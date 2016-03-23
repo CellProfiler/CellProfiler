@@ -3,14 +3,14 @@
 
 import re
 import urllib
-import numpy as np
+import numpy
 import wx
 import wx.grid
 from wx.combo import BitmapComboBox
 from wx.lib.mixins.gridlabelrenderer import GridLabelRenderer
-import cellprofiler.measurements as cpmeas
-import cellprofiler.preferences as cpprefs
-import cellprofiler.settings as cps
+import cellprofiler.measurements
+import cellprofiler.preferences
+import cellprofiler.settings
 from cellprofiler.gui import draw_item_selection_rect
 from cellprofiler.gui.cornerbuttonmixin import CornerButtonMixin
 from cellprofiler.modules.images import Images
@@ -67,16 +67,16 @@ class ImageSetCache(object):
         image_set_numbers = m.get_image_numbers()
         if len(image_set_numbers) == 0:
             self.pages = []
-            self.image_set_page = np.zeros(0, int)
-            self.image_set_index = np.zeros(0, int)
+            self.image_set_page = numpy.zeros(0, int)
+            self.image_set_index = numpy.zeros(0, int)
         else:
             self.pages = [image_set_numbers[i:(i + page_size)]
                           for i in range(0, len(image_set_numbers), page_size)]
-            self.image_set_page = np.zeros(np.max(image_set_numbers) + 1, int)
-            self.image_set_index = np.zeros(np.max(image_set_numbers) + 1, int)
+            self.image_set_page = numpy.zeros(numpy.max(image_set_numbers) + 1, int)
+            self.image_set_index = numpy.zeros(numpy.max(image_set_numbers) + 1, int)
             for i, page in enumerate(self.pages):
                 self.image_set_page[page] = i
-                self.image_set_index[page] = np.arange(len(page))
+                self.image_set_index[page] = numpy.arange(len(page))
 
     def __len__(self):
         if self.m is None:
@@ -95,7 +95,7 @@ class ImageSetCache(object):
         if not key in self.cache:
             if len(self.cache) >= self.max_size:
                 self.decimate()
-            entry = [self.m[cpmeas.IMAGE, feature, self.pages[page]],
+            entry = [self.m[cellprofiler.measurements.IMAGE, feature, self.pages[page]],
                      self.access_time]
             self.cache[key] = entry
         else:
@@ -176,44 +176,44 @@ class ImageSetCtrl(wx.grid.Grid, CornerButtonMixin):
             m = self.measurements
             if m is None or len(self.cache) == 0:
                 return columns
-            assert isinstance(m, cpmeas.Measurements)
+            assert isinstance(m, cellprofiler.measurements.Measurements)
             metadata_tags = m.get_metadata_tags()
-            for feature in m.get_feature_names(cpmeas.IMAGE):
+            for feature in m.get_feature_names(cellprofiler.measurements.IMAGE):
                 is_key = False
                 channel = None
                 if self.display_mode == DISPLAY_MODE_COMPLEX:
-                    if feature.startswith(cpmeas.C_METADATA):
+                    if feature.startswith(cellprofiler.measurements.C_METADATA):
                         column_type = COL_METADATA
                         name = feature.split("_", 1)[1]
                         if feature in metadata_tags:
                             is_key = True
-                    elif (feature.startswith(cpmeas.C_FILE_NAME) or
-                              feature.startswith(cpmeas.C_OBJECTS_FILE_NAME)):
+                    elif (feature.startswith(cellprofiler.measurements.C_FILE_NAME) or
+                              feature.startswith(cellprofiler.measurements.C_OBJECTS_FILE_NAME)):
                         column_type = COL_FILENAME
                         channel = feature.split("_", 1)[1]
                         name = "%s File Name" % channel
-                    elif (feature.startswith(cpmeas.C_PATH_NAME) or
-                              feature.startswith(cpmeas.C_OBJECTS_PATH_NAME)):
+                    elif (feature.startswith(cellprofiler.measurements.C_PATH_NAME) or
+                              feature.startswith(cellprofiler.measurements.C_OBJECTS_PATH_NAME)):
                         column_type = COL_PATHNAME
                         channel = feature.split("_", 1)[1]
                         name = "%s Path Name" % channel
-                    elif (feature.startswith(cpmeas.C_URL) or
-                              feature.startswith(cpmeas.C_OBJECTS_URL)):
+                    elif (feature.startswith(cellprofiler.measurements.C_URL) or
+                              feature.startswith(cellprofiler.measurements.C_OBJECTS_URL)):
                         column_type = COL_URL
                         channel = feature.split("_", 1)[1]
                         name = "%s URL" % channel
-                    elif feature.startswith(cpmeas.C_SERIES):
+                    elif feature.startswith(cellprofiler.measurements.C_SERIES):
                         column_type = COL_SERIES
                         channel = feature.split("_", 1)[1]
                         name = "%s Series" % channel
-                    elif feature.startswith(cpmeas.C_FRAME):
+                    elif feature.startswith(cellprofiler.measurements.C_FRAME):
                         column_type = COL_FRAME
                         channel = feature.split("_", 1)[1]
                         name = "%s Frame" % channel
                     else:
                         continue
-                elif (feature.startswith(cpmeas.C_URL) or
-                          feature.startswith(cpmeas.C_OBJECTS_URL)):
+                elif (feature.startswith(cellprofiler.measurements.C_URL) or
+                          feature.startswith(cellprofiler.measurements.C_OBJECTS_URL)):
                     column_type = COL_URL
                     channel = feature.split("_", 1)[1]
                     name = channel
@@ -296,9 +296,9 @@ class ImageSetCtrl(wx.grid.Grid, CornerButtonMixin):
             image_set = self.image_numbers[row]
             column = self.columns[col]
             if column.channel_type == cpp.Pipeline.ImageSetChannelDescriptor.CT_OBJECTS:
-                feature = cpmeas.C_OBJECTS_URL + "_" + column.channel
+                feature = cellprofiler.measurements.C_OBJECTS_URL + "_" + column.channel
             else:
-                feature = cpmeas.C_URL + "_" + column.channel
+                feature = cellprofiler.measurements.C_URL + "_" + column.channel
             value = self.cache[feature, image_set]
             if value is not None:
                 return value.encode("utf-8")
@@ -441,7 +441,7 @@ class ImageSetCtrl(wx.grid.Grid, CornerButtonMixin):
                     style=wx.OK | wx.ICON_INFORMATION,
                     parent=self)
         else:
-            cpprefs.report_progress(
+            cellprofiler.preferences.report_progress(
                     "ImageSetCount", None,
                     "Found %d image sets" % n_imagesets)
         self.recompute()
@@ -1456,7 +1456,7 @@ class FilterPanelDlg(wx.Dialog):
         from cellprofiler.modules.images import FilePredicate, DirectoryPredicate
         from cellprofiler.modules.images import ExtensionPredicate
 
-        self.filter_setting = cps.Filter(
+        self.filter_setting = cellprofiler.settings.Filter(
                 "Filter",
                 predicates=[FilePredicate(),
                             DirectoryPredicate(),
@@ -1475,7 +1475,7 @@ class FilterPanelDlg(wx.Dialog):
         """A filter function that applies the current filter to a URL"""
         modpath = Images.url_to_modpath(url)
         return self.filter_setting.evaluate(
-                (cps.FileCollectionDisplay.NODE_IMAGE_PLANE, modpath, None))
+                (cellprofiler.settings.FileCollectionDisplay.NODE_IMAGE_PLANE, modpath, None))
 
     def on_value_change(self, setting, panel, new_text, event, timeout):
         self.filter_setting.set_value_text(new_text)

@@ -1,10 +1,10 @@
 import sys
 import time
-import numpy as np
+import numpy
 import wx
 import cellprofiler
-import cellprofiler.utilities.version as version
-from cellprofiler.gui import get_cp_icon, get_cp_bitmap
+import cellprofiler.utilities.version
+from cellprofiler.gui import get_cp_icon
 from cellprofiler.icons import get_builtin_image
 
 
@@ -60,7 +60,7 @@ class ProgressFrame(wx.Frame):
         self.BackgroundColour = cellprofiler.preferences.get_background_color()
         self.tbicon = wx.TaskBarIcon()
         self.tbicon.SetIcon(get_cp_icon(), "CellProfiler2.0")
-        self.SetTitle("CellProfiler %s" % version.title_string)
+        self.SetTitle("CellProfiler %s" % cellprofiler.utilities.version.title_string)
         self.SetSize((640, 480))
         self.panel = wx.Panel(self, wx.ID_ANY)
         sizer = wx.BoxSizer(wx.VERTICAL)
@@ -173,7 +173,7 @@ class ProgressFrame(wx.Frame):
 
         if self.end_times is None:
             # One extra element at the beginning for the start time
-            self.end_times = np.zeros(1 + num_modules * num_image_sets)
+            self.end_times = numpy.zeros(1 + num_modules * num_image_sets)
         module_index = module.module_num - 1  # make it zero-based
         index = image_set_index * num_modules + (module_index - 1)
         self.end_times[1 + index] = self.adjusted_time()
@@ -192,11 +192,11 @@ class ProgressFrame(wx.Frame):
             module_index = self.current_module.module_num - 1
             index = self.image_set_index * self.num_modules + module_index
             durations = (self.end_times[1:] - self.end_times[:-1]).reshape(self.num_image_sets, self.num_modules)
-            per_module_estimates = np.zeros(self.num_modules)
-            per_module_estimates[:module_index] = np.median(durations[:self.image_set_index + 1, :module_index], 0)
+            per_module_estimates = numpy.zeros(self.num_modules)
+            per_module_estimates[:module_index] = numpy.median(durations[:self.image_set_index + 1, :module_index], 0)
             current_module_so_far = self.adjusted_time() - self.end_times[1 + index - 1]
             if self.image_set_index > 0:
-                per_module_estimates[module_index:] = np.median(durations[:self.image_set_index, module_index:], 0)
+                per_module_estimates[module_index:] = numpy.median(durations[:self.image_set_index, module_index:], 0)
                 per_module_estimates[module_index] = max(per_module_estimates[module_index], current_module_so_far)
             else:
                 # Guess that the modules that haven't finished yet are

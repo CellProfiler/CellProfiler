@@ -20,7 +20,7 @@ diameter', meaning the diameter of a circle with the same area as the
 object."""
 
 import wx
-from cellprofiler.gui.html.htmlwindow import HtmlClickableWindow
+import cellprofiler.gui.html.htmlwindow
 
 
 class HTMLDialog(wx.Dialog):
@@ -28,7 +28,7 @@ class HTMLDialog(wx.Dialog):
         super(HTMLDialog, self).__init__(parent, -1, title,
                                          style=(wx.DEFAULT_DIALOG_STYLE |
                                                 wx.RESIZE_BORDER))
-        html = HtmlClickableWindow(parent=self)
+        html = cellprofiler.gui.html.htmlwindow.HtmlClickableWindow(parent=self)
         html.SetPage(contents)
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(html, 1, wx.EXPAND | wx.ALL, 5)

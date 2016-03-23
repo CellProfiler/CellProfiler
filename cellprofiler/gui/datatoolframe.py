@@ -4,13 +4,13 @@
 import h5py
 import wx
 import wx.lib.scrolledpanel
-import cellprofiler.cpimage as cpi
-import cellprofiler.gui.cpfigure as cpf
-import cellprofiler.measurements as cpmeas
-import cellprofiler.objects as cpo
-import cellprofiler.pipeline as cpp
-import cellprofiler.preferences as cpprefs
-import cellprofiler.workspace as cpw
+import cellprofiler.cpimage
+import cellprofiler.gui.cpfigure
+import cellprofiler.measurements
+import cellprofiler.objects
+import cellprofiler.pipeline
+import cellprofiler.preferences
+import cellprofiler.workspace
 from cellprofiler.gui import get_cp_icon
 from cellprofiler.gui.moduleview import ModuleView
 from cellprofiler.modules import instantiate_module
@@ -41,17 +41,17 @@ class DataToolFrame(wx.Frame):
         wx.Frame.__init__(self, *args, **kwds_copy)
         self.module = instantiate_module(module_name)
         self.module.use_as_data_tool = True
-        self.pipeline = cpp.Pipeline()
+        self.pipeline = cellprofiler.pipeline.Pipeline()
         if h5py.is_hdf5(measurements_file_name):
-            self.workspace = cpw.Workspace(self.pipeline, self.module, None, None, None,
-                                           None)
+            self.workspace = cellprofiler.workspace.Workspace(self.pipeline, self.module, None, None, None,
+                                                              None)
             self.workspace.load(measurements_file_name, True)
             self.measurements = self.workspace.measurements
         else:
             self.pipeline.load(measurements_file_name)
             self.load_measurements(measurements_file_name)
-            self.workspace = cpw.Workspace(self.pipeline, self.module, None, None,
-                                           self.measurements, None)
+            self.workspace = cellprofiler.workspace.Workspace(self.pipeline, self.module, None, None,
+                                                              self.measurements, None)
 
         self.module.module_num = len(self.pipeline.modules()) + 1
         self.pipeline.add_module(self.module)
@@ -59,8 +59,8 @@ class DataToolFrame(wx.Frame):
         self.sizer = wx.BoxSizer(wx.VERTICAL)
 
         module_panel = wx.lib.scrolledpanel.ScrolledPanel(self, -1, style=wx.SUNKEN_BORDER)
-        module_panel.BackgroundColour = cpprefs.get_background_color()
-        self.BackgroundColour = cpprefs.get_background_color()
+        module_panel.BackgroundColour = cellprofiler.preferences.get_background_color()
+        self.BackgroundColour = cellprofiler.preferences.get_background_color()
 
         self.module_view = ModuleView(module_panel, self.workspace, True)
         self.module_view.set_selection(self.module.module_num)
@@ -138,7 +138,7 @@ class DataToolFrame(wx.Frame):
             assert isinstance(dlg, wx.FileDialog)
             if dlg.ShowModal() == wx.ID_OK:
                 if dlg.GetFilterIndex() == 0:
-                    new_measurements = cpmeas.Measurements(
+                    new_measurements = cellprofiler.measurements.Measurements(
                             filename=dlg.Path,
                             copy=self.measurements)
                     new_measurements.flush()
@@ -162,13 +162,13 @@ class DataToolFrame(wx.Frame):
                          0, wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL)
         metadata_db = {}
         metadata_features = [
-            x for x in self.measurements.get_feature_names(cpmeas.IMAGE)
+            x for x in self.measurements.get_feature_names(cellprofiler.measurements.IMAGE)
             if x.startswith('Metadata')]
         sel = None
         for i in self.measurements.get_image_numbers():
             metadata_key = ','.join(['%s=%s' % (
                 feature,
-                self.measurements.get_measurement(cpmeas.IMAGE, feature, i))
+                self.measurements.get_measurement(cellprofiler.measurements.IMAGE, feature, i))
                                      for feature in metadata_features])
             metadata_db[i] = metadata_key
             if i == self.measurements.image_set_number:
@@ -197,26 +197,26 @@ class DataToolFrame(wx.Frame):
             self.measurements.image_set_number = index + 1
 
     def load_measurements(self, measurements_file_name):
-        self.measurements = cpmeas.load_measurements(
+        self.measurements = cellprofiler.measurements.load_measurements(
                 measurements_file_name, can_overwrite=True)
         # Start on the first image
         self.measurements.next_image_set(1)
 
     def on_run(self, event):
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cellprofiler.cpimage.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        workspace = cpw.Workspace(self.pipeline,
-                                  self.module,
-                                  image_set,
-                                  cpo.ObjectSet(),
-                                  self.measurements,
-                                  image_set_list,
-                                  frame=self)
+        workspace = cellprofiler.workspace.Workspace(self.pipeline,
+                                                     self.module,
+                                                     image_set,
+                                                     cellprofiler.objects.ObjectSet(),
+                                                     self.measurements,
+                                                     image_set_list,
+                                                     frame=self)
         self.module.show_window = True  # to make sure it saves display data
         self.module.run_as_data_tool(workspace)
         self.measurements.flush()
         if self.module.show_window:
-            fig = cpf.create_or_find(
+            fig = cellprofiler.gui.cpfigure.create_or_find(
                     parent=self,
                     title="%s Output" % self.module.module_name,
                     name="CellProfiler:DataTool:%s" % self.module.module_name)

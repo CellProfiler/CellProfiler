@@ -3,13 +3,13 @@
 
 import logging
 import bisect
-import numpy as np
+import numpy
 import wx
 import wx.lib.scrolledpanel
 import urllib
 import urllib2
 import uuid
-import cellprofiler.preferences as cpprefs
+import cellprofiler.preferences
 from cellprofiler.gui import draw_item_selection_rect
 
 logger = logging.getLogger(__name__)
@@ -60,8 +60,8 @@ class PathListCtrl(wx.PyScrolledWindow):
         self.notify_selection_changed()
         self.folder_items = []
         self.folder_names = []
-        self.folder_counts = np.zeros(0, int)
-        self.folder_idxs = np.zeros(0, int)
+        self.folder_counts = numpy.zeros(0, int)
+        self.folder_idxs = numpy.zeros(0, int)
         _, height = self.GetTextExtent("Wally")
         self.line_height = height
         self.leading = 0
@@ -192,7 +192,7 @@ class PathListCtrl(wx.PyScrolledWindow):
         """# of paths shown in UI"""
         if self.schmutzy:
             self.recalc()
-        return np.sum(self.folder_counts)
+        return numpy.sum(self.folder_counts)
 
     def get_folder_count(self):
         """# of folders shown in UI"""
@@ -246,7 +246,7 @@ class PathListCtrl(wx.PyScrolledWindow):
         npaths = len(paths)
         for i, path in enumerate(paths):
             if i % 100 == 0:
-                cpprefs.report_progress(
+                cellprofiler.preferences.report_progress(
                         uid, float(i) / npaths,
                              "Loading %s into UI" % path)
             folder, filename = self.splitpath(path)
@@ -267,7 +267,7 @@ class PathListCtrl(wx.PyScrolledWindow):
                 folder_item.file_display_names.insert(pidx, display_name)
                 folder_item.enabled.insert(pidx, True)
         if len(paths) > 0:
-            cpprefs.report_progress(uid, 1, "Done")
+            cellprofiler.preferences.report_progress(uid, 1, "Done")
         self.schmutzy = True
         self.Refresh(eraseBackground=False)
 
@@ -339,21 +339,21 @@ class PathListCtrl(wx.PyScrolledWindow):
             return
         if len(self.folder_items) == 0:
             max_width, total_height = self.drop_files_and_folders_text_extent
-            self.folder_counts = np.zeros(0, int)
-            self.folder_idxs = np.zeros(0, int)
+            self.folder_counts = numpy.zeros(0, int)
+            self.folder_idxs = numpy.zeros(0, int)
         else:
             if self.show_disabled:
-                self.folder_counts = np.array(
+                self.folder_counts = numpy.array(
                         [len(x.filenames) if x.opened else 0
                          for x in self.folder_items])
             else:
                 for item in self.folder_items:
-                    enabled_mask = np.array(item.enabled, bool)
-                    item.enabled_idxs = np.arange(len(item.enabled))[enabled_mask]
-                self.folder_counts = np.array(
-                        [np.sum(x.enabled) if x.opened else 0
+                    enabled_mask = numpy.array(item.enabled, bool)
+                    item.enabled_idxs = numpy.arange(len(item.enabled))[enabled_mask]
+                self.folder_counts = numpy.array(
+                        [numpy.sum(x.enabled) if x.opened else 0
                          for x in self.folder_items])
-            self.folder_idxs = np.hstack(([0], np.cumsum(self.folder_counts + 1)))
+            self.folder_idxs = numpy.hstack(([0], numpy.cumsum(self.folder_counts + 1)))
             max_width = reduce(max, [max(reduce(max, x.widths), x.display_width)
                                      for x in self.folder_items])
             total_height = self.line_height * self.folder_idxs[-1]

@@ -2,14 +2,14 @@
 """
 
 import matplotlib
-import numpy as np
+import numpy
 import wx
 from wx.lib.colourselect import ColourSelect, EVT_COLOURSELECT
 from wx.lib.scrolledpanel import ScrolledPanel
-import cellprofiler.measurements as cpmeas
-import cellprofiler.preferences as cpprefs
+import cellprofiler.measurements
+import cellprofiler.preferences
 from cellprofiler.gui.cpartists import CPImageArtist, ImageData, ObjectsData, MaskData, ColorMixin, MODE_COLORIZE, MODE_HIDE, MODE_LINES, NORMALIZE_LINEAR, NORMALIZE_LOG, NORMALIZE_RAW, INTERPOLATION_BICUBIC, INTERPOLATION_BILINEAR, INTERPOLATION_NEAREST
-from cellprofiler.gui.cpfigure import CPFigureFrame, get_matplotlib_interpolation_preference
+from cellprofiler.gui.cpfigure import CPFigureFrame
 from cellprofiler.gui.help import WV_FIGURE_HELP, WORKSPACE_VIEWER_HELP
 from cellprofiler.gui.htmldialog import HTMLDialog
 from cellprofiler.modules.identify import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
@@ -126,10 +126,10 @@ class VWImageRow(VWRow):
         image_set = vw.workspace.image_set
         name = self.chooser.GetStringSelection()
 
-        im = cpprefs.get_intensity_mode()
-        if im == cpprefs.INTENSITY_MODE_LOG:
+        im = cellprofiler.preferences.get_intensity_mode()
+        if im == cellprofiler.preferences.INTENSITY_MODE_LOG:
             normalization = NORMALIZE_LOG
-        elif im == cpprefs.INTENSITY_MODE_NORMAL:
+        elif im == cellprofiler.preferences.INTENSITY_MODE_NORMAL:
             normalization = NORMALIZE_LINEAR
         else:
             normalization = NORMALIZE_RAW
@@ -138,7 +138,7 @@ class VWImageRow(VWRow):
                 name, None,
                 mode=MODE_HIDE,
                 color=self.color,
-                colormap=cpprefs.get_default_colormap(),
+                colormap=cellprofiler.preferences.get_default_colormap(),
                 alpha=alpha,
                 normalization=normalization)
         vw.image.add(self.data)
@@ -164,7 +164,7 @@ class VWObjectsRow(VWRow):
         self.data = bind_data_class(ObjectsData, self.color_ctrl, vw.redraw)(
                 name, None,
                 outline_color=self.color,
-                colormap=cpprefs.get_default_colormap(),
+                colormap=cellprofiler.preferences.get_default_colormap(),
                 alpha=.5,
                 mode=MODE_HIDE)
         vw.image.add(self.data)
@@ -239,10 +239,10 @@ class ViewWorkspace(object):
         self.frame.set_subplots((1, 1))
         self.axes = self.frame.subplot(0, 0)
         self.axes.invert_yaxis()
-        interpolation = cpprefs.get_interpolation_mode()
-        if interpolation == cpprefs.IM_NEAREST:
+        interpolation = cellprofiler.preferences.get_interpolation_mode()
+        if interpolation == cellprofiler.preferences.IM_NEAREST:
             interpolation = INTERPOLATION_NEAREST
-        elif interpolation == cpprefs.IM_BILINEAR:
+        elif interpolation == cellprofiler.preferences.IM_BILINEAR:
             interpolation = INTERPOLATION_BILINEAR
         else:
             interpolation = INTERPOLATION_BICUBIC
@@ -587,7 +587,7 @@ class ViewWorkspace(object):
             artist.remove()
 
         m = self.workspace.measurements
-        assert isinstance(m, cpmeas.Measurements)
+        assert isinstance(m, cellprofiler.measurements.Measurements)
         title_lines = []
         object_values = {}
         for measurement_row in self.measurement_rows:
@@ -602,7 +602,7 @@ class ViewWorkspace(object):
                 continue
 
             value = m[object_name, feature]
-            if object_name in (cpmeas.IMAGE, cpmeas.EXPERIMENT):
+            if object_name in (cellprofiler.measurements.IMAGE, cellprofiler.measurements.EXPERIMENT):
                 if isinstance(value, int):
                     fmt = "%s: %d"
                 elif isinstance(value, float):
@@ -629,11 +629,11 @@ class ViewWorkspace(object):
                     M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y]
             for i in range(len(x)):
                 xi, yi = x[i], y[i]
-                if np.isnan(xi) or np.isnan(yi):
+                if numpy.isnan(xi) or numpy.isnan(yi):
                     continue
                 height = 0
                 for j, measurement_row in enumerate(measurement_rows):
-                    if len(values[j]) <= i or np.isnan(values[j][i]):
+                    if len(values[j]) <= i or numpy.isnan(values[j][i]):
                         continue
                     value = values[j][i]
                     font = measurement_row.font

@@ -8,7 +8,7 @@ import sys
 import traceback
 import urllib
 import urllib2
-from StringIO import StringIO
+import StringIO
 
 ED_STOP = "Stop"
 ED_CONTINUE = "Continue"
@@ -296,7 +296,7 @@ def on_report(event, dialog, traceback_text, pipeline):
     try:
         obfuscated_pipeline = pipeline.copy()
         obfuscated_pipeline.obfuscate()
-        fd = StringIO()
+        fd = StringIO.StringIO()
         obfuscated_pipeline.savetxt(fd)
         fd.seek(0)
         pipeline_text = fd.read()

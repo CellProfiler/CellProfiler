@@ -8,7 +8,7 @@ import wx
 import scipy.io.matlab
 import cellprofiler.preferences
 from cellprofiler.modules.loadimages import LoadImagesImageProvider, is_image
-import cellprofiler.gui.cpfigure as FIG
+import cellprofiler.gui.cpfigure
 
 logger = logging.getLogger(__name__)
 
@@ -112,9 +112,9 @@ class DirectoryView(object):
 
     def __display_matlab_image(self, handles, filename):
         image = handles["Image"]
-        frame = FIG.CPFigureFrame(self.__list_box.GetTopLevelParent(),
-                                  title=filename,
-                                  subplots=(1, 1))
+        frame = cellprofiler.gui.cpfigure.CPFigureFrame(self.__list_box.GetTopLevelParent(),
+                                                        title=filename,
+                                                        subplots=(1, 1))
         if image.ndim == 3:
             frame.subplot_imshow(0, 0, image, filename)
         else:
@@ -124,9 +124,9 @@ class DirectoryView(object):
     def __display_image(self, filename):
         lip = LoadImagesImageProvider("dummy", "", filename, True)
         image = lip.provide_image(None).pixel_data
-        frame = FIG.CPFigureFrame(self.__list_box.GetTopLevelParent(),
-                                  title=filename,
-                                  subplots=(1, 1))
+        frame = cellprofiler.gui.cpfigure.CPFigureFrame(self.__list_box.GetTopLevelParent(),
+                                                        title=filename,
+                                                        subplots=(1, 1))
         if image.ndim == 3:
             frame.subplot_imshow(0, 0, image, filename)
         else:

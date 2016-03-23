@@ -1,10 +1,9 @@
 """metadatadlg.py - dialog for editing an expression that might contain metadata
 """
 
-import re
 import wx
 import wx.lib.masked
-import cellprofiler.measurements as cpmeas
+import cellprofiler.measurements
 from cellprofiler.preferences import get_primary_outline_color
 
 __choice_ids = []
@@ -45,12 +44,12 @@ class MetadataControl(wx.PyControl):
 
         super(MetadataControl, self).__init__(*args, **kwargs)
         columns = pipeline.get_measurement_columns(module)
-        choices = [cpmeas.C_SERIES, cpmeas.C_FRAME]
+        choices = [cellprofiler.measurements.C_SERIES, cellprofiler.measurements.C_FRAME]
         for column in columns:
             object_name, feature, coltype = column[:3]
-            choice = feature[(len(cpmeas.C_METADATA) + 1):]
-            if (object_name == cpmeas.IMAGE and
-                    feature.startswith(cpmeas.C_METADATA)):
+            choice = feature[(len(cellprofiler.measurements.C_METADATA) + 1):]
+            if (object_name == cellprofiler.measurements.IMAGE and
+                    feature.startswith(cellprofiler.measurements.C_METADATA)):
                 choices.append(choice)
         self.__metadata_choices = choices
         self.SetValue(value)

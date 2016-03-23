@@ -5,7 +5,7 @@ import urllib2
 import webbrowser
 import wx
 import wx.html
-import cellprofiler.preferences as cpprefs
+from cellprofiler.preferences import get_background_color, set_startup_blurb
 import content
 from cellprofiler.gui.html.content import WELCOME_HELP
 from cellprofiler.icons import get_builtin_images_path
@@ -17,7 +17,7 @@ WELCOME_SCREEN_FRAME = "WelcomeScreenFrame"
 class HtmlClickableWindow(wx.html.HtmlWindow):
     def __init__(self, *args, **kwargs):
         wx.html.HtmlWindow.__init__(self, *args, **kwargs)
-        self.HTMLBackgroundColour = cpprefs.get_background_color()
+        self.HTMLBackgroundColour = get_background_color()
 
     def load_startup_blurb(self):
         self.OnLinkClicked(wx.html.HtmlLinkInfo('startup_main', ''))
@@ -30,7 +30,7 @@ class HtmlClickableWindow(wx.html.HtmlWindow):
             webbrowser.open(href)
         elif href.startswith('pref:'):
             if 'no_display' in href:
-                cpprefs.set_startup_blurb(False)
+                set_startup_blurb(False)
                 # Find the parent frame and, if it's the welcome screen frame,
                 # "close" it (= hide it)
                 #
@@ -45,7 +45,7 @@ class HtmlClickableWindow(wx.html.HtmlWindow):
             html_str = WELCOME_HELP[href]
             html_str += '<p>Go <a href="startup_main">back</a> to the welcome screen.</p>'
             self.SetPage(html_str)
-            self.BackgroundColour = cpprefs.get_background_color()
+            self.BackgroundColour = get_background_color()
         elif href.startswith('load:'):
             pipeline_filename = href[5:]
             try:
@@ -108,7 +108,7 @@ class HtmlClickableWindow(wx.html.HtmlWindow):
             newpage = content.find_link(href)
             if newpage is not None:
                 self.SetPage(newpage)
-                self.BackgroundColour = cpprefs.get_background_color()
+                self.BackgroundColour = get_background_color()
             else:
                 super(HtmlClickableWindow, self).OnLinkClicked(linkinfo)
 

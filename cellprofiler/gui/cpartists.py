@@ -4,7 +4,7 @@
 import matplotlib
 import matplotlib.artist
 import matplotlib.collections
-import numpy as np
+import numpy
 from centrosome.cpmorphology import get_outline_pts
 from centrosome.outline import outline
 from scipy.ndimage import distance_transform_edt, label
@@ -70,7 +70,7 @@ class ColorMixin(object):
             color = matplotlib.rcParams.get('patch.facecolor', 'b')
         else:
             color = self._color
-        return np.atleast_1d(matplotlib.colors.colorConverter.to_rgb(color))
+        return numpy.atleast_1d(matplotlib.colors.colorConverter.to_rgb(color))
 
     def _set_color(self, color):
         """Set the color"""
@@ -88,7 +88,7 @@ class ColorMixin(object):
     @property
     def color3(self):
         """Return the color as a 3D array"""
-        return self.color[np.newaxis, np.newaxis, :]
+        return self.color[numpy.newaxis, numpy.newaxis, :]
 
     def _on_color_changed(self):
         """Called when the color changed, default = do nothing"""
@@ -245,11 +245,11 @@ class OutlinesMixin(ColorMixin):
             if self.line_width > 1:
                 hw = float(self.line_width) / 2
                 d = distance_transform_edt(~ self._outlines)
-                dti, dtj = np.where((d < hw + .5) & ~self._outlines)
-                self._outlines = self._outlines.astype(np.float32)
-                self._outlines[dti, dtj] = np.minimum(1, hw + .5 - d[dti, dtj])
+                dti, dtj = numpy.where((d < hw + .5) & ~self._outlines)
+                self._outlines = self._outlines.astype(numpy.float32)
+                self._outlines[dti, dtj] = numpy.minimum(1, hw + .5 - d[dti, dtj])
 
-        return self._outlines.astype(np.float32)
+        return self._outlines.astype(numpy.float32)
 
     @property
     def points(self):
@@ -325,17 +325,17 @@ class ObjectsData(OutlinesMixin):
         if self.__overlay is not None:
             return self.__overlay
         sm = matplotlib.cm.ScalarMappable(cmap=self.colormap)
-        sm.set_clim(vmin=1, vmax=np.max([np.max(l) for l in self.labels]) + 1)
+        sm.set_clim(vmin=1, vmax=numpy.max([numpy.max(l) for l in self.labels]) + 1)
 
         img = None
         lmin = 0
         for l in self.labels:
-            if np.all(l == 0):
+            if numpy.all(l == 0):
                 continue
             if self.scramble:
-                lmin = np.min(l[l != 0])
+                lmin = numpy.min(l[l != 0])
             l[l != 0] = renumber_labels_for_display(l)[l != 0] + lmin
-            lmin = np.max(l)
+            lmin = numpy.max(l)
             if img is None:
                 img = sm.to_rgba(l)
                 img[l == 0, :] = 0
@@ -384,7 +384,7 @@ class MaskData(OutlinesMixin):
     @property
     def labels(self):
         """Return the mask as a sequence of labels matrices"""
-        return [self.mask.astype(np.uint8)]
+        return [self.mask.astype(numpy.uint8)]
 
     def _using_color(self):
         return True
@@ -536,7 +536,7 @@ class CPImageArtist(matplotlib.artist.Artist):
                 if y >= pixel_data.shape[0] or x >= pixel_data.shape[1]:
                     continue
                 if pixel_data.ndim == 3:
-                    value = np.mean(pixel_data[y, x, :])
+                    value = numpy.mean(pixel_data[y, x, :])
                 else:
                     value = pixel_data[y, x]
                 result[image.name] = value
@@ -569,8 +569,8 @@ class CPImageArtist(matplotlib.artist.Artist):
         # First 3 color indices are intensities
         # Last is the alpha
 
-        target = np.zeros(
-                (view_ymax - view_ymin, view_xmax - view_xmin, 4), np.float32)
+        target = numpy.zeros(
+                (view_ymax - view_ymin, view_xmax - view_xmin, 4), numpy.float32)
 
         def get_tile_and_target(pixel_data):
             """Return the visible tile of the image and a view of the target"""
@@ -585,7 +585,7 @@ class CPImageArtist(matplotlib.artist.Artist):
             target_view = target[:(ymax - view_ymin), :(xmax - view_xmin), :]
             return pixel_data, target_view
 
-        max_color_in = np.zeros(3)
+        max_color_in = numpy.zeros(3)
         for image in self.__images:
             assert isinstance(image, ImageData)
             if image.mode == MODE_HIDE:
@@ -597,10 +597,10 @@ class CPImageArtist(matplotlib.artist.Artist):
             tv_alpha = target_view[:, :, 3]
             tv_image = target_view[:, :, :3]
             if image.normalization in (NORMALIZE_LINEAR, NORMALIZE_LOG):
-                pd_max = np.max(pixel_data)
-                pd_min = np.min(pixel_data)
+                pd_max = numpy.max(pixel_data)
+                pd_min = numpy.min(pixel_data)
                 if pd_min == pd_max:
-                    pixel_data = np.zeros(pixel_data.shape, np.float32)
+                    pixel_data = numpy.zeros(pixel_data.shape, numpy.float32)
                 else:
                     pixel_data = (pixel_data - pd_min) / (pd_max - pd_min)
             else:
@@ -608,36 +608,36 @@ class CPImageArtist(matplotlib.artist.Artist):
                 pixel_data[pixel_data < image.vmin] = image.vmin
                 pixel_data[pixel_data > image.vmax] = image.vmax
             if image.normalization == NORMALIZE_LOG:
-                log_eps = np.log(1.0 / 256)
-                log_one_plus_eps = np.log(257.0 / 256)
-                pixel_data = (np.log(pixel_data + 1.0 / 256) - log_eps) / \
+                log_eps = numpy.log(1.0 / 256)
+                log_one_plus_eps = numpy.log(257.0 / 256)
+                pixel_data = (numpy.log(pixel_data + 1.0 / 256) - log_eps) / \
                              (log_one_plus_eps - log_eps)
             if image.mode == MODE_COLORIZE or image.mode == MODE_GRAYSCALE:
-                pixel_data = pixel_data[:, :, np.newaxis] * image.color3
+                pixel_data = pixel_data[:, :, numpy.newaxis] * image.color3
             elif image.mode == MODE_COLORMAP:
                 sm = matplotlib.cm.ScalarMappable(cmap=image.colormap)
                 if image.normalization == NORMALIZE_RAW:
                     sm.set_clim((image.vmin, image.vmax))
                 pixel_data = sm.to_rgba(pixel_data)[:, :, :3]
-            max_color_in = np.maximum(max_color_in, np.max(
+            max_color_in = numpy.maximum(max_color_in, numpy.max(
                     pixel_data.reshape(pixel_data.shape[0] * pixel_data.shape[1],
                                        pixel_data.shape[2]), 0))
             imalpha = image.alpha
             tv_image[:] = \
-                tv_image * tv_alpha[:, :, np.newaxis] * (1 - imalpha) + \
+                tv_image * tv_alpha[:, :, numpy.newaxis] * (1 - imalpha) + \
                 pixel_data * imalpha
             tv_alpha[:] = \
                 tv_alpha + imalpha - tv_alpha * imalpha
-            tv_image[tv_alpha != 0, :] /= tv_alpha[tv_alpha != 0][:, np.newaxis]
+            tv_image[tv_alpha != 0, :] /= tv_alpha[tv_alpha != 0][:, numpy.newaxis]
 
         #
         # Normalize the image intensity
         #
-        max_color_out = np.max(target[:, :, :3].reshape(
+        max_color_out = numpy.max(target[:, :, :3].reshape(
                 target.shape[0] * target.shape[1], 3), 0)
         color_mask = (max_color_in != 0) & (max_color_out != 0)
-        if np.any(color_mask):
-            multiplier = np.min(
+        if numpy.any(color_mask):
+            multiplier = numpy.min(
                     max_color_in[color_mask] / max_color_out[color_mask])
         else:
             multiplier = 1
@@ -672,25 +672,25 @@ class CPImageArtist(matplotlib.artist.Artist):
                 mask, target_view = get_tile_and_target(mask)
                 if om.mode == MODE_INVERTED:
                     mask = ~mask
-                ocolor = mask[:, :, np.newaxis] * om.color3
+                ocolor = mask[:, :, numpy.newaxis] * om.color3
             else:
                 continue
             tv_alpha = target_view[:, :, 3]
             tv_image = target_view[:, :, :3]
-            tv_alpha3 = tv_alpha[:, :, np.newaxis]
+            tv_alpha3 = tv_alpha[:, :, numpy.newaxis]
             oalpha = mask.astype(float) * om.alpha
-            oalpha3 = oalpha[:, :, np.newaxis]
+            oalpha3 = oalpha[:, :, numpy.newaxis]
             tv_image[:] = \
                 tv_image * tv_alpha3 * (1 - oalpha3) + ocolor * oalpha3
             tv_alpha[:] = tv_alpha + oalpha - tv_alpha * oalpha
-            tv_image[tv_alpha != 0, :] /= tv_alpha[tv_alpha != 0][:, np.newaxis]
+            tv_image[tv_alpha != 0, :] /= tv_alpha[tv_alpha != 0][:, numpy.newaxis]
 
         target = target[:, :, :3]
-        np.clip(target, 0, 1, target)
+        numpy.clip(target, 0, 1, target)
         if flip_lr:
-            target = np.fliplr(target)
+            target = numpy.fliplr(target)
         if self.axes.viewLim.height < 0:
-            target = np.flipud(target)
+            target = numpy.flipud(target)
         im = matplotlib.image.fromarray(target[:, :, :3], 0)
         im.is_grayscale = False
         im.set_interpolation(self.mp_interpolation)
@@ -1174,21 +1174,21 @@ class CPOutlineArtist(matplotlib.collections.LineCollection):
         #
         lines = []
         for l in labels:
-            new_labels, counts = label(l != 0, np.ones((3, 3), bool))
+            new_labels, counts = label(l != 0, numpy.ones((3, 3), bool))
             if counts == 0:
                 continue
-            l = l.astype(np.uint64) * counts + new_labels
-            unique, idx = np.unique(l.flatten(), return_inverse=True)
+            l = l.astype(numpy.uint64) * counts + new_labels
+            unique, idx = numpy.unique(l.flatten(), return_inverse=True)
             if unique[0] == 0:
-                my_range = np.arange(len(unique))
+                my_range = numpy.arange(len(unique))
             else:
-                my_range = np.arange(1, len(unique))
+                my_range = numpy.arange(1, len(unique))
             idx.shape = l.shape
             pts, offs, counts = get_outline_pts(idx, my_range)
             pts += .5  # Target the centers of the pixels.
             pts = pts[:, ::-1]  # matplotlib x, y reversed from i,j
             for off, count in zip(offs, counts):
-                lines.append(np.vstack((pts[off:off + count], pts[off:off + 1])))
+                lines.append(numpy.vstack((pts[off:off + count], pts[off:off + 1])))
         matplotlib.collections.LineCollection.__init__(
                 self, lines, *args, **kwargs)
 

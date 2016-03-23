@@ -4,7 +4,7 @@
 import Queue
 import os.path
 import wx
-import cellprofiler.utilities.filefinder as filefinder
+import cellprofiler.utilities.filefinder
 
 
 class FileFinderDialog(wx.Dialog):
@@ -42,7 +42,7 @@ class FileFinderDialog(wx.Dialog):
         self.timer.Start(100)
 
         self.key_to_itemid = {None: self.root_id}
-        self.file_finder = filefinder.Locator(self.finder_cb, self.metadata_cb)
+        self.file_finder = cellprofiler.utilities.filefinder.Locator(self.finder_cb, self.metadata_cb)
         for dir in dirs:
             self.file_finder.queue(dir)
 
@@ -142,7 +142,7 @@ class FileFinderDialog(wx.Dialog):
     def update(self, path, isdir, key, parent, status, data):
         self.progress[key] = status
 
-        if status != filefinder.FOUND:
+        if status != cellprofiler.utilities.filefinder.FOUND:
             return
 
         # already have this item - was it put back?

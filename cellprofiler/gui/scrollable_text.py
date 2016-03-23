@@ -1,10 +1,10 @@
 import wx
-import wx.lib.scrolledpanel as scrolledpanel
+import wx.lib.scrolledpanel
 
 
-class ScrollableText(scrolledpanel.ScrolledPanel):
+class ScrollableText(wx.lib.scrolledpanel.ScrolledPanel):
     def __init__(self, parent, id=-1, text=None):
-        scrolledpanel.ScrolledPanel.__init__(self, parent, id)
+        wx.lib.scrolledpanel.ScrolledPanel.__init__(self, parent, id)
 
         if text is None:
             text = [[('black', 'adsf')]]

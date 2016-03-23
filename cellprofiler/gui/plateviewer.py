@@ -4,10 +4,9 @@
 import multiprocessing
 import threading
 import traceback
-
 import matplotlib
 import matplotlib.cm
-import numpy as np
+import numpy
 import wx
 import wx.grid
 from matplotlib.backends.backend_wx import NavigationToolbar2Wx
@@ -123,7 +122,7 @@ class PlateData(object):
         pd = self.plate_well_site[name]
         n_rows = 8
         n_cols = 12
-        a = np.zeros((n_rows, n_cols), object)
+        a = numpy.zeros((n_rows, n_cols), object)
         a[:, :] = None
         for wellname, wd in pd.iteritems():
             wellname = wellname.lower()
@@ -135,7 +134,7 @@ class PlateData(object):
                 row = ord(wellname[0]) - ord('a')
                 col = int(wellname[1:]) - 1
             while row >= a.shape[0] or col >= a.shape[1]:
-                temp = np.zeros((n_rows * 2, n_cols * 2), object)
+                temp = numpy.zeros((n_rows * 2, n_cols * 2), object)
                 temp[:, :] = None
                 temp[:n_rows, :n_cols] = a
                 a = temp
@@ -341,7 +340,7 @@ class PlateViewer(object):
                 elif self.site_grid.GetNumberRows() > len(site_names):
                     self.site_grid.DeleteRows(
                             numRows=self.site_grid.GetNumberRows() - len(site_names))
-                side = int(np.ceil(np.sqrt(float(len(site_names)))))
+                side = int(numpy.ceil(numpy.sqrt(float(len(site_names)))))
                 for i, site_name in enumerate(sorted(site_names)):
                     self.site_grid.SetRowLabelValue(i, site_name)
                     if update_values:
@@ -410,7 +409,7 @@ class PlateViewer(object):
         col = (float(x) - self.get_border_width() - float(side) / 2) / side
         row = (float(y) - self.get_border_height() - float(side) / 2) / side
         irow, icol = [int(v + .5) for v in (row, col)]
-        d = np.sqrt((row - irow) ** 2 + (col - icol) ** 2) * side
+        d = numpy.sqrt((row - irow) ** 2 + (col - icol) ** 2) * side
         if d > self.get_radius():
             return None
         if (irow < 0 or irow >= self.data.plate_layout[0] or
@@ -518,10 +517,10 @@ class PlateViewer(object):
         with self.image_dict_lock:
             image_dict = dict([(x, y.copy()) for x, y in self.image_dict.iteritems()])
         channel_dict = {}
-        totals = np.zeros(4)
+        totals = numpy.zeros(4)
         for i in range(self.channel_grid.GetNumberRows()):
             channel_name = self.channel_grid.GetRowLabelValue(i)
-            channel_dict[channel_name] = np.array([
+            channel_dict[channel_name] = numpy.array([
                                                       int(self.channel_grid.GetCellValue(i, j))
                                                       for j in range(4)], float)
             totals += channel_dict[channel_name]
@@ -531,13 +530,13 @@ class PlateViewer(object):
         if self.use_site_grid:
             for i in range(self.site_grid.GetNumberRows()):
                 site_name = self.site_grid.GetRowLabelValue(i)
-                site_dict[site_name] = np.array([
+                site_dict[site_name] = numpy.array([
                                                     float(self.site_grid.GetCellValue(i, j)) - 1
                                                     for j in range(2)])[::-1]
                 tile_dims = [max(i0, i1) for i0, i1 in zip(
                         site_dict[site_name], tile_dims)]
         else:
-            site_dict[None] = np.zeros(2)
+            site_dict[None] = numpy.zeros(2)
         img_size = [0, 0]
         for sd in image_dict.values():
             for channel in sd:
@@ -545,24 +544,24 @@ class PlateViewer(object):
                         sd[channel].shape, img_size)]
         if all([iii == 0 for iii in img_size]):
             return
-        img_size = np.array(img_size)
-        tile_dims = np.array(tile_dims) + 1
+        img_size = numpy.array(img_size)
+        tile_dims = numpy.array(tile_dims) + 1
         for k in site_dict:
             site_dict[k] *= img_size
-        img_size = np.hstack([np.ceil(tile_dims * img_size).astype(int), [3]])
-        megapicture = np.zeros(img_size, np.uint8)
+        img_size = numpy.hstack([numpy.ceil(tile_dims * img_size).astype(int), [3]])
+        megapicture = numpy.zeros(img_size, numpy.uint8)
         for site, sd in image_dict.iteritems():
             offs = site_dict[site].astype(int)
             # TO_DO - handle images that aren't scaled from 0 to 255
             for channel, image in sd.iteritems():
-                imgmax = np.max(image)
+                imgmax = numpy.max(image)
                 scale = 1 if imgmax <= 1 else 255 if imgmax < 256 \
                     else 4095 if imgmax < 4096 else 65535
                 a = channel_dict[channel][3]
                 rgb = channel_dict[channel][:3] / 255.
                 image = image * a / scale
                 if image.ndim < 3:
-                    image = image[:, :, np.newaxis] * rgb[np.newaxis, np.newaxis, :]
+                    image = image[:, :, numpy.newaxis] * rgb[numpy.newaxis, numpy.newaxis, :]
 
                 if image.shape[0] + offs[0] > megapicture.shape[0]:
                     image = image[:(megapicture.shape[0] - offs[0]), :, :]

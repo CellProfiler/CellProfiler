@@ -5,7 +5,7 @@ This module takes over painting the sash window to make it a little more obvious
 
 import wx
 from wx.aui import PyAuiDockArt
-from cellprofiler.preferences import get_background_color
+import cellprofiler.preferences
 
 '''The size of the gripper the long way. This is about 5 dots worth.'''
 GRIPPER_SIZE = 32
@@ -41,7 +41,7 @@ def on_sashwindow_paint(event):
     assert isinstance(window, wx.SashWindow)
     dc = wx.PaintDC(window)
     dc.BeginDrawing()
-    dc.Background = wx.Brush(get_background_color())
+    dc.Background = wx.Brush(cellprofiler.preferences.get_background_color())
     dc.Clear()
     art, pane_info = get_art_and_pane_info()
     w, h = window.GetClientSizeTuple()
@@ -94,7 +94,7 @@ def on_splitter_paint(event):
     assert isinstance(window, wx.SplitterWindow)
     dc = wx.PaintDC(window)
     dc.BeginDrawing()
-    dc.Background = wx.Brush(get_background_color())
+    dc.Background = wx.Brush(cellprofiler.preferences.get_background_color())
     dc.Clear()
     art, pane_info = get_art_and_pane_info()
     w, h = window.GetClientSizeTuple()

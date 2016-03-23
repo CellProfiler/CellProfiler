@@ -3,7 +3,7 @@
 
 import wx
 import wx.grid
-from cellprofiler.gui import draw_bevel, BV_UP, BV_DOWN
+import cellprofiler.gui
 
 BU_NORMAL = "normal"
 BU_PRESSED = "pressed"
@@ -31,9 +31,9 @@ class GridButtonRenderer(wx.grid.PyGridCellRenderer):
         bitmap = self.get_bitmap(grid, attr, dc, row, col)
         state = self.get_state(grid, row, col)
         if state is not None:
-            bv = ((state == BU_NORMAL and BV_UP) or
-                  BV_DOWN)
-            rect = draw_bevel(dc, rect, self.__bevel_width, bv)
+            bv = ((state == BU_NORMAL and cellprofiler.gui.BV_UP) or
+                  cellprofiler.gui.BV_DOWN)
+            rect = cellprofiler.gui.draw_bevel(dc, rect, self.__bevel_width, bv)
         else:
             bw = self.__bevel_width
             rect = wx.Rect(rect.Left + bw, rect.Top + bw, rect.width - 2 * bw, rect.height - 2 * bw)

@@ -5,7 +5,7 @@ import re
 import sys
 import wx
 import wx.html
-import wx.lib.agw.customtreectrl as CT
+import wx.lib.agw.customtreectrl
 import scrollable_text
 
 default_input = '/tmp'
@@ -520,10 +520,10 @@ class ImagePage(wx.Panel):
         self.update_file_list(keep_pos=True)
 
 
-class DirTree(CT.CustomTreeCtrl):
+class DirTree(wx.lib.agw.customtreectrl.CustomTreeCtrl):
     def __init__(self, parent, file_selector):
         self.file_selector = file_selector
-        CT.CustomTreeCtrl.__init__(self, parent, -1, style=wx.TR_DEFAULT_STYLE)
+        wx.lib.agw.customtreectrl.CustomTreeCtrl.__init__(self, parent, -1, style=wx.TR_DEFAULT_STYLE)
 
         # folder images
         isz = (16, 16)

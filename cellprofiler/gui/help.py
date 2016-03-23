@@ -23,7 +23,6 @@ import sys
 import cellprofiler.icons
 from cellprofiler.utilities.relpath import relpath
 
-# from cellprofiler.modules.metadata import X_AUTOMATIC_EXTRACTION, X_MANUAL_EXTRACTION, X_IMPORTED_EXTRACTION
 X_AUTOMATIC_EXTRACTION = "Extract from image file headers"
 X_MANUAL_EXTRACTION = "Extract from file/folder names"
 X_IMPORTED_EXTRACTION = "Import from file"

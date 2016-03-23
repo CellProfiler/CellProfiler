@@ -1,12 +1,8 @@
 """AddModuleFrame.py - this is the window frame and the subwindows
 that give you the GUI to add a module to a pipeline
 """
-import os
-import re
-import sys
 
 import wx
-
 import cellprofiler.cpmodule
 import cellprofiler.modules
 import cellprofiler.preferences

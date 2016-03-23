@@ -20,9 +20,7 @@
 import logging
 import os
 import sys
-
 import cellprofiler.icons
-from cellprofiler.settings import YES, NO
 from cellprofiler.utilities.relpath import relpath
 
 # from cellprofiler.modules.metadata import X_AUTOMATIC_EXTRACTION, X_MANUAL_EXTRACTION, X_IMPORTED_EXTRACTION

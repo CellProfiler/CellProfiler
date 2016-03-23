@@ -1,20 +1,18 @@
 """PathList - the PathListCtrl displays folders and paths in a scalable way
 """
-import logging
 
-logger = logging.getLogger(__name__)
+import logging
 import bisect
 import numpy as np
 import wx
 import wx.lib.scrolledpanel
-import os
-import sys
 import urllib
 import urllib2
 import uuid
-
 import cellprofiler.preferences as cpprefs
 from cellprofiler.gui import draw_item_selection_rect
+
+logger = logging.getLogger(__name__)
 
 OMERO_SCHEME = "omero:"
 

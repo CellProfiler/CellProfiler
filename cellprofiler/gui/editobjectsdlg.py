@@ -3,10 +3,6 @@
 """
 
 import logging
-
-logger = logging.getLogger(__name__)
-
-import os
 import matplotlib
 import matplotlib.figure
 from matplotlib.lines import Line2D
@@ -19,10 +15,8 @@ from scipy.ndimage import gaussian_filter, binary_dilation, grey_dilation
 import sys
 import wx
 import wx.html
-
 import cellprofiler.objects as cpo
 import cellprofiler.preferences as cpprefs
-from centrosome.outline import outline
 from centrosome.cpmorphology import triangle_areas, distance2_to_line, convex_hull_image
 from centrosome.cpmorphology import polygon_lines_to_mask
 from centrosome.cpmorphology import get_outline_pts, thicken, color_labels
@@ -30,6 +24,8 @@ from centrosome.index import Indexes
 from cellprofiler.gui.cpfigure_tools import renumber_labels_for_display
 from cellprofiler.gui.cpfigure import CPNavigationToolbar
 from cellprofiler.gui.sashwindow_tools import sw_bind_to_evt_paint
+
+logger = logging.getLogger(__name__)
 
 
 class EditObjectsDialog(wx.Dialog):

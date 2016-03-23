@@ -1,5 +1,6 @@
 """ModuleView.py - implements a view on a module
 """
+
 import Queue
 import cStringIO
 import logging
@@ -11,7 +12,6 @@ import time
 import traceback
 import uuid
 import weakref
-
 import matplotlib.cm
 import numpy as np
 import wx
@@ -20,8 +20,6 @@ import wx.lib.colourselect
 import wx.lib.rcsizer
 import wx.lib.resizewidget
 import wx.lib.scrolledpanel
-
-logger = logging.getLogger(__name__)
 import cellprofiler.pipeline as cpp
 import cellprofiler.settings as cps
 import cellprofiler.preferences as cpprefs
@@ -34,6 +32,8 @@ from namesubscriber import NameSubscriberComboBox
 from cornerbuttonmixin import CornerButtonMixin
 import cellprofiler.utilities.walk_in_background as W
 import cellprofiler.gui.pathlist as PL
+
+logger = logging.getLogger(__name__)
 
 WARNING_COLOR = wx.Colour(224, 224, 0, 255)
 RANGE_TEXT_WIDTH = 40  # number of pixels in a range text box TO_DO - calculate it

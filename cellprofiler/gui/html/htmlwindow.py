@@ -3,10 +3,8 @@ import sys
 import urllib
 import urllib2
 import webbrowser
-
 import wx
 import wx.html
-
 import cellprofiler.preferences as cpprefs
 import content
 from cellprofiler.gui.html.content import WELCOME_HELP

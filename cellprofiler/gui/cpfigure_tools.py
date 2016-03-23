@@ -1,7 +1,7 @@
 """ cpfigure_tools.py - cpfigure tools that do not depend on WX
 """
-from cStringIO import StringIO
 
+from cStringIO import StringIO
 import matplotlib
 import numpy as np
 import scipy

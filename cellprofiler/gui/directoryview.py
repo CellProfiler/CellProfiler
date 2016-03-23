@@ -4,21 +4,13 @@
 
 import logging
 import os
-import sys
-import traceback
-
 import wx
-
-logger = logging.getLogger(__name__)
 import scipy.io.matlab
-import matplotlib
-import matplotlib.image
-import matplotlib.figure
-import matplotlib.backends.backend_wx
-
 import cellprofiler.preferences
 from cellprofiler.modules.loadimages import LoadImagesImageProvider, is_image
 import cellprofiler.gui.cpfigure as FIG
+
+logger = logging.getLogger(__name__)
 
 
 class DirectoryView(object):

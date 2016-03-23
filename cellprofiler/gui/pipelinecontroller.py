@@ -7,23 +7,18 @@ import datetime
 import exceptions
 import hashlib
 import logging
-import math
 import os
 import random
 import re
-import shutil
 import string
 import sys
 import threading
 import urllib
 from cStringIO import StringIO
-
 import h5py
 import numpy as np
 import wx
 from wx.lib.mixins.listctrl import ColumnSorterMixin, ListCtrlAutoWidthMixin
-
-import cellprofiler.analysis as cpanalysis
 import cellprofiler.analysis as cpanalysis
 import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpmodule
@@ -34,19 +29,15 @@ import cellprofiler.objects as cpo
 import cellprofiler.pipeline as cpp
 import cellprofiler.preferences as cpprefs
 import cellprofiler.utilities.version as version
-import cellprofiler.utilities.walk_in_background as W
 import cellprofiler.workspace as cpw
 import cpframe
-from cellprofiler.gui import get_cp_bitmap
 from cellprofiler.gui.addmoduleframe import AddModuleFrame
 from cellprofiler.gui.bitmaplabelbutton import BitmapLabelButton
 from cellprofiler.gui.help import HELP_ON_MODULE_BUT_NONE_SELECTED, PLATEVIEWER_HELP
 from cellprofiler.gui.htmldialog import HTMLDialog
-from cellprofiler.gui.movieslider import EVT_TAKE_STEP
 from cellprofiler.gui.omerologin import OmeroLoginDlg
 from cellprofiler.gui.pathlist import EVT_PLC_SELECTION_CHANGED
-from cellprofiler.gui.viewworkspace import \
-    show_workspace_viewer, update_workspace_viewer
+from cellprofiler.gui.viewworkspace import show_workspace_viewer, update_workspace_viewer
 from cellprofiler.icons import get_builtin_image
 from cellprofiler.modules.loadimages import C_FILE_NAME, C_PATH_NAME, C_FRAME
 from cellprofiler.modules.loadimages import pathname2url

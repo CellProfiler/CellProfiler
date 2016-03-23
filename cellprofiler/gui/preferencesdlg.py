@@ -3,10 +3,8 @@
 
 import os
 import sys
-
 import matplotlib.cm
 import wx
-
 import cellprofiler.gui.help as cphelp
 import cellprofiler.preferences as cpprefs
 from cellprofiler.gui.htmldialog import HTMLDialog

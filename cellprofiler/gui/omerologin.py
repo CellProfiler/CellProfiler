@@ -3,7 +3,6 @@
 
 import wx
 from bioformats.formatreader import set_omero_credentials
-
 import cellprofiler.preferences as cpprefs
 
 

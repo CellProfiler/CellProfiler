@@ -10,18 +10,18 @@ try:
 except:
     from StringIO import StringIO
 import logging
-import numpy as np
+
 import time
-import base64
+
 import math
 import os
-import zlib
+
 import wx
 import sys
 import cellprofiler.pipeline as cpp
 import cellprofiler.preferences as cpprefs
 from cellprofiler.gui import draw_item_selection_rect
-import cellprofiler.gui.movieslider as cpgmov
+
 from cellprofiler.gui.cpfigure import window_name, find_fig
 from cellprofiler.icons import get_builtin_image
 from cellprofiler.gui.moduleview import request_module_validation, ValidationRequest

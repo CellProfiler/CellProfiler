@@ -3,9 +3,7 @@
 
 import Queue
 import os.path
-
 import wx
-
 import cellprofiler.utilities.filefinder as filefinder
 
 

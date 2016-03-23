@@ -2,8 +2,6 @@
 """
 
 import logging
-
-logger = logging.getLogger(__name__)
 import csv
 import javabridge
 import numpy as np
@@ -23,7 +21,6 @@ from cellprofiler.preferences import update_cpfigure_position, get_next_cpfigure
 from scipy.sparse import coo_matrix
 from scipy.ndimage import distance_transform_edt, label
 import functools
-
 from cellprofiler.gui import get_cp_icon
 from cellprofiler.gui.help import make_help_menu, FIGURE_HELP
 import cellprofiler.preferences as cpprefs
@@ -31,6 +28,8 @@ from cpfigure_tools import figure_to_image, only_display_image, renumber_labels_
 import cellprofiler.gui.cpartists
 import centrosome.outline
 from centrosome.cpmorphology import get_outline_pts
+
+logger = logging.getLogger(__name__)
 
 #
 # Monkey-patch the backend canvas to only report the truly supported filetypes

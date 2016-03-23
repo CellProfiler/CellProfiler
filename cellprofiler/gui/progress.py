@@ -1,10 +1,7 @@
-import cStringIO
 import sys
 import time
-
 import numpy as np
 import wx
-
 import cellprofiler
 import cellprofiler.utilities.version as version
 from cellprofiler.gui import get_cp_icon, get_cp_bitmap

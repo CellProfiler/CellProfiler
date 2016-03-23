@@ -1,5 +1,6 @@
 """namesubscriber.py - implements a combobox with extra information
 """
+
 import wx
 
 

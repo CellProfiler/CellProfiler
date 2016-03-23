@@ -4,9 +4,7 @@
 import datetime
 import os
 import sys
-
 import wx
-
 import cellprofiler.pipeline as cpp
 import cellprofiler.preferences as cpprefs
 

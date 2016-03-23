@@ -3,11 +3,9 @@ import os
 import os.path
 import re
 import sys
-
 import wx
 import wx.html
 import wx.lib.agw.customtreectrl as CT
-
 import scrollable_text
 
 default_input = '/tmp'

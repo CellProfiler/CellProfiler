@@ -1,9 +1,7 @@
 import os
 import re
-import sys
 from glob import glob
 from shutil import copy
-
 import cellprofiler.icons
 import cellprofiler.preferences as cpprefs
 import cellprofiler.utilities.version as version

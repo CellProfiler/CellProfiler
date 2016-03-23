@@ -3,13 +3,11 @@
 
 import re
 import urllib
-
 import numpy as np
 import wx
 import wx.grid
 from wx.combo import BitmapComboBox
 from wx.lib.mixins.gridlabelrenderer import GridLabelRenderer
-
 import cellprofiler.measurements as cpmeas
 import cellprofiler.preferences as cpprefs
 import cellprofiler.settings as cps

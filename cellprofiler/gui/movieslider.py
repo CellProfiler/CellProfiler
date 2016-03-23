@@ -7,9 +7,7 @@ public license.
 
 import StringIO
 import math
-
 import wx
-
 import cellprofiler.preferences as cpprefs
 from cellprofiler.gui import draw_bevel, BV_DOWN
 

@@ -3471,7 +3471,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
 
             else:
                 # Extract user-specified image names and colors
-                user_image_names = [];
+                user_image_names = []
                 image_channel_colors = []
                 selected_image_names = []
                 for group in self.image_groups:

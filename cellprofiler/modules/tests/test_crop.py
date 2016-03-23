@@ -295,7 +295,7 @@ class TestCrop(unittest.TestCase):
         module.horizontal_limits.set_value((0, "end"))
         module.vertical_limits.set_value((0, "end"))
         module.remove_rows_and_columns.value = cpmc.RM_EDGES
-        module.use_plate_fix.value = True;
+        module.use_plate_fix.value = True
         module.run(workspace)
         output_image = workspace.image_set.get_image(OUTPUT_IMAGE)
         self.assertTrue(np.all(output_image.pixel_data == expected_image))
@@ -312,7 +312,7 @@ class TestCrop(unittest.TestCase):
         module.horizontal_limits.set_value((0, "end"))
         module.vertical_limits.set_value((2, "end"))
         module.remove_rows_and_columns.value = cpmc.RM_EDGES
-        module.use_plate_fix.value = True;
+        module.use_plate_fix.value = True
         module.run(workspace)
         output_image = workspace.image_set.get_image(OUTPUT_IMAGE)
         self.assertTrue(np.all(output_image.pixel_data == expected_image))
@@ -330,7 +330,7 @@ class TestCrop(unittest.TestCase):
         module.horizontal_limits.set_value((0, "end"))
         module.vertical_limits.set_value((0, "end"))
         module.remove_rows_and_columns.value = cpmc.RM_EDGES
-        module.use_plate_fix.value = True;
+        module.use_plate_fix.value = True
         module.run(workspace)
         output_image = workspace.image_set.get_image(OUTPUT_IMAGE)
         self.assertTrue(np.all(output_image.pixel_data == expected_image))

@@ -634,8 +634,8 @@ class Pipeline(object):
     """
 
     def __init__(self):
-        self.__modules = [];
-        self.__listeners = [];
+        self.__modules = []
+        self.__listeners = []
         self.__measurement_columns = {}
         self.__measurement_column_hash = None
         self.__test_mode = False
@@ -702,7 +702,7 @@ class Pipeline(object):
         """Read a pipeline's modules out of the handles structure
 
         """
-        self.__modules = [];
+        self.__modules = []
         try:
             settings = handles[SETTINGS][0, 0]
             module_names = settings[MODULE_NAMES]
@@ -1806,7 +1806,7 @@ class Pipeline(object):
                     is_first_image_set = False
                 measurements.group_number = group_number
                 measurements.group_index = group_index
-                numberof_windows = 0;
+                numberof_windows = 0
                 slot_number = 0
                 object_set = cpo.ObjectSet()
                 image_set = measurements
@@ -1901,7 +1901,7 @@ class Pipeline(object):
                             should_write_measurements):
                         measurements.add_measurement('Image',
                                                      module_error_measurement,
-                                                     np.array([failure]));
+                                                     np.array([failure]))
                         measurements.add_measurement('Image',
                                                      execution_time_measurement,
                                                      np.array([delta_sec]))

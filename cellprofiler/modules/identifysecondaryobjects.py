@@ -501,10 +501,9 @@ class IdentifySecondaryObjects(cpmi.Identify):
         objects = workspace.object_set.get_objects(self.primary_objects.value)
         global_threshold = None
         if self.method == M_DISTANCE_N:
-            has_threshold = False
+            pass
         else:
             thresholded_image = self.threshold_image(image_name, workspace)
-            has_threshold = True
 
         #
         # Get the following labels:
@@ -553,7 +552,6 @@ class IdentifySecondaryObjects(cpmi.Identify):
             # Create the final output labels by removing labels in the
             # output matrix that are missing from the segmented image
             #
-            segmented_labels = objects.segmented
             segmented_out = self.filter_labels(small_removed_segmented_out,
                                                objects, workspace)
         elif self.method == M_PROPAGATION:
@@ -641,7 +639,7 @@ class IdentifySecondaryObjects(cpmi.Identify):
                 workspace.image_set.add(self.new_primary_outlines_name.value,
                                         out_img)
         else:
-            primary_outline = outline(objects.segmented)
+            pass
         secondary_outline = outline(segmented_out)
 
         #

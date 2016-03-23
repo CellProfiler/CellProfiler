@@ -68,7 +68,6 @@ class TestMeasureImageIntensity(unittest.TestCase):
         pixels[0:2, 0:2] = 1
         workspace, module = self.make_workspace({},
                                                 {"my_image": pixels})
-        image = workspace.image_set.get_image("my_image")
         module.images[0].image_name.value = "my_image"
         module.run(workspace)
         m = workspace.measurements

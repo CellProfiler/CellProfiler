@@ -1390,9 +1390,7 @@ class LoadImages(cpmodule.CPModule):
 
     def prepare_run_of_images(self, workspace):
         """Set up image providers for image files"""
-        pipeline = workspace.pipeline
         # OK to use workspace.frame, since we're in prepare_run
-        frame = workspace.frame
         files = self.collect_files(workspace)
         if len(files) == 0:
             return False
@@ -1415,7 +1413,6 @@ class LoadImages(cpmodule.CPModule):
         m = workspace.measurements
         assert isinstance(m, cpmeas.Measurements)
         image_names = self.image_name_vars()
-        list_of_lists = [[] for x in image_names]
         for pathname, image_index in files:
             list_of_lists[image_index].append(pathname)
 
@@ -1465,7 +1462,6 @@ class LoadImages(cpmodule.CPModule):
         #
         # files_by_image_name holds one list of files for each image name index
         #
-        files_by_image_name = [[] for i in range(len(self.images))]
         for file, i in files:
             files_by_image_name[i].append(os.path.split(file))
         #
@@ -1473,7 +1469,6 @@ class LoadImages(cpmodule.CPModule):
         # metadata for each tag. Give a file a metadata value of None
         # if it has no value for a given metadata tag
         #
-        d = [{} for i in range(len(self.images))]
         conflicts = []
         for i in range(len(self.images)):
             fd = self.images[i]
@@ -1488,7 +1483,6 @@ class LoadImages(cpmodule.CPModule):
                         child = {}
                         parent[value] = child
                     parent = child
-                    last_value = value
                 tag = tags[-1]
                 value = metadata.get(tag)
                 if parent.has_key(value):
@@ -1777,7 +1771,6 @@ class LoadImages(cpmodule.CPModule):
 
         pipeline = workspace.pipeline
         # OK to use workspace.frame, since we're in prepare_run
-        frame = workspace.frame
         m = workspace.measurements
         assert isinstance(m, cpmeas.Measurements)
         if m.image_set_count > 0 and self.do_group_by_metadata:
@@ -1810,7 +1803,6 @@ class LoadImages(cpmodule.CPModule):
         #
         file_list = [[column[i] for column in file_list]
                      for i in range(len(file_list[0]))]
-        root = self.image_directory()
 
         image_set_count = 0
         for image_set_files in file_list:
@@ -1909,9 +1901,6 @@ class LoadImages(cpmodule.CPModule):
                                         cidx = idx * nchannels + channel
                                     else:
                                         cidx = channel * nsets + idx
-                                    c = cidx % channel_count
-                                    z = int(cidx / channel_count) % stack_count
-                                    t = int(cidx / channel_count / stack_count) % timepoint_count
                                     m.add_measurement(
                                             cpmeas.IMAGE,
                                             "_".join((C_FILE_NAME, image_name)),
@@ -2023,18 +2012,15 @@ class LoadImages(cpmodule.CPModule):
         """Set up image providers for movie files"""
         pipeline = workspace.pipeline
         # OK to use workspace.frame, since we're in prepare_run
-        frame = workspace.frame
         m = workspace.measurements
         files = self.collect_files(workspace)
         if len(files) == 0:
             return False
-        root = self.image_directory()
         image_names = self.image_name_vars()
         #
         # The list of lists has one list per image type. Each per-image type
         # list is composed of tuples of pathname and frame #
         #
-        list_of_lists = [[] for x in image_names]
         image_index = 0
         for pathname, image_group_index in files:
             pathname = os.path.join(self.image_directory(), pathname)
@@ -2115,7 +2101,6 @@ class LoadImages(cpmodule.CPModule):
                         mapping mountpoints. It should be called for every
                         pathname stored in the settings or legacy fields.
         '''
-        image_set_list = workspace.image_set_list
         m = workspace.measurements
         for image_group in self.images:
             for channel in image_group.channels:
@@ -2134,8 +2119,6 @@ class LoadImages(cpmodule.CPModule):
         header = ["Image name", "Path", "Filename"]
         ratio = [1.0, 2.5, 2.0]
         tags = self.get_metadata_tags()
-        ratio += [1.0 for tag in tags]
-        ratio = [x / sum(ratio) for x in ratio]
         header += tags
         statistics = []
         m = workspace.measurements
@@ -2233,7 +2216,6 @@ class LoadImages(cpmodule.CPModule):
                         n_frames = 1
                     else:
                         n_frames = mdpixels.SizeZ * mdpixels.SizeC * mdpixels.SizeT
-                    series = provider.series
                     ijv = np.zeros((0, 3), int)
                     offset = 0
                     for index in range(n_frames):
@@ -2382,7 +2364,6 @@ class LoadImages(cpmodule.CPModule):
         import bioformats.omexml
         from bioformats.formatreader import get_omexml_metadata
         if self.file_types in (FF_AVI_MOVIES, FF_OTHER_MOVIES, FF_STK_MOVIES):
-            url = pathname2url(pathname)
             xml = get_omexml_metadata(pathname)
             omexml = bioformats.omexml.OMEXML(xml)
             frame_count = omexml.image(0).Pixels.SizeT
@@ -3210,12 +3191,11 @@ class LoadImagesImageProvider(LoadImagesImageProviderBase):
         """
         from bioformats.formatreader import get_image_reader
         self.cache_file()
-        filename = self.get_filename()
         channel_names = []
         if isinstance(self.rescale, float):
-            rescale = False
+            pass
         else:
-            rescale = self.rescale
+            pass
         if self.is_matlab_file():
             with open(self.get_full_name(), "rb") as fd:
                 imgdata = scipy.io.matlab.mio.loadmat(
@@ -3223,7 +3203,6 @@ class LoadImagesImageProvider(LoadImagesImageProviderBase):
             img = imgdata["Image"]
             # floating point - scale = 1:1
             self.scale = 1.0
-            pixel_type_scale = 1.0
         else:
             url = self.get_url()
             if url.lower().startswith("omero:"):

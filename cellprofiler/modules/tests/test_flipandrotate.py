@@ -470,7 +470,6 @@ Rotate:[module_num:1|svn_version:\'8913\'|variable_revision_number:2|show_window
 
     def test_04_01_crop(self):
         '''Turn cropping on and check that the cropping mask covers the mask'''
-        image = np.random.uniform(size=(19, 21))
         i, j = np.mgrid[0:19, 0:21].astype(float)
         image = i / 100 + j / 10000
         for angle in range(10, 360, 10):
@@ -485,8 +484,6 @@ Rotate:[module_num:1|svn_version:\'8913\'|variable_revision_number:2|show_window
                 module.wants_crop.value = True
 
             crop_output_image, angle = self.run_module(image, fn=fn)
-            crop_mask = crop_output_image.crop_mask
-            crop_image = crop_output_image.pixel_data
             self.assertTrue(np.all(crop_output_image.mask[1:-1, 1:-1]))
 
             #
@@ -504,10 +501,6 @@ Rotate:[module_num:1|svn_version:\'8913\'|variable_revision_number:2|show_window
             pixel_data = output_image.pixel_data
             slop = (np.array(pixel_data.shape) - np.array(image.shape)) / 2
             mask = output_image.mask
-            pixel_data = pixel_data[slop[0]:image.shape[0] + slop[0],
-                         slop[1]:image.shape[1] + slop[1]]
-            mask = mask[slop[0]:image.shape[0] + slop[0],
-                   slop[1]:image.shape[1] + slop[1]]
             #
             # Slight misregistration: rotate returns even # shape
             #

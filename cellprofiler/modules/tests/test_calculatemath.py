@@ -466,10 +466,6 @@ CalculateRatios:[module_num:1|svn_version:\'8913\'|variable_revision_number:6|sh
         but not in get_measurement_columns
         '''
 
-        def fn(module):
-            module.operands[1].operand_objects.value = OBJECT[0]
-            module.operands[1].operand_measurement.value = "measurement0"
-
         module = C.CalculateMath()
         module.output_feature_name.value = OUTPUT_MEASUREMENTS
         module.operands[0].operand_choice.value = C.MC_OBJECT
@@ -482,7 +478,6 @@ CalculateRatios:[module_num:1|svn_version:\'8913\'|variable_revision_number:6|sh
 
     def test_10_1_img_1566(self):
         '''Regression test: different numbers of objects'''
-        r = np.random.RandomState(1566)
         o0 = [np.array([1, 2, 3, 4, 5]), np.array([1, 1, 2, 2, 3]),
               np.array([1, 2, 4, 5]), np.array([1, 1, 1, 1])]
         o1 = [np.array([1, 1, 2, 2, 3]), np.array([1, 2, 3, 4, 5]),

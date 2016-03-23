@@ -333,7 +333,6 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         i, j = np.mgrid[0:10, 0:20]
         image = i + j
         mask = r.uniform(size=image.shape) > .5
-        imask = mask.astype(int)
         cropping = np.zeros((30, 40), bool)
         cropping[10:20, 10:30] = True
         workspace, module = self.make_workspace(
@@ -354,7 +353,6 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         i, j = np.mgrid[0:10, 0:20]
         image = i + j
         mask = r.uniform(size=image.shape) > .5
-        imask = mask.astype(int)
         cropping = np.zeros((30, 40), bool)
         cropping[10:20, 10:30] = True
         workspace, module = self.make_workspace(

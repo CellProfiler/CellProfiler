@@ -764,8 +764,7 @@ class PipelineListView(object):
                 module.module_num = i + index + n_input_modules + 1
                 self.__pipeline.add_module(module)
             for i in range(len(pipeline.modules(False))):
-                item = self.list_ctrl.SetItemState(
-                        i + index, wx.LIST_STATE_SELECTED, wx.LIST_STATE_SELECTED)
+                pass
         finally:
             wx.EndBusyCursor()
 
@@ -940,7 +939,6 @@ class PipelineListView(object):
 
         The debugging viewer needs to rewind to rerun a module after a change
         """
-        setting = event.get_setting()
         module = event.get_module()
         list_ctrl, index = self.get_ctrl_and_index(module)
         if (not module.is_input_module() and
@@ -1460,7 +1458,6 @@ class PipelineListCtrl(wx.PyScrolledWindow):
         dc.Background = wx.Brush(wx.SystemSettings.GetColour(wx.SYS_COLOUR_LISTBOX))
         dc.Clear()
         dc.Font = self.Font
-        rn = wx.RendererNative.Get()
         if self.test_mode:
             #
             # Draw the slider

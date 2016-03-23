@@ -1094,7 +1094,6 @@ class NamesAndTypes(cpm.CPModule):
         returns a Java list of ImageSet objects and a dictionary of
         channel name to index in the image set.
         '''
-        metadata_types = workspace.pipeline.get_available_metadata_keys()
         #
         # Find the anchor channel - it's the first one which has metadata
         # definitions for all joins
@@ -1440,7 +1439,6 @@ class NamesAndTypes(cpm.CPModule):
             ipds = []
             for i in range(J.call(stack, "size", "(I)I", 2)):
                 coords[2] = i
-                jcoords = J.get_env().make_int_array(coords)
                 ipds.append(cpp.ImagePlaneDetails(
                         J.call(stack, "get", "([I)Ljava/lang/Object;", coords)))
 
@@ -1546,7 +1544,6 @@ class NamesAndTypes(cpm.CPModule):
         num_dimensions = J.call(stack, "numDimensions", "()I")
         if num_dimensions == 2:
             # Should never reach here - should be 3D, but we defensively code
-            num_frames = 1
             index = None  # signal that we haven't read the metadata
             series = None
             coords = J.get_env().make_int_array(np.zeros(2, int))
@@ -1558,7 +1555,6 @@ class NamesAndTypes(cpm.CPModule):
             ipds = []
             for i in range(J.call(stack, "size", "(I)I", 2)):
                 coords[2] = i
-                jcoords = J.get_env().make_int_array(coords)
                 ipds.append(cpp.ImagePlaneDetails(
                         J.call(stack, "get", "([I)Ljava/lang/Object;", coords)))
             OBJECTS_CHANNEL = J.get_static_field(
@@ -2032,9 +2028,6 @@ class ObjectsImageProvider(LoadImagesImageProviderURL):
         """Load an image from a pathname
         """
         self.cache_file()
-        filename = self.get_filename()
-        channel_names = []
-        url = self.get_url()
         properties = {}
         if self.index is None:
             metadata = get_omexml_metadata(self.get_full_name())

@@ -489,7 +489,6 @@ CreateBatchFiles:[module_num:19|svn_version:\'Unknown\'|variable_revision_number
                 pipeline = cpp.Pipeline()
                 pipeline.add_listener(callback)
                 image_set_list = cpi.ImageSetList()
-                measurements = cpmeas.Measurements(mode="memory")
                 workspace = cpw.Workspace(pipeline, None, None, None,
                                           cpmeas.Measurements(),
                                           image_set_list)
@@ -504,7 +503,6 @@ CreateBatchFiles:[module_num:19|svn_version:\'Unknown\'|variable_revision_number
                 pipeline.prepare_run(workspace)
                 pipeline.prepare_group(workspace, {}, range(1, 97))
                 for i in range(96):
-                    image_set = image_set_list.get_image_set(i)
                     for image_name in ('DNA', 'Cytoplasm'):
                         pathname = measurements.get_measurement(
                                 cpmeas.IMAGE, "PathName_" + image_name, i + 1)

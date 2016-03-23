@@ -112,7 +112,6 @@ def get_config():
     try:
         config = wx.Config.Get(False)
     except wx.PyNoAppError:
-        app = wx.App(0)
         config = wx.Config.Get(False)
     if not config:
         wx.Config.Set(wx.Config('CellProfiler', 'BroadInstitute', 'CellProfilerLocal.cfg', 'CellProfilerGlobal.cfg',
@@ -185,7 +184,6 @@ def config_read(key):
         # Keeps popup box from appearing during testing I hope
         #
         import wx
-        shutup = wx.LogNull()
     if __cached_values.has_key(key):
         return __cached_values[key]
     if get_config().Exists(key):
@@ -223,7 +221,6 @@ def config_write(key, value):
         # Keeps popup box from appearing during testing I hope
         #
         import wx
-        shutup = wx.LogNull()
     __cached_values[key] = value
     if value is not None:
         value = utf16encode(value)
@@ -616,10 +613,6 @@ def set_table_font_size(table_font_size):
 
 def tuple_to_color(t, default=(0, 0, 0)):
     import wx
-    try:
-        return wx.Colour(red=int(t[0]), green=int(t[1]), blue=int(t[2]))
-    except IndexError, ValueError:
-        return tuple_to_color(default)
 
 
 __background_color = None
@@ -1803,7 +1796,6 @@ def map_report_progress(fn_map, fn_report, sequence, freq=None):
         else:
             freq = (n_items + 99) / 100
     output = []
-    uid = uuid.uuid4()
     for i in range(0, n_items, freq):
         report_progress(uuid, float(i) / n_items, fn_report(sequence[i]))
         output += map(fn_map, sequence[i:i + freq])

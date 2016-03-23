@@ -64,7 +64,6 @@ class TestSendEmail(unittest.TestCase):
                 set(map(lambda x: x.recipient.value, module.recipients)))
         lines = data.split("\n")
         sep = lines.index("")
-        header = lines[:sep]
         body = "\n".join(lines[(sep + 1):])
         if expected_body is None:
             expected_body = "\n".join([when.message.value for when in whens])
@@ -78,7 +77,7 @@ class TestSendEmail(unittest.TestCase):
 
     def poll(self):
         try:
-            peer, mailfrom, rcpttos, data = self.queue.get(timeout=1)
+            pass
         except Queue.Empty:
             return
         self.fail("Received unexpected email")

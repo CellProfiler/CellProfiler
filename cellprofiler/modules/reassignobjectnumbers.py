@@ -447,7 +447,6 @@ class ReassignObjectNumbers(cpm.CPModule):
         #
         label_numbers = np.arange(1, len(count) + 1)[count > 0]
         index = index[count > 0]
-        count = count[count > 0]
         #
         # Get the differences between labels so we can use a cumsum trick
         # to increment to the next label when they change

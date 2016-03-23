@@ -97,7 +97,7 @@ LabelImages:[module_num:2|svn_version:\'9970\'|variable_revision_number:1|show_w
     def make_workspace(self, image_set_count):
         image_set_list = cpi.ImageSetList()
         for i in range(image_set_count):
-            image_set = image_set_list.get_image_set(i)
+            pass
         module = L.LabelImages()
         pipeline = cpp.Pipeline()
 
@@ -220,9 +220,6 @@ LabelImages:[module_num:2|svn_version:\'9970\'|variable_revision_number:1|show_w
             module.run(workspace)
         sites = measurements.get_all_measurements(cpmeas.IMAGE, cpmeas.M_SITE)
         rows = measurements.get_all_measurements(cpmeas.IMAGE, cpmeas.M_ROW)
-        columns = measurements.get_all_measurements(cpmeas.IMAGE, cpmeas.M_COLUMN)
-        plates = measurements.get_all_measurements(cpmeas.IMAGE, cpmeas.M_PLATE)
-        wells = measurements.get_all_measurements(cpmeas.IMAGE, cpmeas.M_WELL)
         abc = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
         for i in range(nimagesets):
             self.assertEqual(sites[i], 1)

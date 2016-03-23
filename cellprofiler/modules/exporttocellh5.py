@@ -570,13 +570,13 @@ class ExportToCellH5(cpm.CPModule):
                         #                child in the child segmentation
                         continue
                     if image_number1 != m.image_set_number:
-                        path1 = self.get_site_path(workspace, image_number1)
+                        pass
                     else:
-                        path1 = path
+                        pass
                     if image_number2 != m.image_set_number:
-                        path2 = self.get_site_path(workspace, image_number2)
+                        pass
                     else:
-                        path2 = path
+                        pass
                     #
                     # TODO: this is sort of extra credit, but the relationships
                     #       relate an object in one segmentation to another.
@@ -591,7 +591,6 @@ class ExportToCellH5(cpm.CPModule):
             ### to be implemented with
             ### ch5_master.repack()
             return
-            measurements = workspace.measurements
             fd, temp_name = tempfile.mkstemp(
                     suffix=".ch5",
                     dir=self.directory.get_absolute_path())

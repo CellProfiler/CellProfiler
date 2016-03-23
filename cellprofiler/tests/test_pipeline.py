@@ -102,7 +102,7 @@ class TestPipeline(unittest.TestCase):
             traceback.print_exc()
 
     def test_00_00_init(self):
-        x = cpp.Pipeline()
+        pass
 
     def test_01_01_load_mat(self):
         '''Regression test of img-942, load a batch data pipeline with notes'''
@@ -149,7 +149,6 @@ HasImagePlaneDetails:False"""
         # Can't copy an empty pipeline
         #
         pipeline = cpp.Pipeline()
-        p2 = pipeline.copy()
 
     def test_06_01_run_pipeline(self):
         x = exploding_pipeline(self)
@@ -302,7 +301,6 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
                      ({'foo': 'foo-B', 'bar': 'bar-B'}, (3, 4)))
 
         def prepare_run(workspace):
-            image_set_list = workspace.image_set_list
             self.assertEqual(expects[0], 'PrepareRun')
             for group_number_idx, (grouping, image_numbers) in enumerate(groupings):
                 for group_idx, image_number in enumerate(image_numbers):
@@ -445,7 +443,6 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
                      run, post_group, post_run, get_measurement_columns)
         module.module_num = 1
         pipeline.add_module(module)
-        measurements = pipeline.run(grouping={'foo': 'foo-B', 'bar': 'bar-B'})
         self.assertEqual(expects[0], 'Done')
 
     def test_10_03_display(self):
@@ -489,10 +486,6 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
             self.assertIs(module1, module)
             self.assertEqual(workspace.display_data.baz, "Foo")
             callbacks_called.add("post_run_display_handler")
-
-        def get_measurement_columns(pipeline):
-            return [(cpmeas.IMAGE, "mymeasurement",
-                     cpmeas.COLTYPE_INTEGER)]
 
         module.setup(((), (({}, (1,)))),
                      prepare_run_callback=prepare_run,
@@ -538,7 +531,6 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
     def test_11_02_catch_prepare_run_error(self):
         pipeline = exploding_pipeline(self)
         module = GroupModule()
-        keys = ('foo', 'bar')
         groupings = (({'foo': 'foo-A', 'bar': 'bar-A'}, (1, 2)),
                      ({'foo': 'foo-B', 'bar': 'bar-B'}, (3, 4)),
                      ({'foo': 'foo-C', 'bar': 'bar-C'}, (5, 6)))
@@ -608,9 +600,6 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
         module.module_num = 1
         pipeline.add_module(module)
         measurements = cpmeas.Measurements()
-        my_measurement = [np.random.uniform(size=np.random.randint(3, 25))
-                          for i in range(20)]
-        my_image_measurement = [np.random.uniform() for i in range(20)]
         my_experiment_measurement = np.random.uniform()
         measurements.add_experiment_measurement("expt", my_experiment_measurement)
         for i in range(20):
@@ -662,8 +651,6 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
         m1_name = "dalkzfsrqoiualkjfrqealkjfqroupifaaalfdskquyalkhfaafdsafdsqteqteqtew"
         m2_name = "lkjxKJDSALKJDSAWQOIULKJFASOIUQELKJFAOIUQRLKFDSAOIURQLKFDSAQOIRALFAJ"
         m3_name = "druxKJDSALKJDSAWQOIULKJFASOIUQELKJFAOIUQRLKFDSAOIURQLKFDSAQOIRALFAJ"
-        my_measurement = [np.random.uniform(size=np.random.randint(3, 25))
-                          for i in range(20)]
         my_other_measurement = [np.random.uniform(size=my_measurement[i].size)
                                 for i in range(20)]
         my_final_measurement = [np.random.uniform(size=my_measurement[i].size)
@@ -1318,12 +1305,6 @@ def profile_pipeline(pipeline_filename,
         pipeline = cpp.Pipeline()
         measurements = None
         pipeline.load(pipeline_filename)
-        measurements = pipeline.run(
-                image_set_start=image_set_start,
-                image_set_end=image_set_end,
-                grouping=groups,
-                measurements_filename=measurements_filename,
-                initial_measurements=measurements)
 
     if not output_filename:
         pipeline_name = os.path.basename(pipeline_filename).split('.')[0]
@@ -1415,7 +1396,6 @@ class MyClassForTest1101(cpm.CPModule):
         return "cellprofiler.tests.Test_Pipeline.MyClassForTest1101"
 
     def prepare_run(self, workspace, *args):
-        image_set = workspace.image_set_list.get_image_set(0)
         workspace.measurements.add_measurement("Image", "Foo", 1)
         return True
 

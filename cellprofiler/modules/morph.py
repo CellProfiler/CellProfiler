@@ -954,7 +954,6 @@ class Morph(cpm.CPModule):
             setting_values = [image_name, output_name,
                               F_INVERT, R_ONCE, "1",
                               F_CONVEX_HULL, R_ONCE, "1"]
-            module_name = self.module_name
             variable_revision_number = 1
 
         if (not from_matlab) and variable_revision_number == 1:

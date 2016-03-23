@@ -813,7 +813,6 @@ class UntangleWorms(cpm.CPModule):
         if count != 0 and np.sum(skeleton) != 0:
             areas = np.bincount(labels.flatten())
             skeleton_areas = np.bincount(labels[skeleton])
-            current_index = 1
             for i in range(1, count + 1):
                 if (areas[i] < params.min_worm_area or
                             i >= skeleton_areas.shape[0] or
@@ -1263,7 +1262,6 @@ class UntangleWorms(cpm.CPModule):
         j = j[ooo]
         labels = labels[ooo]
         order = order[ooo]
-        distance = distance[ooo]
         counts = (np.zeros(0, int) if len(labels) == 0
                   else np.bincount(labels.flatten())[1:])
 
@@ -1273,10 +1271,8 @@ class UntangleWorms(cpm.CPModule):
                 branch_ij[:, 0], branch_ij[:, 1],
                 branch_areas_labeled[branch_ij[:, 0], branch_ij[:, 1]]])
             branch_ij = branch_ij[ooo]
-            branch_labels = branch_areas_labeled[branch_ij[:, 0], branch_ij[:, 1]]
             branch_counts = np.bincount(branch_areas_labeled.flatten())[1:]
         else:
-            branch_labels = np.zeros(0, int)
             branch_counts = np.zeros(0, int)
         #
         # "find" the segment starts
@@ -1383,7 +1379,6 @@ class UntangleWorms(cpm.CPModule):
         #
         label = np.arange(N1)[neighbor_count > 0]
         neighbor_index = neighbor_index[neighbor_count > 0]
-        neighbor_count = neighbor_count[neighbor_count > 0]
         #
         # Correct n2 beause we have formerly added N1 to its labels. Make
         # it zero-based.
@@ -2009,7 +2004,6 @@ class UntangleWorms(cpm.CPModule):
         '''
         current_best_subset = []
         current_best_cost = np.sum(segment_lengths) * leftover_weight
-        current_costs = costs
         current_path_segment_matrix = path_segment_matrix.astype(int)
         current_path_choices = np.eye(len(costs), dtype=bool)
         for i in range(min(max_num_worms, len(costs))):
@@ -2603,7 +2597,6 @@ def read_params(training_set_directory, training_set_file_name, d):
             fd_or_file = urllib2.urlopen(url)
 
         mat_params = loadmat(fd_or_file)["params"][0, 0]
-        field_names = mat_params.dtype.fields.keys()
 
         result = X()
 
@@ -2612,10 +2605,7 @@ def read_params(training_set_directory, training_set_file_name, d):
         SINGLE_WORM_FILTER = 'single_worm_filter'
         INITIAL_FILTER = 'initial_filter'
         SINGLE_WORM_DETERMINATION = 'single_worm_determination'
-        CLUSTER_PATHS_FINDING = 'cluster_paths_finding'
         WORM_DESCRIPTOR_BUILDING = 'worm_descriptor_building'
-        SINGLE_WORM_FIND_PATH = 'single_worm_find_path'
-        METHOD = "method"
 
         STRING = "string"
         SCALAR = "scalar"

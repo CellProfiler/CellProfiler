@@ -351,7 +351,6 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
         return workspace, module
 
     def test_02_01_load_one(self):
-        folder = self.test_folder
         file_name = self.test_filename
         cpprefs.set_default_image_directory(self.test_path)
         workspace, module = self.make_workspace([file_name])

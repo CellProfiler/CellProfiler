@@ -287,14 +287,14 @@ class RescaleIntensity(cpm.CPModule):
                                         cache=False)
             if self.wants_automatic_high == HIGH_ALL_IMAGES:
                 if image.has_mask:
-                    vmax = np.max(image.pixel_data[image.mask])
+                    pass
                 else:
                     vmax = np.max(image.pixel_data)
                     max_value = vmax if max_value is None else max(max_value, vmax)
 
             if self.wants_automatic_low == LOW_ALL_IMAGES:
                 if image.has_mask:
-                    vmin = np.min(image.pixel_data[image.mask])
+                    pass
                 else:
                     vmin = np.min(image.pixel_data)
                     min_value = vmin if min_value is None else min(min_value, vmin)

@@ -19,7 +19,6 @@ import cellprofiler.workspace as cpw
 class testInjectImage(unittest.TestCase):
     def test_00_00_init(self):
         image = numpy.zeros((10, 10), dtype=float)
-        x = InjectImage("my_image", image)
 
     def test_01_01_get_from_image_set(self):
         image = numpy.zeros((10, 10), dtype=float)

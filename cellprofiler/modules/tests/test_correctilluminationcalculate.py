@@ -843,13 +843,13 @@ class TestCorrectImage_Calculate(unittest.TestCase):
             inj_module.run(workspace)
             module.run(workspace)
             if average_flag:
-                img = image_set.get_image("AverageImage")
+                pass
             else:
                 self.assertRaises(AssertionError,
                                   image_set.get_image,
                                   "AverageImage")
             if dilated_flag:
-                img = image_set.get_image("DilatedImage")
+                pass
             else:
                 self.assertRaises(AssertionError,
                                   image_set.get_image,

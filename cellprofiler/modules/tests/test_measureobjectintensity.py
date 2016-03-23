@@ -497,7 +497,6 @@ class TestMeasureObjects(unittest.TestCase):
         pipeline.add_module(io)
         pipeline.add_module(moi)
         # Crashes when pipeline runs in measureobjectintensity.py revision 7146
-        m = pipeline.run()
 
     def test_03_06_quartiles(self):
         """test quartile values on a 250x250 square with 4 objects"""
@@ -590,7 +589,6 @@ class TestMeasureObjects(unittest.TestCase):
         labels[:, 15:] = 3
         labels[20:, :] += 1
         edge_mask = np.zeros((40, 30), bool)
-        i, j = np.mgrid[0:40, 0:30]
         for ii in (0, 19, 20, -1):
             edge_mask[ii, :] = True
         for jj in (0, 14, 15, -1):

@@ -201,7 +201,6 @@ class FlipAndRotate(cpm.CPModule):
             else:
                 raise NotImplementedError("Unknown rotation method: %s" %
                                           self.rotate_choice.value)
-            rangle = angle * np.pi / 180.0
             mask = scind.rotate(mask.astype(float), angle,
                                 reshape=True) > .50
             crop = scind.rotate(np.ones(pixel_data.shape[:2]), angle,

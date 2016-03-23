@@ -210,8 +210,6 @@ class Align(cpm.CPModule):
         return result
 
     def run(self, workspace):
-        i_min = np.iinfo(int).max
-        j_min = np.iinfo(int).max
         off_x, off_y = self.align(workspace, self.first_input_image.value,
                                   self.second_input_image.value)
         names = [

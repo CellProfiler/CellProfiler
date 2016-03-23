@@ -248,8 +248,6 @@ class IdentifyTertiaryObjects(cpm.CPModule):
             child_count_of_primary = np.zeros(mask.shape, int)
             child_count_of_primary[mask] = child_count_of_secondary[
                 secondary_of_primary[mask] - 1]
-            primary_parents = np.zeros(secondary_parents.shape,
-                                       secondary_parents.dtype)
             primary_of_secondary = np.zeros(secondary_objects.count + 1, int)
             primary_of_secondary[secondary_of_primary] = \
                 np.arange(1, len(secondary_of_primary) + 1)

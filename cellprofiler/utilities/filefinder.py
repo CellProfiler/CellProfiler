@@ -254,7 +254,6 @@ class Locator(object):
 
             # do the actual work
             try:
-                st = time.time()
                 if status == STAT:
                     if num_timeouts < self.max_fallbacks:
                         timeout = self.stat_time * (2 ** num_timeouts)

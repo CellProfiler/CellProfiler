@@ -336,7 +336,6 @@ class TestFilterObjects(unittest.TestCase):
         for i in range(40):
             labels[2:5, i * 10 + 3:i * 10 + 7] = i + 1
         np.random.seed(0)
-        values = np.zeros((n, 2))
         values = np.random.uniform(size=(n, 2))
         idx = 1
         my_max = np.array([.7, .5])

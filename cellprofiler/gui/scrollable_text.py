@@ -36,7 +36,6 @@ class ScrollableText(scrolledpanel.ScrolledPanel):
             self.longest_line = 1
 
     def draw_lines(self, DC, start, end, lineheight):
-        mw = 0
         DC.SetFont(self.font)
         for idx in range(max(0, start), min(end, len(self.text))):
             l = self.text[idx]

@@ -257,7 +257,6 @@ class SendEmail(cpm.CPModule):
             is_first_in_group = group_index == 1
             is_last_in_group = d.get(K_LAST_IN_GROUP) == image_number
         else:
-            group_index = None
             is_first = image_number == 1
             is_first_in_group = image_number == 1
             is_last_in_group = False

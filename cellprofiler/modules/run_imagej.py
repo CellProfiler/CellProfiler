@@ -785,7 +785,6 @@ class RunImageJ(cpm.CPModule):
             factory = script_service.getByName(self.macro_language.value)
             engine = factory.getScriptEngine()
             engine.put("ImageJ", get_context())
-            result = engine.evalS(macro)
         elif choice == CM_MACRO:
             macro = workspace.measurements.apply_metadata(macro)
             if when is None and \

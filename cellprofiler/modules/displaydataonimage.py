@@ -293,7 +293,6 @@ class DisplayDataOnImage(cpm.CPModule):
 
         self.display_on_figure(workspace, axes, imshow_fn)
 
-        canvas = matplotlib.backends.backend_agg.FigureCanvasAgg(fig)
         if self.saved_image_contents == E_AXES:
             fig.set_frameon(False)
             if not self.use_color_map():
@@ -401,7 +400,6 @@ class DisplayDataOnImage(cpm.CPModule):
                                    workspace.display_data.y,
                                    workspace.display_data.values):
                 try:
-                    fvalue = float(value)
                     svalue = "%.*f" % (self.decimals.value, value)
                 except:
                     svalue = str(value)

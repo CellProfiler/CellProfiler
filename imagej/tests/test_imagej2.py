@@ -159,7 +159,7 @@ class TestImagej2(unittest.TestCase):
             raise AssertionError("Could not find target module")
 
     def test_03_01_command_service(self):
-        svc = ij2.get_command_service(self.context)
+        pass
 
     def test_03_02_command_service_run(self):
         svc = ij2.get_command_service(self.context)
@@ -182,7 +182,7 @@ class TestImagej2(unittest.TestCase):
         ij2.Axes().Y
 
     def test_05_01_dataset_service(self):
-        svc = ij2.get_dataset_service(self.context)
+        pass
 
     def test_05_02_create1(self):
         svc = ij2.get_dataset_service(self.context)
@@ -303,7 +303,6 @@ class TestImagej2(unittest.TestCase):
         image = np.zeros((30, 30))
         ds = ij2.create_dataset(self.context, image, "Foo")
         display = display_svc.createDisplay("Foo", ds)
-        d2 = display_svc.createDisplay("Bar", ij2.create_dataset(self.context, image, "Bar"))
         overlay = J.run_script(
                 """var o = new Packages.net.imagej.overlay.RectangleOverlay(context.getContext());
                    o.setOrigin(5, 0);
@@ -344,7 +343,7 @@ class TestImagej2(unittest.TestCase):
             self.assertEqual(mask[ii, jj], test)
 
     def test_09_01_get_display_service(self):
-        svc = ij2.get_display_service(self.context)
+        pass
 
     def test_09_02_create_display(self):
         svc = ij2.get_display_service(self.context)
@@ -410,7 +409,6 @@ class TestImagej2(unittest.TestCase):
         ds = ij2.create_dataset(self.context, image, "Foo")
         svc.createDisplay("Foo", ds)
         image = r.randint(0, 256, (14, 12))
-        ds2 = ij2.create_dataset(self.context, image, "Bar")
         display = svc.createDisplay("Bar", ds)
         svc.setActiveDisplay(display)
         display = svc.getDisplay("Foo")
@@ -449,7 +447,6 @@ class TestImagej2(unittest.TestCase):
 
     def test_09_09_check_overlay(self):
         svc = ij2.get_display_service(self.context)
-        r = np.random.RandomState()
         i, j = np.mgrid[0:11, 0:1300:100]
         image = i + j
         ds = ij2.create_dataset(self.context, image, "Foo")
@@ -585,7 +582,6 @@ class TestImagej2(unittest.TestCase):
         image = i + j
         ds = ij2.create_dataset(self.context, image, "Foo")
         display = display_svc.createDisplay("Foo", ds)
-        d2 = display_svc.createDisplay("Bar", ij2.create_dataset(self.context, image, "Bar"))
         mask = np.zeros(i.shape, bool)
         islice = slice(2, -3)
         jslice = slice(3, -4)
@@ -603,7 +599,6 @@ class TestImagej2(unittest.TestCase):
         image = i + j
         ds = ij2.create_dataset(self.context, image, "Foo")
         display = display_svc.createDisplay("Foo", ds)
-        d2 = display_svc.createDisplay("Bar", ij2.create_dataset(self.context, image, "Bar"))
         mask = np.zeros(i.shape, bool)
         islice = slice(2, -3)
         jslice = slice(3, -4)

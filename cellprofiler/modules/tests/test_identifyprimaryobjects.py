@@ -72,7 +72,7 @@ class test_IdentifyPrimaryObjects(unittest.TestCase):
         return workspace, module
 
     def test_00_00_init(self):
-        x = ID.IdentifyPrimaryObjects()
+        pass
 
     def test_02_000_test_zero_objects(self):
         x = ID.IdentifyPrimaryObjects()
@@ -273,7 +273,6 @@ class test_IdentifyPrimaryObjects(unittest.TestCase):
         x.run(Workspace(pipeline, x, image_set, object_set, measurements, None))
         self.assertEqual(len(object_set.object_names), 1)
         self.assertTrue("my_object" in object_set.object_names)
-        objects = object_set.get_objects("my_object")
         self.assertTrue("Image" in measurements.get_object_names())
         self.assertTrue("my_object" in measurements.get_object_names())
         self.assertTrue("Threshold_FinalThreshold_my_object" in measurements.get_feature_names("Image"))
@@ -321,7 +320,6 @@ class test_IdentifyPrimaryObjects(unittest.TestCase):
         x.run(Workspace(pipeline, x, image_set, object_set, measurements, None))
         self.assertEqual(len(object_set.object_names), 1)
         self.assertTrue("my_object" in object_set.object_names)
-        objects = object_set.get_objects("my_object")
         self.assertTrue("Image" in measurements.get_object_names())
         self.assertTrue("my_object" in measurements.get_object_names())
         self.assertTrue("Threshold_FinalThreshold_my_object" in measurements.get_feature_names("Image"))
@@ -2184,8 +2182,6 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         assert isinstance(x, ID.IdentifyPrimaryObjects)
         x.threshold_scope.value = T.TM_ADAPTIVE
         x.threshold_method.value = T.TM_OTSU
-        threshold, global_threshold = x.get_threshold(
-                cpi.Image(image), np.ones((525, 525), bool), workspace)
 
     def test_08_01_per_object_otsu(self):
         """Test get_threshold using Otsu per-object"""
@@ -2502,7 +2498,6 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         x.threshold_correction_factor.value = 1
         x.should_save_outlines.value = True
         x.save_outlines.value = "outlines"
-        measurements = workspace.measurements
         x.run(workspace)
         my_objects = workspace.object_set.get_objects(OBJECTS_NAME)
         self.assertTrue(my_objects.segmented[3, 3] != 0)

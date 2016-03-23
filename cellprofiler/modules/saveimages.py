@@ -470,11 +470,11 @@ class SaveImages(cpm.CPModule):
             frame        - display within this frame (or None to not display)
         """
         if self.save_image_or_figure.value in (IF_IMAGE, IF_MASK, IF_CROPPING):
-            should_save = self.run_image(workspace)
+            pass
         elif self.save_image_or_figure == IF_MOVIE:
-            should_save = self.run_movie(workspace)
+            pass
         elif self.save_image_or_figure == IF_OBJECTS:
-            should_save = self.run_objects(workspace)
+            pass
         else:
             raise NotImplementedError(("Saving a %s is not yet supported" %
                                        (self.save_image_or_figure)))

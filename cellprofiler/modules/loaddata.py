@@ -731,17 +731,9 @@ class LoadData(cpm.CPModule):
     def other_providers(self, group):
         '''Get name providers from the CSV header'''
         if group == 'imagegroup' and self.wants_images.value:
-            try:
-                # do not load URLs automatically
-                return self.get_image_names(do_not_cache=True)
-            except Exception, e:
-                return []
+            pass
         elif group == 'objectgroup' and self.wants_images:
-            try:
-                # do not load URLs automatically
-                return self.get_object_names(do_not_cache=True)
-            except Exception, e:
-                return []
+            pass
 
         return []
 
@@ -901,11 +893,9 @@ class LoadData(cpm.CPModule):
                         # path and file names
                         #
                         path_feature = "_".join((path_name_category, name))
-                        path_name_column = len(header)
                         header.append(path_feature)
 
                         file_name_feature = "_".join((file_name_category, name))
-                        file_name_column = len(header)
                         header.append(file_name_feature)
                         for row in rows:
                             url = row[url_column]
@@ -1033,7 +1023,6 @@ class LoadData(cpm.CPModule):
         return True
 
     def fetch_provider(self, name, measurements, is_image_name=True):
-        path_base = self.image_path
         if is_image_name:
             url_feature = C_URL + "_" + name
             series_feature = C_SERIES + "_" + name
@@ -1210,8 +1199,7 @@ class LoadData(cpm.CPModule):
                 if key_is_path_or_url[index]:
                     # Account for possible rewrite of the pathname
                     # in batch data
-                    len_field = max(cpmeas.PATH_NAME_LENGTH,
-                                    len_field + PATH_PADDING)
+                    pass
                 if coltypes[index] != cpmeas.COLTYPE_VARCHAR:
                     ldtype = get_loaddata_type(field)
                     if coltypes[index] == cpmeas.COLTYPE_INTEGER:
@@ -1340,7 +1328,6 @@ class LoadData(cpm.CPModule):
                     "Warning: the format and purpose of LoadText "
                     "has changed substantially.")
             text_file_name = setting_values[0]
-            field_name = setting_values[1]
             path_name = setting_values[2]
             if path_name == '.':
                 path_choice = DIR_DEFAULT_IMAGE
@@ -1353,7 +1340,6 @@ class LoadData(cpm.CPModule):
                               cps.NO, "1,100000"]
             from_matlab = False
             variable_revision_number = 1
-            module_name = self.module_name
         if (not from_matlab) and variable_revision_number == 1:
             setting_values = setting_values + [cps.NO, ""]
             variable_revision_number = 2
@@ -1371,7 +1357,7 @@ class LoadData(cpm.CPModule):
                                   setting_values[5:])
             variable_revision_number = 3
         if variable_revision_number == 3 and (not from_matlab):
-            module_name = self.module_name
+            pass
 
         if variable_revision_number == 3 and (not from_matlab):
             # directory choice, custom directory merged
@@ -1473,7 +1459,6 @@ def get_loaddata_type(x):
         return cpmeas.COLTYPE_INTEGER
     except:
         try:
-            fv = float(x)
             return cpmeas.COLTYPE_FLOAT
         except:
             return cpmeas.COLTYPE_VARCHAR

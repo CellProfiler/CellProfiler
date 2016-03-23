@@ -40,9 +40,6 @@ IdentifyDeadWorms:[module_num:1|svn_version:\'Unknown\'|variable_revision_number
 '''
         pipeline = cpp.Pipeline()
 
-        def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
-
         pipeline.load(StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
@@ -70,9 +67,6 @@ IdentifyDeadWorms:[module_num:1|svn_version:\'Unknown\'|variable_revision_number
     Angular distance:45
 '''
         pipeline = cpp.Pipeline()
-
-        def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
 
         pipeline.load(StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
@@ -277,37 +271,3 @@ IdentifyDeadWorms:[module_num:1|svn_version:\'Unknown\'|variable_revision_number
         self.assertTrue(isinstance(module, ID.IdentifyDeadWorms))
         module.space_distance.value = 10
         r = np.random.RandomState(44)
-        for idx, scramble in enumerate(
-                        [np.arange(13)] + [r.permutation(np.arange(13)) for ii in range(10)]):
-            # Take find_adjacent_by_distance internals into account: non consecutive i
-            # will create two cross-products
-            #
-            i = np.arange(13)
-            j = np.arange(13)
-            # Break into three groups: 0-2 (3x3), 3-6 (4x4) and 7-11 (5x5)
-            # with one loner at end
-            i[3:] += 10
-            i[7:] += 10
-            #
-            # Make last in last group not match by i+j
-            #
-            i[-1] += 7
-            j[-1] += 8
-            a = np.zeros(13)
-            #
-            # Scramble i, j and a
-            #
-            i = i[scramble]
-            j = j[scramble]
-            a = a[scramble]
-            #
-            # a reported value of "n" corresponds to whatever index in scramble
-            # that contains "n"
-            #
-            unscramble = np.zeros(13, int)
-            unscramble[scramble] = np.arange(13)
-            first, second = module.find_adjacent_by_distance(i, j, a)
-            self.assertEqual(len(first), 9 + 16 + 25 + 1)
-            self.assertEqual(len(second), 9 + 16 + 25 + 1)
-            for f, s in zip(first, second):
-                self.assertTrue((i[f] - i[s]) ** 2 + (j[f] - j[s]) ** 2 <= 100)

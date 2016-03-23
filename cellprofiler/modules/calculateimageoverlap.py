@@ -380,7 +380,6 @@ class CalculateImageOverlap(cpm.CPModule):
                         (FTR_EARTH_MOVERS_DISTANCE, emd))
 
     def measure_objects(self, workspace):
-        image_set = workspace.image_set
         object_name_GT = self.object_name_GT.value
         objects_GT = workspace.get_objects(object_name_GT)
         iGT, jGT, lGT = objects_GT.ijv.transpose()
@@ -501,7 +500,6 @@ class CalculateImageOverlap(cpm.CPModule):
                 return np.nan
             return float(numerator) / float(denominator)
 
-        accuracy = nan_divide(TP, all_intersecting_area)
         recall = nan_divide(TP, GT_tot_area)
         precision = nan_divide(TP, (TP + FP))
         F_factor = nan_divide(2 * (precision * recall), (precision + recall))
@@ -869,8 +867,6 @@ class CalculateImageOverlap(cpm.CPModule):
 
     def get_skeleton_points(self, obj):
         '''Get points by skeletonizing the objects and decimating'''
-        ii = []
-        jj = []
         total_skel = np.zeros(obj.shape, bool)
         for labels, indexes in obj.get_labels():
             colors = morph.color_labels(labels)

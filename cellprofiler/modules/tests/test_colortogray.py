@@ -35,7 +35,7 @@ class TestColorToGray(unittest.TestCase):
         return img
 
     def test_00_00_init(self):
-        x = cpm_ctg.ColorToGray()
+        pass
 
     def test_01_01_combine(self):
         img = self.get_my_image()

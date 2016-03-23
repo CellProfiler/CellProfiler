@@ -846,7 +846,6 @@ class ImageSetList(object):
         # Sort order for dictionary keys
         #
         sort_order = []
-        dictionaries = []
         #
         # Dictionary of key_values to list of image numbers
         #
@@ -902,7 +901,6 @@ class ImageSetList(object):
         p.find_global = find_global
 
         count = p.load()
-        all_keys = [p.load() for i in range(count)]
         self.__legacy_fields = p.load()
         #
         # Have to do in this order in order for the image set's
@@ -944,7 +942,6 @@ def readc01(fname):
     x = readint(g)
     y = readint(g)
 
-    nplanes = readshort(g)
     nbits = readshort(g)
 
     compression = readint(g)
@@ -952,11 +949,6 @@ def readc01(fname):
 
     # skip 4 bytes
     g.seek(4, 1)
-
-    pixelwidth = readint(g)
-    pixelheight = readint(g)
-    colors = readint(g)
-    colors_important = readint(g)
 
     # skip 12 bytes
     g.seek(12, 1)

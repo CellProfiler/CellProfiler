@@ -315,7 +315,6 @@ class MeasureObjectSizeShape(cpm.CPModule):
                                 theta * 180 / np.pi)
         self.record_measurement(workspace, object_name, F_COMPACTNESS,
                                 compactness)
-        is_first = False
         if len(objects.indices) == 0:
             nobjects = 0
         else:

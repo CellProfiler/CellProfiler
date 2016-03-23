@@ -190,7 +190,6 @@ class TestAnalysisWorker(unittest.TestCase):
 
         def ecute(self):
             '''Retrieve the results of self.ex()'''
-            msg = self.up_queue_recv_socket.recv()
             result, e = self.up_queue.get()
             if e is not None:
                 raise e

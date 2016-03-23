@@ -3012,7 +3012,6 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
 
         file_name = "DrosophilaEmbryo_GFPHistone.avi"
         maybe_download_tesst_image(file_name)
-        target_url = LI.pathname2url(os.path.join(target_path, file_name))
         module.images[0].common_text.value = file_name
         module.images[0].channels[0].image_name.value = IMAGE_NAME
         module.module_num = 1
@@ -3070,7 +3069,6 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
 
         file_name = "RLM1 SSN3 300308 008015000.flex"
         maybe_download_tesst_image(file_name)
-        target_url = LI.pathname2url(os.path.join(orig_path, file_name))
         module.images[0].common_text.value = file_name
         module.images[0].channels[0].image_name.value = IMAGE_NAME
         module.module_num = 1

@@ -265,15 +265,12 @@ class MeasureObjectNeighbors(cpm.CPModule):
             labels = labels[i, j]
             expanded_labels = labels  # for display
             distance = 1  # dilate once to make touching edges overlap
-            scale = S_EXPANDED
             if self.neighbors_are_objects:
                 neighbor_labels = labels.copy()
         elif self.distance_method == D_WITHIN:
             distance = self.distance.value
-            scale = str(distance)
         elif self.distance_method == D_ADJACENT:
             distance = 1
-            scale = S_ADJACENT
         else:
             raise ValueError("Unknown distance method: %s" %
                              self.distance_method.value)
@@ -445,7 +442,6 @@ class MeasureObjectNeighbors(cpm.CPModule):
                         second_object_number[has_pixels] = order[has_pixels, 1] + 1
         else:
             object_indexes = object_numbers - 1
-            neighbor_indexes = neighbor_numbers - 1
             first_objects = np.zeros(0, int)
             second_objects = np.zeros(0, int)
         #
@@ -467,7 +463,6 @@ class MeasureObjectNeighbors(cpm.CPModule):
         assert (isinstance(workspace, cpw.Workspace))
         m = workspace.measurements
         assert (isinstance(m, cpmeas.Measurements))
-        image_set = workspace.image_set
         features_and_data = [
             (M_NUMBER_OF_NEIGHBORS, neighbor_count),
             (M_FIRST_CLOSEST_OBJECT_NUMBER, first_object_number),
@@ -519,7 +514,6 @@ class MeasureObjectNeighbors(cpm.CPModule):
             image_set.add(self.count_image_name.value, count_image)
         else:
             neighbor_cm_name = cpprefs.get_default_colormap()
-            neighbor_cm = matplotlib.cm.get_cmap(neighbor_cm_name)
         if self.neighbors_are_objects and self.wants_percent_touching_image:
             percent_touching_cm_name = self.touching_colormap.value
             percent_touching_cm = get_colormap(percent_touching_cm_name)
@@ -533,7 +527,6 @@ class MeasureObjectNeighbors(cpm.CPModule):
                           touching_image)
         else:
             percent_touching_cm_name = cpprefs.get_default_colormap()
-            percent_touching_cm = matplotlib.cm.get_cmap(percent_touching_cm_name)
 
         if self.show_window:
             workspace.display_data.neighbor_cm_name = neighbor_cm_name

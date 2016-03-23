@@ -227,7 +227,6 @@ class Smooth(cpm.CPModule):
                                     if setting_values[2] == SMOOTH_KEEPING_EDGES
                                     else setting_values[3]),
                               setting_values[7]]
-            module_name = 'Smooth'
             from_matlab = False
             variable_revision_number = 1
         if variable_revision_number == 1 and not from_matlab:

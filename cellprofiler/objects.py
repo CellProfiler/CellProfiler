@@ -263,7 +263,6 @@ class Objects(object):
         r = np.random.mtrand.RandomState()
         alpha = np.zeros(all_labels[0][0].shape, np.float32)
         order = np.lexsort([counts])
-        label_colors = []
         for idx, i in enumerate(order):
             max_available = len(colors) / (len(all_labels) - idx)
             ncolors = min(counts[i], max_available)
@@ -312,7 +311,6 @@ class Objects(object):
         histogram - histogram from histogram_from_ijv or histogram_from_labels
         '''
         parent_count = histogram.shape[0] - 1
-        child_count = histogram.shape[1] - 1
 
         parents_of_children = np.argmax(histogram, axis=0)
         #
@@ -724,7 +722,6 @@ class Segmentation(object):
         breaks = np.hstack(([0], np.where(mask)[0] + 1, [len(labels)]))
         firsts = breaks[:-1]
         counts = breaks[1:] - firsts
-        indexer = Indexes(counts)
         #
         # Eliminate the locations that are singly labeled
         #
@@ -748,7 +745,6 @@ class Segmentation(object):
         # Remember idx points into sort_order which points into labels
         # to get the nth label, grouped into consecutive positions.
         #
-        input_indexer = Indexes(counts)
         output_indexer = Indexes(pair_counts)
         #
         # The start of the run of overlaps and the offsets
@@ -825,7 +821,6 @@ class Segmentation(object):
         # Create the dense matrix by using the color to address the
         # 5-d hyperplane into which we place each label
         #
-        result = []
         dense = np.zeros([np.max(v_color)] + list(self.shape), labels.dtype)
         slices = tuple([v_color[labels] - 1] + positional_columns)
         dense[slices] = labels

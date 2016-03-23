@@ -92,7 +92,6 @@ def create_context(service_classes):
     class Context(object):
         def __init__(self):
             if service_classes is None:
-                classes = None
                 ctxt_fn = J.run_script(
                         """new java.util.concurrent.Callable() {
                             call: function() {

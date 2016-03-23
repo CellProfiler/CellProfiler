@@ -306,7 +306,6 @@ def test_deviations(test_measurements, reference_measurements,
 def test_deviation(feature, test_measurement, reference_measurement,
                    max_deviation, max_nan_deviation, max_obj_deviation,
                    per_image):
-    statistics = []
     if test_measurement.dtype == np.float32:
         return test_float_deviation(feature, test_measurement,
                                     reference_measurement,

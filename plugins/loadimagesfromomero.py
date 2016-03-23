@@ -394,7 +394,6 @@ class OmeroLoadImages(cpm.CPModule):
             pixels = pixels_list[i]
             pixels_id = pixels.getId().getValue()
             sizeZ = pixels.getSizeZ().getValue()
-            sizeC = pixels.getSizeC().getValue()
             sizeT = pixels.getSizeT().getValue()
             for channel in self.channels:
                 for z in range(0, sizeZ):

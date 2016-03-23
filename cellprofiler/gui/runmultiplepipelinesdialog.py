@@ -223,7 +223,6 @@ class RunMultplePipelinesDialog(wx.Dialog):
                 if result == wx.ID_OK:
                     self.pipeline_list_view.SetItemText(item, dlg.Path)
             elif subitem in (P_INPUT_DIRECTORY_COLUMN, P_OUTPUT_DIRECTORY_COLUMN):
-                dest = "input" if subitem == P_INPUT_DIRECTORY_COLUMN else "output"
                 dlg = wx.DirDialog(self, "Choose the default %s folder to use for the pipeline")
                 list_item = self.pipeline_list_view.GetItem(item, subitem)
                 dlg.Path = list_item.GetText()

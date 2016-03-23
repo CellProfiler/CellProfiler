@@ -77,7 +77,7 @@ class TestAnalysis(unittest.TestCase):
                     if socks.get(self.recv_notify_socket, None) == zmq.POLLIN:
                         # Discard whatever comes down the notify socket.
                         # It's only used to wake us up.
-                        msg = self.recv_notify_socket.recv()
+                        pass
                     while True:
                         try:
                             if not self.keep_going:
@@ -127,7 +127,6 @@ class TestAnalysis(unittest.TestCase):
                 while True:
                     socks = dict(self.poller.poll())
                     if socks.get(self.recv_notify_socket, None) == zmq.POLLIN:
-                        msg = self.recv_notify_socket.recv()
                         if not self.keep_going:
                             raise Exception("Cancelled")
                     if socks.get(self.work_socket, None) == zmq.POLLIN:
@@ -161,7 +160,6 @@ class TestAnalysis(unittest.TestCase):
                 while True:
                     socks = dict(self.poller.poll())
                     if socks.get(self.recv_notify_socket, None) == zmq.POLLIN:
-                        msg = self.recv_notify_socket.recv()
                         if not self.keep_going:
                             raise Exception("Cancelled")
                     if socks.get(self.announce_socket, None) == zmq.POLLIN:
@@ -299,7 +297,6 @@ class TestAnalysis(unittest.TestCase):
 
     def test_02_01_announcement(self):
         logger.debug("Entering %s" % inspect.getframeinfo(inspect.currentframe()).function)
-        pipeline, m = self.make_pipeline_and_measurements_and_start()
 
         with self.FakeWorker() as worker:
             work_announce_address = self.analysis.runner.work_announce_address
@@ -313,7 +310,6 @@ class TestAnalysis(unittest.TestCase):
         logger.debug("Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function)
 
     def test_03_01_get_work(self):
-        pipeline, m = self.make_pipeline_and_measurements_and_start()
         with self.FakeWorker() as worker:
             worker.connect(self.analysis.runner.work_announce_address)
             response = worker.send(cpanalysis.WorkRequest(worker.analysis_id))()
@@ -325,7 +321,6 @@ class TestAnalysis(unittest.TestCase):
 
     def test_03_02_get_work_twice(self):
         logger.debug("Entering %s" % inspect.getframeinfo(inspect.currentframe()).function)
-        pipeline, m = self.make_pipeline_and_measurements_and_start()
 
         with self.FakeWorker() as worker:
             worker.connect(self.analysis.runner.work_announce_address)
@@ -337,7 +332,6 @@ class TestAnalysis(unittest.TestCase):
 
     def test_03_03_cancel_before_work(self):
         logger.debug("Entering %s" % inspect.getframeinfo(inspect.currentframe()).function)
-        pipeline, m = self.make_pipeline_and_measurements_and_start()
 
         with self.FakeWorker() as worker:
             worker.connect(self.analysis.runner.work_announce_address)
@@ -431,7 +425,6 @@ class TestAnalysis(unittest.TestCase):
 
     def test_04_03_interaction(self):
         logger.debug("Entering %s" % inspect.getframeinfo(inspect.currentframe()).function)
-        pipeline, m = self.make_pipeline_and_measurements_and_start()
         with self.FakeWorker() as worker:
             worker.connect(self.analysis.runner.work_announce_address)
             fn_interaction_reply = worker.send(
@@ -449,7 +442,6 @@ class TestAnalysis(unittest.TestCase):
 
     def test_04_04_01_display(self):
         logger.debug("Entering %s" % inspect.getframeinfo(inspect.currentframe()).function)
-        pipeline, m = self.make_pipeline_and_measurements_and_start()
         with self.FakeWorker() as worker:
             worker.connect(self.analysis.runner.work_announce_address)
             fn_interaction_reply = worker.send(
@@ -470,7 +462,6 @@ class TestAnalysis(unittest.TestCase):
 
     def test_04_04_02_display_post_group(self):
         logger.debug("Entering %s" % inspect.getframeinfo(inspect.currentframe()).function)
-        pipeline, m = self.make_pipeline_and_measurements_and_start()
         with self.FakeWorker() as worker:
             worker.connect(self.analysis.runner.work_announce_address)
             fn_interaction_reply = worker.send(
@@ -492,7 +483,6 @@ class TestAnalysis(unittest.TestCase):
 
     def test_04_05_exception(self):
         logger.debug("Entering %s" % inspect.getframeinfo(inspect.currentframe()).function)
-        pipeline, m = self.make_pipeline_and_measurements_and_start()
         with self.FakeWorker() as worker:
             worker.connect(self.analysis.runner.work_announce_address)
             fn_interaction_reply = worker.send(
@@ -550,9 +540,6 @@ class TestAnalysis(unittest.TestCase):
         with self.FakeWorker() as worker:
             worker.connect(self.analysis.runner.work_announce_address)
             response = worker.request_work()
-            dictionaries = [dict([(uuid.uuid4().hex, r.uniform(size=(10, 15)))
-                                  for _ in range(10)])
-                            for module in pipeline.modules()]
             response = worker.send(cpanalysis.ImageSetSuccessWithDictionary(
                     worker.analysis_id, response.image_set_numbers[0],
                     dictionaries))()
@@ -572,10 +559,6 @@ class TestAnalysis(unittest.TestCase):
 
     def test_05_02_groups(self):
         logger.debug("Entering %s" % inspect.getframeinfo(inspect.currentframe()).function)
-        pipeline, m = self.make_pipeline_and_measurements_and_start(
-                nimage_sets=4,
-                group_numbers=[1, 1, 2, 2],
-                group_indexes=[1, 2, 1, 2])
         r = np.random.RandomState()
         r.seed(52)
         with self.FakeWorker() as worker:
@@ -584,8 +567,6 @@ class TestAnalysis(unittest.TestCase):
             self.assertTrue(response.worker_runs_post_group)
             self.assertFalse(response.wants_dictionary)
             self.assertSequenceEqual(response.image_set_numbers, [1, 2])
-            response = worker.send(cpanalysis.ImageSetSuccess(
-                    worker.analysis_id, response.image_set_numbers[0]))()
             response = worker.request_work()
             self.assertSequenceEqual(response.image_set_numbers, [3, 4])
             self.assertTrue(response.worker_runs_post_group)
@@ -610,7 +591,6 @@ class TestAnalysis(unittest.TestCase):
             #
             #####################################################
             worker.connect(self.analysis.runner.work_announce_address)
-            response = worker.request_work()
             response = worker.send(cpanalysis.InitialMeasurementsRequest(
                     worker.analysis_id))()
             client_measurements = cpmeas.load_measurements_from_buffer(
@@ -621,11 +601,6 @@ class TestAnalysis(unittest.TestCase):
             # report the results of the first job
             #
             #####################################################
-            dictionaries = [dict([(uuid.uuid4().hex, r.uniform(size=(10, 15)))
-                                  for _ in range(10)])
-                            for module in pipeline.modules()]
-            response = worker.send(cpanalysis.ImageSetSuccessWithDictionary(
-                    worker.analysis_id, 1, dictionaries))()
             objects_measurements = r.uniform(size=10)
             client_measurements[cpmeas.IMAGE, IMAGE_FEATURE, 1] = "Hello"
             client_measurements[OBJECTS_NAME, OBJECTS_FEATURE, 1] = \
@@ -635,7 +610,6 @@ class TestAnalysis(unittest.TestCase):
                     client_measurements.file_contents(),
                     image_set_numbers=[1])
             client_measurements.close()
-            response_fn = worker.send(req)
 
             self.check_display_post_run_requests(pipeline)
             #####################################################
@@ -674,7 +648,6 @@ class TestAnalysis(unittest.TestCase):
             #
             #####################################################
             worker.connect(self.analysis.runner.work_announce_address)
-            response = worker.request_work()
             response = worker.send(cpanalysis.InitialMeasurementsRequest(
                     worker.analysis_id))()
             client_measurements = cpmeas.load_measurements_from_buffer(
@@ -685,11 +658,6 @@ class TestAnalysis(unittest.TestCase):
             # report the results of the first job
             #
             #####################################################
-            dictionaries = [dict([(uuid.uuid4().hex, r.uniform(size=(10, 15)))
-                                  for _ in range(10)])
-                            for module in pipeline.modules()]
-            response = worker.send(cpanalysis.ImageSetSuccessWithDictionary(
-                    worker.analysis_id, 1, dictionaries))()
             #####################################################
             #
             # The analysis server should be ready to send us two
@@ -724,7 +692,6 @@ class TestAnalysis(unittest.TestCase):
                         m.file_contents(),
                         image_set_numbers=[image_number])
                 m.close()
-                response = worker.send(req)()
             client_measurements.close()
             #####################################################
             #
@@ -767,13 +734,10 @@ class TestAnalysis(unittest.TestCase):
             #
             #####################################################
             worker.connect(self.analysis.runner.work_announce_address)
-            response = worker.request_work()
             response = worker.send(cpanalysis.InitialMeasurementsRequest(
                     worker.analysis_id))()
             client_measurements = cpmeas.load_measurements_from_buffer(
                     response.buf)
-            response = worker.send(cpanalysis.ImageSetSuccess(
-                    worker.analysis_id, 1))()
             #####################################################
             #
             # Get the second group.
@@ -804,7 +768,6 @@ class TestAnalysis(unittest.TestCase):
                         m.file_contents(),
                         image_set_numbers=image_numbers)
                 m.close()
-                response = worker.send(req)()
             client_measurements.close()
             #####################################################
             #
@@ -848,7 +811,6 @@ class TestAnalysis(unittest.TestCase):
             #
             #####################################################
             worker.connect(self.analysis.runner.work_announce_address)
-            response = worker.request_work()
             response = worker.send(cpanalysis.InitialMeasurementsRequest(
                     worker.analysis_id))()
             client_measurements = cpmeas.load_measurements_from_buffer(
@@ -859,11 +821,6 @@ class TestAnalysis(unittest.TestCase):
             # report the results of the first job
             #
             #####################################################
-            dictionaries = [dict([(uuid.uuid4().hex, r.uniform(size=(10, 15)))
-                                  for _ in range(10)])
-                            for module in pipeline.modules()]
-            response = worker.send(cpanalysis.ImageSetSuccessWithDictionary(
-                    worker.analysis_id, 1, dictionaries))()
             #####################################################
             #
             # The analysis server should be ready to send us just
@@ -894,7 +851,6 @@ class TestAnalysis(unittest.TestCase):
                         m.file_contents(),
                         image_set_numbers=[image_number])
                 m.close()
-                response = worker.send(req)()
             client_measurements.close()
             #####################################################
             #
@@ -956,8 +912,7 @@ class TestAnalysis(unittest.TestCase):
             client_measurements = cpmeas.load_measurements_from_buffer(
                     response.buf)
             for image_number in (1, 2):
-                response = worker.send(cpanalysis.ImageSetSuccess(
-                        worker.analysis_id, image_number))()
+                pass
             m = cpmeas.Measurements(copy=client_measurements)
             objects_measurements = [r.uniform(size=10) for _ in range(2)]
             for image_number in (1, 2):
@@ -970,7 +925,6 @@ class TestAnalysis(unittest.TestCase):
                     m.file_contents(),
                     image_set_numbers=(1, 2))
             m.close()
-            response = worker.send(req)()
             client_measurements.close()
             #####################################################
             #
@@ -1009,7 +963,6 @@ class TestAnalysis(unittest.TestCase):
             #
             #####################################################
             worker.connect(self.analysis.runner.work_announce_address)
-            response = worker.request_work()
             response = worker.send(cpanalysis.InitialMeasurementsRequest(
                     worker.analysis_id))()
             client_measurements = cpmeas.load_measurements_from_buffer(
@@ -1020,11 +973,6 @@ class TestAnalysis(unittest.TestCase):
             # report the results of the first job
             #
             #####################################################
-            dictionaries = [dict([(uuid.uuid4().hex, r.uniform(size=(10, 15)))
-                                  for _ in range(10)])
-                            for module in pipeline.modules()]
-            response = worker.send(cpanalysis.ImageSetSuccessWithDictionary(
-                    worker.analysis_id, 1, dictionaries))()
             n_objects = 10
             objects_measurements = r.uniform(size=n_objects)
             objects_relationship = r.permutation(n_objects) + 1
@@ -1040,7 +988,6 @@ class TestAnalysis(unittest.TestCase):
                     client_measurements.file_contents(),
                     image_set_numbers=[1])
             client_measurements.close()
-            response_fn = worker.send(req)
 
             self.check_display_post_run_requests(pipeline)
             #####################################################
@@ -1086,7 +1033,6 @@ class TestAnalysis(unittest.TestCase):
         #
         logger.debug("Entering %s" % inspect.getframeinfo(inspect.currentframe()).function)
         self.wants_analysis_finished = True
-        pipeline, m = self.make_pipeline_and_measurements_and_start()
         r = np.random.RandomState()
         r.seed(61)
         with self.FakeWorker() as worker:
@@ -1097,9 +1043,6 @@ class TestAnalysis(unittest.TestCase):
             #
             #####################################################
             worker.connect(self.analysis.runner.work_announce_address)
-            response = worker.request_work()
-            response = worker.send(cpanalysis.InitialMeasurementsRequest(
-                    worker.analysis_id))()
             #####################################################
             #
             # The worker sends an AnalysisCancelRequest. The
@@ -1107,8 +1050,6 @@ class TestAnalysis(unittest.TestCase):
             #
             #####################################################
 
-            response = worker.send(cpanalysis.AnalysisCancelRequest(
-                    worker.analysis_id))()
             result = self.event_queue.get()
             self.assertIsInstance(result, cpanalysis.AnalysisFinished)
             self.assertTrue(result.cancelled)

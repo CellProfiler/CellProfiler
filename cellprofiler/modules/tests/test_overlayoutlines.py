@@ -282,10 +282,9 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
         expected[:, :, 2][outline.astype(bool)] = 0
         for i in range(2):
             if i == 0:
-                workspace, module = self.make_workspace(image, outline)
+                pass
             else:
-                workspace, module = self.make_workspace(
-                        image, labels=[outline.astype(int)])
+                pass
             workspace, module = self.make_workspace(image, outline)
             module.blank_image.value = True
             module.wants_color.value = O.WANTS_COLOR
@@ -335,10 +334,9 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
         sub_expected[:, :, 2][outline[:50, :40].astype(bool)] = 0
         for i in range(2):
             if i == 0:
-                workspace, module = self.make_workspace(image, outline)
+                pass
             else:
-                workspace, module = self.make_workspace(
-                        image, labels=[outline.astype(int)])
+                pass
             workspace, module = self.make_workspace(image, outline)
             module.wants_color.value = O.WANTS_COLOR
             module.outlines[0].color.value = "Red"
@@ -357,10 +355,9 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
         expected[outline.astype(bool)] = 1
         for i in range(2):
             if i == 0:
-                workspace, module = self.make_workspace(image, outline)
+                pass
             else:
-                workspace, module = self.make_workspace(
-                        image, labels=[outline.astype(int)])
+                pass
             workspace, module = self.make_workspace(image, outline)
             module.blank_image.value = True
             module.wants_color.value = O.WANTS_GRAYSCALE

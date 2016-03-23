@@ -690,7 +690,6 @@ class TestSegmentation(unittest.TestCase):
     def test_03_02_shape_sparse_implicit(self):
         r = np.random.RandomState()
         r.seed(102)
-        shape = (1, 1, 1, 50, 50)
         ijv = np.core.records.fromarrays(
                 [r.randint(0, 10, size=20) for _ in range(3)],
                 [(HDF5ObjectSet.AXIS_Y, np.uint32, 1),
@@ -706,7 +705,6 @@ class TestSegmentation(unittest.TestCase):
     def test_03_03_set_shape(self):
         r = np.random.RandomState()
         r.seed(102)
-        shape = (1, 1, 1, 50, 50)
         ijv = np.core.records.fromarrays(
                 [r.randint(0, 10, size=20) for _ in range(3)],
                 [(HDF5ObjectSet.AXIS_Y, np.uint32, 1),

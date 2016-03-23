@@ -75,7 +75,6 @@ class IdentifyObjectsManually(I.Identify):
     def run(self, workspace):
         image_name = self.image_name.value
         objects_name = self.objects_name.value
-        outlines_name = self.outlines_name.value
         image = workspace.image_set.get_image(image_name)
         pixel_data = image.pixel_data
 

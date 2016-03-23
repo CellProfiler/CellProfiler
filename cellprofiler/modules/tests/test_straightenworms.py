@@ -747,7 +747,6 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
         module.run(workspace)
         m = workspace.measurements
         self.assertTrue(isinstance(m, cpmeas.Measurements))
-        oo = workspace.object_set.get_objects(OBJECTS_NAME)
         image = workspace.image_set.get_image(STRAIGHTENED_IMAGE_NAME).pixel_data
         f1 = 1.0 / 3.0
         f2 = 2.0 / 3.0

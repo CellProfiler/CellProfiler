@@ -1488,8 +1488,6 @@ class CPSizer(wx.PySizer):
         self.__cols = cols
         self.__hungry_row = hungry_row
         self.__hungry_col = hungry_col
-        self.__ignore_width = [[False for j in range(0, rows)] for i in range(0, cols)]
-        self.__ignore_height = [[False for j in range(0, rows)] for i in range(0, cols)]
 
     def set_ignore_width(self, col, row, ignore=True):
         """Don't pay any attention to the minimum width of the item in grid cell col,row
@@ -1522,8 +1520,6 @@ class CPSizer(wx.PySizer):
         return wx.Size(sum(col_widths), sum(row_heights))
 
     def __get_min_sizes(self):
-        row_heights = [0 for i in range(0, self.__rows)]
-        col_widths = [0 for i in range(0, self.__cols)]
         idx = 0
         for item in self.GetChildren():
             row, col = divmod(idx, self.__rows)

@@ -407,13 +407,12 @@ class Measurements(object):
             return t
 
         for object_name, feature, coltype in measurement_columns:
-            coltype = fix_type(coltype)
             if object_name == EXPERIMENT:
-                dims = 0
+                pass
             elif object_name == IMAGE:
-                dims = 1
+                pass
             else:
-                dims = 2
+                pass
             self.hdf5_dict.add_object(object_name)
             self.hdf5_dict.add_feature(object_name, feature)
         self.__initialized_explicitly = True
@@ -1283,7 +1282,6 @@ class Measurements(object):
             for feature in self.get_feature_names(object_name):
                 if self.agg_ignore_feature(object_name, feature):
                     continue
-                feature_name = "%s_%s" % (object_name, feature)
                 values = self.get_measurement(object_name, feature,
                                               image_set_number)
                 if values is not None:

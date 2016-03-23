@@ -271,12 +271,7 @@ def get_results_as_list(cursor):
 
 
 def get_next_result(cursor):
-    try:
-        return cursor.next()
-    except MySQLdb.Error, e:
-        raise Exception('Error retrieving next result from database: %s' % (e))
-    except StopIteration, e:
-        return None
+    pass
 
 
 def connect_mysql(host, user, pw, db):
@@ -1548,10 +1543,7 @@ class ExportToDatabase(cpm.CPModule):
 
         error = None
         try:
-            connection = connect_mysql(self.db_host.value,
-                                       self.db_user.value,
-                                       self.db_passwd.value,
-                                       self.db_name.value)
+            pass
         except MySQLdb.Error, error:
             if error.args[0] == 1045:
                 msg = "Incorrect username or password"
@@ -1609,7 +1601,7 @@ class ExportToDatabase(cpm.CPModule):
                                                              self.db_name.value)
                 needs_close = True
                 if self.wants_well_tables:
-                    per_well = self.write_mysql_table_per_well(pipeline, image_set_list)
+                    pass
             elif self.db_type == DB_SQLITE:
                 db_file = self.make_full_filename(self.sqlite_file.value)
                 self.connection, self.cursor = connect_sqlite(db_file)
@@ -1635,8 +1627,6 @@ class ExportToDatabase(cpm.CPModule):
                 tables_that_exist = []
                 for table in tables:
                     try:
-                        r = execute(self.cursor,
-                                    'SELECT * FROM %s LIMIT 1' % (table))
                         tables_that_exist.append(table)
                     except:
                         pass
@@ -1673,15 +1663,12 @@ class ExportToDatabase(cpm.CPModule):
                             elif result != wx.ID_YES:
                                 return True
 
-                mappings = self.get_column_name_mappings(pipeline, image_set_list)
                 column_defs = self.get_pipeline_measurement_columns(pipeline,
                                                                     image_set_list)
                 if self.objects_choice != O_ALL:
                     onames = [cpmeas.EXPERIMENT, cpmeas.IMAGE, cpmeas.NEIGHBORS]
                     if self.objects_choice == O_SELECT:
                         onames += self.objects_list.selections
-                    column_defs = [column for column in column_defs
-                                   if column[0] in onames]
                 self.create_database_tables(self.cursor, workspace)
             return True
         finally:
@@ -1856,7 +1843,6 @@ class ExportToDatabase(cpm.CPModule):
         (module_number, relationship name, object_name1, object_name2) and
         whose value is the relationship type ID for that relationship.
         '''
-        db_file = self.make_full_filename(self.sqlite_file.value)
         with DBContext(self) as (connection, cursor):
             return self.get_relationship_types(cursor).items()
 
@@ -2113,7 +2099,6 @@ class ExportToDatabase(cpm.CPModule):
         '''
         columns = self.get_pipeline_measurement_columns(pipeline,
                                                         image_set_list)
-        mappings = self.get_column_name_mappings(pipeline, image_set_list)
         ob_tables = self.get_object_names(pipeline, image_set_list)
         result = []
         for ob_table in ob_tables:
@@ -2191,13 +2176,9 @@ class ExportToDatabase(cpm.CPModule):
             execute(cursor, 'USE %s' % self.db_name.value,
                     return_result=False)
 
-        columns = self.get_pipeline_measurement_columns(pipeline,
-                                                        image_set_list)
-
         #
         # Drop either the unified objects table or the view of it
         #
-        object_table_name = self.get_table_name(cpmeas.OBJECT)
         try:
             execute(cursor, 'DROP TABLE IF EXISTS %s' %
                     self.get_table_name(cpmeas.OBJECT),
@@ -2604,14 +2585,7 @@ CREATE TABLE %s (
 
         pipeline = workspace.pipeline
         image_set_list = workspace.image_set_list
-        measurements = workspace.measurements
 
-        m_cols = self.get_pipeline_measurement_columns(pipeline,
-                                                       image_set_list)
-        mappings = self.get_column_name_mappings(pipeline, image_set_list)
-
-        file_name_width, path_name_width = self.get_file_path_width(workspace)
-        metadata_name_width = 128
         file_name = "%sSETUP.SQL" % (self.sql_file_prefix)
         path_name = self.make_full_filename(file_name, workspace)
         fid = open(path_name, "wt")
@@ -2784,7 +2758,6 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             disp_header = ['Table', 'Filename']
             disp_columns = []
 
-        zeros_for_nan = False
         measurements = workspace.measurements
         pipeline = workspace.pipeline
         image_set_list = workspace.image_set_list
@@ -2801,7 +2774,6 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                     continue
                 if self.ignore_feature(object_name, feature, measurements):
                     continue
-                feature_name = "%s_%s" % (object_name, feature)
                 if not measurements.has_feature(cpmeas.IMAGE, feature):
                     value = np.NaN
                 else:
@@ -4245,7 +4217,6 @@ class ColumnNameMapping:
         """Scan the dictionary for feature names > max_len and shorten"""
         reverse_dictionary = {}
         problem_names = []
-        seeded_random = False
         valid_name_regexp = "^[0-9a-zA-Z_$]+$"
         for key in sorted(self.__dictionary.keys()):
             value = self.__dictionary[key]

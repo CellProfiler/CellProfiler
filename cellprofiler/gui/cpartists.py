@@ -163,14 +163,8 @@ class ImageData(ColorMixin):
              vmax - the ceiling of the image range in raw mode - default is 1
     """
 
-    def __init__(self, name, pixel_data,
-                 mode=None,
-                 color=(1.0, 1.0, 1.0),
-                 colormap=None,
-                 alpha=None,
-                 normalization=None,
-                 vmin=0,
-                 vmax=1):
+    def __init__(self, name, pixel_data, mode=None, color=(1.0, 1.0, 1.0), colormap=None, alpha=None, normalization=None, vmin=0, vmax=1):
+        super(ImageData, self).__init__()
         self.name = name
         self.pixel_data = pixel_data
         self.__mode = mode

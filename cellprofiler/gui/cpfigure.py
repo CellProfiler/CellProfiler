@@ -19,7 +19,7 @@ import matplotlib.backends.backend_wxagg
 import matplotlib.cm
 import matplotlib.colorbar
 import matplotlib.patches
-import numpy as np
+import numpy
 import numpy.ma
 import os
 import scipy.ndimage
@@ -48,10 +48,10 @@ def log_transform(im):
     orig = im
     try:
         im = im.copy()
-        im[np.isnan(im)] = 0
-        (minimum, maximum) = (im[im > 0].min(), im[np.isfinite(im)].max())
+        im[numpy.isnan(im)] = 0
+        (minimum, maximum) = (im[im > 0].min(), im[numpy.isfinite(im)].max())
         if (maximum > minimum) and (maximum > 0):
-            return (np.log(im.clip(minimum, maximum)) - np.log(minimum)) / (np.log(maximum) - np.log(minimum))
+            return (numpy.log(im.clip(minimum, maximum)) - numpy.log(minimum)) / (numpy.log(maximum) - numpy.log(minimum))
     except:
         pass
     return orig
@@ -60,11 +60,11 @@ def log_transform(im):
 def auto_contrast(im):
     """returns image scaled to the interval [0,1]"""
     im = im.copy()
-    if np.prod(im.shape) == 0:
+    if numpy.prod(im.shape) == 0:
         return im
     (minimum, maximum) = (im.min(), im.max())
     # Check that the image isn't binary
-    if np.any((im > minimum) & (im < maximum)):
+    if numpy.any((im > minimum) & (im < maximum)):
         im -= im.min()
         if im.max() > 0:
             im /= im.max()
@@ -118,22 +118,22 @@ def wraparound(sequence):
 
 def make_1_or_3_channels(im):
     if im.ndim == 2 or im.shape[2] == 1:
-        return im.astype(np.float32)
+        return im.astype(numpy.float32)
     if im.shape[2] == 3:
-        return (im * 255).clip(0, 255).astype(np.uint8)
-    out = np.zeros((im.shape[0], im.shape[1], 3), np.float32)
+        return (im * 255).clip(0, 255).astype(numpy.uint8)
+    out = numpy.zeros((im.shape[0], im.shape[1], 3), numpy.float32)
     for chanidx, weights in zip(range(im.shape[2]), wraparound(COLOR_VALS)):
         for idx, v in enumerate(weights):
             out[:, :, idx] += v * im[:, :, chanidx]
-    return (out * 255).clip(0, 255).astype(np.uint8)
+    return (out * 255).clip(0, 255).astype(numpy.uint8)
 
 
 def make_3_channels_float(im):
     if im.ndim == 3 and im.shape[2] == 1:
         im = im[:, :, 0]
     if im.ndim == 2:
-        return np.dstack((im, im, im)).astype(np.double).clip(0, 1)
-    out = np.zeros((im.shape[0], im.shape[1], 3), np.double)
+        return numpy.dstack((im, im, im)).astype(numpy.double).clip(0, 1)
+    out = numpy.zeros((im.shape[0], im.shape[1], 3), numpy.double)
     for chanidx, weights in zip(range(im.shape[2]), wraparound(COLOR_VALS)):
         for idx, v in enumerate(weights):
             out[:, :, idx] += v * im[:, :, chanidx]
@@ -142,7 +142,7 @@ def make_3_channels_float(im):
 
 def getbitmap(im):
     if im.ndim == 2:
-        im = (255 * np.dstack((im, im, im))).astype(np.uint8)
+        im = (255 * numpy.dstack((im, im, im))).astype(numpy.uint8)
     h, w, _ = im.shape
     outim = wx.EmptyImage(w, h)
     b = buffer(im)  # make sure buffer exists through the remainder of function
@@ -314,7 +314,7 @@ class CPFigureFrame(wx.Frame):
         wx.EVT_CLOSE(self, self.on_close)
         self.Bind(wx.EVT_SIZE, self.on_size)
         if subplots:
-            self.subplots = np.zeros(subplots, dtype=object)
+            self.subplots = numpy.zeros(subplots, dtype=object)
         self.create_menu(help_menu_items)
         self.create_toolbar()
         self.figure.canvas.mpl_connect('button_press_event', self.on_button_press)
@@ -570,8 +570,8 @@ class CPFigureFrame(wx.Frame):
         x, y = [int(round(xy)) for xy in xi, yi]
         if not self.in_bounds(im, x, y):
             return fields
-        if im.dtype.type == np.uint8:
-            im = im.astype(np.float32) / 255.0
+        if im.dtype.type == numpy.uint8:
+            im = im.astype(numpy.float32) / 255.0
         if im.ndim == 2:
             fields += ["Intensity: %.4f" % (im[y, x])]
         elif im.ndim == 3 and im.shape[2] == 3:
@@ -602,12 +602,12 @@ class CPFigureFrame(wx.Frame):
             y0 = min(self.mouse_down[1], event.ydata)
             y1 = max(self.mouse_down[1], event.ydata)
 
-            length = np.sqrt((x0 - x1) ** 2 + (y0 - y1) ** 2)
+            length = numpy.sqrt((x0 - x1) ** 2 + (y0 - y1) ** 2)
             fields.append("Length: %.1f" % length)
             xinterval = event.inaxes.xaxis.get_view_interval()
             yinterval = event.inaxes.yaxis.get_view_interval()
-            diagonal = np.sqrt((xinterval[1] - xinterval[0]) ** 2 +
-                               (yinterval[1] - yinterval[0]) ** 2)
+            diagonal = numpy.sqrt((xinterval[1] - xinterval[0]) ** 2 +
+                                  (yinterval[1] - yinterval[0]) ** 2)
             mutation_scale = min(int(length * 100 / diagonal), 20)
             if self.length_arrow is not None:
                 self.length_arrow.set_positions((self.mouse_down[0],
@@ -760,7 +760,7 @@ class CPFigureFrame(wx.Frame):
             if hasattr(self, 'subplots'):
                 delattr(self, 'subplots')
         else:
-            self.subplots = np.zeros(subplots, dtype=object)
+            self.subplots = numpy.zeros(subplots, dtype=object)
 
     @allow_sharexy
     def subplot(self, x, y, sharex=None, sharey=None):
@@ -1308,7 +1308,7 @@ class CPFigureFrame(wx.Frame):
                         cplabels[CPLD_NAME],
                         cplabels[CPLD_LABELS],
                         linewidth=cplabels[CPLD_LINE_WIDTH],
-                        colors=np.array(cplabels[CPLD_OUTLINE_COLOR], float) / 255.))
+                        colors=numpy.array(cplabels[CPLD_OUTLINE_COLOR], float) / 255.))
 
     @allow_sharexy
     def subplot_imshow_color(self, x, y, image, title=None,
@@ -1345,7 +1345,7 @@ class CPFigureFrame(wx.Frame):
             # Set the lower limit to 0 if the color for index 0 is already black.
             mappable.set_clim(0, labels.max())
             cm = None
-        elif np.any(labels != 0):
+        elif numpy.any(labels != 0):
             mappable.set_clim(1, labels.max())
             cm = None
         image = mappable.to_rgba(labels)[:, :, :3]
@@ -1376,17 +1376,17 @@ class CPFigureFrame(wx.Frame):
             if len(ijv) == 0:
                 shape = [1, 1]
             else:
-                shape = [np.max(ijv[:, 0]) + 1, np.max(ijv[:, 1]) + 1]
-        image = np.zeros(list(shape) + [3], np.float)
+                shape = [numpy.max(ijv[:, 0]) + 1, numpy.max(ijv[:, 1]) + 1]
+        image = numpy.zeros(list(shape) + [3], numpy.float)
         if len(ijv) > 0:
             cm = matplotlib.cm.get_cmap(cellprofiler.preferences.get_default_colormap())
-            max_label = np.max(ijv[:, 2])
+            max_label = numpy.max(ijv[:, 2])
             if renumber:
-                np.random.seed(0)
-                order = np.random.permutation(max_label)
+                numpy.random.seed(0)
+                order = numpy.random.permutation(max_label)
             else:
-                order = np.arange(max_label)
-            order = np.hstack(([0], order + 1))
+                order = numpy.arange(max_label)
+            order = numpy.hstack(([0], order + 1))
             colors = matplotlib.cm.ScalarMappable(cmap=cm).to_rgba(order)
             r, g, b, a = [scipy.sparse.coo_matrix((colors[ijv[:, 2], i], (ijv[:, 0], ijv[:, 1])),
                                                   shape=shape).toarray()
@@ -1415,8 +1415,8 @@ class CPFigureFrame(wx.Frame):
         use_imshow - Use matplotlib's imshow to display instead of creating
                      our own artist.
         """
-        if image.dtype.type == np.float64:
-            image = image.astype(np.float32)
+        if image.dtype.type == numpy.float64:
+            image = image.astype(numpy.float32)
         kwargs = kwargs.copy()
         kwargs['colormap'] = matplotlib.cm.Greys_r
         return self.subplot_imshow(x, y, image, title=title, **kwargs)
@@ -1446,20 +1446,20 @@ class CPFigureFrame(wx.Frame):
         vmin = kwargs['vmin']
         vmax = kwargs['vmax']
         rgb_mask = kwargs['rgb_mask']
-        image = image.astype(np.float32)
+        image = image.astype(numpy.float32)
         if isinstance(colormap, matplotlib.cm.ScalarMappable):
             colormap = colormap.cmap
         # Perform normalization
         if normalize:
             if is_color_image(image):
-                image = np.dstack([auto_contrast(image[:, :, ch])
-                                   for ch in range(image.shape[2])])
+                image = numpy.dstack([auto_contrast(image[:, :, ch])
+                                      for ch in range(image.shape[2])])
             else:
                 image = auto_contrast(image)
         elif normalize == 'log':
             if is_color_image(image):
-                image = np.dstack([log_transform(image[:, :, ch])
-                                   for ch in range(image.shape[2])])
+                image = numpy.dstack([log_transform(image[:, :, ch])
+                                      for ch in range(image.shape[2])])
             else:
                 image = log_transform(image)
 
@@ -1468,9 +1468,9 @@ class CPFigureFrame(wx.Frame):
             rgb_mask = match_rgbmask_to_image(rgb_mask, image)
             image *= rgb_mask
             if image.shape[2] == 2:
-                image = np.dstack([image[:, :, 0],
+                image = numpy.dstack([image[:, :, 0],
                                    image[:, :, 1],
-                                   np.zeros(image.shape[:2], image.dtype)])
+                                      numpy.zeros(image.shape[:2], image.dtype)])
         if not is_color_image(image):
             mappable = matplotlib.cm.ScalarMappable(cmap=colormap)
             mappable.set_clim(vmin, vmax)
@@ -1483,12 +1483,12 @@ class CPFigureFrame(wx.Frame):
                     not cplabel.get(CPLD_SHOW, True):
                 continue
             loffset = 0
-            ltotal = sum([np.max(labels) for labels in cplabel[CPLD_LABELS]])
+            ltotal = sum([numpy.max(labels) for labels in cplabel[CPLD_LABELS]])
             if ltotal == 0:
                 continue
             for labels in cplabel[CPLD_LABELS]:
                 if cplabel[CPLD_MODE] == CPLDM_OUTLINES:
-                    oc = np.array(cplabel[CPLD_OUTLINE_COLOR], float)[:3] / 255
+                    oc = numpy.array(cplabel[CPLD_OUTLINE_COLOR], float)[:3] / 255
                     lm = centrosome.outline.outline(labels) != 0
                     lo = lm.astype(float)
                     lw = float(cplabel[CPLD_LINE_WIDTH])
@@ -1496,10 +1496,10 @@ class CPFigureFrame(wx.Frame):
                         # Alpha-blend for distances beyond 1
                         hw = lw / 2
                         d = scipy.ndimage.distance_transform_edt(~lm)
-                        dti, dtj = np.where((d < hw + .5) & ~lm)
-                        lo[dti, dtj] = np.minimum(1, hw + .5 - d[dti, dtj])
-                    image = image * (1 - lo[:, :, np.newaxis]) + \
-                            lo[:, :, np.newaxis] * oc[np.newaxis, np.newaxis, :]
+                        dti, dtj = numpy.where((d < hw + .5) & ~lm)
+                        lo[dti, dtj] = numpy.minimum(1, hw + .5 - d[dti, dtj])
+                    image = image * (1 - lo[:, :, numpy.newaxis]) + \
+                            lo[:, :, numpy.newaxis] * oc[numpy.newaxis, numpy.newaxis, :]
                 elif cplabel[CPLD_MODE] == CPLDM_ALPHA:
                     #
                     # For alpha overlays, renumber
@@ -1511,7 +1511,7 @@ class CPFigureFrame(wx.Frame):
                     alpha = cplabel[CPLD_ALPHA_VALUE]
                     image[labels != 0, :] *= 1 - alpha
                     image[labels != 0, :] += limage * alpha
-                loffset += np.max(labels)
+                loffset += numpy.max(labels)
 
         return image
 
@@ -1600,8 +1600,8 @@ class CPFigureFrame(wx.Frame):
         yscale - scaling of the y axis (e.g. 'log' or 'linear')
         title  - string title for the plot
         """
-        xvals = np.array(xvals).flatten()
-        yvals = np.array(yvals).flatten()
+        xvals = numpy.array(xvals).flatten()
+        yvals = numpy.array(yvals).flatten()
         if clear:
             self.clear_subplot(x, y)
 
@@ -1643,13 +1643,13 @@ class CPFigureFrame(wx.Frame):
         axes = self.subplot(x, y)
         self.figure.set_facecolor((1, 1, 1))
         self.figure.set_edgecolor((1, 1, 1))
-        values = np.array(values).flatten()
+        values = numpy.array(values).flatten()
         if xscale == 'log':
-            values = np.log(values[values > 0])
+            values = numpy.log(values[values > 0])
             xlabel = 'Log(%s)' % (xlabel or '?')
         # hist apparently doesn't like nans, need to preen them out first
         # (infinities are not much better)
-        values = values[np.isfinite(values)]
+        values = values[numpy.isfinite(values)]
         # nothing to plot?
         if values.shape[0] == 0:
             axes = self.subplot(x, y)
@@ -1697,7 +1697,7 @@ class CPFigureFrame(wx.Frame):
         self.figure.set_facecolor((1, 1, 1))
         self.figure.set_edgecolor((1, 1, 1))
 
-        points = np.array(points)
+        points = numpy.array(points)
 
         # Clip to positives if in log space
         if xscale == 'log':
@@ -1722,10 +1722,10 @@ class CPFigureFrame(wx.Frame):
         axes.set_ylabel(ylabel)
         axes.set_title(title)
 
-        xmin = np.nanmin(points[:, 0])
-        xmax = np.nanmax(points[:, 0])
-        ymin = np.nanmin(points[:, 1])
-        ymax = np.nanmax(points[:, 1])
+        xmin = numpy.nanmin(points[:, 0])
+        xmax = numpy.nanmax(points[:, 0])
+        ymin = numpy.nanmin(points[:, 1])
+        ymax = numpy.nanmax(points[:, 1])
 
         # Pad all sides
         if xscale == 'log':
@@ -1821,7 +1821,7 @@ class CPFigureFrame(wx.Frame):
                     for subkey in srcplate:
                         if subkey not in destplate:
                             destplate[subkey] = srcplate[subkey]
-                        elif not np.isnan(srcplate[subkey]):
+                        elif not numpy.isnan(srcplate[subkey]):
                             destplate[subkey] = srcplate[subkey]
 
         return self.draw_platemap()
@@ -1844,7 +1844,7 @@ class CPFigureFrame(wx.Frame):
         # Draw NaNs as gray
         # XXX: What if colormap with gray in it?
         cmap.set_bad('gray', 1.)
-        clean_data = np.ma.array(data, mask=np.isnan(data))
+        clean_data = numpy.ma.array(data, mask=numpy.isnan(data))
         plot = axes.imshow(clean_data, cmap=cmap, interpolation='nearest',
                            shape=data.shape)
         axes.set_title(title)
@@ -1854,10 +1854,10 @@ class CPFigureFrame(wx.Frame):
         axes.set_yticklabels(alphabet[:nrows], minor=False)
         axes.axis('image')
 
-        if colorbar and not np.all(np.isnan(data)):
+        if colorbar and not numpy.all(numpy.isnan(data)):
             if self.colorbar.has_key(axes):
                 cb = self.colorbar[axes]
-                cb.set_clim(np.min(clean_data), np.max(clean_data))
+                cb.set_clim(numpy.min(clean_data), numpy.max(clean_data))
                 cb.update_normal(clean_data)
             else:
                 self.colorbar[axes] = self.figure.colorbar(
@@ -1893,8 +1893,8 @@ def format_plate_data_as_array(plate_dict, plate_type):
     elif plate_type == '384':
         plate_shape = (16, 24)
     alphabet = 'ABCDEFGHIJKLMNOP'
-    data = np.zeros(plate_shape)
-    data[:] = np.nan
+    data = numpy.zeros(plate_shape)
+    data[:] = numpy.nan
     display_error = True
     for well, val in plate_dict.items():
         r = alphabet.index(well[0].upper())
@@ -1982,20 +1982,20 @@ class CPOutlineArtist(matplotlib.collections.LineCollection):
         #
         lines = []
         for l in labels:
-            new_labels, counts = scipy.ndimage.label(l != 0, np.ones((3, 3), bool))
+            new_labels, counts = scipy.ndimage.label(l != 0, numpy.ones((3, 3), bool))
             if counts == 0:
                 continue
-            l = l.astype(np.uint64) * counts + new_labels
-            unique, idx = np.unique(l.flatten(), return_inverse=True)
+            l = l.astype(numpy.uint64) * counts + new_labels
+            unique, idx = numpy.unique(l.flatten(), return_inverse=True)
             if unique[0] == 0:
-                my_range = np.arange(len(unique))
+                my_range = numpy.arange(len(unique))
             else:
-                my_range = np.arange(1, len(unique))
+                my_range = numpy.arange(1, len(unique))
             idx.shape = l.shape
             pts, offs, counts = centrosome.cpmorphology.get_outline_pts(idx, my_range)
             pts = pts[:, ::-1]  # matplotlib x, y reversed from i,j
             for off, count in zip(offs, counts):
-                lines.append(np.vstack((pts[off:off + count], pts[off:off + 1])))
+                lines.append(numpy.vstack((pts[off:off + count], pts[off:off + 1])))
         matplotlib.collections.LineCollection.__init__(
                 self, lines, *args, **kwargs)
 
@@ -2043,7 +2043,7 @@ class CPImageArtist(matplotlib.artist.Artist):
         #
         flip_ud = self.axes.viewLim.height < 0
         if flip_ud:
-            image = np.flipud(image)
+            image = numpy.flipud(image)
 
         im = matplotlib.image.fromarray(image, 0)
         im.is_grayscale = False
@@ -2111,9 +2111,9 @@ def get_crosshair_cursor():
             #
             # Build the crosshair cursor image as a numpy array.
             #
-            buf = np.ones((16, 16, 3), dtype='uint8') * 255
+            buf = numpy.ones((16, 16, 3), dtype='uint8') * 255
             buf[7, 1:-1, :] = buf[1:-1, 7, :] = 0
-            abuf = np.ones((16, 16), dtype='uint8') * 255
+            abuf = numpy.ones((16, 16), dtype='uint8') * 255
             abuf[:6, :6] = abuf[9:, :6] = abuf[9:, 9:] = abuf[:6, 9:] = 0
             im = wx.ImageFromBuffer(16, 16, buf.tostring(), abuf.tostring())
             im.SetOptionInt(wx.IMAGE_OPTION_CUR_HOTSPOT_X, 7)

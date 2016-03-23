@@ -1350,6 +1350,9 @@ class ImageSetCtrlDropTarget(wx.FileDropTarget):
 class ImageSetController:
     '''Modifies the image set according to GUI notifications'''
 
+    def __init__(self):
+        pass
+
     def can_edit(self):
         '''Return True if the image set is editable'''
         return False

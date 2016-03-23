@@ -502,7 +502,7 @@ class PreferencesView:
 
     def __on_edit_box_change(self, event, edit_box, text, actions):
         path = edit_box.GetValue()
-        error_text = 'The %s is not a directory' % (text)
+        error_text = 'The %s is not a directory' % text
         if os.path.isdir(path):
             for action in actions:
                 action(path)
@@ -709,7 +709,7 @@ def secs_to_timestr(duration):
     minutes = rest // 60
     rest %= 60
     seconds = rest
-    minutes = ("%02d:" if hours > 0 else "%d:") % (minutes)
+    minutes = ("%02d:" if hours > 0 else "%d:") % minutes
     hours = "%d:" % (hours,) if hours > 0 else ""
-    seconds = "%02d" % (seconds)
+    seconds = "%02d" % seconds
     return hours + minutes + seconds

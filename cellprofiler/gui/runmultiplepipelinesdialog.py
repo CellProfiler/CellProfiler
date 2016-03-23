@@ -211,7 +211,7 @@ class RunMultplePipelinesDialog(wx.Dialog):
                 if event.Position[0] < start + widths[subitem]:
                     break
                 start += widths[subitem]
-        if (0 <= item < self.pipeline_list_view.ItemCount and (hit_code & wx.LIST_HITTEST_ONITEM)):
+        if 0 <= item < self.pipeline_list_view.ItemCount and (hit_code & wx.LIST_HITTEST_ONITEM):
             if subitem == P_REMOVE_BUTTON_COLUMN:
                 self.pipeline_list_view.DeleteItem(item)
             elif subitem == P_FILENAME_COLUMN:

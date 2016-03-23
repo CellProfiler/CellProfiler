@@ -104,7 +104,7 @@ def run_batch_macro(macro_text, imp):
         }
     };
     """
-    interp = J.JClassWrapper("ij.macro.Interpreter")();
+    interp = J.JClassWrapper("ij.macro.Interpreter")()
     return interp.runBatchMacro(macro_text, imp).o
 
 

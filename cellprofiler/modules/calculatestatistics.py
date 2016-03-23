@@ -539,13 +539,13 @@ def z_factors(xcol, ymatr):
     # extremes BY DOSE of the averages and stdevs.
     zrange = np.abs(avers[0, :] - avers[-1, :])
     zstd = stds[0, :] + stds[-1, :]
-    zstd[zrange == 0] = 1;
-    zrange[zrange == 0] = 0.000001;
+    zstd[zrange == 0] = 1
+    zrange[zrange == 0] = 0.000001
     z = 1 - 3 * (zstd / zrange)
 
     # The one-tailed Z' factor is defined by using only the samples between the
     # means, again defined by DOSE extremes
-    zrange = np.abs(avers[0, :] - avers[-1, :]);
+    zrange = np.abs(avers[0, :] - avers[-1, :])
     exp1_vals = ymatr[xcol == xs[0], :]
     exp2_vals = ymatr[xcol == xs[-1], :]
     #
@@ -592,9 +592,9 @@ def v_factors(xcol, ymatr):
     # Special handling for labels that have no ranges
     #
     vstd = np.zeros(len(vrange))
-    vstd[vrange == 0] = 1;
+    vstd[vrange == 0] = 1
     vstd[vrange != 0] = np.mean(stds[:, vrange != 0], 0)
-    vrange[vrange == 0] = 0.000001;
+    vrange[vrange == 0] = 0.000001
     v = 1 - 6 * (vstd / vrange)
     return v
 

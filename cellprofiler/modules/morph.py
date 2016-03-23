@@ -917,7 +917,7 @@ class Morph(cpm.CPModule):
                     raise NotImplementedError("Unimplemented morphological function: %s" %
                                               function_name)
                 if np.all(new_pixel_data == pixel_data):
-                    break;
+                    break
                 pixel_data = new_pixel_data
             return pixel_data
 

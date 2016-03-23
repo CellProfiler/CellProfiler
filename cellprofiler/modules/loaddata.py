@@ -707,7 +707,7 @@ class LoadData(cpm.CPModule):
             try:
                 data = self.convert()
             except Exception, e:
-                raise RuntimeError("%s" % (e))
+                raise RuntimeError("%s" % e)
             header = data.dtype.names
         entry["header"] = [header_to_column(column) for column in header]
         return entry["header"]
@@ -1200,7 +1200,7 @@ class LoadData(cpm.CPModule):
             for index, field in enumerate(row):
                 if already_output[index]:
                     continue
-                if ((not self.wants_images) and key_is_path_or_file_name[index]):
+                if (not self.wants_images) and key_is_path_or_file_name[index]:
                     continue
                 try:
                     len_field = len(field)

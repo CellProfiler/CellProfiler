@@ -96,7 +96,7 @@ class CellProfilerApp(wx.App):
                 return
 
             import cellprofiler.gui.newversiondialog as nvd
-            dlg = nvd.NewVersionDialog(None, "CellProfiler update available (version %d)" % (new_version),
+            dlg = nvd.NewVersionDialog(None, "CellProfiler update available (version %d)" % new_version,
                                        new_version_info, 'http://cellprofiler.org/download.htm',
                                        cpp.get_check_new_versions(), set_check_pref, skip_this_version)
             dlg.ShowModal()

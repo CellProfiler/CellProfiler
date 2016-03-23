@@ -406,7 +406,7 @@ class CreateBatchFiles(cpm.CPModule):
                             path[len(local_directory):])
         if self.remote_host_is_windows.value:
             path = path.replace('/', '\\')
-        elif (regexp_substitution):
+        elif regexp_substitution:
             path = re.subn('\\\\\\\\', '/', path)[0]
             path = re.subn('\\\\(?!g\\<[^>]*\\>)', '/', path)[0]
         else:

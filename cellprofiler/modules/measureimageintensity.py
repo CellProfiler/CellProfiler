@@ -244,17 +244,17 @@ class MeasureImageIntensity(cpm.CPModule):
             pixel_upper_qrt = sorted_pixel_data[int(len(sorted_pixel_data) * 0.75)]
 
         m = workspace.measurements
-        m.add_image_measurement(F_TOTAL_INTENSITY % (measurement_name), pixel_sum)
-        m.add_image_measurement(F_MEAN_INTENSITY % (measurement_name), pixel_mean)
-        m.add_image_measurement(F_MEDIAN_INTENSITY % (measurement_name), pixel_median)
-        m.add_image_measurement(F_STD_INTENSITY % (measurement_name), pixel_std)
-        m.add_image_measurement(F_MAD_INTENSITY % (measurement_name), pixel_mad)
-        m.add_image_measurement(F_MAX_INTENSITY % (measurement_name), pixel_max)
-        m.add_image_measurement(F_MIN_INTENSITY % (measurement_name), pixel_min)
-        m.add_image_measurement(F_TOTAL_AREA % (measurement_name), pixel_count)
-        m.add_image_measurement(F_PERCENT_MAXIMAL % (measurement_name), pixel_pct_max)
-        m.add_image_measurement(F_LOWER_QUARTILE % (measurement_name), pixel_lower_qrt)
-        m.add_image_measurement(F_UPPER_QUARTILE % (measurement_name), pixel_upper_qrt)
+        m.add_image_measurement(F_TOTAL_INTENSITY % measurement_name, pixel_sum)
+        m.add_image_measurement(F_MEAN_INTENSITY % measurement_name, pixel_mean)
+        m.add_image_measurement(F_MEDIAN_INTENSITY % measurement_name, pixel_median)
+        m.add_image_measurement(F_STD_INTENSITY % measurement_name, pixel_std)
+        m.add_image_measurement(F_MAD_INTENSITY % measurement_name, pixel_mad)
+        m.add_image_measurement(F_MAX_INTENSITY % measurement_name, pixel_max)
+        m.add_image_measurement(F_MIN_INTENSITY % measurement_name, pixel_min)
+        m.add_image_measurement(F_TOTAL_AREA % measurement_name, pixel_count)
+        m.add_image_measurement(F_PERCENT_MAXIMAL % measurement_name, pixel_pct_max)
+        m.add_image_measurement(F_LOWER_QUARTILE % measurement_name, pixel_lower_qrt)
+        m.add_image_measurement(F_UPPER_QUARTILE % measurement_name, pixel_upper_qrt)
         return [[im.image_name.value,
                  im.object_name.value if im.wants_objects.value else "",
                  feature_name, str(value)]

@@ -431,7 +431,8 @@ class CPFigureFrame(wx.Frame):
                               event.width, event.height)
             ctrl.ForceRefresh()  # I don't know why, but it seems to be needed.
 
-    def align_widget(self, ctrl, x, y, width, height,
+    @staticmethod
+    def align_widget(ctrl, x, y, width, height,
                      halign, valign, canvas_width, canvas_height):
         """Align a widget within the canvas
 
@@ -1295,7 +1296,8 @@ class CPFigureFrame(wx.Frame):
             hist_fig.figure.canvas.draw()
         return subplot
 
-    def update_line_labels(self, subplot, kwargs):
+    @staticmethod
+    def update_line_labels(subplot, kwargs):
         outlines = [x for x in subplot.collections
                     if isinstance(x, CPOutlineArtist)]
         for outline in outlines:
@@ -1438,7 +1440,8 @@ class CPFigureFrame(wx.Frame):
         kwargs['colormap'] = matplotlib.cm.binary_r
         return self.subplot_imshow(x, y, image, title=title, **kwargs)
 
-    def normalize_image(self, image, **kwargs):
+    @staticmethod
+    def normalize_image(image, **kwargs):
         """Produce a color image normalized according to user spec"""
         colormap = kwargs['colormap']
         normalize = kwargs['normalize']

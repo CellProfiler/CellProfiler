@@ -230,7 +230,8 @@ class LocationPanel(wx.Panel):
         idx = self.base_dir.GetSelection()
         return [default_input, default_output, self.otherdir.GetValue()][idx]
 
-    def format_file(self, file_info):
+    @staticmethod
+    def format_file(file_info):
         return [('black', os.path.join(*file_info))]
 
     def update_file_list(self, dir=None, descend_dirs=None):

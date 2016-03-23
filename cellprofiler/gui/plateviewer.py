@@ -239,15 +239,18 @@ class PlateViewer(object):
         self.on_update()
         self.frame.Layout()
 
-    def on_splitter_dclick(self, event):
+    @staticmethod
+    def on_splitter_dclick(event):
         assert isinstance(event, wx.SplitterEvent)
         event.Veto()
 
-    def get_border_height(self):
+    @staticmethod
+    def get_border_height():
         """The border along the top of the plate"""
         return 20
 
-    def get_border_width(self):
+    @staticmethod
+    def get_border_width():
         return 30
 
     def on_close(self, event):

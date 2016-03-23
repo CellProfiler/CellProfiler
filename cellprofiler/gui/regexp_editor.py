@@ -160,7 +160,8 @@ class RegexpDialog(wx.Dialog):
         self.SetSizer(sizer)
         self.Fit()
 
-    def on_regexp_key(self, event):
+    @staticmethod
+    def on_regexp_key(event):
         #
         # On Mac, very bad things (infinite recursion through OnPaint
         # followed by segfault) happen if you type carriage return
@@ -168,7 +169,8 @@ class RegexpDialog(wx.Dialog):
         if event.GetKeyCode() != wx.stc.STC_KEY_RETURN:
             event.Skip()
 
-    def get_color_db(self):
+    @staticmethod
+    def get_color_db():
         color_db = ["BLACK", "RED", "GREEN", "BLUE", "CYAN", "MAGENTA", "SIENNA", "PURPLE"]
         color_db = [wx.TheColourDatabase.FindColour(x) for x in color_db]
         return color_db
@@ -623,7 +625,8 @@ if __name__ == "__main__":
 
 
     class MyApp(wx.App):
-        def OnInit(self):
+        @staticmethod
+        def OnInit():
             return True
 
 

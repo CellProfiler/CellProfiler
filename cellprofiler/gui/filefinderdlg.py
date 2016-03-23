@@ -67,7 +67,8 @@ class FileFinderDialog(wx.Dialog):
                   flag=wx.CENTER)
         self.Layout()
 
-    def img_idx(self, checked):
+    @staticmethod
+    def img_idx(checked):
         if not checked:
             return 0, 1
         else:
@@ -136,7 +137,8 @@ class FileFinderDialog(wx.Dialog):
         # in on_timer(), below.
         self.queue.put((path, isdir, key, parent, status, data))
 
-    def metadata_cb(self, path):
+    @staticmethod
+    def metadata_cb(path):
         return
 
     def update(self, path, isdir, key, parent, status, data):
@@ -182,7 +184,8 @@ class FileFinderDialog(wx.Dialog):
 
 if __name__ == "__main__":
     class MyApp(wx.App):
-        def OnInit(self):
+        @staticmethod
+        def OnInit():
             dlg = FileFinderDialog(None, ['/Users/tjones/CellProfilerMine.git',
                                           '/Volumes/plateformes/incell/Screening Externe_BFX Projects Calls/E-003_CILS_BENMERAH/Crible_E003'],
                                    size=(640, 480),

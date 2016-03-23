@@ -627,7 +627,8 @@ class EditObjectsDialog(wx.Dialog):
                 return
             self.EndModal(return_code)
 
-    def on_destroy(self, event):
+    @staticmethod
+    def on_destroy(event):
         # bug in wx / matplotlib. Toolbar will be in a mouse capture
         # mode which is not cancelled as dialog exits. Bad things
         # happen on Mac when you try to release capture on a window

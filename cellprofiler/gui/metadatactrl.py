@@ -654,7 +654,8 @@ if __name__ == "__main__":
 
 
     class MyApp(wx.App):
-        def OnInit(self):
+        @staticmethod
+        def OnInit():
             p = cpp.Pipeline()
             p.load(sys.argv[1])
             dlg = MetadataDialog(p, p.modules()[-1], None)

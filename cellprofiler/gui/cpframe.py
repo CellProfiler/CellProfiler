@@ -838,48 +838,56 @@ class CPFrame(wx.Frame):
     # Adapted from a post reply by Robin Dunn:
     # http://wxpython-users.1045709.n5.nabble.com/how-to-implement-copy-paste-with-accelerators-td3337472.html
     #########################################################
-    def on_cut(self, event):
+    @staticmethod
+    def on_cut(event):
         """Handle ID_CUT"""
         focus = wx.Window.FindFocus()
         if (focus is not None and hasattr(focus, "Cut")
             and hasattr(focus, 'CanCut') and focus.CanCut()):
             focus.Cut()
 
-    def on_update_cut_ui(self, event):
+    @staticmethod
+    def on_update_cut_ui(event):
         focus = wx.Window.FindFocus()
         event.Enable(bool(
                 focus and hasattr(focus, 'CanCut') and focus.CanCut()))
 
-    def on_copy(self, event):
+    @staticmethod
+    def on_copy(event):
         """Handle ID_COPY"""
         focus = wx.Window.FindFocus()
         if focus is not None and hasattr(focus, "Copy") and \
                 hasattr(focus, 'CanCopy') and focus.CanCopy():
             focus.Copy()
 
-    def on_update_copy_ui(self, event):
+    @staticmethod
+    def on_update_copy_ui(event):
         focus = wx.Window.FindFocus()
         event.Enable(bool(
                 focus and hasattr(focus, 'CanCopy') and focus.CanCopy()))
 
-    def on_paste(self, event):
+    @staticmethod
+    def on_paste(event):
         """Handle ID_PASTE"""
         focus = wx.Window.FindFocus()
         if focus is not None and hasattr(focus, "Paste") and \
                 hasattr(focus, "CanPaste") and focus.CanPaste():
             focus.Paste()
 
-    def on_update_paste_ui(self, event):
+    @staticmethod
+    def on_update_paste_ui(event):
         focus = wx.Window.FindFocus()
         event.Enable(bool(
                 focus and hasattr(focus, 'CanPaste') and focus.CanPaste()))
 
-    def on_select_all(self, event):
+    @staticmethod
+    def on_select_all(event):
         focus = wx.Window.FindFocus()
         if focus and hasattr(focus, "SelectAll"):
             focus.SelectAll()
 
-    def on_update_select_all_ui(self, event):
+    @staticmethod
+    def on_update_select_all_ui(event):
         focus = wx.Window.FindFocus()
         if hasattr(focus, "CanSelect") and not focus.CanSelect():
             event.Enable(False)
@@ -928,43 +936,51 @@ class CPFrame(wx.Frame):
 
         self.__menu_file.Enable(ID_FILE_STOP_ANALYSIS, True)
 
-    def __on_widget_inspector(self, evt):
+    @staticmethod
+    def __on_widget_inspector(evt):
         try:
             import wx.lib.inspection
             wx.lib.inspection.InspectionTool().Show()
         except:
             wx.MessageBox("Inspection tool is not available on this platform")
 
-    def __on_preferences(self, event):
+    @staticmethod
+    def __on_preferences(event):
         dlg = cellprofiler.gui.preferencesdlg.PreferencesDlg()
         dlg.Show()
 
-    def __on_check_new_version(self, event):
+    @staticmethod
+    def __on_check_new_version(event):
         wx.GetApp().new_version_check(force=True)
 
     def __on_close_all(self, event):
         close_all(self)
 
-    def __on_new_cp(self, event):
+    @staticmethod
+    def __on_new_cp(event):
         import os
         if not hasattr(sys, 'frozen'):
             os.system('open CellProfiler_python.command')
         else:
             os.system('open -na CellProfiler.app')
 
-    def __on_help_release_notes(self, event):
+    @staticmethod
+    def __on_help_release_notes(event):
         import webbrowser
         webbrowser.open("http://github.com/CellProfiler/CellProfiler/wiki/CellProfiler-release-notes")
 
-    def __on_help_online_manual(self, event):
+    @staticmethod
+    def __on_help_online_manual(event):
         import webbrowser
         webbrowser.open("http://d1zymp9ayga15t.cloudfront.net/CPmanual/index.html")
 
-    def __on_help_developers_guide(self, event):
+    @staticmethod
+    def __on_help_developers_guide(event):
         import webbrowser
         webbrowser.open("http://www.cellprofiler.org/wiki/index.php/Main_Page")
 
-    def __on_help_source_code(self, event):
+    @staticmethod
+    def __on_help_source_code(event):
         import webbrowser
         webbrowser.open("https://github.com/CellProfiler/CellProfiler")
 
@@ -1107,7 +1123,8 @@ class CPFrame(wx.Frame):
                           "No module selected",
                           style=wx.OK | wx.ICON_INFORMATION)
 
-    def __debug_pdb(self, event):
+    @staticmethod
+    def __debug_pdb(event):
         pdb.set_trace()
 
     def do_help_modules(self, modules):
@@ -1218,14 +1235,16 @@ class CPFrame(wx.Frame):
         helpframe.Layout()
         helpframe.Show()
 
-    def print_help(self, event, module_name, help_text):
+    @staticmethod
+    def print_help(event, module_name, help_text):
         """Print the help text for a module"""
         printer = wx.html.HtmlEasyPrinting("Printing %s" % module_name,
                                            event.GetEventObject())
         printer.GetPrintData().SetPaperId(wx.PAPER_LETTER)
         printer.PrintText(help_text)
 
-    def save_help(self, event, module_name, help_text):
+    @staticmethod
+    def save_help(event, module_name, help_text):
         """Save the help text for a module"""
         save_dlg = wx.FileDialog(event.GetEventObject(),
                                  message="Save help for %s to file" % module_name,

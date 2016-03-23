@@ -377,20 +377,24 @@ class PreferencesDlg(wx.Dialog):
                  cphelp.BATCHPROFILER_URL_HELP]
                 ]
 
-    def get_title_font(self):
+    @staticmethod
+    def get_title_font():
         return "%s,%f" % (cpprefs.get_title_font_name(),
                           cpprefs.get_title_font_size())
 
-    def set_title_font(self, font):
+    @staticmethod
+    def set_title_font(font):
         name, size = font.split(",")
         cpprefs.set_title_font_name(name)
         cpprefs.set_title_font_size(float(size))
 
-    def get_table_font(self):
+    @staticmethod
+    def get_table_font():
         return "%s,%f" % (cpprefs.get_table_font_name(),
                           cpprefs.get_table_font_size())
 
-    def set_table_font(self, font):
+    @staticmethod
+    def set_table_font(font):
         name, size = font.split(",")
         cpprefs.set_table_font_name(name)
         cpprefs.set_table_font_size(float(size))
@@ -398,7 +402,8 @@ class PreferencesDlg(wx.Dialog):
 
 if __name__ == '__main__':
     class MyApp(wx.App):
-        def OnInit(self):
+        @staticmethod
+        def OnInit():
             dlg = PreferencesDlg()
             dlg.show_modal()
             return 1

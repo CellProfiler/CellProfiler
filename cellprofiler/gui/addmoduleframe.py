@@ -224,7 +224,8 @@ class AddModuleFrame(wx.Frame):
         helpframe.Layout()
         helpframe.Show()
 
-    def __on_wheres_my_module(self, event):
+    @staticmethod
+    def __on_wheres_my_module(event):
         import webbrowser
         webbrowser.open("http://cellprofiler.org/forum/viewtopic.php?f=14&t=806&p=3221#p4486")
 

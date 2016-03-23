@@ -565,7 +565,8 @@ class ViewWorkspace(object):
         event.SetEventObject(self.frame)
         self.image.on_update_menu(event, menu)
 
-    def update_choices(self, rows):
+    @staticmethod
+    def update_choices(rows):
         for row in rows:
             row.update_chooser()
 

@@ -336,7 +336,8 @@ class ModuleView:
                 self.__on_workspace_event)
         self.__started = True
 
-    def skip_event(self, event):
+    @staticmethod
+    def skip_event(event):
         event.Skip(False)
 
     def get_module_panel(self):
@@ -2083,7 +2084,8 @@ class ModuleView:
         elif timeout is not False:
             self.reset_view(timeout)
 
-    def fit_ctrl(self, ctrl):
+    @staticmethod
+    def fit_ctrl(ctrl):
         """Fit the control to its text size"""
         width, height = ctrl.GetTextExtent(ctrl.Value + "MM")
         ctrl.SetSizeHintsSz(wx.Size(width, -1))
@@ -2394,7 +2396,8 @@ class FilterPanelController(object):
     def any_all_choices(self):
         return [x.display_name for x in self.ANY_ALL_PREDICATES]
 
-    def indent(self, sizer, address):
+    @staticmethod
+    def indent(sizer, address):
         assert isinstance(sizer, wx.Sizer)
         if len(address) == 0:
             return
@@ -2406,7 +2409,8 @@ class FilterPanelController(object):
         self.hide_show_dict[name] = True
         return ctrl
 
-    def get_sizer_index(self, sizer, item):
+    @staticmethod
+    def get_sizer_index(sizer, item):
         if isinstance(item, wx.Sizer):
             indexes = [i for i, s in enumerate(sizer.GetChildren())
                        if s.IsSizer() and s.GetSizer() is item]
@@ -2724,7 +2728,8 @@ class FilterPanelController(object):
     def key(self):
         return str(self.v.key())
 
-    def saddress(self, address):
+    @staticmethod
+    def saddress(address):
         return "_".join([str(x) for x in address])
 
     def anyall_choice_name(self, address):
@@ -2815,10 +2820,12 @@ class FileCollectionDisplayController(object):
         def OnDropText(self, x, y, text):
             self.text_callback_fn(x, y, text)
 
-        def OnEnter(self, x, y, d):
+        @staticmethod
+        def OnEnter(x, y, d):
             return wx.DragCopy
 
-        def OnDragOver(self, x, y, d):
+        @staticmethod
+        def OnDragOver(x, y, d):
             return wx.DragCopy
 
         def OnData(self, x, y, d):
@@ -2831,7 +2838,8 @@ class FileCollectionDisplayController(object):
                                      self.file_data_object.GetFilenames())
             return wx.DragCopy
 
-        def OnDrop(self, x, y):
+        @staticmethod
+        def OnDrop(x, y):
             return True
 
     def __init__(self, module_view, v, pipeline):
@@ -3759,7 +3767,8 @@ class BinaryMatrixController(object):
         paint_dc.EndDrawing()
         event.Skip()
 
-    def get_matrix_element_rect(self, i, j):
+    @staticmethod
+    def get_matrix_element_rect(i, j):
         bx, ex, dx, by, ey, dy = [
             wx.SystemSettings.GetMetric(m) for m in (
                 wx.SYS_BORDER_X, wx.SYS_EDGE_X, wx.SYS_SMALLICON_X,

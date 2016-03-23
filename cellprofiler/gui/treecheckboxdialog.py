@@ -81,7 +81,8 @@ class TreeCheckboxDialog(wx.Dialog):
         files should be picked up from the currenet directory, but not kids."""
         self.parent_reflects_child = value
 
-    def img_idx(self, d):
+    @staticmethod
+    def img_idx(d):
         if d[None] is False:
             return 0, 1
         elif d[None] is True:
@@ -214,7 +215,8 @@ class TreeCheckboxDialog(wx.Dialog):
 
 if __name__ == "__main__":
     class MyApp(wx.App):
-        def OnInit(self):
+        @staticmethod
+        def OnInit():
             d = {None: None}
             for i in range(5):
                 d1 = d[str(i)] = {None: None}

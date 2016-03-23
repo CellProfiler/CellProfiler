@@ -1353,15 +1353,18 @@ class ImageSetController:
     def __init__(self):
         pass
 
-    def can_edit(self):
+    @staticmethod
+    def can_edit():
         """Return True if the image set is editable"""
         return False
 
-    def can_undo(self):
+    @staticmethod
+    def can_undo():
         """Return True if the image set can undo something"""
         return False
 
-    def can_redo(self):
+    @staticmethod
+    def can_redo():
         """Return True if the image set can redo something"""
         return False
 

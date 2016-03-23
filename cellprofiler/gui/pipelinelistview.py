@@ -529,7 +529,8 @@ class PipelineListView(object):
 
         return modules
 
-    def get_event_module(self, event):
+    @staticmethod
+    def get_event_module(event):
         """Retrieve a module from an event's selection
 
         event - an event from a PipelineListCtrl with an associated selection
@@ -558,7 +559,8 @@ class PipelineListView(object):
                 w.Raise()
                 w.SetFocus()
 
-    def find_module_figure_window(self, module):
+    @staticmethod
+    def find_module_figure_window(module):
         name = window_name(module)
         return find_fig(name=name)
 

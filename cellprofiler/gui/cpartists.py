@@ -60,7 +60,8 @@ class ColorMixin(object):
 
     alpha = property(get_alpha, set_alpha)
 
-    def _on_alpha_changed(self):
+    @staticmethod
+    def _on_alpha_changed():
         """Called when the alpha value is modified, default = do nothing"""
         pass
 
@@ -122,7 +123,8 @@ class ColorMixin(object):
         """True if this data's configuration will use the alpha setting"""
         return self._using_alpha()
 
-    def _using_alpha(self):
+    @staticmethod
+    def _using_alpha():
         """Override if we ever don't use the alpha setting"""
         return True
 
@@ -968,18 +970,21 @@ class CPImageArtist(matplotlib.artist.Artist):
         if self.figure is not None and self.figure.canvas is not None:
             self.figure.canvas.draw_idle()
 
-    def __get_window_from_event(self, event):
+    @staticmethod
+    def __get_window_from_event(event):
         import wx
         o = event.EventObject
         if isinstance(o, wx.Menu):
             return o.GetInvokingWindow()
         return o
 
-    def __on_update_normalization(self, event, data, target):
+    @staticmethod
+    def __on_update_normalization(event, data, target):
         assert isinstance(data, ImageData)
         event.Check(data.normalization == target)
 
-    def __on_update_image_color_item(self, event, data):
+    @staticmethod
+    def __on_update_image_color_item(event, data):
         event.Enable(data.mode != MODE_RGB)
 
     def __initialize_objects_sub_menu(self, event, sub_menu, data):
@@ -1013,7 +1018,8 @@ class CPImageArtist(matplotlib.artist.Artist):
         data.mode = mode
         self.refresh()
 
-    def __on_update_objects_mode(self, event, data, mode):
+    @staticmethod
+    def __on_update_objects_mode(event, data, mode):
         event.Check(mode == data.mode)
 
     def __initialize_mask_sub_menu(self, event, sub_menu, data):
@@ -1047,7 +1053,8 @@ class CPImageArtist(matplotlib.artist.Artist):
         data.mode = mode
         self.refresh()
 
-    def __on_update_mask_mode(self, event_or_item, data, target):
+    @staticmethod
+    def __on_update_mask_mode(event_or_item, data, target):
         """Update the menu item or UpdateUIEvent's check status
 
         event_or_item - either an UpdateUIEvent or MenuItem or other
@@ -1140,7 +1147,8 @@ class CPImageArtist(matplotlib.artist.Artist):
                 data = old_alpha
                 self.refresh()
 
-    def __update_sub_menu(self, event, sub_menu, data):
+    @staticmethod
+    def __update_sub_menu(event, sub_menu, data):
         event.Enable(data.mode != MODE_HIDE)
         event.Text = data.name if len(data.name) > 0 else " "
 

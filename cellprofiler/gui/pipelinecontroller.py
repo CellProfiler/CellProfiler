@@ -2540,7 +2540,8 @@ class PipelineController:
             # being empty causes futher exceptions).
             evt.reply(cpanalysis.InteractionReply(result=result))
 
-    def omero_login_request(self, evt):
+    @staticmethod
+    def omero_login_request(evt):
         """Handle retrieval of the Omero credentials"""
         from bioformats.formatreader import get_omero_credentials
         evt.reply(cpanalysis.OmeroLoginReply(get_omero_credentials()))
@@ -3177,7 +3178,8 @@ class PipelineController:
                 self.CenterOnParent()
                 self.Bind(wx.EVT_SIZE, self.on_size)
 
-            def on_size(self, event):
+            @staticmethod
+            def on_size(event):
                 assert isinstance(event, wx.SizeEvent)
                 cpprefs.set_choose_image_set_frame_size(
                         event.m_size.width, event.m_size.height)
@@ -3448,10 +3450,12 @@ class FLDropTarget(wx.PyDropTarget):
     def OnDropText(self, x, y, text):
         self.text_callback_fn(x, y, text)
 
-    def OnEnter(self, x, y, d):
+    @staticmethod
+    def OnEnter(x, y, d):
         return wx.DragCopy
 
-    def OnDragOver(self, x, y, d):
+    @staticmethod
+    def OnDragOver(x, y, d):
         return wx.DragCopy
 
     def OnData(self, x, y, d):
@@ -3464,5 +3468,6 @@ class FLDropTarget(wx.PyDropTarget):
                                  self.file_data_object.GetFilenames())
         return wx.DragCopy
 
-    def OnDrop(self, x, y):
+    @staticmethod
+    def OnDrop(x, y):
         return True

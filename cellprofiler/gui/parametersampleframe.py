@@ -312,7 +312,8 @@ class ParameterSampleFrame(wx.Frame):
             parameters_to_widgets_list.append(widget_indices)
         return parameters_to_widgets_list
 
-    def get_parameter_type(self, setting):
+    @staticmethod
+    def get_parameter_type(setting):
         """Get parameter type of 'setting' by considering its class."""
         if isinstance(setting, settings.Binary):
             return PARAM_CLASS_BOUNDED_DISCRETE
@@ -348,7 +349,8 @@ class ParameterSampleFrame(wx.Frame):
         else:
             return 'whatever is left'
 
-    def get_parameter_input_size(self, setting):
+    @staticmethod
+    def get_parameter_input_size(setting):
         """Get input size of 'setting'."""
         size = 1;
         try:
@@ -357,7 +359,8 @@ class ParameterSampleFrame(wx.Frame):
             pass
         return size
 
-    def is_parameter_float(self, setting):
+    @staticmethod
+    def is_parameter_float(setting):
         if isinstance(setting, settings.Float):
             return True
         elif isinstance(setting, settings.FloatRange):
@@ -365,7 +368,8 @@ class ParameterSampleFrame(wx.Frame):
         else:
             return False
 
-    def is_parameter_int(self, setting):
+    @staticmethod
+    def is_parameter_int(setting):
         if isinstance(setting, settings.Integer):
             return True
         elif isinstance(setting, settings.IntegerRange):
@@ -501,7 +505,8 @@ class ParameterSampleFrame(wx.Frame):
                         number *= self.__number_spin_ctrl_list[j].GetValue()
         return number
 
-    def compute_samples(self, lower_bound, upper_bound, number_samples, is_int):
+    @staticmethod
+    def compute_samples(lower_bound, upper_bound, number_samples, is_int):
         """Computes samples in the range [lower_bound, upper_bound].
 
         This method computes an returns a list of uniformly distributed samples
@@ -691,7 +696,8 @@ class ParameterSampleFrame(wx.Frame):
                 #        print '\t\t' + str(current_measurement)
                 # ~^~
 
-    def save_image(self, image, path):
+    @staticmethod
+    def save_image(image, path):
         """TODO: add comments"""
 
         import PIL.Image as PILImage

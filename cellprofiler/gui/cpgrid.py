@@ -73,7 +73,8 @@ class GridButtonRenderer(wx.grid.PyGridCellRenderer):
             return bitmap
         return None
 
-    def get_state(self, grid, row, col):
+    @staticmethod
+    def get_state(grid, row, col):
         """Get a cell's press-state
 
         grid - the grid control
@@ -85,7 +86,8 @@ class GridButtonRenderer(wx.grid.PyGridCellRenderer):
             return None
         return values[1]
 
-    def set_cell_value(self, grid, row, col, key, state):
+    @staticmethod
+    def set_cell_value(grid, row, col, key, state):
         """Set a cell's value in a grid
 
         grid    - the grid control

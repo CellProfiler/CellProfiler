@@ -551,7 +551,8 @@ class PreferencesView:
         if self.__pipeline_list_view is not None:
             self.__pipeline_list_view.notify_directory_change()
 
-    def refresh_input_directory(self):
+    @staticmethod
+    def refresh_input_directory():
         cpprefs.fire_image_directory_changed_event()
 
 

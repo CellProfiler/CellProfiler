@@ -635,9 +635,9 @@ class PipelineListView(object):
             result = drop_source.DoDragDrop(wx.Drag_AllowMove)
             self.drag_underway = False
             if result == wx.DragMove:
-                for id in selected_module_ids:
+                for identifier in selected_module_ids:
                     for module in self.__pipeline.modules(False):
-                        if module.id == id:
+                        if module.id == identifier:
                             self.__pipeline.remove_module(module.module_num)
                             break
         finally:

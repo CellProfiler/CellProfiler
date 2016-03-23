@@ -38,7 +38,7 @@ STATE_PLAYING = "playing"
 
 class SliderCtl(wx.Panel):
     def __init__(self, parent,
-                 id=-1,
+                 identifier=-1,
                  value=0,
                  min_value=0,
                  max_value=100,
@@ -49,7 +49,7 @@ class SliderCtl(wx.Panel):
                  size=wx.DefaultSize,
                  style=wx.TAB_TRAVERSAL | wx.NO_BORDER,
                  name=SLIDER_CTL_STR):
-        super(SliderCtl, self).__init__(parent, id, pos, size, style, name)
+        super(SliderCtl, self).__init__(parent, identifier, pos, size, style, name)
         self.border = 10
         self.tick_length = 5
         self.__value = value
@@ -325,7 +325,7 @@ class MovieSlider(wx.Panel):
     """
 
     def __init__(self, parent,
-                 id=-1,
+                 identifier=-1,
                  value=0,
                  min_value=0,
                  max_value=100,
@@ -350,7 +350,7 @@ class MovieSlider(wx.Panel):
         style       - style for panel window
         name        - window's name
         """
-        super(MovieSlider, self).__init__(parent, id, pos, size, style, name)
+        super(MovieSlider, self).__init__(parent, identifier, pos, size, style, name)
         self.BackgroundColour = cellprofiler.preferences.get_background_color()
         self.value_names = value_names
         sizer = wx.BoxSizer(wx.VERTICAL)

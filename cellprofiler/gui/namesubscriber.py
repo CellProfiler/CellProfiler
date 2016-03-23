@@ -97,8 +97,8 @@ class NameSubscriberComboBox(wx.Panel):
         all_menu = wx.Menu()
 
         unsorted_choices = [
-            (name, annotation, num, is_input_module, id)
-            for (name, annotation, num, is_input_module), id in
+            (name, annotation, num, is_input_module, identifier)
+            for (name, annotation, num, is_input_module), identifier in
             zip(self.orig_choices, self.IDs)]
         fn_key = lambda x: (x[2], x)
         choices_sorted_by_num = sorted(unsorted_choices, key=fn_key)

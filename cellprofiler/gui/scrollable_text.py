@@ -3,8 +3,8 @@ import wx.lib.scrolledpanel
 
 
 class ScrollableText(wx.lib.scrolledpanel.ScrolledPanel):
-    def __init__(self, parent, id=-1, text=None):
-        wx.lib.scrolledpanel.ScrolledPanel.__init__(self, parent, id)
+    def __init__(self, parent, identifier=-1, text=None):
+        wx.lib.scrolledpanel.ScrolledPanel.__init__(self, parent, identifier)
 
         if text is None:
             text = [[('black', 'adsf')]]
@@ -44,10 +44,10 @@ class ScrollableText(wx.lib.scrolledpanel.ScrolledPanel):
             l = self.text[idx]
             combined = "".join([s[1] for s in l])
             extents = [0] + DC.GetPartialTextExtents(combined)
-            for str in l:
-                DC.SetTextForeground(str[0])
-                DC.DrawText(str[1], extents[0], idx * lineheight)
-                extents = extents[len(str[1]):]
+            for string in l:
+                DC.SetTextForeground(string[0])
+                DC.DrawText(string[1], extents[0], idx * lineheight)
+                extents = extents[len(string[1]):]
 
     def resize(self, evt):
         DC = wx.ClientDC(self)

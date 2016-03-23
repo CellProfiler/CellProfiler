@@ -658,11 +658,11 @@ class ImageSetCtrl(wx.grid.Grid, CornerButtonMixin):
             sub_sizer.Add(choice)
             selection = None
             current_help = ""
-            for i, (text, bitmap, help) in enumerate(choices):
+            for i, (text, bitmap, help_text) in enumerate(choices):
                 choice.Append(text, bitmap, text)
                 if text == channel_type:
                     selection = i
-                    current_help = help
+                    current_help = help_text
 
             help_text = wx.StaticText(dlg, label=current_help)
             help_text.Wrap(dlg.GetSize()[0] - 20)
@@ -1513,9 +1513,9 @@ class FilterPanelDlg(wx.Dialog):
         sub_sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.Sizer.Add(sub_sizer, 0, wx.EXPAND)
 
-        for button_text, fn, help in function_list:
+        for button_text, fn, help_text in function_list:
             button = wx.Button(self, label=button_text)
-            button.SetToolTipString(help)
+            button.SetToolTipString(help_text)
 
             def on_button(event, fn=fn):
                 current_channel = self.channel_choice.GetStringSelection()

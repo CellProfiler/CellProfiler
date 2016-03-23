@@ -168,9 +168,9 @@ class PreferencesDlg(wx.Dialog):
             else:
                 on_press = None
             if not on_press is None:
-                id = wx.NewId()
-                button = wx.Button(scrollpanel, id, ui_info)
-                self.Bind(wx.EVT_BUTTON, on_press, button, id)
+                identifier = wx.NewId()
+                button = wx.Button(scrollpanel, identifier, ui_info)
+                self.Bind(wx.EVT_BUTTON, on_press, button, identifier)
                 sizer.Add(button, (index, 2))
             button = wx.Button(scrollpanel, -1, '?', (0, 0), (30, -1))
 

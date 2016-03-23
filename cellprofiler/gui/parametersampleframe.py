@@ -69,7 +69,7 @@ class ParameterSampleFrame(wx.Frame):
             [[s_11, None, s_31], [s_12, None, s_32], ...].
     """
 
-    def __init__(self, parent, module, pipeline, id=-1,
+    def __init__(self, parent, module, pipeline, identifier=-1,
                  pos=wx.DefaultPosition, size=wx.DefaultSize,
                  style=wx.DEFAULT_FRAME_STYLE, name=wx.FrameNameStr):
         # Flag to check during event handling: widgets generate events as they
@@ -94,7 +94,7 @@ class ParameterSampleFrame(wx.Frame):
         self.__grids = None
 
         frame_title = 'Sampling settings for module, ' + self.__module.module_name
-        wx.Frame.__init__(self, self.__frame, id, frame_title, pos, size, style, name)
+        wx.Frame.__init__(self, self.__frame, identifier, frame_title, pos, size, style, name)
         self.__frame_sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSize(wx.Size(700, 350))
         self.SetSizer(self.__frame_sizer)

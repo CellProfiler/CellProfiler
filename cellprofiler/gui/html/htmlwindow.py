@@ -113,8 +113,8 @@ class HtmlClickableWindow(wx.html.HtmlWindow):
             else:
                 super(HtmlClickableWindow, self).OnLinkClicked(linkinfo)
 
-    def OnOpeningURL(self, type, url):
-        if type == wx.html.HTML_URL_IMAGE:
+    def OnOpeningURL(self, file_format, url):
+        if file_format == wx.html.HTML_URL_IMAGE:
             if url.startswith(MEMORY_SCHEME):
                 path = get_builtin_images_path()
                 full_path = os.path.join(path, url[len(MEMORY_SCHEME):])

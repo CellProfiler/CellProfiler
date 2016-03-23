@@ -998,35 +998,35 @@ class EditObjectsDialog(wx.Dialog):
                     "Toggle guiding image display")
             check_item.Check(self.wants_image_display)
         contrast_menu = wx.Menu("Contrast")
-        for mid, state, help in (
+        for mid, state, help_text in (
                 (self.ID_CONTRAST_RAW, self.SM_RAW, "Display raw intensity image"),
                 (self.ID_CONTRAST_NORMALIZED, self.SM_NORMALIZED,
                  "Display the image intensity using the full range of gray scales"),
                 (self.ID_CONTRAST_LOG_NORMALIZED, self.SM_LOG_NORMALIZED,
                  "Display the image intensity using a logarithmic scale")):
-            contrast_menu.AppendRadioItem(mid, state, help)
+            contrast_menu.AppendRadioItem(mid, state, help_text)
             if self.scaling_mode == state:
                 contrast_menu.Check(mid, True)
         menu.AppendMenu(-1, "Contrast", contrast_menu)
 
         interpolation_menu = wx.Menu("Interpolation")
-        for mid, state, help in (
+        for mid, state, help_text in (
                 (self.ID_INTERPOLATION_NEAREST, cellprofiler.preferences.IM_NEAREST,
                  "Display images using the intensity of the nearest pixel (blocky)"),
                 (self.ID_INTERPOLATION_BILINEAR, cellprofiler.preferences.IM_BILINEAR,
                  "Display images by blending the intensities of the four nearest pixels (smoother)"),
                 (self.ID_INTERPOLATION_BICUBIC, cellprofiler.preferences.IM_BICUBIC,
                  "Display images by blending intensities using cubic spline interpolation (smoothest)")):
-            interpolation_menu.AppendRadioItem(mid, state, help)
+            interpolation_menu.AppendRadioItem(mid, state, help_text)
             if self.interpolation_mode == state:
                 interpolation_menu.Check(mid, True)
         menu.AppendMenu(-1, "Interpolation", interpolation_menu)
 
         label_menu = wx.Menu("Label appearance")
-        for mid, label, help in (
+        for mid, label, help_text in (
                 (self.ID_LABELS_OUTLINES, "Outlines", "Show the outlines of objects"),
                 (self.ID_LABELS_FILL, "Fill", "Show objects with a solid fill color")):
-            label_menu.AppendRadioItem(mid, label, help)
+            label_menu.AppendRadioItem(mid, label, help_text)
         label_menu.Check(self.label_display_mode, True)
         menu.AppendMenu(-1, "Label appearance", label_menu)
 

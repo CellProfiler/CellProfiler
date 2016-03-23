@@ -169,21 +169,21 @@ class AddModuleFrame(wx.Frame):
         category = self.__get_selected_category()
         idx = self.__module_list_box.GetSelection()
         if idx != wx.NOT_FOUND:
-            file = self.__module_list_box.GetItems()[idx]
-            self.notify(AddToPipelineEvent(file, self.__module_dict[category][file]))
+            filename = self.__module_list_box.GetItems()[idx]
+            self.notify(AddToPipelineEvent(filename, self.__module_dict[category][filename]))
 
     def __on_help(self, event):
         category = self.__get_selected_category()
         idx = self.__module_list_box.GetSelection()
         if idx != wx.NOT_FOUND:
-            file = self.__module_list_box.GetItems()[idx]
-            loader = self.__module_dict[category][file]
+            filename = self.__module_list_box.GetItems()[idx]
+            loader = self.__module_dict[category][filename]
             module = loader(0)
             if isinstance(self.Parent, cpframe.CPFrame):
                 self.Parent.do_help_module(module.module_name, module.get_help())
             else:
-                help = module.get_help()
-                wx.MessageBox(help)
+                help_text = module.get_help()
+                wx.MessageBox(help_text)
 
     def __on_search_help(self, event):
         if len(self.search_text.Value) == 0:
@@ -209,14 +209,14 @@ class AddModuleFrame(wx.Frame):
         self.display_helpframe(BUILDING_A_PIPELINE_HELP,
                                'Add modules: Getting Started')
 
-    def display_helpframe(self, help, title):
+    def display_helpframe(self, help_text, title):
         from cellprofiler.gui.html.htmlwindow import HtmlClickableWindow
         helpframe = wx.Frame(self, -1, title, size=(640, 480))
         sizer = wx.BoxSizer()
         helpframe.SetSizer(sizer)
         window = HtmlClickableWindow(helpframe)
         sizer.Add(window, 1, wx.EXPAND)
-        window.AppendToPage(help)
+        window.AppendToPage(help_text)
         helpframe.SetIcon(get_cp_icon())
         helpframe.Layout()
         helpframe.Show()

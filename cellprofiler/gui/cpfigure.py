@@ -50,9 +50,9 @@ def log_transform(im):
     try:
         im = im.copy()
         im[np.isnan(im)] = 0
-        (min, max) = (im[im > 0].min(), im[np.isfinite(im)].max())
-        if (max > min) and (max > 0):
-            return (np.log(im.clip(min, max)) - np.log(min)) / (np.log(max) - np.log(min))
+        (minimum, maximum) = (im[im > 0].min(), im[np.isfinite(im)].max())
+        if (maximum > minimum) and (maximum > 0):
+            return (np.log(im.clip(minimum, maximum)) - np.log(minimum)) / (np.log(maximum) - np.log(minimum))
     except:
         pass
     return orig
@@ -63,9 +63,9 @@ def auto_contrast(im):
     im = im.copy()
     if np.prod(im.shape) == 0:
         return im
-    (min, max) = (im.min(), im.max())
+    (minimum, maximum) = (im.min(), im.max())
     # Check that the image isn't binary
-    if np.any((im > min) & (im < max)):
+    if np.any((im > minimum) & (im < maximum)):
         im -= im.min()
         if im.max() > 0:
             im /= im.max()
@@ -111,9 +111,9 @@ CPLD_ALPHA_VALUE = "alpha_value"
 CPLD_SHOW = "show"
 
 
-def wraparound(list):
+def wraparound(sequence):
     while True:
-        for l in list:
+        for l in sequence:
             yield l
 
 
@@ -175,14 +175,14 @@ def find_fig(parent=None, title="", name=wx.FrameNameStr, subplots=None):
             return w
 
 
-def create_or_find(parent=None, id=-1, title="",
+def create_or_find(parent=None, identifier=-1, title="",
                    pos=wx.DefaultPosition, size=wx.DefaultSize,
                    style=wx.DEFAULT_FRAME_STYLE, name=wx.FrameNameStr,
                    subplots=None,
                    on_close=None):
     """Create or find a figure frame window"""
     win = find_fig(parent, title, name, subplots)
-    return win or CPFigureFrame(parent, id, title, pos, size, style, name,
+    return win or CPFigureFrame(parent, identifier, title, pos, size, style, name,
                                 subplots, on_close)
 
 
@@ -254,7 +254,7 @@ MODE_MEASURE_LENGTH = 2
 class CPFigureFrame(wx.Frame):
     """A wx.Frame with a figure inside"""
 
-    def __init__(self, parent=None, id=-1, title="",
+    def __init__(self, parent=None, identifier=-1, title="",
                  pos=wx.DefaultPosition, size=wx.DefaultSize,
                  style=wx.DEFAULT_FRAME_STYLE, name=wx.FrameNameStr,
                  subplots=None, on_close=None,
@@ -277,7 +277,7 @@ class CPFigureFrame(wx.Frame):
         global window_ids
         if pos == wx.DefaultPosition:
             pos = get_next_cpfigure_position()
-        super(CPFigureFrame, self).__init__(parent, id, title, pos, size, style, name)
+        super(CPFigureFrame, self).__init__(parent, identifier, title, pos, size, style, name)
         self.close_fn = on_close
         self.BackgroundColour = cellprofiler.preferences.get_background_color()
         self.mouse_mode = MODE_NONE
@@ -698,18 +698,18 @@ class CPFigureFrame(wx.Frame):
             if dlg.ShowModal() == wx.ID_OK:
                 path = dlg.GetPath()
                 if dlg.FilterIndex == 1:
-                    format = "png"
+                    file_format = "png"
                 elif dlg.FilterIndex == 0:
-                    format = "pdf"
+                    file_format = "pdf"
                 elif dlg.FilterIndex == 2:
-                    format = "tif"
+                    file_format = "tif"
                 elif dlg.FilterIndex == 3:
-                    format = "jpg"
+                    file_format = "jpg"
                 else:
-                    format = "pdf"
+                    file_format = "pdf"
                 if "." not in os.path.split(path)[1]:
-                    path += "." + format
-                self.figure.savefig(path, format=format)
+                    path += "." + file_format
+                self.figure.savefig(path, format=file_format)
 
     def on_file_save_table(self, event):
         if self.table is None:
@@ -744,15 +744,15 @@ class CPFigureFrame(wx.Frame):
             if dlg.ShowModal() == wx.ID_OK:
                 path = dlg.GetPath()
                 if dlg.FilterIndex == 1:
-                    format = "png"
+                    file_format = "png"
                 elif dlg.FilterIndex == 0:
-                    format = "pdf"
+                    file_format = "pdf"
                 elif dlg.FilterIndex == 2:
-                    format = "ps"
+                    file_format = "ps"
                 else:
-                    format = "pdf"
+                    file_format = "pdf"
                 self.figure.savefig(path,
-                                    format=format,
+                                    format=file_format,
                                     bbox_inches=extent)
 
     def set_subplots(self, subplots):
@@ -976,8 +976,8 @@ class CPFigureFrame(wx.Frame):
             rgb_mask = match_rgbmask_to_image(params['rgb_mask'], self.images[x, y])
             ids = [get_menu_id(MENU_RGB_CHANNELS, (x, y, i))
                    for i in range(len(rgb_mask))]
-            for name, value, id in zip(wraparound(COLOR_NAMES), rgb_mask, ids):
-                item = submenu.Append(id, name, 'Show/Hide the %s channel' % name, wx.ITEM_CHECK)
+            for name, value, identifier in zip(wraparound(COLOR_NAMES), rgb_mask, ids):
+                item = submenu.Append(identifier, name, 'Show/Hide the %s channel' % name, wx.ITEM_CHECK)
                 if value != 0:
                     item.Check()
             popup.AppendMenu(-1, 'Channels', submenu)
@@ -992,8 +992,8 @@ class CPFigureFrame(wx.Frame):
                 else:
                     # copy to prevent modifying shared values
                     params['rgb_mask'] = list(params['rgb_mask'])
-                for idx, id in enumerate(ids):
-                    if id == evt.Id:
+                for idx, identifier in enumerate(ids):
+                    if identifier == evt.Id:
                         params['rgb_mask'][idx] = not params['rgb_mask'][idx]
                 self.subplot_imshow(x, y, self.images[(x, y)], **params)
                 # Restore plot zoom
@@ -1001,8 +1001,8 @@ class CPFigureFrame(wx.Frame):
                 self.subplot(x, y).set_ylim(ylims[0], ylims[1])
                 self.figure.canvas.draw()
 
-            for id in ids:
-                self.Bind(wx.EVT_MENU, toggle_channels, id=id)
+            for identifier in ids:
+                self.Bind(wx.EVT_MENU, toggle_channels, id=identifier)
 
         if params['cplabels'] is not None and len(params['cplabels']) > 0:
             for i, cplabels in enumerate(params['cplabels']):

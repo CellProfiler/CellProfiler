@@ -1253,11 +1253,11 @@ class PipelineController:
         if pathname is None:
             self.__frame.Title = "CellProfiler %s" % cellprofiler.utilities.version.title_string
             return
-        path, file = os.path.split(pathname)
+        path, filename = os.path.split(pathname)
         if self.__dirty_workspace:
-            self.__frame.Title = "CellProfiler %s: %s* (%s)" % (cellprofiler.utilities.version.title_string, file, path)
+            self.__frame.Title = "CellProfiler %s: %s* (%s)" % (cellprofiler.utilities.version.title_string, filename, path)
         else:
-            self.__frame.Title = "CellProfiler %s: %s (%s)" % (cellprofiler.utilities.version.title_string, file, path)
+            self.__frame.Title = "CellProfiler %s: %s (%s)" % (cellprofiler.utilities.version.title_string, filename, path)
 
     def __on_clear_pipeline(self, event):
         if wx.MessageBox("Do you really want to remove all modules from the pipeline?",

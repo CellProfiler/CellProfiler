@@ -22,8 +22,8 @@ COLORCUBE = "colorcube"
 LINES = "lines"
 WHITE = "white"
 COLORMAPS = ["Default", "autumn", "bone", COLORCUBE, "cool", "copper",
-             "flag", "gray", "hot", "hsv", "jet", LINES,"pink", "prism",
-             "spring", "summer", WHITE, "winter" ]
+             "flag", "gray", "hot", "hsv", "jet", LINES, "pink", "prism",
+             "spring", "summer", WHITE, "winter"]
 
 IM_COLOR = "Color"
 IM_BINARY = "Binary (black & white)"
@@ -31,24 +31,24 @@ IM_GRAYSCALE = "Grayscale"
 IM_UINT16 = "uint16"
 IM_ALL = [IM_COLOR, IM_BINARY, IM_GRAYSCALE, IM_UINT16]
 
-class ConvertObjectsToImage(cpm.CPModule):
 
+class ConvertObjectsToImage(cpm.CPModule):
     module_name = "ConvertObjectsToImage"
     category = "Object Processing"
     variable_revision_number = 1
 
     def create_settings(self):
         self.object_name = cps.ObjectNameSubscriber(
-            "Select the input objects",cps.NONE,doc="""
+                "Select the input objects", cps.NONE, doc="""
             Choose the name of the objects you want to convert to an image.""")
 
         self.image_name = cps.ImageNameProvider(
-            "Name the output image", "CellImage",doc="""
+                "Name the output image", "CellImage", doc="""
             Enter the name of the resulting image.""")
 
         self.image_mode = cps.Choice(
-            "Select the color format",
-            IM_ALL,doc="""
+                "Select the color format",
+                IM_ALL, doc="""
             Select which colors the resulting image should use. You have the following
             options:
             <ul>
@@ -70,14 +70,14 @@ class ConvertObjectsToImage(cpm.CPModule):
             another program.</li>
             </ul>
             You can choose <i>%(IM_COLOR)s</i> with a <i>Gray</i> colormap to produce
-            jumbled gray objects."""%globals())
+            jumbled gray objects.""" % globals())
 
         self.colormap = cps.Colormap(
-            "Select the colormap",doc="""
+                "Select the colormap", doc="""
             <i>(Used only if "<i>%(IM_COLOR)s</i>" output image selected)</i><br>
             Choose the colormap to be used, which affects how the objects are colored.
             You can look up your default colormap under <i>File > Preferences</i>.
-            """%globals())
+            """ % globals())
 
     def settings(self):
         return [self.object_name, self.image_name, self.image_mode,
@@ -148,8 +148,8 @@ class ConvertObjectsToImage(cpm.CPModule):
             pixel_data[mask, :] = pixel_data[mask, :] / alpha[mask][:, np.newaxis]
         else:
             pixel_data[mask] = pixel_data[mask] / alpha[mask]
-        image = cpi.Image(pixel_data, parent_image = objects.parent_image,
-                          convert = convert)
+        image = cpi.Image(pixel_data, parent_image=objects.parent_image,
+                          convert=convert)
         workspace.image_set.add(self.image_name.value, image)
         if self.show_window:
             workspace.display_data.ijv = objects.ijv
@@ -159,28 +159,28 @@ class ConvertObjectsToImage(cpm.CPModule):
         pixel_data = workspace.display_data.pixel_data
         figure.set_subplots((2, 1))
         figure.subplot_imshow_ijv(
-            0, 0, workspace.display_data.ijv,
-            shape = workspace.display_data.pixel_data.shape[:2],
-                title = "Original: %s"%self.object_name.value)
+                0, 0, workspace.display_data.ijv,
+                shape=workspace.display_data.pixel_data.shape[:2],
+                title="Original: %s" % self.object_name.value)
         if self.image_mode == IM_BINARY:
             figure.subplot_imshow_bw(1, 0, pixel_data,
-                                            self.image_name.value,
-                                            sharexy = figure.subplot(0, 0))
+                                     self.image_name.value,
+                                     sharexy=figure.subplot(0, 0))
         elif pixel_data.shape[1] == 2:
             figure.subplot_imshow_grayscale(1, 0, pixel_data,
                                             self.image_name.value,
-                                            sharexy = figure.subplot(0, 0))
+                                            sharexy=figure.subplot(0, 0))
         else:
             figure.subplot_imshow_grayscale(1, 0, pixel_data,
                                             self.image_name.value,
-                                            sharexy = figure.subplot(0, 0))
-
+                                            sharexy=figure.subplot(0, 0))
 
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
         if variable_revision_number == 1 and from_matlab:
             from_matlab = False
         return setting_values, variable_revision_number, from_matlab
+
 
 #
 # Backwards compatability

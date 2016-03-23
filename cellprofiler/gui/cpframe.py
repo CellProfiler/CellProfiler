@@ -2,6 +2,7 @@
 """ CellProfiler.CellProfilerGUI.CPFrame - Cell Profiler's main window
 """
 import logging
+
 logger = logging.getLogger(__name__)
 import inspect
 import os
@@ -40,27 +41,27 @@ import sys
 import cellprofiler.gui.dialog
 
 ID_FILE_NEW_WORKSPACE = wx.ID_NEW
-ID_FILE_LOAD=wx.ID_OPEN
-ID_FILE_LOAD_PIPELINE=wx.NewId()
+ID_FILE_LOAD = wx.ID_OPEN
+ID_FILE_LOAD_PIPELINE = wx.NewId()
 ID_FILE_URL_LOAD_PIPELINE = wx.NewId()
 ID_FILE_OPEN_IMAGE = wx.NewId()
-ID_FILE_EXIT=wx.NewId()
-ID_FILE_WIDGET_INSPECTOR=wx.NewId()
-ID_FILE_SAVE_PIPELINE=wx.NewId()
-ID_FILE_SAVE=wx.ID_SAVE
+ID_FILE_EXIT = wx.NewId()
+ID_FILE_WIDGET_INSPECTOR = wx.NewId()
+ID_FILE_SAVE_PIPELINE = wx.NewId()
+ID_FILE_SAVE = wx.ID_SAVE
 ID_FILE_SAVE_AS = wx.ID_SAVEAS
 ID_FILE_REVERT_TO_SAVED = wx.NewId()
-ID_FILE_CLEAR_PIPELINE=wx.NewId()
+ID_FILE_CLEAR_PIPELINE = wx.NewId()
 ID_FILE_EXPORT_IMAGE_SETS = wx.NewId()
 ID_FILE_EXPORT_PIPELINE_NOTES = wx.NewId()
 ID_FILE_IMPORT_FILE_LIST = wx.NewId()
-ID_FILE_ANALYZE_IMAGES=wx.NewId()
-ID_FILE_STOP_ANALYSIS=wx.NewId()
+ID_FILE_ANALYZE_IMAGES = wx.NewId()
+ID_FILE_STOP_ANALYSIS = wx.NewId()
 ID_FILE_RESTART = wx.NewId()
-ID_FILE_PRINT=wx.NewId()
+ID_FILE_PRINT = wx.NewId()
 ID_FILE_PLATEVIEWER = wx.NewId()
 ID_FILE_RUN_MULTIPLE_PIPELINES = wx.NewId()
-ID_FILE_NEW_CP=wx.NewId()
+ID_FILE_NEW_CP = wx.NewId()
 
 ID_EDIT_SELECT_ALL = wx.NewId()
 ID_EDIT_COPY = wx.NewId()
@@ -116,6 +117,7 @@ ID_HELP_DEVELOPERS_GUIDE = wx.NewId()
 ID_HELP_SOURCE_CODE = wx.NewId()
 ID_HELP_ABOUT = wx.ID_ABOUT
 
+
 class CPFrame(wx.Frame):
     def __init__(self, *args, **kwds):
         """Initialize the frame and its layout
@@ -150,13 +152,16 @@ class CPFrame(wx.Frame):
 
         self.__module_list_panel = wx.Panel(self.__left_win)
         self.__module_list_panel.SetBackgroundColour(background_color)
-        self.__module_list_panel.SetToolTipString("The pipeline panel contains the modules in the pipeline. Click on the '+' button below or right-click in the panel to begin adding modules.")
-        self.__pipeline_test_panel = wx.Panel(self.__left_win,-1)
-        self.__pipeline_test_panel.SetToolTipString("The test mode panel is used for previewing the module settings prior to an analysis run. Click the buttons or use the 'Test' menu item to begin testing your module settings.")
+        self.__module_list_panel.SetToolTipString(
+                "The pipeline panel contains the modules in the pipeline. Click on the '+' button below or right-click in the panel to begin adding modules.")
+        self.__pipeline_test_panel = wx.Panel(self.__left_win, -1)
+        self.__pipeline_test_panel.SetToolTipString(
+                "The test mode panel is used for previewing the module settings prior to an analysis run. Click the buttons or use the 'Test' menu item to begin testing your module settings.")
         self.__pipeline_test_panel.BackgroundColour = cpprefs.get_background_color()
-        self.__module_controls_panel = wx.Panel(self.__left_win,-1, style=wx.BORDER_NONE)
+        self.__module_controls_panel = wx.Panel(self.__left_win, -1, style=wx.BORDER_NONE)
         self.__module_controls_panel.BackgroundColour = cpprefs.get_background_color()
-        self.__module_controls_panel.SetToolTipString("The module controls add, remove, move and get help for modules. Click on the '+' button to begin adding modules.")
+        self.__module_controls_panel.SetToolTipString(
+                "The module controls add, remove, move and get help for modules. Click on the '+' button to begin adding modules.")
         #
         # The right window has the following structure:
         #
@@ -201,7 +206,7 @@ class CPFrame(wx.Frame):
                                    self.__on_sash_drag)
         self.__path_list_sash.SetOrientation(wx.LAYOUT_HORIZONTAL)
         self.__path_list_sash.SetAlignment(wx.LAYOUT_TOP)
-        self.__path_list_sash.SetDefaultSize((screen_width,  screen_height/4))
+        self.__path_list_sash.SetDefaultSize((screen_width, screen_height / 4))
         self.__path_list_sash.SetDefaultBorderSize(4)
         self.__path_list_sash.SetSashVisible(wx.SASH_BOTTOM, True)
         self.__path_list_sash.BackgroundColour = cpprefs.get_background_color()
@@ -234,9 +239,11 @@ class CPFrame(wx.Frame):
                 self.__path_list_sash,
                 label = "Show files excluded by filters")
         hsizer.Add(self.__path_list_filter_checkbox, 0, wx.EXPAND)
+
         def show_disabled(event):
             self.__path_list_ctrl.set_show_disabled(
                     self.__path_list_filter_checkbox.Value)
+
         self.__path_list_filter_checkbox.Bind(wx.EVT_CHECKBOX, show_disabled)
         hsizer.AddStretchSpacer()
         #
@@ -267,7 +274,7 @@ class CPFrame(wx.Frame):
                 self.__path_module_imageset_panel, style=wx.NO_BORDER)
         self.__imageset_sash.SetOrientation(wx.LAYOUT_HORIZONTAL)
         self.__imageset_sash.SetAlignment(wx.LAYOUT_BOTTOM)
-        self.__imageset_sash.SetDefaultSize((screen_width, screen_height/4))
+        self.__imageset_sash.SetDefaultSize((screen_width, screen_height / 4))
         self.__imageset_sash.SetDefaultBorderSize(4)
         self.__imageset_sash.SetExtraBorderSize(2)
         self.__imageset_sash.SetSashVisible(wx.SASH_TOP, True)
@@ -289,7 +296,7 @@ class CPFrame(wx.Frame):
         #
         # Preferences panel
         #
-        self.__preferences_panel = wx.Panel(self.__right_win,-1)
+        self.__preferences_panel = wx.Panel(self.__right_win, -1)
         self.__right_win.Sizer.Add(self.__preferences_panel, 1, wx.EXPAND)
         self.__preferences_panel.BackgroundColour = cpprefs.get_background_color()
         self.__preferences_panel.SetToolTipString(
@@ -370,7 +377,7 @@ class CPFrame(wx.Frame):
             self.show_imageset_sash(True)
             self.__imageset_panel.Layout()
 
-    def show_grid_ctrl(self, table = None):
+    def show_grid_ctrl(self, table=None):
         if table is not None:
             self.__grid_ctrl.SetTable(table)
         sizer = self.__imageset_panel.Sizer
@@ -460,7 +467,6 @@ class CPFrame(wx.Frame):
         finally:
             self.__pmi_layout_in_progress = False
 
-
     def OnClose(self, event):
         if event.CanVeto() and not self.pipeline_controller.check_close():
             event.Veto()
@@ -484,7 +490,7 @@ class CPFrame(wx.Frame):
         wx.GetApp().ExitMainLoop()
 
     def __set_properties(self):
-        self.SetTitle("CellProfiler %s"%(version.title_string))
+        self.SetTitle("CellProfiler %s" % (version.title_string))
         self.SetSize((1024, 600))
 
     def enable_edit_commands(self, ids):
@@ -579,18 +585,19 @@ class CPFrame(wx.Frame):
                 'View Image',
                 'Open an image file for viewing')
         self.__menu_file.AppendSeparator()
-        self.__menu_file.Append(ID_FILE_ANALYZE_IMAGES,'Analyze Images\tctrl+N','Run the pipeline on the images in the image directory')
-        self.__menu_file.Append(ID_FILE_STOP_ANALYSIS,'Stop Analysis','Stop running the pipeline')
+        self.__menu_file.Append(ID_FILE_ANALYZE_IMAGES, 'Analyze Images\tctrl+N',
+                                'Run the pipeline on the images in the image directory')
+        self.__menu_file.Append(ID_FILE_STOP_ANALYSIS, 'Stop Analysis', 'Stop running the pipeline')
         self.__menu_file.Append(ID_FILE_RUN_MULTIPLE_PIPELINES, 'Run Multiple Pipelines')
-        if os.name=='posix':
+        if os.name == 'posix':
             self.__menu_file.Append(ID_FILE_NEW_CP, 'Open a New CP Window')
         self.__menu_file.Append(ID_FILE_RESTART, 'Resume Pipeline', 'Resume a pipeline from a saved measurements file.')
         self.__menu_file.AppendSeparator()
-        self.__menu_file.Append(ID_OPTIONS_PREFERENCES,"&Preferences...","Set global application preferences")
+        self.__menu_file.Append(ID_OPTIONS_PREFERENCES, "&Preferences...", "Set global application preferences")
 
         self.recent_files = wx.Menu()
         self.recent_pipeline_files = wx.Menu()
-        self.__menu_file.Append(ID_FILE_EXIT,'E&xit\tctrl+Q','Quit the application')
+        self.__menu_file.Append(ID_FILE_EXIT, 'E&xit\tctrl+Q', 'Quit the application')
 
         self.menu_edit = wx.Menu()
         self.menu_edit.Append(wx.ID_UNDO, help="Undo last action")
@@ -633,14 +640,17 @@ class CPFrame(wx.Frame):
                               "Collapse all folders in the file list, hiding all file names")
 
         self.__menu_debug = wx.Menu()
-        self.__menu_debug.Append(ID_DEBUG_TOGGLE,'&Start Test Mode\tF5','Start the pipeline debugger')
-        self.__menu_debug.Append(ID_DEBUG_STEP,'Ste&p to Next Module\tF6','Execute the currently selected module')
-        self.__menu_debug.Append(ID_DEBUG_NEXT_IMAGE_SET,'&Next Image Set\tF7','Advance to the next image set')
-        self.__menu_debug.Append(ID_DEBUG_NEXT_GROUP, 'Next Image &Group\tF8','Advance to the next group in the image set list')
-        self.__menu_debug.Append(ID_DEBUG_CHOOSE_RANDOM_IMAGE_SET, 'Random Image Set','Advance to a random image set')
-        self.__menu_debug.Append(ID_DEBUG_CHOOSE_GROUP, 'Choose Image Group', 'Choose which image set group to process in test-mode')
-        self.__menu_debug.Append(ID_DEBUG_CHOOSE_IMAGE_SET, 'Choose Image Set','Choose any of the available image sets')
-        self.__menu_debug.Append(ID_DEBUG_VIEW_WORKSPACE, "View Workspace","Show the workspace viewer")
+        self.__menu_debug.Append(ID_DEBUG_TOGGLE, '&Start Test Mode\tF5', 'Start the pipeline debugger')
+        self.__menu_debug.Append(ID_DEBUG_STEP, 'Ste&p to Next Module\tF6', 'Execute the currently selected module')
+        self.__menu_debug.Append(ID_DEBUG_NEXT_IMAGE_SET, '&Next Image Set\tF7', 'Advance to the next image set')
+        self.__menu_debug.Append(ID_DEBUG_NEXT_GROUP, 'Next Image &Group\tF8',
+                                 'Advance to the next group in the image set list')
+        self.__menu_debug.Append(ID_DEBUG_CHOOSE_RANDOM_IMAGE_SET, 'Random Image Set', 'Advance to a random image set')
+        self.__menu_debug.Append(ID_DEBUG_CHOOSE_GROUP, 'Choose Image Group',
+                                 'Choose which image set group to process in test-mode')
+        self.__menu_debug.Append(ID_DEBUG_CHOOSE_IMAGE_SET, 'Choose Image Set',
+                                 'Choose any of the available image sets')
+        self.__menu_debug.Append(ID_DEBUG_VIEW_WORKSPACE, "View Workspace", "Show the workspace viewer")
         if not hasattr(sys, 'frozen') or os.getenv('CELLPROFILER_DEBUG'):
             self.__menu_debug.Append(ID_DEBUG_RELOAD, "Reload Modules' Source")
             self.__menu_debug.Append(ID_DEBUG_PDB, "Break Into Debugger")
@@ -649,8 +659,8 @@ class CPFrame(wx.Frame):
             #
             if os.environ.get("USERNAME", "").lower() == "leek":
                 self.__menu_debug.Append(ID_FILE_WIDGET_INSPECTOR, "Widget inspector")
-        self.__menu_debug.Enable(ID_DEBUG_STEP,False)
-        self.__menu_debug.Enable(ID_DEBUG_NEXT_IMAGE_SET,False)
+        self.__menu_debug.Enable(ID_DEBUG_STEP, False)
+        self.__menu_debug.Enable(ID_DEBUG_NEXT_IMAGE_SET, False)
         self.__menu_debug.Enable(ID_DEBUG_NEXT_GROUP, False)
         self.__menu_debug.Enable(ID_DEBUG_CHOOSE_GROUP, False)
         self.__menu_debug.Enable(ID_DEBUG_CHOOSE_IMAGE_SET, False)
@@ -660,9 +670,9 @@ class CPFrame(wx.Frame):
         self.__menu_window = wx.Menu()
         self.__menu_window.Append(ID_WINDOW_CLOSE_ALL, "Close &All Open Windows\tctrl+L",
                                   "Close all open module display windows")
-        self.__menu_window.Append(ID_WINDOW_SHOW_ALL_WINDOWS,"Show All Windows On Run",
+        self.__menu_window.Append(ID_WINDOW_SHOW_ALL_WINDOWS, "Show All Windows On Run",
                                   "Show all module display windows for all modules during analysis")
-        self.__menu_window.Append(ID_WINDOW_HIDE_ALL_WINDOWS,"Hide All Windows On Run",
+        self.__menu_window.Append(ID_WINDOW_HIDE_ALL_WINDOWS, "Hide All Windows On Run",
                                   "Hide all module display windows for all modules during analysis")
         self.__menu_window.AppendSeparator()
 
@@ -670,18 +680,19 @@ class CPFrame(wx.Frame):
         # We must add a non-submenu menu item before
         # make_help_menu adds submenus, otherwise the submenus
         # will disappear on the Mac.
-        self.__menu_help.Append(ID_HELP_WELCOME, "Show Welcome Screen","Display the welcome screen shown at startup")
-        self.__menu_help.Append(ID_HELP_RELEASE_NOTES, "Release Notes","Show the release notes in a browser")
-        self.__menu_help.Append(ID_HELP_ONLINE_MANUAL, "Online Manual","Launch the HTML help in a browser")
+        self.__menu_help.Append(ID_HELP_WELCOME, "Show Welcome Screen", "Display the welcome screen shown at startup")
+        self.__menu_help.Append(ID_HELP_RELEASE_NOTES, "Release Notes", "Show the release notes in a browser")
+        self.__menu_help.Append(ID_HELP_ONLINE_MANUAL, "Online Manual", "Launch the HTML help in a browser")
         self.__menu_help.AppendSeparator()
         make_help_menu(MAIN_HELP, self, self.__menu_help)
         self.__menu_help.AppendSeparator()
-        self.__menu_help.AppendSubMenu(self.data_tools_help(), 'Data Tool Help','Display documentation for available data tools')
-        self.__menu_help.Append(ID_HELP_MODULE,'Module Help','Display Documentation for the Current Module')
+        self.__menu_help.AppendSubMenu(self.data_tools_help(), 'Data Tool Help',
+                                       'Display documentation for available data tools')
+        self.__menu_help.Append(ID_HELP_MODULE, 'Module Help', 'Display Documentation for the Current Module')
         self.__menu_help.Append(ID_HELP_SEARCH, "Search Help...",
                                 "Search for help pages that match a search term.")
         self.__menu_help.AppendSeparator()
-        self.__menu_help.Append(ID_HELP_DEVELOPERS_GUIDE,"Developer's Guide",
+        self.__menu_help.Append(ID_HELP_DEVELOPERS_GUIDE, "Developer's Guide",
                                 "Launch the developer's guide webpage")
         self.__menu_help.Append(ID_HELP_SOURCE_CODE, "Source Code",
                                 "Visit CellProfiler's Github repository")
@@ -693,9 +704,9 @@ class CPFrame(wx.Frame):
         self.__menu_help.Append(wx.ID_ABOUT, "&About CellProfiler", "About CellProfiler")
 
         self.__menu_bar = wx.MenuBar()
-        self.__menu_bar.Append(self.__menu_file,'&File')
+        self.__menu_bar.Append(self.__menu_file, '&File')
         self.__menu_bar.Append(self.menu_edit, '&Edit')
-        self.__menu_bar.Append(self.__menu_debug,'&Test')
+        self.__menu_bar.Append(self.__menu_debug, '&Test')
         if cpprefs.get_show_sampling():
             self.__menu_sample = wx.Menu()
             self.__menu_sample.Append(ID_SAMPLE_INIT, 'Initialize Sampling', 'Initialize sampling up to current module')
@@ -710,9 +721,9 @@ class CPFrame(wx.Frame):
         self.enable_edit_commands([])
 
         wx.EVT_MENU(self, ID_FILE_OPEN_IMAGE, self.on_open_image)
-        wx.EVT_MENU(self,ID_FILE_EXIT,lambda event: self.Close())
-        wx.EVT_MENU(self,ID_FILE_WIDGET_INSPECTOR,self.__on_widget_inspector)
-        wx.EVT_MENU(self, ID_FILE_NEW_CP,self.__on_new_cp)
+        wx.EVT_MENU(self, ID_FILE_EXIT, lambda event: self.Close())
+        wx.EVT_MENU(self, ID_FILE_WIDGET_INSPECTOR, self.__on_widget_inspector)
+        wx.EVT_MENU(self, ID_FILE_NEW_CP, self.__on_new_cp)
 
         wx.EVT_MENU(self, wx.ID_CUT, self.on_cut)
         self.Bind(wx.EVT_UPDATE_UI, self.on_update_cut_ui, id=wx.ID_CUT)
@@ -725,34 +736,34 @@ class CPFrame(wx.Frame):
                   id=wx.ID_SELECTALL)
 
         wx.EVT_MENU(self, ID_HELP_WELCOME, self.__on_help_welcome)
-        wx.EVT_MENU(self,ID_HELP_MODULE,self.__on_help_module)
-        wx.EVT_BUTTON(self,ID_HELP_MODULE,self.__on_help_module)
-        wx.EVT_MENU(self,ID_HELP_RELEASE_NOTES,self.__on_help_release_notes)
-        wx.EVT_MENU(self,ID_HELP_ONLINE_MANUAL,self.__on_help_online_manual)
-        wx.EVT_MENU(self,ID_HELP_DEVELOPERS_GUIDE, self.__on_help_developers_guide)
+        wx.EVT_MENU(self, ID_HELP_MODULE, self.__on_help_module)
+        wx.EVT_BUTTON(self, ID_HELP_MODULE, self.__on_help_module)
+        wx.EVT_MENU(self, ID_HELP_RELEASE_NOTES, self.__on_help_release_notes)
+        wx.EVT_MENU(self, ID_HELP_ONLINE_MANUAL, self.__on_help_online_manual)
+        wx.EVT_MENU(self, ID_HELP_DEVELOPERS_GUIDE, self.__on_help_developers_guide)
         wx.EVT_MENU(self, ID_HELP_SOURCE_CODE, self.__on_help_source_code)
         wx.EVT_MENU(self, ID_HELP_SEARCH, self.__on_search_help)
-        wx.EVT_MENU(self, wx.ID_ABOUT, self.about)
-        wx.EVT_MENU(self,ID_OPTIONS_PREFERENCES, self.__on_preferences)
-        wx.EVT_MENU(self,ID_CHECK_NEW_VERSION, self.__on_check_new_version)
-        wx.EVT_MENU(self,ID_WINDOW_CLOSE_ALL, self.__on_close_all)
+        wx.EVT_MENU(self, ID_HELP_ABOUT, self.about)
+        wx.EVT_MENU(self, ID_OPTIONS_PREFERENCES, self.__on_preferences)
+        wx.EVT_MENU(self, ID_CHECK_NEW_VERSION, self.__on_check_new_version)
+        wx.EVT_MENU(self, ID_WINDOW_CLOSE_ALL, self.__on_close_all)
         wx.EVT_MENU(self, ID_DEBUG_PDB, self.__debug_pdb)
         accelerator_table = wx.AcceleratorTable(
                 [(wx.ACCEL_CMD, ord('N'), ID_FILE_ANALYZE_IMAGES),
                  (wx.ACCEL_CMD, ord('O'), ID_FILE_LOAD),
                  (wx.ACCEL_CMD, ord('P'), ID_FILE_SAVE_PIPELINE),
-                 (wx.ACCEL_CMD|wx.ACCEL_SHIFT,ord('S'),ID_FILE_SAVE),
-                 (wx.ACCEL_CMD,ord('L'),ID_WINDOW_CLOSE_ALL),
-                 (wx.ACCEL_CMD,ord('Q'),ID_FILE_EXIT),
-                 (wx.ACCEL_CMD,ord('W'),ID_FILE_EXIT),
+                 (wx.ACCEL_CMD | wx.ACCEL_SHIFT, ord('S'), ID_FILE_SAVE),
+                 (wx.ACCEL_CMD, ord('L'), ID_WINDOW_CLOSE_ALL),
+                 (wx.ACCEL_CMD, ord('Q'), ID_FILE_EXIT),
+                 (wx.ACCEL_CMD, ord('W'), ID_FILE_EXIT),
                  (wx.ACCEL_CMD, ord('A'), wx.ID_SELECTALL),
                  (wx.ACCEL_CMD, ord('C'), wx.ID_CUT),
                  (wx.ACCEL_CMD, ord('V'), wx.ID_PASTE),
-                 (wx.ACCEL_NORMAL,wx.WXK_F5,ID_DEBUG_TOGGLE),
-                 (wx.ACCEL_NORMAL,wx.WXK_F6,ID_DEBUG_STEP),
-                 (wx.ACCEL_NORMAL,wx.WXK_F7,ID_DEBUG_NEXT_IMAGE_SET),
-                 (wx.ACCEL_NORMAL,wx.WXK_F8,ID_DEBUG_NEXT_GROUP),
-                 (wx.ACCEL_CMD,ord('Z'),ID_EDIT_UNDO) ])
+                 (wx.ACCEL_NORMAL, wx.WXK_F5, ID_DEBUG_TOGGLE),
+                 (wx.ACCEL_NORMAL, wx.WXK_F6, ID_DEBUG_STEP),
+                 (wx.ACCEL_NORMAL, wx.WXK_F7, ID_DEBUG_NEXT_IMAGE_SET),
+                 (wx.ACCEL_NORMAL, wx.WXK_F8, ID_DEBUG_NEXT_GROUP),
+                 (wx.ACCEL_CMD, ord('Z'), ID_EDIT_UNDO)])
         self.SetAcceleratorTable(accelerator_table)
         self.enable_launch_commands()
 
@@ -760,11 +771,13 @@ class CPFrame(wx.Frame):
         '''Create a help menu for the data tools'''
         if not hasattr(self, "__data_tools_help_menu"):
             self.__menu_data_tools_help_menu = wx.Menu()
+
             def on_plate_viewer_help(event):
                 import htmldialog
                 dlg = htmldialog.HTMLDialog(
                         self, "Help on plate viewer", PLATEVIEWER_HELP)
                 dlg.Show()
+
             new_id = wx.NewId()
             self.__menu_data_tools_help_menu.Append(new_id, "Plate viewer")
             wx.EVT_MENU(self, new_id, on_plate_viewer_help)
@@ -775,6 +788,7 @@ class CPFrame(wx.Frame):
 
                 def on_data_tool_help(event, data_tool_name=data_tool_name):
                     self.__on_data_tool_help(event, data_tool_name)
+
                 wx.EVT_MENU(self, new_id, on_data_tool_help)
         return self.__menu_data_tools_help_menu
 
@@ -789,10 +803,11 @@ class CPFrame(wx.Frame):
                 from cellprofiler.gui.help import MENU_BAR_DATATOOLS_HELP
                 dlg = htmldialog.HTMLDialog(self, 'Data Tool Overview', MENU_BAR_DATATOOLS_HELP)
                 dlg.Show()
+
             new_id = wx.NewId()
             self.__data_tools_menu.Append(
                     new_id, 'Data Tool Overview', 'Overview of the Data Tools')
-            wx.EVT_MENU(self,new_id,on_data_tool_overview)
+            wx.EVT_MENU(self, new_id, on_data_tool_overview)
 
             self.__data_tools_menu.AppendSeparator()
 
@@ -805,8 +820,10 @@ class CPFrame(wx.Frame):
             for data_tool_name in get_data_tool_names():
                 new_id = wx.NewId()
                 self.__data_tools_menu.Append(new_id, data_tool_name)
+
                 def on_data_tool(event, data_tool_name=data_tool_name):
                     self.__on_data_tool(event, data_tool_name)
+
                 wx.EVT_MENU(self, new_id, on_data_tool)
 
             self.__data_tools_menu.AppendSeparator()
@@ -875,6 +892,7 @@ class CPFrame(wx.Frame):
                       ID_DEBUG_CHOOSE_IMAGE_SET,
                       ID_DEBUG_CHOOSE_RANDOM_IMAGE_SET,
                       ID_DEBUG_VIEW_WORKSPACE)
+
     def enable_debug_commands(self):
         """Enable or disable the debug commands (like ID_DEBUG_STEP)"""
         startstop = self.__menu_debug.FindItemById(ID_DEBUG_TOGGLE)
@@ -891,8 +909,8 @@ class CPFrame(wx.Frame):
     def enable_launch_commands(self):
         '''Enable commands to start analysis or test mode'''
         startstop = self.__menu_debug.FindItemById(ID_DEBUG_TOGGLE)
-        startstop.Text =  '&Start Test Mode\tF5'
-        startstop.Help =  'Start testing your pipeline'
+        startstop.Text = '&Start Test Mode\tF5'
+        startstop.Help = 'Start testing your pipeline'
         for cmd in self.debug_commands:
             self.__menu_debug.Enable(cmd, False)
         self.__menu_file.Enable(ID_FILE_ANALYZE_IMAGES, True)
@@ -976,7 +994,7 @@ class CPFrame(wx.Frame):
         else:
             wx.MessageBox(HELP_ON_MODULE_BUT_NONE_SELECTED,
                           "No module selected",
-                          style=wx.OK|wx.ICON_INFORMATION)
+                          style=wx.OK | wx.ICON_INFORMATION)
 
     def __debug_pdb(self, event):
         pdb.set_trace()
@@ -985,26 +1003,26 @@ class CPFrame(wx.Frame):
         for module in modules:
             ## An attempt to place images inline with the help. However, the
             ## images will not scale properly in size (yet)
-            #result = module.get_help()
-            #root = os.path.split(__file__)[0]
-            #if len(root) == 0:
-            #root = os.curdir
-            #root = os.path.split(os.path.abspath(root))[0] # Back up one level
-            #absolute_image_path = os.path.join(root, 'icons','%s.png'%(module.module_name,))
+            # result = module.get_help()
+            # root = os.path.split(__file__)[0]
+            # if len(root) == 0:
+            # root = os.curdir
+            # root = os.path.split(os.path.abspath(root))[0] # Back up one level
+            # absolute_image_path = os.path.join(root, 'icons','%s.png'%(module.module_name,))
             ## Check if the file that goes with this module exists on this computer
-            #if os.path.exists(absolute_image_path) and os.path.isfile(absolute_image_path):
+            # if os.path.exists(absolute_image_path) and os.path.isfile(absolute_image_path):
             ## If so, strip out end html tags so I can add more stuff
-            #result = result.replace('</body>','').replace('</html>','')
+            # result = result.replace('</body>','').replace('</html>','')
             ## Include images specific to the module
-            #result += '\n\n<div><p><img src="%s", width="50%%"></p></div>\n'%absolute_image_path
+            # result += '\n\n<div><p><img src="%s", width="50%%"></p></div>\n'%absolute_image_path
             ## Now end the help text
-            #result += '</body></html>'
-            #self.do_help_module(module.module_name, result)
+            # result += '</body></html>'
+            # self.do_help_module(module.module_name, result)
             self.do_help_module(module.module_name, module.get_help())
 
     def do_help_module(self, module_name, help_text):
-        helpframe = wx.Frame(self,-1,'Help for module, "%s"' %
-                             (module_name),size=(640,480))
+        helpframe = wx.Frame(self, -1, 'Help for module, "%s"' %
+                             (module_name), size=(640, 480))
         helpframe.MenuBar = wx.MenuBar()
         ####################################################
         #
@@ -1015,7 +1033,7 @@ class CPFrame(wx.Frame):
         sizer = wx.BoxSizer()
         helpframe.SetSizer(sizer)
         window = HtmlClickableWindow(helpframe)
-        sizer.Add(window,1,wx.EXPAND)
+        sizer.Add(window, 1, wx.EXPAND)
         window.AppendToPage(help_text)
 
         ################################################
@@ -1027,6 +1045,7 @@ class CPFrame(wx.Frame):
         menu.Append(ID_FILE_SAVE_PIPELINE, "&Save...")
         menu.Append(ID_FILE_PRINT, "&Print...")
         menu.Append(ID_FILE_EXIT, "E&xit")
+
         def on_save(event):
             self.save_help(event, module_name, help_text)
 
@@ -1039,7 +1058,7 @@ class CPFrame(wx.Frame):
         helpframe.MenuBar.Append(menu, '&File')
         helpframe.Bind(wx.EVT_MENU, on_save, id=ID_FILE_SAVE_PIPELINE)
         helpframe.Bind(wx.EVT_MENU, on_print, id=ID_FILE_PRINT)
-        helpframe.Bind(wx.EVT_MENU, on_exit, id = ID_FILE_EXIT)
+        helpframe.Bind(wx.EVT_MENU, on_exit, id=ID_FILE_EXIT)
 
         ####################################################
         #
@@ -1066,11 +1085,12 @@ class CPFrame(wx.Frame):
                 finally:
                     wx.TheClipboard.Close()
             else:
-                wx.MessageBox("Failed to copy to the clipboard","Error",
+                wx.MessageBox("Failed to copy to the clipboard", "Error",
                               wx.OK | wx.ICON_ERROR)
+
         helpframe.MenuBar.Append(menu, '&Edit')
         helpframe.Bind(wx.EVT_MENU, on_copy, id=ID_EDIT_COPY)
-        helpframe.Bind(wx.EVT_MENU, on_edit_select_all, id= ID_EDIT_SELECT_ALL)
+        helpframe.Bind(wx.EVT_MENU, on_edit_select_all, id=ID_EDIT_SELECT_ALL)
         helpframe.Bind(wx.EVT_IDLE, on_idle)
 
         ####################################################
@@ -1079,9 +1099,9 @@ class CPFrame(wx.Frame):
         #
         ####################################################
         accelerator_table = wx.AcceleratorTable(
-                [(wx.ACCEL_CMD,ord('Q'), ID_FILE_EXIT),
-                 (wx.ACCEL_CMD,ord('P'), ID_FILE_PRINT),
-                 (wx.ACCEL_CMD,ord('C'), ID_EDIT_COPY)])
+                [(wx.ACCEL_CMD, ord('Q'), ID_FILE_EXIT),
+                 (wx.ACCEL_CMD, ord('P'), ID_FILE_PRINT),
+                 (wx.ACCEL_CMD, ord('C'), ID_EDIT_COPY)])
         helpframe.SetAcceleratorTable(accelerator_table)
         helpframe.SetIcon(get_cp_icon())
         helpframe.Layout()
@@ -1089,7 +1109,7 @@ class CPFrame(wx.Frame):
 
     def print_help(self, event, module_name, help_text):
         '''Print the help text for a module'''
-        printer = wx.html.HtmlEasyPrinting("Printing %s"%module_name,
+        printer = wx.html.HtmlEasyPrinting("Printing %s" % module_name,
                                            event.GetEventObject())
         printer.GetPrintData().SetPaperId(wx.PAPER_LETTER)
         printer.PrintText(help_text)
@@ -1097,10 +1117,10 @@ class CPFrame(wx.Frame):
     def save_help(self, event, module_name, help_text):
         '''Save the help text for a module'''
         save_dlg = wx.FileDialog(event.GetEventObject(),
-                                 message = "Save help for %s to file"%module_name,
-                                 defaultFile = "%s.html"%module_name,
-                                 wildcard = "*.html",
-                                 style = wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
+                                 message="Save help for %s to file" % module_name,
+                                 defaultFile="%s.html" % module_name,
+                                 wildcard="*.html",
+                                 style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
         result = save_dlg.ShowModal()
         if result == wx.ID_OK:
             pathname = save_dlg.GetPath()
@@ -1110,17 +1130,17 @@ class CPFrame(wx.Frame):
 
     def on_open_image(self, event):
         dlg = wx.FileDialog(self,
-                            message = "Open an image file",
-                            wildcard = "Image file (*.tif,*.tiff,*.jpg,*.jpeg,*.png,*.gif,*.bmp)|*.tif;*.tiff;*.jpg;*.jpeg;*.png;*.gif;*.bmp|*.* (all files)|*.*",
-                            style = wx.FD_OPEN)
+                            message="Open an image file",
+                            wildcard="Image file (*.tif,*.tiff,*.jpg,*.jpeg,*.png,*.gif,*.bmp)|*.tif;*.tiff;*.jpg;*.jpeg;*.png;*.gif;*.bmp|*.* (all files)|*.*",
+                            style=wx.FD_OPEN)
         if dlg.ShowModal() == wx.ID_OK:
             from cellprofiler.modules.loadimages import LoadImagesImageProvider
             from cellprofiler.gui.cpfigure import CPFigureFrame
             lip = LoadImagesImageProvider("dummy", "", dlg.Path)
             image = lip.provide_image(None).pixel_data
-            frame = CPFigureFrame(self, title=dlg.Path, subplots=(1,1))
+            frame = CPFigureFrame(self, title=dlg.Path, subplots=(1, 1))
             if image.ndim == 3:
-                frame.subplot_imshow_color(0, 0, image, title = dlg.Path)
+                frame.subplot_imshow_color(0, 0, image, title=dlg.Path)
             else:
                 frame.subplot_imshow_grayscale(0, 0, image, title=dlg.Path)
             frame.panel.draw()
@@ -1128,7 +1148,7 @@ class CPFrame(wx.Frame):
     def __attach_views(self):
         self.__pipeline_list_view = PipelineListView(self.__module_list_panel, self)
         self.__pipeline_controller = PipelineController(self.__workspace, self)
-        self.__pipeline_list_view.attach_to_pipeline(self.__pipeline,self.__pipeline_controller)
+        self.__pipeline_list_view.attach_to_pipeline(self.__pipeline, self.__pipeline_controller)
         self.__pipeline_controller.attach_to_test_controls_panel(self.__pipeline_test_panel)
         self.__pipeline_controller.attach_to_module_controls_panel(self.__module_controls_panel)
         self.__pipeline_controller.attach_to_path_list_ctrl(
@@ -1163,13 +1183,13 @@ class CPFrame(wx.Frame):
         self.__splitter.BackgroundColour = self.BackgroundColour
 
         top_left_sizer = wx.BoxSizer(wx.VERTICAL)
-        top_left_sizer.Add(self.__module_list_panel,1,wx.EXPAND|wx.ALL,1)
-        top_left_sizer.Add(self.__module_controls_panel,0,wx.EXPAND|wx.ALL,2)
-        top_left_sizer.Add(self.__pipeline_test_panel, 0, wx.EXPAND|wx.ALL,2)
+        top_left_sizer.Add(self.__module_list_panel, 1, wx.EXPAND | wx.ALL, 1)
+        top_left_sizer.Add(self.__module_controls_panel, 0, wx.EXPAND | wx.ALL, 2)
+        top_left_sizer.Add(self.__pipeline_test_panel, 0, wx.EXPAND | wx.ALL, 2)
         top_left_win.SetSizer(top_left_sizer)
 
         border = wx.BoxSizer()
-        border.Add(splitter, 1, wx.EXPAND|wx.ALL,1)
+        border.Add(splitter, 1, wx.EXPAND | wx.ALL, 1)
         self.SetSizer(border)
         self.Layout()
         right_win.Layout()
@@ -1193,18 +1213,19 @@ class CPFrame(wx.Frame):
         self.search_frame.BackgroundColour = background_color
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.search_frame.Sizer.Add(sizer, 0, wx.EXPAND | wx.ALL, 4)
-        sizer.Add(wx.StaticText(self.search_frame, label = "Search:"), 0,
+        sizer.Add(wx.StaticText(self.search_frame, label="Search:"), 0,
                   wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL)
         sizer.AddSpacer(2)
         search_text_ctrl = wx.TextCtrl(self.search_frame)
         sizer.Add(search_text_ctrl, 1, wx.EXPAND)
-        search_button = wx.Button(self.search_frame, label = "Search")
+        search_button = wx.Button(self.search_frame, label="Search")
         search_button.SetDefault()
         sizer.AddSpacer(2)
         sizer.Add(search_button, 0, wx.EXPAND)
 
         html_window = HtmlClickableWindow(self.search_frame)
         self.search_frame.Sizer.Add(html_window, 1, wx.EXPAND | wx.ALL, 4)
+
         def on_search(event):
             from cellprofiler.gui.html.manual import search_module_help
             search_text = search_text_ctrl.Value
@@ -1217,7 +1238,9 @@ class CPFrame(wx.Frame):
                 html_window.SetPage(so_sorry)
             else:
                 html_window.SetPage(html)
+
         search_button.Bind(wx.EVT_BUTTON, on_search)
+
         def on_link_clicked(event):
             '''Handle anchor clicks manually
 
@@ -1232,6 +1255,7 @@ class CPFrame(wx.Frame):
             html_window.ScrollLines(-1)
 
         html_window.Bind(wx.html.EVT_HTML_LINK_CLICKED, on_link_clicked)
+
         def on_close(event):
             assert isinstance(event, wx.CloseEvent)
             self.search_frame.Hide()
@@ -1279,18 +1303,18 @@ class CPFrame(wx.Frame):
             return
         dlg = wx.FileDialog(
                 self, "Choose data output file for %s data tool" %
-                      tool_name, wildcard = "Measurements file(*.mat,*.h5)|*.mat;*.h5",
+                      tool_name, wildcard="Measurements file(*.mat,*.h5)|*.mat;*.h5",
                 style=(wx.FD_OPEN | wx.FILE_MUST_EXIST))
         if dlg.ShowModal() == wx.ID_OK:
             DataToolFrame(self,
                           module_name=tool_name,
-                          measurements_file_name = dlg.Path)
+                          measurements_file_name=dlg.Path)
 
     def __on_data_tool_help(self, event, tool_name):
         module = instantiate_module(tool_name)
         self.do_help_module(tool_name, module.get_help())
 
-    def display_error(self,message,error):
+    def display_error(self, message, error):
         """Displays an exception in a standardized way
 
         """
@@ -1299,14 +1323,14 @@ class CPFrame(wx.Frame):
         tb = sys.exc_info()[2]
         traceback.print_tb(tb)
         text = '\n'.join(traceback.format_list(traceback.extract_tb(tb)))
-        text = error.message + '\n'+text
+        text = error.message + '\n' + text
         display_error_message(self, text, "Caught exception during operation")
 
-    def add_error_listener(self,listener):
+    def add_error_listener(self, listener):
         """Add a listener for display errors"""
         self.__error_listeners.append(listener)
 
-    def remove_error_listener(self,listener):
+    def remove_error_listener(self, listener):
         """Remove a listener for display errors"""
         self.__error_listeners.remove(listener)
 
@@ -1338,41 +1362,43 @@ class CPFrame(wx.Frame):
 
     pipeline_list_view = property(get_pipeline_list_view)
 
+
 class CPSizer(wx.PySizer):
     """A grid sizer that deals out leftover sizes to the hungry row and column
 
     """
+
     # If this were for use outside of here, it would look at the positioning flags such
     # as wx.EXPAND and wx.ALIGN... in RecalcSizes, but we assume everything wants
     # to be expanded
-    def __init__(self,rows,cols,hungry_row,hungry_col):
+    def __init__(self, rows, cols, hungry_row, hungry_col):
         wx.PySizer.__init__(self)
         self.__rows = rows
         self.__cols = cols
         self.__hungry_row = hungry_row
         self.__hungry_col = hungry_col
-        self.__ignore_width = [[False for j in range(0,rows)] for i in range(0,cols)]
-        self.__ignore_height = [[False for j in range(0,rows)] for i in range(0,cols)]
+        self.__ignore_width = [[False for j in range(0, rows)] for i in range(0, cols)]
+        self.__ignore_height = [[False for j in range(0, rows)] for i in range(0, cols)]
 
-    def set_ignore_width(self,col,row,ignore=True):
+    def set_ignore_width(self, col, row, ignore=True):
         """Don't pay any attention to the minimum width of the item in grid cell col,row
 
         """
-        self.__ignore_width[col][row]=ignore
+        self.__ignore_width[col][row] = ignore
 
-    def get_ignore_width(self,col,row):
+    def get_ignore_width(self, col, row):
         """Return true if we should ignore the minimum width of the item at col,row
 
         """
         return self.__ignore_width[col][row]
 
-    def set_ignore_height(self,col,row,ignore=True):
+    def set_ignore_height(self, col, row, ignore=True):
         """Don't pay any attention to the minimum height of the item in grid cell col,row
 
         """
-        self.__ignore_height[col][row]=ignore
+        self.__ignore_height[col][row] = ignore
 
-    def get_ignore_height(self,col,row):
+    def get_ignore_height(self, col, row):
         """Return true if we should ignore the minimum height of the item at col,row
 
         """
@@ -1382,31 +1408,31 @@ class CPSizer(wx.PySizer):
         """Calculate the minimum row and column and add
         """
         (row_heights, col_widths) = self.__get_min_sizes()
-        return wx.Size(sum(col_widths),sum(row_heights))
+        return wx.Size(sum(col_widths), sum(row_heights))
 
     def __get_min_sizes(self):
-        row_heights=[0 for i in range(0,self.__rows)]
-        col_widths=[0 for i in range(0,self.__cols)]
+        row_heights = [0 for i in range(0, self.__rows)]
+        col_widths = [0 for i in range(0, self.__cols)]
         idx = 0
         for item in self.GetChildren():
-            row,col = divmod(idx,self.__rows)
+            row, col = divmod(idx, self.__rows)
             size = item.CalcMin()
-            if not self.get_ignore_width(col,row):
-                col_widths[col]=max(col_widths[col],size[0])
-            if not self.get_ignore_height(col,row):
-                row_heights[row]=max(row_heights[row],size[1])
-            idx+=1
-        return (row_heights,col_widths)
+            if not self.get_ignore_width(col, row):
+                col_widths[col] = max(col_widths[col], size[0])
+            if not self.get_ignore_height(col, row):
+                row_heights[row] = max(row_heights[row], size[1])
+            idx += 1
+        return (row_heights, col_widths)
 
     def RecalcSizes(self):
         """Recalculate the sizes of our items, distributing leftovers among them
         """
         (row_heights, col_widths) = self.__get_min_sizes()
         size = self.GetSize()
-        leftover_width = size[0]- sum(col_widths)
+        leftover_width = size[0] - sum(col_widths)
         leftover_height = size[1] - sum(row_heights)
-        col_widths[self.__hungry_col]+=leftover_width
-        row_heights[self.__hungry_row]+=leftover_height
+        col_widths[self.__hungry_col] += leftover_width
+        row_heights[self.__hungry_row] += leftover_height
         idx = 0
         for item in self.GetChildren():
             row,col = divmod(idx,self.__rows)

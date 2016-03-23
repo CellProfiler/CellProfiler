@@ -1,6 +1,6 @@
 '''macros.py - helper methods for finding and running macros'''
 
-__version__="$Revision$"
+__version__ = "$Revision$"
 
 import sys
 
@@ -9,6 +9,7 @@ import javabridge as J
 
 from cellprofiler.preferences import get_headless
 from imagej.imageplus import get_imageplus_wrapper
+
 
 def get_commands():
     '''Return a list of the available command strings'''
@@ -27,14 +28,17 @@ def get_commands():
     keys = J.jenumeration_to_string_list(keys)
     values = J.call(hashtable, "values", "()Ljava/util/Collection;")
     values = [J.to_string(x) for x in J.iterate_java(
-        J.call(values, 'iterator', "()Ljava/util/Iterator;"))]
+            J.call(values, 'iterator', "()Ljava/util/Iterator;"))]
+
     class CommandList(list):
         def __init__(self):
             super(CommandList, self).__init__(keys)
             self.values = values
+
     return CommandList()
 
-def execute_command(command, options = None):
+
+def execute_command(command, options=None):
     '''Execute the named command within ImageJ'''
     if options is None:
         J.static_call("ij/IJ", "run", "(Ljava/lang/String;)V", command)
@@ -42,6 +46,7 @@ def execute_command(command, options = None):
         J.static_call("ij/IJ", "run",
                       "(Ljava/lang/String;Ljava/lang/String;)V",
                       command, options)
+
 
 def set_current_image(image_plus):
     '''Put the given image on the top of the batch mode image stack
@@ -66,6 +71,7 @@ def set_current_image(image_plus):
                   "addBatchModeImage",
                   "(Lij/ImagePlus;)V", image_plus.o)
 
+
 def get_current_image():
     '''Get the image from the top of the batch mode image stack
 
@@ -77,6 +83,7 @@ def get_current_image():
     if image_plus is not None:
         return get_imageplus_wrapper(image_plus)
 
+
 def execute_macro(macro_text):
     '''Execute a macro in ImageJ
 
@@ -84,6 +91,7 @@ def execute_macro(macro_text):
     '''
     interp = J.make_instance("ij/macro/Interpreter", "()V")
     J.call(interp, "run", "(Ljava/lang/String;)V", macro_text)
+
 
 def run_batch_macro(macro_text, imp):
     '''Run a macro in batch mode
@@ -103,9 +111,11 @@ def run_batch_macro(macro_text, imp):
     interp = J.JClassWrapper("ij.macro.Interpreter")();
     return interp.runBatchMacro(macro_text, imp).o
 
+
 def get_user_loader():
     '''The class loader used to load user plugins'''
     return J.static_call("ij/IJ", "getClassLoader", "()Ljava/lang/ClassLoader;")
+
 
 def get_plugin(classname):
     '''Return an instance of the named plugin'''

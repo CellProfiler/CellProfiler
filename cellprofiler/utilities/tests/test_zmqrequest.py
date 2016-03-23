@@ -2,6 +2,7 @@
 """
 import logging
 import logging.handlers
+
 logger = logging.getLogger(__name__)
 import Queue
 import os
@@ -16,6 +17,7 @@ import cellprofiler.utilities.zmqrequest as Z
 
 CLIENT_MESSAGE = "Hello, server"
 SERVER_MESSAGE = "Hello, client"
+
 
 class TestZMQRequest(unittest.TestCase):
     @classmethod
@@ -39,8 +41,9 @@ class TestZMQRequest(unittest.TestCase):
         '''
         MSG_STOP = "STOP"
         MSG_SEND = "SEND"
+
         def __init__(self, analysis_id, name="Client thread"):
-            threading.Thread.__init__(self, name = name)
+            threading.Thread.__init__(self, name=name)
             self.notify_addr = "inproc://" + uuid.uuid4().hex
             self.setDaemon(True)
             self.queue = Queue.Queue()
@@ -158,7 +161,7 @@ class TestZMQRequest(unittest.TestCase):
                 logger.info("Message received from server")
                 self.assertIsInstance(req, Z.AnalysisRequest)
                 self.assertEqual(req.msg, CLIENT_MESSAGE)
-                req.reply(Z.Reply(msg = SERVER_MESSAGE))
+                req.reply(Z.Reply(msg=SERVER_MESSAGE))
                 response = client.recv()
                 self.assertEqual(response.msg, SERVER_MESSAGE)
 
@@ -171,7 +174,7 @@ class TestZMQRequest(unittest.TestCase):
                 self.assertIsInstance(req, Z.AnalysisRequest)
                 self.assertEqual(req.msg, CLIENT_MESSAGE)
                 server.cancel()
-                req.reply(Z.Reply(msg = SERVER_MESSAGE))
+                req.reply(Z.Reply(msg=SERVER_MESSAGE))
                 response = client.recv()
                 self.assertIsInstance(response, Z.BoundaryExited)
 
@@ -228,14 +231,14 @@ class TestZMQRequest(unittest.TestCase):
         r = np.random.RandomState()
         r.seed(15)
         test_cases = [
-            { "k":"v" },
-            { "k":(1, 2, 3) },
-            { (1, 2, 3): "k" },
-            { 1: { u"k":"v" } },
-            { "k": [ { 1:2 }, { 3:4}] },
-            { "k": ( (1, 2 ,{ "k1":"v1" }), )},
-            { "k": r.uniform(size=(5, 8)) },
-            { "k": r.uniform(size=(7, 3)) > .5 }
+            {"k": "v"},
+            {"k": (1, 2, 3)},
+            {(1, 2, 3): "k"},
+            {1: {u"k": "v"}},
+            {"k": [{1: 2}, {3: 4}]},
+            {"k": ((1, 2, {"k1": "v1"}),)},
+            {"k": r.uniform(size=(5, 8))},
+            {"k": r.uniform(size=(7, 3)) > .5}
         ]
         for test_case in test_cases:
             json_string, buf = Z.json_encode(test_case)
@@ -245,22 +248,21 @@ class TestZMQRequest(unittest.TestCase):
     def test_03_05_json_encode_uint64(self):
         for dtype in np.uint64, np.int64, np.uint32:
             json_string, buf = Z.json_encode(
-                dict(foo = np.arange(10).astype(dtype)))
+                    dict(foo=np.arange(10).astype(dtype)))
             result = Z.json_decode(json_string, buf)
             self.assertEqual(result["foo"].dtype, np.int32)
 
         json_string, buf = Z.json_encode(
-            dict(foo=np.arange(10).astype(np.int16)))
+                dict(foo=np.arange(10).astype(np.int16)))
         result = Z.json_decode(json_string, buf)
         self.assertEqual(result["foo"].dtype, np.int16)
 
     def test_03_06_json_encode_zero_length_uint(self):
         for dtype in np.uint64, np.int64, np.uint32:
             json_string, buf = Z.json_encode(
-                dict(foo = np.zeros(0,dtype)))
+                    dict(foo=np.zeros(0, dtype)))
             result = Z.json_decode(json_string, buf)
             self.assertEqual(len(result["foo"]), 0)
-
 
     def same(self, a, b):
         if isinstance(a, (float, int)):

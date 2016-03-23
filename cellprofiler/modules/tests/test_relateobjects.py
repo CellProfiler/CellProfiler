@@ -24,7 +24,8 @@ import cellprofiler.modules.relateobjects as R
 PARENT_OBJECTS = 'parentobjects'
 CHILD_OBJECTS = 'childobjects'
 MEASUREMENT = 'Measurement'
-IGNORED_MEASUREMENT = '%s_Foo'%R.C_PARENT
+IGNORED_MEASUREMENT = '%s_Foo' % R.C_PARENT
+
 
 class TestRelateObjects(unittest.TestCase):
     def make_workspace(self, parents, children, fake_measurement=False):
@@ -35,6 +36,7 @@ class TestRelateObjects(unittest.TestCase):
                 def get_measurement_columns(self, pipeline):
                     return [(CHILD_OBJECTS, MEASUREMENT, cpmeas.COLTYPE_FLOAT),
                             (CHILD_OBJECTS, IGNORED_MEASUREMENT, cpmeas.COLTYPE_INTEGER)]
+
             module = FakeModule()
             module.module_num = 1
             pipeline.add_module(module)
@@ -117,13 +119,15 @@ class TestRelateObjects(unittest.TestCase):
         #
         fd = StringIO(zlib.decompress(base64.b64decode(data)))
         pipeline = cpp.Pipeline()
+
         def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(fd)
-        self.assertEqual(len(pipeline.modules()),4)
+        self.assertEqual(len(pipeline.modules()), 4)
         module = pipeline.modules()[3]
-        self.assertTrue(isinstance(module,R.Relate))
+        self.assertTrue(isinstance(module, R.Relate))
         self.assertEqual(module.sub_object_name.value, "Speckles")
         self.assertEqual(module.parent_name.value, "Nuclei")
         self.assertTrue(module.wants_per_parent_means.value)
@@ -155,13 +159,15 @@ class TestRelateObjects(unittest.TestCase):
                 'H0jm/B/wE3G8/Pr6nfjTGt9f8Be1L4ug==')
         fd = StringIO(zlib.decompress(base64.b64decode(data)))
         pipeline = cpp.Pipeline()
+
         def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(fd)
-        self.assertEqual(len(pipeline.modules()),4)
+        self.assertEqual(len(pipeline.modules()), 4)
         module = pipeline.modules()[3]
-        self.assertTrue(isinstance(module,R.Relate))
+        self.assertTrue(isinstance(module, R.Relate))
         self.assertEqual(module.sub_object_name.value, "Speckles")
         self.assertEqual(module.parent_name.value, "Cells")
         self.assertFalse(module.wants_per_parent_means.value)
@@ -312,8 +318,10 @@ Relate:[module_num:8|svn_version:\'8866\'|variable_revision_number:2|show_window
     Parent name\x3A:Nuclei
 """
         pipeline = cpp.Pipeline()
+
         def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
         self.assertEqual(len(pipeline.modules()), 8)
@@ -326,43 +334,43 @@ Relate:[module_num:8|svn_version:\'8866\'|variable_revision_number:2|show_window
         self.assertTrue(module.wants_step_parent_distances)
         self.assertEqual(len(module.step_parent_names), 2)
         for group, expected in zip(module.step_parent_names,
-                                   ("Cytoplasm","Nuclei")):
+                                   ("Cytoplasm", "Nuclei")):
             self.assertEqual(group.step_parent_name, expected)
 
     def test_02_01_relate_zeros(self):
         '''Relate a field of empty parents to empty children'''
-        labels = np.zeros((10,10),int)
+        labels = np.zeros((10, 10), int)
         workspace, module = self.make_workspace(labels, labels)
         module.wants_per_parent_means.value = False
         module.run(workspace)
         m = workspace.measurements
         parents_of = m.get_current_measurement(CHILD_OBJECTS,
-                                               "Parent_%s"%PARENT_OBJECTS)
+                                               "Parent_%s" % PARENT_OBJECTS)
         self.assertEqual(np.product(parents_of.shape), 0)
         child_count = m.get_current_measurement(PARENT_OBJECTS,
-                                                "Children_%s_Count"%
+                                                "Children_%s_Count" %
                                                 CHILD_OBJECTS)
         self.assertEqual(np.product(child_count.shape), 0)
         self.features_and_columns_match(workspace)
 
     def test_02_01_relate_one(self):
         '''Relate one parent to one child'''
-        parent_labels = np.ones((10,10),int)
-        child_labels = np.zeros((10,10),int)
-        child_labels[3:5,4:7] = 1
+        parent_labels = np.ones((10, 10), int)
+        child_labels = np.zeros((10, 10), int)
+        child_labels[3:5, 4:7] = 1
         workspace, module = self.make_workspace(parent_labels, child_labels)
         module.wants_per_parent_means.value = False
         module.run(workspace)
         m = workspace.measurements
         parents_of = m.get_current_measurement(CHILD_OBJECTS,
-                                               "Parent_%s"%PARENT_OBJECTS)
+                                               "Parent_%s" % PARENT_OBJECTS)
         self.assertEqual(np.product(parents_of.shape), 1)
-        self.assertEqual(parents_of[0],1)
+        self.assertEqual(parents_of[0], 1)
         child_count = m.get_current_measurement(PARENT_OBJECTS,
-                                                "Children_%s_Count"%
+                                                "Children_%s_Count" %
                                                 CHILD_OBJECTS)
         self.assertEqual(np.product(child_count.shape), 1)
-        self.assertEqual(child_count[0],1)
+        self.assertEqual(child_count[0], 1)
         self.features_and_columns_match(workspace)
 
     def test_02_02_relate_wrong_size(self):
@@ -371,104 +379,103 @@ Relate:[module_num:8|svn_version:\'8866\'|variable_revision_number:2|show_window
         Perhaps someone is trying to relate cells to wells and the grid
         doesn't completely cover the labels matrix.
         '''
-        parent_labels = np.ones((20,10),int)
-        parent_labels[10:,:] = 0
-        child_labels = np.zeros((10,20),int)
-        child_labels[3:5,4:7] = 1
+        parent_labels = np.ones((20, 10), int)
+        parent_labels[10:, :] = 0
+        child_labels = np.zeros((10, 20), int)
+        child_labels[3:5, 4:7] = 1
         workspace, module = self.make_workspace(parent_labels, child_labels)
         module.wants_per_parent_means.value = False
         module.run(workspace)
         m = workspace.measurements
         parents_of = m.get_current_measurement(CHILD_OBJECTS,
-                                               "Parent_%s"%PARENT_OBJECTS)
+                                               "Parent_%s" % PARENT_OBJECTS)
         self.assertEqual(np.product(parents_of.shape), 1)
-        self.assertEqual(parents_of[0],1)
+        self.assertEqual(parents_of[0], 1)
         child_count = m.get_current_measurement(PARENT_OBJECTS,
-                                                "Children_%s_Count"%
+                                                "Children_%s_Count" %
                                                 CHILD_OBJECTS)
         self.assertEqual(np.product(child_count.shape), 1)
-        self.assertEqual(child_count[0],1)
+        self.assertEqual(child_count[0], 1)
         self.features_and_columns_match(workspace)
 
     def test_02_03_relate_ijv(self):
         '''Regression test of IMG-1317: relating objects in ijv form'''
 
-        child_ijv = np.array([[5,5,1],[5,5,2],[20,15,3]])
-        parent_ijv = np.array([[5,5,1], [20,15,2]])
+        child_ijv = np.array([[5, 5, 1], [5, 5, 2], [20, 15, 3]])
+        parent_ijv = np.array([[5, 5, 1], [20, 15, 2]])
         workspace, module = self.make_workspace(parent_ijv, child_ijv)
         module.wants_per_parent_means.value = False
         module.run(workspace)
         m = workspace.measurements
         parents_of = m.get_current_measurement(CHILD_OBJECTS,
-                                               "Parent_%s"%PARENT_OBJECTS)
+                                               "Parent_%s" % PARENT_OBJECTS)
         self.assertEqual(np.product(parents_of.shape), 3)
-        self.assertTrue(parents_of[0],1)
+        self.assertTrue(parents_of[0], 1)
         self.assertEqual(parents_of[1], 1)
         self.assertEqual(parents_of[2], 2)
         child_count = m.get_current_measurement(PARENT_OBJECTS,
-                                                "Children_%s_Count"%
+                                                "Children_%s_Count" %
                                                 CHILD_OBJECTS)
         self.assertEqual(np.product(child_count.shape), 2)
-        self.assertEqual(child_count[0],2)
-        self.assertEqual(child_count[1],1)
+        self.assertEqual(child_count[0], 2)
+        self.assertEqual(child_count[1], 1)
 
     def test_03_01_mean(self):
         '''Compute the mean for two parents and four children'''
-        i,j = np.mgrid[0:20,0:20]
-        parent_labels = (i/10 + 1).astype(int)
-        child_labels  = (i/10).astype(int) + (j/10).astype(int) * 2 + 1
+        i, j = np.mgrid[0:20, 0:20]
+        parent_labels = (i / 10 + 1).astype(int)
+        child_labels = (i / 10).astype(int) + (j / 10).astype(int) * 2 + 1
         workspace, module = self.make_workspace(parent_labels, child_labels,
                                                 fake_measurement=True)
         module.wants_per_parent_means.value = True
         m = workspace.measurements
         self.assertTrue(isinstance(m, cpmeas.Measurements))
-        m.add_measurement(CHILD_OBJECTS,MEASUREMENT,
-                          np.array([1.0,2.0,3.0,4.0]))
+        m.add_measurement(CHILD_OBJECTS, MEASUREMENT,
+                          np.array([1.0, 2.0, 3.0, 4.0]))
         m.add_measurement(CHILD_OBJECTS, IGNORED_MEASUREMENT,
-                          np.array([1,2,3,4]))
+                          np.array([1, 2, 3, 4]))
         expected = np.array([2.0, 3.0])
         module.run(workspace)
-        name = "Mean_%s_%s"%(CHILD_OBJECTS, MEASUREMENT)
+        name = "Mean_%s_%s" % (CHILD_OBJECTS, MEASUREMENT)
         self.assertTrue(name in m.get_feature_names(PARENT_OBJECTS))
         data = m.get_current_measurement(PARENT_OBJECTS, name)
-        self.assertTrue(np.all(data==expected))
+        self.assertTrue(np.all(data == expected))
         self.features_and_columns_match(workspace)
-        name = "Mean_%s_%s"%(CHILD_OBJECTS, IGNORED_MEASUREMENT)
+        name = "Mean_%s_%s" % (CHILD_OBJECTS, IGNORED_MEASUREMENT)
         self.assertFalse(name in m.get_feature_names(PARENT_OBJECTS))
 
     def test_03_02_empty_mean(self):
         # Regression test - if there are no children, the per-parent means
         #                   should still be populated
-        i,j = np.mgrid[0:20,0:20]
-        parent_labels = (i/10 + 1).astype(int)
-        child_labels  = np.zeros(parent_labels.shape, int)
+        i, j = np.mgrid[0:20, 0:20]
+        parent_labels = (i / 10 + 1).astype(int)
+        child_labels = np.zeros(parent_labels.shape, int)
         workspace, module = self.make_workspace(parent_labels, child_labels,
                                                 fake_measurement=True)
         module.wants_per_parent_means.value = True
         m = workspace.measurements
         self.assertTrue(isinstance(m, cpmeas.Measurements))
-        m.add_measurement(CHILD_OBJECTS,MEASUREMENT, np.zeros(0))
+        m.add_measurement(CHILD_OBJECTS, MEASUREMENT, np.zeros(0))
         m.add_measurement(CHILD_OBJECTS, IGNORED_MEASUREMENT, np.zeros(0, int))
         module.run(workspace)
-        name = "Mean_%s_%s"%(CHILD_OBJECTS, MEASUREMENT)
+        name = "Mean_%s_%s" % (CHILD_OBJECTS, MEASUREMENT)
         self.assertTrue(name in m.get_feature_names(PARENT_OBJECTS))
         data = m.get_current_measurement(PARENT_OBJECTS, name)
         self.assertTrue(np.all(np.isnan(data)))
         self.features_and_columns_match(workspace)
-        name = "Mean_%s_%s"%(CHILD_OBJECTS, IGNORED_MEASUREMENT)
+        name = "Mean_%s_%s" % (CHILD_OBJECTS, IGNORED_MEASUREMENT)
         self.assertFalse(name in m.get_feature_names(PARENT_OBJECTS))
-
 
     def test_04_00_distance_empty(self):
         '''Make sure we can handle labels matrices that are all zero'''
-        empty_labels = np.zeros((10,20),int)
-        some_labels = np.zeros((10,20),int)
-        some_labels[2:7,3:8] = 1
-        some_labels[3:8,12:17] = 2
-        for parent_labels, child_labels, n in ((empty_labels, empty_labels,0),
+        empty_labels = np.zeros((10, 20), int)
+        some_labels = np.zeros((10, 20), int)
+        some_labels[2:7, 3:8] = 1
+        some_labels[3:8, 12:17] = 2
+        for parent_labels, child_labels, n in ((empty_labels, empty_labels, 0),
                                                (some_labels, empty_labels, 0),
                                                (empty_labels, some_labels, 2)):
-            workspace,module = self.make_workspace(parent_labels, child_labels)
+            workspace, module = self.make_workspace(parent_labels, child_labels)
             self.assertTrue(isinstance(module, R.Relate))
             module.find_parent_child_distances.value = R.D_BOTH
             module.run(workspace)
@@ -483,23 +490,23 @@ Relate:[module_num:8|svn_version:\'8866\'|variable_revision_number:2|show_window
 
     def test_04_01_distance_centroids(self):
         '''Check centroid-centroid distance calculation'''
-        i,j = np.mgrid[0:14,0:30]
-        parent_labels = (i>=7) * 1 + (j>=15) * 2 + 1
+        i, j = np.mgrid[0:14, 0:30]
+        parent_labels = (i >= 7) * 1 + (j >= 15) * 2 + 1
         # Centers should be at i=3 and j=7
-        parent_centers = np.array([[3,7],[10,7],[3,22],[10,22]], float)
+        parent_centers = np.array([[3, 7], [10, 7], [3, 22], [10, 22]], float)
         child_labels = np.zeros(i.shape)
         np.random.seed(0)
         # Take 12 random points and label them
         child_centers = np.random.permutation(np.prod(i.shape))[:12]
         child_centers = np.vstack((i.flatten()[child_centers],
                                    j.flatten()[child_centers]))
-        child_labels[child_centers[0],child_centers[1]] = np.arange(1,13)
+        child_labels[child_centers[0], child_centers[1]] = np.arange(1, 13)
         parent_indexes = parent_labels[child_centers[0],
-                                       child_centers[1]] -1
-        expected = np.sqrt(np.sum((parent_centers[parent_indexes,:] -
-                                   child_centers.transpose())**2,1))
+                                       child_centers[1]] - 1
+        expected = np.sqrt(np.sum((parent_centers[parent_indexes, :] -
+                                   child_centers.transpose()) ** 2, 1))
 
-        workspace,module = self.make_workspace(parent_labels, child_labels)
+        workspace, module = self.make_workspace(parent_labels, child_labels)
         self.assertTrue(isinstance(module, R.Relate))
         module.find_parent_child_distances.value = R.D_CENTROID
         module.run(workspace)
@@ -512,29 +519,29 @@ Relate:[module_num:8|svn_version:\'8866\'|variable_revision_number:2|show_window
 
     def test_04_02_distance_minima(self):
         '''Check centroid-perimeter distance calculation'''
-        i,j = np.mgrid[0:14,0:30]
+        i, j = np.mgrid[0:14, 0:30]
         #
         # Make the objects different sizes to exercise more code
         #
-        parent_labels = (i>=6) * 1 + (j>=14) * 2 + 1
+        parent_labels = (i >= 6) * 1 + (j >= 14) * 2 + 1
         child_labels = np.zeros(i.shape)
         np.random.seed(0)
         # Take 12 random points and label them
         child_centers = np.random.permutation(np.prod(i.shape))[:12]
         child_centers = np.vstack((i.flatten()[child_centers],
                                    j.flatten()[child_centers]))
-        child_labels[child_centers[0],child_centers[1]] = np.arange(1,13)
+        child_labels[child_centers[0], child_centers[1]] = np.arange(1, 13)
         #
         # Measure the distance from the child to the edge of its parent.
         # We do this using the distance transform with a background that's
         # the edges of the labels
         #
-        background = ((i != 0) & (i != 5) & (i !=6) & (i != 13) &
+        background = ((i != 0) & (i != 5) & (i != 6) & (i != 13) &
                       (j != 0) & (j != 13) & (j != 14) & (j != 29))
         d = distance_transform_edt(background)
         expected = d[child_centers[0], child_centers[1]]
 
-        workspace,module = self.make_workspace(parent_labels, child_labels)
+        workspace, module = self.make_workspace(parent_labels, child_labels)
         self.assertTrue(isinstance(module, R.Relate))
         module.find_parent_child_distances.value = R.D_MINIMUM
         module.run(workspace)
@@ -552,25 +559,25 @@ Relate:[module_num:8|svn_version:\'8866\'|variable_revision_number:2|show_window
         # Make sure means of minimum and mean distances of children
         # are recorded properly
         #
-        i,j = np.mgrid[0:14,0:30]
+        i, j = np.mgrid[0:14, 0:30]
         #
         # Make the objects different sizes to exercise more code
         #
-        parent_labels = (i>=7) * 1 + (j>=15) * 2 + 1
+        parent_labels = (i >= 7) * 1 + (j >= 15) * 2 + 1
         child_labels = np.zeros(i.shape)
         np.random.seed(0)
         # Take 12 random points and label them
         child_centers = np.random.permutation(np.prod(i.shape))[:12]
         child_centers = np.vstack((i.flatten()[child_centers],
                                    j.flatten()[child_centers]))
-        child_labels[child_centers[0],child_centers[1]] = np.arange(1,13)
-        parent_centers = np.array([[3,7],[10,7],[3,22],[10,22]], float)
+        child_labels[child_centers[0], child_centers[1]] = np.arange(1, 13)
+        parent_centers = np.array([[3, 7], [10, 7], [3, 22], [10, 22]], float)
         parent_indexes = parent_labels[child_centers[0],
-                                       child_centers[1]] -1
-        expected = np.sqrt(np.sum((parent_centers[parent_indexes,:] -
-                                   child_centers.transpose())**2,1))
+                                       child_centers[1]] - 1
+        expected = np.sqrt(np.sum((parent_centers[parent_indexes, :] -
+                                   child_centers.transpose()) ** 2, 1))
 
-        workspace,module = self.make_workspace(parent_labels, child_labels)
+        workspace, module = self.make_workspace(parent_labels, child_labels)
         self.assertTrue(isinstance(module, R.Relate))
         module.find_parent_child_distances.value = R.D_CENTROID
         module.wants_per_parent_means.value = True
@@ -593,6 +600,6 @@ Relate:[module_num:8|svn_version:\'8866\'|variable_revision_number:2|show_window
 
         self.assertEqual(len(v), 4)
         for idx in range(4):
-            if np.any(plabel == idx+1):
+            if np.any(plabel == idx + 1):
                 self.assertAlmostEqual(
-                    v[idx], np.mean(expected[plabel==idx+1]), 4)
+                        v[idx], np.mean(expected[plabel == idx + 1]), 4)

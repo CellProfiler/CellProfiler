@@ -1,7 +1,6 @@
 '''read_directory_url.py - get a directory listing from a URL
 '''
 
-
 import os
 import urllib
 import urllib2
@@ -10,6 +9,8 @@ import xml.dom.minidom as dom
 IS_DIRECTORY = 1
 IS_FILE = 2
 IS_UNKNOWN = 0
+
+
 def read_directory_url(url):
     '''Given a URL representing a directory, return a list of subdirectories and files
 
@@ -23,7 +24,7 @@ def read_directory_url(url):
     # See http://httpd.apache.org/docs/trunk/mod/mod_autoindex.html
     #     F=0 is simple list
     #
-    for urll in (url, url+"?F=0"):
+    for urll in (url, url + "?F=0"):
         fd = urllib2.urlopen(urll)
         data = ""
         discard = True
@@ -45,7 +46,7 @@ def read_directory_url(url):
             href = a.getAttribute("href")
             if len(href) > 0:
                 if href.startswith("/"):
-                    continue # Global like "/foo/"
+                    continue  # Global like "/foo/"
                 elif href in ("./", "../"):
                     continue
                 elif href.endswith("/"):
@@ -55,9 +56,10 @@ def read_directory_url(url):
         return result
     raise RuntimeError("Unable to get directory listing from %s" % url)
 
-def walk_url(url, topdown = False):
-    files = [f for f,d in read_directory_url(url) if d == IS_FILE]
-    directories = [f for f,d in read_directory_url(url) if d == IS_DIRECTORY]
+
+def walk_url(url, topdown=False):
+    files = [f for f, d in read_directory_url(url) if d == IS_FILE]
+    directories = [f for f, d in read_directory_url(url) if d == IS_DIRECTORY]
     if topdown:
         yield (url, directories, files)
     for directory in directories:
@@ -67,11 +69,12 @@ def walk_url(url, topdown = False):
     if not topdown:
         yield (url, directories, files)
 
+
 if __name__ == "__main__":
     result = read_directory_url("http://www.broadinstitute.org/~leek/tracking")
-    print "\n".join(["%s\t%s" % ( f, "f" if d == IS_FILE else "d")
+    print "\n".join(["%s\t%s" % (f, "f" if d == IS_FILE else "d")
                      for f, d in result])
     for path, files, directories in walk_url("https://svn.broadinstitute.org/CellProfiler/trunk/ExampleImages", True):
         print path
         for filename in files:
-            print "\t"+filename
+            print "\t" + filename

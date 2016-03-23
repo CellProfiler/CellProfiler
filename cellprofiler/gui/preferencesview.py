@@ -370,7 +370,7 @@ class PreferencesView:
                 reset_progress()
                 return
             if progress == 1:
-                loc = loc - 1
+                loc -= 1
             for operation_id in self.__progress_stack[(loc + 1):]:
                 del self.__progress_dictionary[operation_id]
             self.__progress_stack = self.__progress_stack[:(loc + 1)]
@@ -707,7 +707,7 @@ def secs_to_timestr(duration):
     hours = dur // (60 * 60)
     rest = dur % (60 * 60)
     minutes = rest // 60
-    rest = rest % 60
+    rest %= 60
     seconds = rest
     minutes = ("%02d:" if hours > 0 else "%d:") % (minutes)
     hours = "%d:" % (hours,) if hours > 0 else ""

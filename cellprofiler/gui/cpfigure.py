@@ -470,13 +470,13 @@ class CPFigureFrame(wx.Frame):
                 y = y + height - best_height
                 height = best_height
             elif valign in (wx.ALIGN_CENTER, wx.ALIGN_CENTER_VERTICAL):
-                y = y + (height - best_height) / 2
+                y += (height - best_height) / 2
             height = best_height
         if width > best_width:
             if halign == wx.ALIGN_RIGHT:
                 x = x + width - best_width
             elif halign in (wx.ALIGN_CENTER, wx.ALIGN_CENTER_VERTICAL):
-                x = x + (width - best_width) / 2
+                x += (width - best_width) / 2
             width = best_width
         ctrl.SetPosition(wx.Point(x, y))
         ctrl.SetSize(wx.Size(width, height))
@@ -1726,15 +1726,15 @@ class CPFigureFrame(wx.Frame):
 
         # Pad all sides
         if xscale == 'log':
-            xmin = xmin / 1.5
-            xmax = xmax * 1.5
+            xmin /= 1.5
+            xmax *= 1.5
         else:
             xmin = xmin - (xmax - xmin) / 20.
             xmax = xmax + (xmax - xmin) / 20.
 
         if yscale == 'log':
-            ymin = ymin / 1.5
-            ymax = ymax * 1.5
+            ymin /= 1.5
+            ymax *= 1.5
         else:
             ymin = ymin - (ymax - ymin) / 20.
             ymax = ymax + (ymax - ymin) / 20.

@@ -175,9 +175,7 @@ class SliderCtl(wx.Panel):
         if self.HasCapture():
             if self.capture_object == HT_MARKER:
                 new_value = self.get_mark_from_y(event.GetY())
-                if (new_value != self.value and
-                            new_value >= self.start_value and
-                            new_value <= self.stop_value):
+                if (new_value != self.value and self.start_value <= new_value <= self.stop_value):
                     self.value = new_value
             elif self.capture_object == HT_START:
                 new_value = self.get_mark_from_y(event.GetY())

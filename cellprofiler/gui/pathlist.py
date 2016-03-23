@@ -489,8 +489,7 @@ class PathListCtrl(wx.PyScrolledWindow):
         recurse = (flags & self.FLAG_RECURSE) != 0
         wants_folders = (flags & self.FLAG_FOLDERS) != 0
         enabled_only = (flags & self.FLAG_ENABLED_ONLY) != 0
-        has_path = (idx >= 0 and idx < len(self.folder_names) and
-                    path == self.folder_names[idx])
+        has_path = (0 <= idx < len(self.folder_names) and path == self.folder_names[idx])
         if has_path:
             if not wants_folders:
                 folders.append(self.folder_items[idx])
@@ -559,7 +558,7 @@ class PathListCtrl(wx.PyScrolledWindow):
             return False
         sel_start = min(self.mouse_down_idx, self.mouse_idx)
         sel_end = max(self.mouse_down_idx, self.mouse_idx) + 1
-        return idx >= sel_start and idx < sel_end
+        return sel_start <= idx < sel_end
 
     def on_paint(self, event):
         '''Handle the paint event'''

@@ -673,7 +673,8 @@ class ImageSetCtrl(wx.grid.Grid, CornerButtonMixin):
 
             def on_combo(event):
                 idx = choice.GetSelection()
-                if idx >= 0 and idx < len(choices):
+                # noinspection PyChainedComparisons
+                if 0 <= idx < len(choices):
                     help_text.Label = choices[idx][2]
 
             choice.Bind(wx.EVT_COMBOBOX, on_combo)

@@ -101,13 +101,6 @@ def run_batch_macro(macro_text, imp):
 
     returns the image plus that was the active image at the end of the run
     '''
-    script = """
-    new java.util.concurrent.Callable() {
-        call: function() {
-             return interp.runBatchMacro(macro_text, imp);
-        }
-    };
-    """
     interp = J.JClassWrapper("ij.macro.Interpreter")();
     return interp.runBatchMacro(macro_text, imp).o
 

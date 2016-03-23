@@ -1,8 +1,7 @@
-'''test_imagej2 - test the imagej2 module'''
+"""test_imagej2 - test the imagej2 module"""
 
 import unittest
 
-import bioformats
 import javabridge as J
 import numpy as np
 
@@ -26,14 +25,14 @@ class TestImagej2(unittest.TestCase):
             display.close()
 
     def run_command(self, command_class, inputs, outputs):
-        '''Run an imageJ command
+        """Run an imageJ command
 
         command_class - the command's dotted class name
 
         inputs - a dictionary of key/value pairs for the command's inputs
 
         outputs - a dictionary of keys to be filled with the command's outputs
-        '''
+        """
         module_index = ij2.get_module_service(self.context).getIndex()
         module_infos = module_index.getS('org.scijava.command.CommandInfo')
         module_info = filter(lambda x: x.getClassName() == command_class,

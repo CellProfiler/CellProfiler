@@ -426,7 +426,7 @@ class CPFrame(wx.Frame):
                and module UI, otherwise hide the welcome screen.
         '''
         self.startup_blurb_frame.Show(show)
-        if (show):
+        if show:
             self.startup_blurb_frame.Raise()
 
     def show_preferences(self, show):
@@ -490,7 +490,7 @@ class CPFrame(wx.Frame):
         wx.GetApp().ExitMainLoop()
 
     def __set_properties(self):
-        self.SetTitle("CellProfiler %s" % (version.title_string))
+        self.SetTitle("CellProfiler %s" % version.title_string)
         self.SetSize((1024, 600))
 
     def enable_edit_commands(self, ids):
@@ -877,7 +877,7 @@ class CPFrame(wx.Frame):
 
     def on_select_all(self, event):
         focus = wx.Window.FindFocus()
-        if (focus and hasattr(focus, "SelectAll")):
+        if focus and hasattr(focus, "SelectAll"):
             focus.SelectAll()
 
     def on_update_select_all_ui(self, event):
@@ -1022,7 +1022,7 @@ class CPFrame(wx.Frame):
 
     def do_help_module(self, module_name, help_text):
         helpframe = wx.Frame(self, -1, 'Help for module, "%s"' %
-                             (module_name), size=(640, 480))
+                             module_name, size=(640, 480))
         helpframe.MenuBar = wx.MenuBar()
         ####################################################
         #
@@ -1160,7 +1160,7 @@ class CPFrame(wx.Frame):
                 frame = self,
                 notes_panel = self.__notes_panel)
         self.__pipeline_controller.attach_to_module_view(self.__module_view)
-        self.__pipeline_list_view.attach_to_module_view((self.__module_view))
+        self.__pipeline_list_view.attach_to_module_view(self.__module_view)
         self.__preferences_view = PreferencesView(
                 self.__right_win.Sizer,
                 self.__preferences_panel,
@@ -1422,7 +1422,7 @@ class CPSizer(wx.PySizer):
             if not self.get_ignore_height(col, row):
                 row_heights[row] = max(row_heights[row], size[1])
             idx += 1
-        return (row_heights, col_widths)
+        return row_heights, col_widths
 
     def RecalcSizes(self):
         """Recalculate the sizes of our items, distributing leftovers among them

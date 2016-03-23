@@ -69,7 +69,7 @@ class TestIdentifyTertiaryObjects(unittest.TestCase):
         module.run(workspace)
         measurements = workspace.measurements
         self.assertTrue("Image" in measurements.get_object_names())
-        count_feature = "Count_%s" % (TERTIARY)
+        count_feature = "Count_%s" % TERTIARY
         self.assertTrue(count_feature in
                         measurements.get_feature_names("Image"))
         value = measurements.get_current_measurement("Image", count_feature)
@@ -99,7 +99,7 @@ class TestIdentifyTertiaryObjects(unittest.TestCase):
         module.run(workspace)
         measurements = workspace.measurements
         self.assertTrue("Image" in measurements.get_object_names())
-        count_feature = "Count_%s" % (TERTIARY)
+        count_feature = "Count_%s" % TERTIARY
         self.assertTrue(count_feature in
                         measurements.get_feature_names("Image"))
         value = measurements.get_current_measurement("Image", count_feature)
@@ -107,9 +107,9 @@ class TestIdentifyTertiaryObjects(unittest.TestCase):
         self.assertEqual(value, 1)
 
         self.assertTrue(TERTIARY in measurements.get_object_names())
-        child_count_feature = "Children_%s_Count" % (TERTIARY)
+        child_count_feature = "Children_%s_Count" % TERTIARY
         for parent_name in (PRIMARY, SECONDARY):
-            parents_of_feature = ("Parent_%s" % (parent_name))
+            parents_of_feature = ("Parent_%s" % parent_name)
             self.assertTrue(parents_of_feature in
                             measurements.get_feature_names(TERTIARY))
             value = measurements.get_current_measurement(TERTIARY,
@@ -124,7 +124,7 @@ class TestIdentifyTertiaryObjects(unittest.TestCase):
             self.assertTrue(value[0], 1)
 
         for axis, expected in (("X", 5), ("Y", 4)):
-            feature = "Location_Center_%s" % (axis)
+            feature = "Location_Center_%s" % axis
             self.assertTrue(feature in measurements.get_feature_names(TERTIARY))
             value = measurements.get_current_measurement(TERTIARY, feature)
             self.assertTrue(np.product(value.shape), 1)
@@ -153,15 +153,15 @@ class TestIdentifyTertiaryObjects(unittest.TestCase):
         module = workspace.module
         module.run(workspace)
         measurements = workspace.measurements
-        count_feature = "Count_%s" % (TERTIARY)
+        count_feature = "Count_%s" % TERTIARY
         value = measurements.get_current_measurement("Image", count_feature)
         self.assertEqual(value, 2)
 
-        child_count_feature = "Children_%s_Count" % (TERTIARY)
+        child_count_feature = "Children_%s_Count" % TERTIARY
         output_labels = workspace.object_set.get_objects(TERTIARY).segmented
         for parent_name, idx, parent_labels in ((PRIMARY, 2, expected_primary_parents),
                                                 (SECONDARY, 3, expected_secondary_parents)):
-            parents_of_feature = ("Parent_%s" % (parent_name))
+            parents_of_feature = ("Parent_%s" % parent_name)
             cvalue = measurements.get_current_measurement(parent_name,
                                                           child_count_feature)
             self.assertTrue(np.all(cvalue == 1))
@@ -207,7 +207,7 @@ class TestIdentifyTertiaryObjects(unittest.TestCase):
         self.assertTrue(np.all(output_labels[output_outlines.pixel_data] > 0))
         for parent_name, parent_labels in ((PRIMARY, expected_primary_parents),
                                            (SECONDARY, expected_secondary_parents)):
-            parents_of_feature = ("Parent_%s" % (parent_name))
+            parents_of_feature = ("Parent_%s" % parent_name)
             pvalue = measurements.get_current_measurement(TERTIARY,
                                                           parents_of_feature)
             label_map = np.zeros((np.product(pvalue.shape) + 1,), int)
@@ -383,11 +383,11 @@ class TestIdentifyTertiaryObjects(unittest.TestCase):
         self.assertTrue(np.all(output_objects.segmented == expected_labels))
 
         measurements = workspace.measurements
-        count_feature = "Count_%s" % (TERTIARY)
+        count_feature = "Count_%s" % TERTIARY
         value = measurements.get_current_measurement("Image", count_feature)
         self.assertEqual(value, 3)
 
-        child_count_feature = "Children_%s_Count" % (TERTIARY)
+        child_count_feature = "Children_%s_Count" % TERTIARY
         for parent_name in PRIMARY, SECONDARY:
             parent_of_feature = "Parent_%s" % parent_name
             parent_of = measurements.get_current_measurement(

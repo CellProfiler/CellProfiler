@@ -221,10 +221,10 @@ class RelateObjects(cpm.CPModule):
         m = workspace.measurements
         assert isinstance(m, cpmeas.Measurements)
         m.add_measurement(self.sub_object_name.value,
-                          FF_PARENT % (self.parent_name.value),
+                          FF_PARENT % self.parent_name.value,
                           parents_of)
         m.add_measurement(self.parent_name.value,
-                          FF_CHILDREN_COUNT % (self.sub_object_name.value),
+                          FF_CHILDREN_COUNT % self.sub_object_name.value,
                           child_count)
         good_parents = parents_of[parents_of != 0]
         image_numbers = np.ones(len(good_parents), int) * m.image_set_number
@@ -442,10 +442,10 @@ class RelateObjects(cpm.CPModule):
         '''
         meas = workspace.measurements
         assert isinstance(meas, cpmeas.Measurements)
-        parent_feature = FF_PARENT % (parent_name)
+        parent_feature = FF_PARENT % parent_name
         primary_parent = self.parent_name.value
         sub_object_name = self.sub_object_name.value
-        primary_parent_feature = FF_PARENT % (primary_parent)
+        primary_parent_feature = FF_PARENT % primary_parent
         if parent_feature in meas.get_feature_names(sub_object_name):
             parents_of = meas.get_current_measurement(sub_object_name,
                                                       parent_feature)
@@ -510,7 +510,7 @@ class RelateObjects(cpm.CPModule):
                 break
             parent_features = module.get_measurements(
                     pipeline, self.sub_object_name.value, "Parent")
-            if self.parent_name.value in (parent_features):
+            if self.parent_name.value in parent_features:
                 raise cps.ValidationError(
                         "%s and %s were related by the %s module" %
                         (self.sub_object_name.value, self.parent_name.value,
@@ -551,7 +551,7 @@ class RelateObjects(cpm.CPModule):
     def get_measurement_columns(self, pipeline):
         '''Return the column definitions for this module's measurements'''
         columns = [(self.sub_object_name.value,
-                    FF_PARENT % (self.parent_name.value),
+                    FF_PARENT % self.parent_name.value,
                     cpmeas.COLTYPE_INTEGER),
                    (self.parent_name.value,
                     FF_CHILDREN_COUNT % self.sub_object_name.value,

@@ -809,7 +809,7 @@ MeasureImageQuality:[module_num:5|svn_version:\'10368\'|variable_revision_number
         image_set_list = workspace.image_set_list
         image_set = image_set_list.get_image_set(0)
         for i in range(1, 5):
-            image_set.add("my_image%s" % (i), cpi.Image(np.zeros((100, 100))))
+            image_set.add("my_image%s" % i, cpi.Image(np.zeros((100, 100))))
 
         q = workspace.module
         # Set my_image1 and my_image2 settings: Saturation only

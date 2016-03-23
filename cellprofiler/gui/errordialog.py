@@ -54,7 +54,7 @@ def display_error_dialog(*args, **kwargs):
         try:
             logging.root.error("Exception in display_error_dialog()!", exc_info=True)
         except Exception:
-            sys.stderr.write("Exception logging exception in display_error_dialog().  Everything probably broken.\n");
+            sys.stderr.write("Exception logging exception in display_error_dialog().  Everything probably broken.\n")
             pass
     finally:
         __inside_display_error_dialog = False
@@ -313,9 +313,9 @@ def on_report(event, dialog, traceback_text, pipeline):
         wx.MessageBox("Report successfully sent to CellProfiler.org. Thank you.",
                       parent=dialog)
     except urllib2.HTTPError, e:
-        wx.MessageBox("Failed to upload, server reported code %d" % (e.code))
+        wx.MessageBox("Failed to upload, server reported code %d" % e.code)
     except urllib2.URLError, e:
-        wx.MessageBox("Failed to upload: %s" % (e.reason))
+        wx.MessageBox("Failed to upload: %s" % e.reason)
 
 
 def show_warning(title, message, get_preference, set_preference):

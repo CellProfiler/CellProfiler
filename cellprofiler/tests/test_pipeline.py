@@ -59,7 +59,7 @@ def image_with_one_cell(size=(100, 100)):
 
 def get_empty_pipeline():
     pipeline = cpp.Pipeline()
-    while (len(pipeline.modules()) > 0):
+    while len(pipeline.modules()) > 0:
         pipeline.remove_module(pipeline.modules()[-1].module_num)
     return pipeline
 
@@ -494,7 +494,7 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
             return [(cpmeas.IMAGE, "mymeasurement",
                      cpmeas.COLTYPE_INTEGER)]
 
-        module.setup(((), (({}, (1,)))),
+        module.setup(((), ({}, (1,))),
                      prepare_run_callback=prepare_run,
                      prepare_group_callback=prepare_group,
                      run_callback=run,
@@ -841,7 +841,7 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
             This directory should contain the pipeline ExampleAllModulesPipeline
             """
             example_dir = example_images_directory()
-            if (not example_dir):
+            if not example_dir:
                 import warnings
                 warnings.warn('example_images_directory not found, skipping profiling of ExampleAllModulesPipeline')
                 return
@@ -1329,8 +1329,8 @@ def profile_pipeline(pipeline_filename,
         pipeline_name = os.path.basename(pipeline_filename).split('.')[0]
         output_filename = os.path.join(cpprefs.get_default_output_directory(), pipeline_name + '_profile')
 
-    if (not os.path.exists(output_filename) or always_run):
-        print 'Profiling %s' % (pipeline_filename)
+    if not os.path.exists(output_filename) or always_run:
+        print 'Profiling %s' % pipeline_filename
         cProfile.runctx('run_pipeline(pipeline_filename)', globals(), locals(), output_filename)
 
     p = pstats.Stats(output_filename)

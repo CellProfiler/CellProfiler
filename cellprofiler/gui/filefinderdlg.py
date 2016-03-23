@@ -69,9 +69,9 @@ class FileFinderDialog(wx.Dialog):
 
     def img_idx(self, checked):
         if not checked:
-            return (0, 1)
+            return 0, 1
         else:
-            return (2, 3)
+            return 2, 3
 
     def get_item_data(self, item_id):
         return self.tree_ctrl.GetItemPyData(item_id)

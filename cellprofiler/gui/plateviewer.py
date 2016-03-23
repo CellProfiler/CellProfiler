@@ -332,10 +332,10 @@ class PlateViewer(object):
                 self.site_grid.Show(True)
                 self.use_site_grid = True
                 update_values = self.site_grid.GetNumberRows() != len(site_names)
-                if (self.site_grid.GetNumberRows() < len(site_names)):
+                if self.site_grid.GetNumberRows() < len(site_names):
                     self.site_grid.AppendRows(
                             len(site_names) - self.site_grid.GetNumberRows())
-                elif (self.site_grid.GetNumberRows() > len(site_names)):
+                elif self.site_grid.GetNumberRows() > len(site_names):
                     self.site_grid.DeleteRows(
                             numRows=self.site_grid.GetNumberRows() - len(site_names))
                 side = int(np.ceil(np.sqrt(float(len(site_names)))))
@@ -348,10 +348,10 @@ class PlateViewer(object):
                 self.site_grid.Show(False)
                 self.use_site_grid = False
             update_values = self.channel_grid.GetNumberRows() != len(channel_names)
-            if (self.channel_grid.GetNumberRows() < len(channel_names)):
+            if self.channel_grid.GetNumberRows() < len(channel_names):
                 self.channel_grid.AppendRows(
                         len(channel_names) - self.channel_grid.GetNumberRows())
-            elif (self.channel_grid.GetNumberRows() > len(channel_names)):
+            elif self.channel_grid.GetNumberRows() > len(channel_names):
                 self.channel_grid.DeleteRows(
                         numRows=self.channel_grid.GetNumberRows() - len(channel_names))
             for i, channel_name in enumerate(sorted(channel_names)):

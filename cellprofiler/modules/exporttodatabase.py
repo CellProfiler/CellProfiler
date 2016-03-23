@@ -274,7 +274,7 @@ def get_next_result(cursor):
     try:
         return cursor.next()
     except MySQLdb.Error, e:
-        raise Exception('Error retrieving next result from database: %s' % (e))
+        raise Exception('Error retrieving next result from database: %s' % e)
     except StopIteration, e:
         return None
 
@@ -1151,7 +1151,7 @@ class ExportToDatabase(cpm.CPModule):
         for column in columns:
             object_name, feature, coltype = column[:3]
             choice = feature[(len(C_FILE_NAME) + 1):]
-            if (object_name == cpmeas.IMAGE and (feature.startswith(C_FILE_NAME))):
+            if object_name == cpmeas.IMAGE and (feature.startswith(C_FILE_NAME)):
                 image_names.append(choice)
         return image_names
 
@@ -1454,7 +1454,7 @@ class ExportToDatabase(cpm.CPModule):
             table_name_lengths += [len(
                     self.table_prefix.value + "Per_Object")] if self.objects_choice != O_NONE and self.separate_object_tables.value in (
                 OT_COMBINE, OT_VIEW) else []
-            table_name_lengths += [len(self.table_prefix.value + "Per_" + x) for x in (self.objects_list.value).split(
+            table_name_lengths += [len(self.table_prefix.value + "Per_" + x) for x in self.objects_list.value.split(
                     ',')] if self.objects_choice != O_NONE and self.separate_object_tables == OT_PER_OBJECT else []
             if np.any(np.array(table_name_lengths) > max_char):
                 msg = "A table name exceeds the %d character allowed by MySQL.\n" % max_char
@@ -1636,7 +1636,7 @@ class ExportToDatabase(cpm.CPModule):
                 for table in tables:
                     try:
                         r = execute(self.cursor,
-                                    'SELECT * FROM %s LIMIT 1' % (table))
+                                    'SELECT * FROM %s LIMIT 1' % table)
                         tables_that_exist.append(table)
                     except:
                         pass
@@ -2187,7 +2187,7 @@ class ExportToDatabase(cpm.CPModule):
             # self.db_name.value)
             # if len(result) == 0:
             execute(cursor, 'CREATE DATABASE IF NOT EXISTS %s' %
-                    (self.db_name.value), return_result=False)
+                    self.db_name.value, return_result=False)
             execute(cursor, 'USE %s' % self.db_name.value,
                     return_result=False)
 
@@ -2612,11 +2612,11 @@ CREATE TABLE %s (
 
         file_name_width, path_name_width = self.get_file_path_width(workspace)
         metadata_name_width = 128
-        file_name = "%sSETUP.SQL" % (self.sql_file_prefix)
+        file_name = "%sSETUP.SQL" % self.sql_file_prefix
         path_name = self.make_full_filename(file_name, workspace)
         fid = open(path_name, "wt")
-        fid.write("CREATE DATABASE IF NOT EXISTS %s;\n" % (self.db_name.value))
-        fid.write("USE %s;\n" % (self.db_name.value))
+        fid.write("CREATE DATABASE IF NOT EXISTS %s;\n" % self.db_name.value)
+        fid.write("USE %s;\n" % self.db_name.value)
         fid.write(self.get_create_image_table_statement(pipeline,
                                                         image_set_list) + ";\n")
         #
@@ -2678,13 +2678,13 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
               should be written to a separate file.
         '''
         if fid is None:
-            file_name = "%s_Per_Well_SETUP.SQL" % (self.sql_file_prefix)
+            file_name = "%s_Per_Well_SETUP.SQL" % self.sql_file_prefix
             path_name = self.make_full_filename(file_name)
             fid = open(path_name, "wt")
             needs_close = True
         else:
             needs_close = False
-        fid.write("USE %s;\n" % (self.db_name.value))
+        fid.write("USE %s;\n" % self.db_name.value)
         table_prefix = self.get_table_prefix()
         #
         # Do in two passes. Pass # 1 makes the column name mappings for the
@@ -3326,7 +3326,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                 object_names = [self.location_object.value]
             elif self.separate_object_tables == OT_PER_OBJECT:
                 if self.objects_choice == O_SELECT:
-                    object_names = (self.objects_list.value).split(',')
+                    object_names = self.objects_list.value.split(',')
                 else:
                     object_names = [
                         object_name
@@ -3401,25 +3401,25 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                     if self.separate_object_tables == OT_COMBINE:
                         cell_tables = '%sPer_Object' % (self.get_table_prefix())
                         object_id = C_OBJECT_NUMBER
-                        filename = '%s.properties' % (tblname)
+                        filename = '%s.properties' % tblname
                         properties_object_name = "Object"
-                        object_count = 'Image_Count_%s' % (self.location_object.value)
-                        cell_x_loc = '%s_Location_Center_X' % (self.location_object.value)
-                        cell_y_loc = '%s_Location_Center_Y' % (self.location_object.value)
+                        object_count = 'Image_Count_%s' % self.location_object.value
+                        cell_x_loc = '%s_Location_Center_X' % self.location_object.value
+                        cell_y_loc = '%s_Location_Center_Y' % self.location_object.value
                     elif self.separate_object_tables == OT_PER_OBJECT:
                         cell_tables = '%sPer_%s' % (self.get_table_prefix(), object_name)
-                        object_id = '%s_Number_Object_Number' % (object_name)
+                        object_id = '%s_Number_Object_Number' % object_name
                         filename = '%s_%s.properties' % (tblname, object_name)
                         properties_object_name = object_name
-                        object_count = 'Image_Count_%s' % (object_name)
-                        cell_x_loc = '%s_Location_Center_X' % (object_name)
-                        cell_y_loc = '%s_Location_Center_Y' % (object_name)
+                        object_count = 'Image_Count_%s' % object_name
+                        cell_x_loc = '%s_Location_Center_X' % object_name
+                        cell_y_loc = '%s_Location_Center_Y' % object_name
             else:
                 '''If object_name = None, it's either per_image only or a view '''
                 if self.objects_choice == O_NONE:
                     cell_tables = ''
                     object_id = ''
-                    filename = '%s.properties' % (tblname)
+                    filename = '%s.properties' % tblname
                     properties_object_name = object_name
                     object_count = ''
                     cell_x_loc = ''
@@ -3427,11 +3427,11 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                 elif self.separate_object_tables == OT_VIEW:
                     cell_tables = '%sPer_Object' % (self.get_table_prefix())
                     object_id = C_OBJECT_NUMBER
-                    filename = '%s.properties' % (tblname)
+                    filename = '%s.properties' % tblname
                     properties_object_name = "Object"
-                    object_count = 'Image_Count_%s' % (self.location_object.value)
-                    cell_x_loc = '%s_Location_Center_X' % (self.location_object.value)
-                    cell_y_loc = '%s_Location_Center_Y' % (self.location_object.value)
+                    object_count = 'Image_Count_%s' % self.location_object.value
+                    cell_x_loc = '%s_Location_Center_X' % self.location_object.value
+                    cell_y_loc = '%s_Location_Center_Y' % self.location_object.value
 
             file_name = self.make_full_filename(filename, workspace)
             unique_id = C_IMAGE_NUMBER
@@ -3471,7 +3471,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
 
             else:
                 # Extract user-specified image names and colors
-                user_image_names = [];
+                user_image_names = []
                 image_channel_colors = []
                 selected_image_names = []
                 for group in self.image_groups:
@@ -3731,7 +3731,7 @@ check_tables = yes
             if tbl_prefix.endswith('_'): tbl_prefix = tbl_prefix[:-1]
             name = "_".join((name, tbl_prefix))
 
-        filename = '%s.workspace' % (name)
+        filename = '%s.workspace' % name
         file_name = self.make_full_filename(filename, workspace)
 
         fd = open(file_name, "wb")

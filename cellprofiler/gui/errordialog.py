@@ -1,5 +1,5 @@
-'''errordialog - dialog box for reporting error.
-'''
+"""errordialog - dialog box for reporting error.
+"""
 
 import logging
 import os
@@ -29,7 +29,7 @@ def clear_old_errors():
 
 
 def display_error_dialog(*args, **kwargs):
-    '''Display an error dialog, returning an indication of whether to continue
+    """Display an error dialog, returning an indication of whether to continue
 
     frame - parent frame for application
     exc - exception that caused the error
@@ -42,7 +42,7 @@ def display_error_dialog(*args, **kwargs):
             (exc_name, exc_message, traceback_text, filename, line_number, remote_debug_callback)
 
     Returns either ED_STOP or ED_CONTINUE indicating how to handle.
-    '''
+    """
     global __inside_display_error_dialog
     if __inside_display_error_dialog:
         return
@@ -62,7 +62,7 @@ def display_error_dialog(*args, **kwargs):
 
 def _display_error_dialog(frame, exc, pipeline, message=None, tb=None, continue_only=False,
                           remote_exc_info=None):
-    '''Display an error dialog, returning an indication of whether to continue
+    """Display an error dialog, returning an indication of whether to continue
 
     frame - parent frame for application
     exc - exception that caused the error
@@ -76,7 +76,7 @@ def _display_error_dialog(frame, exc, pipeline, message=None, tb=None, continue_
              line_number, remote_event_queue)
 
     Returns either ED_STOP or ED_CONTINUE indicating how to handle.
-    '''
+    """
 
     import wx
     assert wx.Thread_IsMain(), "Can only display errors from WX thread."
@@ -287,7 +287,7 @@ def _display_error_dialog(frame, exc, pipeline, message=None, tb=None, continue_
 
 
 def on_report(event, dialog, traceback_text, pipeline):
-    '''Report an error to us'''
+    """Report an error to us"""
     from cellprofiler.utilities.version import version_string
     params = {"traceback": traceback_text,
               "revision": version_string,
@@ -319,7 +319,7 @@ def on_report(event, dialog, traceback_text, pipeline):
 
 
 def show_warning(title, message, get_preference, set_preference):
-    '''Show a silenceable warning message to the user
+    """Show a silenceable warning message to the user
 
     title - title for the dialog box
 
@@ -332,7 +332,7 @@ def show_warning(title, message, get_preference, set_preference):
                      not to see the warning again.
 
     The message is printed to the console if headless.
-    '''
+    """
     from cellprofiler.preferences import get_headless
 
     if get_headless():
@@ -372,7 +372,7 @@ def show_warning(title, message, get_preference, set_preference):
 
 def display_error_message(parent, message, title, buttons=None,
                           size=(300, 200)):
-    '''Display an error in a scrolling message box
+    """Display an error in a scrolling message box
 
     parent - parent window to the error message
     message - message to display in scrolling box
@@ -382,7 +382,7 @@ def display_error_message(parent, message, title, buttons=None,
     size - size of frame. Defaults to 300 x 200 but will fit.
 
     returns the code from ShowModal.
-    '''
+    """
     import wx
     if buttons is None:
         buttons = [wx.ID_OK]

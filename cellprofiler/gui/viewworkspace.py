@@ -40,13 +40,13 @@ def update_workspace_viewer(workspace):
 
 
 def bind_data_class(data_class, color_select, fn_redraw):
-    '''Bind ImageData etc to synchronize to color select button
+    """Bind ImageData etc to synchronize to color select button
 
     data_class - ImageData, ObjectData or MaskData
     color_select - a color select button whose color synchronizes
                    to that of the data
     fn_redraw - function to be called
-    '''
+    """
     assert issubclass(data_class, ColorMixin)
     assert isinstance(color_select, ColourSelect)
 
@@ -63,7 +63,7 @@ def bind_data_class(data_class, color_select, fn_redraw):
 
 
 class VWRow(object):
-    '''A row of controls and a data item'''
+    """A row of controls and a data item"""
 
     def __init__(self, vw, color, can_delete):
         self.vw = vw
@@ -84,7 +84,7 @@ class VWRow(object):
 
     @property
     def color(self):
-        '''The color control's current color scaled for matplotlib'''
+        """The color control's current color scaled for matplotlib"""
         return tuple([float(x) / 255 for x in self.color_ctrl.GetColour()])
 
     def on_choice(self, event):
@@ -114,7 +114,7 @@ class VWRow(object):
         self.update_chooser()
 
     def update_chooser(self, first=False):
-        '''Update the chooser with the given list of names'''
+        """Update the chooser with the given list of names"""
         name = self.chooser.GetStringSelection()
         names = self.get_names()
         current_names = sorted(self.chooser.GetItems())
@@ -156,14 +156,14 @@ class VWImageRow(VWRow):
         return self.vw.workspace.image_set.get_names()
 
     def update_data(self, name):
-        '''Update the image data from the workspace'''
+        """Update the image data from the workspace"""
         image_set = self.vw.workspace.image_set
         image = image_set.get_image(name)
         self.data.pixel_data = image.pixel_data
 
 
 class VWObjectsRow(VWRow):
-    '''A row of controls for controlling objects'''
+    """A row of controls for controlling objects"""
 
     def __init__(self, vw, color, can_delete):
         super(VWObjectsRow, self).__init__(vw, color, can_delete)
@@ -189,7 +189,7 @@ class VWObjectsRow(VWRow):
 
 
 class VWMaskRow(VWRow):
-    '''A row of controls for controlling masks'''
+    """A row of controls for controlling masks"""
 
     def __init__(self, vw, color, can_delete):
         super(VWMaskRow, self).__init__(vw, color, can_delete)
@@ -212,7 +212,7 @@ class VWMaskRow(VWRow):
         return names
 
     def update_data(self, name):
-        '''Update the image data from the workspace'''
+        """Update the image data from the workspace"""
         image_set = self.vw.workspace.image_set
         image = image_set.get_image(name)
         self.data.mask = image.mask
@@ -220,7 +220,7 @@ class VWMaskRow(VWRow):
 
 class VWFigureFrame(CPFigureFrame):
     def on_close(self, event):
-        '''Hide instead of close'''
+        """Hide instead of close"""
         if isinstance(event, wx.CloseEvent):
             event.Veto()
         self.Hide()
@@ -400,7 +400,7 @@ class ViewWorkspace(object):
         self.frame.SetSize(wx.Size(w, h))
 
     def scale_axes(self):
-        '''Set the axes limits appropriate to the images we have'''
+        """Set the axes limits appropriate to the images we have"""
         ax = self.image.axes
         if self.frame.navtoolbar.is_home():
             max_x = max_y = 0
@@ -545,7 +545,7 @@ class ViewWorkspace(object):
         self.redraw()
 
     def set_workspace(self, workspace):
-        '''Rebuild the workspace control panel'''
+        """Rebuild the workspace control panel"""
         self.workspace = workspace
         self.ignore_redraw = True
         try:
@@ -679,17 +679,17 @@ class ViewWorkspace(object):
 
 
 class MeasurementRow(object):
-    '''Container for measurement controls'''
+    """Container for measurement controls"""
 
     def __init__(self, panel, grid_sizer, row_idx, on_change):
-        '''MeasurementRow contstructor
+        """MeasurementRow contstructor
 
         panel - the panel that's going to be the host for the controls
         grid_sizer - put the controls in this grid sizer
         row_idx - the row # in the grid sizer
         on_change - a function (with no args) that's called whenever any control
                     is changed. This handler should call MeasurementRow.update
-        '''
+        """
         #
         # Create three-tiered measurement choice:
         #    object name

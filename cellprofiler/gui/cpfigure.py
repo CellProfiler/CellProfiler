@@ -46,7 +46,7 @@ g_use_imshow = False
 
 
 def log_transform(im):
-    '''returns log(image) scaled to the interval [0,1]'''
+    """returns log(image) scaled to the interval [0,1]"""
     orig = im
     try:
         im = im.copy()
@@ -60,7 +60,7 @@ def log_transform(im):
 
 
 def auto_contrast(im):
-    '''returns image scaled to the interval [0,1]'''
+    """returns image scaled to the interval [0,1]"""
     im = im.copy()
     if np.prod(im.shape) == 0:
         return im
@@ -165,7 +165,7 @@ window_ids = []
 
 
 def window_name(module):
-    '''Return a module's figure window name'''
+    """Return a module's figure window name"""
     return "CellProfiler:%s:%s" % (module.module_name, module.module_num)
 
 
@@ -405,7 +405,7 @@ class CPFigureFrame(wx.Frame):
         self.navtoolbar.Bind(EVT_NAV_MODE_CHANGE, self.on_navtool_changed)
 
     def clf(self):
-        '''Clear the figure window, resetting the display'''
+        """Clear the figure window, resetting the display"""
         self.figure.clf()
         if hasattr(self, "subplots"):
             self.subplots[:, :] = None
@@ -424,7 +424,7 @@ class CPFigureFrame(wx.Frame):
         self.widgets = []
 
     def on_resize(self, event):
-        '''Handle mpl_connect('resize_event')'''
+        """Handle mpl_connect('resize_event')"""
         assert isinstance(event, matplotlib.backend_bases.ResizeEvent)
         for x, y, width, height, halign, valign, ctrl in self.widgets:
             self.align_widget(ctrl, x, y, width, height, halign, valign,
@@ -433,7 +433,7 @@ class CPFigureFrame(wx.Frame):
 
     def align_widget(self, ctrl, x, y, width, height,
                      halign, valign, canvas_width, canvas_height):
-        '''Align a widget within the canvas
+        """Align a widget within the canvas
 
         ctrl - the widget to be aligned
 
@@ -446,7 +446,7 @@ class CPFigureFrame(wx.Frame):
                          than the space (wx.ALIGN_xx or wx.EXPAND)
 
         canvas_width, canvas_height - the width and height of the canvas parent
-        '''
+        """
         assert isinstance(ctrl, wx.Window)
         x = x * canvas_width
         y = y * canvas_height
@@ -482,12 +482,12 @@ class CPFigureFrame(wx.Frame):
         ctrl.SetSize(wx.Size(width, height))
 
     def on_size(self, event):
-        '''Handle resizing of canvas, bars and secret panel
+        """Handle resizing of canvas, bars and secret panel
 
         Sizers have proven to be too unpredictable and useless. So
         we do it manually here. Reinventing the wheel is so much quicker
         and works much better.
-        '''
+        """
         if any([not hasattr(self, bar) for bar in "navtoolbar", "status_bar"]):
             return
         available_width, available_height = self.GetClientSize()
@@ -531,7 +531,7 @@ class CPFigureFrame(wx.Frame):
             self.__menu_item_measure_length.Check(False)
 
     def on_measure_length(self, event):
-        '''Measure length menu item selected.'''
+        """Measure length menu item selected."""
         if self.__menu_item_measure_length.IsChecked():
             self.mouse_mode = MODE_MEASURE_LENGTH
             self.navtoolbar.cancel_mode()
@@ -585,7 +585,7 @@ class CPFigureFrame(wx.Frame):
 
     @staticmethod
     def in_bounds(im, xi, yi):
-        '''Return false if xi or yi are outside of the bounds of the image'''
+        """Return false if xi or yi are outside of the bounds of the image"""
         return not (im is None or xi >= im.shape[1] or yi >= im.shape[0]
                     or xi < 0 or yi < 0)
 
@@ -633,7 +633,7 @@ class CPFigureFrame(wx.Frame):
         self.status_bar.SetFields(fields)
 
     def get_fields(self, event, yi, xi, x1):
-        '''Get the standard fields at the cursor location'''
+        """Get the standard fields at the cursor location"""
         if event.inaxes:
             fields = ["X: %d" % xi, "Y: %d" % yi]
             im = self.find_image_for_axes(event.inaxes)
@@ -723,12 +723,12 @@ class CPFigureFrame(wx.Frame):
                     csv.writer(fd).writerows(self.table)
 
     def on_file_save_subplot(self, event, x, y):
-        '''Save just the contents of a subplot w/o decorations
+        """Save just the contents of a subplot w/o decorations
 
         event - event generating the request
 
         x, y - the placement of the subplot
-        '''
+        """
         #
         # Thank you Joe Kington
         # http://stackoverflow.com/questions/4325733/save-a-subplot-in-matplotlib
@@ -815,13 +815,13 @@ class CPFigureFrame(wx.Frame):
         self.PopupMenu(popup, pos)
 
     def get_imshow_menu(self, (x, y)):
-        '''returns a menu corresponding to the specified subplot with items to:
+        """returns a menu corresponding to the specified subplot with items to:
         - launch the image in a new cpfigure window
         - Show image histogram
         - Change contrast stretching
         - Toggle channels on/off
         Note: Each item is bound to a handler.
-        '''
+        """
         MENU_CONTRAST_RAW = wx.NewId()
         MENU_CONTRAST_NORMALIZED = wx.NewId()
         MENU_CONTRAST_LOG = wx.NewId()
@@ -898,7 +898,7 @@ class CPFigureFrame(wx.Frame):
             item_nearest.Check()
 
         def open_image_in_new_figure(evt):
-            '''Callback for "Open image in new window" popup menu item '''
+            """Callback for "Open image in new window" popup menu item """
             # Store current zoom limits
             xlims = self.subplot(x, y).get_xlim()
             ylims = self.subplot(x, y).get_ylim()
@@ -918,14 +918,14 @@ class CPFigureFrame(wx.Frame):
             fig.figure.canvas.draw()
 
         def show_hist(evt):
-            '''Callback for "Show image histogram" popup menu item'''
+            """Callback for "Show image histogram" popup menu item"""
             new_title = '%s %s image histogram' % (self.Title, (x, y))
             fig = create_or_find(self, -1, new_title, subplots=(1, 1), name=new_title)
             fig.subplot_histogram(0, 0, self.images[(x, y)].flatten(), bins=200, xlabel='pixel intensity')
             fig.figure.canvas.draw()
 
         def change_contrast(evt):
-            '''Callback for Image contrast menu items'''
+            """Callback for Image contrast menu items"""
             # Store zoom limits
             xlims = self.subplot(x, y).get_xlim()
             ylims = self.subplot(x, y).get_ylim()
@@ -983,7 +983,7 @@ class CPFigureFrame(wx.Frame):
             popup.AppendMenu(-1, 'Channels', submenu)
 
             def toggle_channels(evt):
-                '''Callback for channel menu items.'''
+                """Callback for channel menu items."""
                 # Store zoom limits
                 xlims = self.subplot(x, y).get_xlim()
                 ylims = self.subplot(x, y).get_ylim()
@@ -1089,7 +1089,7 @@ class CPFigureFrame(wx.Frame):
                        colorbar=False, normalize=None, vmin=0, vmax=1,
                        rgb_mask=(1, 1, 1), sharex=None, sharey=None,
                        use_imshow=False, interpolation=None, cplabels=None):
-        '''Show an image in a subplot
+        """Show an image in a subplot
 
         x, y  - show image in this subplot
         image - image to show
@@ -1112,7 +1112,7 @@ class CPFigureFrame(wx.Frame):
         cplabels - a list of dictionaries of labels properties. Each dictionary
                    describes a set of labels. See the documentation of
                    the CPLD_* constants for details.
-        '''
+        """
         orig_vmin = vmin
         orig_vmax = vmax
         if interpolation is None:
@@ -1322,7 +1322,7 @@ class CPFigureFrame(wx.Frame):
     def subplot_imshow_labels(self, x, y, labels, title=None, clear=True,
                               renumber=True, sharex=None, sharey=None,
                               use_imshow=False):
-        '''Show a labels matrix using the default color map
+        """Show a labels matrix using the default color map
 
         x,y - the subplot's coordinates
         image - the binary image to show
@@ -1332,7 +1332,7 @@ class CPFigureFrame(wx.Frame):
                 panning and zooming, if any
         use_imshow - Use matplotlib's imshow to display instead of creating
                      our own artist.
-        '''
+        """
         if renumber:
             labels = renumber_labels_for_display(labels)
 
@@ -1358,7 +1358,7 @@ class CPFigureFrame(wx.Frame):
     def subplot_imshow_ijv(self, x, y, ijv, shape=None, title=None,
                            clear=True, renumber=True, sharex=None, sharey=None,
                            use_imshow=False):
-        '''Show an ijv-style labeling using the default color map
+        """Show an ijv-style labeling using the default color map
 
         x,y - the subplot's coordinates
         ijv - a pixel-by-pixel labeling where ijv[:,0] is the i coordinate,
@@ -1371,7 +1371,7 @@ class CPFigureFrame(wx.Frame):
                 panning and zooming, if any
         use_imshow - Use matplotlib's imshow to display instead of creating
                      our own artist.
-        '''
+        """
         if shape is None:
             if len(ijv) == 0:
                 shape = [1, 1]
@@ -1400,7 +1400,7 @@ class CPFigureFrame(wx.Frame):
 
     @allow_sharexy
     def subplot_imshow_grayscale(self, x, y, image, title=None, **kwargs):
-        '''Show an intensity image in shades of gray
+        """Show an intensity image in shades of gray
 
         x,y - the subplot's coordinates
         image - the binary image to show
@@ -1414,7 +1414,7 @@ class CPFigureFrame(wx.Frame):
                 panning and zooming, if any
         use_imshow - Use matplotlib's imshow to display instead of creating
                      our own artist.
-        '''
+        """
         if image.dtype.type == np.float64:
             image = image.astype(np.float32)
         kwargs = kwargs.copy()
@@ -1423,7 +1423,7 @@ class CPFigureFrame(wx.Frame):
 
     @allow_sharexy
     def subplot_imshow_bw(self, x, y, image, title=None, **kwargs):
-        '''Show a binary image in black and white
+        """Show a binary image in black and white
 
         x,y - the subplot's coordinates
         image - the binary image to show
@@ -1433,13 +1433,13 @@ class CPFigureFrame(wx.Frame):
                 panning and zooming, if any
         use_imshow - Use matplotlib's imshow to display instead of creating
                      our own artist.
-        '''
+        """
         kwargs = kwargs.copy()
         kwargs['colormap'] = matplotlib.cm.binary_r
         return self.subplot_imshow(x, y, image, title=title, **kwargs)
 
     def normalize_image(self, image, **kwargs):
-        '''Produce a color image normalized according to user spec'''
+        """Produce a color image normalized according to user spec"""
         colormap = kwargs['colormap']
         normalize = kwargs['normalize']
         vmin = kwargs['vmin']
@@ -1747,7 +1747,7 @@ class CPFigureFrame(wx.Frame):
 
     def subplot_platemap(self, x, y, plates_dict, plate_type,
                          cmap=matplotlib.cm.jet, colorbar=True, title=''):
-        '''Draws a basic plate map (as an image).
+        """Draws a basic plate map (as an image).
         x, y       - subplot's column and row (should be 0,0)
         plates_dict - dict of the form: d[plate][well] --> numeric value
                      well must be in the form "A01"
@@ -1756,7 +1756,7 @@ class CPFigureFrame(wx.Frame):
                      Warning: gray is currently used for NaN values)
         title      - name for this subplot
         clear      - clear the subplot axes before display if True
-        '''
+        """
         plate_names = sorted(plates_dict.keys())
 
         if 'plate_choice' not in self.__dict__:
@@ -1881,12 +1881,12 @@ class CPFigureFrame(wx.Frame):
 
 
 def format_plate_data_as_array(plate_dict, plate_type):
-    ''' Returns an array shaped like the given plate type with the values from
+    """ Returns an array shaped like the given plate type with the values from
     plate_dict stored in it.  Wells without data will be set to np.NaN
     plate_dict  -  dict mapping well names to data. eg: d["A01"] --> data
                    data values must be of numerical or string types
     plate_type  - '96' (return 8x12 array) or '384' (return 16x24 array)
-    '''
+    """
     if plate_type == '96':
         plate_shape = (8, 12)
     elif plate_type == '384':
@@ -1909,11 +1909,11 @@ def format_plate_data_as_array(plate_dict, plate_type):
 
 
 def show_image(url, parent=None, needs_raise_after=True):
-    '''Show an image in a figure frame
+    """Show an image in a figure frame
 
     url - url of the image
     parent - parent frame to this one.
-    '''
+    """
     filename = url[(url.rfind("/") + 1):]
     try:
         if url.lower().endswith(".mat"):
@@ -1957,21 +1957,21 @@ roundoff = True
 
 
 class CPOutlineArtist(matplotlib.collections.LineCollection):
-    '''An artist that is a plot of the outline around an object
+    """An artist that is a plot of the outline around an object
 
     This class is here so that we can add and remove artists for certain
     outlines.
-    '''
+    """
 
     def __init__(self, name, labels, *args, **kwargs):
-        '''Draw outlines for objects
+        """Draw outlines for objects
 
         name - the name of the outline
 
         labels - a sequence of labels matrices
 
         kwargs - further arguments for Line2D
-        '''
+        """
         # get_outline_pts has its faults:
         # * it doesn't do holes
         # * it only does one of two disconnected objects
@@ -2130,17 +2130,17 @@ NAV_MODE_NONE = ''
 
 
 class CPNavigationToolbar(NavigationToolbar2WxAgg):
-    '''Navigation toolbar for EditObjectsDialog'''
+    """Navigation toolbar for EditObjectsDialog"""
 
     def set_cursor(self, cursor):
-        '''Set the cursor based on the mode'''
+        """Set the cursor based on the mode"""
         if cursor == matplotlib.backend_bases.cursors.SELECT_REGION:
             self.canvas.SetCursor(get_crosshair_cursor())
         else:
             NavigationToolbar2WxAgg.set_cursor(self, cursor)
 
     def cancel_mode(self):
-        '''Toggle the current mode to off'''
+        """Toggle the current mode to off"""
         if self.mode == NAV_MODE_ZOOM:
             self.zoom()
             if 'Zoom' in self.wx_ids:
@@ -2159,7 +2159,7 @@ class CPNavigationToolbar(NavigationToolbar2WxAgg):
         self.__send_mode_change_event()
 
     def is_home(self):
-        '''Return True if zoom/pan is at the home position'''
+        """Return True if zoom/pan is at the home position"""
         if self._views._pos <= 0:
             return True
         if self._views[0] == self._views[-1]:
@@ -2167,7 +2167,7 @@ class CPNavigationToolbar(NavigationToolbar2WxAgg):
         return False
 
     def reset(self):
-        '''Clear out the position stack'''
+        """Clear out the position stack"""
         # We differ from the reference implementation because we clear
         # the view stacks.
         self._views.clear()

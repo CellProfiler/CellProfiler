@@ -1,5 +1,5 @@
-'''datatoolframe.py - Holder for a data tool
-'''
+"""datatoolframe.py - Holder for a data tool
+"""
 
 import h5py
 import numpy as np
@@ -27,11 +27,11 @@ ID_IMAGE_CHOOSE = wx.NewId()
 
 class DataToolFrame(wx.Frame):
     def __init__(self, *args, **kwds):
-        '''Instantiate a data tool frame
+        """Instantiate a data tool frame
 
         module_name: name of module to instantiate
         measurements_file_name: name of measurements file
-        '''
+        """
         assert kwds.has_key("module_name"), "DataToolFrame() needs a module_name argument"
         assert kwds.has_key("measurements_file_name"), "DataToolFrame() needs a measurements_file_name argument"
         module_name = kwds["module_name"]
@@ -154,7 +154,7 @@ class DataToolFrame(wx.Frame):
         self.Close()
 
     def on_image_choose(self, event):
-        '''Choose an image from the image set'''
+        """Choose an image from the image set"""
         dlg = wx.Dialog(self)
         dlg.Title = "Choose an image set"
         sizer = wx.BoxSizer(wx.VERTICAL)

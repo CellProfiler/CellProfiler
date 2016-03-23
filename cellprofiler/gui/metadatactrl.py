@@ -1,5 +1,5 @@
-'''metadatadlg.py - dialog for editing an expression that might contain metadata
-'''
+"""metadatadlg.py - dialog for editing an expression that might contain metadata
+"""
 
 import re
 
@@ -25,13 +25,13 @@ class MetadataControl(wx.PyControl):
             self.value = u""
 
     def __init__(self, pipeline, module, *args, **kwargs):
-        '''Initialize the field
+        """Initialize the field
 
         pipeline - the pipeline being run
         module - the module containing the setting
         value (optional) - initial value for control
         padding (optional) - padding around text in pixels
-        '''
+        """
         kwargs = kwargs.copy()
         style = kwargs.get("style", wx.BORDER_DEFAULT)
         value = kwargs.pop("value", "")
@@ -150,7 +150,7 @@ class MetadataControl(wx.PyControl):
         self.Cursor = wx.StockCursor(wx.CURSOR_IBEAM)
 
     def GetValue(self):
-        '''The setting value underlying the text representation'''
+        """The setting value underlying the text representation"""
         value = ""
         for token in self.__tokens:
             if isinstance(token, self.MetadataToken):
@@ -165,7 +165,7 @@ class MetadataControl(wx.PyControl):
     Value = property(GetValue, SetValue)
 
     def adjust_scroll(self):
-        '''Scroll the cursor position into view'''
+        """Scroll the cursor position into view"""
 
         rawpos = 0
         for i in range(self.__cursor_pos):
@@ -410,11 +410,11 @@ class MetadataControl(wx.PyControl):
         self.Refresh()
 
     def get_text(self, start_idx=0, end_idx=None):
-        '''Return the text representation of the tokens between the given indices
+        """Return the text representation of the tokens between the given indices
 
         start_idx - index of first token in string
         end_idx - index of last token or -1 for all
-        '''
+        """
         value = ""
         if end_idx is None:
             end_idx = len(self.__tokens)
@@ -513,7 +513,7 @@ class MetadataControl(wx.PyControl):
         self.on_token_change()
 
     def get_positions(self, dc):
-        '''Get the widths of each of the tokens'''
+        """Get the widths of each of the tokens"""
         text = self.get_text(0, len(self.__tokens))
         raw_positions = dc.GetPartialTextExtents(text)
         positions = [self.padding]
@@ -601,7 +601,7 @@ if __name__ == "__main__":
 
 
     class MetadataDialog(wx.Dialog):
-        '''A dialog that graphically displays metadata tags.
+        """A dialog that graphically displays metadata tags.
 
         To use:
 
@@ -609,10 +609,10 @@ if __name__ == "__main__":
         dlg.value = setting.value # the setting to be edited
         if dlg.ShowModal() == wx.ID_OK:
             setting.value = dlg.value
-        '''
+        """
 
         def __init__(self, pipeline, module, *args, **kwargs):
-            '''Class initializer
+            """Class initializer
 
             pipeline - pipeline being edited
             module - module containing setting to be edited. Only metadata previous
@@ -625,7 +625,7 @@ if __name__ == "__main__":
             size - initial window size
             style - dialog style
             name - window name
-            '''
+            """
             super(MetadataDialog, self).__init__(*args, **kwargs)
             self.value = ""
             columns = pipeline.get_measurement_columns(module)

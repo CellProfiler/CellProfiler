@@ -1,7 +1,7 @@
-'''sashwindow_tools.py - custom painting of sashwindows
+"""sashwindow_tools.py - custom painting of sashwindows
 
 This module takes over painting the sash window to make it a little more obvious
-'''
+"""
 
 import wx
 from wx.aui import PyAuiDockArt
@@ -15,10 +15,10 @@ GRIPPER_HEIGHT = 8
 
 
 def sw_bind_to_evt_paint(window):
-    '''Bind to wx.EVT_PAINT to take over the painting
+    """Bind to wx.EVT_PAINT to take over the painting
 
     window - a wx.SashWindow
-    '''
+    """
     window.Bind(wx.EVT_PAINT, on_sashwindow_paint)
 
 
@@ -85,7 +85,7 @@ def on_sashwindow_paint(event):
 
 
 def sp_bind_to_evt_paint(window):
-    '''Take over painting the splitter of a splitter window'''
+    """Take over painting the splitter of a splitter window"""
     window.Bind(wx.EVT_PAINT, on_splitter_paint)
 
 

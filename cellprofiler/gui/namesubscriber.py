@@ -4,9 +4,9 @@ import wx
 
 
 def align_twosided_items(parent, items, min_spacing=8, left_texts=None, right_texts=None):
-    '''Find spacing for a list of pairs of text such that the left texts are
+    """Find spacing for a list of pairs of text such that the left texts are
     left justified and the right texts (roughly) right justified.
-    '''
+    """
     if right_texts is None:
         right_texts = []
     if left_texts is None:
@@ -29,11 +29,11 @@ def align_twosided_items(parent, items, min_spacing=8, left_texts=None, right_te
 
 
 class NameSubscriberComboBox(wx.Panel):
-    '''A read-only combobox with extra annotation, and a context menu.
+    """A read-only combobox with extra annotation, and a context menu.
 
     Mostly the same interface as wx.ComboBox, but choices is a list of (Name,
     Parent, modulenum).
-    '''
+    """
 
     def __init__(self, annotation, choices=None, value='', name=''):
         wx.Panel.__init__(self, annotation, name=name)

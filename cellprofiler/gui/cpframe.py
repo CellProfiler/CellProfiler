@@ -324,7 +324,7 @@ class CPFrame(wx.Frame):
         self.show_module_ui(True)
 
     def start(self, workspace_path, pipeline_path):
-        '''Handle resource loading after the GUI has been constructed
+        """Handle resource loading after the GUI has been constructed
 
         workspace_path - one of the following: a pathname to the workspace
                          to load, False to ask the user for a new workspace
@@ -333,7 +333,7 @@ class CPFrame(wx.Frame):
 
         pipeline_path - the pipeline to load after the workspace has been
                         loaded or None for the workspace's pipeline.
-        '''
+        """
         self.__pipeline_controller.start(workspace_path, pipeline_path)
         self.__module_view.start()
         #
@@ -345,10 +345,10 @@ class CPFrame(wx.Frame):
         self.startup_blurb_frame.SetRect(r)
 
     def show_path_list_ctrl(self, show):
-        '''Show or hide the path list control
+        """Show or hide the path list control
 
         show - true to show, false to hide
-        '''
+        """
         if bool(show) == bool(self.__path_list_sash.IsShown()):
             return
         self.__path_list_sash.Show(show)
@@ -356,10 +356,10 @@ class CPFrame(wx.Frame):
         self.__path_list_sash.Layout()
 
     def show_imageset_sash(self, show):
-        '''Show or hide the imageset control
+        """Show or hide the imageset control
 
         show - true to show, false to hide
-        '''
+        """
         if bool(show) == bool(self.__imageset_sash.IsShown()):
             return
         self.__imageset_sash.Show(show)
@@ -398,7 +398,7 @@ class CPFrame(wx.Frame):
         self.__imageset_ctrl.recompute()
 
     def show_module_ui(self, show):
-        '''Show or hide the module and notes panel'''
+        """Show or hide the module and notes panel"""
         if (show == self.__path_module_imageset_panel.IsShownOnScreen() and
                     show == self.__notes_panel.IsShownOnScreen()):
             return
@@ -419,21 +419,21 @@ class CPFrame(wx.Frame):
             self.__imageset_sash.Layout()
 
     def show_welcome_screen(self, show):
-        '''Show or hide the welcome screen
+        """Show or hide the welcome screen
 
         show - If True, show the welcome screen and hide the preferences
                and module UI, otherwise hide the welcome screen.
-        '''
+        """
         self.startup_blurb_frame.Show(show)
         if show:
             self.startup_blurb_frame.Raise()
 
     def show_preferences(self, show):
-        '''Show or hide the preferences panel
+        """Show or hide the preferences panel
 
         show - if True, show the preferences panel and hide the welcome
                and module UI. If false, just hide the preferences.
-        '''
+        """
         self.__preferences_panel.Show(show)
         if show:
             self.show_module_ui(False)
@@ -457,7 +457,7 @@ class CPFrame(wx.Frame):
             self.__imageset_sash.Layout()
 
     def layout_pmi_panel(self):
-        '''Run the sash layout algorithm on the path/module/imageset panel'''
+        """Run the sash layout algorithm on the path/module/imageset panel"""
         self.__pmi_layout_in_progress = True
         try:
             wx.LayoutAlgorithm().LayoutWindow(self.__path_module_imageset_panel,
@@ -493,7 +493,7 @@ class CPFrame(wx.Frame):
         self.SetSize((1024, 600))
 
     def enable_edit_commands(self, ids):
-        '''Enable the edit commands that are supported by the focused window
+        """Enable the edit commands that are supported by the focused window
 
         ids - a list of the IDs supported by the window that has the focus.
 
@@ -507,7 +507,7 @@ class CPFrame(wx.Frame):
         wx.ID_PASTE
         wx.ID_DELETE
         wx.ID_SELECTALL
-        '''
+        """
         d = dict([(x, False) for x in
                   (wx.ID_COPY, wx.ID_CUT, wx.ID_PASTE, wx.ID_SELECTALL)])
         for eyedee in ids:
@@ -767,7 +767,7 @@ class CPFrame(wx.Frame):
         self.enable_launch_commands()
 
     def data_tools_help(self):
-        '''Create a help menu for the data tools'''
+        """Create a help menu for the data tools"""
         if not hasattr(self, "__data_tools_help_menu"):
             self.__menu_data_tools_help_menu = wx.Menu()
 
@@ -792,7 +792,7 @@ class CPFrame(wx.Frame):
         return self.__menu_data_tools_help_menu
 
     def data_tools_menu(self):
-        '''Create a menu of data tools'''
+        """Create a menu of data tools"""
 
         if not hasattr(self, "__data_tools_menu"):
             self.__data_tools_menu = wx.Menu()
@@ -839,7 +839,7 @@ class CPFrame(wx.Frame):
     # http://wxpython-users.1045709.n5.nabble.com/how-to-implement-copy-paste-with-accelerators-td3337472.html
     #########################################################
     def on_cut(self, event):
-        '''Handle ID_CUT'''
+        """Handle ID_CUT"""
         focus = wx.Window.FindFocus()
         if (focus is not None and hasattr(focus, "Cut")
             and hasattr(focus, 'CanCut') and focus.CanCut()):
@@ -851,7 +851,7 @@ class CPFrame(wx.Frame):
                 focus and hasattr(focus, 'CanCut') and focus.CanCut()))
 
     def on_copy(self, event):
-        '''Handle ID_COPY'''
+        """Handle ID_COPY"""
         focus = wx.Window.FindFocus()
         if focus is not None and hasattr(focus, "Copy") and \
                 hasattr(focus, 'CanCopy') and focus.CanCopy():
@@ -863,7 +863,7 @@ class CPFrame(wx.Frame):
                 focus and hasattr(focus, 'CanCopy') and focus.CanCopy()))
 
     def on_paste(self, event):
-        '''Handle ID_PASTE'''
+        """Handle ID_PASTE"""
         focus = wx.Window.FindFocus()
         if focus is not None and hasattr(focus, "Paste") and \
                 hasattr(focus, "CanPaste") and focus.CanPaste():
@@ -906,7 +906,7 @@ class CPFrame(wx.Frame):
             self.__menu_debug.Enable(cmd, True)
 
     def enable_launch_commands(self):
-        '''Enable commands to start analysis or test mode'''
+        """Enable commands to start analysis or test mode"""
         startstop = self.__menu_debug.FindItemById(ID_DEBUG_TOGGLE)
         startstop.Text = '&Start Test Mode\tF5'
         startstop.Help = 'Start testing your pipeline'
@@ -920,7 +920,7 @@ class CPFrame(wx.Frame):
         self.__menu_file.Enable(ID_FILE_STOP_ANALYSIS, False)
 
     def enable_analysis_commands(self):
-        '''Enable commands to pause or stop analysis'''
+        """Enable commands to pause or stop analysis"""
         self.__menu_file.Enable(ID_FILE_ANALYZE_IMAGES, False)
         self.__menu_file.Enable(ID_FILE_RESTART, False)
         self.__menu_debug.Enable(ID_DEBUG_TOGGLE, False)
@@ -1219,14 +1219,14 @@ class CPFrame(wx.Frame):
         helpframe.Show()
 
     def print_help(self, event, module_name, help_text):
-        '''Print the help text for a module'''
+        """Print the help text for a module"""
         printer = wx.html.HtmlEasyPrinting("Printing %s" % module_name,
                                            event.GetEventObject())
         printer.GetPrintData().SetPaperId(wx.PAPER_LETTER)
         printer.PrintText(help_text)
 
     def save_help(self, event, module_name, help_text):
-        '''Save the help text for a module'''
+        """Save the help text for a module"""
         save_dlg = wx.FileDialog(event.GetEventObject(),
                                  message="Save help for %s to file" % module_name,
                                  defaultFile="%s.html" % module_name,
@@ -1310,7 +1310,7 @@ class CPFrame(wx.Frame):
         self.SetIcon(get_cp_icon())
 
     def __make_search_frame(self):
-        '''Make and hide the "search the help" frame'''
+        """Make and hide the "search the help" frame"""
         background_color = cpprefs.get_background_color()
         size = (wx.SystemSettings.GetMetric(wx.SYS_SCREEN_X) / 2,
                 wx.SystemSettings.GetMetric(wx.SYS_SCREEN_Y) / 2)
@@ -1353,11 +1353,11 @@ class CPFrame(wx.Frame):
         search_button.Bind(wx.EVT_BUTTON, on_search)
 
         def on_link_clicked(event):
-            '''Handle anchor clicks manually
+            """Handle anchor clicks manually
 
             The HTML window (on Windows at least) jams the anchor to the
             top of the window which obscures it.
-            '''
+            """
             linkinfo = event.GetLinkInfo()
             if linkinfo.GetHref()[0] != "#":
                 event.Skip()
@@ -1382,7 +1382,7 @@ class CPFrame(wx.Frame):
             self.search_frame.Raise()
 
     def __make_startup_blurb_frame(self):
-        '''Make the frame surrounding the startup blurb panel'''
+        """Make the frame surrounding the startup blurb panel"""
         background_color = cpprefs.get_background_color()
         frame = self.startup_blurb_frame = wx.Frame(
                 self, title="Welcome to CellProfiler",

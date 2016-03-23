@@ -9,7 +9,7 @@ from centrosome.cpmorphology import distance_color_labels
 
 
 def figure_to_image(figure, *args, **kwargs):
-    '''Convert a figure to a numpy array'''
+    """Convert a figure to a numpy array"""
     #
     # Save the figure as a .PNG and then load it using scipy.misc.imread
     #
@@ -23,11 +23,11 @@ def figure_to_image(figure, *args, **kwargs):
 
 
 def only_display_image(figure, shape):
-    '''Set up a figure so that the image occupies the entire figure
+    """Set up a figure so that the image occupies the entire figure
 
     figure - a matplotlib figure
     shape - i/j size of the image being displayed
-    '''
+    """
     assert isinstance(figure, matplotlib.figure.Figure)
     figure.set_frameon(False)
     ax = figure.axes[0]

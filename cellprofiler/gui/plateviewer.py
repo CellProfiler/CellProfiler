@@ -1,5 +1,5 @@
-'''plateviewer.py - a user interface to view the image files for a plate
-'''
+"""plateviewer.py - a user interface to view the image files for a plate
+"""
 
 import multiprocessing
 import threading
@@ -15,14 +15,14 @@ from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
 
 
 def well_row_name(x):
-    '''Return a well row name for the given zero-based index'''
+    """Return a well row name for the given zero-based index"""
     if x < 26:
         return chr(ord('A') + x)
     return chr(ord('A') + int(x / 26) - 1) + chr(ord('A') + x % 26)
 
 
 class PlateData(object):
-    '''The plate data is the data store for the image files
+    """The plate data is the data store for the image files
 
     plate_well_site is a 3-level dictionary where the first level
     dictionary has keys that are plate names and whose values are
@@ -30,7 +30,7 @@ class PlateData(object):
     The second level has keys that are well names and values that are
     dictionaries of sites. The third level has site name as key and
     a list of files at that site as values.
-    '''
+    """
     D_FILENAME = "filename"
     D_PLANE_INDEX = "planeindex"
     D_CHANNEL = "channel"
@@ -40,13 +40,13 @@ class PlateData(object):
     def __init__(self,
                  plate_layout=(16, 24),
                  well_layout=None):
-        '''Initialize the plate model
+        """Initialize the plate model
 
         plate_layout - the layout of wells on the plate (rows, columns)
 
         well_layout - the layout of sites within a well. Each site should
         have a row and column position. The format is a sequence of two-tuples.
-        '''
+        """
         self.plate_well_site = {}
         self.plate_layout = plate_layout
         self.well_layout = well_layout
@@ -77,7 +77,7 @@ class PlateData(object):
                   channel_names=None,
                   z_indexes=None,
                   t_indexes=None):
-        '''Add files to the plate model
+        """Add files to the plate model
 
         filenames - a sequence of image file names
         platenames - a sequence of plate names, one per file
@@ -89,7 +89,7 @@ class PlateData(object):
         the planar image
         z_indexes - if present, the Z index of the plane
         t_indexes - if present, the time index of the plane
-        '''
+        """
         self.has_channel_names |= channel_names is not None
         self.has_z_indexes |= z_indexes is not None
         self.has_t_indexes |= t_indexes is not None
@@ -147,12 +147,12 @@ class PlateData(object):
 
 
 class PlateViewer(object):
-    '''The PlateViewer class lets the user view the files associated with plates
+    """The PlateViewer class lets the user view the files associated with plates
 
     The idea here is that the PlateViewer is given a list of image files
     with plate, well and site metadata. The plate viewer organizes the
     files and lets the user browse individual plates.
-    '''
+    """
 
     def __init__(self, frame, data):
         self.data = data
@@ -244,7 +244,7 @@ class PlateViewer(object):
         event.Veto()
 
     def get_border_height(self):
-        '''The border along the top of the plate'''
+        """The border along the top of the plate"""
         return 20
 
     def get_border_width(self):
@@ -399,10 +399,10 @@ class PlateViewer(object):
         return max(self.get_well_side() / 2 - 1, 1)
 
     def plate_hit_test(self, x, y):
-        '''Return the row and column of the well or None if not hit
+        """Return the row and column of the well or None if not hit
 
         x, y - coordinates of pixel on plate panel surface
-        '''
+        """
         side = self.get_well_side()
         col = (float(x) - self.get_border_width() - float(side) / 2) / side
         row = (float(y) - self.get_border_height() - float(side) / 2) / side
@@ -459,7 +459,7 @@ class PlateViewer(object):
                                    radius * 2, radius * 2)
 
     def set_display_well(self, well):
-        '''Set the display well and redraw the figure'''
+        """Set the display well and redraw the figure"""
         with self.image_dict_lock:
             self.image_dict = {}
             self.image_dict_generation += 1

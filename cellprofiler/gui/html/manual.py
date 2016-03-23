@@ -96,7 +96,7 @@ recent manual is available <a href="http://d1zymp9ayga15t.cloudfront.net/CPmanua
 
 
 def output_gui_html(webpage_path):
-    '''Output an HTML page for each non-module help item'''
+    """Output an HTML page for each non-module help item"""
     icons_relpath = relpath(cellprofiler.icons.__path__[0])
 
     help_text = """
@@ -141,7 +141,7 @@ def output_gui_html(webpage_path):
 
 
 def output_module_html(webpage_path):
-    '''Output an HTML page for each module'''
+    """Output an HTML page for each module"""
 
     icons_relpath = relpath(cellprofiler.icons.__path__[0])
     all_png_icons = glob(os.path.join(icons_relpath, "*.png"))
@@ -203,13 +203,13 @@ def output_module_html(webpage_path):
 
 
 def search_module_help(text):
-    '''Search the help for a string
+    """Search the help for a string
 
     text - find text in the module help using case-insensitive matching
 
     returns an html document of all the module help pages that matched or
             None if no match found.
-    '''
+    """
     matching_help = []
     for item in MAIN_HELP:
         matching_help += __search_menu_helper(
@@ -272,7 +272,7 @@ def search_module_help(text):
 
 
 def __search_fn(html, text):
-    '''Find begin-end coordinates of case-insensitive matches in html
+    """Find begin-end coordinates of case-insensitive matches in html
 
     html - an HTML document
 
@@ -281,7 +281,7 @@ def __search_fn(html, text):
     Find the begin and end indices of case insensitive matches of "text"
     within the text-data of the HTML, searching only in its body and excluding
     text in the HTML tags.
-    '''
+    """
     start_match = re.search(r"<\s*body[^>]*?>", html, re.IGNORECASE)
     if start_match is None:
         start = 0
@@ -309,7 +309,7 @@ def __search_fn(html, text):
 
 
 def __search_menu_helper(menu, search_fn):
-    '''Search a help menu for text
+    """Search a help menu for text
 
     menu - a menu in the style of MAIN_HELP. A leaf is a two-tuple composed
            of a title string and its HTML help. Non-leaf branches are two-tuples
@@ -320,7 +320,7 @@ def __search_menu_helper(menu, search_fn):
 
     returns a list of three-tuples. The first item is the title. The second is
     the html help. The third is a list of begin-end tuples of matches found.
-    '''
+    """
     if len(menu) == 2 and all([isinstance(x, basestring) for x in menu]):
         matches = search_fn(menu[1])
         if len(matches) > 0:

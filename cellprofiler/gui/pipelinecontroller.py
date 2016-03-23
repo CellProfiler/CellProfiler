@@ -1008,7 +1008,7 @@ class PipelineController:
         try:
             self.do_save_pipeline()
         except Exception, e:
-            wx.MessageBox('Exception:\n%s' % (e), 'Could not save pipeline...', wx.ICON_ERROR | wx.OK, self.__frame)
+            wx.MessageBox('Exception:\n%s' % e, 'Could not save pipeline...', wx.ICON_ERROR | wx.OK, self.__frame)
 
     def do_save_pipeline(self):
         '''Save the pipeline, asking the user for the name
@@ -1259,7 +1259,7 @@ class PipelineController:
         '''Set the title of the parent frame'''
         pathname = cpprefs.get_current_workspace_path()
         if pathname is None:
-            self.__frame.Title = "CellProfiler %s" % (version.title_string)
+            self.__frame.Title = "CellProfiler %s" % version.title_string
             return
         path, file = os.path.split(pathname)
         if self.__dirty_workspace:
@@ -1585,7 +1585,7 @@ class PipelineController:
             self.on_pathlist_command(cmd)
 
     def get_pathlist_empty_context_menu(self, path):
-        return ((self.PATHLIST_CMD_BROWSE, self.PATHLIST_CMD_BROWSE),)
+        return (self.PATHLIST_CMD_BROWSE, self.PATHLIST_CMD_BROWSE),
 
     def on_pathlist_empty_command(self, path, cmd):
         if cmd == self.PATHLIST_CMD_BROWSE:
@@ -2599,7 +2599,7 @@ class PipelineController:
         else:
             message = (("Error while processing (remote worker):\n"
                         "%s\n\nDo you want to stop processing?") %
-                       (evt))
+                       evt)
 
         disposition = display_error_dialog(
                 None, evt.exc_type, self.__pipeline, message,

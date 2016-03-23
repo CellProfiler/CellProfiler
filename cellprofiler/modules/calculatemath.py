@@ -173,7 +173,7 @@ class CalculateMath(cpm.CPModule):
                 result += ([self.operand_objects] if self.operand_choice == MC_OBJECT \
                                else [])
                 result += [self.operand_measurement, self.multiplicand, self.exponent]
-                return (result)
+                return result
 
         self.output_feature_name = cps.AlphanumericText(
                 "Name the output measurement",
@@ -237,7 +237,7 @@ class CalculateMath(cpm.CPModule):
         result += [self.wants_log, self.final_multiplicand, self.final_exponent, self.final_addend]
         result += [self.constrain_lower_bound, self.lower_bound, self.constrain_upper_bound, self.upper_bound]
 
-        return (result)
+        return result
 
     def post_pipeline_load(self, pipeline):
         '''Fixup any measurement names that might have been ambiguously loaded
@@ -275,7 +275,7 @@ class CalculateMath(cpm.CPModule):
         if self.constrain_upper_bound:
             result += [self.upper_bound]
 
-        return (result)
+        return result
 
     def run(self, workspace):
         m = workspace.measurements
@@ -312,7 +312,7 @@ class CalculateMath(cpm.CPModule):
             values.append(value)
 
         if ((not has_image_measurement) and
-                (self.operation.value not in (O_NONE)) and
+                (self.operation.value not in O_NONE) and
                     len(values[0]) != len(values[1])):
             #
             # Try harder, broadcast using the results from relate objects
@@ -480,7 +480,7 @@ class CalculateMath(cpm.CPModule):
         for binary.
         '''
         if self.operation == O_NONE:
-            return (self.operands[0],)
+            return self.operands[0],
         else:
             return self.operands
 
@@ -576,7 +576,7 @@ class CalculateMath(cpm.CPModule):
             setting_values = new_setting_values
             from_matlab = False
             variable_revision_number = 1
-        if (not from_matlab and variable_revision_number == 1):
+        if not from_matlab and variable_revision_number == 1:
             # Added a final addition number as well as options to constrain
             # the result to an upper and/or lower bound.
             setting_values += ["0", cps.NO, "0", cps.NO, "1"]

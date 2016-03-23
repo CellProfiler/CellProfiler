@@ -620,7 +620,7 @@ class Segmentation(object):
         The remaining axes are in the order, C, T, Z, Y and X
         '''
         if self.__dense is not None:
-            return (self.__dense, self.__indices)
+            return self.__dense, self.__indices
         if self.__cache is not None and self.__cache.has_dense(
                 self.__objects_name, self.__segmentation_name):
             return (self.__cache.get_dense(
@@ -685,7 +685,7 @@ class Segmentation(object):
             self.__indices = [np.unique(d) for d in dense]
             self.__indices = [
                 idx[1:] if idx[0] == 0 else idx for idx in self.__indices]
-        return (dense, self.__indices)
+        return dense, self.__indices
 
     def __convert_sparse_to_dense(self):
         from cellprofiler.utilities.hdf5_dict import HDF5ObjectSet
@@ -876,7 +876,7 @@ class ObjectSet(object):
     def add_objects(self, objects, name):
         assert isinstance(objects, Objects), "objects must be an instance of CellProfiler.Objects"
         assert ((not self.__objects_by_name.has_key(name)) or
-                self.__can_overwrite), "The object, %s, is already in the object set" % (name)
+                self.__can_overwrite), "The object, %s, is already in the object set" % name
         self.__objects_by_name[name] = objects
 
     def get_object_names(self):

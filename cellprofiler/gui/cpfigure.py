@@ -977,7 +977,7 @@ class CPFigureFrame(wx.Frame):
             ids = [get_menu_id(MENU_RGB_CHANNELS, (x, y, i))
                    for i in range(len(rgb_mask))]
             for name, value, id in zip(wraparound(COLOR_NAMES), rgb_mask, ids):
-                item = submenu.Append(id, name, 'Show/Hide the %s channel' % (name), wx.ITEM_CHECK)
+                item = submenu.Append(id, name, 'Show/Hide the %s channel' % name, wx.ITEM_CHECK)
                 if value != 0:
                     item.Check()
             popup.AppendMenu(-1, 'Channels', submenu)
@@ -1899,7 +1899,7 @@ def format_plate_data_as_array(plate_dict, plate_type):
         if r >= data.shape[0] or c >= data.shape[1]:
             if display_error:
                 logging.getLogger("cellprofiler.gui.cpfigure").warning(
-                        'A well value (%s) does not fit in the given plate type.\n' % (well))
+                        'A well value (%s) does not fit in the given plate type.\n' % well)
                 display_error = False
             continue
         data[r, c] = val

@@ -131,14 +131,14 @@ ignore_categories = (
 def make_success_statistic(name, attributes, per_image=False):
     if per_image:
         name += "_per_image"
-    return (name, attributes, None, None, None)
+    return name, attributes, None, None, None
 
 
 def make_error_statistic(name, attributes, error_type, message, body,
                          per_image=False):
     if per_image:
         name += "_per_image"
-    return (name, attributes, error_type, message, body)
+    return name, attributes, error_type, message, body
 
 
 def write_statistic(output_fd, statistic):

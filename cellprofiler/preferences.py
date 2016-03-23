@@ -546,7 +546,7 @@ def get_default_output_directory():
 
 def set_default_output_directory(path):
     global __default_output_directory
-    assert os.path.isdir(path), 'Default Output Folder, "%s", is not a directory' % (path)
+    assert os.path.isdir(path), 'Default Output Folder, "%s", is not a directory' % path
     __default_output_directory = path
     config_write(DEFAULT_OUTPUT_DIRECTORY, path)
     add_recent_file(path, DEFAULT_OUTPUT_DIRECTORY)
@@ -997,9 +997,9 @@ def update_cpfigure_position():
         disp = wx.GetDisplaySize()
     except:
         disp = (800, 600)
-    if (__cpfigure_position[0] + win_size[0] > disp[0]):
+    if __cpfigure_position[0] + win_size[0] > disp[0]:
         __cpfigure_position = (-1, __cpfigure_position[1])
-    if (__cpfigure_position[1] + win_size[1] > disp[1]):
+    if __cpfigure_position[1] + win_size[1] > disp[1]:
         __cpfigure_position = (-1, -1)
     else:
         # These offsets could be set in the preferences UI

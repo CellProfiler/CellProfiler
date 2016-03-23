@@ -415,9 +415,9 @@ class IdentifySecondaryObjects(cpmi.Identify):
             variable_revision_number = 1
         if from_matlab:
             NotImplementedError(
-                    "Don't know how to convert Matlab IdentifySecondary revision # %d" % (variable_revision_number))
+                    "Don't know how to convert Matlab IdentifySecondary revision # %d" % variable_revision_number)
         if variable_revision_number != self.variable_revision_number:
-            NotImplementedError("Don't know how to handle IdentifySecondary revision # %d" % (variable_revision_number))
+            NotImplementedError("Don't know how to handle IdentifySecondary revision # %d" % variable_revision_number)
         if (not from_matlab) and variable_revision_number == 1:
             # Removed test mode
             # added Otsu parameters.
@@ -743,19 +743,19 @@ class IdentifySecondaryObjects(cpmi.Identify):
             median_diameter = (np.sqrt(float(areas[object_count / 2]) / np.pi) * 2)
             high_diameter = (np.sqrt(float(areas[object_count * 9 / 10]) / np.pi) * 2)
             statistics.append(["10th pctile diameter",
-                               "%.1f pixels" % (low_diameter)])
+                               "%.1f pixels" % low_diameter])
             statistics.append(["Median diameter",
-                               "%.1f pixels" % (median_diameter)])
+                               "%.1f pixels" % median_diameter])
             statistics.append(["90th pctile diameter",
-                               "%.1f pixels" % (high_diameter)])
+                               "%.1f pixels" % high_diameter])
             if self.method != M_DISTANCE_N and self.threshold_scope != TS_BINARY_IMAGE:
                 statistics.append(["Thresholding filter size",
-                                   "%.1f" % (workspace.display_data.threshold_sigma)])
+                                   "%.1f" % workspace.display_data.threshold_sigma])
             statistics.append(["Area covered by objects", "%.1f %%" % object_pct])
         workspace.display_data.statistics = statistics
 
         figure.set_subplots((2, 2))
-        title = "Input image, cycle #%d" % (workspace.measurements.image_number)
+        title = "Input image, cycle #%d" % workspace.measurements.image_number
         figure.subplot_imshow_grayscale(0, 0, img, title)
         figure.subplot_imshow_labels(1, 0, segmented_out, "%s objects" % self.objects_name.value,
                                      sharexy=figure.subplot(0, 0))

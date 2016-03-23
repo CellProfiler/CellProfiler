@@ -1913,7 +1913,7 @@ class ModuleView:
                     ctrl.Clear()
                     ctrl.AppendItems(choices)
                     ctrl.SetSelection(0)
-                if (not value is None):
+                if not value is None:
                     try:
                         if ctrl.Value != value:
                             ctrl.Value = value
@@ -3248,7 +3248,7 @@ class FileCollectionDisplayController(object):
         Make sure that the tree is auto-expanded if appropriate and that
         the root nodes are expanded.
         '''
-        if (not self.user_collapsed_a_node):
+        if not self.user_collapsed_a_node:
             #
             # Expand all until we reach a node that has more than
             # one child = ambiguous choice of which to expand

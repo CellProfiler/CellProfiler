@@ -564,7 +564,7 @@ class ParameterSampleFrame(wx.Frame):
             self.__keys, self.__groupings = self.__pipeline.get_groupings(
                     workspace)
         except ValueError, v:
-            message = "Error while preparing for run:\n%s" % (v)
+            message = "Error while preparing for run:\n%s" % v
             wx.MessageBox(message, "Pipeline error", wx.OK | wx.ICON_ERROR, self.__frame)
         self.__grouping_index = 0
         self.__within_group_index = 0

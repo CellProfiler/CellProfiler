@@ -86,7 +86,7 @@ class DirectoryView(object):
                     "Warning: Could not refresh default image directory %s.\n" %
                     (cellprofiler.preferences.get_default_image_directory()),
                     exc_info=True)
-            files = ['Could not refresh files (%s)' % (e.__class__.__name__)]
+            files = ['Could not refresh files (%s)' % e.__class__.__name__]
         files.sort()
         self.__list_box.AppendItems(files)
 

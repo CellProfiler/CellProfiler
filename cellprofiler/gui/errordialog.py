@@ -313,9 +313,9 @@ def on_report(event, dialog, traceback_text, pipeline):
         wx.MessageBox("Report successfully sent to CellProfiler.org. Thank you.",
                       parent=dialog)
     except urllib2.HTTPError, e:
-        wx.MessageBox("Failed to upload, server reported code %d" % (e.code))
+        wx.MessageBox("Failed to upload, server reported code %d" % e.code)
     except urllib2.URLError, e:
-        wx.MessageBox("Failed to upload: %s" % (e.reason))
+        wx.MessageBox("Failed to upload: %s" % e.reason)
 
 
 def show_warning(title, message, get_preference, set_preference):

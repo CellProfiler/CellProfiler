@@ -262,7 +262,7 @@ class CorrectIlluminationApply(cpm.CPModule):
                 raise cps.ValidationError(("Your original pipeline used '%s' to rescale the final image, "
                                            "but the rescaling option has been removed. Please use "
                                            "RescaleIntensity to rescale your output image. Save your "
-                                           "pipeline to get rid of this warning.") % (image.rescale_option),
+                                           "pipeline to get rid of this warning.") % image.rescale_option,
                                           image.divide_or_subtract)
 
     def upgrade_settings(self, setting_values, variable_revision_number,

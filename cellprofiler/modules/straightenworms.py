@@ -593,14 +593,14 @@ class StraightenWorms(cpm.CPModule):
                                     (C_WORM, ftr, image_name,
                                      self.get_scale_name(None, b)))
                             m.add_measurement(
-                                    input_object_name, measurement, np.zeros((0)))
+                                    input_object_name, measurement, np.zeros(0))
                     if nbins_horizontal > 1:
                         for b in range(nbins_horizontal):
                             measurement = "_".join(
                                     (C_WORM, ftr, image_name,
                                      self.get_scale_name(b, None)))
                             m.add_measurement(
-                                    input_object_name, measurement, np.zeros((0)))
+                                    input_object_name, measurement, np.zeros(0))
                         if nbins_vertical > 1:
                             for v in range(nbins_vertical):
                                 for h in range(nbins_horizontal):
@@ -608,7 +608,7 @@ class StraightenWorms(cpm.CPModule):
                                             (C_WORM, ftr, image_name,
                                              self.get_scale_name(h, v)))
                                     m.add_measurement(
-                                            input_object_name, measurement, np.zeros((0)))
+                                            input_object_name, measurement, np.zeros(0))
 
         else:
             #

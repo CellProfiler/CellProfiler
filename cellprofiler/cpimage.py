@@ -690,8 +690,8 @@ class ImageSet(object):
         name - return the image provider with this name
         """
         providers = filter(lambda x: x.name == name, self.__image_providers)
-        assert len(providers) > 0, "No provider of the %s image" % (name)
-        assert len(providers) == 1, "More than one provider of the %s image" % (name)
+        assert len(providers) > 0, "No provider of the %s image" % name
+        assert len(providers) == 1, "More than one provider of the %s image" % name
         return providers[0]
 
     def remove_image_provider(self, name):
@@ -859,7 +859,7 @@ class ImageSetList(object):
                 d[key_values] = []
                 sort_order.append(key_values)
             d[key_values].append(i + 1)
-        return (keys, [(dict(zip(keys, k)), d[k]) for k in sort_order])
+        return keys, [(dict(zip(keys, k)), d[k]) for k in sort_order]
 
     def save_state(self):
         '''Return a string that can be used to load the image_set_list's state
@@ -888,7 +888,7 @@ class ImageSetList(object):
 
         def find_global(module_name, class_name):
             logger.debug("Pickler wants %s:%s", module_name, class_name)
-            if (module_name not in ("numpy", "numpy.core.multiarray")):
+            if module_name not in ("numpy", "numpy.core.multiarray"):
                 logger.critical(
                         "WARNING WARNING WARNING - your batch file has asked to load %s.%s."
                         " If this looks in any way suspicious please contact us at www.cellprofiler.org",

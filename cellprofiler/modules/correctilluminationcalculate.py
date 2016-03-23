@@ -747,7 +747,7 @@ class CorrectIlluminationCalculate(cpm.CPModule):
         elif self.smoothing_method == SM_CONVEX_HULL:
             output_pixels = self.smooth_with_convex_hull(pixel_data, mask)
         else:
-            raise ValueError("Unimplemented smoothing method: %s:" % (self.smoothing_method.value))
+            raise ValueError("Unimplemented smoothing method: %s:" % self.smoothing_method.value)
         return output_pixels
 
     def smooth_with_convex_hull(self, pixel_data, mask):

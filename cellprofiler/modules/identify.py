@@ -1017,7 +1017,7 @@ class Identify(cellprofiler.cpmodule.CPModule):
                                         local_threshold, global_threshold)
         if hasattr(workspace.display_data, "statistics"):
             workspace.display_data.statistics.append(
-                    ["Threshold", "%0.3g" % (global_threshold)])
+                    ["Threshold", "%0.3g" % global_threshold])
 
         return local_threshold, global_threshold
 
@@ -1043,10 +1043,10 @@ class Identify(cellprofiler.cpmodule.CPModule):
         objname = self.get_measurement_objects_name()
         ave_threshold = np.mean(np.atleast_1d(local_threshold))
         measurements.add_measurement(cpmeas.IMAGE,
-                                     FF_FINAL_THRESHOLD % (objname),
+                                     FF_FINAL_THRESHOLD % objname,
                                      ave_threshold)
         measurements.add_measurement(cpmeas.IMAGE,
-                                     FF_ORIG_THRESHOLD % (objname),
+                                     FF_ORIG_THRESHOLD % objname,
                                      global_threshold)
 
     def add_fg_bg_measurements(self, measurements, image, mask, binary_image):
@@ -1063,11 +1063,11 @@ class Identify(cellprofiler.cpmodule.CPModule):
         objname = self.get_measurement_objects_name()
         wv = weighted_variance(image, mask, binary_image)
         measurements.add_measurement(cpmeas.IMAGE,
-                                     FF_WEIGHTED_VARIANCE % (objname),
+                                     FF_WEIGHTED_VARIANCE % objname,
                                      np.array([wv], dtype=float))
         entropies = sum_of_entropies(image, mask, binary_image)
         measurements.add_measurement(cpmeas.IMAGE,
-                                     FF_SUM_OF_ENTROPIES % (objname),
+                                     FF_SUM_OF_ENTROPIES % objname,
                                      np.array([entropies], dtype=float))
 
     def validate_module(self, pipeline):
@@ -1275,7 +1275,7 @@ def add_object_location_measurements_ijv(measurements,
 def add_object_count_measurements(measurements, object_name, object_count):
     """Add the # of objects to the measurements"""
     measurements.add_measurement('Image',
-                                 FF_COUNT % (object_name),
+                                 FF_COUNT % object_name,
                                  np.array([object_count],
                                           dtype=float))
 

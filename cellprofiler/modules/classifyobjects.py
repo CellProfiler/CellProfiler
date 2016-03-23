@@ -688,7 +688,7 @@ class ClassifyObjects(cpm.CPModule):
             measurement_name = '_'.join((M_CATEGORY, feature_name, F_PCT_PER_BIN))
             measurements.add_measurement(cpmeas.IMAGE, measurement_name,
                                          100.0 * float(num_hits) / num_values if num_values > 0 else 0)
-        if group.wants_images or (self.show_window):
+        if group.wants_images or self.show_window:
             colors = self.get_colors(bin_hits.shape[1])
             object_bins = np.sum(bin_hits * th_idx, 1) + 1
             object_color = np.hstack(([0], object_bins))

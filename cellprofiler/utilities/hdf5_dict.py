@@ -381,7 +381,7 @@ class HDF5Dict(object):
             dataset = self.get_dataset(object_name, feature_name)
             if dataset is None or dataset.shape[0] == 0:
                 return [np.array([]) for image_number in num_idx]
-            if (len(indices) / 2 < len(num_idx)):
+            if len(indices) / 2 < len(num_idx):
                 #
                 # Optimize by fetching complete dataset
                 # if fetching more than 1/2 of indices
@@ -1425,7 +1425,7 @@ class HDF5FileList(object):
                 has_metadata = self.__cache[path_tuple].has_metadata
             idx = bisect.bisect_left(a, parts[-1])
             if idx < len(a) and a[idx] == parts[-1]:
-                return (group, idx, has_metadata)
+                return group, idx, has_metadata
             return None
 
     def get_refresh_timestamp(self, url):

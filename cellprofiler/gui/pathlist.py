@@ -224,10 +224,10 @@ class PathListCtrl(wx.PyScrolledWindow):
             return None, None
 
         if self.show_disabled:
-            return (item, idx)
+            return item, idx
         else:
             idx = item.enabled_idxs[idx]
-            return (item, idx)
+            return item, idx
 
     @staticmethod
     def splitpath(path):
@@ -903,7 +903,7 @@ class PathListCtrl(wx.PyScrolledWindow):
         pos = event.GetPosition()
         pos = self.ScreenToClient(pos)
         item_list = fn_context_menu(arg)
-        if (len(self.context_menu_ids) < len(item_list)):
+        if len(self.context_menu_ids) < len(item_list):
             self.context_menu_ids += [
                 wx.NewId() for _ in range(len(self.context_menu_ids),
                                           len(item_list))]

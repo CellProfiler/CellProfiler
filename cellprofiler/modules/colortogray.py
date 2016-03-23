@@ -339,9 +339,9 @@ class ColorToGray(cpm.CPModule):
         output_image = workspace.display_data.output_image
         figure.set_subplots((1, 2))
         figure.subplot_imshow(0, 0, input_image,
-                              title="Original image: %s" % (self.image_name))
+                              title="Original image: %s" % self.image_name)
         figure.subplot_imshow(0, 1, output_image,
-                              title="Grayscale image: %s" % (self.grayscale_name),
+                              title="Grayscale image: %s" % self.grayscale_name,
                               colormap=matplotlib.cm.Greys_r,
                               sharexy=figure.subplot(0, 0))
 

@@ -298,12 +298,12 @@ class MeasureCorrelation(cpm.CPModule):
             b = (ymean - a * xmean)
 
             i = 1
-            while (i > 0.003921568627):
+            while i > 0.003921568627:
                 Thr_fi_c = i
                 Thr_si_c = (a * i) + b
                 combt = (fi < Thr_fi_c) | (si < Thr_si_c)
                 costReg = scistat.pearsonr(fi[combt], si[combt])
-                if (costReg[0] <= 0):
+                if costReg[0] <= 0:
                     break
                 i = i - 0.003921568627
 
@@ -483,7 +483,7 @@ class MeasureCorrelation(cpm.CPModule):
         n_objects = objects.count
         # Handle case when both images for the correlation are completely masked out
 
-        if ((n_objects == 0)):
+        if n_objects == 0:
             corr = np.zeros((0,))
             overlap = np.zeros((0,))
             K1 = np.zeros((0,))
@@ -494,7 +494,7 @@ class MeasureCorrelation(cpm.CPModule):
             RWC2 = np.zeros((0,))
             C1 = np.zeros((0,))
             C2 = np.zeros((0,))
-        elif ((np.where(mask)[0].__len__() == 0)):
+        elif np.where(mask)[0].__len__() == 0:
             corr = np.zeros((n_objects,))
             corr[:] = np.NaN
             overlap = K1 = K2 = M1 = M2 = RWC1 = RWC2 = C1 = C2 = corr
@@ -557,12 +557,12 @@ class MeasureCorrelation(cpm.CPModule):
             b = (ymean - a * xmean)
 
             i = 1
-            while (i > 0.003921568627):
+            while i > 0.003921568627:
                 thr_fi_c = i
                 thr_si_c = (a * i) + b
                 combt = (fi < thr_fi_c) | (si < thr_si_c)
                 costReg = scistat.pearsonr(fi[combt], si[combt])
-                if (costReg[0] <= 0):
+                if costReg[0] <= 0:
                     break
                 i = i - 0.003921568627
 

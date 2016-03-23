@@ -5,8 +5,7 @@ Buttons included in this file Copyright Audacity
 public license.
 """
 
-from cellprofiler.gui import draw_bevel, BV_DOWN
-
+import cellprofiler.gui
 import cellprofiler.preferences
 import StringIO
 import wx
@@ -273,7 +272,7 @@ class SliderCtl(wx.Panel):
         dc.Brush = wx.WHITE_BRUSH
         dc.DrawRectangle(rect.Left, rect.Top, rect.width, rect.height)
         rect.Deflate(1, 1)
-        rect = draw_bevel(dc, rect, 2, BV_DOWN)
+        rect = cellprofiler.gui.draw_bevel(dc, rect, 2, cellprofiler.gui.BV_DOWN)
         sep_y = self.get_mark_y(self.value)
         rtop = wx.Rect(rect.Left, rect.Top, rect.width, sep_y - rect.Top)
         dc.Pen = wx.BLACK_PEN

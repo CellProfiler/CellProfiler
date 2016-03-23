@@ -1,7 +1,7 @@
-from cellprofiler.gui.html.content import WELCOME_HELP
-from cellprofiler.icons import get_builtin_images_path
 from cellprofiler.preferences import get_background_color, set_startup_blurb
 
+import cellprofiler.gui.html.content
+import cellprofiler.icons
 import content
 import os
 import sys
@@ -43,7 +43,7 @@ class HtmlClickableWindow(wx.html.HtmlWindow):
                     parent = parent.Parent
         elif href.startswith('help:'):
             href = linkinfo.Href[7:]
-            html_str = WELCOME_HELP[href]
+            html_str = cellprofiler.gui.html.content.WELCOME_HELP[href]
             html_str += '<p>Go <a href="startup_main">back</a> to the welcome screen.</p>'
             self.SetPage(html_str)
             self.BackgroundColour = get_background_color()
@@ -116,7 +116,7 @@ class HtmlClickableWindow(wx.html.HtmlWindow):
     def OnOpeningURL(self, file_format, url):
         if file_format == wx.html.HTML_URL_IMAGE:
             if url.startswith(MEMORY_SCHEME):
-                path = get_builtin_images_path()
+                path = cellprofiler.icons.get_builtin_images_path()
                 full_path = os.path.join(path, url[len(MEMORY_SCHEME):])
                 if sys.platform.startswith("win"):
                     my_url = full_path

@@ -1,10 +1,9 @@
 """cpartists.py - Specialized matplotlib artists for CellProfiler
 """
 
-from cellprofiler.gui.cpfigure_tools import renumber_labels_for_display
-from centrosome.cpmorphology import get_outline_pts
-from centrosome.outline import outline
-
+import cellprofiler.gui.cpfigure_tools
+import centrosome.cpmorphology
+import centrosome.outline
 import matplotlib
 import matplotlib.artist
 import matplotlib.collections
@@ -240,9 +239,9 @@ class OutlinesMixin(ColorMixin):
         if self._outlines is None:
             for i, labels in enumerate(self.labels):
                 if i == 0:
-                    self._outlines = outline(labels) != 0
+                    self._outlines = centrosome.outline.outline(labels) != 0
                 else:
-                    self._outlines |= outline(labels) != 0
+                    self._outlines |= centrosome.outline.outline(labels) != 0
             if self.line_width > 1:
                 hw = float(self.line_width) / 2
                 d = scipy.ndimage.distance_transform_edt(~ self._outlines)
@@ -335,7 +334,7 @@ class ObjectsData(OutlinesMixin):
                 continue
             if self.scramble:
                 lmin = numpy.min(l[l != 0])
-            l[l != 0] = renumber_labels_for_display(l)[l != 0] + lmin
+            l[l != 0] = cellprofiler.gui.cpfigure_tools.renumber_labels_for_display(l)[l != 0] + lmin
             lmin = numpy.max(l)
             if img is None:
                 img = sm.to_rgba(l)
@@ -1185,7 +1184,7 @@ class CPOutlineArtist(matplotlib.collections.LineCollection):
             else:
                 my_range = numpy.arange(1, len(unique))
             idx.shape = l.shape
-            pts, offs, counts = get_outline_pts(idx, my_range)
+            pts, offs, counts = centrosome.cpmorphology.get_outline_pts(idx, my_range)
             pts += .5  # Target the centers of the pixels.
             pts = pts[:, ::-1]  # matplotlib x, y reversed from i,j
             for off, count in zip(offs, counts):

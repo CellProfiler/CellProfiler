@@ -1,35 +1,33 @@
 """PipelineListView.py
 """
 
-from cellprofiler.gui import draw_item_selection_rect
-from cellprofiler.gui.cpfigure import window_name, find_fig
-from cellprofiler.gui.moduleview import request_module_validation, ValidationRequest
-from cellprofiler.icons import get_builtin_image
-from StringIO import StringIO
-
-import cellprofiler.pipeline as cpp
-import cellprofiler.preferences as cpprefs
-import logging
+import cellprofiler.gui
+import cellprofiler.gui.cpfigure
+import cellprofiler.gui.moduleview
+import cellprofiler.icons
+import cellprofiler.pipeline
+import cellprofiler.preferences
 import logging
 import math
 import os
+import StringIO
 import sys
 import time
 import wx
 
 logger = logging.getLogger(__name__)
 
-IMG_OK = get_builtin_image('IMG_OK')
-IMG_ERROR = get_builtin_image('IMG_ERROR')
-IMG_EYE = get_builtin_image('IMG_EYE')
-IMG_CLOSED_EYE = get_builtin_image('IMG_CLOSED_EYE')
-IMG_PAUSE = get_builtin_image('IMG_PAUSE')
-IMG_GO = get_builtin_image('IMG_GO')
-IMG_DISABLED = get_builtin_image('IMG_DISABLED')
-IMG_UNAVAILABLE = get_builtin_image('IMG_UNAVAILABLE')
-IMG_SLIDER = get_builtin_image('IMG_SLIDER')
-IMG_SLIDER_ACTIVE = get_builtin_image('IMG_SLIDER_ACTIVE')
-IMG_DOWNARROW = get_builtin_image('downarrow')
+IMG_OK = cellprofiler.icons.get_builtin_image('IMG_OK')
+IMG_ERROR = cellprofiler.icons.get_builtin_image('IMG_ERROR')
+IMG_EYE = cellprofiler.icons.get_builtin_image('IMG_EYE')
+IMG_CLOSED_EYE = cellprofiler.icons.get_builtin_image('IMG_CLOSED_EYE')
+IMG_PAUSE = cellprofiler.icons.get_builtin_image('IMG_PAUSE')
+IMG_GO = cellprofiler.icons.get_builtin_image('IMG_GO')
+IMG_DISABLED = cellprofiler.icons.get_builtin_image('IMG_DISABLED')
+IMG_UNAVAILABLE = cellprofiler.icons.get_builtin_image('IMG_UNAVAILABLE')
+IMG_SLIDER = cellprofiler.icons.get_builtin_image('IMG_SLIDER')
+IMG_SLIDER_ACTIVE = cellprofiler.icons.get_builtin_image('IMG_SLIDER_ACTIVE')
+IMG_DOWNARROW = cellprofiler.icons.get_builtin_image('downarrow')
 BMP_WARNING = wx.ArtProvider.GetBitmap(wx.ART_WARNING, size=(16, 16))
 
 NO_PIPELINE_LOADED = 'No pipeline loaded'
@@ -278,7 +276,7 @@ class PipelineListView(object):
         self.input_list_ctrl.Enable(show)
         if not show:
             self.input_list_ctrl.DeleteAllItems()
-            fake_pipeline = cpp.Pipeline()
+            fake_pipeline = cellprofiler.pipeline.Pipeline()
             fake_pipeline.init_modules()
             for i, module in enumerate(fake_pipeline.modules(False)):
                 item = PipelineListCtrl.PipelineListCtrlItem(module)
@@ -322,10 +320,10 @@ class PipelineListView(object):
                     self.on_validate_module(setting_idx, message, level,
                                             module_num, settings_hash)
 
-                validation_request = ValidationRequest(
+                validation_request = cellprofiler.gui.moduleview.ValidationRequest(
                         self.__pipeline, module, on_validate_module)
                 self.validation_requests.append(validation_request)
-                request_module_validation(validation_request)
+                cellprofiler.gui.moduleview.request_module_validation(validation_request)
 
     def set_debug_mode(self, mode):
         if (mode == True) and (self.__pipeline is not None):
@@ -399,17 +397,17 @@ class PipelineListView(object):
         """Pipeline event notifications come through here
 
         """
-        if isinstance(event, cpp.PipelineLoadedEvent):
+        if isinstance(event, cellprofiler.pipeline.PipelineLoadedEvent):
             self.__on_pipeline_loaded(pipeline, event)
-        elif isinstance(event, cpp.ModuleAddedPipelineEvent):
+        elif isinstance(event, cellprofiler.pipeline.ModuleAddedPipelineEvent):
             self.__on_module_added(pipeline, event)
-        elif isinstance(event, cpp.ModuleMovedPipelineEvent):
+        elif isinstance(event, cellprofiler.pipeline.ModuleMovedPipelineEvent):
             self.__on_module_moved(pipeline, event)
-        elif isinstance(event, cpp.ModuleRemovedPipelineEvent):
+        elif isinstance(event, cellprofiler.pipeline.ModuleRemovedPipelineEvent):
             self.__on_module_removed(pipeline, event)
-        elif isinstance(event, cpp.PipelineClearedEvent):
+        elif isinstance(event, cellprofiler.pipeline.PipelineClearedEvent):
             self.__on_pipeline_cleared(pipeline, event)
-        elif isinstance(event, cpp.ModuleEditedPipelineEvent):
+        elif isinstance(event, cellprofiler.pipeline.ModuleEditedPipelineEvent):
             for list_ctrl in self.list_ctrl, self.input_list_ctrl:
                 active_item = list_ctrl.get_active_item()
                 if (active_item is not None and
@@ -428,11 +426,11 @@ class PipelineListView(object):
                             self.set_current_debug_module(module)
                         break
 
-        elif isinstance(event, cpp.ModuleEnabledEvent):
+        elif isinstance(event, cellprofiler.pipeline.ModuleEnabledEvent):
             self.__on_module_enabled(event)
-        elif isinstance(event, cpp.ModuleDisabledEvent):
+        elif isinstance(event, cellprofiler.pipeline.ModuleDisabledEvent):
             self.__on_module_disabled(event)
-        elif isinstance(event, cpp.ModuleShowWindowEvent):
+        elif isinstance(event, cellprofiler.pipeline.ModuleShowWindowEvent):
             self.__on_show_window(event)
 
     def notify_directory_change(self):
@@ -550,8 +548,8 @@ class PipelineListView(object):
 
     @staticmethod
     def find_module_figure_window(module):
-        name = window_name(module)
-        return find_fig(name=name)
+        name = cellprofiler.gui.cpfigure.window_name(module)
+        return cellprofiler.gui.cpfigure.find_fig(name=name)
 
     def __on_pause_column_clicked(self, event):
         module = self.get_event_module(event)
@@ -610,7 +608,7 @@ class PipelineListView(object):
         if len(modules_to_save) == 0:
             event.Veto()
             return
-        fd = StringIO()
+        fd = StringIO.StringIO()
         self.__pipeline.savetxt(fd, modules_to_save,
                                 save_image_plane_details=False)
         pipeline_data_object = PipelineDataObject()
@@ -721,7 +719,7 @@ class PipelineListView(object):
         for filename in filenames:
             logger.info("Processing %s" % filename)
             _, ext = os.path.splitext(filename)
-            if len(ext) > 1 and ext[1:] in cpprefs.EXT_PROJECT_CHOICES:
+            if len(ext) > 1 and ext[1:] in cellprofiler.preferences.EXT_PROJECT_CHOICES:
                 self.__frame.Raise()
                 if wx.MessageBox(
                                 "Do you want to load the project, ""%s""?" % filename,
@@ -730,7 +728,7 @@ class PipelineListView(object):
                         parent=self.__frame) == wx.YES:
                     self.__frame.pipeline_controller.do_open_workspace(filename)
                     break
-            elif len(ext) > 1 and ext[1:] in cpprefs.EXT_PIPELINE_CHOICES:
+            elif len(ext) > 1 and ext[1:] in cellprofiler.preferences.EXT_PIPELINE_CHOICES:
                 self.__frame.Raise()
                 if wx.MessageBox(
                                 "Do you want to import the pipeline, ""%s""?" % filename,
@@ -746,8 +744,8 @@ class PipelineListView(object):
         #
         wx.BeginBusyCursor()
         try:
-            pipeline = cpp.Pipeline()
-            pipeline.load(StringIO(data))
+            pipeline = cellprofiler.pipeline.Pipeline()
+            pipeline.load(StringIO.StringIO(data))
             n_input_modules = self.get_input_item_count()
             for i, module in enumerate(pipeline.modules(False)):
                 module.module_num = i + index + n_input_modules + 1
@@ -772,7 +770,7 @@ class PipelineListView(object):
         """Reset the list view and repopulate the list items"""
         self.list_ctrl.DeleteAllItems()
         self.input_list_ctrl.DeleteAllItems()
-        assert isinstance(pipeline, cpp.Pipeline)
+        assert isinstance(pipeline, cellprofiler.pipeline.Pipeline)
 
         for module in pipeline.modules(False):
             self.__populate_row(module)
@@ -838,7 +836,7 @@ class PipelineListView(object):
     def __on_module_moved(self, pipeline, event):
         module = pipeline.modules(False)[event.module_num - 1]
         list_ctrl, index = self.get_ctrl_and_index(module)
-        if event.direction == cpp.DIRECTION_UP:
+        if event.direction == cellprofiler.pipeline.DIRECTION_UP:
             # if this module was moved up, the one before it was moved down
             # and is now after
             other_module = pipeline.modules(False)[event.module_num]
@@ -1528,7 +1526,7 @@ class PipelineListCtrl(wx.PyScrolledWindow):
                     if (self.always_draw_current_as_if_selected and
                             not item.selected):
                         flags |= wx.CONTROL_SELECTED
-                draw_item_selection_rect(self, dc, r, flags)
+                cellprofiler.gui.draw_item_selection_rect(self, dc, r, flags)
                 if (flags & wx.CONTROL_SELECTED + wx.CONTROL_FOCUSED) == \
                                 wx.CONTROL_SELECTED + wx.CONTROL_FOCUSED:
                     text_clr = clr_selected

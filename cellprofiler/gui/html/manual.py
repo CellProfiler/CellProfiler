@@ -1,14 +1,13 @@
-from cellprofiler.gui.help import MAIN_HELP
-from cellprofiler.modules import get_module_names, instantiate_module
-from cellprofiler.utilities.relpath import relpath
-from glob import glob
-from shutil import copy
-
+import cellprofiler.gui.help
 import cellprofiler.icons
+import cellprofiler.modules
 import cellprofiler.preferences
+import cellprofiler.utilities.relpath
 import cellprofiler.utilities.version
+import glob
 import os
 import re
+import shutil
 
 LOCATION_COVERPAGE = os.path.join('images', 'CPCoverPage.png')
 LOCATION_WHITEHEADLOGO = os.path.join('images', 'WhiteheadInstituteLogo.png')
@@ -37,9 +36,9 @@ def generate_html(webpage_path=None):
     index_fd = open(os.path.join(webpage_path, 'index.html'), 'w')
 
     icons_path = cellprofiler.icons.__path__[0]
-    all_pngs = glob(os.path.join(icons_path, "*.png"))
+    all_pngs = glob.glob(os.path.join(icons_path, "*.png"))
     for f in all_pngs:
-        copy(f, webpage_images_path)
+        shutil.copy(f, webpage_images_path)
 
     intro_text = """
 <html style="font-family:arial">
@@ -96,7 +95,7 @@ recent manual is available <a href="http://d1zymp9ayga15t.cloudfront.net/CPmanua
 
 def output_gui_html(webpage_path):
     """Output an HTML page for each non-module help item"""
-    icons_relpath = relpath(cellprofiler.icons.__path__[0])
+    icons_relpath = cellprofiler.utilities.relpath.relpath(cellprofiler.icons.__path__[0])
 
     help_text = """
 <h2>Using CellProfiler</a></h2>"""
@@ -133,7 +132,7 @@ def output_gui_html(webpage_path):
         help_text += "</ul>\n"
         return help_text
 
-    help_text = write_menu("Help", MAIN_HELP, help_text)
+    help_text = write_menu("Help", cellprofiler.gui.help.MAIN_HELP, help_text)
     help_text += "\n"
 
     return help_text
@@ -142,8 +141,8 @@ def output_gui_html(webpage_path):
 def output_module_html(webpage_path):
     """Output an HTML page for each module"""
 
-    icons_relpath = relpath(cellprofiler.icons.__path__[0])
-    all_png_icons = glob(os.path.join(icons_relpath, "*.png"))
+    icons_relpath = cellprofiler.utilities.relpath.relpath(cellprofiler.icons.__path__[0])
+    all_png_icons = glob.glob(os.path.join(icons_relpath, "*.png"))
     icon_names = [os.path.basename(f)[:-4] for f in all_png_icons]
 
     help_text = """
@@ -157,8 +156,8 @@ def output_module_html(webpage_path):
         except IOError:
             raise ValueError("Could not create directory %s" % module_path)
 
-    for module_name in sorted(get_module_names()):
-        module = instantiate_module(module_name)
+    for module_name in sorted(cellprofiler.modules.get_module_names()):
+        module = cellprofiler.modules.instantiate_module(module_name)
         location = os.path.split(
                 module.create_settings.im_func.func_code.co_filename)[0]
         if location == cellprofiler.preferences.get_plugin_directory():
@@ -210,13 +209,13 @@ def search_module_help(text):
             None if no match found.
     """
     matching_help = []
-    for item in MAIN_HELP:
+    for item in cellprofiler.gui.help.MAIN_HELP:
         matching_help += __search_menu_helper(
                 item, lambda x: __search_fn(x, text))
     count = sum([len(x[2]) for x in matching_help])
 
-    for module_name in get_module_names():
-        module = instantiate_module(module_name)
+    for module_name in cellprofiler.modules.get_module_names():
+        module = cellprofiler.modules.instantiate_module(module_name)
         location = os.path.split(
                 module.create_settings.im_func.func_code.co_filename)[0]
         if location == cellprofiler.preferences.get_plugin_directory():

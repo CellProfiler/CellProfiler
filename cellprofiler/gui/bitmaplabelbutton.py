@@ -2,12 +2,11 @@
 
 """
 
-from wx.lib.buttons import GenBitmapTextButton
-
 import wx
+import wx.lib.buttons
 
 
-class BitmapLabelButton(GenBitmapTextButton):
+class BitmapLabelButton(wx.lib.buttons.GenBitmapTextButton):
     LEFT_MARGIN = 5
     TEXT_PADDING = 3
 

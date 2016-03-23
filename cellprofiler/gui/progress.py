@@ -1,7 +1,6 @@
-from cellprofiler.gui import get_cp_icon
-from cellprofiler.icons import get_builtin_image
-
 import cellprofiler
+import cellprofiler.gui
+import cellprofiler.icons
 import cellprofiler.utilities.version
 import numpy
 import sys
@@ -60,7 +59,7 @@ class ProgressFrame(wx.Frame):
         # GUI stuff
         self.BackgroundColour = cellprofiler.preferences.get_background_color()
         self.tbicon = wx.TaskBarIcon()
-        self.tbicon.SetIcon(get_cp_icon(), "CellProfiler2.0")
+        self.tbicon.SetIcon(cellprofiler.gui.get_cp_icon(), "CellProfiler2.0")
         self.SetTitle("CellProfiler %s" % cellprofiler.utilities.version.title_string)
         self.SetSize((640, 480))
         self.panel = wx.Panel(self, wx.ID_ANY)
@@ -85,10 +84,10 @@ class ProgressFrame(wx.Frame):
         sizer.Add(self.current_module_control, 0, wx.LEFT | wx.RIGHT | wx.BOTTOM, 5)
         buttons_sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.play_pause_button = wx.BitmapButton(self.panel, -1,
-                                                 bitmap=wx.BitmapFromImage(get_builtin_image('pause')))
+                                                 bitmap=wx.BitmapFromImage(cellprofiler.icons.get_builtin_image('pause')))
         self.play_pause_button.SetToolTipString("Pause")
         buttons_sizer.Add(self.play_pause_button, 0, wx.ALL, 5)
-        self.stop_button = wx.BitmapButton(self.panel, -1, bitmap=wx.BitmapFromImage(get_builtin_image('stop')))
+        self.stop_button = wx.BitmapButton(self.panel, -1, bitmap=wx.BitmapFromImage(cellprofiler.icons.get_builtin_image('stop')))
         self.stop_button.SetToolTipString("Stop")
         buttons_sizer.Add(self.stop_button, 0, wx.ALL, 5)
         save_bitmap = wx.ArtProvider.GetBitmap(wx.ART_FILE_SAVE,
@@ -126,14 +125,14 @@ class ProgressFrame(wx.Frame):
 
     def pause(self):
         self.play_pause_button.SetBitmapLabel(
-                wx.BitmapFromImage(get_builtin_image('play')))
+                wx.BitmapFromImage(cellprofiler.icons.get_builtin_image('play')))
         self.play_pause_button.SetToolTipString("Resume")
         self.pause_start_time = time.time()
         self.paused = True
 
     def play(self):
         self.play_pause_button.SetBitmapLabel(
-                wx.BitmapFromImage(get_builtin_image('pause')))
+                wx.BitmapFromImage(cellprofiler.icons.get_builtin_image('pause')))
         self.play_pause_button.SetToolTipString("Pause")
         self.previous_pauses_duration += time.time() - self.pause_start_time
         self.pause_start_time = None

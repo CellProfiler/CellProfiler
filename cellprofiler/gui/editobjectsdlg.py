@@ -2,25 +2,24 @@
 
 """
 
-from cellprofiler.gui.cpfigure import CPNavigationToolbar
-from cellprofiler.gui.cpfigure_tools import renumber_labels_for_display
-from cellprofiler.gui.sashwindow_tools import sw_bind_to_evt_paint
-from centrosome.cpmorphology import get_outline_pts, color_labels
-from centrosome.cpmorphology import polygon_lines_to_mask
-from centrosome.cpmorphology import triangle_areas, distance2_to_line, convex_hull_image
-from centrosome.index import Indexes
-from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
-from matplotlib.lines import Line2D
-from matplotlib.path import Path
-from scipy.ndimage import gaussian_filter
-
+import cellprofiler.gui.cpfigure
+import cellprofiler.gui.cpfigure_tools
+import cellprofiler.gui.sashwindow_tools
 import cellprofiler.objects
 import cellprofiler.preferences
+import centrosome.cpmorphology
+import centrosome.cpmorphology
+import centrosome.cpmorphology
+import centrosome.index
 import logging
 import matplotlib
 import matplotlib.backend_bases
+import matplotlib.backends.backend_wxagg
 import matplotlib.figure
+import matplotlib.lines
+import matplotlib.path
 import numpy
+import scipy.ndimage
 import scipy.ndimage
 import sys
 import wx
@@ -226,11 +225,11 @@ class EditObjectsDialog(wx.Dialog):
         self.artists = {}
         for (x, y), d in artist_save:
             object_number = d[self.K_LABEL]
-            artist = Line2D(x, y,
-                            marker='o', markerfacecolor='r',
-                            markersize=6,
-                            color=self.colormap[object_number, :],
-                            animated=True)
+            artist = matplotlib.lines.Line2D(x, y,
+                                             marker='o', markerfacecolor='r',
+                                             markersize=6,
+                                             color=self.colormap[object_number, :],
+                                             animated=True)
             self.artists[artist] = d
             self.orig_axes.add_line(artist)
         self.display()
@@ -258,7 +257,7 @@ class EditObjectsDialog(wx.Dialog):
         #
         self.inside_print = False
 
-        class CanvasPatch(FigureCanvasWxAgg):
+        class CanvasPatch(matplotlib.backends.backend_wxagg.FigureCanvasWxAgg):
             def print_figure(self, *args, **kwargs):
                 self.Parent.inside_print = True
                 try:
@@ -267,7 +266,7 @@ class EditObjectsDialog(wx.Dialog):
                     self.Parent.inside_print = False
 
         self.panel = CanvasPatch(self, -1, self.figure)
-        self.toolbar = CPNavigationToolbar(self.panel)
+        self.toolbar = cellprofiler.gui.cpfigure.CPNavigationToolbar(self.panel)
         self.sash_parent = wx.Panel(self)
         #
         # Need to reparent the canvas after instantiating the toolbar so
@@ -296,7 +295,7 @@ class EditObjectsDialog(wx.Dialog):
         ########################################
         self.help_sash = wx.SashLayoutWindow(self.sash_parent)
         self.help_sash.Bind(wx.EVT_SASH_DRAGGED, self.on_help_sash_drag)
-        sw_bind_to_evt_paint(self.help_sash)
+        cellprofiler.gui.sashwindow_tools.sw_bind_to_evt_paint(self.help_sash)
         self.help_sash.SetOrientation(wx.LAYOUT_HORIZONTAL)
         self.help_sash.SetAlignment(wx.LAYOUT_BOTTOM)
         self.help_sash.SetDefaultBorderSize(4)
@@ -545,7 +544,7 @@ class EditObjectsDialog(wx.Dialog):
         self.lj = numpy.zeros(0, int)
         self.ll = numpy.zeros(0, int)
         for label_and_touching in self.labels:
-            colored_labels = color_labels(label_and_touching)
+            colored_labels = centrosome.cpmorphology.color_labels(label_and_touching)
             for color in range(1, numpy.max(colored_labels) + 1):
                 label = numpy.zeros(label_and_touching.shape,
                                     label_and_touching.dtype)
@@ -556,13 +555,13 @@ class EditObjectsDialog(wx.Dialog):
                 idxs = numpy.unique(label)
                 idxs = idxs[idxs != 0]
                 distinct_label_count = len(idxs)
-                clabels = renumber_labels_for_display(label)
+                clabels = cellprofiler.gui.cpfigure_tools.renumber_labels_for_display(label)
                 clabels[clabels != 0] += lstart
                 lstart += distinct_label_count
                 label_map[label.flatten()] = clabels.flatten()
                 l, ct = scipy.ndimage.label(label != 0,
                                             structure=numpy.ones((3, 3), bool))
-                coords, offsets, counts = get_outline_pts(l, numpy.arange(1, ct + 1))
+                coords, offsets, counts = centrosome.cpmorphology.get_outline_pts(l, numpy.arange(1, ct + 1))
                 oi, oj = coords.transpose()
                 l, ct = scipy.ndimage.label(label == 0)  # 4-connected
                 #
@@ -575,7 +574,7 @@ class EditObjectsDialog(wx.Dialog):
                 if len(ledge) > 0:
                     l[l == ledge[0]] = 0
 
-                coords, offsets, counts = get_outline_pts(l, numpy.arange(1, ct + 1))
+                coords, offsets, counts = centrosome.cpmorphology.get_outline_pts(l, numpy.arange(1, ct + 1))
                 if coords.shape[0] > 0:
                     oi, oj = [numpy.hstack((o, coords[:, i]))
                               for i, o in enumerate((oi, oj))]
@@ -770,7 +769,7 @@ class EditObjectsDialog(wx.Dialog):
                         lmap = numpy.zeros(len(k), int)
                         lmap[k] = numpy.arange(numpy.sum(k))
                         counts = numpy.bincount(lmap[self.ol[mask]])
-                        indexer = Indexes((counts,))
+                        indexer = centrosome.index.Indexes((counts,))
                         e = 1 + 3 * (counts[indexer.rev_idx] >= 16)
                         dash_mask = (indexer.idx[0] & (2 ** e - 1)) >= 2 ** (e - 1)
                         color[self.oi[mask], self.oj[mask]] = \
@@ -778,9 +777,9 @@ class EditObjectsDialog(wx.Dialog):
                     else:
                         color[self.oi[mask], self.oj[mask]] = self.oc[mask]
                     sigma = 1
-                    intensity = gaussian_filter(intensity, sigma)
+                    intensity = scipy.ndimage.gaussian_filter(intensity, sigma)
                     eps = intensity > numpy.finfo(intensity.dtype).eps
-                    color = gaussian_filter(color, (sigma, sigma, 0))[eps, :]
+                    color = scipy.ndimage.gaussian_filter(color, (sigma, sigma, 0))[eps, :]
                     intensity = intensity[eps]
                     cimage[eps, :] = \
                         cimage[eps, :] * (1 - intensity[:, numpy.newaxis]) + color
@@ -883,7 +882,7 @@ class EditObjectsDialog(wx.Dialog):
                 return
         elif event.inaxes == self.orig_axes and event.button == 3:
             for artist in self.artists:
-                path = Path(artist.get_xydata())
+                path = matplotlib.path.Path(artist.get_xydata())
                 if path.contains_point((event.xdata, event.ydata)):
                     self.close_label(self.artists[artist][self.K_LABEL])
                     self.record_undo()
@@ -1141,7 +1140,7 @@ class EditObjectsDialog(wx.Dialog):
             min(self.shape[i] - 1, max(yx, 0))
             for i, yx in enumerate((event.ydata, event.xdata))]
         new_pt = numpy.array([xdata, ydata], int)
-        path = Path(numpy.array((before_pt, new_pt, after_pt)))
+        path = matplotlib.path.Path(numpy.array((before_pt, new_pt, after_pt)))
         eps = numpy.finfo(numpy.float32).eps
         for artist in self.artists:
             if (self.allow_overlap and
@@ -1159,12 +1158,12 @@ class EditObjectsDialog(wx.Dialog):
                 xydata = numpy.column_stack((xx, yy))
             else:
                 xydata = artist.get_xydata()
-            other_path = Path(xydata)
+            other_path = matplotlib.path.Path(xydata)
 
             l0 = xydata[:-1, :]
             l1 = xydata[1:, :]
             neww_pt = numpy.ones(l0.shape) * new_pt[numpy.newaxis, :]
-            d = distance2_to_line(neww_pt, l0, l1)
+            d = centrosome.cpmorphology.distance2_to_line(neww_pt, l0, l1)
             different_sign = (numpy.sign(neww_pt - l0) !=
                               numpy.sign(neww_pt - l1))
             on_segment = ((d < eps) & different_sign[:, 0] &
@@ -1286,7 +1285,7 @@ class EditObjectsDialog(wx.Dialog):
         for n in all_labels:
             self.remove_label(n)
 
-        mask = convex_hull_image(mask)
+        mask = centrosome.cpmorphology.convex_hull_image(mask)
         self.replace_label(mask, object_number)
         self.init_labels()
         self.make_control_points(object_number)
@@ -1318,7 +1317,7 @@ class EditObjectsDialog(wx.Dialog):
             # In either case, don't add.
             #
             proj = numpy.sum(v * (pt - l0), 1)
-            d2 = distance2_to_line(pt, l0, l1)
+            d2 = centrosome.cpmorphology.distance2_to_line(pt, l0, l1)
             d2[proj <= 0] = numpy.inf
             d2[proj >= llen] = numpy.inf
             best = numpy.argmin(d2)
@@ -1391,12 +1390,12 @@ class EditObjectsDialog(wx.Dialog):
         self.labels.append(lnew)
         self.restructure_labels()
         self.init_labels()
-        new_artist = Line2D(x, y,
-                            marker='o',
-                            markerfacecolor='r',
-                            markersize=6,
-                            color=self.colormap[object_number, :],
-                            animated=True)
+        new_artist = matplotlib.lines.Line2D(x, y,
+                                             marker='o',
+                                             markerfacecolor='r',
+                                             markersize=6,
+                                             color=self.colormap[object_number, :],
+                                             animated=True)
 
         self.artists[new_artist] = {self.K_LABEL: object_number,
                                     self.K_EDITED: True,
@@ -1464,10 +1463,10 @@ class EditObjectsDialog(wx.Dialog):
         x, y = x[pick_index], y[pick_index]
         self.split_pick_artist = pick_artist
         self.split_pick_index = pick_index
-        self.split_artist = Line2D(numpy.array((x, x)),
-                                   numpy.array((y, y)),
-                                   color="blue",
-                                   animated=True)
+        self.split_artist = matplotlib.lines.Line2D(numpy.array((x, x)),
+                                                    numpy.array((y, y)),
+                                                    color="blue",
+                                                    animated=True)
         self.orig_axes.add_line(self.split_artist)
         self.mode = self.SPLIT_PICK_SECOND_MODE
         self.set_orig_axes_title()
@@ -1546,11 +1545,11 @@ class EditObjectsDialog(wx.Dialog):
                                  border_pts[:1, 1, :]))
 
             pick_artist.set_data((xy0[:, 0], xy0[:, 1]))
-            new_artist = Line2D(xy1[:, 0], xy1[:, 1],
-                                marker='o', markerfacecolor='r',
-                                markersize=6,
-                                color=self.colormap[old_object_number, :],
-                                animated=True)
+            new_artist = matplotlib.lines.Line2D(xy1[:, 0], xy1[:, 1],
+                                                 marker='o', markerfacecolor='r',
+                                                 markersize=6,
+                                                 color=self.colormap[old_object_number, :],
+                                                 animated=True)
             self.orig_axes.add_line(new_artist)
             if is_outside:
                 new_object_number = len(self.to_keep)
@@ -1567,7 +1566,7 @@ class EditObjectsDialog(wx.Dialog):
                     if (not attrs[self.K_OUTSIDE] and
                                 attrs[self.K_LABEL] == old_object_number):
                         hx, hy = artist.get_data()
-                        hmask = hmask | polygon_lines_to_mask(
+                        hmask = hmask | centrosome.cpmorphology.polygon_lines_to_mask(
                                 hy[:-1], hx[:-1], hy[1:], hx[1:],
                                 self.shape)
                 temp = numpy.ones(self.to_keep.shape[0] + 1, bool)
@@ -1713,9 +1712,9 @@ class EditObjectsDialog(wx.Dialog):
 
     def on_freehand_draw_click(self, event):
         """Begin drawing on mouse-down"""
-        self.active_artist = Line2D([event.xdata], [event.ydata],
-                                    color="blue",
-                                    animated=True)
+        self.active_artist = matplotlib.lines.Line2D([event.xdata], [event.ydata],
+                                                     color="blue",
+                                                     animated=True)
         self.orig_axes.add_line(self.active_artist)
         self.update_artists()
 
@@ -1742,11 +1741,11 @@ class EditObjectsDialog(wx.Dialog):
             xydata,
             numpy.array([[xydata[0, 0], xydata[0, 1]]])))
 
-        mask = polygon_lines_to_mask(xydata[:-1, 1],
+        mask = centrosome.cpmorphology.polygon_lines_to_mask(xydata[:-1, 1],
                                      xydata[:-1, 0],
                                      xydata[1:, 1],
                                      xydata[1:, 0],
-                                     self.shape)
+                                                             self.shape)
         if not self.allow_overlap:
             self.labels[0][mask] = 0
         self.add_label(mask)
@@ -1779,7 +1778,7 @@ class EditObjectsDialog(wx.Dialog):
         if event.button == 1:
             if event.inaxes == self.orig_axes:
                 self.delete_mode_start = (event.xdata, event.ydata)
-                self.delete_mode_rect_artist = Line2D(
+                self.delete_mode_rect_artist = matplotlib.lines.Line2D(
                         [event.xdata] * 5, [event.ydata] * 5,
                         linestyle="-",
                         color="w",
@@ -1815,7 +1814,7 @@ class EditObjectsDialog(wx.Dialog):
             if len(points) > 0:
                 points = numpy.vstack(points)
                 if self.delete_mode_artist is None:
-                    self.delete_mode_artist = Line2D(
+                    self.delete_mode_artist = matplotlib.lines.Line2D(
                             points[:, 0], points[:, 1],
                             marker="o",
                             markeredgecolor="black",
@@ -1977,7 +1976,7 @@ class EditObjectsDialog(wx.Dialog):
             sub_object_numbers = [
                 n for n in range(1, count + 1)
                 if polarity or n != border_object]
-            coords, offsets, counts = get_outline_pts(labels, sub_object_numbers)
+            coords, offsets, counts = centrosome.cpmorphology.get_outline_pts(labels, sub_object_numbers)
             coords -= 1  # account for mask padding
             for i, sub_object_number in enumerate(sub_object_numbers):
                 chain = coords[offsets[i]:(offsets[i] + counts[i]), :]
@@ -2000,8 +1999,8 @@ class EditObjectsDialog(wx.Dialog):
                         idx0 = idx1 - 1
                         ca = chain[accepted]
                         aidx = numpy.argwhere(accepted).flatten()
-                        a = triangle_areas(ca[idx0],
-                                           ca[idx1],
+                        a = centrosome.cpmorphology.triangle_areas(ca[idx0],
+                                                                   ca[idx1],
                                            chain[:-1])
                         idxmax = numpy.argmax(a)
                         if a[idxmax] < 4:
@@ -2011,12 +2010,12 @@ class EditObjectsDialog(wx.Dialog):
                                    aidx[idx1[idxmax]]) / 2)
                         accepted[idx] = True
                     chain = chain[accepted]
-                artist = Line2D(chain[:, 1], chain[:, 0],
-                                marker='o',
-                                markerfacecolor='r',
-                                markersize=6,
-                                color=self.colormap[object_number, :],
-                                animated=True)
+                artist = matplotlib.lines.Line2D(chain[:, 1], chain[:, 0],
+                                                 marker='o',
+                                                 markerfacecolor='r',
+                                                 markersize=6,
+                                                 color=self.colormap[object_number, :],
+                                                 animated=True)
                 self.orig_axes.add_line(artist)
                 self.artists[artist] = {
                     self.K_LABEL: object_number,
@@ -2042,9 +2041,9 @@ class EditObjectsDialog(wx.Dialog):
             mask = numpy.zeros(self.shape, bool)
             for artist in my_artists:
                 j, i = artist.get_data()
-                m1 = polygon_lines_to_mask(i[:-1], j[:-1],
+                m1 = centrosome.cpmorphology.polygon_lines_to_mask(i[:-1], j[:-1],
                                            i[1:], j[1:],
-                                           self.shape)
+                                                                   self.shape)
                 mask[m1] = ~mask[m1]
             for artist in my_artists:
                 artist.remove()

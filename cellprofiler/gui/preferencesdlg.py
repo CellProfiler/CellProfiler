@@ -1,9 +1,8 @@
 """preferencesdlg.py Edit global preferences
 """
 
-from cellprofiler.gui.htmldialog import HTMLDialog
-
 import cellprofiler.gui.help
+import cellprofiler.gui.htmldialog
 import cellprofiler.preferences
 import matplotlib.cm
 import os
@@ -175,7 +174,7 @@ class PreferencesDlg(wx.Dialog):
             button = wx.Button(scrollpanel, -1, '?', (0, 0), (30, -1))
 
             def on_help(event, help_text=help_text):
-                dlg = HTMLDialog(self, "Preferences help", help_text)
+                dlg = cellprofiler.gui.htmldialog.HTMLDialog(self, "Preferences help", help_text)
                 dlg.Show()
 
             sizer.Add(button, (index, 3))

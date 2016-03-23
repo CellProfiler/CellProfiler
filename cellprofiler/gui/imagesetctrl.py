@@ -1,20 +1,19 @@
 """ImageSetCtrl.py - A control to display an imageset
 """
 
-from cellprofiler.gui import draw_item_selection_rect
-from cellprofiler.gui.cornerbuttonmixin import CornerButtonMixin
-from cellprofiler.modules.images import Images
-from wx.combo import BitmapComboBox
-from wx.lib.mixins.gridlabelrenderer import GridLabelRenderer
-
+import cellprofiler.gui
+import cellprofiler.gui.cornerbuttonmixin
 import cellprofiler.measurements
+import cellprofiler.modules.images
 import cellprofiler.preferences
 import cellprofiler.settings
 import numpy
 import re
 import urllib
 import wx
+import wx.combo
 import wx.grid
+import wx.lib.mixins.gridlabelrenderer
 
 '''Table column displays metadata'''
 COL_METADATA = "Metadata"
@@ -113,7 +112,7 @@ class ImageSetCache(object):
         self.cache = dict(cache_kv[-int(self.max_size / 2):])
 
 
-class ImageSetCtrl(wx.grid.Grid, CornerButtonMixin):
+class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButtonMixin):
     class ImageSetGridTable(wx.grid.PyGridTableBase):
         DEFAULT_ATTR = wx.grid.GridCellAttr()
         ERROR_ATTR = wx.grid.GridCellAttr()
@@ -375,7 +374,7 @@ class ImageSetCtrl(wx.grid.Grid, CornerButtonMixin):
             display_mode = DISPLAY_MODE_SIMPLE
 
         wx.grid.Grid.__init__(self, *args, **kwargs)
-        CornerButtonMixin.__init__(
+        cellprofiler.gui.cornerbuttonmixin.CornerButtonMixin.__init__(
                 self, self.on_update,
                 label="Update", tooltip="Update and display the image set")
         gclw = self.GetGridColLabelWindow()
@@ -653,8 +652,8 @@ class ImageSetCtrl(wx.grid.Grid, CornerButtonMixin):
             dlg.Sizer.Add(sub_sizer, 0, wx.EXPAND | wx.ALL, 10)
             sub_sizer.Add(wx.StaticText(dlg, label="Image type:"))
             channel_type = self.Table.columns[col].channel_type
-            choice = BitmapComboBox(dlg, value=channel_type,
-                                    style=wx.CB_DROPDOWN)
+            choice = wx.combo.BitmapComboBox(dlg, value=channel_type,
+                                             style=wx.CB_DROPDOWN)
             sub_sizer.Add(choice)
             selection = None
             current_help = ""
@@ -1027,7 +1026,7 @@ class EllipsisGridCellRenderer(wx.grid.PyGridCellRenderer):
                     grid, grid.GetGridWindow(), grid.GetGridColLabelWindow(),
                     grid.GetGridRowLabelWindow(), grid.GetGridCornerLabelWindow()):
                 flags += wx.CONTROL_FOCUSED
-            draw_item_selection_rect(
+            cellprofiler.gui.draw_item_selection_rect(
                     grid.GetGridWindow(), dc, rect, flags)
             dc.SetBackgroundMode(wx.TRANSPARENT)
             if attr.HasTextColour():
@@ -1096,7 +1095,7 @@ class EllipsisGridCellRenderer(wx.grid.PyGridCellRenderer):
         return wx.Size(width + 2 * self.padding, height)
 
 
-class ColLabelRenderer(GridLabelRenderer):
+class ColLabelRenderer(wx.lib.mixins.gridlabelrenderer.GridLabelRenderer):
     """Renders the appearance of a column label
 
     A column label has the label text, an icon button for setting the
@@ -1474,7 +1473,7 @@ class FilterPanelDlg(wx.Dialog):
 
     def fn_filter(self, url):
         """A filter function that applies the current filter to a URL"""
-        modpath = Images.url_to_modpath(url)
+        modpath = cellprofiler.modules.images.Images.url_to_modpath(url)
         return self.filter_setting.evaluate(
                 (cellprofiler.settings.FileCollectionDisplay.NODE_IMAGE_PLANE, modpath, None))
 

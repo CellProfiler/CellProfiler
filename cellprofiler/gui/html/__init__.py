@@ -1,9 +1,8 @@
 """cellprofiler.gui.html.__init__
 """
 
-from htmlwindow import HtmlClickableWindow
-
 import content
+import htmlwindow
 import wx
 
 # Rewrite the help for the case where we have to use a differently named menu for wx 2.8.10.1 on Mac

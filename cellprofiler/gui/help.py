@@ -17,9 +17,8 @@
 #
 ########################################################
 
-from cellprofiler.utilities.relpath import relpath
-
 import cellprofiler.icons
+import cellprofiler.utilities.relpath
 import logging
 import os
 import sys
@@ -37,7 +36,7 @@ logger = logging.getLogger(__name__)
 # So I have use relative ones. Should check this to see if works on the
 # compiled version
 try:
-    path = relpath(cellprofiler.icons.get_builtin_images_path())
+    path = cellprofiler.utilities.relpath.relpath(cellprofiler.icons.get_builtin_images_path())
 except:
     if any([x == "--html" for x in sys.argv]) and sys.platform.startswith("win"):
         if hasattr(sys, "frozen"):

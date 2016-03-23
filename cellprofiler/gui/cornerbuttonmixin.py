@@ -1,9 +1,8 @@
 """CornerButtonMixin.py - a mixin for wx.grid.Grid that manages a button in the corner
 """
 
-from wx.lib.mixins.gridlabelrenderer import GridDefaultCornerLabelRenderer
-
 import wx
+import wx.lib.mixins.gridlabelrenderer
 
 
 class CornerButtonMixin(object):
@@ -76,7 +75,7 @@ class CornerButtonMixin(object):
             dc.BackgroundMode = wx.TRANSPARENT
             rn = wx.RendererNative.Get()
             assert isinstance(rn, wx.RendererNative)
-            cr = GridDefaultCornerLabelRenderer()
+            cr = wx.lib.mixins.gridlabelrenderer.GridDefaultCornerLabelRenderer()
             cr.DrawBorder(self, dc, corner.GetRect())
             if self.fn_clicked is not None:
                 r = self.get_corner_update_button_rect()

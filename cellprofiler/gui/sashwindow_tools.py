@@ -3,10 +3,9 @@
 This module takes over painting the sash window to make it a little more obvious
 """
 
-from wx.aui import PyAuiDockArt
-
 import cellprofiler.preferences
 import wx
+import wx.aui
 
 '''The size of the gripper the long way. This is about 5 dots worth.'''
 GRIPPER_SIZE = 32
@@ -30,7 +29,7 @@ def get_art_and_pane_info():
     global __art
     global __pane_info
     if __art is None:
-        __art = PyAuiDockArt()
+        __art = wx.aui.PyAuiDockArt()
         __pane_info = wx.aui.AuiPaneInfo()
         __pane_info.Gripper(True)
     return __art, __pane_info

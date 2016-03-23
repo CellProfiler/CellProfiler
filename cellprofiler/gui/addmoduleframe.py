@@ -2,10 +2,9 @@
 that give you the GUI to add a module to a pipeline
 """
 
-from cellprofiler.gui import get_cp_icon
-from cellprofiler.gui.html.manual import search_module_help
-
 import cellprofiler.cpmodule
+import cellprofiler.gui
+import cellprofiler.gui.html.manual
 import cellprofiler.modules
 import cellprofiler.preferences
 import cpframe
@@ -111,7 +110,7 @@ class AddModuleFrame(wx.Frame):
         self.Hide()
 
     def __set_icon(self):
-        icon = get_cp_icon()
+        icon = cellprofiler.gui.get_cp_icon()
         self.SetIcon(icon)
 
     def __get_module_files(self):
@@ -195,7 +194,7 @@ class AddModuleFrame(wx.Frame):
             self.search_text.SetFocus()
             return
 
-        html = search_module_help(self.search_text.Value)
+        html = cellprofiler.gui.html.manual.search_module_help(self.search_text.Value)
         if html is None:
             wx.MessageBox('No references found for "%s".' % self.search_text.Value,
                           caption="Text not found",
@@ -217,7 +216,7 @@ class AddModuleFrame(wx.Frame):
         window = HtmlClickableWindow(helpframe)
         sizer.Add(window, 1, wx.EXPAND)
         window.AppendToPage(help_text)
-        helpframe.SetIcon(get_cp_icon())
+        helpframe.SetIcon(cellprofiler.gui.get_cp_icon())
         helpframe.Layout()
         helpframe.Show()
 

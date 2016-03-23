@@ -2,9 +2,8 @@
 
     TODO - long-term, this should Matlab imformats or CPimread to get the list of images"""
 
-from cellprofiler.modules.loadimages import LoadImagesImageProvider, is_image
-
 import cellprofiler.gui.cpfigure
+import cellprofiler.modules.loadimages
 import cellprofiler.preferences
 import logging
 import os
@@ -73,7 +72,7 @@ class DirectoryView(object):
         try:
             files = [x
                      for x in os.listdir(cellprofiler.preferences.get_default_image_directory())
-                     if is_image(x) or x.endswith(".cp")]
+                     if cellprofiler.modules.loadimages.is_image(x) or x.endswith(".cp")]
         except Exception, e:
             logger.warning(
                     "Warning: Could not refresh default image directory %s.\n" %
@@ -123,7 +122,7 @@ class DirectoryView(object):
         frame.Refresh()
 
     def __display_image(self, filename):
-        lip = LoadImagesImageProvider("dummy", "", filename, True)
+        lip = cellprofiler.modules.loadimages.LoadImagesImageProvider("dummy", "", filename, True)
         image = lip.provide_image(None).pixel_data
         frame = cellprofiler.gui.cpfigure.CPFigureFrame(self.__list_box.GetTopLevelParent(),
                                                         title=filename,

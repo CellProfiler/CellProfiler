@@ -1,10 +1,9 @@
 """plateviewer.py - a user interface to view the image files for a plate
 """
 
-from matplotlib.backends.backend_wx import NavigationToolbar2Wx
-from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
-
 import matplotlib
+import matplotlib.backends.backend_wx
+import matplotlib.backends.backend_wxagg
 import matplotlib.cm
 import multiprocessing
 import numpy
@@ -205,13 +204,13 @@ class PlateViewer(object):
         self.figure = matplotlib.figure.Figure()
         self.axes = self.figure.add_axes((0.05, 0.05, .9, .9))
         self.subcanvaspanel = wx.Panel(self.canvas_panel)
-        self.canvas = FigureCanvasWxAgg(self.subcanvaspanel, -1, self.figure)
+        self.canvas = matplotlib.backends.backend_wxagg.FigureCanvasWxAgg(self.subcanvaspanel, -1, self.figure)
         self.canvas_panel.Sizer.Add(self.subcanvaspanel, 1, wx.EXPAND)
         #
         # The following is largely taken from the matplotlib examples:
         # http://matplotlib.sourceforge.net/examples/user_interfaces/embedding_in_wx2.html
         #
-        self.navtoolbar = NavigationToolbar2Wx(self.canvas)
+        self.navtoolbar = matplotlib.backends.backend_wx.NavigationToolbar2Wx(self.canvas)
         self.navtoolbar.Realize()
         if wx.Platform == '__WXMAC__':
             # Mac platform (OSX 10.3, MacPython) does not seem to cope with

@@ -1,12 +1,12 @@
 """Tests for cellprofiler.gui.html.manual"""
 
+import cellprofiler.gui.html.manual
+import cellprofiler.preferences
 import os
 import re
 import tempfile
 import traceback
 import unittest
-import cellprofiler.gui.html.manual
-import cellprofiler.preferences
 
 
 class TestManual(unittest.TestCase):

@@ -1,23 +1,20 @@
 """ cpfigure.py - provides a frame with a figure inside
 """
 
-from cellprofiler.gui import get_cp_icon
-from cellprofiler.gui.help import make_help_menu, FIGURE_HELP
-from cellprofiler.preferences import get_next_cpfigure_position, reset_cpfigure_position
-from centrosome.cpmorphology import get_outline_pts
-from cpfigure_tools import renumber_labels_for_display
-from matplotlib.backends.backend_wxagg import NavigationToolbar2WxAgg, FigureCanvasWxAgg
-from scipy.ndimage import distance_transform_edt, label
-from scipy.sparse import coo_matrix
-
+import cellprofiler.gui
 import cellprofiler.gui.cpartists
+import cellprofiler.gui.help
 import cellprofiler.preferences
+import cellprofiler.preferences
+import centrosome.cpmorphology
 import centrosome.outline
+import cpfigure_tools
 import csv
 import functools
 import javabridge
 import logging
 import matplotlib
+import matplotlib.backends.backend_wxagg
 import matplotlib.backends.backend_wxagg
 import matplotlib.cm
 import matplotlib.colorbar
@@ -25,6 +22,8 @@ import matplotlib.patches
 import numpy as np
 import numpy.ma
 import os
+import scipy.ndimage
+import scipy.sparse
 import sys
 import uuid
 import wx
@@ -36,10 +35,10 @@ logger = logging.getLogger(__name__)
 #
 mpl_filetypes = ["png", "pdf"]
 mpl_unsupported_filetypes = [
-    ft for ft in FigureCanvasWxAgg.filetypes
+    ft for ft in matplotlib.backends.backend_wxagg.FigureCanvasWxAgg.filetypes
     if ft not in mpl_filetypes]
 for ft in mpl_unsupported_filetypes:
-    del FigureCanvasWxAgg.filetypes[ft]
+    del matplotlib.backends.backend_wxagg.FigureCanvasWxAgg.filetypes[ft]
 
 g_use_imshow = False
 
@@ -196,7 +195,7 @@ def close_all(parent):
         else:
             window.Close()
 
-    reset_cpfigure_position()
+    cellprofiler.preferences.reset_cpfigure_position()
     try:
         from imagej.windowmanager import close_all_windows
         from javabridge import attach, detach
@@ -259,7 +258,7 @@ class CPFigureFrame(wx.Frame):
                  style=wx.DEFAULT_FRAME_STYLE, name=wx.FrameNameStr,
                  subplots=None, on_close=None,
                  secret_panel_class=None,
-                 help_menu_items=FIGURE_HELP):
+                 help_menu_items=cellprofiler.gui.help.FIGURE_HELP):
         """Initialize the frame:
 
         parent   - parent window to this one, typically CPFrame
@@ -276,7 +275,7 @@ class CPFigureFrame(wx.Frame):
         """
         global window_ids
         if pos == wx.DefaultPosition:
-            pos = get_next_cpfigure_position()
+            pos = cellprofiler.preferences.get_next_cpfigure_position()
         super(CPFigureFrame, self).__init__(parent, identifier, title, pos, size, style, name)
         self.close_fn = on_close
         self.BackgroundColour = cellprofiler.preferences.get_background_color()
@@ -306,7 +305,7 @@ class CPFigureFrame(wx.Frame):
         else:
             matplotlib.rcdefaults()
         self.figure = figure = matplotlib.figure.Figure()
-        self.panel = FigureCanvasWxAgg(self, -1, self.figure)
+        self.panel = matplotlib.backends.backend_wxagg.FigureCanvasWxAgg(self, -1, self.figure)
         if secret_panel_class is None:
             secret_panel_class = wx.Panel
         self.secret_panel = secret_panel_class(self)
@@ -323,7 +322,7 @@ class CPFigureFrame(wx.Frame):
         self.figure.canvas.mpl_connect('button_release_event', self.on_button_release)
         self.figure.canvas.mpl_connect('resize_event', self.on_resize)
         try:
-            self.SetIcon(get_cp_icon())
+            self.SetIcon(cellprofiler.gui.get_cp_icon())
         except:
             pass
         if size == wx.DefaultSize:
@@ -359,7 +358,7 @@ class CPFigureFrame(wx.Frame):
                         wx.EVT_MENU(parent, window_id, on_menu_command)
                         self.remove_menu.append([menu, window_id])
 
-    def create_menu(self, figure_help=FIGURE_HELP):
+    def create_menu(self, figure_help=cellprofiler.gui.help.FIGURE_HELP):
         self.MenuBar = wx.MenuBar()
         self.__menu_file = wx.Menu()
         self.__menu_file.Append(MENU_FILE_SAVE, "&Save")
@@ -394,7 +393,7 @@ class CPFigureFrame(wx.Frame):
 
         self.SetAcceleratorTable(accelerators)
         wx.EVT_MENU(self, MENU_CLOSE_WINDOW, self.on_close)
-        self.MenuBar.Append(make_help_menu(figure_help, self), "&Help")
+        self.MenuBar.Append(cellprofiler.gui.help.make_help_menu(figure_help, self), "&Help")
 
     def create_toolbar(self):
         self.navtoolbar = CPNavigationToolbar(self.figure.canvas)
@@ -1335,7 +1334,7 @@ class CPFigureFrame(wx.Frame):
                      our own artist.
         """
         if renumber:
-            labels = renumber_labels_for_display(labels)
+            labels = cpfigure_tools.renumber_labels_for_display(labels)
 
         cm = matplotlib.cm.get_cmap(cellprofiler.preferences.get_default_colormap())
         cm.set_bad((0, 0, 0))
@@ -1389,8 +1388,8 @@ class CPFigureFrame(wx.Frame):
                 order = np.arange(max_label)
             order = np.hstack(([0], order + 1))
             colors = matplotlib.cm.ScalarMappable(cmap=cm).to_rgba(order)
-            r, g, b, a = [coo_matrix((colors[ijv[:, 2], i], (ijv[:, 0], ijv[:, 1])),
-                                     shape=shape).toarray()
+            r, g, b, a = [scipy.sparse.coo_matrix((colors[ijv[:, 2], i], (ijv[:, 0], ijv[:, 1])),
+                                                  shape=shape).toarray()
                           for i in range(4)]
             for i, plane in enumerate((r, g, b)):
                 image[a != 0, i] = plane[a != 0] / a[a != 0]
@@ -1496,7 +1495,7 @@ class CPFigureFrame(wx.Frame):
                     if lw > 1:
                         # Alpha-blend for distances beyond 1
                         hw = lw / 2
-                        d = distance_transform_edt(~lm)
+                        d = scipy.ndimage.distance_transform_edt(~lm)
                         dti, dtj = np.where((d < hw + .5) & ~lm)
                         lo[dti, dtj] = np.minimum(1, hw + .5 - d[dti, dtj])
                     image = image * (1 - lo[:, :, np.newaxis]) + \
@@ -1504,7 +1503,7 @@ class CPFigureFrame(wx.Frame):
                 elif cplabel[CPLD_MODE] == CPLDM_ALPHA:
                     #
                     # For alpha overlays, renumber
-                    lnumbers = renumber_labels_for_display(labels) + loffset
+                    lnumbers = cpfigure_tools.renumber_labels_for_display(labels) + loffset
                     mappable = matplotlib.cm.ScalarMappable(
                             cmap=cplabel[CPLD_ALPHA_COLORMAP])
                     mappable.set_clim(1, ltotal)
@@ -1983,7 +1982,7 @@ class CPOutlineArtist(matplotlib.collections.LineCollection):
         #
         lines = []
         for l in labels:
-            new_labels, counts = label(l != 0, np.ones((3, 3), bool))
+            new_labels, counts = scipy.ndimage.label(l != 0, np.ones((3, 3), bool))
             if counts == 0:
                 continue
             l = l.astype(np.uint64) * counts + new_labels
@@ -1993,7 +1992,7 @@ class CPOutlineArtist(matplotlib.collections.LineCollection):
             else:
                 my_range = np.arange(1, len(unique))
             idx.shape = l.shape
-            pts, offs, counts = get_outline_pts(idx, my_range)
+            pts, offs, counts = centrosome.cpmorphology.get_outline_pts(idx, my_range)
             pts = pts[:, ::-1]  # matplotlib x, y reversed from i,j
             for off, count in zip(offs, counts):
                 lines.append(np.vstack((pts[off:off + count], pts[off:off + 1])))
@@ -2131,7 +2130,7 @@ NAV_MODE_PAN = 'pan/zoom'
 NAV_MODE_NONE = ''
 
 
-class CPNavigationToolbar(NavigationToolbar2WxAgg):
+class CPNavigationToolbar(matplotlib.backends.backend_wxagg.NavigationToolbar2WxAgg):
     """Navigation toolbar for EditObjectsDialog"""
 
     def set_cursor(self, cursor):
@@ -2139,7 +2138,7 @@ class CPNavigationToolbar(NavigationToolbar2WxAgg):
         if cursor == matplotlib.backend_bases.cursors.SELECT_REGION:
             self.canvas.SetCursor(get_crosshair_cursor())
         else:
-            NavigationToolbar2WxAgg.set_cursor(self, cursor)
+            matplotlib.backends.backend_wxagg.NavigationToolbar2WxAgg.set_cursor(self, cursor)
 
     def cancel_mode(self):
         """Toggle the current mode to off"""
@@ -2153,11 +2152,11 @@ class CPNavigationToolbar(NavigationToolbar2WxAgg):
                 self.ToggleTool(self.wx_ids['Pan'], False)
 
     def zoom(self, *args):
-        NavigationToolbar2WxAgg.zoom(self, *args)
+        matplotlib.backends.backend_wxagg.NavigationToolbar2WxAgg.zoom(self, *args)
         self.__send_mode_change_event()
 
     def pan(self, *args):
-        NavigationToolbar2WxAgg.pan(self, *args)
+        matplotlib.backends.backend_wxagg.NavigationToolbar2WxAgg.pan(self, *args)
         self.__send_mode_change_event()
 
     def is_home(self):

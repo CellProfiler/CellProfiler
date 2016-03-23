@@ -1,9 +1,8 @@
 """metadatadlg.py - dialog for editing an expression that might contain metadata
 """
 
-from cellprofiler.preferences import get_primary_outline_color
-
 import cellprofiler.measurements
+import cellprofiler.preferences
 import wx
 import wx.lib.masked
 
@@ -531,7 +530,7 @@ class MetadataControl(wx.PyControl):
         try:
             dc.BackgroundMode = wx.SOLID
             background_color = wx.SystemSettings_GetColour(wx.SYS_COLOUR_WINDOW)
-            metadata_color = get_primary_outline_color()
+            metadata_color = cellprofiler.preferences.get_primary_outline_color()
             selected_background_color = wx.SystemSettings_GetColour(wx.SYS_COLOUR_HIGHLIGHT)
             selected_color = wx.SystemSettings_GetColour(wx.SYS_COLOUR_HIGHLIGHTTEXT)
             text_color = wx.SystemSettings_GetColour(wx.SYS_COLOUR_WINDOWTEXT)

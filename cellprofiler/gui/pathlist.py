@@ -1,9 +1,8 @@
 """PathList - the PathListCtrl displays folders and paths in a scalable way
 """
 
-from cellprofiler.gui import draw_item_selection_rect
-
 import bisect
+import cellprofiler.gui
 import cellprofiler.preferences
 import logging
 import numpy
@@ -643,7 +642,7 @@ class PathListCtrl(wx.PyScrolledWindow):
                         flags += wx.CONTROL_SELECTED
                     if idx == self.focus_item:
                         flags += wx.CONTROL_CURRENT
-                    draw_item_selection_rect(
+                    cellprofiler.gui.draw_item_selection_rect(
                             self, paint_dc,
                             wx.Rect(self.TREEITEM_WIDTH - x, yy,
                                     sel_width + 2 * self.TREEITEM_GAP, line_height),

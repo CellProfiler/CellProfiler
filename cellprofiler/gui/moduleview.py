@@ -1,26 +1,25 @@
 """ModuleView.py - implements a view on a module
 """
 
-from cellprofiler.icons import get_builtin_image
-from cornerbuttonmixin import CornerButtonMixin
-from htmldialog import HTMLDialog
-from metadatactrl import MetadataControl
-from namesubscriber import NameSubscriberComboBox
-from regexp_editor import edit_regexp, RE_FILENAME_GUESSES, RE_FOLDER_GUESSES
-from treecheckboxdialog import TreeCheckboxDialog
-
+import cellprofiler.icons
 import cellprofiler.pipeline
 import cellprofiler.preferences
 import cellprofiler.settings
+import cornerbuttonmixin
+import htmldialog
 import logging
 import matplotlib.cm
+import metadatactrl
+import namesubscriber
 import numpy
 import os
 import Queue
+import regexp_editor
 import stat
 import sys
 import threading
 import time
+import treecheckboxdialog
 import uuid
 import weakref
 import wx
@@ -715,10 +714,10 @@ class ModuleView:
         if v.value not in [c[0] for c in choices]:
             choices = choices + [(v.value, "", 0, False)]
         if not control:
-            control = NameSubscriberComboBox(self.__module_panel,
-                                             value=v.value,
-                                             choices=choices,
-                                             name=control_name)
+            control = namesubscriber.NameSubscriberComboBox(self.__module_panel,
+                                                            value=v.value,
+                                                            choices=choices,
+                                                            name=control_name)
 
             def callback(event, setting=v, control=control):
                 # the NameSubscriberComboBox behaves like a combobox
@@ -843,7 +842,7 @@ class ModuleView:
                     return leaf_state
 
                 get_state(d)
-                dlg = TreeCheckboxDialog(self.module_panel, d, size=(480, 480))
+                dlg = treecheckboxdialog.TreeCheckboxDialog(self.module_panel, d, size=(480, 480))
                 dlg.Title = "Select measurements"
                 if dlg.ShowModal() == wx.ID_OK:
                     def collect_state(object_name, prefix, d):
@@ -939,7 +938,7 @@ class ModuleView:
                 finally:
                     self.module_panel.SetCursor(wx.NullCursor)
 
-                dlg = TreeCheckboxDialog(self.module_panel, d, size=(320, 480))
+                dlg = treecheckboxdialog.TreeCheckboxDialog(self.module_panel, d, size=(320, 480))
                 dlg.set_parent_reflects_child(False)
                 dlg.Title = "Select folders"
                 if dlg.ShowModal() == wx.ID_OK:
@@ -1270,14 +1269,14 @@ class ModuleView:
 
                 if v.guess == cellprofiler.settings.RegexpText.GUESS_FOLDER:
                     guess_file = cellprofiler.preferences.get_pathname_re_guess_file()
-                    guesses = RE_FOLDER_GUESSES
+                    guesses = regexp_editor.RE_FOLDER_GUESSES
                 else:
                     guess_file = cellprofiler.preferences.get_filename_re_guess_file()
-                    guesses = RE_FILENAME_GUESSES
+                    guesses = regexp_editor.RE_FILENAME_GUESSES
                 if guess_file is not None and os.path.exists(guess_file):
                     with open(guess_file, "r") as fd:
                         guesses = [x.strip() for x in fd.readlines()]
-                new_value = edit_regexp(panel, control.Value, filename, guesses)
+                new_value = regexp_editor.edit_regexp(panel, control.Value, filename, guesses)
                 if new_value:
                     control.Value = new_value
                     self.__on_cell_change(event, setting, control)
@@ -1310,7 +1309,7 @@ class ModuleView:
             sizer = wx.BoxSizer(wx.HORIZONTAL)
             control.SetSizer(sizer)
             if v.metadata_display:
-                edit_control = MetadataControl(
+                edit_control = metadatactrl.MetadataControl(
                         self.__pipeline,
                         self.__module,
                         control,
@@ -1392,10 +1391,10 @@ class ModuleView:
             custom_label = wx.StaticText(control, name=custom_ctrl_label_name)
             custom_sizer.Add(custom_label, 0, wx.ALIGN_CENTER_VERTICAL)
             if v.allow_metadata:
-                custom_ctrl = MetadataControl(self.__pipeline,
-                                              self.__module,
-                                              control, value=v.custom_path,
-                                              name=custom_ctrl_name)
+                custom_ctrl = metadatactrl.MetadataControl(self.__pipeline,
+                                                           self.__module,
+                                                           control, value=v.custom_path,
+                                                           name=custom_ctrl_name)
             else:
                 custom_ctrl = wx.TextCtrl(control, -1, v.custom_path,
                                           name=custom_ctrl_name)
@@ -1569,7 +1568,7 @@ class ModuleView:
         text = None
         if not control:
             if v.metadata_display:
-                control = MetadataControl(
+                control = metadatactrl.MetadataControl(
                         self.__pipeline,
                         self.__module,
                         self.__module_panel,
@@ -1975,14 +1974,14 @@ class ModuleView:
                             name=name)
 
         def callback(event):
-            dialog = HTMLDialog(self.__module_panel, title, content)
+            dialog = htmldialog.HTMLDialog(self.__module_panel, title, content)
             dialog.CentreOnParent()
             dialog.Show()
 
         control.Bind(wx.EVT_BUTTON, callback, control)
         return control
 
-    class CornerButtonGrid(wx.grid.Grid, CornerButtonMixin):
+    class CornerButtonGrid(wx.grid.Grid, cornerbuttonmixin.CornerButtonMixin):
         def __init__(self, *args, **kwargs):
             kwargs = kwargs.copy()
             if "fn_clicked" in kwargs:
@@ -1992,7 +1991,7 @@ class ModuleView:
             label = kwargs.pop("label", "Update")
             tooltip = kwargs.pop("tooltip", "Update this table")
             wx.grid.Grid.__init__(self, *args, **kwargs)
-            CornerButtonMixin.__init__(self, fn_clicked, label, tooltip)
+            cornerbuttonmixin.CornerButtonMixin.__init__(self, fn_clicked, label, tooltip)
 
     def make_table_control(self, v, control):
         if control is None:
@@ -2788,13 +2787,13 @@ class FileCollectionDisplayController(object):
             wx.ArtProvider.GetBitmap(wx.ART_NORMAL_FILE,
                                      wx.ART_OTHER, size=(16, 16)))
     IMAGE_PLANE_IMAGE_INDEX = IMAGE_LIST.Add(
-            get_builtin_image("microscope-icon_16").ConvertToBitmap())
+            cellprofiler.icons.get_builtin_image("microscope-icon_16").ConvertToBitmap())
     IMAGE_PLANES_IMAGE_INDEX = IMAGE_LIST.Add(
-            get_builtin_image("microscopes_16").ConvertToBitmap())
+            cellprofiler.icons.get_builtin_image("microscopes_16").ConvertToBitmap())
     COLOR_IMAGE_INDEX = IMAGE_LIST.Add(
-            get_builtin_image("microscope-color_16").ConvertToBitmap())
+            cellprofiler.icons.get_builtin_image("microscope-color_16").ConvertToBitmap())
     MOVIE_IMAGE_INDEX = IMAGE_LIST.Add(
-            get_builtin_image("movie_16").ConvertToBitmap())
+            cellprofiler.icons.get_builtin_image("movie_16").ConvertToBitmap())
 
     ACTIVE_COLOR = wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOWTEXT)
     FILTERED_COLOR = wx.SystemSettings.GetColour(wx.SYS_COLOUR_GRAYTEXT)

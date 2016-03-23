@@ -1,13 +1,12 @@
 """datatoolframe.py - Holder for a data tool
 """
 
-from cellprofiler.gui import get_cp_icon
-from cellprofiler.gui.moduleview import ModuleView
-from cellprofiler.modules import instantiate_module
-
 import cellprofiler.cpimage
+import cellprofiler.gui
 import cellprofiler.gui.cpfigure
+import cellprofiler.gui.moduleview
 import cellprofiler.measurements
+import cellprofiler.modules
 import cellprofiler.objects
 import cellprofiler.pipeline
 import cellprofiler.preferences
@@ -40,7 +39,7 @@ class DataToolFrame(wx.Frame):
         del kwds_copy["measurements_file_name"]
         kwds_copy["title"] = "%s data tool" % module_name
         wx.Frame.__init__(self, *args, **kwds_copy)
-        self.module = instantiate_module(module_name)
+        self.module = cellprofiler.modules.instantiate_module(module_name)
         self.module.use_as_data_tool = True
         self.pipeline = cellprofiler.pipeline.Pipeline()
         if h5py.is_hdf5(measurements_file_name):
@@ -63,7 +62,7 @@ class DataToolFrame(wx.Frame):
         module_panel.BackgroundColour = cellprofiler.preferences.get_background_color()
         self.BackgroundColour = cellprofiler.preferences.get_background_color()
 
-        self.module_view = ModuleView(module_panel, self.workspace, True)
+        self.module_view = cellprofiler.gui.moduleview.ModuleView(module_panel, self.workspace, True)
         self.module_view.set_selection(self.module.module_num)
 
         def on_change(caller, event):
@@ -121,8 +120,8 @@ class DataToolFrame(wx.Frame):
         module_panel.Layout()
         self.Show()
         self.tbicon = wx.TaskBarIcon()
-        self.tbicon.SetIcon(get_cp_icon(), "CellProfiler2.0")
-        self.SetIcon(get_cp_icon())
+        self.tbicon.SetIcon(cellprofiler.gui.get_cp_icon(), "CellProfiler2.0")
+        self.SetIcon(cellprofiler.gui.get_cp_icon())
 
     def on_load_measurements(self, event):
         dlg = wx.FileDialog(self, "Load a measurements file",

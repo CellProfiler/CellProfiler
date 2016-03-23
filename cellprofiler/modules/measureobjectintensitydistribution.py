@@ -49,7 +49,7 @@ from centrosome.propagate import propagate
 from numpy.ma import masked_array
 from scipy.sparse import coo_matrix
 
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
@@ -462,7 +462,7 @@ class MeasureObjectIntensityDistribution(cpm.CPModule):
                                 cmap=colormap)
                         output_pixels = cm.to_rgba(heatmap_img)[:, :, :3]
                         output_pixels[labels == 0, :] = 0
-                    parent_image = workspace.image_set.get_image(
+                    parent_image = workspace.image_set.image(
                             heatmap.image_name.get_image_name())
                     output_img = cpi.Image(
                             output_pixels,
@@ -538,11 +538,11 @@ class MeasureObjectIntensityDistribution(cpm.CPModule):
         wants_scaled = bin_count_settings.wants_scaled.value
         maximum_radius = bin_count_settings.maximum_radius.value
 
-        image = workspace.image_set.get_image(image_name,
-                                              must_be_grayscale=True)
+        image = workspace.image_set.image(image_name,
+                                          must_be_grayscale=True)
         objects = workspace.object_set.get_objects(object_name)
         labels, pixel_data = cpo.crop_labels_and_image(objects.segmented,
-                                                       image.pixel_data)
+                                                       image.data)
         nobjects = np.max(objects.segmented)
         measurements = workspace.measurements
         assert isinstance(measurements, cpmeas.Measurements)
@@ -761,7 +761,7 @@ class MeasureObjectIntensityDistribution(cpm.CPModule):
             #
             ij = np.zeros((objects.count + 1, 2))
             r = np.zeros(objects.count + 1)
-            for labels, indexes in objects.get_labels():
+            for labels, indexes in objects.labels():
                 ij_, r_ = minimum_enclosing_circle(labels, indexes)
                 ij[indexes] = ij_
                 r[indexes] = r_
@@ -776,9 +776,9 @@ class MeasureObjectIntensityDistribution(cpm.CPModule):
                     yx[:, 1], yx[:, 0], zernike_indexes)
             for image_group in self.images:
                 image_name = image_group.image_name.value
-                image = workspace.image_set.get_image(
+                image = workspace.image_set.image(
                         image_name, must_be_grayscale=True)
-                pixels = image.pixel_data
+                pixels = image.data
                 mask = (ijv[:, 0] < pixels.shape[0]) & \
                        (ijv[:, 1] < pixels.shape[1])
                 mask[mask] = image.mask[ijv[mask, 0], ijv[mask, 1]]

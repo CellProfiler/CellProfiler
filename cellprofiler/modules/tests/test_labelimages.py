@@ -16,7 +16,7 @@ set_headless()
 
 import cellprofiler.pipeline as cpp
 import cellprofiler.cpmodule as cpm
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.workspace as cpw
@@ -95,7 +95,7 @@ LabelImages:[module_num:2|svn_version:\'9970\'|variable_revision_number:1|show_w
         self.assertEqual(module.order, L.O_ROW)
 
     def make_workspace(self, image_set_count):
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         for i in range(image_set_count):
             image_set = image_set_list.get_image_set(i)
         module = L.LabelImages()

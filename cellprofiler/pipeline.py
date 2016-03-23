@@ -38,7 +38,7 @@ import re
 logger = logging.getLogger(__name__)
 pipeline_stats_logger = logging.getLogger("PipelineStatistics")
 import cellprofiler.preferences as cpprefs
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.workspace as cpw
@@ -206,7 +206,7 @@ def add_all_images(handles, image_set, object_set):
     images = {}
     for provider in image_set.providers:
         name = provider.name()
-        image = image_set.get_image(name)
+        image = image_set.image(name)
         images[name] = image.image
         if image.has_mask:
             images['CropMask' + name] = image.mask
@@ -1428,7 +1428,7 @@ class Pipeline(object):
         images = {}
         if image_set:
             for provider in image_set.providers:
-                image = image_set.get_image(provider.name)
+                image = image_set.image(provider.name)
                 if image.image is not None:
                     images[provider.name] = image.image
                 if image.mask is not None:
@@ -1615,7 +1615,7 @@ class Pipeline(object):
             assert name in image_dict, 'Image named "%s" was not provided in the input dictionary' % (name)
 
         # Create image set from provided dict
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         for image_name in input_image_names:
             input_pixels = image_dict[image_name]
@@ -1632,7 +1632,7 @@ class Pipeline(object):
         # Populate a dictionary for output with the images to be exported
         output_dict = {}
         for name in output_image_names:
-            output_dict[name] = image_set.get_image(name).pixel_data
+            output_dict[name] = image_set.image(name).data
 
         return output_dict
 
@@ -1745,7 +1745,7 @@ class Pipeline(object):
         else:
             measurements = initial_measurements
 
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         workspace = cpw.Workspace(self, None, None, None,
                                   measurements, image_set_list, frame)
 
@@ -1798,7 +1798,7 @@ class Pipeline(object):
                 last_image_number = image_number
                 measurements.clear_cache()
                 for provider in measurements.providers:
-                    provider.release_memory()
+                    provider.free()
                 measurements.next_image_set(image_number)
                 if is_first_image_set:
                     measurements.image_set_start = image_number
@@ -1957,7 +1957,7 @@ class Pipeline(object):
         image_set = measurements
         measurements.clear_cache()
         for provider in measurements.providers:
-            provider.release_memory()
+            provider.free()
         outlines = {}
         grids = None
         should_write_measurements = True
@@ -2874,7 +2874,7 @@ class Pipeline(object):
         try:
             new_workspace = cpw.Workspace(
                     pipeline, None, None, None,
-                    temp_measurements, cpi.ImageSetList())
+                    temp_measurements, cpi.List())
             new_workspace.set_file_list(workspace.file_list)
             pipeline.prepare_run(new_workspace, end_module)
 

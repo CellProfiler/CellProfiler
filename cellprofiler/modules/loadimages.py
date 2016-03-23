@@ -62,7 +62,7 @@ import uuid
 
 import cellprofiler.objects as cpo
 import cellprofiler.cpmodule as cpmodule
-import cellprofiler.cpimage as cpimage
+import cellprofiler.image as cpimage
 import cellprofiler.measurements as cpmeas
 from cellprofiler.pipeline import GROUP_INDEX
 import cellprofiler.preferences as preferences
@@ -2190,8 +2190,8 @@ class LoadImages(cpmodule.CPModule):
                     provider = LoadImagesImageProvider(
                             image_name, path, filename, rescale)
                 if wants_images:
-                    image = provider.provide_image(workspace.image_set)
-                    pixel_data = image.pixel_data
+                    image = provider.source(workspace.image_set)
+                    pixel_data = image.data
                     image_set.providers.append(provider)
                     m.add_image_measurement(
                             "_".join((C_MD5_DIGEST, image_name)),
@@ -2239,7 +2239,7 @@ class LoadImages(cpmodule.CPModule):
                     for index in range(n_frames):
                         provider.index = index
                         provider.rescale = False
-                        labels = provider.provide_image(None).pixel_data
+                        labels = provider.source(None).data
                         shape = labels.shape[:2]
                         labels = convert_image_to_objects(labels)
                         i, j = np.mgrid[0:labels.shape[0], 0:labels.shape[1]]
@@ -2255,7 +2255,7 @@ class LoadImages(cpmodule.CPModule):
                     assert isinstance(object_set, cpo.ObjectSet)
                     object_name = channel.object_name.value
                     object_set.add_objects(o, object_name)
-                    provider.release_memory()
+                    provider.free()
                     row[0] = object_name
                     I.add_object_count_measurements(m, object_name, o.count)
                     I.add_object_location_measurements_ijv(m, object_name, ijv)
@@ -2265,8 +2265,8 @@ class LoadImages(cpmodule.CPModule):
                             outlines |= centrosome.outline.outline(l).astype(
                                     outlines.dtype)
                         outline_image = cpimage.Image(outlines,
-                                                      path_name=path,
-                                                      file_name=filename)
+                                                      pathname=path,
+                                                      filename=filename)
                         workspace.image_set.add(channel.outlines_name.value, outline_image)
 
                 for tag in tags:
@@ -3028,7 +3028,7 @@ def is_movie(filename):
     return ext in SUPPORTED_MOVIE_EXTENSIONS
 
 
-class LoadImagesImageProviderBase(cpimage.AbstractImageProvider):
+class LoadImagesImageProviderBase(cpimage.Abstract):
     '''Base for image providers: handle pathname and filename & URLs'''
 
     def __init__(self, name, pathname, filename):
@@ -3155,8 +3155,8 @@ class LoadImagesImageProviderBase(cpimage.AbstractImageProvider):
             path = self.get_full_name()
             if not os.path.isfile(path):
                 # No file here - hash the image
-                image = self.provide_image(measurements)
-                hasher.update(image.pixel_data.tostring())
+                image = self.source(measurements)
+                hasher.update(image.data.tostring())
             else:
                 with open(self.get_full_name(), "rb") as fd:
                     while True:
@@ -3169,7 +3169,7 @@ class LoadImagesImageProviderBase(cpimage.AbstractImageProvider):
             rdr.md5_hash = hasher.hexdigest()
         return rdr.md5_hash
 
-    def release_memory(self):
+    def free(self):
         '''Release any image memory
 
         Possibly delete the temporary file'''
@@ -3190,7 +3190,7 @@ class LoadImagesImageProviderBase(cpimage.AbstractImageProvider):
     def __del__(self):
         # using __del__ is all kinds of bad, but we need to remove the
         # files to keep the system from filling up.
-        self.release_memory()
+        self.free()
 
 
 class LoadImagesImageProvider(LoadImagesImageProviderBase):
@@ -3205,7 +3205,7 @@ class LoadImagesImageProvider(LoadImagesImageProviderBase):
         self.index = index
         self.channel = channel
 
-    def provide_image(self, image_set):
+    def source(self, images):
         """Load an image from a pathname
         """
         from bioformats.formatreader import get_image_reader
@@ -3265,8 +3265,8 @@ class LoadImagesImageProvider(LoadImagesImageProviderBase):
             # Apply a manual rescale
             img = img.astype(np.float32) / self.rescale
         image = cpimage.Image(img,
-                              path_name=self.get_pathname(),
-                              file_name=self.get_filename(),
+                              pathname=self.get_pathname(),
+                              filename=self.get_filename(),
                               scale=self.scale)
         if img.ndim == 3 and len(channel_names) == img.shape[2]:
             image.channel_names = list(channel_names)

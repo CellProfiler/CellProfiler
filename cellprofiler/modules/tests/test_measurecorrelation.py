@@ -13,7 +13,7 @@ set_headless()
 
 import cellprofiler.pipeline as cpp
 import cellprofiler.cpmodule as cpm
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.workspace as cpw
@@ -28,7 +28,7 @@ class TestMeasureCorrelation(unittest.TestCase):
     def make_workspace(self, image1, image2, objects=None):
         '''Make a workspace for testing ApplyThreshold'''
         module = M.MeasureCorrelation()
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         for image_group, name, image in zip(module.image_groups,
                                             (IMAGE1_NAME, IMAGE2_NAME),

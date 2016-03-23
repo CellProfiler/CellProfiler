@@ -16,7 +16,7 @@ set_headless()
 import cellprofiler.workspace as cpw
 import cellprofiler.pipeline as cpp
 import cellprofiler.objects as cpo
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.preferences as cpprefs
 import cellprofiler.measurements as cpm
 import cellprofiler.modules.filterobjects as F
@@ -39,7 +39,7 @@ class TestFilterObjects(unittest.TestCase):
         module = F.FilterByObjectMeasurement()
         pipeline = cpp.Pipeline()
         object_set = cpo.ObjectSet()
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         workspace = cpw.Workspace(pipeline,
                                   module,

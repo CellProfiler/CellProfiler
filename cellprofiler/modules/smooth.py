@@ -12,7 +12,7 @@ from centrosome.smooth import circular_gaussian_kernel
 from centrosome.smooth import fit_polynomial
 from centrosome.smooth import smooth_with_function_and_mask
 
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
 from cellprofiler.gui.help import HELP_ON_MEASURING_DISTANCES, HELP_ON_PIXEL_INTENSITIES
@@ -136,9 +136,9 @@ class Smooth(cpm.CPModule):
         return result
 
     def run(self, workspace):
-        image = workspace.image_set.get_image(self.image_name.value,
-                                              must_be_grayscale=True)
-        pixel_data = image.pixel_data
+        image = workspace.image_set.image(self.image_name.value,
+                                          must_be_grayscale=True)
+        pixel_data = image.data
         if self.wants_automatic_object_size.value:
             object_size = min(30, max(1, np.mean(pixel_data.shape) / 40))
         else:
@@ -175,13 +175,13 @@ class Smooth(cpm.CPModule):
         output_image = cpi.Image(output_pixels, parent_image=image)
         workspace.image_set.add(self.filtered_image_name.value,
                                 output_image)
-        workspace.display_data.pixel_data = pixel_data
+        workspace.display_data.data = pixel_data
         workspace.display_data.output_pixels = output_pixels
 
     def display(self, workspace, figure):
         figure.set_subplots((2, 1))
         figure.subplot_imshow_grayscale(0, 0,
-                                        workspace.display_data.pixel_data,
+                                        workspace.display_data.data,
                                         "Original: %s" %
                                         self.image_name.value)
         figure.subplot_imshow_grayscale(1, 0,

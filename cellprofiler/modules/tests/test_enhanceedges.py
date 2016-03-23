@@ -13,7 +13,7 @@ from cellprofiler.preferences import set_headless
 set_headless()
 
 import cellprofiler.cpmodule as cpm
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.pipeline as cpp
@@ -35,7 +35,7 @@ class TestEnhanceEdges(unittest.TestCase):
         module.output_image_name.value = OUTPUT_IMAGE_NAME
         pipeline = cpp.Pipeline()
         object_set = cpo.ObjectSet()
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         workspace = cpw.Workspace(pipeline,
                                   module,
@@ -173,8 +173,8 @@ class TestEnhanceEdges(unittest.TestCase):
         module.method.value = F.M_SOBEL
         module.direction.value = F.E_HORIZONTAL
         module.run(workspace)
-        output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertTrue(np.all(output.pixel_data == FIL.hsobel(image)))
+        output = workspace.image_set.image(OUTPUT_IMAGE_NAME)
+        self.assertTrue(np.all(output.data == FIL.hsobel(image)))
 
     def test_02_02_sobel_vertical(self):
         '''Test the Sobel vertical transform'''
@@ -184,8 +184,8 @@ class TestEnhanceEdges(unittest.TestCase):
         module.method.value = F.M_SOBEL
         module.direction.value = F.E_VERTICAL
         module.run(workspace)
-        output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertTrue(np.all(output.pixel_data == FIL.vsobel(image)))
+        output = workspace.image_set.image(OUTPUT_IMAGE_NAME)
+        self.assertTrue(np.all(output.data == FIL.vsobel(image)))
 
     def test_02_03_sobel_all(self):
         '''Test the Sobel transform'''
@@ -195,8 +195,8 @@ class TestEnhanceEdges(unittest.TestCase):
         module.method.value = F.M_SOBEL
         module.direction.value = F.E_ALL
         module.run(workspace)
-        output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertTrue(np.all(output.pixel_data == FIL.sobel(image)))
+        output = workspace.image_set.image(OUTPUT_IMAGE_NAME)
+        self.assertTrue(np.all(output.data == FIL.sobel(image)))
 
     def test_03_01_prewitt_horizontal(self):
         '''Test the prewitt horizontal transform'''
@@ -206,8 +206,8 @@ class TestEnhanceEdges(unittest.TestCase):
         module.method.value = F.M_PREWITT
         module.direction.value = F.E_HORIZONTAL
         module.run(workspace)
-        output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertTrue(np.all(output.pixel_data == FIL.hprewitt(image)))
+        output = workspace.image_set.image(OUTPUT_IMAGE_NAME)
+        self.assertTrue(np.all(output.data == FIL.hprewitt(image)))
 
     def test_03_02_prewitt_vertical(self):
         '''Test the prewitt vertical transform'''
@@ -217,8 +217,8 @@ class TestEnhanceEdges(unittest.TestCase):
         module.method.value = F.M_PREWITT
         module.direction.value = F.E_VERTICAL
         module.run(workspace)
-        output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertTrue(np.all(output.pixel_data == FIL.vprewitt(image)))
+        output = workspace.image_set.image(OUTPUT_IMAGE_NAME)
+        self.assertTrue(np.all(output.data == FIL.vprewitt(image)))
 
     def test_03_03_prewitt_all(self):
         '''Test the prewitt transform'''
@@ -228,8 +228,8 @@ class TestEnhanceEdges(unittest.TestCase):
         module.method.value = F.M_PREWITT
         module.direction.value = F.E_ALL
         module.run(workspace)
-        output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertTrue(np.all(output.pixel_data == FIL.prewitt(image)))
+        output = workspace.image_set.image(OUTPUT_IMAGE_NAME)
+        self.assertTrue(np.all(output.data == FIL.prewitt(image)))
 
     def test_04_01_roberts(self):
         '''Test the roberts transform'''
@@ -238,8 +238,8 @@ class TestEnhanceEdges(unittest.TestCase):
         workspace, module = self.make_workspace(image)
         module.method.value = F.M_ROBERTS
         module.run(workspace)
-        output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertTrue(np.all(output.pixel_data == FIL.roberts(image)))
+        output = workspace.image_set.image(OUTPUT_IMAGE_NAME)
+        self.assertTrue(np.all(output.data == FIL.roberts(image)))
 
     def test_05_01_log_automatic(self):
         '''Test the laplacian of gaussian with automatic sigma'''
@@ -250,14 +250,14 @@ class TestEnhanceEdges(unittest.TestCase):
         module.sigma.value = 20
         module.wants_automatic_sigma.value = True
         module.run(workspace)
-        output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        output = workspace.image_set.image(OUTPUT_IMAGE_NAME)
         sigma = 2.0
         expected = FIL.laplacian_of_gaussian(image,
                                              np.ones(image.shape, bool),
                                              int(sigma * 4) + 1,
                                              sigma).astype(np.float32)
 
-        self.assertTrue(np.all(output.pixel_data == expected))
+        self.assertTrue(np.all(output.data == expected))
 
     def test_05_02_log_manual(self):
         '''Test the laplacian of gaussian with manual sigma'''
@@ -268,14 +268,14 @@ class TestEnhanceEdges(unittest.TestCase):
         module.sigma.value = 4
         module.wants_automatic_sigma.value = False
         module.run(workspace)
-        output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        output = workspace.image_set.image(OUTPUT_IMAGE_NAME)
         sigma = 4.0
         expected = FIL.laplacian_of_gaussian(image,
                                              np.ones(image.shape, bool),
                                              int(sigma * 4) + 1,
                                              sigma).astype(np.float32)
 
-        self.assertTrue(np.all(output.pixel_data == expected))
+        self.assertTrue(np.all(output.data == expected))
 
     def test_06_01_canny(self):
         '''Test the canny method'''
@@ -290,10 +290,10 @@ class TestEnhanceEdges(unittest.TestCase):
         module.wants_automatic_low_threshold.value = True
         module.wants_automatic_sigma.value = True
         module.run(workspace)
-        output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        output = workspace.image_set.image(OUTPUT_IMAGE_NAME)
         t1, t2 = otsu3(FIL.sobel(image))
         result = FIL.canny(image, np.ones(image.shape, bool), 1.0, t1, t2)
-        self.assertTrue(np.all(output.pixel_data == result))
+        self.assertTrue(np.all(output.data == result))
 
     def test_07_01_kirsch(self):
         r = np.random.RandomState([ord(_) for _ in "test_07_01_kirsch"])
@@ -303,6 +303,6 @@ class TestEnhanceEdges(unittest.TestCase):
         workspace, module = self.make_workspace(image)
         module.method.value = F.M_KIRSCH
         module.run(workspace)
-        output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        output = workspace.image_set.image(OUTPUT_IMAGE_NAME)
         result = kirsch(image)
-        np.testing.assert_almost_equal(output.pixel_data, result, decimal=4)
+        np.testing.assert_almost_equal(output.data, result, decimal=4)

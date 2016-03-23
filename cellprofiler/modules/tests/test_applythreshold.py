@@ -14,7 +14,7 @@ set_headless()
 
 import cellprofiler.pipeline as cpp
 import cellprofiler.cpmodule as cpm
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.workspace as cpw
@@ -36,7 +36,7 @@ class TestApplyThreshold(unittest.TestCase):
         module.thresholded_image_name.value = OUTPUT_IMAGE_NAME
         pipeline = cpp.Pipeline()
         object_set = cpo.ObjectSet()
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         workspace = cpw.Workspace(pipeline,
                                   module,
@@ -296,8 +296,8 @@ class TestApplyThreshold(unittest.TestCase):
         module.manual_threshold.value = .5
         module.shift.value = False
         module.run(workspace)
-        output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertTrue(np.all(output.pixel_data == expected))
+        output = workspace.image_set.image(OUTPUT_IMAGE_NAME)
+        self.assertTrue(np.all(output.data == expected))
 
         m = workspace.measurements
         self.assertTrue(isinstance(m, cpmeas.Measurements))
@@ -357,8 +357,8 @@ class TestApplyThreshold(unittest.TestCase):
         module.manual_threshold.value = .5
         module.shift.value = True
         module.run(workspace)
-        output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertTrue(np.all(output.pixel_data == expected))
+        output = workspace.image_set.image(OUTPUT_IMAGE_NAME)
+        self.assertTrue(np.all(output.data == expected))
 
     def test_03_01_grayscale_high_threshold(self):
         '''Apply a high threshold, no dilation'''
@@ -373,8 +373,8 @@ class TestApplyThreshold(unittest.TestCase):
         module.manual_threshold.value = .5
         module.dilation.value = 0
         module.run(workspace)
-        output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertTrue(np.all(output.pixel_data == expected))
+        output = workspace.image_set.image(OUTPUT_IMAGE_NAME)
+        self.assertTrue(np.all(output.data == expected))
 
     def test_03_02_grayscale_high_threshold_dilation(self):
         '''Apply a high threshold with dilation'''
@@ -390,8 +390,8 @@ class TestApplyThreshold(unittest.TestCase):
         module.manual_threshold.value = .5
         module.dilation.value = 2
         module.run(workspace)
-        output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertTrue(np.all(output.pixel_data == expected))
+        output = workspace.image_set.image(OUTPUT_IMAGE_NAME)
+        self.assertTrue(np.all(output.data == expected))
 
     def test_04_01_binary_manual(self):
         '''Test a binary threshold with manual threshold value'''
@@ -403,8 +403,8 @@ class TestApplyThreshold(unittest.TestCase):
         module.threshold_scope.value = T.TM_MANUAL
         module.manual_threshold.value = .5
         module.run(workspace)
-        output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertTrue(np.all(output.pixel_data == expected))
+        output = workspace.image_set.image(OUTPUT_IMAGE_NAME)
+        self.assertTrue(np.all(output.data == expected))
 
     def test_04_02_binary_global(self):
         '''Test a binary threshold with Otsu global method'''
@@ -417,8 +417,8 @@ class TestApplyThreshold(unittest.TestCase):
         module.threshold_scope.value = I.TS_GLOBAL
         module.threshold_method.value = T.TM_OTSU
         module.run(workspace)
-        output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertTrue(np.all(output.pixel_data == expected))
+        output = workspace.image_set.image(OUTPUT_IMAGE_NAME)
+        self.assertTrue(np.all(output.data == expected))
 
     def test_04_03_binary_correction(self):
         '''Test a binary threshold with a correction factor'''
@@ -432,8 +432,8 @@ class TestApplyThreshold(unittest.TestCase):
         module.threshold_method.value = T.TM_OTSU
         module.threshold_correction_factor.value = .5
         module.run(workspace)
-        output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertTrue(np.all(output.pixel_data == expected))
+        output = workspace.image_set.image(OUTPUT_IMAGE_NAME)
+        self.assertTrue(np.all(output.data == expected))
 
     def test_04_04_low_bounds(self):
         '''Test a binary threshold with a low bound'''
@@ -448,8 +448,8 @@ class TestApplyThreshold(unittest.TestCase):
         module.threshold_method.value = T.TM_OTSU
         module.threshold_range.min = .7
         module.run(workspace)
-        output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertTrue(np.all(output.pixel_data == expected))
+        output = workspace.image_set.image(OUTPUT_IMAGE_NAME)
+        self.assertTrue(np.all(output.data == expected))
 
     def test_04_05_high_bounds(self):
         '''Test a binary threshold with a high bound'''
@@ -463,8 +463,8 @@ class TestApplyThreshold(unittest.TestCase):
         module.threshold_method.value = T.TM_OTSU
         module.threshold_range.max = .1
         module.run(workspace)
-        output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertTrue(np.all(output.pixel_data == expected))
+        output = workspace.image_set.image(OUTPUT_IMAGE_NAME)
+        self.assertTrue(np.all(output.data == expected))
 
     def test_04_06_per_object(self):
         '''Test that per-object thresholding works'''
@@ -484,8 +484,8 @@ class TestApplyThreshold(unittest.TestCase):
         module.threshold_method.value = T.TM_OTSU
         module.masking_objects.value = "HelloKitty"
         module.run(workspace)
-        output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertTrue(np.all(output.pixel_data == expected))
+        output = workspace.image_set.image(OUTPUT_IMAGE_NAME)
+        self.assertTrue(np.all(output.data == expected))
 
     def test_04_07_threshold_from_measurement(self):
         '''Test a binary threshold from previous measurements'''
@@ -523,8 +523,8 @@ class TestApplyThreshold(unittest.TestCase):
         module.use_weighted_variance.value = I.O_WEIGHTED_VARIANCE
         module.two_class_otsu.value = I.O_TWO_CLASS
         module.run(workspace)
-        output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertTrue(np.all(output.pixel_data == expected))
+        output = workspace.image_set.image(OUTPUT_IMAGE_NAME)
+        self.assertTrue(np.all(output.data == expected))
 
     def test_05_02_otsu_entropy(self):
         '''Test the entropy version of Otsu'''
@@ -544,8 +544,8 @@ class TestApplyThreshold(unittest.TestCase):
         module.use_weighted_variance.value = I.O_ENTROPY
         module.two_class_otsu.value = I.O_TWO_CLASS
         module.run(workspace)
-        output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertTrue(np.all(output.pixel_data == expected))
+        output = workspace.image_set.image(OUTPUT_IMAGE_NAME)
+        self.assertTrue(np.all(output.data == expected))
 
     def test_05_03_otsu3_wv_low(self):
         '''Test the three-class otsu, weighted variance middle = background'''
@@ -612,7 +612,7 @@ class TestApplyThreshold(unittest.TestCase):
         module.two_class_otsu.value = I.O_THREE_CLASS
         module.assign_middle_to_foreground.value = I.O_BACKGROUND
         module.run(workspace)
-        output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        output = workspace.image_set.image(OUTPUT_IMAGE_NAME)
         m = workspace.measurements
         m_threshold = m[cpmeas.IMAGE, I.FF_ORIG_THRESHOLD % module.get_measurement_objects_name()]
         self.assertAlmostEqual(m_threshold, threshold)
@@ -637,5 +637,5 @@ class TestApplyThreshold(unittest.TestCase):
         module.two_class_otsu.value = I.O_THREE_CLASS
         module.assign_middle_to_foreground.value = I.O_FOREGROUND
         module.run(workspace)
-        output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertTrue(np.all(output.pixel_data == expected))
+        output = workspace.image_set.image(OUTPUT_IMAGE_NAME)
+        self.assertTrue(np.all(output.data == expected))

@@ -396,7 +396,7 @@ logger = logging.getLogger(__name__)
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
 from cellprofiler.settings import YES, NO
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import centrosome.cpmorphology as morph
 from centrosome.filter import poisson_equation
 
@@ -700,12 +700,12 @@ class Morph(cpm.CPModule):
         return result
 
     def run(self, workspace):
-        image = workspace.image_set.get_image(self.image_name.value)
+        image = workspace.image_set.image(self.image_name.value)
         if image.has_mask:
             mask = image.mask
         else:
             mask = None
-        pixel_data = image.pixel_data
+        pixel_data = image.data
         if pixel_data.ndim == 3:
             if any([np.any(pixel_data[:, :, 0] != pixel_data[:, :, plane])
                     for plane in range(1, pixel_data.shape[2])]):
@@ -716,12 +716,12 @@ class Morph(cpm.CPModule):
         new_image = cpi.Image(pixel_data, parent_image=image)
         workspace.image_set.add(self.output_image_name.value, new_image)
         if self.show_window:
-            workspace.display_data.image = image.pixel_data
-            workspace.display_data.pixel_data = pixel_data
+            workspace.display_data.image = image.data
+            workspace.display_data.data = pixel_data
 
     def display(self, workspace, figure):
         image = workspace.display_data.image
-        pixel_data = workspace.display_data.pixel_data
+        pixel_data = workspace.display_data.data
         figure.set_subplots((2, 1))
         if pixel_data.dtype.kind == 'b':
             figure.subplot_imshow_bw(0, 0, image,

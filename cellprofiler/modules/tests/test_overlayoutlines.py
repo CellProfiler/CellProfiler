@@ -13,7 +13,7 @@ set_headless()
 
 import cellprofiler.pipeline as cpp
 import cellprofiler.cpmodule as cpm
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.workspace as cpw
@@ -240,8 +240,8 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
             module.outlines[0].color.value = "Red"
             module.line_width.value = 0.0
             module.run(workspace)
-            output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-            self.assertTrue(np.all(output_image.pixel_data == expected))
+            output_image = workspace.image_set.image(OUTPUT_IMAGE_NAME)
+            self.assertTrue(np.all(output_image.data == expected))
 
     def test_02_02_color_to_color_outlines(self):
         np.random.seed(0)
@@ -266,8 +266,8 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
             module.outlines[0].color.value = "Red"
             module.line_width.value = 0.0
             module.run(workspace)
-            output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-            self.assertTrue(np.all(output_image.pixel_data == expected))
+            output_image = workspace.image_set.image(OUTPUT_IMAGE_NAME)
+            self.assertTrue(np.all(output_image.data == expected))
 
     def test_02_03_blank_to_color_outlines(self):
         np.random.seed(0)
@@ -292,8 +292,8 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
             module.outlines[0].color.value = "Red"
             module.line_width.value = 0.0
             module.run(workspace)
-            output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-            self.assertTrue(np.all(output_image.pixel_data == expected))
+            output_image = workspace.image_set.image(OUTPUT_IMAGE_NAME)
+            self.assertTrue(np.all(output_image.data == expected))
 
     def test_02_04_wrong_size_gray_to_color(self):
         '''Regression test of img-961'''
@@ -318,8 +318,8 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
             module.outlines[0].color.value = "Red"
             module.line_width.value = 0.0
             module.run(workspace)
-            output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-            self.assertTrue(np.all(output_image.pixel_data == expected))
+            output_image = workspace.image_set.image(OUTPUT_IMAGE_NAME)
+            self.assertTrue(np.all(output_image.data == expected))
 
     def test_02_05_wrong_size_color_to_color(self):
         np.random.seed(25)
@@ -344,8 +344,8 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
             module.outlines[0].color.value = "Red"
             module.line_width.value = 0.0
             module.run(workspace)
-            output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-            self.assertTrue(np.all(output_image.pixel_data == expected))
+            output_image = workspace.image_set.image(OUTPUT_IMAGE_NAME)
+            self.assertTrue(np.all(output_image.data == expected))
 
     def test_03_01_blank_to_gray(self):
         np.random.seed(0)
@@ -366,8 +366,8 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
             module.wants_color.value = O.WANTS_GRAYSCALE
             module.line_width.value = 0.0
             module.run(workspace)
-            output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-            self.assertTrue(np.all(output_image.pixel_data == expected))
+            output_image = workspace.image_set.image(OUTPUT_IMAGE_NAME)
+            self.assertTrue(np.all(output_image.data == expected))
 
     def test_03_02_gray_max_image(self):
         np.random.seed(0)
@@ -383,8 +383,8 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
         module.max_type.value = O.MAX_IMAGE
         module.line_width.value = 0.0
         module.run(workspace)
-        output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertTrue(np.all(output_image.pixel_data == expected))
+        output_image = workspace.image_set.image(OUTPUT_IMAGE_NAME)
+        self.assertTrue(np.all(output_image.data == expected))
 
     def test_03_02_gray_max_possible(self):
         np.random.seed(0)
@@ -400,8 +400,8 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
         module.max_type.value = O.MAX_POSSIBLE
         module.line_width.value = 0.0
         module.run(workspace)
-        output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertTrue(np.all(output_image.pixel_data == expected))
+        output_image = workspace.image_set.image(OUTPUT_IMAGE_NAME)
+        self.assertTrue(np.all(output_image.data == expected))
 
     def test_03_03_wrong_size_gray(self):
         '''Regression test of IMG-961 - image and outline size differ'''
@@ -418,8 +418,8 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
         module.max_type.value = O.MAX_POSSIBLE
         module.line_width.value = 0.0
         module.run(workspace)
-        output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertTrue(np.all(output_image.pixel_data == expected))
+        output_image = workspace.image_set.image(OUTPUT_IMAGE_NAME)
+        self.assertTrue(np.all(output_image.data == expected))
 
     def test_04_01_ijv(self):
         np.random.seed(0)
@@ -447,5 +447,5 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
         module.outlines[0].color.value = "Red"
         module.line_width.value = 0.0
         module.run(workspace)
-        output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertTrue(np.all(output_image.pixel_data == expected))
+        output_image = workspace.image_set.image(OUTPUT_IMAGE_NAME)
+        self.assertTrue(np.all(output_image.data == expected))

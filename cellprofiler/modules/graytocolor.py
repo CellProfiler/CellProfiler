@@ -12,7 +12,7 @@ relative weights.
 
 import numpy as np
 
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
 
@@ -296,18 +296,18 @@ class GrayToColor(cpm.CPModule):
                 image_name = color_scheme_setting.image_name.value
                 input_image_names.append(image_name)
                 channel_names.append(image_name)
-                image = imgset.get_image(image_name,
-                                         must_be_grayscale=True)
+                image = imgset.image(image_name,
+                                     must_be_grayscale=True)
                 multiplier = (color_scheme_setting.intensities *
                               color_scheme_setting.adjustment_factor.value)
-                pixel_data = image.pixel_data
+                pixel_data = image.data
                 if parent_image is not None:
-                    if (parent_image.pixel_data.shape != pixel_data.shape):
+                    if (parent_image.data.shape != pixel_data.shape):
                         raise ValueError("The %s image and %s image have different sizes (%s vs %s)" %
                                          (parent_image_name,
                                           color_scheme_setting.image_name.value,
-                                          parent_image.pixel_data.shape,
-                                          image.pixel_data.shape))
+                                          parent_image.data.shape,
+                                          image.data.shape))
                     rgb_pixel_data += np.dstack([pixel_data] * 3) * multiplier
                 else:
                     parent_image = image
@@ -316,16 +316,16 @@ class GrayToColor(cpm.CPModule):
         else:
             input_image_names = [sc.image_name.value for sc in self.stack_channels]
             channel_names = input_image_names
-            source_channels = [imgset.get_image(name, must_be_grayscale=True).pixel_data
+            source_channels = [imgset.image(name, must_be_grayscale=True).data
                                for name in input_image_names]
-            parent_image = imgset.get_image(input_image_names[0])
+            parent_image = imgset.image(input_image_names[0])
             for idx, pd in enumerate(source_channels):
                 if pd.shape != source_channels[0].shape:
                     raise ValueError("The %s image and %s image have different sizes (%s vs %s)" %
                                      (self.stack_channels[0].image_name.value,
                                       self.stack_channels[idx].image_name.value,
                                       source_channels[0].shape,
-                                      pd.pixel_data.shape))
+                                      pd.data.shape))
             if self.scheme_choice == SCHEME_STACK:
                 rgb_pixel_data = np.dstack(source_channels)
             else:
@@ -333,10 +333,10 @@ class GrayToColor(cpm.CPModule):
                 for sc in self.stack_channels:
                     color_tuple = sc.color.to_rgb()
                     color = sc.weight.value * np.array(color_tuple).astype(
-                            parent_image.pixel_data.dtype) / 255
+                            parent_image.data.dtype) / 255
                     colors.append(color[np.newaxis, np.newaxis, :])
                 rgb_pixel_data = \
-                    parent_image.pixel_data[:, :, np.newaxis] * colors[0]
+                    parent_image.data[:, :, np.newaxis] * colors[0]
                 for image, color in zip(source_channels[1:], colors[1:]):
                     rgb_pixel_data = rgb_pixel_data + \
                                      image[:, :, np.newaxis] * color
@@ -355,7 +355,7 @@ class GrayToColor(cpm.CPModule):
             workspace.display_data.input_image_names = input_image_names
             workspace.display_data.rgb_pixel_data = rgb_pixel_data
             workspace.display_data.images = \
-                [imgset.get_image(name, must_be_grayscale=True).pixel_data
+                [imgset.image(name, must_be_grayscale=True).data
                  for name in input_image_names]
 
     def display(self, workspace, figure):

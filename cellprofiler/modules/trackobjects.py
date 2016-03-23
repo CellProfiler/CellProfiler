@@ -175,7 +175,7 @@ from scipy.ndimage import distance_transform_edt
 import scipy.ndimage
 import scipy.sparse
 import cellprofiler.cpmodule as cpm
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.pipeline as cpp
 import cellprofiler.settings as cps
 from cellprofiler.settings import YES, NO

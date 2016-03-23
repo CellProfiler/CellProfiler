@@ -14,7 +14,7 @@ from centrosome.filter import hessian, median_filter
 from centrosome.filter import variance_transform, line_integration
 from scipy.ndimage import gaussian_filter
 
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
 from cellprofiler.gui.help import HELP_ON_MEASURING_DISTANCES, PROTIP_AVOID_ICON
@@ -251,14 +251,14 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
         return result
 
     def run(self, workspace):
-        image = workspace.image_set.get_image(self.image_name.value,
-                                              must_be_grayscale=True)
+        image = workspace.image_set.image(self.image_name.value,
+                                          must_be_grayscale=True)
         #
         # Match against Matlab's strel('disk') operation.
         #
         radius = (float(self.object_size.value) - 1.0) / 2.0
         mask = image.mask if image.has_mask else None
-        pixel_data = image.pixel_data
+        pixel_data = image.data
         if self.method == ENHANCE:
             if self.enhance_method == E_SPECKLES:
                 if self.speckle_accuracy == S_SLOW or radius <= 3:
@@ -323,16 +323,16 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
                                           self.enhance_method.value)
         elif self.method == SUPPRESS:
             if image.has_mask:
-                result = opening(image.pixel_data, radius, image.mask)
+                result = opening(image.data, radius, image.mask)
             else:
-                result = opening(image.pixel_data, radius)
+                result = opening(image.data, radius)
         else:
             raise ValueError("Unknown filtering method: %s" % self.method)
         result_image = cpi.Image(result, parent_image=image)
         workspace.image_set.add(self.filtered_image_name.value, result_image)
 
         if self.show_window:
-            workspace.display_data.image = image.pixel_data
+            workspace.display_data.image = image.data
             workspace.display_data.result = result
 
     def display(self, workspace, figure):

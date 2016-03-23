@@ -6,7 +6,7 @@ from StringIO import StringIO
 
 import numpy as np
 
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.modules.unmixcolors as U
@@ -145,7 +145,7 @@ UnmixColors:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|sho
         module.module_num = 1
         pipeline.add_module(module)
 
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         image = cpi.Image(pixels)
         image_set.add(INPUT_IMAGE, image)
@@ -170,22 +170,22 @@ UnmixColors:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|sho
         workspace, module = self.make_workspace(np.zeros((10, 20, 3)),
                                                 [U.CHOICE_HEMATOXYLIN])
         module.run(workspace)
-        image = workspace.image_set.get_image(output_image_name(0))
+        image = workspace.image_set.image(output_image_name(0))
         #
         # All zeros in brightfield should be all 1 in stain
         #
-        np.testing.assert_almost_equal(image.pixel_data, 1, 2)
+        np.testing.assert_almost_equal(image.data, 1, 2)
 
     def test_02_02_ones(self):
         '''Test on an image of all ones'''
         workspace, module = self.make_workspace(np.ones((10, 20, 3)),
                                                 [U.CHOICE_HEMATOXYLIN])
         module.run(workspace)
-        image = workspace.image_set.get_image(output_image_name(0))
+        image = workspace.image_set.image(output_image_name(0))
         #
         # All ones in brightfield should be no stain
         #
-        np.testing.assert_almost_equal(image.pixel_data, 0, 2)
+        np.testing.assert_almost_equal(image.data, 0, 2)
 
     def test_02_03_one_stain(self):
         '''Test on a single stain'''
@@ -195,8 +195,8 @@ UnmixColors:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|sho
         image = self.make_image(expected, U.ST_HEMATOXYLIN)
         workspace, module = self.make_workspace(image, [U.CHOICE_HEMATOXYLIN])
         module.run(workspace)
-        image = workspace.image_set.get_image(output_image_name(0))
-        np.testing.assert_almost_equal(image.pixel_data, expected, 2)
+        image = workspace.image_set.image(output_image_name(0))
+        np.testing.assert_almost_equal(image.data, expected, 2)
 
     def test_02_04_two_stains(self):
         '''Test on two stains mixed together'''
@@ -212,10 +212,10 @@ UnmixColors:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|sho
         workspace, module = self.make_workspace(image, [
             U.CHOICE_HEMATOXYLIN, U.CHOICE_EOSIN])
         module.run(workspace)
-        image_1 = workspace.image_set.get_image(output_image_name(0))
-        np.testing.assert_almost_equal(image_1.pixel_data, expected_1, 2)
-        image_2 = workspace.image_set.get_image(output_image_name(1))
-        np.testing.assert_almost_equal(image_2.pixel_data, expected_2, 2)
+        image_1 = workspace.image_set.image(output_image_name(0))
+        np.testing.assert_almost_equal(image_1.data, expected_1, 2)
+        image_2 = workspace.image_set.image(output_image_name(1))
+        np.testing.assert_almost_equal(image_2.data, expected_2, 2)
 
     def test_02_05_custom_stain(self):
         '''Test on a custom value for the stains'''
@@ -228,5 +228,5 @@ UnmixColors:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|sho
          module.outputs[0].green_absorbance.value,
          module.outputs[0].blue_absorbance.value) = absorbance
         module.run(workspace)
-        image = workspace.image_set.get_image(output_image_name(0))
-        np.testing.assert_almost_equal(image.pixel_data, expected, 2)
+        image = workspace.image_set.image(output_image_name(0))
+        np.testing.assert_almost_equal(image.data, expected, 2)

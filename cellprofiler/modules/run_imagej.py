@@ -33,7 +33,7 @@ import sys
 import uuid
 
 import cellprofiler.cpmodule as cpm
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.settings as cps
 from cellprofiler.settings import YES, NO
 import cellprofiler.preferences as cpprefs
@@ -669,10 +669,10 @@ class RunImageJ(cpm.CPModule):
         d = self.get_dictionary(workspace.image_set_list)
         if self.wants_to_set_current_image:
             input_image_name = self.current_input_image_name.value
-            img = image_set.get_image(input_image_name,
-                                      must_be_grayscale=True)
+            img = image_set.image(input_image_name,
+                                  must_be_grayscale=True)
             if self.show_window:
-                workspace.display_data.image_sent_to_ij = img.pixel_data
+                workspace.display_data.image_sent_to_ij = img.data
         else:
             img = None
         display_service = ij2.get_display_service(get_context())
@@ -686,7 +686,7 @@ class RunImageJ(cpm.CPModule):
         # Install the input image as the current image
         #
         if img is not None:
-            ijpixels = img.pixel_data * IMAGEJ_SCALE
+            ijpixels = img.data * IMAGEJ_SCALE
             if not ij1_mode:
                 dataset = ij2.create_dataset(get_context(),
                                              ijpixels,
@@ -742,7 +742,7 @@ class RunImageJ(cpm.CPModule):
         '''
         display_view = display.getActiveView()
         dataset = ij2.wrap_dataset(display_view.getData())
-        pixel_data = dataset.get_pixel_data() / IMAGEJ_SCALE
+        pixel_data = dataset.data() / IMAGEJ_SCALE
         mask = ij2.create_mask(display)
         image = cpi.Image(pixel_data, mask=mask)
         workspace.image_set.add(image_name, image)
@@ -755,7 +755,7 @@ class RunImageJ(cpm.CPModule):
         dataset - an ImageJ dataset
         image_name - save the image in the image set using this name.
         '''
-        pixel_data = dataset.get_pixel_data() / IMAGEJ_SCALE
+        pixel_data = dataset.data() / IMAGEJ_SCALE
         image = cpi.Image(pixel_data)
         workspace.image_set.add(image_name, image)
         return pixel_data
@@ -853,8 +853,8 @@ class RunImageJ(cpm.CPModule):
             elif field_type == ij2.FT_IMAGE:
                 data_class = J.call(module_item.o, "getType", "()Ljava/lang/Class;")
                 image_name = setting.value
-                image = workspace.image_set.get_image(image_name)
-                pixel_data = image.pixel_data * IMAGEJ_SCALE
+                image = workspace.image_set.image(image_name)
+                pixel_data = image.data * IMAGEJ_SCALE
 
                 dataset = ij2.create_dataset(
                         context, pixel_data, image_name)
@@ -881,7 +881,7 @@ class RunImageJ(cpm.CPModule):
                         o = display.o
                 input_dictionary.put(field_name, o)
                 if wants_display:
-                    input_images.append((image_name, image.pixel_data))
+                    input_images.append((image_name, image.data))
             elif field_type == ij2.FT_TABLE:
                 table_name = setting.value
                 table = workspace.object_set.get_type_instance(

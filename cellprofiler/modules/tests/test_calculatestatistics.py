@@ -19,7 +19,7 @@ set_headless()
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
 import cellprofiler.measurements as cpmeas
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.pipeline as cpp
 import cellprofiler.objects as cpo
 import cellprofiler.workspace as cpw
@@ -518,7 +518,7 @@ CalculateStatistics:[module_num:1|svn_version:\'9495\'|variable_revision_number:
                     dv = module.dose_values[-1]
                     dv.measurement.value = feature
         m.image_set_number = nimages
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         for i in range(nimages):
             image_set = image_set_list.get_image_set(i)
         workspace = cpw.Workspace(pipeline, module, image_set,

@@ -529,10 +529,10 @@ class MeasureTexture(cpm.CPModule):
     def run_one(self, image_name, object_name, scale, angle, workspace):
         """Run, computing the area measurements for a single map of objects"""
         statistics = []
-        image = workspace.image_set.get_image(image_name,
-                                              must_be_grayscale=True)
+        image = workspace.image_set.image(image_name,
+                                          must_be_grayscale=True)
         objects = workspace.get_objects(object_name)
-        pixel_data = image.pixel_data
+        pixel_data = image.data
         if image.has_mask:
             mask = image.mask
         else:
@@ -583,9 +583,9 @@ class MeasureTexture(cpm.CPModule):
     def run_image(self, image_name, scale, angle, workspace):
         '''Run measurements on image'''
         statistics = []
-        image = workspace.image_set.get_image(image_name,
-                                              must_be_grayscale=True)
-        pixel_data = image.pixel_data
+        image = workspace.image_set.image(image_name,
+                                          must_be_grayscale=True)
+        pixel_data = image.data
         image_labels = np.ones(pixel_data.shape, int)
         if image.has_mask:
             image_labels[~ image.mask] = 0
@@ -604,9 +604,9 @@ class MeasureTexture(cpm.CPModule):
         labels = objects.segmented
         object_count = np.max(labels)
         if object_count > 0:
-            image = workspace.image_set.get_image(image_name,
-                                                  must_be_grayscale=True)
-            pixel_data = image.pixel_data
+            image = workspace.image_set.image(image_name,
+                                              must_be_grayscale=True)
+            pixel_data = image.data
             labels = objects.segmented
             if image.has_mask:
                 mask = image.mask
@@ -646,9 +646,9 @@ class MeasureTexture(cpm.CPModule):
         return statistics
 
     def run_image_gabor(self, image_name, scale, workspace):
-        image = workspace.image_set.get_image(image_name,
-                                              must_be_grayscale=True)
-        pixel_data = image.pixel_data
+        image = workspace.image_set.image(image_name,
+                                          must_be_grayscale=True)
+        pixel_data = image.data
         labels = np.ones(pixel_data.shape, int)
         if image.has_mask:
             labels[~image.mask] = 0

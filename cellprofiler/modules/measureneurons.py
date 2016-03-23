@@ -45,7 +45,7 @@ import scipy.ndimage as scind
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 from scipy.ndimage import binary_erosion, grey_dilation, grey_erosion
 
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
@@ -281,9 +281,9 @@ class MeasureNeurons(cpm.CPModule):
         labels_count = np.max(labels)
         label_range = np.arange(labels_count, dtype=np.int32) + 1
 
-        skeleton_image = workspace.image_set.get_image(
+        skeleton_image = workspace.image_set.image(
                 skeleton_name, must_be_binary=True)
-        skeleton = skeleton_image.pixel_data
+        skeleton = skeleton_image.data
         if skeleton_image.has_mask:
             skeleton = skeleton & skeleton_image.mask
         try:
@@ -432,14 +432,14 @@ class MeasureNeurons(cpm.CPModule):
         #
         if self.wants_neuron_graph:
             trunk_mask = (branching_counts > 0) & (nearby_labels != 0)
-            intensity_image = workspace.image_set.get_image(
+            intensity_image = workspace.image_set.image(
                     self.intensity_image_name.value)
             edge_graph, vertex_graph = self.make_neuron_graph(
                     combined_skel, dlabels,
                     trunk_mask,
                     branch_points & ~trunk_mask,
                     end_points,
-                    intensity_image.pixel_data)
+                    intensity_image.data)
 
             image_number = workspace.measurements.image_set_number
 
@@ -451,7 +451,7 @@ class MeasureNeurons(cpm.CPModule):
             if self.show_window:
                 workspace.display_data.edge_graph = edge_graph
                 workspace.display_data.vertex_graph = vertex_graph
-                workspace.display_data.intensity_image = intensity_image.pixel_data
+                workspace.display_data.intensity_image = intensity_image.data
         #
         # Make the display image
         #

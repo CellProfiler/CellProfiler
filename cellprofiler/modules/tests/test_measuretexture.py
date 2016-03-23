@@ -16,7 +16,7 @@ from bioformats import load_image
 from bioformats.formatreader import load_using_bioformats_url
 from scipy.io.matlab import loadmat
 
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.modules.measuretexture as M
@@ -40,7 +40,7 @@ class TestMeasureTexture(unittest.TestCase):
         module.object_groups[0].object_name.value = INPUT_OBJECTS_NAME
         pipeline = cpp.Pipeline()
         object_set = cpo.ObjectSet()
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         workspace = cpw.Workspace(pipeline,
                                   module,

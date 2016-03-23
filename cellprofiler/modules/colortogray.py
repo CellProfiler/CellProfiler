@@ -17,7 +17,7 @@ import re
 import matplotlib.colors
 import numpy as np
 
-import cellprofiler.cpimage  as cpi
+import cellprofiler.image  as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
 
@@ -302,8 +302,8 @@ class ColorToGray(cpm.CPModule):
             measurements - the measurements for this run
             frame        - display within this frame (or None to not display)
         """
-        image = workspace.image_set.get_image(self.image_name.value,
-                                              must_be_color=True)
+        image = workspace.image_set.image(self.image_name.value,
+                                          must_be_color=True)
         if self.should_combine():
             self.run_combine(workspace, image)
         else:
@@ -318,7 +318,7 @@ class ColorToGray(cpm.CPModule):
     def run_combine(self, workspace, image):
         """Combine images to make a grayscale one
         """
-        input_image = image.pixel_data
+        input_image = image.data
         channels, contributions = zip(*self.channels_and_contributions())
         denominator = sum(contributions)
         channels = np.array(channels, int)
@@ -348,7 +348,7 @@ class ColorToGray(cpm.CPModule):
     def run_split(self, workspace, image):
         """Split image into individual components
         """
-        input_image = image.pixel_data
+        input_image = image.data
         disp_collection = []
         if self.rgb_or_channels in (CH_RGB, CH_CHANNELS):
             for index, name, title in self.channels_and_image_names():

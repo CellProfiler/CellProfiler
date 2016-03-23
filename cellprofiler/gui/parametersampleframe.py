@@ -14,7 +14,7 @@ import numpy as np
 import wx
 import wx.lib.agw.floatspin as fs
 
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.cpmodule
 import cellprofiler.measurements as cpm
 import cellprofiler.objects as cpo
@@ -554,7 +554,7 @@ class ParameterSampleFrame(wx.Frame):
         """
         self.__measurements = cpm.Measurements(can_overwrite=True)
         self.__object_set = cpo.ObjectSet(can_overwrite=True)
-        self.__image_set_list = cpi.ImageSetList()
+        self.__image_set_list = cpi.List()
         workspace = cpw.Workspace(self.__pipeline, None, None, None,
                                   self.__measurements, self.__image_set_list,
                                   self.__frame)
@@ -638,7 +638,7 @@ class ParameterSampleFrame(wx.Frame):
                 if isinstance(setting, settings.ImageNameProvider):
                     # Save image
                     image = \
-                        self.__measurements.get_image(value_to_write)
+                        self.__measurements.image(value_to_write)
                     path = \
                         os.path.join(directory_path, value_to_write + '_' + str(sample_num))
                     self.save_image(image, path)
@@ -695,7 +695,7 @@ class ParameterSampleFrame(wx.Frame):
         """TODO: add comments"""
 
         import PIL.Image as PILImage
-        pixels = image.pixel_data
+        pixels = image.data
         if np.max(pixels) > 1 or np.min(pixels) < 0:
             pixels = pixels.copy()
             pixels[pixels < 0] = 0

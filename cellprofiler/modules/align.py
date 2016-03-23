@@ -27,7 +27,7 @@ import scipy.sparse
 from centrosome.filter import stretch
 from scipy.fftpack import fft2, ifft2
 
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
@@ -230,7 +230,7 @@ class Align(cpm.CPModule):
                                               additional.input_image_name.value)
             offsets.append((a_off_y, a_off_x))
 
-        shapes = [workspace.image_set.get_image(x).pixel_data.shape[:2]
+        shapes = [workspace.image_set.image(x).data.shape[:2]
                   for x, _ in names]
         offsets, shapes = self.adjust_offsets(offsets, shapes)
 
@@ -247,9 +247,9 @@ class Align(cpm.CPModule):
         # save data for display
         workspace.display_data.image_info = \
             [(input_name,
-              workspace.image_set.get_image(input_name).pixel_data,
+              workspace.image_set.image(input_name).data,
               output_name,
-              workspace.image_set.get_image(output_name).pixel_data,
+              workspace.image_set.image(output_name).data,
               x, y, shape)
              for (input_name, output_name), (y, x), shape
              in zip(names, offsets, shapes)]
@@ -311,10 +311,10 @@ class Align(cpm.CPModule):
 
         Returns the x,y (not i,j) offsets.
         '''
-        image1 = workspace.image_set.get_image(input1_name)
-        image1_pixels = image1.pixel_data.astype(float)
-        image2 = workspace.image_set.get_image(input2_name)
-        image2_pixels = image2.pixel_data.astype(float)
+        image1 = workspace.image_set.image(input1_name)
+        image1_pixels = image1.data.astype(float)
+        image2 = workspace.image_set.image(input2_name)
+        image2_pixels = image2.data.astype(float)
         if self.alignment_method == M_CROSS_CORRELATION:
             return self.align_cross_correlation(image1_pixels, image2_pixels)
         else:
@@ -515,8 +515,8 @@ class Align(cpm.CPModule):
         shape - shape of the resultant image
         '''
 
-        image = workspace.image_set.get_image(input_image_name)
-        pixel_data = image.pixel_data
+        image = workspace.image_set.image(input_image_name)
+        pixel_data = image.data
         if pixel_data.ndim == 2:
             output_shape = (shape[0], shape[1], 1)
             planes = [pixel_data]
@@ -537,7 +537,7 @@ class Align(cpm.CPModule):
         p2[:, :] = p1[:, :]
         if np.all(output_mask):
             output_mask = None
-        crop_mask = np.zeros(image.pixel_data.shape, bool)
+        crop_mask = np.zeros(image.data.shape, bool)
         p1, p2 = offset_slice(crop_mask, output_pixels, off_y, off_x)
         p1[:, :] = True
         if np.all(crop_mask):

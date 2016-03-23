@@ -238,14 +238,14 @@ class MeasureCorrelation(cpm.CPModule):
     def run_image_pair_images(self, workspace, first_image_name,
                               second_image_name):
         '''Calculate the correlation between the pixels of two images'''
-        first_image = workspace.image_set.get_image(first_image_name,
-                                                    must_be_grayscale=True)
-        second_image = workspace.image_set.get_image(second_image_name,
-                                                     must_be_grayscale=True)
-        first_pixel_data = first_image.pixel_data
+        first_image = workspace.image_set.image(first_image_name,
+                                                must_be_grayscale=True)
+        second_image = workspace.image_set.image(second_image_name,
+                                                 must_be_grayscale=True)
+        first_pixel_data = first_image.data
         first_mask = first_image.mask
         first_pixel_count = np.product(first_pixel_data.shape)
-        second_pixel_data = second_image.pixel_data
+        second_pixel_data = second_image.data
         second_mask = second_image.mask
         second_pixel_count = np.product(second_pixel_data.shape)
         #
@@ -425,27 +425,27 @@ class MeasureCorrelation(cpm.CPModule):
     def run_image_pair_objects(self, workspace, first_image_name,
                                second_image_name, object_name):
         '''Calculate per-object correlations between intensities in two images'''
-        first_image = workspace.image_set.get_image(first_image_name,
-                                                    must_be_grayscale=True)
-        second_image = workspace.image_set.get_image(second_image_name,
-                                                     must_be_grayscale=True)
+        first_image = workspace.image_set.image(first_image_name,
+                                                must_be_grayscale=True)
+        second_image = workspace.image_set.image(second_image_name,
+                                                 must_be_grayscale=True)
         objects = workspace.object_set.get_objects(object_name)
         #
         # Crop both images to the size of the labels matrix
         #
         labels = objects.segmented
         try:
-            first_pixels = objects.crop_image_similarly(first_image.pixel_data)
+            first_pixels = objects.crop_image_similarly(first_image.data)
             first_mask = objects.crop_image_similarly(first_image.mask)
         except ValueError:
-            first_pixels, m1 = cpo.size_similarly(labels, first_image.pixel_data)
+            first_pixels, m1 = cpo.size_similarly(labels, first_image.data)
             first_mask, m1 = cpo.size_similarly(labels, first_image.mask)
             first_mask[~m1] = False
         try:
-            second_pixels = objects.crop_image_similarly(second_image.pixel_data)
+            second_pixels = objects.crop_image_similarly(second_image.data)
             second_mask = objects.crop_image_similarly(second_image.mask)
         except ValueError:
-            second_pixels, m1 = cpo.size_similarly(labels, second_image.pixel_data)
+            second_pixels, m1 = cpo.size_similarly(labels, second_image.data)
             second_mask, m1 = cpo.size_similarly(labels, second_image.mask)
             second_mask[~m1] = False
         mask = ((labels > 0) & first_mask & second_mask)
@@ -453,10 +453,10 @@ class MeasureCorrelation(cpm.CPModule):
         second_pixels = second_pixels[mask]
         labels = labels[mask]
         result = []
-        first_pixel_data = first_image.pixel_data
+        first_pixel_data = first_image.data
         first_mask = first_image.mask
         first_pixel_count = np.product(first_pixel_data.shape)
-        second_pixel_data = second_image.pixel_data
+        second_pixel_data = second_image.data
         second_mask = second_image.mask
         second_pixel_count = np.product(second_pixel_data.shape)
         #

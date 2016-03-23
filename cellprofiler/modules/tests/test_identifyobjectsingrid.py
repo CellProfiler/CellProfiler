@@ -14,7 +14,7 @@ set_headless()
 
 import cellprofiler.workspace as cpw
 import cellprofiler.cpgridinfo as cpg
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.objects as cpo
 import cellprofiler.measurements as cpmeas
@@ -125,7 +125,7 @@ class TestIdentifyObjectsInGrid(unittest.TestCase):
         module.output_objects_name.value = OUTPUT_OBJECTS_NAME
         module.guiding_object_name.value = GUIDING_OBJECTS_NAME
         module.outlines_name.value = OUTLINES_NAME
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         object_set = cpo.ObjectSet()
         if labels is not None:
             my_objects = cpo.Objects()
@@ -215,8 +215,8 @@ class TestIdentifyObjectsInGrid(unittest.TestCase):
         #
         # Check the outlines
         #
-        outlines = workspace.image_set.get_image(OUTLINES_NAME)
-        outlines = outlines.pixel_data
+        outlines = workspace.image_set.image(OUTLINES_NAME)
+        outlines = outlines.data
         expected_outlines = outline(expected)
         self.assertTrue(np.all(outlines == (expected_outlines[0:outlines.shape[0], 0:outlines.shape[1]] > 0)))
         #

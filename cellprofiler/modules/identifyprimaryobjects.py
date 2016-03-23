@@ -175,7 +175,7 @@ import scipy.stats
 
 import identify as cpmi
 import cellprofiler.cpmodule
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
 from cellprofiler.settings import YES, NO
@@ -886,7 +886,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             measurements - the measurements for this run
         """
         image_name = self.image_name.value
-        image = workspace.image_set.get_image(image_name)
+        image = workspace.image_set.image(image_name)
         workspace.display_data.statistics = []
         binary_image = self.threshold_image(image_name, workspace)
 
@@ -978,7 +978,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
                                        "%.1f" % (self.calc_smoothing_filter_size())])
                     statistics.append(["Maxima suppression size",
                                        "%.1f" % (maxima_suppression_size)])
-            workspace.display_data.image = image.pixel_data
+            workspace.display_data.image = image.data
             workspace.display_data.labeled_image = labeled_image
             workspace.display_data.size_excluded_labels = size_excluded_labeled_image
             workspace.display_data.border_excluded_labels = border_excluded_labeled_image
@@ -1096,9 +1096,9 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         if self.unclump_method == UN_NONE or self.watershed_method == WA_NONE:
             return labeled_image, object_count, 7, 0.5, 5
 
-        cpimage = workspace.image_set.get_image(
+        cpimage = workspace.image_set.image(
                 self.image_name.value, must_be_grayscale=True)
-        image = cpimage.pixel_data
+        image = cpimage.data
         mask = cpimage.mask
 
         reported_LoG_filter_diameter = 5

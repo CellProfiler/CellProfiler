@@ -15,7 +15,7 @@ set_headless()
 import cellprofiler.workspace as cpw
 import cellprofiler.pipeline as cpp
 import cellprofiler.objects as cpo
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.measurements as cpmeas
 import cellprofiler.modules.flipandrotate as F
 from centrosome.cpmorphology import draw_line
@@ -251,7 +251,7 @@ Rotate:[module_num:1|svn_version:\'8913\'|variable_revision_number:2|show_window
         image and the angle measurement.
         '''
         img = cpi.Image(image, mask)
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         image_set.add(IMAGE_NAME, img)
         module = F.FlipAndRotate()
@@ -276,7 +276,7 @@ Rotate:[module_num:1|svn_version:\'8913\'|variable_revision_number:2|show_window
         self.assertTrue(feature in
                         measurements.get_feature_names(cpmeas.IMAGE))
         angle = measurements.get_current_image_measurement(feature)
-        output_image = image_set.get_image(OUTPUT_IMAGE)
+        output_image = image_set.image(OUTPUT_IMAGE)
         return (output_image, angle)
 
     def test_02_01_flip_left_to_right(self):
@@ -300,7 +300,7 @@ Rotate:[module_num:1|svn_version:\'8913\'|variable_revision_number:2|show_window
         output_image, angle = self.run_module(image, mask=mask, fn=fn)
         self.assertEqual(angle, 0)
         self.assertTrue(np.all(output_image.mask == expected_mask))
-        self.assertTrue(np.all(np.abs(output_image.pixel_data - expected) <=
+        self.assertTrue(np.all(np.abs(output_image.data - expected) <=
                                np.finfo(np.float32).eps))
 
     def test_02_02_flip_top_to_bottom(self):
@@ -324,7 +324,7 @@ Rotate:[module_num:1|svn_version:\'8913\'|variable_revision_number:2|show_window
         output_image, angle = self.run_module(image, mask=mask, fn=fn)
         self.assertEqual(angle, 0)
         self.assertTrue(np.all(output_image.mask == expected_mask))
-        self.assertTrue(np.all(np.abs(output_image.pixel_data - expected) <=
+        self.assertTrue(np.all(np.abs(output_image.data - expected) <=
                                np.finfo(float).eps))
 
     def test_02_03_flip_both(self):
@@ -351,7 +351,7 @@ Rotate:[module_num:1|svn_version:\'8913\'|variable_revision_number:2|show_window
         output_image, angle = self.run_module(image, mask=mask, fn=fn)
         self.assertEqual(angle, 0)
         self.assertTrue(np.all(output_image.mask == expected_mask))
-        self.assertTrue(np.all(np.abs(output_image.pixel_data - expected) <=
+        self.assertTrue(np.all(np.abs(output_image.data - expected) <=
                                np.finfo(float).eps))
 
     def test_03_01_rotate_angle(self):
@@ -385,7 +385,7 @@ Rotate:[module_num:1|svn_version:\'8913\'|variable_revision_number:2|show_window
             output_image, measured_angle = self.run_module(img, mask, fn)
             self.assertAlmostEqual(measured_angle, angle, 3)
             rangle = float(angle) * np.pi / 180.0
-            pixel_data = output_image.pixel_data
+            pixel_data = output_image.data
             #
             # Check that the output contains the four corners of the original
             #
@@ -444,7 +444,7 @@ Rotate:[module_num:1|svn_version:\'8913\'|variable_revision_number:2|show_window
                 module.second_pixel.value = pt1
 
             output_image, angle = self.run_module(img, fn=fn)
-            pixels = output_image.pixel_data
+            pixels = output_image.data
 
             if option == F.C_HORIZONTALLY:
                 self.assertAlmostEqual(angle,
@@ -486,7 +486,7 @@ Rotate:[module_num:1|svn_version:\'8913\'|variable_revision_number:2|show_window
 
             crop_output_image, angle = self.run_module(image, fn=fn)
             crop_mask = crop_output_image.crop_mask
-            crop_image = crop_output_image.pixel_data
+            crop_image = crop_output_image.data
             self.assertTrue(np.all(crop_output_image.mask[1:-1, 1:-1]))
 
             #
@@ -501,7 +501,7 @@ Rotate:[module_num:1|svn_version:\'8913\'|variable_revision_number:2|show_window
 
             output_image, angle = self.run_module(image, fn=fn)
             self.assertTrue(isinstance(crop_output_image, cpi.Image))
-            pixel_data = output_image.pixel_data
+            pixel_data = output_image.data
             slop = (np.array(pixel_data.shape) - np.array(image.shape)) / 2
             mask = output_image.mask
             pixel_data = pixel_data[slop[0]:image.shape[0] + slop[0],

@@ -23,7 +23,7 @@ See also <b>IdentifyPrimaryObjects</b>, <b>IdentifySecondaryObjects</b>, <b>Iden
 import numpy as np
 from centrosome.outline import outline
 
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
@@ -241,10 +241,10 @@ class MeasureImageAreaOccupied(cpm.CPModule):
 
     def measure_images(self, operand, workspace):
         '''Performs measurements on the requested images'''
-        image = workspace.image_set.get_image(operand.binary_name.value, must_be_binary=True)
-        area_occupied = np.sum(image.pixel_data > 0)
-        perimeter = np.sum(outline(image.pixel_data) > 0)
-        total_area = np.prod(np.shape(image.pixel_data))
+        image = workspace.image_set.image(operand.binary_name.value, must_be_binary=True)
+        area_occupied = np.sum(image.data > 0)
+        perimeter = np.sum(outline(image.data) > 0)
+        total_area = np.prod(np.shape(image.data))
         m = workspace.measurements
         m.add_image_measurement(F_AREA_OCCUPIED % (operand.binary_name.value),
                                 np.array([area_occupied], dtype=float))

@@ -10,7 +10,7 @@ from cellprofiler.preferences import set_headless
 set_headless()
 
 from cellprofiler.modules.injectimage import InjectImage
-import cellprofiler.cpimage
+import cellprofiler.image
 import cellprofiler.pipeline
 import cellprofiler.measurements as cpmeas
 import cellprofiler.workspace as cpw
@@ -28,13 +28,13 @@ class testInjectImage(unittest.TestCase):
         measurements = cpmeas.Measurements()
         workspace = cpw.Workspace(pipeline, ii, measurements, None,
                                   measurements,
-                                  cellprofiler.cpimage.ImageSetList())
+                                  cellprofiler.image.List())
         ii.prepare_run(workspace)
         ii.prepare_group(workspace, {}, [1])
         ii.run(workspace)
         image_set = workspace.image_set
         self.assertTrue(image_set, "No image set returned from ImageSetList.GetImageSet")
-        my_image = image_set.get_image("my_image")
+        my_image = image_set.image("my_image")
         self.assertTrue(my_image, "No image returned from ImageSet.GetImage")
         self.assertEqual(my_image.image.shape[0], 10, "Wrong image shape")
 

@@ -12,7 +12,7 @@ import centrosome.outline
 import numpy as np
 from scipy.ndimage import distance_transform_edt
 
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
 from cellprofiler.settings import YES, NO
@@ -204,19 +204,19 @@ class OverlayOutlines(cpm.CPModule):
             output_image = cpi.Image(pixel_data)
             workspace.image_set.add(self.output_image_name.value, output_image)
         else:
-            image = workspace.image_set.get_image(self.image_name.value)
+            image = workspace.image_set.image(self.image_name.value)
             output_image = cpi.Image(pixel_data, parent_image=image)
             workspace.image_set.add(self.output_image_name.value, output_image)
-            workspace.display_data.image_pixel_data = image.pixel_data
+            workspace.display_data.image_pixel_data = image.data
         if self.__can_composite_objects() and self.show_window:
             workspace.display_data.labels = {}
             for outline in self.outlines:
                 name = outline.objects_name.value
                 objects = workspace.object_set.get_objects(name)
                 workspace.display_data.labels[name] = \
-                    [labels for labels, indexes in objects.get_labels()]
+                    [labels for labels, indexes in objects.labels()]
 
-        workspace.display_data.pixel_data = pixel_data
+        workspace.display_data.data = pixel_data
 
     def __can_composite_objects(self):
         '''Return True if we can use object compositing during display'''
@@ -234,7 +234,7 @@ class OverlayOutlines(cpm.CPModule):
 
         if self.__can_composite_objects():
             if self.blank_image:
-                pixel_data = np.zeros(workspace.display_data.pixel_data.shape)
+                pixel_data = np.zeros(workspace.display_data.data.shape)
             else:
                 pixel_data = workspace.display_data.image_pixel_data
             cplabels = []
@@ -252,7 +252,7 @@ class OverlayOutlines(cpm.CPModule):
                      CPLD_LINE_WIDTH: self.line_width.value}
                 cplabels.append(d)
         else:
-            pixel_data = workspace.display_data.pixel_data
+            pixel_data = workspace.display_data.data
             cplabels = None
         if self.blank_image.value:
             if self.wants_color.value == WANTS_COLOR:
@@ -297,9 +297,9 @@ class OverlayOutlines(cpm.CPModule):
             pixel_data = np.zeros(shape)
             maximum = 1
         else:
-            image = image_set.get_image(self.image_name.value,
-                                        must_be_grayscale=True)
-            pixel_data = image.pixel_data
+            image = image_set.image(self.image_name.value,
+                                    must_be_grayscale=True)
+            pixel_data = image.data
             maximum = 1 if self.max_type == MAX_POSSIBLE else np.max(pixel_data)
             pixel_data = pixel_data.copy()
         for outline in self.outlines:
@@ -316,8 +316,8 @@ class OverlayOutlines(cpm.CPModule):
             pixel_data = None
             pdmax = 1
         else:
-            image = image_set.get_image(self.image_name.value)
-            pixel_data = image.pixel_data
+            image = image_set.image(self.image_name.value)
+            pixel_data = image.data
             if pixel_data.ndim == 2:
                 pixel_data = np.dstack((pixel_data, pixel_data, pixel_data))
             else:
@@ -353,12 +353,12 @@ class OverlayOutlines(cpm.CPModule):
         '''Get outline, with aliasing and taking widths into account'''
         if outline.outline_choice == FROM_IMAGES:
             name = outline.outline_name.value
-            pixel_data = workspace.image_set.get_image(name).pixel_data
+            pixel_data = workspace.image_set.image(name).data
         else:
             name = outline.objects_name.value
             objects = workspace.object_set.get_objects(name)
             pixel_data = np.zeros(objects.shape, bool)
-            for labels, indexes in objects.get_labels():
+            for labels, indexes in objects.labels():
                 pixel_data = \
                     pixel_data | centrosome.outline.outline(labels)
         if self.wants_color == WANTS_GRAYSCALE:

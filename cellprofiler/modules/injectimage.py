@@ -5,7 +5,7 @@ import hashlib
 
 import numpy as np
 
-import cellprofiler.cpimage
+import cellprofiler.image
 import cellprofiler.cpmodule
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects
@@ -87,7 +87,7 @@ class InjectImage(cellprofiler.cpmodule.CPModule):
             mask = self.__mask[workspace.image_set.image_number - 1]
         else:
             mask = self.__mask
-        image = cellprofiler.cpimage.Image(image, mask)
+        image = cellprofiler.image.Image(image, mask)
         workspace.image_set.add(self.__image_name, image)
 
     def post_run(self, workspace):

@@ -28,7 +28,7 @@ from scipy.ndimage import gaussian_gradient_magnitude, correlate1d
 #
 ##################################
 
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
 
@@ -219,12 +219,12 @@ class ImageTemplate(cpm.CPModule):
         # The image set will convert a color image to a grayscale one
         # and warn the user.
         #
-        input_image = image_set.get_image(input_image_name,
-                                          must_be_grayscale=True)
+        input_image = image_set.image(input_image_name,
+                                      must_be_grayscale=True)
         #
         # Get the pixels - these are a 2-d Numpy array.
         #
-        pixels = input_image.pixel_data
+        pixels = input_image.data
         #
         # Get the smoothing parameter
         #

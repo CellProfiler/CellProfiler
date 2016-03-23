@@ -15,7 +15,7 @@ import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.pipeline as cpp
 import cellprofiler.workspace as cpw
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.objects as cpo
 import cellprofiler.modules.measureimageintensity as M
 
@@ -26,7 +26,7 @@ class TestMeasureImageIntensity(unittest.TestCase):
         module = M.MeasureImageIntensity()
         pipeline = cpp.Pipeline()
         object_set = cpo.ObjectSet()
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         workspace = cpw.Workspace(pipeline,
                                   module,
@@ -46,7 +46,7 @@ class TestMeasureImageIntensity(unittest.TestCase):
         '''Test operation on a completely-masked image'''
         workspace, module = self.make_workspace({},
                                                 {"my_image": np.zeros((10, 10))})
-        image = workspace.image_set.get_image("my_image")
+        image = workspace.image_set.image("my_image")
         image.mask = np.zeros((10, 10), bool)
         module.images[0].image_name.value = "my_image"
         module.run(workspace)
@@ -68,7 +68,7 @@ class TestMeasureImageIntensity(unittest.TestCase):
         pixels[0:2, 0:2] = 1
         workspace, module = self.make_workspace({},
                                                 {"my_image": pixels})
-        image = workspace.image_set.get_image("my_image")
+        image = workspace.image_set.image("my_image")
         module.images[0].image_name.value = "my_image"
         module.run(workspace)
         m = workspace.measurements
@@ -93,7 +93,7 @@ class TestMeasureImageIntensity(unittest.TestCase):
         mask[1:9, 1:9] = True
         workspace, module = self.make_workspace({},
                                                 {"my_image": pixels})
-        image = workspace.image_set.get_image("my_image")
+        image = workspace.image_set.image("my_image")
         image.mask = mask
         module.images[0].image_name.value = "my_image"
         module.run(workspace)
@@ -148,7 +148,7 @@ class TestMeasureImageIntensity(unittest.TestCase):
         mask[1:9, :9] = True
         workspace, module = self.make_workspace({"my_objects": objects},
                                                 {"my_image": pixels})
-        image = workspace.image_set.get_image("my_image")
+        image = workspace.image_set.image("my_image")
         image.mask = mask
 
         module.images[0].image_name.value = "my_image"

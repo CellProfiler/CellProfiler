@@ -16,7 +16,7 @@ import cellprofiler.modules.identify as cpmi
 import cellprofiler.modules.identifytertiaryobjects as cpmit
 import cellprofiler.workspace as cpw
 import cellprofiler.pipeline as cpp
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.objects as cpo
 import cellprofiler.measurements as cpm
 
@@ -39,7 +39,7 @@ class TestIdentifyTertiaryObjects(unittest.TestCase):
                          has object with name "secondary" containing
                          the secondary labels
         """
-        isl = cpi.ImageSetList()
+        isl = cpi.List()
         module = cpmit.IdentifyTertiarySubregion()
         module.module_num = 1
         module.primary_objects_name.value = PRIMARY
@@ -202,9 +202,9 @@ class TestIdentifyTertiaryObjects(unittest.TestCase):
         module.run(workspace)
         measurements = workspace.measurements
         output_labels = workspace.object_set.get_objects(TERTIARY).segmented
-        output_outlines = workspace.image_set.get_image(OUTLINES,
-                                                        must_be_binary=True)
-        self.assertTrue(np.all(output_labels[output_outlines.pixel_data] > 0))
+        output_outlines = workspace.image_set.image(OUTLINES,
+                                                    must_be_binary=True)
+        self.assertTrue(np.all(output_labels[output_outlines.data] > 0))
         for parent_name, parent_labels in ((PRIMARY, expected_primary_parents),
                                            (SECONDARY, expected_secondary_parents)):
             parents_of_feature = ("Parent_%s" % (parent_name))
@@ -241,9 +241,9 @@ class TestIdentifyTertiaryObjects(unittest.TestCase):
         module.run(workspace)
         measurements = workspace.measurements
         output_labels = workspace.object_set.get_objects(TERTIARY).segmented
-        output_outlines = workspace.image_set.get_image(OUTLINES,
-                                                        must_be_binary=True)
-        self.assertTrue(np.all(output_labels[output_outlines.pixel_data] > 0))
+        output_outlines = workspace.image_set.image(OUTLINES,
+                                                    must_be_binary=True)
+        self.assertTrue(np.all(output_labels[output_outlines.data] > 0))
 
     def test_02_01_load_matlab(self):
         '''Load a Matlab pipeline with an IdentifyTertiary module'''

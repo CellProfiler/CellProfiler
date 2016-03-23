@@ -15,7 +15,7 @@ set_headless()
 
 import cellprofiler.pipeline as cpp
 import cellprofiler.settings as cps
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.workspace as cpw
 import cellprofiler.objects as cpo
 import cellprofiler.measurements as cpm
@@ -48,7 +48,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
 
         returns a list of workspaces + the module
         '''
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         workspaces = []
         module = calc.CorrectIlluminationCalculate()
         module.module_num = 1
@@ -107,7 +107,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
                                            calc.FI_OBJECT_SIZE):
                                     module.automatic_object_width.value = ow
                                     measurements = cpm.Measurements()
-                                    image_set_list = cpi.ImageSetList()
+                                    image_set_list = cpi.List()
                                     workspace = cpw.Workspace(
                                             pipeline, None, None, None,
                                             measurements, image_set_list)
@@ -124,9 +124,9 @@ class TestCorrectImage_Calculate(unittest.TestCase):
                                                               image_set_list)
                                     inj_module.run(workspace)
                                     module.run(workspace)
-                                    image = image_set.get_image("OutputImage")
+                                    image = image_set.image("OutputImage")
                                     self.assertTrue(image is not None)
-                                    self.assertTrue(np.all(image.pixel_data == 0),
+                                    self.assertTrue(np.all(image.data == 0),
                                                     """Failure case:
                 intensity_choice = %(intensity_choice)s
                 dilate_objects = %(dilate_objects)s
@@ -167,7 +167,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
                                        calc.FI_OBJECT_SIZE):
                                 module.automatic_object_width.value = ow
                                 measurements = cpm.Measurements()
-                                image_set_list = cpi.ImageSetList()
+                                image_set_list = cpi.List()
                                 workspace = cpw.Workspace(
                                         pipeline, None, None, None,
                                         measurements, image_set_list)
@@ -184,9 +184,9 @@ class TestCorrectImage_Calculate(unittest.TestCase):
                                                           image_set_list)
                                 inj_module.run(workspace)
                                 module.run(workspace)
-                                image = image_set.get_image("OutputImage")
+                                image = image_set.image("OutputImage")
                                 self.assertTrue(image is not None)
-                                self.assertTrue(np.all(np.std(image.pixel_data) < .00001),
+                                self.assertTrue(np.all(np.std(image.data) < .00001),
                                                 """Failure case:
             each_or_all            = %(ea)s
             intensity_choice       = %(intensity_choice)s
@@ -228,7 +228,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
                                    calc.FI_OBJECT_SIZE):
                             module.automatic_object_width.value = ow
                             measurements = cpm.Measurements()
-                            image_set_list = cpi.ImageSetList()
+                            image_set_list = cpi.List()
                             workspace = cpw.Workspace(
                                     pipeline, None, None, None,
                                     measurements, image_set_list)
@@ -245,9 +245,9 @@ class TestCorrectImage_Calculate(unittest.TestCase):
                                                       image_set_list)
                             inj_module.run(workspace)
                             module.run(workspace)
-                            image = image_set.get_image("OutputImage")
+                            image = image_set.image("OutputImage")
                             self.assertTrue(image is not None)
-                            self.assertTrue(np.all(abs(image.pixel_data[mask] - 1 < .00001)),
+                            self.assertTrue(np.all(abs(image.data[mask] - 1 < .00001)),
                                             """Failure case:
             each_or_all            = %(ea)s
             intensity_choice       = %(intensity_choice)s
@@ -281,13 +281,13 @@ class TestCorrectImage_Calculate(unittest.TestCase):
             assert isinstance(workspace, cpw.Workspace)
             module.run(workspace)
         image_set = workspaces[-1].image_set
-        self.assertNotIn(OUTPUT_IMAGE_NAME, image_set.get_names())
-        self.assertNotIn(DILATED_IMAGE_NAME, image_set.get_names())
-        self.assertNotIn(AVERAGE_IMAGE_NAME, image_set.get_names())
+        self.assertNotIn(OUTPUT_IMAGE_NAME, image_set.names())
+        self.assertNotIn(DILATED_IMAGE_NAME, image_set.names())
+        self.assertNotIn(AVERAGE_IMAGE_NAME, image_set.names())
         module.post_group(workspaces[-1], None)
-        self.assertIn(OUTPUT_IMAGE_NAME, image_set.get_names())
-        self.assertIn(DILATED_IMAGE_NAME, image_set.get_names())
-        self.assertIn(AVERAGE_IMAGE_NAME, image_set.get_names())
+        self.assertIn(OUTPUT_IMAGE_NAME, image_set.names())
+        self.assertIn(DILATED_IMAGE_NAME, image_set.names())
+        self.assertIn(AVERAGE_IMAGE_NAME, image_set.names())
 
     def test_01_04_not_filtered(self):
         '''Regression test of issue #310, negative case
@@ -315,9 +315,9 @@ class TestCorrectImage_Calculate(unittest.TestCase):
             assert isinstance(workspace, cpw.Workspace)
             module.run(workspace)
         image_set = workspaces[-1].image_set
-        self.assertIn(OUTPUT_IMAGE_NAME, image_set.get_names())
-        self.assertIn(DILATED_IMAGE_NAME, image_set.get_names())
-        self.assertIn(AVERAGE_IMAGE_NAME, image_set.get_names())
+        self.assertIn(OUTPUT_IMAGE_NAME, image_set.names())
+        self.assertIn(DILATED_IMAGE_NAME, image_set.names())
+        self.assertIn(AVERAGE_IMAGE_NAME, image_set.names())
         module.post_group(workspaces[-1], None)
         #
         # Make sure it appears only once
@@ -325,7 +325,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         for image_name in (
                 OUTPUT_IMAGE_NAME, DILATED_IMAGE_NAME, AVERAGE_IMAGE_NAME):
             self.assertEqual(len(filter(lambda x: x == image_name,
-                                        image_set.get_names())), 1)
+                                        image_set.names())), 1)
 
     def test_02_02_Background(self):
         """Test an image with four distinct backgrounds"""
@@ -352,7 +352,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         module.dilate_objects.value = False
         module.smoothing_method.value = calc.SM_NONE
         measurements = cpm.Measurements()
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         workspace = cpw.Workspace(pipeline, None, None, None,
                                   measurements, image_set_list)
         pipeline.prepare_run(workspace)
@@ -368,11 +368,11 @@ class TestCorrectImage_Calculate(unittest.TestCase):
                                   image_set_list)
         inj_module.run(workspace)
         module.run(workspace)
-        image = image_set.get_image("OutputImage")
-        self.assertTrue(np.all(image.pixel_data[:20, :20] == .25))
-        self.assertTrue(np.all(image.pixel_data[:20, 20:] == .5))
-        self.assertTrue(np.all(image.pixel_data[20:, :20] == .75))
-        self.assertTrue(np.all(image.pixel_data[20:, 20:] == .9))
+        image = image_set.image("OutputImage")
+        self.assertTrue(np.all(image.data[:20, :20] == .25))
+        self.assertTrue(np.all(image.data[:20, 20:] == .5))
+        self.assertTrue(np.all(image.data[20:, :20] == .75))
+        self.assertTrue(np.all(image.data[20:, 20:] == .9))
 
     def test_03_00_no_smoothing(self):
         """Make sure that no smoothing takes place if smoothing is turned off"""
@@ -394,7 +394,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         module.rescale_option.value = cps.NO
         module.dilate_objects.value = False
         measurements = cpm.Measurements()
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         workspace = cpw.Workspace(pipeline, None, None, None,
                                   measurements, image_set_list)
         pipeline.prepare_run(workspace)
@@ -410,8 +410,8 @@ class TestCorrectImage_Calculate(unittest.TestCase):
                                   image_set_list)
         inj_module.run(workspace)
         module.run(workspace)
-        image = image_set.get_image("OutputImage")
-        self.assertTrue(np.all(np.abs(image.pixel_data - input_image) < .001),
+        image = image_set.image("OutputImage")
+        self.assertTrue(np.all(np.abs(image.data - input_image) < .001),
                         "Failed to fit polynomial to %s" % (image_name))
 
     def test_03_01_FitPolynomial(self):
@@ -444,7 +444,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
             module.rescale_option.value = cps.NO
             module.dilate_objects.value = False
             measurements = cpm.Measurements()
-            image_set_list = cpi.ImageSetList()
+            image_set_list = cpi.List()
             workspace = cpw.Workspace(pipeline, None, None, None,
                                       measurements, image_set_list)
             pipeline.prepare_run(workspace)
@@ -460,8 +460,8 @@ class TestCorrectImage_Calculate(unittest.TestCase):
                                       image_set_list)
             inj_module.run(workspace)
             module.run(workspace)
-            image = image_set.get_image("OutputImage")
-            self.assertTrue(np.all(np.abs(image.pixel_data - input_image) < .001),
+            image = image_set.image("OutputImage")
+            self.assertTrue(np.all(np.abs(image.data - input_image) < .001),
                             "Failed to fit polynomial to %s" % (image_name))
 
     def test_03_02_gaussian_filter(self):
@@ -489,7 +489,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         module.rescale_option.value = cps.NO
         module.dilate_objects.value = False
         measurements = cpm.Measurements()
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         workspace = cpw.Workspace(pipeline, None, None, None,
                                   measurements, image_set_list)
         pipeline.prepare_run(workspace)
@@ -505,8 +505,8 @@ class TestCorrectImage_Calculate(unittest.TestCase):
                                   image_set_list)
         inj_module.run(workspace)
         module.run(workspace)
-        image = image_set.get_image("OutputImage")
-        ipd = image.pixel_data[40:61, 40:61]
+        image = image_set.image("OutputImage")
+        ipd = image.data[40:61, 40:61]
         expected_image = expected_image[40:61, 40:61]
         self.assertTrue(np.all(np.abs(ipd / ipd.mean() -
                                       expected_image / expected_image.mean()) <
@@ -539,7 +539,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         module.rescale_option.value = cps.NO
         module.dilate_objects.value = False
         measurements = cpm.Measurements()
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         workspace = cpw.Workspace(pipeline, None, None, None,
                                   measurements, image_set_list)
         pipeline.prepare_run(workspace)
@@ -555,8 +555,8 @@ class TestCorrectImage_Calculate(unittest.TestCase):
                                   image_set_list)
         inj_module.run(workspace)
         module.run(workspace)
-        image = image_set.get_image("OutputImage")
-        self.assertTrue(np.all(image.pixel_data == expected_image))
+        image = image_set.image("OutputImage")
+        self.assertTrue(np.all(image.data == expected_image))
 
     def test_03_04_smooth_to_average(self):
         """Test smoothing to an average value"""
@@ -582,7 +582,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         module.rescale_option.value = cps.NO
         module.dilate_objects.value = False
         measurements = cpm.Measurements()
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         workspace = cpw.Workspace(pipeline, None, None, None,
                                   measurements, image_set_list)
         pipeline.prepare_run(workspace)
@@ -598,8 +598,8 @@ class TestCorrectImage_Calculate(unittest.TestCase):
                                   image_set_list)
         inj_module.run(workspace)
         module.run(workspace)
-        image = image_set.get_image("OutputImage")
-        np.testing.assert_almost_equal(image.pixel_data, expected_image)
+        image = image_set.image("OutputImage")
+        np.testing.assert_almost_equal(image.data, expected_image)
 
     def test_03_05_splines(self):
         for automatic, bg_mode, spline_points, threshold, convergence, offset, hi, lo, succeed in (
@@ -658,8 +658,8 @@ class TestCorrectImage_Calculate(unittest.TestCase):
             module.spline_rescale.value = 1
             module.prepare_group(workspaces[0], {}, [1])
             module.run(workspaces[0])
-            img = workspaces[0].image_set.get_image(OUTPUT_IMAGE_NAME)
-            pixel_data = img.pixel_data
+            img = workspaces[0].image_set.image(OUTPUT_IMAGE_NAME)
+            pixel_data = img.data
             diff = pixel_data - np.min(pixel_data) - bg
             if succeed:
                 self.assertTrue(np.all(diff < .05))
@@ -695,8 +695,8 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         module.spline_rescale.value = 2
         module.prepare_group(workspaces[0], {}, [1])
         module.run(workspaces[0])
-        img = workspaces[0].image_set.get_image(OUTPUT_IMAGE_NAME)
-        pixel_data = img.pixel_data
+        img = workspaces[0].image_set.image(OUTPUT_IMAGE_NAME)
+        pixel_data = img.data
         diff = pixel_data - np.min(pixel_data) - bg
         np.all(diff < .05)
 
@@ -731,8 +731,8 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         module.automatic_splines.value = True
         module.prepare_group(workspaces[0], {}, [1])
         module.run(workspaces[0])
-        img = workspaces[0].image_set.get_image(OUTPUT_IMAGE_NAME)
-        pixel_data = img.pixel_data
+        img = workspaces[0].image_set.image(OUTPUT_IMAGE_NAME)
+        pixel_data = img.data
         diff = pixel_data - np.min(pixel_data) - bg
         self.assertTrue(np.all(diff < .05))
         #
@@ -747,8 +747,8 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         module.automatic_splines.value = True
         module.prepare_group(workspaces[0], {}, [1])
         module.run(workspaces[0])
-        img = workspaces[0].image_set.get_image(OUTPUT_IMAGE_NAME)
-        pixel_data = img.pixel_data
+        img = workspaces[0].image_set.image(OUTPUT_IMAGE_NAME)
+        pixel_data = img.data
         diff = pixel_data - np.min(pixel_data) - bg
         self.assertFalse(np.all(diff < .05))
 
@@ -784,8 +784,8 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         module.automatic_splines.value = True
         module.prepare_group(workspaces[0], {}, [1])
         module.run(workspaces[0])
-        img = workspaces[0].image_set.get_image(OUTPUT_IMAGE_NAME)
-        pixel_data = img.pixel_data
+        img = workspaces[0].image_set.image(OUTPUT_IMAGE_NAME)
+        pixel_data = img.data
         diff = pixel_data - np.min(pixel_data) - bg
         self.assertTrue(np.all(diff < .05))
         #
@@ -800,8 +800,8 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         module.automatic_splines.value = True
         module.prepare_group(workspaces[0], {}, [1])
         module.run(workspaces[0])
-        img = workspaces[0].image_set.get_image(OUTPUT_IMAGE_NAME)
-        pixel_data = img.pixel_data
+        img = workspaces[0].image_set.image(OUTPUT_IMAGE_NAME)
+        pixel_data = img.data
         diff = pixel_data - np.min(pixel_data) - bg
         self.assertFalse(np.all(diff < .05))
 
@@ -826,7 +826,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
             module.save_dilated_image.value = dilated_flag
             module.dilated_image_name.value = "DilatedImage"
             measurements = cpm.Measurements()
-            image_set_list = cpi.ImageSetList()
+            image_set_list = cpi.List()
             workspace = cpw.Workspace(pipeline, None, None, None,
                                       measurements, image_set_list)
             pipeline.prepare_run(workspace)
@@ -843,16 +843,16 @@ class TestCorrectImage_Calculate(unittest.TestCase):
             inj_module.run(workspace)
             module.run(workspace)
             if average_flag:
-                img = image_set.get_image("AverageImage")
+                img = image_set.image("AverageImage")
             else:
                 self.assertRaises(AssertionError,
-                                  image_set.get_image,
+                                  image_set.image,
                                   "AverageImage")
             if dilated_flag:
-                img = image_set.get_image("DilatedImage")
+                img = image_set.image("DilatedImage")
             else:
                 self.assertRaises(AssertionError,
-                                  image_set.get_image,
+                                  image_set.image,
                                   "DilatedImage")
 
     def test_05_01_rescale(self):
@@ -879,7 +879,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         module.rescale_option.value = cps.YES
         module.dilate_objects.value = False
         measurements = cpm.Measurements()
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         workspace = cpw.Workspace(pipeline, None, None, None,
                                   measurements, image_set_list)
         pipeline.prepare_run(workspace)
@@ -895,8 +895,8 @@ class TestCorrectImage_Calculate(unittest.TestCase):
                                   image_set_list)
         inj_module.run(workspace)
         module.run(workspace)
-        image = image_set.get_image("OutputImage")
-        self.assertTrue(np.all(image.pixel_data == expected_image))
+        image = image_set.image("OutputImage")
+        self.assertTrue(np.all(image.data == expected_image))
 
     def test_05_02_rescale_outlier(self):
         """Test rescaling with one low outlier"""
@@ -924,7 +924,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         module.rescale_option.value = cps.YES
         module.dilate_objects.value = False
         measurements = cpm.Measurements()
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         workspace = cpw.Workspace(pipeline, None, None, None,
                                   measurements, image_set_list)
         pipeline.prepare_run(workspace)
@@ -940,8 +940,8 @@ class TestCorrectImage_Calculate(unittest.TestCase):
                                   image_set_list)
         inj_module.run(workspace)
         module.run(workspace)
-        image = image_set.get_image("OutputImage")
-        self.assertTrue(np.all(image.pixel_data == expected_image))
+        image = image_set.image("OutputImage")
+        self.assertTrue(np.all(image.data == expected_image))
 
     def test_06_01_load_matlab(self):
         data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'

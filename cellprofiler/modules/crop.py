@@ -30,7 +30,7 @@ import sys
 import numpy as np
 from centrosome.filter import stretch
 
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.preferences as cpprefs
@@ -304,19 +304,19 @@ class Crop(cpm.CPModule):
                 cpmeas.GROUP_INDEX) == 1
         image_set_list = workspace.image_set_list
         d = self.get_dictionary(image_set_list)
-        orig_image = workspace.image_set.get_image(self.image_name.value)
+        orig_image = workspace.image_set.image(self.image_name.value)
         recalculate_flag = (self.shape not in (SH_ELLIPSE, SH_RECTANGLE) or
                             self.individual_or_once == IO_INDIVIDUALLY or
                             first_image_set or
                             workspace.pipeline.test_mode)
         save_flag = (self.individual_or_once == IO_FIRST and first_image_set)
         if not recalculate_flag:
-            if d[D_FIRST_CROPPING].shape != orig_image.pixel_data.shape[:2]:
+            if d[D_FIRST_CROPPING].shape != orig_image.data.shape[:2]:
                 recalculate_flag = True
                 logger.warning("""Image, "%s", size changed from %s to %s during cycle %d, recalculating""",
                                self.image_name.value,
                                str(d[D_FIRST_CROPPING].shape),
-                               str(orig_image.pixel_data.shape[:2]),
+                               str(orig_image.data.shape[:2]),
                                workspace.image_set.image_number)
         mask = None  # calculate the mask after cropping unless set below
         cropping = None
@@ -325,11 +325,11 @@ class Crop(cpm.CPModule):
             cropping = d[D_FIRST_CROPPING]
             mask = d[D_FIRST_CROPPING_MASK]
         elif self.shape == SH_CROPPING:
-            cropping_image = workspace.image_set.get_image(self.cropping_mask_source.value)
+            cropping_image = workspace.image_set.image(self.cropping_mask_source.value)
             cropping = cropping_image.crop_mask
         elif self.shape == SH_IMAGE:
-            source_image = workspace.image_set.get_image \
-                (self.image_mask_source.value).pixel_data
+            source_image = workspace.image_set.image \
+                (self.image_mask_source.value).data
             if self.use_plate_fix.value:
                 source_image = self.plate_fixup(source_image)
             cropping = source_image > 0
@@ -343,7 +343,7 @@ class Crop(cpm.CPModule):
         elif self.shape == SH_RECTANGLE:
             cropping = self.get_rectangle_cropping(workspace, orig_image)
         if self.remove_rows_and_columns == RM_NO:
-            cropped_pixel_data = orig_image.pixel_data.copy()
+            cropped_pixel_data = orig_image.data.copy()
             if cropped_pixel_data.ndim == 3:
                 cropped_pixel_data[~cropping, :] = 0
             else:
@@ -351,19 +351,19 @@ class Crop(cpm.CPModule):
             if mask is None:
                 mask = cropping
             if orig_image.has_mask:
-                image_mask = mask & orig_image.get_mask()
+                image_mask = mask & orig_image.mask()
             else:
                 image_mask = mask
         else:
             internal_cropping = self.remove_rows_and_columns == RM_ALL
-            cropped_pixel_data = cpi.crop_image(orig_image.pixel_data,
+            cropped_pixel_data = cpi.crop_image(orig_image.data,
                                                 cropping,
                                                 internal_cropping)
             if mask is None:
                 mask = cpi.crop_image(cropping, cropping, internal_cropping)
             if orig_image.has_mask:
                 image_mask = cpi.crop_image(
-                        orig_image.get_mask(), cropping, internal_cropping) & mask
+                        orig_image.mask(), cropping, internal_cropping) & mask
             else:
                 image_mask = mask
 
@@ -386,7 +386,7 @@ class Crop(cpm.CPModule):
         # Display the image
         #
         if self.show_window:
-            workspace.display_data.orig_image_pixel_data = orig_image.pixel_data
+            workspace.display_data.orig_image_pixel_data = orig_image.data
             workspace.display_data.cropped_pixel_data = cropped_pixel_data
             workspace.display_data.image_set_number = workspace.measurements.image_set_number
 
@@ -400,7 +400,7 @@ class Crop(cpm.CPModule):
         #
         # Save the old and new image sizes
         #
-        original_image_area = np.product(orig_image.pixel_data.shape[:2])
+        original_image_area = np.product(orig_image.data.shape[:2])
         area_retained_after_cropping = np.sum(cropping)
         feature = FF_AREA_RETAINED % (self.cropped_image_name.value)
         m = workspace.measurements
@@ -434,7 +434,7 @@ class Crop(cpm.CPModule):
         if ((not d.has_key(self.shape.value)) or
                     self.individual_or_once == IO_INDIVIDUALLY):
             d[self.shape.value] = \
-                workspace.interaction_request(self, d.get(self.shape.value, None), orig_image.pixel_data)
+                workspace.interaction_request(self, d.get(self.shape.value, None), orig_image.data)
         if self.shape == SH_ELLIPSE:
             return self.apply_ellipse_cropping(workspace, orig_image)
         else:
@@ -756,7 +756,7 @@ class Crop(cpm.CPModule):
         ellipse = d[SH_ELLIPSE]
         x_center, y_center, x_radius, y_radius = [
             ellipse[x] for x in (EL_XCENTER, EL_YCENTER, EL_XRADIUS, EL_YRADIUS)]
-        pixel_data = orig_image.pixel_data
+        pixel_data = orig_image.data
         x_max = pixel_data.shape[1]
         y_max = pixel_data.shape[0]
         if x_radius > y_radius:
@@ -778,7 +778,7 @@ class Crop(cpm.CPModule):
 
     def get_rectangle_cropping(self, workspace, orig_image):
         """Crop into a rectangle using user-specified coordinates"""
-        cropping = np.ones(orig_image.pixel_data.shape[:2], bool)
+        cropping = np.ones(orig_image.data.shape[:2], bool)
         if not self.horizontal_limits.unbounded_min:
             cropping[:, :self.horizontal_limits.min] = False
         if not self.horizontal_limits.unbounded_max:
@@ -790,7 +790,7 @@ class Crop(cpm.CPModule):
         return cropping
 
     def apply_rectangle_cropping(self, workspace, orig_image):
-        cropping = np.ones(orig_image.pixel_data.shape[:2], bool)
+        cropping = np.ones(orig_image.data.shape[:2], bool)
         d = self.get_dictionary(workspace.image_set_list)
         r = d[SH_RECTANGLE]
         left, top, right, bottom = [

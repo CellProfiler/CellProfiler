@@ -14,7 +14,7 @@ set_headless()
 
 import cellprofiler.pipeline as cpp
 import cellprofiler.cpmodule as cpm
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.settings as cps
@@ -708,7 +708,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
             module.heatmaps[i].measurement.value = a
         pipeline = cpp.Pipeline()
         measurements = cpmeas.Measurements()
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = measurements
         img = cpi.Image(image)
         image_set.add(IMAGE_NAME, img)
@@ -754,24 +754,24 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
             area = (float(bin) * 2.0 - 1.0) / 16.0
             self.assertTrue(data[0] > area - .1)
             self.assertTrue(data[0] < area + .1)
-            heatmap = workspace.image_set.get_image(
-                    HEAT_MAP_NAME + M.F_FRAC_AT_D).pixel_data
+            heatmap = workspace.image_set.image(
+                    HEAT_MAP_NAME + M.F_FRAC_AT_D).data
             data = data.astype(heatmap.dtype)
             self.assertEqual(mode(heatmap[bins == bin])[0][0], data[0])
             data = m.get_current_measurement(OBJECT_NAME,
                                              feature_mean_frac(bin, 4))
             self.assertEqual(len(data), 1)
             self.assertAlmostEqual(data[0], 1, 2)
-            heatmap = workspace.image_set.get_image(
-                    HEAT_MAP_NAME + M.F_MEAN_FRAC).pixel_data
+            heatmap = workspace.image_set.image(
+                    HEAT_MAP_NAME + M.F_MEAN_FRAC).data
             data = data.astype(heatmap.dtype)
             self.assertEqual(mode(heatmap[bins == bin])[0][0], data[0])
             data = m.get_current_measurement(OBJECT_NAME,
                                              feature_radial_cv(bin, 4))
             self.assertEqual(len(data), 1)
             self.assertAlmostEqual(data[0], 0, 2)
-            heatmap = workspace.image_set.get_image(
-                    HEAT_MAP_NAME + M.F_RADIAL_CV).pixel_data
+            heatmap = workspace.image_set.image(
+                    HEAT_MAP_NAME + M.F_RADIAL_CV).data
             data = data.astype(heatmap.dtype)
             self.assertEqual(mode(heatmap[bins == bin])[0][0], data[0])
         module = workspace.module
@@ -984,8 +984,8 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
             bin_d = (float(bin) - .5) * 8 / 21
             self.assertLess(np.abs(data[0] - area), .1)
             self.assertLess(np.abs(data[1] - area * bin_d), .1)
-            heatmap = workspace.image_set.get_image(
-                    HEAT_MAP_NAME + M.F_FRAC_AT_D).pixel_data
+            heatmap = workspace.image_set.image(
+                    HEAT_MAP_NAME + M.F_FRAC_AT_D).data
             data = data.astype(heatmap.dtype)
             for label in 1, 2:
                 mask = (bins == bin) & (labels == label)
@@ -994,8 +994,8 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
                                              feature_mean_frac(bin, 4))
             self.assertEqual(len(data), 2)
             self.assertAlmostEqual(data[0], 1, 2)
-            heatmap = workspace.image_set.get_image(
-                    HEAT_MAP_NAME + M.F_MEAN_FRAC).pixel_data
+            heatmap = workspace.image_set.image(
+                    HEAT_MAP_NAME + M.F_MEAN_FRAC).data
             data = data.astype(heatmap.dtype)
             for label in 1, 2:
                 mask = (bins == bin) & (labels == label)
@@ -1004,8 +1004,8 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
                                              feature_radial_cv(bin, 4))
             self.assertEqual(len(data), 2)
             self.assertAlmostEqual(data[0], 0, 2)
-            heatmap = workspace.image_set.get_image(
-                    HEAT_MAP_NAME + M.F_RADIAL_CV).pixel_data
+            heatmap = workspace.image_set.image(
+                    HEAT_MAP_NAME + M.F_RADIAL_CV).data
             data = data.astype(heatmap.dtype)
             for label in 1, 2:
                 mask = (bins == bin) & (labels == label)

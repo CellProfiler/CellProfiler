@@ -18,7 +18,7 @@ set_headless()
 
 import cellprofiler.pipeline as cpp
 import cellprofiler.cpmodule as cpm
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.settings as cps
@@ -110,7 +110,7 @@ MeasureNeurons:[module_num:1|svn_version:\'8401\'|variable_revision_number:1|sho
                        intensity_image=None,
                        wants_graph=False):
         m = cpmeas.Measurements()
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         m.add_measurement(cpmeas.IMAGE, cpmeas.GROUP_NUMBER, 1)
         m.add_measurement(cpmeas.IMAGE, cpmeas.GROUP_INDEX, 1)
         image_set = m

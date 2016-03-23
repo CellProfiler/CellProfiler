@@ -18,7 +18,7 @@ set_headless()
 
 import cellprofiler.workspace as cpw
 import cellprofiler.pipeline as cpp
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
@@ -319,8 +319,8 @@ class TestCreateBatchFiles(unittest.TestCase):
         module = pipeline.modules()[-1]
         self.assertTrue(isinstance(module, C.CreateBatchFiles))
         batch_data = zlib.decompress(module.batch_state)
-        image_set_list = cpi.ImageSetList()
-        image_set_list.load_state(batch_data)
+        image_set_list = cpi.List()
+        image_set_list.read(batch_data)
         self.assertEqual(image_set_list.count(), 96)
         self.assertEqual(image_set_list.legacy_fields['PathnamerawDNA'],
                          '\\\\iodine\\imaging_analysis\\People\\Lee\\ExampleImages\\ExampleSBSImages')
@@ -477,7 +477,7 @@ CreateBatchFiles:[module_num:19|svn_version:\'Unknown\'|variable_revision_number
                 mapping.local_directory.value = ipath
                 self.assertFalse(pipeline.in_batch_mode())
                 measurements = cpmeas.Measurements(mode="memory")
-                image_set_list = cpi.ImageSetList()
+                image_set_list = cpi.List()
                 result = pipeline.prepare_run(
                         cpw.Workspace(pipeline, None, None, None,
                                       measurements, image_set_list))
@@ -488,7 +488,7 @@ CreateBatchFiles:[module_num:19|svn_version:\'Unknown\'|variable_revision_number
                         cpmeas.EXPERIMENT, cpp.M_PIPELINE))
                 pipeline = cpp.Pipeline()
                 pipeline.add_listener(callback)
-                image_set_list = cpi.ImageSetList()
+                image_set_list = cpi.List()
                 measurements = cpmeas.Measurements(mode="memory")
                 workspace = cpw.Workspace(pipeline, None, None, None,
                                           cpmeas.Measurements(),

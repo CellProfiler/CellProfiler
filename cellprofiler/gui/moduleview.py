@@ -1901,7 +1901,7 @@ class ModuleView:
         image_names = v.get_image_name_choices(self.__pipeline)
         object_name = v.get_object_name(self.__pipeline)
         object_names = v.get_object_name_choices(self.__pipeline)
-        scale = v.get_scale(self.__pipeline)
+        scale = v.scale(self.__pipeline)
         scales = v.get_scale_choices(self.__pipeline)
 
         def set_up_combobox(ctrl, text_ctrl, choices, value, always_show=False):

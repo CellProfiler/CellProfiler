@@ -44,7 +44,7 @@ import re
 import centrosome.outline
 import numpy as np
 
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
@@ -391,8 +391,8 @@ class LoadSingleImage(cpm.CPModule):
 
             provider = LoadImagesImageProvider(
                     image_name, pathname, filename, rescale)
-            image = provider.provide_image(image_set)
-            pixel_data = image.pixel_data
+            image = provider.source(image_set)
+            pixel_data = image.data
             if wants_images:
                 md5 = provider.get_md5_hash(m)
                 m.add_image_measurement("_".join((C_MD5_DIGEST, image_name)),

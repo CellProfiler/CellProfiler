@@ -10,7 +10,7 @@ from centrosome.threshold import TM_METHODS, TM_MANUAL, TM_MOG, TM_OTSU
 from scipy.ndimage.morphology import binary_dilation
 
 import cellprofiler.settings as cps
-from cellprofiler import cpimage
+from cellprofiler import image
 from cellprofiler.cpmodule import CPModule
 from cellprofiler.modules.identify import get_threshold_measurement_columns
 from cellprofiler.settings import YES, NO
@@ -131,9 +131,9 @@ class ApplyThreshold(Identify):
             measurements - the measurements for this run
             frame        - display within this frame (or None to not display)
         """
-        input = workspace.image_set.get_image(self.image_name.value,
-                                              must_be_grayscale=True)
-        pixels = input.pixel_data.copy()
+        input = workspace.image_set.image(self.image_name.value,
+                                          must_be_grayscale=True)
+        pixels = input.data.copy()
         binary_image, local_thresh = self.threshold_image(
                 self.image_name.value, workspace, wants_local_threshold=True)
         if self.binary != 'Grayscale':
@@ -156,11 +156,11 @@ class ApplyThreshold(Identify):
                         """Threshold setting, "%s" is not "%s" or "%s".""" %
                         (self.low_or_high.value, TH_BELOW_THRESHOLD,
                          TH_ABOVE_THRESHOLD))
-        output = cpimage.Image(pixels, parent_image=input)
+        output = image.Image(pixels, parent_image=input)
         workspace.image_set.add(self.thresholded_image_name.value, output)
         if self.show_window:
-            workspace.display_data.input_pixel_data = input.pixel_data
-            workspace.display_data.output_pixel_data = output.pixel_data
+            workspace.display_data.input_pixel_data = input.data
+            workspace.display_data.output_pixel_data = output.data
             statistics = workspace.display_data.statistics = []
             workspace.display_data.col_labels = ("Feature", "Value")
 

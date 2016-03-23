@@ -7,7 +7,7 @@ import wx
 import wx.lib.scrolledpanel
 from scipy.io.matlab.mio import loadmat
 
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.gui.cpfigure as cpf
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
@@ -206,7 +206,7 @@ class DataToolFrame(wx.Frame):
         self.measurements.next_image_set(1)
 
     def on_run(self, event):
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         workspace = cpw.Workspace(self.pipeline,
                                   self.module,

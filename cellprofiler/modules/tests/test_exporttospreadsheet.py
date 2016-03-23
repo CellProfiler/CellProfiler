@@ -15,7 +15,7 @@ from cellprofiler.preferences import set_headless
 
 set_headless()
 
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.preferences as cpprefs
@@ -802,7 +802,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         m = cpmeas.Measurements()
         m.add_measurement("my_object", "my_measurement", np.zeros((0,)))
         m.add_image_measurement("Count_my_object", 0)
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         object_set.add_objects(cpo.Objects(), "my_object")
@@ -836,7 +836,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.object_groups[0].wants_automatic_file_name.value = False
         m = cpmeas.Measurements()
         m.add_experiment_measurement("my_measurement", "Hello, world")
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         workspace = cpw.Workspace(self.make_measurements_pipeline(m),
@@ -877,7 +877,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         m = cpmeas.Measurements(mode="memory")
         m.add_experiment_measurement("my_measurement", "Hello, world")
         m.add_experiment_measurement("my_other_measurement", "Goodbye")
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         workspace = cpw.Workspace(self.make_measurements_pipeline(m),
@@ -921,7 +921,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         m.add_experiment_measurement("Exit_Status", "Complete")
         image_measurements = np.random.uniform(size=4)
         m.add_all_measurements(cpmeas.IMAGE, "my_measurement", image_measurements)
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         workspace = cpw.Workspace(self.make_measurements_pipeline(m),
@@ -951,7 +951,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         m = cpmeas.Measurements()
         image_measurements = np.random.uniform(size=4)
         m.add_all_measurements(cpmeas.IMAGE, "my_measurement", image_measurements)
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         workspace = cpw.Workspace(self.make_measurements_pipeline(m),
@@ -976,7 +976,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.object_groups[0].wants_automatic_file_name.value = False
         m = cpmeas.Measurements()
         m.add_image_measurement("my_measurement", "Hello, world")
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         workspace = cpw.Workspace(self.make_measurements_pipeline(m),
@@ -1011,7 +1011,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.object_groups[0].file_name.value = path
         module.object_groups[0].wants_automatic_file_name.value = False
         m = cpmeas.Measurements()
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_sets = [image_set_list.get_image_set(i)
                       for i in range(2)]
         for i in range(2):
@@ -1059,7 +1059,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         mvalues = np.random.uniform(size=(1,))
         m.add_measurement("my_object", "my_measurement", mvalues)
         m.add_image_measurement("Count_my_object", 1)
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         object_set.add_objects(cpo.Objects(), "my_objects")
@@ -1101,7 +1101,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         for i in range(3):
             m.add_measurement("my_object", "measurement_%d" % (i), mvalues[:, i])
         m.add_image_measurement("Count_my_object", 2)
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         object_set.add_objects(cpo.Objects(), "my_objects")
@@ -1156,7 +1156,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                                   "measurement_%d" % (i), mvalues[:, i, oidx])
         m.add_image_measurement("Count_object_0", 4)
         m.add_image_measurement("Count_object_1", 4)
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         object_set.add_objects(cpo.Objects(), "object_0")
@@ -1212,7 +1212,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         mvalues[1] = np.NaN
         m.add_measurement("my_object", "my_measurement", mvalues)
         m.add_image_measurement("Count_my_object", 2)
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         object_set.add_objects(cpo.Objects(), "my_objects")
@@ -1257,7 +1257,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         mvalues[1] = np.NaN
         m.add_measurement("my_object", "my_measurement", mvalues)
         m.add_image_measurement("Count_my_object", 2)
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         object_set.add_objects(cpo.Objects(), "my_objects")
@@ -1311,7 +1311,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                 data_type=np.float64)
         m.add_measurement(cpmeas.IMAGE, "Count_%s" % OBJECTS_NAME, 0,
                           image_set_number=2)
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         object_set.add_objects(cpo.Objects(), OBJECTS_NAME)
@@ -1370,7 +1370,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                 data_type=np.float64)
         m.add_measurement(cpmeas.IMAGE, "Count_%s" % OBJECTS_NAME, 0,
                           image_set_number=2)
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         object_set.add_objects(cpo.Objects(), OBJECTS_NAME)
@@ -1421,7 +1421,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         m.add_measurement(
                 cpmeas.IMAGE, IMG_MEAS, my_blob, image_set_number=1,
                 data_type=np.uint8)
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         workspace = cpw.Workspace(self.make_measurements_pipeline(m),
@@ -1458,7 +1458,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         m.add_measurement(
                 cpmeas.EXPERIMENT, IMG_MEAS, my_blob, image_set_number=1,
                 data_type=np.uint8)
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         workspace = cpw.Workspace(self.make_measurements_pipeline(m),
@@ -1497,7 +1497,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         m = cpmeas.Measurements()
         np.random.seed(0)
         mvalues = np.random.uniform(size=(4,))
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         for index, measurement, metadata in zip(range(4), mvalues, ('foo', 'bar', 'bar', 'foo')):
             image_set = image_set_list.get_image_set(index)
             m.add_measurement("my_object", "my_measurement", np.array([measurement]))
@@ -1555,7 +1555,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         m = cpmeas.Measurements()
         np.random.seed(0)
         mvalues = np.random.uniform(size=(4,))
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         for index, measurement, metadata in zip(range(4), mvalues, ('foo', 'bar', 'bar', 'foo')):
             image_set = image_set_list.get_image_set(index)
             m.add_measurement("my_object", "my_measurement", np.array([measurement]))
@@ -1609,7 +1609,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         m = cpmeas.Measurements()
         np.random.seed(0)
         mvalues = np.random.uniform(size=(4,))
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         for index, measurement, metadata in zip(range(4), mvalues, ('foo', 'bar', 'bar', 'foo')):
             image_set = image_set_list.get_image_set(index)
             m.add_image_measurement("my_measurement", measurement)
@@ -1666,7 +1666,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         m = cpmeas.Measurements()
         np.random.seed(0)
         mvalues = np.random.uniform(size=(4,))
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         metadata_values = ('foo', 'bar', 'bar', 'foo')
         for index, (measurement, metadata) in \
                 enumerate(zip(mvalues, metadata_values)):
@@ -1723,7 +1723,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.object_groups[0].wants_automatic_file_name.value = False
         m = cpmeas.Measurements(mode="memory")
         m.add_image_measurement("my_measurement", "Hello, world")
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         workspace = cpw.Workspace(self.make_measurements_pipeline(m),
@@ -1764,7 +1764,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         m = cpmeas.Measurements(mode="memory")
         metadata_value = u"\u2211(Hello, world)"
         m.add_image_measurement("my_measurement", metadata_value)
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         workspace = cpw.Workspace(self.make_measurements_pipeline(m),
@@ -1873,7 +1873,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         np.random.seed(0)
         data = np.random.uniform(size=(6,))
         m.add_measurement("my_objects", "my_measurement", data)
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         object_set.add_objects(cpo.Objects(), "my_objects")
@@ -1923,7 +1923,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         np.random.seed(0)
         data = np.random.uniform(size=(6,))
         m.add_measurement("my_objects", "my_measurement", data)
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         object_set.add_objects(cpo.Objects(), "my_objects")
@@ -1994,7 +1994,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         m.add_measurement("my_objects", "my_measurement", data)
         m.add_measurement("my_objects", "my_filtered_measurement",
                           np.random.uniform(size=(6,)))
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         object_set.add_objects(cpo.Objects(), "my_objects")
@@ -2074,7 +2074,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         np.random.seed(0)
         data = np.random.uniform(size=(6,))
         m.add_image_measurement("first_measurement", np.sum(data))
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         workspace = cpw.Workspace(self.make_measurements_pipeline(m),
@@ -2109,7 +2109,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.object_groups[0].file_name.value = path
         module.object_groups[0].wants_automatic_file_name.value = False
         m = cpmeas.Measurements()
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         data = ("The reverse side also has a reverse side. (Japanese proverb)",
                 "When I was younger, I could remember anything, whether it had happened or not. (Mark Twain)",
                 "A thing worth having is a thing worth cheating for. (W.C. Fields)"
@@ -2161,7 +2161,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                 m.next_image_set()
             m.add_image_measurement("Count_my_objects", mvalues.shape[1])
             m.add_measurement("my_objects", "my_measurement", mvalues[image_idx, :])
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         object_set.add_objects(cpo.Objects(), "my_objects")
@@ -2214,7 +2214,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             m.add_image_measurement("Metadata_Plate", "P-X9TRG")
             m.add_image_measurement("Metadata_Well", "C0%d" % (image_idx + 1))
             m.add_measurement("my_objects", "my_measurement", mvalues[image_idx, :])
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         object_set.add_objects(cpo.Objects(), "my_objects")
@@ -2275,7 +2275,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             if image_idx != 1:
                 m.add_image_measurement("my_measurement", 100)
                 m.add_measurement("my_objects", "my_measurement", mvalues[image_idx, :])
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         object_set.add_objects(cpo.Objects(), "my_objects")
@@ -2337,7 +2337,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         m[cpmeas.IMAGE, cpmeas.GROUP_INDEX, 1] = 1
         m[cpmeas.IMAGE, "_".join((C_COUNT, OBJECTS_NAME)), 1] = 3
         m[OBJECTS_NAME, M_LOCATION_CENTER_X, 1] = np.array([1, 4, 9], float)
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         object_set.add_objects(cpo.Objects(), "my_objects")
@@ -2617,7 +2617,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.object_groups[0].file_name.value = path
         module.object_groups[0].wants_automatic_file_name.value = False
         m = cpmeas.Measurements()
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         for i in range(0, 10):
             image_set = image_set_list.get_image_set(i)
             m.add_image_measurement(cpp.IMAGE_NUMBER, i + 1)

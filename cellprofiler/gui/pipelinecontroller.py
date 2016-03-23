@@ -25,7 +25,7 @@ from wx.lib.mixins.listctrl import ColumnSorterMixin, ListCtrlAutoWidthMixin
 
 import cellprofiler.analysis as cpanalysis
 import cellprofiler.analysis as cpanalysis
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.cpmodule as cpmodule
 import cellprofiler.gui.moduleview
 import cellprofiler.gui.parametersampleframe as psf
@@ -2772,7 +2772,7 @@ class PipelineController:
         self.__debug_object_set = cpo.ObjectSet(can_overwrite=True)
         self.__frame.enable_debug_commands()
         assert isinstance(self.__pipeline, cpp.Pipeline)
-        self.__debug_image_set_list = cpi.ImageSetList(True)
+        self.__debug_image_set_list = cpi.List(True)
         workspace = cpw.Workspace(self.__pipeline, None, None, None,
                                   self.__debug_measurements,
                                   self.__debug_image_set_list,

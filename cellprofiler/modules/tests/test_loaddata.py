@@ -17,7 +17,7 @@ set_headless()
 
 import cellprofiler.pipeline as cpp
 import cellprofiler.cpmodule as cpm
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.preferences as cpprefs
@@ -401,8 +401,8 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
 
         def callback(workspace):
             imgset = workspace.image_set
-            image = imgset.get_image("DNA")
-            pixels = image.pixel_data
+            image = imgset.image("DNA")
+            pixels = image.data
             self.assertEqual(pixels.shape[0], self.test_shape[0])
             c0_ran[0] = True
 
@@ -435,7 +435,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
 
         def callback(workspace):
             imgset = workspace.image_set
-            self.assertEqual(len(imgset.get_names()), 0)
+            self.assertEqual(len(imgset.names()), 0)
             c0_ran[0] = True
 
         c0 = C0()
@@ -468,7 +468,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
         pipeline, module, filename = self.make_pipeline(csv_text)
         assert isinstance(module, L.LoadData)
         m = cpmeas.Measurements()
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         try:
             workspace = cpw.Workspace(pipeline, module, m, None, m,
                                       image_set_list)
@@ -479,7 +479,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
                 module.run(workspace)
                 chashes = []
                 for channel in channels:
-                    pixel_data = m.get_image(channel).pixel_data
+                    pixel_data = m.get_image(channel).data
                     h = hashlib.md5()
                     h.update(pixel_data)
                     chashes.append(h.digest())
@@ -669,7 +669,7 @@ Channel1-01-A-01.tif,/imaging/analysis/trunk/ExampleImages/ExampleSBSImages
         module.wants_images.value = True
         module.wants_image_groupings.value = True
         module.metadata_fields.value = "ROW"
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         measurements = cpmeas.Measurements()
         workspace = cpw.Workspace(pipeline, module, None,
                                   None, measurements, image_set_list)
@@ -693,7 +693,7 @@ Channel1-01-A-01.tif,/imaging/analysis/trunk/ExampleImages/ExampleSBSImages
                                           cpo.ObjectSet(), measurements,
                                           image_set_list)
                 module.run(workspace)
-                provider = image_set.get_image_provider("Cytoplasm")
+                provider = image_set.find_source_by("Cytoplasm")
                 match = re.search(pattern, provider.get_filename())
                 self.assertTrue(match)
                 self.assertEqual(row, match.group("ROW"))
@@ -716,8 +716,8 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
 
         def callback(workspace):
             imgset = workspace.image_set
-            image = imgset.get_image("DAPI")
-            pixels = image.pixel_data
+            image = imgset.image("DAPI")
+            pixels = image.data
             self.assertEqual(pixels.shape[0], self.test_shape[0])
             c0_ran[0] = True
 
@@ -756,8 +756,8 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
 
                 def callback(workspace):
                     imgset = workspace.image_set
-                    image = imgset.get_image("MyFile")
-                    pixels = image.pixel_data
+                    image = imgset.image("MyFile")
+                    pixels = image.data
                     c0_image.append(pixels.copy())
 
                 c0 = C0()
@@ -790,7 +790,7 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
         assert isinstance(module, L.LoadData)
         module.wants_images.value = True
         try:
-            image_set_list = cpi.ImageSetList()
+            image_set_list = cpi.List()
             measurements = cpmeas.Measurements()
             workspace = cpw.Workspace(
                     pipeline, module, None, None, measurements, image_set_list)
@@ -894,7 +894,7 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
         module.image_directory.custom_path = self.test_path
         m = cpmeas.Measurements()
         workspace = cpw.Workspace(pipeline, module, m, cpo.ObjectSet(),
-                                  m, cpi.ImageSetList())
+                                  m, cpi.List())
         self.assertTrue(module.prepare_run(workspace))
         self.assertEqual(m.get_measurement(cpmeas.IMAGE, "FileName_DNA", 1),
                          self.test_filename)
@@ -905,8 +905,8 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
                 L.pathname2url(os.path.join(self.test_path, self.test_filename)))
         module.prepare_group(workspace, {}, [1])
         module.run(workspace)
-        img = workspace.image_set.get_image("DNA", must_be_grayscale=True)
-        self.assertEqual(tuple(img.pixel_data.shape), self.test_shape)
+        img = workspace.image_set.image("DNA", must_be_grayscale=True)
+        self.assertEqual(tuple(img.data.shape), self.test_shape)
 
     def test_13_02_load_url(self):
         #
@@ -921,7 +921,7 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
         assert isinstance(module, L.LoadData)
         m = cpmeas.Measurements()
         workspace = cpw.Workspace(pipeline, module, m, cpo.ObjectSet(),
-                                  m, cpi.ImageSetList())
+                                  m, cpi.List())
         self.assertTrue(module.prepare_run(workspace))
         self.assertEqual(m.get_measurement(cpmeas.IMAGE, "FileName_DNA", 1),
                          cp_logo_url_filename)
@@ -934,8 +934,8 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
         self.assertEqual(m[cpmeas.IMAGE, "PathName_DNA", 3], "")
         module.prepare_group(workspace, {}, [1])
         module.run(workspace)
-        img = workspace.image_set.get_image("DNA", must_be_color=True)
-        self.assertEqual(tuple(img.pixel_data.shape), cp_logo_url_shape)
+        img = workspace.image_set.image("DNA", must_be_color=True)
+        self.assertEqual(tuple(img.data.shape), cp_logo_url_shape)
 
     def test_13_03_extra_fields(self):
         #
@@ -950,7 +950,7 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
         assert isinstance(module, L.LoadData)
         m = cpmeas.Measurements()
         workspace = cpw.Workspace(pipeline, module, m, cpo.ObjectSet(),
-                                  m, cpi.ImageSetList())
+                                  m, cpi.List())
         self.assertTrue(module.prepare_run(workspace))
         self.assertEqual(m.get_measurement(cpmeas.IMAGE, "FileName_DNA", 1),
                          cp_logo_url_filename)
@@ -964,8 +964,8 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
         self.assertEqual(m[cpmeas.IMAGE, "PathName_DNA", 3], "")
         module.prepare_group(workspace, {}, [1])
         module.run(workspace)
-        img = workspace.image_set.get_image("DNA", must_be_color=True)
-        self.assertEqual(tuple(img.pixel_data.shape), cp_logo_url_shape)
+        img = workspace.image_set.image("DNA", must_be_color=True)
+        self.assertEqual(tuple(img.data.shape), cp_logo_url_shape)
 
     def test_13_04_extra_lines(self):
         #
@@ -983,7 +983,7 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
             assert isinstance(module, L.LoadData)
             m = cpmeas.Measurements()
             workspace = cpw.Workspace(pipeline, module, m, cpo.ObjectSet(),
-                                      m, cpi.ImageSetList())
+                                      m, cpi.List())
             self.assertTrue(module.prepare_run(workspace))
             self.assertTrue(isinstance(m, cpmeas.Measurements))
             self.assertEqual(m.image_set_count, 1)
@@ -1013,7 +1013,7 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
             assert isinstance(module, L.LoadData)
             m = cpmeas.Measurements()
             workspace = cpw.Workspace(pipeline, module, m, cpo.ObjectSet(),
-                                      m, cpi.ImageSetList())
+                                      m, cpi.List())
             module.wants_rows.value = True
             module.row_range.min = 2
             module.row_range.max = 3
@@ -1037,7 +1037,7 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
             module.image_directory.custom_path = self.test_path
             m = cpmeas.Measurements()
             workspace = cpw.Workspace(pipeline, module, m, cpo.ObjectSet(),
-                                      m, cpi.ImageSetList())
+                                      m, cpi.List())
             self.assertTrue(module.prepare_run(workspace))
             self.assertEqual(m.get_measurement(cpmeas.IMAGE, "FileName_DNA", 1),
                              self.test_filename)
@@ -1048,8 +1048,8 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
                     L.pathname2url(os.path.join(self.test_path, self.test_filename)))
             module.prepare_group(workspace, {}, [1])
             module.run(workspace)
-            img = workspace.image_set.get_image("DNA", must_be_grayscale=True)
-            self.assertEqual(tuple(img.pixel_data.shape), self.test_shape)
+            img = workspace.image_set.image("DNA", must_be_grayscale=True)
+            self.assertEqual(tuple(img.data.shape), self.test_shape)
         finally:
             os.remove(filename)
 

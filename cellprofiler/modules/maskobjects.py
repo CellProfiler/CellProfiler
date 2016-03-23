@@ -31,7 +31,7 @@ import scipy.ndimage as scind
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 from centrosome.outline import outline
 
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
@@ -233,9 +233,9 @@ class MaskObjects(I.Identify):
         original_objects = workspace.object_set.get_objects(object_name)
 
         if self.mask_choice == MC_IMAGE:
-            mask = workspace.image_set.get_image(self.masking_image.value,
-                                                 must_be_binary=True)
-            mask = mask.pixel_data
+            mask = workspace.image_set.image(self.masking_image.value,
+                                             must_be_binary=True)
+            mask = mask.data
         else:
             masking_objects = workspace.object_set.get_objects(
                     self.masking_objects.value)

@@ -15,7 +15,7 @@ See also <b>DisplayDensityPlot</b>, <b>DisplayScatterPlot</b>.
 
 import numpy as np
 
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
 from cellprofiler.settings import YES, NO

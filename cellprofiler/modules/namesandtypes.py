@@ -91,7 +91,7 @@ import traceback
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.objects as cpo
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.measurements as cpmeas
 import cellprofiler.pipeline as cpp
 import cellprofiler.settings as cps
@@ -1512,15 +1512,15 @@ class NamesAndTypes(cpm.CPModule):
             C_MD5_DIGEST, C_SCALING, C_HEIGHT, C_WIDTH
 
         name = provider.get_name()
-        if name in m.get_names():
+        if name in m.names():
             # Get the image with cacheing.
-            img = m.get_image(name)
+            img = m.image(name)
         else:
-            img = provider.provide_image(m)
+            img = provider.source(m)
         m[cpmeas.IMAGE, C_MD5_DIGEST + "_" + name] = \
             NamesAndTypes.get_file_hash(provider, m)
-        m[cpmeas.IMAGE, C_WIDTH + "_" + name] = img.pixel_data.shape[1]
-        m[cpmeas.IMAGE, C_HEIGHT + "_" + name] = img.pixel_data.shape[0]
+        m[cpmeas.IMAGE, C_WIDTH + "_" + name] = img.data.shape[1]
+        m[cpmeas.IMAGE, C_HEIGHT + "_" + name] = img.data.shape[0]
         if image_or_objects == cpmeas.IMAGE:
             m[cpmeas.IMAGE, C_SCALING + "_" + name] = provider.scale
 
@@ -1583,18 +1583,18 @@ class NamesAndTypes(cpm.CPModule):
         provider = ObjectsImageProvider(name, url, series, index)
         self.add_provider_measurements(provider, workspace.measurements,
                                        cpmeas.OBJECT)
-        image = provider.provide_image(workspace.image_set)
+        image = provider.source(workspace.image_set)
         o = cpo.Objects()
-        if image.pixel_data.shape[2] == 1:
-            o.segmented = image.pixel_data[:, :, 0]
+        if image.data.shape[2] == 1:
+            o.segmented = image.data[:, :, 0]
             add_object_location_measurements(workspace.measurements,
                                              name,
                                              o.segmented,
                                              o.count)
         else:
             ijv = np.zeros((0, 3), int)
-            for i in range(image.pixel_data.shape[2]):
-                plane = image.pixel_data[:, :, i]
+            for i in range(image.data.shape[2]):
+                plane = image.data[:, :, i]
                 shape = plane.shape
                 i, j = np.mgrid[0:shape[0], 0:shape[1]]
                 ijv = np.vstack(
@@ -1606,7 +1606,7 @@ class NamesAndTypes(cpm.CPModule):
         add_object_count_measurements(workspace.measurements, name, o.count)
         workspace.object_set.add_objects(o, name)
         if should_save_outlines:
-            outline_image = np.zeros(image.pixel_data.shape[:2], bool)
+            outline_image = np.zeros(image.data.shape[:2], bool)
             for labeled_image, indices in o.get_labels():
                 plane = centrosome.outline.outline(labeled_image)
                 outline_image |= plane.astype(outline_image.dtype)
@@ -1977,10 +1977,10 @@ class ColorImageProvider(LoadImagesImageProviderURL):
                                             series=series,
                                             index=index)
 
-    def provide_image(self, image_set):
-        image = LoadImagesImageProviderURL.provide_image(self, image_set)
-        if image.pixel_data.ndim == 2:
-            image.pixel_data = np.dstack([image.pixel_data] * 3)
+    def source(self, images):
+        image = LoadImagesImageProviderURL.source(self, images)
+        if image.data.ndim == 2:
+            image.data = np.dstack([image.data] * 3)
         return image
 
 
@@ -1994,11 +1994,11 @@ class MonochromeImageProvider(LoadImagesImageProviderURL):
                                             index=index,
                                             channel=channel)
 
-    def provide_image(self, image_set):
-        image = LoadImagesImageProviderURL.provide_image(self, image_set)
-        if image.pixel_data.ndim == 3:
-            image.pixel_data = \
-                np.sum(image.pixel_data, 2) / image.pixel_data.shape[2]
+    def source(self, images):
+        image = LoadImagesImageProviderURL.source(self, images)
+        if image.data.ndim == 3:
+            image.data = \
+                np.sum(image.data, 2) / image.data.shape[2]
         return image
 
 
@@ -2012,10 +2012,10 @@ class MaskImageProvider(MonochromeImageProvider):
                                          index=index,
                                          channel=channel)
 
-    def provide_image(self, image_set):
-        image = MonochromeImageProvider.provide_image(self, image_set)
-        if image.pixel_data.dtype.kind != 'b':
-            image.pixel_data = image.pixel_data != 0
+    def source(self, images):
+        image = MonochromeImageProvider.source(self, images)
+        if image.data.dtype.kind != 'b':
+            image.data = image.data != 0
         return image
 
 
@@ -2028,7 +2028,7 @@ class ObjectsImageProvider(LoadImagesImageProviderURL):
                                             series=series,
                                             index=index)
 
-    def provide_image(self, image_set):
+    def source(self, images):
         """Load an image from a pathname
         """
         self.cache_file()
@@ -2067,7 +2067,7 @@ class ObjectsImageProvider(LoadImagesImageProviderURL):
             planes.append(img)
 
         image = cpi.Image(np.dstack(planes),
-                          path_name=self.get_pathname(),
-                          file_name=self.get_filename(),
+                          pathname=self.get_pathname(),
+                          filename=self.get_filename(),
                           convert=False)
         return image

@@ -21,7 +21,7 @@ import numpy as np
 import zmq
 
 import cellprofiler
-import cellprofiler.cpimage as cpimage
+import cellprofiler.image as cpimage
 import cellprofiler.measurements as cpmeas
 import cellprofiler.preferences as cpprefs
 import cellprofiler.workspace as cpw
@@ -340,7 +340,7 @@ class AnalysisRunner(object):
             # The shared dicts are needed in jobserver()
             self.shared_dicts = [m.get_dictionary() for m in self.pipeline.modules()]
             workspace = cpw.Workspace(self.pipeline, None, None, None,
-                                      measurements, cpimage.ImageSetList())
+                                      measurements, cpimage.List())
 
             if image_set_end is None:
                 image_set_end = measurements.get_image_numbers()[-1]

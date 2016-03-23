@@ -40,7 +40,7 @@ import scipy.ndimage as scind
 from centrosome.filter import stretch
 from scipy.sparse import coo_matrix
 
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
@@ -571,9 +571,9 @@ class ReassignObjectNumbers(cpm.CPModule):
     def get_image(self, workspace):
         '''Get the image for image-directed merging'''
         objects = workspace.object_set.get_objects(self.objects_name.value)
-        image = workspace.image_set.get_image(self.image_name.value,
-                                              must_be_grayscale=True)
-        image = objects.crop_image_similarly(image.pixel_data)
+        image = workspace.image_set.image(self.image_name.value,
+                                          must_be_grayscale=True)
+        image = objects.crop_image_similarly(image.data)
         return image
 
     def get_measurement_columns(self, pipeline):

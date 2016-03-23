@@ -35,7 +35,7 @@ import numpy as np
 import scipy.ndimage as scind
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
@@ -205,20 +205,20 @@ class MeasureGranularity(cpm.CPModule):
         assert isinstance(workspace, cpw.Workspace)
         image_set = workspace.image_set
         measurements = workspace.measurements
-        im = image_set.get_image(image.image_name.value,
-                                 must_be_grayscale=True)
+        im = image_set.image(image.image_name.value,
+                             must_be_grayscale=True)
         #
         # Downsample the image and mask
         #
-        new_shape = np.array(im.pixel_data.shape)
+        new_shape = np.array(im.data.shape)
         if image.subsample_size.value < 1:
             new_shape = new_shape * image.subsample_size.value
             i, j = (np.mgrid[0:new_shape[0], 0:new_shape[1]].astype(float) /
                     image.subsample_size.value)
-            pixels = scind.map_coordinates(im.pixel_data, (i, j), order=1)
+            pixels = scind.map_coordinates(im.data, (i, j), order=1)
             mask = scind.map_coordinates(im.mask.astype(float), (i, j)) > .9
         else:
-            pixels = im.pixel_data
+            pixels = im.data
             mask = im.mask
         #
         # Remove background pixels using a greyscale tophat filter
@@ -260,7 +260,7 @@ class MeasureGranularity(cpm.CPModule):
                     self.labels = self.labels.copy()
                     self.labels[~ im.mask] = 0
                     self.current_mean = fix(
-                            scind.mean(im.pixel_data,
+                            scind.mean(im.data,
                                        self.labels,
                                        self.range))
                     self.start_mean = np.maximum(
@@ -307,7 +307,7 @@ class MeasureGranularity(cpm.CPModule):
             # Restore the reconstructed image to the shape of the
             # original image so we can match against object labels
             #
-            orig_shape = im.pixel_data.shape
+            orig_shape = im.data.shape
             i, j = np.mgrid[0:orig_shape[0], 0:orig_shape[1]].astype(float)
             #
             # Make sure the mapping only references the index range of

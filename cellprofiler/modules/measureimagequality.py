@@ -782,7 +782,7 @@ class MeasureImageQuality(cpm.CPModule):
         result = []
         for image_name in self.images_to_process(image_group, workspace):
             feature = "%s_%s_%s" % (C_IMAGE_QUALITY, C_SCALING, image_name)
-            value = workspace.image_set.get_image(image_name).scale
+            value = workspace.image_set.image(image_name).scale
             if not value:  # Set to NaN if not defined, such as for derived images
                 value = np.NaN
             workspace.add_measurement(cpmeas.IMAGE, feature, value)
@@ -795,10 +795,10 @@ class MeasureImageQuality(cpm.CPModule):
         result = []
         for image_name in self.images_to_process(image_group, workspace):
 
-            image = workspace.image_set.get_image(image_name,
-                                                  must_be_grayscale=True)
-            pixel_data = image.pixel_data
-            shape = image.pixel_data.shape
+            image = workspace.image_set.image(image_name,
+                                              must_be_grayscale=True)
+            pixel_data = image.data
+            shape = image.data.shape
             if image.has_mask:
                 pixel_data = pixel_data[image.mask]
 
@@ -828,8 +828,8 @@ class MeasureImageQuality(cpm.CPModule):
                 #
                 # Do the math per label
                 #
-                local_means = fix(scind.mean(image.pixel_data, grid, grid_range))
-                local_squared_normalized_image = (image.pixel_data -
+                local_means = fix(scind.mean(image.data, grid, grid_range))
+                local_squared_normalized_image = (image.data -
                                                   local_means[grid]) ** 2
                 #
                 # Compute the sum of local_squared_normalized_image values for each
@@ -879,9 +879,9 @@ class MeasureImageQuality(cpm.CPModule):
         '''Calculate a correlation measure from the Harlick feature set'''
         result = []
         for image_name in self.images_to_process(image_group, workspace):
-            image = workspace.image_set.get_image(image_name,
-                                                  must_be_grayscale=True)
-            pixel_data = image.pixel_data
+            image = workspace.image_set.image(image_name,
+                                              must_be_grayscale=True)
+            pixel_data = image.data
 
             # Compute Haralick's correlation texture for the given scales
             image_labels = np.ones(pixel_data.shape, int)
@@ -905,9 +905,9 @@ class MeasureImageQuality(cpm.CPModule):
 
         result = []
         for image_name in self.images_to_process(image_group, workspace):
-            image = workspace.image_set.get_image(image_name,
-                                                  must_be_grayscale=True)
-            pixel_data = image.pixel_data
+            image = workspace.image_set.image(image_name,
+                                              must_be_grayscale=True)
+            pixel_data = image.data
             if image.has_mask:
                 pixel_data = pixel_data[image.mask]
             pixel_count = np.product(pixel_data.shape)
@@ -943,9 +943,9 @@ class MeasureImageQuality(cpm.CPModule):
         return result
 
     def run_intensity_measurement(self, image_name, workspace):
-        image = workspace.image_set.get_image(image_name,
-                                              must_be_grayscale=True)
-        pixels = image.pixel_data
+        image = workspace.image_set.image(image_name,
+                                          must_be_grayscale=True)
+        pixels = image.data
         if image.has_mask:
             pixels = pixels[image.mask]
 
@@ -994,10 +994,10 @@ class MeasureImageQuality(cpm.CPModule):
     def calculate_power_spectrum(self, image_group, workspace):
         result = []
         for image_name in self.images_to_process(image_group, workspace):
-            image = workspace.image_set.get_image(image_name,
-                                                  must_be_grayscale=True)
+            image = workspace.image_set.image(image_name,
+                                              must_be_grayscale=True)
 
-            pixel_data = image.pixel_data
+            pixel_data = image.data
 
             if image.has_mask:
                 pixel_data = np.array(pixel_data)  # make a copy
@@ -1036,8 +1036,8 @@ class MeasureImageQuality(cpm.CPModule):
         all_threshold_groups = self.get_all_threshold_groups(image_group)
 
         for image_name in self.images_to_process(image_group, workspace):
-            image = workspace.image_set.get_image(image_name,
-                                                  must_be_grayscale=True)
+            image = workspace.image_set.image(image_name,
+                                              must_be_grayscale=True)
 
             for threshold_group in all_threshold_groups:
                 threshold_method = threshold_group.threshold_algorithm
@@ -1048,7 +1048,7 @@ class MeasureImageQuality(cpm.CPModule):
                 (local_threshold, global_threshold) = \
                     (cpthresh.get_threshold(threshold_method,
                                             cpthresh.TM_GLOBAL,
-                                            image.pixel_data,
+                                            image.data,
                                             mask=image.mask,
                                             object_fraction=object_fraction,
                                             two_class_otsu=two_class_otsu,
@@ -1058,7 +1058,7 @@ class MeasureImageQuality(cpm.CPModule):
                      else
                      cpthresh.get_threshold(threshold_method,
                                             cpthresh.TM_GLOBAL,
-                                            image.pixel_data,
+                                            image.data,
                                             object_fraction=object_fraction,
                                             two_class_otsu=two_class_otsu,
                                             use_weighted_variance=use_weighted_variance,

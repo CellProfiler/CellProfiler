@@ -15,7 +15,7 @@ set_headless()
 
 import cellprofiler.pipeline as cpp
 import cellprofiler.cpmodule as cpm
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.workspace as cpw
@@ -47,7 +47,7 @@ class TestRelateObjects(unittest.TestCase):
         module.module_num = 2 if fake_measurement else 1
         pipeline.add_module(module)
         object_set = cpo.ObjectSet()
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         m = cpmeas.Measurements()
         m.add_image_measurement(cpmeas.GROUP_NUMBER, 1)

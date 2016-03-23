@@ -18,7 +18,7 @@ set_headless()
 
 import cellprofiler.pipeline as cpp
 import cellprofiler.cpmodule as cpm
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.workspace as cpw
@@ -266,7 +266,7 @@ MaskObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:1|sho
             oo.segmented = masking_objects
             object_set.add_objects(oo, MASKING_OBJECTS)
 
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         if masking_image is not None:
             mi = cpi.Image(masking_image)
@@ -510,8 +510,8 @@ MaskObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:1|sho
                                                 masking_image=mask,
                                                 wants_outlines=True)
         module.run(workspace)
-        outlines = workspace.image_set.get_image(OUTPUT_OUTLINES)
-        self.assertTrue(np.all(outlines.pixel_data == expected))
+        outlines = workspace.image_set.image(OUTPUT_OUTLINES)
+        self.assertTrue(np.all(outlines.data == expected))
 
     def test_03_07_mask_invert(self):
         labels = np.zeros((20, 10), int)

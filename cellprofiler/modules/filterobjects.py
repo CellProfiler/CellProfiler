@@ -40,7 +40,7 @@ from scipy.sparse import coo_matrix
 import traceback
 
 from cellprofiler.modules.identify import FF_PARENT, FF_CHILDREN_COUNT
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.objects as cpo
 import cellprofiler.settings as cps
@@ -538,15 +538,15 @@ class FilterObjects(cpm.CPModule):
                  [m.measurement.get_image_name(workspace.pipeline)
                   for m in self.measurements]
                  if image is not None
-                 and image in workspace.image_set.get_names()]
+                 and image in workspace.image_set.names()]
             if len(image_names) == 0:
                 # Measurement isn't image-based
                 if src_objects.has_parent_image:
-                    image = src_objects.parent_image.pixel_data
+                    image = src_objects.parent_image.data
                 else:
                     image = None
             else:
-                image = workspace.image_set.get_image(image_names[0]).pixel_data
+                image = workspace.image_set.image(image_names[0]).data
 
             workspace.display_data.src_objects_segmented = \
                 src_objects.segmented

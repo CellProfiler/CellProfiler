@@ -17,7 +17,7 @@ from centrosome.kirsch import kirsch
 from centrosome.otsu import otsu3
 from scipy.ndimage import convolve
 
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
 from cellprofiler.settings import YES, NO
@@ -155,9 +155,9 @@ class EnhanceEdges(cpm.CPModule):
         return settings
 
     def run(self, workspace):
-        image = workspace.image_set.get_image(self.image_name.value,
-                                              must_be_grayscale=True)
-        orig_pixels = image.pixel_data
+        image = workspace.image_set.image(self.image_name.value,
+                                          must_be_grayscale=True)
+        orig_pixels = image.data
         if image.has_mask:
             mask = image.mask
         else:

@@ -42,7 +42,7 @@ See also <b>ColorToGray</b>.
 import numpy as np
 from scipy.linalg import lstsq
 
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.preferences as cpprefs
 import cellprofiler.settings as cps
@@ -307,9 +307,9 @@ class UnmixColors(cpm.CPModule):
     def run(self, workspace):
         '''Unmix the colors on an image in the image set'''
         input_image_name = self.input_image_name.value
-        input_image = workspace.image_set.get_image(input_image_name,
-                                                    must_be_rgb=True)
-        input_pixels = input_image.pixel_data
+        input_image = workspace.image_set.image(input_image_name,
+                                                must_be_rgb=True)
+        input_pixels = input_image.data
         if self.show_window:
             workspace.display_data.input_image = input_pixels
             workspace.display_data.outputs = {}
@@ -318,7 +318,7 @@ class UnmixColors(cpm.CPModule):
 
     def run_on_output(self, workspace, input_image, output):
         '''Produce one image - storing it in the image set'''
-        input_pixels = input_image.pixel_data
+        input_pixels = input_image.data
         inverse_absorbances = self.get_inverse_absorbances(output)
         #########################################
         #
@@ -410,7 +410,7 @@ class UnmixColors(cpm.CPModule):
                         "*.tif;*.tiff;*.bmp;*.png;*.gif;*.jpg")
         if dlg.ShowModal() == wx.ID_OK:
             lip = LoadImagesImageProvider("dummy", "", dlg.Path)
-            image = lip.provide_image(None).pixel_data
+            image = lip.source(None).data
             if image.ndim < 3:
                 wx.MessageBox("You must calibrate the absorbance using a color image",
                               "Error: not color image",

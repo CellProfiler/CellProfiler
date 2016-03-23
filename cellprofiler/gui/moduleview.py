@@ -3146,7 +3146,7 @@ class FileCollectionDisplayController(object):
         while True:
             name = self.tree_ctrl.GetItemPyData(item)
             if name is None:
-                break;
+                break
             else:
                 result.insert(0, name)
                 item = self.tree_ctrl.GetItemParent(item)

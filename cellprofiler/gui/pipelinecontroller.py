@@ -2870,7 +2870,7 @@ class PipelineController:
             module_error_measurement = 'ModuleError_%02d%s' % (module.module_num, module.module_name)
             self.__debug_measurements.add_measurement('Image',
                                                       module_error_measurement,
-                                                      failure);
+                                                      failure)
         return failure == 0
 
     def current_debug_module(self):

@@ -1154,6 +1154,9 @@ class CPOutlineArtist(matplotlib.collections.LineCollection):
     outlines.
     '''
 
+    def set_paths(self):
+        pass
+
     def __init__(self, name, labels, *args, **kwargs):
         '''Draw outlines for objects
 

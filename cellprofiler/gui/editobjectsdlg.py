@@ -258,6 +258,9 @@ class EditObjectsDialog(wx.Dialog):
         self.inside_print = False
 
         class CanvasPatch(matplotlib.backends.backend_wxagg.FigureCanvasWxAgg):
+            def __init__(self):
+                pass
+
             def print_figure(self, *args, **kwargs):
                 self.Parent.inside_print = True
                 try:

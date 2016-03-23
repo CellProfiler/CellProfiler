@@ -7,6 +7,9 @@ import wx.lib.buttons
 
 
 class BitmapLabelButton(wx.lib.buttons.GenBitmapTextButton):
+    def __init__(self):
+        pass
+
     LEFT_MARGIN = 5
     TEXT_PADDING = 3
 

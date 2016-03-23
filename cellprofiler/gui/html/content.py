@@ -1,6 +1,7 @@
-import urllib
 from cellprofiler.gui.help import MEASUREMENT_NAMING_HELP, USING_YOUR_OUTPUT_REF, TEST_MODE_HELP, RUNNING_YOUR_PIPELINE_HELP, SELECTING_IMAGES_HELP, CONFIGURE_IMAGES_HELP
 from cellprofiler.gui.help import MODULE_HELP_BUTTON, MODULE_ADD_BUTTON
+
+import urllib
 
 SELECTING_IMAGES_REF = urllib.quote("Selecting images")
 

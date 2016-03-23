@@ -1,9 +1,10 @@
 """datatoolframe.py - Holder for a data tool
 """
 
-import h5py
-import wx
-import wx.lib.scrolledpanel
+from cellprofiler.gui import get_cp_icon
+from cellprofiler.gui.moduleview import ModuleView
+from cellprofiler.modules import instantiate_module
+
 import cellprofiler.cpimage
 import cellprofiler.gui.cpfigure
 import cellprofiler.measurements
@@ -11,9 +12,9 @@ import cellprofiler.objects
 import cellprofiler.pipeline
 import cellprofiler.preferences
 import cellprofiler.workspace
-from cellprofiler.gui import get_cp_icon
-from cellprofiler.gui.moduleview import ModuleView
-from cellprofiler.modules import instantiate_module
+import h5py
+import wx
+import wx.lib.scrolledpanel
 
 ID_FILE_LOAD_MEASUREMENTS = wx.NewId()
 ID_FILE_SAVE_MEASUREMENTS = wx.NewId()

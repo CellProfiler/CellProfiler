@@ -5,11 +5,6 @@ Author: AJ Pretorius
         a.j.pretorius@leeds.ac.uk
 """
 
-import os
-import traceback
-import numpy
-import wx
-import wx.lib.agw.floatspin
 import cellprofiler.cpimage
 import cellprofiler.cpmodule
 import cellprofiler.measurements
@@ -17,6 +12,11 @@ import cellprofiler.objects
 import cellprofiler.preferences
 import cellprofiler.settings
 import cellprofiler.workspace
+import numpy
+import os
+import traceback
+import wx
+import wx.lib.agw.floatspin
 
 PARAM_CLASS_TEXT_LABEL = 'Input text label'
 PARAM_CLASS_BOUNDED_DISCRETE = 'Bounded, discrete'

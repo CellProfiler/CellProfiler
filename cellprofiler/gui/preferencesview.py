@@ -1,15 +1,16 @@
 """PreferencesView.py - displays the default preferences in the lower right corner
 """
 
+from cellprofiler.gui.help import DEFAULT_IMAGE_FOLDER_HELP, DEFAULT_OUTPUT_FOLDER_HELP, USING_THE_OUTPUT_FILE_HELP
+from cellprofiler.gui.htmldialog import HTMLDialog
+
+import cellprofiler.analysis
+import cellprofiler.preferences
+import numpy
 import os
 import string
 import time
-import numpy
 import wx
-import cellprofiler.analysis
-import cellprofiler.preferences
-from cellprofiler.gui.help import DEFAULT_IMAGE_FOLDER_HELP, DEFAULT_OUTPUT_FOLDER_HELP, USING_THE_OUTPUT_FILE_HELP
-from cellprofiler.gui.htmldialog import HTMLDialog
 
 WELCOME_MESSAGE = 'Welcome to CellProfiler'
 

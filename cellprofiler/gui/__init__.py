@@ -4,9 +4,9 @@ The CellProfilerGUI package holds the viewer and controller portions
 of the cell profiler program
 """
 
+import cellprofiler.icons
 import os
 import sys
-from cellprofiler.icons import get_builtin_image, get_builtin_images_path
 
 cp_image = None
 
@@ -15,7 +15,7 @@ def get_cp_image():
     """The CellProfiler icon as a wx.Image"""
     global cp_image
     if cp_image is None:
-        cp_image = get_builtin_image('CellProfilerIcon')
+        cp_image = cellprofiler.icons.get_builtin_image('CellProfilerIcon')
     return cp_image
 
 
@@ -32,7 +32,7 @@ def get_cp_icon(size=None):
     """The CellProfiler icon as a wx.Icon"""
     import wx
     if sys.platform.startswith('win'):
-        path = os.path.join(get_builtin_images_path(), "CellProfilerIcon.ico")
+        path = os.path.join(cellprofiler.icons.get_builtin_images_path(), "CellProfilerIcon.ico")
         icon = wx.EmptyIcon()
         icon.LoadFile(path, wx.BITMAP_TYPE_ICO)
         return icon

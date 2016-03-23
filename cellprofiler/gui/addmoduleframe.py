@@ -2,13 +2,14 @@
 that give you the GUI to add a module to a pipeline
 """
 
-import wx
+from cellprofiler.gui import get_cp_icon
+from cellprofiler.gui.html.manual import search_module_help
+
 import cellprofiler.cpmodule
 import cellprofiler.modules
 import cellprofiler.preferences
 import cpframe
-from cellprofiler.gui import get_cp_icon
-from cellprofiler.gui.html.manual import search_module_help
+import wx
 
 
 class AddModuleFrame(wx.Frame):

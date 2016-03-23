@@ -1,11 +1,12 @@
-import sys
-import time
-import numpy
-import wx
-import cellprofiler
-import cellprofiler.utilities.version
 from cellprofiler.gui import get_cp_icon
 from cellprofiler.icons import get_builtin_image
+
+import cellprofiler
+import cellprofiler.utilities.version
+import numpy
+import sys
+import time
+import wx
 
 
 def module_label(module):

@@ -1,19 +1,20 @@
 """ImageSetCtrl.py - A control to display an imageset
 """
 
-import re
-import urllib
-import numpy
-import wx
-import wx.grid
-from wx.combo import BitmapComboBox
-from wx.lib.mixins.gridlabelrenderer import GridLabelRenderer
-import cellprofiler.measurements
-import cellprofiler.preferences
-import cellprofiler.settings
 from cellprofiler.gui import draw_item_selection_rect
 from cellprofiler.gui.cornerbuttonmixin import CornerButtonMixin
 from cellprofiler.modules.images import Images
+from wx.combo import BitmapComboBox
+from wx.lib.mixins.gridlabelrenderer import GridLabelRenderer
+
+import cellprofiler.measurements
+import cellprofiler.preferences
+import cellprofiler.settings
+import numpy
+import re
+import urllib
+import wx
+import wx.grid
 
 '''Table column displays metadata'''
 COL_METADATA = "Metadata"

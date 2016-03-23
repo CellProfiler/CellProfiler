@@ -1,14 +1,15 @@
 """cpartists.py - Specialized matplotlib artists for CellProfiler
 """
 
+from cellprofiler.gui.cpfigure_tools import renumber_labels_for_display
+from centrosome.cpmorphology import get_outline_pts
+from centrosome.outline import outline
+
 import matplotlib
 import matplotlib.artist
 import matplotlib.collections
 import numpy
-from centrosome.cpmorphology import get_outline_pts
-from centrosome.outline import outline
-from scipy.ndimage import distance_transform_edt, label
-from cellprofiler.gui.cpfigure_tools import renumber_labels_for_display
+import scipy.ndimage
 
 '''Render the image in shades of gray'''
 MODE_GRAYSCALE = "grayscale"
@@ -244,7 +245,7 @@ class OutlinesMixin(ColorMixin):
                     self._outlines |= outline(labels) != 0
             if self.line_width > 1:
                 hw = float(self.line_width) / 2
-                d = distance_transform_edt(~ self._outlines)
+                d = scipy.ndimage.distance_transform_edt(~ self._outlines)
                 dti, dtj = numpy.where((d < hw + .5) & ~self._outlines)
                 self._outlines = self._outlines.astype(numpy.float32)
                 self._outlines[dti, dtj] = numpy.minimum(1, hw + .5 - d[dti, dtj])
@@ -1174,7 +1175,7 @@ class CPOutlineArtist(matplotlib.collections.LineCollection):
         #
         lines = []
         for l in labels:
-            new_labels, counts = label(l != 0, numpy.ones((3, 3), bool))
+            new_labels, counts = scipy.ndimage.label(l != 0, numpy.ones((3, 3), bool))
             if counts == 0:
                 continue
             l = l.astype(numpy.uint64) * counts + new_labels

@@ -2,36 +2,37 @@
 """ CellProfiler.CellProfilerGUI.CPFrame - Cell Profiler's main window
 """
 
-import logging
+from cellprofiler.gui import get_cp_icon
+from cellprofiler.gui.cpfigure import close_all
+from cellprofiler.gui.datatoolframe import DataToolFrame
+from cellprofiler.gui.errordialog import display_error_message
+from cellprofiler.gui.help import MAIN_HELP, make_help_menu, HELP_ON_MODULE_BUT_NONE_SELECTED, HELP_ON_FILE_LIST, PLATEVIEWER_HELP
+from cellprofiler.gui.html.htmlwindow import HtmlClickableWindow, WELCOME_SCREEN_FRAME
+from cellprofiler.gui.imagesetctrl import ImageSetCtrl
+from cellprofiler.gui.moduleview import ModuleView, stop_validation_queue_thread
+from cellprofiler.gui.pathlist import PathListCtrl
+from cellprofiler.gui.pipelinecontroller import PipelineController
+from cellprofiler.gui.pipelinelistview import PipelineListView
+from cellprofiler.gui.preferencesview import PreferencesView
+from cellprofiler.gui.sashwindow_tools import sw_bind_to_evt_paint, sp_bind_to_evt_paint
+from cellprofiler.icons import get_builtin_image, get_icon_copyrights
+from cellprofiler.modules import get_data_tool_names, instantiate_module
+from cellprofiler.pipeline import Pipeline
+
+import cellprofiler.gui.html
+import cellprofiler.gui.preferencesdlg
+import cellprofiler.preferences
+import cellprofiler.utilities.version
+import cellprofiler.workspace
 import inspect
+import logging
 import os
 import pdb
+import sys
+import traceback
 import wx
 import wx.html
 import wx.lib.scrolledpanel
-import cellprofiler.preferences
-import cellprofiler.workspace
-from cellprofiler.icons import get_builtin_image, get_icon_copyrights
-from cellprofiler.modules import get_data_tool_names, instantiate_module
-from cellprofiler.gui import get_cp_icon
-from cellprofiler.gui.pipelinelistview import PipelineListView
-from cellprofiler.gui.cpfigure import close_all
-from cellprofiler.gui.help import MAIN_HELP, make_help_menu, HELP_ON_MODULE_BUT_NONE_SELECTED, HELP_ON_FILE_LIST, PLATEVIEWER_HELP
-from cellprofiler.pipeline import Pipeline
-from cellprofiler.gui.pipelinecontroller import PipelineController
-from cellprofiler.gui.moduleview import ModuleView, stop_validation_queue_thread
-from cellprofiler.gui.preferencesview import PreferencesView
-from cellprofiler.gui.datatoolframe import DataToolFrame
-from cellprofiler.gui.html.htmlwindow import HtmlClickableWindow, WELCOME_SCREEN_FRAME
-from cellprofiler.gui.errordialog import display_error_message
-from cellprofiler.gui.pathlist import PathListCtrl
-from cellprofiler.gui.imagesetctrl import ImageSetCtrl
-from cellprofiler.gui.sashwindow_tools import sw_bind_to_evt_paint, sp_bind_to_evt_paint
-import cellprofiler.gui.html
-import cellprofiler.gui.preferencesdlg
-import cellprofiler.utilities.version
-import traceback
-import sys
 
 logger = logging.getLogger(__name__)
 

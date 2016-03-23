@@ -19,8 +19,8 @@ non-round objects, the diameter here is actually the 'equivalent
 diameter', meaning the diameter of a circle with the same area as the
 object."""
 
-import wx
 import cellprofiler.gui.html.htmlwindow
+import wx
 
 
 class HTMLDialog(wx.Dialog):

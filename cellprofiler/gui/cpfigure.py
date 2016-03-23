@@ -1,33 +1,33 @@
 """ cpfigure.py - provides a frame with a figure inside
 """
 
-import logging
+from cellprofiler.gui import get_cp_icon
+from cellprofiler.gui.help import make_help_menu, FIGURE_HELP
+from cellprofiler.preferences import get_next_cpfigure_position, reset_cpfigure_position
+from centrosome.cpmorphology import get_outline_pts
+from cpfigure_tools import renumber_labels_for_display
+from matplotlib.backends.backend_wxagg import NavigationToolbar2WxAgg, FigureCanvasWxAgg
+from scipy.ndimage import distance_transform_edt, label
+from scipy.sparse import coo_matrix
+
+import cellprofiler.gui.cpartists
+import cellprofiler.preferences
+import centrosome.outline
 import csv
+import functools
 import javabridge
+import logging
+import matplotlib
+import matplotlib.backends.backend_wxagg
+import matplotlib.cm
+import matplotlib.colorbar
+import matplotlib.patches
 import numpy as np
+import numpy.ma
 import os
 import sys
 import uuid
 import wx
-import matplotlib
-import matplotlib.cm
-import numpy.ma
-import matplotlib.patches
-import matplotlib.colorbar
-import matplotlib.backends.backend_wxagg
-from matplotlib.backends.backend_wxagg import NavigationToolbar2WxAgg
-from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
-from cellprofiler.preferences import get_next_cpfigure_position, reset_cpfigure_position
-from scipy.sparse import coo_matrix
-from scipy.ndimage import distance_transform_edt, label
-import functools
-from cellprofiler.gui import get_cp_icon
-from cellprofiler.gui.help import make_help_menu, FIGURE_HELP
-import cellprofiler.preferences
-from cpfigure_tools import renumber_labels_for_display
-import cellprofiler.gui.cpartists
-import centrosome.outline
-from centrosome.cpmorphology import get_outline_pts
 
 logger = logging.getLogger(__name__)
 

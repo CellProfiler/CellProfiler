@@ -1,9 +1,9 @@
 """cpgrid.py - wx.grid helpers for cellprofiler
 """
 
+import cellprofiler.gui
 import wx
 import wx.grid
-import cellprofiler.gui
 
 BU_NORMAL = "normal"
 BU_PRESSED = "pressed"

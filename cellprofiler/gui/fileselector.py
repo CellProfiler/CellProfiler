@@ -2,11 +2,11 @@ import fnmatch
 import os
 import os.path
 import re
+import scrollable_text
 import sys
 import wx
 import wx.html
 import wx.lib.agw.customtreectrl
-import scrollable_text
 
 default_input = '/tmp'
 default_output = '/Users/thouis'

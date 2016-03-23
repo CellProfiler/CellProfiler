@@ -1,36 +1,6 @@
 """PipelineController.py - controls (modifies) a pipeline
 """
 
-import Queue
-import csv
-import datetime
-import exceptions
-import hashlib
-import logging
-import os
-import random
-import re
-import string
-import sys
-import threading
-import urllib
-import cStringIO
-import h5py
-import numpy
-import wx
-from wx.lib.mixins.listctrl import ColumnSorterMixin, ListCtrlAutoWidthMixin
-import cellprofiler.analysis
-import cellprofiler.cpimage
-import cellprofiler.cpmodule
-import cellprofiler.gui.moduleview
-import cellprofiler.gui.parametersampleframe
-import cellprofiler.measurements
-import cellprofiler.objects
-import cellprofiler.pipeline
-import cellprofiler.preferences
-import cellprofiler.utilities.version
-import cellprofiler.workspace
-import cpframe
 from cellprofiler.gui.addmoduleframe import AddModuleFrame
 from cellprofiler.gui.bitmaplabelbutton import BitmapLabelButton
 from cellprofiler.gui.help import PLATEVIEWER_HELP
@@ -44,6 +14,37 @@ from cellprofiler.modules.loadimages import pathname2url
 from errordialog import display_error_dialog, ED_STOP, ED_SKIP
 from errordialog import display_error_message
 from runmultiplepipelinesdialog import RunMultplePipelinesDialog
+from wx.lib.mixins.listctrl import ColumnSorterMixin, ListCtrlAutoWidthMixin
+
+import cellprofiler.analysis
+import cellprofiler.cpimage
+import cellprofiler.cpmodule
+import cellprofiler.gui.moduleview
+import cellprofiler.gui.parametersampleframe
+import cellprofiler.measurements
+import cellprofiler.objects
+import cellprofiler.pipeline
+import cellprofiler.preferences
+import cellprofiler.utilities.version
+import cellprofiler.workspace
+import cpframe
+import cStringIO
+import csv
+import datetime
+import exceptions
+import h5py
+import hashlib
+import logging
+import numpy
+import os
+import Queue
+import random
+import re
+import string
+import sys
+import threading
+import urllib
+import wx
 
 logger = logging.getLogger(__name__)
 RECENT_PIPELINE_FILE_MENU_ID = [wx.NewId() for i in range(cellprofiler.preferences.RECENT_FILE_COUNT)]

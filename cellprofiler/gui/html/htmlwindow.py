@@ -1,3 +1,8 @@
+from cellprofiler.gui.html.content import WELCOME_HELP
+from cellprofiler.icons import get_builtin_images_path
+from cellprofiler.preferences import get_background_color, set_startup_blurb
+
+import content
 import os
 import sys
 import urllib
@@ -5,10 +10,6 @@ import urllib2
 import webbrowser
 import wx
 import wx.html
-from cellprofiler.preferences import get_background_color, set_startup_blurb
-import content
-from cellprofiler.gui.html.content import WELCOME_HELP
-from cellprofiler.icons import get_builtin_images_path
 
 MEMORY_SCHEME = "memory:"
 WELCOME_SCREEN_FRAME = "WelcomeScreenFrame"

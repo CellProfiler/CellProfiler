@@ -1,23 +1,21 @@
 """PipelineListView.py
 """
 
-try:
-    from cStringIO import StringIO
-except:
-    from StringIO import StringIO
-import logging
-import logging
-import time
-import math
-import os
-import wx
-import sys
-import cellprofiler.pipeline as cpp
-import cellprofiler.preferences as cpprefs
 from cellprofiler.gui import draw_item_selection_rect
 from cellprofiler.gui.cpfigure import window_name, find_fig
-from cellprofiler.icons import get_builtin_image
 from cellprofiler.gui.moduleview import request_module_validation, ValidationRequest
+from cellprofiler.icons import get_builtin_image
+from StringIO import StringIO
+
+import cellprofiler.pipeline as cpp
+import cellprofiler.preferences as cpprefs
+import logging
+import logging
+import math
+import os
+import sys
+import time
+import wx
 
 logger = logging.getLogger(__name__)
 

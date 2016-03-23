@@ -1,9 +1,10 @@
 """omerologin - dialog box to capture login credentials for Omero
 """
 
-import wx
 from bioformats.formatreader import set_omero_credentials
+
 import cellprofiler.preferences
+import wx
 
 
 class OmeroLoginDlg(wx.Dialog):

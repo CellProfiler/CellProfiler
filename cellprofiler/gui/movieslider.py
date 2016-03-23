@@ -5,10 +5,11 @@ Buttons included in this file Copyright Audacity
 public license.
 """
 
+from cellprofiler.gui import draw_bevel, BV_DOWN
+
+import cellprofiler.preferences
 import StringIO
 import wx
-import cellprofiler.preferences
-from cellprofiler.gui import draw_bevel, BV_DOWN
 
 MOVIE_SLIDER_NAME_STR = u"movie_slider"
 SLIDER_CTL_STR = u"slider_ctl"

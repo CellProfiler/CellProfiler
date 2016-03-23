@@ -1,11 +1,11 @@
 """ cpfigure_tools.py - cpfigure tools that do not depend on WX
 """
 
+import centrosome.cpmorphology
 import cStringIO
 import matplotlib
 import numpy
 import scipy
-import centrosome.cpmorphology
 
 
 def figure_to_image(figure, *args, **kwargs):

@@ -4,11 +4,11 @@
 import logging
 import os
 import platform
+import StringIO
 import sys
 import traceback
 import urllib
 import urllib2
-import StringIO
 
 ED_STOP = "Stop"
 ED_CONTINUE = "Continue"

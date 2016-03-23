@@ -1,8 +1,9 @@
 """CornerButtonMixin.py - a mixin for wx.grid.Grid that manages a button in the corner
 """
 
-import wx
 from wx.lib.mixins.gridlabelrenderer import GridDefaultCornerLabelRenderer
+
+import wx
 
 
 class CornerButtonMixin(object):

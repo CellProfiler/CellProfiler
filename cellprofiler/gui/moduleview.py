@@ -1,33 +1,34 @@
 """ModuleView.py - implements a view on a module
 """
 
-import Queue
+from cellprofiler.icons import get_builtin_image
+from cornerbuttonmixin import CornerButtonMixin
+from htmldialog import HTMLDialog
+from metadatactrl import MetadataControl
+from namesubscriber import NameSubscriberComboBox
+from regexp_editor import edit_regexp, RE_FILENAME_GUESSES, RE_FOLDER_GUESSES
+from treecheckboxdialog import TreeCheckboxDialog
+
+import cellprofiler.pipeline
+import cellprofiler.preferences
+import cellprofiler.settings
 import logging
+import matplotlib.cm
+import numpy
 import os
+import Queue
 import stat
 import sys
 import threading
 import time
 import uuid
 import weakref
-import matplotlib.cm
-import numpy
 import wx
 import wx.grid
 import wx.lib.colourselect
 import wx.lib.rcsizer
 import wx.lib.resizewidget
 import wx.lib.scrolledpanel
-import cellprofiler.pipeline
-import cellprofiler.settings
-import cellprofiler.preferences
-from cellprofiler.icons import get_builtin_image
-from regexp_editor import edit_regexp, RE_FILENAME_GUESSES, RE_FOLDER_GUESSES
-from htmldialog import HTMLDialog
-from treecheckboxdialog import TreeCheckboxDialog
-from metadatactrl import MetadataControl
-from namesubscriber import NameSubscriberComboBox
-from cornerbuttonmixin import CornerButtonMixin
 
 logger = logging.getLogger(__name__)
 

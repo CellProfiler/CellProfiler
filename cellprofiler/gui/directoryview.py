@@ -2,13 +2,14 @@
 
     TODO - long-term, this should Matlab imformats or CPimread to get the list of images"""
 
+from cellprofiler.modules.loadimages import LoadImagesImageProvider, is_image
+
+import cellprofiler.gui.cpfigure
+import cellprofiler.preferences
 import logging
 import os
-import wx
 import scipy.io.matlab
-import cellprofiler.preferences
-from cellprofiler.modules.loadimages import LoadImagesImageProvider, is_image
-import cellprofiler.gui.cpfigure
+import wx
 
 logger = logging.getLogger(__name__)
 

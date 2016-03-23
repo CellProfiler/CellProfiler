@@ -1,10 +1,11 @@
 """metadatadlg.py - dialog for editing an expression that might contain metadata
 """
 
+from cellprofiler.preferences import get_primary_outline_color
+
+import cellprofiler.measurements
 import wx
 import wx.lib.masked
-import cellprofiler.measurements
-from cellprofiler.preferences import get_primary_outline_color
 
 __choice_ids = []
 

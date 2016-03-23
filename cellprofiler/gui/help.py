@@ -17,11 +17,12 @@
 #
 ########################################################
 
+from cellprofiler.utilities.relpath import relpath
+
+import cellprofiler.icons
 import logging
 import os
 import sys
-import cellprofiler.icons
-from cellprofiler.utilities.relpath import relpath
 
 X_AUTOMATIC_EXTRACTION = "Extract from image file headers"
 X_MANUAL_EXTRACTION = "Extract from file/folder names"

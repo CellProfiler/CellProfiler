@@ -2,28 +2,29 @@
 
 """
 
-import logging
-import matplotlib
-import matplotlib.figure
+from cellprofiler.gui.cpfigure import CPNavigationToolbar
+from cellprofiler.gui.cpfigure_tools import renumber_labels_for_display
+from cellprofiler.gui.sashwindow_tools import sw_bind_to_evt_paint
+from centrosome.cpmorphology import get_outline_pts, color_labels
+from centrosome.cpmorphology import polygon_lines_to_mask
+from centrosome.cpmorphology import triangle_areas, distance2_to_line, convex_hull_image
+from centrosome.index import Indexes
+from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
 from matplotlib.lines import Line2D
 from matplotlib.path import Path
-from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
+from scipy.ndimage import gaussian_filter
+
+import cellprofiler.objects
+import cellprofiler.preferences
+import logging
+import matplotlib
 import matplotlib.backend_bases
+import matplotlib.figure
 import numpy
 import scipy.ndimage
-from scipy.ndimage import gaussian_filter
 import sys
 import wx
 import wx.html
-import cellprofiler.objects
-import cellprofiler.preferences
-from centrosome.cpmorphology import triangle_areas, distance2_to_line, convex_hull_image
-from centrosome.cpmorphology import polygon_lines_to_mask
-from centrosome.cpmorphology import get_outline_pts, color_labels
-from centrosome.index import Indexes
-from cellprofiler.gui.cpfigure_tools import renumber_labels_for_display
-from cellprofiler.gui.cpfigure import CPNavigationToolbar
-from cellprofiler.gui.sashwindow_tools import sw_bind_to_evt_paint
 
 logger = logging.getLogger(__name__)
 

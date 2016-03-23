@@ -1,16 +1,17 @@
 """PathList - the PathListCtrl displays folders and paths in a scalable way
 """
 
-import logging
+from cellprofiler.gui import draw_item_selection_rect
+
 import bisect
+import cellprofiler.preferences
+import logging
 import numpy
-import wx
-import wx.lib.scrolledpanel
 import urllib
 import urllib2
 import uuid
-import cellprofiler.preferences
-from cellprofiler.gui import draw_item_selection_rect
+import wx
+import wx.lib.scrolledpanel
 
 logger = logging.getLogger(__name__)
 

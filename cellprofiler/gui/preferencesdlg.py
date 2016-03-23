@@ -1,13 +1,14 @@
 """preferencesdlg.py Edit global preferences
 """
 
-import os
-import sys
-import matplotlib.cm
-import wx
+from cellprofiler.gui.htmldialog import HTMLDialog
+
 import cellprofiler.gui.help
 import cellprofiler.preferences
-from cellprofiler.gui.htmldialog import HTMLDialog
+import matplotlib.cm
+import os
+import sys
+import wx
 
 DIRBROWSE = "Browse"
 FILEBROWSE = "FileBrowse"

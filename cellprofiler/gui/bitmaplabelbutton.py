@@ -2,8 +2,9 @@
 
 """
 
-import wx
 from wx.lib.buttons import GenBitmapTextButton
+
+import wx
 
 
 class BitmapLabelButton(GenBitmapTextButton):

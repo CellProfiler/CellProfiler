@@ -770,7 +770,7 @@ def offset_slice(pixels1, pixels2, i, j):
 
     p1 = pixels1[p1_imin:p1_imax, p1_jmin:p1_jmax]
     p2 = pixels2[p2_imin:p2_imax, p2_jmin:p2_jmax]
-    return (p1, p2)
+    return p1, p2
 
 
 def cumsum_quadrant(x, i_forwards, j_forwards):

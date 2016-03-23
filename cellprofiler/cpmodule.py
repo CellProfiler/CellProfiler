@@ -177,7 +177,7 @@ class CPModule(object):
                                   module_name,
                                   from_matlab)
         # we can't handle matlab settings anymore
-        assert not from_matlab, "Module %s's upgrade_settings returned from_matlab==True" % (module_name)
+        assert not from_matlab, "Module %s's upgrade_settings returned from_matlab==True" % module_name
         self.prepare_settings(setting_values)
         for v, value in zip(self.settings(), setting_values):
             v.value = value
@@ -253,7 +253,7 @@ class CPModule(object):
             if len(str(variable)) > 0:
                 setting[cpp.VARIABLE_VALUES][module_idx, i] = variable.get_unicode_value()
             if isinstance(variable, cps.NameProvider):
-                setting[cpp.VARIABLE_INFO_TYPES][module_idx, i] = unicode("%s indep" % (variable.group))
+                setting[cpp.VARIABLE_INFO_TYPES][module_idx, i] = unicode("%s indep" % variable.group)
             elif isinstance(variable, cps.NameSubscriber):
                 setting[cpp.VARIABLE_INFO_TYPES][module_idx, i] = unicode(variable.group)
         setting[cpp.VARIABLE_REVISION_NUMBERS][0, module_idx] = self.variable_revision_number

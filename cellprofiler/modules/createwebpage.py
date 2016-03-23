@@ -262,11 +262,11 @@ class CreateWebPage(cpm.CPModule):
             figure.set_subplots((1, 1))
             msg = ("Wrote %s" if workspace.display_data.wrote_html
                    else "Did not write %s")
-            outcomes = [[msg % (workspace.display_data.webpage_filename)]]
+            outcomes = [[msg % workspace.display_data.webpage_filename]]
             if self.wants_zip_file:
                 msg = ("Wrote %s" if workspace.display_data.wrote_zip
                        else "Did not write %s")
-                outcomes.append([msg % (workspace.display_data.zipfile_filename)])
+                outcomes.append([msg % workspace.display_data.zipfile_filename])
             figure.subplot_table(0, 0, outcomes)
 
     def post_run(self, workspace):

@@ -44,7 +44,7 @@ class TestConvertObjectsToImage(unittest.TestCase):
         object_set.add_objects(objects, OBJECTS_NAME)
         module.image_name.value = IMAGE_NAME
         module.object_name.value = OBJECTS_NAME
-        return (workspace, module)
+        return workspace, module
 
     def test_01_01_load_matlab(self):
         '''load a matlab pipeline with ConvertToImage in it'''
@@ -180,7 +180,7 @@ class TestConvertObjectsToImage(unittest.TestCase):
         self.assertGreater(len(objects.get_labels()), 1)
         module.image_name.value = IMAGE_NAME
         module.object_name.value = OBJECTS_NAME
-        return (workspace, module, ijv)
+        return workspace, module, ijv
 
     def test_03_01_binary_ijv(self):
         workspace, module, ijv = self.make_workspace_ijv()

@@ -83,11 +83,11 @@ class TreeCheckboxDialog(wx.Dialog):
 
     def img_idx(self, d):
         if d[None] is False:
-            return (0, 1)
+            return 0, 1
         elif d[None] is True:
-            return (2, 3)
+            return 2, 3
         else:
-            return (4, 5)
+            return 4, 5
 
     def get_item_data(self, item_id):
         x = self.tree_ctrl.GetItemData(item_id)

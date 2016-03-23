@@ -221,7 +221,7 @@ class DataToolFrame(wx.Frame):
         if self.module.show_window:
             fig = cpf.create_or_find(
                     parent=self,
-                    title="%s Output" % (self.module.module_name),
-                    name="CellProfiler:DataTool:%s" % (self.module.module_name))
+                    title="%s Output" % self.module.module_name,
+                    name="CellProfiler:DataTool:%s" % self.module.module_name)
             self.module.display(workspace, fig)
             fig.figure.canvas.draw()

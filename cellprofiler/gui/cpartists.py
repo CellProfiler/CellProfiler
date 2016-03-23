@@ -456,9 +456,7 @@ class CPImageArtist(matplotlib.artist.Artist):
         return self.__interpolation or \
                (rcparams or matplotlib.rcParams)['image.interpolation']
 
-    interpolation = property(
-            get_interpolation, set_interpolation,
-            "The interpolation to use when stretching intensities")
+    interpolation = property(get_interpolation, set_interpolation)
 
     def add(self, data):
         """Add an image, objects or mask to the artist

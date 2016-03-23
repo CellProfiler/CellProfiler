@@ -5,7 +5,9 @@ import javabridge as J
 
 
 def get_imageplus_wrapper(imageplus_obj):
-    """Wrap the imageplus object as a Java class"""
+    """Wrap the imageplus object as a Java class
+    :param imageplus_obj:
+    """
     if imageplus_obj is None:
         return None
 
@@ -65,7 +67,9 @@ def get_imageplus_wrapper(imageplus_obj):
 
 
 def load_imageplus(file_name):
-    """Create an ImagePlus instance from a file"""
+    """Create an ImagePlus instance from a file
+    :param file_name:
+    """
     imageplus_obj = J.make_instance('ij/ImagePlus',
                                     '(Ljava/lang/String;)V',
                                     file_name)
@@ -77,6 +81,8 @@ def make_imageplus_from_processor(title, processor):
 
     title - the window title for the ImagePlus object
     processor - the ImageProcessor instance
+    :param processor:
+    :param title:
     """
     imageplus_obj = J.make_instance(
             'ij/ImagePlus',

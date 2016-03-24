@@ -208,9 +208,12 @@ class ImageRepo(object):
                                             self.parameters["segmentation"]["foreground"]["MaskDilation"]
                                             * self.parameters["segmentation"]["avgCellDiameter"])
 
-            cell_content_mask_threshold = np.median(self._darker[eroded_foreground])
-            if np.max(self._darker[eroded_foreground]) == cell_content_mask_threshold: # there is only one value
-                cell_content_mask_threshold = 0.0 # take all
+            if not eroded_foreground.any():
+                cell_content_mask_threshold = 0.0
+            else:
+                cell_content_mask_threshold = np.median(self._darker[eroded_foreground])
+                if np.max(self._darker[eroded_foreground]) == cell_content_mask_threshold:  # there is only one value
+                    cell_content_mask_threshold = 0.0  # take all
         else:
             cell_content_mask_threshold = self.parameters["segmentation"]["cellContent"]["MaskThreshold"]
 

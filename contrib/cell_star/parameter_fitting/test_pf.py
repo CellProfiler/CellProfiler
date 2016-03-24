@@ -1,10 +1,10 @@
-__author__ = 'Adam'
+__author__ = 'Adam Kaczmarek, Filip Mroz'
 
 import sys
-import os
 import os.path as path
 import numpy as np
 import scipy as sp
+
 from cellprofiler.preferences import get_max_workers
 from contrib.cell_star.utils import image_util
 from contrib.cell_star.parameter_fitting.pf_process import run
@@ -57,15 +57,21 @@ def test_pf(image_path, mask_path, precision, avg_cell_diameter, method):
     frame = try_load_image(image_path)
     gt_mask = np.array(try_load_image(mask_path), dtype=bool)
 
+
     gt_snakes = gt_mask_to_snakes(gt_mask)
 
     run(frame, gt_snakes, precision, avg_cell_diameter, method)
 
 
 if __name__ == "__main__":
+    if len(sys.argv) < 7:
+        print "Usage: <script> base_path image_path mask_path precision avg_cell_diameter method"
+        print "Given: " + " ".join(sys.argv)
+        sys.exit(-1)
     ch = logging.StreamHandler()
     ch.setLevel(logging.DEBUG)
     logger = logging.getLogger('contrib.cell_star.parameter_fitting')
     logger.setLevel(logging.DEBUG)
     logger.addHandler(ch)
-    test_pf(sys.argv[1], sys.argv[2], int(sys.argv[3]), float(sys.argv[4]), sys.argv[5])
+    corpus_path = sys.argv[1]
+    test_pf(sys.argv[2], sys.argv[3], int(sys.argv[4]), float(sys.argv[5]), sys.argv[6])

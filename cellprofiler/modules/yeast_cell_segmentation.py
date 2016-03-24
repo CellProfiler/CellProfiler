@@ -2,7 +2,7 @@
 import threading
 
 import cellprofiler.icons
-
+from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON
 __doc__ = """<b>YeastSegmentation</b> identifies yeast (or other round) objects in the image. This module can be used
 with brightfield images (as well as fluorescent ones).
 

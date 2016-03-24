@@ -13,6 +13,7 @@ from contrib.cell_star.parameter_fitting.pf_snake import GTSnake
 import logging
 logger = logging.getLogger(__name__)
 
+global corpus_path
 corpus_path = "../cell_star_plugins/yeast_corpus/data/"
 
 

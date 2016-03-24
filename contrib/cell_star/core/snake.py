@@ -3,9 +3,7 @@ __author__ = 'Adam Kaczmarek, Filip Mróz'
 
 #external imports
 import numpy as np
-from matplotlib import path
 # from matplotlib.nxutils import points_inside_poly
-import copy
 import math
 #internal imports
 from contrib.cell_star.utils import calc_util, image_util
@@ -38,7 +36,6 @@ class Snake(object):
         self.points = points
         self.final_edgepoints = final_edgepoints
         self.rank = None
-        self.segment_rank = None
         self.max_contiguous_free_border = 0
         self.free_border_entropy = 0.0
         self.in_snake = None
@@ -57,6 +54,7 @@ class Snake(object):
         self.border_integral = 0
         self.polar_coordinate_boundary = None
         self.original_edgepoints = None
+        self.properties_vector_cached = {}
 
     def __init__(self, parameters, seed, points=None, final_edgepoints=None, images=None):
         """
@@ -75,7 +73,6 @@ class Snake(object):
         self.final_edgepoints = final_edgepoints
         self.images = images
         self.rank = None
-        self.segment_rank = None
         self.max_contiguous_free_border = 0
         self.free_border_entropy = 0.0
         self.in_snake = None
@@ -94,6 +91,7 @@ class Snake(object):
         self.border_integral = 0
         self.polar_coordinate_boundary = None
         self.original_edgepoints = None
+        self.properties_vector_cached = {}
 
     def show(self, name):
         maska = image_util.draw_polygons(self.images.image, [zip(self.xs, self.ys)])
@@ -346,26 +344,13 @@ class Snake(object):
     def centroid(self):
         return self.centroid_x, self.centroid_y
 
-    def calculate_segment_rank(self, ranking_params, avg_cell_diameter):
-        """
-        Method calculating rank of segment occupied by snake
-
-        @param ranking_params: configuration parameters for ranking
-        @param avg_cell_diameter: average cell diameter (from params)
-        """
-        self.segment_rank = 0
-        self.segment_rank += ranking_params["maxInnerBrightnessWeight"] * self.max_inner_brightness
-        self.segment_rank += ranking_params["avgInnerBrightnessWeight"] * self.avg_inner_brightness
-        self.segment_rank += ranking_params["avgBorderBrightnessWeight"] * (self.avg_in_border_brightness - self.avg_out_border_brightness)
-        self.segment_rank -= ranking_params["avgInnerDarknessWeight"] * self.avg_inner_darkness
-        self.segment_rank -= float(ranking_params["logAreaBonus"]) * math.log(self.area**(1.0 / avg_cell_diameter))
-
     @speed_profile
     def calculate_properties_vec(self, polar_transform):
         # Potentially prevent unnecessary calculations
         if self.rank is not None:
             return
 
+        self.properties_vector_cached = {}
         original_clean = self.images.image_back_difference
         brighter = self.images.brighter
         cell_content_mask = self.images.cell_content_mask
@@ -429,9 +414,6 @@ class Snake(object):
             self.centroid_x = self.xs[0]
             self.centroid_y = self.ys[0]
 
-        # Calculate segment rank
-        self.calculate_segment_rank(self.parameters["segmentation"]["ranking"], self.parameters["segmentation"]["avgCellDiameter"])
-
         # Calculate free border fragments - fragments of border, which endpoints have been discarded
         fb, _, _ = calc_util.loop_connected_components(np.array([1 - x for x in self.final_edgepoints]))
         # Calculate free border entropy
@@ -459,11 +441,13 @@ class Snake(object):
         ])
 
     def properties_vector(self, avg_cell_diameter):
-        return np.array([
-            self.max_inner_brightness,
-            self.avg_inner_brightness,
-            self.avg_in_border_brightness - self.avg_out_border_brightness,
-            -self.avg_inner_darkness,
-            math.log(self.area**(1/avg_cell_diameter)),
-            self.free_border_entropy
-        ])
+        if avg_cell_diameter not in self.properties_vector_cached:
+            self.properties_vector_cached[avg_cell_diameter] = np.array([
+                self.max_inner_brightness,
+                self.avg_inner_brightness,
+                self.avg_in_border_brightness - self.avg_out_border_brightness,
+                -self.avg_inner_darkness,
+                math.log(self.area ** (1.0 / avg_cell_diameter)),
+                self.free_border_entropy
+            ])
+        return self.properties_vector_cached[avg_cell_diameter]

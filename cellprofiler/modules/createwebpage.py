@@ -46,43 +46,6 @@ TRANSLATION_DICTIONARY = {
     "No": OPEN_NO
 }
 
-#
-# os.path.relpath is only available from Python 2.6 +
-# The following is derived from posixpath.py from the Python distribution
-#
-if hasattr(os.path, "relpath"):
-    relpath = os.path.relpath
-else:
-    def relpath(path, start=os.curdir):
-        start = os.path.abspath(start)
-        path = os.path.abspath(path)
-        if sys.platform.startswith("win"):
-            start = start.lower()
-            path = path.lower()
-            #
-            # Check to see if UNC paths match ("\\foo\bar" style)
-            #
-            start_unc = os.path.splitunc(start)[0]
-            path_unc = os.path.splitunc(path)[0]
-            if start_unc != path_unc:
-                raise ValueError("Can't get relative path between %s and %s"
-                                 (start, path))
-            if len(start_unc):
-                # Drive letters.
-                start_drive = os.path.splitdrive(start)[0]
-                path_drive = os.path.splitdrive(path)[0]
-                if start_drive != path_drive:
-                    raise ValueError("Can't get relative path between %s and %s"
-                                     (start, path))
-        start_list = start.split(os.path.sep)
-        path_list = path.split(os.path.sep)
-        i = len(os.path.commonprefix((start_list, path_list)))
-        rel_list = [os.pardir] * (len(start_list) - i) + path_list[i:]
-        if len(rel_list) == 0:
-            return os.curdir
-        return '/'.join(rel_list)
-
-
 class CreateWebPage(cpm.CPModule):
     module_name = "CreateWebPage"
     category = "Other"
@@ -304,7 +267,7 @@ class CreateWebPage(cpm.CPModule):
                     # Make the thumbnail path name relative to the location for
                     # the .html file
                     #
-                    thumbnail_path_name = relpath(
+                    thumbnail_path_name = os.path.relpath(
                             thumbnail_path_name, path_name)
                     if os.path.sep != '/':
                         thumbnail_path_name = thumbnail_path_name.replace(

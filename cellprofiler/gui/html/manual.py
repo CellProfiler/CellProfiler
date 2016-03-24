@@ -1,22 +1,20 @@
+import cellprofiler.gui.help
+import cellprofiler.icons
+import cellprofiler.modules
+import cellprofiler.preferences
+import cellprofiler.utilities.relpath
+import cellprofiler.utilities.version
+import glob
 import os
 import re
-import sys
-from glob import glob
-from shutil import copy
-
-import cellprofiler.icons
-import cellprofiler.preferences as cpprefs
-import cellprofiler.utilities.version as version
-from cellprofiler.gui.help import MAIN_HELP
-from cellprofiler.modules import get_module_names, instantiate_module
-from cellprofiler.utilities.relpath import relpath
+import shutil
 
 LOCATION_COVERPAGE = os.path.join('images', 'CPCoverPage.png')
 LOCATION_WHITEHEADLOGO = os.path.join('images', 'WhiteheadInstituteLogo.png')
 LOCATION_CSAILLOGO = os.path.join('images', 'CSAIL_Logo.png')
 LOCATION_IMAGINGPLATFORMBANNER = os.path.join('images', 'BroadPlusImagingPlusBanner.png')
-VERSION = version.version_string
-VERSION_NUMBER = version.version_number
+VERSION = cellprofiler.utilities.version.version_string
+VERSION_NUMBER = cellprofiler.utilities.version.version_number
 
 
 def generate_html(webpage_path=None):
@@ -38,9 +36,9 @@ def generate_html(webpage_path=None):
     index_fd = open(os.path.join(webpage_path, 'index.html'), 'w')
 
     icons_path = cellprofiler.icons.__path__[0]
-    all_pngs = glob(os.path.join(icons_path, "*.png"))
+    all_pngs = glob.glob(os.path.join(icons_path, "*.png"))
     for f in all_pngs:
-        copy(f, webpage_images_path)
+        shutil.copy(f, webpage_images_path)
 
     intro_text = """
 <html style="font-family:arial">
@@ -96,8 +94,8 @@ recent manual is available <a href="http://d1zymp9ayga15t.cloudfront.net/CPmanua
 
 
 def output_gui_html(webpage_path):
-    '''Output an HTML page for each non-module help item'''
-    icons_relpath = relpath(cellprofiler.icons.__path__[0])
+    """Output an HTML page for each non-module help item"""
+    icons_relpath = cellprofiler.utilities.relpath.relpath(cellprofiler.icons.__path__[0])
 
     help_text = """
 <h2>Using CellProfiler</a></h2>"""
@@ -134,17 +132,17 @@ def output_gui_html(webpage_path):
         help_text += "</ul>\n"
         return help_text
 
-    help_text = write_menu("Help", MAIN_HELP, help_text)
+    help_text = write_menu("Help", cellprofiler.gui.help.MAIN_HELP, help_text)
     help_text += "\n"
 
     return help_text
 
 
 def output_module_html(webpage_path):
-    '''Output an HTML page for each module'''
+    """Output an HTML page for each module"""
 
-    icons_relpath = relpath(cellprofiler.icons.__path__[0])
-    all_png_icons = glob(os.path.join(icons_relpath, "*.png"))
+    icons_relpath = cellprofiler.utilities.relpath.relpath(cellprofiler.icons.__path__[0])
+    all_png_icons = glob.glob(os.path.join(icons_relpath, "*.png"))
     icon_names = [os.path.basename(f)[:-4] for f in all_png_icons]
 
     help_text = """
@@ -158,11 +156,11 @@ def output_module_html(webpage_path):
         except IOError:
             raise ValueError("Could not create directory %s" % module_path)
 
-    for module_name in sorted(get_module_names()):
-        module = instantiate_module(module_name)
+    for module_name in sorted(cellprofiler.modules.get_module_names()):
+        module = cellprofiler.modules.instantiate_module(module_name)
         location = os.path.split(
                 module.create_settings.im_func.func_code.co_filename)[0]
-        if location == cpprefs.get_plugin_directory():
+        if location == cellprofiler.preferences.get_plugin_directory():
             continue
         if isinstance(module.category, (str, unicode)):
             module.category = [module.category]
@@ -203,24 +201,24 @@ def output_module_html(webpage_path):
 
 
 def search_module_help(text):
-    '''Search the help for a string
+    """Search the help for a string
 
     text - find text in the module help using case-insensitive matching
 
     returns an html document of all the module help pages that matched or
             None if no match found.
-    '''
+    """
     matching_help = []
-    for item in MAIN_HELP:
+    for item in cellprofiler.gui.help.MAIN_HELP:
         matching_help += __search_menu_helper(
                 item, lambda x: __search_fn(x, text))
     count = sum([len(x[2]) for x in matching_help])
 
-    for module_name in get_module_names():
-        module = instantiate_module(module_name)
+    for module_name in cellprofiler.modules.get_module_names():
+        module = cellprofiler.modules.instantiate_module(module_name)
         location = os.path.split(
                 module.create_settings.im_func.func_code.co_filename)[0]
-        if location == cpprefs.get_plugin_directory():
+        if location == cellprofiler.preferences.get_plugin_directory():
             continue
         help_text = module.get_help()
         matches = __search_fn(help_text, text)
@@ -272,7 +270,7 @@ def search_module_help(text):
 
 
 def __search_fn(html, text):
-    '''Find begin-end coordinates of case-insensitive matches in html
+    """Find begin-end coordinates of case-insensitive matches in html
 
     html - an HTML document
 
@@ -281,7 +279,7 @@ def __search_fn(html, text):
     Find the begin and end indices of case insensitive matches of "text"
     within the text-data of the HTML, searching only in its body and excluding
     text in the HTML tags.
-    '''
+    """
     start_match = re.search(r"<\s*body[^>]*?>", html, re.IGNORECASE)
     if start_match is None:
         start = 0
@@ -309,7 +307,7 @@ def __search_fn(html, text):
 
 
 def __search_menu_helper(menu, search_fn):
-    '''Search a help menu for text
+    """Search a help menu for text
 
     menu - a menu in the style of MAIN_HELP. A leaf is a two-tuple composed
            of a title string and its HTML help. Non-leaf branches are two-tuples
@@ -320,46 +318,10 @@ def __search_menu_helper(menu, search_fn):
 
     returns a list of three-tuples. The first item is the title. The second is
     the html help. The third is a list of begin-end tuples of matches found.
-    '''
+    """
     if len(menu) == 2 and all([isinstance(x, basestring) for x in menu]):
         matches = search_fn(menu[1])
         if len(matches) > 0:
             return [(menu[0], menu[1], matches)]
         return []
     return sum(map(lambda x: __search_menu_helper(x, search_fn), menu[1]), [])
-
-
-if __name__ == "__main__":
-    import wx
-    import wx.html
-
-    app = wx.PySimpleApp(True)
-    frame = wx.Frame(None, title="Search the help")
-    frame.Sizer = wx.BoxSizer(wx.VERTICAL)
-    search_sizer = wx.BoxSizer(wx.HORIZONTAL)
-    frame.Sizer.Add(search_sizer, 0, wx.EXPAND | wx.ALL, 5)
-    search_sizer.Add(wx.StaticText(frame, label="Search:"), 0, wx.ALIGN_LEFT)
-    search_sizer.AddSpacer(2)
-    text = wx.TextCtrl(frame)
-    search_sizer.Add(text, 1, wx.EXPAND)
-    search_sizer.AddSpacer(2)
-    button = wx.Button(frame, label="Search")
-    search_sizer.Add(button, 0, wx.EXPAND)
-
-    htmlwindow = wx.html.HtmlWindow(frame)
-    frame.Sizer.Add(htmlwindow, 1, wx.EXPAND)
-
-
-    def do_search(event):
-        search_text = text.Value
-        html = search_module_help(search_text)
-        if html is None:
-            html = "<html><header><title>%s not found</title><header><body>So sorry, %s not found</body></html>" % (
-                search_text, search_text)
-        htmlwindow.SetPage(html)
-
-
-    button.Bind(wx.EVT_BUTTON, do_search)
-    frame.Layout()
-    frame.Show()
-    app.MainLoop()

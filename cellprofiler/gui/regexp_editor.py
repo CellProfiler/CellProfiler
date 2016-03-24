@@ -2,7 +2,6 @@
 """
 
 import re
-
 import wx
 import wx.stc
 
@@ -160,7 +159,8 @@ class RegexpDialog(wx.Dialog):
         self.SetSizer(sizer)
         self.Fit()
 
-    def on_regexp_key(self, event):
+    @staticmethod
+    def on_regexp_key(event):
         #
         # On Mac, very bad things (infinite recursion through OnPaint
         # followed by segfault) happen if you type carriage return
@@ -168,7 +168,8 @@ class RegexpDialog(wx.Dialog):
         if event.GetKeyCode() != wx.stc.STC_KEY_RETURN:
             event.Skip()
 
-    def get_color_db(self):
+    @staticmethod
+    def get_color_db():
         color_db = ["BLACK", "RED", "GREEN", "BLUE", "CYAN", "MAGENTA", "SIENNA", "PURPLE"]
         color_db = [wx.TheColourDatabase.FindColour(x) for x in color_db]
         return color_db
@@ -220,9 +221,7 @@ class RegexpDialog(wx.Dialog):
         pos = self.regexp_display.CurrentPos
         if state.open_expression_start is not None:
             self.regexp_display.BraceBadLight(state.open_expression_start)
-        elif (pos > 0 and
-                      pos < len(state.matching_braces) and
-                      state.matching_braces[pos - 1] is not None):
+        elif 0 < pos < len(state.matching_braces) and state.matching_braces[pos - 1] is not None:
             self.regexp_display.BraceHighlight(state.matching_braces[pos - 1],
                                                pos - 1)
         else:
@@ -287,7 +286,7 @@ class RegexpDialog(wx.Dialog):
     test_text = property(get_test_text, set_test_text)
 
     def get_guesses(self):
-        '''The guess regexps used when the user presses the "guess" button'''
+        """The guess regexps used when the user presses the "guess" button"""
         return self.__guesses
 
     def set_guesses(self, value):
@@ -310,9 +309,7 @@ TOK_REPEAT = 4
 TOK_SPECIAL = 5
 TOK_DEFINITION = 6
 
-HARDCODE_ESCAPES = set([r"\\", r"\a", r"\b", r"\d", r"\f", r"\n", r"\r",
-                        r"\s", r"\t", r"\v", r"\w",
-                        r"\A", r"\B", r"\D", r"\S", r"\W", r"\Z"])
+HARDCODE_ESCAPES = {r"\\", r"\a", r"\b", r"\d", r"\f", r"\n", r"\r", r"\s", r"\t", r"\v", r"\w", r"\A", r"\B", r"\D", r"\S", r"\W", r"\Z"}
 OCTAL_DIGITS = set("01234567")
 DECIMAL_DIGITS = set("0123456789")
 HEXIDECIMAL_DIGITS = set("0123456789ABCDEFabcdef")
@@ -343,7 +340,7 @@ class RegexpState:
         self.matching_braces += [None] * length
 
     def open_group(self, length, group_name=None, is_non_grouping=False):
-        '''Open a grouping expression'''
+        """Open a grouping expression"""
         self.__group_depth += 1
         self.__group_starts.append(self.position)
         self.__any_tokens = True
@@ -354,7 +351,7 @@ class RegexpState:
         self.position += length
 
     def close_group(self):
-        '''Close a grouping expression returning the matching position'''
+        """Close a grouping expression returning the matching position"""
         if self.__group_depth == 0:
             raise ValueError("Unmatched closing parentheses")
         if self.__group_name is not None:
@@ -375,7 +372,7 @@ class RegexpState:
         return self.__group_count
 
     def get_in_brackets(self):
-        '''True if the state is within [] brackets'''
+        """True if the state is within [] brackets"""
         return self.__in_brackets
 
     in_brackets = property(get_in_brackets)
@@ -403,7 +400,7 @@ class RegexpState:
         self.position += length
 
     def parsed_special(self, length=1, label=TOK_SPECIAL):
-        '''Parse a token that's not repeatable'''
+        """Parse a token that's not repeatable"""
         self.__any_tokens = False
         self.mark_tokens(length, label)
         self.position += length
@@ -423,7 +420,7 @@ class RegexpState:
 
     @property
     def open_expression_start(self):
-        '''Return the start of the innermost open expression or None'''
+        """Return the start of the innermost open expression or None"""
         if self.__in_brackets:
             return self.__bracket_start
         elif self.__group_depth:
@@ -435,13 +432,13 @@ class RegexpState:
 
 
 def looking_at_escape(s, state):
-    '''Return # of characters in an escape
+    """Return # of characters in an escape
 
     s - string to look at
     state - the current search state
 
     returns either None or the # of characters in the escape
-    '''
+    """
     if s[0] != "\\":
         return
     if len(s) < 2:
@@ -620,16 +617,3 @@ def parse(s, state):
         state.token_labels[state.open_expression_start] = STYLE_ERROR
         raise ValueError("Incomplete expression")
     return state
-
-
-if __name__ == "__main__":
-    import wx.lib.inspection
-
-
-    class MyApp(wx.App):
-        def OnInit(self):
-            return True
-
-
-    app = MyApp(0)
-    edit_regexp(None, "(?P<foo>foo)", "Where is the food?")

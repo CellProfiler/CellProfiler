@@ -40,7 +40,7 @@ from cellprofiler.preferences import \
     DEFAULT_INPUT_SUBFOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME, \
     IO_FOLDER_CHOICE_HELP_TEXT, IO_WITH_METADATA_HELP_TEXT, \
     get_default_image_directory
-from cellprofiler.utilities.relpath import relpath
+import os.path
 from cellprofiler.modules.loadimages import C_FILE_NAME, C_PATH_NAME, C_URL
 from cellprofiler.modules.loadimages import \
     C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME, C_OBJECTS_URL
@@ -844,7 +844,7 @@ class SaveImages(cpm.CPModule):
         pathname = self.pathname.get_absolute_path(measurements)
         if self.create_subdirectories:
             image_path = self.source_path(workspace)
-            subdir = relpath(image_path, self.root_dir.get_absolute_path())
+            subdir = os.path.relpath(image_path, self.root_dir.get_absolute_path())
             pathname = os.path.join(pathname, subdir)
         if len(pathname) and not os.path.isdir(pathname) and make_dirs:
             try:

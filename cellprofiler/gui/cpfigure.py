@@ -2136,9 +2136,6 @@ NAV_MODE_NONE = ''
 class CPNavigationToolbar(matplotlib.backends.backend_wxagg.NavigationToolbar2WxAgg):
     """Navigation toolbar for EditObjectsDialog"""
 
-    def __init__(self):
-        pass
-
     def set_cursor(self, cursor):
         """Set the cursor based on the mode"""
         if cursor == matplotlib.backend_bases.cursors.SELECT_REGION:

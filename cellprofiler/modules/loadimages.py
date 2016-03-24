@@ -70,7 +70,7 @@ import cellprofiler.settings as cps
 from cellprofiler.settings import YES, NO
 import centrosome.outline
 import identify as I
-from cellprofiler.utilities.relpath import relpath
+import os.path
 from cellprofiler.preferences import \
     standardize_default_folder_names, DEFAULT_INPUT_FOLDER_NAME, \
     DEFAULT_OUTPUT_FOLDER_NAME, ABSOLUTE_FOLDER_NAME, URL_FOLDER_NAME, \
@@ -2535,7 +2535,7 @@ class LoadImages(cpmodule.CPModule):
             listdir = lambda path: [
                 x for x in os.listdir(path)
                 if os.path.isfile(os.path.join(path, x))]
-            my_relpath = relpath
+            my_relpath = os.path.relpath
             realpath = os.path.realpath
             join = os.path.join
             if (root.lower().startswith("http:") or

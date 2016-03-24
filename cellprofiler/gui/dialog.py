@@ -13,3 +13,12 @@ class AboutDialogInfo(wx.AboutDialogInfo):
         self.Name = "CellProfiler"
 
         self.Version = pkg_resources.get_distribution("cellprofiler").version
+
+
+class Error(wx.MessageDialog):
+    def __init__(self, message, extended_message):
+        super(Error, self).__init__(parent=None, message=message, style=wx.CANCEL | wx.ICON_EXCLAMATION)
+
+        self.SetExtendedMessage(extended_message)
+
+        self.SetOKLabel("Continue Processing")

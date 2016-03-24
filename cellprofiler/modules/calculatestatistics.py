@@ -539,13 +539,13 @@ def z_factors(xcol, ymatr):
     # extremes BY DOSE of the averages and stdevs.
     zrange = np.abs(avers[0, :] - avers[-1, :])
     zstd = stds[0, :] + stds[-1, :]
-    zstd[zrange == 0] = 1;
-    zrange[zrange == 0] = 0.000001;
+    zstd[zrange == 0] = 1
+    zrange[zrange == 0] = 0.000001
     z = 1 - 3 * (zstd / zrange)
 
     # The one-tailed Z' factor is defined by using only the samples between the
     # means, again defined by DOSE extremes
-    zrange = np.abs(avers[0, :] - avers[-1, :]);
+    zrange = np.abs(avers[0, :] - avers[-1, :])
     exp1_vals = ymatr[xcol == xs[0], :]
     exp2_vals = ymatr[xcol == xs[-1], :]
     #
@@ -572,7 +572,7 @@ def z_factors(xcol, ymatr):
     z_one_tailed = 1 - 3 * (zstd / zrange)
     # Otherwise, set it to a really negative value
     z_one_tailed[(~ np.isfinite(zstd)) | (zrange == 0)] = -1e5
-    return (z, z_one_tailed, xs, avers)
+    return z, z_one_tailed, xs, avers
 
 
 def v_factors(xcol, ymatr):
@@ -592,9 +592,9 @@ def v_factors(xcol, ymatr):
     # Special handling for labels that have no ranges
     #
     vstd = np.zeros(len(vrange))
-    vstd[vrange == 0] = 1;
+    vstd[vrange == 0] = 1
     vstd[vrange != 0] = np.mean(stds[:, vrange != 0], 0)
-    vrange[vrange == 0] = 0.000001;
+    vrange[vrange == 0] = 0.000001
     v = 1 - 6 * (vstd / vrange)
     return v
 
@@ -659,7 +659,7 @@ def loc_vector_labels(x):
     sorted_labels = np.cumsum(first_occurrence) - 1
     labels = sorted_labels[reverse_order]
     uniqsortvals = sorted_x[first_occurrence]
-    return (labels, len(uniqsortvals), uniqsortvals)
+    return labels, len(uniqsortvals), uniqsortvals
 
 
 #######################################################
@@ -795,7 +795,7 @@ def calc_init_params(x, y):
         hillc = -1
     else:
         hillc = 1
-    return (min_0, max_0, ec50, hillc)
+    return min_0, max_0, ec50, hillc
 
 
 def write_figures(prefix, directory, dose_name,

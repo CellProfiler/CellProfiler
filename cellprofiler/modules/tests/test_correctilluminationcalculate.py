@@ -140,7 +140,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         """
         pipeline = cpp.Pipeline()
         pipeline.add_listener(self.error_callback)
-        for image in ((np.ones((10, 10)), np.ones((10, 10, 3)))):
+        for image in (np.ones((10, 10)), np.ones((10, 10, 3))):
             inj_module = inj.InjectImage("MyImage", image)
             inj_module.module_num = 1
             pipeline.add_module(inj_module)
@@ -412,7 +412,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         module.run(workspace)
         image = image_set.get_image("OutputImage")
         self.assertTrue(np.all(np.abs(image.pixel_data - input_image) < .001),
-                        "Failed to fit polynomial to %s" % (image_name))
+                        "Failed to fit polynomial to %s" % image_name)
 
     def test_03_01_FitPolynomial(self):
         """Test fitting a polynomial to different gradients"""
@@ -462,7 +462,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
             module.run(workspace)
             image = image_set.get_image("OutputImage")
             self.assertTrue(np.all(np.abs(image.pixel_data - input_image) < .001),
-                            "Failed to fit polynomial to %s" % (image_name))
+                            "Failed to fit polynomial to %s" % image_name)
 
     def test_03_02_gaussian_filter(self):
         """Test gaussian filtering a gaussian of a point"""

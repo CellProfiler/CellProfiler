@@ -183,7 +183,7 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
                                           ('OtherObjects', 1)):
             for measurement in module.get_measurements(pipeline, object_name,
                                                        'AreaShape'):
-                feature_name = 'AreaShape_%s' % (measurement)
+                feature_name = 'AreaShape_%s' % measurement
                 m = measurements.get_current_measurement(object_name,
                                                          feature_name)
                 self.assertEqual(len(m), object_count)

@@ -256,7 +256,7 @@ class ExpandOrShrinkObjects(cpm.CPModule):
         categories = []
         if object_name == cpmeas.IMAGE:
             categories += ["Count"]
-        if (object_name == self.output_object_name):
+        if object_name == self.output_object_name:
             categories += ("Location", "Number")
         return categories
 

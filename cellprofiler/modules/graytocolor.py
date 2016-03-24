@@ -302,7 +302,7 @@ class GrayToColor(cpm.CPModule):
                               color_scheme_setting.adjustment_factor.value)
                 pixel_data = image.pixel_data
                 if parent_image is not None:
-                    if (parent_image.pixel_data.shape != pixel_data.shape):
+                    if parent_image.pixel_data.shape != pixel_data.shape:
                         raise ValueError("The %s image and %s image have different sizes (%s vs %s)" %
                                          (parent_image_name,
                                           color_scheme_setting.image_name.value,

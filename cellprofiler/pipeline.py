@@ -634,8 +634,8 @@ class Pipeline(object):
     """
 
     def __init__(self):
-        self.__modules = [];
-        self.__listeners = [];
+        self.__modules = []
+        self.__listeners = []
         self.__measurement_columns = {}
         self.__measurement_column_hash = None
         self.__test_mode = False
@@ -702,7 +702,7 @@ class Pipeline(object):
         """Read a pipeline's modules out of the handles structure
 
         """
-        self.__modules = [];
+        self.__modules = []
         try:
             settings = handles[SETTINGS][0, 0]
             module_names = settings[MODULE_NAMES]
@@ -1054,7 +1054,7 @@ class Pipeline(object):
                                       "not be able to load it.\n\n"
                                       "You can ignore this warning if you do not plan to save\n"
                                       "this pipeline or if you will only use it with this or\n"
-                                      "later versions of CellProfiler.") % (git_hash)
+                                      "later versions of CellProfiler.") % git_hash
                     else:
                         message = (
                             "Your pipeline was saved using an old version\n"
@@ -1561,7 +1561,7 @@ class Pipeline(object):
         # LoadSingleImage used to work if placed before LoadImages or
         # LoadData, but doesn't any more
         #
-        while (True):
+        while True:
             for i, module in enumerate(self.modules()):
                 if isinstance(module, LoadSingleImage):
                     for other_module in self.modules()[(i + 1):]:
@@ -1612,7 +1612,7 @@ class Pipeline(object):
         # Check that the incoming dictionary matches the names expected by the
         # ExternalImageProviders
         for name in input_image_names:
-            assert name in image_dict, 'Image named "%s" was not provided in the input dictionary' % (name)
+            assert name in image_dict, 'Image named "%s" was not provided in the input dictionary' % name
 
         # Create image set from provided dict
         image_set_list = cpi.ImageSetList()
@@ -1806,7 +1806,7 @@ class Pipeline(object):
                     is_first_image_set = False
                 measurements.group_number = group_number
                 measurements.group_index = group_index
-                numberof_windows = 0;
+                numberof_windows = 0
                 slot_number = 0
                 object_set = cpo.ObjectSet()
                 image_set = measurements
@@ -1901,7 +1901,7 @@ class Pipeline(object):
                             should_write_measurements):
                         measurements.add_measurement('Image',
                                                      module_error_measurement,
-                                                     np.array([failure]));
+                                                     np.array([failure]))
                         measurements.add_measurement('Image',
                                                      execution_time_measurement,
                                                      np.array([delta_sec]))
@@ -2009,7 +2009,7 @@ class Pipeline(object):
             # Paradox: ExportToDatabase must write these columns in order
             #  to complete, but in order to do so, the module needs to
             #  have already completed. So we don't report them for it.
-            if (should_write_measurements):
+            if should_write_measurements:
                 measurements[cpmeas.IMAGE,
                              'ModuleError_%02d%s' % (module.module_num, module.module_name)] = 0
                 measurements[cpmeas.IMAGE,
@@ -2328,7 +2328,7 @@ class Pipeline(object):
                                   module.module_num,
                                   module.module_name))
         if groupings is None:
-            return ((), (((), workspace.measurements.get_image_numbers()),))
+            return (), (((), workspace.measurements.get_image_numbers()),)
         return groupings
 
     def get_undefined_metadata_tags(self, pattern):
@@ -2343,7 +2343,7 @@ class Pipeline(object):
         current_metadata = []
         for column in columns:
             object_name, feature, coltype = column[:3]
-            if (object_name == cpmeas.IMAGE and feature.startswith(cpmeas.C_METADATA)):
+            if object_name == cpmeas.IMAGE and feature.startswith(cpmeas.C_METADATA):
                 current_metadata.append(feature[(len(cpmeas.C_METADATA) + 1):])
 
         m = re.findall('\\(\\?[<](.+?)[>]\\)', pattern)
@@ -2441,7 +2441,7 @@ class Pipeline(object):
     def clear(self):
         self.start_undoable_action()
         try:
-            while (len(self.__modules) > 0):
+            while len(self.__modules) > 0:
                 self.remove_module(self.__modules[-1].module_num)
             self.notify_listeners(PipelineClearedEvent())
             self.init_modules()
@@ -2499,7 +2499,7 @@ class Pipeline(object):
             self.__settings[idx - 1] = self.__settings[idx]
             self.__settings[idx] = prev_settings
         else:
-            raise ValueError('Unknown direction: %s' % (direction))
+            raise ValueError('Unknown direction: %s' % direction)
         self.notify_listeners(ModuleMovedPipelineEvent(new_module_num, direction, False))
 
         def undo():
@@ -2523,7 +2523,7 @@ class Pipeline(object):
         def undo():
             self.disable_module(module)
 
-        message = "Enable %s" % (module.module_name)
+        message = "Enable %s" % module.module_name
         self.__undo_stack.append((undo, message))
 
     def disable_module(self, module):
@@ -2538,7 +2538,7 @@ class Pipeline(object):
         def undo():
             self.enable_module(module)
 
-        message = "Disable %s" % (module.module_name)
+        message = "Disable %s" % module.module_name
         self.__undo_stack.append((undo, message))
 
     def show_module_window(self, module, state=True):
@@ -2884,7 +2884,7 @@ class Pipeline(object):
             d = {}
             all_image_numbers = temp_measurements.get_image_numbers()
             if len(all_image_numbers) == 0:
-                return (iscds, metadata_key_names, {})
+                return iscds, metadata_key_names, {}
             metadata_columns = [
                 temp_measurements.get_measurement(
                         cpmeas.IMAGE, feature, all_image_numbers)
@@ -2919,7 +2919,7 @@ class Pipeline(object):
                     for u, s, i, c in zip(url_columns, series_columns,
                                           index_columns, channel_columns)]
                 d[key] = value
-            return (iscds, metadata_key_names, d)
+            return iscds, metadata_key_names, d
         finally:
             if new_workspace is not None:
                 new_workspace.set_file_list(None)
@@ -2957,7 +2957,7 @@ class Pipeline(object):
             pipeline.add_module(module2)
         '''
 
-        class UndoableAction():
+        class UndoableAction:
             def __init__(self, pipeline, name):
                 self.pipeline = pipeline
                 self.name = name
@@ -3132,7 +3132,7 @@ class Pipeline(object):
         self.add_image_metadata("file:" + urllib.pathname2url(path), metadata)
 
     def add_image_metadata(self, url, metadata, ipd=None):
-        if (metadata.image_count == 1):
+        if metadata.image_count == 1:
             m = {}
             pixels = metadata.image(0).Pixels
             m[ImagePlaneDetails.MD_SIZE_C] = str(pixels.SizeC)

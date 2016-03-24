@@ -18,7 +18,6 @@
 ########################################################
 
 import cellprofiler.icons
-import cellprofiler.utilities.relpath
 import logging
 import os
 import sys

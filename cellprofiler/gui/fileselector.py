@@ -35,19 +35,6 @@ FS_FILENAME_ONLY, FS_SUBDIR_AND_FNAME, FS_FULL_PATH = match_elements
 default_image_names = ['DNA', 'Actin', 'Protein']
 
 
-def relpath(sub, parent):
-    tails = []
-    assert sub.startswith(parent)
-    while sub.startswith(parent):
-        sub, tail = os.path.split(sub)
-        tails.append(tail)
-    tails.reverse()
-    # drop the first element, as that one was part of parent
-    if len(tails) > 1:
-        return os.path.join(*tails[1:])
-    return ''
-
-
 def default_image_name(idx):
     try:
         return default_image_names[idx]
@@ -246,7 +233,7 @@ class LocationPanel(wx.Panel):
             progress.Pulse(limit_dirname_size(directory))
             self.file_list = []
             for dirpath, dirnames, filenames in os.walk(directory):
-                subpath = relpath(dirpath, directory)
+                subpath = os.path.relpath(dirpath, directory)
                 self.file_list += [(directory, subpath, f) for f in filenames]
                 c, s = progress.Pulse(limit_dirname_size(dirpath))
                 if not c:
@@ -258,7 +245,7 @@ class LocationPanel(wx.Panel):
             self.file_list = []
             dirlist = self.dirtree.get_selected_dirs()
             for idx, dirpath in enumerate(dirlist):
-                subpath = relpath(dirpath, directory)
+                subpath = os.path.relpath(dirpath, directory)
                 self.file_list += [(directory, subpath, f) for f in os.listdir(dirpath) if
                                    os.path.isfile(os.path.join(dirpath, f))]
                 c, s = progress.Update((idx * 99) / len(dirlist), limit_dirname_size(dirpath))

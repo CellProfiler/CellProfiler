@@ -2,7 +2,6 @@ import cellprofiler.gui.help
 import cellprofiler.icons
 import cellprofiler.modules
 import cellprofiler.preferences
-import cellprofiler.utilities.relpath
 import cellprofiler.utilities.version
 import glob
 import os

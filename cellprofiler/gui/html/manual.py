@@ -2,12 +2,21 @@ import cellprofiler.gui.help
 import cellprofiler.icons
 import cellprofiler.modules
 import cellprofiler.preferences
-import cellprofiler.utilities.relpath
 import cellprofiler.utilities.version
 import glob
 import os
 import re
 import shutil
+import sys
+from glob import glob
+from shutil import copy
+
+import cellprofiler.icons
+import cellprofiler.preferences as cpprefs
+import cellprofiler.utilities.version as version
+from cellprofiler.gui.help import MAIN_HELP
+from cellprofiler.modules import get_module_names, instantiate_module
+import os.path
 
 LOCATION_COVERPAGE = os.path.join('images', 'CPCoverPage.png')
 LOCATION_WHITEHEADLOGO = os.path.join('images', 'WhiteheadInstituteLogo.png')
@@ -94,8 +103,8 @@ recent manual is available <a href="http://d1zymp9ayga15t.cloudfront.net/CPmanua
 
 
 def output_gui_html(webpage_path):
-    """Output an HTML page for each non-module help item"""
-    icons_relpath = cellprofiler.utilities.relpath.relpath(cellprofiler.icons.__path__[0])
+    '''Output an HTML page for each non-module help item'''
+    icons_relpath = os.path.relpath(cellprofiler.icons.__path__[0])
 
     help_text = """
 <h2>Using CellProfiler</a></h2>"""
@@ -141,8 +150,8 @@ def output_gui_html(webpage_path):
 def output_module_html(webpage_path):
     """Output an HTML page for each module"""
 
-    icons_relpath = cellprofiler.utilities.relpath.relpath(cellprofiler.icons.__path__[0])
-    all_png_icons = glob.glob(os.path.join(icons_relpath, "*.png"))
+    icons_relpath = os.path.relpath(cellprofiler.icons.__path__[0])
+    all_png_icons = glob(os.path.join(icons_relpath, "*.png"))
     icon_names = [os.path.basename(f)[:-4] for f in all_png_icons]
 
     help_text = """

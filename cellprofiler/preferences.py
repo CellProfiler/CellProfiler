@@ -326,7 +326,6 @@ BACKGROUND_COLOR = 'BackgroundColor'
 PIXEL_SIZE = 'PixelSize'
 COLORMAP = 'Colormap'
 MODULEDIRECTORY = 'ModuleDirectory'
-CHECKFORNEWVERSIONS = 'CheckForNewVersions'
 SKIPVERSION = 'SkipVersion2.1'
 FF_RECENTFILES = 'RecentFile%d'
 STARTUPBLURB = 'StartupBlurb'
@@ -418,7 +417,7 @@ def recent_file(index, category=""):
 
 
 '''All keys saved in the registry'''
-ALL_KEYS = ([ALLOW_OUTPUT_FILE_OVERWRITE, BACKGROUND_COLOR, CHECKFORNEWVERSIONS,
+ALL_KEYS = ([ALLOW_OUTPUT_FILE_OVERWRITE, BACKGROUND_COLOR,
              COLORMAP, DEFAULT_IMAGE_DIRECTORY, DEFAULT_OUTPUT_DIRECTORY,
              IJ_PLUGIN_DIRECTORY, MODULEDIRECTORY, PLUGIN_DIRECTORY,
              PRIMARY_OUTLINE_COLOR, SECONDARY_OUTLINE_COLOR,
@@ -810,22 +809,6 @@ def get_current_workspace_path():
 def set_current_workspace_path(path):
     global __current_workspace_path
     __current_workspace_path = path
-
-
-def get_check_new_versions():
-    if not config_exists(CHECKFORNEWVERSIONS):
-        # should this check for whether we can actually save preferences?
-        return True
-    return get_config().ReadBool(CHECKFORNEWVERSIONS)
-
-
-def set_check_new_versions(val):
-    old_val = get_check_new_versions()
-    get_config().WriteBool(CHECKFORNEWVERSIONS, bool(val))
-    # If the user turns on version checking, they probably don't want
-    # to skip versions anymore.
-    if val and (not old_val):
-        set_skip_version(0)
 
 
 def get_skip_version():

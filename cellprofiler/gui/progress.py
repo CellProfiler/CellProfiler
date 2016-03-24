@@ -17,11 +17,13 @@ def module_label(module):
     else:
         return "Current module:"
 
+
 def image_set_label(image_set_index, num_image_sets):
     if image_set_index:
-        return "Image cycle: %(image_set_index)d of %(num_image_sets)d"%locals()
+        return "Image cycle: %(image_set_index)d of %(num_image_sets)d" % locals()
     else:
         return "Image cycle:"
+
 
 def duration_label(duration):
     dur = int(round(duration))
@@ -30,14 +32,13 @@ def duration_label(duration):
     minutes = rest // 60
     rest = rest % 60
     seconds = rest
-    s = "%d h "%(hours,) if hours > 0 else ""
-    s += "%d min "%(minutes,) if hours > 0 or minutes > 0 else ""
-    s += "%d s"%(seconds,)
+    s = "%d h " % (hours,) if hours > 0 else ""
+    s += "%d min " % (minutes,) if hours > 0 or minutes > 0 else ""
+    s += "%d s" % (seconds,)
     return s
 
 
 class ProgressFrame(wx.Frame):
-
     def __init__(self, *args, **kwds):
         if sys.platform.startswith("win"):
             kwds["style"] = wx.DEFAULT_FRAME_STYLE | wx.STAY_ON_TOP
@@ -62,7 +63,7 @@ class ProgressFrame(wx.Frame):
         self.BackgroundColour = cellprofiler.preferences.get_background_color()
         self.tbicon = wx.TaskBarIcon()
         self.tbicon.SetIcon(get_cp_icon(), "CellProfiler2.0")
-        self.SetTitle("CellProfiler %s"%(version.title_string))
+        self.SetTitle("CellProfiler %s" % version.title_string)
         self.SetSize((640, 480))
         self.panel = wx.Panel(self, wx.ID_ANY)
         sizer = wx.BoxSizer(wx.VERTICAL)
@@ -94,8 +95,8 @@ class ProgressFrame(wx.Frame):
         buttons_sizer.Add(self.stop_button, 0, wx.ALL, 5)
         save_bitmap = wx.ArtProvider.GetBitmap(wx.ART_FILE_SAVE,
                                                wx.ART_CMN_DIALOG,
-                                               (16,16))
-        self.save_button = wx.BitmapButton(self.panel, -1, bitmap = save_bitmap)
+                                               (16, 16))
+        self.save_button = wx.BitmapButton(self.panel, -1, bitmap=save_bitmap)
         self.save_button.SetToolTipString("Save measurements")
         buttons_sizer.Add(self.save_button, 0, wx.ALL, 5)
         sizer.Add(buttons_sizer, 0, wx.CENTER)
@@ -127,14 +128,14 @@ class ProgressFrame(wx.Frame):
 
     def pause(self):
         self.play_pause_button.SetBitmapLabel(
-            wx.BitmapFromImage(get_builtin_image('play')))
+                wx.BitmapFromImage(get_builtin_image('play')))
         self.play_pause_button.SetToolTipString("Resume")
         self.pause_start_time = time.time()
         self.paused = True
 
     def play(self):
         self.play_pause_button.SetBitmapLabel(
-            wx.BitmapFromImage(get_builtin_image('pause')))
+                wx.BitmapFromImage(get_builtin_image('pause')))
         self.play_pause_button.SetToolTipString("Pause")
         self.previous_pauses_duration += time.time() - self.pause_start_time
         self.pause_start_time = None
@@ -189,22 +190,22 @@ class ProgressFrame(wx.Frame):
         """Return our best estimate of the remaining duration, or None
         if we have no bases for guessing."""
         if self.end_times is None:
-            return None # We have not started the first module yet
+            return None  # We have not started the first module yet
         else:
             module_index = self.current_module.module_num - 1
             index = self.image_set_index * self.num_modules + module_index
             durations = (self.end_times[1:] - self.end_times[:-1]).reshape(self.num_image_sets, self.num_modules)
             per_module_estimates = np.zeros(self.num_modules)
-            per_module_estimates[:module_index] = np.median(durations[:self.image_set_index+1,:module_index], 0)
+            per_module_estimates[:module_index] = np.median(durations[:self.image_set_index + 1, :module_index], 0)
             current_module_so_far = self.adjusted_time() - self.end_times[1 + index - 1]
             if self.image_set_index > 0:
-                per_module_estimates[module_index:] = np.median(durations[:self.image_set_index,module_index:], 0)
+                per_module_estimates[module_index:] = np.median(durations[:self.image_set_index, module_index:], 0)
                 per_module_estimates[module_index] = max(per_module_estimates[module_index], current_module_so_far)
             else:
                 # Guess that the modules that haven't finished yet are
                 # as slow as the slowest one we've seen so far.
                 per_module_estimates[module_index] = current_module_so_far
-                per_module_estimates[module_index:] = per_module_estimates[:module_index+1].max()
+                per_module_estimates[module_index:] = per_module_estimates[:module_index + 1].max()
             if False:
                 print "current_module_so_far =", current_module_so_far, "; adjusted_time =", self.adjusted_time(), "; end_times =", self.end_times
                 print "durations:"

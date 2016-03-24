@@ -78,11 +78,11 @@ F_UPPER_QUARTILE = 'Intensity_UpperQuartileIntensity_%s'
 F_LOWER_QUARTILE = 'Intensity_LowerQuartileIntensity_%s'
 
 ALL_MEASUREMENTS = ["TotalIntensity", "MeanIntensity", "StdIntensity", "MADIntensity", "MedianIntensity",
-                    "MinIntensity",  "MaxIntensity", "TotalArea", "PercentMaximal",
-                    "LowerQuartileIntensity","UpperQuartileIntensity"]
+                    "MinIntensity", "MaxIntensity", "TotalArea", "PercentMaximal",
+                    "LowerQuartileIntensity", "UpperQuartileIntensity"]
+
 
 class MeasureImageIntensity(cpm.CPModule):
-
     module_name = 'MeasureImageIntensity'
     category = "Measurement"
     variable_revision_number = 2
@@ -91,31 +91,31 @@ class MeasureImageIntensity(cpm.CPModule):
         '''Create the settings & name the module'''
         self.divider_top = cps.Divider(line=False)
         self.images = []
-        self.add_image_measurement(can_remove = False)
+        self.add_image_measurement(can_remove=False)
         self.add_button = cps.DoSomething("", "Add another image",
                                           self.add_image_measurement)
         self.divider_bottom = cps.Divider(line=False)
 
-    def add_image_measurement(self, can_remove = True):
+    def add_image_measurement(self, can_remove=True):
         group = cps.SettingsGroup()
         if can_remove:
             group.append("divider", cps.Divider())
 
         group.append("image_name", cps.ImageNameSubscriber(
-            "Select the image to measure",
-            cps.NONE, doc = '''
+                "Select the image to measure",
+                cps.NONE, doc='''
             Choose an image name from the drop-down menu to calculate intensity for that
             image. Use the <i>Add another image</i> button below to add additional images which will be
             measured. You can add the same image multiple times if you want to measure
             the intensity within several different objects.'''))
 
         group.append("wants_objects", cps.Binary(
-            "Measure the intensity only from areas enclosed by objects?",
-            False, doc = """
-            Select <i>%(YES)s</i> to measure only those pixels within an object of choice."""%globals()))
+                "Measure the intensity only from areas enclosed by objects?",
+                False, doc="""
+            Select <i>%(YES)s</i> to measure only those pixels within an object of choice.""" % globals()))
 
-        group.append("object_name",cps.ObjectNameSubscriber(
-            "Select the input objects",cps.NONE, doc = '''
+        group.append("object_name", cps.ObjectNameSubscriber(
+                "Select the input objects", cps.NONE, doc='''
             <i>(Used only when measuring intensity from area enclosed by objects)</i><br>
             Select the objects that the intensity will be aggregated within. The intensity measurement will be
             restricted to the pixels within these objects.'''))
@@ -132,12 +132,12 @@ class MeasureImageIntensity(cpm.CPModule):
             if (group.image_name.value, group.wants_objects.value, group.object_name.value) in settings:
                 if not group.wants_objects.value:
                     raise cps.ValidationError(
-                        "%s has already been selected" %group.image_name.value,
-                        group.image_name)
+                            "%s has already been selected" % group.image_name.value,
+                            group.image_name)
                 else:
                     raise cps.ValidationError(
-                        "%s has already been selected with %s" %(group.object_name.value, group.image_name.value),
-                        group.object_name)
+                            "%s has already been selected with %s" % (group.object_name.value, group.image_name.value),
+                            group.object_name)
             settings[(group.image_name.value, group.wants_objects.value, group.object_name.value)] = True
 
     def settings(self):
@@ -178,7 +178,7 @@ class MeasureImageIntensity(cpm.CPModule):
         #
         # Then measure each
         #
-        col_labels = ["Image","Masking object","Feature","Value"]
+        col_labels = ["Image", "Masking object", "Feature", "Value"]
         statistics = []
         for im in self.get_non_redundant_image_measurements():
             statistics += self.measure(im, workspace)
@@ -189,7 +189,7 @@ class MeasureImageIntensity(cpm.CPModule):
         figure.set_subplots((1, 1))
         figure.subplot_table(0, 0,
                              workspace.display_data.statistics,
-                             col_labels = workspace.display_data.col_labels)
+                             col_labels=workspace.display_data.col_labels)
 
     def measure(self, im, workspace):
         '''Perform measurements according to the image measurement in im
@@ -213,7 +213,6 @@ class MeasureImageIntensity(cpm.CPModule):
         elif image.has_mask:
             pixels = pixels[image.mask]
 
-
         pixel_count = np.product(pixels.shape)
         if pixel_count == 0:
             pixel_sum = 0
@@ -228,11 +227,11 @@ class MeasureImageIntensity(cpm.CPModule):
             pixel_upper_qrt = 0
         else:
             pixels = pixels.flatten()
-            pixels = pixels[np.nonzero(np.isfinite(pixels))[0]] # Ignore NaNs, Infs
+            pixels = pixels[np.nonzero(np.isfinite(pixels))[0]]  # Ignore NaNs, Infs
             pixel_count = np.product(pixels.shape)
 
             pixel_sum = np.sum(pixels)
-            pixel_mean = pixel_sum/float(pixel_count)
+            pixel_mean = pixel_sum / float(pixel_count)
             pixel_std = np.std(pixels)
             pixel_median = np.median(pixels)
             pixel_mad = np.median(np.abs(pixels - pixel_median))
@@ -241,21 +240,21 @@ class MeasureImageIntensity(cpm.CPModule):
             pixel_pct_max = (100.0 * float(np.sum(pixels == pixel_max)) /
                              float(pixel_count))
             sorted_pixel_data = sorted(pixels)
-            pixel_lower_qrt = sorted_pixel_data[int(len(sorted_pixel_data)* 0.25)]
-            pixel_upper_qrt = sorted_pixel_data[int(len(sorted_pixel_data)* 0.75)]
+            pixel_lower_qrt = sorted_pixel_data[int(len(sorted_pixel_data) * 0.25)]
+            pixel_upper_qrt = sorted_pixel_data[int(len(sorted_pixel_data) * 0.75)]
 
         m = workspace.measurements
-        m.add_image_measurement(F_TOTAL_INTENSITY%(measurement_name), pixel_sum)
-        m.add_image_measurement(F_MEAN_INTENSITY%(measurement_name), pixel_mean)
-        m.add_image_measurement(F_MEDIAN_INTENSITY%(measurement_name), pixel_median)
-        m.add_image_measurement(F_STD_INTENSITY%(measurement_name), pixel_std)
-        m.add_image_measurement(F_MAD_INTENSITY%(measurement_name), pixel_mad)
-        m.add_image_measurement(F_MAX_INTENSITY%(measurement_name), pixel_max)
-        m.add_image_measurement(F_MIN_INTENSITY%(measurement_name), pixel_min)
-        m.add_image_measurement(F_TOTAL_AREA%(measurement_name), pixel_count)
-        m.add_image_measurement(F_PERCENT_MAXIMAL % (measurement_name), pixel_pct_max)
-        m.add_image_measurement(F_LOWER_QUARTILE % (measurement_name), pixel_lower_qrt)
-        m.add_image_measurement(F_UPPER_QUARTILE % (measurement_name), pixel_upper_qrt)
+        m.add_image_measurement(F_TOTAL_INTENSITY % measurement_name, pixel_sum)
+        m.add_image_measurement(F_MEAN_INTENSITY % measurement_name, pixel_mean)
+        m.add_image_measurement(F_MEDIAN_INTENSITY % measurement_name, pixel_median)
+        m.add_image_measurement(F_STD_INTENSITY % measurement_name, pixel_std)
+        m.add_image_measurement(F_MAD_INTENSITY % measurement_name, pixel_mad)
+        m.add_image_measurement(F_MAX_INTENSITY % measurement_name, pixel_max)
+        m.add_image_measurement(F_MIN_INTENSITY % measurement_name, pixel_min)
+        m.add_image_measurement(F_TOTAL_AREA % measurement_name, pixel_count)
+        m.add_image_measurement(F_PERCENT_MAXIMAL % measurement_name, pixel_pct_max)
+        m.add_image_measurement(F_LOWER_QUARTILE % measurement_name, pixel_lower_qrt)
+        m.add_image_measurement(F_UPPER_QUARTILE % measurement_name, pixel_upper_qrt)
         return [[im.image_name.value,
                  im.object_name.value if im.wants_objects.value else "",
                  feature_name, str(value)]
@@ -286,7 +285,8 @@ class MeasureImageIntensity(cpm.CPModule):
                                      (F_PERCENT_MAXIMAL, cpmeas.COLTYPE_FLOAT),
                                      (F_LOWER_QUARTILE, cpmeas.COLTYPE_FLOAT),
                                      (F_UPPER_QUARTILE, cpmeas.COLTYPE_FLOAT)):
-                measurement_name = im.image_name.value + (("_" + im.object_name.value) if im.wants_objects.value else "")
+                measurement_name = im.image_name.value + (
+                    ("_" + im.object_name.value) if im.wants_objects.value else "")
                 columns.append((cpmeas.IMAGE, feature % measurement_name, coltype))
         return columns
 
@@ -298,15 +298,15 @@ class MeasureImageIntensity(cpm.CPModule):
 
     def get_measurements(self, pipeline, object_name, category):
         if (object_name == cpmeas.IMAGE and
-            category == "Intensity"):
+                    category == "Intensity"):
             return ALL_MEASUREMENTS
         return []
 
     def get_measurement_images(self, pipeline, object_name,
                                category, measurement):
         if (object_name == cpmeas.IMAGE and
-            category == "Intensity" and
-            measurement in ALL_MEASUREMENTS):
+                    category == "Intensity" and
+                    measurement in ALL_MEASUREMENTS):
             result = []
             for im in self.images:
                 image_name = im.image_name.value
@@ -325,9 +325,9 @@ class MeasureImageIntensity(cpm.CPModule):
         because it was generally unused. The first setting is the image name.
         '''
         if from_matlab and variable_revision_number == 2:
-            setting_values = [setting_values[0], # image name
-                              cps.NO,            # wants objects
-                              cps.NONE ]           # object name
+            setting_values = [setting_values[0],  # image name
+                              cps.NO,  # wants objects
+                              cps.NONE]  # object name
             variable_revision_number = 1
             from_matlab = False
         if variable_revision_number == 1:

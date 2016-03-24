@@ -1,5 +1,7 @@
-import cellprofiler.icons 
-from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON, IMAGES_FILELIST_BLANK, IMAGES_FILELIST_FILLED
+import cellprofiler.icons
+from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON, IMAGES_FILELIST_BLANK, \
+    IMAGES_FILELIST_FILLED
+
 __doc__ = """
 The <b>Images</b> module specifies the location of image files to be analyzed by your pipeline.
 <hr>
@@ -83,7 +85,7 @@ further processing have been removed, whether manually or using filtering. This 
 collecting metadata (if desired) and when assembling the image sets in NamesAndTypes. The list can be
 filtered further in NamesAndTypes to specify, for example, that a subset of these images represents a
 particular wavelength.
-"""%globals()
+""" % globals()
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.pipeline as cpp
@@ -111,6 +113,7 @@ FILTER_CHOICE_ALL = [FILTER_CHOICE_NONE, FILTER_CHOICE_IMAGES,
 
 FILTER_DEFAULT = 'and (extension does isimage) (directory doesnot containregexp "[\\\\\\\\/]\\\\.")'
 
+
 class Images(cpm.CPModule):
     variable_revision_number = 2
     module_name = "Images"
@@ -123,7 +126,7 @@ class Images(cpm.CPModule):
     def create_settings(self):
         self.workspace = None
         module_explanation = [
-            "To begin creating your project, use the %s module to compile" %self.module_name,
+            "To begin creating your project, use the %s module to compile" % self.module_name,
             "a list of files and/or folders that you want to analyze. You can also specify a set of rules",
             "to include only the desired files in your selected folders."]
         self.set_notes([" ".join(module_explanation)])
@@ -134,8 +137,8 @@ class Images(cpm.CPModule):
                       ExtensionPredicate()]
 
         self.filter_choice = cps.Choice(
-            "Filter images?", FILTER_CHOICE_ALL, value=FILTER_CHOICE_IMAGES,
-            doc = """
+                "Filter images?", FILTER_CHOICE_ALL, value=FILTER_CHOICE_IMAGES,
+                doc="""
             The <b>Images</b> module will pass all the files specified in the file list
             panel downstream to have a meaningful name assigned to it (so other modules can
             access it) or optionally, to define the relationships between images and associated
@@ -156,15 +159,15 @@ class Images(cpm.CPModule):
             the files from the File list panel. This approach is useful if, for example, you
             drag-and-dropped a folder onto the File list panel which contains a mixture of images
             that you want to analyze and other files that you want to ignore.</li>
-            </ul></p>"""%globals())
+            </ul></p>""" % globals())
 
         self.filter = cps.Filter("Select the rule criteria", predicates,
-            FILTER_DEFAULT, doc = """
+                                 FILTER_DEFAULT, doc="""
             Specify a set of rules to narrow down the files to be analyzed.
-            <p>%(FILTER_RULES_BUTTONS_HELP)s</p>"""%globals())
+            <p>%(FILTER_RULES_BUTTONS_HELP)s</p>""" % globals())
 
         self.update_button = cps.PathListRefreshButton(
-            "", "Apply filters to the file list", doc = """
+                "", "Apply filters to the file list", doc="""
             <i>(Only displayed if filtering based on rules)</i><br>
             Re-display the file list, removing or graying out the files
             that do not pass the current filter.
@@ -179,7 +182,7 @@ class Images(cpm.CPModule):
                 return modpath[0] + ":" + modpath[1]
             else:
                 return modpath[0] + ":" + modpath[1] + "/" + "/".join(
-                    [urllib.quote(part) for part in modpath[2:]])
+                        [urllib.quote(part) for part in modpath[2:]])
         path = os.path.join(*modpath)
         return pathname2url(path)
 
@@ -251,9 +254,9 @@ class Images(cpm.CPModule):
             ifcls = J.class_for_name("org.cellprofiler.imageset.ImageFile")
             scls = env.find_class("java/lang/String")
             iffilter = J.make_instance(
-                "org/cellprofiler/imageset/filter/Filter",
-                "(Ljava/lang/String;Ljava/lang/Class;)V",
-                expression, ifcls)
+                    "org/cellprofiler/imageset/filter/Filter",
+                    "(Ljava/lang/String;Ljava/lang/Class;)V",
+                    expression, ifcls)
             file_array = env.make_object_array(len(file_list), scls)
             for i, url in enumerate(file_list):
                 if isinstance(url, unicode):
@@ -262,11 +265,11 @@ class Images(cpm.CPModule):
                     ourl = env.new_string_utf(url)
                 env.set_object_array_element(file_array, i, ourl)
             passes_filter = J.call(
-                iffilter, "filterURLs",
-                "([Ljava/lang/String;)[Z", file_array)
+                    iffilter, "filterURLs",
+                    "([Ljava/lang/String;)[Z", file_array)
             if isinstance(passes_filter, J.JB_Object):
                 passes_filter = J.get_env().get_boolean_array_elements(
-                    passes_filter)
+                        passes_filter)
             file_list = [f for f, passes in zip(file_list, passes_filter)
                          if passes]
         workspace.pipeline.set_filtered_file_list(file_list, self)
@@ -290,15 +293,17 @@ class Images(cpm.CPModule):
         if variable_revision_number == 1:
             # Changed from yes/no for filter to a choice
             filter_choice = \
-                FILTER_CHOICE_CUSTOM if setting_values[1] == cps.YES else\
-                FILTER_CHOICE_NONE
+                FILTER_CHOICE_CUSTOM if setting_values[1] == cps.YES else \
+                    FILTER_CHOICE_NONE
             setting_values = \
-                setting_values[:1] +[filter_choice] + setting_values[2:]
+                setting_values[:1] + [filter_choice] + setting_values[2:]
             variable_revision_number = 2
         return setting_values, variable_revision_number, from_matlab
 
+
 class DirectoryPredicate(cps.Filter.FilterPredicate):
     '''A predicate that only filters directories'''
+
     def __init__(self):
         subpredicates = (
             cps.Filter.CONTAINS_PREDICATE,
@@ -309,8 +314,8 @@ class DirectoryPredicate(cps.Filter.FilterPredicate):
         predicates = [cps.Filter.DoesPredicate(subpredicates),
                       cps.Filter.DoesNotPredicate(subpredicates)]
         cps.Filter.FilterPredicate.__init__(self,
-            'directory', "Directory", self.fn_filter,
-            predicates, doc = "Apply the rule to directories")
+                                            'directory', "Directory", self.fn_filter,
+                                            predicates, doc="Apply the rule to directories")
 
     def fn_filter(self, (node_type, modpath, module), *args):
         '''The DirectoryPredicate filter function
@@ -329,10 +334,12 @@ class DirectoryPredicate(cps.Filter.FilterPredicate):
 
     def test_valid(self, pipeline, *args):
         self((cps.FileCollectionDisplay.NODE_FILE,
-              ["/imaging","image.tif"], None), *args)
+              ["/imaging", "image.tif"], None), *args)
+
 
 class FilePredicate(cps.Filter.FilterPredicate):
     '''A predicate that only filters files'''
+
     def __init__(self):
         subpredicates = (
             cps.Filter.CONTAINS_PREDICATE,
@@ -343,8 +350,8 @@ class FilePredicate(cps.Filter.FilterPredicate):
         predicates = [cps.Filter.DoesPredicate(subpredicates),
                       cps.Filter.DoesNotPredicate(subpredicates)]
         cps.Filter.FilterPredicate.__init__(self,
-            'file', "File", self.fn_filter, predicates,
-            doc = "Apply the rule to files")
+                                            'file', "File", self.fn_filter, predicates,
+                                            doc="Apply the rule to files")
 
     def fn_filter(self, (node_type, modpath, module), *args):
         '''The FilePredicate filter function
@@ -367,39 +374,42 @@ class FilePredicate(cps.Filter.FilterPredicate):
         self((cps.FileCollectionDisplay.NODE_FILE,
               ["/imaging", "test.tif"], None), *args)
 
+
 def is_image_extension(suffix):
     '''Return True if the extension is one of those recongized by bioformats'''
     extensions = J.get_collection_wrapper(
-        J.static_call("org/cellprofiler/imageset/filter/IsImagePredicate",
-                      "getImageSuffixes", "()Ljava/util/Set;"))
+            J.static_call("org/cellprofiler/imageset/filter/IsImagePredicate",
+                          "getImageSuffixes", "()Ljava/util/Set;"))
     return extensions.contains(suffix.lower())
+
 
 class ExtensionPredicate(cps.Filter.FilterPredicate):
     '''A predicate that operates on file extensions'''
     IS_TIF_PREDICATE = cps.Filter.FilterPredicate(
-        "istif", '"tif", "tiff", "ome.tif" or "ome.tiff"',
-        lambda x: x.lower() in ("tif", "tiff", "ome.tif", "ome.tiff"), [],
-        doc="The extension is associated with TIFF image files")
+            "istif", '"tif", "tiff", "ome.tif" or "ome.tiff"',
+            lambda x: x.lower() in ("tif", "tiff", "ome.tif", "ome.tiff"), [],
+            doc="The extension is associated with TIFF image files")
     IS_JPEG_PREDICATE = cps.Filter.FilterPredicate(
-        "isjpeg", '"jpg" or "jpeg"',
-        lambda x: x.lower() in ("jpg", "jpeg"), [],
-        doc = "The extension is associated with JPEG image files")
+            "isjpeg", '"jpg" or "jpeg"',
+            lambda x: x.lower() in ("jpg", "jpeg"), [],
+            doc="The extension is associated with JPEG image files")
     IS_PNG_PREDICATE = cps.Filter.FilterPredicate(
-        "ispng", '"png"',
-        lambda x: x.lower() == "png", [],
-        doc = "The extension is associated with PNG image files")
+            "ispng", '"png"',
+            lambda x: x.lower() == "png", [],
+            doc="The extension is associated with PNG image files")
     IS_IMAGE_PREDICATE = cps.Filter.FilterPredicate(
-        'isimage', 'the extension of an image file',
-        is_image_extension, [],
-        'Is an extension commonly associated with image files')
+            'isimage', 'the extension of an image file',
+            is_image_extension, [],
+            'Is an extension commonly associated with image files')
     IS_FLEX_PREDICATE = cps.Filter.FilterPredicate(
-        'isflex', '"flex"',
-        lambda x: x.lower() == "flex", [],
-        doc = "The extension is associated with .flex files")
+            'isflex', '"flex"',
+            lambda x: x.lower() == "flex", [],
+            doc="The extension is associated with .flex files")
     IS_MOVIE_PREDICATE = cps.Filter.FilterPredicate(
-        "ismovie", '"mov" or "avi"',
-        lambda x: x.lower() in ("mov", "avi"), [],
-        doc = "The extension is associated with movie files")
+            "ismovie", '"mov" or "avi"',
+            lambda x: x.lower() in ("mov", "avi"), [],
+            doc="The extension is associated with movie files")
+
     def __init__(self):
         subpredicates = (
             self.IS_TIF_PREDICATE,
@@ -408,11 +418,11 @@ class ExtensionPredicate(cps.Filter.FilterPredicate):
             self.IS_IMAGE_PREDICATE,
             self.IS_FLEX_PREDICATE,
             self.IS_MOVIE_PREDICATE)
-        predicates = [ cps.Filter.DoesPredicate(subpredicates, "Is"),
-                       cps.Filter.DoesNotPredicate(subpredicates, "Is not")]
+        predicates = [cps.Filter.DoesPredicate(subpredicates, "Is"),
+                      cps.Filter.DoesNotPredicate(subpredicates, "Is not")]
         cps.Filter.FilterPredicate.__init__(self,
-            'extension', "Extension", self.fn_filter, predicates,
-            doc="The rule applies to the file extension")
+                                            'extension', "Extension", self.fn_filter, predicates,
+                                            doc="The rule applies to the file extension")
 
     def fn_filter(self, (node_type, modpath, module), *args):
         '''The ExtensionPredicate filter function
@@ -425,7 +435,7 @@ class ExtensionPredicate(cps.Filter.FilterPredicate):
         elif isinstance(modpath[-1], tuple) and len(modpath[-1]) == 3:
             filename = modpath[-2]
         else:
-                filename = modpath[-1]
+            filename = modpath[-1]
         exts = []
         while True:
             filename, ext = os.path.splitext(filename)
@@ -440,55 +450,56 @@ class ExtensionPredicate(cps.Filter.FilterPredicate):
         self((cps.FileCollectionDisplay.NODE_FILE,
               ["/imaging", "test.tif"], None), *args)
 
+
 class ImagePredicate(cps.Filter.FilterPredicate):
     '''A predicate that applies subpredicates to image plane details'''
     IS_COLOR_PREDICATE = cps.Filter.FilterPredicate(
-        "iscolor", "Color",
-        lambda x: (
-            x.metadata.has_key(cpp.ImagePlaneDetails.MD_COLOR_FORMAT) and
-            x.metadata[cpp.ImagePlaneDetails.MD_COLOR_FORMAT] ==
-            cpp.ImagePlaneDetails.MD_RGB), [],
-        doc = "The image is an interleaved color image (for example, a PNG image)")
+            "iscolor", "Color",
+            lambda x: (
+                x.metadata.has_key(cpp.ImagePlaneDetails.MD_COLOR_FORMAT) and
+                x.metadata[cpp.ImagePlaneDetails.MD_COLOR_FORMAT] ==
+                cpp.ImagePlaneDetails.MD_RGB), [],
+            doc="The image is an interleaved color image (for example, a PNG image)")
 
     IS_MONOCHROME_PREDICATE = cps.Filter.FilterPredicate(
-        "ismonochrome", "Monochrome",
-        lambda x: (
-            x.metadata.has_key(cpp.ImagePlaneDetails.MD_COLOR_FORMAT) and
-            x.metadata[cpp.ImagePlaneDetails.MD_COLOR_FORMAT] ==
-            cpp.ImagePlaneDetails.MD_MONOCHROME), [],
-        doc = "The image is monochrome")
+            "ismonochrome", "Monochrome",
+            lambda x: (
+                x.metadata.has_key(cpp.ImagePlaneDetails.MD_COLOR_FORMAT) and
+                x.metadata[cpp.ImagePlaneDetails.MD_COLOR_FORMAT] ==
+                cpp.ImagePlaneDetails.MD_MONOCHROME), [],
+            doc="The image is monochrome")
 
     @staticmethod
     def is_stack(x):
         if (x.metadata.has_key(cpp.ImagePlaneDetails.MD_SIZE_T) and
-              x.metadata[cpp.ImagePlaneDetails.MD_SIZE_T] > 1):
+                    x.metadata[cpp.ImagePlaneDetails.MD_SIZE_T] > 1):
             return True
         if (x.metadata.has_key(cpp.ImagePlaneDetails.MD_SIZE_Z) and
-            x.metadata[cpp.ImagePlaneDetails.MD_SIZE_Z] > 1):
+                    x.metadata[cpp.ImagePlaneDetails.MD_SIZE_Z] > 1):
             return True
         return False
 
     IS_STACK_PREDICATE = cps.Filter.FilterPredicate(
-        "isstack", "Stack", lambda x: ImagePredicate.is_stack(x), [],
-        doc = "The image is a Z-stack or movie")
+            "isstack", "Stack", lambda x: ImagePredicate.is_stack(x), [],
+            doc="The image is a Z-stack or movie")
 
     IS_STACK_FRAME_PREDICATE = cps.Filter.FilterPredicate(
-        "isstackframe", "Stack frame", lambda x: x.index is not None, [],
-        doc = "The image is a frame of a movie or a plane of a Z-stack")
+            "isstackframe", "Stack frame", lambda x: x.index is not None, [],
+            doc="The image is a frame of a movie or a plane of a Z-stack")
 
     def __init__(self):
-        subpredicates = ( self.IS_COLOR_PREDICATE,
-                          self.IS_MONOCHROME_PREDICATE,
-                          self.IS_STACK_PREDICATE,
-                          self.IS_STACK_FRAME_PREDICATE)
-        predicates = [ pred_class(subpredicates, text)
-                       for pred_class, text in (
-                           (cps.Filter.DoesPredicate, "Is"),
-                           (cps.Filter.DoesNotPredicate, "Is not"))]
+        subpredicates = (self.IS_COLOR_PREDICATE,
+                         self.IS_MONOCHROME_PREDICATE,
+                         self.IS_STACK_PREDICATE,
+                         self.IS_STACK_FRAME_PREDICATE)
+        predicates = [pred_class(subpredicates, text)
+                      for pred_class, text in (
+                          (cps.Filter.DoesPredicate, "Is"),
+                          (cps.Filter.DoesNotPredicate, "Is not"))]
         cps.Filter.FilterPredicate.__init__(self,
-            'image', "Image", self.fn_filter,
-            predicates,
-            doc = "Filter based on image characteristics")
+                                            'image', "Image", self.fn_filter,
+                                            predicates,
+                                            doc="Filter based on image characteristics")
 
     def fn_filter(self, (node_type, modpath, module), *args):
         if node_type == cps.FileCollectionDisplay.NODE_DIRECTORY:
@@ -500,6 +511,7 @@ class ImagePredicate(cps.Filter.FilterPredicate):
 
     class FakeModule(cpm.CPModule):
         '''A fake module for setting validation'''
+
         def get_image_plane_details(self, modpath):
             url = Images.modpath_to_url(modpath)
             return cpp.ImagePlaneDetails(url, None, None, None)

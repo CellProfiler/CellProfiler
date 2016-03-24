@@ -29,8 +29,10 @@ Groups:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:1|show_win
 
 """
         pipeline = cpp.Pipeline()
+
         def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
@@ -55,8 +57,10 @@ Groups:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
 
 """
         pipeline = cpp.Pipeline()
+
         def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
@@ -66,7 +70,6 @@ Groups:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
         self.assertEqual(module.grouping_metadata_count.value, 1)
         g0 = module.grouping_metadata[0]
         self.assertEqual(g0.metadata_choice, "Plate")
-
 
     def make_image_sets(self, key_metadata, channel_metadata):
         '''Make image sets by permuting key and channel metadata
@@ -86,7 +89,7 @@ Groups:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
                  in channel_metadata]
         image_set_key_names = [key for key, values in key_metadata]
 
-        slices = tuple([slice(0,len(values)) for key, values in key_metadata])
+        slices = tuple([slice(0, len(values)) for key, values in key_metadata])
         ijkl = np.mgrid[slices]
         ijkl = ijkl.reshape(ijkl.shape[0], np.prod(ijkl.shape[1:]))
         image_set_values = [values for key, values in key_metadata]
@@ -107,11 +110,11 @@ Groups:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
             image_set = []
             image_sets.append(image_set)
             for _, channel_metadata_key, channel_metadata_value, _ in channel_metadata:
-                file_name = "_".join(list(k) + [channel_metadata_value])+".tif"
+                file_name = "_".join(list(k) + [channel_metadata_value]) + ".tif"
                 metadata = dict([
-                    (kn, kv) for kn, kv in
-                    zip(image_set_key_names + [channel_metadata_key],
-                        list(k) + [channel_metadata_value])])
+                                    (kn, kv) for kn, kv in
+                                    zip(image_set_key_names + [channel_metadata_key],
+                                        list(k) + [channel_metadata_value])])
                 image_set.append((file_name, metadata))
         #
         # Scramble the image sets
@@ -125,12 +128,12 @@ Groups:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
                              for k in image_set_key_names])
         m.set_channel_descriptors(iscds)
         for i, ipds in enumerate(image_sets):
-            image_number = i+1
+            image_number = i + 1
             for (file_name, metadata), iscd in zip(ipds, iscds):
                 for feature, value in (
-                    (cpmeas.C_FILE_NAME, file_name),
-                    (cpmeas.C_PATH_NAME, os.pathsep + "images"),
-                    (cpmeas.C_URL, "file://images/" + file_name)):
+                        (cpmeas.C_FILE_NAME, file_name),
+                        (cpmeas.C_PATH_NAME, os.pathsep + "images"),
+                        (cpmeas.C_URL, "file://images/" + file_name)):
                     m[cpmeas.IMAGE, feature + "_" + iscd.name, image_number] = value
                 for key, value in metadata.iteritems():
                     feature = "_".join((cpmeas.C_METADATA, key))
@@ -143,14 +146,13 @@ Groups:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
         workspace = cpw.Workspace(pipeline, module, m, None, m, None)
         return module, workspace
 
-
     def test_02_00_compute_no_groups(self):
         groups, workspace = self.make_image_sets(
-            (("Plate", ("P-12345", "P-23456")),
-             ("Well", ("A01", "A02", "A03")),
-             ("Site", ("1", "2", "3", "4"))),
-            (("DNA", "Wavelength", "1", cpp.Pipeline.ImageSetChannelDescriptor.CT_GRAYSCALE),
-             ("GFP", "Wavelength", "1", cpp.Pipeline.ImageSetChannelDescriptor.CT_GRAYSCALE)))
+                (("Plate", ("P-12345", "P-23456")),
+                 ("Well", ("A01", "A02", "A03")),
+                 ("Site", ("1", "2", "3", "4"))),
+                (("DNA", "Wavelength", "1", cpp.Pipeline.ImageSetChannelDescriptor.CT_GRAYSCALE),
+                 ("GFP", "Wavelength", "1", cpp.Pipeline.ImageSetChannelDescriptor.CT_GRAYSCALE)))
         groups = G.Groups()
         groups.wants_groups.value = False
         m = workspace.measurements
@@ -166,11 +168,11 @@ Groups:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
     def test_02_01_group_on_one(self):
         groups = G.Groups()
         groups, workspace = self.make_image_sets(
-            (("Plate", ("P-12345", "P-23456")),
-             ("Well", ("A01", "A02", "A03")),
-             ("Site", ("1", "2", "3", "4"))),
-            (("DNA", "Wavelength", "1", cpp.Pipeline.ImageSetChannelDescriptor.CT_GRAYSCALE),
-             ("GFP", "Wavelength", "1", cpp.Pipeline.ImageSetChannelDescriptor.CT_GRAYSCALE)))
+                (("Plate", ("P-12345", "P-23456")),
+                 ("Well", ("A01", "A02", "A03")),
+                 ("Site", ("1", "2", "3", "4"))),
+                (("DNA", "Wavelength", "1", cpp.Pipeline.ImageSetChannelDescriptor.CT_GRAYSCALE),
+                 ("GFP", "Wavelength", "1", cpp.Pipeline.ImageSetChannelDescriptor.CT_GRAYSCALE)))
         groups.wants_groups.value = True
         groups.grouping_metadata[0].metadata_choice.value = "Plate"
         groups.prepare_run(workspace)
@@ -179,11 +181,11 @@ Groups:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
         image_numbers = m.get_image_numbers()
         self.assertEqual(len(image_numbers), 24)
         np.testing.assert_array_equal(
-            np.hstack([np.ones(12, int), np.ones(12, int) * 2]),
-            m[cpmeas.IMAGE, cpmeas.GROUP_NUMBER, image_numbers])
+                np.hstack([np.ones(12, int), np.ones(12, int) * 2]),
+                m[cpmeas.IMAGE, cpmeas.GROUP_NUMBER, image_numbers])
         np.testing.assert_array_equal(
-            np.hstack([np.arange(1,13)] * 2),
-            m[cpmeas.IMAGE, cpmeas.GROUP_INDEX, image_numbers])
+                np.hstack([np.arange(1, 13)] * 2),
+                m[cpmeas.IMAGE, cpmeas.GROUP_INDEX, image_numbers])
 
         pipeline = workspace.pipeline
         assert isinstance(pipeline, cpp.Pipeline)
@@ -193,26 +195,26 @@ Groups:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
         self.assertEqual(len(groupings), 2)
 
         for group_number, plate, (grouping, image_set_list) in zip(
-            (1, 2), ("P-12345",  "P-23456"), groupings):
+                (1, 2), ("P-12345", "P-23456"), groupings):
             self.assertDictEqual(grouping, dict(Metadata_Plate=plate))
             self.assertEqual(len(image_set_list), 3 * 4)
             self.assertSequenceEqual(list(image_set_list),
-                                     range((group_number -1) * 12 + 1,
+                                     range((group_number - 1) * 12 + 1,
                                            group_number * 12 + 1))
-            for image_number in range(1 + (group_number-1) * 12,
+            for image_number in range(1 + (group_number - 1) * 12,
                                       1 + group_number * 12):
                 for image_name in ("DNA", "GFP"):
                     ftr = "_".join((cpmeas.C_FILE_NAME, image_name))
                     self.assertTrue(
-                        m[cpmeas.IMAGE, ftr, image_number].startswith(plate))
+                            m[cpmeas.IMAGE, ftr, image_number].startswith(plate))
 
     def test_02_01_group_on_two(self):
         groups, workspace = self.make_image_sets(
-            (("Plate", ("P-12345", "P-23456")),
-             ("Well", ("A01", "A02", "A03")),
-             ("Site", ("1", "2", "3", "4"))),
-            (("DNA", "Wavelength", "1", cpp.Pipeline.ImageSetChannelDescriptor.CT_GRAYSCALE),
-             ("GFP", "Wavelength", "1", cpp.Pipeline.ImageSetChannelDescriptor.CT_GRAYSCALE)))
+                (("Plate", ("P-12345", "P-23456")),
+                 ("Well", ("A01", "A02", "A03")),
+                 ("Site", ("1", "2", "3", "4"))),
+                (("DNA", "Wavelength", "1", cpp.Pipeline.ImageSetChannelDescriptor.CT_GRAYSCALE),
+                 ("GFP", "Wavelength", "1", cpp.Pipeline.ImageSetChannelDescriptor.CT_GRAYSCALE)))
         groups.wants_groups.value = True
         groups.grouping_metadata[0].metadata_choice.value = "Plate"
         groups.add_grouping_metadata()
@@ -230,7 +232,7 @@ Groups:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
         self.assertEqual(key_list[1], "Metadata_Site")
         self.assertEqual(len(groupings), 8)
 
-        idx = 0;
+        idx = 0
         for plate in ("P-12345", "P-23456"):
             for site in ("1", "2", "3", "4"):
                 grouping, image_set_list = groupings[idx]
@@ -260,7 +262,7 @@ Groups:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
         #
         groups = G.Groups()
         groups.wants_groups.value = True
-        choices = [ "Plate", "Well", "Site"]
+        choices = ["Plate", "Well", "Site"]
         for i, choice in enumerate(choices):
             if i > 0:
                 groups.add_grouping_metadata()

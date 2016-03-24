@@ -7,6 +7,7 @@ MESSAGE = "This package is deprecated, please use centrosome"
 
 warnings.warn(MESSAGE, DeprecationWarning)
 
+
 def bind(module):
     k = module.rsplit(".")[-1]
     module = sys.modules[module]

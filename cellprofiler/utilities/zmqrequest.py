@@ -1,5 +1,6 @@
 import errno
 import logging
+
 logger = logging.getLogger(__name__)
 import json
 import os
@@ -14,9 +15,12 @@ import cellprofiler.cpgridinfo as cpg
 
 NOTIFY_SOCKET_ADDR = 'inproc://BoundaryNotifications'
 SD_KEY_DICT = "__keydict__"
+
+
 def make_CP_encoder(buffers):
     '''create an encoder for CellProfiler data and numpy arrays (which will be
     stored in the input argument)'''
+
     def encoder(data, buffers=buffers):
         if isinstance(data, np.ndarray):
             #
@@ -27,10 +31,10 @@ def make_CP_encoder(buffers):
             # is wider than a 32-bit pointer
             #
             info32 = np.iinfo(np.int32)
-            if data.dtype.kind == "i" and data.dtype.itemsize > 4 or\
-               data.dtype.kind == "u" and data.dtype.itemsize >= 4:
+            if data.dtype.kind == "i" and data.dtype.itemsize > 4 or \
+                                    data.dtype.kind == "u" and data.dtype.itemsize >= 4:
                 if np.prod(data.shape) == 0 or \
-                   (np.min(data) >= info32.min and np.max(data) <= info32.max):
+                        (np.min(data) >= info32.min and np.max(data) <= info32.max):
                     data = data.astype(np.int32)
             idx = len(buffers)
             buffers.append(np.ascontiguousarray(data))
@@ -53,7 +57,9 @@ def make_CP_encoder(buffers):
             return {'__buffer__': True,
                     'idx': idx}
         raise TypeError("%r of type %r is not JSON serializable" % (data, type(data)))
+
     return encoder
+
 
 def make_CP_decoder(buffers):
     def decoder(dct, buffers=buffers):
@@ -71,7 +77,9 @@ def make_CP_decoder(buffers):
             grid.deserialize(dct)
             return grid
         return dct
+
     return decoder
+
 
 def make_sendable_dictionary(d):
     '''Make a dictionary that passes muster with JSON'''
@@ -95,6 +103,7 @@ def make_sendable_dictionary(d):
             result[k] = v
     return result
 
+
 def make_sendable_sequence(l):
     '''Make a list that passes muster with JSON'''
     result = []
@@ -106,6 +115,7 @@ def make_sendable_sequence(l):
         else:
             result.append(v)
     return tuple(result)
+
 
 def decode_sendable_dictionary(d):
     '''Decode the dictionary encoded by make_sendable_dictionary'''
@@ -124,6 +134,7 @@ def decode_sendable_dictionary(d):
         result[k] = v
     return result
 
+
 def decode_sendable_sequence(l, desired_type):
     '''Decode a tuple encoded by make_sendable_sequence'''
     result = []
@@ -135,6 +146,7 @@ def decode_sendable_sequence(l, desired_type):
         else:
             result.append(v)
     return result if isinstance(result, desired_type) else desired_type(result)
+
 
 def json_encode(o):
     '''Encode an object as a JSON string
@@ -151,6 +163,7 @@ def json_encode(o):
     json_str = json.dumps(sendable_dict, default=encoder)
     return json_str, buffers
 
+
 def json_decode(json_str, buffers):
     '''Decode a JSON-encoded string
 
@@ -164,12 +177,14 @@ def json_decode(json_str, buffers):
     attribute_dict = json.loads(json_str, object_hook=decoder)
     return decode_sendable_dictionary(attribute_dict)
 
+
 class Communicable(object):
     '''Base class for Requests and Replies.
 
     All subclasses must accept keyword arguments to __init__() corresponding to
     their attributes.
     '''
+
     def send(self, socket, routing=[]):
         if hasattr(self, '_remote'):
             assert not self._remote, "send() called on a non-local Communicable object."
@@ -198,7 +213,8 @@ class Communicable(object):
         try:
             instance = sys.modules[module].__dict__[classname](**attribute_dict)
         except:
-            print "Communicable could not instantiate %s from module %s with kwargs %s" % (module, classname, attribute_dict)
+            print "Communicable could not instantiate %s from module %s with kwargs %s" % (
+                module, classname, attribute_dict)
             raise
         instance._remote = True
         instance._routing = routing
@@ -217,7 +233,7 @@ class Communicable(object):
         self._replied = True
         if please_reply:
             raise NotImplementedError(
-                "Req / rep / rep / rep pattern is no longer supported")
+                    "Req / rep / rep / rep pattern is no longer supported")
 
 
 class Request(Communicable):
@@ -234,6 +250,7 @@ class Request(Communicable):
     All subclasses must accept keyword arguments to __init__() corresponding to
     their attributes.
     '''
+
     def __init__(self, **kwargs):
         # all keywords become attributes
         self.__dict__.update(kwargs)
@@ -271,6 +288,7 @@ class Request(Communicable):
         else:
             self._boundary.enqueue_reply(self, reply_obj)
 
+
 class AnalysisRequest(Request):
     '''A request associated with an analysis
 
@@ -278,18 +296,22 @@ class AnalysisRequest(Request):
     will reply with BoundaryExited if the analysis associated with the
     analysis ID has been cancelled.
     '''
+
     def __init__(self, analysis_id, **kwargs):
         Request.__init__(self, **kwargs)
         self.analysis_id = analysis_id
+
 
 class LockStatusRequest(Request):
     '''A request for the status on some locked file
 
     uid - the unique ID stored inside the file's lock
     '''
+
     def __init__(self, uid, **kwargs):
         self.uid = uid
         Request.__init__(self, **kwargs)
+
 
 class Reply(Communicable):
     '''The counterpart to a Request.
@@ -297,6 +319,7 @@ class Reply(Communicable):
     All subclasses must accept keyword arguments to __init__() corresponding to
     their attributes.
     '''
+
     def __init__(self, **kwargs):
         # all keywords become attributes
         self.__dict__.update(kwargs)
@@ -306,8 +329,10 @@ class Reply(Communicable):
 class UpstreamExit(Reply):
     pass
 
+
 class BoundaryExited(UpstreamExit):
     pass
+
 
 class LockStatusReply(Reply):
     '''A reply to the LockStatusRequest
@@ -315,12 +340,15 @@ class LockStatusReply(Reply):
     self.uid - the unique ID of the locked file
     self.locked - true if locked, false if not
     '''
+
     def __init__(self, uid, locked, **kwargs):
         Reply.__init__(self, **kwargs)
         self.uid = uid
         self.locked = locked
 
+
 the_boundary = None
+
 
 def start_boundary():
     global the_boundary
@@ -328,8 +356,10 @@ def start_boundary():
         the_boundary = Boundary("tcp://127.0.0.1")
     return the_boundary
 
+
 def get_announcer_address():
     return start_boundary().announce_address
+
 
 def register_analysis(analysis_id, upward_queue):
     '''Register for all analysis request messages with the given ID
@@ -347,6 +377,7 @@ def register_analysis(analysis_id, upward_queue):
     the_boundary.register_analysis(analysis_id, upward_queue)
     return the_boundary
 
+
 def cancel_analysis(analysis_id):
     '''Cancel an analysis.
 
@@ -360,12 +391,14 @@ def cancel_analysis(analysis_id):
     global the_boundary
     the_boundary.cancel_analysis(analysis_id)
 
+
 def join_to_the_boundary():
     '''Send a stop signal to the boundary thread and join to it'''
     global the_boundary
     if the_boundary is not None:
         the_boundary.join()
         the_boundary = None
+
 
 class AnalysisContext(object):
     '''The analysis context holds the pieces needed to route analysis requests'''
@@ -441,6 +474,7 @@ class AnalysisContext(object):
                 Communicable.reply(req, BoundaryExited())
             self.reqs_pending = set()
 
+
 class Boundary(object):
     '''This object serves as the interface between a ZMQ socket passing
     Requests and Replies, and a thread or threads serving those requests.
@@ -452,6 +486,7 @@ class Boundary(object):
     the socket thread poll for changes on the notify and request sockets, but
     allows it to receive Python objects via the downward queue.
     '''
+
     def __init__(self, zmq_address, port=None):
         '''Construction
 
@@ -513,10 +548,10 @@ class Boundary(object):
             fqdn, self.external_request_port)
 
         self.thread = threading.Thread(
-            target=self.spin,
-            args=(self.selfnotify_socket, self.request_socket,
-                  self.external_request_socket),
-            name="Boundary spin()")
+                target=self.spin,
+                args=(self.selfnotify_socket, self.request_socket,
+                      self.external_request_socket),
+                name="Boundary spin()")
         self.thread.start()
 
     '''Notify the socket thread that an analysis was added'''
@@ -539,8 +574,8 @@ class Boundary(object):
         '''
         with self.analysis_dictionary_lock:
             self.analysis_dictionary[analysis_id] = AnalysisContext(
-                analysis_id, upward_queue,
-                self.analysis_dictionary_lock)
+                    analysis_id, upward_queue,
+                    self.analysis_dictionary_lock)
         response_queue = Queue.Queue()
         self.send_to_boundary_thread(self.NOTIFY_REGISTER_ANALYSIS,
                                      (analysis_id, response_queue))
@@ -562,7 +597,7 @@ class Boundary(object):
         req - original request
         rep - the reply to the request
         '''
-        self.send_to_boundary_thread(self.NOTIFY_REPLY_READY,(req, rep))
+        self.send_to_boundary_thread(self.NOTIFY_REPLY_READY, (req, rep))
 
     def cancel(self, analysis_id):
         '''Cancel an analysis
@@ -622,7 +657,7 @@ class Boundary(object):
                         elif notification == self.NOTIFY_REGISTER_ANALYSIS:
                             analysis_id, response_queue = arg
                             self.handle_register_analysis(
-                                analysis_id, response_queue)
+                                    analysis_id, response_queue)
                         elif notification == self.NOTIFY_STOP:
                             received_stop = True
                 except Queue.Empty:
@@ -635,7 +670,7 @@ class Boundary(object):
                         # Discard the actual contents
                         _ = selfnotify_socket.recv()
                     if (s not in (request_socket, external_request_socket) or
-                        state != zmq.POLLIN):
+                                state != zmq.POLLIN):
                         continue
                     req = Communicable.recv(s, routed=True)
                     req.set_boundary(self)
@@ -647,8 +682,8 @@ class Boundary(object):
                                 break
                         else:
                             logger.warn(
-                                "Received a request that wasn't an AnalysisRequest: %s"%
-                                str(type(req)))
+                                    "Received a request that wasn't an AnalysisRequest: %s" %
+                                    str(type(req)))
                             req.reply(BoundaryExited())
                         continue
                     if s != request_socket:
@@ -686,7 +721,7 @@ class Boundary(object):
                     #
                     response_queue = Queue.Queue()
                     request_class_queue.put(
-                        [self, self.NOTIFY_STOP, response_queue])
+                            [self, self.NOTIFY_STOP, response_queue])
                     thread = response_queue.get()
                     if isinstance(thread, threading.Thread):
                         thread.join()
@@ -729,8 +764,8 @@ class Boundary(object):
                 analysis_id for analysis_id in self.analysis_dictionary.keys()
                 if not self.analysis_dictionary[analysis_id].cancelled]
         self.announce_socket.send_json([
-            (analysis_id, self.request_address)
-            for analysis_id in valid_analysis_ids])
+                                           (analysis_id, self.request_address)
+                                           for analysis_id in valid_analysis_ids])
 
     def handle_reply(self, req, rep):
         if not isinstance(req, AnalysisRequest):
@@ -753,6 +788,7 @@ class Boundary(object):
         self.announce_analyses()
         response_queue.put("OK")
 
+
 __lock_queue = Queue.Queue()
 __lock_thread = None
 
@@ -760,17 +796,19 @@ LOCK_REQUEST = "Lock request"
 UNLOCK_REQUEST = "Unlock request"
 UNLOCK_OK = "OK"
 
+
 def start_lock_thread():
     '''Start the thread that handles file locking'''
     global __lock_thread
     if __lock_thread is not None:
         return
     the_boundary.register_request_class(LockStatusRequest, __lock_queue)
+
     def lock_thread_fn():
         global __lock_thread
         locked_uids = {}
         locked_files = {}
-        while(True):
+        while True:
             msg = __lock_queue.get()
             boundary = msg[0]
             if msg[1] == Boundary.NOTIFY_STOP:
@@ -801,14 +839,17 @@ def start_lock_thread():
                     msg[3].put(e)
         __lock_thread = None
         logger.info("Exiting the lock thread")
-    __lock_thread = threading.Thread(target = lock_thread_fn)
+
+    __lock_thread = threading.Thread(target=lock_thread_fn)
     __lock_thread.setName("FileLockThread")
     __lock_thread.start()
+
 
 def get_lock_path(path):
     '''Return the path to the lockfile'''
     pathpart, filepart = os.path.split(path)
     return os.path.join(pathpart, u"." + filepart + u".lock")
+
 
 def lock_file(path, timeout=3):
     '''Lock a file
@@ -825,7 +866,7 @@ def lock_file(path, timeout=3):
     try:
         fd = os.open(lock_path, os.O_CREAT | os.O_EXCL | os.O_RDWR)
         with os.fdopen(fd, "a") as f:
-            f.write(the_boundary.external_request_address+"\n"+uid)
+            f.write(the_boundary.external_request_address + "\n" + uid)
     except OSError as e:
         if e.errno != errno.EEXIST:
             raise
@@ -845,7 +886,7 @@ def lock_file(path, timeout=3):
             poller = zmq.Poller()
             poller.register(request_socket, zmq.POLLIN)
             keep_polling = True
-            while(keep_polling):
+            while keep_polling:
                 keep_polling = False
                 for socket, status in poller.poll(timeout * 1000):
                     keep_polling = True
@@ -869,7 +910,7 @@ def lock_file(path, timeout=3):
             attrs = get_file_attributes(lock_path)
             set_file_attributes(lock_path, attrs & ~ FILE_ATTRIBUTE_HIDDEN)
         with open(lock_path, "w") as f:
-            f.write(the_boundary.request_address + "\n"+uid)
+            f.write(the_boundary.request_address + "\n" + uid)
         if sys.platform == "win32":
             attrs = get_file_attributes(lock_path)
             set_file_attributes(lock_path, attrs | FILE_ATTRIBUTE_HIDDEN)
@@ -881,6 +922,7 @@ def lock_file(path, timeout=3):
     __lock_queue.put((None, LOCK_REQUEST, (uid, path), q))
     q.get()
     return True
+
 
 def unlock_file(path):
     '''Unlock the file at the given path'''
@@ -895,23 +937,27 @@ def unlock_file(path):
     lock_path = get_lock_path(path)
     os.remove(lock_path)
 
+
 if __name__ == '__main__':
     context = zmq.Context()
+
 
     def subproc():
         address = sys.argv[sys.argv.index('subproc') + 1]
         mysock = context.socket(zmq.REQ)
         mysock.connect(address)
-        req = Request(this='is', a='test', b=5, c=1.3, d=np.arange(10), e=[{'q' : np.arange(5)}])
+        req = Request(this='is', a='test', b=5, c=1.3, d=np.arange(10), e=[{'q': np.arange(5)}])
         rep = req.send(mysock)
         print "subproc received", rep, rep.__dict__
         rep = rep.reply(Reply(msg='FOO'), please_reply=True)
         print "subproc received", rep, rep.__dict__
 
+
     if 'subproc' in sys.argv[1:]:
         subproc()
     else:
         import subprocess
+
         upq = Queue.Queue()
         cv = threading.Condition()
         boundary = Boundary('tcp://127.0.0.1', upq, cv)

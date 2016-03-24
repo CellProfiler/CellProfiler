@@ -3,6 +3,7 @@
 import wx
 from wx.lib.mixins.gridlabelrenderer import GridDefaultCornerLabelRenderer
 
+
 class CornerButtonMixin(object):
     '''A mixin class for wx.grid.Grid that adds a button in the corner
 
@@ -10,6 +11,7 @@ class CornerButtonMixin(object):
     It takes control of the grid's GridCornerLabelWindow, managing mouseclicks
     and painting to make it appear as if there is a button there
     '''
+
     def __init__(self, fn_clicked, label="Update", tooltip="Update this table"):
         '''Initialize the mixin - call after wx.grid.Grid.__init__
 
@@ -29,7 +31,6 @@ class CornerButtonMixin(object):
         corner.Bind(wx.EVT_MOUSE_CAPTURE_LOST, self.on_corner_capture_lost)
         self.corner_hitcode = self.CORNER_HIT_NONE
         self.corner_button_pressed = False
-
 
     #######
     #
@@ -80,7 +81,7 @@ class CornerButtonMixin(object):
                 if self.corner_hitcode == self.CORNER_HIT_UPDATE:
                     if self.corner_button_pressed:
                         flags = wx.CONTROL_PRESSED | wx.CONTROL_CURRENT \
-                            | wx.CONTROL_FOCUSED | wx.CONTROL_SELECTED
+                                | wx.CONTROL_FOCUSED | wx.CONTROL_SELECTED
                     else:
                         flags = 0
                 else:
@@ -125,13 +126,13 @@ class CornerButtonMixin(object):
                 corner.SetToolTipString(self.tooltip)
         else:
             was_pressed = self.corner_button_pressed
-            self.corner_button_pressed =  (
+            self.corner_button_pressed = (
                 self.corner_hitcode != self.CORNER_HIT_NONE and
                 self.corner_hitcode == hit_code)
             if was_pressed != self.corner_button_pressed:
                 corner.RefreshRect(
-                    self.get_corner_update_button_rect(),
-                    eraseBackground = False)
+                        self.get_corner_update_button_rect(),
+                        eraseBackground=False)
 
     def on_corner_capture_lost(self, event):
         self.corner_hitcode = self.CORNER_HIT_NONE

@@ -1,4 +1,5 @@
 from cellprofiler.gui.help import LOADING_IMAGE_SEQ_HELP_REF
+
 __doc__ = '''
 <b>Make Projection</b> combines several two-dimensional images of
 the same field of view together, either by performing a mathematical operation
@@ -26,7 +27,7 @@ output of this module is not complete until all image processing cycles have com
 the projection should be created with a dedicated pipeline.</p>
 
 See also the help for the <b>Input</b> modules.
-'''%globals()
+''' % globals()
 
 import numpy as np
 
@@ -47,19 +48,20 @@ P_ALL = [P_AVERAGE, P_MAXIMUM, P_MINIMUM, P_SUM, P_VARIANCE, P_POWER,
 
 K_PROVIDER = "Provider"
 
-class MakeProjection(cpm.CPModule):
 
+class MakeProjection(cpm.CPModule):
     module_name = 'MakeProjection'
     category = 'Image Processing'
     variable_revision_number = 2
+
     def create_settings(self):
         self.image_name = cps.ImageNameSubscriber(
-            'Select the input image',cps.NONE, doc = '''
+                'Select the input image', cps.NONE, doc='''
             Select the image to be made into a projection.''')
 
         self.projection_type = cps.Choice(
-            'Type of projection',
-            P_ALL, doc = '''
+                'Type of projection',
+                P_ALL, doc='''
             The final projection image can be created by the following methods:
             <ul>
             <li><i>%(P_AVERAGE)s:</i> Use the average pixel intensity at each pixel position.</li>
@@ -108,13 +110,13 @@ class MakeProjection(cpm.CPModule):
             </p>''' % globals())
 
         self.projection_image_name = cps.ImageNameProvider(
-            'Name the output image',
-            'ProjectionBlue', doc = '''
+                'Name the output image',
+                'ProjectionBlue', doc='''
             Enter the name for the projected image.''',
-            provided_attributes={cps.AGGREGATE_IMAGE_ATTRIBUTE: True,
-                                 cps.AVAILABLE_ON_LAST_ATTRIBUTE: True } )
+                provided_attributes={cps.AGGREGATE_IMAGE_ATTRIBUTE: True,
+                                     cps.AVAILABLE_ON_LAST_ATTRIBUTE: True})
         self.frequency = cps.Float(
-            "Frequency", 6.0, minval=1.0,doc = """
+                "Frequency", 6.0, minval=1.0, doc="""
             <i>(Used only if %(P_POWER)s is selected as the projection method)</i><br>
             This setting controls the frequency at which the power
             is measured. A frequency of 2 will respond most strongly to
@@ -147,7 +149,7 @@ class MakeProjection(cpm.CPModule):
         workspace.image_set.providers.append(provider)
         image = workspace.image_set.get_image(self.image_name.value)
         pixels = image.pixel_data
-        if (not provider.has_image):
+        if not provider.has_image:
             provider.set_image(image)
         else:
             provider.accumulate_image(image)
@@ -181,13 +183,13 @@ class MakeProjection(cpm.CPModule):
                                   self.image_name.value)
             figure.subplot_imshow(1, 0, provider_pixels,
                                   self.projection_image_name.value,
-                                  sharexy = figure.subplot(0, 0))
+                                  sharexy=figure.subplot(0, 0))
         else:
             figure.subplot_imshow_bw(0, 0, pixels,
                                      self.image_name.value)
             figure.subplot_imshow_bw(1, 0, provider_pixels,
                                      self.projection_image_name.value,
-                                     sharexy = figure.subplot(0, 0))
+                                     sharexy=figure.subplot(0, 0))
 
     def upgrade_settings(self, setting_values,
                          variable_revision_number,
@@ -198,19 +200,20 @@ class MakeProjection(cpm.CPModule):
             module_name = self.module_name
             variable_revision_number = 1
         if (from_matlab and module_name == 'MakeProjection' and
-            variable_revision_number == 3):
+                    variable_revision_number == 3):
             setting_values = setting_values[:3]
             from_matlab = False
             variable_revision_number = 1
         if (not from_matlab) and variable_revision_number == 1:
             # Added frequency
-            setting_values = setting_values + [ "6" ]
+            setting_values = setting_values + ["6"]
         return setting_values, variable_revision_number, from_matlab
 
 
 class ImageProvider(cpi.AbstractImageProvider):
     """Provide the image after averaging but before dilation and smoothing"""
-    def __init__(self, name, how_to_accumulate, frequency = 6):
+
+    def __init__(self, name, how_to_accumulate, frequency=6):
         """Construct using a parent provider that does the real work
 
         name - name of the image provided
@@ -364,8 +367,8 @@ class ImageProvider(cpi.AbstractImageProvider):
         if image.has_mask:
             self.__image_count += image.mask.astype(int)
         else:
-                self.__image_count += 1
-        if self.__how_to_accumulate in [P_AVERAGE,P_SUM]:
+            self.__image_count += 1
+        if self.__how_to_accumulate in [P_AVERAGE, P_SUM]:
             if image.has_mask:
                 self.__image[image.mask] += image.pixel_data[image.mask]
             else:
@@ -406,7 +409,7 @@ class ImageProvider(cpi.AbstractImageProvider):
         elif self.__how_to_accumulate == P_MASK:
             self.__image = self.__image & image.mask
         else:
-            raise NotImplementedError("No such accumulation method: %s"%
+            raise NotImplementedError("No such accumulation method: %s" %
                                       self.__how_to_accumulate)
 
     def provide_image(self, image_set):
@@ -430,7 +433,7 @@ class ImageProvider(cpi.AbstractImageProvider):
         elif self.__how_to_accumulate == P_VARIANCE:
             cached_image = np.zeros(self.__vsquared.shape, np.float32)
             cached_image[mask] = self.__vsquared[mask] / image_count[mask]
-            cached_image[mask] -= self.__vsum[mask]**2 / (image_count[mask] ** 2)
+            cached_image[mask] -= self.__vsum[mask] ** 2 / (image_count[mask] ** 2)
         elif self.__how_to_accumulate == P_POWER:
             cached_image = np.zeros(image_count.shape, np.complex128)
             cached_image[mask] = self.__power_image[mask]

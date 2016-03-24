@@ -5,6 +5,7 @@ results to the UI thread.
 '''
 
 import logging
+
 logger = logging.getLogger(__name__)
 import os
 import threading
@@ -19,12 +20,15 @@ THREAD_STOPPING = "Stopping"
 THREAD_PAUSE = "Pause"
 THREAD_RESUME = "Resume"
 
+
 class InterruptException(Exception):
     def __init__(self, *args):
         super(self.__class__, self).__init__(*args)
 
+
 class Checkpoint(object):
     '''A class that manages pausing and stopping'''
+
     def __init__(self):
         self.state = THREAD_RUNNING
 
@@ -42,6 +46,7 @@ class Checkpoint(object):
             while self.state == THREAD_PAUSE:
                 pause_condition.wait()
 
+
 #
 # Some file types won't open with BioFormats unless BioFormats is allowed
 # to look at the file contents while determining the appropriate file reader.
@@ -49,10 +54,11 @@ class Checkpoint(object):
 # the grouping option turned off. So here's the list of those that
 # absolutely need it.
 #
-exts_that_need_allow_open_files = ( ".jpg", ".jpeg", ".jpe",
-                                    ".jp2", ".j2k", ".jpf",
-                                    ".jpx", ".dic", ".dcm", ".dicom",
-                                    ".j2ki", ".j2kr", ".ome.tif", ".ome.tiff" )
+exts_that_need_allow_open_files = (".jpg", ".jpeg", ".jpe",
+                                   ".jp2", ".j2k", ".jpf",
+                                   ".jpx", ".dic", ".dcm", ".dicom",
+                                   ".j2ki", ".j2kr", ".ome.tif", ".ome.tiff")
+
 
 def get_metadata(path):
     import subimager.client as C
@@ -65,6 +71,7 @@ def get_metadata(path):
     if result is not None:
         return O.OMEXML(result)
     return None
+
 
 def walk_in_background(path, callback_fn, completed_fn=None, metadata_fn=None):
     '''Walk a directory tree in the background
@@ -127,12 +134,14 @@ def walk_in_background(path, callback_fn, completed_fn=None, metadata_fn=None):
             if completed_fn is not None:
                 import wx
                 wx.CallAfter(complete)
-    thread = threading.Thread(target = fn)
+
+    thread = threading.Thread(target=fn)
     thread.setDaemon(True)
     thread.start()
     return checkpoint.set_state
 
-def get_metadata_in_background(pathnames, fn_callback, fn_completed = None):
+
+def get_metadata_in_background(pathnames, fn_callback, fn_completed=None):
     '''Get image metadata for each path
 
     pathnames - list of pathnames
@@ -172,9 +181,11 @@ def get_metadata_in_background(pathnames, fn_callback, fn_completed = None):
         finally:
             if fn_completed is not None:
                 wx.CallAfter(completion_fn)
-    thread = threading.Thread(target = fn)
+
+    thread = threading.Thread(target=fn)
     thread.start()
     return checkpoint.set_state
+
 
 class WalkCollection(object):
     '''A collection of all walks in progress
@@ -182,6 +193,7 @@ class WalkCollection(object):
     This class manages a group of walks that are in progress so that they
     can be paused, resumed and stopped in unison.
     '''
+
     def __init__(self, fn_on_completed):
         self.fn_on_completed = fn_on_completed
         self.stop_functions = {}
@@ -195,29 +207,29 @@ class WalkCollection(object):
                 self.state = THREAD_STOP
                 self.fn_on_completed()
 
-    def walk_in_background(self, path, callback_fn, metadata_fn = None):
+    def walk_in_background(self, path, callback_fn, metadata_fn=None):
         if self.state == THREAD_PAUSE:
             self.paused_tasks.append(
-                lambda path, callback_fn, metadata_fn:
-                self.walk_in_background(path, callback_fn, metadata_fn))
+                    lambda path, callback_fn, metadata_fn:
+                    self.walk_in_background(path, callback_fn, metadata_fn))
         else:
             key = uuid.uuid4()
             fn_on_complete = lambda key=key: self.on_complete(key)
             self.stop_functions[key] = walk_in_background(
-                path, callback_fn, fn_on_complete, metadata_fn)
+                    path, callback_fn, fn_on_complete, metadata_fn)
             if self.state == THREAD_STOP:
                 self.state = THREAD_RUNNING
 
     def get_metadata_in_background(self, pathnames, fn_callback):
         if self.state == THREAD_PAUSE:
             self.paused_tasks.append(
-                lambda pathnames, fn_callback:
-                self.get_metadata_in_background(pathnames, fn_callback))
+                    lambda pathnames, fn_callback:
+                    self.get_metadata_in_background(pathnames, fn_callback))
         else:
             key = uuid.uuid4()
             fn_on_complete = lambda key=key: self.on_complete(key)
             self.stop_functions[key] = get_metadata_in_background(
-                pathnames, fn_callback, fn_on_complete)
+                    pathnames, fn_callback, fn_on_complete)
 
     def get_state(self):
         return self.state

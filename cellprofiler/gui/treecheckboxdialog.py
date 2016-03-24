@@ -3,6 +3,7 @@
 
 import wx
 
+
 class TreeCheckboxDialog(wx.Dialog):
     '''A dialog for "selecting" items on a tree by checking them'''
 
@@ -23,16 +24,16 @@ class TreeCheckboxDialog(wx.Dialog):
         self.SetSizer(sizer)
         tree_style = wx.TR_DEFAULT_STYLE
         self.tree_ctrl = wx.TreeCtrl(self,
-                                     style = tree_style)
+                                     style=tree_style)
         sizer.Add(self.tree_ctrl, 1, wx.EXPAND | wx.ALL, 5)
 
         image_list = wx.ImageList(16, 16)
         for i, state_flag in enumerate(
-            (0, wx.CONTROL_CHECKED, wx.CONTROL_UNDETERMINED)):
+                (0, wx.CONTROL_CHECKED, wx.CONTROL_UNDETERMINED)):
             for j, selection_flag in enumerate((0, wx.CONTROL_CURRENT)):
                 idx = image_list.Add(
-                    self.get_checkbox_bitmap(state_flag | selection_flag,
-                                             16, 16))
+                        self.get_checkbox_bitmap(state_flag | selection_flag,
+                                                 16, 16))
         self.tree_ctrl.SetImageList(image_list)
         self.image_list = image_list
         image_index, selected_image_index = self.img_idx(d)
@@ -56,9 +57,9 @@ class TreeCheckboxDialog(wx.Dialog):
         sizer.Add(table_sizer, 0, wx.EXPAND)
         table_sizer.Add(wx.StaticText(self, label='Key:'), (0, 0), flag=wx.LEFT | wx.RIGHT, border=3)
         for i, (bitmap, description) in enumerate((
-            (image_list.GetBitmap(0), "No subitems selected / not selected"),
-            (image_list.GetBitmap(2), "All subitems selected / selected"),
-            (image_list.GetBitmap(4), "Some subitems selected. Open tree to see selections."))):
+                (image_list.GetBitmap(0), "No subitems selected / not selected"),
+                (image_list.GetBitmap(2), "All subitems selected / selected"),
+                (image_list.GetBitmap(4), "Some subitems selected. Open tree to see selections."))):
             bitmap_ctrl = wx.StaticBitmap(self)
             bitmap_ctrl.SetBitmap(bitmap)
             table_sizer.Add(bitmap_ctrl, (i, 1), flag=wx.RIGHT, border=5)
@@ -82,11 +83,11 @@ class TreeCheckboxDialog(wx.Dialog):
 
     def img_idx(self, d):
         if d[None] is False:
-            return (0, 1)
+            return 0, 1
         elif d[None] is True:
-            return (2, 3)
+            return 2, 3
         else:
-            return (4, 5)
+            return 4, 5
 
     def get_item_data(self, item_id):
         x = self.tree_ctrl.GetItemData(item_id)
@@ -210,28 +211,31 @@ class TreeCheckboxDialog(wx.Dialog):
         self.bitmaps.append(bitmap)
         return bitmap
 
+
 if __name__ == "__main__":
     class MyApp(wx.App):
         def OnInit(self):
-            d = { None:None }
+            d = {None: None}
             for i in range(5):
-                d1 = d[str(i)] = { None: None }
+                d1 = d[str(i)] = {None: None}
                 for j in range(5):
-                    d2 = d1[str(j)] = { None: None }
+                    d2 = d1[str(j)] = {None: None}
                     for k in range(5):
-                        d2[str(k)] = { None: (k & 1) != 0}
+                        d2[str(k)] = {None: (k & 1) != 0}
+
             def fn():
                 return {
-                    "Hello":{
-                        "There": {None:False},
-                        "Kitty":{None:True},
-                        None:None },
-                    None:None }
+                    "Hello": {
+                        "There": {None: False},
+                        "Kitty": {None: True},
+                        None: None},
+                    None: None}
+
             d["KittenKiller"] = fn
 
-            dlg = TreeCheckboxDialog(None, d, size=(640,480),
-                                     style = wx.DEFAULT_DIALOG_STYLE |
-                                     wx.RESIZE_BORDER)
+            dlg = TreeCheckboxDialog(None, d, size=(640, 480),
+                                     style=wx.DEFAULT_DIALOG_STYLE |
+                                           wx.RESIZE_BORDER)
             dlg.ShowModal()
             print "{"
             for i in range(5):
@@ -247,6 +251,8 @@ if __name__ == "__main__":
                 print "        },"
             print "}"
             return False
+
+
     my_app = MyApp(False)
     my_app.MainLoop()
     pass

@@ -24,6 +24,7 @@ MASKED_IMAGE_NAME = "maskedimage"
 IMAGE_NAME = "image"
 OBJECTS_NAME = "objects"
 
+
 class TestMaskImage(unittest.TestCase):
     def test_01_01_load_matlab(self):
         data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
@@ -45,8 +46,10 @@ class TestMaskImage(unittest.TestCase):
                 'O2p+zHJrySoT59cblof++qcntf7vitLX+824l7vare+vk/l7bXphfVPS7385'
                 'zfV33p3+r793D88OABdDcYI=')
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 3)
@@ -84,8 +87,10 @@ class TestMaskImage(unittest.TestCase):
                 '16NBeJNJ9Q/eSxG4ZEAbFC8/rJwtvhZOad8p42x/Vr+p6pHffp5x3KfxyLoS'
                 'E8L9BgVhjWE=')
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 3)
@@ -126,8 +131,10 @@ class TestMaskImage(unittest.TestCase):
                 'q5WdCni4T3mWgud+ewoeHlzPvrba+DkAy+uHbX5M9dfpJ40fYHP/RnzVe9tC'
                 'nsdQ/39X3jff')
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 5)
@@ -148,8 +155,8 @@ class TestMaskImage(unittest.TestCase):
         self.assertTrue(module.invert_mask)
 
     def test_02_01_mask_with_objects(self):
-        labels = np.zeros((10,15),int)
-        labels[2:5,3:8] = 1
+        labels = np.zeros((10, 15), int)
+        labels[2:5, 3:8] = 1
         labels[5:8, 10:14] = 2
         object_set = cpo.ObjectSet()
         objects = cpo.Objects()
@@ -157,9 +164,9 @@ class TestMaskImage(unittest.TestCase):
         object_set.add_objects(objects, OBJECTS_NAME)
 
         image_set_list = cpi.ImageSetList()
-        image_set=image_set_list.get_image_set(0)
+        image_set = image_set_list.get_image_set(0)
         np.random.seed(0)
-        pixel_data = np.random.uniform(size=(10,15)).astype(np.float32)
+        pixel_data = np.random.uniform(size=(10, 15)).astype(np.float32)
         image_set.add(IMAGE_NAME, cpi.Image(pixel_data))
 
         pipeline = cpp.Pipeline()
@@ -183,8 +190,8 @@ class TestMaskImage(unittest.TestCase):
         self.assertTrue(np.all(masked_image.masking_objects.segmented == labels))
 
     def test_02_02_mask_invert(self):
-        labels = np.zeros((10,15),int)
-        labels[2:5,3:8] = 1
+        labels = np.zeros((10, 15), int)
+        labels[2:5, 3:8] = 1
         labels[5:8, 10:14] = 2
         object_set = cpo.ObjectSet()
         objects = cpo.Objects()
@@ -192,9 +199,9 @@ class TestMaskImage(unittest.TestCase):
         object_set.add_objects(objects, OBJECTS_NAME)
 
         image_set_list = cpi.ImageSetList()
-        image_set=image_set_list.get_image_set(0)
+        image_set = image_set_list.get_image_set(0)
         np.random.seed(0)
-        pixel_data = np.random.uniform(size=(10,15)).astype(np.float32)
+        pixel_data = np.random.uniform(size=(10, 15)).astype(np.float32)
         image_set.add(IMAGE_NAME, cpi.Image(pixel_data))
 
         pipeline = cpp.Pipeline()
@@ -218,8 +225,8 @@ class TestMaskImage(unittest.TestCase):
         self.assertTrue(np.all(masked_image.masking_objects.segmented == labels))
 
     def test_02_03_double_mask(self):
-        labels = np.zeros((10,15),int)
-        labels[2:5,3:8] = 1
+        labels = np.zeros((10, 15), int)
+        labels[2:5, 3:8] = 1
         labels[5:8, 10:14] = 2
         object_set = cpo.ObjectSet()
         objects = cpo.Objects()
@@ -227,10 +234,10 @@ class TestMaskImage(unittest.TestCase):
         object_set.add_objects(objects, OBJECTS_NAME)
 
         image_set_list = cpi.ImageSetList()
-        image_set=image_set_list.get_image_set(0)
+        image_set = image_set_list.get_image_set(0)
         np.random.seed(0)
-        pixel_data = np.random.uniform(size=(10,15)).astype(np.float32)
-        mask = np.random.uniform(size=(10,15)) > .5
+        pixel_data = np.random.uniform(size=(10, 15)).astype(np.float32)
+        mask = np.random.uniform(size=(10, 15)) > .5
         image_set.add(IMAGE_NAME, cpi.Image(pixel_data, mask))
 
         expected_mask = (mask & (labels > 0))
@@ -257,12 +264,12 @@ class TestMaskImage(unittest.TestCase):
 
     def test_03_01_binary_mask(self):
         image_set_list = cpi.ImageSetList()
-        image_set=image_set_list.get_image_set(0)
+        image_set = image_set_list.get_image_set(0)
         np.random.seed(0)
-        pixel_data = np.random.uniform(size=(10,15)).astype(np.float32)
+        pixel_data = np.random.uniform(size=(10, 15)).astype(np.float32)
         image_set.add(IMAGE_NAME, cpi.Image(pixel_data))
 
-        masking_image = np.random.uniform(size=(10,15)) > .5
+        masking_image = np.random.uniform(size=(10, 15)) > .5
         image_set.add(MASKING_IMAGE_NAME, cpi.Image(masking_image))
 
         pipeline = cpp.Pipeline()
@@ -288,12 +295,12 @@ class TestMaskImage(unittest.TestCase):
 
     def test_03_02_gray_mask(self):
         image_set_list = cpi.ImageSetList()
-        image_set=image_set_list.get_image_set(0)
+        image_set = image_set_list.get_image_set(0)
         np.random.seed(0)
-        pixel_data = np.random.uniform(size=(10,15)).astype(np.float32)
+        pixel_data = np.random.uniform(size=(10, 15)).astype(np.float32)
         image_set.add(IMAGE_NAME, cpi.Image(pixel_data))
 
-        masking_image = np.random.uniform(size=(10,15))
+        masking_image = np.random.uniform(size=(10, 15))
         image_set.add(MASKING_IMAGE_NAME, cpi.Image(masking_image))
         masking_image = masking_image > .5
 
@@ -320,12 +327,12 @@ class TestMaskImage(unittest.TestCase):
 
     def test_03_03_color_mask(self):
         image_set_list = cpi.ImageSetList()
-        image_set=image_set_list.get_image_set(0)
+        image_set = image_set_list.get_image_set(0)
         np.random.seed(0)
-        pixel_data = np.random.uniform(size=(10,15,3)).astype(np.float32)
+        pixel_data = np.random.uniform(size=(10, 15, 3)).astype(np.float32)
         image_set.add(IMAGE_NAME, cpi.Image(pixel_data))
 
-        masking_image = np.random.uniform(size=(10,15))
+        masking_image = np.random.uniform(size=(10, 15))
 
         image_set.add(MASKING_IMAGE_NAME, cpi.Image(masking_image))
         expected_mask = masking_image > .5
@@ -345,8 +352,8 @@ class TestMaskImage(unittest.TestCase):
         module.run(workspace)
         masked_image = workspace.image_set.get_image(MASKED_IMAGE_NAME)
         self.assertTrue(isinstance(masked_image, cpi.Image))
-        self.assertTrue(np.all(masked_image.pixel_data[expected_mask,:] ==
-                               pixel_data[expected_mask,:]))
-        self.assertTrue(np.all(masked_image.pixel_data[~expected_mask,:] == 0))
+        self.assertTrue(np.all(masked_image.pixel_data[expected_mask, :] ==
+                               pixel_data[expected_mask, :]))
+        self.assertTrue(np.all(masked_image.pixel_data[~expected_mask, :] == 0))
         self.assertTrue(np.all(masked_image.mask == expected_mask))
         self.assertFalse(masked_image.has_masking_objects)

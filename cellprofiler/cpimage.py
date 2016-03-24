@@ -17,6 +17,7 @@ from numpy import fromstring, uint8, uint16
 
 logger = logging.getLogger(__name__)
 
+
 class Image(object):
     """An image composed of a Numpy array plus secondary attributes such as mask and label matrices
 
@@ -54,16 +55,17 @@ class Image(object):
     Otherwise, the image has no mask or cropping mask and all pixels are
     significant.
     """
+
     def __init__(self,
                  image=None,
                  mask=None,
-                 crop_mask = None,
+                 crop_mask=None,
                  parent_image=None,
-                 masking_objects = None,
-                 convert = True,
-                 path_name = None,
-                 file_name = None,
-                 scale = None):
+                 masking_objects=None,
+                 convert=True,
+                 path_name=None,
+                 file_name=None,
+                 scale=None):
         self.__image = None
         self.__mask = None
         self.__has_mask = False
@@ -90,7 +92,7 @@ class Image(object):
             return
         return self.__image.get()
 
-    def set_image(self,image,convert=True):
+    def set_image(self, image, convert=True):
         """Set the primary image
 
         Convert the image to a numpy array of dtype = np.float64.
@@ -104,37 +106,37 @@ class Image(object):
         if img.dtype.name == "bool" or not convert:
             self.__image = ImageCache(img)
             return
-        mval  = 0.
+        mval = 0.
         scale = 1.
         fix_range = False
-        if issubclass(img.dtype.type,np.floating):
+        if issubclass(img.dtype.type, np.floating):
             pass
         elif img.dtype.type is np.uint8:
-            scale = math.pow(2.0,8.0)-1
+            scale = math.pow(2.0, 8.0) - 1
         elif img.dtype.type is np.uint16:
-            scale = math.pow(2.0,16.0)-1
+            scale = math.pow(2.0, 16.0) - 1
         elif img.dtype.type is np.uint32:
-            scale = math.pow(2.0,32.0)-1
+            scale = math.pow(2.0, 32.0) - 1
         elif img.dtype.type is np.uint64:
-            scale = math.pow(2.0,64.0)-1
+            scale = math.pow(2.0, 64.0) - 1
         elif img.dtype.type is np.int8:
-            scale = math.pow(2.0,8.0)
-            mval  = -scale / 2.0
-            scale -=1
+            scale = math.pow(2.0, 8.0)
+            mval = -scale / 2.0
+            scale -= 1
             fix_range = True
         elif img.dtype.type is np.int16:
-            scale = math.pow(2.0,16.0)
-            mval  = -scale / 2.0
+            scale = math.pow(2.0, 16.0)
+            mval = -scale / 2.0
             scale -= 1
             fix_range = True
         elif img.dtype.type is np.int32:
-            scale = math.pow(2.0,32.0)
-            mval  = -scale / 2.0
+            scale = math.pow(2.0, 32.0)
+            mval = -scale / 2.0
             scale -= 1
             fix_range = True
         elif img.dtype.type is np.int64:
-            scale = math.pow(2.0,64.0)
-            mval  = -scale / 2.0
+            scale = math.pow(2.0, 64.0)
+            mval = -scale / 2.0
             scale -= 1
             fix_range = True
         # Avoid temporaries by doing the shift/scale in place.
@@ -144,11 +146,11 @@ class Image(object):
         if fix_range:
             # These types will always have ranges between 0 and 1. Make it so.
             np.clip(img, 0, 1, out=img)
-        check_consistency(img,self.__mask)
+        check_consistency(img, self.__mask)
         self.__image = ImageCache(img)
 
-    image=property(get_image,set_image)
-    pixel_data=property(get_image,set_image)
+    image = property(get_image, set_image)
+    pixel_data = property(get_image, set_image)
 
     def get_parent_image(self):
         """The image from which this one was derived"""
@@ -162,6 +164,7 @@ class Image(object):
     def get_has_parent_image(self):
         """True if this image has a defined parent"""
         return self.__parent_image is not None
+
     has_parent_image = property(get_has_parent_image)
 
     def get_masking_objects(self):
@@ -180,6 +183,7 @@ class Image(object):
         available through the labels property
         """
         return self.__masking_objects is not None
+
     has_masking_objects = property(get_has_masking_objects)
 
     def get_labels(self):
@@ -191,6 +195,7 @@ class Image(object):
         if not self.has_masking_objects:
             return None
         return self.crop_image_similarly(self.masking_objects.segmented)
+
     labels = property(get_labels)
 
     def get_mask(self):
@@ -225,13 +230,13 @@ class Image(object):
         we convert it to boolean by testing each element for non-zero.
         """
         m = np.array(mask)
-        if not(m.dtype.type is np.bool):
+        if not (m.dtype.type is np.bool):
             m = (m != 0)
         check_consistency(self.image, m)
         self.__mask = ImageCache(m)
         self.__has_mask = True
 
-    mask=property(get_mask,set_mask)
+    mask = property(get_mask, set_mask)
 
     def get_has_mask(self):
         """True if the image has a mask"""
@@ -260,7 +265,7 @@ class Image(object):
         #
         return self.mask
 
-    def set_crop_mask(self,crop_mask):
+    def set_crop_mask(self, crop_mask):
         self.__crop_mask = ImageCache(crop_mask)
 
     crop_mask = property(get_crop_mask, set_crop_mask)
@@ -281,18 +286,18 @@ class Image(object):
             # Same size - no cropping needed
             return image
         if any([my_size > other_size
-                for my_size,other_size
-                in zip(self.pixel_data.shape,image.shape)]):
-            raise ValueError("Image to be cropped is smaller: %s vs %s"%
+                for my_size, other_size
+                in zip(self.pixel_data.shape, image.shape)]):
+            raise ValueError("Image to be cropped is smaller: %s vs %s" %
                              (repr(image.shape),
                               repr(self.pixel_data.shape)))
         if not self.has_crop_mask:
             raise RuntimeError(
-                "Images are of different size and no crop mask available.\n"
-                "Use the Crop and Align modules to match images of different sizes.")
-        cropped_image = crop_image(image,self.crop_mask)
+                    "Images are of different size and no crop mask available.\n"
+                    "Use the Crop and Align modules to match images of different sizes.")
+        cropped_image = crop_image(image, self.crop_mask)
         if cropped_image.shape[0:2] != self.pixel_data.shape[0:2]:
-            raise ValueError("Cropped image is not the same size as the reference image: %s vs %s"%
+            raise ValueError("Cropped image is not the same size as the reference image: %s vs %s" %
                              (repr(cropped_image.shape),
                               repr(self.pixel_data.shape)))
         return cropped_image
@@ -354,6 +359,7 @@ class Image(object):
         if self.__scale is None and self.has_parent_image:
             return self.parent_image.scale
         return self.__scale
+
     scale = property(get_scale)
 
     def cache(self, name, hdf5_file):
@@ -367,15 +373,16 @@ class Image(object):
         maybe objects.
         '''
         from cellprofiler.utilities.hdf5_dict import HDF5ImageSet
-        if isinstance(self.__image, ImageCache) and\
-           not self.__image.is_cached():
+        if isinstance(self.__image, ImageCache) and \
+                not self.__image.is_cached():
             self.__image.cache(name, HDF5ImageSet(hdf5_file))
-        if isinstance(self.__mask, ImageCache) and\
-           not self.__mask.is_cached():
+        if isinstance(self.__mask, ImageCache) and \
+                not self.__mask.is_cached():
             self.__mask.cache(name, HDF5ImageSet(hdf5_file, "Masks"))
-        if isinstance(self.__crop_mask, ImageCache) and\
-           not self.__crop_mask.is_cached():
+        if isinstance(self.__crop_mask, ImageCache) and \
+                not self.__crop_mask.is_cached():
             self.__crop_mask.cache(name, HDF5ImageSet(hdf5_file, "CropMasks"))
+
 
 class ImageCache(object):
     '''An HDF5 cache that can store an image, mask or crop mask
@@ -395,7 +402,7 @@ class ImageCache(object):
         elif image.ndim == 3:
             self.__type = ImageCache.IC_COLOR
             self.__image = image.transpose(2, 0, 1).reshape(
-                image.shape[2], 1, 1, image.shape[0], image.shape[1])
+                    image.shape[2], 1, 1, image.shape[0], image.shape[1])
         else:
             self.__type = ImageCache.IC_5D
             self.__image = image
@@ -427,43 +434,44 @@ class ImageCache(object):
             return image.reshape(image.shape[3], image.shape[4])
         elif self.__type == ImageCache.IC_COLOR:
             return image.reshape(
-                image.shape[0], image.shape[3], image.shape[4]).transpose(1, 2, 0)
+                    image.shape[0], image.shape[3], image.shape[4]).transpose(1, 2, 0)
 
 
-def crop_image(image, crop_mask,crop_internal = False):
+def crop_image(image, crop_mask, crop_internal=False):
     """Crop an image to the size of the nonzero portion of a crop mask"""
     i_histogram = crop_mask.sum(axis=1)
-    i_cumsum    = np.cumsum(i_histogram != 0)
+    i_cumsum = np.cumsum(i_histogram != 0)
     j_histogram = crop_mask.sum(axis=0)
-    j_cumsum    = np.cumsum(j_histogram != 0)
+    j_cumsum = np.cumsum(j_histogram != 0)
     if i_cumsum[-1] == 0:
         # The whole image is cropped away
-        return np.zeros((0,0),dtype=image.dtype)
+        return np.zeros((0, 0), dtype=image.dtype)
     if crop_internal:
         #
         # Make up sequences of rows and columns to keep
         #
-        i_keep = np.argwhere(i_histogram>0)
-        j_keep = np.argwhere(j_histogram>0)
+        i_keep = np.argwhere(i_histogram > 0)
+        j_keep = np.argwhere(j_histogram > 0)
         #
         # Then slice the array by I, then by J to get what's not blank
         #
-        return image[i_keep.flatten(),:][:,j_keep.flatten()].copy()
+        return image[i_keep.flatten(), :][:, j_keep.flatten()].copy()
     else:
         #
         # The first non-blank row and column are where the cumsum is 1
         # The last are at the first where the cumsum is it's max (meaning
         # what came after was all zeros and added nothing)
         #
-        i_first     = np.argwhere(i_cumsum==1)[0]
-        i_last      = np.argwhere(i_cumsum==i_cumsum.max())[0]
-        i_end       = i_last+1
-        j_first     = np.argwhere(j_cumsum==1)[0]
-        j_last      = np.argwhere(j_cumsum==j_cumsum.max())[0]
-        j_end       = j_last+1
+        i_first = np.argwhere(i_cumsum == 1)[0]
+        i_last = np.argwhere(i_cumsum == i_cumsum.max())[0]
+        i_end = i_last + 1
+        j_first = np.argwhere(j_cumsum == 1)[0]
+        j_last = np.argwhere(j_cumsum == j_cumsum.max())[0]
+        j_end = j_last + 1
         if image.ndim == 3:
-            return image[i_first:i_end,j_first:j_end,:].copy()
-        return image[i_first:i_end,j_first:j_end].copy()
+            return image[i_first:i_end, j_first:j_end, :].copy()
+        return image[i_first:i_end, j_first:j_end].copy()
+
 
 class GrayscaleImage(object):
     """A wrapper around a non-grayscale image
@@ -471,6 +479,7 @@ class GrayscaleImage(object):
     This is meant to be used if the image is 3-d but all channels
        are the same or if the image is binary.
     """
+
     def __init__(self, image):
         self.__image = image
 
@@ -481,9 +490,10 @@ class GrayscaleImage(object):
         """One 2-d channel of the color image as a numpy array"""
         if self.__image.pixel_data.dtype.kind == 'b':
             return self.__image.pixel_data.astype(np.float64)
-        return self.__image.pixel_data[:,:,0]
+        return self.__image.pixel_data[:, :, 0]
 
     pixel_data = property(get_pixel_data)
+
 
 class RGBImage(object):
     """A wrapper that discards the alpha channel
@@ -491,6 +501,7 @@ class RGBImage(object):
     This is meant to be used if the image is 3-d + alpha but the alpha
     channel is discarded
     """
+
     def __init__(self, image):
         self.__image = image
 
@@ -499,20 +510,23 @@ class RGBImage(object):
 
     def get_pixel_data(self):
         '''Return the pixel data without the alpha channel'''
-        return self.__image.pixel_data[:,:,:3]
+        return self.__image.pixel_data[:, :, :3]
 
     pixel_data = property(get_pixel_data)
 
+
 def check_consistency(image, mask):
     """Check that the image, mask and labels arrays have the same shape and that the arrays are of the right dtype"""
-    assert (image is None) or (len(image.shape) in (2,3)),"Image must have 2 or 3 dimensions"
-    assert (mask is None) or (len(mask.shape)==2),"Mask must have 2 dimensions"
+    assert (image is None) or (len(image.shape) in (2, 3)), "Image must have 2 or 3 dimensions"
+    assert (mask is None) or (len(mask.shape) == 2), "Mask must have 2 dimensions"
     assert (image is None) or (mask is None) or (image.shape[:2] == mask.shape), "Image and mask sizes don't match"
-    assert (mask is None) or (mask.dtype.type is np.bool_), "Mask must be boolean, was %s"%(repr(mask.dtype.type))
+    assert (mask is None) or (mask.dtype.type is np.bool_), "Mask must be boolean, was %s" % (repr(mask.dtype.type))
+
 
 class AbstractImageProvider(object):
     """Represents an image provider that returns images
     """
+
     def provide_image(self, image_set):
         """Return the image that is associated with the image set
         """
@@ -535,15 +549,18 @@ class AbstractImageProvider(object):
 
     name = property(__get_name)
 
+
 class VanillaImageProvider(AbstractImageProvider):
     """This image provider returns the image given to it in the constructor
 
     """
-    def __init__(self,name,image):
+
+    def __init__(self, name, image):
         """Constructor takes the name of the image and the CellProfiler.Image.Image instance to be returned
         """
         self.__name = name
         self.__image = image
+
     def provide_image(self, image_set):
         return self.__image
 
@@ -557,7 +574,8 @@ class VanillaImageProvider(AbstractImageProvider):
 class CallbackImageProvider(AbstractImageProvider):
     """An image provider proxy that calls the indicated callback functions (presumably in your module) to implement the methods
     """
-    def __init__(self,name,image_provider_fn):
+
+    def __init__(self, name, image_provider_fn):
         """Constructor
         name              - name returned by the Name method
         image_provider_fn - function called during ProvideImage with the arguments, image_set and the CallbackImageProvider instance
@@ -567,10 +585,11 @@ class CallbackImageProvider(AbstractImageProvider):
         self.__image_provider_fn = image_provider_fn
 
     def provide_image(self, image_set):
-        return self.__image_provider_fn(image_set,self)
+        return self.__image_provider_fn(image_set, self)
 
     def get_name(self):
         return self.__name
+
 
 class ImageSet(object):
     """Represents the images for a particular iteration of a pipeline
@@ -580,7 +599,8 @@ class ImageSet(object):
     (which might represent things like the plate/well for the image set or the
     frame number in a movie, etc.)
     """
-    def __init__(self, number, keys,legacy_fields):
+
+    def __init__(self, number, keys, legacy_fields):
         """Constructor:
         number = image set index
         keys = dictionary of key/value pairs that uniquely identify the image set
@@ -611,11 +631,11 @@ class ImageSet(object):
     keys = property(get_keys)
 
     def get_image(self, name,
-                 must_be_binary=False,
-                 must_be_color=False,
-                 must_be_grayscale=False,
-                 must_be_rgb = False,
-                 cache = True):
+                  must_be_binary=False,
+                  must_be_color=False,
+                  must_be_grayscale=False,
+                  must_be_rgb=False,
+                  cache=True):
         """Return the image associated with the given name
 
         name - name of the image within the image_set
@@ -638,11 +658,11 @@ class ImageSet(object):
         if must_be_color and image.pixel_data.ndim != 3:
             raise ValueError("Image must be color, but it was grayscale")
         if (must_be_grayscale and
-            (image.pixel_data.ndim != 2)):
+                (image.pixel_data.ndim != 2)):
             pd = image.pixel_data
-            if pd.shape[2] >= 3 and\
-               np.all(pd[:,:,0]==pd[:,:,1]) and\
-               np.all(pd[:,:,0]==pd[:,:,2]):
+            if pd.shape[2] >= 3 and \
+                    np.all(pd[:, :, 0] == pd[:, :, 1]) and \
+                    np.all(pd[:, :, 0] == pd[:, :, 2]):
                 return GrayscaleImage(image)
             raise ValueError("Image must be grayscale, but it was color")
         if must_be_grayscale and image.pixel_data.dtype.kind == 'b':
@@ -650,7 +670,7 @@ class ImageSet(object):
         if must_be_rgb:
             if image.pixel_data.ndim != 3:
                 raise ValueError("Image must be RGB, but it was grayscale")
-            elif image.pixel_data.shape[2] not in (3,4):
+            elif image.pixel_data.shape[2] not in (3, 4):
                 raise ValueError("Image must be RGB, but it had %d channels" %
                                  image.pixel_data.shape[2])
             elif image.pixel_data.shape[2] == 4:
@@ -670,8 +690,8 @@ class ImageSet(object):
         name - return the image provider with this name
         """
         providers = filter(lambda x: x.name == name, self.__image_providers)
-        assert len(providers)>0, "No provider of the %s image"%(name)
-        assert len(providers)==1, "More than one provider of the %s image"%(name)
+        assert len(providers) > 0, "No provider of the %s image" % name
+        assert len(providers) == 1, "More than one provider of the %s image" % name
         return providers[0]
 
     def remove_image_provider(self, name):
@@ -717,14 +737,16 @@ class ImageSet(object):
             self.clear_image(name)
         for provider in old_providers:
             self.providers.remove(provider)
-        provider = VanillaImageProvider(name,image)
+        provider = VanillaImageProvider(name, image)
         self.providers.append(provider)
+
 
 class ImageSetList(object):
     """Represents the list of image sets in a pipeline run
 
     """
-    def __init__(self, test_mode = False):
+
+    def __init__(self, test_mode=False):
         self.__image_sets = []
         self.__image_sets_by_key = {}
         self.__legacy_fields = {}
@@ -737,12 +759,12 @@ class ImageSetList(object):
         '''True if we are in test mode'''
         return self.__test_mode
 
-    def get_image_set(self,keys_or_number):
+    def get_image_set(self, keys_or_number):
         """Return either the indexed image set (keys_or_number = index) or the image set with matching keys
 
         """
         if not isinstance(keys_or_number, dict):
-            keys = {'number':keys_or_number }
+            keys = {'number': keys_or_number}
             number = keys_or_number
             if self.__associating_by_key is None:
                 self.__associating_by_key = False
@@ -756,7 +778,7 @@ class ImageSetList(object):
                 number = len(self.__image_sets)
             self.__associating_by_key = True
         if number >= len(self.__image_sets):
-            self.__image_sets += [ None ]*(number - len(self.__image_sets)+1)
+            self.__image_sets += [None] * (number - len(self.__image_sets) + 1)
         if self.__image_sets[number] is None:
             image_set = ImageSet(number, keys, self.__legacy_fields)
             self.__image_sets[number] = image_set
@@ -836,8 +858,8 @@ class ImageSetList(object):
             if not d.has_key(key_values):
                 d[key_values] = []
                 sort_order.append(key_values)
-            d[key_values].append(i+1)
-        return (keys, [(dict(zip(keys,k)),d[k]) for k in sort_order])
+            d[key_values].append(i + 1)
+        return keys, [(dict(zip(keys, k)), d[k]) for k in sort_order]
 
     def save_state(self):
         '''Return a string that can be used to load the image_set_list's state
@@ -846,11 +868,11 @@ class ImageSetList(object):
         have image providers before this call.
         '''
         f = StringIO()
-        dump(self.count(),f)
+        dump(self.count(), f)
         for i in range(self.count()):
             image_set = self.get_image_set(i)
             assert isinstance(image_set, ImageSet)
-            assert len(image_set.providers)==0, "An image set cannot have providers while saving its state"
+            assert len(image_set.providers) == 0, "An image set cannot have providers while saving its state"
             dump(image_set.keys, f)
         dump(self.legacy_fields, f)
         return f.getvalue()
@@ -863,18 +885,20 @@ class ImageSetList(object):
 
         # Make a safe unpickler
         p = Unpickler(StringIO(state))
+
         def find_global(module_name, class_name):
-            logger.debug("Pickler wants %s:%s",module_name, class_name)
-            if (module_name not in ("numpy", "numpy.core.multiarray")):
+            logger.debug("Pickler wants %s:%s", module_name, class_name)
+            if module_name not in ("numpy", "numpy.core.multiarray"):
                 logger.critical(
-                    "WARNING WARNING WARNING - your batch file has asked to load %s.%s."
-                    " If this looks in any way suspicious please contact us at www.cellprofiler.org",
-                    module_name, class_name)
+                        "WARNING WARNING WARNING - your batch file has asked to load %s.%s."
+                        " If this looks in any way suspicious please contact us at www.cellprofiler.org",
+                        module_name, class_name)
                 raise ValueError("Illegal attempt to unpickle class %s.%s",
                                  (module_name, class_name))
             __import__(module_name)
             mod = sys.modules[module_name]
             return getattr(mod, class_name)
+
         p.find_global = find_global
 
         count = p.load()
@@ -887,16 +911,19 @@ class ImageSetList(object):
         for i in range(count):
             self.get_image_set(all_keys[i])
 
+
 def make_dictionary_key(key):
     '''Make a dictionary into a stable key for another dictionary'''
     return u", ".join([u":".join([unicode(y) for y in x])
                        for x in sorted(key.iteritems())])
+
 
 def readc01(fname):
     '''Read a Cellomics file into an array
 
     fname - the name of the file
     '''
+
     def readint(f):
         return unpack("<l", f.read(4))[0]
 
@@ -933,7 +960,6 @@ def readc01(fname):
 
     # skip 12 bytes
     g.seek(12, 1)
-
 
     data = fromstring(g.read(), uint16 if nbits == 16 else uint8, x * y)
     return data.reshape(x, y).T

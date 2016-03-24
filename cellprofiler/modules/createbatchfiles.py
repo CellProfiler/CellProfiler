@@ -1,4 +1,5 @@
 from cellprofiler.gui.help import BATCH_PROCESSING_HELP_REF
+
 __doc__ = '''
 <b>Create Batch Files</b> produces files that allow individual batches of images to be processed
 separately on a cluster of computers.
@@ -20,10 +21,10 @@ the cluster root path, i.e., <tt>/server_name/your_name/</tt>.
 </p>
 
 For more details on batch processing, please see <i>%(BATCH_PROCESSING_HELP_REF)s</i>.
-'''%globals()
-
+''' % globals()
 
 import logging
+
 logger = logging.getLogger(__name__)
 import httplib
 import numpy as np
@@ -49,6 +50,7 @@ S_FIXED_COUNT = 9
 '''# of settings per mapping'''
 S_PER_MAPPING = 2
 
+
 class CreateBatchFiles(cpm.CPModule):
     #
     # How it works:
@@ -73,26 +75,26 @@ class CreateBatchFiles(cpm.CPModule):
     def create_settings(self):
         '''Create the module settings and name the module'''
         self.wants_default_output_directory = cps.Binary(
-            "Store batch files in default output folder?", True,doc="""
+                "Store batch files in default output folder?", True, doc="""
             Select <i>%(YES)s</i> to store batch files in the Default Output folder. <br>
             Select <i>%(NO)s</i> to enter the path to the folder that will be used to store
-            these files."""%globals())
+            these files.""" % globals())
 
         self.custom_output_directory = cps.Text(
-            "Output folder path",
-            cpprefs.get_default_output_directory(),doc="""
+                "Output folder path",
+                cpprefs.get_default_output_directory(), doc="""
             Enter the path to the output folder.""")
 
         # Worded this way not because I am windows-centric but because it's
         # easier than listing every other OS in the universe except for VMS
         self.remote_host_is_windows = cps.Binary(
-            "Are the cluster computers running Windows?",
-            False,doc="""
+                "Are the cluster computers running Windows?",
+                False, doc="""
             Select <i>%(YES)s</i> if the cluster computers are running one of the Microsoft
             Windows operating systems. In this case, <b>CreateBatchFiles</b> will
             modify all paths to use the Windows file separator (backslash &#92;). <br>
             Select <i>%(NO)s</i> for <b>CreateBatchFiles</b> to modify all paths to use
-            the Unix or Macintosh file separator (slash &#47;)."""%globals())
+            the Unix or Macintosh file separator (slash &#47;).""" % globals())
 
         self.batch_mode = cps.Binary("Hidden: in batch mode", False)
         self.distributed_mode = cps.Binary("Hidden: in distributed mode", False)
@@ -100,26 +102,27 @@ class CreateBatchFiles(cpm.CPModule):
                                                    cpprefs.get_default_image_directory())
         self.revision = cps.Integer("Hidden: revision number", 0)
         self.from_old_matlab = cps.Binary("Hidden: from old matlab", False)
-        self.acknowledge_old_matlab = cps.DoSomething("Could not update CP1.0 pipeline to be compatible with CP2.0.  See module notes.", "OK",
-                                                      self.clear_old_matlab)
+        self.acknowledge_old_matlab = cps.DoSomething(
+                "Could not update CP1.0 pipeline to be compatible with CP2.0.  See module notes.", "OK",
+                self.clear_old_matlab)
         self.mappings = []
         self.add_mapping()
         self.add_mapping_button = cps.DoSomething("",
-            "Add another path mapping", self.add_mapping, doc="""
+                                                  "Add another path mapping", self.add_mapping, doc="""
             Use this option if another path must be mapped because there is a difference
             between how the local computer sees a folder location vs. how the cluster
             computer sees the folder location.""")
 
         self.go_to_website = cps.Binary(
-            "Launch BatchProfiler", True,
-            doc="""Launch BatchProfiler after creating the batch file. This
+                "Launch BatchProfiler", True,
+                doc="""Launch BatchProfiler after creating the batch file. This
             setting will launch a web browser to the BatchProfiler URL to
             allow you to create batch jobs to run the analysis on a cluster.
             """)
 
         self.check_path_button = cps.DoSomething(
-            "Press this button to check pathnames on the remote server",
-            "Check paths", self.check_paths, doc = """
+                "Press this button to check pathnames on the remote server",
+                "Check paths", self.check_paths, doc="""
             This button will start a routine that will ask the
             webserver to check whether the default input and default output
             folders exist. It will also check whether all remote
@@ -129,8 +132,8 @@ class CreateBatchFiles(cpm.CPModule):
         group = cps.SettingsGroup()
         group.append("local_directory",
                      cps.Text(
-                        "Local root path",
-                        cpprefs.get_default_image_directory(),doc="""
+                             "Local root path",
+                             cpprefs.get_default_image_directory(), doc="""
                         Enter the path to files on this computer.
                         This is the root path on the local machine (i.e., the computer setting up
                         the batch files). If <b>CreateBatchFiles</b> finds
@@ -145,8 +148,8 @@ class CreateBatchFiles(cpm.CPModule):
 
         group.append("remote_directory",
                      cps.Text(
-                        "Cluster root path",
-                        cpprefs.get_default_image_directory(),doc="""
+                             "Cluster root path",
+                             cpprefs.get_default_image_directory(), doc="""
                         Enter the path to files on the cluster. This is the cluster
                         root path, i.e., how the cluster machine sees the
                         top-most folder where your input/output files are stored.
@@ -176,7 +179,7 @@ class CreateBatchFiles(cpm.CPModule):
             raise ValueError("# of mapping settings (%d) "
                              "is not a multiple of %d" %
                              (len(setting_values) - S_FIXED_COUNT,
-                             S_PER_MAPPING))
+                              S_PER_MAPPING))
         mapping_count = (len(setting_values) - S_FIXED_COUNT) / S_PER_MAPPING
         while mapping_count < len(self.mappings):
             del self.mappings[-1]
@@ -212,9 +215,9 @@ class CreateBatchFiles(cpm.CPModule):
             if not cpprefs.get_headless():
                 import wx
                 wx.MessageBox(
-                    "CreateBatchFiles saved pipeline to %s" % path,
-                    caption = "CreateBatchFiles: Batch file saved",
-                    style = wx.OK | wx.ICON_INFORMATION)
+                        "CreateBatchFiles saved pipeline to %s" % path,
+                        caption="CreateBatchFiles: Batch file saved",
+                        style=wx.OK | wx.ICON_INFORMATION)
             if self.go_to_website:
                 try:
                     import webbrowser
@@ -222,7 +225,7 @@ class CreateBatchFiles(cpm.CPModule):
                     server_path = self.alter_path(os.path.dirname(path))
                     query = urllib.urlencode(dict(data_dir=server_path))
                     url = cpprefs.get_batchprofiler_url() + \
-                        "/NewBatch.py?" + query
+                          "/NewBatch.py?" + query
                     webbrowser.open_new(url)
                 except:
                     import traceback
@@ -276,8 +279,8 @@ class CreateBatchFiles(cpm.CPModule):
 
         image_set_list = workspace.image_set_list
         pipeline = workspace.pipeline
-        m = cpmeas.Measurements(copy = workspace.measurements,
-                                filename = h5_path)
+        m = cpmeas.Measurements(copy=workspace.measurements,
+                                filename=h5_path)
         try:
             assert isinstance(pipeline, cpp.Pipeline)
             assert isinstance(m, cpmeas.Measurements)
@@ -294,9 +297,9 @@ class CreateBatchFiles(cpm.CPModule):
             bizarro_self.revision.value = version_number
             if self.wants_default_output_directory:
                 bizarro_self.custom_output_directory.value = \
-                            self.alter_path(cpprefs.get_default_output_directory())
+                    self.alter_path(cpprefs.get_default_output_directory())
             bizarro_self.default_image_directory.value = \
-                        self.alter_path(cpprefs.get_default_image_directory())
+                self.alter_path(cpprefs.get_default_image_directory())
             bizarro_self.batch_mode.value = True
             pipeline.write_pipeline_measurement(m)
             orig_pipeline.write_pipeline_measurement(m, user_pipeline=True)
@@ -304,8 +307,8 @@ class CreateBatchFiles(cpm.CPModule):
             # Write the path mappings to the batch measurements
             #
             m.write_path_mappings(
-                [(mapping.local_directory.value, mapping.remote_directory.value)
-                 for mapping in self.mappings])
+                    [(mapping.local_directory.value, mapping.remote_directory.value)
+                     for mapping in self.mappings])
             return h5_path
         finally:
             m.close()
@@ -328,14 +331,14 @@ class CreateBatchFiles(cpm.CPModule):
             cpprefs.set_default_output_directory(default_output_directory)
         else:
             logger.info(
-                "Batch file default output directory, \"%s\", does not exist" %
-                default_output_directory)
+                    "Batch file default output directory, \"%s\", does not exist" %
+                    default_output_directory)
         if os.path.isdir(default_image_directory):
             cpprefs.set_default_image_directory(default_image_directory)
         else:
             logger.info(
-                "Batch file default input directory \"%s\", does not exist" %
-                default_image_directory)
+                    "Batch file default input directory \"%s\", does not exist" %
+                    default_image_directory)
 
     def turn_off_batch_mode(self):
         '''Remove any indications that we are in batch mode
@@ -343,7 +346,7 @@ class CreateBatchFiles(cpm.CPModule):
         This call restores the module to an editable state.
         '''
         self.batch_mode.value = False
-        self.batch_state = np.zeros((0,),np.uint8)
+        self.batch_state = np.zeros((0,), np.uint8)
 
     def check_paths(self):
         '''Check to make sure the default directories are remotely accessible'''
@@ -354,7 +357,7 @@ class CreateBatchFiles(cpm.CPModule):
             url = ("/batchprofiler/cgi-bin/development/"
                    "CellProfiler_2.0/PathExists.py?%s") % more
             conn = httplib.HTTPConnection("imageweb")
-            conn.request("GET",url)
+            conn.request("GET", url)
             result = conn.getresponse()
             if result.status != httplib.OK:
                 raise RuntimeError("HTTP failed: %s" % result.reason)
@@ -368,8 +371,8 @@ class CreateBatchFiles(cpm.CPModule):
                 wx.MessageBox("Cannot find %s on the server." % path)
                 all_ok = False
         for path, name in (
-            (cpprefs.get_default_image_directory(), "default image folder"),
-            (cpprefs.get_default_output_directory(), "default output folder")):
+                (cpprefs.get_default_image_directory(), "default image folder"),
+                (cpprefs.get_default_output_directory(), "default output folder")):
             if not check(self.alter_path(path)):
                 wx.MessageBox("Cannot find the %s, \"%s\", on the server." %
                               (name, path))
@@ -402,14 +405,13 @@ class CreateBatchFiles(cpm.CPModule):
                     path = (remote_directory +
                             path[len(local_directory):])
         if self.remote_host_is_windows.value:
-            path = path.replace('/','\\')
-        elif (regexp_substitution):
-            path = re.subn('\\\\\\\\','/',path)[0]
-            path = re.subn('\\\\(?!g\\<[^>]*\\>)','/',path)[0]
+            path = path.replace('/', '\\')
+        elif regexp_substitution:
+            path = re.subn('\\\\\\\\', '/', path)[0]
+            path = re.subn('\\\\(?!g\\<[^>]*\\>)', '/', path)[0]
         else:
-            path = path.replace('\\','/')
+            path = path.replace('\\', '/')
         return path
-
 
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
@@ -462,7 +464,7 @@ class CreateBatchFiles(cpm.CPModule):
         if (not from_matlab) and variable_revision_number == 3:
             # Pickled image list is now the batch state
             self.batch_state = np.array(zlib.compress(setting_values[4]))
-            setting_values = setting_values[:4]+setting_values[5:]
+            setting_values = setting_values[:4] + setting_values[5:]
             variable_revision_number = 4
         if (not from_matlab) and variable_revision_number == 4:
             setting_values = setting_values[:4] + [False] + setting_values[4:]

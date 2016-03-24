@@ -14,12 +14,13 @@ from cStringIO import StringIO
 import dateutil.parser
 
 from cellprofiler.modules.tests import \
-     example_images_directory, maybe_download_example_images
+    example_images_directory, maybe_download_example_images
 
 if hasattr(sys, 'frozen'):
     ARGLIST_START = [sys.executable]
 else:
     ARGLIST_START = ["CellProfiler.py", "-b"]
+
 
 @unittest.skipIf(sys.platform != 'win32', "Skip tests on all but Windows")
 class TestCellProfiler(unittest.TestCase):
@@ -58,7 +59,7 @@ class TestCellProfiler(unittest.TestCase):
     def test_01_02_code_statistics(self):
         old_stdout = sys.stdout
         fake_stdout = StringIO(
-            self.run_cellprofiler("--code-statistics"))
+                self.run_cellprofiler("--code-statistics"))
         fake_stdout.seek(0)
         found_module_stats = False
         found_setting_stats = False
@@ -125,8 +126,10 @@ class TestCellProfiler(unittest.TestCase):
         except IOError, e:
             if e.args[0] != 'http error':
                 raise e
+
             def bad_url(e=e):
                 raise e
+
             unittest.expectedFailure(bad_url)()
         finally:
             shutil.rmtree(output_directory)

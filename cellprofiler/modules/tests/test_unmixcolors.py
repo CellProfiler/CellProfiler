@@ -15,11 +15,13 @@ import cellprofiler.pipeline as cpp
 import cellprofiler.workspace as cpw
 
 INPUT_IMAGE = "inputimage"
+
+
 def output_image_name(idx):
     return "outputimage%d" % idx
 
-class TestUnmixColors(unittest.TestCase):
 
+class TestUnmixColors(unittest.TestCase):
     def test_01_01_load_v1(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
@@ -95,8 +97,10 @@ UnmixColors:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|sho
     Blue absorbance\x3A:0.3
 """
         pipeline = cpp.Pipeline()
+
         def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
@@ -107,10 +111,10 @@ UnmixColors:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|sho
         self.assertEqual(module.outputs[0].image_name, "Hematoxylin")
         self.assertEqual(module.outputs[-1].image_name, "RedWine")
         for i, stain in enumerate((
-            U.CHOICE_HEMATOXYLIN, U.CHOICE_EOSIN, U.CHOICE_DAB,
-            U.CHOICE_FAST_RED, U.CHOICE_FAST_BLUE, U.CHOICE_METHYL_GREEN,
-            U.CHOICE_AEC, U.CHOICE_ANILINE_BLUE, U.CHOICE_AZOCARMINE,
-            U.CHOICE_ALICAN_BLUE, U.CHOICE_PAS)):
+                U.CHOICE_HEMATOXYLIN, U.CHOICE_EOSIN, U.CHOICE_DAB,
+                U.CHOICE_FAST_RED, U.CHOICE_FAST_BLUE, U.CHOICE_METHYL_GREEN,
+                U.CHOICE_AEC, U.CHOICE_ANILINE_BLUE, U.CHOICE_AZOCARMINE,
+                U.CHOICE_ALICAN_BLUE, U.CHOICE_PAS)):
             self.assertEqual(module.outputs[i].stain_choice, stain)
         self.assertAlmostEqual(module.outputs[-1].red_absorbance.value, .1)
         self.assertAlmostEqual(module.outputs[-1].green_absorbance.value, .2)
@@ -123,8 +127,10 @@ UnmixColors:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|sho
         choices - a list of choice strings for the images desired
         '''
         pipeline = cpp.Pipeline()
+
         def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
+
         pipeline.add_listener(callback)
 
         module = U.UnmixColors()
@@ -133,8 +139,8 @@ UnmixColors:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|sho
         module.outputs[0].stain_choice.value = choices[0]
         for i, choice in enumerate(choices[1:]):
             module.add_image()
-            module.outputs[i+1].image_name.value = output_image_name(i+1)
-            module.outputs[i+1].stain_choice.value = choice
+            module.outputs[i + 1].image_name.value = output_image_name(i + 1)
+            module.outputs[i + 1].stain_choice.value = choice
 
         module.module_num = 1
         pipeline.add_module(module)
@@ -150,18 +156,18 @@ UnmixColors:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|sho
 
     @staticmethod
     def make_image(expected, absorbances):
-        eps = 1.0/256.0/2.0
+        eps = 1.0 / 256.0 / 2.0
         absorbance = 1 - expected
         log_absorbance = np.log(absorbance + eps)
         absorbances = np.array(absorbances)
-        absorbances = absorbances / np.sqrt(np.sum(absorbances**2))
-        log_absorbance = log_absorbance[:,:,np.newaxis] * absorbances[np.newaxis, np.newaxis, :]
+        absorbances = absorbances / np.sqrt(np.sum(absorbances ** 2))
+        log_absorbance = log_absorbance[:, :, np.newaxis] * absorbances[np.newaxis, np.newaxis, :]
         image = np.exp(log_absorbance) - eps
         return image
 
     def test_02_01_zeros(self):
         '''Test on an image of all zeros'''
-        workspace, module = self.make_workspace(np.zeros((10,20,3)),
+        workspace, module = self.make_workspace(np.zeros((10, 20, 3)),
                                                 [U.CHOICE_HEMATOXYLIN])
         module.run(workspace)
         image = workspace.image_set.get_image(output_image_name(0))
@@ -172,7 +178,7 @@ UnmixColors:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|sho
 
     def test_02_02_ones(self):
         '''Test on an image of all ones'''
-        workspace, module = self.make_workspace(np.ones((10,20,3)),
+        workspace, module = self.make_workspace(np.ones((10, 20, 3)),
                                                 [U.CHOICE_HEMATOXYLIN])
         module.run(workspace)
         image = workspace.image_set.get_image(output_image_name(0))
@@ -185,7 +191,7 @@ UnmixColors:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|sho
         '''Test on a single stain'''
 
         np.random.seed(23)
-        expected = np.random.uniform(size=(10,20))
+        expected = np.random.uniform(size=(10, 20))
         image = self.make_image(expected, U.ST_HEMATOXYLIN)
         workspace, module = self.make_workspace(image, [U.CHOICE_HEMATOXYLIN])
         module.run(workspace)
@@ -195,8 +201,8 @@ UnmixColors:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|sho
     def test_02_04_two_stains(self):
         '''Test on two stains mixed together'''
         np.random.seed(24)
-        expected_1 = np.random.uniform(size=(10,20)) * .5
-        expected_2 = np.random.uniform(size=(10,20)) * .5
+        expected_1 = np.random.uniform(size=(10, 20)) * .5
+        expected_2 = np.random.uniform(size=(10, 20)) * .5
         #
         # The absorbances should add in log space and multiply in
         # the image space
@@ -204,7 +210,7 @@ UnmixColors:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|sho
         image = self.make_image(expected_1, U.ST_HEMATOXYLIN)
         image *= self.make_image(expected_2, U.ST_EOSIN)
         workspace, module = self.make_workspace(image, [
-            U.CHOICE_HEMATOXYLIN, U.CHOICE_EOSIN ])
+            U.CHOICE_HEMATOXYLIN, U.CHOICE_EOSIN])
         module.run(workspace)
         image_1 = workspace.image_set.get_image(output_image_name(0))
         np.testing.assert_almost_equal(image_1.pixel_data, expected_1, 2)
@@ -215,12 +221,12 @@ UnmixColors:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|sho
         '''Test on a custom value for the stains'''
         np.random.seed(25)
         absorbance = np.random.uniform(size=3)
-        expected = np.random.uniform(size=(10,20))
+        expected = np.random.uniform(size=(10, 20))
         image = self.make_image(expected, absorbance)
         workspace, module = self.make_workspace(image, [U.CHOICE_CUSTOM])
-        ( module.outputs[0].red_absorbance.value,
-          module.outputs[0].green_absorbance.value,
-          module.outputs[0].blue_absorbance.value ) = absorbance
+        (module.outputs[0].red_absorbance.value,
+         module.outputs[0].green_absorbance.value,
+         module.outputs[0].blue_absorbance.value) = absorbance
         module.run(workspace)
         image = workspace.image_set.get_image(output_image_name(0))
         np.testing.assert_almost_equal(image.pixel_data, expected, 2)

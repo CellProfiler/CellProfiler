@@ -3,6 +3,7 @@
 '''
 
 import logging
+
 logger = logging.getLogger(__name__)
 
 import os
@@ -30,6 +31,7 @@ from cellprofiler.gui.cpfigure_tools import renumber_labels_for_display
 from cellprofiler.gui.cpfigure import CPNavigationToolbar
 from cellprofiler.gui.sashwindow_tools import sw_bind_to_evt_paint
 
+
 class EditObjectsDialog(wx.Dialog):
     '''This dialog can be invoked as an objects editor
 
@@ -42,7 +44,7 @@ class EditObjectsDialog(wx.Dialog):
     '''
     resume_id = wx.NewId()
     cancel_id = wx.NewId()
-    epsilon = 5 # maximum pixel distance to a vertex for hit test
+    epsilon = 5  # maximum pixel distance to a vertex for hit test
     FREEHAND_DRAW_MODE = "freehanddrawmode"
     SPLIT_PICK_FIRST_MODE = "split1"
     SPLIT_PICK_SECOND_MODE = "split2"
@@ -122,13 +124,13 @@ class EditObjectsDialog(wx.Dialog):
         wx.Dialog.__init__(self, None, -1,
                            "",
                            size=frame_size,
-                           style = style)
+                           style=style)
         self.allow_overlap = allow_overlap
         self.title = title
         self.guide_image = guide_image
         self.orig_labels = orig_labels
         self.shape = self.orig_labels[0].shape
-        self.background = None # background = None if full repaint needed
+        self.background = None  # background = None if full repaint needed
         self.reset(display=False)
         self.active_artist = None
         self.active_index = None
@@ -166,10 +168,10 @@ class EditObjectsDialog(wx.Dialog):
             #
             ijvx = np.vstack((
                 np.column_stack(
-                    (ijv, np.zeros(ijv.shape[0], ijv.dtype))),
+                        (ijv, np.zeros(ijv.shape[0], ijv.dtype))),
                 np.column_stack(
-                    (self.last_ijv,
-                     np.ones(self.last_ijv.shape[0], ijv.dtype)))))
+                        (self.last_ijv,
+                         np.ones(self.last_ijv.shape[0], ijv.dtype)))))
             order = np.lexsort((ijvx[:, 3],
                                 ijvx[:, 2],
                                 ijvx[:, 1],
@@ -179,9 +181,9 @@ class EditObjectsDialog(wx.Dialog):
             # Then mark all prev and next where i,j,v match (in both sets)
             #
             matches = np.hstack(
-                ((np.all(ijvx[:-1, :3] == ijvx[1:, :3], 1) &
-                  (ijvx[:-1, 3] == 0) &
-                  (ijvx[1:, 3] == 1)), [False]))
+                    ((np.all(ijvx[:-1, :3] == ijvx[1:, :3], 1) &
+                      (ijvx[:-1, 3] == 0) &
+                      (ijvx[1:, 3] == 1)), [False]))
             matches[1:] = matches[1:] | matches[:-1]
             ijvx = ijvx[~matches, :]
         artist_save = [(a.get_data(), self.artists[a].copy())
@@ -201,15 +203,15 @@ class EditObjectsDialog(wx.Dialog):
         ijvx, artist_save, self.to_keep = self.undo_stack.pop()
         ijvx = np.vstack((
             ijvx, np.column_stack(
-                (self.last_ijv, np.ones(self.last_ijv.shape[0],
-                                        self.last_ijv.dtype)))))
+                    (self.last_ijv, np.ones(self.last_ijv.shape[0],
+                                            self.last_ijv.dtype)))))
         order = np.lexsort((ijvx[:, 3], ijvx[:, 2], ijvx[:, 1], ijvx[:, 0]))
         ijvx = ijvx[order, :]
         #
         # Then mark all prev and next where i,j,v match (in both sets)
         #
         matches = np.hstack(
-            (np.all(ijvx[:-1, :3] == ijvx[1:, :3], 1), [False]))
+                (np.all(ijvx[:-1, :3] == ijvx[1:, :3], 1), [False]))
         matches[1:] = matches[1:] | matches[:-1]
         ijvx = ijvx[~matches, :]
         self.last_ijv = ijvx[:, :3]
@@ -231,7 +233,7 @@ class EditObjectsDialog(wx.Dialog):
                             marker='o', markerfacecolor='r',
                             markersize=6,
                             color=self.colormap[object_number, :],
-                            animated = True)
+                            animated=True)
             self.artists[artist] = d
             self.orig_axes.add_line(artist)
         self.display()
@@ -244,8 +246,8 @@ class EditObjectsDialog(wx.Dialog):
         ijv = np.zeros((0, 3), int)
         for l in self.labels:
             ijv = np.vstack(
-                (ijv,
-                 np.column_stack([i[l!=0], j[l!=0], l[l!=0]])))
+                    (ijv,
+                     np.column_stack([i[l != 0], j[l != 0], l[l != 0]])))
         return ijv
 
     def build_ui(self):
@@ -258,6 +260,7 @@ class EditObjectsDialog(wx.Dialog):
         # to do anything during printing (causes segfault on Windows)
         #
         self.inside_print = False
+
         class CanvasPatch(FigureCanvasWxAgg):
             def print_figure(self, *args, **kwargs):
                 self.Parent.inside_print = True
@@ -265,6 +268,7 @@ class EditObjectsDialog(wx.Dialog):
                     super(CanvasPatch, self).print_figure(*args, **kwargs)
                 finally:
                     self.Parent.inside_print = False
+
         self.panel = CanvasPatch(self, -1, self.figure)
         self.toolbar = CPNavigationToolbar(self.panel)
         self.sash_parent = wx.Panel(self)
@@ -281,12 +285,12 @@ class EditObjectsDialog(wx.Dialog):
         # Make 3 axes
         #
         self.orig_axes = self.figure.add_subplot(1, 1, 1)
-        self.orig_axes.set_zorder(1) # preferentially select on click.
+        self.orig_axes.set_zorder(1)  # preferentially select on click.
         self.orig_axes._adjustable = 'box-forced'
         self.orig_axes.set_title(
-            self.title,
-            fontname=cpprefs.get_title_font_name(),
-            fontsize=cpprefs.get_title_font_size())
+                self.title,
+                fontname=cpprefs.get_title_font_name(),
+                fontsize=cpprefs.get_title_font_size())
 
         ########################################
         #
@@ -310,92 +314,92 @@ class EditObjectsDialog(wx.Dialog):
             LEFT_MOUSE_BUTTON = LEFT_MOUSE
             RIGHT_MOUSE = "right mouse button"
         self.html_panel.SetPage(
-        """<h1>Editing help</h1>
-        <p>The editing user interface lets you create, remove and
-        edit objects. The interface will show the image that you selected
-        as the guiding image, overlaid with colored outlines of the selected
-        objects. Buttons are available at the bottom of the panel
-        for various commands. A number of operations are available with
-        the mouse:
-        <ul>
-        <li><i>Remove an object:</i> Click on the object
-        with the %(LEFT_MOUSE)s. The colored object outline will switch from
-        a solid line to a dashed line.</li>
-        <li><i>Restore a removed object:</i> Click on the object that was previously removed.
-        The colored object outline will switch from
-        a dashed line back to a solid line. </li>
-        <li><i>Edit objects:</i> Select the object
-        with the %(RIGHT_MOUSE)s to edit it. The outline will switch
-        from a colored outline to a series of points (the <i>control points</i>)
-        along the object boundary connected by solid lines. You can place any
-        number of objects into this mode for editing simultaneously; the control
-        point outline will indicate which objects have been selected.
-        Move object control points
-        by dragging them while holding the %(LEFT_MOUSE_BUTTON)s
-        down. Please note the following editing limitations:
-        <ul>
-        <li>You cannot move a control point across the interior boundary
-        of the object you are editing.</li>
-        <li>You cannot move the
-        edges on either side of a control point across another control point.</li>
-        </ul>
-        <li><i>Finish editing an object:</i> Click on the object again with
-        the %(RIGHT_MOUSE)s to save changes.</li>
-        <li><i>Abandon changes to an object:</i> Hit the <i>Esc</i> key.</li>
-        </ul>
-        You can always reset your edits to the original state
-        before editing by pressing the <i>Reset</i> key.</p>
+                """<h1>Editing help</h1>
+                <p>The editing user interface lets you create, remove and
+                edit objects. The interface will show the image that you selected
+                as the guiding image, overlaid with colored outlines of the selected
+                objects. Buttons are available at the bottom of the panel
+                for various commands. A number of operations are available with
+                the mouse:
+                <ul>
+                <li><i>Remove an object:</i> Click on the object
+                with the %(LEFT_MOUSE)s. The colored object outline will switch from
+                a solid line to a dashed line.</li>
+                <li><i>Restore a removed object:</i> Click on the object that was previously removed.
+                The colored object outline will switch from
+                a dashed line back to a solid line. </li>
+                <li><i>Edit objects:</i> Select the object
+                with the %(RIGHT_MOUSE)s to edit it. The outline will switch
+                from a colored outline to a series of points (the <i>control points</i>)
+                along the object boundary connected by solid lines. You can place any
+                number of objects into this mode for editing simultaneously; the control
+                point outline will indicate which objects have been selected.
+                Move object control points
+                by dragging them while holding the %(LEFT_MOUSE_BUTTON)s
+                down. Please note the following editing limitations:
+                <ul>
+                <li>You cannot move a control point across the interior boundary
+                of the object you are editing.</li>
+                <li>You cannot move the
+                edges on either side of a control point across another control point.</li>
+                </ul>
+                <li><i>Finish editing an object:</i> Click on the object again with
+                the %(RIGHT_MOUSE)s to save changes.</li>
+                <li><i>Abandon changes to an object:</i> Hit the <i>Esc</i> key.</li>
+                </ul>
+                You can always reset your edits to the original state
+                before editing by pressing the <i>Reset</i> key.</p>
 
-        <p>Once finished editing all your desired objects, press the <i>Done</i> button to
-        save your edits. At that point, the editing user interface will be replaced
-        by the module display window showing the original and the edited object set.</p>
+                <p>Once finished editing all your desired objects, press the <i>Done</i> button to
+                save your edits. At that point, the editing user interface will be replaced
+                by the module display window showing the original and the edited object set.</p>
 
-        <h2>Editing commands</h2>
-        The following keys perform editing
-        commands when pressed (the keys are not case-sensitive):
-        <ul>
-        <li><b>A</b>: Add a control point to the line nearest the
-        mouse cursor</li>
-        <li><b>C</b>: Join all selected objects into one that forms a
-        convex hull around them all. The convex hull is the smallest
-        shape that has no indentations and encloses all of the
-        objects. You can use this to combine several pieces into
-        one round object.</li>
-        <li><b>D</b>: Delete the control point nearest to the
-        cursor.</li>
-        <li><b>F</b>: Freehand draw. Press down on the %(LEFT_MOUSE)s
-        to draw a new object outline, then release to complete
-        the outline and return to normal editing.</li>
-        <li><b>J</b>: Join all the selected objects into one object.</li>
-        <li><b>M</b>: Display the context menu to select a command.</li>
-        <li><b>N</b>: Create a new object under the cursor. A new set
-        of control points is produced which you can then start
-        manipulating with the mouse.</li>
-        <li><b>S</b>: Split an object. Pressing <b>S</b> puts
-        the user interface into <i>Split Mode</i>. The user interface
-        will prompt you to select a first and second point for the
-        split. Two types of splits are allowed:
-        <ul>
-        <li>A split between two points on the same contour. This split
-        creates two separate objects.</li>
-        <li>A split between the inside and the outside of an object that
-        has a hole in it. This split creates a channel from the hole
-        to the outside of the object.</li>
-        </ul>
-        <li><b>T</b>: Toggle between fill and outline mode for objects.</li>
-        <li><b>X</b>: Delete mode. Press down on the %(LEFT_MOUSE)s to
-        start defining the delete region. Drag to define a rectangle. All
-        control points within the rectangle (shown as white circles) will be
-        deleted when you release the %(LEFT_MOUSE)s. Press the escape key
-        to cancel.
-        </li>
-        </ul>
-        <p><b>Note:</b> Editing is disabled in zoom or pan mode. The
-        zoom or pan button on the navigation toolbar is depressed
-        during this mode and your cursor is no longer an arrow.
-        You can exit from zoom or pan mode by pressing the
-        appropriate button on the navigation toolbar.</p>
-        """ % locals())
+                <h2>Editing commands</h2>
+                The following keys perform editing
+                commands when pressed (the keys are not case-sensitive):
+                <ul>
+                <li><b>A</b>: Add a control point to the line nearest the
+                mouse cursor</li>
+                <li><b>C</b>: Join all selected objects into one that forms a
+                convex hull around them all. The convex hull is the smallest
+                shape that has no indentations and encloses all of the
+                objects. You can use this to combine several pieces into
+                one round object.</li>
+                <li><b>D</b>: Delete the control point nearest to the
+                cursor.</li>
+                <li><b>F</b>: Freehand draw. Press down on the %(LEFT_MOUSE)s
+                to draw a new object outline, then release to complete
+                the outline and return to normal editing.</li>
+                <li><b>J</b>: Join all the selected objects into one object.</li>
+                <li><b>M</b>: Display the context menu to select a command.</li>
+                <li><b>N</b>: Create a new object under the cursor. A new set
+                of control points is produced which you can then start
+                manipulating with the mouse.</li>
+                <li><b>S</b>: Split an object. Pressing <b>S</b> puts
+                the user interface into <i>Split Mode</i>. The user interface
+                will prompt you to select a first and second point for the
+                split. Two types of splits are allowed:
+                <ul>
+                <li>A split between two points on the same contour. This split
+                creates two separate objects.</li>
+                <li>A split between the inside and the outside of an object that
+                has a hole in it. This split creates a channel from the hole
+                to the outside of the object.</li>
+                </ul>
+                <li><b>T</b>: Toggle between fill and outline mode for objects.</li>
+                <li><b>X</b>: Delete mode. Press down on the %(LEFT_MOUSE)s to
+                start defining the delete region. Drag to define a rectangle. All
+                control points within the rectangle (shown as white circles) will be
+                deleted when you release the %(LEFT_MOUSE)s. Press the escape key
+                to cancel.
+                </li>
+                </ul>
+                <p><b>Note:</b> Editing is disabled in zoom or pan mode. The
+                zoom or pan button on the navigation toolbar is depressed
+                during this mode and your cursor is no longer an arrow.
+                You can exit from zoom or pan mode by pressing the
+                appropriate button on the navigation toolbar.</p>
+                """ % locals())
         self.help_sash.Hide()
 
         ###################################################
@@ -419,21 +423,21 @@ class EditObjectsDialog(wx.Dialog):
         sub_sizer.Add(keep_button, 0, wx.ALIGN_CENTER)
 
         remove_button = wx.Button(self, self.ID_ACTION_REMOVE, "Remove all")
-        sub_sizer.Add(remove_button,0, wx.ALIGN_CENTER)
+        sub_sizer.Add(remove_button, 0, wx.ALIGN_CENTER)
 
         toggle_button = wx.Button(self, self.ID_ACTION_TOGGLE,
                                   "Reverse selection")
-        sub_sizer.Add(toggle_button,0, wx.ALIGN_CENTER)
+        sub_sizer.Add(toggle_button, 0, wx.ALIGN_CENTER)
         self.undo_button = wx.Button(self, wx.ID_UNDO)
         self.undo_button.SetToolTipString("Undo last edit")
         self.undo_button.Enable(False)
         sub_sizer.Add(self.undo_button)
         reset_button = wx.Button(self, -1, "Reset")
         reset_button.SetToolTipString(
-            "Undo all editing and restore the original objects")
+                "Undo all editing and restore the original objects")
         sub_sizer.Add(reset_button)
         self.display_image_button = \
-            wx.Button(self, self.ID_DISPLAY_IMAGE, label = self.D_HIDE_IMAGE)
+            wx.Button(self, self.ID_DISPLAY_IMAGE, label=self.D_HIDE_IMAGE)
         if self.guide_image is None:
             self.display_image_button.Show(False)
         else:
@@ -441,12 +445,12 @@ class EditObjectsDialog(wx.Dialog):
         self.help_button = wx.Button(self, wx.ID_HELP, label="Show Help")
         sub_sizer.Add(self.help_button)
         self.Bind(wx.EVT_BUTTON, self.on_toggle, toggle_button)
-        self.Bind(wx.EVT_MENU, self.on_toggle, id= self.ID_ACTION_TOGGLE)
+        self.Bind(wx.EVT_MENU, self.on_toggle, id=self.ID_ACTION_TOGGLE)
         self.Bind(wx.EVT_BUTTON, self.on_keep, keep_button)
         self.Bind(wx.EVT_MENU, self.on_keep, id=self.ID_ACTION_KEEP)
         self.Bind(wx.EVT_BUTTON, self.on_remove, remove_button)
         self.Bind(wx.EVT_MENU, self.on_remove, id=self.ID_ACTION_REMOVE)
-        self.Bind(wx.EVT_BUTTON, self.undo, id = wx.ID_UNDO)
+        self.Bind(wx.EVT_BUTTON, self.undo, id=wx.ID_UNDO)
         self.Bind(wx.EVT_BUTTON, self.on_reset, reset_button)
         self.display_image_button.Bind(wx.EVT_BUTTON, self.on_display_image)
         self.help_button.Bind(wx.EVT_BUTTON, self.on_help)
@@ -472,15 +476,14 @@ class EditObjectsDialog(wx.Dialog):
         self.Bind(wx.EVT_MENU, self.enter_delete_mode,
                   id=self.ID_MODE_DELETE)
         self.Bind(
-            wx.EVT_MENU,
-            (lambda event: self.set_label_display_mode(self.ID_LABELS_OUTLINES)),
-            id = self.ID_LABELS_OUTLINES)
+                wx.EVT_MENU,
+                (lambda event: self.set_label_display_mode(self.ID_LABELS_OUTLINES)),
+                id=self.ID_LABELS_OUTLINES)
         self.Bind(
-            wx.EVT_MENU,
-            (lambda event: self.set_label_display_mode(self.ID_LABELS_FILL)),
-            id = self.ID_LABELS_FILL)
+                wx.EVT_MENU,
+                (lambda event: self.set_label_display_mode(self.ID_LABELS_FILL)),
+                id=self.ID_LABELS_FILL)
         self.figure.canvas.Bind(wx.EVT_PAINT, self.on_paint)
-
 
         ######################################
         #
@@ -491,15 +494,19 @@ class EditObjectsDialog(wx.Dialog):
         resume_button = wx.Button(self, self.resume_id, "Done")
         button_sizer.AddButton(resume_button)
         sub_sizer.Add(button_sizer, 0, wx.ALIGN_CENTER)
+
         def on_resume(event):
             self.on_close(event, wx.OK)
+
         self.Bind(wx.EVT_BUTTON, on_resume, resume_button)
         button_sizer.SetAffirmativeButton(resume_button)
 
         cancel_button = wx.Button(self, self.cancel_id, "Cancel")
         button_sizer.AddButton(cancel_button)
+
         def on_cancel(event):
             self.Close()
+
         self.Bind(wx.EVT_BUTTON, on_cancel, cancel_button)
         button_sizer.SetNegativeButton(cancel_button)
         self.Bind(wx.EVT_MENU, self.on_help, id=wx.ID_HELP)
@@ -542,25 +549,25 @@ class EditObjectsDialog(wx.Dialog):
         self.ll = np.zeros(0, int)
         for label_and_touching in self.labels:
             colored_labels = color_labels(label_and_touching)
-            for color in range(1, np.max(colored_labels)+1):
+            for color in range(1, np.max(colored_labels) + 1):
                 label = np.zeros(label_and_touching.shape,
-                                  label_and_touching.dtype)
-                label[colored_labels==color] = \
-                    label_and_touching[colored_labels==color]
+                                 label_and_touching.dtype)
+                label[colored_labels == color] = \
+                    label_and_touching[colored_labels == color]
                 # drive each successive matrix's labels away
                 # from all others.
                 idxs = np.unique(label)
-                idxs = idxs[idxs!=0]
+                idxs = idxs[idxs != 0]
                 distinct_label_count = len(idxs)
                 clabels = renumber_labels_for_display(label)
                 clabels[clabels != 0] += lstart
                 lstart += distinct_label_count
                 label_map[label.flatten()] = clabels.flatten()
                 l, ct = scipy.ndimage.label(label != 0,
-                                            structure=np.ones((3,3), bool))
-                coords, offsets, counts = get_outline_pts(l, np.arange(1, ct+1))
+                                            structure=np.ones((3, 3), bool))
+                coords, offsets, counts = get_outline_pts(l, np.arange(1, ct + 1))
                 oi, oj = coords.transpose()
-                l, ct = scipy.ndimage.label(label == 0) # 4-connected
+                l, ct = scipy.ndimage.label(label == 0)  # 4-connected
                 #
                 # Have to remove the label that touches the edge, if any
                 #
@@ -571,9 +578,9 @@ class EditObjectsDialog(wx.Dialog):
                 if len(ledge) > 0:
                     l[l == ledge[0]] = 0
 
-                coords, offsets, counts = get_outline_pts(l, np.arange(1, ct+1))
+                coords, offsets, counts = get_outline_pts(l, np.arange(1, ct + 1))
                 if coords.shape[0] > 0:
-                    oi, oj = [np.hstack((o, coords[:,i]))
+                    oi, oj = [np.hstack((o, coords[:, i]))
                               for i, o in enumerate((oi, oj))]
 
                 ol = label[oi, oj]
@@ -589,10 +596,10 @@ class EditObjectsDialog(wx.Dialog):
                 self.lj = np.hstack((self.lj, lj))
                 self.ll = np.hstack((self.ll, ll))
         cm = matplotlib.cm.get_cmap(cpprefs.get_default_colormap())
-        cm.set_bad((0,0,0))
+        cm.set_bad((0, 0, 0))
 
         mappable = matplotlib.cm.ScalarMappable(cmap=cm)
-        mappable.set_clim(1, nlabels+1)
+        mappable.set_clim(1, nlabels + 1)
         self.colormap = mappable.to_rgba(np.arange(nlabels + 1))[:, :3]
         self.colormap = self.colormap[label_map, :]
         self.oc = self.colormap[self.ol, :]
@@ -610,11 +617,11 @@ class EditObjectsDialog(wx.Dialog):
                     self.remove_label(idx)
         else:
             result = wx.MessageBox(
-                "Are you sure you want to cancel editing?\n\n"
-                "If you are in analysis mode this will stop the analysis.",
-                "Cancel object editor",
-                style = wx.YES_NO | wx.ICON_QUESTION,
-                parent = self)
+                    "Are you sure you want to cancel editing?\n\n"
+                    "If you are in analysis mode this will stop the analysis.",
+                    "Cancel object editor",
+                    style=wx.YES_NO | wx.ICON_QUESTION,
+                    parent=self)
             if result != wx.YES:
                 event.Skip(False)
                 return
@@ -666,9 +673,9 @@ class EditObjectsDialog(wx.Dialog):
             vv.append(l[mask])
         temp = cpo.Objects()
         temp.set_ijv(
-            np.column_stack([np.hstack(x) for x in (ii, jj, vv)]),
-            shape = self.shape)
-        self.labels = [l for l,c in temp.get_labels()]
+                np.column_stack([np.hstack(x) for x in (ii, jj, vv)]),
+                shape=self.shape)
+        self.labels = [l for l, c in temp.get_labels()]
 
     def add_label(self, mask):
         object_number = len(self.to_keep)
@@ -729,20 +736,20 @@ class EditObjectsDialog(wx.Dialog):
                     cimage = image.copy()
                 elif self.scaling_mode == self.SM_NORMALIZED:
                     cimage = (image - min_intensity) / \
-                        (max_intensity - min_intensity)
+                             (max_intensity - min_intensity)
                 else:
                     #
                     # Scale the image to 1 <= image <= e
                     # and take log to get numbers between 0 and 1
                     #
                     cimage = np.log(
-                        1 + (image - min_intensity) *
-                        ((np.e - 1) / (max_intensity - min_intensity)))
+                            1 + (image - min_intensity) *
+                            ((np.e - 1) / (max_intensity - min_intensity)))
         else:
             cimage = np.zeros(
-                (self.shape[0],
-                 self.shape[1],
-                 3), np.float)
+                    (self.shape[0],
+                     self.shape[1],
+                     3), np.float)
         if len(self.to_keep) > 1:
             in_artist = np.zeros(len(self.to_keep), bool)
             for d in self.artists.values():
@@ -767,7 +774,7 @@ class EditObjectsDialog(wx.Dialog):
                         counts = np.bincount(lmap[self.ol[mask]])
                         indexer = Indexes((counts,))
                         e = 1 + 3 * (counts[indexer.rev_idx] >= 16)
-                        dash_mask = (indexer.idx[0] & (2**e - 1)) >= 2**(e-1)
+                        dash_mask = (indexer.idx[0] & (2 ** e - 1)) >= 2 ** (e - 1)
                         color[self.oi[mask], self.oj[mask]] = \
                             self.oc[mask] * dash_mask[:, np.newaxis]
                     else:
@@ -775,7 +782,7 @@ class EditObjectsDialog(wx.Dialog):
                     sigma = 1
                     intensity = gaussian_filter(intensity, sigma)
                     eps = intensity > np.finfo(intensity.dtype).eps
-                    color = gaussian_filter(color, (sigma, sigma,0))[eps, :]
+                    color = gaussian_filter(color, (sigma, sigma, 0))[eps, :]
                     intensity = intensity[eps]
                     cimage[eps, :] = \
                         cimage[eps, :] * (1 - intensity[:, np.newaxis]) + color
@@ -787,15 +794,15 @@ class EditObjectsDialog(wx.Dialog):
                     (((self.li & 1) == 0) & ((self.lj & 1) == 0)))
                 npts = np.sum(mask)
                 has_color = scipy.sparse.coo_matrix(
-                    (np.ones(npts), (self.li[mask], self.lj[mask])),
-                    shape = cimage.shape[:2]).toarray()
+                        (np.ones(npts), (self.li[mask], self.lj[mask])),
+                        shape=cimage.shape[:2]).toarray()
                 for i in range(3):
                     rgbval = scipy.sparse.coo_matrix(
-                        (self.lc[mask, i], (self.li[mask], self.lj[mask])),
-                        shape = cimage.shape[:2]).toarray()
+                            (self.lc[mask, i], (self.li[mask], self.lj[mask])),
+                            shape=cimage.shape[:2]).toarray()
                     cimage[has_color > 0, i] = (
                         rgbval[has_color > 0] / has_color[has_color > 0])
-        self.orig_axes.imshow(cimage, interpolation = self.interpolation_mode)
+        self.orig_axes.imshow(cimage, interpolation=self.interpolation_mode)
         self.set_orig_axes_title()
         if set_lim:
             self.orig_axes.set_xlim((x0, x1))
@@ -825,7 +832,7 @@ class EditObjectsDialog(wx.Dialog):
         if self.split_artist is not None:
             self.orig_axes.draw_artist(self.split_artist)
         if (self.mode == self.FREEHAND_DRAW_MODE and
-            self.active_artist is not None):
+                    self.active_artist is not None):
             self.orig_axes.draw_artist(self.active_artist)
         if not self.inside_print:
             self.figure.canvas.blit(self.orig_axes.bbox)
@@ -842,7 +849,7 @@ class EditObjectsDialog(wx.Dialog):
             data = artist.get_xydata()[:-1, :]
             xy = artist.get_transform().transform(data)
             x, y = xy.transpose()
-            d = np.sqrt((x-event.x)**2 + (y-event.y)**2)
+            d = np.sqrt((x - event.x) ** 2 + (y - event.y) ** 2)
             idx = np.atleast_1d(np.argmin(d)).flatten()[0]
             d = d[idx]
             if d < self.epsilon and d < best_d:
@@ -908,10 +915,10 @@ class EditObjectsDialog(wx.Dialog):
         x = int(event.xdata + .5)
         y = int(event.ydata + .5)
         if (x < 0 or x >= self.shape[1] or
-            y < 0 or y >= self.shape[0]):
+                    y < 0 or y >= self.shape[0]):
             return
         for labels in self.labels:
-            lnum = labels[y,x]
+            lnum = labels[y, x]
             if lnum != 0:
                 break
         if lnum == 0:
@@ -949,7 +956,7 @@ class EditObjectsDialog(wx.Dialog):
                 self.toggle_label_display_mode()
             elif event.key == "x":
                 self.enter_delete_mode(event)
-            elif event.key =="z":
+            elif event.key == "z":
                 if len(self.undo_stack) > 0:
                     self.undo()
             elif event.key == "escape":
@@ -976,7 +983,7 @@ class EditObjectsDialog(wx.Dialog):
         if isinstance(event, wx.MouseEvent):
             x, y = self.panel.ScreenToClient(event.GetPosition())
             location_event = matplotlib.backend_bases.LocationEvent(
-                "ContextMenu", self.panel, x, y, event)
+                    "ContextMenu", self.panel, x, y, event)
             if location_event.inaxes == self.orig_axes:
                 if self.get_mouse_event_object_number(location_event) is not None:
                     event.Skip(False)
@@ -989,16 +996,16 @@ class EditObjectsDialog(wx.Dialog):
         menu = wx.Menu()
         if self.guide_image is not None:
             check_item = menu.AppendCheckItem(
-                self.ID_DISPLAY_IMAGE, "Display image",
-                "Toggle guiding image display")
+                    self.ID_DISPLAY_IMAGE, "Display image",
+                    "Toggle guiding image display")
             check_item.Check(self.wants_image_display)
         contrast_menu = wx.Menu("Contrast")
         for mid, state, help in (
-            (self.ID_CONTRAST_RAW, self.SM_RAW, "Display raw intensity image"),
-            (self.ID_CONTRAST_NORMALIZED, self.SM_NORMALIZED,
-            "Display the image intensity using the full range of gray scales"),
-            (self.ID_CONTRAST_LOG_NORMALIZED, self.SM_LOG_NORMALIZED,
-            "Display the image intensity using a logarithmic scale")):
+                (self.ID_CONTRAST_RAW, self.SM_RAW, "Display raw intensity image"),
+                (self.ID_CONTRAST_NORMALIZED, self.SM_NORMALIZED,
+                 "Display the image intensity using the full range of gray scales"),
+                (self.ID_CONTRAST_LOG_NORMALIZED, self.SM_LOG_NORMALIZED,
+                 "Display the image intensity using a logarithmic scale")):
             contrast_menu.AppendRadioItem(mid, state, help)
             if self.scaling_mode == state:
                 contrast_menu.Check(mid, True)
@@ -1006,12 +1013,12 @@ class EditObjectsDialog(wx.Dialog):
 
         interpolation_menu = wx.Menu("Interpolation")
         for mid, state, help in (
-            (self.ID_INTERPOLATION_NEAREST, cpprefs.IM_NEAREST,
-             "Display images using the intensity of the nearest pixel (blocky)"),
-            (self.ID_INTERPOLATION_BILINEAR, cpprefs.IM_BILINEAR,
-             "Display images by blending the intensities of the four nearest pixels (smoother)"),
-            (self.ID_INTERPOLATION_BICUBIC, cpprefs.IM_BICUBIC,
-             "Display images by blending intensities using cubic spline interpolation (smoothest)")):
+                (self.ID_INTERPOLATION_NEAREST, cpprefs.IM_NEAREST,
+                 "Display images using the intensity of the nearest pixel (blocky)"),
+                (self.ID_INTERPOLATION_BILINEAR, cpprefs.IM_BILINEAR,
+                 "Display images by blending the intensities of the four nearest pixels (smoother)"),
+                (self.ID_INTERPOLATION_BICUBIC, cpprefs.IM_BICUBIC,
+                 "Display images by blending intensities using cubic spline interpolation (smoothest)")):
             interpolation_menu.AppendRadioItem(mid, state, help)
             if self.interpolation_mode == state:
                 interpolation_menu.Check(mid, True)
@@ -1019,8 +1026,8 @@ class EditObjectsDialog(wx.Dialog):
 
         label_menu = wx.Menu("Label appearance")
         for mid, label, help in (
-            (self.ID_LABELS_OUTLINES, "Outlines", "Show the outlines of objects"),
-            (self.ID_LABELS_FILL, "Fill", "Show objects with a solid fill color")):
+                (self.ID_LABELS_OUTLINES, "Outlines", "Show the outlines of objects"),
+                (self.ID_LABELS_FILL, "Fill", "Show objects with a solid fill color")):
             label_menu.AppendRadioItem(mid, label, help)
         label_menu.Check(self.label_display_mode, True)
         menu.AppendMenu(-1, "Label appearance", label_menu)
@@ -1039,24 +1046,24 @@ class EditObjectsDialog(wx.Dialog):
 
         actions_menu = wx.Menu("Actions")
         actions_menu.Append(
-            self.ID_ACTION_KEEP, "Keep",
-            "Keep all objects (undo all remove object actions)")
+                self.ID_ACTION_KEEP, "Keep",
+                "Keep all objects (undo all remove object actions)")
         actions_menu.Append(
-            self.ID_ACTION_REMOVE, "Remove",
-            "Mark all objects for removal")
+                self.ID_ACTION_REMOVE, "Remove",
+                "Mark all objects for removal")
         actions_menu.Append(
-            self.ID_ACTION_TOGGLE, "Toggle",
-            "Mark all kept objects for removal and unmark all objects marked for removal")
+                self.ID_ACTION_TOGGLE, "Toggle",
+                "Mark all kept objects for removal and unmark all objects marked for removal")
         actions_menu.Append(
-            self.ID_ACTION_RESET, "Reset",
-            "Reset the objects to their original state before editing")
+                self.ID_ACTION_RESET, "Reset",
+                "Reset the objects to their original state before editing")
         actions_menu.AppendSeparator()
         actions_menu.Append(
-            self.ID_ACTION_JOIN, "Join objects",
-            "Join all objects being edited into a single object")
+                self.ID_ACTION_JOIN, "Join objects",
+                "Join all objects being edited into a single object")
         actions_menu.Append(
-            self.ID_ACTION_CONVEX_HULL, "Convex hull",
-            "Merge all objects being edited into an object which is the smallest convex hull around them all (can be done to a single object).")
+                self.ID_ACTION_CONVEX_HULL, "Convex hull",
+                "Merge all objects being edited into an object which is the smallest convex hull around them all (can be done to a single object).")
         menu.AppendMenu(-1, "Actions", actions_menu)
         menu.Append(wx.ID_HELP)
         self.PopupMenu(menu)
@@ -1097,7 +1104,7 @@ class EditObjectsDialog(wx.Dialog):
             event.guiEvent.Skip(False)
             event.guiEvent.StopPropagation()
         if (event.inaxes is not None and
-            event.inaxes.get_navigate_mode() is not None):
+                    event.inaxes.get_navigate_mode() is not None):
             return
         if self.mode == self.FREEHAND_DRAW_MODE:
             self.on_mouse_button_up_freehand_draw_mode(event)
@@ -1131,16 +1138,16 @@ class EditObjectsDialog(wx.Dialog):
         after_index = (self.active_index + 1) % n_points
         before_pt, after_pt = [
             np.array([data[0][idx], data[1][idx]])
-                     for idx in (before_index, after_index)]
+            for idx in (before_index, after_index)]
         ydata, xdata = [
-            min(self.shape[i]-1, max(yx, 0))
+            min(self.shape[i] - 1, max(yx, 0))
             for i, yx in enumerate((event.ydata, event.xdata))]
         new_pt = np.array([xdata, ydata], int)
         path = Path(np.array((before_pt, new_pt, after_pt)))
         eps = np.finfo(np.float32).eps
         for artist in self.artists:
             if (self.allow_overlap and
-                self.artists[artist][self.K_LABEL] != object_number):
+                        self.artists[artist][self.K_LABEL] != object_number):
                 continue
             if artist == self.active_artist:
                 if n_points <= 4:
@@ -1148,7 +1155,7 @@ class EditObjectsDialog(wx.Dialog):
                 # Exclude the lines -2 and 2 before and after ours.
                 #
                 xx, yy = [np.hstack((d[self.active_index:],
-                                     d[:(self.active_index+1)]))
+                                     d[:(self.active_index + 1)]))
                           for d in data]
                 xx, yy = xx[2:-2], yy[2:-2]
                 xydata = np.column_stack((xx, yy))
@@ -1168,7 +1175,7 @@ class EditObjectsDialog(wx.Dialog):
             if any(on_segment):
                 # it's ok if the point is on the line.
                 continue
-            if path.intersects_path(other_path, filled = False):
+            if path.intersects_path(other_path, filled=False):
                 return
 
         data = self.active_artist.get_data()
@@ -1198,7 +1205,7 @@ class EditObjectsDialog(wx.Dialog):
         if self.delete_mode_rect_artist is not None:
             self.orig_axes.draw_artist(self.delete_mode_rect_artist)
         if (self.mode == self.FREEHAND_DRAW_MODE and
-            self.active_artist is not None):
+                    self.active_artist is not None):
             self.orig_axes.draw_artist(self.active_artist)
             old = self.panel.IsShownOnScreen
         #
@@ -1237,7 +1244,7 @@ class EditObjectsDialog(wx.Dialog):
 
     def join_objects(self, event):
         all_labels = np.unique([
-            v[self.K_LABEL] for v in self.artists.values()])
+                                   v[self.K_LABEL] for v in self.artists.values()])
         if len(all_labels) < 2:
             return
         assert all_labels[0] == np.min(all_labels)
@@ -1255,7 +1262,7 @@ class EditObjectsDialog(wx.Dialog):
             mask |= to_join[label]
             label[to_join[label]] = 0
         self.labels.append(
-            mask.astype(self.labels[0].dtype) * object_number)
+                mask.astype(self.labels[0].dtype) * object_number)
 
         self.restructure_labels()
         self.init_labels()
@@ -1269,7 +1276,7 @@ class EditObjectsDialog(wx.Dialog):
             return
 
         all_labels = np.unique([
-            v[self.K_LABEL] for v in self.artists.values()])
+                                   v[self.K_LABEL] for v in self.artists.values()])
         for label in all_labels:
             self.close_label(label, display=False)
         object_number = all_labels[0]
@@ -1326,8 +1333,8 @@ class EditObjectsDialog(wx.Dialog):
         if best_artist is None:
             return
         l = best_artist.get_xydata()[:, ::-1]
-        l = np.vstack((l[:(best_index+1)], new_pt.reshape(1,2),
-                       l[(best_index+1):]))
+        l = np.vstack((l[:(best_index + 1)], new_pt.reshape(1, 2),
+                       l[(best_index + 1):]))
         best_artist.set_data((l[:, 1], l[:, 0]))
         self.artists[best_artist][self.K_EDITED] = True
         self.update_artists()
@@ -1342,7 +1349,7 @@ class EditObjectsDialog(wx.Dialog):
             else:
                 l = np.vstack((
                     l[:best_index, :],
-                    l[(best_index+1):-1, :]))
+                    l[(best_index + 1):-1, :]))
                 l = np.vstack((l, l[:1, :]))
                 best_artist.set_data((l[:, 0], l[:, 1]))
                 self.artists[best_artist][self.K_EDITED] = True
@@ -1370,19 +1377,19 @@ class EditObjectsDialog(wx.Dialog):
 
     def new_object(self, event):
         object_number = len(self.to_keep)
-        temp = np.ones(object_number+1, bool)
+        temp = np.ones(object_number + 1, bool)
         temp[:-1] = self.to_keep
         self.to_keep = temp
         angles = np.pi * 2 * np.arange(13) / 12
         x = 20 * np.cos(angles) + event.xdata
         y = 20 * np.sin(angles) + event.ydata
         x[x < 0] = 0
-        x[x >= self.shape[1]] = self.shape[1]-1
-        y[y >= self.shape[0]] = self.shape[0]-1
+        x[x >= self.shape[1]] = self.shape[1] - 1
+        y[y >= self.shape[0]] = self.shape[0] - 1
         lnew = np.zeros(self.labels[0].shape,
                         self.labels[0].dtype)
         i, j = np.mgrid[0:lnew.shape[0], 0:lnew.shape[1]]
-        lnew[(i - event.ydata)**2 + (j - event.xdata) **2 <= 400] = object_number
+        lnew[(i - event.ydata) ** 2 + (j - event.xdata) ** 2 <= 400] = object_number
         self.labels.append(lnew)
         self.restructure_labels()
         self.init_labels()
@@ -1391,11 +1398,11 @@ class EditObjectsDialog(wx.Dialog):
                             markerfacecolor='r',
                             markersize=6,
                             color=self.colormap[object_number, :],
-                            animated = True)
+                            animated=True)
 
-        self.artists[new_artist] = { self.K_LABEL: object_number,
-                                     self.K_EDITED: True,
-                                     self.K_OUTSIDE: True}
+        self.artists[new_artist] = {self.K_LABEL: object_number,
+                                    self.K_EDITED: True,
+                                    self.K_OUTSIDE: True}
         self.display()
         self.record_undo()
 
@@ -1430,9 +1437,9 @@ class EditObjectsDialog(wx.Dialog):
             title = self.title
 
         self.orig_axes.set_title(
-            title,
-            fontname=cpprefs.get_title_font_name(),
-            fontsize=cpprefs.get_title_font_size())
+                title,
+                fontname=cpprefs.get_title_font_name(),
+                fontsize=cpprefs.get_title_font_size())
 
     def enter_split_mode(self, event):
         self.toolbar.cancel_mode()
@@ -1461,8 +1468,8 @@ class EditObjectsDialog(wx.Dialog):
         self.split_pick_index = pick_index
         self.split_artist = Line2D(np.array((x, x)),
                                    np.array((y, y)),
-                                   color = "blue",
-                                   animated = True)
+                                   color="blue",
+                                   animated=True)
         self.orig_axes.add_line(self.split_artist)
         self.mode = self.SPLIT_PICK_SECOND_MODE
         self.set_orig_axes_title()
@@ -1476,7 +1483,7 @@ class EditObjectsDialog(wx.Dialog):
             self.split_artist.set_data((x, y))
             pick_artist, pick_index = self.get_control_point(event)
             if pick_artist is not None and self.ok_to_split(
-                pick_artist, pick_index):
+                    pick_artist, pick_index):
                 self.split_artist.set_color("red")
             else:
                 self.split_artist.set_color("blue")
@@ -1484,7 +1491,7 @@ class EditObjectsDialog(wx.Dialog):
 
     def ok_to_split(self, pick_artist, pick_index):
         if (self.artists[pick_artist][self.K_LABEL] !=
-            self.artists[self.split_pick_artist][self.K_LABEL]):
+                self.artists[self.split_pick_artist][self.K_LABEL]):
             # Second must be same object as first.
             return False
         if pick_artist == self.split_pick_artist:
@@ -1495,11 +1502,11 @@ class EditObjectsDialog(wx.Dialog):
                 # don't allow split of neighbors
                 return False
             if (len(pick_artist.get_xdata()) - max_index <= 2 and
-                min_index == 0):
+                        min_index == 0):
                 # don't allow split of last and first
                 return False
         elif (self.artists[pick_artist][self.K_OUTSIDE] ==
-              self.artists[self.split_pick_artist][self.K_OUTSIDE]):
+                  self.artists[self.split_pick_artist][self.K_OUTSIDE]):
             # Only allow inter-object split of outside to inside
             return False
         return True
@@ -1522,12 +1529,12 @@ class EditObjectsDialog(wx.Dialog):
             idx0 = min(pick_index, self.split_pick_index)
             idx1 = max(pick_index, self.split_pick_index)
             if is_outside:
-                xy0 = np.vstack((xy[:(idx0+1), :],
+                xy0 = np.vstack((xy[:(idx0 + 1), :],
                                  xy[idx1:, :]))
-                xy1 = np.vstack((xy[idx0:(idx1+1), :],
-                                 xy[idx0:(idx0+1), :]))
+                xy1 = np.vstack((xy[idx0:(idx1 + 1), :],
+                                 xy[idx0:(idx0 + 1), :]))
             else:
-                border_pts = np.zeros((2,2,2))
+                border_pts = np.zeros((2, 2, 2))
 
                 border_pts[0, 0, :], border_pts[1, 1, :] = \
                     self.get_split_points(pick_artist, idx0)
@@ -1535,9 +1542,9 @@ class EditObjectsDialog(wx.Dialog):
                     self.get_split_points(pick_artist, idx1)
                 xy0 = np.vstack((xy[:idx0, :],
                                  border_pts[:, 0, :],
-                                 xy[(idx1+1):, :]))
+                                 xy[(idx1 + 1):, :]))
                 xy1 = np.vstack((border_pts[:, 1, :],
-                                 xy[(idx0+1):idx1, :],
+                                 xy[(idx0 + 1):idx1, :],
                                  border_pts[:1, 1, :]))
 
             pick_artist.set_data((xy0[:, 0], xy0[:, 1]))
@@ -1545,7 +1552,7 @@ class EditObjectsDialog(wx.Dialog):
                                 marker='o', markerfacecolor='r',
                                 markersize=6,
                                 color=self.colormap[old_object_number, :],
-                                animated = True)
+                                animated=True)
             self.orig_axes.add_line(new_artist)
             if is_outside:
                 new_object_number = len(self.to_keep)
@@ -1560,11 +1567,11 @@ class EditObjectsDialog(wx.Dialog):
                 hmask = np.zeros(self.shape, bool)
                 for artist, attrs in list(self.artists.items()):
                     if (not attrs[self.K_OUTSIDE] and
-                        attrs[self.K_LABEL] == old_object_number):
+                                attrs[self.K_LABEL] == old_object_number):
                         hx, hy = artist.get_data()
                         hmask = hmask | polygon_lines_to_mask(
-                            hy[:-1], hx[:-1], hy[1:], hx[1:],
-                            self.shape)
+                                hy[:-1], hx[:-1], hy[1:], hx[1:],
+                                self.shape)
                 temp = np.ones(self.to_keep.shape[0] + 1, bool)
                 temp[:-1] = self.to_keep
                 self.to_keep = temp
@@ -1575,7 +1582,7 @@ class EditObjectsDialog(wx.Dialog):
                 #
                 for label in self.labels:
                     label[hmask & ((label == old_object_number) |
-                                    (label == new_object_number))] = 0
+                                   (label == new_object_number))] = 0
                 self.init_labels()
                 self.make_control_points(old_object_number)
                 self.make_control_points(new_object_number)
@@ -1586,7 +1593,7 @@ class EditObjectsDialog(wx.Dialog):
                 self.artists[new_artist] = {
                     self.K_EDITED: True,
                     self.K_LABEL: old_object_number,
-                    self.K_OUTSIDE: False }
+                    self.K_OUTSIDE: False}
                 self.update_artists()
         else:
             #
@@ -1620,7 +1627,7 @@ class EditObjectsDialog(wx.Dialog):
             # is 0 for the point to be contributed first and
             # 1 for the point to be contributed last.
             #
-            border_pts = np.zeros((2,2,2))
+            border_pts = np.zeros((2, 2, 2))
 
             border_pts[0, 0, :], border_pts[1, 1, :] = \
                 self.get_split_points(outside_artist, outside_index)
@@ -1629,11 +1636,11 @@ class EditObjectsDialog(wx.Dialog):
 
             xy = np.vstack((xy0[:outside_index, :],
                             border_pts[:, 0, :],
-                            xy1[(inside_index+1):-1, :],
+                            xy1[(inside_index + 1):-1, :],
                             xy1[:inside_index, :],
                             border_pts[:, 1, :],
-                            xy0[(outside_index+1):, :]))
-            xy[-1, : ] = xy[0, :] # if outside_index == 0
+                            xy0[(outside_index + 1):, :]))
+            xy[-1, :] = xy[0, :]  # if outside_index == 0
 
             outside_artist.set_data((xy[:, 0], xy[:, 1]))
             del self.artists[inside_artist]
@@ -1682,7 +1689,7 @@ class EditObjectsDialog(wx.Dialog):
         elif idx == a.shape[0] - 1:
             idx_right = 1
         else:
-            idx_right = idx+1
+            idx_right = idx + 1
         return ((a[idx_left, :] + a[idx, :]) / 2,
                 (a[idx_right, :] + a[idx, :]) / 2)
 
@@ -1708,9 +1715,9 @@ class EditObjectsDialog(wx.Dialog):
 
     def on_freehand_draw_click(self, event):
         '''Begin drawing on mouse-down'''
-        self.active_artist = Line2D([ event.xdata], [event.ydata],
-                                    color = "blue",
-                                    animated = True)
+        self.active_artist = Line2D([event.xdata], [event.ydata],
+                                    color="blue",
+                                    animated=True)
         self.orig_axes.add_line(self.active_artist)
         self.update_artists()
 
@@ -1720,11 +1727,11 @@ class EditObjectsDialog(wx.Dialog):
         if self.active_artist is not None:
             xdata, ydata = self.active_artist.get_data()
             ydata, xdata = [
-                np.minimum(self.shape[i]-1, np.maximum(yx, 0))
+                np.minimum(self.shape[i] - 1, np.maximum(yx, 0))
                 for i, yx in enumerate((ydata, xdata))]
             self.active_artist.set_data(
-                np.hstack((xdata, [event.xdata])),
-                np.hstack((ydata, [event.ydata])))
+                    np.hstack((xdata, [event.xdata])),
+                    np.hstack((ydata, [event.ydata])))
             self.update_artists()
 
     def on_mouse_button_up_freehand_draw_mode(self, event):
@@ -1760,6 +1767,7 @@ class EditObjectsDialog(wx.Dialog):
     DELETE_MODE_TITLE = (
         "Press the mouse button and drag to select points to delete.\n"
         "Hit Esc to exit without deleting.\n")
+
     def enter_delete_mode(self, event):
         self.toolbar.cancel_mode()
         self.mode = self.DELETE_MODE
@@ -1774,10 +1782,10 @@ class EditObjectsDialog(wx.Dialog):
             if event.inaxes == self.orig_axes:
                 self.delete_mode_start = (event.xdata, event.ydata)
                 self.delete_mode_rect_artist = Line2D(
-                    [event.xdata] * 5, [event.ydata] * 5,
-                    linestyle = "-",
-                    color = "w",
-                    marker = " ")
+                        [event.xdata] * 5, [event.ydata] * 5,
+                        linestyle="-",
+                        color="w",
+                        marker=" ")
                 self.orig_axes.add_line(self.delete_mode_rect_artist)
                 logger.info("Starting delete at %f, %f" % self.delete_mode_start)
             else:
@@ -1785,7 +1793,7 @@ class EditObjectsDialog(wx.Dialog):
 
     def on_mouse_moved_delete_mode(self, event):
         if (self.delete_mode_start is not None and
-            event.inaxes == self.orig_axes):
+                    event.inaxes == self.orig_axes):
             (xmin, xmax), (ymin, ymax) = [
                 [fn(a, b) for fn in min, max]
                 for a, b in
@@ -1794,8 +1802,10 @@ class EditObjectsDialog(wx.Dialog):
             self.delete_mode_rect_artist.set_data([
                 [xmin, xmin, xmax, xmax, xmin],
                 [ymin, ymax, ymax, ymin, ymin]])
-            def delete_mode_filter(x,y):
+
+            def delete_mode_filter(x, y):
                 return (x >= xmin) & (x < xmax) & (y >= ymin) & (y < ymax)
+
             self.delete_mode_filter = delete_mode_filter
             points = []
             for artist in self.artists:
@@ -1808,16 +1818,16 @@ class EditObjectsDialog(wx.Dialog):
                 points = np.vstack(points)
                 if self.delete_mode_artist is None:
                     self.delete_mode_artist = Line2D(
-                        points[:, 0], points[:, 1],
-                        marker = "o",
-                        markeredgecolor="black",
-                        markerfacecolor="white",
-                        linestyle=" ")
+                            points[:, 0], points[:, 1],
+                            marker="o",
+                            markeredgecolor="black",
+                            markerfacecolor="white",
+                            linestyle=" ")
                     self.orig_axes.add_line(self.delete_mode_artist)
                 else:
                     old_points = self.delete_mode_artist.get_xydata()
                     if len(old_points) != len(points) or np.any(
-                        old_points != points):
+                                    old_points != points):
                         self.delete_mode_artist.set_data(points.transpose())
             self.update_artists()
 
@@ -1830,7 +1840,7 @@ class EditObjectsDialog(wx.Dialog):
                 if np.all(f):
                     continue
                 xy = np.column_stack((x[f], y[f]))
-                if len(xy) < 3 or len(xy)==3 and np.all(xy[0]==xy[-1]):
+                if len(xy) < 3 or len(xy) == 3 and np.all(xy[0] == xy[-1]):
                     to_delete.append(artist)
                 else:
                     if np.all(xy[0] != xy[-1]):
@@ -1928,7 +1938,7 @@ class EditObjectsDialog(wx.Dialog):
 
     def layout_sash(self):
         wx.LayoutAlgorithm().LayoutWindow(
-            self.sash_parent, self.panel)
+                self.sash_parent, self.panel)
         if self.help_sash.IsShown():
             self.help_sash.Layout()
             self.help_sash.Refresh()
@@ -1949,10 +1959,10 @@ class EditObjectsDialog(wx.Dialog):
         # Objects are 8-connected and holes are 4-connected
         #
         for polarity, structure in (
-            (True, np.ones((3,3), bool)),
-            (False, np.array([[0, 1, 0],
-                              [1, 1, 1],
-                              [0, 1, 0]], bool))):
+                (True, np.ones((3, 3), bool)),
+                (False, np.array([[0, 1, 0],
+                                  [1, 1, 1],
+                                  [0, 1, 0]], bool))):
             #
             # Pad the mask so we don't have to deal with out of bounds
             #
@@ -1964,13 +1974,13 @@ class EditObjectsDialog(wx.Dialog):
                 mask = ~mask
             labels, count = scipy.ndimage.label(mask, structure)
             if not polarity:
-                border_object = labels[0,0]
-                labels[labels == labels[0,0]] = 0
+                border_object = labels[0, 0]
+                labels[labels == labels[0, 0]] = 0
             sub_object_numbers = [
-                n for n in range(1, count+1)
+                n for n in range(1, count + 1)
                 if polarity or n != border_object]
             coords, offsets, counts = get_outline_pts(labels, sub_object_numbers)
-            coords = coords - 1 # account for mask padding
+            coords = coords - 1  # account for mask padding
             for i, sub_object_number in enumerate(sub_object_numbers):
                 chain = coords[offsets[i]:(offsets[i] + counts[i]), :]
                 if not polarity:
@@ -1986,7 +1996,7 @@ class EditObjectsDialog(wx.Dialog):
                     accepted = np.zeros(len(chain), bool)
                     accepted[0] = True
                     accepted[-1] = True
-                    accepted[int(len(chain)/2)] = True
+                    accepted[int(len(chain) / 2)] = True
                     while True:
                         idx1 = np.cumsum(accepted[:-1])
                         idx0 = idx1 - 1
@@ -2008,7 +2018,7 @@ class EditObjectsDialog(wx.Dialog):
                                 markerfacecolor='r',
                                 markersize=6,
                                 color=self.colormap[object_number, :],
-                                animated = True)
+                                animated=True)
                 self.orig_axes.add_line(artist)
                 self.artists[artist] = {
                     self.K_LABEL: object_number,
@@ -2016,7 +2026,7 @@ class EditObjectsDialog(wx.Dialog):
                     self.K_OUTSIDE: polarity}
         self.update_artists()
 
-    def close_label(self, label, display = True):
+    def close_label(self, label, display=True):
         '''Close the artists associated with a label
 
         label - label # of label being closed.
@@ -2053,12 +2063,14 @@ class EditObjectsDialog(wx.Dialog):
             if display:
                 self.display()
 
-if __name__== "__main__":
+
+if __name__ == "__main__":
     import javabridge
     import bioformats
+
     javabridge.start_vm(class_path=bioformats.JARS)
     try:
-        if len(sys.argv) > 2 :
+        if len(sys.argv) > 2:
             labels = [bioformats.load_image(sys.argv[1], rescale=False)]
             img = bioformats.load_image(sys.argv[2])
         else:

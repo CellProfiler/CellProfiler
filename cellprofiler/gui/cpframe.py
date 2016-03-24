@@ -5,6 +5,7 @@
 import cellprofiler.gui
 import cellprofiler.gui.cpfigure
 import cellprofiler.gui.datatoolframe
+import cellprofiler.gui.dialog
 import cellprofiler.gui.errordialog
 import cellprofiler.gui.help
 import cellprofiler.gui.html

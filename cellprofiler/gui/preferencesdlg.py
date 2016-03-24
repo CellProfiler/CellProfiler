@@ -1,15 +1,13 @@
-'''preferencesdlg.py Edit global preferences
-'''
+"""preferencesdlg.py Edit global preferences
+"""
 
+import cellprofiler.gui.help
+import cellprofiler.gui.htmldialog
+import cellprofiler.preferences
+import matplotlib.cm
 import os
 import sys
-
-import matplotlib.cm
 import wx
-
-import cellprofiler.gui.help as cphelp
-import cellprofiler.preferences as cpprefs
-from cellprofiler.gui.htmldialog import HTMLDialog
 
 DIRBROWSE = "Browse"
 FILEBROWSE = "FileBrowse"
@@ -19,11 +17,11 @@ CHOICE = "Choice"
 
 
 class IntegerPreference(object):
-    '''User interface info for an integer preference
+    """User interface info for an integer preference
 
     This signals that a preference should be displayed and edited as
     an integer, optionally limited by a range.
-    '''
+    """
 
     def __init__(self, minval=None, maxval=None):
         self.minval = minval
@@ -58,11 +56,11 @@ class ClassPathValidator(wx.PyValidator):
 
 
 class PreferencesDlg(wx.Dialog):
-    '''Display a dialog for setting preferences
+    """Display a dialog for setting preferences
 
     The dialog handles fetching current defaults and setting the
     defaults when the user hits OK.
-    '''
+    """
 
     def __init__(self, parent=None, ID=-1, title="CellProfiler preferences",
                  size=wx.DefaultSize, pos=wx.DefaultPosition,
@@ -112,7 +110,7 @@ class PreferencesDlg(wx.Dialog):
                                   max=maxval,
                                   initial=getter())
             else:
-                if getter == cpprefs.get_ij_plugin_directory:
+                if getter == cellprofiler.preferences.get_ij_plugin_directory:
                     validator = ClassPathValidator()
                 else:
                     validator = wx.DefaultValidator
@@ -169,14 +167,14 @@ class PreferencesDlg(wx.Dialog):
             else:
                 on_press = None
             if not on_press is None:
-                id = wx.NewId()
-                button = wx.Button(scrollpanel, id, ui_info)
-                self.Bind(wx.EVT_BUTTON, on_press, button, id)
+                identifier = wx.NewId()
+                button = wx.Button(scrollpanel, identifier, ui_info)
+                self.Bind(wx.EVT_BUTTON, on_press, button, identifier)
                 sizer.Add(button, (index, 2))
             button = wx.Button(scrollpanel, -1, '?', (0, 0), (30, -1))
 
             def on_help(event, help_text=help_text):
-                dlg = HTMLDialog(self, "Preferences help", help_text)
+                dlg = cellprofiler.gui.htmldialog.HTMLDialog(self, "Preferences help", help_text)
                 dlg.Show()
 
             sizer.Add(button, (index, 3))
@@ -217,7 +215,7 @@ class PreferencesDlg(wx.Dialog):
                 setter(value)
 
     def get_preferences(self):
-        '''Get the list of preferences.
+        """Get the list of preferences.
 
         Each row in the list has the following form:
         Title - the text that appears to the right of the edit box
@@ -226,95 +224,95 @@ class PreferencesDlg(wx.Dialog):
         display - If this is a list, it represents the valid choices.
                   If it is "dirbrowse", put a directory browse button
                   to the right of the edit box.
-        '''
+        """
         cmaps = list(matplotlib.cm.datad.keys())
         cmaps.sort()
         return [["Default Input Folder",
-                 cpprefs.get_default_image_directory,
-                 cpprefs.set_default_image_directory,
-                 DIRBROWSE, cphelp.DEFAULT_IMAGE_FOLDER_HELP],
+                 cellprofiler.preferences.get_default_image_directory,
+                 cellprofiler.preferences.set_default_image_directory,
+                 DIRBROWSE, cellprofiler.gui.help.DEFAULT_IMAGE_FOLDER_HELP],
                 ["Default Output Folder",
-                 cpprefs.get_default_output_directory,
-                 cpprefs.set_default_output_directory,
-                 DIRBROWSE, cphelp.DEFAULT_OUTPUT_FOLDER_HELP],
+                 cellprofiler.preferences.get_default_output_directory,
+                 cellprofiler.preferences.set_default_output_directory,
+                 DIRBROWSE, cellprofiler.gui.help.DEFAULT_OUTPUT_FOLDER_HELP],
                 ["Title font",
                  self.get_title_font,
                  self.set_title_font,
-                 FONT, cphelp.TITLE_FONT_HELP],
+                 FONT, cellprofiler.gui.help.TITLE_FONT_HELP],
                 ["Table font",
                  self.get_table_font,
                  self.set_table_font,
-                 FONT, cphelp.TABLE_FONT_HELP],
+                 FONT, cellprofiler.gui.help.TABLE_FONT_HELP],
                 ["Default colormap",
-                 cpprefs.get_default_colormap,
-                 cpprefs.set_default_colormap,
-                 cmaps, cphelp.DEFAULT_COLORMAP_HELP],
+                 cellprofiler.preferences.get_default_colormap,
+                 cellprofiler.preferences.set_default_colormap,
+                 cmaps, cellprofiler.gui.help.DEFAULT_COLORMAP_HELP],
                 ["Window background",
-                 cpprefs.get_background_color,
-                 cpprefs.set_background_color,
-                 COLOR, cphelp.WINDOW_BACKGROUND_HELP],
+                 cellprofiler.preferences.get_background_color,
+                 cellprofiler.preferences.set_background_color,
+                 COLOR, cellprofiler.gui.help.WINDOW_BACKGROUND_HELP],
                 ["Error color",
-                 cpprefs.get_error_color,
-                 cpprefs.set_error_color,
-                 COLOR, cphelp.ERROR_COLOR_HELP],
+                 cellprofiler.preferences.get_error_color,
+                 cellprofiler.preferences.set_error_color,
+                 COLOR, cellprofiler.gui.help.ERROR_COLOR_HELP],
                 ["Primary outline color",
-                 cpprefs.get_primary_outline_color,
-                 cpprefs.set_primary_outline_color,
-                 COLOR, cphelp.PRIMARY_OUTLINE_COLOR_HELP],
+                 cellprofiler.preferences.get_primary_outline_color,
+                 cellprofiler.preferences.set_primary_outline_color,
+                 COLOR, cellprofiler.gui.help.PRIMARY_OUTLINE_COLOR_HELP],
                 ["Secondary outline color",
-                 cpprefs.get_secondary_outline_color,
-                 cpprefs.set_secondary_outline_color,
-                 COLOR, cphelp.SECONDARY_OUTLINE_COLOR_HELP],
+                 cellprofiler.preferences.get_secondary_outline_color,
+                 cellprofiler.preferences.set_secondary_outline_color,
+                 COLOR, cellprofiler.gui.help.SECONDARY_OUTLINE_COLOR_HELP],
                 ["Tertiary outline color",
-                 cpprefs.get_tertiary_outline_color,
-                 cpprefs.set_tertiary_outline_color,
-                 COLOR, cphelp.TERTIARY_OUTLINE_COLOR_HELP],
+                 cellprofiler.preferences.get_tertiary_outline_color,
+                 cellprofiler.preferences.set_tertiary_outline_color,
+                 COLOR, cellprofiler.gui.help.TERTIARY_OUTLINE_COLOR_HELP],
                 ["Interpolation mode",
-                 cpprefs.get_interpolation_mode,
-                 cpprefs.set_interpolation_mode,
-                 [cpprefs.IM_NEAREST, cpprefs.IM_BILINEAR, cpprefs.IM_BICUBIC],
-                 cphelp.INTERPOLATION_MODE_HELP],
+                 cellprofiler.preferences.get_interpolation_mode,
+                 cellprofiler.preferences.set_interpolation_mode,
+                 [cellprofiler.preferences.IM_NEAREST, cellprofiler.preferences.IM_BILINEAR, cellprofiler.preferences.IM_BICUBIC],
+                 cellprofiler.gui.help.INTERPOLATION_MODE_HELP],
                 ["Intensity normalization",
-                 cpprefs.get_intensity_mode,
-                 cpprefs.set_intensity_mode,
-                 [cpprefs.INTENSITY_MODE_RAW, cpprefs.INTENSITY_MODE_NORMAL,
-                  cpprefs.INTENSITY_MODE_LOG],
-                 cphelp.INTENSITY_MODE_HELP],
+                 cellprofiler.preferences.get_intensity_mode,
+                 cellprofiler.preferences.set_intensity_mode,
+                 [cellprofiler.preferences.INTENSITY_MODE_RAW, cellprofiler.preferences.INTENSITY_MODE_NORMAL,
+                  cellprofiler.preferences.INTENSITY_MODE_LOG],
+                 cellprofiler.gui.help.INTENSITY_MODE_HELP],
                 ["CellProfiler plugins directory",
-                 cpprefs.get_plugin_directory,
-                 cpprefs.set_plugin_directory,
-                 DIRBROWSE, cphelp.PLUGINS_DIRECTORY_HELP],
+                 cellprofiler.preferences.get_plugin_directory,
+                 cellprofiler.preferences.set_plugin_directory,
+                 DIRBROWSE, cellprofiler.gui.help.PLUGINS_DIRECTORY_HELP],
                 ["ImageJ plugins directory",
-                 cpprefs.get_ij_plugin_directory,
-                 cpprefs.set_ij_plugin_directory,
-                 DIRBROWSE, cphelp.IJ_PLUGINS_DIRECTORY_HELP],
+                 cellprofiler.preferences.get_ij_plugin_directory,
+                 cellprofiler.preferences.set_ij_plugin_directory,
+                 DIRBROWSE, cellprofiler.gui.help.IJ_PLUGINS_DIRECTORY_HELP],
                 ["Check for updates",
-                 cpprefs.get_check_new_versions,
-                 cpprefs.set_check_new_versions,
-                 CHOICE, cphelp.CHECK_FOR_UPDATES_HELP],
+                 cellprofiler.preferences.get_check_new_versions,
+                 cellprofiler.preferences.set_check_new_versions,
+                 CHOICE, cellprofiler.gui.help.CHECK_FOR_UPDATES_HELP],
                 ["Display welcome text on startup",
-                 cpprefs.get_startup_blurb,
-                 cpprefs.set_startup_blurb,
-                 CHOICE, cphelp.SHOW_STARTUP_BLURB_HELP],
+                 cellprofiler.preferences.get_startup_blurb,
+                 cellprofiler.preferences.set_startup_blurb,
+                 CHOICE, cellprofiler.gui.help.SHOW_STARTUP_BLURB_HELP],
                 ["Warn if Java runtime environment not present",
-                 cpprefs.get_report_jvm_error,
-                 cpprefs.set_report_jvm_error,
-                 CHOICE, cphelp.REPORT_JVM_ERROR_HELP],
+                 cellprofiler.preferences.get_report_jvm_error,
+                 cellprofiler.preferences.set_report_jvm_error,
+                 CHOICE, cellprofiler.gui.help.REPORT_JVM_ERROR_HELP],
                 ['Show the "Analysis complete" message at the end of a run',
-                 cpprefs.get_show_analysis_complete_dlg,
-                 cpprefs.set_show_analysis_complete_dlg,
-                 CHOICE, cphelp.SHOW_ANALYSIS_COMPLETE_HELP],
+                 cellprofiler.preferences.get_show_analysis_complete_dlg,
+                 cellprofiler.preferences.set_show_analysis_complete_dlg,
+                 CHOICE, cellprofiler.gui.help.SHOW_ANALYSIS_COMPLETE_HELP],
                 ['Show the "Exiting test mode" message',
-                 cpprefs.get_show_exiting_test_mode_dlg,
-                 cpprefs.set_show_exiting_test_mode_dlg,
-                 CHOICE, cphelp.SHOW_EXITING_TEST_MODE_HELP],
+                 cellprofiler.preferences.get_show_exiting_test_mode_dlg,
+                 cellprofiler.preferences.set_show_exiting_test_mode_dlg,
+                 CHOICE, cellprofiler.gui.help.SHOW_EXITING_TEST_MODE_HELP],
                 ['Warn if images are different sizes',
-                 cpprefs.get_show_report_bad_sizes_dlg,
-                 cpprefs.set_show_report_bad_sizes_dlg,
-                 CHOICE, cphelp.SHOW_REPORT_BAD_SIZES_DLG_HELP],
+                 cellprofiler.preferences.get_show_report_bad_sizes_dlg,
+                 cellprofiler.preferences.set_show_report_bad_sizes_dlg,
+                 CHOICE, cellprofiler.gui.help.SHOW_REPORT_BAD_SIZES_DLG_HELP],
                 ['Show the sampling menu',
-                 cpprefs.get_show_sampling,
-                 cpprefs.set_show_sampling,
+                 cellprofiler.preferences.get_show_sampling,
+                 cellprofiler.preferences.set_show_sampling,
                  CHOICE, """<p>Show the sampling menu </p>
                  <p><i>Note that CellProfiler must be restarted after setting.</i></p>
                  <p>The sampling menu is an interplace for Paramorama, a plugin for an interactive visualization
@@ -330,78 +328,71 @@ class PreferencesDlg(wx.Dialog):
                  and Ruddle RA. (2011) IEEE Transactions on Visualization and Computer Graphics, 17(12), 2402-2411.</li>
                  </ul>"""],
                 ['Warn if a pipeline was saved in an old version of CellProfiler',
-                 cpprefs.get_warn_about_old_pipeline,
-                 cpprefs.set_warn_about_old_pipeline,
+                 cellprofiler.preferences.get_warn_about_old_pipeline,
+                 cellprofiler.preferences.set_warn_about_old_pipeline,
                  CHOICE,
-                 cphelp.WARN_ABOUT_OLD_PIPELINES_HELP],
+                 cellprofiler.gui.help.WARN_ABOUT_OLD_PIPELINES_HELP],
                 ['Use more figure space',
-                 cpprefs.get_use_more_figure_space,
-                 cpprefs.set_use_more_figure_space,
+                 cellprofiler.preferences.get_use_more_figure_space,
+                 cellprofiler.preferences.set_use_more_figure_space,
                  CHOICE,
-                 cphelp.USE_MORE_FIGURE_SPACE_HELP
+                 cellprofiler.gui.help.USE_MORE_FIGURE_SPACE_HELP
                  ],
                 ['Maximum number of workers',
-                 cpprefs.get_max_workers,
-                 cpprefs.set_max_workers,
-                 IntegerPreference(1, cpprefs.default_max_workers() * 4),
-                 cphelp.MAX_WORKERS_HELP],
+                 cellprofiler.preferences.get_max_workers,
+                 cellprofiler.preferences.set_max_workers,
+                 IntegerPreference(1, cellprofiler.preferences.default_max_workers() * 4),
+                 cellprofiler.gui.help.MAX_WORKERS_HELP],
                 ['Temporary folder',
-                 cpprefs.get_temporary_directory,
-                 (lambda x: cpprefs.set_temporary_directory(x, globally=True)),
+                 cellprofiler.preferences.get_temporary_directory,
+                 (lambda x: cellprofiler.preferences.set_temporary_directory(x, globally=True)),
                  DIRBROWSE,
-                 cphelp.TEMP_DIR_HELP],
+                 cellprofiler.gui.help.TEMP_DIR_HELP],
                 ['Maximum memory for Java (MB)',
-                 cpprefs.get_jvm_heap_mb,
-                 cpprefs.set_jvm_heap_mb,
+                 cellprofiler.preferences.get_jvm_heap_mb,
+                 cellprofiler.preferences.set_jvm_heap_mb,
                  IntegerPreference(128, 64000),
-                 cphelp.JVM_HEAP_HELP],
+                 cellprofiler.gui.help.JVM_HEAP_HELP],
                 ['Save pipeline and/or file list in addition to project',
-                 cpprefs.get_save_pipeline_with_project,
-                 cpprefs.set_save_pipeline_with_project,
-                 cpprefs.SPP_ALL,
-                 cphelp.SAVE_PIPELINE_WITH_PROJECT_HELP],
+                 cellprofiler.preferences.get_save_pipeline_with_project,
+                 cellprofiler.preferences.set_save_pipeline_with_project,
+                 cellprofiler.preferences.SPP_ALL,
+                 cellprofiler.gui.help.SAVE_PIPELINE_WITH_PROJECT_HELP],
                 ['Folder name regular expression guesses',
-                 cpprefs.get_pathname_re_guess_file,
-                 cpprefs.set_pathname_re_guess_file,
+                 cellprofiler.preferences.get_pathname_re_guess_file,
+                 cellprofiler.preferences.set_pathname_re_guess_file,
                  FILEBROWSE,
-                 cphelp.FOLDER_RE_GUESS_HELP],
+                 cellprofiler.gui.help.FOLDER_RE_GUESS_HELP],
                 ['File name regular expression guesses',
-                 cpprefs.get_filename_re_guess_file,
-                 cpprefs.set_filename_re_guess_file,
+                 cellprofiler.preferences.get_filename_re_guess_file,
+                 cellprofiler.preferences.set_filename_re_guess_file,
                  FILEBROWSE,
-                 cphelp.FILE_RE_GUESS_HELP],
+                 cellprofiler.gui.help.FILE_RE_GUESS_HELP],
                 ['Batch Profiler URL',
-                 cpprefs.get_batchprofiler_url,
-                 cpprefs.set_batchprofiler_url,
+                 cellprofiler.preferences.get_batchprofiler_url,
+                 cellprofiler.preferences.set_batchprofiler_url,
                  None,
-                 cphelp.BATCHPROFILER_URL_HELP]
+                 cellprofiler.gui.help.BATCHPROFILER_URL_HELP]
                 ]
 
-    def get_title_font(self):
-        return "%s,%f" % (cpprefs.get_title_font_name(),
-                          cpprefs.get_title_font_size())
+    @staticmethod
+    def get_title_font():
+        return "%s,%f" % (cellprofiler.preferences.get_title_font_name(),
+                          cellprofiler.preferences.get_title_font_size())
 
-    def set_title_font(self, font):
+    @staticmethod
+    def set_title_font(font):
         name, size = font.split(",")
-        cpprefs.set_title_font_name(name)
-        cpprefs.set_title_font_size(float(size))
+        cellprofiler.preferences.set_title_font_name(name)
+        cellprofiler.preferences.set_title_font_size(float(size))
 
-    def get_table_font(self):
-        return "%s,%f" % (cpprefs.get_table_font_name(),
-                          cpprefs.get_table_font_size())
+    @staticmethod
+    def get_table_font():
+        return "%s,%f" % (cellprofiler.preferences.get_table_font_name(),
+                          cellprofiler.preferences.get_table_font_size())
 
-    def set_table_font(self, font):
+    @staticmethod
+    def set_table_font(font):
         name, size = font.split(",")
-        cpprefs.set_table_font_name(name)
-        cpprefs.set_table_font_size(float(size))
-
-
-if __name__ == '__main__':
-    class MyApp(wx.App):
-        def OnInit(self):
-            dlg = PreferencesDlg()
-            dlg.show_modal()
-            return 1
-
-
-    app = MyApp(0)
+        cellprofiler.preferences.set_table_font_name(name)
+        cellprofiler.preferences.set_table_font_size(float(size))

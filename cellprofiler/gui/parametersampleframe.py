@@ -5,22 +5,18 @@ Author: AJ Pretorius
         a.j.pretorius@leeds.ac.uk
 """
 
-import os
-import sys
-import time
-import traceback
-
-import numpy as np
-import wx
-import wx.lib.agw.floatspin as fs
-
-import cellprofiler.cpimage as cpi
+import cellprofiler.cpimage
 import cellprofiler.cpmodule
-import cellprofiler.measurements as cpm
-import cellprofiler.objects as cpo
+import cellprofiler.measurements
+import cellprofiler.objects
 import cellprofiler.preferences
-import cellprofiler.settings as settings
-import cellprofiler.workspace as cpw
+import cellprofiler.settings
+import cellprofiler.workspace
+import numpy
+import os
+import traceback
+import wx
+import wx.lib.agw.floatspin
 
 PARAM_CLASS_TEXT_LABEL = 'Input text label'
 PARAM_CLASS_BOUNDED_DISCRETE = 'Bounded, discrete'
@@ -73,7 +69,7 @@ class ParameterSampleFrame(wx.Frame):
             [[s_11, None, s_31], [s_12, None, s_32], ...].
     """
 
-    def __init__(self, parent, module, pipeline, id=-1,
+    def __init__(self, parent, module, pipeline, identifier=-1,
                  pos=wx.DefaultPosition, size=wx.DefaultSize,
                  style=wx.DEFAULT_FRAME_STYLE, name=wx.FrameNameStr):
         # Flag to check during event handling: widgets generate events as they
@@ -98,7 +94,7 @@ class ParameterSampleFrame(wx.Frame):
         self.__grids = None
 
         frame_title = 'Sampling settings for module, ' + self.__module.module_name
-        wx.Frame.__init__(self, self.__frame, id, frame_title, pos, size, style, name)
+        wx.Frame.__init__(self, self.__frame, identifier, frame_title, pos, size, style, name)
         self.__frame_sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSize(wx.Size(700, 350))
         self.SetSizer(self.__frame_sizer)
@@ -210,21 +206,21 @@ class ParameterSampleFrame(wx.Frame):
                     interval = DEFAULT_NUMBER_SAMPLES - 1  # Used later to set upper bound
                 elif self.is_parameter_float(setting):
                     # Float
-                    lower_spin_ctrl = fs.FloatSpin(
+                    lower_spin_ctrl = wx.lib.agw.floatspin.FloatSpin(
                             self.__settings_scrolled_window, wx.NewId(),
                             size=wx.DefaultSize)  # NB: if not set, spin buttons are hidden
                     lower_spin_ctrl.SetDigits(FLOAT_DIGITS_TO_ROUND_TO)
                     lower_spin_ctrl.SetIncrement(10 ** -FLOAT_DIGITS_TO_ROUND_TO)
                     lower_spin_ctrl.SetRange(FLOAT_LOWER_BOUND, FLOAT_UPPER_BOUND)
-                    lower_spin_ctrl.Bind(fs.EVT_FLOATSPIN, self.on_lower_float_spin)
+                    lower_spin_ctrl.Bind(wx.lib.agw.floatspin.EVT_FLOATSPIN, self.on_lower_float_spin)
 
-                    upper_spin_ctrl = fs.FloatSpin(
+                    upper_spin_ctrl = wx.lib.agw.floatspin.FloatSpin(
                             self.__settings_scrolled_window, wx.NewId(),
                             size=wx.DefaultSize)  # NB: if not set, spin buttons are hidden
                     upper_spin_ctrl.SetDigits(FLOAT_DIGITS_TO_ROUND_TO)
                     upper_spin_ctrl.SetIncrement(10 ** -FLOAT_DIGITS_TO_ROUND_TO)
                     upper_spin_ctrl.SetRange(FLOAT_LOWER_BOUND, FLOAT_UPPER_BOUND)
-                    upper_spin_ctrl.Bind(fs.EVT_FLOATSPIN, self.on_upper_float_spin)
+                    upper_spin_ctrl.Bind(wx.lib.agw.floatspin.EVT_FLOATSPIN, self.on_upper_float_spin)
 
                     interval = upper_spin_ctrl.GetIncrement()  # Used later to set upper bound
 
@@ -312,43 +308,45 @@ class ParameterSampleFrame(wx.Frame):
             parameters_to_widgets_list.append(widget_indices)
         return parameters_to_widgets_list
 
-    def get_parameter_type(self, setting):
+    @staticmethod
+    def get_parameter_type(setting):
         """Get parameter type of 'setting' by considering its class."""
-        if isinstance(setting, settings.Binary):
+        if isinstance(setting, cellprofiler.settings.Binary):
             return PARAM_CLASS_BOUNDED_DISCRETE
-        elif isinstance(setting, settings.Choice):
+        elif isinstance(setting, cellprofiler.settings.Choice):
             return PARAM_CLASS_BOUNDED_DISCRETE
-        elif isinstance(setting, settings.Divider):
+        elif isinstance(setting, cellprofiler.settings.Divider):
             return PARAM_CLASS_DECORATION
-        elif isinstance(setting, settings.DoSomething):
+        elif isinstance(setting, cellprofiler.settings.DoSomething):
             return PARAM_CLASS_DECORATION
-        elif isinstance(setting, settings.FigureSubscriber):
+        elif isinstance(setting, cellprofiler.settings.FigureSubscriber):
             return PARAM_CLASS_BOUNDED_DISCRETE
-        elif isinstance(setting, settings.Float):
+        elif isinstance(setting, cellprofiler.settings.Float):
             return PARAM_CLASS_UNBOUNDED
-        elif isinstance(setting, settings.FloatRange):
+        elif isinstance(setting, cellprofiler.settings.FloatRange):
             return PARAM_CLASS_UNBOUNDED
-        elif isinstance(setting, settings.Integer):
+        elif isinstance(setting, cellprofiler.settings.Integer):
             return PARAM_CLASS_UNBOUNDED
-        elif isinstance(setting, settings.IntegerRange):
+        elif isinstance(setting, cellprofiler.settings.IntegerRange):
             return PARAM_CLASS_UNBOUNDED
-        elif isinstance(setting, settings.IntegerOrUnboundedRange):
+        elif isinstance(setting, cellprofiler.settings.IntegerOrUnboundedRange):
             return PARAM_CLASS_UNBOUNDED
-        elif isinstance(setting, settings.Measurement):
+        elif isinstance(setting, cellprofiler.settings.Measurement):
             # NB: Not sure what to do with 'Measurement' yet
             return 'not sure'
-        elif isinstance(setting, settings.NameProvider):
+        elif isinstance(setting, cellprofiler.settings.NameProvider):
             return PARAM_CLASS_TEXT_LABEL
-        elif isinstance(setting, settings.NameSubscriber):
+        elif isinstance(setting, cellprofiler.settings.NameSubscriber):
             return PARAM_CLASS_BOUNDED_DISCRETE
-        elif isinstance(setting, settings.RemoveSettingButton):
+        elif isinstance(setting, cellprofiler.settings.RemoveSettingButton):
             return PARAM_CLASS_DECORATION
-        elif isinstance(setting, settings.Text):
+        elif isinstance(setting, cellprofiler.settings.Text):
             return PARAM_CLASS_TEXT_LABEL
         else:
             return 'whatever is left'
 
-    def get_parameter_input_size(self, setting):
+    @staticmethod
+    def get_parameter_input_size(setting):
         """Get input size of 'setting'."""
         size = 1
         try:
@@ -357,20 +355,22 @@ class ParameterSampleFrame(wx.Frame):
             pass
         return size
 
-    def is_parameter_float(self, setting):
-        if isinstance(setting, settings.Float):
+    @staticmethod
+    def is_parameter_float(setting):
+        if isinstance(setting, cellprofiler.settings.Float):
             return True
-        elif isinstance(setting, settings.FloatRange):
+        elif isinstance(setting, cellprofiler.settings.FloatRange):
             return True
         else:
             return False
 
-    def is_parameter_int(self, setting):
-        if isinstance(setting, settings.Integer):
+    @staticmethod
+    def is_parameter_int(setting):
+        if isinstance(setting, cellprofiler.settings.Integer):
             return True
-        elif isinstance(setting, settings.IntegerRange):
+        elif isinstance(setting, cellprofiler.settings.IntegerRange):
             return True
-        elif isinstance(setting, settings.IntegerOrUnboundedRange):
+        elif isinstance(setting, cellprofiler.settings.IntegerOrUnboundedRange):
             return True
         else:
             return False
@@ -404,14 +404,14 @@ class ParameterSampleFrame(wx.Frame):
                 try:
                     setting.set_value(lower_value)
                     setting.test_valid(self.__pipeline)
-                except settings.ValidationError, instance:
+                except cellprofiler.settings.ValidationError, instance:
                     message += '\'' + str(setting.get_text()) + \
                                '\': lower bound invalid, ' + \
                                '\n\t' + str(instance.message) + '\n'
                 try:
                     setting.set_value(upper_value)
                     setting.test_valid(self.__pipeline)
-                except settings.ValidationError, instance:
+                except cellprofiler.settings.ValidationError, instance:
                     message += '\'' + str(setting.get_text()) + \
                                '\': upper bound invalid, ' + \
                                '\n\t' + str(instance.message) + '\n'
@@ -501,7 +501,8 @@ class ParameterSampleFrame(wx.Frame):
                         number *= self.__number_spin_ctrl_list[j].GetValue()
         return number
 
-    def compute_samples(self, lower_bound, upper_bound, number_samples, is_int):
+    @staticmethod
+    def compute_samples(lower_bound, upper_bound, number_samples, is_int):
         """Computes samples in the range [lower_bound, upper_bound].
 
         This method computes an returns a list of uniformly distributed samples
@@ -552,12 +553,12 @@ class ParameterSampleFrame(wx.Frame):
         better understanding of what exactly this does, but I'm pretty much
         using it as a black box for the time being.
         """
-        self.__measurements = cpm.Measurements(can_overwrite=True)
-        self.__object_set = cpo.ObjectSet(can_overwrite=True)
-        self.__image_set_list = cpi.ImageSetList()
-        workspace = cpw.Workspace(self.__pipeline, None, None, None,
-                                  self.__measurements, self.__image_set_list,
-                                  self.__frame)
+        self.__measurements = cellprofiler.measurements.Measurements(can_overwrite=True)
+        self.__object_set = cellprofiler.objects.ObjectSet(can_overwrite=True)
+        self.__image_set_list = cellprofiler.cpimage.ImageSetList()
+        workspace = cellprofiler.workspace.Workspace(self.__pipeline, None, None, None,
+                                                     self.__measurements, self.__image_set_list,
+                                                     self.__frame)
         try:
             if not self.__pipeline.prepare_run(workspace):
                 print 'Error: failed to get image sets'
@@ -635,7 +636,7 @@ class ParameterSampleFrame(wx.Frame):
             # Do not write settings without values, ie, buttons etc
             if setting.get_text() != '':
                 value_to_write = str(setting.get_value())
-                if isinstance(setting, settings.ImageNameProvider):
+                if isinstance(setting, cellprofiler.settings.ImageNameProvider):
                     # Save image
                     image = \
                         self.__measurements.get_image(value_to_write)
@@ -691,17 +692,18 @@ class ParameterSampleFrame(wx.Frame):
                 #        print '\t\t' + str(current_measurement)
                 # ~^~
 
-    def save_image(self, image, path):
+    @staticmethod
+    def save_image(image, path):
         """TODO: add comments"""
 
         import PIL.Image as PILImage
         pixels = image.pixel_data
-        if np.max(pixels) > 1 or np.min(pixels) < 0:
+        if numpy.max(pixels) > 1 or numpy.min(pixels) < 0:
             pixels = pixels.copy()
             pixels[pixels < 0] = 0
             pixels[pixels > 1] = 1
 
-        pixels = (pixels * 255).astype(np.uint8)
+        pixels = (pixels * 255).astype(numpy.uint8)
         if pixels.ndim == 3 and pixels.shape[2] == 4:
             mode = 'RGBA'
         elif pixels.ndim == 3:

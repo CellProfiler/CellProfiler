@@ -1,16 +1,15 @@
+from cellprofiler.preferences import get_background_color, set_startup_blurb
+
+import cellprofiler.gui.html.content
+import cellprofiler.icons
+import content
 import os
 import sys
 import urllib
 import urllib2
 import webbrowser
-
 import wx
 import wx.html
-
-import cellprofiler.preferences as cpprefs
-import content
-from cellprofiler.gui.html.content import WELCOME_HELP
-from cellprofiler.icons import get_builtin_images_path
 
 MEMORY_SCHEME = "memory:"
 WELCOME_SCREEN_FRAME = "WelcomeScreenFrame"
@@ -19,7 +18,7 @@ WELCOME_SCREEN_FRAME = "WelcomeScreenFrame"
 class HtmlClickableWindow(wx.html.HtmlWindow):
     def __init__(self, *args, **kwargs):
         wx.html.HtmlWindow.__init__(self, *args, **kwargs)
-        self.HTMLBackgroundColour = cpprefs.get_background_color()
+        self.HTMLBackgroundColour = get_background_color()
 
     def load_startup_blurb(self):
         self.OnLinkClicked(wx.html.HtmlLinkInfo('startup_main', ''))
@@ -32,7 +31,7 @@ class HtmlClickableWindow(wx.html.HtmlWindow):
             webbrowser.open(href)
         elif href.startswith('pref:'):
             if 'no_display' in href:
-                cpprefs.set_startup_blurb(False)
+                set_startup_blurb(False)
                 # Find the parent frame and, if it's the welcome screen frame,
                 # "close" it (= hide it)
                 #
@@ -44,10 +43,10 @@ class HtmlClickableWindow(wx.html.HtmlWindow):
                     parent = parent.Parent
         elif href.startswith('help:'):
             href = linkinfo.Href[7:]
-            html_str = WELCOME_HELP[href]
+            html_str = cellprofiler.gui.html.content.WELCOME_HELP[href]
             html_str += '<p>Go <a href="startup_main">back</a> to the welcome screen.</p>'
             self.SetPage(html_str)
-            self.BackgroundColour = cpprefs.get_background_color()
+            self.BackgroundColour = get_background_color()
         elif href.startswith('load:'):
             pipeline_filename = href[5:]
             try:
@@ -110,14 +109,14 @@ class HtmlClickableWindow(wx.html.HtmlWindow):
             newpage = content.find_link(href)
             if newpage is not None:
                 self.SetPage(newpage)
-                self.BackgroundColour = cpprefs.get_background_color()
+                self.BackgroundColour = get_background_color()
             else:
                 super(HtmlClickableWindow, self).OnLinkClicked(linkinfo)
 
-    def OnOpeningURL(self, type, url):
-        if type == wx.html.HTML_URL_IMAGE:
+    def OnOpeningURL(self, file_format, url):
+        if file_format == wx.html.HTML_URL_IMAGE:
             if url.startswith(MEMORY_SCHEME):
-                path = get_builtin_images_path()
+                path = cellprofiler.icons.get_builtin_images_path()
                 full_path = os.path.join(path, url[len(MEMORY_SCHEME):])
                 if sys.platform.startswith("win"):
                     my_url = full_path
@@ -125,12 +124,3 @@ class HtmlClickableWindow(wx.html.HtmlWindow):
                     my_url = "file:" + urllib.pathname2url(full_path)
                 return my_url
         return wx.html.HTML_OPEN
-
-
-if __name__ == '__main__':
-    app = wx.App(0)
-    frame = wx.Frame(None, -1, 'foo', (500, 500))
-    htmlwin = HtmlClickableWindow(frame, wx.ID_ANY, style=wx.NO_BORDER)
-    frame.Show(True)
-    frame.Center()
-    app.MainLoop()

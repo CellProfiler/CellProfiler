@@ -5,13 +5,10 @@ Buttons included in this file Copyright Audacity
 public license.
 """
 
+import cellprofiler.gui
+import cellprofiler.preferences
 import StringIO
-import math
-
 import wx
-
-import cellprofiler.preferences as cpprefs
-from cellprofiler.gui import draw_bevel, BV_DOWN
 
 MOVIE_SLIDER_NAME_STR = u"movie_slider"
 SLIDER_CTL_STR = u"slider_ctl"
@@ -40,7 +37,7 @@ STATE_PLAYING = "playing"
 
 class SliderCtl(wx.Panel):
     def __init__(self, parent,
-                 id=-1,
+                 identifier=-1,
                  value=0,
                  min_value=0,
                  max_value=100,
@@ -51,7 +48,7 @@ class SliderCtl(wx.Panel):
                  size=wx.DefaultSize,
                  style=wx.TAB_TRAVERSAL | wx.NO_BORDER,
                  name=SLIDER_CTL_STR):
-        super(SliderCtl, self).__init__(parent, id, pos, size, style, name)
+        super(SliderCtl, self).__init__(parent, identifier, pos, size, style, name)
         self.border = 10
         self.tick_length = 5
         self.__value = value
@@ -175,9 +172,7 @@ class SliderCtl(wx.Panel):
         if self.HasCapture():
             if self.capture_object == HT_MARKER:
                 new_value = self.get_mark_from_y(event.GetY())
-                if (new_value != self.value and
-                            new_value >= self.start_value and
-                            new_value <= self.stop_value):
+                if new_value != self.value and self.start_value <= new_value <= self.stop_value:
                     self.value = new_value
             elif self.capture_object == HT_START:
                 new_value = self.get_mark_from_y(event.GetY())
@@ -221,7 +216,7 @@ class SliderCtl(wx.Panel):
 
     def on_paint(self, event):
         dc = wx.BufferedPaintDC(self)
-        dc.SetBackground(wx.Brush(cpprefs.get_background_color()))
+        dc.SetBackground(wx.Brush(cellprofiler.preferences.get_background_color()))
         dc.Clear()
         self.draw_groove(dc)
         self.draw_ticks(dc)
@@ -277,7 +272,7 @@ class SliderCtl(wx.Panel):
         dc.Brush = wx.WHITE_BRUSH
         dc.DrawRectangle(rect.Left, rect.Top, rect.width, rect.height)
         rect.Deflate(1, 1)
-        rect = draw_bevel(dc, rect, 2, BV_DOWN)
+        rect = cellprofiler.gui.draw_bevel(dc, rect, 2, cellprofiler.gui.BV_DOWN)
         sep_y = self.get_mark_y(self.value)
         rtop = wx.Rect(rect.Left, rect.Top, rect.width, sep_y - rect.Top)
         dc.Pen = wx.BLACK_PEN
@@ -329,7 +324,7 @@ class MovieSlider(wx.Panel):
     """
 
     def __init__(self, parent,
-                 id=-1,
+                 identifier=-1,
                  value=0,
                  min_value=0,
                  max_value=100,
@@ -354,8 +349,8 @@ class MovieSlider(wx.Panel):
         style       - style for panel window
         name        - window's name
         """
-        super(MovieSlider, self).__init__(parent, id, pos, size, style, name)
-        self.BackgroundColour = cpprefs.get_background_color()
+        super(MovieSlider, self).__init__(parent, identifier, pos, size, style, name)
+        self.BackgroundColour = cellprofiler.preferences.get_background_color()
         self.value_names = value_names
         sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(sizer)
@@ -402,7 +397,7 @@ class MovieSlider(wx.Panel):
             self.set_state(STATE_PAUSED)
 
     def on_step_taken(self):
-        self.slider.value = self.slider.value + 1
+        self.slider.value += 1
         if self.slider.value == self.slider.stop_value:
             self.set_state(STATE_PAUSED)
         if self.state == STATE_PLAYING:
@@ -437,41 +432,3 @@ class MovieSlider(wx.Panel):
         bitmap = wx.BitmapFromImage(image)
         button = wx.BitmapButton(self, -1, bitmap)
         return button
-
-
-if __name__ == "__main__":
-    import wx.lib.inspection
-
-
-    class MyFrame(wx.Frame):
-        def __init__(self):
-            wx.Frame.__init__(self, None, title="Movie slider demo",
-                              pos=wx.DefaultPosition, size=wx.DefaultSize,
-                              style=wx.DEFAULT_FRAME_STYLE)
-            sizer = wx.BoxSizer()
-            self.SetSizer(sizer)
-            value_names = ["0: happy", "1: grumpy", "2: sleepy", "3: dopey", "4: doc", "5: dwarf # 6", "6: dwarf # 7"]
-            self.movie_slider = MovieSlider(self,
-                                            max_value=9,
-                                            start_value=0,
-                                            stop_value=7,
-                                            value_names=value_names)
-            sizer.Add(self.movie_slider, 1, wx.EXPAND)
-            self.Bind(EVT_TAKE_STEP, self.on_take_step, self.movie_slider)
-
-        def on_take_step(self, event):
-            wx.MessageBox("Take a step")
-            self.movie_slider.on_step_taken()
-
-
-    class MyApp(wx.App):
-        def OnInit(self):
-            self.frame = MyFrame()
-            self.SetTopWindow(self.frame)
-            self.frame.Show()
-            wx.lib.inspection.InspectionTool().Show()
-            return 1
-
-
-    app = MyApp(0)
-    app.MainLoop()

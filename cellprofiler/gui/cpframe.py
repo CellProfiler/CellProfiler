@@ -740,7 +740,6 @@ class CPFrame(wx.Frame):
         wx.EVT_MENU(self, ID_HELP_SEARCH, self.__on_search_help)
         wx.EVT_MENU(self, ID_HELP_ABOUT, self.about)
         wx.EVT_MENU(self, ID_OPTIONS_PREFERENCES, self.__on_preferences)
-        wx.EVT_MENU(self, ID_CHECK_NEW_VERSION, self.__on_check_new_version)
         wx.EVT_MENU(self, ID_WINDOW_CLOSE_ALL, self.__on_close_all)
         wx.EVT_MENU(self, ID_DEBUG_PDB, self.__debug_pdb)
         accelerator_table = wx.AcceleratorTable(
@@ -944,10 +943,6 @@ class CPFrame(wx.Frame):
     def __on_preferences(event):
         dlg = cellprofiler.gui.preferencesdlg.PreferencesDlg()
         dlg.Show()
-
-    @staticmethod
-    def __on_check_new_version(event):
-        wx.GetApp().new_version_check(force=True)
 
     def __on_close_all(self, event):
         cellprofiler.gui.cpfigure.close_all(self)

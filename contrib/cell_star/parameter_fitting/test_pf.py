@@ -1,16 +1,18 @@
 __author__ = 'Adam Kaczmarek, Filip Mroz'
 
-import sys
+import logging
 import os.path as path
+import sys
+
 import numpy as np
 import scipy as sp
 
 from cellprofiler.preferences import get_max_workers
-from contrib.cell_star.utils import image_util
 from contrib.cell_star.parameter_fitting.pf_process import run
 from contrib.cell_star.parameter_fitting.pf_snake import GTSnake
+from contrib.cell_star.utils import image_util
+from contrib.cell_star.config.config import default_config
 
-import logging
 logger = logging.getLogger(__name__)
 
 global corpus_path
@@ -21,9 +23,23 @@ def single_mask_to_snake(bool_mask, seed=None):
     return GTSnake(bool_mask, seed)
 
 
-def gt_mask_to_snakes(gt_mask):
-    components, num_components = sp.ndimage.label(gt_mask, np.ones((3, 3)))
+def gt_label_to_snakes(components):
+    num_components = components.max()
     return [single_mask_to_snake(components == label) for label in range(1, num_components + 1)]
+
+
+def image_to_label(image):
+    values = np.unique(image)
+    if len(values) == 2:  # it is a mask
+        components, num_components = sp.ndimage.label(image, np.ones((3, 3)))
+        return components
+    else:  # remap labels to [1..] values
+        curr = 1
+        label_image = image.copy()
+        for v in values[1:]:  # zero is ignored
+            label_image[image == v] = curr
+            curr += 1
+        return label_image
 
 
 def load_from_testset(filepath):
@@ -38,30 +54,41 @@ def try_load_image(image_path):
     return image_util.load_frame(corpus_path, image_path)
 
 
-def run_pf(input_image, gt_mask, parameters, precision, avg_cell_diameter):
+def run_pf(input_image, gt_label, parameters, precision, avg_cell_diameter):
     """
     :param input_image:
-    :param gt_mask:
+    :param gt_label:
     :param parameters:
     :return: Best complete parameters settings, best distance
     """
-    gt_snakes = gt_mask_to_snakes(gt_mask)
+    gt_label = image_to_label(gt_label)
+
+    gt_slices = sp.ndimage.find_objects(gt_label != 0)[0]
+    extended_slice = image_util.extend_slices(gt_slices, avg_cell_diameter * default_config()["segmentation"]["stars"]["maxSize"] * 2)
+    croped_image = input_image[extended_slice]
+    croped_gt_mask = gt_label[extended_slice]
+
+    gt_snakes = gt_label_to_snakes(croped_gt_mask)
     if get_max_workers() > 1:
-        best_complete_params, _, best_score = run(input_image, gt_snakes, precision=precision, avg_cell_diameter=avg_cell_diameter, initial_params=parameters, method='mp')
+        best_complete_params, _, best_score = run(croped_image, gt_snakes, precision=precision, avg_cell_diameter=avg_cell_diameter, initial_params=parameters, method='mp')
     else:
-        best_complete_params, _, best_score = run(input_image, gt_snakes, precision=precision, avg_cell_diameter=avg_cell_diameter, initial_params=parameters, method='brute')
+        best_complete_params, _, best_score = run(croped_image, gt_snakes, precision=precision, avg_cell_diameter=avg_cell_diameter, initial_params=parameters, method='brute')
 
     return best_complete_params, best_score
 
 
 def test_pf(image_path, mask_path, precision, avg_cell_diameter, method):
     frame = try_load_image(image_path)
-    gt_mask = np.array(try_load_image(mask_path), dtype=bool)
+    gt_image = np.array(try_load_image(mask_path) * 255, dtype=int)
+    gt_label = image_to_label(gt_image)
 
+    gt_slices = sp.ndimage.find_objects(gt_label > 0)[0]
+    extended_slice = image_util.extend_slices(gt_slices, avg_cell_diameter * default_config()["segmentation"]["stars"]["maxSize"] * 2)
+    croped_frame = frame[extended_slice]
+    croped_gt_label = gt_label[extended_slice]
 
-    gt_snakes = gt_mask_to_snakes(gt_mask)
-
-    run(frame, gt_snakes, precision, avg_cell_diameter, method)
+    gt_snakes = gt_label_to_snakes(croped_gt_label)
+    run(croped_frame, gt_snakes, precision, avg_cell_diameter, method)
 
 
 if __name__ == "__main__":

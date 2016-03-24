@@ -447,7 +447,7 @@ class Snake(object):
                 self.avg_inner_brightness,
                 self.avg_in_border_brightness - self.avg_out_border_brightness,
                 -self.avg_inner_darkness,
-                math.log(self.area ** (1.0 / avg_cell_diameter)),
+                -math.log(self.area ** (1.0 / avg_cell_diameter)),
                 self.free_border_entropy
             ])
         return self.properties_vector_cached[avg_cell_diameter]

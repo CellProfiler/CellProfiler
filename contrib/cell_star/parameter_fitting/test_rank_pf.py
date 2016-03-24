@@ -4,7 +4,7 @@ import sys
 import numpy as np
 import contrib.cell_star.parameter_fitting.pf_rank_process as pf_rank
 import contrib.cell_star.parameter_fitting.test_pf as test_pf
-from contrib.cell_star.parameter_fitting.test_pf import try_load_image, gt_mask_to_snakes
+from contrib.cell_star.parameter_fitting.test_pf import try_load_image, image_to_label, gt_label_to_snakes
 from cellprofiler.preferences import get_max_workers
 
 import logging
@@ -16,7 +16,7 @@ def run_rank_pf(input_image, gt_mask, parameters):
     :param parameters:
     :return: Best complete parameters settings, best distance
     """
-    gt_snakes = gt_mask_to_snakes(gt_mask)
+    gt_snakes = gt_label_to_snakes(gt_mask)
     if get_max_workers() > 1:
         best_complete_params, _, best_score = pf_rank.run_multiprocess(input_image, gt_snakes, initial_params=parameters, method='brute')
     else:
@@ -26,9 +26,10 @@ def run_rank_pf(input_image, gt_mask, parameters):
 
 def test_rank_pf(image_path, mask_path, precision, avg_cell_diameter, method):
     frame = try_load_image(image_path)
-    gt_mask = np.array(try_load_image(mask_path), dtype=bool)
+    gt_image = np.array(try_load_image(mask_path) * 255, dtype=int)
+    gt_label = image_to_label(gt_image)
 
-    gt_snakes = gt_mask_to_snakes(gt_mask)
+    gt_snakes = gt_label_to_snakes(gt_label)
 
     if method == "mp":
         pf_rank.run_multiprocess(frame, gt_snakes, precision, avg_cell_diameter, 'brute')

@@ -17,15 +17,12 @@
 #
 ########################################################
 
+import cellprofiler.icons
+import cellprofiler.utilities.relpath
 import logging
 import os
 import sys
 
-import cellprofiler.icons
-from cellprofiler.settings import YES, NO
-from cellprofiler.utilities.relpath import relpath
-
-# from cellprofiler.modules.metadata import X_AUTOMATIC_EXTRACTION, X_MANUAL_EXTRACTION, X_IMPORTED_EXTRACTION
 X_AUTOMATIC_EXTRACTION = "Extract from image file headers"
 X_MANUAL_EXTRACTION = "Extract from file/folder names"
 X_IMPORTED_EXTRACTION = "Import from file"
@@ -39,7 +36,7 @@ logger = logging.getLogger(__name__)
 # So I have use relative ones. Should check this to see if works on the
 # compiled version
 try:
-    path = relpath(cellprofiler.icons.get_builtin_images_path())
+    path = cellprofiler.utilities.relpath.relpath(cellprofiler.icons.get_builtin_images_path())
 except:
     if any([x == "--html" for x in sys.argv]) and sys.platform.startswith("win"):
         if hasattr(sys, "frozen"):

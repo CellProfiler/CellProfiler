@@ -1,44 +1,40 @@
 # -*- Encoding: utf-8 -*-
 """ CellProfiler.CellProfilerGUI.CPFrame - Cell Profiler's main window
 """
-import logging
 
-logger = logging.getLogger(__name__)
+import cellprofiler.gui
+import cellprofiler.gui.cpfigure
+import cellprofiler.gui.datatoolframe
+import cellprofiler.gui.dialog
+import cellprofiler.gui.errordialog
+import cellprofiler.gui.help
+import cellprofiler.gui.html
+import cellprofiler.gui.html.htmlwindow
+import cellprofiler.gui.imagesetctrl
+import cellprofiler.gui.moduleview
+import cellprofiler.gui.pathlist
+import cellprofiler.gui.pipelinecontroller
+import cellprofiler.gui.pipelinelistview
+import cellprofiler.gui.preferencesdlg
+import cellprofiler.gui.preferencesview
+import cellprofiler.gui.sashwindow_tools
+import cellprofiler.icons
+import cellprofiler.modules
+import cellprofiler.pipeline
+import cellprofiler.preferences
+import cellprofiler.utilities.version
+import cellprofiler.workspace
 import inspect
+import logging
 import os
 import pdb
+import sys
+import traceback
 import wx
 import wx.html
 import wx.lib.scrolledpanel
-import cellprofiler.preferences as cpprefs
-import cellprofiler.measurements as cpmeas
-import cellprofiler.workspace as cpw
 
-from cellprofiler.icons import get_builtin_image, get_icon_copyrights
-from cellprofiler.modules import get_data_tool_names, instantiate_module
-from cellprofiler.gui import get_cp_icon, get_cp_bitmap
-from cellprofiler.gui.pipelinelistview import PipelineListView
-from cellprofiler.gui.cpfigure import close_all
-from cellprofiler.gui.help import MAIN_HELP, make_help_menu, \
-    HELP_ON_MODULE_BUT_NONE_SELECTED, HELP_ON_FILE_LIST, PLATEVIEWER_HELP
-from cellprofiler.pipeline import Pipeline
-from cellprofiler.gui.pipelinecontroller import PipelineController
-from cellprofiler.gui.moduleview import ModuleView, stop_validation_queue_thread
-from cellprofiler.gui.preferencesview import PreferencesView
-from cellprofiler.gui.directoryview import DirectoryView
-from cellprofiler.gui.datatoolframe import DataToolFrame
-from cellprofiler.gui.html.htmlwindow import HtmlClickableWindow, WELCOME_SCREEN_FRAME
-from cellprofiler.gui.errordialog import display_error_message
-from cellprofiler.gui.pathlist import PathListCtrl
-from cellprofiler.gui.imagesetctrl import ImageSetCtrl
-from cellprofiler.gui.sashwindow_tools import sw_bind_to_evt_paint, sp_bind_to_evt_paint
-from cellprofiler.gui.bitmaplabelbutton import BitmapLabelButton
-import cellprofiler.gui.html
-import cellprofiler.gui.preferencesdlg
-import cellprofiler.utilities.version as version
-import traceback
-import sys
-import cellprofiler.gui.dialog
+logger = logging.getLogger(__name__)
 
 ID_FILE_NEW_WORKSPACE = wx.ID_NEW
 ID_FILE_LOAD = wx.ID_OPEN
@@ -125,13 +121,13 @@ class CPFrame(wx.Frame):
         """
         kwds["style"] = wx.DEFAULT_FRAME_STYLE
         wx.Frame.__init__(self, *args, **kwds)
-        self.__pipeline = Pipeline()
-        self.__workspace = cpw.Workspace(
+        self.__pipeline = cellprofiler.pipeline.Pipeline()
+        self.__workspace = cellprofiler.workspace.Workspace(
                 self.__pipeline, None, None, None, None, None)
-        background_color = cpprefs.get_background_color()
+        background_color = cellprofiler.preferences.get_background_color()
         self.BackgroundColour = background_color
         self.__splitter = wx.SplitterWindow(self, -1, style=wx.SP_BORDER)
-        sp_bind_to_evt_paint(self.__splitter)
+        cellprofiler.gui.sashwindow_tools.sp_bind_to_evt_paint(self.__splitter)
         #
         # Screen size metrics might be used below
         #
@@ -157,9 +153,9 @@ class CPFrame(wx.Frame):
         self.__pipeline_test_panel = wx.Panel(self.__left_win, -1)
         self.__pipeline_test_panel.SetToolTipString(
                 "The test mode panel is used for previewing the module settings prior to an analysis run. Click the buttons or use the 'Test' menu item to begin testing your module settings.")
-        self.__pipeline_test_panel.BackgroundColour = cpprefs.get_background_color()
+        self.__pipeline_test_panel.BackgroundColour = cellprofiler.preferences.get_background_color()
         self.__module_controls_panel = wx.Panel(self.__left_win, -1, style=wx.BORDER_NONE)
-        self.__module_controls_panel.BackgroundColour = cpprefs.get_background_color()
+        self.__module_controls_panel.BackgroundColour = cellprofiler.preferences.get_background_color()
         self.__module_controls_panel.SetToolTipString(
                 "The module controls add, remove, move and get help for modules. Click on the '+' button to begin adding modules.")
         #
@@ -201,7 +197,7 @@ class CPFrame(wx.Frame):
         #
         self.__path_list_sash = wx.SashLayoutWindow(
                 self.__path_module_imageset_panel, style=wx.NO_BORDER)
-        sw_bind_to_evt_paint(self.__path_list_sash)
+        cellprofiler.gui.sashwindow_tools.sw_bind_to_evt_paint(self.__path_list_sash)
         self.__path_list_sash.Bind(wx.EVT_SASH_DRAGGED,
                                    self.__on_sash_drag)
         self.__path_list_sash.SetOrientation(wx.LAYOUT_HORIZONTAL)
@@ -209,7 +205,7 @@ class CPFrame(wx.Frame):
         self.__path_list_sash.SetDefaultSize((screen_width, screen_height / 4))
         self.__path_list_sash.SetDefaultBorderSize(4)
         self.__path_list_sash.SetSashVisible(wx.SASH_BOTTOM, True)
-        self.__path_list_sash.BackgroundColour = cpprefs.get_background_color()
+        self.__path_list_sash.BackgroundColour = cellprofiler.preferences.get_background_color()
         self.__path_list_sash.AutoLayout = True
         self.__path_list_sash.Hide()
         path_list_group_box = wx.StaticBox(
@@ -223,7 +219,7 @@ class CPFrame(wx.Frame):
         #
         # Path list control
         #
-        self.__path_list_ctrl = PathListCtrl(self.__path_list_sash)
+        self.__path_list_ctrl = cellprofiler.gui.pathlist.PathListCtrl(self.__path_list_sash)
         sizer.Add(self.__path_list_ctrl, 1, wx.EXPAND | wx.ALL)
         #
         # Path list tools horizontal sizer
@@ -262,7 +258,7 @@ class CPFrame(wx.Frame):
         ######################################################################
 
         self.__module_panel = wx.Panel(self.__path_module_imageset_panel)
-        self.__module_panel.BackgroundColour = cpprefs.get_background_color()
+        self.__module_panel.BackgroundColour = cellprofiler.preferences.get_background_color()
 
         ######################################################################
         #
@@ -280,15 +276,15 @@ class CPFrame(wx.Frame):
         self.__imageset_sash.SetSashVisible(wx.SASH_TOP, True)
         self.__imageset_sash.Bind(wx.EVT_SASH_DRAGGED,
                                   self.__on_sash_drag)
-        sw_bind_to_evt_paint(self.__imageset_sash)
+        cellprofiler.gui.sashwindow_tools.sw_bind_to_evt_paint(self.__imageset_sash)
         self.__imageset_sash.Hide()
         self.__imageset_panel = wx.Panel(self.__imageset_sash)
         self.__imageset_panel.Sizer = wx.BoxSizer()
         self.__imageset_panel.SetAutoLayout(True)
-        self.__imageset_ctrl = ImageSetCtrl(
+        self.__imageset_ctrl = cellprofiler.gui.imagesetctrl.ImageSetCtrl(
                 self.__workspace, self.__imageset_panel, read_only=True)
         self.__imageset_panel.Sizer.Add(self.__imageset_ctrl, 1, wx.EXPAND)
-        self.__grid_ctrl = ModuleView.CornerButtonGrid(
+        self.__grid_ctrl = cellprofiler.gui.moduleview.ModuleView.CornerButtonGrid(
                 self.__imageset_panel)
         self.__imageset_panel.Sizer.Add(self.__grid_ctrl, 1, wx.EXPAND)
 
@@ -298,7 +294,7 @@ class CPFrame(wx.Frame):
         #
         self.__preferences_panel = wx.Panel(self.__right_win, -1)
         self.__right_win.Sizer.Add(self.__preferences_panel, 1, wx.EXPAND)
-        self.__preferences_panel.BackgroundColour = cpprefs.get_background_color()
+        self.__preferences_panel.BackgroundColour = cellprofiler.preferences.get_background_color()
         self.__preferences_panel.SetToolTipString(
                 "The folder panel sets/creates the input and output folders and output filename. Once your pipeline is ready and your folders set, click 'Analyze Images' to begin the analysis run.")
         #
@@ -320,12 +316,12 @@ class CPFrame(wx.Frame):
         self.__error_listeners = []
         self.Bind(wx.EVT_CLOSE, self.OnClose)
         self.SetAutoLayout(True)
-        if cpprefs.get_startup_blurb():
+        if cellprofiler.preferences.get_startup_blurb():
             self.show_welcome_screen(True)
         self.show_module_ui(True)
 
     def start(self, workspace_path, pipeline_path):
-        '''Handle resource loading after the GUI has been constructed
+        """Handle resource loading after the GUI has been constructed
 
         workspace_path - one of the following: a pathname to the workspace
                          to load, False to ask the user for a new workspace
@@ -334,7 +330,7 @@ class CPFrame(wx.Frame):
 
         pipeline_path - the pipeline to load after the workspace has been
                         loaded or None for the workspace's pipeline.
-        '''
+        """
         self.__pipeline_controller.start(workspace_path, pipeline_path)
         self.__module_view.start()
         #
@@ -346,10 +342,10 @@ class CPFrame(wx.Frame):
         self.startup_blurb_frame.SetRect(r)
 
     def show_path_list_ctrl(self, show):
-        '''Show or hide the path list control
+        """Show or hide the path list control
 
         show - true to show, false to hide
-        '''
+        """
         if bool(show) == bool(self.__path_list_sash.IsShown()):
             return
         self.__path_list_sash.Show(show)
@@ -357,10 +353,10 @@ class CPFrame(wx.Frame):
         self.__path_list_sash.Layout()
 
     def show_imageset_sash(self, show):
-        '''Show or hide the imageset control
+        """Show or hide the imageset control
 
         show - true to show, false to hide
-        '''
+        """
         if bool(show) == bool(self.__imageset_sash.IsShown()):
             return
         self.__imageset_sash.Show(show)
@@ -399,7 +395,7 @@ class CPFrame(wx.Frame):
         self.__imageset_ctrl.recompute()
 
     def show_module_ui(self, show):
-        '''Show or hide the module and notes panel'''
+        """Show or hide the module and notes panel"""
         if (show == self.__path_module_imageset_panel.IsShownOnScreen() and
                     show == self.__notes_panel.IsShownOnScreen()):
             return
@@ -420,21 +416,21 @@ class CPFrame(wx.Frame):
             self.__imageset_sash.Layout()
 
     def show_welcome_screen(self, show):
-        '''Show or hide the welcome screen
+        """Show or hide the welcome screen
 
         show - If True, show the welcome screen and hide the preferences
                and module UI, otherwise hide the welcome screen.
-        '''
+        """
         self.startup_blurb_frame.Show(show)
         if show:
             self.startup_blurb_frame.Raise()
 
     def show_preferences(self, show):
-        '''Show or hide the preferences panel
+        """Show or hide the preferences panel
 
         show - if True, show the preferences panel and hide the welcome
                and module UI. If false, just hide the preferences.
-        '''
+        """
         self.__preferences_panel.Show(show)
         if show:
             self.show_module_ui(False)
@@ -458,7 +454,7 @@ class CPFrame(wx.Frame):
             self.__imageset_sash.Layout()
 
     def layout_pmi_panel(self):
-        '''Run the sash layout algorithm on the path/module/imageset panel'''
+        """Run the sash layout algorithm on the path/module/imageset panel"""
         self.__pmi_layout_in_progress = True
         try:
             wx.LayoutAlgorithm().LayoutWindow(self.__path_module_imageset_panel,
@@ -484,17 +480,17 @@ class CPFrame(wx.Frame):
         except:
             logger.warn("Failed to close the pipeline controller", exc_info=True)
         try:
-            stop_validation_queue_thread()
+            cellprofiler.gui.moduleview.stop_validation_queue_thread()
         except:
             logger.warn("Failed to stop pipeline validation thread", exc_info=True)
         wx.GetApp().ExitMainLoop()
 
     def __set_properties(self):
-        self.SetTitle("CellProfiler %s" % version.title_string)
+        self.SetTitle("CellProfiler %s" % cellprofiler.utilities.version.title_string)
         self.SetSize((1024, 600))
 
     def enable_edit_commands(self, ids):
-        '''Enable the edit commands that are supported by the focused window
+        """Enable the edit commands that are supported by the focused window
 
         ids - a list of the IDs supported by the window that has the focus.
 
@@ -508,7 +504,7 @@ class CPFrame(wx.Frame):
         wx.ID_PASTE
         wx.ID_DELETE
         wx.ID_SELECTALL
-        '''
+        """
         d = dict([(x, False) for x in
                   (wx.ID_COPY, wx.ID_CUT, wx.ID_PASTE, wx.ID_SELECTALL)])
         for eyedee in ids:
@@ -528,7 +524,7 @@ class CPFrame(wx.Frame):
         self.__menu_file.Append(
                 wx.ID_OPEN,
                 "Open Project...\tctrl+O",
-                help='Open a project from a .%s project file' % cpprefs.EXT_PROJECT)
+                help='Open a project from a .%s project file' % cellprofiler.preferences.EXT_PROJECT)
         self.recent_workspace_files = wx.Menu()
         self.__menu_file.AppendSubMenu(
                 self.recent_workspace_files,
@@ -550,7 +546,7 @@ class CPFrame(wx.Frame):
                 ID_FILE_LOAD_PIPELINE,
                 'Pipeline from File...',
                 'Import a pipeline into the project from a .%s file' %
-                cpprefs.EXT_PIPELINE)
+                cellprofiler.preferences.EXT_PIPELINE)
         submenu.Append(
                 ID_FILE_URL_LOAD_PIPELINE,
                 'Pipeline from URL...',
@@ -565,7 +561,7 @@ class CPFrame(wx.Frame):
         submenu.Append(
                 ID_FILE_SAVE_PIPELINE,
                 'Pipeline...\tctrl+P',
-                "Save the project's pipeline to a .%s file" % cpprefs.EXT_PIPELINE)
+                "Save the project's pipeline to a .%s file" % cellprofiler.preferences.EXT_PIPELINE)
         submenu.Append(
                 ID_FILE_EXPORT_IMAGE_SETS,
                 "Image Set Listing...",
@@ -684,7 +680,7 @@ class CPFrame(wx.Frame):
         self.__menu_help.Append(ID_HELP_RELEASE_NOTES, "Release Notes", "Show the release notes in a browser")
         self.__menu_help.Append(ID_HELP_ONLINE_MANUAL, "Online Manual", "Launch the HTML help in a browser")
         self.__menu_help.AppendSeparator()
-        make_help_menu(MAIN_HELP, self, self.__menu_help)
+        cellprofiler.gui.help.make_help_menu(cellprofiler.gui.help.MAIN_HELP, self, self.__menu_help)
         self.__menu_help.AppendSeparator()
         self.__menu_help.AppendSubMenu(self.data_tools_help(), 'Data Tool Help',
                                        'Display documentation for available data tools')
@@ -707,7 +703,7 @@ class CPFrame(wx.Frame):
         self.__menu_bar.Append(self.__menu_file, '&File')
         self.__menu_bar.Append(self.menu_edit, '&Edit')
         self.__menu_bar.Append(self.__menu_debug, '&Test')
-        if cpprefs.get_show_sampling():
+        if cellprofiler.preferences.get_show_sampling():
             self.__menu_sample = wx.Menu()
             self.__menu_sample.Append(ID_SAMPLE_INIT, 'Initialize Sampling', 'Initialize sampling up to current module')
             self.__menu_bar.Append(self.__menu_sample, '&Sample')
@@ -745,7 +741,6 @@ class CPFrame(wx.Frame):
         wx.EVT_MENU(self, ID_HELP_SEARCH, self.__on_search_help)
         wx.EVT_MENU(self, ID_HELP_ABOUT, self.about)
         wx.EVT_MENU(self, ID_OPTIONS_PREFERENCES, self.__on_preferences)
-        wx.EVT_MENU(self, ID_CHECK_NEW_VERSION, self.__on_check_new_version)
         wx.EVT_MENU(self, ID_WINDOW_CLOSE_ALL, self.__on_close_all)
         wx.EVT_MENU(self, ID_DEBUG_PDB, self.__debug_pdb)
         accelerator_table = wx.AcceleratorTable(
@@ -768,21 +763,21 @@ class CPFrame(wx.Frame):
         self.enable_launch_commands()
 
     def data_tools_help(self):
-        '''Create a help menu for the data tools'''
+        """Create a help menu for the data tools"""
         if not hasattr(self, "__data_tools_help_menu"):
             self.__menu_data_tools_help_menu = wx.Menu()
 
             def on_plate_viewer_help(event):
                 import htmldialog
                 dlg = htmldialog.HTMLDialog(
-                        self, "Help on plate viewer", PLATEVIEWER_HELP)
+                        self, "Help on plate viewer", cellprofiler.gui.help.PLATEVIEWER_HELP)
                 dlg.Show()
 
             new_id = wx.NewId()
             self.__menu_data_tools_help_menu.Append(new_id, "Plate viewer")
             wx.EVT_MENU(self, new_id, on_plate_viewer_help)
 
-            for data_tool_name in get_data_tool_names():
+            for data_tool_name in cellprofiler.modules.get_data_tool_names():
                 new_id = wx.NewId()
                 self.__menu_data_tools_help_menu.Append(new_id, data_tool_name)
 
@@ -793,7 +788,7 @@ class CPFrame(wx.Frame):
         return self.__menu_data_tools_help_menu
 
     def data_tools_menu(self):
-        '''Create a menu of data tools'''
+        """Create a menu of data tools"""
 
         if not hasattr(self, "__data_tools_menu"):
             self.__data_tools_menu = wx.Menu()
@@ -817,7 +812,7 @@ class CPFrame(wx.Frame):
 
             self.__data_tools_menu.AppendSeparator()
 
-            for data_tool_name in get_data_tool_names():
+            for data_tool_name in cellprofiler.modules.get_data_tool_names():
                 new_id = wx.NewId()
                 self.__data_tools_menu.Append(new_id, data_tool_name)
 
@@ -839,48 +834,56 @@ class CPFrame(wx.Frame):
     # Adapted from a post reply by Robin Dunn:
     # http://wxpython-users.1045709.n5.nabble.com/how-to-implement-copy-paste-with-accelerators-td3337472.html
     #########################################################
-    def on_cut(self, event):
-        '''Handle ID_CUT'''
+    @staticmethod
+    def on_cut(event):
+        """Handle ID_CUT"""
         focus = wx.Window.FindFocus()
         if (focus is not None and hasattr(focus, "Cut")
             and hasattr(focus, 'CanCut') and focus.CanCut()):
             focus.Cut()
 
-    def on_update_cut_ui(self, event):
+    @staticmethod
+    def on_update_cut_ui(event):
         focus = wx.Window.FindFocus()
         event.Enable(bool(
                 focus and hasattr(focus, 'CanCut') and focus.CanCut()))
 
-    def on_copy(self, event):
-        '''Handle ID_COPY'''
+    @staticmethod
+    def on_copy(event):
+        """Handle ID_COPY"""
         focus = wx.Window.FindFocus()
         if focus is not None and hasattr(focus, "Copy") and \
                 hasattr(focus, 'CanCopy') and focus.CanCopy():
             focus.Copy()
 
-    def on_update_copy_ui(self, event):
+    @staticmethod
+    def on_update_copy_ui(event):
         focus = wx.Window.FindFocus()
         event.Enable(bool(
                 focus and hasattr(focus, 'CanCopy') and focus.CanCopy()))
 
-    def on_paste(self, event):
-        '''Handle ID_PASTE'''
+    @staticmethod
+    def on_paste(event):
+        """Handle ID_PASTE"""
         focus = wx.Window.FindFocus()
         if focus is not None and hasattr(focus, "Paste") and \
                 hasattr(focus, "CanPaste") and focus.CanPaste():
             focus.Paste()
 
-    def on_update_paste_ui(self, event):
+    @staticmethod
+    def on_update_paste_ui(event):
         focus = wx.Window.FindFocus()
         event.Enable(bool(
                 focus and hasattr(focus, 'CanPaste') and focus.CanPaste()))
 
-    def on_select_all(self, event):
+    @staticmethod
+    def on_select_all(event):
         focus = wx.Window.FindFocus()
         if focus and hasattr(focus, "SelectAll"):
             focus.SelectAll()
 
-    def on_update_select_all_ui(self, event):
+    @staticmethod
+    def on_update_select_all_ui(event):
         focus = wx.Window.FindFocus()
         if hasattr(focus, "CanSelect") and not focus.CanSelect():
             event.Enable(False)
@@ -907,7 +910,7 @@ class CPFrame(wx.Frame):
             self.__menu_debug.Enable(cmd, True)
 
     def enable_launch_commands(self):
-        '''Enable commands to start analysis or test mode'''
+        """Enable commands to start analysis or test mode"""
         startstop = self.__menu_debug.FindItemById(ID_DEBUG_TOGGLE)
         startstop.Text = '&Start Test Mode\tF5'
         startstop.Help = 'Start testing your pipeline'
@@ -921,7 +924,7 @@ class CPFrame(wx.Frame):
         self.__menu_file.Enable(ID_FILE_STOP_ANALYSIS, False)
 
     def enable_analysis_commands(self):
-        '''Enable commands to pause or stop analysis'''
+        """Enable commands to pause or stop analysis"""
         self.__menu_file.Enable(ID_FILE_ANALYZE_IMAGES, False)
         self.__menu_file.Enable(ID_FILE_RESTART, False)
         self.__menu_debug.Enable(ID_DEBUG_TOGGLE, False)
@@ -929,49 +932,53 @@ class CPFrame(wx.Frame):
 
         self.__menu_file.Enable(ID_FILE_STOP_ANALYSIS, True)
 
-    def __on_widget_inspector(self, evt):
+    @staticmethod
+    def __on_widget_inspector(evt):
         try:
             import wx.lib.inspection
             wx.lib.inspection.InspectionTool().Show()
         except:
             wx.MessageBox("Inspection tool is not available on this platform")
 
-    def __on_preferences(self, event):
+    @staticmethod
+    def __on_preferences(event):
         dlg = cellprofiler.gui.preferencesdlg.PreferencesDlg()
         dlg.Show()
 
-    def __on_check_new_version(self, event):
-        wx.GetApp().new_version_check(force=True)
-
     def __on_close_all(self, event):
-        close_all(self)
+        cellprofiler.gui.cpfigure.close_all(self)
 
-    def __on_new_cp(self, event):
+    @staticmethod
+    def __on_new_cp(event):
         import os
         if not hasattr(sys, 'frozen'):
             os.system('open CellProfiler_python.command')
         else:
             os.system('open -na CellProfiler.app')
 
-    def __on_help_release_notes(self, event):
+    @staticmethod
+    def __on_help_release_notes(event):
         import webbrowser
         webbrowser.open("http://github.com/CellProfiler/CellProfiler/wiki/CellProfiler-release-notes")
 
-    def __on_help_online_manual(self, event):
+    @staticmethod
+    def __on_help_online_manual(event):
         import webbrowser
         webbrowser.open("http://d1zymp9ayga15t.cloudfront.net/CPmanual/index.html")
 
-    def __on_help_developers_guide(self, event):
+    @staticmethod
+    def __on_help_developers_guide(event):
         import webbrowser
         webbrowser.open("http://www.cellprofiler.org/wiki/index.php/Main_Page")
 
-    def __on_help_source_code(self, event):
+    @staticmethod
+    def __on_help_source_code(event):
         import webbrowser
         webbrowser.open("https://github.com/CellProfiler/CellProfiler")
 
     def __on_help_path_list(self, event):
         import htmldialog
-        dlg = htmldialog.HTMLDialog(self, "Help on file list", HELP_ON_FILE_LIST)
+        dlg = htmldialog.HTMLDialog(self, "Help on file list", cellprofiler.gui.help.HELP_ON_FILE_LIST)
         dlg.Show()
 
     @staticmethod
@@ -992,11 +999,12 @@ class CPFrame(wx.Frame):
             self.do_help_module(active_module.module_name,
                                 active_module.get_help())
         else:
-            wx.MessageBox(HELP_ON_MODULE_BUT_NONE_SELECTED,
+            wx.MessageBox(cellprofiler.gui.help.HELP_ON_MODULE_BUT_NONE_SELECTED,
                           "No module selected",
                           style=wx.OK | wx.ICON_INFORMATION)
 
-    def __debug_pdb(self, event):
+    @staticmethod
+    def __debug_pdb(event):
         pdb.set_trace()
 
     def do_help_modules(self, modules):
@@ -1032,7 +1040,7 @@ class CPFrame(wx.Frame):
 
         sizer = wx.BoxSizer()
         helpframe.SetSizer(sizer)
-        window = HtmlClickableWindow(helpframe)
+        window = cellprofiler.gui.html.htmlwindow.HtmlClickableWindow(helpframe)
         sizer.Add(window, 1, wx.EXPAND)
         window.AppendToPage(help_text)
 
@@ -1103,19 +1111,21 @@ class CPFrame(wx.Frame):
                  (wx.ACCEL_CMD, ord('P'), ID_FILE_PRINT),
                  (wx.ACCEL_CMD, ord('C'), ID_EDIT_COPY)])
         helpframe.SetAcceleratorTable(accelerator_table)
-        helpframe.SetIcon(get_cp_icon())
+        helpframe.SetIcon(cellprofiler.gui.get_cp_icon())
         helpframe.Layout()
         helpframe.Show()
 
-    def print_help(self, event, module_name, help_text):
-        '''Print the help text for a module'''
+    @staticmethod
+    def print_help(event, module_name, help_text):
+        """Print the help text for a module"""
         printer = wx.html.HtmlEasyPrinting("Printing %s" % module_name,
                                            event.GetEventObject())
         printer.GetPrintData().SetPaperId(wx.PAPER_LETTER)
         printer.PrintText(help_text)
 
-    def save_help(self, event, module_name, help_text):
-        '''Save the help text for a module'''
+    @staticmethod
+    def save_help(event, module_name, help_text):
+        """Save the help text for a module"""
         save_dlg = wx.FileDialog(event.GetEventObject(),
                                  message="Save help for %s to file" % module_name,
                                  defaultFile="%s.html" % module_name,
@@ -1146,22 +1156,22 @@ class CPFrame(wx.Frame):
             frame.panel.draw()
 
     def __attach_views(self):
-        self.__pipeline_list_view = PipelineListView(self.__module_list_panel, self)
-        self.__pipeline_controller = PipelineController(self.__workspace, self)
+        self.__pipeline_list_view = cellprofiler.gui.pipelinelistview.PipelineListView(self.__module_list_panel, self)
+        self.__pipeline_controller = cellprofiler.gui.pipelinecontroller.PipelineController(self.__workspace, self)
         self.__pipeline_list_view.attach_to_pipeline(self.__pipeline, self.__pipeline_controller)
         self.__pipeline_controller.attach_to_test_controls_panel(self.__pipeline_test_panel)
         self.__pipeline_controller.attach_to_module_controls_panel(self.__module_controls_panel)
         self.__pipeline_controller.attach_to_path_list_ctrl(
                 self.__path_list_ctrl,
                 self.__path_list_filter_checkbox)
-        self.__module_view = ModuleView(
+        self.__module_view = cellprofiler.gui.moduleview.ModuleView(
                 self.__module_panel,
                 self.__workspace,
                 frame = self,
                 notes_panel = self.__notes_panel)
         self.__pipeline_controller.attach_to_module_view(self.__module_view)
         self.__pipeline_list_view.attach_to_module_view(self.__module_view)
-        self.__preferences_view = PreferencesView(
+        self.__preferences_view = cellprofiler.gui.preferencesview.PreferencesView(
                 self.__right_win.Sizer,
                 self.__preferences_panel,
                 self.__progress_panel,
@@ -1196,11 +1206,11 @@ class CPFrame(wx.Frame):
         top_left_win.Layout()
 
     def __set_icon(self):
-        self.SetIcon(get_cp_icon())
+        self.SetIcon(cellprofiler.gui.get_cp_icon())
 
     def __make_search_frame(self):
-        '''Make and hide the "search the help" frame'''
-        background_color = cpprefs.get_background_color()
+        """Make and hide the "search the help" frame"""
+        background_color = cellprofiler.preferences.get_background_color()
         size = (wx.SystemSettings.GetMetric(wx.SYS_SCREEN_X) / 2,
                 wx.SystemSettings.GetMetric(wx.SYS_SCREEN_Y) / 2)
         self.search_frame = wx.Frame(
@@ -1208,7 +1218,7 @@ class CPFrame(wx.Frame):
                 size = size,
                 style = wx.DEFAULT_FRAME_STYLE | wx.TAB_TRAVERSAL)
         self.search_frame.AutoLayout = True
-        self.search_frame.SetIcon(get_cp_icon())
+        self.search_frame.SetIcon(cellprofiler.gui.get_cp_icon())
         self.search_frame.Sizer = wx.BoxSizer(wx.VERTICAL)
         self.search_frame.BackgroundColour = background_color
         sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -1223,7 +1233,7 @@ class CPFrame(wx.Frame):
         sizer.AddSpacer(2)
         sizer.Add(search_button, 0, wx.EXPAND)
 
-        html_window = HtmlClickableWindow(self.search_frame)
+        html_window = cellprofiler.gui.html.htmlwindow.HtmlClickableWindow(self.search_frame)
         self.search_frame.Sizer.Add(html_window, 1, wx.EXPAND | wx.ALL, 4)
 
         def on_search(event):
@@ -1242,11 +1252,11 @@ class CPFrame(wx.Frame):
         search_button.Bind(wx.EVT_BUTTON, on_search)
 
         def on_link_clicked(event):
-            '''Handle anchor clicks manually
+            """Handle anchor clicks manually
 
             The HTML window (on Windows at least) jams the anchor to the
             top of the window which obscures it.
-            '''
+            """
             linkinfo = event.GetLinkInfo()
             if linkinfo.GetHref()[0] != "#":
                 event.Skip()
@@ -1263,7 +1273,7 @@ class CPFrame(wx.Frame):
 
         self.search_frame.Bind(wx.EVT_CLOSE, on_close)
         self.search_frame.Layout()
-        self.search_frame.SetIcon(get_cp_icon())
+        self.search_frame.SetIcon(cellprofiler.gui.get_cp_icon())
 
     def __on_search_help(self, event):
         if self.search_frame is not None:
@@ -1271,18 +1281,18 @@ class CPFrame(wx.Frame):
             self.search_frame.Raise()
 
     def __make_startup_blurb_frame(self):
-        '''Make the frame surrounding the startup blurb panel'''
-        background_color = cpprefs.get_background_color()
+        """Make the frame surrounding the startup blurb panel"""
+        background_color = cellprofiler.preferences.get_background_color()
         frame = self.startup_blurb_frame = wx.Frame(
-                self, title = "Welcome to CellProfiler",
-                size = (640, 480),
-                name=WELCOME_SCREEN_FRAME)
+                self, title="Welcome to CellProfiler",
+                size=(640, 480),
+                name=cellprofiler.gui.html.htmlwindow.WELCOME_SCREEN_FRAME)
         frame.BackgroundColour = background_color
         frame.Sizer = wx.BoxSizer()
-        content = HtmlClickableWindow(frame)
+        content = cellprofiler.gui.html.htmlwindow.HtmlClickableWindow(frame)
         content.load_startup_blurb()
         frame.Sizer.Add(content, 1, wx.EXPAND)
-        frame.SetIcon(get_cp_icon())
+        frame.SetIcon(cellprofiler.gui.get_cp_icon())
 
         def on_close(event):
             assert isinstance(event, wx.CloseEvent)
@@ -1293,7 +1303,7 @@ class CPFrame(wx.Frame):
         frame.Layout()
 
     def __on_data_tool(self, event, tool_name):
-        module = instantiate_module(tool_name)
+        module = cellprofiler.modules.instantiate_module(tool_name)
         args, varargs, varkw, vardef = inspect.getargspec(module.run_as_data_tool)
         if len(args) + (0 if varargs is None else len(varargs)) == 1:
             # Data tool doesn't need the data tool frame because it doesn't
@@ -1306,12 +1316,12 @@ class CPFrame(wx.Frame):
                       tool_name, wildcard="Measurements file(*.mat,*.h5)|*.mat;*.h5",
                 style=(wx.FD_OPEN | wx.FILE_MUST_EXIST))
         if dlg.ShowModal() == wx.ID_OK:
-            DataToolFrame(self,
-                          module_name=tool_name,
-                          measurements_file_name=dlg.Path)
+            cellprofiler.gui.datatoolframe.DataToolFrame(self,
+                                                         module_name=tool_name,
+                                                         measurements_file_name=dlg.Path)
 
     def __on_data_tool_help(self, event, tool_name):
-        module = instantiate_module(tool_name)
+        module = cellprofiler.modules.instantiate_module(tool_name)
         self.do_help_module(tool_name, module.get_help())
 
     def display_error(self, message, error):
@@ -1324,7 +1334,7 @@ class CPFrame(wx.Frame):
         traceback.print_tb(tb)
         text = '\n'.join(traceback.format_list(traceback.extract_tb(tb)))
         text = error.message + '\n' + text
-        display_error_message(self, text, "Caught exception during operation")
+        cellprofiler.gui.errordialog.display_error_message(self, text, "Caught exception during operation")
 
     def add_error_listener(self, listener):
         """Add a listener for display errors"""

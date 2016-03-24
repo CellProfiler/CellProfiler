@@ -2,23 +2,15 @@
 
     TODO - long-term, this should Matlab imformats or CPimread to get the list of images"""
 
+import cellprofiler.gui.cpfigure
+import cellprofiler.modules.loadimages
+import cellprofiler.preferences
 import logging
 import os
-import sys
-import traceback
-
+import scipy.io.matlab
 import wx
 
 logger = logging.getLogger(__name__)
-import scipy.io.matlab
-import matplotlib
-import matplotlib.image
-import matplotlib.figure
-import matplotlib.backends.backend_wx
-
-import cellprofiler.preferences
-from cellprofiler.modules.loadimages import LoadImagesImageProvider, is_image
-import cellprofiler.gui.cpfigure as FIG
 
 
 class DirectoryView(object):
@@ -43,7 +35,7 @@ class DirectoryView(object):
         self.__pipeline_listeners = []
 
     def close(self):
-        '''Disconnect from the preferences when the window closes'''
+        """Disconnect from the preferences when the window closes"""
         cellprofiler.preferences.remove_image_directory_listener(self.__on_image_directory_changed)
 
     def add_pipeline_listener(self, listener):
@@ -80,7 +72,7 @@ class DirectoryView(object):
         try:
             files = [x
                      for x in os.listdir(cellprofiler.preferences.get_default_image_directory())
-                     if is_image(x) or x.endswith(".cp")]
+                     if cellprofiler.modules.loadimages.is_image(x) or x.endswith(".cp")]
         except Exception, e:
             logger.warning(
                     "Warning: Could not refresh default image directory %s.\n" %
@@ -120,9 +112,9 @@ class DirectoryView(object):
 
     def __display_matlab_image(self, handles, filename):
         image = handles["Image"]
-        frame = FIG.CPFigureFrame(self.__list_box.GetTopLevelParent(),
-                                  title=filename,
-                                  subplots=(1, 1))
+        frame = cellprofiler.gui.cpfigure.CPFigureFrame(self.__list_box.GetTopLevelParent(),
+                                                        title=filename,
+                                                        subplots=(1, 1))
         if image.ndim == 3:
             frame.subplot_imshow(0, 0, image, filename)
         else:
@@ -130,11 +122,11 @@ class DirectoryView(object):
         frame.Refresh()
 
     def __display_image(self, filename):
-        lip = LoadImagesImageProvider("dummy", "", filename, True)
+        lip = cellprofiler.modules.loadimages.LoadImagesImageProvider("dummy", "", filename, True)
         image = lip.provide_image(None).pixel_data
-        frame = FIG.CPFigureFrame(self.__list_box.GetTopLevelParent(),
-                                  title=filename,
-                                  subplots=(1, 1))
+        frame = cellprofiler.gui.cpfigure.CPFigureFrame(self.__list_box.GetTopLevelParent(),
+                                                        title=filename,
+                                                        subplots=(1, 1))
         if image.ndim == 3:
             frame.subplot_imshow(0, 0, image, filename)
         else:

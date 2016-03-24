@@ -1,13 +1,10 @@
-'''metadatadlg.py - dialog for editing an expression that might contain metadata
-'''
+"""metadatadlg.py - dialog for editing an expression that might contain metadata
+"""
 
-import re
-
+import cellprofiler.measurements
+import cellprofiler.preferences
 import wx
 import wx.lib.masked
-
-import cellprofiler.measurements as cpmeas
-from cellprofiler.preferences import get_primary_outline_color
 
 __choice_ids = []
 
@@ -25,13 +22,13 @@ class MetadataControl(wx.PyControl):
             self.value = u""
 
     def __init__(self, pipeline, module, *args, **kwargs):
-        '''Initialize the field
+        """Initialize the field
 
         pipeline - the pipeline being run
         module - the module containing the setting
         value (optional) - initial value for control
         padding (optional) - padding around text in pixels
-        '''
+        """
         kwargs = kwargs.copy()
         style = kwargs.get("style", wx.BORDER_DEFAULT)
         value = kwargs.pop("value", "")
@@ -47,12 +44,12 @@ class MetadataControl(wx.PyControl):
 
         super(MetadataControl, self).__init__(*args, **kwargs)
         columns = pipeline.get_measurement_columns(module)
-        choices = [cpmeas.C_SERIES, cpmeas.C_FRAME]
+        choices = [cellprofiler.measurements.C_SERIES, cellprofiler.measurements.C_FRAME]
         for column in columns:
             object_name, feature, coltype = column[:3]
-            choice = feature[(len(cpmeas.C_METADATA) + 1):]
-            if (object_name == cpmeas.IMAGE and
-                    feature.startswith(cpmeas.C_METADATA)):
+            choice = feature[(len(cellprofiler.measurements.C_METADATA) + 1):]
+            if (object_name == cellprofiler.measurements.IMAGE and
+                    feature.startswith(cellprofiler.measurements.C_METADATA)):
                 choices.append(choice)
         self.__metadata_choices = choices
         self.SetValue(value)
@@ -150,7 +147,7 @@ class MetadataControl(wx.PyControl):
         self.Cursor = wx.StockCursor(wx.CURSOR_IBEAM)
 
     def GetValue(self):
-        '''The setting value underlying the text representation'''
+        """The setting value underlying the text representation"""
         value = ""
         for token in self.__tokens:
             if isinstance(token, self.MetadataToken):
@@ -165,7 +162,7 @@ class MetadataControl(wx.PyControl):
     Value = property(GetValue, SetValue)
 
     def adjust_scroll(self):
-        '''Scroll the cursor position into view'''
+        """Scroll the cursor position into view"""
 
         rawpos = 0
         for i in range(self.__cursor_pos):
@@ -228,7 +225,7 @@ class MetadataControl(wx.PyControl):
                 token = self.__tokens[pos]
                 try:
                     idx = self.__metadata_choices.index(token.value) + 1
-                    idx = idx % len(self.__metadata_choices)
+                    idx %= len(self.__metadata_choices)
                 except ValueError:
                     idx = 0
                 if len(self.__metadata_choices):
@@ -410,11 +407,11 @@ class MetadataControl(wx.PyControl):
         self.Refresh()
 
     def get_text(self, start_idx=0, end_idx=None):
-        '''Return the text representation of the tokens between the given indices
+        """Return the text representation of the tokens between the given indices
 
         start_idx - index of first token in string
         end_idx - index of last token or -1 for all
-        '''
+        """
         value = ""
         if end_idx is None:
             end_idx = len(self.__tokens)
@@ -513,7 +510,7 @@ class MetadataControl(wx.PyControl):
         self.on_token_change()
 
     def get_positions(self, dc):
-        '''Get the widths of each of the tokens'''
+        """Get the widths of each of the tokens"""
         text = self.get_text(0, len(self.__tokens))
         raw_positions = dc.GetPartialTextExtents(text)
         positions = [self.padding]
@@ -533,7 +530,7 @@ class MetadataControl(wx.PyControl):
         try:
             dc.BackgroundMode = wx.SOLID
             background_color = wx.SystemSettings_GetColour(wx.SYS_COLOUR_WINDOW)
-            metadata_color = get_primary_outline_color()
+            metadata_color = cellprofiler.preferences.get_primary_outline_color()
             selected_background_color = wx.SystemSettings_GetColour(wx.SYS_COLOUR_HIGHLIGHT)
             selected_color = wx.SystemSettings_GetColour(wx.SYS_COLOUR_HIGHLIGHTTEXT)
             text_color = wx.SystemSettings_GetColour(wx.SYS_COLOUR_WINDOWTEXT)
@@ -568,8 +565,7 @@ class MetadataControl(wx.PyControl):
             for i, token in enumerate(self.__tokens):
                 if isinstance(token, self.MetadataToken):
                     current_state = "metadata"
-                elif (self.selection is not None and
-                              i >= selection[0] and i < selection[1]):
+                elif self.selection is not None and selection[0] <= i < selection[1]:
                     current_state = "selection"
                 else:
                     current_state = "boring"
@@ -594,75 +590,3 @@ class MetadataControl(wx.PyControl):
                 dc.DrawText(text, position[0], position[1])
         finally:
             dc.Destroy()
-
-
-if __name__ == "__main__":
-    import cellprofiler.pipeline as cpp
-    import sys
-
-
-    class MetadataDialog(wx.Dialog):
-        '''A dialog that graphically displays metadata tags.
-
-        To use:
-
-        dlg = MetadataDialog(pipeline, module)
-        dlg.value = setting.value # the setting to be edited
-        if dlg.ShowModal() == wx.ID_OK:
-            setting.value = dlg.value
-        '''
-
-        def __init__(self, pipeline, module, *args, **kwargs):
-            '''Class initializer
-
-            pipeline - pipeline being edited
-            module - module containing setting to be edited. Only metadata previous
-                     to this module will be available.
-            (from wx.Dialog)
-            parent - parent window
-            id - window ID for this window
-            title - Title in caption bar of window
-            pos - initial window position
-            size - initial window size
-            style - dialog style
-            name - window name
-            '''
-            super(MetadataDialog, self).__init__(*args, **kwargs)
-            self.value = ""
-            columns = pipeline.get_measurement_columns(module)
-            choices = [feature[(len(cpmeas.C_METADATA) + 1):]
-                       for object_name, feature, coltype in columns
-                       if object_name == cpmeas.IMAGE and
-                       feature.startswith(cpmeas.C_METADATA)]
-
-            sizer = wx.GridBagSizer(3, 2)
-            self.SetSizer(sizer)
-            sizer.AddGrowableCol(1)
-            sizer.Add(wx.StaticText(self, -1, "Expression:"), (0, 0),
-                      flag=wx.ALIGN_CENTER | wx.ALL, border=2)
-
-            self.expression_ctrl = MetadataControl(pipeline, module, self)
-            sizer.Add(self.expression_ctrl, (0, 1), (1, 2),
-                      flag=wx.ALIGN_CENTER | wx.ALL, border=2)
-
-            buttons = wx.StdDialogButtonSizer()
-            sizer.Add(buttons, (1, 0), (1, 3),
-                      flag=wx.EXPAND | wx.ALL, border=2)
-            buttons.AddButton(wx.Button(self, wx.ID_OK))
-            buttons.AddButton(wx.Button(self, wx.ID_CANCEL))
-            buttons.Realize()
-            self.Layout()
-
-
-    class MyApp(wx.App):
-        def OnInit(self):
-            p = cpp.Pipeline()
-            p.load(sys.argv[1])
-            dlg = MetadataDialog(p, p.modules()[-1], None)
-            dlg.expression_ctrl.SetValue("Hello \\g<PLATE> giraffe platypus!")
-            dlg.ShowModal()
-            return 1
-
-
-    my_app = MyApp()
-    my_app.MainLoop()

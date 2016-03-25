@@ -87,7 +87,7 @@ import cellprofiler.preferences as cpprefs
 import cellprofiler.settings as cps
 from cellprofiler.preferences import IO_FOLDER_CHOICE_HELP_TEXT
 from cellprofiler.settings import YES, NO
-from cellprofiler.utilities import product
+import itertools
 from identify import C_COUNT, C_LOCATION, FTR_CENTER_X, FTR_CENTER_Y
 from identify import C_NUMBER, FTR_OBJECT_NUMBER
 from identify import add_object_count_measurements
@@ -986,7 +986,7 @@ class StraightenWorms(cpm.CPModule):
                                       self.get_scale_name(None, segment))),
                             cpmeas.COLTYPE_FLOAT)
                            for ftr, group, segment
-                           in product((FTR_MEAN_INTENSITY, FTR_STD_INTENSITY),
+                           in itertools.product((FTR_MEAN_INTENSITY, FTR_STD_INTENSITY),
                                       self.images,
                                       range(nsegments))]
             if nstripes > 1:
@@ -996,7 +996,7 @@ class StraightenWorms(cpm.CPModule):
                                       self.get_scale_name(stripe, None))),
                             cpmeas.COLTYPE_FLOAT)
                            for ftr, group, stripe
-                           in product((FTR_MEAN_INTENSITY, FTR_STD_INTENSITY),
+                           in itertools.product((FTR_MEAN_INTENSITY, FTR_STD_INTENSITY),
                                       self.images,
                                       range(nstripes))]
             if nsegments > 1 and nstripes > 1:
@@ -1006,7 +1006,7 @@ class StraightenWorms(cpm.CPModule):
                                       self.get_scale_name(stripe, segment))),
                             cpmeas.COLTYPE_FLOAT)
                            for ftr, group, stripe, segment
-                           in product((FTR_MEAN_INTENSITY, FTR_STD_INTENSITY),
+                           in itertools.product((FTR_MEAN_INTENSITY, FTR_STD_INTENSITY),
                                       self.images,
                                       range(nstripes),
                                       range(nsegments))]
@@ -1057,7 +1057,7 @@ class StraightenWorms(cpm.CPModule):
                            for stripe in range(nstripes)]
             if nstripes > 1 and nsegments > 1:
                 result += [self.get_scale_name(h, v)
-                           for h, v in product(
+                           for h, v in itertools.product(
                             range(nstripes),
                             range(nsegments))]
         return result

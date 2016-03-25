@@ -65,13 +65,13 @@ logger = logging.getLogger(__name__)
 import scipy.ndimage as scind
 from scipy.linalg.basic import lstsq
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
+import centrosome.haralick
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
 from cellprofiler.settings import YES, NO
 import centrosome.threshold as cpthresh
-from centrosome.haralick import Haralick
-from cellprofiler.utilities import product
+import itertools
 import centrosome.radial_power_spectrum as rps
 from identify import O_TWO_CLASS, O_THREE_CLASS, O_WEIGHTED_VARIANCE, O_ENTROPY
 from identify import O_FOREGROUND, O_BACKGROUND
@@ -890,7 +890,7 @@ class MeasureImageQuality(cpm.CPModule):
             for scale_group in image_group.scale_groups:
                 scale = scale_group.scale.value
 
-                value = Haralick(pixel_data, image_labels, 0, scale).H3()
+                value = centrosome.haralick.Haralick(pixel_data, image_labels, 0, scale).H3()
                 if not np.isfinite(value):
                     value = 0.0
                 workspace.add_measurement(cpmeas.IMAGE, "%s_%s_%s_%d" %
@@ -1117,16 +1117,16 @@ class MeasureImageQuality(cpm.CPModule):
         threshold_args = []
         object_fraction = [0.05, 0.25, 0.75, 0.95]
         # Produce list of combinations of the special thresholding method parameters: Otsu, MoG
-        z = product([cpthresh.TM_OTSU], [0], [O_WEIGHTED_VARIANCE, O_ENTROPY], [O_THREE_CLASS],
+        z = itertools.product([cpthresh.TM_OTSU], [0], [O_WEIGHTED_VARIANCE, O_ENTROPY], [O_THREE_CLASS],
                     [O_FOREGROUND, O_BACKGROUND])
         threshold_args += [i for i in z]
-        z = product([cpthresh.TM_OTSU], [0], [O_WEIGHTED_VARIANCE, O_ENTROPY], [O_TWO_CLASS], [O_FOREGROUND])
+        z = itertools.product([cpthresh.TM_OTSU], [0], [O_WEIGHTED_VARIANCE, O_ENTROPY], [O_TWO_CLASS], [O_FOREGROUND])
         threshold_args += [i for i in z]
-        z = product([cpthresh.TM_MOG], object_fraction, [O_WEIGHTED_VARIANCE], [O_TWO_CLASS], [O_FOREGROUND])
+        z = itertools.product([cpthresh.TM_MOG], object_fraction, [O_WEIGHTED_VARIANCE], [O_TWO_CLASS], [O_FOREGROUND])
         threshold_args += [i for i in z]
         # Tack on the remaining simpler methods
         leftover_methods = [i for i in cpthresh.TM_METHODS if i not in [cpthresh.TM_OTSU, cpthresh.TM_MOG]]
-        z = product(leftover_methods, [0], [O_WEIGHTED_VARIANCE], [O_TWO_CLASS], [O_FOREGROUND])
+        z = itertools.product(leftover_methods, [0], [O_WEIGHTED_VARIANCE], [O_TWO_CLASS], [O_FOREGROUND])
         threshold_args += [i for i in z]
 
         # Assign the threshold values to a temporary threshold group

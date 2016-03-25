@@ -211,9 +211,6 @@ class VWMaskRow(VWRow):
 
 
 class VWFigureFrame(cellprofiler.gui.cpfigure.CPFigureFrame):
-    def __init__(self):
-        pass
-
     def on_close(self, event):
         """Hide instead of close"""
         if isinstance(event, wx.CloseEvent):

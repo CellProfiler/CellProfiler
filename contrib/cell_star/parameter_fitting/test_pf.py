@@ -54,6 +54,15 @@ def try_load_image(image_path):
     return image_util.load_frame(corpus_path, image_path)
 
 
+def cropped_to_gt(avg_cell_diameter, image, gt_image):
+    gt_label = image_to_label(gt_image)
+
+    gt_slices = sp.ndimage.find_objects(gt_label > 0)[0]
+    extended_slice = image_util.extend_slices(gt_slices, avg_cell_diameter * default_config()["segmentation"]["stars"]["maxSize"] * 2)
+    cropped_image = image[extended_slice]
+    cropped_gt_label = gt_label[extended_slice]
+    return cropped_image, cropped_gt_label
+
 def run_pf(input_image, gt_label, parameters, precision, avg_cell_diameter):
     """
     :param input_image:
@@ -61,12 +70,8 @@ def run_pf(input_image, gt_label, parameters, precision, avg_cell_diameter):
     :param parameters:
     :return: Best complete parameters settings, best distance
     """
-    gt_label = image_to_label(gt_label)
 
-    gt_slices = sp.ndimage.find_objects(gt_label != 0)[0]
-    extended_slice = image_util.extend_slices(gt_slices, avg_cell_diameter * default_config()["segmentation"]["stars"]["maxSize"] * 2)
-    croped_image = input_image[extended_slice]
-    croped_gt_mask = gt_label[extended_slice]
+    croped_image, croped_gt_mask = cropped_to_gt(avg_cell_diameter, input_image, gt_label)
 
     gt_snakes = gt_label_to_snakes(croped_gt_mask)
     if get_max_workers() > 1:
@@ -80,15 +85,11 @@ def run_pf(input_image, gt_label, parameters, precision, avg_cell_diameter):
 def test_pf(image_path, mask_path, precision, avg_cell_diameter, method):
     frame = try_load_image(image_path)
     gt_image = np.array(try_load_image(mask_path) * 255, dtype=int)
-    gt_label = image_to_label(gt_image)
 
-    gt_slices = sp.ndimage.find_objects(gt_label > 0)[0]
-    extended_slice = image_util.extend_slices(gt_slices, avg_cell_diameter * default_config()["segmentation"]["stars"]["maxSize"] * 2)
-    croped_frame = frame[extended_slice]
-    croped_gt_label = gt_label[extended_slice]
+    cropped_image, cropped_gt_label = cropped_to_gt(avg_cell_diameter, frame, gt_image)
 
-    gt_snakes = gt_label_to_snakes(croped_gt_label)
-    run(croped_frame, gt_snakes, precision, avg_cell_diameter, method)
+    gt_snakes = gt_label_to_snakes(cropped_gt_label)
+    run(cropped_image, gt_snakes, precision, avg_cell_diameter, method)
 
 
 if __name__ == "__main__":

@@ -725,7 +725,7 @@ def get_batch_commands(filename):
             for i, off in enumerate(cumsums):
                 if off == prev:
                     continue
-                print "CellProfiler -c -r -b -p %s -f %d -l %d" % (
+                print "CellProfiler -c -r -p %s -f %d -l %d" % (
                     filename, prev + 1, off)
                 prev = off
             return
@@ -735,7 +735,7 @@ def get_batch_commands(filename):
     for grouping in groupings:
         group_string = ",".join(
                 ["%s=%s" % (k, v) for k, v in grouping[0].iteritems()])
-        print "CellProfiler -c -r -b -p %s -g %s" % (
+        print "CellProfiler -c -r -p %s -g %s" % (
             filename, group_string)
 
 

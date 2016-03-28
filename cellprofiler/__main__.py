@@ -143,10 +143,6 @@ def main(args=None):
         get_batch_commands(options.batch_commands_file)
         return
 
-    if options.run_ilastik:
-        run_ilastik()
-        return
-
     if options.add_message_for_user:
         if len(args) != 3:
             sys.stderr.write("Usage: (for add_message-for-user)\n")
@@ -411,14 +407,6 @@ def parse_args(args):
                           default=False,
                           action="store_true",
                           help="Build extensions, then exit CellProfiler")
-
-    parser.add_option("--ilastik",
-                      dest="run_ilastik",
-                      default=False,
-                      action="store_true",
-                      help=("Run Ilastik instead of CellProfiler. "
-                            "Ilastik is a pixel-based classifier. See "
-                            "www.ilastik.org for more details."))
     parser.add_option("-d", "--done-file",
                       dest="done_file",
                       default=None,

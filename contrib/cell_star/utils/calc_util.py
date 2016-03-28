@@ -3,14 +3,46 @@ __author__ = 'Adam Kaczmarek, Filip Mróz'
 
 # External imports
 import math
+
 import numpy as np
-from image_util import image_show, image_dilate_with_element, get_circle_kernel
-from index import Index
 from matplotlib.path import Path
+
+from index import Index
 
 
 def euclidean_norm((x1, y1), (x2, y2)):
     return math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
+
+
+def interpolate(final_edgepoints, points_number, xmins3):
+    # Interpolacja konturu, na odrzucone punkty
+    # Lista indeksów zatwierdzonych punktów konturu
+    cumlengths = np.where(final_edgepoints)[0]
+    if len(cumlengths) > 0:
+        # Dodanie na końcu listy indeksu pierwszego punktu zwiększonego o liczbę
+        # punktów konturu, dla obliczenia długości przedziału interpolacji
+        cumlengths_loop = np.append(cumlengths, cumlengths[0] + int(points_number))
+        for i in range(len(cumlengths)):
+            # Indeks bieżącego punktu konturu
+            # current = cumlengths[i]
+            left_interval_boundary = cumlengths[i]
+            # Długość przedziału interpolacji (ilość odrzuconych punktów konturu do najbliższego zatwierdzonego)
+            # mlength = cumlengths_loop[i + 1] - current - 1
+            interval_length = cumlengths_loop[i + 1] - left_interval_boundary - 1
+            # Indeks końca przedziału interpolacji (ostatniego interpolowanego punktu)
+            # jend = (current + mlength + 1) % points_number
+            right_interval_boundary = cumlengths_loop[i + 1] % points_number
+
+            # Dla każdego punktu w przedziale interpolacji
+            for k in range(left_interval_boundary + 1, left_interval_boundary + interval_length + 1):
+                # Indeks interpolowanego punktu
+                interpolated = k % points_number
+                # Oblicz nową interpolowaną wartość
+                new_val = round(xmins3[left_interval_boundary] + (
+                    xmins3[right_interval_boundary] - xmins3[left_interval_boundary]) * (k - left_interval_boundary) / (
+                                    interval_length + 1))
+                # Zwróć minimum jako wynik interpolacji - interpolacja nie może oddalić konturu od środka komórki
+                xmins3[interpolated] = min(xmins3[interpolated], new_val)
 
 
 def loop_connected_components(v):
@@ -50,60 +82,6 @@ def loop_connected_components(v):
 
         init = (fin - c) % v.shape[0] + 1
     return np.array(c), init, fin
-
-
-def limit_difference(vertices_order, minimal_dist, maximal_dist, max_diff, quality, conservative=False):
-    """
-    Makes vertices list more 'smooth' by trimming the odd ones. Updates minimal_dist and maximal_dist.
-    @param vertices_order: list of sorted angles to consider
-    @param conservative: limit change of distance
-    @todo what is the purpose of starting over?
-    @todo optimize
-    """
-    vertices_number = len(vertices_order)
-
-    ready = 0
-    while ready < vertices_number - 1:
-        current = (ready + 1)%vertices_number
-        current_angle = vertices_order[current]
-        previous = ready%vertices_number
-        previous_angle = vertices_order[previous]
-        if minimal_dist[current_angle] - minimal_dist[previous_angle] > max_diff[minimal_dist[previous_angle]]:
-            maximal_dist[current_angle] = minimal_dist[previous_angle] + max_diff[minimal_dist[previous_angle]]
-
-            # Take quality from 0 to maximal_dist
-            # Find best in that interval (can be optimized a lot OPT)
-            minimal_dist[current_angle] = np.argmin(quality[:maximal_dist[current_angle]+1,current_angle])
-            ready = min(-1,ready - 2) # start over!!
-
-        else:
-            ready += 1
-    return
-
-
-def limit_difference_counter(vertices_order, minimal_dist, maximal_dist, max_diff, quality):
-    vertices_number = len(vertices_order)
-
-    ready = vertices_number - 1
-
-    while ready > 0:
-        current = (ready + 1) % vertices_number
-        current_angle = vertices_order[current]
-        previous = (ready + 2) % vertices_number
-        previous_angle = vertices_order[previous]
-
-        if minimal_dist[current_angle] - minimal_dist[previous_angle] > max_diff[minimal_dist[previous_angle]]:
-            maximal_dist[current_angle] = minimal_dist[previous_angle] + max_diff[minimal_dist[previous_angle]]
-
-            minimal_dist[current_angle] = max(
-                np.argmin(quality[:maximal_dist[current_angle]+1, current_angle]),
-                minimal_dist[previous_angle] - max_diff[minimal_dist[previous_angle]]
-            )
-            ready = max(vertices_number - 1, ready)
-        else:
-            ready -= 1
-
-    return minimal_dist, maximal_dist
 
 
 def unstick_contour(edgepoints, unstick_coeff):

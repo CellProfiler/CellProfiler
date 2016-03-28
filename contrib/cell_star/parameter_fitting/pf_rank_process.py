@@ -2,12 +2,13 @@
 __author__ = 'Adam Kaczmarek, Filip Mróz'
 
 import copy
+import operator as op
+import random
 import time
 from multiprocessing import Process, Queue
-import operator as op
+
 import scipy.optimize as opt
 
-import random
 random.seed(1)
 
 import logging
@@ -29,6 +30,9 @@ from cellprofiler.preferences import get_max_workers
 best_so_far = 1000000000
 calculations = 0
 
+def maximal_distance(n):
+    l = n - 1
+    return l*(l+1)*(l+2)/6.0 * 2
 
 def distance_norm_list(expected, result):
     """
@@ -38,9 +42,10 @@ def distance_norm_list(expected, result):
     @return:
     """
     global best_so_far, calculations
+    length = len(expected)
     exp_position = dict([(obj, i) for (i, obj) in enumerate(expected)])
     positions = enumerate(result)
-    distance = sum([abs(exp_position[obj] - i) ** 2 for (i, obj) in positions])
+    distance = sum([abs(exp_position[obj] - i) ** 2 for (i, obj) in positions]) / maximal_distance(length)  # scaling to [0,1]
     best_so_far = min(best_so_far, distance)
     calculations += 1
     if calculations % 100 == 0:

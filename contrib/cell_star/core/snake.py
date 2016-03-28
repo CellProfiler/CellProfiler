@@ -216,34 +216,9 @@ class Snake(object):
         self.final_edgepoints = \
             calc_util.unstick_contour(self.original_edgepoints, self.parameters["segmentation"]["stars"]["unstick"])
 
-        # Interpolacja konturu, na odrzucone punkty
-        # Lista indeksów zatwierdzonych punktów konturu
-        cumlengths = np.where(self.final_edgepoints)[0]
-        if len(cumlengths) > 0:
-            # Dodanie na końcu listy indeksu pierwszego punktu zwiększonego o liczbę
-            # punktów konturu, dla obliczenia długości przedziału interpolacji
-            cumlengths_loop = np.append(cumlengths, cumlengths[0] + int(points_number))
-            for i in range(len(cumlengths)):
-                # Indeks bieżącego punktu konturu
-                # current = cumlengths[i]
-                left_interval_boundary = cumlengths[i]
-                # Długość przedziału interpolacji (ilość odrzuconych punktów konturu do najbliższego zatwierdzonego)
-                # mlength = cumlengths_loop[i + 1] - current - 1
-                interval_length = cumlengths_loop[i + 1] - left_interval_boundary - 1
-                # Indeks końca przedziału interpolacji (ostatniego interpolowanego punktu)
-                # jend = (current + mlength + 1) % points_number
-                right_interval_boundary = cumlengths_loop[i + 1] % points_number
+        # Interpolate points where no reliable points had been found.
+        calc_util.interpolate(self.final_edgepoints, points_number, xmins3)
 
-                # Dla każdego punktu w przedziale interpolacji
-                for k in range(left_interval_boundary + 1, left_interval_boundary + interval_length + 1):
-                    # Indeks interpolowanego punktu
-                    interpolated = k % points_number
-                    # Oblicz nową interpolowaną wartość
-                    new_val = round(xmins3[left_interval_boundary] + (xmins3[right_interval_boundary] - xmins3[left_interval_boundary]) * (k - left_interval_boundary) / (interval_length + 1))
-                    # Zwróć minimum jako wynik interpolacji - interpolacja nie może oddalić konturu od środka komórki
-                    xmins3[interpolated] = min(xmins3[interpolated], new_val)
-
-        #
         #
         # Przetworzenie konturu na listę punktów
         #
@@ -267,6 +242,7 @@ class Snake(object):
         self.points = [Point(x, y) for x, y in zip(np.append(px, px[0]), np.append(py, py[0]))]
 
         return
+
 
     def smooth_contour_vec(self, xmins, max_diff, points_number, f_tot):
         """

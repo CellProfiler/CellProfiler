@@ -15,8 +15,8 @@ import sklearn.ensemble
 
 logger = logging.getLogger(__name__)
 
-A_CLASS = 'Class'
-A_DIGEST = 'MD5Digest'
+A_CLASS = "Class"
+A_DIGEST = "MD5Digest"
 A_VERSION = "Version"
 AA_ADVANCED = "Advanced"
 AA_AUTOMATIC = "Automatic"
@@ -57,20 +57,6 @@ class Classify(cellprofiler.cpmodule.CPModule):
     variable_revision_number = 1
 
     def create_settings(self):
-        self.mode = cellprofiler.settings.Choice("Classify or train?", [MODE_CLASSIFY, MODE_TRAIN])
-
-        self.advanced_or_automatic = cellprofiler.settings.Choice("Configuration mode", [AA_AUTOMATIC, AA_ADVANCED], doc="Do you want to automatically choose the training parameters or use the defaults?")
-
-        self.radius = cellprofiler.settings.Integer("Radius", DEFAULT_RADIUS, 1)
-
-        self.n_features = cellprofiler.settings.Integer("Number of features", DEFAULT_N_FEATURES, 1, doc="""The classifier runs a feature reduction set. This creates <i>Eigentextures</i> which are representative texture patches found throughout the image. The module scores each patch around a pixel according to how much it has each of these textures and those scores are fed into the final classifier. Raise the number of features if some of the textures or edges of your classes are misclassified. Lower the number of features to improve processing time or to reduce overfitting if you have a smaller amount of ground truth.""")
-
-        self.n_estimators = cellprofiler.settings.Integer("Number of estimators", DEFAULT_N_ESTIMATORS, 1, doc="""The classifier uses a voting scheme where it trains this many estimators. It purposefully does a bad job training and makes up for this deficit by having many poor classification judges. This protects against overfitting by not relying on having a single classifier that is very good at classifying the ground truth, but mistakenly uses irrelevant information to do so. Raise the number of estimators if the classifier is making obvious mistakes with unwarranted certainty. Lower the number of estimators to improve processing speed.""")
-
-        self.min_samples_per_leaf = cellprofiler.settings.Integer( "Minimum samples per leaf", DEFAULT_MIN_SAMPLES_PER_LEAF, 1, doc="""This setting determines the minimum number of ground truth pixels that the classifier will use to split a decision tree. There must be at least this number of example pixels in each branch for the classifier to have confidence that the split is real and not just an artifact of an irrelevant measurement.\n Lower this setting if the classifier does a good job on most of the pixels but does not draw sharp distinctions between one class and another at the border between the classes (e.g. at the edges of cells). Raise this setting if the classifier misclassifies pixels that are clearly not the right class - this is overtraining.""")
-
-        self.path = cellprofiler.settings.DirectoryPath("Classifier folder")
-
         def get_directory_fn():
             """Get the directory for the file name"""
             return self.path.get_absolute_path()
@@ -80,11 +66,25 @@ class Classify(cellprofiler.cpmodule.CPModule):
 
             self.path.join_parts(dir_choice, custom_path)
 
-        self.filename = cellprofiler.settings.FilenameText( "Classifier file", "Classifier.cpclassifier", get_directory_fn=get_directory_fn, set_directory_fn=set_directory_fn, exts=[("Pixel classifier (*.cpclassifier)", "*.cpclassifier"), ("All files (*.*)", "*.*")])
+        self.mode = cellprofiler.settings.Choice("Classify or train?", [MODE_CLASSIFY, MODE_TRAIN])
 
-        self.gt_source = cellprofiler.settings.Choice( "Ground truth source", [SRC_OBJECTS, SRC_ILASTIK], doc=""" The ground truth data can either be taken from objects or can be the exported TIF "labels" output of Ilastik.""")
+        self.advanced_or_automatic = cellprofiler.settings.Choice("Configuration mode", [AA_AUTOMATIC, AA_ADVANCED], doc="Do you want to automatically choose the training parameters or use the defaults?")
 
-        self.labels_image = cellprofiler.settings.ImageNameSubscriber( "Ilastik labels image", "labels.tif", doc=""" <i>Used only if the ground truth source is "Ilastik"</i> <br> This image should be the exported labels image from Ilastik.""")
+        self.radius = cellprofiler.settings.Integer("Radius", DEFAULT_RADIUS, 1)
+
+        self.n_features = cellprofiler.settings.Integer("Number of features", DEFAULT_N_FEATURES, 1, doc="The classifier runs a feature reduction set. This creates <i>Eigentextures</i> which are representative texture patches found throughout the image. The module scores each patch around a pixel according to how much it has each of these textures and those scores are fed into the final classifier. Raise the number of features if some of the textures or edges of your classes are misclassified. Lower the number of features to improve processing time or to reduce overfitting if you have a smaller amount of ground truth.")
+
+        self.n_estimators = cellprofiler.settings.Integer("Number of estimators", DEFAULT_N_ESTIMATORS, 1, doc="The classifier uses a voting scheme where it trains this many estimators. It purposefully does a bad job training and makes up for this deficit by having many poor classification judges. This protects against overfitting by not relying on having a single classifier that is very good at classifying the ground truth, but mistakenly uses irrelevant information to do so. Raise the number of estimators if the classifier is making obvious mistakes with unwarranted certainty. Lower the number of estimators to improve processing speed.")
+
+        self.min_samples_per_leaf = cellprofiler.settings.Integer("Minimum samples per leaf", DEFAULT_MIN_SAMPLES_PER_LEAF, 1, doc="This setting determines the minimum number of ground truth pixels that the classifier will use to split a decision tree. There must be at least this number of example pixels in each branch for the classifier to have confidence that the split is real and not just an artifact of an irrelevant measurement.\n Lower this setting if the classifier does a good job on most of the pixels but does not draw sharp distinctions between one class and another at the border between the classes (e.g. at the edges of cells). Raise this setting if the classifier misclassifies pixels that are clearly not the right class - this is overtraining.")
+
+        self.path = cellprofiler.settings.DirectoryPath("Classifier folder")
+
+        self.filename = cellprofiler.settings.FilenameText("Classifier file", "Classifier.cpclassifier", get_directory_fn=get_directory_fn, set_directory_fn=set_directory_fn, exts=[("Pixel classifier (*.cpclassifier)", "*.cpclassifier"), ("All files (*.*)", "*.*")])
+
+        self.gt_source = cellprofiler.settings.Choice("Ground truth source", [SRC_OBJECTS, SRC_ILASTIK], doc="The ground truth data can either be taken from objects or can be the exported TIF \"labels\" output of Ilastik.")
+
+        self.labels_image = cellprofiler.settings.ImageNameSubscriber("Ilastik labels image", "labels.tif", doc="<i>Used only if the ground truth source is \"Ilastik\"</i> <br> This image should be the exported labels image from Ilastik.")
 
         self.wants_background_class = cellprofiler.settings.Binary("Do you want a background class?", True)
 
@@ -154,7 +154,7 @@ class Classify(cellprofiler.cpmodule.CPModule):
     def add_labels(self, can_remove=True):
         group = cellprofiler.settings.SettingsGroup()
 
-        group.append("class_name", cellprofiler.settings.AlphanumericText("Class name", "Class %d" % (len(self.label_classes) + 1), doc="""The name to give to pixels of this class (e.g. "Foreground")\nYou should add one class for each class you defined in Ilastik"""))
+        group.append("class_name", cellprofiler.settings.AlphanumericText("Class name", "Class %d" % (len(self.label_classes) + 1), doc="The name to give to pixels of this class (e.g. \"Foreground\")\nYou should add one class for each class you defined in Ilastik"))
 
         if can_remove:
             group.append("remover", cellprofiler.settings.RemoveSettingButton("Remove object", "Remove", self.label_classes, group))
@@ -834,7 +834,7 @@ class PixelClassifier(object):
 
         result = []
 
-        for image_number, idx, idx_end in zip( image_numbers, idxs[:-1], idxs[1:]):
+        for image_number, idx, idx_end in zip(image_numbers, idxs[:-1], idxs[1:]):
             image = self.get_image(image_number)
 
             result.append(self.get_samples(image, samples[idx:idx_end, 1:]))

@@ -4,11 +4,17 @@
 import cellprofiler
 import cellprofiler.image
 import cellprofiler.measurement
+import cellprofiler.pipeline
+import cellprofiler.pipeline
 import cellprofiler.preference
+import cellprofiler.preference
+import cellprofiler.utilities.thread_excepthook
 import cellprofiler.utilities.zmqrequest
+import cellprofiler.worker
 import cellprofiler.workspace
 import collections
 import cStringIO
+import javabridge
 import logging
 import multiprocessing
 import numpy
@@ -19,6 +25,7 @@ import subprocess
 import sys
 import tempfile
 import threading
+import time
 import uuid
 import zmq
 
@@ -273,12 +280,11 @@ class AnalysisRunner(object):
         image_set_end - last image set number to process
         overwrite - whether to recompute imagesets that already have data in initial_measurements.
         """
-        from javabridge import attach, detach
         posted_analysis_started = False
         acknowledged_thread_start = False
         measurements = None
         workspace = None
-        attach()
+        javabridge.attach()
         try:
             # listen for pipeline events, and pass them upstream
             self.pipeline.add_listener(lambda pipe, evt: self.post_event(evt))
@@ -431,7 +437,7 @@ class AnalysisRunner(object):
                     while (self.paused or ((not self.cancelled) and self.in_process_queue.empty() and self.finished_queue.empty() and self.received_measurements_queue.empty())):
                         self.interface_work_cv.wait()  # wait for a change of status or work to arrive
         finally:
-            detach()
+            javabridge.detach()
             # Note - the measurements file is owned by the queue consumer
             #        after this post_event.
             #
@@ -609,25 +615,23 @@ class AnalysisRunner(object):
         if 'CP_DEBUG_WORKER' in os.environ:
             if os.environ['CP_DEBUG_WORKER'] == 'NOT_INPROC':
                 return
-            from cellprofiler.worker import Worker, NOTIFY_ADDR, NOTIFY_STOP
-            from cellprofiler.pipeline import CancelledException
 
             class WorkerRunner(threading.Thread):
                 def __init__(self, work_announce_address):
                     threading.Thread.__init__(self)
                     self.work_announce_address = work_announce_address
                     self.notify_socket = zmq.Context.instance().socket(zmq.PUB)
-                    self.notify_socket.bind(NOTIFY_ADDR)
+                    self.notify_socket.bind(cellprofiler.worker.NOTIFY_ADDR)
 
                 def run(self):
-                    with Worker(self.work_announce_address) as aw:
+                    with cellprofiler.worker.Worker(self.work_announce_address) as aw:
                         try:
                             aw.run()
-                        except CancelledException:
+                        except cellprofiler.pipeline.CancelledException:
                             logger.info("Exiting debug worker thread")
 
                 def wait(self):
-                    self.notify_socket.send(NOTIFY_STOP)
+                    self.notify_socket.send(cellprofiler.worker.NOTIFY_STOP)
                     self.join()
 
             thread = WorkerRunner(cls.work_announce_address)
@@ -935,11 +939,6 @@ if sys.platform == "darwin":
                 pass
 
 if __name__ == '__main__':
-    import time
-    import cellprofiler.pipeline
-    import cellprofiler.preference
-    import cellprofiler.utilities.thread_excepthook
-
     # This is an ugly hack, but it's necesary to unify the Request/Reply
     # classes above, so that regardless of whether this is the current module,
     # or a separately imported one, they see the same classes.

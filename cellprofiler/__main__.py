@@ -376,13 +376,6 @@ def parse_args(args):
                             "and for the measurements file, if not specified. "
                             "The default is " + tempfile.gettempdir()))
 
-    parser.add_option("--jvm-heap-size",
-                      dest="jvm_heap_size",
-                      default=None,
-                      help=("This is the amount of memory reserved for the "
-                            "Java Virtual Machine (similar to the java -Xmx switch)."
-                            "Example formats: 512000k, 512m, 1g"))
-
     parser.add_option("--add-message-for-user",
                       dest="add_message_for_user",
                       default=False,

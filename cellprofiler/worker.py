@@ -33,41 +33,19 @@ knime_bridge_address = None
 
 def aw_parse_args():
     """Parse the application arguments into setup parameters"""
-    from cellprofiler.preference import \
-        set_headless, set_awt_headless, \
-        set_plugin_directory, set_ij_plugin_directory
+    from cellprofiler.preference import set_headless, set_awt_headless, set_plugin_directory, set_ij_plugin_directory
     import optparse
     global work_announce_address
     global knime_bridge_address
     set_headless()
     set_awt_headless(True)
     parser = optparse.OptionParser()
-    parser.add_option("--work-announce",
-                      dest="work_announce_address",
-                      help="ZMQ port where work announcements are published",
-                      default=None)
-    parser.add_option("--log-level",
-                      dest="log_level",
-                      help="Logging level for logger: DEBUG, INFO, WARNING, ERROR",
-                      default=os.environ.get(AW_LOG_LEVEL, logging.INFO))
-    parser.add_option("--plugins-directory",
-                      dest="plugins_directory",
-                      help="Folder containing the CellProfiler plugin modules needed by client pipelines",
-                      default=None)
-    parser.add_option("--ij-plugins-directory",
-                      dest="ij_plugins_directory",
-                      help="Folder containing the ImageJ plugin .jar and .class files needed bby client pipelines",
-                      default=None)
-    parser.add_option("--jvm-heap-size",
-                      dest="jvm_heap_size",
-                      default=None,
-                      help=("This is the amount of memory reserved for the "
-                            "Java Virtual Machine (similar to the java -Xmx switch)."
-                            "Example formats: 512000k, 512m, 1g"))
-    parser.add_option("--knime-bridge-address",
-                      dest="knime_bridge_address",
-                      help="Open up a port to handle the Knime bridge protocol",
-                      default=None)
+    parser.add_option("--work-announce", dest="work_announce_address", help="ZMQ port where work announcements are published", default=None)
+    parser.add_option("--log-level", dest="log_level", help="Logging level for logger: DEBUG, INFO, WARNING, ERROR", default=os.environ.get(AW_LOG_LEVEL, logging.INFO))
+    parser.add_option("--plugins-directory", dest="plugins_directory", help="Folder containing the CellProfiler plugin modules needed by client pipelines", default=None)
+    parser.add_option("--ij-plugins-directory", dest="ij_plugins_directory", help="Folder containing the ImageJ plugin .jar and .class files needed bby client pipelines", default=None)
+    parser.add_option("--jvm-heap-size", dest="jvm_heap_size", default=None, help=("This is the amount of memory reserved for the " "Java Virtual Machine (similar to the java -Xmx switch)." "Example formats: 512000k, 512m, 1g"))
+    parser.add_option("--knime-bridge-address", dest="knime_bridge_address", help="Open up a port to handle the Knime bridge protocol", default=None)
 
     options, args = parser.parse_args()
     if options.jvm_heap_size is not None:
@@ -200,13 +178,10 @@ def main():
 
     from cellprofiler.knime_bridge import KnimeBridgeServer
     with Worker(work_announce_address) as worker:
-        worker_thread = threading.Thread(target=worker.run,
-                                         name="WorkerThread")
+        worker_thread = threading.Thread(target=worker.run, name="WorkerThread")
         worker_thread.setDaemon(True)
         worker_thread.start()
-        with KnimeBridgeServer(the_zmq_context,
-                               knime_bridge_address,
-                               NOTIFY_ADDR, NOTIFY_STOP):
+        with KnimeBridgeServer(the_zmq_context, knime_bridge_address, NOTIFY_ADDR, NOTIFY_STOP):
             cellprofiler.utilities.run_loop.enter_run_loop()
             worker_thread.join()
 
@@ -301,11 +276,9 @@ class Worker(object):
         with self.AnalysisWorkerThreadObject(self):
             while not self.cancelled:
                 try:
-                    self.current_analysis_id, \
-                    self.work_request_address = self.get_announcement()
+                    self.current_analysis_id, self.work_request_address = self.get_announcement()
                     if t0 is None or time.time() - t0 > 30:
-                        logger.debug("Connecting at address %s" %
-                                     self.work_request_address)
+                        logger.debug("Connecting at address %s" % self.work_request_address)
                         t0 = time.time()
                     self.work_socket = the_zmq_context.socket(zmq.REQ)
                     self.work_socket.connect(self.work_request_address)
@@ -334,13 +307,10 @@ class Worker(object):
 
             logger.info("Starting job")
             # Fetch the pipeline and preferences for this analysis if we don't have it
-            current_pipeline, current_preferences = \
-                self.pipelines_and_preferences.get(
-                        self.current_analysis_id, (None, None))
+            current_pipeline, current_preferences = self.pipelines_and_preferences.get( self.current_analysis_id, (None, None))
             if not current_pipeline:
                 logger.debug("Fetching pipeline and preferences")
-                rep = self.send(cellprofiler.analysis.PipelinePreferencesRequest(
-                        self.current_analysis_id))
+                rep = self.send(cellprofiler.analysis.PipelinePreferencesRequest( self.current_analysis_id))
                 logger.debug("Received pipeline and preferences response")
                 preferences_dict = rep.preferences
                 # update preferences to match remote values
@@ -349,14 +319,12 @@ class Worker(object):
                 logger.debug("Loading pipeline")
                 pipeline_blob = rep.pipeline_blob.tostring()
                 current_pipeline = cpp.Pipeline()
-                current_pipeline.loadtxt(cStringIO.StringIO(pipeline_blob),
-                                         raise_on_error=True)
+                current_pipeline.loadtxt(cStringIO.StringIO(pipeline_blob), raise_on_error=True)
                 logger.debug("Pipeline loaded")
                 current_pipeline.add_listener(
                         self.pipeline_listener.handle_event)
                 current_preferences = rep.preferences
-                self.pipelines_and_preferences[self.current_analysis_id] = (
-                    current_pipeline, current_preferences)
+                self.pipelines_and_preferences[self.current_analysis_id] = ( current_pipeline, current_preferences)
             else:
                 # update preferences to match remote values
                 cellprofiler.preference.set_preferences_from_dict(current_preferences)
@@ -365,16 +333,12 @@ class Worker(object):
             self.pipeline_listener.reset()
             logger.debug("Getting initial measurements")
             # Fetch the path to the intial measurements if needed.
-            current_measurements = self.initial_measurements.get(
-                    self.current_analysis_id)
+            current_measurements = self.initial_measurements.get( self.current_analysis_id)
             if current_measurements is None:
                 logger.debug("Sending initial measurements request")
-                rep = self.send(cellprofiler.analysis.InitialMeasurementsRequest(
-                        self.current_analysis_id))
+                rep = self.send(cellprofiler.analysis.InitialMeasurementsRequest( self.current_analysis_id))
                 logger.debug("Got initial measurements")
-                current_measurements = \
-                    self.initial_measurements[self.current_analysis_id] = \
-                    cellprofiler.measurement.load_measurements_from_buffer(rep.buf)
+                current_measurements = self.initial_measurements[self.current_analysis_id] = \ cellprofiler.measurement.load_measurements_from_buffer(rep.buf)
             else:
                 logger.debug("Has initial measurements")
             # Make a copy of the measurements for writing during this job
@@ -391,11 +355,9 @@ class Worker(object):
 
             if not worker_runs_post_group:
                 # Get the shared state from the first imageset in this run.
-                shared_dicts = self.send(
-                        cellprofiler.analysis.SharedDictionaryRequest(self.current_analysis_id)).dictionaries
+                shared_dicts = self.send( cellprofiler.analysis.SharedDictionaryRequest(self.current_analysis_id)).dictionaries
                 assert len(shared_dicts) == len(current_pipeline.modules())
-                for module, new_dict in zip(current_pipeline.modules(),
-                                            shared_dicts):
+                for module, new_dict in zip(current_pipeline.modules(), shared_dicts):
                     module.set_dictionary_for_worker(new_dict)
 
             # Run prepare group if this is the first image in the group.  We do
@@ -403,15 +365,9 @@ class Worker(object):
             # that any changes to the modules' shared state dictionaries get
             # propagated correctly.
             should_process = True
-            if current_measurements[cellprofiler.measurement.IMAGE,
-                                    cellprofiler.measurement.GROUP_INDEX,
-                                    image_set_numbers[0]] == 1:
-                workspace = cellprofiler.workspace.Workspace(current_pipeline, None, None, None,
-                                                             current_measurements, None, None)
-                if not current_pipeline.prepare_group(
-                        workspace,
-                        current_measurements.get_grouping_keys(),
-                        image_set_numbers):
+            if current_measurements[cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_INDEX, image_set_numbers[0]] == 1:
+                workspace = cellprofiler.workspace.Workspace(current_pipeline, None, None, None, current_measurements, None, None)
+                if not current_pipeline.prepare_group( workspace, current_measurements.get_grouping_keys(), image_set_numbers):
                     # exception handled elsewhere, possibly cancelling this run.
                     should_process = False
                 del workspace
@@ -423,12 +379,7 @@ class Worker(object):
                     gc.collect()
                     try:
                         self.pipeline_listener.image_set_number = image_set_number
-                        last_workspace = current_pipeline.run_image_set(
-                                current_measurements,
-                                image_set_number,
-                                self.interaction_handler,
-                                self.display_handler,
-                                self.cancel_handler)
+                        last_workspace = current_pipeline.run_image_set( current_measurements, image_set_number, self.interaction_handler, self.display_handler, self.cancel_handler)
                         if self.pipeline_listener.should_abort:
                             abort = True
                             break
@@ -443,16 +394,10 @@ class Worker(object):
                         if send_dictionary:
                             # The jobserver would like a copy of our modules'
                             # run_state dictionaries.
-                            dicts = [m.get_dictionary_for_worker()
-                                     for m in current_pipeline.modules()]
-                            req = cellprofiler.analysis.ImageSetSuccessWithDictionary(
-                                    self.current_analysis_id,
-                                    image_set_number=image_set_number,
-                                    shared_dicts=dicts)
+                            dicts = [m.get_dictionary_for_worker() for m in current_pipeline.modules()]
+                            req = cellprofiler.analysis.ImageSetSuccessWithDictionary( self.current_analysis_id, image_set_number=image_set_number, shared_dicts=dicts)
                         else:
-                            req = cellprofiler.analysis.ImageSetSuccess(
-                                    self.current_analysis_id,
-                                    image_set_number=image_set_number)
+                            req = cellprofiler.analysis.ImageSetSuccess( self.current_analysis_id, image_set_number=image_set_number)
                         rep = self.send(req)
                     except cpp.CancelledException:
                         logging.info("Aborting job after cancellation")
@@ -460,8 +405,7 @@ class Worker(object):
                     except Exception:
                         try:
                             logging.error("Error in pipeline", exc_info=True)
-                            if self.handle_exception(
-                                    image_set_number=image_set_number) == cellprofiler.gui.errordialog.ED_STOP:
+                            if self.handle_exception( image_set_number=image_set_number) == cellprofiler.gui.errordialog.ED_STOP:
                                 abort = True
                                 break
                         except:
@@ -476,23 +420,17 @@ class Worker(object):
                     return
 
                 if worker_runs_post_group:
-                    last_workspace.interaction_handler = \
-                        self.interaction_handler
+                    last_workspace.interaction_handler = self.interaction_handler
                     last_workspace.cancel_handler = self.cancel_handler
-                    last_workspace.post_group_display_handler = \
-                        self.post_group_display_handler
+                    last_workspace.post_group_display_handler = self.post_group_display_handler
                     # There might be an exception in this call, but it will be
                     # handled elsewhere, and there's nothing we can do for it
                     # here.
-                    current_pipeline.post_group(
-                            last_workspace,
-                            current_measurements.get_grouping_keys())
+                    current_pipeline.post_group( last_workspace, current_measurements.get_grouping_keys())
                     del last_workspace
 
             # send measurements back to server
-            req = cellprofiler.analysis.MeasurementsReport(self.current_analysis_id,
-                                                           buf=current_measurements.file_contents(),
-                                                           image_set_numbers=image_set_numbers)
+            req = cellprofiler.analysis.MeasurementsReport(self.current_analysis_id, buf=current_measurements.file_contents(), image_set_numbers=image_set_numbers)
             rep = self.send(req)
 
         except cpp.CancelledException:
@@ -512,14 +450,8 @@ class Worker(object):
         """handle interaction requests by passing them to the jobserver and wait for the reply."""
         # we write args and kwargs into the InteractionRequest to allow
         # more complex data to be sent by the underlying zmq machinery.
-        arg_kwarg_dict = dict([('arg_%d' % idx, v) for idx, v in enumerate(args)] +
-                              [('kwarg_%s' % name, v) for (name, v) in kwargs.items()])
-        req = cellprofiler.analysis.InteractionRequest(
-                self.current_analysis_id,
-                module_num=module.module_num,
-                num_args=len(args),
-                kwargs_names=kwargs.keys(),
-                **arg_kwarg_dict)
+        arg_kwarg_dict = dict([('arg_%d' % idx, v) for idx, v in enumerate(args)] + [('kwarg_%s' % name, v) for (name, v) in kwargs.items()])
+        req = cellprofiler.analysis.InteractionRequest( self.current_analysis_id, module_num=module.module_num, num_args=len(args), kwargs_names=kwargs.keys(), **arg_kwarg_dict)
         rep = self.send(req)
         return rep.result
 
@@ -531,16 +463,11 @@ class Worker(object):
 
     def display_handler(self, module, display_data, image_set_number):
         """handle display requests"""
-        req = cellprofiler.analysis.DisplayRequest(self.current_analysis_id,
-                                                   module_num=module.module_num,
-                                                   display_data_dict=display_data.__dict__,
-                                                   image_set_number=image_set_number)
+        req = cellprofiler.analysis.DisplayRequest(self.current_analysis_id, module_num=module.module_num, display_data_dict=display_data.__dict__, image_set_number=image_set_number)
         rep = self.send(req)
 
     def post_group_display_handler(self, module, display_data, image_set_number):
-        req = cellprofiler.analysis.DisplayPostGroupRequest(
-                self.current_analysis_id,
-                module.module_num, display_data.__dict__, image_set_number)
+        req = cellprofiler.analysis.DisplayPostGroupRequest( self.current_analysis_id, module.module_num, display_data.__dict__, image_set_number)
         rep = self.send(req)
 
     def omero_login_handler(self):
@@ -575,15 +502,11 @@ class Worker(object):
                     notify_msg = self.notify_socket.recv()
                     if notify_msg == NOTIFY_STOP:
                         self.cancelled = True
-                        self.raise_cancel(
-                                "Received stop notification while waiting for "
-                                "response from %s" % str(req))
+                        self.raise_cancel( "Received stop notification while waiting for " "response from %s" % str(req))
                 if socket == work_socket and state == zmq.POLLIN:
                     response = req.recv(work_socket)
         if isinstance(response, cellprofiler.analysis.UpstreamExit):
-            self.raise_cancel(
-                    "Received UpstreamExit for analysis %s during request %s" %
-                    (self.current_analysis_id, str(req)))
+            self.raise_cancel( "Received UpstreamExit for analysis %s during request %s" % (self.current_analysis_id, str(req)))
         return response
 
     def raise_cancel(self, msg="Cancelling analysis"):
@@ -641,8 +564,7 @@ class Worker(object):
         finally:
             announce_socket.close()
 
-    def handle_exception(self, image_set_number=None,
-                         module_name=None, exc_info=None):
+    def handle_exception(self, image_set_number=None, module_name=None, exc_info=None):
         """report and handle an exception, possibly by remote debugging, returning
         how to proceed (skip or abort).
 
@@ -663,14 +585,7 @@ class Worker(object):
         except:
             return cellprofiler.gui.errordialog.ED_STOP  # nothing to do but give up
         try:
-            req = cellprofiler.analysis.ExceptionReport(
-                    self.current_analysis_id,
-                    image_set_number,
-                    module_name,
-                    exc_type=t.__name__,
-                    exc_message=str(exc),
-                    exc_traceback="".join(traceback.format_exception(t, exc, tb)),
-                    filename=filename, line_number=line_number)
+            req = cellprofiler.analysis.ExceptionReport( self.current_analysis_id, image_set_number, module_name, exc_type=t.__name__, exc_message=str(exc), exc_traceback="".join(traceback.format_exception(t, exc, tb)), filename=filename, line_number=line_number)
             reply = self.send(req, report_socket)
             while True:
                 if reply.disposition == 'DEBUG':
@@ -681,22 +596,18 @@ class Worker(object):
 
                     def pc(port):
                         print "GOT PORT ", port
-                        debug_reply[0] = self.send(
-                                cellprofiler.analysis.DebugWaiting(self.current_analysis_id, port),
-                                report_socket)
+                        debug_reply[0] = self.send( cellprofiler.analysis.DebugWaiting(self.current_analysis_id, port), report_socket)
 
                     print  "HASH", reply.verification_hash
                     try:
                         from cellprofiler.utilities.rpdb import Rpdb
-                        rpdb = Rpdb(verification_hash=reply.verification_hash,
-                                    port_callback=pc)
+                        rpdb = Rpdb(verification_hash=reply.verification_hash, port_callback=pc)
                     except:
                         return cellprofiler.gui.errordialog.ED_STOP
                     rpdb.verify()
                     rpdb.post_mortem(tb)
                     # We get a new reply at the end, which might be "DEBUG" again.
-                    reply = self.send(cellprofiler.analysis.DebugComplete(self.current_analysis_id),
-                                      report_socket)
+                    reply = self.send(cellprofiler.analysis.DebugComplete(self.current_analysis_id), report_socket)
                 else:
                     return reply.disposition
         finally:
@@ -720,10 +631,7 @@ class PipelineEventListener(object):
     def handle_event(self, pipeline, event):
         from cellprofiler.pipeline import RunExceptionEvent
         if isinstance(event, RunExceptionEvent):
-            disposition = self.handle_exception_fn(
-                    image_set_number=self.image_set_number,
-                    module_name=event.module.module_name,
-                    exc_info=(type(event.error), event.error, event.tb))
+            disposition = self.handle_exception_fn( image_set_number=self.image_set_number, module_name=event.module.module_name, exc_info=(type(event.error), event.error, event.tb))
             if disposition == cellprofiler.gui.errordialog.ED_STOP:
                 self.should_abort = True
                 event.cancel_run = True

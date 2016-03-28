@@ -54,16 +54,7 @@ class Image(object):
     significant.
     """
 
-    def __init__(self,
-                 image=None,
-                 mask=None,
-                 crop_mask=None,
-                 parent_image=None,
-                 masking_objects=None,
-                 convert=True,
-                 path_name=None,
-                 file_name=None,
-                 scale=None):
+    def __init__(self, image=None, mask=None, crop_mask=None, parent_image=None, masking_objects=None, convert=True, path_name=None, file_name=None, scale=None):
         self.__image = None
         self.__mask = None
         self.__has_mask = False
@@ -271,9 +262,7 @@ class Image(object):
     @property
     def has_crop_mask(self):
         """True if the image or its ancestors has a crop mask"""
-        return (self.__crop_mask is not None or
-                self.has_masking_objects or
-                (self.has_parent_image and self.parent_image.has_crop_mask))
+        return (self.__crop_mask is not None or self.has_masking_objects or (self.has_parent_image and self.parent_image.has_crop_mask))
 
     def crop_image_similarly(self, image):
         """Crop a 2-d or 3-d image using this image's crop mask
@@ -283,21 +272,13 @@ class Image(object):
         if image.shape[:2] == self.pixel_data.shape[:2]:
             # Same size - no cropping needed
             return image
-        if any([my_size > other_size
-                for my_size, other_size
-                in zip(self.pixel_data.shape, image.shape)]):
-            raise ValueError("Image to be cropped is smaller: %s vs %s" %
-                             (repr(image.shape),
-                              repr(self.pixel_data.shape)))
+        if any([my_size > other_size for my_size, other_size in zip(self.pixel_data.shape, image.shape)]):
+            raise ValueError("Image to be cropped is smaller: %s vs %s" % (repr(image.shape), repr(self.pixel_data.shape)))
         if not self.has_crop_mask:
-            raise RuntimeError(
-                    "Images are of different size and no crop mask available.\n"
-                    "Use the Crop and Align modules to match images of different sizes.")
+            raise RuntimeError( "Images are of different size and no crop mask available.\n" "Use the Crop and Align modules to match images of different sizes.")
         cropped_image = crop_image(image, self.crop_mask)
         if cropped_image.shape[0:2] != self.pixel_data.shape[0:2]:
-            raise ValueError("Cropped image is not the same size as the reference image: %s vs %s" %
-                             (repr(cropped_image.shape),
-                              repr(self.pixel_data.shape)))
+            raise ValueError("Cropped image is not the same size as the reference image: %s vs %s" % (repr(cropped_image.shape), repr(self.pixel_data.shape)))
         return cropped_image
 
     def get_file_name(self):
@@ -371,14 +352,11 @@ class Image(object):
         maybe objects.
         """
         from cellprofiler.utilities.hdf5_dict import HDF5ImageSet
-        if isinstance(self.__image, Cache) and \
-                not self.__image.is_cached():
+        if isinstance(self.__image, Cache) and not self.__image.is_cached():
             self.__image.cache(name, HDF5ImageSet(hdf5_file))
-        if isinstance(self.__mask, Cache) and \
-                not self.__mask.is_cached():
+        if isinstance(self.__mask, Cache) and not self.__mask.is_cached():
             self.__mask.cache(name, HDF5ImageSet(hdf5_file, "Masks"))
-        if isinstance(self.__crop_mask, Cache) and \
-                not self.__crop_mask.is_cached():
+        if isinstance(self.__crop_mask, Cache) and not self.__crop_mask.is_cached():
             self.__crop_mask.cache(name, HDF5ImageSet(hdf5_file, "CropMasks"))
 
 
@@ -399,8 +377,7 @@ class Cache(object):
             self.__image = image.reshape(1, 1, 1, image.shape[0], image.shape[1])
         elif image.ndim == 3:
             self.__type = Cache.IC_COLOR
-            self.__image = image.transpose(2, 0, 1).reshape(
-                    image.shape[2], 1, 1, image.shape[0], image.shape[1])
+            self.__image = image.transpose(2, 0, 1).reshape( image.shape[2], 1, 1, image.shape[0], image.shape[1])
         else:
             self.__type = Cache.IC_5D
             self.__image = image
@@ -431,8 +408,7 @@ class Cache(object):
         if self.__type == Cache.IC_MONOCHROME:
             return image.reshape(image.shape[3], image.shape[4])
         elif self.__type == Cache.IC_COLOR:
-            return image.reshape(
-                    image.shape[0], image.shape[3], image.shape[4]).transpose(1, 2, 0)
+            return image.reshape( image.shape[0], image.shape[3], image.shape[4]).transpose(1, 2, 0)
 
 
 def crop_image(image, crop_mask, crop_internal=False):
@@ -542,8 +518,7 @@ class AbstractImageProvider(object):
 
     def release_memory(self):
         """Release whatever memory is associated with the image"""
-        logger.warning("Warning: no memory release function implemented for %s image",
-                       self.get_name())
+        logger.warning("Warning: no memory release function implemented for %s image", self.get_name())
 
     name = property(__get_name)
 
@@ -628,12 +603,7 @@ class Set(object):
 
     keys = property(get_keys)
 
-    def get_image(self, name,
-                  must_be_binary=False,
-                  must_be_color=False,
-                  must_be_grayscale=False,
-                  must_be_rgb=False,
-                  cache=True):
+    def get_image(self, name, must_be_binary=False, must_be_color=False, must_be_grayscale=False, must_be_rgb=False, cache=True):
         """Return the image associated with the given name
 
         name - name of the image within the image_set
@@ -655,12 +625,9 @@ class Set(object):
             raise ValueError("Image was not binary")
         if must_be_color and image.pixel_data.ndim != 3:
             raise ValueError("Image must be color, but it was grayscale")
-        if (must_be_grayscale and
-                (image.pixel_data.ndim != 2)):
+        if (must_be_grayscale and (image.pixel_data.ndim != 2)):
             pd = image.pixel_data
-            if pd.shape[2] >= 3 and \
-                    numpy.all(pd[:, :, 0] == pd[:, :, 1]) and \
-                    numpy.all(pd[:, :, 0] == pd[:, :, 2]):
+            if pd.shape[2] >= 3 and numpy.all(pd[:, :, 0] == pd[:, :, 1]) and numpy.all(pd[:, :, 0] == pd[:, :, 2]):
                 return Grayscale(image)
             raise ValueError("Image must be grayscale, but it was color")
         if must_be_grayscale and image.pixel_data.dtype.kind == 'b':
@@ -669,8 +636,7 @@ class Set(object):
             if image.pixel_data.ndim != 3:
                 raise ValueError("Image must be RGB, but it was grayscale")
             elif image.pixel_data.shape[2] not in (3, 4):
-                raise ValueError("Image must be RGB, but it had %d channels" %
-                                 image.pixel_data.shape[2])
+                raise ValueError("Image must be RGB, but it had %d channels" % image.pixel_data.shape[2])
             elif image.pixel_data.shape[2] == 4:
                 logger.warning("Discarding alpha channel.")
                 return RGB(image)
@@ -697,8 +663,7 @@ class Set(object):
 
         name - the name of the provider to remove
         """
-        self.__image_providers = filter(lambda x: x.name != name,
-                                        self.__image_providers)
+        self.__image_providers = filter(lambda x: x.name != name, self.__image_providers)
 
     def clear_image(self, name):
         """Remove the image memory associated with a provider
@@ -729,8 +694,7 @@ class Set(object):
     legacy_fields = property(get_legacy_fields)
 
     def add(self, name, image):
-        old_providers = [provider for provider in self.providers
-                         if provider.name == name]
+        old_providers = [provider for provider in self.providers if provider.name == name]
         if len(old_providers) > 0:
             self.clear_image(name)
         for provider in old_providers:
@@ -887,12 +851,8 @@ class SetList(object):
         def find_global(module_name, class_name):
             logger.debug("Pickler wants %s:%s", module_name, class_name)
             if module_name not in ("numpy", "numpy.core.multiarray"):
-                logger.critical(
-                        "WARNING WARNING WARNING - your batch file has asked to load %s.%s."
-                        " If this looks in any way suspicious please contact us at www.cellprofiler.org",
-                        module_name, class_name)
-                raise ValueError("Illegal attempt to unpickle class %s.%s",
-                                 (module_name, class_name))
+                logger.critical( "WARNING WARNING WARNING - your batch file has asked to load %s.%s." " If this looks in any way suspicious please contact us at www.cellprofiler.org", module_name, class_name)
+                raise ValueError("Illegal attempt to unpickle class %s.%s", (module_name, class_name))
             __import__(module_name)
             mod = sys.modules[module_name]
             return getattr(mod, class_name)
@@ -912,8 +872,7 @@ class SetList(object):
 
 def make_dictionary_key(key):
     """Make a dictionary into a stable key for another dictionary"""
-    return u", ".join([u":".join([unicode(y) for y in x])
-                       for x in sorted(key.iteritems())])
+    return u", ".join([u":".join([unicode(y) for y in x]) for x in sorted(key.iteritems())])
 
 
 def readc01(fname):

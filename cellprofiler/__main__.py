@@ -68,8 +68,7 @@ def main(args=None):
     import cellprofiler.preference as cpprefs
     cpprefs.set_awt_headless(True)
     switches = ('--work-announce', '--knime-bridge-address')
-    if any([any([arg.startswith(switch) for switch in switches])
-            for arg in args]):
+    if any([any([arg.startswith(switch) for switch in switches]) for arg in args]):
         #
         # Go headless ASAP
         #
@@ -85,8 +84,7 @@ def main(args=None):
 
     options, args = parse_args(args)
     if options.print_version:
-        from cellprofiler.utilities.version import \
-            dotted_version, version_string, git_hash, version_number
+        from cellprofiler.utilities.version import dotted_version, version_string, git_hash, version_number
         print "CellProfiler %s" % dotted_version
         print "Git %s" % git_hash
         print "Version %s" % version_number
@@ -136,15 +134,13 @@ def main(args=None):
         using_hdf5 = h5py.is_hdf5(path)
         if using_hdf5:
             import cellprofiler.measurement as cpmeas
-            m = cpmeas.Measurement(
-                    filename=path, mode="r+")
+            m = cpmeas.Measurement( filename=path, mode="r+")
             pipeline_text = m[cpmeas.EXPERIMENT, "Pipeline_Pipeline"]
         else:
             with open(path, "r") as fd:
                 pipeline_text = fd.read()
         header, body = pipeline_text.split("\n\n", 1)
-        pipeline_text = header + \
-                        ("\nMessageForUser:%s|%s\n\n" % (caption, message)) + body
+        pipeline_text = header + ("\nMessageForUser:%s|%s\n\n" % (caption, message)) + body
         if using_hdf5:
             m[cpmeas.EXPERIMENT, "Pipeline_Pipeline"] = pipeline_text
             m.close()
@@ -162,11 +158,9 @@ def main(args=None):
     if options.omero_credentials is not None:
         set_omero_credentials_from_string(options.omero_credentials)
     if options.plugins_directory is not None:
-        cpprefs.set_plugin_directory(options.plugins_directory,
-                                     globally=False)
+        cpprefs.set_plugin_directory(options.plugins_directory, globally=False)
     if options.ij_plugins_directory is not None:
-        cpprefs.set_ij_plugin_directory(options.ij_plugins_directory,
-                                        globally=False)
+        cpprefs.set_ij_plugin_directory(options.ij_plugins_directory, globally=False)
     if options.temp_dir is not None:
         if not os.path.exists(options.temp_dir):
             os.makedirs(options.temp_dir)

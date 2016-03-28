@@ -128,17 +128,12 @@ class KnimeBridgeServer(threading.Thread):
                             wrapper = msg.pop(0)
                             message_type = msg.pop(0).bytes
                             if message_type not in self.dispatch:
-                                self.raise_cellprofiler_exception(
-                                        session_id,
-                                        "Unhandled message type: %s" % message_type)
-                            else:
+                                self.raise_cellprofiler_exception( session_id, "Unhandled message type: %s" % message_type) else:
                                 try:
-                                    self.dispatch[message_type](
-                                            session_id, message_type, msg)
+                                    self.dispatch[message_type]( session_id, message_type, msg)
                                 except Exception, e:
                                     logger.warn(e.message, exc_info=1)
-                                    self.raise_cellprofiler_exception(
-                                            session_id, e.message)
+                                    self.raise_cellprofiler_exception( session_id, e.message)
                     else:
                         continue
                     break
@@ -151,10 +146,7 @@ class KnimeBridgeServer(threading.Thread):
 
     def connect(self, session_id, message_type, message):
         """Handle the connect message"""
-        self.socket.send_multipart(
-                [zmq.Frame(session_id),
-                 zmq.Frame(),
-                 zmq.Frame(CONNECT_REPLY_1)])
+        self.socket.send_multipart( [zmq.Frame(session_id), zmq.Frame(), zmq.Frame(CONNECT_REPLY_1)])
 
     def pipeline_info(self, session_id, message_type, message):
         """Handle the pipeline info message"""
@@ -164,15 +156,12 @@ class KnimeBridgeServer(threading.Thread):
         try:
             pipeline.loadtxt(cStringIO.StringIO(pipeline_txt))
         except Exception, e:
-            logger.warning(
-                    "Failed to load pipeline: sending pipeline exception",
-                    exc_info=1)
+            logger.warning( "Failed to load pipeline: sending pipeline exception", exc_info=1)
             self.raise_pipeline_exception(session_id, str(e))
             return
         input_modules, other_modules = self.split_pipeline(pipeline)
         channels = self.find_channels(input_modules)
-        type_names, measurements = self.find_measurements(
-                other_modules, pipeline)
+        type_names, measurements = self.find_measurements( other_modules, pipeline)
         body = json.dumps([channels, type_names, measurements])
         msg_out = [
             zmq.Frame(session_id),
@@ -222,24 +211,18 @@ class KnimeBridgeServer(threading.Thread):
             workspace = cellprofiler.workspace.Workspace(pipeline, module, m, None, m, None)
             module.prepare_run(workspace)
         for module in other_modules:
-            workspace = cellprofiler.workspace.Workspace(
-                    pipeline, module, m, object_set, m, None)
+            workspace = cellprofiler.workspace.Workspace( pipeline, module, m, object_set, m, None)
             try:
-                logger.info(
-                        "Running module # %d: %s" %
-                        (module.module_num, module.module_name))
+                logger.info( "Running module # %d: %s" % (module.module_num, module.module_name))
                 pipeline.run_module(module, workspace)
-                if workspace.disposition in \
-                        (cellprofiler.workspace.DISPOSITION_SKIP, cellprofiler.workspace.DISPOSITION_CANCEL):
+                if workspace.disposition in (cellprofiler.workspace.DISPOSITION_SKIP, cellprofiler.workspace.DISPOSITION_CANCEL):
                     break
             except Exception, e:
-                msg = "Encountered error while running module, \"%s\": %s" % (
-                    module.module_name, e.message)
+                msg = "Encountered error while running module, \"%s\": %s" % ( module.module_name, e.message)
                 logger.warning(msg, exc_info=1)
                 self.raise_cellprofiler_exception(session_id, msg)
                 return
-        type_names, feature_dict = self.find_measurements(
-                other_modules, pipeline)
+        type_names, feature_dict = self.find_measurements( other_modules, pipeline)
 
         double_features = []
         double_data = []

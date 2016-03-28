@@ -112,8 +112,7 @@ def get_config():
         app = wx.App(0)
         config = wx.Config.Get(False)
     if not config:
-        wx.Config.Set(wx.Config('CellProfiler', 'BroadInstitute', 'CellProfilerLocal.cfg', 'CellProfilerGlobal.cfg',
-                                wx.CONFIG_USE_LOCAL_FILE))
+        wx.Config.Set(wx.Config('CellProfiler', 'BroadInstitute', 'CellProfilerLocal.cfg', 'CellProfilerGlobal.cfg', wx.CONFIG_USE_LOCAL_FILE))
         config = wx.Config.Get()
         if not config.Exists(PREFERENCES_VERSION):
             for key in ALL_KEYS:
@@ -125,12 +124,9 @@ def get_config():
             try:
                 preferences_version_number = int(config_read(PREFERENCES_VERSION))
                 if preferences_version_number != PREFERENCES_VERSION_NUMBER:
-                    logger.warning(
-                            "Preferences version mismatch: expected %d, at %d" %
-                            (PREFERENCES_VERSION_NUMBER, preferences_version_number))
+                    logger.warning( "Preferences version mismatch: expected %d, at %d" % (PREFERENCES_VERSION_NUMBER, preferences_version_number))
             except:
-                logger.warning(
-                        "Preferences version was %s, not a number. Resetting to current version" % preferences_version_number)
+                logger.warning( "Preferences version was %s, not a number. Resetting to current version" % preferences_version_number)
                 config_write(PREFERENCES_VERSION, str(PREFERENCES_VERSION))
 
     return config
@@ -203,9 +199,7 @@ def config_read(key):
         try:
             value = cellprofiler.utilities.utf16encode.utf16decode(value)
         except:
-            logger.warning(
-                    "Failed to decode preference (%s=%s), assuming 2.0" %
-                    (key, value))
+            logger.warning( "Failed to decode preference (%s=%s), assuming 2.0" % (key, value))
     __cached_values[key] = value
     return value
 
@@ -465,8 +459,7 @@ def get_default_image_directory():
             return __default_image_directory
     except:
         logger.error("Unknown failure when retrieving the default image directory", exc_info=True)
-    logger.warning("Warning: current path of %s is not a valid directory. Switching to home directory." % (
-        default_image_directory.encode('ascii', 'replace')))
+    logger.warning("Warning: current path of %s is not a valid directory. Switching to home directory." % ( default_image_directory.encode('ascii', 'replace')))
     # If the user's home directory is not ascii, we're not going to go hunting for one that is.
     # Fail ungracefully.
     default_image_directory = os.path.abspath(os.path.expanduser('~'))

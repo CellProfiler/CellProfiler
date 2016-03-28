@@ -279,21 +279,15 @@ class RegexpText(Setting):
 class DirectoryPath(Text):
     """A setting that displays a filesystem path name
     """
-    DIR_ALL = [cellprofiler.preference.ABSOLUTE_FOLDER_NAME,
-               cellprofiler.preference.DEFAULT_INPUT_FOLDER_NAME, cellprofiler.preference.DEFAULT_OUTPUT_FOLDER_NAME,
-               cellprofiler.preference.DEFAULT_INPUT_SUBFOLDER_NAME,
-               cellprofiler.preference.DEFAULT_OUTPUT_SUBFOLDER_NAME]
+    DIR_ALL = [cellprofiler.preference.ABSOLUTE_FOLDER_NAME, cellprofiler.preference.DEFAULT_INPUT_FOLDER_NAME, cellprofiler.preference.DEFAULT_OUTPUT_FOLDER_NAME, cellprofiler.preference.DEFAULT_INPUT_SUBFOLDER_NAME, cellprofiler.preference.DEFAULT_OUTPUT_SUBFOLDER_NAME]
 
-    def __init__(self, text, value=None, dir_choices=None,
-                 allow_metadata=True, support_urls=False,
-                 *args, **kwargs):
+    def __init__(self, text, value=None, dir_choices=None, allow_metadata=True, support_urls=False, *args, **kwargs):
         if dir_choices is None:
             dir_choices = DirectoryPath.DIR_ALL
         if support_urls and not (cellprofiler.preference.URL_FOLDER_NAME in dir_choices):
             dir_choices = dir_choices + [cellprofiler.preference.URL_FOLDER_NAME]
         if value is None:
-            value = DirectoryPath.static_join_string(
-                    dir_choices[0], "")
+            value = DirectoryPath.static_join_string( dir_choices[0], "")
         self.dir_choices = dir_choices
         self.allow_metadata = allow_metadata
         self.support_urls = support_urls
@@ -316,11 +310,7 @@ class DirectoryPath(Text):
 
     def join_string(self, dir_choice=None, custom_path=None):
         """Return the value string composed of a directory choice & path"""
-        return self.static_join_string(
-                dir_choice if dir_choice is not None
-                else self.dir_choice,
-                custom_path if custom_path is not None
-                else self.custom_path)
+        return self.static_join_string( dir_choice if dir_choice is not None else self.dir_choice, custom_path if custom_path is not None else self.custom_path)
 
     @staticmethod
     def static_join_string(dir_choice, custom_path):
@@ -353,9 +343,7 @@ class DirectoryPath(Text):
     @property
     def is_custom_choice(self):
         """True if the current dir_choice requires a custom path"""
-        return self.dir_choice in [
-            cellprofiler.preference.ABSOLUTE_FOLDER_NAME, cellprofiler.preference.DEFAULT_INPUT_SUBFOLDER_NAME,
-            cellprofiler.preference.DEFAULT_OUTPUT_SUBFOLDER_NAME, cellprofiler.preference.URL_FOLDER_NAME]
+        return self.dir_choice in [ cellprofiler.preference.ABSOLUTE_FOLDER_NAME, cellprofiler.preference.DEFAULT_INPUT_SUBFOLDER_NAME, cellprofiler.preference.DEFAULT_OUTPUT_SUBFOLDER_NAME, cellprofiler.preference.URL_FOLDER_NAME]
 
     def get_absolute_path(self, measurements=None, image_set_number=None):
         """Return the absolute path specified by the setting
@@ -381,8 +369,7 @@ class DirectoryPath(Text):
             raise ValueError("Unknown directory choice: %s" % self.dir_choice)
         if self.allow_metadata:
             if measurements is not None:
-                custom_path = measurements.apply_metadata(self.custom_path,
-                                                          image_set_number)
+                custom_path = measurements.apply_metadata(self.custom_path, image_set_number)
             else:
                 # For UI, get the path up to the metadata.
                 custom_path = self.custom_path
@@ -419,12 +406,10 @@ class DirectoryPath(Text):
             dir_choice = cellprofiler.preference.DEFAULT_INPUT_FOLDER_NAME
         elif cmp_path == out_dir:
             dir_choice = cellprofiler.preference.DEFAULT_OUTPUT_FOLDER_NAME
-        elif (cmp_path.startswith(img_dir) and
-                      cmp_path[len(img_dir)] in seps):
+        elif (cmp_path.startswith(img_dir) and cmp_path[len(img_dir)] in seps):
             dir_choice = cellprofiler.preference.DEFAULT_INPUT_SUBFOLDER_NAME
             custom_path = path[len(img_dir) + 1:]
-        elif (cmp_path.startswith(out_dir) and
-                      cmp_path[len(out_dir)] in seps):
+        elif (cmp_path.startswith(out_dir) and cmp_path[len(out_dir)] in seps):
             dir_choice = cellprofiler.preference.DEFAULT_OUTPUT_SUBFOLDER_NAME
             custom_path = path[len(out_dir) + 1:]
         else:
@@ -445,25 +430,18 @@ class DirectoryPath(Text):
         elif self.dir_choice == cellprofiler.preference.DEFAULT_OUTPUT_FOLDER_NAME:
             pass
         elif self.dir_choice == cellprofiler.preference.ABSOLUTE_FOLDER_NAME:
-            self.custom_path = fn_alter_path(
-                    self.custom_path, regexp_substitution=self.allow_metadata)
+            self.custom_path = fn_alter_path( self.custom_path, regexp_substitution=self.allow_metadata)
         elif self.dir_choice == cellprofiler.preference.DEFAULT_INPUT_SUBFOLDER_NAME:
-            self.custom_path = fn_alter_path(
-                    self.custom_path, regexp_substitution=self.allow_metadata)
+            self.custom_path = fn_alter_path( self.custom_path, regexp_substitution=self.allow_metadata)
         elif self.dir_choice == cellprofiler.preference.DEFAULT_OUTPUT_SUBFOLDER_NAME:
-            self.custom_path = fn_alter_path(
-                    self.custom_path, regexp_substitution=self.allow_metadata)
+            self.custom_path = fn_alter_path( self.custom_path, regexp_substitution=self.allow_metadata)
 
     def test_valid(self, pipeline):
         if self.dir_choice not in self.dir_choices + [cellprofiler.preference.NO_FOLDER_NAME]:
-            raise ValidationError("Unsupported directory choice: %s" %
-                                  self.dir_choice, self)
-        if (not self.allow_metadata and self.is_custom_choice and
-                    self.custom_path.find(r"\g<") != -1):
-            raise ValidationError("Metadata not supported for this setting",
-                                  self)
-        if self.dir_choice == cellprofiler.preference.ABSOLUTE_FOLDER_NAME and (
-                    (self.custom_path is None) or (len(self.custom_path) == 0)):
+            raise ValidationError("Unsupported directory choice: %s" % self.dir_choice, self)
+        if (not self.allow_metadata and self.is_custom_choice and self.custom_path.find(r"\g<") != -1):
+            raise ValidationError("Metadata not supported for this setting", self)
+        if self.dir_choice == cellprofiler.preference.ABSOLUTE_FOLDER_NAME and ( (self.custom_path is None) or (len(self.custom_path) == 0)):
             raise ValidationError("Please enter a valid path", self)
 
 
@@ -535,8 +513,7 @@ class PathnameOrURL(Pathname):
     """
 
     def is_url(self):
-        return any([self.value_text.lower().startswith(scheme)
-                    for scheme in ("http:", "https:", "ftp:")])
+        return any([self.value_text.lower().startswith(scheme) for scheme in ("http:", "https:", "ftp:")])
 
     def test_valid(self, pipeline):
         if not self.is_url():
@@ -566,8 +543,7 @@ class ImagePlane(Setting):
 
         text - informative text to display to the left
         """
-        super(ImagePlane, self).__init__(
-                text, ImagePlane.build(""), *args, **kwargs)
+        super(ImagePlane, self).__init__( text, ImagePlane.build(""), *args, **kwargs)
 
     @staticmethod
     def build(url, series=None, index=None, channel=None):
@@ -586,11 +562,9 @@ class ImagePlane(Setting):
         if " " in url:
             # Spaces are not legal characters in URLs, nevertheless, I try
             # to accomodate
-            logger.warn(
-                    "URLs should not contain spaces. %s is the offending URL" % url)
+            logger.warn( "URLs should not contain spaces. %s is the offending URL" % url)
             url = url.replace(" ", "%20")
-        return " ".join([str(x) if x is not None else ""
-                         for x in url, series, index, channel])
+        return " ".join([str(x) if x is not None else "" for x in url, series, index, channel])
 
     def __get_field(self, index):
         f = self.value_text.split(" ")[index]
@@ -629,9 +603,7 @@ class ImagePlane(Setting):
 
     def test_valid(self, pipeline):
         if self.url is None:
-            raise ValidationError(
-                    "This setting's URL is blank. Please select a valid image",
-                    self)
+            raise ValidationError( "This setting's URL is blank. Please select a valid image", self)
 
 
 class AlphanumericText(Text):
@@ -673,13 +645,10 @@ class AlphanumericText(Text):
         """
         if first_must_be_alpha:
             pattern = "^[A-Za-z_][A-Za-z_0-9]*$"
-            error = (
-                'Names must start with an ASCII letter or underbar ("_")'
-                ' optionally followed by ASCII letters, underbars or digits.')
+            error = ( 'Names must start with an ASCII letter or underbar ("_")' ' optionally followed by ASCII letters, underbars or digits.')
         else:
             pattern = "^[A-Za-z_0-9]+$"
-            error = ('Only ASCII letters, digits and underbars ("_") can be '
-                     'used here')
+            error = ('Only ASCII letters, digits and underbars ("_") can be ' 'used here')
 
         match = re.match(pattern, text)
         if match is None:
@@ -690,8 +659,7 @@ class Number(Text):
     """A setting that allows only numeric input
     """
 
-    def __init__(self, text, value=0, minval=None, maxval=None, *args,
-                 **kwargs):
+    def __init__(self, text, value=0, minval=None, maxval=None, *args, **kwargs):
         if isinstance(value, basestring):
             text_value = value
             value = self.str_to_value(value)
@@ -720,8 +688,7 @@ class Number(Text):
     def set_value(self, value):
         """Convert integer to string
         """
-        str_value = unicode(value) if isinstance(value, basestring) \
-            else self.value_to_str(value)
+        str_value = unicode(value) if isinstance(value, basestring) else self.value_to_str(value)
         self.set_value_text(str_value)
 
     def get_value(self, reraise=False):
@@ -745,13 +712,9 @@ class Number(Text):
         except ValueError:
             raise ValidationError('Value not in decimal format', self)
         if self.__minval is not None and self.__minval > value:
-            raise ValidationError(
-                    'Must be at least %s, was %s' %
-                    (self.value_to_str(self.__minval), self.value_text), self)
+            raise ValidationError( 'Must be at least %s, was %s' % (self.value_to_str(self.__minval), self.value_text), self)
         if self.__maxval is not None and self.__maxval < value:
-            raise ValidationError(
-                    'Must be at most %s, was %s' %
-                    (self.value_to_str(self.__maxval), self.value_text), self)
+            raise ValidationError( 'Must be at most %s, was %s' % (self.value_to_str(self.__maxval), self.value_text), self)
 
     def eq(self, x):
         """Equal if our value equals the operand"""
@@ -898,14 +861,11 @@ class Range(Setting):
                 raise ValidationError(self.valid_format_text % value, self)
         v_min, v_max = [self.str_to_value(value) for value in values]
         if self._minval is not None and self._minval > v_min:
-            raise ValidationError("%s can't be less than %s" % (
-                self.min_text, self.value_to_str(self._minval)), self)
+            raise ValidationError("%s can't be less than %s" % ( self.min_text, self.value_to_str(self._minval)), self)
         if self._maxval is not None and self._maxval < v_max:
-            raise ValidationError("%s can't be greater than %s" % (
-                self.max_text, self.value_to_str(self._maxval)), self)
+            raise ValidationError("%s can't be greater than %s" % ( self.max_text, self.value_to_str(self._maxval)), self)
         if v_min > v_max:
-            raise ValidationError("%s is greater than %s" %
-                                  (self.min_text, self.max_text), self)
+            raise ValidationError("%s is greater than %s" % (self.min_text, self.max_text), self)
 
     def eq(self, x):
         """If the operand is a sequence, true if it matches the min and max"""
@@ -919,16 +879,14 @@ class IntegerRange(Range):
     """
     valid_format_text = "%s must be all digits"
 
-    def __init__(self, text, value=(0, 1), minval=None, maxval=None, *args,
-                 **kwargs):
+    def __init__(self, text, value=(0, 1), minval=None, maxval=None, *args, **kwargs):
         """Initialize an integer range
         text  - helpful text to be displayed to the user
         value - initial default value, a two-tuple as minimum and maximum
         minval - the minimum acceptable value of either
         maxval - the maximum acceptable value of either
         """
-        super(IntegerRange, self).__init__(
-                text, "%d,%d" % value, minval, maxval, *args, **kwargs)
+        super(IntegerRange, self).__init__( text, "%d,%d" % value, minval, maxval, *args, **kwargs)
 
     def str_to_value(self, value_str):
         return int(value_str)
@@ -1008,22 +966,19 @@ class IntegerOrUnboundedRange(IntegerRange):
     number is returned for slicing.
     """
 
-    def __init__(self, text, value=(0, END), minval=None, maxval=None,
-                 *args, **kwargs):
+    def __init__(self, text, value=(0, END), minval=None, maxval=None, *args, **kwargs):
         """Initialize an integer range
         text  - helpful text to be displayed to the user
         value - initial default value, a two-tuple as minimum and maximum
         minval - the minimum acceptable value of either
         maxval - the maximum acceptable value of either
         """
-        Range.__init__(self, text, "%s,%s" % (str(value[0]), str(value[1])),
-                       *args, **kwargs)
+        Range.__init__(self, text, "%s,%s" % (str(value[0]), str(value[1])), *args, **kwargs)
 
     def str_to_value(self, str_value):
         if str_value == BEGIN:
             return 0
-        elif (self.is_abs() and str_value == END) or \
-                (len(str_value) > 0 and str_value[1:] == END):
+        elif (self.is_abs() and str_value == END) or (len(str_value) > 0 and str_value[1:] == END):
             return END
         return super(IntegerOrUnboundedRange, self).str_to_value(str_value)
 
@@ -1111,21 +1066,12 @@ class IntegerOrUnboundedRange(IntegerRange):
             raise ValidationError("%s is not an integer" % (values[0]), self)
         if len(values[1]) == 0:
             raise ValidationError("The end value is blank", self)
-        if not (values[1] == END or
-                    values[1].isdigit() or
-                    (values[1][0] == '-' and
-                         (values[1][1:].isdigit() or values[1][1:] == END))):
+        if not (values[1] == END or values[1].isdigit() or (values[1][0] == '-' and (values[1][1:].isdigit() or values[1][1:] == END))):
             raise ValidationError("%s is not an integer or %s" % (values[1], END), self)
-        if ((not self.unbounded_min) and
-                self._minval and
-                    self._minval > self.min):
-            raise ValidationError(
-                    "%s can't be less than %d" % (self.min_text, self._minval), self)
-        if ((not self.unbounded_max) and
-                self._maxval and
-                    self._maxval < self.max):
-            raise ValidationError("%d can't be greater than %d" %
-                                  (self.max, self._maxval), self)
+        if ((not self.unbounded_min) and self._minval and self._minval > self.min):
+            raise ValidationError( "%s can't be less than %d" % (self.min_text, self._minval), self)
+        if ((not self.unbounded_max) and self._maxval and self._maxval < self.max):
+            raise ValidationError("%d can't be greater than %d" % (self.max, self._maxval), self)
         if (not self.unbounded_min) and (not self.unbounded_max) and self.min > self.max > 0:
             raise ValidationError("%d is greater than %d" % (self.min, self.max), self)
 
@@ -1148,8 +1094,7 @@ class FloatRange(Range):
     """
     valid_format_text = "%s must be a floating-point number"
 
-    def __init__(self, text, value=(0, 1), *args,
-                 **kwargs):
+    def __init__(self, text, value=(0, 1), *args, **kwargs):
         """Initialize an integer range
         text  - helpful text to be displayed to the user
         value - initial default value, a two-tuple as minimum and maximum
@@ -1172,12 +1117,8 @@ class BinaryMatrix(Setting):
     """A setting that allows editing of a 2D matrix of binary values
     """
 
-    def __init__(self, text,
-                 default_value=True,
-                 default_width=5,
-                 default_height=5, **kwargs):
-        initial_value_text = self.to_value(
-                [[default_value] * default_width] * default_height)
+    def __init__(self, text, default_value=True, default_width=5, default_height=5, **kwargs):
+        initial_value_text = self.to_value( [[default_value] * default_width] * default_height)
         Setting.__init__(self, text, initial_value_text, **kwargs)
 
     @staticmethod
@@ -1190,10 +1131,7 @@ class BinaryMatrix(Setting):
         """
         h = len(matrix)
         w = 0 if h == 0 else len(matrix[0])
-        return ",".join((
-            str(h), str(w),
-            "".join(["".join(["1" if v else "0" for v in row])
-                     for row in matrix])))
+        return ",".join(( str(h), str(w), "".join(["".join(["1" if v else "0" for v in row]) for row in matrix])))
 
     def get_matrix(self):
         """Return the setting's matrix"""
@@ -1251,8 +1189,7 @@ class ImageNameProvider(NameProvider):
     """
 
     def __init__(self, text, value=DO_NOT_USE, *args, **kwargs):
-        super(ImageNameProvider, self).__init__(text, IMAGE_GROUP, value,
-                                                *args, **kwargs)
+        super(ImageNameProvider, self).__init__(text, IMAGE_GROUP, value, *args, **kwargs)
 
 
 class FileImageNameProvider(ImageNameProvider):
@@ -1263,8 +1200,7 @@ class FileImageNameProvider(ImageNameProvider):
         if not kwargs.has_key(PROVIDED_ATTRIBUTES):
             kwargs[PROVIDED_ATTRIBUTES] = {}
         kwargs[PROVIDED_ATTRIBUTES][FILE_IMAGE_ATTRIBUTE] = True
-        super(FileImageNameProvider, self).__init__(text, value, *args,
-                                                    **kwargs)
+        super(FileImageNameProvider, self).__init__(text, value, *args, **kwargs)
 
 
 class ExternalImageNameProvider(ImageNameProvider):
@@ -1276,8 +1212,7 @@ class ExternalImageNameProvider(ImageNameProvider):
         if not kwargs.has_key(PROVIDED_ATTRIBUTES):
             kwargs[PROVIDED_ATTRIBUTES] = {}
         kwargs[PROVIDED_ATTRIBUTES][EXTERNAL_IMAGE_ATTRIBUTE] = True
-        super(ExternalImageNameProvider, self).__init__(text, value, *args,
-                                                        **kwargs)
+        super(ExternalImageNameProvider, self).__init__(text, value, *args, **kwargs)
 
 
 class CroppingNameProvider(ImageNameProvider):
@@ -1296,15 +1231,11 @@ class ObjectNameProvider(NameProvider):
     """
 
     def __init__(self, text, value=DO_NOT_USE, *args, **kwargs):
-        super(ObjectNameProvider, self).__init__(text, OBJECT_GROUP, value,
-                                                 *args, **kwargs)
+        super(ObjectNameProvider, self).__init__(text, OBJECT_GROUP, value, *args, **kwargs)
 
     def test_valid(self, pipeline):
         if self.value_text in cellprofiler.measurement.disallowed_object_names:
-            raise ValidationError(
-                    "Object names may not be any of %s" % (
-                        ", ".join(cellprofiler.measurement.disallowed_object_names)),
-                    self)
+            raise ValidationError( "Object names may not be any of %s" % ( ", ".join(cellprofiler.measurement.disallowed_object_names)), self)
         super(ObjectNameProvider, self).test_valid(pipeline)
 
 
@@ -1313,8 +1244,7 @@ class OutlineNameProvider(ImageNameProvider):
     """
 
     def __init__(self, text, value=DO_NOT_USE, *args, **kwargs):
-        super(OutlineNameProvider, self).__init__(text, value,
-                                                  *args, **kwargs)
+        super(OutlineNameProvider, self).__init__(text, value, *args, **kwargs)
 
 
 class GridNameProvider(NameProvider):
@@ -1322,8 +1252,7 @@ class GridNameProvider(NameProvider):
     """
 
     def __init__(self, text, value="Grid", *args, **kwargs):
-        super(GridNameProvider, self).__init__(text, GRID_GROUP, value,
-                                               *args, **kwargs)
+        super(GridNameProvider, self).__init__(text, GRID_GROUP, value, *args, **kwargs)
 
 
 REQUIRED_ATTRIBUTES = "required_attributes"
@@ -1333,8 +1262,7 @@ class NameSubscriber(Setting):
     """A setting that takes its value from one made available by name providers
     """
 
-    def __init__(self, text, group, value=None,
-                 can_be_blank=False, blank_text=LEAVE_BLANK, *args, **kwargs):
+    def __init__(self, text, group, value=None, can_be_blank=False, blank_text=LEAVE_BLANK, *args, **kwargs):
         if value is None:
             value = (can_be_blank and blank_text) or "None"
         self.__required_attributes = {"group": group}
@@ -1369,17 +1297,14 @@ class NameSubscriber(Setting):
 
     def matches(self, setting):
         """Return true if this subscriber matches the category of the provider"""
-        return all([setting.provided_attributes.get(key, None) ==
-                    self.__required_attributes[key]
-                    for key in self.__required_attributes.keys()])
+        return all([setting.provided_attributes.get(key, None) == self.__required_attributes[key] for key in self.__required_attributes.keys()])
 
     def test_valid(self, pipeline):
         choices = self.get_choices(pipeline)
         if len(choices) == 0:
             raise ValidationError("No prior instances of %s were defined" % self.group, self)
         if self.value not in [c[0] for c in choices]:
-            raise ValidationError("%s not in %s" % (self.value, ", ".join(c[0] for c in self.get_choices(pipeline))),
-                                  self)
+            raise ValidationError("%s not in %s" % (self.value, ", ".join(c[0] for c in self.get_choices(pipeline))), self)
 
 
 def filter_duplicate_names(name_list):
@@ -1398,20 +1323,12 @@ def get_name_provider_choices(pipeline, last_setting, group):
     """
     choices = []
     for module in pipeline.modules(False):
-        module_choices = [
-            (other_name, module.module_name, module.module_num,
-             module.is_input_module())
-            for other_name in module.other_providers(group)]
+        module_choices = [ (other_name, module.module_name, module.module_num, module.is_input_module()) for other_name in module.other_providers(group)]
         for setting in module.visible_settings():
             if setting.key() == last_setting.key():
                 return filter_duplicate_names(choices)
-            if (isinstance(setting, NameProvider) and
-                    module.enabled and
-                        setting != DO_NOT_USE and
-                    last_setting.matches(setting)):
-                module_choices.append((
-                    setting.value, module.module_name, module.module_num,
-                    module.is_input_module()))
+            if (isinstance(setting, NameProvider) and module.enabled and setting != DO_NOT_USE and last_setting.matches(setting)):
+                module_choices.append(( setting.value, module.module_name, module.module_num, module.is_input_module()))
         choices += module_choices
     assert False, "Setting not among visible settings in pipeline"
 
@@ -1430,11 +1347,7 @@ def get_name_providers(pipeline, last_setting):
         for setting in module.visible_settings():
             if setting.key() == last_setting.key():
                 return choices
-            if (isinstance(setting, NameProvider) and
-                        setting != DO_NOT_USE and
-                    module.enabled and
-                    last_setting.matches(setting) and
-                        setting.value == last_setting.value):
+            if (isinstance(setting, NameProvider) and setting != DO_NOT_USE and module.enabled and last_setting.matches(setting) and setting.value == last_setting.value):
                 module_choices.append(setting)
         choices += module_choices
     assert False, "Setting not among visible settings in pipeline"
@@ -1444,25 +1357,19 @@ class ImageNameSubscriber(NameSubscriber):
     """A setting that provides an image name
     """
 
-    def __init__(self, text, value=None, can_be_blank=False,
-                 blank_text=LEAVE_BLANK, *args, **kwargs):
-        super(ImageNameSubscriber, self).__init__(text, IMAGE_GROUP, value,
-                                                  can_be_blank, blank_text,
-                                                  *args, **kwargs)
+    def __init__(self, text, value=None, can_be_blank=False, blank_text=LEAVE_BLANK, *args, **kwargs):
+        super(ImageNameSubscriber, self).__init__(text, IMAGE_GROUP, value, can_be_blank, blank_text, *args, **kwargs)
 
 
 class FileImageNameSubscriber(ImageNameSubscriber):
     """A setting that provides image names loaded from files"""
 
-    def __init__(self, text, value=DO_NOT_USE, can_be_blank=False,
-                 blank_text=LEAVE_BLANK, *args, **kwargs):
+    def __init__(self, text, value=DO_NOT_USE, can_be_blank=False, blank_text=LEAVE_BLANK, *args, **kwargs):
         kwargs = kwargs.copy()
         if not kwargs.has_key(REQUIRED_ATTRIBUTES):
             kwargs[REQUIRED_ATTRIBUTES] = {}
         kwargs[REQUIRED_ATTRIBUTES][FILE_IMAGE_ATTRIBUTE] = True
-        super(FileImageNameSubscriber, self).__init__(text, value, can_be_blank,
-                                                      blank_text, *args,
-                                                      **kwargs)
+        super(FileImageNameSubscriber, self).__init__(text, value, can_be_blank, blank_text, *args, **kwargs)
 
 
 class CroppingNameSubscriber(ImageNameSubscriber):
@@ -1474,42 +1381,30 @@ class CroppingNameSubscriber(ImageNameSubscriber):
         if not kwargs.has_key(REQUIRED_ATTRIBUTES):
             kwargs[REQUIRED_ATTRIBUTES] = {}
         kwargs[REQUIRED_ATTRIBUTES][CROPPING_ATTRIBUTE] = True
-        super(CroppingNameSubscriber, self).__init__(text, value, can_be_blank,
-                                                     blank_text, *args,
-                                                     **kwargs)
+        super(CroppingNameSubscriber, self).__init__(text, value, can_be_blank, blank_text, *args, **kwargs)
 
 
 class ExternalImageNameSubscriber(ImageNameSubscriber):
     """A setting that provides image names loaded externally (eg: from Java)"""
 
-    def __init__(self, text, value=DO_NOT_USE, can_be_blank=False,
-                 blank_text=LEAVE_BLANK, *args, **kwargs):
-        super(ExternalImageNameSubscriber, self).__init__(text, value, can_be_blank,
-                                                          blank_text, *args,
-                                                          **kwargs)
+    def __init__(self, text, value=DO_NOT_USE, can_be_blank=False, blank_text=LEAVE_BLANK, *args, **kwargs):
+        super(ExternalImageNameSubscriber, self).__init__(text, value, can_be_blank, blank_text, *args, **kwargs)
 
 
 class ObjectNameSubscriber(NameSubscriber):
     """A setting that subscribes to the list of available object names
     """
 
-    def __init__(self, text, value=DO_NOT_USE, can_be_blank=False,
-                 blank_text=LEAVE_BLANK, *args, **kwargs):
-        super(ObjectNameSubscriber, self).__init__(text, OBJECT_GROUP, value,
-                                                   can_be_blank, blank_text,
-                                                   *args, **kwargs)
+    def __init__(self, text, value=DO_NOT_USE, can_be_blank=False, blank_text=LEAVE_BLANK, *args, **kwargs):
+        super(ObjectNameSubscriber, self).__init__(text, OBJECT_GROUP, value, can_be_blank, blank_text, *args, **kwargs)
 
 
 class OutlineNameSubscriber(ImageNameSubscriber):
     """A setting that subscribes to the list of available object outline names
     """
 
-    def __init__(self, text, value="None", can_be_blank=False,
-                 blank_text=LEAVE_BLANK, *args, **kwargs):
-        super(OutlineNameSubscriber, self).__init__(text,
-                                                    value, can_be_blank,
-                                                    blank_text, *args,
-                                                    **kwargs)
+    def __init__(self, text, value="None", can_be_blank=False, blank_text=LEAVE_BLANK, *args, **kwargs):
+        super(OutlineNameSubscriber, self).__init__(text, value, can_be_blank, blank_text, *args, **kwargs)
 
     def matches(self, setting):
         """Only match OutlineNameProvider variables"""
@@ -1537,11 +1432,8 @@ class GridNameSubscriber(NameSubscriber):
     """A setting that subscribes to grid information providers
     """
 
-    def __init__(self, text, value=DO_NOT_USE, can_be_blank=False,
-                 blank_text=LEAVE_BLANK, *args, **kwargs):
-        super(GridNameSubscriber, self).__init__(text, GRID_GROUP, value,
-                                                 can_be_blank, blank_text,
-                                                 *args, **kwargs)
+    def __init__(self, text, value=DO_NOT_USE, can_be_blank=False, blank_text=LEAVE_BLANK, *args, **kwargs):
+        super(GridNameSubscriber, self).__init__(text, GRID_GROUP, value, can_be_blank, blank_text, *args, **kwargs)
 
 
 class Binary(Setting):
@@ -1560,8 +1452,7 @@ class Binary(Setting):
 
     def set_value(self, value):
         """When setting, translate true and false into yes and no"""
-        if value == YES or value == NO or \
-                isinstance(value, str) or isinstance(value, unicode):
+        if value == YES or value == NO or isinstance(value, str) or isinstance(value, unicode):
             super(Binary, self).set_value(value)
         else:
             str_value = (value and YES) or NO
@@ -1587,8 +1478,7 @@ class Choice(Setting):
 
     """
 
-    def __init__(self, text, choices, value=None, tooltips=None,
-                 choices_fn=None, *args, **kwargs):
+    def __init__(self, text, choices, value=None, tooltips=None, choices_fn=None, *args, **kwargs):
         """Initializer
         module - the module containing the setting
         text - the explanatory text for the setting
@@ -1629,9 +1519,7 @@ class Choice(Setting):
         if self.__choices_fn is not None:
             self.__choices = self.__choices_fn(pipeline)
         if self.value not in self.choices:
-            raise ValidationError(
-                    "%s is not one of %s" %
-                    (self.value, ",".join(self.choices)), self)
+            raise ValidationError( "%s is not one of %s" % (self.value, ",".join(self.choices)), self)
 
 
 class CustomChoice(Choice):
@@ -1641,8 +1529,7 @@ class CustomChoice(Choice):
         choices - a sequence of string choices to be displayed in the drop-down
         value - the default choice or None to choose the first of the choices.
         """
-        super(CustomChoice, self).__init__(text, choices, value, *args,
-                                           **kwargs)
+        super(CustomChoice, self).__init__(text, choices, value, *args, **kwargs)
 
     def get_choices(self):
         """Put the custom choice at the top"""
@@ -1666,9 +1553,7 @@ class MultiChoice(Setting):
         choices - a sequence of string choices to be selected
         value - a list of selected choices or a comma-separated string list
         """
-        super(MultiChoice, self).__init__(text,
-                                          self.parse_value(value),
-                                          *args, **kwargs)
+        super(MultiChoice, self).__init__(text, self.parse_value(value), *args, **kwargs)
         self.__choices = choices
 
     def parse_value(self, value):
@@ -1720,13 +1605,8 @@ class MultiChoice(Setting):
                 if len(self.choices) == 0:
                     raise ValidationError("No available choices", self)
                 elif len(self.choices) > 25:
-                    raise ValidationError(
-                            "%s is not one of the choices" % selection, self)
-                raise ValidationError("%s is not one of %s" %
-                                      (selection,
-                                       reduce(lambda x, y: "%s,%s" %
-                                                           (x, y), self.choices)),
-                                      self)
+                    raise ValidationError( "%s is not one of the choices" % selection, self)
+                raise ValidationError("%s is not one of %s" % (selection, reduce(lambda x, y: "%s,%s" % (x, y), self.choices)), self)
 
 
 class SubscriberMultiChoice(MultiChoice):
@@ -1744,13 +1624,11 @@ class SubscriberMultiChoice(MultiChoice):
             self.__required_attributes.update(kwargs[REQUIRED_ATTRIBUTES])
             kwargs = kwargs.copy()
             del kwargs[REQUIRED_ATTRIBUTES]
-        super(SubscriberMultiChoice, self).__init__(text, [], value,
-                                                    *args, **kwargs)
+        super(SubscriberMultiChoice, self).__init__(text, [], value, *args, **kwargs)
 
     def load_choices(self, pipeline):
         """Get the choice list from name providers"""
-        self.choices = sorted([
-                                  c[0] for c in get_name_provider_choices(pipeline, self, self.group)])
+        self.choices = sorted([ c[0] for c in get_name_provider_choices(pipeline, self, self.group)])
 
     @property
     def group(self):
@@ -1764,9 +1642,7 @@ class SubscriberMultiChoice(MultiChoice):
         FileImageNameProviders (images loaded from files), you can
         check that here.
         """
-        return all([provider.provided_attributes.get(key, None) ==
-                    self.__required_attributes[key]
-                    for key in self.__required_attributes])
+        return all([provider.provided_attributes.get(key, None) == self.__required_attributes[key] for key in self.__required_attributes])
 
     def test_valid(self, pipeline):
         self.load_choices(pipeline)
@@ -1780,8 +1656,7 @@ class ObjectSubscriberMultiChoice(SubscriberMultiChoice):
     """
 
     def __init__(self, text, value=None, *args, **kwargs):
-        super(ObjectSubscriberMultiChoice, self).__init__(text, OBJECT_GROUP,
-                                                          value, *args, **kwargs)
+        super(ObjectSubscriberMultiChoice, self).__init__(text, OBJECT_GROUP, value, *args, **kwargs)
 
 
 class ImageNameSubscriberMultiChoice(SubscriberMultiChoice):
@@ -1791,8 +1666,7 @@ class ImageNameSubscriberMultiChoice(SubscriberMultiChoice):
     """
 
     def __init__(self, text, value=None, *args, **kwargs):
-        super(ImageNameSubscriberMultiChoice, self).__init__(text, IMAGE_GROUP,
-                                                             value, *args, **kwargs)
+        super(ImageNameSubscriberMultiChoice, self).__init__(text, IMAGE_GROUP, value, *args, **kwargs)
 
 
 class MeasurementMultiChoice(MultiChoice):
@@ -1858,8 +1732,7 @@ class MeasurementMultiChoice(MultiChoice):
             """Disallow any measurement column with "," or "|" in its names"""
             return not any([any([bad in f for f in c[:2]]) for bad in ",", "|"])
 
-        self.set_choices([self.make_measurement_choice(c[0], c[1])
-                          for c in columns if valid_mc(c)])
+        self.set_choices([self.make_measurement_choice(c[0], c[1]) for c in columns if valid_mc(c)])
 
 
 class SubdirectoryFilter(MultiChoice):
@@ -1893,8 +1766,7 @@ class SubdirectoryFilter(MultiChoice):
         return ','.join(choices)
 
     def alter_for_create_batch_files(self, fn_alter_path):
-        selections = [fn_alter_path(selection)
-                      for selection in self.get_selections()]
+        selections = [fn_alter_path(selection) for selection in self.get_selections()]
         self.value = self.get_value_string(selections)
 
     def test_valid(self, pipeline):
@@ -1903,8 +1775,7 @@ class SubdirectoryFilter(MultiChoice):
             for subdirectory in self.get_selections():
                 path = os.path.join(root, subdirectory)
                 if not os.path.isdir(path):
-                    raise ValidationError("%s is not a valid directory" % path,
-                                          self)
+                    raise ValidationError("%s is not a valid directory" % path, self)
 
 
 class TreeChoice(Setting):
@@ -1989,8 +1860,7 @@ class TreeChoice(Setting):
         for item in self.get_path_parts():
             nodes = [n for n in tree if n[0] == item]
             if len(nodes) != 1:
-                raise ValidationError("Unable to find command " +
-                                      ">".join(self.get_path_parts()), self)
+                raise ValidationError("Unable to find command " + ">".join(self.get_path_parts()), self)
             node = nodes[0]
             tree = node[1]
         return node
@@ -2075,8 +1945,7 @@ class DoThings(Setting):
 
         label - the label to display for that action
         """
-        self.__labels_and_callbacks[idx] = \
-            (label, self.__labels_and_callbacks[idx][1])
+        self.__labels_and_callbacks[idx] = (label, self.__labels_and_callbacks[idx][1])
 
     def on_event_fired(self, idx):
         """Call the indexed action's callback
@@ -2090,9 +1959,7 @@ class RemoveSettingButton(DoSomething):
     """A button whose only purpose is to remove something from a list."""
 
     def __init__(self, text, label, list, entry, **kwargs):
-        super(RemoveSettingButton, self).__init__(text, label,
-                                                  lambda: list.remove(entry),
-                                                  **kwargs)
+        super(RemoveSettingButton, self).__init__(text, label, lambda: list.remove(entry), **kwargs)
 
 
 class Divider(Setting):
@@ -2125,8 +1992,7 @@ class Measurement(Setting):
         super(Measurement, self).__init__(text, value, *args, **kwargs)
         self.__object_fn = object_fn
 
-    def construct_value(self, category, feature_name, object_or_image_name,
-                        scale):
+    def construct_value(self, category, feature_name, object_or_image_name, scale):
         """Construct a value that might represent a partially complete value"""
         if category is None:
             value = 'None'
@@ -2172,9 +2038,7 @@ class Measurement(Setting):
                 return category
         return None
 
-    def get_feature_name_choices(self, pipeline,
-                                 object_name=None,
-                                 category=None):
+    def get_feature_name_choices(self, pipeline, object_name=None, category=None):
         """Find the feature name choices available for the chosen category"""
         if object_name is None:
             object_name = self.__object_fn()
@@ -2186,34 +2050,25 @@ class Measurement(Setting):
         for module in pipeline.modules():
             if self.key() in [x.key() for x in module.settings()]:
                 break
-            feature_names.update(module.get_measurements(pipeline, object_name,
-                                                         category))
+            feature_names.update(module.get_measurements(pipeline, object_name, category))
         result = list(feature_names)
         result.sort()
         return result
 
-    def get_feature_name(self, pipeline,
-                         object_name=None,
-                         category=None):
+    def get_feature_name(self, pipeline, object_name=None, category=None):
         """Return the currently selected feature name"""
         if category is None:
             category = self.get_category(pipeline, object_name)
         if category is None:
             return None
-        feature_names = self.get_feature_name_choices(pipeline,
-                                                      object_name,
-                                                      category)
+        feature_names = self.get_feature_name_choices(pipeline, object_name, category)
         for feature_name in feature_names:
             head = '_'.join((category, feature_name))
-            if (self.value.startswith(head + '_') or
-                        self.value == head):
+            if (self.value.startswith(head + '_') or self.value == head):
                 return feature_name
         return None
 
-    def get_image_name_choices(self, pipeline,
-                               object_name=None,
-                               category=None,
-                               feature_name=None):
+    def get_image_name_choices(self, pipeline, object_name=None, category=None, feature_name=None):
         """Find the secondary image name choices available for a feature
 
         A measurement can still be valid, even if there are no available
@@ -2225,26 +2080,19 @@ class Measurement(Setting):
         if category is None:
             category = self.get_category(pipeline, object_name)
         if feature_name is None:
-            feature_name = self.get_feature_name(pipeline, object_name,
-                                                 category)
+            feature_name = self.get_feature_name(pipeline, object_name, category)
         if category is None or feature_name is None:
             return []
         image_names = set()
         for module in pipeline.modules():
             if self.key() in [x.key() for x in module.settings()]:
                 break
-            image_names.update(module.get_measurement_images(pipeline,
-                                                             object_name,
-                                                             category,
-                                                             feature_name))
+            image_names.update(module.get_measurement_images(pipeline, object_name, category, feature_name))
         result = list(image_names)
         result.sort()
         return result
 
-    def get_image_name(self, pipeline,
-                       object_name=None,
-                       category=None,
-                       feature_name=None):
+    def get_image_name(self, pipeline, object_name=None, category=None, feature_name=None):
         """Return the currently chosen image name"""
         if object_name is None:
             object_name = self.__object_fn()
@@ -2253,13 +2101,10 @@ class Measurement(Setting):
         if category is None:
             return None
         if feature_name is None:
-            feature_name = self.get_feature_name(pipeline, object_name,
-                                                 category)
+            feature_name = self.get_feature_name(pipeline, object_name, category)
         if feature_name is None:
             return None
-        image_names = self.get_image_name_choices(pipeline,
-                                                  object_name, category,
-                                                  feature_name)
+        image_names = self.get_image_name_choices(pipeline, object_name, category, feature_name)
         # 1st pass - accept only exact match
         # 2nd pass - accept part match.
         # This handles things like "OriginalBlue_Nuclei" vs "OriginalBlue"
@@ -2274,11 +2119,7 @@ class Measurement(Setting):
                     return image_name
         return None
 
-    def get_scale_choices(self, pipeline,
-                          object_name=None,
-                          category=None,
-                          feature_name=None,
-                          image_name=None):
+    def get_scale_choices(self, pipeline, object_name=None, category=None, feature_name=None, image_name=None):
         """Return the measured scales for the currently chosen measurement
 
         The setting may still be valid, even though there are no scale choices.
@@ -2289,42 +2130,30 @@ class Measurement(Setting):
         if category is None:
             category = self.get_category(pipeline, object_name)
         if feature_name is None:
-            feature_name = self.get_feature_name(pipeline, object_name,
-                                                 category)
+            feature_name = self.get_feature_name(pipeline, object_name, category)
         if image_name is None:
-            image_name = self.get_image_name(pipeline, object_name, category,
-                                             feature_name)
+            image_name = self.get_image_name(pipeline, object_name, category, feature_name)
         if category is None or feature_name is None:
             return []
         scales = set()
         for module in pipeline.modules():
             if self.key() in [x.key() for x in module.settings()]:
                 break
-            scales.update(module.get_measurement_scales(pipeline,
-                                                        object_name,
-                                                        category,
-                                                        feature_name,
-                                                        image_name))
+            scales.update(module.get_measurement_scales(pipeline, object_name, category, feature_name, image_name))
         result = [str(scale) for scale in scales]
         result.sort()
         return result
 
-    def get_scale(self, pipeline,
-                  object_name=None,
-                  category=None,
-                  feature_name=None,
-                  image_name=None):
+    def get_scale(self, pipeline, object_name=None, category=None, feature_name=None, image_name=None):
         """Return the currently chosen scale"""
         if object_name is None:
             object_name = self.__object_fn()
         if category is None:
             category = self.get_category(pipeline, object_name)
         if feature_name is None:
-            feature_name = self.get_feature_name(pipeline, object_name,
-                                                 category)
+            feature_name = self.get_feature_name(pipeline, object_name, category)
         if image_name is None:
-            image_name = self.get_image_name(pipeline, object_name,
-                                             category, feature_name)
+            image_name = self.get_image_name(pipeline, object_name, category, feature_name)
         sub_object_name = self.get_object_name(pipeline)
         if category is None or feature_name is None:
             return None
@@ -2339,10 +2168,7 @@ class Measurement(Setting):
                 return scale
         return None
 
-    def get_object_name_choices(self, pipeline,
-                                object_name=None,
-                                category=None,
-                                feature_name=None):
+    def get_object_name_choices(self, pipeline, object_name=None, category=None, feature_name=None):
         """Return a list of objects for a particular feature
 
         Typically these are image features measured on the objects in the image
@@ -2359,17 +2185,12 @@ class Measurement(Setting):
         for module in pipeline.modules():
             if self.key in [x.key() for x in module.settings()]:
                 break
-            objects.update(module.get_measurement_objects(pipeline,
-                                                          object_name,
-                                                          category,
-                                                          feature_name))
+            objects.update(module.get_measurement_objects(pipeline, object_name, category, feature_name))
         result = list(objects)
         result.sort()
         return result
 
-    def get_object_name(self, pipeline, object_name=None,
-                        category=None,
-                        feature_name=None):
+    def get_object_name(self, pipeline, object_name=None, category=None, feature_name=None):
         """Return the currently chosen image name"""
         if object_name is None:
             object_name = self.__object_fn()
@@ -2378,16 +2199,13 @@ class Measurement(Setting):
         if category is None:
             return None
         if feature_name is None:
-            feature_name = self.get_feature_name(pipeline, object_name,
-                                                 category)
+            feature_name = self.get_feature_name(pipeline, object_name, category)
         if feature_name is None:
             return None
-        object_names = self.get_object_name_choices(pipeline, object_name,
-                                                    category, feature_name)
+        object_names = self.get_object_name_choices(pipeline, object_name, category, feature_name)
         for object_name in object_names:
             head = '_'.join((category, feature_name, object_name))
-            if (self.value.startswith(head + '_') or
-                        self.value == head):
+            if (self.value.startswith(head + '_') or self.value == head):
                 return object_name
         return None
 
@@ -2395,45 +2213,30 @@ class Measurement(Setting):
         obname = self.__object_fn()
         category = self.get_category(pipeline, obname)
         if category is None:
-            raise ValidationError("%s has an unavailable measurement category" %
-                                  self.value, self)
+            raise ValidationError("%s has an unavailable measurement category" % self.value, self)
         feature_name = self.get_feature_name(pipeline, obname, category)
         if feature_name is None:
-            raise ValidationError("%s has an unmeasured feature name" %
-                                  self.value, self)
+            raise ValidationError("%s has an unmeasured feature name" % self.value, self)
         #
         # If there are any image names or object names, then there must
         # be a valid image name or object name
         #
-        image_name = self.get_image_name(pipeline, obname, category,
-                                         feature_name)
-        image_names = self.get_image_name_choices(pipeline, obname,
-                                                  category, feature_name)
-        sub_object_name = self.get_object_name(pipeline, obname, category,
-                                               feature_name)
-        sub_object_names = self.get_object_name_choices(pipeline, obname,
-                                                        category, feature_name)
-        if (len(sub_object_names) > 0 and image_name is None and
-                    sub_object_name is None):
-            raise ValidationError("%s has an unavailable object name" %
-                                  self.value, self)
-        if (len(image_names) > 0 and image_name is None and
-                    sub_object_name is None):
-            raise ValidationError("%s has an unavailable image name" %
-                                  self.value, self)
-        scale_choices = self.get_scale_choices(pipeline, obname, category,
-                                               feature_name)
-        if (self.get_scale(pipeline, obname, category, feature_name)
-            not in scale_choices and len(scale_choices) > 0):
-            raise ValidationError("%s has an unavailable scale" %
-                                  self.value, self)
+        image_name = self.get_image_name(pipeline, obname, category, feature_name)
+        image_names = self.get_image_name_choices(pipeline, obname, category, feature_name)
+        sub_object_name = self.get_object_name(pipeline, obname, category, feature_name)
+        sub_object_names = self.get_object_name_choices(pipeline, obname, category, feature_name)
+        if (len(sub_object_names) > 0 and image_name is None and sub_object_name is None):
+            raise ValidationError("%s has an unavailable object name" % self.value, self)
+        if (len(image_names) > 0 and image_name is None and sub_object_name is None):
+            raise ValidationError("%s has an unavailable image name" % self.value, self)
+        scale_choices = self.get_scale_choices(pipeline, obname, category, feature_name)
+        if (self.get_scale(pipeline, obname, category, feature_name) not in scale_choices and len(scale_choices) > 0):
+            raise ValidationError("%s has an unavailable scale" % self.value, self)
         for module in pipeline.modules():
             if self.key() in [s.key() for s in module.visible_settings()]:
                 break
-        if (not any([column[0] == obname and column[1] == self.value
-                     for column in pipeline.get_measurement_columns(module)])):
-            raise ValidationError("%s is not measured for %s" %
-                                  (self.value, obname), self)
+        if (not any([column[0] == obname and column[1] == self.value for column in pipeline.get_measurement_columns(module)])):
+            raise ValidationError("%s is not measured for %s" % (self.value, obname), self)
 
 
 class Colormap(Choice):
@@ -2467,9 +2270,7 @@ class Color(Setting):
     def to_rgb(self):
         value = self.value.replace(" ", "")
         if value.startswith("#") and len(value) >= 7:
-            return (int(value[1:3], 16),
-                    int(value[3:5], 16),
-                    int(value[5:7], 16))
+            return (int(value[1:3], 16), int(value[3:5], 16), int(value[5:7], 16))
         elif self.colortable.has_key(value.lower()):
             return self.colortable[value.lower()]
         else:
@@ -2665,8 +2466,7 @@ class Filter(Setting):
     """
 
     class FilterPredicate(object):
-        def __init__(self, symbol, display_name, function, subpredicates,
-                     doc=None):
+        def __init__(self, symbol, display_name, function, subpredicates, doc=None):
             self.symbol = symbol
             self.display_name = display_name
             self.function = function
@@ -2711,41 +2511,21 @@ class Filter(Setting):
 
     @classmethod
     def eval_list(cls, fn, x, *args):
-        results = [v for v in [arg[0](x, *arg[1:]) for arg in args]
-                   if v is not None]
+        results = [v for v in [arg[0](x, *arg[1:]) for arg in args] if v is not None]
         if len(results) == 0:
             return None
         return fn(results)
 
-    AND_PREDICATE = CompoundFilterPredicate(
-            "and", "All",
-            lambda x, *l: Filter.eval_list(all, x, *l), list,
-            doc="All subordinate rules must be satisfied")
-    OR_PREDICATE = CompoundFilterPredicate(
-            "or", "Any",
-            lambda x, *l: Filter.eval_list(any, x, *l), list,
-            doc="Any one of the subordinate rules must be satisfied")
-    LITERAL_PREDICATE = FilterPredicate(
-            "literal", "Custom value", None, [],
-            doc="Enter the rule's text")
-    CONTAINS_PREDICATE = FilterPredicate(
-            "contain", "Contain",
-            lambda x, y: x.find(y) >= 0, [LITERAL_PREDICATE],
-            doc="The element must contain the text that you enter to the right")
-    STARTS_WITH_PREDICATE = FilterPredicate(
-            "startwith", "Start with",
-            lambda x, y: x.startswith(y), [LITERAL_PREDICATE],
-            doc="The element must start with the text that you enter to the right")
-    ENDSWITH_PREDICATE = FilterPredicate(
-            "endwith", "End with",
-            lambda x, y: x.endswith(y), [LITERAL_PREDICATE],
-            doc="The element must end with the text that you enter to the right")
+    AND_PREDICATE = CompoundFilterPredicate( "and", "All", lambda x, *l: Filter.eval_list(all, x, *l), list, doc="All subordinate rules must be satisfied")
+    OR_PREDICATE = CompoundFilterPredicate( "or", "Any", lambda x, *l: Filter.eval_list(any, x, *l), list, doc="Any one of the subordinate rules must be satisfied")
+    LITERAL_PREDICATE = FilterPredicate( "literal", "Custom value", None, [], doc="Enter the rule's text")
+    CONTAINS_PREDICATE = FilterPredicate( "contain", "Contain", lambda x, y: x.find(y) >= 0, [LITERAL_PREDICATE], doc="The element must contain the text that you enter to the right")
+    STARTS_WITH_PREDICATE = FilterPredicate( "startwith", "Start with", lambda x, y: x.startswith(y), [LITERAL_PREDICATE], doc="The element must start with the text that you enter to the right")
+    ENDSWITH_PREDICATE = FilterPredicate( "endwith", "End with", lambda x, y: x.endswith(y), [LITERAL_PREDICATE], doc="The element must end with the text that you enter to the right")
 
     class RegexpFilterPredicate(FilterPredicate):
         def __init__(self, display_name, subpredicates):
-            super(self.__class__, self).__init__(
-                    "containregexp", display_name, self.regexp_fn, subpredicates,
-                    doc="The element must contain a match for the regular expression that you enter to the right")
+            super(self.__class__, self).__init__( "containregexp", display_name, self.regexp_fn, subpredicates, doc="The element must contain a match for the regular expression that you enter to the right")
 
         def regexp_fn(self, x, y):
             try:
@@ -2754,33 +2534,22 @@ class Filter(Setting):
                 raise ValueError("Badly formatted regular expression: %s" % y)
             return pattern.search(x) is not None
 
-    CONTAINS_REGEXP_PREDICATE = RegexpFilterPredicate(
-            "Contain regular expression", [LITERAL_PREDICATE])
-    EQ_PREDICATE = FilterPredicate(
-            "eq", "Exactly match", lambda x, y: x == y, [LITERAL_PREDICATE],
-            doc="Must exactly match the text that you enter to the right")
+    CONTAINS_REGEXP_PREDICATE = RegexpFilterPredicate( "Contain regular expression", [LITERAL_PREDICATE])
+    EQ_PREDICATE = FilterPredicate( "eq", "Exactly match", lambda x, y: x == y, [LITERAL_PREDICATE], doc="Must exactly match the text that you enter to the right")
 
     class DoesPredicate(FilterPredicate):
         """Pass the arguments through (no-op)"""
         SYMBOL = "does"
 
-        def __init__(self, subpredicates, text="Does",
-                     doc="The rule passes if the condition to the right holds"):
-            super(self.__class__, self).__init__(
-                    self.SYMBOL, text,
-                    lambda x, f, *l: f(x, *l), subpredicates,
-                    doc=doc)
+        def __init__(self, subpredicates, text="Does", doc="The rule passes if the condition to the right holds"):
+            super(self.__class__, self).__init__( self.SYMBOL, text, lambda x, f, *l: f(x, *l), subpredicates, doc=doc)
 
     class DoesNotPredicate(FilterPredicate):
         """Negate the result of the arguments"""
         SYMBOL = "doesnot"
 
-        def __init__(self, subpredicates, text="Does not",
-                     doc="The rule fails if the condition to the right holds"):
-            super(self.__class__, self).__init__(
-                    self.SYMBOL, text,
-                    lambda x, f, *l: not f(x, *l), subpredicates,
-                    doc=doc)
+        def __init__(self, subpredicates, text="Does not", doc="The rule fails if the condition to the right holds"):
+            super(self.__class__, self).__init__( self.SYMBOL, text, lambda x, f, *l: not f(x, *l), subpredicates, doc=doc)
 
     def __init__(self, text, predicates, value="", **kwargs):
         super(self.__class__, self).__init__(text, value, **kwargs)
@@ -2892,11 +2661,9 @@ class Filter(Setting):
         elif kwd == cls.OR_PREDICATE.symbol:
             match = cls.OR_PREDICATE
         else:
-            matches = [x for x in predicates
-                       if x is not list and x.symbol == kwd]
+            matches = [x for x in predicates if x is not list and x.symbol == kwd]
             if len(matches) == 0:
-                raise ValueError('The filter predicate, "%s", was not in the list of allowed predicates ("%s")' %
-                                 (kwd, '","'.join([x.symbol for x in predicates])))
+                raise ValueError('The filter predicate, "%s", was not in the list of allowed predicates ("%s")' % (kwd, '","'.join([x.symbol for x in predicates])))
             match = matches[0]
         if match.subpredicates is list:
             predicates = [list] + predicates
@@ -2942,8 +2709,7 @@ class Filter(Setting):
         s = []
         for element in structure:
             if isinstance(element, Filter.FilterPredicate):
-                s.append(
-                        cls.FilterPredicate.encode_symbol(unicode(element.symbol)))
+                s.append( cls.FilterPredicate.encode_symbol(unicode(element.symbol)))
             elif isinstance(element, basestring):
                 s.append(u'"' + cls.encode_literal(element) + u'"')
             else:
@@ -2953,12 +2719,7 @@ class Filter(Setting):
     def test_valid(self, pipeline):
         try:
             import javabridge as J
-            J.run_script("""
-            importPackage(Packages.org.cellprofiler.imageset.filter);
-            new Filter(expr, klass);
-            """, dict(expr=self.value_text,
-                      klass=J.class_for_name(
-                              "org.cellprofiler.imageset.ImagePlaneDetailsStack")))
+            J.run_script(""" importPackage(Packages.org.cellprofiler.imageset.filter); new Filter(expr, klass); """, dict(expr=self.value_text, klass=J.class_for_name( "org.cellprofiler.imageset.ImagePlaneDetailsStack")))
         except Exception, e:
             raise ValidationError(str(e), self)
 
@@ -2973,9 +2734,7 @@ class Filter(Setting):
             if isinstance(x, (list, tuple)):
                 self.__warn_if_blank(x)
             elif x == "":
-                raise ValidationError(
-                        "The text entry for an expression in this filter is blank",
-                        self)
+                raise ValidationError( "The text entry for an expression in this filter is blank", self)
 
 
 class FileCollectionDisplay(Setting):
@@ -3039,13 +2798,7 @@ class FileCollectionDisplay(Setting):
         def __init__(self, text):
             self.text = text
 
-    def __init__(self, text, value,
-                 fn_on_drop,
-                 fn_on_remove,
-                 fn_get_path_info,
-                 fn_on_menu_command,
-                 fn_on_bkgnd_control,
-                 hide_text="Hide filtered files", **kwargs):
+    def __init__(self, text, value, fn_on_drop, fn_on_remove, fn_get_path_info, fn_on_menu_command, fn_on_bkgnd_control, hide_text="Hide filtered files", **kwargs):
         """Constructor
 
         text - the label to the left of the setting
@@ -3247,8 +3000,7 @@ class FileCollectionDisplay(Setting):
                 #
                 # Delete the subtree if the subtree is emptied
                 #
-                if len(subtree) == 0 or (
-                                len(subtree) == 1 and subtree.has_key(None)):
+                if len(subtree) == 0 or ( len(subtree) == 1 and subtree.has_key(None)):
                     del tree[root_mod]
             else:
                 del tree[root_mod]
@@ -3274,9 +3026,7 @@ class FileCollectionDisplay(Setting):
             else:
                 if tree.has_key(mod[0]):
                     self.mark_subtree(mod[1], keep, tree[mod[0]])
-        kept = [tree[k][None] if isinstance(tree[k], dict)
-                else tree[k]
-                for k in tree.keys() if k is not None]
+        kept = [tree[k][None] if isinstance(tree[k], dict) else tree[k] for k in tree.keys() if k is not None]
         tree[None] = any(kept)
 
     def get_node_info(self, path):
@@ -3347,8 +3097,7 @@ class ImageSetDisplay(DoSomething):
     """
 
     def __init__(self, *args, **kwargs):
-        super(self.__class__, self).__init__(args[0], args[1], None, *args[:2],
-                                             **kwargs)
+        super(self.__class__, self).__init__(args[0], args[1], None, *args[:2], **kwargs)
 
 
 class Table(Setting):
@@ -3356,12 +3105,7 @@ class Table(Setting):
 
     ATTR_ERROR = "Error"
 
-    def __init__(self, text,
-                 min_size=(400, 300),
-                 max_field_size=30,
-                 use_sash=False,
-                 corner_button=None,
-                 **kwargs):
+    def __init__(self, text, min_size=(400, 300), max_field_size=30, use_sash=False, corner_button=None, **kwargs):
         """Constructor
 
         text - text label to display to the left of the table
@@ -3406,11 +3150,9 @@ class Table(Setting):
         data - rows of data to add. Each field in a row is placed
                at the column indicated by "columns"
         """
-        indices = [columns.index(c) if c in columns else None
-                   for c in self.column_names]
+        indices = [columns.index(c) if c in columns else None for c in self.column_names]
         for row in data:
-            self.data.append([None if index is None else row[index]
-                              for index in indices])
+            self.data.append([None if index is None else row[index] for index in indices])
 
     def sort_rows(self, columns):
         """Sort rows based on values in columns"""
@@ -3609,17 +3351,11 @@ class Joiner(Setting):
         """
         join = self.parse()
         if len(join) == 0:
-            raise ValidationError(
-                    "This setting needs to be initialized by choosing items from each column",
-                    self)
+            raise ValidationError( "This setting needs to be initialized by choosing items from each column", self)
         for d in join:
             for column_name, value in d.items():
-                if column_name in self.entities and \
-                        (value not in self.entities[column_name] and
-                                 value is not None):
-                    raise ValidationError(
-                            "%s is not a valid choice for %s" %
-                            (value, column_name), self)
+                if column_name in self.entities and (value not in self.entities[column_name] and value is not None):
+                    raise ValidationError( "%s is not a valid choice for %s" % (value, column_name), self)
 
 
 class DataTypes(Setting):
@@ -3684,8 +3420,7 @@ class SettingsGroup(object):
         """Add a new setting to the group, with a name.  The setting
         will then be available as group.name
         """
-        assert name not in self.__dict__, "%s already in SettingsGroup (previous setting or built in attribute)" % (
-            name)
+        assert name not in self.__dict__, "%s already in SettingsGroup (previous setting or built in attribute)" % ( name)
         self.__setattr__(name, setting)
         self.settings.append(setting)
 
@@ -3698,8 +3433,7 @@ class SettingsGroup(object):
 
     def pipeline_settings(self):
         """Return a list of the settings, filtering out UI tidbits"""
-        return [setting for setting in self.settings
-                if setting.save_to_pipeline]
+        return [setting for setting in self.settings if setting.save_to_pipeline]
 
 
 class NumberConnector(object):

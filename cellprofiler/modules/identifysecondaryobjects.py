@@ -128,14 +128,14 @@ import os
 import scipy.ndimage as scind
 import scipy.misc as scimisc
 
-import cellprofiler.cpmodule as cpm
-import cellprofiler.cpimage as cpi
-import cellprofiler.measurements as cpmeas
-import cellprofiler.objects as cpo
-import cellprofiler.preferences as cpprefs
+import cellprofiler.module as cpm
+import cellprofiler.image as cpi
+import cellprofiler.measurement as cpmeas
+import cellprofiler.object as cpo
+import cellprofiler.preference as cpprefs
 import cellprofiler.workspace as cpw
-import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
+import cellprofiler.setting as cps
+from cellprofiler.setting import YES, NO
 import identify as cpmi
 from identify import FI_IMAGE_SIZE
 import centrosome.threshold as cpthresh

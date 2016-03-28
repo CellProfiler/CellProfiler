@@ -20,9 +20,9 @@ import zmq
 
 import cellprofiler.analysis as cpanalysis
 import cellprofiler.pipeline as cpp
-import cellprofiler.cpmodule as cpm
-import cellprofiler.preferences as cpprefs
-import cellprofiler.measurements as cpmeas
+import cellprofiler.module as cpm
+import cellprofiler.preference as cpprefs
+import cellprofiler.measurement as cpmeas
 import cellprofiler.utilities.zmqrequest as cpzmq
 from cellprofiler.modules.tests import example_images_directory, testimages_directory
 

@@ -21,15 +21,15 @@ from bioformats.formatreader import clear_image_reader_cache
 from bioformats.formatwriter import write_image
 from bioformats.omexml import PT_UINT8
 
-import cellprofiler.cpimage as I
-import cellprofiler.cpmodule as CPM
-import cellprofiler.measurements as measurements
+import cellprofiler.image as I
+import cellprofiler.module as CPM
+import cellprofiler.measurement as measurements
 import cellprofiler.modules.loadimages as LI
 import cellprofiler.modules.tests as T
-import cellprofiler.objects as cpo
+import cellprofiler.object as cpo
 import cellprofiler.pipeline as cpp
 import cellprofiler.pipeline as P
-import cellprofiler.preferences as cpprefs
+import cellprofiler.preference as cpprefs
 import cellprofiler.workspace as W
 from cellprofiler.modules.namesandtypes import M_IMAGE_SET
 from cellprofiler.modules.tests import \

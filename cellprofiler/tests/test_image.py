@@ -6,7 +6,7 @@ import unittest
 
 import numpy as np
 
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 
 
 class TestImage(unittest.TestCase):

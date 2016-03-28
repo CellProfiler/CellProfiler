@@ -32,7 +32,7 @@ knime_bridge_address = None
 
 def aw_parse_args():
     '''Parse the application arguments into setup parameters'''
-    from cellprofiler.preferences import \
+    from cellprofiler.preference import \
         set_headless, set_awt_headless, \
         set_plugin_directory, set_ij_plugin_directory
     import optparse
@@ -70,7 +70,7 @@ def aw_parse_args():
 
     options, args = parser.parse_args()
     if options.jvm_heap_size is not None:
-        from cellprofiler.preferences import set_jvm_heap_mb
+        from cellprofiler.preference import set_jvm_heap_mb
         set_jvm_heap_mb(options.jvm_heap_size, False)
     logging.root.setLevel(options.log_level)
     if len(logging.root.handlers) == 0:
@@ -127,8 +127,8 @@ import traceback
 from weakref import WeakSet
 
 import cellprofiler.workspace as cpw
-import cellprofiler.measurements as cpmeas
-import cellprofiler.preferences as cpprefs
+import cellprofiler.measurement as cpmeas
+import cellprofiler.preference as cpprefs
 from cellprofiler.gui.errordialog import ED_STOP, ED_SKIP
 from cellprofiler.analysis import \
     PipelinePreferencesRequest, InitialMeasurementsRequest, WorkRequest, \

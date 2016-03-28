@@ -9,16 +9,16 @@ import zlib
 import numpy as np
 import scipy.ndimage as scind
 
-from cellprofiler.preferences import set_headless
+from cellprofiler.preference import set_headless
 
 set_headless()
 
 import cellprofiler.pipeline as cpp
-import cellprofiler.cpimage as cpi
-import cellprofiler.measurements as cpmeas
-import cellprofiler.objects as cpo
+import cellprofiler.image as cpi
+import cellprofiler.measurement as cpmeas
+import cellprofiler.object as cpo
 import cellprofiler.pipeline as cpp
-import cellprofiler.settings as cps
+import cellprofiler.setting as cps
 import cellprofiler.workspace as cpw
 import cellprofiler.modules.morph as morph
 import centrosome.cpmorphology as cpmorph

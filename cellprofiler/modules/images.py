@@ -87,11 +87,11 @@ filtered further in NamesAndTypes to specify, for example, that a subset of thes
 particular wavelength.
 """ % globals()
 
-import cellprofiler.cpmodule as cpm
+import cellprofiler.module as cpm
 import cellprofiler.pipeline as cpp
-import cellprofiler.preferences as cpprefs
-import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
+import cellprofiler.preference as cpprefs
+import cellprofiler.setting as cps
+from cellprofiler.setting import YES, NO
 import cellprofiler.workspace as cpw
 import cellprofiler.utilities.walk_in_background as W
 import javabridge as J

@@ -28,9 +28,9 @@ from scipy.ndimage import gaussian_gradient_magnitude, correlate1d
 #
 ##################################
 
-import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
-import cellprofiler.settings as cps
+import cellprofiler.image as cpi
+import cellprofiler.module as cpm
+import cellprofiler.setting as cps
 
 ###################################
 #

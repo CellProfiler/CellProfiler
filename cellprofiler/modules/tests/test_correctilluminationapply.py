@@ -11,18 +11,18 @@ from StringIO import StringIO
 
 import numpy as np
 
-from cellprofiler.preferences import set_headless
+from cellprofiler.preference import set_headless
 
 set_headless()
 
 import cellprofiler.modules.correctilluminationapply as cpmcia
 import cellprofiler.modules.injectimage as inj
-import cellprofiler.cpmodule as cpm
-import cellprofiler.cpimage as cpi
+import cellprofiler.module as cpm
+import cellprofiler.image as cpi
 import cellprofiler.pipeline as cpp
 import cellprofiler.workspace as cpw
-import cellprofiler.objects as cpo
-import cellprofiler.measurements as cpm
+import cellprofiler.object as cpo
+import cellprofiler.measurement as cpm
 
 
 class TestCorrectIlluminationApply(unittest.TestCase):

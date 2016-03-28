@@ -60,18 +60,18 @@ cached_file_lists = {}
 import scipy.io.matlab.mio
 import uuid
 
-import cellprofiler.objects as cpo
-import cellprofiler.cpmodule as cpmodule
-import cellprofiler.cpimage as cpimage
-import cellprofiler.measurements as cpmeas
+import cellprofiler.object as cpo
+import cellprofiler.module as cpmodule
+import cellprofiler.image as cpimage
+import cellprofiler.measurement as cpmeas
 from cellprofiler.pipeline import GROUP_INDEX
-import cellprofiler.preferences as preferences
-import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
+import cellprofiler.preference as preferences
+import cellprofiler.setting as cps
+from cellprofiler.setting import YES, NO
 import centrosome.outline
 import identify as I
 import os.path
-from cellprofiler.preferences import \
+from cellprofiler.preference import \
     standardize_default_folder_names, DEFAULT_INPUT_FOLDER_NAME, \
     DEFAULT_OUTPUT_FOLDER_NAME, ABSOLUTE_FOLDER_NAME, URL_FOLDER_NAME, \
     DEFAULT_INPUT_SUBFOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME, \
@@ -81,7 +81,7 @@ from cellprofiler.preferences import \
 from cellprofiler.gui.help import USING_METADATA_GROUPING_HELP_REF, REGEXP_HELP_REF
 from cellprofiler.gui.errordialog import show_warning
 
-from cellprofiler.measurements import \
+from cellprofiler.measurement import \
     C_FILE_NAME, C_PATH_NAME, C_URL, C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME, \
     C_OBJECTS_URL
 

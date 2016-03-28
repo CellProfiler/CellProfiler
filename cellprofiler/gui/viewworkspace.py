@@ -5,9 +5,9 @@ import cellprofiler.gui.cpartists
 import cellprofiler.gui.cpfigure
 import cellprofiler.gui.help
 import cellprofiler.gui.htmldialog
-import cellprofiler.measurements
+import cellprofiler.measurement
 import cellprofiler.modules.identify
-import cellprofiler.preferences
+import cellprofiler.preference
 import matplotlib
 import numpy
 import wx
@@ -126,10 +126,10 @@ class VWImageRow(VWRow):
         image_set = vw.workspace.image_set
         name = self.chooser.GetStringSelection()
 
-        im = cellprofiler.preferences.get_intensity_mode()
-        if im == cellprofiler.preferences.INTENSITY_MODE_LOG:
+        im = cellprofiler.preference.get_intensity_mode()
+        if im == cellprofiler.preference.INTENSITY_MODE_LOG:
             normalization = cellprofiler.gui.cpartists.NORMALIZE_LOG
-        elif im == cellprofiler.preferences.INTENSITY_MODE_NORMAL:
+        elif im == cellprofiler.preference.INTENSITY_MODE_NORMAL:
             normalization = cellprofiler.gui.cpartists.NORMALIZE_LINEAR
         else:
             normalization = cellprofiler.gui.cpartists.NORMALIZE_RAW
@@ -138,7 +138,7 @@ class VWImageRow(VWRow):
                 name, None,
                 mode=cellprofiler.gui.cpartists.MODE_HIDE,
                 color=self.color,
-                colormap=cellprofiler.preferences.get_default_colormap(),
+                colormap=cellprofiler.preference.get_default_colormap(),
                 alpha=alpha,
                 normalization=normalization)
         vw.image.add(self.data)
@@ -164,7 +164,7 @@ class VWObjectsRow(VWRow):
         self.data = bind_data_class(cellprofiler.gui.cpartists.ObjectsData, self.color_ctrl, vw.redraw)(
                 name, None,
                 outline_color=self.color,
-                colormap=cellprofiler.preferences.get_default_colormap(),
+                colormap=cellprofiler.preference.get_default_colormap(),
                 alpha=.5,
                 mode=cellprofiler.gui.cpartists.MODE_HIDE)
         vw.image.add(self.data)
@@ -239,10 +239,10 @@ class ViewWorkspace(object):
         self.frame.set_subplots((1, 1))
         self.axes = self.frame.subplot(0, 0)
         self.axes.invert_yaxis()
-        interpolation = cellprofiler.preferences.get_interpolation_mode()
-        if interpolation == cellprofiler.preferences.IM_NEAREST:
+        interpolation = cellprofiler.preference.get_interpolation_mode()
+        if interpolation == cellprofiler.preference.IM_NEAREST:
             interpolation = cellprofiler.gui.cpartists.INTERPOLATION_NEAREST
-        elif interpolation == cellprofiler.preferences.IM_BILINEAR:
+        elif interpolation == cellprofiler.preference.IM_BILINEAR:
             interpolation = cellprofiler.gui.cpartists.INTERPOLATION_BILINEAR
         else:
             interpolation = cellprofiler.gui.cpartists.INTERPOLATION_BICUBIC
@@ -587,7 +587,7 @@ class ViewWorkspace(object):
             artist.remove()
 
         m = self.workspace.measurements
-        assert isinstance(m, cellprofiler.measurements.Measurements)
+        assert isinstance(m, cellprofiler.measurement.Measurements)
         title_lines = []
         object_values = {}
         for measurement_row in self.measurement_rows:
@@ -602,7 +602,7 @@ class ViewWorkspace(object):
                 continue
 
             value = m[object_name, feature]
-            if object_name in (cellprofiler.measurements.IMAGE, cellprofiler.measurements.EXPERIMENT):
+            if object_name in (cellprofiler.measurement.IMAGE, cellprofiler.measurement.EXPERIMENT):
                 if isinstance(value, int):
                     fmt = "%s: %d"
                 elif isinstance(value, float):

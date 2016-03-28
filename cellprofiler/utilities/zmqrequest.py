@@ -11,7 +11,7 @@ import uuid
 import zmq
 import Queue
 import numpy as np
-import cellprofiler.cpgridinfo as cpg
+import cellprofiler.grid as cpg
 
 NOTIFY_SOCKET_ADDR = 'inproc://BoundaryNotifications'
 SD_KEY_DICT = "__keydict__"

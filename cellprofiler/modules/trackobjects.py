@@ -174,13 +174,13 @@ import numpy.ma
 from scipy.ndimage import distance_transform_edt
 import scipy.ndimage
 import scipy.sparse
-import cellprofiler.cpmodule as cpm
-import cellprofiler.cpimage as cpi
+import cellprofiler.module as cpm
+import cellprofiler.image as cpi
 import cellprofiler.pipeline as cpp
-import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
-import cellprofiler.measurements as cpmeas
-import cellprofiler.preferences as cpprefs
+import cellprofiler.setting as cps
+from cellprofiler.setting import YES, NO
+import cellprofiler.measurement as cpmeas
+import cellprofiler.preference as cpprefs
 from centrosome.lapjv import lapjv
 import centrosome.filter as cpfilter
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix

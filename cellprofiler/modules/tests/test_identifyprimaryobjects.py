@@ -11,13 +11,13 @@ import centrosome.threshold as T
 import numpy as np
 import scipy.ndimage
 
-import cellprofiler.cpimage as cpi
-import cellprofiler.measurements as cpmeas
+import cellprofiler.image as cpi
+import cellprofiler.measurement as cpmeas
 import cellprofiler.modules.identify as I
 import cellprofiler.modules.identifyprimaryobjects as ID
-import cellprofiler.objects as cpo
+import cellprofiler.object as cpo
 import cellprofiler.pipeline
-import cellprofiler.settings
+import cellprofiler.setting
 from cellprofiler.modules.injectimage import InjectImage
 from cellprofiler.modules.tests import read_example_image
 from cellprofiler.workspace import Workspace
@@ -976,7 +976,7 @@ IdentifyPrimaryObjects:[module_num:1|svn_version:\'9633\'|variable_revision_numb
         self.assertTrue(module.automatic_smoothing.value)
         self.assertTrue(module.automatic_suppression.value)
         self.assertFalse(module.merge_objects.value)
-        self.assertTrue(module.image_name == cellprofiler.settings.DO_NOT_USE)
+        self.assertTrue(module.image_name == cellprofiler.setting.DO_NOT_USE)
         self.assertFalse(module.should_save_outlines.value)
         self.assertEqual(module.save_outlines.value, "None")
         self.assertAlmostEqual(module.threshold_range.min, 0)

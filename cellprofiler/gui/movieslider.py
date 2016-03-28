@@ -6,7 +6,7 @@ public license.
 """
 
 import cellprofiler.gui
-import cellprofiler.preferences
+import cellprofiler.preference
 import StringIO
 import wx
 
@@ -216,7 +216,7 @@ class SliderCtl(wx.Panel):
 
     def on_paint(self, event):
         dc = wx.BufferedPaintDC(self)
-        dc.SetBackground(wx.Brush(cellprofiler.preferences.get_background_color()))
+        dc.SetBackground(wx.Brush(cellprofiler.preference.get_background_color()))
         dc.Clear()
         self.draw_groove(dc)
         self.draw_ticks(dc)
@@ -350,7 +350,7 @@ class MovieSlider(wx.Panel):
         name        - window's name
         """
         super(MovieSlider, self).__init__(parent, identifier, pos, size, style, name)
-        self.BackgroundColour = cellprofiler.preferences.get_background_color()
+        self.BackgroundColour = cellprofiler.preference.get_background_color()
         self.value_names = value_names
         sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(sizer)

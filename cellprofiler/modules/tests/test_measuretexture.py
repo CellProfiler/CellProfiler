@@ -16,13 +16,13 @@ from bioformats import load_image
 from bioformats.formatreader import load_using_bioformats_url
 from scipy.io.matlab import loadmat
 
-import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements as cpmeas
+import cellprofiler.image as cpi
+import cellprofiler.module as cpm
+import cellprofiler.measurement as cpmeas
 import cellprofiler.modules.measuretexture as M
-import cellprofiler.objects as cpo
+import cellprofiler.object as cpo
 import cellprofiler.pipeline as cpp
-import cellprofiler.preferences as cpprefs
+import cellprofiler.preference as cpprefs
 import cellprofiler.workspace as cpw
 from cellprofiler.modules.tests import \
     example_images_directory, maybe_download_example_image, \

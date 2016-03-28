@@ -42,12 +42,12 @@ import numpy as np
 from centrosome.cpmorphology import centers_of_labels, relabel
 from centrosome.outline import outline
 
-import cellprofiler.cpgridinfo as cpg
-import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements as cpmeas
-import cellprofiler.objects as cpo
-import cellprofiler.settings as cps
+import cellprofiler.grid as cpg
+import cellprofiler.image as cpi
+import cellprofiler.module as cpm
+import cellprofiler.measurement as cpmeas
+import cellprofiler.object as cpo
+import cellprofiler.setting as cps
 from cellprofiler.gui.help import HELP_ON_MEASURING_DISTANCES
 from cellprofiler.gui.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
 from cellprofiler.modules.identify import add_object_count_measurements

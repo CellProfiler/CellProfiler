@@ -113,10 +113,10 @@ See also <b>MeasureImageAreaOccupied</b>.
 import numpy as np
 import scipy.ndimage as scind
 
-import cellprofiler.cpmodule as cpm
-import cellprofiler.objects as cpo
-import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
+import cellprofiler.module as cpm
+import cellprofiler.object as cpo
+import cellprofiler.setting as cps
+from cellprofiler.setting import YES, NO
 import centrosome.zernike as cpmz
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 from centrosome.cpmorphology import ellipse_from_second_moments_ijv
@@ -129,7 +129,7 @@ from centrosome.cpmorphology import maximum_position_of_labels
 from centrosome.cpmorphology import median_of_labels
 from centrosome.cpmorphology import feret_diameter
 from centrosome.cpmorphology import convex_hull_ijv
-from cellprofiler.measurements import COLTYPE_FLOAT
+from cellprofiler.measurement import COLTYPE_FLOAT
 
 """The category of the per-object measurements made by this module"""
 AREA_SHAPE = 'AreaShape'

@@ -17,10 +17,10 @@ import sys
 import traceback
 
 logger = logging.getLogger(__name__)
-import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements as cpmeas
-import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
+import cellprofiler.module as cpm
+import cellprofiler.measurement as cpmeas
+import cellprofiler.setting as cps
+from cellprofiler.setting import YES, NO
 from cellprofiler.gui.help import USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF
 
 S_FIRST = "After first cycle"

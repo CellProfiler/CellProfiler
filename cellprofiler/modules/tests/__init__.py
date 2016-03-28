@@ -18,7 +18,7 @@ from urllib2 import HTTPError
 import tempfile
 
 import scipy.io.matlab.mio
-from cellprofiler.preferences import set_headless
+from cellprofiler.preference import set_headless
 
 set_headless()
 from cellprofiler.modules import builtin_modules, all_modules

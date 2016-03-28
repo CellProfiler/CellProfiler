@@ -81,18 +81,18 @@ from scipy.io import loadmat
 from scipy.sparse import coo
 
 logger = logging.getLogger(__name__)
-import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements as cpmeas
-import cellprofiler.cpimage as cpi
-import cellprofiler.objects as cpo
-import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
+import cellprofiler.module as cpm
+import cellprofiler.measurement as cpmeas
+import cellprofiler.image as cpi
+import cellprofiler.object as cpo
+import cellprofiler.setting as cps
+from cellprofiler.setting import YES, NO
 import centrosome.cpmorphology as morph
-import cellprofiler.preferences as cpprefs
+import cellprofiler.preference as cpprefs
 import identify as I
 from centrosome.propagate import propagate
 from centrosome.outline import outline
-from cellprofiler.preferences import standardize_default_folder_names, \
+from cellprofiler.preference import standardize_default_folder_names, \
     DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME, NO_FOLDER_NAME, \
     ABSOLUTE_FOLDER_NAME, IO_FOLDER_CHOICE_HELP_TEXT
 from cellprofiler.gui.help import USING_METADATA_GROUPING_HELP_REF

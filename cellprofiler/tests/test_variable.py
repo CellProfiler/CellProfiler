@@ -5,9 +5,9 @@ import os
 import tempfile
 import unittest
 
-import cellprofiler.measurements as cpmeas
-import cellprofiler.preferences as cpprefs
-import cellprofiler.settings as cps
+import cellprofiler.measurement as cpmeas
+import cellprofiler.preference as cpprefs
+import cellprofiler.setting as cps
 
 
 class TestVariable(unittest.TestCase):

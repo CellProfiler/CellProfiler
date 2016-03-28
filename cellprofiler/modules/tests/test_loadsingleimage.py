@@ -12,15 +12,15 @@ from StringIO import StringIO
 import PIL.Image
 import numpy as np
 
-import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements as cpmeas
+import cellprofiler.image as cpi
+import cellprofiler.module as cpm
+import cellprofiler.measurement as cpmeas
 import cellprofiler.modules.loadimages as LI
 import cellprofiler.modules.loadsingleimage as L
-import cellprofiler.objects as cpo
+import cellprofiler.object as cpo
 import cellprofiler.pipeline as cpp
-import cellprofiler.preferences as cpprefs
-import cellprofiler.settings as cps
+import cellprofiler.preference as cpprefs
+import cellprofiler.setting as cps
 import cellprofiler.workspace as cpw
 from cellprofiler.modules.identify import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y, M_NUMBER_OBJECT_NUMBER
 from cellprofiler.modules.tests import \

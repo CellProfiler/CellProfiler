@@ -165,12 +165,12 @@ except:
     from StringIO import StringIO
 import matplotlib.mlab
 
-import cellprofiler.cpmodule as cpm
-import cellprofiler.objects as cpo
-import cellprofiler.measurements as cpmeas
-import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
-import cellprofiler.preferences as cpprefs
+import cellprofiler.module as cpm
+import cellprofiler.object as cpo
+import cellprofiler.measurement as cpmeas
+import cellprofiler.setting as cps
+from cellprofiler.setting import YES, NO
+import cellprofiler.preference as cpprefs
 import identify as I
 from cellprofiler.modules.loadimages import LoadImagesImageProvider
 from cellprofiler.modules.loadimages import C_FILE_NAME, C_PATH_NAME, C_URL
@@ -178,13 +178,13 @@ from cellprofiler.modules.loadimages import C_SERIES, C_FRAME
 from cellprofiler.modules.loadimages import C_OBJECTS_FILE_NAME
 from cellprofiler.modules.loadimages import C_OBJECTS_PATH_NAME
 from cellprofiler.modules.loadimages import C_OBJECTS_URL
-from cellprofiler.measurements import C_OBJECTS_SERIES, C_OBJECTS_FRAME
+from cellprofiler.measurement import C_OBJECTS_SERIES, C_OBJECTS_FRAME
 from cellprofiler.modules.loadimages import C_MD5_DIGEST, C_SCALING
 from cellprofiler.modules.loadimages import C_HEIGHT, C_WIDTH
 from cellprofiler.modules.loadimages import bad_sizes_warning
 from cellprofiler.modules.loadimages import convert_image_to_objects
 from cellprofiler.modules.loadimages import pathname2url, url2pathname
-from cellprofiler.preferences import standardize_default_folder_names, \
+from cellprofiler.preference import standardize_default_folder_names, \
     DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME, NO_FOLDER_NAME, \
     ABSOLUTE_FOLDER_NAME, IO_FOLDER_CHOICE_HELP_TEXT
 

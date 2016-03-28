@@ -20,17 +20,17 @@ if hasattr(unittest, "SkipTest"):
 else:
     SkipTestException = None
 
-from cellprofiler.preferences import set_headless
+from cellprofiler.preference import set_headless
 
 set_headless()
 
-import cellprofiler.cpmodule as cpm
+import cellprofiler.module as cpm
 import cellprofiler.pipeline as cpp
-import cellprofiler.settings as cps
-import cellprofiler.cpimage as cpi
+import cellprofiler.setting as cps
+import cellprofiler.image as cpi
 import cellprofiler.workspace as cpw
-import cellprofiler.objects as cpo
-import cellprofiler.measurements as cpmeas
+import cellprofiler.object as cpo
+import cellprofiler.measurement as cpmeas
 
 import cellprofiler.modules.exporttodatabase as E
 import cellprofiler.modules.identify as I

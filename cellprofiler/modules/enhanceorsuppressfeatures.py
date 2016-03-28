@@ -14,9 +14,9 @@ from centrosome.filter import hessian, median_filter
 from centrosome.filter import variance_transform, line_integration
 from scipy.ndimage import gaussian_filter
 
-import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
-import cellprofiler.settings as cps
+import cellprofiler.image as cpi
+import cellprofiler.module as cpm
+import cellprofiler.setting as cps
 from cellprofiler.gui.help import HELP_ON_MEASURING_DISTANCES, PROTIP_AVOID_ICON
 
 ENHANCE = 'Enhance'

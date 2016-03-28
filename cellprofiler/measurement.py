@@ -12,7 +12,7 @@ import numpy as np
 import re
 from scipy.io.matlab import loadmat
 from itertools import repeat
-import cellprofiler.preferences as cpprefs
+import cellprofiler.preference as cpprefs
 from cellprofiler.utilities.hdf5_dict import HDF5Dict, get_top_level_group
 from cellprofiler.utilities.hdf5_dict import VERSION, HDFCSV, VStringArray
 from cellprofiler.utilities.hdf5_dict import HDF5ObjectSet
@@ -1579,7 +1579,7 @@ class Measurements(object):
                       discard alpha channel.
         """
         from .modules.loadimages import LoadImagesImageProviderURL
-        from .cpimage import GrayscaleImage, RGBImage
+        from .image import GrayscaleImage, RGBImage
         name = str(name)
         if self.__images.has_key(name):
             image = self.__images[name]
@@ -1718,7 +1718,7 @@ class Measurements(object):
     names = property(get_names)
 
     def add(self, name, image):
-        from .cpimage import VanillaImageProvider
+        from .image import VanillaImageProvider
         old_providers = [provider for provider in self.providers
                          if provider.name == name]
         if len(old_providers) > 0:

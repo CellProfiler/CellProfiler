@@ -12,17 +12,17 @@ import PIL.Image as PILImage
 import numpy as np
 import scipy.ndimage
 
-from cellprofiler.preferences import set_headless
+from cellprofiler.preference import set_headless
 
 set_headless()
 
 import cellprofiler.pipeline as cpp
-import cellprofiler.settings as cps
-import cellprofiler.cpimage as cpi
+import cellprofiler.setting as cps
+import cellprofiler.image as cpi
 import cellprofiler.workspace as cpw
-import cellprofiler.objects as cpo
-import cellprofiler.measurements as cpmeas
-import cellprofiler.preferences as cpprefs
+import cellprofiler.object as cpo
+import cellprofiler.measurement as cpmeas
+import cellprofiler.preference as cpprefs
 
 import cellprofiler.modules.flagimage as F
 

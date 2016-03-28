@@ -16,11 +16,11 @@ See also <b>ApplyThreshold</b>, <b>RescaleIntensity</b>, <b>CorrectIlluminationC
 
 import numpy as np
 
-import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements as cpmeas
-import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
+import cellprofiler.image as cpi
+import cellprofiler.module as cpm
+import cellprofiler.measurement as cpmeas
+import cellprofiler.setting as cps
+from cellprofiler.setting import YES, NO
 import inflect
 
 O_ADD = "Add"

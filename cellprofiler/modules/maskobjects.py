@@ -31,15 +31,15 @@ import scipy.ndimage as scind
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 from centrosome.outline import outline
 
-import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements as cpmeas
-import cellprofiler.objects as cpo
-import cellprofiler.preferences as cpprefs
-import cellprofiler.settings as cps
+import cellprofiler.image as cpi
+import cellprofiler.module as cpm
+import cellprofiler.measurement as cpmeas
+import cellprofiler.object as cpo
+import cellprofiler.preference as cpprefs
+import cellprofiler.setting as cps
 import identify as I
 from cellprofiler.gui.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
-from cellprofiler.settings import YES, NO
+from cellprofiler.setting import YES, NO
 
 MC_OBJECTS = "Objects"
 MC_IMAGE = "Image"

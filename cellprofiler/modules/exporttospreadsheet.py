@@ -51,16 +51,16 @@ import numpy as np
 import os
 import sys
 
-import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements as cpmeas
+import cellprofiler.module as cpm
+import cellprofiler.measurement as cpmeas
 import cellprofiler.pipeline as cpp
-import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
-from cellprofiler.measurements import IMAGE, EXPERIMENT
-from cellprofiler.preferences import get_absolute_path, get_output_file_name
-from cellprofiler.preferences import ABSPATH_OUTPUT, ABSPATH_IMAGE, get_headless
+import cellprofiler.setting as cps
+from cellprofiler.setting import YES, NO
+from cellprofiler.measurement import IMAGE, EXPERIMENT
+from cellprofiler.preference import get_absolute_path, get_output_file_name
+from cellprofiler.preference import ABSPATH_OUTPUT, ABSPATH_IMAGE, get_headless
 from cellprofiler.gui.help import USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF, MEASUREMENT_NAMING_HELP
-from cellprofiler.preferences import \
+from cellprofiler.preference import \
     standardize_default_folder_names, DEFAULT_INPUT_FOLDER_NAME, \
     DEFAULT_OUTPUT_FOLDER_NAME, ABSOLUTE_FOLDER_NAME, \
     DEFAULT_INPUT_SUBFOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME, \

@@ -9,16 +9,16 @@ from StringIO import StringIO
 
 import numpy as np
 
-from cellprofiler.preferences import set_headless
+from cellprofiler.preference import set_headless
 
 set_headless()
 
 import cellprofiler.modules.injectimage as II
 import cellprofiler.modules.measureobjectintensity as MOI
 import cellprofiler.pipeline as P
-import cellprofiler.measurements as cpmeas
-import cellprofiler.objects as cpo
-import cellprofiler.cpimage as cpi
+import cellprofiler.measurement as cpmeas
+import cellprofiler.object as cpo
+import cellprofiler.image as cpi
 import cellprofiler.workspace as cpw
 import centrosome.outline as cpmo
 

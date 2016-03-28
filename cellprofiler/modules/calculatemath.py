@@ -35,10 +35,10 @@ logger = logging.getLogger(__package__)
 
 import numpy as np
 
-import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements as cpmeas
-import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
+import cellprofiler.module as cpm
+import cellprofiler.measurement as cpmeas
+import cellprofiler.setting as cps
+from cellprofiler.setting import YES, NO
 from cellprofiler.modules.identify import R_PARENT, R_CHILD
 
 O_MULTIPLY = "Multiply"

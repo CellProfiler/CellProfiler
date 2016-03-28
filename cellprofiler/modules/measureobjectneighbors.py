@@ -46,14 +46,14 @@ from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 from centrosome.cpmorphology import strel_disk, centers_of_labels
 from centrosome.outline import outline
 
-import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements as cpmeas
-import cellprofiler.objects as cpo
-import cellprofiler.preferences as cpprefs
-import cellprofiler.settings as cps
+import cellprofiler.image as cpi
+import cellprofiler.module as cpm
+import cellprofiler.measurement as cpmeas
+import cellprofiler.object as cpo
+import cellprofiler.preference as cpprefs
+import cellprofiler.setting as cps
 import cellprofiler.workspace as cpw
-from cellprofiler.settings import YES, NO
+from cellprofiler.setting import YES, NO
 
 D_ADJACENT = 'Adjacent'
 D_EXPAND = 'Expand until adjacent'

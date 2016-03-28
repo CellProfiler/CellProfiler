@@ -8,16 +8,16 @@ from StringIO import StringIO
 
 import numpy as np
 
-from cellprofiler.preferences import set_headless
+from cellprofiler.preference import set_headless
 
 set_headless()
 
 import cellprofiler.pipeline as cpp
 import cellprofiler.workspace as cpw
-import cellprofiler.cpmodule as cpm
-import cellprofiler.cpimage as cpi
-import cellprofiler.measurements as cpmm
-import cellprofiler.objects as cpo
+import cellprofiler.module as cpm
+import cellprofiler.image as cpi
+import cellprofiler.measurement as cpmm
+import cellprofiler.object as cpo
 from centrosome.outline import outline
 import cellprofiler.modules.measureimageareaoccupied as mia
 

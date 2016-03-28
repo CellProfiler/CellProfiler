@@ -9,11 +9,11 @@ from centrosome.threshold import TM_GLOBAL, TM_ADAPTIVE, TM_PER_OBJECT, TM_BINAR
 from centrosome.threshold import TM_METHODS, TM_MANUAL, TM_MOG, TM_OTSU
 from scipy.ndimage.morphology import binary_dilation
 
-import cellprofiler.settings as cps
-from cellprofiler import cpimage
-from cellprofiler.cpmodule import CPModule
+import cellprofiler.setting as cps
+from cellprofiler import image
+from cellprofiler.module import CPModule
 from cellprofiler.modules.identify import get_threshold_measurement_columns
-from cellprofiler.settings import YES, NO
+from cellprofiler.setting import YES, NO
 from identify import FF_ORIG_THRESHOLD, FF_FINAL_THRESHOLD
 from identify import FF_SUM_OF_ENTROPIES, FF_WEIGHTED_VARIANCE
 from identify import FI_IMAGE_SIZE, TSM_NONE
@@ -156,7 +156,7 @@ class ApplyThreshold(Identify):
                         """Threshold setting, "%s" is not "%s" or "%s".""" %
                         (self.low_or_high.value, TH_BELOW_THRESHOLD,
                          TH_ABOVE_THRESHOLD))
-        output = cpimage.Image(pixels, parent_image=input)
+        output = image.Image(pixels, parent_image=input)
         workspace.image_set.add(self.thresholded_image_name.value, output)
         if self.show_window:
             workspace.display_data.input_pixel_data = input.pixel_data

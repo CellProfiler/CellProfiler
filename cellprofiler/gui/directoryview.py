@@ -4,7 +4,7 @@
 
 import cellprofiler.gui.cpfigure
 import cellprofiler.modules.loadimages
-import cellprofiler.preferences
+import cellprofiler.preference
 import logging
 import os
 import scipy.io.matlab
@@ -30,13 +30,13 @@ class DirectoryView(object):
         panel.SetSizer(sizer)
         self.__best_height = 0
         self.refresh()
-        cellprofiler.preferences.add_image_directory_listener(self.__on_image_directory_changed)
+        cellprofiler.preference.add_image_directory_listener(self.__on_image_directory_changed)
         panel.Bind(wx.EVT_LISTBOX_DCLICK, self.__on_list_box_d_click, self.__list_box)
         self.__pipeline_listeners = []
 
     def close(self):
         """Disconnect from the preferences when the window closes"""
-        cellprofiler.preferences.remove_image_directory_listener(self.__on_image_directory_changed)
+        cellprofiler.preference.remove_image_directory_listener(self.__on_image_directory_changed)
 
     def add_pipeline_listener(self, listener):
         """Add a listener that will be informed when the user wants to open a pipeline
@@ -71,12 +71,12 @@ class DirectoryView(object):
             return
         try:
             files = [x
-                     for x in os.listdir(cellprofiler.preferences.get_default_image_directory())
+                     for x in os.listdir(cellprofiler.preference.get_default_image_directory())
                      if cellprofiler.modules.loadimages.is_image(x) or x.endswith(".cp")]
         except Exception, e:
             logger.warning(
                     "Warning: Could not refresh default image directory %s.\n" %
-                    (cellprofiler.preferences.get_default_image_directory()),
+                    (cellprofiler.preference.get_default_image_directory()),
                     exc_info=True)
             files = ['Could not refresh files (%s)' % e.__class__.__name__]
         files.sort()
@@ -91,7 +91,7 @@ class DirectoryView(object):
             selection = self.__list_box.GetItems()[selections[0]]
         else:
             selection = self.__list_box.GetItems()[self.__list_box.GetSelection()]
-        filename = os.path.join(cellprofiler.preferences.get_default_image_directory(), selection)
+        filename = os.path.join(cellprofiler.preference.get_default_image_directory(), selection)
 
         try:
             if os.path.splitext(selection)[1].lower() == '.cp':

@@ -12,10 +12,10 @@ by specifying "Objects" as the type of image to save.
 
 import numpy as np
 
-import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
-import cellprofiler.preferences as cpprefs
-import cellprofiler.settings as cps
+import cellprofiler.image as cpi
+import cellprofiler.module as cpm
+import cellprofiler.preference as cpprefs
+import cellprofiler.setting as cps
 
 DEFAULT_COLORMAP = "Default"
 COLORCUBE = "colorcube"

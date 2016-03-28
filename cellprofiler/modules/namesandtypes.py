@@ -89,14 +89,14 @@ import os
 import re
 import traceback
 
-import cellprofiler.cpmodule as cpm
-import cellprofiler.objects as cpo
-import cellprofiler.cpimage as cpi
-import cellprofiler.measurements as cpmeas
+import cellprofiler.module as cpm
+import cellprofiler.object as cpo
+import cellprofiler.image as cpi
+import cellprofiler.measurement as cpmeas
 import cellprofiler.pipeline as cpp
-import cellprofiler.settings as cps
+import cellprofiler.setting as cps
 import centrosome.outline
-import cellprofiler.preferences as cpprefs
+import cellprofiler.preference as cpprefs
 from cellprofiler.modules.images import FilePredicate
 from cellprofiler.modules.images import ExtensionPredicate
 from cellprofiler.modules.images import ImagePredicate
@@ -1674,7 +1674,7 @@ class NamesAndTypes(cpm.CPModule):
             C_FILE_NAME, C_PATH_NAME, C_URL, C_MD5_DIGEST, C_SCALING, \
             C_HEIGHT, C_WIDTH, C_SERIES, C_FRAME, \
             C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME, C_OBJECTS_URL
-        from cellprofiler.measurements import \
+        from cellprofiler.measurement import \
             C_OBJECTS_SERIES, C_OBJECTS_FRAME
         from cellprofiler.modules.identify import C_NUMBER, C_COUNT, \
             C_LOCATION, FTR_OBJECT_NUMBER, FTR_CENTER_X, FTR_CENTER_Y, \

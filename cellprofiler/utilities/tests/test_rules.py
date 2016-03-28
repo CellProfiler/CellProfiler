@@ -6,7 +6,7 @@ from StringIO import StringIO
 
 import numpy as np
 
-import cellprofiler.measurements as cpmeas
+import cellprofiler.measurement as cpmeas
 import cellprofiler.utilities.rules as R
 
 OBJECT_NAME = "MyObject"

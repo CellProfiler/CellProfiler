@@ -21,9 +21,9 @@ import numpy as np
 import zmq
 
 import cellprofiler
-import cellprofiler.cpimage as cpimage
-import cellprofiler.measurements as cpmeas
-import cellprofiler.preferences as cpprefs
+import cellprofiler.image as cpimage
+import cellprofiler.measurement as cpmeas
+import cellprofiler.preference as cpprefs
 import cellprofiler.workspace as cpw
 from cellprofiler.utilities.zmqrequest import AnalysisRequest, Request, Reply, UpstreamExit
 from cellprofiler.utilities.zmqrequest import get_announcer_address
@@ -694,7 +694,7 @@ class AnalysisRunner(object):
         if 'CP_DEBUG_WORKER' in os.environ:
             if os.environ['CP_DEBUG_WORKER'] == 'NOT_INPROC':
                 return
-            from cellprofiler.analysis_worker import \
+            from cellprofiler.worker import \
                 AnalysisWorker, NOTIFY_ADDR, NOTIFY_STOP
             from cellprofiler.pipeline import CancelledException
 
@@ -742,7 +742,7 @@ class AnalysisRunner(object):
                     args = ([executable] + aw_args)
                 elif sys.platform.startswith('linux'):
                     aw_path = os.path.join(os.path.dirname(__file__),
-                                           "analysis_worker.py")
+                                           "worker.py")
                     args = [sys.executable, aw_path] + aw_args
                 else:
                     args = [sys.executable] + aw_args
@@ -837,7 +837,7 @@ def find_worker_env(idx):
 def find_analysis_worker_source():
     # import here to break circular dependency.
     import cellprofiler.analysis  # used to get the path to the code
-    return os.path.join(os.path.dirname(cellprofiler.analysis.__file__), "analysis_worker.py")
+    return os.path.join(os.path.dirname(cellprofiler.analysis.__file__), "worker.py")
 
 
 def start_daemon_thread(target=None, args=(), kwargs=None, name=None):
@@ -1049,7 +1049,7 @@ if sys.platform == "darwin":
 if __name__ == '__main__':
     import time
     import cellprofiler.pipeline
-    import cellprofiler.preferences
+    import cellprofiler.preference
     import cellprofiler.utilities.thread_excepthook
 
     # This is an ugly hack, but it's necesary to unify the Request/Reply

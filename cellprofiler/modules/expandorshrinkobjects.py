@@ -38,16 +38,16 @@ from centrosome.cpmorphology import skeletonize_labels, spur
 from centrosome.outline import outline
 from scipy.ndimage import distance_transform_edt
 
-import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements as cpmeas
-import cellprofiler.objects as cpo
-import cellprofiler.settings as cps
+import cellprofiler.image as cpi
+import cellprofiler.module as cpm
+import cellprofiler.measurement as cpmeas
+import cellprofiler.object as cpo
+import cellprofiler.setting as cps
 from cellprofiler.gui.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
 from cellprofiler.modules.identify import add_object_count_measurements
 from cellprofiler.modules.identify import add_object_location_measurements
 from cellprofiler.modules.identify import get_object_measurement_columns
-from cellprofiler.settings import YES, NO
+from cellprofiler.setting import YES, NO
 
 O_SHRINK_INF = 'Shrink objects to a point'
 O_EXPAND_INF = 'Expand objects until touching'

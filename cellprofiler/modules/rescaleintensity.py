@@ -10,11 +10,11 @@ do not preserve the relative intensities from image to image.
 import numpy as np
 from centrosome.filter import stretch
 
-import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements as cpmeas
-import cellprofiler.preferences as cpprefs
-import cellprofiler.settings as cps
+import cellprofiler.image as cpi
+import cellprofiler.module as cpm
+import cellprofiler.measurement as cpmeas
+import cellprofiler.preference as cpprefs
+import cellprofiler.setting as cps
 
 M_STRETCH = 'Stretch each image to use the full intensity range'
 M_MANUAL_INPUT_RANGE = 'Choose specific values to be reset to the full intensity range'

@@ -37,12 +37,12 @@ import traceback
 import numpy as np
 
 logger = logging.getLogger(__name__)
-import cellprofiler.cpgridinfo as cpg
-import cellprofiler.cpmodule as cpm
-import cellprofiler.cpimage as cpi
-import cellprofiler.measurements as cpmeas
-import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
+import cellprofiler.grid as cpg
+import cellprofiler.module as cpm
+import cellprofiler.image as cpi
+import cellprofiler.measurement as cpmeas
+import cellprofiler.setting as cps
+from cellprofiler.setting import YES, NO
 from centrosome.cpmorphology import centers_of_labels
 
 NUM_TOP_LEFT = "Top left"

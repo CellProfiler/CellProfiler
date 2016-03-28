@@ -2,7 +2,7 @@
 """
 
 import cellprofiler.pipeline
-import cellprofiler.preferences
+import cellprofiler.preference
 import datetime
 import os
 import sys
@@ -51,7 +51,7 @@ class RunMultplePipelinesDialog(wx.Dialog):
         self.add_dialog_buttons(self.sizer)
 
         self.hookup_events()
-        self.set_path(cellprofiler.preferences.get_default_output_directory())
+        self.set_path(cellprofiler.preference.get_default_output_directory())
         self.Layout()
 
     def add_file_chooser(self, sizer):
@@ -133,7 +133,7 @@ class RunMultplePipelinesDialog(wx.Dialog):
         file_names = []
         for file_name in os.listdir(path):
             ext = os.path.splitext(file_name)[1].lower()
-            if len(ext) > 0 and ext[1:] in cellprofiler.preferences.EXT_PIPELINE_CHOICES:
+            if len(ext) > 0 and ext[1:] in cellprofiler.preference.EXT_PIPELINE_CHOICES:
                 file_names.append(file_name)
         self.file_chooser.DeleteAllItems()
         module_count = [None]
@@ -181,13 +181,13 @@ class RunMultplePipelinesDialog(wx.Dialog):
                         sys.maxint, path)
                 self.pipeline_list_view.SetStringItem(
                         index, P_INPUT_DIRECTORY_COLUMN,
-                        cellprofiler.preferences.get_default_image_directory())
+                        cellprofiler.preference.get_default_image_directory())
                 self.pipeline_list_view.SetStringItem(
                         index, P_OUTPUT_DIRECTORY_COLUMN,
-                        cellprofiler.preferences.get_default_output_directory())
+                        cellprofiler.preference.get_default_output_directory())
                 self.pipeline_list_view.SetStringItem(
                         index, P_OUTPUT_FILE_COLUMN,
-                        cellprofiler.preferences.get_output_file_name())
+                        cellprofiler.preference.get_output_file_name())
                 self.pipeline_list_view.SetItemColumnImage(
                         index, P_REMOVE_BUTTON_COLUMN, self.delete_bmp_idx)
                 self.file_chooser.Select(i, False)

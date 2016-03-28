@@ -66,7 +66,7 @@ def main(args=None):
     '''
     if args is None:
         args = sys.argv
-    import cellprofiler.preferences as cpprefs
+    import cellprofiler.preference as cpprefs
     cpprefs.set_awt_headless(True)
     switches = ('--work-announce', '--knime-bridge-address')
     if any([any([arg.startswith(switch) for switch in switches])
@@ -79,9 +79,9 @@ def main(args=None):
             if arg == "--ij-plugins-directory" and len(args) > i + 1:
                 cpprefs.set_ij_plugin_directory(args[i + 1])
                 break
-        import cellprofiler.analysis_worker
-        cellprofiler.analysis_worker.aw_parse_args()
-        cellprofiler.analysis_worker.main()
+        import cellprofiler.worker
+        cellprofiler.worker.aw_parse_args()
+        cellprofiler.worker.main()
         sys.exit(0)
 
     options, args = parse_args(args)
@@ -97,14 +97,14 @@ def main(args=None):
     # Important to go headless ASAP
     #
     if (not options.show_gui) or options.write_schema_and_exit:
-        import cellprofiler.preferences as cpprefs
+        import cellprofiler.preference as cpprefs
         cpprefs.set_headless()
         # What's there to do but run if you're running headless?
         # Might want to change later if there's some headless setup
         options.run_pipeline = True
 
     if options.jvm_heap_size is not None:
-        from cellprofiler.preferences import set_jvm_heap_mb
+        from cellprofiler.preference import set_jvm_heap_mb
         set_jvm_heap_mb(options.jvm_heap_size, False)
     set_log_level(options)
 
@@ -136,7 +136,7 @@ def main(args=None):
         import h5py
         using_hdf5 = h5py.is_hdf5(path)
         if using_hdf5:
-            import cellprofiler.measurements as cpmeas
+            import cellprofiler.measurement as cpmeas
             m = cpmeas.Measurements(
                     filename=path, mode="r+")
             pipeline_text = m[cpmeas.EXPERIMENT, "Pipeline_Pipeline"]
@@ -544,7 +544,7 @@ def set_omero_credentials_from_string(credentials_string):
                         user - the user name
                         session-id - the session ID used for authentication
     '''
-    import cellprofiler.preferences as cpprefs
+    import cellprofiler.preference as cpprefs
     from bioformats.formatreader import use_omero_credentials
     from bioformats.formatreader import \
         K_OMERO_SERVER, K_OMERO_PORT, K_OMERO_USER, K_OMERO_SESSION_ID, \
@@ -678,7 +678,7 @@ def print_groups(filename):
     '''
     import json
 
-    import cellprofiler.measurements as cpmeas
+    import cellprofiler.measurement as cpmeas
 
     path = os.path.expanduser(filename)
     m = cpmeas.Measurements(filename=path, mode="r")
@@ -699,7 +699,7 @@ def get_batch_commands(filename):
     CellProfiler --get-batch-commands Batch_data.h5 | sed s/CellProfiler/farm_job.sh/
     '''
 
-    import cellprofiler.measurements as cpmeas
+    import cellprofiler.measurement as cpmeas
 
     path = os.path.expanduser(filename)
     m = cpmeas.Measurements(filename=path, mode="r")
@@ -744,8 +744,8 @@ def write_schema(pipeline_filename):
                 "ExportToDatabase module.")
 
     import cellprofiler.pipeline as cpp
-    import cellprofiler.measurements as cpmeas
-    import cellprofiler.objects as cpo
+    import cellprofiler.measurement as cpmeas
+    import cellprofiler.object as cpo
     import cellprofiler.workspace as cpw
     pipeline = cpp.Pipeline()
     pipeline.load(pipeline_filename)
@@ -872,8 +872,8 @@ def run_pipeline_headless(options, args):
             (not options.pipeline_filename.lower().startswith('http'))):
         options.pipeline_filename = os.path.expanduser(options.pipeline_filename)
     from cellprofiler.pipeline import Pipeline, EXIT_STATUS, M_PIPELINE
-    import cellprofiler.measurements as cpmeas
-    import cellprofiler.preferences as cpprefs
+    import cellprofiler.measurement as cpmeas
+    import cellprofiler.preference as cpprefs
     pipeline = Pipeline()
     initial_measurements = None
     try:

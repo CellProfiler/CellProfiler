@@ -37,11 +37,11 @@ import scipy.ndimage as scind
 #
 ##################################
 
-import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements as cpmeas
-import cellprofiler.objects as cpo
-import cellprofiler.settings as cps
+import cellprofiler.image as cpi
+import cellprofiler.module as cpm
+import cellprofiler.measurement as cpmeas
+import cellprofiler.object as cpo
+import cellprofiler.setting as cps
 
 from centrosome.zernike import construct_zernike_polynomials
 from centrosome.zernike import get_zernike_indexes
@@ -471,7 +471,7 @@ class MeasurementTemplate(cpm.CPModule):
         # The second thing is the measurement name.
         #
         # The third thing is the column type. See the COLTYPE constants
-        # in measurements.py for what you can use
+        # in measurement.py for what you can use
         #
         input_object_name = self.input_object_name.value
         return [(input_object_name,

@@ -43,13 +43,13 @@ from centrosome.cpmorphology import get_line_pts
 from scipy.ndimage import binary_erosion, binary_fill_holes
 from scipy.ndimage import mean as mean_of_labels
 
-import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements as cpmeas
-import cellprofiler.objects as cpo
-import cellprofiler.preferences as cpprefs
-import cellprofiler.settings as cps
+import cellprofiler.module as cpm
+import cellprofiler.measurement as cpmeas
+import cellprofiler.object as cpo
+import cellprofiler.preference as cpprefs
+import cellprofiler.setting as cps
 import identify as I
-from cellprofiler.settings import YES, NO
+from cellprofiler.setting import YES, NO
 
 C_WORMS = "Worm"
 F_ANGLE = "Angle"

@@ -8,9 +8,9 @@ import re
 import sys
 import os.path
 import glob
-import cellprofiler.cpmodule as cpm
+import cellprofiler.module as cpm
 from cellprofiler.modules.plugins import plugin_list
-from cellprofiler.preferences import get_plugin_directory
+from cellprofiler.preference import get_plugin_directory
 
 # python modules and their corresponding cellprofiler.module classes
 pymodule_to_cpmodule = {'align': 'Align',

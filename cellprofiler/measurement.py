@@ -1,20 +1,13 @@
 """Measurements.py - storage for image and object measurements
 """
-from __future__ import with_statement
 
 import json
 import logging
-
 import h5py
-
-logger = logging.getLogger(__name__)
 import re
-from scipy.io.matlab import loadmat
+import scipy.io.matlab
 import cellprofiler.preference
-from cellprofiler.utilities.hdf5_dict import HDF5Dict, get_top_level_group
-from cellprofiler.utilities.hdf5_dict import VERSION, HDFCSV, VStringArray
-from cellprofiler.utilities.hdf5_dict import HDF5ObjectSet
-from cellprofiler.utilities.hdf5_dict import NullLock
+import cellprofiler.utilities.hdf5_dict
 import tempfile
 import numpy
 import warnings
@@ -22,6 +15,8 @@ import os
 import os.path
 import urllib
 import sys
+
+logger = logging.getLogger(__name__)
 
 AGG_MEAN = "Mean"
 AGG_STD_DEV = "StDev"
@@ -271,27 +266,27 @@ class Measurement(object):
             is_temporary = False
         if isinstance(copy, Measurement):
             with copy.hdf5_dict.lock:
-                self.hdf5_dict = HDF5Dict(
+                self.hdf5_dict = cellprofiler.utilities.hdf5_dict.HDF5Dict(
                         filename,
                         is_temporary=is_temporary,
                         copy=copy.hdf5_dict.top_group,
                         mode=mode,
                         image_numbers=image_numbers)
         elif hasattr(copy, '__getitem__') and hasattr(copy, 'keys'):
-            self.hdf5_dict = HDF5Dict(
+            self.hdf5_dict = cellprofiler.utilities.hdf5_dict.HDF5Dict(
                     filename,
                     is_temporary=is_temporary,
                     copy=copy,
                     mode=mode,
                     image_numbers=image_numbers)
             if not multithread:
-                self.hdf5_dict.lock = NullLock
+                self.hdf5_dict.lock = cellprofiler.utilities.hdf5_dict.NullLock
         elif copy is not None:
             raise ValueError('Copy source for measurments is neither a Measurements or HDF5 group.')
         else:
-            self.hdf5_dict = HDF5Dict(filename,
-                                      is_temporary=is_temporary,
-                                      mode=mode)
+            self.hdf5_dict = cellprofiler.utilities.hdf5_dict.HDF5Dict(filename,
+                                                                       is_temporary=is_temporary,
+                                                                       mode=mode)
         if is_temporary:
             os.close(fd)
 
@@ -461,7 +456,7 @@ class Measurement(object):
 
     def load(self, measurements_file_name):
         """Load measurements from a matlab file"""
-        handles = loadmat(measurements_file_name, struct_as_record=True)
+        handles = scipy.io.matlab.loadmat(measurements_file_name, struct_as_record=True)
         self.create_from_handles(handles)
 
     def create_from_handles(self, handles):
@@ -1690,7 +1685,7 @@ class Measurement(object):
                     prefix="CellProfilerImageCache")
             self.__image_cache_file = h5py.File(
                     self.__image_cache_path, "w")
-            self.__hdf5_object_set = HDF5ObjectSet(self.__image_cache_file)
+            self.__hdf5_object_set = cellprofiler.utilities.hdf5_dict.HDF5ObjectSet(self.__image_cache_file)
             os.close(h)
 
     def cache(self):
@@ -1851,9 +1846,9 @@ def load_measurements(filename, dest_file=None, can_overwrite=False,
         fd.close()
 
     if header == HDF5_HEADER:
-        f, top_level = get_top_level_group(filename)
+        f, top_level = cellprofiler.utilities.hdf5_dict.get_top_level_group(filename)
         try:
-            if VERSION in f.keys():
+            if cellprofiler.utilities.hdf5_dict.VERSION in f.keys():
                 if run_name is not None:
                     top_level = top_level[run_name]
                 else:
@@ -2051,12 +2046,12 @@ class ImageSetCache(object):
                 self.metadata_keys = None
             self.image_names = self.load_strings_attr(self.IMAGE_NAMES)
             self.image_or_object = self.load_strings_attr(self.IMAGE_OR_OBJECT)
-            self.image_set_table = HDFCSV(self.image_set_cache_group,
-                                          self.IMAGE_SET_TABLE)
+            self.image_set_table = cellprofiler.utilities.hdf5_dict.HDFCSV(self.image_set_cache_group,
+                                                                           self.IMAGE_SET_TABLE)
             self.error_row_and_column_dataset = \
                 self.image_set_cache_group[self.ERROR_ROW_AND_COLUMN_DATASET]
             self.error_messages = \
-                VStringArray(self.image_set_cache_group[self.ERROR_MESSAGES])
+                cellprofiler.utilities.hdf5_dict.VStringArray(self.image_set_cache_group[self.ERROR_MESSAGES])
 
     def store_strings_attr(self, name, strings):
         """Store a list of unicode strings in an attribute of the top group
@@ -2143,8 +2138,8 @@ class ImageSetCache(object):
         else:
             self.store_strings_attr(self.METADATA_KEYS, metadata_keys)
             self.metadata_keys = list(metadata_keys)
-        self.image_set_table = HDFCSV(self.image_set_cache_group,
-                                      self.IMAGE_SET_TABLE)
+        self.image_set_table = cellprofiler.utilities.hdf5_dict.HDFCSV(self.image_set_cache_group,
+                                                                       self.IMAGE_SET_TABLE)
         if metadata_keys is not None:
             for i, name in enumerate(metadata_keys):
                 self.image_set_table.add_column(
@@ -2179,7 +2174,7 @@ class ImageSetCache(object):
                         shape=(len(errors),),
                         chunks=(256,),
                         maxshape=(None,))
-            self.error_messages = VStringArray(
+            self.error_messages = cellprofiler.utilities.hdf5_dict.VStringArray(
                     self.image_set_cache_group.require_group(self.ERROR_MESSAGES))
 
         for i, (image_set_row_number, index, msg) in enumerate(errors):

@@ -1,6 +1,5 @@
 """Pipeline.py - an ordered set of modules to be executed
 """
-from __future__ import with_statement
 
 import bisect
 import gc
@@ -11,6 +10,27 @@ import uuid
 import numpy
 import scipy
 import scipy.io.matlab
+import os
+import StringIO
+import sys
+import tempfile
+import datetime
+import threading
+import urlparse
+import urllib
+import urllib2
+import re
+import cellprofiler.preference
+import cellprofiler.image
+import cellprofiler.measurement
+import cellprofiler.object
+import cellprofiler.workspace
+import cellprofiler.setting
+import cellprofiler.utilities.utf16encode
+import cellprofiler.matlab.cputils
+import cellprofiler.utilities.walk_in_background
+import cellprofiler.utilities.version
+import javabridge
 
 try:
     # implemented in scipy.io.matlab.miobase.py@5582
@@ -20,30 +40,8 @@ try:
 except:
     has_mat_read_error = False
 
-import os
-import StringIO  # XXX - replace with cStringIO?
-import sys
-import tempfile
-import datetime
-import threading
-import urlparse
-import urllib
-import urllib2
-import re
-
 logger = logging.getLogger(__name__)
 pipeline_stats_logger = logging.getLogger("PipelineStatistics")
-import cellprofiler.preference
-import cellprofiler.image
-import cellprofiler.measurement
-import cellprofiler.object
-import cellprofiler.workspace
-import cellprofiler.setting
-from cellprofiler.utilities.utf16encode import utf16encode, utf16decode
-from cellprofiler.matlab.cputils import make_cell_struct_dtype, new_string_cell_array, encapsulate_strings_in_arrays
-from cellprofiler.utilities.walk_in_background import WalkCollection, THREAD_STOP
-import cellprofiler.utilities.version
-import javabridge
 
 '''The measurement name of the image number'''
 IMAGE_NUMBER = cellprofiler.measurement.IMAGE_NUMBER
@@ -97,24 +95,24 @@ SETTINGS_DTYPE = numpy.dtype([(VARIABLE_VALUES, '|O4'),
                               (MODULE_NOTES, '|O4'),
                               (SHOW_WINDOW, '|O4'),
                               (BATCH_STATE, '|O4')])
-CURRENT_DTYPE = make_cell_struct_dtype([NUMBER_OF_IMAGE_SETS,
-                                        SET_BEING_ANALYZED, NUMBER_OF_MODULES,
-                                        SAVE_OUTPUT_HOW_OFTEN, TIME_STARTED,
-                                        STARTING_IMAGE_SET,
-                                        STARTUP_DIRECTORY,
-                                        DEFAULT_OUTPUT_DIRECTORY,
-                                        DEFAULT_IMAGE_DIRECTORY,
-                                        IMAGE_TOOLS_FILENAMES,
-                                        IMAGE_TOOL_HELP])
-PREFERENCES_DTYPE = make_cell_struct_dtype([PIXEL_SIZE,
-                                            DEFAULT_MODULE_DIRECTORY,
-                                            DEFAULT_OUTPUT_DIRECTORY,
-                                            DEFAULT_IMAGE_DIRECTORY,
-                                            INTENSITY_COLOR_MAP,
-                                            LABEL_COLOR_MAP,
-                                            STRIP_PIPELINE, SKIP_ERRORS,
-                                            DISPLAY_MODE_VALUE, FONT_SIZE,
-                                            DISPLAY_WINDOWS])
+CURRENT_DTYPE = cellprofiler.matlab.cputils.make_cell_struct_dtype([NUMBER_OF_IMAGE_SETS,
+                                                                    SET_BEING_ANALYZED, NUMBER_OF_MODULES,
+                                                                    SAVE_OUTPUT_HOW_OFTEN, TIME_STARTED,
+                                                                    STARTING_IMAGE_SET,
+                                                                    STARTUP_DIRECTORY,
+                                                                    DEFAULT_OUTPUT_DIRECTORY,
+                                                                    DEFAULT_IMAGE_DIRECTORY,
+                                                                    IMAGE_TOOLS_FILENAMES,
+                                                                    IMAGE_TOOL_HELP])
+PREFERENCES_DTYPE = cellprofiler.matlab.cputils.make_cell_struct_dtype([PIXEL_SIZE,
+                                                                        DEFAULT_MODULE_DIRECTORY,
+                                                                        DEFAULT_OUTPUT_DIRECTORY,
+                                                                        DEFAULT_IMAGE_DIRECTORY,
+                                                                        INTENSITY_COLOR_MAP,
+                                                                        LABEL_COLOR_MAP,
+                                                                        STRIP_PIPELINE, SKIP_ERRORS,
+                                                                        DISPLAY_MODE_VALUE, FONT_SIZE,
+                                                                        DISPLAY_WINDOWS])
 
 '''Save pipeline in Matlab format'''
 FMT_MATLAB = "Matlab"
@@ -214,7 +212,7 @@ def add_all_images(handles, image_set, object_set):
         if objects.has_small_removed_segmented():
             images['SmallRemovedSegmented' + object_name] = objects.small_removed_segmented
 
-    npy_images = numpy.ndarray((1, 1), dtype=make_cell_struct_dtype(images.keys()))
+    npy_images = numpy.ndarray((1, 1), dtype=cellprofiler.matlab.cputils.make_cell_struct_dtype(images.keys()))
     for key, image in images.iteritems():
         npy_images[key][0, 0] = image
     handles[PIPELINE] = npy_images
@@ -276,7 +274,7 @@ def add_all_measurements(handles, measurements):
     """
     object_names = [name for name in measurements.get_object_names()
                     if len(measurements.get_feature_names(name)) > 0]
-    measurements_dtype = make_cell_struct_dtype(object_names)
+    measurements_dtype = cellprofiler.matlab.cputils.make_cell_struct_dtype(object_names)
     npy_measurements = numpy.ndarray((1, 1), dtype=measurements_dtype)
     handles[MEASUREMENTS] = npy_measurements
     image_numbers = measurements.get_image_numbers()
@@ -287,7 +285,7 @@ def add_all_measurements(handles, measurements):
         if object_name == cellprofiler.measurement.EXPERIMENT:
             continue
         mapping = map_feature_names(measurements.get_feature_names(object_name))
-        object_dtype = make_cell_struct_dtype(mapping.keys())
+        object_dtype = cellprofiler.matlab.cputils.make_cell_struct_dtype(mapping.keys())
         object_measurements = numpy.ndarray((1, 1), dtype=object_dtype)
         npy_measurements[object_name][0, 0] = object_measurements
         for field, feature_name in mapping.iteritems():
@@ -306,7 +304,7 @@ def add_all_measurements(handles, measurements):
                     feature_measurements[0, i - 1] = numpy.zeros(0)
     if cellprofiler.measurement.EXPERIMENT in measurements.object_names:
         mapping = map_feature_names(measurements.get_feature_names(cellprofiler.measurement.EXPERIMENT))
-        object_dtype = make_cell_struct_dtype(mapping.keys())
+        object_dtype = cellprofiler.matlab.cputils.make_cell_struct_dtype(mapping.keys())
         experiment_measurements = numpy.ndarray((1, 1), dtype=object_dtype)
         npy_measurements[cellprofiler.measurement.EXPERIMENT][0, 0] = experiment_measurements
         for field, feature_name in mapping.iteritems():
@@ -660,7 +658,7 @@ class Pipeline(object):
         self.__image_plane_details = []
         self.__image_plane_details_metadata_settings = tuple()
 
-        self.file_walker = WalkCollection(self.on_walk_completed)
+        self.file_walker = cellprofiler.utilities.walk_in_background.WalkCollection(self.on_walk_completed)
         self.__undo_stack = []
 
     def copy(self, save_image_plane_details=True):
@@ -788,10 +786,10 @@ class Pipeline(object):
                 raise
 
         module_count = len(self.modules(False))
-        setting[VARIABLE_VALUES] = new_string_cell_array((module_count, variable_count))
+        setting[VARIABLE_VALUES] = cellprofiler.matlab.cputils.new_string_cell_array((module_count, variable_count))
         # The variable info types are similarly shaped
-        setting[VARIABLE_INFO_TYPES] = new_string_cell_array((module_count, variable_count))
-        setting[MODULE_NAMES] = new_string_cell_array((1, module_count))
+        setting[VARIABLE_INFO_TYPES] = cellprofiler.matlab.cputils.new_string_cell_array((module_count, variable_count))
+        setting[MODULE_NAMES] = cellprofiler.matlab.cputils.new_string_cell_array((1, module_count))
         setting[NUMBERS_OF_VARIABLES] = numpy.ndarray((1, module_count),
                                                       dtype=numpy.dtype('uint8'))
         setting[PIXEL_SIZE] = cellprofiler.preference.get_pixel_size()
@@ -799,7 +797,7 @@ class Pipeline(object):
                                                            dtype=numpy.dtype('uint8'))
         setting[MODULE_REVISION_NUMBERS] = numpy.ndarray((1, module_count),
                                                          dtype=numpy.dtype('uint16'))
-        setting[MODULE_NOTES] = new_string_cell_array((1, module_count))
+        setting[MODULE_NOTES] = cellprofiler.matlab.cputils.new_string_cell_array((1, module_count))
         setting[SHOW_WINDOW] = numpy.ndarray((1, module_count),
                                              dtype=numpy.dtype('uint8'))
         setting[BATCH_STATE] = numpy.ndarray((1, module_count),
@@ -1106,7 +1104,7 @@ class Pipeline(object):
                     text, setting = line.split(':')
                     setting = setting.decode('string_escape')
                     if do_utf16_decode:
-                        setting = utf16decode(setting)
+                        setting = cellprofiler.utilities.utf16encode.utf16decode(setting)
                     settings.append(setting)
                 #
                 # Set up the module
@@ -1290,7 +1288,7 @@ class Pipeline(object):
                     setting_text = str(setting_text)
                 fd.write('    %s:%s\n' % (
                     self.encode_txt(setting_text),
-                    self.encode_txt(utf16encode(setting.unicode_value))))
+                    self.encode_txt(cellprofiler.utilities.utf16encode.utf16encode(setting.unicode_value))))
         if save_image_plane_details:
             fd.write("\n")
             write_file_list(fd, self.__file_list)
@@ -1330,7 +1328,7 @@ class Pipeline(object):
         # For the output file, you have to bury it a little deeper - the root has to have
         # a single field named "handles"
         #
-        root = {'handles': numpy.ndarray((1, 1), dtype=make_cell_struct_dtype(handles.keys()))}
+        root = {'handles': numpy.ndarray((1, 1), dtype=cellprofiler.matlab.cputils.make_cell_struct_dtype(handles.keys()))}
         for key, value in handles.iteritems():
             root['handles'][key][0, 0] = value
         self.savemat(filename, root)
@@ -1441,7 +1439,7 @@ class Pipeline(object):
                     images['SmallRemovedSegmented' + name] = objects.small_removed_segmented
 
         if len(images):
-            pipeline_dtype = make_cell_struct_dtype(images.keys())
+            pipeline_dtype = cellprofiler.matlab.cputils.make_cell_struct_dtype(images.keys())
             pipeline = numpy.ndarray((1, 1), dtype=pipeline_dtype)
             handles[PIPELINE] = pipeline
             for name, image in images.items():
@@ -1449,11 +1447,11 @@ class Pipeline(object):
 
         no_measurements = (measurements is None or len(measurements.get_object_names()) == 0)
         if not no_measurements:
-            measurements_dtype = make_cell_struct_dtype(measurements.get_object_names())
+            measurements_dtype = cellprofiler.matlab.cputils.make_cell_struct_dtype(measurements.get_object_names())
             npy_measurements = numpy.ndarray((1, 1), dtype=measurements_dtype)
             handles['Measurements'] = npy_measurements
             for object_name in measurements.get_object_names():
-                object_dtype = make_cell_struct_dtype(measurements.get_feature_names(object_name))
+                object_dtype = cellprofiler.matlab.cputils.make_cell_struct_dtype(measurements.get_feature_names(object_name))
                 object_measurements = numpy.ndarray((1, 1), dtype=object_dtype)
                 npy_measurements[object_name][0, 0] = object_measurements
                 for feature_name in measurements.get_feature_names(object_name):
@@ -3091,7 +3089,7 @@ class Pipeline(object):
         return self.__image_plane_details
 
     def walk_paths(self, pathnames):
-        if self.file_walker.get_state() == THREAD_STOP:
+        if self.file_walker.get_state() == cellprofiler.utilities.walk_in_background.THREAD_STOP:
             self.notify_listeners(FileWalkStartedEvent())
         files = []
         for pathname in pathnames:

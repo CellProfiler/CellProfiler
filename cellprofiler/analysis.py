@@ -20,9 +20,7 @@ import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.preference
 import cellprofiler.workspace
-from cellprofiler.utilities.zmqrequest import AnalysisRequest, Request, Reply, UpstreamExit
-from cellprofiler.utilities.zmqrequest import get_announcer_address
-from cellprofiler.utilities.zmqrequest import register_analysis, cancel_analysis
+import cellprofiler.utilities.zmqrequest
 
 logger = logging.getLogger(__name__)
 
@@ -550,8 +548,8 @@ class AnalysisRunner(object):
 
         # start the zmqrequest Boundary
         request_queue = Queue.Queue()
-        boundary = register_analysis(analysis_id,
-                                     request_queue)
+        boundary = cellprofiler.utilities.zmqrequest.register_analysis(analysis_id,
+                                                                       request_queue)
         #
         # The boundary is announcing our analysis at this point. Workers
         # will get announcements if they connect.
@@ -585,12 +583,12 @@ class AnalysisRunner(object):
 
             if isinstance(req, PipelinePreferencesRequest):
                 logger.debug("Received pipeline preferences request")
-                req.reply(Reply(pipeline_blob=numpy.array(self.pipeline_as_string()),
-                                preferences=cellprofiler.preference.preferences_as_dict()))
+                req.reply(cellprofiler.utilities.zmqrequest.Reply(pipeline_blob=numpy.array(self.pipeline_as_string()),
+                                                                  preferences=cellprofiler.preference.preferences_as_dict()))
                 logger.debug("Replied to pipeline preferences request")
             elif isinstance(req, InitialMeasurementsRequest):
                 logger.debug("Received initial measurements request")
-                req.reply(Reply(buf=self.initial_measurements_buf))
+                req.reply(cellprofiler.utilities.zmqrequest.Reply(buf=self.initial_measurements_buf))
                 logger.debug("Replied to initial measurements request")
             elif isinstance(req, WorkRequest):
                 if not self.work_queue.empty():
@@ -684,7 +682,7 @@ class AnalysisRunner(object):
         except NotImplementedError:
             num = 4
 
-        cls.work_announce_address = get_announcer_address()
+        cls.work_announce_address = cellprofiler.utilities.zmqrequest.get_announcer_address()
         logger.info("Starting workers on address %s" % cls.work_announce_address)
         if 'CP_DEBUG_WORKER' in os.environ:
             if os.environ['CP_DEBUG_WORKER'] == 'NOT_INPROC':
@@ -868,22 +866,22 @@ class AnalysisFinished(object):
         self.cancelled = cancelled
 
 
-class PipelinePreferencesRequest(AnalysisRequest):
+class PipelinePreferencesRequest(cellprofiler.utilities.zmqrequest.AnalysisRequest):
     pass
 
 
-class InitialMeasurementsRequest(AnalysisRequest):
+class InitialMeasurementsRequest(cellprofiler.utilities.zmqrequest.AnalysisRequest):
     pass
 
 
-class WorkRequest(AnalysisRequest):
+class WorkRequest(cellprofiler.utilities.zmqrequest.AnalysisRequest):
     pass
 
 
-class ImageSetSuccess(AnalysisRequest):
+class ImageSetSuccess(cellprofiler.utilities.zmqrequest.AnalysisRequest):
     def __init__(self, analysis_id, image_set_number=None):
-        AnalysisRequest.__init__(self, analysis_id,
-                                 image_set_number=image_set_number)
+        cellprofiler.utilities.zmqrequest.AnalysisRequest.__init__(self, analysis_id,
+                                                                   image_set_number=image_set_number)
 
 
 class ImageSetSuccessWithDictionary(ImageSetSuccess):
@@ -893,28 +891,28 @@ class ImageSetSuccessWithDictionary(ImageSetSuccess):
         self.shared_dicts = shared_dicts
 
 
-class DictionaryReqRep(Reply):
+class DictionaryReqRep(cellprofiler.utilities.zmqrequest.Reply):
     pass
 
 
-class MeasurementsReport(AnalysisRequest):
+class MeasurementsReport(cellprofiler.utilities.zmqrequest.AnalysisRequest):
     def __init__(self, analysis_id, buf, image_set_numbers=None):
-        AnalysisRequest.__init__(self, analysis_id,
-                                 buf=buf,
-                                 image_set_numbers=image_set_numbers)
+        cellprofiler.utilities.zmqrequest.AnalysisRequest.__init__(self, analysis_id,
+                                                                   buf=buf,
+                                                                   image_set_numbers=image_set_numbers)
         if image_set_numbers is None:
             image_set_numbers = []
 
 
-class InteractionRequest(AnalysisRequest):
+class InteractionRequest(cellprofiler.utilities.zmqrequest.AnalysisRequest):
     pass
 
 
-class AnalysisCancelRequest(AnalysisRequest):
+class AnalysisCancelRequest(cellprofiler.utilities.zmqrequest.AnalysisRequest):
     pass
 
 
-class DisplayRequest(AnalysisRequest):
+class DisplayRequest(cellprofiler.utilities.zmqrequest.AnalysisRequest):
     pass
 
 
@@ -928,100 +926,100 @@ class DisplayPostRunRequest(object):
         self.display_data = display_data
 
 
-class DisplayPostGroupRequest(AnalysisRequest):
+class DisplayPostGroupRequest(cellprofiler.utilities.zmqrequest.AnalysisRequest):
     """Request a post-group display
 
     This is a message sent to the UI from the analysis worker"""
 
     def __init__(self, analysis_id, module_num, display_data, image_set_number):
-        AnalysisRequest.__init__(
+        cellprofiler.utilities.zmqrequest.AnalysisRequest.__init__(
                 self, analysis_id,
                 module_num=module_num,
                 image_set_number=image_set_number,
                 display_data=display_data)
 
 
-class SharedDictionaryRequest(AnalysisRequest):
+class SharedDictionaryRequest(cellprofiler.utilities.zmqrequest.AnalysisRequest):
     def __init__(self, analysis_id, module_num=-1):
-        AnalysisRequest.__init__(self, analysis_id, module_num=module_num)
+        cellprofiler.utilities.zmqrequest.AnalysisRequest.__init__(self, analysis_id, module_num=module_num)
 
 
-class SharedDictionaryReply(Reply):
+class SharedDictionaryReply(cellprofiler.utilities.zmqrequest.Reply):
     def __init__(self, dictionaries=None):
-        Reply.__init__(self, dictionaries=dictionaries)
+        cellprofiler.utilities.zmqrequest.Reply.__init__(self, dictionaries=dictionaries)
         if dictionaries is None:
             dictionaries = [{}]
 
 
-class ExceptionReport(AnalysisRequest):
+class ExceptionReport(cellprofiler.utilities.zmqrequest.AnalysisRequest):
     def __init__(self, analysis_id,
                  image_set_number, module_name,
                  exc_type, exc_message, exc_traceback,
                  filename, line_number):
-        AnalysisRequest.__init__(self,
-                                 analysis_id,
-                                 image_set_number=image_set_number,
-                                 module_name=module_name,
-                                 exc_type=exc_type,
-                                 exc_message=exc_message,
-                                 exc_traceback=exc_traceback,
-                                 filename=filename,
-                                 line_number=line_number)
+        cellprofiler.utilities.zmqrequest.AnalysisRequest.__init__(self,
+                                                                   analysis_id,
+                                                                   image_set_number=image_set_number,
+                                                                   module_name=module_name,
+                                                                   exc_type=exc_type,
+                                                                   exc_message=exc_message,
+                                                                   exc_traceback=exc_traceback,
+                                                                   filename=filename,
+                                                                   line_number=line_number)
 
     def __str__(self):
         return "(Worker) %s: %s" % (self.exc_type, self.exc_message)
 
 
-class ExceptionPleaseDebugReply(Reply):
+class ExceptionPleaseDebugReply(cellprofiler.utilities.zmqrequest.Reply):
     def __init__(self, disposition, verification_hash=None):
-        Reply.__init__(self, disposition=disposition, verification_hash=verification_hash)
+        cellprofiler.utilities.zmqrequest.Reply.__init__(self, disposition=disposition, verification_hash=verification_hash)
 
 
-class DebugWaiting(AnalysisRequest):
+class DebugWaiting(cellprofiler.utilities.zmqrequest.AnalysisRequest):
     """Communicate the debug port to the server and wait for server OK to attach"""
 
     def __init__(self, analysis_id, port):
-        AnalysisRequest.__init__(self,
-                                 analysis_id=analysis_id,
-                                 port=port)
+        cellprofiler.utilities.zmqrequest.AnalysisRequest.__init__(self,
+                                                                   analysis_id=analysis_id,
+                                                                   port=port)
 
 
-class DebugCancel(Reply):
+class DebugCancel(cellprofiler.utilities.zmqrequest.Reply):
     """If sent in response to DebugWaiting, the user has changed his/her mind"""
 
 
-class DebugComplete(AnalysisRequest):
+class DebugComplete(cellprofiler.utilities.zmqrequest.AnalysisRequest):
     pass
 
 
-class InteractionReply(Reply):
+class InteractionReply(cellprofiler.utilities.zmqrequest.Reply):
     pass
 
 
-class WorkReply(Reply):
+class WorkReply(cellprofiler.utilities.zmqrequest.Reply):
     pass
 
 
-class NoWorkReply(Reply):
+class NoWorkReply(cellprofiler.utilities.zmqrequest.Reply):
     pass
 
 
-class ServerExited(UpstreamExit):
+class ServerExited(cellprofiler.utilities.zmqrequest.UpstreamExit):
     pass
 
 
-class OmeroLoginRequest(AnalysisRequest):
+class OmeroLoginRequest(cellprofiler.utilities.zmqrequest.AnalysisRequest):
     pass
 
 
-class OmeroLoginReply(Reply):
+class OmeroLoginReply(cellprofiler.utilities.zmqrequest.Reply):
     def __init__(self, credentials):
-        Reply.__init__(self, credentials=credentials)
+        cellprofiler.utilities.zmqrequest.Reply.__init__(self, credentials=credentials)
 
 
-class Ack(Reply):
+class Ack(cellprofiler.utilities.zmqrequest.Reply):
     def __init__(self, message="THANKS"):
-        Reply.__init__(self, message=message)
+        cellprofiler.utilities.zmqrequest.Reply.__init__(self, message=message)
 
 
 if sys.platform == "darwin":

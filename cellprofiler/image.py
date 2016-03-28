@@ -7,12 +7,11 @@ ImageSetList - Represents the list of image filenames that make up a pipeline ru
 import logging
 import math
 import sys
-from StringIO import StringIO
-from cPickle import dump, Unpickler
-from struct import unpack
-from zlib import decompress
+import StringIO
+import cPickle
+import struct
+import zlib
 import numpy
-from numpy import fromstring, uint8, uint16
 
 logger = logging.getLogger(__name__)
 
@@ -866,14 +865,14 @@ class SetList(object):
         load_state will restore the image set list's state. No image_set can
         have image providers before this call.
         """
-        f = StringIO()
-        dump(self.count(), f)
+        f = StringIO.StringIO()
+        cPickle.dump(self.count(), f)
         for i in range(self.count()):
             image_set = self.get_image_set(i)
             assert isinstance(image_set, Set)
             assert len(image_set.providers) == 0, "An image set cannot have providers while saving its state"
-            dump(image_set.keys, f)
-        dump(self.legacy_fields, f)
+            cPickle.dump(image_set.keys, f)
+        cPickle.dump(self.legacy_fields, f)
         return f.getvalue()
 
     def load_state(self, state):
@@ -883,7 +882,7 @@ class SetList(object):
         self.__image_sets_by_key = {}
 
         # Make a safe unpickler
-        p = Unpickler(StringIO(state))
+        p = cPickle.Unpickler(StringIO.StringIO(state))
 
         def find_global(module_name, class_name):
             logger.debug("Pickler wants %s:%s", module_name, class_name)
@@ -924,10 +923,10 @@ def readc01(fname):
     """
 
     def readint(f):
-        return unpack("<l", f.read(4))[0]
+        return struct.unpack("<l", f.read(4))[0]
 
     def readshort(f):
-        return unpack("<h", f.read(2))[0]
+        return struct.unpack("<h", f.read(2))[0]
 
     f = open(fname, "rb")
 
@@ -935,7 +934,7 @@ def readc01(fname):
     assert readint(f) == 16 << 24
 
     # decompress
-    g = StringIO(decompress(f.read()))
+    g = StringIO.StringIO(zlib.decompress(f.read()))
 
     # skip four bytes
     g.seek(4, 1)
@@ -960,5 +959,5 @@ def readc01(fname):
     # skip 12 bytes
     g.seek(12, 1)
 
-    data = fromstring(g.read(), uint16 if nbits == 16 else uint8, x * y)
+    data = numpy.fromstring(g.read(), numpy.uint16 if nbits == 16 else numpy.uint8, x * y)
     return data.reshape(x, y).T

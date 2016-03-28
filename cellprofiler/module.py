@@ -5,9 +5,7 @@
 
 import sys
 import uuid
-
 import numpy
-
 import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.object

@@ -4,7 +4,7 @@ import os
 import re
 import sys
 import tempfile
-from cStringIO import StringIO
+import cStringIO
 import h5py
 import numpy
 
@@ -887,7 +887,7 @@ def run_pipeline_headless(options, args):
             initial_measurements.get_experiment_measurement(
                     M_PIPELINE)
         pipeline_text = pipeline_text.encode('us-ascii')
-        pipeline.load(StringIO(pipeline_text))
+        pipeline.load(cStringIO.StringIO(pipeline_text))
         if not pipeline.in_batch_mode():
             #
             # Need file list in order to call prepare_run

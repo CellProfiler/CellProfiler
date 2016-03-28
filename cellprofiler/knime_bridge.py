@@ -4,17 +4,24 @@ The knime bridge supports a ZMQ protocol that lets a single client
 run an analysis worker to get pipeline metadata and run a pipeline on
 an image set.
 """
+
 import logging
-
-logger = logging.getLogger(__name__)
-
-from cStringIO import StringIO
+import cStringIO
 import json
 import javabridge
 import numpy
 import threading
 import uuid
 import zmq
+import cellprofiler.module
+import cellprofiler.measurement
+import cellprofiler.image
+import cellprofiler.object
+import cellprofiler.pipeline
+import cellprofiler.setting
+import cellprofiler.workspace
+
+logger = logging.getLogger(__name__)
 
 if not hasattr(zmq, "Frame"):
     # Apparently, not in some versions of ZMQ?
@@ -24,14 +31,6 @@ if not hasattr(zmq, "Frame"):
 
 
     zmq.Frame = ZmqFrame
-
-import cellprofiler.module
-import cellprofiler.measurement
-import cellprofiler.image
-import cellprofiler.object
-import cellprofiler.pipeline
-import cellprofiler.setting
-import cellprofiler.workspace
 
 CONNECT_REQ_1 = "connect-request-1"
 CONNECT_REPLY_1 = "connect-reply-1"
@@ -163,7 +162,7 @@ class KnimeBridgeServer(threading.Thread):
         pipeline_txt = message.pop(0).bytes
         pipeline = cellprofiler.pipeline.Pipeline()
         try:
-            pipeline.loadtxt(StringIO(pipeline_txt))
+            pipeline.loadtxt(cStringIO.StringIO(pipeline_txt))
         except Exception, e:
             logger.warning(
                     "Failed to load pipeline: sending pipeline exception",
@@ -189,7 +188,7 @@ class KnimeBridgeServer(threading.Thread):
         module_names = json.loads(message.pop(0).bytes)
         pipeline = cellprofiler.pipeline.Pipeline()
         try:
-            pipeline.loadtxt(StringIO(pipeline_txt))
+            pipeline.loadtxt(cStringIO.StringIO(pipeline_txt))
         except Exception, e:
             logger.warning(
                     "Failed to load pipeline: sending pipeline exception",
@@ -202,7 +201,7 @@ class KnimeBridgeServer(threading.Thread):
                 to_remove.insert(0, module)
         for module in to_remove:
             pipeline.remove_module(module.module_num)
-        pipeline_fd = StringIO()
+        pipeline_fd = cStringIO.StringIO()
         pipeline.savetxt(pipeline_fd, save_image_plane_details=False)
         msg_out = [
             zmq.Frame(session_id),
@@ -346,7 +345,7 @@ class KnimeBridgeServer(threading.Thread):
                     session_id, e.message)
             return None, None, None
         try:
-            pipeline.loadtxt(StringIO(pipeline_txt))
+            pipeline.loadtxt(cStringIO.StringIO(pipeline_txt))
         except Exception, e:
             logger.warning(
                     "Failed to load pipeline: sending pipeline exception",
@@ -511,7 +510,7 @@ class KnimeBridgeServer(threading.Thread):
                     session_id, e.message)
             return None, None, None
         try:
-            pipeline.loadtxt(StringIO(pipeline_txt))
+            pipeline.loadtxt(cStringIO.StringIO(pipeline_txt))
         except Exception, e:
             logger.warning(
                     "Failed to load pipeline: sending pipeline exception",

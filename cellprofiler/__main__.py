@@ -396,12 +396,6 @@ def parse_args(args):
                       action="store_true",
                       help="Print the version and exit")
 
-    if not hasattr(sys, 'frozen'):
-        parser.add_option("-b", "--do-not-build", "--do-not_build",
-                          dest="build_extensions",
-                          default=True,
-                          action="store_false",
-                          help="Do not build C and Cython extensions")
     parser.add_option("-d", "--done-file",
                       dest="done_file",
                       default=None,

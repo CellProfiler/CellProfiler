@@ -115,12 +115,14 @@ def main(args=None):
         sys.exit(0)
 
     options, args = parse_args(args)
+
     if options.print_version:
         print "CellProfiler %s" % cellprofiler.utilities.version.dotted_version
         print "Git %s" % cellprofiler.utilities.version.git_hash
         print "Version %s" % cellprofiler.utilities.version.version_number
         print "Built %s" % cellprofiler.utilities.version.version_string.split(" ")[0]
         sys.exit(0)
+
     #
     # Important to go headless ASAP
     #
@@ -152,26 +154,37 @@ def main(args=None):
             sys.stderr.write("    <message> - the message displayed inside the message box\n")
             sys.stderr.write("    <pipeline-or-project> - the path to the pipeline or project file to modify\n")
             return
+
         caption = args[0]
+
         message = args[1]
+
         path = args[2]
 
         using_hdf5 = h5py.is_hdf5(path)
+
         if using_hdf5:
             m = cellprofiler.measurement.Measurement(filename=path, mode="r+")
+
             pipeline_text = m[cellprofiler.measurement.EXPERIMENT, "Pipeline_Pipeline"]
         else:
             with open(path, "r") as fd:
                 pipeline_text = fd.read()
+
         header, body = pipeline_text.split("\n\n", 1)
+
         pipeline_text = header + ("\nMessageForUser:%s|%s\n\n" % (caption, message)) + body
+
         if using_hdf5:
             m[cellprofiler.measurement.EXPERIMENT, "Pipeline_Pipeline"] = pipeline_text
+
             m.close()
         else:
             with open(path, "w") as fd:
                 fd.write(pipeline_text)
+
         print "Message added to %s" % path
+
         return
 
     # necessary to prevent matplotlib trying to use Tkinter as its backend.
@@ -190,6 +203,7 @@ def main(args=None):
     if options.temp_dir is not None:
         if not os.path.exists(options.temp_dir):
             os.makedirs(options.temp_dir)
+
         cellprofiler.preference.set_temporary_directory(options.temp_dir, globally=False)
 
     if not options.allow_schema_write:
@@ -212,7 +226,9 @@ def main(args=None):
         #
         if options.output_html:
             webpage_path = options.output_directory if options.output_directory else None
+
             cellprofiler.gui.html.manual.generate_html(webpage_path)
+
             return
 
         if options.print_measurements:
@@ -232,15 +248,19 @@ def main(args=None):
             if options.pipeline_filename:
                 if cellprofiler.workspace.is_workspace_file(options.pipeline_filename):
                     workspace_path = os.path.expanduser(options.pipeline_filename)
+
                     pipeline_path = None
                 else:
                     pipeline_path = os.path.expanduser(options.pipeline_filename)
+
                     workspace_path = None
             elif options.new_project:
                 workspace_path = False
+
                 pipeline_path = None
             else:
                 workspace_path = None
+
                 pipeline_path = None
 
             app = cellprofiler.gui.app.App(0, workspace_path=workspace_path, pipeline_path=pipeline_path)
@@ -256,6 +276,7 @@ def main(args=None):
         if options.output_directory:
             if not os.path.exists(options.output_directory):
                 os.makedirs(options.output_directory)
+
             cellprofiler.preference.set_default_output_directory(options.output_directory)
 
         if options.image_directory:
@@ -497,9 +518,11 @@ def parse_args(args):
             # Assume fakey open of .cpproj and OS can't be configured to
             # add the switch as it can in Windows.
             options.project_filename = args[1]
+
             result_args = []
         elif args[1].lower().endswith(".cpproj"):
             options.pipeline_filename = args[1]
+
             result_args = []
 
     return options, result_args
@@ -512,6 +535,7 @@ def set_log_level(options):
             logging.root.setLevel(int(options.log_level))
         else:
             logging.root.setLevel(options.log_level)
+
         if len(logging.root.handlers) == 0:
             logging.root.addHandler(logging.StreamHandler())
     except ValueError:
@@ -530,22 +554,22 @@ def set_omero_credentials_from_string(credentials_string):
     """
 
     if re.match("([^=^,]+=[^=^,]+,)*([^=^,]+=[^=^,]+)", credentials_string) is None:
-        logging.root.error(
-                'The OMERO credentials string, "%s", is badly-formatted.' %
-                credentials_string)
-        logging.root.error(
-                'It should have the form: '
-                '"host=hostname.org,port=####,user=<user>,session-id=<session-id>\n')
+        logging.root.error('The OMERO credentials string, "%s", is badly-formatted.' % credentials_string)
+
+        logging.root.error('It should have the form: ' '"host=hostname.org,port=####,user=<user>,session-id=<session-id>\n')
+
         raise ValueError("Invalid format for --omero-credentials")
 
     for k, v in [kv.split("=", 1) for kv in credentials_string.split(",")]:
         k = k.lower()
+
         credentials = {
             bioformats.formatreader.K_OMERO_SERVER: cellprofiler.preference.get_omero_server(),
             bioformats.formatreader.K_OMERO_PORT: cellprofiler.preference.get_omero_port(),
             bioformats.formatreader.K_OMERO_USER: cellprofiler.preference.get_omero_user(),
             bioformats.formatreader.K_OMERO_SESSION_ID: cellprofiler.preference.get_omero_session_id()
         }
+
         if k == OMERO_CK_HOST:
             cellprofiler.preference.set_omero_server(v, globally=False)
             credentials[bioformats.formatreader.K_OMERO_SERVER] = v
@@ -561,17 +585,19 @@ def set_omero_credentials_from_string(credentials_string):
             credentials[bioformats.formatreader.K_OMERO_PASSWORD] = v
         elif k == OMERO_CK_CONFIG_FILE:
             credentials[bioformats.formatreader.K_OMERO_CONFIG_FILE] = v
+
             if not os.path.isfile(v):
                 msg = "Cannot find OMERO config file, %s" % v
+
                 logging.root.error(msg)
+
                 raise ValueError(msg)
         else:
-            logging.root.error(
-                    'Unknown --omero-credentials keyword: "%s"' % k)
-            logging.root.error(
-                    'Acceptable keywords are: "%s"' %
-                    '","'.join([OMERO_CK_HOST, OMERO_CK_PORT, OMERO_CK_SESSION_ID]))
+            logging.root.error('Unknown --omero-credentials keyword: "%s"' % k)
+            logging.root.error('Acceptable keywords are: "%s"' % '","'.join([OMERO_CK_HOST, OMERO_CK_PORT, OMERO_CK_SESSION_ID]))
+
             raise ValueError("Invalid format for --omero-credentials")
+
     bioformats.formatreader.use_omero_credentials(credentials)
 
 
@@ -597,13 +623,20 @@ def print_measurements(options):
             raise ValueError("Failed to load %s" % options.pipeline_filename)
 
     pipeline.add_listener(callback)
+
     pipeline.load(os.path.expanduser(options.pipeline_filename))
+
     columns = pipeline.get_measurement_columns()
+
     print "--- begin measurements ---"
+
     print "Object,Feature,Type"
+
     for column in columns:
         object_name, feature, data_type = column[:3]
+
         print "%s,%s,%s" % (object_name, feature, data_type)
+
     print "--- end measurements ---"
 
 
@@ -617,9 +650,13 @@ def print_groups(filename):
     """
 
     path = os.path.expanduser(filename)
+
     m = cellprofiler.measurement.Measurement(filename=path, mode="r")
+
     metadata_tags = m.get_grouping_tags()
+
     groupings = m.get_groupings(metadata_tags)
+
     json.dump(groupings, sys.stdout)
 
 
@@ -634,39 +671,46 @@ def get_batch_commands(filename):
 
     CellProfiler --get-batch-commands Batch_data.h5 | sed s/CellProfiler/farm_job.sh/
     """
-
     path = os.path.expanduser(filename)
+
     m = cellprofiler.measurement.Measurement(filename=path, mode="r")
 
     image_numbers = m.get_image_numbers()
+
     if m.has_feature(cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_NUMBER):
         group_numbers = m[cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_NUMBER, image_numbers]
+
         group_indexes = m[cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_INDEX, image_numbers]
 
-        if numpy.any(group_numbers != 1) and numpy.all(
-                        (group_indexes[1:] == group_indexes[:-1] + 1) | ((group_indexes[1:] == 1) & (group_numbers[1:] == group_numbers[:-1] + 1))):
+        if numpy.any(group_numbers != 1) and numpy.all((group_indexes[1:] == group_indexes[:-1] + 1) | ((group_indexes[1:] == 1) & (group_numbers[1:] == group_numbers[:-1] + 1))):
             #
             # Do -f and -l if more than one group and group numbers
             # and indices are properly constructed
             #
             bins = numpy.bincount(group_numbers)
+
             cumsums = numpy.cumsum(bins)
+
             prev = 0
+
             for i, off in enumerate(cumsums):
                 if off == prev:
                     continue
-                print "CellProfiler -c -r -p %s -f %d -l %d" % (
-                    filename, prev + 1, off)
+
+                print "CellProfiler -c -r -p %s -f %d -l %d" % (filename, prev + 1, off)
+
                 prev = off
+
             return
 
     metadata_tags = m.get_grouping_tags()
+
     groupings = m.get_groupings(metadata_tags)
+
     for grouping in groupings:
-        group_string = ",".join(
-                ["%s=%s" % (k, v) for k, v in grouping[0].iteritems()])
-        print "CellProfiler -c -r -p %s -g %s" % (
-            filename, group_string)
+        group_string = ",".join(["%s=%s" % (k, v) for k, v in grouping[0].iteritems()])
+
+        print "CellProfiler -c -r -p %s -g %s" % (filename, group_string)
 
 
 def write_schema(pipeline_filename):

@@ -1,11 +1,11 @@
-'''cpgridinfo - define a grid structure
-'''
+"""cpgridinfo - define a grid structure
+"""
 
 import numpy as np
 
 
 class Grid(object):
-    '''Represents all the parameters of a grid'''
+    """Represents all the parameters of a grid"""
 
     def __init__(self):
         self.x_location_of_lowest_x_spot = None

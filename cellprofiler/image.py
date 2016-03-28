@@ -272,7 +272,7 @@ class Image(object):
 
     @property
     def has_crop_mask(self):
-        '''True if the image or its ancestors has a crop mask'''
+        """True if the image or its ancestors has a crop mask"""
         return (self.__crop_mask is not None or
                 self.has_masking_objects or
                 (self.has_parent_image and self.parent_image.has_crop_mask))
@@ -303,12 +303,12 @@ class Image(object):
         return cropped_image
 
     def get_file_name(self):
-        '''The name of the file holding this image
+        """The name of the file holding this image
 
         If the image is derived, then return the file name of the first
         ancestor that has a file name. Return None if the image does not have
         an ancestor or if no ancestor has a file name.
-        '''
+        """
         if not self.__file_name is None:
             return self.__file_name
         elif self.has_parent_image:
@@ -319,12 +319,12 @@ class Image(object):
     file_name = property(get_file_name)
 
     def get_path_name(self):
-        '''The path to the file holding this image
+        """The path to the file holding this image
 
         If the image is derived, then return the path name of the first
         ancestor that has a path name. Return None if the image does not have
         an ancestor or if no ancestor has a file name.
-        '''
+        """
         if not self.__path_name is None:
             return self.__path_name
         elif self.has_parent_image:
@@ -335,7 +335,7 @@ class Image(object):
     path_name = property(get_path_name)
 
     def get_channel_names(self):
-        '''The user-defined names of the channels in a channel stack'''
+        """The user-defined names of the channels in a channel stack"""
         return self.__channel_names
 
     def set_channel_names(self, names):
@@ -345,17 +345,17 @@ class Image(object):
 
     @property
     def has_channel_names(self):
-        '''True if there are channel names on this image'''
+        """True if there are channel names on this image"""
         return self.__channel_names is not None
 
     def get_scale(self):
-        '''The scale at acquisition
+        """The scale at acquisition
 
         This is the intensity scale used by the acquisition device. For
         instance, a microscope might use a 12-bit a/d converter to acquire
         an image and store that information using the TIF MaxSampleValue
         tag = 4095.
-        '''
+        """
         if self.__scale is None and self.has_parent_image:
             return self.parent_image.scale
         return self.__scale
@@ -363,7 +363,7 @@ class Image(object):
     scale = property(get_scale)
 
     def cache(self, name, hdf5_file):
-        '''Move all images into backing stores
+        """Move all images into backing stores
 
         name - the channel name of the image
         hdf5_file - an HDF5 file or group
@@ -371,7 +371,7 @@ class Image(object):
         We utilize the sub-groups, "Images", "Masks" and "CropMasks".
         The best practice is to use a temporary file dedicated to images and
         maybe objects.
-        '''
+        """
         from cellprofiler.utilities.hdf5_dict import HDF5ImageSet
         if isinstance(self.__image, Cache) and \
                 not self.__image.is_cached():
@@ -385,15 +385,15 @@ class Image(object):
 
 
 class Cache(object):
-    '''An HDF5 cache that can store an image, mask or crop mask
+    """An HDF5 cache that can store an image, mask or crop mask
 
-    '''
+    """
     IC_MONOCHROME = "Monochrome"
     IC_COLOR = "Color"
     IC_5D = "5D"
 
     def __init__(self, image):
-        '''Initialize with the image to control'''
+        """Initialize with the image to control"""
         self.__backing_store = None
         self.__name = None
         if image.ndim == 2:
@@ -408,24 +408,24 @@ class Cache(object):
             self.__image = image
 
     def is_cached(self):
-        '''Return True if image is already cached by a backing store
+        """Return True if image is already cached by a backing store
 
-        '''
+        """
         return self.__backing_store is not None
 
     def cache(self, name, backing_store):
-        '''Cache an image into a backing store
+        """Cache an image into a backing store
 
         name - unique channel name of the image
         backing_store - an HDF5ImageSet
-        '''
+        """
         self.__backing_store = backing_store
         self.__name = name
         self.__backing_store.set_image(self.__name, self.__image)
         del self.__image
 
     def get(self):
-        '''Get the image in its original format'''
+        """Get the image in its original format"""
         if self.is_cached():
             image = self.__backing_store.get_image(self.__name)
         else:
@@ -509,7 +509,7 @@ class RGB(object):
         return getattr(self.__image, name)
 
     def get_pixel_data(self):
-        '''Return the pixel data without the alpha channel'''
+        """Return the pixel data without the alpha channel"""
         return self.__image.pixel_data[:, :, :3]
 
     pixel_data = property(get_pixel_data)
@@ -543,7 +543,7 @@ class AbstractImageProvider(object):
         raise NotImplementedError("Please implement get_name for your class")
 
     def release_memory(self):
-        '''Release whatever memory is associated with the image'''
+        """Release whatever memory is associated with the image"""
         logger.warning("Warning: no memory release function implemented for %s image",
                        self.get_name())
 
@@ -620,7 +620,7 @@ class Set(object):
 
     @property
     def image_number(self):
-        '''The image number as used in measurements and the database'''
+        """The image number as used in measurements and the database"""
         return self.__number + 1
 
     def get_keys(self):
@@ -703,16 +703,16 @@ class Set(object):
                                         self.__image_providers)
 
     def clear_image(self, name):
-        '''Remove the image memory associated with a provider
+        """Remove the image memory associated with a provider
 
         name - the name of the provider
-        '''
+        """
         self.get_image_provider(name).release_memory()
         if self.__images.has_key(name):
             del self.__images[name]
 
     def clear_cache(self):
-        '''Remove all of the cached images'''
+        """Remove all of the cached images"""
         self.__images.clear()
 
     def get_names(self):
@@ -756,7 +756,7 @@ class SetList(object):
 
     @property
     def test_mode(self):
-        '''True if we are in test mode'''
+        """True if we are in test mode"""
         return self.__test_mode
 
     def get_image_set(self, keys_or_number):
@@ -792,10 +792,10 @@ class SetList(object):
 
     @property
     def associating_by_key(self):
-        '''True if some image set has been added with a key instead of a number
+        """True if some image set has been added with a key instead of a number
 
         This will return "None" if no association has been done.
-        '''
+        """
         return self.__associating_by_key
 
     def purge_image_set(self, number):
@@ -828,7 +828,7 @@ class SetList(object):
     legacy_fields = property(get_legacy_fields)
 
     def get_groupings(self, keys):
-        '''Return the groupings of an image set list over a set of keys
+        """Return the groupings of an image set list over a set of keys
 
         keys - a sequence of keys that match some of the image set keys
 
@@ -841,7 +841,7 @@ class SetList(object):
                     that gives the group's values for each key.
                     The second element is a list of image numbers of
                     the images in the group
-        '''
+        """
         #
         # Sort order for dictionary keys
         #
@@ -862,11 +862,11 @@ class SetList(object):
         return keys, [(dict(zip(keys, k)), d[k]) for k in sort_order]
 
     def save_state(self):
-        '''Return a string that can be used to load the image_set_list's state
+        """Return a string that can be used to load the image_set_list's state
 
         load_state will restore the image set list's state. No image_set can
         have image providers before this call.
-        '''
+        """
         f = StringIO()
         dump(self.count(), f)
         for i in range(self.count()):
@@ -878,7 +878,7 @@ class SetList(object):
         return f.getvalue()
 
     def load_state(self, state):
-        '''Load an image_set_list's state from the string returned from save_state'''
+        """Load an image_set_list's state from the string returned from save_state"""
 
         self.__image_sets = []
         self.__image_sets_by_key = {}
@@ -913,16 +913,16 @@ class SetList(object):
 
 
 def make_dictionary_key(key):
-    '''Make a dictionary into a stable key for another dictionary'''
+    """Make a dictionary into a stable key for another dictionary"""
     return u", ".join([u":".join([unicode(y) for y in x])
                        for x in sorted(key.iteritems())])
 
 
 def readc01(fname):
-    '''Read a Cellomics file into an array
+    """Read a Cellomics file into an array
 
     fname - the name of the file
-    '''
+    """
 
     def readint(f):
         return unpack("<l", f.read(4))[0]

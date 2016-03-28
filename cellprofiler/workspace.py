@@ -35,7 +35,7 @@ DISPOSITION_CANCEL = "Cancel"
 
 
 def is_workspace_file(path):
-    '''Return True if the file along the given path is a workspace file'''
+    """Return True if the file along the given path is a workspace file"""
     if not h5py.is_hdf5(path):
         return False
     h5file = h5py.File(path, mode="r")
@@ -169,7 +169,7 @@ class Workspace(object):
         self.measurements.add_measurement(object_name, feature_name, data)
 
     def get_file_list(self):
-        '''The user-curated list of files'''
+        """The user-curated list of files"""
         return self.__file_list
 
     def set_file_list(self, file_list):
@@ -188,25 +188,25 @@ class Workspace(object):
     file_list = property(get_file_list)
 
     def get_grid(self, grid_name):
-        '''Return a grid with the given name'''
+        """Return a grid with the given name"""
         if not self.__grid.has_key(grid_name):
             raise ValueError("Could not find grid %s" % grid_name)
         return self.__grid[grid_name]
 
     def set_grids(self, last=None):
-        '''Initialize the grids for an image set
+        """Initialize the grids for an image set
 
         last - none if first in image set or the return value from
                this method.
         returns a grid dictionary
-        '''
+        """
         if last is None:
             last = {}
         self.__grid = last
         return self.__grid
 
     def set_grid(self, grid_name, grid_info):
-        '''Add a grid to the workspace'''
+        """Add a grid to the workspace"""
         self.__grid[grid_name] = grid_info
 
     def cache(self):
@@ -326,7 +326,7 @@ class Workspace(object):
         self.__module = module
 
     def interaction_request(self, module, *args, **kwargs):
-        '''make a request for GUI interaction via a pipeline event
+        """make a request for GUI interaction via a pipeline event
 
         module - target module for interaction request
 
@@ -334,7 +334,7 @@ class Workspace(object):
                       a headless context. An example is synchronized access to
                       a shared resource which must be coordinated among all
                       workers.
-        '''
+        """
         # See also:
         # main().interaction_handler() in worker.py
         # PipelineController.module_interaction_request() in pipelinecontroller.py
@@ -355,16 +355,16 @@ class Workspace(object):
             return self.interaction_handler(module, *args, **kwargs)
 
     def cancel_request(self):
-        '''Make a request to cancel an ongoing analysis'''
+        """Make a request to cancel an ongoing analysis"""
         if self.cancel_handler is None:
             raise self.NoInteractionException()
         self.cancel_handler()
 
     def post_group_display(self, module):
-        '''Perform whatever post-group module display is necessary
+        """Perform whatever post-group module display is necessary
 
         module - module being run
-        '''
+        """
         if self.post_group_display_handler is not None:
             self.post_group_display_handler(
                     module, self.display_data, self.measurements.image_set_number)
@@ -376,10 +376,10 @@ class Workspace(object):
             module.display_post_group(self, figure)
 
     def post_run_display(self, module):
-        '''Perform whatever post-run module display is necessary
+        """Perform whatever post-run module display is necessary
 
         module - module being run
-        '''
+        """
         if self.post_run_display_handler is not None:
             self.post_run_display_handler(self, module)
         elif self.frame is not None:
@@ -395,7 +395,7 @@ class Workspace(object):
                 self.image_set_list.count() - 1)
 
     def get_disposition(self):
-        '''How to proceed with the pipeline
+        """How to proceed with the pipeline
 
         One of the following values:
         DISPOSITION_CONTINUE - continue to execute the pipeline
@@ -403,7 +403,7 @@ class Workspace(object):
                             the next module
         DISPOSITION_CANCEL - stop running the pipeline
         DISPOSITION_SKIP - skip the rest of this image set
-        '''
+        """
         return self.__disposition
 
     def set_disposition(self, disposition):
@@ -421,13 +421,13 @@ class Workspace(object):
         pass
 
     def load(self, filename, load_pipeline):
-        '''Load a workspace from a .cpi file
+        """Load a workspace from a .cpi file
 
         filename - path to file to load
 
         load_pipeline - true to load the pipeline from the file, false to
                         use the current pipeline.
-        '''
+        """
         import shutil
         from .pipeline import M_PIPELINE, M_DEFAULT_INPUT_FOLDER, \
             M_DEFAULT_OUTPUT_FOLDER
@@ -485,10 +485,10 @@ class Workspace(object):
         self.notify(self.WorkspaceLoadedEvent(self))
 
     def create(self):
-        '''Create a new workspace file
+        """Create a new workspace file
 
         filename - name of the workspace file
-        '''
+        """
         from .measurement import Measurement, make_temporary_file
         if isinstance(self.measurements, Measurement):
             self.close()
@@ -505,12 +505,12 @@ class Workspace(object):
         self.notify(self.WorkspaceCreatedEvent(self))
 
     def save(self, path):
-        '''Save the current workspace to the given path
+        """Save the current workspace to the given path
 
         path - path to file to save
 
         Note: "saving" means copying the temporary workspace file
-        '''
+        """
         self.save_default_folders_to_measurements()
         self.measurements.flush()
         #
@@ -534,7 +534,7 @@ class Workspace(object):
         hdf5dest.close()
 
     def close(self):
-        '''Close the workspace and delete the temporary measurements file'''
+        """Close the workspace and delete the temporary measurements file"""
         if self.measurements is not None and self.__filename is not None:
             self.measurements.close()
             os.unlink(self.__filename)
@@ -563,7 +563,7 @@ class Workspace(object):
             self.save_pipeline_to_measurements()
 
     def refresh_image_set(self, force=False):
-        '''Refresh the image set if not present
+        """Refresh the image set if not present
 
         force - force a rewrite, even if the image set is cached
 
@@ -572,7 +572,7 @@ class Workspace(object):
         measurements. If image set measurements are present, then we
         assume that the cache reflects pipeline + file list unless "force"
         is true.
-        '''
+        """
         import cellprofiler.measurement as cpmeas
         if len(self.measurements.get_image_numbers()) == 0 or force:
             self.measurements.clear()
@@ -603,13 +603,13 @@ class Workspace(object):
         return True
 
     def add_notification_callback(self, callback):
-        '''Add a callback that will be called on a workspace event
+        """Add a callback that will be called on a workspace event
 
         Workspace events are load events, and file list events.
 
         callback - a function to be called when an event occurs. The signature
         is: callback(event)
-        '''
+        """
         self.__notification_callbacks.append(callback)
 
     def remove_notification_callback(self, callback):
@@ -627,30 +627,30 @@ class Workspace(object):
         self.notify(self.WorkspaceFileListNotification(self))
 
     class WorkspaceEvent(object):
-        '''The base for any event sent to a workspace callback via Workspace.notify
+        """The base for any event sent to a workspace callback via Workspace.notify
 
-        '''
+        """
 
         def __init__(self, workspace):
             self.workspace = workspace
 
     class WorkspaceLoadedEvent(WorkspaceEvent):
-        '''Indicates that a workspace has been loaded
+        """Indicates that a workspace has been loaded
 
         When a workspace loads, the file list changes.
-        '''
+        """
 
         def __init__(self, workspace):
             super(self.__class__, self).__init__(workspace)
 
     class WorkspaceCreatedEvent(WorkspaceEvent):
-        '''Indicates that a blank workspace has been created'''
+        """Indicates that a blank workspace has been created"""
 
         def __init__(self, workspace):
             super(self.__class__, self).__init__(workspace)
 
     class WorkspaceFileListNotification(WorkspaceEvent):
-        '''Indicates that the workspace's file list changed'''
+        """Indicates that the workspace's file list changed"""
 
         def __init__(self, workspace):
             super(self.__class__, self).__init__(workspace)

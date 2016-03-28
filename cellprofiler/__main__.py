@@ -60,10 +60,10 @@ if os.path.exists(site_packages) and os.path.isdir(site_packages):
 
 
 def main(args=None):
-    '''Run CellProfiler
+    """Run CellProfiler
 
     args - command-line arguments, e.g. sys.argv
-    '''
+    """
     if args is None:
         args = sys.argv
     import cellprofiler.preference as cpprefs
@@ -279,7 +279,7 @@ def stop_cellprofiler():
 
 
 def parse_args(args):
-    '''Parse the CellProfiler command-line arguments'''
+    """Parse the CellProfiler command-line arguments"""
     import optparse
     usage = """usage: %prog [options] [<output-file>])
          where <output-file> is the optional filename for the output file of
@@ -522,7 +522,7 @@ def parse_args(args):
 
 
 def set_log_level(options):
-    '''Set the logging package's log level based on command-line options'''
+    """Set the logging package's log level based on command-line options"""
     try:
         if options.log_level.isdigit():
             logging.root.setLevel(int(options.log_level))
@@ -535,7 +535,7 @@ def set_log_level(options):
 
 
 def set_omero_credentials_from_string(credentials_string):
-    '''Set the OMERO server / port / session ID
+    """Set the OMERO server / port / session ID
 
     credentials_string: a comma-separated key/value pair string (key=value)
                         that gives the credentials. Keys are
@@ -543,7 +543,7 @@ def set_omero_credentials_from_string(credentials_string):
                         port - the TCP port to use to connect
                         user - the user name
                         session-id - the session ID used for authentication
-    '''
+    """
     import cellprofiler.preference as cpprefs
     from bioformats.formatreader import use_omero_credentials
     from bioformats.formatreader import \
@@ -597,10 +597,10 @@ def set_omero_credentials_from_string(credentials_string):
 
 
 def print_code_statistics():
-    '''Print # lines of code, # modules, etc to console
+    """Print # lines of code, # modules, etc to console
 
     This is the official source of code statistics for things like grants.
-    '''
+    """
     from cellprofiler.modules import builtin_modules, all_modules, instantiate_module
     import subprocess
     print "\n\n\n**** CellProfiler code statistics ****"
@@ -637,7 +637,7 @@ def print_code_statistics():
 
 
 def print_measurements(options):
-    '''Print the measurements that would be output by a pipeline
+    """Print the measurements that would be output by a pipeline
 
     This function calls Pipeline.get_measurement_columns() to get the
     measurements that would be output by a pipeline. This can be used in
@@ -646,7 +646,7 @@ def print_measurements(options):
     with Knime and write a Knime node that let the user specify a pipeline
     file. The node could then execute CellProfiler with the --measurements
     switch and display the measurements as node outputs.
-    '''
+    """
 
     if options.pipeline_filename is None:
         raise ValueError("Can't print measurements, no pipeline file")
@@ -669,13 +669,13 @@ def print_measurements(options):
 
 
 def print_groups(filename):
-    '''Print the image set groups for this pipeline
+    """Print the image set groups for this pipeline
 
     This function outputs a JSON string to the console composed of a list
     of the groups in the pipeline image set. Each element of the list is
     a two-tuple whose first element is a key/value dictionary of the
     group's key and the second is a tuple of the image numbers in the group.
-    '''
+    """
     import json
 
     import cellprofiler.measurement as cpmeas
@@ -688,7 +688,7 @@ def print_groups(filename):
 
 
 def get_batch_commands(filename):
-    '''Print the commands needed to run the given batch data file headless
+    """Print the commands needed to run the given batch data file headless
 
     filename - the name of a Batch_data.h5 file. The file should group image sets.
 
@@ -697,7 +697,7 @@ def get_batch_commands(filename):
     run through a utility such as "sed":
 
     CellProfiler --get-batch-commands Batch_data.h5 | sed s/CellProfiler/farm_job.sh/
-    '''
+    """
 
     import cellprofiler.measurement as cpmeas
 
@@ -776,7 +776,7 @@ def run_ilastik():
 
 
 def build_extensions():
-    '''Compile C and Cython files as needed'''
+    """Compile C and Cython files as needed"""
     import subprocess
     import cellprofiler.utilities.setup
     from distutils.dep_util import newer_group
@@ -832,7 +832,7 @@ def build_extensions():
 
 
 def run_pipeline_headless(options, args):
-    '''Run a CellProfiler pipeline in headless mode'''
+    """Run a CellProfiler pipeline in headless mode"""
     #
     # Start Ilastik's workers
     #

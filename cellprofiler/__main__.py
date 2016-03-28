@@ -132,9 +132,6 @@ def main(args=None):
         # Might want to change later if there's some headless setup
         options.run_pipeline = True
 
-    if options.jvm_heap_size is not None:
-        cellprofiler.preference.set_jvm_heap_mb(options.jvm_heap_size, False)
-
     set_log_level(options)
 
     if options.print_groups_file is not None:
@@ -200,12 +197,6 @@ def main(args=None):
     if options.ij_plugins_directory is not None:
         cellprofiler.preference.set_ij_plugin_directory(options.ij_plugins_directory, globally=False)
 
-    if options.temp_dir is not None:
-        if not os.path.exists(options.temp_dir):
-            os.makedirs(options.temp_dir)
-
-        cellprofiler.preference.set_temporary_directory(options.temp_dir, globally=False)
-
     if not options.allow_schema_write:
         cellprofiler.preference.set_allow_schema_write(False)
 
@@ -224,18 +215,8 @@ def main(args=None):
         #
         # Handle command-line tasks that that need to load the modules to run
         #
-        if options.output_html:
-            webpage_path = options.output_directory if options.output_directory else None
-
-            cellprofiler.gui.html.manual.generate_html(webpage_path)
-
-            return
-
         if options.print_measurements:
             print_measurements(options)
-            return
-
-        if not hasattr(sys, "frozen") and options.code_statistics:
             return
 
         if options.write_schema_and_exit:

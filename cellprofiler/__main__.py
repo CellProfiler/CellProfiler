@@ -299,6 +299,10 @@ def main(args=None):
 
 
 def stop_cellprofiler():
+    """
+
+    :return:
+    """
     try:
         GLOBAL_WM.stopWorkers()
     except:
@@ -314,7 +318,13 @@ def stop_cellprofiler():
 
 
 def parse_args(args):
-    """Parse the CellProfiler command-line arguments"""
+    """
+    Parse the CellProfiler command-line arguments
+
+    :param args:
+
+    :return:
+    """
 
     usage = """usage: %prog [options] [<output-file>])
          where <output-file> is the optional filename for the output file of
@@ -529,7 +539,13 @@ def parse_args(args):
 
 
 def set_log_level(options):
-    """Set the logging package's log level based on command-line options"""
+    """
+    Set the logging package's log level based on command-line options
+
+    :param options:
+
+    :return:
+    """
     try:
         if options.log_level.isdigit():
             logging.root.setLevel(int(options.log_level))
@@ -543,14 +559,17 @@ def set_log_level(options):
 
 
 def set_omero_credentials_from_string(credentials_string):
-    """Set the OMERO server / port / session ID
+    """
+    Set the OMERO server / port / session ID
 
-    credentials_string: a comma-separated key/value pair string (key=value)
-                        that gives the credentials. Keys are
-                        host - the DNS name or IP address of the OMERO server
-                        port - the TCP port to use to connect
-                        user - the user name
-                        session-id - the session ID used for authentication
+    :param credentials_string:  a comma-separated key/value pair string (key=value)
+                                that gives the credentials. Keys are
+                                host - the DNS name or IP address of the OMERO server
+                                port - the TCP port to use to connect
+                                user - the user name
+                                session-id - the session ID used for authentication
+
+    :return:
     """
 
     if re.match("([^=^,]+=[^=^,]+,)*([^=^,]+=[^=^,]+)", credentials_string) is None:
@@ -602,7 +621,8 @@ def set_omero_credentials_from_string(credentials_string):
 
 
 def print_measurements(options):
-    """Print the measurements that would be output by a pipeline
+    """
+    Print the measurements that would be output by a pipeline
 
     This function calls Pipeline.get_measurement_columns() to get the
     measurements that would be output by a pipeline. This can be used in
@@ -611,8 +631,11 @@ def print_measurements(options):
     with Knime and write a Knime node that let the user specify a pipeline
     file. The node could then execute CellProfiler with the --measurements
     switch and display the measurements as node outputs.
-    """
 
+    :param options:
+
+    :return:
+    """
     if options.pipeline_filename is None:
         raise ValueError("Can't print measurements, no pipeline file")
 
@@ -641,12 +664,17 @@ def print_measurements(options):
 
 
 def print_groups(filename):
-    """Print the image set groups for this pipeline
+    """
+    Print the image set groups for this pipeline
 
     This function outputs a JSON string to the console composed of a list
     of the groups in the pipeline image set. Each element of the list is
     a two-tuple whose first element is a key/value dictionary of the
     group's key and the second is a tuple of the image numbers in the group.
+
+    :param filename:
+
+    :return:
     """
 
     path = os.path.expanduser(filename)
@@ -661,15 +689,18 @@ def print_groups(filename):
 
 
 def get_batch_commands(filename):
-    """Print the commands needed to run the given batch data file headless
-
-    filename - the name of a Batch_data.h5 file. The file should group image sets.
+    """
+    Print the commands needed to run the given batch data file headless
 
     The output assumes that the executable, "CellProfiler", can be used
     to run the command from the shell. Alternatively, the output could be
     run through a utility such as "sed":
 
     CellProfiler --get-batch-commands Batch_data.h5 | sed s/CellProfiler/farm_job.sh/
+
+    :param filename: the name of a Batch_data.h5 file. The file should group image sets.
+
+    :return:
     """
     path = os.path.expanduser(filename)
 
@@ -714,6 +745,12 @@ def get_batch_commands(filename):
 
 
 def write_schema(pipeline_filename):
+    """
+
+    :param pipeline_filename:
+
+    :return:
+    """
     if pipeline_filename is None:
         raise ValueError("The --write-schema-and-exit switch must be used in conjunction\n with the -p or --pipeline switch to load a pipeline with an\n ExportToDatabase module.")
 
@@ -737,7 +774,14 @@ def write_schema(pipeline_filename):
 
 
 def run_pipeline_headless(options, args):
-    """Run a CellProfiler pipeline in headless mode"""
+    """
+    Run a CellProfiler pipeline in headless mode
+
+    :param options:
+    :param args:
+
+    :return:
+    """
     #
     # Start Ilastik's workers
     #

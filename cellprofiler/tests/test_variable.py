@@ -5,9 +5,9 @@ import os
 import tempfile
 import unittest
 
-import cellprofiler.measurements as cpmeas
-import cellprofiler.preferences as cpprefs
-import cellprofiler.settings as cps
+import cellprofiler.measurement as cpmeas
+import cellprofiler.preference as cpprefs
+import cellprofiler.setting as cps
 
 
 class TestVariable(unittest.TestCase):
@@ -366,7 +366,7 @@ class TestDirectoryPath(unittest.TestCase):
         self.assertEqual(s.get_absolute_path(), '')
 
     def test_03_07_metadata(self):
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurement()
         m.add_image_measurement("Metadata_Path", "2")
         s = cps.DirectoryPath("whatever", allow_metadata=True)
         for dir_choice, expected in (

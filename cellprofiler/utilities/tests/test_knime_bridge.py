@@ -7,14 +7,14 @@ import unittest
 import uuid
 import zmq
 
-from cellprofiler.analysis_worker import NOTIFY_STOP
+from cellprofiler.worker import NOTIFY_STOP
 from cellprofiler.knime_bridge import KnimeBridgeServer, \
     CONNECT_REQ_1, CONNECT_REPLY_1, \
     PIPELINE_INFO_REQ_1, PIPELINE_INFO_REPLY_1, PIPELINE_EXCEPTION_1, \
     RUN_REQ_1, RUN_GROUP_REQ_1, RUN_REPLY_1, CELLPROFILER_EXCEPTION_1, \
     CLEAN_PIPELINE_REQ_1, CLEAN_PIPELINE_REPLY_1
 import cellprofiler.pipeline as cpp
-import cellprofiler.measurements as cpmeas
+import cellprofiler.measurement as cpmeas
 from cellprofiler.modules.identifyprimaryobjects import IdentifyPrimaryObjects
 from cellprofiler.modules.identify import TS_MANUAL
 from cellprofiler.modules.flagimage import FlagImage, S_IMAGE

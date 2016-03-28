@@ -12,18 +12,18 @@ from StringIO import StringIO
 import numpy as np
 from scipy.io.matlab import loadmat
 
-from cellprofiler.preferences import set_headless
+from cellprofiler.preference import set_headless
 
 set_headless()
 
-import cellprofiler.cpmodule as cpm
-import cellprofiler.settings as cps
-import cellprofiler.measurements as cpmeas
-import cellprofiler.cpimage as cpi
+import cellprofiler.module as cpm
+import cellprofiler.setting as cps
+import cellprofiler.measurement as cpmeas
+import cellprofiler.image as cpi
 import cellprofiler.pipeline as cpp
-import cellprofiler.objects as cpo
+import cellprofiler.object as cpo
 import cellprofiler.workspace as cpw
-import cellprofiler.preferences as cpprefs
+import cellprofiler.preference as cpprefs
 from cellprofiler.modules.tests import github_url
 
 import cellprofiler.modules.calculatestatistics as C
@@ -502,7 +502,7 @@ CalculateStatistics:[module_num:1|svn_version:\'9495\'|variable_revision_number:
         pipeline = cpp.Pipeline()
         pipeline.add_module(module)
 
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurement()
         nimages = None
         for object_name in mdict.keys():
             odict = mdict[object_name]
@@ -518,7 +518,7 @@ CalculateStatistics:[module_num:1|svn_version:\'9495\'|variable_revision_number:
                     dv = module.dose_values[-1]
                     dv.measurement.value = feature
         m.image_set_number = nimages
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.SetList()
         for i in range(nimages):
             image_set = image_set_list.get_image_set(i)
         workspace = cpw.Workspace(pipeline, module, image_set,
@@ -545,7 +545,7 @@ CalculateStatistics:[module_num:1|svn_version:\'9495\'|variable_revision_number:
                                                 ["Metadata_Doses"])
         module.post_run(workspace)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         for category in ("Zfactor", "OneTailedZfactor", "Vfactor"):
             feature = '_'.join((category, INPUT_OBJECTS, TEST_FTR))
             value = m.get_experiment_measurement(feature)

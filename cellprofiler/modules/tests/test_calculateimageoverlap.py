@@ -11,15 +11,15 @@ from StringIO import StringIO
 import numpy as np
 import scipy.ndimage as ndimage
 
-from cellprofiler.preferences import set_headless
+from cellprofiler.preference import set_headless
 
 set_headless()
 
 import cellprofiler.pipeline as cpp
-import cellprofiler.cpmodule as cpm
-import cellprofiler.cpimage as cpi
-import cellprofiler.measurements as cpmeas
-import cellprofiler.objects as cpo
+import cellprofiler.module as cpm
+import cellprofiler.image as cpi
+import cellprofiler.measurement as cpmeas
+import cellprofiler.object as cpo
 import cellprofiler.workspace as cpw
 import cellprofiler.modules.calculateimageoverlap as C
 
@@ -226,7 +226,7 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
         pipeline.add_listener(callback)
         pipeline.add_module(module)
 
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.SetList()
         image_set = image_set_list.get_image_set(0)
 
         for name, d in ((GROUND_TRUTH_IMAGE_NAME, ground_truth),
@@ -237,7 +237,7 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
             image_set.add(name, image)
 
         workspace = cpw.Workspace(pipeline, module, image_set,
-                                  cpo.ObjectSet(), cpmeas.Measurements(),
+                                  cpo.ObjectSet(), cpmeas.Measurement(),
                                   image_set_list)
         return workspace, module
 
@@ -261,7 +261,7 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
 
         pipeline.add_listener(callback)
         pipeline.add_module(module)
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.SetList()
         image_set = image_set_list.get_image_set(0)
 
         for name, d in ((GROUND_TRUTH_OBJ_IMAGE_NAME, ground_truth),
@@ -273,14 +273,14 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
         object_set = cpo.ObjectSet()
         for name, d in ((GROUND_TRUTH_OBJ, ground_truth_obj),
                         (ID_OBJ, id_obj)):
-            object = cpo.Objects()
+            object = cpo.Object()
             if d.shape[1] == 3:
                 object.ijv = d
             else:
                 object.segmented = d
             object_set.add_objects(object, name)
         workspace = cpw.Workspace(pipeline, module, image_set,
-                                  object_set, cpmeas.Measurements(),
+                                  object_set, cpmeas.Measurement(),
                                   image_set_list)
         return workspace, module
 
@@ -294,7 +294,7 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
         self.assertTrue(isinstance(module, C.CalculateImageOverlap))
         module.run(workspace)
         measurements = workspace.measurements
-        self.assertTrue(isinstance(measurements, cpmeas.Measurements))
+        self.assertTrue(isinstance(measurements, cpmeas.Measurement))
         self.assertEqual(
                 measurements.get_current_image_measurement("Overlap_FalseNegRate_test"),
                 0)
@@ -316,7 +316,7 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
         self.assertTrue(isinstance(module, C.CalculateImageOverlap))
         module.run(workspace)
         measurements = workspace.measurements
-        self.assertTrue(isinstance(measurements, cpmeas.Measurements))
+        self.assertTrue(isinstance(measurements, cpmeas.Measurement))
         for feature, expected in ((C.FTR_FALSE_POS_RATE, 0),
                                   (C.FTR_FALSE_NEG_RATE, 0),
                                   (C.FTR_TRUE_POS_RATE, 1),
@@ -345,7 +345,7 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
         self.assertTrue(isinstance(module, C.CalculateImageOverlap))
         module.run(workspace)
         measurements = workspace.measurements
-        self.assertTrue(isinstance(measurements, cpmeas.Measurements))
+        self.assertTrue(isinstance(measurements, cpmeas.Measurement))
         for feature, expected in ((C.FTR_FALSE_POS_RATE, 0),
                                   (C.FTR_FALSE_NEG_RATE, 0),
                                   (C.FTR_TRUE_POS_RATE, 1),
@@ -369,7 +369,7 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
                 dict(image=image), dict(image=image))
         module.run(workspace)
         measurements = workspace.measurements
-        self.assertTrue(isinstance(measurements, cpmeas.Measurements))
+        self.assertTrue(isinstance(measurements, cpmeas.Measurement))
         for feature, expected in ((C.FTR_FALSE_POS_RATE, 0),
                                   (C.FTR_FALSE_NEG_RATE, 0),
                                   (C.FTR_TRUE_POS_RATE, 1),
@@ -762,7 +762,7 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
         module.wants_emd.value = False
         module.run(workspace)
         measurements = workspace.measurements
-        self.assertTrue(isinstance(measurements, cpmeas.Measurements))
+        self.assertTrue(isinstance(measurements, cpmeas.Measurement))
 
     def test_05_02_test_objects_rand_index(self):
         r = np.random.RandomState()

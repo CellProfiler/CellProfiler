@@ -3,7 +3,7 @@
 
 import bisect
 import cellprofiler.gui
-import cellprofiler.preferences
+import cellprofiler.preference
 import logging
 import numpy
 import urllib
@@ -246,7 +246,7 @@ class PathListCtrl(wx.PyScrolledWindow):
         npaths = len(paths)
         for i, path in enumerate(paths):
             if i % 100 == 0:
-                cellprofiler.preferences.report_progress(
+                cellprofiler.preference.report_progress(
                         uid, float(i) / npaths,
                              "Loading %s into UI" % path)
             folder, filename = self.splitpath(path)
@@ -267,7 +267,7 @@ class PathListCtrl(wx.PyScrolledWindow):
                 folder_item.file_display_names.insert(pidx, display_name)
                 folder_item.enabled.insert(pidx, True)
         if len(paths) > 0:
-            cellprofiler.preferences.report_progress(uid, 1, "Done")
+            cellprofiler.preference.report_progress(uid, 1, "Done")
         self.schmutzy = True
         self.Refresh(eraseBackground=False)
 

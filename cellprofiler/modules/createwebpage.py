@@ -13,17 +13,17 @@ import zipfile
 from cStringIO import StringIO
 from urllib2 import urlopen
 
-import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements as cpmeas
-import cellprofiler.preferences as cpprefs
-import cellprofiler.settings as cps
+import cellprofiler.module as cpm
+import cellprofiler.measurement as cpmeas
+import cellprofiler.preference as cpprefs
+import cellprofiler.setting as cps
 from cellprofiler.gui.help import USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF
 from cellprofiler.modules.loadimages import C_FILE_NAME, C_PATH_NAME, C_URL
 from cellprofiler.modules.loadimages import pathname2url
-from cellprofiler.settings import \
+from cellprofiler.setting import \
     DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME, \
     DEFAULT_INPUT_SUBFOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME
-from cellprofiler.settings import YES, NO, ABSOLUTE_FOLDER_NAME
+from cellprofiler.setting import YES, NO, ABSOLUTE_FOLDER_NAME
 
 IDX_DIRECTORY_CHOICE_V1 = 4
 
@@ -46,7 +46,7 @@ TRANSLATION_DICTIONARY = {
     "No": OPEN_NO
 }
 
-class CreateWebPage(cpm.CPModule):
+class CreateWebPage(cpm.Module):
     module_name = "CreateWebPage"
     category = "Other"
     variable_revision_number = 2

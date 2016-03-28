@@ -21,7 +21,7 @@ import cellprofiler.gui.sashwindow_tools
 import cellprofiler.icons
 import cellprofiler.modules
 import cellprofiler.pipeline
-import cellprofiler.preferences
+import cellprofiler.preference
 import cellprofiler.utilities.version
 import cellprofiler.workspace
 import inspect
@@ -124,7 +124,7 @@ class CPFrame(wx.Frame):
         self.__pipeline = cellprofiler.pipeline.Pipeline()
         self.__workspace = cellprofiler.workspace.Workspace(
                 self.__pipeline, None, None, None, None, None)
-        background_color = cellprofiler.preferences.get_background_color()
+        background_color = cellprofiler.preference.get_background_color()
         self.BackgroundColour = background_color
         self.__splitter = wx.SplitterWindow(self, -1, style=wx.SP_BORDER)
         cellprofiler.gui.sashwindow_tools.sp_bind_to_evt_paint(self.__splitter)
@@ -153,9 +153,9 @@ class CPFrame(wx.Frame):
         self.__pipeline_test_panel = wx.Panel(self.__left_win, -1)
         self.__pipeline_test_panel.SetToolTipString(
                 "The test mode panel is used for previewing the module settings prior to an analysis run. Click the buttons or use the 'Test' menu item to begin testing your module settings.")
-        self.__pipeline_test_panel.BackgroundColour = cellprofiler.preferences.get_background_color()
+        self.__pipeline_test_panel.BackgroundColour = cellprofiler.preference.get_background_color()
         self.__module_controls_panel = wx.Panel(self.__left_win, -1, style=wx.BORDER_NONE)
-        self.__module_controls_panel.BackgroundColour = cellprofiler.preferences.get_background_color()
+        self.__module_controls_panel.BackgroundColour = cellprofiler.preference.get_background_color()
         self.__module_controls_panel.SetToolTipString(
                 "The module controls add, remove, move and get help for modules. Click on the '+' button to begin adding modules.")
         #
@@ -205,7 +205,7 @@ class CPFrame(wx.Frame):
         self.__path_list_sash.SetDefaultSize((screen_width, screen_height / 4))
         self.__path_list_sash.SetDefaultBorderSize(4)
         self.__path_list_sash.SetSashVisible(wx.SASH_BOTTOM, True)
-        self.__path_list_sash.BackgroundColour = cellprofiler.preferences.get_background_color()
+        self.__path_list_sash.BackgroundColour = cellprofiler.preference.get_background_color()
         self.__path_list_sash.AutoLayout = True
         self.__path_list_sash.Hide()
         path_list_group_box = wx.StaticBox(
@@ -258,7 +258,7 @@ class CPFrame(wx.Frame):
         ######################################################################
 
         self.__module_panel = wx.Panel(self.__path_module_imageset_panel)
-        self.__module_panel.BackgroundColour = cellprofiler.preferences.get_background_color()
+        self.__module_panel.BackgroundColour = cellprofiler.preference.get_background_color()
 
         ######################################################################
         #
@@ -294,7 +294,7 @@ class CPFrame(wx.Frame):
         #
         self.__preferences_panel = wx.Panel(self.__right_win, -1)
         self.__right_win.Sizer.Add(self.__preferences_panel, 1, wx.EXPAND)
-        self.__preferences_panel.BackgroundColour = cellprofiler.preferences.get_background_color()
+        self.__preferences_panel.BackgroundColour = cellprofiler.preference.get_background_color()
         self.__preferences_panel.SetToolTipString(
                 "The folder panel sets/creates the input and output folders and output filename. Once your pipeline is ready and your folders set, click 'Analyze Images' to begin the analysis run.")
         #
@@ -316,7 +316,7 @@ class CPFrame(wx.Frame):
         self.__error_listeners = []
         self.Bind(wx.EVT_CLOSE, self.OnClose)
         self.SetAutoLayout(True)
-        if cellprofiler.preferences.get_startup_blurb():
+        if cellprofiler.preference.get_startup_blurb():
             self.show_welcome_screen(True)
         self.show_module_ui(True)
 
@@ -524,7 +524,7 @@ class CPFrame(wx.Frame):
         self.__menu_file.Append(
                 wx.ID_OPEN,
                 "Open Project...\tctrl+O",
-                help='Open a project from a .%s project file' % cellprofiler.preferences.EXT_PROJECT)
+                help='Open a project from a .%s project file' % cellprofiler.preference.EXT_PROJECT)
         self.recent_workspace_files = wx.Menu()
         self.__menu_file.AppendSubMenu(
                 self.recent_workspace_files,
@@ -546,7 +546,7 @@ class CPFrame(wx.Frame):
                 ID_FILE_LOAD_PIPELINE,
                 'Pipeline from File...',
                 'Import a pipeline into the project from a .%s file' %
-                cellprofiler.preferences.EXT_PIPELINE)
+                cellprofiler.preference.EXT_PIPELINE)
         submenu.Append(
                 ID_FILE_URL_LOAD_PIPELINE,
                 'Pipeline from URL...',
@@ -561,7 +561,7 @@ class CPFrame(wx.Frame):
         submenu.Append(
                 ID_FILE_SAVE_PIPELINE,
                 'Pipeline...\tctrl+P',
-                "Save the project's pipeline to a .%s file" % cellprofiler.preferences.EXT_PIPELINE)
+                "Save the project's pipeline to a .%s file" % cellprofiler.preference.EXT_PIPELINE)
         submenu.Append(
                 ID_FILE_EXPORT_IMAGE_SETS,
                 "Image Set Listing...",
@@ -698,7 +698,7 @@ class CPFrame(wx.Frame):
         self.__menu_bar.Append(self.__menu_file, '&File')
         self.__menu_bar.Append(self.menu_edit, '&Edit')
         self.__menu_bar.Append(self.__menu_debug, '&Test')
-        if cellprofiler.preferences.get_show_sampling():
+        if cellprofiler.preference.get_show_sampling():
             self.__menu_sample = wx.Menu()
             self.__menu_sample.Append(ID_SAMPLE_INIT, 'Initialize Sampling', 'Initialize sampling up to current module')
             self.__menu_bar.Append(self.__menu_sample, '&Sample')
@@ -1205,7 +1205,7 @@ class CPFrame(wx.Frame):
 
     def __make_search_frame(self):
         """Make and hide the "search the help" frame"""
-        background_color = cellprofiler.preferences.get_background_color()
+        background_color = cellprofiler.preference.get_background_color()
         size = (wx.SystemSettings.GetMetric(wx.SYS_SCREEN_X) / 2,
                 wx.SystemSettings.GetMetric(wx.SYS_SCREEN_Y) / 2)
         self.search_frame = wx.Frame(
@@ -1277,7 +1277,7 @@ class CPFrame(wx.Frame):
 
     def __make_startup_blurb_frame(self):
         """Make the frame surrounding the startup blurb panel"""
-        background_color = cellprofiler.preferences.get_background_color()
+        background_color = cellprofiler.preference.get_background_color()
         frame = self.startup_blurb_frame = wx.Frame(
                 self, title="Welcome to CellProfiler",
                 size=(640, 480),

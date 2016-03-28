@@ -9,15 +9,15 @@ from StringIO import StringIO
 import numpy as np
 from scipy.ndimage import distance_transform_edt
 
-from cellprofiler.preferences import set_headless
+from cellprofiler.preference import set_headless
 
 set_headless()
 
 import cellprofiler.pipeline as cpp
-import cellprofiler.cpmodule as cpm
-import cellprofiler.cpimage as cpi
-import cellprofiler.measurements as cpmeas
-import cellprofiler.objects as cpo
+import cellprofiler.module as cpm
+import cellprofiler.image as cpi
+import cellprofiler.measurement as cpmeas
+import cellprofiler.object as cpo
 import cellprofiler.workspace as cpw
 import cellprofiler.modules.relateobjects as R
 
@@ -32,7 +32,7 @@ class TestRelateObjects(unittest.TestCase):
         '''Make a workspace for testing Relate'''
         pipeline = cpp.Pipeline()
         if fake_measurement:
-            class FakeModule(cpm.CPModule):
+            class FakeModule(cpm.Module):
                 def get_measurement_columns(self, pipeline):
                     return [(CHILD_OBJECTS, MEASUREMENT, cpmeas.COLTYPE_FLOAT),
                             (CHILD_OBJECTS, IGNORED_MEASUREMENT, cpmeas.COLTYPE_INTEGER)]
@@ -47,9 +47,9 @@ class TestRelateObjects(unittest.TestCase):
         module.module_num = 2 if fake_measurement else 1
         pipeline.add_module(module)
         object_set = cpo.ObjectSet()
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.SetList()
         image_set = image_set_list.get_image_set(0)
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurement()
         m.add_image_measurement(cpmeas.GROUP_NUMBER, 1)
         m.add_image_measurement(cpmeas.GROUP_INDEX, 1)
         workspace = cpw.Workspace(pipeline,
@@ -58,14 +58,14 @@ class TestRelateObjects(unittest.TestCase):
                                   object_set,
                                   m,
                                   image_set_list)
-        o = cpo.Objects()
+        o = cpo.Object()
         if parents.shape[1] == 3:
             # IJV format
             o.ijv = parents
         else:
             o.segmented = parents
         object_set.add_objects(o, PARENT_OBJECTS)
-        o = cpo.Objects()
+        o = cpo.Object()
         if children.shape[1] == 3:
             o.ijv = children
         else:
@@ -429,7 +429,7 @@ Relate:[module_num:8|svn_version:\'8866\'|variable_revision_number:2|show_window
                                                 fake_measurement=True)
         module.wants_per_parent_means.value = True
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         m.add_measurement(CHILD_OBJECTS, MEASUREMENT,
                           np.array([1.0, 2.0, 3.0, 4.0]))
         m.add_measurement(CHILD_OBJECTS, IGNORED_MEASUREMENT,
@@ -454,7 +454,7 @@ Relate:[module_num:8|svn_version:\'8866\'|variable_revision_number:2|show_window
                                                 fake_measurement=True)
         module.wants_per_parent_means.value = True
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         m.add_measurement(CHILD_OBJECTS, MEASUREMENT, np.zeros(0))
         m.add_measurement(CHILD_OBJECTS, IGNORED_MEASUREMENT, np.zeros(0, int))
         module.run(workspace)

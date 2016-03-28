@@ -12,18 +12,18 @@ from StringIO import StringIO
 
 import numpy as np
 
-from cellprofiler.preferences import set_headless
+from cellprofiler.preference import set_headless
 
 set_headless()
 
 import cellprofiler.workspace as cpw
 import cellprofiler.pipeline as cpp
-import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements as cpmeas
-import cellprofiler.objects as cpo
-import cellprofiler.settings as cps
-import cellprofiler.preferences as cpprefs
+import cellprofiler.image as cpi
+import cellprofiler.module as cpm
+import cellprofiler.measurement as cpmeas
+import cellprofiler.object as cpo
+import cellprofiler.setting as cps
+import cellprofiler.preference as cpprefs
 
 import cellprofiler.modules.loadimages as LI
 import cellprofiler.modules.createbatchfiles as C
@@ -319,7 +319,7 @@ class TestCreateBatchFiles(unittest.TestCase):
         module = pipeline.modules()[-1]
         self.assertTrue(isinstance(module, C.CreateBatchFiles))
         batch_data = zlib.decompress(module.batch_state)
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.SetList()
         image_set_list.load_state(batch_data)
         self.assertEqual(image_set_list.count(), 96)
         self.assertEqual(image_set_list.legacy_fields['PathnamerawDNA'],
@@ -409,7 +409,7 @@ CreateBatchFiles:[module_num:19|svn_version:\'Unknown\'|variable_revision_number
         # First, make sure that a naked CPModule tests valid
         #
         pipeline = cpp.Pipeline()
-        module = cpm.CPModule()
+        module = cpm.Module()
         module.module_num = len(pipeline.modules()) + 1
         pipeline.add_module(module)
         pipeline.test_valid()
@@ -422,7 +422,7 @@ CreateBatchFiles:[module_num:19|svn_version:\'Unknown\'|variable_revision_number
         pipeline.add_module(module)
         pipeline.test_valid()
 
-        module = cpm.CPModule()
+        module = cpm.Module()
         module.module_num = len(pipeline.modules()) + 1
         pipeline.add_module(module)
         self.assertRaises(cps.ValidationError, pipeline.test_valid)
@@ -476,8 +476,8 @@ CreateBatchFiles:[module_num:19|svn_version:\'Unknown\'|variable_revision_number
                 mapping = module.mappings[0]
                 mapping.local_directory.value = ipath
                 self.assertFalse(pipeline.in_batch_mode())
-                measurements = cpmeas.Measurements(mode="memory")
-                image_set_list = cpi.ImageSetList()
+                measurements = cpmeas.Measurement(mode="memory")
+                image_set_list = cpi.SetList()
                 result = pipeline.prepare_run(
                         cpw.Workspace(pipeline, None, None, None,
                                       measurements, image_set_list))
@@ -488,10 +488,10 @@ CreateBatchFiles:[module_num:19|svn_version:\'Unknown\'|variable_revision_number
                         cpmeas.EXPERIMENT, cpp.M_PIPELINE))
                 pipeline = cpp.Pipeline()
                 pipeline.add_listener(callback)
-                image_set_list = cpi.ImageSetList()
-                measurements = cpmeas.Measurements(mode="memory")
+                image_set_list = cpi.SetList()
+                measurements = cpmeas.Measurement(mode="memory")
                 workspace = cpw.Workspace(pipeline, None, None, None,
-                                          cpmeas.Measurements(),
+                                          cpmeas.Measurement(),
                                           image_set_list)
                 workspace.load(hfile, True)
                 measurements = workspace.measurements

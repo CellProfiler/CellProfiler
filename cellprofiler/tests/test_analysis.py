@@ -20,9 +20,9 @@ import zmq
 
 import cellprofiler.analysis as cpanalysis
 import cellprofiler.pipeline as cpp
-import cellprofiler.cpmodule as cpm
-import cellprofiler.preferences as cpprefs
-import cellprofiler.measurements as cpmeas
+import cellprofiler.module as cpm
+import cellprofiler.preference as cpprefs
+import cellprofiler.measurement as cpmeas
 import cellprofiler.utilities.zmqrequest as cpzmq
 from cellprofiler.modules.tests import example_images_directory, testimages_directory
 
@@ -238,7 +238,7 @@ class TestAnalysis(unittest.TestCase):
                                        group_numbers=None,
                                        group_indexes=None,
                                        **kwargs):
-        m = cpmeas.Measurements(mode="memory")
+        m = cpmeas.Measurement(mode="memory")
         for i in range(1, nimage_sets + 1):
             if group_numbers is not None:
                 group_number = group_numbers[i - 1]
@@ -276,7 +276,7 @@ class TestAnalysis(unittest.TestCase):
 
         for module in pipeline.modules():
             if module.show_window and \
-                            module.__class__.display_post_run != cpm.CPModule.display_post_run:
+                            module.__class__.display_post_run != cpm.Module.display_post_run:
                 result = self.event_queue.get()
                 self.assertIsInstance(
                         result, cpanalysis.DisplayPostRunRequest)
@@ -294,7 +294,7 @@ class TestAnalysis(unittest.TestCase):
         self.assertIsInstance(analysis_finished, cpanalysis.AnalysisFinished)
         self.assertTrue(analysis_finished.cancelled)
         self.assertIsInstance(analysis_finished.measurements,
-                              cpmeas.Measurements)
+                              cpmeas.Measurement)
         logger.debug("Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function)
 
     def test_02_01_announcement(self):
@@ -399,8 +399,8 @@ class TestAnalysis(unittest.TestCase):
             client_measurements = cpmeas.load_measurements_from_buffer(
                     response.buf)
             try:
-                assert isinstance(client_measurements, cpmeas.Measurements)
-                assert isinstance(m, cpmeas.Measurements)
+                assert isinstance(client_measurements, cpmeas.Measurement)
+                assert isinstance(m, cpmeas.Measurement)
                 self.assertSequenceEqual(
                         m.get_image_numbers(),
                         client_measurements.get_image_numbers())
@@ -715,7 +715,7 @@ class TestAnalysis(unittest.TestCase):
                     worker.send(cpanalysis.ImageSetSuccess(
                             worker.analysis_id,
                             image_set_number=image_number))
-                m = cpmeas.Measurements(copy=client_measurements)
+                m = cpmeas.Measurement(copy=client_measurements)
                 m[cpmeas.IMAGE, IMAGE_FEATURE, image_number] = \
                     "Hello %d" % image_number
                 m[OBJECTS_NAME, OBJECTS_FEATURE, image_number] = om
@@ -793,7 +793,7 @@ class TestAnalysis(unittest.TestCase):
                         worker.analysis_id,
                         image_set_number=image_number))
             for image_numbers in ((1, 2), (3, 4)):
-                m = cpmeas.Measurements(copy=client_measurements)
+                m = cpmeas.Measurement(copy=client_measurements)
                 for image_number in image_numbers:
                     m[cpmeas.IMAGE, IMAGE_FEATURE, image_number] = \
                         "Hello %d" % image_number
@@ -885,7 +885,7 @@ class TestAnalysis(unittest.TestCase):
                 worker.send(cpanalysis.ImageSetSuccess(
                         worker.analysis_id,
                         image_set_number=image_number))
-                m = cpmeas.Measurements(copy=client_measurements)
+                m = cpmeas.Measurement(copy=client_measurements)
                 m[cpmeas.IMAGE, IMAGE_FEATURE, image_number] = \
                     "Hello %d" % image_number
                 m[OBJECTS_NAME, OBJECTS_FEATURE, image_number] = om
@@ -909,7 +909,7 @@ class TestAnalysis(unittest.TestCase):
             self.assertIsInstance(result, cpanalysis.AnalysisFinished)
             self.assertFalse(result.cancelled)
             measurements = result.measurements
-            assert isinstance(measurements, cpmeas.Measurements)
+            assert isinstance(measurements, cpmeas.Measurement)
             self.assertSequenceEqual(list(measurements.get_image_numbers()),
                                      [1, 2, 3])
             for i in range(1, 4):
@@ -958,7 +958,7 @@ class TestAnalysis(unittest.TestCase):
             for image_number in (1, 2):
                 response = worker.send(cpanalysis.ImageSetSuccess(
                         worker.analysis_id, image_number))()
-            m = cpmeas.Measurements(copy=client_measurements)
+            m = cpmeas.Measurement(copy=client_measurements)
             objects_measurements = [r.uniform(size=10) for _ in range(2)]
             for image_number in (1, 2):
                 m[cpmeas.IMAGE, IMAGE_FEATURE, image_number] = \
@@ -1055,7 +1055,7 @@ class TestAnalysis(unittest.TestCase):
             self.assertIsInstance(result, cpanalysis.AnalysisFinished)
             self.assertFalse(result.cancelled)
             measurements = result.measurements
-            assert isinstance(measurements, cpmeas.Measurements)
+            assert isinstance(measurements, cpmeas.Measurement)
             self.assertSequenceEqual(measurements.get_image_numbers(), [1])
             self.assertEqual(measurements[cpmeas.IMAGE, IMAGE_FEATURE, 1],
                              "Hello")

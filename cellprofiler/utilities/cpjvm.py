@@ -11,7 +11,7 @@ import tempfile
 import bioformats
 import javabridge
 
-import cellprofiler.preferences as cpprefs
+import cellprofiler.preference as cpprefs
 
 logger = logging.getLogger(__name__)
 

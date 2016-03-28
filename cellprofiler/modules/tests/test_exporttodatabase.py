@@ -20,17 +20,17 @@ if hasattr(unittest, "SkipTest"):
 else:
     SkipTestException = None
 
-from cellprofiler.preferences import set_headless
+from cellprofiler.preference import set_headless
 
 set_headless()
 
-import cellprofiler.cpmodule as cpm
+import cellprofiler.module as cpm
 import cellprofiler.pipeline as cpp
-import cellprofiler.settings as cps
-import cellprofiler.cpimage as cpi
+import cellprofiler.setting as cps
+import cellprofiler.image as cpi
 import cellprofiler.workspace as cpw
-import cellprofiler.objects as cpo
-import cellprofiler.measurements as cpmeas
+import cellprofiler.object as cpo
+import cellprofiler.measurement as cpmeas
 
 import cellprofiler.modules.exporttodatabase as E
 import cellprofiler.modules.identify as I
@@ -1636,7 +1636,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                        post_run_test=False):
         '''Make a measurements structure with image and object measurements'''
 
-        class TestModule(cpm.CPModule):
+        class TestModule(cpm.Module):
             module_name = "TestModule"
             module_num = 1
             variable_revision_number = 1
@@ -1735,7 +1735,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     return ["Plate", "Well"]
                 return []
 
-        m = cpmeas.Measurements(can_overwrite=True)
+        m = cpmeas.Measurement(can_overwrite=True)
         for i in range(image_set_count):
             if i > 0:
                 m.next_image_set()
@@ -1778,15 +1778,15 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 m.add_relate_measurement(
                         1, RELATIONSHIP_NAME, o1name, o2name, i1, o1, i2, o2)
 
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.SetList()
         image_set = image_set_list.get_image_set(0)
         image_set.add(IMAGE_NAME, cpi.Image(r.uniform(size=(512, 512))))
         object_set = cpo.ObjectSet()
-        objects = cpo.Objects()
+        objects = cpo.Object()
         objects.segmented = np.array([[0, 1, 2, 3], [0, 1, 2, 3]])
         object_set.add_objects(objects, OBJECT_NAME)
         if alt_object:
-            objects = cpo.Objects()
+            objects = cpo.Object()
             objects.segmented = np.array([[0, 1, 2, 3], [0, 1, 2, 3]])
             object_set.add_objects(objects, ALTOBJECT_NAME)
         test_module = TestModule()
@@ -2634,7 +2634,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         self.assertTrue(isinstance(module, E.ExportToDatabase))
         module.objects_choice.value = E.O_NONE
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         m.add_image_measurement(STRING_IMG_MEASUREMENT, backslash_string)
         try:
             module.prepare_run(workspace)
@@ -4047,7 +4047,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         self.assertTrue(isinstance(module, E.ExportToDatabase))
         self.assertTrue(isinstance(workspace, cpw.Workspace))
         measurements = workspace.measurements
-        self.assertTrue(isinstance(measurements, cpmeas.Measurements))
+        self.assertTrue(isinstance(measurements, cpmeas.Measurement))
         module.wants_agg_mean.value = False
         module.wants_agg_median.value = False
         module.wants_agg_std_dev.value = False
@@ -4133,7 +4133,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         self.assertTrue(isinstance(module, E.ExportToDatabase))
         self.assertTrue(isinstance(workspace, cpw.Workspace))
         measurements = workspace.measurements
-        self.assertTrue(isinstance(measurements, cpmeas.Measurements))
+        self.assertTrue(isinstance(measurements, cpmeas.Measurement))
         module.wants_agg_mean.value = True
         module.wants_agg_median.value = False
         module.wants_agg_std_dev.value = False
@@ -4227,7 +4227,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         self.assertTrue(isinstance(module, E.ExportToDatabase))
         self.assertTrue(isinstance(workspace, cpw.Workspace))
         measurements = workspace.measurements
-        self.assertTrue(isinstance(measurements, cpmeas.Measurements))
+        self.assertTrue(isinstance(measurements, cpmeas.Measurement))
         module.wants_agg_mean.value = False
         module.wants_agg_median.value = False
         module.wants_agg_std_dev.value = False
@@ -4307,7 +4307,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         self.assertTrue(isinstance(module, E.ExportToDatabase))
         self.assertTrue(isinstance(workspace, cpw.Workspace))
         measurements = workspace.measurements
-        self.assertTrue(isinstance(measurements, cpmeas.Measurements))
+        self.assertTrue(isinstance(measurements, cpmeas.Measurement))
         module.wants_agg_mean.value = True
         module.wants_agg_median.value = False
         module.wants_agg_std_dev.value = False
@@ -4399,7 +4399,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.assertTrue(isinstance(module, E.ExportToDatabase))
             self.assertTrue(isinstance(workspace, cpw.Workspace))
             measurements = workspace.measurements
-            self.assertTrue(isinstance(measurements, cpmeas.Measurements))
+            self.assertTrue(isinstance(measurements, cpmeas.Measurement))
             module.db_type.value = E.DB_SQLITE
             module.directory.dir_choice = E.ABSOLUTE_FOLDER_NAME
             module.directory.custom_path = output_dir
@@ -4495,7 +4495,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         self.assertTrue(isinstance(module, E.ExportToDatabase))
         self.assertTrue(isinstance(workspace, cpw.Workspace))
         measurements = workspace.measurements
-        self.assertTrue(isinstance(measurements, cpmeas.Measurements))
+        self.assertTrue(isinstance(measurements, cpmeas.Measurement))
         module.wants_agg_mean.value = False
         module.wants_agg_median.value = False
         module.wants_agg_std_dev.value = False

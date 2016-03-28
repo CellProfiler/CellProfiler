@@ -10,15 +10,15 @@ from StringIO import StringIO
 import numpy as np
 import scipy.ndimage
 
-from cellprofiler.preferences import set_headless
+from cellprofiler.preference import set_headless
 
 set_headless()
 
 import cellprofiler.pipeline as cpp
-import cellprofiler.cpmodule as cpm
-import cellprofiler.cpimage as cpi
-import cellprofiler.measurements as cpmeas
-import cellprofiler.objects as cpo
+import cellprofiler.module as cpm
+import cellprofiler.image as cpi
+import cellprofiler.measurement as cpmeas
+import cellprofiler.object as cpo
 import cellprofiler.workspace as cpw
 
 import cellprofiler.modules.labelimages as L
@@ -95,7 +95,7 @@ LabelImages:[module_num:2|svn_version:\'9970\'|variable_revision_number:1|show_w
         self.assertEqual(module.order, L.O_ROW)
 
     def make_workspace(self, image_set_count):
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.SetList()
         for i in range(image_set_count):
             image_set = image_set_list.get_image_set(i)
         module = L.LabelImages()
@@ -110,7 +110,7 @@ LabelImages:[module_num:2|svn_version:\'9970\'|variable_revision_number:1|show_w
 
         workspace = cpw.Workspace(pipeline, module,
                                   image_set_list.get_image_set(0),
-                                  cpo.ObjectSet(), cpmeas.Measurements(),
+                                  cpo.ObjectSet(), cpmeas.Measurement(),
                                   image_set_list)
         return workspace, module
 
@@ -120,7 +120,7 @@ LabelImages:[module_num:2|svn_version:\'9970\'|variable_revision_number:1|show_w
         nimagesets = 96 * nsites
         workspace, module = self.make_workspace(nimagesets)
         measurements = workspace.measurements
-        self.assertTrue(isinstance(measurements, cpmeas.Measurements))
+        self.assertTrue(isinstance(measurements, cpmeas.Measurement))
         self.assertTrue(isinstance(module, L.LabelImages))
         module.row_count.value = 8
         module.column_count.value = 12
@@ -150,7 +150,7 @@ LabelImages:[module_num:2|svn_version:\'9970\'|variable_revision_number:1|show_w
         nimagesets = 96 * nsites
         workspace, module = self.make_workspace(nimagesets)
         measurements = workspace.measurements
-        self.assertTrue(isinstance(measurements, cpmeas.Measurements))
+        self.assertTrue(isinstance(measurements, cpmeas.Measurement))
         self.assertTrue(isinstance(module, L.LabelImages))
         module.row_count.value = 8
         module.column_count.value = 12
@@ -180,7 +180,7 @@ LabelImages:[module_num:2|svn_version:\'9970\'|variable_revision_number:1|show_w
         nimagesets = 96 * nsites * nplates
         workspace, module = self.make_workspace(nimagesets)
         measurements = workspace.measurements
-        self.assertTrue(isinstance(measurements, cpmeas.Measurements))
+        self.assertTrue(isinstance(measurements, cpmeas.Measurement))
         self.assertTrue(isinstance(module, L.LabelImages))
         module.row_count.value = 8
         module.column_count.value = 12
@@ -208,7 +208,7 @@ LabelImages:[module_num:2|svn_version:\'9970\'|variable_revision_number:1|show_w
         nimagesets = 1000
         workspace, module = self.make_workspace(nimagesets)
         measurements = workspace.measurements
-        self.assertTrue(isinstance(measurements, cpmeas.Measurements))
+        self.assertTrue(isinstance(measurements, cpmeas.Measurement))
         self.assertTrue(isinstance(module, L.LabelImages))
         module.row_count.value = 1000
         module.column_count.value = 1

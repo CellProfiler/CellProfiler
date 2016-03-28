@@ -17,10 +17,10 @@ import sys
 import traceback
 
 logger = logging.getLogger(__name__)
-import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements as cpmeas
-import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
+import cellprofiler.module as cpm
+import cellprofiler.measurement as cpmeas
+import cellprofiler.setting as cps
+from cellprofiler.setting import YES, NO
 from cellprofiler.gui.help import USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF
 
 S_FIRST = "After first cycle"
@@ -56,7 +56,7 @@ EVENT_SETTING_COUNT = 4
 K_LAST_IN_GROUP = "Last in group"
 
 
-class SendEmail(cpm.CPModule):
+class SendEmail(cpm.Module):
     module_name = "SendEmail"
     category = "Other"
     variable_revision_number = 2
@@ -244,7 +244,7 @@ class SendEmail(cpm.CPModule):
     def run(self, workspace):
         '''Run every image set'''
         m = workspace.measurements
-        assert isinstance(m, cpmeas.Measurements)
+        assert isinstance(m, cpmeas.Measurement)
         d = self.get_dictionary()
         image_number = m.image_set_number
         if m.has_feature(cpmeas.IMAGE, cpmeas.GROUP_NUMBER):
@@ -297,7 +297,7 @@ class SendEmail(cpm.CPModule):
         '''Send an email according to the settings'''
 
         measurements = workspace.measurements
-        assert isinstance(measurements, cpmeas.Measurements)
+        assert isinstance(measurements, cpmeas.Measurement)
 
         message = email.message.Message()
         who_from = self.from_address.value

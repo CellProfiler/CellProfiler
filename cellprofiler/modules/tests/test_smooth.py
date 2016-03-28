@@ -9,17 +9,17 @@ import zlib
 import numpy as np
 from scipy.ndimage import gaussian_filter
 
-from cellprofiler.preferences import set_headless
+from cellprofiler.preference import set_headless
 
 set_headless()
 
 import cellprofiler.workspace as cpw
-import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
-import cellprofiler.objects as cpo
+import cellprofiler.image as cpi
+import cellprofiler.module as cpm
+import cellprofiler.object as cpo
 import cellprofiler.modules.smooth as S
 import cellprofiler.pipeline as cpp
-import cellprofiler.measurements as cpmeas
+import cellprofiler.measurement as cpmeas
 from centrosome.smooth import fit_polynomial, smooth_with_function_and_mask
 from centrosome.filter import median_filter, bilateral_filter
 
@@ -33,13 +33,13 @@ class TestSmooth(unittest.TestCase):
         module = S.Smooth()
         pipeline = cpp.Pipeline()
         object_set = cpo.ObjectSet()
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.SetList()
         image_set = image_set_list.get_image_set(0)
         workspace = cpw.Workspace(pipeline,
                                   module,
                                   image_set,
                                   object_set,
-                                  cpmeas.Measurements(),
+                                  cpmeas.Measurement(),
                                   image_set_list)
         image_set.add(INPUT_IMAGE_NAME, cpi.Image(image, mask))
         module.image_name.value = INPUT_IMAGE_NAME

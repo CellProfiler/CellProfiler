@@ -1,8 +1,8 @@
 """metadatadlg.py - dialog for editing an expression that might contain metadata
 """
 
-import cellprofiler.measurements
-import cellprofiler.preferences
+import cellprofiler.measurement
+import cellprofiler.preference
 import wx
 import wx.lib.masked
 
@@ -44,12 +44,12 @@ class MetadataControl(wx.PyControl):
 
         super(MetadataControl, self).__init__(*args, **kwargs)
         columns = pipeline.get_measurement_columns(module)
-        choices = [cellprofiler.measurements.C_SERIES, cellprofiler.measurements.C_FRAME]
+        choices = [cellprofiler.measurement.C_SERIES, cellprofiler.measurement.C_FRAME]
         for column in columns:
             object_name, feature, coltype = column[:3]
-            choice = feature[(len(cellprofiler.measurements.C_METADATA) + 1):]
-            if (object_name == cellprofiler.measurements.IMAGE and
-                    feature.startswith(cellprofiler.measurements.C_METADATA)):
+            choice = feature[(len(cellprofiler.measurement.C_METADATA) + 1):]
+            if (object_name == cellprofiler.measurement.IMAGE and
+                    feature.startswith(cellprofiler.measurement.C_METADATA)):
                 choices.append(choice)
         self.__metadata_choices = choices
         self.SetValue(value)
@@ -530,7 +530,7 @@ class MetadataControl(wx.PyControl):
         try:
             dc.BackgroundMode = wx.SOLID
             background_color = wx.SystemSettings_GetColour(wx.SYS_COLOUR_WINDOW)
-            metadata_color = cellprofiler.preferences.get_primary_outline_color()
+            metadata_color = cellprofiler.preference.get_primary_outline_color()
             selected_background_color = wx.SystemSettings_GetColour(wx.SYS_COLOUR_HIGHLIGHT)
             selected_color = wx.SystemSettings_GetColour(wx.SYS_COLOUR_HIGHLIGHTTEXT)
             text_color = wx.SystemSettings_GetColour(wx.SYS_COLOUR_WINDOWTEXT)

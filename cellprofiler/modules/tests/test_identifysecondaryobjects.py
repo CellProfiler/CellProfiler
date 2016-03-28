@@ -8,7 +8,7 @@ import zlib
 
 import numpy as np
 
-from cellprofiler.preferences import set_headless
+from cellprofiler.preference import set_headless
 
 set_headless()
 
@@ -16,9 +16,9 @@ import cellprofiler.modules.identifysecondaryobjects as cpmi2
 import cellprofiler.modules.identify as cpmi
 import cellprofiler.pipeline as cpp
 import cellprofiler.workspace as cpw
-import cellprofiler.cpimage as cpi
-import cellprofiler.objects as cpo
-import cellprofiler.measurements as cpm
+import cellprofiler.image as cpi
+import cellprofiler.object as cpo
+import cellprofiler.measurement as cpm
 
 INPUT_OBJECTS_NAME = "input_objects"
 OUTPUT_OBJECTS_NAME = "output_objects"
@@ -393,9 +393,9 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
 
         p.add_listener(callback)
         o_s = cpo.ObjectSet()
-        i_l = cpi.ImageSetList()
+        i_l = cpi.SetList()
         image = cpi.Image(image)
-        objects = cpo.Objects()
+        objects = cpo.Object()
         if unedited_segmented is not None:
             objects.unedited_segmented = unedited_segmented
         if small_removed_segmented is not None:
@@ -404,7 +404,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         o_s.add_objects(objects, INPUT_OBJECTS_NAME)
         i_s = i_l.get_image_set(0)
         i_s.add(IMAGE_NAME, image)
-        m = cpm.Measurements()
+        m = cpm.Measurement()
         module = cpmi2.IdentifySecondary()
         module.primary_objects.value = INPUT_OBJECTS_NAME
         module.objects_name.value = OUTPUT_OBJECTS_NAME
@@ -496,12 +496,12 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
     def test_02_04_two_objects_propagation_distance(self):
         p = cpp.Pipeline()
         o_s = cpo.ObjectSet()
-        i_l = cpi.ImageSetList()
+        i_l = cpi.SetList()
         img = np.zeros((10, 20))
         img[2:7, 2:7] = .3
         img[2:7, 7:17] = .5
         image = cpi.Image(img)
-        objects = cpo.Objects()
+        objects = cpo.Object()
         labels = np.zeros((10, 20), int)
         labels[3:6, 3:6] = 1
         labels[3:6, 13:16] = 2
@@ -511,7 +511,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         o_s.add_objects(objects, INPUT_OBJECTS_NAME)
         i_s = i_l.get_image_set(0)
         i_s.add(IMAGE_NAME, image)
-        m = cpm.Measurements()
+        m = cpm.Measurement()
         module = cpmi2.IdentifySecondary()
         module.primary_objects.value = INPUT_OBJECTS_NAME
         module.objects_name.value = OUTPUT_OBJECTS_NAME
@@ -570,16 +570,16 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
     def test_03_01_zeros_watershed_gradient(self):
         p = cpp.Pipeline()
         o_s = cpo.ObjectSet()
-        i_l = cpi.ImageSetList()
+        i_l = cpi.SetList()
         image = cpi.Image(np.zeros((10, 10)))
-        objects = cpo.Objects()
+        objects = cpo.Object()
         objects.unedited_segmented = np.zeros((10, 10), int)
         objects.small_removed_segmented = np.zeros((10, 10), int)
         objects.segmented = np.zeros((10, 10), int)
         o_s.add_objects(objects, INPUT_OBJECTS_NAME)
         i_s = i_l.get_image_set(0)
         i_s.add(IMAGE_NAME, image)
-        m = cpm.Measurements()
+        m = cpm.Measurement()
         module = cpmi2.IdentifySecondary()
         module.primary_objects.value = INPUT_OBJECTS_NAME
         module.objects_name.value = OUTPUT_OBJECTS_NAME
@@ -599,11 +599,11 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
     def test_03_02_one_object_watershed_gradient(self):
         p = cpp.Pipeline()
         o_s = cpo.ObjectSet()
-        i_l = cpi.ImageSetList()
+        i_l = cpi.SetList()
         img = np.zeros((10, 10))
         img[2:7, 2:7] = .5
         image = cpi.Image(img)
-        objects = cpo.Objects()
+        objects = cpo.Object()
         labels = np.zeros((10, 10), int)
         labels[3:6, 3:6] = 1
         objects.unedited_segmented = labels
@@ -612,7 +612,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         o_s.add_objects(objects, INPUT_OBJECTS_NAME)
         i_s = i_l.get_image_set(0)
         i_s.add(IMAGE_NAME, image)
-        m = cpm.Measurements()
+        m = cpm.Measurement()
         module = cpmi2.IdentifySecondary()
         module.primary_objects.value = INPUT_OBJECTS_NAME
         module.objects_name.value = OUTPUT_OBJECTS_NAME
@@ -646,14 +646,14 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
     def test_03_03_two_objects_watershed_gradient(self):
         p = cpp.Pipeline()
         o_s = cpo.ObjectSet()
-        i_l = cpi.ImageSetList()
+        i_l = cpi.SetList()
         img = np.zeros((10, 20))
         # There should be a gradient at :,7 which should act
         # as the watershed barrier
         img[2:7, 2:7] = .3
         img[2:7, 7:17] = .5
         image = cpi.Image(img)
-        objects = cpo.Objects()
+        objects = cpo.Object()
         labels = np.zeros((10, 20), int)
         labels[3:6, 3:6] = 1
         labels[3:6, 13:16] = 2
@@ -663,7 +663,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         o_s.add_objects(objects, INPUT_OBJECTS_NAME)
         i_s = i_l.get_image_set(0)
         i_s.add(IMAGE_NAME, image)
-        m = cpm.Measurements()
+        m = cpm.Measurement()
         module = cpmi2.IdentifySecondary()
         module.primary_objects.value = INPUT_OBJECTS_NAME
         module.objects_name.value = OUTPUT_OBJECTS_NAME
@@ -722,16 +722,16 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
     def test_04_01_zeros_watershed_image(self):
         p = cpp.Pipeline()
         o_s = cpo.ObjectSet()
-        i_l = cpi.ImageSetList()
+        i_l = cpi.SetList()
         image = cpi.Image(np.zeros((10, 10)))
-        objects = cpo.Objects()
+        objects = cpo.Object()
         objects.unedited_segmented = np.zeros((10, 10), int)
         objects.small_removed_segmented = np.zeros((10, 10), int)
         objects.segmented = np.zeros((10, 10), int)
         o_s.add_objects(objects, INPUT_OBJECTS_NAME)
         i_s = i_l.get_image_set(0)
         i_s.add(IMAGE_NAME, image)
-        m = cpm.Measurements()
+        m = cpm.Measurement()
         module = cpmi2.IdentifySecondary()
         module.primary_objects.value = INPUT_OBJECTS_NAME
         module.objects_name.value = OUTPUT_OBJECTS_NAME
@@ -751,11 +751,11 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
     def test_04_02_one_object_watershed_image(self):
         p = cpp.Pipeline()
         o_s = cpo.ObjectSet()
-        i_l = cpi.ImageSetList()
+        i_l = cpi.SetList()
         img = np.zeros((10, 10))
         img[2:7, 2:7] = .5
         image = cpi.Image(img)
-        objects = cpo.Objects()
+        objects = cpo.Object()
         labels = np.zeros((10, 10), int)
         labels[3:6, 3:6] = 1
         objects.unedited_segmented = labels
@@ -764,7 +764,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         o_s.add_objects(objects, INPUT_OBJECTS_NAME)
         i_s = i_l.get_image_set(0)
         i_s.add(IMAGE_NAME, image)
-        m = cpm.Measurements()
+        m = cpm.Measurement()
         module = cpmi2.IdentifySecondary()
         module.primary_objects.value = INPUT_OBJECTS_NAME
         module.objects_name.value = OUTPUT_OBJECTS_NAME
@@ -790,7 +790,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
     def test_04_03_two_objects_watershed_image(self):
         p = cpp.Pipeline()
         o_s = cpo.ObjectSet()
-        i_l = cpi.ImageSetList()
+        i_l = cpi.SetList()
         img = np.zeros((10, 20))
         # There should be a saddle at 7 which should serve
         # as the watershed barrier
@@ -798,7 +798,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         img[2:7, 2:7] = .05 * (7 - y[2:7, 2:7])
         img[2:7, 7:17] = .05 * (y[2:7, 7:17] - 6)
         image = cpi.Image(img)
-        objects = cpo.Objects()
+        objects = cpo.Object()
         labels = np.zeros((10, 20), int)
         labels[3:6, 3:6] = 1
         labels[3:6, 13:16] = 2
@@ -808,7 +808,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         o_s.add_objects(objects, INPUT_OBJECTS_NAME)
         i_s = i_l.get_image_set(0)
         i_s.add(IMAGE_NAME, image)
-        m = cpm.Measurements()
+        m = cpm.Measurement()
         module = cpmi2.IdentifySecondary()
         module.primary_objects.value = INPUT_OBJECTS_NAME
         module.objects_name.value = OUTPUT_OBJECTS_NAME
@@ -859,16 +859,16 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
     def test_05_01_zeros_distance_n(self):
         p = cpp.Pipeline()
         o_s = cpo.ObjectSet()
-        i_l = cpi.ImageSetList()
+        i_l = cpi.SetList()
         image = cpi.Image(np.zeros((10, 10)))
-        objects = cpo.Objects()
+        objects = cpo.Object()
         objects.unedited_segmented = np.zeros((10, 10), int)
         objects.small_removed_segmented = np.zeros((10, 10), int)
         objects.segmented = np.zeros((10, 10), int)
         o_s.add_objects(objects, INPUT_OBJECTS_NAME)
         i_s = i_l.get_image_set(0)
         i_s.add(IMAGE_NAME, image)
-        m = cpm.Measurements()
+        m = cpm.Measurement()
         module = cpmi2.IdentifySecondary()
         module.primary_objects.value = INPUT_OBJECTS_NAME
         module.objects_name.value = OUTPUT_OBJECTS_NAME
@@ -888,10 +888,10 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
     def test_05_02_one_object_distance_n(self):
         p = cpp.Pipeline()
         o_s = cpo.ObjectSet()
-        i_l = cpi.ImageSetList()
+        i_l = cpi.SetList()
         img = np.zeros((10, 10))
         image = cpi.Image(img)
-        objects = cpo.Objects()
+        objects = cpo.Object()
         labels = np.zeros((10, 10), int)
         labels[3:6, 3:6] = 1
         objects.unedited_segmented = labels
@@ -900,7 +900,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         o_s.add_objects(objects, INPUT_OBJECTS_NAME)
         i_s = i_l.get_image_set(0)
         i_s.add(IMAGE_NAME, image)
-        m = cpm.Measurements()
+        m = cpm.Measurement()
         module = cpmi2.IdentifySecondary()
         module.primary_objects.value = INPUT_OBJECTS_NAME
         module.objects_name.value = OUTPUT_OBJECTS_NAME
@@ -928,10 +928,10 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
     def test_05_03_two_objects_distance_n(self):
         p = cpp.Pipeline()
         o_s = cpo.ObjectSet()
-        i_l = cpi.ImageSetList()
+        i_l = cpi.SetList()
         img = np.zeros((10, 20))
         image = cpi.Image(img)
-        objects = cpo.Objects()
+        objects = cpo.Object()
         labels = np.zeros((10, 20), int)
         labels[3:6, 3:6] = 1
         labels[3:6, 13:16] = 2
@@ -941,7 +941,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         o_s.add_objects(objects, INPUT_OBJECTS_NAME)
         i_s = i_l.get_image_set(0)
         i_s.add(IMAGE_NAME, image)
-        m = cpm.Measurements()
+        m = cpm.Measurement()
         module = cpmi2.IdentifySecondary()
         module.primary_objects.value = INPUT_OBJECTS_NAME
         module.objects_name.value = OUTPUT_OBJECTS_NAME
@@ -991,11 +991,11 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         '''Test the "save_outlines" feature'''
         p = cpp.Pipeline()
         o_s = cpo.ObjectSet()
-        i_l = cpi.ImageSetList()
+        i_l = cpi.SetList()
         img = np.zeros((10, 10))
         img[2:7, 2:7] = .5
         image = cpi.Image(img)
-        objects = cpo.Objects()
+        objects = cpo.Object()
         labels = np.zeros((10, 10), int)
         labels[3:6, 3:6] = 1
         objects.unedited_segmented = labels
@@ -1004,7 +1004,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         o_s.add_objects(objects, INPUT_OBJECTS_NAME)
         i_s = i_l.get_image_set(0)
         i_s.add(IMAGE_NAME, image)
-        m = cpm.Measurements()
+        m = cpm.Measurement()
         module = cpmi2.IdentifySecondary()
         module.primary_objects.value = INPUT_OBJECTS_NAME
         module.objects_name.value = OUTPUT_OBJECTS_NAME
@@ -1038,11 +1038,11 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         '''Test saving new primary outlines'''
         p = cpp.Pipeline()
         o_s = cpo.ObjectSet()
-        i_l = cpi.ImageSetList()
+        i_l = cpi.SetList()
         img = np.zeros((10, 10))
         img[2:7, 2:7] = .5
         image = cpi.Image(img)
-        objects = cpo.Objects()
+        objects = cpo.Object()
         labels = np.zeros((10, 10), int)
         labels[3:6, 3:6] = 1
         objects.unedited_segmented = labels
@@ -1051,7 +1051,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         o_s.add_objects(objects, INPUT_OBJECTS_NAME)
         i_s = i_l.get_image_set(0)
         i_s.add(IMAGE_NAME, image)
-        m = cpm.Measurements()
+        m = cpm.Measurement()
         module = cpmi2.IdentifySecondary()
         module.primary_objects.value = INPUT_OBJECTS_NAME
         module.objects_name.value = OUTPUT_OBJECTS_NAME
@@ -1269,16 +1269,16 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
 
         p = cpp.Pipeline()
         o_s = cpo.ObjectSet()
-        i_l = cpi.ImageSetList()
+        i_l = cpi.SetList()
         image = cpi.Image(image)
-        objects = cpo.Objects()
+        objects = cpo.Object()
         objects.unedited_segmented = labels
         objects.small_removed_segmented = labels
         objects.segmented = labels
         o_s.add_objects(objects, INPUT_OBJECTS_NAME)
         i_s = i_l.get_image_set(0)
         i_s.add(IMAGE_NAME, image)
-        m = cpm.Measurements()
+        m = cpm.Measurement()
         module = cpmi2.IdentifySecondary()
         module.primary_objects.value = INPUT_OBJECTS_NAME
         module.objects_name.value = OUTPUT_OBJECTS_NAME
@@ -1330,9 +1330,9 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
 
         p = cpp.Pipeline()
         o_s = cpo.ObjectSet()
-        i_l = cpi.ImageSetList()
+        i_l = cpi.SetList()
         image = cpi.Image(image)
-        objects = cpo.Objects()
+        objects = cpo.Object()
         objects.unedited_segmented = labels
         objects.small_removed_segmented = labels
         objects.unedited_segmented = labels_unedited
@@ -1340,7 +1340,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         o_s.add_objects(objects, INPUT_OBJECTS_NAME)
         i_s = i_l.get_image_set(0)
         i_s.add(IMAGE_NAME, image)
-        m = cpm.Measurements()
+        m = cpm.Measurement()
         module = cpmi2.IdentifySecondary()
         module.primary_objects.value = INPUT_OBJECTS_NAME
         module.objects_name.value = OUTPUT_OBJECTS_NAME
@@ -1393,9 +1393,9 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
 
         p = cpp.Pipeline()
         o_s = cpo.ObjectSet()
-        i_l = cpi.ImageSetList()
+        i_l = cpi.SetList()
         image = cpi.Image(image)
-        objects = cpo.Objects()
+        objects = cpo.Object()
         objects.unedited_segmented = labels
         objects.small_removed_segmented = labels
         objects.unedited_segmented = labels_unedited
@@ -1403,7 +1403,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         o_s.add_objects(objects, INPUT_OBJECTS_NAME)
         i_s = i_l.get_image_set(0)
         i_s.add(IMAGE_NAME, image)
-        m = cpm.Measurements()
+        m = cpm.Measurement()
         module = cpmi2.IdentifySecondary()
         module.primary_objects.value = INPUT_OBJECTS_NAME
         module.objects_name.value = OUTPUT_OBJECTS_NAME
@@ -1447,9 +1447,9 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
 
         p = cpp.Pipeline()
         o_s = cpo.ObjectSet()
-        i_l = cpi.ImageSetList()
+        i_l = cpi.SetList()
         image = cpi.Image(image)
-        objects = cpo.Objects()
+        objects = cpo.Object()
         objects.unedited_segmented = labels
         objects.small_removed_segmented = labels
         objects.unedited_segmented = labels_unedited
@@ -1457,7 +1457,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         o_s.add_objects(objects, INPUT_OBJECTS_NAME)
         i_s = i_l.get_image_set(0)
         i_s.add(IMAGE_NAME, image)
-        m = cpm.Measurements()
+        m = cpm.Measurement()
         module = cpmi2.IdentifySecondary()
         module.primary_objects.value = INPUT_OBJECTS_NAME
         module.objects_name.value = OUTPUT_OBJECTS_NAME
@@ -1494,7 +1494,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         module.threshold_scope.value = cpmi.TS_BINARY_IMAGE
         module.binary_image.value = "threshold"
         image_set = workspace.image_set
-        self.assertTrue(isinstance(image_set, cpi.ImageSet))
+        self.assertTrue(isinstance(image_set, cpi.Set))
         image_set.add("threshold", cpi.Image(threshold, convert=False))
 
         module.run(workspace)
@@ -1534,7 +1534,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
                 module.fill_holes.value = wants_fill_holes
                 module.distance_to_dilate.value = 10000
                 image_set = workspace.image_set
-                self.assertTrue(isinstance(image_set, cpi.ImageSet))
+                self.assertTrue(isinstance(image_set, cpi.Set))
                 image_set.add("threshold", cpi.Image(threshold, convert=False))
 
                 module.run(workspace)
@@ -1552,7 +1552,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         self.assertTrue(isinstance(module, cpmi2.IdentifySecondary))
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpm.Measurements))
+        self.assertTrue(isinstance(m, cpm.Measurement))
         result = m.get_relationships(
                 module.module_num, cpmi2.R_PARENT,
                 module.primary_objects.value, module.objects_name.value)
@@ -1569,7 +1569,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         module.manual_threshold.value = .25
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpm.Measurements))
+        self.assertTrue(isinstance(m, cpm.Measurement))
         result = m.get_relationships(
                 module.module_num, cpmi2.R_PARENT,
                 module.primary_objects.value, module.objects_name.value)
@@ -1600,7 +1600,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
             module.manual_threshold.value = .25
             module.run(workspace)
             m = workspace.measurements
-            self.assertTrue(isinstance(m, cpm.Measurements))
+            self.assertTrue(isinstance(m, cpm.Measurement))
             result = m.get_relationships(
                     module.module_num, cpmi2.R_PARENT,
                     module.primary_objects.value, module.objects_name.value)

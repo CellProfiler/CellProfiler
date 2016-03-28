@@ -2,11 +2,11 @@
 that give you the GUI to add a module to a pipeline
 """
 
-import cellprofiler.cpmodule
+import cellprofiler.module
 import cellprofiler.gui
 import cellprofiler.gui.html.manual
 import cellprofiler.modules
-import cellprofiler.preferences
+import cellprofiler.preference
 import cpframe
 import wx
 

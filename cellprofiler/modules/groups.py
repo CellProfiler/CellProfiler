@@ -96,14 +96,14 @@ logger = logging.getLogger(__name__)
 import numpy as np
 import os
 
-import cellprofiler.cpmodule as cpm
+import cellprofiler.module as cpm
 import cellprofiler.pipeline as cpp
-import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
-import cellprofiler.measurements as cpmeas
+import cellprofiler.setting as cps
+from cellprofiler.setting import YES, NO
+import cellprofiler.measurement as cpmeas
 
 
-class Groups(cpm.CPModule):
+class Groups(cpm.Module):
     variable_revision_number = 2
     module_name = "Groups"
     category = "File Processing"
@@ -331,7 +331,7 @@ class Groups(cpm.CPModule):
             except:
                 return
             m = self.workspace.measurements
-            assert isinstance(m, cpmeas.Measurements)
+            assert isinstance(m, cpmeas.Measurement)
             channel_descriptors = m.get_channel_descriptors()
 
             self.grouping_list.clear_columns()
@@ -496,7 +496,7 @@ class Groups(cpm.CPModule):
         group_indexes = group_indexes[order]
 
         m = workspace.measurements
-        assert isinstance(m, cpmeas.Measurements)
+        assert isinstance(m, cpmeas.Measurement)
         #
         # Downstream processing requires that image sets be ordered by
         # increasing group number, then increasing group index.

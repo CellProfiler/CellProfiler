@@ -23,11 +23,11 @@ See also <b>IdentifyPrimaryObjects</b>, <b>IdentifySecondaryObjects</b>, <b>Iden
 import numpy as np
 from centrosome.outline import outline
 
-import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements as cpmeas
-import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
+import cellprofiler.image as cpi
+import cellprofiler.module as cpm
+import cellprofiler.measurement as cpmeas
+import cellprofiler.setting as cps
+from cellprofiler.setting import YES, NO
 
 C_AREA_OCCUPIED = "AreaOccupied"
 
@@ -49,7 +49,7 @@ IMAGE_SETTING_COUNT = 1
 OBJECT_SETTING_COUNT = 3
 
 
-class MeasureImageAreaOccupied(cpm.CPModule):
+class MeasureImageAreaOccupied(cpm.Module):
     module_name = "MeasureImageAreaOccupied"
     category = "Measurement"
     variable_revision_number = 3

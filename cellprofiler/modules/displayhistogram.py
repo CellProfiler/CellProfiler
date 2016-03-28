@@ -15,13 +15,13 @@ See also <b>DisplayDensityPlot</b>, <b>DisplayScatterPlot</b>.
 
 import numpy as np
 
-import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
-import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
+import cellprofiler.image as cpi
+import cellprofiler.module as cpm
+import cellprofiler.setting as cps
+from cellprofiler.setting import YES, NO
 
 
-class DisplayHistogram(cpm.CPModule):
+class DisplayHistogram(cpm.Module):
     module_name = "DisplayHistogram"
     category = "Data Tools"
     variable_revision_number = 3

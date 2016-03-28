@@ -4,7 +4,7 @@
 import cellprofiler.analysis
 import cellprofiler.gui.help
 import cellprofiler.gui.htmldialog
-import cellprofiler.preferences
+import cellprofiler.preference
 import numpy
 import os
 import string
@@ -40,22 +40,22 @@ class PreferencesView:
         self.__image_folder_panel.AutoLayout = True
         self.__image_edit_box = self.__make_folder_panel(
                 self.__image_folder_panel,
-                cellprofiler.preferences.get_default_image_directory(),
-                lambda: cellprofiler.preferences.get_recent_files(cellprofiler.preferences.DEFAULT_IMAGE_DIRECTORY),
+                cellprofiler.preference.get_default_image_directory(),
+                lambda: cellprofiler.preference.get_recent_files(cellprofiler.preference.DEFAULT_IMAGE_DIRECTORY),
                 'Default Input Folder',
                 cellprofiler.gui.help.DEFAULT_IMAGE_FOLDER_HELP,
-                [cellprofiler.preferences.set_default_image_directory,
+                [cellprofiler.preference.set_default_image_directory,
                  self.__notify_pipeline_list_view_directory_change],
                 refresh_action=self.refresh_input_directory)
         self.__output_folder_panel = wx.Panel(panel)
         self.__output_folder_panel.AutoLayout = True
         self.__output_edit_box = self.__make_folder_panel(
                 self.__output_folder_panel,
-                cellprofiler.preferences.get_default_output_directory(),
-                lambda: cellprofiler.preferences.get_recent_files(cellprofiler.preferences.DEFAULT_OUTPUT_DIRECTORY),
+                cellprofiler.preference.get_default_output_directory(),
+                lambda: cellprofiler.preference.get_recent_files(cellprofiler.preference.DEFAULT_OUTPUT_DIRECTORY),
                 'Default Output Folder',
                 cellprofiler.gui.help.DEFAULT_OUTPUT_FOLDER_HELP,
-                [cellprofiler.preferences.set_default_output_directory,
+                [cellprofiler.preference.set_default_output_directory,
                  self.__notify_pipeline_list_view_directory_change])
         self.__odds_and_ends_panel = wx.Panel(panel)
         self.__odds_and_ends_panel.AutoLayout = True
@@ -102,9 +102,9 @@ class PreferencesView:
         self.__status_panel.Layout()
 
     def close(self):
-        cellprofiler.preferences.remove_output_file_name_listener(self.__on_preferences_output_filename_event)
-        cellprofiler.preferences.remove_image_directory_listener(self.__on_preferences_image_directory_event)
-        cellprofiler.preferences.remove_output_directory_listener(self.__on_preferences_output_directory_event)
+        cellprofiler.preference.remove_output_file_name_listener(self.__on_preferences_output_filename_event)
+        cellprofiler.preference.remove_image_directory_listener(self.__on_preferences_image_directory_event)
+        cellprofiler.preference.remove_output_directory_listener(self.__on_preferences_output_directory_event)
 
     def __make_folder_panel(self, panel, value, list_fn, text, help_text,
                             actions, refresh_action=None):
@@ -183,40 +183,40 @@ class PreferencesView:
         panel = self.__odds_and_ends_panel
         output_filename_text = wx.StaticText(panel, -1, 'Output Filename:')
         output_filename_edit_box = wx.TextCtrl(
-                panel, value=cellprofiler.preferences.get_output_file_name())
+                panel, value=cellprofiler.preference.get_output_file_name())
         self.__output_filename_edit_box = output_filename_edit_box
         allow_output_filename_overwrite_check_box = \
             wx.CheckBox(panel, label="Allow overwrite?")
         allow_output_filename_overwrite_check_box.Value = \
-            cellprofiler.preferences.get_allow_output_file_overwrite()
+            cellprofiler.preference.get_allow_output_file_overwrite()
         write_measurements_combo_box = wx.Choice(
                 panel, choices=
                 [WRITE_HDF_FILE_TEXT, WRITE_MAT_FILE_TEXT,
                  DO_NOT_WRITE_MEASUREMENTS_TEXT])
         # set measurements mode, then fake an event to update output
         # filename and which controls are shown.
-        measurements_mode_idx = [cellprofiler.preferences.WRITE_HDF5, True, False].index(
-                cellprofiler.preferences.get_write_MAT_files())
+        measurements_mode_idx = [cellprofiler.preference.WRITE_HDF5, True, False].index(
+                cellprofiler.preference.get_write_MAT_files())
         write_measurements_combo_box.SetSelection(measurements_mode_idx)
         output_filename_help_button = wx.Button(
                 panel, label='?', style=wx.BU_EXACTFIT)
         output_file_format_text = wx.StaticText(
                 panel, label="Output file format:")
-        cellprofiler.preferences.add_output_file_name_listener(
+        cellprofiler.preference.add_output_file_name_listener(
                 self.__on_preferences_output_filename_event)
-        cellprofiler.preferences.add_image_directory_listener(
+        cellprofiler.preference.add_image_directory_listener(
                 self.__on_preferences_image_directory_event)
-        cellprofiler.preferences.add_output_directory_listener(
+        cellprofiler.preference.add_output_directory_listener(
                 self.__on_preferences_output_directory_event)
         self.__hold_a_reference_to_progress_callback = self.progress_callback
-        cellprofiler.preferences.add_progress_callback(
+        cellprofiler.preference.add_progress_callback(
                 self.__hold_a_reference_to_progress_callback)
 
         def on_output_filename_changed(event):
-            cellprofiler.preferences.set_output_file_name(output_filename_edit_box.Value)
+            cellprofiler.preference.set_output_file_name(output_filename_edit_box.Value)
 
         def on_allow_checkbox(event):
-            cellprofiler.preferences.set_allow_output_file_overwrite(
+            cellprofiler.preference.set_allow_output_file_overwrite(
                     allow_output_filename_overwrite_check_box.Value)
 
         def on_write_MAT_files_combo_box(event):
@@ -226,19 +226,19 @@ class PreferencesView:
             sel = write_measurements_combo_box.GetStringSelection()
             output_filename = output_filename_edit_box.Value
             if sel == WRITE_HDF_FILE_TEXT:
-                cellprofiler.preferences.set_write_MAT_files(cellprofiler.preferences.WRITE_HDF5)
+                cellprofiler.preference.set_write_MAT_files(cellprofiler.preference.WRITE_HDF5)
                 if output_filename.lower().endswith('.mat'):
                     output_filename = output_filename[:-4] + u".h5"
             elif sel == WRITE_MAT_FILE_TEXT:
-                cellprofiler.preferences.set_write_MAT_files(True)
+                cellprofiler.preference.set_write_MAT_files(True)
                 if output_filename.lower().endswith('.h5'):
                     output_filename = output_filename[:-3] + u".mat"
             else:
-                cellprofiler.preferences.set_write_MAT_files(False)
+                cellprofiler.preference.set_write_MAT_files(False)
 
             if output_filename != output_filename_edit_box.Value:
                 output_filename_edit_box.Value = output_filename
-                cellprofiler.preferences.set_output_file_name(
+                cellprofiler.preference.set_output_file_name(
                         output_filename_edit_box.Value)
             #
             # Reconstruct the sizers depending on whether we have one or two rows
@@ -390,7 +390,7 @@ class PreferencesView:
                              style=wx.YES_NO) == wx.NO:
                 return False, "Image directory does not exist"
             os.makedirs(path)
-            cellprofiler.preferences.set_default_image_directory(path)
+            cellprofiler.preference.set_default_image_directory(path)
         path = self.__output_edit_box.Value
         if not os.path.isdir(path):
             if wx.MessageBox(('The Default Output Folder is "%s", but '
@@ -400,13 +400,13 @@ class PreferencesView:
                              style=wx.YES_NO) == wx.NO:
                 return False, "Output directory does not exist"
             os.makedirs(path)
-            cellprofiler.preferences.set_default_output_directory(path)
+            cellprofiler.preference.set_default_output_directory(path)
         return True, "OK"
 
     def __on_destroy(self, event):
-        cellprofiler.preferences.remove_image_directory_listener(self.__on_preferences_image_directory_event)
-        cellprofiler.preferences.remove_output_directory_listener(self.__on_preferences_output_directory_event)
-        cellprofiler.preferences.remove_output_file_name_listener(self.__on_preferences_output_filename_event)
+        cellprofiler.preference.remove_image_directory_listener(self.__on_preferences_image_directory_event)
+        cellprofiler.preference.remove_output_directory_listener(self.__on_preferences_output_directory_event)
+        cellprofiler.preference.remove_output_file_name_listener(self.__on_preferences_output_filename_event)
 
     def attach_to_pipeline_list_view(self, pipeline_list_view):
         self.__pipeline_list_view = pipeline_list_view
@@ -524,23 +524,23 @@ class PreferencesView:
         error_text = 'Pixel size must be a number'
         text = self.__pixel_size_edit_box.Value
         if text.isdigit():
-            cellprofiler.preferences.set_pixel_size(int(text))
+            cellprofiler.preference.set_pixel_size(int(text))
             self.pop_error_text(error_text)
         else:
             self.set_error_text(error_text)
 
     def __on_preferences_output_filename_event(self, event):
-        if self.__output_filename_edit_box.Value != cellprofiler.preferences.get_output_file_name():
-            self.__output_filename_edit_box.Value = cellprofiler.preferences.get_output_file_name()
+        if self.__output_filename_edit_box.Value != cellprofiler.preference.get_output_file_name():
+            self.__output_filename_edit_box.Value = cellprofiler.preference.get_output_file_name()
 
     def __on_preferences_output_directory_event(self, event):
         old_selection = self.__output_edit_box.Selection
-        if self.__output_edit_box.Value != cellprofiler.preferences.get_default_output_directory():
-            self.__output_edit_box.Value = cellprofiler.preferences.get_default_output_directory()
+        if self.__output_edit_box.Value != cellprofiler.preference.get_default_output_directory():
+            self.__output_edit_box.Value = cellprofiler.preference.get_default_output_directory()
 
     def __on_preferences_image_directory_event(self, event):
-        if self.__image_edit_box.Value != cellprofiler.preferences.get_default_image_directory():
-            self.__image_edit_box.Value = cellprofiler.preferences.get_default_image_directory()
+        if self.__image_edit_box.Value != cellprofiler.preference.get_default_image_directory():
+            self.__image_edit_box.Value = cellprofiler.preference.get_default_image_directory()
 
     def __notify_pipeline_list_view_directory_change(self, path):
         # modules may need revalidation
@@ -549,7 +549,7 @@ class PreferencesView:
 
     @staticmethod
     def refresh_input_directory():
-        cellprofiler.preferences.fire_image_directory_changed_event()
+        cellprofiler.preference.fire_image_directory_changed_event()
 
 
 class ProgressWatcher:

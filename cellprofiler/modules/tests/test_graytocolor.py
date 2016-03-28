@@ -9,14 +9,14 @@ from StringIO import StringIO
 import numpy as np
 import numpy as np
 
-import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
-import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements as cpmeas
+import cellprofiler.image as cpi
+import cellprofiler.module as cpm
+import cellprofiler.module as cpm
+import cellprofiler.measurement as cpmeas
 import cellprofiler.modules.graytocolor as G
-import cellprofiler.objects as cpo
+import cellprofiler.object as cpo
 import cellprofiler.pipeline as cpp
-import cellprofiler.settings as cps
+import cellprofiler.setting as cps
 import cellprofiler.workspace as cpw
 
 OUTPUT_IMAGE_NAME = 'outputimage'
@@ -70,13 +70,13 @@ class TestGrayToColor(unittest.TestCase):
 
         pipeline.add_listener(callback)
         pipeline.add_module(module)
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.SetList()
         image_set = image_set_list.get_image_set(0)
         for image, image_name in zip(images, image_names):
             if image is not None:
                 image_set.add(image_name, cpi.Image(image))
         workspace = cpw.Workspace(pipeline, module, image_set, cpo.ObjectSet(),
-                                  cpmeas.Measurements(), image_set_list)
+                                  cpmeas.Measurement(), image_set_list)
         return workspace, module
 
     def test_01_01_load_matlab(self):

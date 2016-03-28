@@ -9,15 +9,15 @@ from StringIO import StringIO
 import numpy as np
 from scipy.sparse.coo import coo_matrix
 
-from cellprofiler.preferences import set_headless
+from cellprofiler.preference import set_headless
 
 set_headless()
 
 import cellprofiler.pipeline as cpp
-import cellprofiler.cpmodule as cpm
-import cellprofiler.cpimage as cpi
-import cellprofiler.measurements as cpmeas
-import cellprofiler.objects as cpo
+import cellprofiler.module as cpm
+import cellprofiler.image as cpi
+import cellprofiler.measurement as cpmeas
+import cellprofiler.object as cpo
 import cellprofiler.workspace as cpw
 import cellprofiler.modules.convertobjectstoimage as C
 
@@ -31,15 +31,15 @@ class TestConvertObjectsToImage(unittest.TestCase):
         labels = np.reshape(np.arange(256), (16, 16))
         pipeline = cpp.Pipeline()
         object_set = cpo.ObjectSet()
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.SetList()
         image_set = image_set_list.get_image_set(0)
         workspace = cpw.Workspace(pipeline,
                                   module,
                                   image_set,
                                   object_set,
-                                  cpmeas.Measurements(),
+                                  cpmeas.Measurement(),
                                   image_set_list)
-        objects = cpo.Objects()
+        objects = cpo.Object()
         objects.segmented = labels
         object_set.add_objects(objects, OBJECTS_NAME)
         module.image_name.value = IMAGE_NAME
@@ -166,15 +166,15 @@ class TestConvertObjectsToImage(unittest.TestCase):
 
         pipeline = cpp.Pipeline()
         object_set = cpo.ObjectSet()
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.SetList()
         image_set = image_set_list.get_image_set(0)
         workspace = cpw.Workspace(pipeline,
                                   module,
                                   image_set,
                                   object_set,
-                                  cpmeas.Measurements(),
+                                  cpmeas.Measurement(),
                                   image_set_list)
-        objects = cpo.Objects()
+        objects = cpo.Object()
         objects.set_ijv(ijv, shape)
         object_set.add_objects(objects, OBJECTS_NAME)
         self.assertGreater(len(objects.get_labels()), 1)

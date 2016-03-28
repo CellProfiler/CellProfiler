@@ -1,7 +1,7 @@
 """Tests for cellprofiler.gui.html.manual"""
 
 import cellprofiler.gui.html.manual
-import cellprofiler.preferences
+import cellprofiler.preference
 import os
 import re
 import tempfile
@@ -15,7 +15,7 @@ class TestManual(unittest.TestCase):
         # Monkey-patch RunImageJ to keep it from calling ImageJ during
         # create_settings
         from cellprofiler.modules.run_imagej import RunImageJ
-        from cellprofiler.settings import Text
+        from cellprofiler.setting import Text
         self.old_make_command_choice = RunImageJ.make_command_choice
 
         def make_command_choice(self, label, doc):
@@ -53,7 +53,7 @@ class TestManual(unittest.TestCase):
                 module = instantiate_module(module_name)
                 location = os.path.split(
                         module.create_settings.im_func.func_code.co_filename)[0]
-                if location == cellprofiler.preferences.get_plugin_directory():
+                if location == cellprofiler.preference.get_plugin_directory():
                     continue
                 traceback.print_exc()
                 self.assert_("Failed to open %s.html" % module_name)

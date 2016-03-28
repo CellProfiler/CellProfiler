@@ -6,7 +6,7 @@ import unittest
 
 import numpy as np
 
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 
 
 class TestImage(unittest.TestCase):
@@ -111,83 +111,83 @@ IMAGE_NAME = "image"
 
 class TestImageSet(unittest.TestCase):
     def test_01_01_add(self):
-        x = cpi.ImageSet(0, {}, {})
+        x = cpi.Set(0, {}, {})
         x.add(IMAGE_NAME, cpi.Image(np.zeros((10, 20))))
         self.assertEqual(len(x.providers), 1)
         self.assertEqual(x.providers[0].name, IMAGE_NAME)
 
     def test_01_02_get_image(self):
-        x = cpi.ImageSet(0, {}, {})
+        x = cpi.Set(0, {}, {})
         x.add(IMAGE_NAME, cpi.Image(np.zeros((10, 20))))
         image = x.get_image(IMAGE_NAME)
         self.assertEqual(tuple(image.pixel_data.shape), (10, 20))
 
     def test_02_01_must_be_binary(self):
-        x = cpi.ImageSet(0, {}, {})
+        x = cpi.Set(0, {}, {})
         x.add(IMAGE_NAME, cpi.Image(np.zeros((10, 20), bool)))
         image = x.get_image(IMAGE_NAME, must_be_binary=True)
         self.assertEqual(tuple(image.pixel_data.shape), (10, 20))
 
     def test_02_02_must_be_binary_throws(self):
-        x = cpi.ImageSet(0, {}, {})
+        x = cpi.Set(0, {}, {})
         x.add(IMAGE_NAME, cpi.Image(np.zeros((10, 20), float)))
         self.assertRaises(ValueError, x.get_image, IMAGE_NAME,
                           must_be_binary=True)
 
     def test_03_01_must_be_gray(self):
-        x = cpi.ImageSet(0, {}, {})
+        x = cpi.Set(0, {}, {})
         x.add(IMAGE_NAME, cpi.Image(np.zeros((10, 20), float)))
         image = x.get_image(IMAGE_NAME, must_be_grayscale=True)
         self.assertEqual(tuple(image.pixel_data.shape), (10, 20))
 
     def test_03_02_must_be_gray_throws(self):
-        x = cpi.ImageSet(0, {}, {})
+        x = cpi.Set(0, {}, {})
         np.random.seed(22)
         x.add(IMAGE_NAME, cpi.Image(np.random.uniform(size=(10, 20, 3))))
         self.assertRaises(ValueError, x.get_image, IMAGE_NAME,
                           must_be_grayscale=True)
 
     def test_03_03_must_be_gray_color(self):
-        x = cpi.ImageSet(0, {}, {})
+        x = cpi.Set(0, {}, {})
         x.add(IMAGE_NAME, cpi.Image(np.zeros((10, 20, 3), float)))
         image = x.get_image(IMAGE_NAME, must_be_grayscale=True)
         self.assertEqual(tuple(image.pixel_data.shape), (10, 20))
 
     def test_04_01_must_be_color(self):
-        x = cpi.ImageSet(0, {}, {})
+        x = cpi.Set(0, {}, {})
         x.add(IMAGE_NAME, cpi.Image(np.zeros((10, 20, 3), float)))
         image = x.get_image(IMAGE_NAME, must_be_color=True)
         self.assertEqual(tuple(image.pixel_data.shape), (10, 20, 3))
 
     def test_04_02_must_be_color_throws(self):
-        x = cpi.ImageSet(0, {}, {})
+        x = cpi.Set(0, {}, {})
         np.random.seed(22)
         x.add(IMAGE_NAME, cpi.Image(np.random.uniform(size=(10, 20))))
         self.assertRaises(ValueError, x.get_image, IMAGE_NAME,
                           must_be_color=True)
 
     def test_05_01_must_be_rgb(self):
-        x = cpi.ImageSet(0, {}, {})
+        x = cpi.Set(0, {}, {})
         x.add(IMAGE_NAME, cpi.Image(np.zeros((10, 20, 3), float)))
         image = x.get_image(IMAGE_NAME, must_be_rgb=True)
         self.assertEqual(tuple(image.pixel_data.shape), (10, 20, 3))
 
     def test_05_02_must_be_rgb_throws_gray(self):
-        x = cpi.ImageSet(0, {}, {})
+        x = cpi.Set(0, {}, {})
         np.random.seed(22)
         x.add(IMAGE_NAME, cpi.Image(np.random.uniform(size=(10, 20))))
         self.assertRaises(ValueError, x.get_image, IMAGE_NAME,
                           must_be_rgb=True)
 
     def test_05_03_must_be_rgb_throws_5_channel(self):
-        x = cpi.ImageSet(0, {}, {})
+        x = cpi.Set(0, {}, {})
         np.random.seed(22)
         x.add(IMAGE_NAME, cpi.Image(np.random.uniform(size=(10, 20, 5))))
         self.assertRaises(ValueError, x.get_image, IMAGE_NAME,
                           must_be_rgb=True)
 
     def test_05_04_must_be_rgb_alpha(self):
-        x = cpi.ImageSet(0, {}, {})
+        x = cpi.Set(0, {}, {})
         x.add(IMAGE_NAME, cpi.Image(np.zeros((10, 20, 4), float)))
         image = x.get_image(IMAGE_NAME, must_be_rgb=True)
         self.assertEqual(tuple(image.pixel_data.shape), (10, 20, 3))
@@ -195,11 +195,11 @@ class TestImageSet(unittest.TestCase):
 
 class TestImageSetList(unittest.TestCase):
     def test_00_00_init(self):
-        x = cpi.ImageSetList()
+        x = cpi.SetList()
         self.assertEqual(x.count(), 0, "# of elements of an empty image set list is %d, not zero" % (x.count()))
 
     def test_01_01_add_image_set_by_number(self):
-        x = cpi.ImageSetList()
+        x = cpi.SetList()
         y = x.get_image_set(0)
         self.assertEqual(x.count(), 1, "# of elements was %d, should be 1" % (x.count()))
         self.assertEqual(y.get_number(), 0, "The image set should be #0, was %d" % (y.get_number()))
@@ -208,7 +208,7 @@ class TestImageSetList(unittest.TestCase):
                          "The number key should be zero, was %s" % (repr(y.get_keys()["number"])))
 
     def test_01_02_add_image_set_by_key(self):
-        x = cpi.ImageSetList()
+        x = cpi.SetList()
         key = {"key": "value"}
         y = x.get_image_set(key)
         self.assertEqual(x.count(), 1, "# of elements was %d, should be 1" % (x.count()))
@@ -218,7 +218,7 @@ class TestImageSetList(unittest.TestCase):
         self.assertEquals(repr(key), repr(y.get_keys()))
 
     def test_01_03_add_two_image_sets(self):
-        x = cpi.ImageSetList()
+        x = cpi.SetList()
         y = x.get_image_set(0)
         z = x.get_image_set(1)
         self.assertEqual(x.count(), 2, "# of elements was %d, should be 2" % (x.count()))
@@ -228,7 +228,7 @@ class TestImageSetList(unittest.TestCase):
         self.assertEquals(z, x.get_image_set(1), "The second image set was not retrieved by index")
 
     def test_02_01_add_image_provider(self):
-        x = cpi.ImageSetList()
+        x = cpi.SetList()
         y = x.get_image_set(0)
         img = cpi.Image(np.ones((10, 10)))
 
@@ -241,7 +241,7 @@ class TestImageSetList(unittest.TestCase):
         self.assertEquals(img, y.get_image("TestImageProvider"))
 
     def test_02_02_add_two_image_providers(self):
-        x = cpi.ImageSetList()
+        x = cpi.SetList()
         y = x.get_image_set(0)
         img1 = cpi.Image(np.ones((10, 10)))
 
@@ -262,42 +262,42 @@ class TestImageSetList(unittest.TestCase):
 
     def test_03_01_serialize_no_key(self):
         '''Serialize an image list with no keys in the image sets'''
-        x = cpi.ImageSetList()
+        x = cpi.SetList()
         for i in range(5):
             x.get_image_set(i)
         s = x.save_state()
 
-        y = cpi.ImageSetList()
+        y = cpi.SetList()
         y.load_state(s)
         self.assertEquals(y.count(), 5)
 
     def test_03_02_serialize_key(self):
-        x = cpi.ImageSetList()
+        x = cpi.SetList()
         values = (('A', 'B'), ('C', 'D'), ('E', 'F'))
         for value1, value2 in values:
             d = {'K1': value1, 'K2': value2}
             x.get_image_set(d)
         s = x.save_state()
 
-        y = cpi.ImageSetList()
+        y = cpi.SetList()
         y.load_state(s)
         self.assertEquals(y.count(), len(values))
         for i in range(len(values)):
             image_set = y.get_image_set(i)
-            self.assertTrue(isinstance(image_set, cpi.ImageSet))
+            self.assertTrue(isinstance(image_set, cpi.Set))
             value1, value2 = values[i]
             for key, value in (('K1', value1), ('K2', value2)):
                 self.assertEqual(image_set.keys[key], value)
 
     def test_03_03_serialize_legacy_fields(self):
-        x = cpi.ImageSetList()
+        x = cpi.SetList()
         for i in range(5):
             x.get_image_set(i)
         d = {'foo': 'bar', 'test': 'suite'}
         x.legacy_fields['dictionary'] = d
         s = x.save_state()
 
-        y = cpi.ImageSetList()
+        y = cpi.SetList()
         y.load_state(s)
         self.assertEquals(y.count(), 5)
         self.assertTrue(y.legacy_fields.has_key('dictionary'))

@@ -1,7 +1,7 @@
 import cellprofiler.gui.help
 import cellprofiler.icons
 import cellprofiler.modules
-import cellprofiler.preferences
+import cellprofiler.preference
 import cellprofiler.utilities.version
 import glob
 import os
@@ -12,7 +12,7 @@ from glob import glob
 from shutil import copy
 
 import cellprofiler.icons
-import cellprofiler.preferences as cpprefs
+import cellprofiler.preference as cpprefs
 import cellprofiler.utilities.version as version
 from cellprofiler.gui.help import MAIN_HELP
 from cellprofiler.modules import get_module_names, instantiate_module
@@ -169,7 +169,7 @@ def output_module_html(webpage_path):
         module = cellprofiler.modules.instantiate_module(module_name)
         location = os.path.split(
                 module.create_settings.im_func.func_code.co_filename)[0]
-        if location == cellprofiler.preferences.get_plugin_directory():
+        if location == cellprofiler.preference.get_plugin_directory():
             continue
         if isinstance(module.category, (str, unicode)):
             module.category = [module.category]
@@ -227,7 +227,7 @@ def search_module_help(text):
         module = cellprofiler.modules.instantiate_module(module_name)
         location = os.path.split(
                 module.create_settings.im_func.func_code.co_filename)[0]
-        if location == cellprofiler.preferences.get_plugin_directory():
+        if location == cellprofiler.preference.get_plugin_directory():
             continue
         help_text = module.get_help()
         matches = __search_fn(help_text, text)

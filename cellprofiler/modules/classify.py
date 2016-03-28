@@ -1,17 +1,17 @@
 """Classify - train or use a classifier"""
 
 import bisect
-import hashlib
+import cellprofiler.cpimage
+import cellprofiler.cpmodule
+import cellprofiler.settings
 import h5py
+import hashlib
 import logging
 import numpy
 import os
 import pickle
-import sklearn.ensemble
 import sklearn.decomposition
-import cellprofiler.cpmodule
-import cellprofiler.cpimage
-import cellprofiler.settings
+import sklearn.ensemble
 
 logger = logging.getLogger(__name__)
 

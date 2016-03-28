@@ -9,7 +9,6 @@ import os
 import pickle
 from sklearn.ensemble import ExtraTreesClassifier
 from sklearn.decomposition import RandomizedPCA
-import tempfile
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.cpimage as cpi

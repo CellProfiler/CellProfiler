@@ -1,12 +1,38 @@
+import bioformats.formatreader
+import cellprofiler.gui.app
+import cellprofiler.gui.html.manual
+import cellprofiler.measurement
+import cellprofiler.modules
+import cellprofiler.object
+import cellprofiler.pipeline
+import cellprofiler.preference
+import cellprofiler.utilities.cpjvm
+import cellprofiler.utilities.hdf5_dict
+import cellprofiler.utilities.version
+import cellprofiler.utilities.zmqrequest
+import cellprofiler.worker
+import cellprofiler.workspace
 import cStringIO
+import ctypes
 import h5py
+# import ilastik
+# import ilastik.core.jobMachine
+import imp
+import javabridge
+import json
 import logging
 import logging.config
+import matplotlib
 import numpy
+import optparse
 import os
+# import pyreadline.logger
 import re
+import site
+import subprocess
 import sys
 import tempfile
+import wx
 
 OMERO_CK_HOST = "host"
 OMERO_CK_PORT = "port"
@@ -22,8 +48,6 @@ if sys.platform.startswith('win'):
     if hasattr(sys, 'frozen'):
         here = os.path.split(sys.argv[0])[0]
 
-        import ctypes
-
         libzmq = os.path.join(here, 'libzmq.dll')
         if os.path.exists(libzmq):
             ctypes.cdll.LoadLibrary(libzmq)
@@ -37,8 +61,6 @@ numpy.seterr(all='ignore')
 # appears when CP is frozen
 #
 try:
-    from pyreadline.logger import stop_logging, pyreadline_logger
-
     pyreadline_logger.setLevel(logging.INFO)
     stop_logging()
 except:
@@ -53,8 +75,6 @@ if len(root) == 0:
 root = os.path.abspath(root)
 site_packages = os.path.join(root, 'site-packages').encode('utf-8')
 if os.path.exists(site_packages) and os.path.isdir(site_packages):
-    import site
-
     site.addsitedir(site_packages)
 
 
@@ -65,44 +85,39 @@ def main(args=None):
     """
     if args is None:
         args = sys.argv
-    import cellprofiler.preference as cpprefs
-    cpprefs.set_awt_headless(True)
+    cellprofiler.preference.set_awt_headless(True)
     switches = ('--work-announce', '--knime-bridge-address')
     if any([any([arg.startswith(switch) for switch in switches]) for arg in args]):
         #
         # Go headless ASAP
         #
-        cpprefs.set_headless()
+        cellprofiler.preference.set_headless()
         for i, arg in enumerate(args):
             if arg == "--ij-plugins-directory" and len(args) > i + 1:
-                cpprefs.set_ij_plugin_directory(args[i + 1])
+                cellprofiler.preference.set_ij_plugin_directory(args[i + 1])
                 break
-        import cellprofiler.worker
         cellprofiler.worker.aw_parse_args()
         cellprofiler.worker.main()
         sys.exit(0)
 
     options, args = parse_args(args)
     if options.print_version:
-        from cellprofiler.utilities.version import dotted_version, version_string, git_hash, version_number
-        print "CellProfiler %s" % dotted_version
-        print "Git %s" % git_hash
-        print "Version %s" % version_number
-        print "Built %s" % version_string.split(" ")[0]
+        print "CellProfiler %s" % cellprofiler.utilities.version.dotted_version
+        print "Git %s" % cellprofiler.utilities.version.git_hash
+        print "Version %s" % cellprofiler.utilities.version.version_number
+        print "Built %s" % cellprofiler.utilities.version.version_string.split(" ")[0]
         sys.exit(0)
     #
     # Important to go headless ASAP
     #
     if (not options.show_gui) or options.write_schema_and_exit:
-        import cellprofiler.preference as cpprefs
-        cpprefs.set_headless()
+        cellprofiler.preference.set_headless()
         # What's there to do but run if you're running headless?
         # Might want to change later if there's some headless setup
         options.run_pipeline = True
 
     if options.jvm_heap_size is not None:
-        from cellprofiler.preference import set_jvm_heap_mb
-        set_jvm_heap_mb(options.jvm_heap_size, False)
+        cellprofiler.preference.set_jvm_heap_mb(options.jvm_heap_size, False)
     set_log_level(options)
 
     if options.print_groups_file is not None:
@@ -130,19 +145,17 @@ def main(args=None):
         message = args[1]
         path = args[2]
 
-        import h5py
         using_hdf5 = h5py.is_hdf5(path)
         if using_hdf5:
-            import cellprofiler.measurement as cpmeas
-            m = cpmeas.Measurement( filename=path, mode="r+")
-            pipeline_text = m[cpmeas.EXPERIMENT, "Pipeline_Pipeline"]
+            m = cellprofiler.measurement.Measurement(filename=path, mode="r+")
+            pipeline_text = m[cellprofiler.measurement.EXPERIMENT, "Pipeline_Pipeline"]
         else:
             with open(path, "r") as fd:
                 pipeline_text = fd.read()
         header, body = pipeline_text.split("\n\n", 1)
         pipeline_text = header + ("\nMessageForUser:%s|%s\n\n" % (caption, message)) + body
         if using_hdf5:
-            m[cpmeas.EXPERIMENT, "Pipeline_Pipeline"] = pipeline_text
+            m[cellprofiler.measurement.EXPERIMENT, "Pipeline_Pipeline"] = pipeline_text
             m.close()
         else:
             with open(path, "w") as fd:
@@ -152,40 +165,37 @@ def main(args=None):
 
     # necessary to prevent matplotlib trying to use Tkinter as its backend.
     # has to be done before CellProfilerApp is imported
-    from matplotlib import use as mpluse
-    mpluse('WXAgg')
+    matplotlib.use('WXAgg')
 
     if options.omero_credentials is not None:
         set_omero_credentials_from_string(options.omero_credentials)
     if options.plugins_directory is not None:
-        cpprefs.set_plugin_directory(options.plugins_directory, globally=False)
+        cellprofiler.preference.set_plugin_directory(options.plugins_directory, globally=False)
     if options.ij_plugins_directory is not None:
-        cpprefs.set_ij_plugin_directory(options.ij_plugins_directory, globally=False)
+        cellprofiler.preference.set_ij_plugin_directory(options.ij_plugins_directory, globally=False)
     if options.temp_dir is not None:
         if not os.path.exists(options.temp_dir):
             os.makedirs(options.temp_dir)
-        cpprefs.set_temporary_directory(options.temp_dir, globally=False)
+        cellprofiler.preference.set_temporary_directory(options.temp_dir, globally=False)
     if not options.allow_schema_write:
-        cpprefs.set_allow_schema_write(False)
+        cellprofiler.preference.set_allow_schema_write(False)
     #
     # After the crucial preferences are established, we can start the VM
     #
-    from cellprofiler.utilities.cpjvm import cp_start_vm
-    cp_start_vm()
+    cellprofiler.utilities.cpjvm.cp_start_vm()
     #
     # Not so crucial preferences...
     #
     if options.image_set_file is not None:
-        cpprefs.set_image_set_file(options.image_set_file)
+        cellprofiler.preference.set_image_set_file(options.image_set_file)
     try:
         # ---------------------------------------
         #
         # Handle command-line tasks that that need to load the modules to run
         #
         if options.output_html:
-            from cellprofiler.gui.html.manual import generate_html
             webpage_path = options.output_directory if options.output_directory else None
-            generate_html(webpage_path)
+            cellprofiler.gui.html.manual.generate_html(webpage_path)
             return
         if options.print_measurements:
             print_measurements(options)
@@ -199,13 +209,10 @@ def main(args=None):
         #
         # ------------------------------------------
         if options.show_gui:
-            import wx
             wx.Log.EnableLogging(False)
-            from cellprofiler.gui.app import App
-            from cellprofiler.workspace import is_workspace_file
 
             if options.pipeline_filename:
-                if is_workspace_file(options.pipeline_filename):
+                if cellprofiler.workspace.is_workspace_file(options.pipeline_filename):
                     workspace_path = os.path.expanduser(options.pipeline_filename)
                     pipeline_path = None
                 else:
@@ -218,13 +225,12 @@ def main(args=None):
                 workspace_path = None
                 pipeline_path = None
 
-            app = App(0, workspace_path=workspace_path, pipeline_path=pipeline_path)
+            app = cellprofiler.gui.app.App(0, workspace_path=workspace_path, pipeline_path=pipeline_path)
 
         if options.data_file is not None:
-            cpprefs.set_data_file(os.path.abspath(options.data_file))
+            cellprofiler.preference.set_data_file(os.path.abspath(options.data_file))
 
-        from cellprofiler.utilities.version import version_string, version_number
-        logging.root.info("Version: %s / %d" % (version_string, version_number))
+        logging.root.info("Version: %s / %d" % (cellprofiler.utilities.version.version_string, cellprofiler.utilities.version.version_number))
 
         if options.run_pipeline and not options.pipeline_filename:
             raise ValueError("You must specify a pipeline filename to run")
@@ -232,10 +238,10 @@ def main(args=None):
         if options.output_directory:
             if not os.path.exists(options.output_directory):
                 os.makedirs(options.output_directory)
-            cpprefs.set_default_output_directory(options.output_directory)
+            cellprofiler.preference.set_default_output_directory(options.output_directory)
 
         if options.image_directory:
-            cpprefs.set_default_image_directory(options.image_directory)
+            cellprofiler.preference.set_default_image_directory(options.image_directory)
 
         if options.show_gui:
             if options.run_pipeline:
@@ -255,25 +261,22 @@ def main(args=None):
 
 def stop_cellprofiler():
     try:
-        from ilastik.core.jobMachine import GLOBAL_WM
         GLOBAL_WM.stopWorkers()
     except:
         logging.root.warn("Failed to stop Ilastik")
     try:
-        from cellprofiler.utilities.zmqrequest import join_to_the_boundary
-        join_to_the_boundary()
+        cellprofiler.utilities.zmqrequest.join_to_the_boundary()
     except:
         logging.root.warn("Failed to stop zmq boundary", exc_info=1)
     try:
-        from cellprofiler.utilities.cpjvm import cp_stop_vm
-        cp_stop_vm()
+        cellprofiler.utilities.cpjvm.cp_stop_vm()
     except:
         logging.root.warn("Failed to stop the JVM", exc_info=1)
 
 
 def parse_args(args):
     """Parse the CellProfiler command-line arguments"""
-    import optparse
+
     usage = """usage: %prog [options] [<output-file>])
          where <output-file> is the optional filename for the output file of
                measurements when running headless.
@@ -537,11 +540,6 @@ def set_omero_credentials_from_string(credentials_string):
                         user - the user name
                         session-id - the session ID used for authentication
     """
-    import cellprofiler.preference as cpprefs
-    from bioformats.formatreader import use_omero_credentials
-    from bioformats.formatreader import \
-        K_OMERO_SERVER, K_OMERO_PORT, K_OMERO_USER, K_OMERO_SESSION_ID, \
-        K_OMERO_PASSWORD, K_OMERO_CONFIG_FILE
 
     if re.match("([^=^,]+=[^=^,]+,)*([^=^,]+=[^=^,]+)", credentials_string) is None:
         logging.root.error(
@@ -555,26 +553,26 @@ def set_omero_credentials_from_string(credentials_string):
     for k, v in [kv.split("=", 1) for kv in credentials_string.split(",")]:
         k = k.lower()
         credentials = {
-            K_OMERO_SERVER: cpprefs.get_omero_server(),
-            K_OMERO_PORT: cpprefs.get_omero_port(),
-            K_OMERO_USER: cpprefs.get_omero_user(),
-            K_OMERO_SESSION_ID: cpprefs.get_omero_session_id()
+            bioformats.formatreader.K_OMERO_SERVER: cellprofiler.preference.get_omero_server(),
+            bioformats.formatreader.K_OMERO_PORT: cellprofiler.preference.get_omero_port(),
+            bioformats.formatreader.K_OMERO_USER: cellprofiler.preference.get_omero_user(),
+            bioformats.formatreader.K_OMERO_SESSION_ID: cellprofiler.preference.get_omero_session_id()
         }
         if k == OMERO_CK_HOST:
-            cpprefs.set_omero_server(v, globally=False)
-            credentials[K_OMERO_SERVER] = v
+            cellprofiler.preference.set_omero_server(v, globally=False)
+            credentials[bioformats.formatreader.K_OMERO_SERVER] = v
         elif k == OMERO_CK_PORT:
-            cpprefs.set_omero_port(v, globally=False)
-            credentials[K_OMERO_PORT] = v
+            cellprofiler.preference.set_omero_port(v, globally=False)
+            credentials[bioformats.formatreader.K_OMERO_PORT] = v
         elif k == OMERO_CK_SESSION_ID:
-            credentials[K_OMERO_SESSION_ID] = v
+            credentials[bioformats.formatreader.K_OMERO_SESSION_ID] = v
         elif k == OMERO_CK_USER:
-            cpprefs.set_omero_user(v, globally=False)
-            credentials[K_OMERO_USER] = v
+            cellprofiler.preference.set_omero_user(v, globally=False)
+            credentials[bioformats.formatreader.K_OMERO_USER] = v
         elif k == OMERO_CK_PASSWORD:
-            credentials[K_OMERO_PASSWORD] = v
+            credentials[bioformats.formatreader.K_OMERO_PASSWORD] = v
         elif k == OMERO_CK_CONFIG_FILE:
-            credentials[K_OMERO_CONFIG_FILE] = v
+            credentials[bioformats.formatreader.K_OMERO_CONFIG_FILE] = v
             if not os.path.isfile(v):
                 msg = "Cannot find OMERO config file, %s" % v
                 logging.root.error(msg)
@@ -586,7 +584,7 @@ def set_omero_credentials_from_string(credentials_string):
                     'Acceptable keywords are: "%s"' %
                     '","'.join([OMERO_CK_HOST, OMERO_CK_PORT, OMERO_CK_SESSION_ID]))
             raise ValueError("Invalid format for --omero-credentials")
-    use_omero_credentials(credentials)
+    bioformats.formatreader.use_omero_credentials(credentials)
 
 
 def print_code_statistics():
@@ -594,18 +592,17 @@ def print_code_statistics():
 
     This is the official source of code statistics for things like grants.
     """
-    from cellprofiler.modules import builtin_modules, all_modules, instantiate_module
-    import subprocess
+
     print "\n\n\n**** CellProfiler code statistics ****"
-    print "# of built-in modules: %d" % len(builtin_modules)
+    print "# of built-in modules: %d" % len(cellprofiler.modules.builtin_modules)
     setting_count = 0
-    for module in all_modules.values():
+    for module in cellprofiler.modules.all_modules.values():
         if module.__module__.find(".") < 0:
             continue
         mn = module.__module__.rsplit(".", 1)[1]
-        if mn not in builtin_modules:
+        if mn not in cellprofiler.modules.builtin_modules:
             continue
-        module_instance = instantiate_module(module.module_name)
+        module_instance = cellprofiler.modules.instantiate_module(module.module_name)
         setting_count += len(module_instance.help_settings())
     directory = os.path.abspath(os.path.split(sys.argv[0])[0])
     try:
@@ -643,11 +640,11 @@ def print_measurements(options):
 
     if options.pipeline_filename is None:
         raise ValueError("Can't print measurements, no pipeline file")
-    import cellprofiler.pipeline as cpp
-    pipeline = cpp.Pipeline()
+
+    pipeline = cellprofiler.pipeline.Pipeline()
 
     def callback(pipeline, event):
-        if isinstance(event, cpp.LoadExceptionEvent):
+        if isinstance(event, cellprofiler.pipeline.LoadExceptionEvent):
             raise ValueError("Failed to load %s" % options.pipeline_filename)
 
     pipeline.add_listener(callback)
@@ -669,12 +666,9 @@ def print_groups(filename):
     a two-tuple whose first element is a key/value dictionary of the
     group's key and the second is a tuple of the image numbers in the group.
     """
-    import json
-
-    import cellprofiler.measurement as cpmeas
 
     path = os.path.expanduser(filename)
-    m = cpmeas.Measurement(filename=path, mode="r")
+    m = cellprofiler.measurement.Measurement(filename=path, mode="r")
     metadata_tags = m.get_grouping_tags()
     groupings = m.get_groupings(metadata_tags)
     json.dump(groupings, sys.stdout)
@@ -692,19 +686,15 @@ def get_batch_commands(filename):
     CellProfiler --get-batch-commands Batch_data.h5 | sed s/CellProfiler/farm_job.sh/
     """
 
-    import cellprofiler.measurement as cpmeas
-
     path = os.path.expanduser(filename)
-    m = cpmeas.Measurement(filename=path, mode="r")
+    m = cellprofiler.measurement.Measurement(filename=path, mode="r")
 
     image_numbers = m.get_image_numbers()
-    if m.has_feature(cpmeas.IMAGE, cpmeas.GROUP_NUMBER):
-        group_numbers = m[cpmeas.IMAGE, cpmeas.GROUP_NUMBER, image_numbers]
-        group_indexes = m[cpmeas.IMAGE, cpmeas.GROUP_INDEX, image_numbers]
-        if numpy.any(group_numbers != 1) and numpy.all(
-                        (group_indexes[1:] == group_indexes[:-1] + 1) |
-                        ((group_indexes[1:] == 1) &
-                             (group_numbers[1:] == group_numbers[:-1] + 1))):
+    if m.has_feature(cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_NUMBER):
+        group_numbers = m[cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_NUMBER, image_numbers]
+        group_indexes = m[cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_INDEX, image_numbers]
+
+        if numpy.any(group_numbers != 1) and numpy.all((group_indexes[1:] == group_indexes[:-1] + 1) | ((group_indexes[1:] == 1) & (group_numbers[1:] == group_numbers[:-1] + 1))):
             #
             # Do -f and -l if more than one group and group numbers
             # and indices are properly constructed
@@ -731,28 +721,24 @@ def get_batch_commands(filename):
 
 def write_schema(pipeline_filename):
     if pipeline_filename is None:
-        raise ValueError(
-                "The --write-schema-and-exit switch must be used in conjunction\n"
-                "with the -p or --pipeline switch to load a pipeline with an\n"
-                "ExportToDatabase module.")
+        raise ValueError("The --write-schema-and-exit switch must be used in conjunction\n with the -p or --pipeline switch to load a pipeline with an\n ExportToDatabase module.")
 
-    import cellprofiler.pipeline as cpp
-    import cellprofiler.measurement as cpmeas
-    import cellprofiler.object as cpo
-    import cellprofiler.workspace as cpw
-    pipeline = cpp.Pipeline()
+    pipeline = cellprofiler.pipeline.Pipeline()
+
     pipeline.load(pipeline_filename)
+
     pipeline.turn_off_batch_mode()
+
     for module in pipeline.modules():
         if module.module_name == "ExportToDatabase":
             break
     else:
-        raise ValueError(
-                "The pipeline, \"%s\", does not have an ExportToDatabase module" %
-                pipeline_filename)
-    m = cpmeas.Measurement()
-    workspace = cpw.Workspace(
-            pipeline, module, m, cpo.ObjectSet, m, None)
+        raise ValueError("The pipeline, \"%s\", does not have an ExportToDatabase module" % pipeline_filename)
+
+    m = cellprofiler.measurement.Measurement()
+
+    workspace = cellprofiler.workspace.Workspace(pipeline, module, m, cellprofiler.object.ObjectSet, m, None)
+
     module.prepare_run(workspace)
 
 
@@ -760,68 +746,11 @@ def run_ilastik():
     #
     # Fake ilastik into thinking it is __main__
     #
-    import ilastik
-    import imp
+
     sys.argv.remove("--ilastik")
     il_path = ilastik.__path__
     il_file, il_path, il_description = imp.find_module('ilastikMain', il_path)
     imp.load_module('__main__', il_file, il_path, il_description)
-
-
-def build_extensions():
-    """Compile C and Cython files as needed"""
-    import subprocess
-    import cellprofiler.utilities.setup
-    from distutils.dep_util import newer_group
-    #
-    # Check for dependencies and compile if necessary
-    #
-    compile_scripts = [(os.path.join('cellprofiler', 'utilities', 'mac_setup.py'), cellprofiler.utilities.setup)]
-    env = os.environ.copy()
-    old_pythonpath = os.getenv('PYTHONPATH', None)
-
-    # if we're using a local site_packages, the subprocesses will need
-    # to be able to find it.
-
-    if old_pythonpath:
-        env['PYTHONPATH'] = site_packages + os.pathsep + old_pythonpath
-    else:
-        env['PYTHONPATH'] = site_packages
-
-    use_mingw = (sys.platform == 'win32' and sys.version_info[0] <= 2 and
-                 sys.version_info[1] <= 5)
-    for key in list(env.keys()):
-        value = env[key]
-        if isinstance(key, unicode):
-            key = key.encode("utf-8")
-        if isinstance(value, unicode):
-            value = value.encode("utf-8")
-        env[key] = value
-    for compile_script, my_module in compile_scripts:
-        script_path, script_file = os.path.split(compile_script)
-        script_path = os.path.join(root, script_path)
-        configuration = my_module.configuration()
-        needs_build = False
-        for extension in configuration['ext_modules']:
-            target = extension.name + '.pyd'
-            if newer_group(extension.sources, target):
-                needs_build = True
-        if not needs_build:
-            continue
-        if use_mingw:
-            p = subprocess.Popen([sys.executable,
-                                  script_file,
-                                  "build_ext", "-i",
-                                  "--compiler=mingw32"],
-                                 cwd=script_path,
-                                 env=env)
-        else:
-            p = subprocess.Popen([sys.executable,
-                                  script_file,
-                                  "build_ext", "-i"],
-                                 cwd=script_path,
-                                 env=env)
-        p.communicate()
 
 
 def run_pipeline_headless(options, args):
@@ -830,15 +759,13 @@ def run_pipeline_headless(options, args):
     # Start Ilastik's workers
     #
     try:
-        from ilastik.core.jobMachine import GLOBAL_WM
         GLOBAL_WM.set_thread_count(1)
     except:
         logging.root.warn("Failed to stop Ilastik")
 
     if sys.platform == 'darwin':
         if options.start_awt:
-            from javabridge import activate_awt
-            activate_awt()
+            javabridge.activate_awt()
 
     if not options.first_image_set is None:
         if not options.first_image_set.isdigit():
@@ -864,14 +791,12 @@ def run_pipeline_headless(options, args):
     if ((options.pipeline_filename is not None) and
             (not options.pipeline_filename.lower().startswith('http'))):
         options.pipeline_filename = os.path.expanduser(options.pipeline_filename)
-    from cellprofiler.pipeline import Pipeline, EXIT_STATUS, M_PIPELINE
-    import cellprofiler.measurement as cpmeas
-    import cellprofiler.preference as cpprefs
-    pipeline = Pipeline()
+
+    pipeline = cellprofiler.pipeline.Pipeline()
     initial_measurements = None
     try:
         if h5py.is_hdf5(options.pipeline_filename):
-            initial_measurements = cpmeas.load_measurements(
+            initial_measurements = cellprofiler.measurement.load_measurements(
                     options.pipeline_filename,
                     image_numbers=image_set_numbers)
     except:
@@ -879,17 +804,16 @@ def run_pipeline_headless(options, args):
     if initial_measurements is not None:
         pipeline_text = \
             initial_measurements.get_experiment_measurement(
-                    M_PIPELINE)
+                    cellprofiler.pipeline.M_PIPELINE)
         pipeline_text = pipeline_text.encode('us-ascii')
         pipeline.load(cStringIO.StringIO(pipeline_text))
         if not pipeline.in_batch_mode():
             #
             # Need file list in order to call prepare_run
             #
-            from cellprofiler.utilities.hdf5_dict import HDF5FileList
             with h5py.File(options.pipeline_filename, "r") as src:
-                if HDF5FileList.has_file_list(src):
-                    HDF5FileList.copy(
+                if cellprofiler.utilities.hdf5_dict.HDF5FileList.has_file_list(src):
+                    cellprofiler.utilities.hdf5_dict.HDF5FileList.copy(
                             src, initial_measurements.hdf5_dict.hdf5_file)
     else:
         pipeline.load(options.pipeline_filename)
@@ -898,7 +822,7 @@ def run_pipeline_headless(options, args):
         groups = dict(kvs)
     else:
         groups = None
-    file_list = cpprefs.get_image_set_file()
+    file_list = cellprofiler.preference.get_image_set_file()
     if file_list is not None:
         pipeline.read_file_list(file_list)
     #
@@ -928,8 +852,8 @@ def run_pipeline_headless(options, args):
         pipeline.save_measurements(args[0], measurements)
     if options.done_file is not None:
         if (measurements is not None and
-                measurements.has_feature(cpmeas.EXPERIMENT, EXIT_STATUS)):
-            done_text = measurements.get_experiment_measurement(EXIT_STATUS)
+                measurements.has_feature(cellprofiler.measurement.EXPERIMENT, cellprofiler.pipeline.EXIT_STATUS)):
+            done_text = measurements.get_experiment_measurement(cellprofiler.pipeline.EXIT_STATUS)
         else:
             done_text = "Failure"
         fd = open(options.done_file, "wt")

@@ -338,7 +338,7 @@ class Worker(object):
                 logger.debug("Sending initial measurements request")
                 rep = self.send(cellprofiler.analysis.InitialMeasurementsRequest( self.current_analysis_id))
                 logger.debug("Got initial measurements")
-                current_measurements = self.initial_measurements[self.current_analysis_id] = \ cellprofiler.measurement.load_measurements_from_buffer(rep.buf)
+                current_measurements = self.initial_measurements[self.current_analysis_id] = cellprofiler.measurement.load_measurements_from_buffer(rep.buf)
             else:
                 logger.debug("Has initial measurements")
             # Make a copy of the measurements for writing during this job

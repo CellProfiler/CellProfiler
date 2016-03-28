@@ -692,11 +692,6 @@ class CPFrame(wx.Frame):
                                 "Launch the developer's guide webpage")
         self.__menu_help.Append(ID_HELP_SOURCE_CODE, "Source Code",
                                 "Visit CellProfiler's Github repository")
-        self.__menu_help.Append(
-                ID_CHECK_NEW_VERSION,
-                "Check for Updates...",
-                "Check for a new version of CellProfiler")
-
         self.__menu_help.Append(wx.ID_ABOUT, "&About CellProfiler", "About CellProfiler")
 
         self.__menu_bar = wx.MenuBar()

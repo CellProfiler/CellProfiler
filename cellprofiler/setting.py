@@ -1134,7 +1134,7 @@ class IntegerOrUnboundedRange(IntegerRange):
                     self._maxval < self.max):
             raise ValidationError("%d can't be greater than %d" %
                                   (self.max, self._maxval), self)
-        if ((not self.unbounded_min) and (not self.unbounded_max) and self.min > self.max > 0):
+        if (not self.unbounded_min) and (not self.unbounded_max) and self.min > self.max > 0:
             raise ValidationError("%d is greater than %d" % (self.min, self.max), self)
 
 

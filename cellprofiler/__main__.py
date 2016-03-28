@@ -350,13 +350,6 @@ def parse_args(args):
                             'pipeline. For instance, "-g ROW=H,COL=01", will '
                             'process only the group of image sets that match '
                             'the keys.'))
-    parser.add_option("--html",
-                      action="store_true",
-                      dest="output_html",
-                      default=False,
-                      help=('Output HTML help for all modules. Use with the -o '
-                            'option to specify the output directory for the '
-                            'files. Assumes -b.'))
 
     parser.add_option("--plugins-directory",
                       dest="plugins_directory",

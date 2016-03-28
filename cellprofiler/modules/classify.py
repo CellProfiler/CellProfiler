@@ -672,6 +672,7 @@ class PixelClassifier(object):
 
     def get_image(self, image_number):
         image_number = str(image_number)
+
         return self.g_images[image_number].value
 
     def add_ground_truth(self, class_name, image_number, coordinates):
@@ -685,9 +686,13 @@ class PixelClassifier(object):
         :return:
         """
         coordinates = numpy.column_stack((numpy.ones(coordinates.shape[0], coordinates.dtype) * image_number, coordinates))
+
         ds = self.get_ground_truth(class_name)
+
         ds_idx = ds.shape[0]
+
         ds.resize(ds_idx + coordinates.shape[0], axis=0)
+
         ds[ds_idx:] = coordinates
 
         if A_DIGEST in self.g_training_set.attrs:
@@ -703,22 +708,30 @@ class PixelClassifier(object):
         :return: an S x N matrix where N is the size of the kernel
         """
         kernel = self.get_kernel()[numpy.newaxis, :, :]
+
         coords = pixels[:, numpy.newaxis, :] + kernel
+
         #
         # Boundary reflection
         #
         coords[coords < 0] = numpy.abs(coords[coords < 0])
+
         for i, axis_size in enumerate(image.shape):
             mask = coords[:, :, i] >= axis_size
+
             coords[mask, i] = axis_size * 2 - coords[mask, i] - 1
+
         #
         # Samples
         #
-        samples = image[coords[:, :, 0],
-                        coords[:, :, 1],
-                        coords[:, :, 2],
-                        coords[:, :, 3],
-                        coords[:, :, 4]]
+        samples = image[
+            coords[:, :, 0],
+            coords[:, :, 1],
+            coords[:, :, 2],
+            coords[:, :, 3],
+            coords[:, :, 4]
+        ]
+
         return samples
 
     def add_sampling(self, sampling_name, d_index):
@@ -732,7 +745,9 @@ class PixelClassifier(object):
         """
         if sampling_name in self.g_sampling.keys():
             del self.g_sampling[sampling_name]
+
         g = self.g_sampling.create_group(sampling_name)
+
         for k, v in d_index.iteritems():
             g.create_dataset(k, data=v)
 
@@ -745,13 +760,19 @@ class PixelClassifier(object):
         :return: a sample which is S x N and vector of length S which is composed of indexes into the class names returned by get_class_names.  S is the length of the sum of all samples in the sampling.
         """
         g = self.g_sampling[sampling_name]
+
         samples = []
+
         classes = []
+
         for idx, class_name in enumerate(self.get_class_names()):
             if class_name in g.keys():
                 sampling = g[class_name][:]
+
                 classes.append(numpy.ones(len(sampling), numpy.uint8) * idx)
+
                 gt = self.get_ground_truth(class_name)
+
                 #
                 # h5py datasets are not addressable via an array of indices
                 # in the way that numpy arrays are. A mask of the array elements
@@ -763,38 +784,54 @@ class PixelClassifier(object):
                 # We sort the sampling indices and then process in chunks.
                 #
                 if len(gt) == len(sampling):
-                    logger.debug("Extracting %d samples from %s" %
-                                 (len(sampling), class_name))
+                    logger.debug("Extracting %d samples from %s" % (len(sampling), class_name))
+
                     samples.append(gt[:])
                 else:
                     chunk_size = self.pix_chunk_size
+
                     sampling.sort()
+
                     sindx = 0
+
                     for gtidx in range(0, len(gt), chunk_size):
                         gtidx_end = min(gtidx + chunk_size, len(gt))
+
                         if sampling[sindx] >= gtidx_end:
                             continue
-                        sindx_end = bisect.bisect_left(
-                                sampling[sindx:], gtidx_end) + sindx
-                        logger.debug(
-                                "Extracting %d samples from %s %d:%d" %
-                                (sindx_end - sindx, class_name, gtidx, gtidx_end))
+
+                        sindx_end = bisect.bisect_left(sampling[sindx:], gtidx_end) + sindx
+
+                        logger.debug("Extracting %d samples from %s %d:%d" % (sindx_end - sindx, class_name, gtidx, gtidx_end))
+
                         samples.append(gt[:][sampling[sindx:sindx_end], :])
+
                         sindx = sindx_end
+
                         if sindx >= len(gt):
                             break
+
         samples = numpy.vstack(samples)
+
         classes = numpy.hstack(classes)
+
         #
         # Order by image number.
         #
         order = numpy.lexsort([samples[:, _] for _ in reversed(range(samples.shape[1]))])
+
         samples = samples[order]
+
         classes = classes[order]
+
         counts = numpy.bincount(samples[:, 0])
+
         image_numbers = numpy.where(counts > 0)[0]
+
         counts = counts[image_numbers]
+
         idxs = numpy.hstack([[0], numpy.cumsum(counts)])
+
         result = []
 
         for image_number, idx, idx_end in zip( image_numbers, idxs[:-1], idxs[1:]):
@@ -870,11 +907,13 @@ class PixelClassifier(object):
                     logger.debug("Processing dot product chunk %d:%d of %d" % (idx, idx_end, len(sample)))
 
                     result.append(numpy.sum(sample[idx:idx_end, :, numpy.newaxis] * ds[:].T[numpy.newaxis, :, :], 1))
+
                 result = numpy.vstack(result)
         else:
             algorithm = pickle.loads(ds.value)
 
             result = algorithm.transform(sample)
+
         return result
 
     def fit(self, classifier_name, sample, classes, algorithm=None):
@@ -890,16 +929,22 @@ class PixelClassifier(object):
         """
         if algorithm is None:
             algorithm = sklearn.ensemble.ExtraTreesClassifier(n_estimators=N_ESTIMATORS, min_samples_leaf=MIN_SAMPLES_PER_LEAF)
+
         algorithm.fit(sample, classes)
+
         s = pickle.dumps(algorithm)
+
         if classifier_name in self.g_classifiers.keys():
             del self.g_classifiers[classifier_name]
+
         ds = self.g_classifiers.create_dataset(classifier_name, data=s)
+
         ds.attrs[A_CLASS] = CLS_CLASSIFIER
 
     def predict_proba(self, classifier_name, sample):
         if classifier_name not in self.classifier_cache:
             algorithm = pickle.loads(self.g_classifiers[classifier_name].value)
+
             self.classifier_cache[classifier_name] = algorithm
         else:
             algorithm = self.classifier_cache[classifier_name]
@@ -907,10 +952,12 @@ class PixelClassifier(object):
 
     def run_pipeline(self, filter_bank_name, classifier_name, sample):
         filtered = self.use_filter_bank(filter_bank_name, sample)
+
         return self.predict_proba(classifier_name, filtered)
 
     def config_final_pipeline(self, filter_bank_name, classifier_name):
         self.root.attrs["FilterBankName"] = filter_bank_name
+
         self.root.attrs["ClassifierName"] = classifier_name
 
     def run_final_pipeline(self, sample):

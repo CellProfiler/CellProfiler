@@ -47,6 +47,9 @@ CLS_FILTER = "Filter"
 CLS_CLASSIFIER = "Classifier"
 CLS_SAMPLING = "Sampling"
 
+SRC_OBJECTS = "Objects"
+SRC_ILASTIK = "Ilastik"
+
 ROUNDS = [("initial", 100000, 0),
           ("middle", 75000, 25000),
           ("final", 50000, 50000)]
@@ -113,6 +116,19 @@ class Classify(cpm.CPModule):
             set_directory_fn = set_directory_fn,
             exts = [("Pixel classifier (*.cpclassifier)", "*.cpclassifier"),
                     ("All files (*.*)", "*.*")])
+        self.gt_source = cps.Choice(
+            "Ground truth source", [SRC_OBJECTS, SRC_ILASTIK],
+        doc="""
+        The ground truth data can either be taken from objects or can be
+        the exported TIF "labels" output of Ilastik.
+        """)
+        self.labels_image = cps.ImageNameSubscriber(
+            "Ilastik labels image", "labels.tif",
+            doc="""
+            <i>Used only if the ground truth source is "Ilastik"</i>
+            <br>
+            This image should be the exported labels image from Ilastik.
+            """)
         self.wants_background_class = cps.Binary(
             "Do you want a background class?", True)
         self.background_class_name = cps.Text("Background class name", 
@@ -123,6 +139,13 @@ class Classify(cpm.CPModule):
         self.add_objects(False)
         self.add_objects_button = cps.DoSomething(
             "Add another class", "Add", self.add_objects)
+        self.label_classes = []
+        self.label_class_count = cps.HiddenCount(
+            self.label_classes, "Label class count")
+        self.add_labels(False)
+        self.add_labels_button = cps.DoSomething(
+        "Add another class", "Add", self.add_labels)
+        
         self.images = []
         self.image_count = cps.HiddenCount(self.images, "Image count")
         self.add_image(False)
@@ -137,9 +160,14 @@ class Classify(cpm.CPModule):
     def get_class_names(self, ignore=None):
         result = []
         if self.mode == MODE_TRAIN:
-            if self.wants_background_class:
-                result.append(self.background_class_name.value)
-            result += [group.object_name.value for group in self.object_classes]
+            if self.gt_source == SRC_OBJECTS:
+                if self.wants_background_class:
+                    result.append(self.background_class_name.value)
+                result += [group.object_name.value 
+                           for group in self.object_classes]
+            else:
+                result += [group.class_name.value
+                           for group in self.label_classes]
         else:
             try:
                 with self.get_classifier("r") as c:
@@ -156,6 +184,19 @@ class Classify(cpm.CPModule):
             group.append("remover", cps.RemoveSettingButton(
                 "Remove object", "Remove", self.object_classes, group))
         self.object_classes.append(group)
+        
+    def add_labels(self, can_remove=True):
+        group = cps.SettingsGroup()
+        group.append("class_name", cps.AlphanumericText(
+            "Class name", "Class %d" % (len(self.label_classes)+1),
+            doc="""
+            The name to give to pixels of this class (e.g. "Foreground")
+            
+            You should add one class for each class you defined in Ilastik"""))
+        if can_remove:
+            group.append("remover", cps.RemoveSettingButton(
+                "Remove object", "Remove", self.label_classes, group))
+        self.label_classes.append(group)
         
     def add_image(self, can_remove=True):
         group = cps.SettingsGroup()
@@ -182,13 +223,17 @@ class Classify(cpm.CPModule):
         
     def settings(self):
         result = [
-            self.object_class_count, self.image_count, self.output_count,
+            self.object_class_count, self.label_class_count,
+            self.image_count, self.output_count,
             self.mode, self.path, self.filename, 
             self.advanced_or_automatic,
             self.radius, self.n_features, self.n_estimators, 
-            self.min_samples_per_leaf,
+            self.min_samples_per_leaf, self.gt_source,
+            self.labels_image,
             self.wants_background_class, self.background_class_name]
         for group in self.object_classes:
+            result += group.pipeline_settings()
+        for group in self.label_classes:
             result += group.pipeline_settings()
         for group in self.images:
             result += group.pipeline_settings()
@@ -208,12 +253,19 @@ class Classify(cpm.CPModule):
         result.append(self.add_image_button)
         if self.mode == MODE_TRAIN:
             self.filename.mode = cps.FilenameText.MODE_OVERWRITE
-            result.append(self.wants_background_class)
-            if self.wants_background_class:
-                result.append(self.background_class_name)
-            for group in self.object_classes:
-                result += group.visible_settings()
-            result.append(self.add_objects_button)
+            result.append(self.gt_source)
+            if self.gt_source == SRC_OBJECTS:
+                result.append(self.wants_background_class)
+                if self.wants_background_class:
+                    result.append(self.background_class_name)
+                for group in self.object_classes:
+                    result += group.visible_settings()
+                result.append(self.add_objects_button)
+            else:
+                result.append(self.labels_image)
+                for group in self.label_classes:
+                    result += group.visible_settings()
+                result.append(self.add_labels_button)
         else:
             self.filename.mode = cps.FilenameText.MODE_OPEN
             for group in self.outputs:
@@ -223,9 +275,9 @@ class Classify(cpm.CPModule):
 
     def prepare_settings(self, setting_values):
         for count, sequence, add_fn in zip(
-            [int(_) for _ in setting_values[:3]],
-            (self.object_classes, self.images, self.outputs),
-            (self.add_objects, self.add_image, self.add_output)):
+            [int(_) for _ in setting_values[:4]],
+            (self.object_classes, self.label_classes, self.images, self.outputs),
+            (self.add_objects, self.add_labels, self.add_image, self.add_output)):
             del sequence[:]
             for idx in range(count):
                 add_fn()
@@ -302,18 +354,26 @@ class Classify(cpm.CPModule):
         with self.get_classifier("a") as c:
             assert isinstance(c, PixelClassifier)
             c.add_image(pixels, image_number)
-            bg = np.ones(pixels.shape[-2:], bool)
             gt = []
-            for group in self.object_classes:
-                object_name = group.object_name.value
-                objects = workspace.object_set.get_objects(object_name)
-                fg = np.zeros(bg.shape, bool)
-                for plane, _ in objects.get_labels():
-                    fg[plane > 0] = True
-                bg[fg] = False
-                gt.append((object_name, fg))
-            if self.wants_background_class:
-                gt.append((self.background_class_name.value, bg))
+            if self.gt_source == SRC_OBJECTS:
+                bg = np.ones(pixels.shape[-2:], bool)
+                for group in self.object_classes:
+                    object_name = group.object_name.value
+                    objects = workspace.object_set.get_objects(object_name)
+                    fg = np.zeros(bg.shape, bool)
+                    for plane, _ in objects.get_labels():
+                        fg[plane > 0] = True
+                    bg[fg] = False
+                    gt.append((object_name, fg))
+                if self.wants_background_class:
+                    gt.append((self.background_class_name.value, bg))
+            else:
+                label_image_name = self.labels_image.value
+                img = workspace.image_set.get_image(label_image_name)
+                pixel_data = (img.pixel_data * img.scale).astype(int)
+                for idx, group in enumerate(self.label_classes):
+                    class_name = group.class_name.value
+                    gt.append((class_name, pixel_data == idx+1))
             for object_name, fg in gt:
                 i, j = np.where(fg)
                 c.add_ground_truth(
@@ -406,7 +466,8 @@ class Classify(cpm.CPModule):
                     samples = c.get_samples(pixels, coords)
                     probs = c.run_final_pipeline(samples)
                     prob_maps[:, i:iend, j:jend] = \
-                        probs[:, prob_idxs].reshape(iend - i, jend - j)
+                        probs[:, prob_idxs].reshape(
+                            iend - i, jend - j, len(prob_maps)).transpose(2, 0, 1)
         for i, group in enumerate(self.outputs):
             image_name = group.output_image.value
             image = cpi.Image(prob_maps[i])

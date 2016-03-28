@@ -136,10 +136,12 @@ def main(args=None):
 
     if options.print_groups_file is not None:
         print_groups(options.print_groups_file)
+
         return
 
     if options.batch_commands_file is not None:
         get_batch_commands(options.batch_commands_file)
+
         return
 
     if options.add_message_for_user:
@@ -152,30 +154,28 @@ def main(args=None):
             sys.stderr.write("    <pipeline-or-project> - the path to the pipeline or project file to modify\n")
             return
 
-        caption = args[0]
-
-        message = args[1]
-
         path = args[2]
 
         using_hdf5 = h5py.is_hdf5(path)
 
-        if using_hdf5:
-            m = cellprofiler.measurement.Measurement(filename=path, mode="r+")
+        measurement = None
 
-            pipeline_text = m[cellprofiler.measurement.EXPERIMENT, "Pipeline_Pipeline"]
+        if using_hdf5:
+            measurement = cellprofiler.measurement.Measurement(filename=path, mode="r+")
+
+            pipeline_text = measurement[cellprofiler.measurement.EXPERIMENT, "Pipeline_Pipeline"]
         else:
             with open(path, "r") as fd:
                 pipeline_text = fd.read()
 
         header, body = pipeline_text.split("\n\n", 1)
 
-        pipeline_text = header + ("\nMessageForUser:{0:s}|{1:s}\n\n".format(caption, message)) + body
+        pipeline_text = header + ("\nMessageForUser:{0:s}|{1:s}\n\n".format(args[0], args[1])) + body
 
         if using_hdf5:
-            m[cellprofiler.measurement.EXPERIMENT, "Pipeline_Pipeline"] = pipeline_text
+            measurement[cellprofiler.measurement.EXPERIMENT, "Pipeline_Pipeline"] = pipeline_text
 
-            m.close()
+            measurement.close()
         else:
             with open(path, "w") as fd:
                 fd.write(pipeline_text)
@@ -594,6 +594,7 @@ def set_omero_credentials_from_string(credentials_string):
                 raise ValueError(msg)
         else:
             logging.root.error(u'Unknown --omero-credentials keyword: "{0:s}"'.format(k))
+
             logging.root.error(u'Acceptable keywords are: "{0:s}"'.format('","'.join([OMERO_CK_HOST, OMERO_CK_PORT, OMERO_CK_SESSION_ID])))
 
             raise ValueError("Invalid format for --omero-credentials")
@@ -657,16 +658,9 @@ def print_groups(filename):
 
     :return:
     """
+    measurement = cellprofiler.measurement.Measurement(filename=(os.path.expanduser(filename)), mode="r")
 
-    path = os.path.expanduser(filename)
-
-    m = cellprofiler.measurement.Measurement(filename=path, mode="r")
-
-    metadata_tags = m.get_grouping_tags()
-
-    groupings = m.get_groupings(metadata_tags)
-
-    json.dump(groupings, sys.stdout)
+    json.dump(obj=(measurement.get_groupings(measurement.get_grouping_tags())), fp=sys.stdout)
 
 
 def get_batch_commands(filename):
@@ -683,25 +677,21 @@ def get_batch_commands(filename):
 
     :return:
     """
-    path = os.path.expanduser(filename)
+    measurement = cellprofiler.measurement.Measurement(filename=(os.path.expanduser(filename)), mode="r")
 
-    m = cellprofiler.measurement.Measurement(filename=path, mode="r")
+    image_numbers = measurement.get_image_numbers()
 
-    image_numbers = m.get_image_numbers()
+    if measurement.has_feature(cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_NUMBER):
+        group_numbers = measurement[cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_NUMBER, image_numbers]
 
-    if m.has_feature(cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_NUMBER):
-        group_numbers = m[cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_NUMBER, image_numbers]
-
-        group_indexes = m[cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_INDEX, image_numbers]
+        group_indexes = measurement[cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_INDEX, image_numbers]
 
         if numpy.any(group_numbers != 1) and numpy.all((group_indexes[1:] == group_indexes[:-1] + 1) | ((group_indexes[1:] == 1) & (group_numbers[1:] == group_numbers[:-1] + 1))):
             #
             # Do -f and -l if more than one group and group numbers
             # and indices are properly constructed
             #
-            bins = numpy.bincount(group_numbers)
-
-            cumsums = numpy.cumsum(bins)
+            cumsums = numpy.cumsum(numpy.bincount(group_numbers))
 
             prev = 0
 
@@ -715,9 +705,9 @@ def get_batch_commands(filename):
 
             return
 
-    metadata_tags = m.get_grouping_tags()
+    metadata_tags = measurement.get_grouping_tags()
 
-    groupings = m.get_groupings(metadata_tags)
+    groupings = measurement.get_groupings(metadata_tags)
 
     for grouping in groupings:
         group_string = ",".join(["{0:s}={1:s}".format(k, v) for k, v in grouping[0].iteritems()])
@@ -747,11 +737,9 @@ def write_schema(pipeline_filename):
     else:
         raise ValueError(u"The pipeline, \"{0:s}\", does not have an ExportToDatabase module".format(pipeline_filename))
 
-    m = cellprofiler.measurement.Measurement()
+    measurement = cellprofiler.measurement.Measurement()
 
-    workspace = cellprofiler.workspace.Workspace(pipeline, module, m, cellprofiler.object.ObjectSet, m, None)
-
-    module.prepare_run(workspace)
+    module.prepare_run(cellprofiler.workspace.Workspace(pipeline, module, measurement, cellprofiler.object.ObjectSet, measurement, None))
 
 
 def run_pipeline_headless(options, args):
@@ -856,12 +844,8 @@ def run_pipeline_headless(options, args):
                 create_batch_files.default_image_directory.value = options.image_directory
 
     use_hdf5 = len(args) > 0 and not args[0].lower().endswith(".mat")
-    measurements = pipeline.run(
-            image_set_start=image_set_start,
-            image_set_end=image_set_end,
-            grouping=groups,
-            measurements_filename=None if not use_hdf5 else args[0],
-            initial_measurements=initial_measurements)
+
+    measurements = pipeline.run(image_set_start=image_set_start, image_set_end=image_set_end, grouping=groups, measurements_filename=None if not use_hdf5 else args[0], initial_measurements=initial_measurements)
 
     if len(args) > 0 and not use_hdf5:
         pipeline.save_measurements(args[0], measurements)

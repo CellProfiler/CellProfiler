@@ -965,16 +965,21 @@ class PixelClassifier(object):
 
 
 if __name__ == "__main__":
+    import cellprofiler.pipeline
+    import cellprofiler.preferences
+    import cellprofiler.utilities.cpjvm
+
     logging.basicConfig()
     logging.root.setLevel(logging.DEBUG)
-    import cellprofiler.pipeline as cpp
-    import cellprofiler.preferences as cpprefs
 
-    cpprefs.set_default_output_directory("c:/temp/output/classify")
-    pipeline = cpp.Pipeline()
+    cellprofiler.preferences.set_default_output_directory("c:/temp/output/classify")
+
+    pipeline = cellprofiler.pipeline.Pipeline()
+
     pipeline.load("c:/temp/output/classify/classify.cpproj")
-    module = pipeline.modules()[-1]
-    module.post_group(None, None)
-    from cellprofiler.utilities.cpjvm import cp_stop_vm
 
-    cp_stop_vm()
+    module = pipeline.modules()[-1]
+
+    module.post_group(None, None)
+
+    cellprofiler.utilities.cpjvm.cp_stop_vm()

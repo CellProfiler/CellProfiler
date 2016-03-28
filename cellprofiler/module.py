@@ -3,8 +3,6 @@
     TO-DO: capture and save module revision #s in the handles
 """
 
-import os
-import re
 import sys
 import uuid
 

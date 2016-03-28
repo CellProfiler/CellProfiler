@@ -118,14 +118,12 @@ if __name__ == "__main__":
 
 import time
 import threading
-import thread
 import random
 import zmq
 import cStringIO
 import gc
 import traceback
 from weakref import WeakSet
-
 import cellprofiler.workspace
 import cellprofiler.measurement
 import cellprofiler.preference

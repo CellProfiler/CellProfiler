@@ -9,8 +9,6 @@ import logging
 import multiprocessing
 import os
 import os.path
-import random
-import re
 import sys
 import tempfile
 import threading

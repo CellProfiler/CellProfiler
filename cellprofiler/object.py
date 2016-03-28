@@ -2,7 +2,6 @@
 """
 
 import numpy
-from centrosome.cpmorphology import all_connected_components
 from centrosome.index import Indexes, all_pairs
 from centrosome.outline import outline
 from scipy.sparse import coo_matrix

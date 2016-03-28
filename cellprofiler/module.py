@@ -352,7 +352,8 @@ class Module(object):
         """
         return []
 
-    def get_module_num(self):
+    @property
+    def module_num(self):
         """Get the module's index number
 
         The module's index number or ModuleNum is a one-based index of its
@@ -364,13 +365,12 @@ class Module(object):
             raise (Exception('Module has not been created'))
         return self.__module_num
 
-    def set_module_num(self, module_num):
+    @property.setter
+    def module_num(self, module_num):
         """Change the module's one-based index number in the pipeline
 
         """
         self.__module_num = module_num
-
-    module_num = property(get_module_num, set_module_num)
 
     def module_class(self):
         """The class to instantiate, except for the special case of matlab modules.
@@ -378,18 +378,19 @@ class Module(object):
         """
         return self.__module__ + '.' + self.module_name
 
-    def get_enabled(self):
+    @property
+    def enabled(self):
         """True if the module should be executed, False if it should be ignored.
 
         """
         return self.__enabled
 
-    def set_enabled(self, enable):
+    @enabled.setter
+    def enabled(self, enable):
         self.__enabled = enable
 
-    enabled = property(get_enabled, set_enabled)
-
-    def get_use_as_data_tool(self):
+    @property
+    def use_as_data_tool(self):
         """True if the module is being used as a data tool
 
         This flag can be used to modify the visible_settings and other things
@@ -400,13 +401,12 @@ class Module(object):
         """
         return self.__as_data_tool
 
-    def set_use_as_data_tool(self, as_data_tool):
+    @use_as_data_tool.setter
+    def use_as_data_tool(self, as_data_tool):
         """Mark the module as being used as a data tool
 
         """
         self.__as_data_tool = as_data_tool
-
-    use_as_data_tool = property(get_use_as_data_tool, set_use_as_data_tool)
 
     def settings(self):
         """Return the settings to be loaded or saved to/from the pipeline
@@ -435,44 +435,44 @@ class Module(object):
         """
         return self.settings()
 
-    def get_show_window(self):
+    @property
+    def show_window(self):
         """True if the user wants to see the figure for this module"""
         return self.__show_window
 
-    def set_show_window(self, show_window):
+    @show_window.setter
+    def show_window(self, show_window):
         self.__show_window = show_window
 
-    show_window = property(get_show_window, set_show_window)
-
-    def get_wants_pause(self):
+    @property
+    def wants_pause(self):
         """True if the user wants to pause at this module while debugging"""
         return self.__wants_pause
 
-    def set_wants_pause(self, wants_pause):
+    @wants_pause.setter
+    def wants_pause(self, wants_pause):
         self.__wants_pause = wants_pause
 
-    wants_pause = property(get_wants_pause, set_wants_pause)
-
-    def get_notes(self):
+    @property
+    def notes(self):
         """The user-entered notes for a module
         """
         return self.__notes
 
-    def set_notes(self, notes):
+    @notes.setter
+    def notes(self, notes):
         """Give the module new user-entered notes
 
         """
         self.__notes = notes
 
-    notes = property(get_notes, set_notes)
-
-    def get_svn_version(self):
+    @property
+    def svn_version(self):
         return self.__svn_version
 
-    def set_svn_version(self, version):
+    @svn_version.setter
+    def svn_version(self, version):
         self.__svn_version = version
-
-    svn_version = property(get_svn_version, set_svn_version)
 
     def write_to_handles(self, handles):
         """Write out the module's state to the handles

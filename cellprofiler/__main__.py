@@ -117,10 +117,10 @@ def main(args=None):
     options, args = parse_args(args)
 
     if options.print_version:
-        print "CellProfiler %s" % cellprofiler.utilities.version.dotted_version
-        print "Git %s" % cellprofiler.utilities.version.git_hash
-        print "Version %s" % cellprofiler.utilities.version.version_number
-        print "Built %s" % cellprofiler.utilities.version.version_string.split(" ")[0]
+        print u"CellProfiler {0:s}".format(cellprofiler.utilities.version.dotted_version)
+        print "Git {0:s}".format(cellprofiler.utilities.version.git_hash)
+        print "Version {0:s}".format(cellprofiler.utilities.version.version_number)
+        print "Built {0:s}".format(cellprofiler.utilities.version.version_string.split(" ")[0])
         sys.exit(0)
 
     #
@@ -173,7 +173,7 @@ def main(args=None):
 
         header, body = pipeline_text.split("\n\n", 1)
 
-        pipeline_text = header + ("\nMessageForUser:%s|%s\n\n" % (caption, message)) + body
+        pipeline_text = header + ("\nMessageForUser:{0:s}|{1:s}\n\n".format(caption, message)) + body
 
         if using_hdf5:
             m[cellprofiler.measurement.EXPERIMENT, "Pipeline_Pipeline"] = pipeline_text
@@ -183,7 +183,7 @@ def main(args=None):
             with open(path, "w") as fd:
                 fd.write(pipeline_text)
 
-        print "Message added to %s" % path
+        print u"Message added to {0:s}".format(path)
 
         return
 
@@ -268,7 +268,7 @@ def main(args=None):
         if options.data_file is not None:
             cellprofiler.preference.set_data_file(os.path.abspath(options.data_file))
 
-        logging.root.info("Version: %s / %d" % (cellprofiler.utilities.version.version_string, cellprofiler.utilities.version.version_number))
+        logging.root.info("Version: {0:s} / {1:d}".format(cellprofiler.utilities.version.version_string, cellprofiler.utilities.version.version_number))
 
         if options.run_pipeline and not options.pipeline_filename:
             raise ValueError("You must specify a pipeline filename to run")
@@ -496,12 +496,12 @@ def parse_args(args):
                       dest="log_level",
                       default=str(logging.INFO),
                       help=("Set the verbosity for logging messages: " +
-                            ("%d or %s for debugging, " % (logging.DEBUG, "DEBUG")) +
-                            ("%d or %s for informational, " % (logging.INFO, "INFO")) +
-                            ("%d or %s for warning, " % (logging.WARNING, "WARNING")) +
-                            ("%d or %s for error, " % (logging.ERROR, "ERROR")) +
-                            ("%d or %s for critical, " % (logging.CRITICAL, "CRITICAL")) +
-                            ("%d or %s for fatal." % (logging.FATAL, "FATAL")) +
+                            ("{0:d} or {1:s} for debugging, ".format(logging.DEBUG, "DEBUG")) +
+                            ("{0:d} or {1:s} for informational, ".format(logging.INFO, "INFO")) +
+                            ("{0:d} or {1:s} for warning, ".format(logging.WARNING, "WARNING")) +
+                            ("{0:d} or {1:s} for error, ".format(logging.ERROR, "ERROR")) +
+                            ("{0:d} or {1:s} for critical, ".format(logging.CRITICAL, "CRITICAL")) +
+                            ("{0:d} or {1:s} for fatal.".format(logging.FATAL, "FATAL")) +
                             " Otherwise, the argument is interpreted as the file name of a log configuration file (see http://docs.python.org/library/logging.config.html for file format)"))
 
     if sys.platform == 'darwin':
@@ -554,7 +554,7 @@ def set_omero_credentials_from_string(credentials_string):
     """
 
     if re.match("([^=^,]+=[^=^,]+,)*([^=^,]+=[^=^,]+)", credentials_string) is None:
-        logging.root.error('The OMERO credentials string, "%s", is badly-formatted.' % credentials_string)
+        logging.root.error(u'The OMERO credentials string, "{0:s}", is badly-formatted.'.format(credentials_string))
 
         logging.root.error('It should have the form: ' '"host=hostname.org,port=####,user=<user>,session-id=<session-id>\n')
 
@@ -587,14 +587,14 @@ def set_omero_credentials_from_string(credentials_string):
             credentials[bioformats.formatreader.K_OMERO_CONFIG_FILE] = v
 
             if not os.path.isfile(v):
-                msg = "Cannot find OMERO config file, %s" % v
+                msg = u"Cannot find OMERO config file, {0:s}".format(v)
 
                 logging.root.error(msg)
 
                 raise ValueError(msg)
         else:
-            logging.root.error('Unknown --omero-credentials keyword: "%s"' % k)
-            logging.root.error('Acceptable keywords are: "%s"' % '","'.join([OMERO_CK_HOST, OMERO_CK_PORT, OMERO_CK_SESSION_ID]))
+            logging.root.error(u'Unknown --omero-credentials keyword: "{0:s}"'.format(k))
+            logging.root.error(u'Acceptable keywords are: "{0:s}"'.format('","'.join([OMERO_CK_HOST, OMERO_CK_PORT, OMERO_CK_SESSION_ID])))
 
             raise ValueError("Invalid format for --omero-credentials")
 
@@ -620,7 +620,7 @@ def print_measurements(options):
 
     def callback(pipeline, event):
         if isinstance(event, cellprofiler.pipeline.LoadExceptionEvent):
-            raise ValueError("Failed to load %s" % options.pipeline_filename)
+            raise ValueError(u"Failed to load {0:s}".format(options.pipeline_filename))
 
     pipeline.add_listener(callback)
 
@@ -635,7 +635,7 @@ def print_measurements(options):
     for column in columns:
         object_name, feature, data_type = column[:3]
 
-        print "%s,%s,%s" % (object_name, feature, data_type)
+        print "{0:s},{1:s},{2:s}".format(object_name, feature, data_type)
 
     print "--- end measurements ---"
 
@@ -697,7 +697,7 @@ def get_batch_commands(filename):
                 if off == prev:
                     continue
 
-                print "CellProfiler -c -r -p %s -f %d -l %d" % (filename, prev + 1, off)
+                print "CellProfiler -c -r -p {0:s} -f {1:d} -l {2:d}".format(filename, prev + 1, off)
 
                 prev = off
 
@@ -708,9 +708,9 @@ def get_batch_commands(filename):
     groupings = m.get_groupings(metadata_tags)
 
     for grouping in groupings:
-        group_string = ",".join(["%s=%s" % (k, v) for k, v in grouping[0].iteritems()])
+        group_string = ",".join(["{0:s}={1:s}".format(k, v) for k, v in grouping[0].iteritems()])
 
-        print "CellProfiler -c -r -p %s -g %s" % (filename, group_string)
+        print "CellProfiler -c -r -p {0:s} -g {1:s}".format(filename, group_string)
 
 
 def write_schema(pipeline_filename):
@@ -727,7 +727,7 @@ def write_schema(pipeline_filename):
         if module.module_name == "ExportToDatabase":
             break
     else:
-        raise ValueError("The pipeline, \"%s\", does not have an ExportToDatabase module" % pipeline_filename)
+        raise ValueError(u"The pipeline, \"{0:s}\", does not have an ExportToDatabase module".format(pipeline_filename))
 
     m = cellprofiler.measurement.Measurement()
 
@@ -849,7 +849,7 @@ def run_pipeline_headless(options, args):
 
         fd = open(options.done_file, "wt")
 
-        fd.write("%s\n" % done_text)
+        fd.write(u"{0:s}\n".format(done_text))
 
         fd.close()
 

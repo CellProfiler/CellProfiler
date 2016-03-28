@@ -180,27 +180,33 @@ def main(args=None):
 
     if options.omero_credentials is not None:
         set_omero_credentials_from_string(options.omero_credentials)
+
     if options.plugins_directory is not None:
         cellprofiler.preference.set_plugin_directory(options.plugins_directory, globally=False)
+
     if options.ij_plugins_directory is not None:
         cellprofiler.preference.set_ij_plugin_directory(options.ij_plugins_directory, globally=False)
+
     if options.temp_dir is not None:
         if not os.path.exists(options.temp_dir):
             os.makedirs(options.temp_dir)
         cellprofiler.preference.set_temporary_directory(options.temp_dir, globally=False)
+
     if not options.allow_schema_write:
         cellprofiler.preference.set_allow_schema_write(False)
+
     #
     # After the crucial preferences are established, we can start the VM
     #
     cellprofiler.utilities.cpjvm.cp_start_vm()
+
     #
     # Not so crucial preferences...
     #
     if options.image_set_file is not None:
         cellprofiler.preference.set_image_set_file(options.image_set_file)
+
     try:
-        # ---------------------------------------
         #
         # Handle command-line tasks that that need to load the modules to run
         #
@@ -208,16 +214,18 @@ def main(args=None):
             webpage_path = options.output_directory if options.output_directory else None
             cellprofiler.gui.html.manual.generate_html(webpage_path)
             return
+
         if options.print_measurements:
             print_measurements(options)
             return
+
         if not hasattr(sys, "frozen") and options.code_statistics:
             return
+
         if options.write_schema_and_exit:
             write_schema(options.pipeline_filename)
             return
-        #
-        # ------------------------------------------
+
         if options.show_gui:
             wx.Log.EnableLogging(False)
 
@@ -298,6 +306,7 @@ def parse_args(args):
         # Would be nice to log here, but logging is not yet set up.
 
     parser = optparse.OptionParser(usage=usage)
+
     parser.add_option("-p", "--pipeline", "--project",
                       dest="pipeline_filename",
                       help=('Load this pipeline file or project on startup. '
@@ -305,6 +314,7 @@ def parse_args(args):
                             'project, the -i flag is also needed unless the '
                             'pipeline is saved with the file list.'),
                       default=None)
+
     parser.add_option("-n", "--new-project",
                       dest="new_project",
                       help="Open a new project, prompting for its name using a file dialog",
@@ -312,6 +322,7 @@ def parse_args(args):
                       default=False)
 
     default_show_gui = True
+
     if sys.platform.startswith('linux'):
         if not os.getenv('DISPLAY'):
             default_show_gui = False
@@ -373,6 +384,7 @@ def parse_args(args):
                       help=("This option lets you add a message to a pipeline "
                             "or project file which will appear in a message box"
                             "when that pipeline or project file is opened. "))
+
     parser.add_option("--version",
                       dest="print_version",
                       default=False,
@@ -477,7 +489,9 @@ def parse_args(args):
                           action="store_true",
                           default=False,
                           help="Initialize the Java AWT UI so it can be used when running headless on OS/X")
+
     options, result_args = parser.parse_args(args[1:])
+
     if sys.platform == 'darwin' and len(args) == 2:
         if args[1].lower().endswith(".cpproj"):
             # Assume fakey open of .cpproj and OS can't be configured to
@@ -487,6 +501,7 @@ def parse_args(args):
         elif args[1].lower().endswith(".cpproj"):
             options.pipeline_filename = args[1]
             result_args = []
+
     return options, result_args
 
 
@@ -656,8 +671,7 @@ def get_batch_commands(filename):
 
 def write_schema(pipeline_filename):
     if pipeline_filename is None:
-        raise ValueError(
-                "The --write-schema-and-exit switch must be used in conjunction\n with the -p or --pipeline switch to load a pipeline with an\n ExportToDatabase module.")
+        raise ValueError("The --write-schema-and-exit switch must be used in conjunction\n with the -p or --pipeline switch to load a pipeline with an\n ExportToDatabase module.")
 
     pipeline = cellprofiler.pipeline.Pipeline()
 
@@ -678,17 +692,6 @@ def write_schema(pipeline_filename):
     module.prepare_run(workspace)
 
 
-def run_ilastik():
-    #
-    # Fake ilastik into thinking it is __main__
-    #
-
-    sys.argv.remove("--ilastik")
-    il_path = ilastik.__path__
-    il_file, il_path, il_description = imp.find_module('ilastikMain', il_path)
-    imp.load_module('__main__', il_file, il_path, il_description)
-
-
 def run_pipeline_headless(options, args):
     """Run a CellProfiler pipeline in headless mode"""
     #
@@ -703,7 +706,7 @@ def run_pipeline_headless(options, args):
         if options.start_awt:
             javabridge.activate_awt()
 
-    if not options.first_image_set is None:
+    if options.first_image_set is not None:
         if not options.first_image_set.isdigit():
             raise ValueError("The --first-image-set option takes a numeric argument")
         else:
@@ -712,11 +715,13 @@ def run_pipeline_headless(options, args):
         image_set_start = None
 
     image_set_numbers = None
-    if not options.last_image_set is None:
+
+    if options.last_image_set is not None:
         if not options.last_image_set.isdigit():
             raise ValueError("The --last-image-set option takes a numeric argument")
         else:
             image_set_end = int(options.last_image_set)
+
             if image_set_start is None:
                 image_set_numbers = numpy.arange(1, image_set_end + 1)
             else:
@@ -724,58 +729,62 @@ def run_pipeline_headless(options, args):
     else:
         image_set_end = None
 
-    if ((options.pipeline_filename is not None) and
-            (not options.pipeline_filename.lower().startswith('http'))):
+    if (options.pipeline_filename is not None) and (not options.pipeline_filename.lower().startswith('http')):
         options.pipeline_filename = os.path.expanduser(options.pipeline_filename)
 
     pipeline = cellprofiler.pipeline.Pipeline()
+
     initial_measurements = None
+
     try:
         if h5py.is_hdf5(options.pipeline_filename):
-            initial_measurements = cellprofiler.measurement.load_measurements(
-                    options.pipeline_filename,
-                    image_numbers=image_set_numbers)
+            initial_measurements = cellprofiler.measurement.load_measurements(options.pipeline_filename, image_numbers=image_set_numbers)
     except:
         logging.root.info("Failed to load measurements from pipeline")
+
     if initial_measurements is not None:
-        pipeline_text = \
-            initial_measurements.get_experiment_measurement(
-                    cellprofiler.pipeline.M_PIPELINE)
+        pipeline_text = initial_measurements.get_experiment_measurement(cellprofiler.pipeline.M_PIPELINE)
+
         pipeline_text = pipeline_text.encode('us-ascii')
+
         pipeline.load(cStringIO.StringIO(pipeline_text))
+
         if not pipeline.in_batch_mode():
             #
             # Need file list in order to call prepare_run
             #
             with h5py.File(options.pipeline_filename, "r") as src:
                 if cellprofiler.utilities.hdf5_dict.HDF5FileList.has_file_list(src):
-                    cellprofiler.utilities.hdf5_dict.HDF5FileList.copy(
-                            src, initial_measurements.hdf5_dict.hdf5_file)
+                    cellprofiler.utilities.hdf5_dict.HDF5FileList.copy(src, initial_measurements.hdf5_dict.hdf5_file)
     else:
         pipeline.load(options.pipeline_filename)
+
     if options.groups is not None:
         kvs = [x.split('=') for x in options.groups.split(',')]
+
         groups = dict(kvs)
     else:
         groups = None
+
     file_list = cellprofiler.preference.get_image_set_file()
+
     if file_list is not None:
         pipeline.read_file_list(file_list)
+
     #
     # Fixup CreateBatchFiles with any command-line input or output directories
     #
     if pipeline.in_batch_mode():
-        create_batch_files = [
-            m for m in pipeline.modules()
-            if m.is_create_batch_module()]
+        create_batch_files = [m for m in pipeline.modules() if m.is_create_batch_module()]
+
         if len(create_batch_files) > 0:
             create_batch_files = create_batch_files[0]
+
             if options.output_directory is not None:
-                create_batch_files.custom_output_directory.value = \
-                    options.output_directory
+                create_batch_files.custom_output_directory.value = options.output_directory
+
             if options.image_directory is not None:
-                create_batch_files.default_image_directory.value = \
-                    options.image_directory
+                create_batch_files.default_image_directory.value = options.image_directory
 
     use_hdf5 = len(args) > 0 and not args[0].lower().endswith(".mat")
     measurements = pipeline.run(

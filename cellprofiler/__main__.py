@@ -6,6 +6,7 @@ import cellprofiler.modules
 import cellprofiler.object
 import cellprofiler.pipeline
 import cellprofiler.preference
+import cellprofiler.utilities
 import cellprofiler.utilities.cpjvm
 import cellprofiler.utilities.hdf5_dict
 import cellprofiler.utilities.version
@@ -13,7 +14,7 @@ import cellprofiler.utilities.zmqrequest
 import cellprofiler.worker
 import cellprofiler.workspace
 import cStringIO
-import ctypes
+# import ctypes
 import h5py
 # import ilastik
 # import ilastik.core.jobMachine
@@ -28,7 +29,7 @@ import optparse
 import os
 # import pyreadline.logger
 import re
-import site
+# import site
 import subprocess
 import sys
 import tempfile
@@ -41,63 +42,76 @@ OMERO_CK_PASSWORD = "password"
 OMERO_CK_SESSION_ID = "session-id"
 OMERO_CK_CONFIG_FILE = "config-file"
 
-if sys.platform.startswith('win'):
-    # This recipe is largely from zmq which seems to need this magic
-    # in order to import in frozen mode - a topic the developers never
-    # dealt with.
-    if hasattr(sys, 'frozen'):
-        here = os.path.split(sys.argv[0])[0]
-
-        libzmq = os.path.join(here, 'libzmq.dll')
-        if os.path.exists(libzmq):
-            ctypes.cdll.LoadLibrary(libzmq)
-
+# if sys.platform.startswith('win'):
+#     # This recipe is largely from zmq which seems to need this magic
+#     # in order to import in frozen mode - a topic the developers never
+#     # dealt with.
+#     if hasattr(sys, 'frozen'):
+#         here = os.path.split(sys.argv[0])[0]
 #
-# CellProfiler expects NaN as a result during calculation
-#
-numpy.seterr(all='ignore')
+#         libzmq = os.path.join(here, 'libzmq.dll')
+#         if os.path.exists(libzmq):
+#             ctypes.cdll.LoadLibrary(libzmq)
 #
 # Defeat pyreadline which graciously sets its logging to DEBUG and it
 # appears when CP is frozen
 #
-try:
-    pyreadline_logger.setLevel(logging.INFO)
-    stop_logging()
-except:
-    pass
+# try:
+#     pyreadline_logger.setLevel(logging.INFO)
+#     stop_logging()
+# except:
+#     pass
+#
+# if not hasattr(sys, 'frozen'):
+#     root = os.path.split(__file__)[0]
+# else:
+#     root = os.path.split(sys.argv[0])[0]
+#
+# if len(root) == 0:
+#     root = os.curdir
+#
+# root = os.path.abspath(root)
+#
+# site_packages = os.path.join(root, 'site-packages').encode('utf-8')
+#
+# if os.path.exists(site_packages) and os.path.isdir(site_packages):
+#     site.addsitedir(site_packages)
 
-if not hasattr(sys, 'frozen'):
-    root = os.path.split(__file__)[0]
-else:
-    root = os.path.split(sys.argv[0])[0]
-if len(root) == 0:
-    root = os.curdir
-root = os.path.abspath(root)
-site_packages = os.path.join(root, 'site-packages').encode('utf-8')
-if os.path.exists(site_packages) and os.path.isdir(site_packages):
-    site.addsitedir(site_packages)
+# CellProfiler expects NaN as a result during calculation
+numpy.seterr(all='ignore')
 
 
 def main(args=None):
-    """Run CellProfiler
+    """
+    Run CellProfiler
 
-    args - command-line arguments, e.g. sys.argv
+    :param args: command-line arguments, e.g. sys.argv
+
+    :return:
     """
     if args is None:
         args = sys.argv
+
     cellprofiler.preference.set_awt_headless(True)
+
     switches = ('--work-announce', '--knime-bridge-address')
+
     if any([any([arg.startswith(switch) for switch in switches]) for arg in args]):
         #
         # Go headless ASAP
         #
         cellprofiler.preference.set_headless()
+
         for i, arg in enumerate(args):
             if arg == "--ij-plugins-directory" and len(args) > i + 1:
                 cellprofiler.preference.set_ij_plugin_directory(args[i + 1])
+
                 break
+
         cellprofiler.worker.aw_parse_args()
+
         cellprofiler.worker.main()
+
         sys.exit(0)
 
     options, args = parse_args(args)
@@ -118,6 +132,7 @@ def main(args=None):
 
     if options.jvm_heap_size is not None:
         cellprofiler.preference.set_jvm_heap_mb(options.jvm_heap_size, False)
+
     set_log_level(options)
 
     if options.print_groups_file is not None:
@@ -694,7 +709,8 @@ def get_batch_commands(filename):
         group_numbers = m[cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_NUMBER, image_numbers]
         group_indexes = m[cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_INDEX, image_numbers]
 
-        if numpy.any(group_numbers != 1) and numpy.all((group_indexes[1:] == group_indexes[:-1] + 1) | ((group_indexes[1:] == 1) & (group_numbers[1:] == group_numbers[:-1] + 1))):
+        if numpy.any(group_numbers != 1) and numpy.all(
+                        (group_indexes[1:] == group_indexes[:-1] + 1) | ((group_indexes[1:] == 1) & (group_numbers[1:] == group_numbers[:-1] + 1))):
             #
             # Do -f and -l if more than one group and group numbers
             # and indices are properly constructed
@@ -721,7 +737,8 @@ def get_batch_commands(filename):
 
 def write_schema(pipeline_filename):
     if pipeline_filename is None:
-        raise ValueError("The --write-schema-and-exit switch must be used in conjunction\n with the -p or --pipeline switch to load a pipeline with an\n ExportToDatabase module.")
+        raise ValueError(
+            "The --write-schema-and-exit switch must be used in conjunction\n with the -p or --pipeline switch to load a pipeline with an\n ExportToDatabase module.")
 
     pipeline = cellprofiler.pipeline.Pipeline()
 
@@ -848,17 +865,22 @@ def run_pipeline_headless(options, args):
             grouping=groups,
             measurements_filename=None if not use_hdf5 else args[0],
             initial_measurements=initial_measurements)
+
     if len(args) > 0 and not use_hdf5:
         pipeline.save_measurements(args[0], measurements)
+
     if options.done_file is not None:
-        if (measurements is not None and
-                measurements.has_feature(cellprofiler.measurement.EXPERIMENT, cellprofiler.pipeline.EXIT_STATUS)):
+        if measurements is not None and measurements.has_feature(cellprofiler.measurement.EXPERIMENT, cellprofiler.pipeline.EXIT_STATUS):
             done_text = measurements.get_experiment_measurement(cellprofiler.pipeline.EXIT_STATUS)
         else:
             done_text = "Failure"
+
         fd = open(options.done_file, "wt")
+
         fd.write("%s\n" % done_text)
+
         fd.close()
+
     if measurements is not None:
         measurements.close()
 

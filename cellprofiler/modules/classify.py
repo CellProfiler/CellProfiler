@@ -4,15 +4,14 @@ import bisect
 import hashlib
 import h5py
 import logging
-import numpy as np
+import numpy
 import os
 import pickle
 from sklearn.ensemble import ExtraTreesClassifier
 from sklearn.decomposition import RandomizedPCA
-
-import cellprofiler.cpmodule as cpm
-import cellprofiler.cpimage as cpi
-import cellprofiler.settings as cps
+import cellprofiler.cpmodule
+import cellprofiler.cpimage
+import cellprofiler.settings
 
 logger = logging.getLogger(__name__)
 
@@ -54,20 +53,20 @@ ROUNDS = [("initial", 100000, 0),
           ("final", 50000, 50000)]
 
 
-class Classify(cpm.CPModule):
+class Classify(cellprofiler.cpmodule.CPModule):
     variable_revision_number = 1
     category = "Image Processing"
     module_name = "Classify"
 
     def create_settings(self):
-        self.mode = cps.Choice("Classify or train?",
-                               [MODE_CLASSIFY, MODE_TRAIN])
-        self.advanced_or_automatic = cps.Choice(
+        self.mode = cellprofiler.settings.Choice("Classify or train?",
+                                                 [MODE_CLASSIFY, MODE_TRAIN])
+        self.advanced_or_automatic = cellprofiler.settings.Choice(
                 "Configuration mode", [AA_AUTOMATIC, AA_ADVANCED],
                 doc="""Do you want to automatically choose the training parameters
             or use the defaults?""")
-        self.radius = cps.Integer("Radius", DEFAULT_RADIUS, 1)
-        self.n_features = cps.Integer(
+        self.radius = cellprofiler.settings.Integer("Radius", DEFAULT_RADIUS, 1)
+        self.n_features = cellprofiler.settings.Integer(
                 "Number of features", DEFAULT_N_FEATURES, 1,
                 doc="""The classifier runs a feature reduction set. This creates
             <i>Eigentextures</i> which are representative texture patches
@@ -79,7 +78,7 @@ class Classify(cpm.CPModule):
             time or to reduce overfitting if you have a smaller amount of
             ground truth.
             """)
-        self.n_estimators = cps.Integer(
+        self.n_estimators = cellprofiler.settings.Integer(
                 "Number of estimators", DEFAULT_N_ESTIMATORS, 1,
                 doc="""The classifier uses a voting scheme where it trains this
             many estimators. It purposefully does a bad job training and makes
@@ -90,7 +89,7 @@ class Classify(cpm.CPModule):
             of estimators if the classifier is making obvious mistakes with
             unwarranted certainty. Lower the number of estimators to improve
             processing speed.""")
-        self.min_samples_per_leaf = cps.Integer(
+        self.min_samples_per_leaf = cellprofiler.settings.Integer(
                 "Minimum samples per leaf", DEFAULT_MIN_SAMPLES_PER_LEAF, 1,
                 doc="""This setting determines the minimum number of ground truth
             pixels that the classifier will use to split a decision tree.
@@ -104,7 +103,7 @@ class Classify(cpm.CPModule):
             cells). Raise this setting if the classifier misclassifies pixels
             that are clearly not the right class - this is overtraining.
             """)
-        self.path = cps.DirectoryPath("Classifier folder")
+        self.path = cellprofiler.settings.DirectoryPath("Classifier folder")
 
         def get_directory_fn():
             """Get the directory for the file name"""
@@ -114,51 +113,51 @@ class Classify(cpm.CPModule):
             dir_choice, custom_path = self.path.get_parts_from_path(path)
             self.path.join_parts(dir_choice, custom_path)
 
-        self.filename = cps.FilenameText(
+        self.filename = cellprofiler.settings.FilenameText(
                 "Classifier file", "Classifier.cpclassifier",
                 get_directory_fn=get_directory_fn,
                 set_directory_fn=set_directory_fn,
                 exts=[("Pixel classifier (*.cpclassifier)", "*.cpclassifier"),
                       ("All files (*.*)", "*.*")])
-        self.gt_source = cps.Choice(
+        self.gt_source = cellprofiler.settings.Choice(
                 "Ground truth source", [SRC_OBJECTS, SRC_ILASTIK],
                 doc="""
         The ground truth data can either be taken from objects or can be
         the exported TIF "labels" output of Ilastik.
         """)
-        self.labels_image = cps.ImageNameSubscriber(
+        self.labels_image = cellprofiler.settings.ImageNameSubscriber(
                 "Ilastik labels image", "labels.tif",
                 doc="""
             <i>Used only if the ground truth source is "Ilastik"</i>
             <br>
             This image should be the exported labels image from Ilastik.
             """)
-        self.wants_background_class = cps.Binary(
+        self.wants_background_class = cellprofiler.settings.Binary(
                 "Do you want a background class?", True)
-        self.background_class_name = cps.Text("Background class name",
+        self.background_class_name = cellprofiler.settings.Text("Background class name",
                                               "Background")
         self.object_classes = []
-        self.object_class_count = cps.HiddenCount(self.object_classes,
+        self.object_class_count = cellprofiler.settings.HiddenCount(self.object_classes,
                                                   "Object class count")
         self.add_objects(False)
-        self.add_objects_button = cps.DoSomething(
+        self.add_objects_button = cellprofiler.settings.DoSomething(
                 "Add another class", "Add", self.add_objects)
         self.label_classes = []
-        self.label_class_count = cps.HiddenCount(
+        self.label_class_count = cellprofiler.settings.HiddenCount(
                 self.label_classes, "Label class count")
         self.add_labels(False)
-        self.add_labels_button = cps.DoSomething(
+        self.add_labels_button = cellprofiler.settings.DoSomething(
                 "Add another class", "Add", self.add_labels)
 
         self.images = []
-        self.image_count = cps.HiddenCount(self.images, "Image count")
+        self.image_count = cellprofiler.settings.HiddenCount(self.images, "Image count")
         self.add_image(False)
-        self.add_image_button = cps.DoSomething(
+        self.add_image_button = cellprofiler.settings.DoSomething(
                 "Add another image", "Add", self.add_image)
         self.outputs = []
-        self.output_count = cps.HiddenCount(self.outputs, "Output count")
+        self.output_count = cellprofiler.settings.HiddenCount(self.outputs, "Output count")
         self.add_output(False)
-        self.add_output_button = cps.DoSomething(
+        self.add_output_button = cellprofiler.settings.DoSomething(
                 "Add another output", "Add", self.add_output)
 
     def get_class_names(self, ignore=None):
@@ -181,47 +180,47 @@ class Classify(cpm.CPModule):
         return result
 
     def add_objects(self, can_remove=True):
-        group = cps.SettingsGroup()
-        group.append("object_name", cps.ObjectNameSubscriber(
+        group = cellprofiler.settings.SettingsGroup()
+        group.append("object_name", cellprofiler.settings.ObjectNameSubscriber(
                 "Object name", "Nuclei"))
         if can_remove:
-            group.append("remover", cps.RemoveSettingButton(
+            group.append("remover", cellprofiler.settings.RemoveSettingButton(
                     "Remove object", "Remove", self.object_classes, group))
         self.object_classes.append(group)
 
     def add_labels(self, can_remove=True):
-        group = cps.SettingsGroup()
-        group.append("class_name", cps.AlphanumericText(
+        group = cellprofiler.settings.SettingsGroup()
+        group.append("class_name", cellprofiler.settings.AlphanumericText(
                 "Class name", "Class %d" % (len(self.label_classes) + 1),
                 doc="""
             The name to give to pixels of this class (e.g. "Foreground")
 
             You should add one class for each class you defined in Ilastik"""))
         if can_remove:
-            group.append("remover", cps.RemoveSettingButton(
+            group.append("remover", cellprofiler.settings.RemoveSettingButton(
                     "Remove object", "Remove", self.label_classes, group))
         self.label_classes.append(group)
 
     def add_image(self, can_remove=True):
-        group = cps.SettingsGroup()
-        group.append("image_name", cps.ImageNameSubscriber(
+        group = cellprofiler.settings.SettingsGroup()
+        group.append("image_name", cellprofiler.settings.ImageNameSubscriber(
                 "Image name", "DNA"))
         if can_remove:
-            group.append("remover", cps.RemoveSettingButton(
+            group.append("remover", cellprofiler.settings.RemoveSettingButton(
                     "Remove object", "Remove", self.images, group))
         self.images.append(group)
 
     def add_output(self, can_remove=True):
-        group = cps.SettingsGroup()
+        group = cellprofiler.settings.SettingsGroup()
         group.append(
                 "output_image",
-                cps.ImageNameProvider("Output image", "Probability"))
+                cellprofiler.settings.ImageNameProvider("Output image", "Probability"))
 
-        group.append("class_name", cps.Choice(
+        group.append("class_name", cellprofiler.settings.Choice(
                 "Class name", choices=self.get_class_names(),
                 choices_fn=self.get_class_names))
         if can_remove:
-            group.append("remover", cps.RemoveSettingButton(
+            group.append("remover", cellprofiler.settings.RemoveSettingButton(
                     "Remove object", "Remove", self.outputs, group))
         self.outputs.append(group)
 
@@ -256,7 +255,7 @@ class Classify(cpm.CPModule):
             result += group.visible_settings()
         result.append(self.add_image_button)
         if self.mode == MODE_TRAIN:
-            self.filename.mode = cps.FilenameText.MODE_OVERWRITE
+            self.filename.mode = cellprofiler.settings.FilenameText.MODE_OVERWRITE
             result.append(self.gt_source)
             if self.gt_source == SRC_OBJECTS:
                 result.append(self.wants_background_class)
@@ -271,7 +270,7 @@ class Classify(cpm.CPModule):
                     result += group.visible_settings()
                 result.append(self.add_labels_button)
         else:
-            self.filename.mode = cps.FilenameText.MODE_OPEN
+            self.filename.mode = cellprofiler.settings.FilenameText.MODE_OPEN
             for group in self.outputs:
                 result += group.visible_settings()
             result.append(self.add_output_button)
@@ -318,17 +317,17 @@ class Classify(cpm.CPModule):
             with self.get_classifier("w") as c:
                 assert isinstance(c, PixelClassifier)
                 r = self.get_radius()
-                i, j = np.mgrid[-r:r + 1, -r:r + 1]
+                i, j = numpy.mgrid[-r:r + 1, -r:r + 1]
                 kernel_mask = i * i + j * j <= r * r
-                n_features = np.sum(kernel_mask)
-                kernel = np.vstack([
-                                       np.column_stack([
-                                           np.ones(n_features, int) * channel,  # C offset
-                                           np.zeros(n_features, int),  # T offset
-                                           np.zeros(n_features, int),  # Z offset
+                n_features = numpy.sum(kernel_mask)
+                kernel = numpy.vstack([
+                                          numpy.column_stack([
+                                              numpy.ones(n_features, int) * channel,  # C offset
+                                           numpy.zeros(n_features, int),  # T offset
+                                           numpy.zeros(n_features, int),  # Z offset
                                            i[kernel_mask],
                                            j[kernel_mask]])
-                                       for channel in range(len(self.images))])
+                                          for channel in range(len(self.images))])
                 c.set_kernel(kernel)
                 for class_name in self.get_class_names():
                     c.add_class(class_name)
@@ -356,7 +355,7 @@ class Classify(cpm.CPModule):
             # [[img]] adds Z and T of dimension 1 to the uber array
             #
             pixels.append([[img]])
-        return np.array(pixels)
+        return numpy.array(pixels)
 
     def run_train(self, workspace):
         pixels = self.get_5d_image(workspace)
@@ -366,11 +365,11 @@ class Classify(cpm.CPModule):
             c.add_image(pixels, image_number)
             gt = []
             if self.gt_source == SRC_OBJECTS:
-                bg = np.ones(pixels.shape[-2:], bool)
+                bg = numpy.ones(pixels.shape[-2:], bool)
                 for group in self.object_classes:
                     object_name = group.object_name.value
                     objects = workspace.object_set.get_objects(object_name)
-                    fg = np.zeros(bg.shape, bool)
+                    fg = numpy.zeros(bg.shape, bool)
                     for plane, _ in objects.get_labels():
                         fg[plane > 0] = True
                     bg[fg] = False
@@ -385,11 +384,11 @@ class Classify(cpm.CPModule):
                     class_name = group.class_name.value
                     gt.append((class_name, pixel_data == idx + 1))
             for object_name, fg in gt:
-                i, j = np.where(fg)
+                i, j = numpy.where(fg)
                 c.add_ground_truth(
                         object_name,
                         image_number,
-                        np.column_stack([np.zeros(len(i), int)] * 3 + [i, j]))
+                        numpy.column_stack([numpy.zeros(len(i), int)] * 3 + [i, j]))
 
     def post_group(self, workspace, grouping):
         if self.mode == MODE_TRAIN:
@@ -427,17 +426,17 @@ class Classify(cpm.CPModule):
                     gt = c.get_ground_truth(class_name)
                     if name_in is not None and n_error_samples > 0:
                         probs = c.run_pipeline(name_in, name_in, gt)[:, idx]
-                        order = np.argsort(probs)
+                        order = numpy.argsort(probs)
                         error_idx = order[:n_error_samples]
                         other_idx = order[n_error_samples:]
                     else:
-                        error_idx = np.zeros(0, int)
-                        other_idx = np.arange(gt.shape[0])
+                        error_idx = numpy.zeros(0, int)
+                        other_idx = numpy.arange(gt.shape[0])
                     if len(other_idx) > n_random_samples:
                         r = c.random_state(str(name_in) + name_out + class_name)
                         other_idx = r.choice(
                                 other_idx, size=n_random_samples, replace=False)
-                    sample_idx = np.hstack((error_idx, other_idx))
+                    sample_idx = numpy.hstack((error_idx, other_idx))
                     d[class_name] = sample_idx
                 c.add_sampling(sample_name, d)
             samples, classes = c.sample(fb_sample_name)
@@ -458,21 +457,21 @@ class Classify(cpm.CPModule):
         with self.get_classifier("r") as c:
             assert isinstance(c, PixelClassifier)
             class_names = c.get_class_names()
-            prob_idxs = np.array([
+            prob_idxs = numpy.array([
                                      class_names.index(group.class_name.value)
                                      for group in self.outputs])
             chunk_size = 128
-            prob_maps = np.zeros(
+            prob_maps = numpy.zeros(
                     (len(prob_idxs), pixels.shape[3], pixels.shape[4]))
             for i in range(0, pixels.shape[3], chunk_size):
                 iend = min(i + chunk_size, pixels.shape[3])
                 for j in range(0, pixels.shape[4], chunk_size):
                     jend = min(j + chunk_size, pixels.shape[4])
-                    ii, jj = [_.flatten() for _ in np.mgrid[i:iend, j:jend]]
-                    coords = np.column_stack((
-                        np.zeros(len(ii), int),
-                        np.zeros(len(ii), int),
-                        np.zeros(len(ii), int),
+                    ii, jj = [_.flatten() for _ in numpy.mgrid[i:iend, j:jend]]
+                    coords = numpy.column_stack((
+                        numpy.zeros(len(ii), int),
+                        numpy.zeros(len(ii), int),
+                        numpy.zeros(len(ii), int),
                         ii, jj))
                     samples = c.get_samples(pixels, coords)
                     probs = c.run_final_pipeline(samples)
@@ -481,7 +480,7 @@ class Classify(cpm.CPModule):
                                 iend - i, jend - j, len(prob_maps)).transpose(2, 0, 1)
         for i, group in enumerate(self.outputs):
             image_name = group.output_image.value
-            image = cpi.Image(prob_maps[i])
+            image = cellprofiler.cpimage.Image(prob_maps[i])
             workspace.image_set.add(image_name, image)
         if self.show_window:
             workspace.display_data.input_images = [
@@ -570,8 +569,8 @@ class PixelClassifier(object):
             for class_name in self.get_class_names():
                 md5.update(self.get_ground_truth(class_name).value.data)
             self.g_training_set.attrs[A_DIGEST] = md5.hexdigest()
-        return np.random.RandomState(np.frombuffer(
-                self.g_training_set.attrs[A_DIGEST] + extra, np.uint8))
+        return numpy.random.RandomState(numpy.frombuffer(
+                self.g_training_set.attrs[A_DIGEST] + extra, numpy.uint8))
 
     @staticmethod
     def get_instances(group, class_name):
@@ -605,7 +604,7 @@ class PixelClassifier(object):
         ds = self.g_training_set.create_dataset(
                 class_name,
                 shape=(0, 6),
-                dtype=np.int32,
+                dtype=numpy.int32,
                 chunks=(4096, 6),
                 maxshape=(None, 6))
         ds.attrs[A_CLASS] = CLS_GROUND_TRUTH
@@ -655,8 +654,8 @@ class PixelClassifier(object):
 
         :return:
         """
-        coordinates = np.column_stack(
-                (np.ones(coordinates.shape[0], coordinates.dtype) * image_number,
+        coordinates = numpy.column_stack(
+                (numpy.ones(coordinates.shape[0], coordinates.dtype) * image_number,
                  coordinates))
         ds = self.get_ground_truth(class_name)
         ds_idx = ds.shape[0]
@@ -675,12 +674,12 @@ class PixelClassifier(object):
 
         :return: an S x N matrix where N is the size of the kernel
         """
-        kernel = self.get_kernel()[np.newaxis, :, :]
-        coords = pixels[:, np.newaxis, :] + kernel
+        kernel = self.get_kernel()[numpy.newaxis, :, :]
+        coords = pixels[:, numpy.newaxis, :] + kernel
         #
         # Boundary reflection
         #
-        coords[coords < 0] = np.abs(coords[coords < 0])
+        coords[coords < 0] = numpy.abs(coords[coords < 0])
         for i, axis_size in enumerate(image.shape):
             mask = coords[:, :, i] >= axis_size
             coords[mask, i] = axis_size * 2 - coords[mask, i] - 1
@@ -723,7 +722,7 @@ class PixelClassifier(object):
         for idx, class_name in enumerate(self.get_class_names()):
             if class_name in g.keys():
                 sampling = g[class_name][:]
-                classes.append(np.ones(len(sampling), np.uint8) * idx)
+                classes.append(numpy.ones(len(sampling), numpy.uint8) * idx)
                 gt = self.get_ground_truth(class_name)
                 #
                 # h5py datasets are not addressable via an array of indices
@@ -756,26 +755,26 @@ class PixelClassifier(object):
                         sindx = sindx_end
                         if sindx >= len(gt):
                             break
-        samples = np.vstack(samples)
-        classes = np.hstack(classes)
+        samples = numpy.vstack(samples)
+        classes = numpy.hstack(classes)
         #
         # Order by image number.
         #
-        order = np.lexsort(
+        order = numpy.lexsort(
                 [samples[:, _] for _ in reversed(range(samples.shape[1]))])
         samples = samples[order]
         classes = classes[order]
-        counts = np.bincount(samples[:, 0])
-        image_numbers = np.where(counts > 0)[0]
+        counts = numpy.bincount(samples[:, 0])
+        image_numbers = numpy.where(counts > 0)[0]
         counts = counts[image_numbers]
-        idxs = np.hstack([[0], np.cumsum(counts)])
+        idxs = numpy.hstack([[0], numpy.cumsum(counts)])
         result = []
         for image_number, idx, idx_end in zip(
                 image_numbers, idxs[:-1], idxs[1:]):
             image = self.get_image(image_number)
             result.append(self.get_samples(image, samples[idx:idx_end, 1:]))
 
-        return np.vstack(result), classes
+        return numpy.vstack(result), classes
 
     def make_filter_bank(self, sampling, classes, filter_bank_name, n_filters, algorithm=None):
         """
@@ -821,7 +820,7 @@ class PixelClassifier(object):
         ds = self.g_filters[filter_bank_name]
         if ds.attrs[A_CLASS] == CLS_FILTER:
             if USE_DOT:
-                result = np.dot(sample, ds[:].T)
+                result = numpy.dot(sample, ds[:].T)
             else:
                 #
                 # A dot product... but cluster's np.dot is so XXXXed
@@ -832,9 +831,9 @@ class PixelClassifier(object):
                     idx_end = min(idx + chunk_size, len(sample))
                     logger.debug("Processing dot product chunk %d:%d of %d" %
                                  (idx, idx_end, len(sample)))
-                    result.append(np.sum(sample[idx:idx_end, :, np.newaxis] *
-                                         ds[:].T[np.newaxis, :, :], 1))
-                result = np.vstack(result)
+                    result.append(numpy.sum(sample[idx:idx_end, :, numpy.newaxis] *
+                                         ds[:].T[numpy.newaxis, :, :], 1))
+                result = numpy.vstack(result)
         else:
             algorithm = pickle.loads(ds.value)
             result = algorithm.transform(sample)

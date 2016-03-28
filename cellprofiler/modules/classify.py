@@ -530,7 +530,7 @@ class Classify(cellprofiler.cpmodule.CPModule):
 # The classifier class is here mostly to simplify the initial development
 # and it would get moved out to Centrosome eventually.
 #
-class PixelClassifier(object):
+class PixelClassifier:
     """Represents a classifier stored in an HDF5 file
 
     The parts:

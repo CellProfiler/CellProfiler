@@ -3,14 +3,14 @@
     TO-DO: capture and save module revision #s in the handles
 """
 
-import sys
-import uuid
-import numpy
 import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.object
 import cellprofiler.setting
+import numpy
 import pipeline
+import sys
+import uuid
 
 
 class Module(object):

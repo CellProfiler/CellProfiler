@@ -1,26 +1,26 @@
 """analysis.py - Run pipelines on imagesets to produce measurements.
 """
 
-import Queue
-import cStringIO
+import cellprofiler
+import cellprofiler.image
+import cellprofiler.measurement
+import cellprofiler.preference
+import cellprofiler.utilities.zmqrequest
+import cellprofiler.workspace
 import collections
+import cStringIO
 import logging
 import multiprocessing
+import numpy
 import os
 import os.path
+import Queue
 import subprocess
 import sys
 import tempfile
 import threading
 import uuid
-import numpy
 import zmq
-import cellprofiler
-import cellprofiler.image
-import cellprofiler.measurement
-import cellprofiler.preference
-import cellprofiler.workspace
-import cellprofiler.utilities.zmqrequest
 
 logger = logging.getLogger(__name__)
 

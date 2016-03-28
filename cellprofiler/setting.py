@@ -1,16 +1,16 @@
 """ Setting.py - represents a module setting
 """
 
-import logging
+import cellprofiler.measurement
+import cellprofiler.preference
+import cellprofiler.utilities.utf16encode
 import json
+import logging
 import matplotlib.cm
 import os
-import sys
 import re
+import sys
 import uuid
-import cellprofiler.preference
-import cellprofiler.measurement
-import cellprofiler.utilities.utf16encode
 
 logger = logging.getLogger(__name__)
 

@@ -5,6 +5,8 @@
            Create a function to populate a handles structure with preferences.
 """
 
+import cellprofiler
+import cellprofiler.utilities.utf16encode
 import logging
 import multiprocessing
 import os
@@ -16,8 +18,6 @@ import time
 import traceback
 import uuid
 import weakref
-import cellprofiler
-import cellprofiler.utilities.utf16encode
 
 logger = logging.getLogger(__name__)
 

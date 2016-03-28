@@ -1,20 +1,20 @@
 """Measurements.py - storage for image and object measurements
 """
 
-import json
-import logging
-import h5py
-import re
-import scipy.io.matlab
 import cellprofiler.preference
 import cellprofiler.utilities.hdf5_dict
-import tempfile
+import h5py
+import json
+import logging
 import numpy
-import warnings
 import os
 import os.path
-import urllib
+import re
+import scipy.io.matlab
 import sys
+import tempfile
+import urllib
+import warnings
 
 logger = logging.getLogger(__name__)
 

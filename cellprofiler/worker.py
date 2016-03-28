@@ -17,6 +17,7 @@ the analysis worker runs three threads:
                    the read call throws an exception and the monitor thread
                    stops the main thread's run loop.
 """
+
 import logging
 import os
 import sys

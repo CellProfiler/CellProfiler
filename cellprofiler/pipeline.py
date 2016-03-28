@@ -2,35 +2,35 @@
 """
 
 import bisect
+import cellprofiler.image
+import cellprofiler.matlab.cputils
+import cellprofiler.measurement
+import cellprofiler.object
+import cellprofiler.preference
+import cellprofiler.setting
+import cellprofiler.utilities.utf16encode
+import cellprofiler.utilities.version
+import cellprofiler.utilities.walk_in_background
+import cellprofiler.workspace
+import datetime
 import gc
 import hashlib
+import javabridge
 import json
 import logging
-import uuid
 import numpy
+import os
+import re
 import scipy
 import scipy.io.matlab
-import os
 import StringIO
 import sys
 import tempfile
-import datetime
 import threading
-import urlparse
 import urllib
 import urllib2
-import re
-import cellprofiler.preference
-import cellprofiler.image
-import cellprofiler.measurement
-import cellprofiler.object
-import cellprofiler.workspace
-import cellprofiler.setting
-import cellprofiler.utilities.utf16encode
-import cellprofiler.matlab.cputils
-import cellprofiler.utilities.walk_in_background
-import cellprofiler.utilities.version
-import javabridge
+import urlparse
+import uuid
 
 try:
     # implemented in scipy.io.matlab.miobase.py@5582

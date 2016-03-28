@@ -5,21 +5,21 @@ run an analysis worker to get pipeline metadata and run a pipeline on
 an image set.
 """
 
-import logging
-import cStringIO
-import json
-import javabridge
-import numpy
-import threading
-import uuid
-import zmq
-import cellprofiler.module
-import cellprofiler.measurement
 import cellprofiler.image
+import cellprofiler.measurement
+import cellprofiler.module
 import cellprofiler.object
 import cellprofiler.pipeline
 import cellprofiler.setting
 import cellprofiler.workspace
+import cStringIO
+import javabridge
+import json
+import logging
+import numpy
+import threading
+import uuid
+import zmq
 
 logger = logging.getLogger(__name__)
 

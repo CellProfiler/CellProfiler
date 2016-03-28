@@ -4,14 +4,14 @@ Image        - Represents an image with secondary attributes such as a mask and 
 ImageSetList - Represents the list of image filenames that make up a pipeline run
 """
 
+import cPickle
 import logging
 import math
-import sys
-import StringIO
-import cPickle
-import struct
-import zlib
 import numpy
+import StringIO
+import struct
+import sys
+import zlib
 
 logger = logging.getLogger(__name__)
 

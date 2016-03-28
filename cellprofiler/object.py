@@ -1,11 +1,11 @@
 """ CellProfiler.Objects.py - represents a labelling of objects in an image
 """
 
-import numpy
 import centrosome.index
 import centrosome.outline
-import scipy.sparse
 import decorator
+import numpy
+import scipy.sparse
 
 OBJECT_TYPE_NAME = "objects"
 

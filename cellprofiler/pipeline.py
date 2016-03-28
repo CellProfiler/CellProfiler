@@ -3746,6 +3746,9 @@ class PrepareRunErrorEvent(AbstractPipelineEvent):
     LoadImages or NamesAndTypes and no images were matched.
     """
 
+    def event_type(self):
+        pass
+
     def __init__(self, module, message):
         super(self.__class__, self).__init__()
         self.module = module

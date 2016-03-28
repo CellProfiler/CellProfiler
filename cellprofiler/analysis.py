@@ -25,7 +25,6 @@ import subprocess
 import sys
 import tempfile
 import threading
-import time
 import uuid
 import zmq
 

@@ -368,14 +368,6 @@ def parse_args(args):
                       help=("CellProfiler will look for ImageJ plugin modules "
                             "in this directory (headless-only)."))
 
-    parser.add_option("-t", "--temporary-directory",
-                      dest="temp_dir",
-                      default=None,
-                      help=("The temporary directory if in headless mode. "
-                            "CellProfiler uses this for downloaded image files "
-                            "and for the measurements file, if not specified. "
-                            "The default is " + tempfile.gettempdir()))
-
     parser.add_option("--add-message-for-user",
                       dest="add_message_for_user",
                       default=False,

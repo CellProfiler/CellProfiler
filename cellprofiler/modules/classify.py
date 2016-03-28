@@ -155,7 +155,7 @@ class Classify(cellprofiler.cpmodule.CPModule):
     def add_labels(self, removable=True):
         group = cellprofiler.settings.SettingsGroup()
 
-        group.append("class_name", cellprofiler.settings.AlphanumericText("Class name", "Class %d" % (len(self.label_classes) + 1), doc="The name to give to pixels of this class (e.g. \"Foreground\")\nYou should add one class for each class you defined in Ilastik"))
+        group.append("class_name", cellprofiler.settings.AlphanumericText("Class name", "Class {0:d}".format(len(self.label_classes) + 1), doc="The name to give to pixels of this class (e.g. \"Foreground\")\nYou should add one class for each class you defined in Ilastik"))
 
         if removable:
             group.append("remover", cellprofiler.settings.RemoveSettingButton("Remove object", "Remove", self.label_classes, group))
@@ -377,12 +377,10 @@ class Classify(cellprofiler.cpmodule.CPModule):
                 if self.wants_background_class:
                     ground_truth.append((self.background_class_name.value, background))
             else:
-                img = workspace.image_set.get_image(self.labels_image.value)
-
-                pixel_data = (img.pixel_data * img.scale).astype(int)
+                image = workspace.image_set.get_image(self.labels_image.value)
 
                 for index, group in enumerate(self.label_classes):
-                    ground_truth.append((group.class_name.value, pixel_data == index + 1))
+                    ground_truth.append((group.class_name.value, (image.pixel_data * image.scale).astype(int) == index + 1))
 
             for object_name, foreground in ground_truth:
                 i, j = numpy.where(foreground)
@@ -468,9 +466,7 @@ class Classify(cellprofiler.cpmodule.CPModule):
         with self.get_classifier("r") as classifier:
             assert isinstance(classifier, PixelClassifier)
 
-            class_names = classifier.get_class_names()
-
-            probabilities_indices = numpy.array([class_names.index(group.class_name.value) for group in self.outputs])
+            probabilities_indices = numpy.array([classifier.get_class_names().index(group.class_name.value) for group in self.outputs])
 
             chunk_size = 128
 
@@ -777,7 +773,7 @@ class PixelClassifier:
                 # We sort the sampling indices and then process in chunks.
                 #
                 if len(ground_truth) == len(sampling):
-                    logger.debug("Extracting %d samples from %s" % (len(sampling), class_name))
+                    logger.debug("Extracting {0:d} samples from {1:s}".format(len(sampling), class_name))
 
                     samples.append(ground_truth[:])
                 else:
@@ -795,7 +791,7 @@ class PixelClassifier:
 
                         sindx_end = bisect.bisect_left(sampling[sindx:], gtidx_end) + sindx
 
-                        logger.debug("Extracting %d samples from %s %d:%d" % (sindx_end - sindx, class_name, gtidx, gtidx_end))
+                        logger.debug("Extracting {0:d} samples from {1:s} {2:d}:{3:d}".format(sindx_end - sindx, class_name, gtidx, gtidx_end))
 
                         samples.append(ground_truth[:][sampling[sindx:sindx_end], :])
 

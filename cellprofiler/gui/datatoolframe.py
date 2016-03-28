@@ -138,7 +138,7 @@ class DataToolFrame(wx.Frame):
             assert isinstance(dlg, wx.FileDialog)
             if dlg.ShowModal() == wx.ID_OK:
                 if dlg.GetFilterIndex() == 0:
-                    new_measurements = cellprofiler.measurement.Measurements(
+                    new_measurements = cellprofiler.measurement.Measurement(
                             filename=dlg.Path,
                             copy=self.measurements)
                     new_measurements.flush()
@@ -203,7 +203,7 @@ class DataToolFrame(wx.Frame):
         self.measurements.next_image_set(1)
 
     def on_run(self, event):
-        image_set_list = cellprofiler.image.ImageSetList()
+        image_set_list = cellprofiler.image.SetList()
         image_set = image_set_list.get_image_set(0)
         workspace = cellprofiler.workspace.Workspace(self.pipeline,
                                                      self.module,

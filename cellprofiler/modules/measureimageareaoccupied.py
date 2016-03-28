@@ -49,7 +49,7 @@ IMAGE_SETTING_COUNT = 1
 OBJECT_SETTING_COUNT = 3
 
 
-class MeasureImageAreaOccupied(cpm.CPModule):
+class MeasureImageAreaOccupied(cpm.Module):
     module_name = "MeasureImageAreaOccupied"
     category = "Measurement"
     variable_revision_number = 3

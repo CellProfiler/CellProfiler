@@ -78,7 +78,7 @@ S_EXPANDED = 'Expanded'
 S_ADJACENT = 'Adjacent'
 
 
-class MeasureObjectNeighbors(cpm.CPModule):
+class MeasureObjectNeighbors(cpm.Module):
     module_name = 'MeasureObjectNeighbors'
     category = "Measurement"
     variable_revision_number = 2
@@ -203,13 +203,13 @@ class MeasureObjectNeighbors(cpm.CPModule):
 
     def run(self, workspace):
         objects = workspace.object_set.get_objects(self.object_name.value)
-        assert isinstance(objects, cpo.Objects)
+        assert isinstance(objects, cpo.Object)
         has_pixels = objects.areas > 0
         labels = objects.small_removed_segmented
         kept_labels = objects.segmented
         neighbor_objects = workspace.object_set.get_objects(
                 self.neighbors_name.value)
-        assert isinstance(neighbor_objects, cpo.Objects)
+        assert isinstance(neighbor_objects, cpo.Object)
         neighbor_labels = neighbor_objects.small_removed_segmented
         #
         # Need to add in labels touching border.
@@ -466,7 +466,7 @@ class MeasureObjectNeighbors(cpm.CPModule):
         #
         assert (isinstance(workspace, cpw.Workspace))
         m = workspace.measurements
-        assert (isinstance(m, cpmeas.Measurements))
+        assert (isinstance(m, cpmeas.Measurement))
         image_set = workspace.image_set
         features_and_data = [
             (M_NUMBER_OF_NEIGHBORS, neighbor_count),

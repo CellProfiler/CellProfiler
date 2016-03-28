@@ -32,7 +32,7 @@ CMS_USE_MEASUREMENT_RANGE = "Use this image's measurement range"
 CMS_MANUAL = "Manual"
 
 
-class DisplayDataOnImage(cpm.CPModule):
+class DisplayDataOnImage(cpm.Module):
     module_name = 'DisplayDataOnImage'
     category = 'Data Tools'
     variable_revision_number = 6

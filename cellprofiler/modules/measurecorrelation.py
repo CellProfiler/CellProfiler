@@ -82,7 +82,7 @@ F_RWC_FORMAT = "Correlation_RWC_%s_%s"
 F_COSTES_FORMAT = "Correlation_Costes_%s_%s"
 
 
-class MeasureCorrelation(cpm.CPModule):
+class MeasureCorrelation(cpm.Module):
     module_name = 'MeasureCorrelation'
     category = 'Measurement'
     variable_revision_number = 3

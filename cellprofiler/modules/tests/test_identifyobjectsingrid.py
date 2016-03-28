@@ -125,10 +125,10 @@ class TestIdentifyObjectsInGrid(unittest.TestCase):
         module.output_objects_name.value = OUTPUT_OBJECTS_NAME
         module.guiding_object_name.value = GUIDING_OBJECTS_NAME
         module.outlines_name.value = OUTLINES_NAME
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.SetList()
         object_set = cpo.ObjectSet()
         if labels is not None:
-            my_objects = cpo.Objects()
+            my_objects = cpo.Object()
             my_objects.segmented = labels
             object_set.add_objects(my_objects, GUIDING_OBJECTS_NAME)
         pipeline = cpp.Pipeline()
@@ -140,13 +140,13 @@ class TestIdentifyObjectsInGrid(unittest.TestCase):
         pipeline.add_module(module)
         workspace = cpw.Workspace(pipeline, module,
                                   image_set_list.get_image_set(0),
-                                  object_set, cpmeas.Measurements(),
+                                  object_set, cpmeas.Measurement(),
                                   image_set_list)
         workspace.set_grid(GRID_NAME, gridding)
         return workspace, module
 
     def make_rectangular_grid(self, gridding):
-        self.assertTrue(isinstance(gridding, cpg.CPGridInfo))
+        self.assertTrue(isinstance(gridding, cpg.Grid))
         i0 = gridding.y_location_of_lowest_y_spot
         j0 = gridding.x_location_of_lowest_x_spot
         di = gridding.y_spacing
@@ -195,7 +195,7 @@ class TestIdentifyObjectsInGrid(unittest.TestCase):
         # Check measurements
         #
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         xm = m.get_current_measurement(OUTPUT_OBJECTS_NAME, 'Location_Center_X')
         self.assertTrue(np.all(xm == x_locations[1:]))
         ym = m.get_current_measurement(OUTPUT_OBJECTS_NAME, 'Location_Center_Y')
@@ -324,7 +324,7 @@ class TestIdentifyObjectsInGrid(unittest.TestCase):
         labels = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME).segmented
         self.assertTrue(np.all(labels == expected[0:labels.shape[0], 0:labels.shape[1]]))
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         xm = m.get_current_measurement(OUTPUT_OBJECTS_NAME, 'Location_Center_X')
         self.assertTrue(np.all(xm == x_locations[1:]))
         ym = m.get_current_measurement(OUTPUT_OBJECTS_NAME, 'Location_Center_Y')
@@ -389,7 +389,7 @@ class TestIdentifyObjectsInGrid(unittest.TestCase):
         labels = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME).segmented
         self.assertTrue(np.all(labels == expected[0:labels.shape[0], 0:labels.shape[1]]))
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         xm = m.get_current_measurement(OUTPUT_OBJECTS_NAME, 'Location_Center_X')
         self.assertTrue(np.all(xm == x_locations[1:]))
         ym = m.get_current_measurement(OUTPUT_OBJECTS_NAME, 'Location_Center_Y')
@@ -441,7 +441,7 @@ class TestIdentifyObjectsInGrid(unittest.TestCase):
         labels = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME).segmented
         self.assertTrue(np.all(labels == expected[0:labels.shape[0], 0:labels.shape[1]]))
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         xm = m.get_current_measurement(OUTPUT_OBJECTS_NAME, 'Location_Center_X')
         self.assertEqual(len(xm), 96)
         self.assertTrue(np.all(xm[:-1] == x_locations[1:-1]))
@@ -524,7 +524,7 @@ class TestIdentifyObjectsInGrid(unittest.TestCase):
         labels = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME).segmented
         self.assertTrue(np.all(labels == expected[0:labels.shape[0], 0:labels.shape[1]]))
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         xm = m.get_current_measurement(OUTPUT_OBJECTS_NAME, 'Location_Center_X')
         self.assertTrue(np.all(xm == x_locations[1:]))
         ym = m.get_current_measurement(OUTPUT_OBJECTS_NAME, 'Location_Center_Y')

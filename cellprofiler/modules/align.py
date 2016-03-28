@@ -48,7 +48,7 @@ C_ALIGN = "Align"
 MEASUREMENT_FORMAT = C_ALIGN + "_%sshift_%s"
 
 
-class Align(cpm.CPModule):
+class Align(cpm.Module):
     module_name = "Align"
     category = 'Image Processing'
     variable_revision_number = 3

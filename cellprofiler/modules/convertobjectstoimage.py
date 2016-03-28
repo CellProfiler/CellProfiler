@@ -32,7 +32,7 @@ IM_UINT16 = "uint16"
 IM_ALL = [IM_COLOR, IM_BINARY, IM_GRAYSCALE, IM_UINT16]
 
 
-class ConvertObjectsToImage(cpm.CPModule):
+class ConvertObjectsToImage(cpm.Module):
     module_name = "ConvertObjectsToImage"
     category = "Object Processing"
     variable_revision_number = 1

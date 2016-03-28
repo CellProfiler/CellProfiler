@@ -36,13 +36,13 @@ class TestApplyThreshold(unittest.TestCase):
         module.thresholded_image_name.value = OUTPUT_IMAGE_NAME
         pipeline = cpp.Pipeline()
         object_set = cpo.ObjectSet()
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.SetList()
         image_set = image_set_list.get_image_set(0)
         workspace = cpw.Workspace(pipeline,
                                   module,
                                   image_set,
                                   object_set,
-                                  cpmeas.Measurements(),
+                                  cpmeas.Measurement(),
                                   image_set_list)
         image_set.add(INPUT_IMAGE_NAME,
                       cpi.Image(image) if mask is None
@@ -300,7 +300,7 @@ class TestApplyThreshold(unittest.TestCase):
         self.assertTrue(np.all(output.pixel_data == expected))
 
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         image_features = m.get_feature_names(cpmeas.IMAGE)
         #
         # Check measurement columns = image features
@@ -476,7 +476,7 @@ class TestApplyThreshold(unittest.TestCase):
         expected = image > T.get_otsu_threshold(image[labels == 1])
         expected[labels == 2] = image[labels == 2] > T.get_otsu_threshold(image[labels == 2])
         workspace, module = self.make_workspace(image)
-        objects = cpo.Objects()
+        objects = cpo.Object()
         objects.segmented = labels
         workspace.object_set.add_objects(objects, "HelloKitty")
         module.binary.value = A.BINARY

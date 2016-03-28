@@ -85,7 +85,7 @@ S_IMAGE_NAME_OFFSET_V4 = 1
 S_RESCALE_OFFSET_V4 = 2
 
 
-class LoadSingleImage(cpm.CPModule):
+class LoadSingleImage(cpm.Module):
     module_name = "LoadSingleImage"
     category = "File Processing"
     variable_revision_number = 5
@@ -321,7 +321,7 @@ class LoadSingleImage(cpm.CPModule):
 
     def prepare_run(self, workspace):
         m = workspace.measurements
-        assert isinstance(m, cpmeas.Measurements)
+        assert isinstance(m, cpmeas.Measurement)
         root = self.get_base_directory(workspace)
 
         if m.image_set_count == 0:
@@ -362,7 +362,7 @@ class LoadSingleImage(cpm.CPModule):
     def run(self, workspace):
         statistics = []
         m = workspace.measurements
-        assert isinstance(m, cpmeas.Measurements)
+        assert isinstance(m, cpmeas.Measurement)
         #
         # Hack: if LoadSingleImage is first, no paths are populated
         #
@@ -409,7 +409,7 @@ class LoadSingleImage(cpm.CPModule):
                 # Turn image into objects
                 #
                 labels = convert_image_to_objects(pixel_data)
-                objects = cpo.Objects()
+                objects = cpo.Object()
                 objects.segmented = labels
                 object_set = workspace.object_set
                 assert isinstance(object_set, cpo.ObjectSet)

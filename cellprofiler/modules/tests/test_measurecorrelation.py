@@ -28,7 +28,7 @@ class TestMeasureCorrelation(unittest.TestCase):
     def make_workspace(self, image1, image2, objects=None):
         '''Make a workspace for testing ApplyThreshold'''
         module = M.MeasureCorrelation()
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.SetList()
         image_set = image_set_list.get_image_set(0)
         for image_group, name, image in zip(module.image_groups,
                                             (IMAGE1_NAME, IMAGE2_NAME),
@@ -47,7 +47,7 @@ class TestMeasureCorrelation(unittest.TestCase):
                                   module,
                                   image_set,
                                   object_set,
-                                  cpmeas.Measurements(),
+                                  cpmeas.Measurement(),
                                   image_set_list)
         return workspace, module
 
@@ -575,7 +575,7 @@ MeasureCorrelation:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
         image2[labels == 2] = 1 - image1[labels == 2]
         i1 = cpi.Image(image1)
         i2 = cpi.Image(image2)
-        o = cpo.Objects()
+        o = cpo.Object()
         o.segmented = labels
         workspace, module = self.make_workspace(i1, i2, o)
         module.run(workspace)
@@ -611,7 +611,7 @@ MeasureCorrelation:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
         labels = np.zeros((10, 10), int)
         labels[:4, :4] = 1
         labels[6:, 6:] = 2
-        o = cpo.Objects()
+        o = cpo.Object()
         o.segmented = labels
         #
         # Make the objects have the cropped image as a parent
@@ -633,7 +633,7 @@ MeasureCorrelation:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
         image2 = image1.copy()
         i1 = cpi.Image(image1)
         i2 = cpi.Image(image2)
-        o = cpo.Objects()
+        o = cpo.Object()
         o.segmented = labels
         workspace, module = self.make_workspace(i1, i2, o)
         module.run(workspace)
@@ -663,7 +663,7 @@ MeasureCorrelation:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
         labels = np.zeros((10, 30), int)
         labels[:4, :4] = 1
         labels[6:, 6:] = 2
-        o = cpo.Objects()
+        o = cpo.Object()
         o.segmented = labels
         workspace, module = self.make_workspace(i1, i1, o)
         module.run(workspace)
@@ -686,7 +686,7 @@ MeasureCorrelation:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
         labels[3:8, 3:8] = 1
         labels[13:18, 13:18] = 2
         mask = labels != 2
-        objects = cpo.Objects()
+        objects = cpo.Object()
         objects.segmented = labels
 
         for mask1, mask2 in ((mask, None), (None, mask), (mask, mask)):

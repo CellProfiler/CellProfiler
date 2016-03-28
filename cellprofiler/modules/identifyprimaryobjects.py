@@ -989,7 +989,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         cpmi.add_object_count_measurements(measurements,
                                            objname, object_count)
         # Add label matrices to the object set
-        objects = cellprofiler.object.Objects()
+        objects = cellprofiler.object.Object()
         objects.segmented = labeled_image
         objects.unedited_segmented = unedited_labels
         objects.small_removed_segmented = small_removed_labels

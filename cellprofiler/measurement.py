@@ -222,7 +222,7 @@ def make_temporary_file():
             prefix='Cpmeasurements', suffix='.hdf5', dir=dir)
 
 
-class Measurements(object):
+class Measurement(object):
     """Represents measurements made on images and objects
     """
 
@@ -272,7 +272,7 @@ class Measurements(object):
                 logger.debug("%s: (%d %s): %s" % frame)
         else:
             is_temporary = False
-        if isinstance(copy, Measurements):
+        if isinstance(copy, Measurement):
             with copy.hdf5_dict.lock:
                 self.hdf5_dict = HDF5Dict(
                         filename,
@@ -751,7 +751,7 @@ class Measurements(object):
                         grp[R_SECOND_IMAGE_NUMBER]):
             for i in range(0, imgnums.shape[0], chunk_size):
                 limit = min(imgnums.shape[0], i + chunk_size)
-                Measurements.update_image_number_relationships(
+                Measurement.update_image_number_relationships(
                         imgnums[i:limit], i, d)
         return d
 
@@ -820,14 +820,14 @@ class Measurements(object):
             if data is None:
                 data = []
             self.hdf5_dict[EXPERIMENT, feature_name, 0, data_type] = \
-                Measurements.wrap_string(data)
+                Measurement.wrap_string(data)
         elif object_name == IMAGE:
             if np.isscalar(image_set_number):
                 image_set_number = [image_set_number]
                 data = [data]
             data = [d if d is None or d is np.NaN
-                    else Measurements.wrap_string(d) if np.isscalar(d)
-            else Measurements.wrap_string(d[0]) if data_type is None
+                    else Measurement.wrap_string(d) if np.isscalar(d)
+            else Measurement.wrap_string(d[0]) if data_type is None
             else d
                     for d in data]
             self.hdf5_dict[IMAGE, feature_name, image_set_number, data_type] = data
@@ -958,7 +958,7 @@ class Measurements(object):
             result = self.hdf5_dict[EXPERIMENT, feature_name, 0]
             if len(result) == 1:
                 result = result[0]
-            return Measurements.unwrap_string(result)
+            return Measurement.unwrap_string(result)
         if image_set_number is None:
             image_set_number = self.image_set_number
         vals = self.hdf5_dict[object_name, feature_name, image_set_number]
@@ -967,13 +967,13 @@ class Measurements(object):
                 if vals is None or len(vals) == 0:
                     return None
                 if len(vals) == 1:
-                    return Measurements.unwrap_string(vals[0])
+                    return Measurement.unwrap_string(vals[0])
                 return vals
             else:
                 measurement_dtype = self.hdf5_dict.get_feature_dtype(
                         object_name, feature_name)
                 if h5py.check_dtype(vlen=measurement_dtype) == str:
-                    result = [Measurements.unwrap_string(v[0])
+                    result = [Measurement.unwrap_string(v[0])
                               if v is not None else None
                               for v in vals]
                 elif measurement_dtype == np.uint8:
@@ -1044,7 +1044,7 @@ class Measurements(object):
         values - list of either values or arrays of values
         '''
         values = [[] if value is None
-                  else [Measurements.wrap_string(value)] if np.isscalar(value)
+                  else [Measurement.wrap_string(value)] if np.isscalar(value)
         else value
                   for value in values]
         if ((not self.hdf5_dict.has_feature(IMAGE, IMAGE_NUMBER)) or
@@ -1361,7 +1361,7 @@ class Measurements(object):
                         column = column.astype(float)
                     except:
                         column = np.array(
-                                [Measurements.wrap_string(x) for x in column],
+                                [Measurement.wrap_string(x) for x in column],
                                 object)
                 self.hdf5_dict.add_all(IMAGE, feature, column, image_numbers)
 
@@ -1579,7 +1579,7 @@ class Measurements(object):
                       discard alpha channel.
         """
         from .modules.loadimages import LoadImagesImageProviderURL
-        from .image import GrayscaleImage, RGBImage
+        from .image import Grayscale, RGB
         name = str(name)
         if self.__images.has_key(name):
             image = self.__images[name]
@@ -1633,10 +1633,10 @@ class Measurements(object):
             if pd.shape[2] >= 3 and \
                     np.all(pd[:, :, 0] == pd[:, :, 1]) and \
                     np.all(pd[:, :, 0] == pd[:, :, 2]):
-                return GrayscaleImage(image)
+                return Grayscale(image)
             raise ValueError("Image must be grayscale, but it was color")
         if must_be_grayscale and image.pixel_data.dtype.kind == 'b':
-            return GrayscaleImage(image)
+            return Grayscale(image)
         if must_be_rgb:
             if image.pixel_data.ndim != 3:
                 raise ValueError("Image must be RGB, but it was grayscale")
@@ -1645,7 +1645,7 @@ class Measurements(object):
                                  image.pixel_data.shape[2])
             elif image.pixel_data.shape[2] == 4:
                 logger.warning("Discarding alpha channel.")
-                return RGBImage(image)
+                return RGB(image)
         return image
 
     def get_providers(self):
@@ -1863,13 +1863,13 @@ def load_measurements(filename, dest_file=None, can_overwrite=False,
                     # Assume that the user wants the last one
                     last_key = sorted(top_level.keys())[-1]
                     top_level = top_level[last_key]
-            m = Measurements(filename=dest_file, copy=top_level,
-                             image_numbers=image_numbers)
+            m = Measurement(filename=dest_file, copy=top_level,
+                            image_numbers=image_numbers)
             return m
         finally:
             f.close()
     else:
-        m = Measurements(filename=dest_file)
+        m = Measurement(filename=dest_file)
         m.load(filename)
         return m
 

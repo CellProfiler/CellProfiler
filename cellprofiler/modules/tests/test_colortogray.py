@@ -54,9 +54,9 @@ class TestColorToGray(unittest.TestCase):
         pipeline.add_module(ctg)
         pipeline.test_valid()
 
-        measurements = cpm.Measurements()
+        measurements = cpm.Measurement()
         object_set = cpo.ObjectSet()
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.SetList()
         workspace = Workspace(pipeline, inj, None, None, measurements,
                               image_set_list, None)
         inj.prepare_run(workspace)
@@ -91,9 +91,9 @@ class TestColorToGray(unittest.TestCase):
         pipeline.add_module(ctg)
         pipeline.test_valid()
 
-        measurements = cpm.Measurements()
+        measurements = cpm.Measurement()
         object_set = cpo.ObjectSet()
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.SetList()
         workspace = Workspace(pipeline, inj, None, None, measurements,
                               image_set_list, None)
         inj.prepare_run(workspace)
@@ -126,7 +126,7 @@ class TestColorToGray(unittest.TestCase):
     def test_01_03_combine_channels(self):
         np.random.seed(13)
         image = np.random.uniform(size=(20, 10, 5))
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.SetList()
         image_set = image_set_list.get_image_set(0)
         image_set.add(IMAGE_NAME, cpi.Image(image))
 
@@ -156,7 +156,7 @@ class TestColorToGray(unittest.TestCase):
         pipeline.add_listener(callback)
         pipeline.add_module(module)
         workspace = Workspace(pipeline, module, image_set, cpo.ObjectSet(),
-                              cpm.Measurements(), image_set_list)
+                              cpm.Measurement(), image_set_list)
         module.run(workspace)
         pixels = image_set.get_image(module.grayscale_name.value).pixel_data
         self.assertEqual(pixels.ndim, 2)
@@ -166,7 +166,7 @@ class TestColorToGray(unittest.TestCase):
     def test_01_04_split_channels(self):
         np.random.seed(13)
         image = np.random.uniform(size=(20, 10, 5))
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.SetList()
         image_set = image_set_list.get_image_set(0)
         image_set.add(IMAGE_NAME, cpi.Image(image))
 
@@ -191,7 +191,7 @@ class TestColorToGray(unittest.TestCase):
         pipeline.add_listener(callback)
         pipeline.add_module(module)
         workspace = Workspace(pipeline, module, image_set, cpo.ObjectSet(),
-                              cpm.Measurements(), image_set_list)
+                              cpm.Measurement(), image_set_list)
         module.run(workspace)
         for i, channel_index in enumerate(channel_indexes):
             pixels = image_set.get_image(module.channels[i].image_name.value).pixel_data

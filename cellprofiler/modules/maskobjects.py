@@ -291,7 +291,7 @@ class MaskObjects(I.Identify):
         #
         # Add the objects
         #
-        remaining_objects = cpo.Objects()
+        remaining_objects = cpo.Object()
         remaining_objects.segmented = labels
         remaining_objects.unedited_segmented = original_objects.unedited_segmented
         workspace.object_set.add_objects(remaining_objects,

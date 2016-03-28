@@ -35,7 +35,7 @@ I_ALL = [I_NEAREST_NEIGHBOR, I_BILINEAR, I_BICUBIC]
 S_ADDITIONAL_IMAGE_COUNT = 9
 
 
-class Resize(cpm.CPModule):
+class Resize(cpm.Module):
     category = "Image Processing"
     variable_revision_number = 4
     module_name = "Resize"

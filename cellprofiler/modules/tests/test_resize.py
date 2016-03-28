@@ -174,13 +174,13 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         module.module_num = 1
         pipeline = cpp.Pipeline()
         pipeline.add_module(module)
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.SetList()
         image_set = image_set_list.get_image_set(0)
         image = cpi.Image(image, mask, cropping)
         image_set.add(INPUT_IMAGE_NAME, image)
         workspace = cpw.Workspace(pipeline, module, image_set,
                                   cpo.ObjectSet(),
-                                  cpmeas.Measurements(),
+                                  cpmeas.Measurement(),
                                   image_set_list)
         return workspace, module
 

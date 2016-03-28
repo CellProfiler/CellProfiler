@@ -29,7 +29,7 @@ MY_OBJECTS = "my_objects"
 
 class TestMeasureImageQuality(unittest.TestCase):
     def make_workspace(self, pixel_data, mask=None, objects=None):
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.SetList()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         image = cpi.Image(pixel_data)
@@ -37,7 +37,7 @@ class TestMeasureImageQuality(unittest.TestCase):
             image.mask = mask
         image_set.add(MY_IMAGE, image)
         if not objects is None:
-            o = cpo.Objects()
+            o = cpo.Object()
             o.segmented = objects
             object_set.add_objects(o, MY_OBJECTS)
         module = miq.MeasureImageQuality()
@@ -50,7 +50,7 @@ class TestMeasureImageQuality(unittest.TestCase):
         pipeline.add_module(module)
         workspace = cpw.Workspace(pipeline, module, image_set,
                                   object_set,
-                                  cpmeas.Measurements(), image_set_list)
+                                  cpmeas.Measurement(), image_set_list)
         return workspace
 
     def test_00_00_zeros(self):
@@ -387,7 +387,7 @@ class TestMeasureImageQuality(unittest.TestCase):
         module = workspace.module
         self.assertTrue(isinstance(module, miq.MeasureImageQuality))
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         image_name = module.image_groups[0].image_names.get_selections()[0]
         feature = module.image_groups[0].threshold_groups[0].threshold_feature_name(image_name)
         data = np.random.uniform(size=100)
@@ -417,7 +417,7 @@ class TestMeasureImageQuality(unittest.TestCase):
         module = workspace.module
         self.assertTrue(isinstance(module, miq.MeasureImageQuality))
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         image_name = module.image_groups[0].image_names.get_selections()[0]
         feature = module.image_groups[0].threshold_groups[0].threshold_feature_name(image_name)
         data = np.random.uniform(size=100)

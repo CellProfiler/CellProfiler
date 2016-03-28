@@ -21,7 +21,7 @@ import cellprofiler.module as cpm
 import cellprofiler.setting as cps
 
 
-class InputExternal(cpm.CPModule):
+class InputExternal(cpm.Module):
     variable_revision_number = 1
     module_name = 'InputExternal'
     category = 'Other'

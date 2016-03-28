@@ -159,7 +159,7 @@ FIXED_SETTING_COUNT = 2
 VARIABLE_SETTING_COUNT = 5
 
 
-class UnmixColors(cpm.CPModule):
+class UnmixColors(cpm.Module):
     module_name = "UnmixColors"
     category = "Image Processing"
     variable_revision_number = 2

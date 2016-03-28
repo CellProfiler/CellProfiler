@@ -49,7 +49,7 @@ P_ALL = [P_AVERAGE, P_MAXIMUM, P_MINIMUM, P_SUM, P_VARIANCE, P_POWER,
 K_PROVIDER = "Provider"
 
 
-class MakeProjection(cpm.CPModule):
+class MakeProjection(cpm.Module):
     module_name = 'MakeProjection'
     category = 'Image Processing'
     variable_revision_number = 2

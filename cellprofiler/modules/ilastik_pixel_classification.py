@@ -86,7 +86,7 @@ if has_ilastik:
 SI_PROBABILITY_MAP_COUNT = 3
 
 
-class IlastikPixelClassification(cpm.CPModule):
+class IlastikPixelClassification(cpm.Module):
     module_name = 'ilastik_pixel_classification'
     variable_revision_number = 2
     category = "Image Processing"

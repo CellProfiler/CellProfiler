@@ -104,7 +104,7 @@ class Image(object):
         """
         img = np.asanyarray(image)
         if img.dtype.name == "bool" or not convert:
-            self.__image = ImageCache(img)
+            self.__image = Cache(img)
             return
         mval = 0.
         scale = 1.
@@ -147,7 +147,7 @@ class Image(object):
             # These types will always have ranges between 0 and 1. Make it so.
             np.clip(img, 0, 1, out=img)
         check_consistency(img, self.__mask)
-        self.__image = ImageCache(img)
+        self.__image = Cache(img)
 
     image = property(get_image, set_image)
     pixel_data = property(get_image, set_image)
@@ -233,7 +233,7 @@ class Image(object):
         if not (m.dtype.type is np.bool):
             m = (m != 0)
         check_consistency(self.image, m)
-        self.__mask = ImageCache(m)
+        self.__mask = Cache(m)
         self.__has_mask = True
 
     mask = property(get_mask, set_mask)
@@ -266,7 +266,7 @@ class Image(object):
         return self.mask
 
     def set_crop_mask(self, crop_mask):
-        self.__crop_mask = ImageCache(crop_mask)
+        self.__crop_mask = Cache(crop_mask)
 
     crop_mask = property(get_crop_mask, set_crop_mask)
 
@@ -373,18 +373,18 @@ class Image(object):
         maybe objects.
         '''
         from cellprofiler.utilities.hdf5_dict import HDF5ImageSet
-        if isinstance(self.__image, ImageCache) and \
+        if isinstance(self.__image, Cache) and \
                 not self.__image.is_cached():
             self.__image.cache(name, HDF5ImageSet(hdf5_file))
-        if isinstance(self.__mask, ImageCache) and \
+        if isinstance(self.__mask, Cache) and \
                 not self.__mask.is_cached():
             self.__mask.cache(name, HDF5ImageSet(hdf5_file, "Masks"))
-        if isinstance(self.__crop_mask, ImageCache) and \
+        if isinstance(self.__crop_mask, Cache) and \
                 not self.__crop_mask.is_cached():
             self.__crop_mask.cache(name, HDF5ImageSet(hdf5_file, "CropMasks"))
 
 
-class ImageCache(object):
+class Cache(object):
     '''An HDF5 cache that can store an image, mask or crop mask
 
     '''
@@ -397,14 +397,14 @@ class ImageCache(object):
         self.__backing_store = None
         self.__name = None
         if image.ndim == 2:
-            self.__type = ImageCache.IC_MONOCHROME
+            self.__type = Cache.IC_MONOCHROME
             self.__image = image.reshape(1, 1, 1, image.shape[0], image.shape[1])
         elif image.ndim == 3:
-            self.__type = ImageCache.IC_COLOR
+            self.__type = Cache.IC_COLOR
             self.__image = image.transpose(2, 0, 1).reshape(
                     image.shape[2], 1, 1, image.shape[0], image.shape[1])
         else:
-            self.__type = ImageCache.IC_5D
+            self.__type = Cache.IC_5D
             self.__image = image
 
     def is_cached(self):
@@ -430,9 +430,9 @@ class ImageCache(object):
             image = self.__backing_store.get_image(self.__name)
         else:
             image = self.__image
-        if self.__type == ImageCache.IC_MONOCHROME:
+        if self.__type == Cache.IC_MONOCHROME:
             return image.reshape(image.shape[3], image.shape[4])
-        elif self.__type == ImageCache.IC_COLOR:
+        elif self.__type == Cache.IC_COLOR:
             return image.reshape(
                     image.shape[0], image.shape[3], image.shape[4]).transpose(1, 2, 0)
 
@@ -473,7 +473,7 @@ def crop_image(image, crop_mask, crop_internal=False):
         return image[i_first:i_end, j_first:j_end].copy()
 
 
-class GrayscaleImage(object):
+class Grayscale(object):
     """A wrapper around a non-grayscale image
 
     This is meant to be used if the image is 3-d but all channels
@@ -495,7 +495,7 @@ class GrayscaleImage(object):
     pixel_data = property(get_pixel_data)
 
 
-class RGBImage(object):
+class RGB(object):
     """A wrapper that discards the alpha channel
 
     This is meant to be used if the image is 3-d + alpha but the alpha
@@ -591,7 +591,7 @@ class CallbackImageProvider(AbstractImageProvider):
         return self.__name
 
 
-class ImageSet(object):
+class Set(object):
     """Represents the images for a particular iteration of a pipeline
 
     An image set is composed of one image provider per image in the set.
@@ -663,10 +663,10 @@ class ImageSet(object):
             if pd.shape[2] >= 3 and \
                     np.all(pd[:, :, 0] == pd[:, :, 1]) and \
                     np.all(pd[:, :, 0] == pd[:, :, 2]):
-                return GrayscaleImage(image)
+                return Grayscale(image)
             raise ValueError("Image must be grayscale, but it was color")
         if must_be_grayscale and image.pixel_data.dtype.kind == 'b':
-            return GrayscaleImage(image)
+            return Grayscale(image)
         if must_be_rgb:
             if image.pixel_data.ndim != 3:
                 raise ValueError("Image must be RGB, but it was grayscale")
@@ -675,7 +675,7 @@ class ImageSet(object):
                                  image.pixel_data.shape[2])
             elif image.pixel_data.shape[2] == 4:
                 logger.warning("Discarding alpha channel.")
-                return RGBImage(image)
+                return RGB(image)
         return image
 
     def get_providers(self):
@@ -741,7 +741,7 @@ class ImageSet(object):
         self.providers.append(provider)
 
 
-class ImageSetList(object):
+class SetList(object):
     """Represents the list of image sets in a pipeline run
 
     """
@@ -780,7 +780,7 @@ class ImageSetList(object):
         if number >= len(self.__image_sets):
             self.__image_sets += [None] * (number - len(self.__image_sets) + 1)
         if self.__image_sets[number] is None:
-            image_set = ImageSet(number, keys, self.__legacy_fields)
+            image_set = Set(number, keys, self.__legacy_fields)
             self.__image_sets[number] = image_set
             self.__image_sets_by_key[k] = image_set
             if self.associating_by_key:
@@ -853,7 +853,7 @@ class ImageSetList(object):
         d = {}
         for i in range(self.count()):
             image_set = self.get_image_set(i)
-            assert isinstance(image_set, ImageSet)
+            assert isinstance(image_set, Set)
             key_values = tuple([str(image_set.keys[key]) for key in keys])
             if not d.has_key(key_values):
                 d[key_values] = []
@@ -871,7 +871,7 @@ class ImageSetList(object):
         dump(self.count(), f)
         for i in range(self.count()):
             image_set = self.get_image_set(i)
-            assert isinstance(image_set, ImageSet)
+            assert isinstance(image_set, Set)
             assert len(image_set.providers) == 0, "An image set cannot have providers while saving its state"
             dump(image_set.keys, f)
         dump(self.legacy_fields, f)

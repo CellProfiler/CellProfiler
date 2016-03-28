@@ -51,7 +51,7 @@ S_FIXED_COUNT = 9
 S_PER_MAPPING = 2
 
 
-class CreateBatchFiles(cpm.CPModule):
+class CreateBatchFiles(cpm.Module):
     #
     # How it works:
     #
@@ -279,11 +279,11 @@ class CreateBatchFiles(cpm.CPModule):
 
         image_set_list = workspace.image_set_list
         pipeline = workspace.pipeline
-        m = cpmeas.Measurements(copy=workspace.measurements,
-                                filename=h5_path)
+        m = cpmeas.Measurement(copy=workspace.measurements,
+                               filename=h5_path)
         try:
             assert isinstance(pipeline, cpp.Pipeline)
-            assert isinstance(m, cpmeas.Measurements)
+            assert isinstance(m, cpmeas.Measurement)
 
             orig_pipeline = pipeline
             pipeline = pipeline.copy()

@@ -176,7 +176,7 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
             m = self.measurements
             if m is None or len(self.cache) == 0:
                 return columns
-            assert isinstance(m, cellprofiler.measurement.Measurements)
+            assert isinstance(m, cellprofiler.measurement.Measurement)
             metadata_tags = m.get_metadata_tags()
             for feature in m.get_feature_names(cellprofiler.measurement.IMAGE):
                 is_key = False

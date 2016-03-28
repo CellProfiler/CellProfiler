@@ -27,7 +27,7 @@ IO_IMAGE = "Image"
 IO_OBJECTS = "Objects"
 
 
-class MaskImage(cpm.CPModule):
+class MaskImage(cpm.Module):
     module_name = "MaskImage"
     category = "Image Processing"
     variable_revision_number = 3

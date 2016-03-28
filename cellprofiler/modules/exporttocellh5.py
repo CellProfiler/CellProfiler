@@ -38,7 +38,7 @@ COLORS = [("Red", "0xFF0000"),
           ("Blue", "0x0000FF")]
 
 
-class ExportToCellH5(cpm.CPModule):
+class ExportToCellH5(cpm.Module):
     #
     # TODO: model z and t. Currently, CellProfiler would analyze each
     #       stack plane independently. I think the easiest way to handle

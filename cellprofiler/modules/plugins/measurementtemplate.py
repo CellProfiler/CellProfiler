@@ -71,7 +71,7 @@ C_MEASUREMENT_TEMPLATE = "MT"
 #
 ###################################
 
-class MeasurementTemplate(cpm.CPModule):
+class MeasurementTemplate(cpm.Module):
     ###############################################
     #
     # The module starts by declaring the name that's used for display,
@@ -161,7 +161,7 @@ class MeasurementTemplate(cpm.CPModule):
         # make in here
         #
         meas = workspace.measurements
-        assert isinstance(meas, cpmeas.Measurements)
+        assert isinstance(meas, cpmeas.Measurement)
         #
         # We record some statistics which we will display later.
         # We format them so that Matplotlib can display them in a table.

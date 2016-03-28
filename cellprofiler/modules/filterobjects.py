@@ -99,7 +99,7 @@ PO_PARENT_WITH_MOST_OVERLAP = "Parent with most overlap"
 PO_ALL = [PO_BOTH, PO_PARENT_WITH_MOST_OVERLAP]
 
 
-class FilterObjects(cpm.CPModule):
+class FilterObjects(cpm.Module):
     module_name = 'FilterObjects'
     category = "Object Processing"
     variable_revision_number = 7
@@ -491,7 +491,7 @@ class FilterObjects(cpm.CPModule):
             # segmentation for the new and generally try to copy stuff
             # from the old to the new.
             #
-            target_objects = cpo.Objects()
+            target_objects = cpo.Object()
             target_objects.segmented = target_labels
             target_objects.unedited_segmented = src_objects.unedited_segmented
             #

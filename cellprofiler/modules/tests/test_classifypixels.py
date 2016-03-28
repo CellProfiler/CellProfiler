@@ -137,7 +137,7 @@ if has_ilastik:
 
             pipeline.add_listener(callback)
             pipeline.add_module(module)
-            image_set_list = cpi.ImageSetList()
+            image_set_list = cpi.SetList()
             image_set = image_set_list.get_image_set(0)
             r = np.random.RandomState()
             r.seed(0)
@@ -148,7 +148,7 @@ if has_ilastik:
                     module,
                     image_set,
                     cpo.ObjectSet(),
-                    cpmeas.Measurements(),
+                    cpmeas.Measurement(),
                     image_set_list)
             return workspace, module
 

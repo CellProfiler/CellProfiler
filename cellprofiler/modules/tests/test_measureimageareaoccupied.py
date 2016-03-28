@@ -27,7 +27,7 @@ OBJECTS_NAME = "MyObjects"
 class TestMeasureImageArea(unittest.TestCase):
     def make_workspace(self, labels, parent_image=None):
         object_set = cpo.ObjectSet()
-        objects = cpo.Objects()
+        objects = cpo.Object()
         objects.segmented = labels
         objects.parent_image = parent_image
         object_set.add_objects(objects, OBJECTS_NAME)
@@ -37,11 +37,11 @@ class TestMeasureImageArea(unittest.TestCase):
         module.module_num = 1
         module.operands[0].operand_objects.value = OBJECTS_NAME
         pipeline.add_module(module)
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.SetList()
         workspace = cpw.Workspace(pipeline, module,
                                   image_set_list.get_image_set(0),
                                   object_set,
-                                  cpmm.Measurements(),
+                                  cpmm.Measurement(),
                                   image_set_list)
         return workspace
 

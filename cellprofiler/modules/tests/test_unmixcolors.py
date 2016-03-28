@@ -145,13 +145,13 @@ UnmixColors:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|sho
         module.module_num = 1
         pipeline.add_module(module)
 
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.SetList()
         image_set = image_set_list.get_image_set(0)
         image = cpi.Image(pixels)
         image_set.add(INPUT_IMAGE, image)
 
         workspace = cpw.Workspace(pipeline, module, image_set, cpo.ObjectSet(),
-                                  cpmeas.Measurements(), image_set_list)
+                                  cpmeas.Measurement(), image_set_list)
         return workspace, module
 
     @staticmethod

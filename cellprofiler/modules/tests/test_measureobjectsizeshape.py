@@ -24,13 +24,13 @@ OBJECTS_NAME = "myobjects"
 
 class TestMeasureObjectSizeShape(unittest.TestCase):
     def make_workspace(self, labels):
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.SetList()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
-        objects = cpo.Objects()
+        objects = cpo.Object()
         objects.segmented = labels
         object_set.add_objects(objects, OBJECTS_NAME)
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurement()
         module = cpmoas.MeasureObjectAreaShape()
         module.module_num = 1
         module.object_groups[0].name.value = OBJECTS_NAME
@@ -93,15 +93,15 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
         """Run on an empty labels matrix"""
         object_set = cpo.ObjectSet()
         labels = np.zeros((10, 20), int)
-        objects = cpo.Objects()
+        objects = cpo.Object()
         objects.segmented = labels
         object_set.add_objects(objects, "SomeObjects")
         module = cpmoas.MeasureObjectAreaShape()
         settings = ["SomeObjects", "Yes"]
         module.set_settings_from_values(settings, 1, module.module_class())
         module.module_num = 1
-        image_set_list = cpi.ImageSetList()
-        measurements = cpmeas.Measurements()
+        image_set_list = cpi.SetList()
+        measurements = cpmeas.Measurement()
         pipeline = cpp.Pipeline()
         pipeline.add_module(module)
         workspace = cpw.Workspace(pipeline, module,
@@ -129,21 +129,21 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
         labels[1:9, 1:5] = 1
         labels[1:9, 11] = 2
         labels[4, 6:19] = 2
-        objects = cpo.Objects()
+        objects = cpo.Object()
         objects.segmented = labels
         object_set.add_objects(objects, "SomeObjects")
         labels = np.zeros((115, 115), int)
         x, y = np.mgrid[-50:51, -50:51]
         labels[:101, :101][x ** 2 + y ** 2 <= 2500] = 1
-        objects = cpo.Objects()
+        objects = cpo.Object()
         objects.segmented = labels
         object_set.add_objects(objects, "OtherObjects")
         module = cpmoas.MeasureObjectAreaShape()
         settings = ["SomeObjects", "OtherObjects", "Yes"]
         module.set_settings_from_values(settings, 1, module.module_class())
         module.module_num = 1
-        image_set_list = cpi.ImageSetList()
-        measurements = cpmeas.Measurements()
+        image_set_list = cpi.SetList()
+        measurements = cpmeas.Measurement()
         pipeline = cpp.Pipeline()
         pipeline.add_module(module)
         workspace = cpw.Workspace(pipeline, module,
@@ -227,12 +227,12 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
         labels = np.zeros((10, 20), int)
         labels[1:9, 1:5] = 1
         labels[4:6, 6:19] = 1
-        objects = cpo.Objects()
+        objects = cpo.Object()
         objects.segmented = labels
         object_set.add_objects(objects, "SomeObjects")
         module.module_num = 1
-        image_set_list = cpi.ImageSetList()
-        measurements = cpmeas.Measurements()
+        image_set_list = cpi.SetList()
+        measurements = cpmeas.Measurement()
         pipeline = cpp.Pipeline()
         pipeline.add_module(module)
 
@@ -259,7 +259,7 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
         #
         labels[1:19, 1:19] = (np.random.uniform(size=(18, 18)) > .5).astype(int)
         labels[21:39, 1:19] = (np.random.uniform(size=(18, 18)) > .5).astype(int) * 2
-        objects = cpo.Objects()
+        objects = cpo.Object()
         objects.segmented = labels
         object_set = cpo.ObjectSet()
         object_set.add_objects(objects, "SomeObjects")
@@ -267,8 +267,8 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
         module.object_groups[0].name.value = "SomeObjects"
         module.calculate_zernikes.value = True
         module.module_num = 1
-        image_set_list = cpi.ImageSetList()
-        measurements = cpmeas.Measurements()
+        image_set_list = cpi.SetList()
+        measurements = cpmeas.Measurement()
         pipeline = cpp.Pipeline()
         pipeline.add_module(module)
 
@@ -298,12 +298,12 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
         # 3/4 of a square is covered
         labels[5:7, 5:10] = 1
         labels[7:9, 5:15] = 1
-        objects = cpo.Objects()
+        objects = cpo.Object()
         objects.segmented = labels
         object_set.add_objects(objects, "SomeObjects")
         module.module_num = 1
-        image_set_list = cpi.ImageSetList()
-        measurements = cpmeas.Measurements()
+        image_set_list = cpi.SetList()
+        measurements = cpmeas.Measurement()
         pipeline = cpp.Pipeline()
         pipeline.add_module(module)
 
@@ -330,14 +330,14 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
         mlist = []
         olist = []
         for m in (m1, m2):
-            objects = cpo.Objects()
+            objects = cpo.Object()
             objects.segmented = m.astype(int)
             olist.append(objects)
         ijv = np.column_stack((
             np.hstack([np.argwhere(m)[:, 0] for m in (m1, m2)]),
             np.hstack([np.argwhere(m)[:, 1] for m in (m1, m2)]),
             np.array([1] * np.sum(m1) + [2] * np.sum(m2))))
-        objects = cpo.Objects()
+        objects = cpo.Object()
         objects.ijv = ijv
         olist.append(objects)
         for objects in olist:
@@ -347,8 +347,8 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
             object_set = cpo.ObjectSet()
             object_set.add_objects(objects, "SomeObjects")
             module.module_num = 1
-            image_set_list = cpi.ImageSetList()
-            measurements = cpmeas.Measurements()
+            image_set_list = cpi.SetList()
+            measurements = cpmeas.Measurement()
             mlist.append(measurements)
             pipeline = cpp.Pipeline()
             pipeline.add_module(module)
@@ -366,7 +366,7 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
             if oname != "SomeObjects":
                 continue
             measurements = mlist[0]
-            self.assertTrue(isinstance(measurements, cpmeas.Measurements))
+            self.assertTrue(isinstance(measurements, cpmeas.Measurement))
             v1 = measurements.get_current_measurement(oname, feature)
             self.assertEqual(len(v1), 1)
             v1 = v1[0]

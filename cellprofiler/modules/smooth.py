@@ -26,7 +26,7 @@ CIRCULAR_AVERAGE_FILTER = 'Circular Average Filter'
 SM_TO_AVERAGE = "Smooth to Average"
 
 
-class Smooth(cpm.CPModule):
+class Smooth(cpm.Module):
     module_name = 'Smooth'
     category = "Image Processing"
     variable_revision_number = 2

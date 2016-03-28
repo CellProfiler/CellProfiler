@@ -178,7 +178,7 @@ class TestExpandOrShrinkObjects(unittest.TestCase):
                        wants_outlines=False,
                        wants_fill_holes=False):
         object_set = cpo.ObjectSet()
-        objects = cpo.Objects()
+        objects = cpo.Object()
         objects.segmented = labels
         object_set.add_objects(objects, INPUT_NAME)
         module = E.ExpandOrShrink()
@@ -192,12 +192,12 @@ class TestExpandOrShrinkObjects(unittest.TestCase):
         module.module_num = 1
         pipeline = cpp.Pipeline()
         pipeline.add_module(module)
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.SetList()
         workspace = cpw.Workspace(pipeline,
                                   module,
                                   image_set_list.get_image_set(0),
                                   object_set,
-                                  cpmeas.Measurements(),
+                                  cpmeas.Measurement(),
                                   image_set_list)
         return workspace, module
 
@@ -213,7 +213,7 @@ class TestExpandOrShrinkObjects(unittest.TestCase):
         self.assertTrue(np.all(objects.segmented == expected))
         self.assertTrue(OUTLINES_NAME not in workspace.get_outline_names())
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         count = m.get_current_image_measurement("Count_" + OUTPUT_NAME)
         if not np.isscalar(count):
             count = count[0]

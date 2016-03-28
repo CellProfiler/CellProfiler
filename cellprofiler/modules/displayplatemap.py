@@ -33,7 +33,7 @@ WF_NAME = 'Well name'
 WF_ROWCOL = 'Row & Column'
 
 
-class DisplayPlatemap(cpm.CPModule):
+class DisplayPlatemap(cpm.Module):
     module_name = "DisplayPlatemap"
     category = "Data Tools"
     variable_revision_number = 2

@@ -413,7 +413,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
 
         try:
             m = pipeline.run()
-            self.assertTrue(isinstance(m, cpmeas.Measurements))
+            self.assertTrue(isinstance(m, cpmeas.Measurement))
             self.assertTrue(c0_ran[0])
             hexdigest = m.get_current_image_measurement('MD5Digest_DNA')
             self.assertEqual(hexdigest, self.test_md5)
@@ -467,8 +467,8 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
         csv_text = "\n".join(csv_lines)
         pipeline, module, filename = self.make_pipeline(csv_text)
         assert isinstance(module, L.LoadData)
-        m = cpmeas.Measurements()
-        image_set_list = cpi.ImageSetList()
+        m = cpmeas.Measurement()
+        image_set_list = cpi.SetList()
         try:
             workspace = cpw.Workspace(pipeline, module, m, None, m,
                                       image_set_list)
@@ -510,7 +510,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
         module.row_range.min = 4
         module.row_range.max = 6
         m = pipeline.run()
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         data = m.get_all_measurements(cpmeas.IMAGE, "Test_Measurement")
         self.assertTrue(np.all(data == np.arange(4, 7)))
         os.remove(filename)
@@ -534,7 +534,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
         module.row_range.min = 4
         module.row_range.max = 6
         m = pipeline.run()
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         data = m.get_all_measurements(cpmeas.IMAGE, "Test_Measurement")
         self.assertTrue(np.all(data == np.arange(4, 7)))
         os.remove(filename)
@@ -669,8 +669,8 @@ Channel1-01-A-01.tif,/imaging/analysis/trunk/ExampleImages/ExampleSBSImages
         module.wants_images.value = True
         module.wants_image_groupings.value = True
         module.metadata_fields.value = "ROW"
-        image_set_list = cpi.ImageSetList()
-        measurements = cpmeas.Measurements()
+        image_set_list = cpi.SetList()
+        measurements = cpmeas.Measurement()
         workspace = cpw.Workspace(pipeline, module, None,
                                   None, measurements, image_set_list)
         module.prepare_run(workspace)
@@ -728,7 +728,7 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
 
         try:
             m = pipeline.run()
-            self.assertTrue(isinstance(m, cpmeas.Measurements))
+            self.assertTrue(isinstance(m, cpmeas.Measurement))
             self.assertTrue(c0_ran[0])
             hexdigest = m.get_current_image_measurement('MD5Digest_DAPI')
             self.assertEqual(hexdigest, self.test_md5)
@@ -790,8 +790,8 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
         assert isinstance(module, L.LoadData)
         module.wants_images.value = True
         try:
-            image_set_list = cpi.ImageSetList()
-            measurements = cpmeas.Measurements()
+            image_set_list = cpi.SetList()
+            measurements = cpmeas.Measurement()
             workspace = cpw.Workspace(
                     pipeline, module, None, None, measurements, image_set_list)
             pipeline.prepare_run(workspace)
@@ -892,9 +892,9 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
         assert isinstance(module, L.LoadData)
         module.image_directory.dir_choice = cps.ABSOLUTE_FOLDER_NAME
         module.image_directory.custom_path = self.test_path
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurement()
         workspace = cpw.Workspace(pipeline, module, m, cpo.ObjectSet(),
-                                  m, cpi.ImageSetList())
+                                  m, cpi.SetList())
         self.assertTrue(module.prepare_run(workspace))
         self.assertEqual(m.get_measurement(cpmeas.IMAGE, "FileName_DNA", 1),
                          self.test_filename)
@@ -919,9 +919,9 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
 ''' % globals()
         pipeline, module, filename = self.make_pipeline(csv_text)
         assert isinstance(module, L.LoadData)
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurement()
         workspace = cpw.Workspace(pipeline, module, m, cpo.ObjectSet(),
-                                  m, cpi.ImageSetList())
+                                  m, cpi.SetList())
         self.assertTrue(module.prepare_run(workspace))
         self.assertEqual(m.get_measurement(cpmeas.IMAGE, "FileName_DNA", 1),
                          cp_logo_url_filename)
@@ -948,9 +948,9 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
 ''' % globals()
         pipeline, module, filename = self.make_pipeline(csv_text)
         assert isinstance(module, L.LoadData)
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurement()
         workspace = cpw.Workspace(pipeline, module, m, cpo.ObjectSet(),
-                                  m, cpi.ImageSetList())
+                                  m, cpi.SetList())
         self.assertTrue(module.prepare_run(workspace))
         self.assertEqual(m.get_measurement(cpmeas.IMAGE, "FileName_DNA", 1),
                          cp_logo_url_filename)
@@ -981,11 +981,11 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
         pipeline, module, filename = self.make_pipeline(csv_text)
         try:
             assert isinstance(module, L.LoadData)
-            m = cpmeas.Measurements()
+            m = cpmeas.Measurement()
             workspace = cpw.Workspace(pipeline, module, m, cpo.ObjectSet(),
-                                      m, cpi.ImageSetList())
+                                      m, cpi.SetList())
             self.assertTrue(module.prepare_run(workspace))
-            self.assertTrue(isinstance(m, cpmeas.Measurements))
+            self.assertTrue(isinstance(m, cpmeas.Measurement))
             self.assertEqual(m.image_set_count, 1)
             self.assertTrue('FileName_DNA' in m.get_feature_names(cpmeas.IMAGE))
             self.assertEqual(m[cpmeas.IMAGE, 'FileName_DNA', 1], file_name)
@@ -1011,14 +1011,14 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
         pipeline, module, filename = self.make_pipeline(csv_text)
         try:
             assert isinstance(module, L.LoadData)
-            m = cpmeas.Measurements()
+            m = cpmeas.Measurement()
             workspace = cpw.Workspace(pipeline, module, m, cpo.ObjectSet(),
-                                      m, cpi.ImageSetList())
+                                      m, cpi.SetList())
             module.wants_rows.value = True
             module.row_range.min = 2
             module.row_range.max = 3
             self.assertTrue(module.prepare_run(workspace))
-            self.assertTrue(isinstance(m, cpmeas.Measurements))
+            self.assertTrue(isinstance(m, cpmeas.Measurement))
             self.assertEqual(m.image_set_count, 1)
             self.assertTrue('FileName_DNA' in m.get_feature_names(cpmeas.IMAGE))
             self.assertEqual(m[cpmeas.IMAGE, 'FileName_DNA', 1], file_names[0])
@@ -1035,9 +1035,9 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
             assert isinstance(module, L.LoadData)
             module.image_directory.dir_choice = cps.ABSOLUTE_FOLDER_NAME
             module.image_directory.custom_path = self.test_path
-            m = cpmeas.Measurements()
+            m = cpmeas.Measurement()
             workspace = cpw.Workspace(pipeline, module, m, cpo.ObjectSet(),
-                                      m, cpi.ImageSetList())
+                                      m, cpi.SetList())
             self.assertTrue(module.prepare_run(workspace))
             self.assertEqual(m.get_measurement(cpmeas.IMAGE, "FileName_DNA", 1),
                              self.test_filename)
@@ -1054,7 +1054,7 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
             os.remove(filename)
 
 
-class C0(cpm.CPModule):
+class C0(cpm.Module):
     module_name = 'C0'
     variable_revision_number = 1
 

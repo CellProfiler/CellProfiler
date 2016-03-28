@@ -67,7 +67,7 @@ DOS_DIVIDE = "Divide"
 DOS_SUBTRACT = "Subtract"
 
 
-class CorrectIlluminationCalculate(cpm.CPModule):
+class CorrectIlluminationCalculate(cpm.Module):
     module_name = "CorrectIlluminationCalculate"
     variable_revision_number = 2
     category = "Image Processing"
@@ -473,7 +473,7 @@ class CorrectIlluminationCalculate(cpm.CPModule):
         pipeline = workspace.pipeline
         assert isinstance(pipeline, cpp.Pipeline)
         m = workspace.measurements
-        assert isinstance(m, cpmeas.Measurements)
+        assert isinstance(m, cpmeas.Measurement)
         if self.each_or_all != EA_EACH and len(image_numbers) > 0:
             title = "#%d: CorrectIlluminationCalculate for %s" % (
                 self.module_num, self.image_name)

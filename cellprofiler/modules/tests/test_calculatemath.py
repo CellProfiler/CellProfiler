@@ -220,7 +220,7 @@ CalculateRatios:[module_num:1|svn_version:\'8913\'|variable_revision_number:6|sh
         '''
         module = C.CalculateMath()
         module.operation.value = operation
-        measurements = cpmeas.Measurements()
+        measurements = cpmeas.Measurement()
         for i, operand, is_image_measurement, data in \
                 ((0, module.operands[0], m1_is_image_measurement, m1_data),
                  (1, module.operands[1], m2_is_image_measurement, m2_data)):
@@ -235,7 +235,7 @@ CalculateRatios:[module_num:1|svn_version:\'8913\'|variable_revision_number:6|sh
             operand.operand_measurement.value = measurement
         module.output_feature_name.value = OUTPUT_MEASUREMENTS
         pipeline = cpp.Pipeline()
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.SetList()
         workspace = cpw.Workspace(pipeline,
                                   module,
                                   image_set_list.get_image_set(0),
@@ -504,7 +504,7 @@ CalculateRatios:[module_num:1|svn_version:\'8913\'|variable_revision_number:6|sh
             for flip in (False, True):
                 def setup_fn(module, workspace, oo0=oo0, oo1=oo1, flip=flip):
                     m = workspace.measurements
-                    self.assertTrue(isinstance(m, cpmeas.Measurements))
+                    self.assertTrue(isinstance(m, cpmeas.Measurement))
                     if not flip:
                         m.add_relate_measurement(
                                 1, C.R_PARENT, OBJECT[0], OBJECT[1],
@@ -551,7 +551,7 @@ CalculateRatios:[module_num:1|svn_version:\'8913\'|variable_revision_number:6|sh
         for oo0, oo1, ii0, ii1, e0, e1 in zip(o0, o1, in0, in1, expected0, expected1):
             def setup_fn(module, workspace, oo0=oo0, oo1=oo1):
                 m = workspace.measurements
-                self.assertTrue(isinstance(m, cpmeas.Measurements))
+                self.assertTrue(isinstance(m, cpmeas.Measurement))
                 m.add_relate_measurement(
                         1, C.R_PARENT, OBJECT[0], OBJECT[1],
                         np.ones(len(oo0), int), oo0,

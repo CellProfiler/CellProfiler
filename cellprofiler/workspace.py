@@ -9,7 +9,7 @@ import numpy as np
 import h5py
 import os
 
-from cellprofiler.grid import CPGridInfo
+from cellprofiler.grid import Grid
 from .utilities.hdf5_dict import HDF5FileList, HDF5Dict
 
 '''Continue to run the pipeline
@@ -450,7 +450,7 @@ class Workspace(object):
 
             shutil.copyfile(filename, self.__filename)
 
-            self.__measurements = cpmeas.Measurements(
+            self.__measurements = cpmeas.Measurement(
                     filename=self.__filename, mode="r+")
             if self.__file_list is not None:
                 self.__file_list.remove_notification_callback(
@@ -489,12 +489,12 @@ class Workspace(object):
 
         filename - name of the workspace file
         '''
-        from .measurement import Measurements, make_temporary_file
-        if isinstance(self.measurements, Measurements):
+        from .measurement import Measurement, make_temporary_file
+        if isinstance(self.measurements, Measurement):
             self.close()
 
         fd, self.__filename = make_temporary_file()
-        self.__measurements = Measurements(
+        self.__measurements = Measurement(
                 filename=self.__filename, mode="w")
         os.close(fd)
         if self.__file_list is not None:
@@ -589,8 +589,8 @@ class Workspace(object):
             # TODO: Get rid of image_set_list
             no_image_set_list = self.image_set_list is None
             if no_image_set_list:
-                from cellprofiler.image import ImageSetList
-                self.__image_set_list = ImageSetList()
+                from cellprofiler.image import SetList
+                self.__image_set_list = SetList()
             try:
                 result = self.pipeline.prepare_run(self, stop_module)
                 return result

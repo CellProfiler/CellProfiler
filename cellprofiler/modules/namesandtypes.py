@@ -268,7 +268,7 @@ M_IMAGE_SET_ZIP_DICTIONARY = "ImageSet_Zip_Dictionary"
 M_IMAGE_SET = "ImageSet_ImageSet"
 
 
-class NamesAndTypes(cpm.CPModule):
+class NamesAndTypes(cpm.Module):
     variable_revision_number = 6
     module_name = "NamesAndTypes"
     category = "File Processing"
@@ -810,7 +810,7 @@ class NamesAndTypes(cpm.CPModule):
             image_set_channel_names[idx] = name
 
         m = workspace.measurements
-        assert isinstance(m, cpmeas.Measurements)
+        assert isinstance(m, cpmeas.Measurement)
 
         image_numbers = range(1, len(image_sets) + 1)
         if len(image_numbers) == 0:
@@ -1584,7 +1584,7 @@ class NamesAndTypes(cpm.CPModule):
         self.add_provider_measurements(provider, workspace.measurements,
                                        cpmeas.OBJECT)
         image = provider.provide_image(workspace.image_set)
-        o = cpo.Objects()
+        o = cpo.Object()
         if image.pixel_data.shape[2] == 1:
             o.segmented = image.pixel_data[:, :, 0]
             add_object_location_measurements(workspace.measurements,

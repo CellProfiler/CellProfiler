@@ -109,8 +109,8 @@ MeasureNeurons:[module_num:1|svn_version:\'8401\'|variable_revision_number:1|sho
     def make_workspace(self, labels, image, mask=None,
                        intensity_image=None,
                        wants_graph=False):
-        m = cpmeas.Measurements()
-        image_set_list = cpi.ImageSetList()
+        m = cpmeas.Measurement()
+        image_set_list = cpi.SetList()
         m.add_measurement(cpmeas.IMAGE, cpmeas.GROUP_NUMBER, 1)
         m.add_measurement(cpmeas.IMAGE, cpmeas.GROUP_INDEX, 1)
         image_set = m
@@ -118,7 +118,7 @@ MeasureNeurons:[module_num:1|svn_version:\'8401\'|variable_revision_number:1|sho
         image_set.add(IMAGE_NAME, img)
 
         object_set = cpo.ObjectSet()
-        o = cpo.Objects()
+        o = cpo.Object()
         o.segmented = labels
         object_set.add_objects(o, OBJECT_NAME)
 
@@ -191,7 +191,7 @@ MeasureNeurons:[module_num:1|svn_version:\'8401\'|variable_revision_number:1|sho
 
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         for feature in M.F_ALL:
             mname = "_".join((M.C_NEURON, expected, IMAGE_NAME))
             data = m.get_current_measurement(OBJECT_NAME, mname)
@@ -206,7 +206,7 @@ MeasureNeurons:[module_num:1|svn_version:\'8401\'|variable_revision_number:1|sho
         workspace, module = self.make_workspace(labels, image)
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         for feature, expected in ((M.F_NUMBER_NON_TRUNK_BRANCHES, 0),
                                   (M.F_NUMBER_TRUNKS, 1)):
             mname = "_".join((M.C_NEURON, feature, IMAGE_NAME))
@@ -224,7 +224,7 @@ MeasureNeurons:[module_num:1|svn_version:\'8401\'|variable_revision_number:1|sho
         workspace, module = self.make_workspace(labels, image)
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         for feature, expected in ((M.F_NUMBER_NON_TRUNK_BRANCHES, [0, 0]),
                                   (M.F_NUMBER_TRUNKS, [2, 1])):
             mname = "_".join((M.C_NEURON, feature, IMAGE_NAME))
@@ -244,7 +244,7 @@ MeasureNeurons:[module_num:1|svn_version:\'8401\'|variable_revision_number:1|sho
         workspace, module = self.make_workspace(labels, image)
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         for feature, expected in ((M.F_NUMBER_NON_TRUNK_BRANCHES, 1),
                                   (M.F_NUMBER_TRUNKS, 1)):
             mname = "_".join((M.C_NEURON, feature, IMAGE_NAME))
@@ -266,7 +266,7 @@ MeasureNeurons:[module_num:1|svn_version:\'8401\'|variable_revision_number:1|sho
         workspace, module = self.make_workspace(labels, image)
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         for feature, expected in ((M.F_NUMBER_NON_TRUNK_BRANCHES, 1),
                                   (M.F_NUMBER_TRUNKS, 2)):
             mname = "_".join((M.C_NEURON, feature, IMAGE_NAME))
@@ -298,7 +298,7 @@ MeasureNeurons:[module_num:1|svn_version:\'8401\'|variable_revision_number:1|sho
         workspace, module = self.make_workspace(labels, image)
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         for feature, expected in ((M.F_NUMBER_NON_TRUNK_BRANCHES, 0),
                                   (M.F_NUMBER_TRUNKS, 3)):
             mname = "_".join((M.C_NEURON, feature, IMAGE_NAME))
@@ -321,7 +321,7 @@ MeasureNeurons:[module_num:1|svn_version:\'8401\'|variable_revision_number:1|sho
         workspace, module = self.make_workspace(labels, image)
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         for feature, expected in ((M.F_NUMBER_NON_TRUNK_BRANCHES, [0, 0]),
                                   (M.F_NUMBER_TRUNKS, [2, 1])):
             mname = "_".join((M.C_NEURON, feature, IMAGE_NAME))

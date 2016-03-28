@@ -341,7 +341,7 @@ class DBContext(object):
         self.connection.close()
 
 
-class ExportToDatabase(cpm.CPModule):
+class ExportToDatabase(cpm.Module):
     module_name = "ExportToDatabase"
     variable_revision_number = 27
     category = ["File Processing", "Data Tools"]
@@ -1717,7 +1717,7 @@ class ExportToDatabase(cpm.CPModule):
         # have to hack our measurement column cache to circumvent this.
         #
         m = workspace.measurements
-        assert isinstance(m, cpmeas.Measurements)
+        assert isinstance(m, cpmeas.Measurement)
         d = self.get_dictionary()
         columns = m.get_measurement_columns()
         for i, (object_name, feature_name, coltype) in enumerate(columns):
@@ -1990,7 +1990,7 @@ class ExportToDatabase(cpm.CPModule):
             # Process the image numbers in the current image's group
             #
             m = workspace.measurements
-            assert isinstance(m, cpmeas.Measurements)
+            assert isinstance(m, cpmeas.Measurement)
             group_number = m[cpmeas.IMAGE, cpmeas.GROUP_NUMBER,
                              m.image_set_number]
             all_image_numbers = m.get_image_numbers()
@@ -2946,7 +2946,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         try:
             zeros_for_nan = False
             measurements = workspace.measurements
-            assert isinstance(measurements, cpmeas.Measurements)
+            assert isinstance(measurements, cpmeas.Measurement)
             pipeline = workspace.pipeline
             image_set_list = workspace.image_set_list
             measurement_cols = self.get_pipeline_measurement_columns(pipeline,

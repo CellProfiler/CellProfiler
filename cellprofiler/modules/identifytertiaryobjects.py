@@ -74,7 +74,7 @@ R_PARENT = "Parent"
 R_REMOVED = "Removed"
 
 
-class IdentifyTertiaryObjects(cpm.CPModule):
+class IdentifyTertiaryObjects(cpm.Module):
     module_name = "IdentifyTertiaryObjects"
     variable_revision_number = 2
     category = "Object Processing"
@@ -228,7 +228,7 @@ class IdentifyTertiaryObjects(cpm.CPModule):
         #
         # Make the tertiary objects container
         #
-        tertiary_objects = cpo.Objects()
+        tertiary_objects = cpo.Object()
         tertiary_objects.segmented = tertiary_labels
         tertiary_objects.parent_image = tertiary_image
         #

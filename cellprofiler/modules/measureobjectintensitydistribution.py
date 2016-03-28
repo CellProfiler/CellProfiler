@@ -120,7 +120,7 @@ MEASUREMENT_ALIASES = {
     A_RADIAL_CV: MF_RADIAL_CV}
 
 
-class MeasureObjectIntensityDistribution(cpm.CPModule):
+class MeasureObjectIntensityDistribution(cpm.Module):
     module_name = "MeasureObjectIntensityDistribution"
     category = "Measurement"
     variable_revision_number = 5
@@ -545,7 +545,7 @@ class MeasureObjectIntensityDistribution(cpm.CPModule):
                                                        image.pixel_data)
         nobjects = np.max(objects.segmented)
         measurements = workspace.measurements
-        assert isinstance(measurements, cpmeas.Measurements)
+        assert isinstance(measurements, cpmeas.Measurement)
         heatmaps = {}
         for heatmap in self.heatmaps:
             if heatmap.object_name.get_objects_name() == object_name and \

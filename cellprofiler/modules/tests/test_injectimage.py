@@ -25,10 +25,10 @@ class testInjectImage(unittest.TestCase):
         image = numpy.zeros((10, 10), dtype=float)
         ii = InjectImage("my_image", image)
         pipeline = cellprofiler.pipeline.Pipeline()
-        measurements = cpmeas.Measurements()
+        measurements = cpmeas.Measurement()
         workspace = cpw.Workspace(pipeline, ii, measurements, None,
                                   measurements,
-                                  cellprofiler.image.ImageSetList())
+                                  cellprofiler.image.SetList())
         ii.prepare_run(workspace)
         ii.prepare_group(workspace, {}, [1])
         ii.run(workspace)

@@ -46,7 +46,7 @@ TRANSLATION_DICTIONARY = {
     "No": OPEN_NO
 }
 
-class CreateWebPage(cpm.CPModule):
+class CreateWebPage(cpm.Module):
     module_name = "CreateWebPage"
     category = "Other"
     variable_revision_number = 2

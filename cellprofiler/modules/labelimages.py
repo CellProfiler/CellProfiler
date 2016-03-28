@@ -33,7 +33,7 @@ O_ROW = "Row"
 O_COLUMN = "Column"
 
 
-class LabelImages(cpm.CPModule):
+class LabelImages(cpm.Module):
     module_name = "LabelImages"
     category = "Other"
     variable_revision_number = 1

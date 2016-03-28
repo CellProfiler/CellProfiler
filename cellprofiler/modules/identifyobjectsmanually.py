@@ -85,7 +85,7 @@ class IdentifyObjectsManually(I.Identify):
             # User cancelled. Soldier on as best we can.
             workspace.cancel_request()
             labels = np.zeros(pixel_data.shape[:2], int)
-        objects = cpo.Objects()
+        objects = cpo.Object()
         objects.segmented = labels
         workspace.object_set.add_objects(objects, objects_name)
 

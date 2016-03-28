@@ -165,7 +165,7 @@ F_STANDARD = [F_AREA, F_ECCENTRICITY, F_SOLIDITY, F_EXTENT,
               F_MIN_FERET_DIAMETER, F_MAX_FERET_DIAMETER]
 
 
-class MeasureObjectSizeShape(cpm.CPModule):
+class MeasureObjectSizeShape(cpm.Module):
     module_name = "MeasureObjectSizeShape"
     variable_revision_number = 1
     category = 'Measurement'
@@ -294,7 +294,7 @@ class MeasureObjectSizeShape(cpm.CPModule):
     def run_on_objects(self, object_name, workspace):
         """Run, computing the area measurements for a single map of objects"""
         objects = workspace.get_objects(object_name)
-        assert isinstance(objects, cpo.Objects)
+        assert isinstance(objects, cpo.Object)
         #
         # Do the ellipse-related measurements
         #

@@ -251,7 +251,7 @@ Rotate:[module_num:1|svn_version:\'8913\'|variable_revision_number:2|show_window
         image and the angle measurement.
         '''
         img = cpi.Image(image, mask)
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.SetList()
         image_set = image_set_list.get_image_set(0)
         image_set.add(IMAGE_NAME, img)
         module = F.FlipAndRotate()
@@ -267,7 +267,7 @@ Rotate:[module_num:1|svn_version:\'8913\'|variable_revision_number:2|show_window
             self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
 
         pipeline.add_listener(error_callback)
-        measurements = cpmeas.Measurements()
+        measurements = cpmeas.Measurement()
         workspace = cpw.Workspace(pipeline, module, image_set,
                                   cpo.ObjectSet(), measurements,
                                   image_set_list)

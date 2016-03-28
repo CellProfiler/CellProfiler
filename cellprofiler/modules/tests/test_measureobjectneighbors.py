@@ -35,9 +35,9 @@ class TestMeasureObjectNeighbors(unittest.TestCase):
         pipeline = cpp.Pipeline()
         pipeline.add_module(module)
         object_set = cpo.ObjectSet()
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.SetList()
         image_set = image_set_list.get_image_set(0)
-        measurements = cpmeas.Measurements()
+        measurements = cpmeas.Measurement()
         measurements.group_index = 1
         measurements.group_number = 1
         workspace = cpw.Workspace(pipeline,
@@ -46,14 +46,14 @@ class TestMeasureObjectNeighbors(unittest.TestCase):
                                   object_set,
                                   measurements,
                                   image_set_list)
-        objects = cpo.Objects()
+        objects = cpo.Object()
         objects.segmented = labels
         object_set.add_objects(objects, OBJECTS_NAME)
         if neighbors_labels is None:
             module.neighbors_name.value = OBJECTS_NAME
         else:
             module.neighbors_name.value = NEIGHBORS_NAME
-            objects = cpo.Objects()
+            objects = cpo.Object()
             objects.segmented = neighbors_labels
             object_set.add_objects(objects, NEIGHBORS_NAME)
         return workspace, module
@@ -414,7 +414,7 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
         object_set = workspace.object_set
         self.assertTrue(isinstance(object_set, cpo.ObjectSet))
         objects = object_set.get_objects(OBJECTS_NAME)
-        self.assertTrue(isinstance(objects, cpo.Objects))
+        self.assertTrue(isinstance(objects, cpo.Object))
 
         sm_labels = labels.copy() * 3
         sm_labels[-1, -1] = 1
@@ -451,7 +451,7 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
         object_set = workspace.object_set
         self.assertTrue(isinstance(object_set, cpo.ObjectSet))
         objects = object_set.get_objects(OBJECTS_NAME)
-        self.assertTrue(isinstance(objects, cpo.Objects))
+        self.assertTrue(isinstance(objects, cpo.Object))
 
         # Needs 2 objects to trigger the bug
         sm_labels = np.zeros((10, 10), int)
@@ -562,7 +562,7 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
                 self.assertTrue(isinstance(module, M.MeasureObjectNeighbors))
                 module.run(workspace)
                 m = workspace.measurements
-                self.assertTrue(isinstance(m, cpmeas.Measurements))
+                self.assertTrue(isinstance(m, cpmeas.Measurement))
                 for feature in module.all_features:
                     v = m.get_current_measurement(
                             OBJECTS_NAME, module.get_measurement_name(feature))
@@ -579,7 +579,7 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
             self.assertTrue(isinstance(module, M.MeasureObjectNeighbors))
             module.run(workspace)
             m = workspace.measurements
-            self.assertTrue(isinstance(m, cpmeas.Measurements))
+            self.assertTrue(isinstance(m, cpmeas.Measurement))
             v = m.get_current_measurement(
                     OBJECTS_NAME,
                     module.get_measurement_name(M.M_FIRST_CLOSEST_OBJECT_NUMBER))
@@ -612,7 +612,7 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
         self.assertTrue(isinstance(module, M.MeasureObjectNeighbors))
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         v = m.get_current_measurement(
                 OBJECTS_NAME,
                 module.get_measurement_name(M.M_FIRST_CLOSEST_OBJECT_NUMBER))
@@ -657,7 +657,7 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
                 labels, M.D_WITHIN, 2)
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         k = m.get_relationship_groups()
         self.assertEqual(len(k), 1)
         k = k[0]
@@ -710,7 +710,7 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
                 labels, M.D_WITHIN, 2, nlabels)
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         k = m.get_relationship_groups()
         self.assertEqual(len(k), 1)
         k = k[0]
@@ -795,7 +795,7 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
         self.assertTrue(isinstance(module, M.MeasureObjectNeighbors))
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         ftr = module.get_measurement_name(M.M_FIRST_CLOSEST_OBJECT_NUMBER)
         values = m[OBJECTS_NAME, ftr]
         self.assertEqual(values[1], 1)

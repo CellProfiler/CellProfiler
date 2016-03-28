@@ -37,7 +37,7 @@ E_HORIZONTAL = "Horizontal"
 E_VERTICAL = "Vertical"
 
 
-class EnhanceEdges(cpm.CPModule):
+class EnhanceEdges(cpm.Module):
     module_name = "EnhanceEdges"
     category = "Image Processing"
     variable_revision_number = 2

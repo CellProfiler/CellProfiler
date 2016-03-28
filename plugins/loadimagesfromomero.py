@@ -170,7 +170,7 @@ def create_omero_gateway(host=DEFAULT_OMERO_HOST, port=DEFAULT_OMERO_PORT,
     return omero_client, omero_session, omero_gateway
 
 
-class OmeroLoadImages(cpm.CPModule):
+class OmeroLoadImages(cpm.Module):
     variable_revision_number = 1
     module_name = 'OmeroLoadImages'
     category = 'File Processing'

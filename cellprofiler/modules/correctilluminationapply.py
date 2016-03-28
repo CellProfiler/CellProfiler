@@ -42,7 +42,7 @@ RE_MATCH = "Match maximums"
 SETTINGS_PER_IMAGE = 4
 
 
-class CorrectIlluminationApply(cpm.CPModule):
+class CorrectIlluminationApply(cpm.Module):
     category = "Image Processing"
     variable_revision_number = 3
     module_name = "CorrectIlluminationApply"

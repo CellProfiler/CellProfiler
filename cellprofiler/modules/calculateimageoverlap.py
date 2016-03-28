@@ -107,7 +107,7 @@ DM_KMEANS = "K Means"
 DM_SKEL = "Skeleton"
 
 
-class CalculateImageOverlap(cpm.CPModule):
+class CalculateImageOverlap(cpm.Module):
     category = "Measurement"
     variable_revision_number = 4
     module_name = "CalculateImageOverlap"
@@ -351,9 +351,9 @@ class CalculateImageOverlap(cpm.CPModule):
                                 adjusted_rand_index)
 
         if self.wants_emd:
-            test_objects = cpo.Objects()
+            test_objects = cpo.Object()
             test_objects.segmented = test_labels
-            ground_truth_objects = cpo.Objects()
+            ground_truth_objects = cpo.Object()
             ground_truth_objects.segmented = ground_truth_labels
             emd = self.compute_emd(test_objects, ground_truth_objects)
             m.add_image_measurement(

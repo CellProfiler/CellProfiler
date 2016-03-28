@@ -677,7 +677,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
         module.images[0].image_name.value = IMAGE_NAME
         module.objects[0].object_name.value = OBJECT_NAME
         object_set = cpo.ObjectSet()
-        main_objects = cpo.Objects()
+        main_objects = cpo.Object()
         main_objects.segmented = labels
         object_set.add_objects(main_objects, OBJECT_NAME)
         if center_labels is None:
@@ -685,7 +685,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
         else:
             module.objects[0].center_choice.value = center_choice
             module.objects[0].center_object_name.value = CENTER_NAME
-            center_objects = cpo.Objects()
+            center_objects = cpo.Object()
             center_objects.segmented = center_labels
             object_set.add_objects(center_objects, CENTER_NAME)
         module.bin_counts[0].bin_count.value = bin_count
@@ -707,8 +707,8 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
             module.heatmaps[i].colormap.value = "gray"
             module.heatmaps[i].measurement.value = a
         pipeline = cpp.Pipeline()
-        measurements = cpmeas.Measurements()
-        image_set_list = cpi.ImageSetList()
+        measurements = cpmeas.Measurement()
+        image_set_list = cpi.SetList()
         image_set = measurements
         img = cpi.Image(image)
         image_set.add(IMAGE_NAME, img)

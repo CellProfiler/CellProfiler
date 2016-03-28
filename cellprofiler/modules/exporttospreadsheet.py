@@ -122,7 +122,7 @@ NANS_AS_NULLS = "Null"
 NANS_AS_NANS = "NaN"
 
 
-class ExportToSpreadsheet(cpm.CPModule):
+class ExportToSpreadsheet(cpm.Module):
     module_name = 'ExportToSpreadsheet'
     category = ["File Processing", "Data Tools"]
     variable_revision_number = 11
@@ -1103,7 +1103,7 @@ Do you want to save it anyway?""" %
                 OBJECT_RELATIONSHIPS, workspace, image_set_numbers[0],
                 settings_group)
         m = workspace.measurements
-        assert isinstance(m, cpmeas.Measurements)
+        assert isinstance(m, cpmeas.Measurement)
         fd = open(file_name, "wb")
         module_map = {}
         for module in workspace.pipeline.modules():

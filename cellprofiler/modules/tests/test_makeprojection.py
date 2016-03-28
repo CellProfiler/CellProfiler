@@ -170,7 +170,7 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
 
     def run_image_set(self, projection_type, images_and_masks,
                       frequency=9, run_last=True):
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.SetList()
         image_count = len(images_and_masks)
         for i in range(image_count):
             pixel_data, mask = images_and_masks[i]
@@ -193,7 +193,7 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
         module.projection_type.value = projection_type
         module.frequency.value = frequency
         pipeline.add_module(module)
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurement()
         workspace = cpw.Workspace(pipeline, module, None, None, m, image_set_list)
         module.prepare_run(workspace)
         module.prepare_group(workspace, {}, range(1, len(images_and_masks) + 1))

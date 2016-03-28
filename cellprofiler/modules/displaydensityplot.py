@@ -25,7 +25,7 @@ import cellprofiler.module as cpm
 import cellprofiler.setting as cps
 
 
-class DisplayDensityPlot(cpm.CPModule):
+class DisplayDensityPlot(cpm.Module):
     module_name = "DisplayDensityPlot"
     category = "Data Tools"
     variable_revision_number = 1

@@ -38,21 +38,21 @@ class TestMergeOutputFiles(unittest.TestCase):
         return m
 
     def write_image_measurements(self, m, feature, image_count):
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         for i in range(image_count):
             if i > 0:
                 m.next_image_set(i + 1)
             m.add_image_measurement(feature, np.random.uniform())
 
     def write_object_measurements(self, m, object_name, feature, object_counts):
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         for i, count in enumerate(object_counts):
             object_measurements = np.random.uniform(size=i)
             m.add_measurement(object_name, feature, object_measurements,
                               image_set_number=i + 1)
 
     def write_experiment_measurement(self, m, feature):
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         m.add_experiment_measurement(feature, np.random.uniform())
 
     def test_00_00_nothing(self):
@@ -62,7 +62,7 @@ class TestMergeOutputFiles(unittest.TestCase):
     def test_01_01_one(self):
         '''Test "merging" one file'''
         np.random.seed(11)
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurement()
         self.write_image_measurements(m, "foo", 5)
         self.write_object_measurements(m, "myobjects", "bar", [3, 6, 2, 9, 16])
         self.write_experiment_measurement(m, "baz")
@@ -82,7 +82,7 @@ class TestMergeOutputFiles(unittest.TestCase):
         np.random.seed(12)
         mm = []
         for i in range(2):
-            m = cpmeas.Measurements()
+            m = cpmeas.Measurement()
             self.write_image_measurements(m, "foo", 5)
             self.write_object_measurements(m, "myobjects", "bar", [3, 6, 2, 9, 16])
             self.write_experiment_measurement(m, "baz")
@@ -104,7 +104,7 @@ class TestMergeOutputFiles(unittest.TestCase):
         np.random.seed(13)
         mm = []
         for i in range(2):
-            m = cpmeas.Measurements()
+            m = cpmeas.Measurement()
             self.write_image_measurements(m, "foo", 5)
             self.write_object_measurements(m, "myobjects", "bar%d" % i, [3, 6, 2, 9, 16])
             self.write_experiment_measurement(m, "baz")
@@ -129,7 +129,7 @@ class TestMergeOutputFiles(unittest.TestCase):
         np.random.seed(13)
         mm = []
         for i in range(2):
-            m = cpmeas.Measurements()
+            m = cpmeas.Measurement()
             self.write_image_measurements(m, "foo", 5)
             self.write_object_measurements(m, "myobjects%d" % i, "bar", [3, 6, 2, 9, 16])
             self.write_experiment_measurement(m, "baz")

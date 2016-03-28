@@ -29,7 +29,7 @@ OBJECTS_NAME = 'objectsname'
 class TestOverlayOutlines(unittest.TestCase):
     def make_workspace(self, image, outline=None, labels=None):
         '''Make a workspace for testing ApplyThreshold'''
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurement()
         object_set = cpo.ObjectSet()
         module = O.OverlayOutlines()
         module.blank_image.value = False
@@ -40,7 +40,7 @@ class TestOverlayOutlines(unittest.TestCase):
             m.add(OUTLINE_NAME, cpi.Image(outline))
             module.outlines[0].outline_choice.value = O.FROM_IMAGES
         if labels is not None:
-            objects = cpo.Objects()
+            objects = cpo.Object()
             if len(labels) > 1:
                 ijv = np.vstack(
                         [np.column_stack(list(np.where(l > 0)) + [l[l > 0]])

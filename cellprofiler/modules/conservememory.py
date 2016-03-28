@@ -27,7 +27,7 @@ S_NUMBER_OF_PER_MODULE_SETTINGS = 1
 S_NUMBER_OF_SETTINGS_PER_IMAGE = 1
 
 
-class ConserveMemory(cpm.CPModule):
+class ConserveMemory(cpm.Module):
     module_name = "ConserveMemory"
     category = 'Other'
     variable_revision_number = 1

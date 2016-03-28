@@ -213,7 +213,7 @@ class EditObjectsDialog(wx.Dialog):
         self.last_ijv = ijvx[:, :3]
         self.last_artist_save = artist_save
         self.last_to_keep = self.to_keep
-        temp = cellprofiler.object.Objects()
+        temp = cellprofiler.object.Object()
         temp.ijv = self.last_ijv
         self.labels = [l for l, c in temp.get_labels(self.shape)]
         self.init_labels()
@@ -671,7 +671,7 @@ class EditObjectsDialog(wx.Dialog):
             ii.append(i[mask])
             jj.append(j[mask])
             vv.append(l[mask])
-        temp = cellprofiler.object.Objects()
+        temp = cellprofiler.object.Object()
         temp.set_ijv(
                 numpy.column_stack([numpy.hstack(x) for x in (ii, jj, vv)]),
                 shape=self.shape)

@@ -98,7 +98,7 @@ SI_PROBABILITY_MAP_COUNT = 3
 classifier_dict = {}
 
 
-class ClassifyPixels(cpm.CPModule):
+class ClassifyPixels(cpm.Module):
     module_name = 'ClassifyPixels'
     variable_revision_number = 2
     category = "Image Processing"

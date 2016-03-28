@@ -25,7 +25,7 @@ CC_COLOR = "Color"
 CC_ALL = [CC_COLOR, CC_GRAYSCALE]
 
 
-class InvertForPrinting(cpm.CPModule):
+class InvertForPrinting(cpm.Module):
     module_name = "InvertForPrinting"
     category = 'Image Processing'
     variable_revision_number = 1

@@ -1350,7 +1350,7 @@ class Pipeline(object):
                         by the UI for the user for cases like a pipeline
                         created by CreateBatchFiles.
         '''
-        assert (isinstance(m, cpmeas.Measurements))
+        assert (isinstance(m, cpmeas.Measurement))
         fd = StringIO.StringIO()
         self.savetxt(fd, save_image_plane_details=False)
         m.add_measurement(cpmeas.EXPERIMENT,
@@ -1615,13 +1615,13 @@ class Pipeline(object):
             assert name in image_dict, 'Image named "%s" was not provided in the input dictionary' % name
 
         # Create image set from provided dict
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.SetList()
         image_set = image_set_list.get_image_set(0)
         for image_name in input_image_names:
             input_pixels = image_dict[image_name]
             image_set.add(image_name, cpi.Image(input_pixels))
         object_set = cpo.ObjectSet()
-        measurements = cpmeas.Measurements()
+        measurements = cpmeas.Measurement()
 
         # Run the modules
         for module in self.modules():
@@ -1654,7 +1654,7 @@ class Pipeline(object):
                    grouping to run or None to run all groupings
         measurements_filename - name of file to use for measurements
         """
-        measurements = cpmeas.Measurements(
+        measurements = cpmeas.Measurement(
                 image_set_start=image_set_start,
                 filename=measurements_filename,
                 copy=initial_measurements)
@@ -1741,11 +1741,11 @@ class Pipeline(object):
         if image_set_end is not None:
             assert isinstance(image_set_end, int), "Image set end must be an integer"
         if initial_measurements is None:
-            measurements = cpmeas.Measurements(image_set_start)
+            measurements = cpmeas.Measurement(image_set_start)
         else:
             measurements = initial_measurements
 
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.SetList()
         workspace = cpw.Workspace(self, None, None, None,
                                   measurements, image_set_list, frame)
 
@@ -2105,7 +2105,7 @@ class Pipeline(object):
 
         Write the pipeline, version # and timestamp.
         '''
-        assert isinstance(m, cpmeas.Measurements)
+        assert isinstance(m, cpmeas.Measurement)
         self.write_pipeline_measurement(m)
         m.add_experiment_measurement(M_VERSION, cpversion.version_string)
         m.add_experiment_measurement(M_TIMESTAMP,
@@ -2228,7 +2228,7 @@ class Pipeline(object):
         image_set_list - the image set list for the run
         frame - the topmost frame window or None if no GUI
         """
-        from cellprofiler.module import CPModule
+        from cellprofiler.module import Module
         if len(args) == 3:
             measurements, image_set_list, frame = args
             workspace = cpw.Workspace(self,
@@ -2253,7 +2253,7 @@ class Pipeline(object):
                 if event.cancel_run:
                     return "Failure"
             if module.show_window and \
-                            module.__class__.display_post_run != CPModule.display_post_run:
+                            module.__class__.display_post_run != Module.display_post_run:
                 try:
                     workspace.post_run_display(module)
                 except Exception, instance:
@@ -2382,7 +2382,7 @@ class Pipeline(object):
 
         workspace - the last workspace run
         '''
-        from cellprofiler.module import CPModule
+        from cellprofiler.module import Module
         for module in self.modules():
             try:
                 module.post_group(workspace, grouping)
@@ -2395,7 +2395,7 @@ class Pipeline(object):
                 if event.cancel_run:
                     return False
             if module.show_window and \
-                            module.__class__.display_post_group != CPModule.display_post_group:
+                            module.__class__.display_post_group != Module.display_post_group:
                 try:
                     workspace.post_group_display(module)
                 except:
@@ -2869,12 +2869,12 @@ class Pipeline(object):
         if end_module is not None:
             end_module_idx = self.modules().index(end_module)
             end_module = pipeline.modules()[end_module_idx]
-        temp_measurements = cpmeas.Measurements(mode="memory")
+        temp_measurements = cpmeas.Measurement(mode="memory")
         new_workspace = None
         try:
             new_workspace = cpw.Workspace(
                     pipeline, None, None, None,
-                    temp_measurements, cpi.ImageSetList())
+                    temp_measurements, cpi.SetList())
             new_workspace.set_file_list(workspace.file_list)
             pipeline.prepare_run(new_workspace, end_module)
 

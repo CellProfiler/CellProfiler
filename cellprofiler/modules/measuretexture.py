@@ -163,7 +163,7 @@ IO_OBJECTS = "Objects"
 IO_BOTH = "Both"
 
 
-class MeasureTexture(cpm.CPModule):
+class MeasureTexture(cpm.Module):
     module_name = "MeasureTexture"
     variable_revision_number = 4
     category = 'Measurement'

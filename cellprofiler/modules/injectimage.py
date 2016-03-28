@@ -12,7 +12,7 @@ import cellprofiler.object
 import cellprofiler.setting
 
 
-class InjectImage(cellprofiler.module.CPModule):
+class InjectImage(cellprofiler.module.Module):
     """This module is intended for testing. It injects an image into the
     image set.
     """
@@ -121,7 +121,7 @@ class InjectImage(cellprofiler.module.CPModule):
         return []
 
 
-class InjectObjects(cellprofiler.module.CPModule):
+class InjectObjects(cellprofiler.module.Module):
     """Inject objects with labels into the pipeline"""
 
     module_name = "InjectObjects"
@@ -147,7 +147,7 @@ class InjectObjects(cellprofiler.module.CPModule):
         return [self.object_name]
 
     def run(self, workspace):
-        my_objects = cellprofiler.object.Objects()
+        my_objects = cellprofiler.object.Object()
         my_objects.segmented = self.__segmented
         if self.__unedited_segmented is not None:
             my_objects.unedited_segmented = self.__unedited_segmented

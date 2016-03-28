@@ -43,7 +43,7 @@ M_ROTATION_CATEGORY = "Rotation"
 M_ROTATION_F = "%s_%%s" % M_ROTATION_CATEGORY
 
 
-class FlipAndRotate(cpm.CPModule):
+class FlipAndRotate(cpm.Module):
     category = 'Image Processing'
     variable_revision_number = 2
     module_name = 'FlipAndRotate'

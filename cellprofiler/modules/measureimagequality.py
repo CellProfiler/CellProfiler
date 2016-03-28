@@ -126,7 +126,7 @@ SETTINGS_PER_GROUP_V3 = 11
 IMAGE_GROUP_SETTING_OFFSET = 2
 
 
-class MeasureImageQuality(cpm.CPModule):
+class MeasureImageQuality(cpm.Module):
     module_name = "MeasureImageQuality"
     category = "Measurement"
     variable_revision_number = 5

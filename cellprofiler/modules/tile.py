@@ -74,7 +74,7 @@ TILE_HEIGHT = "TileHeight"
 FIXED_SETTING_COUNT = 10
 
 
-class Tile(cpm.CPModule):
+class Tile(cpm.Module):
     module_name = "Tile"
     category = 'Image Processing'
     variable_revision_number = 1

@@ -57,7 +57,7 @@ FIXED_SETTING_COUNT_1 = 7
 FIXED_SETTING_COUNT = 8
 
 
-class ImageMath(cpm.CPModule):
+class ImageMath(cpm.Module):
     category = "Image Processing"
     variable_revision_number = 4
     module_name = "ImageMath"
@@ -294,7 +294,7 @@ class ImageMath(cpm.CPModule):
         # weave in the measurements
         idx = 0
         measurements = workspace.measurements
-        assert isinstance(measurements, cpmeas.Measurements)
+        assert isinstance(measurements, cpmeas.Measurement)
         for i in range(self.operand_count):
             if not wants_image[i]:
                 value = measurements.get_current_image_measurement(

@@ -155,7 +155,7 @@ PROTIP_AVOID_ICON = "thumb-down.png"
 TECH_NOTE_ICON = "gear.png"
 
 
-class Identify(cellprofiler.module.CPModule):
+class Identify(cellprofiler.module.Module):
     threshold_setting_version = 2
 
     def create_threshold_settings(self, methods=TM_METHODS):

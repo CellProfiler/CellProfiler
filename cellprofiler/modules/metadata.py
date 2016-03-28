@@ -154,7 +154,7 @@ LEN_EXTRACTION_METHOD_V1 = 8
 LEN_EXTRACTION_METHOD = 9
 
 
-class Metadata(cpm.CPModule):
+class Metadata(cpm.Module):
     variable_revision_number = 4
     module_name = "Metadata"
     category = "File Processing"

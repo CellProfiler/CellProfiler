@@ -87,7 +87,7 @@ class TestSendEmail(unittest.TestCase):
                        group_numbers=None,
                        group_indexes=None,
                        n_recipients=1):
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurement()
         if group_numbers is None:
             group_numbers = [1] * len(image_numbers)
             group_indexes = range(1, len(image_numbers) + 1)

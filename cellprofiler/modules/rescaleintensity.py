@@ -48,7 +48,7 @@ HIGH_EACH_IMAGE = 'Maximum for each image'
 HIGH_ALL = [CUSTOM_VALUE, HIGH_EACH_IMAGE, HIGH_ALL_IMAGES]
 
 
-class RescaleIntensity(cpm.CPModule):
+class RescaleIntensity(cpm.Module):
     module_name = "RescaleIntensity"
     category = "Image Processing"
     variable_revision_number = 2

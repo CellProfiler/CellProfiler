@@ -207,7 +207,7 @@ def main():
         pass
 
     from cellprofiler.knime_bridge import KnimeBridgeServer
-    with AnalysisWorker(work_announce_address) as worker:
+    with Worker(work_announce_address) as worker:
         worker_thread = threading.Thread(target=worker.run,
                                          name="WorkerThread")
         worker_thread.setDaemon(True)
@@ -232,7 +232,7 @@ def main():
         logger.warn("Failed to stop the JVM", exc_info=1)
 
 
-class AnalysisWorker(object):
+class Worker(object):
     '''An analysis worker processing work at a given address
 
     '''
@@ -386,7 +386,7 @@ class AnalysisWorker(object):
             else:
                 logger.debug("Has initial measurements")
             # Make a copy of the measurements for writing during this job
-            current_measurements = cpmeas.Measurements(copy=current_measurements)
+            current_measurements = cpmeas.Measurement(copy=current_measurements)
             all_measurements.add(current_measurements)
             job_measurements.append(current_measurements)
 

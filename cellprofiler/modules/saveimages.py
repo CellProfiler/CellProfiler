@@ -108,7 +108,7 @@ OFFSET_DIRECTORY_PATH = 11
 OFFSET_BIT_DEPTH_V11 = 12
 
 
-class SaveImages(cpm.CPModule):
+class SaveImages(cpm.Module):
     module_name = "SaveImages"
     variable_revision_number = 11
     category = "File Processing"

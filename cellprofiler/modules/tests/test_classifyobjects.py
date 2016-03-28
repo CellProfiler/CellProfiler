@@ -279,11 +279,11 @@ class TestClassifyObjects(unittest.TestCase):
     def make_workspace(self, labels, contrast_choice,
                        measurement1=None, measurement2=None):
         object_set = cpo.ObjectSet()
-        objects = cpo.Objects()
+        objects = cpo.Object()
         objects.segmented = labels
         object_set.add_objects(objects, OBJECTS_NAME)
 
-        measurements = cpmeas.Measurements()
+        measurements = cpmeas.Measurement()
         module = C.ClassifyObjects()
         m_names = []
         if measurement1 is not None:
@@ -295,7 +295,7 @@ class TestClassifyObjects(unittest.TestCase):
                                          measurement2)
             module.add_single_measurement()
             m_names.append(MEASUREMENT_NAME_2)
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.SetList()
         image_set = image_set_list.get_image_set(0)
 
         module.contrast_choice.value = contrast_choice

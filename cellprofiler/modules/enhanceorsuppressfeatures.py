@@ -36,7 +36,7 @@ N_GRADIENT = "Line structures"
 N_TUBENESS = "Tubeness"
 
 
-class EnhanceOrSuppressFeatures(cpm.CPModule):
+class EnhanceOrSuppressFeatures(cpm.Module):
     module_name = 'EnhanceOrSuppressFeatures'
     category = "Image Processing"
     variable_revision_number = 5

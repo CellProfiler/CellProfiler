@@ -63,7 +63,7 @@ LABEL_ALPHA = 1.0
 WORM_ALPHA = .25
 
 
-class IdentifyDeadWorms(cpm.CPModule):
+class IdentifyDeadWorms(cpm.Module):
     module_name = "IdentifyDeadWorms"
     variable_revision_number = 2
     category = ["Other", "Worm Toolbox"]
@@ -245,7 +245,7 @@ class IdentifyDeadWorms(cpm.CPModule):
             labels = np.zeros(mask.shape, int)
 
         m = workspace.measurements
-        assert isinstance(m, cpmeas.Measurements)
+        assert isinstance(m, cpmeas.Measurement)
         object_name = self.object_name.value
         m.add_measurement(object_name, I.M_LOCATION_CENTER_X, center_x)
         m.add_measurement(object_name, I.M_LOCATION_CENTER_Y, center_y)
@@ -257,7 +257,7 @@ class IdentifyDeadWorms(cpm.CPModule):
         #
         object_set = workspace.object_set
         assert isinstance(object_set, cpo.ObjectSet)
-        objects = cpo.Objects()
+        objects = cpo.Object()
         objects.segmented = labels
         objects.parent_image = image
         object_set.add_objects(objects, object_name)

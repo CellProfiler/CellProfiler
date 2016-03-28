@@ -96,7 +96,7 @@ class TestConserveMemory(unittest.TestCase):
         module.how_to_remove.value = S.C_REMOVE
         module.image_names[0].image_name.value = "Image1"
         module.module_num = 1
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.SetList()
         image_set = image_set_list.get_image_set(0)
         image_set.add("Image1", cpi.Image(np.zeros((10, 10))))
         image_set.add("Image2", cpi.Image(np.zeros((10, 10))))
@@ -108,7 +108,7 @@ class TestConserveMemory(unittest.TestCase):
         pipeline.add_listener(callback)
         pipeline.add_module(module)
         workspace = cpw.Workspace(pipeline, module, image_set,
-                                  cpo.ObjectSet(), cpmeas.Measurements(),
+                                  cpo.ObjectSet(), cpmeas.Measurement(),
                                   image_set_list)
         module.run(workspace)
         image = image_set.get_image("Image1")
@@ -121,7 +121,7 @@ class TestConserveMemory(unittest.TestCase):
         module.how_to_remove.value = S.C_KEEP
         module.image_names[0].image_name.value = "Image1"
         module.module_num = 1
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.SetList()
         image_set = image_set_list.get_image_set(0)
         image_set.add("Image1", cpi.Image(np.zeros((10, 10))))
         image_set.add("Image2", cpi.Image(np.zeros((10, 10))))
@@ -133,7 +133,7 @@ class TestConserveMemory(unittest.TestCase):
         pipeline.add_listener(callback)
         pipeline.add_module(module)
         workspace = cpw.Workspace(pipeline, module, image_set, cpo.ObjectSet(),
-                                  cpmeas.Measurements(), image_set_list)
+                                  cpmeas.Measurement(), image_set_list)
         module.run(workspace)
         image = image_set.get_image("Image2")
         self.assertFalse(isinstance(image, cpi.Image))

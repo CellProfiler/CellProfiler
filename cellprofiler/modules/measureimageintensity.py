@@ -82,7 +82,7 @@ ALL_MEASUREMENTS = ["TotalIntensity", "MeanIntensity", "StdIntensity", "MADInten
                     "LowerQuartileIntensity", "UpperQuartileIntensity"]
 
 
-class MeasureImageIntensity(cpm.CPModule):
+class MeasureImageIntensity(cpm.Module):
     module_name = 'MeasureImageIntensity'
     category = "Measurement"
     variable_revision_number = 2

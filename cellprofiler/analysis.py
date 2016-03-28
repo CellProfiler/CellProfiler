@@ -72,7 +72,7 @@ class Analysis(object):
         to measurements_filename, optionally starting with previous
         measurements.'''
         self.pipeline = pipeline
-        initial_measurements = cpmeas.Measurements(copy=initial_measurements)
+        initial_measurements = cpmeas.Measurement(copy=initial_measurements)
         self.initial_measurements_buf = initial_measurements.file_contents()
         initial_measurements.close()
         self.output_path = measurements_filename
@@ -321,9 +321,9 @@ class AnalysisRunner(object):
                     fd = os.fdopen(fd, "wb")
                     fd.write(self.initial_measurements_buf)
                     fd.close()
-                    initial_measurements = cpmeas.Measurements(
+                    initial_measurements = cpmeas.Measurement(
                             filename=filename, mode="r")
-                    measurements = cpmeas.Measurements(
+                    measurements = cpmeas.Measurement(
                             image_set_start=None,
                             copy=initial_measurements,
                             mode="a")
@@ -334,13 +334,13 @@ class AnalysisRunner(object):
             else:
                 with open(self.output_path, "wb") as fd:
                     fd.write(self.initial_measurements_buf)
-                measurements = cpmeas.Measurements(image_set_start=None,
-                                                   filename=self.output_path,
-                                                   mode="a")
+                measurements = cpmeas.Measurement(image_set_start=None,
+                                                  filename=self.output_path,
+                                                  mode="a")
             # The shared dicts are needed in jobserver()
             self.shared_dicts = [m.get_dictionary() for m in self.pipeline.modules()]
             workspace = cpw.Workspace(self.pipeline, None, None, None,
-                                      measurements, cpimage.ImageSetList())
+                                      measurements, cpimage.SetList())
 
             if image_set_end is None:
                 image_set_end = measurements.get_image_numbers()[-1]
@@ -695,7 +695,7 @@ class AnalysisRunner(object):
             if os.environ['CP_DEBUG_WORKER'] == 'NOT_INPROC':
                 return
             from cellprofiler.worker import \
-                AnalysisWorker, NOTIFY_ADDR, NOTIFY_STOP
+                Worker, NOTIFY_ADDR, NOTIFY_STOP
             from cellprofiler.pipeline import CancelledException
 
             class WorkerRunner(threading.Thread):
@@ -706,7 +706,7 @@ class AnalysisRunner(object):
                     self.notify_socket.bind(NOTIFY_ADDR)
 
                 def run(self):
-                    with AnalysisWorker(self.work_announce_address) as aw:
+                    with Worker(self.work_announce_address) as aw:
                         try:
                             aw.run()
                         except CancelledException:

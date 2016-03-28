@@ -22,7 +22,7 @@ import cellprofiler.module as cpm
 import cellprofiler.setting as cps
 
 
-class OutputExternal(cpm.CPModule):
+class OutputExternal(cpm.Module):
     variable_revision_number = 1
     module_name = 'OutputExternal'
     category = 'Other'

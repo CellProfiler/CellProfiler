@@ -21,7 +21,7 @@ import cellprofiler.setting as cps
 from cellprofiler.setting import YES, NO
 
 
-class DisplayHistogram(cpm.CPModule):
+class DisplayHistogram(cpm.Module):
     module_name = "DisplayHistogram"
     category = "Data Tools"
     variable_revision_number = 3

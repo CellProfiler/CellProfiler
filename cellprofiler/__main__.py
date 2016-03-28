@@ -137,7 +137,7 @@ def main(args=None):
         using_hdf5 = h5py.is_hdf5(path)
         if using_hdf5:
             import cellprofiler.measurement as cpmeas
-            m = cpmeas.Measurements(
+            m = cpmeas.Measurement(
                     filename=path, mode="r+")
             pipeline_text = m[cpmeas.EXPERIMENT, "Pipeline_Pipeline"]
         else:
@@ -681,7 +681,7 @@ def print_groups(filename):
     import cellprofiler.measurement as cpmeas
 
     path = os.path.expanduser(filename)
-    m = cpmeas.Measurements(filename=path, mode="r")
+    m = cpmeas.Measurement(filename=path, mode="r")
     metadata_tags = m.get_grouping_tags()
     groupings = m.get_groupings(metadata_tags)
     json.dump(groupings, sys.stdout)
@@ -702,7 +702,7 @@ def get_batch_commands(filename):
     import cellprofiler.measurement as cpmeas
 
     path = os.path.expanduser(filename)
-    m = cpmeas.Measurements(filename=path, mode="r")
+    m = cpmeas.Measurement(filename=path, mode="r")
 
     image_numbers = m.get_image_numbers()
     if m.has_feature(cpmeas.IMAGE, cpmeas.GROUP_NUMBER):
@@ -757,7 +757,7 @@ def write_schema(pipeline_filename):
         raise ValueError(
                 "The pipeline, \"%s\", does not have an ExportToDatabase module" %
                 pipeline_filename)
-    m = cpmeas.Measurements()
+    m = cpmeas.Measurement()
     workspace = cpw.Workspace(
             pipeline, module, m, cpo.ObjectSet, m, None)
     module.prepare_run(workspace)

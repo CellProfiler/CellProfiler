@@ -161,7 +161,7 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
 
         pipeline.add_listener(callback)
         pipeline.add_module(module)
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.SetList()
         for i, image in enumerate(images):
             image_set = image_set_list.get_image_set(i)
             image_set.add(INPUT_IMAGE_NAME, cpi.Image(image))
@@ -169,7 +169,7 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
         workspace = cpw.Workspace(pipeline, module,
                                   image_set_list.get_image_set(0),
                                   cpo.ObjectSet(),
-                                  cpmeas.Measurements(),
+                                  cpmeas.Measurement(),
                                   image_set_list)
         return workspace, module
 
@@ -503,7 +503,7 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
                                    image))
 
     def make_place_workspace(self, images):
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.SetList()
         image_set = image_set_list.get_image_set(0)
         module = T.Tile()
         module.module_num = 1
@@ -533,7 +533,7 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
         workspace = cpw.Workspace(pipeline, module,
                                   image_set,
                                   cpo.ObjectSet(),
-                                  cpmeas.Measurements(),
+                                  cpmeas.Measurement(),
                                   image_set_list)
         return workspace, module
 

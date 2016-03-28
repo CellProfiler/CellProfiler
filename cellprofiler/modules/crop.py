@@ -89,7 +89,7 @@ D_FIRST_CROPPING = "FirstCropping"
 D_FIRST_CROPPING_MASK = "FirstCroppingMask"
 
 
-class Crop(cpm.CPModule):
+class Crop(cpm.Module):
     module_name = "Crop"
     variable_revision_number = 2
     category = "Image Processing"

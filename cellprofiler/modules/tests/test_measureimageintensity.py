@@ -26,18 +26,18 @@ class TestMeasureImageIntensity(unittest.TestCase):
         module = M.MeasureImageIntensity()
         pipeline = cpp.Pipeline()
         object_set = cpo.ObjectSet()
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.SetList()
         image_set = image_set_list.get_image_set(0)
         workspace = cpw.Workspace(pipeline,
                                   module,
                                   image_set,
                                   object_set,
-                                  cpmeas.Measurements(),
+                                  cpmeas.Measurement(),
                                   image_set_list)
         for key in image_dict.keys():
             image_set.add(key, cpi.Image(image_dict[key]))
         for key in object_dict.keys():
-            o = cpo.Objects()
+            o = cpo.Object()
             o.segmented = object_dict[key]
             object_set.add_objects(o, key)
         return workspace, module

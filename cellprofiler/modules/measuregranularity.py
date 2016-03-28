@@ -52,7 +52,7 @@ OBJECTS_SETTING_COUNT_V3 = 1
 OBJECTS_SETTING_COUNT = OBJECTS_SETTING_COUNT_V3
 
 
-class MeasureGranularity(cpm.CPModule):
+class MeasureGranularity(cpm.Module):
     module_name = 'MeasureGranularity'
     category = "Measurement"
     variable_revision_number = 3

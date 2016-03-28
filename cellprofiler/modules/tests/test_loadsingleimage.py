@@ -343,10 +343,10 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
 
         pipeline.add_listener(callback)
         pipeline.add_module(module)
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.SetList()
         workspace = cpw.Workspace(pipeline, module,
                                   image_set_list.get_image_set(0),
-                                  cpo.ObjectSet(), cpmeas.Measurements(),
+                                  cpo.ObjectSet(), cpmeas.Measurement(),
                                   image_set_list)
         return workspace, module
 
@@ -359,7 +359,7 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
         module.prepare_run(workspace)
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         self.assertEqual(m.image_set_count, 1)
         f = m.get_all_measurements(
                 cpmeas.IMAGE,
@@ -422,9 +422,9 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
         li.location.dir_choice = cps.ABSOLUTE_FOLDER_NAME
         li.location.custom_path = path
         li.images[0].common_text.value = "Channel2-"
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurement()
         workspace = cpw.Workspace(pipeline, lsi, m, cpo.ObjectSet(), m,
-                                  cpi.ImageSetList())
+                                  cpi.SetList())
         self.assertTrue(pipeline.prepare_run(workspace))
         self.assertGreater(m.image_set_count, 1)
         pipeline.prepare_group(workspace, {}, m.get_image_numbers())
@@ -563,9 +563,9 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
 
             pipeline.add_listener(callback)
             pipeline.add_module(module)
-            m = cpmeas.Measurements()
+            m = cpmeas.Measurement()
             object_set = cpo.ObjectSet()
-            image_set_list = cpi.ImageSetList()
+            image_set_list = cpi.SetList()
             image_set = image_set_list.get_image_set(0)
             workspace = cpw.Workspace(
                     pipeline, module, image_set, object_set, m, image_set_list)
@@ -618,9 +618,9 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
 
             pipeline.add_listener(callback)
             pipeline.add_module(module)
-            m = cpmeas.Measurements()
+            m = cpmeas.Measurement()
             object_set = cpo.ObjectSet()
-            image_set_list = cpi.ImageSetList()
+            image_set_list = cpi.SetList()
             image_set = image_set_list.get_image_set(0)
             workspace = cpw.Workspace(
                     pipeline, module, image_set, object_set, m, image_set_list)

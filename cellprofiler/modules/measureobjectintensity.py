@@ -99,7 +99,7 @@ ALL_MEASUREMENTS = [INTEGRATED_INTENSITY, MEAN_INTENSITY, STD_INTENSITY,
 ALL_LOCATION_MEASUREMENTS = [LOC_CMI_X, LOC_CMI_Y, LOC_MAX_X, LOC_MAX_Y]
 
 
-class MeasureObjectIntensity(cpm.CPModule):
+class MeasureObjectIntensity(cpm.Module):
     module_name = "MeasureObjectIntensity"
     variable_revision_number = 3
     category = "Measurement"

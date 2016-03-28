@@ -932,7 +932,7 @@ class PipelineController:
         pathname - pathname to the file
         """
         assert h5py.is_hdf5(pathname)
-        m = cellprofiler.measurement.Measurements(
+        m = cellprofiler.measurement.Measurement(
                 filename=pathname,
                 mode="r")
         has_user_pipeline = m.has_feature(
@@ -1138,7 +1138,7 @@ class PipelineController:
                                              continue_only=True)
             return
         m = self.__workspace.measurements
-        assert isinstance(m, cellprofiler.measurement.Measurements)
+        assert isinstance(m, cellprofiler.measurement.Measurement)
 
         image_numbers = m.get_image_numbers()
         if len(image_numbers) == 0:
@@ -2447,7 +2447,7 @@ class PipelineController:
         self.__workspace.display_data.__dict__.update(evt.display_data_dict)
         try:
             module = self.__pipeline.modules(exclude_disabled=False)[module_num - 1]
-            if module.display != cellprofiler.module.CPModule.display:
+            if module.display != cellprofiler.module.Module.display:
                 fig = self.__workspace.get_module_figure(module,
                                                          evt.image_set_number,
                                                          self.__frame)
@@ -2471,7 +2471,7 @@ class PipelineController:
         self.__workspace.display_data.__dict__.update(evt.display_data.__dict__)
         try:
             module = self.__pipeline.modules(exclude_disabled=False)[module_num - 1]
-            if module.display_post_run != cellprofiler.module.CPModule.display_post_run:
+            if module.display_post_run != cellprofiler.module.Module.display_post_run:
                 image_number = self.__workspace.measurements.image_set_count
                 fig = self.__workspace.get_module_figure(module,
                                                          image_number,
@@ -2491,7 +2491,7 @@ class PipelineController:
         self.__workspace.display_data.__dict__.update(evt.display_data)
         try:
             module = self.__pipeline.modules(exclude_disabled=False)[module_num - 1]
-            if module.display_post_group != cellprofiler.module.CPModule.display_post_group:
+            if module.display_post_group != cellprofiler.module.Module.display_post_group:
                 image_number = evt.image_set_number
                 fig = self.__workspace.get_module_figure(module,
                                                          image_number,
@@ -2757,13 +2757,13 @@ class PipelineController:
                 return False
 
         self.close_debug_measurements()
-        self.__debug_measurements = cellprofiler.measurement.Measurements(
+        self.__debug_measurements = cellprofiler.measurement.Measurement(
                 copy=self.__workspace.measurements,
                 mode="memory")
         self.__debug_object_set = cellprofiler.object.ObjectSet(can_overwrite=True)
         self.__frame.enable_debug_commands()
         assert isinstance(self.__pipeline, cellprofiler.pipeline.Pipeline)
-        self.__debug_image_set_list = cellprofiler.image.ImageSetList(True)
+        self.__debug_image_set_list = cellprofiler.image.SetList(True)
         workspace = cellprofiler.workspace.Workspace(self.__pipeline, None, None, None,
                                                      self.__debug_measurements,
                                                      self.__debug_image_set_list,

@@ -56,7 +56,7 @@ EVENT_SETTING_COUNT = 4
 K_LAST_IN_GROUP = "Last in group"
 
 
-class SendEmail(cpm.CPModule):
+class SendEmail(cpm.Module):
     module_name = "SendEmail"
     category = "Other"
     variable_revision_number = 2
@@ -244,7 +244,7 @@ class SendEmail(cpm.CPModule):
     def run(self, workspace):
         '''Run every image set'''
         m = workspace.measurements
-        assert isinstance(m, cpmeas.Measurements)
+        assert isinstance(m, cpmeas.Measurement)
         d = self.get_dictionary()
         image_number = m.image_set_number
         if m.has_feature(cpmeas.IMAGE, cpmeas.GROUP_NUMBER):
@@ -297,7 +297,7 @@ class SendEmail(cpm.CPModule):
         '''Send an email according to the settings'''
 
         measurements = workspace.measurements
-        assert isinstance(measurements, cpmeas.Measurements)
+        assert isinstance(measurements, cpmeas.Measurement)
 
         message = email.message.Message()
         who_from = self.from_address.value

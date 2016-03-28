@@ -123,7 +123,7 @@ Groups:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
         r.seed(np.frombuffer("".join(["%s=%s" % kv for kv in key_metadata]), np.uint8))
         image_sets = [image_sets[i] for i in r.permutation(len(image_sets))]
 
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurement()
         m.set_metadata_tags(["_".join((cpmeas.C_METADATA, k))
                              for k in image_set_key_names])
         m.set_channel_descriptors(iscds)
@@ -156,7 +156,7 @@ Groups:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
         groups = G.Groups()
         groups.wants_groups.value = False
         m = workspace.measurements
-        assert isinstance(m, cpmeas.Measurements)
+        assert isinstance(m, cpmeas.Measurement)
         image_numbers = m.get_image_numbers()
         expected_file_names = m[cpmeas.IMAGE, cpmeas.C_FILE_NAME + "_" + "DNA", image_numbers]
         self.assertTrue(groups.prepare_run(workspace))
@@ -177,7 +177,7 @@ Groups:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
         groups.grouping_metadata[0].metadata_choice.value = "Plate"
         groups.prepare_run(workspace)
         m = workspace.measurements
-        assert isinstance(m, cpmeas.Measurements)
+        assert isinstance(m, cpmeas.Measurement)
         image_numbers = m.get_image_numbers()
         self.assertEqual(len(image_numbers), 24)
         np.testing.assert_array_equal(
@@ -221,7 +221,7 @@ Groups:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
         groups.grouping_metadata[1].metadata_choice.value = "Site"
         self.assertTrue(groups.prepare_run(workspace))
         m = workspace.measurements
-        assert isinstance(m, cpmeas.Measurements)
+        assert isinstance(m, cpmeas.Measurement)
         image_numbers = m.get_image_numbers()
 
         pipeline = workspace.pipeline

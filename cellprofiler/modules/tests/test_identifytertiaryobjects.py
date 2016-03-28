@@ -39,7 +39,7 @@ class TestIdentifyTertiaryObjects(unittest.TestCase):
                          has object with name "secondary" containing
                          the secondary labels
         """
-        isl = cpi.ImageSetList()
+        isl = cpi.SetList()
         module = cpmit.IdentifyTertiarySubregion()
         module.module_num = 1
         module.primary_objects_name.value = PRIMARY
@@ -49,13 +49,13 @@ class TestIdentifyTertiaryObjects(unittest.TestCase):
                                   module,
                                   isl.get_image_set(0),
                                   cpo.ObjectSet(),
-                                  cpm.Measurements(),
+                                  cpm.Measurement(),
                                   isl)
         workspace.pipeline.add_module(module)
 
         for labels, name in ((primary_labels, PRIMARY),
                              (secondary_labels, SECONDARY)):
-            objects = cpo.Objects()
+            objects = cpo.Object()
             objects.segmented = labels
             workspace.object_set.add_objects(objects, name)
         return workspace

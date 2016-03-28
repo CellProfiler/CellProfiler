@@ -152,11 +152,11 @@ class TestMeasureObjects(unittest.TestCase):
             self.assertTrue(column[2] == cpmeas.COLTYPE_FLOAT)
 
     def make_workspace(self, labels, pixel_data, mask=None):
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.SetList()
         image_set = image_set_list.get_image_set(0)
         image_set.add(IMAGE_NAME, cpi.Image(pixel_data, mask))
         object_set = cpo.ObjectSet()
-        o = cpo.Objects()
+        o = cpo.Object()
         if labels.shape[1] == 3:
             o.ijv = labels
         else:
@@ -170,7 +170,7 @@ class TestMeasureObjects(unittest.TestCase):
         pipeline.add_listener(self.error_callback)
         pipeline.add_module(module)
         workspace = cpw.Workspace(pipeline, module, image_set,
-                                  object_set, cpmeas.Measurements(),
+                                  object_set, cpmeas.Measurement(),
                                   image_set_list)
         return workspace, module
 
@@ -562,7 +562,7 @@ class TestMeasureObjects(unittest.TestCase):
         workspace, module = self.make_workspace(labels, pixel_data, mask)
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         values = m.get_current_measurement(
                 OBJECT_NAME, '_'.join((MOI.INTENSITY, MOI.MEDIAN_INTENSITY, IMAGE_NAME)))
         self.assertEqual(len(values), 1)
@@ -577,7 +577,7 @@ class TestMeasureObjects(unittest.TestCase):
         workspace, module = self.make_workspace(labels, image)
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         values = m.get_current_measurement(
                 OBJECT_NAME, '_'.join((MOI.INTENSITY, MOI.STD_INTENSITY, IMAGE_NAME)))
         self.assertEqual(len(values), 4)
@@ -600,7 +600,7 @@ class TestMeasureObjects(unittest.TestCase):
         workspace, module = self.make_workspace(labels, image)
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         values = m.get_current_measurement(
                 OBJECT_NAME, '_'.join((MOI.INTENSITY, MOI.STD_INTENSITY_EDGE, IMAGE_NAME)))
         self.assertEqual(len(values), 4)
@@ -622,14 +622,14 @@ class TestMeasureObjects(unittest.TestCase):
         workspace0, module0 = self.make_workspace(labels, image)
         module0.run(workspace0)
         measurements0 = workspace0.measurements
-        assert isinstance(measurements0, cpmeas.Measurements)
+        assert isinstance(measurements0, cpmeas.Measurement)
         for i, (workspace, module) in enumerate((
                 self.make_workspace(np.column_stack([o1, np.ones(o1.shape[0], int)]), image),
                 self.make_workspace(np.column_stack([o2, np.ones(o2.shape[0], int)]), image),
                 self.make_workspace(np.column_stack([o3, np.ones(o3.shape[0], int)]), image))):
             module.run(workspace)
             measurements1 = workspace.measurements
-            assert isinstance(measurements1, cpmeas.Measurements)
+            assert isinstance(measurements1, cpmeas.Measurement)
             for cname, fnames in ((MOI.INTENSITY, MOI.ALL_MEASUREMENTS),
                                   (MOI.C_LOCATION, MOI.ALL_LOCATION_MEASUREMENTS)):
                 for fname in fnames:
@@ -645,11 +645,11 @@ class TestMeasureObjects(unittest.TestCase):
         np.random.seed(41)
         labels = np.ones((20, 50), int)
         image = np.random.uniform(size=(30, 40)).astype(np.float32)
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.SetList()
         image_set = image_set_list.get_image_set(0)
         image_set.add('MyImage', cpi.Image(image))
         object_set = cpo.ObjectSet()
-        o = cpo.Objects()
+        o = cpo.Object()
         o.segmented = labels
         object_set.add_objects(o, "MyObjects")
         pipeline = P.Pipeline()
@@ -664,7 +664,7 @@ class TestMeasureObjects(unittest.TestCase):
         module.objects[0].name.value = "MyObjects"
         pipeline.add_module(module)
         workspace = cpw.Workspace(pipeline, module, image_set, object_set,
-                                  cpmeas.Measurements(), image_set_list)
+                                  cpmeas.Measurement(), image_set_list)
         module.run(workspace)
         feature_name = '%s_%s_%s' % (MOI.INTENSITY, MOI.INTEGRATED_INTENSITY, "MyImage")
         m = workspace.measurements.get_current_measurement("MyObjects", feature_name)
@@ -680,10 +680,10 @@ class TestMeasureObjects(unittest.TestCase):
         # Mask the edge of the object
         #
         mask = ~ cpmo.outline(labels).astype(bool)
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurement()
         m.add(IMAGE_NAME, cpi.Image(image, mask=mask))
         object_set = cpo.ObjectSet()
-        o = cpo.Objects()
+        o = cpo.Object()
         o.segmented = labels
         object_set.add_objects(o, OBJECT_NAME)
         pipeline = P.Pipeline()

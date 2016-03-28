@@ -72,7 +72,7 @@ F_ALL = [F_NUMBER_TRUNKS, F_NUMBER_NON_TRUNK_BRANCHES, F_NUMBER_BRANCH_ENDS,
          F_TOTAL_NEURITE_LENGTH]
 
 
-class MeasureNeurons(cpm.CPModule):
+class MeasureNeurons(cpm.Module):
     module_name = "MeasureNeurons"
     category = "Measurement"
     variable_revision_number = 3
@@ -249,7 +249,7 @@ class MeasureNeurons(cpm.CPModule):
         edge_files = set()
         vertex_files = set()
         m = workspace.measurements
-        assert isinstance(m, cpmeas.Measurements)
+        assert isinstance(m, cpmeas.Measurement)
         for image_number in m.get_image_numbers():
             edge_path, vertex_path = self.get_graph_file_paths(m, image_number)
             edge_files.add(edge_path)
@@ -417,7 +417,7 @@ class MeasureNeurons(cpm.CPModule):
         # Save measurements
         #
         m = workspace.measurements
-        assert isinstance(m, cpmeas.Measurements)
+        assert isinstance(m, cpmeas.Measurement)
         feature = "_".join((C_NEURON, F_NUMBER_TRUNKS, skeleton_name))
         m.add_measurement(seed_objects_name, feature, trunk_counts)
         feature = "_".join((C_NEURON, F_NUMBER_NON_TRUNK_BRANCHES,

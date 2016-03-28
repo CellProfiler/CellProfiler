@@ -587,7 +587,7 @@ class ViewWorkspace(object):
             artist.remove()
 
         m = self.workspace.measurements
-        assert isinstance(m, cellprofiler.measurement.Measurements)
+        assert isinstance(m, cellprofiler.measurement.Measurement)
         title_lines = []
         object_values = {}
         for measurement_row in self.measurement_rows:

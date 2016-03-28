@@ -89,7 +89,7 @@ IdentifyDeadWorms:[module_num:1|svn_version:\'Unknown\'|variable_revision_number
 
     def make_workspace(self, pixel_data, mask=None):
         image = cpi.Image(pixel_data, mask)
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.SetList()
 
         image_set = image_set_list.get_image_set(0)
         image_set.add(IMAGE_NAME, image)
@@ -110,7 +110,7 @@ IdentifyDeadWorms:[module_num:1|svn_version:\'Unknown\'|variable_revision_number
 
         workspace = cpw.Workspace(pipeline, module, image_set,
                                   cpo.ObjectSet(),
-                                  cpmeas.Measurements(),
+                                  cpmeas.Measurement(),
                                   image_set_list)
         return workspace, module
 
@@ -138,7 +138,7 @@ IdentifyDeadWorms:[module_num:1|svn_version:\'Unknown\'|variable_revision_number
         module.angle_count.value = 16
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         count = m.get_current_image_measurement(
                 '_'.join((ID.I.C_COUNT, OBJECTS_NAME)))
         self.assertEqual(count, 1)
@@ -178,7 +178,7 @@ IdentifyDeadWorms:[module_num:1|svn_version:\'Unknown\'|variable_revision_number
         module.angle_count.value = 16
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         count = m.get_current_image_measurement(
                 '_'.join((ID.I.C_COUNT, OBJECTS_NAME)))
         self.assertEqual(count, 2)

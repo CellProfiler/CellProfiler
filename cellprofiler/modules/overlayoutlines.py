@@ -45,7 +45,7 @@ NUM_OUTLINE_SETTINGS_V3 = 4
 NUM_OUTLINE_SETTINGS = 4
 
 
-class OverlayOutlines(cpm.CPModule):
+class OverlayOutlines(cpm.Module):
     module_name = 'OverlayOutlines'
     variable_revision_number = 3
     category = "Image Processing"

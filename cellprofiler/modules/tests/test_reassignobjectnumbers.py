@@ -274,7 +274,7 @@ ReassignObjectNumbers:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
         pipeline.add_listener(callback)
         pipeline.add_module(module)
 
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.SetList()
         image_set = image_set_list.get_image_set(0)
         if image is not None:
             img = cpi.Image(image)
@@ -282,12 +282,12 @@ ReassignObjectNumbers:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
             module.image_name.value = IMAGE_NAME
 
         object_set = cpo.ObjectSet()
-        o = cpo.Objects()
+        o = cpo.Object()
         o.segmented = input_labels
         object_set.add_objects(o, INPUT_OBJECTS_NAME)
 
         workspace = cpw.Workspace(pipeline, module, image_set, object_set,
-                                  cpmeas.Measurements(), image_set_list)
+                                  cpmeas.Measurement(), image_set_list)
         if parents_of is not None:
             m = workspace.measurements
             ftr = R.FF_PARENT % parent_object
@@ -305,7 +305,7 @@ ReassignObjectNumbers:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
 
         self.assertTrue(isinstance(workspace, cpw.Workspace))
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         count = m.get_current_image_measurement(I.FF_COUNT % OUTPUT_OBJECTS_NAME)
         self.assertEqual(count, 0)
         for feature_name in (I.M_LOCATION_CENTER_X, I.M_LOCATION_CENTER_Y):
@@ -371,7 +371,7 @@ ReassignObjectNumbers:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
 
         self.assertTrue(isinstance(workspace, cpw.Workspace))
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         count = m.get_current_image_measurement(I.FF_COUNT % OUTPUT_OBJECTS_NAME)
         self.assertEqual(count, 1)
         for feature_name, value in ((I.M_LOCATION_CENTER_X, 5),

@@ -485,9 +485,9 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
 
         pipeline.add_listener(callback)
         object_set = cpo.ObjectSet()
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.SetList()
         image_set = image_set_list.get_image_set(0)
-        measurements = cpmeas.Measurements()
+        measurements = cpmeas.Measurement()
         module_number = 1
         module = R.RescaleIntensity()
         module.image_name.value = INPUT_NAME

@@ -58,7 +58,7 @@ GRADIENT_DIRECTION_Y = "Gradient direction - Y"
 #
 ###################################
 
-class ImageTemplate(cpm.CPModule):
+class ImageTemplate(cpm.Module):
     ###############################################
     #
     # The module starts by declaring the name that's used for display,

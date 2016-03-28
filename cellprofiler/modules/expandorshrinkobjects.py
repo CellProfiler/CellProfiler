@@ -60,7 +60,7 @@ O_ALL = [O_SHRINK_INF, O_EXPAND_INF, O_DIVIDE, O_SHRINK, O_EXPAND,
          O_SKELETONIZE, O_SPUR]
 
 
-class ExpandOrShrinkObjects(cpm.CPModule):
+class ExpandOrShrinkObjects(cpm.Module):
     module_name = 'ExpandOrShrinkObjects'
     category = 'Object Processing'
     variable_revision_number = 1
@@ -146,7 +146,7 @@ class ExpandOrShrinkObjects(cpm.CPModule):
 
     def run(self, workspace):
         input_objects = workspace.object_set.get_objects(self.object_name.value)
-        output_objects = cpo.Objects()
+        output_objects = cpo.Object()
         output_objects.segmented = self.do_labels(input_objects.segmented)
         if (input_objects.has_small_removed_segmented and
                     self.operation not in (O_EXPAND, O_EXPAND_INF, O_DIVIDE)):

@@ -39,18 +39,18 @@ class TestFilterObjects(unittest.TestCase):
         module = F.FilterByObjectMeasurement()
         pipeline = cpp.Pipeline()
         object_set = cpo.ObjectSet()
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.SetList()
         image_set = image_set_list.get_image_set(0)
         workspace = cpw.Workspace(pipeline,
                                   module,
                                   image_set,
                                   object_set,
-                                  cpm.Measurements(),
+                                  cpm.Measurement(),
                                   image_set_list)
         for key in image_dict.keys():
             image_set.add(key, cpi.Image(image_dict[key]))
         for key in object_dict.keys():
-            o = cpo.Objects()
+            o = cpo.Object()
             o.segmented = object_dict[key]
             object_set.add_objects(o, key)
         return workspace, module
@@ -1606,7 +1606,7 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
         parent_image = cpi.Image(np.zeros((10, 10)), mask=mask)
         workspace.image_set.add(INPUT_IMAGE, parent_image)
 
-        input_objects = cpo.Objects()
+        input_objects = cpo.Object()
         input_objects.segmented = labels
         input_objects.parent_image = parent_image
 
@@ -1632,7 +1632,7 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
         segmented[6:8, 0:4] = 2
 
         workspace, module = self.make_workspace({})
-        input_objects = cpo.Objects()
+        input_objects = cpo.Object()
         workspace.object_set.add_objects(input_objects, INPUT_OBJECTS)
         input_objects.segmented = segmented
         input_objects.unedited_segmented = unedited
@@ -1662,7 +1662,7 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
         segmented[6:8, 0:4] = 2
 
         workspace, module = self.make_workspace({})
-        input_objects = cpo.Objects()
+        input_objects = cpo.Object()
         input_objects.segmented = segmented
         input_objects.unedited_segmented = unedited
         workspace.object_set.add_objects(input_objects, INPUT_OBJECTS)

@@ -56,7 +56,7 @@ MC_ALL = [MC_IMAGE, MC_OBJECT]
 C_MATH = "Math"
 
 
-class CalculateMath(cpm.CPModule):
+class CalculateMath(cpm.Module):
     module_name = "CalculateMath"
     category = "Data Tools"
     variable_revision_number = 2

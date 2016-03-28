@@ -35,13 +35,13 @@ class TestEnhanceEdges(unittest.TestCase):
         module.output_image_name.value = OUTPUT_IMAGE_NAME
         pipeline = cpp.Pipeline()
         object_set = cpo.ObjectSet()
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.SetList()
         image_set = image_set_list.get_image_set(0)
         workspace = cpw.Workspace(pipeline,
                                   module,
                                   image_set,
                                   object_set,
-                                  cpmeas.Measurements(),
+                                  cpmeas.Measurement(),
                                   image_set_list)
         image_set.add(INPUT_IMAGE_NAME,
                       cpi.Image(image) if mask is None

@@ -75,7 +75,7 @@ A_RENUMBER = "Renumber"
 A_DELETE = "Delete"
 
 
-class RenameOrRenumberFiles(cpm.CPModule):
+class RenameOrRenumberFiles(cpm.Module):
     module_name = "RenameOrRenumberFiles"
     category = "File Processing"
     variable_revision_number = 2

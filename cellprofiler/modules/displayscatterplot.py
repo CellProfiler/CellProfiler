@@ -25,7 +25,7 @@ SOURCE_CHOICE = [SOURCE_IM, SOURCE_OBJ]
 SCALE_CHOICE = ['linear', 'log']
 
 
-class DisplayScatterPlot(cpm.CPModule):
+class DisplayScatterPlot(cpm.Module):
     module_name = "DisplayScatterPlot"
     category = "Data Tools"
     variable_revision_number = 2

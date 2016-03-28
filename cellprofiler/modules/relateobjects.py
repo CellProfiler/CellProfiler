@@ -78,7 +78,7 @@ FIXED_SETTING_COUNT = 5
 VARIABLE_SETTING_COUNT = 1
 
 
-class RelateObjects(cpm.CPModule):
+class RelateObjects(cpm.Module):
     module_name = 'RelateObjects'
     category = "Object Processing"
     variable_revision_number = 2
@@ -219,7 +219,7 @@ class RelateObjects(cpm.CPModule):
         children = workspace.object_set.get_objects(self.sub_object_name.value)
         child_count, parents_of = parents.relate_children(children)
         m = workspace.measurements
-        assert isinstance(m, cpmeas.Measurements)
+        assert isinstance(m, cpmeas.Measurement)
         m.add_measurement(self.sub_object_name.value,
                           FF_PARENT % self.parent_name.value,
                           parents_of)
@@ -329,7 +329,7 @@ class RelateObjects(cpm.CPModule):
     def calculate_centroid_distances(self, workspace, parent_name):
         '''Calculate the centroid-centroid distance between parent & child'''
         meas = workspace.measurements
-        assert isinstance(meas, cpmeas.Measurements)
+        assert isinstance(meas, cpmeas.Measurement)
         sub_object_name = self.sub_object_name.value
         parents = workspace.object_set.get_objects(parent_name)
         children = workspace.object_set.get_objects(sub_object_name)
@@ -352,7 +352,7 @@ class RelateObjects(cpm.CPModule):
     def calculate_minimum_distances(self, workspace, parent_name):
         '''Calculate the distance from child center to parent perimeter'''
         meas = workspace.measurements
-        assert isinstance(meas, cpmeas.Measurements)
+        assert isinstance(meas, cpmeas.Measurement)
         sub_object_name = self.sub_object_name.value
         parents = workspace.object_set.get_objects(parent_name)
         children = workspace.object_set.get_objects(sub_object_name)
@@ -441,7 +441,7 @@ class RelateObjects(cpm.CPModule):
         named parent.
         '''
         meas = workspace.measurements
-        assert isinstance(meas, cpmeas.Measurements)
+        assert isinstance(meas, cpmeas.Measurement)
         parent_feature = FF_PARENT % parent_name
         primary_parent = self.parent_name.value
         sub_object_name = self.sub_object_name.value

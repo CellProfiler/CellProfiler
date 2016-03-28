@@ -462,7 +462,7 @@ FUNCTION_SETTING_COUNT_V3 = 11
 FUNCTION_SETTING_COUNT = 12
 
 
-class Morph(cpm.CPModule):
+class Morph(cpm.Module):
     module_name = "Morph"
     category = "Image Processing"
     variable_revision_number = 4

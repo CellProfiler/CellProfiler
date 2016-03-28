@@ -18,7 +18,6 @@ import time
 import traceback
 import uuid
 import weakref
-
 import cellprofiler
 from cellprofiler.utilities.utf16encode import utf16encode, utf16decode
 

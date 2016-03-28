@@ -121,14 +121,14 @@ import threading
 import thread
 import random
 import zmq
-import cStringIO as StringIO
+import cStringIO
 import gc
 import traceback
 from weakref import WeakSet
 
-import cellprofiler.workspace as cpw
-import cellprofiler.measurement as cpmeas
-import cellprofiler.preference as cpprefs
+import cellprofiler.workspace
+import cellprofiler.measurement
+import cellprofiler.preference
 from cellprofiler.gui.errordialog import ED_STOP, ED_SKIP
 from cellprofiler.analysis import \
     PipelinePreferencesRequest, InitialMeasurementsRequest, WorkRequest, \
@@ -138,14 +138,14 @@ from cellprofiler.analysis import \
     ServerExited, ImageSetSuccess, ImageSetSuccessWithDictionary, \
     SharedDictionaryRequest, Ack, UpstreamExit, ANNOUNCE_DONE, \
     OmeroLoginRequest, OmeroLoginReply
-import javabridge as J
+import javabridge
 from cellprofiler.utilities.run_loop import enter_run_loop, stop_run_loop
 #
 # CellProfiler expects NaN as a result during calculation
 #
-import numpy as np
+import numpy
 
-np.seterr(all='ignore')
+numpy.seterr(all='ignore')
 
 # to guarantee closing of measurements, we store all of them in a WeakSet, and
 # close them on exit.
@@ -288,9 +288,9 @@ class Worker(object):
             self.worker.exit_thread()
 
     def enter_thread(self):
-        J.attach()
-        if not cpprefs.get_awt_headless():
-            J.activate_awt()
+        javabridge.attach()
+        if not cellprofiler.preference.get_awt_headless():
+            javabridge.activate_awt()
         self.notify_socket = the_zmq_context.socket(zmq.SUB)
         self.notify_socket.setsockopt(zmq.SUBSCRIBE, "")
         self.notify_socket.connect(NOTIFY_ADDR)
@@ -299,7 +299,7 @@ class Worker(object):
         from bioformats.formatreader import clear_image_reader_cache
         self.notify_socket.close()
         clear_image_reader_cache()
-        J.detach()
+        javabridge.detach()
         if self.with_stop_run_loop:
             stop_run_loop()
 
@@ -352,12 +352,12 @@ class Worker(object):
                 logger.debug("Received pipeline and preferences response")
                 preferences_dict = rep.preferences
                 # update preferences to match remote values
-                cpprefs.set_preferences_from_dict(preferences_dict)
+                cellprofiler.preference.set_preferences_from_dict(preferences_dict)
 
                 logger.debug("Loading pipeline")
                 pipeline_blob = rep.pipeline_blob.tostring()
                 current_pipeline = cpp.Pipeline()
-                current_pipeline.loadtxt(StringIO.StringIO(pipeline_blob),
+                current_pipeline.loadtxt(cStringIO.StringIO(pipeline_blob),
                                          raise_on_error=True)
                 logger.debug("Pipeline loaded")
                 current_pipeline.add_listener(
@@ -367,7 +367,7 @@ class Worker(object):
                     current_pipeline, current_preferences)
             else:
                 # update preferences to match remote values
-                cpprefs.set_preferences_from_dict(current_preferences)
+                cellprofiler.preference.set_preferences_from_dict(current_preferences)
 
             # Reset the listener's state
             self.pipeline_listener.reset()
@@ -382,11 +382,11 @@ class Worker(object):
                 logger.debug("Got initial measurements")
                 current_measurements = \
                     self.initial_measurements[self.current_analysis_id] = \
-                    cpmeas.load_measurements_from_buffer(rep.buf)
+                    cellprofiler.measurement.load_measurements_from_buffer(rep.buf)
             else:
                 logger.debug("Has initial measurements")
             # Make a copy of the measurements for writing during this job
-            current_measurements = cpmeas.Measurement(copy=current_measurements)
+            current_measurements = cellprofiler.measurement.Measurement(copy=current_measurements)
             all_measurements.add(current_measurements)
             job_measurements.append(current_measurements)
 
@@ -411,11 +411,11 @@ class Worker(object):
             # that any changes to the modules' shared state dictionaries get
             # propagated correctly.
             should_process = True
-            if current_measurements[cpmeas.IMAGE,
-                                    cpmeas.GROUP_INDEX,
+            if current_measurements[cellprofiler.measurement.IMAGE,
+                                    cellprofiler.measurement.GROUP_INDEX,
                                     image_set_numbers[0]] == 1:
-                workspace = cpw.Workspace(current_pipeline, None, None, None,
-                                          current_measurements, None, None)
+                workspace = cellprofiler.workspace.Workspace(current_pipeline, None, None, None,
+                                                             current_measurements, None, None)
                 if not current_pipeline.prepare_group(
                         workspace,
                         current_measurements.get_grouping_keys(),

@@ -5,9 +5,8 @@ import re
 import sys
 import tempfile
 from cStringIO import StringIO
-
 import h5py
-import numpy as np
+import numpy
 
 OMERO_CK_HOST = "host"
 OMERO_CK_PORT = "port"
@@ -32,7 +31,7 @@ if sys.platform.startswith('win'):
 #
 # CellProfiler expects NaN as a result during calculation
 #
-np.seterr(all='ignore')
+numpy.seterr(all='ignore')
 #
 # Defeat pyreadline which graciously sets its logging to DEBUG and it
 # appears when CP is frozen
@@ -708,7 +707,7 @@ def get_batch_commands(filename):
     if m.has_feature(cpmeas.IMAGE, cpmeas.GROUP_NUMBER):
         group_numbers = m[cpmeas.IMAGE, cpmeas.GROUP_NUMBER, image_numbers]
         group_indexes = m[cpmeas.IMAGE, cpmeas.GROUP_INDEX, image_numbers]
-        if np.any(group_numbers != 1) and np.all(
+        if numpy.any(group_numbers != 1) and numpy.all(
                         (group_indexes[1:] == group_indexes[:-1] + 1) |
                         ((group_indexes[1:] == 1) &
                              (group_numbers[1:] == group_numbers[:-1] + 1))):
@@ -716,8 +715,8 @@ def get_batch_commands(filename):
             # Do -f and -l if more than one group and group numbers
             # and indices are properly constructed
             #
-            bins = np.bincount(group_numbers)
-            cumsums = np.cumsum(bins)
+            bins = numpy.bincount(group_numbers)
+            cumsums = numpy.cumsum(bins)
             prev = 0
             for i, off in enumerate(cumsums):
                 if off == prev:
@@ -862,9 +861,9 @@ def run_pipeline_headless(options, args):
         else:
             image_set_end = int(options.last_image_set)
             if image_set_start is None:
-                image_set_numbers = np.arange(1, image_set_end + 1)
+                image_set_numbers = numpy.arange(1, image_set_end + 1)
             else:
-                image_set_numbers = np.arange(image_set_start, image_set_end + 1)
+                image_set_numbers = numpy.arange(image_set_start, image_set_end + 1)
     else:
         image_set_end = None
 

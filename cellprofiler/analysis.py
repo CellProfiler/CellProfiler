@@ -1,11 +1,9 @@
 """analysis.py - Run pipelines on imagesets to produce measurements.
 """
-from __future__ import with_statement
 
 import Queue
-import cStringIO as StringIO
+import cStringIO
 import collections
-import gc
 import logging
 import multiprocessing
 import os
@@ -15,16 +13,13 @@ import sys
 import tempfile
 import threading
 import uuid
-
-import h5py
-import numpy as np
+import numpy
 import zmq
-
 import cellprofiler
-import cellprofiler.image as cpimage
-import cellprofiler.measurement as cpmeas
-import cellprofiler.preference as cpprefs
-import cellprofiler.workspace as cpw
+import cellprofiler.image
+import cellprofiler.measurement
+import cellprofiler.preference
+import cellprofiler.workspace
 from cellprofiler.utilities.zmqrequest import AnalysisRequest, Request, Reply, UpstreamExit
 from cellprofiler.utilities.zmqrequest import get_announcer_address
 from cellprofiler.utilities.zmqrequest import register_analysis, cancel_analysis
@@ -72,7 +67,7 @@ class Analysis(object):
         to measurements_filename, optionally starting with previous
         measurements."""
         self.pipeline = pipeline
-        initial_measurements = cpmeas.Measurement(copy=initial_measurements)
+        initial_measurements = cellprofiler.measurement.Measurement(copy=initial_measurements)
         self.initial_measurements_buf = initial_measurements.file_contents()
         initial_measurements.close()
         self.output_path = measurements_filename
@@ -316,14 +311,14 @@ class AnalysisRunner(object):
             if self.output_path is None:
                 # Caller wants a temporary measurements file.
                 fd, filename = tempfile.mkstemp(
-                        ".h5", dir=cpprefs.get_temporary_directory())
+                        ".h5", dir=cellprofiler.preference.get_temporary_directory())
                 try:
                     fd = os.fdopen(fd, "wb")
                     fd.write(self.initial_measurements_buf)
                     fd.close()
-                    initial_measurements = cpmeas.Measurement(
+                    initial_measurements = cellprofiler.measurement.Measurement(
                             filename=filename, mode="r")
-                    measurements = cpmeas.Measurement(
+                    measurements = cellprofiler.measurement.Measurement(
                             image_set_start=None,
                             copy=initial_measurements,
                             mode="a")
@@ -334,13 +329,13 @@ class AnalysisRunner(object):
             else:
                 with open(self.output_path, "wb") as fd:
                     fd.write(self.initial_measurements_buf)
-                measurements = cpmeas.Measurement(image_set_start=None,
-                                                  filename=self.output_path,
-                                                  mode="a")
+                measurements = cellprofiler.measurement.Measurement(image_set_start=None,
+                                                                    filename=self.output_path,
+                                                                    mode="a")
             # The shared dicts are needed in jobserver()
             self.shared_dicts = [m.get_dictionary() for m in self.pipeline.modules()]
-            workspace = cpw.Workspace(self.pipeline, None, None, None,
-                                      measurements, cpimage.SetList())
+            workspace = cellprofiler.workspace.Workspace(self.pipeline, None, None, None,
+                                                         measurements, cellprofiler.image.SetList())
 
             if image_set_end is None:
                 image_set_end = measurements.get_image_numbers()[-1]
@@ -356,14 +351,14 @@ class AnalysisRunner(object):
             if self.pipeline.requires_aggregation():
                 overwrite = True
             if has_groups and not overwrite:
-                if not measurements.has_feature(cpmeas.IMAGE, self.STATUS):
+                if not measurements.has_feature(cellprofiler.measurement.IMAGE, self.STATUS):
                     overwrite = True
                 else:
                     group_status = {}
                     for image_number in measurements.get_image_numbers():
                         group_number = measurements[
-                            cpmeas.IMAGE, cpmeas.GROUP_NUMBER, image_number]
-                        status = measurements[cpmeas.IMAGE, self.STATUS,
+                            cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_NUMBER, image_number]
+                        status = measurements[cellprofiler.measurement.IMAGE, self.STATUS,
                                               image_number]
                         if status != self.STATUS_DONE:
                             group_status[group_number] = self.STATUS_UNPROCESSED
@@ -375,17 +370,17 @@ class AnalysisRunner(object):
                 needs_reset = False
                 if (overwrite or
                         (not measurements.has_measurements(
-                                cpmeas.IMAGE, self.STATUS, image_set_number)) or
-                        (measurements[cpmeas.IMAGE, self.STATUS, image_set_number]
+                                cellprofiler.measurement.IMAGE, self.STATUS, image_set_number)) or
+                        (measurements[cellprofiler.measurement.IMAGE, self.STATUS, image_set_number]
                              != self.STATUS_DONE)):
                     needs_reset = True
                 elif has_groups:
                     group_number = measurements[
-                        cpmeas.IMAGE, cpmeas.GROUP_NUMBER, image_set_number]
+                        cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_NUMBER, image_set_number]
                     if group_status[group_number] != self.STATUS_DONE:
                         needs_reset = True
                 if needs_reset:
-                    measurements[cpmeas.IMAGE, self.STATUS, image_set_number] = \
+                    measurements[cellprofiler.measurement.IMAGE, self.STATUS, image_set_number] = \
                         self.STATUS_UNPROCESSED
                     new_image_sets_to_process.append(image_set_number)
             image_sets_to_process = new_image_sets_to_process
@@ -396,11 +391,11 @@ class AnalysisRunner(object):
                 worker_runs_post_group = True
                 job_groups = {}
                 for image_set_number in image_sets_to_process:
-                    group_number = measurements[cpmeas.IMAGE,
-                                                cpmeas.GROUP_NUMBER,
+                    group_number = measurements[cellprofiler.measurement.IMAGE,
+                                                cellprofiler.measurement.GROUP_NUMBER,
                                                 image_set_number]
-                    group_index = measurements[cpmeas.IMAGE,
-                                               cpmeas.GROUP_INDEX,
+                    group_index = measurements[cellprofiler.measurement.IMAGE,
+                                               cellprofiler.measurement.GROUP_INDEX,
                                                image_set_number]
                     job_groups[group_number] = job_groups.get(group_number, []) + [(group_index, image_set_number)]
                 job_groups = [[isn for _, isn in sorted(job_groups[group_number])]
@@ -437,7 +432,7 @@ class AnalysisRunner(object):
                 while not self.received_measurements_queue.empty():
                     image_numbers, buf = self.received_measurements_queue.get()
                     image_numbers = [int(i) for i in image_numbers]
-                    recd_measurements = cpmeas.load_measurements_from_buffer(buf)
+                    recd_measurements = cellprofiler.measurement.load_measurements_from_buffer(buf)
                     self.copy_recieved_measurements(recd_measurements, measurements, image_numbers)
                     recd_measurements.close()
                     del recd_measurements
@@ -446,13 +441,13 @@ class AnalysisRunner(object):
                 while not self.in_process_queue.empty():
                     image_set_numbers = self.in_process_queue.get()
                     for image_set_number in image_set_numbers:
-                        measurements[cpmeas.IMAGE, self.STATUS, int(image_set_number)] = self.STATUS_IN_PROCESS
+                        measurements[cellprofiler.measurement.IMAGE, self.STATUS, int(image_set_number)] = self.STATUS_IN_PROCESS
 
                 # check for finished jobs that haven't returned measurements, yet
                 while not self.finished_queue.empty():
                     finished_req = self.finished_queue.get()
                     measurements[
-                        cpmeas.IMAGE, self.STATUS, int(finished_req.image_set_number)] = self.STATUS_FINISHED_WAITING
+                        cellprofiler.measurement.IMAGE, self.STATUS, int(finished_req.image_set_number)] = self.STATUS_FINISHED_WAITING
                     if waiting_for_first_imageset:
                         assert isinstance(finished_req,
                                           ImageSetSuccessWithDictionary)
@@ -466,7 +461,7 @@ class AnalysisRunner(object):
                     finished_req.reply(Ack())
 
                 # check progress and report
-                counts = collections.Counter(measurements[cpmeas.IMAGE, self.STATUS, image_set_number]
+                counts = collections.Counter(measurements[cellprofiler.measurement.IMAGE, self.STATUS, image_set_number]
                                              for image_set_number in image_sets_to_process)
                 self.post_event(AnalysisProgress(counts))
 
@@ -477,9 +472,9 @@ class AnalysisRunner(object):
                     if not worker_runs_post_group:
                         self.pipeline.post_group(workspace, {})
 
-                    workspace = cpw.Workspace(self.pipeline,
-                                              None, None, None,
-                                              measurements, None, None)
+                    workspace = cellprofiler.workspace.Workspace(self.pipeline,
+                                                                 None, None, None,
+                                                                 measurements, None, None)
                     workspace.post_run_display_handler = \
                         self.post_run_display_handler
                     self.pipeline.post_run(workspace)
@@ -521,23 +516,23 @@ class AnalysisRunner(object):
         """
         measurements.copy_relationships(recd_measurements)
         for o in recd_measurements.get_object_names():
-            if o == cpmeas.EXPERIMENT:
+            if o == cellprofiler.measurement.EXPERIMENT:
                 continue  # Written during prepare_run / post_run
-            elif o == cpmeas.IMAGE:
+            elif o == cellprofiler.measurement.IMAGE:
                 # Some have been previously written. It's worth the time
                 # to check values and only write changes
                 for feature in recd_measurements.get_feature_names(o):
-                    if not measurements.has_feature(cpmeas.IMAGE, feature):
+                    if not measurements.has_feature(cellprofiler.measurement.IMAGE, feature):
                         f_image_numbers = image_numbers
                     else:
                         local_values = measurements[
-                            cpmeas.IMAGE, feature, image_numbers]
+                            cellprofiler.measurement.IMAGE, feature, image_numbers]
                         remote_values = recd_measurements[
-                            cpmeas.IMAGE, feature, image_numbers]
+                            cellprofiler.measurement.IMAGE, feature, image_numbers]
                         f_image_numbers = [
                             i for i, lv, rv in zip(
                                     image_numbers, local_values, remote_values)
-                            if (np.any(rv != lv) if isinstance(lv, np.ndarray)
+                            if (numpy.any(rv != lv) if isinstance(lv, numpy.ndarray)
                                 else lv != rv)]
                     if len(f_image_numbers) > 0:
                         measurements[o, feature, f_image_numbers] \
@@ -547,7 +542,7 @@ class AnalysisRunner(object):
                     measurements[o, feature, image_numbers] \
                         = recd_measurements[o, feature, image_numbers]
         for image_set_number in image_numbers:
-            measurements[cpmeas.IMAGE, self.STATUS, image_set_number] = self.STATUS_DONE
+            measurements[cellprofiler.measurement.IMAGE, self.STATUS, image_set_number] = self.STATUS_DONE
 
     def jobserver(self, analysis_id, start_signal):
         # this server subthread should be very lightweight, as it has to handle
@@ -590,8 +585,8 @@ class AnalysisRunner(object):
 
             if isinstance(req, PipelinePreferencesRequest):
                 logger.debug("Received pipeline preferences request")
-                req.reply(Reply(pipeline_blob=np.array(self.pipeline_as_string()),
-                                preferences=cpprefs.preferences_as_dict()))
+                req.reply(Reply(pipeline_blob=numpy.array(self.pipeline_as_string()),
+                                preferences=cellprofiler.preference.preferences_as_dict()))
                 logger.debug("Replied to pipeline preferences request")
             elif isinstance(req, InitialMeasurementsRequest):
                 logger.debug("Received initial measurements request")
@@ -674,7 +669,7 @@ class AnalysisRunner(object):
             self.interface_work_cv.notify()
 
     def pipeline_as_string(self):
-        s = StringIO.StringIO()
+        s = cStringIO.StringIO()
         self.pipeline.savetxt(s)
         return s.getvalue()
 
@@ -729,9 +724,9 @@ class AnalysisRunner(object):
                 close_all_on_exec()
 
             aw_args = ["--work-announce", cls.work_announce_address,
-                       "--plugins-directory", cpprefs.get_plugin_directory(),
-                       "--ij-plugins-directory", cpprefs.get_ij_plugin_directory()]
-            jvm_arg = "%dm" % cpprefs.get_jvm_heap_mb()
+                       "--plugins-directory", cellprofiler.preference.get_plugin_directory(),
+                       "--ij-plugins-directory", cellprofiler.preference.get_ij_plugin_directory()]
+            jvm_arg = "%dm" % cellprofiler.preference.get_jvm_heap_mb()
             aw_args.append("--jvm-heap-size=%s" % jvm_arg)
             # stdin for the subprocesses serves as a deadman's switch.  When
             # closed, the subprocess exits.

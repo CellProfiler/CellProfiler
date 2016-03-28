@@ -5,4 +5,3 @@ ImagePlus object via the Java bridge.
 """
 
 __version__ = "$Revision$"
-

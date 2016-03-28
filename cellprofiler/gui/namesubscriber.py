@@ -75,7 +75,7 @@ class NameSubscriberComboBox(wx.Panel):
                 return "(from %s)" % module_name
             return "(from %s #%02d)" % (module_name, module_num)
         return ""
-    
+
     def update_annotation(self):
         self.annotation_dlg.Label = ''
         if self.orig_choices:

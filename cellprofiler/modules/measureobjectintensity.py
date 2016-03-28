@@ -6,18 +6,18 @@ module extracts intensity features for each object based on one or more
 corresponding grayscale images. Measurements are recorded for each object.
 
 <p>Intensity measurements are made for all combinations of the images
-and objects entered. If you want only specific image/object measurements, you can 
+and objects entered. If you want only specific image/object measurements, you can
 use multiple MeasureObjectIntensity modules for each group of measurements desired.</p>
 
 <p>Note that for publication purposes, the units of
 intensity from microscopy images are usually described as "Intensity
-units" or "Arbitrary intensity units" since microscopes are not 
-calibrated to an absolute scale. Also, it is important to note whether 
+units" or "Arbitrary intensity units" since microscopes are not
+calibrated to an absolute scale. Also, it is important to note whether
 you are reporting either the mean or the integrated intensity, so specify
 "Mean intensity units" or "Integrated intensity units" accordingly.</p>
 
-<p>Keep in mind that the default behavior in CellProfiler is to rescale the 
-image intensity from 0 to 1 by dividing all pixels in the image by the 
+<p>Keep in mind that the default behavior in CellProfiler is to rescale the
+image intensity from 0 to 1 by dividing all pixels in the image by the
 maximum possible intensity value. This "maximum possible" value
 is defined by the "Set intensity range from" setting in <b>NamesAndTypes</b>;
 see the help for that setting for more details.</p>
@@ -47,10 +47,10 @@ see the help for that setting for more details.</p>
 intensities within the object. The MAD is defined as the median(|x<sub>i</sub> - median(x)|).</li>
 <li><i>UpperQuartileIntensity:</i> The intensity value of the pixel for which 75%
  of the pixels in the object have lower values.</li>
-<li><i>Location_CenterMassIntensity_X, Location_CenterMassIntensity_Y:</i> The 
-pixel (X,Y) coordinates of the intensity weighted centroid (= center of mass = first moment) 
+<li><i>Location_CenterMassIntensity_X, Location_CenterMassIntensity_Y:</i> The
+pixel (X,Y) coordinates of the intensity weighted centroid (= center of mass = first moment)
 of all pixels within the object.</li>
-<li><i>Location_MaxIntensity_X, Location_MaxIntensity_Y:</i> The pixel (X,Y) coordinates of 
+<li><i>Location_MaxIntensity_X, Location_MaxIntensity_Y:</i> The pixel (X,Y) coordinates of
 the pixel with the maximum intensity within the object.</li>
 </ul>
 
@@ -93,7 +93,7 @@ LOC_MAX_Y = 'MaxIntensity_Y'
 ALL_MEASUREMENTS = [INTEGRATED_INTENSITY, MEAN_INTENSITY, STD_INTENSITY,
                         MIN_INTENSITY, MAX_INTENSITY, INTEGRATED_INTENSITY_EDGE,
                         MEAN_INTENSITY_EDGE, STD_INTENSITY_EDGE,
-                        MIN_INTENSITY_EDGE, MAX_INTENSITY_EDGE, 
+                        MIN_INTENSITY_EDGE, MAX_INTENSITY_EDGE,
                         MASS_DISPLACEMENT, LOWER_QUARTILE_INTENSITY,
                         MEDIAN_INTENSITY, MAD_INTENSITY, UPPER_QUARTILE_INTENSITY]
 ALL_LOCATION_MEASUREMENTS = [LOC_CMI_X, LOC_CMI_Y, LOC_MAX_X, LOC_MAX_Y]
@@ -103,7 +103,7 @@ class MeasureObjectIntensity(cpm.CPModule):
     module_name = "MeasureObjectIntensity"
     variable_revision_number = 3
     category = "Measurement"
-    
+
     def create_settings(self):
         self.images = []
         self.add_image(can_remove = False)
@@ -116,7 +116,7 @@ class MeasureObjectIntensity(cpm.CPModule):
 
     def add_image(self, can_remove = True):
         '''Add an image to the image_groups collection
-        
+
         can_delete - set this to False to keep from showing the "remove"
                      button for images that must be present.
         '''
@@ -126,14 +126,14 @@ class MeasureObjectIntensity(cpm.CPModule):
         group.append("name", cps.ImageNameSubscriber(
             "Select an image to measure",cps.NONE, doc = """
             Select the grayscale images whose intensity you want to measure."""))
-        
+
         if can_remove:
             group.append("remover", cps.RemoveSettingButton("", "Remove this image", self.images, group))
         self.images.append(group)
 
     def add_object(self, can_remove = True):
         '''Add an object to the object_groups collection
-        
+
         can_delete - set this to False to keep from showing the "remove"
                      button for images that must be present.
         '''
@@ -143,7 +143,7 @@ class MeasureObjectIntensity(cpm.CPModule):
         group.append("name", cps.ObjectNameSubscriber(
             "Select objects to measure",cps.NONE, doc = """
             Select the objects whose intensities you want to measure."""))
-        
+
         if can_remove:
             group.append("remover", cps.RemoveSettingButton("", "Remove this object", self.objects, group))
         self.objects.append(group)
@@ -163,11 +163,11 @@ class MeasureObjectIntensity(cpm.CPModule):
             result += im.visible_settings()
         result += [self.add_object_button]
         return result
-        
+
     def upgrade_settings(self,setting_values,variable_revision_number,
                          module_name,from_matlab):
         '''Adjust setting values if they came from a previous revision
-        
+
         setting_values - a sequence of strings representing the settings
                          for the module as stored in the pipeline
         variable_revision_number - the variable revision number of the
@@ -179,7 +179,7 @@ class MeasureObjectIntensity(cpm.CPModule):
                       that module was merged into the current module
         from_matlab - True if the settings came from a Matlab pipeline, False
                       if the settings are from a CellProfiler 2.0 pipeline.
-        
+
         Overriding modules should return a tuple of setting_values,
         variable_revision_number and True if upgraded to CP 2.0, otherwise
         they should leave things as-is so that the caller can report
@@ -204,14 +204,14 @@ class MeasureObjectIntensity(cpm.CPModule):
 
     def prepare_settings(self,setting_values):
         """Do any sort of adjustment to the settings required for the given values
-        
+
         setting_values - the values for the settings
 
         This method allows a module to specialize itself according to
         the number of settings and their value. For instance, a module that
         takes a variable number of images or objects can increase or decrease
         the number of relevant settings so they map correctly to the values.
-        
+
         See cellprofiler.modules.measureobjectsizeshape for an example.
         """
         #
@@ -236,7 +236,7 @@ class MeasureObjectIntensity(cpm.CPModule):
                     "%s has already been selected" %group.name.value,
                     group.name)
             images.add(group.name.value)
-            
+
         objects = set()
         for group in self.objects:
             if group.name.value in objects:
@@ -244,7 +244,7 @@ class MeasureObjectIntensity(cpm.CPModule):
                     "%s has already been selected" %group.name.value,
                     group.name)
             objects.add(group.name.value)
-    
+
     def get_measurement_columns(self, pipeline):
         '''Return the column definitions for measurements made by this module'''
         columns = []
@@ -258,12 +258,12 @@ class MeasureObjectIntensity(cpm.CPModule):
                                         "%s_%s_%s"%(category, feature,
                                                     image_name.value),
                                         cpmeas.COLTYPE_FLOAT))
-                
+
         return columns
-            
+
     def get_categories(self,pipeline, object_name):
         """Get the categories of measurements supplied for the given object name
-        
+
         pipeline - pipeline being run
         object_name - name of labels in question (or 'Images')
         returns a list of category names
@@ -272,7 +272,7 @@ class MeasureObjectIntensity(cpm.CPModule):
             if object_name_variable.value == object_name:
                 return [INTENSITY, C_LOCATION]
         return []
-    
+
     def get_measurements(self, pipeline, object_name, category):
         """Get the measurements made on the given object in the given category"""
         if category == C_LOCATION:
@@ -285,7 +285,7 @@ class MeasureObjectIntensity(cpm.CPModule):
             if object_name_variable.value == object_name:
                 return all_measurements
         return []
-    
+
     def get_measurement_images(self, pipeline,object_name, category, measurement):
         """Get the images used to make the given measurement in the given category on the given object"""
         if category == INTENSITY:
@@ -300,7 +300,7 @@ class MeasureObjectIntensity(cpm.CPModule):
             if object_name_variable == object_name:
                 return [image.name.value for image in self.images]
         return []
-    
+
     def run(self, workspace):
         if self.show_window:
             workspace.display_data.col_labels = (
@@ -343,7 +343,7 @@ class MeasureObjectIntensity(cpm.CPModule):
                     labels, img = cpo.crop_labels_and_image(labels, img)
                     _, masked_image = cpo.crop_labels_and_image(labels, masked_image)
                     outlines = cpmo.outline(labels)
-                    
+
                     if image.has_mask:
                         _, mask = cpo.crop_labels_and_image(labels, image.mask)
                         masked_labels = labels.copy()
@@ -353,7 +353,7 @@ class MeasureObjectIntensity(cpm.CPModule):
                     else:
                         masked_labels = labels
                         masked_outlines = outlines
-                    
+
                     lmask = masked_labels > 0 & np.isfinite(img) # Ignore NaNs, Infs
                     has_objects = np.any(lmask)
                     if has_objects:
@@ -369,7 +369,7 @@ class MeasureObjectIntensity(cpm.CPModule):
                         mean_intensity[lindexes-1] = \
                             integrated_intensity[lindexes-1] / lcount
                         std_intensity[lindexes-1] = np.sqrt(
-                            fix(nd.mean((limg - mean_intensity[llabels-1])**2, 
+                            fix(nd.mean((limg - mean_intensity[llabels-1])**2,
                                         llabels, lindexes)))
                         min_intensity[lindexes-1] = fix(nd.minimum(limg, llabels, lindexes))
                         max_intensity[lindexes-1] = fix(
@@ -385,7 +385,7 @@ class MeasureObjectIntensity(cpm.CPModule):
                         # and the sum of X or Y * intensity / integrated intensity
                         cm_x = fix(nd.mean(mesh_x, llabels, lindexes))
                         cm_y = fix(nd.mean(mesh_y, llabels, lindexes))
-                        
+
                         i_x = fix(nd.sum(mesh_x * limg, llabels, lindexes))
                         i_y = fix(nd.sum(mesh_y * limg, llabels, lindexes))
                         cmi_x[lindexes-1] = i_x / integrated_intensity[lindexes-1]
@@ -438,7 +438,7 @@ class MeasureObjectIntensity(cpm.CPModule):
                             madimg[order[qi + 1]] * qf)
                         qmask = (~qmask) & (areas > 0)
                         mad_intensity[lindexes[qmask]-1] = madimg[order[qindex[qmask]]]
-                        
+
                     emask = masked_outlines > 0
                     eimg = img[emask]
                     elabels = labels[emask]
@@ -452,7 +452,7 @@ class MeasureObjectIntensity(cpm.CPModule):
                             integrated_intensity_edge[lindexes-1] / ecount
                         std_intensity_edge[lindexes-1] = \
                             np.sqrt(fix(nd.mean(
-                                (eimg - mean_intensity_edge[elabels-1])**2, 
+                                (eimg - mean_intensity_edge[elabels-1])**2,
                                 elabels, lindexes)))
                         min_intensity_edge[lindexes-1] = fix(
                             nd.minimum(eimg, elabels, lindexes))
@@ -481,15 +481,15 @@ class MeasureObjectIntensity(cpm.CPModule):
                      (C_LOCATION, LOC_MAX_Y, max_y)):
                     measurement_name = "%s_%s_%s"%(category,feature_name,
                                                    image_name.value)
-                    m.add_measurement(object_name.value,measurement_name, 
+                    m.add_measurement(object_name.value,measurement_name,
                                       measurement)
                     if self.show_window and len(measurement) > 0:
-                        statistics.append((image_name.value, object_name.value, 
+                        statistics.append((image_name.value, object_name.value,
                                            feature_name,
                                            np.round(np.mean(measurement),3),
                                            np.round(np.median(measurement),3),
                                            np.round(np.std(measurement),3)))
-        
+
     def display(self, workspace, figure):
         figure.set_subplots((1, 1))
         figure.subplot_table(0, 0,

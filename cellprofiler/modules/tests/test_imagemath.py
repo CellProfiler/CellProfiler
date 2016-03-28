@@ -58,7 +58,7 @@ Subtract:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|show_wind
         self.assertAlmostEqual(module.images[1].factor.value, 1.5)
         self.assertTrue(module.truncate_low)
         self.assertFalse(module.truncate_high)
-        
+
     def test_01_001_load_combine(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
@@ -90,7 +90,7 @@ Combine:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|show_windo
         self.assertAlmostEqual(module.after_factor.value, 1.0/0.9)
         self.assertEqual(module.operation.value, I.O_ADD)
         self.assertEqual(module.output_image_name, "MyOutputImage")
-    
+
     def test_01_002_load_invert_intensity(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
@@ -113,7 +113,7 @@ InvertIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|sh
         self.assertEqual(module.images[0].image_name, "MyImage")
         self.assertEqual(module.output_image_name, "MyInvertedImage")
         self.assertEqual(module.operation, I.O_INVERT)
-    
+
     def test_01_003_load_multiply(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
@@ -139,7 +139,7 @@ Multiply:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_wind
         self.assertEqual(module.images[0].factor, 1)
         self.assertEqual(module.images[1].factor, 1)
         self.assertEqual(module.output_image_name, "MyOutputImage")
-        
+
     def test_01_01_load_matlab(self):
         data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
                 'SU1RyM+zUgjJKFXwKs1RMDQDIitDCytjMwUjAwNLBZIBA6OnLz8DA0MWEwND'
@@ -183,7 +183,7 @@ Multiply:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_wind
         self.assertEqual(module.operation.value, I.O_INVERT)
         self.assertTrue(module.truncate_low.value)
         self.assertTrue(module.truncate_high.value)
-        
+
         module = pipeline.modules()[2]
         self.assertTrue(isinstance(module, I.ImageMath))
         self.assertEqual(len(module.images), 2)
@@ -197,7 +197,7 @@ Multiply:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_wind
         self.assertEqual(module.after_factor.value, 5)
         self.assertFalse(module.truncate_low.value)
         self.assertFalse(module.truncate_high.value)
-        
+
         module = pipeline.modules()[3]
         self.assertTrue(isinstance(module, I.ImageMath))
         self.assertEqual(len(module.images), 3)
@@ -206,7 +206,7 @@ Multiply:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_wind
         self.assertEqual(module.images[2].image_name.value, 'Actin')
         self.assertEqual(module.output_image_name.value, 'ImageAfterMath')
         self.assertEqual(module.operation.value, I.O_ADD)
-    
+
     def test_01_02_load_wierd_matlab(self):
         '''Load some ImageMath modules with constants typed in instead of images'''
         data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
@@ -234,7 +234,7 @@ Multiply:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_wind
         pipeline.add_listener(callback)
         pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
         #
-        # Modules:        
+        # Modules:
         # 1) Add, 1
         # 2) Subtract, 1
         # 3) Multiply, 2
@@ -252,7 +252,7 @@ Multiply:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_wind
         module = pipeline.modules()[5]
         self.assertEqual(len(module.images),2)
         self.assertAlmostEqual(module.addend.value, .3)
-        
+
     def test_01_03_load_v3(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
@@ -432,10 +432,10 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
         self.assertEqual(module.images[1].image_or_measurement, I.IM_MEASUREMENT)
         self.assertEqual(module.images[1].measurement, "Count_Nuclei")
         self.assertEqual(module.images[1].factor, 1.5)
-        
+
     def run_imagemath(self, images, modify_module_fn=None, measurement = None):
         '''Run the ImageMath module, returning the image created
-        
+
         images - a list of dictionaries. The dictionary has keys:
                  pixel_data - image pixel data
                  mask - mask for image
@@ -470,7 +470,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
                                   measurements, image_set_list)
         module.run(workspace)
         return image_set.get_image('outputimage')
-    
+
     def check_expected(self, image, expected, mask=None, ignore=False):
         if mask is None and not image.has_crop_mask:
             self.assertTrue(np.all(np.abs(image.pixel_data - expected <
@@ -484,16 +484,16 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
             self.assertTrue(image.has_mask)
             if not image.has_crop_mask:
                 self.assertTrue(np.all(mask == image.mask))
-            self.assertTrue(np.all(np.abs(image.pixel_data[image.mask] - 
+            self.assertTrue(np.all(np.abs(image.pixel_data[image.mask] -
                                           expected[image.mask]) <
                                           np.sqrt(np.finfo(np.float32).eps)))
-        
+
     def test_02_01_exponent(self):
         '''Test exponentiation of an image'''
         def fn(module):
             module.exponent.value = 2
             module.operation.value = I.O_NONE
-        
+
         np.random.seed(0)
         image = np.random.uniform(size=(10,10)).astype(np.float32)
         expected = image**2
@@ -505,26 +505,26 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
         def fn(module):
             module.after_factor.value = .5
             module.operation.value = I.O_NONE
-        
+
         np.random.seed(0)
         image = np.random.uniform(size=(10,10))
         expected = image*.5
         output = self.run_imagemath([{ 'pixel_data': image}], fn)
         self.check_expected(output, expected)
-    
+
     def test_02_03_addend(self):
         '''Test adding a value to image'''
         def fn(module):
             module.addend.value = .5
             module.operation.value = I.O_NONE
-        
+
         np.random.seed(0)
         image = np.random.uniform(size=(10,10))*.5
         image = image.astype(np.float32)
         expected = image + .5
         output = self.run_imagemath([{ 'pixel_data': image}], fn)
         self.check_expected(output, expected)
-    
+
     def test_02_04_mask(self):
         '''Test a mask in the first image'''
         def fn(module):
@@ -536,7 +536,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
                                       'mask': mask
                                       }], fn)
         self.check_expected(output, image, mask)
-    
+
     def test_03_01_add(self):
         '''Test adding'''
         def fn(module):
@@ -549,7 +549,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
             expected = reduce(np.add,[x['pixel_data'] for x in images])
             output = self.run_imagemath(images, fn)
             self.check_expected(output, expected)
-    
+
     def test_03_02_add_mask(self):
         '''Test adding masked images'''
         '''Test adding'''
@@ -565,7 +565,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
             mask = reduce(np.logical_and, [x['mask'] for x in images])
             output = self.run_imagemath(images, fn)
             self.check_expected(output, expected, mask)
-    
+
     def test_03_03_add_mask_truncate(self):
         def fn(module):
             module.operation.value = I.O_ADD
@@ -580,7 +580,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
             mask = reduce(np.logical_and, [x['mask'] for x in images])
             output = self.run_imagemath(images, fn)
             self.check_expected(output, expected, mask)
-    
+
     def test_03_04_add_crop(self):
         '''Add images, cropping to border'''
         def fn(module):
@@ -601,7 +601,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
                 expected = reduce(np.add,[x['cropped_data'] for x in images])
                 output = self.run_imagemath(images, fn)
                 self.check_expected(output, expected)
-    
+
     def test_03_05_add_factors(self):
         '''Test adding with factors'''
         np.random.seed(0)
@@ -609,7 +609,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
             images = [{ 'pixel_data':np.random.uniform(size=(10,10)).astype(np.float32) }
                       for i in range(n)]
             factors = np.random.uniform(size=n)
-            expected = reduce(np.add,[x['pixel_data'] * factor 
+            expected = reduce(np.add,[x['pixel_data'] * factor
                                       for x,factor in zip(images,factors)])
             def fn(module):
                 module.operation.value = I.O_ADD
@@ -618,7 +618,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
                     module.images[i].factor.value = factors[i]
             output = self.run_imagemath(images, fn)
             self.check_expected(output, expected)
-    
+
     def test_03_06_ignore_mask(self):
         '''Test adding images with masks, but ignoring the masks'''
         def fn(module):
@@ -634,7 +634,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
             mask = reduce(np.logical_and, [x['mask'] for x in images])
             output = self.run_imagemath(images, fn)
             self.check_expected(output, expected, mask, True)
-        
+
     def test_04_01_subtract(self):
         '''Test subtracting'''
         def fn(module):
@@ -688,7 +688,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
                       for i in range(2)]
         output = self.run_imagemath(images, fn)
         self.assertTrue(output.pixel_data.dtype == np.bool)
-        
+
     def test_06_01_divide(self):
         def fn(module):
             module.operation.value = I.O_DIVIDE
@@ -700,7 +700,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
             expected = reduce(np.divide,[x['pixel_data'] for x in images])
             output = self.run_imagemath(images, fn)
             self.check_expected(output, expected)
-    
+
     def test_07_01_average(self):
         def fn(module):
             module.operation.value = I.O_AVERAGE
@@ -720,7 +720,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
             images = [{ 'pixel_data':np.random.uniform(size=(10,10)).astype(np.float32) }
                       for i in range(n)]
             factors = np.random.uniform(size=n)
-            expected = reduce(np.add,[x['pixel_data'] * factor 
+            expected = reduce(np.add,[x['pixel_data'] * factor
                                       for x,factor in zip(images,factors)])
             expected /= np.sum(factors)
             def fn(module):
@@ -730,12 +730,12 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
                     module.images[i].factor.value = factors[i]
             output = self.run_imagemath(images, fn)
             self.check_expected(output, expected)
-    
+
     def test_08_01_invert(self):
         '''Test invert of an image'''
         def fn(module):
             module.operation.value = I.O_INVERT
-        
+
         np.random.seed(0)
         image = np.random.uniform(size=(10,10)).astype(np.float32)
         expected = 1-image
@@ -747,24 +747,24 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
         def fn(module):
             module.operation.value = I.O_LOG_TRANSFORM
             module.truncate_low.value = False
-        
+
         np.random.seed(0)
         image = np.random.uniform(size=(10,10)).astype(np.float32)
         expected = np.log2(image+1)
         output = self.run_imagemath([{ 'pixel_data': image}], fn)
         self.check_expected(output, expected)
-        
+
     def test_09_02_log_transform_legacy(self):
         def fn(module):
             module.operation.value = I.O_LOG_TRANSFORM_LEGACY
             module.truncate_low.value = False
-        
+
         np.random.seed(0)
         image = np.random.uniform(size=(10,10)).astype(np.float32)
         expected = np.log2(image)
         output = self.run_imagemath([{ 'pixel_data': image}], fn)
         self.check_expected(output, expected)
-        
+
     def test_10_01_with_measurement(self):
         '''Test multiplying an image by a measurement'''
         def fn(module):
@@ -774,10 +774,10 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
 
         np.random.seed(101)
         measurement = 1.23
-        expected = np.random.uniform(size=(10,20)).astype(np.float32) 
+        expected = np.random.uniform(size=(10,20)).astype(np.float32)
         image = expected / measurement
         output = self.run_imagemath([{ 'pixel_data':image }],
-                                    modify_module_fn = fn, 
+                                    modify_module_fn = fn,
                                     measurement = measurement)
         self.check_expected(output, expected)
 
@@ -790,14 +790,14 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
 
         np.random.seed(102)
         measurement = 1.52
-        expected = np.random.uniform(size=(10,20)).astype(np.float32) 
+        expected = np.random.uniform(size=(10,20)).astype(np.float32)
         image = expected / measurement
         mask = np.random.uniform(size=(10,20)) < .2
         output = self.run_imagemath([{ 'pixel_data':image, 'mask':mask }],
-                                    modify_module_fn = fn, 
+                                    modify_module_fn = fn,
                                     measurement = measurement)
         self.check_expected(output, expected, mask)
-        
+
     def test_11_01_add_and_do_nothing(self):
         #
         # Regression for issue #1333 - add one, do nothing, input image
@@ -820,7 +820,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
         module.run(workspace)
         np.testing.assert_array_almost_equal(
             pixel_data, m.get_image("inputimage").pixel_data)
-        
+
     def test_11_02_invert_binary_invert(self):
         #
         # Regression for issue #1329
@@ -848,7 +848,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
             module.run(workspace)
         np.testing.assert_array_equal(
             pixel_data, m.get_image("inputimage").pixel_data > .5)
-        
+
     def test_12_01_or_binary(self):
         def fn(module):
             module.operation.value = I.O_OR
@@ -860,7 +860,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
             expected = reduce(np.logical_or, [x['pixel_data'] for x in images])
             output = self.run_imagemath(images, fn)
             self.check_expected(output, expected)
-            
+
     def test_12_02_or_numeric(self):
         def fn(module):
             module.operation.value = I.O_OR
@@ -873,7 +873,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
         expected = reduce(np.logical_or, [x['pixel_data'] for x in images])
         output = self.run_imagemath(images, fn)
         self.check_expected(output, expected)
-        
+
     def test_13_01_and_binary(self):
         def fn(module):
             module.operation.value = I.O_AND
@@ -885,7 +885,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
             expected = reduce(np.logical_and, [x['pixel_data'] for x in images])
             output = self.run_imagemath(images, fn)
             self.check_expected(output, expected)
-            
+
     def test_14_01_not(self):
         def fn(module):
             module.operation.value = I.O_NOT
@@ -894,12 +894,12 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
         expected = ~ pixel_data
         output = self.run_imagemath([{'pixel_data': pixel_data}], fn)
         self.check_expected(output, expected)
-        
+
     def test_15_01_equals_binary(self):
         def fn(module):
             module.operation.value = I.O_EQUALS
         np.random.seed(1501)
-        
+
         for n in range(2,5):
             image0 = np.random.uniform(size=(20, 20)) > .5
             images = [{'pixel_data': image0}]
@@ -910,26 +910,26 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
                 images.append(dict(pixel_data = image))
             output = self.run_imagemath(images, fn)
             self.check_expected(output, expected)
-        
+
     def test_15_02_equals_numeric(self):
         def fn(module):
             module.operation.value = I.O_EQUALS
         np.random.seed(1502)
-        
+
         image0 = np.random.uniform(size=(20, 20))
         image1 = np.random.uniform(size=(20, 20))
         expected = np.random.uniform(size=(20, 20)) > .5
         image1[expected] = image0[expected]
-        images = [{'pixel_data': image0}, 
+        images = [{'pixel_data': image0},
                   {'pixel_data': image1}]
         output = self.run_imagemath(images, fn)
         self.check_expected(output, expected)
-        
+
     def test_16_01_minimum(self):
         def fn(module):
             module.operation.value = I.O_MINIMUM
         np.random.seed(1502)
-        
+
         for n in range(2,5):
             image0 = np.random.uniform(size=(20, 20))
             images = [{'pixel_data': image0}]
@@ -940,12 +940,12 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
                 images.append(dict(pixel_data = image))
             output = self.run_imagemath(images, fn)
             self.check_expected(output, expected)
-        
+
     def test_17_01_maximum(self):
         def fn(module):
             module.operation.value = I.O_MAXIMUM
         np.random.seed(1502)
-        
+
         for n in range(2,5):
             image0 = np.random.uniform(size=(20, 20))
             images = [{'pixel_data': image0}]
@@ -956,4 +956,3 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
                 images.append(dict(pixel_data = image))
             output = self.run_imagemath(images, fn)
             self.check_expected(output, expected)
-        

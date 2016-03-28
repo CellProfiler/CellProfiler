@@ -15,7 +15,7 @@ GRIPPER_HEIGHT = 8
 
 def sw_bind_to_evt_paint(window):
     '''Bind to wx.EVT_PAINT to take over the painting
-    
+
     window - a wx.SashWindow
     '''
     window.Bind(wx.EVT_PAINT, on_sashwindow_paint)
@@ -83,7 +83,7 @@ def on_sashwindow_paint(event):
 def sp_bind_to_evt_paint(window):
     '''Take over painting the splitter of a splitter window'''
     window.Bind(wx.EVT_PAINT, on_splitter_paint)
-    
+
 def on_splitter_paint(event):
     assert isinstance(event, wx.PaintEvent)
     window = event.EventObject

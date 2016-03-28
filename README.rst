@@ -1,20 +1,44 @@
 CellProfiler
 ============
 
-CellProfiler is free, open-source software designed to enable biologists without training in computer vision or programming to quantitatively measure phenotypes from thousands of images automatically.
+An open-source application for measuring phenotypes
 
-Our website, `cellprofiler.org <http://cellprofiler.org>`_, is aimed at non-developer users and has lots of information about CellProfiler and how to use it, as well as a `forum <http://forum.cellprofiler.org>`_ for asking questions.
+.. image:: https://img.shields.io/travis/CellProfiler/CellProfiler.svg
+    :target: https://travis-ci.org/CellProfiler/CellProfiler
 
-The `developer wiki <https://github.com/CellProfiler/CellProfiler/wiki>`_ covers topic such as how to build CellProfiler from source, how to set up a development environment with all of CellProfiler's dependencies, and the various resources set up to support CellProfiler development.
+.. image:: https://img.shields.io/pypi/v/cellprofiler.svg
+    :target: https://pypi.python.org/pypi/cellprofiler
+
+.. image:: https://img.shields.io/pypi/dm/cellprofiler.svg
+    :target: https://pypi.python.org/pypi/cellprofiler
 
 Installation
 ------------
 
+Compiled releases for Linux, OS X, and Windows are available from `cellprofiler.org/releases <http://cellprofiler.org/releases/>`_.
+
+Install from the Python Package Index (PyPI)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 .. code-block:: sh
 
-    $ pip install cellprofiler
+    $ pip install --pre cellprofiler
 
-How to file new issues
-----------------------
+Install from Source
+~~~~~~~~~~~~~~~~~~~
 
-If you have a bug or other issue to report, please read the wiki page on `how to file new issues <https://github.com/CellProfiler/CellProfiler/wiki/How-to-file-new-issues>`_ to learn the best way to report it. You can also search the `forum <http://forum.cellprofiler.org>`_ which may have a report or work-around for the issue.
+Prerequisites
+`````````````
+
+`NumPy <http://www.numpy.org/>`_ is the fundamental package for scientific computing with Python:
+
+.. code-block:: sh
+
+    $ pip install numpy
+
+Installation
+````````````
+
+.. code-block:: sh
+
+    $ pip install --editable .

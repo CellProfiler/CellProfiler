@@ -14,7 +14,7 @@ if _sys.version_info[0] > 2 or _sys.version_info[1] >= 6:
 else:
     def product(*args):
         '''The cartesian product of the arguments
-        
+
         see docs for itertools.product for full documentation
         (available in Python 2.6+)
         '''

@@ -28,8 +28,8 @@ from cellprofiler.gui.html.htmlwindow import HtmlClickableWindow
 
 class HTMLDialog(wx.Dialog):
     def __init__(self, parent, title, contents):
-        super(HTMLDialog, self).__init__(parent, -1, title, 
-                                         style=(wx.DEFAULT_DIALOG_STYLE | 
+        super(HTMLDialog, self).__init__(parent, -1, title,
+                                         style=(wx.DEFAULT_DIALOG_STYLE |
                                                 wx.RESIZE_BORDER))
         html = HtmlClickableWindow(parent=self)
         html.SetPage(contents)
@@ -45,5 +45,3 @@ if __name__ == "__main__":
     dialog = HTMLDialog(None, "Title", long_text)
     choice =  dialog.Show()
     app.MainLoop()
-
-    

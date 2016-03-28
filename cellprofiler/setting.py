@@ -3464,7 +3464,7 @@ class Table(Setting):
             if self.row_attributes.has_key(row_index):
                 self.row_attributes[row_index].add(attribute)
             else:
-                self.row_attributes[row_index] = set([attribute])
+                self.row_attributes[row_index] = {attribute}
         else:
             if self.row_attributes.has_key(row_index):
                 s = self.row_attributes[row_index]
@@ -3498,7 +3498,7 @@ class Table(Setting):
             if self.cell_attributes.has_key(key):
                 self.cell_attributes[key].add(attribute)
             else:
-                self.cell_attributes[key] = set([attribute])
+                self.cell_attributes[key] = {attribute}
         else:
             if self.cell_attributes.has_key(key):
                 s = self.cell_attributes[key]

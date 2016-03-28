@@ -7,8 +7,8 @@ import logging
 import numpy
 import os
 import pickle
-from sklearn.ensemble import ExtraTreesClassifier
-from sklearn.decomposition import RandomizedPCA
+import sklearn.ensemble
+import sklearn.decomposition
 import cellprofiler.cpmodule
 import cellprofiler.cpimage
 import cellprofiler.settings
@@ -444,7 +444,7 @@ class Classify(cellprofiler.cpmodule.CPModule):
                     samples, classes, name_out, self.get_n_features())
             samples, classes = c.sample(classifier_sample_name)
             filtered = c.use_filter_bank(name_out, samples)
-            algorithm = ExtraTreesClassifier(
+            algorithm = sklearn.ensemble.ExtraTreesClassifier(
                     n_estimators=self.get_n_estimators(),
                     min_samples_leaf=self.get_min_samples_per_leaf())
             c.fit(name_out, filtered, classes, algorithm)
@@ -790,8 +790,8 @@ class PixelClassifier(object):
         """
         if algorithm is None:
             r = self.random_state(filter_bank_name)
-            algorithm = RandomizedPCA(n_filters,
-                                      random_state=r)
+            algorithm = sklearn.decomposition.RandomizedPCA(n_filters,
+                                                            random_state=r)
         algorithm.fit(sampling, classes)
         if hasattr(algorithm, "components_"):
             components = algorithm.components_
@@ -850,7 +850,7 @@ class PixelClassifier(object):
         :return:
         """
         if algorithm is None:
-            algorithm = ExtraTreesClassifier(
+            algorithm = sklearn.ensemble.ExtraTreesClassifier(
                     n_estimators=N_ESTIMATORS,
                     min_samples_leaf=MIN_SAMPLES_PER_LEAF)
         algorithm.fit(sample, classes)

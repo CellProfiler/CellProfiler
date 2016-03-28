@@ -321,6 +321,7 @@ def parse_args(args):
                       dest="show_gui",
                       default=default_show_gui,
                       help="Run headless (without the GUI)")
+
     parser.add_option("-r", "--run",
                       action="store_true",
                       dest="run_pipeline",
@@ -331,18 +332,22 @@ def parse_args(args):
                       dest="output_directory",
                       default=None,
                       help="Make this directory the default output folder")
+
     parser.add_option("-i", "--image-directory",
                       dest="image_directory",
                       default=None,
                       help="Make this directory the default input folder")
+
     parser.add_option("-f", "--first-image-set",
                       dest="first_image_set",
                       default=None,
                       help="The one-based index of the first image set to process")
+
     parser.add_option("-l", "--last-image-set",
                       dest="last_image_set",
                       default=None,
                       help="The one-based index of the last image set to process")
+
     parser.add_option("-g", "--group",
                       dest="groups",
                       default=None,
@@ -379,6 +384,7 @@ def parse_args(args):
                       default=None,
                       help=('The path to the "Done" file, written by CellProfiler'
                             ' shortly before exiting'))
+
     parser.add_option("--measurements",
                       dest="print_measurements",
                       default=False,
@@ -395,6 +401,7 @@ def parse_args(args):
                            "CreateBatchFiles. The output is a JSON-encoded data "
                            "structure containing the group keys and values and the "
                            "image sets in each group.")
+
     parser.add_option("--get-batch-commands",
                       dest="batch_commands_file",
                       default=None,
@@ -415,6 +422,7 @@ def parse_args(args):
                       help="Specify the location of a .csv file for LoadData. "
                            "If this switch is present, this file is used instead of "
                            "the one specified in the LoadData module.")
+
     parser.add_option("--file-list",
                       dest="image_set_file",
                       default=None,
@@ -428,11 +436,13 @@ def parse_args(args):
                       help="Do not execute the schema definition and other "
                            "per-experiment SQL commands during initialization "
                            "when running a pipeline in batch mode.")
+
     parser.add_option("--write-schema-and-exit",
                       dest='write_schema_and_exit',
                       default=False,
                       action='store_true',
                       help="Create the experiment database schema and exit")
+
     parser.add_option("--omero-credentials",
                       dest="omero_credentials",
                       default=None,
@@ -460,12 +470,6 @@ def parse_args(args):
                             ("%d or %s for critical, " % (logging.CRITICAL, "CRITICAL")) +
                             ("%d or %s for fatal." % (logging.FATAL, "FATAL")) +
                             " Otherwise, the argument is interpreted as the file name of a log configuration file (see http://docs.python.org/library/logging.config.html for file format)"))
-
-    parser.add_option("--code-statistics",
-                      dest="code_statistics",
-                      action="store_true",
-                      default=False,
-                      help="Print the number of modules, settings and lines of code")
 
     if sys.platform == 'darwin':
         parser.add_option("--use-awt",

@@ -15,42 +15,38 @@ import sklearn.ensemble
 
 logger = logging.getLogger(__name__)
 
-USE_DOT = True
-DEFAULT_N_ESTIMATORS = 25
-DEFAULT_MIN_SAMPLES_PER_LEAF = 10
-DEFAULT_RADIUS = 9
-DEFAULT_N_FEATURES = 100
-
-MODE_CLASSIFY = "Classify"
-MODE_TRAIN = "Train"
-
-AA_ADVANCED = "Advanced"
-AA_AUTOMATIC = "Automatic"
-
-G_TRAINING_SET = "TrainingSet"
-DS_KERNEL = "Kernel"
-DS_IMAGE_NUMBER = "ImageNumber"
-DS_COORDS = "Coords"
-A_VERSION = "Version"
 A_CLASS = 'Class'
 A_DIGEST = 'MD5Digest'
-G_SAMPLING = "Sampling"
-G_FILTERS = "Filters"
-G_CLASSIFIERS = "Classifiers"
-G_IMAGES = "Images"
-
+A_VERSION = "Version"
+AA_ADVANCED = "Advanced"
+AA_AUTOMATIC = "Automatic"
+CLS_CLASSIFIER = "Classifier"
+CLS_FILTER = "Filter"
 CLS_GROUND_TRUTH = "GroundTruth"
 CLS_KERNEL = "Kernel"
-CLS_FILTER = "Filter"
-CLS_CLASSIFIER = "Classifier"
 CLS_SAMPLING = "Sampling"
-
-SRC_OBJECTS = "Objects"
+DEFAULT_MIN_SAMPLES_PER_LEAF = 10
+DEFAULT_N_ESTIMATORS = 25
+DEFAULT_N_FEATURES = 100
+DEFAULT_RADIUS = 9
+DS_COORDS = "Coords"
+DS_IMAGE_NUMBER = "ImageNumber"
+DS_KERNEL = "Kernel"
+G_CLASSIFIERS = "Classifiers"
+G_FILTERS = "Filters"
+G_IMAGES = "Images"
+G_SAMPLING = "Sampling"
+G_TRAINING_SET = "TrainingSet"
+MODE_CLASSIFY = "Classify"
+MODE_TRAIN = "Train"
 SRC_ILASTIK = "Ilastik"
-
-ROUNDS = [("initial", 100000, 0),
-          ("middle", 75000, 25000),
-          ("final", 50000, 50000)]
+SRC_OBJECTS = "Objects"
+USE_DOT = True
+ROUNDS = [
+    ("initial", 100000, 0),
+    ("middle", 75000, 25000),
+    ("final", 50000, 50000)
+]
 
 
 class Classify(cellprofiler.cpmodule.CPModule):

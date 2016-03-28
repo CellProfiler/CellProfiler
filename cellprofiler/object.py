@@ -60,7 +60,8 @@ class Object(object):
         self.__small_removed_segmented = None
         self.__parent_image = None
 
-    def get_segmented(self):
+    @property
+    def segmented(self):
         """Get the de-facto segmentation of the image into objects: a matrix
         of object numbers.
         """
@@ -72,7 +73,8 @@ class Object(object):
             "Operation failed because the segmentation was not 2D"
         return dense.reshape(dense.shape[-2:])
 
-    def set_segmented(self, labels):
+    @segmented.setter
+    def segmented(self, labels):
         dense = downsample_labels(labels)
         dense = dense.reshape((1, 1, 1, 1, dense.shape[0], dense.shape[1]))
         self.__segmented = Segmentation(dense=dense)
@@ -81,9 +83,22 @@ class Object(object):
         if getattr(self, "memoize_method_dictionary", False):
             self.memoize_method_dictionary = {}
 
-    segmented = property(get_segmented, set_segmented)
+    @property
+    def ijv(self):
+        """Get the segmentation in IJV object format
 
-    def set_ijv(self, ijv, shape=None):
+        The ijv format is a list of i,j coordinates in slots 0 and 1
+        and the label at the pixel in slot 2.
+        """
+        from cellprofiler.utilities.hdf5_dict import HDF5ObjectSet
+        sparse = self.__segmented.get_sparse()
+        return numpy.column_stack(
+                [sparse[axis] for axis in
+                 HDF5ObjectSet.AXIS_Y, HDF5ObjectSet.AXIS_X,
+                 HDF5ObjectSet.AXIS_LABELS])
+
+    @ijv.setter
+    def ijv(self, ijv, shape=None):
         """Set the segmentation to an IJV object format
 
         The ijv format is a list of i,j coordinates in slots 0 and 1
@@ -98,21 +113,6 @@ class Object(object):
         if shape is not None:
             shape = (1, 1, 1, shape[0], shape[1])
         self.__segmented = Segmentation(sparse=sparse, shape=shape)
-
-    def get_ijv(self):
-        """Get the segmentation in IJV object format
-
-        The ijv format is a list of i,j coordinates in slots 0 and 1
-        and the label at the pixel in slot 2.
-        """
-        from cellprofiler.utilities.hdf5_dict import HDF5ObjectSet
-        sparse = self.__segmented.get_sparse()
-        return numpy.column_stack(
-                [sparse[axis] for axis in
-                 HDF5ObjectSet.AXIS_Y, HDF5ObjectSet.AXIS_X,
-                 HDF5ObjectSet.AXIS_LABELS])
-
-    ijv = property(get_ijv, set_ijv)
 
     @property
     def shape(self):
@@ -137,7 +137,8 @@ class Object(object):
         """Return true if there is an unedited segmented matrix."""
         return self.__unedited_segmented is not None
 
-    def get_unedited_segmented(self):
+    @property
+    def unedited_segmented(self):
         """Get the segmentation of the image into objects, including junk that
         should be ignored: a matrix of object numbers.
 
@@ -149,19 +150,17 @@ class Object(object):
             return dense[0, 0, 0, 0]
         return self.segmented
 
-    def set_unedited_segmented(self, labels):
-        dense = downsample_labels(labels).reshape(
-                (1, 1, 1, 1, labels.shape[0], labels.shape[1]))
+    @unedited_segmented.setter
+    def unedited_segmented(self, labels):
+        dense = downsample_labels(labels).reshape((1, 1, 1, 1, labels.shape[0], labels.shape[1]))
         self.__unedited_segmented = Segmentation(dense=dense)
-
-    unedited_segmented = property(get_unedited_segmented,
-                                  set_unedited_segmented)
 
     def has_small_removed_segmented(self):
         """Return true if there is a junk object matrix."""
         return self.__small_removed_segmented is not None
 
-    def get_small_removed_segmented(self):
+    @property
+    def small_removed_segmented(self):
         """Get the matrix of segmented objects with the small objects removed
 
         This should be the same as the unedited_segmented label matrix with
@@ -173,13 +172,11 @@ class Object(object):
             return dense[0, 0, 0, 0]
         return self.unedited_segmented
 
-    def set_small_removed_segmented(self, labels):
+    @small_removed_segmented.setter
+    def small_removed_segmented(self, labels):
         dense = downsample_labels(labels).reshape(
                 (1, 1, 1, 1, labels.shape[0], labels.shape[1]))
         self.__small_removed_segmented = Segmentation(dense=dense)
-
-    small_removed_segmented = property(get_small_removed_segmented,
-                                       set_small_removed_segmented)
 
     def cache(self, hdf5_object_set, objects_name):
         """Move the segmentations out of memory and into HDF5
@@ -195,7 +192,8 @@ class Object(object):
                 segmentation.cache(
                         hdf5_object_set, objects_name, segmentation_name)
 
-    def get_parent_image(self):
+    @property
+    def parent_image(self):
         """The image that was analyzed to yield the objects.
 
         The image is an instance of CPImage which means it has the mask
@@ -203,7 +201,8 @@ class Object(object):
         """
         return self.__parent_image
 
-    def set_parent_image(self, parent_image):
+    @parent_image.setter
+    def parent_image(self, parent_image):
         self.__parent_image = parent_image
         for segmentation in self.__segmented, self.__small_removed_segmented, \
                             self.__unedited_segmented:
@@ -213,15 +212,12 @@ class Object(object):
                          parent_image.pixel_data.shape[1])
                 segmentation.set_shape(shape)
 
-    parent_image = property(get_parent_image, set_parent_image)
-
-    def get_has_parent_image(self):
+    @property
+    def has_parent_image(self):
         """True if the objects were derived from a parent image
 
         """
         return self.__parent_image is not None
-
-    has_parent_image = property(get_has_parent_image)
 
     def crop_image_similarly(self, image):
         """Crop an image in the same way as the parent image was cropped."""
@@ -394,7 +390,8 @@ class Object(object):
         return (parent_matrix.tocsc() * child_matrix.tocsc()).toarray()
 
     @memoize_method
-    def get_indices(self):
+    @property
+    def indices(self):
         """Get the indices for a scipy.ndimage-style function from the segmented labels
 
         """
@@ -403,21 +400,18 @@ class Object(object):
         max_label = numpy.max(self.ijv[:, 2])
         return numpy.arange(max_label).astype(numpy.int32) + 1
 
-    indices = property(get_indices)
-
     @property
     def count(self):
         """The number of objects labeled"""
         return len(self.indices)
 
     @memoize_method
-    def get_areas(self):
+    @property
+    def areas(self):
         """The area of each object"""
         if len(self.indices) == 0:
             return numpy.zeros(0, int)
         return numpy.bincount(self.ijv[:, 2])[self.indices]
-
-    areas = property(get_areas)
 
     @memoize_method
     def fn_of_label(self, function):
@@ -529,7 +523,8 @@ class Segmentation(object):
         self.__sparse = None
         self.__cache = hdf5_object_set
 
-    def get_shape(self):
+    @property
+    def shape(self):
         """Get or estimate the shape of the segmentation matrix
 
         Order of precedence:
@@ -553,7 +548,8 @@ class Segmentation(object):
                          for axis in HDF5ObjectSet.AXES])
         return self.__shape
 
-    def set_shape(self, shape):
+    @shape.setter
+    def shape(self, shape):
         """Set the shape of the segmentation array
 
         shape - the 5D shape of the array
@@ -562,8 +558,6 @@ class Segmentation(object):
         """
         self.__shape = shape
         self.__explicit_shape = True
-
-    shape = property(get_shape, set_shape)
 
     def has_dense(self):
         return self.__dense is not None or (
@@ -581,7 +575,8 @@ class Segmentation(object):
 
         return self.has_dense()
 
-    def get_sparse(self):
+    @property
+    def sparse(self):
         """Get the sparse representation of the segmentation
 
         returns a Numpy record array where every row represents
@@ -600,8 +595,6 @@ class Segmentation(object):
                     "Can't find object, \"%s\", segmentation, \"%s\"." %
                     (self.__objects_name, self.__segmentation_name))
         return self.__convert_dense_to_sparse()
-
-    sparse = property(get_sparse)
 
     def get_dense(self):
         """Get the dense representation of the segmentation
@@ -876,24 +869,22 @@ class ObjectSet(object):
                 self.__can_overwrite), "The object, %s, is already in the object set" % name
         self.__objects_by_name[name] = objects
 
-    def get_object_names(self):
+    @property
+    def object_names(self):
         """Return the names of all of the objects
         """
         return self.__objects_by_name.keys()
-
-    object_names = property(get_object_names)
 
     def get_objects(self, name):
         """Return the objects instance with the given name
         """
         return self.__objects_by_name[name]
 
-    def get_all_objects(self):
+    @property
+    def all_objects(self):
         """Return a list of name / objects tuples
         """
         return self.__objects_by_name.items()
-
-    all_objects = property(get_all_objects)
 
     def get_types(self):
         """Get then names of types of per-image set "things"

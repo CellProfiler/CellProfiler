@@ -135,10 +135,11 @@ class Classify(cellprofiler.cpmodule.CPModule):
                 result += [group.class_name.value for group in self.label_classes]
         else:
             try:
-                with self.get_classifier("r") as c:
-                    return c.get_class_names()
+                with self.get_classifier("r") as classifier:
+                    return classifier.get_class_names()
             except IOError:
                 result.append("None")
+
         return result
 
     def add_objects(self, can_remove=True):
@@ -151,34 +152,34 @@ class Classify(cellprofiler.cpmodule.CPModule):
 
         self.object_classes.append(group)
 
-    def add_labels(self, can_remove=True):
+    def add_labels(self, removable=True):
         group = cellprofiler.settings.SettingsGroup()
 
         group.append("class_name", cellprofiler.settings.AlphanumericText("Class name", "Class %d" % (len(self.label_classes) + 1), doc="The name to give to pixels of this class (e.g. \"Foreground\")\nYou should add one class for each class you defined in Ilastik"))
 
-        if can_remove:
+        if removable:
             group.append("remover", cellprofiler.settings.RemoveSettingButton("Remove object", "Remove", self.label_classes, group))
 
         self.label_classes.append(group)
 
-    def add_image(self, can_remove=True):
+    def add_image(self, removable=True):
         group = cellprofiler.settings.SettingsGroup()
 
         group.append("image_name", cellprofiler.settings.ImageNameSubscriber("Image name", "DNA"))
 
-        if can_remove:
+        if removable:
             group.append("remover", cellprofiler.settings.RemoveSettingButton("Remove object", "Remove", self.images, group))
 
         self.images.append(group)
 
-    def add_output(self, can_remove=True):
+    def add_output(self, removable=True):
         group = cellprofiler.settings.SettingsGroup()
 
         group.append("output_image", cellprofiler.settings.ImageNameProvider("Output image", "Probability"))
 
         group.append("class_name", cellprofiler.settings.Choice("Class name", choices=self.get_class_names(), choices_fn=self.get_class_names))
 
-        if can_remove:
+        if removable:
             group.append("remover", cellprofiler.settings.RemoveSettingButton("Remove object", "Remove", self.outputs, group))
 
         self.outputs.append(group)
@@ -218,7 +219,11 @@ class Classify(cellprofiler.cpmodule.CPModule):
         return result
 
     def visible_settings(self):
-        result = [self.mode, self.path, self.filename]
+        result = [
+            self.mode,
+            self.path,
+            self.filename
+        ]
 
         if self.mode == MODE_TRAIN:
             result.append(self.advanced_or_automatic)
@@ -263,20 +268,18 @@ class Classify(cellprofiler.cpmodule.CPModule):
 
         return result
 
-    def prepare_settings(self, setting_values):
-        for count, sequence, add_fn in zip([int(_) for _ in setting_values[:4]], (self.object_classes, self.label_classes, self.images, self.outputs), (self.add_objects, self.add_labels, self.add_image, self.add_output)):
+    def prepare_settings(self, settings):
+        for count, sequence, add_fn in zip([int(_) for _ in settings[:4]], (self.object_classes, self.label_classes, self.images, self.outputs), (self.add_objects, self.add_labels, self.add_image, self.add_output)):
             del sequence[:]
 
-            for idx in range(count):
+            for index in range(count):
                 add_fn()
 
     def is_aggregation_module(self):
         return self.mode == MODE_TRAIN
 
     def get_classifier(self, mode):
-        path = os.path.join(self.path.get_absolute_path(), self.filename.value)
-
-        return PixelClassifier(path, mode)
+        return PixelClassifier(os.path.join(self.path.get_absolute_path(), self.filename.value), mode)
 
     def get_radius(self):
         if self.advanced_or_automatic == AA_AUTOMATIC:
@@ -304,23 +307,21 @@ class Classify(cellprofiler.cpmodule.CPModule):
 
     def prepare_group(self, workspace, grouping, image_numbers):
         if self.mode == MODE_TRAIN:
-            with self.get_classifier("w") as c:
-                assert isinstance(c, PixelClassifier)
+            with self.get_classifier("w") as classifier:
+                assert isinstance(classifier, PixelClassifier)
 
-                r = self.get_radius()
+                radius = self.get_radius()
 
-                i, j = numpy.mgrid[-r:r + 1, -r:r + 1]
+                i, j = numpy.mgrid[-radius:radius + 1, -radius:radius + 1]
 
-                kernel_mask = i * i + j * j <= r * r
+                kernel_mask = i * i + j * j <= radius * radius
 
                 n_features = numpy.sum(kernel_mask)
 
-                kernel = numpy.vstack([numpy.column_stack([numpy.ones(n_features, int) * channel, numpy.zeros(n_features, int), numpy.zeros(n_features, int), i[kernel_mask], j[kernel_mask]]) for channel in range(len(self.images))])
-
-                c.set_kernel(kernel)
+                classifier.set_kernel(numpy.vstack([numpy.column_stack([numpy.ones(n_features, int) * channel, numpy.zeros(n_features, int), numpy.zeros(n_features, int), i[kernel_mask], j[kernel_mask]]) for channel in range(len(self.images))]))
 
                 for class_name in self.get_class_names():
-                    c.add_class(class_name)
+                    classifier.add_class(class_name)
 
     def run(self, workspace):
         if self.mode == MODE_TRAIN:
@@ -339,14 +340,10 @@ class Classify(cellprofiler.cpmodule.CPModule):
         pixels = []
 
         for group in self.images:
-            image_name = group.image_name.value
-
-            img = workspace.image_set.get_image(image_name, must_be_grayscale=True).pixel_data
-
             #
             # [[img]] adds Z and T of dimension 1 to the uber array
             #
-            pixels.append([[img]])
+            pixels.append([[workspace.image_set.get_image(group.image_name.value, must_be_grayscale=True).pixel_data]])
 
         return numpy.array(pixels)
 
@@ -355,48 +352,42 @@ class Classify(cellprofiler.cpmodule.CPModule):
 
         image_number = workspace.measurements.image_number
 
-        with self.get_classifier("a") as c:
-            assert isinstance(c, PixelClassifier)
+        with self.get_classifier("a") as classifier:
+            assert isinstance(classifier, PixelClassifier)
 
-            c.add_image(pixels, image_number)
+            classifier.add_image(pixels, image_number)
 
-            gt = []
+            ground_truth = []
 
             if self.gt_source == SRC_OBJECTS:
-                bg = numpy.ones(pixels.shape[-2:], bool)
+                background = numpy.ones(pixels.shape[-2:], bool)
 
                 for group in self.object_classes:
                     object_name = group.object_name.value
 
-                    objects = workspace.object_set.get_objects(object_name)
+                    foreground = numpy.zeros(background.shape, bool)
 
-                    fg = numpy.zeros(bg.shape, bool)
+                    for plane, _ in workspace.object_set.get_objects(object_name).get_labels():
+                        foreground[plane > 0] = True
 
-                    for plane, _ in objects.get_labels():
-                        fg[plane > 0] = True
+                    background[foreground] = False
 
-                    bg[fg] = False
-
-                    gt.append((object_name, fg))
+                    ground_truth.append((object_name, foreground))
 
                 if self.wants_background_class:
-                    gt.append((self.background_class_name.value, bg))
+                    ground_truth.append((self.background_class_name.value, background))
             else:
-                label_image_name = self.labels_image.value
-
-                img = workspace.image_set.get_image(label_image_name)
+                img = workspace.image_set.get_image(self.labels_image.value)
 
                 pixel_data = (img.pixel_data * img.scale).astype(int)
 
-                for idx, group in enumerate(self.label_classes):
-                    class_name = group.class_name.value
+                for index, group in enumerate(self.label_classes):
+                    ground_truth.append((group.class_name.value, pixel_data == index + 1))
 
-                    gt.append((class_name, pixel_data == idx + 1))
+            for object_name, foreground in ground_truth:
+                i, j = numpy.where(foreground)
 
-            for object_name, fg in gt:
-                i, j = numpy.where(fg)
-
-                c.add_ground_truth(object_name, image_number, numpy.column_stack([numpy.zeros(len(i), int)] * 3 + [i, j]))
+                classifier.add_ground_truth(object_name, image_number, numpy.column_stack([numpy.zeros(len(i), int)] * 3 + [i, j]))
 
     def post_group(self, workspace, grouping):
         if self.mode == MODE_TRAIN:
@@ -405,10 +396,10 @@ class Classify(cellprofiler.cpmodule.CPModule):
             for round_name, n_random, n_error in ROUNDS:
                 self.do_training_round(last_round_name, round_name, n_random / len(self.get_class_names()), n_error / len(self.get_class_names()))
 
-            with self.get_classifier("a") as c:
-                assert isinstance(c, PixelClassifier)
+            with self.get_classifier("a") as classifier:
+                assert isinstance(classifier, PixelClassifier)
 
-                c.config_final_pipeline("final", "final")
+                classifier.config_final_pipeline("final", "final")
 
     def do_training_round(self, name_in, name_out, n_random_samples, n_error_samples):
         """
@@ -421,109 +412,97 @@ class Classify(cellprofiler.cpmodule.CPModule):
 
         :return:
         """
-        with self.get_classifier("a") as c:
-            assert isinstance(c, PixelClassifier)
+        with self.get_classifier("a") as classifier:
+            assert isinstance(classifier, PixelClassifier)
 
             #
             # Sample
             #
-            fb_sample_name = name_out + "_filter_bank"
+            fb_sample_name = "{0}_filter_bank".format(name_out)
 
-            classifier_sample_name = name_out + "_classifier"
+            classifier_sample_name = "{0}_classifier".format(name_out)
 
             for sample_name in fb_sample_name, classifier_sample_name:
                 d = {}
 
-                for idx, class_name in enumerate(c.get_class_names()):
-                    gt = c.get_ground_truth(class_name)
+                for index, class_name in enumerate(classifier.get_class_names()):
+                    ground_truth = classifier.get_ground_truth(class_name)
 
                     if name_in is not None and n_error_samples > 0:
-                        probs = c.run_pipeline(name_in, name_in, gt)[:, idx]
+                        probabilities = classifier.run_pipeline(name_in, name_in, ground_truth)[:, index]
 
-                        order = numpy.argsort(probs)
+                        order = numpy.argsort(probabilities)
 
-                        error_idx = order[:n_error_samples]
+                        error_index = order[:n_error_samples]
 
-                        other_idx = order[n_error_samples:]
+                        other_index = order[n_error_samples:]
                     else:
-                        error_idx = numpy.zeros(0, int)
+                        error_index = numpy.zeros(0, int)
 
-                        other_idx = numpy.arange(gt.shape[0])
-                    if len(other_idx) > n_random_samples:
-                        r = c.random_state(str(name_in) + name_out + class_name)
+                        other_index = numpy.arange(ground_truth.shape[0])
+                    if len(other_index) > n_random_samples:
+                        random_state = classifier.random_state(str(name_in) + name_out + class_name)
 
-                        other_idx = r.choice(other_idx, size=n_random_samples, replace=False)
+                        other_index = random_state.choice(other_index, size=n_random_samples, replace=False)
 
-                    sample_idx = numpy.hstack((error_idx, other_idx))
+                    sample_idx = numpy.hstack((error_index, other_index))
 
                     d[class_name] = sample_idx
 
-                c.add_sampling(sample_name, d)
+                classifier.add_sampling(sample_name, d)
 
-            samples, classes = c.sample(fb_sample_name)
+            samples, classes = classifier.sample(fb_sample_name)
 
-            c.make_filter_bank(samples, classes, name_out, self.get_n_features())
+            classifier.make_filter_bank(samples, classes, name_out, self.get_n_features())
 
-            samples, classes = c.sample(classifier_sample_name)
+            samples, classes = classifier.sample(classifier_sample_name)
 
-            filtered = c.use_filter_bank(name_out, samples)
-
-            algorithm = sklearn.ensemble.ExtraTreesClassifier(n_estimators=self.get_n_estimators(), min_samples_leaf=self.get_min_samples_per_leaf())
-
-            c.fit(name_out, filtered, classes, algorithm)
+            classifier.fit(name_out, classifier.use_filter_bank(name_out, samples), classes, sklearn.ensemble.ExtraTreesClassifier(n_estimators=self.get_n_estimators(), min_samples_leaf=self.get_min_samples_per_leaf()))
 
     def run_classify(self, workspace):
         pixels = self.get_5d_image(workspace)
+
         #
         # Process the image in chunks
         #
-        with self.get_classifier("r") as c:
-            assert isinstance(c, PixelClassifier)
+        with self.get_classifier("r") as classifier:
+            assert isinstance(classifier, PixelClassifier)
 
-            class_names = c.get_class_names()
+            class_names = classifier.get_class_names()
 
-            prob_idxs = numpy.array([class_names.index(group.class_name.value) for group in self.outputs])
+            probabilities_indices = numpy.array([class_names.index(group.class_name.value) for group in self.outputs])
 
             chunk_size = 128
 
-            prob_maps = numpy.zeros((len(prob_idxs), pixels.shape[3], pixels.shape[4]))
+            probabilities = numpy.zeros((len(probabilities_indices), pixels.shape[3], pixels.shape[4]))
 
-            for i in range(0, pixels.shape[3], chunk_size):
-                iend = min(i + chunk_size, pixels.shape[3])
+            for index in range(0, pixels.shape[3], chunk_size):
+                iend = min(index + chunk_size, pixels.shape[3])
 
                 for j in range(0, pixels.shape[4], chunk_size):
                     jend = min(j + chunk_size, pixels.shape[4])
 
-                    ii, jj = [_.flatten() for _ in numpy.mgrid[i:iend, j:jend]]
+                    ii, jj = [_.flatten() for _ in numpy.mgrid[index:iend, j:jend]]
 
-                    coords = numpy.column_stack((numpy.zeros(len(ii), int), numpy.zeros(len(ii), int), numpy.zeros(len(ii), int), ii, jj))
+                    probabilities[:, index:iend, j:jend] = classifier.run_final_pipeline(classifier.get_samples(pixels, numpy.column_stack((numpy.zeros(len(ii), int), numpy.zeros(len(ii), int), numpy.zeros(len(ii), int), ii, jj))))[:, probabilities_indices].reshape(iend - index, jend - j, len(probabilities)).transpose(2, 0, 1)
 
-                    samples = c.get_samples(pixels, coords)
-
-                    probs = c.run_final_pipeline(samples)
-
-                    prob_maps[:, i:iend, j:jend] = probs[:, prob_idxs].reshape(iend - i, jend - j, len(prob_maps)).transpose(2, 0, 1)
-
-        for i, group in enumerate(self.outputs):
-            image_name = group.output_image.value
-
-            image = cellprofiler.cpimage.Image(prob_maps[i])
-
-            workspace.image_set.add(image_name, image)
+        for index, group in enumerate(self.outputs):
+            workspace.image_set.add(group.output_image.value, cellprofiler.cpimage.Image(probabilities[index]))
 
         if self.show_window:
-            workspace.display_data.input_images = [pixels[i].reshape(*pixels.shape[-2:]) for i in range(pixels.shape[0])]
+            workspace.display_data.input_images = [pixels[index].reshape(*pixels.shape[-2:]) for index in range(pixels.shape[0])]
 
-            workspace.display_data.output_images = [prob_maps[i] for i in range(len(prob_maps))]
+            workspace.display_data.output_images = [probabilities[index] for index in range(len(probabilities))]
 
     def display(self, workspace, figure):
         if self.mode == MODE_CLASSIFY:
             figure.set_subplots((2, max(len(self.images), len(self.outputs))))
 
-            for i, (group, image) in enumerate(zip(self.images, workspace.display_data.input_images)):
-                figure.subplot_imshow_bw(0, i, image, title=group.image_name.value)
-            for i, (group, image) in enumerate(zip(self.outputs, workspace.display_data.output_images)):
-                figure.subplot_imshow_bw(1, i, image, title=group.output_image.value)
+            for index, (group, image) in enumerate(zip(self.images, workspace.display_data.input_images)):
+                figure.subplot_imshow_bw(0, index, image, title=group.image_name.value)
+
+            for index, (group, image) in enumerate(zip(self.outputs, workspace.display_data.output_images)):
+                figure.subplot_imshow_bw(1, index, image, title=group.output_image.value)
 
 
 #
@@ -555,16 +534,25 @@ class PixelClassifier:
 
         if mode == "w":
             self.f.attrs[A_VERSION] = self.version
+
             self.g_training_set = self.root.create_group(G_TRAINING_SET)
+
             self.g_filters = self.root.create_group(G_FILTERS)
+
             self.g_sampling = self.root.create_group(G_SAMPLING)
+
             self.g_classifiers = self.root.create_group(G_CLASSIFIERS)
+
             self.g_images = self.root.create_group(G_IMAGES)
         else:
             self.g_training_set = self.root[G_TRAINING_SET]
+
             self.g_filters = self.root[G_FILTERS]
+
             self.g_sampling = self.root[G_SAMPLING]
+
             self.g_classifiers = self.root[G_CLASSIFIERS]
+
             self.g_images = self.root[G_IMAGES]
 
         self.classifier_cache = {}
@@ -574,12 +562,19 @@ class PixelClassifier:
 
     def __exit__(self, exc_type, exc_value, exc_traceback):
         self.f.flush()
+
         del self.root
+
         del self.g_training_set
+
         del self.g_filters
+
         del self.g_classifiers
+
         del self.g_sampling
+
         self.f.close()
+
         del self.f
 
     def random_state(self, extra=''):
@@ -671,9 +666,7 @@ class PixelClassifier:
         self.g_images.create_dataset(image_number, data=image)
 
     def get_image(self, image_number):
-        image_number = str(image_number)
-
-        return self.g_images[image_number].value
+        return self.g_images[str(image_number)].value
 
     def add_ground_truth(self, class_name, image_number, coordinates):
         """
@@ -687,13 +680,13 @@ class PixelClassifier:
         """
         coordinates = numpy.column_stack((numpy.ones(coordinates.shape[0], coordinates.dtype) * image_number, coordinates))
 
-        ds = self.get_ground_truth(class_name)
+        dataset = self.get_ground_truth(class_name)
 
-        ds_idx = ds.shape[0]
+        ds_idx = dataset.shape[0]
 
-        ds.resize(ds_idx + coordinates.shape[0], axis=0)
+        dataset.resize(ds_idx + coordinates.shape[0], axis=0)
 
-        ds[ds_idx:] = coordinates
+        dataset[ds_idx:] = coordinates
 
         if A_DIGEST in self.g_training_set.attrs:
             del self.g_training_set.attrs[A_DIGEST]
@@ -709,27 +702,27 @@ class PixelClassifier:
         """
         kernel = self.get_kernel()[numpy.newaxis, :, :]
 
-        coords = pixels[:, numpy.newaxis, :] + kernel
+        coordinates = pixels[:, numpy.newaxis, :] + kernel
 
         #
         # Boundary reflection
         #
-        coords[coords < 0] = numpy.abs(coords[coords < 0])
+        coordinates[coordinates < 0] = numpy.abs(coordinates[coordinates < 0])
 
         for i, axis_size in enumerate(image.shape):
-            mask = coords[:, :, i] >= axis_size
+            mask = coordinates[:, :, i] >= axis_size
 
-            coords[mask, i] = axis_size * 2 - coords[mask, i] - 1
+            coordinates[mask, i] = axis_size * 2 - coordinates[mask, i] - 1
 
         #
         # Samples
         #
         samples = image[
-            coords[:, :, 0],
-            coords[:, :, 1],
-            coords[:, :, 2],
-            coords[:, :, 3],
-            coords[:, :, 4]
+            coordinates[:, :, 0],
+            coordinates[:, :, 1],
+            coordinates[:, :, 2],
+            coordinates[:, :, 3],
+            coordinates[:, :, 4]
         ]
 
         return samples
@@ -746,10 +739,10 @@ class PixelClassifier:
         if sampling_name in self.g_sampling.keys():
             del self.g_sampling[sampling_name]
 
-        g = self.g_sampling.create_group(sampling_name)
+        group = self.g_sampling.create_group(sampling_name)
 
-        for k, v in d_index.iteritems():
-            g.create_dataset(k, data=v)
+        for key, value in d_index.iteritems():
+            group.create_dataset(key, data=value)
 
     def sample(self, sampling_name):
         """
@@ -765,13 +758,13 @@ class PixelClassifier:
 
         classes = []
 
-        for idx, class_name in enumerate(self.get_class_names()):
+        for index, class_name in enumerate(self.get_class_names()):
             if class_name in g.keys():
                 sampling = g[class_name][:]
 
-                classes.append(numpy.ones(len(sampling), numpy.uint8) * idx)
+                classes.append(numpy.ones(len(sampling), numpy.uint8) * index)
 
-                gt = self.get_ground_truth(class_name)
+                ground_truth = self.get_ground_truth(class_name)
 
                 #
                 # h5py datasets are not addressable via an array of indices
@@ -783,10 +776,10 @@ class PixelClassifier:
                 #
                 # We sort the sampling indices and then process in chunks.
                 #
-                if len(gt) == len(sampling):
+                if len(ground_truth) == len(sampling):
                     logger.debug("Extracting %d samples from %s" % (len(sampling), class_name))
 
-                    samples.append(gt[:])
+                    samples.append(ground_truth[:])
                 else:
                     chunk_size = self.pix_chunk_size
 
@@ -794,8 +787,8 @@ class PixelClassifier:
 
                     sindx = 0
 
-                    for gtidx in range(0, len(gt), chunk_size):
-                        gtidx_end = min(gtidx + chunk_size, len(gt))
+                    for gtidx in range(0, len(ground_truth), chunk_size):
+                        gtidx_end = min(gtidx + chunk_size, len(ground_truth))
 
                         if sampling[sindx] >= gtidx_end:
                             continue
@@ -804,11 +797,11 @@ class PixelClassifier:
 
                         logger.debug("Extracting %d samples from %s %d:%d" % (sindx_end - sindx, class_name, gtidx, gtidx_end))
 
-                        samples.append(gt[:][sampling[sindx:sindx_end], :])
+                        samples.append(ground_truth[:][sampling[sindx:sindx_end], :])
 
                         sindx = sindx_end
 
-                        if sindx >= len(gt):
+                        if sindx >= len(ground_truth):
                             break
 
         samples = numpy.vstack(samples)
@@ -830,14 +823,14 @@ class PixelClassifier:
 
         counts = counts[image_numbers]
 
-        idxs = numpy.hstack([[0], numpy.cumsum(counts)])
+        indices = numpy.hstack([[0], numpy.cumsum(counts)])
 
         result = []
 
-        for image_number, idx, idx_end in zip(image_numbers, idxs[:-1], idxs[1:]):
+        for image_number, index, index_end in zip(image_numbers, indices[:-1], indices[1:]):
             image = self.get_image(image_number)
 
-            result.append(self.get_samples(image, samples[idx:idx_end, 1:]))
+            result.append(self.get_samples(image, samples[index:index_end, 1:]))
 
         return numpy.vstack(result), classes
 
@@ -854,9 +847,9 @@ class PixelClassifier:
         :return:
         """
         if algorithm is None:
-            r = self.random_state(filter_bank_name)
+            random_state = self.random_state(filter_bank_name)
 
-            algorithm = sklearn.decomposition.RandomizedPCA(n_filters, random_state=r)
+            algorithm = sklearn.decomposition.RandomizedPCA(n_filters, random_state=random_state)
 
         algorithm.fit(sampling, classes)
 
@@ -869,15 +862,15 @@ class PixelClassifier:
             if filter_bank_name in self.g_filters.keys():
                 del self.g_filters[filter_bank_name]
 
-            ds = self.g_filters.create_dataset(filter_bank_name, data=components)
+            dataset = self.g_filters.create_dataset(filter_bank_name, data=components)
 
-            ds.attrs[A_CLASS] = CLS_FILTER
+            dataset.attrs[A_CLASS] = CLS_FILTER
         else:
             s = pickle.dumps(algorithm)
 
-            ds = self.g_filters.create_dataset(filter_bank_name,
-                                               data=s)
-            ds.attrs[A_CLASS] = CLS_CLASSIFIER
+            dataset = self.g_filters.create_dataset(filter_bank_name, data=s)
+
+            dataset.attrs[A_CLASS] = CLS_CLASSIFIER
 
     def use_filter_bank(self, filter_bank_name, sample):
         """
@@ -888,11 +881,11 @@ class PixelClassifier:
 
         :return:
         """
-        ds = self.g_filters[filter_bank_name]
+        dataset = self.g_filters[filter_bank_name]
 
-        if ds.attrs[A_CLASS] == CLS_FILTER:
+        if dataset.attrs[A_CLASS] == CLS_FILTER:
             if USE_DOT:
-                result = numpy.dot(sample, ds[:].T)
+                result = numpy.dot(sample, dataset[:].T)
             else:
                 #
                 # A dot product... but cluster's np.dot is so XXXXed
@@ -901,16 +894,16 @@ class PixelClassifier:
 
                 result = []
 
-                for idx in range(0, len(sample), chunk_size):
-                    idx_end = min(idx + chunk_size, len(sample))
+                for index in range(0, len(sample), chunk_size):
+                    index_end = min(index + chunk_size, len(sample))
 
-                    logger.debug("Processing dot product chunk %d:%d of %d" % (idx, idx_end, len(sample)))
+                    logger.debug("Processing dot product chunk {0:d}:{1:d} of {2:d}".format(index, index_end, len(sample)))
 
-                    result.append(numpy.sum(sample[idx:idx_end, :, numpy.newaxis] * ds[:].T[numpy.newaxis, :, :], 1))
+                    result.append(numpy.sum(sample[index:index_end, :, numpy.newaxis] * dataset[:].T[numpy.newaxis, :, :], 1))
 
                 result = numpy.vstack(result)
         else:
-            algorithm = pickle.loads(ds.value)
+            algorithm = pickle.loads(dataset.value)
 
             result = algorithm.transform(sample)
 
@@ -937,9 +930,9 @@ class PixelClassifier:
         if classifier_name in self.g_classifiers.keys():
             del self.g_classifiers[classifier_name]
 
-        ds = self.g_classifiers.create_dataset(classifier_name, data=s)
+        dataset = self.g_classifiers.create_dataset(classifier_name, data=s)
 
-        ds.attrs[A_CLASS] = CLS_CLASSIFIER
+        dataset.attrs[A_CLASS] = CLS_CLASSIFIER
 
     def predict_proba(self, classifier_name, sample):
         if classifier_name not in self.classifier_cache:

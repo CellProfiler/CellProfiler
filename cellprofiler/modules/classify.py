@@ -97,7 +97,7 @@ class Classify(cpm.CPModule):
             There must be at least this number of example pixels in each branch
             for the classifier to have confidence that the split is real and
             not just an artifact of an irrelevant measurement.
-            
+
             Lower this setting if the classifier does a good job on most of the
             pixels but does not draw sharp distinctions between one class and
             another at the border between the classes (e.g. at the edges of
@@ -195,7 +195,7 @@ class Classify(cpm.CPModule):
                 "Class name", "Class %d" % (len(self.label_classes) + 1),
                 doc="""
             The name to give to pixels of this class (e.g. "Foreground")
-            
+
             You should add one class for each class you defined in Ilastik"""))
         if can_remove:
             group.append("remover", cps.RemoveSettingButton(
@@ -340,7 +340,13 @@ class Classify(cpm.CPModule):
             self.run_classify(workspace)
 
     def get_5d_image(self, workspace):
-        """Compile a 5d image from the channel planes"""
+        """
+        Compile a 5d image from the channel planes
+
+        :param workspace:
+
+        :return:
+        """
         pixels = []
         for group in self.images:
             image_name = group.image_name.value
@@ -397,15 +403,16 @@ class Classify(cpm.CPModule):
                 assert isinstance(c, PixelClassifier)
                 c.config_final_pipeline("final", "final")
 
-    def do_training_round(
-            self, name_in, name_out, n_random_samples, n_error_samples):
-        """Perform a round of training
+    def do_training_round(self, name_in, name_out, n_random_samples, n_error_samples):
+        """
+        Perform a round of training
 
-        name_in - name of the filter bank and classifier to use to find the
-                  error samples. None if no error samples.
-        name_out - name for output classifier
-        n_random_samples - # of samples randomly drawn from each class
-        n_error_samples - # of samples drawn from errors
+        :param name_in: name of the filter bank and classifier to use to find the error samples. None if no error samples.
+        :param name_out: name for output classifier
+        :param n_random_samples: # of samples randomly drawn from each class
+        :param n_error_samples: # of samples drawn from errors
+
+        :return:
         """
         with self.get_classifier("a") as c:
             assert isinstance(c, PixelClassifier)
@@ -505,18 +512,10 @@ class PixelClassifier(object):
 
     The parts:
 
-    Kernel - this is the patch that's taken from the pixel's neighborhood. It
-             has the shape, NxM where N is the # of points in the patch and
-             M are the indices relative to the pixel. The kernel dimensions
-             are C, T, Z, Y, X.
-    TrainingSet - the ground truth data. Each label has a corresponding
-             dataset stored using the name of the class. The dataset has the
-             shape, S x N, where N is the # of points in the patch and S is
-             the # of samples for that class.
-    Filters - the filters applied to the kernel to derive features. Each
-              filter is a vector of length N.
-    Classifier - the classifier is pickled after being trained and is stored
-                 in a dataset.
+    Kernel - this is the patch that's taken from the pixel's neighborhood. It has the shape, NxM where N is the # of points in the patch and M are the indices relative to the pixel. The kernel dimensions are C, T, Z, Y, X.
+    TrainingSet - the ground truth data. Each label has a corresponding dataset stored using the name of the class. The dataset has the shape, S x N, where N is the # of points in the patch and S is the # of samples for that class.
+    Filters - the filters applied to the kernel to derive features. Each filter is a vector of length N.
+    Classifier - the classifier is pickled after being trained and is stored in a dataset.
     """
     version = 1
 
@@ -524,10 +523,8 @@ class PixelClassifier(object):
         """Either create or load the classifier from a file
 
         path - path to the file
-        mode - "r" for read-only, "w" for overwrite (new file) or "a" for
-               read-write access
-        classifier_path - path to the sub-groups within the HDF file, defaults
-                          to the root.
+        mode - "r" for read-only, "w" for overwrite (new file) or "a" for read-write access
+        classifier_path - path to the sub-groups within the HDF file, defaults to the root.
         """
         self.f = h5py.File(path, mode)
         self.root = \
@@ -561,8 +558,12 @@ class PixelClassifier(object):
         del self.f
 
     def random_state(self, extra=''):
-        """Return a random state based on the ground truth sampled
+        """
+        Return a random state based on the ground truth sampled
 
+        :param extra:
+
+        :return:
         """
         if A_DIGEST not in self.g_training_set.attrs:
             md5 = hashlib.md5()
@@ -574,14 +575,23 @@ class PixelClassifier(object):
 
     @staticmethod
     def get_instances(group, class_name):
-        """Get the keys for a group for objects of a given class"""
-        return sorted([k for k in group.keys()
-                       if group[k].attrs[A_CLASS] == class_name])
+        """
+        Get the keys for a group for objects of a given class
+
+        :param group:
+        :param class_name:
+
+        :return:
+        """
+        return sorted([k for k in group.keys() if group[k].attrs[A_CLASS] == class_name])
 
     def set_kernel(self, kernel):
-        """Set the kernel used to sample pixels from a neighborhood
+        """
+        Set the kernel used to sample pixels from a neighborhood
 
-        kernel - an N x 5 matrix of N offsets by 5 dimensions (C, T, Z, Y, X)
+        :param kernel: an N x 5 matrix of N offsets by 5 dimensions (C, T, Z, Y, X)
+
+        :return:
         """
         if DS_KERNEL in self.root.keys():
             del self.root[DS_KERNEL]
@@ -605,12 +615,12 @@ class PixelClassifier(object):
         return self.get_instances(self.g_training_set, CLS_GROUND_TRUTH)
 
     def get_ground_truth(self, class_name):
-        """Get the ground truth for a class
+        """
+        Get the ground truth for a class
 
-        class_name - the name of the class
+        :param class_name: the name of the class
 
-        returns an S X 6 where the first index is the image number and
-        the remaining are the coordinates of the GT pixel in C, T, Z, Y, X form
+        :return: an S X 6 where the first index is the image number and the remaining are the coordinates of the GT pixel in C, T, Z, Y, X form
         """
         return self.g_training_set[class_name]
 
@@ -636,11 +646,14 @@ class PixelClassifier(object):
         return self.g_images[image_number].value
 
     def add_ground_truth(self, class_name, image_number, coordinates):
-        """Add ground truth to a class
+        """
+        Add ground truth to a class
 
-        class_name - name of the class
-        image_number - the image number as reported in add_image
-        pixels - an S x 5 matrix of S samples and 5 pixel coordinates
+        :param class_name: name of the class
+        :param image_number: the image number as reported in add_image
+        :param coordinates: an S x 5 matrix of S samples and 5 pixel coordinates
+
+        :return:
         """
         coordinates = np.column_stack(
                 (np.ones(coordinates.shape[0], coordinates.dtype) * image_number,
@@ -654,14 +667,13 @@ class PixelClassifier(object):
             del self.g_training_set.attrs[A_DIGEST]
 
     def get_samples(self, image, pixels):
-        """Extract samples from an image at given pixels
+        """
+        Extract samples from an image at given pixels
 
-        image - a C, T, Z, Y, X image
+        :param image: a C, T, Z, Y, X image
+        :param pixels: an S x 5 matrix where the columns are the C, T, Z, Y, X coordinates and the rows are the samples to collect
 
-        pixels - an S x 5 matrix where the columns are the C, T, Z, Y, X
-                 coordinates and the rows are the samples to collect
-
-        returns an S x N matrix where N is the size of the kernel
+        :return: an S x N matrix where N is the size of the kernel
         """
         kernel = self.get_kernel()[np.newaxis, :, :]
         coords = pixels[:, np.newaxis, :] + kernel
@@ -683,11 +695,13 @@ class PixelClassifier(object):
         return samples
 
     def add_sampling(self, sampling_name, d_index):
-        """Add a sampling of the ground truth
+        """
+        Add a sampling of the ground truth
 
-        sampling_name - a name for the sampling
-        d_index - a dictionary of indices. The key is the class name and
-                  the value is a vector of indices into the class's ground truth
+        :param sampling_name: a name for the sampling
+        :param d_index: a dictionary of indices. The key is the class name and the value is a vector of indices into the class's ground truth
+
+        :return:
         """
         if sampling_name in self.g_sampling.keys():
             del self.g_sampling[sampling_name]
@@ -696,13 +710,12 @@ class PixelClassifier(object):
             g.create_dataset(k, data=v)
 
     def sample(self, sampling_name):
-        """Return sample and vector of class indexes
+        """
+        Return sample and vector of class indexes
 
-        sampling_name - the name of the sampling
+        :param sampling_name: the name of the sampling
 
-        Returns a sample which is S x N and vector of length S which is
-        composed of indexes into the class names returned by get_class_names.
-        S is the length of the sum of all samples in the sampling
+        :return: a sample which is S x N and vector of length S which is composed of indexes into the class names returned by get_class_names.  S is the length of the sum of all samples in the sampling.
         """
         g = self.g_sampling[sampling_name]
         samples = []
@@ -764,19 +777,17 @@ class PixelClassifier(object):
 
         return np.vstack(result), classes
 
-    def make_filter_bank(self, sampling, classes, filter_bank_name, n_filters,
-                         algorithm=None):
-        """Make a filter bank using PCA
+    def make_filter_bank(self, sampling, classes, filter_bank_name, n_filters, algorithm=None):
+        """
+        Make a filter bank using PCA
 
-        sampling - a sampling of the ground truth
-        classes - a vector of the same length as the sampling giving the
-                  indexes of the classes of each sample
-        filter_bank_name - the name to assign to the filter bank
-        n_filters - # of filters to create
+        :param sampling: a sampling of the ground truth
+        :param classes: a vector of the same length as the sampling giving the indexes of the classes of each sample
+        :param filter_bank_name: the name to assign to the filter bank
+        :param n_filters: # of filters to create
+        :param algorithm: an object that can be fitted using algorithm.fit(X, Y) and can transform using algorithm.transform(X). Default is RandomizedPCA.
 
-        algorithm - an object that can be fitted using algorithm.fit(X, Y)
-                    and can transform using algorithm.transform(X). Default
-                    is RandomizedPCA.
+        :return:
         """
         if algorithm is None:
             r = self.random_state(filter_bank_name)
@@ -799,7 +810,14 @@ class PixelClassifier(object):
             ds.attrs[A_CLASS] = CLS_CLASSIFIER
 
     def use_filter_bank(self, filter_bank_name, sample):
-        """Transform a sample using a filter bank"""
+        """
+        Transform a sample using a filter bank
+
+        :param filter_bank_name:
+        :param sample:
+
+        :return:
+        """
         ds = self.g_filters[filter_bank_name]
         if ds.attrs[A_CLASS] == CLS_FILTER:
             if USE_DOT:
@@ -823,12 +841,14 @@ class PixelClassifier(object):
         return result
 
     def fit(self, classifier_name, sample, classes, algorithm=None):
-        """Fit an algorithm to data and save
+        """
+        Fit an algorithm to data and save
 
-        classifier_name - save using this name
-        sample - S samples x N features
-        classes - S class labels indexing into the class names
-        algorithm - algorithm to use to train
+        :param classifier_name: save using this name
+        :param sample: S samples x N features
+        :param classes: S class labels indexing into the class names
+        :param algorithm: algorithm to use to train
+        :return:
         """
         if algorithm is None:
             algorithm = ExtraTreesClassifier(

@@ -430,17 +430,17 @@ class Measurement(object):
         except KeyError:
             return 0
 
-    def get_is_first_image(self):
+    @property
+    def is_first_image(self):
         """True if this is the first image in the set"""
         return self.__is_first_image
 
-    def set_is_first_image(self, value):
+    @is_first_image.setter
+    def is_first_image(self, value):
         if not value:
             raise ValueError("Can only reset to be first image")
         self.__is_first_image = True
         self.image_set_number = self.image_set_start_number
-
-    is_first_image = property(get_is_first_image, set_is_first_image)
 
     @property
     def image_set_start_number(self):
@@ -514,23 +514,23 @@ class Measurement(object):
             data = unicode(data).encode('unicode_escape')
         self.hdf5_dict.add_all(EXPERIMENT, feature_name, [data], [0])
 
-    def get_group_number(self):
+    @property
+    def group_number(self):
         """The number of the group currently being processed"""
         return self.get_current_image_measurement(GROUP_NUMBER)
 
-    def set_group_number(self, group_number, can_overwrite=False):
+    @group_number.setter
+    def group_number(self, group_number, can_overwrite=False):
         self.add_image_measurement(GROUP_NUMBER, group_number)
 
-    group_number = property(get_group_number, set_group_number)
-
-    def get_group_index(self):
+    @property
+    def group_index(self):
         """The within-group index of the current image set"""
         return self.get_current_image_measurement(GROUP_INDEX)
 
-    def set_group_index(self, group_index):
+    @group_index.setter
+    def group_index(self, group_index):
         self.add_image_measurement(GROUP_INDEX, group_index)
-
-    group_index = property(get_group_index, set_group_index)
 
     def get_groupings(self, features):
         """Return groupings of image sets based on feature values
@@ -857,13 +857,12 @@ class Measurement(object):
         """Remove all measurements"""
         self.hdf5_dict.clear()
 
-    def get_object_names(self):
+    @property
+    def object_names(self):
         """The list of object names (including Image) that have measurements
         """
         return [x for x in self.hdf5_dict.top_level_names()
                 if x != RELATIONSHIP]
-
-    object_names = property(get_object_names)
 
     def get_feature_names(self, object_name):
         """The list of feature names (measurements) for an object
@@ -1640,11 +1639,10 @@ class Measurement(object):
                 return RGB(image)
         return image
 
-    def get_providers(self):
+    @property
+    def providers(self):
         """The list of providers (populated during the image discovery phase)"""
         return self.__image_providers
-
-    providers = property(get_providers)
 
     def get_image_provider(self, name):
         """Get a named image provider
@@ -1702,12 +1700,11 @@ class Measurement(object):
         """Remove all of the cached images"""
         self.__images.clear()
 
-    def get_names(self):
+    @property
+    def names(self):
         """Get the image provider names
         """
         return [provider.name for provider in self.providers]
-
-    names = property(get_names)
 
     def add(self, name, image):
         from .image import VanillaImageProvider

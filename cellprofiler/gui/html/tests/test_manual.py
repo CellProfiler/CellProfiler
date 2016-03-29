@@ -1,13 +1,12 @@
-'''Tests for cellprofiler.gui.html.manual'''
+"""Tests for cellprofiler.gui.html.manual"""
 
+import cellprofiler.gui.html.manual
+import cellprofiler.preferences
 import os
 import re
 import tempfile
 import traceback
 import unittest
-
-import cellprofiler.gui.html.manual as M
-import cellprofiler.preferences as cpprefs
 
 
 class TestManual(unittest.TestCase):
@@ -18,13 +17,17 @@ class TestManual(unittest.TestCase):
         from cellprofiler.modules.run_imagej import RunImageJ
         from cellprofiler.settings import Text
         self.old_make_command_choice = RunImageJ.make_command_choice
+
         def make_command_choice(self, label, doc):
             return Text(label, "None", doc=doc)
+
         RunImageJ.make_command_choice = make_command_choice
         self.old_populate_language_dictionary = \
             RunImageJ.populate_language_dictionary
+
         def populate_language_dictionary(self):
             self.language_dictionary = dict(swedish="SwedishEngine")
+
         RunImageJ.populate_language_dictionary = populate_language_dictionary
 
     def tearDown(self):
@@ -41,7 +44,7 @@ class TestManual(unittest.TestCase):
 
     def test_01_01_output_module_html(self):
         from cellprofiler.modules import get_module_names, instantiate_module
-        M.output_module_html(self.temp_dir)
+        cellprofiler.gui.html.manual.output_module_html(self.temp_dir)
         for module_name in sorted(get_module_names()):
             fd = None
             try:
@@ -49,19 +52,19 @@ class TestManual(unittest.TestCase):
             except:
                 module = instantiate_module(module_name)
                 location = os.path.split(
-                    module.create_settings.im_func.func_code.co_filename)[0]
-                if location == cpprefs.get_plugin_directory():
+                        module.create_settings.im_func.func_code.co_filename)[0]
+                if location == cellprofiler.preferences.get_plugin_directory():
                     continue
                 traceback.print_exc()
-                self.assert_("Failed to open %s.html" %module_name)
+                self.assert_("Failed to open %s.html" % module_name)
             data = fd.read()
             fd.close()
 
             #
             # Make sure that some nesting rules are obeyed.
             #
-            tags_we_care_about =  ("i","b","ul","ol","li","table","tr","td","th",
-                                   "h1","h2","h3","html","head", "body")
+            tags_we_care_about = ("i", "b", "ul", "ol", "li", "table", "tr", "td", "th",
+                                  "h1", "h2", "h3", "html", "head", "body")
             pattern = r"<\s*([a-zA-Z0-9]+).[^>]*>"
             anti_pattern = r"</\s*([a-zA-Z0-9]+)[^>]*>"
             d = {}
@@ -75,12 +78,12 @@ class TestManual(unittest.TestCase):
             for p, dd in ((pattern, d),
                           (anti_pattern, anti_d)):
                 pos = 0
-                while(True):
+                while True:
                     m = re.search(p, data[pos:])
                     if m is None:
                         break
                     tag = m.groups()[0].lower()
-                    pos = pos + m.start(1)+1
+                    pos = pos + m.start(1) + 1
                     if dd.has_key(tag):
                         dd[tag][COUNT] += 1
                         dd[tag][LIST].append(pos)
@@ -107,16 +110,16 @@ class TestManual(unittest.TestCase):
             T_ANTI_B = 17
             tokens = []
             for tag, token, anti_token in (
-                ('table', T_TABLE, T_ANTI_TABLE),
-                ('tr', T_TR, T_ANTI_TR),
-                ('td', T_TD, T_ANTI_TD),
-                ('th', T_TH, T_ANTI_TH),
-                ('ul', T_UL, T_ANTI_UL),
-                ('ol', T_OL, T_ANTI_OL),
-                ('li', T_LI, T_ANTI_LI),
-                ('i', T_I, T_ANTI_I),
-                ('b', T_B, T_ANTI_B)
-                ):
+                    ('table', T_TABLE, T_ANTI_TABLE),
+                    ('tr', T_TR, T_ANTI_TR),
+                    ('td', T_TD, T_ANTI_TD),
+                    ('th', T_TH, T_ANTI_TH),
+                    ('ul', T_UL, T_ANTI_UL),
+                    ('ol', T_OL, T_ANTI_OL),
+                    ('li', T_LI, T_ANTI_LI),
+                    ('i', T_I, T_ANTI_I),
+                    ('b', T_B, T_ANTI_B)
+            ):
                 tokens += [(pos, token) for pos in d[tag][LIST]]
                 tokens += [(pos, anti_token) for pos in anti_d[tag][LIST]]
 
@@ -133,11 +136,11 @@ class TestManual(unittest.TestCase):
             S_AFTER_B = 9
 
             state_transitions = {
-                S_INIT: { T_TABLE: S_AFTER_TABLE,
-                          T_OL: S_AFTER_OL,
-                          T_UL: S_AFTER_UL,
-                          T_I: S_AFTER_I,
-                          T_B: S_AFTER_B },
+                S_INIT: {T_TABLE: S_AFTER_TABLE,
+                         T_OL: S_AFTER_OL,
+                         T_UL: S_AFTER_UL,
+                         T_I: S_AFTER_I,
+                         T_B: S_AFTER_B},
                 S_AFTER_TABLE: {
                     T_ANTI_TABLE: S_INIT,
                     T_TR: S_AFTER_TR
@@ -181,7 +184,7 @@ class TestManual(unittest.TestCase):
                 },
                 S_AFTER_I: {
                     T_ANTI_I: S_INIT,
-                    T_I: S_AFTER_I, # Stupid but legal <i><i>Foo</i></i>
+                    T_I: S_AFTER_I,  # Stupid but legal <i><i>Foo</i></i>
                     T_B: S_AFTER_B,
                     T_TABLE: S_AFTER_TABLE,
                     T_OL: S_AFTER_OL,
@@ -200,18 +203,18 @@ class TestManual(unittest.TestCase):
 
             for pos, token in tokens:
                 self.assertTrue(
-                    len(state) >= 0,
-                    "Error in %s near position %d (%s)" %
-                    (module_name, pos, data[max(0,pos - 30):
-                                            max(pos + 30, len(data))])
+                        len(state) >= 0,
+                        "Error in %s near position %d (%s)" %
+                        (module_name, pos, data[max(0, pos - 30):
+                        max(pos + 30, len(data))])
                 )
-                top_state, start_pos = (S_INIT,0) if len(state) == 0 else state[-1]
+                top_state, start_pos = (S_INIT, 0) if len(state) == 0 else state[-1]
 
                 self.assertTrue(
-                    state_transitions[top_state].has_key(token),
-                    "Nesting error in %s near position %d (%s)" %
-                    (module_name, pos, data[max(0,pos - 50):pos]+"^^^"+
-                     data[pos:min(pos + 50, len(data))]))
+                        state_transitions[top_state].has_key(token),
+                        "Nesting error in %s near position %d (%s)" %
+                        (module_name, pos, data[max(0, pos - 50):pos] + "^^^" +
+                         data[pos:min(pos + 50, len(data))]))
                 next_state = state_transitions[top_state][token]
                 if next_state == S_INIT:
                     state.pop()
@@ -219,10 +222,10 @@ class TestManual(unittest.TestCase):
                     state.append((next_state, pos))
             if len(state) > 0:
                 self.assertEqual(
-                    len(state), 0,
-                    "Couldn't find last closing tag in %s. Last tag position = %d (%s)" %
-                    (module_name, state[-1][1], data[(state[-1][1] - 30):
-                                                     (state[-1][1] + 30)]))
+                        len(state), 0,
+                        "Couldn't find last closing tag in %s. Last tag position = %d (%s)" %
+                        (module_name, state[-1][1], data[(state[-1][1] - 30):
+                        (state[-1][1] + 30)]))
             #
             # Check begin/end tag counts
             #
@@ -232,10 +235,10 @@ class TestManual(unittest.TestCase):
                                     "Missing closing </%s> tag in %s" %
                                     (tag, module_name))
                     self.assertEqual(
-                        d[tag][COUNT], anti_d[tag][COUNT],
-                        "Found %d <%s>, != %d </%s> in %s" %
-                        (d[tag][COUNT], tag,
-                         anti_d[tag][COUNT], tag, module_name))
+                            d[tag][COUNT], anti_d[tag][COUNT],
+                            "Found %d <%s>, != %d </%s> in %s" %
+                            (d[tag][COUNT], tag,
+                             anti_d[tag][COUNT], tag, module_name))
                 else:
                     self.assertFalse(anti_d.has_key(tag),
                                      "Missing opening <%s> tag in %s" %

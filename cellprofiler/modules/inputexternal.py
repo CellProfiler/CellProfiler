@@ -20,6 +20,7 @@ See also <b>RunImageJ</b>'''
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
 
+
 class InputExternal(cpm.CPModule):
     variable_revision_number = 1
     module_name = 'InputExternal'
@@ -46,7 +47,7 @@ class InputExternal(cpm.CPModule):
         group.append('divider', cps.Divider(line=False))
         group.append('image_name', cps.ExternalImageNameProvider('Give this image a name'))
         if can_remove:
-            group.append('remover', cps.RemoveSettingButton('','Remove this image name', self.image_names, group))
+            group.append('remover', cps.RemoveSettingButton('', 'Remove this image name', self.image_names, group))
         self.image_names.append(group)
 
     def prepare_settings(self, setting_values):

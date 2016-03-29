@@ -1,8 +1,7 @@
-'''test_imagej2 - test the imagej2 module'''
+"""test_imagej2 - test the imagej2 module"""
 
 import unittest
 
-import bioformats
 import javabridge as J
 import numpy as np
 
@@ -13,6 +12,7 @@ class TestImagej2(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.context = ij2.get_context()
+
     @classmethod
     def tearDownClass(cls):
         del cls.context
@@ -25,17 +25,17 @@ class TestImagej2(unittest.TestCase):
             display.close()
 
     def run_command(self, command_class, inputs, outputs):
-        '''Run an imageJ command
+        """Run an imageJ command
 
         command_class - the command's dotted class name
 
         inputs - a dictionary of key/value pairs for the command's inputs
 
         outputs - a dictionary of keys to be filled with the command's outputs
-        '''
+        """
         module_index = ij2.get_module_service(self.context).getIndex()
         module_infos = module_index.getS('org.scijava.command.CommandInfo')
-        module_info = filter(lambda x:x.getClassName() == command_class,
+        module_info = filter(lambda x: x.getClassName() == command_class,
                              module_infos)[0]
         svc = ij2.get_command_service(self.context)
         input_map = J.make_map(**inputs)
@@ -47,7 +47,7 @@ class TestImagej2(unittest.TestCase):
 
     def test_01_01_get_service(self):
         self.assertIsNotNone(
-            self.context.getService("net.imagej.DatasetService"))
+                self.context.getService("net.imagej.DatasetService"))
 
     def test_02_01_get_module_service(self):
         self.assertIsNotNone(ij2.get_module_service(self.context))
@@ -62,10 +62,10 @@ class TestImagej2(unittest.TestCase):
         svc = ij2.get_module_service(self.context)
         module_index = svc.getIndex()
         self.assertTrue(any([
-            x.getClassName() == 'net.imagej.plugins.commands.assign.AddSpecifiedNoiseToDataValues'
-            for x in module_index]))
+                                x.getClassName() == 'net.imagej.plugins.commands.assign.AddSpecifiedNoiseToDataValues'
+                                for x in module_index]))
         self.assertGreaterEqual(
-            len(module_index.getS('org.scijava.command.CommandInfo')), 1)
+                len(module_index.getS('org.scijava.command.CommandInfo')), 1)
 
     def test_02_03_module_info(self):
         svc = ij2.get_module_service(self.context)
@@ -121,7 +121,7 @@ class TestImagej2(unittest.TestCase):
         module_infos = svc.getModules()
         for module_info in module_infos:
             if module_info.getClassName() == \
-               'net.imagej.plugins.commands.assign.AddSpecifiedNoiseToDataValues':
+                    'net.imagej.plugins.commands.assign.AddSpecifiedNoiseToDataValues':
                 module = module_info.createModule()
                 module.getInfo()
                 module.getInput('stdDev')
@@ -139,7 +139,7 @@ class TestImagej2(unittest.TestCase):
         module_infos = svc.getModules()
         for module_info in module_infos:
             if module_info.getClassName() == \
-               'net.imagej.plugins.commands.assign.AddSpecifiedNoiseToDataValues':
+                    'net.imagej.plugins.commands.assign.AddSpecifiedNoiseToDataValues':
                 menu_path = module_info.getMenuPath()
                 for item in J.iterate_collection(menu_path):
                     menu_entry = ij2.wrap_menu_entry(item)
@@ -165,7 +165,7 @@ class TestImagej2(unittest.TestCase):
         module_infos = ij2.get_module_service(self.context).getModules()
         for module_info in module_infos:
             if module_info.getClassName() == \
-               'net.imagej.app.AboutImageJ':
+                    'net.imagej.app.AboutImageJ':
                 d = J.get_map_wrapper(J.make_instance('java/util/HashMap', '()V'))
                 future = svc.run(module_info.o, True, d.o)
                 module = future.get()
@@ -215,7 +215,7 @@ class TestImagej2(unittest.TestCase):
         pixel_data = ij2.get_pixel_data(imgplus)
         self.assertSequenceEqual(pixel_data.shape, [10, 7])
         i, j = np.mgrid[0:10, 0:7]
-        np.testing.assert_array_equal(pixel_data, i + j*10)
+        np.testing.assert_array_equal(pixel_data, i + j * 10)
 
     def test_05_04_get_dataset_pixel_data(self):
         # test ij2.get_pixel_data
@@ -231,12 +231,12 @@ class TestImagej2(unittest.TestCase):
         result = svc.create1(np.array([10, 15]),
                              "MyDataset", [ij2.Axes().Y, ij2.Axes().X],
                              8, False, False)
-        pixel_data = result.get_pixel_data(axes = [ij2.Axes().X, ij2.Axes().Y])
+        pixel_data = result.get_pixel_data(axes=[ij2.Axes().X, ij2.Axes().Y])
         self.assertSequenceEqual(pixel_data.shape, [15, 10])
 
     def test_05_06_create_dataset(self):
-        i,j = np.mgrid[:7, :9]
-        image = (i+j*10).astype(float)
+        i, j = np.mgrid[:7, :9]
+        image = (i + j * 10).astype(float)
         ds = ij2.create_dataset(self.context, image, "Foo")
         imgplus = ds.getImgPlus()
         script = """
@@ -245,8 +245,8 @@ class TestImagej2(unittest.TestCase):
         ra.setPosition(y, 1);
         ra.get().get()"""
         fn = np.frompyfunc(
-            lambda x, y: J.run_script(script,
-                                      dict(imgplus=imgplus, x=x, y=y)), 2, 1)
+                lambda x, y: J.run_script(script,
+                                          dict(imgplus=imgplus, x=x, y=y)), 2, 1)
         pixel_data = fn(j, i)
         np.testing.assert_array_equal(image, pixel_data)
 
@@ -275,11 +275,11 @@ class TestImagej2(unittest.TestCase):
         pixel_data = ij2.get_pixel_data(imgplus)
         self.assertSequenceEqual(pixel_data.shape, [10, 7, 3])
         i, j, c = np.mgrid[0:10, 0:7, 0:3]
-        np.testing.assert_array_equal(pixel_data, i + j*10 + c*100)
+        np.testing.assert_array_equal(pixel_data, i + j * 10 + c * 100)
 
     def test_05_08_create_dataset_3d(self):
-        i,j,c = np.mgrid[:7, :9, :3]
-        image = (i+j*10).astype(float)
+        i, j, c = np.mgrid[:7, :9, :3]
+        image = (i + j * 10).astype(float)
         ds = ij2.create_dataset(self.context, image, "Foo")
         imgplus = ds.getImgPlus()
         script = """
@@ -289,8 +289,8 @@ class TestImagej2(unittest.TestCase):
         ra.setPosition(c, 2);
         ra.get().get()"""
         fn = np.frompyfunc(
-            lambda x, y, c:
-            J.run_script(script, dict(imgplus=imgplus, x=x, y=y, c=c)), 3, 1)
+                lambda x, y, c:
+                J.run_script(script, dict(imgplus=imgplus, x=x, y=y, c=c)), 3, 1)
         pixel_data = fn(j, i, c)
         np.testing.assert_array_equal(image, pixel_data)
 
@@ -304,12 +304,12 @@ class TestImagej2(unittest.TestCase):
         display = display_svc.createDisplay("Foo", ds)
         d2 = display_svc.createDisplay("Bar", ij2.create_dataset(self.context, image, "Bar"))
         overlay = J.run_script(
-            """var o = new Packages.net.imagej.overlay.RectangleOverlay(context.getContext());
-               o.setOrigin(5, 0);
-               o.setOrigin(3, 1);
-               o.setExtent(6, 0);
-               o.setExtent(7, 1);
-               o;""", dict(context=self.context))
+                """var o = new Packages.net.imagej.overlay.RectangleOverlay(context.getContext());
+                   o.setOrigin(5, 0);
+                   o.setOrigin(3, 1);
+                   o.setExtent(6, 0);
+                   o.setExtent(7, 1);
+                   o;""", dict(context=self.context))
         overlay_svc.addOverlays(display, J.make_list([overlay]))
         ij2.select_overlay(display.o, overlay)
         mask = ij2.create_mask(display)
@@ -331,7 +331,7 @@ class TestImagej2(unittest.TestCase):
     def test_08_01_create_overlay(self):
         r = np.random.RandomState()
         r.seed(81)
-        mask = r.uniform(size=(23,10)) > .5
+        mask = r.uniform(size=(23, 10)) > .5
         overlay = ij2.create_overlay(self.context, mask)
         roi = J.call(overlay, "getRegionOfInterest",
                      "()Lnet/imglib2/roi/RegionOfInterest;")
@@ -349,7 +349,7 @@ class TestImagej2(unittest.TestCase):
         svc = ij2.get_display_service(self.context)
         r = np.random.RandomState()
         r.seed(92)
-        image = r.randint(0, 256, (11,13))
+        image = r.randint(0, 256, (11, 13))
         ds = ij2.create_dataset(self.context, image, "Foo")
         display = svc.createDisplay("Foo", ds)
         self.assertEqual(display.size(), 1)
@@ -372,7 +372,7 @@ class TestImagej2(unittest.TestCase):
         svc = ij2.get_display_service(self.context)
         r = np.random.RandomState()
         r.seed(92)
-        image = r.randint(0, 256, (11,13))
+        image = r.randint(0, 256, (11, 13))
         ds = ij2.create_dataset(self.context, image, "Foo")
         display = svc.createDisplay("Foo", ds)
         svc.setActiveDisplay(display)
@@ -381,7 +381,7 @@ class TestImagej2(unittest.TestCase):
         svc = ij2.get_display_service(self.context)
         r = np.random.RandomState()
         r.seed(92)
-        image = r.randint(0, 256, (11,13))
+        image = r.randint(0, 256, (11, 13))
         ds = ij2.create_dataset(self.context, image, "Foo")
         display = svc.createDisplay("Foo", ds)
         ds = ij2.create_dataset(self.context, image, "Bar")
@@ -393,7 +393,7 @@ class TestImagej2(unittest.TestCase):
         svc = ij2.get_display_service(self.context)
         r = np.random.RandomState()
         r.seed(92)
-        image = r.randint(0, 256, (11,13))
+        image = r.randint(0, 256, (11, 13))
         ds = ij2.create_dataset(self.context, image, "Foo")
         svc.createDisplay("Foo", ds)
         ds = ij2.create_dataset(self.context, image, "Bar")
@@ -405,10 +405,10 @@ class TestImagej2(unittest.TestCase):
         svc = ij2.get_display_service(self.context)
         r = np.random.RandomState()
         r.seed(92)
-        image = r.randint(0, 256, (11,13))
+        image = r.randint(0, 256, (11, 13))
         ds = ij2.create_dataset(self.context, image, "Foo")
         svc.createDisplay("Foo", ds)
-        image = r.randint(0, 256, (14,12))
+        image = r.randint(0, 256, (14, 12))
         ds2 = ij2.create_dataset(self.context, image, "Bar")
         display = svc.createDisplay("Bar", ds)
         svc.setActiveDisplay(display)
@@ -421,7 +421,7 @@ class TestImagej2(unittest.TestCase):
         svc = ij2.get_display_service(self.context)
         r = np.random.RandomState()
         r.seed(92)
-        image = r.randint(0, 256, (11,13))
+        image = r.randint(0, 256, (11, 13))
         ds = ij2.create_dataset(self.context, image, "Foo")
         svc.createDisplay("Foo", ds)
         self.assertTrue(svc.isUniqueName("Bar"))
@@ -433,7 +433,7 @@ class TestImagej2(unittest.TestCase):
         #
         svc = ij2.get_display_service(self.context)
         i, j = np.mgrid[0:5, 0:70:10]
-        image = i+j
+        image = i + j
         ds = ij2.create_dataset(self.context, image, "Foo")
         display = svc.createDisplay("Foo", ds)
         outputs = dict(display=None)
@@ -450,14 +450,14 @@ class TestImagej2(unittest.TestCase):
         svc = ij2.get_display_service(self.context)
         r = np.random.RandomState()
         i, j = np.mgrid[0:11, 0:1300:100]
-        image = i+j
+        image = i + j
         ds = ij2.create_dataset(self.context, image, "Foo")
         display = svc.createDisplay("Foo", ds)
         mask = np.zeros(image.shape, bool)
         mask[2:-1, 3:-4] = 1
         overlay = ij2.create_overlay(self.context, mask)
         ij2.get_overlay_service(self.context).addOverlays(
-            display.o, J.make_list([overlay]))
+                display.o, J.make_list([overlay]))
         ij2.select_overlay(display.o, overlay)
         self.run_command("net.imagej.plugins.commands.imglib.CropImage",
                          dict(display=display), {})
@@ -553,7 +553,7 @@ class TestImagej2(unittest.TestCase):
         display_svc = ij2.get_display_service(self.context)
         overlay_svc = ij2.get_overlay_service(self.context)
         i, j = np.mgrid[0:15, 0:1900:100]
-        image = i+j
+        image = i + j
         ds = ij2.create_dataset(self.context, image, "Foo")
         display = display_svc.createDisplay("Foo", ds)
         self.assertEqual(len(overlay_svc.getDisplayOverlays(display.o)), 0)
@@ -562,14 +562,14 @@ class TestImagej2(unittest.TestCase):
         display_svc = ij2.get_display_service(self.context)
         overlay_svc = ij2.get_overlay_service(self.context)
         i, j = np.mgrid[0:15, 0:1900:100]
-        image = i+j
+        image = i + j
         ds = ij2.create_dataset(self.context, image, "Foo")
         display = display_svc.createDisplay("Foo", ds)
         d2 = display_svc.createDisplay(
-            "Bar", ij2.create_dataset(self.context, image, "Bar"))
+                "Bar", ij2.create_dataset(self.context, image, "Bar"))
         mask = np.zeros(i.shape, bool)
-        islice = slice(2,-3)
-        jslice = slice(3,-4)
+        islice = slice(2, -3)
+        jslice = slice(3, -4)
         mask[islice, jslice] = True
         overlay = ij2.create_overlay(self.context, mask)
         overlay_svc.addOverlays(display, J.make_list([overlay]))
@@ -581,13 +581,13 @@ class TestImagej2(unittest.TestCase):
         display_svc = ij2.get_display_service(self.context)
         overlay_svc = ij2.get_overlay_service(self.context)
         i, j = np.mgrid[0:15, 0:1900:100]
-        image = i+j
+        image = i + j
         ds = ij2.create_dataset(self.context, image, "Foo")
         display = display_svc.createDisplay("Foo", ds)
         d2 = display_svc.createDisplay("Bar", ij2.create_dataset(self.context, image, "Bar"))
         mask = np.zeros(i.shape, bool)
-        islice = slice(2,-3)
-        jslice = slice(3,-4)
+        islice = slice(2, -3)
+        jslice = slice(3, -4)
         mask[islice, jslice] = True
         overlay = ij2.create_overlay(self.context, mask)
         overlay_svc.addOverlays(display, J.make_list([overlay]))
@@ -599,13 +599,13 @@ class TestImagej2(unittest.TestCase):
         display_svc = ij2.get_display_service(self.context)
         overlay_svc = ij2.get_overlay_service(self.context)
         i, j = np.mgrid[0:15, 0:1900:100]
-        image = i+j
+        image = i + j
         ds = ij2.create_dataset(self.context, image, "Foo")
         display = display_svc.createDisplay("Foo", ds)
         d2 = display_svc.createDisplay("Bar", ij2.create_dataset(self.context, image, "Bar"))
         mask = np.zeros(i.shape, bool)
-        islice = slice(2,-3)
-        jslice = slice(3,-4)
+        islice = slice(2, -3)
+        jslice = slice(3, -4)
         mask[islice, jslice] = True
         overlay = ij2.create_overlay(self.context, mask)
         overlay_svc.addOverlays(display, J.make_list([overlay]))
@@ -615,12 +615,12 @@ class TestImagej2(unittest.TestCase):
         display_svc = ij2.get_display_service(self.context)
         overlay_svc = ij2.get_overlay_service(self.context)
         i, j = np.mgrid[0:15, 0:1900:100]
-        image = i+j
+        image = i + j
         ds = ij2.create_dataset(self.context, image, "Foo")
         display = display_svc.createDisplay("Foo", ds)
         mask = np.zeros(i.shape, bool)
-        islice = slice(2,-3)
-        jslice = slice(3,-4)
+        islice = slice(2, -3)
+        jslice = slice(3, -4)
         mask[islice, jslice] = True
         overlay = ij2.create_overlay(self.context, mask)
         overlay_svc.addOverlays(display, J.make_list([overlay]))

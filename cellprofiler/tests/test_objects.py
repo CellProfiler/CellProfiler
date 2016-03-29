@@ -16,15 +16,15 @@ from cellprofiler.utilities.hdf5_dict import HDF5ObjectSet
 
 class TestObjects(unittest.TestCase):
     def setUp(self):
-        self.__image10 = np.zeros((10,10),dtype=np.bool)
-        self.__image10[2:4,2:4] = 1
-        self.__image10[5:7,5:7] = 1
-        self.__unedited_segmented10,count =scipy.ndimage.label(self.__image10)
-        assert count==2
+        self.__image10 = np.zeros((10, 10), dtype=np.bool)
+        self.__image10[2:4, 2:4] = 1
+        self.__image10[5:7, 5:7] = 1
+        self.__unedited_segmented10, count = scipy.ndimage.label(self.__image10)
+        assert count == 2
         self.__segmented10 = self.__unedited_segmented10.copy()
-        self.__segmented10[self.__segmented10==2] = 0
+        self.__segmented10[self.__segmented10 == 2] = 0
         self.__small_removed_segmented10 = self.__unedited_segmented10.copy()
-        self.__small_removed_segmented10[self.__segmented10==1] = 0
+        self.__small_removed_segmented10[self.__segmented10 == 1] = 0
 
     def relate_ijv(self, parent_ijv, children_ijv):
         p = cpo.Objects()
@@ -36,12 +36,12 @@ class TestObjects(unittest.TestCase):
     def test_01_01_set_segmented(self):
         x = cpo.Objects()
         x.set_segmented(self.__segmented10)
-        self.assertTrue((self.__segmented10==x.segmented).all())
+        self.assertTrue((self.__segmented10 == x.segmented).all())
 
     def test_01_02_segmented(self):
         x = cpo.Objects()
         x.segmented = self.__segmented10
-        self.assertTrue((self.__segmented10==x.segmented).all())
+        self.assertTrue((self.__segmented10 == x.segmented).all())
 
     def test_01_03_set_unedited_segmented(self):
         x = cpo.Objects()
@@ -51,17 +51,17 @@ class TestObjects(unittest.TestCase):
     def test_01_04_unedited_segmented(self):
         x = cpo.Objects()
         x.unedited_segmented = self.__unedited_segmented10
-        self.assertTrue((self.__unedited_segmented10== x.unedited_segmented).all())
+        self.assertTrue((self.__unedited_segmented10 == x.unedited_segmented).all())
 
     def test_01_05_set_small_removed_segmented(self):
         x = cpo.Objects()
         x.set_small_removed_segmented(self.__small_removed_segmented10)
-        self.assertTrue((self.__small_removed_segmented10==x.small_removed_segmented).all())
+        self.assertTrue((self.__small_removed_segmented10 == x.small_removed_segmented).all())
 
     def test_01_06_unedited_segmented(self):
         x = cpo.Objects()
         x.small_removed_segmented = self.__small_removed_segmented10
-        self.assertTrue((self.__small_removed_segmented10== x.small_removed_segmented).all())
+        self.assertTrue((self.__small_removed_segmented10 == x.small_removed_segmented).all())
 
     def test_02_01_set_all(self):
         x = cpo.Objects()
@@ -84,32 +84,32 @@ class TestObjects(unittest.TestCase):
     def test_05_01_relate_zero_parents_and_children(self):
         """Test the relate method if both parent and child label matrices are zeros"""
         x = cpo.Objects()
-        x.segmented = np.zeros((10,10),int)
+        x.segmented = np.zeros((10, 10), int)
         y = cpo.Objects()
-        y.segmented = np.zeros((10,10),int)
+        y.segmented = np.zeros((10, 10), int)
         children_per_parent, parents_of_children = x.relate_children(y)
         self.assertEqual(np.product(children_per_parent.shape), 0)
         self.assertEqual(np.product(parents_of_children.shape), 0)
 
     def test_05_02_relate_zero_parents_one_child(self):
         x = cpo.Objects()
-        x.segmented = np.zeros((10,10),int)
+        x.segmented = np.zeros((10, 10), int)
         y = cpo.Objects()
-        labels = np.zeros((10,10),int)
-        labels[3:6,3:6] = 1
+        labels = np.zeros((10, 10), int)
+        labels[3:6, 3:6] = 1
         y.segmented = labels
         children_per_parent, parents_of_children = x.relate_children(y)
         self.assertEqual(np.product(children_per_parent.shape), 0)
         self.assertEqual(np.product(parents_of_children.shape), 1)
-        self.assertEqual(parents_of_children[0],0)
+        self.assertEqual(parents_of_children[0], 0)
 
     def test_05_03_relate_one_parent_no_children(self):
         x = cpo.Objects()
-        labels = np.zeros((10,10),int)
-        labels[3:6,3:6] = 1
+        labels = np.zeros((10, 10), int)
+        labels[3:6, 3:6] = 1
         x.segmented = labels
         y = cpo.Objects()
-        y.segmented = np.zeros((10,10),int)
+        y.segmented = np.zeros((10, 10), int)
         children_per_parent, parents_of_children = x.relate_children(y)
         self.assertEqual(np.product(children_per_parent.shape), 1)
         self.assertEqual(children_per_parent[0], 0)
@@ -117,8 +117,8 @@ class TestObjects(unittest.TestCase):
 
     def test_05_04_relate_one_parent_one_child(self):
         x = cpo.Objects()
-        labels = np.zeros((10,10),int)
-        labels[3:6,3:6] = 1
+        labels = np.zeros((10, 10), int)
+        labels[3:6, 3:6] = 1
         x.segmented = labels
         y = cpo.Objects()
         y.segmented = labels
@@ -126,63 +126,63 @@ class TestObjects(unittest.TestCase):
         self.assertEqual(np.product(children_per_parent.shape), 1)
         self.assertEqual(children_per_parent[0], 1)
         self.assertEqual(np.product(parents_of_children.shape), 1)
-        self.assertEqual(parents_of_children[0],1)
+        self.assertEqual(parents_of_children[0], 1)
 
     def test_05_05_relate_two_parents_one_child(self):
         x = cpo.Objects()
-        labels = np.zeros((10,10),int)
-        labels[3:6,3:6] = 1
-        labels[3:6,7:9] = 2
+        labels = np.zeros((10, 10), int)
+        labels[3:6, 3:6] = 1
+        labels[3:6, 7:9] = 2
         x.segmented = labels
         y = cpo.Objects()
-        labels = np.zeros((10,10),int)
-        labels[3:6,5:9] = 1
+        labels = np.zeros((10, 10), int)
+        labels[3:6, 5:9] = 1
         y.segmented = labels
         children_per_parent, parents_of_children = x.relate_children(y)
         self.assertEqual(np.product(children_per_parent.shape), 2)
         self.assertEqual(children_per_parent[0], 0)
         self.assertEqual(children_per_parent[1], 1)
         self.assertEqual(np.product(parents_of_children.shape), 1)
-        self.assertEqual(parents_of_children[0],2)
+        self.assertEqual(parents_of_children[0], 2)
 
     def test_05_06_relate_one_parent_two_children(self):
         x = cpo.Objects()
-        labels = np.zeros((10,10),int)
-        labels[3:6,3:9] = 1
+        labels = np.zeros((10, 10), int)
+        labels[3:6, 3:9] = 1
         x.segmented = labels
         y = cpo.Objects()
-        labels = np.zeros((10,10),int)
-        labels[3:6,3:6] = 1
-        labels[3:6,7:9] = 2
+        labels = np.zeros((10, 10), int)
+        labels[3:6, 3:6] = 1
+        labels[3:6, 7:9] = 2
         y.segmented = labels
         children_per_parent, parents_of_children = x.relate_children(y)
         self.assertEqual(np.product(children_per_parent.shape), 1)
         self.assertEqual(children_per_parent[0], 2)
         self.assertEqual(np.product(parents_of_children.shape), 2)
-        self.assertEqual(parents_of_children[0],1)
-        self.assertEqual(parents_of_children[1],1)
+        self.assertEqual(parents_of_children[0], 1)
+        self.assertEqual(parents_of_children[1], 1)
 
     def test_05_07_relate_ijv_none(self):
         child_counts, parents_of = self.relate_ijv(
-            np.zeros((0,3), int), np.zeros((0,3), int))
+                np.zeros((0, 3), int), np.zeros((0, 3), int))
         self.assertEqual(len(child_counts), 0)
         self.assertEqual(len(parents_of), 0)
 
         child_counts, parents_of = self.relate_ijv(
-            np.zeros((0,3), int), np.array([[1,2,3]]))
+                np.zeros((0, 3), int), np.array([[1, 2, 3]]))
         self.assertEqual(len(child_counts), 0)
         self.assertEqual(len(parents_of), 3)
         self.assertEqual(parents_of[2], 0)
 
         child_counts, parents_of = self.relate_ijv(
-            np.array([[1,2,3]]), np.zeros((0,3), int))
+                np.array([[1, 2, 3]]), np.zeros((0, 3), int))
         self.assertEqual(len(child_counts), 3)
         self.assertEqual(child_counts[2], 0)
         self.assertEqual(len(parents_of), 0)
 
     def test_05_08_relate_ijv_no_match(self):
         child_counts, parents_of = self.relate_ijv(
-            np.array([[3,2,1]]), np.array([[5,6,1]]))
+                np.array([[3, 2, 1]]), np.array([[5, 6, 1]]))
         self.assertEqual(len(child_counts), 1)
         self.assertEqual(child_counts[0], 0)
         self.assertEqual(len(parents_of), 1)
@@ -190,7 +190,7 @@ class TestObjects(unittest.TestCase):
 
     def test_05_09_relate_ijv_one_match(self):
         child_counts, parents_of = self.relate_ijv(
-            np.array([[3,2,1]]), np.array([[3,2,1]]))
+                np.array([[3, 2, 1]]), np.array([[3, 2, 1]]))
         self.assertEqual(len(child_counts), 1)
         self.assertEqual(child_counts[0], 1)
         self.assertEqual(len(parents_of), 1)
@@ -200,11 +200,11 @@ class TestObjects(unittest.TestCase):
         r = np.random.RandomState()
         r.seed(510)
         parent_ijv = np.column_stack((
-            r.randint(0,10,size=(100,2)), np.ones(100, int)))
+            r.randint(0, 10, size=(100, 2)), np.ones(100, int)))
         child_ijv = np.column_stack((
-            r.randint(0,10,size=(100,2)), np.ones(100, int)))
+            r.randint(0, 10, size=(100, 2)), np.ones(100, int)))
         child_counts, parents_of = self.relate_ijv(
-            parent_ijv, child_ijv)
+                parent_ijv, child_ijv)
         self.assertEqual(len(child_counts), 1)
         self.assertEqual(child_counts[0], 1)
         self.assertEqual(len(parents_of), 1)
@@ -214,17 +214,17 @@ class TestObjects(unittest.TestCase):
         r = np.random.RandomState()
         r.seed(511)
         parent_ijv = np.column_stack((
-            r.randint(0,10,size=(100,2)), np.ones(100, int)))
+            r.randint(0, 10, size=(100, 2)), np.ones(100, int)))
         child_ijv = np.column_stack((
-            r.randint(0,10,size=(100,2)), np.ones(100, int)))
-        parent_ijv[parent_ijv[:,0] >= 5, 2] = 2
-        child_ijv[:,2] = (
-            1 + (child_ijv[:,0] >= 5).astype(int) +
-            2 * (child_ijv[:,1] >= 5).astype(int))
+            r.randint(0, 10, size=(100, 2)), np.ones(100, int)))
+        parent_ijv[parent_ijv[:, 0] >= 5, 2] = 2
+        child_ijv[:, 2] = (
+            1 + (child_ijv[:, 0] >= 5).astype(int) +
+            2 * (child_ijv[:, 1] >= 5).astype(int))
         child_counts, parents_of = self.relate_ijv(
-            parent_ijv, child_ijv)
-        self.assertEqual(len(child_counts),2)
-        self.assertEqual(tuple(child_counts), (2,2))
+                parent_ijv, child_ijv)
+        self.assertEqual(len(child_counts), 2)
+        self.assertEqual(tuple(child_counts), (2, 2))
         self.assertEqual(len(parents_of), 4)
         self.assertEqual(parents_of[0], 1)
         self.assertEqual(parents_of[1], 2)
@@ -232,22 +232,22 @@ class TestObjects(unittest.TestCase):
         self.assertEqual(parents_of[3], 2)
 
     def test_05_12_relate_many_parent_missing_child(self):
-        parent_ijv = np.array([[1,0,1], [2,0,2],[3,0,3]])
-        child_ijv = np.array([[1,0,1], [3,0,2]])
+        parent_ijv = np.array([[1, 0, 1], [2, 0, 2], [3, 0, 3]])
+        child_ijv = np.array([[1, 0, 1], [3, 0, 2]])
         child_counts, parents_of = self.relate_ijv(
-            parent_ijv, child_ijv)
-        self.assertEqual(len(child_counts),3)
+                parent_ijv, child_ijv)
+        self.assertEqual(len(child_counts), 3)
         self.assertEqual(tuple(child_counts), (1, 0, 1))
         self.assertEqual(len(parents_of), 2)
         self.assertEqual(parents_of[0], 1)
         self.assertEqual(parents_of[1], 3)
 
     def test_05_13_relate_many_child_missing_parent(self):
-        child_ijv = np.array([[1,0,1], [2,0,2],[3,0,3]])
-        parent_ijv = np.array([[1,0,1], [3,0,2]])
+        child_ijv = np.array([[1, 0, 1], [2, 0, 2], [3, 0, 3]])
+        parent_ijv = np.array([[1, 0, 1], [3, 0, 2]])
         child_counts, parents_of = self.relate_ijv(
-            parent_ijv, child_ijv)
-        self.assertEqual(len(child_counts),2)
+                parent_ijv, child_ijv)
+        self.assertEqual(len(child_counts), 2)
         self.assertEqual(tuple(child_counts), (1, 1))
         self.assertEqual(len(parents_of), 3)
         self.assertEqual(parents_of[0], 1)
@@ -255,22 +255,22 @@ class TestObjects(unittest.TestCase):
         self.assertEqual(parents_of[2], 2)
 
     def test_05_14_relate_many_parent_missing_child_end(self):
-        parent_ijv = np.array([[1,0,1], [2,0,2],[3,0,3]])
-        child_ijv = np.array([[1,0,1], [2,0,2]])
+        parent_ijv = np.array([[1, 0, 1], [2, 0, 2], [3, 0, 3]])
+        child_ijv = np.array([[1, 0, 1], [2, 0, 2]])
         child_counts, parents_of = self.relate_ijv(
-            parent_ijv, child_ijv)
-        self.assertEqual(len(child_counts),3)
+                parent_ijv, child_ijv)
+        self.assertEqual(len(child_counts), 3)
         self.assertEqual(tuple(child_counts), (1, 1, 0))
         self.assertEqual(len(parents_of), 2)
         self.assertEqual(parents_of[0], 1)
         self.assertEqual(parents_of[1], 2)
 
     def test_05_15_relate_many_child_missing_end(self):
-        child_ijv = np.array([[1,0,1], [2,0,2],[3,0,3]])
-        parent_ijv = np.array([[1,0,1], [2,0,2]])
+        child_ijv = np.array([[1, 0, 1], [2, 0, 2], [3, 0, 3]])
+        parent_ijv = np.array([[1, 0, 1], [2, 0, 2]])
         child_counts, parents_of = self.relate_ijv(
-            parent_ijv, child_ijv)
-        self.assertEqual(len(child_counts),2)
+                parent_ijv, child_ijv)
+        self.assertEqual(len(child_counts), 2)
         self.assertEqual(tuple(child_counts), (1, 1))
         self.assertEqual(len(parents_of), 3)
         self.assertEqual(parents_of[0], 1)
@@ -285,25 +285,24 @@ class TestObjects(unittest.TestCase):
         child_ijv = np.array([[4095, 0, 1]], np.uint16)
         parent_ijv = np.array([[4095, 16, 1]], np.uint16)
         child_counts, parents_of = self.relate_ijv(
-            parent_ijv, child_ijv)
-        assert(np.all(child_counts==0))
-
+                parent_ijv, child_ijv)
+        assert (np.all(child_counts == 0))
 
     def test_06_01_segmented_to_ijv(self):
         '''Convert the segmented representation to an IJV one'''
         x = cpo.Objects()
         np.random.seed(61)
-        labels = np.random.randint(0,10,size=(20,20))
+        labels = np.random.randint(0, 10, size=(20, 20))
         x.segmented = labels
         ijv = x.get_ijv()
         new_labels = np.zeros(labels.shape, int)
-        new_labels[ijv[:,0],ijv[:,1]] = ijv[:,2]
+        new_labels[ijv[:, 0], ijv[:, 1]] = ijv[:, 2]
         self.assertTrue(np.all(labels == new_labels))
 
     def test_06_02_ijv_to_labels_empty(self):
         '''Convert a blank ijv representation to labels'''
         x = cpo.Objects()
-        x.ijv = np.zeros((0,3), int)
+        x.ijv = np.zeros((0, 3), int)
         y = x.get_labels()
         self.assertEqual(len(y), 1)
         labels, indices = y[0]
@@ -314,8 +313,8 @@ class TestObjects(unittest.TestCase):
         '''Convert an ijv representation w/o overlap to labels'''
         x = cpo.Objects()
         np.random.seed(63)
-        labels = np.zeros((20,20), int)
-        labels[1:-1,1:-1] = np.random.randint(0,10,size=(18,18))
+        labels = np.zeros((20, 20), int)
+        labels[1:-1, 1:-1] = np.random.randint(0, 10, size=(18, 18))
 
         x.segmented = labels
         ijv = x.get_ijv()
@@ -327,21 +326,21 @@ class TestObjects(unittest.TestCase):
         labels_out, indices = labels_out[0]
         self.assertTrue(np.all(labels_out == labels))
         self.assertEqual(len(indices), 9)
-        self.assertTrue(np.all(np.unique(indices)==np.arange(1,10)))
+        self.assertTrue(np.all(np.unique(indices) == np.arange(1, 10)))
 
     def test_06_04_ijv_to_labels_overlapping(self):
         '''Convert an ijv representation with overlap to labels'''
-        ijv = np.array([[1,1,1],
-                        [1,2,1],
-                        [2,1,1],
-                        [2,2,1],
-                        [1,3,2],
-                        [2,3,2],
-                        [2,3,3],
-                        [4,4,4],
-                        [4,5,4],
-                        [4,5,5],
-                        [5,5,5]])
+        ijv = np.array([[1, 1, 1],
+                        [1, 2, 1],
+                        [2, 1, 1],
+                        [2, 2, 1],
+                        [1, 3, 2],
+                        [2, 3, 2],
+                        [2, 3, 3],
+                        [4, 4, 4],
+                        [4, 5, 4],
+                        [4, 5, 5],
+                        [5, 5, 5]])
         x = cpo.Objects()
         x.ijv = ijv
         labels = x.get_labels()
@@ -354,7 +353,7 @@ class TestObjects(unittest.TestCase):
             self.assertTrue(b not in unique_a)
         for i, j, v in ijv:
             mylabels = labels[0][0] if v in unique_a else labels[1][0]
-            self.assertEqual(mylabels[i,j], v)
+            self.assertEqual(mylabels[i, j], v)
 
     def test_06_05_ijv_three_overlapping(self):
         #
@@ -373,54 +372,54 @@ class TestObjects(unittest.TestCase):
             labels.append(l)
             self.assertEqual(len(i), 1)
             self.assertTrue(i[0] in (1, 2, 3))
-            indices[i[0]-1] = True
+            indices[i[0] - 1] = True
         self.assertTrue(np.all(indices))
         self.assertEqual(len(labels), 3)
         lstacked = np.dstack(labels)
         i, j, k = np.mgrid[0:lstacked.shape[0],
-                           0:lstacked.shape[1],
-                           0:lstacked.shape[2]]
+                  0:lstacked.shape[1],
+                  0:lstacked.shape[2]]
         self.assertTrue(np.all(lstacked[(i != 4) | (j != 5)] == 0))
         self.assertEqual((1, 2, 3), tuple(sorted(lstacked[4, 5, :])))
 
     def test_07_00_make_ivj_outlines_empty(self):
         np.random.seed(70)
         x = cpo.Objects()
-        x.segmented = np.zeros((10,20), int)
-        image = x.make_ijv_outlines(np.random.uniform(size=(5,3)))
+        x.segmented = np.zeros((10, 20), int)
+        image = x.make_ijv_outlines(np.random.uniform(size=(5, 3)))
         self.assertTrue(np.all(image == 0))
 
     def test_07_01_make_ijv_outlines(self):
         np.random.seed(70)
         x = cpo.Objects()
-        ii,jj = np.mgrid[0:10,0:20]
-        masks = [(ii-ic)**2 + (jj - jc) **2 < r **2
-                 for ic, jc, r in ((4,5,5), (4,12,5), (6, 8, 5))]
+        ii, jj = np.mgrid[0:10, 0:20]
+        masks = [(ii - ic) ** 2 + (jj - jc) ** 2 < r ** 2
+                 for ic, jc, r in ((4, 5, 5), (4, 12, 5), (6, 8, 5))]
         i = np.hstack([ii[mask] for mask in masks])
         j = np.hstack([jj[mask] for mask in masks])
-        v = np.hstack([[k+1] * np.sum(mask) for k, mask in enumerate(masks)])
+        v = np.hstack([[k + 1] * np.sum(mask) for k, mask in enumerate(masks)])
 
-        x.set_ijv(np.column_stack((i,j,v)), ii.shape)
-        x.parent_image = cpi.Image(np.zeros((10,20)))
+        x.set_ijv(np.column_stack((i, j, v)), ii.shape)
+        x.parent_image = cpi.Image(np.zeros((10, 20)))
         colors = np.random.uniform(size=(3, 3)).astype(np.float32)
         image = x.make_ijv_outlines(colors)
-        i1 = [i for i, color in enumerate(colors) if np.all(color == image[0,5,:])]
+        i1 = [i for i, color in enumerate(colors) if np.all(color == image[0, 5, :])]
         self.assertEqual(len(i1), 1)
-        i2 = [i for i, color in enumerate(colors) if np.all(color == image[0,12,:])]
+        i2 = [i for i, color in enumerate(colors) if np.all(color == image[0, 12, :])]
         self.assertEqual(len(i2), 1)
-        i3 = [i for i, color in enumerate(colors) if np.all(color == image[-1,8,:])]
+        i3 = [i for i, color in enumerate(colors) if np.all(color == image[-1, 8, :])]
         self.assertEqual(len(i3), 1)
         self.assertNotEqual(i1[0], i2[0])
         self.assertNotEqual(i2[0], i3[0])
         colors = colors[np.array([i1[0], i2[0], i3[0]])]
-        outlines = np.zeros((10,20,3), np.float32)
-        alpha = np.zeros((10,20))
+        outlines = np.zeros((10, 20, 3), np.float32)
+        alpha = np.zeros((10, 20))
         for i, (color, mask) in enumerate(zip(colors, masks)):
             my_outline = outline(mask)
             outlines[my_outline] += color
             alpha[my_outline] += 1
         alpha[alpha == 0] = 1
-        outlines /= alpha[:,:,np.newaxis]
+        outlines /= alpha[:, :, np.newaxis]
         np.testing.assert_almost_equal(outlines, image)
 
     def test_07_02_labels_same_as_ijv(self):
@@ -587,12 +586,13 @@ class TestObjects(unittest.TestCase):
             os.close(fd)
             os.remove(path)
 
+
 class TestSegmentation(unittest.TestCase):
     def test_01_01_dense(self):
         r = np.random.RandomState()
         r.seed(101)
         labels = r.randint(0, 10, size=(2, 3, 4, 5, 6, 7))
-        s = cpo.Segmentation(dense = labels)
+        s = cpo.Segmentation(dense=labels)
         self.assertTrue(s.has_dense())
         self.assertFalse(s.has_sparse())
         np.testing.assert_array_equal(s.get_dense()[0], labels)
@@ -601,11 +601,11 @@ class TestSegmentation(unittest.TestCase):
         r = np.random.RandomState()
         r.seed(102)
         ijv = np.core.records.fromarrays(
-            [r.randint(0, 10, size=20) for _ in range(3)],
-            [(HDF5ObjectSet.AXIS_Y, np.uint32, 1),
-             (HDF5ObjectSet.AXIS_X, np.uint32, 1),
-             (HDF5ObjectSet.AXIS_LABELS, np.uint32, 1)])
-        s = cpo.Segmentation(sparse = ijv)
+                [r.randint(0, 10, size=20) for _ in range(3)],
+                [(HDF5ObjectSet.AXIS_Y, np.uint32, 1),
+                 (HDF5ObjectSet.AXIS_X, np.uint32, 1),
+                 (HDF5ObjectSet.AXIS_LABELS, np.uint32, 1)])
+        s = cpo.Segmentation(sparse=ijv)
         np.testing.assert_array_equal(s.get_sparse(), ijv)
         self.assertFalse(s.has_dense())
         self.assertTrue(s.has_sparse())
@@ -623,23 +623,23 @@ class TestSegmentation(unittest.TestCase):
         for idx in range(10):
             x_loc = r.uniform() * 30 + 10
             y_loc = r.uniform() * 30 + 10
-            max_radius = np.min([min(loc-1, 49-loc) for loc in x_loc, y_loc])
+            max_radius = np.min([min(loc - 1, 49 - loc) for loc in x_loc, y_loc])
             radius = r.uniform() * (max_radius - 5) + 5
-            mask = ((i - y_loc)**2 + (j - x_loc)**2) <= radius**2
+            mask = ((i - y_loc) ** 2 + (j - x_loc) ** 2) <= radius ** 2
             ii.append(i[mask])
             jj.append(j[mask])
-            vv.append(np.ones(np.sum(mask), np.uint32) * (idx+1))
+            vv.append(np.ones(np.sum(mask), np.uint32) * (idx + 1))
         ijv = np.core.records.fromarrays([
-            np.hstack(x) for x in ii, jj, vv],
-            [(HDF5ObjectSet.AXIS_Y, np.uint32, 1),
-             (HDF5ObjectSet.AXIS_X, np.uint32, 1),
-             (HDF5ObjectSet.AXIS_LABELS, np.uint32, 1)])
-        s = cpo.Segmentation(sparse = ijv, shape=(1, 1, 1, 50, 50))
+                                             np.hstack(x) for x in ii, jj, vv],
+                                         [(HDF5ObjectSet.AXIS_Y, np.uint32, 1),
+                                          (HDF5ObjectSet.AXIS_X, np.uint32, 1),
+                                          (HDF5ObjectSet.AXIS_LABELS, np.uint32, 1)])
+        s = cpo.Segmentation(sparse=ijv, shape=(1, 1, 1, 50, 50))
         dense, indices = s.get_dense()
         self.assertEqual(tuple(dense.shape[1:]), (1, 1, 1, 50, 50))
         self.assertEqual(np.sum(dense > 0), len(ijv))
         retrieval = dense[:, 0, 0, 0,
-                          ijv[HDF5ObjectSet.AXIS_Y], ijv[HDF5ObjectSet.AXIS_X]]
+                    ijv[HDF5ObjectSet.AXIS_Y], ijv[HDF5ObjectSet.AXIS_X]]
         matches = (retrieval == ijv[HDF5ObjectSet.AXIS_LABELS][None, :])
         self.assertTrue(np.all(np.sum(matches, 0) == 1))
 
@@ -654,15 +654,15 @@ class TestSegmentation(unittest.TestCase):
         for idx in range(10):
             x_loc = r.uniform() * 30 + 10
             y_loc = r.uniform() * 30 + 10
-            max_radius = np.min([min(loc-1, 49-loc) for loc in x_loc, y_loc])
+            max_radius = np.min([min(loc - 1, 49 - loc) for loc in x_loc, y_loc])
             radius = r.uniform() * (max_radius - 5) + 5
-            mask = ((i - y_loc)**2 + (j - x_loc)**2) <= radius**2
-            dense[idx, 0, 0, 0, mask] = idx+1
-        s = cpo.Segmentation(dense = dense)
+            mask = ((i - y_loc) ** 2 + (j - x_loc) ** 2) <= radius ** 2
+            dense[idx, 0, 0, 0, mask] = idx + 1
+        s = cpo.Segmentation(dense=dense)
         ijv = s.get_sparse()
         self.assertEqual(np.sum(dense > 0), len(ijv))
         retrieval = dense[:, 0, 0, 0,
-                          ijv[HDF5ObjectSet.AXIS_Y], ijv[HDF5ObjectSet.AXIS_X]]
+                    ijv[HDF5ObjectSet.AXIS_Y], ijv[HDF5ObjectSet.AXIS_X]]
         matches = (retrieval == ijv[HDF5ObjectSet.AXIS_LABELS][None, :])
         self.assertTrue(np.all(np.sum(matches, 0) == 1))
 
@@ -670,7 +670,7 @@ class TestSegmentation(unittest.TestCase):
         r = np.random.RandomState()
         r.seed(101)
         labels = r.randint(0, 10, size=(2, 3, 4, 5, 6, 7))
-        s = cpo.Segmentation(dense = labels)
+        s = cpo.Segmentation(dense=labels)
         self.assertTrue(s.has_shape())
         self.assertEqual(tuple(s.shape), tuple(labels.shape[1:]))
 
@@ -679,11 +679,11 @@ class TestSegmentation(unittest.TestCase):
         r.seed(102)
         shape = (1, 1, 1, 50, 50)
         ijv = np.core.records.fromarrays(
-            [r.randint(0, 10, size=20) for _ in range(3)],
-            [(HDF5ObjectSet.AXIS_Y, np.uint32, 1),
-             (HDF5ObjectSet.AXIS_X, np.uint32, 1),
-             (HDF5ObjectSet.AXIS_LABELS, np.uint32, 1)])
-        s = cpo.Segmentation(sparse = ijv, shape=shape)
+                [r.randint(0, 10, size=20) for _ in range(3)],
+                [(HDF5ObjectSet.AXIS_Y, np.uint32, 1),
+                 (HDF5ObjectSet.AXIS_X, np.uint32, 1),
+                 (HDF5ObjectSet.AXIS_LABELS, np.uint32, 1)])
+        s = cpo.Segmentation(sparse=ijv, shape=shape)
         self.assertTrue(s.has_shape())
         self.assertEqual(tuple(s.shape), shape)
 
@@ -692,14 +692,14 @@ class TestSegmentation(unittest.TestCase):
         r.seed(102)
         shape = (1, 1, 1, 50, 50)
         ijv = np.core.records.fromarrays(
-            [r.randint(0, 10, size=20) for _ in range(3)],
-            [(HDF5ObjectSet.AXIS_Y, np.uint32, 1),
-             (HDF5ObjectSet.AXIS_X, np.uint32, 1),
-             (HDF5ObjectSet.AXIS_LABELS, np.uint32, 1)])
+                [r.randint(0, 10, size=20) for _ in range(3)],
+                [(HDF5ObjectSet.AXIS_Y, np.uint32, 1),
+                 (HDF5ObjectSet.AXIS_X, np.uint32, 1),
+                 (HDF5ObjectSet.AXIS_LABELS, np.uint32, 1)])
         ijv[HDF5ObjectSet.AXIS_X] = 11
         ijv[HDF5ObjectSet.AXIS_Y] = 31
         shape = (1, 1, 1, 33, 13)
-        s = cpo.Segmentation(sparse = ijv)
+        s = cpo.Segmentation(sparse=ijv)
         self.assertFalse(s.has_shape())
         self.assertEqual(tuple(s.shape), shape)
 
@@ -708,14 +708,14 @@ class TestSegmentation(unittest.TestCase):
         r.seed(102)
         shape = (1, 1, 1, 50, 50)
         ijv = np.core.records.fromarrays(
-            [r.randint(0, 10, size=20) for _ in range(3)],
-            [(HDF5ObjectSet.AXIS_Y, np.uint32, 1),
-             (HDF5ObjectSet.AXIS_X, np.uint32, 1),
-             (HDF5ObjectSet.AXIS_LABELS, np.uint32, 1)])
+                [r.randint(0, 10, size=20) for _ in range(3)],
+                [(HDF5ObjectSet.AXIS_Y, np.uint32, 1),
+                 (HDF5ObjectSet.AXIS_X, np.uint32, 1),
+                 (HDF5ObjectSet.AXIS_LABELS, np.uint32, 1)])
         ijv[HDF5ObjectSet.AXIS_X] = 11
         ijv[HDF5ObjectSet.AXIS_Y] = 31
         shape = (1, 1, 1, 50, 50)
-        s = cpo.Segmentation(sparse = ijv)
+        s = cpo.Segmentation(sparse=ijv)
         self.assertFalse(s.has_shape())
         s.set_shape(shape)
         self.assertEqual(tuple(s.shape), shape)
@@ -723,95 +723,97 @@ class TestSegmentation(unittest.TestCase):
 
 class TestDownsampleLabels(unittest.TestCase):
     def test_01_01_downsample_127(self):
-        i,j = np.mgrid[0:16, 0:8]
-        labels = (i*8 + j).astype(int)
+        i, j = np.mgrid[0:16, 0:8]
+        labels = (i * 8 + j).astype(int)
         result = cpo.downsample_labels(labels)
         self.assertEqual(result.dtype, np.dtype(np.int8))
         self.assertTrue(np.all(result == labels))
 
     def test_01_02_downsample_128(self):
-        i,j = np.mgrid[0:16, 0:8]
-        labels = (i*8 + j).astype(int) + 1
+        i, j = np.mgrid[0:16, 0:8]
+        labels = (i * 8 + j).astype(int) + 1
         result = cpo.downsample_labels(labels)
         self.assertEqual(result.dtype, np.dtype(np.int16))
         self.assertTrue(np.all(result == labels))
 
     def test_01_03_downsample_32767(self):
-        i,j = np.mgrid[0:256, 0:128]
-        labels = (i*128 + j).astype(int)
+        i, j = np.mgrid[0:256, 0:128]
+        labels = (i * 128 + j).astype(int)
         result = cpo.downsample_labels(labels)
         self.assertEqual(result.dtype, np.dtype(np.int16))
         self.assertTrue(np.all(result == labels))
 
     def test_01_04_downsample_32768(self):
-        i,j = np.mgrid[0:256, 0:128]
-        labels = (i*128 + j).astype(int) + 1
+        i, j = np.mgrid[0:256, 0:128]
+        labels = (i * 128 + j).astype(int) + 1
         result = cpo.downsample_labels(labels)
         self.assertEqual(result.dtype, np.dtype(np.int32))
         self.assertTrue(np.all(result == labels))
 
+
 class TestCropLabelsAndImage(unittest.TestCase):
     def test_01_01_crop_same(self):
         labels, image = cpo.crop_labels_and_image(np.zeros((10, 20)),
-                                                  np.zeros((10,20)))
-        self.assertEqual(tuple(labels.shape), (10,20))
-        self.assertEqual(tuple(image.shape), (10,20))
+                                                  np.zeros((10, 20)))
+        self.assertEqual(tuple(labels.shape), (10, 20))
+        self.assertEqual(tuple(image.shape), (10, 20))
 
     def test_01_02_crop_image(self):
         labels, image = cpo.crop_labels_and_image(np.zeros((10, 20)),
-                                                  np.zeros((10,30)))
-        self.assertEqual(tuple(labels.shape), (10,20))
-        self.assertEqual(tuple(image.shape), (10,20))
+                                                  np.zeros((10, 30)))
+        self.assertEqual(tuple(labels.shape), (10, 20))
+        self.assertEqual(tuple(image.shape), (10, 20))
         labels, image = cpo.crop_labels_and_image(np.zeros((10, 20)),
                                                   np.zeros((20, 20)))
-        self.assertEqual(tuple(labels.shape), (10,20))
-        self.assertEqual(tuple(image.shape), (10,20))
+        self.assertEqual(tuple(labels.shape), (10, 20))
+        self.assertEqual(tuple(image.shape), (10, 20))
 
     def test_01_03_crop_labels(self):
         labels, image = cpo.crop_labels_and_image(np.zeros((10, 30)),
-                                                  np.zeros((10,20)))
-        self.assertEqual(tuple(labels.shape), (10,20))
-        self.assertEqual(tuple(image.shape), (10,20))
+                                                  np.zeros((10, 20)))
+        self.assertEqual(tuple(labels.shape), (10, 20))
+        self.assertEqual(tuple(image.shape), (10, 20))
         labels, image = cpo.crop_labels_and_image(np.zeros((20, 20)),
                                                   np.zeros((10, 20)))
-        self.assertEqual(tuple(labels.shape), (10,20))
-        self.assertEqual(tuple(image.shape), (10,20))
+        self.assertEqual(tuple(labels.shape), (10, 20))
+        self.assertEqual(tuple(image.shape), (10, 20))
 
     def test_01_04_crop_both(self):
         labels, image = cpo.crop_labels_and_image(np.zeros((10, 30)),
-                                                  np.zeros((20,20)))
-        self.assertEqual(tuple(labels.shape), (10,20))
-        self.assertEqual(tuple(image.shape), (10,20))
+                                                  np.zeros((20, 20)))
+        self.assertEqual(tuple(labels.shape), (10, 20))
+        self.assertEqual(tuple(image.shape), (10, 20))
+
 
 class TestSizeSimilarly(unittest.TestCase):
     def test_01_01_size_same(self):
-        secondary, mask = cpo.size_similarly(np.zeros((10,20)),
-                                             np.zeros((10,20)))
-        self.assertEqual(tuple(secondary.shape), (10,20))
+        secondary, mask = cpo.size_similarly(np.zeros((10, 20)),
+                                             np.zeros((10, 20)))
+        self.assertEqual(tuple(secondary.shape), (10, 20))
         self.assertTrue(np.all(mask))
 
     def test_01_02_larger_secondary(self):
-        secondary, mask = cpo.size_similarly(np.zeros((10,20)),
-                                             np.zeros((10,30)))
-        self.assertEqual(tuple(secondary.shape), (10,20))
+        secondary, mask = cpo.size_similarly(np.zeros((10, 20)),
+                                             np.zeros((10, 30)))
+        self.assertEqual(tuple(secondary.shape), (10, 20))
         self.assertTrue(np.all(mask))
-        secondary, mask = cpo.size_similarly(np.zeros((10,20)),
-                                             np.zeros((20,20)))
-        self.assertEqual(tuple(secondary.shape), (10,20))
+        secondary, mask = cpo.size_similarly(np.zeros((10, 20)),
+                                             np.zeros((20, 20)))
+        self.assertEqual(tuple(secondary.shape), (10, 20))
         self.assertTrue(np.all(mask))
 
     def test_01_03_smaller_secondary(self):
-        secondary, mask = cpo.size_similarly(np.zeros((10,20), int),
-                                             np.zeros((10,15), np.float32))
-        self.assertEqual(tuple(secondary.shape), (10,20))
-        self.assertTrue(np.all(mask[:10,:15]))
-        self.assertTrue(np.all(~mask[:10,15:]))
+        secondary, mask = cpo.size_similarly(np.zeros((10, 20), int),
+                                             np.zeros((10, 15), np.float32))
+        self.assertEqual(tuple(secondary.shape), (10, 20))
+        self.assertTrue(np.all(mask[:10, :15]))
+        self.assertTrue(np.all(~mask[:10, 15:]))
         self.assertEqual(secondary.dtype, np.dtype(np.float32))
 
     def test_01_04_size_color(self):
-        secondary, mask = cpo.size_similarly(np.zeros((10,20), int),
-                                             np.zeros((10,15,3), np.float32))
-        self.assertEqual(tuple(secondary.shape), (10,20,3))
-        self.assertTrue(np.all(mask[:10,:15]))
-        self.assertTrue(np.all(~mask[:10,15:]))
+        secondary, mask = cpo.size_similarly(np.zeros((10, 20), int),
+                                             np.zeros((10, 15, 3), np.float32))
+        self.assertEqual(tuple(secondary.shape), (10, 20, 3))
+        self.assertTrue(np.all(mask[:10, :15]))
+        self.assertTrue(np.all(~mask[:10, 15:]))
         self.assertEqual(secondary.dtype, np.dtype(np.float32))

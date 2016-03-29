@@ -1,14 +1,12 @@
 """ runmultiplepipelinesdialog.py - Dialog to collect info for RunMultiplePipelines
 """
 
+import cellprofiler.pipeline
+import cellprofiler.preferences
 import datetime
 import os
 import sys
-
 import wx
-
-import cellprofiler.pipeline as cpp
-import cellprofiler.preferences as cpprefs
 
 FC_FILENAME_COLUMN = 0
 FC_DATE_COLUMN = 1
@@ -19,6 +17,7 @@ P_INPUT_DIRECTORY_COLUMN = 1
 P_OUTPUT_DIRECTORY_COLUMN = 2
 P_OUTPUT_FILE_COLUMN = 3
 P_REMOVE_BUTTON_COLUMN = 4
+
 
 class RunMultplePipelinesDialog(wx.Dialog):
     def __init__(self, *args, **kwargs):
@@ -52,16 +51,16 @@ class RunMultplePipelinesDialog(wx.Dialog):
         self.add_dialog_buttons(self.sizer)
 
         self.hookup_events()
-        self.set_path(cpprefs.get_default_output_directory())
+        self.set_path(cellprofiler.preferences.get_default_output_directory())
         self.Layout()
 
     def add_file_chooser(self, sizer):
-        '''Add UI elements for displaying files in a directory.'''
+        """Add UI elements for displaying files in a directory."""
         #
         # File list box on left, buttons on right
         #
         self.file_chooser = wx.ListCtrl(self, style=wx.LC_REPORT)
-        self.file_chooser.InsertColumn(FC_FILENAME_COLUMN,"File name")
+        self.file_chooser.InsertColumn(FC_FILENAME_COLUMN, "File name")
         self.file_chooser.InsertColumn(FC_DATE_COLUMN, "Last modified")
         self.file_chooser.InsertColumn(FC_MODULE_COUNT_COLUMN, "# modules")
         self.file_chooser.SetColumnWidth(FC_MODULE_COUNT_COLUMN, wx.LIST_AUTOSIZE_USEHEADER)
@@ -85,10 +84,10 @@ class RunMultplePipelinesDialog(wx.Dialog):
         sub_sizer.Add(self.directory_picker, 1, wx.EXPAND)
 
     def add_pipeline_list_box(self, sizer):
-        self.plv_image_list = wx.ImageList(16,16)
-        delete_bmp = wx.ArtProvider.GetBitmap(wx.ART_DELETE, size=(16,16))
+        self.plv_image_list = wx.ImageList(16, 16)
+        delete_bmp = wx.ArtProvider.GetBitmap(wx.ART_DELETE, size=(16, 16))
         self.delete_bmp_idx = self.plv_image_list.Add(delete_bmp)
-        self.pipeline_list_view = wx.ListCtrl(self, style = wx.LC_REPORT)
+        self.pipeline_list_view = wx.ListCtrl(self, style=wx.LC_REPORT)
         self.pipeline_list_view.SetImageList(self.plv_image_list, wx.IMAGE_LIST_SMALL)
         sizer.Add(self.pipeline_list_view, 1, wx.EXPAND | wx.ALL, 5)
         self.pipeline_list_view.InsertColumn(P_FILENAME_COLUMN, "Pipeline")
@@ -134,17 +133,18 @@ class RunMultplePipelinesDialog(wx.Dialog):
         file_names = []
         for file_name in os.listdir(path):
             ext = os.path.splitext(file_name)[1].lower()
-            if len(ext) > 0 and ext[1:] in cpprefs.EXT_PIPELINE_CHOICES:
+            if len(ext) > 0 and ext[1:] in cellprofiler.preferences.EXT_PIPELINE_CHOICES:
                 file_names.append(file_name)
         self.file_chooser.DeleteAllItems()
-        module_count = [ None ]
+        module_count = [None]
+
         def on_pipeline_event(caller, event):
-            if isinstance(event, cpp.LoadExceptionEvent):
+            if isinstance(event, cellprofiler.pipeline.LoadExceptionEvent):
                 module_count[0] = None
-            elif isinstance(event, cpp.PipelineLoadedEvent):
+            elif isinstance(event, cellprofiler.pipeline.PipelineLoadedEvent):
                 module_count[0] = len(caller.modules())
 
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_listener(on_pipeline_event)
         for file_name in file_names:
             file_path = os.path.join(path, file_name)
@@ -154,7 +154,7 @@ class RunMultplePipelinesDialog(wx.Dialog):
             pipeline.load(file_path)
             if module_count[0] is not None:
                 index = self.file_chooser.InsertStringItem(
-                    sys.maxint, file_name)
+                        sys.maxint, file_name)
                 self.file_chooser.SetStringItem(index, FC_DATE_COLUMN, mtime)
                 self.file_chooser.SetStringItem(index, FC_MODULE_COUNT_COLUMN,
                                                 str(module_count[0]))
@@ -175,21 +175,21 @@ class RunMultplePipelinesDialog(wx.Dialog):
         for i in range(self.file_chooser.ItemCount):
             if self.file_chooser.IsSelected(i):
                 path = os.path.join(
-                    self.directory_picker.Path,
-                    self.file_chooser.GetItemText(i))
+                        self.directory_picker.Path,
+                        self.file_chooser.GetItemText(i))
                 index = self.pipeline_list_view.InsertStringItem(
-                    sys.maxint, path)
+                        sys.maxint, path)
                 self.pipeline_list_view.SetStringItem(
-                    index, P_INPUT_DIRECTORY_COLUMN,
-                    cpprefs.get_default_image_directory())
+                        index, P_INPUT_DIRECTORY_COLUMN,
+                        cellprofiler.preferences.get_default_image_directory())
                 self.pipeline_list_view.SetStringItem(
-                    index, P_OUTPUT_DIRECTORY_COLUMN,
-                    cpprefs.get_default_output_directory())
+                        index, P_OUTPUT_DIRECTORY_COLUMN,
+                        cellprofiler.preferences.get_default_output_directory())
                 self.pipeline_list_view.SetStringItem(
-                    index, P_OUTPUT_FILE_COLUMN,
-                    cpprefs.get_output_file_name())
+                        index, P_OUTPUT_FILE_COLUMN,
+                        cellprofiler.preferences.get_output_file_name())
                 self.pipeline_list_view.SetItemColumnImage(
-                    index, P_REMOVE_BUTTON_COLUMN, self.delete_bmp_idx)
+                        index, P_REMOVE_BUTTON_COLUMN, self.delete_bmp_idx)
                 self.file_chooser.Select(i, False)
         self.pipeline_list_view.SetColumnWidth(P_FILENAME_COLUMN, wx.LIST_AUTOSIZE)
         self.pipeline_list_view.SetColumnWidth(P_INPUT_DIRECTORY_COLUMN, wx.LIST_AUTOSIZE)
@@ -209,12 +209,11 @@ class RunMultplePipelinesDialog(wx.Dialog):
                 if event.Position[0] < start + widths[subitem]:
                     break
                 start += widths[subitem]
-        if (item >= 0 and item < self.pipeline_list_view.ItemCount and
-            (hit_code & wx.LIST_HITTEST_ONITEM)):
+        if 0 <= item < self.pipeline_list_view.ItemCount and (hit_code & wx.LIST_HITTEST_ONITEM):
             if subitem == P_REMOVE_BUTTON_COLUMN:
                 self.pipeline_list_view.DeleteItem(item)
             elif subitem == P_FILENAME_COLUMN:
-                dlg = wx.FileDialog(self, "Choose a pipeline file", style = wx.FD_OPEN)
+                dlg = wx.FileDialog(self, "Choose a pipeline file", style=wx.FD_OPEN)
                 dlg.Path = self.pipeline_list_view.GetItemText(item)
                 dlg.Wildcard = "CellProfiler pipeline (*.cp)|*.cp|Measurements file (*.mat)|*.mat"
                 result = dlg.ShowModal()
@@ -229,7 +228,7 @@ class RunMultplePipelinesDialog(wx.Dialog):
                     self.pipeline_list_view.SetStringItem(item, subitem, dlg.Path)
             elif subitem == P_OUTPUT_FILE_COLUMN:
                 dlg = wx.FileDialog(self, "Choose an output measurements file",
-                                    style = wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
+                                    style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
                 list_item = self.pipeline_list_view.GetItem(item, subitem)
                 dlg.Path = list_item.GetText()
                 dlg.Wildcard = "Measurements file (*.mat)|*.mat"
@@ -243,7 +242,7 @@ class RunMultplePipelinesDialog(wx.Dialog):
                      RUN_MULTIPLE_PIPELINES_HELP).Show()
 
     def get_pipelines(self):
-        '''Return the user's chosen pipelines & other details
+        """Return the user's chosen pipelines & other details
 
         The return value is a list of objects with the following attributes
         .path - path to the pipeline file
@@ -251,8 +250,9 @@ class RunMultplePipelinesDialog(wx.Dialog):
         .default_output_folder - default output folder when running the pipeline
         .measurements_file - .mat file to use when storing measurements. Can
                              be None if none wanted.
-        '''
+        """
         result = []
+
         class PipelineDetails(object):
             def __init__(self, path, default_input_folder, default_output_folder,
                          measurements_file):
@@ -267,6 +267,6 @@ class RunMultplePipelinesDialog(wx.Dialog):
                  for j in (P_FILENAME_COLUMN, P_INPUT_DIRECTORY_COLUMN,
                            P_OUTPUT_DIRECTORY_COLUMN, P_OUTPUT_FILE_COLUMN)]
             result.append(PipelineDetails(
-                path, default_input_folder, default_output_folder,
-                measurements_file))
+                    path, default_input_folder, default_output_folder,
+                    measurements_file))
         return result

@@ -1,20 +1,21 @@
-'''treecheckboxdialog.py - tree checkbox dialog for selection of tree branches
-'''
+"""treecheckboxdialog.py - tree checkbox dialog for selection of tree branches
+"""
 
 import wx
 
+
 class TreeCheckboxDialog(wx.Dialog):
-    '''A dialog for "selecting" items on a tree by checking them'''
+    """A dialog for "selecting" items on a tree by checking them"""
 
     def __init__(self, parent, d, *args, **kwargs):
-        '''Initialize the dialog
+        """Initialize the dialog
 
         d - dictionary representing the tree.
             Keys form the dictionary labels, values are dictionaries of subtrees
             A leaf is marked with a dictionary entry whose key is None and
             whose value is True or False, depending on whether it is
             initially selected or not.
-        '''
+        """
         wx.Dialog.__init__(self, parent, *args, **kwargs)
 
         self.bitmaps = []
@@ -23,16 +24,16 @@ class TreeCheckboxDialog(wx.Dialog):
         self.SetSizer(sizer)
         tree_style = wx.TR_DEFAULT_STYLE
         self.tree_ctrl = wx.TreeCtrl(self,
-                                     style = tree_style)
+                                     style=tree_style)
         sizer.Add(self.tree_ctrl, 1, wx.EXPAND | wx.ALL, 5)
 
         image_list = wx.ImageList(16, 16)
         for i, state_flag in enumerate(
-            (0, wx.CONTROL_CHECKED, wx.CONTROL_UNDETERMINED)):
+                (0, wx.CONTROL_CHECKED, wx.CONTROL_UNDETERMINED)):
             for j, selection_flag in enumerate((0, wx.CONTROL_CURRENT)):
                 idx = image_list.Add(
-                    self.get_checkbox_bitmap(state_flag | selection_flag,
-                                             16, 16))
+                        self.get_checkbox_bitmap(state_flag | selection_flag,
+                                                 16, 16))
         self.tree_ctrl.SetImageList(image_list)
         self.image_list = image_list
         image_index, selected_image_index = self.img_idx(d)
@@ -56,9 +57,9 @@ class TreeCheckboxDialog(wx.Dialog):
         sizer.Add(table_sizer, 0, wx.EXPAND)
         table_sizer.Add(wx.StaticText(self, label='Key:'), (0, 0), flag=wx.LEFT | wx.RIGHT, border=3)
         for i, (bitmap, description) in enumerate((
-            (image_list.GetBitmap(0), "No subitems selected / not selected"),
-            (image_list.GetBitmap(2), "All subitems selected / selected"),
-            (image_list.GetBitmap(4), "Some subitems selected. Open tree to see selections."))):
+                (image_list.GetBitmap(0), "No subitems selected / not selected"),
+                (image_list.GetBitmap(2), "All subitems selected / selected"),
+                (image_list.GetBitmap(4), "Some subitems selected. Open tree to see selections."))):
             bitmap_ctrl = wx.StaticBitmap(self)
             bitmap_ctrl.SetBitmap(bitmap)
             table_sizer.Add(bitmap_ctrl, (i, 1), flag=wx.RIGHT, border=5)
@@ -69,7 +70,7 @@ class TreeCheckboxDialog(wx.Dialog):
         self.Layout()
 
     def set_parent_reflects_child(self, value):
-        '''Set the "parent_reflects_child" flag
+        """Set the "parent_reflects_child" flag
 
         If you uncheck all of a parent's children, maybe that means
         that the parent should be unchecked too. But imagine the case
@@ -77,16 +78,17 @@ class TreeCheckboxDialog(wx.Dialog):
         they want the files in the parent, but not in the child. Set this
         to False to make the parent state be "None" if all children are False.
         This drives the parent to None instead of False, indicating that
-        files should be picked up from the currenet directory, but not kids.'''
+        files should be picked up from the currenet directory, but not kids."""
         self.parent_reflects_child = value
 
-    def img_idx(self, d):
+    @staticmethod
+    def img_idx(d):
         if d[None] is False:
-            return (0, 1)
+            return 0, 1
         elif d[None] is True:
-            return (2, 3)
+            return 2, 3
         else:
-            return (4, 5)
+            return 4, 5
 
     def get_item_data(self, item_id):
         x = self.tree_ctrl.GetItemData(item_id)
@@ -94,14 +96,14 @@ class TreeCheckboxDialog(wx.Dialog):
         return d
 
     def on_expanding(self, event):
-        '''Populate subitems on expansion'''
+        """Populate subitems on expansion"""
         item_id = event.GetItem()
         d = self.get_item_data(item_id)
         if len(d) > 1:
             self.populate(item_id)
 
     def populate(self, item_id):
-        '''Populate the subitems of a tree'''
+        """Populate the subitems of a tree"""
         try:
             d = self.get_item_data(item_id)
             assert len(d) > 1
@@ -190,11 +192,11 @@ class TreeCheckboxDialog(wx.Dialog):
                 child_id = self.tree_ctrl.GetNextSibling(child_id)
 
     def get_checkbox_bitmap(self, flags, width, height):
-        '''Return a bitmap with a checkbox drawn into it
+        """Return a bitmap with a checkbox drawn into it
 
         flags - rendering flags including CONTROL_CHECKED and CONTROL_UNDETERMINED
         width, height - size of bitmap to return
-        '''
+        """
         dc = wx.MemoryDC()
         bitmap = wx.EmptyBitmap(width, height)
         dc.SelectObject(bitmap)
@@ -209,44 +211,3 @@ class TreeCheckboxDialog(wx.Dialog):
         dc.Destroy()
         self.bitmaps.append(bitmap)
         return bitmap
-
-if __name__ == "__main__":
-    class MyApp(wx.App):
-        def OnInit(self):
-            d = { None:None }
-            for i in range(5):
-                d1 = d[str(i)] = { None: None }
-                for j in range(5):
-                    d2 = d1[str(j)] = { None: None }
-                    for k in range(5):
-                        d2[str(k)] = { None: (k & 1) != 0}
-            def fn():
-                return {
-                    "Hello":{
-                        "There": {None:False},
-                        "Kitty":{None:True},
-                        None:None },
-                    None:None }
-            d["KittenKiller"] = fn
-
-            dlg = TreeCheckboxDialog(None, d, size=(640,480),
-                                     style = wx.DEFAULT_DIALOG_STYLE |
-                                     wx.RESIZE_BORDER)
-            dlg.ShowModal()
-            print "{"
-            for i in range(5):
-                d1 = d[str(i)]
-                print "   %d: { None=%s," % (i, repr(d1[None]))
-                for j in range(5):
-                    d2 = d1[str(j)]
-                    print "       %d: { None=%s" % (j, repr(d2[None]))
-                    for k in range(5):
-                        d3 = d2[str(k)]
-                        print "           %d: { None=%s }, " % (k, repr(d3[None]))
-                    print "           },"
-                print "        },"
-            print "}"
-            return False
-    my_app = MyApp(False)
-    my_app.MainLoop()
-    pass

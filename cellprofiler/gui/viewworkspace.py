@@ -1,28 +1,21 @@
 """ViewWorkspace.py - view the image sets and object sets in a workspace
 """
 
+import cellprofiler.gui.cpartists
+import cellprofiler.gui.cpfigure
+import cellprofiler.gui.help
+import cellprofiler.gui.htmldialog
+import cellprofiler.measurements
+import cellprofiler.modules.identify
+import cellprofiler.preferences
 import matplotlib
-import numpy as np
+import numpy
 import wx
-from wx.lib.colourselect import ColourSelect, EVT_COLOURSELECT
-from wx.lib.intctrl import IntCtrl, EVT_INT
-from wx.lib.resizewidget import ResizeWidget
-from wx.lib.scrolledpanel import ScrolledPanel
-
-import cellprofiler.measurements as cpmeas
-import cellprofiler.preferences as cpprefs
-from cellprofiler.gui.cpartists import \
-     CPImageArtist, ImageData, ObjectsData, MaskData, ColorMixin,\
-     MODE_COLORIZE, MODE_HIDE, MODE_LINES,\
-     NORMALIZE_LINEAR, NORMALIZE_LOG, NORMALIZE_RAW,\
-     INTERPOLATION_BICUBIC, INTERPOLATION_BILINEAR, INTERPOLATION_NEAREST
-from cellprofiler.gui.cpfigure import \
-     CPFigureFrame, get_matplotlib_interpolation_preference
-from cellprofiler.gui.help import WV_FIGURE_HELP, WORKSPACE_VIEWER_HELP
-from cellprofiler.gui.htmldialog import HTMLDialog
-from cellprofiler.modules.identify import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
+import wx.lib.colourselect
+import wx.lib.scrolledpanel
 
 __the_workspace_viewer = None
+
 
 def show_workspace_viewer(parent, workspace):
     global __the_workspace_viewer
@@ -32,53 +25,59 @@ def show_workspace_viewer(parent, workspace):
         __the_workspace_viewer.set_workspace(workspace)
         __the_workspace_viewer.frame.Show()
 
+
 def update_workspace_viewer(workspace):
     if __the_workspace_viewer is not None:
         __the_workspace_viewer.set_workspace(workspace)
 
+
 def bind_data_class(data_class, color_select, fn_redraw):
-    '''Bind ImageData etc to synchronize to color select button
+    """Bind ImageData etc to synchronize to color select button
 
     data_class - ImageData, ObjectData or MaskData
     color_select - a color select button whose color synchronizes
                    to that of the data
     fn_redraw - function to be called
-    '''
-    assert issubclass(data_class, ColorMixin)
-    assert isinstance(color_select, ColourSelect)
+    """
+    assert issubclass(data_class, cellprofiler.gui.cpartists.ColorMixin)
+    assert isinstance(color_select, wx.lib.colourselect.ColourSelect)
+
     class bdc(data_class):
         def _on_color_changed(self):
             super(bdc, self)._on_color_changed()
-            r, g, b = [int(x*255) for x in self.color]
+            r, g, b = [int(x * 255) for x in self.color]
             rold, gold, bold = self.color_select.GetColour()
             if r != rold or g != gold or b != bold:
                 self.color_select.SetColour(wx.Colour(r, g, b))
+
     bdc.color_select = color_select
     return bdc
 
+
 class VWRow(object):
-    '''A row of controls and a data item'''
+    """A row of controls and a data item"""
+
     def __init__(self, vw, color, can_delete):
         self.vw = vw
         panel = vw.panel
         self.chooser = wx.Choice(panel)
-        self.color_ctrl = ColourSelect(panel, colour=color)
+        self.color_ctrl = wx.lib.colourselect.ColourSelect(panel, colour=color)
         self.show_check = wx.CheckBox(panel)
         bitmap = wx.ArtProvider.GetBitmap(
-            wx.ART_DELETE, wx.ART_TOOLBAR, (16, 16))
+                wx.ART_DELETE, wx.ART_TOOLBAR, (16, 16))
         self.remove_button = wx.BitmapButton(
-            panel, bitmap = bitmap)
+                panel, bitmap=bitmap)
         if not can_delete:
             self.remove_button.Hide()
         self.chooser.Bind(wx.EVT_CHOICE, self.on_choice)
-        self.color_ctrl.Bind(EVT_COLOURSELECT, self.on_color_change)
+        self.color_ctrl.Bind(wx.lib.colourselect.EVT_COLOURSELECT, self.on_color_change)
         self.show_check.Bind(wx.EVT_CHECKBOX, self.on_check_change)
         self.update_chooser(first=True)
 
     @property
     def color(self):
-        '''The color control's current color scaled for matplotlib'''
-        return tuple([float(x)/255 for x in self.color_ctrl.GetColour()])
+        """The color control's current color scaled for matplotlib"""
+        return tuple([float(x) / 255 for x in self.color_ctrl.GetColour()])
 
     def on_choice(self, event):
         self.data.name = self.chooser.GetStringSelection()
@@ -86,7 +85,7 @@ class VWRow(object):
 
     def on_color_change(self, event):
         self.data.color = tuple(
-            [float(c) / 255. for c in self.color_ctrl.GetColour()])
+                [float(c) / 255. for c in self.color_ctrl.GetColour()])
         self.vw.redraw()
 
     def on_check_change(self, event):
@@ -99,15 +98,15 @@ class VWRow(object):
         if self.show_check.IsChecked() and name in names:
             self.data.name = name
             self.update_data(name)
-            if self.data.mode == MODE_HIDE:
+            if self.data.mode == cellprofiler.gui.cpartists.MODE_HIDE:
                 self.data.mode = self.last_mode
-        elif self.data.mode != MODE_HIDE:
+        elif self.data.mode != cellprofiler.gui.cpartists.MODE_HIDE:
             self.last_mode = self.data.get_raw_mode()
-            self.data.mode = MODE_HIDE
+            self.data.mode = cellprofiler.gui.cpartists.MODE_HIDE
         self.update_chooser()
 
-    def update_chooser(self, first = False):
-        '''Update the chooser with the given list of names'''
+    def update_chooser(self, first=False):
+        """Update the chooser with the given list of names"""
         name = self.chooser.GetStringSelection()
         names = self.get_names()
         current_names = sorted(self.chooser.GetItems())
@@ -127,47 +126,49 @@ class VWImageRow(VWRow):
         image_set = vw.workspace.image_set
         name = self.chooser.GetStringSelection()
 
-        im = cpprefs.get_intensity_mode()
-        if im == cpprefs.INTENSITY_MODE_LOG:
-            normalization = NORMALIZE_LOG
-        elif im == cpprefs.INTENSITY_MODE_NORMAL:
-            normalization = NORMALIZE_LINEAR
+        im = cellprofiler.preferences.get_intensity_mode()
+        if im == cellprofiler.preferences.INTENSITY_MODE_LOG:
+            normalization = cellprofiler.gui.cpartists.NORMALIZE_LOG
+        elif im == cellprofiler.preferences.INTENSITY_MODE_NORMAL:
+            normalization = cellprofiler.gui.cpartists.NORMALIZE_LINEAR
         else:
-            normalization = NORMALIZE_RAW
+            normalization = cellprofiler.gui.cpartists.NORMALIZE_RAW
         alpha = 1.0 / (len(vw.image_rows) + 1.0)
-        self.data = bind_data_class(ImageData, self.color_ctrl, vw.redraw)(
-            name, None,
-            mode = MODE_HIDE,
-            color = self.color,
-            colormap = cpprefs.get_default_colormap(),
-            alpha = alpha,
-            normalization = normalization)
+        self.data = bind_data_class(cellprofiler.gui.cpartists.ImageData, self.color_ctrl, vw.redraw)(
+                name, None,
+                mode=cellprofiler.gui.cpartists.MODE_HIDE,
+                color=self.color,
+                colormap=cellprofiler.preferences.get_default_colormap(),
+                alpha=alpha,
+                normalization=normalization)
         vw.image.add(self.data)
-        self.last_mode = MODE_COLORIZE
+        self.last_mode = cellprofiler.gui.cpartists.MODE_COLORIZE
 
     def get_names(self):
         return self.vw.workspace.image_set.get_names()
 
     def update_data(self, name):
-        '''Update the image data from the workspace'''
+        """Update the image data from the workspace"""
         image_set = self.vw.workspace.image_set
         image = image_set.get_image(name)
         self.data.pixel_data = image.pixel_data
 
+
 class VWObjectsRow(VWRow):
-    '''A row of controls for controlling objects'''
+    """A row of controls for controlling objects"""
+
     def __init__(self, vw, color, can_delete):
         super(VWObjectsRow, self).__init__(vw, color, can_delete)
         self.update_chooser(first=True)
         name = self.chooser.GetStringSelection()
-        self.data = bind_data_class(ObjectsData, self.color_ctrl, vw.redraw)(
-            name, None,
-            outline_color = self.color,
-            colormap = cpprefs.get_default_colormap(),
-            alpha = .5,
-            mode = MODE_HIDE)
+        self.data = bind_data_class(cellprofiler.gui.cpartists.ObjectsData, self.color_ctrl, vw.redraw)(
+                name, None,
+                outline_color=self.color,
+                colormap=cellprofiler.preferences.get_default_colormap(),
+                alpha=.5,
+                mode=cellprofiler.gui.cpartists.MODE_HIDE)
         vw.image.add(self.data)
-        self.last_mode = MODE_LINES
+        self.last_mode = cellprofiler.gui.cpartists.MODE_LINES
 
     def get_names(self):
         object_set = self.vw.workspace.object_set
@@ -178,20 +179,22 @@ class VWObjectsRow(VWRow):
         objects = object_set.get_objects(name)
         self.data.labels = [l for l, i in objects.get_labels()]
 
+
 class VWMaskRow(VWRow):
-    '''A row of controls for controlling masks'''
+    """A row of controls for controlling masks"""
+
     def __init__(self, vw, color, can_delete):
         super(VWMaskRow, self).__init__(vw, color, can_delete)
         self.__cached_names = None
         self.update_chooser(first=True)
         name = self.chooser.GetStringSelection()
-        self.data = bind_data_class(MaskData, self.color_ctrl, vw.redraw)(
-            name, None,
-            color = self.color,
-            alpha = .5,
-            mode = MODE_HIDE)
+        self.data = bind_data_class(cellprofiler.gui.cpartists.MaskData, self.color_ctrl, vw.redraw)(
+                name, None,
+                color=self.color,
+                alpha=.5,
+                mode=cellprofiler.gui.cpartists.MODE_HIDE)
         vw.image.add(self.data)
-        self.last_mode = MODE_LINES
+        self.last_mode = cellprofiler.gui.cpartists.MODE_LINES
 
     def get_names(self):
         image_set = self.vw.workspace.image_set
@@ -201,29 +204,32 @@ class VWMaskRow(VWRow):
         return names
 
     def update_data(self, name):
-        '''Update the image data from the workspace'''
+        """Update the image data from the workspace"""
         image_set = self.vw.workspace.image_set
         image = image_set.get_image(name)
         self.data.mask = image.mask
 
-class VWFigureFrame(CPFigureFrame):
+
+class VWFigureFrame(cellprofiler.gui.cpfigure.CPFigureFrame):
     def on_close(self, event):
-        '''Hide instead of close'''
+        """Hide instead of close"""
         if isinstance(event, wx.CloseEvent):
             event.Veto()
         self.Hide()
+
 
 class ViewWorkspace(object):
     C_CHOOSER = 0
     C_COLOR = 1
     C_SHOW = 2
     C_REMOVE = 3
+
     def __init__(self, parent, workspace):
         self.frame = VWFigureFrame(
-            parent,
-            title = "CellProfiler Workspace",
-            secret_panel_class=ScrolledPanel,
-        help_menu_items=WV_FIGURE_HELP)
+                parent,
+                title="CellProfiler Workspace",
+                secret_panel_class=wx.lib.scrolledpanel.ScrolledPanel,
+                help_menu_items=cellprofiler.gui.help.WV_FIGURE_HELP)
         self.workspace = workspace
         self.ignore_redraw = False
         self.image_rows = []
@@ -233,14 +239,14 @@ class ViewWorkspace(object):
         self.frame.set_subplots((1, 1))
         self.axes = self.frame.subplot(0, 0)
         self.axes.invert_yaxis()
-        interpolation = cpprefs.get_interpolation_mode()
-        if interpolation == cpprefs.IM_NEAREST:
-            interpolation = INTERPOLATION_NEAREST
-        elif interpolation == cpprefs.IM_BILINEAR:
-            interpolation = INTERPOLATION_BILINEAR
+        interpolation = cellprofiler.preferences.get_interpolation_mode()
+        if interpolation == cellprofiler.preferences.IM_NEAREST:
+            interpolation = cellprofiler.gui.cpartists.INTERPOLATION_NEAREST
+        elif interpolation == cellprofiler.preferences.IM_BILINEAR:
+            interpolation = cellprofiler.gui.cpartists.INTERPOLATION_BILINEAR
         else:
-            interpolation = INTERPOLATION_BICUBIC
-        self.image = CPImageArtist(interpolation = interpolation)
+            interpolation = cellprofiler.gui.cpartists.INTERPOLATION_BICUBIC
+        self.image = cellprofiler.gui.cpartists.CPImageArtist(interpolation=interpolation)
         assert isinstance(self.axes, matplotlib.axes.Axes)
         self.axes.add_artist(self.image)
         self.axes.set_aspect('equal')
@@ -253,126 +259,128 @@ class ViewWorkspace(object):
         # Make a grid of image controls
         #
         panel.Sizer.AddSpacer(4)
-        self.image_grid = wx.GridBagSizer(vgap = 3, hgap = 3)
+        self.image_grid = wx.GridBagSizer(vgap=3, hgap=3)
         sub_sizer = wx.BoxSizer(wx.VERTICAL)
         panel.Sizer.Add(
-            sub_sizer, 0, wx.ALIGN_LEFT | wx.LEFT | wx.RIGHT, 3)
+                sub_sizer, 0, wx.ALIGN_LEFT | wx.LEFT | wx.RIGHT, 3)
         sub_sizer.Add(self.image_grid, 0, wx.ALIGN_LEFT)
         self.image_grid.Add(
-            wx.StaticText(panel, label="Images"), (0, self.C_CHOOSER),
-            flag = wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_BOTTOM)
+                wx.StaticText(panel, label="Images"), (0, self.C_CHOOSER),
+                flag=wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_BOTTOM)
         self.image_grid.Add(
-            wx.StaticText(panel, label="Color"), (0, self.C_COLOR),
-            flag = wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_BOTTOM)
+                wx.StaticText(panel, label="Color"), (0, self.C_COLOR),
+                flag=wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_BOTTOM)
         self.image_grid.Add(
-            wx.StaticText(panel, label="Show"), (0, self.C_SHOW),
-            flag = wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_BOTTOM)
+                wx.StaticText(panel, label="Show"), (0, self.C_SHOW),
+                flag=wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_BOTTOM)
         self.image_grid.Add(
-            wx.StaticText(panel, label="Remove"), (0, self.C_REMOVE),
-            flag = wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_BOTTOM)
-        self.add_image_row(can_delete = False)
+                wx.StaticText(panel, label="Remove"), (0, self.C_REMOVE),
+                flag=wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_BOTTOM)
+        self.add_image_row(can_delete=False)
         add_image_button = wx.Button(panel,
-                                     label = "Add Image")
+                                     label="Add Image")
         sub_sizer.Add(add_image_button, 0, wx.ALIGN_RIGHT)
         add_image_button.Bind(
-            wx.EVT_BUTTON,
-            lambda event:self.add_image_row())
+                wx.EVT_BUTTON,
+                lambda event: self.add_image_row())
         panel.Sizer.AddSpacer(4)
-        panel.Sizer.Add(wx.StaticLine(panel, style = wx.LI_HORIZONTAL),
+        panel.Sizer.Add(wx.StaticLine(panel, style=wx.LI_HORIZONTAL),
                         0, wx.EXPAND)
         panel.Sizer.AddSpacer(4)
         #
         # Make a grid of object controls
         #
-        self.object_grid = wx.GridBagSizer(vgap = 3, hgap = 3)
+        self.object_grid = wx.GridBagSizer(vgap=3, hgap=3)
         sub_sizer = wx.BoxSizer(wx.VERTICAL)
         panel.Sizer.Add(sub_sizer, 0, wx.ALIGN_LEFT | wx.LEFT | wx.RIGHT, 3)
         sub_sizer.Add(self.object_grid, 0, wx.ALIGN_LEFT)
         self.object_grid.Add(
-            wx.StaticText(panel, label="Objects"), (0, self.C_CHOOSER),
-            flag = wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_BOTTOM)
+                wx.StaticText(panel, label="Objects"), (0, self.C_CHOOSER),
+                flag=wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_BOTTOM)
         self.object_grid.Add(
-            wx.StaticText(panel, label="Color"), (0, self.C_COLOR),
-            flag = wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_BOTTOM)
+                wx.StaticText(panel, label="Color"), (0, self.C_COLOR),
+                flag=wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_BOTTOM)
         self.object_grid.Add(
-            wx.StaticText(panel, label="Show"), (0, self.C_SHOW),
-            flag = wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_BOTTOM)
+                wx.StaticText(panel, label="Show"), (0, self.C_SHOW),
+                flag=wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_BOTTOM)
         self.object_grid.Add(
-            wx.StaticText(panel, label="Remove"), (0, self.C_REMOVE),
-            flag = wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_BOTTOM)
-        self.add_objects_row(can_delete = False)
+                wx.StaticText(panel, label="Remove"), (0, self.C_REMOVE),
+                flag=wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_BOTTOM)
+        self.add_objects_row(can_delete=False)
         add_object_button = wx.Button(panel,
-                                      label = "Add Objects")
+                                      label="Add Objects")
         sub_sizer.Add(add_object_button, 0, wx.ALIGN_RIGHT)
         add_object_button.Bind(
-            wx.EVT_BUTTON,
-            lambda event:self.add_objects_row())
+                wx.EVT_BUTTON,
+                lambda event: self.add_objects_row())
         panel.Sizer.AddSpacer(4)
-        panel.Sizer.Add(wx.StaticLine(panel, style = wx.LI_HORIZONTAL),
+        panel.Sizer.Add(wx.StaticLine(panel, style=wx.LI_HORIZONTAL),
                         0, wx.EXPAND)
         panel.Sizer.AddSpacer(4)
         #
         # Make a grid of mask controls
         #
-        self.mask_grid = wx.GridBagSizer(vgap = 3, hgap = 3)
+        self.mask_grid = wx.GridBagSizer(vgap=3, hgap=3)
         sub_sizer = wx.BoxSizer(wx.VERTICAL)
         panel.Sizer.Add(sub_sizer, 0, wx.ALIGN_LEFT | wx.LEFT | wx.RIGHT, 3)
         sub_sizer.Add(self.mask_grid, 0, wx.ALIGN_LEFT)
         self.mask_grid.Add(
-            wx.StaticText(panel, label="Masks"), (0, self.C_CHOOSER),
-            flag = wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_BOTTOM)
+                wx.StaticText(panel, label="Masks"), (0, self.C_CHOOSER),
+                flag=wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_BOTTOM)
         self.mask_grid.Add(
-            wx.StaticText(panel, label="Color"), (0, self.C_COLOR),
-            flag = wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_BOTTOM)
+                wx.StaticText(panel, label="Color"), (0, self.C_COLOR),
+                flag=wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_BOTTOM)
         self.mask_grid.Add(
-            wx.StaticText(panel, label="Show"), (0, self.C_SHOW),
-            flag = wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_BOTTOM)
+                wx.StaticText(panel, label="Show"), (0, self.C_SHOW),
+                flag=wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_BOTTOM)
         self.mask_grid.Add(
-            wx.StaticText(panel, label="Remove"), (0, self.C_REMOVE),
-            flag = wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_BOTTOM)
-        self.add_mask_row(can_delete = False)
+                wx.StaticText(panel, label="Remove"), (0, self.C_REMOVE),
+                flag=wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_BOTTOM)
+        self.add_mask_row(can_delete=False)
         add_mask_button = wx.Button(panel,
-                                    label = "Add Mask")
+                                    label="Add Mask")
         sub_sizer.Add(add_mask_button, 0, wx.ALIGN_RIGHT)
         add_mask_button.Bind(
-            wx.EVT_BUTTON,
-            lambda event:self.add_mask_row())
+                wx.EVT_BUTTON,
+                lambda event: self.add_mask_row())
         panel.Sizer.AddSpacer(4)
-        panel.Sizer.Add(wx.StaticLine(panel, style = wx.LI_HORIZONTAL),
+        panel.Sizer.Add(wx.StaticLine(panel, style=wx.LI_HORIZONTAL),
                         0, wx.EXPAND)
         panel.Sizer.AddSpacer(4)
         #
         # Make a grid of measurements to display
         #
-        self.m_grid = wx.GridBagSizer(vgap = 3, hgap = 3)
+        self.m_grid = wx.GridBagSizer(vgap=3, hgap=3)
         sub_sizer = wx.BoxSizer(wx.VERTICAL)
         panel.Sizer.Add(sub_sizer, 0, wx.ALIGN_LEFT | wx.LEFT | wx.RIGHT, 3)
         sub_sizer.Add(self.m_grid, 0, wx.ALIGN_LEFT)
         self.m_grid.Add(
-            wx.StaticText(panel, label="Measurement"), (0, self.C_CHOOSER),
-            flag = wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_BOTTOM)
+                wx.StaticText(panel, label="Measurement"), (0, self.C_CHOOSER),
+                flag=wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_BOTTOM)
         self.m_grid.Add(
-            wx.StaticText(panel, label="Font"), (0, self.C_COLOR),
-            flag = wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_BOTTOM)
+                wx.StaticText(panel, label="Font"), (0, self.C_COLOR),
+                flag=wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_BOTTOM)
         self.m_grid.Add(
-            wx.StaticText(panel, label="Show"), (0, self.C_SHOW),
-            flag = wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_BOTTOM)
+                wx.StaticText(panel, label="Show"), (0, self.C_SHOW),
+                flag=wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_BOTTOM)
         self.m_grid.Add(
-            wx.StaticText(panel, label="Remove"), (0, self.C_REMOVE),
-            flag = wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_BOTTOM)
-        self.add_measurement_row(can_delete = False)
+                wx.StaticText(panel, label="Remove"), (0, self.C_REMOVE),
+                flag=wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_BOTTOM)
+        self.add_measurement_row(can_delete=False)
         add_measurement_button = wx.Button(panel,
-                                      label = "Add Measurement")
+                                           label="Add Measurement")
         sub_sizer.Add(add_measurement_button, 0, wx.ALIGN_RIGHT)
         add_measurement_button.Bind(
-            wx.EVT_BUTTON,
-            self.on_add_measurement_row)
+                wx.EVT_BUTTON,
+                self.on_add_measurement_row)
         panel.Sizer.AddSpacer(6)
         help_button = wx.Button(panel, wx.ID_HELP)
         panel.Sizer.Add(help_button, 0, wx.ALIGN_RIGHT)
+
         def on_help(event):
-            HTMLDialog(panel, "Workspace viewer help",
-                       WORKSPACE_VIEWER_HELP).Show()
+            cellprofiler.gui.htmldialog.HTMLDialog(panel, "Workspace viewer help",
+                                                   cellprofiler.gui.help.WORKSPACE_VIEWER_HELP).Show()
+
         help_button.Bind(wx.EVT_BUTTON, on_help)
         self.image.add_to_menu(self.frame, self.frame.menu_subplots)
         self.frame.Bind(wx.EVT_CONTEXT_MENU, self.on_context_menu)
@@ -384,12 +392,12 @@ class ViewWorkspace(object):
         self.frame.SetSize(wx.Size(w, h))
 
     def scale_axes(self):
-        '''Set the axes limits appropriate to the images we have'''
+        """Set the axes limits appropriate to the images we have"""
         ax = self.image.axes
         if self.frame.navtoolbar.is_home():
             max_x = max_y = 0
             for image_row in self.image_rows:
-                if image_row.data.mode != MODE_HIDE:
+                if image_row.data.mode != cellprofiler.gui.cpartists.MODE_HIDE:
                     shape = image_row.data.pixel_data.shape
                     max_x = max(shape[1], max_x)
                     max_y = max(shape[0], max_y)
@@ -417,17 +425,17 @@ class ViewWorkspace(object):
             self.frame.Hide()
             event.Veto()
 
-    def add_image_row(self, can_delete = True):
+    def add_image_row(self, can_delete=True):
         self.add_row(
-            VWImageRow,
-            self.image_rows, self.image_grid,
-            can_delete)
+                VWImageRow,
+                self.image_rows, self.image_grid,
+                can_delete)
 
-    def add_objects_row(self, can_delete = True):
+    def add_objects_row(self, can_delete=True):
         self.add_row(VWObjectsRow, self.object_rows, self.object_grid,
                      can_delete)
 
-    def add_mask_row(self, can_delete = True):
+    def add_mask_row(self, can_delete=True):
         self.add_row(VWMaskRow, self.mask_rows, self.mask_grid, can_delete)
 
     def add_row(self, row_class, rows, grid_sizer, can_delete):
@@ -436,21 +444,22 @@ class ViewWorkspace(object):
             else wx.BLUE if row == 3 else wx.WHITE
         vw_row = row_class(self, color, can_delete)
 
-        grid_sizer.Add(vw_row.chooser, (row, self.C_CHOOSER), flag = wx.EXPAND)
+        grid_sizer.Add(vw_row.chooser, (row, self.C_CHOOSER), flag=wx.EXPAND)
         grid_sizer.Add(vw_row.color_ctrl, (row, self.C_COLOR),
-                       flag = wx.EXPAND)
+                       flag=wx.EXPAND)
         grid_sizer.Add(vw_row.show_check, (row, self.C_SHOW),
-                       flag = wx.ALIGN_CENTER)
+                       flag=wx.ALIGN_CENTER)
         grid_sizer.Add(vw_row.remove_button, (row, self.C_REMOVE),
-                            flag = wx.ALIGN_CENTER)
+                       flag=wx.ALIGN_CENTER)
         rows.append(vw_row)
         if can_delete:
             def remove_this_row(
-                event, rows=rows, grid_sizer=grid_sizer,
-                remove_button = vw_row.remove_button):
+                    event, rows=rows, grid_sizer=grid_sizer,
+                    remove_button=vw_row.remove_button):
                 self.remove_row(rows, grid_sizer, remove_button)
+
             vw_row.remove_button.Bind(
-                wx.EVT_BUTTON, remove_this_row)
+                    wx.EVT_BUTTON, remove_this_row)
         self.update_menu(self.frame.menu_subplots)
         self.layout()
 
@@ -461,7 +470,7 @@ class ViewWorkspace(object):
         else:
             return
         for control in vw_row.chooser, vw_row.color_ctrl, vw_row.show_check, \
-            vw_row.remove_button:
+                       vw_row.remove_button:
             grid_sizer.Remove(control)
             control.Destroy()
         self.image.remove(vw_row.data)
@@ -469,9 +478,9 @@ class ViewWorkspace(object):
         for ii in range(i, len(rows)):
             vw_row = rows[ii]
             for j, control in enumerate((
-                vw_row.chooser, vw_row.color_ctrl, vw_row.show_check,
-                vw_row.remove_button)):
-                grid_sizer.SetItemPosition(control, (ii+1, j))
+                    vw_row.chooser, vw_row.color_ctrl, vw_row.show_check,
+                    vw_row.remove_button)):
+                grid_sizer.SetItemPosition(control, (ii + 1, j))
         self.update_menu(self.frame.menu_subplots)
         self.layout()
         self.redraw()
@@ -481,26 +490,26 @@ class ViewWorkspace(object):
         self.layout()
         self.redraw()
 
-    def add_measurement_row(self, can_delete = True):
-        row_idx = len(self.measurement_rows)+1
+    def add_measurement_row(self, can_delete=True):
+        row_idx = len(self.measurement_rows) + 1
         mr = []
         panel = self.panel
         row = MeasurementRow(panel,
                              self.m_grid,
                              row_idx,
-                             lambda : self.on_measurement_changed(mr[0]))
+                             lambda: self.on_measurement_changed(mr[0]))
         mr.append(row)
         self.measurement_rows.append(row)
         bitmap = wx.ArtProvider.GetBitmap(
-            wx.ART_DELETE, wx.ART_TOOLBAR, (16, 16))
+                wx.ART_DELETE, wx.ART_TOOLBAR, (16, 16))
 
         remove_button = wx.BitmapButton(panel,
-                                        bitmap = bitmap)
+                                        bitmap=bitmap)
         self.m_grid.Add(remove_button, (row_idx, self.C_REMOVE),
-                        flag = wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_TOP)
+                        flag=wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_TOP)
         remove_button.Bind(
-            wx.EVT_BUTTON,
-            lambda event: self.remove_measurement_row(row, remove_button))
+                wx.EVT_BUTTON,
+                lambda event: self.remove_measurement_row(row, remove_button))
         if not can_delete:
             remove_button.Hide()
         row.update(self.workspace)
@@ -516,11 +525,10 @@ class ViewWorkspace(object):
                 for j in (self.C_CHOOSER, self.C_COLOR,
                           self.C_SHOW, self.C_REMOVE):
                     item = self.m_grid.FindItemAtPosition(
-                        wx.GBPosition(ii+1, j))
+                            wx.GBPosition(ii + 1, j))
                     self.m_grid.SetItemPosition(item, (ii, j))
             self.layout()
             self.redraw()
-
 
     def on_measurement_changed(self, measurement_row):
         assert isinstance(measurement_row, MeasurementRow)
@@ -529,7 +537,7 @@ class ViewWorkspace(object):
         self.redraw()
 
     def set_workspace(self, workspace):
-        '''Rebuild the workspace control panel'''
+        """Rebuild the workspace control panel"""
         self.workspace = workspace
         self.ignore_redraw = True
         try:
@@ -549,7 +557,8 @@ class ViewWorkspace(object):
         event.SetEventObject(self.frame)
         self.image.on_update_menu(event, menu)
 
-    def update_choices(self, rows):
+    @staticmethod
+    def update_choices(rows):
         for row in rows:
             row.update_chooser()
 
@@ -578,7 +587,7 @@ class ViewWorkspace(object):
             artist.remove()
 
         m = self.workspace.measurements
-        assert isinstance(m, cpmeas.Measurements)
+        assert isinstance(m, cellprofiler.measurements.Measurements)
         title_lines = []
         object_values = {}
         for measurement_row in self.measurement_rows:
@@ -593,7 +602,7 @@ class ViewWorkspace(object):
                 continue
 
             value = m[object_name, feature]
-            if object_name in (cpmeas.IMAGE, cpmeas.EXPERIMENT):
+            if object_name in (cellprofiler.measurements.IMAGE, cellprofiler.measurements.EXPERIMENT):
                 if isinstance(value, int):
                     fmt = "%s: %d"
                 elif isinstance(value, float):
@@ -604,11 +613,11 @@ class ViewWorkspace(object):
             else:
                 if object_name not in object_values:
                     if any([not m.has_feature(object_name, lf) for lf in
-                            M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y]):
+                            cellprofiler.modules.identify.M_LOCATION_CENTER_X, cellprofiler.modules.identify.M_LOCATION_CENTER_Y]):
                         continue
                     object_values[object_name] = []
                 object_values[object_name].append(
-                    (value, measurement_row))
+                        (value, measurement_row))
         if len(title_lines) > 0:
             self.axes.set_title("\n".join(title_lines))
         else:
@@ -617,61 +626,63 @@ class ViewWorkspace(object):
             values = [vr[0] for vr in value_rows]
             measurement_rows = [vr[1] for vr in value_rows]
             x, y = [m[object_name, ftr] for ftr in
-                    M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y]
+                    cellprofiler.modules.identify.M_LOCATION_CENTER_X, cellprofiler.modules.identify.M_LOCATION_CENTER_Y]
             for i in range(len(x)):
                 xi, yi = x[i], y[i]
-                if np.isnan(xi) or np.isnan(yi):
+                if numpy.isnan(xi) or numpy.isnan(yi):
                     continue
                 height = 0
                 for j, measurement_row in enumerate(measurement_rows):
-                    if len(values[j]) <= i or np.isnan(values[j][i]):
+                    if len(values[j]) <= i or numpy.isnan(values[j][i]):
                         continue
                     value = values[j][i]
                     font = measurement_row.font
                     if font.GetStyle() == wx.ITALIC:
-                        fontstyle="italic"
+                        fontstyle = "italic"
                     else:
-                        fontstyle="normal"
+                        fontstyle = "normal"
                     color = measurement_row.foreground_color
                     fontcolor, backgroundcolor = [
-                        tuple([float(c)/255 for c in color][:3]) for color in
+                        tuple([float(c) / 255 for c in color][:3]) for color in
                         measurement_row.foreground_color,
                         measurement_row.background_color]
 
                     fmt = "%%.%df" % measurement_row.precision
                     a = self.axes.annotate(
-                        fmt % value,
-                        (xi, yi),
-                        xytext = (0, -height),
-                        textcoords = "offset points",
-                        ha = "center",
-                        va = "center",
-                        bbox = {
-                            "boxstyle": measurement_row.box_style,
-                            "fc": backgroundcolor,
-                            "alpha": measurement_row.background_alpha
+                            fmt % value,
+                            (xi, yi),
+                            xytext=(0, -height),
+                            textcoords="offset points",
+                            ha="center",
+                            va="center",
+                            bbox={
+                                "boxstyle": measurement_row.box_style,
+                                "fc": backgroundcolor,
+                                "alpha": measurement_row.background_alpha
                             },
-                        color = fontcolor,
-                        family = font.GetFaceName(),
-                        fontsize = font.GetPointSize(),
-                        fontstyle = fontstyle,
-                        weight = font.GetWeight())
+                            color=fontcolor,
+                            family=font.GetFaceName(),
+                            fontsize=font.GetPointSize(),
+                            fontstyle=fontstyle,
+                            weight=font.GetWeight())
                     height += font.GetPointSize() + 1
 
         self.scale_axes()
         self.frame.figure.canvas.draw()
 
+
 class MeasurementRow(object):
-    '''Container for measurement controls'''
+    """Container for measurement controls"""
+
     def __init__(self, panel, grid_sizer, row_idx, on_change):
-        '''MeasurementRow contstructor
+        """MeasurementRow contstructor
 
         panel - the panel that's going to be the host for the controls
         grid_sizer - put the controls in this grid sizer
         row_idx - the row # in the grid sizer
         on_change - a function (with no args) that's called whenever any control
                     is changed. This handler should call MeasurementRow.update
-        '''
+        """
         #
         # Create three-tiered measurement choice:
         #    object name
@@ -697,9 +708,9 @@ class MeasurementRow(object):
         #
         # Font button
         #
-        self.font_button = wx.Button(panel, label = "Font")
+        self.font_button = wx.Button(panel, label="Font")
         grid_sizer.Add(self.font_button, (row_idx, ViewWorkspace.C_COLOR),
-                       flag = wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_TOP)
+                       flag=wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_TOP)
         self.font_button.Bind(wx.EVT_BUTTON, self.on_choose_font)
         self.show_ctrl = wx.CheckBox(panel)
         grid_sizer.Add(self.show_ctrl, (row_idx, ViewWorkspace.C_SHOW),
@@ -709,29 +720,31 @@ class MeasurementRow(object):
         #
         self.font = self.font_button.Font
         self.foreground_color = wx.SystemSettings.GetColour(
-            wx.SYS_COLOUR_BTNTEXT)
+                wx.SYS_COLOUR_BTNTEXT)
         self.background_color = wx.SystemSettings.GetColour(
-            wx.SYS_COLOUR_WINDOW)
+                wx.SYS_COLOUR_WINDOW)
         self.background_alpha = 0.5
         self.box_style = "round"
-        self.precision = 4 # of decimal places
+        self.precision = 4  # of decimal places
 
         for control, event in (
-            (self.object_choice, wx.EVT_CHOICE),
-            (self.category_choice, wx.EVT_CHOICE),
-            (self.measurement_choice, wx.EVT_CHOICE),
-            (self.show_ctrl, wx.EVT_CHECKBOX)):
+                (self.object_choice, wx.EVT_CHOICE),
+                (self.category_choice, wx.EVT_CHOICE),
+                (self.measurement_choice, wx.EVT_CHOICE),
+                (self.show_ctrl, wx.EVT_CHECKBOX)):
             control.Bind(event, self.on_change)
 
     def on_choose_font(self, event):
         with wx.Dialog(self.choice_panel.Parent,
-                       title = "Measurement appearance") as dlg:
+                       title="Measurement appearance") as dlg:
             labels = []
+
             def add_label(sizer, label):
                 ctrl = wx.StaticText(dlg, label=label)
                 sizer.Add(ctrl, 0, wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL)
                 labels.append(ctrl)
                 sizer.AddSpacer(2)
+
             dlg.Sizer = wx.BoxSizer(wx.VERTICAL)
             sizer = wx.BoxSizer(wx.VERTICAL)
             dlg.Sizer.Add(sizer, 0, wx.EXPAND | wx.ALL, 5)
@@ -752,8 +765,8 @@ class MeasurementRow(object):
             sizer.Add(subsizer, 0, wx.EXPAND)
             sizer.AddSpacer(2)
             add_label(subsizer, "Text color")
-            foreground_color = ColourSelect(
-                dlg, colour = self.foreground_color)
+            foreground_color = wx.lib.colourselect.ColourSelect(
+                    dlg, colour=self.foreground_color)
             subsizer.Add(foreground_color, 0, wx.ALIGN_LEFT)
             #
             # Background color and alpha
@@ -762,8 +775,8 @@ class MeasurementRow(object):
             sizer.Add(subsizer, 0, wx.EXPAND)
             sizer.AddSpacer(2)
             add_label(subsizer, "Background color")
-            background_color = ColourSelect(
-                dlg, colour = self.background_color)
+            background_color = wx.lib.colourselect.ColourSelect(
+                    dlg, colour=self.background_color)
             subsizer.Add(background_color, 0, wx.ALIGN_LEFT)
 
             subsizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -771,9 +784,9 @@ class MeasurementRow(object):
             sizer.AddSpacer(2)
             add_label(subsizer, "Alpha")
             alpha = wx.Slider(
-                dlg, value=self.background_alpha * 100,
-                minValue = 0, maxValue = 100,
-                style=wx.SL_HORIZONTAL | wx.SL_AUTOTICKS | wx.SL_LABELS)
+                    dlg, value=self.background_alpha * 100,
+                    minValue=0, maxValue=100,
+                    style=wx.SL_HORIZONTAL | wx.SL_AUTOTICKS | wx.SL_LABELS)
             alpha.SetMinSize(wx.Size(200, alpha.GetMinSize()[0]))
             subsizer.Add(alpha, 0, wx.EXPAND)
 
@@ -782,8 +795,8 @@ class MeasurementRow(object):
             sizer.AddSpacer(2)
             add_label(subsizer, "Box shape")
             box_style = wx.Choice(
-                dlg, choices = ["circle", "round", "roundtooth", "sawtooth",
-                                "square"])
+                    dlg, choices=["circle", "round", "roundtooth", "sawtooth",
+                                  "square"])
             box_style.SetStringSelection(self.box_style)
             subsizer.Add(box_style, 0, wx.ALIGN_LEFT)
 
@@ -791,7 +804,7 @@ class MeasurementRow(object):
             sizer.Add(subsizer, 0, wx.EXPAND)
             sizer.AddSpacer(2)
             add_label(subsizer, "Precision")
-            precision = wx.SpinCtrl(dlg, value=str(self.precision), min = 0)
+            precision = wx.SpinCtrl(dlg, value=str(self.precision), min=0)
             subsizer.AddSpacer(2)
             subsizer.Add(precision, 0, wx.ALIGN_LEFT)
 
@@ -802,7 +815,7 @@ class MeasurementRow(object):
                 label.SetMinSize(wx.Size(width, label.GetBestSize()[1]))
 
             button_sizer = wx.StdDialogButtonSizer()
-            dlg.Sizer.Add(button_sizer, 0, wx.ALIGN_CENTER_HORIZONTAL |wx.ALL, 5)
+            dlg.Sizer.Add(button_sizer, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 5)
             button_sizer.AddButton(wx.Button(dlg, wx.ID_OK))
             button_sizer.AddButton(wx.Button(dlg, wx.ID_CANCEL))
             button_sizer.Realize()

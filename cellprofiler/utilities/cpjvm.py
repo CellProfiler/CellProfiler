@@ -15,10 +15,12 @@ import cellprofiler.preferences as cpprefs
 
 logger = logging.getLogger(__name__)
 
+
 def get_path_to_jars():
     import prokaryote
 
     return os.path.dirname(prokaryote.__file__)
+
 
 def get_patcher_args(class_path):
     '''Return the JVM args needed to patch ij1 classes
@@ -46,12 +48,13 @@ def get_patcher_args(class_path):
     '''
 
     patchers = filter(
-        (lambda x:os.path.split(x)[1].startswith("prokaryote")), class_path)
+            (lambda x: os.path.split(x)[1].startswith("prokaryote")), class_path)
     if len(patchers) > 0:
         patcher = patchers[0]
         return ["-javaagent:%s=init" % patcher]
     logger.warn("Did not find prokaryote in %s" % repr(class_path))
     return []
+
 
 def get_jars():
     '''Get the final list of JAR files passed to javabridge'''
@@ -60,8 +63,8 @@ def get_jars():
     if os.environ.has_key("CLASSPATH"):
         class_path += os.environ["CLASSPATH"].split(os.pathsep)
         logging.debug(
-            "Adding Java class path from environment variable, ""CLASSPATH""")
-        logging.debug("    CLASSPATH="+os.environ["CLASSPATH"])
+                "Adding Java class path from environment variable, ""CLASSPATH""")
+        logging.debug("    CLASSPATH=" + os.environ["CLASSPATH"])
 
     imagej_path = get_path_to_jars()
 
@@ -72,7 +75,7 @@ def get_jars():
 
     plugin_directory = cpprefs.get_ij_plugin_directory()
     if (plugin_directory is not None and
-        os.path.isdir(plugin_directory)):
+            os.path.isdir(plugin_directory)):
         logger.debug("Using %s as imagej plugin directory" % plugin_directory)
         #
         # Add the plugin directory to pick up .class files in a directory
@@ -99,11 +102,12 @@ def get_jars():
         from javabridge.locate import find_jdk
         jdk_path = find_jdk()
         if jdk_path is not None:
-            tools_jar = os.path.join(jdk_path, "lib","tools.jar")
+            tools_jar = os.path.join(jdk_path, "lib", "tools.jar")
             class_path.append(tools_jar)
         else:
             logger.warning("Failed to find tools.jar")
     return class_path
+
 
 def find_logback_xml():
     '''Find the location of the logback.xml file for Java logging config
@@ -114,12 +118,13 @@ def find_logback_xml():
     paths = [os.curdir,
              os.path.dirname(__file__),
              os.path.join(
-                 os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
-                 "java", "src", "main", "resources")]
+                     os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
+                     "java", "src", "main", "resources")]
     for path in paths:
         target = os.path.join(path, "logback.xml")
         if os.path.isfile(target):
             return target
+
 
 def add_logback_xml_arg(args):
     '''Add the logback.xml configuration arg if appropriate
@@ -133,8 +138,9 @@ def add_logback_xml_arg(args):
             if logback_path[1] == ':':
                 # \\localhost\x$ is same as x:
                 logback_path = "//localhost/" + logback_path[0] + "$" + \
-                    logback_path[2:]
+                               logback_path[2:]
         args.append("-Dlogback.configurationFile=%s" % logback_path)
+
 
 def cp_start_vm():
     '''Start CellProfiler's JVM via Javabridge
@@ -147,7 +153,7 @@ def cp_start_vm():
         awt from being invoked
     '''
     args = ["-Dloci.bioformats.loaded=true",
-            "-Djava.util.prefs.PreferencesFactory="+
+            "-Djava.util.prefs.PreferencesFactory=" +
             "org.cellprofiler.headlesspreferences.HeadlessPreferencesFactory"]
     add_logback_xml_arg(args)
     class_path = get_jars()
@@ -157,14 +163,14 @@ def cp_start_vm():
         logger.debug("JVM will be started with AWT in headless mode")
         args.append("-Djava.awt.headless=true")
 
-    heap_size = str(cpprefs.get_jvm_heap_mb())+"m"
+    heap_size = str(cpprefs.get_jvm_heap_mb()) + "m"
     if os.environ.has_key("CP_JDWP_PORT"):
         args.append(
-            ("-agentlib:jdwp=transport=dt_socket,address=127.0.0.1:%s"
-             ",server=y,suspend=n") % os.environ["CP_JDWP_PORT"])
+                ("-agentlib:jdwp=transport=dt_socket,address=127.0.0.1:%s"
+                 ",server=y,suspend=n") % os.environ["CP_JDWP_PORT"])
     javabridge.start_vm(args=args,
                         class_path=class_path,
-                        max_heap_size = heap_size)
+                        max_heap_size=heap_size)
     #
     # Enable Bio-Formats directory cacheing
     #
@@ -198,15 +204,15 @@ def cp_start_vm():
             os.write(fd, "This is not an image file")
             os.fsync(fd)
             stream = javabridge.make_instance(
-                rais_classname, '(Ljava/lang/String;)V', path)
+                    rais_classname, '(Ljava/lang/String;)V', path)
             problem_classes = []
             for klass in env.get_object_array_elements(class_list.get_classes()):
                 try:
-                    instance =  javabridge.call(
-                        klass, "newInstance", "()Ljava/lang/Object;")
+                    instance = javabridge.call(
+                            klass, "newInstance", "()Ljava/lang/Object;")
                     can_read_garbage = javabridge.call(
-                        instance, "isThisType",
-                        "(L%s;)Z" % rais_classname, stream)
+                            instance, "isThisType",
+                            "(L%s;)Z" % rais_classname, stream)
                     if can_read_garbage:
                         problem_classes.append(klass)
                         class_list.remove_class(klass)
@@ -229,7 +235,9 @@ def cp_start_vm():
         for klass in problem_classes:
             class_list.add_class(klass)
         return class_list
+
     bioformats.formatreader.get_class_list = get_class_list
+
 
 def cp_stop_vm(kill=True):
     '''Shut down the Java VM

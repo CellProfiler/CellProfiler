@@ -827,8 +827,8 @@ class PixelClassifier(object):
         '''
         if algorithm is None:
             algorithm = ExtraTreesClassifier(
-                n_estimators=N_ESTIMATORS,
-                min_samples_leaf = MIN_SAMPLES_PER_LEAF)
+                n_estimators=DEFAULT_N_ESTIMATORS,
+                min_samples_leaf = DEFAULT_MIN_SAMPLES_PER_LEAF)
         algorithm.fit(sample, classes)
         s = pickle.dumps(algorithm)
         if classifier_name in self.g_classifiers.keys():

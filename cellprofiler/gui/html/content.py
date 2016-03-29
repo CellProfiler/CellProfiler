@@ -1,7 +1,7 @@
-import urllib
-
 from cellprofiler.gui.help import MEASUREMENT_NAMING_HELP, USING_YOUR_OUTPUT_REF, TEST_MODE_HELP, RUNNING_YOUR_PIPELINE_HELP, SELECTING_IMAGES_HELP, CONFIGURE_IMAGES_HELP
 from cellprofiler.gui.help import MODULE_HELP_BUTTON, MODULE_ADD_BUTTON
+
+import urllib
 
 SELECTING_IMAGES_REF = urllib.quote("Selecting images")
 
@@ -50,7 +50,7 @@ as a means of extracting other features.</p>
 <p>For more information on these identification modules work and how to configure them for best performance, please see
 the detailed help by selecting the <b>IdentifyPrimaryObjects</b> module and clicking the <img src="memory:%(MODULE_HELP_BUTTON)s">&nbsp;
 button at the bottom of the pipeline panel.</p>
-'''%globals()
+''' % globals()
 
 MAKING_MEASUREMENTS_REF = urllib.quote("Making measurements")
 MAKING_MEASUREMENTS_HELP = '''
@@ -85,7 +85,7 @@ are accessible by clicking the <img src="memory:%(MODULE_ADD_BUTTON)s">&nbsp;but
 the detailed help by selecting the module and clicking the <img src="memory:%(MODULE_HELP_BUTTON)s">&nbsp;
 button at the bottom of the pipeline panel. You can also find details on measurement nomenclature when exporting under
 <i>%(MEASUREMENT_NAMING_HELP)s</i></p>
-'''%globals()
+''' % globals()
 
 EXPORTING_RESULTS_REF = urllib.quote("Exporting results")
 EXPORTING_RESULTS_HELP = '''
@@ -108,7 +108,7 @@ nomenclature specified by the user.</p>
 the detailed help by selecting the module and clicking the <img src="memory:%(MODULE_HELP_BUTTON)s">
 button at the bottom of the pipeline panel. You can also find details on various exporting options under
 <i>%(USING_YOUR_OUTPUT_REF)s</i></p>
-'''%globals()
+''' % globals()
 
 TEST_MODE_REF = urllib.quote("Using test mode")
 RUNNING_YOUR_PIPELINE_REF = urllib.quote("Analyzing your images")
@@ -120,7 +120,7 @@ buttons containing more specific documentation for using
 CellProfiler. Clicking the "?" button near the pipeline window will show information about the selected module within the pipeline,
 whereas clicking the <img src="memory:%(MODULE_HELP_BUTTON)s"> button to the right of each of the module setting
 displays help for that particular setting.
-'''%globals()
+''' % globals()
 
 WELCOME_HELP = {
     SELECTING_IMAGES_REF: SELECTING_IMAGES_HELP,
@@ -131,7 +131,7 @@ WELCOME_HELP = {
     TEST_MODE_REF: TEST_MODE_HELP,
     RUNNING_YOUR_PIPELINE_REF: RUNNING_YOUR_PIPELINE_HELP,
     IN_APP_HELP_REF: IN_APP_HELP_HELP
-    }
+}
 
 startup_main = '''<html>
 <body>
@@ -208,7 +208,7 @@ startup_main = '''<html>
 </table>
 <p>Click <a href="pref:no_display">here</a> to stop displaying this page when CellProfiler starts. This page can be accessed from <i>Help > Show Welcome Screen</i> at any time.</p>
 </body>
-</html>'''%globals()
+</html>''' % globals()
 
 startup_interface = '''<html>
 <body>
@@ -232,6 +232,7 @@ are tools for adding, removing, and reordering modules and getting help.</td></t
 <p>Go <a href="startup_main">back</a> to the welcome screen.</p>
 </body>
 </html>'''
+
 
 def find_link(name):
     return globals().get(name, None)

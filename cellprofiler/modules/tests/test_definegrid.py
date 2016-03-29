@@ -27,24 +27,25 @@ INPUT_IMAGE_NAME = "inputimage"
 OUTPUT_IMAGE_NAME = "outputimage"
 OBJECTS_NAME = "objects"
 
+
 class TestDefineGrid(unittest.TestCase):
     def test_01_01_load_matlab(self):
-        #What would you like to call the grid that you define in this module?    GridBlue
-        #How many rows and columns are in the grid (not counting control spots outside the grid itself)?    9,13
-        #For numbering purposes, is the first spot at the left or right?    Right
-        #For numbering purposes, is the first spot on the top or bottom?    Top
-        #Would you like to count across first (by rows) or up/down first (by columns)?    Columns
-        #Would you like to define a new grid for each image cycle, or define a grid once and use it for all images?    Once
-        #Would you like to define the grid automatically, based on objects you have identified in a previous module?    Manual
-        #For AUTOMATIC, what are the previously identified objects you want to use to define the grid?
-        #For MANUAL, how would you like to specify where the control spot is?    Coordinates
-        #For MANUAL or if you are saving an RGB image, what is the original image on which to mark/display the grid?    OrigBlue
-        #For MANUAL + MOUSE, what is the distance from the control spot to the top left spot in the grid? (X,Y: specify spot units or pixels below)    0,0
-        #For MANUAL + MOUSE, did you specify the distance to the control spot (above) in spot units or pixels?    Spot Units
-        #For MANUAL + ONCE or MANUAL + MOUSE, what is the spacing, in pixels, between columns (horizontal = X) and rows (vertical = Y)?    40,50
-        #For MANUAL + ONCE + COORDINATES, where is the center of the control spot (X,Y pixel location)?    15,23
-        #What would you like to call an RGB image with R = the image, G = grid lines, and B = text?    Grid
-        #If the gridding fails, would you like to use a previous grid that worked?    Any Previous
+        # What would you like to call the grid that you define in this module?    GridBlue
+        # How many rows and columns are in the grid (not counting control spots outside the grid itself)?    9,13
+        # For numbering purposes, is the first spot at the left or right?    Right
+        # For numbering purposes, is the first spot on the top or bottom?    Top
+        # Would you like to count across first (by rows) or up/down first (by columns)?    Columns
+        # Would you like to define a new grid for each image cycle, or define a grid once and use it for all images?    Once
+        # Would you like to define the grid automatically, based on objects you have identified in a previous module?    Manual
+        # For AUTOMATIC, what are the previously identified objects you want to use to define the grid?
+        # For MANUAL, how would you like to specify where the control spot is?    Coordinates
+        # For MANUAL or if you are saving an RGB image, what is the original image on which to mark/display the grid?    OrigBlue
+        # For MANUAL + MOUSE, what is the distance from the control spot to the top left spot in the grid? (X,Y: specify spot units or pixels below)    0,0
+        # For MANUAL + MOUSE, did you specify the distance to the control spot (above) in spot units or pixels?    Spot Units
+        # For MANUAL + ONCE or MANUAL + MOUSE, what is the spacing, in pixels, between columns (horizontal = X) and rows (vertical = Y)?    40,50
+        # For MANUAL + ONCE + COORDINATES, where is the center of the control spot (X,Y pixel location)?    15,23
+        # What would you like to call an RGB image with R = the image, G = grid lines, and B = text?    Grid
+        # If the gridding fails, would you like to use a previous grid that worked?    Any Previous
         data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
                 'SU1RyM+zUgjJKFXwyy9TMLRUMDS2MjS1MrZQMDIwsFQgGTAwevryMzAwlDIx'
                 'MFTMuRrmn3/ZQKT89hbt+i2l1m8bXPpkTnlIOhcwszV5rpl7zahz8ewdMwOT'
@@ -63,11 +64,13 @@ class TestDefineGrid(unittest.TestCase):
                 'f878dS9kzv4Drz4vnOd/2aZm2QXryXoij38L+ho4LtqsW/nk34VVH/afm9/c'
                 'd7P2gvGW6zlr+jf/+Pzp43l3pu/Ma7bb+7+7cL595b/4uKKHnAA6FG1I')
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
-        self.assertEqual(len(pipeline.modules()),2)
+        self.assertEqual(len(pipeline.modules()), 2)
         module = pipeline.modules()[-1]
         self.assertTrue(isinstance(module, D.DefineGrid))
         self.assertEqual(module.grid_image, "GridBlue")
@@ -83,8 +86,8 @@ class TestDefineGrid(unittest.TestCase):
         self.assertEqual(module.first_spot_coordinates.y, 23)
         self.assertEqual(module.first_spot_row, 1)
         self.assertEqual(module.first_spot_col, 1)
-        self.assertEqual(module.second_spot_coordinates.x, 15 + 40*12)
-        self.assertEqual(module.second_spot_coordinates.y, 23 + 50*8)
+        self.assertEqual(module.second_spot_coordinates.x, 15 + 40 * 12)
+        self.assertEqual(module.second_spot_coordinates.y, 23 + 50 * 8)
         self.assertTrue(module.wants_image)
         self.assertEqual(module.save_image_name, "Grid")
         self.assertEqual(module.failed_grid_choice, D.FAIL_ANY_PREVIOUS)
@@ -111,11 +114,13 @@ class TestDefineGrid(unittest.TestCase):
                 'rg90N8ojkwZVCZRmsUL3L1Sx3rpFPHjc+U+Yv/mF6/UWdXb0v9oMwhcO/c03'
                 '64MLW4oB7hcabXyXrvG3cxvHf9T8Q6Hx83B4wv2YEHK+14/q/wcChSof')
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
-        self.assertEqual(len(pipeline.modules()),2)
+        self.assertEqual(len(pipeline.modules()), 2)
         module = pipeline.modules()[-1]
         self.assertTrue(isinstance(module, D.DefineGrid))
         self.assertEqual(module.grid_image, "Grid")
@@ -148,9 +153,11 @@ class TestDefineGrid(unittest.TestCase):
         objects.segmented = labels
         object_set.add_objects(objects, OBJECTS_NAME)
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
             self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.add_module(module)
         measurements = cpmeas.Measurements()
@@ -160,9 +167,9 @@ class TestDefineGrid(unittest.TestCase):
         return workspace, module
 
     def test_02_01_grid_automatic(self):
-        image = np.zeros((50,100))
-        labels = np.zeros((50,100), int)
-        ii,jj = np.mgrid[0:50,0:100]
+        image = np.zeros((50, 100))
+        labels = np.zeros((50, 100), int)
+        ii, jj = np.mgrid[0:50, 0:100]
         #
         # Make two circles at 10,11 and 40, 92
         #
@@ -176,7 +183,7 @@ class TestDefineGrid(unittest.TestCase):
             for j in range(columns):
                 center_i = first_y + spacing_y * i
                 center_j = first_x + spacing_x * j
-                labels[(ii-center_i)**2+(jj-center_j)**2 <= 9] = i*columns+j+1
+                labels[(ii - center_i) ** 2 + (jj - center_j) ** 2 <= 9] = i * columns + j + 1
         workspace, module = self.make_workspace(image, labels)
         self.assertTrue(isinstance(module, D.DefineGrid))
         self.assertTrue(isinstance(workspace, cpw.Workspace))
@@ -196,7 +203,7 @@ class TestDefineGrid(unittest.TestCase):
         self.assertEqual(gridding.y_location_of_lowest_y_spot, first_y)
         self.assertTrue(np.all(gridding.x_locations == first_x + np.arange(columns) * spacing_x))
         self.assertTrue(np.all(gridding.y_locations == first_y + np.arange(rows) * spacing_y))
-        spot_table = np.arange(rows*columns)+1
+        spot_table = np.arange(rows * columns) + 1
         spot_table.shape = (rows, columns)
         self.assertTrue(np.all(gridding.spot_table == spot_table))
 
@@ -208,7 +215,7 @@ class TestDefineGrid(unittest.TestCase):
                                (D.F_Y_LOCATION_OF_LOWEST_Y_SPOT, first_y),
                                (D.F_X_SPACING, spacing_x),
                                (D.F_Y_SPACING, spacing_y)):
-            measurement = '_'.join((D.M_CATEGORY,GRID_NAME, feature))
+            measurement = '_'.join((D.M_CATEGORY, GRID_NAME, feature))
             self.assertTrue(m.has_feature(cpmeas.IMAGE, measurement))
             self.assertEqual(m.get_current_image_measurement(measurement), value)
 
@@ -216,9 +223,9 @@ class TestDefineGrid(unittest.TestCase):
         self.assertTrue(image is not None)
 
     def test_02_02_fail(self):
-        image = np.zeros((50,100))
-        labels = np.zeros((50,100), int)
-        labels[20:40,51:62] = 1
+        image = np.zeros((50, 100))
+        labels = np.zeros((50, 100), int)
+        labels[20:40, 51:62] = 1
         workspace, module = self.make_workspace(image, labels)
         self.assertTrue(isinstance(module, D.DefineGrid))
         self.assertTrue(isinstance(workspace, cpw.Workspace))
@@ -228,8 +235,8 @@ class TestDefineGrid(unittest.TestCase):
         self.assertRaises(RuntimeError, module.run, workspace)
 
     def test_03_01_coordinates_plus_savedimagesize(self):
-        image = np.zeros((50,100))
-        labels = np.zeros((50,100), int)
+        image = np.zeros((50, 100))
+        labels = np.zeros((50, 100), int)
         first_x, first_y = (11, 10)
         second_x, second_y = (92, 40)
         rows = 4
@@ -244,8 +251,8 @@ class TestDefineGrid(unittest.TestCase):
         module.ordering.value = D.NUM_BY_COLUMNS
         module.auto_or_manual.value = D.AM_MANUAL
         module.manual_choice.value = D.MAN_COORDINATES
-        module.first_spot_coordinates.value = "%d,%d"%(first_x, first_y)
-        module.second_spot_coordinates.value = "%d,%d"%(second_x, second_y)
+        module.first_spot_coordinates.value = "%d,%d" % (first_x, first_y)
+        module.second_spot_coordinates.value = "%d,%d" % (second_x, second_y)
         module.first_spot_col.value = 1
         module.first_spot_row.value = 1
         module.second_spot_col.value = columns
@@ -264,7 +271,7 @@ class TestDefineGrid(unittest.TestCase):
         self.assertEqual(gridding.y_location_of_lowest_y_spot, first_y)
         self.assertTrue(np.all(gridding.x_locations == first_x + np.arange(columns) * spacing_x))
         self.assertTrue(np.all(gridding.y_locations == first_y + np.arange(rows) * spacing_y))
-        spot_table = np.arange(rows*columns)+1
+        spot_table = np.arange(rows * columns) + 1
         spot_table.shape = (rows, columns)
         self.assertTrue(np.all(gridding.spot_table == spot_table))
 
@@ -276,7 +283,7 @@ class TestDefineGrid(unittest.TestCase):
                                (D.F_Y_LOCATION_OF_LOWEST_Y_SPOT, first_y),
                                (D.F_X_SPACING, spacing_x),
                                (D.F_Y_SPACING, spacing_y)):
-            measurement = '_'.join((D.M_CATEGORY,GRID_NAME, feature))
+            measurement = '_'.join((D.M_CATEGORY, GRID_NAME, feature))
             self.assertTrue(m.has_feature(cpmeas.IMAGE, measurement))
             self.assertEqual(m.get_current_image_measurement(measurement), value)
 

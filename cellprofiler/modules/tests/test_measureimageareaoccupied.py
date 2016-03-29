@@ -22,8 +22,10 @@ from centrosome.outline import outline
 import cellprofiler.modules.measureimageareaoccupied as mia
 
 OBJECTS_NAME = "MyObjects"
+
+
 class TestMeasureImageArea(unittest.TestCase):
-    def make_workspace(self, labels, parent_image = None):
+    def make_workspace(self, labels, parent_image=None):
         object_set = cpo.ObjectSet()
         objects = cpo.Objects()
         objects.segmented = labels
@@ -44,16 +46,17 @@ class TestMeasureImageArea(unittest.TestCase):
         return workspace
 
     def test_00_00_zeros(self):
-        workspace = self.make_workspace(np.zeros((10,10),int))
+        workspace = self.make_workspace(np.zeros((10, 10), int))
         module = workspace.module
         module.operands[0].operand_choice.value = "Objects"
         module.run(workspace)
         m = workspace.measurements
-        def mn(x):
-            return "AreaOccupied_%s_%s"%(x, module.operands[0].operand_objects.value)
 
-        self.assertEqual(m.get_current_measurement("Image",mn("AreaOccupied")), 0)
-        self.assertEqual(m.get_current_measurement("Image",mn("TotalArea")), 100)
+        def mn(x):
+            return "AreaOccupied_%s_%s" % (x, module.operands[0].operand_objects.value)
+
+        self.assertEqual(m.get_current_measurement("Image", mn("AreaOccupied")), 0)
+        self.assertEqual(m.get_current_measurement("Image", mn("TotalArea")), 100)
 
         columns = module.get_measurement_columns(workspace.pipeline)
         features = m.get_feature_names(cpmm.IMAGE)
@@ -62,55 +65,57 @@ class TestMeasureImageArea(unittest.TestCase):
             self.assertTrue(column[1] in features)
 
     def test_01_01_one_object(self):
-        labels = np.zeros((10,10),int)
-        labels[2:7,3:8] = 1
+        labels = np.zeros((10, 10), int)
+        labels[2:7, 3:8] = 1
         area_occupied = np.sum(labels)
         workspace = self.make_workspace(labels)
         module = workspace.module
         module.operands[0].operand_choice.value = "Objects"
         module.run(workspace)
         m = workspace.measurements
-        def mn(x):
-            return "AreaOccupied_%s_%s"%(x, module.operands[0].operand_objects.value)
 
-        self.assertEqual(m.get_current_measurement("Image",mn("AreaOccupied")), area_occupied)
-        self.assertEqual(m.get_current_measurement("Image",mn("TotalArea")), 100)
+        def mn(x):
+            return "AreaOccupied_%s_%s" % (x, module.operands[0].operand_objects.value)
+
+        self.assertEqual(m.get_current_measurement("Image", mn("AreaOccupied")), area_occupied)
+        self.assertEqual(m.get_current_measurement("Image", mn("TotalArea")), 100)
 
     def test_01_02_object_with_cropping(self):
-        labels = np.zeros((10,10),int)
-        labels[0:7,3:8] = 1
-        mask = np.zeros((10,10),bool)
-        mask[1:9,1:9] = True
-        image = cpi.Image(np.zeros((10,10)),mask=mask)
+        labels = np.zeros((10, 10), int)
+        labels[0:7, 3:8] = 1
+        mask = np.zeros((10, 10), bool)
+        mask[1:9, 1:9] = True
+        image = cpi.Image(np.zeros((10, 10)), mask=mask)
         area_occupied = np.sum(labels[mask])
-        perimeter = np.sum(outline(np.logical_and(labels,mask)))
+        perimeter = np.sum(outline(np.logical_and(labels, mask)))
         total_area = np.sum(mask)
         workspace = self.make_workspace(labels, image)
         module = workspace.module
         module.operands[0].operand_choice.value = "Objects"
         module.run(workspace)
         m = workspace.measurements
-        def mn(x):
-            return "AreaOccupied_%s_%s"%(x, module.operands[0].operand_objects.value)
 
-        self.assertEqual(m.get_current_measurement("Image",mn("AreaOccupied")), area_occupied)
-        self.assertEqual(m.get_current_measurement("Image",mn("Perimeter")), perimeter)
-        self.assertEqual(m.get_current_measurement("Image",mn("TotalArea")), total_area)
+        def mn(x):
+            return "AreaOccupied_%s_%s" % (x, module.operands[0].operand_objects.value)
+
+        self.assertEqual(m.get_current_measurement("Image", mn("AreaOccupied")), area_occupied)
+        self.assertEqual(m.get_current_measurement("Image", mn("Perimeter")), perimeter)
+        self.assertEqual(m.get_current_measurement("Image", mn("TotalArea")), total_area)
 
     def test_02_01_get_measurement_columns(self):
         module = mia.MeasureImageAreaOccupied()
         module.operands[0].operand_objects.value = OBJECTS_NAME
         module.operands[0].operand_choice.value = "Objects"
         columns = module.get_measurement_columns(None)
-        expected = ((cpmm.IMAGE, "AreaOccupied_AreaOccupied_%s"%OBJECTS_NAME,
+        expected = ((cpmm.IMAGE, "AreaOccupied_AreaOccupied_%s" % OBJECTS_NAME,
                      cpmm.COLTYPE_FLOAT),
-                    (cpmm.IMAGE, "AreaOccupied_Perimeter_%s"%OBJECTS_NAME,
+                    (cpmm.IMAGE, "AreaOccupied_Perimeter_%s" % OBJECTS_NAME,
                      cpmm.COLTYPE_FLOAT),
-                    (cpmm.IMAGE, "AreaOccupied_TotalArea_%s"%OBJECTS_NAME,
+                    (cpmm.IMAGE, "AreaOccupied_TotalArea_%s" % OBJECTS_NAME,
                      cpmm.COLTYPE_FLOAT))
         self.assertEqual(len(columns), len(expected))
         for column in columns:
-            self.assertTrue(any([all([cf==ef for cf,ef in zip(column,ex)])
+            self.assertTrue(any([all([cf == ef for cf, ef in zip(column, ex)])
                                  for ex in expected]))
 
     def test_03_01_load_v1(self):
@@ -140,8 +145,10 @@ class TestMeasureImageArea(unittest.TestCase):
                 '6CJ0EWSW5fcxsvXmsCF0uBY0HMqGy/O4PoE/Ph8rgfTVg+JH51+d91E+/Pds'
                 'Fr5isXDp/8u7CbhSzCZxCPzf2nR59/Aj/SMfF9X/f/JWyJ0=')
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 3)
@@ -179,8 +186,10 @@ class TestMeasureImageArea(unittest.TestCase):
                 'L/w/bg58+L3zn2XSg4f392+LN0majzM3/j48i8KXy2Wz96T55xHvBuBy0nzc'
                 'c/w/0nJx/uiW9o6N29x+WT9n2LGqn1ye3GxM0/63s/1/UENheQ==')
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 4)
@@ -188,4 +197,5 @@ class TestMeasureImageArea(unittest.TestCase):
         self.assertTrue(isinstance(module, mia.MeasureImageAreaOccupied))
         self.assertEqual(len(module.operands), 2)
         self.assertEqual(module.operands[0].operand_objects.value, "Nuclei")
-#       self.assertEqual(module.operands[1].operand_objects.value, "Cells")
+
+# self.assertEqual(module.operands[1].operand_objects.value, "Cells")

@@ -1,5 +1,6 @@
-import cellprofiler.icons 
+import cellprofiler.icons
 from cellprofiler.gui.help import MEASUREOBJSIZESHAPE_ECCENTRICITY
+
 __doc__ = '''
 <b>Measure Object Size Shape </b> measures several area and shape
 features of identified objects.
@@ -107,7 +108,7 @@ vol 3, p. 30 </li>
 </ul>
 
 See also <b>MeasureImageAreaOccupied</b>.
-'''%globals()
+''' % globals()
 
 import numpy as np
 import scipy.ndimage as scind
@@ -156,15 +157,15 @@ F_MIN_FERET_DIAMETER = 'MinFeretDiameter'
 F_MAX_FERET_DIAMETER = 'MaxFeretDiameter'
 
 """The non-Zernike features"""
-F_STANDARD = [ F_AREA, F_ECCENTRICITY, F_SOLIDITY, F_EXTENT,
-               F_EULER_NUMBER, F_PERIMETER, F_FORM_FACTOR,
-               F_MAJOR_AXIS_LENGTH, F_MINOR_AXIS_LENGTH,
-               F_ORIENTATION, F_COMPACTNESS, F_CENTER_X, F_CENTER_Y,
-               F_MAXIMUM_RADIUS, F_MEAN_RADIUS, F_MEDIAN_RADIUS,
-               F_MIN_FERET_DIAMETER, F_MAX_FERET_DIAMETER]
+F_STANDARD = [F_AREA, F_ECCENTRICITY, F_SOLIDITY, F_EXTENT,
+              F_EULER_NUMBER, F_PERIMETER, F_FORM_FACTOR,
+              F_MAJOR_AXIS_LENGTH, F_MINOR_AXIS_LENGTH,
+              F_ORIENTATION, F_COMPACTNESS, F_CENTER_X, F_CENTER_Y,
+              F_MAXIMUM_RADIUS, F_MEAN_RADIUS, F_MEDIAN_RADIUS,
+              F_MIN_FERET_DIAMETER, F_MAX_FERET_DIAMETER]
+
 
 class MeasureObjectSizeShape(cpm.CPModule):
-
     module_name = "MeasureObjectSizeShape"
     variable_revision_number = 1
     category = 'Measurement'
@@ -176,25 +177,25 @@ class MeasureObjectSizeShape(cpm.CPModule):
         of which has an entry in self.object_groups.
         """
         self.object_groups = []
-        self.add_object(can_remove = False)
-        self.spacer = cps.Divider(line = True)
-        self.add_objects = cps.DoSomething("", "Add another object",self.add_object)
+        self.add_object(can_remove=False)
+        self.spacer = cps.Divider(line=True)
+        self.add_objects = cps.DoSomething("", "Add another object", self.add_object)
 
         self.calculate_zernikes = cps.Binary(
-            'Calculate the Zernike features?',True, doc="""
+                'Calculate the Zernike features?', True, doc="""
             Select <i>%(YES)s</i> to calculate the Zernike shape features. Since the
             first 10 Zernike polynomials (from order 0 to order 9) are
             calculated, this operation can be time consuming if the image
-            contains a lot of objects."""%globals())
+            contains a lot of objects.""" % globals())
 
-    def add_object(self, can_remove = True):
+    def add_object(self, can_remove=True):
         """Add a slot for another object"""
         group = cps.SettingsGroup()
         if can_remove:
             group.append("divider", cps.Divider(line=False))
 
         group.append("name", cps.ObjectNameSubscriber(
-            "Select objects to measure",cps.NONE,doc="""
+                "Select objects to measure", cps.NONE, doc="""
             Select the objects that you want to measure."""))
 
         if can_remove:
@@ -210,7 +211,7 @@ class MeasureObjectSizeShape(cpm.CPModule):
 
     def prepare_settings(self, setting_values):
         """Adjust the number of object groups based on the number of setting_values"""
-        object_group_count = len(setting_values)-1
+        object_group_count = len(setting_values) - 1
         while len(self.object_groups) > object_group_count:
             self.remove_object(object_group_count)
 
@@ -231,11 +232,11 @@ class MeasureObjectSizeShape(cpm.CPModule):
         for group in self.object_groups:
             if group.name.value in objects:
                 raise cps.ValidationError(
-                    "%s has already been selected" %group.name.value,
-                    group.name)
+                        "%s has already been selected" % group.name.value,
+                        group.name)
             objects.add(group.name.value)
 
-    def get_categories(self,pipeline, object_name):
+    def get_categories(self, pipeline, object_name):
         """Get the categories of measurements supplied for the given object name
 
         pipeline - pipeline being run
@@ -250,7 +251,7 @@ class MeasureObjectSizeShape(cpm.CPModule):
     def get_zernike_numbers(self):
         """The Zernike numbers measured by this module"""
         if self.calculate_zernikes.value:
-            return cpmz.get_zernike_indexes(ZERNIKE_N+1)
+            return cpmz.get_zernike_indexes(ZERNIKE_N + 1)
         else:
             return []
 
@@ -259,7 +260,7 @@ class MeasureObjectSizeShape(cpm.CPModule):
 
         zernike_index - a 2 element sequence organized as N,M
         """
-        return "Zernike_%d_%d"%(zernike_index[0],zernike_index[1])
+        return "Zernike_%d_%d" % (zernike_index[0], zernike_index[1])
 
     def get_feature_names(self):
         """Return the names of the features measured"""
@@ -276,7 +277,7 @@ class MeasureObjectSizeShape(cpm.CPModule):
         category - return measurements made in this category
         """
         if (category == AREA_SHAPE and
-            self.get_categories(pipeline,object_name)):
+                self.get_categories(pipeline, object_name)):
             return self.get_feature_names()
         return []
 
@@ -285,7 +286,7 @@ class MeasureObjectSizeShape(cpm.CPModule):
 
         if self.show_window:
             workspace.display_data.col_labels = \
-                     ("Object", "Feature", "Mean", "Median", "STD")
+                ("Object", "Feature", "Mean", "Median", "STD")
             workspace.display_data.statistics = []
         for object_group in self.object_groups:
             self.run_on_objects(object_group.name.value, workspace)
@@ -299,7 +300,7 @@ class MeasureObjectSizeShape(cpm.CPModule):
         #
         i, j, l = objects.ijv.transpose()
         centers, eccentricity, major_axis_length, minor_axis_length, \
-            theta, compactness =\
+        theta, compactness = \
             ellipse_from_second_moments_ijv(i, j, 1, l, objects.indices, True)
         del i
         del j
@@ -332,21 +333,21 @@ class MeasureObjectSizeShape(cpm.CPModule):
         max_feret_diameter = np.zeros(nobjects)
         zernike_numbers = self.get_zernike_numbers()
         zf = {}
-        for n,m in zernike_numbers:
-            zf[(n,m)] = np.zeros(nobjects)
+        for n, m in zernike_numbers:
+            zf[(n, m)] = np.zeros(nobjects)
         if nobjects > 0:
             chulls, chull_counts = convex_hull_ijv(objects.ijv, objects.indices)
             for labels, indices in objects.get_labels():
-                to_indices = indices-1
+                to_indices = indices - 1
                 distances = distance_to_edge(labels)
-                mcenter_y[to_indices], mcenter_x[to_indices] =\
-                         maximum_position_of_labels(distances, labels, indices)
+                mcenter_y[to_indices], mcenter_x[to_indices] = \
+                    maximum_position_of_labels(distances, labels, indices)
                 max_radius[to_indices] = fix(scind.maximum(
-                    distances, labels, indices))
+                        distances, labels, indices))
                 mean_radius[to_indices] = fix(scind.mean(
-                    distances, labels, indices))
+                        distances, labels, indices))
                 median_radius[to_indices] = median_of_labels(
-                    distances, labels, indices)
+                        distances, labels, indices)
                 #
                 # The extent (area / bounding box area)
                 #
@@ -367,12 +368,12 @@ class MeasureObjectSizeShape(cpm.CPModule):
                 # Zernike features
                 #
                 zf_l = cpmz.zernike(zernike_numbers, labels, indices)
-                for (n,m), z in zip(zernike_numbers, zf_l.transpose()):
-                    zf[(n,m)][to_indices] = z
+                for (n, m), z in zip(zernike_numbers, zf_l.transpose()):
+                    zf[(n, m)][to_indices] = z
             #
             # Form factor
             #
-            ff = 4.0 * np.pi * objects.areas / mperimeters**2
+            ff = 4.0 * np.pi * objects.areas / mperimeters ** 2
             #
             # Feret diameter
             #
@@ -395,15 +396,15 @@ class MeasureObjectSizeShape(cpm.CPModule):
                       (F_MEDIAN_RADIUS, median_radius),
                       (F_MIN_FERET_DIAMETER, min_feret_diameter),
                       (F_MAX_FERET_DIAMETER, max_feret_diameter)] +
-                     [(self.get_zernike_name((n,m)), zf[(n,m)])
-                       for n,m in zernike_numbers]):
+                         [(self.get_zernike_name((n, m)), zf[(n, m)])
+                          for n, m in zernike_numbers]):
             self.record_measurement(workspace, object_name, f, m)
 
     def display(self, workspace, figure):
         figure.set_subplots((1, 1))
         figure.subplot_table(0, 0,
                              workspace.display_data.statistics,
-                             col_labels = workspace.display_data.col_labels)
+                             col_labels=workspace.display_data.col_labels)
 
     def perform_measurement(self, workspace, function,
                             object_name, feature_name):
@@ -427,7 +428,7 @@ class MeasureObjectSizeShape(cpm.CPModule):
         self.record_measurement(workspace, object_name, feature_name, data)
 
     def perform_ndmeasurement(self, workspace, function,
-                              object_name, feature_name ):
+                              object_name, feature_name):
         """Perform a scipy.ndimage-style measurement on a label matrix
 
         workspace   - the workspace for the run
@@ -447,20 +448,20 @@ class MeasureObjectSizeShape(cpm.CPModule):
             data = np.zeros((0,))
         self.record_measurement(workspace, object_name, feature_name, data)
 
-    def record_measurement(self,workspace,
+    def record_measurement(self, workspace,
                            object_name, feature_name, result):
         """Record the result of a measurement in the workspace's measurements"""
         data = fix(result)
         workspace.add_measurement(object_name,
-                                  "%s_%s"%(AREA_SHAPE,feature_name),
+                                  "%s_%s" % (AREA_SHAPE, feature_name),
                                   data)
         if self.show_window and np.any(np.isfinite(data)) > 0:
             data = data[np.isfinite(data)]
             workspace.display_data.statistics.append(
-                (object_name, feature_name,
-                 "%.2f"%np.mean(data),
-                 "%.2f"%np.median(data),
-                 "%.2f"%np.std(data)))
+                    (object_name, feature_name,
+                     "%.2f" % np.mean(data),
+                     "%.2f" % np.median(data),
+                     "%.2f" % np.std(data)))
 
     def get_measurement_columns(self, pipeline):
         '''Return measurement column definitions.
@@ -470,11 +471,8 @@ class MeasureObjectSizeShape(cpm.CPModule):
         cols = []
         for oname in object_names:
             for mname in measurement_names:
-                cols += [(oname, AREA_SHAPE+'_'+mname, COLTYPE_FLOAT)]
+                cols += [(oname, AREA_SHAPE + '_' + mname, COLTYPE_FLOAT)]
         return cols
-
-
-
 
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
@@ -504,12 +502,14 @@ class MeasureObjectSizeShape(cpm.CPModule):
             from_matlab = False
         return setting_values, variable_revision_number, from_matlab
 
+
 def form_factor(objects):
     """FormFactor = 4/pi*Area/Perimeter^2, equals 1 for a perfectly circular"""
     if len(objects.indices) > 0:
         perimeter = objects.fn_of_label_and_index(calculate_perimeters)
-        return 4.0*np.pi*objects.areas / perimeter**2
+        return 4.0 * np.pi * objects.areas / perimeter ** 2
     else:
         return np.zeros((0,))
+
 
 MeasureObjectAreaShape = MeasureObjectSizeShape

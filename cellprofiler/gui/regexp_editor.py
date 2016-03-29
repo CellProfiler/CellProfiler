@@ -2,7 +2,6 @@
 """
 
 import re
-
 import wx
 import wx.stc
 
@@ -16,13 +15,13 @@ RE_FILENAME_GUESSES = [
     # This is the generic naming convention for fluorescent microscopy images
     "^(?P<Plate>.*?)_(?P<Well>[A-Za-z]+[0-9]+)f(?P<Site>[0-9]{2})d(?P<Dye>[0-9])\\.tif$",
     # Molecular devices single site
-    "^(?P<ExperimentName>.*?)_(?P<Well>[A-Za-z]+[0-9]+)_w(?P<Wavelength>[0-9])_?" + UUID_REGEXP + "\\.tif$" ,
+    "^(?P<ExperimentName>.*?)_(?P<Well>[A-Za-z]+[0-9]+)_w(?P<Wavelength>[0-9])_?" + UUID_REGEXP + "\\.tif$",
     # Plate / well / site / channel without UUID
     "^(?P<Plate>.*?)_(?P<Well>[A-Za-z]+[0-9]+)_s(?P<Site>[0-9])_w(?P<Wavelength>[0-9])\\.tif$",
     # Molecular devices multi-site
     '^(?P<ExperimentName>.*?)_(?P<Well>[A-Za-z]+[0-9]+)_s(?P<Site>[0-9])_w(?P<Wavelength>[0-9])' + UUID_REGEXP + '\\.tif$',
     # Molecular devices multi-site, single wavelength
-    '^(?P<ExperimentName>.*)_(?P<Well>[A-Za-z][0-9]{2})_s(?P<Site>[0-9])'+ UUID_REGEXP,
+    '^(?P<ExperimentName>.*)_(?P<Well>[A-Za-z][0-9]{2})_s(?P<Site>[0-9])' + UUID_REGEXP,
     # Plate / well / [UUID]
     '^(?P<Plate>.*?)_(?P<Well>[A-Za-z]+[0-9]+)_\\[' + UUID_REGEXP + '\\]\\.tif$',
     # Cellomics
@@ -33,7 +32,7 @@ RE_FILENAME_GUESSES = [
     '^(?P<Row>[A-H]*) - (?P<Column>[0-9]*)\(fld (?P<Site>[0-9]*) wv (?P<Wavelength>.*) - (?P<Filter>.*)\)'
     # Please add more guesses below
 
-    ]
+]
 
 RE_FOLDER_GUESSES = [
     # BD Pathway
@@ -41,10 +40,11 @@ RE_FOLDER_GUESSES = [
     # Molecular devices
     r".*[\\/](?P<Date>\d{4}-\d{1,2}-\d{1,2})[\\/](?P<PlateID>.*)$"
     # Please add more guesses below
-    ]
+]
 
-def edit_regexp(parent, regexp, test_text, guesses = RE_FILENAME_GUESSES):
-    frame = RegexpDialog(parent, size=(500,200),
+
+def edit_regexp(parent, regexp, test_text, guesses=RE_FILENAME_GUESSES):
+    frame = RegexpDialog(parent, size=(500, 200),
                          style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
     frame.value = regexp
     frame.test_text = test_text
@@ -53,10 +53,11 @@ def edit_regexp(parent, regexp, test_text, guesses = RE_FILENAME_GUESSES):
         return frame.value
     return None
 
+
 class RegexpDialog(wx.Dialog):
-    def __init__(self, *args,**varargs):
+    def __init__(self, *args, **varargs):
         varargs["title"] = "Regular expression editor"
-        super(RegexpDialog,self).__init__(*args,**varargs)
+        super(RegexpDialog, self).__init__(*args, **varargs)
         self.__value = "Not initialized"
         self.__test_text = "Not initialized"
         self.__guesses = RE_FILENAME_GUESSES
@@ -69,61 +70,61 @@ class RegexpDialog(wx.Dialog):
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         hsizer = wx.BoxSizer(wx.HORIZONTAL)
-        sizer.Add(hsizer,0,wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5)
-        hsizer.Add(wx.StaticText(self,label="Regex:"),0,wx.ALIGN_CENTER|wx.ALL, 5)
+        sizer.Add(hsizer, 0, wx.GROW | wx.ALIGN_CENTER_VERTICAL | wx.ALL, 5)
+        hsizer.Add(wx.StaticText(self, label="Regex:"), 0, wx.ALIGN_CENTER | wx.ALL, 5)
 
-        self.regexp_display = wx.stc.StyledTextCtrl(self, -1, style = wx.BORDER_SIMPLE)
+        self.regexp_display = wx.stc.StyledTextCtrl(self, -1, style=wx.BORDER_SIMPLE)
         self.regexp_display.SetBufferedDraw(True)
         w, h = self.regexp_display.ClientToWindowSize(
-            self.regexp_display.GetTextExtent("".join(["M"]*50)))
+                self.regexp_display.GetTextExtent("".join(["M"] * 50)))
         self.regexp_display.SetMinSize(wx.Size(w, h))
         self.regexp_display.Text = self.value
         self.regexp_display.SetLexer(wx.stc.STC_LEX_CONTAINER)
         for key in range(31):
             self.regexp_display.StyleSetFont(key, self.font)
-        self.regexp_display.StyleSetForeground(TOK_ORDINARY, wx.Colour(0,0,0,255))
-        self.regexp_display.StyleSetForeground(TOK_ESCAPE, wx.Colour(0,64,64,255))
-        self.regexp_display.StyleSetForeground(TOK_GROUP, wx.Colour(0,0,255,255))
-        self.regexp_display.StyleSetForeground(TOK_REPEAT, wx.Colour(0,128,0,255))
-        self.regexp_display.StyleSetForeground(TOK_BRACKET_EXP, wx.Colour(64,64,64,255))
-        self.regexp_display.StyleSetForeground(TOK_SPECIAL, wx.Colour(128,64,0,255))
+        self.regexp_display.StyleSetForeground(TOK_ORDINARY, wx.Colour(0, 0, 0, 255))
+        self.regexp_display.StyleSetForeground(TOK_ESCAPE, wx.Colour(0, 64, 64, 255))
+        self.regexp_display.StyleSetForeground(TOK_GROUP, wx.Colour(0, 0, 255, 255))
+        self.regexp_display.StyleSetForeground(TOK_REPEAT, wx.Colour(0, 128, 0, 255))
+        self.regexp_display.StyleSetForeground(TOK_BRACKET_EXP, wx.Colour(64, 64, 64, 255))
+        self.regexp_display.StyleSetForeground(TOK_SPECIAL, wx.Colour(128, 64, 0, 255))
         color_db = self.get_color_db()
-        for i in range(1,16):
-            self.regexp_display.StyleSetForeground(TOK_DEFINITION-1+i,color_db[i % len(color_db)])
+        for i in range(1, 16):
+            self.regexp_display.StyleSetForeground(TOK_DEFINITION - 1 + i, color_db[i % len(color_db)])
 
-        self.regexp_display.StyleSetForeground(STYLE_ERROR,wx.Colour(255,64,128,255))
+        self.regexp_display.StyleSetForeground(STYLE_ERROR, wx.Colour(255, 64, 128, 255))
         self.regexp_display.StyleSetFont(34, self.font)
-        self.regexp_display.StyleSetForeground(34, wx.Colour(0,0,255,255))
+        self.regexp_display.StyleSetForeground(34, wx.Colour(0, 0, 255, 255))
         self.regexp_display.StyleSetUnderline(34, True)
         self.regexp_display.StyleSetFont(35, self.font)
-        self.regexp_display.StyleSetForeground(35, wx.Colour(255,0,0,255))
+        self.regexp_display.StyleSetForeground(35, wx.Colour(255, 0, 0, 255))
         self.regexp_display.SetUseVerticalScrollBar(0)
         self.regexp_display.SetUseHorizontalScrollBar(0)
         self.regexp_display.SetMarginWidth(wx.stc.STC_MARGIN_NUMBER, 0)
         self.regexp_display.SetMarginWidth(wx.stc.STC_MARGIN_SYMBOL, 0)
-        hsizer.Add(self.regexp_display,1,wx.EXPAND | wx.ALL, 5)
+        hsizer.Add(self.regexp_display, 1, wx.EXPAND | wx.ALL, 5)
 
         hsizer = wx.BoxSizer(wx.HORIZONTAL)
-        hsizer.Add(wx.StaticText(self,label="Test text:"),0,wx.ALIGN_CENTER|wx.ALL,5)
-        self.test_text_ctl = wx.TextCtrl(self,value=self.__test_text)
+        hsizer.Add(wx.StaticText(self, label="Test text:"), 0, wx.ALIGN_CENTER | wx.ALL, 5)
+        self.test_text_ctl = wx.TextCtrl(self, value=self.__test_text)
         self.test_text_ctl.Font = self.font
-        hsizer.Add(self.test_text_ctl,1,wx.ALIGN_CENTER|wx.ALL, 5)
-        sizer.Add(hsizer,0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5)
+        hsizer.Add(self.test_text_ctl, 1, wx.ALIGN_CENTER | wx.ALL, 5)
+        sizer.Add(hsizer, 0, wx.GROW | wx.ALIGN_CENTER_VERTICAL | wx.ALL, 5)
 
         style = wx.NO_BORDER
-        self.test_display = wx.stc.StyledTextCtrl(self, -1, style = style)
+        self.test_display = wx.stc.StyledTextCtrl(self, -1, style=style)
         self.test_display.SetLexer(wx.stc.STC_LEX_CONTAINER)
         self.test_display.StyleClearAll()
         self.test_display.StyleSetFont(STYLE_NO_MATCH, self.font)
         self.test_display.StyleSetForeground(STYLE_NO_MATCH,
-                                             wx.Colour(128,128,128,255))
+                                             wx.Colour(128, 128, 128, 255))
         color_db = self.get_color_db()
         for i in range(16):
-            self.test_display.StyleSetFont(STYLE_FIRST_LABEL-1+i, self.font)
-            self.test_display.StyleSetForeground(STYLE_FIRST_LABEL-1+i,color_db[i % len(color_db)])
+            self.test_display.StyleSetFont(STYLE_FIRST_LABEL - 1 + i, self.font)
+            self.test_display.StyleSetForeground(STYLE_FIRST_LABEL - 1 + i, color_db[i % len(color_db)])
 
-        self.test_display.StyleSetFont(STYLE_ERROR,self.error_font)
-        self.test_display.StyleSetForeground(STYLE_ERROR,wx.Colour(255,0,0,255))
+        self.test_display.StyleSetFont(STYLE_ERROR, self.error_font)
+        self.test_display.StyleSetForeground(STYLE_ERROR, wx.Colour(255, 0, 0, 255))
         self.test_display.Text = self.__test_text
         self.test_display.ReadOnly = True
         self.test_display.SetUseVerticalScrollBar(0)
@@ -131,27 +132,26 @@ class RegexpDialog(wx.Dialog):
         self.test_display.SetMarginWidth(wx.stc.STC_MARGIN_NUMBER, 0)
         self.test_display.SetMarginWidth(wx.stc.STC_MARGIN_SYMBOL, 0)
         text_extent = self.test_display.GetTextExtent(self.__test_text)
-        self.test_display.SetSizeHints(100,text_extent[1],maxH = text_extent[1])
-        sizer.Add(self.test_display,0,wx.EXPAND | wx.ALL, 5)
+        self.test_display.SetSizeHints(100, text_extent[1], maxH=text_extent[1])
+        sizer.Add(self.test_display, 0, wx.EXPAND | wx.ALL, 5)
 
-
-        line = wx.StaticLine(self, -1, size=(20,-1), style=wx.LI_HORIZONTAL)
-        sizer.Add(line, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.RIGHT|wx.LEFT, 5)
+        line = wx.StaticLine(self, -1, size=(20, -1), style=wx.LI_HORIZONTAL)
+        sizer.Add(line, 0, wx.GROW | wx.ALIGN_CENTER_VERTICAL | wx.RIGHT | wx.LEFT, 5)
 
         hsizer = wx.StdDialogButtonSizer()
         guess_button = wx.Button(self, label="Guess")
         hsizer.Add(guess_button, 0, wx.ALIGN_RIGHT)
-        ok_button = wx.Button(self,label="Submit")
+        ok_button = wx.Button(self, label="Submit")
         ok_button.SetDefault()
-        hsizer.Add(ok_button,0,wx.ALIGN_RIGHT|wx.LEFT, 5)
+        hsizer.Add(ok_button, 0, wx.ALIGN_RIGHT | wx.LEFT, 5)
         cancel_button = wx.Button(self, label="Cancel")
-        hsizer.Add(cancel_button,0,wx.ALIGN_RIGHT|wx.LEFT,5)
+        hsizer.Add(cancel_button, 0, wx.ALIGN_RIGHT | wx.LEFT, 5)
         hsizer.Realize()
-        sizer.Add(hsizer,0,wx.ALIGN_RIGHT|wx.ALL,5)
+        sizer.Add(hsizer, 0, wx.ALIGN_RIGHT | wx.ALL, 5)
 
         self.Bind(wx.EVT_BUTTON, self.on_guess, guess_button)
-        self.Bind(wx.EVT_BUTTON,self.on_ok_button, ok_button)
-        self.Bind(wx.EVT_BUTTON,self.on_cancel_button, cancel_button)
+        self.Bind(wx.EVT_BUTTON, self.on_ok_button, ok_button)
+        self.Bind(wx.EVT_BUTTON, self.on_cancel_button, cancel_button)
         self.Bind(wx.EVT_TEXT, self.on_test_text_text_change, self.test_text_ctl)
         self.Bind(wx.stc.EVT_STC_CHANGE, self.on_editor_text_change, self.regexp_display)
         self.Bind(wx.stc.EVT_STC_STYLENEEDED, self.on_style_needed, self.regexp_display)
@@ -159,7 +159,8 @@ class RegexpDialog(wx.Dialog):
         self.SetSizer(sizer)
         self.Fit()
 
-    def on_regexp_key(self, event):
+    @staticmethod
+    def on_regexp_key(event):
         #
         # On Mac, very bad things (infinite recursion through OnPaint
         # followed by segfault) happen if you type carriage return
@@ -167,8 +168,9 @@ class RegexpDialog(wx.Dialog):
         if event.GetKeyCode() != wx.stc.STC_KEY_RETURN:
             event.Skip()
 
-    def get_color_db(self):
-        color_db = ["BLACK", "RED", "GREEN", "BLUE", "CYAN","MAGENTA","SIENNA","PURPLE"]
+    @staticmethod
+    def get_color_db():
+        color_db = ["BLACK", "RED", "GREEN", "BLUE", "CYAN", "MAGENTA", "SIENNA", "PURPLE"]
         color_db = [wx.TheColourDatabase.FindColour(x) for x in color_db]
         return color_db
 
@@ -181,10 +183,10 @@ class RegexpDialog(wx.Dialog):
                 break
         else:
             wx.MessageBox(
-                "None of the standard regular expressions matches the test text.",
-                caption = "No matching guesses",
-                style = wx.OK | wx.CENTRE | wx.ICON_INFORMATION,
-                parent = self)
+                    "None of the standard regular expressions matches the test text.",
+                    caption="No matching guesses",
+                    style=wx.OK | wx.CENTRE | wx.ICON_INFORMATION,
+                    parent=self)
 
     def on_ok_button(self, event):
         self.EndModal(1)
@@ -207,23 +209,21 @@ class RegexpDialog(wx.Dialog):
     def refresh_regexp(self):
         state = RegexpState()
         regexp_text = self.__value
-        self.regexp_display.StartStyling(0,0xff)
-        self.regexp_display.SetStyling(len(regexp_text),STYLE_ERROR)
+        self.regexp_display.StartStyling(0, 0xff)
+        self.regexp_display.SetStyling(len(regexp_text), STYLE_ERROR)
         try:
             parse(regexp_text, state)
         except:
             pass
         for i in range(state.position):
-            self.regexp_display.StartStyling(i,0xff)
+            self.regexp_display.StartStyling(i, 0xff)
             self.regexp_display.SetStyling(1, state.token_labels[i])
         pos = self.regexp_display.CurrentPos
         if state.open_expression_start is not None:
             self.regexp_display.BraceBadLight(state.open_expression_start)
-        elif (pos > 0 and
-              pos < len(state.matching_braces) and
-              state.matching_braces[pos-1] is not None):
-            self.regexp_display.BraceHighlight(state.matching_braces[pos-1],
-                                               pos-1)
+        elif 0 < pos < len(state.matching_braces) and state.matching_braces[pos - 1] is not None:
+            self.regexp_display.BraceHighlight(state.matching_braces[pos - 1],
+                                               pos - 1)
         else:
             self.regexp_display.BraceHighlight(wx.stc.STC_INVALID_POSITION,
                                                wx.stc.STC_INVALID_POSITION)
@@ -233,28 +233,28 @@ class RegexpDialog(wx.Dialog):
         self.test_display.Text = self.__test_text
         try:
             parse(self.__value, RegexpState())
-        except ValueError,e:
+        except ValueError, e:
             self.test_display.Text = e.message
-            self.test_display.StartStyling(0,0xff)
+            self.test_display.StartStyling(0, 0xff)
             self.test_display.SetStyling(len(self.test_display.Text),
                                          STYLE_ERROR)
             return
         try:
             match = re.search(self.__value, self.__test_text)
             if match:
-                for i in range(len(match.groups())+1):
+                for i in range(len(match.groups()) + 1):
                     start = match.start(i)
                     end = match.end(i)
                     self.test_display.StartStyling(start, 0xff)
-                    self.test_display.SetStyling(end-start,i+1)
+                    self.test_display.SetStyling(end - start, i + 1)
             else:
                 self.test_display.Text = "Regular expression does not match"
-                self.test_display.StartStyling(0,0xff)
+                self.test_display.StartStyling(0, 0xff)
                 self.test_display.SetStyling(len(self.test_display.Text),
                                              STYLE_ERROR)
         except:
             self.test_display.Text = "Regular expression is not valid"
-            self.test_display.StartStyling(0,0xff)
+            self.test_display.StartStyling(0, 0xff)
             self.test_display.SetStyling(len(self.test_display.Text),
                                          STYLE_ERROR)
         self.test_display.ReadOnly = True
@@ -286,13 +286,14 @@ class RegexpDialog(wx.Dialog):
     test_text = property(get_test_text, set_test_text)
 
     def get_guesses(self):
-        '''The guess regexps used when the user presses the "guess" button'''
+        """The guess regexps used when the user presses the "guess" button"""
         return self.__guesses
 
     def set_guesses(self, value):
         self.__guesses = value
 
     guesses = property(get_guesses, set_guesses)
+
 
 ####################
 #
@@ -308,18 +309,17 @@ TOK_REPEAT = 4
 TOK_SPECIAL = 5
 TOK_DEFINITION = 6
 
-HARDCODE_ESCAPES = set([r"\\", r"\a", r"\b", r"\d", r"\f", r"\n", r"\r",
-                        r"\s", r"\t", r"\v", r"\w",
-                        r"\A", r"\B", r"\D", r"\S", r"\W", r"\Z"] )
+HARDCODE_ESCAPES = {r"\\", r"\a", r"\b", r"\d", r"\f", r"\n", r"\r", r"\s", r"\t", r"\v", r"\w", r"\A", r"\B", r"\D", r"\S", r"\W", r"\Z"}
 OCTAL_DIGITS = set("01234567")
 DECIMAL_DIGITS = set("0123456789")
 HEXIDECIMAL_DIGITS = set("0123456789ABCDEFabcdef")
 REPEAT_STARTS = set("{*+?")
 OTHER_SPECIAL_CHARACTERS = set(".|")
 
-IGNORABLE_GROUPS = ( r"\(\?[iLmsux]+\)",
-                     r"\(\?#.*\)"
-                     )
+IGNORABLE_GROUPS = (r"\(\?[iLmsux]+\)",
+                    r"\(\?#.*\)"
+                    )
+
 
 class RegexpState:
     def __init__(self):
@@ -339,8 +339,8 @@ class RegexpState:
         self.token_labels += [label] * length
         self.matching_braces += [None] * length
 
-    def open_group(self, length, group_name = None, is_non_grouping=False):
-        '''Open a grouping expression'''
+    def open_group(self, length, group_name=None, is_non_grouping=False):
+        """Open a grouping expression"""
         self.__group_depth += 1
         self.__group_starts.append(self.position)
         self.__any_tokens = True
@@ -351,7 +351,7 @@ class RegexpState:
         self.position += length
 
     def close_group(self):
-        '''Close a grouping expression returning the matching position'''
+        """Close a grouping expression returning the matching position"""
         if self.__group_depth == 0:
             raise ValueError("Unmatched closing parentheses")
         if self.__group_name is not None:
@@ -360,7 +360,7 @@ class RegexpState:
         self.__group_depth -= 1
         if self.__is_non_grouping:
             self.__group_count += 1
-        matching_brace =  self.__group_starts.pop()
+        matching_brace = self.__group_starts.pop()
         self.mark_tokens(1, TOK_GROUP)
         self.matching_braces[self.position] = matching_brace
         self.position += 1
@@ -372,7 +372,7 @@ class RegexpState:
         return self.__group_count
 
     def get_in_brackets(self):
-        '''True if the state is within [] brackets'''
+        """True if the state is within [] brackets"""
         return self.__in_brackets
 
     in_brackets = property(get_in_brackets)
@@ -394,13 +394,13 @@ class RegexpState:
         self.position += 1
         return self.__bracket_start
 
-    def parsed_token(self, length=1, label = TOK_ORDINARY):
+    def parsed_token(self, length=1, label=TOK_ORDINARY):
         self.__any_tokens = True
         self.mark_tokens(length, label)
         self.position += length
 
-    def parsed_special(self, length=1, label = TOK_SPECIAL):
-        '''Parse a token that's not repeatable'''
+    def parsed_special(self, length=1, label=TOK_SPECIAL):
+        """Parse a token that's not repeatable"""
         self.__any_tokens = False
         self.mark_tokens(length, label)
         self.position += length
@@ -420,7 +420,7 @@ class RegexpState:
 
     @property
     def open_expression_start(self):
-        '''Return the start of the innermost open expression or None'''
+        """Return the start of the innermost open expression or None"""
         if self.__in_brackets:
             return self.__bracket_start
         elif self.__group_depth:
@@ -430,14 +430,15 @@ class RegexpState:
     def any_tokens(self):
         return self.__any_tokens
 
+
 def looking_at_escape(s, state):
-    '''Return # of characters in an escape
+    """Return # of characters in an escape
 
     s - string to look at
     state - the current search state
 
     returns either None or the # of characters in the escape
-    '''
+    """
     if s[0] != "\\":
         return
     if len(s) < 2:
@@ -447,13 +448,13 @@ def looking_at_escape(s, state):
     if state.in_brackets:
         # within brackets, only octal supported
         if s[1] in OCTAL_DIGITS:
-            for i in range(2,min(4,len(s))):
+            for i in range(2, min(4, len(s))):
                 if s[i] != OCTAL_DIGITS:
                     return i
         if s[1] in DECIMAL_DIGITS:
             raise ValueError("Numeric escapes within brackets must be octal values: e.g. [\\21] for ^Q")
     elif s[1] == 0:
-        for i in range(2,min(4,len(s))):
+        for i in range(2, min(4, len(s))):
             if s[i] != OCTAL_DIGITS:
                 return i
     elif s[1] in DECIMAL_DIGITS:
@@ -465,7 +466,7 @@ def looking_at_escape(s, state):
             group_number = int(s[1])
             length = 1
         if group_number > state.group_count:
-            raise ValueError("Only %d groups at this point"%state.group_count)
+            raise ValueError("Only %d groups at this point" % state.group_count)
         return length
     if s[1] == 'x':
         if s[2] in HEXIDECIMAL_DIGITS and s[3] in HEXIDECIMAL_DIGITS:
@@ -473,6 +474,7 @@ def looking_at_escape(s, state):
         raise ValueError("Hexidecimal escapes are two digits long: eg. \\x1F")
     # The escape is needless, but harmless
     return 2
+
 
 def looking_at_repeat(s, state):
     if s[0] not in REPEAT_STARTS:
@@ -482,31 +484,32 @@ def looking_at_repeat(s, state):
     if not state.any_tokens:
         raise ValueError("Invalid repeat placement: there is nothing to repeat")
     if s[0] == '{':
-        match = re.match("\\{([0-9]+)(,([0-9]+))?\\}",s)
+        match = re.match("\\{([0-9]+)(,([0-9]+))?\\}", s)
         if not match:
             raise ValueError("Incomplete or badly formatted repeat expression")
         if match.group(3) is not None:
             if int(match.group(1)) > int(match.group(3)):
-                raise ValueError("Minimum # of matches in %s is greater than maximum number"%match.group())
+                raise ValueError("Minimum # of matches in %s is greater than maximum number" % match.group())
         return len(match.group())
     if len(s) > 1 and s[1] == '?':
         return 2
     return 1
 
+
 def handle_open_group(s, state):
     if s[0] == '(':
         if len(s) > 2 and s[1] == '?':
-            if s[2] in  ("=","!",":"):
+            if s[2] in ("=", "!", ":"):
                 # a look-ahead expression or parentheses without grouping
-                state.open_group(3, is_non_grouping = True)
+                state.open_group(3, is_non_grouping=True)
                 return 3
             elif len(s) > 3 and s[1:3] == "<=":
                 # A look-ahead expression
-                state.open_group(4, is_non_grouping = True)
+                state.open_group(4, is_non_grouping=True)
                 return 4
             elif s[2] in set("iLmsux"):
                 # Setting switches
-                match = re.match(r"\(\?[iLmsux]+\)",s)
+                match = re.match(r"\(\?[iLmsux]+\)", s)
                 if not match:
                     raise ValueError("Incomplete or badly formatted switch expression")
                 state.parsed_special(len(match.group()))
@@ -520,18 +523,19 @@ def handle_open_group(s, state):
                 return len(match.group())
             elif s[2] == '(':
                 # (?(name/id)) construct
-                match = re.match(r"\(\?\(([^)]+)\)",s)
+                match = re.match(r"\(\?\(([^)]+)\)", s)
                 if not match:
                     raise ValueError("Incomplete or badly formatted conditional match")
                 name_or_id = match.group(1)
                 if name_or_id.isdigit():
                     if int(name_or_id) > state.group_count:
-                        raise ValueError("Not enough groups before conditional match: asked for %d, but only %d available"%
-                                         (int(name_or_id), state.group_count))
+                        raise ValueError(
+                                "Not enough groups before conditional match: asked for %d, but only %d available" %
+                                (int(name_or_id), state.group_count))
                 else:
                     if not state.is_group_name(name_or_id):
-                        raise ValueError('Unavailable group name, "%s", in conditional match'%name_or_id)
-                state.open_group(len(match.group()), is_non_grouping = True)
+                        raise ValueError('Unavailable group name, "%s", in conditional match' % name_or_id)
+                state.open_group(len(match.group()), is_non_grouping=True)
             elif s[2] == 'P' and len(s) > 3:
                 if s[3] == "=":
                     # (?P=FOO) matches the previous group expression, FOO
@@ -543,17 +547,17 @@ def handle_open_group(s, state):
                         return len(match.group())
                 elif s[3] == "<":
                     # Named group definition: (?P<FOO>...)
-                    match = re.match(r"\(\?P<([^>]+)>",s)
+                    match = re.match(r"\(\?P<([^>]+)>", s)
                     if not match:
                         raise ValueError("Incomplete or badly formattted named group definition")
                     elif state.is_group_name(match.group(1)):
-                        raise ValueError("Doubly-defined group: %s"%match.group(1))
+                        raise ValueError("Doubly-defined group: %s" % match.group(1))
                     else:
                         group_name = match.group(1)
                         state.open_group(len(match.group()),
-                                         group_name = group_name,
-                                         is_non_grouping = True)
-                        state.token_labels[-len(group_name)-1:-1] = \
+                                         group_name=group_name,
+                                         is_non_grouping=True)
+                        state.token_labels[-len(group_name) - 1:-1] = \
                             [TOK_DEFINITION + state.group_name_index(group_name)] * len(group_name)
                         return len(match.group())
                 else:
@@ -563,6 +567,7 @@ def handle_open_group(s, state):
         else:
             state.open_group(1)
             return 1
+
 
 def parse(s, state):
     while state.position < len(s):
@@ -590,7 +595,7 @@ def parse(s, state):
                     state.parsed_special()
                 continue
             if s[state.position] == '$':
-                if state.position < len(s) -1:
+                if state.position < len(s) - 1:
                     raise ValueError("$ can only appear at the end of a regular expression")
                 else:
                     state.parsed_special()
@@ -612,12 +617,3 @@ def parse(s, state):
         state.token_labels[state.open_expression_start] = STYLE_ERROR
         raise ValueError("Incomplete expression")
     return state
-
-if __name__== "__main__":
-    import wx.lib.inspection
-    class MyApp(wx.App):
-        def OnInit(self):
-            return True
-
-    app = MyApp(0)
-    edit_regexp(None, "(?P<foo>foo)", "Where is the food?")

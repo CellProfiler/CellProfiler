@@ -1,6 +1,7 @@
 """Directory for tests of individual modules
 """
 import logging
+
 logger = logging.getLogger(__name__)
 import base64
 from bioformats.formatwriter import write_image, convert_pixels_to_buffer
@@ -18,6 +19,7 @@ import tempfile
 
 import scipy.io.matlab.mio
 from cellprofiler.preferences import set_headless
+
 set_headless()
 from cellprofiler.modules import builtin_modules, all_modules
 
@@ -27,9 +29,11 @@ cp_logo_url = "https://raw.githubusercontent.com/CellProfiler/CellProfiler/maste
 cp_logo_url_folder, cp_logo_url_filename = cp_logo_url.rsplit("/", 1)
 cp_logo_url_shape = (70, 187, 3)
 
+
 class TestAllModules(unittest.TestCase):
     '''Test things having to do with modules'''
     optional_modules = ('classifypixels', 'ilastik_pixel_classification')
+
     def test_01_01_import_all(self):
         #
         # Make sure that we can import every module.
@@ -37,34 +41,36 @@ class TestAllModules(unittest.TestCase):
         # they are not included in the test suite because they don't import
         #
         found_modules = map(
-            (lambda x:x.__module__.rsplit(".", 1)[-1]), all_modules.values())
+                (lambda x: x.__module__.rsplit(".", 1)[-1]), all_modules.values())
         for module_name in \
-            filter((lambda x:x not in self.optional_modules), builtin_modules):
+                filter((lambda x: x not in self.optional_modules), builtin_modules):
             self.assertTrue(
-                module_name in found_modules,
-                "%s is missing from the list of available modules" %
-                module_name)
+                    module_name in found_modules,
+                    "%s is missing from the list of available modules" %
+                    module_name)
+
 
 def example_images_directory():
     global __temp_example_images_folder
     if os.environ.has_key('CP_EXAMPLEIMAGES'):
         return os.environ['CP_EXAMPLEIMAGES']
     fyle = os.path.abspath(__file__)
-    d = os.path.split(fyle)[0]   # trunk.CellProfiler.cellprofiler.modules.tests
-    d = os.path.split(d)[0]      # trunk.CellProfiler.cellprofiler.modules
-    d = os.path.split(d)[0]      # trunk.CellProfiler.cellprofiler
-    d = os.path.split(d)[0]      # trunk.CellProfiler
-    d = os.path.split(d)[0]      # trunk
-    for imagedir in ["CP-CPEXAMPLEIMAGES","ExampleImages"]:
-        path = os.path.join(d,imagedir)
+    d = os.path.split(fyle)[0]  # trunk.CellProfiler.cellprofiler.modules.tests
+    d = os.path.split(d)[0]  # trunk.CellProfiler.cellprofiler.modules
+    d = os.path.split(d)[0]  # trunk.CellProfiler.cellprofiler
+    d = os.path.split(d)[0]  # trunk.CellProfiler
+    d = os.path.split(d)[0]  # trunk
+    for imagedir in ["CP-CPEXAMPLEIMAGES", "ExampleImages"]:
+        path = os.path.join(d, imagedir)
         if os.path.exists(path):
             return path
     if __temp_example_images_folder is None:
         __temp_example_images_folder = tempfile.mkdtemp(
-            prefix="cp_exampleimages")
+                prefix="cp_exampleimages")
         logger.warn("Creating temporary folder %s for example images" %
                     __temp_example_images_folder)
     return __temp_example_images_folder
+
 
 def svn_mirror_url():
     '''Return the URL for the SVN mirror
@@ -75,36 +81,44 @@ def svn_mirror_url():
     return os.environ.get("CP_SVNMIRROR_URL",
                           "http://cellprofiler.org/svnmirror")
 
+
 def example_images_url():
     return svn_mirror_url() + "/" + "ExampleImages"
 
+
 __temp_test_images_folder = None
+
+
 def testimages_directory():
     global __temp_test_images_folder
     if os.environ.has_key('CP_TESTIMAGES'):
         return os.environ['CP_TESTIMAGES']
     fyle = os.path.abspath(__file__)
-    d = os.path.split(fyle)[0]   # trunk.CellProfiler.cellprofiler.modules.tests
-    d = os.path.split(d)[0]      # trunk.CellProfiler.cellprofiler.modules
-    d = os.path.split(d)[0]      # trunk.CellProfiler.cellprofiler
-    d = os.path.split(d)[0]      # trunk.CellProfiler
-    d = os.path.split(d)[0]      # trunk
+    d = os.path.split(fyle)[0]  # trunk.CellProfiler.cellprofiler.modules.tests
+    d = os.path.split(d)[0]  # trunk.CellProfiler.cellprofiler.modules
+    d = os.path.split(d)[0]  # trunk.CellProfiler.cellprofiler
+    d = os.path.split(d)[0]  # trunk.CellProfiler
+    d = os.path.split(d)[0]  # trunk
     path = os.path.join(d, "TestImages")
     if os.path.exists(path):
         return path
     if __temp_test_images_folder is None:
         __temp_test_images_folder = tempfile.mkdtemp(
-            prefix="cp_testimages")
+                prefix="cp_testimages")
         logger.warn("Creating temporary folder %s for test images" %
                     __temp_test_images_folder)
     return __temp_test_images_folder
 
+
 def testimages_url():
     return svn_mirror_url() + "/" + "TestImages"
 
+
 class testExampleImagesDirectory(unittest.TestCase):
     def test_00_00_got_something(self):
-        self.assertTrue(example_images_directory(), "You need to have the example images checked out to run these tests")
+        self.assertTrue(example_images_directory(),
+                        "You need to have the example images checked out to run these tests")
+
 
 def load_pipeline(test_case, encoded_data):
     """Load a pipeline from base-64 encoded data
@@ -120,23 +134,26 @@ def load_pipeline(test_case, encoded_data):
     """
     import cellprofiler.pipeline
 
-    (matfd,matpath) = tempfile.mkstemp('.mat')
-    matfh = os.fdopen(matfd,'wb')
+    (matfd, matpath) = tempfile.mkstemp('.mat')
+    matfh = os.fdopen(matfd, 'wb')
     try:
         data = base64.b64decode(encoded_data)
         matfh.write(data)
         matfh.flush()
         pipeline = cellprofiler.pipeline.Pipeline()
-        handles=scipy.io.matlab.mio.loadmat(matpath, struct_as_record=True)
+        handles = scipy.io.matlab.mio.loadmat(matpath, struct_as_record=True)
     finally:
         matfh.close()
-    def blowup(pipeline,event):
+
+    def blowup(pipeline, event):
         if isinstance(event, (cellprofiler.pipeline.RunExceptionEvent,
                               cellprofiler.pipeline.LoadExceptionEvent)):
             test_case.assertFalse(event.error.message)
+
     pipeline.add_listener(blowup)
     pipeline.create_from_handles(handles)
     return pipeline
+
 
 def maybe_download_example_image(folders, file_name, shape=None):
     '''Download the given ExampleImages file if not in the directory
@@ -151,19 +168,20 @@ def maybe_download_example_image(folders, file_name, shape=None):
     if shape is None:
         shape = (20, 30)
     local_path = os.path.join(*tuple([
-        example_images_directory()] + folders + [file_name]))
+                                         example_images_directory()] + folders + [file_name]))
     if not os.path.exists(local_path):
         directory = os.path.join(*tuple([
-            example_images_directory()] + folders))
+                                            example_images_directory()] + folders))
         if not os.path.isdir(directory):
             os.makedirs(directory)
         r = np.random.RandomState()
         r.seed(np.frombuffer(
-            hashlib.sha1("/".join(folders) + file_name).digest(),
-            np.uint8))
+                hashlib.sha1("/".join(folders) + file_name).digest(),
+                np.uint8))
         img = (r.uniform(size=shape) * 255).astype(np.uint8)
         write_image(local_path, img, PT_UINT8)
     return local_path
+
 
 def make_12_bit_image(folder, filename, shape):
     '''Create a 12-bit image of the desired shape
@@ -175,8 +193,8 @@ def make_12_bit_image(folder, filename, shape):
     '''
     r = np.random.RandomState()
     r.seed(np.frombuffer(
-        hashlib.sha1("/".join([folder, filename])).digest(),
-        np.uint8))
+            hashlib.sha1("/".join([folder, filename])).digest(),
+            np.uint8))
     img = (r.uniform(size=shape) * 4095).astype(np.uint16)
     path = os.path.join(example_images_directory(), folder, filename)
     if not os.path.isdir(os.path.dirname(path)):
@@ -190,23 +208,23 @@ def make_12_bit_image(folder, filename, shape):
     with open(path, "rb") as fd:
         data = np.frombuffer(fd.read(), np.uint8).copy()
     offset = np.frombuffer(data[4:8].data, np.uint32)[0]
-    nentries = np.frombuffer(data[offset:offset+2], np.uint16)[0]
+    nentries = np.frombuffer(data[offset:offset + 2], np.uint16)[0]
     ifds = []
     # Get the IFDs we don't modify
     for idx in range(nentries):
-        ifd = data[offset+2+idx*12:offset+14+idx*12]
+        ifd = data[offset + 2 + idx * 12:offset + 14 + idx * 12]
         code = ifd[0] + 256 * ifd[1]
         if code not in (258, 281):
             ifds.append(ifd)
     ifds += [
         # 12 bits/sample
-        np.array([2, 1, 3, 0, 1, 0, 0, 0, 12, 0, 0, 0], np.uint8 ),
+        np.array([2, 1, 3, 0, 1, 0, 0, 0, 12, 0, 0, 0], np.uint8),
         # max value = 4095
         np.array([25, 1, 3, 0, 1, 0, 0, 0, 255, 15, 0, 0], np.uint8)]
-    ifds = sorted(ifds, cmp = (lambda a, b: cmp(a.tolist(), b.tolist())))
+    ifds = sorted(ifds, cmp=(lambda a, b: cmp(a.tolist(), b.tolist())))
     old_end = offset + 2 + nentries * 12
-    new_end = offset + 2 + len(ifds) *12
-    diff = new_end-old_end
+    new_end = offset + 2 + len(ifds) * 12
+    diff = new_end - old_end
     #
     # Fix up the IFD offsets if greater than "offset"
     #
@@ -214,20 +232,21 @@ def make_12_bit_image(folder, filename, shape):
         count = np.frombuffer(ifd[4:8].data, np.uint32)[0]
         if count > 4:
             ifd_off = np.array(
-                [np.frombuffer(ifd[8:12].data, np.uint32)[0]]) + diff
+                    [np.frombuffer(ifd[8:12].data, np.uint32)[0]]) + diff
             if ifd_off > offset:
                 ifd[8:12] = np.frombuffer(ifd_off.data, np.uint8)
-    new_data = np.zeros(len(data)+diff, np.uint8)
+    new_data = np.zeros(len(data) + diff, np.uint8)
     new_data[:offset] = data[:offset]
     new_data[offset] = len(ifds) % 256
-    new_data[offset+1] = int(len(ifds) / 256)
+    new_data[offset + 1] = int(len(ifds) / 256)
     for idx, ifd in enumerate(ifds):
-        new_data[offset+2+idx*12:offset+14+idx*12] = ifd
+        new_data[offset + 2 + idx * 12:offset + 14 + idx * 12] = ifd
     new_data[new_end:] = data[old_end:]
 
     with open(path, "wb") as fd:
         fd.write(new_data.data)
     return path
+
 
 def maybe_download_example_images(folders, file_names):
     '''Download multiple files to the example images directory
@@ -242,10 +261,11 @@ def maybe_download_example_images(folders, file_names):
         maybe_download_example_image(folders, file_name)
     return os.path.join(example_images_directory(), *folders)
 
+
 def maybe_download_sbs():
     '''Download the SBS dataset to its expected location if necessary'''
     files = []
-    for channel in 1,2:
+    for channel in 1, 2:
         idx = 1
         for row in "ABCDEFGH":
             for col in range(1, 13):
@@ -261,18 +281,20 @@ def maybe_download_sbs():
     for filename in ["Channel1ILLUM.mat", "Channel2ILLUM.mat"]:
         pixels = np.ones((20, 30))
         scipy.io.matlab.mio.savemat(
-            os.path.join(path, filename), {"Image":pixels}, format='5')
+                os.path.join(path, filename), {"Image": pixels}, format='5')
     return path
+
 
 def maybe_download_fly():
     '''Download the fly example directory'''
     return maybe_download_example_images(
-        ["ExampleFlyImages"],
-        ["01_POS002_D.TIF", "01_POS002_F.TIF", "01_POS002_R.TIF",
-         "01_POS076_D.TIF", "01_POS076_F.TIF", "01_POS076_R.TIF",
-         "01_POS218_D.TIF", "01_POS218_F.TIF", "01_POS218_R.TIF"])
+            ["ExampleFlyImages"],
+            ["01_POS002_D.TIF", "01_POS002_F.TIF", "01_POS002_R.TIF",
+             "01_POS076_D.TIF", "01_POS076_F.TIF", "01_POS076_R.TIF",
+             "01_POS218_D.TIF", "01_POS218_F.TIF", "01_POS218_R.TIF"])
 
-def maybe_download_tesst_image( file_name):
+
+def maybe_download_tesst_image(file_name):
     '''Download the given TestImages file if not in the directory
 
     file_name - name of file to fetch
@@ -288,8 +310,10 @@ def maybe_download_tesst_image( file_name):
             # This raises the "expected failure" exception.
             def bad_url(e=e):
                 raise e
+
             unittest.expectedFailure(bad_url)()
     return local_path
+
 
 def read_example_image(folder, file_name, **kwargs):
     '''Read an example image from one of the example image directories
@@ -305,10 +329,11 @@ def read_example_image(folder, file_name, **kwargs):
     maybe_download_example_image([folder], file_name)
     return load_image(path, **kwargs)
 
+
 raw_8_1 = 'AAQJDRIWGx8kKC0xNjo/Q0hMUVZaX2NobHF1en6Dh4wEBgoOEhcbICQpLTI2Oz9ESE1RVlpfY2hscXV6foOHjAkKDBAUGBwgJSkuMjc7QERJTVJWW19kaG1xdnp/g4iMDQ4QExYaHiImKi8zODxARUlOUldbYGRpbXJ2e3+EiI0SEhQWGR0gJCgsMDU5PUFGSk9TV1xgZWlucnd7gISJjRYXGBodICMmKi4yNjo/Q0dLUFRYXWFmam9zd3yAhYmOGxscHiAjJiktMDQ4PEBESU1RVVpeYmdrcHR4fYGGio8fICAiJCYpLDAzNzs+QkZKT1NXW19kaGxxdXl+goeLjyQkJSYoKi0wMzY6PUFFSUxRVVldYWVqbnJ2e3+DiIyRKCkpKiwuMDM2OTxAQ0dLT1NXW19jZ2tvdHh8gIWJjZItLS4vMDI0Nzo8QENGSk1RVVldYWVpbXF1eX6ChoqPkzEyMjM1Njg7PUBDRklNUFRXW19jZ2tvc3d7f4SIjJCUNjY3ODk6PD5BQ0ZJTFBTV1peYWVpbXF1eX2BhYmOkpY6Ozs8PT9AQkVHSk1QU1ZZXWBkaGxvc3d7f4OHi4+UmD8/QEBBQ0RGSUtNUFNWWVxgY2dqbnJ2eX2BhYmNkZWaQ0RERUZHSUpMT1FUV1lcYGNmam1xdHh8gISHi4+Tl5tISElJSktNT1FTVVdaXWBjZmltcHR3e36ChoqOkpaZnUxNTU5PUFFTVVdZW15gY2ZpbHBzdnp9gYWIjJCUmJygUVFSUlNUVVdZW11fYWRnam1wc3Z5fYCEh4uPkpaanqJWVlZXV1haW11fYWNlaGptcHN2eXyAg4eKjpGVmZ2gpFpaW1tcXV5fYWNlZ2lsbnF0dnl8gIOGio2RlJibn6OnX19fYGBhYmRlZ2lrbW9ydHd6fYCDhomNkJOXmp6ipaljY2RkZWZnaGprbW9xc3Z4e32Ag4aJjJCTlpqdoaSorGhoaGlpamtsbm9xc3V3eXx+gYSHio2Qk5aZnaCkp6uubGxtbW5vcHFydHV3eXt9gIKFh4qNkJOWmZygo6eqrrFxcXFycnN0dXZ4eXt9f4GEhoiLjpGTlpmcoKOmqq2wtHV1dnZ3d3h5e3x+f4GDhYeKjI+RlJeanaCjpqmtsLO3enp6e3t8fX5/gIKEhYeJi46QkpWYmp2go6aprLCztrp+fn9/gICBgoOFhoiJi42PkpSWmZueoaSnqq2ws7a5vYODg4SEhYaHiImKjI6PkZOWmJqdn6Kkp6qtsLO2ubzAh4eIiImJiouMjY+QkpSVl5mcnqCjpairrrCztrm8wMOMjIyNjY6Pj5GSk5SWmJqbnaCipKeprK6xtLe6vcDDxpCRkZGSkpOUlZaXmZqcnqCipKaoqq2vsrW3ur3Aw8bJlZWVlpaXl5iZmpydn6CipKaoqqyusbO2uLu+wcTGyc2Zmpqam5ucnZ6foKGjpKaoqqyusLK0t7m8v8HEx8rN0J6enp+foKChoqOkpqepqqyusLK0tri7vcDCxcjLzdDTo6Ojo6SkpaanqKmqq62usLK0tri6vL/Bw8bJy87R1Nenp6eoqKmpqqusra6wsbO0tri6vL7AwsXHyszP0tTX2qysrKytra6vr7Cxs7S1t7m6vL7AwsTGycvO0NPV2NvesLCwsbGysrO0tba3uLq7vb7AwsTGyMrNz9HU1tnc3uG1tbW1tra3t7i5uru9vr/Bw8TGyMrMztDT1dja3d/i5bm5ubq6u7u8vb6/wMHCxMXHycrMztDS1NfZ297g4+bovr6+vr+/wMDBwsPExcfIycvNztDS1NbY293f4uTn6ezCwsLDw8TExcbGx8nKy8zOz9HT1NbY2tzf4ePl6Ort8MfHx8fIyMnJysvMzc7P0dLU1dfZ2tze4OLl5+ns7vHzy8vMzMzNzc7Pz9DR0tTV1tjZ293f4OLk5unr7fDy9PfQ0NDQ0dHS0tPU1dbX2Nnb3N7f4ePl5ujq7e/x8/b4+9TU1dXV1tbX19jZ2tvc3t/g4uPl5+nr7O/x8/X3+vz/'
-raw_8_1_shape = (48,32)
+raw_8_1_shape = (48, 32)
 raw_8_2 = '//v28u3p5ODb19LOycXAvLezrqmloJyXk46KhYF8eHP7+fXx7ejk39vW0s3JxMC7t7KuqaWgnJeTjoqFgXx4c/b18+/r5+Pf2tbRzcjEv7u2sq2ppKCbl5KOiYWAfHdz8vHv7Onl4d3Z1dDMx8O/uraxraikn5uWko2JhIB7d3Lt7evp5uLf29fTz8rGwr65tbCsqKOfmpaRjYiEf3t2cuno5+Xi39zZ1dHNycXAvLi0r6unop6ZlZCMiIN/enZx5OTj4d/c2dbSz8vHw7+7trKuqqWhnZiUj4uHgn55dXDg39/d29nW08/MyMTBvbm1sKyopKCbl5OOioaBfXh0cNvb2tnX1dLPzMnFwr66trOuqqainpqVkY2JhIB8d3Nu19bW1dPRz8zJxsO/vLi0sKyopKCcmJSQi4eDf3p2cm3S0tHQz83LyMXDv7y5tbKuqqainpqWko6KhoF9eXVwbM7NzczKycfEwr+8ubayr6uopKCcmJSQjIiEgHt3c29rycnIx8bFw8G+vLm2s6+sqKWhnpqWko6KhoJ+enZxbWnFxMTDwsC/vbq4tbKvrKmmop+bl5OQjIiEgHx4dHBrZ8DAv7++vLu5trSyr6yppqOfnJiVkY2JhoJ+enZybmplvLu7urm4trWzsK6rqKajn5yZlZKOi4eDf3t4dHBsaGS3t7a2tbSysK6sqqilop+cmZaSj4uIhIF9eXVxbWlmYrOysrGwr66sqqimpKGfnJmWk4+MiYWCfnp3c29rZ2Nfrq6trayrqqimpKKgnpuYlZKPjImGgn97eHRwbWllYV2pqamoqKelpKKgnpyal5WSj4yJhoN/fHh1cW5qZmJfW6WlpKSjoqGgnpyamJaTkY6LiYaDf3x5dXJua2dkYFxYoKCgn5+enZuamJaUkpCNi4iFgn98eXZyb2xoZWFdWlacnJubmpmYl5WUkpCOjImHhIJ/fHl2c29saWViXltXU5eXl5aWlZSTkZCOjIqIhoOBfnt4dXJvbGlmYl9bWFRRk5OSkpGQj46Ni4qIhoSCf316eHVyb2xpZmNfXFhVUU6Ojo6NjYyLiomHhoSCgH57eXd0cW5saWZjX1xZVVJPS4qKiYmIiIeGhIOBgH58enh1c3Bua2hlYl9cWVZST0xIhYWFhISDgoGAf317enh2dHFvbWpnZWJfXFlWU09MSUWBgYCAf39+fXx6eXd2dHJwbWtpZmRhXltYVVJPTElGQnx8fHt7enl4d3Z1c3FwbmxpZ2ViYF1bWFVST0xJRkM/eHh3d3Z2dXRzcnBvbWtqaGZjYV9cWldUUU9MSUZDPzxzc3NycnFwcG5tbGtpZ2VkYl9dW1hWU1FOS0hFQj88OW9ubm5tbWxramloZmVjYV9dW1lXVVJQTUpIRUI/PDk2ampqaWloaGdmZWNiYF9dW1lXVVNRTkxJR0RBPjs5NjJmZWVlZGRjYmFgX15cW1lXVVNRT01LSEZDQD47ODUyL2FhYWBgX19eXVxbWVhWVVNRT01LSUdEQj89Ojc0Mi8sXFxcXFtbWllYV1ZVVFJRT01LSUdFQ0A+PDk2NDEuKyhYWFhXV1ZWVVRTUlFPTkxLSUdFQ0E/PTo4NTMwLSsoJVNTU1NSUlFQUE9OTEtKSEZFQ0E/PTs5NjQxLywqJyQhT09PTk5NTUxLSklIR0VEQkE/PTs5NzUyMC4rKSYjIR5KSkpKSUlISEdGRURCQUA+PDs5NzUzMS8sKiclIiAdGkZGRkVFRERDQkFAPz49Ozo4NjUzMS8tKygmJCEfHBkXQUFBQUBAPz8+PTw7Ojg3NjQyMS8tKyknJCIgHRsYFhM9PT08PDs7Ojk5ODY1NDMxMC4sKyknJSMgHhwaFxUSDzg4ODg3NzY2NTQzMjEwLi0rKigmJSMhHx0aGBYTEQ4MNDQzMzMyMjEwMC8uLSsqKScmJCIgHx0bGRYUEg8NCwgvLy8vLi4tLSwrKikoJyYkIyEgHhwaGRcVEhAODAkHBCsrKioqKSkoKCcmJSQjISAfHRwaGBYUExAODAoIBQMA'
-raw_8_2_shape = (48,32)
+raw_8_2_shape = (48, 32)
 tif_8_1 = 'SUkqAAgAAAAIAAABAwABAAAAIAAAAAEBAwABAAAAMAAAAAIBAwABAAAACAAAAAMBAwABAAAAAQAAAAYBAwABAAAAAQAAABEBBAABAAAAbgAAABYBAwABAAAAMAAAABcBAwABAAAAAAYAAAAAAAAABAkNEhYbHyQoLTE2Oj9DSExRVlpfY2hscXV6foOHjAQGCg4SFxsgJCktMjY7P0RITVFWWl9jaGxxdXp+g4eMCQoMEBQYHCAlKS4yNztARElNUlZbX2RobXF2en+DiIwNDhATFhoeIiYqLzM4PEBFSU5SV1tgZGltcnZ7f4SIjRISFBYZHSAkKCwwNTk9QUZKT1NXXGBlaW5yd3uAhImNFhcYGh0gIyYqLjI2Oj9DR0tQVFhdYWZqb3N3fICFiY4bGxweICMmKS0wNDg8QERJTVFVWl5iZ2twdHh9gYaKjx8gICIkJiksMDM3Oz5CRkpPU1dbX2RobHF1eX6Ch4uPJCQlJigqLTAzNjo9QUVJTFFVWV1hZWpucnZ7f4OIjJEoKSkqLC4wMzY5PEBDR0tPU1dbX2Nna290eHyAhYmNki0tLi8wMjQ3OjxAQ0ZKTVFVWV1hZWltcXV5foKGio+TMTIyMzU2ODs9QENGSU1QVFdbX2Nna29zd3t/hIiMkJQ2Njc4OTo8PkFDRklMUFNXWl5hZWltcXV5fYGFiY6Sljo7Ozw9P0BCRUdKTVBTVlldYGRobG9zd3t/g4eLj5SYPz9AQEFDREZJS01QU1ZZXGBjZ2pucnZ5fYGFiY2RlZpDRERFRkdJSkxPUVRXWVxgY2ZqbXF0eHyAhIeLj5OXm0hISUlKS01PUVNVV1pdYGNmaW1wdHd7foKGio6SlpmdTE1NTk9QUVNVV1lbXmBjZmlscHN2en2BhYiMkJSYnKBRUVJSU1RVV1lbXV9hZGdqbXBzdnl9gISHi4+SlpqeolZWVldXWFpbXV9hY2Voam1wc3Z5fICDh4qOkZWZnaCkWlpbW1xdXl9hY2VnaWxucXR2eXyAg4aKjZGUmJufo6dfX19gYGFiZGVnaWttb3J0d3p9gIOGiY2Qk5eanqKlqWNjZGRlZmdoamttb3Fzdnh7fYCDhomMkJOWmp2hpKisaGhoaWlqa2xub3FzdXd5fH6BhIeKjZCTlpmdoKSnq65sbG1tbm9wcXJ0dXd5e32AgoWHio2Qk5aZnKCjp6qusXFxcXJyc3R1dnh5e31/gYSGiIuOkZOWmZygo6aqrbC0dXV2dnd3eHl7fH5/gYOFh4qMj5GUl5qdoKOmqa2ws7d6enp7e3x9fn+AgoSFh4mLjpCSlZianaCjpqmssLO2un5+f3+AgIGCg4WGiImLjY+SlJaZm56hpKeqrbCztrm9g4ODhISFhoeIiYqMjo+Rk5aYmp2foqSnqq2ws7a5vMCHh4iIiYmKi4yNj5CSlJWXmZyeoKOlqKuusLO2ubzAw4yMjI2Njo+PkZKTlJaYmpudoKKkp6msrrG0t7q9wMPGkJGRkZKSk5SVlpeZmpyeoKKkpqiqra+ytbe6vcDDxsmVlZWWlpeXmJmanJ2foKKkpqiqrK6xs7a4u77BxMbJzZmampqbm5ydnp+goaOkpqiqrK6wsrS3uby/wcTHys3Qnp6en5+goKGio6Smp6mqrK6wsrS2uLu9wMLFyMvN0NOjo6OjpKSlpqeoqaqrra6wsrS2uLq8v8HDxsnLztHU16enp6ioqamqq6ytrrCxs7S2uLq8vsDCxcfKzM/S1NfarKysrK2trq+vsLGztLW3ubq8vsDCxMbJy87Q09XY296wsLCxsbKys7S1tre4uru9vsDCxMbIys3P0dTW2dze4bW1tbW2tre3uLm6u72+v8HDxMbIyszO0NPV2Nrd3+Llubm5urq7u7y9vr/AwcLExcfJyszO0NLU19nb3uDj5ui+vr6+v7/AwMHCw8TFx8jJy83O0NLU1tjb3d/i5Ofp7MLCwsPDxMTFxsbHycrLzM7P0dPU1tja3N/h4+Xo6u3wx8fHx8jIycnKy8zNzs/R0tTV19na3N7g4uXn6ezu8fPLy8zMzM3Nzs/P0NHS1NXW2Nnb3d/g4uTm6evt8PL099DQ0NDR0dLS09TV1tfY2dvc3t/h4+Xm6Ort7/Hz9vj71NTV1dXW1tfX2Nna29ze3+Di4+Xn6evs7/Hz9ff6/P8='
 jpg_8_1 = '/9j/4AAQSkZJRgABAQEAYABgAAD/4QB2RXhpZgAASUkqAAgAAAAIAAABAwABAAAAIADM/wEBAwABAAAAMADP/wIBAwABAAAACADS/wMBAwABAAAAAQDV/wYBAwABAAAAAQDY/xEBBAABAAAAbgAAABYBAwABAAAAMADe/xcBAwABAAAAAAbh/wAAAAD/2wBDAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH/2wBDAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH/wAARCAAwACADASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD+MLwR4In0+eNVjZVVhgYPHPQdun+cV96fDHSJozbhkI5XqPp/n09TyaNI+GJjmRhbnqD93+uP8jJ5619MeBfArQtD+5IwVHCnnJHtjp0FAH0B8LrGRfs4Kkfc9fYn9cc//Xz+jvwttGH2fg8bP6f/AFv89fkj4ceFnQwZjPG3tg/56981+gXwz0BkNv8AIQfl7fQjI7f/AKs0AfkvY/C7bIpFv0P9z09yM/Xj/E+zeFvhwUeM+Rjkfw9x/k9+tfW9p8LcMP8AR8c/3P8A639Py7+l6B8MyjJi35BGfl/I4I7f/XxQB5f4E8CMjQ/uTjKjhT69Tx/j1r7d+Hng9kMH7o4+X+Hj/PB9AKPB/wAOyjRfuOMr/D27en8+AOlfXngXwKUMIEJ6r/DjGOvPf+tAHhdv8LfmH+j9x/D/AJ/mPw793ovwx2smLfuP4Mf0J/HPXHpX3LB8Lef+Pb/xz8Pf+v8AQ9hpXwvwy/6P37IP8OvueB1xQB8u+GPhvhoj9n9P4Py7euK+n/Bnw+KmL9x3U/d/n0/U9c8V7J4e+GZBQi39M/J+vTv3/wA4+ivCfw5KtF/o/wDdONvr+HY/zNAH/9k='
 png_8_1 = 'iVBORw0KGgoAAAANSUhEUgAAACAAAAAwCAAAAABVxyezAAADHElEQVR4nGJkYGFFhygcAAAAAP//YmJhYmRkQIUoAAAAAP//YmFlZGLCVIOAAAAAAP//YmFhZGJmYmJiYmRkZMSmDgAAAP//YmFlYGJihiiBKkJVAQAAAP//YmFhZGRihqpghBmEpA4AAAD//2JhZWBkYmJGUYKsihEAAAD//2JhYWRggqhgZmZiYoI4GaGEAQAAAP//YmFlYIQawQyziokJYRATAAAA//9iYWFkYIQYwcTMxMQEUwFXAgAAAP//YmFlYIQYwcQCNwBZCQAAAP//gpjAyMQMdQayEiYmJkZGAAAAAP//gpjAyIRQwYxiCBMAAAD//2JhYWRgRDKCCcmpTEyMTEwAAAAA//9iYWWA2YFkBFwJIxMAAAD//4KYADOCiZkFrgSihhEAAAD//4KYwAhRz4wATLDgBQAAAP//gpoAUQFzKMQ0iBYAAAAA//+CmoDFCKgSAAAAAP//YmFlgLoS2QikkAcAAAD//2JhYUCzg4kZ6lKIWwEAAAD//4KagMUIqEMAAAAA//9CmMAIVYBmCwAAAP//gpmA1RXMzMxMAAAAAP//gpuA3QhmZgAAAAD//4KbAFfABPUAC8QOAAAAAP//gpgAcSVWIwAAAAD//0KYwAhJAZCoQigAAAAA//+CmwAzghnNoQAAAAD//0IyAWIEM5otAAAAAP//QpjAyISsAmoNCzMAAAD//4KZwMAECW5GdCMAAAAA//9iYWFkQA0JpDhhZmZmBgAAAP//gpqA5EpkvzIxswAAAAD//0I2AasRAAAAAP//QjIBixFMzMwAAAAA//9iYWVAmICsAGYEAAAA//9iYUGYgGkEEzMzAAAA//+Cm8DAyMgEC26YAiZmZmYAAAAA//9CMQHJCGaYQwEAAAD//4KZAHUlphEAAAAA//9CNQEW3EhGAAAAAP//QjEB2QhYiAMAAAD//0KYwMDIhGwEMzS4AAAAAP//QjUB6kpGJCMAAAAA//9iYWFghPuTkQkaVvCUw8QMAAAA//9CMwHmUUa4HQAAAAD//4KbgHAlIxMTExMjM9SvAAAAAP//AwAHWgwSjKsCjAAAAABJRU5ErkJggg=='

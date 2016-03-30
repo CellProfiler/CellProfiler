@@ -711,6 +711,7 @@ class YeastCellSegmentation(cpmi.Identify):
         #                                     image_set_number)
         
         ### opening file dialog
+        labels = None
         with wx.FileDialog(None,
                             message = "Open an image file",
                             wildcard = "Image file (*.tif,*.tiff,*.jpg,*.jpeg,*.png,*.gif,*.bmp)|*.tif;*.tiff;*.jpg;*.jpeg;*.png;*.gif;*.bmp|*.* (all files)|*.*",
@@ -718,7 +719,7 @@ class YeastCellSegmentation(cpmi.Identify):
             if dlg.ShowModal() == wx.ID_OK:
                 from bioformats import load_image
                 image = load_image( dlg.Path) #lip.provide_image(None).pixel_data
-                label_path = dlg.Path + ".lab.tif" # if file attached load labels from file
+                label_path = dlg.Path + ".lab.png" # if file attached load labels from file
                 if isfile(label_path):
                     labels = (load_image(label_path) * 255).astype(int)
             else:
@@ -768,7 +769,6 @@ class YeastCellSegmentation(cpmi.Identify):
         ## end of image adaptation
 
         # TODO think what to do if the user chooses new image (and we load old cells)
-        # if not hasattr(self, 'labels'):
         if labels is None:
             labels = [np.zeros(self.pixel_data.shape[:2], int)]
 

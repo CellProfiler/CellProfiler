@@ -12,27 +12,19 @@ Filip Mroz, Adam Kaczmarek, Szymon Stoma.
 
 Website: http://www.cellprofiler.org
 """
-import os
 
-import base64
 import unittest
+
 import numpy as np
 import scipy.ndimage
-import tempfile
-import StringIO
-import zlib
 
-import cellprofiler.modules.yeast_cell_segmentation as YS
-import cellprofiler.modules.identify as I
-import cellprofiler.cpmath.threshold as T
-from cellprofiler.modules.injectimage import InjectImage
-import cellprofiler.settings
 import cellprofiler.cpimage as cpi
-import cellprofiler.objects as cpo
 import cellprofiler.measurements as cpmeas
+import cellprofiler.modules.yeast_cell_segmentation as YS
+import cellprofiler.objects as cpo
 import cellprofiler.pipeline
+import cellprofiler.settings
 from cellprofiler.workspace import Workspace
-from cellprofiler.modules.tests import read_example_image
 
 IMAGE_NAME = "my_image"
 BACKGROUND_IMAGE_NAME = "background_image"
@@ -120,6 +112,7 @@ class test_YeastSegmentation(unittest.TestCase):
         location_center_y = measurements.get_current_measurement(OBJECTS_NAME,"Location_Center_Y")
         self.assertTrue(isinstance(location_center_y,np.ndarray))
         self.assertEqual(np.product(location_center_y.shape),0)
+
 
     def test_01_01_test_one_object(self):
         x = YS.YeastCellSegmentation()
@@ -357,6 +350,30 @@ class test_YeastSegmentation(unittest.TestCase):
         self.assertTrue(objects.segmented[10,10] > 0)
         self.assertTrue(objects.segmented[30,30] > 0)
 
+    def test_01_07_extreme_params(self):
+        x = YS.YeastCellSegmentation()
+        x.object_name.value = OBJECTS_NAME
+        x.segmentation_precision.value = 14
+        x.input_image_name.value = IMAGE_NAME
+        x.background_brighter_then_cell_inside.value = False
+        x.average_cell_diameter.value = 77
+        img = get_two_cell_mask()
+        draw_circle(img,(5,5),2,0.7)
+        draw_circle(img,(35,11),3,0.2)
+        img = convert_to_brightfield(img, False)
+        image = cpi.Image(img, file_name="test_01_07_extreme_params")
+        image_set_list = cpi.ImageSetList()
+        image_set = image_set_list.get_image_set(0)
+        image_set.providers.append(cpi.VanillaImageProvider(IMAGE_NAME,image))
+        object_set = cpo.ObjectSet()
+        measurements = cpmeas.Measurements()
+        pipeline = cellprofiler.pipeline.Pipeline()
+        x.run(Workspace(pipeline,x,image_set,object_set,measurements,None))
+        objects = object_set.get_objects(OBJECTS_NAME)
+        segmented = objects.segmented
+        self.assertTrue(np.all(segmented == 0))  # no found because of parameters (no foreground)
+        self.assertEqual(0, objects.count)
+
     def test_02_01_discard_large(self):
         x = YS.YeastCellSegmentation()
         x.object_name.value = OBJECTS_NAME
@@ -443,21 +460,22 @@ class test_YeastSegmentation(unittest.TestCase):
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         image_set.providers.append(cpi.VanillaImageProvider(IMAGE_NAME,image))
-        image_set.providers.append(cpi.VanillaImageProvider(BACKGROUND_IMAGE_NAME,background))
+        image_set.providers.append(cpi.VanillaImageProvider(BACKGROUND_IMAGE_NAME, background))
         object_set = cpo.ObjectSet()
         measurements = cpmeas.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
-        x.run(Workspace(pipeline,x,image_set,object_set,measurements,None))
+        x.run(Workspace(pipeline, x, image_set, object_set, measurements, None))
         objects = object_set.get_objects(OBJECTS_NAME)
-        self.assertEqual(objects.segmented[25,25]>0,1,"The small object was not there")
-        self.assertEqual(objects.segmented[100,100]>0,1,"The large object was not there")
-        self.assertEqual(objects.segmented[150,150]>0,0,"The background blob was not filtered out")
+        self.assertEqual(objects.segmented[25, 25] > 0, 1, "The small object was not there")
+        self.assertEqual(objects.segmented[100, 100] > 0, 1, "The large object was not there")
+        self.assertEqual(objects.segmented[150, 150] > 0, 0, "The background blob was not filtered out")
+
 
 def add_noise(img, fraction):
     '''Add a fractional amount of noise to an image to make it look real'''
     np.random.seed(0)
-    noise = np.random.uniform(low=1-fraction/2, high=1+fraction/2,
-                                 size=img.shape)
+    noise = np.random.uniform(low=1 - fraction / 2, high=1 + fraction / 2,
+                              size=img.shape)
     return img * noise
 
 def get_one_cell_mask():

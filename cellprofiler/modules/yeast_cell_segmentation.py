@@ -139,6 +139,7 @@ __revision__="$Id$"
 #################################
 from os.path import expanduser
 from os.path import join as pj
+from os.path import isfile
 import logging
 logger = logging.getLogger(__name__)
 
@@ -717,6 +718,9 @@ class YeastCellSegmentation(cpmi.Identify):
             if dlg.ShowModal() == wx.ID_OK:
                 from bioformats import load_image
                 image = load_image( dlg.Path) #lip.provide_image(None).pixel_data
+                label_path = dlg.Path + ".lab.tif" # if file attached load labels from file
+                if isfile(label_path):
+                    labels = (load_image(label_path) * 255).astype(int)
             else:
                 return
 
@@ -765,19 +769,21 @@ class YeastCellSegmentation(cpmi.Identify):
 
         # TODO think what to do if the user chooses new image (and we load old cells)
         # if not hasattr(self, 'labels'):
-        labels = [np.zeros(self.pixel_data.shape[:2], int)]
-        ## two next lines are hack from Lee
-        labels[0][0, 0] = 1
-        labels[0][-2, -2] = 1
-        with EditObjectsDialog(
-                self.pixel_data, labels, False, title) as dialog_box:
-            result = dialog_box.ShowModal()
-            if result != OK:
-                return None
-            labels = dialog_box.labels[0]
-        ## two next lines are hack from Lee
-        labels[0, 0] = 0
-        labels[-2, -2] = 0
+        if labels is None:
+            labels = [np.zeros(self.pixel_data.shape[:2], int)]
+
+            ## two next lines are hack from Lee
+            labels[0][0, 0] = 1
+            labels[0][-2, -2] = 1
+            with EditObjectsDialog(
+                    self.pixel_data, labels, False, title) as dialog_box:
+                result = dialog_box.ShowModal()
+                if result != OK:
+                    return None
+                labels = dialog_box.labels[0]
+            ## two next lines are hack from Lee
+            labels[0, 0] = 0
+            labels[-2, -2] = 0
 
         # check if the user provided GT
         # TODO check for con. comp. and e.g. let it go if more then 3 cells were added

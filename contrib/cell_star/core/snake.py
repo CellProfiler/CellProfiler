@@ -264,20 +264,21 @@ class Snake(object):
         xmins2 = np.copy(xmins)
         xmaxs = np.copy(xmins)
 
-        max_iterations = 10**5
         current_iteration = 0
-
         ok_points = 0
-
         changed = True
 
         while changed:
             changed = False
-            if current_iteration > max_iterations:
-                break
 
             # vertices_order = points_order[min_angle:] + points_order[:min_angle]
+            fixed = 0
             while ok_points < points_number:
+                if fixed >= points_number and ok_points != 0:
+                    current_iteration += points_number - ok_points
+                    ok_points = points_number
+                    break
+
                 current = (istart + current_iteration) % points_number
                 previous = (current - 1) % points_number
 
@@ -290,9 +291,8 @@ class Snake(object):
                 else:
                     ok_points += 1
 
+                fixed += 1
                 current_iteration += 1
-                if current_iteration > max_iterations:
-                    break
 
             while ok_points > 1:
                 current = (istart + current_iteration) % points_number
@@ -307,8 +307,6 @@ class Snake(object):
                     ok_points -= 1
 
                 current_iteration += 1
-                if current_iteration > max_iterations:
-                    break
 
             current_iteration += 1
 

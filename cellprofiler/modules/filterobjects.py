@@ -275,13 +275,12 @@ class FilterObjects(cpm.CPModule):
             between related objects (e.g., primary and secondary objects) after filtering.""")
 
     def get_class_choices(self, pipeline):
-        try:
-            if self.mode == MODE_CLASSIFIERS:
-                return self.get_bin_labels()
-            elif self.mode == MODE_RULES:
-                rules = self.get_rules()
-                nclasses = len(rules.rules[0].weights[0])
-                return [str(i) for i in range(1, nclasses+1)]
+        if self.mode == MODE_CLASSIFIERS:
+            return self.get_bin_labels()
+        elif self.mode == MODE_RULES:
+            rules = self.get_rules()
+            nclasses = len(rules.rules[0].weights[0])
+            return [str(i) for i in range(1, nclasses+1)]
 
     def get_rules_class_choices(self, pipeline):
         try:

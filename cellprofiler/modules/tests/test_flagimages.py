@@ -948,7 +948,7 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
 
     def test_09_03_classify_multiple_select_true(self):
         module, workspace = self.make_workspace([1], [])
-        with self.make_classifier(module, 2, 
+        with self.make_classifier(module, 2,
                                   classes = [1, 2, 3],
                                   class_names = ["Foo", "Bar", "Baz"],
                                   rules_classes = ["Bar", "Baz"]):

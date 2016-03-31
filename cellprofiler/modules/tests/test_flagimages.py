@@ -931,22 +931,21 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
                     self.assertEqual(value, expected_value)
         finally:
             os.remove(rules_path)
-<<<<<<< HEAD
-            
+
     def test_09_01_classify_true(self):
         module, workspace = self.make_workspace([1], [])
         with self.make_classifier(module, 1):
             module.run(workspace)
             m = workspace.measurements
             self.assertEqual(m[cpmeas.IMAGE, MEASUREMENT_NAME], 1)
-        
+
     def test_09_02_classify_false(self):
         module, workspace = self.make_workspace([1], [])
         with self.make_classifier(module, 2):
             module.run(workspace)
             m = workspace.measurements
             self.assertEqual(m[cpmeas.IMAGE, MEASUREMENT_NAME], 0)
-        
+
     def test_09_03_classify_multiple_select_true(self):
         module, workspace = self.make_workspace([1], [])
         with self.make_classifier(module, 2, 
@@ -956,7 +955,7 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
             module.run(workspace)
             m = workspace.measurements
             self.assertEqual(m[cpmeas.IMAGE, MEASUREMENT_NAME], 1)
-        
+
     def test_09_04_classify_multiple_select_false(self):
         module, workspace = self.make_workspace([1], [])
         with self.make_classifier(module, 2, 

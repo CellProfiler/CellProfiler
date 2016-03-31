@@ -14,18 +14,19 @@ from cStringIO import StringIO
 import dateutil.parser
 
 from cellprofiler.modules.tests import \
-     example_images_directory, maybe_download_example_images
+    example_images_directory, maybe_download_example_images
 
 if hasattr(sys, 'frozen'):
     ARGLIST_START = [sys.executable]
 else:
     ARGLIST_START = ["CellProfiler.py", "-b"]
 
+
 @unittest.skipIf(sys.platform != 'win32', "Skip tests on all but Windows")
 class TestCellProfiler(unittest.TestCase):
     def run_cellprofiler(self, *args):
         '''Run CellProfiler with the given arguments list
-        
+
         returns STDOUT from running it.
         '''
         if hasattr(sys, "frozen"):
@@ -43,7 +44,7 @@ class TestCellProfiler(unittest.TestCase):
             args = [sys.executable, cellprofiler_path,
                     "--do-not-build", "--do-not-fetch"] + list(args)
             return subprocess.check_output(args, cwd=root_dir)
-    
+
     def test_01_01_html(self):
         path = tempfile.mkdtemp()
         try:
@@ -52,13 +53,13 @@ class TestCellProfiler(unittest.TestCase):
             self.assertTrue("index.html" in filenames)
         finally:
             shutil.rmtree(path)
-            
+
     @unittest.skipIf(hasattr(sys, "frozen"),
                      "Code statistics are not available in frozen-mode")
     def test_01_02_code_statistics(self):
         old_stdout = sys.stdout
         fake_stdout = StringIO(
-            self.run_cellprofiler("--code-statistics"))
+                self.run_cellprofiler("--code-statistics"))
         fake_stdout.seek(0)
         found_module_stats = False
         found_setting_stats = False
@@ -73,7 +74,7 @@ class TestCellProfiler(unittest.TestCase):
         self.assertTrue(found_module_stats)
         self.assertTrue(found_setting_stats)
         self.assertTrue(found_lines_of_code)
-        
+
     def test_01_03_version(self):
         import cellprofiler.utilities.version as V
         output = self.run_cellprofiler("--version")
@@ -82,11 +83,11 @@ class TestCellProfiler(unittest.TestCase):
                         if " " in line])
         self.assertEqual(version["CellProfiler"], V.dotted_version)
         self.assertEqual(version["Git"], V.git_hash)
-        self.assertEqual(int(version["Version"][:8]), 
+        self.assertEqual(int(version["Version"][:8]),
                          int(V.version_number / 1000000))
         built = dateutil.parser.parse(version["Built"])
         self.assertLessEqual(built.date(), datetime.date.today())
-        
+
     def test_02_01_run_headless(self):
         output_directory = tempfile.mkdtemp()
         temp_directory = os.path.join(output_directory, "temp")
@@ -100,7 +101,7 @@ class TestCellProfiler(unittest.TestCase):
             urllib.URLopener().open(fly_pipe).close()
             measurements_file = os.path.join(output_directory, "Measurements.h5")
             done_file = os.path.join(output_directory, "Done.txt")
-            self.run_cellprofiler("-c", "-r", 
+            self.run_cellprofiler("-c", "-r",
                                   "-o", output_directory,
                                   "-p", fly_pipe,
                                   "-d", done_file,
@@ -115,7 +116,7 @@ class TestCellProfiler(unittest.TestCase):
             # Re-run using the measurements file.
             #
             m2_file = os.path.join(output_directory, "M2.h5")
-            self.run_cellprofiler("-c", "-r", 
+            self.run_cellprofiler("-c", "-r",
                                   "-o", output_directory,
                                   "-f", "1",
                                   "-l", "1",
@@ -125,9 +126,10 @@ class TestCellProfiler(unittest.TestCase):
         except IOError, e:
             if e.args[0] != 'http error':
                 raise e
+
             def bad_url(e=e):
                 raise e
+
             unittest.expectedFailure(bad_url)()
         finally:
             shutil.rmtree(output_directory)
-            

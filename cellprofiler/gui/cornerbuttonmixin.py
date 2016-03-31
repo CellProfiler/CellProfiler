@@ -1,22 +1,25 @@
-'''CornerButtonMixin.py - a mixin for wx.grid.Grid that manages a button in the corner
-'''
+"""CornerButtonMixin.py - a mixin for wx.grid.Grid that manages a button in the corner
+"""
+
 import wx
-from wx.lib.mixins.gridlabelrenderer import GridDefaultCornerLabelRenderer
+import wx.lib.mixins.gridlabelrenderer
+
 
 class CornerButtonMixin(object):
-    '''A mixin class for wx.grid.Grid that adds a button in the corner
-    
+    """A mixin class for wx.grid.Grid that adds a button in the corner
+
     This should be added as a mixin to a class derived from wx.grid.Grid.
     It takes control of the grid's GridCornerLabelWindow, managing mouseclicks
     and painting to make it appear as if there is a button there
-    '''
+    """
+
     def __init__(self, fn_clicked, label="Update", tooltip="Update this table"):
-        '''Initialize the mixin - call after wx.grid.Grid.__init__
-        
+        """Initialize the mixin - call after wx.grid.Grid.__init__
+
         fn_clicked - function to call upon button press
-        
+
         label - the button's label
-        '''
+        """
         self.fn_clicked = fn_clicked
         self.label = label
         self.tooltip = tooltip
@@ -29,21 +32,20 @@ class CornerButtonMixin(object):
         corner.Bind(wx.EVT_MOUSE_CAPTURE_LOST, self.on_corner_capture_lost)
         self.corner_hitcode = self.CORNER_HIT_NONE
         self.corner_button_pressed = False
-        
-        
+
     #######
     #
     # Grid corner handling
     #
     #######
-    
+
     CORNER_HIT_NONE = None
     CORNER_HIT_UPDATE = 0
     BUTTON_PADDING = 4
 
     CORNER_ICON_PADDING = 2
     CORNER_ICON_SIZE = 16
-    
+
     def get_corner_update_button_rect(self):
         crect = self.GridCornerLabelWindow.GetRect()
         w, h = self.GridCornerLabelWindow.GetTextExtent(self.label)
@@ -52,7 +54,7 @@ class CornerButtonMixin(object):
         x = crect.X + (crect.width - w) / 2
         y = crect.Y + (crect.height - h) / 2
         return wx.Rect(x, y, w, h)
-    
+
     def corner_hit_test(self, x, y):
         if self.fn_clicked is None:
             return self.CORNER_HIT_NONE
@@ -60,7 +62,7 @@ class CornerButtonMixin(object):
         if r.ContainsXY(x, y):
             return self.CORNER_HIT_UPDATE
         return self.CORNER_HIT_NONE
-        
+
     def on_paint_corner(self, event):
         corner = self.GridCornerLabelWindow
         dc = wx.BufferedPaintDC(corner)
@@ -73,14 +75,14 @@ class CornerButtonMixin(object):
             dc.BackgroundMode = wx.TRANSPARENT
             rn = wx.RendererNative.Get()
             assert isinstance(rn, wx.RendererNative)
-            cr = GridDefaultCornerLabelRenderer()
+            cr = wx.lib.mixins.gridlabelrenderer.GridDefaultCornerLabelRenderer()
             cr.DrawBorder(self, dc, corner.GetRect())
             if self.fn_clicked is not None:
                 r = self.get_corner_update_button_rect()
                 if self.corner_hitcode == self.CORNER_HIT_UPDATE:
                     if self.corner_button_pressed:
                         flags = wx.CONTROL_PRESSED | wx.CONTROL_CURRENT \
-                            | wx.CONTROL_FOCUSED | wx.CONTROL_SELECTED
+                                | wx.CONTROL_FOCUSED | wx.CONTROL_SELECTED
                     else:
                         flags = 0
                 else:
@@ -90,11 +92,11 @@ class CornerButtonMixin(object):
                 x = r.X + (r.width - w) / 2
                 y = r.Y + (r.height - h) / 2
                 dc.DrawText(self.label, x, y)
-                    
+
         finally:
             dc.Background = old_brush
             new_brush.Destroy()
-    
+
     def on_corner_left_mouse_down(self, event):
         corner = self.GridCornerLabelWindow
         hit_code = self.corner_hit_test(event.X, event.Y)
@@ -103,7 +105,7 @@ class CornerButtonMixin(object):
             self.corner_button_pressed = True
             corner.CaptureMouse()
             corner.Refresh(eraseBackground=False)
-    
+
     def on_corner_left_mouse_up(self, event):
         corner = self.GridCornerLabelWindow
         if self.corner_hitcode != self.CORNER_HIT_NONE:
@@ -114,7 +116,7 @@ class CornerButtonMixin(object):
             self.corner_hitcode = self.CORNER_HIT_NONE
             corner.ReleaseMouse()
             corner.Refresh(eraseBackground=False)
-    
+
     def on_corner_motion(self, event):
         corner = self.GridCornerLabelWindow
         hit_code = self.corner_hit_test(event.X, event.Y)
@@ -125,16 +127,13 @@ class CornerButtonMixin(object):
                 corner.SetToolTipString(self.tooltip)
         else:
             was_pressed = self.corner_button_pressed
-            self.corner_button_pressed =  (
+            self.corner_button_pressed = (
                 self.corner_hitcode != self.CORNER_HIT_NONE and
                 self.corner_hitcode == hit_code)
             if was_pressed != self.corner_button_pressed:
                 corner.RefreshRect(
-                    self.get_corner_update_button_rect(),
-                    eraseBackground = False)
-    
+                        self.get_corner_update_button_rect(),
+                        eraseBackground=False)
+
     def on_corner_capture_lost(self, event):
         self.corner_hitcode = self.CORNER_HIT_NONE
-        
-        
-    

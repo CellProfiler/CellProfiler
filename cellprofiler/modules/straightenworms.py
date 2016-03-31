@@ -21,7 +21,7 @@ used to compute measurements using any of the object measurement modules,
 for instance, <b>MeasureTexture</b>.
 
 The module can be configured to make intensity measurements on parts of the
-worm, dividing the worm up into pieces of equal width and/or height. 
+worm, dividing the worm up into pieces of equal width and/or height.
 Measurements are made longitudally in stripes from head to tail and transversely
 in segments across the width of the worm. Longitudinal stripes are numbered
 from left to right and transverse segments are numbered from top to bottom.
@@ -30,8 +30,8 @@ to measure more than one longitudinal stripe and transverse segment. These
 are numbered by longitudinal stripe number, then transverse segment number. For
 instance, "Worm_MeanIntensity_GFP_L2of3_T1of4", is a measurement of the
 mean GFP intensity of the center stripe (second of 3 stripes) of the topmost band
-(first of four bands). Measurements of longitudinal stripes are designated as 
-"T1of1" indicating that the whole worm is one transverse segment. Likewise 
+(first of four bands). Measurements of longitudinal stripes are designated as
+"T1of1" indicating that the whole worm is one transverse segment. Likewise
 measurements of transverse segments are designated as "L1of1" indicating that
 there is only one longitudinal stripe. Both mean intensity and standard
 deviation of intensity are measured per worm sub-area.
@@ -45,8 +45,8 @@ intensity measurements are then made on that grayscale image.
 
 <b>Object measurements:</b>
 <ul>
-<li><i>Location_X, Location_Y:</i> The pixel (X,Y) coordinates of the primary 
-object centroids. The centroid is calculated as the center of mass of the binary 
+<li><i>Location_X, Location_Y:</i> The pixel (X,Y) coordinates of the primary
+object centroids. The centroid is calculated as the center of mass of the binary
 representation of the object.</li>
 <li><i>Worm_MeanIntensity:</i> The average pixel intensity within a worm.</li>
 <li><i>Worm_StdIntensity:</i> The standard deviation of the pixel intensities within a worm.</li>
@@ -56,14 +56,14 @@ representation of the object.</li>
 <ul>
 <li>Peng H, Long F, Liu X, Kim SK, Myers EW (2008) "Straightening <i>Caenorhabditis elegans</i> images."
 <i>Bioinformatics</i>, 24(2):234-42.<a href="http://dx.doi.org/10.1093/bioinformatics/btm569">(link)</a></li>
-<li>W&auml;hlby C, Kamentsky L, Liu ZH, Riklin-Raviv T, Conery AL, O'Rourke EJ, 
+<li>W&auml;hlby C, Kamentsky L, Liu ZH, Riklin-Raviv T, Conery AL, O'Rourke EJ,
 Sokolnicki KL, Visvikis O, Ljosa V, Irazoqui JE, Golland P, Ruvkun G,
-Ausubel FM, Carpenter AE (2012). "An image analysis toolbox for high-throughput 
+Ausubel FM, Carpenter AE (2012). "An image analysis toolbox for high-throughput
 <i>C. elegans</i> assays." <i>Nature Methods</i> 9(7): 714-716.
 <a href="http://dx.doi.org/10.1038/nmeth.1984">(link)</a></li>
 </ul>
 
-<p>See also: Our <a href="http://www.cellprofiler.org/wormtoolbox/">Worm 
+<p>See also: Our <a href="http://www.cellprofiler.org/wormtoolbox/">Worm
 Toolbox</a> page for sample images and pipelines, as well
 as video tutorials.</p>
 '''
@@ -87,7 +87,7 @@ import cellprofiler.preferences as cpprefs
 import cellprofiler.settings as cps
 from cellprofiler.preferences import IO_FOLDER_CHOICE_HELP_TEXT
 from cellprofiler.settings import YES, NO
-from cellprofiler.utilities import product
+import itertools
 from identify import C_COUNT, C_LOCATION, FTR_CENTER_X, FTR_CENTER_Y
 from identify import C_NUMBER, FTR_OBJECT_NUMBER
 from identify import add_object_count_measurements
@@ -126,19 +126,19 @@ VARIABLE_SETTINGS_COUNT_V2 = 2
 FIXED_SETTINGS_COUNT_V3 = 11
 VARIABLE_SETTINGS_COUNT_V3 = 2
 
+
 class StraightenWorms(cpm.CPModule):
-    
     variable_revision_number = 3
     category = ["Object Processing", "Worm Toolbox"]
     module_name = "StraightenWorms"
-    
+
     def create_settings(self):
         '''Create the settings for the module'''
         self.images = []
 
         self.objects_name = cps.ObjectNameSubscriber(
-            'Select the input untangled worm objects', 
-            'OverlappingWorms',doc = """
+                'Select the input untangled worm objects',
+                'OverlappingWorms', doc="""
             This is the name of the objects produced by the
             <b>UntangleWorms</b> module. <b>StraightenWorms</b> can use
             either the overlapping or non-overlapping objects as input. It
@@ -150,92 +150,93 @@ class StraightenWorms(cpm.CPModule):
             will recalculate the control points for these images.""")
 
         self.straightened_objects_name = cps.ObjectNameProvider(
-            "Name the output straightened worm objects", 
-            "StraightenedWorms",doc = """
+                "Name the output straightened worm objects",
+                "StraightenedWorms", doc="""
             This is the name that will be given to the straightened
             worm objects. These objects can then be used in a subsequent
             measurement module.""")
-        
+
         self.width = cps.Integer(
-            "Worm width", 20, minval = 3,doc = """
+                "Worm width", 20, minval=3, doc="""
             This setting determines the width of the image of each
             worm. The width should be set to at least the maximum width of
             any untangled worm, but can be set to be larger to include the
             worm's background in the straightened image.""")
-        
+
         self.training_set_directory = cps.DirectoryPath(
-            "Training set file location", support_urls = True,
-            allow_metadata = False,doc = """
+                "Training set file location", support_urls=True,
+                allow_metadata=False, doc="""
             Select the folder containing the training set to be loaded.
             %(IO_FOLDER_CHOICE_HELP_TEXT)s
             <p>An additional option is the following:
             <ul>
             <li><i>URL</i>: Use the path part of a URL. For instance, your
-            training set might be hosted at 
+            training set might be hosted at
             <i>http://my_institution.edu/server/my_username/TrainingSet.xml</i>
             To access this file, you would choose <i>URL</i> and enter
             <i>http://my_institution.edu/server/my_username/</i>
             as the path location.</li>
-            </ul></p>"""%globals())
-        
+            </ul></p>""" % globals())
+
         def get_directory_fn():
             '''Get the directory for the CSV file name'''
             return self.training_set_directory.get_absolute_path()
+
         def set_directory_fn(path):
             dir_choice, custom_path = self.training_set_directory.get_parts_from_path(path)
             self.training_set_directory.join_parts(dir_choice, custom_path)
-            
+
         self.training_set_file_name = cps.FilenameText(
-            "Training set file name", "TrainingSet.xml",
-            doc = "This is the name of the training set file.",
-            get_directory_fn = get_directory_fn,
-            set_directory_fn = set_directory_fn,
-            browse_msg = "Choose training set",
-            exts = [("Worm training set (*.xml)", "*.xml"),
-                    ("All files (*.*)", "*.*")])
-        
+                "Training set file name", "TrainingSet.xml",
+                doc="This is the name of the training set file.",
+                get_directory_fn=get_directory_fn,
+                set_directory_fn=set_directory_fn,
+                browse_msg="Choose training set",
+                exts=[("Worm training set (*.xml)", "*.xml"),
+                      ("All files (*.*)", "*.*")])
+
         self.wants_measurements = cps.Binary(
-            "Measure intensity distribution?", True,doc = """
+                "Measure intensity distribution?", True, doc="""
             Select <i>%(YES)s</i> to divide a worm into sections
             and measure the intensities of each section in each of the
             straightened images. These measurements can help classify
             phenotypes if the staining pattern across the segments differs
-            between phenotypes."""%globals())
-        
+            between phenotypes.""" % globals())
+
         self.number_of_segments = cps.Integer(
-            "Number of transverse segments", 4, 1,doc = """
+                "Number of transverse segments", 4, 1, doc="""
             (<i>Only used if intensities are measured</i>)<br>
             This setting controls the number of segments measured, dividing
-            the worm longitudally into transverse segments starting at the head 
+            the worm longitudally into transverse segments starting at the head
             and ending at the tail.
             These measurements might be used to identify a phenotype in which
             a stain is localized longitudally, for instance, in the head.
-            
+
             Set the number of vertical segments to 1 to only measure intensity
             in the horizontal direction.""")
 
         self.number_of_stripes = cps.Integer(
-            "Number of longitudinal stripes", 3, 1,doc = """
+                "Number of longitudinal stripes", 3, 1, doc="""
             (<i>Only used if intensities are measured</i>)<br>
             This setting controls the number of stripes measured, dividing
             the worm transversely into areas that run longitudally. These
             measurements might be used to identify a phenotype in which a
             stain is localized transversely, for instance in the gut of the
             worm.
-            
+
             Set the number of horizontal stripes to 1 to only measure intensity
             in the vertical direction.""")
-        
+
         self.flip_worms = cps.Choice(
-            "Align worms?", [FLIP_NONE, FLIP_TOP, FLIP_BOTTOM, FLIP_MANUAL],
-            doc = """
+                "Align worms?", [FLIP_NONE, FLIP_TOP, FLIP_BOTTOM, FLIP_MANUAL],
+                doc="""
             (<i>Only used if intensities are measured</i>)<br>
             <b>StraightenWorms</b> can align worms so that the brightest
             half of the worm (the half with the highest mean intensity) is
             at the top of the image or at the bottom of the image. This
             can be used to align all worms similarly if some feature,
             such as the larynx, is stained and is always at the same end
-            of the worm. 
+            of the worm.
             <ul>
             <li><i>%(FLIP_TOP)s:</i> The brightest part of the
             worm should be at the top of the image.</li>
@@ -244,110 +245,110 @@ class StraightenWorms(cpm.CPModule):
             <li><i>%(FLIP_NONE)s:</i> The worm should not be aligned.</li>
             <li><i>%(FLIP_MANUAL)s:</i> Bring up an editor for every
             cycle that allows you to choose the orientation of each worm.</li>
-            </ul>"""%globals())
-        
+            </ul>""" % globals())
+
         def image_choices_fn(pipeline):
             '''Return the image choices for the alignment image'''
-            return [ group.image_name.value
-                     for group in self.images ]
-        
+            return [group.image_name.value
+                    for group in self.images]
+
         self.flip_image = cps.Choice(
-            "Alignment image", 
-            [ cps.NONE ], choices_fn = image_choices_fn,doc = """
+                "Alignment image",
+                [cps.NONE], choices_fn=image_choices_fn, doc="""
             (<i>Only used if aligning worms</i>)<br>
             This is the image whose intensity will be used to align the worms.
             You must use one of the straightened images below.""")
-        
+
         self.image_count = cps.HiddenCount(self.images, "Image count")
-        
+
         self.add_image(False)
-        
+
         self.add_image_button = cps.DoSomething(
-            "", "Add another image", self.add_image,doc = """
+                "", "Add another image", self.add_image, doc="""
             Press this button to add another image to be straightened""")
-        
-    def add_image(self, can_delete = True):
+
+    def add_image(self, can_delete=True):
         '''Add an image to the list of images to be straightened'''
-        
+
         group = cps.SettingsGroup()
         group.append("divider", cps.Divider())
         group.append("image_name", cps.ImageNameSubscriber(
-            'Select an input image to straighten', cps.NONE,doc = '''
+                'Select an input image to straighten', cps.NONE, doc='''
             This is the name of an image that will be straightened
             similarly to the worm. The straightened image and objects can
             then be used in subsequent modules such as
             <b>MeasureObjectIntensity</b>.'''))
-        
+
         group.append("straightened_image_name", cps.ImageNameProvider(
-            'Name the output straightened image', 'StraightenedImage',doc = '''
+                'Name the output straightened image', 'StraightenedImage', doc='''
             This is the name that will be given to the image
             of the straightened worms.'''))
-        
+
         if can_delete:
             group.append("remover", cps.RemoveSettingButton(
-                "", "Remove above image", self.images, group))
+                    "", "Remove above image", self.images, group))
         self.images.append(group)
-        
+
     def settings(self):
         '''Return the settings, in the order they appear in the pipeline'''
-        result = ([ self.objects_name, self.straightened_objects_name,
-                    self.width, self.training_set_directory, 
-                    self.training_set_file_name, self.image_count,
-                    self.wants_measurements, self.number_of_segments,
-                    self.number_of_stripes,
-                    self.flip_worms, self.flip_image] + 
-                  sum([ group.pipeline_settings() for group in self.images], []))
+        result = ([self.objects_name, self.straightened_objects_name,
+                   self.width, self.training_set_directory,
+                   self.training_set_file_name, self.image_count,
+                   self.wants_measurements, self.number_of_segments,
+                   self.number_of_stripes,
+                   self.flip_worms, self.flip_image] +
+                  sum([group.pipeline_settings() for group in self.images], []))
         return result
-    
+
     def visible_settings(self):
         '''Return the settings as displayed in the module view'''
-        result = [ self.objects_name, self.straightened_objects_name,
-                   self.width, self.training_set_directory,
-                   self.training_set_file_name, self.wants_measurements]
+        result = [self.objects_name, self.straightened_objects_name,
+                  self.width, self.training_set_directory,
+                  self.training_set_file_name, self.wants_measurements]
         if self.wants_measurements:
-            result += [ self.number_of_segments, self.number_of_stripes,
-                        self.flip_worms]
+            result += [self.number_of_segments, self.number_of_stripes,
+                       self.flip_worms]
             if self.flip_worms in (FLIP_BOTTOM, FLIP_TOP):
-                result += [ self.flip_image ]
-        result += sum([ group.visible_settings() for group in self.images], []) 
-        result += [ self.add_image_button ]
+                result += [self.flip_image]
+        result += sum([group.visible_settings() for group in self.images], [])
+        result += [self.add_image_button]
         return result
-    
+
     def validate_module(self, pipeline):
         if self.training_set_directory.dir_choice != cpprefs.URL_FOLDER_NAME:
             path = os.path.join(self.training_set_directory.get_absolute_path(),
                                 self.training_set_file_name.value)
             if not os.path.exists(path):
                 raise cps.ValidationError(
-                    "Can't find file %s" % self.training_set_file_name.value,
-                    self.training_set_file_name)
+                        "Can't find file %s" % self.training_set_file_name.value,
+                        self.training_set_file_name)
         if self.wants_measurements and self.number_of_segments == 1 and \
-           self.number_of_stripes == 1:
+                        self.number_of_stripes == 1:
             raise cps.ValidationError(
-                "No measurements will be produced if the number of "
-                "longitudinal stripes and the number of transverse segments "
-                "are both equal to one. Please turn measurements off or change "
-                "the number of stripes or segments.",
-                self.wants_measurements)
-            
+                    "No measurements will be produced if the number of "
+                    "longitudinal stripes and the number of transverse segments "
+                    "are both equal to one. Please turn measurements off or change "
+                    "the number of stripes or segments.",
+                    self.wants_measurements)
+
     def prepare_settings(self, setting_values):
         nimages = int(setting_values[IDX_IMAGE_COUNT])
         del self.images[1:]
-        for i in range(1,nimages):
+        for i in range(1, nimages):
             self.add_image()
-            
+
     K_PIXEL_DATA = "pixel_data"
     K_MASK = "mask"
     K_NAME = "name"
     K_PARENT_IMAGE = "__parent_image"
     K_PARENT_IMAGE_NAME = "__parent_image_name"
-    
+
     class InteractionCancelledException(RuntimeError):
         def __init__(self, *args):
             if len(args) == 0:
                 args = ["User cancelled StraightenWorms"]
             super(self.__class__, self).__init__(*args)
-            
+
     def run(self, workspace):
         '''Process one image set'''
         object_set = workspace.object_set
@@ -365,10 +366,10 @@ class StraightenWorms(cpm.CPModule):
         # Worm_ControlPointX_2 < Worm_ControlPointX_10
         #
         features = m.get_feature_names(objects_name)
-        cpx = [ f for f in features
-                if f.startswith("_".join((C_WORM, F_CONTROL_POINT_X)))]
-        cpy = [ f for f in features
-                if f.startswith("_".join((C_WORM, F_CONTROL_POINT_Y)))]
+        cpx = [f for f in features
+               if f.startswith("_".join((C_WORM, F_CONTROL_POINT_X)))]
+        cpy = [f for f in features
+               if f.startswith("_".join((C_WORM, F_CONTROL_POINT_Y)))]
         ncontrolpoints = len(cpx)
         if ncontrolpoints == 0:
             #
@@ -378,30 +379,30 @@ class StraightenWorms(cpm.CPModule):
             ncontrolpoints = params.num_control_points
             all_labels = [l for l, idx in orig_objects.get_labels()]
             control_points, lengths = recalculate_single_worm_control_points(
-                all_labels, ncontrolpoints)
+                    all_labels, ncontrolpoints)
             control_points = control_points.transpose(2, 1, 0)
         else:
-            def sort_fn(a,b):
+            def sort_fn(a, b):
                 '''Sort by control point number'''
                 acp = int(a.split("_")[-1])
                 bcp = int(b.split("_")[-1])
                 return cmp(acp, bcp)
-            
+
             cpx.sort(sort_fn)
             cpy.sort(sort_fn)
             control_points = np.array([
-                [m.get_current_measurement(objects_name, f) for f in cp]
-                for cp in (cpy, cpx)])
+                                          [m.get_current_measurement(objects_name, f) for f in cp]
+                                          for cp in (cpy, cpx)])
             m_length = "_".join((C_WORM, F_LENGTH))
             lengths = np.ceil(m.get_current_measurement(objects_name, m_length))
-        
+
         nworms = len(lengths)
         half_width = self.width.value / 2
-        width = 2*half_width + 1
+        width = 2 * half_width + 1
         if nworms == 0:
             shape = (2 * half_width + 1, width)
         else:
-            shape = (int(np.max(lengths)) + 2*half_width + 1, 
+            shape = (int(np.max(lengths)) + 2 * half_width + 1,
                      nworms * width)
         labels = np.zeros(shape, int)
         #
@@ -422,66 +423,66 @@ class StraightenWorms(cpm.CPModule):
         for i in range(nworms):
             if lengths[i] == 0:
                 continue
-            object_number = i+1
+            object_number = i + 1
             orig_labels = [
                 x for x, y in orig_labels_and_indexes
                 if object_number in y and object_number in x]
             if len(orig_labels) == 0:
                 continue
             orig_labels = orig_labels[0]
-            
+
             ii = control_points[0, :, i]
             jj = control_points[1, :, i]
-            
+
             si = interp1d(np.linspace(0, lengths[i], ncontrolpoints), ii)
             sj = interp1d(np.linspace(0, lengths[i], ncontrolpoints), jj)
             #
             # The coordinates of "length" points along the worm
             #
-            ci = si(np.arange(0, int(lengths[i])+1))
-            cj = sj(np.arange(0, int(lengths[i])+1))
+            ci = si(np.arange(0, int(lengths[i]) + 1))
+            cj = sj(np.arange(0, int(lengths[i]) + 1))
             #
             # Find the normals at each point by taking the derivative,
-            # and twisting by 90 degrees. 
+            # and twisting by 90 degrees.
             #
             di = ci[1:] - ci[:-1]
             di = np.hstack([[di[0]], di])
             dj = cj[1:] - cj[:-1]
             dj = np.hstack([[dj[0]], dj])
-            ni = -dj / np.sqrt(di**2 + dj**2)
-            nj = di / np.sqrt(di**2 + dj**2)
+            ni = -dj / np.sqrt(di ** 2 + dj ** 2)
+            nj = di / np.sqrt(di ** 2 + dj ** 2)
             #
             # Extend the worm out from the head and tail by the width
             #
-            ci = np.hstack([np.arange(-half_width,0) * nj[0] + ci[0],
+            ci = np.hstack([np.arange(-half_width, 0) * nj[0] + ci[0],
                             ci,
                             np.arange(1, half_width + 1) * nj[-1] + ci[-1]])
-            cj = np.hstack([np.arange(-half_width,0) * (-ni[0]) + cj[0],
+            cj = np.hstack([np.arange(-half_width, 0) * (-ni[0]) + cj[0],
                             cj,
                             np.arange(1, half_width + 1) * (-ni[-1]) + cj[-1]])
             ni = np.hstack([[ni[0]] * half_width, ni, [ni[-1]] * half_width])
             nj = np.hstack([[nj[0]] * half_width, nj, [nj[-1]] * half_width])
-            iii, jjj = np.mgrid[0:len(ci), -half_width : (half_width+1)]
-            
+            iii, jjj = np.mgrid[0:len(ci), -half_width: (half_width + 1)]
+
             #
             # Create a mapping of i an j in straightened space to
             # the coordinates in real space
             #
-            islice =slice(0,len(ci))
-            jslice = slice(width * i,width * (i+1))
+            islice = slice(0, len(ci))
+            jslice = slice(width * i, width * (i + 1))
             ix[islice, jslice] = ci[iii] + ni[iii] * jjj
             jx[islice, jslice] = cj[iii] + nj[iii] * jjj
             #
             # We may need to flip the worm
             #
             if self.flip_worms in (FLIP_TOP, FLIP_BOTTOM):
-                ixs = ix[islice,jslice]
-                jxs = jx[islice,jslice]
+                ixs = ix[islice, jslice]
+                jxs = jx[islice, jslice]
                 image_name = self.flip_image.value
-                image = image_set.get_image(image_name, must_be_grayscale = True)
+                image = image_set.get_image(image_name, must_be_grayscale=True)
                 simage = map_coordinates(image.pixel_data, [ixs, jxs])
                 halfway = int(len(ci)) / 2
-                smask = map_coordinates(orig_labels == i+1, [ixs, jxs])
+                smask = map_coordinates(orig_labels == i + 1, [ixs, jxs])
                 if image.has_mask:
                     smask *= map_coordinates(image.mask, [ixs, jxs])
                 simage *= smask
@@ -489,19 +490,19 @@ class StraightenWorms(cpm.CPModule):
                 # Compute the mean intensity of the top and bottom halves
                 # of the worm.
                 #
-                area_top = np.sum(smask[:halfway,:])
-                area_bottom = np.sum(smask[halfway:,:])
-                top_intensity = np.sum(simage[:halfway,:]) / area_top
-                bottom_intensity = np.sum(simage[halfway:,:]) / area_bottom
+                area_top = np.sum(smask[:halfway, :])
+                area_bottom = np.sum(smask[halfway:, :])
+                top_intensity = np.sum(simage[:halfway, :]) / area_top
+                bottom_intensity = np.sum(simage[halfway:, :]) / area_bottom
                 if ((top_intensity > bottom_intensity) !=
-                    (self.flip_worms == FLIP_TOP)):
+                        (self.flip_worms == FLIP_TOP)):
                     # Flip worm if it doesn't match user expectations
                     iii = len(ci) - iii - 1
                     jjj = - jjj
                     ix[islice, jslice] = ci[iii] + ni[iii] * jjj
                     jx[islice, jslice] = cj[iii] + nj[iii] * jjj
-            mask = map_coordinates((orig_labels == i+1).astype(np.float32), 
-                                   [ix[islice, jslice], jx[islice,jslice]]) > .5
+            mask = map_coordinates((orig_labels == i + 1).astype(np.float32),
+                                   [ix[islice, jslice], jx[islice, jslice]]) > .5
             labels[islice, jslice][mask] = object_number
         #
         # Now create one straightened image for each input image
@@ -513,28 +514,28 @@ class StraightenWorms(cpm.CPModule):
             image = image_set.get_image(image_name)
             if image.pixel_data.ndim == 2:
                 straightened_pixel_data = map_coordinates(
-                    image.pixel_data, [ix, jx])
+                        image.pixel_data, [ix, jx])
             else:
                 straightened_pixel_data = np.zeros(
-                    (ix.shape[0], ix.shape[1], image.pixel_data.shape[2]))
+                        (ix.shape[0], ix.shape[1], image.pixel_data.shape[2]))
                 for d in range(image.pixel_data.shape[2]):
-                    straightened_pixel_data[:,:,d] = map_coordinates(
-                        image.pixel_data[:,:,d], [ix, jx])
+                    straightened_pixel_data[:, :, d] = map_coordinates(
+                            image.pixel_data[:, :, d], [ix, jx])
             straightened_mask = map_coordinates(image.mask, [ix, jx]) > .5
             straightened_images.append({
-                self.K_NAME:straightened_image_name,
-                self.K_PIXEL_DATA:straightened_pixel_data,
-                self.K_MASK:straightened_mask,
-                self.K_PARENT_IMAGE:image,
-                self.K_PARENT_IMAGE_NAME:image_name})
+                self.K_NAME: straightened_image_name,
+                self.K_PIXEL_DATA: straightened_pixel_data,
+                self.K_MASK: straightened_mask,
+                self.K_PARENT_IMAGE: image,
+                self.K_PARENT_IMAGE_NAME: image_name})
         if self.flip_worms == FLIP_MANUAL:
             result, labels = workspace.interaction_request(
-                self, straightened_images, labels,
-                m.image_set_number)
+                    self, straightened_images, labels,
+                    m.image_set_number)
             for dorig, dedited in zip(straightened_images, result):
                 dorig[self.K_PIXEL_DATA] = dedited[self.K_PIXEL_DATA]
                 dorig[self.K_MASK] = dedited[self.K_MASK]
-            
+
         if self.show_window:
             workspace.display_data.image_pairs = []
         for d in straightened_images:
@@ -544,12 +545,12 @@ class StraightenWorms(cpm.CPModule):
             straightened_pixel_data = d[self.K_PIXEL_DATA]
             straightened_image = cpi.Image(d[self.K_PIXEL_DATA],
                                            d[self.K_MASK],
-                                           parent_image = image)
+                                           parent_image=image)
             image_set.add(straightened_image_name, straightened_image)
             if self.show_window:
                 workspace.display_data.image_pairs.append(
-                    ((image.pixel_data, image_name),
-                     (straightened_pixel_data, straightened_image_name)))
+                        ((image.pixel_data, image_name),
+                         (straightened_pixel_data, straightened_image_name)))
         #
         # Measure the worms if appropriate
         #
@@ -559,8 +560,7 @@ class StraightenWorms(cpm.CPModule):
         # Record the objects
         #
         self.make_objects(workspace, labels, nworms)
-            
-           
+
     def read_params(self, workspace):
         '''Read the training params or use the cached value'''
         if not hasattr(self, "training_params"):
@@ -569,7 +569,7 @@ class StraightenWorms(cpm.CPModule):
                              self.training_set_file_name,
                              self.training_params)
         return params
-    
+
     def measure_worms(self, workspace, labels, nworms, width):
         m = workspace.measurements
         assert isinstance(m, cpmeas.Measurements)
@@ -590,26 +590,26 @@ class StraightenWorms(cpm.CPModule):
                     if nbins_vertical > 1:
                         for b in range(nbins_vertical):
                             measurement = "_".join(
-                                (C_WORM, ftr, image_name, 
-                                 self.get_scale_name(None, b)))
+                                    (C_WORM, ftr, image_name,
+                                     self.get_scale_name(None, b)))
                             m.add_measurement(
-                                input_object_name, measurement, np.zeros((0)))
+                                    input_object_name, measurement, np.zeros(0))
                     if nbins_horizontal > 1:
                         for b in range(nbins_horizontal):
                             measurement = "_".join(
-                                (C_WORM, ftr, image_name, 
-                                 self.get_scale_name(b, None)))
+                                    (C_WORM, ftr, image_name,
+                                     self.get_scale_name(b, None)))
                             m.add_measurement(
-                                input_object_name, measurement, np.zeros((0)))
+                                    input_object_name, measurement, np.zeros(0))
                         if nbins_vertical > 1:
                             for v in range(nbins_vertical):
                                 for h in range(nbins_horizontal):
                                     measurement = "_".join(
-                                        (C_WORM, ftr, image_name, 
-                                         self.get_scale_name(h, v)))
+                                            (C_WORM, ftr, image_name,
+                                             self.get_scale_name(h, v)))
                                     m.add_measurement(
-                                        input_object_name, measurement, np.zeros((0)))
-                                    
+                                            input_object_name, measurement, np.zeros(0))
+
         else:
             #
             # Find the minimum and maximum i coordinate of each worm
@@ -617,13 +617,13 @@ class StraightenWorms(cpm.CPModule):
             object_set = workspace.object_set
             assert isinstance(object_set, cpo.ObjectSet)
             orig_objects = object_set.get_objects(input_object_name)
-    
-            i,j = np.mgrid[0:labels.shape[0], 0:labels.shape[1]]
+
+            i, j = np.mgrid[0:labels.shape[0], 0:labels.shape[1]]
             min_i, max_i, _, _ = extrema(i, labels, orig_objects.indices)
             min_i = np.hstack(([0], min_i))
             max_i = np.hstack(([labels.shape[0]], max_i)) + 1
             heights = max_i - min_i
-            
+
             # # # # # # # # # # # # # # # # #
             #
             # Create up to 3 spaces which represent the gridding
@@ -644,10 +644,10 @@ class StraightenWorms(cpm.CPModule):
                 griddings += [(1, nbins_horizontal, scales)]
                 if nbins_vertical > 1:
                     scales = np.array([
-                        [self.get_scale_name(h,v) for h in range(nbins_horizontal)]
-                        for v in range(nbins_vertical)])
+                                          [self.get_scale_name(h, v) for h in range(nbins_horizontal)]
+                                          for v in range(nbins_vertical)])
                     griddings += [(nbins_vertical, nbins_horizontal, scales)]
-            
+
             for i_dim, j_dim, scales in griddings:
                 # # # # # # # # # # # # # # # # # # # # # #
                 #
@@ -655,7 +655,7 @@ class StraightenWorms(cpm.CPModule):
                 #
                 # # # # # # # # # # # # # # # # # # # # # #
                 labels1 = labels.copy()
-                i,j = np.mgrid[0:labels.shape[0], 0:labels.shape[1]]
+                i, j = np.mgrid[0:labels.shape[0], 0:labels.shape[1]]
                 i_frac = (i - min_i[labels]).astype(float) / heights[labels]
                 i_frac_end = i_frac + 1.0 / heights[labels].astype(float)
                 i_radius_frac = (i - min_i[labels]).astype(float) / (heights[labels] - 1)
@@ -670,7 +670,7 @@ class StraightenWorms(cpm.CPModule):
                 # For each pixel in the image, find the center of its worm
                 # in the j direction (the width)
                 #
-                j_center = int(width / 2) + width * (labels-1)
+                j_center = int(width / 2) + width * (labels - 1)
                 #
                 # Find which segment (from the training set) per pixel in
                 # a fractional form
@@ -682,8 +682,8 @@ class StraightenWorms(cpm.CPModule):
                 i_index_frac = i_index - np.floor(i_index)
                 i_index_frac[i_index >= len(radii) - 1] = 1
                 i_index = np.minimum(i_index.astype(int), len(radii) - 2)
-                r = np.ceil((radii[i_index] * (1 - i_index_frac) + 
-                             radii[i_index+1] * i_index_frac))
+                r = np.ceil((radii[i_index] * (1 - i_index_frac) +
+                             radii[i_index + 1] * i_index_frac))
                 #
                 # Map the worm width into the space 0-1
                 #
@@ -696,7 +696,7 @@ class StraightenWorms(cpm.CPModule):
                 i_mapping = np.maximum(i_frac * i_dim, 0)
                 i_mapping_end = np.minimum(i_frac_end * i_dim, i_dim)
                 j_mapping = np.maximum(j_frac * j_dim, 0)
-                j_mapping_end = np.minimum(j_frac_end  * j_dim, j_dim)
+                j_mapping_end = np.minimum(j_frac_end * j_dim, j_dim)
                 i_mapping = i_mapping[labels1 > 0]
                 i_mapping_end = i_mapping_end[labels1 > 0]
                 j_mapping = j_mapping[labels1 > 0]
@@ -704,7 +704,7 @@ class StraightenWorms(cpm.CPModule):
                 labels_1d = labels1[labels1 > 0]
                 i = i[labels1 > 0]
                 j = j[labels1 > 0]
-                
+
                 #
                 # There are easy cases and hard cases. The easy cases are
                 # when a pixel in the input space wholly falls in the
@@ -712,7 +712,7 @@ class StraightenWorms(cpm.CPModule):
                 #
                 easy = ((i_mapping.astype(int) == i_mapping_end.astype(int)) &
                         (j_mapping.astype(int) == j_mapping_end.astype(int)))
-                
+
                 i_src = i[easy]
                 j_src = j[easy]
                 i_dest = i_mapping[easy].astype(int)
@@ -806,11 +806,11 @@ class StraightenWorms(cpm.CPModule):
                     i_weights[i_idx.fwd_idx] = i_low_frac
                     j_weights[j_idx.fwd_idx] = j_low_frac
                     mask = i_high_frac > 0
-                    i_weights[i_idx.fwd_idx[mask]+ i_count[mask] - 1] = \
-                             i_high_frac[mask]
+                    i_weights[i_idx.fwd_idx[mask] + i_count[mask] - 1] = \
+                        i_high_frac[mask]
                     mask = j_high_frac > 0
                     j_weights[j_idx.fwd_idx[mask] + j_count[mask] - 1] = \
-                             j_high_frac[mask]
+                        j_high_frac[mask]
                     #
                     # Get indexes for the 2-d array, i_count x j_count
                     #
@@ -847,24 +847,24 @@ class StraightenWorms(cpm.CPModule):
                     j_dest = np.hstack((j_dest, j_dest_hard))
                     weight = np.hstack((weight, weight_hard))
                     labels_src = np.hstack((labels_src, labels_1d[idx.rev_idx]))
-                
+
                 self.measure_bins(workspace, i_src, j_src, i_dest, j_dest,
                                   weight, labels_src, scales, nworms)
 
     def measure_bins(self, workspace, i_src, j_src, i_dest, j_dest,
                      weight, labels_src, scales, nworms):
         '''Measure the intensity in the worm by binning
-        
+
         Consider a transformation from the space of images of straightened worms
         to the space of a grid (the worm gets stretched to fit into the grid).
         This function takes the coordinates of each labeled pixel in the
         straightened worm and computes per-grid-cell measurements on
         the pixels that fall into each grid cell for each straightened image.
-        
+
         A pixel might span bins. In this case, it appears once per overlapped
         bin and it is given a weight proportional to the amount of it's area
         that falls in the bin.
-        
+
         workspace - the workspace for the current image set
         i_src, j_src - the coordinates of the pixels in the straightened space
         i_dest, j_dest - the coordinates of the bins for those pixels
@@ -886,17 +886,17 @@ class StraightenWorms(cpm.CPModule):
             if straightened_image.ndim == 3:
                 straightened_image = np.mean(straightened_image, 2)
             straightened_image = straightened_image[i_src, j_src]
-            bin_number = (labels_src - 1 + 
-                          nworms * j_dest + 
+            bin_number = (labels_src - 1 +
+                          nworms * j_dest +
                           nworms * scales.shape[1] * i_dest)
             bin_counts = np.bincount(bin_number)
             bin_weights = np.bincount(bin_number, weight)
-            bin_means = (np.bincount(bin_number, weight * straightened_image) / 
+            bin_means = (np.bincount(bin_number, weight * straightened_image) /
                          bin_weights)
             deviances = straightened_image - bin_means[bin_number]
             #
-            # Weighted variance = 
-            # sum(weight * (x - mean(x)) ** 2) 
+            # Weighted variance =
+            # sum(weight * (x - mean(x)) ** 2)
             # ---------------------------------
             #  N - 1
             #  ----- sum(weight)
@@ -913,13 +913,12 @@ class StraightenWorms(cpm.CPModule):
             for i in range(scales.shape[0]):
                 for j in range(scales.shape[1]):
                     for values, ftr in (
-                        (bin_means, FTR_MEAN_INTENSITY),
-                        (bin_stds, FTR_STD_INTENSITY)):
+                            (bin_means, FTR_MEAN_INTENSITY),
+                            (bin_stds, FTR_STD_INTENSITY)):
                         measurement = "_".join(
-                            (C_WORM, ftr, image_name, scales[i][j]))
-                        m.add_measurement(orig_name, measurement, values[i,j])
-        
-                
+                                (C_WORM, ftr, image_name, scales[i][j]))
+                        m.add_measurement(orig_name, measurement, values[i, j])
+
     def make_objects(self, workspace, labels, nworms):
         m = workspace.measurements
         assert isinstance(m, cpmeas.Measurements)
@@ -932,7 +931,7 @@ class StraightenWorms(cpm.CPModule):
         add_object_count_measurements(m, straightened_objects_name, nworms)
         add_object_location_measurements(m, straightened_objects_name,
                                          labels, nworms)
-        
+
     def display(self, workspace, figure):
         '''Display the results of the worm straightening'''
         image_pairs = workspace.display_data.image_pairs
@@ -943,19 +942,19 @@ class StraightenWorms(cpm.CPModule):
                 imshow = figure.subplot_imshow_grayscale
             else:
                 imshow = figure.subplot_imshow_color
-            axis = imshow(0, i, src_pix, title = src_name,
-                          sharexy = src_axis)
+            axis = imshow(0, i, src_pix, title=src_name,
+                          sharexy=src_axis)
             if src_axis is None:
                 src_axis = axis
             if dest_pix.ndim == 2:
                 imshow = figure.subplot_imshow_grayscale
             else:
                 imshow = figure.subplot_imshow_color
-            imshow(1, i, dest_pix, title = dest_name)
-    
+            imshow(1, i, dest_pix, title=dest_name)
+
     def get_scale_name(self, longitudinal, transverse):
         '''Create a scale name, given a longitudinal and transverse band #
-        
+
         longitudinal - band # (0 to # of stripes) or None for transverse-only
         transverse - band # (0 to # of stripes) or None  for longitudinal-only
         '''
@@ -970,9 +969,9 @@ class StraightenWorms(cpm.CPModule):
         else:
             tcount = self.number_of_segments.value
         return "%s%dof%d_%s%dof%d" % (
-            SCALE_HORIZONTAL, transverse+1, tcount,
-            SCALE_VERTICAL, longitudinal+1, lcount)
-    
+            SCALE_HORIZONTAL, transverse + 1, tcount,
+            SCALE_VERTICAL, longitudinal + 1, lcount)
+
     def get_measurement_columns(self, pipeline):
         '''Return columns that define the measurements produced by this module'''
         result = get_object_measurement_columns(self.straightened_objects_name.value)
@@ -982,22 +981,22 @@ class StraightenWorms(cpm.CPModule):
             worms_name = self.objects_name.value
             if nsegments > 1:
                 result += [(worms_name,
-                            "_".join((C_WORM, ftr, 
+                            "_".join((C_WORM, ftr,
                                       group.straightened_image_name.value,
                                       self.get_scale_name(None, segment))),
                             cpmeas.COLTYPE_FLOAT)
                            for ftr, group, segment
-                           in product((FTR_MEAN_INTENSITY, FTR_STD_INTENSITY),
+                           in itertools.product((FTR_MEAN_INTENSITY, FTR_STD_INTENSITY),
                                       self.images,
                                       range(nsegments))]
             if nstripes > 1:
                 result += [(worms_name,
-                            "_".join((C_WORM, ftr, 
+                            "_".join((C_WORM, ftr,
                                       group.straightened_image_name.value,
                                       self.get_scale_name(stripe, None))),
                             cpmeas.COLTYPE_FLOAT)
                            for ftr, group, stripe
-                           in product((FTR_MEAN_INTENSITY, FTR_STD_INTENSITY),
+                           in itertools.product((FTR_MEAN_INTENSITY, FTR_STD_INTENSITY),
                                       self.images,
                                       range(nstripes))]
             if nsegments > 1 and nstripes > 1:
@@ -1007,47 +1006,47 @@ class StraightenWorms(cpm.CPModule):
                                       self.get_scale_name(stripe, segment))),
                             cpmeas.COLTYPE_FLOAT)
                            for ftr, group, stripe, segment
-                           in product((FTR_MEAN_INTENSITY, FTR_STD_INTENSITY),
+                           in itertools.product((FTR_MEAN_INTENSITY, FTR_STD_INTENSITY),
                                       self.images,
                                       range(nstripes),
                                       range(nsegments))]
         return result
-    
+
     def get_categories(self, pipeline, object_name):
         result = []
         if object_name == cpmeas.IMAGE:
-            result += [ C_COUNT ]
+            result += [C_COUNT]
         elif object_name == self.straightened_objects_name:
-            result += [ C_LOCATION, C_NUMBER]
+            result += [C_LOCATION, C_NUMBER]
         elif object_name == self.objects_name and self.wants_measurements:
-            result += [ C_WORM ]
+            result += [C_WORM]
         return result
-    
+
     def get_measurements(self, pipeline, object_name, category):
         if object_name == cpmeas.IMAGE and category == C_COUNT:
-            return [ self.straightened_objects_name.value]
+            return [self.straightened_objects_name.value]
         elif object_name == self.straightened_objects_name:
             if category == C_LOCATION:
-                return [ FTR_CENTER_X, FTR_CENTER_Y ]
+                return [FTR_CENTER_X, FTR_CENTER_Y]
             elif category == C_NUMBER:
-                return [ FTR_OBJECT_NUMBER ]
+                return [FTR_OBJECT_NUMBER]
         elif category == C_WORM and object_name == self.objects_name:
-                return [ FTR_MEAN_INTENSITY, FTR_STD_INTENSITY ]
+            return [FTR_MEAN_INTENSITY, FTR_STD_INTENSITY]
         return []
-    
+
     def get_measurement_images(self, pipeline, object_name, category, measurement):
         if (object_name == self.objects_name and
-            category == C_WORM and
-            measurement in (FTR_MEAN_INTENSITY, FTR_STD_INTENSITY)):
+                    category == C_WORM and
+                    measurement in (FTR_MEAN_INTENSITY, FTR_STD_INTENSITY)):
             return [group.straightened_image_name.value
                     for group in self.images]
         return []
-    
+
     def get_measurement_scales(self, pipeline, object_name, category,
                                measurement, image_name):
         result = []
         if image_name in self.get_measurement_images(
-            pipeline, object_name, category, measurement):
+                pipeline, object_name, category, measurement):
             nsegments = self.number_of_segments.value
             nstripes = self.number_of_stripes.value
             if nsegments > 1:
@@ -1058,24 +1057,24 @@ class StraightenWorms(cpm.CPModule):
                            for stripe in range(nstripes)]
             if nstripes > 1 and nsegments > 1:
                 result += [self.get_scale_name(h, v)
-                           for h,v in product(
-                               range(nstripes),
-                               range(nsegments))]
+                           for h, v in itertools.product(
+                            range(nstripes),
+                            range(nsegments))]
         return result
-    
-    def upgrade_settings(self, setting_values, variable_revision_number, 
+
+    def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
         '''Modify the settings to match the current version
-        
+
         This method takes the settings from a previous revision of
         StraightenWorms and modifies them so that they match
         the settings that would be output by the current version.
-        
+
         setting_values - setting value strings, possibly output by prev version
-        
+
         variable_revision_number - revision of version of StraightenWorms that
         output the settings
-        
+
         module_name, from_matlab - not used, see CPModule for use elsewhere.
 
         Overriding modules should return a tuple of setting_values,
@@ -1083,14 +1082,14 @@ class StraightenWorms(cpm.CPModule):
         they should leave things as-is so that the caller can report
         an error.
         '''
-        
+
         if variable_revision_number == 1:
             #
             # Added worm measurement and flipping
             #
             setting_values = (
                 setting_values[:FIXED_SETTINGS_COUNT_V1] +
-                [ cps.NO, "4", cps.NO, "None" ] +
+                [cps.NO, "4", cps.NO, "None"] +
                 setting_values[FIXED_SETTINGS_COUNT_V1:])
             variable_revision_number = 2
         if variable_revision_number == 2:
@@ -1102,15 +1101,15 @@ class StraightenWorms(cpm.CPModule):
                 setting_values[IDX_FLIP_WORMS_V2:])
             variable_revision_number = 3
         return setting_values, variable_revision_number, from_matlab
-    
+
     def prepare_to_create_batch(self, workspace, fn_alter_path):
         '''Prepare to create a batch file
-        
+
         This function is called when CellProfiler is about to create a
         file for batch processing. It will pickle the image set list's
         "legacy_fields" dictionary. This callback lets a module prepare for
         saving.
-        
+
         pipeline - the pipeline to be saved
         image_set_list - the image set list to be saved
         fn_alter_path - this is a function that takes a pathname on the local
@@ -1123,29 +1122,29 @@ class StraightenWorms(cpm.CPModule):
 
     def handle_interaction(self, straightened_images, labels, image_set_number):
         '''Show a UI for flipping worms
-        
+
         straightened_images - a tuple of dictionaries, one per image to be
                               straightened. The keys are "pixel_data",
                               "mask" and "name".
-        
+
         labels - a labels matrix with one worm per label
-        
+
         image_set_number - the cycle #
-        
+
         returns a tuple of flipped worm images and the flipped labels matrix
         '''
         import wx
         import matplotlib
         import matplotlib.cm
         import matplotlib.backends.backend_wxagg
-        
+
         frame_size = wx.GetDisplaySize()
         frame_size = [max(frame_size[0], frame_size[1]) / 2] * 2
         style = wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER | wx.MAXIMIZE_BOX
-        with wx.Dialog(None, -1, 
-                           "Straighten worms: cycle #%d" % image_set_number,
-                           size=frame_size,
-                           style = style) as dlg:
+        with wx.Dialog(None, -1,
+                       "Straighten worms: cycle #%d" % image_set_number,
+                       size=frame_size,
+                       style=style) as dlg:
             assert isinstance(dlg, wx.Dialog)
             dlg.Sizer = wx.BoxSizer(wx.VERTICAL)
             figure = matplotlib.figure.Figure()
@@ -1153,12 +1152,12 @@ class StraightenWorms(cpm.CPModule):
             axes.set_title("Click on a worm to flip it.\n"
                            "Hit OK when done")
             panel = matplotlib.backends.backend_wxagg.FigureCanvasWxAgg(
-                dlg, -1, figure)
+                    dlg, -1, figure)
             toolbar = matplotlib.backends.backend_wxagg.NavigationToolbar2WxAgg(
-                panel)
+                    panel)
             dlg.Sizer.Add(toolbar, 0, wx.EXPAND)
             dlg.Sizer.Add(panel, 1, wx.EXPAND)
-            
+
             ok_button = wx.Button(dlg, wx.ID_OK)
             cancel_button = wx.Button(dlg, wx.ID_CANCEL)
             button_sizer = wx.StdDialogButtonSizer()
@@ -1166,16 +1165,16 @@ class StraightenWorms(cpm.CPModule):
             button_sizer.AddButton(ok_button)
             button_sizer.AddButton(cancel_button)
             button_sizer.Realize()
-            
-            big_labels = np.zeros((labels.shape[0] + 2, labels.shape[1]+2),
-                                  dtype = labels.dtype)
+
+            big_labels = np.zeros((labels.shape[0] + 2, labels.shape[1] + 2),
+                                  dtype=labels.dtype)
             big_labels[1:-1, 1:-1] = labels
             outline_ij = np.argwhere(
-                (labels != 0) & (
-                    (big_labels[:-2, 1:-1] != big_labels[1:-1, 1:-1]) |
-                    (big_labels[2:, 1:-1] != big_labels[1:-1, 1:-1]) |
-                    (big_labels[1:-1, :-2] != big_labels[1:-1, 1:-1]) |
-                    (big_labels[1:-1, 2:] != big_labels[1:-1, 1:-1])))
+                    (labels != 0) & (
+                        (big_labels[:-2, 1:-1] != big_labels[1:-1, 1:-1]) |
+                        (big_labels[2:, 1:-1] != big_labels[1:-1, 1:-1]) |
+                        (big_labels[1:-1, :-2] != big_labels[1:-1, 1:-1]) |
+                        (big_labels[1:-1, 2:] != big_labels[1:-1, 1:-1])))
             outline_l = labels[outline_ij[:, 0], outline_ij[:, 1]]
             order = np.lexsort([outline_ij[:, 0], outline_ij[:, 1],
                                 outline_l])
@@ -1184,10 +1183,11 @@ class StraightenWorms(cpm.CPModule):
             outline_indexes = np.hstack(([0], np.cumsum(np.bincount(outline_l))))
             ii, jj = np.mgrid[0:labels.shape[0], 0:labels.shape[1]]
             half_width = self.width.value / 2
-            width = 2*half_width + 1
-            
-            active_worm = [ None]
+            width = 2 * half_width + 1
+
+            active_worm = [None]
             needs_draw = [True]
+
             def refresh():
                 object_number = active_worm[0]
                 if len(straightened_images) == 1:
@@ -1209,7 +1209,7 @@ class StraightenWorms(cpm.CPModule):
                         pixel_data = straightened_image[self.K_PIXEL_DATA]
                         if pixel_data.ndim == 3:
                             pixel_data = np.mean(pixel_data, 2)
-                        imin, imax = [fn(pixel_data[labels !=0])
+                        imin, imax = [fn(pixel_data[labels != 0])
                                       for fn in np.min, np.max]
                         if imin == imax:
                             pixel_data = np.zeros(labels.shape)
@@ -1218,34 +1218,34 @@ class StraightenWorms(cpm.CPModule):
                         image[labels != 0, i] = pixel_data[labels != 0]
                 if object_number is not None:
                     color = np.array(
-                        cpprefs.get_primary_outline_color().asTuple(),
-                        dtype = np.float) / 255
+                            cpprefs.get_primary_outline_color().asTuple(),
+                            dtype=np.float) / 255
                     s = slice(outline_indexes[object_number],
-                              outline_indexes[object_number+1])
+                              outline_indexes[object_number + 1])
                     image[outline_ij[s, 0],
-                          outline_ij[s, 1], :] = color[np.newaxis, :]
+                    outline_ij[s, 1], :] = color[np.newaxis, :]
                 axes.imshow(image, origin="upper")
                 needs_draw[0] = True
                 panel.Refresh()
-                
+
             def on_mouse_over(event):
                 object_number = active_worm[0]
                 new_object_number = None
                 if event.inaxes == axes:
                     new_object_number = labels[
-                        max(0, min(labels.shape[0]-1, int(event.ydata+.5))),
-                        max(0, min(labels.shape[1]-1, int(event.xdata+.5)))]
+                        max(0, min(labels.shape[0] - 1, int(event.ydata + .5))),
+                        max(0, min(labels.shape[1] - 1, int(event.xdata + .5)))]
                     if new_object_number == 0:
                         new_object_number = None
                     if object_number != new_object_number:
                         active_worm[0] = new_object_number
                         refresh()
-                        
+
             def on_mouse_click(event):
                 object_number = active_worm[0]
-                if event.inaxes == axes and\
-                   object_number is not None and\
-                   event.button == 1:
+                if event.inaxes == axes and \
+                                object_number is not None and \
+                                event.button == 1:
                     imax = np.max(ii[labels == object_number]) + half_width
                     mask = ((jj >= width * (object_number - 1)) &
                             (jj < width * object_number) &
@@ -1254,7 +1254,7 @@ class StraightenWorms(cpm.CPModule):
                     jsrc = jj[mask]
                     idest = imax - isrc
                     jdest = (object_number * 2 - 1) * width - jj[mask] - 1
-                    
+
                     for d in straightened_images:
                         for key in self.K_PIXEL_DATA, self.K_MASK:
                             src = d[key]
@@ -1273,12 +1273,12 @@ class StraightenWorms(cpm.CPModule):
                           (jsrc >= 0) & (jsrc < jlim))
                     labels[isrc[mm], jsrc[mm]] = labels[idest[mm], jdest[mm]]
                     s = slice(outline_indexes[object_number],
-                              outline_indexes[object_number+1])
+                              outline_indexes[object_number + 1])
                     outline_ij[s, 0] = imax - outline_ij[s, 0]
-                    outline_ij[s, 1] = (object_number * 2 - 1) * width -\
-                        outline_ij[s, 1] - 1
+                    outline_ij[s, 1] = (object_number * 2 - 1) * width - \
+                                       outline_ij[s, 1] - 1
                     refresh()
-                    
+
             def on_paint(event):
                 dc = wx.PaintDC(panel)
                 if needs_draw[0]:
@@ -1288,16 +1288,16 @@ class StraightenWorms(cpm.CPModule):
                     panel.gui_repaint(dc)
                 dc.Destroy()
                 event.Skip()
-                
+
             def on_ok(event):
                 dlg.EndModal(wx.OK)
-                
+
             def on_cancel(event):
                 dlg.EndModal(wx.CANCEL)
-                
+
             dlg.Bind(wx.EVT_BUTTON, on_ok, ok_button)
             dlg.Bind(wx.EVT_BUTTON, on_cancel, cancel_button)
-            
+
             refresh()
             panel.mpl_connect('button_press_event',
                               on_mouse_click)

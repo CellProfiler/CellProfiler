@@ -2,7 +2,6 @@
 directory.
 """
 
-
 # These examples:
 # http://blog.dowski.com/2008/07/31/customizing-the-python-import-system/
 # http://www.secomputing.co.uk/2009/05/importing-python-packages-in-memory.html
@@ -35,7 +34,7 @@ class PluginImporter(object):
         if os.path.exists(os.path.join(cpprefs.get_plugin_directory(), modname + '.py')):
             return self
         return None
- 
+
     def load_module(self, fullname):
         if fullname in sys.modules:
             return sys.modules[fullname]
@@ -55,5 +54,6 @@ class PluginImporter(object):
         except:
             if fullname in sys.module:
                 del sys.modules[fullname]
+
 
 sys.meta_path.append(PluginImporter())

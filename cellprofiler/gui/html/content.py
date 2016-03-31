@@ -1,7 +1,7 @@
-import urllib
-
 from cellprofiler.gui.help import MEASUREMENT_NAMING_HELP, USING_YOUR_OUTPUT_REF, TEST_MODE_HELP, RUNNING_YOUR_PIPELINE_HELP, SELECTING_IMAGES_HELP, CONFIGURE_IMAGES_HELP
 from cellprofiler.gui.help import MODULE_HELP_BUTTON, MODULE_ADD_BUTTON
+
+import urllib
 
 SELECTING_IMAGES_REF = urllib.quote("Selecting images")
 
@@ -9,16 +9,16 @@ CONFIGURE_IMAGES_REF = urllib.quote("Configure images")
 
 IDENTIFY_FEATUREES_REF = urllib.quote("Identifying features")
 IDENTIFY_FEATUREES_HELP = '''
-<p>A hallmark of most CellProfiler pipelines is the identification of cellular features in your images, whether they are 
+<p>A hallmark of most CellProfiler pipelines is the identification of cellular features in your images, whether they are
 nuclei, organelles or something else. </p>
 
 <table width="75%%" cellpadding="0">
 <tr>
 <td width="75%%" valign="top">
 A number of modules are dedicated to the purpose of detecting these features; the <b>IdentifyPrimaryObjects</b> module is the
-one that is most commonly used. The result of this module is a set of labeled <i>objects</i>; we define an object as a collection of connected pixels 
-in an image which share the same label. The challenge here is to find a combination of settings that best identify the objects from 
-the image, a task called <i>segmentation</i>. The typical expectation is to end up with one object for each cellular feature of interest 
+one that is most commonly used. The result of this module is a set of labeled <i>objects</i>; we define an object as a collection of connected pixels
+in an image which share the same label. The challenge here is to find a combination of settings that best identify the objects from
+the image, a task called <i>segmentation</i>. The typical expectation is to end up with one object for each cellular feature of interest
 (for example, each nucleus is assigned to a single object in a DNA stained image). If this is not the
 case, the module settings can be adjusted to make it so (or as close as possible). In some cases, image processing modules must be used beforehand
 to transform the image so it is more amenable to object detection.</td>
@@ -29,9 +29,9 @@ to transform the image so it is more amenable to object detection.</td>
 <p>In brief, the workflow of finding objects using this module is to do the following:
 <ul>
 <li><i>Distinguish the foreground from background:</i> The foreground is defined as that part of the image which contains
-the features of interest, as opposed to the <i>background</i> which does not. The module 
+the features of interest, as opposed to the <i>background</i> which does not. The module
 assumes that the foreground is brighter than the background, which is the case for fluorescence images; for other
-types of images, other modules can be used to first invert the image, turning dark regions into bright regions 
+types of images, other modules can be used to first invert the image, turning dark regions into bright regions
 and vice versa. </li>
 <li><i>Identify the objects in each foreground region:</i> Each foreground region may contain multiple objects
 of interest (for example, touching nuclei in a DNA stained image). Recognizing the presence of these objects is the
@@ -39,18 +39,18 @@ objective of this step.</li>
 <li><i>Splitting clusters of objects:</i> If objects are touching each other, the final step is to separate them in
 a way that reflects the actual boundaries as much as possible. This process is referred to as "declumping."</li>
 </ul>
-The module also contains additional settings for filtering the results of this process on the basis of size, location, etc. 
-to get the final object set. At this point, the objects are ready for measurements to be made, or for further manipulations 
+The module also contains additional settings for filtering the results of this process on the basis of size, location, etc.
+to get the final object set. At this point, the objects are ready for measurements to be made, or for further manipulations
 as a means of extracting other features.</p>
 
-<p>Other modules are able to take the results of this module and use them in combination with additional images 
+<p>Other modules are able to take the results of this module and use them in combination with additional images
 (like <b>IdentifySecondaryObjects</b>) or other objects (like <b>IdentifyTertiaryObjects</b>) to define yet more objects.
 </p>
 
-<p>For more information on these identification modules work and how to configure them for best performance, please see 
+<p>For more information on these identification modules work and how to configure them for best performance, please see
 the detailed help by selecting the <b>IdentifyPrimaryObjects</b> module and clicking the <img src="memory:%(MODULE_HELP_BUTTON)s">&nbsp;
 button at the bottom of the pipeline panel.</p>
-'''%globals()
+''' % globals()
 
 MAKING_MEASUREMENTS_REF = urllib.quote("Making measurements")
 MAKING_MEASUREMENTS_HELP = '''
@@ -74,53 +74,53 @@ are accessible by clicking the <img src="memory:%(MODULE_ADD_BUTTON)s">&nbsp;but
     a fluorescence marker at that location. The maximal, minimal, mean, and integrated (total) intensity of each marker
     can be measured as well as correlations in intensity between channels.</td>
     <td><b>MeasureObjectIntensity</b>, <b>MeasureImageIntensity</b>, <b>MeasureObjectRadialDistribution</b>, <b>MeasureCorrelation</b></td></tr>
-    <tr align="center"><td><i>Texture</i></td><td> These quantities characterize spatial smoothness and regularity across an object, and are often useful 
+    <tr align="center"><td><i>Texture</i></td><td> These quantities characterize spatial smoothness and regularity across an object, and are often useful
     for characterizing the fine patterns of localization.</td><td><b>MeasureTexture</b></td></tr>
-    <tr align="center"><td><i>Clustering</i></td><td> Spatial relationships can be characterized by adjacency descriptors, such as the number of neighboring 
+    <tr align="center"><td><i>Clustering</i></td><td> Spatial relationships can be characterized by adjacency descriptors, such as the number of neighboring
     objects, the percent of the perimeter touching neighbor objects, etc.</td><td><b>MeasureObjectNeighbors</b></td></tr>
 </table>
 </p>
 
-<p>For more information on these modules and how to configure them for best performance, please see 
+<p>For more information on these modules and how to configure them for best performance, please see
 the detailed help by selecting the module and clicking the <img src="memory:%(MODULE_HELP_BUTTON)s">&nbsp;
-button at the bottom of the pipeline panel. You can also find details on measurement nomenclature when exporting under 
+button at the bottom of the pipeline panel. You can also find details on measurement nomenclature when exporting under
 <i>%(MEASUREMENT_NAMING_HELP)s</i></p>
-'''%globals()
+''' % globals()
 
 EXPORTING_RESULTS_REF = urllib.quote("Exporting results")
 EXPORTING_RESULTS_HELP = '''
 <p>Writing the measurements generated by CellProfiler is necessary for downstream statistical analysis. The most
 common format for export is the <i>spreadsheet</i> which is a table of values. The module <b>ExportToSpreadsheet</b>
-handles the task of writing the measurements (for images, objects or both) to a file readable by Excel, or the 
+handles the task of writing the measurements (for images, objects or both) to a file readable by Excel, or the
 spreadsheet program of your choice.</p>
 
 <p>For larger assays, involving tens of thousands of images or more, a spreadsheet is usually insufficient to handle the massive
 amounts of data generated. A <i>database</i> is a better solution in this case, although this requires more sophistication
-by the user; the <b>ExportToDatabase</b> module is to be used for this task. If this avenue is needed, it is best to consult 
+by the user; the <b>ExportToDatabase</b> module is to be used for this task. If this avenue is needed, it is best to consult
 with your information technology department.</p>
 
-<p>CellProfiler will not save images produce by analysis modules unless told to do so. It is often desirable to save 
+<p>CellProfiler will not save images produce by analysis modules unless told to do so. It is often desirable to save
 the outlines of the objects identified; this can is useful as a sanity check of the object identification results or for quality control
-purposes. The <b>SaveImages</b> module is used for saving images to a variety of output formats, with the 
+purposes. The <b>SaveImages</b> module is used for saving images to a variety of output formats, with the
 nomenclature specified by the user.</p>
 
-<p>For more information on these modules and how to configure them for best performance, please see 
+<p>For more information on these modules and how to configure them for best performance, please see
 the detailed help by selecting the module and clicking the <img src="memory:%(MODULE_HELP_BUTTON)s">
-button at the bottom of the pipeline panel. You can also find details on various exporting options under 
+button at the bottom of the pipeline panel. You can also find details on various exporting options under
 <i>%(USING_YOUR_OUTPUT_REF)s</i></p>
-'''%globals()
-    
+''' % globals()
+
 TEST_MODE_REF = urllib.quote("Using test mode")
 RUNNING_YOUR_PIPELINE_REF = urllib.quote("Analyzing your images")
 
 IN_APP_HELP_REF = urllib.quote("Using the help")
 IN_APP_HELP_HELP = '''
-In addition to the Help menu in the main CellProfiler window, there are <img src="memory:%(MODULE_HELP_BUTTON)s"> 
-buttons containing more specific documentation for using 
-CellProfiler. Clicking the "?" button near the pipeline window will show information about the selected module within the pipeline, 
-whereas clicking the <img src="memory:%(MODULE_HELP_BUTTON)s"> button to the right of each of the module setting 
-displays help for that particular setting. 
-'''%globals()
+In addition to the Help menu in the main CellProfiler window, there are <img src="memory:%(MODULE_HELP_BUTTON)s">
+buttons containing more specific documentation for using
+CellProfiler. Clicking the "?" button near the pipeline window will show information about the selected module within the pipeline,
+whereas clicking the <img src="memory:%(MODULE_HELP_BUTTON)s"> button to the right of each of the module setting
+displays help for that particular setting.
+''' % globals()
 
 WELCOME_HELP = {
     SELECTING_IMAGES_REF: SELECTING_IMAGES_HELP,
@@ -131,7 +131,7 @@ WELCOME_HELP = {
     TEST_MODE_REF: TEST_MODE_HELP,
     RUNNING_YOUR_PIPELINE_REF: RUNNING_YOUR_PIPELINE_HELP,
     IN_APP_HELP_REF: IN_APP_HELP_HELP
-    }
+}
 
 startup_main = '''<html>
 <body>
@@ -160,8 +160,8 @@ startup_main = '''<html>
 <tr>
     <td>&nbsp;</td>
     <td><i><font size="+2">2: Adjust</font></b></td>
-    <td>Use the Input modules to <a href="help://%(SELECTING_IMAGES_REF)s">select</a> and <a href="help://%(CONFIGURE_IMAGES_REF)s">configure</a> your images for analysis. 
-    Add Analysis modules to <a href="help://%(IDENTIFY_FEATUREES_REF)s">identify</a> image features, make <a href="help://%(MAKING_MEASUREMENTS_REF)s">measurements</a> and 
+    <td>Use the Input modules to <a href="help://%(SELECTING_IMAGES_REF)s">select</a> and <a href="help://%(CONFIGURE_IMAGES_REF)s">configure</a> your images for analysis.
+    Add Analysis modules to <a href="help://%(IDENTIFY_FEATUREES_REF)s">identify</a> image features, make <a href="help://%(MAKING_MEASUREMENTS_REF)s">measurements</a> and
     <a href="help://%(EXPORTING_RESULTS_REF)s">export</a> results.</td>
 </tr>
 <tr>
@@ -208,7 +208,7 @@ startup_main = '''<html>
 </table>
 <p>Click <a href="pref:no_display">here</a> to stop displaying this page when CellProfiler starts. This page can be accessed from <i>Help > Show Welcome Screen</i> at any time.</p>
 </body>
-</html>'''%globals()
+</html>''' % globals()
 
 startup_interface = '''<html>
 <body>
@@ -223,7 +223,7 @@ The CellProfiler interface has tools for managing images, pipelines and modules.
 <colgroup><col width="200"><col width="300%"></colgroup>
 <thead><tr valign="top"><th bgcolor="#B2B2B2">Element</th><th bgcolor="#B2B2B2">Description</th></tr></thead>
 <tbody>
-<tr><td><i>Pipeline</i></td><td>Lists the modules in the pipeline, with controls for display and testing. Below this panel 
+<tr><td><i>Pipeline</i></td><td>Lists the modules in the pipeline, with controls for display and testing. Below this panel
 are tools for adding, removing, and reordering modules and getting help.</td></tr>
 <tr><td><i>Files</i></td><td>Lists images and pipeline files in the current input folder.</td></tr>
 <tr><td><i>Module Settings</i></td><td>Contains the options for the currently selected module.</td></tr>
@@ -232,6 +232,7 @@ are tools for adding, removing, and reordering modules and getting help.</td></t
 <p>Go <a href="startup_main">back</a> to the welcome screen.</p>
 </body>
 </html>'''
+
 
 def find_link(name):
     return globals().get(name, None)

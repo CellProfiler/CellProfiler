@@ -2,6 +2,7 @@
 __author__ = 'Adam Kaczmarek, Filip Mróz'
 
 import math
+
 import numpy as np
 
 
@@ -21,6 +22,9 @@ class Point(object):
     def __init__(self, x, y):
         self.x = x
         self.y = y
+
+    def __repr__(self):
+        return "Seed(x={0},y={1})".format(self.x, self.y)
 
     def polar_coords(self, origin):
         r_x = self.x - origin.x

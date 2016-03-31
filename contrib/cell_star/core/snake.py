@@ -325,33 +325,39 @@ class Snake(object):
             return
 
         self.properties_vector_cached = {}
-        original_clean = self.images.image_back_difference
-        brighter = self.images.brighter
-        cell_content_mask = self.images.cell_content_mask
-
         epsilon = 10 ** -8
+        min_border_r = 0.055 * self.parameters["segmentation"]["avgCellDiameter"]
+        max_border_r = 0.1 * self.parameters["segmentation"]["avgCellDiameter"]
+        image_bounds = calc_util.get_cartesian_bounds(self.polar_coordinate_boundary, self.seed.x, self.seed.y, polar_transform)
+        dilated_bounds = image_util.extend_slices(image_bounds, int(max_border_r * 2))
 
-        segment, self.in_polygon, self.in_polygon_yx = calc_util.star_in_polygon(self.images.brighter.shape,
+        original_clean = self.images.image_back_difference[dilated_bounds]
+        brighter = self.images.brighter[dilated_bounds]
+        cell_content_mask = self.images.cell_content_mask[dilated_bounds]
+        origin_in_slice = calc_util.inslice_point((self.seed.y, self.seed.x), dilated_bounds)
+        origin_in_slice = Point(x=origin_in_slice[1], y=origin_in_slice[0])
+
+        segment, self.in_polygon, in_polygon_local_yx = calc_util.star_in_polygon(brighter.shape,
                                                                                  self.polar_coordinate_boundary,
-                                                                                 self.seed.x, self.seed.y,
+                                                                                 origin_in_slice.x, origin_in_slice.y,
                                                                                  polar_transform)
+        self.in_polygon_yx = calc_util.unslice_point(in_polygon_local_yx, dilated_bounds)
 
-        self.area = np.count_nonzero(segment) + self.epsilon
+        self.area = np.count_nonzero(self.in_polygon) + self.epsilon
         approx_radius = math.sqrt(self.area / math.pi)
-        min_r = 0.055 * self.parameters["segmentation"]["avgCellDiameter"]
-        max_r = 0.1 * self.parameters["segmentation"]["avgCellDiameter"]
-        border_radius = max(min(approx_radius, max_r), min_r)
+
+        border_radius = max(min(approx_radius, max_border_r), min_border_r)
 
         dilation = round(border_radius / polar_transform.step)
 
         dilated_boundary = np.minimum(self.polar_coordinate_boundary + dilation, len(polar_transform.R) - 1)
         eroded_boundary = np.maximum(self.polar_coordinate_boundary - dilation, 1)
 
-        dilated, _, _ = calc_util.star_in_polygon(self.images.brighter.shape, dilated_boundary,
-                                                  self.seed.x, self.seed.y, polar_transform)
+        dilated, _, _ = calc_util.star_in_polygon(brighter.shape, dilated_boundary,
+                                                  origin_in_slice.x, origin_in_slice.y, polar_transform)
 
-        eroded, _, _ = calc_util.star_in_polygon(self.images.brighter.shape, eroded_boundary,
-                                                 self.seed.x, self.seed.y, polar_transform)
+        eroded, _, _ = calc_util.star_in_polygon(brighter.shape, eroded_boundary,
+                                                 origin_in_slice.x, origin_in_slice.y, polar_transform)
 
         out_border = dilated ^ segment
         in_border = segment ^ eroded
@@ -389,7 +395,7 @@ class Snake(object):
             self.centroid_y = self.ys[0]
 
         # Calculate free border fragments - fragments of border, which endpoints have been discarded
-        fb, _, _ = calc_util.loop_connected_components(np.array([1 - x for x in self.final_edgepoints]))
+        fb, _, _ = calc_util.loop_connected_components(np.logical_not(self.final_edgepoints))
         # Calculate free border entropy
         fb_entropy = 0
         if min(fb.shape) != 0:

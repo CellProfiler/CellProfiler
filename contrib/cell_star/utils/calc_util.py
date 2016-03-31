@@ -189,6 +189,29 @@ def get_in_polygon(x1, x2, y1, y2, path):
     return grid
 
 
+def inslice_point(point_yx_in_slice, slices):
+    y = point_yx_in_slice[0]
+    x = point_yx_in_slice[1]
+    max_len = 1000000
+    return y - slices[0].indices(max_len)[0], x - slices[1].indices(max_len)[0]
+
+
+def unslice_point(point_yx_in_slice, slices):
+    y = point_yx_in_slice[0]
+    x = point_yx_in_slice[1]
+    max_len = 1000000
+    return y + slices[0].indices(max_len)[0], x + slices[1].indices(max_len)[0]
+
+
+def get_cartesian_bounds(polar_coordinate_boundary, origin_x, origin_y, polar_transform):
+    polygon_x, polygon_y = polar_to_cartesian(polar_coordinate_boundary, origin_x, origin_y, polar_transform)
+    x1 = int(max(0, math.floor(min(polygon_x))))
+    x2 = int(math.ceil(max(polygon_x)) + 1)
+    y1 = int(max(0, math.floor(min(polygon_y))))
+    y2 = int(math.ceil(max(polygon_y)) + 1)
+    return slice(y1, y2), slice(x1, x2)
+
+
 def polar_to_cartesian(polar_coordinate_boundary, origin_x, origin_y, polar_transform):
     t = polar_transform.t
     step = polar_transform.step
@@ -201,10 +224,10 @@ def polar_to_cartesian(polar_coordinate_boundary, origin_x, origin_y, polar_tran
 def star_in_polygon((max_y, max_x), polar_coordinate_boundary, seed_x, seed_y, polar_transform):
     polygon_x, polygon_y = polar_to_cartesian(polar_coordinate_boundary, seed_x, seed_y, polar_transform)
 
-    x1 = max(0, math.floor(min(polygon_x)))
-    x2 = min(max_x, math.ceil(max(polygon_x)) + 1)
-    y1 = max(0, math.floor(min(polygon_y)))
-    y2 = min(max_y, math.ceil(max(polygon_y)) + 1)
+    x1 = int(max(0, math.floor(min(polygon_x))))
+    x2 = int(min(max_x, math.ceil(max(polygon_x)) + 1))
+    y1 = int(max(0, math.floor(min(polygon_y))))
+    y2 = int(min(max_y, math.ceil(max(polygon_y)) + 1))
 
     x1 = min(x1, max_x)
     y1 = min(y1, max_y)

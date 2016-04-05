@@ -27,7 +27,7 @@ def run_rank_pf(input_image, gt_mask, parameters):
     return best_complete_params, best_score
 
 
-def test_rank_pf(image_path, mask_path, precision, avg_cell_diameter, method):
+def test_rank_pf(image_path, mask_path, precision, avg_cell_diameter, method, initial_params=None):
     frame = try_load_image(image_path)
     gt_image = np.array(try_load_image(mask_path) * 255, dtype=int)
 
@@ -35,9 +35,9 @@ def test_rank_pf(image_path, mask_path, precision, avg_cell_diameter, method):
 
     gt_snakes = gt_label_to_snakes(cropped_gt_label)
     if method == "mp":
-        pf_rank.run_multiprocess(cropped_image, gt_snakes, precision, avg_cell_diameter, 'brute')
+        return pf_rank.run_multiprocess(cropped_image, gt_snakes, precision, avg_cell_diameter, 'brute', initial_params=initial_params)
     else:
-        pf_rank.run_singleprocess(cropped_image, gt_snakes, precision, avg_cell_diameter, method)
+        return pf_rank.run_singleprocess(cropped_image, gt_snakes, precision, avg_cell_diameter, method, initial_params=initial_params)
 
 
 if __name__ == "__main__":

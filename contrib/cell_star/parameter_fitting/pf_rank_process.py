@@ -214,8 +214,17 @@ def optimize_brute(params_to_optimize, distance_function):
 
     logger.debug("Opt finished: " + str(result[:2]) + " Elapsed[s]: " + str(elapsed))
     # distance_function(result[0], debug=True)
+    optimize_basinhopping(result[0], distance_function)
+
     return result[0], result[1]
 
+
+
+def optimize_basinhopping(params_to_optimize, distance_function):
+    minimizer_kwargs = {"method": "COBYLA"}
+    result = opt.basinhopping(distance_function, params_to_optimize, minimizer_kwargs=minimizer_kwargs, niter=200)
+    logger.debug("Opt finished: " + str(result))
+    return result.x, result.fun
 
 #
 #

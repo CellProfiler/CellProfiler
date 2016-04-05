@@ -58,7 +58,7 @@ def cropped_to_gt(avg_cell_diameter, image, gt_image):
     gt_label = image_to_label(gt_image)
 
     gt_slices = sp.ndimage.find_objects(gt_label > 0)[0]
-    extended_slice = image_util.extend_slices(gt_slices, avg_cell_diameter * default_config()["segmentation"]["stars"]["maxSize"] * 2)
+    extended_slice = image_util.extend_slices(gt_slices, avg_cell_diameter * default_config()["segmentation"]["stars"]["maxSize"] * 4)
     cropped_image = image[extended_slice]
     cropped_gt_label = gt_label[extended_slice]
     return cropped_image, cropped_gt_label
@@ -82,14 +82,14 @@ def run_pf(input_image, gt_label, parameters, precision, avg_cell_diameter):
     return best_complete_params, best_score
 
 
-def test_pf(image_path, mask_path, precision, avg_cell_diameter, method):
+def test_pf(image_path, mask_path, precision, avg_cell_diameter, method, initial_params=None):
     frame = try_load_image(image_path)
     gt_image = np.array(try_load_image(mask_path) * 255, dtype=int)
 
     cropped_image, cropped_gt_label = cropped_to_gt(avg_cell_diameter, frame, gt_image)
 
     gt_snakes = gt_label_to_snakes(cropped_gt_label)
-    run(cropped_image, gt_snakes, precision, avg_cell_diameter, method)
+    return run(cropped_image, gt_snakes, precision, avg_cell_diameter, method, initial_params=initial_params)
 
 
 if __name__ == "__main__":

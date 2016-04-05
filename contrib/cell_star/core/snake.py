@@ -205,6 +205,7 @@ class Snake(object):
         xmins = xmins[s]
         # Wyznacz maksymalne różnice pomiędzy kolejnymi punktami konturu
         max_diff = np.array(abs(smoothness) * np.arange(1, steps+1) / points_number + 0.5, dtype=int)
+
         # Pierwsze wygładzenie konturu
         xmins2, xmaxs = self.smooth_contour_vec(xmins, max_diff, points_number, f_tot)
 
@@ -239,7 +240,7 @@ class Snake(object):
         #
         # assert np.all(xmins3 == self.polar_coordinate_boundary)
 
-        self.points = [Point(x, y) for x, y in zip(np.append(px, px[0]), np.append(py, py[0]))]
+        self.points = [Point(x, y) for x, y in zip(px, py)]
 
         return
 

@@ -170,12 +170,11 @@ def optimize(method_name, gt_snakes, images, params, precision, avg_cell_diamete
     else:
         if method_name == 'brute':
             best_params_encoded, distance = optimize_brute(encoded_params, distance_function)
-        elif method_name == 'anneal':
-            best_params_encoded, distance = optimize_anneal(encoded_params, distance_function)
+        elif method_name == 'basin':
+            best_params_encoded, distance = optimize_basinhopping(encoded_params, distance_function)
         elif method_name == 'diffevo':
             best_params_encoded, distance = optimize_de(encoded_params, distance_function)
-        else:
-            best_params_encoded, distance = optimize_basinhopping(encoded_params, distance_function)
+
 
     if initial_distance <= distance:
         logger.debug("Initial parameters (%f) are not worse than the best found (%f)."%(initial_distance, distance))
@@ -206,6 +205,7 @@ def optimize_brute(params_to_optimize, distance_function):
     logger.debug("Search range: " + str(zip(lower_bound,upper_bound)))
     result = opt.brute(distance_function, zip(lower_bound, upper_bound), Ns=number_of_steps, disp=True, finish=None, full_output=True)
     logger.debug("Opt finished:" + str(result[:2]))
+    optimize_basinhopping(result[0], distance_function)
     # distance_function(result[0], debug=True)
     return result[0], result[1]
 
@@ -228,8 +228,8 @@ def optimize_de(params_to_optimize, distance_function):
 
 
 def optimize_basinhopping(params_to_optimize, distance_function):
-    minimizer_kwargs = {"method": "BFGS"}
-    result = opt.basinhopping(distance_function, params_to_optimize, minimizer_kwargs=minimizer_kwargs, niter=20)
+    minimizer_kwargs = {"method": "COBYLA"}
+    result = opt.basinhopping(distance_function, params_to_optimize, minimizer_kwargs=minimizer_kwargs, niter=44)
     logger.debug("Opt finished: " + str(result))
     return result.x, result.fun
 

@@ -163,6 +163,9 @@ def optimize(method_name, gt_snakes, images, params, precision, avg_cell_diamete
     encoded_params = pf_parameters_encode(params)
     distance_function = pf_get_distance(gt_snakes, images, params)
     initial_distance = distance_function(encoded_params)
+    if method_name == "mp" and getattr(sys, "frozen", False) and sys.platform == 'win32':
+        # multiprocessing do not work then
+        method_name = "brute"
     if method_name == "mp":
         best_params_encoded, distance = multiproc_multitype_fitness(images.image, gt_snakes, precision, avg_cell_diameter, params)
         # test_trained_parameters(images.image, params, precision, avg_cell_diameter)

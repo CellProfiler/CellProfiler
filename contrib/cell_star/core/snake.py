@@ -96,7 +96,7 @@ class Snake(object):
     def show(self, name):
         maska = image_util.draw_polygons(self.images.image, [zip(self.xs, self.ys)])
         image_out = maska + (1-maska) * self.images.image
-        image_util.image_show_and_save(image_out, name, False)
+        image_util.image_show(image_out, name)
 
     @speed_profile
     def star_multi_vec(self, size_weight, polar_transform):
@@ -181,6 +181,7 @@ class Snake(object):
             - brightness_weight * im[Index.to_numpy(index)]
 
         f_tot = f_tot.T
+        #f_tot = image_util.image_smooth(f_tot, 1)
 
 
         epsilon = 10**(-10)

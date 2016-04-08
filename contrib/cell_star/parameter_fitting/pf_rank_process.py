@@ -54,8 +54,9 @@ def distance_norm_list(expected, result):
 
 
 def calc_ranking(rank_snakes, pf_param_vector):
+    rank_params_decoded = pf_rank_parameters_decode(pf_param_vector)
     fitness_order = sorted(rank_snakes, key=lambda x: -x.fitness)
-    ranking_order = sorted(rank_snakes, key=lambda x: x.calculate_ranking(pf_rank_parameters_decode(pf_param_vector)))
+    ranking_order = sorted(rank_snakes, key=lambda x: x.calculate_ranking(rank_params_decoded))
     #logger.debug(sorted(pf_rank_parameters_decode(pf_param_vector).iteritems()))
     return distance_norm_list(fitness_order, ranking_order)
 

@@ -70,48 +70,37 @@ class PFSnake(object):
     def extract_total_mask_of_snake(snake, tot_shape):
         yx = snake.in_polygon_yx
         in_polygon = snake.in_polygon
-        xy = np.array([yx, np.array(yx) + in_polygon.shape]).flatten()
+        in_polygon_bounds = np.array([yx, np.array(yx) + in_polygon.shape]).flatten()
 
         mask = np.zeros(tot_shape, dtype=bool)
-        mask[xy[0]:xy[2], xy[1]:xy[3]] = in_polygon
+        mask[in_polygon_bounds[0]:in_polygon_bounds[2], in_polygon_bounds[1]:in_polygon_bounds[3]] = in_polygon
 
         return mask
 
+    @staticmethod
+    def gt_snake_intersection(snake, gt):
+        yx = snake.in_polygon_yx
+        in_polygon = snake.in_polygon
+        in_polygon_bounds = np.array([yx, np.array(yx) + in_polygon.shape]).flatten()
+        intersection_local = gt.binary_mask[in_polygon_bounds[0]:in_polygon_bounds[2],
+                             in_polygon_bounds[1]:in_polygon_bounds[3]] * in_polygon
+        return np.count_nonzero(intersection_local)
 
     @staticmethod
     def fitness_with_gt(snake, gt_snake):
-        gt_total_mask = gt_snake.binary_mask
-        pf_total_mask = PFSnake.extract_total_mask_of_snake(snake, gt_total_mask.shape)
-        return float(np.count_nonzero(np.logical_and(pf_total_mask, gt_total_mask))) / \
-            float(np.count_nonzero(np.logical_or(pf_total_mask, gt_total_mask)))
-
-    def fitness(self, gt_snake, debug=False):
-        gt_total_mask = gt_snake.binary_mask
-        this_total_mask = self.extract_total_mask(gt_total_mask.shape)
-
-        if debug:
-            from contrib.cell_star.utils import image_util
-            image_util.image_show(np.logical_xor(this_total_mask, gt_total_mask), 1)
-
-        self.fit = float(np.count_nonzero(np.logical_and(this_total_mask, gt_total_mask))) / \
-            float(np.count_nonzero(np.logical_or(this_total_mask, gt_total_mask)))
-
-        return self.fit
+        intersection = PFSnake.gt_snake_intersection(snake, gt_snake)
+        return intersection / (snake.area + gt_snake.area - intersection)
 
     def multi_fitness(self, gt_snake):
         return max([PFSnake.fitness_with_gt(pf_snake, gt_snake) for pf_snake in self.snakes])
 
 
 
-    @property
-    def rank(self):
-        return self.fit
-
-
 class GTSnake(object):
 
     def __init__(self, binary_mask, seed=None):
         self.binary_mask = binary_mask
+        self.area = np.count_nonzero(self.binary_mask)
         if seed is not None:
             self.seed = seed
             self.centroid_x, self.centroid_y = seed.x, seed.y

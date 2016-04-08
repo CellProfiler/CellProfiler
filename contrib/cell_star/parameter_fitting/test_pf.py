@@ -8,10 +8,10 @@ import numpy as np
 import scipy as sp
 
 from cellprofiler.preferences import get_max_workers
-from contrib.cell_star.parameter_fitting.pf_process import run
+from contrib.cell_star.config.config import default_config
+from contrib.cell_star.parameter_fitting.pf_process import run, test_trained_parameters
 from contrib.cell_star.parameter_fitting.pf_snake import GTSnake
 from contrib.cell_star.utils import image_util
-from contrib.cell_star.config.config import default_config
 
 logger = logging.getLogger(__name__)
 
@@ -58,7 +58,8 @@ def cropped_to_gt(avg_cell_diameter, image, gt_image):
     gt_label = image_to_label(gt_image)
 
     gt_slices = sp.ndimage.find_objects(gt_label > 0)[0]
-    extended_slice = image_util.extend_slices(gt_slices, avg_cell_diameter * default_config()["segmentation"]["stars"]["maxSize"] * 4)
+    #extended_slice = image_util.extend_slices(gt_slices, avg_cell_diameter * default_config()["segmentation"]["stars"]["maxSize"] * 4)
+    extended_slice = image_util.extend_slices(gt_slices, 5000)  # No cropping!
     cropped_image = image[extended_slice]
     cropped_gt_label = gt_label[extended_slice]
     return cropped_image, cropped_gt_label
@@ -90,6 +91,21 @@ def test_pf(image_path, mask_path, precision, avg_cell_diameter, method, initial
 
     gt_snakes = gt_label_to_snakes(cropped_gt_label)
     return run(cropped_image, gt_snakes, precision, avg_cell_diameter, method, initial_params=initial_params)
+
+
+def test_parameters(image_path, mask_path, precision, avg_cell_diameter, params, output_path=None):
+    frame = try_load_image(image_path)
+    #gt_image = np.array(try_load_image(mask_path) * 255, dtype=int)
+
+    #cropped_image, cropped_gt_label = cropped_to_gt(avg_cell_diameter, frame, gt_image)
+    #gt_snakes = gt_label_to_snakes(cropped_gt_label)
+
+    output_name = None
+    if output_path is not None:
+        image_util.debug_image_path = output_path
+        output_name = "trained"
+
+    test_trained_parameters(frame, params["segmentation"]["stars"], precision, avg_cell_diameter, output_name)
 
 
 if __name__ == "__main__":

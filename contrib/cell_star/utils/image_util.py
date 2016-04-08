@@ -271,14 +271,14 @@ def image_normalize(image):
     return np.minimum(np.maximum(image_normalized, 0), 1)
 
 
-def image_show_and_save(image, title, save_image):
+def image_save(image, title):
     """
     Displays image with title using matplotlib.pyplot
     @param image:
     @param title:
     """
 
-    if not SILENCE and save_image:
+    if not SILENCE:
         prepare_debug_folder()
         sp.misc.imsave(os.path.join(debug_image_path, title + '.png'), image)
 

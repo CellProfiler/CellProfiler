@@ -206,15 +206,15 @@ class Segmentation(object):
     def debug_images(self):
         if self.debug_output_image_path is not None:
             image_util.debug_image_path = self.debug_output_image_path
-        image_util.image_show_and_save(self.images.background, "background", True)
-        image_util.image_show_and_save(self.images.brighter, "brighter", True)
-        image_util.image_show_and_save(self.images.brighter_original, "brighter_original", True)
-        image_util.image_show_and_save(self.images.darker, "darker", True)
-        image_util.image_show_and_save(self.images.darker_original, "darker_original", True)
-        image_util.image_show_and_save(self.images.cell_content_mask, "cell_content_mask", True)
-        image_util.image_show_and_save(self.images.cell_border_mask, "cell_border_mask", True)
-        image_util.image_show_and_save(self.images.foreground_mask, "foreground_mask", True)
-        image_util.image_show_and_save(self.images.image_back_difference, "image_back_difference", True)
+        image_util.image_save(self.images.background, "background")
+        image_util.image_save(self.images.brighter, "brighter")
+        image_util.image_save(self.images.brighter_original, "brighter_original")
+        image_util.image_save(self.images.darker, "darker")
+        image_util.image_save(self.images.darker_original, "darker_original")
+        image_util.image_save(self.images.cell_content_mask, "cell_content_mask")
+        image_util.image_save(self.images.cell_border_mask, "cell_border_mask")
+        image_util.image_save(self.images.foreground_mask, "foreground_mask")
+        image_util.image_save(self.images.image_back_difference, "image_back_difference")
         pass
 
     def debug_seeds(self, step):

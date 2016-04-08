@@ -20,7 +20,7 @@ from contrib.cell_star.core.image_repo import ImageRepo
 from contrib.cell_star.parameter_fitting.pf_snake import PFSnake
 from contrib.cell_star.core.seeder import Seeder
 from contrib.cell_star.process.segmentation import Segmentation
-from contrib.cell_star.utils.image_util import image_show
+from contrib.cell_star.utils.image_util import image_show, image_save
 from contrib.cell_star.core.parallel.snake_grow import mp_snake_grow
 from contrib.cell_star.parameter_fitting.pf_auto_params import pf_parameters_encode, pf_parameters_decode
 
@@ -124,15 +124,16 @@ def pf_get_distance(gt_snakes, images, initial_parameters, callback = keep_3_bes
 #
 #
 
-
-def test_trained_parameters(image, parameters, precision, avg_cell_diameter):
+def test_trained_parameters(image, star_params, precision, avg_cell_diameter, output_name=None):
     seg = Segmentation(segmentation_precision=precision, avg_cell_diameter=avg_cell_diameter)
-    for k, v in parameters.iteritems():
+    for k, v in star_params.iteritems():
         seg.parameters["segmentation"]["stars"][k] = v
     seg.set_frame(image)
     seg.run_segmentation()
-    image_show(seg.images.segmentation, 1)
-
+    if output_name is None:
+        image_show(seg.images.segmentation, 1)
+    else:
+        image_save(seg.images.segmentation, output_name)
 
 #
 #
@@ -193,7 +194,7 @@ def optimize(method_name, gt_snakes, images, params, precision, avg_cell_diamete
         elif method_name == 'brutemaxbasin':
             best_params_encoded, distance = optimize_brute(encoded_params, distance_function)
             logger.debug("Best grid parameters distance is (%f)." % distance)
-            best_params_encoded, distance = optimize_basinhopping(best_params_encoded, distance_function, time_percent=150)
+            best_params_encoded, distance = optimize_basinhopping(best_params_encoded, distance_function, time_percent=100)
         elif method_name == 'brutemax3basin':
             _, _ = optimize_brute(encoded_params, distance_function)
             logger.debug("Best grid parameters distance are %s." %  str(zip(*best_3)[0]))
@@ -201,7 +202,7 @@ def optimize(method_name, gt_snakes, images, params, precision, avg_cell_diamete
 
             best_basins = []
             for candidate in list(best_3):
-                best_basins.append(optimize_basinhopping(candidate[1], distance_function, time_percent = 50))
+                best_basins.append(optimize_basinhopping(candidate[1], distance_function, time_percent = 33))
             best_basins.sort(key=lambda x: x[1])
 
             best_params_encoded, distance = best_basins[0]

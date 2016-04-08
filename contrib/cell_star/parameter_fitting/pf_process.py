@@ -2,12 +2,13 @@
 __author__ = 'Adam Kaczmarek, Filip Mr�z'
 
 import copy
+import random
 import time
 from multiprocessing import Process, Queue
-from scipy.linalg import norm
-import scipy.optimize as opt
 
-import random
+import scipy.optimize as opt
+from scipy.linalg import norm
+
 random.seed(1)
 
 import logging
@@ -21,7 +22,7 @@ from contrib.cell_star.core.seeder import Seeder
 from contrib.cell_star.process.segmentation import Segmentation
 from contrib.cell_star.utils.image_util import image_show
 from contrib.cell_star.core.parallel.snake_grow import mp_snake_grow
-from contrib.cell_star.parameter_fitting.pf_auto_params import parameters_range, pf_parameters_encode, pf_parameters_decode
+from contrib.cell_star.parameter_fitting.pf_auto_params import pf_parameters_encode, pf_parameters_decode
 
 from cellprofiler.preferences import get_max_workers
 
@@ -36,6 +37,15 @@ max_number_of_chosen_snakes = 20
 #
 best_so_far = 1
 calculations = 0
+best_3 = []
+
+def keep_3_best(partial_parameters, distance):
+    global best_3
+    best_3.append((distance, partial_parameters))
+    best_3.sort(key=lambda x: x[0])
+    best_3 = best_3[:3]
+    if best_3[0][0] == best_3[-1][0]:
+        best_3 = [best_3[0]]
 
 def distance_norm(fitnesses):
     global calculations, best_so_far
@@ -89,17 +99,21 @@ def get_size_weight_list(params):
     return l
 
 
-def pf_get_distance(gt_snakes, images, initial_parameters):
+def pf_get_distance(gt_snakes, images, initial_parameters, callback = keep_3_best):
     gt_snake_seed_pairs = [(gt_snake, seed) for gt_snake in gt_snakes for seed in get_gt_snake_seeds(gt_snake)]
     random.shuffle(gt_snake_seed_pairs)
     pick_seed_pairs = max(min_number_of_chosen_seeds, max_number_of_chosen_snakes / len(
         initial_parameters["segmentation"]["stars"]["sizeWeight"]))
     gt_snake_seed_pairs = gt_snake_seed_pairs[:pick_seed_pairs]
 
-    distance = lambda partial_parameters, debug=False: \
-        distance_norm(
+    def distance(partial_parameters, debug=False):
+        current_distance = distance_norm(
             snakes_fitness(gt_snake_seed_pairs, images, initial_parameters, partial_parameters, debug=debug)
         )
+        if callback is not None:
+            callback(partial_parameters, current_distance)
+
+        return current_distance
 
     return distance
 
@@ -127,6 +141,7 @@ def test_trained_parameters(image, parameters, precision, avg_cell_diameter):
 #
 
 def run(image, gt_snakes, precision, avg_cell_diameter, method='brute', initial_params=None):
+    global best_3
     """
     :param image: input image
     :param gt_snakes: gt snakes label image
@@ -144,6 +159,7 @@ def run(image, gt_snakes, precision, avg_cell_diameter, method='brute', initial_
     images = ImageRepo(image, params)
 
     start = time.clock()
+    best_3 = []
     optimized = optimize(method, gt_snakes, images, params, precision, avg_cell_diameter)
 
     best_arg = optimized[0]
@@ -163,9 +179,10 @@ def optimize(method_name, gt_snakes, images, params, precision, avg_cell_diamete
     encoded_params = pf_parameters_encode(params)
     distance_function = pf_get_distance(gt_snakes, images, params)
     initial_distance = distance_function(encoded_params)
+    logger.debug("Initial parameters distance is (%f)." % (initial_distance))
     if method_name == "mp" and getattr(sys, "frozen", False) and sys.platform == 'win32':
         # multiprocessing do not work then
-        method_name = "brute"
+        method_name = "brutemaxbasin"
     if method_name == "mp":
         best_params_encoded, distance = multiproc_multitype_fitness(images.image, gt_snakes, precision, avg_cell_diameter, params)
         # test_trained_parameters(images.image, params, precision, avg_cell_diameter)
@@ -173,14 +190,28 @@ def optimize(method_name, gt_snakes, images, params, precision, avg_cell_diamete
     else:
         if method_name == 'brute':
             best_params_encoded, distance = optimize_brute(encoded_params, distance_function)
+        elif method_name == 'brutemaxbasin':
+            best_params_encoded, distance = optimize_brute(encoded_params, distance_function)
+            logger.debug("Best grid parameters distance is (%f)." % distance)
+            best_params_encoded, distance = optimize_basinhopping(best_params_encoded, distance_function, time_percent=150)
+        elif method_name == 'brutemax3basin':
+            _, _ = optimize_brute(encoded_params, distance_function)
+            logger.debug("Best grid parameters distance are %s." %  str(zip(*best_3)[0]))
+            logger.debug("Best grid parameters parameters are %s." %  str(zip(*best_3)[1]))
+
+            best_basins = []
+            for candidate in list(best_3):
+                best_basins.append(optimize_basinhopping(candidate[1], distance_function, time_percent = 50))
+            best_basins.sort(key=lambda x: x[1])
+
+            best_params_encoded, distance = best_basins[0]
         elif method_name == 'basin':
             best_params_encoded, distance = optimize_basinhopping(encoded_params, distance_function)
         elif method_name == 'diffevo':
             best_params_encoded, distance = optimize_de(encoded_params, distance_function)
 
-
     if initial_distance <= distance:
-        logger.debug("Initial parameters (%f) are not worse than the best found (%f)."%(initial_distance, distance))
+        logger.debug("Initial parameters (%f) are not worse than the best found (%f)." % (initial_distance, distance))
         return encoded_params, initial_distance
     else:
         return best_params_encoded, distance
@@ -208,8 +239,6 @@ def optimize_brute(params_to_optimize, distance_function):
     logger.debug("Search range: " + str(zip(lower_bound,upper_bound)))
     result = opt.brute(distance_function, zip(lower_bound, upper_bound), Ns=number_of_steps, disp=True, finish=None, full_output=True)
     logger.debug("Opt finished:" + str(result[:2]))
-    optimize_basinhopping(result[0], distance_function)
-    # distance_function(result[0], debug=True)
     return result[0], result[1]
 
 
@@ -230,45 +259,12 @@ def optimize_de(params_to_optimize, distance_function):
     return result.x, result.fun
 
 
-def optimize_basinhopping(params_to_optimize, distance_function):
+def optimize_basinhopping(params_to_optimize, distance_function, time_percent = 100):
     minimizer_kwargs = {"method": "COBYLA"}
-    result = opt.basinhopping(distance_function, params_to_optimize, minimizer_kwargs=minimizer_kwargs, niter=44)
+    result = opt.basinhopping(distance_function, params_to_optimize, minimizer_kwargs=minimizer_kwargs, niter=44*time_percent/100)
     logger.debug("Opt finished: " + str(result))
     return result.x, result.fun
 
-
-def optimize_anneal(params_to_optimize, distance_function):
-    # DEPRECATED
-    broadness = 0.1
-    search_range = 10 * broadness
-    temperature = 500 + (search_range * 100) ** 2
-
-    stall_iter = 300  # int(temperature / 4)
-
-    lower_bound = params_to_optimize - np.maximum(np.abs(params_to_optimize), 0.1)
-    lower_bound[params_to_optimize == 0] = -100 * search_range
-
-    upper_bound = params_to_optimize + np.maximum(np.abs(params_to_optimize), 0.1)
-    upper_bound[params_to_optimize == 0] = 100 * search_range
-
-    # lower_bound = [0]*len(params_to_optimize)
-    # upper_bound = [1]*len(params_to_optimize)
-    result = opt.anneal(distance_function, params_to_optimize, full_output=True, lower=lower_bound, upper=upper_bound, maxiter=10, schedule='cauchy')
-    logger.debug("Opt finished: " + str(result))
-    # fitness_function(result[0], debug=True)
-    return result[0], result[1]
-
-
-#
-#
-# CALLBACKS
-#
-#
-
-# def universal_callback(method_name, params, value):
-# best_so_far = min(best_so_far, distance)
-#     print "Current:", distance, ", Best:", best_so_far
-#     return distance
 
 
 #

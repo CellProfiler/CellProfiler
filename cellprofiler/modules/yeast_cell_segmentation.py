@@ -712,13 +712,15 @@ class YeastCellSegmentation(cpmi.Identify):
         
         ### opening file dialog
         labels = None
+        image_path = None
         with wx.FileDialog(None,
                             message = "Open an image file",
                             wildcard = "Image file (*.tif,*.tiff,*.jpg,*.jpeg,*.png,*.gif,*.bmp)|*.tif;*.tiff;*.jpg;*.jpeg;*.png;*.gif;*.bmp|*.* (all files)|*.*",
                             style = wx.FD_OPEN) as dlg:
             if dlg.ShowModal() == wx.ID_OK:
                 from bioformats import load_image
-                image = load_image( dlg.Path) #lip.provide_image(None).pixel_data
+                image_path = dlg.Path
+                image = load_image(image_path) #lip.provide_image(None).pixel_data
                 label_path = dlg.Path + ".lab.png" # if file attached load labels from file
                 if isfile(label_path):
                     labels = (load_image(label_path) * 255).astype(int)
@@ -769,14 +771,18 @@ class YeastCellSegmentation(cpmi.Identify):
         ## end of image adaptation
 
         # TODO think what to do if the user chooses new image (and we load old cells)
-        if labels is None:
-            labels = [np.zeros(self.pixel_data.shape[:2], int)]
+        if labels is None or not labels.any():
+            edit_labels = [np.zeros(self.pixel_data.shape[:2], int)]
+
+            if getattr(self, "last_labeling", None) is not None:
+                if self.last_labeling[0] == image_path:
+                    edit_labels = [self.last_labeling[1]]
 
             ## two next lines are hack from Lee
-            labels[0][0, 0] = 1
-            labels[0][-2, -2] = 1
+            edit_labels[0][0, 0] = 1
+            edit_labels[0][-2, -2] = 1
             with EditObjectsDialog(
-                    self.pixel_data, labels, False, title) as dialog_box:
+                    self.pixel_data, edit_labels, False, title) as dialog_box:
                 result = dialog_box.ShowModal()
                 if result != OK:
                     return None
@@ -784,6 +790,8 @@ class YeastCellSegmentation(cpmi.Identify):
             ## two next lines are hack from Lee
             labels[0, 0] = 0
             labels[-2, -2] = 0
+
+            self.last_labeling = (image_path, labels)
 
         # check if the user provided GT
         # TODO check for con. comp. and e.g. let it go if more then 3 cells were added

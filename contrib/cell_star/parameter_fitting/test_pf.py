@@ -77,7 +77,7 @@ def run_pf(input_image, gt_label, parameters, precision, avg_cell_diameter):
     if get_max_workers() > 1:
         best_complete_params, _, best_score = run(croped_image, gt_snakes, precision=precision, avg_cell_diameter=avg_cell_diameter, initial_params=parameters, method='mp')
     else:
-        best_complete_params, _, best_score = run(croped_image, gt_snakes, precision=precision, avg_cell_diameter=avg_cell_diameter, initial_params=parameters, method='brute')
+        best_complete_params, _, best_score = run(croped_image, gt_snakes, precision=precision, avg_cell_diameter=avg_cell_diameter, initial_params=parameters, method='brutemaxbasin')
 
     return best_complete_params, best_score
 

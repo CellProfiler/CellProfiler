@@ -112,7 +112,7 @@ def run_multiprocess(image, gt_snakes, precision=-1, avg_cell_diameter=-1, metho
         params = copy.deepcopy(initial_params)
 
     start = time.clock()
-    best_params, distance = multiproc_optimize_brute(image, gt_snakes, params)
+    best_params, distance = multiproc_optimize(image, gt_snakes, method, params)
     best_params_full = PFRankSnake.merge_rank_parameters(params, best_params)
     stop = time.clock()
 
@@ -183,8 +183,13 @@ def run_singleprocess(image, gt_snakes, precision=-1, avg_cell_diameter=-1, meth
 
 def optimize(method_name, encoded_params, distance_function):
     initial_distance = distance_function(encoded_params)
+    logger.debug("Initial parameters distance is (%f)." % initial_distance)
     if method_name == 'brute':
         best_params_encoded, distance = optimize_brute(encoded_params, distance_function)
+    elif method_name == 'brutemaxbasin':
+        best_params_encoded, distance = optimize_brute(encoded_params, distance_function)
+        logger.debug("Best grid parameters distance is (%f)." % distance)
+        best_params_encoded, distance = optimize_basinhopping(best_params_encoded, distance_function)
     else:
         raise Exception("No such optimization method.")
 
@@ -213,8 +218,6 @@ def optimize_brute(params_to_optimize, distance_function):
     elapsed = time.clock() - start
 
     logger.debug("Opt finished: " + str(result[:2]) + " Elapsed[s]: " + str(elapsed))
-    # distance_function(result[0], debug=True)
-    optimize_basinhopping(result[0], distance_function)
 
     return result[0], result[1]
 
@@ -238,11 +241,11 @@ def run_wrapper(queue, image, gt_snakes, method, params):
     queue.put(result)
 
 
-def multiproc_optimize_brute(image, gt_snakes, initial_params=None):
+def multiproc_optimize(image, gt_snakes, method='brute', initial_params=None):
     result_queue = Queue()
     workers_num = get_max_workers()
     optimizers = [
-        Process(target=run_wrapper, args=(result_queue, image, gt_snakes, 'brute', initial_params)) for _ in range(workers_num)]
+        Process(target=run_wrapper, args=(result_queue, image, gt_snakes, method, initial_params)) for _ in range(workers_num)]
 
     for optimizer in optimizers:
         optimizer.start()

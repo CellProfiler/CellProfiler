@@ -21,9 +21,9 @@ def run_rank_pf(input_image, gt_mask, parameters):
     gt_snakes = gt_label_to_snakes(cropped_gt_label)
     if get_max_workers() > 1 and not(getattr(sys, "frozen", False) and sys.platform == 'win32'):
         # multiprocessing do not work if frozen on win32
-        best_complete_params, _, best_score = pf_rank.run_multiprocess(cropped_image, gt_snakes, initial_params=parameters, method='brute')
+        best_complete_params, _, best_score = pf_rank.run_multiprocess(cropped_image, gt_snakes, initial_params=parameters, method='brutemaxbasin')
     else:
-        best_complete_params, _, best_score = pf_rank.run_singleprocess(cropped_image, gt_snakes, initial_params=parameters, method='brute')
+        best_complete_params, _, best_score = pf_rank.run_singleprocess(cropped_image, gt_snakes, initial_params=parameters, method='brutemaxbasin')
 
     return best_complete_params, best_score
 
@@ -36,7 +36,7 @@ def test_rank_pf(image_path, mask_path, precision, avg_cell_diameter, method, in
 
     gt_snakes = gt_label_to_snakes(cropped_gt_label)
     if method == "mp":
-        return pf_rank.run_multiprocess(cropped_image, gt_snakes, precision, avg_cell_diameter, 'brute', initial_params=initial_params)
+        return pf_rank.run_multiprocess(cropped_image, gt_snakes, precision, avg_cell_diameter, 'brutemaxbasin', initial_params=initial_params)
     else:
         return pf_rank.run_singleprocess(cropped_image, gt_snakes, precision, avg_cell_diameter, method, initial_params=initial_params)
 

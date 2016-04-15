@@ -1,7 +1,9 @@
 '''test_filterbyobjectmeasurements.py: Test FilterByObjectMeasurements module'''
 
+import contextlib
 import StringIO
 import base64
+import cPickle
 import os
 import tempfile
 import unittest
@@ -54,6 +56,38 @@ class TestFilterObjects(unittest.TestCase):
             o.segmented = object_dict[key]
             object_set.add_objects(o, key)
         return workspace, module
+
+    @contextlib.contextmanager
+    def make_classifier(self, module, 
+                        answers, 
+                        classes=None,
+                        class_names = None, 
+                        rules_class = None,
+                        name = "Classifier",
+                        feature_names = ["Foo_"+TEST_FTR]):
+        '''Returns the filename of the classifier pickle'''
+        assert isinstance(module, F.FilterObjects)
+        if classes is None:
+            classes = np.arange(1, np.max(answers)+1)
+        if class_names is None:
+            class_names = ["Class%d" for _ in classes]
+        if rules_class is None:
+            rules_class = class_names[0]
+        s = make_classifier_pickle(answers, classes, class_names, name, 
+                                  feature_names)
+        fd, filename = tempfile.mkstemp(".model")
+        os.write(fd, s)
+        os.close(fd)
+            
+        module.mode.value = F.MODE_CLASSIFIERS
+        module.rules_class.value = rules_class
+        module.rules_directory.set_custom_path(os.path.dirname(filename))
+        module.rules_file_name.value = os.path.split(filename)[1]
+        yield
+        try:
+            os.remove(filename)
+        except:
+            pass
 
     def test_00_01_zeros_single(self):
         '''Test keep single object on an empty labels matrix'''
@@ -1679,3 +1713,84 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
         mask = (unedited != 3) & (unedited != 0)
         self.assertTrue(np.all(small_removed[mask] != 0))
         self.assertTrue(np.all(small_removed[~mask] == 0))
+        
+    def test_11_00_classify_none(self):
+        workspace, module = self.make_workspace(
+            {INPUT_OBJECTS : np.zeros((10, 10), int)})
+        module.object_name.value = INPUT_OBJECTS
+        module.target_name.value = OUTPUT_OBJECTS
+        with self.make_classifier(module, np.zeros(0, int), classes = [1]):
+            workspace.measurements[INPUT_OBJECTS, TEST_FTR] = np.zeros(0)
+            module.run(workspace)
+            output_objects = workspace.object_set.get_objects(OUTPUT_OBJECTS)
+            self.assertEqual(output_objects.count, 0)
+        
+    def test_11_01_classify_true(self):
+        labels = np.zeros((10, 10), int)
+        labels[4:7, 4:7] = 1
+        workspace, module = self.make_workspace(
+            {INPUT_OBJECTS : labels})
+        module.object_name.value = INPUT_OBJECTS
+        module.target_name.value = OUTPUT_OBJECTS
+        with self.make_classifier(module, np.ones(1, int), classes = [1, 2]):
+            workspace.measurements[INPUT_OBJECTS, TEST_FTR] = np.zeros(1)
+            module.run(workspace)
+            output_objects = workspace.object_set.get_objects(OUTPUT_OBJECTS)
+            self.assertEqual(output_objects.count, 1)
+    
+    def test_11_02_classify_false(self):
+        labels = np.zeros((10, 10), int)
+        labels[4:7, 4:7] = 1
+        workspace, module = self.make_workspace(
+            {INPUT_OBJECTS : labels})
+        module.object_name.value = INPUT_OBJECTS
+        module.target_name.value = OUTPUT_OBJECTS
+        with self.make_classifier(module, np.ones(1, int)*2, classes = [1, 2]):
+            workspace.measurements[INPUT_OBJECTS, TEST_FTR] = np.zeros(1)
+            module.run(workspace)
+            output_objects = workspace.object_set.get_objects(OUTPUT_OBJECTS)
+            self.assertEqual(output_objects.count, 0)
+        
+    def test_11_03_classify_many(self):
+        labels = np.zeros((10, 10), int)
+        labels[1:4, 1:4] = 1
+        labels[5:7, 5:7] = 2
+        workspace, module = self.make_workspace(
+            {INPUT_OBJECTS : labels})
+        module.object_name.value = INPUT_OBJECTS
+        module.target_name.value = OUTPUT_OBJECTS
+        with self.make_classifier(
+            module, np.array([1, 2]), classes = [1, 2]):
+            workspace.measurements[INPUT_OBJECTS, TEST_FTR] = np.zeros(2)
+            module.run(workspace)
+            output_objects = workspace.object_set.get_objects(OUTPUT_OBJECTS)
+            self.assertEqual(output_objects.count, 1)
+            labels_out = output_objects.get_labels()[0][0]
+            np.testing.assert_array_equal(labels_out[1:4, 1:4], 1)
+            np.testing.assert_array_equal(labels_out[5:7, 5:7], 0)
+        
+class FakeClassifier(object):
+    def __init__(self, answers, classes):
+        '''initializer
+        
+        answers - a vector of answers to be returned by "predict"
+        
+        classes - a vector of class numbers to be used to populate self.classes_
+        '''
+        self.answers_ = answers
+        self.classes_ = classes
+        
+    def predict(self, *args, **kwargs):
+        return self.answers_
+    
+def make_classifier_pickle(answers, classes, class_names, name, feature_names):
+    '''Make a pickle of a fake classifier
+    
+    answers - the answers you want to get back after calling classifier.predict
+    classes - the class #s for the answers.
+    class_names - one name per class in the order they appear in classes
+    name - the name of the classifier
+    feature_names - the names of the features fed into the classifier
+    '''
+    classifier = FakeClassifier(answers, classes)
+    return cPickle.dumps([classifier, class_names, name, feature_names])

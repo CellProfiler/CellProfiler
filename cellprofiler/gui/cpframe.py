@@ -692,11 +692,6 @@ class CPFrame(wx.Frame):
                                 "Launch the developer's guide webpage")
         self.__menu_help.Append(ID_HELP_SOURCE_CODE, "Source Code",
                                 "Visit CellProfiler's Github repository")
-        self.__menu_help.Append(
-                ID_CHECK_NEW_VERSION,
-                "Check for Updates...",
-                "Check for a new version of CellProfiler")
-
         self.__menu_help.Append(wx.ID_ABOUT, "&About CellProfiler", "About CellProfiler")
 
         self.__menu_bar = wx.MenuBar()
@@ -752,7 +747,7 @@ class CPFrame(wx.Frame):
                  (wx.ACCEL_CMD, ord('Q'), ID_FILE_EXIT),
                  (wx.ACCEL_CMD, ord('W'), ID_FILE_EXIT),
                  (wx.ACCEL_CMD, ord('A'), wx.ID_SELECTALL),
-                 (wx.ACCEL_CMD, ord('C'), wx.ID_CUT),
+                 (wx.ACCEL_CMD, ord('C'), wx.ID_COPY),
                  (wx.ACCEL_CMD, ord('V'), wx.ID_PASTE),
                  (wx.ACCEL_NORMAL, wx.WXK_F5, ID_DEBUG_TOGGLE),
                  (wx.ACCEL_NORMAL, wx.WXK_F6, ID_DEBUG_STEP),

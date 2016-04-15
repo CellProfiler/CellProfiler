@@ -1,76 +1,68 @@
 """PipelineController.py - controls (modifies) a pipeline
 """
 
-import Queue
+import cellprofiler.analysis
+import cellprofiler.cpimage
+import cellprofiler.cpmodule
+import cellprofiler.gui.addmoduleframe
+import cellprofiler.gui.bitmaplabelbutton
+import cellprofiler.gui.help
+import cellprofiler.gui.htmldialog
+import cellprofiler.gui.moduleview
+import cellprofiler.gui.omerologin
+import cellprofiler.gui.parametersampleframe
+import cellprofiler.gui.pathlist
+import cellprofiler.gui.viewworkspace
+import cellprofiler.icons
+import cellprofiler.measurements
+import cellprofiler.modules.loadimages
+import cellprofiler.modules.loadimages
+import cellprofiler.objects
+import cellprofiler.pipeline
+import cellprofiler.preferences
+import cellprofiler.utilities.version
+import cellprofiler.workspace
+import cpframe
+import cStringIO
 import csv
 import datetime
+import errordialog
 import exceptions
+import h5py
 import hashlib
 import logging
-import math
+import numpy
 import os
+import Queue
 import random
 import re
-import shutil
+import runmultiplepipelinesdialog
 import string
 import sys
 import threading
 import urllib
-from cStringIO import StringIO
-
-import h5py
-import numpy as np
 import wx
-from wx.lib.mixins.listctrl import ColumnSorterMixin, ListCtrlAutoWidthMixin
-
-import cellprofiler.analysis as cpanalysis
-import cellprofiler.analysis as cpanalysis
-import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpmodule
-import cellprofiler.gui.moduleview
-import cellprofiler.gui.parametersampleframe as psf
-import cellprofiler.measurements as cpm
-import cellprofiler.objects as cpo
-import cellprofiler.pipeline as cpp
-import cellprofiler.preferences as cpprefs
-import cellprofiler.utilities.version as version
-import cellprofiler.utilities.walk_in_background as W
-import cellprofiler.workspace as cpw
-import cpframe
-from cellprofiler.gui import get_cp_bitmap
-from cellprofiler.gui.addmoduleframe import AddModuleFrame
-from cellprofiler.gui.bitmaplabelbutton import BitmapLabelButton
-from cellprofiler.gui.help import HELP_ON_MODULE_BUT_NONE_SELECTED, PLATEVIEWER_HELP
-from cellprofiler.gui.htmldialog import HTMLDialog
-from cellprofiler.gui.movieslider import EVT_TAKE_STEP
-from cellprofiler.gui.omerologin import OmeroLoginDlg
-from cellprofiler.gui.pathlist import EVT_PLC_SELECTION_CHANGED
-from cellprofiler.gui.viewworkspace import \
-     show_workspace_viewer, update_workspace_viewer
-from cellprofiler.icons import get_builtin_image
-from cellprofiler.modules.loadimages import C_FILE_NAME, C_PATH_NAME, C_FRAME
-from cellprofiler.modules.loadimages import pathname2url
-from errordialog import display_error_dialog, ED_CONTINUE, ED_STOP, ED_SKIP
-from errordialog import display_error_message
-from runmultiplepipelinesdialog import RunMultplePipelinesDialog
+import wx.lib.mixins.listctrl
 
 logger = logging.getLogger(__name__)
-RECENT_PIPELINE_FILE_MENU_ID = [wx.NewId() for i in range(cpprefs.RECENT_FILE_COUNT)]
-RECENT_WORKSPACE_FILE_MENU_ID = [wx.NewId() for i in range(cpprefs.RECENT_FILE_COUNT)]
+RECENT_PIPELINE_FILE_MENU_ID = [wx.NewId() for i in range(cellprofiler.preferences.RECENT_FILE_COUNT)]
+RECENT_WORKSPACE_FILE_MENU_ID = [wx.NewId() for i in range(cellprofiler.preferences.RECENT_FILE_COUNT)]
 WRITING_MAT_FILE = "Writing .MAT measurements file..."
 WROTE_MAT_FILE = ".MAT measurements file has been saved"
+
 
 class PipelineController:
     """Controls the pipeline through the UI
 
     """
+
     def __init__(self, workspace, frame):
         self.__workspace = workspace
         pipeline = self.__pipeline = workspace.pipeline
         pipeline.add_listener(self.__on_pipeline_event)
         self.__analysis = None
         self.__frame = frame
-        self.__add_module_frame = AddModuleFrame(frame,-1,"Add modules")
+        self.__add_module_frame = cellprofiler.gui.addmoduleframe.AddModuleFrame(frame, -1, "Add modules")
         self.__add_module_frame.add_listener(self.on_add_to_pipeline)
         # ~*~
         self.__parameter_sample_frame = None
@@ -87,8 +79,8 @@ class PipelineController:
         self.__plate_viewer = None
         self.__locked_workspace_filename = None
         self.pipeline_list = []
-        cpprefs.add_image_directory_listener(self.__on_image_directory_change)
-        cpprefs.add_output_directory_listener(self.__on_output_directory_change)
+        cellprofiler.preferences.add_image_directory_listener(self.__on_image_directory_change)
+        cellprofiler.preferences.add_output_directory_listener(self.__on_output_directory_change)
 
         # interaction/display requests and exceptions from an Analysis
         self.interaction_request_queue = Queue.PriorityQueue()
@@ -101,7 +93,7 @@ class PipelineController:
         self.populate_edit_menu(self.__frame.menu_edit_add_module)
         assert isinstance(frame, wx.Frame)
         frame.Bind(wx.EVT_MENU, self.__on_new_workspace,
-                   id = cpframe.ID_FILE_NEW_WORKSPACE)
+                   id=cpframe.ID_FILE_NEW_WORKSPACE)
         wx.EVT_MENU(frame, cpframe.ID_FILE_LOAD,
                     self.__on_open_workspace)
         wx.EVT_MENU(frame, cpframe.ID_FILE_SAVE,
@@ -112,17 +104,17 @@ class PipelineController:
                     self.__on_load_pipeline)
         wx.EVT_MENU(frame, cpframe.ID_FILE_URL_LOAD_PIPELINE, self.__on_url_load_pipeline)
         wx.EVT_MENU(frame, cpframe.ID_FILE_IMPORT_FILE_LIST, self.__on_import_file_list)
-        wx.EVT_MENU(frame, cpframe.ID_FILE_SAVE_PIPELINE,self.__on_save_as_pipeline)
+        wx.EVT_MENU(frame, cpframe.ID_FILE_SAVE_PIPELINE, self.__on_save_as_pipeline)
         wx.EVT_MENU(frame, cpframe.ID_FILE_EXPORT_IMAGE_SETS,
                     self.__on_export_image_sets)
         wx.EVT_MENU(frame, cpframe.ID_FILE_EXPORT_PIPELINE_NOTES,
                     self.__on_export_pipeline_notes)
         wx.EVT_MENU(frame, cpframe.ID_FILE_REVERT_TO_SAVED,
                     self.__on_revert_workspace)
-        wx.EVT_MENU(frame, cpframe.ID_FILE_CLEAR_PIPELINE,self.__on_clear_pipeline)
+        wx.EVT_MENU(frame, cpframe.ID_FILE_CLEAR_PIPELINE, self.__on_clear_pipeline)
         wx.EVT_MENU(frame, cpframe.ID_FILE_PLATEVIEWER, self.__on_plateviewer)
-        wx.EVT_MENU(frame, cpframe.ID_FILE_ANALYZE_IMAGES,self.on_analyze_images)
-        wx.EVT_MENU(frame, cpframe.ID_FILE_STOP_ANALYSIS,self.on_stop_running)
+        wx.EVT_MENU(frame, cpframe.ID_FILE_ANALYZE_IMAGES, self.on_analyze_images)
+        wx.EVT_MENU(frame, cpframe.ID_FILE_STOP_ANALYSIS, self.on_stop_running)
         wx.EVT_MENU(frame, cpframe.ID_FILE_RUN_MULTIPLE_PIPELINES, self.on_run_multiple_pipelines)
         wx.EVT_MENU(frame, cpframe.ID_FILE_RESTART, self.on_restart)
 
@@ -152,20 +144,20 @@ class PipelineController:
                         cpframe.ID_EDIT_REMOVE_FROM_FILE_LIST,
                         cpframe.ID_EDIT_SHOW_FILE_LIST_IMAGE):
             frame.Bind(wx.EVT_UPDATE_UI, self.on_update_pathlist_ui,
-                       id = menu_id)
+                       id=menu_id)
         frame.Bind(wx.EVT_UPDATE_UI, self.on_update_module_enable,
-                   id = cpframe.ID_EDIT_ENABLE_MODULE)
+                   id=cpframe.ID_EDIT_ENABLE_MODULE)
         frame.Bind(wx.EVT_MENU, self.on_module_enable,
                    id=cpframe.ID_EDIT_ENABLE_MODULE)
 
-        wx.EVT_MENU(frame,cpframe.ID_DEBUG_TOGGLE,self.on_debug_toggle)
-        wx.EVT_MENU(frame,cpframe.ID_DEBUG_STEP,self.on_debug_step)
-        wx.EVT_MENU(frame,cpframe.ID_DEBUG_NEXT_IMAGE_SET,self.on_debug_next_image_set)
-        wx.EVT_MENU(frame,cpframe.ID_DEBUG_NEXT_GROUP, self.on_debug_next_group)
-        wx.EVT_MENU(frame,cpframe.ID_DEBUG_CHOOSE_GROUP, self.on_debug_choose_group)
-        wx.EVT_MENU(frame,cpframe.ID_DEBUG_CHOOSE_IMAGE_SET, self.on_debug_choose_image_set)
-        wx.EVT_MENU(frame,cpframe.ID_DEBUG_CHOOSE_RANDOM_IMAGE_SET, self.on_debug_random_image_set)
-        wx.EVT_MENU(frame,cpframe.ID_DEBUG_RELOAD, self.on_debug_reload)
+        wx.EVT_MENU(frame, cpframe.ID_DEBUG_TOGGLE, self.on_debug_toggle)
+        wx.EVT_MENU(frame, cpframe.ID_DEBUG_STEP, self.on_debug_step)
+        wx.EVT_MENU(frame, cpframe.ID_DEBUG_NEXT_IMAGE_SET, self.on_debug_next_image_set)
+        wx.EVT_MENU(frame, cpframe.ID_DEBUG_NEXT_GROUP, self.on_debug_next_group)
+        wx.EVT_MENU(frame, cpframe.ID_DEBUG_CHOOSE_GROUP, self.on_debug_choose_group)
+        wx.EVT_MENU(frame, cpframe.ID_DEBUG_CHOOSE_IMAGE_SET, self.on_debug_choose_image_set)
+        wx.EVT_MENU(frame, cpframe.ID_DEBUG_CHOOSE_RANDOM_IMAGE_SET, self.on_debug_random_image_set)
+        wx.EVT_MENU(frame, cpframe.ID_DEBUG_RELOAD, self.on_debug_reload)
         wx.EVT_MENU(frame, cpframe.ID_DEBUG_VIEW_WORKSPACE,
                     self.on_debug_view_workspace)
 
@@ -173,18 +165,18 @@ class PipelineController:
         wx.EVT_MENU(frame, cpframe.ID_SAMPLE_INIT, self.on_sample_init)
         # ~^~
 
-        wx.EVT_MENU(frame,cpframe.ID_WINDOW_SHOW_ALL_WINDOWS, self.on_show_all_windows)
-        wx.EVT_MENU(frame,cpframe.ID_WINDOW_HIDE_ALL_WINDOWS, self.on_hide_all_windows)
+        wx.EVT_MENU(frame, cpframe.ID_WINDOW_SHOW_ALL_WINDOWS, self.on_show_all_windows)
+        wx.EVT_MENU(frame, cpframe.ID_WINDOW_HIDE_ALL_WINDOWS, self.on_hide_all_windows)
 
         from bioformats.formatreader import set_omero_login_hook
         set_omero_login_hook(self.omero_login)
 
     def start(self, workspace_file, pipeline_path):
-        '''Do initialization after GUI hookup
+        """Do initialization after GUI hookup
 
         Perform steps that need to happen after all of the user interface
         elements have been initialized.
-        '''
+        """
         if workspace_file is not None:
             self.do_open_workspace(workspace_file,
                                    load_pipeline=(pipeline_path is None))
@@ -192,8 +184,8 @@ class PipelineController:
             self.do_create_workspace()
         if pipeline_path is not None:
             self.do_load_pipeline(pipeline_path)
-        file_list = cpprefs.get_image_set_file()
-        cpprefs.clear_image_set_file()
+        file_list = cellprofiler.preferences.get_image_set_file()
+        cellprofiler.preferences.clear_image_set_file()
         if file_list is not None:
             self.__pipeline.read_file_list(file_list)
 
@@ -206,11 +198,11 @@ class PipelineController:
     def attach_to_path_list_ctrl(self,
                                  path_list_ctrl,
                                  path_list_filtered_files_checkbox):
-        '''Attach the pipeline controller to the path_list_ctrl
+        """Attach the pipeline controller to the path_list_ctrl
 
         This lets the pipeline controller populate the path list as
         it changes.
-        '''
+        """
         self.__path_list_ctrl = path_list_ctrl
         self.__path_list_is_filtered = None
         self.__path_list_filter_checkbox = path_list_filtered_files_checkbox
@@ -218,28 +210,29 @@ class PipelineController:
             self.__path_list_ctrl.get_show_disabled()
 
         path_list_ctrl.set_context_menu_fn(
-            self.get_pathlist_file_context_menu,
-            self.get_pathlist_folder_context_menu,
-            self.get_pathlist_empty_context_menu,
-            self.on_pathlist_file_command,
-            self.on_pathlist_folder_command,
-            self.on_pathlist_empty_command)
+                self.get_pathlist_file_context_menu,
+                self.get_pathlist_folder_context_menu,
+                self.get_pathlist_empty_context_menu,
+                self.on_pathlist_file_command,
+                self.on_pathlist_folder_command,
+                self.on_pathlist_empty_command)
         path_list_ctrl.set_delete_fn(self.on_pathlist_file_delete)
         self.path_list_drop_target = FLDropTarget(
-            self.on_pathlist_drop_files,
-            self.on_pathlist_drop_text)
+                self.on_pathlist_drop_files,
+                self.on_pathlist_drop_text)
         path_list_ctrl.SetDropTarget(self.path_list_drop_target)
 
         def show_disabled(event):
             self.__path_list_ctrl.set_show_disabled(
-                self.__path_list_filter_checkbox.Value)
+                    self.__path_list_filter_checkbox.Value)
+
         self.__path_list_filter_checkbox.Bind(wx.EVT_CHECKBOX, show_disabled)
 
     def set_path_list_filtering(self, use_filter):
-        '''Update the path list UI according to the filter on/off state
+        """Update the path list UI according to the filter on/off state
 
         use_filter - True if filtering, False if all files enabled.
-        '''
+        """
         use_filter = bool(use_filter)
         if self.__path_list_is_filtered is not use_filter:
             sizer = self.__path_list_filter_checkbox.GetContainingSizer()
@@ -249,14 +242,14 @@ class PipelineController:
                 self.__path_list_ctrl.enable_all_paths()
             self.__path_list_is_filtered = use_filter
 
-    def attach_to_module_view(self,module_view):
+    def attach_to_module_view(self, module_view):
         """Listen for setting changes from the module view
 
         """
         self.__module_view = module_view
         module_view.add_listener(self.__on_module_view_event)
 
-    def attach_to_module_controls_panel(self,module_controls_panel):
+    def attach_to_module_controls_panel(self, module_controls_panel):
         """Attach the pipeline controller to the module controls panel
 
         Attach the pipeline controller to the module controls panel.
@@ -266,23 +259,23 @@ class PipelineController:
         self.__module_controls_panel = module_controls_panel
         mcp_sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.__help_button = wx.Button(
-            self.__module_controls_panel, cpframe.ID_HELP_MODULE,
-            "?", (0,0), (30, -1))
+                self.__module_controls_panel, cpframe.ID_HELP_MODULE,
+                "?", (0, 0), (30, -1))
         self.__help_button.SetToolTipString("Get Help for selected module")
-        self.__mcp_text = wx.StaticText(self.__module_controls_panel,-1,"Adjust modules:")
-        self.__mcp_add_module_button = wx.Button(self.__module_controls_panel,-1,"+",(0,0), (30, -1))
+        self.__mcp_text = wx.StaticText(self.__module_controls_panel, -1, "Adjust modules:")
+        self.__mcp_add_module_button = wx.Button(self.__module_controls_panel, -1, "+", (0, 0), (30, -1))
         self.__mcp_add_module_button.SetToolTipString("Add a module")
         self.__mcp_remove_module_button = wx.Button(
-            self.__module_controls_panel, cpframe.ID_EDIT_DELETE,
-            "-",(0,0), (30, -1))
+                self.__module_controls_panel, cpframe.ID_EDIT_DELETE,
+                "-", (0, 0), (30, -1))
         self.__mcp_remove_module_button.SetToolTipString("Remove selected module")
         self.__mcp_module_up_button = wx.Button(
-            self.__module_controls_panel, cpframe.ID_EDIT_MOVE_UP,
-            "^",(0,0), (30, -1))
+                self.__module_controls_panel, cpframe.ID_EDIT_MOVE_UP,
+                "^", (0, 0), (30, -1))
         self.__mcp_module_up_button.SetToolTipString("Move selected module up")
         self.__mcp_module_down_button = wx.Button(
-            self.__module_controls_panel, cpframe.ID_EDIT_MOVE_DOWN,
-            "v", (0,0), (30, -1))
+                self.__module_controls_panel, cpframe.ID_EDIT_MOVE_DOWN,
+                "v", (0, 0), (30, -1))
         self.__mcp_module_down_button.SetToolTipString("Move selected module down")
         mcp_sizer.AddMany([(self.__help_button, 0, wx.ALIGN_CENTER | wx.ALL, 3),
                            ((1, 3), 3),
@@ -292,11 +285,10 @@ class PipelineController:
                            (self.__mcp_module_up_button, 0, wx.ALIGN_CENTER | wx.ALL, 3),
                            (self.__mcp_module_down_button, 0, wx.ALIGN_CENTER | wx.ALL, 3)])
         self.__module_controls_panel.SetSizer(mcp_sizer)
-        self.__module_controls_panel.Bind(wx.EVT_BUTTON, self.__on_add_module,self.__mcp_add_module_button)
-        self.__module_controls_panel.Bind(wx.EVT_BUTTON, self.on_remove_module,self.__mcp_remove_module_button)
-        self.__module_controls_panel.Bind(wx.EVT_BUTTON, self.on_module_up,self.__mcp_module_up_button)
-        self.__module_controls_panel.Bind(wx.EVT_BUTTON, self.on_module_down,self.__mcp_module_down_button)
-
+        self.__module_controls_panel.Bind(wx.EVT_BUTTON, self.__on_add_module, self.__mcp_add_module_button)
+        self.__module_controls_panel.Bind(wx.EVT_BUTTON, self.on_remove_module, self.__mcp_remove_module_button)
+        self.__module_controls_panel.Bind(wx.EVT_BUTTON, self.on_module_up, self.__mcp_module_up_button)
+        self.__module_controls_panel.Bind(wx.EVT_BUTTON, self.on_module_down, self.__mcp_module_down_button)
 
     ANALYZE_IMAGES = "Analyze Images"
     ANALYZE_IMAGES_HELP = "Start a CellProfiler analysis run"
@@ -316,7 +308,7 @@ class PipelineController:
         In addition, the PipelineController gets to add whatever buttons it wants to the
         panel.
         """
-        bkgnd_color = cpprefs.get_background_color()
+        bkgnd_color = cellprofiler.preferences.get_background_color()
         assert isinstance(panel, wx.Window)
         self.__test_controls_panel = panel
         panel.SetBackgroundColour(bkgnd_color)
@@ -337,45 +329,44 @@ class PipelineController:
         #
         # Launch sizer
         #
-        self.__test_bmp = wx.BitmapFromImage(get_builtin_image("IMG_TEST"))
-        self.__test_mode_button = BitmapLabelButton(
-                panel, bitmap = self.__test_bmp, label = self.ENTER_TEST_MODE)
+        self.__test_bmp = wx.BitmapFromImage(cellprofiler.icons.get_builtin_image("IMG_TEST"))
+        self.__test_mode_button = cellprofiler.gui.bitmaplabelbutton.BitmapLabelButton(
+                panel, bitmap=self.__test_bmp, label=self.ENTER_TEST_MODE)
         self.__test_mode_button.Bind(wx.EVT_BUTTON, self.on_debug_toggle)
         self.__test_mode_button.SetToolTipString(self.ENTER_TEST_MODE_HELP)
 
         self.__tcp_launch_sizer.Add(self.__test_mode_button, 1, wx.EXPAND)
 
-        analyze_bmp = wx.BitmapFromImage(get_builtin_image("IMG_ANALYZE_16"))
-        self.__analyze_images_button = BitmapLabelButton(
-            panel, bitmap = analyze_bmp, label = self.ANALYZE_IMAGES)
+        analyze_bmp = wx.BitmapFromImage(cellprofiler.icons.get_builtin_image("IMG_ANALYZE_16"))
+        self.__analyze_images_button = cellprofiler.gui.bitmaplabelbutton.BitmapLabelButton(
+                panel, bitmap=analyze_bmp, label=self.ANALYZE_IMAGES)
         self.__analyze_images_button.Bind(wx.EVT_BUTTON, self.on_analyze_images)
         self.__analyze_images_button.SetToolTipString(self.ANALYZE_IMAGES_HELP)
 
         self.__tcp_launch_sizer.Add(self.__analyze_images_button, 1, wx.EXPAND)
 
-
         #
         # Analysis sizer
         #
-        stop_bmp = wx.BitmapFromImage(get_builtin_image("IMG_STOP"))
-        pause_bmp = wx.BitmapFromImage(get_builtin_image("IMG_PAUSE"))
-        self.__pause_button = BitmapLabelButton(
-            panel, bitmap = pause_bmp, label = self.PAUSE)
+        stop_bmp = wx.BitmapFromImage(cellprofiler.icons.get_builtin_image("IMG_STOP"))
+        pause_bmp = wx.BitmapFromImage(cellprofiler.icons.get_builtin_image("IMG_PAUSE"))
+        self.__pause_button = cellprofiler.gui.bitmaplabelbutton.BitmapLabelButton(
+                panel, bitmap=pause_bmp, label=self.PAUSE)
         self.__pause_button.Bind(wx.EVT_BUTTON, self.on_pause)
         self.__pause_button.SetToolTipString(self.PAUSE_HELP)
         self.__tcp_analysis_sizer.Add(self.__pause_button, 1, wx.EXPAND)
 
-        self.__resume_button = BitmapLabelButton(
-            panel, bitmap = analyze_bmp, label = self.RESUME)
+        self.__resume_button = cellprofiler.gui.bitmaplabelbutton.BitmapLabelButton(
+                panel, bitmap=analyze_bmp, label=self.RESUME)
         self.__resume_button.Bind(wx.EVT_BUTTON, self.on_resume)
         self.__resume_button.SetToolTipString(self.RESUME_HELP)
         self.__tcp_analysis_sizer.Add(self.__resume_button, 1, wx.EXPAND)
 
-        self.__stop_analysis_button = BitmapLabelButton(
-            panel, bitmap = stop_bmp, label = 'Stop Analysis')
+        self.__stop_analysis_button = cellprofiler.gui.bitmaplabelbutton.BitmapLabelButton(
+                panel, bitmap=stop_bmp, label='Stop Analysis')
         self.__stop_analysis_button.Bind(wx.EVT_BUTTON, self.on_stop_running)
         self.__stop_analysis_button.SetToolTipString(
-            "Cancel the analysis run")
+                "Cancel the analysis run")
         self.__tcp_analysis_sizer.Add(self.__stop_analysis_button, 1, wx.EXPAND)
         #
         # Test mode sizer
@@ -384,24 +375,24 @@ class PipelineController:
         self.__tcp_test_sizer.Add(sub_sizer, 1, wx.EXPAND)
         self.__tcp_test_sizer.AddSpacer(2)
 
-        run_bmp = wx.BitmapFromImage(get_builtin_image("IMG_RUN"))
-        self.__tcp_continue = BitmapLabelButton(
-            panel, label="Run", bitmap = run_bmp)
+        run_bmp = wx.BitmapFromImage(cellprofiler.icons.get_builtin_image("IMG_RUN"))
+        self.__tcp_continue = cellprofiler.gui.bitmaplabelbutton.BitmapLabelButton(
+                panel, label="Run", bitmap=run_bmp)
         self.__tcp_continue.SetToolTip(wx.ToolTip("Run to next pause"))
         self.__tcp_continue.Bind(
-            wx.EVT_BUTTON, self.on_debug_continue)
+                wx.EVT_BUTTON, self.on_debug_continue)
         sub_sizer.Add(self.__tcp_continue, 1, wx.EXPAND)
 
-        self.__tcp_step = BitmapLabelButton(
-            panel, label = "Step", bitmap = analyze_bmp)
+        self.__tcp_step = cellprofiler.gui.bitmaplabelbutton.BitmapLabelButton(
+                panel, label="Step", bitmap=analyze_bmp)
         self.__tcp_step.SetToolTip(wx.ToolTip("Step to next module"))
         self.__tcp_step.Bind(wx.EVT_BUTTON, self.on_debug_step)
         sub_sizer.Add(self.__tcp_step, 1, wx.EXPAND)
 
         view_bitmap = wx.ArtProvider.GetBitmap(
-            wx.ART_FIND, wx.ART_BUTTON)
-        self.__tcp_view = BitmapLabelButton(
-            panel, label = "Viewer", bitmap = view_bitmap)
+                wx.ART_FIND, wx.ART_BUTTON)
+        self.__tcp_view = cellprofiler.gui.bitmaplabelbutton.BitmapLabelButton(
+                panel, label="Viewer", bitmap=view_bitmap)
         self.__tcp_view.SetToolTip(wx.ToolTip("Open the workspace viewer"))
         self.__tcp_view.Bind(wx.EVT_BUTTON, self.on_debug_view_workspace)
         sub_sizer.Add(self.__tcp_view)
@@ -409,15 +400,15 @@ class PipelineController:
         sub_sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.__tcp_test_sizer.Add(sub_sizer, 1, wx.EXPAND)
 
-        self.__tcp_stop_testmode = BitmapLabelButton(
-            panel, label = "Exit Test Mode", bitmap = stop_bmp)
+        self.__tcp_stop_testmode = cellprofiler.gui.bitmaplabelbutton.BitmapLabelButton(
+                panel, label="Exit Test Mode", bitmap=stop_bmp)
         self.__tcp_stop_testmode.SetToolTip(wx.ToolTip("Exit test mode"))
         self.__tcp_stop_testmode.Bind(wx.EVT_BUTTON, self.on_debug_stop)
         sub_sizer.Add(self.__tcp_stop_testmode, 1, wx.EXPAND)
 
-        next_image_bmp = wx.BitmapFromImage(get_builtin_image("IMG_IMAGE"))
-        self.__tcp_next_imageset = BitmapLabelButton(
-            panel, label = "Next Image Set", bitmap = next_image_bmp)
+        next_image_bmp = wx.BitmapFromImage(cellprofiler.icons.get_builtin_image("IMG_IMAGE"))
+        self.__tcp_next_imageset = cellprofiler.gui.bitmaplabelbutton.BitmapLabelButton(
+                panel, label="Next Image Set", bitmap=next_image_bmp)
         self.__tcp_next_imageset.SetToolTip(wx.ToolTip("Jump to next image set"))
         self.__tcp_next_imageset.Bind(wx.EVT_BUTTON, self.on_debug_next_image_set)
         sub_sizer.Add(self.__tcp_next_imageset, 1, wx.EXPAND)
@@ -428,7 +419,7 @@ class PipelineController:
         self.show_launch_controls()
 
     def show_launch_controls(self):
-        '''Show the "Analyze images" and "Enter test mode" buttons'''
+        """Show the "Analyze images" and "Enter test mode" buttons"""
         self.__test_controls_panel.Sizer.Hide(self.__tcp_test_sizer)
         self.__test_controls_panel.Sizer.Hide(self.__tcp_analysis_sizer)
         self.__test_controls_panel.Sizer.Show(self.__tcp_launch_sizer)
@@ -437,7 +428,7 @@ class PipelineController:
         self.__frame.enable_launch_commands()
 
     def show_analysis_controls(self):
-        '''Show the controls that stop and pause analysis'''
+        """Show the controls that stop and pause analysis"""
         self.__test_controls_panel.Sizer.Hide(self.__tcp_test_sizer)
         self.__test_controls_panel.Sizer.Hide(self.__tcp_launch_sizer)
         self.__test_controls_panel.Sizer.Show(self.__tcp_analysis_sizer)
@@ -460,7 +451,7 @@ class PipelineController:
         self.__test_controls_panel.Layout()
 
     def show_test_controls(self):
-        '''Show the controls for dealing with test mode'''
+        """Show the controls for dealing with test mode"""
         self.__test_controls_panel.Sizer.Show(self.__tcp_test_sizer)
         self.__test_controls_panel.Sizer.Hide(self.__tcp_launch_sizer)
         self.__test_controls_panel.Sizer.Hide(self.__tcp_analysis_sizer)
@@ -469,93 +460,93 @@ class PipelineController:
         self.__frame.enable_debug_commands()
 
     def omero_login(self):
-        with OmeroLoginDlg(self.__frame, title = "Log into Omero") as dlg:
+        with cellprofiler.gui.omerologin.OmeroLoginDlg(self.__frame, title="Log into Omero") as dlg:
             dlg.ShowModal()
 
     def __on_open_workspace(self, event):
-        '''Handle the Open Workspace menu command'''
+        """Handle the Open Workspace menu command"""
         path = self.do_open_workspace_dlg()
         if path is not None:
             self.do_open_workspace(path, True)
 
     def __on_revert_workspace(self, event):
-        path = cpprefs.get_current_workspace_path()
+        path = cellprofiler.preferences.get_current_workspace_path()
         if path is not None:
             self.do_open_workspace(path, True)
 
     def do_open_workspace_dlg(self):
-        '''Display the open workspace dialog, returning the chosen file
+        """Display the open workspace dialog, returning the chosen file
 
         returns a path or None if the user canceled. If it returns a path,
         the workspace file is locked.
-        '''
+        """
         wildcard = "CellProfiler project (%s)|%s|All files (*.*)|*.*" % (
-            ",".join(["*.%s" % x for x in cpprefs.EXT_PROJECT_CHOICES]),
-            ";".join(["*.%s" % x for x in cpprefs.EXT_PROJECT_CHOICES]))
+            ",".join(["*.%s" % x for x in cellprofiler.preferences.EXT_PROJECT_CHOICES]),
+            ";".join(["*.%s" % x for x in cellprofiler.preferences.EXT_PROJECT_CHOICES]))
         with wx.FileDialog(
-            self.__frame,
-            "Choose a project file to open",
-            wildcard = wildcard) as dlg:
+                self.__frame,
+                "Choose a project file to open",
+                wildcard=wildcard) as dlg:
             if dlg.ShowModal() == wx.ID_OK:
                 return dlg.Path
             return None
 
     def do_open_workspace(self, filename, load_pipeline=True):
-        '''Open the given workspace file
+        """Open the given workspace file
 
         filename - the path to the file to open. It should already be locked.
-        '''
+        """
         if not os.path.isfile(filename):
             wx.MessageBox("Could not find project file: %s" % filename,
-                          caption = "Error opening project file",
-                          parent = self.__frame,
-                          style = wx.OK | wx.ICON_ERROR)
+                          caption="Error opening project file",
+                          parent=self.__frame,
+                          style=wx.OK | wx.ICON_ERROR)
             return
         #
         # Meh, maybe the user loaded a pipeline file...
         #
         if not h5py.is_hdf5(filename):
-            if cpp.Pipeline.is_pipeline_txt_file(filename):
+            if cellprofiler.pipeline.Pipeline.is_pipeline_txt_file(filename):
                 message = (
-                    "The file, \"%s\", is a pipeline file, not a project file. "
-                    "Do you want to load it as a pipeline?") % \
-                    os.path.split(filename)[-1]
+                              "The file, \"%s\", is a pipeline file, not a project file. "
+                              "Do you want to load it as a pipeline?") % \
+                          os.path.split(filename)[-1]
                 result = wx.MessageBox(
-                    message,
-                    "Cannot load as project file",
-                    style = wx.YES | wx.NO | wx.YES_DEFAULT | wx.ICON_QUESTION,
-                    parent = self.__frame)
+                        message,
+                        "Cannot load as project file",
+                        style=wx.YES | wx.NO | wx.YES_DEFAULT | wx.ICON_QUESTION,
+                        parent=self.__frame)
                 if result == wx.YES:
                     self.do_load_pipeline(filename)
                 return
             else:
                 message = (
-                    "CellProfiler cannot read the file, \"%s\", as a project "
-                    "file. It may be damaged or corrupted or may not be in the "
-                    ".cpproj format") % os.path.split(filename)[-1]
+                              "CellProfiler cannot read the file, \"%s\", as a project "
+                              "file. It may be damaged or corrupted or may not be in the "
+                              ".cpproj format") % os.path.split(filename)[-1]
                 wx.MessageBox(
-                    message, "Cannot read %s" % filename,
-                    style = wx.OK | wx.ICON_ERROR,
-                    parent = self.__frame)
+                        message, "Cannot read %s" % filename,
+                        style=wx.OK | wx.ICON_ERROR,
+                        parent=self.__frame)
                 return
 
         if self.is_running():
             # Defensive programming - the user shouldn't be able
             # to do this.
             wx.MessageBox(
-                'The project file, "%s", cannot be loaded during analysis.\n\nPlease stop the analysis and try again.' % filename,
-                caption = "Cannot load project file",
-                style = wx.OK | wx.ICON_INFORMATION,
-                parent = self.__frame)
+                    'The project file, "%s", cannot be loaded during analysis.\n\nPlease stop the analysis and try again.' % filename,
+                    caption="Cannot load project file",
+                    style=wx.OK | wx.ICON_INFORMATION,
+                    parent=self.__frame)
             return
         self.exit_test_mode()
         progress_callback_fn = None
         message = "Loading %s" % filename
         with wx.ProgressDialog(
-                parent = self.__frame,
-                title = "Opening project",
-                message= message,
-                style=wx.PD_CAN_ABORT|wx.PD_APP_MODAL) as dlg:
+                parent=self.__frame,
+                title="Opening project",
+                message=message,
+                style=wx.PD_CAN_ABORT | wx.PD_APP_MODAL) as dlg:
             try:
                 assert isinstance(dlg, wx.ProgressDialog)
                 dlg.longest_msg_len = dlg.GetTextExtent(message)[0]
@@ -569,12 +560,13 @@ class PipelineController:
                         if msg_len > dlg.longest_msg_len:
                             dlg.longest_msg_len = msg_len
                             dlg.Fit()
-                cpprefs.add_progress_callback(progress_callback)
+
+                cellprofiler.preferences.add_progress_callback(progress_callback)
                 progress_callback_fn = progress_callback
 
                 self.__workspace.load(filename, load_pipeline)
-                cpprefs.set_workspace_file(filename)
-                cpprefs.set_current_workspace_path(filename)
+                cellprofiler.preferences.set_workspace_file(filename)
+                cellprofiler.preferences.set_current_workspace_path(filename)
                 self.__pipeline.load_file_list(self.__workspace)
                 self.__pipeline.turn_off_batch_mode()
                 if not load_pipeline:
@@ -584,66 +576,66 @@ class PipelineController:
                 self.__dirty_workspace = False
                 self.set_title()
                 self.display_pipeline_message_for_user()
-            except cpp.PipelineLoadCancelledException:
+            except cellprofiler.pipeline.PipelineLoadCancelledException:
                 # In response to user interaction, so pass
                 self.__pipeline.clear()
             finally:
-                cpprefs.remove_progress_callback(progress_callback_fn)
+                cellprofiler.preferences.remove_progress_callback(progress_callback_fn)
 
     def display_pipeline_message_for_user(self):
         if self.__pipeline.message_for_user is not None:
             frame = wx.Frame(self.
                              __frame,
-                             title = self.__pipeline.caption_for_user)
+                             title=self.__pipeline.caption_for_user)
             frame.Sizer = wx.BoxSizer(wx.VERTICAL)
             panel = wx.Panel(frame)
             frame.Sizer.Add(panel, 1, wx.EXPAND)
             panel.Sizer = wx.BoxSizer(wx.VERTICAL)
             subpanel = wx.Panel(panel)
             subpanel.BackgroundColour = wx.SystemSettings.GetColour(
-                wx.SYS_COLOUR_WINDOW)
+                    wx.SYS_COLOUR_WINDOW)
             panel.Sizer.Add(subpanel, 1, wx.EXPAND)
             subpanel.Sizer = wx.BoxSizer(wx.VERTICAL)
             subpanel.Sizer.AddSpacer(15)
             message_sizer = wx.BoxSizer(wx.HORIZONTAL)
             subpanel.Sizer.Add(
-                message_sizer, 1, wx.EXPAND | wx.RIGHT | wx.LEFT, 15)
+                    message_sizer, 1, wx.EXPAND | wx.RIGHT | wx.LEFT, 15)
             subpanel.Sizer.AddSpacer(15)
             button_bar = wx.StdDialogButtonSizer()
-            panel.Sizer.Add(button_bar, 0, wx.EXPAND|wx.ALL, 5)
+            panel.Sizer.Add(button_bar, 0, wx.EXPAND | wx.ALL, 5)
 
             info_bitmap = wx.ArtProvider.GetBitmap(
-                wx.ART_INFORMATION,
-                client = wx.ART_CMN_DIALOG)
+                    wx.ART_INFORMATION,
+                    client=wx.ART_CMN_DIALOG)
             message_sizer.Add(
-                wx.StaticBitmap(subpanel, bitmap=info_bitmap),
-                0, wx.ALIGN_TOP | wx.ALIGN_LEFT)
+                    wx.StaticBitmap(subpanel, bitmap=info_bitmap),
+                    0, wx.ALIGN_TOP | wx.ALIGN_LEFT)
             message_sizer.AddSpacer(12)
             text = wx.StaticText(
-                subpanel, label = self.__pipeline.message_for_user)
+                    subpanel, label=self.__pipeline.message_for_user)
             message_sizer.Add(text, 0, wx.ALIGN_LEFT | wx.ALIGN_TOP)
 
             ok_button = wx.Button(panel, wx.ID_OK)
             button_bar.AddButton(ok_button)
             button_bar.Realize()
             ok_button.Bind(
-                wx.EVT_BUTTON,
-                lambda event: frame.Close())
+                    wx.EVT_BUTTON,
+                    lambda event: frame.Close())
             frame.Fit()
             frame.Show()
 
     def __on_new_workspace(self, event):
-        '''Handle the New Workspace menu command'''
+        """Handle the New Workspace menu command"""
         if self.__dirty_workspace:
-            result =  wx.MessageBox(
-                "Do you want to save your existing project?",
-                caption = "Save project",
-                style = wx.YES_NO | wx.CANCEL | wx.ICON_QUESTION,
-                parent = self.__frame)
+            result = wx.MessageBox(
+                    "Do you want to save your existing project?",
+                    caption="Save project",
+                    style=wx.YES_NO | wx.CANCEL | wx.ICON_QUESTION,
+                    parent=self.__frame)
             if result == wx.CANCEL:
                 return
             elif result == wx.YES:
-                path = cpprefs.get_current_workspace_path()
+                path = cellprofiler.preferences.get_current_workspace_path()
                 if path is None:
                     if not self.do_save_as_workspace():
                         return
@@ -652,7 +644,7 @@ class PipelineController:
         self.do_create_workspace()
 
     def do_create_workspace(self):
-        '''Create a new workspace file'''
+        """Create a new workspace file"""
         self.stop_debugging()
         if self.is_running():
             self.stop_running()
@@ -663,59 +655,59 @@ class PipelineController:
         self.__workspace.measurements.clear()
         self.__workspace.save_pipeline_to_measurements()
         self.__dirty_workspace = False
-        cpprefs.set_current_workspace_path(None)
+        cellprofiler.preferences.set_current_workspace_path(None)
         self.__pipeline_list_view.select_one_module(1)
         self.enable_module_controls_panel_buttons()
         self.set_title()
 
     def __on_save_as_workspace(self, event):
-        '''Handle the Save Workspace As menu command'''
+        """Handle the Save Workspace As menu command"""
         self.do_save_as_workspace()
 
     def do_save_as_workspace(self):
         wildcard = "CellProfiler project (*.%s)|*.%s" % (
-            cpprefs.EXT_PROJECT, cpprefs.EXT_PROJECT)
+            cellprofiler.preferences.EXT_PROJECT, cellprofiler.preferences.EXT_PROJECT)
         with wx.FileDialog(
-            self.__frame,
-            "Save project file as",
-            wildcard = wildcard,
-            style = wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as dlg:
+                self.__frame,
+                "Save project file as",
+                wildcard=wildcard,
+                style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as dlg:
             if dlg.ShowModal() == wx.ID_OK:
                 pathname, filename = os.path.split(dlg.Path)
                 fullname = dlg.Path
-                dot_cpproj_ext = "." + cpprefs.EXT_PROJECT
+                dot_cpproj_ext = "." + cellprofiler.preferences.EXT_PROJECT
                 if sys.platform == "darwin" and not filename.endswith(dot_cpproj_ext):
                     fullname += dot_cpproj_ext
                 self.do_save_workspace(fullname)
-                cpprefs.set_current_workspace_path(fullname)
-                cpprefs.set_workspace_file(fullname)
+                cellprofiler.preferences.set_current_workspace_path(fullname)
+                cellprofiler.preferences.set_workspace_file(fullname)
                 self.set_title()
                 return True
             return False
 
     def __on_save_workspace(self, event):
-        '''Handle the Save Project menu command'''
-        path = cpprefs.get_current_workspace_path()
+        """Handle the Save Project menu command"""
+        path = cellprofiler.preferences.get_current_workspace_path()
         if path is None:
             self.do_save_as_workspace()
         else:
             self.do_save_workspace(path)
 
     def do_save_workspace(self, filename):
-        '''Create a copy of the current workspace file'''
+        """Create a copy of the current workspace file"""
         self.__workspace.save(filename)
-        cpprefs.set_workspace_file(filename)
+        cellprofiler.preferences.set_workspace_file(filename)
         self.__dirty_workspace = False
         self.set_title()
-        others = cpprefs.get_save_pipeline_with_project()
-        if others in (cpprefs.SPP_PIPELINE_ONLY,
-                      cpprefs.SPP_PIPELINE_AND_FILE_LIST):
+        others = cellprofiler.preferences.get_save_pipeline_with_project()
+        if others in (cellprofiler.preferences.SPP_PIPELINE_ONLY,
+                      cellprofiler.preferences.SPP_PIPELINE_AND_FILE_LIST):
             pipeline_path = \
-                os.path.splitext(filename)[0] + "." + cpprefs.EXT_PIPELINE
+                os.path.splitext(filename)[0] + "." + cellprofiler.preferences.EXT_PIPELINE
             self.__pipeline.save(pipeline_path,
                                  save_image_plane_details=False)
-        if others in (cpprefs.SPP_FILE_LIST_ONLY,
-                      cpprefs.SPP_PIPELINE_AND_FILE_LIST):
+        if others in (cellprofiler.preferences.SPP_FILE_LIST_ONLY,
+                      cellprofiler.preferences.SPP_PIPELINE_AND_FILE_LIST):
             filelist_path = os.path.splitext(filename)[0] + ".txt"
             self.do_export_text_file_list(filelist_path)
 
@@ -723,12 +715,12 @@ class PipelineController:
 
     def __on_load_pipeline(self, event):
         wildcard = "CellProfiler pipeline (%s)|%s" % (
-            ",".join([".%s" % x for x in cpprefs.EXT_PIPELINE_CHOICES]),
-            ";".join(["*.%s" % x for x in cpprefs.EXT_PIPELINE_CHOICES]))
+            ",".join([".%s" % x for x in cellprofiler.preferences.EXT_PIPELINE_CHOICES]),
+            ";".join(["*.%s" % x for x in cellprofiler.preferences.EXT_PIPELINE_CHOICES]))
         dlg = wx.FileDialog(self.__frame,
                             "Choose a pipeline file to open",
-                            wildcard = wildcard)
-        if dlg.ShowModal()==wx.ID_OK:
+                            wildcard=wildcard)
+        if dlg.ShowModal() == wx.ID_OK:
             pathname = dlg.GetPath()
             self.do_load_pipeline(pathname)
         dlg.Destroy()
@@ -754,16 +746,17 @@ class PipelineController:
                     "Text file (*.txt)|*.txt|"
                     "All files (*.*)|*.*")
         with wx.FileDialog(
-            self.__frame, "Import file list",
-            wildcard = wildcard) as dlg:
+                self.__frame, "Import file list",
+                wildcard=wildcard) as dlg:
             assert isinstance(dlg, wx.FileDialog)
             if dlg.ShowModal() == wx.ID_OK:
                 if dlg.FilterIndex == 0:
                     self.do_import_csv_file_list(dlg.Path)
                 else:
                     self.do_import_text_file_list(dlg.Path)
+
     def do_import_csv_file_list(self, path):
-        '''Import path names from a CSV file
+        """Import path names from a CSV file
 
         path - path to the CSV file
 
@@ -771,14 +764,14 @@ class PipelineController:
         is treated as a path. An example:
         "/images/A01_w1.tif","/images/A01_w2.tif"
         "/images/A02_w1.tif","/images/A02_w2.tif"
-        '''
+        """
         with open(path, mode="rb") as fd:
             rdr = csv.reader(fd)
             pathnames = sum(rdr, [])
             self.__pipeline.add_pathnames_to_file_list(pathnames)
 
     def do_import_text_file_list(self, path):
-        '''Import path names from a text file
+        """Import path names from a text file
 
         path - path to the text file
 
@@ -791,7 +784,7 @@ class PipelineController:
 
         If your file name has line feeds in it or whitespace at the start
         or end of the line, maybe you're asking too much :-)
-        '''
+        """
         with open(path, mode="r") as fd:
             pathnames = [p.strip().decode("utf-8") for p in fd]
             self.__pipeline.add_pathnames_to_file_list(pathnames)
@@ -807,7 +800,7 @@ class PipelineController:
             for url in self.__workspace.file_list.get_filelist():
                 if isinstance(url, unicode):
                     url = url.encode("utf-8")
-                fd.write(url+"\n")
+                fd.write(url + "\n")
 
     def is_running(self):
         return self.__analysis is not None
@@ -816,7 +809,7 @@ class PipelineController:
         if not os.path.isfile(pathname):
             wx.MessageBox("Could not find pipeline file: %s." % pathname,
                           caption="Error loading pipeline file",
-                          parent = self.__frame,
+                          parent=self.__frame,
                           style=wx.OK | wx.ICON_ERROR)
             return
         try:
@@ -837,22 +830,22 @@ class PipelineController:
                 # Note: the length of the longest line of text also
                 #       controls the size of the directory entry text box
                 text = (
-"Your pipeline contains the legacy module LoadImages, and legacy references\n"
-"to the Default Input Folder. CellProfiler can convert this pipeline by:\n\n"
-u"\u2022 Using the new input modules (Images, Metadata, NamesAndTypes, Groups).\n"
-u"\u2022 Using an existing folder instead of the Default Input Folder.\n\n"
-"If you choose to convert the pipeline, you should then make sure of the \n"
-"following:\n"
-u"\u2022 Images module: Provide your original images and/or folders as input.\n"
-u"\u2022 Metadata module: Confirm that your metadata (if any) is provided.\n"
-u"\u2022 NamesAndTypes: Confirm that 'Color image' is selected for any\n"
-"   color images under the 'Select the image type' setting.\n"
-u"\u2022 Groups: Confirm that that the expected number of images per group are present.")
+                    "Your pipeline contains the legacy module LoadImages, and legacy references\n"
+                    "to the Default Input Folder. CellProfiler can convert this pipeline by:\n\n"
+                    u"\u2022 Using the new input modules (Images, Metadata, NamesAndTypes, Groups).\n"
+                    u"\u2022 Using an existing folder instead of the Default Input Folder.\n\n"
+                    "If you choose to convert the pipeline, you should then make sure of the \n"
+                    "following:\n"
+                    u"\u2022 Images module: Provide your original images and/or folders as input.\n"
+                    u"\u2022 Metadata module: Confirm that your metadata (if any) is provided.\n"
+                    u"\u2022 NamesAndTypes: Confirm that 'Color image' is selected for any\n"
+                    "   color images under the 'Select the image type' setting.\n"
+                    u"\u2022 Groups: Confirm that that the expected number of images per group are present.")
                 CONVERT = 1
                 DONT_CONVERT = 2
 
                 with wx.Dialog(self.__frame,
-                               title = "Convert legacy pipeline?") as dlg:
+                               title="Convert legacy pipeline?") as dlg:
                     import wx.lib.filebrowsebutton as filebrowse
                     #
                     # Structure:
@@ -872,7 +865,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                     dlg.Sizer.Add(sizer, 0, wx.EXPAND | wx.ALL, 10)
                     bmp = wx.ArtProvider.GetBitmap(wx.ART_QUESTION,
                                                    wx.ART_CMN_DIALOG)
-                    sizer.Add(wx.StaticBitmap(dlg, bitmap = bmp), 0,
+                    sizer.Add(wx.StaticBitmap(dlg, bitmap=bmp), 0,
                               wx.ALIGN_LEFT | wx.ALIGN_TOP)
                     sizer.AddSpacer(8)
                     vsizer = wx.BoxSizer(wx.VERTICAL)
@@ -881,10 +874,10 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                                0, wx.ALIGN_LEFT | wx.ALIGN_TOP)
                     vsizer.AddSpacer(8)
                     dir_ctrl = filebrowse.DirBrowseButton(
-                        dlg, labelText = "Folder",
-                        dialogTitle = "Browse for default input folder",
-                        startDirectory = cpprefs.get_default_image_directory())
-                    dir_ctrl.SetValue(cpprefs.get_default_image_directory())
+                            dlg, labelText="Folder",
+                            dialogTitle="Browse for default input folder",
+                            startDirectory=cellprofiler.preferences.get_default_image_directory())
+                    dir_ctrl.SetValue(cellprofiler.preferences.get_default_image_directory())
                     vsizer.Add(dir_ctrl, 1, wx.EXPAND)
                     dlg.Sizer.AddSpacer(8)
                     btn_sizer = wx.StdDialogButtonSizer()
@@ -898,12 +891,15 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                     btn_sizer.Realize()
                     #
                     dlg.action = DONT_CONVERT
+
                     def on_convert_pressed(event):
                         dlg.action = CONVERT
                         dlg.EndModal(CONVERT)
+
                     def on_dont_convert_pressed(event):
                         dlg.action = DONT_CONVERT
                         dlg.EndModal(DONT_CONVERT)
+
                     convert_button.Bind(wx.EVT_BUTTON, on_convert_pressed)
                     dont_convert_button.Bind(wx.EVT_BUTTON, on_dont_convert_pressed)
                     dlg.Fit()
@@ -912,64 +908,64 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                     if dlg.action == CONVERT:
                         self.__pipeline.convert_legacy_input_modules()
                         self.__pipeline.convert_default_input_folder(
-                            dir_ctrl.GetValue())
+                                dir_ctrl.GetValue())
 
             self.__workspace.save_pipeline_to_measurements()
             self.display_pipeline_message_for_user()
             target_project_path = \
-                os.path.splitext(pathname)[0] + "." + cpprefs.EXT_PROJECT
-            if not os.path.exists(target_project_path) and\
-               cpprefs.get_current_workspace_path() is None:
-                cpprefs.set_current_workspace_path(target_project_path)
+                os.path.splitext(pathname)[0] + "." + cellprofiler.preferences.EXT_PROJECT
+            if not os.path.exists(target_project_path) and \
+                            cellprofiler.preferences.get_current_workspace_path() is None:
+                cellprofiler.preferences.set_current_workspace_path(target_project_path)
                 self.set_title()
 
-        except cpp.PipelineLoadCancelledException:
+        except cellprofiler.pipeline.PipelineLoadCancelledException:
             self.__pipeline.clear()
-        except Exception,instance:
+        except Exception, instance:
             from cellprofiler.gui.errordialog import display_error_dialog
-            display_error_dialog(self.__frame, instance, self.__pipeline,
-                                 continue_only=True)
+            errordialog.display_error_dialog(self.__frame, instance, self.__pipeline,
+                                             continue_only=True)
 
     def load_hdf5_pipeline(self, pathname):
-        '''Load a pipeline from an HDF5 measurements file or similar
+        """Load a pipeline from an HDF5 measurements file or similar
 
         pathname - pathname to the file
-        '''
+        """
         assert h5py.is_hdf5(pathname)
-        m = cpm.Measurements(
-            filename = pathname,
-            mode = "r")
+        m = cellprofiler.measurements.Measurements(
+                filename=pathname,
+                mode="r")
         has_user_pipeline = m.has_feature(
-            cpm.EXPERIMENT, cpp.M_USER_PIPELINE)
+                cellprofiler.measurements.EXPERIMENT, cellprofiler.pipeline.M_USER_PIPELINE)
         has_pipeline = m.has_feature(
-            cpm.EXPERIMENT, cpp.M_PIPELINE)
+                cellprofiler.measurements.EXPERIMENT, cellprofiler.pipeline.M_PIPELINE)
         if has_user_pipeline:
             if has_pipeline:
                 with wx.Dialog(
-                    self.__frame,
-                    title = "Choose pipeline to open") as dlg:
+                        self.__frame,
+                        title="Choose pipeline to open") as dlg:
                     dlg.Sizer = wx.BoxSizer(wx.VERTICAL)
                     sizer = wx.BoxSizer(wx.VERTICAL)
                     dlg.Sizer.Add(sizer, 1, wx.EXPAND | wx.ALL, 10)
                     message = (
-                        "%s contains two pipelines, the primary pipeline and\n"
-                        "the user pipeline. The primary pipeline is the one\n"
-                        "that should be used for batch processing, but it\n"
-                        "may have been modified to make it suitable for that\n"
-                        "purpose. The user pipeline is the pipeline as\n"
-                        "displayed by CellProfiler and is more suitable for\n"
-                        "editing and running in test mode.\n\n"
-                        "Do you want to open the primary or user pipeline?") %\
-                        os.path.split(pathname)[1]
-                    sizer.Add(wx.StaticText(dlg, label = message), 0, wx.EXPAND)
+                                  "%s contains two pipelines, the primary pipeline and\n"
+                                  "the user pipeline. The primary pipeline is the one\n"
+                                  "that should be used for batch processing, but it\n"
+                                  "may have been modified to make it suitable for that\n"
+                                  "purpose. The user pipeline is the pipeline as\n"
+                                  "displayed by CellProfiler and is more suitable for\n"
+                                  "editing and running in test mode.\n\n"
+                                  "Do you want to open the primary or user pipeline?") % \
+                              os.path.split(pathname)[1]
+                    sizer.Add(wx.StaticText(dlg, label=message), 0, wx.EXPAND)
                     sizer.AddSpacer(4)
                     groupbox = wx.StaticBox(dlg, label="Pipeline choice")
                     gb_sizer = wx.StaticBoxSizer(groupbox, wx.VERTICAL)
                     sizer.Add(gb_sizer, 1, wx.EXPAND)
-                    rb_primary = wx.RadioButton(dlg, label = "&Primary pipeline")
+                    rb_primary = wx.RadioButton(dlg, label="&Primary pipeline")
                     gb_sizer.Add(rb_primary, 0, wx.ALIGN_LEFT)
                     gb_sizer.AddSpacer(2)
-                    rb_user = wx.RadioButton(dlg, label = "&User pipeline")
+                    rb_user = wx.RadioButton(dlg, label="&User pipeline")
                     gb_sizer.Add(rb_user, 0, wx.ALIGN_LEFT)
                     rb_user.SetValue(True)
 
@@ -980,21 +976,21 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                     btn_sizer.Realize()
                     dlg.Fit()
                     if dlg.ShowModal() == wx.ID_OK:
-                        ftr = (cpp.M_USER_PIPELINE if rb_user.Value else
-                               cpp.M_PIPELINE)
+                        ftr = (cellprofiler.pipeline.M_USER_PIPELINE if rb_user.Value else
+                               cellprofiler.pipeline.M_PIPELINE)
                     else:
                         return False
             else:
-                ftr = cpp.M_USER_PIPELINE
+                ftr = cellprofiler.pipeline.M_USER_PIPELINE
         else:
-            ftr = cpp.M_PIPELINE
+            ftr = cellprofiler.pipeline.M_PIPELINE
         pipeline_text = m.get_experiment_measurement(ftr)
         pipeline_text = pipeline_text.encode('us-ascii')
-        self.__pipeline.load(StringIO(pipeline_text))
+        self.__pipeline.load(cStringIO.StringIO(pipeline_text))
         return True
 
     def __clear_errors(self):
-        for key,error in self.__setting_errors.iteritems():
+        for key, error in self.__setting_errors.iteritems():
             self.__frame.preferences_view.pop_error_text(error)
         self.__setting_errors = {}
 
@@ -1002,30 +998,30 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         try:
             self.do_save_pipeline()
         except Exception, e:
-            wx.MessageBox('Exception:\n%s'%(e), 'Could not save pipeline...', wx.ICON_ERROR|wx.OK, self.__frame)
+            wx.MessageBox('Exception:\n%s' % e, 'Could not save pipeline...', wx.ICON_ERROR | wx.OK, self.__frame)
 
     def do_save_pipeline(self):
-        '''Save the pipeline, asking the user for the name
+        """Save the pipeline, asking the user for the name
 
         return True if the user saved the pipeline
-        '''
-        default_filename = cpprefs.get_current_workspace_path()
+        """
+        default_filename = cellprofiler.preferences.get_current_workspace_path()
         if default_filename is None:
-            default_filename = "pipeline.%s" % cpprefs.EXT_PIPELINE
+            default_filename = "pipeline.%s" % cellprofiler.preferences.EXT_PIPELINE
             default_path = None
         else:
             default_path, default_filename = os.path.split(default_filename)
             default_filename = \
-                os.path.splitext(default_filename)[0] + "." + cpprefs.EXT_PIPELINE
+                os.path.splitext(default_filename)[0] + "." + cellprofiler.preferences.EXT_PIPELINE
         wildcard = ("CellProfiler pipeline (*.%s)|*.%s|"
                     "CellProfiler pipeline and file list (*.%s)|*.%s") % (
-            cpprefs.EXT_PIPELINE, cpprefs.EXT_PIPELINE,
-            cpprefs.EXT_PIPELINE, cpprefs.EXT_PIPELINE)
+                       cellprofiler.preferences.EXT_PIPELINE, cellprofiler.preferences.EXT_PIPELINE,
+                       cellprofiler.preferences.EXT_PIPELINE, cellprofiler.preferences.EXT_PIPELINE)
         with wx.FileDialog(self.__frame,
                            "Save pipeline",
                            wildcard=wildcard,
                            defaultFile=default_filename,
-                           style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT) as dlg:
+                           style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as dlg:
             assert isinstance(dlg, wx.FileDialog)
             if default_path is not None:
                 dlg.Path = os.path.join(default_path, default_filename)
@@ -1034,59 +1030,59 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                 file_name = dlg.GetFilename()
                 pathname = dlg.GetPath()
                 if not sys.platform.startswith("win"):
-                    dot_ext_pipeline = "." + cpprefs.EXT_PIPELINE
+                    dot_ext_pipeline = "." + cellprofiler.preferences.EXT_PIPELINE
                     if not file_name.endswith(dot_ext_pipeline):
                         # on platforms other than Windows, add the default suffix
                         pathname += dot_ext_pipeline
                 self.__pipeline.save(
-                    pathname,
-                    save_image_plane_details=save_image_plane_details)
+                        pathname,
+                        save_image_plane_details=save_image_plane_details)
                 return True
             return False
 
     def __on_export_image_sets(self, event):
-        '''Export the pipeline's image sets to a .csv file'''
+        """Export the pipeline's image sets to a .csv file"""
         dlg = wx.FileDialog(self.__frame, "Export image sets",
-                            wildcard = "Image set file (*.csv)|*.csv",
-                            style = wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
+                            wildcard="Image set file (*.csv)|*.csv",
+                            style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
         try:
             if dlg.ShowModal() == wx.ID_OK:
                 try:
                     self.__workspace.refresh_image_set()
                     self.__workspace.measurements.write_image_sets(dlg.Path)
                 except Exception, e:
-                    display_error_dialog(self.__frame, e, self.__pipeline,
+                    errordialog.display_error_dialog(self.__frame, e, self.__pipeline,
                                          "Failed to export image sets",
-                                         continue_only=True)
+                                                     continue_only=True)
         finally:
             dlg.Destroy()
 
         # Show helpful message to guide in proper use (GithHub issue #688)
         frame = wx.Frame(self.__frame,
-                            title = "Image set listing saved")
+                         title="Image set listing saved")
         frame.Sizer = wx.BoxSizer(wx.VERTICAL)
         panel = wx.Panel(frame)
         frame.Sizer.Add(panel, 1, wx.EXPAND)
         panel.Sizer = wx.BoxSizer(wx.VERTICAL)
         subpanel = wx.Panel(panel)
         subpanel.BackgroundColour = wx.SystemSettings.GetColour(
-            wx.SYS_COLOUR_WINDOW)
+                wx.SYS_COLOUR_WINDOW)
         panel.Sizer.Add(subpanel, 1, wx.EXPAND)
         subpanel.Sizer = wx.BoxSizer(wx.VERTICAL)
         subpanel.Sizer.AddSpacer(15)
         message_sizer = wx.BoxSizer(wx.HORIZONTAL)
         subpanel.Sizer.Add(
-            message_sizer, 1, wx.EXPAND | wx.RIGHT | wx.LEFT, 15)
+                message_sizer, 1, wx.EXPAND | wx.RIGHT | wx.LEFT, 15)
         subpanel.Sizer.AddSpacer(15)
         button_bar = wx.StdDialogButtonSizer()
-        panel.Sizer.Add(button_bar, 0, wx.EXPAND|wx.ALL, 5)
+        panel.Sizer.Add(button_bar, 0, wx.EXPAND | wx.ALL, 5)
 
         info_bitmap = wx.ArtProvider.GetBitmap(
-            wx.ART_INFORMATION,
-            client = wx.ART_CMN_DIALOG)
+                wx.ART_INFORMATION,
+                client=wx.ART_CMN_DIALOG)
         message_sizer.Add(
-            wx.StaticBitmap(subpanel, bitmap=info_bitmap),
-            0, wx.ALIGN_TOP | wx.ALIGN_LEFT)
+                wx.StaticBitmap(subpanel, bitmap=info_bitmap),
+                0, wx.ALIGN_TOP | wx.ALIGN_LEFT)
         message_sizer.AddSpacer(12)
         help_text = (
             "Your image set listing has been saved as a comma-delimited file (CSV). This file can be loaded \n"
@@ -1097,20 +1093,20 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
             "the '--data-file' switch to use an alternate CSV file as input to LoadData rather than the one specified\n"
             "in the LoadData module itself.\n")
         text = wx.StaticText(
-            subpanel, label = help_text)
+                subpanel, label=help_text)
         message_sizer.Add(text, 0, wx.ALIGN_LEFT | wx.ALIGN_TOP)
 
         ok_button = wx.Button(panel, wx.ID_OK)
         button_bar.AddButton(ok_button)
         button_bar.Realize()
         ok_button.Bind(
-            wx.EVT_BUTTON,
-            lambda event: frame.Close())
+                wx.EVT_BUTTON,
+                lambda event: frame.Close())
         frame.Fit()
         frame.Show()
 
     def __on_export_pipeline_notes(self, event):
-        default_filename = cpprefs.get_current_workspace_path()
+        default_filename = cellprofiler.preferences.get_current_workspace_path()
         if default_filename is None:
             default_filename = "pipeline.txt"
             default_path = None
@@ -1120,10 +1116,10 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                 os.path.splitext(default_filename)[0] + ".txt"
 
         with wx.FileDialog(
-            self.__frame, "Export pipeline notes",
-            defaultFile = default_filename,
-            wildcard = "Text file (*.txt)|*.txt",
-            style = wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as dlg:
+                self.__frame, "Export pipeline notes",
+                defaultFile=default_filename,
+                wildcard="Text file (*.txt)|*.txt",
+                style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as dlg:
             if default_path is not None:
                 dlg.Directory = default_path
             if dlg.ShowModal() == wx.ID_OK:
@@ -1137,61 +1133,61 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         try:
             self.__workspace.refresh_image_set()
         except Exception, e:
-            display_error_dialog(self.__frame, e, self.__pipeline,
+            errordialog.display_error_dialog(self.__frame, e, self.__pipeline,
                                  "Failed to make image sets",
-                                 continue_only=True)
+                                             continue_only=True)
             return
         m = self.__workspace.measurements
-        assert isinstance(m, cpm.Measurements)
+        assert isinstance(m, cellprofiler.measurements.Measurements)
 
         image_numbers = m.get_image_numbers()
         if len(image_numbers) == 0:
             self.display_plate_viewer_help(
-                "Your project does not produce any image sets.\n"
-                "Please configure the input modules correctly.",
-                "Plate viewer: No image sets")
+                    "Your project does not produce any image sets.\n"
+                    "Please configure the input modules correctly.",
+                    "Plate viewer: No image sets")
             return
-        url_features = [f for f in m.get_feature_names(cpm.IMAGE)
-                        if f.startswith(cpm.C_URL)]
+        url_features = [f for f in m.get_feature_names(cellprofiler.measurements.IMAGE)
+                        if f.startswith(cellprofiler.measurements.C_URL)]
         pws = []
         for feature in ("Plate", "Well", "Site"):
-            measurement = cpm.C_METADATA + "_" + feature
-            if m.has_feature(cpm.IMAGE, measurement):
+            measurement = cellprofiler.measurements.C_METADATA + "_" + feature
+            if m.has_feature(cellprofiler.measurements.IMAGE, measurement):
                 pws.append(
-                    m.get_measurement(cpm.IMAGE, measurement, image_numbers))
+                        m.get_measurement(cellprofiler.measurements.IMAGE, measurement, image_numbers))
             else:
                 pws.append([None] * len(image_numbers))
         plate, well, site = pws
         if pws[1][0] is None:
             self.display_plate_viewer_help(
-                "Your project needs to tag every image set with well metadata\n"
-                "Please use the Metadata module to define a metadata tag\n"
-                "named, ""Well"".",
-                "Plate viewer: No well metadata")
+                    "Your project needs to tag every image set with well metadata\n"
+                    "Please use the Metadata module to define a metadata tag\n"
+                    "named, ""Well"".",
+                    "Plate viewer: No well metadata")
             return
 
         for url_feature in url_features:
-            channel = [url_feature[(len(cpm.C_URL)+1):]] * len(image_numbers)
-            urls = m.get_measurement(cpm.IMAGE, url_feature, image_numbers)
+            channel = [url_feature[(len(cellprofiler.measurements.C_URL) + 1):]] * len(image_numbers)
+            urls = m.get_measurement(cellprofiler.measurements.IMAGE, url_feature, image_numbers)
             data.add_files(
-                [url.encode('utf-8') for url in urls],
-                plate, well, site, channel_names = channel)
+                    [url.encode('utf-8') for url in urls],
+                    plate, well, site, channel_names=channel)
         if self.__plate_viewer is not None:
             self.__pv_frame.Destroy()
-        self.__pv_frame = wx.Frame(self.__frame, title = "Plate viewer")
+        self.__pv_frame = wx.Frame(self.__frame, title="Plate viewer")
         self.__plate_viewer = pv.PlateViewer(self.__pv_frame, data)
         self.__pv_frame.Fit()
         self.__pv_frame.Show()
 
     def display_plate_viewer_help(self, message, caption):
-        '''Display a helpful dialog for a plate viewer config error
+        """Display a helpful dialog for a plate viewer config error
 
         message - message to display
 
         caption - caption on frame bar
-        '''
-        message = message + "\n\nPress ""Help"" for the plate viewer manual page."
-        with wx.Dialog(self.__frame, title = caption) as dlg:
+        """
+        message += "\n\nPress ""Help"" for the plate viewer manual page."
+        with wx.Dialog(self.__frame, title=caption) as dlg:
             assert isinstance(dlg, wx.Dialog)
             dlg.Sizer = wx.BoxSizer(wx.VERTICAL)
             message_sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -1209,56 +1205,59 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
             button_sizer.AddButton(ok_button)
             button_sizer.AddButton(help_button)
             button_sizer.Realize()
+
             def do_ok(event):
                 dlg.EndModal(0)
+
             def do_help(event):
-                HTMLDialog(self.__frame, "Help for plate viewer",
-                           PLATEVIEWER_HELP).Show()
+                cellprofiler.gui.htmldialog.HTMLDialog(self.__frame, "Help for plate viewer",
+                                                       cellprofiler.gui.help.PLATEVIEWER_HELP).Show()
+
             ok_button.Bind(wx.EVT_BUTTON, do_ok)
             help_button.Bind(wx.EVT_BUTTON, do_help)
             dlg.Fit()
             dlg.ShowModal()
 
     def set_current_pipeline_path(self, pathname):
-        cpprefs.set_current_pipeline_path(pathname)
-        cpprefs.add_recent_file(pathname)
+        cellprofiler.preferences.set_current_pipeline_path(pathname)
+        cellprofiler.preferences.add_recent_file(pathname)
         self.populate_recent_files()
 
     def populate_recent_files(self):
-        '''Populate the recent files menu'''
+        """Populate the recent files menu"""
         for menu, ids, file_names, fn in (
-            (self.__frame.recent_pipeline_files,
-             RECENT_PIPELINE_FILE_MENU_ID,
-             cpprefs.get_recent_files(),
-             self.do_load_pipeline),
-            (self.__frame.recent_workspace_files,
-             RECENT_WORKSPACE_FILE_MENU_ID,
-             cpprefs.get_recent_files(cpprefs.WORKSPACE_FILE),
-             self.do_open_workspace)):
+                (self.__frame.recent_pipeline_files,
+                 RECENT_PIPELINE_FILE_MENU_ID,
+                 cellprofiler.preferences.get_recent_files(),
+                 self.do_load_pipeline),
+                (self.__frame.recent_workspace_files,
+                 RECENT_WORKSPACE_FILE_MENU_ID,
+                 cellprofiler.preferences.get_recent_files(cellprofiler.preferences.WORKSPACE_FILE),
+                 self.do_open_workspace)):
             assert isinstance(menu, wx.Menu)
             while len(menu.MenuItems) > 0:
-                self.__frame.Unbind(wx.EVT_MENU, id = menu.MenuItems[0].Id)
+                self.__frame.Unbind(wx.EVT_MENU, id=menu.MenuItems[0].Id)
                 menu.RemoveItem(menu.MenuItems[0])
             for index, file_name in enumerate(file_names):
                 menu.Append(ids[index], file_name)
                 self.__frame.Bind(
-                    wx.EVT_MENU,
-                    lambda event, file_name=file_name, fn=fn: fn(file_name),
-                    id = ids[index])
+                        wx.EVT_MENU,
+                        lambda event, file_name=file_name, fn=fn: fn(file_name),
+                        id=ids[index])
 
     def set_title(self):
-        '''Set the title of the parent frame'''
-        pathname = cpprefs.get_current_workspace_path()
+        """Set the title of the parent frame"""
+        pathname = cellprofiler.preferences.get_current_workspace_path()
         if pathname is None:
-            self.__frame.Title = "CellProfiler %s" % (version.title_string)
+            self.__frame.Title = "CellProfiler %s" % cellprofiler.utilities.version.title_string
             return
-        path, file = os.path.split(pathname)
+        path, filename = os.path.split(pathname)
         if self.__dirty_workspace:
-            self.__frame.Title = "CellProfiler %s: %s* (%s)" % (version.title_string, file, path)
+            self.__frame.Title = "CellProfiler %s: %s* (%s)" % (cellprofiler.utilities.version.title_string, filename, path)
         else:
-            self.__frame.Title = "CellProfiler %s: %s (%s)" % (version.title_string, file, path)
+            self.__frame.Title = "CellProfiler %s: %s (%s)" % (cellprofiler.utilities.version.title_string, filename, path)
 
-    def __on_clear_pipeline(self,event):
+    def __on_clear_pipeline(self, event):
         if wx.MessageBox("Do you really want to remove all modules from the pipeline?",
                          "Clearing pipeline",
                          wx.YES_NO | wx.ICON_QUESTION, self.__frame) == wx.YES:
@@ -1271,58 +1270,60 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
             self.enable_module_controls_panel_buttons()
 
     def check_close(self):
-        '''Return True if we are allowed to close
+        """Return True if we are allowed to close
 
         Check for pipeline dirty, return false if user doesn't want to close
-        '''
+        """
         if self.__dirty_workspace:
             #
             # Create a dialog box asking the user what to do.
             #
             dialog = wx.Dialog(self.__frame,
-                               title = "Closing CellProfiler")
+                               title="Closing CellProfiler")
             super_sizer = wx.BoxSizer(wx.VERTICAL)
             dialog.SetSizer(super_sizer)
             #
             # This is the main window with the icon and question
             #
             sizer = wx.BoxSizer(wx.HORIZONTAL)
-            super_sizer.Add(sizer, 1, wx.EXPAND|wx.ALL, 5)
+            super_sizer.Add(sizer, 1, wx.EXPAND | wx.ALL, 5)
             question_mark = wx.ArtProvider.GetBitmap(wx.ART_HELP,
                                                      wx.ART_MESSAGE_BOX)
             icon = wx.StaticBitmap(dialog, -1, question_mark)
             sizer.Add(icon, 0, wx.EXPAND | wx.ALL, 5)
-            text = wx.StaticText(dialog, label = "Do you want to save your project?")
+            text = wx.StaticText(dialog, label="Do you want to save your project?")
             sizer.Add(text, 0, wx.EXPAND | wx.ALL, 5)
             super_sizer.Add(wx.StaticLine(dialog), 0, wx.EXPAND | wx.LEFT | wx.RIGHT, 20)
             #
             # These are the buttons
             #
             button_sizer = wx.BoxSizer(wx.HORIZONTAL)
-            super_sizer.Add(button_sizer, 0, wx.ALIGN_CENTER_HORIZONTAL|wx.ALL, 5)
+            super_sizer.Add(button_sizer, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 5)
             SAVE_ID = wx.NewId()
             DONT_SAVE_ID = wx.NewId()
             RETURN_TO_CP_ID = wx.NewId()
             answer = [RETURN_TO_CP_ID]
             for button_id, text, set_default in (
-                (SAVE_ID, "Save", True),
-                (RETURN_TO_CP_ID, "Return to CellProfiler", False),
-                (DONT_SAVE_ID, "Don't Save", False)):
+                    (SAVE_ID, "Save", True),
+                    (RETURN_TO_CP_ID, "Return to CellProfiler", False),
+                    (DONT_SAVE_ID, "Don't Save", False)):
                 button = wx.Button(dialog, button_id, text)
                 if set_default:
                     button.SetDefault()
                 button_sizer.Add(button, 0, wx.EXPAND | wx.ALL, 5)
-                def on_button(event, button_id = button_id):
+
+                def on_button(event, button_id=button_id):
                     dialog.SetReturnCode(button_id)
                     answer[0] = button_id
                     dialog.Close()
-                dialog.Bind(wx.EVT_BUTTON, on_button, button,button_id)
+
+                dialog.Bind(wx.EVT_BUTTON, on_button, button, button_id)
             dialog.Fit()
             dialog.CentreOnParent()
             try:
                 dialog.ShowModal()
                 if answer[0] == SAVE_ID:
-                    workspace_path = cpprefs.get_current_workspace_path()
+                    workspace_path = cellprofiler.preferences.get_current_workspace_path()
                     if workspace_path is None:
                         return self.do_save_as_workspace()
                     if not self.do_save_workspace(workspace_path):
@@ -1343,13 +1344,13 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
     def __on_pipeline_event(self, caller, event):
         if not wx.Thread_IsMain():
             wx.CallAfter(self.__on_pipeline_event, caller, event)
-        if isinstance(event,cpp.RunExceptionEvent):
+        if isinstance(event, cellprofiler.pipeline.RunExceptionEvent):
             error_msg = None
             self.__pipeline_list_view.select_one_module(event.module.module_num)
             try:
                 import MySQLdb
                 if (isinstance(event.error, MySQLdb.OperationalError) and
-                    len(event.error.args) > 1):
+                            len(event.error.args) > 1):
                     #
                     # The informative error is in args[1] for MySQL
                     #
@@ -1361,33 +1362,33 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                     error_msg = event.error.strerror
                 else:
                     error_msg = str(event.error)
-            if isinstance(event, cpp.PrepareRunExceptionEvent):
+            if isinstance(event, cellprofiler.pipeline.PrepareRunExceptionEvent):
                 message = "Encountered unrecoverable error in %s during startup:\n%s" % (
                     event.module.module_name, error_msg)
                 continue_only = True
-            elif isinstance(event, cpp.PostRunExceptionEvent):
+            elif isinstance(event, cellprofiler.pipeline.PostRunExceptionEvent):
                 message = "Encountered uncrecoverable error in %s during post-processing:\n%s" % (
                     event.module.module_name, error_msg)
                 continue_only = True
             else:
                 message = (("Error while processing %s:\n"
                             "%s\n\nDo you want to stop processing?") %
-                           (event.module.module_name,error_msg))
+                           (event.module.module_name, error_msg))
                 continue_only = False
-            result = display_error_dialog(self.__frame,
-                                          event.error,
-                                          self.__pipeline,
-                                          message,
-                                          event.tb,
-                                          continue_only=continue_only)
-            event.cancel_run = result == ED_STOP
-            event.skip_thisset = result == ED_SKIP
+            result = errordialog.display_error_dialog(self.__frame,
+                                                      event.error,
+                                                      self.__pipeline,
+                                                      message,
+                                                      event.tb,
+                                                      continue_only=continue_only)
+            event.cancel_run = result == errordialog.ED_STOP
+            event.skip_thisset = result == errordialog.ED_SKIP
 
-        elif isinstance(event, cpp.LoadExceptionEvent):
+        elif isinstance(event, cellprofiler.pipeline.LoadExceptionEvent):
             self.on_load_exception_event(event)
-        elif isinstance(event, cpp.URLsAddedEvent):
+        elif isinstance(event, cellprofiler.pipeline.URLsAddedEvent):
             self.on_urls_added(event)
-        elif isinstance(event, cpp.URLsRemovedEvent):
+        elif isinstance(event, cellprofiler.pipeline.URLsRemovedEvent):
             self.on_urls_removed(event)
         elif event.is_pipeline_modification:
             self.__dirty_workspace = True
@@ -1395,16 +1396,16 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
             needs_default_image_folder = \
                 self.__pipeline.needs_default_image_folder()
             self.__frame.get_preferences_view().show_default_image_folder(
-                needs_default_image_folder)
+                    needs_default_image_folder)
             if event.is_image_set_modification:
                 self.on_image_set_modification()
             self.__workspace.save_pipeline_to_measurements()
             if isinstance(
-                event, (cpp.ModuleAddedPipelineEvent,
-                        cpp.ModuleMovedPipelineEvent,
-                        cpp.ModuleRemovedPipelineEvent,
-                        cpp.PipelineClearedEvent,
-                        cpp.PipelineLoadedEvent)):
+                    event, (cellprofiler.pipeline.ModuleAddedPipelineEvent,
+                            cellprofiler.pipeline.ModuleMovedPipelineEvent,
+                            cellprofiler.pipeline.ModuleRemovedPipelineEvent,
+                            cellprofiler.pipeline.PipelineClearedEvent,
+                            cellprofiler.pipeline.PipelineLoadedEvent)):
                 self.populate_goto_menu()
 
     def on_image_set_modification(self):
@@ -1418,61 +1419,61 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         self.on_image_set_modification()
 
     def on_workspace_event(self, event):
-        '''Workspace's file list changed. Invalidate the workspace cache.'''
-        if isinstance(event, cpw.Workspace.WorkspaceFileListNotification):
+        """Workspace's file list changed. Invalidate the workspace cache."""
+        if isinstance(event, cellprofiler.workspace.Workspace.WorkspaceFileListNotification):
             self.on_image_set_modification()
             self.__dirty_workspace = True
 
     def on_load_exception_event(self, event):
-        '''Handle a pipeline load exception'''
+        """Handle a pipeline load exception"""
         if event.module is None:
             module_name = event.module_name
         else:
             module_name = event.module.module_name
         if event.settings is None or len(event.settings) == 0:
-            message = ("Error while loading %s: %s\nDo you want to stop processing?"%
+            message = ("Error while loading %s: %s\nDo you want to stop processing?" %
                        (module_name, event.error.message))
         else:
             message = ("Error while loading %s: %s\n"
                        "Do you want to stop processing?\n\n"
                        "Module settings:\n"
-                       "\t%s") % ( module_name,
-                                   event.error.message,
-                                   '\n\t'.join(event.settings))
-        if display_error_message(
-            self.__frame, message,
-            "Pipeline error",
-            buttons = [wx.ID_YES, wx.ID_NO]) == wx.NO:
+                       "\t%s") % (module_name,
+                                  event.error.message,
+                                  '\n\t'.join(event.settings))
+        if errordialog.display_error_message(
+                self.__frame, message,
+                "Pipeline error",
+                buttons=[wx.ID_YES, wx.ID_NO]) == wx.NO:
             event.cancel_run = False
 
     def on_urls_added(self, event):
-        '''Callback from pipeline when paths are added to the pipeline'''
+        """Callback from pipeline when paths are added to the pipeline"""
         urls = event.urls
         self.__path_list_ctrl.add_paths(urls)
         self.__workspace.file_list.add_files_to_filelist(urls)
         self.__pipeline_list_view.notify_has_file_list(
-            len(self.__pipeline.file_list) > 0)
+                len(self.__pipeline.file_list) > 0)
         self.exit_test_mode()
 
     def on_urls_removed(self, event):
-        '''Callback from pipeline when paths are removed from the pipeline'''
-        urls =event.urls
+        """Callback from pipeline when paths are removed from the pipeline"""
+        urls = event.urls
         self.__path_list_ctrl.remove_paths(urls)
         self.__workspace.file_list.remove_files_from_filelist(urls)
         self.__pipeline_list_view.notify_has_file_list(
-            len(self.__pipeline.file_list) > 0)
+                len(self.__pipeline.file_list) > 0)
         self.exit_test_mode()
 
     def on_update_pathlist(self, event=None):
         enabled_urls = set(self.__pipeline.get_filtered_file_list(
-            self.__workspace))
+                self.__workspace))
         disabled_urls = set(self.__path_list_ctrl.get_paths())
         disabled_urls.difference_update(enabled_urls)
         self.__path_list_ctrl.enable_paths(enabled_urls, True)
         self.__path_list_ctrl.enable_paths(disabled_urls, False)
 
     def on_update_pathlist_ui(self, event):
-        '''Called with an UpdateUIEvent for a pathlist command ID'''
+        """Called with an UpdateUIEvent for a pathlist command ID"""
         assert isinstance(event, wx.UpdateUIEvent)
         event.Enable(True)
         if not self.__path_list_ctrl.IsShownOnScreen():
@@ -1484,21 +1485,20 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
             if not self.__path_list_ctrl.has_focus_item():
                 event.Enable(False)
 
-    def on_pathlist_browse(self, event, default_dir = wx.EmptyString):
-        '''Handle request for browsing for pathlist files'''
+    def on_pathlist_browse(self, event, default_dir=wx.EmptyString):
+        """Handle request for browsing for pathlist files"""
         with wx.FileDialog(
-            self.__path_list_ctrl,
-            "Select image files",
-            defaultDir = default_dir,
-            wildcard = ("Image files (*.tif,*.tiff,*.png,*.jpg,*.gif,*.jpg)|"
-                        "*.tif;*.tiff;*.jpg;*.jpeg;*.png;*.gif;*.bmp|"
-                        "All files (*.*)|*.*"),
-            style = wx.FD_DEFAULT_STYLE | wx.FD_MULTIPLE | wx.FD_OPEN) as dlg:
+                self.__path_list_ctrl,
+                "Select image files",
+                defaultDir=default_dir,
+                wildcard=("Image files (*.tif,*.tiff,*.png,*.jpg,*.gif,*.jpg)|"
+                          "*.tif;*.tiff;*.jpg;*.jpeg;*.png;*.gif;*.bmp|"
+                          "All files (*.*)|*.*"),
+                style=wx.FD_DEFAULT_STYLE | wx.FD_MULTIPLE | wx.FD_OPEN) as dlg:
             assert isinstance(dlg, wx.FileDialog)
             if dlg.ShowModal() == wx.ID_OK:
                 paths = dlg.GetPaths()
                 self.add_paths_to_pathlist(paths)
-
 
     PATHLIST_CMD_SHOW = "Show Selected Image"
     PATHLIST_CMD_BROWSE = "Browse For Images"
@@ -1535,10 +1535,11 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                 path = urllib.url2pathname(paths[0][5:])
                 path = os.path.split(path)[0]
                 self.on_pathlist_browse(
-                    None,
-                    default_dir=path)
+                        None,
+                        default_dir=path)
         else:
             self.on_pathlist_command(cmd)
+
     def on_pathlist_command(self, cmd):
         if cmd == self.PATHLIST_CMD_EXPAND_ALL:
             self.on_pathlist_expand_all()
@@ -1558,11 +1559,11 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
     def on_pathlist_folder_command(self, path, cmd):
         if cmd == self.PATHLIST_CMD_REMOVE:
             paths = self.__path_list_ctrl.get_folder(
-                path, self.__path_list_ctrl.FLAG_RECURSE)
+                    path, self.__path_list_ctrl.FLAG_RECURSE)
             self.on_pathlist_file_delete(paths)
         elif cmd == self.PATHLIST_CMD_REFRESH:
             paths = self.__path_list_ctrl.get_folder(
-                path, self.__path_list_ctrl.FLAG_RECURSE)
+                    path, self.__path_list_ctrl.FLAG_RECURSE)
             self.on_pathlist_refresh(paths)
         elif cmd == self.PATHLIST_CMD_BROWSE:
             if path.startswith("file:"):
@@ -1574,7 +1575,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
             self.on_pathlist_command(cmd)
 
     def get_pathlist_empty_context_menu(self, path):
-        return ((self.PATHLIST_CMD_BROWSE, self.PATHLIST_CMD_BROWSE),)
+        return (self.PATHLIST_CMD_BROWSE, self.PATHLIST_CMD_BROWSE),
 
     def on_pathlist_empty_command(self, path, cmd):
         if cmd == self.PATHLIST_CMD_BROWSE:
@@ -1587,19 +1588,19 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         self.__path_list_ctrl.collapse_all()
 
     def on_pathlist_remove(self, event=None):
-        '''Remove selected files from the path list'''
+        """Remove selected files from the path list"""
         paths = self.__path_list_ctrl.get_paths(
-            self.__path_list_ctrl.FLAG_SELECTED_ONLY)
+                self.__path_list_ctrl.FLAG_SELECTED_ONLY)
         self.on_pathlist_file_delete(paths)
 
     def on_pathlist_show(self, event=None):
-        '''Show the focused item's image'''
+        """Show the focused item's image"""
         from cellprofiler.gui.cpfigure import show_image
         from cellprofiler.modules.loadimages import url2pathname
         paths = self.__path_list_ctrl.get_paths(
-            self.__path_list_ctrl.FLAG_FOCUS_ITEM_ONLY)
+                self.__path_list_ctrl.FLAG_FOCUS_ITEM_ONLY)
         if len(paths) == 0:
-            wx.MessageBox("No image selected.", caption = "No image selected", parent = self.__frame)
+            wx.MessageBox("No image selected.", caption="No image selected", parent=self.__frame)
             return
         path = url2pathname(paths[0])
         ext = os.path.splitext(path)[1]
@@ -1613,24 +1614,24 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                     return
             except:
                 pass
-        if len(ext) > 1 and ext[1:] in cpprefs.EXT_PROJECT_CHOICES:
+        if len(ext) > 1 and ext[1:] in cellprofiler.preferences.EXT_PROJECT_CHOICES:
             result = wx.MessageBox(
-                'Do you want to load the project, \n'
-                '"%s", into your project?' % os.path.split(path)[1],
-                caption = "Load project",
-                style = wx.YES_NO | wx.ICON_QUESTION,
-                parent = self.__path_list_ctrl)
+                    'Do you want to load the project, \n'
+                    '"%s", into your project?' % os.path.split(path)[1],
+                    caption="Load project",
+                    style=wx.YES_NO | wx.ICON_QUESTION,
+                    parent=self.__path_list_ctrl)
             if result == wx.YES:
                 self.do_open_workspace(path)
             return
 
-        if len(ext) > 1 and ext[1:] in cpprefs.EXT_PIPELINE_CHOICES:
+        if len(ext) > 1 and ext[1:] in cellprofiler.preferences.EXT_PIPELINE_CHOICES:
             result = wx.MessageBox(
-                'Do you want to import the pipeline, \n'
-                '"%s", into your project?' % os.path.split(path)[1],
-                caption = "Import pipeline",
-                style = wx.YES_NO | wx.ICON_QUESTION,
-                parent = self.__path_list_ctrl)
+                    'Do you want to import the pipeline, \n'
+                    '"%s", into your project?' % os.path.split(path)[1],
+                    caption="Import pipeline",
+                    style=wx.YES_NO | wx.ICON_QUESTION,
+                    parent=self.__path_list_ctrl)
             if result == wx.YES:
                 self.do_load_pipeline(path)
             return
@@ -1645,14 +1646,16 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         """Refresh the pathlist by checking for existence of file URLs"""
 
         urls = filter((lambda url: url.startswith("file:")), urls)
+
         def refresh_msg(idx):
             return "Checked %d of %d" % (idx, len(urls))
+
         with wx.ProgressDialog(
-            parent = self.__frame,
-            title = "Refreshing file list",
-            message = refresh_msg(0),
-            maximum = len(urls) + 1,
-            style = wx.PD_CAN_ABORT|wx.PD_APP_MODAL) as dlg:
+                parent=self.__frame,
+                title="Refreshing file list",
+                message=refresh_msg(0),
+                maximum=len(urls) + 1,
+                style=wx.PD_CAN_ABORT | wx.PD_APP_MODAL) as dlg:
             assert isinstance(dlg, wx.ProgressDialog)
             to_remove = []
             for idx, url in enumerate(urls):
@@ -1665,19 +1668,19 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                         return
             if len(to_remove) > 0:
                 dlg.Update(
-                    len(urls), "Removing %d missing files" % len(to_remove))
+                        len(urls), "Removing %d missing files" % len(to_remove))
                 self.__pipeline.remove_urls(to_remove)
 
     def on_pathlist_clear(self, event):
-        '''Remove all files from the path list'''
+        """Remove all files from the path list"""
         result = wx.MessageBox(
-            "Are you sure you want to clear all files from your project?\n\n"
-            "Clearing will remove the files from your project,\n"
-            "but will not delete or modify the files themselves.\n"
-            'Choose "Yes" to delete or "No" to cancel this operation.',
-            caption = "Confirm file list clear operation",
-            style = wx.YES_NO,
-            parent = self.__frame)
+                "Are you sure you want to clear all files from your project?\n\n"
+                "Clearing will remove the files from your project,\n"
+                "but will not delete or modify the files themselves.\n"
+                'Choose "Yes" to delete or "No" to cancel this operation.',
+                caption="Confirm file list clear operation",
+                style=wx.YES_NO,
+                parent=self.__frame)
         if result == wx.YES:
             self.__pipeline.clear_urls()
             self.__workspace.file_list.clear_filelist()
@@ -1690,8 +1693,8 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         t0 = datetime.datetime.now()
         with wx.ProgressDialog("Processing files",
                                "Initializing\n\n",
-                               parent = self.__frame,
-                               style = wx.PD_APP_MODAL | wx.PD_CAN_ABORT) as dlg:
+                               parent=self.__frame,
+                               style=wx.PD_APP_MODAL | wx.PD_CAN_ABORT) as dlg:
             assert isinstance(dlg, wx.ProgressDialog)
             h, w = dlg.GetSizeTuple()
             if w < 480:
@@ -1699,10 +1702,11 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
             queue = Queue.Queue()
             interrupt = [False]
             message = ["Initializing"]
+
             def fn(filenames=filenames,
                    interrupt=interrupt,
                    message=message,
-                   queue = queue):
+                   queue=queue):
                 urls = []
                 for pathname in filenames:
                     if interrupt[0]:
@@ -1715,7 +1719,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                     message[0] = "Processing " + pathname
 
                     if os.path.isfile(pathname):
-                        urls.append(pathname2url(pathname))
+                        urls.append(cellprofiler.modules.loadimages.pathname2url(pathname))
                         if len(urls) > 100:
                             queue.put(urls)
                             urls = []
@@ -1725,7 +1729,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                                 if interrupt[0]:
                                     break
                                 path = os.path.join(dirpath, filename)
-                                urls.append(pathname2url(path))
+                                urls.append(cellprofiler.modules.loadimages.pathname2url(path))
                                 message[0] = "Processing " + path
                                 if len(urls) > 100:
                                     queue.put(urls)
@@ -1738,6 +1742,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
             thread = threading.Thread(target=fn)
             thread.setDaemon(True)
             thread.start()
+
             def update_pulse(msg):
                 waiting_for = int((datetime.datetime.now() - t0).total_seconds())
                 if waiting_for > 60:
@@ -1756,7 +1761,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                             urls += queue.get(block=False)
                     except:
                         keep_going = update_pulse(
-                            "Adding %d files to file list" %len(urls))
+                                "Adding %d files to file list" % len(urls))
                         self.add_urls(urls)
                 except:
                     if not thread.is_alive():
@@ -1774,9 +1779,9 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         pathnames = [p.strip() for p in re.split("[\r\n]+", text.strip())]
         self.__pipeline.add_pathnames_to_file_list(pathnames)
 
-    def pick_from_pathlist(self, selected_url, title = None,
-                           instructions = None):
-        '''Pick a file from the pathlist control
+    def pick_from_pathlist(self, selected_url, title=None,
+                           instructions=None):
+        """Pick a file from the pathlist control
 
         This function displays the pathlist control within a dialog box. The
         single pathlist control is reparented to the dialog box during its
@@ -1785,12 +1790,12 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         selected_url - select this URL in the pathlist control.
 
         returns the URL or None if the user cancelled.
-        '''
+        """
         if title is None:
             title = "Select an image file"
         with wx.Dialog(
-            self.__frame, title = title, size = (640, 480),
-            style = wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER) as dlg:
+                self.__frame, title=title, size=(640, 480),
+                style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER) as dlg:
             dlg.Sizer = wx.BoxSizer(wx.VERTICAL)
             dlg.Sizer.AddSpacer(3)
             sizer = wx.BoxSizer(wx.VERTICAL)
@@ -1818,28 +1823,29 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
 
                 def on_plc_change(event):
                     ok_button.Enable(self.__path_list_ctrl.has_selections())
-                self.__path_list_ctrl.Bind(EVT_PLC_SELECTION_CHANGED,
+
+                self.__path_list_ctrl.Bind(cellprofiler.gui.pathlist.EVT_PLC_SELECTION_CHANGED,
                                            on_plc_change)
                 result = dlg.ShowModal()
-                self.__path_list_ctrl.Unbind(EVT_PLC_SELECTION_CHANGED)
+                self.__path_list_ctrl.Unbind(cellprofiler.gui.pathlist.EVT_PLC_SELECTION_CHANGED)
                 if result == wx.ID_OK:
                     paths = self.__path_list_ctrl.get_paths(
-                        self.__path_list_ctrl.FLAG_SELECTED_ONLY)
+                            self.__path_list_ctrl.FLAG_SELECTED_ONLY)
                     return None if len(paths) == 0 else paths[0]
                 return None
             finally:
                 self.__path_list_ctrl.Reparent(old_parent)
 
     def add_urls(self, urls):
-        '''Add URLS to the pipeline'''
+        """Add URLS to the pipeline"""
         # The pipeline's notification callback will add them to the workspace
         self.__pipeline.add_urls(urls)
 
     def on_walk_callback(self, dirpath, dirnames, filenames):
-        '''Handle an iteration of file walking'''
+        """Handle an iteration of file walking"""
 
         hdf_file_list = self.__workspace.get_file_list()
-        file_list = [pathname2url(os.path.join(dirpath, filename))
+        file_list = [cellprofiler.modules.loadimages.pathname2url(os.path.join(dirpath, filename))
                      for filename in filenames]
         hdf_file_list.add_files_to_filelist(file_list)
         self.__pipeline.add_urls(file_list)
@@ -1860,9 +1866,9 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
             # The module_num of the first module that's not an input module
             first_module_num, last_module_num = [
                 reduce(
-                    fn,
-                    [module.module_num for module in self.__pipeline.modules()
-                     if not module.is_input_module()], initial)
+                        fn,
+                        [module.module_num for module in self.__pipeline.modules()
+                         if not module.is_input_module()], initial)
                 for fn, initial in ((min, len(self.__pipeline.modules())),
                                     (max, -1))]
             enable_up = active_module.module_num > first_module_num
@@ -1873,10 +1879,10 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
             enable_delete = enable_duplicate = False
 
         for menu_id, control, state in (
-            (cpframe.ID_EDIT_MOVE_DOWN, self.__mcp_module_down_button, enable_down),
-            (cpframe.ID_EDIT_MOVE_UP, self.__mcp_module_up_button, enable_up),
-            (cpframe.ID_EDIT_DELETE, self.__mcp_remove_module_button, enable_delete),
-            (cpframe.ID_EDIT_DUPLICATE, None, enable_duplicate)):
+                (cpframe.ID_EDIT_MOVE_DOWN, self.__mcp_module_down_button, enable_down),
+                (cpframe.ID_EDIT_MOVE_UP, self.__mcp_module_up_button, enable_up),
+                (cpframe.ID_EDIT_DELETE, self.__mcp_remove_module_button, enable_delete),
+                (cpframe.ID_EDIT_DUPLICATE, None, enable_duplicate)):
             state = state and not self.is_running()
             if control is not None:
                 control.Enable(state)
@@ -1884,7 +1890,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
             if menu_item is not None:
                 menu_item.Enable(state)
 
-    def __on_add_module(self,event):
+    def __on_add_module(self, event):
         if not self.__add_module_frame.IsShownOnScreen():
             x, y = self.__frame.GetPositionTuple()
             x = max(x - self.__add_module_frame.GetSize().width, 0)
@@ -1893,19 +1899,19 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         self.__add_module_frame.Raise()
 
     def populate_edit_menu(self, menu):
-        '''Display a menu of modules to add'''
+        """Display a menu of modules to add"""
         from cellprofiler.modules import get_module_names
         #
         # Get a two-level dictionary of categories and names
         #
-        d = { "All": [] }
+        d = {"All": []}
         for module_name in get_module_names():
             try:
                 module = cellprofiler.modules.get_module_class(module_name)
                 if module.is_input_module():
                     continue
                 category = module.category
-                if isinstance(category, (str,unicode)):
+                if isinstance(category, (str, unicode)):
                     categories = [category, "All"]
                 else:
                     categories = list(category) + ["All"]
@@ -1928,19 +1934,19 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                     self.menu_id_to_module_name[menu_id] = module_name
                     self.__frame.Bind(wx.EVT_MENU,
                                       self.on_menu_add_module,
-                                      id = menu_id)
+                                      id=menu_id)
                 sub_menu.Append(menu_id, module_name)
             menu.AppendSubMenu(sub_menu, category)
 
-    def populate_goto_menu(self, menu = None):
-        '''Populate the menu items in the edit->goto menu'''
+    def populate_goto_menu(self, menu=None):
+        """Populate the menu items in the edit->goto menu"""
         if menu is None:
             menu = self.__frame.menu_edit_goto_module
         assert isinstance(menu, wx.Menu)
         ids = []
         for item in menu.GetMenuItems():
             assert isinstance(item, wx.MenuItem)
-            self.__frame.Unbind(wx.EVT_MENU, id = item.Id)
+            self.__frame.Unbind(wx.EVT_MENU, id=item.Id)
             ids.append(item.Id)
         for item_id in ids:
             menu.Delete(item_id)
@@ -1949,10 +1955,12 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
             ids += [wx.NewId() for _ in range(len(ids), len(modules))]
         for item_id, module in zip(ids, modules):
             item = menu.Append(
-                item_id,
-                "#%02d %s" % (module.module_num, module.module_name))
-            def on_goto_module(event, module_num = module.module_num):
+                    item_id,
+                    "#%02d %s" % (module.module_num, module.module_name))
+
+            def on_goto_module(event, module_num=module.module_num):
                 self.on_goto_module(event, module_num)
+
             self.__frame.Bind(wx.EVT_MENU, on_goto_module, id=item_id)
 
     def on_goto_module(self, event, module_num):
@@ -1964,38 +1972,39 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         assert isinstance(event, wx.CommandEvent)
         if self.menu_id_to_module_name.has_key(event.Id):
             module_name = self.menu_id_to_module_name[event.Id]
+
             def loader(module_num, module_name=module_name):
                 module = instantiate_module(module_name)
                 module.set_module_num(module_num)
                 return module
+
             self.on_add_to_pipeline(
-                self, AddToPipelineEvent(module_name, loader))
+                    self, AddToPipelineEvent(module_name, loader))
         else:
             logger.warn("Could not find module associated with ID = %d, module = %s" % (
                 event.Id, event.GetString()))
 
-
     def __get_selected_modules(self):
-        '''Get the modules selected in the GUI, but not input modules'''
+        """Get the modules selected in the GUI, but not input modules"""
         return filter(lambda x: not x.is_input_module(),
                       self.__pipeline_list_view.get_selected_modules())
 
     def ok_to_edit_pipeline(self):
-        '''Return True if ok to edit pipeline
+        """Return True if ok to edit pipeline
 
         Warns user if not OK (is_running)
-        '''
+        """
         if self.is_running():
             wx.MessageBox(
-                "Pipeline modification is disabled during analysis.\n"
-                "Please stop the analysis before editing your pipeline.",
-                caption = "Error: Pipeline editing disabled during analysis",
-                style = wx.OK | wx.ICON_INFORMATION,
-                parent = self.__frame)
+                    "Pipeline modification is disabled during analysis.\n"
+                    "Please stop the analysis before editing your pipeline.",
+                    caption="Error: Pipeline editing disabled during analysis",
+                    style=wx.OK | wx.ICON_INFORMATION,
+                    parent=self.__frame)
             return False
         return True
 
-    def on_remove_module(self,event):
+    def on_remove_module(self, event):
         self.remove_selected_modules()
 
     def remove_selected_modules(self):
@@ -2020,13 +2029,13 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
             self.exit_test_mode()
 
     def exit_test_mode(self):
-        '''Exit test mode with all the bells and whistles
+        """Exit test mode with all the bells and whistles
 
         This is safe to call if not in test mode
-        '''
+        """
         if self.is_in_debug_mode():
             self.stop_debugging()
-            if cpprefs.get_show_exiting_test_mode_dlg():
+            if cellprofiler.preferences.get_show_exiting_test_mode_dlg():
                 self.show_exiting_test_mode()
 
     def on_duplicate_module(self, event):
@@ -2038,22 +2047,21 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
 
         selected_modules = self.__get_selected_modules()
         if len(selected_modules):
-            module_num=selected_modules[-1].module_num+1
+            module_num = selected_modules[-1].module_num + 1
         else:
             # insert module last if nothing selected
-            module_num = len(self.__pipeline.modules())+1
+            module_num = len(self.__pipeline.modules()) + 1
         for m in modules:
             module = self.__pipeline.instantiate_module(m.module_name)
             module.module_num = module_num
             module.set_settings_from_values(
-                cpp.Pipeline.capture_module_settings(m),
-                m.variable_revision_number, m.module_name, False)
+                    cellprofiler.pipeline.Pipeline.capture_module_settings(m),
+                    m.variable_revision_number, m.module_name, False)
             module.show_window = m.show_window  # copy visibility
             self.__pipeline.add_module(module)
             module_num += 1
 
-
-    def on_module_up(self,event):
+    def on_module_up(self, event):
         """Move the currently selected modules up"""
         if not self.ok_to_edit_pipeline():
             return
@@ -2064,16 +2072,16 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                 return
             selected_modules = [active_module]
         for module in selected_modules:
-            self.__pipeline.move_module(module.module_num, cpp.DIRECTION_UP)
+            self.__pipeline.move_module(module.module_num, cellprofiler.pipeline.DIRECTION_UP)
         #
         # Major event - restart from scratch
         #
         if self.is_in_debug_mode():
             self.stop_debugging()
-            if cpprefs.get_show_exiting_test_mode_dlg():
+            if cellprofiler.preferences.get_show_exiting_test_mode_dlg():
                 self.show_exiting_test_mode()
 
-    def on_module_down(self,event):
+    def on_module_down(self, event):
         """Move the currently selected modules down"""
         if not self.ok_to_edit_pipeline():
             return
@@ -2086,20 +2094,20 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
             selected_modules = [active_module]
         for module in selected_modules:
             self.__pipeline.move_module(
-                module.module_num, cpp.DIRECTION_DOWN)
+                    module.module_num, cellprofiler.pipeline.DIRECTION_DOWN)
         #
         # Major event - restart from scratch
         #
         if self.is_in_debug_mode():
             self.stop_debugging()
-            if cpprefs.get_show_exiting_test_mode_dlg():
+            if cellprofiler.preferences.get_show_exiting_test_mode_dlg():
                 self.show_exiting_test_mode()
 
     def on_update_module_enable(self, event):
-        '''Update the UI for the ENABLE_MODULE menu item / button
+        """Update the UI for the ENABLE_MODULE menu item / button
 
         event - an UpdateUIEvent for the item
-        '''
+        """
         active_module = self.__pipeline_list_view.get_active_module()
         if active_module is not None:
             event.SetText("Disable Module" if active_module.enabled
@@ -2110,7 +2118,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
             event.Enable(True)
 
     def on_module_enable(self, event):
-        '''Toggle the active module's enable state'''
+        """Toggle the active module's enable state"""
         active_module = self.__pipeline_list_view.get_active_module()
         if active_module is None:
             logger.warn("User managed to fire the enable/disable module event and no module was active")
@@ -2146,7 +2154,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         active_module = self.__pipeline_list_view.get_active_module()
         if active_module is None:
             # insert module last if nothing selected
-            module_num = len(self.__pipeline.modules(False))+1
+            module_num = len(self.__pipeline.modules(False)) + 1
         else:
             last_input_module_num = 0
             for module in self.__pipeline.modules(False):
@@ -2154,12 +2162,12 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                     last_input_module_num = module.module_num
                 else:
                     break
-            module_num = max(active_module.module_num, last_input_module_num)+1
+            module_num = max(active_module.module_num, last_input_module_num) + 1
         module = event.module_loader(module_num)
         module.show_window = True  # default to show in GUI
         remove_input_modules = False
         if (module.is_load_module() and
-            any([m.is_input_module() for m in self.__pipeline.modules()])):
+                any([m.is_input_module() for m in self.__pipeline.modules()])):
             #
             # A legacy load module, ask user if they want to convert to a
             # legacy pipeline
@@ -2168,12 +2176,12 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                        "with the Images, Metadata, NamesAndTypes, and Groups\n"
                        "input modules. Do you want to remove these input\n"
                        "modules and use %s instead?") % (
-                           module.module_name, module.module_name)
+                          module.module_name, module.module_name)
             if wx.MessageBox(
-                message,
-                caption = "Use legacy input module, %s" %module.module_name,
-                style = wx.YES_NO | wx.YES_DEFAULT | wx.ICON_QUESTION,
-                parent = self.__frame) != wx.YES:
+                    message,
+                    caption="Use legacy input module, %s" % module.module_name,
+                    style=wx.YES_NO | wx.YES_DEFAULT | wx.ICON_QUESTION,
+                    parent=self.__frame) != wx.YES:
                 return
             remove_input_modules = True
 
@@ -2188,14 +2196,16 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                     break
             self.__pipeline_list_view.select_one_module(module.module_num)
 
-        #
-        # Major event - restart from scratch
-        #
-        #if self.is_in_debug_mode():
-        #    self.stop_debugging()
+            #
+            # Major event - restart from scratch
+            #
+            # if self.is_in_debug_mode():
+            #    self.stop_debugging()
 
     def __on_module_view_event(self, caller, event):
-        assert isinstance(event,cellprofiler.gui.moduleview.SettingEditedEvent), '%s is not an instance of CellProfiler.CellProfilerGUI.ModuleView.SettingEditedEvent'%(str(event))
+        assert isinstance(event,
+                          cellprofiler.gui.moduleview.SettingEditedEvent), '%s is not an instance of CellProfiler.CellProfilerGUI.ModuleView.SettingEditedEvent' % (
+            str(event))
         setting = event.get_setting()
         proposed_value = event.get_proposed_value()
         setting.set_value_text(proposed_value)
@@ -2211,19 +2221,19 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
             # list.
             #
             self.stop_debugging()
-            if cpprefs.get_show_exiting_test_mode_dlg():
+            if cellprofiler.preferences.get_show_exiting_test_mode_dlg():
                 self.show_exiting_test_mode()
 
     def status_callback(self, *args):
         self.__frame.preferences_view.on_pipeline_progress(*args)
 
     def on_run_multiple_pipelines(self, event):
-        '''Menu handler for run multiple pipelines'''
-        dlg = RunMultplePipelinesDialog(
-                parent = self.__frame,
-                title = "Run multiple pipelines",
-                style = wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER |wx.THICK_FRAME,
-                size = (640,480))
+        """Menu handler for run multiple pipelines"""
+        dlg = runmultiplepipelinesdialog.RunMultplePipelinesDialog(
+                parent=self.__frame,
+                title="Run multiple pipelines",
+                style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER | wx.THICK_FRAME,
+                size=(640, 480))
         try:
             if dlg.ShowModal() == wx.ID_OK:
                 self.pipeline_list = dlg.get_pipelines()
@@ -2236,17 +2246,17 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
             return
         pipeline_details = self.pipeline_list.pop(0)
         self.do_load_pipeline(pipeline_details.path)
-        cpprefs.set_default_image_directory(pipeline_details.default_input_folder)
-        cpprefs.set_default_output_directory(pipeline_details.default_output_folder)
-        cpprefs.set_output_file_name(pipeline_details.measurements_file)
+        cellprofiler.preferences.set_default_image_directory(pipeline_details.default_input_folder)
+        cellprofiler.preferences.set_default_output_directory(pipeline_details.default_output_folder)
+        cellprofiler.preferences.set_output_file_name(pipeline_details.measurements_file)
         self.on_analyze_images(event)
 
     def on_analyze_images(self, event):
-        '''Handle a user request to start running the pipeline'''
+        """Handle a user request to start running the pipeline"""
         self.do_analyze_images()
 
     def do_analyze_images(self):
-        '''Analyze images using the current workspace and pipeline'''
+        """Analyze images using the current workspace and pipeline"""
         ##################################
         #
         # Preconditions:
@@ -2277,22 +2287,22 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
             self.__module_view.disable()
             self.__pipeline_list_view.allow_editing(False)
             self.__frame.preferences_view.on_analyze_images()
-            with cpp.Pipeline.PipelineListener(
-                self.__pipeline, self.on_prepare_run_error_event):
+            with cellprofiler.pipeline.Pipeline.PipelineListener(
+                    self.__pipeline, self.on_prepare_run_error_event):
                 if not self.__pipeline.prepare_run(self.__workspace):
                     self.stop_running()
                     return
             measurements_file_path = None
-            if cpprefs.get_write_MAT_files() == cpprefs.WRITE_HDF5:
+            if cellprofiler.preferences.get_write_MAT_files() == cellprofiler.preferences.WRITE_HDF5:
                 measurements_file_path = self.get_output_file_path()
 
             num_workers = min(
-                len(self.__workspace.measurements.get_image_numbers()),
-                cpprefs.get_max_workers())
-            self.__analysis = cpanalysis.Analysis(
-                self.__pipeline,
-                measurements_file_path,
-                initial_measurements=self.__workspace.measurements)
+                    len(self.__workspace.measurements.get_image_numbers()),
+                    cellprofiler.preferences.get_max_workers())
+            self.__analysis = cellprofiler.analysis.Analysis(
+                    self.__pipeline,
+                    measurements_file_path,
+                    initial_measurements=self.__workspace.measurements)
             self.__analysis.start(self.analysis_event_handler,
                                   num_workers)
             self.__frame.preferences_view.update_worker_count_info(num_workers)
@@ -2301,53 +2311,53 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
 
         except Exception, e:
             # Catastrophic failure
-            display_error_dialog(self.__frame,
-                                 e,
-                                 self.__pipeline,
+            errordialog.display_error_dialog(self.__frame,
+                                             e,
+                                             self.__pipeline,
                                  "Failure in analysis startup.",
-                                 sys.exc_info()[2],
-                                 continue_only=True)
+                                             sys.exc_info()[2],
+                                             continue_only=True)
             self.stop_running()
         return
 
     def on_prepare_run_error_event(self, pipeline, event):
-        '''Display an error message box on error during prepare_run
+        """Display an error message box on error during prepare_run
 
         This is called if the pipeline is misconfigured - an unrecoverable
         error that's the user's fault.
-        '''
-        if isinstance(event, cpp.PrepareRunErrorEvent):
+        """
+        if isinstance(event, cellprofiler.pipeline.PrepareRunErrorEvent):
             if event.module is None:
                 caption = "Cannot run pipeline"
                 message = ("The pipeline cannot be started because of\n"
                            "a configuration problem:\n\n%s") % event.message
             else:
-                caption = "Cannot run pipeline: misconfiguration in %s" %\
-                    event.module.module_name
+                caption = "Cannot run pipeline: misconfiguration in %s" % \
+                          event.module.module_name
                 message = ("The pipeline cannot be started because of\n"
-                           "a configuration problem in the %s module:\n\n%s") %\
-                    (event.module.module_name, event.message)
+                           "a configuration problem in the %s module:\n\n%s") % \
+                          (event.module.module_name, event.message)
             wx.MessageBox(
-                message = message,
-                caption = caption,
-                parent = self.__frame,
-                style = wx.ICON_ERROR | wx.OK)
+                    message=message,
+                    caption=caption,
+                    parent=self.__frame,
+                    style=wx.ICON_ERROR | wx.OK)
 
     def analysis_event_handler(self, evt):
         PRI_EXCEPTION, PRI_INTERACTION, PRI_DISPLAY = range(3)
 
-        if isinstance(evt, cpanalysis.AnalysisStarted):
+        if isinstance(evt, cellprofiler.analysis.AnalysisStarted):
             wx.CallAfter(self.show_analysis_controls)
-        elif isinstance(evt, cpanalysis.AnalysisProgress):
+        elif isinstance(evt, cellprofiler.analysis.AnalysisProgress):
             print "Progress", evt.counts
             total_jobs = sum(evt.counts.values())
             completed = sum(map(
-                (lambda status: evt.counts.get(status, 0)),
-                (cpanalysis.AnalysisRunner.STATUS_DONE,
-                 cpanalysis.AnalysisRunner.STATUS_FINISHED_WAITING)))
+                    (lambda status: evt.counts.get(status, 0)),
+                    (cellprofiler.analysis.AnalysisRunner.STATUS_DONE,
+                     cellprofiler.analysis.AnalysisRunner.STATUS_FINISHED_WAITING)))
             wx.CallAfter(self.__frame.preferences_view.on_pipeline_progress,
                          total_jobs, completed)
-        elif isinstance(evt, cpanalysis.AnalysisFinished):
+        elif isinstance(evt, cellprofiler.analysis.AnalysisFinished):
             print ("Cancelled!" if evt.cancelled else "Finished!")
             # drop any interaction/display requests or exceptions
             while True:
@@ -2359,34 +2369,34 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                 self.pipeline_list = []
 
             wx.CallAfter(self.on_stop_analysis, evt)
-        elif isinstance(evt, cpanalysis.DisplayRequest):
+        elif isinstance(evt, cellprofiler.analysis.DisplayRequest):
             wx.CallAfter(self.module_display_request, evt)
-        elif isinstance(evt, cpanalysis.DisplayPostRunRequest):
+        elif isinstance(evt, cellprofiler.analysis.DisplayPostRunRequest):
             wx.CallAfter(self.module_display_post_run_request, evt)
-        elif isinstance(evt, cpanalysis.DisplayPostGroupRequest):
+        elif isinstance(evt, cellprofiler.analysis.DisplayPostGroupRequest):
             wx.CallAfter(self.module_display_post_group_request, evt)
-        elif isinstance(evt, cpanalysis.InteractionRequest):
+        elif isinstance(evt, cellprofiler.analysis.InteractionRequest):
             self.interaction_request_queue.put((PRI_INTERACTION, self.module_interaction_request, evt))
             wx.CallAfter(self.handle_analysis_feedback)
-        elif isinstance(evt, cpanalysis.OmeroLoginRequest):
+        elif isinstance(evt, cellprofiler.analysis.OmeroLoginRequest):
             self.interaction_request_queue.put((PRI_INTERACTION, self.omero_login_request, evt))
             wx.CallAfter(self.handle_analysis_feedback)
-        elif isinstance(evt, cpanalysis.ExceptionReport):
+        elif isinstance(evt, cellprofiler.analysis.ExceptionReport):
             self.interaction_request_queue.put((PRI_EXCEPTION, self.analysis_exception, evt))
             wx.CallAfter(self.handle_analysis_feedback)
-        elif isinstance(evt, (cpanalysis.DebugWaiting, cpanalysis.DebugComplete)):
+        elif isinstance(evt, (cellprofiler.analysis.DebugWaiting, cellprofiler.analysis.DebugComplete)):
             # These are handled by the dialog reading the debug
             # request queue
             if self.debug_request_queue is None:
                 # Things are in a bad state here, possibly because the
                 # user hasn't properly run the debugger. Chances are that
                 # the user knows that something is going wrong.
-                evt.reply(cpanalysis.ServerExited())
+                evt.reply(cellprofiler.analysis.ServerExited())
             else:
                 self.debug_request_queue.put(evt)
-        elif isinstance(evt, cpanalysis.AnalysisPaused):
+        elif isinstance(evt, cellprofiler.analysis.AnalysisPaused):
             wx.CallAfter(self.show_resume_button)
-        elif isinstance(evt, cpanalysis.AnalysisResumed):
+        elif isinstance(evt, cellprofiler.analysis.AnalysisResumed):
             wx.CallAfter(self.show_pause_button)
         elif isinstance(evt, cellprofiler.pipeline.RunExceptionEvent):
             # exception in (prepare/post)_(run/group)
@@ -2395,10 +2405,10 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
             raise ValueError("Unknown event type %s %s" % (type(evt), evt))
 
     def handle_analysis_feedback(self):
-        '''Process any pending exception or interaction requests from the
+        """Process any pending exception or interaction requests from the
         pipeline.  This function guards against multiple modal dialogs being
         opened, which can overwhelm the user and cause UI hangs.
-        '''
+        """
         # just in case.
         assert wx.Thread_IsMain(), "PipelineController.handle_analysis_feedback() must be called from main thread!"
 
@@ -2420,24 +2430,24 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
             self.interaction_pending = False
 
     def module_display_request(self, evt):
-        '''
-        '''
+        """
+        """
         assert wx.Thread_IsMain(), "PipelineController.module_display_request() must be called from main thread!"
 
         module_num = evt.module_num
-        if module_num <= 0 or\
-           module_num > len(self.__pipeline.modules(exclude_disabled=False)):
+        if module_num <= 0 or \
+                        module_num > len(self.__pipeline.modules(exclude_disabled=False)):
             # Defensive coding: module was deleted?
             logger.warning(
-                "Failed to display module # %d. The pipeline may have been edited during analysis" % module_num)
-            evt.reply(cpanalysis.Ack())
+                    "Failed to display module # %d. The pipeline may have been edited during analysis" % module_num)
+            evt.reply(cellprofiler.analysis.Ack())
             return
 
         # use our shared workspace
         self.__workspace.display_data.__dict__.update(evt.display_data_dict)
         try:
             module = self.__pipeline.modules(exclude_disabled=False)[module_num - 1]
-            if module.display != cpmodule.CPModule.display:
+            if module.display != cellprofiler.cpmodule.CPModule.display:
                 fig = self.__workspace.get_module_figure(module,
                                                          evt.image_set_number,
                                                          self.__frame)
@@ -2447,12 +2457,12 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                 fig.figure.canvas.Refresh()
         except:
             _, exc, tb = sys.exc_info()
-            display_error_dialog(None, exc, self.__pipeline, tb=tb, continue_only=True,
-                                 message="Exception in handling display request for module %s #%d" \
-                                     % (module.module_name, module_num))
+            errordialog.display_error_dialog(None, exc, self.__pipeline, tb=tb, continue_only=True,
+                                             message="Exception in handling display request for module %s #%d" \
+                                         % (module.module_name, module_num))
         finally:
             # we need to ensure that the reply_cb gets a reply
-            evt.reply(cpanalysis.Ack())
+            evt.reply(cellprofiler.analysis.Ack())
 
     def module_display_post_run_request(self, evt):
         assert wx.Thread_IsMain(), "PipelineController.module_post_run_display_request() must be called from main thread!"
@@ -2461,7 +2471,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         self.__workspace.display_data.__dict__.update(evt.display_data.__dict__)
         try:
             module = self.__pipeline.modules(exclude_disabled=False)[module_num - 1]
-            if module.display_post_run != cpmodule.CPModule.display_post_run:
+            if module.display_post_run != cellprofiler.cpmodule.CPModule.display_post_run:
                 image_number = self.__workspace.measurements.image_set_count
                 fig = self.__workspace.get_module_figure(module,
                                                          image_number,
@@ -2470,9 +2480,9 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                 fig.Refresh()
         except:
             _, exc, tb = sys.exc_info()
-            display_error_dialog(None, exc, self.__pipeline, tb=tb, continue_only=True,
-                                 message="Exception in handling display request for module %s #%d" \
-                                     % (module.module_name, module_num))
+            errordialog.display_error_dialog(None, exc, self.__pipeline, tb=tb, continue_only=True,
+                                             message="Exception in handling display request for module %s #%d" \
+                                         % (module.module_name, module_num))
 
     def module_display_post_group_request(self, evt):
         assert wx.Thread_IsMain(), "PipelineController.module_post_group_display_request() must be called from main thread!"
@@ -2481,7 +2491,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         self.__workspace.display_data.__dict__.update(evt.display_data)
         try:
             module = self.__pipeline.modules(exclude_disabled=False)[module_num - 1]
-            if module.display_post_group != cpmodule.CPModule.display_post_group:
+            if module.display_post_group != cellprofiler.cpmodule.CPModule.display_post_group:
                 image_number = evt.image_set_number
                 fig = self.__workspace.get_module_figure(module,
                                                          image_number,
@@ -2490,16 +2500,16 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                 fig.Refresh()
         except:
             _, exc, tb = sys.exc_info()
-            display_error_dialog(None, exc, self.__pipeline, tb=tb, continue_only=True,
-                                 message="Exception in handling display request for module %s #%d" \
-                                     % (module.module_name, module_num))
+            errordialog.display_error_dialog(None, exc, self.__pipeline, tb=tb, continue_only=True,
+                                             message="Exception in handling display request for module %s #%d" \
+                                         % (module.module_name, module_num))
         finally:
-            evt.reply(cpanalysis.Ack())
+            evt.reply(cellprofiler.analysis.Ack())
 
     def module_interaction_request(self, evt):
-        '''forward a module interaction request from the running pipeline to
+        """forward a module interaction request from the running pipeline to
         our own pipeline's instance of the module, and reply with the result.
-        '''
+        """
         module_num = evt.module_num
         # extract args and kwargs from the request.
         # see main().interaction_handler() in analysis_worker.py
@@ -2508,66 +2518,67 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         result = ""
         try:
             module = self.__pipeline.modules(
-                exclude_disabled=False)[module_num - 1]
+                    exclude_disabled=False)[module_num - 1]
             result = module.handle_interaction(*args, **kwargs)
         except:
             _, exc, tb = sys.exc_info()
-            display_error_dialog(None, exc, self.__pipeline, tb=tb, continue_only=True,
-                                 message="Exception in handling interaction request for module %s(#%d)" \
-                                     % (module.module_name, module_num))
+            errordialog.display_error_dialog(None, exc, self.__pipeline, tb=tb, continue_only=True,
+                                             message="Exception in handling interaction request for module %s(#%d)" \
+                                         % (module.module_name, module_num))
         finally:
             # we need to ensure that the reply_cb gets a reply (even if it
             # being empty causes futher exceptions).
-            evt.reply(cpanalysis.InteractionReply(result=result))
+            evt.reply(cellprofiler.analysis.InteractionReply(result=result))
 
-    def omero_login_request(self, evt):
-        '''Handle retrieval of the Omero credentials'''
+    @staticmethod
+    def omero_login_request(evt):
+        """Handle retrieval of the Omero credentials"""
         from bioformats.formatreader import get_omero_credentials
-        evt.reply(cpanalysis.OmeroLoginReply(get_omero_credentials()))
+        evt.reply(cellprofiler.analysis.OmeroLoginReply(get_omero_credentials()))
 
     def analysis_exception(self, evt):
-        '''Report an error in analysis to the user, giving options for
-        skipping, aborting, and debugging.'''
-
+        """Report an error in analysis to the user, giving options for
+        skipping, aborting, and debugging."""
 
         assert wx.Thread_IsMain(), "PipelineController.analysis_exception() must be called from main thread!"
 
         self.debug_request_queue = Queue.Queue()
 
         evtlist = [evt]
-        def remote_debug(evtlist = evtlist):
+
+        def remote_debug(evtlist=evtlist):
             # choose a random string for verification
             verification = ''.join(random.choice(string.ascii_letters) for x in range(5))
             evt = evtlist[0]
             # Request debugging.  We get back a port.
             evt.reply(
-                cpanalysis.ExceptionPleaseDebugReply(
-                    cpanalysis.DEBUG,
-                    hashlib.sha1(verification).hexdigest()))
+                    cellprofiler.analysis.ExceptionPleaseDebugReply(
+                            cellprofiler.analysis.DEBUG,
+                            hashlib.sha1(verification).hexdigest()))
             evt = self.debug_request_queue.get()
             port = evt.port
             result = wx.MessageBox(
-                "Remote PDB waiting on port %d\nUse '%s' for verification" %
-                (port, verification),
-                "Remote debugging started.",
-                wx.OK | wx.CANCEL | wx.ICON_INFORMATION)
+                    "Remote PDB waiting on port %d\nUse '%s' for verification" %
+                    (port, verification),
+                    "Remote debugging started.",
+                    wx.OK | wx.CANCEL | wx.ICON_INFORMATION)
             if result == wx.ID_CANCEL:
-                evt.reply(cpanalysis.DebugCancel())
+                evt.reply(cellprofiler.analysis.DebugCancel())
                 return False
             # Acknowledge the port request, and we'll get back a
             # DebugComplete(), which we use as a new evt to reply with the
             # eventual CONTINUE/STOP choice.
             with wx.ProgressDialog(
-                "Remote debugging on port %d" % port,
-                "Debugging remotely, Cancel to abandon",
-                style = wx.PD_APP_MODAL | wx.PD_CAN_ABORT) as dlg:
+                            "Remote debugging on port %d" % port,
+                    "Debugging remotely, Cancel to abandon",
+                    style=wx.PD_APP_MODAL | wx.PD_CAN_ABORT) as dlg:
                 while True:
                     try:
-                        evtlist[0] = self.debug_request_queue.get(timeout = .25)
+                        evtlist[0] = self.debug_request_queue.get(timeout=.25)
                         return True
                     except Queue.Empty:
                         keep_going, skip = dlg.UpdatePulse(
-                            "Debugging remotely, Cancel to abandon")
+                                "Debugging remotely, Cancel to abandon")
                         if not keep_going:
                             self.debug_request_queue = None
                             return False
@@ -2579,25 +2590,25 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         else:
             message = (("Error while processing (remote worker):\n"
                         "%s\n\nDo you want to stop processing?") %
-                       (evt))
+                       evt)
 
-        disposition = display_error_dialog(
-            None, evt.exc_type, self.__pipeline, message,
-            remote_exc_info=(evt.exc_type, evt.exc_message, evt.exc_traceback,
-                             evt.filename, evt.line_number,
-                             remote_debug))
-        if disposition == ED_STOP:
+        disposition = errordialog.display_error_dialog(
+                None, evt.exc_type, self.__pipeline, message,
+                remote_exc_info=(evt.exc_type, evt.exc_message, evt.exc_traceback,
+                                 evt.filename, evt.line_number,
+                                 remote_debug))
+        if disposition == errordialog.ED_STOP:
             self.__analysis.cancel()
 
-        evtlist[0].reply(cpanalysis.Reply(disposition=disposition))
+        evtlist[0].reply(cellprofiler.analysis.Reply(disposition=disposition))
 
         wx.Yield()  # This allows cancel events to remove other exceptions from the queue.
 
     def on_restart(self, event):
-        '''Restart a pipeline from a measurements file'''
+        """Restart a pipeline from a measurements file"""
         dlg = wx.FileDialog(self.__frame, "Select measurements file",
-                            wildcard = "Measurements file (*.mat, *.h5)|*.mat;*.h5",
-                            style = wx.FD_OPEN)
+                            wildcard="Measurements file (*.mat, *.h5)|*.mat;*.h5",
+                            style=wx.FD_OPEN)
         try:
             if dlg.ShowModal() != wx.ID_OK:
                 return
@@ -2612,32 +2623,32 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         ##################################
 
         try:
-            measurements = cpm.load_measurements(path)
+            measurements = cellprofiler.measurements.load_measurements(path)
             pipeline_txt = measurements.get_experiment_measurement(
-                cpp.M_PIPELINE)
-            self.__pipeline.loadtxt(StringIO(pipeline_txt.encode("utf-8")))
+                    cellprofiler.pipeline.M_PIPELINE)
+            self.__pipeline.loadtxt(cStringIO.StringIO(pipeline_txt.encode("utf-8")))
             self.__module_view.disable()
             self.__pipeline_list_view.allow_editing(False)
             self.__frame.preferences_view.on_analyze_images()
             measurements_file_path = None
-            if cpprefs.get_write_MAT_files() == cpprefs.WRITE_HDF5:
+            if cellprofiler.preferences.get_write_MAT_files() == cellprofiler.preferences.WRITE_HDF5:
                 measurements_file_path = self.get_output_file_path()
 
-            self.__analysis = cpanalysis.Analysis(
-                self.__pipeline,
-                measurements_file_path,
-                initial_measurements=measurements)
+            self.__analysis = cellprofiler.analysis.Analysis(
+                    self.__pipeline,
+                    measurements_file_path,
+                    initial_measurements=measurements)
             self.__analysis.start(self.analysis_event_handler,
-                                  overwrite = False)
+                                  overwrite=False)
 
         except Exception, e:
             # Catastrophic failure
-            display_error_dialog(self.__frame,
-                                 e,
-                                 self.__pipeline,
+            errordialog.display_error_dialog(self.__frame,
+                                             e,
+                                             self.__pipeline,
                                  "Failure in analysis startup.",
-                                 sys.exc_info()[2],
-                                 continue_only=True)
+                                             sys.exc_info()[2],
+                                             continue_only=True)
             self.stop_running()
 
     def on_pause(self, event):
@@ -2652,36 +2663,36 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         self.__analysis.resume()
         self.__resume_button.Enable(False)
 
-    def on_stop_running(self,event):
-        '''Handle a user interface request to stop running'''
+    def on_stop_running(self, event):
+        """Handle a user interface request to stop running"""
         self.__stop_analysis_button.Enable(False)
         self.pipeline_list = []
         if (self.__analysis is not None) and self.__analysis.check_running():
             self.__analysis.cancel()
             return  # self.stop_running() will be called when we receive the
-                    # AnalysisCancelled event in self.analysis_event_handler.
+            # AnalysisCancelled event in self.analysis_event_handler.
         self.stop_running()
 
     def on_stop_analysis(self, event):
-        '''Stop an analysis run.
+        """Stop an analysis run.
 
         Handle chores that need completing after an analysis is cancelled
         or finished, like closing the measurements file or writing the .MAT
         file.
 
         event - a cpanalysis.AnalysisFinished event
-        '''
+        """
         try:
-            if cpprefs.get_write_MAT_files() is True:
+            if cellprofiler.preferences.get_write_MAT_files() is True:
                 # The user wants to write a .mat file.
                 if event.cancelled:
                     if event.measurements is None:
                         return
                     with wx.FileDialog(
-                        self.__frame,
-                        "Save measurements to a file",
-                        wildcard="CellProfiler measurements (*.mat)|*.mat",
-                        style = wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as dlg:
+                            self.__frame,
+                            "Save measurements to a file",
+                            wildcard="CellProfiler measurements (*.mat)|*.mat",
+                            style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as dlg:
                         if dlg.ShowModal() == wx.ID_OK:
                             path = dlg.Path
                         else:
@@ -2693,12 +2704,12 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                 self.__pipeline.save_measurements(path, event.measurements)
         finally:
             m = event.measurements
-            status = m[cpm.IMAGE, cpanalysis.AnalysisRunner.STATUS,
+            status = m[cellprofiler.measurements.IMAGE, cellprofiler.analysis.AnalysisRunner.STATUS,
                        m.get_image_numbers()]
             n_image_sets = sum([
-                x == cpanalysis.AnalysisRunner.STATUS_DONE for x in status])
+                                   x == cellprofiler.analysis.AnalysisRunner.STATUS_DONE for x in status])
             self.stop_running()
-            if cpprefs.get_show_analysis_complete_dlg():
+            if cellprofiler.preferences.get_show_analysis_complete_dlg():
                 self.show_analysis_complete(n_image_sets)
             m.close()
             self.run_next_pipeline(None)
@@ -2729,8 +2740,8 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
             wx.MessageBox("Test mode is disabled because this pipeline\n"
                           "does not have any modules to run.",
                           "Test mode is disabled",
-                          style = wx.OK | wx.ICON_ERROR,
-                          parent = self.__frame)
+                          style=wx.OK | wx.ICON_ERROR,
+                          parent=self.__frame)
             return
         self.start_debugging()
 
@@ -2739,28 +2750,28 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         self.__pipeline_list_view.set_debug_mode(True)
         self.__test_controls_panel.GetParent().GetSizer().Layout()
         self.show_test_controls()
-        with cpp.Pipeline.PipelineListener(
-            self.__pipeline, self.on_prepare_run_error_event):
+        with cellprofiler.pipeline.Pipeline.PipelineListener(
+                self.__pipeline, self.on_prepare_run_error_event):
             if not self.__workspace.refresh_image_set():
                 self.stop_debugging()
                 return False
 
         self.close_debug_measurements()
         self.__debug_measurements = cellprofiler.measurements.Measurements(
-            copy = self.__workspace.measurements,
-            mode="memory")
-        self.__debug_object_set = cpo.ObjectSet(can_overwrite=True)
+                copy=self.__workspace.measurements,
+                mode="memory")
+        self.__debug_object_set = cellprofiler.objects.ObjectSet(can_overwrite=True)
         self.__frame.enable_debug_commands()
-        assert isinstance(self.__pipeline, cpp.Pipeline)
-        self.__debug_image_set_list = cpi.ImageSetList(True)
-        workspace = cpw.Workspace(self.__pipeline, None, None, None,
-                                  self.__debug_measurements,
-                                  self.__debug_image_set_list,
-                                  self.__frame)
+        assert isinstance(self.__pipeline, cellprofiler.pipeline.Pipeline)
+        self.__debug_image_set_list = cellprofiler.cpimage.ImageSetList(True)
+        workspace = cellprofiler.workspace.Workspace(self.__pipeline, None, None, None,
+                                                     self.__debug_measurements,
+                                                     self.__debug_image_set_list,
+                                                     self.__frame)
         try:
             workspace.set_file_list(self.__workspace.file_list)
             self.__keys, self.__groupings = self.__pipeline.get_groupings(
-                workspace)
+                    workspace)
 
             self.__grouping_index = 0
             self.__within_group_index = 0
@@ -2807,21 +2818,23 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         try:
             image_set_number = self.__debug_measurements.image_set_number
             self.__debug_measurements.add_image_measurement(
-                cpp.GROUP_NUMBER, self.__grouping_index)
+                    cellprofiler.pipeline.GROUP_NUMBER, self.__grouping_index)
             self.__debug_measurements.add_image_measurement(
-                cpp.GROUP_INDEX, self.__within_group_index)
-            workspace = cpw.Workspace(self.__pipeline,
-                                      module,
-                                      self.__debug_measurements,
-                                      self.__debug_object_set,
-                                      self.__debug_measurements,
-                                      self.__debug_image_set_list,
-                                      self.__frame if module.show_window else None,
-                                      outlines = self.__debug_outlines)
+                    cellprofiler.pipeline.GROUP_INDEX, self.__within_group_index)
+            workspace = cellprofiler.workspace.Workspace(self.__pipeline,
+                                                         module,
+                                                         self.__debug_measurements,
+                                                         self.__debug_object_set,
+                                                         self.__debug_measurements,
+                                                         self.__debug_image_set_list,
+                                                         self.__frame if module.show_window else None,
+                                                         outlines=self.__debug_outlines)
             self.__debug_grids = workspace.set_grids(self.__debug_grids)
             cancelled = [False]
-            def cancel_handler(cancelled = cancelled):
+
+            def cancel_handler(cancelled=cancelled):
                 cancelled[0] = True
+
             workspace.cancel_handler = cancel_handler
             self.__pipeline.run_module(module, workspace)
             if cancelled[0]:
@@ -2833,30 +2846,30 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                 module.display(workspace, fig)
                 fig.Refresh()
             workspace.refresh()
-            if workspace.disposition == cpw.DISPOSITION_SKIP:
+            if workspace.disposition == cellprofiler.workspace.DISPOSITION_SKIP:
                 self.last_debug_module()
             elif (module.module_num < len(self.__pipeline.modules()) and
-                  select_next_module):
-                self.__pipeline_list_view.select_one_module(module.module_num+1)
-            failure=0
-            update_workspace_viewer(workspace)
-        except Exception,instance:
+                      select_next_module):
+                self.__pipeline_list_view.select_one_module(module.module_num + 1)
+            failure = 0
+            cellprofiler.gui.viewworkspace.update_workspace_viewer(workspace)
+        except Exception, instance:
             logger.error("Failed to run module %s", module.module_name,
                          exc_info=True)
-            event = cpp.RunExceptionEvent(instance,module)
+            event = cellprofiler.pipeline.RunExceptionEvent(instance, module)
             self.__pipeline.notify_listeners(event)
             if event.cancel_run:
                 self.on_debug_stop(event)
-                failure=-1
-            failure=1
+                failure = -1
+            failure = 1
         self.__frame.SetCursor(old_cursor)
-        if ((module.module_name != 'Restart' or failure==-1) and
-            self.__debug_measurements is not None):
-            module_error_measurement = 'ModuleError_%02d%s'%(module.module_num,module.module_name)
+        if ((module.module_name != 'Restart' or failure == -1) and
+                    self.__debug_measurements is not None):
+            module_error_measurement = 'ModuleError_%02d%s' % (module.module_num, module.module_name)
             self.__debug_measurements.add_measurement('Image',
                                                       module_error_measurement,
-                                                      failure);
-        return failure==0
+                                                      failure)
+        return failure == 0
 
     def current_debug_module(self):
         assert self.is_in_debug_mode()
@@ -2893,18 +2906,18 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         message_format = "Running module %d of %d: %s"
         index = 0
         with wx.ProgressDialog(
-            "Running modules in test mode",
-            message_format % (index+1, count, first_module.module_name),
-            maximum = count,
-            parent = self.__frame,
-            style = wx.PD_APP_MODAL | wx.PD_AUTO_HIDE | wx.PD_CAN_ABORT) as dlg:
+                "Running modules in test mode",
+                        message_format % (index + 1, count, first_module.module_name),
+                maximum=count,
+                parent=self.__frame,
+                style=wx.PD_APP_MODAL | wx.PD_AUTO_HIDE | wx.PD_CAN_ABORT) as dlg:
             dlg.Show()
             max_message_width = None
             while True:
                 assert isinstance(dlg, wx.ProgressDialog)
                 module = self.current_debug_module()
                 message = message_format % (
-                    index+1, count, module.module_name)
+                    index + 1, count, module.module_name)
                 message_width = dlg.GetTextExtent(message)[0]
                 if max_message_width is None:
                     max_message_width = message_width
@@ -2953,21 +2966,21 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
     def on_debug_next_group(self, event):
         if self.__grouping_index is not None:
             self.debug_choose_group(((self.__grouping_index + 1) %
-                               len(self.__groupings)))
+                                     len(self.__groupings)))
 
     def on_debug_prev_group(self, event):
         if self.__grouping_index is not None:
             self.debug_choose_group(((self.__grouping_index + len(self.__groupings) - 1) %
-                               len(self.__groupings)))
+                                     len(self.__groupings)))
 
-    def on_debug_random_image_set(self,event):
-        group_index = 0 if len(self.__groupings) == 1 else np.random.randint(0,len(self.__groupings)-1,size=1)
+    def on_debug_random_image_set(self, event):
+        group_index = 0 if len(self.__groupings) == 1 else numpy.random.randint(0, len(self.__groupings) - 1, size=1)
         keys, image_numbers = self.__groupings[group_index]
         if len(image_numbers) == 0:
             return
-        np.random.seed()
-        image_number_index = np.random.randint(1,len(image_numbers),size=1)[0]
-        self.__within_group_index = ((image_number_index-1) % len(image_numbers))
+        numpy.random.seed()
+        image_number_index = numpy.random.randint(1, len(image_numbers), size=1)[0]
+        self.__within_group_index = ((image_number_index - 1) % len(image_numbers))
         image_number = image_numbers[self.__within_group_index]
         self.__debug_measurements.next_image_set(image_number)
         self.__pipeline_list_view.reset_debug_module()
@@ -2976,10 +2989,10 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
     def debug_choose_group(self, index):
         self.__grouping_index = index
         self.__within_group_index = 0
-        workspace = cpw.Workspace(self.__pipeline, None, None, None,
-                                  self.__debug_measurements,
-                                  self.__debug_image_set_list,
-                                  self.__frame)
+        workspace = cellprofiler.workspace.Workspace(self.__pipeline, None, None, None,
+                                                     self.__debug_measurements,
+                                                     self.__debug_image_set_list,
+                                                     self.__frame)
 
         self.__pipeline.prepare_group(workspace,
                                       self.__groupings[self.__grouping_index][0],
@@ -2991,18 +3004,19 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         self.__debug_outlines = {}
 
     def on_debug_choose_group(self, event):
-        '''Choose a group'''
+        """Choose a group"""
         if len(self.__groupings) < 2:
-            wx.MessageBox("There is only one group and it is currently running in test mode","Choose image group")
+            wx.MessageBox("There is only one group and it is currently running in test mode", "Choose image group")
             return
-        dialog = wx.Dialog(self.__frame, title="Choose an image group", style=wx.RESIZE_BORDER|wx.DEFAULT_DIALOG_STYLE)
+        dialog = wx.Dialog(self.__frame, title="Choose an image group",
+                           style=wx.RESIZE_BORDER | wx.DEFAULT_DIALOG_STYLE)
         super_sizer = wx.BoxSizer(wx.VERTICAL)
         dialog.SetSizer(super_sizer)
-        super_sizer.Add(wx.StaticText(dialog, label = "Select a group set for testing:"),0,wx.EXPAND|wx.ALL,5)
+        super_sizer.Add(wx.StaticText(dialog, label="Select a group set for testing:"), 0, wx.EXPAND | wx.ALL, 5)
         choices = []
 
         for grouping, image_numbers in self.__groupings:
-            text = ["%s=%s"%(k,v) for k,v in grouping.iteritems()]
+            text = ["%s=%s" % (k, v) for k, v in grouping.iteritems()]
             text = ', '.join(text)
             choices.append(text)
         lb = wx.ListBox(dialog, choices=choices)
@@ -3011,14 +3025,14 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
             lb.EnsureVisible(self.__grouping_index)
         else:
             lb.Select(0)
-        super_sizer.Add(lb, 1, wx.EXPAND|wx.ALL, 10)
-        super_sizer.Add(wx.StaticLine(dialog),0,wx.EXPAND|wx.ALL,5)
+        super_sizer.Add(lb, 1, wx.EXPAND | wx.ALL, 10)
+        super_sizer.Add(wx.StaticLine(dialog), 0, wx.EXPAND | wx.ALL, 5)
         btnsizer = wx.StdDialogButtonSizer()
         btnsizer.AddButton(wx.Button(dialog, wx.ID_OK))
         btnsizer.AddButton(wx.Button(dialog, wx.ID_CANCEL))
         btnsizer.Realize()
         super_sizer.Add(btnsizer)
-        super_sizer.Add((2,2))
+        super_sizer.Add((2, 2))
         dialog.Fit()
         dialog.CenterOnParent()
         try:
@@ -3028,9 +3042,10 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
             dialog.Destroy()
 
     def on_debug_choose_image_set(self, event):
-        '''Choose one of the current image sets
+        """Choose one of the current image sets
 
-        '''
+        """
+
         def feature_cmp(x, y):
             if "_" not in x or "_" not in y:
                 return cmp(x, y)
@@ -3040,7 +3055,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
             #
             # Put metadata first.
             #
-            file_md_order = (C_FILE_NAME, C_PATH_NAME, C_FRAME)
+            file_md_order = (cellprofiler.modules.loadimages.C_FILE_NAME, cellprofiler.modules.loadimages.C_PATH_NAME, cellprofiler.modules.loadimages.C_FRAME)
             cx_is_file_md, cy_is_file_md = \
                 [cz in file_md_order for cz in (cx, cy)]
             if cx_is_file_md:
@@ -3049,7 +3064,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                 elif fx != fy:
                     return cmp(fx, fy)
                 else:
-                    cx_priority, cy_priority =\
+                    cx_priority, cy_priority = \
                         [file_md_order.index(cz) for cz in (cx, cy)]
                     return cmp(cx_priority, cy_priority)
             elif cy_is_file_md:
@@ -3059,12 +3074,12 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
 
         m = self.__debug_measurements
         features = sorted(
-            [f for f in m.get_feature_names(cpm.IMAGE) if f.split("_")[0] in
-             (cpm.C_METADATA, C_FILE_NAME, C_PATH_NAME, C_FRAME)],
-            cmp = feature_cmp)
-        image_numbers = np.array(self.__groupings[self.__grouping_index][1], int)
+                [f for f in m.get_feature_names(cellprofiler.measurements.IMAGE) if f.split("_")[0] in
+                 (cellprofiler.measurements.C_METADATA, cellprofiler.modules.loadimages.C_FILE_NAME, cellprofiler.modules.loadimages.C_PATH_NAME, cellprofiler.modules.loadimages.C_FRAME)],
+                cmp=feature_cmp)
+        image_numbers = numpy.array(self.__groupings[self.__grouping_index][1], int)
         columns = dict([
-            (f, m[cpm.IMAGE, f, image_numbers]) for f in features])
+                           (f, m[cellprofiler.measurements.IMAGE, f, image_numbers]) for f in features])
         choices = {}
         for i, image_number in enumerate(image_numbers):
             choices[image_number] = [columns[f][i] for f in features]
@@ -3085,78 +3100,79 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                     del cv[i]
                 del features[i]
 
-        class ListCtrlAndWidthMixin(wx.ListCtrl, ListCtrlAutoWidthMixin):
+        class ListCtrlAndWidthMixin(wx.ListCtrl, wx.lib.mixins.listctrl.ListCtrlAutoWidthMixin):
             pass
 
-        class ChooseImageSetDialog(wx.Dialog, ColumnSorterMixin):
+        class ChooseImageSetDialog(wx.Dialog, wx.lib.mixins.listctrl.ColumnSorterMixin):
             def __init__(self, parent):
-                dlg_size = cpprefs.get_choose_image_set_frame_size()
+                dlg_size = cellprofiler.preferences.get_choose_image_set_frame_size()
                 if dlg_size is None:
                     dlg_size = wx.DefaultSize
                 wx.Dialog.__init__(
-                    self, parent,
-                    title="Choose an image cycle",
-                    size = dlg_size,
-                    style=wx.RESIZE_BORDER|wx.DEFAULT_DIALOG_STYLE)
+                        self, parent,
+                        title="Choose an image cycle",
+                        size=dlg_size,
+                        style=wx.RESIZE_BORDER | wx.DEFAULT_DIALOG_STYLE)
                 super_sizer = wx.BoxSizer(wx.VERTICAL)
                 self.SetSizer(super_sizer)
                 super_sizer.Add(
-                    wx.StaticText(
-                        self, label = "Select an image cycle for testing:"),
-                    0, wx.EXPAND|wx.ALL, 5)
+                        wx.StaticText(
+                                self, label="Select an image cycle for testing:"),
+                        0, wx.EXPAND | wx.ALL, 5)
                 self.list_ctrl = ListCtrlAndWidthMixin(
-                    self,
-                    style = wx.LC_REPORT)
+                        self,
+                        style=wx.LC_REPORT)
                 self.list_ctrl.InsertColumn(0, "Image #")
                 total_width = self.list_ctrl.GetTextExtent("Image #")[0]
                 for i, f in enumerate(features):
-                    if f.startswith(cpm.C_METADATA):
-                        name = f[(len(cpm.C_METADATA) + 1):]
-                    elif f.startswith(cpm.C_FILE_NAME):
-                        name = f[(len(cpm.C_FILE_NAME) + 1):]
-                    elif f.startswith(cpm.C_FRAME):
-                        name = f[(len(cpm.C_FRAME)+1):] + " frame"
+                    if f.startswith(cellprofiler.measurements.C_METADATA):
+                        name = f[(len(cellprofiler.measurements.C_METADATA) + 1):]
+                    elif f.startswith(cellprofiler.measurements.C_FILE_NAME):
+                        name = f[(len(cellprofiler.measurements.C_FILE_NAME) + 1):]
+                    elif f.startswith(cellprofiler.measurements.C_FRAME):
+                        name = f[(len(cellprofiler.measurements.C_FRAME) + 1):] + " frame"
                     else:
-                        name = f[(len(cpm.C_PATH_NAME) + 1):] + " folder"
-                    self.list_ctrl.InsertColumn(i+1, name)
+                        name = f[(len(cellprofiler.measurements.C_PATH_NAME) + 1):] + " folder"
+                    self.list_ctrl.InsertColumn(i + 1, name)
                     width = 0
                     for row in choices.values():
                         w, h = self.list_ctrl.GetTextExtent(unicode(row[i]))
                         if w > width:
                             width = w
-                    self.list_ctrl.SetColumnWidth(i+1, width+15)
+                    self.list_ctrl.SetColumnWidth(i + 1, width + 15)
                     total_width += width + 25
                 total_width += 30
                 self.list_ctrl.SetMinSize(
-                    wx.Size(min(total_width, 640), self.list_ctrl.GetMinHeight()))
+                        wx.Size(min(total_width, 640), self.list_ctrl.GetMinHeight()))
                 self.itemDataMap = dict([
-                    (k,
-                     [u"%06d" % v if isinstance(v, int) else
-                      u"%020.10f" % v if isinstance(v, float) else
-                      unicode(v) for v in [k] + choices[k]]) for k in choices])
+                                            (k,
+                                             [u"%06d" % v if isinstance(v, int) else
+                                              u"%020.10f" % v if isinstance(v, float) else
+                                              unicode(v) for v in [k] + choices[k]]) for k in choices])
 
                 for image_number in sorted(choices.keys()):
                     row = [unicode(image_number)] + \
-                        [unicode(x) for x in choices[image_number]]
+                          [unicode(x) for x in choices[image_number]]
                     pos = self.list_ctrl.Append(row)
                     self.list_ctrl.SetItemData(pos, image_number)
-                ColumnSorterMixin.__init__(self, self.list_ctrl.ColumnCount)
-                super_sizer.Add(self.list_ctrl, 1, wx.EXPAND|wx.ALL, 10)
-                super_sizer.Add(wx.StaticLine(self),0,wx.EXPAND|wx.ALL,5)
+                wx.lib.mixins.listctrl.ColumnSorterMixin.__init__(self, self.list_ctrl.ColumnCount)
+                super_sizer.Add(self.list_ctrl, 1, wx.EXPAND | wx.ALL, 10)
+                super_sizer.Add(wx.StaticLine(self), 0, wx.EXPAND | wx.ALL, 5)
                 btnsizer = wx.StdDialogButtonSizer()
                 btnsizer.AddButton(wx.Button(self, wx.ID_OK))
                 btnsizer.AddButton(wx.Button(self, wx.ID_CANCEL))
                 btnsizer.Realize()
                 super_sizer.Add(btnsizer)
-                super_sizer.Add((2,2))
+                super_sizer.Add((2, 2))
                 self.Layout()
                 self.CenterOnParent()
                 self.Bind(wx.EVT_SIZE, self.on_size)
 
-            def on_size(self, event):
+            @staticmethod
+            def on_size(event):
                 assert isinstance(event, wx.SizeEvent)
-                cpprefs.set_choose_image_set_frame_size(
-                    event.m_size.width, event.m_size.height)
+                cellprofiler.preferences.set_choose_image_set_frame_size(
+                        event.m_size.width, event.m_size.height)
                 event.Skip(True)
 
             def GetListCtrl(self):
@@ -3184,12 +3200,12 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                 self.debug_init_imageset()
 
     def debug_init_imageset(self):
-        '''Initialize the current image set by running the input modules'''
+        """Initialize the current image set by running the input modules"""
         for module in self.__pipeline.modules():
             if module.is_input_module():
                 if not self.do_step(module, False):
                     return False
-        modules = filter((lambda m:not m.is_input_module()),
+        modules = filter((lambda m: not m.is_input_module()),
                          self.__pipeline.modules())
         #
         # Select the first executable module
@@ -3199,10 +3215,10 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         return True
 
     def on_debug_reload(self, event):
-        '''Reload modules from source, warning the user if the pipeline could
+        """Reload modules from source, warning the user if the pipeline could
         not be reinstantiated with the new versions.
 
-        '''
+        """
         success = self.__pipeline.reload_modules()
         if not success:
             wx.MessageBox(("CellProfiler has reloaded modules from source, but "
@@ -3212,21 +3228,21 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                           wx.ICON_ERROR | wx.OK)
 
     def on_debug_view_workspace(self, event):
-        '''Show the workspace viewer'''
-        workspace = cpw.Workspace(
-            self.__pipeline,
-            None,
-            self.__debug_measurements,
-            self.__debug_object_set,
-            self.__debug_measurements,
-            self.__debug_image_set_list)
-        show_workspace_viewer(self.__frame, workspace)
+        """Show the workspace viewer"""
+        workspace = cellprofiler.workspace.Workspace(
+                self.__pipeline,
+                None,
+                self.__debug_measurements,
+                self.__debug_object_set,
+                self.__debug_measurements,
+                self.__debug_image_set_list)
+        cellprofiler.gui.viewworkspace.show_workspace_viewer(self.__frame, workspace)
 
     def on_sample_init(self, event):
         if self.__module_view is not None:
             if self.__module_view.get_current_module() is not None:
                 self.show_parameter_sample_options(
-                    self.__module_view.get_current_module().get_module_num(), event)
+                        self.__module_view.get_current_module().get_module_num(), event)
             else:
                 print "No current module"
 
@@ -3236,10 +3252,10 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
             selected_module.test_valid(self.__pipeline)
 
             top_level_frame = self.__frame
-            self.parameter_sample_frame = psf.ParameterSampleFrame(
-                top_level_frame, selected_module, self.__pipeline, -1)
+            self.parameter_sample_frame = cellprofiler.gui.parametersampleframe.ParameterSampleFrame(
+                    top_level_frame, selected_module, self.__pipeline, -1)
             self.parameter_sample_frame.Bind(
-                wx.EVT_CLOSE, self.on_parameter_sample_frame_close)
+                    wx.EVT_CLOSE, self.on_parameter_sample_frame_close)
             self.parameter_sample_frame.Show(True)
 
     def on_parameter_sample_frame_close(self, event):
@@ -3249,27 +3265,27 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
     # ~^~
 
     def show_analysis_complete(self, n_image_sets):
-        '''Show the "Analysis complete" dialog'''
+        """Show the "Analysis complete" dialog"""
         dlg = wx.Dialog(self.__frame, -1, "Analysis complete")
         sizer = wx.BoxSizer(wx.VERTICAL)
         dlg.SetSizer(sizer)
         sub_sizer = wx.BoxSizer(wx.HORIZONTAL)
         sizer.Add(sub_sizer, 1, wx.EXPAND)
         text_ctrl = wx.StaticText(
-            dlg,
-            label="Finished processing %d image sets. Any saved images\n"
-            "or exported output files specified by your pipeline\n"
-            "have been saved in your designated locations.\n\n"
-            "Note that the module display windows may not show\n"
-            "the final image cycle on computers with multiple\n"
-            "processing cores."% n_image_sets)
+                dlg,
+                label="Finished processing %d image sets. Any saved images\n"
+                      "or exported output files specified by your pipeline\n"
+                      "have been saved in your designated locations.\n\n"
+                      "Note that the module display windows may not show\n"
+                      "the final image cycle on computers with multiple\n"
+                      "processing cores." % n_image_sets)
         sub_sizer.Add(
-            text_ctrl,
-            1, wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL |
-            wx.EXPAND | wx.ALL, 10)
+                text_ctrl,
+                1, wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL |
+                   wx.EXPAND | wx.ALL, 10)
         bitmap = wx.ArtProvider.GetBitmap(wx.ART_INFORMATION,
                                           wx.ART_CMN_DIALOG,
-                                          size=(32,32))
+                                          size=(32, 32))
         sub_sizer.Add(wx.StaticBitmap(dlg, -1, bitmap), 0,
                       wx.EXPAND | wx.ALL, 10)
         dont_show_again = wx.CheckBox(dlg, -1, "Don't show this again")
@@ -3281,32 +3297,35 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         button_sizer.AddButton(save_pipeline_button)
         if sys.platform in ('darwin', 'win32'):
             open_default_output_folder_button = wx.Button(
-                dlg, -1, "Open default output folder")
+                    dlg, -1, "Open default output folder")
             button_sizer.SetNegativeButton(open_default_output_folder_button)
             button_sizer.AddButton(open_default_output_folder_button)
+
             def on_open_default_output_folder(event):
                 import subprocess
                 if sys.platform == 'darwin':
                     subprocess.call([
-                        "open", cpprefs.get_default_output_directory()])
+                        "open", cellprofiler.preferences.get_default_output_directory()])
                 elif sys.platform == 'win32':
                     subprocess.call([
                         "cmd", "/C", "start", "explorer",
-                        cpprefs.get_default_output_directory()])
+                        cellprofiler.preferences.get_default_output_directory()])
+
             open_default_output_folder_button.Bind(
-                wx.EVT_BUTTON, on_open_default_output_folder)
+                    wx.EVT_BUTTON, on_open_default_output_folder)
         button_sizer.SetCancelButton(save_pipeline_button)
         button_sizer.AddButton(wx.Button(dlg, wx.ID_OK))
         sizer.Add(button_sizer, 0,
                   wx.ALIGN_CENTER_HORIZONTAL | wx.EXPAND | wx.ALL, 10)
+
         def on_save_workspace(event):
             self.__on_save_workspace(event)
             wx.MessageBox(
-                "Saved project %s" % cpprefs.get_current_workspace_path(),
-                caption = "Saved project",
-                parent = self.__frame)
-        save_pipeline_button.Bind(wx.EVT_BUTTON, on_save_workspace)
+                    "Saved project %s" % cellprofiler.preferences.get_current_workspace_path(),
+                    caption="Saved project",
+                    parent=self.__frame)
 
+        save_pipeline_button.Bind(wx.EVT_BUTTON, on_save_workspace)
 
         button_sizer.Realize()
         dlg.Fit()
@@ -3314,12 +3333,12 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         try:
             dlg.ShowModal()
             if dont_show_again.Value:
-                cpprefs.set_show_analysis_complete_dlg(False)
+                cellprofiler.preferences.set_show_analysis_complete_dlg(False)
         finally:
             dlg.Destroy()
 
     def show_exiting_test_mode(self):
-        '''Show the "Analysis complete" dialog'''
+        """Show the "Analysis complete" dialog"""
         dlg = wx.Dialog(self.__frame, -1, "Exiting test mode")
         sizer = wx.BoxSizer(wx.VERTICAL)
         dlg.SetSizer(sizer)
@@ -3329,12 +3348,12 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                                   label=("You have changed the pipeline so\n"
                                          "that test mode will now exit.\n"))
         sub_sizer.Add(
-            text_ctrl,
-            1, wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL |
-            wx.EXPAND | wx.ALL, 10)
+                text_ctrl,
+                1, wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL |
+                   wx.EXPAND | wx.ALL, 10)
         bitmap = wx.ArtProvider.GetBitmap(wx.ART_INFORMATION,
                                           wx.ART_CMN_DIALOG,
-                                          size=(32,32))
+                                          size=(32, 32))
         sub_sizer.Add(wx.StaticBitmap(dlg, -1, bitmap), 0,
                       wx.EXPAND | wx.ALL, 10)
         dont_show_again = wx.CheckBox(dlg, -1, "Don't show this again")
@@ -3351,45 +3370,46 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         try:
             dlg.ShowModal()
             if dont_show_again.Value:
-                cpprefs.set_show_exiting_test_mode_dlg(False)
+                cellprofiler.preferences.set_show_exiting_test_mode_dlg(False)
         finally:
             dlg.Destroy()
 
     def get_output_file_path(self):
-        path = os.path.join(cpprefs.get_default_output_directory(),
-                            cpprefs.get_output_file_name())
-        if os.path.exists(path) and not cpprefs.get_allow_output_file_overwrite():
-            (first_part,ext)=os.path.splitext(path)
+        path = os.path.join(cellprofiler.preferences.get_default_output_directory(),
+                            cellprofiler.preferences.get_output_file_name())
+        if os.path.exists(path) and not cellprofiler.preferences.get_allow_output_file_overwrite():
+            (first_part, ext) = os.path.splitext(path)
             start = 1
-            match = re.match('^(.+)__([0-9]+)$',first_part)
+            match = re.match('^(.+)__([0-9]+)$', first_part)
             if match:
                 first_part = match.groups()[0]
                 start = int(match.groups()[1])
-            for i in range(start,1000):
-                alternate_name = '%(first_part)s__%(i)d%(ext)s'%(locals())
+            for i in range(start, 1000):
+                alternate_name = '%(first_part)s__%(i)d%(ext)s' % (locals())
                 if not os.path.exists(alternate_name):
                     break
             result = wx.MessageDialog(parent=self.__frame,
-                                message='%s already exists. Would you like to create %s instead?'%(path, alternate_name),
-                                caption='Output file exists',
-                                style = wx.YES_NO+wx.ICON_QUESTION)
+                                      message='%s already exists. Would you like to create %s instead?' % (
+                                          path, alternate_name),
+                                      caption='Output file exists',
+                                      style=wx.YES_NO + wx.ICON_QUESTION)
             user_choice = result.ShowModal()
             result.Destroy()
             if user_choice & wx.YES:
                 path = alternate_name
-                cpprefs.set_output_file_name(os.path.split(alternate_name)[1])
+                cellprofiler.preferences.set_output_file_name(os.path.split(alternate_name)[1])
             else:
                 return None
         return path
 
     def on_show_all_windows(self, event):
-        '''Turn "show_window" on for every module in the pipeline'''
+        """Turn "show_window" on for every module in the pipeline"""
         with self.__pipeline.undoable_action("Show all windows"):
             for module in self.__pipeline.modules(exclude_disabled=False):
                 self.__pipeline.show_module_window(module, True)
 
     def on_hide_all_windows(self, event):
-        '''Turn "show_window" off for every module in the pipeline'''
+        """Turn "show_window" off for every module in the pipeline"""
         with self.__pipeline.undoable_action("Hide all windows"):
             for module in self.__pipeline.modules(exclude_disabled=False):
                 self.__pipeline.show_module_window(module, False)
@@ -3399,8 +3419,13 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         """
         return self.__pipeline.Run(self.__frame)
 
-class FLDropTarget(wx.PyDropTarget):
-    '''A generic drop target (for the path list)'''
+
+# TODO: wx 3.0 seems to have broken the composite drop target functionality
+#       so I am reverting to only allowing files, hence the commented-out code
+#
+class FLDropTarget(wx.FileDropTarget):
+    """A generic drop target (for the path list)"""
+
     def __init__(self, file_callback_fn, text_callback_fn):
         super(self.__class__, self).__init__()
         self.file_callback_fn = file_callback_fn
@@ -3410,7 +3435,7 @@ class FLDropTarget(wx.PyDropTarget):
         self.composite_data_object = wx.DataObjectComposite()
         self.composite_data_object.Add(self.file_data_object, True)
         self.composite_data_object.Add(self.text_data_object)
-        self.SetDataObject(self.composite_data_object)
+        #self.SetDataObject(self.composite_data_object)
 
     def OnDropFiles(self, x, y, filenames):
         self.file_callback_fn(x, y, filenames)
@@ -3424,15 +3449,16 @@ class FLDropTarget(wx.PyDropTarget):
     def OnDragOver(self, x, y, d):
         return wx.DragCopy
 
-    def OnData(self, x, y, d):
-        if self.GetData():
-            df = self.composite_data_object.GetReceivedFormat().GetType()
-            if  df in (wx.DF_TEXT, wx.DF_UNICODETEXT):
-                self.OnDropText(x, y, self.text_data_object.GetText())
-            elif df == wx.DF_FILENAME:
-                self.OnDropFiles(x, y,
-                                 self.file_data_object.GetFilenames())
-        return wx.DragCopy
-
-    def OnDrop(self, x, y):
-        return True
+    #def OnData(self, x, y, d):
+    #    if self.GetData():
+    #        df = self.composite_data_object.GetReceivedFormat().GetType()
+    #        if df in (wx.DF_TEXT, wx.DF_UNICODETEXT):
+    #            self.OnDropText(x, y, self.text_data_object.GetText())
+    #        elif df == wx.DF_FILENAME:
+    #            self.OnDropFiles(x, y,
+    #                             self.file_data_object.GetFilenames())
+    #    return wx.DragCopy
+    #
+    #@staticmethod
+    #def OnDrop(x, y):
+    #    return True

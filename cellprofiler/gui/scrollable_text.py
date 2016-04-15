@@ -1,11 +1,13 @@
 import wx
-import wx.lib.scrolledpanel as scrolledpanel
+import wx.lib.scrolledpanel
 
 
-class ScrollableText(scrolledpanel.ScrolledPanel):
-    def __init__(self, parent, id=-1, text=[[('black', 'adsf')]]):
-        scrolledpanel.ScrolledPanel.__init__(self, parent, id)
+class ScrollableText(wx.lib.scrolledpanel.ScrolledPanel):
+    def __init__(self, parent, identifier=-1, text=None):
+        wx.lib.scrolledpanel.ScrolledPanel.__init__(self, parent, identifier)
 
+        if text is None:
+            text = [[('black', 'adsf')]]
         self.SetBackgroundColour('white')
         self.SetVirtualSize((1500, 1500))
         self.SetupScrolling(True, True)
@@ -42,17 +44,17 @@ class ScrollableText(scrolledpanel.ScrolledPanel):
             l = self.text[idx]
             combined = "".join([s[1] for s in l])
             extents = [0] + DC.GetPartialTextExtents(combined)
-            for str in l:
-                DC.SetTextForeground(str[0])
-                DC.DrawText(str[1], extents[0], idx * lineheight)
-                extents = extents[len(str[1]):]
+            for string in l:
+                DC.SetTextForeground(string[0])
+                DC.DrawText(string[1], extents[0], idx * lineheight)
+                extents = extents[len(string[1]):]
 
     def resize(self, evt):
         DC = wx.ClientDC(self)
         DC.SetFont(self.font)
 
         # find line width and  height
-        extent = DC.GetFullTextExtent('X'*self.longest_line)
+        extent = DC.GetFullTextExtent('X' * self.longest_line)
         lineheight = extent[1]
         maxwidth = extent[0]
 
@@ -64,7 +66,7 @@ class ScrollableText(scrolledpanel.ScrolledPanel):
     def redraw(self, evt):
         DC = wx.PaintDC(self)
         self.PrepareDC(DC)
-        extent = DC.GetFullTextExtent('x'*self.longest_line)
+        extent = DC.GetFullTextExtent('x' * self.longest_line)
         lineheight = extent[1]
         vs = self.GetViewStart()
         ppu = self.GetScrollPixelsPerUnit()
@@ -81,17 +83,3 @@ class ScrollableText(scrolledpanel.ScrolledPanel):
             mmax = max(max_line, mmax)
             ri.Next()
         self.draw_lines(DC, mmin, mmax, lineheight)
-
-
-
-if __name__ == '__main__':
-    class MainFrame(wx.Frame):
-        def __init__(self, parent):
-            wx.Frame.__init__(self, parent, -1)
-            t = [[('black', l[:len(l)/2]), ('red', l[len(l)/2:])] for l in open('scrollable_text.py')]
-            self.scrollable = ScrollableText(self, -1, t)
-
-    app = wx.PySimpleApp(None,-1)
-    frame = MainFrame(parent=None)
-    frame.Show()
-    app.MainLoop()

@@ -27,6 +27,7 @@ def install_thread_sys_excepthook():
                 raise
             except:
                 sys.excepthook(*sys.exc_info())
+
         self.run = run_with_except_hook
 
     threading.Thread.__init__ = init

@@ -12,7 +12,8 @@ from centrosome.smooth import smooth_with_function_and_mask
 from centrosome.smooth import smooth_with_noise
 from centrosome.threshold import TM_GLOBAL, TM_ADAPTIVE, TM_BINARY_IMAGE
 from centrosome.threshold import TM_MANUAL, TM_MEASUREMENT, TM_METHODS, get_threshold
-from centrosome.threshold import TM_PER_OBJECT, TM_OTSU, TM_MOG, TM_MCT, TM_BACKGROUND, TM_KAPUR, TM_ROBUST_BACKGROUND, TM_RIDLER_CALVARD
+from centrosome.threshold import TM_PER_OBJECT, TM_OTSU, TM_MOG, TM_MCT, TM_BACKGROUND, TM_KAPUR, TM_ROBUST_BACKGROUND, \
+    TM_RIDLER_CALVARD
 from centrosome.threshold import mad, binned_mode
 from centrosome.threshold import weighted_variance, sum_of_entropies
 
@@ -32,8 +33,8 @@ O_ENTROPY = 'Entropy'
 O_FOREGROUND = 'Foreground'
 O_BACKGROUND = 'Background'
 
-FI_IMAGE_SIZE    = 'Image size'
-FI_CUSTOM        = 'Custom'
+FI_IMAGE_SIZE = 'Image size'
+FI_CUSTOM = 'Custom'
 
 RB_DEFAULT = "Default"
 RB_CUSTOM = "Custom"
@@ -69,11 +70,11 @@ R_CHILD = "Child"
 
 FTR_CENTER_X = "Center_X"
 '''The centroid X coordinate measurement feature name'''
-M_LOCATION_CENTER_X = '%s_%s'%(C_LOCATION, FTR_CENTER_X)
+M_LOCATION_CENTER_X = '%s_%s' % (C_LOCATION, FTR_CENTER_X)
 
 FTR_CENTER_Y = "Center_Y"
 '''The centroid Y coordinate measurement feature name'''
-M_LOCATION_CENTER_Y = '%s_%s'%(C_LOCATION, FTR_CENTER_Y)
+M_LOCATION_CENTER_Y = '%s_%s' % (C_LOCATION, FTR_CENTER_Y)
 
 FTR_OBJECT_NUMBER = "Object_Number"
 '''The object number - an index from 1 to however many objects'''
@@ -85,12 +86,12 @@ FF_COUNT = '%s_%%s' % C_COUNT
 FTR_FINAL_THRESHOLD = "FinalThreshold"
 
 '''Format string for the FinalThreshold feature name'''
-FF_FINAL_THRESHOLD = '%s_%s_%%s' %(C_THRESHOLD, FTR_FINAL_THRESHOLD)
+FF_FINAL_THRESHOLD = '%s_%s_%%s' % (C_THRESHOLD, FTR_FINAL_THRESHOLD)
 
 FTR_ORIG_THRESHOLD = "OrigThreshold"
 
 '''Format string for the OrigThreshold feature name'''
-FF_ORIG_THRESHOLD = '%s_%s_%%s' % (C_THRESHOLD,FTR_ORIG_THRESHOLD)
+FF_ORIG_THRESHOLD = '%s_%s_%%s' % (C_THRESHOLD, FTR_ORIG_THRESHOLD)
 
 FTR_WEIGHTED_VARIANCE = "WeightedVariance"
 
@@ -109,7 +110,7 @@ FF_CHILDREN_COUNT = "%s_%%s_Count" % C_CHILDREN
 FF_PARENT = "%s_%%s" % C_PARENT
 
 '''Threshold scope = automatic - use defaults of global + MCT, no adjustments'''
-TS_AUTOMATIC ="Automatic"
+TS_AUTOMATIC = "Automatic"
 
 '''Threshold scope = global - one threshold per image'''
 TS_GLOBAL = "Global"
@@ -153,19 +154,21 @@ PROTIP_RECOMEND_ICON = "thumb-up.png"
 PROTIP_AVOID_ICON = "thumb-down.png"
 TECH_NOTE_ICON = "gear.png"
 
+
 class Identify(cellprofiler.cpmodule.CPModule):
     threshold_setting_version = 2
-    def create_threshold_settings(self, methods = TM_METHODS):
+
+    def create_threshold_settings(self, methods=TM_METHODS):
 
         '''Create settings related to thresholding'''
         # The threshold setting version is invisible to the user
         self.threshold_setting_version = cps.Integer(
-            "Threshold setting version",
-            value = self.threshold_setting_version)
+                "Threshold setting version",
+                value=self.threshold_setting_version)
 
         self.threshold_scope = cps.Choice(
-            'Threshold strategy',
-            TS_ALL, doc = """
+                'Threshold strategy',
+                TS_ALL, doc="""
             The thresholding strategy determines the type of input that is used
             to calculate the threshold. The image thresholds can be based on:
             <ul>
@@ -270,8 +273,8 @@ class Identify(cellprofiler.cpmodule.CPModule):
 	    """ % globals())
 
         self.threshold_method = cps.Choice(
-            'Thresholding method',
-            methods, doc="""
+                'Thresholding method',
+                methods, doc="""
             The intensity threshold affects the decision of whether each pixel
             will be considered foreground (region(s) of interest) or background.
             A higher threshold value will result in only the brightest regions being identified,
@@ -432,11 +435,11 @@ class Identify(cellprofiler.cpmodule.CPModule):
             using the entropy of the histogram." <i>Computer Vision, Graphics and Image Processing</i>,
             29, 273-285.</li>
             </ul></p>
-            """%globals())
+            """ % globals())
 
         self.threshold_smoothing_choice = cps.Choice(
-            "Select the smoothing method for thresholding",
-            [TSM_AUTOMATIC, TSM_MANUAL, TSM_NONE], doc = """
+                "Select the smoothing method for thresholding",
+                [TSM_AUTOMATIC, TSM_MANUAL, TSM_NONE], doc="""
             <i>(Only used for strategies other than %(TS_AUTOMATIC)s and
             %(TS_BINARY_IMAGE)s)</i><br>
             The input image can be optionally smoothed before being thresholded.
@@ -457,17 +460,17 @@ class Identify(cellprofiler.cpmodule.CPModule):
             </ul>""" % globals())
 
         self.threshold_smoothing_scale = cps.Float(
-            "Threshold smoothing scale", 1.0, minval = 0,doc ="""
+                "Threshold smoothing scale", 1.0, minval=0, doc="""
             <i>(Only used if smoothing for threshold is %(TSM_MANUAL)s)</i><br>
             This setting controls the scale used to smooth the input image
             before the threshold is applied. The scale should be approximately
             the size of the artifacts to be eliminated by smoothing. A Gaussian
             is used with a sigma adjusted so that 1/2 of the Gaussian's
             distribution falls within the diameter given by the scale
-            (sigma = scale / 0.674)"""%globals())
+            (sigma = scale / 0.674)""" % globals())
 
         self.threshold_correction_factor = cps.Float(
-            "Threshold correction factor", 1, doc ="""
+                "Threshold correction factor", 1, doc="""
             This setting allows you to adjust the threshold as calculated by the
             above method. The value entered here adjusts the threshold either
             upwards or downwards, by multiplying it by this value.
@@ -484,11 +487,11 @@ class Identify(cellprofiler.cpmodule.CPModule):
             covered by objects. If a larger percentage of the image is covered, the
             Otsu method will give a slightly biased threshold that may have to be
             corrected using this setting.</dd>
-            </dl>"""%globals())
+            </dl>""" % globals())
 
         self.threshold_range = cps.FloatRange(
-            'Lower and upper bounds on threshold', (0,1), minval=0,
-            maxval=1, doc="""
+                'Lower and upper bounds on threshold', (0, 1), minval=0,
+                maxval=1, doc="""
             Enter the minimum and maximum allowable threshold, a value from 0 to 1.
             This is helpful as a safety precaution when the threshold is calculated
             automatically, by overriding the automatic threshold.
@@ -501,43 +504,43 @@ class Identify(cellprofiler.cpmodule.CPModule):
             In such cases, you can estimate the background pixel intensity and set the lower
             bound according to this empirically-determined value. </dd>
             <dd>%(HELP_ON_PIXEL_INTENSITIES)s</dd>
-            </dl>"""%globals())
+            </dl>""" % globals())
 
         self.object_fraction = cps.CustomChoice(
-            'Approximate fraction of image covered by objects?',
-            ['0.01','0.1','0.2','0.3', '0.4','0.5','0.6','0.7', '0.8','0.9','0.99'], doc="""
+                'Approximate fraction of image covered by objects?',
+                ['0.01', '0.1', '0.2', '0.3', '0.4', '0.5', '0.6', '0.7', '0.8', '0.9', '0.99'], doc="""
             <i>(Used only when applying the %(TM_MOG)s thresholding method)</i><br>
             Enter an estimate of how much of the image is covered with objects, which
-            is used to estimate the distribution of pixel intensities."""%globals())
+            is used to estimate the distribution of pixel intensities.""" % globals())
 
         self.manual_threshold = cps.Float(
-            "Manual threshold",
-             value=0.0, minval=0.0, maxval=1.0,doc="""
+                "Manual threshold",
+                value=0.0, minval=0.0, maxval=1.0, doc="""
             <i>(Used only if Manual selected for thresholding method)</i><br>
             Enter the value that will act as an absolute threshold for the images, a value from 0 to 1.""")
 
         self.thresholding_measurement = cps.Measurement("Select the measurement to threshold with",
-            lambda : cpmeas.IMAGE, doc = """
+                                                        lambda: cpmeas.IMAGE, doc="""
             <i>(Used only if Measurement is selected for thresholding method)</i><br>
             Choose the image measurement that will act as an absolute threshold for the images.""")
 
         self.binary_image = cps.ImageNameSubscriber(
-            "Select binary image", cps.NONE, doc = """
+                "Select binary image", cps.NONE, doc="""
             <i>(Used only if Binary image selected for thresholding method)</i><br>
             Select the binary image to be used for thresholding.""")
 
         self.masking_objects = MaskObjectNameSubscriber(
-            "Masking objects", cps.NONE,doc = """
+                "Masking objects", cps.NONE, doc="""
             <i>(Used only if %(TS_PER_OBJECT)s is selected for the
             thresholding strategy)</i><br>A threshold will be calculated for
             each object and applied to the pixels inside that object. Pixels
             outside of any object will be assigned to the background.
             You can either select a prior object or if you select <i>%(O_FROM_IMAGE)s,</i>
-            the input image's mask will be used.</p>"""%globals())
+            the input image's mask will be used.</p>""" % globals())
 
         self.two_class_otsu = cps.Choice(
-            'Two-class or three-class thresholding?',
-            [O_TWO_CLASS, O_THREE_CLASS],doc="""
+                'Two-class or three-class thresholding?',
+                [O_TWO_CLASS, O_THREE_CLASS], doc="""
             <i>(Used only for the Otsu thresholding method)</i> <br>
             <ul>
             <li><i>%(O_TWO_CLASS)s:</i> Select this option if the grayscale levels are readily
@@ -565,22 +568,22 @@ class Identify(cellprofiler.cpmodule.CPModule):
             However, in extreme cases where either
             there are almost no objects or the entire field of view is covered with
             objects, three-class thresholding may perform worse than two-class.</dd>
-            </dl>"""%globals())
+            </dl>""" % globals())
 
         self.use_weighted_variance = cps.Choice(
-            'Minimize the weighted variance or the entropy?',
-            [O_WEIGHTED_VARIANCE, O_ENTROPY])
+                'Minimize the weighted variance or the entropy?',
+                [O_WEIGHTED_VARIANCE, O_ENTROPY])
 
         self.assign_middle_to_foreground = cps.Choice(
-            'Assign pixels in the middle intensity class to the foreground '
-            'or the background?', [O_FOREGROUND, O_BACKGROUND],doc="""
+                'Assign pixels in the middle intensity class to the foreground '
+                'or the background?', [O_FOREGROUND, O_BACKGROUND], doc="""
             <i>(Used only for three-class thresholding)</i><br>
             Choose whether you want the pixels with middle grayscale intensities to be assigned
             to the foreground class or the background class.""")
 
         self.rb_custom_choice = cps.Choice(
-            "Use default parameters?", [RB_DEFAULT, RB_CUSTOM],
-            doc = """
+                "Use default parameters?", [RB_DEFAULT, RB_CUSTOM],
+                doc="""
             <i>(Used only with the %(TM_ROBUST_BACKGROUND)s method)</i><br>
             This setting determines whether the %(TM_ROBUST_BACKGROUND)s method
             uses its default parameters or lets the user customize them.
@@ -594,29 +597,29 @@ class Identify(cellprofiler.cpmodule.CPModule):
             """ % globals())
 
         self.lower_outlier_fraction = cps.Float(
-            "Lower outlier fraction", .05,
-            minval = 0,
-            maxval = 1,
-            doc = """
+                "Lower outlier fraction", .05,
+                minval=0,
+                maxval=1,
+                doc="""
             <i>(Used only when customizing the %(TM_ROBUST_BACKGROUND)s method)</i><br>
             Discard this fraction of the pixels in the image starting with
             those of the lowest intensity.
-            """%globals())
+            """ % globals())
 
         self.upper_outlier_fraction = cps.Float(
-            "Upper outlier fraction", .05,
-            minval = 0,
-            maxval = 1,
-            doc = """
+                "Upper outlier fraction", .05,
+                minval=0,
+                maxval=1,
+                doc="""
             <i>(Used only when customizing the %(TM_ROBUST_BACKGROUND)s method)</i><br>
             Discard this fraction of the pixels in the image starting with
             those of the highest intensity.
-            """%globals())
+            """ % globals())
 
         self.averaging_method = cps.Choice(
-            "Averaging method",
-            [RB_MEAN, RB_MEDIAN, RB_MODE],
-            doc = """
+                "Averaging method",
+                [RB_MEAN, RB_MEDIAN, RB_MODE],
+                doc="""
             <i>(Used only when customizing the %(TM_ROBUST_BACKGROUND)s method)</i><br>
             This setting determines how the intensity midpoint is determined.
             <br><ul><li><i>%(RB_MEAN)s</i>: Use the mean of the pixels
@@ -631,11 +634,11 @@ class Identify(cellprofiler.cpmodule.CPModule):
             of the number of pixels in the unmasked portion of the image) and
             chooses the intensity associated with the bin with the most pixels.
             </li></ul>
-            """ %globals())
+            """ % globals())
         self.variance_method = cps.Choice(
-            "Variance method",
-            [RB_SD, RB_MAD],
-            doc="""
+                "Variance method",
+                [RB_SD, RB_MAD],
+                doc="""
             <i>(Used only when customizing the %(TM_ROBUST_BACKGROUND)s method)</i><br>
             Robust background adds a number of deviations (standard or MAD) to
             the average to get the final background. This setting chooses the
@@ -643,11 +646,11 @@ class Identify(cellprofiler.cpmodule.CPModule):
             outliers.<br>Choose one of <i>%(RB_SD)s</i> or <i>%(RB_MAD)s</i>
             (the median of the absolute difference of the pixel intensities
             from their median).
-            """%globals())
+            """ % globals())
 
         self.number_of_deviations = cps.Float(
-            "# of deviations", 2,
-            doc = """
+                "# of deviations", 2,
+                doc="""
             <i>(Used only when customizing the %(TM_ROBUST_BACKGROUND)s method)</i><br>
             Robust background calculates the variance, multiplies it by the
             value given by this setting and adds it to the average. Adding
@@ -658,11 +661,11 @@ class Identify(cellprofiler.cpmodule.CPModule):
             foreground pixels. It's possible to use a negative number
             to lower the threshold if the averaging method picks a threshold
             that is within the range of foreground pixel intensities.
-            """%globals())
+            """ % globals())
 
         self.adaptive_window_method = cps.Choice(
-            "Method to calculate adaptive window size",
-            [FI_IMAGE_SIZE, FI_CUSTOM], doc="""
+                "Method to calculate adaptive window size",
+                [FI_IMAGE_SIZE, FI_CUSTOM], doc="""
             <i>(Used only if an adaptive thresholding method is used)</i><br>
             The adaptive method breaks the image into blocks, computing the threshold
             for each block. There are two ways to compute the block size:
@@ -670,14 +673,14 @@ class Identify(cellprofiler.cpmodule.CPModule):
             <li><i>%(FI_IMAGE_SIZE)s:</i> The block size is one-tenth of the image dimensions,
             or 50 &times; 50 pixels, whichever is bigger.</li>
             <li><i>%(FI_CUSTOM)s:</i> The block size is specified by the user.</li>
-            </ul>"""%globals())
+            </ul>""" % globals())
 
         self.adaptive_window_size = cps.Integer(
-            'Size of adaptive window', 10, doc="""
+                'Size of adaptive window', 10, doc="""
             <i>(Used only if an adaptive thresholding method with a %(FI_CUSTOM)s window size
             are selected)</i><br>
             Enter the window for the adaptive method. For example,
-            you may want to use a multiple of the largest expected object size."""%globals())
+            you may want to use a multiple of the largest expected object size.""" % globals())
 
     def get_threshold_settings(self):
         '''Return the threshold settings to be saved in the pipeline'''
@@ -729,12 +732,12 @@ class Identify(cellprofiler.cpmodule.CPModule):
                 self.threshold_smoothing_scale]
 
     def upgrade_legacy_threshold_settings(
-        self, threshold_method, threshold_smoothing_choice, threshold_correction_factor,
-        threshold_range, object_fraction, manual_threshold,
-        thresholding_measurement, binary_image,
-        two_class_otsu, use_weighted_variance, assign_middle_to_foreground,
-        adaptive_window_method, adaptive_window_size,
-        masking_objects = O_FROM_IMAGE):
+            self, threshold_method, threshold_smoothing_choice, threshold_correction_factor,
+            threshold_range, object_fraction, manual_threshold,
+            thresholding_measurement, binary_image,
+            two_class_otsu, use_weighted_variance, assign_middle_to_foreground,
+            adaptive_window_method, adaptive_window_size,
+            masking_objects=O_FROM_IMAGE):
         '''Return threshold setting strings built from the legacy elements
 
         IdentifyPrimaryObjects, IdentifySecondaryObjects and ApplyThreshold
@@ -782,11 +785,11 @@ class Identify(cellprofiler.cpmodule.CPModule):
             # Added robust background settings
             #
             setting_values = setting_values + [
-                RB_DEFAULT,    # Robust background custom choice
-                .05, .05,      # lower and upper outlier fractions
-                RB_MEAN,       # averaging method
-                RB_SD,         # variance method
-                2]             # of standard deviations
+                RB_DEFAULT,  # Robust background custom choice
+                .05, .05,  # lower and upper outlier fractions
+                RB_MEAN,  # averaging method
+                RB_SD,  # variance method
+                2]  # of standard deviations
             version = 2
         if version > self.threshold_setting_version:
             raise ValueError("Unsupported pipeline version: threshold setting version = %d" % version)
@@ -822,16 +825,16 @@ class Identify(cellprofiler.cpmodule.CPModule):
                            self.variance_method,
                            self.number_of_deviations]
         if self.threshold_scope not in \
-           (TS_BINARY_IMAGE, TS_MEASUREMENT, TS_MANUAL):
-            vv += [ self.threshold_smoothing_choice]
+                (TS_BINARY_IMAGE, TS_MEASUREMENT, TS_MANUAL):
+            vv += [self.threshold_smoothing_choice]
             if self.threshold_smoothing_choice == TSM_MANUAL:
                 vv += [self.threshold_smoothing_scale]
         if not self.threshold_scope in (TM_MANUAL, TM_BINARY_IMAGE):
-            vv += [ self.threshold_correction_factor, self.threshold_range]
+            vv += [self.threshold_correction_factor, self.threshold_range]
         if self.threshold_scope == TM_ADAPTIVE:
-            vv += [ self.adaptive_window_method ]
+            vv += [self.adaptive_window_method]
             if self.adaptive_window_method == FI_CUSTOM:
-                vv += [ self.adaptive_window_size ]
+                vv += [self.adaptive_window_size]
 
         return vv
 
@@ -849,22 +852,22 @@ class Identify(cellprofiler.cpmodule.CPModule):
         # Retrieve the relevant image and mask
         #
         image = workspace.image_set.get_image(image_name,
-                                              must_be_grayscale = True)
+                                              must_be_grayscale=True)
         img = image.pixel_data
         mask = image.mask
         if self.threshold_scope == TS_BINARY_IMAGE:
             binary_image = workspace.image_set.get_image(
-                self.binary_image.value, must_be_binary = True).pixel_data
+                    self.binary_image.value, must_be_binary=True).pixel_data
             self.add_fg_bg_measurements(
-                workspace.measurements, img, mask, binary_image)
+                    workspace.measurements, img, mask, binary_image)
             if wants_local_threshold:
                 return binary_image, None
             return binary_image
         local_threshold, global_threshold = self.get_threshold(
-            image, mask, workspace)
+                image, mask, workspace)
 
-        if self.threshold_smoothing_choice == TSM_NONE or\
-           self.threshold_scope in (TS_MEASUREMENT, TS_MANUAL):
+        if self.threshold_smoothing_choice == TSM_NONE or \
+                        self.threshold_scope in (TS_MEASUREMENT, TS_MANUAL):
             blurred_image = img
             sigma = 0
         else:
@@ -876,16 +879,18 @@ class Identify(cellprofiler.cpmodule.CPModule):
                 # intensity is contributed from within the smoothing diameter
                 # and 1/2 is contributed from outside.
                 sigma = self.threshold_smoothing_scale.value / 0.6744 / 2.0
+
             def fn(img, sigma=sigma):
                 return scipy.ndimage.gaussian_filter(
-                    img, sigma, mode='constant', cval=0)
+                        img, sigma, mode='constant', cval=0)
+
             blurred_image = smooth_with_function_and_mask(img, fn, mask)
-        if hasattr(workspace,"display_data"):
+        if hasattr(workspace, "display_data"):
             workspace.display_data.threshold_sigma = sigma
 
         binary_image = (blurred_image >= local_threshold) & mask
         self.add_fg_bg_measurements(
-            workspace.measurements, img, mask, binary_image)
+                workspace.measurements, img, mask, binary_image)
         if wants_local_threshold:
             return binary_image, local_threshold
         return binary_image
@@ -908,7 +913,7 @@ class Identify(cellprofiler.cpmodule.CPModule):
                 # Thresholds are stored as single element arrays.  Cast to
                 # float to extract the value.
                 value = float(m.get_current_image_measurement(
-                    self.thresholding_measurement.value))
+                        self.thresholding_measurement.value))
                 value *= self.threshold_correction_factor.value
                 if not self.threshold_range.min is None:
                     value = max(value, self.threshold_range.min)
@@ -922,7 +927,7 @@ class Identify(cellprofiler.cpmodule.CPModule):
                         masking_objects = image.masking_objects
                     else:
                         masking_objects = workspace.object_set.get_objects(
-                            self.masking_objects.value)
+                                self.masking_objects.value)
                     if masking_objects is not None:
                         label_planes = masking_objects.get_labels(img.shape[:2])
                         if len(label_planes) == 1:
@@ -945,13 +950,13 @@ class Identify(cellprofiler.cpmodule.CPModule):
                     labels = None
                 if self.threshold_scope == TS_ADAPTIVE:
                     if self.adaptive_window_method == FI_IMAGE_SIZE:
-                         # The original behavior
+                        # The original behavior
                         image_size = np.array(img.shape[:2], dtype=int)
                         block_size = image_size / 10
-                        block_size[block_size<50] = 50
+                        block_size[block_size < 50] = 50
                     elif self.adaptive_window_method == FI_CUSTOM:
                         block_size = self.adaptive_window_size.value * \
-                            np.array([1,1])
+                                     np.array([1, 1])
                 else:
                     block_size = None
                 kwparams = {}
@@ -971,7 +976,7 @@ class Identify(cellprofiler.cpmodule.CPModule):
                         self.use_weighted_variance.value == O_WEIGHTED_VARIANCE
                     kwparams['two_class_otsu'] = \
                         self.two_class_otsu.value == O_TWO_CLASS
-                    kwparams['assign_middle_to_foreground'] =\
+                    kwparams['assign_middle_to_foreground'] = \
                         self.assign_middle_to_foreground.value == O_FOREGROUND
                 elif self.get_threshold_algorithm() == TM_MOG:
                     #
@@ -979,40 +984,40 @@ class Identify(cellprofiler.cpmodule.CPModule):
                     #
                     object_fraction = self.object_fraction.value
                     if object_fraction.endswith("%"):
-                        object_fraction = float(object_fraction[:-1])/100.0
+                        object_fraction = float(object_fraction[:-1]) / 100.0
                     else:
                         object_fraction = float(object_fraction)
                     kwparams['object_fraction'] = object_fraction
-                elif self.get_threshold_algorithm() == TM_ROBUST_BACKGROUND and\
-                     self.rb_custom_choice == RB_CUSTOM:
+                elif self.get_threshold_algorithm() == TM_ROBUST_BACKGROUND and \
+                                self.rb_custom_choice == RB_CUSTOM:
                     kwparams['lower_outlier_fraction'] = \
                         self.lower_outlier_fraction.value
                     kwparams['upper_outlier_fraction'] = \
                         self.upper_outlier_fraction.value
-                    kwparams['deviations_above_average' ] = \
+                    kwparams['deviations_above_average'] = \
                         self.number_of_deviations.value
                     kwparams['average_fn'] = {
                         RB_MEAN: np.mean,
                         RB_MEDIAN: np.median,
                         RB_MODE: binned_mode
-                        }.get(self.averaging_method.value, np.mean)
+                    }.get(self.averaging_method.value, np.mean)
                     kwparams['variance_fn'] = {
                         RB_SD: np.std,
-                        RB_MAD: mad }.get(self.variance_method.value, np.std)
+                        RB_MAD: mad}.get(self.variance_method.value, np.std)
 
                 local_threshold, global_threshold = get_threshold(
-                    self.threshold_algorithm,
-                    self.threshold_modifier,
-                    img,
-                    mask = mask,
-                    labels = labels,
-                    adaptive_window_size = block_size,
-                    **kwparams)
+                        self.threshold_algorithm,
+                        self.threshold_modifier,
+                        img,
+                        mask=mask,
+                        labels=labels,
+                        adaptive_window_size=block_size,
+                        **kwparams)
         self.add_threshold_measurements(workspace.measurements,
                                         local_threshold, global_threshold)
         if hasattr(workspace.display_data, "statistics"):
             workspace.display_data.statistics.append(
-                ["Threshold","%0.3g"%(global_threshold)])
+                    ["Threshold", "%0.3g" % global_threshold])
 
         return local_threshold, global_threshold
 
@@ -1024,7 +1029,7 @@ class Identify(cellprofiler.cpmodule.CPModule):
         name to distinguish between different thresholds in the same pipeline.
         '''
         raise NotImplementedError(
-            "Please implement get_measurement_objects_name() for this module")
+                "Please implement get_measurement_objects_name() for this module")
 
     def add_threshold_measurements(self, measurements,
                                    local_threshold, global_threshold):
@@ -1038,10 +1043,10 @@ class Identify(cellprofiler.cpmodule.CPModule):
         objname = self.get_measurement_objects_name()
         ave_threshold = np.mean(np.atleast_1d(local_threshold))
         measurements.add_measurement(cpmeas.IMAGE,
-                                     FF_FINAL_THRESHOLD%(objname),
+                                     FF_FINAL_THRESHOLD % objname,
                                      ave_threshold)
         measurements.add_measurement(cpmeas.IMAGE,
-                                     FF_ORIG_THRESHOLD%(objname),
+                                     FF_ORIG_THRESHOLD % objname,
                                      global_threshold)
 
     def add_fg_bg_measurements(self, measurements, image, mask, binary_image):
@@ -1058,12 +1063,12 @@ class Identify(cellprofiler.cpmodule.CPModule):
         objname = self.get_measurement_objects_name()
         wv = weighted_variance(image, mask, binary_image)
         measurements.add_measurement(cpmeas.IMAGE,
-                                     FF_WEIGHTED_VARIANCE%(objname),
-                                     np.array([wv],dtype=float))
+                                     FF_WEIGHTED_VARIANCE % objname,
+                                     np.array([wv], dtype=float))
         entropies = sum_of_entropies(image, mask, binary_image)
         measurements.add_measurement(cpmeas.IMAGE,
-                                     FF_SUM_OF_ENTROPIES%(objname),
-                                     np.array([entropies],dtype=float))
+                                     FF_SUM_OF_ENTROPIES % objname,
+                                     np.array([entropies], dtype=float))
 
     def validate_module(self, pipeline):
         if not hasattr(self, "threshold_scope"):
@@ -1077,20 +1082,20 @@ class Identify(cellprofiler.cpmodule.CPModule):
                     else:
                         float(self.object_fraction.value)
                 except ValueError:
-                    raise cps.ValidationError("%s is not a floating point value"%
+                    raise cps.ValidationError("%s is not a floating point value" %
                                               self.object_fraction.value,
                                               self.object_fraction)
             elif self.get_threshold_algorithm() == TM_ROBUST_BACKGROUND and \
-                 self.rb_custom_choice == RB_CUSTOM:
+                            self.rb_custom_choice == RB_CUSTOM:
                 if self.lower_outlier_fraction.value + \
-                   self.upper_outlier_fraction.value >= 1:
+                        self.upper_outlier_fraction.value >= 1:
                     raise cps.ValidationError(
-                        ("The sum of the lower robust background outlier "
-                         "fraction (%f) and the upper fraction (%f) must "
-                         "be less than one.") % (
-                             self.lower_outlier_fraction.value,
-                             self.upper_outlier_fraction.value),
-                        self.upper_outlier_fraction)
+                            ("The sum of the lower robust background outlier "
+                             "fraction (%f) and the upper fraction (%f) must "
+                             "be less than one.") % (
+                                self.lower_outlier_fraction.value,
+                                self.upper_outlier_fraction.value),
+                            self.upper_outlier_fraction)
 
     def get_threshold_modifier(self):
         """The threshold algorithm modifier
@@ -1100,7 +1105,7 @@ class Identify(cellprofiler.cpmodule.CPModule):
         TM_PER_OBJECT                   = "PerObject"
         """
         if self.threshold_scope.value in (TS_AUTOMATIC,
-            TS_GLOBAL, TS_BINARY_IMAGE, TS_MANUAL, TS_MEASUREMENT):
+                                          TS_GLOBAL, TS_BINARY_IMAGE, TS_MANUAL, TS_MEASUREMENT):
             return TM_GLOBAL
         elif self.threshold_scope.value == TS_PER_OBJECT:
             return TM_PER_OBJECT
@@ -1154,7 +1159,7 @@ class Identify(cellprofiler.cpmodule.CPModule):
         measurement - the feature being measured
         '''
         if measurement in self.get_threshold_measurements(
-            pipeline, object_name, category):
+                pipeline, object_name, category):
             return [self.get_measurement_objects_name()]
         else:
             return []
@@ -1176,7 +1181,7 @@ class Identify(cellprofiler.cpmodule.CPModule):
             result += [C_LOCATION, C_NUMBER]
             if len(object_dictionary[object_name]) > 0:
                 result += [C_PARENT]
-        if object_name in reduce(lambda x,y: x+y, object_dictionary.values()):
+        if object_name in reduce(lambda x, y: x + y, object_dictionary.values()):
             result += [C_CHILDREN]
         return result
 
@@ -1208,9 +1213,10 @@ class Identify(cellprofiler.cpmodule.CPModule):
             return result
         return []
 
+
 def add_object_location_measurements(measurements,
                                      object_name,
-                                     labels, object_count = None):
+                                     labels, object_count=None):
     """Add the X and Y centers of mass to the measurements
 
     measurements - the measurements container
@@ -1228,25 +1234,26 @@ def add_object_location_measurements(measurements,
     if object_count:
         centers = scipy.ndimage.center_of_mass(np.ones(labels.shape),
                                                labels,
-                                               range(1,object_count+1))
+                                               range(1, object_count + 1))
         centers = np.array(centers)
-        centers = centers.reshape((object_count,2))
-        location_center_y = centers[:,0]
-        location_center_x = centers[:,1]
-        number = np.arange(1,object_count+1)
+        centers = centers.reshape((object_count, 2))
+        location_center_y = centers[:, 0]
+        location_center_x = centers[:, 1]
+        number = np.arange(1, object_count + 1)
     else:
-        location_center_y = np.zeros((0,),dtype=float)
-        location_center_x = np.zeros((0,),dtype=float)
-        number = np.zeros((0,),dtype=int)
+        location_center_y = np.zeros((0,), dtype=float)
+        location_center_x = np.zeros((0,), dtype=float)
+        number = np.zeros((0,), dtype=int)
     measurements.add_measurement(object_name, M_LOCATION_CENTER_X,
                                  location_center_x)
     measurements.add_measurement(object_name, M_LOCATION_CENTER_Y,
                                  location_center_y)
     measurements.add_measurement(object_name, M_NUMBER_OBJECT_NUMBER, number)
 
+
 def add_object_location_measurements_ijv(measurements,
                                          object_name,
-                                         ijv, object_count = None):
+                                         ijv, object_count=None):
     '''Add object location measurements for IJV-style objects'''
     if object_count is None:
         object_count = 0 if ijv.shape[0] == 0 else np.max(ijv[:, 2])
@@ -1262,15 +1269,16 @@ def add_object_location_measurements_ijv(measurements,
     measurements.add_measurement(object_name, M_LOCATION_CENTER_X, center_x)
     measurements.add_measurement(object_name, M_LOCATION_CENTER_Y, center_y)
     measurements.add_measurement(object_name, M_NUMBER_OBJECT_NUMBER,
-                                 np.arange(1, object_count+1))
+                                 np.arange(1, object_count + 1))
 
 
 def add_object_count_measurements(measurements, object_name, object_count):
     """Add the # of objects to the measurements"""
     measurements.add_measurement('Image',
-                                 FF_COUNT%(object_name),
+                                 FF_COUNT % object_name,
                                  np.array([object_count],
-                                             dtype=float))
+                                          dtype=float))
+
 
 def get_object_measurement_columns(object_name):
     '''Get the column definitions for measurements made by identify modules
@@ -1283,17 +1291,19 @@ def get_object_measurement_columns(object_name):
     return [(object_name, M_LOCATION_CENTER_X, cpmeas.COLTYPE_FLOAT),
             (object_name, M_LOCATION_CENTER_Y, cpmeas.COLTYPE_FLOAT),
             (object_name, M_NUMBER_OBJECT_NUMBER, cpmeas.COLTYPE_INTEGER),
-            (cpmeas.IMAGE, FF_COUNT%object_name, cpmeas.COLTYPE_INTEGER)]
+            (cpmeas.IMAGE, FF_COUNT % object_name, cpmeas.COLTYPE_INTEGER)]
+
 
 def get_threshold_measurement_columns(image_name):
     '''Get the column definitions for threshold measurements, if made
 
     image_name - name of the image
     '''
-    return [(cpmeas.IMAGE, FF_FINAL_THRESHOLD%image_name, cpmeas.COLTYPE_FLOAT),
-            (cpmeas.IMAGE, FF_ORIG_THRESHOLD%image_name, cpmeas.COLTYPE_FLOAT),
-            (cpmeas.IMAGE, FF_WEIGHTED_VARIANCE%image_name, cpmeas.COLTYPE_FLOAT),
-            (cpmeas.IMAGE, FF_SUM_OF_ENTROPIES%image_name, cpmeas.COLTYPE_FLOAT)]
+    return [(cpmeas.IMAGE, FF_FINAL_THRESHOLD % image_name, cpmeas.COLTYPE_FLOAT),
+            (cpmeas.IMAGE, FF_ORIG_THRESHOLD % image_name, cpmeas.COLTYPE_FLOAT),
+            (cpmeas.IMAGE, FF_WEIGHTED_VARIANCE % image_name, cpmeas.COLTYPE_FLOAT),
+            (cpmeas.IMAGE, FF_SUM_OF_ENTROPIES % image_name, cpmeas.COLTYPE_FLOAT)]
+
 
 def draw_outline(img, outline, color):
     '''Draw the given outline on the given image in the given color'''
@@ -1304,8 +1314,10 @@ def draw_outline(img, outline, color):
     img[outline != 0, 1] = green
     img[outline != 0, 2] = blue
 
+
 class MaskObjectNameSubscriber(cps.ObjectNameSubscriber):
     '''This class allows the legacy "From Image" choice'''
+
     def __init__(self, *args, **kwargs):
         super(self.__class__, self).__init__(*args, **kwargs)
 

@@ -27,9 +27,10 @@ OUTPUT_NAME = 'output'
 REFERENCE_NAME = 'reference'
 MEASUREMENT_NAME = 'measurement'
 
+
 class TestRescaleIntensity(unittest.TestCase):
     def test_01_0000_load_matlab_v2(self):
-        data=r"""CellProfiler Pipeline: http://www.cellprofiler.org
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:1234
 FromMatlab:True
@@ -55,8 +56,10 @@ RescaleIntensity:[module_num:2|svn_version:\'8913\'|variable_revision_number:2|s
     What did you call the image whose maximum you want the rescaled image to match?:MyOtherImage
 """
         pipeline = cpp.Pipeline()
+
         def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 2)
@@ -77,7 +80,7 @@ RescaleIntensity:[module_num:2|svn_version:\'8913\'|variable_revision_number:2|s
         self.assertAlmostEqual(module.dest_scale.max, 0.9)
 
     def test_01_000_load_matlab_v3(self):
-        data=r"""CellProfiler Pipeline: http://www.cellprofiler.org
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:1234
 FromMatlab:True
@@ -95,8 +98,10 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
     What did you call the image whose maximum you want the rescaled image to match?:MyOtherImage
 """
         pipeline = cpp.Pipeline()
+
         def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
@@ -126,8 +131,10 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
                 'mvbrTkn5FdPT6+Vk8vd9X5m+9UGk6ud3+x7tlb9xvV23ItPoP3veqZxrAHZa'
                 'yfc=')
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 1)
@@ -152,8 +159,10 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
                 'x45p531tl6/3ei8V8Ga3iOXce6VGO5T+buGa43by9Grd71FF665Xv9r58Y++'
                 '17uiSgA7HuOs')
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 1)
@@ -185,8 +194,10 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
                 '2DHtvK/t8vVe76UC3uwWsZx7r9Roh9LfLVxz3E6eXq37Papo3fXqVzs//tF3'
                 'USuqBAART+Do')
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 1)
@@ -211,8 +222,10 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
                 'kO7V4mD9F6s372ab8lsv9VxK+VyZdT72i5nSDT79STq7943F9dO6Xw+5/BPf'
                 'nF4UBQBPz9+M')
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 1)
@@ -238,8 +251,10 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
                 'b1tEqML98swi041Z6QWVvyzZC/oU9Ndfu+N9cGfc+xXXl33er5ZeqAwAZ7jf'
                 'Pg==')
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 1)
@@ -263,8 +278,10 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
                 'eclSUMUnFTLbOe7/kfqkN0dfuJrcW/l8WVxAeHo5r8b3ucssJ98tLd5h9LXH'
                 '2KJ54nf+6ndrk+Ll/Z94T/4YH9ldfBAAEkrtMg==')
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 1)
@@ -290,8 +307,10 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
                 'yr943RXK+ql2ulq48OowtunL55ezPOf89Cvt7F7ROa/fzqvKtfrPHSxacBwA'
                 '5zLjFA==')
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 1)
@@ -313,8 +332,10 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
                 'Wtld/68Xz9GyOiS+ueNETonNDXt2Xr7ZzkH/n9QveW1QwnTq2qvqCK+V0Q/S'
                 'U0982+u2U8t+tXpB5KuXlhZzJ4df3/9/cuSvqt3q9lsM/vH2PK4vBwDa3/W+')
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 1)
@@ -347,8 +368,10 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
                 'W5NKvqGtszY3LLvZ/1iReFc68RqNj/EepfN1vsl2dd6m2vD54z9mS7PRmWvn'
                 'W55nb/7/bvTDF41Ernx/mw7AxXw+iUPg/4De1tncNf3dMd5V/38aZ6rY')
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 3)
@@ -438,8 +461,10 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
                 'c/ElniF+fh/131K+Ifz8BgABJqAFQIDtMQm/tE1/gJbla5zbIdoFCLCjWXv/'
                 'Cz7DUEw=')
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
         module = pipeline.modules()[2]
@@ -450,12 +475,14 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         self.assertEqual(module.wants_automatic_low, R.LOW_EACH_IMAGE)
         self.assertEqual(module.wants_automatic_high, R.HIGH_EACH_IMAGE)
 
-    def make_workspace(self, input_image, input_mask = None,
-                       reference_image=None, reference_mask = None,
+    def make_workspace(self, input_image, input_mask=None,
+                       reference_image=None, reference_mask=None,
                        measurement=None):
         pipeline = cpp.Pipeline()
+
         def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
+
         pipeline.add_listener(callback)
         object_set = cpo.ObjectSet()
         image_set_list = cpi.ImageSetList()
@@ -487,7 +514,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
             if reference_mask is None:
                 image = cpi.Image(reference_image)
             else:
-                image = cpi.Image(reference_image, mask = reference_mask)
+                image = cpi.Image(reference_image, mask=reference_mask)
             image_set.add(REFERENCE_NAME, image)
             ii = InjectImage(REFERENCE_NAME, reference_image, reference_mask)
             ii.module_num = module_number
@@ -504,13 +531,13 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
                                   object_set,
                                   measurements,
                                   image_set_list)
-        return workspace,module
+        return workspace, module
 
     def test_03_01_stretch(self):
         np.random.seed(0)
-        expected = np.random.uniform(size=(10,10)).astype(np.float32)
-        expected[0,0] = 1
-        expected[9,9] = 0
+        expected = np.random.uniform(size=(10, 10)).astype(np.float32)
+        expected[0, 0] = 1
+        expected[9, 9] = 0
         workspace, module = self.make_workspace(expected / 2 + .1)
         module.rescale_method.value = R.M_STRETCH
         module.run(workspace)
@@ -519,13 +546,13 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
 
     def test_03_02_stretch_mask(self):
         np.random.seed(0)
-        expected = np.random.uniform(size=(10,10)).astype(np.float32)
-        expected[0,0] = 1
-        expected[9,9] = 0
+        expected = np.random.uniform(size=(10, 10)).astype(np.float32)
+        expected[0, 0] = 1
+        expected[9, 9] = 0
         mask = np.ones(expected.shape, bool)
-        mask[3:5,4:7] = False
+        mask[3:5, 4:7] = False
         expected[~ mask] = 1.5
-        workspace, module = self.make_workspace(expected / 2 + .1,mask)
+        workspace, module = self.make_workspace(expected / 2 + .1, mask)
         module.rescale_method.value = R.M_STRETCH
         module.run(workspace)
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
@@ -533,7 +560,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
 
     def test_04_01_manual_input_range(self):
         np.random.seed(0)
-        expected = np.random.uniform(size=(10,10))
+        expected = np.random.uniform(size=(10, 10))
         workspace, module = self.make_workspace(expected / 2 + .1)
         module.rescale_method.value = R.M_MANUAL_INPUT_RANGE
         module.wants_automatic_low.value = R.CUSTOM_VALUE
@@ -546,8 +573,8 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
 
     def test_04_02_00_manual_input_range_auto_low(self):
         np.random.seed(0)
-        expected = np.random.uniform(size=(10,10)).astype(np.float32)
-        expected[0,0] = 0
+        expected = np.random.uniform(size=(10, 10)).astype(np.float32)
+        expected[0, 0] = 0
         workspace, module = self.make_workspace(expected / 2 + .1)
         module.rescale_method.value = R.M_MANUAL_INPUT_RANGE
         module.wants_automatic_low.value = R.LOW_EACH_IMAGE
@@ -560,9 +587,9 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
 
     def test_04_02_01_manual_input_range_auto_low_all(self):
         np.random.seed(421)
-        image1 = np.random.uniform(size=(10,20)).astype(np.float32) * .5 + .5
-        image2 = np.random.uniform(size=(10,20)).astype(np.float32)
-        expected = (image1 - np.min(image2))/ (1 - np.min(image2))
+        image1 = np.random.uniform(size=(10, 20)).astype(np.float32) * .5 + .5
+        image2 = np.random.uniform(size=(10, 20)).astype(np.float32)
+        expected = (image1 - np.min(image2)) / (1 - np.min(image2))
         workspace, module = self.make_workspace([image1, image2])
         self.assertTrue(isinstance(module, R.RescaleIntensity))
         module.rescale_method.value = R.M_MANUAL_INPUT_RANGE
@@ -577,8 +604,8 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
 
     def test_04_03_00_manual_input_range_auto_high(self):
         np.random.seed(0)
-        expected = np.random.uniform(size=(10,10)).astype(np.float32)
-        expected[0,0] = 1
+        expected = np.random.uniform(size=(10, 10)).astype(np.float32)
+        expected[0, 0] = 1
         workspace, module = self.make_workspace(expected / 2 + .1)
         module.rescale_method.value = R.M_MANUAL_INPUT_RANGE
         module.wants_automatic_low.value = R.CUSTOM_VALUE
@@ -591,8 +618,8 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
 
     def test_04_03_01_manual_input_range_auto_high_all(self):
         np.random.seed(421)
-        image1 = np.random.uniform(size=(10,20)).astype(np.float32) * .5
-        image2 = np.random.uniform(size=(10,20)).astype(np.float32)
+        image1 = np.random.uniform(size=(10, 20)).astype(np.float32) * .5
+        image2 = np.random.uniform(size=(10, 20)).astype(np.float32)
         expected = image1 / np.max(image2)
         workspace, module = self.make_workspace([image1, image2])
         self.assertTrue(isinstance(module, R.RescaleIntensity))
@@ -610,7 +637,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
 
     def test_04_03_02_manual_input_range_auto_low_and_high(self):
         np.random.seed(0)
-        expected = np.random.uniform(size=(10,10)).astype(np.float32)
+        expected = np.random.uniform(size=(10, 10)).astype(np.float32)
         expected = expected - expected.min()
         expected = expected / expected.max()
         workspace, module = self.make_workspace(expected / 2 + .1)
@@ -623,10 +650,10 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
 
     def test_04_04_manual_input_range_mask(self):
         np.random.seed(0)
-        expected = np.random.uniform(size=(10,10)).astype(np.float32)
-        expected[0,0] = 1
+        expected = np.random.uniform(size=(10, 10)).astype(np.float32)
+        expected[0, 0] = 1
         mask = np.ones(expected.shape, bool)
-        mask[3:5,4:7] = False
+        mask[3:5, 4:7] = False
         expected[~ mask] = 1.5
         workspace, module = self.make_workspace(expected / 2 + .1, mask)
         module.rescale_method.value = R.M_MANUAL_INPUT_RANGE
@@ -639,12 +666,12 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
 
     def test_04_05_manual_input_range_truncate(self):
         np.random.seed(0)
-        expected = np.random.uniform(size=(10,10)).astype(np.float32)
+        expected = np.random.uniform(size=(10, 10)).astype(np.float32)
         expected_low_mask = np.zeros(expected.shape, bool)
-        expected_low_mask[2:4,1:3] = True
+        expected_low_mask[2:4, 1:3] = True
         expected[expected_low_mask] = -.05
         expected_high_mask = np.zeros(expected.shape, bool)
-        expected_high_mask[6:8,5:7] = True
+        expected_high_mask[6:8, 5:7] = True
         expected[expected_high_mask] = 1.05
         mask = ~(expected_low_mask | expected_high_mask)
         for low_truncate_method in (R.R_MASK, R.R_SCALE, R.R_SET_TO_CUSTOM,
@@ -689,7 +716,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
                     elif high_truncate_method == R.R_SET_TO_ONE:
                         high_value = 1
                     np.testing.assert_almost_equal(
-                        pixels[expected_high_mask], high_value)
+                            pixels[expected_high_mask], high_value)
 
     def test_04_06_color_mask(self):
         '''Regression test - color image + truncate with mask
@@ -697,9 +724,9 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         The bug: color image yielded a 3-d mask
         '''
         np.random.seed(0)
-        expected = np.random.uniform(size=(10,10,3)).astype(np.float32)
+        expected = np.random.uniform(size=(10, 10, 3)).astype(np.float32)
         expected_mask = (expected >= .2) & (expected <= .8)
-        expected_mask = expected_mask[:,:,0] & expected_mask[:,:,1] & expected_mask[:,:,2]
+        expected_mask = expected_mask[:, :, 0] & expected_mask[:, :, 1] & expected_mask[:, :, 2]
         workspace, module = self.make_workspace(expected / 2 + .1)
         module.rescale_method.value = R.M_MANUAL_INPUT_RANGE
         module.wants_automatic_low.value = R.CUSTOM_VALUE
@@ -715,7 +742,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
 
     def test_05_01_manual_io_range(self):
         np.random.seed(0)
-        expected = np.random.uniform(size=(10,10)).astype(np.float32)
+        expected = np.random.uniform(size=(10, 10)).astype(np.float32)
         workspace, module = self.make_workspace(expected / 2 + .1)
         expected = expected * .75 + .05
         module.rescale_method.value = R.M_MANUAL_IO_RANGE
@@ -731,8 +758,8 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
 
     def test_06_01_divide_by_image_minimum(self):
         np.random.seed(0)
-        image = np.random.uniform(size=(10,10)).astype(np.float32)
-        image[0,0] = 0
+        image = np.random.uniform(size=(10, 10)).astype(np.float32)
+        image[0, 0] = 0
         image = image / 2 + .25
         expected = image * 4
         workspace, module = self.make_workspace(image)
@@ -743,11 +770,11 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
 
     def test_06_02_divide_by_image_minimum_masked(self):
         np.random.seed(0)
-        image = np.random.uniform(size=(10,10))
-        image[0,0] = 0
+        image = np.random.uniform(size=(10, 10))
+        image[0, 0] = 0
         image = image / 2 + .25
-        mask = np.ones(image.shape,bool)
-        mask[3:6,7:9] = False
+        mask = np.ones(image.shape, bool)
+        mask[3:6, 7:9] = False
         image[~mask] = .05
         expected = image * 4
         workspace, module = self.make_workspace(image, mask)
@@ -758,9 +785,9 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
 
     def test_07_01_divide_by_image_maximum(self):
         np.random.seed(0)
-        image = np.random.uniform(size=(10,10)).astype(np.float32)
+        image = np.random.uniform(size=(10, 10)).astype(np.float32)
         image = image / 2 + .1
-        image[0,0] = .8
+        image[0, 0] = .8
         expected = image / .8
         workspace, module = self.make_workspace(image)
         module.rescale_method.value = R.M_DIVIDE_BY_IMAGE_MAXIMUM
@@ -770,11 +797,11 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
 
     def test_07_02_divide_by_image_minimum_masked(self):
         np.random.seed(0)
-        image = np.random.uniform(size=(10,10)).astype(np.float32)
+        image = np.random.uniform(size=(10, 10)).astype(np.float32)
         image = image / 2 + .1
-        image[0,0] = .8
-        mask = np.ones(image.shape,bool)
-        mask[3:6,7:9] = False
+        image[0, 0] = .8
+        mask = np.ones(image.shape, bool)
+        mask[3:6, 7:9] = False
         image[~mask] = .9
         expected = image / .8
         workspace, module = self.make_workspace(image, mask)
@@ -785,7 +812,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
 
     def test_08_01_divide_by_value(self):
         np.random.seed(0)
-        image = np.random.uniform(size=(10,10)).astype(np.float32)
+        image = np.random.uniform(size=(10, 10)).astype(np.float32)
         image = image / 2 + .1
         value = .9
         expected = image / value
@@ -798,7 +825,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
 
     def test_09_01_divide_by_measurement(self):
         np.random.seed(0)
-        image = np.random.uniform(size=(10,10)).astype(np.float32)
+        image = np.random.uniform(size=(10, 10)).astype(np.float32)
         image = image / 2 + .1
         value = .75
         expected = image / value
@@ -810,14 +837,14 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
 
     def test_10_01_scale_by_image_maximum(self):
         np.random.seed(0)
-        image = np.random.uniform(size=(10,10)).astype(np.float32)
-        image[0,0] = 1
+        image = np.random.uniform(size=(10, 10)).astype(np.float32)
+        image[0, 0] = 1
         image = image / 2 + .1
-        reference = np.random.uniform(size=(10,10)).astype(np.float32) * .75
-        reference[0,0] = .75
+        reference = np.random.uniform(size=(10, 10)).astype(np.float32) * .75
+        reference[0, 0] = .75
         expected = image * .75 / .60
         workspace, module = self.make_workspace(image,
-                                                reference_image = reference)
+                                                reference_image=reference)
         module.rescale_method.value = R.M_SCALE_BY_IMAGE_MAXIMUM
         module.run(workspace)
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
@@ -825,31 +852,30 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
 
     def test_10_02_scale_by_image_maximum_mask(self):
         np.random.seed(0)
-        image = np.random.uniform(size=(10,10)).astype(np.float32)
-        image[0,0] = 1
+        image = np.random.uniform(size=(10, 10)).astype(np.float32)
+        image[0, 0] = 1
         image = image / 2 + .1
         mask = np.ones(image.shape, bool)
-        mask[3:6,4:8] = False
+        mask[3:6, 4:8] = False
         image[~mask] = .9
-        reference = np.random.uniform(size=(10,10)) * .75
-        reference[0,0] = .75
+        reference = np.random.uniform(size=(10, 10)) * .75
+        reference[0, 0] = .75
         rmask = np.ones(reference.shape, bool)
-        rmask[7:9,1:3] = False
+        rmask[7:9, 1:3] = False
         reference[~rmask] = .91
         expected = image * .75 / .60
         workspace, module = self.make_workspace(image,
-                                                input_mask = mask,
-                                                reference_image = reference,
-                                                reference_mask = rmask)
+                                                input_mask=mask,
+                                                reference_image=reference,
+                                                reference_mask=rmask)
         module.rescale_method.value = R.M_SCALE_BY_IMAGE_MAXIMUM
         module.run(workspace)
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
         np.testing.assert_almost_equal(pixels[mask], expected[mask])
 
-
     def test_11_01_convert_to_8_bit(self):
         np.random.seed(0)
-        image = np.random.uniform(size=(10,10))
+        image = np.random.uniform(size=(10, 10))
         expected = (image * 255).astype(np.uint8)
         workspace, module = self.make_workspace(image)
         module.rescale_method.value = R.M_CONVERT_TO_8_BIT

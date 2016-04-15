@@ -5,13 +5,10 @@ Buttons included in this file Copyright Audacity
 public license.
 """
 
+import cellprofiler.gui
+import cellprofiler.preferences
 import StringIO
-import math
-
 import wx
-
-import cellprofiler.preferences as cpprefs
-from cellprofiler.gui import draw_bevel, BV_DOWN
 
 MOVIE_SLIDER_NAME_STR = u"movie_slider"
 SLIDER_CTL_STR = u"slider_ctl"
@@ -29,29 +26,29 @@ MARKER = "\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x10\x00\x00\x00\x08\x0
 HT_MARKER = 1
 HT_START = 2
 HT_STOP = 3
-EVT_VALUE_CHANGED_TYPE  = wx.NewEventType()
-EVT_VALUE_CHANGED       = wx.PyEventBinder(EVT_VALUE_CHANGED_TYPE)
-EVT_TAKE_STEP_TYPE      = wx.NewEventType()
-EVT_TAKE_STEP           = wx.PyEventBinder(EVT_TAKE_STEP_TYPE)
+EVT_VALUE_CHANGED_TYPE = wx.NewEventType()
+EVT_VALUE_CHANGED = wx.PyEventBinder(EVT_VALUE_CHANGED_TYPE)
+EVT_TAKE_STEP_TYPE = wx.NewEventType()
+EVT_TAKE_STEP = wx.PyEventBinder(EVT_TAKE_STEP_TYPE)
 
-STATE_PAUSED   = "paused"
-STATE_PLAYING  = "playing"
+STATE_PAUSED = "paused"
+STATE_PLAYING = "playing"
+
 
 class SliderCtl(wx.Panel):
-
-    def __init__(self,parent,
-                 id = -1,
-                 value = 0,
-                 min_value = 0,
-                 max_value = 100,
-                 start_value = 0,
-                 stop_value = 100,
-                 value_names = None,
-                 pos = wx.DefaultPosition,
-                 size = wx.DefaultSize,
-                 style = wx.TAB_TRAVERSAL|wx.NO_BORDER,
-                 name = SLIDER_CTL_STR):
-        super(SliderCtl,self).__init__(parent, id, pos, size, style, name)
+    def __init__(self, parent,
+                 identifier=-1,
+                 value=0,
+                 min_value=0,
+                 max_value=100,
+                 start_value=0,
+                 stop_value=100,
+                 value_names=None,
+                 pos=wx.DefaultPosition,
+                 size=wx.DefaultSize,
+                 style=wx.TAB_TRAVERSAL | wx.NO_BORDER,
+                 name=SLIDER_CTL_STR):
+        super(SliderCtl, self).__init__(parent, identifier, pos, size, style, name)
         self.border = 10
         self.tick_length = 5
         self.__value = value
@@ -66,7 +63,7 @@ class SliderCtl(wx.Panel):
         self.Bind(wx.EVT_SIZE, self.on_size, self)
         self.Bind(wx.EVT_LEFT_DOWN, self.on_left_down, self)
         self.Bind(wx.EVT_LEFT_UP, self.on_left_up)
-        self.Bind(wx.EVT_MOTION, self. on_motion)
+        self.Bind(wx.EVT_MOTION, self.on_motion)
 
     def get_value(self):
         """The value selected by the control (the arrow)"""
@@ -74,9 +71,9 @@ class SliderCtl(wx.Panel):
 
     def set_value(self, new_value):
         if new_value < self.min_value:
-            raise ValueError("Value %d is less than minimum (= %d)"%(new_value, self.min_value))
+            raise ValueError("Value %d is less than minimum (= %d)" % (new_value, self.min_value))
         if new_value > self.max_value:
-            raise ValueError("Value %d is more than minimum (= %d)"%(new_value, self.max_value))
+            raise ValueError("Value %d is more than minimum (= %d)" % (new_value, self.max_value))
         if self.__value == new_value:
             return
         if self.__start_value > new_value:
@@ -84,26 +81,26 @@ class SliderCtl(wx.Panel):
         if self.__stop_value < new_value:
             self.__stop_value = new_value
         self.__value = new_value
-        event = wx.CommandEvent(EVT_VALUE_CHANGED_TYPE,self.Id)
+        event = wx.CommandEvent(EVT_VALUE_CHANGED_TYPE, self.Id)
         event.EventObject = self
         event.SetClientData(new_value)
         self.AddPendingEvent(event)
         self.Refresh()
 
-    value = property(get_value,set_value)
+    value = property(get_value, set_value)
 
     def get_start_value(self):
         return self.__start_value
 
     def set_start_value(self, new_value):
         if new_value < self.min_value:
-            raise ValueError("Value %d is less than minimum (= %d)"%(new_value, self.min_value))
+            raise ValueError("Value %d is less than minimum (= %d)" % (new_value, self.min_value))
         if new_value > self.max_value:
-            raise ValueError("Value %d is more than minimum (= %d)"%(new_value, self.max_value))
+            raise ValueError("Value %d is more than minimum (= %d)" % (new_value, self.max_value))
         if self.__start_value == new_value:
             return
         if new_value == self.__stop_value:
-            self.stop_value = new_value+1
+            self.stop_value = new_value + 1
         self.__start_value = new_value
         self.Refresh()
 
@@ -114,13 +111,13 @@ class SliderCtl(wx.Panel):
 
     def set_stop_value(self, new_value):
         if new_value < self.min_value:
-            raise ValueError("Value %d is less than minimum (= %d)"%(new_value, self.min_value))
+            raise ValueError("Value %d is less than minimum (= %d)" % (new_value, self.min_value))
         if new_value > self.max_value:
-            raise ValueError("Value %d is more than minimum (= %d)"%(new_value, self.max_value))
+            raise ValueError("Value %d is more than minimum (= %d)" % (new_value, self.max_value))
         if self.__stop_value == new_value:
             return
         if new_value == self.__start_value and new_value > 0:
-            self.start_value = new_value-1
+            self.start_value = new_value - 1
         self.__stop_value = new_value
         self.Refresh()
 
@@ -130,7 +127,7 @@ class SliderCtl(wx.Panel):
         """The minimum (top) value of the slider"""
         return self.__min_value
 
-    def set_min_value(self,min_value):
+    def set_min_value(self, min_value):
         self.__min_value = min_value
         if self.start_value < min_value:
             self.start_value = min_value
@@ -139,13 +136,14 @@ class SliderCtl(wx.Panel):
         if self.value < min_value:
             self.value = min_value
         self.Refresh()
+
     min_value = property(get_min_value, set_min_value)
 
     def get_max_value(self):
         """The maximum (top) value of the slider"""
         return self.__max_value
 
-    def set_max_value(self,max_value):
+    def set_max_value(self, max_value):
         self.__max_value = max_value
         if self.start_value > max_value:
             self.start_value = max_value
@@ -154,14 +152,14 @@ class SliderCtl(wx.Panel):
         if self.value > max_value:
             self.value = max_value
         self.Refresh()
+
     max_value = property(get_max_value, set_max_value)
 
-
-    def on_left_down(self,event):
+    def on_left_down(self, event):
         x = event.GetX()
         y = event.GetY()
-        hit = self.hit_test(x,y)
-        if hit in (HT_MARKER,HT_START,HT_STOP):
+        hit = self.hit_test(x, y)
+        if hit in (HT_MARKER, HT_START, HT_STOP):
             self.CaptureMouse()
             self.capture_object = hit
             self.SetCursor(wx.StockCursor(wx.CURSOR_SIZENS))
@@ -174,24 +172,22 @@ class SliderCtl(wx.Panel):
         if self.HasCapture():
             if self.capture_object == HT_MARKER:
                 new_value = self.get_mark_from_y(event.GetY())
-                if (new_value != self.value and
-                    new_value >= self.start_value and
-                    new_value <= self.stop_value):
+                if new_value != self.value and self.start_value <= new_value <= self.stop_value:
                     self.value = new_value
             elif self.capture_object == HT_START:
                 new_value = self.get_mark_from_y(event.GetY())
                 if (new_value != self.start_value and
-                    new_value <= self.value and
-                    new_value < self.stop_value):
+                            new_value <= self.value and
+                            new_value < self.stop_value):
                     self.start_value = new_value
             elif self.capture_object == HT_STOP:
                 new_value = self.get_mark_from_y(event.GetY())
                 if (new_value != self.stop_value and
-                    new_value >= self.value and
-                    new_value > self.start_value):
+                            new_value >= self.value and
+                            new_value > self.start_value):
                     self.stop_value = new_value
         else:
-            hit = self.hit_test(x,y)
+            hit = self.hit_test(x, y)
             if hit == HT_MARKER:
                 self.SetCursor(wx.StockCursor(wx.CURSOR_SIZENS))
             else:
@@ -207,11 +203,11 @@ class SliderCtl(wx.Panel):
             self.ReleaseMouse()
             self.SetCursor(wx.StockCursor(wx.CURSOR_ARROW))
 
-    def hit_test(self, x,y):
-        if self.marker_rect.Contains((x,y)):
+    def hit_test(self, x, y):
+        if self.marker_rect.Contains((x, y)):
             return HT_MARKER
-        for pt, result in ((self.get_stop_point(),HT_STOP),):
-            if (x-pt.x)**2 + (y-pt.y)**2 < 12*12:
+        for pt, result in ((self.get_stop_point(), HT_STOP),):
+            if (x - pt.x) ** 2 + (y - pt.y) ** 2 < 12 * 12:
                 return result
         return None
 
@@ -220,7 +216,7 @@ class SliderCtl(wx.Panel):
 
     def on_paint(self, event):
         dc = wx.BufferedPaintDC(self)
-        dc.SetBackground(wx.Brush(cpprefs.get_background_color()))
+        dc.SetBackground(wx.Brush(cellprofiler.preferences.get_background_color()))
         dc.Clear()
         self.draw_groove(dc)
         self.draw_ticks(dc)
@@ -232,108 +228,112 @@ class SliderCtl(wx.Panel):
         if self.min_value == self.max_value:
             return float(total_height)
         return float(total_height) / float(self.max_value - self.min_value)
+
     mark_distance = property(get_mark_distance)
 
     def get_mark_y(self, mark_value):
         return self.border + self.mark_distance * mark_value
 
     def get_mark_from_y(self, y):
-        mark = int((y - self.border + self.mark_distance/2)/self.mark_distance)
+        mark = int((y - self.border + self.mark_distance / 2) / self.mark_distance)
         mark += self.min_value
-        return min(max(mark, self.min_value),self.max_value)
+        return min(max(mark, self.min_value), self.max_value)
 
     def get_marker_rect(self):
         y = self.get_mark_y(self.value)
-        center_x = self.groove_rect.x + self.groove_rect.width/2
-        return wx.Rect(center_x-8,y-4,16,8)
+        center_x = self.groove_rect.x + self.groove_rect.width / 2
+        return wx.Rect(center_x - 8, y - 4, 16, 8)
 
     marker_rect = property(get_marker_rect)
 
     def get_start_point(self):
         y = self.get_mark_y(self.start_value)
-        center_x = self.groove_rect.x + self.groove_rect.width/2
-        return wx.Point(center_x,y)
+        center_x = self.groove_rect.x + self.groove_rect.width / 2
+        return wx.Point(center_x, y)
 
     def get_stop_point(self):
         y = self.get_mark_y(self.stop_value)
-        center_x = self.groove_rect.x + self.groove_rect.width/2
-        return wx.Point(center_x,y)
+        center_x = self.groove_rect.x + self.groove_rect.width / 2
+        return wx.Point(center_x, y)
 
     def get_groove_rect(self):
         rect = self.GetClientRect()
         center_x = (rect.right + rect.left) / 2
         top = rect.top + self.border
         bottom = rect.bottom - self.border
-        return wx.Rect(center_x-5,top,11,bottom-top)
+        return wx.Rect(center_x - 5, top, 11, bottom - top)
+
     groove_rect = property(get_groove_rect)
 
-    def draw_groove(self,dc):
+    def draw_groove(self, dc):
         rect = self.groove_rect
-        rect.Inflate(0,1)
+        rect.Inflate(0, 1)
         dc.Pen = wx.BLACK_PEN
         dc.Brush = wx.WHITE_BRUSH
-        dc.DrawRectangle(rect.Left,rect.Top,rect.width,rect.height)
-        rect.Deflate(1,1)
-        rect = draw_bevel(dc,rect,2,BV_DOWN)
+        dc.DrawRectangle(rect.Left, rect.Top, rect.width, rect.height)
+        rect.Deflate(1, 1)
+        rect = cellprofiler.gui.draw_bevel(dc, rect, 2, cellprofiler.gui.BV_DOWN)
         sep_y = self.get_mark_y(self.value)
-        rtop = wx.Rect(rect.Left,rect.Top,rect.width,sep_y-rect.Top)
+        rtop = wx.Rect(rect.Left, rect.Top, rect.width, sep_y - rect.Top)
         dc.Pen = wx.BLACK_PEN
         dc.Brush = wx.GREEN_BRUSH
-        dc.DrawRectangle(rtop.x,rtop.y,rtop.width,rtop.height)
+        dc.DrawRectangle(rtop.x, rtop.y, rtop.width, rtop.height)
         dc.Brush = wx.WHITE_BRUSH
-        dc.DrawRectangle(rect.Left, sep_y, rect.width, rect.Bottom-sep_y)
+        dc.DrawRectangle(rect.Left, sep_y, rect.width, rect.Bottom - sep_y)
 
-    def draw_marker(self,dc):
+    def draw_marker(self, dc):
         rect = self.get_marker_rect()
         stream = StringIO.StringIO(MARKER)
-        image  = wx.ImageFromStream(stream)
+        image = wx.ImageFromStream(stream)
         bitmap = wx.BitmapFromImage(image)
-        mask   = wx.Mask(bitmap, wx.WHITE)
+        mask = wx.Mask(bitmap, wx.WHITE)
         bitmap.SetMask(mask)
-        dc.DrawBitmap(bitmap,rect.x, rect.y, True)
+        dc.DrawBitmap(bitmap, rect.x, rect.y, True)
 
-    def draw_stop(self,dc):
+    def draw_stop(self, dc):
         stop_pt = self.get_stop_point()
         stream = StringIO.StringIO(RED_DOT)
-        image  = wx.ImageFromStream(stream)
+        image = wx.ImageFromStream(stream)
         bitmap = wx.BitmapFromImage(image)
-        mask   = wx.Mask(bitmap, wx.WHITE)
+        mask = wx.Mask(bitmap, wx.WHITE)
         bitmap.SetMask(mask)
-        dc.DrawBitmap(bitmap,stop_pt.x-12, stop_pt.y - 12, True)
+        dc.DrawBitmap(bitmap, stop_pt.x - 12, stop_pt.y - 12, True)
 
     def draw_ticks(self, dc):
         xstart = self.groove_rect.Right
-        xend   = xstart + self.tick_length
+        xend = xstart + self.tick_length
         dc.Pen = wx.BLACK_PEN
-        for i in range(self.min_value, self.max_value+1):
-            dc.DrawLine(xstart,self.get_mark_y(i),
-                        xend,self.get_mark_y(i))
+        for i in range(self.min_value, self.max_value + 1):
+            dc.DrawLine(xstart, self.get_mark_y(i),
+                        xend, self.get_mark_y(i))
 
     def on_erase_background(self, event):
         pass
 
     def make_bitmap_button(self, data):
         stream = StringIO.StringIO(data)
-        image  = wx.ImageFromStream(stream)
+        image = wx.ImageFromStream(stream)
         bitmap = wx.BitmapFromImage(image)
         button = wx.BitmapButton(self, -1, bitmap)
         return button
+
 
 class MovieSlider(wx.Panel):
     """A control that uses the metaphor of a movie player to control selection
 
     """
+
     def __init__(self, parent,
-                 id = -1,
-                 value = 0,
-                 min_value  = 0,
-                 max_value  = 100,
-                 start_value = 0,
-                 stop_value = 100,
-                 value_names = None,
-                 pos = wx.DefaultPosition,
-                 size = wx.DefaultSize,
-                 style = wx.TAB_TRAVERSAL|wx.NO_BORDER,
+                 identifier=-1,
+                 value=0,
+                 min_value=0,
+                 max_value=100,
+                 start_value=0,
+                 stop_value=100,
+                 value_names=None,
+                 pos=wx.DefaultPosition,
+                 size=wx.DefaultSize,
+                 style=wx.TAB_TRAVERSAL | wx.NO_BORDER,
                  name=MOVIE_SLIDER_NAME_STR):
         """Construct the movie slider
 
@@ -349,30 +349,30 @@ class MovieSlider(wx.Panel):
         style       - style for panel window
         name        - window's name
         """
-        super(MovieSlider,self).__init__(parent, id, pos, size, style, name)
-        self.BackgroundColour = cpprefs.get_background_color()
+        super(MovieSlider, self).__init__(parent, identifier, pos, size, style, name)
+        self.BackgroundColour = cellprofiler.preferences.get_background_color()
         self.value_names = value_names
         sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(sizer)
         self.slider = SliderCtl(self,
-                                value = value,
-                                min_value = min_value,
-                                max_value = max_value,
-                                start_value = start_value,
-                                stop_value = stop_value,
-                                value_names = value_names,
+                                value=value,
+                                min_value=min_value,
+                                max_value=max_value,
+                                start_value=start_value,
+                                stop_value=stop_value,
+                                value_names=value_names,
                                 size=(50, -1),
-                                style=wx.SL_VERTICAL|wx.SL_AUTOTICKS)
-        sizer.Add(self.slider,1,wx.EXPAND)
-        #controls_sizer = wx.BoxSizer(wx.HORIZONTAL)
+                                style=wx.SL_VERTICAL | wx.SL_AUTOTICKS)
+        sizer.Add(self.slider, 1, wx.EXPAND)
+        # controls_sizer = wx.BoxSizer(wx.HORIZONTAL)
         # sizer.Add(controls_sizer,0,wx.ALIGN_CENTER_HORIZONTAL)
-        #self.skip_start_button = self.make_bitmap_button(BUTTON_SKIPSTART)
-        #controls_sizer.Add(self.skip_start_button,0,wx.SHAPED)
+        # self.skip_start_button = self.make_bitmap_button(BUTTON_SKIPSTART)
+        # controls_sizer.Add(self.skip_start_button,0,wx.SHAPED)
         # self.play_button = self.make_bitmap_button(BUTTON_PLAY)
-        #controls_sizer.Add(self.play_button, 0, wx.SHAPED | wx.ALIGN_CENTER_HORIZONTAL)
-        #self.skip_end_button = self.make_bitmap_button(BUTTON_SKIPEND)
-        #controls_sizer.Add(self.skip_end_button,0,wx.SHAPED)
-        #self.Bind(wx.EVT_BUTTON, self.on_play_pressed, self.play_button)
+        # controls_sizer.Add(self.play_button, 0, wx.SHAPED | wx.ALIGN_CENTER_HORIZONTAL)
+        # self.skip_end_button = self.make_bitmap_button(BUTTON_SKIPEND)
+        # controls_sizer.Add(self.skip_end_button,0,wx.SHAPED)
+        # self.Bind(wx.EVT_BUTTON, self.on_play_pressed, self.play_button)
         self.Bind(EVT_VALUE_CHANGED, self.on_slider_value_changed, self.slider)
         self.state = STATE_PAUSED
 
@@ -389,7 +389,7 @@ class MovieSlider(wx.Panel):
         if self.state == STATE_PAUSED:
             if self.slider.value == self.slider.max_value:
                 return
-            outgoing_event = wx.CommandEvent(EVT_TAKE_STEP_TYPE,self.Id)
+            outgoing_event = wx.CommandEvent(EVT_TAKE_STEP_TYPE, self.Id)
             outgoing_event.EventObject = self
             self.AddPendingEvent(outgoing_event)
             self.set_state(STATE_PLAYING)
@@ -397,18 +397,18 @@ class MovieSlider(wx.Panel):
             self.set_state(STATE_PAUSED)
 
     def on_step_taken(self):
-        self.slider.value = self.slider.value + 1
+        self.slider.value += 1
         if self.slider.value == self.slider.stop_value:
             self.set_state(STATE_PAUSED)
         if self.state == STATE_PLAYING:
-            event = wx.CommandEvent(EVT_TAKE_STEP_TYPE,self.Id)
+            event = wx.CommandEvent(EVT_TAKE_STEP_TYPE, self.Id)
             event.EventObject = self
             self.AddPendingEvent(event)
 
     def on_step_failed(self):
         self.set_state(STATE_PAUSED)
 
-    def set_state(self,new_state):
+    def set_state(self, new_state):
         self.state = new_state
         if new_state == STATE_PAUSED:
             if self.slider.value == self.slider.max_value:
@@ -422,45 +422,13 @@ class MovieSlider(wx.Panel):
 
     def set_play_button_image(self, data):
         stream = StringIO.StringIO(data)
-        image  = wx.ImageFromStream(stream)
+        image = wx.ImageFromStream(stream)
         bitmap = wx.BitmapFromImage(image)
         self.play_button.SetBitmapLabel(bitmap)
 
     def make_bitmap_button(self, data):
         stream = StringIO.StringIO(data)
-        image  = wx.ImageFromStream(stream)
+        image = wx.ImageFromStream(stream)
         bitmap = wx.BitmapFromImage(image)
         button = wx.BitmapButton(self, -1, bitmap)
         return button
-
-if __name__ == "__main__":
-    import wx.lib.inspection
-    class MyFrame(wx.Frame):
-        def __init__(self):
-            wx.Frame.__init__(self, None, title="Movie slider demo",
-                              pos=wx.DefaultPosition, size=wx.DefaultSize,
-                              style=wx.DEFAULT_FRAME_STYLE)
-            sizer = wx.BoxSizer()
-            self.SetSizer(sizer)
-            value_names = ["0: happy","1: grumpy","2: sleepy","3: dopey","4: doc","5: dwarf # 6", "6: dwarf # 7"]
-            self.movie_slider = MovieSlider(self,
-                                            max_value=9,
-                                            start_value=0,
-                                            stop_value=7,
-                                            value_names=value_names)
-            sizer.Add(self.movie_slider,1,wx.EXPAND)
-            self.Bind(EVT_TAKE_STEP, self.on_take_step, self.movie_slider)
-
-        def on_take_step(self, event):
-            wx.MessageBox("Take a step")
-            self.movie_slider.on_step_taken()
-
-    class MyApp(wx.App):
-        def OnInit(self):
-            self.frame = MyFrame()
-            self.SetTopWindow(self.frame)
-            self.frame.Show()
-            wx.lib.inspection.InspectionTool().Show()
-            return 1
-    app = MyApp(0)
-    app.MainLoop()

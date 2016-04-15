@@ -1,5 +1,6 @@
-import cellprofiler.icons 
+import cellprofiler.icons
 from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON
+
 __doc__ = '''<b>Identify Secondary Objects</b> identifies objects (e.g., cell edges) using
 objects identified by another module (e.g., nuclei) as a starting point.
 <hr>
@@ -120,7 +121,7 @@ calculated as the sum of absolute differences in a 3x3 (8-connected) image
 neighborhood, combined with &lambda; via sqrt(differences<sup>2</sup> + &lambda;<sup>2</sup>).
 
 <p>See also the other <b>Identify</b> modules.</p>
-'''%globals()
+''' % globals()
 
 import numpy as np
 import os
@@ -159,27 +160,27 @@ N_SETTING_VALUES = 14
 '''Parent (seed) relationship of input objects to output objects'''
 R_PARENT = "Parent"
 
-class IdentifySecondaryObjects(cpmi.Identify):
 
+class IdentifySecondaryObjects(cpmi.Identify):
     module_name = "IdentifySecondaryObjects"
     variable_revision_number = 9
     category = "Object Processing"
 
     def create_settings(self):
         self.primary_objects = cps.ObjectNameSubscriber(
-            "Select the input objects","Nuclei",doc="""
+                "Select the input objects", "Nuclei", doc="""
             What did you call the objects you want to use as "seeds" to identify a secondary
             object around each one? By definition, each primary object must be associated with exactly one
             secondary object and completely contained within it.""")
 
         self.objects_name = cps.ObjectNameProvider(
-            "Name the objects to be identified","Cells",doc="""
+                "Name the objects to be identified", "Cells", doc="""
             Enter the name that you want to call the objects identified by this module.""")
 
         self.method = cps.Choice(
-            "Select the method to identify the secondary objects",
-            [M_PROPAGATION, M_WATERSHED_G, M_WATERSHED_I, M_DISTANCE_N, M_DISTANCE_B],
-            M_PROPAGATION, doc="""
+                "Select the method to identify the secondary objects",
+                [M_PROPAGATION, M_WATERSHED_G, M_WATERSHED_I, M_DISTANCE_N, M_DISTANCE_B],
+                M_PROPAGATION, doc="""
             <p>There are several methods available to find the dividing lines
             between secondary objects which touch each other:
             <ul>
@@ -237,21 +238,21 @@ class IdentifySecondaryObjects(cpmi.Identify):
             </ul>""" % globals())
 
         self.image_name = cps.ImageNameSubscriber(
-            "Select the input image",
-            cps.NONE,doc="""
+                "Select the input image",
+                cps.NONE, doc="""
             The selected image will be used to find the edges of the secondary objects.
             For <i>%(M_DISTANCE_N)s</i> this will not affect object identification,
-            only the final display."""%globals())
+            only the final display.""" % globals())
 
         self.create_threshold_settings()
         # default smoothing choice is different for idprimary and idsecondary
         self.threshold_smoothing_choice.value = cpmi.TSM_NONE
 
         self.distance_to_dilate = cps.Integer(
-            "Number of pixels by which to expand the primary objects",10,minval=1)
+                "Number of pixels by which to expand the primary objects", 10, minval=1)
 
         self.regularization_factor = cps.Float(
-            "Regularization factor",0.05,minval=0,doc="""
+                "Regularization factor", 0.05, minval=0, doc="""
             <i>(Used only if %(M_PROPAGATION)s method is selected)</i> <br>
             The regularization factor &lambda; can be anywhere in the range 0 to infinity.
             This method takes two factors into account when deciding where to draw
@@ -269,42 +270,42 @@ class IdentifySecondaryObjects(cpmi.Identify):
             ignored at &lambda; much greater than 1.</li>
             <li>At infinity, the result will look like %(M_DISTANCE_B)s, masked to the
             secondary staining image.</li>
-            </ul>"""%globals())
+            </ul>""" % globals())
 
         self.use_outlines = cps.Binary(
-            "Retain outlines of the identified secondary objects?",False, doc="""
-            %(RETAINING_OUTLINES_HELP)s"""%globals())
+                "Retain outlines of the identified secondary objects?", False, doc="""
+            %(RETAINING_OUTLINES_HELP)s""" % globals())
 
         self.outlines_name = cps.OutlineNameProvider(
-            'Name the outline image',"SecondaryOutlines", doc="""
-            %(NAMING_OUTLINES_HELP)s"""%globals())
+                'Name the outline image', "SecondaryOutlines", doc="""
+            %(NAMING_OUTLINES_HELP)s""" % globals())
 
         self.wants_discard_edge = cps.Binary(
-            "Discard secondary objects touching the border of the image?",
-            False,doc = """
+                "Discard secondary objects touching the border of the image?",
+                False, doc="""
             Select <i>%(YES)s</i> to discard secondary objects which touch
             the image border. Select <i>%(NO)s</i> to retain objects regardless
             of whether they touch the image edge or not.
             <p>The objects are discarded
             with respect to downstream measurement modules, but they are retained in memory
             as "unedited objects"; this allows them to be considered in downstream modules that modify the
-            segmentation.</p>"""%globals())
+            segmentation.</p>""" % globals())
 
         self.fill_holes = cps.Binary(
-            "Fill holes in identified objects?", True,doc = """
-            Select <i>%(YES)s</i> to fill any holes inside objects."""%globals())
+                "Fill holes in identified objects?", True, doc="""
+            Select <i>%(YES)s</i> to fill any holes inside objects.""" % globals())
 
         self.wants_discard_primary = cps.Binary(
-            "Discard the associated primary objects?",False,doc = """
+                "Discard the associated primary objects?", False, doc="""
             <i>(Used only if discarding secondary objects touching the image border)</i> <br>
             It might be appropriate to discard the primary object
             for any secondary object that touches the edge of the image.
             <p>Select <i>%(YES)s</i> to create a new set of objects that are identical
             to the original primary objects set, minus the objects for which the associated
-            secondary object touches the image edge.</p>"""%globals())
+            secondary object touches the image edge.</p>""" % globals())
 
         self.new_primary_objects_name = cps.ObjectNameProvider(
-            "Name the new primary objects", "FilteredNuclei",doc = """
+                "Name the new primary objects", "FilteredNuclei", doc="""
             <i>(Used only if associated primary objects are discarded)</i> <br>
             You can name the primary objects that remain after the discarding step.
             These objects will all have secondary objects
@@ -314,12 +315,12 @@ class IdentifySecondaryObjects(cpmi.Identify):
             segmentation.""")
 
         self.wants_primary_outlines = cps.Binary(
-            "Retain outlines of the new primary objects?", False,doc = """
+                "Retain outlines of the new primary objects?", False, doc="""
             <i>(Used only if associated primary objects are discarded)</i><br>
-            %(RETAINING_OUTLINES_HELP)s"""%globals())
+            %(RETAINING_OUTLINES_HELP)s""" % globals())
 
         self.new_primary_outlines_name = cps.OutlineNameProvider(
-            "Name the new primary object outlines", "FilteredNucleiOutlines",doc = """
+                "Name the new primary object outlines", "FilteredNucleiOutlines", doc="""
             <i>(Used only if associated primary objects are discarded and saving outlines of new primary objects)</i><br>
             Enter a name for the outlines of the identified
             objects. The outlined image can be selected in downstream modules by selecting
@@ -327,19 +328,19 @@ class IdentifySecondaryObjects(cpmi.Identify):
 
     def settings(self):
         return [
-            self.primary_objects, self.objects_name, self.method, self.image_name,
-            self.distance_to_dilate, self.regularization_factor, self.outlines_name,
-            self.use_outlines, self.wants_discard_edge, self.wants_discard_primary,
-            self.new_primary_objects_name, self.wants_primary_outlines,
-            self.new_primary_outlines_name, self.fill_holes] + \
+                   self.primary_objects, self.objects_name, self.method, self.image_name,
+                   self.distance_to_dilate, self.regularization_factor, self.outlines_name,
+                   self.use_outlines, self.wants_discard_edge, self.wants_discard_primary,
+                   self.new_primary_objects_name, self.wants_primary_outlines,
+                   self.new_primary_outlines_name, self.fill_holes] + \
                self.get_threshold_settings()
 
     def visible_settings(self):
         result = [self.image_name, self.primary_objects, self.objects_name,
-                 self.method]
+                  self.method]
         if self.method != M_DISTANCE_N:
             result += self.get_threshold_visible_settings()
-        if self.method in (M_DISTANCE_B,M_DISTANCE_N):
+        if self.method in (M_DISTANCE_B, M_DISTANCE_N):
             result.append(self.distance_to_dilate)
         elif self.method == M_PROPAGATION:
             result.append(self.regularization_factor)
@@ -357,29 +358,29 @@ class IdentifySecondaryObjects(cpmi.Identify):
         return result
 
     def help_settings(self):
-        return [ self.primary_objects, self.objects_name,
-                 self.method, self.image_name] +\
+        return [self.primary_objects, self.objects_name,
+                self.method, self.image_name] + \
                self.get_threshold_visible_settings() + \
-               [ self.distance_to_dilate,
-                 self.regularization_factor,
-                 self.fill_holes, self.wants_discard_edge, self.wants_discard_primary,
-                 self.new_primary_objects_name, self.wants_primary_outlines,
-                 self.new_primary_outlines_name,
-                 self.use_outlines, self.outlines_name]
+               [self.distance_to_dilate,
+                self.regularization_factor,
+                self.fill_holes, self.wants_discard_edge, self.wants_discard_primary,
+                self.new_primary_objects_name, self.wants_primary_outlines,
+                self.new_primary_outlines_name,
+                self.use_outlines, self.outlines_name]
 
     def upgrade_settings(self,
                          setting_values,
                          variable_revision_number,
                          module_name,
                          from_matlab):
-        if from_matlab and variable_revision_number==1:
+        if from_matlab and variable_revision_number == 1:
             NotImplementedError("Sorry, Matlab variable revision # 1 is not supported")
-        if from_matlab and variable_revision_number==2:
+        if from_matlab and variable_revision_number == 2:
             # Added test mode - default = no
             setting_values = list(setting_values)
             setting_values.append(cps.NO)
             variable_revision_number = 3
-        if from_matlab and variable_revision_number==3:
+        if from_matlab and variable_revision_number == 3:
             new_setting_values = list(setting_values)
             if setting_values[4].isdigit():
                 # User entered manual threshold
@@ -387,17 +388,17 @@ class IdentifySecondaryObjects(cpmi.Identify):
                 new_setting_values.append(setting_values[4])
                 new_setting_values.append(cps.DO_NOT_USE)
             elif (not setting_values[4] in
-                  (cpthresh.TM_OTSU_GLOBAL,cpthresh.TM_OTSU_ADAPTIVE,
-                   cpthresh.TM_OTSU_PER_OBJECT,cpthresh.TM_MOG_GLOBAL,
-                   cpthresh.TM_MOG_ADAPTIVE,cpthresh.TM_MOG_PER_OBJECT,
-                   cpthresh.TM_BACKGROUND_GLOBAL,cpthresh.TM_BACKGROUND_ADAPTIVE,
-                   cpthresh.TM_BACKGROUND_PER_OBJECT,cpthresh.TM_ROBUST_BACKGROUND,
-                   cpthresh.TM_ROBUST_BACKGROUND_GLOBAL,
-                   cpthresh.TM_ROBUST_BACKGROUND_ADAPTIVE,
-                   cpthresh.TM_ROBUST_BACKGROUND_PER_OBJECT,
-                   cpthresh.TM_RIDLER_CALVARD_GLOBAL,cpthresh.TM_RIDLER_CALVARD_ADAPTIVE,
-                   cpthresh.TM_RIDLER_CALVARD_PER_OBJECT,cpthresh.TM_KAPUR_GLOBAL,
-                   cpthresh.TM_KAPUR_ADAPTIVE,cpthresh.TM_KAPUR_PER_OBJECT)):
+                (cpthresh.TM_OTSU_GLOBAL, cpthresh.TM_OTSU_ADAPTIVE,
+                 cpthresh.TM_OTSU_PER_OBJECT, cpthresh.TM_MOG_GLOBAL,
+                 cpthresh.TM_MOG_ADAPTIVE, cpthresh.TM_MOG_PER_OBJECT,
+                 cpthresh.TM_BACKGROUND_GLOBAL, cpthresh.TM_BACKGROUND_ADAPTIVE,
+                 cpthresh.TM_BACKGROUND_PER_OBJECT, cpthresh.TM_ROBUST_BACKGROUND,
+                 cpthresh.TM_ROBUST_BACKGROUND_GLOBAL,
+                 cpthresh.TM_ROBUST_BACKGROUND_ADAPTIVE,
+                 cpthresh.TM_ROBUST_BACKGROUND_PER_OBJECT,
+                 cpthresh.TM_RIDLER_CALVARD_GLOBAL, cpthresh.TM_RIDLER_CALVARD_ADAPTIVE,
+                 cpthresh.TM_RIDLER_CALVARD_PER_OBJECT, cpthresh.TM_KAPUR_GLOBAL,
+                 cpthresh.TM_KAPUR_ADAPTIVE, cpthresh.TM_KAPUR_PER_OBJECT)):
                 # User entered an image name -  guess
                 new_setting_values[4] = cpthresh.TM_BINARY_IMAGE
                 new_setting_values.append('0')
@@ -413,13 +414,14 @@ class IdentifySecondaryObjects(cpmi.Identify):
             from_matlab = False
             variable_revision_number = 1
         if from_matlab:
-            NotImplementedError("Don't know how to convert Matlab IdentifySecondary revision # %d"%(variable_revision_number))
+            NotImplementedError(
+                    "Don't know how to convert Matlab IdentifySecondary revision # %d" % variable_revision_number)
         if variable_revision_number != self.variable_revision_number:
-            NotImplementedError("Don't know how to handle IdentifySecondary revision # %d"%(variable_revision_number))
+            NotImplementedError("Don't know how to handle IdentifySecondary revision # %d" % variable_revision_number)
         if (not from_matlab) and variable_revision_number == 1:
             # Removed test mode
             # added Otsu parameters.
-            setting_values = setting_values[:11]+setting_values[12:]
+            setting_values = setting_values[:11] + setting_values[12:]
             setting_values += [cpmi.O_TWO_CLASS, cpmi.O_WEIGHTED_VARIANCE,
                                cpmi.O_FOREGROUND]
             variable_revision_number = 2
@@ -460,39 +462,39 @@ class IdentifySecondaryObjects(cpmi.Identify):
 
         if (not from_matlab) and variable_revision_number == 8:
             primary_objects, objects_name, method, image_name, \
-                threshold_method, threshold_correction_factor, \
-                threshold_range, object_fraction, distance_to_dilate, \
-                regularization_factor, outlines_name, manual_threshold,  \
-                binary_image, use_outlines, two_class_otsu, \
-                use_weighted_variance, assign_middle_to_foreground, \
-                wants_discard_edge, wants_discard_primary, \
-                new_primary_objects_name, wants_primary_outlines, \
-                new_primary_outlines_name, thresholding_measurement, \
-                fill_holes, adaptive_window_method, \
-                adaptive_window_size = setting_values
+            threshold_method, threshold_correction_factor, \
+            threshold_range, object_fraction, distance_to_dilate, \
+            regularization_factor, outlines_name, manual_threshold, \
+            binary_image, use_outlines, two_class_otsu, \
+            use_weighted_variance, assign_middle_to_foreground, \
+            wants_discard_edge, wants_discard_primary, \
+            new_primary_objects_name, wants_primary_outlines, \
+            new_primary_outlines_name, thresholding_measurement, \
+            fill_holes, adaptive_window_method, \
+            adaptive_window_size = setting_values
             setting_values = [
-                primary_objects, objects_name, method, image_name,
-                distance_to_dilate, regularization_factor, outlines_name,
-                use_outlines, wants_discard_edge, wants_discard_primary,
-                new_primary_objects_name, wants_primary_outlines,
-                new_primary_outlines_name, fill_holes] + \
-                self.upgrade_legacy_threshold_settings(
-                    threshold_method, cpmi.TSM_NONE,
-                    threshold_correction_factor, threshold_range,
-                    object_fraction, manual_threshold, thresholding_measurement,
-                    binary_image, two_class_otsu, use_weighted_variance,
-                    assign_middle_to_foreground, adaptive_window_method,
-                    adaptive_window_size)
+                                 primary_objects, objects_name, method, image_name,
+                                 distance_to_dilate, regularization_factor, outlines_name,
+                                 use_outlines, wants_discard_edge, wants_discard_primary,
+                                 new_primary_objects_name, wants_primary_outlines,
+                                 new_primary_outlines_name, fill_holes] + \
+                             self.upgrade_legacy_threshold_settings(
+                                     threshold_method, cpmi.TSM_NONE,
+                                     threshold_correction_factor, threshold_range,
+                                     object_fraction, manual_threshold, thresholding_measurement,
+                                     binary_image, two_class_otsu, use_weighted_variance,
+                                     assign_middle_to_foreground, adaptive_window_method,
+                                     adaptive_window_size)
             variable_revision_number = 9
         setting_values = setting_values[:N_SETTING_VALUES] + \
-            self.upgrade_threshold_settings(setting_values[N_SETTING_VALUES:])
+                         self.upgrade_threshold_settings(setting_values[N_SETTING_VALUES:])
         return setting_values, variable_revision_number, from_matlab
 
     def run(self, workspace):
         assert isinstance(workspace, cpw.Workspace)
         image_name = self.image_name.value
         image = workspace.image_set.get_image(image_name,
-                                              must_be_grayscale = True)
+                                              must_be_grayscale=True)
         workspace.display_data.statistics = []
         img = image.pixel_data
         mask = image.mask
@@ -511,9 +513,9 @@ class IdentifySecondaryObjects(cpmi.Identify):
         #
         labels_in = objects.unedited_segmented.copy()
         labels_touching_edge = np.hstack(
-            (labels_in[0,:], labels_in[-1,:], labels_in[:,0], labels_in[:,-1]))
+                (labels_in[0, :], labels_in[-1, :], labels_in[:, 0], labels_in[:, -1]))
         labels_touching_edge = np.unique(labels_touching_edge)
-        is_touching = np.zeros(np.max(labels_in)+1, bool)
+        is_touching = np.zeros(np.max(labels_in) + 1, bool)
         is_touching[labels_touching_edge] = True
         is_touching = is_touching[labels_in]
 
@@ -531,18 +533,18 @@ class IdentifySecondaryObjects(cpmi.Identify):
 
         if self.method in (M_DISTANCE_B, M_DISTANCE_N):
             if self.method == M_DISTANCE_N:
-                distances,(i,j) = scind.distance_transform_edt(labels_in == 0,
-                                                               return_indices = True)
-                labels_out = np.zeros(labels_in.shape,int)
+                distances, (i, j) = scind.distance_transform_edt(labels_in == 0,
+                                                                 return_indices=True)
+                labels_out = np.zeros(labels_in.shape, int)
                 dilate_mask = distances <= self.distance_to_dilate.value
-                labels_out[dilate_mask] =\
-                    labels_in[i[dilate_mask],j[dilate_mask]]
+                labels_out[dilate_mask] = \
+                    labels_in[i[dilate_mask], j[dilate_mask]]
             else:
                 labels_out, distances = propagate(img, labels_in,
                                                   thresholded_image,
                                                   1.0)
-                labels_out[distances>self.distance_to_dilate.value] = 0
-                labels_out[labels_in > 0] = labels_in[labels_in>0]
+                labels_out[distances > self.distance_to_dilate.value] = 0
+                labels_out[labels_in > 0] = labels_in[labels_in > 0]
             if self.fill_holes:
                 small_removed_segmented_out = fill_labeled_holes(labels_out)
             else:
@@ -580,7 +582,7 @@ class IdentifySecondaryObjects(cpmi.Identify):
             #
             labels_out = watershed(sobel_image,
                                    labels_in,
-                                   np.ones((3,3),bool),
+                                   np.ones((3, 3), bool),
                                    mask=watershed_mask)
             if self.fill_holes:
                 small_removed_segmented_out = fill_labeled_holes(labels_out)
@@ -593,7 +595,7 @@ class IdentifySecondaryObjects(cpmi.Identify):
             # invert the image so that the maxima are filled first
             # and the cells compete over what's close to the threshold
             #
-            inverted_img = 1-img
+            inverted_img = 1 - img
             #
             # Same as above, but perform the watershed on the original image
             #
@@ -604,14 +606,14 @@ class IdentifySecondaryObjects(cpmi.Identify):
             #
             labels_out = watershed(inverted_img,
                                    labels_in,
-                                   np.ones((3,3),bool),
+                                   np.ones((3, 3), bool),
                                    mask=watershed_mask)
             if self.fill_holes:
                 small_removed_segmented_out = fill_labeled_holes(labels_out)
             else:
                 small_removed_segmented_out = labels_out
             segmented_out = self.filter_labels(small_removed_segmented_out,
-                                                objects, workspace)
+                                               objects, workspace)
 
         if self.wants_discard_edge and self.wants_discard_primary:
             #
@@ -619,7 +621,7 @@ class IdentifySecondaryObjects(cpmi.Identify):
             #
             lookup = scind.maximum(segmented_out,
                                    objects.segmented,
-                                   range(np.max(objects.segmented)+1))
+                                   range(np.max(objects.segmented) + 1))
             lookup = fix(lookup)
             lookup[0] = 0
             lookup[lookup != 0] = np.arange(np.sum(lookup != 0)) + 1
@@ -635,7 +637,7 @@ class IdentifySecondaryObjects(cpmi.Identify):
             primary_outline = outline(segmented_labels)
             if self.wants_primary_outlines:
                 out_img = cpi.Image(primary_outline.astype(bool),
-                                    parent_image = image)
+                                    parent_image=image)
                 workspace.image_set.add(self.new_primary_outlines_name.value,
                                         out_img)
         else:
@@ -654,7 +656,7 @@ class IdentifySecondaryObjects(cpmi.Identify):
         workspace.object_set.add_objects(objects_out, objname)
         if self.use_outlines.value:
             out_img = cpi.Image(secondary_outline.astype(bool),
-                                parent_image = image)
+                                parent_image=image)
             workspace.image_set.add(self.outlines_name.value, out_img)
         object_count = np.max(segmented_out)
         #
@@ -671,20 +673,20 @@ class IdentifySecondaryObjects(cpmi.Identify):
         children_per_parent, parents_of_children = \
             objects.relate_children(objects_out)
         measurements.add_measurement(self.primary_objects.value,
-                                     cpmi.FF_CHILDREN_COUNT%objname,
+                                     cpmi.FF_CHILDREN_COUNT % objname,
                                      children_per_parent)
         measurements.add_measurement(objname,
-                                     cpmi.FF_PARENT%self.primary_objects.value,
+                                     cpmi.FF_PARENT % self.primary_objects.value,
                                      parents_of_children)
-        image_numbers = np.ones(len(parents_of_children), int) *\
-            measurements.image_set_number
+        image_numbers = np.ones(len(parents_of_children), int) * \
+                        measurements.image_set_number
         mask = parents_of_children > 0
         measurements.add_relate_measurement(
-            self.module_num, R_PARENT,
-            self.primary_objects.value, self.objects_name.value,
-            image_numbers[mask], parents_of_children[mask],
-            image_numbers[mask],
-            np.arange(1, len(parents_of_children) + 1)[mask])
+                self.module_num, R_PARENT,
+                self.primary_objects.value, self.objects_name.value,
+                image_numbers[mask], parents_of_children[mask],
+                image_numbers[mask],
+                np.arange(1, len(parents_of_children) + 1)[mask])
         #
         # If primary objects were created, add them
         #
@@ -698,17 +700,17 @@ class IdentifySecondaryObjects(cpmi.Identify):
                                                   self.new_primary_objects_name.value,
                                                   new_objects.segmented)
             for parent_objects, parent_name, child_objects, child_name in (
-                (objects, self.primary_objects.value,
-                 new_objects, self.new_primary_objects_name.value),
-                (new_objects, self.new_primary_objects_name.value,
-                 objects_out, objname)):
+                    (objects, self.primary_objects.value,
+                     new_objects, self.new_primary_objects_name.value),
+                    (new_objects, self.new_primary_objects_name.value,
+                     objects_out, objname)):
                 children_per_parent, parents_of_children = \
                     parent_objects.relate_children(child_objects)
                 measurements.add_measurement(parent_name,
-                                             cpmi.FF_CHILDREN_COUNT%child_name,
+                                             cpmi.FF_CHILDREN_COUNT % child_name,
                                              children_per_parent)
                 measurements.add_measurement(child_name,
-                                             cpmi.FF_PARENT%parent_name,
+                                             cpmi.FF_PARENT % parent_name,
                                              parents_of_children)
         if self.show_window:
             object_area = np.sum(segmented_out > 0)
@@ -732,46 +734,46 @@ class IdentifySecondaryObjects(cpmi.Identify):
         statistics = workspace.display_data.statistics
 
         if global_threshold is not None:
-            statistics.append(["Threshold","%.3f" % global_threshold])
+            statistics.append(["Threshold", "%.3f" % global_threshold])
 
         if object_count > 0:
             areas = scind.sum(np.ones(segmented_out.shape), segmented_out, np.arange(1, object_count + 1))
             areas.sort()
-            low_diameter  = (np.sqrt(float(areas[object_count / 10]) / np.pi) * 2)
+            low_diameter = (np.sqrt(float(areas[object_count / 10]) / np.pi) * 2)
             median_diameter = (np.sqrt(float(areas[object_count / 2]) / np.pi) * 2)
             high_diameter = (np.sqrt(float(areas[object_count * 9 / 10]) / np.pi) * 2)
             statistics.append(["10th pctile diameter",
-                               "%.1f pixels" % (low_diameter)])
+                               "%.1f pixels" % low_diameter])
             statistics.append(["Median diameter",
-                               "%.1f pixels" % (median_diameter)])
+                               "%.1f pixels" % median_diameter])
             statistics.append(["90th pctile diameter",
-                               "%.1f pixels" % (high_diameter)])
+                               "%.1f pixels" % high_diameter])
             if self.method != M_DISTANCE_N and self.threshold_scope != TS_BINARY_IMAGE:
                 statistics.append(["Thresholding filter size",
-                                "%.1f"%(workspace.display_data.threshold_sigma)])
+                                   "%.1f" % workspace.display_data.threshold_sigma])
             statistics.append(["Area covered by objects", "%.1f %%" % object_pct])
         workspace.display_data.statistics = statistics
 
         figure.set_subplots((2, 2))
-        title = "Input image, cycle #%d" % (workspace.measurements.image_number)
+        title = "Input image, cycle #%d" % workspace.measurements.image_number
         figure.subplot_imshow_grayscale(0, 0, img, title)
         figure.subplot_imshow_labels(1, 0, segmented_out, "%s objects" % self.objects_name.value,
-                                       sharexy = figure.subplot(0, 0))
+                                     sharexy=figure.subplot(0, 0))
 
         cplabels = [
-            dict(name = self.primary_objects.value,
-                 labels = [ primary_labels ]),
-            dict(name = self.objects_name.value,
-                 labels = [ segmented_out ])]
-        title = "%s and %s outlines" %(
+            dict(name=self.primary_objects.value,
+                 labels=[primary_labels]),
+            dict(name=self.objects_name.value,
+                 labels=[segmented_out])]
+        title = "%s and %s outlines" % (
             self.primary_objects.value, self.objects_name.value)
         figure.subplot_imshow_grayscale(
-            0, 1, img, title = title, cplabels = cplabels,
-            sharexy = figure.subplot(0, 0))
+                0, 1, img, title=title, cplabels=cplabels,
+                sharexy=figure.subplot(0, 0))
         figure.subplot_table(
-            1, 1,
-            [[x[1]] for x in workspace.display_data.statistics],
-            row_labels = [x[0] for x in workspace.display_data.statistics])
+                1, 1,
+                [[x[1]] for x in workspace.display_data.statistics],
+                row_labels=[x[0] for x in workspace.display_data.statistics])
 
     def filter_labels(self, labels_out, objects, workspace):
         """Filter labels out of the output
@@ -788,8 +790,8 @@ class IdentifySecondaryObjects(cpmi.Identify):
         if max_out > 0:
             segmented_labels, m1 = cpo.size_similarly(labels_out, segmented_labels)
             segmented_labels[~m1] = 0
-            lookup = scind.maximum(segmented_labels,labels_out,
-                                   range(max_out+1))
+            lookup = scind.maximum(segmented_labels, labels_out,
+                                   range(max_out + 1))
             lookup = np.array(lookup, int)
             lookup[0] = 0
             segmented_labels_out = lookup[labels_out]
@@ -801,16 +803,16 @@ class IdentifySecondaryObjects(cpmi.Identify):
                 mask_border = (image.mask & ~ scind.binary_erosion(image.mask))
                 edge_labels = segmented_labels_out[mask_border]
             else:
-                edge_labels = np.hstack((segmented_labels_out[0,:],
-                                         segmented_labels_out[-1,:],
-                                         segmented_labels_out[:,0],
-                                         segmented_labels_out[:,-1]))
+                edge_labels = np.hstack((segmented_labels_out[0, :],
+                                         segmented_labels_out[-1, :],
+                                         segmented_labels_out[:, 0],
+                                         segmented_labels_out[:, -1]))
             edge_labels = np.unique(edge_labels)
             #
             # Make a lookup table that translates edge labels to zero
             # but translates everything else to itself
             #
-            lookup = np.arange(max(max_out, np.max(segmented_labels))+1)
+            lookup = np.arange(max(max_out, np.max(segmented_labels)) + 1)
             lookup[edge_labels] = 0
             #
             # Run the segmented labels through this to filter out edge
@@ -827,26 +829,26 @@ class IdentifySecondaryObjects(cpmi.Identify):
         '''Return column definitions for measurements made by this module'''
         columns = cpmi.get_object_measurement_columns(self.objects_name.value)
         columns += [(self.primary_objects.value,
-                     cpmi.FF_CHILDREN_COUNT%self.objects_name.value,
+                     cpmi.FF_CHILDREN_COUNT % self.objects_name.value,
                      cpmeas.COLTYPE_INTEGER),
                     (self.objects_name.value,
-                     cpmi.FF_PARENT%self.primary_objects.value,
+                     cpmi.FF_PARENT % self.primary_objects.value,
                      cpmeas.COLTYPE_INTEGER)]
         if self.method != M_DISTANCE_N:
             columns += cpmi.get_threshold_measurement_columns(self.objects_name.value)
         if self.wants_discard_edge and self.wants_discard_primary:
             columns += cpmi.get_object_measurement_columns(self.new_primary_objects_name.value)
             columns += [(self.new_primary_objects_name.value,
-                         cpmi.FF_CHILDREN_COUNT%self.objects_name.value,
+                         cpmi.FF_CHILDREN_COUNT % self.objects_name.value,
                          cpmeas.COLTYPE_INTEGER),
                         (self.objects_name.value,
-                         cpmi.FF_PARENT%self.new_primary_objects_name.value,
+                         cpmi.FF_PARENT % self.new_primary_objects_name.value,
                          cpmeas.COLTYPE_INTEGER)]
             columns += [(self.primary_objects.value,
-                         cpmi.FF_CHILDREN_COUNT%self.new_primary_objects_name.value,
+                         cpmi.FF_CHILDREN_COUNT % self.new_primary_objects_name.value,
                          cpmeas.COLTYPE_INTEGER),
                         (self.new_primary_objects_name.value,
-                         cpmi.FF_PARENT%self.primary_objects.value,
+                         cpmi.FF_PARENT % self.primary_objects.value,
                          cpmeas.COLTYPE_INTEGER)]
 
         return columns
@@ -889,18 +891,19 @@ class IdentifySecondaryObjects(cpmi.Identify):
         }
         if self.wants_discard_edge and self.wants_discard_primary:
             object_dictionary[self.objects_name.value] += \
-                             [self.new_primary_objects_name.value]
+                [self.new_primary_objects_name.value]
             object_dictionary[self.new_primary_objects_name.value] = \
-                             [self.primary_objects.value]
+                [self.primary_objects.value]
         return object_dictionary
 
     def get_measurement_objects(self, pipeline, object_name, category, measurement):
         if self.method != M_DISTANCE_N:
             return self.get_threshold_measurement_objects(
-                pipeline, object_name, category, measurement)
+                    pipeline, object_name, category, measurement)
         return []
 
     def get_measurement_objects_name(self):
         return self.objects_name.value
+
 
 IdentifySecondary = IdentifySecondaryObjects

@@ -27,9 +27,11 @@ import cellprofiler.preferences as cpprefs
 from cellprofiler.modules.tests import github_url
 
 import cellprofiler.modules.calculatestatistics as C
+
 INPUT_OBJECTS = "my_object"
 TEST_FTR = "my_measurement"
 FIGURE_NAME = "figname"
+
 
 class TestCalculateStatistics(unittest.TestCase):
     def test_01_01_load_matlab(self):
@@ -45,8 +47,10 @@ class TestCalculateStatistics(unittest.TestCase):
                 'WVN9wsfQGs9JBt4dBxwEHHcuUNT/ZfjfdfWi+vB5bsm76yu2pdqW++7VmqfO'
                 'L/dWXuueds62+ZPtP+zM7f7Pstg39TAAo3nSDA==')
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 2)
@@ -78,8 +82,10 @@ class TestCalculateStatistics(unittest.TestCase):
                 'z8Ptx6foFbSHes8zcHrYQYn7DfLN85tH4qPalonPW7+mLV9HrKNPcwIg/j8i'
                 'b/w/eRPZpA==')
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
         #
@@ -130,8 +136,10 @@ CalculateStatistics:[module_num:1|svn_version:\'9495\'|variable_revision_number:
     File output location:Default Output Folder\x7CTest
 """
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
@@ -478,7 +486,7 @@ CalculateStatistics:[module_num:1|svn_version:\'9495\'|variable_revision_number:
     #             os.remove(path)
     #         os.rmdir(temp_dir)
 
-    def make_workspace(self, mdict, controls_measurement, dose_measurements = []):
+    def make_workspace(self, mdict, controls_measurement, dose_measurements=[]):
         '''Make a workspace and module for running CalculateStatistics
 
         mdict - a two-level dictionary that mimics the measurements structure
@@ -525,16 +533,16 @@ CalculateStatistics:[module_num:1|svn_version:\'9495\'|variable_revision_number:
         '''
         mdict = {
             cpmeas.IMAGE: {
-                "Metadata_Controls": [ 1,0,-1],
-                "Metadata_Doses": [ 0, .5, 1 ] },
+                "Metadata_Controls": [1, 0, -1],
+                "Metadata_Doses": [0, .5, 1]},
             INPUT_OBJECTS: {
-                TEST_FTR: [ np.array([1.0, np.NaN, 2.3, 3.4, 2.9]),
-                            np.array([5.3, 2.4, np.NaN, 3.2]),
-                            np.array([np.NaN, 3.1, 4.3, 2.2, 1.1, 0.1])]
-                }}
+                TEST_FTR: [np.array([1.0, np.NaN, 2.3, 3.4, 2.9]),
+                           np.array([5.3, 2.4, np.NaN, 3.2]),
+                           np.array([np.NaN, 3.1, 4.3, 2.2, 1.1, 0.1])]
+            }}
         workspace, module = self.make_workspace(mdict,
                                                 "Metadata_Controls",
-                                                [ "Metadata_Doses"])
+                                                ["Metadata_Doses"])
         module.post_run(workspace)
         m = workspace.measurements
         self.assertTrue(isinstance(m, cpmeas.Measurements))
@@ -549,16 +557,16 @@ CalculateStatistics:[module_num:1|svn_version:\'9495\'|variable_revision_number:
         #
         mdict = {
             cpmeas.IMAGE: {
-                "Metadata_Controls": [ 1,0,-1],
-                "Metadata_Doses": [ 0, .5, 1 ] },
+                "Metadata_Controls": [1, 0, -1],
+                "Metadata_Doses": [0, .5, 1]},
             INPUT_OBJECTS: {
-                TEST_FTR: [ np.array([1.0, 2.3, 3.4, 2.9]),
-                            np.array([5.3, 2.4, 3.2]),
-                            np.array([3.1, 4.3, 2.2, 1.1, 0.1])]
-                }}
+                TEST_FTR: [np.array([1.0, 2.3, 3.4, 2.9]),
+                           np.array([5.3, 2.4, 3.2]),
+                           np.array([3.1, 4.3, 2.2, 1.1, 0.1])]
+            }}
         workspace, module = self.make_workspace(mdict,
                                                 "Metadata_Controls",
-                                                [ "Metadata_Doses"])
+                                                ["Metadata_Doses"])
         assert isinstance(module, C.CalculateStatistics)
         my_dir = tempfile.mkdtemp()
         my_subdir = os.path.join(my_dir, "foo")

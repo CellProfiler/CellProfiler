@@ -23,12 +23,13 @@ import cellprofiler.modules.measureobjectneighbors as M
 OBJECTS_NAME = 'objectsname'
 NEIGHBORS_NAME = 'neighborsname'
 
+
 class TestMeasureObjectNeighbors(unittest.TestCase):
-    def make_workspace(self, labels, mode, distance=0, neighbors_labels = None):
+    def make_workspace(self, labels, mode, distance=0, neighbors_labels=None):
         '''Make a workspace for testing MeasureObjectNeighbors'''
         module = M.MeasureObjectNeighbors()
         module.module_num = 1
-        module.object_name.value=OBJECTS_NAME
+        module.object_name.value = OBJECTS_NAME
         module.distance_method.value = mode
         module.distance.value = distance
         pipeline = cpp.Pipeline()
@@ -86,9 +87,9 @@ class TestMeasureObjectNeighbors(unittest.TestCase):
         fd = StringIO(zlib.decompress(base64.b64decode(data)))
         pipeline = cpp.Pipeline()
         pipeline.load(fd)
-        self.assertEqual(len(pipeline.modules()),3)
+        self.assertEqual(len(pipeline.modules()), 3)
         module = pipeline.modules()[2]
-        self.assertTrue(isinstance(module,M.MeasureObjectNeighbors))
+        self.assertTrue(isinstance(module, M.MeasureObjectNeighbors))
         self.assertEqual(module.object_name, 'Nuclei')
         self.assertEqual(module.distance_method, M.D_EXPAND)
         self.assertFalse(module.wants_count_image.value)
@@ -124,9 +125,9 @@ class TestMeasureObjectNeighbors(unittest.TestCase):
         fd = StringIO(zlib.decompress(base64.b64decode(data)))
         pipeline = cpp.Pipeline()
         pipeline.load(fd)
-        self.assertEqual(len(pipeline.modules()),3)
+        self.assertEqual(len(pipeline.modules()), 3)
         module = pipeline.modules()[2]
-        self.assertTrue(isinstance(module,M.MeasureObjectNeighbors))
+        self.assertTrue(isinstance(module, M.MeasureObjectNeighbors))
         self.assertEqual(module.object_name, 'Nuclei')
         self.assertEqual(module.neighbors_name, 'Nuclei')
         self.assertEqual(module.distance_method, M.D_EXPAND)
@@ -155,8 +156,10 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
     Select a colormap:purple
 '''
         pipeline = cpp.Pipeline()
+
         def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
@@ -175,17 +178,17 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
 
     def test_02_02_empty(self):
         '''Test a labels matrix with no objects'''
-        workspace, module = self.make_workspace(np.zeros((10,10),int),
+        workspace, module = self.make_workspace(np.zeros((10, 10), int),
                                                 M.D_EXPAND, 5)
         module.run(workspace)
         m = workspace.measurements
-        neighbors = m.get_current_measurement(OBJECTS_NAME,"Neighbors_NumberOfNeighbors_Expanded")
+        neighbors = m.get_current_measurement(OBJECTS_NAME, "Neighbors_NumberOfNeighbors_Expanded")
         self.assertEqual(len(neighbors), 0)
         features = m.get_feature_names(OBJECTS_NAME)
         columns = module.get_measurement_columns(workspace.pipeline)
         self.assertEqual(len(features), len(columns))
         for column in columns:
-            self.assertEqual(column[0],OBJECTS_NAME)
+            self.assertEqual(column[0], OBJECTS_NAME)
             self.assertTrue(column[1] in features)
             self.assertTrue(column[2] == (cpmeas.COLTYPE_INTEGER
                                           if column[1].find('Number') != -1
@@ -193,26 +196,26 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
 
     def test_02_03_one(self):
         '''Test a labels matrix with a single object'''
-        labels = np.zeros((10,10),int)
-        labels[3:5,4:6] = 1
+        labels = np.zeros((10, 10), int)
+        labels[3:5, 4:6] = 1
         workspace, module = self.make_workspace(labels,
                                                 M.D_EXPAND, 5)
         module.run(workspace)
         m = workspace.measurements
         neighbors = m.get_current_measurement(OBJECTS_NAME,
                                               "Neighbors_NumberOfNeighbors_Expanded")
-        self.assertEqual(len(neighbors),1)
-        self.assertEqual(neighbors[0],0)
+        self.assertEqual(len(neighbors), 1)
+        self.assertEqual(neighbors[0], 0)
         pct = m.get_current_measurement(OBJECTS_NAME,
                                         "Neighbors_PercentTouching_Expanded")
-        self.assertEqual(len(pct),1)
-        self.assertEqual(pct[0],0)
+        self.assertEqual(len(pct), 1)
+        self.assertEqual(pct[0], 0)
 
     def test_02_04_two_expand(self):
         '''Test a labels matrix with two objects'''
-        labels = np.zeros((10,10),int)
-        labels[2,2] = 1
-        labels[8,7] = 2
+        labels = np.zeros((10, 10), int)
+        labels[2, 2] = 1
+        labels[8, 7] = 2
         workspace, module = self.make_workspace(labels,
                                                 M.D_EXPAND, 5)
         module.run(workspace)
@@ -230,8 +233,8 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
         m = workspace.measurements
         neighbors = m.get_current_measurement(OBJECTS_NAME,
                                               "Neighbors_NumberOfNeighbors_Expanded")
-        self.assertEqual(len(neighbors),2)
-        self.assertTrue(np.all(neighbors==1))
+        self.assertEqual(len(neighbors), 2)
+        self.assertTrue(np.all(neighbors == 1))
         pct = m.get_current_measurement(OBJECTS_NAME,
                                         "Neighbors_PercentTouching_Expanded")
         #
@@ -255,24 +258,24 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
         # There are 33 perimeter pixels (P + O) and 17 perimeter pixels
         # that overlap the dilated neighbor (O).
         #
-        self.assertEqual(len(pct),2)
-        self.assertAlmostEqual(pct[0],100.0*17.0/33.0)
+        self.assertEqual(len(pct), 2)
+        self.assertAlmostEqual(pct[0], 100.0 * 17.0 / 33.0)
         fo = m.get_current_measurement(OBJECTS_NAME,
                                        "Neighbors_FirstClosestObjectNumber_Expanded")
-        self.assertEqual(len(fo),2)
-        self.assertEqual(fo[0],2)
-        self.assertEqual(fo[1],1)
+        self.assertEqual(len(fo), 2)
+        self.assertEqual(fo[0], 2)
+        self.assertEqual(fo[1], 1)
         x = m.get_current_measurement(OBJECTS_NAME,
                                       "Neighbors_FirstClosestDistance_Expanded")
-        self.assertAlmostEqual(len(x),2)
-        self.assertAlmostEqual(x[0],np.sqrt(61))
-        self.assertAlmostEqual(x[1],np.sqrt(61))
+        self.assertAlmostEqual(len(x), 2)
+        self.assertAlmostEqual(x[0], np.sqrt(61))
+        self.assertAlmostEqual(x[1], np.sqrt(61))
 
     def test_02_04_two_not_adjacent(self):
         '''Test a labels matrix with two objects, not adjacent'''
-        labels = np.zeros((10,10),int)
-        labels[2,2] = 1
-        labels[8,7] = 2
+        labels = np.zeros((10, 10), int)
+        labels[2, 2] = 1
+        labels[8, 7] = 2
         workspace, module = self.make_workspace(labels,
                                                 M.D_ADJACENT, 5)
         module.run(workspace)
@@ -285,41 +288,41 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
         m = workspace.measurements
         neighbors = m.get_current_measurement(OBJECTS_NAME,
                                               "Neighbors_NumberOfNeighbors_Adjacent")
-        self.assertEqual(len(neighbors),2)
-        self.assertTrue(np.all(neighbors==0))
+        self.assertEqual(len(neighbors), 2)
+        self.assertTrue(np.all(neighbors == 0))
         pct = m.get_current_measurement(OBJECTS_NAME,
                                         "Neighbors_PercentTouching_Adjacent")
-        self.assertEqual(len(pct),2)
-        self.assertTrue(np.all(pct==0))
+        self.assertEqual(len(pct), 2)
+        self.assertTrue(np.all(pct == 0))
 
     def test_02_05_adjacent(self):
         '''Test a labels matrix with two objects, adjacent'''
-        labels = np.zeros((10,10),int)
-        labels[2,2] = 1
-        labels[2,3] = 2
+        labels = np.zeros((10, 10), int)
+        labels[2, 2] = 1
+        labels[2, 3] = 2
         workspace, module = self.make_workspace(labels,
                                                 M.D_ADJACENT, 5)
         module.run(workspace)
         m = workspace.measurements
         neighbors = m.get_current_measurement(OBJECTS_NAME,
                                               "Neighbors_NumberOfNeighbors_Adjacent")
-        self.assertEqual(len(neighbors),2)
-        self.assertTrue(np.all(neighbors==1))
+        self.assertEqual(len(neighbors), 2)
+        self.assertTrue(np.all(neighbors == 1))
         pct = m.get_current_measurement(OBJECTS_NAME,
                                         "Neighbors_PercentTouching_Adjacent")
-        self.assertEqual(len(pct),2)
-        self.assertAlmostEqual(pct[0],100)
+        self.assertEqual(len(pct), 2)
+        self.assertAlmostEqual(pct[0], 100)
         fo = m.get_current_measurement(OBJECTS_NAME,
                                        "Neighbors_FirstClosestObjectNumber_Adjacent")
-        self.assertEqual(len(fo),2)
-        self.assertEqual(fo[0],2)
-        self.assertEqual(fo[1],1)
+        self.assertEqual(len(fo), 2)
+        self.assertEqual(fo[0], 2)
+        self.assertEqual(fo[1], 1)
 
     def test_02_06_manual_not_touching(self):
         '''Test a labels matrix with two objects not touching'''
-        labels = np.zeros((10,10),int)
-        labels[2,2] = 1 # Pythagoras triangle 3-4-5
-        labels[5,6] = 2
+        labels = np.zeros((10, 10), int)
+        labels[2, 2] = 1  # Pythagoras triangle 3-4-5
+        labels[5, 6] = 2
         workspace, module = self.make_workspace(labels,
                                                 M.D_WITHIN, 4)
         module.run(workspace)
@@ -332,80 +335,80 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
         m = workspace.measurements
         neighbors = m.get_current_measurement(OBJECTS_NAME,
                                               "Neighbors_NumberOfNeighbors_4")
-        self.assertEqual(len(neighbors),2)
-        self.assertTrue(np.all(neighbors==0))
+        self.assertEqual(len(neighbors), 2)
+        self.assertTrue(np.all(neighbors == 0))
         pct = m.get_current_measurement(OBJECTS_NAME,
                                         "Neighbors_PercentTouching_4")
-        self.assertEqual(len(pct),2)
-        self.assertAlmostEqual(pct[0],0)
+        self.assertEqual(len(pct), 2)
+        self.assertAlmostEqual(pct[0], 0)
 
     def test_02_07_manual_touching(self):
         '''Test a labels matrix with two objects touching'''
-        labels = np.zeros((10,10),int)
-        labels[2,2] = 1 # Pythagoras triangle 3-4-5
-        labels[5,6] = 2
+        labels = np.zeros((10, 10), int)
+        labels[2, 2] = 1  # Pythagoras triangle 3-4-5
+        labels[5, 6] = 2
         workspace, module = self.make_workspace(labels,
                                                 M.D_WITHIN, 5)
         module.run(workspace)
         m = workspace.measurements
         neighbors = m.get_current_measurement(OBJECTS_NAME,
                                               "Neighbors_NumberOfNeighbors_5")
-        self.assertEqual(len(neighbors),2)
-        self.assertTrue(np.all(neighbors==1))
+        self.assertEqual(len(neighbors), 2)
+        self.assertTrue(np.all(neighbors == 1))
         pct = m.get_current_measurement(OBJECTS_NAME,
                                         "Neighbors_PercentTouching_5")
-        self.assertEqual(len(pct),2)
-        self.assertAlmostEqual(pct[0],100)
+        self.assertEqual(len(pct), 2)
+        self.assertAlmostEqual(pct[0], 100)
 
         fo = m.get_current_measurement(OBJECTS_NAME,
                                        "Neighbors_FirstClosestObjectNumber_5")
-        self.assertEqual(len(fo),2)
-        self.assertEqual(fo[0],2)
-        self.assertEqual(fo[1],1)
+        self.assertEqual(len(fo), 2)
+        self.assertEqual(fo[0], 2)
+        self.assertEqual(fo[1], 1)
 
     def test_02_08_three(self):
         '''Test the angles between three objects'''
-        labels = np.zeros((10,10),int)
-        labels[2,2] = 1 # x=3,y=4,5 triangle
-        labels[2,5] = 2
-        labels[6,2] = 3
+        labels = np.zeros((10, 10), int)
+        labels[2, 2] = 1  # x=3,y=4,5 triangle
+        labels[2, 5] = 2
+        labels[6, 2] = 3
         workspace, module = self.make_workspace(labels,
                                                 M.D_WITHIN, 5)
         module.run(workspace)
         m = workspace.measurements
         fo = m.get_current_measurement(OBJECTS_NAME,
                                        "Neighbors_FirstClosestObjectNumber_5")
-        self.assertEqual(len(fo),3)
-        self.assertEqual(fo[0],2)
-        self.assertEqual(fo[1],1)
-        self.assertEqual(fo[2],1)
+        self.assertEqual(len(fo), 3)
+        self.assertEqual(fo[0], 2)
+        self.assertEqual(fo[1], 1)
+        self.assertEqual(fo[2], 1)
         so = m.get_current_measurement(OBJECTS_NAME,
                                        "Neighbors_SecondClosestObjectNumber_5")
-        self.assertEqual(len(so),3)
-        self.assertEqual(so[0],3)
-        self.assertEqual(so[1],3)
-        self.assertEqual(so[2],2)
+        self.assertEqual(len(so), 3)
+        self.assertEqual(so[0], 3)
+        self.assertEqual(so[1], 3)
+        self.assertEqual(so[2], 2)
         d = m.get_current_measurement(OBJECTS_NAME,
                                       "Neighbors_SecondClosestDistance_5")
-        self.assertEqual(len(d),3)
-        self.assertAlmostEqual(d[0],4)
-        self.assertAlmostEqual(d[1],5)
-        self.assertAlmostEqual(d[2],5)
+        self.assertEqual(len(d), 3)
+        self.assertAlmostEqual(d[0], 4)
+        self.assertAlmostEqual(d[1], 5)
+        self.assertAlmostEqual(d[2], 5)
 
         angle = m.get_current_measurement(OBJECTS_NAME,
                                           "Neighbors_AngleBetweenNeighbors_5")
-        self.assertEqual(len(angle),3)
-        self.assertAlmostEqual(angle[0],90)
-        self.assertAlmostEqual(angle[1],np.arccos(3.0/5.0) * 180.0 / np.pi)
-        self.assertAlmostEqual(angle[2],np.arccos(4.0/5.0) * 180.0 / np.pi)
+        self.assertEqual(len(angle), 3)
+        self.assertAlmostEqual(angle[0], 90)
+        self.assertAlmostEqual(angle[1], np.arccos(3.0 / 5.0) * 180.0 / np.pi)
+        self.assertAlmostEqual(angle[2], np.arccos(4.0 / 5.0) * 180.0 / np.pi)
 
     def test_02_09_touching_discarded(self):
         '''Make sure that we count edge-touching discarded objects
 
         Regression test of IMG-1012.
         '''
-        labels = np.zeros((10,10),int)
-        labels[2,3] = 1
+        labels = np.zeros((10, 10), int)
+        labels[2, 3] = 1
         workspace, module = self.make_workspace(labels,
                                                 M.D_ADJACENT, 5)
         object_set = workspace.object_set
@@ -414,23 +417,23 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
         self.assertTrue(isinstance(objects, cpo.Objects))
 
         sm_labels = labels.copy() * 3
-        sm_labels[-1,-1] = 1
-        sm_labels[0:2,3] = 2
+        sm_labels[-1, -1] = 1
+        sm_labels[0:2, 3] = 2
         objects.small_removed_segmented = sm_labels
         module.run(workspace)
         m = workspace.measurements
         neighbors = m.get_current_measurement(OBJECTS_NAME,
                                               "Neighbors_NumberOfNeighbors_Adjacent")
-        self.assertEqual(len(neighbors),1)
-        self.assertTrue(np.all(neighbors==1))
+        self.assertEqual(len(neighbors), 1)
+        self.assertTrue(np.all(neighbors == 1))
         pct = m.get_current_measurement(OBJECTS_NAME,
                                         "Neighbors_PercentTouching_Adjacent")
-        self.assertEqual(len(pct),1)
-        self.assertAlmostEqual(pct[0],100)
+        self.assertEqual(len(pct), 1)
+        self.assertAlmostEqual(pct[0], 100)
         fo = m.get_current_measurement(OBJECTS_NAME,
                                        "Neighbors_FirstClosestObjectNumber_Adjacent")
-        self.assertEqual(len(fo),1)
-        self.assertEqual(fo[0],0)
+        self.assertEqual(len(fo), 1)
+        self.assertEqual(fo[0], 0)
 
         angle = m.get_current_measurement(OBJECTS_NAME,
                                           "Neighbors_AngleBetweenNeighbors_Adjacent")
@@ -442,7 +445,7 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
 
         Regression test of a follow-on bug to IMG-1012
         '''
-        labels = np.zeros((10,10),int)
+        labels = np.zeros((10, 10), int)
         workspace, module = self.make_workspace(labels,
                                                 M.D_ADJACENT, 5)
         object_set = workspace.object_set
@@ -451,28 +454,28 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
         self.assertTrue(isinstance(objects, cpo.Objects))
 
         # Needs 2 objects to trigger the bug
-        sm_labels = np.zeros((10,10), int)
-        sm_labels[0:2,3] = 1
+        sm_labels = np.zeros((10, 10), int)
+        sm_labels[0:2, 3] = 1
         sm_labels[-3:-1, 5] = 2
         objects.small_removed_segmented = sm_labels
         module.run(workspace)
         m = workspace.measurements
         neighbors = m.get_current_measurement(OBJECTS_NAME,
                                               "Neighbors_NumberOfNeighbors_Adjacent")
-        self.assertEqual(len(neighbors),0)
+        self.assertEqual(len(neighbors), 0)
         pct = m.get_current_measurement(OBJECTS_NAME,
                                         "Neighbors_PercentTouching_Adjacent")
-        self.assertEqual(len(pct),0)
+        self.assertEqual(len(pct), 0)
         fo = m.get_current_measurement(OBJECTS_NAME,
                                        "Neighbors_FirstClosestObjectNumber_Adjacent")
-        self.assertEqual(len(fo),0)
+        self.assertEqual(len(fo), 0)
 
     def test_03_01_NeighborCountImage(self):
         '''Test production of a neighbor-count image'''
-        labels = np.zeros((10,10),int)
-        labels[2,2] = 1 # x=3,y=4,5 triangle
-        labels[2,5] = 2
-        labels[6,2] = 3
+        labels = np.zeros((10, 10), int)
+        labels[2, 2] = 1  # x=3,y=4,5 triangle
+        labels[2, 5] = 2
+        labels[6, 2] = 3
         workspace, module = self.make_workspace(labels,
                                                 M.D_WITHIN, 4)
         module.wants_count_image.value = True
@@ -480,21 +483,21 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
         module.count_colormap.value = 'jet'
         module.run(workspace)
         image = workspace.image_set.get_image('my_image').pixel_data
-        self.assertEqual(tuple(image.shape), (10,10,3))
+        self.assertEqual(tuple(image.shape), (10, 10, 3))
         # Everything off of the images should be black
-        self.assertTrue(np.all(image[labels[labels==0],:]==0))
+        self.assertTrue(np.all(image[labels[labels == 0], :] == 0))
         # The corners should match 1 neighbor and should get the same color
-        self.assertTrue(np.all(image[2,5,:]==image[6,2,:]))
+        self.assertTrue(np.all(image[2, 5, :] == image[6, 2, :]))
         # The pixel at the right angle should have a different color
-        self.assertFalse(np.all(image[2,2,:]==image[2,5,:]))
+        self.assertFalse(np.all(image[2, 2, :] == image[2, 5, :]))
 
     def test_04_01_PercentTouchingImage(self):
         '''Test production of a percent touching image'''
-        labels = np.zeros((10,10),int)
-        labels[2,2] = 1
-        labels[2,5] = 2
-        labels[6,2] = 3
-        labels[7,2] = 3
+        labels = np.zeros((10, 10), int)
+        labels[2, 2] = 1
+        labels[2, 5] = 2
+        labels[6, 2] = 3
+        labels[7, 2] = 3
         workspace, module = self.make_workspace(labels,
                                                 M.D_WITHIN, 4)
         module.wants_percent_touching_image.value = True
@@ -502,13 +505,13 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
         module.touching_colormap.value = 'jet'
         module.run(workspace)
         image = workspace.image_set.get_image('my_image').pixel_data
-        self.assertEqual(tuple(image.shape), (10,10,3))
+        self.assertEqual(tuple(image.shape), (10, 10, 3))
         # Everything off of the images should be black
-        self.assertTrue(np.all(image[labels[labels==0],:]==0))
+        self.assertTrue(np.all(image[labels[labels == 0], :] == 0))
         # 1 and 2 are at 100 %
-        self.assertTrue(np.all(image[2,2,:]==image[2,5,:]))
+        self.assertTrue(np.all(image[2, 2, :] == image[2, 5, :]))
         # 3 is at 50% and should have a different color
-        self.assertFalse(np.all(image[2,2,:]==image[6,2,:]))
+        self.assertFalse(np.all(image[2, 2, :] == image[6, 2, :]))
 
     def test_05_01_get_measurement_columns(self):
         '''Test the get_measurement_columns method'''
@@ -521,11 +524,11 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
                                        (M.D_WITHIN, "5")):
             module.distance_method.value = distance_method
             columns = module.get_measurement_columns(None)
-            features = ["%s_%s_%s"%(M.C_NEIGHBORS, feature, scale)
+            features = ["%s_%s_%s" % (M.C_NEIGHBORS, feature, scale)
                         for feature in M.M_ALL]
-            self.assertEqual(len(columns),len(features))
+            self.assertEqual(len(columns), len(features))
             for column in columns:
-                self.assertTrue(column[1] in features,"Unexpected column name: %s"%column[1])
+                self.assertTrue(column[1] in features, "Unexpected column name: %s" % column[1])
 
     def test_05_02_get_measurement_columns_neighbors(self):
         module = M.MeasureObjectNeighbors()
@@ -540,15 +543,14 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
             features = ["%s_%s_%s_%s" % (M.C_NEIGHBORS, feature, NEIGHBORS_NAME, scale)
                         for feature in M.M_ALL
                         if feature != M.M_PERCENT_TOUCHING]
-            self.assertEqual(len(columns),len(features))
+            self.assertEqual(len(columns), len(features))
             for column in columns:
-                self.assertTrue(column[1] in features,"Unexpected column name: %s"%column[1])
-
+                self.assertTrue(column[1] in features, "Unexpected column name: %s" % column[1])
 
     def test_06_01_neighbors_zeros(self):
-        blank_labels = np.zeros((20,10), int)
-        one_object = np.zeros((20,10), int)
-        one_object[2:-2,2:-2] = 1
+        blank_labels = np.zeros((20, 10), int)
+        one_object = np.zeros((20, 10), int)
+        one_object[2:-2, 2:-2] = 1
 
         cases = ((blank_labels, blank_labels, 0, 0),
                  (blank_labels, one_object, 0, 1),
@@ -556,103 +558,103 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
         for olabels, nlabels, ocount, ncount in cases:
             for mode in M.D_ALL:
                 workspace, module = self.make_workspace(
-                    olabels, mode, neighbors_labels = nlabels)
+                        olabels, mode, neighbors_labels=nlabels)
                 self.assertTrue(isinstance(module, M.MeasureObjectNeighbors))
                 module.run(workspace)
                 m = workspace.measurements
                 self.assertTrue(isinstance(m, cpmeas.Measurements))
                 for feature in module.all_features:
                     v = m.get_current_measurement(
-                        OBJECTS_NAME, module.get_measurement_name(feature))
+                            OBJECTS_NAME, module.get_measurement_name(feature))
                     self.assertEqual(len(v), ocount)
 
     def test_06_02_one_neighbor(self):
-        olabels = np.zeros((20,10), int)
-        olabels[2,2] = 1
-        nlabels = np.zeros((20,10), int)
-        nlabels[-2,-2] = 1
+        olabels = np.zeros((20, 10), int)
+        olabels[2, 2] = 1
+        nlabels = np.zeros((20, 10), int)
+        nlabels[-2, -2] = 1
         for mode in M.D_ALL:
             workspace, module = self.make_workspace(
-                olabels, mode, distance = 20, neighbors_labels = nlabels)
+                    olabels, mode, distance=20, neighbors_labels=nlabels)
             self.assertTrue(isinstance(module, M.MeasureObjectNeighbors))
             module.run(workspace)
             m = workspace.measurements
             self.assertTrue(isinstance(m, cpmeas.Measurements))
             v = m.get_current_measurement(
-                OBJECTS_NAME,
-                module.get_measurement_name(M.M_FIRST_CLOSEST_OBJECT_NUMBER))
+                    OBJECTS_NAME,
+                    module.get_measurement_name(M.M_FIRST_CLOSEST_OBJECT_NUMBER))
             self.assertEqual(len(v), 1)
             self.assertEqual(v[0], 1)
             v = m.get_current_measurement(
-                OBJECTS_NAME,
-                module.get_measurement_name(M.M_SECOND_CLOSEST_OBJECT_NUMBER))
+                    OBJECTS_NAME,
+                    module.get_measurement_name(M.M_SECOND_CLOSEST_OBJECT_NUMBER))
             self.assertEqual(len(v), 1)
             self.assertEqual(v[0], 0)
             v = m.get_current_measurement(
-                OBJECTS_NAME,
-                module.get_measurement_name(M.M_FIRST_CLOSEST_DISTANCE))
+                    OBJECTS_NAME,
+                    module.get_measurement_name(M.M_FIRST_CLOSEST_DISTANCE))
             self.assertEqual(len(v), 1)
-            self.assertAlmostEqual(v[0], np.sqrt(16**2 + 6**2))
+            self.assertAlmostEqual(v[0], np.sqrt(16 ** 2 + 6 ** 2))
             v = m.get_current_measurement(
-                OBJECTS_NAME,
-                module.get_measurement_name(M.M_NUMBER_OF_NEIGHBORS))
+                    OBJECTS_NAME,
+                    module.get_measurement_name(M.M_NUMBER_OF_NEIGHBORS))
             self.assertEqual(len(v), 1)
             self.assertEqual(v[0], 0 if mode == M.D_ADJACENT else 1)
 
     def test_06_03_two_neighbors(self):
-        olabels = np.zeros((20,10), int)
+        olabels = np.zeros((20, 10), int)
         olabels[2, 2] = 1
-        nlabels = np.zeros((20,10), int)
+        nlabels = np.zeros((20, 10), int)
         nlabels[5, 2] = 2
         nlabels[2, 6] = 1
         workspace, module = self.make_workspace(
-            olabels, M.D_EXPAND, distance = 20, neighbors_labels = nlabels)
+                olabels, M.D_EXPAND, distance=20, neighbors_labels=nlabels)
         self.assertTrue(isinstance(module, M.MeasureObjectNeighbors))
         module.run(workspace)
         m = workspace.measurements
         self.assertTrue(isinstance(m, cpmeas.Measurements))
         v = m.get_current_measurement(
-            OBJECTS_NAME,
-            module.get_measurement_name(M.M_FIRST_CLOSEST_OBJECT_NUMBER))
+                OBJECTS_NAME,
+                module.get_measurement_name(M.M_FIRST_CLOSEST_OBJECT_NUMBER))
         self.assertEqual(len(v), 1)
         self.assertEqual(v[0], 2)
         v = m.get_current_measurement(
-            OBJECTS_NAME,
-            module.get_measurement_name(M.M_SECOND_CLOSEST_OBJECT_NUMBER))
+                OBJECTS_NAME,
+                module.get_measurement_name(M.M_SECOND_CLOSEST_OBJECT_NUMBER))
         self.assertEqual(len(v), 1)
         self.assertEqual(v[0], 1)
         v = m.get_current_measurement(
-            OBJECTS_NAME,
-            module.get_measurement_name(M.M_FIRST_CLOSEST_DISTANCE))
+                OBJECTS_NAME,
+                module.get_measurement_name(M.M_FIRST_CLOSEST_DISTANCE))
         self.assertEqual(len(v), 1)
         self.assertAlmostEqual(v[0], 3)
         v = m.get_current_measurement(
-            OBJECTS_NAME,
-            module.get_measurement_name(M.M_SECOND_CLOSEST_DISTANCE))
+                OBJECTS_NAME,
+                module.get_measurement_name(M.M_SECOND_CLOSEST_DISTANCE))
         self.assertEqual(len(v), 1)
         self.assertAlmostEqual(v[0], 4)
         v = m.get_current_measurement(
-            OBJECTS_NAME,
-            module.get_measurement_name(M.M_ANGLE_BETWEEN_NEIGHBORS))
+                OBJECTS_NAME,
+                module.get_measurement_name(M.M_ANGLE_BETWEEN_NEIGHBORS))
         self.assertEqual(len(v), 1)
         self.assertAlmostEqual(v[0], 90)
 
     def test_07_01_relationships(self):
         labels = np.array([
-            [ 0,0,0,0,0,0,0,0,0,0 ],
-            [ 0,1,1,1,0,0,0,2,2,2 ],
-            [ 0,1,1,1,0,0,0,2,2,2 ],
-            [ 0,1,1,1,0,0,0,2,2,2 ],
-            [ 0,0,0,0,3,3,3,0,0,0 ],
-            [ 0,0,0,0,3,3,3,0,0,0 ],
-            [ 0,0,0,0,3,3,3,0,0,0 ],
-            [ 0,4,4,4,0,0,0,5,5,5 ],
-            [ 0,4,4,4,0,0,0,5,5,5 ],
-            [ 0,4,4,4,0,0,0,5,5,5 ],
-            [ 0,0,0,0,0,0,0,0,0,0 ]])
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 1, 1, 1, 0, 0, 0, 2, 2, 2],
+            [0, 1, 1, 1, 0, 0, 0, 2, 2, 2],
+            [0, 1, 1, 1, 0, 0, 0, 2, 2, 2],
+            [0, 0, 0, 0, 3, 3, 3, 0, 0, 0],
+            [0, 0, 0, 0, 3, 3, 3, 0, 0, 0],
+            [0, 0, 0, 0, 3, 3, 3, 0, 0, 0],
+            [0, 4, 4, 4, 0, 0, 0, 5, 5, 5],
+            [0, 4, 4, 4, 0, 0, 0, 5, 5, 5],
+            [0, 4, 4, 4, 0, 0, 0, 5, 5, 5],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
 
         workspace, module = self.make_workspace(
-            labels, M.D_WITHIN, 2)
+                labels, M.D_WITHIN, 2)
         module.run(workspace)
         m = workspace.measurements
         self.assertTrue(isinstance(m, cpmeas.Measurements))
@@ -665,47 +667,47 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
         self.assertEqual(k.object_name2, OBJECTS_NAME)
         self.assertEqual(k.relationship, cpmeas.NEIGHBORS)
         r = m.get_relationships(
-            k.module_number,
-            k.relationship,
-            k.object_name1,
-            k.object_name2)
+                k.module_number,
+                k.relationship,
+                k.object_name1,
+                k.object_name2)
         self.assertEqual(len(r), 8)
         ro1 = r[cpmeas.R_FIRST_OBJECT_NUMBER]
         ro2 = r[cpmeas.R_SECOND_OBJECT_NUMBER]
-        np.testing.assert_array_equal(np.unique(ro1[ro2==3]),
-                                      np.array([1,2,4,5]))
-        np.testing.assert_array_equal(np.unique(ro2[ro1==3]),
-                                      np.array([1,2,4,5]))
+        np.testing.assert_array_equal(np.unique(ro1[ro2 == 3]),
+                                      np.array([1, 2, 4, 5]))
+        np.testing.assert_array_equal(np.unique(ro2[ro1 == 3]),
+                                      np.array([1, 2, 4, 5]))
 
     def test_07_02_neighbors(self):
         labels = np.array([
-            [ 0,0,0,0,0,0,0,0,0,0 ],
-            [ 0,1,1,1,0,0,0,2,2,2 ],
-            [ 0,1,1,1,0,0,0,2,2,2 ],
-            [ 0,1,1,1,0,0,0,2,2,2 ],
-            [ 0,0,0,0,3,3,3,0,0,0 ],
-            [ 0,0,0,0,3,3,3,0,0,0 ],
-            [ 0,0,0,0,3,3,3,0,0,0 ],
-            [ 0,4,4,4,0,0,0,5,5,5 ],
-            [ 0,4,4,4,0,0,0,5,5,5 ],
-            [ 0,4,4,4,0,0,0,5,5,5 ],
-            [ 0,0,0,0,0,0,0,0,0,0 ]])
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 1, 1, 1, 0, 0, 0, 2, 2, 2],
+            [0, 1, 1, 1, 0, 0, 0, 2, 2, 2],
+            [0, 1, 1, 1, 0, 0, 0, 2, 2, 2],
+            [0, 0, 0, 0, 3, 3, 3, 0, 0, 0],
+            [0, 0, 0, 0, 3, 3, 3, 0, 0, 0],
+            [0, 0, 0, 0, 3, 3, 3, 0, 0, 0],
+            [0, 4, 4, 4, 0, 0, 0, 5, 5, 5],
+            [0, 4, 4, 4, 0, 0, 0, 5, 5, 5],
+            [0, 4, 4, 4, 0, 0, 0, 5, 5, 5],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
 
         nlabels = np.array([
-            [ 0,0,0,0,0,0,0,0,0,0 ],
-            [ 0,0,0,0,0,0,0,0,0,0 ],
-            [ 0,0,0,0,0,0,0,0,0,0 ],
-            [ 0,0,0,0,0,0,0,0,0,0 ],
-            [ 0,1,1,1,0,0,0,0,0,0 ],
-            [ 0,1,1,1,0,0,0,0,0,0 ],
-            [ 0,1,1,1,0,0,0,0,0,0 ],
-            [ 0,0,0,0,0,0,0,0,0,0 ],
-            [ 0,0,0,0,0,0,0,0,0,0 ],
-            [ 0,0,0,0,0,0,0,0,0,0 ],
-            [ 0,0,0,0,0,0,0,0,0,0 ]])
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 1, 1, 1, 0, 0, 0, 0, 0, 0],
+            [0, 1, 1, 1, 0, 0, 0, 0, 0, 0],
+            [0, 1, 1, 1, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
 
         workspace, module = self.make_workspace(
-            labels, M.D_WITHIN, 2, nlabels)
+                labels, M.D_WITHIN, 2, nlabels)
         module.run(workspace)
         m = workspace.measurements
         self.assertTrue(isinstance(m, cpmeas.Measurements))
@@ -718,24 +720,24 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
         self.assertEqual(k.object_name2, NEIGHBORS_NAME)
         self.assertEqual(k.relationship, cpmeas.NEIGHBORS)
         r = m.get_relationships(
-            k.module_number,
-            k.relationship,
-            k.object_name1,
-            k.object_name2)
+                k.module_number,
+                k.relationship,
+                k.object_name1,
+                k.object_name2)
         self.assertEqual(len(r), 3)
         ro1 = r[cpmeas.R_FIRST_OBJECT_NUMBER]
         ro2 = r[cpmeas.R_SECOND_OBJECT_NUMBER]
         self.assertTrue(np.all(ro2 == 1))
-        np.testing.assert_array_equal(np.unique(ro1), np.array([1,3,4]))
+        np.testing.assert_array_equal(np.unique(ro1), np.array([1, 3, 4]))
 
     def test_08_01_missing_object(self):
         # Regression test of issue 434
         #
         # Catch case of no pixels for an object
         #
-        labels = np.zeros((10,10),int)
-        labels[2,2] = 1
-        labels[2,3] = 3
+        labels = np.zeros((10, 10), int)
+        labels[2, 2] = 1
+        labels[2, 3] = 3
         workspace, module = self.make_workspace(labels,
                                                 M.D_ADJACENT, 5)
         module.run(workspace)
@@ -758,7 +760,7 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
         #
         neighbors = np.zeros((11, 13), int)
         neighbors[5:7, 4:8] = 1
-        neighbors_unedited = np.zeros((11,13), int)
+        neighbors_unedited = np.zeros((11, 13), int)
         neighbors_unedited[5:7, 4:8] = 1
         neighbors_unedited[0:4, 4:8] = 2
 
@@ -766,7 +768,7 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
         objects[1:6, 5:7] = 1
 
         workspace, module = self.make_workspace(
-            objects, M.D_WITHIN, neighbors_labels=neighbors)
+                objects, M.D_WITHIN, neighbors_labels=neighbors)
         no = workspace.object_set.get_objects(NEIGHBORS_NAME)
         no.unedited_segmented = neighbors_unedited
         no.small_removed_segmented = neighbors
@@ -783,13 +785,13 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
         # Object # 2 should match neighbor # 1, but because of
         # an error in masking distances, neighbor #1 is masked out
         #
-        olabels = np.zeros((20,10), int)
+        olabels = np.zeros((20, 10), int)
         olabels[2, 2] = 2
-        nlabels = np.zeros((20,10), int)
+        nlabels = np.zeros((20, 10), int)
         nlabels[2, 3] = 1
         nlabels[5, 2] = 2
         workspace, module = self.make_workspace(
-            olabels, M.D_EXPAND, distance = 20, neighbors_labels = nlabels)
+                olabels, M.D_EXPAND, distance=20, neighbors_labels=nlabels)
         self.assertTrue(isinstance(module, M.MeasureObjectNeighbors))
         module.run(workspace)
         m = workspace.measurements
@@ -810,7 +812,7 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
         objects_unedited[0:2, 0:2] = 3
 
         workspace, module = self.make_workspace(
-            objects, M.D_EXPAND, distance = 1)
+                objects, M.D_EXPAND, distance=1)
         no = workspace.object_set.get_objects(OBJECTS_NAME)
         no.unedited_segmented = objects_unedited
         no.small_removed_segmented = objects

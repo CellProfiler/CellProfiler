@@ -47,6 +47,7 @@ C_ALIGN = "Align"
 
 MEASUREMENT_FORMAT = C_ALIGN + "_%sshift_%s"
 
+
 class Align(cpm.CPModule):
     module_name = "Align"
     category = 'Image Processing'
@@ -54,24 +55,24 @@ class Align(cpm.CPModule):
 
     def create_settings(self):
         self.first_input_image = cps.ImageNameSubscriber(
-            "Select the first input image",
-            cps.NONE,doc="""
+                "Select the first input image",
+                cps.NONE, doc="""
             Specify the name of the first image to align.""")
 
         self.first_output_image = cps.ImageNameProvider(
-            "Name the first output image",
-            "AlignedRed",doc="""
+                "Name the first output image",
+                "AlignedRed", doc="""
             Enter the name of the first aligned image.""")
 
         self.separator_1 = cps.Divider(line=False)
         self.second_input_image = cps.ImageNameSubscriber(
-            "Select the second input image",
-            cps.NONE,doc="""
+                "Select the second input image",
+                cps.NONE, doc="""
             Specify the name of the second image to align.""")
 
         self.second_output_image = cps.ImageNameProvider(
-            "Name the second output image",
-            "AlignedGreen",doc="""
+                "Name the second output image",
+                "AlignedGreen", doc="""
             Enter the name of the second aligned image.""")
 
         self.separator_2 = cps.Divider(line=False)
@@ -106,10 +107,10 @@ class Align(cpm.CPModule):
              <ul>
              <li>Lewis JP. (1995) "Fast normalized cross-correlation." <i>Vision Interface</i>, 1-7.</li>
              </ul>
-             </p>'''%globals())
+             </p>''' % globals())
 
         self.crop_mode = cps.Choice(
-            "Crop mode", [C_CROP, C_PAD, C_SAME_SIZE],doc = """
+                "Crop mode", [C_CROP, C_PAD, C_SAME_SIZE], doc="""
             The crop mode determines how the output images are either cropped
             or padded after alignment. The alignment phase calculates the
             areas in each image that are found to be overlapping. In almost
@@ -146,7 +147,7 @@ class Align(cpm.CPModule):
             <b>MakeProjection</b>.</li>
             </ul>""" % globals())
 
-    def add_image(self, can_remove = True):
+    def add_image(self, can_remove=True):
         '''Add an image + associated questions and buttons'''
         group = cps.SettingsGroup()
         if can_remove:
@@ -154,20 +155,20 @@ class Align(cpm.CPModule):
 
         group.append("input_image_name",
                      cps.ImageNameSubscriber(
-                         "Select the additional image",
-                         cps.NONE,doc="""
+                             "Select the additional image",
+                             cps.NONE, doc="""
                          Select the additional image to align?"""))
 
         group.append("output_image_name",
                      cps.ImageNameProvider(
-                         "Name the output image",
-                         "AlignedBlue",doc="""
+                             "Name the output image",
+                             "AlignedBlue", doc="""
                          Enter the name of the aligned image?"""))
 
         group.append("align_choice",
                      cps.Choice(
-                         "Select how the alignment is to be applied",
-                         [A_SIMILARLY, A_SEPARATELY],doc="""
+                             "Select how the alignment is to be applied",
+                             [A_SIMILARLY, A_SEPARATELY], doc="""
                          An additional image can either be aligned similarly to the second one or
                          a separate alignment to the first image can be calculated:
                          <ul>
@@ -176,7 +177,7 @@ class Align(cpm.CPModule):
                          <li><i>%(A_SEPARATELY)s:</i> A new set of alignment measurements are
                          calculated for this additional image using the alignment method
                          specified with respect to the first input image.</li>
-                         </ul>"""%globals()))
+                         </ul>""" % globals()))
 
         if can_remove:
             group.append("remover", cps.RemoveSettingButton("", "Remove above image", self.additional_images, group))
@@ -186,14 +187,14 @@ class Align(cpm.CPModule):
         result = [self.alignment_method, self.crop_mode]
 
         result += [self.first_input_image, self.first_output_image,
-                  self.second_input_image, self.second_output_image]
+                   self.second_input_image, self.second_output_image]
         for additional in self.additional_images:
             result += [additional.input_image_name, additional.output_image_name, additional.align_choice]
         return result
 
     def prepare_settings(self, setting_values):
-        assert (len(setting_values)-6)% 3 == 0
-        n_additional = (len(setting_values)-6)/3
+        assert (len(setting_values) - 6) % 3 == 0
+        n_additional = (len(setting_values) - 6) / 3
         del self.additional_images[:]
         while len(self.additional_images) < n_additional:
             self.add_image()
@@ -202,7 +203,7 @@ class Align(cpm.CPModule):
         result = [self.alignment_method, self.crop_mode]
 
         result += [self.first_input_image, self.first_output_image, self.separator_1,
-                  self.second_input_image, self.second_output_image]
+                   self.second_input_image, self.second_output_image]
         for additional in self.additional_images:
             result += additional.visible_settings()
         result += [self.add_button]
@@ -216,7 +217,7 @@ class Align(cpm.CPModule):
         names = [
             (self.first_input_image.value, self.first_output_image.value),
             (self.second_input_image.value, self.second_output_image.value)]
-        offsets = [ (0, 0), (off_y, off_x)]
+        offsets = [(0, 0), (off_y, off_x)]
 
         for additional in self.additional_images:
             names.append((additional.input_image_name.value,
@@ -287,7 +288,7 @@ class Align(cpm.CPModule):
             img[:first_pixels.shape[0], :first_pixels.shape[1], 0] = first_pixels
             img[:other_pixels.shape[0], :other_pixels.shape[1], 1] = other_pixels
             figure.subplot_imshow(0, j, img, unaligned_title,
-                                  sharexy = figure.subplot(0, 0))
+                                  sharexy=figure.subplot(0, 0))
 
             aligned_title = ("Aligned images: %s and %s\nX offset: %d, Y offset: %d" %
                              (first_output_name, output_name,
@@ -300,7 +301,7 @@ class Align(cpm.CPModule):
             img[:first_pixels.shape[0], :first_pixels.shape[1], 0] = first_pixels
             img[:other_pixels.shape[0], :other_pixels.shape[1], 1] = other_pixels
             figure.subplot_imshow(1, j, img, aligned_title,
-                                  sharexy = figure.subplot(0, 0))
+                                  sharexy=figure.subplot(0, 0))
 
     def align(self, workspace, input1_name, input2_name):
         '''Align the second image with the first
@@ -351,21 +352,21 @@ class Align(cpm.CPModule):
         # amplitude at that frequency.
         #
         s = np.maximum(pixels1.shape, pixels2.shape)
-        fshape = s*2
+        fshape = s * 2
         #
         # Calculate the # of pixels at a particular point
         #
-        i,j = np.mgrid[-s[0]:s[0],
-                       -s[1]:s[1]]
-        unit = np.abs(i*j).astype(float)
-        unit[unit<1]=1 # keeps from dividing by zero in some places
+        i, j = np.mgrid[-s[0]:s[0],
+               -s[1]:s[1]]
+        unit = np.abs(i * j).astype(float)
+        unit[unit < 1] = 1  # keeps from dividing by zero in some places
         #
         # Normalize the pixel values around zero which does not affect the
         # correlation, keeps some of the sums of multiplications from
         # losing precision and precomputes t(x-u,y-v) - t_mean
         #
-        pixels1 = pixels1-np.mean(pixels1)
-        pixels2 = pixels2-np.mean(pixels2)
+        pixels1 = pixels1 - np.mean(pixels1)
+        pixels2 = pixels2 - np.mean(pixels2)
         #
         # Lewis uses an image, f and a template t. He derives a normalized
         # cross correlation, ncc(u,v) =
@@ -376,8 +377,8 @@ class Align(cpm.CPModule):
         # leaving f(x,y)*(t(x-u,y-v)-t_mean) which is a convolution of f
         # by t-t_mean.
         #
-        fp1 = fft2(pixels1,fshape)
-        fp2 = fft2(pixels2,fshape)
+        fp1 = fft2(pixels1, fshape)
+        fp2 = fft2(pixels2, fshape)
         corr12 = ifft2(fp1 * fp2.conj()).real
 
         #
@@ -399,10 +400,10 @@ class Align(cpm.CPModule):
         p1_si = pixels1.shape[0]
         p1_sj = pixels1.shape[1]
         p1_sum = np.zeros(fshape)
-        p1_sum[:p1_si,:p1_sj] = cumsum_quadrant(pixels1, False, False)
-        p1_sum[:p1_si,-p1_sj:] = cumsum_quadrant(pixels1, False, True)
-        p1_sum[-p1_si:,:p1_sj] = cumsum_quadrant(pixels1, True, False)
-        p1_sum[-p1_si:,-p1_sj:] = cumsum_quadrant(pixels1, True, True)
+        p1_sum[:p1_si, :p1_sj] = cumsum_quadrant(pixels1, False, False)
+        p1_sum[:p1_si, -p1_sj:] = cumsum_quadrant(pixels1, False, True)
+        p1_sum[-p1_si:, :p1_sj] = cumsum_quadrant(pixels1, True, False)
+        p1_sum[-p1_si:, -p1_sj:] = cumsum_quadrant(pixels1, True, True)
         #
         # Divide the sum over the # of elements summed-over
         #
@@ -411,10 +412,10 @@ class Align(cpm.CPModule):
         p2_si = pixels2.shape[0]
         p2_sj = pixels2.shape[1]
         p2_sum = np.zeros(fshape)
-        p2_sum[:p2_si,:p2_sj] = cumsum_quadrant(pixels2, False, False)
-        p2_sum[:p2_si,-p2_sj:] = cumsum_quadrant(pixels2, False, True)
-        p2_sum[-p2_si:,:p2_sj] = cumsum_quadrant(pixels2, True, False)
-        p2_sum[-p2_si:,-p2_sj:] = cumsum_quadrant(pixels2, True, True)
+        p2_sum[:p2_si, :p2_sj] = cumsum_quadrant(pixels2, False, False)
+        p2_sum[:p2_si, -p2_sj:] = cumsum_quadrant(pixels2, False, True)
+        p2_sum[-p2_si:, :p2_sj] = cumsum_quadrant(pixels2, True, False)
+        p2_sum[-p2_si:, -p2_sj:] = cumsum_quadrant(pixels2, True, True)
         p2_sum = np.fliplr(np.flipud(p2_sum))
         p2_mean = p2_sum / unit
         #
@@ -423,8 +424,8 @@ class Align(cpm.CPModule):
         # the mean^2 by the # of elements being summed-over
         # to account for the mean being summed that many times.
         #
-        p1sd = np.sum(pixels1**2) - p1_mean**2 * np.product(s)
-        p2sd = np.sum(pixels2**2) - p2_mean**2 * np.product(s)
+        p1sd = np.sum(pixels1 ** 2) - p1_mean ** 2 * np.product(s)
+        p2sd = np.sum(pixels2 ** 2) - p2_mean ** 2 * np.product(s)
         #
         # There's always chance of roundoff error for a zero value
         # resulting in a negative sd, so limit the sds here
@@ -438,7 +439,7 @@ class Align(cpm.CPModule):
         #
         corrnorm[(unit < np.product(s) / 2) &
                  (sd < np.mean(sd) / 100)] = 0
-        i,j = np.unravel_index(np.argmax(corrnorm ),fshape)
+        i, j = np.unravel_index(np.argmax(corrnorm), fshape)
         #
         # Reflect values that fall into the second half
         #
@@ -446,7 +447,7 @@ class Align(cpm.CPModule):
             i = i - fshape[0]
         if j > pixels1.shape[1]:
             j = j - fshape[1]
-        return j,i
+        return j, i
 
     def align_mutual_information(self, pixels1, pixels2, mask1, mask2):
         '''Align the second image with the first using mutual information
@@ -471,7 +472,7 @@ class Align(cpm.CPModule):
         def mutualinf(x, y, maskx, masky):
             x = x[maskx & masky]
             y = y[maskx & masky]
-            return entropy(x) + entropy(y) - entropy2(x,y)
+            return entropy(x) + entropy(y) - entropy2(x, y)
 
         maxshape = np.maximum(pixels1.shape, pixels2.shape)
         pixels1 = reshape_image(pixels1, maxshape)
@@ -485,11 +486,11 @@ class Align(cpm.CPModule):
         while True:
             last_i = i
             last_j = j
-            for new_i in range(last_i-1,last_i+2):
-                for new_j in range(last_j-1, last_j+2):
+            for new_i in range(last_i - 1, last_i + 2):
+                for new_j in range(last_j - 1, last_j + 2):
                     if new_i == 0 and new_j == 0:
                         continue
-                    p2, p1 = offset_slice(pixels2,pixels1, new_i, new_j)
+                    p2, p1 = offset_slice(pixels2, pixels1, new_i, new_j)
                     m2, m1 = offset_slice(mask2, mask1, new_i, new_j)
                     info = mutualinf(p1, p2, m1, m2)
                     if info > best:
@@ -497,7 +498,7 @@ class Align(cpm.CPModule):
                         i = new_i
                         j = new_j
             if i == last_i and j == last_j:
-                return j,i
+                return j, i
 
     def apply_alignment(self, workspace, input_image_name, output_image_name,
                         off_x, off_y, shape):
@@ -528,23 +529,23 @@ class Align(cpm.CPModule):
             # Copy the input to the output
             #
             p1, p2 = offset_slice(plane, output_pixels[:, :, i], off_y, off_x)
-            p2[:,:] = p1[:,:]
+            p2[:, :] = p1[:, :]
         if pixel_data.ndim == 2:
             output_pixels.shape = output_pixels.shape[:2]
         output_mask = np.zeros(shape, bool)
         p1, p2 = offset_slice(image.mask, output_mask, off_y, off_x)
-        p2[:,:] = p1[:,:]
+        p2[:, :] = p1[:, :]
         if np.all(output_mask):
             output_mask = None
         crop_mask = np.zeros(image.pixel_data.shape, bool)
         p1, p2 = offset_slice(crop_mask, output_pixels, off_y, off_x)
-        p1[:,:] = True
+        p1[:, :] = True
         if np.all(crop_mask):
             crop_mask = None
         output_image = cpi.Image(output_pixels,
-                                 mask = output_mask,
-                                 crop_mask = crop_mask,
-                                 parent_image = image)
+                                 mask=output_mask,
+                                 crop_mask=crop_mask,
+                                 parent_image=image)
         workspace.image_set.add(output_image_name, output_image)
 
     def adjust_offsets(self, offsets, shapes):
@@ -600,7 +601,7 @@ class Align(cpm.CPModule):
             return [C_ALIGN]
         return []
 
-    def get_measurements(self, pipeline,object_name, category):
+    def get_measurements(self, pipeline, object_name, category):
         if object_name == cpmeas.IMAGE and category == C_ALIGN:
             return ["Xshift", "Yshift"]
         return []
@@ -608,9 +609,9 @@ class Align(cpm.CPModule):
     def get_measurement_images(self, pipeline, object_name, category, measurement):
         if measurement in self.get_measurements(pipeline, object_name, category):
             return ([self.first_output_image.value,
-                     self.second_output_image.value ] +
-                    [ additional.output_image_name.value
-                      for additional in self.additional_images])
+                     self.second_output_image.value] +
+                    [additional.output_image_name.value
+                     for additional in self.additional_images])
         return []
 
     def get_measurement_columns(self, pipeline):
@@ -621,11 +622,11 @@ class Align(cpm.CPModule):
                    [additional.output_image_name.value
                     for additional in self.additional_images])
         columns = []
-        for axis in ('X','Y'):
+        for axis in ('X', 'Y'):
             columns += [(cpmeas.IMAGE,
-                         MEASUREMENT_FORMAT%(axis, target),
+                         MEASUREMENT_FORMAT % (axis, target),
                          cpmeas.COLTYPE_INTEGER)
-                         for target in targets]
+                        for target in targets]
         return columns
 
     def upgrade_settings(self, setting_values,
@@ -647,14 +648,14 @@ class Align(cpm.CPModule):
             # 10: AlternateAlignedImage2
             new_setting_values = list(setting_values[:4])
             if (setting_values[4] != cps.DO_NOT_USE and
-                setting_values[5] != cps.DO_NOT_USE):
-                new_setting_values += [ setting_values[4], setting_values[5],
-                                        A_SEPARATELY]
-            for i in (7,9):
+                        setting_values[5] != cps.DO_NOT_USE):
+                new_setting_values += [setting_values[4], setting_values[5],
+                                       A_SEPARATELY]
+            for i in (7, 9):
                 if (setting_values[i] != cps.DO_NOT_USE and
-                    setting_values[i+1] != cps.DO_NOT_USE):
+                            setting_values[i + 1] != cps.DO_NOT_USE):
                     new_setting_values += [setting_values[i],
-                                           setting_values[i+1],
+                                           setting_values[i + 1],
                                            A_SIMILARLY]
             new_setting_values += [setting_values[6], True]
             setting_values = new_setting_values
@@ -677,14 +678,14 @@ class Align(cpm.CPModule):
             # 11: Wants cropping.
             new_setting_values = list(setting_values[:4])
             if (setting_values[4] != cps.DO_NOT_USE and
-                setting_values[5] != cps.DO_NOT_USE):
-                new_setting_values += [ setting_values[4], setting_values[5],
-                                        A_SEPARATELY]
-            for i in (7,9):
+                        setting_values[5] != cps.DO_NOT_USE):
+                new_setting_values += [setting_values[4], setting_values[5],
+                                       A_SEPARATELY]
+            for i in (7, 9):
                 if (setting_values[i] != cps.DO_NOT_USE and
-                    setting_values[i+1] != cps.DO_NOT_USE):
+                            setting_values[i + 1] != cps.DO_NOT_USE):
                     new_setting_values += [setting_values[i],
-                                           setting_values[i+1],
+                                           setting_values[i + 1],
                                            A_SIMILARLY]
             new_setting_values += [setting_values[6], setting_values[11]]
             setting_values = new_setting_values
@@ -711,14 +712,14 @@ class Align(cpm.CPModule):
             # 15: Wants cropping.
             new_setting_values = list(setting_values[:4])
             if (setting_values[4] != cps.DO_NOT_USE and
-                setting_values[5] != cps.DO_NOT_USE):
-                new_setting_values += [ setting_values[4], setting_values[5],
-                                        A_SEPARATELY]
-            for i in (7,9,11,13):
+                        setting_values[5] != cps.DO_NOT_USE):
+                new_setting_values += [setting_values[4], setting_values[5],
+                                       A_SEPARATELY]
+            for i in (7, 9, 11, 13):
                 if (setting_values[i] != cps.DO_NOT_USE and
-                    setting_values[i+1] != cps.DO_NOT_USE):
+                            setting_values[i + 1] != cps.DO_NOT_USE):
                     new_setting_values += [setting_values[i],
-                                           setting_values[i+1],
+                                           setting_values[i + 1],
                                            A_SIMILARLY]
             new_setting_values += [setting_values[6], setting_values[11]]
             setting_values = new_setting_values
@@ -734,11 +735,12 @@ class Align(cpm.CPModule):
             # wants_cropping changed to crop_mode
             setting_values = (
                 setting_values[:1] +
-                [ C_CROP if setting_values[1] == cps.YES else C_SAME_SIZE ] +
+                [C_CROP if setting_values[1] == cps.YES else C_SAME_SIZE] +
                 setting_values[2:])
             variable_revision_number = 3
 
         return setting_values, variable_revision_number, from_matlab
+
 
 def offset_slice(pixels1, pixels2, i, j):
     '''Return two sliced arrays where the first slice is offset by i,j
@@ -766,9 +768,10 @@ def offset_slice(pixels1, pixels2, i, j):
     p1_jmax = p1_jmin + width
     p2_jmax = p2_jmin + width
 
-    p1 = pixels1[p1_imin:p1_imax,p1_jmin:p1_jmax]
-    p2 = pixels2[p2_imin:p2_imax,p2_jmin:p2_jmax]
-    return (p1,p2)
+    p1 = pixels1[p1_imin:p1_imax, p1_jmin:p1_jmax]
+    p2 = pixels2[p2_imin:p2_imax, p2_jmin:p2_jmax]
+    return p1, p2
+
 
 def cumsum_quadrant(x, i_forwards, j_forwards):
     '''Return the cumulative sum going in the i, then j direction
@@ -778,25 +781,27 @@ def cumsum_quadrant(x, i_forwards, j_forwards):
     j_forwards - sum from 0 to end in the j direction if true
     '''
     if i_forwards:
-        x=x.cumsum(0)
+        x = x.cumsum(0)
     else:
-        x=np.flipud(np.flipud(x).cumsum(0))
+        x = np.flipud(np.flipud(x).cumsum(0))
     if j_forwards:
         return x.cumsum(1)
     else:
         return np.fliplr(np.fliplr(x).cumsum(1))
+
 
 def entropy(x):
     '''The entropy of x as if x is a probability distribution'''
     histogram = scind.histogram(x.astype(float), np.min(x), np.max(x), 256)
     n = np.sum(histogram)
     if n > 0 and np.max(histogram) > 0:
-        histogram = histogram[histogram!=0]
-        return np.log2(n) - np.sum(histogram * np.log2(histogram))/n
+        histogram = histogram[histogram != 0]
+        return np.log2(n) - np.sum(histogram * np.log2(histogram)) / n
     else:
         return 0
 
-def entropy2(x,y):
+
+def entropy2(x, y):
     '''Joint entropy of paired samples X and Y'''
     #
     # Bin each image into 256 gray levels
@@ -807,17 +812,18 @@ def entropy2(x,y):
     # create an image where each pixel with the same X & Y gets
     # the same value
     #
-    xy = 256*x+y
+    xy = 256 * x + y
     xy = xy.flatten()
     sparse = scipy.sparse.coo_matrix((np.ones(xy.shape),
-                                      (xy,np.zeros(xy.shape))))
+                                      (xy, np.zeros(xy.shape))))
     histogram = sparse.toarray()
-    n=np.sum(histogram)
+    n = np.sum(histogram)
     if n > 0 and np.max(histogram) > 0:
-        histogram = histogram[histogram>0]
+        histogram = histogram[histogram > 0]
         return np.log2(n) - np.sum(histogram * np.log2(histogram)) / n
     else:
         return 0
+
 
 def reshape_image(source, new_shape):
     '''Reshape an image to a larger shape, padding with zeros'''

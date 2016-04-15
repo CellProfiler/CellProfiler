@@ -2,6 +2,7 @@
 """
 
 import logging
+
 logger = logging.getLogger(__name__)
 import re
 import sys
@@ -12,6 +13,7 @@ from cellprofiler.modules.plugins import plugin_list
 from cellprofiler.preferences import get_plugin_directory
 
 # python modules and their corresponding cellprofiler.module classes
+
 pymodule_to_cpmodule = {'align' : 'Align',
                         'applythreshold' : 'ApplyThreshold',
                         'calculateimageoverlap' : 'CalculateImageOverlap',
@@ -50,50 +52,50 @@ pymodule_to_cpmodule = {'align' : 'Align',
                         'identifydeadworms': 'IdentifyDeadWorms',
                         'identifyobjectsingrid': 'IdentifyObjectsInGrid',
                         'identifyobjectsmanually': 'IdentifyObjectsManually',
-                        'identifyprimaryobjects' : 'IdentifyPrimaryObjects',
-                        'identifysecondaryobjects' : 'IdentifySecondaryObjects',
-                        'identifytertiaryobjects' : 'IdentifyTertiaryObjects',
-                        'imagemath' : 'ImageMath',
+                        'identifyprimaryobjects': 'IdentifyPrimaryObjects',
+                        'identifysecondaryobjects': 'IdentifySecondaryObjects',
+                        'identifytertiaryobjects': 'IdentifyTertiaryObjects',
+                        'imagemath': 'ImageMath',
                         'images': 'Images',
-                        'invertforprinting' : 'InvertForPrinting',
-                        'labelimages' : 'LabelImages',
-                        'loadimages' : 'LoadImages',
-                        #'loadimagesnew' : 'LoadImagesNew',
-                        'loadsingleimage' : 'LoadSingleImage',
-                        'loaddata' : 'LoadData',
-                        'makeprojection' : 'MakeProjection',
-                        'maskimage' : 'MaskImage',
-                        'maskobjects' : 'MaskObjects',
-                        'measurecorrelation' : 'MeasureCorrelation',
-                        'measuregranularity' : 'MeasureGranularity',
-                        'measureimageareaoccupied' : 'MeasureImageAreaOccupied',
-                        'measureimagegranularity' : 'MeasureGranularity',
-                        'measureimageintensity' : 'MeasureImageIntensity',
-                        'measureimagequality' : 'MeasureImageQuality',
-                        'measureobjectintensity' : 'MeasureObjectIntensity',
-                        'measureobjectsizeshape' : 'MeasureObjectSizeShape',
-                        'measureobjectneighbors' : 'MeasureObjectNeighbors',
-                        'measureobjectintensitydistribution' : 'MeasureObjectIntensityDistribution',
+                        'invertforprinting': 'InvertForPrinting',
+                        'labelimages': 'LabelImages',
+                        'loadimages': 'LoadImages',
+                        # 'loadimagesnew' : 'LoadImagesNew',
+                        'loadsingleimage': 'LoadSingleImage',
+                        'loaddata': 'LoadData',
+                        'makeprojection': 'MakeProjection',
+                        'maskimage': 'MaskImage',
+                        'maskobjects': 'MaskObjects',
+                        'measurecorrelation': 'MeasureCorrelation',
+                        'measuregranularity': 'MeasureGranularity',
+                        'measureimageareaoccupied': 'MeasureImageAreaOccupied',
+                        'measureimagegranularity': 'MeasureGranularity',
+                        'measureimageintensity': 'MeasureImageIntensity',
+                        'measureimagequality': 'MeasureImageQuality',
+                        'measureobjectintensity': 'MeasureObjectIntensity',
+                        'measureobjectsizeshape': 'MeasureObjectSizeShape',
+                        'measureobjectneighbors': 'MeasureObjectNeighbors',
+                        'measureobjectintensitydistribution': 'MeasureObjectIntensityDistribution',
                         'measureneurons': 'MeasureNeurons',
-                        'measuretexture' : 'MeasureTexture',
-                        'mergeoutputfiles' : 'MergeOutputFiles',
-                        'metadata' : 'Metadata',
-                        'morph' : 'Morph',
-                        'namesandtypes' : 'NamesAndTypes',
-                        'overlayoutlines' : 'OverlayOutlines',
-                        'relateobjects' : 'RelateObjects',
+                        'measuretexture': 'MeasureTexture',
+                        'mergeoutputfiles': 'MergeOutputFiles',
+                        'metadata': 'Metadata',
+                        'morph': 'Morph',
+                        'namesandtypes': 'NamesAndTypes',
+                        'overlayoutlines': 'OverlayOutlines',
+                        'relateobjects': 'RelateObjects',
                         'reassignobjectnumbers': 'ReassignObjectNumbers',
                         'renameorrenumberfiles': 'RenameOrRenumberFiles',
-                        'rescaleintensity' : 'RescaleIntensity',
-                        'resize' : 'Resize',
+                        'rescaleintensity': 'RescaleIntensity',
+                        'resize': 'Resize',
                         'run_imagej': 'RunImageJ',
-                        'saveimages' : 'SaveImages',
-                        'sendemail' : 'SendEmail',
-                        'smooth' : 'Smooth',
-                        'straightenworms' : 'StraightenWorms',
-                        'trackobjects' : 'TrackObjects',
-                        'tile' : 'Tile',
-                        'calculateimageoverlap' : 'CalculateImageOverlap',
+                        'saveimages': 'SaveImages',
+                        'sendemail': 'SendEmail',
+                        'smooth': 'Smooth',
+                        'straightenworms': 'StraightenWorms',
+                        'trackobjects': 'TrackObjects',
+                        'tile': 'Tile',
+                        'calculateimageoverlap': 'CalculateImageOverlap',
                         'unmixcolors': 'UnmixColors',
                         'untangleworms': 'UntangleWorms'
                         }
@@ -145,7 +147,7 @@ builtin_modules = ['align',
                    'invertforprinting',
                    'labelimages',
                    'loadimages',
-                   #'loadimagesnew',
+                   # 'loadimagesnew',
                    'loadsingleimage',
                    'loaddata',
                    'makeprojection',
@@ -186,7 +188,7 @@ builtin_modules = ['align',
 # CP-Matlab to CP-python module substitutions
 substitutions = {'Average': 'MakeProjection',
                  'CalculateRatios': 'CalculateMath',
-                 'ClassifyObjectsByTwoMeasurements' : 'ClassifyObjects',
+                 'ClassifyObjectsByTwoMeasurements': 'ClassifyObjects',
                  'Combine': 'ImageMath',
                  'cellprofiler.modules.converttoimage.ConvertToImage': 'ConvertObjectsToImage',
                  'ConvertToImage': 'ConvertObjectsToImage',
@@ -195,22 +197,22 @@ substitutions = {'Average': 'MakeProjection',
                  'CorrectIllumination_Calculate': 'CorrectIlluminationCalculate',
                  'cellprofiler.modules.correctillumination_calculate.CorrectIllumination_Calculate': 'CorrectIlluminationCalculate',
                  'cellprofiler.modules.enhanceorsuppressspeckles.EnhanceOrSuppressSpeckles': 'EnhanceOrSuppressFeatures',
-                 'DifferentiateStains':'UnmixColors',
+                 'DifferentiateStains': 'UnmixColors',
                  'EnhanceOrSuppressSpeckles': 'EnhanceOrSuppressFeatures',
                  'Exclude': 'MaskObjects',
                  'cellprofiler.modules.expandorshrink.ExpandOrShrink': 'ExpandOrShrinkObjects',
-                 'ExpandOrShrink':'ExpandOrShrinkObjects',
+                 'ExpandOrShrink': 'ExpandOrShrinkObjects',
                  'ExportToExcel': 'ExportToSpreadsheet',
                  'cellprofiler.modules.exporttoexcel.ExportToExcel': 'ExportToSpreadsheet',
                  'FilterByObjectMeasurement': 'FilterObjects',
                  'cellprofiler.modules.filterbyobjectmeasurement.FilterByObjectMeasurement': 'FilterObjects',
-                 'FindEdges':'EnhanceEdges',
-                 'cellprofiler.modules.findedges.FindEdges':'EnhanceEdges',
-                 'FlagImageForQC' : 'FlagImage',
-                 'Flip' : 'FlipAndRotate',
+                 'FindEdges': 'EnhanceEdges',
+                 'cellprofiler.modules.findedges.FindEdges': 'EnhanceEdges',
+                 'FlagImageForQC': 'FlagImage',
+                 'Flip': 'FlipAndRotate',
                  'IdentifyPrimManual': 'IdentifyObjectsManually',
                  'cellprofiler.modules.identifyprimautomatic.IdentifyPrimAutomatic': 'IdentifyPrimaryObjects',
-                 'IdentifyPrimAutomatic':'IdentifyPrimaryObjects',
+                 'IdentifyPrimAutomatic': 'IdentifyPrimaryObjects',
                  'cellprofiler.modules.identifysecondary.IdentifySecondary': 'IdentifySecondaryObjects',
                  'IdentifySecondary': 'IdentifySecondaryObjects',
                  'cellprofiler.modules.identifytertiarysubregion.IdentifyTertiarySubregion': 'IdentifyTertiaryObjects',
@@ -218,32 +220,32 @@ substitutions = {'Average': 'MakeProjection',
                  'cellprofiler.modules.imageconvexhull.ImageConvexHull': 'Morph',
                  'ImageConvexHull': 'Morph',
                  'InvertIntensity': 'ImageMath',
-                 'KeepLargestObject' : 'FilterObjects',
+                 'KeepLargestObject': 'FilterObjects',
                  'cellprofiler.modules.loadtext.LoadText': 'LoadData',
                  'LoadText': 'LoadData',
-                 'cellprofiler.modules.measureimagegranularity.MeasureImageGranularity':'MeasureGranularity',
+                 'cellprofiler.modules.measureimagegranularity.MeasureImageGranularity': 'MeasureGranularity',
                  'MeasureImageGranularity': 'MeasureGranularity',
-                 'cellprofiler.modules.measureobjectareashape.MeasureObjectAreaShape':'MeasureObjectSizeShape',
-                 'MeasureObjectAreaShape':'MeasureObjectSizeShape',
+                 'cellprofiler.modules.measureobjectareashape.MeasureObjectAreaShape': 'MeasureObjectSizeShape',
+                 'MeasureObjectAreaShape': 'MeasureObjectSizeShape',
                  'MeasureImageSaturationBlur': 'MeasureImageQuality',
-                 'MeasureRadialDistribution' : 'MeasureObjectIntensityDistribution',
+                 'MeasureRadialDistribution': 'MeasureObjectIntensityDistribution',
                  'MeasureObjectRadialDistribution': 'MeasureObjectIntensityDistribution',
                  'cellprofiler.modules.measureobjectradialdistribution.MeasureObjectRadialDistribution': 'MeasureObjectIntensityDistribution',
                  'Multiply': 'ImageMath',
                  'PlaceAdjacent': 'Tile',
-                 'cellprofiler.modules.relabelobjects.RelabelObjects':'ReassignObjectNumbers',
+                 'cellprofiler.modules.relabelobjects.RelabelObjects': 'ReassignObjectNumbers',
                  'RelabelObjects': 'ReassignObjectNumbers',
                  'cellprofiler.modules.relate.Relate': 'RelateObjects',
                  'Relate': 'RelateObjects',
-                 'Rotate' : 'FlipAndRotate',
-                 'SmoothOrEnhance' : 'Smooth',
-                 'SmoothKeepingEdges' : 'Smooth',
-                 'cellprofiler.modules.speedupcellprofiler.SpeedUpCellProfiler':'ConserveMemory',
-                 'SpeedUpCellProfiler':'ConserveMemory',
+                 'Rotate': 'FlipAndRotate',
+                 'SmoothOrEnhance': 'Smooth',
+                 'SmoothKeepingEdges': 'Smooth',
+                 'cellprofiler.modules.speedupcellprofiler.SpeedUpCellProfiler': 'ConserveMemory',
+                 'SpeedUpCellProfiler': 'ConserveMemory',
                  'SplitIntoContiguousObjects': 'ReassignObjectNumbers',
                  'Subtract': 'ImageMath',
                  'UnifyObjects': 'ReassignObjectNumbers',
-                 'cellprofiler.modules.overlay_outlines.OverlayOutlines':'OverlayOutlines',
+                 'cellprofiler.modules.overlay_outlines.OverlayOutlines': 'OverlayOutlines',
                  'CorrectIllumination_Apply': 'CorrectIlluminationApply',
                  'CorrectIllumination_Calculate': 'CorrectIlluminationCalculate'
                  }
@@ -258,14 +260,19 @@ pure_datatools = {}
 do_not_override = ['__init__', 'set_settings', 'create_from_handles', 'test_valid', 'module_class']
 should_override = ['create_settings', 'settings', 'run']
 
+
 def check_module(module, name):
     if hasattr(module, 'do_not_check'):
         return
-    assert name == module.module_name, "Module %s should have module_name %s (is %s)"%(name, name, module.module_name)
+    assert name == module.module_name, "Module %s should have module_name %s (is %s)" % (name, name, module.module_name)
     for method_name in do_not_override:
-        assert getattr(module, method_name) == getattr(cpm.CPModule, method_name), "Module %s should not override method %s"%(name, method_name)
+        assert getattr(module, method_name) == getattr(cpm.CPModule,
+                                                       method_name), "Module %s should not override method %s" % (
+            name, method_name)
     for method_name in should_override:
-        assert getattr(module, method_name) != getattr(cpm.CPModule, method_name), "Module %s should override method %s"%(name, method_name)
+        assert getattr(module, method_name) != getattr(cpm.CPModule,
+                                                       method_name), "Module %s should override method %s" % (
+            name, method_name)
 
 
 def find_cpmodule(m):
@@ -278,7 +285,8 @@ def find_cpmodule(m):
     for v, val in m.__dict__.iteritems():
         if isinstance(val, type) and issubclass(val, cpm.CPModule):
             return val
-    raise "Could not find cpm.CPModule class in %s"%(m.__file__)
+    raise "Could not find cpm.CPModule class in %s" % m.__file__
+
 
 def fill_modules():
     del pymodules[:]
@@ -301,9 +309,9 @@ def fill_modules():
             pymodules.append(m)
             if name in all_modules:
                 logger.warning(
-                    "Multiple definitions of module %s\n\told in %s\n\tnew in %s",
-                    name, sys.modules[all_modules[name].__module__].__file__,
-                    m.__file__)
+                        "Multiple definitions of module %s\n\told in %s\n\tnew in %s",
+                        name, sys.modules[all_modules[name].__module__].__file__,
+                        m.__file__)
             all_modules[name] = cp_module
             check_module(cp_module, name)
             # attempt to instantiate
@@ -327,8 +335,7 @@ def fill_modules():
                 del pymodules[-1]
 
     for mod in builtin_modules:
-        add_module('cellprofiler.modules.'+ mod, True)
-
+        add_module('cellprofiler.modules.' + mod, True)
 
     plugin_directory = get_plugin_directory()
     if plugin_directory is not None:
@@ -344,8 +351,11 @@ def fill_modules():
     if len(badmodules) > 0:
         logger.warning("could not load these modules: %s",
                        ",".join([x[0] for x in badmodules]))
+
+
 def add_module_for_tst(module_class):
     all_modules[module_class.module_name] = module_class
+
 
 fill_modules()
 
@@ -353,18 +363,20 @@ __all__ = ['instantiate_module', 'get_module_names', 'reload_modules',
            'output_module_html', 'add_module_for_tst', 'builtin_modules']
 
 replaced_modules = {
-    'LoadImageDirectory':['LoadImages','LoadData'],
-    'GroupMovieFrames':['LoadImages'],
-    'IdentifyPrimLoG':['IdentifyPrimaryObjects'],
-    'FileNameMetadata':['LoadImages']
-    }
+    'LoadImageDirectory': ['LoadImages', 'LoadData'],
+    'GroupMovieFrames': ['LoadImages'],
+    'IdentifyPrimLoG': ['IdentifyPrimaryObjects'],
+    'FileNameMetadata': ['LoadImages']
+}
 depricated_modules = [
     'CorrectIllumination_Calculate_kate',
     'SubtractBackground'
-    ]
+]
 unimplemented_modules = [
     'LabelImages', 'Restart', 'SplitOrSpliceMovie'
-    ]
+]
+
+
 def get_module_class(module_name):
     if module_name in substitutions:
         module_name = substitutions[module_name]
@@ -384,8 +396,9 @@ def get_module_class(module_name):
             raise ValueError(("The %s module no longer exists. You can find "
                               "similar functionality in: %s") %
                              (module_class, ", ".join(replaced_modules[module_class])))
-        raise ValueError("Could not find the %s module"%module_class)
+        raise ValueError("Could not find the %s module" % module_class)
     return all_modules[module_class]
+
 
 def instantiate_module(module_name):
     module = get_module_class(module_name)()
@@ -393,11 +406,14 @@ def instantiate_module(module_name):
         module.svn_version = svn_revisions[module_name]
     return module
 
+
 def get_module_names():
     return all_modules.keys()
 
+
 def get_data_tool_names():
     return datatools
+
 
 def reload_modules():
     for m in pymodules:

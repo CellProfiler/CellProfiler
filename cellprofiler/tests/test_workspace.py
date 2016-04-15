@@ -1,6 +1,7 @@
 """test_workspace.py - test the workspace
 """
 import logging
+
 logger = logging.getLogger(__name__)
 import os
 import h5py
@@ -11,7 +12,8 @@ import cellprofiler.measurements as cpmeas
 import cellprofiler.pipeline as cpp
 import cellprofiler.workspace as cpw
 from cellprofiler.utilities.hdf5_dict import \
-     FILE_LIST_GROUP, TOP_LEVEL_GROUP_NAME
+    FILE_LIST_GROUP, TOP_LEVEL_GROUP_NAME
+
 
 class TestWorkspace(unittest.TestCase):
     def setUp(self):
@@ -34,7 +36,7 @@ class TestWorkspace(unittest.TestCase):
         fd, path = tempfile.mkstemp(".cpproj")
         file_list = workspace.get_file_list()
         file_list.add_files_to_filelist(
-            ["http://cellprofiler.org/ExampleFlyImages/01_POS002_D.TIF"])
+                ["http://cellprofiler.org/ExampleFlyImages/01_POS002_D.TIF"])
         workspace.save(path)
         self.workspace_files.append(path)
         os.close(fd)

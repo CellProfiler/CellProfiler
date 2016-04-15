@@ -2,6 +2,7 @@
 """
 
 import logging
+
 logger = logging.getLogger(__name__)
 from cStringIO import StringIO
 import numpy as np
@@ -32,6 +33,7 @@ DISPOSITION_PAUSE = "Pause"
 '''Cancel running the pipeline'''
 DISPOSITION_CANCEL = "Cancel"
 
+
 def is_workspace_file(path):
     '''Return True if the file along the given path is a workspace file'''
     if not h5py.is_hdf5(path):
@@ -44,10 +46,12 @@ def is_workspace_file(path):
     finally:
         h5file.close()
 
+
 class Workspace(object):
     """The workspace contains the processing information and state for
     a pipeline run on an image set
     """
+
     def __init__(self,
                  pipeline,
                  module,
@@ -56,8 +60,8 @@ class Workspace(object):
                  measurements,
                  image_set_list,
                  frame=None,
-                 create_new_window = False,
-                 outlines = {}):
+                 create_new_window=False,
+                 outlines={}):
         """Workspace constructor
 
         pipeline          - the pipeline of modules being run
@@ -84,7 +88,7 @@ class Workspace(object):
         self.__grid = {}
         self.__disposition = DISPOSITION_CONTINUE
         self.__disposition_listeners = []
-        self.__in_background = False # controls checks for calls to create_or_find_figure()
+        self.__in_background = False  # controls checks for calls to create_or_find_figure()
         self.__filename = None
         self.__file_list = None
         self.__loading = False
@@ -99,6 +103,7 @@ class Workspace(object):
 
         class DisplayData(object):
             pass
+
         self.display_data = DisplayData()
         """Object into which the module's run() method can stuff items
         that must be available later for display()."""
@@ -114,6 +119,7 @@ class Workspace(object):
     def get_pipeline(self):
         """Get the pipeline being run"""
         return self.__pipeline
+
     pipeline = property(get_pipeline)
 
     def get_image_set(self):
@@ -129,6 +135,7 @@ class Workspace(object):
     def get_image_set_list(self):
         """The list of all image sets"""
         return self.__image_set_list
+
     image_set_list = property(get_image_set_list)
 
     def get_object_set(self):
@@ -138,7 +145,7 @@ class Workspace(object):
 
     object_set = property(get_object_set)
 
-    def get_objects(self,objects_name):
+    def get_objects(self, objects_name):
         """Return the objects.Objects instance for the given name.
 
         objects_name - the name of the objects to retrieve
@@ -183,10 +190,10 @@ class Workspace(object):
     def get_grid(self, grid_name):
         '''Return a grid with the given name'''
         if not self.__grid.has_key(grid_name):
-            raise ValueError("Could not find grid %s"%grid_name)
+            raise ValueError("Could not find grid %s" % grid_name)
         return self.__grid[grid_name]
 
-    def set_grids(self, last = None):
+    def set_grids(self, last=None):
         '''Initialize the grids for an image set
 
         last - none if first in image set or the return value from
@@ -223,19 +230,21 @@ class Workspace(object):
     def get_display(self):
         """True to provide a gui display"""
         return self.__frame is not None
+
     display = property(get_display)
 
     def get_in_background(self):
         return self.__in_background
+
     def set_in_background(self, val):
         self.__in_background = val
+
     in_background = property(get_in_background, set_in_background)
 
     def get_module_figure(self, module, image_set_number, parent=None):
         """Create a CPFigure window or find one already created"""
         import cellprofiler.gui.cpfigure as cpf
         import cellprofiler.measurements as cpmeas
-
 
         # catch any background threads trying to call display functions.
         assert not self.__in_background
@@ -268,7 +277,7 @@ class Workspace(object):
 
         return figure
 
-    def create_or_find_figure(self,title=None,subplots=None,window_name = None):
+    def create_or_find_figure(self, title=None, subplots=None, window_name=None):
         """Create a matplotlib figure window or find one already created"""
         import cellprofiler.gui.cpfigure as cpf
 
@@ -276,20 +285,20 @@ class Workspace(object):
         assert not self.__in_background
 
         if title is None:
-            title=self.__module.module_name
+            title = self.__module.module_name
 
         if window_name is None:
             window_name = cpf.window_name(self.__module)
 
         if self.__create_new_window:
             figure = cpf.CPFigureFrame(self,
-                                   title=title,
-                                   name = window_name,
-                                   subplots = subplots)
+                                       title=title,
+                                       name=window_name,
+                                       subplots=subplots)
         else:
-            figure = cpf.create_or_find(self.__frame, title = title,
-                                        name = window_name,
-                                        subplots = subplots)
+            figure = cpf.create_or_find(self.__frame, title=title,
+                                        name=window_name,
+                                        subplots=subplots)
         if not figure in self.__windows_used:
             self.__windows_used.append(figure)
         return figure
@@ -358,12 +367,12 @@ class Workspace(object):
         '''
         if self.post_group_display_handler is not None:
             self.post_group_display_handler(
-                module, self.display_data, self.measurements.image_set_number)
+                    module, self.display_data, self.measurements.image_set_number)
         elif self.frame is not None:
             figure = self.get_module_figure(
-                module,
-                self.measurements.image_set_number,
-                self.frame)
+                    module,
+                    self.measurements.image_set_number,
+                    self.frame)
             module.display_post_group(self, figure)
 
     def post_run_display(self, module):
@@ -375,15 +384,15 @@ class Workspace(object):
             self.post_run_display_handler(self, module)
         elif self.frame is not None:
             figure = self.get_module_figure(
-                module,
-                self.measurements.image_set_count+1,
-                self.frame)
+                    module,
+                    self.measurements.image_set_count + 1,
+                    self.frame)
             module.display_post_run(self, figure)
 
     @property
     def is_last_image_set(self):
         return (self.measurements.image_set_number ==
-                self.image_set_list.count()-1)
+                self.image_set_list.count() - 1)
 
     def get_disposition(self):
         '''How to proceed with the pipeline
@@ -421,10 +430,10 @@ class Workspace(object):
         '''
         import shutil
         from .pipeline import M_PIPELINE, M_DEFAULT_INPUT_FOLDER, \
-             M_DEFAULT_OUTPUT_FOLDER
+            M_DEFAULT_OUTPUT_FOLDER
         import cellprofiler.measurements as cpmeas
         from cellprofiler.preferences import set_default_image_directory, \
-             set_default_output_directory
+            set_default_output_directory
 
         image_set_and_measurements_are_same = False
         if self.__measurements is not None:
@@ -442,28 +451,28 @@ class Workspace(object):
             shutil.copyfile(filename, self.__filename)
 
             self.__measurements = cpmeas.Measurements(
-                filename = self.__filename, mode = "r+")
+                    filename=self.__filename, mode="r+")
             if self.__file_list is not None:
                 self.__file_list.remove_notification_callback(
-                    self.__on_file_list_changed)
+                        self.__on_file_list_changed)
             self.__file_list = HDF5FileList(self.measurements.hdf5_dict.hdf5_file)
             self.__file_list.add_notification_callback(self.__on_file_list_changed)
             if load_pipeline and self.__measurements.has_feature(
-                cpmeas.EXPERIMENT, M_PIPELINE):
+                    cpmeas.EXPERIMENT, M_PIPELINE):
                 pipeline_txt = self.__measurements.get_experiment_measurement(
-                    M_PIPELINE).encode("utf-8")
+                        M_PIPELINE).encode("utf-8")
                 self.pipeline.load(StringIO(pipeline_txt))
             elif load_pipeline:
                 self.pipeline.clear()
             else:
                 fd = StringIO()
-                self.pipeline.savetxt(fd, save_image_plane_details = False)
+                self.pipeline.savetxt(fd, save_image_plane_details=False)
                 self.__measurements.add_experiment_measurement(
-                    M_PIPELINE, fd.getvalue())
+                        M_PIPELINE, fd.getvalue())
 
             for feature, function in (
-                (M_DEFAULT_INPUT_FOLDER, set_default_image_directory),
-                (M_DEFAULT_OUTPUT_FOLDER, set_default_output_directory)):
+                    (M_DEFAULT_INPUT_FOLDER, set_default_image_directory),
+                    (M_DEFAULT_OUTPUT_FOLDER, set_default_output_directory)):
                 if self.measurements.has_feature(cpmeas.EXPERIMENT, feature):
                     path = self.measurements[cpmeas.EXPERIMENT, feature]
                     if os.path.isdir(path):
@@ -486,11 +495,11 @@ class Workspace(object):
 
         fd, self.__filename = make_temporary_file()
         self.__measurements = Measurements(
-            filename = self.__filename, mode = "w")
+                filename=self.__filename, mode="w")
         os.close(fd)
         if self.__file_list is not None:
             self.__file_list.remove_notification_callback(
-                self.__on_file_list_changed)
+                    self.__on_file_list_changed)
         self.__file_list = HDF5FileList(self.measurements.hdf5_dict.hdf5_file)
         self.__file_list.add_notification_callback(self.__on_file_list_changed)
         self.notify(self.WorkspaceCreatedEvent(self))
@@ -544,9 +553,9 @@ class Workspace(object):
         from cellprofiler.preferences import get_default_output_directory
 
         self.measurements.add_experiment_measurement(
-            M_DEFAULT_INPUT_FOLDER, get_default_image_directory())
+                M_DEFAULT_INPUT_FOLDER, get_default_image_directory())
         self.measurements.add_experiment_measurement(
-            M_DEFAULT_OUTPUT_FOLDER, get_default_output_directory())
+                M_DEFAULT_OUTPUT_FOLDER, get_default_output_directory())
 
     def invalidate_image_set(self):
         if not self.__loading:
@@ -572,8 +581,8 @@ class Workspace(object):
             stop_module = None
             if len(modules) > 1 and not modules[-1].is_load_module():
                 for module, next_module in zip(
-                    self.pipeline.modules()[:-1],
-                    self.pipeline.modules()[1:]):
+                        self.pipeline.modules()[:-1],
+                        self.pipeline.modules()[1:]):
                     if module.is_load_module():
                         stop_module = next_module
 
@@ -612,7 +621,7 @@ class Workspace(object):
                 callback(event)
             except:
                 logger.error("Notification callback threw an exception",
-                             exc_info = 1)
+                             exc_info=1)
 
     def __on_file_list_changed(self):
         self.notify(self.WorkspaceFileListNotification(self))
@@ -621,6 +630,7 @@ class Workspace(object):
         '''The base for any event sent to a workspace callback via Workspace.notify
 
         '''
+
         def __init__(self, workspace):
             self.workspace = workspace
 
@@ -629,16 +639,19 @@ class Workspace(object):
 
         When a workspace loads, the file list changes.
         '''
+
         def __init__(self, workspace):
             super(self.__class__, self).__init__(workspace)
 
     class WorkspaceCreatedEvent(WorkspaceEvent):
         '''Indicates that a blank workspace has been created'''
+
         def __init__(self, workspace):
             super(self.__class__, self).__init__(workspace)
 
     class WorkspaceFileListNotification(WorkspaceEvent):
         '''Indicates that the workspace's file list changed'''
+
         def __init__(self, workspace):
             super(self.__class__, self).__init__(workspace)
 

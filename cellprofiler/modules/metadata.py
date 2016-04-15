@@ -116,6 +116,7 @@ from cellprofiler.modules.images import FilePredicate
 from cellprofiler.modules.images import ExtensionPredicate
 from cellprofiler.modules.images import ImagePredicate
 from cellprofiler.modules.images import DirectoryPredicate
+from cellprofiler.modules.images import Images
 from cellprofiler.modules.loadimages import \
     well_metadata_tokens, urlfilename, urlpathname
 from cellprofiler.gui.help import FILTER_RULES_BUTTONS_HELP

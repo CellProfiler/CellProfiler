@@ -247,9 +247,6 @@ def cp_stop_vm(kill=True):
     '''
     from imagej.imagej2 import allow_quit, the_imagej_context
 
-    #
-    # This may fail if ImageJ is not running
-    #
     try:
         ij1 = javabridge.JClassWrapper("ij.IJ").getInstance()
     except:

@@ -323,11 +323,6 @@ class PreferencesDlg(wx.Dialog):
                  <li>Visualization of parameter space for image analysis. Pretorius AJ, Bray MA, Carpenter AE
                  and Ruddle RA. (2011) IEEE Transactions on Visualization and Computer Graphics, 17(12), 2402-2411.</li>
                  </ul>"""],
-                ['Warn if a pipeline was saved in an old version of CellProfiler',
-                 cellprofiler.preferences.get_warn_about_old_pipeline,
-                 cellprofiler.preferences.set_warn_about_old_pipeline,
-                 CHOICE,
-                 cellprofiler.gui.help.WARN_ABOUT_OLD_PIPELINES_HELP],
                 ['Use more figure space',
                  cellprofiler.preferences.get_use_more_figure_space,
                  cellprofiler.preferences.set_use_more_figure_space,

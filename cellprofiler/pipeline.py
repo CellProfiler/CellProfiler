@@ -1066,12 +1066,6 @@ class Pipeline(object):
                             "You can ignore this warning if you do not plan to save\n"
                             "this pipeline or if you will only use it with this or\n"
                             "later versions of CellProfiler." % pipeline_version)
-
-                    show_warning(
-                            "Pipeline saved with old version of CellProfiler",
-                            message,
-                            cpprefs.get_warn_about_old_pipeline,
-                            cpprefs.set_warn_about_old_pipeline)
                 else:
                     pipeline_stats_logger.info(
                             "Pipeline saved with CellProfiler version %d" %

@@ -137,7 +137,7 @@ class IdentifyObjectsManually(I.Identify):
 
         returns - color image of same size as pixel_data
         '''
-        from cellprofiler.gui.cpfigure import renumber_labels_for_display
+        from cellprofiler.gui.cpfigure_tools import renumber_labels_for_display
         import matplotlib
 
         labels = renumber_labels_for_display(labels)

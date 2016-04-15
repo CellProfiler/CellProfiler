@@ -1178,28 +1178,6 @@ def set_write_MAT_files(value):
                  WRITE_HDF5 if value == WRITE_HDF5
                  else "True" if value else "False")
 
-
-__warn_about_old_pipeline = None
-
-
-def get_warn_about_old_pipeline():
-    '''Return True if CP should warn the user about old SVN revision pipelines'''
-    global __warn_about_old_pipeline
-    if __warn_about_old_pipeline is not None:
-        return __warn_about_old_pipeline
-    if not config_exists(WARN_ABOUT_OLD_PIPELINE):
-        return True
-    return config_read(WARN_ABOUT_OLD_PIPELINE) == "True"
-
-
-def set_warn_about_old_pipeline(value):
-    '''Set the "warn about old pipelines" flag'''
-    global __warn_about_old_pipeline
-    __warn_about_old_pipeline = value
-    config_write(WARN_ABOUT_OLD_PIPELINE,
-                 "True" if value else "False")
-
-
 __use_more_figure_space = None
 
 

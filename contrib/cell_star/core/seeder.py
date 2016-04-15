@@ -1,34 +1,44 @@
 # -*- coding: utf-8 -*-
-__author__ = 'Adam Kaczmarek, Filip Mróz'
-
-# External imports
+"""
+Seeder is responsible for finding places where might be cells.
+Date: 2013-2016
+Website: http://cellstar-algorithm.org/
+"""
 import random
-from copy import copy
-# Internal imports
-# Objects
+
 from contrib.cell_star.core.seed import Seed
-# Utils
 from contrib.cell_star.utils.calc_util import *
 from contrib.cell_star.utils.image_util import *
 
 
 class Seeder(object):
+    """
+    Find places for seeds based on images and previously found snakes.
+    """
 
     def __init__(self, images, parameters):
+        """
+        @type images: core.image_repo.ImageRepo
+        @type parameters: dict
+        """
         self.images = images
+        np.random.seed(abs(hash(abs(np.sum(images.image)))))
         random.seed(abs(np.sum(images.image)))
         self.parameters = parameters
         self.cluster_min_distance = self.parameters["segmentation"]["seeding"]["minDistance"] \
-            * self.parameters["segmentation"]["avgCellDiameter"]
+                                    * self.parameters["segmentation"]["avgCellDiameter"]
         self.random_radius = self.parameters["segmentation"]["seeding"]["randomDiskRadius"] \
-            * self.parameters["segmentation"]["avgCellDiameter"]
+                             * self.parameters["segmentation"]["avgCellDiameter"]
 
     def cluster_seeds(self, seeds):
+        """
+        @type seeds: list[Seed]
+        """
         origin = 'cluster'
         if len(seeds) > 0:
             origin = seeds[0].origin
         seeds = np.array(map(lambda s: (s.x, s.y), seeds))
-        my_inf =\
+        my_inf = \
             np.inf if seeds.dtype.kind == 'f' else np.iinfo(seeds.dtype).max
         while len(seeds) > 1:
             #
@@ -72,144 +82,142 @@ class Seeder(object):
         return seed_points
 
     @staticmethod
-    def rand_seeds(random_radius, times, seeds):
-            # Wprowadzam zmianę: kopia seedów tak jest w oryginale. Obecnie zmieniana jest także lista seeds (python)
-            rand_seeds = []
-            for j in xrange(times):
-                new_seeds = copy(seeds)
-                angles = []
-                radius = []
-                for _ in xrange(len(new_seeds)):
-                    angles.append(random.random() * 2 * math.pi)
-                    radius.append(random.random() * random_radius)
-                for i in xrange(len(seeds)):
-                    x = new_seeds[i].x + radius[i] * math.cos(angles[i])
-                    y = new_seeds[i].y + radius[i] * math.sin(angles[i])
-                    f = new_seeds[i].origin + '_rand'
-                    new_seeds[i] = Seed(x, y, f)
-                rand_seeds = rand_seeds + new_seeds
+    def rand_seeds(max_random_radius, times, seeds):
+        """
+        @type seeds: list[Seed]
+        """
+        seeds_number = len(seeds)
+        px = [s.x for s in seeds] * times
+        py = [s.y for s in seeds] * times
 
-            return rand_seeds
+        random_angle = np.random.random(seeds_number * times) * 2 * math.pi
+        random_radius = np.random.random(seeds_number * times) * max_random_radius
 
-    def find_seeds_from_border_or_content(self, image, foreground_mask, segments, mode, excl=False):
-            """
-            Finds seeds from given image
-            @param image: image (border or content) from which seeds are being extracted
-            @param foreground_mask: binary foreground mask
-            @param mode: 'border' or 'content' determining if look for maxima or minima
-            @param excl: former 'RemovingCurrSegments'
-            """
+        rpx = px + random_radius * np.cos(random_angle)
+        rpy = py + random_radius * np.sin(random_angle)
 
-            #seeds = []
-            im_name = ''
-            origin = ''
+        return [Seed(x, y, 'rand') for x, y in zip(rpx, rpy)]
 
-            if mode == 'border':
-                blur = self.parameters["segmentation"]["seeding"]["BorderBlur"] \
-                    * self.parameters["segmentation"]["avgCellDiameter"]
-                im_name = 'border' + im_name
-                image = set_image_border(image, 1)
-                excl_value = 1
-            else:
-                blur = self.parameters["segmentation"]["seeding"]["ContentBlur"] \
-                    * self.parameters["segmentation"]["avgCellDiameter"]
-                im_name = 'content' + im_name
-                excl_value = 0
+    def find_seeds_from_border_or_content(self, image, foreground_mask, segments, mode):
+        """
+        Finds seeds from given image.
+        @param image: image (border or content) from which seeds are being extracted
+        @type image: np.ndarray
+        @param foreground_mask: binary foreground mask
+        @type foreground_mask: np.ndarray
+        @param segment: array with segments marked
+        @type segments: np.ndarray
+        @param mode: 'border' or 'content' determining if look for maxima or minima
+        """
 
-            if excl:
-                image = exclude_segments(image, segments, excl_value)
-                origin = ' no segments'
-                im_name += ' excluding current segments'
+        im_name = ''
+        origin = ''
 
-            origin = im_name + origin
+        if mode == 'border':
+            blur = self.parameters["segmentation"]["seeding"]["BorderBlur"] \
+                   * self.parameters["segmentation"]["avgCellDiameter"]
+            im_name = 'border' + im_name
+            image = set_image_border(image, 1)
+            excl_value = 1
+        else:
+            blur = self.parameters["segmentation"]["seeding"]["ContentBlur"] \
+                   * self.parameters["segmentation"]["avgCellDiameter"]
+            im_name = 'content' + im_name
+            excl_value = 0
 
-            blurred = self.images.get_blurred(image, blur, cache_result=not excl)
+        excluding = segments is not None
+        if excluding:
+            image = exclude_segments(image, segments, excl_value)
+            origin = ' no segments'
+            im_name += ' excluding current segments'
 
-            if mode == 'border':
-                blurred = 1 - blurred
+        origin = im_name + origin
 
-            maxima = find_maxima(blurred) * foreground_mask
+        blurred = self.images.get_blurred(image, blur, cache_result=not excluding)
 
-            maxima_coords = sp.nonzero(maxima)
-            seeds = zip(maxima_coords[1], maxima_coords[0])
+        if mode == 'border':
+            blurred = 1 - blurred
 
-            seed_points = point_list_as_seeds(seeds, origin)
-            seed_points = self.cluster_seeds(seed_points)
+        maxima = find_maxima(blurred) * foreground_mask
 
-            return seed_points
+        maxima_coords = sp.nonzero(maxima)
+        seeds = zip(maxima_coords[1], maxima_coords[0])
+
+        seed_points = point_list_as_seeds(seeds, origin)
+        seed_points = self.cluster_seeds(seed_points)
+
+        return seed_points
 
     def find_seeds_from_snakes(self, snakes):
-            """
-            Finds seeds from snakes centroids
-            @param snakes: Grown snakes from previous frame
-            """
-            return point_list_as_seeds([snake.centroid for snake in snakes], 'snake centroid')
+        """
+        Finds seeds from snakes centroids
+        @param snakes: Grown snakes from previous frame
+        @type snakes: list[Snake]
+        """
+        return point_list_as_seeds([snake.centroid for snake in snakes], 'snake centroid')
 
-    def find_seeds(self, snakes, all_seeds, exclude_current_segments=False):
+    def find_seeds(self, snakes, all_seeds, exclude_current_segments):
         seeds = []
 
-        # Pierwszy krok segmentacji
-        if not exclude_current_segments and self.parameters["segmentation"]["seeding"]["from"]["cellBorder"]:
-            new_seeds = self.find_seeds_from_border_or_content(self.images.brighter, self.images.foreground_mask,
-                                                               self.images.segmentation, 'border',
-                                                               exclude_current_segments)
-            new_seeds += self.rand_seeds(
-                self.random_radius,
-                self.parameters["segmentation"]["seeding"]["from"]["cellBorderRandom"],
-                new_seeds
-            )
+        # First iteration of segmentation.
+        if not exclude_current_segments:
+            if self.parameters["segmentation"]["seeding"]["from"]["cellBorder"]:
+                new_seeds = self.find_seeds_from_border_or_content(self.images.brighter, self.images.foreground_mask,
+                                                                   None, 'border')
+                new_seeds += self.rand_seeds(
+                    self.random_radius,
+                    self.parameters["segmentation"]["seeding"]["from"]["cellBorderRandom"],
+                    new_seeds
+                )
 
             seeds += new_seeds
 
-        # Pierwszy krok segmentacji
-        if not exclude_current_segments and self.parameters["segmentation"]["seeding"]["from"]["cellContent"]:
-            new_seeds = self.find_seeds_from_border_or_content(self.images.darker, self.images.foreground_mask,
-                                                               self.images.segmentation, 'content',
-                                                               exclude_current_segments)
-            new_seeds += self.rand_seeds(
-                self.random_radius,
-                self.parameters["segmentation"]["seeding"]["from"]["cellContentRandom"],
-                new_seeds
-            )
+            if self.parameters["segmentation"]["seeding"]["from"]["cellContent"]:
+                new_seeds = self.find_seeds_from_border_or_content(self.images.darker, self.images.foreground_mask,
+                                                                   None, 'content')
+                new_seeds += self.rand_seeds(
+                    self.random_radius,
+                    self.parameters["segmentation"]["seeding"]["from"]["cellContentRandom"],
+                    new_seeds
+                )
 
-            seeds += new_seeds
+                seeds += new_seeds
 
-        # If there are already snakes - todo
-        if len(snakes) > 0 and self.parameters["segmentation"]["seeding"]["from"]["cellBorderRemovingCurrSegments"]:
-            new_seeds = self.find_seeds_from_border_or_content(self.images.brighter, self.images.foreground_mask,
-                                                               self.images.segmentation, 'border', True)
-            new_seeds += self.rand_seeds(
-                self.random_radius,
-                self.parameters["segmentation"]["seeding"]["from"]["cellBorderRemovingCurrSegments"],
-                new_seeds
-            )
+        elif len(snakes) > 0:
+            if self.parameters["segmentation"]["seeding"]["from"]["cellBorderRemovingCurrSegments"]:
+                new_seeds = self.find_seeds_from_border_or_content(self.images.brighter, self.images.foreground_mask,
+                                                                   self.images.segmentation, 'border')
+                new_seeds += self.rand_seeds(
+                    self.random_radius,
+                    self.parameters["segmentation"]["seeding"]["from"]["cellBorderRemovingCurrSegmentsRandom"],
+                    new_seeds
+                )
 
-            seeds += new_seeds
+                seeds += new_seeds
 
-        #  If there are already snakes - todo
-        if len(snakes) > 0 and self.parameters["segmentation"]["seeding"]["from"]["cellContentRemovingCurrSegments"]:
-            new_seeds = self.find_seeds_from_border_or_content(self.images.darker, self.images.foreground_mask,
-                                                               self.images.segmentation, 'content', True)
-            new_seeds += self.rand_seeds(
-                self.random_radius,
-                self.parameters["segmentation"]["seeding"]["from"]["cellContentRemovingCurrSegmentsRandom"],
-                new_seeds
-            )
+            if self.parameters["segmentation"]["seeding"]["from"]["cellContentRemovingCurrSegments"]:
+                new_seeds = self.find_seeds_from_border_or_content(self.images.darker, self.images.foreground_mask,
+                                                                   self.images.segmentation, 'content')
+                new_seeds += self.rand_seeds(
+                    self.random_radius,
+                    self.parameters["segmentation"]["seeding"]["from"]["cellContentRemovingCurrSegmentsRandom"],
+                    new_seeds
+                )
 
-            seeds += new_seeds
+                seeds += new_seeds
 
-        #  If there are already snakes - todo
-        if self.parameters["segmentation"]["seeding"]["from"]["snakesCentroids"]:
-            new_seeds = self.find_seeds_from_snakes(snakes)
-            new_seeds += self.rand_seeds(
-                self.random_radius,
-                self.parameters["segmentation"]["seeding"]["from"]["snakesCentroidsRandom"],
-                new_seeds
-            )
-            seeds += new_seeds
+            # Seeds from existing contours
+            if self.parameters["segmentation"]["seeding"]["from"]["snakesCentroids"]:
+                new_seeds = self.find_seeds_from_snakes(snakes)
+                new_seeds += self.rand_seeds(
+                    self.random_radius,
+                    self.parameters["segmentation"]["seeding"]["from"]["snakesCentroidsRandom"],
+                    new_seeds
+                )
+                seeds += new_seeds
 
-        #TODO: filter seeds using foreground mask ?
-        #seeds = [seed for seed in seeds if self.images.foreground_mask[seed.y, seed.x]]
+        # TODO: filter seeds using foreground mask ?
+        # seeds = [seed for seed in seeds if self.images.foreground_mask[seed.y, seed.x]]
 
         seeds = self._filter_seeds(seeds, all_seeds)
 
@@ -222,7 +230,7 @@ class Seeder(object):
         @return:
         """
         distance = self.parameters["segmentation"]["stars"]["step"] * self.parameters["segmentation"]["avgCellDiameter"]
-        distance = float(max(distance, 0.5))   # not less than half of pixel length
+        distance = float(max(distance, 0.5))  # not less than half of pixel length
         ok_seeds = np.array([False for seed in seeds])
 
         # TODO: obecnie parametr ustawiony na -1 - wykryć gdzie jest konfigurowany w MATLABIE
@@ -231,7 +239,7 @@ class Seeder(object):
         grid_size = int(round(max(self.parameters["segmentation"]["transform"]["originalImDim"]) * 1.1 / distance))
         im_x = self.parameters["segmentation"]["transform"]["originalImDim"][1]
         im_y = self.parameters["segmentation"]["transform"]["originalImDim"][0]
-        #else:
+        # else:
         #    grid_size = 10
 
         # Create grid
@@ -282,7 +290,6 @@ def point_list_as_seeds(points, origin):
 
 
 class SeedGrid(object):
-
     def __init__(self, size=10):
         self._size_x = size
         self._size_y = size

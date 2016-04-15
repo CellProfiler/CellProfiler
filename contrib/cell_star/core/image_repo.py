@@ -36,32 +36,8 @@ class ImageRepo(object):
         # Obraz wynikowy
         self._segmentation = None
 
-    def reset(self):
-        # Przetworzone obrazy 256-kolorowe
-        #self._background = None
-        self._brighter = None
-        self._brighter_original = None
-        self._darker = None
-        self._darker_original = None
-        self._image_back_difference = None
-        self._image_back_difference_blurred = None
-
-        # Maski binarne
-        self._foreground_mask = None
-        self._background_mask = None
-        self._cell_border_mask = None
-        self._cell_content_mask = None
-
-        # Kesz
-        self._blurred = [] # (image,blur,image_blurred)
-
-        # Obraz wynikowy
-        self._segmentation = None
-
     def init_segmentation(self):
         self._segmentation = np.zeros(self.image.shape[:2], int)
-
-    # Obliczenia
 
     def calculate_brighter_original(self):
         self._brighter_original = self.image - self.background

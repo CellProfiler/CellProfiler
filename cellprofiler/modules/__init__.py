@@ -14,7 +14,7 @@ from cellprofiler.preferences import get_plugin_directory
 
 # python modules and their corresponding cellprofiler.module classes
 
-pymodule_to_cpmodule = {'align' : 'Align',
+pymodule_to_cpmodule = {'align': 'Align',
                         'applythreshold': 'ApplyThreshold',
                         'calculateimageoverlap': 'CalculateImageOverlap',
                         'calculatemath': 'CalculateMath',
@@ -23,9 +23,9 @@ pymodule_to_cpmodule = {'align' : 'Align',
                         'classifypixels': 'ClassifyPixels',
                         'colortogray': 'ColorToGray',
                         'conservememory': 'ConserveMemory',
-                        'convertobjectstoimage' : 'ConvertObjectsToImage',
-                        'correctilluminationcalculate' : 'CorrectIlluminationCalculate',
-                        'correctilluminationapply' : 'CorrectIlluminationApply',
+                        'convertobjectstoimage': 'ConvertObjectsToImage',
+                        'correctilluminationcalculate': 'CorrectIlluminationCalculate',
+                        'correctilluminationapply': 'CorrectIlluminationApply',
                         'createbatchfiles': 'CreateBatchFiles',
                         'createwebpage' : 'CreateWebPage',
                         'crop': 'Crop',

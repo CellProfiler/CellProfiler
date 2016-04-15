@@ -747,7 +747,7 @@ class CPFrame(wx.Frame):
                  (wx.ACCEL_CMD, ord('Q'), ID_FILE_EXIT),
                  (wx.ACCEL_CMD, ord('W'), ID_FILE_EXIT),
                  (wx.ACCEL_CMD, ord('A'), wx.ID_SELECTALL),
-                 (wx.ACCEL_CMD, ord('C'), wx.ID_CUT),
+                 (wx.ACCEL_CMD, ord('C'), wx.ID_COPY),
                  (wx.ACCEL_CMD, ord('V'), wx.ID_PASTE),
                  (wx.ACCEL_NORMAL, wx.WXK_F5, ID_DEBUG_TOGGLE),
                  (wx.ACCEL_NORMAL, wx.WXK_F6, ID_DEBUG_STEP),

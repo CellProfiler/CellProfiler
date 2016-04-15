@@ -1741,15 +1741,6 @@ Determines whether CellProfiler will display a warning dialog
 if images of different sizes are loaded together in an image set.
 Check this preference to show the message box or uncheck it to stop display."""
 
-WARN_ABOUT_OLD_PIPELINES_HELP = """
-Determines whether CellProfiler displays a warning dialog
-if you open a pipeline that was saved using an old version of CellProfiler.
-The purpose of this warning is to remind you that, if you save the pipeline
-using the newer version of CellProfiler, people using the old version of
-CellProfiler might not be able to use the new pipeline. Pipelines saved
-by old CellProfiler versions can always be loaded and used by new
-CellProfiler versions."""
-
 USE_MORE_FIGURE_SPACE_HELP = """
 Determines whether to reduce the padding space
 and font sizes in module display figures. It is suggested that you
@@ -1914,7 +1905,6 @@ EACH_PREFERENCE_HELP = (
     ('Show the "Exiting test mode" message', SHOW_EXITING_TEST_MODE_HELP),
     ("Warn if images are different sizes", SHOW_REPORT_BAD_SIZES_DLG_HELP),
     ("Show the parameter sampling menu", PARAMETER_SAMPLING_MENU_HELP),
-    ("Warn if a pipeline was saved in an old version of CellProfiler", WARN_ABOUT_OLD_PIPELINES_HELP),
     ("Use more figure space", USE_MORE_FIGURE_SPACE_HELP),
     ("Maximum number of workers", MAX_WORKERS_HELP),
     ("Temporary folder", TEMP_DIR_HELP),

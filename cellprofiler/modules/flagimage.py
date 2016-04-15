@@ -47,7 +47,8 @@ S_IMAGE = "Whole-image measurement"
 S_AVERAGE_OBJECT = "Average measurement for all objects in each image"
 S_ALL_OBJECTS = "Measurements for all objects in each image"
 S_RULES = "Rules"
-S_ALL = [S_IMAGE, S_AVERAGE_OBJECT, S_ALL_OBJECTS, S_RULES]
+S_CLASSIFIER = "Classifier"
+S_ALL = [S_IMAGE, S_AVERAGE_OBJECT, S_ALL_OBJECTS, S_RULES, S_CLASSIFIER]
 
 '''Number of settings in the module, aside from those in the flags'''
 N_FIXED_SETTINGS = 1
@@ -158,6 +159,7 @@ class FlagImage(cpm.CPModule):
                         <li><i>%(S_RULES)s:</i> Use a text file of rules produced by CellProfiler Analyst. With this
                         option, you will have to ensure that this pipeline produces every measurement
                         in the rules file upstream of this module.</li>
+                        <li><i>%(S_CLASSIFIER)s:</i> Use a classifier built by CellProfiler Analyst.</li>
                         </ul>
                         ''' % globals()))
 
@@ -209,6 +211,14 @@ class FlagImage(cpm.CPModule):
         def get_rules_class_choices(group=group):
             '''Get the available choices from the rules file'''
             try:
+                if group.source_choice == S_CLASSIFIER:
+                    return self.get_bin_labels(group)
+                elif group.source_choice == S_RULES:
+                    rules = self.get_rules(group)
+                    nclasses = len(rules.rules[0].weights[0])
+                    return [str(i) for i in range(1, nclasses+1)]
+                else:
+                    return ["None"]
                 rules = self.get_rules(group)
                 nclasses = len(rules.rules[0].weights[0])
                 return [str(i) for i in range(1, nclasses + 1)]
@@ -299,9 +309,15 @@ class FlagImage(cpm.CPModule):
 
             if m_g.source_choice == S_ALL_OBJECTS or m_g.source_choice == S_AVERAGE_OBJECT:
                 result += [m_g.object_name]
-            if m_g.source_choice == S_RULES:
+            if m_g.source_choice == S_RULES or\
+               m_g.source_choice == S_CLASSIFIER:
                 result += [m_g.rules_directory, m_g.rules_file_name,
                            m_g.rules_class]
+                whatami = "Rules" if m_g.source_choice == S_RULES \
+                    else "Classifier"
+                for setting, s in ((m_g.rules_directory, "%s file location"),
+                                   (m_g.rules_file_name, "%s file name")):
+                    setting.text = s % whatami
             else:
                 result += [m_g.measurement, m_g.wants_minimum]
                 if m_g.wants_minimum.value:
@@ -354,11 +370,23 @@ class FlagImage(cpm.CPModule):
                     measurement_cols = [c[1] for c in pipeline.get_measurement_columns(self)]
                     undef_features = list(set(rule_features).difference(measurement_cols))
                     if len(undef_features) > 0:
+                        raise cps.ValidationError("The rule described by %s has not been measured earlier in the pipeline."%undef_features[0],
+                                                    measurement_setting.rules_file_name)
+                elif measurement_setting.source_choice == S_CLASSIFIER:
+                    try:
+                        self.get_classifier(measurement_setting)
+                        self.get_classifier_features(measurement_setting)
+                        self.get_bin_labels(measurement_setting)
+                    except IOError:
                         raise cps.ValidationError(
-                                "The rule described by %s has not been measured earlier in the pipeline." %
-                                undef_features[
-                                    0],
-                                measurement_setting.rules_file_name)
+                            "Failed to load classifier file %s" % 
+                            measurement_setting.rules_file_name.value, 
+                            measurement_setting.rules_file_name)
+                    except:
+                        raise cps.ValidationError(
+                        "Unable to load %s as a classifier file" %
+                        measurement_setting.rules_file_name.value, 
+                        measurement_setting.rules_file_name)
 
     def prepare_to_create_batch(self, workspace, fn_alter_path):
         for flag_settings in self.flags:
@@ -487,6 +515,33 @@ class FlagImage(cpm.CPModule):
             rules.parse(path)
             return rules
 
+    def load_classifier(self, measurement_group):
+        '''Load the classifier pickle if not cached
+
+        returns classifier, bin_labels, name and features
+        '''
+        d = self.get_dictionary()
+        file_ = measurement_group.rules_file_name.value
+        directory_ = measurement_group.rules_directory.get_absolute_path()
+        path_ = os.path.join(directory_, file_)
+        if path_ not in d:
+            if not os.path.isfile(path_):
+                raise cps.ValidationError("No such rules file: %s" % path_, 
+                                          self.rules_file_name)
+            else:
+                from sklearn.externals import joblib
+                d[path_] = joblib.load(path_)
+        return d[path_]
+    
+    def get_classifier(self, measurement_group):
+        return self.load_classifier(measurement_group)[0]
+    
+    def get_bin_labels(self, measurement_group):
+        return self.load_classifier(measurement_group)[1]
+    
+    def get_classifier_features(self, measurement_group):
+        return self.load_classifier(measurement_group)[3]
+
     def run_flag(self, workspace, flag):
         ok, stats = self.eval_measurement(workspace,
                                           flag.measurement_settings[0])
@@ -573,17 +628,44 @@ class FlagImage(cpm.CPModule):
                 display_value = "%d of %d" % (hit_count, scores.shape[0])
             else:
                 display_value = "--"
+        elif ms.source_choice == S_CLASSIFIER:
+            classifier = self.get_classifier(ms)
+            target_idxs = [
+                self.get_bin_labels(ms).index(_)
+                for _ in ms.rules_class.get_selections()]
+            features = []
+            image_features = workspace.measurements.get_feature_names(
+                cpmeas.IMAGE)
+            for feature_name in self.get_classifier_features(ms):
+                feature_name = feature_name.split("_", 1)[1]
+                features.append(feature_name)
+    
+            feature_vector = np.array([
+                0 if feature_name not in image_features else
+                workspace.measurements[cpmeas.IMAGE, feature_name] 
+                for feature_name in features]).reshape(1, len(features))
+            predicted_class = classifier.predict(feature_vector)[0]
+            predicted_idx = \
+                np.where(classifier.classes_==predicted_class)[0][0]
+            fail = predicted_idx in target_idxs
+            display_value = self.get_bin_labels(ms)[predicted_idx]
+            source = cpmeas.IMAGE
         else:
             raise NotImplementedError("Source choice of %s not implemented" %
                                       ms.source_choice)
-        fail = ((ms.source_choice != S_RULES and (fail or
-                                                  (ms.wants_minimum.value and
-                                                   min_value < ms.minimum_value.value) or
-                                                  (ms.wants_maximum.value and
-                                                   max_value > ms.maximum_value.value))) or
-                (ms.source_choice == S_RULES and fail))
-
-        return ((not fail), (source, ms.measurement.value if ms.source_choice != S_RULES else "Rules", display_value,
+        is_rc = ms.source_choice in (S_RULES, S_CLASSIFIER)
+        is_meas = not is_rc
+        fail = (( is_meas and 
+                 (fail or (ms.wants_minimum.value and 
+                           min_value < ms.minimum_value.value) or
+                  (ms.wants_maximum.value and
+                   max_value > ms.maximum_value.value))) or
+                (is_rc and fail))
+        
+        return ((not fail), (source, 
+                             ms.measurement.value if is_meas 
+                             else ms.source_choice.value, 
+                             display_value, 
                              "Fail" if fail else "Pass"))
 
     def get_measurement_columns(self, pipeline):

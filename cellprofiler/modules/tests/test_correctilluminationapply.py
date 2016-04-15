@@ -1,28 +1,18 @@
 """test_correctilluminationapply.py
-
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
-
-Copyright (c) 2003-2009 Massachusetts Institute of Technology
-Copyright (c) 2009-2015 Broad Institute
-All rights reserved.
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
 """
 
-
 import base64
-import numpy as np
 import os
 import sys
 import tempfile
 import unittest
-from StringIO import StringIO
 import zlib
+from StringIO import StringIO
+
+import numpy as np
 
 from cellprofiler.preferences import set_headless
+
 set_headless()
 
 import cellprofiler.modules.correctilluminationapply as cpmcia
@@ -33,6 +23,7 @@ import cellprofiler.pipeline as cpp
 import cellprofiler.workspace as cpw
 import cellprofiler.objects as cpo
 import cellprofiler.measurements as cpm
+
 
 class TestCorrectIlluminationApply(unittest.TestCase):
     def error_callback(self, calller, event):
@@ -57,10 +48,12 @@ class TestCorrectIlluminationApply(unittest.TestCase):
                 'k7r6t/irzo9fGXYHnNj95qX1eeXFHnMu/to/YdL0SVuurZ7q9PtN3sGvWmk/'
                 'z9Wq5c6T/PHnzq4b+27tivwufuL77/07jtvnfP60n+3dXInPAHjXVAU=')
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
-        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))    
+        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 3)
         module = pipeline.modules()[2]
         self.assertTrue(isinstance(module, cpmcia.CorrectIlluminationApply))
@@ -70,7 +63,7 @@ class TestCorrectIlluminationApply(unittest.TestCase):
         self.assertEqual(image.illum_correct_function_image_name, "IllumPhase")
         self.assertEqual(image.corrected_image_name, "CorrPhase")
         self.assertEqual(image.divide_or_subtract, "Subtract")
-        
+
     def test_00_01_load_v1(self):
         data = ('eJztWd1O2zAUdkph/EwTu2LalS/pRqu2YxpUE9C1Q1SjpaIVE0KMmdallty4'
                 'chJoNyHtco/IY+wRZpeEpCaQ/kARUlJF6Tn2d77j43Pc2C1mq7vZL/BjIgmL'
@@ -92,10 +85,12 @@ class TestCorrectIlluminationApply(unittest.TestCase):
                 'zzkffm9cIuKzNH3/PKjxd+fl3+YofFHtNt9CAC5qR7K3DwHDzfvyPf2dsY3T'
                 'f9jxa0L4DxGFUhU=')
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
-        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))        
+        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 2)
         module = pipeline.modules()[1]
         self.assertTrue(isinstance(module, cpmcia.CorrectIlluminationApply))
@@ -129,8 +124,10 @@ class TestCorrectIlluminationApply(unittest.TestCase):
                 'iVZPyt4Tlz1q/Oa68Nvj4BPS0sz8nXFX491eB3+2+uHz675b+72PHHB+m02W'
                 'n39qva235TvGW3Mc5fhe/abruvYXbnrGEg==')
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 3)
@@ -149,12 +146,12 @@ class TestCorrectIlluminationApply(unittest.TestCase):
     def test_01_01_divide(self):
         """Test correction by division"""
         np.random.seed(0)
-        image = np.random.uniform(size=(10,10)).astype(np.float32)
-        illum = np.random.uniform(size=(10,10)).astype(np.float32)
+        image = np.random.uniform(size=(10, 10)).astype(np.float32)
+        illum = np.random.uniform(size=(10, 10)).astype(np.float32)
         expected = image / illum
         pipeline = cpp.Pipeline()
         pipeline.add_listener(self.error_callback)
-        input_module = inj.InjectImage("InputImage",image)
+        input_module = inj.InjectImage("InputImage", image)
         input_module.module_num = 1
         pipeline.add_module(input_module)
         illum_module = inj.InjectImage("IllumImage", illum)
@@ -194,13 +191,13 @@ class TestCorrectIlluminationApply(unittest.TestCase):
     def test_01_02_subtract(self):
         """Test correction by subtraction"""
         np.random.seed(0)
-        image = np.random.uniform(size=(10,10)).astype(np.float32)
-        illum = np.random.uniform(size=(10,10)).astype(np.float32)
+        image = np.random.uniform(size=(10, 10)).astype(np.float32)
+        illum = np.random.uniform(size=(10, 10)).astype(np.float32)
         expected = image - illum
         expected[expected < 0] = 0
         pipeline = cpp.Pipeline()
         pipeline.add_listener(self.error_callback)
-        input_module = inj.InjectImage("InputImage",image)
+        input_module = inj.InjectImage("InputImage", image)
         input_module.module_num = 1
         pipeline.add_module(input_module)
         illum_module = inj.InjectImage("IllumImage", illum)
@@ -237,17 +234,17 @@ class TestCorrectIlluminationApply(unittest.TestCase):
         module.run(workspace)
         output_image = workspace.image_set.get_image("OutputImage")
         self.assertTrue(np.all(output_image.pixel_data == expected))
-    
+
     def test_02_01_color_by_bw(self):
         '''Correct a color image with a black & white illumination fn'''
         np.random.seed(0)
-        image = np.random.uniform(size=(10,10,3)).astype(np.float32)
-        illum = np.random.uniform(size=(10,10)).astype(np.float32)
-        expected = image - illum[:,:,np.newaxis]
+        image = np.random.uniform(size=(10, 10, 3)).astype(np.float32)
+        illum = np.random.uniform(size=(10, 10)).astype(np.float32)
+        expected = image - illum[:, :, np.newaxis]
         expected[expected < 0] = 0
         pipeline = cpp.Pipeline()
         pipeline.add_listener(self.error_callback)
-        input_module = inj.InjectImage("InputImage",image)
+        input_module = inj.InjectImage("InputImage", image)
         input_module.module_num = 1
         pipeline.add_module(input_module)
         illum_module = inj.InjectImage("IllumImage", illum)
@@ -288,13 +285,13 @@ class TestCorrectIlluminationApply(unittest.TestCase):
     def test_02_02_color_by_color(self):
         '''Correct a color image with a black & white illumination fn'''
         np.random.seed(0)
-        image = np.random.uniform(size=(10,10,3)).astype(np.float32)
-        illum = np.random.uniform(size=(10,10,3)).astype(np.float32)
+        image = np.random.uniform(size=(10, 10, 3)).astype(np.float32)
+        illum = np.random.uniform(size=(10, 10, 3)).astype(np.float32)
         expected = image - illum
         expected[expected < 0] = 0
         pipeline = cpp.Pipeline()
         pipeline.add_listener(self.error_callback)
-        input_module = inj.InjectImage("InputImage",image)
+        input_module = inj.InjectImage("InputImage", image)
         input_module.module_num = 1
         pipeline.add_module(input_module)
         illum_module = inj.InjectImage("IllumImage", illum)
@@ -331,4 +328,3 @@ class TestCorrectIlluminationApply(unittest.TestCase):
         module.run(workspace)
         output_image = workspace.image_set.get_image("OutputImage")
         self.assertTrue(np.all(output_image.pixel_data == expected))
-        

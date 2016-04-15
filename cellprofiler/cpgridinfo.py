@@ -1,22 +1,12 @@
 '''cpgridinfo - define a grid structure
-
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
-
-Copyright (c) 2003-2009 Massachusetts Institute of Technology
-Copyright (c) 2009-2015 Broad Institute
-All rights reserved.
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
 '''
-
 
 import numpy as np
 
+
 class CPGridInfo(object):
     '''Represents all the parameters of a grid'''
+
     def __init__(self):
         self.x_location_of_lowest_x_spot = None
         self.y_location_of_lowest_y_spot = None

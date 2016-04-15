@@ -1,31 +1,20 @@
 '''utf16encode.py - encode unicode strings as escaped utf16
-
-CellProfiler is distributed under the GNU General Public License,
-but this file is licensed under the more permissive BSD license.
-See the accompanying file LICENSE for details.
-
-Copyright (c) 2003-2009 Massachusetts Institute of Technology
-Copyright (c) 2009-2015 Broad Institute
-All rights reserved.
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
 '''
+
 
 def utf16encode(x):
     '''Encode a unicode string in 7-bit US ascii
-    
+
     x - unicode string to be encoded
-    
+
     returns utf8-escape-encoded string
-    
+
     The escapes:
 
     \ (backslash) -> \\
-    
+
     0x20 <= c < 0xff -> c
-    
+
     all others -> \u####
     '''
     y = ''
@@ -38,6 +27,7 @@ def utf16encode(x):
         else:
             y += str(z)
     return y
+
 
 def utf16decode(x):
     '''Decode an escaped utf8-encoded string
@@ -62,5 +52,5 @@ def utf16decode(x):
             acc += z
         else:
             state = -1
-            y += unichr(int(acc+z, 16))
+            y += unichr(int(acc + z, 16))
     return y

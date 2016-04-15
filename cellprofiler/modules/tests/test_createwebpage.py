@@ -1,16 +1,5 @@
 '''test_createwebpage - Test the CreateWebPage module
-
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
-
-Copyright (c) 2003-2009 Massachusetts Institute of Technology
-Copyright (c) 2009-2015 Broad Institute
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
 '''
-
 
 import base64
 import numpy as np
@@ -21,12 +10,14 @@ import shutil
 from StringIO import StringIO
 import tempfile
 import unittest
+from urllib import URLopener
 from urllib2 import urlopen
 import xml.dom.minidom as DOM
 import zipfile
 import zlib
 
 import cellprofiler.preferences as cpprefs
+
 cpprefs.set_headless()
 
 import cellprofiler.workspace as cpw
@@ -39,10 +30,12 @@ import cellprofiler.pipeline as cpp
 import cellprofiler.modules.createwebpage as C
 from cellprofiler.modules.loadimages import C_FILE_NAME, C_PATH_NAME, C_URL
 from cellprofiler.modules.loadimages import pathname2url, url2pathname
+
 IMAGE_NAME = "image"
 THUMB_NAME = "thumb"
 DEFAULT_HTML_FILE = "default.html"
 ZIPFILE_NAME = "zipfile.zip"
+
 
 class TestCreateWebPage(unittest.TestCase):
     def setUp(self):
@@ -59,27 +52,27 @@ class TestCreateWebPage(unittest.TestCase):
                     os.mkdir(os.path.join(directory, str(i), str(j), str(k)))
         cpprefs.set_default_image_directory(os.path.join(self.directory, "1"))
         self.alt_directory = tempfile.mkdtemp()
-        
+
     def tearDown(self):
         shutil.rmtree(self.directory)
         shutil.rmtree(self.alt_directory)
-        
+
     def test_00_00_remember_to_put_new_text_in_the_dictionary(self):
         '''Make sure people use TRANSLATION_DICTIONARY'''
         self.assertTrue(C.DIR_ABOVE in C.TRANSLATION_DICTIONARY)
         self.assertTrue(C.DIR_SAME in C.TRANSLATION_DICTIONARY)
         self.assertTrue("One level over the images" in C.TRANSLATION_DICTIONARY)
         self.assertTrue("Same as the images" in C.TRANSLATION_DICTIONARY)
-        
+
         self.assertTrue(C.OPEN_ONCE in C.TRANSLATION_DICTIONARY)
         self.assertTrue(C.OPEN_EACH in C.TRANSLATION_DICTIONARY)
         self.assertTrue(C.OPEN_NO in C.TRANSLATION_DICTIONARY)
-        
+
         self.assertTrue("Once only" in C.TRANSLATION_DICTIONARY)
         self.assertTrue("For each image" in C.TRANSLATION_DICTIONARY)
         self.assertTrue("No" in C.TRANSLATION_DICTIONARY)
-        
-        self.assertEqual(len(C.TRANSLATION_DICTIONARY), 5, 
+
+        self.assertEqual(len(C.TRANSLATION_DICTIONARY), 5,
                          "Please update this test to include your newly entered translation")
 
     def test_01_01_load_matlab(self):
@@ -100,8 +93,10 @@ class TestCreateWebPage(unittest.TestCase):
                 'eFOPNet7dXa2/r7bdkKd9wtuhMd8+P5z9dMX61csv6nxXT5n6prwrV2Pc77u'
                 'qS/9HPS4zmnj18pa/7o7p579Z9NbdcMfAGQ1SXU=')
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 2)
@@ -121,7 +116,7 @@ class TestCreateWebPage(unittest.TestCase):
         self.assertEqual(module.image_border_width, 2)
         self.assertEqual(module.create_new_window, C.OPEN_ONCE)
         self.assertFalse(module.wants_zip_file)
-        
+
     def test_01_02_load_v1(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
@@ -179,8 +174,10 @@ CreateWebPage:[module_num:3|svn_version:\'9401\'|variable_revision_number:1|show
     Zipfile name\x3A:Images.zip
 """
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
         self.assertEqual(len(pipeline.modules()), 3)
@@ -201,7 +198,7 @@ CreateWebPage:[module_num:3|svn_version:\'9401\'|variable_revision_number:1|show
         self.assertEqual(module.create_new_window, C.OPEN_ONCE)
         self.assertFalse(module.wants_zip_file)
         self.assertEqual(module.zipfile_name, "Images.zip")
-        
+
         module = pipeline.modules()[1]
         self.assertTrue(isinstance(module, C.CreateWebPage))
         self.assertEqual(module.orig_image_name, "IllumDNA")
@@ -219,7 +216,7 @@ CreateWebPage:[module_num:3|svn_version:\'9401\'|variable_revision_number:1|show
         self.assertEqual(module.create_new_window, C.OPEN_EACH)
         self.assertTrue(module.wants_zip_file)
         self.assertEqual(module.zipfile_name, "Images.zip")
-        
+
         module = pipeline.modules()[2]
         self.assertTrue(isinstance(module, C.CreateWebPage))
         self.assertEqual(module.orig_image_name, "IllumDNA")
@@ -237,7 +234,7 @@ CreateWebPage:[module_num:3|svn_version:\'9401\'|variable_revision_number:1|show
         self.assertEqual(module.create_new_window, C.OPEN_NO)
         self.assertTrue(module.wants_zip_file)
         self.assertEqual(module.zipfile_name, "Images.zip")
-        
+
     def test_01_03_load_v2(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
@@ -261,8 +258,10 @@ CreateWebPage:[module_num:1|svn_version:\'9401\'|variable_revision_number:2|show
     Zipfile name\x3A:Images.zip
 """
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
@@ -272,9 +271,9 @@ CreateWebPage:[module_num:1|svn_version:\'9401\'|variable_revision_number:2|show
         self.assertTrue(module.wants_thumbnails)
         self.assertEqual(module.thumbnail_image_name, "ColorThumbnail")
         self.assertEqual(module.web_page_file_name, "sbsimages\\g<Controls>.html")
-        self.assertEqual(module.directory_choice.dir_choice, 
+        self.assertEqual(module.directory_choice.dir_choice,
                          C.ABSOLUTE_FOLDER_NAME)
-        self.assertEqual(module.directory_choice.custom_path, 
+        self.assertEqual(module.directory_choice.custom_path,
                          "/imaging/analysis")
         self.assertEqual(module.title, "SBS Images\x3A Controls=\\g<Controls>")
         self.assertEqual(module.background_color, "light grey")
@@ -286,11 +285,11 @@ CreateWebPage:[module_num:1|svn_version:\'9401\'|variable_revision_number:2|show
         self.assertEqual(module.create_new_window, C.OPEN_ONCE)
         self.assertFalse(module.wants_zip_file)
         self.assertEqual(module.zipfile_name, "Images.zip")
-    
-    def run_create_webpage(self, image_paths, thumb_paths = None, 
-                           metadata = None, alter_fn = None):
+
+    def run_create_webpage(self, image_paths, thumb_paths=None,
+                           metadata=None, alter_fn=None):
         '''Run the create_webpage module, returning the resulting HTML document
-        
+
         image_paths - list of path / filename tuples. The function will
                       write an image to each of these and put images and
                       measurements into the workspace for each.
@@ -299,7 +298,7 @@ CreateWebPage:[module_num:1|svn_version:\'9401\'|variable_revision_number:2|show
         alter_fn    - function taking a CreateWebPage module, for you to
                       alter the module's settings
         '''
-        
+
         np.random.seed(0)
         module = C.CreateWebPage()
         module.module_num = 1
@@ -308,35 +307,37 @@ CreateWebPage:[module_num:1|svn_version:\'9401\'|variable_revision_number:2|show
         if alter_fn is not None:
             alter_fn(module)
         pipeline = cpp.Pipeline()
+
         def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.add_module(module)
-        
-        images = [ (IMAGE_NAME, image_paths)]
+
+        images = [(IMAGE_NAME, image_paths)]
         if thumb_paths:
-            images += [ (THUMB_NAME, thumb_paths)]
+            images += [(THUMB_NAME, thumb_paths)]
             self.assertEqual(len(image_paths), len(thumb_paths))
             module.wants_thumbnails.value = True
             module.thumbnail_image_name.value = THUMB_NAME
         else:
             module.wants_thumbnails.value = False
-            
+
         measurements = cpmeas.Measurements()
-        
-        workspace = cpw.Workspace(pipeline, module, 
-                                  measurements, None, measurements, 
+
+        workspace = cpw.Workspace(pipeline, module,
+                                  measurements, None, measurements,
                                   None, None)
         for i in range(len(image_paths)):
-            image_number = i+1
+            image_number = i + 1
             if metadata is not None:
                 for key in metadata.keys():
                     values = metadata[key]
                     feature = cpmeas.C_METADATA + "_" + key
                     measurements[cpmeas.IMAGE, feature, image_number] = values[i]
-                    
+
             for image_name, paths in images:
-                pixel_data = np.random.uniform(size=(10,13))
+                pixel_data = np.random.uniform(size=(10, 13))
                 path_name, file_name = paths[i]
                 if path_name is None:
                     path_name = cpprefs.get_default_image_directory()
@@ -348,7 +349,7 @@ CreateWebPage:[module_num:1|svn_version:\'9401\'|variable_revision_number:2|show
                         file_name = file_name.split("?", 1)[0]
                 if is_file:
                     full_path = os.path.abspath(os.path.join(
-                        self.directory, path_name, file_name))
+                            self.directory, path_name, file_name))
                     url = pathname2url(full_path)
                     path = os.path.split(full_path)[0]
                 else:
@@ -361,20 +362,20 @@ CreateWebPage:[module_num:1|svn_version:\'9401\'|variable_revision_number:2|show
                 url_feature = '_'.join((C_URL, image_name))
                 measurements[cpmeas.IMAGE, path_feature, image_number] = \
                     path
-                measurements[cpmeas.IMAGE, file_feature, image_number] =\
+                measurements[cpmeas.IMAGE, file_feature, image_number] = \
                     file_name
                 measurements[cpmeas.IMAGE, url_feature, image_number] = url
-                
+
         module.post_run(workspace)
         return measurements
-    
-    def read_html(self, html_path = None):
+
+    def read_html(self, html_path=None):
         '''Read html file, assuming the default location
-        
+
         returns a DOM
         '''
         if html_path is None:
-            html_path = os.path.join(cpprefs.get_default_image_directory(), 
+            html_path = os.path.join(cpprefs.get_default_image_directory(),
                                      DEFAULT_HTML_FILE)
         fd = open(html_path, 'r')
         try:
@@ -382,12 +383,12 @@ CreateWebPage:[module_num:1|svn_version:\'9401\'|variable_revision_number:2|show
             return DOM.parseString(data)
         finally:
             fd.close()
-    
+
     def ap(self, path):
         '''Get the absolute path to the file'''
         path = os.path.join(cpprefs.get_default_image_directory(), path)
         return os.path.abspath(path)
-    
+
     def test_02_01_one_image_file(self):
         '''Test an image set with one image file'''
         self.run_create_webpage([(None, 'A01.png')])
@@ -405,7 +406,7 @@ CreateWebPage:[module_num:1|svn_version:\'9401\'|variable_revision_number:2|show
         # Get the <tr> nodes
         #
         table_children = [n for n in table.childNodes
-                         if n.nodeType == dom.ELEMENT_NODE]
+                          if n.nodeType == dom.ELEMENT_NODE]
         self.assertEqual(len(table_children), 1)
         tr = table_children[0]
         self.assertEqual(tr.tagName, "tr")
@@ -427,15 +428,16 @@ CreateWebPage:[module_num:1|svn_version:\'9401\'|variable_revision_number:2|show
         self.assertEqual(img.tagName, "img")
         self.assertTrue(img.hasAttribute("src"))
         self.assertEqual(img.getAttribute("src"), "A01.png")
-        
+
     def test_02_02_title(self):
         TITLE = "My Title"
+
         def alter_fn(module):
             self.assertTrue(isinstance(module, C.CreateWebPage))
             module.title.value = TITLE
-        
-        self.run_create_webpage([(None, 'A01.png')], alter_fn = alter_fn)
-        
+
+        self.run_create_webpage([(None, 'A01.png')], alter_fn=alter_fn)
+
         dom = self.read_html()
         title_elements = dom.getElementsByTagName('title')
         self.assertEqual(len(title_elements), 1)
@@ -443,16 +445,17 @@ CreateWebPage:[module_num:1|svn_version:\'9401\'|variable_revision_number:2|show
                          if x.nodeType == dom.TEXT_NODE]
         text = ''.join(text_children).strip()
         self.assertEqual(text, TITLE)
-        
+
     def test_02_03_title_with_metadata(self):
         expected = "Lee's Title"
+
         def alter_fn(module):
             self.assertTrue(isinstance(module, C.CreateWebPage))
             module.title.value = "\\g<BelongsToMe> Title"
-        
-        self.run_create_webpage([(None, 'A01.png')], alter_fn = alter_fn,
-                                metadata={ "BelongsToMe":["Lee's"] })
-        
+
+        self.run_create_webpage([(None, 'A01.png')], alter_fn=alter_fn,
+                                metadata={"BelongsToMe": ["Lee's"]})
+
         dom = self.read_html()
         title_elements = dom.getElementsByTagName('title')
         self.assertEqual(len(title_elements), 1)
@@ -460,87 +463,98 @@ CreateWebPage:[module_num:1|svn_version:\'9401\'|variable_revision_number:2|show
                          if x.nodeType == dom.TEXT_NODE]
         text = ''.join(text_children).strip()
         self.assertEqual(text, expected)
-        
+
     def test_02_04_bg_color(self):
         COLOR = "hazelnut"
+
         def alter_fn(module):
             self.assertTrue(isinstance(module, C.CreateWebPage))
             module.background_color.value = COLOR
-        self.run_create_webpage([(None, 'A01.png')], alter_fn = alter_fn)
+
+        self.run_create_webpage([(None, 'A01.png')], alter_fn=alter_fn)
         dom = self.read_html()
         bodies = dom.getElementsByTagName("body")
         self.assertEqual(len(bodies), 1)
         body = bodies[0]
         self.assertTrue(body.hasAttribute("bgcolor"))
         self.assertEqual(body.getAttribute("bgcolor"), COLOR)
-        
+
     def test_02_05_table_border_width(self):
         BORDERWIDTH = 15
+
         def alter_fn(module):
             self.assertTrue(isinstance(module, C.CreateWebPage))
             module.table_border_width.value = BORDERWIDTH
-        self.run_create_webpage([(None, 'A01.png')], alter_fn = alter_fn)
+
+        self.run_create_webpage([(None, 'A01.png')], alter_fn=alter_fn)
         dom = self.read_html()
         tables = dom.getElementsByTagName("table")
         self.assertEqual(len(tables), 1)
         table = tables[0]
         self.assertTrue(table.hasAttribute("border"))
         self.assertEqual(table.getAttribute("border"), str(BORDERWIDTH))
-        
+
     def test_02_06_table_border_color(self):
         COLOR = "corvetteyellow"
+
         def alter_fn(module):
             self.assertTrue(isinstance(module, C.CreateWebPage))
             module.table_border_color.value = COLOR
-        self.run_create_webpage([(None, 'A01.png')], alter_fn = alter_fn)
+
+        self.run_create_webpage([(None, 'A01.png')], alter_fn=alter_fn)
         dom = self.read_html()
         tables = dom.getElementsByTagName("table")
         self.assertEqual(len(tables), 1)
         table = tables[0]
         self.assertTrue(table.hasAttribute("bordercolor"))
         self.assertEqual(table.getAttribute("bordercolor"), COLOR)
-        
+
     def test_02_07_table_cell_spacing(self):
         CELL_SPACING = 11
+
         def alter_fn(module):
             self.assertTrue(isinstance(module, C.CreateWebPage))
             module.image_spacing.value = CELL_SPACING
-        self.run_create_webpage([(None, 'A01.png')], alter_fn = alter_fn)
+
+        self.run_create_webpage([(None, 'A01.png')], alter_fn=alter_fn)
         dom = self.read_html()
         tables = dom.getElementsByTagName("table")
         self.assertEqual(len(tables), 1)
         table = tables[0]
         self.assertTrue(table.hasAttribute("cellspacing"))
         self.assertEqual(table.getAttribute("cellspacing"), str(CELL_SPACING))
-    
+
     def test_02_08_image_border_width(self):
         IMAGE_BORDER_WIDTH = 23
+
         def alter_fn(module):
             self.assertTrue(isinstance(module, C.CreateWebPage))
             module.image_border_width.value = IMAGE_BORDER_WIDTH
-        self.run_create_webpage([(None, 'A01.png')], alter_fn = alter_fn)
+
+        self.run_create_webpage([(None, 'A01.png')], alter_fn=alter_fn)
         dom = self.read_html()
         imgs = dom.getElementsByTagName("img")
         self.assertEqual(len(imgs), 1)
         img = imgs[0]
         self.assertTrue(img.hasAttribute("border"))
         self.assertEqual(img.getAttribute("border"), str(IMAGE_BORDER_WIDTH))
-        
+
     def test_02_09_columns(self):
         def alter_fn(module):
             self.assertTrue(isinstance(module, C.CreateWebPage))
             module.columns.value = 3
+
         self.run_create_webpage(
-            [(None, 'A01.png'), (None, 'A02.png'), (None, 'A03.png'),
-             (None, 'B01.png'), (None, 'B02.png'), (None, 'B03.png')], 
-            alter_fn = alter_fn)
+                [(None, 'A01.png'), (None, 'A02.png'), (None, 'A03.png'),
+                 (None, 'B01.png'), (None, 'B02.png'), (None, 'B03.png')],
+                alter_fn=alter_fn)
         dom = self.read_html()
         tables = dom.getElementsByTagName("table")
         self.assertEqual(len(tables), 1)
         table = tables[0]
         trs = table.getElementsByTagName("tr")
         self.assertEqual(len(trs), 2)
-        for col, tr in zip(("A","B"), trs):
+        for col, tr in zip(("A", "B"), trs):
             tds = tr.getElementsByTagName("td")
             self.assertEqual(len(tds), 3)
             for i, td in enumerate(tds):
@@ -548,24 +562,25 @@ CreateWebPage:[module_num:1|svn_version:\'9401\'|variable_revision_number:2|show
                 self.assertEqual(len(imgs), 1)
                 img = imgs[0]
                 self.assertTrue(img.hasAttribute("src"))
-                self.assertEqual(img.getAttribute("src"), 
-                                 "%s0%d.png" % (col, i+1))
+                self.assertEqual(img.getAttribute("src"),
+                                 "%s0%d.png" % (col, i + 1))
 
     def test_02_10_partial_columns(self):
         def alter_fn(module):
             self.assertTrue(isinstance(module, C.CreateWebPage))
             module.columns.value = 3
+
         self.run_create_webpage(
-            [(None, 'A01.png'), (None, 'A02.png'), (None, 'A03.png'),
-             (None, 'B01.png'), (None, 'B02.png')], 
-            alter_fn = alter_fn)
+                [(None, 'A01.png'), (None, 'A02.png'), (None, 'A03.png'),
+                 (None, 'B01.png'), (None, 'B02.png')],
+                alter_fn=alter_fn)
         dom = self.read_html()
         tables = dom.getElementsByTagName("table")
         self.assertEqual(len(tables), 1)
         table = tables[0]
         trs = table.getElementsByTagName("tr")
         self.assertEqual(len(trs), 2)
-        for col, colcount, tr in zip(("A","B"), (3,2), trs):
+        for col, colcount, tr in zip(("A", "B"), (3, 2), trs):
             tds = tr.getElementsByTagName("td")
             self.assertEqual(len(tds), colcount)
             for i, td in enumerate(tds):
@@ -573,9 +588,9 @@ CreateWebPage:[module_num:1|svn_version:\'9401\'|variable_revision_number:2|show
                 self.assertEqual(len(imgs), 1)
                 img = imgs[0]
                 self.assertTrue(img.hasAttribute("src"))
-                self.assertEqual(img.getAttribute("src"), 
-                                 "%s0%d.png" % (col, i+1))
-    
+                self.assertEqual(img.getAttribute("src"),
+                                 "%s0%d.png" % (col, i + 1))
+
     def test_03_01_thumb(self):
         self.run_create_webpage([(None, 'A01.png')],
                                 [(None, 'A01_thumb.png')])
@@ -593,28 +608,30 @@ CreateWebPage:[module_num:1|svn_version:\'9401\'|variable_revision_number:2|show
         self.assertEqual(len(imgs), 1)
         img = imgs[0]
         self.assertTrue(img.hasAttribute("src"))
-        self.assertEqual(self.ap(img.getAttribute("src")), 
+        self.assertEqual(self.ap(img.getAttribute("src")),
                          self.ap("A01_thumb.png"))
-        
+
     def test_03_02_open_once(self):
         def alter_fn(module):
             self.assertTrue(isinstance(module, C.CreateWebPage))
             module.create_new_window.value = C.OPEN_ONCE
+
         self.run_create_webpage([(None, 'A01.png')],
-                                [(None, 'A01_thumb.png')], alter_fn = alter_fn)
+                                [(None, 'A01_thumb.png')], alter_fn=alter_fn)
         dom = self.read_html()
         links = dom.getElementsByTagName("a")
         self.assertEqual(len(links), 1)
         link = links[0]
         self.assertTrue(link.hasAttribute("target"))
         self.assertEqual(link.getAttribute("target"), "_CPNewWindow")
-        
+
     def test_03_03_open_each(self):
         def alter_fn(module):
             self.assertTrue(isinstance(module, C.CreateWebPage))
             module.create_new_window.value = C.OPEN_EACH
+
         self.run_create_webpage([(None, 'A01.png')],
-                                [(None, 'A01_thumb.png')], alter_fn = alter_fn)
+                                [(None, 'A01_thumb.png')], alter_fn=alter_fn)
         dom = self.read_html()
         links = dom.getElementsByTagName("a")
         self.assertEqual(len(links), 1)
@@ -626,27 +643,30 @@ CreateWebPage:[module_num:1|svn_version:\'9401\'|variable_revision_number:2|show
         def alter_fn(module):
             self.assertTrue(isinstance(module, C.CreateWebPage))
             module.create_new_window.value = C.OPEN_NO
+
         self.run_create_webpage([(None, 'A01.png')],
-                                [(None, 'A01_thumb.png')], alter_fn = alter_fn)
+                                [(None, 'A01_thumb.png')], alter_fn=alter_fn)
         dom = self.read_html()
         links = dom.getElementsByTagName("a")
         self.assertEqual(len(links), 1)
         link = links[0]
         self.assertFalse(link.hasAttribute("target"))
-        
+
     def test_04_01_above_image(self):
         '''Make the HTML file in the directory above the image'''
+
         def alter_fn(module):
             self.assertTrue(isinstance(module, C.CreateWebPage))
             module.directory_choice.value = C.DIR_ABOVE
-        self.run_create_webpage([(None, 'A01.png')], alter_fn = alter_fn)
+
+        self.run_create_webpage([(None, 'A01.png')], alter_fn=alter_fn)
         dom = self.read_html(os.path.join(self.directory, DEFAULT_HTML_FILE))
         imgs = dom.getElementsByTagName("img")
         self.assertEqual(len(imgs), 1)
         img = imgs[0]
         self.assertTrue(img.hasAttribute("src"))
         self.assertEqual(img.getAttribute("src"), "1/A01.png")
-        
+
     def test_04_02_thumb_in_other_dir(self):
         '''Put the image and thumbnail in different directories'''
         self.run_create_webpage([(None, 'A01.png')],
@@ -657,15 +677,17 @@ CreateWebPage:[module_num:1|svn_version:\'9401\'|variable_revision_number:2|show
         img = imgs[0]
         self.assertTrue(img.hasAttribute("src"))
         self.assertEqual(img.getAttribute("src"), "../2/A01_thumb.png")
-        
+
     def test_04_03_metadata_filename(self):
         '''Make two different webpages using metadata'''
+
         def alter_fn(module):
             self.assertTrue(isinstance(module, C.CreateWebPage))
             module.web_page_file_name.value = '\\g<FileName>'
-        self.run_create_webpage([(None, 'A01.png'),(None, 'A02.png')],
-                                metadata={'FileName':['foo','bar']},
-                                alter_fn = alter_fn)
+
+        self.run_create_webpage([(None, 'A01.png'), (None, 'A02.png')],
+                                metadata={'FileName': ['foo', 'bar']},
+                                alter_fn=alter_fn)
         for file_name, image_name in (('foo.html', 'A01.png'),
                                       ('bar.html', 'A02.png')):
             path = os.path.join(cpprefs.get_default_image_directory(), file_name)
@@ -675,13 +697,14 @@ CreateWebPage:[module_num:1|svn_version:\'9401\'|variable_revision_number:2|show
             img = imgs[0]
             self.assertTrue(img.hasAttribute("src"))
             self.assertEqual(img.getAttribute("src"), image_name)
-            
+
     def test_04_04_abspath(self):
         # Specify an absolute path for the images.
         def alter_fn(module):
             self.assertTrue(isinstance(module, C.CreateWebPage))
             module.directory_choice.dir_choice = C.ABSOLUTE_FOLDER_NAME
             module.directory_choice.custom_path = self.alt_directory
+
         filenames = [(None, 'A%02d.png' % i) for i in range(1, 3)]
         self.run_create_webpage(filenames, alter_fn=alter_fn)
         dom = self.read_html(os.path.join(self.alt_directory, DEFAULT_HTML_FILE))
@@ -692,50 +715,52 @@ CreateWebPage:[module_num:1|svn_version:\'9401\'|variable_revision_number:2|show
             image_name = str(img.getAttribute("src"))
             path = url2pathname(image_name)
             self.assertTrue(os.path.exists(path))
-            
+
     def test_05_01_zipfiles(self):
         # Test the zipfile function
         def alter_fn(module):
             self.assertTrue(isinstance(module, C.CreateWebPage))
             module.wants_zip_file.value = True
             module.zipfile_name.value = ZIPFILE_NAME
+
         filenames = ['A%02d.png' % i for i in range(1, 3)]
         self.run_create_webpage([(None, fn) for fn in filenames],
                                 alter_fn=alter_fn)
-        
+
         zpath = os.path.join(cpprefs.get_default_image_directory(), ZIPFILE_NAME)
         with zipfile.ZipFile(zpath, "r") as zfile:
             assert isinstance(zfile, zipfile.ZipFile)
             for filename in filenames:
-                fpath = os.path.join(cpprefs.get_default_image_directory(), 
+                fpath = os.path.join(cpprefs.get_default_image_directory(),
                                      filename)
                 with open(fpath, "rb") as fd:
                     with zfile.open(filename, "r") as zfd:
                         self.assertEqual(fd.read(), zfd.read())
-                        
+
     def test_05_02_zipfile_and_metadata(self):
         # Test the zipfile function with metadata substitution
         def alter_fn(module):
             self.assertTrue(isinstance(module, C.CreateWebPage))
             module.wants_zip_file.value = True
             module.zipfile_name.value = '\\g<FileName>'
+
         filenames = ['A%02d.png' % i for i in range(1, 3)]
         zipfiles = ['A%02d' % i for i in range(1, 3)]
         self.run_create_webpage(
-            [(None, fn) for fn in filenames],
-            metadata=dict(FileName=zipfiles),
-            alter_fn=alter_fn)
-        
+                [(None, fn) for fn in filenames],
+                metadata=dict(FileName=zipfiles),
+                alter_fn=alter_fn)
+
         for filename, zname in zip(filenames, zipfiles):
             zpath = os.path.join(cpprefs.get_default_image_directory(), zname)
             zpath += ".zip"
-            fpath = os.path.join(cpprefs.get_default_image_directory(), 
+            fpath = os.path.join(cpprefs.get_default_image_directory(),
                                  filename)
             with zipfile.ZipFile(zpath, "r") as zfile:
                 with open(fpath, "rb") as fd:
                     with zfile.open(filename, "r") as zfd:
                         self.assertEqual(fd.read(), zfd.read())
-                        
+
     def test_05_03_http_image_zipfile(self):
         # Make a zipfile using files accessed from the web
         def alter_fn(module):
@@ -744,13 +769,25 @@ CreateWebPage:[module_num:1|svn_version:\'9401\'|variable_revision_number:2|show
             module.zipfile_name.value = ZIPFILE_NAME
             module.directory_choice.dir_choice = C.ABSOLUTE_FOLDER_NAME
             module.directory_choice.custom_path = cpprefs.get_default_image_directory()
-            
+
         url_root = "http://cellprofiler.org/svnmirror/ExampleImages/ExampleSBSImages/"
         url_query = "?r=11710"
-        filenames = [ (url_root,  fn + url_query) for fn in
-                      ("Channel1-01-A-01.tif", "Channel2-01-A-01.tif",
-                       "Channel1-02-A-02.tif", "Channel2-02-A-02.tif")]
-        self.run_create_webpage(filenames, alter_fn = alter_fn)
+        filenames = [(url_root, fn + url_query) for fn in
+                     ("Channel1-01-A-01.tif", "Channel2-01-A-01.tif",
+                      "Channel1-02-A-02.tif", "Channel2-02-A-02.tif")]
+        #
+        # Make sure URLs are accessible
+        #
+        try:
+            for filename in filenames:
+                URLopener().open("".join(filename)).close()
+        except IOError, e:
+            def bad_url(e=e):
+                raise e
+
+            unittest.expectedFailure(bad_url)()
+
+        self.run_create_webpage(filenames, alter_fn=alter_fn)
         zpath = os.path.join(cpprefs.get_default_image_directory(),
                              ZIPFILE_NAME)
         with zipfile.ZipFile(zpath, "r") as zfile:
@@ -764,8 +801,6 @@ CreateWebPage:[module_num:1|svn_version:\'9401\'|variable_revision_number:2|show
                     while offset < len(data):
                         udata = svn_fd.read(len(data) - offset)
                         self.assertEqual(
-                            udata, data[offset:(offset + len(udata))])
+                                udata, data[offset:(offset + len(udata))])
                         offset += len(udata)
                 svn_fd.close()
-        
-

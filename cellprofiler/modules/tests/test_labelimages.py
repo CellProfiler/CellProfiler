@@ -1,26 +1,17 @@
 '''test_labelimages.py - test the labelimages module
-
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
-
-Copyright (c) 2003-2009 Massachusetts Institute of Technology
-Copyright (c) 2009-2015 Broad Institute
-All rights reserved.
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
 '''
 
 import base64
-import numpy as np
 import os
-import scipy.ndimage
-from StringIO import StringIO
 import unittest
 import zlib
+from StringIO import StringIO
+
+import numpy as np
+import scipy.ndimage
 
 from cellprofiler.preferences import set_headless
+
 set_headless()
 
 import cellprofiler.pipeline as cpp
@@ -31,6 +22,7 @@ import cellprofiler.objects as cpo
 import cellprofiler.workspace as cpw
 
 import cellprofiler.modules.labelimages as L
+
 
 class TestLabelImages(unittest.TestCase):
     def test_01_00_load_matlab(self):
@@ -49,8 +41,10 @@ class TestLabelImages(unittest.TestCase):
                 'Vz7P+xqXH3gl30u84Nr/TN0rR7e5iJjnb62ba5+qfHtv7MkV069feszzTybP'
                 'Zj33HeYl0fPP6n9yPj3rP1fMtVVHANI9Gb4=')
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 2)
@@ -60,7 +54,7 @@ class TestLabelImages(unittest.TestCase):
         self.assertEqual(module.column_count.value, 24)
         self.assertEqual(module.site_count.value, 2)
         self.assertEqual(module.order, L.O_COLUMN)
-        
+
     def test_01_01_load_v1(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
@@ -79,8 +73,10 @@ LabelImages:[module_num:2|svn_version:\'9970\'|variable_revision_number:1|show_w
     Order\x3A:Row
 """
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
         self.assertEqual(len(pipeline.modules()), 2)
@@ -90,7 +86,7 @@ LabelImages:[module_num:2|svn_version:\'9970\'|variable_revision_number:1|show_w
         self.assertEqual(module.row_count, 32)
         self.assertEqual(module.column_count, 48)
         self.assertEqual(module.order, L.O_COLUMN)
-        
+
         module = pipeline.modules()[1]
         self.assertTrue(isinstance(module, L.LabelImages))
         self.assertEqual(module.site_count, 1)
@@ -104,18 +100,20 @@ LabelImages:[module_num:2|svn_version:\'9970\'|variable_revision_number:1|show_w
             image_set = image_set_list.get_image_set(i)
         module = L.LabelImages()
         pipeline = cpp.Pipeline()
+
         def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
+
         pipeline.add_listener(callback)
         module.module_num = 1
         pipeline.add_module(module)
-        
-        workspace = cpw.Workspace(pipeline, module, 
+
+        workspace = cpw.Workspace(pipeline, module,
                                   image_set_list.get_image_set(0),
                                   cpo.ObjectSet(), cpmeas.Measurements(),
                                   image_set_list)
         return workspace, module
-        
+
     def test_02_01_label_plate_by_row(self):
         '''Label one complete plate'''
         nsites = 6
@@ -169,13 +167,13 @@ LabelImages:[module_num:2|svn_version:\'9970\'|variable_revision_number:1|show_w
         wells = measurements.get_all_measurements(cpmeas.IMAGE, cpmeas.M_WELL)
         for i in range(nimagesets):
             self.assertEqual(sites[i], (i % 6) + 1)
-            this_row = 'ABCDEFGH'[int(i / 6 ) % 8]
+            this_row = 'ABCDEFGH'[int(i / 6) % 8]
             this_column = int(i / 6 / 8) + 1
             self.assertEqual(rows[i], this_row)
             self.assertEqual(columns[i], this_column)
             self.assertEqual(wells[i], '%s%02d' % (this_row, this_column))
             self.assertEqual(plates[i], 1)
-    
+
     def test_02_03_label_many_plates(self):
         nsites = 1
         nplates = 6
@@ -199,13 +197,13 @@ LabelImages:[module_num:2|svn_version:\'9970\'|variable_revision_number:1|show_w
         wells = measurements.get_all_measurements(cpmeas.IMAGE, cpmeas.M_WELL)
         for i in range(nimagesets):
             self.assertEqual(sites[i], 1)
-            this_row = 'ABCDEFGH'[int(i / 12 ) % 8]
+            this_row = 'ABCDEFGH'[int(i / 12) % 8]
             this_column = (i % 12) + 1
             self.assertEqual(rows[i], this_row)
             self.assertEqual(columns[i], this_column)
             self.assertEqual(wells[i], '%s%02d' % (this_row, this_column))
             self.assertEqual(plates[i], int(i / 8 / 12) + 1)
-    
+
     def test_02_04_multichar_row_names(self):
         nimagesets = 1000
         workspace, module = self.make_workspace(nimagesets)

@@ -1,28 +1,19 @@
 '''test_createbatchfiles - test the CreateBatchFiles module
-
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
-
-Copyright (c) 2003-2009 Massachusetts Institute of Technology
-Copyright (c) 2009-2015 Broad Institute
-All rights reserved.
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
 '''
 
 import base64
 import cPickle
-import numpy as np
 import os
 import sys
 import tempfile
 import unittest
-from StringIO import StringIO
 import zlib
+from StringIO import StringIO
+
+import numpy as np
 
 from cellprofiler.preferences import set_headless
+
 set_headless()
 
 import cellprofiler.workspace as cpw
@@ -38,10 +29,11 @@ import cellprofiler.modules.loadimages as LI
 import cellprofiler.modules.createbatchfiles as C
 import cellprofiler.modules.tests as T
 
+
 class TestCreateBatchFiles(unittest.TestCase):
     def test_01_00_test_load_version_8_please(self):
         self.assertEqual(C.CreateBatchFiles.variable_revision_number, 7)
-        
+
     def test_01_01_load_matlab(self):
         '''Load a matlab pipeline containing a single CreateBatchFiles module'''
         data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
@@ -55,10 +47,12 @@ class TestCreateBatchFiles(unittest.TestCase):
                 'Lfv9q9Z5r5Lu3y/3D6dy15d9fS2/QDnqZ3nQi7jvX76uactPfP2/tNF3IQBj'
                 'pbBe')
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
-        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))        
+        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, C.CreateBatchFiles))
@@ -68,7 +62,7 @@ class TestCreateBatchFiles(unittest.TestCase):
         self.assertEqual(module.mappings[0].remote_directory.value, '/imaging/analysis')
         self.assertFalse(module.remote_host_is_windows.value)
         self.assertFalse(module.batch_mode.value)
-    
+
     def test_01_02_load_v1(self):
         '''Load a version 1 pipeline'''
         data = ('eJztVdtOwjAY7pCDxMTond710gsdgwSiuzHDxEgiSGQhmpCYAgWadCvZwYhP'
@@ -82,8 +76,10 @@ class TestCreateBatchFiles(unittest.TestCase):
                 'jbB7mNKxw0RfdlRr1jxctTdryV3k9UYi4KrzHl0Vjlsy61nyvvIxfNH1pfhX'
                 'LkEPWYelPtPrXfiUGL6DBFw6+EMI3NOW+p+tyQdS/g+XWIS0')
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 1)
@@ -95,7 +91,7 @@ class TestCreateBatchFiles(unittest.TestCase):
         self.assertEqual(module.mappings[0].remote_directory.value, '/imaging/analysis')
         self.assertFalse(module.remote_host_is_windows.value)
         self.assertFalse(module.batch_mode.value)
-    
+
     def test_01_03_load_v2(self):
         '''Load a version 2 pipeline'''
         data = ('eJztVdFOIjEULSMaxcTsJj6sb330QYdZsuwGXlYwGkkEiRCzD5NoBy7QpNOS'
@@ -111,16 +107,18 @@ class TestCreateBatchFiles(unittest.TestCase):
                 '3roeOKdRLTL3tbNEL70+S70VMvwwfZj78/p7HT1rid5uBi4fV/7ofn/Q/8MV'
                 '+cjIfwPWKbcg')
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
-        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))    
+        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, C.CreateBatchFiles))
         self.assertFalse(module.wants_default_output_directory.value)
         self.assertEqual(len(module.mappings), 2)
-        self.assertEqual(module.mappings[0].local_directory.value, 
+        self.assertEqual(module.mappings[0].local_directory.value,
                          '\\\\iodine\\imaging_analysis')
         self.assertEqual(module.mappings[0].remote_directory.value,
                          '/imaging/analysis')
@@ -130,7 +128,7 @@ class TestCreateBatchFiles(unittest.TestCase):
                          '/bcb/image')
         self.assertFalse(module.remote_host_is_windows.value)
         self.assertFalse(module.batch_mode.value)
-    
+
     def test_01_04_load_v3(self):
         data = ('eJztVtFu2jAUNTSt1iJNm9SH9c2PfdhCSsu08bLB1KpIhaIFVX2I1DpwAUuO'
                 'jRIztfuKPvZz9hn7jH5C7ZBAsBApbI+1FDnXvufce0+c3LTq3Yt6A1dtB7fq'
@@ -145,16 +143,18 @@ class TestCreateBatchFiles(unittest.TestCase):
                 'v4d2EDehyO7FrT3+auuNyJ72+oZeOKNx7zPr2l0SL5tfUd2VcvQwdZjr8/Rt'
                 'k3hbS+KVcnBW8qcR99019T9c4Y8M/2eDnrm5')
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
-        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))    
+        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, C.CreateBatchFiles))
         self.assertFalse(module.wants_default_output_directory.value)
         self.assertEqual(len(module.mappings), 2)
-        self.assertEqual(module.mappings[0].local_directory.value, 
+        self.assertEqual(module.mappings[0].local_directory.value,
                          '\\\\iodine\\imaging_analysis')
         self.assertEqual(module.mappings[0].remote_directory.value,
                          '/imaging/analysis')
@@ -165,7 +165,7 @@ class TestCreateBatchFiles(unittest.TestCase):
         self.assertFalse(module.remote_host_is_windows.value)
         self.assertFalse(module.batch_mode.value)
         self.assertEqual(module.revision.value, 8014)
-    
+
     def test_01_05_load_v3_batch_data(self):
         '''Test loading a version 3 pipeline with batch data in it'''
         data = ('eJztnX9vG0d6xynHzsVO2kuCAtf+EYAHFHDSRvLO71m3yEm2klio5egi937g'
@@ -310,8 +310,10 @@ class TestCreateBatchFiles(unittest.TestCase):
                 'vXvnTvlnxfzzwXvjPH7ntffhlPZMnf++MfuPaf+/3jsfp33eiL+/MVqX3p/e'
                 'n95//vf/P0+1wjU=')
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
         module = pipeline.modules()[-1]
@@ -322,7 +324,7 @@ class TestCreateBatchFiles(unittest.TestCase):
         self.assertEqual(image_set_list.count(), 96)
         self.assertEqual(image_set_list.legacy_fields['PathnamerawDNA'],
                          '\\\\iodine\\imaging_analysis\\People\\Lee\\ExampleImages\\ExampleSBSImages')
-    
+
     def test_01_06_load_v4(self):
         data = ('eJztWt1u2zYUlhMna7Zha3eTXepqaIpFpeLUi40hjRPXm4f4Z7XRom0CjbZo'
                 'mxgtChKVxS0K7DH2GLvcI+xx+ggjFTmSmSyyldhuAQkW5EPyO+fj4TmkRbNW'
@@ -349,8 +351,10 @@ class TestCreateBatchFiles(unittest.TestCase):
                 'S5vf3LtxnOXxDcf9w9Mk9rIb2Sv7j1/E4LIRTuIS+H+U2eLr4Q3tx31cZPtZ'
                 '/aZkMrfud2gne8npQv9i2v8HD8C1zQ==')
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 3)
@@ -359,7 +363,7 @@ class TestCreateBatchFiles(unittest.TestCase):
         self.assertEqual(len(module.mappings), 1)
         self.assertEqual(module.mappings[0].local_directory.value, 'Z:')
         self.assertEqual(module.mappings[0].remote_directory.value, '/imaging/analysis')
-        
+
     def test_01_07_load_v7(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
@@ -417,12 +421,12 @@ CreateBatchFiles:[module_num:19|svn_version:\'Unknown\'|variable_revision_number
         module.module_num = len(pipeline.modules()) + 1
         pipeline.add_module(module)
         pipeline.test_valid()
-        
+
         module = cpm.CPModule()
         module.module_num = len(pipeline.modules()) + 1
         pipeline.add_module(module)
         self.assertRaises(cps.ValidationError, pipeline.test_valid)
-    
+
     def test_03_01_save_and_load(self):
         '''Save a pipeline to batch data, open it to check and load it'''
         data = ('eJztWW1PGkEQXhC1WtPYTzb9tB+llROoGiWNgi9NSYUSIbZGbbvCApvu7ZJ7'
@@ -443,18 +447,20 @@ CreateBatchFiles:[module_num:19|svn_version:\'Unknown\'|variable_revision_number
                 'S4OgXwPc8DipvO35Ut2/kfZfQO9+ewG6+03K3s04TW9topsa5ahyvYut7Yuv'
                 'Wc+Gdj/P52sKz9ptPOXWK5AzuU8tb5ja9TuRbal4Q1rvCNT6zdzA561DWHwW'
                 'pnvXXa13Zxx+bw3DFwn9zffYBxdxKidxP8Fg47zYw97NbVj7P/nFW+E=')
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
             self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
+
         T.maybe_download_sbs()
         for windows_mode in ((False, True) if sys.platform.startswith("win")
                              else (False,)):
             pipeline = cpp.Pipeline()
             pipeline.add_listener(callback)
             pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
-            ipath = os.path.join(T.example_images_directory(),'ExampleSBSImages')
+            ipath = os.path.join(T.example_images_directory(), 'ExampleSBSImages')
             bpath = tempfile.mkdtemp()
-            bfile = os.path.join(bpath,C.F_BATCH_DATA)
+            bfile = os.path.join(bpath, C.F_BATCH_DATA)
             hfile = os.path.join(bpath, C.F_BATCH_DATA_H5)
             try:
                 li = pipeline.modules()[0]
@@ -473,13 +479,13 @@ CreateBatchFiles:[module_num:19|svn_version:\'Unknown\'|variable_revision_number
                 measurements = cpmeas.Measurements(mode="memory")
                 image_set_list = cpi.ImageSetList()
                 result = pipeline.prepare_run(
-                    cpw.Workspace(pipeline, None, None, None,
-                                  measurements, image_set_list))
+                        cpw.Workspace(pipeline, None, None, None,
+                                      measurements, image_set_list))
                 self.assertFalse(pipeline.in_batch_mode())
                 self.assertFalse(result)
                 self.assertFalse(module.batch_mode.value)
                 self.assertTrue(measurements.has_feature(
-                    cpmeas.EXPERIMENT, cpp.M_PIPELINE))
+                        cpmeas.EXPERIMENT, cpp.M_PIPELINE))
                 pipeline = cpp.Pipeline()
                 pipeline.add_listener(callback)
                 image_set_list = cpi.ImageSetList()
@@ -494,15 +500,15 @@ CreateBatchFiles:[module_num:19|svn_version:\'Unknown\'|variable_revision_number
                 self.assertTrue(isinstance(module, C.CreateBatchFiles))
                 self.assertTrue(module.batch_mode.value)
                 image_numbers = measurements.get_image_numbers()
-                self.assertTrue([x == i+1 for i, x in enumerate(image_numbers)])
+                self.assertTrue([x == i + 1 for i, x in enumerate(image_numbers)])
                 pipeline.prepare_run(workspace)
-                pipeline.prepare_group(workspace, {}, range(1,97))
+                pipeline.prepare_group(workspace, {}, range(1, 97))
                 for i in range(96):
                     image_set = image_set_list.get_image_set(i)
                     for image_name in ('DNA', 'Cytoplasm'):
                         pathname = measurements.get_measurement(
-                            cpmeas.IMAGE, "PathName_"+image_name, i+1)
-                        self.assertEqual(pathname, 
+                                cpmeas.IMAGE, "PathName_" + image_name, i + 1)
+                        self.assertEqual(pathname,
                                          '\\imaging\\analysis' if windows_mode
                                          else '/imaging/analysis')
                 measurements.close()
@@ -512,53 +518,52 @@ CreateBatchFiles:[module_num:19|svn_version:\'Unknown\'|variable_revision_number
                 if os.path.exists(hfile):
                     os.unlink(hfile)
                 os.rmdir(bpath)
-    
+
     def test_04_01_alter_path(self):
         module = C.CreateBatchFiles()
         module.mappings[0].local_directory.value = "foo"
         module.mappings[0].remote_directory.value = "bar"
-        
+
         self.assertEqual(module.alter_path("foo/bar"), "bar/bar")
         self.assertEqual(module.alter_path("baz/bar"), "baz/bar")
-        
+
     def test_04_02_alter_path_regexp(self):
         module = C.CreateBatchFiles()
         module.mappings[0].local_directory.value = "foo"
         module.mappings[0].remote_directory.value = "bar"
-        
+
         self.assertEqual(
-            module.alter_path("foo/bar", regexp_substitution=True), "bar/bar")
+                module.alter_path("foo/bar", regexp_substitution=True), "bar/bar")
         self.assertEqual(
-            module.alter_path("baz/bar", regexp_substitution=True), "baz/bar")
-        
+                module.alter_path("baz/bar", regexp_substitution=True), "baz/bar")
+
         module.mappings[0].local_directory.value = r"\foo\baz"
         module.remote_host_is_windows.value = True
         self.assertEqual(
-            module.alter_path(r"\\foo\\baz\\bar", regexp_substitution=True),
-            r"bar\\bar")
-        
+                module.alter_path(r"\\foo\\baz\\bar", regexp_substitution=True),
+                r"bar\\bar")
+
     if sys.platform == 'win32':
         def test_04_03_alter_path_windows(self):
             module = C.CreateBatchFiles()
             module.mappings[0].local_directory.value = "\\foo"
             module.mappings[0].remote_directory.value = "\\bar"
-            
+
             self.assertEqual(
-                module.alter_path("\\foo\\bar"), "/bar/bar")
+                    module.alter_path("\\foo\\bar"), "/bar/bar")
             self.assertEqual(
-                module.alter_path("\\FOO\\bar"), "/bar/bar")
+                    module.alter_path("\\FOO\\bar"), "/bar/bar")
             self.assertEqual(
-                module.alter_path("\\baz\\bar"), "/baz/bar")
-            
+                    module.alter_path("\\baz\\bar"), "/baz/bar")
+
         def test_04_04_alter_path_windows_regexp(self):
             module = C.CreateBatchFiles()
             module.mappings[0].local_directory.value = "foo"
             module.mappings[0].remote_directory.value = "bar"
-            
+
             self.assertEqual(
-                module.alter_path("\\\\foo\\\\bar", regexp_substitution=True), 
-                "/foo/bar")
+                    module.alter_path("\\\\foo\\\\bar", regexp_substitution=True),
+                    "/foo/bar")
             self.assertEqual(
-                module.alter_path("\\\\foo\\g<bar>", regexp_substitution=True), 
-                "/foo\\g<bar>")
-        
+                    module.alter_path("\\\\foo\\g<bar>", regexp_substitution=True),
+                    "/foo\\g<bar>")

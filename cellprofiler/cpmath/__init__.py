@@ -1,14 +1,21 @@
-"""CellProfiler.Math - mathematical utilities for CellProfiler
+import importlib
+import inspect
+import sys
+import warnings
 
-CellProfiler is distributed under the GNU General Public License,
-but this file is licensed under the more permissive BSD license.
-See the accompanying file LICENSE for details.
+MESSAGE = "This package is deprecated, please use centrosome"
 
-Copyright (c) 2003-2009 Massachusetts Institute of Technology
-Copyright (c) 2009-2015 Broad Institute
-All rights reserved.
+warnings.warn(MESSAGE, DeprecationWarning)
 
-Please see the AUTHORS file for credits.
 
-Website: http://www.cellprofiler.org
-"""
+def bind(module):
+    k = module.rsplit(".")[-1]
+    module = sys.modules[module]
+
+    warnings.warn(MESSAGE + ".%s" % k, DeprecationWarning, stacklevel=2)
+
+    package = importlib.import_module("centrosome." + k)
+
+    for k, v in inspect.getmembers(package):
+        if inspect.getmodule(v) in (None, package):
+            setattr(module, k, v)

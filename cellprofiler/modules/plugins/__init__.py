@@ -1,28 +1,17 @@
 """Plugin modules - redirect module loads to the user's plugin
 directory.
-
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
-
-Copyright (c) 2003-2009 Massachusetts Institute of Technology
-Copyright (c) 2009-2015 Broad Institute
-All rights reserved.
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
 """
-
 
 # These examples:
 # http://blog.dowski.com/2008/07/31/customizing-the-python-import-system/
 # http://www.secomputing.co.uk/2009/05/importing-python-packages-in-memory.html
 # were helpful when writing this code.
 
-import imp
-import sys
-import os.path
 import glob
+import imp
+import os.path
+import sys
+
 import cellprofiler.preferences as cpprefs
 
 
@@ -45,7 +34,7 @@ class PluginImporter(object):
         if os.path.exists(os.path.join(cpprefs.get_plugin_directory(), modname + '.py')):
             return self
         return None
- 
+
     def load_module(self, fullname):
         if fullname in sys.modules:
             return sys.modules[fullname]
@@ -65,5 +54,6 @@ class PluginImporter(object):
         except:
             if fullname in sys.module:
                 del sys.modules[fullname]
+
 
 sys.meta_path.append(PluginImporter())

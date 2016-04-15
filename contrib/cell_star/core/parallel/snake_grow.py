@@ -44,7 +44,7 @@ def grow_single_snake(frame, images, parameters, seed):
     #
 
     ir = ImageRepo(frame, parameters)
-    ir._foreground_mask, ir._brighter, ir._darker, ir._image_back_difference_blurred, ir._image_back_difference, \
+    ir._foreground_mask, ir._brighter, ir._darker, ir._clean, ir._clean_original, \
     ir._cell_content_mask, ir._cell_border_mask, ir._background, ir._background_mask = images
 
     #

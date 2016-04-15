@@ -225,6 +225,11 @@ def exclude_segments(image, segments, val):
 
     return image_segments_valued
 
+def image_median_filter(image, size):
+    if size < 1:
+        return image
+
+    return median_filter(image, (size, size))
 
 def image_blur(image, times):
     """
@@ -247,6 +252,9 @@ def image_smooth(image, radius):
     @param image: image to be blurred (assumed as numpy.array of values from 0 to 1)
     @param radius: radius of the kernel
     """
+    if radius < 1:
+        return image
+
     kernel = get_circle_kernel(radius).astype(float)
     kernel /= np.sum(kernel)
     image = np.array(image, dtype=float)

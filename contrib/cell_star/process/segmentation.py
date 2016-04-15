@@ -149,14 +149,14 @@ class Segmentation(object):
 
         self.images.calculate_brighter_original()
         self.images.calculate_darker_original()
-        self.images.calculate_original_clean()
-        self.images.calculate_foreground_mask()
+        self.images.calculate_clean_original()
+        self.images.calculate_forebackground_masks()
 
-        self.images.calculate_original_clean_blurred()
+        self.images.calculate_clean()
         self.images.calculate_brighter()
         self.images.calculate_darker()
 
-        self.images.calculate_cell_content_mask()
+        self.images.calculate_cell_border_content_mask()
 
     def find_seeds(self, exclude):
         self.seeds = self.seeder.find_seeds(self.snakes, self.all_seeds, exclude_current_segments=exclude)

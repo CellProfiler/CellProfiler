@@ -1,28 +1,28 @@
 # -*- coding: utf-8 -*-
-__author__ = 'Adam Kaczmarek, Filip Mróz'
+"""
+Snake object responsible for growing best contours from given seed.
+Date: 2013-2016
+Website: http://cellstar-algorithm.org/
+"""
 
-#external imports
-import numpy as np
-# from matplotlib.nxutils import points_inside_poly
 import math
-#internal imports
-from contrib.cell_star.utils import calc_util, image_util
+
+import numpy as np
+
 from contrib.cell_star.core.point import Point
+from contrib.cell_star.utils import calc_util, image_util
 from contrib.cell_star.utils.index import Index
 from contrib.cell_star.utils.python_util import *
 
-class Snake(object):
-    epsilon = 0.00000001
-    """
-    List of contour points
-    @ivar x: x coordinate of points
-    @ivar y: y coordinate of points
-    """
 
-    @classmethod
-    def create_from_seed(cls, parameters, seed, points_num, images):
-        points = [seed] * points_num
-        return cls(parameters, seed, points, None, images)
+class Snake(object):
+    """
+    Contour representation of snake along with all its properties.
+    @ivar in_polygon : cropped array representation of contour
+    @ivar in_polygon_yx : position of in_polygon
+    @ivar rank: ranking of the contour (the smaller the better)
+    """
+    epsilon = 1e-10
 
     @property
     def xs(self):
@@ -32,53 +32,36 @@ class Snake(object):
     def ys(self):
         return [p.y for p in self.points]
 
-    def reinit(self, points=None, final_edgepoints=None):
-        self.points = points
-        self.final_edgepoints = final_edgepoints
-        self.rank = None
-        self.max_contiguous_free_border = 0
-        self.free_border_entropy = 0.0
-        self.in_snake = None
-        self.in_polygon = None
-        self.in_polygon_yx = None
-        self.segment_props = {}
-        self.area = 0.0
-        self.avg_out_border_brightness = 0.0
-        self.max_out_border_brightness = 0.0
-        self.avg_in_border_brightness = 0.0
-        self.avg_inner_brightness = 0.0
-        self.max_inner_brightness = 0.0
-        self.avg_inner_darkness = 0.0
-        self.centroid_x = 0.0
-        self.centroid_y = 0.0
-        self.border_integral = 0
-        self.polar_coordinate_boundary = None
-        self.original_edgepoints = None
-        self.properties_vector_cached = {}
+    @property
+    def centroid(self):
+        return self.centroid_x, self.centroid_y
 
-    def __init__(self, parameters, seed, points=None, final_edgepoints=None, images=None):
+    @classmethod
+    def create_from_seed(cls, parameters, seed, points_num, images):
+        points = [seed] * points_num
+        return cls(parameters, seed, points, images)
+
+    def __init__(self, parameters, seed, points=None, images=None):
         """
+        @type seed: Seed
         @type images: core.image_repo.ImageRepo
-        @type final_edgepoints: list
-        @type points: list
+        @type points: list[Point]
         @type parameters: dict
-        @param parameters:
-        @param points: 
-        @param final_edgepoints: 
-        @param images: 
         """
         self.seed = seed
         self.parameters = parameters
-        self.points = points
-        self.final_edgepoints = final_edgepoints
         self.images = images
-        self.rank = None
-        self.max_contiguous_free_border = 0
-        self.free_border_entropy = 0.0
-        self.in_snake = None
+
+        # Snake grow.
+        self.points = points
+        self.original_edgepoints = None
+        self.final_edgepoints = None
+        self.polar_coordinate_boundary = None
+
+        # Snake evaluation properties.
         self.in_polygon = None
         self.in_polygon_yx = None
-        self.segment_props = {}
+        self.rank = None
         self.area = 0.0
         self.avg_out_border_brightness = 0.0
         self.max_out_border_brightness = 0.0
@@ -88,42 +71,29 @@ class Snake(object):
         self.avg_inner_darkness = 0.0
         self.centroid_x = 0.0
         self.centroid_y = 0.0
-        self.border_integral = 0
-        self.polar_coordinate_boundary = None
-        self.original_edgepoints = None
+        self.max_contiguous_free_border = 0
+        self.free_border_entropy = 0.0
         self.properties_vector_cached = {}
 
-    def show(self, name):
-        maska = image_util.draw_polygons(self.images.image, [zip(self.xs, self.ys)])
-        image_out = maska + (1-maska) * self.images.image
-        image_util.image_show(image_out, name)
-
     @speed_profile
-    def star_multi_vec(self, size_weight, polar_transform):
+    def star_grow(self, size_weight, polar_transform):
         """
-
-        @param size_weight:
-        @param polar_transform:
+        Grow the snake from seed.
         @type polar_transform: contrib.cell_star.core.vectorized.polar_transform.PolarTransform
-        @type seed: contrib.cell_star.core.seed.Seed
-        @return:
+        @type size_weight: float
         """
 
         #
-        #
-        # Inicjalizacja
-        #
+        # Initialization
         #
 
         self.centroid_x = self.seed.x
         self.centroid_y = self.seed.y
 
-        handles = []
-
-        avg_cell_diameter = self.parameters["segmentation"]["avgCellDiameter"]
         points_number = polar_transform.N
         step = polar_transform.step
         unstick = self.parameters["segmentation"]["stars"]["unstick"]
+        avg_cell_diameter = self.parameters["segmentation"]["avgCellDiameter"]
         smoothness = self.parameters["segmentation"]["stars"]["smoothness"]
         gradient_weight = self.parameters["segmentation"]["stars"]["gradientWeight"]
         brightness_weight = self.parameters["segmentation"]["stars"]["brightnessWeight"]
@@ -131,6 +101,8 @@ class Snake(object):
         size_weight = float(size_weight) / avg_cell_diameter
         cum_brightness_weight = self.parameters["segmentation"]["stars"]["cumBrightnessWeight"] / avg_cell_diameter
         background_weight = self.parameters["segmentation"]["stars"]["backgroundWeight"] / avg_cell_diameter
+        border_thickness_steps = \
+            1 + math.floor(float(self.parameters["segmentation"]["stars"]["borderThickness"]) / float(step))
 
         im = self.images.image_back_difference_blurred
         imb = self.images.brighter
@@ -138,9 +110,10 @@ class Snake(object):
         imfg = self.images.foreground_mask
 
         steps = polar_transform.steps
-        max_r = polar_transform.max_r # Taka sama wartość w matlabie - generuje niezgodności !
+        max_r = polar_transform.max_r
         R = polar_transform.R.flat
         t = polar_transform.t
+        max_diff = (abs(smoothness) * np.arange(1, steps + 1) / points_number + 0.5).astype(int)
 
         px = float(self.centroid_x) + polar_transform.x
         px = np.maximum(px, 0)
@@ -151,120 +124,92 @@ class Snake(object):
         py = np.minimum(py, im.shape[0] - 1)
 
         #
+        # Contour quality function calculation and finding the best candidates.
         #
-        # Obliczanie funkcji oceny konturu i znajdowanie konturu
         #
-        #
-
-        # indeks idzie kolejno dla każdego kąta wzdłuż promienia od najmniejszego do największego
+        # index is ordered first by angle then by radius
         # for angle:
         #   for radius:
-        index = calc_util.index(px.round(), py.round()).reshape((polar_transform.x.shape[0], polar_transform.x.shape[1], 2))
+
+        index = calc_util.index(px.round(), py.round()).reshape(
+            (polar_transform.x.shape[0], polar_transform.x.shape[1], 2))
 
         #
-        #  pre_f - składowa funkcji oceny jakości konturu
-        #
-        #
+        #  pre_f - part of function quality for interior
+        #  f_tot - final quality array
         #
 
-        pre_f = (cum_brightness_weight * imb[Index.to_numpy(index)] - content_weight * imc[Index.to_numpy(index)] + background_weight * (1 - imfg[Index.to_numpy(index)])) * step
+        numpy_index = Index.to_numpy(index)
+        pre_f = (cum_brightness_weight * imb[numpy_index] \
+                 - content_weight * imc[numpy_index] \
+                 + background_weight * (1 - imfg[numpy_index])) * step
         f = np.cumsum(pre_f, axis=0)
-
-        border_thickness_steps = \
-            1 + math.floor(float(self.parameters["segmentation"]["stars"]["borderThickness"]) / float(step))
 
         im_diff = calc_util.get_gradient(im, index, border_thickness_steps)
 
         f_tot = f \
-            - size_weight * np.kron(np.log(R), np.ones((t.size, 1))).T \
-            - gradient_weight * im_diff \
-            - brightness_weight * im[Index.to_numpy(index)]
+                - size_weight * np.kron(np.log(R), np.ones((t.size, 1))).T \
+                - gradient_weight * im_diff \
+                - brightness_weight * im[numpy_index]
 
         f_tot = f_tot.T
-        #f_tot = image_util.image_smooth(f_tot, 1)
+        # f_tot = image_util.image_smooth(f_tot, 1)
 
+        # Scale entire array to 0-1 then scale individual angles.
+        f_tot = (f_tot - f_tot.min()) / (f_tot.max() - f_tot.min() + self.epsilon)
+        f_tot /= (np.kron(np.ones((f_tot.shape[1], 1)), f_tot.max(axis=1)).T + self.epsilon)
 
-        epsilon = 10**(-10)
-        f_tot = (f_tot - f_tot.min()) / (f_tot.max() - f_tot.min() + epsilon)
-        f_tot /= (np.kron(np.ones((f_tot.shape[1], 1)), f_tot.max(axis=1)).T + epsilon)
-
-        # Znajdź kontur początkowy
-        ymins, xmins = np.where(f_tot == np.kron(np.ones((f_tot.shape[1], 1)), f_tot.min(axis=1)).T)
-        # Przytnij - zabezpieczenie przed przekroczeniem dopuszczalnej liczby punktów
-        ymins, xmins = ymins[:int(points_number)], xmins[:int(points_number)]
-
-        # image_util.image_show(f_tot, 1)
+        # Find initial contour
+        _, best_radius = np.where(f_tot == np.kron(np.ones((f_tot.shape[1], 1)), f_tot.min(axis=1)).T)
 
         #
-        #
-        # Wygładzanie konturu
-        #
+        # Contour smoothing
         #
 
-        # Posortuj punkty konturu (długości promieni) względem kolejnych kątów
-        s = sorted(range(len(ymins)), key=lambda k: ymins[k])
-        xmins = xmins[s]
-        # Wyznacz maksymalne różnice pomiędzy kolejnymi punktami konturu
-        max_diff = np.array(abs(smoothness) * np.arange(1, steps+1) / points_number + 0.5, dtype=int)
+        smoothed_radius, radius_bounds = self.smooth_contour(best_radius, max_diff, points_number, f_tot)
 
-        # Pierwsze wygładzenie konturu
-        xmins2, xmaxs = self.smooth_contour_vec(xmins, max_diff, points_number, f_tot)
+        self.original_edgepoints = (smoothed_radius != radius_bounds) | \
+                                   ((smoothed_radius == best_radius) & (smoothed_radius < max_r - 2))
+        smoothed_radius = np.minimum(smoothed_radius, max_r)
 
-        self.original_edgepoints = (xmins2 != xmaxs) | ((xmins2 == xmins) & (xmins2 < max_r - 2))
-        xmins3 = np.minimum(xmins2, max_r)
-
-        # Unstick edgepoint
-        # Final edgepoints - punkty minimów, które są brane pod uwagę przy konstruowaniu konturu
+        # Determine final edgepoint that will be used to construct contour points
         self.final_edgepoints = \
-            calc_util.unstick_contour(self.original_edgepoints, self.parameters["segmentation"]["stars"]["unstick"])
+            calc_util.unstick_contour(self.original_edgepoints, unstick)
 
         # Interpolate points where no reliable points had been found.
-        calc_util.interpolate(self.final_edgepoints, points_number, xmins3)
+        calc_util.interpolate(self.final_edgepoints, points_number, smoothed_radius)
 
         #
-        # Przetworzenie konturu na listę punktów
+        # Create contour points list
         #
-        #
 
-        xmins3 += 1
+        final_radius = np.minimum(np.maximum(np.round(smoothed_radius + 1), 1), max_r - 1)
 
-        xmins3 = np.minimum(np.maximum(np.round(xmins3), 1), max_r - 1)
+        px = self.seed.x + step * final_radius * np.cos(t.T)
+        py = self.seed.y + step * final_radius * np.sin(t.T)
 
-        px = self.seed.x + step * xmins3 * np.cos(t.T)
-        py = self.seed.y + step * xmins3 * np.sin(t.T)
-
-        self.polar_coordinate_boundary = xmins3  # np.minimum(np.maximum(np.round(xmins3), 1), max_r - 1)
-
-        # if not np.all(xmins3 == self.polar_coordinate_boundary):
-        #     print xmins3
-        #     print self.polar_coordinate_boundary
-        #
-        # assert np.all(xmins3 == self.polar_coordinate_boundary)
-
+        self.polar_coordinate_boundary = final_radius
         self.points = [Point(x, y) for x, y in zip(px, py)]
 
-        return
-
-
-    def smooth_contour_vec(self, xmins, max_diff, points_number, f_tot):
+    def smooth_contour(self, radius, max_diff, points_number, f_tot):
         """
-        Smoothing contour
-        @param xmins: ray lengths for segments
-        @type xmins: np.array
+        Smoothing contour using greedy length cut. Rotating from min radius clockwise and anti.
+        @type radius: np.ndarray
         @param max_diff: max change of ray length per iter.
-        @type max_diff np.array
-        @param points_number: nbr. of points in contour
+        @type max_diff np.ndarray
         @type points_number int
-        @param f_tot: energy fun.
-        @type f_tot: np.array
-        @return:
+        @param f_tot: quality function array
+        @type f_tot: np.ndarray
+
+        @rtype (np.ndarray, np.ndarray)
+        @return (smoothed_radius, used_radius_bounds)
         """
         points_order = range(0, points_number)
-        min_angle = xmins.argmin()
+        min_angle = radius.argmin()
         istart = min_angle
 
-        xmins2 = np.copy(xmins)
-        xmaxs = np.copy(xmins)
+        xmins2 = np.copy(radius)
+        xmaxs = np.copy(radius)
 
         current_iteration = 0
         ok_points = 0
@@ -287,7 +232,7 @@ class Snake(object):
                 if xmins2[current] - xmins2[previous] > max_diff[xmins2[previous]]:
                     xmaxs[current] = xmins2[previous] + max_diff[xmins2[previous]]
                     f_tot_slice = f_tot[current, :xmaxs[current] + 1]
-                    xmins2[current] = np.where(f_tot_slice == f_tot_slice.min())[0].max()
+                    xmins2[current] = f_tot_slice.argmin()
                     ok_points = 0
                     changed = True
                 else:
@@ -302,7 +247,8 @@ class Snake(object):
 
                 if xmins2[current] - xmins2[previous] > max_diff[xmins2[previous]]:
                     xmaxs[current] = xmins2[previous] + max_diff[xmins2[previous]]
-                    xmins2[current] = max(f_tot[current, :xmaxs[current] + 1].argmin(), xmins2[previous] - max_diff[xmins2[previous]])
+                    f_tot_slice = f_tot[current, :xmaxs[current] + 1]
+                    xmins2[current] = max(f_tot_slice.argmin(), xmins2[previous] - max_diff[xmins2[previous]])
                     ok_points = 0
                     changed = True
                 else:
@@ -314,23 +260,26 @@ class Snake(object):
 
         return xmins2, xmaxs
 
-    def limit_difference(self):
-        pass
-
-    def centroid(self):
-        return self.centroid_x, self.centroid_y
-
     @speed_profile
     def calculate_properties_vec(self, polar_transform):
+        """
+        Analyse contour and calculate all it properties and ranking.
+        @type polar_transform: contrib.cell_star.core.vectorized.polar_transform.PolarTransform
+        """
+
         # Potentially prevent unnecessary calculations
         if self.rank is not None:
             return
 
         self.properties_vector_cached = {}
-        epsilon = 10 ** -8
-        min_border_r = 0.055 * self.parameters["segmentation"]["avgCellDiameter"]
-        max_border_r = 0.1 * self.parameters["segmentation"]["avgCellDiameter"]
-        image_bounds = calc_util.get_cartesian_bounds(self.polar_coordinate_boundary, self.seed.x, self.seed.y, polar_transform)
+
+        avg_cell_diameter = self.parameters["segmentation"]["avgCellDiameter"]
+        min_border_r = 0.055 * avg_cell_diameter
+        max_border_r = 0.1 * avg_cell_diameter
+        ranking_params = self.parameters["segmentation"]["ranking"]
+
+        image_bounds = calc_util.get_cartesian_bounds(self.polar_coordinate_boundary, self.seed.x, self.seed.y,
+                                                      polar_transform)
         dilated_bounds = image_util.extend_slices(image_bounds, int(max_border_r * 2))
 
         original_clean = self.images.image_back_difference[dilated_bounds]
@@ -340,14 +289,13 @@ class Snake(object):
         origin_in_slice = Point(x=origin_in_slice[1], y=origin_in_slice[0])
 
         segment, self.in_polygon, in_polygon_local_yx = calc_util.star_in_polygon(brighter.shape,
-                                                                                 self.polar_coordinate_boundary,
-                                                                                 origin_in_slice.x, origin_in_slice.y,
-                                                                                 polar_transform)
+                                                                                  self.polar_coordinate_boundary,
+                                                                                  origin_in_slice.x, origin_in_slice.y,
+                                                                                  polar_transform)
         self.in_polygon_yx = calc_util.unslice_point(in_polygon_local_yx, dilated_bounds)
 
         self.area = np.count_nonzero(self.in_polygon) + self.epsilon
         approx_radius = math.sqrt(self.area / math.pi)
-
         border_radius = max(min(approx_radius, max_border_r), min_border_r)
 
         dilation = round(border_radius / polar_transform.step)
@@ -386,7 +334,7 @@ class Snake(object):
         self.avg_inner_darkness = tmp.sum() / self.area
 
         # Calculate snake centroid
-        if self.area > 2*self.epsilon:
+        if self.area > 2 * self.epsilon:
             area2 = float(self.area - self.epsilon)
             self.centroid_x = (self.in_polygon.sum(0) * np.arange(1, self.in_polygon.shape[1] + 1)).sum() / area2
             self.centroid_y = (self.in_polygon.sum(1) * np.arange(1, self.in_polygon.shape[0] + 1)).sum() / area2
@@ -398,6 +346,7 @@ class Snake(object):
 
         # Calculate free border fragments - fragments of border, which endpoints have been discarded
         fb, _, _ = calc_util.loop_connected_components(np.logical_not(self.final_edgepoints))
+
         # Calculate free border entropy
         fb_entropy = 0
         if min(fb.shape) != 0:
@@ -407,7 +356,7 @@ class Snake(object):
         self.max_contiguous_free_border = fb.max() if fb.size > 0 else 0
 
         self.free_border_entropy = fb_entropy
-        self.rank = self.star_rank(self.parameters["segmentation"]["ranking"], self.parameters["segmentation"]["avgCellDiameter"])
+        self.rank = self.star_rank(ranking_params, avg_cell_diameter)
 
     def star_rank(self, ranking_params, avg_cell_diameter):
         return np.dot(self.ranking_parameters_vector(ranking_params), self.properties_vector(avg_cell_diameter))

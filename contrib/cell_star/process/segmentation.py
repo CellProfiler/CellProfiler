@@ -182,7 +182,7 @@ class Segmentation(object):
             for weight in size_weights:
                 curr_snake = copy(snake)
 
-                curr_snake.star_multi_vec(weight, self.polar_transform)
+                curr_snake.star_grow(weight, self.polar_transform)
                 curr_snake.calculate_properties_vec(self.polar_transform)
 
                 if best_snake is None:

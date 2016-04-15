@@ -55,7 +55,7 @@ class PFSnake(object):
         snakes_to_grow = [(copy.copy(s), w) for w in size_weight_list]
 
         for snake, weight in snakes_to_grow:
-            snake.star_multi_vec(size_weight=weight, polar_transform=self.polar_transform)
+            snake.star_grow(size_weight=weight, polar_transform=self.polar_transform)
             snake.calculate_properties_vec(self.polar_transform)
 
         self.snakes = [grown_snake for grown_snake, _ in snakes_to_grow]

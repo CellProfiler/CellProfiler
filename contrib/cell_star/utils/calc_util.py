@@ -25,7 +25,7 @@ def interpolate(final_edgepoints, points_number, xmins3):
         for i in range(len(cumlengths)):
             # Indeks bieżącego punktu konturu
             # current = cumlengths[i]
-            left_interval_boundary = cumlengths[i]
+            left_interval_boundary = cumlengths_loop[i]
             # Długość przedziału interpolacji (ilość odrzuconych punktów konturu do najbliższego zatwierdzonego)
             # mlength = cumlengths_loop[i + 1] - current - 1
             interval_length = cumlengths_loop[i + 1] - left_interval_boundary - 1

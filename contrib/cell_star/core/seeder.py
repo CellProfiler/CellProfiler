@@ -143,7 +143,7 @@ class Seeder(object):
             Finds seeds from snakes centroids
             @param snakes: Grown snakes from previous frame
             """
-            return point_list_as_seeds([snake.centroid() for snake in snakes], 'snake centroid')
+            return point_list_as_seeds([snake.centroid for snake in snakes], 'snake centroid')
 
     def find_seeds(self, snakes, all_seeds, exclude_current_segments=False):
         seeds = []
@@ -271,7 +271,7 @@ class Seeder(object):
 
 def seed_is_new(_seed, all_seeds, distance):
     for seed in all_seeds:
-        if euclidean_norm(_seed.as_pair(), seed.as_pair()) < distance:
+        if euclidean_norm(_seed.as_xy(), seed.as_xy()) < distance:
             return False
 
     return True

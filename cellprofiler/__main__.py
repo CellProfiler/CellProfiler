@@ -116,10 +116,6 @@ def main(args=None):
         get_batch_commands(options.batch_commands_file)
         return
 
-    if options.run_ilastik:
-        run_ilastik()
-        return
-
     if options.add_message_for_user:
         if len(args) != 3:
             sys.stderr.write("Usage: (for add_message-for-user)\n")
@@ -262,11 +258,6 @@ def main(args=None):
 
 def stop_cellprofiler():
     try:
-        from ilastik.core.jobMachine import GLOBAL_WM
-        GLOBAL_WM.stopWorkers()
-    except:
-        logging.root.warn("Failed to stop Ilastik")
-    try:
         from cellprofiler.utilities.zmqrequest import join_to_the_boundary
         join_to_the_boundary()
     except:
@@ -402,13 +393,6 @@ def parse_args(args):
                           action="store_true",
                           help="Build extensions, then exit CellProfiler")
 
-    parser.add_option("--ilastik",
-                      dest="run_ilastik",
-                      default=False,
-                      action="store_true",
-                      help=("Run Ilastik instead of CellProfiler. "
-                            "Ilastik is a pixel-based classifier. See "
-                            "www.ilastik.org for more details."))
     parser.add_option("-d", "--done-file",
                       dest="done_file",
                       default=None,
@@ -763,18 +747,6 @@ def write_schema(pipeline_filename):
     module.prepare_run(workspace)
 
 
-def run_ilastik():
-    #
-    # Fake ilastik into thinking it is __main__
-    #
-    import ilastik
-    import imp
-    sys.argv.remove("--ilastik")
-    il_path = ilastik.__path__
-    il_file, il_path, il_description = imp.find_module('ilastikMain', il_path)
-    imp.load_module('__main__', il_file, il_path, il_description)
-
-
 def build_extensions():
     '''Compile C and Cython files as needed'''
     import subprocess
@@ -833,14 +805,6 @@ def build_extensions():
 
 def run_pipeline_headless(options, args):
     '''Run a CellProfiler pipeline in headless mode'''
-    #
-    # Start Ilastik's workers
-    #
-    try:
-        from ilastik.core.jobMachine import GLOBAL_WM
-        GLOBAL_WM.set_thread_count(1)
-    except:
-        logging.root.warn("Failed to stop Ilastik")
 
     if sys.platform == 'darwin':
         if options.start_awt:

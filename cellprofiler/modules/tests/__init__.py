@@ -30,26 +30,6 @@ cp_logo_url_folder, cp_logo_url_filename = cp_logo_url.rsplit("/", 1)
 cp_logo_url_shape = (70, 187, 3)
 
 
-class TestAllModules(unittest.TestCase):
-    '''Test things having to do with modules'''
-    optional_modules = ('classifypixels', 'ilastik_pixel_classification')
-
-    def test_01_01_import_all(self):
-        #
-        # Make sure that we can import every module.
-        # Tests have a habit of importing the module they test and then,
-        # they are not included in the test suite because they don't import
-        #
-        found_modules = map(
-                (lambda x: x.__module__.rsplit(".", 1)[-1]), all_modules.values())
-        for module_name in \
-                filter((lambda x: x not in self.optional_modules), builtin_modules):
-            self.assertTrue(
-                    module_name in found_modules,
-                    "%s is missing from the list of available modules" %
-                    module_name)
-
-
 def example_images_directory():
     global __temp_example_images_folder
     if os.environ.has_key('CP_EXAMPLEIMAGES'):

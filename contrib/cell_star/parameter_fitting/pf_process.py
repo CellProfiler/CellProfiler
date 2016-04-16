@@ -21,12 +21,10 @@ from contrib.cell_star.parameter_fitting.pf_snake import PFSnake
 from contrib.cell_star.core.seeder import Seeder
 from contrib.cell_star.process.segmentation import Segmentation
 from contrib.cell_star.utils.image_util import image_show, image_save
-from contrib.cell_star.core.parallel.snake_grow import mp_snake_grow
 from contrib.cell_star.parameter_fitting.pf_auto_params import pf_parameters_encode, pf_parameters_decode
 
 from cellprofiler.preferences import get_max_workers
 
-snakes_multiprocessing = False
 min_number_of_chosen_seeds = 6
 max_number_of_chosen_snakes = 20
 
@@ -64,19 +62,9 @@ def grow_single_seed(seed, images, init_params, pf_param_vector):
 
 
 def snakes_fitness(gt_snake_seed_pairs, images, parameters, pf_param_vector, debug=False):
-    if snakes_multiprocessing:
-        gt_snakes, seeds = zip(*gt_snake_seed_pairs)
-        merged_parameters = PFSnake.merge_parameters(
-            parameters,
-            pf_parameters_decode(pf_param_vector, parameters["segmentation"]["stars"]["sizeWeight"], parameters["segmentation"]["stars"]["step"], parameters["segmentation"]["avgCellDiameter"], parameters["segmentation"]["stars"]["maxSize"])
-        )
-        snakes = mp_snake_grow(images, merged_parameters, seeds)
-        gt_snake_grown_seed_pairs = zip(gt_snakes, snakes)
-    else:
-        gt_snake_grown_seed_pairs = [(gt_snake, grow_single_seed(seed, images, parameters, pf_param_vector)) for
+    gt_snake_grown_seed_pairs = [(gt_snake, grow_single_seed(seed, images, parameters, pf_param_vector)) for
                                      gt_snake, seed in gt_snake_seed_pairs]
 
-    #logger.debug(sorted(pf_parameters_decode(pf_param_vector, parameters["segmentation"]["stars"]["sizeWeight"], parameters["segmentation"]["stars"]["step"], parameters["segmentation"]["avgCellDiameter"], parameters["segmentation"]["stars"]["maxSize"]).iteritems())()
     return np.array([pf_s.multi_fitness(gt_snake) for gt_snake, pf_s in gt_snake_grown_seed_pairs])
 
 

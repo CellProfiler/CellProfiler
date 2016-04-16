@@ -36,6 +36,15 @@ class Snake(object):
     def centroid(self):
         return self.centroid_x, self.centroid_y
 
+    @property
+    def in_polygon_slice(self):
+        if self.in_polygon_yx is None or self.in_polygon is None:
+            return None
+
+        yx = self.in_polygon_yx
+        local = self.in_polygon
+        return slice(yx[0], yx[0] + local.shape[0]), slice(yx[1], yx[1] + local.shape[1])
+
     @classmethod
     def create_from_seed(cls, parameters, seed, points_num, images):
         points = [seed] * points_num

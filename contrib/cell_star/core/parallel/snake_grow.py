@@ -1,15 +1,20 @@
 # -*- coding: utf-8 -*-
-__author__ = 'Adam Kaczmarek, Filip Mróz'
+"""
+Snake grow is an attempt to run time expensive snake in parallel using multiprocessing package.
+Currently not tested and on hold. Tried only once for parameter fitting.
+Date: 2015-2016
+Website: http://cellstar-algorithm.org/
+"""
 
-import multiprocessing
 import ctypes
-import numpy as np
 from copy import copy
 from multiprocessing import Pool, Array, Manager
+
+import numpy as np
+
 from contrib.cell_star.core.image_repo import ImageRepo
-from contrib.cell_star.core.snake import Snake
 from contrib.cell_star.core.polar_transform import PolarTransform
-from contrib.cell_star.utils.image_util import image_show
+from contrib.cell_star.core.snake import Snake
 from contrib.cell_star.parameter_fitting.pf_snake import PFSnake
 
 

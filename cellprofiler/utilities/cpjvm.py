@@ -249,7 +249,8 @@ def cp_stop_vm(kill=True):
 
     try:
         ij1 = javabridge.JClassWrapper("ij.IJ").getInstance()
-    except:
+    except javabridge.JavaException as e:
+        logger.debug("No available instance: %s" % str(e))
         ij1 = None
 
     if the_imagej_context is not None:

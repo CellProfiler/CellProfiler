@@ -1,7 +1,7 @@
 '''<b>Measure Correlation</b> measures the colocalization and correlation between intensities in different images (e.g., different color channels) on a pixel-by-pixel basis, within identified
 objects or across an entire image.
 <hr>
-Given two or more images, this module calculates the correlation & colocalization (Overlap, Mander's, Costes' Automated Threshold & Rank Weighted Colocalization) between the
+Given two or more images, this module calculates the correlation & colocalization (Overlap, Manders, Costes' Automated Threshold & Rank Weighted Colocalization) between the
 pixel intensities. The correlation / colocalization can be measured for entire
 images, or a correlation measurement can be made within each individual object.
 
@@ -26,11 +26,11 @@ here <i>A</i> is the slope.</li>
 where average intesity values of the pixels are not subtracted from the original intesity values. For
 a pair of images R and G, the overlap coefficient is measured as
 r = sum(Ri * Gi) / sqrt (sum(Ri*Ri)*sum(Gi*Gi)).
-<li><i>Mander's coefficient:</i> The mander's coefficient for a pair of images R and G is measured as
+<li><i>Manders coefficient:</i> The mander's coefficient for a pair of images R and G is measured as
 M1 = sum(Ri_coloc)/sum(Ri) and M2 = sum(Gi_coloc)/sum(Gi), where Ri_coloc = Ri when Gi > 0, 0 otherwise and
 Gi_coloc =  Gi when Ri >0, 0 otherwise.
-<li><i>Mander's coefficient (Costes Automated Threshold):</i> Costes' automated threshold estimates
-maximum threshold of intensity for each image based on correlation. Mander's coefficient is applied
+<li><i>Manders coefficient (Costes Automated Threshold):</i> Costes' automated threshold estimates
+maximum threshold of intensity for each image based on correlation. Manders coefficient is applied
 on thresholded images as Ri_coloc = Ri when Gi > Gthr and Gi_coloc = Gi when Ri > Rthr where
 Gthr and Rthr are thresholds calculed using Costes' authomated threshold method.
 <li><i>Rank Weighted Colocalization coefficient:</i> The RWC coefficient for a pair of images R and G is measured as
@@ -324,13 +324,13 @@ class MeasureCorrelation(cpm.CPModule):
             tot_fi_thr = fi[(fi > thr_fi)].sum()
             tot_si_thr = si[(si > thr_si)].sum()
             
-            # Mander's Coefficient
+            # Manders Coefficient
             M1 = 0
             M2 = 0
             M1 = fi_thresh.sum() / tot_fi_thr
             M2 = si_thresh.sum() / tot_si_thr
-            result += [[first_image_name, second_image_name, "-", "Mander's Coefficient","%.3f"%M1],
-                       [second_image_name, first_image_name, "-", "Mander's Coefficient","%.3f"%M2]]
+            result += [[first_image_name, second_image_name, "-", "Manders Coefficient","%.3f"%M1],
+                       [second_image_name, first_image_name, "-", "Manders Coefficient","%.3f"%M2]]
                 
             # RWC Coefficient
             RWC1 = 0
@@ -361,8 +361,8 @@ class MeasureCorrelation(cpm.CPModule):
             C2 = 0
             C1 = fi_thresh_c.sum() / tot_fi_thr_c
             C2 = si_thresh_c.sum() / tot_si_thr_c
-            result += [[first_image_name, second_image_name, "-", "Mander's Coefficient (Costes)","%.3f"%C1],
-                       [second_image_name, first_image_name, "-", "Mander's Coefficient (Costes)","%.3f"%C2]]
+            result += [[first_image_name, second_image_name, "-", "Manders Coefficient (Costes)","%.3f"%C1],
+                       [second_image_name, first_image_name, "-", "Manders Coefficient (Costes)","%.3f"%C2]]
             
             
             # Overlap Coefficient
@@ -577,21 +577,21 @@ class MeasureCorrelation(cpm.CPModule):
             else:
                 tot_si_thr_c = np.zeros(len(lrange))
             
-            # Mander's Coefficient
+            # Manders Coefficient
             M1 = np.zeros(len(lrange))
             M2 = np.zeros(len(lrange))
             
             if np.any(combined_thresh):
                 M1 = np.array(scind.sum(fi_thresh,labels[combined_thresh],lrange)) / np.array(tot_fi_thr)
                 M2 = np.array(scind.sum(si_thresh,labels[combined_thresh],lrange)) / np.array(tot_si_thr)
-            result += [[first_image_name, second_image_name, object_name,"Mean Mander's coeff","%.3f"%np.mean(M1)],
-                       [first_image_name, second_image_name, object_name,"Median Mander's coeff","%.3f"%np.median(M1)],
-                       [first_image_name, second_image_name, object_name,"Min Mander's coeff","%.3f"%np.min(M1)],
-                       [first_image_name, second_image_name, object_name,"Max Mander's coeff","%.3f"%np.max(M1)]]
-            result += [[second_image_name, first_image_name, object_name,"Mean Mander's coeff","%.3f"%np.mean(M2)],
-                       [second_image_name, first_image_name, object_name,"Median Mander's coeff","%.3f"%np.median(M2)],
-                       [second_image_name, first_image_name, object_name,"Min Mander's coeff","%.3f"%np.min(M2)],
-                       [second_image_name, first_image_name, object_name,"Max Mander's coeff","%.3f"%np.max(M2)]]
+            result += [[first_image_name, second_image_name, object_name,"Mean Manders coeff","%.3f"%np.mean(M1)],
+                       [first_image_name, second_image_name, object_name,"Median Manders coeff","%.3f"%np.median(M1)],
+                       [first_image_name, second_image_name, object_name,"Min Manders coeff","%.3f"%np.min(M1)],
+                       [first_image_name, second_image_name, object_name,"Max Manders coeff","%.3f"%np.max(M1)]]
+            result += [[second_image_name, first_image_name, object_name,"Mean Manders coeff","%.3f"%np.mean(M2)],
+                       [second_image_name, first_image_name, object_name,"Median Manders coeff","%.3f"%np.median(M2)],
+                       [second_image_name, first_image_name, object_name,"Min Manders coeff","%.3f"%np.min(M2)],
+                       [second_image_name, first_image_name, object_name,"Max Manders coeff","%.3f"%np.max(M2)]]
             
             # RWC Coefficient
             RWC1 = np.zeros(len(lrange))
@@ -631,15 +631,15 @@ class MeasureCorrelation(cpm.CPModule):
             if np.any(combined_thresh_c):
                 C1 = np.array(scind.sum(fi_thresh_c,labels[combined_thresh_c],lrange)) / np.array(tot_fi_thr_c)
                 C2 = np.array(scind.sum(si_thresh_c,labels[combined_thresh_c],lrange)) / np.array(tot_si_thr_c)
-            result += [[first_image_name, second_image_name, object_name,"Mean Mander's coeff (Costes)","%.3f"%np.mean(C1)],
-                       [first_image_name, second_image_name, object_name,"Median Mander's coeff (Costes)","%.3f"%np.median(C1)],
-                       [first_image_name, second_image_name, object_name,"Min Mander's coeff (Costes)","%.3f"%np.min(C1)],
-                       [first_image_name, second_image_name, object_name,"Max Mander's coeff (Costes)","%.3f"%np.max(C1)]
+            result += [[first_image_name, second_image_name, object_name,"Mean Manders coeff (Costes)","%.3f"%np.mean(C1)],
+                       [first_image_name, second_image_name, object_name,"Median Manders coeff (Costes)","%.3f"%np.median(C1)],
+                       [first_image_name, second_image_name, object_name,"Min Manders coeff (Costes)","%.3f"%np.min(C1)],
+                       [first_image_name, second_image_name, object_name,"Max Manders coeff (Costes)","%.3f"%np.max(C1)]
                        ]
-            result += [[second_image_name, first_image_name, object_name,"Mean Mander's coeff (Costes)","%.3f"%np.mean(C2)],
-                       [second_image_name, first_image_name, object_name,"Median Mander's coeff (Costes)","%.3f"%np.median(C2)],
-                       [second_image_name, first_image_name, object_name,"Min Mander's coeff (Costes)","%.3f"%np.min(C2)],
-                       [second_image_name, first_image_name, object_name,"Max Mander's coeff (Costes)","%.3f"%np.max(C2)]
+            result += [[second_image_name, first_image_name, object_name,"Mean Manders coeff (Costes)","%.3f"%np.mean(C2)],
+                       [second_image_name, first_image_name, object_name,"Median Manders coeff (Costes)","%.3f"%np.median(C2)],
+                       [second_image_name, first_image_name, object_name,"Min Manders coeff (Costes)","%.3f"%np.min(C2)],
+                       [second_image_name, first_image_name, object_name,"Max Manders coeff (Costes)","%.3f"%np.max(C2)]
                        ]
             
             

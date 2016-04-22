@@ -22,6 +22,7 @@ import cellprofiler.modules.editobjectsmanually as E
 INPUT_OBJECTS_NAME = "inputobjects"
 OUTPUT_OBJECTS_NAME = "outputobjects"
 
+
 class TestEditObjectsManually(unittest.TestCase):
     def test_01_01_load_matlab(self):
         data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
@@ -43,8 +44,10 @@ class TestEditObjectsManually(unittest.TestCase):
                 'S/c/3WzLGxd9UPhbZ2tlfVz0nGCPvdkSM1v/PCleMHGB99XNZbei1v3+u+vn'
                 'q/Oryv/ZT35kcv/53Xvn997XF6/83/D13v/Vov8cb0/5b3+mX74BAJGShuQ=')
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 3)
@@ -68,8 +71,10 @@ EditObjectsManually:[module_num:1|svn_version:\'1\'|variable_revision_number:1|s
     Do you want to renumber the objects created by this module or retain the original numbering?:Renumber
 """
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
@@ -97,8 +102,10 @@ EditObjectsManually:[module_num:1|svn_version:\'10039\'|variable_revision_number
     Image name\x3A:DNA
 """
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
@@ -128,8 +135,10 @@ EditObjectsManually:[module_num:1|svn_version:\'10039\'|variable_revision_number
     Allow overlapping objects:Yes
 """
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
@@ -143,7 +152,6 @@ EditObjectsManually:[module_num:1|svn_version:\'10039\'|variable_revision_number
         self.assertEqual(module.image_name, "DNA")
         self.assertTrue(module.allow_overlap)
 
-
     def test_02_02_measurements(self):
         module = E.EditObjectsManually()
         module.object_name.value = INPUT_OBJECTS_NAME
@@ -151,40 +159,40 @@ EditObjectsManually:[module_num:1|svn_version:\'10039\'|variable_revision_number
 
         columns = module.get_measurement_columns(None)
         expected_columns = [
-            ( cpmeas.IMAGE, E.I.FF_COUNT % OUTPUT_OBJECTS_NAME, cpmeas.COLTYPE_INTEGER ),
-            ( OUTPUT_OBJECTS_NAME, E.I.M_NUMBER_OBJECT_NUMBER, cpmeas.COLTYPE_INTEGER),
-            ( OUTPUT_OBJECTS_NAME, E.I.M_LOCATION_CENTER_X, cpmeas.COLTYPE_FLOAT ),
-            ( OUTPUT_OBJECTS_NAME, E.I.M_LOCATION_CENTER_Y, cpmeas.COLTYPE_FLOAT ),
-            ( OUTPUT_OBJECTS_NAME, E.I.FF_PARENT % INPUT_OBJECTS_NAME, cpmeas.COLTYPE_INTEGER),
-            ( INPUT_OBJECTS_NAME, E.I.FF_CHILDREN_COUNT % OUTPUT_OBJECTS_NAME, cpmeas.COLTYPE_INTEGER) ]
+            (cpmeas.IMAGE, E.I.FF_COUNT % OUTPUT_OBJECTS_NAME, cpmeas.COLTYPE_INTEGER),
+            (OUTPUT_OBJECTS_NAME, E.I.M_NUMBER_OBJECT_NUMBER, cpmeas.COLTYPE_INTEGER),
+            (OUTPUT_OBJECTS_NAME, E.I.M_LOCATION_CENTER_X, cpmeas.COLTYPE_FLOAT),
+            (OUTPUT_OBJECTS_NAME, E.I.M_LOCATION_CENTER_Y, cpmeas.COLTYPE_FLOAT),
+            (OUTPUT_OBJECTS_NAME, E.I.FF_PARENT % INPUT_OBJECTS_NAME, cpmeas.COLTYPE_INTEGER),
+            (INPUT_OBJECTS_NAME, E.I.FF_CHILDREN_COUNT % OUTPUT_OBJECTS_NAME, cpmeas.COLTYPE_INTEGER)]
 
         for column in columns:
-            self.assertTrue(any([ all([column[i] == expected[i] for i in range(3)])
-                                  for expected in expected_columns]),
+            self.assertTrue(any([all([column[i] == expected[i] for i in range(3)])
+                                 for expected in expected_columns]),
                             "Unexpected column: %s, %s, %s" % column)
             # Make sure no duplicates
             self.assertEqual(len(['x' for c in columns
                                   if all([column[i] == c[i]
                                           for i in range(3)])]), 1)
         for expected in expected_columns:
-            self.assertTrue(any([ all([column[i] == expected[i] for i in range(3)])
-                                  for column in columns]),
+            self.assertTrue(any([all([column[i] == expected[i] for i in range(3)])
+                                 for column in columns]),
                             "Missing column: %s, %s, %s" % expected)
 
         #
         # Check the measurement features
         #
-        d = { cpmeas.IMAGE: { E.I.C_COUNT: [ OUTPUT_OBJECTS_NAME ],
-                              "Foo": [] },
-              INPUT_OBJECTS_NAME: { E.I.C_CHILDREN: [ "%s_Count" % OUTPUT_OBJECTS_NAME ],
-                                    "Foo": [] },
-              OUTPUT_OBJECTS_NAME: {
-                  E.I.C_LOCATION: [ E.I.FTR_CENTER_X, E.I.FTR_CENTER_Y ],
-                  E.I.C_PARENT: [ INPUT_OBJECTS_NAME ],
-                  E.I.C_NUMBER: [ E.I.FTR_OBJECT_NUMBER ],
-                  "Foo": [] },
-              "Foo": {}
-              }
+        d = {cpmeas.IMAGE: {E.I.C_COUNT: [OUTPUT_OBJECTS_NAME],
+                            "Foo": []},
+             INPUT_OBJECTS_NAME: {E.I.C_CHILDREN: ["%s_Count" % OUTPUT_OBJECTS_NAME],
+                                  "Foo": []},
+             OUTPUT_OBJECTS_NAME: {
+                 E.I.C_LOCATION: [E.I.FTR_CENTER_X, E.I.FTR_CENTER_Y],
+                 E.I.C_PARENT: [INPUT_OBJECTS_NAME],
+                 E.I.C_NUMBER: [E.I.FTR_OBJECT_NUMBER],
+                 "Foo": []},
+             "Foo": {}
+             }
 
         for object_name, category_d in d.iteritems():
             #

@@ -1,4 +1,5 @@
 import logging
+
 logger = logging.getLogger(__package__)
 import os.path
 import glob
@@ -14,16 +15,19 @@ else:
 
 image_cache = weakref.WeakValueDictionary()
 
+
 def get_builtin_image(name):
     import wx
     try:
         return image_cache[name]
     except KeyError:
-        image_cache[name] = im =  wx.Image(os.path.join(path, name + '.png'))
+        image_cache[name] = im = wx.Image(os.path.join(path, name + '.png'))
         return im
+
 
 def get_builtin_images_path():
     return os.path.join(path, '')
+
 
 def get_icon_copyrights():
     icpath = os.path.join(path, "icon_copyrights.txt")

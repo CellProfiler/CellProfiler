@@ -17,15 +17,15 @@
 #
 ########################################################
 
+import cellprofiler.icons
 import logging
 import os
 import sys
-
 import cellprofiler.icons
 from cellprofiler.settings import YES, NO
-from cellprofiler.utilities.relpath import relpath
+import os.path
 
-#from cellprofiler.modules.metadata import X_AUTOMATIC_EXTRACTION, X_MANUAL_EXTRACTION, X_IMPORTED_EXTRACTION
+# from cellprofiler.modules.metadata import X_AUTOMATIC_EXTRACTION, X_MANUAL_EXTRACTION, X_IMPORTED_EXTRACTION
 X_AUTOMATIC_EXTRACTION = "Extract from image file headers"
 X_MANUAL_EXTRACTION = "Extract from file/folder names"
 X_IMPORTED_EXTRACTION = "Import from file"
@@ -34,12 +34,12 @@ VIEW_OUTPUT_SETTINGS_BUTTON_NAME = "View output settings"
 
 logger = logging.getLogger(__name__)
 
-#For some reason, Adobe doesn't like using absolute paths to assemble the PDF.
-#Also, Firefox doesn't like displaying the HTML image links using abs paths either.
-#So I have use relative ones. Should check this to see if works on the
-#compiled version
+# For some reason, Adobe doesn't like using absolute paths to assemble the PDF.
+# Also, Firefox doesn't like displaying the HTML image links using abs paths either.
+# So I have use relative ones. Should check this to see if works on the
+# compiled version
 try:
-    path = relpath(cellprofiler.icons.get_builtin_images_path())
+    path = os.path.relpath(cellprofiler.icons.get_builtin_images_path())
 except:
     if any([x == "--html" for x in sys.argv]) and sys.platform.startswith("win"):
         if hasattr(sys, "frozen"):
@@ -47,9 +47,9 @@ except:
         else:
             drive = __file__[0][0]
         logger.warning(
-            ("Warning: HTML being written with absolute paths. You must\n"
-             "change the current drive to %s: to get image links with\n"
-             "relative paths.\n") % drive)
+                ("Warning: HTML being written with absolute paths. You must\n"
+                 "change the current drive to %s: to get image links with\n"
+                 "relative paths.\n") % drive)
     path = os.path.abspath(cellprofiler.icons.get_builtin_images_path())
 
 ####################################################
@@ -81,15 +81,15 @@ SETTINGS_ERROR_ICON = 'IMG_ERROR.png'
 SETTINGS_WARNING_ICON = 'IMG_WARN.png'
 
 RUNSTATUS_PAUSE_BUTTON = 'status_pause.png'
-RUNSTATUS_STOP_BUTTON  = 'status_stop.png'
-RUNSTATUS_SAVE_BUTTON  = 'status_save.png'
+RUNSTATUS_STOP_BUTTON = 'status_stop.png'
+RUNSTATUS_SAVE_BUTTON = 'status_save.png'
 
 WINDOW_HOME_BUTTON = 'window_home.png'
-WINDOW_BACK_BUTTON  = 'window_back.png'
-WINDOW_FORWARD_BUTTON  = 'window_forward.png'
-WINDOW_PAN_BUTTON  = 'window_pan.png'
-WINDOW_ZOOMTORECT_BUTTON  = 'window_zoom_to_rect.png'
-WINDOW_SAVE_BUTTON  = 'window_filesave.png'
+WINDOW_BACK_BUTTON = 'window_back.png'
+WINDOW_FORWARD_BUTTON = 'window_forward.png'
+WINDOW_PAN_BUTTON = 'window_pan.png'
+WINDOW_ZOOMTORECT_BUTTON = 'window_zoom_to_rect.png'
+WINDOW_SAVE_BUTTON = 'window_filesave.png'
 
 ANALYZE_IMAGE_BUTTON = 'IMG_ANALYZE_16.png'
 STOP_ANALYSIS_BUTTON = 'IMG_STOP.png'
@@ -141,10 +141,11 @@ USING_METADATA_GROUPING_HELP_REF = """Please see the <b>Groups</b> module for mo
 proper use of metadata for grouping"""
 
 from cellprofiler.settings import YES, NO
+
 RETAINING_OUTLINES_HELP = """Select <i>%(YES)s</i> to retain the outlines of the new objects
 for later use in the pipeline. For example, a common use is for quality control purposes by
 overlaying them on your image of choice using the <b>OverlayOutlines</b> module and then saving
-the overlay image with the <b>SaveImages</b> module."""%locals()
+the overlay image with the <b>SaveImages</b> module.""" % locals()
 
 NAMING_OUTLINES_HELP = """
 <i>(Used only if the outline image is to be retained for later use in the pipeline)</i> <br>
@@ -257,7 +258,7 @@ must also specify the "Plate" metadata tag in the regular expression for the oth
 want grouped together.</li>
 </ul>
 </p>
-"""%globals()
+""" % globals()
 
 DEFAULT_IMAGE_FOLDER_HELP = """
 <p>Please note that the Default Input Folder will be deprecated in the future. The location
@@ -285,7 +286,7 @@ type the full folder path in the edit box. If you type a folder path that
 cannot be found, the message box below will indicate this fact until you correct the problem.
 If you want to specify a folder that does not yet exist, type the desired name and
 click on the <i>New folder</i> button <img src="memory:%(CREATE_BUTTON)s">.
-The folder will be created according to the pathname you have typed.</p>"""%globals()
+The folder will be created according to the pathname you have typed.</p>""" % globals()
 
 DEFAULT_OUTPUT_FOLDER_HELP = """
 <p>Please note that the Default Output Folder will be deprecated in the future. The location
@@ -359,7 +360,7 @@ that even though the analysis completes, CellProfiler continues to use
 an inordinate amount of your CPU and RAM. This is because the output file is written
 after the analysis is completed and can take a very long time for a lot of measurements.
 If you do not need this file and/or notice this behavior, select "<i>%(DO_NOT_WRITE_MEASUREMENTS)s</i>"
-from the "Measurements file format" drop-down box.</p>"""%globals()
+from the "Measurements file format" drop-down box.</p>""" % globals()
 
 NEW_FEATURES_HELP = """
 A number of new features have been incorporated into this re-engineered Python
@@ -638,7 +639,7 @@ processing are not saved to the hard drive unless you specifically request it,
 using a <b>SaveImages</b> module.</p>
 <p><i>Saving data in your pipeline:</i> You can include an <b>Export</b> module to automatically export
 data in a format you prefer. See <i>%(USING_YOUR_OUTPUT_REF)s</i> for more details.</p>
-"""%globals()
+""" % globals()
 
 REGEXP_HELP_REF = """
 Patterns are specified using
@@ -742,7 +743,7 @@ have detailed a number of solutions on our forum
 <a href="http://cellprofiler.org/forum/viewtopic.php?f=14&t=806&p=4490#p4490">FAQ</a>
 on this issue. We will continue to add more tips and tricks to this page
 over time.</p>
-"""%globals()
+""" % globals()
 
 TEST_MODE_HELP = """
 <p>Before starting an analysis run, you can test the pipeline settings on a selected image
@@ -810,7 +811,7 @@ Selecting <i>Choose Image Group</i> will allow you to choose the movie file, and
 will let you choose the individual movie frame from that file.
 <p>%(USING_METADATA_GROUPING_HELP_REF)s</p>
 </p>
-"""%globals()
+""" % globals()
 
 RUNNING_YOUR_PIPELINE_HELP = """
 Once you have tested your pipeline using Test mode and you are satisfied with the
@@ -829,7 +830,7 @@ want to terminate analysis, click the "<img src="memory:%(STOP_ANALYSIS_BUTTON)s
 <p>If your computer has multiple processors, CellProfiler will take advantage of them by starting multiple copies
 of itself to process the image sets in parallel. You can set the number of <i>workers</i> (i.e.,copies of
 CellProfiler activated) under <i>File > Preferences...</i></p>
-"""%globals()
+""" % globals()
 
 # The help below contains a Google URL shortener since the URL has a control character that the URL reader doesn't interpret correctly
 BATCHPROCESSING_HELP = """
@@ -881,88 +882,88 @@ spurious objects. This can be overcome by setting a lower limit on the threshold
 the <b>IdentifyPrimaryObjects</b> module.<br>
 The Test mode in CellProfiler may be used for previewing the results of your settings
 on images of your choice. Please refer to <i>%(TEST_MODE_HELP_REF)s</i>
-for more details on how to use this utility.</li>"""%globals() +\
-"""<li><i>Add the <b>CreateBatchFiles</b> module to the end of your pipeline.</i>
-This module is needed to resolve the pathnames to your files with respect to
-your local machine and the cluster computers. If you are processing large batches
-of images, you may also consider adding <b>ExportToDatabase</b> to your pipeline,
-after your measurement modules but before the CreateBatchFiles module. This module
-will export your data either directly to a MySQL/SQLite database or into a set of
-comma-separated files (CSV) along with a script to import your data into a
-MySQL database. Please refer to the help for these modules in order learn more
-about which settings are appropriate.</li>
+for more details on how to use this utility.</li>""" % globals() + \
+                       """<li><i>Add the <b>CreateBatchFiles</b> module to the end of your pipeline.</i>
+                       This module is needed to resolve the pathnames to your files with respect to
+                       your local machine and the cluster computers. If you are processing large batches
+                       of images, you may also consider adding <b>ExportToDatabase</b> to your pipeline,
+                       after your measurement modules but before the CreateBatchFiles module. This module
+                       will export your data either directly to a MySQL/SQLite database or into a set of
+                       comma-separated files (CSV) along with a script to import your data into a
+                       MySQL database. Please refer to the help for these modules in order learn more
+                       about which settings are appropriate.</li>
 
-<li><i>Run the pipeline to create a batch file.</i> Click the <i>Analyze images</i>
-button and the analysis will begin processing locally. Do not be surprised if this initial step
-takes a while since CellProfiler must first create the entire image set list based
-on your settings in the <b>Input</b> modules (this process can be sped
-up by creating your list of images as a CSV and using the <b>LoadData</b> module to load it).
-With the <b>CreateBatchFiles</b> module in place, the pipeline will not process all
-the images, but instead will creates a batch file (a file called
-<i>Batch_data.h5</i>) and save it in the Default Output Folder (Step 1). The advantage of
-using <b>CreateBatchFiles</b> from the researcher's perspective is that the Batch_data.h5
-file generated by the module captures all of the data needed to run the analysis. You
-are now ready to submit this batch file to the cluster to run each of the batches
-of images on different computers on the cluster.</li>
+                       <li><i>Run the pipeline to create a batch file.</i> Click the <i>Analyze images</i>
+                       button and the analysis will begin processing locally. Do not be surprised if this initial step
+                       takes a while since CellProfiler must first create the entire image set list based
+                       on your settings in the <b>Input</b> modules (this process can be sped
+                       up by creating your list of images as a CSV and using the <b>LoadData</b> module to load it).
+                       With the <b>CreateBatchFiles</b> module in place, the pipeline will not process all
+                       the images, but instead will creates a batch file (a file called
+                       <i>Batch_data.h5</i>) and save it in the Default Output Folder (Step 1). The advantage of
+                       using <b>CreateBatchFiles</b> from the researcher's perspective is that the Batch_data.h5
+                       file generated by the module captures all of the data needed to run the analysis. You
+                       are now ready to submit this batch file to the cluster to run each of the batches
+                       of images on different computers on the cluster.</li>
 
-<li><i>Submit your batches to the cluster.</i> Log on to your cluster, and navigate
-to the directory where you have installed CellProfiler on the cluster. <br>
-A single batch can be submitted with the following command:<br>
-<code>
-./python CellProfiler.py -p &lt;Default_Output_Folder_path&gt;/Batch_data.h5 -c -r -b -f &lt;first_image_set_number&gt; -l &lt;last_image_set_number&gt;
-</code>
-This command submits the batch file to CellProfiler and specifies that CellProfiler run in a
-batch mode without its user interface to process the pipeline.
-This run can be modified by using additional options to CellProfiler that
-specify the following:
-<ul>
-<li><code>-p &lt;Default_Output_Folder_path&gt;/Batch_data.h5</code>: The
-location of the batch file, where &lt;Default_Output_Folder_path&gt; is the
-output folder path as seen by the cluster computer.</li>
-<li><code>-c</code>: Run "headless", i.e., without the GUI</li>
-<li><code>-r</code>: Run the pipeline specified on startup, which is contained in
-the batch file.
-<li><code>-b</code>: Do not build extensions, since by this point, they should
-already be built.</li>
-<li><code>-f &lt;first_image_set_number&gt;</code>: Start processing with the image
-set specified, &lt;first_image_set_number&gt;</li>
-<li><code>-l &lt;last_image_set_number&gt; </code>: Finish processing with the image
-set specified, &lt;last_image_set_number&gt;</li>
-</ul>
-Typically, a user will break a long image set list into pieces and execute each of
-these pieces using the command line switches, <code>-f</code> and <code>-l</code> to
-specify the first and last image sets in each job. A full image set would then need
-a script that calls CellProfiler with these options with sequential image set numbers,
-e.g, 1-50, 51-100, etc to submit each as an individual job.<br>
+                       <li><i>Submit your batches to the cluster.</i> Log on to your cluster, and navigate
+                       to the directory where you have installed CellProfiler on the cluster. <br>
+                       A single batch can be submitted with the following command:<br>
+                       <code>
+                       ./python CellProfiler.py -p &lt;Default_Output_Folder_path&gt;/Batch_data.h5 -c -r -b -f &lt;first_image_set_number&gt; -l &lt;last_image_set_number&gt;
+                       </code>
+                       This command submits the batch file to CellProfiler and specifies that CellProfiler run in a
+                       batch mode without its user interface to process the pipeline.
+                       This run can be modified by using additional options to CellProfiler that
+                       specify the following:
+                       <ul>
+                       <li><code>-p &lt;Default_Output_Folder_path&gt;/Batch_data.h5</code>: The
+                       location of the batch file, where &lt;Default_Output_Folder_path&gt; is the
+                       output folder path as seen by the cluster computer.</li>
+                       <li><code>-c</code>: Run "headless", i.e., without the GUI</li>
+                       <li><code>-r</code>: Run the pipeline specified on startup, which is contained in
+                       the batch file.
+                       <li><code>-b</code>: Do not build extensions, since by this point, they should
+                       already be built.</li>
+                       <li><code>-f &lt;first_image_set_number&gt;</code>: Start processing with the image
+                       set specified, &lt;first_image_set_number&gt;</li>
+                       <li><code>-l &lt;last_image_set_number&gt; </code>: Finish processing with the image
+                       set specified, &lt;last_image_set_number&gt;</li>
+                       </ul>
+                       Typically, a user will break a long image set list into pieces and execute each of
+                       these pieces using the command line switches, <code>-f</code> and <code>-l</code> to
+                       specify the first and last image sets in each job. A full image set would then need
+                       a script that calls CellProfiler with these options with sequential image set numbers,
+                       e.g, 1-50, 51-100, etc to submit each as an individual job.<br>
 
-<p>If you need help in producing the batch commands for submitting your jobs, use the
-<code>--get-batch-commands</code> along with the <code>-p</code> switch to specify the
-Batch_data.h5 file output by the CreateBatchFiles module. When specified, CellProfiler
-will output one line to the terminal per job to be run. This output should be further
-processed to generate a script that can invoke the jobs in a cluster-computing context.<br>
-The above notes assume that you are running CellProfiler using our source code (see
-"Developer's Guide" under Help for more details). If you are using the compiled version,
-you would replace <code>./python CellProfiler.py</code> with the CellProfiler
-executable file itself and run it from the installation folder.</p></li>
-</ol>
+                       <p>If you need help in producing the batch commands for submitting your jobs, use the
+                       <code>--get-batch-commands</code> along with the <code>-p</code> switch to specify the
+                       Batch_data.h5 file output by the CreateBatchFiles module. When specified, CellProfiler
+                       will output one line to the terminal per job to be run. This output should be further
+                       processed to generate a script that can invoke the jobs in a cluster-computing context.<br>
+                       The above notes assume that you are running CellProfiler using our source code (see
+                       "Developer's Guide" under Help for more details). If you are using the compiled version,
+                       you would replace <code>./python CellProfiler.py</code> with the CellProfiler
+                       executable file itself and run it from the installation folder.</p></li>
+                       </ol>
 
-<p>Once all the jobs are submitted, the cluster will run each batch individually
-and output any measurements or images specified in the pipeline. Specifying the output filename
-using the <code>-o</code> switch when
-calling CellProfiler will also produce an output file containing the measurements
-for that batch of images in the output folder. Check the output from the batch
-processes to make sure all batches complete. Batches that fail for transient reasons
-can be resubmitted.</p>
+                       <p>Once all the jobs are submitted, the cluster will run each batch individually
+                       and output any measurements or images specified in the pipeline. Specifying the output filename
+                       using the <code>-o</code> switch when
+                       calling CellProfiler will also produce an output file containing the measurements
+                       for that batch of images in the output folder. Check the output from the batch
+                       processes to make sure all batches complete. Batches that fail for transient reasons
+                       can be resubmitted.</p>
 
-<p>To see documentation for all available arguments to CellProfiler, type <code>CellProfiler.py
---help</code> to see a listing.</p>
+                       <p>To see documentation for all available arguments to CellProfiler, type <code>CellProfiler.py
+                       --help</code> to see a listing.</p>
 
-<p>For additional help on batch processing, refer to our
-<a href = "http://goo.gl/HtTzD">wiki</a> if installing CellProfiler on a Unix system,
-our <a href="http://goo.gl/WG9doZ">wiki</a> on
-adapting CellProfiler to a LIMS environment, or post your questions on
-the CellProfiler <a href = "http://cellprofiler.org/forum/viewforum.php?f=18">CPCluster forum</a>.</p>
-"""%globals()
+                       <p>For additional help on batch processing, refer to our
+                       <a href = "http://goo.gl/HtTzD">wiki</a> if installing CellProfiler on a Unix system,
+                       our <a href="http://goo.gl/WG9doZ">wiki</a> on
+                       adapting CellProfiler to a LIMS environment, or post your questions on
+                       the CellProfiler <a href = "http://cellprofiler.org/forum/viewforum.php?f=18">CPCluster forum</a>.</p>
+                       """ % globals()
 
 RUN_MULTIPLE_PIPELINES_HELP = """
 <br>The <b>Run multiple pipelines</b> dialog lets you select several pipelines
@@ -1139,7 +1140,7 @@ omero:iid=58134,omero:iid=58038
 omero:iid=58135,omero:iid=58039
 omero:iid=58136,omero:iid=58040
 </pre>
-"""%globals()
+""" % globals()
 
 MEASUREMENT_NOMENCLATURE_HELP = """
 In CellProfiler, measurements are exported as well as stored internally using the
@@ -1287,7 +1288,7 @@ under the Pipeline panel.</li>
 You can select multiple modules at once for moving, deletion and duplication
 by selecting the first module and using Shift-click on the last module to select
 all the modules in between.
-"""%globals()
+""" % globals()
 
 MENU_BAR_WINDOW_HELP = """
 The <i>Windows</i> menu provides options for showing and hiding the module display windows.
@@ -1301,7 +1302,7 @@ current test run or next analysis run. The display mode icons next to each modul
 in the pipeline panel will switch to <img src="memory:%(DISPLAYMODE_HIDE_ICON)s">.</li>
 </ul>
 If there are any open windows, the window titles are listed underneath these options. Select any
-of these window titles to bring that window to the front."""%globals()
+of these window titles to bring that window to the front.""" % globals()
 
 PARAMETER_SAMPLING_MENU_HELP = """
 The <i>Sampling</i> menu is an interface for Paramorama, a plugin for an interactive visualization
@@ -1344,7 +1345,7 @@ enter the desired settings. The settings behave identically as those from the
 corresponding module.</p>
 
 <p>Help for each <i>Data Tool</i> is available under <i>%(DATA_TOOL_HELP_REF)s</i> or the corresponding
-module help.</p>"""%globals()
+module help.</p>""" % globals()
 
 ####################################################
 #
@@ -1379,7 +1380,7 @@ estimates of typical object diameters for use in <b>IdentifyPrimaryObjects</b>.<
 are displayed here. See <i>%(IMAGE_TOOLS_HELP_REF)s</i> for more details.
 </li>
 </ul>
-"""%globals()
+""" % globals()
 
 MODULE_DISPLAY_INTERACTIVE_NAVIGATION_HELP = """
 All figure windows come with a navigation toolbar, which can be used to navigate through the data set.
@@ -1424,7 +1425,7 @@ to launch a file save dialog. You can save the figure window to an image file.
 Note that this will save the entire contents of the window, not just the individual
 subplot(s) or images.</li>
 </ul>
-"""%globals()
+""" % globals()
 
 INTENSITY_MODE_HELP_LIST = """
 <ul>
@@ -1487,9 +1488,9 @@ green, and blue color channels.</li>
 """ % globals()
 
 FIGURE_HELP = (
-    ("Using The Display Window Menu Bar", MODULE_DISPLAY_MENU_BAR_HELP ),
+    ("Using The Display Window Menu Bar", MODULE_DISPLAY_MENU_BAR_HELP),
     ("Using The Interactive Navigation Toolbar", MODULE_DISPLAY_INTERACTIVE_NAVIGATION_HELP),
-    ("How To Use The Image Tools",MODULE_DISPLAY_IMAGE_TOOLS_HELP))
+    ("How To Use The Image Tools", MODULE_DISPLAY_IMAGE_TOOLS_HELP))
 
 WORKSPACE_VIEWER_HELP = """
 The workspace viewer is a flexible tool that you can use to explore your
@@ -1740,15 +1741,6 @@ Determines whether CellProfiler will display a warning dialog
 if images of different sizes are loaded together in an image set.
 Check this preference to show the message box or uncheck it to stop display."""
 
-WARN_ABOUT_OLD_PIPELINES_HELP = """
-Determines whether CellProfiler displays a warning dialog
-if you open a pipeline that was saved using an old version of CellProfiler.
-The purpose of this warning is to remind you that, if you save the pipeline
-using the newer version of CellProfiler, people using the old version of
-CellProfiler might not be able to use the new pipeline. Pipelines saved
-by old CellProfiler versions can always be loaded and used by new
-CellProfiler versions."""
-
 USE_MORE_FIGURE_SPACE_HELP = """
 Determines whether to reduce the padding space
 and font sizes in module display figures. It is suggested that you
@@ -1891,37 +1883,36 @@ is available, the CreateBatchFiles module can optionally launch a browser
 to display the appropriate batch configuration page."""
 
 EACH_PREFERENCE_HELP = (
-    ( "Default Input Folder", DEFAULT_IMAGE_FOLDER_HELP ),
-    ( "Default Output Folder", DEFAULT_OUTPUT_FOLDER_HELP ),
-    ( "Title font", TITLE_FONT_HELP ),
-    ( "Table font", TABLE_FONT_HELP ),
-    ( "Default colormap", DEFAULT_COLORMAP_HELP ),
-    ( "Window background", WINDOW_BACKGROUND_HELP ),
-    ( "Error color", ERROR_COLOR_HELP),
-    ( "Primary outline color", PRIMARY_OUTLINE_COLOR_HELP),
-    ( "Secondary outline color", SECONDARY_OUTLINE_COLOR_HELP),
-    ( "Tertiary outline color", TERTIARY_OUTLINE_COLOR_HELP),
-    ( "Interpolation mode", INTERPOLATION_MODE_HELP),
-    ( "Intensity mode", INTENSITY_MODE_HELP),
-    ( "CellProfiler plugins directory", PLUGINS_DIRECTORY_HELP ),
-    ( "ImageJ plugins directory", IJ_PLUGINS_DIRECTORY_HELP),
-    #( "ImageJ version", IJ_VERSION_HELP),
-    ( "Check for updates", CHECK_FOR_UPDATES_HELP ),
-    ( "Display welcome text on startup", SHOW_STARTUP_BLURB_HELP ),
-    ( "Warn if Java runtime environment not present", REPORT_JVM_ERROR_HELP),
-    ( 'Show the "Analysis complete" message at the end of a run', SHOW_ANALYSIS_COMPLETE_HELP),
-    ( 'Show the "Exiting test mode" message', SHOW_EXITING_TEST_MODE_HELP),
-    ( "Warn if images are different sizes", SHOW_REPORT_BAD_SIZES_DLG_HELP),
-    ( "Show the parameter sampling menu", PARAMETER_SAMPLING_MENU_HELP),
-    ( "Warn if a pipeline was saved in an old version of CellProfiler", WARN_ABOUT_OLD_PIPELINES_HELP),
-    ( "Use more figure space", USE_MORE_FIGURE_SPACE_HELP),
-    ( "Maximum number of workers", MAX_WORKERS_HELP),
-    ( "Temporary folder", TEMP_DIR_HELP),
-    ( "Save pipeline and/or file list in addition to project", SAVE_PIPELINE_WITH_PROJECT_HELP),
-    ( "Folder name regular expression guesses", FOLDER_RE_GUESS_HELP),
-    ( "File name regular expression guesses", FILE_RE_GUESS_HELP),
-    ( "BatchProfiler URL", BATCHPROFILER_URL_HELP)
-    )
+    ("Default Input Folder", DEFAULT_IMAGE_FOLDER_HELP),
+    ("Default Output Folder", DEFAULT_OUTPUT_FOLDER_HELP),
+    ("Title font", TITLE_FONT_HELP),
+    ("Table font", TABLE_FONT_HELP),
+    ("Default colormap", DEFAULT_COLORMAP_HELP),
+    ("Window background", WINDOW_BACKGROUND_HELP),
+    ("Error color", ERROR_COLOR_HELP),
+    ("Primary outline color", PRIMARY_OUTLINE_COLOR_HELP),
+    ("Secondary outline color", SECONDARY_OUTLINE_COLOR_HELP),
+    ("Tertiary outline color", TERTIARY_OUTLINE_COLOR_HELP),
+    ("Interpolation mode", INTERPOLATION_MODE_HELP),
+    ("Intensity mode", INTENSITY_MODE_HELP),
+    ("CellProfiler plugins directory", PLUGINS_DIRECTORY_HELP),
+    ("ImageJ plugins directory", IJ_PLUGINS_DIRECTORY_HELP),
+    # ( "ImageJ version", IJ_VERSION_HELP),
+    ("Check for updates", CHECK_FOR_UPDATES_HELP),
+    ("Display welcome text on startup", SHOW_STARTUP_BLURB_HELP),
+    ("Warn if Java runtime environment not present", REPORT_JVM_ERROR_HELP),
+    ('Show the "Analysis complete" message at the end of a run', SHOW_ANALYSIS_COMPLETE_HELP),
+    ('Show the "Exiting test mode" message', SHOW_EXITING_TEST_MODE_HELP),
+    ("Warn if images are different sizes", SHOW_REPORT_BAD_SIZES_DLG_HELP),
+    ("Show the parameter sampling menu", PARAMETER_SAMPLING_MENU_HELP),
+    ("Use more figure space", USE_MORE_FIGURE_SPACE_HELP),
+    ("Maximum number of workers", MAX_WORKERS_HELP),
+    ("Temporary folder", TEMP_DIR_HELP),
+    ("Save pipeline and/or file list in addition to project", SAVE_PIPELINE_WITH_PROJECT_HELP),
+    ("Folder name regular expression guesses", FOLDER_RE_GUESS_HELP),
+    ("File name regular expression guesses", FILE_RE_GUESS_HELP),
+    ("BatchProfiler URL", BATCHPROFILER_URL_HELP)
+)
 PREFERENCES_HELP = """The Preferences allow you to change many options in CellProfiler
 <ul>"""
 for key, value in enumerate(EACH_PREFERENCE_HELP):
@@ -2005,7 +1996,7 @@ these pipelines will operate exactly as before.</p>
 modules into the project equivalent as closely as possible. Both <b>LoadImages</b> and <b>LoadData</b>
 remain accessible via the "Add module" and <img src="memory:%(MODULE_ADD_BUTTON)s">&nbsp;
 buttons at the bottom of the pipeline panel.</p>
-"""%globals()
+""" % globals()
 
 SELECTING_IMAGES_HELP = """
 <p>Any image analysis project using CellProfiler begins with providing the program with a set of image files
@@ -2036,7 +2027,7 @@ list of images.</p>
 <p>For more information on this module and how to configure it for the best performance, please see the detailed help by selecting the
 module and clicking the <img src="memory:%(MODULE_HELP_BUTTON)s">&nbsp;button at the bottom of the pipeline panel, or check out
 the Input module tutorials on our <a href="http://cellprofiler.org/tutorials.html">Tutorials</a> page.</p>
-"""%globals()
+""" % globals()
 
 CONFIGURE_IMAGES_HELP = """
 <p>Once you have used the <b>Images</b> module to produce a list of images to be analyzed, you can use the other
@@ -2070,7 +2061,7 @@ attach additional image information about the experiment, among other things.</p
 <p>For more information on these modules and how to configure them for the best performance, please see the detailed help by selecting the
 module and clicking the <img src="memory:%(MODULE_HELP_BUTTON)s">&nbsp;button at the bottom of the pipeline panel, or check out
 the Input module tutorials on our <a href="http://cellprofiler.org/tutorials.html">Tutorials</a> page.</p>
-"""%globals()
+""" % globals()
 
 LOADING_IMAGE_SEQUENCES_HELP = """
 <h3>Introdution</h3>
@@ -2353,7 +2344,7 @@ process the slices in all stacks together as if they were constituents of only o
 </li>
 </ul>
 </p>
-"""%globals()
+""" % globals()
 
 #########################################################
 #
@@ -2435,14 +2426,14 @@ all the conditions you want to include.</p>
 <p>A <i>regular expression</i> is a general term refering to a method of searching for pattern matches in text. There is a high
 learning curve to using them, but are quite powerful once you understand the basics.</p>
 <p>%(REGEXP_HELP_REF)s</p>
-"""%globals()
+""" % globals()
 
 #########################################################
 #
 # Plate viewer help
 #
 #########################################################
-PLATEVIEWER_HELP ="""<h1>Plate Viewer help</h1>
+PLATEVIEWER_HELP = """<h1>Plate Viewer help</h1>
 <p>The plate viewer is a data tool that displays the images in your
 experiment in plate format. Your project must define an image set list with
 metadata annotations for the image's well and, optionally its plate and site.
@@ -2467,39 +2458,40 @@ If you have more than one site per well and have site metadata (with the name,
 MAIN_HELP = (
     ("Why Use CellProfiler?", WHEN_CAN_I_USE_CELLPROFILER_HELP),
     ("Navigating The Menu Bar", (
-        ("Using the File Menu",MENU_BAR_FILE_HELP),
-        ("Using the Edit Menu",MENU_BAR_EDIT_HELP),
-        ("Using the Test Menu",TEST_MODE_HELP),
-        ("Using the Window Menu",MENU_BAR_WINDOW_HELP),
-        ("Using the Parameter Sampling Menu",PARAMETER_SAMPLING_MENU_HELP),
-        ("Using the Data Tools Menu",MENU_BAR_DATATOOLS_HELP)) ),
-    ("Using Module Display Windows", FIGURE_HELP ),
-    #("Setting the Preferences", PREFERENCES_HELP),
-    (CREATING_A_PROJECT_CAPTION,(
-        ("Introduction to Projects",INTRODUCTION_TO_PROJECTS_HELP),
-        ("Selecting Images for Input",SELECTING_IMAGES_HELP),
-        ("Configuring Images for Analysis",CONFIGURE_IMAGES_HELP),
-        ("Loading Image Stacks and Movies",LOADING_IMAGE_SEQUENCES_HELP))),
+        ("Using the File Menu", MENU_BAR_FILE_HELP),
+        ("Using the Edit Menu", MENU_BAR_EDIT_HELP),
+        ("Using the Test Menu", TEST_MODE_HELP),
+        ("Using the Window Menu", MENU_BAR_WINDOW_HELP),
+        ("Using the Parameter Sampling Menu", PARAMETER_SAMPLING_MENU_HELP),
+        ("Using the Data Tools Menu", MENU_BAR_DATATOOLS_HELP))),
+    ("Using Module Display Windows", FIGURE_HELP),
+    # ("Setting the Preferences", PREFERENCES_HELP),
+    (CREATING_A_PROJECT_CAPTION, (
+        ("Introduction to Projects", INTRODUCTION_TO_PROJECTS_HELP),
+        ("Selecting Images for Input", SELECTING_IMAGES_HELP),
+        ("Configuring Images for Analysis", CONFIGURE_IMAGES_HELP),
+        ("Loading Image Stacks and Movies", LOADING_IMAGE_SEQUENCES_HELP))),
     ("How To Build A Pipeline", BUILDING_A_PIPELINE_HELP),
-    ("Testing Your Pipeline",TEST_MODE_HELP),
+    ("Testing Your Pipeline", TEST_MODE_HELP),
     ("Running Your Pipeline", RUNNING_YOUR_PIPELINE_HELP),
     ("Using Your Output", (
         ("How Measurements are Named", MEASUREMENT_NOMENCLATURE_HELP),
         ("Using Spreadsheets and Databases", SPREADSHEETS_DATABASE_HELP),
         ("Using the Output File", USING_THE_OUTPUT_FILE_HELP))),
-    ("Troubleshooting Memory and Speed Issues",MEMORY_AND_SPEED_HELP),
+    ("Troubleshooting Memory and Speed Issues", MEMORY_AND_SPEED_HELP),
     ("Batch Processing", BATCHPROCESSING_HELP),
-    ("Legacy Modules and Features",(
+    ("Legacy Modules and Features", (
         ("Load Modules", LEGACY_LOAD_MODULES_HELP),
         ("Setting the Default Input Folder", DEFAULT_IMAGE_FOLDER_HELP),
         ("Setting the Default Output Folder", DEFAULT_OUTPUT_FOLDER_HELP),
         ("Setting the Output Filename", USING_THE_OUTPUT_FILE_HELP))),
-    ("Other Features",(
+    ("Other Features", (
         ("Running Multiple Pipelines", RUN_MULTIPLE_PIPELINES_HELP),
         ("Configuring Logging", CONFIGURING_LOGGING_HELP),
         ("Accessing Images From OMERO", ACCESSING_OMERO_IMAGES),
         ("Plate Viewer", PLATEVIEWER_HELP)))
 )
+
 
 def make_help_menu(h, window, menu=None):
     import wx

@@ -73,6 +73,7 @@ TILE_HEIGHT = "TileHeight"
 
 FIXED_SETTING_COUNT = 10
 
+
 class Tile(cpm.CPModule):
     module_name = "Tile"
     category = 'Image Processing'
@@ -80,14 +81,14 @@ class Tile(cpm.CPModule):
 
     def create_settings(self):
         self.input_image = cps.ImageNameSubscriber(
-            "Select an input image",
-            cps.NONE,doc="""
+                "Select an input image",
+                cps.NONE, doc="""
             Select the image to be tiled. Additional images within the cycle can be added
-            later by choosing the "<i>%(T_ACROSS_CYCLES)s</i>"option below."""%globals())
+            later by choosing the "<i>%(T_ACROSS_CYCLES)s</i>"option below.""" % globals())
 
         self.output_image = cps.ImageNameProvider(
-            "Name the output image",
-            "TiledImage",doc="""
+                "Name the output image",
+                "TiledImage", doc="""
             Enter a name for the final tiled image.""")
 
         self.additional_images = []
@@ -96,8 +97,8 @@ class Tile(cpm.CPModule):
                                           self.add_image)
 
         self.tile_method = cps.Choice(
-            "Tile assembly method",
-            T_ALL, doc='''
+                "Tile assembly method",
+                T_ALL, doc='''
             This setting controls the method by which the final tiled image is asembled:
             <ul>
             <li><i>%(T_WITHIN_CYCLES)s:</i> If you have loaded more than one image for each cycle
@@ -110,10 +111,10 @@ class Tile(cpm.CPModule):
             images of the same type (e.g., OrigBlue) across all fields of view in your
             experiment, which will result in one final tiled image
             when processing is complete.</li>
-            </ul>'''%globals())
+            </ul>''' % globals())
 
         self.rows = cps.Integer(
-            "Final number of rows", 8, doc='''
+                "Final number of rows", 8, doc='''
             Specify the number of rows would you like to have in the tiled image.
             For example, if you want to show your images in a 96-well format,
             enter 8.
@@ -129,8 +130,8 @@ class Tile(cpm.CPModule):
             </ul></p>''')
 
         self.columns = cps.Integer(
-            "Final number of columns",
-            12, doc='''
+                "Final number of columns",
+                12, doc='''
             Specify the number of columns you like to have in the tiled image.
             For example, if you want to show your images in a 96-well format,
             enter 12.
@@ -146,28 +147,28 @@ class Tile(cpm.CPModule):
             </ul></p>''')
 
         self.place_first = cps.Choice(
-            "Image corner to begin tiling", P_ALL, doc = '''
+                "Image corner to begin tiling", P_ALL, doc='''
             Where do you want the first image to be placed?  Begin in the upper left-hand corner
             for a typical multi-well plate format where the first image is A01.''')
 
         self.tile_style = cps.Choice(
-            "Direction to begin tiling", S_ALL, doc = '''
+                "Direction to begin tiling", S_ALL, doc='''
             This setting specifies the order that the images are to be arranged.
             If your images are named A01, A02, etc,
-            enter <i>%(S_ROW)s</i>".'''%globals())
+            enter <i>%(S_ROW)s</i>".''' % globals())
 
         self.meander = cps.Binary(
-            "Use meander mode?", False, doc = '''
+                "Use meander mode?", False, doc='''
             Select <i>%(YES)s</i> to tile adjacent images in one direction,
             then the next row/column is tiled in the opposite direction.
             Some microscopes capture images
             in this fashion. The default mode is "comb", or "typewriter"
             mode; in this mode, when one row is completely tiled in one direction,
             the next row starts near where the first row started and tiles
-            again in the same direction.'''%globals())
+            again in the same direction.''' % globals())
 
         self.wants_automatic_rows = cps.Binary(
-            "Automatically calculate number of rows?", False,doc = """
+                "Automatically calculate number of rows?", False, doc="""
             <b>Tile</b> can automatically calculate the number of rows
             in the grid based on the number of image cycles that will be processed.
             Select <i>%(YES)s</i> to create a grid that has the number of columns
@@ -175,10 +176,10 @@ class Tile(cpm.CPModule):
             Select <i>%(NO)s</i> to specify the number of rows.
             <p>If you check both automatic rows and automatic columns, <b>Tile</b>
             will create a grid that has roughly the same number of rows
-            and columns.</p>"""%globals())
+            and columns.</p>""" % globals())
 
         self.wants_automatic_columns = cps.Binary(
-            "Automatically calculate number of columns?", False, doc = """
+                "Automatically calculate number of columns?", False, doc="""
             <b>Tile</b> can automatically calculate the number of columns
             in the grid from the number of image cycles that will be processed.
             Select <i>%(YES)s</i> to create a grid that has the number of rows
@@ -186,9 +187,9 @@ class Tile(cpm.CPModule):
             Select <i>%(NO)s</i> to specify the number of rows.
             <p>If you check both automatic rows and automatic columns, <b>Tile</b>
             will create a grid that has roughly the same number of rows
-            and columns.</p>"""%globals())
+            and columns.</p>""" % globals())
 
-    def add_image(self, can_remove = True):
+    def add_image(self, can_remove=True):
         '''Add an image + associated questions and buttons'''
         group = cps.SettingsGroup()
         if can_remove:
@@ -196,7 +197,7 @@ class Tile(cpm.CPModule):
 
         group.append("input_image_name",
                      cps.ImageNameSubscriber("Select an additional image to tile",
-                                            cps.NONE,doc="""
+                                             cps.NONE, doc="""
                                             Select an additional image to tile?"""))
         if can_remove:
             group.append("remover", cps.RemoveSettingButton("", "Remove above image", self.additional_images, group))
@@ -213,8 +214,8 @@ class Tile(cpm.CPModule):
         return result
 
     def prepare_settings(self, setting_values):
-        assert (len(setting_values)-FIXED_SETTING_COUNT)% 1 == 0
-        n_additional = (len(setting_values)-FIXED_SETTING_COUNT)/1
+        assert (len(setting_values) - FIXED_SETTING_COUNT) % 1 == 0
+        n_additional = (len(setting_values) - FIXED_SETTING_COUNT) / 1
         del self.additional_images[:]
         while len(self.additional_images) < n_additional:
             self.add_image()
@@ -276,9 +277,9 @@ class Tile(cpm.CPModule):
         pixels = workspace.display_data.image
         name = self.output_image.value
         if pixels.ndim == 3:
-            figure.subplot_imshow(0, 0, pixels, title = name)
+            figure.subplot_imshow(0, 0, pixels, title=name)
         else:
-            figure.subplot_imshow_grayscale(0, 0, pixels, title = name)
+            figure.subplot_imshow_grayscale(0, 0, pixels, title=name)
 
     def tile(self, workspace):
         '''Tile images across image cycles
@@ -321,25 +322,25 @@ class Tile(cpm.CPModule):
         img_width = min(tile_width, pixels.shape[1])
         if output_pixels.ndim == 2:
             output_pixels[tile_i:(tile_i + img_height),
-                          tile_j:(tile_j + img_width)] = \
+            tile_j:(tile_j + img_width)] = \
                 pixels[:img_height, :img_width]
         elif pixels.ndim == 3:
             output_pixels[tile_i:(tile_i + img_height),
-                          tile_j:(tile_j + img_width),:] = \
-                pixels[:img_height, :img_width,:]
+            tile_j:(tile_j + img_width), :] = \
+                pixels[:img_height, :img_width, :]
         else:
             for k in range(output_pixels.shape[2]):
-                output_pixels[tile_i:(tile_i+img_height),
-                              tile_j:(tile_j+img_width), k] = \
-                             pixels[:img_height, :img_width]
+                output_pixels[tile_i:(tile_i + img_height),
+                tile_j:(tile_j + img_width), k] = \
+                    pixels[:img_height, :img_width]
         return output_pixels
 
     def place_adjacent(self, workspace):
         '''Place images from the same image set adjacent to each other'''
         rows, columns = self.get_grid_dimensions()
-        image_names = ([ self.input_image.value ] +
-                       [ g.input_image_name.value
-                         for g in self.additional_images])
+        image_names = ([self.input_image.value] +
+                       [g.input_image_name.value
+                        for g in self.additional_images])
         pixel_data = [workspace.image_set.get_image(name).pixel_data
                       for name in image_names]
         tile_width = 0
@@ -382,7 +383,7 @@ class Tile(cpm.CPModule):
         if self.place_first in (P_TOP_RIGHT, P_BOTTOM_RIGHT):
             tile_j = columns - tile_j - 1
         if (tile_i < 0 or tile_i >= rows or
-            tile_j < 0 or tile_j >= columns):
+                    tile_j < 0 or tile_j >= columns):
             raise ValueError(("The current image falls outside of the grid boundaries. \n"
                               "Grid dimensions: %d, %d\n"
                               "Tile location: %d, %d\n") %
@@ -390,7 +391,7 @@ class Tile(cpm.CPModule):
                               tile_j, tile_i))
         return tile_i, tile_j
 
-    def get_grid_dimensions(self, image_count = None):
+    def get_grid_dimensions(self, image_count=None):
         '''Get the dimensions of the grid in i,j format
 
         image_count - # of images in the grid. If None, use info from settings.
@@ -407,15 +408,15 @@ class Tile(cpm.CPModule):
                 #
                 i = int(np.sqrt(image_count))
                 j = int((image_count + i - 1) / i)
-                return i,j
+                return i, j
             else:
                 j = self.columns.value
                 i = int((image_count + j - 1) / j)
-                return i,j
+                return i, j
         elif self.wants_automatic_columns:
             i = self.rows.value
             j = int((image_count + i - 1) / i)
-            return i,j
+            return i, j
         else:
             return self.rows.value, self.columns.value
 
@@ -431,31 +432,31 @@ class Tile(cpm.CPModule):
         we are in PlaceAdjacent mode.
         '''
         if (self.tile_method == T_WITHIN_CYCLES and
-            (not self.wants_automatic_rows) and
-            (not self.wants_automatic_columns) and
-            self.rows.value * self.columns.value <
-            len(self.additional_images) + 1):
+                (not self.wants_automatic_rows) and
+                (not self.wants_automatic_columns) and
+                        self.rows.value * self.columns.value <
+                        len(self.additional_images) + 1):
             raise cps.ValidationError(
-                "There are too many images (%d) for a %d by %d grid" %
-                (len(self.additional_images)+1, self.columns.value,
-                 self.rows.value),
-                self.rows)
+                    "There are too many images (%d) for a %d by %d grid" %
+                    (len(self.additional_images) + 1, self.columns.value,
+                     self.rows.value),
+                    self.rows)
 
     def upgrade_settings(self, setting_values,
                          variable_revision_number,
                          module_name, from_matlab):
         '''this must take into account both Tile and PlaceAdjacent from the Matlab'''
         if (from_matlab and module_name == "Tile" and
-            variable_revision_number == 1):
-            image_name, orig_image_name, tiled_image, number_rows,\
-            number_columns, row_or_column, top_or_bottom, left_or_right,\
+                    variable_revision_number == 1):
+            image_name, orig_image_name, tiled_image, number_rows, \
+            number_columns, row_or_column, top_or_bottom, left_or_right, \
             meander_mode, size_change = setting_values
 
             if size_change != "1":
                 logger.warning(
-                    "Discarding rescaling during import of Tile. "
-                    "Use the resize module with a factor of %s.\n" %
-                    size_change)
+                        "Discarding rescaling during import of Tile. "
+                        "Use the resize module with a factor of %s.\n" %
+                        size_change)
 
             left = left_or_right.lower() == 'left'
             if top_or_bottom.lower() == 'top':
@@ -473,16 +474,16 @@ class Tile(cpm.CPModule):
             if number_columns == cps.AUTOMATIC:
                 number_columns = 12
                 wants_automatic_columns = cps.YES
-            setting_values = [ image_name, tiled_image, T_ACROSS_CYCLES,
-                               number_rows, number_columns, place_first,
-                               tile_style, meander_mode, wants_automatic_rows,
-                               wants_automatic_columns]
+            setting_values = [image_name, tiled_image, T_ACROSS_CYCLES,
+                              number_rows, number_columns, place_first,
+                              tile_style, meander_mode, wants_automatic_rows,
+                              wants_automatic_columns]
             from_matlab = False
             variable_revision_number = 1
             module_name = self.module_name
 
         if (from_matlab and module_name == "PlaceAdjacent" and
-            variable_revision_number == 3):
+                    variable_revision_number == 3):
             image_names = [s for s in setting_values[:6]
                            if s.lower() != cps.DO_NOT_USE.lower()]
             adjacent_image_name = setting_values[6]
@@ -490,9 +491,9 @@ class Tile(cpm.CPModule):
             delete_pipeline = setting_values[8]
             if delete_pipeline == cps.YES:
                 logger.warning(
-                    "Ignoring memory option when importing PlaceAdjacent "
-                    "into Tile. Use the ConserveMemory module to remove "
-                    "the image from memory if desired.\n")
+                        "Ignoring memory option when importing PlaceAdjacent "
+                        "into Tile. Use the ConserveMemory module to remove "
+                        "the image from memory if desired.\n")
             if len(image_names) == 0:
                 image_names.append(cps.DO_NOT_USE)
             if horizontal_or_vertical.lower() == "horizontal":

@@ -21,6 +21,7 @@ See also <b>RunImageJ</b>
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
 
+
 class OutputExternal(cpm.CPModule):
     variable_revision_number = 1
     module_name = 'OutputExternal'

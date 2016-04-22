@@ -23,7 +23,6 @@ import cellprofiler.settings as cps
 from cellprofiler.settings import YES, NO
 import inflect
 
-
 O_ADD = "Add"
 O_SUBTRACT = "Subtract"
 O_DIFFERENCE = "Absolute Difference"
@@ -59,7 +58,6 @@ FIXED_SETTING_COUNT = 8
 
 
 class ImageMath(cpm.CPModule):
-
     category = "Image Processing"
     variable_revision_number = 4
     module_name = "ImageMath"
@@ -73,11 +71,11 @@ class ImageMath(cpm.CPModule):
 
         # other settings
         self.operation = cps.Choice(
-            "Operation",
-            [O_ADD, O_SUBTRACT, O_DIFFERENCE, O_MULTIPLY, O_DIVIDE, O_AVERAGE,
-             O_MINIMUM, O_MAXIMUM, O_INVERT,
-             O_LOG_TRANSFORM, O_LOG_TRANSFORM_LEGACY,
-             O_AND, O_OR, O_NOT, O_EQUALS, O_NONE], doc="""
+                "Operation",
+                [O_ADD, O_SUBTRACT, O_DIFFERENCE, O_MULTIPLY, O_DIVIDE, O_AVERAGE,
+                 O_MINIMUM, O_MAXIMUM, O_INVERT,
+                 O_LOG_TRANSFORM, O_LOG_TRANSFORM_LEGACY,
+                 O_AND, O_OR, O_NOT, O_EQUALS, O_NONE], doc="""
             Select the operation to perform. Note that if more than two images are chosen,
             then operations will be performed sequentially from first to last, e.g.,
             for "Divide", (Image1 / Image2) / Image3
@@ -122,40 +120,40 @@ class ImageMath(cpm.CPModule):
             the same value.</li>
             </ul>
             <p>Note that <i>%(O_INVERT)s</i>, <i>%(O_LOG_TRANSFORM)s</i>, <i>%(O_LOG_TRANSFORM_LEGACY)s</i> and <i>%(O_NONE)s</i> operate on only a single image.</p>
-            """%globals())
+            """ % globals())
         self.divider_top = cps.Divider(line=False)
 
         self.exponent = cps.Float(
-            "Raise the power of the result by", 1, doc="""
+                "Raise the power of the result by", 1, doc="""
             Enter an exponent to raise the result to *after* the chosen operation""")
 
         self.after_factor = cps.Float(
-            "Multiply the result by", 1, doc="""
+                "Multiply the result by", 1, doc="""
             Enter a factor to multiply the result by *after* the chosen operation""")
 
         self.addend = cps.Float(
-            "Add to result", 0, doc ="""
+                "Add to result", 0, doc="""
             Enter a number to add to the result *after* the chosen operation""")
 
         self.truncate_low = cps.Binary(
-            "Set values less than 0 equal to 0?", True, doc="""
+                "Set values less than 0 equal to 0?", True, doc="""
             Values outside the range 0 to 1 might not be handled well by other modules.
-            Select <i>%(YES)s</i> to set negative values to 0."""%globals())
+            Select <i>%(YES)s</i> to set negative values to 0.""" % globals())
 
         self.truncate_high = cps.Binary(
-            "Set values greater than 1 equal to 1?", True, doc ="""
+                "Set values greater than 1 equal to 1?", True, doc="""
             Values outside the range 0 to 1 might not be handled well by other modules.
-            Select <i>%(YES)s</i> to set values greater than 1 to a maximum value of 1."""%globals())
+            Select <i>%(YES)s</i> to set values greater than 1 to a maximum value of 1.""" % globals())
 
         self.ignore_mask = cps.Binary(
-            "Ignore the image masks?", False, doc = """
+                "Ignore the image masks?", False, doc="""
             Usually, the smallest mask of all image operands is applied after
             image math has been completed. Select <i>%(YES)s</i> to set
             equal to zero all previously masked pixels and operate on the masked
-            images as if no mask had been applied."""%globals())
+            images as if no mask had been applied.""" % globals())
 
         self.output_image_name = cps.ImageNameProvider(
-            "Name the output image", "ImageAfterMath", doc="""
+                "Name the output image", "ImageAfterMath", doc="""
             Enter a name for the resulting image.""")
 
         self.add_button = cps.DoSomething("", "Add another image", self.add_image)
@@ -167,7 +165,7 @@ class ImageMath(cpm.CPModule):
         group = cps.SettingsGroup()
         group.removable = removable
         group.append("image_or_measurement", cps.Choice(
-            "Image or measurement?", [IM_IMAGE, IM_MEASUREMENT],doc="""
+                "Image or measurement?", [IM_IMAGE, IM_MEASUREMENT], doc="""
             You can perform math operations using two images or you
             can use a measurement for one of the operands. For instance,
             to divide the intensity of one image by another, choose <i>%(IM_IMAGE)s</i>
@@ -175,18 +173,18 @@ class ImageMath(cpm.CPModule):
             of an image by its median intensity, use <b>MeasureImageIntensity</b>
             prior to this module to calculate the median intensity, then
             select <i>%(IM_MEASUREMENT)s</i> and use the median intensity measurement as
-            the denominator"""%globals()))
+            the denominator""" % globals()))
 
-        group.append("image_name", cps.ImageNameSubscriber("", "",doc="""
+        group.append("image_name", cps.ImageNameSubscriber("", "", doc="""
             Selec the image that you want to use for this operation."""))
 
         group.append("measurement", cps.Measurement(
-            "Measurement", lambda : cpmeas.IMAGE,"",doc="""
+                "Measurement", lambda: cpmeas.IMAGE, "", doc="""
             This is a measurement made on the image. The value of the
             measurement is used for the operand for all of the pixels of the
             other operand's image."""))
 
-        group.append("factor", cps.Float("", 1,doc="""
+        group.append("factor", cps.Float("", 1, doc="""
             Enter the number that you would like to multiply the above image by. This multiplication
             is applied before other operations."""))
 
@@ -199,8 +197,8 @@ class ImageMath(cpm.CPModule):
         inflection = inflect.engine()
 
         for idx, image in enumerate(self.images):
-            image.image_name.text = "Select the %s image"%(inflection.number_to_words(inflection.ordinal(idx + 1)))
-            image.factor.text = "Multiply the %s image by"%inflection.number_to_words(inflection.ordinal(idx + 1))
+            image.image_name.text = "Select the %s image" % (inflection.number_to_words(inflection.ordinal(idx + 1)))
+            image.factor.text = "Multiply the %s image by" % inflection.number_to_words(inflection.ordinal(idx + 1))
 
     def settings(self):
         result = [self.operation, self.exponent, self.after_factor, self.addend,
@@ -239,7 +237,7 @@ class ImageMath(cpm.CPModule):
             result += [image.divider]
 
         if single_image:
-            result[-1] = self.divider_bottom # this looks better when there's just one image
+            result[-1] = self.divider_bottom  # this looks better when there's just one image
         else:
             result += [self.add_button, self.divider_bottom]
 
@@ -256,7 +254,7 @@ class ImageMath(cpm.CPModule):
             result += [image.image_or_measurement, image.image_name,
                        image.measurement, image.factor]
         result += [self.exponent, self.after_factor, self.addend,
-                  self.truncate_low, self.truncate_high, self.ignore_mask]
+                   self.truncate_low, self.truncate_high, self.ignore_mask]
         return result
 
     def prepare_settings(self, setting_values):
@@ -268,7 +266,6 @@ class ImageMath(cpm.CPModule):
         while len(self.images) < image_count:
             self.add_image()
 
-
     def run(self, workspace):
         image_names = [image.image_name.value for image in self.images
                        if image.image_or_measurement == IM_IMAGE]
@@ -276,7 +273,7 @@ class ImageMath(cpm.CPModule):
         wants_image = [image.image_or_measurement == IM_IMAGE
                        for image in self.images]
         if self.operation.value in \
-           (O_INVERT, O_LOG_TRANSFORM, O_LOG_TRANSFORM_LEGACY, O_NOT, O_NONE):
+                (O_INVERT, O_LOG_TRANSFORM, O_LOG_TRANSFORM_LEGACY, O_NOT, O_NONE):
             # these only operate on the first image
             image_names = image_names[:1]
             image_factors = image_factors[:1]
@@ -301,7 +298,7 @@ class ImageMath(cpm.CPModule):
         for i in range(self.operand_count):
             if not wants_image[i]:
                 value = measurements.get_current_image_measurement(
-                    self.images[i].measurement.value)
+                        self.images[i].measurement.value)
                 if value is None:
                     value = np.NaN
                 else:
@@ -350,11 +347,11 @@ class ImageMath(cpm.CPModule):
             for pd, mask in zip(pixel_data[1:], masks[1:]):
                 if not np.isscalar(pd) and output_pixel_data.ndim != pd.ndim:
                     if output_pixel_data.ndim == 2:
-                        output_pixel_data = output_pixel_data[:,:,np.newaxis]
+                        output_pixel_data = output_pixel_data[:, :, np.newaxis]
                         if opval == O_EQUALS and not np.isscalar(comparitor):
                             comparitor = comparitor[:, :, np.newaxis]
                     if pd.ndim == 2:
-                        pd = pd[:,:,np.newaxis]
+                        pd = pd[:, :, np.newaxis]
                 if opval == O_EQUALS:
                     output_pixel_data = output_pixel_data & (comparitor == pd)
                 else:
@@ -373,13 +370,13 @@ class ImageMath(cpm.CPModule):
         elif opval == O_NOT:
             output_pixel_data = ~ output_pixel_data
         elif opval == O_LOG_TRANSFORM:
-            output_pixel_data = np.log2(output_pixel_data+1)
+            output_pixel_data = np.log2(output_pixel_data + 1)
         elif opval == O_LOG_TRANSFORM_LEGACY:
             output_pixel_data = np.log2(output_pixel_data)
         elif opval == O_NONE:
             output_pixel_data = output_pixel_data.copy()
         else:
-            raise NotImplementedError("The operation %s has not been implemented"%opval)
+            raise NotImplementedError("The operation %s has not been implemented" % opval)
 
         # Check to see if there was a measurement & image w/o mask. If so
         # set mask to none
@@ -412,11 +409,11 @@ class ImageMath(cpm.CPModule):
         masking_objects = (smallest_image.masking_objects
                            if smallest_image.has_masking_objects else None)
         output_image = cpi.Image(output_pixel_data,
-                                 mask = output_mask,
-                                 crop_mask = crop_mask,
-                                 parent_image = images[0],
-                                 masking_objects = masking_objects,
-                                 convert = False)
+                                 mask=output_mask,
+                                 crop_mask=crop_mask,
+                                 parent_image=images[0],
+                                 masking_objects=masking_objects,
+                                 convert=False)
         workspace.image_set.add(self.output_image_name.value, output_image)
 
         #
@@ -435,13 +432,12 @@ class ImageMath(cpm.CPModule):
         figure.set_subplots((columns, 2))
         for i in range(len(pixel_data)):
             show = figure.subplot_imshow if pixel_data[i].ndim == 3 else \
-                figure.subplot_imshow_bw if pixel_data[i].dtype.kind == 'b'\
-                else figure.subplot_imshow_grayscale
+                figure.subplot_imshow_bw if pixel_data[i].dtype.kind == 'b' \
+                    else figure.subplot_imshow_grayscale
             show(i % columns, int(i / columns),
                  pixel_data[i],
                  title=display_names[i],
-                 sharexy = figure.subplot(0, 0))
-
+                 sharexy=figure.subplot(0, 0))
 
     def validate_module(self, pipeline):
         '''Guarantee that at least one operand is an image'''
@@ -455,40 +451,40 @@ class ImageMath(cpm.CPModule):
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
         if (from_matlab and module_name == 'Subtract' and
-            variable_revision_number == 3):
-            subtract_image_name, basic_image_name, resulting_image_name,\
+                    variable_revision_number == 3):
+            subtract_image_name, basic_image_name, resulting_image_name, \
             multiply_factor_1, multiply_factor_2, truncate = setting_values
-            setting_values = [ O_SUBTRACT,
-                               1, # exponent
-                               1, # post-multiply factor
-                               0, # addend
-                               truncate, # truncate low
-                               cps.NO, # truncate high
-                               resulting_image_name,
-                               basic_image_name,
-                               multiply_factor_2,
-                               subtract_image_name,
-                               multiply_factor_1]
+            setting_values = [O_SUBTRACT,
+                              1,  # exponent
+                              1,  # post-multiply factor
+                              0,  # addend
+                              truncate,  # truncate low
+                              cps.NO,  # truncate high
+                              resulting_image_name,
+                              basic_image_name,
+                              multiply_factor_2,
+                              subtract_image_name,
+                              multiply_factor_1]
             module_name = 'ImageMath'
             from_matlab = False
             variable_revision_number = 1
         if (from_matlab and module_name == 'Combine' and
-            variable_revision_number == 3):
+                    variable_revision_number == 3):
             names_and_weights = [
                 (name, weight)
                 for name, weight in zip(setting_values[:3],
                                         setting_values[4:])
                 if name.lower() != cps.DO_NOT_USE.lower()]
 
-            multiplier = 1.0/sum([float(weight)
-                                  for name, weight in names_and_weights])
+            multiplier = 1.0 / sum([float(weight)
+                                    for name, weight in names_and_weights])
             output_image = setting_values[3]
             setting_values = [O_ADD,  # Operation
-                              "1",    # Exponent
-                              str(multiplier),    # Post-operation multiplier
-                              "0",    # Post-operation offset
-                              cps.NO, # Truncate low
-                              cps.NO, # Truncate high
+                              "1",  # Exponent
+                              str(multiplier),  # Post-operation multiplier
+                              "0",  # Post-operation offset
+                              cps.NO,  # Truncate low
+                              cps.NO,  # Truncate high
                               output_image]
             for name, weight in names_and_weights:
                 setting_values += [name, weight]
@@ -496,24 +492,24 @@ class ImageMath(cpm.CPModule):
             variable_revision_number = 1
             from_matlab = False
         if (from_matlab and module_name == 'InvertIntensity' and
-            variable_revision_number == 1):
+                    variable_revision_number == 1):
             image_name, output_image = setting_values
             setting_values = [image_name, cps.DO_NOT_USE, cps.DO_NOT_USE,
                               'Invert',
-                              1,1,1,1,1,cps.NO,cps.NO, output_image]
+                              1, 1, 1, 1, 1, cps.NO, cps.NO, output_image]
             module_name = 'ImageMath'
             variable_revision_number = 2
         if (from_matlab and module_name == 'Multiply' and
-            variable_revision_number == 1):
+                    variable_revision_number == 1):
             image1, image2, output_image = setting_values
             setting_values = [image1, image2, cps.DO_NOT_USE,
-                              'Multiply', 1,1,1,1,1,cps.NO, cps.NO,
+                              'Multiply', 1, 1, 1, 1, 1, cps.NO, cps.NO,
                               output_image]
             module_name = 'ImageMath'
             variable_revision_number = 2
 
         if (from_matlab and variable_revision_number == 1 and
-            module_name == 'ImageMath'):
+                    module_name == 'ImageMath'):
             image_names = [setting_values[1]]
             input_factors = [float(setting_values[4])]
             operation = setting_values[3]
@@ -541,7 +537,7 @@ class ImageMath(cpm.CPModule):
                 addend = np.sum(factors)
             elif operation == O_SUBTRACT:
                 addend = -np.sum(factors)
-            setting_values = [ operation, exponent, multiplier, addend,
+            setting_values = [operation, exponent, multiplier, addend,
                               wants_truncate_low, wants_truncate_high,
                               output_image_name]
             if operation == O_COMPLEMENT:
@@ -558,21 +554,21 @@ class ImageMath(cpm.CPModule):
             variable_revision_number = 1
 
         if (from_matlab and variable_revision_number == 2 and
-            module_name == 'ImageMath'):
+                    module_name == 'ImageMath'):
             image_names = [setting_values[0]]
             input_factors = [float(setting_values[4])]
             operation = setting_values[3]
             factors = []
-            for i in range(1,3 if operation == O_COMBINE else 2):
+            for i in range(1, 3 if operation == O_COMBINE else 2):
                 # The user could type in a constant for the second or third image name
                 try:
                     factors += [float(setting_values[i]) *
-                                float(setting_values[i+4])]
+                                float(setting_values[i + 4])]
 
                 except:
                     if setting_values[i] != cps.DO_NOT_USE:
                         image_names += [setting_values[i]]
-                        input_factors += [float(setting_values[i+4])]
+                        input_factors += [float(setting_values[i + 4])]
 
             exponent = float(setting_values[7])
             multiplier = float(setting_values[8])
@@ -592,7 +588,7 @@ class ImageMath(cpm.CPModule):
                 addend = np.sum(factors)
             elif operation == O_SUBTRACT:
                 addend = -np.sum(factors)
-            setting_values = [ operation, exponent, multiplier, addend,
+            setting_values = [operation, exponent, multiplier, addend,
                               wants_truncate_low, wants_truncate_high,
                               output_image_name]
             if operation in (O_INVERT, O_LOG_TRANSFORM):
@@ -618,7 +614,7 @@ class ImageMath(cpm.CPModule):
             for i in range(FIXED_SETTING_COUNT_1, len(setting_values),
                            IMAGE_SETTING_COUNT_1):
                 new_setting_values += [IM_IMAGE, setting_values[i],
-                                       setting_values[i+1], ""]
+                                       setting_values[i + 1], ""]
             setting_values = new_setting_values
             variable_revision_number = 2
         if (not from_matlab) and variable_revision_number == 2:

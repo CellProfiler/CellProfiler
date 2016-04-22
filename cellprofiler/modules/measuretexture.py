@@ -153,17 +153,17 @@ H_ANTIDIAGONAL = "Anti-diagonal"
 A_ANTIDIAGONAL = "135"
 H_ALL = [H_HORIZONTAL, H_VERTICAL, H_DIAGONAL, H_ANTIDIAGONAL]
 
-H_TO_A = { H_HORIZONTAL: A_HORIZONTAL,
-           H_VERTICAL: A_VERTICAL,
-           H_DIAGONAL: A_DIAGONAL,
-           H_ANTIDIAGONAL: A_ANTIDIAGONAL }
+H_TO_A = {H_HORIZONTAL: A_HORIZONTAL,
+          H_VERTICAL: A_VERTICAL,
+          H_DIAGONAL: A_DIAGONAL,
+          H_ANTIDIAGONAL: A_ANTIDIAGONAL}
 
 IO_IMAGES = "Images"
 IO_OBJECTS = "Objects"
 IO_BOTH = "Both"
 
-class MeasureTexture(cpm.CPModule):
 
+class MeasureTexture(cpm.CPModule):
     module_name = "MeasureTexture"
     variable_revision_number = 4
     category = 'Measurement'
@@ -180,36 +180,36 @@ class MeasureTexture(cpm.CPModule):
         self.image_count = cps.HiddenCount(self.image_groups)
         self.object_count = cps.HiddenCount(self.object_groups)
         self.scale_count = cps.HiddenCount(self.scale_groups)
-        self.add_image_cb(can_remove = False)
+        self.add_image_cb(can_remove=False)
         self.add_images = cps.DoSomething("", "Add another image",
                                           self.add_image_cb)
         self.image_divider = cps.Divider()
-        self.add_object_cb(can_remove = True)
+        self.add_object_cb(can_remove=True)
         self.add_objects = cps.DoSomething("", "Add another object",
                                            self.add_object_cb)
         self.object_divider = cps.Divider()
-        self.add_scale_cb(can_remove = False)
+        self.add_scale_cb(can_remove=False)
         self.add_scales = cps.DoSomething("", "Add another scale",
                                           self.add_scale_cb)
         self.scale_divider = cps.Divider()
 
         self.wants_gabor = cps.Binary(
-            "Measure Gabor features?", True, doc =
-            """The Gabor features measure striped texture in an object, and can
-            take a substantial time to calculate.
-            <p>Select <i>%(YES)s</i> to measure the Gabor features. Select
-            <i>%(NO)s</i> to skip the Gabor feature calculation if it is not
-            informative for your images.</p>"""%globals())
+                "Measure Gabor features?", True, doc=
+                """The Gabor features measure striped texture in an object, and can
+                take a substantial time to calculate.
+                <p>Select <i>%(YES)s</i> to measure the Gabor features. Select
+                <i>%(NO)s</i> to skip the Gabor feature calculation if it is not
+                informative for your images.</p>""" % globals())
 
-        self.gabor_angles = cps.Integer("Number of angles to compute for Gabor",4,2, doc="""
+        self.gabor_angles = cps.Integer("Number of angles to compute for Gabor", 4, 2, doc="""
             <i>(Used only if Gabor features are measured)</i><br>
             Enter the number of angles to use for each Gabor texture measurement.
             The default value is 4 which detects bands in the horizontal, vertical and diagonal
             orientations.""")
         self.images_or_objects = cps.Choice(
-            "Measure images or objects?", [IO_IMAGES, IO_OBJECTS, IO_BOTH],
-            value = IO_BOTH,
-            doc = """This setting determines whether the module
+                "Measure images or objects?", [IO_IMAGES, IO_OBJECTS, IO_BOTH],
+                value=IO_BOTH,
+                doc="""This setting determines whether the module
             computes image-wide measurements, per-object measurements or both.
             <ul>
             <li><i>%(IO_IMAGES)s:</i> Select if you only want to measure the texture of objects.</li>
@@ -222,21 +222,21 @@ class MeasureTexture(cpm.CPModule):
         """The settings as they appear in the save file."""
         result = [self.image_count, self.object_count, self.scale_count]
         for groups, elements in [(self.image_groups, ['image_name']),
-                                (self.object_groups, ['object_name']),
-                                (self.scale_groups, ['scale', 'angles'])]:
+                                 (self.object_groups, ['object_name']),
+                                 (self.scale_groups, ['scale', 'angles'])]:
             for group in groups:
                 for element in elements:
                     result += [getattr(group, element)]
         result += [self.wants_gabor, self.gabor_angles, self.images_or_objects]
         return result
 
-    def prepare_settings(self,setting_values):
+    def prepare_settings(self, setting_values):
         """Adjust the number of object groups based on the number of
         setting_values"""
-        for count, sequence, fn in\
-            ((int(setting_values[0]), self.image_groups, self.add_image_cb),
-             (int(setting_values[1]), self.object_groups, self.add_object_cb),
-             (int(setting_values[2]), self.scale_groups, self.add_scale_cb)):
+        for count, sequence, fn in \
+                ((int(setting_values[0]), self.image_groups, self.add_image_cb),
+                 (int(setting_values[1]), self.object_groups, self.add_object_cb),
+                 (int(setting_values[2]), self.scale_groups, self.add_scale_cb)):
             del sequence[count:]
             while len(sequence) < count:
                 fn()
@@ -271,7 +271,7 @@ class MeasureTexture(cpm.CPModule):
     def wants_object_measurements(self):
         return self.images_or_objects in (IO_OBJECTS, IO_BOTH)
 
-    def add_image_cb(self, can_remove = True):
+    def add_image_cb(self, can_remove=True):
         '''Add an image to the image_groups collection
 
         can_delete - set this to False to keep from showing the "remove"
@@ -282,14 +282,14 @@ class MeasureTexture(cpm.CPModule):
             group.append("divider", cps.Divider(line=False))
         group.append('image_name',
                      cps.ImageNameSubscriber(
-                         "Select an image to measure",cps.NONE, doc="""
+                             "Select an image to measure", cps.NONE, doc="""
                          Select the grayscale images whose texture you want to measure."""))
 
         if can_remove:
             group.append("remover", cps.RemoveSettingButton("", "Remove this image", self.image_groups, group))
         self.image_groups.append(group)
 
-    def add_object_cb(self, can_remove = True):
+    def add_object_cb(self, can_remove=True):
         '''Add an object to the object_groups collection
 
         can_delete - set this to False to keep from showing the "remove"
@@ -299,7 +299,7 @@ class MeasureTexture(cpm.CPModule):
         if can_remove:
             group.append("divider", cps.Divider(line=False))
         group.append('object_name',
-                     cps.ObjectNameSubscriber("Select objects to measure",cps.NONE, doc="""
+                     cps.ObjectNameSubscriber("Select objects to measure", cps.NONE, doc="""
                         Select the objects whose texture you want to measure.
                         If you only want to measure the texture
                         for the image overall, you can remove all objects using the "Remove this object" button.
@@ -312,7 +312,7 @@ class MeasureTexture(cpm.CPModule):
             group.append("remover", cps.RemoveSettingButton("", "Remove this object", self.object_groups, group))
         self.object_groups.append(group)
 
-    def add_scale_cb(self, can_remove = True):
+    def add_scale_cb(self, can_remove=True):
         '''Add a scale to the scale_groups collection
 
         can_delete - set this to False to keep from showing the "remove"
@@ -323,7 +323,7 @@ class MeasureTexture(cpm.CPModule):
             group.append("divider", cps.Divider(line=False))
         group.append('scale',
                      cps.Integer("Texture scale to measure",
-                                 len(self.scale_groups)+3,
+                                 len(self.scale_groups) + 3,
                                  doc="""You can specify the scale of texture to be measured, in pixel units;
                                  the texture scale is the distance between correlated intensities in the image. A
                                  higher number for the scale of texture measures larger patterns of
@@ -334,8 +334,8 @@ class MeasureTexture(cpm.CPModule):
                                  the scale of texture you are measuring), the texture cannot be measured
                                  and will result in a undefined value in the output file."""))
         group.append('angles', cps.MultiChoice(
-            "Angles to measure", H_ALL, H_ALL,
-        doc = """The Haralick texture measurements are based on the correlation
+                "Angles to measure", H_ALL, H_ALL,
+                doc="""The Haralick texture measurements are based on the correlation
         between pixels offset by the scale in one of four directions:
         <p><ul>
         <li><i>%(H_HORIZONTAL)s</i> - the correlated pixel is "scale" pixels
@@ -353,15 +353,14 @@ class MeasureTexture(cpm.CPModule):
             group.append("remover", cps.RemoveSettingButton("", "Remove this scale", self.scale_groups, group))
         self.scale_groups.append(group)
 
-
     def validate_module(self, pipeline):
         """Make sure chosen objects, images and scales are selected only once"""
         images = set()
         for group in self.image_groups:
             if group.image_name.value in images:
                 raise cps.ValidationError(
-                    "%s has already been selected" %group.image_name.value,
-                    group.image_name)
+                        "%s has already been selected" % group.image_name.value,
+                        group.image_name)
             images.add(group.image_name.value)
 
         if self.wants_object_measurements():
@@ -369,27 +368,27 @@ class MeasureTexture(cpm.CPModule):
             for group in self.object_groups:
                 if group.object_name.value in objects:
                     raise cps.ValidationError(
-                        "%s has already been selected" %group.object_name.value,
-                        group.object_name)
+                            "%s has already been selected" % group.object_name.value,
+                            group.object_name)
                 objects.add(group.object_name.value)
 
         scales = set()
         for group in self.scale_groups:
             if group.scale.value in scales:
                 raise cps.ValidationError(
-                    "%s has already been selected" %group.scale.value,
-                    group.scale)
+                        "%s has already been selected" % group.scale.value,
+                        group.scale)
             scales.add(group.scale.value)
 
-    def get_categories(self,pipeline, object_name):
+    def get_categories(self, pipeline, object_name):
         """Get the measurement categories supplied for the given object name.
 
         pipeline - pipeline being run
         object_name - name of labels in question (or 'Images')
         returns a list of category names
         """
-        if self.wants_object_measurements() and\
-           any([object_name == og.object_name for og in self.object_groups]):
+        if self.wants_object_measurements() and \
+                any([object_name == og.object_name for og in self.object_groups]):
             return [TEXTURE]
         elif self.wants_image_measurements() and object_name == cpmeas.IMAGE:
             return [TEXTURE]
@@ -398,7 +397,7 @@ class MeasureTexture(cpm.CPModule):
 
     def get_features(self):
         '''Return the feature names for this pipeline's configuration'''
-        return F_HARALICK+([F_GABOR] if self.wants_gabor else [])
+        return F_HARALICK + ([F_GABOR] if self.wants_gabor else [])
 
     def get_measurements(self, pipeline, object_name, category):
         '''Get the measurements made on the given object in the given category
@@ -504,20 +503,20 @@ class MeasureTexture(cpm.CPModule):
                 if self.wants_image_measurements():
                     if self.wants_gabor:
                         statistics += self.run_image_gabor(
-                            image_name, scale, workspace)
+                                image_name, scale, workspace)
                     for angle in scale_group.angles.get_selections():
                         statistics += self.run_image(
-                            image_name, scale, angle, workspace)
+                                image_name, scale, angle, workspace)
                 if self.wants_object_measurements():
                     for object_group in self.object_groups:
                         object_name = object_group.object_name.value
                         for angle in scale_group.angles.get_selections():
                             statistics += self.run_one(
-                                image_name, object_name, scale, angle,
-                                workspace)
+                                    image_name, object_name, scale, angle,
+                                    workspace)
                         if self.wants_gabor:
                             statistics += self.run_one_gabor(
-                                image_name, object_name, scale, workspace)
+                                    image_name, object_name, scale, workspace)
         if self.show_window:
             workspace.display_data.statistics = statistics
 
@@ -525,7 +524,7 @@ class MeasureTexture(cpm.CPModule):
         figure.set_subplots((1, 1))
         figure.subplot_table(0, 0,
                              workspace.display_data.statistics,
-                             col_labels = workspace.display_data.col_labels)
+                             col_labels=workspace.display_data.col_labels)
 
     def run_one(self, image_name, object_name, scale, angle, workspace):
         """Run, computing the area measurements for a single map of objects"""
@@ -556,8 +555,8 @@ class MeasureTexture(cpm.CPModule):
         if np.all(labels == 0):
             for name in F_HARALICK:
                 statistics += self.record_measurement(
-                    workspace, image_name, object_name,
-                    str(scale) + "_" + H_TO_A[angle], name, np.zeros((0,)))
+                        workspace, image_name, object_name,
+                        str(scale) + "_" + H_TO_A[angle], name, np.zeros((0,)))
         else:
             scale_i, scale_j = self.get_angle_ij(angle, scale)
 
@@ -567,8 +566,8 @@ class MeasureTexture(cpm.CPModule):
                                                         scale_j,
                                                         mask=mask).all()):
                 statistics += self.record_measurement(
-                    workspace, image_name, object_name,
-                    str(scale) + "_" + H_TO_A[angle], name, value)
+                        workspace, image_name, object_name,
+                        str(scale) + "_" + H_TO_A[angle], name, value)
         return statistics
 
     def get_angle_ij(self, angle, scale):
@@ -596,8 +595,8 @@ class MeasureTexture(cpm.CPModule):
                                                     scale_i,
                                                     scale_j).all()):
             statistics += self.record_image_measurement(
-                workspace, image_name, str(scale) + "_" + H_TO_A[angle],
-                name, value)
+                    workspace, image_name, str(scale) + "_" + H_TO_A[angle],
+                    name, value)
         return statistics
 
     def run_one_gabor(self, image_name, object_name, scale, workspace):
@@ -631,10 +630,10 @@ class MeasureTexture(cpm.CPModule):
                 theta = np.pi * angle / self.gabor_angles.value
                 g = gabor(pixel_data, labels, scale, theta)
                 score_r = fix(scind.sum(g.real, labels,
-                                         np.arange(object_count, dtype=np.int32)+ 1))
+                                        np.arange(object_count, dtype=np.int32) + 1))
                 score_i = fix(scind.sum(g.imag, labels,
-                                         np.arange(object_count, dtype=np.int32)+ 1))
-                score = np.sqrt(score_r**2+score_i**2)
+                                        np.arange(object_count, dtype=np.int32) + 1))
+                score = np.sqrt(score_r ** 2 + score_i ** 2)
                 best_score = np.maximum(best_score, score)
         else:
             best_score = np.zeros((0,))
@@ -660,7 +659,7 @@ class MeasureTexture(cpm.CPModule):
             g = gabor(pixel_data, labels, scale, theta)
             score_r = np.sum(g.real)
             score_i = np.sum(g.imag)
-            score = np.sqrt(score_r**2+score_i**2)
+            score = np.sqrt(score_r ** 2 + score_i ** 2)
             best_score = max(best_score, score)
         statistics = self.record_image_measurement(workspace,
                                                    image_name,
@@ -677,17 +676,17 @@ class MeasureTexture(cpm.CPModule):
         data = fix(result)
         data[~np.isfinite(data)] = 0
         workspace.add_measurement(
-            object_name,
-            "%s_%s_%s_%s" % (TEXTURE, feature_name,image_name, str(scale)),
-            data)
+                object_name,
+                "%s_%s_%s_%s" % (TEXTURE, feature_name, image_name, str(scale)),
+                data)
         statistics = [[image_name, object_name,
-                       "%s %s"%(aggregate_name, feature_name), scale,
-                       "%.2f"%fn(data) if len(data) else "-"]
-                       for aggregate_name, fn in (("min",np.min),
-                                                  ("max",np.max),
-                                                  ("mean",np.mean),
-                                                  ("median",np.median),
-                                                  ("std dev",np.std))]
+                       "%s %s" % (aggregate_name, feature_name), scale,
+                       "%.2f" % fn(data) if len(data) else "-"]
+                      for aggregate_name, fn in (("min", np.min),
+                                                 ("max", np.max),
+                                                 ("mean", np.mean),
+                                                 ("median", np.median),
+                                                 ("std dev", np.std))]
         return statistics
 
     def record_image_measurement(self, workspace,
@@ -697,17 +696,17 @@ class MeasureTexture(cpm.CPModule):
         measurements"""
         if not np.isfinite(result):
             result = 0
-        workspace.measurements.add_image_measurement("%s_%s_%s_%s"%
+        workspace.measurements.add_image_measurement("%s_%s_%s_%s" %
                                                      (TEXTURE, feature_name,
                                                       image_name, str(scale)),
                                                      result)
         statistics = [[image_name, "-",
                        feature_name, scale,
-                       "%.2f"%(result)]]
+                       "%.2f" % result]]
         return statistics
 
-    def upgrade_settings(self,setting_values,variable_revision_number,
-                         module_name,from_matlab):
+    def upgrade_settings(self, setting_values, variable_revision_number,
+                         module_name, from_matlab):
         """Adjust the setting_values for older save file versions
 
         setting_values - a list of strings representing the settings for
@@ -729,7 +728,7 @@ class MeasureTexture(cpm.CPModule):
             object_names = [name for name in setting_values[1:7]
                             if name.upper() != cps.DO_NOT_USE.upper()]
             scales = setting_values[7].split(',')
-            setting_values = ([ "1", str(len(object_names)), str(len(scales)),
+            setting_values = (["1", str(len(object_names)), str(len(scales)),
                                setting_values[0]] + object_names + scales +
                               ["4"])
             variable_revision_number = 1
@@ -749,15 +748,15 @@ class MeasureTexture(cpm.CPModule):
             scale_count = int(setting_values[2])
             scale_offset = 3 + image_count + object_count
             new_setting_values = setting_values[:scale_offset]
-            for scale in setting_values[scale_offset:(scale_offset+scale_count)]:
+            for scale in setting_values[scale_offset:(scale_offset + scale_count)]:
                 new_setting_values += [scale, H_HORIZONTAL]
-            new_setting_values += setting_values[(scale_offset+scale_count):]
+            new_setting_values += setting_values[(scale_offset + scale_count):]
             setting_values = new_setting_values
             variable_revision_number = 3
         if not from_matlab and variable_revision_number == 3:
             #
             # Added image / objects choice
             #
-            setting_values = setting_values + [ IO_BOTH ]
+            setting_values = setting_values + [IO_BOTH]
             variable_revision_number = 4
         return setting_values, variable_revision_number, from_matlab

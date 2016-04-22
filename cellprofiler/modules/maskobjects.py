@@ -64,7 +64,9 @@ S_DICTIONARY = {
     "Keep": P_KEEP,
     "Retain": R_RETAIN,
     "Renumber": R_RENUMBER
-    }
+}
+
+
 def s_lookup(x):
     '''Look up the current value for a setting choice w/backwards compatibility
 
@@ -72,8 +74,8 @@ def s_lookup(x):
     '''
     return S_DICTIONARY.get(x, x)
 
-class MaskObjects(I.Identify):
 
+class MaskObjects(I.Identify):
     category = "Object Processing"
     module_name = "MaskObjects"
     variable_revision_number = 2
@@ -81,7 +83,7 @@ class MaskObjects(I.Identify):
     def create_settings(self):
         '''Create the settings that control this module'''
         self.object_name = cps.ObjectNameSubscriber(
-            "Select objects to be masked",cps.NONE,doc="""
+                "Select objects to be masked", cps.NONE, doc="""
             Select the objects that will be masked (that is, excluded in whole
             or in part based on the other settings in the module).
             You can choose from any objects created by
@@ -89,27 +91,27 @@ class MaskObjects(I.Identify):
             <b>IdentifySecondaryObjects</b> or <b>IdentifyTertiaryObjects</b>.""")
 
         self.remaining_objects = cps.ObjectNameProvider(
-            "Name the masked objects", "MaskedNuclei",doc="""
+                "Name the masked objects", "MaskedNuclei", doc="""
             Enter a name for the objects that remain after
             the masking operation. You can refer to the masked objects in
             subsequent modules by this name.""")
 
         self.mask_choice = cps.Choice(
-            "Mask using a region defined by other objects or by binary image?",
-            [MC_OBJECTS, MC_IMAGE],doc="""
+                "Mask using a region defined by other objects or by binary image?",
+                [MC_OBJECTS, MC_IMAGE], doc="""
             You can mask your objects by defining a region using objects
             you previously identified in your pipeline (<i>%(MC_OBJECTS)s</i>) or by defining a
-            region based on the white regions in a binary image (<i>%(MC_IMAGE)s</i>)."""%globals())
+            region based on the white regions in a binary image (<i>%(MC_IMAGE)s</i>).""" % globals())
 
         self.masking_objects = cps.ObjectNameSubscriber(
-            "Select the masking object",cps.NONE,doc="""
+                "Select the masking object", cps.NONE, doc="""
             Select the objects that will be used to define the
             masking region. You can choose from any objects created
             by a previous object processing module, such as <b>IdentifyPrimaryObjects</b>,
             <b>IdentifySecondaryObjects</b>, or <b>IdentifyTertiaryObjects</b>.""")
 
         self.masking_image = cps.ImageNameSubscriber(
-            "Select the masking image",cps.NONE, doc="""
+                "Select the masking image", cps.NONE, doc="""
             Select an image that was either loaded or
             created by a previous module. The image should be a binary image where
             the white portion of the image is the region(s) you will use for masking.
@@ -119,7 +121,7 @@ class MaskObjects(I.Identify):
             image using <b>ApplyThreshold</b>.""")
 
         self.wants_inverted_mask = cps.Binary(
-            "Invert the mask?", False, doc="""
+                "Invert the mask?", False, doc="""
             This option reverses the foreground/background relationship of
             the mask.
             <ul>
@@ -129,11 +131,11 @@ class MaskObjects(I.Identify):
             <li>Select <i>%(YES)s</i> for the mask to instead be composed of the
             <i>background</i> (black portions) of the masking image or the area
             <i>outside</i> the masking objects.</li>
-            </ul>"""%globals())
+            </ul>""" % globals())
 
         self.overlap_choice = cps.Choice(
-            "Handling of objects that are partially masked",
-            [P_MASK, P_KEEP, P_REMOVE, P_REMOVE_PERCENTAGE],doc="""
+                "Handling of objects that are partially masked",
+                [P_MASK, P_KEEP, P_REMOVE, P_REMOVE_PERCENTAGE], doc="""
             An object might partially overlap the mask region, with
             pixels both inside and outside the region. <b>MaskObjects</b>
             can handle this in one of three ways:<br>
@@ -155,11 +157,11 @@ class MaskObjects(I.Identify):
             the object falls within the masking region. <b>MaskObjects</b>
             completely removes the object if too little of it overlaps
             the masking region.</li>
-            </ul>"""%globals())
+            </ul>""" % globals())
 
         self.overlap_fraction = cps.Float(
-            "Fraction of object that must overlap", .5,
-            minval = 0, maxval = 1,doc = """
+                "Fraction of object that must overlap", .5,
+                minval=0, maxval=1, doc="""
             <i>(Used only if removing based on a overlap)</i><br>
             Specify the minimum fraction of an object
             that must overlap the masking region for that object to be retained.
@@ -167,8 +169,8 @@ class MaskObjects(I.Identify):
             must be within the masking region for that object to be retained.""")
 
         self.retain_or_renumber = cps.Choice(
-            "Numbering of resulting objects",
-            [R_RENUMBER, R_RETAIN],doc="""
+                "Numbering of resulting objects",
+                [R_RENUMBER, R_RETAIN], doc="""
             Choose how to number the objects that
             remain after masking, which controls how remaining objects are associated with their predecessors:
             <ul>
@@ -182,15 +184,15 @@ class MaskObjects(I.Identify):
             the masked objects to be directly aligned with measurements you might
             have made of the original, unmasked objects (or objects directly
             associated with them).</li>
-            </ul>"""%globals())
+            </ul>""" % globals())
 
         self.wants_outlines = cps.Binary(
-            "Retain outlines of the resulting objects?", False, doc = """
-            %(RETAINING_OUTLINES_HELP)s"""%globals())
+                "Retain outlines of the resulting objects?", False, doc="""
+            %(RETAINING_OUTLINES_HELP)s""" % globals())
 
         self.outlines_name = cps.OutlineNameProvider(
-            "Name the outline image", "MaskedOutlines", doc = """
-            %(NAMING_OUTLINES_HELP)s"""%globals())
+                "Name the outline image", "MaskedOutlines", doc="""
+            %(NAMING_OUTLINES_HELP)s""" % globals())
 
     def settings(self):
         '''The settings as they appear in the pipeline'''
@@ -232,11 +234,11 @@ class MaskObjects(I.Identify):
 
         if self.mask_choice == MC_IMAGE:
             mask = workspace.image_set.get_image(self.masking_image.value,
-                                                 must_be_binary = True)
+                                                 must_be_binary=True)
             mask = mask.pixel_data
         else:
             masking_objects = workspace.object_set.get_objects(
-                self.masking_objects.value)
+                    self.masking_objects.value)
             mask = masking_objects.segmented > 0
         if self.wants_inverted_mask:
             mask = ~mask
@@ -259,12 +261,12 @@ class MaskObjects(I.Identify):
             labels = labels * mask
         else:
             pixel_counts = fix(scind.sum(mask, labels,
-                                         np.arange(1, nobjects+1,dtype=np.int32)))
+                                         np.arange(1, nobjects + 1, dtype=np.int32)))
             if self.overlap_choice == P_KEEP:
                 keep = pixel_counts > 0
             else:
                 total_pixels = fix(scind.sum(np.ones(labels.shape), labels,
-                                             np.arange(1, nobjects+1,dtype=np.int32)))
+                                             np.arange(1, nobjects + 1, dtype=np.int32)))
                 if self.overlap_choice == P_REMOVE:
                     keep = pixel_counts == total_pixels
                 elif self.overlap_choice == P_REMOVE_PERCENTAGE:
@@ -279,13 +281,13 @@ class MaskObjects(I.Identify):
         # Renumber the labels matrix if requested
         #
         if self.retain_or_renumber == R_RENUMBER:
-            unique_labels = np.unique(labels[labels!=0])
-            indexer = np.zeros(nobjects+1, int)
-            indexer[unique_labels] = np.arange(1, len(unique_labels)+1)
+            unique_labels = np.unique(labels[labels != 0])
+            indexer = np.zeros(nobjects + 1, int)
+            indexer[unique_labels] = np.arange(1, len(unique_labels) + 1)
             labels = indexer[labels]
             parent_objects = unique_labels
         else:
-            parent_objects = np.arange(1, nobjects+1)
+            parent_objects = np.arange(1, nobjects + 1)
         #
         # Add the objects
         #
@@ -302,10 +304,10 @@ class MaskObjects(I.Identify):
                           I.FF_PARENT % object_name,
                           parent_objects)
         if np.max(original_objects.segmented) == 0:
-            child_count = np.array([],int)
+            child_count = np.array([], int)
         else:
             child_count = fix(scind.sum(labels, original_objects.segmented,
-                                        np.arange(1, nobjects+1,dtype=np.int32)))
+                                        np.arange(1, nobjects + 1, dtype=np.int32)))
             child_count = (child_count > 0).astype(int)
         m.add_measurement(object_name,
                           I.FF_CHILDREN_COUNT % remaining_object_name,
@@ -322,7 +324,7 @@ class MaskObjects(I.Identify):
         #
         if self.wants_outlines.value:
             outline_image = cpi.Image(outline(labels) > 0,
-                                      parent_image = original_objects.parent_image)
+                                      parent_image=original_objects.parent_image)
             workspace.image_set.add(self.outlines_name.value, outline_image)
         #
         # Save the input, mask and output images for display
@@ -335,7 +337,7 @@ class MaskObjects(I.Identify):
     def display(self, workspace, figure):
         '''Create an informative display for the module'''
         import matplotlib
-        from cellprofiler.gui.cpfigure import renumber_labels_for_display
+        from cellprofiler.gui.cpfigure_tools import renumber_labels_for_display
         original_labels = workspace.display_data.original_labels
         final_labels = workspace.display_data.final_labels
         mask = workspace.display_data.mask
@@ -346,16 +348,16 @@ class MaskObjects(I.Identify):
         outlines = outline(original_labels) > 0
 
         cm = matplotlib.cm.get_cmap(cpprefs.get_default_colormap())
-        sm = matplotlib.cm.ScalarMappable(cmap = cm)
+        sm = matplotlib.cm.ScalarMappable(cmap=cm)
         #
         # Paint the labels in color
         #
-        image = sm.to_rgba(final_labels)[:,:,:3]
-        image[final_labels == 0,:] = 0
+        image = sm.to_rgba(final_labels)[:, :, :3]
+        image[final_labels == 0, :] = 0
         #
         # Make the mask a dark gray
         #
-        image[(final_labels == 0) & mask,:] = .25
+        image[(final_labels == 0) & mask, :] = .25
         #
         # Make the outlines of the kept objects the primary color
         # and the outlines of removed objects red.
@@ -368,10 +370,10 @@ class MaskObjects(I.Identify):
 
         figure.set_subplots((2, 1))
         figure.subplot_imshow_labels(0, 0, original_labels,
-                                     title = self.object_name.value)
+                                     title=self.object_name.value)
         figure.subplot_imshow_color(1, 0, image,
-                                    title = self.remaining_objects.value,
-                                    sharexy = figure.subplot(0,0))
+                                    title=self.remaining_objects.value,
+                                    sharexy=figure.subplot(0, 0))
 
     def get_measurement_columns(self, pipeline):
         '''Return column definitions for measurements made by this module'''
@@ -425,13 +427,13 @@ class MaskObjects(I.Identify):
             object_name, mask_region_name, remaining_object_name, \
             renumber, save_outlines, remove_overlapping = setting_values
             wants_outlines = (cps.NO if save_outlines.lower() ==
-                              cps.DO_NOT_USE.lower() else cps.YES)
+                                        cps.DO_NOT_USE.lower() else cps.YES)
             renumber = (R_RENUMBER if renumber == "Renumber"
                         else R_RETAIN if renumber == "Retain"
-                        else renumber)
+            else renumber)
             overlap_choice = (P_MASK if remove_overlapping == "Retain"
                               else P_REMOVE if remove_overlapping == "Remove"
-                              else remove_overlapping)
+            else remove_overlapping)
 
             setting_values = [
                 object_name, remaining_object_name, MC_OBJECTS,

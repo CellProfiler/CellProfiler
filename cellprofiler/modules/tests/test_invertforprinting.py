@@ -28,6 +28,7 @@ I_GREEN_OUT = "GreenOutput"
 I_BLUE_OUT = "BlueOutput"
 I_COLOR_OUT = "ColorOutput"
 
+
 class TestInvertForPrinting(unittest.TestCase):
     def test_01_01_load_matlab(self):
         data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
@@ -48,8 +49,10 @@ class TestInvertForPrinting(unittest.TestCase):
                 'q3k5fn/pKOzac138++3zR15X30j9H8DxtfP95F1O/Vxbb539FfX95u9nqzNv'
                 'ndrrIbq8eP5t8fP96ce79+w/+Hfe79PWfxZv0/z/39JNhxUAgHNw/Q==')
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 3)
@@ -90,8 +93,10 @@ class TestInvertForPrinting(unittest.TestCase):
                 '77Z3bxkvKY+u39yAel4dwuJveWm47rre7jz83g5SLxL6u968Dy6ilJO4H2C8'
                 'eV4ZEu9wCxr/B5P4OHs=')
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 2)
@@ -102,9 +107,9 @@ class TestInvertForPrinting(unittest.TestCase):
         self.assertEqual(module.output_color_choice.value, I.CC_COLOR)
         self.assertEqual(module.color_output_image.value, "InvertedColor")
 
-    def run_module(self, color_image = None,
-                   red_image = None, green_image = None, blue_image = None,
-                   fn = None):
+    def run_module(self, color_image=None,
+                   red_image=None, green_image=None, blue_image=None,
+                   fn=None):
         '''Run the InvertForPrinting module
 
         Call this with Numpy arrays for the images and optionally
@@ -118,10 +123,10 @@ class TestInvertForPrinting(unittest.TestCase):
         module = I.InvertForPrinting()
         module.module_num = 1
         for image, name, setting, check in \
-            ( (color_image, I_COLOR_IN, module.color_input_image, None),
-              (red_image, I_RED_IN, module.red_input_image, module.wants_red_input),
-              (green_image, I_GREEN_IN, module.green_input_image, module.wants_green_input),
-              (blue_image, I_BLUE_IN, module.blue_input_image, module.wants_blue_input)):
+                ((color_image, I_COLOR_IN, module.color_input_image, None),
+                 (red_image, I_RED_IN, module.red_input_image, module.wants_red_input),
+                 (green_image, I_GREEN_IN, module.green_input_image, module.wants_green_input),
+                 (blue_image, I_BLUE_IN, module.blue_input_image, module.wants_blue_input)):
             if image is not None:
                 img = cpi.Image(image)
                 image_set.add(name, img)
@@ -139,8 +144,10 @@ class TestInvertForPrinting(unittest.TestCase):
             fn(module)
         pipeline = cpp.Pipeline()
         pipeline.add_module(module)
+
         def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
+
         pipeline.add_listener(callback)
         workspace = cpw.Workspace(pipeline, module, image_set,
                                   cpo.ObjectSet(),
@@ -154,100 +161,109 @@ class TestInvertForPrinting(unittest.TestCase):
 
     def test_02_01_color_to_color(self):
         np.random.seed(0)
-        color_image = np.random.uniform(size=(10,20,3)).astype(np.float32)
+        color_image = np.random.uniform(size=(10, 20, 3)).astype(np.float32)
+
         def fn(module):
-            self.assertTrue(isinstance(module,I.InvertForPrinting))
+            self.assertTrue(isinstance(module, I.InvertForPrinting))
             module.input_color_choice.value = I.CC_COLOR
             module.output_color_choice.value = I.CC_COLOR
-        d = self.run_module(color_image = color_image, fn = fn)
+
+        d = self.run_module(color_image=color_image, fn=fn)
         self.assertEqual(len(d), 2)
         self.assertTrue(I_COLOR_OUT in d.keys())
         result = d[I_COLOR_OUT]
-        for o, i1, i2 in ((0,1,2),(1,2,0),(2,0,1)):
-            diff = (result[:,:,o] - ((1 - color_image[:,:,i1]) *
-                                     (1-color_image[:,:,i2])))
+        for o, i1, i2 in ((0, 1, 2), (1, 2, 0), (2, 0, 1)):
+            diff = (result[:, :, o] - ((1 - color_image[:, :, i1]) *
+                                       (1 - color_image[:, :, i2])))
             self.assertTrue(np.all(np.abs(diff) <= np.finfo(float).eps))
 
     def test_02_02_color_to_bw(self):
         np.random.seed(0)
-        color_image = np.random.uniform(size=(10,20,3)).astype(np.float32)
+        color_image = np.random.uniform(size=(10, 20, 3)).astype(np.float32)
+
         def fn(module):
-            self.assertTrue(isinstance(module,I.InvertForPrinting))
+            self.assertTrue(isinstance(module, I.InvertForPrinting))
             module.input_color_choice.value = I.CC_COLOR
             module.output_color_choice.value = I.CC_GRAYSCALE
-        d = self.run_module(color_image = color_image, fn = fn)
+
+        d = self.run_module(color_image=color_image, fn=fn)
         self.assertEqual(len(d), 4)
         self.assertTrue(all([color in d.keys()
                              for color in (I_RED_OUT, I_GREEN_OUT, I_BLUE_OUT)]))
         result = [d[I_RED_OUT], d[I_GREEN_OUT], d[I_BLUE_OUT]]
-        for o, i1, i2 in ((0,1,2),(1,2,0),(2,0,1)):
-            diff = (result[o] - ((1 - color_image[:,:,i1]) *
-                                 (1-color_image[:,:,i2])))
+        for o, i1, i2 in ((0, 1, 2), (1, 2, 0), (2, 0, 1)):
+            diff = (result[o] - ((1 - color_image[:, :, i1]) *
+                                 (1 - color_image[:, :, i2])))
             self.assertTrue(np.all(np.abs(diff) <= np.finfo(float).eps))
 
     def test_02_03_bw_to_color(self):
         np.random.seed(0)
-        color_image = np.random.uniform(size=(10,20,3)).astype(np.float32)
+        color_image = np.random.uniform(size=(10, 20, 3)).astype(np.float32)
+
         def fn(module):
-            self.assertTrue(isinstance(module,I.InvertForPrinting))
+            self.assertTrue(isinstance(module, I.InvertForPrinting))
             module.input_color_choice.value = I.CC_GRAYSCALE
             module.output_color_choice.value = I.CC_COLOR
-        d = self.run_module(red_image = color_image[:,:,0],
-                            green_image = color_image[:,:,1],
-                            blue_image = color_image[:,:,2],
-                            fn = fn)
+
+        d = self.run_module(red_image=color_image[:, :, 0],
+                            green_image=color_image[:, :, 1],
+                            blue_image=color_image[:, :, 2],
+                            fn=fn)
         self.assertEqual(len(d), 4)
         self.assertTrue(I_COLOR_OUT in d.keys())
         result = d[I_COLOR_OUT]
-        for o, i1, i2 in ((0,1,2),(1,2,0),(2,0,1)):
+        for o, i1, i2 in ((0, 1, 2), (1, 2, 0), (2, 0, 1)):
             np.testing.assert_almost_equal(
-                result[:,:,o],
-                ((1 - color_image[:,:,i1]) * (1-color_image[:,:,i2])))
+                    result[:, :, o],
+                    ((1 - color_image[:, :, i1]) * (1 - color_image[:, :, i2])))
 
     def test_02_04_bw_to_bw(self):
         np.random.seed(0)
-        color_image = np.random.uniform(size=(10,20,3)).astype(np.float32)
+        color_image = np.random.uniform(size=(10, 20, 3)).astype(np.float32)
+
         def fn(module):
-            self.assertTrue(isinstance(module,I.InvertForPrinting))
+            self.assertTrue(isinstance(module, I.InvertForPrinting))
             module.input_color_choice.value = I.CC_GRAYSCALE
             module.output_color_choice.value = I.CC_GRAYSCALE
-        d = self.run_module(red_image = color_image[:,:,0],
-                            green_image = color_image[:,:,1],
-                            blue_image = color_image[:,:,2],
-                            fn = fn)
+
+        d = self.run_module(red_image=color_image[:, :, 0],
+                            green_image=color_image[:, :, 1],
+                            blue_image=color_image[:, :, 2],
+                            fn=fn)
         self.assertEqual(len(d), 6)
         self.assertTrue(all([color in d.keys()
                              for color in (I_RED_OUT, I_GREEN_OUT, I_BLUE_OUT)]))
         result = [d[I_RED_OUT], d[I_GREEN_OUT], d[I_BLUE_OUT]]
-        for o, i1, i2 in ((0,1,2),(1,2,0),(2,0,1)):
+        for o, i1, i2 in ((0, 1, 2), (1, 2, 0), (2, 0, 1)):
             np.testing.assert_almost_equal(
-                result[o],
-                ((1 - color_image[:,:,i1]) *
-                 (1-color_image[:,:,i2])))
+                    result[o],
+                    ((1 - color_image[:, :, i1]) *
+                     (1 - color_image[:, :, i2])))
 
     def test_03_01_missing_image(self):
         np.random.seed(0)
-        color_image = np.random.uniform(size=(10,20,3)).astype(np.float32)
-        for present in ((True,True,False),
-                        (True,False,True),
-                        (True,False,False),
-                        (False,True,True),
-                        (False,True,False),
-                        (False,False,True)):
+        color_image = np.random.uniform(size=(10, 20, 3)).astype(np.float32)
+        for present in ((True, True, False),
+                        (True, False, True),
+                        (True, False, False),
+                        (False, True, True),
+                        (False, True, False),
+                        (False, False, True)):
             def fn(module):
-                self.assertTrue(isinstance(module,I.InvertForPrinting))
+                self.assertTrue(isinstance(module, I.InvertForPrinting))
                 module.input_color_choice.value = I.CC_GRAYSCALE
                 module.output_color_choice.value = I.CC_GRAYSCALE
-            d = self.run_module(red_image = color_image[:,:,0] if present[0] else None,
-                                green_image = color_image[:,:,1] if present[1] else None,
-                                blue_image = color_image[:,:,2] if present[2] else None,
-                                fn = fn)
-            self.assertEqual(len(d), 3+np.sum(present))
+
+            d = self.run_module(red_image=color_image[:, :, 0] if present[0] else None,
+                                green_image=color_image[:, :, 1] if present[1] else None,
+                                blue_image=color_image[:, :, 2] if present[2] else None,
+                                fn=fn)
+            self.assertEqual(len(d), 3 + np.sum(present))
             self.assertTrue(all([color in d.keys()
                                  for color in (I_RED_OUT, I_GREEN_OUT, I_BLUE_OUT)]))
             result = [d[I_RED_OUT], d[I_GREEN_OUT], d[I_BLUE_OUT]]
-            for o, i1, i2 in ((0,1,2),(1,2,0),(2,0,1)):
+            for o, i1, i2 in ((0, 1, 2), (1, 2, 0), (2, 0, 1)):
                 np.testing.assert_almost_equal(
-                    result[o],
-                    ((1 - color_image[:,:,i1] if present[i1] else 1) *
-                     (1-color_image[:,:,i2] if present[i2] else 1)))
+                        result[o],
+                        ((1 - color_image[:, :, i1] if present[i1] else 1) *
+                         (1 - color_image[:, :, i2] if present[i2] else 1)))

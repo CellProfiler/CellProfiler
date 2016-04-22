@@ -24,6 +24,7 @@ import cellprofiler.modules.renameorrenumberfiles as R
 
 IMAGE_NAME = 'myimage'
 
+
 class TestRenameOrRenumberFiles(unittest.TestCase):
     def setUp(self):
         self.path = tempfile.mkdtemp()
@@ -55,8 +56,10 @@ class TestRenameOrRenumberFiles(unittest.TestCase):
                 'qGN9/WZtnFmEfZW3/YSPl/+Y/9jz22ani/jEyvZNMi9tzrqfUec+xFG+mcmv'
                 'KHmdf9vMxLQ534XDfv9fzv1IfdvKH/Ir75/sBQB5QhVW')
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 3)
@@ -102,8 +105,10 @@ RenameOrRenumberFiles:[module_num:2|svn_version:\'1\'|variable_revision_number:1
     Replacement text:Text
 """
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
         self.assertEqual(len(pipeline.modules()), 2)
@@ -143,8 +148,10 @@ RenameOrRenumberFiles:[module_num:1|svn_version:\'1\'|variable_revision_number:1
     Space replacement\x3A:+
 """
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
@@ -170,8 +177,10 @@ RenameOrRenumberFiles:[module_num:1|svn_version:\'1\'|variable_revision_number:1
         module.module_num = 1
 
         pipeline = cpp.Pipeline()
+
         def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.add_module(module)
 

@@ -8,7 +8,7 @@ class ScrollableText(wx.lib.scrolledpanel.ScrolledPanel):
 
         if text is None:
             text = [[('black', 'adsf')]]
-        self.SetBackgroundColour('white')
+        self.SetBackgroundColour(wx.NullColour)
         self.SetVirtualSize((1500, 1500))
         self.SetupScrolling(True, True)
 

@@ -311,7 +311,7 @@ class PipelineController:
         bkgnd_color = cellprofiler.preferences.get_background_color()
         assert isinstance(panel, wx.Window)
         self.__test_controls_panel = panel
-        panel.SetBackgroundColour(bkgnd_color)
+        panel.SetBackgroundColour(wx.NullColour)
         #
         # There are three sizers, one for each mode:
         # * tcp_launch_sizer - when idle, for launching analysis or test mode
@@ -414,7 +414,7 @@ class PipelineController:
         sub_sizer.Add(self.__tcp_next_imageset, 1, wx.EXPAND)
 
         for child in panel.GetChildren():
-            child.SetBackgroundColour(bkgnd_color)
+            child.SetBackgroundColour(wx.NullColour)
 
         self.show_launch_controls()
 

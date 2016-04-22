@@ -580,7 +580,25 @@ class PipelineController:
                 # In response to user interaction, so pass
                 self.__pipeline.clear()
             finally:
-                cellprofiler.preferences.remove_progress_callback(progress_callback_fn)
+                cpprefs.remove_progress_callback(progress_callback_fn)
+        # issue #1855 - apparently there is a WX bug in 3.0 that
+        # disables buttons during the progress bar display (good),
+        # re-enables the buttons after the progress bar is down (good)
+        # but fails to repaint them, leaving them gray (bad).
+        #
+        # I tried "wx.CallAfter" but the progress bar UI is still up
+        # even though the Python progress bar object has been destroyed.
+        #
+        wx.CallLater(250, self.repaint_after_progress_bar)
+
+    def repaint_after_progress_bar(self):
+        parent_stack = [self.__frame]
+        while len(parent_stack) > 0:
+            window = parent_stack.pop()
+            for child in window.GetChildren():
+                if child.IsShown():
+                    child.Refresh(eraseBackground=True)
+                    parent_stack.append(child)
 
     def display_pipeline_message_for_user(self):
         if self.__pipeline.message_for_user is not None:

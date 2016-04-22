@@ -68,6 +68,7 @@ def main(args=None):
         args = sys.argv
     import cellprofiler.preferences as cpprefs
     cpprefs.set_awt_headless(True)
+    exit_code = 0
     switches = ('--work-announce', '--knime-bridge-address')
     if any([any([arg.startswith(switch) for switch in switches])
             for arg in args]):
@@ -82,7 +83,7 @@ def main(args=None):
         import cellprofiler.analysis_worker
         cellprofiler.analysis_worker.aw_parse_args()
         cellprofiler.analysis_worker.main()
-        sys.exit(0)
+        sys.exit(exit_code)
 
     options, args = parse_args(args)
     if options.print_version:
@@ -92,7 +93,7 @@ def main(args=None):
         print "Git %s" % git_hash
         print "Version %s" % version_number
         print "Built %s" % version_string.split(" ")[0]
-        sys.exit(0)
+        sys.exit(exit_code)
     #
     # Important to go headless ASAP
     #
@@ -254,7 +255,7 @@ def main(args=None):
             run_pipeline_headless(options, args)
     except Exception, e:
         logging.root.fatal("Uncaught exception in CellProfiler.py", exc_info=True)
-        raise
+        exit_code = -1
 
     finally:
         stop_cellprofiler()
@@ -934,16 +935,22 @@ def run_pipeline_headless(options, args):
     if len(args) > 0 and not use_hdf5:
         pipeline.save_measurements(args[0], measurements)
     if options.done_file is not None:
-        if (measurements is not None and
-                measurements.has_feature(cpmeas.EXPERIMENT, EXIT_STATUS)):
+        if (measurements is not None and measurements.has_feature(cpmeas.EXPERIMENT, EXIT_STATUS)):
             done_text = measurements.get_experiment_measurement(EXIT_STATUS)
+
+            exit_code = (0 if done_text == "Complete" else -1)
         else:
             done_text = "Failure"
+
+            exit_code = -1
+
         fd = open(options.done_file, "wt")
         fd.write("%s\n" % done_text)
         fd.close()
     if measurements is not None:
         measurements.close()
+
+    return exit_code
 
 
 if __name__ == "__main__":

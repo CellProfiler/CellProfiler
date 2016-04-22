@@ -2,13 +2,11 @@ import fnmatch
 import os
 import os.path
 import re
+import scrollable_text
 import sys
-
 import wx
 import wx.html
-import wx.lib.agw.customtreectrl as CT
-
-import scrollable_text
+import wx.lib.agw.customtreectrl
 
 default_input = '/tmp'
 default_output = '/Users/thouis'
@@ -37,19 +35,6 @@ FS_FILENAME_ONLY, FS_SUBDIR_AND_FNAME, FS_FULL_PATH = match_elements
 default_image_names = ['DNA', 'Actin', 'Protein']
 
 
-def relpath(sub, parent):
-    tails = []
-    assert sub.startswith(parent)
-    while sub.startswith(parent):
-        sub, tail = os.path.split(sub)
-        tails.append(tail)
-    tails.reverse()
-    # drop the first element, as that one was part of parent
-    if len(tails) > 1:
-        return os.path.join(*tails[1:])
-    return ''
-
-
 def default_image_name(idx):
     try:
         return default_image_names[idx]
@@ -60,11 +45,11 @@ def default_image_name(idx):
 MAX_DIRNAME_SIZE = 80
 
 
-def limit_dirname_size(dir):
-    if len(dir) > MAX_DIRNAME_SIZE:
-        assert len(dir[:MAX_DIRNAME_SIZE / 2 - 3] + '...\n' + dir[-MAX_DIRNAME_SIZE / 2:])
-        return dir[:47] + '...' + dir[-50:]
-    return dir
+def limit_dirname_size(directory):
+    if len(directory) > MAX_DIRNAME_SIZE:
+        assert len(directory[:MAX_DIRNAME_SIZE / 2 - 3] + '...\n' + directory[-MAX_DIRNAME_SIZE / 2:])
+        return directory[:47] + '...' + directory[-50:]
+    return directory
 
 
 myEVT_CUSTOM_EVENT = wx.NewEventType()
@@ -230,25 +215,26 @@ class LocationPanel(wx.Panel):
         idx = self.base_dir.GetSelection()
         return [default_input, default_output, self.otherdir.GetValue()][idx]
 
-    def format_file(self, file_info):
+    @staticmethod
+    def format_file(file_info):
         return [('black', os.path.join(*file_info))]
 
-    def update_file_list(self, dir=None, descend_dirs=None):
-        if dir is None:
-            dir = self.get_current_directory()
+    def update_file_list(self, directory=None, descend_dirs=None):
+        if directory is None:
+            directory = self.get_current_directory()
         if descend_dirs is None:
             descend_dirs = descend_dir_choices[self.descend_dirs.GetSelection()]
 
         if descend_dirs == FS_DESCEND_NO:
-            self.file_list = [(dir, '', f) for f in os.listdir(dir) if os.path.isfile(os.path.join(dir, f))]
+            self.file_list = [(directory, '', f) for f in os.listdir(directory) if os.path.isfile(os.path.join(directory, f))]
         elif descend_dirs == FS_DESCEND_YES:
             progress = wx.ProgressDialog('Finding files...', 'M' * (MAX_DIRNAME_SIZE * 2 / 3), 100, self,
                                          wx.PD_CAN_ABORT | wx.PD_APP_MODAL)
-            progress.Pulse(limit_dirname_size(dir))
+            progress.Pulse(limit_dirname_size(directory))
             self.file_list = []
-            for dirpath, dirnames, filenames in os.walk(dir):
-                subpath = relpath(dirpath, dir)
-                self.file_list += [(dir, subpath, f) for f in filenames]
+            for dirpath, dirnames, filenames in os.walk(directory):
+                subpath = os.path.relpath(dirpath, directory)
+                self.file_list += [(directory, subpath, f) for f in filenames]
                 c, s = progress.Pulse(limit_dirname_size(dirpath))
                 if not c:
                     break
@@ -259,8 +245,8 @@ class LocationPanel(wx.Panel):
             self.file_list = []
             dirlist = self.dirtree.get_selected_dirs()
             for idx, dirpath in enumerate(dirlist):
-                subpath = relpath(dirpath, dir)
-                self.file_list += [(dir, subpath, f) for f in os.listdir(dirpath) if
+                subpath = os.path.relpath(dirpath, directory)
+                self.file_list += [(directory, subpath, f) for f in os.listdir(dirpath) if
                                    os.path.isfile(os.path.join(dirpath, f))]
                 c, s = progress.Update((idx * 99) / len(dirlist), limit_dirname_size(dirpath))
                 if not c:
@@ -521,10 +507,10 @@ class ImagePage(wx.Panel):
         self.update_file_list(keep_pos=True)
 
 
-class DirTree(CT.CustomTreeCtrl):
+class DirTree(wx.lib.agw.customtreectrl.CustomTreeCtrl):
     def __init__(self, parent, file_selector):
         self.file_selector = file_selector
-        CT.CustomTreeCtrl.__init__(self, parent, -1, style=wx.TR_DEFAULT_STYLE)
+        wx.lib.agw.customtreectrl.CustomTreeCtrl.__init__(self, parent, -1, style=wx.TR_DEFAULT_STYLE)
 
         # folder images
         isz = (16, 16)
@@ -536,12 +522,12 @@ class DirTree(CT.CustomTreeCtrl):
         self.set_directory(file_selector.get_current_directory())
         self.Bind(wx.EVT_TREE_ITEM_EXPANDING, self.expand)
 
-    def set_directory(self, dir):
-        if not os.path.isdir(dir):
+    def set_directory(self, directory):
+        if not os.path.isdir(directory):
             return
         self.DeleteAllItems()
-        root = self.AddRoot(dir, ct_type=1)
-        self.SetPyData(root, (dir, False))
+        root = self.AddRoot(directory, ct_type=1)
+        self.SetPyData(root, (directory, False))
         self.SetItemImage(root, self.fldridx, wx.TreeItemIcon_Normal)
         self.SetItemImage(root, self.fldropenidx, wx.TreeItemIcon_Expanded)
         self.AppendItem(root, '...')

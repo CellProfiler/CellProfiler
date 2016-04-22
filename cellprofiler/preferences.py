@@ -326,7 +326,6 @@ BACKGROUND_COLOR = 'BackgroundColor'
 PIXEL_SIZE = 'PixelSize'
 COLORMAP = 'Colormap'
 MODULEDIRECTORY = 'ModuleDirectory'
-CHECKFORNEWVERSIONS = 'CheckForNewVersions'
 SKIPVERSION = 'SkipVersion2.1'
 FF_RECENTFILES = 'RecentFile%d'
 STARTUPBLURB = 'StartupBlurb'
@@ -418,7 +417,7 @@ def recent_file(index, category=""):
 
 
 '''All keys saved in the registry'''
-ALL_KEYS = ([ALLOW_OUTPUT_FILE_OVERWRITE, BACKGROUND_COLOR, CHECKFORNEWVERSIONS,
+ALL_KEYS = ([ALLOW_OUTPUT_FILE_OVERWRITE, BACKGROUND_COLOR,
              COLORMAP, DEFAULT_IMAGE_DIRECTORY, DEFAULT_OUTPUT_DIRECTORY,
              IJ_PLUGIN_DIRECTORY, MODULEDIRECTORY, PLUGIN_DIRECTORY,
              PRIMARY_OUTLINE_COLOR, SECONDARY_OUTLINE_COLOR,
@@ -622,40 +621,16 @@ def tuple_to_color(t, default=(0, 0, 0)):
         return tuple_to_color(default)
 
 
-__background_color = None
 
 
 def get_background_color():
-    '''Get the color to be used for window backgrounds
+    import wx
 
-    Return wx.Colour that will be applied as
-    the background for all frames and dialogs
-    '''
-    global __background_color
-    if __background_color is not None:
-        return __background_color
-    default_color = (143, 188, 143)  # darkseagreen
-    if not config_exists(BACKGROUND_COLOR):
-        __background_color = tuple_to_color(default_color)
-    else:
-        try:
-            color = config_read(BACKGROUND_COLOR).split(',')
-        except:
-            logger.warn("Failed to read background color")
-            traceback.print_exc()
-            color = default_color
-        __background_color = tuple_to_color(tuple(color), default_color)
-    return __background_color
+    return wx.SystemSettings.GetColour(wx.SYS_COLOUR_BACKGROUND)
 
 
 def set_background_color(color):
-    '''Set the color to be used for window backgrounds
-
-    '''
-    global __background_color
-    config_write(BACKGROUND_COLOR,
-                 ','.join([str(x) for x in color.Get()]))
-    __background_color = color
+    pass
 
 
 __error_color = None
@@ -810,22 +785,6 @@ def get_current_workspace_path():
 def set_current_workspace_path(path):
     global __current_workspace_path
     __current_workspace_path = path
-
-
-def get_check_new_versions():
-    if not config_exists(CHECKFORNEWVERSIONS):
-        # should this check for whether we can actually save preferences?
-        return True
-    return get_config().ReadBool(CHECKFORNEWVERSIONS)
-
-
-def set_check_new_versions(val):
-    old_val = get_check_new_versions()
-    get_config().WriteBool(CHECKFORNEWVERSIONS, bool(val))
-    # If the user turns on version checking, they probably don't want
-    # to skip versions anymore.
-    if val and (not old_val):
-        set_skip_version(0)
 
 
 def get_skip_version():
@@ -1194,28 +1153,6 @@ def set_write_MAT_files(value):
     config_write(WRITE_MAT,
                  WRITE_HDF5 if value == WRITE_HDF5
                  else "True" if value else "False")
-
-
-__warn_about_old_pipeline = None
-
-
-def get_warn_about_old_pipeline():
-    '''Return True if CP should warn the user about old SVN revision pipelines'''
-    global __warn_about_old_pipeline
-    if __warn_about_old_pipeline is not None:
-        return __warn_about_old_pipeline
-    if not config_exists(WARN_ABOUT_OLD_PIPELINE):
-        return True
-    return config_read(WARN_ABOUT_OLD_PIPELINE) == "True"
-
-
-def set_warn_about_old_pipeline(value):
-    '''Set the "warn about old pipelines" flag'''
-    global __warn_about_old_pipeline
-    __warn_about_old_pipeline = value
-    config_write(WARN_ABOUT_OLD_PIPELINE,
-                 "True" if value else "False")
-
 
 __use_more_figure_space = None
 

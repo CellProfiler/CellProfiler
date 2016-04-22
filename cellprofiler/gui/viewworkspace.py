@@ -1,26 +1,18 @@
 """ViewWorkspace.py - view the image sets and object sets in a workspace
 """
 
+import cellprofiler.gui.cpartists
+import cellprofiler.gui.cpfigure
+import cellprofiler.gui.help
+import cellprofiler.gui.htmldialog
+import cellprofiler.measurements
+import cellprofiler.modules.identify
+import cellprofiler.preferences
 import matplotlib
-import numpy as np
+import numpy
 import wx
-from wx.lib.colourselect import ColourSelect, EVT_COLOURSELECT
-from wx.lib.intctrl import IntCtrl, EVT_INT
-from wx.lib.resizewidget import ResizeWidget
-from wx.lib.scrolledpanel import ScrolledPanel
-
-import cellprofiler.measurements as cpmeas
-import cellprofiler.preferences as cpprefs
-from cellprofiler.gui.cpartists import \
-    CPImageArtist, ImageData, ObjectsData, MaskData, ColorMixin, \
-    MODE_COLORIZE, MODE_HIDE, MODE_LINES, \
-    NORMALIZE_LINEAR, NORMALIZE_LOG, NORMALIZE_RAW, \
-    INTERPOLATION_BICUBIC, INTERPOLATION_BILINEAR, INTERPOLATION_NEAREST
-from cellprofiler.gui.cpfigure import \
-    CPFigureFrame, get_matplotlib_interpolation_preference
-from cellprofiler.gui.help import WV_FIGURE_HELP, WORKSPACE_VIEWER_HELP
-from cellprofiler.gui.htmldialog import HTMLDialog
-from cellprofiler.modules.identify import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
+import wx.lib.colourselect
+import wx.lib.scrolledpanel
 
 __the_workspace_viewer = None
 
@@ -40,15 +32,15 @@ def update_workspace_viewer(workspace):
 
 
 def bind_data_class(data_class, color_select, fn_redraw):
-    '''Bind ImageData etc to synchronize to color select button
+    """Bind ImageData etc to synchronize to color select button
 
     data_class - ImageData, ObjectData or MaskData
     color_select - a color select button whose color synchronizes
                    to that of the data
     fn_redraw - function to be called
-    '''
-    assert issubclass(data_class, ColorMixin)
-    assert isinstance(color_select, ColourSelect)
+    """
+    assert issubclass(data_class, cellprofiler.gui.cpartists.ColorMixin)
+    assert isinstance(color_select, wx.lib.colourselect.ColourSelect)
 
     class bdc(data_class):
         def _on_color_changed(self):
@@ -63,13 +55,13 @@ def bind_data_class(data_class, color_select, fn_redraw):
 
 
 class VWRow(object):
-    '''A row of controls and a data item'''
+    """A row of controls and a data item"""
 
     def __init__(self, vw, color, can_delete):
         self.vw = vw
         panel = vw.panel
         self.chooser = wx.Choice(panel)
-        self.color_ctrl = ColourSelect(panel, colour=color)
+        self.color_ctrl = wx.lib.colourselect.ColourSelect(panel, colour=color)
         self.show_check = wx.CheckBox(panel)
         bitmap = wx.ArtProvider.GetBitmap(
                 wx.ART_DELETE, wx.ART_TOOLBAR, (16, 16))
@@ -78,13 +70,13 @@ class VWRow(object):
         if not can_delete:
             self.remove_button.Hide()
         self.chooser.Bind(wx.EVT_CHOICE, self.on_choice)
-        self.color_ctrl.Bind(EVT_COLOURSELECT, self.on_color_change)
+        self.color_ctrl.Bind(wx.lib.colourselect.EVT_COLOURSELECT, self.on_color_change)
         self.show_check.Bind(wx.EVT_CHECKBOX, self.on_check_change)
         self.update_chooser(first=True)
 
     @property
     def color(self):
-        '''The color control's current color scaled for matplotlib'''
+        """The color control's current color scaled for matplotlib"""
         return tuple([float(x) / 255 for x in self.color_ctrl.GetColour()])
 
     def on_choice(self, event):
@@ -106,15 +98,15 @@ class VWRow(object):
         if self.show_check.IsChecked() and name in names:
             self.data.name = name
             self.update_data(name)
-            if self.data.mode == MODE_HIDE:
+            if self.data.mode == cellprofiler.gui.cpartists.MODE_HIDE:
                 self.data.mode = self.last_mode
-        elif self.data.mode != MODE_HIDE:
+        elif self.data.mode != cellprofiler.gui.cpartists.MODE_HIDE:
             self.last_mode = self.data.get_raw_mode()
-            self.data.mode = MODE_HIDE
+            self.data.mode = cellprofiler.gui.cpartists.MODE_HIDE
         self.update_chooser()
 
     def update_chooser(self, first=False):
-        '''Update the chooser with the given list of names'''
+        """Update the chooser with the given list of names"""
         name = self.chooser.GetStringSelection()
         names = self.get_names()
         current_names = sorted(self.chooser.GetItems())
@@ -134,49 +126,49 @@ class VWImageRow(VWRow):
         image_set = vw.workspace.image_set
         name = self.chooser.GetStringSelection()
 
-        im = cpprefs.get_intensity_mode()
-        if im == cpprefs.INTENSITY_MODE_LOG:
-            normalization = NORMALIZE_LOG
-        elif im == cpprefs.INTENSITY_MODE_NORMAL:
-            normalization = NORMALIZE_LINEAR
+        im = cellprofiler.preferences.get_intensity_mode()
+        if im == cellprofiler.preferences.INTENSITY_MODE_LOG:
+            normalization = cellprofiler.gui.cpartists.NORMALIZE_LOG
+        elif im == cellprofiler.preferences.INTENSITY_MODE_NORMAL:
+            normalization = cellprofiler.gui.cpartists.NORMALIZE_LINEAR
         else:
-            normalization = NORMALIZE_RAW
+            normalization = cellprofiler.gui.cpartists.NORMALIZE_RAW
         alpha = 1.0 / (len(vw.image_rows) + 1.0)
-        self.data = bind_data_class(ImageData, self.color_ctrl, vw.redraw)(
+        self.data = bind_data_class(cellprofiler.gui.cpartists.ImageData, self.color_ctrl, vw.redraw)(
                 name, None,
-                mode=MODE_HIDE,
+                mode=cellprofiler.gui.cpartists.MODE_HIDE,
                 color=self.color,
-                colormap=cpprefs.get_default_colormap(),
+                colormap=cellprofiler.preferences.get_default_colormap(),
                 alpha=alpha,
                 normalization=normalization)
         vw.image.add(self.data)
-        self.last_mode = MODE_COLORIZE
+        self.last_mode = cellprofiler.gui.cpartists.MODE_COLORIZE
 
     def get_names(self):
         return self.vw.workspace.image_set.get_names()
 
     def update_data(self, name):
-        '''Update the image data from the workspace'''
+        """Update the image data from the workspace"""
         image_set = self.vw.workspace.image_set
         image = image_set.get_image(name)
         self.data.pixel_data = image.pixel_data
 
 
 class VWObjectsRow(VWRow):
-    '''A row of controls for controlling objects'''
+    """A row of controls for controlling objects"""
 
     def __init__(self, vw, color, can_delete):
         super(VWObjectsRow, self).__init__(vw, color, can_delete)
         self.update_chooser(first=True)
         name = self.chooser.GetStringSelection()
-        self.data = bind_data_class(ObjectsData, self.color_ctrl, vw.redraw)(
+        self.data = bind_data_class(cellprofiler.gui.cpartists.ObjectsData, self.color_ctrl, vw.redraw)(
                 name, None,
                 outline_color=self.color,
-                colormap=cpprefs.get_default_colormap(),
+                colormap=cellprofiler.preferences.get_default_colormap(),
                 alpha=.5,
-                mode=MODE_HIDE)
+                mode=cellprofiler.gui.cpartists.MODE_HIDE)
         vw.image.add(self.data)
-        self.last_mode = MODE_LINES
+        self.last_mode = cellprofiler.gui.cpartists.MODE_LINES
 
     def get_names(self):
         object_set = self.vw.workspace.object_set
@@ -189,20 +181,20 @@ class VWObjectsRow(VWRow):
 
 
 class VWMaskRow(VWRow):
-    '''A row of controls for controlling masks'''
+    """A row of controls for controlling masks"""
 
     def __init__(self, vw, color, can_delete):
         super(VWMaskRow, self).__init__(vw, color, can_delete)
         self.__cached_names = None
         self.update_chooser(first=True)
         name = self.chooser.GetStringSelection()
-        self.data = bind_data_class(MaskData, self.color_ctrl, vw.redraw)(
+        self.data = bind_data_class(cellprofiler.gui.cpartists.MaskData, self.color_ctrl, vw.redraw)(
                 name, None,
                 color=self.color,
                 alpha=.5,
-                mode=MODE_HIDE)
+                mode=cellprofiler.gui.cpartists.MODE_HIDE)
         vw.image.add(self.data)
-        self.last_mode = MODE_LINES
+        self.last_mode = cellprofiler.gui.cpartists.MODE_LINES
 
     def get_names(self):
         image_set = self.vw.workspace.image_set
@@ -212,15 +204,15 @@ class VWMaskRow(VWRow):
         return names
 
     def update_data(self, name):
-        '''Update the image data from the workspace'''
+        """Update the image data from the workspace"""
         image_set = self.vw.workspace.image_set
         image = image_set.get_image(name)
         self.data.mask = image.mask
 
 
-class VWFigureFrame(CPFigureFrame):
+class VWFigureFrame(cellprofiler.gui.cpfigure.CPFigureFrame):
     def on_close(self, event):
-        '''Hide instead of close'''
+        """Hide instead of close"""
         if isinstance(event, wx.CloseEvent):
             event.Veto()
         self.Hide()
@@ -236,8 +228,8 @@ class ViewWorkspace(object):
         self.frame = VWFigureFrame(
                 parent,
                 title="CellProfiler Workspace",
-                secret_panel_class=ScrolledPanel,
-                help_menu_items=WV_FIGURE_HELP)
+                secret_panel_class=wx.lib.scrolledpanel.ScrolledPanel,
+                help_menu_items=cellprofiler.gui.help.WV_FIGURE_HELP)
         self.workspace = workspace
         self.ignore_redraw = False
         self.image_rows = []
@@ -247,14 +239,14 @@ class ViewWorkspace(object):
         self.frame.set_subplots((1, 1))
         self.axes = self.frame.subplot(0, 0)
         self.axes.invert_yaxis()
-        interpolation = cpprefs.get_interpolation_mode()
-        if interpolation == cpprefs.IM_NEAREST:
-            interpolation = INTERPOLATION_NEAREST
-        elif interpolation == cpprefs.IM_BILINEAR:
-            interpolation = INTERPOLATION_BILINEAR
+        interpolation = cellprofiler.preferences.get_interpolation_mode()
+        if interpolation == cellprofiler.preferences.IM_NEAREST:
+            interpolation = cellprofiler.gui.cpartists.INTERPOLATION_NEAREST
+        elif interpolation == cellprofiler.preferences.IM_BILINEAR:
+            interpolation = cellprofiler.gui.cpartists.INTERPOLATION_BILINEAR
         else:
-            interpolation = INTERPOLATION_BICUBIC
-        self.image = CPImageArtist(interpolation=interpolation)
+            interpolation = cellprofiler.gui.cpartists.INTERPOLATION_BICUBIC
+        self.image = cellprofiler.gui.cpartists.CPImageArtist(interpolation=interpolation)
         assert isinstance(self.axes, matplotlib.axes.Axes)
         self.axes.add_artist(self.image)
         self.axes.set_aspect('equal')
@@ -386,8 +378,8 @@ class ViewWorkspace(object):
         panel.Sizer.Add(help_button, 0, wx.ALIGN_RIGHT)
 
         def on_help(event):
-            HTMLDialog(panel, "Workspace viewer help",
-                       WORKSPACE_VIEWER_HELP).Show()
+            cellprofiler.gui.htmldialog.HTMLDialog(panel, "Workspace viewer help",
+                                                   cellprofiler.gui.help.WORKSPACE_VIEWER_HELP).Show()
 
         help_button.Bind(wx.EVT_BUTTON, on_help)
         self.image.add_to_menu(self.frame, self.frame.menu_subplots)
@@ -400,12 +392,12 @@ class ViewWorkspace(object):
         self.frame.SetSize(wx.Size(w, h))
 
     def scale_axes(self):
-        '''Set the axes limits appropriate to the images we have'''
+        """Set the axes limits appropriate to the images we have"""
         ax = self.image.axes
         if self.frame.navtoolbar.is_home():
             max_x = max_y = 0
             for image_row in self.image_rows:
-                if image_row.data.mode != MODE_HIDE:
+                if image_row.data.mode != cellprofiler.gui.cpartists.MODE_HIDE:
                     shape = image_row.data.pixel_data.shape
                     max_x = max(shape[1], max_x)
                     max_y = max(shape[0], max_y)
@@ -545,7 +537,7 @@ class ViewWorkspace(object):
         self.redraw()
 
     def set_workspace(self, workspace):
-        '''Rebuild the workspace control panel'''
+        """Rebuild the workspace control panel"""
         self.workspace = workspace
         self.ignore_redraw = True
         try:
@@ -565,7 +557,8 @@ class ViewWorkspace(object):
         event.SetEventObject(self.frame)
         self.image.on_update_menu(event, menu)
 
-    def update_choices(self, rows):
+    @staticmethod
+    def update_choices(rows):
         for row in rows:
             row.update_chooser()
 
@@ -594,7 +587,7 @@ class ViewWorkspace(object):
             artist.remove()
 
         m = self.workspace.measurements
-        assert isinstance(m, cpmeas.Measurements)
+        assert isinstance(m, cellprofiler.measurements.Measurements)
         title_lines = []
         object_values = {}
         for measurement_row in self.measurement_rows:
@@ -609,7 +602,7 @@ class ViewWorkspace(object):
                 continue
 
             value = m[object_name, feature]
-            if object_name in (cpmeas.IMAGE, cpmeas.EXPERIMENT):
+            if object_name in (cellprofiler.measurements.IMAGE, cellprofiler.measurements.EXPERIMENT):
                 if isinstance(value, int):
                     fmt = "%s: %d"
                 elif isinstance(value, float):
@@ -620,7 +613,7 @@ class ViewWorkspace(object):
             else:
                 if object_name not in object_values:
                     if any([not m.has_feature(object_name, lf) for lf in
-                            M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y]):
+                            cellprofiler.modules.identify.M_LOCATION_CENTER_X, cellprofiler.modules.identify.M_LOCATION_CENTER_Y]):
                         continue
                     object_values[object_name] = []
                 object_values[object_name].append(
@@ -633,14 +626,14 @@ class ViewWorkspace(object):
             values = [vr[0] for vr in value_rows]
             measurement_rows = [vr[1] for vr in value_rows]
             x, y = [m[object_name, ftr] for ftr in
-                    M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y]
+                    cellprofiler.modules.identify.M_LOCATION_CENTER_X, cellprofiler.modules.identify.M_LOCATION_CENTER_Y]
             for i in range(len(x)):
                 xi, yi = x[i], y[i]
-                if np.isnan(xi) or np.isnan(yi):
+                if numpy.isnan(xi) or numpy.isnan(yi):
                     continue
                 height = 0
                 for j, measurement_row in enumerate(measurement_rows):
-                    if len(values[j]) <= i or np.isnan(values[j][i]):
+                    if len(values[j]) <= i or numpy.isnan(values[j][i]):
                         continue
                     value = values[j][i]
                     font = measurement_row.font
@@ -679,17 +672,17 @@ class ViewWorkspace(object):
 
 
 class MeasurementRow(object):
-    '''Container for measurement controls'''
+    """Container for measurement controls"""
 
     def __init__(self, panel, grid_sizer, row_idx, on_change):
-        '''MeasurementRow contstructor
+        """MeasurementRow contstructor
 
         panel - the panel that's going to be the host for the controls
         grid_sizer - put the controls in this grid sizer
         row_idx - the row # in the grid sizer
         on_change - a function (with no args) that's called whenever any control
                     is changed. This handler should call MeasurementRow.update
-        '''
+        """
         #
         # Create three-tiered measurement choice:
         #    object name
@@ -772,7 +765,7 @@ class MeasurementRow(object):
             sizer.Add(subsizer, 0, wx.EXPAND)
             sizer.AddSpacer(2)
             add_label(subsizer, "Text color")
-            foreground_color = ColourSelect(
+            foreground_color = wx.lib.colourselect.ColourSelect(
                     dlg, colour=self.foreground_color)
             subsizer.Add(foreground_color, 0, wx.ALIGN_LEFT)
             #
@@ -782,7 +775,7 @@ class MeasurementRow(object):
             sizer.Add(subsizer, 0, wx.EXPAND)
             sizer.AddSpacer(2)
             add_label(subsizer, "Background color")
-            background_color = ColourSelect(
+            background_color = wx.lib.colourselect.ColourSelect(
                     dlg, colour=self.background_color)
             subsizer.Add(background_color, 0, wx.ALIGN_LEFT)
 

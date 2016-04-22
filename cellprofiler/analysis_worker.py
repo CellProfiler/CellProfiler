@@ -694,17 +694,9 @@ class AnalysisWorker(object):
                                 report_socket)
 
                     print  "HASH", reply.verification_hash
-                    try:
-                        from cellprofiler.utilities.rpdb import Rpdb
-                        rpdb = Rpdb(verification_hash=reply.verification_hash,
-                                    port_callback=pc)
-                    except:
-                        return ED_STOP
-                    rpdb.verify()
-                    rpdb.post_mortem(tb)
+
                     # We get a new reply at the end, which might be "DEBUG" again.
-                    reply = self.send(DebugComplete(self.current_analysis_id),
-                                      report_socket)
+                    reply = self.send(DebugComplete(self.current_analysis_id), report_socket)
                 else:
                     return reply.disposition
         finally:

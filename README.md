@@ -1,11 +1,6 @@
-<div align="center">
-  <img src="http://i.imgur.com/WMFG0fo.png"><br><br>
-</div>
------------------
+<img src="http://i.imgur.com/WMFG0fo.png">
 
-|  **`Build`**  |  **`Version`** | **`Downloads`** |
-|---------------|----------------|-----------------|
-| [![Build Status](https://img.shields.io/travis/CellProfiler/CellProfiler/master.svg)](https://travis-ci.org/CellProfiler/CellProfiler) | [![Build Status](https://img.shields.io/pypi/v/cellprofiler.svg)](https://pypi.python.org/pypi/cellprofiler) | [![Build Status](https://img.shields.io/pypi/dm/cellprofiler.svg)](https://pypi.python.org/pypi/cellprofiler) |
+[![Build Status](https://img.shields.io/travis/CellProfiler/CellProfiler/master.svg)](https://travis-ci.org/CellProfiler/CellProfiler) [![Build Status](https://img.shields.io/pypi/v/cellprofiler.svg)](https://pypi.python.org/pypi/cellprofiler) [![Build Status](https://img.shields.io/pypi/dm/cellprofiler.svg)](https://pypi.python.org/pypi/cellprofiler)
 
 **CellProfiler** is a free open-source software designed to enable biologists without training in computer vision or programming to quantitatively measure phenotypes from thousands of images automatically.
 

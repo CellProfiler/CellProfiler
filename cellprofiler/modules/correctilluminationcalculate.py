@@ -744,7 +744,6 @@ class CorrectIlluminationCalculate(cpm.CPModule):
             indices, values = rank_order(pixel_data, 65535)
             indices = indices.astype(np.uint16)
             output_pixels = skimage.filters.median(pixel_data, strel, mask=mask)
-            output_pixels = values[output_pixels]
         elif self.smoothing_method == SM_TO_AVERAGE:
             mean = np.mean(pixel_data[mask])
             output_pixels = np.ones(pixel_data.shape, pixel_data.dtype) * mean

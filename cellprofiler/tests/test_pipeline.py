@@ -29,7 +29,7 @@ import cellprofiler.settings as cps
 import cellprofiler.workspace as cpw
 from cellprofiler.modules.injectimage import InjectImage
 from cellprofiler.modules.tests import \
-     example_images_directory, maybe_download_fly, maybe_download_sbs
+    example_images_directory, maybe_download_fly, maybe_download_sbs
 
 IMAGE_NAME = "myimage"
 ALT_IMAGE_NAME = "altimage"
@@ -37,41 +37,48 @@ OBJECT_NAME = "myobject"
 CATEGORY = "category"
 FEATURE_NAME = "category_myfeature"
 
+
 def module_directory():
     d = cpp.__file__
-    d = os.path.split(d)[0] # ./CellProfiler/pyCellProfiler/cellProfiler
-    d = os.path.split(d)[0] # ./CellProfiler/pyCellProfiler
-    d = os.path.split(d)[0] # ./CellProfiler
+    d = os.path.split(d)[0]  # ./CellProfiler/pyCellProfiler/cellProfiler
+    d = os.path.split(d)[0]  # ./CellProfiler/pyCellProfiler
+    d = os.path.split(d)[0]  # ./CellProfiler
     if not d:
         d = '..'
-    return os.path.join(d,'Modules')
+    return os.path.join(d, 'Modules')
+
 
 def image_with_one_cell(size=(100, 100)):
     img = np.zeros(size)
     mgrid = np.lib.index_tricks.nd_grid()
     g = mgrid[0:size[0], 0:size[1]] - 50
-    dist = g[0, :, :] * g[0, :, :] + g[1, :, :] * g[1, :, :]      # squared Euclidean distance.
+    dist = g[0, :, :] * g[0, :, :] + g[1, :, :] * g[1, :, :]  # squared Euclidean distance.
     img[dist < 25] = (25.0 - dist.astype(float)[dist < 25]) / 25  # A circle centered at (50, 50)
     return img
 
+
 def get_empty_pipeline():
     pipeline = cpp.Pipeline()
-    while(len(pipeline.modules()) > 0):
+    while len(pipeline.modules()) > 0:
         pipeline.remove_module(pipeline.modules()[-1].module_num)
     return pipeline
+
 
 def exploding_pipeline(test):
     """Return a pipeline that fails if the run exception callback is called during a run
     """
     x = get_empty_pipeline()
-    def fn(pipeline,event):
+
+    def fn(pipeline, event):
         if isinstance(event, cpp.RunExceptionEvent):
             import traceback
             test.assertFalse(
-                isinstance(event, cpp.RunExceptionEvent),
-                "\n".join ([event.error.message] + traceback.format_tb(event.tb)))
+                    isinstance(event, cpp.RunExceptionEvent),
+                    "\n".join([event.error.message] + traceback.format_tb(event.tb)))
+
     x.add_listener(fn)
     return x
+
 
 class TestPipeline(unittest.TestCase):
     def setUp(self):
@@ -103,15 +110,17 @@ class TestPipeline(unittest.TestCase):
         global img_942_data  # see bottom of this file
 
         pipeline = cpp.Pipeline()
+
         def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(cStringIO.StringIO(zlib.decompress(base64.b64decode(img_942_data))))
         module = pipeline.modules()[0]
         self.assertEqual(len(module.notes), 1)
         self.assertEqual(
-            module.notes[0],
-            """Excluding "_E12f03d" since it has an incomplete set of channels (and is the only one as such).""")
+                module.notes[0],
+                """Excluding "_E12f03d" since it has an incomplete set of channels (and is the only one as such).""")
 
     def test_01_02_is_txt_fd_sorry_for_your_proofpoint(self):
         # Regression test of issue #1318
@@ -144,7 +153,7 @@ HasImagePlaneDetails:False"""
 
     def test_06_01_run_pipeline(self):
         x = exploding_pipeline(self)
-        module = InjectImage('OneCell',image_with_one_cell())
+        module = InjectImage('OneCell', image_with_one_cell())
         module.set_module_num(1)
         x.add_module(module)
         x.run()
@@ -163,8 +172,10 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
     Select an image a name to export:Hi
  """
         pipeline = cpp.Pipeline()
+
         def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(cStringIO.StringIO(data))
         external_inputs = pipeline.find_external_input_images()
@@ -187,12 +198,14 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
     Select an image a name to export:Ho
  """
         pipeline = cpp.Pipeline()
+
         def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(cStringIO.StringIO(data))
         external_outputs = pipeline.find_external_output_images()
-##        self.assertEqual(len(external_outputs), 2)
+        ##        self.assertEqual(len(external_outputs), 2)
         external_outputs.sort()
         self.assertEqual(external_outputs[0], "Hi")
         self.assertEqual(external_outputs[1], "Ho")
@@ -211,17 +224,19 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
     Select an image a name to export:Ho
  """
         pipeline = cpp.Pipeline()
+
         def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(cStringIO.StringIO(data))
         np.random.seed(73)
-        d = dict(Hi = np.random.uniform(size=(20,10)),
-                 Ho = np.random.uniform(size=(20,10)))
+        d = dict(Hi=np.random.uniform(size=(20, 10)),
+                 Ho=np.random.uniform(size=(20, 10)))
         d_out = pipeline.run_external(d)
         for key in d.keys():
             self.assertTrue(d_out.has_key(key))
-            np.testing.assert_array_almost_equal(d[key],d_out[key])
+            np.testing.assert_array_almost_equal(d[key], d_out[key])
 
     def test_09_01_get_measurement_columns(self):
         '''Test the get_measurement_columns method'''
@@ -281,10 +296,11 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
     def test_10_01_all_groups(self):
         '''Test running a pipeline on all groups'''
         pipeline = exploding_pipeline(self)
-        expects = ['PrepareRun',0]
-        keys = ('foo','bar')
-        groupings = (({'foo':'foo-A','bar':'bar-A'},(1,2)),
-                     ({'foo':'foo-B','bar':'bar-B'},(3,4)))
+        expects = ['PrepareRun', 0]
+        keys = ('foo', 'bar')
+        groupings = (({'foo': 'foo-A', 'bar': 'bar-A'}, (1, 2)),
+                     ({'foo': 'foo-B', 'bar': 'bar-B'}, (3, 4)))
+
         def prepare_run(workspace):
             image_set_list = workspace.image_set_list
             self.assertEqual(expects[0], 'PrepareRun')
@@ -298,6 +314,7 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
                                            image_number] = group_idx + 1
             expects[0], expects[1] = ('PrepareGroup', 0)
             return True
+
         def prepare_group(workspace, grouping, image_numbers):
             expects_state, expects_grouping = expects
             self.assertEqual(expects_state, 'PrepareGroup')
@@ -315,14 +332,15 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
             self.assertEqual(expects_state, 'Run')
             self.assertEqual(expects_image_number, image_number)
             if image_number == 1:
-                expects[0],expects[1] = ('Run', 2)
+                expects[0], expects[1] = ('Run', 2)
             elif image_number == 3:
-                expects[0],expects[1] = ('Run', 4)
+                expects[0], expects[1] = ('Run', 4)
             elif image_number == 2:
-                expects[0],expects[1] = ('PostGroup', 0)
+                expects[0], expects[1] = ('PostGroup', 0)
             else:
-                expects[0],expects[1] = ('PostGroup', 1)
-            workspace.measurements.add_image_measurement("mymeasurement",image_number)
+                expects[0], expects[1] = ('PostGroup', 1)
+            workspace.measurements.add_image_measurement("mymeasurement", image_number)
+
         def post_group(workspace, grouping):
             expects_state, expects_grouping = expects
             self.assertEqual(expects_state, 'PostGroup')
@@ -332,41 +350,43 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
                 self.assertEqual(grouping[key], value)
             if expects_grouping == 0:
                 self.assertEqual(workspace.measurements.image_set_number, 2)
-                expects[0],expects[1] = ('PrepareGroup', 1)
+                expects[0], expects[1] = ('PrepareGroup', 1)
             else:
                 self.assertEqual(workspace.measurements.image_set_number, 4)
-                expects[0],expects[1] = ('PostRun', 0)
+                expects[0], expects[1] = ('PostRun', 0)
+
         def post_run(workspace):
             self.assertEqual(expects[0], 'PostRun')
-            expects[0],expects[1] = ('Done', 0)
+            expects[0], expects[1] = ('Done', 0)
 
         def get_measurement_columns(pipeline):
             return [(cpmeas.IMAGE, "mymeasurement",
                      cpmeas.COLTYPE_INTEGER)]
 
         module = GroupModule()
-        module.setup((keys,groupings), prepare_run, prepare_group,
+        module.setup((keys, groupings), prepare_run, prepare_group,
                      run, post_group, post_run, get_measurement_columns)
         module.module_num = 1
         pipeline.add_module(module)
         measurements = pipeline.run()
         self.assertEqual(expects[0], 'Done')
-        image_numbers = measurements.get_all_measurements("Image","mymeasurement")
+        image_numbers = measurements.get_all_measurements("Image", "mymeasurement")
         self.assertEqual(len(image_numbers), 4)
-        self.assertTrue(np.all(image_numbers == np.array([1,2,3,4])))
-        group_numbers = measurements.get_all_measurements("Image","Group_Number")
-        self.assertTrue(np.all(group_numbers == np.array([1,1,2,2])))
-        group_indexes = measurements.get_all_measurements("Image","Group_Index")
-        self.assertTrue(np.all(group_indexes == np.array([1,2,1,2])))
+        self.assertTrue(np.all(image_numbers == np.array([1, 2, 3, 4])))
+        group_numbers = measurements.get_all_measurements("Image", "Group_Number")
+        self.assertTrue(np.all(group_numbers == np.array([1, 1, 2, 2])))
+        group_indexes = measurements.get_all_measurements("Image", "Group_Index")
+        self.assertTrue(np.all(group_indexes == np.array([1, 2, 1, 2])))
 
     def test_10_02_one_group(self):
         '''Test running a pipeline on one group'''
         pipeline = exploding_pipeline(self)
-        expects = ['PrepareRun',0]
-        keys = ('foo','bar')
-        groupings = (({'foo':'foo-A','bar':'bar-A'},(1,2)),
-                     ({'foo':'foo-B','bar':'bar-B'},(3,4)),
-                     ({'foo':'foo-C','bar':'bar-C'},(5,6)))
+        expects = ['PrepareRun', 0]
+        keys = ('foo', 'bar')
+        groupings = (({'foo': 'foo-A', 'bar': 'bar-A'}, (1, 2)),
+                     ({'foo': 'foo-B', 'bar': 'bar-B'}, (3, 4)),
+                     ({'foo': 'foo-C', 'bar': 'bar-C'}, (5, 6)))
+
         def prepare_run(workspace):
             self.assertEqual(expects[0], 'PrepareRun')
             for group_number_idx, (grouping, image_numbers) in enumerate(groupings):
@@ -379,7 +399,8 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
                                            image_number] = group_idx + 1
             expects[0], expects[1] = ('PrepareGroup', 1)
             return True
-        def prepare_group(workspace, grouping,*args):
+
+        def prepare_group(workspace, grouping, *args):
             expects_state, expects_grouping = expects
             self.assertEqual(expects_state, 'PrepareGroup')
             for key in keys:
@@ -396,11 +417,11 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
             self.assertEqual(expects_state, 'Run')
             self.assertEqual(expects_image_number, image_number)
             if image_number == 3:
-                expects[0],expects[1] = ('Run', 4)
+                expects[0], expects[1] = ('Run', 4)
             elif image_number == 4:
-                expects[0],expects[1] = ('PostGroup', 1)
+                expects[0], expects[1] = ('PostGroup', 1)
 
-            workspace.measurements.add_image_measurement("mymeasurement",image_number)
+            workspace.measurements.add_image_measurement("mymeasurement", image_number)
 
         def post_group(workspace, grouping):
             expects_state, expects_grouping = expects
@@ -409,20 +430,22 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
                 self.assertTrue(grouping.has_key(key))
                 value = groupings[expects_grouping][0][key]
                 self.assertEqual(grouping[key], value)
-            expects[0],expects[1] = ('PostRun', 0)
+            expects[0], expects[1] = ('PostRun', 0)
+
         def post_run(workspace):
             self.assertEqual(expects[0], 'PostRun')
-            expects[0],expects[1] = ('Done', 0)
+            expects[0], expects[1] = ('Done', 0)
+
         def get_measurement_columns(pipeline):
             return [(cpmeas.IMAGE, "mymeasurement",
                      cpmeas.COLTYPE_INTEGER)]
 
         module = GroupModule()
-        module.setup((keys,groupings), prepare_run, prepare_group,
+        module.setup((keys, groupings), prepare_run, prepare_group,
                      run, post_group, post_run, get_measurement_columns)
         module.module_num = 1
         pipeline.add_module(module)
-        measurements = pipeline.run(grouping = {'foo':'foo-B', 'bar':'bar-B'})
+        measurements = pipeline.run(grouping={'foo': 'foo-B', 'bar': 'bar-B'})
         self.assertEqual(expects[0], 'Done')
 
     def test_10_03_display(self):
@@ -438,7 +461,7 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
             workspace.measurements[cpmeas.IMAGE, cpmeas.GROUP_INDEX, 1] = 1
             return True
 
-        def prepare_group(workspace, grouping,*args):
+        def prepare_group(workspace, grouping, *args):
             return True
 
         def run(workspace):
@@ -471,12 +494,12 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
             return [(cpmeas.IMAGE, "mymeasurement",
                      cpmeas.COLTYPE_INTEGER)]
 
-        module.setup(((), (({}, (1,)))),
+        module.setup(((), ({}, (1,))),
                      prepare_run_callback=prepare_run,
-                     prepare_group_callback = prepare_group,
-                     run_callback = run,
+                     prepare_group_callback=prepare_group,
+                     run_callback=run,
                      post_group_callback=post_group,
-                     post_run_callback = post_run)
+                     post_run_callback=post_run)
         module.module_num = 1
         pipeline.add_module(module)
         m = cpmeas.Measurements()
@@ -503,9 +526,11 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
         pipeline = cpp.Pipeline()
         pipeline.add_module(module)
         should_be_true = [False]
+
         def callback(caller, event):
             if isinstance(event, cpp.RunExceptionEvent):
                 should_be_true[0] = True
+
         pipeline.add_listener(callback)
         pipeline.run()
         self.assertTrue(should_be_true[0])
@@ -513,26 +538,28 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
     def test_11_02_catch_prepare_run_error(self):
         pipeline = exploding_pipeline(self)
         module = GroupModule()
-        keys = ('foo','bar')
-        groupings = (({'foo':'foo-A','bar':'bar-A'},(1,2)),
-                     ({'foo':'foo-B','bar':'bar-B'},(3,4)),
-                     ({'foo':'foo-C','bar':'bar-C'},(5,6)))
+        keys = ('foo', 'bar')
+        groupings = (({'foo': 'foo-A', 'bar': 'bar-A'}, (1, 2)),
+                     ({'foo': 'foo-B', 'bar': 'bar-B'}, (3, 4)),
+                     ({'foo': 'foo-C', 'bar': 'bar-C'}, (5, 6)))
+
         def prepare_run(workspace):
             m = workspace.measurements
             for i in range(1, 7):
-                m[cpmeas.IMAGE, cpmeas.C_PATH_NAME+"_DNA", i] =\
+                m[cpmeas.IMAGE, cpmeas.C_PATH_NAME + "_DNA", i] = \
                     "/imaging/analysis"
-                m[cpmeas.IMAGE, cpmeas.C_FILE_NAME+"_DNA", i] = "img%d.tif" % i
+                m[cpmeas.IMAGE, cpmeas.C_FILE_NAME + "_DNA", i] = "img%d.tif" % i
             workspace.pipeline.report_prepare_run_error(
-                module, "I am configured incorrectly")
+                    module, "I am configured incorrectly")
             return True
+
         module.setup(groupings,
-                     prepare_run_callback = prepare_run)
+                     prepare_run_callback=prepare_run)
         module.module_num = 1
         pipeline.add_module(module)
         workspace = cpw.Workspace(
-            pipeline, None, None, None, cpmeas.Measurements(),
-            cpi.ImageSetList())
+                pipeline, None, None, None, cpmeas.Measurements(),
+                cpi.ImageSetList())
         self.assertFalse(pipeline.prepare_run(workspace))
         self.assertEqual(workspace.measurements.image_set_count, 0)
 
@@ -547,7 +574,7 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
             try:
                 v.module_name
             except:
-                print "%s needs to define module_name as a class variable"%k
+                print "%s needs to define module_name as a class variable" % k
                 success = False
         self.assertTrue(success)
 
@@ -562,8 +589,10 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
         fd.seek(0)
 
         pipeline = cpp.Pipeline()
+
         def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(fd)
         self.assertEqual(len(pipeline.modules()), 1)
@@ -579,7 +608,7 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
         module.module_num = 1
         pipeline.add_module(module)
         measurements = cpmeas.Measurements()
-        my_measurement = [np.random.uniform(size=np.random.randint(3,25))
+        my_measurement = [np.random.uniform(size=np.random.randint(3, 25))
                           for i in range(20)]
         my_image_measurement = [np.random.uniform() for i in range(20)]
         my_experiment_measurement = np.random.uniform()
@@ -587,21 +616,21 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
         for i in range(20):
             if i > 0:
                 measurements.next_image_set()
-            measurements.add_measurement("Foo","Bar", my_measurement[i])
+            measurements.add_measurement("Foo", "Bar", my_measurement[i])
             measurements.add_image_measurement(
-                "img", my_image_measurement[i])
+                    "img", my_image_measurement[i])
         fd = cStringIO.StringIO()
         pipeline.save_measurements(fd, measurements)
         fd.seek(0)
         measurements = cpmeas.load_measurements(fd)
-        my_measurement_out = measurements.get_all_measurements("Foo","Bar")
+        my_measurement_out = measurements.get_all_measurements("Foo", "Bar")
         self.assertEqual(len(my_measurement), len(my_measurement_out))
         for m_in, m_out in zip(my_measurement, my_measurement_out):
             self.assertEqual(len(m_in), len(m_out))
             self.assertTrue(np.all(m_in == m_out))
         my_image_measurement_out = measurements.get_all_measurements(
-            "Image", "img")
-        self.assertEqual(len(my_image_measurement),len(my_image_measurement_out))
+                "Image", "img")
+        self.assertEqual(len(my_image_measurement), len(my_image_measurement_out))
         for m_in, m_out in zip(my_image_measurement, my_image_measurement_out):
             self.assertTrue(m_in == m_out)
         my_experiment_measurement_out = \
@@ -610,8 +639,10 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
 
         fd.seek(0)
         pipeline = cpp.Pipeline()
+
         def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(fd)
         self.assertEqual(len(pipeline.modules()), 1)
@@ -631,15 +662,15 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
         m1_name = "dalkzfsrqoiualkjfrqealkjfqroupifaaalfdskquyalkhfaafdsafdsqteqteqtew"
         m2_name = "lkjxKJDSALKJDSAWQOIULKJFASOIUQELKJFAOIUQRLKFDSAOIURQLKFDSAQOIRALFAJ"
         m3_name = "druxKJDSALKJDSAWQOIULKJFASOIUQELKJFAOIUQRLKFDSAOIURQLKFDSAQOIRALFAJ"
-        my_measurement = [np.random.uniform(size=np.random.randint(3,25))
+        my_measurement = [np.random.uniform(size=np.random.randint(3, 25))
                           for i in range(20)]
         my_other_measurement = [np.random.uniform(size=my_measurement[i].size)
-                                            for i in range(20)]
+                                for i in range(20)]
         my_final_measurement = [np.random.uniform(size=my_measurement[i].size)
                                 for i in range(20)]
-        measurements.add_all_measurements("Foo",m1_name, my_measurement)
-        measurements.add_all_measurements("Foo",m2_name, my_other_measurement)
-        measurements.add_all_measurements("Foo",m3_name, my_final_measurement)
+        measurements.add_all_measurements("Foo", m1_name, my_measurement)
+        measurements.add_all_measurements("Foo", m2_name, my_other_measurement)
+        measurements.add_all_measurements("Foo", m3_name, my_final_measurement)
         fd = cStringIO.StringIO()
         pipeline.save_measurements(fd, measurements)
         fd.seek(0)
@@ -652,87 +683,87 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
                                (m2_name, my_other_measurement),
                                (m3_name, my_final_measurement)):
             map_name = mapping[name]
-            my_measurement_out = measurements.get_all_measurements("Foo",map_name)
+            my_measurement_out = measurements.get_all_measurements("Foo", map_name)
             for m_in, m_out in zip(expected, my_measurement_out):
                 self.assertEqual(len(m_in), len(m_out))
                 self.assertTrue(np.all(m_in == m_out))
 
-#     def test_13_04_pipeline_measurement(self):
-#         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-# Version:3
-# DateRevision:20120709180131
-# ModuleCount:1
-# HasImagePlaneDetails:False
-#
-# LoadImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|show_window:True|notes:\x5B"Load the images by matching files in the folder against the unique text pattern for each stain\x3A \'Channel1-\' for nuclei, \'Channel2-\' for the GFP image. The two images together comprise an image set."\x5D|batch_state:array(\x5B\x5D, dtype=uint8)]
-#     File type to be loaded:individual images
-#     File selection method:Text-Exact match
-#     Number of images in each group?:3
-#     Type the text that the excluded images have in common:Do not use
-#     Analyze all subfolders within the selected folder?:None
-#     Input image file location:Elsewhere...\x7Cc\x3A\\\\trunk\\\\ExampleImages\\\\ExampleSBSImages
-#     Check image sets for unmatched or duplicate files?:Yes
-#     Group images by metadata?:No
-#     Exclude certain files?:No
-#     Specify metadata fields to group by:
-#     Select subfolders to analyze:
-#     Image count:2
-#     Text that these images have in common (case-sensitive):Channel1-01
-#     Position of this image in each group:1
-#     Extract metadata from where?:File name
-#     Regular expression that finds metadata in the file name:.*-(?P<ImageNumber>\\\\d*)-(?P<Row>.*)-(?P<Column>\\\\d*)
-#     Type the regular expression that finds metadata in the subfolder path:.*\x5B\\\\\\\\/\x5D(?P<Date>.*)\x5B\\\\\\\\/\x5D(?P<Run>.*)$
-#     Channel count:1
-#     Group the movie frames?:No
-#     Grouping method:Interleaved
-#     Number of channels per group:2
-#     Load the input as images or objects?:Images
-#     Name this loaded image:rawGFP
-#     Name this loaded object:Nuclei
-#     Retain outlines of loaded objects?:No
-#     Name the outline image:NucleiOutlines
-#     Channel number:1
-#     Rescale intensities?:Yes
-#     Text that these images have in common (case-sensitive):Channel2-01
-#     Position of this image in each group:2
-#     Extract metadata from where?:File name
-#     Regular expression that finds metadata in the file name:.*-(?P<ImageNumber>\\\\d*)-(?P<Row>.*)-(?P<Column>\\\\d*)
-#     Type the regular expression that finds metadata in the subfolder path:.*\x5B\\\\\\\\/\x5D(?P<Date>.*)\x5B\\\\\\\\/\x5D(?P<Run>.*)$
-#     Channel count:1
-#     Group the movie frames?:No
-#     Grouping method:Interleaved
-#     Number of channels per group:2
-#     Load the input as images or objects?:Images
-#     Name this loaded image:rawDNA
-#     Name this loaded object:Nuclei
-#     Retain outlines of loaded objects?:No
-#     Name the outline image:NucleiOutlines
-#     Channel number:1
-#     Rescale intensities?:Yes
-# """
-#         maybe_download_sbs()
-#         path = os.path.join(example_images_directory(), "ExampleSBSImages")
-#         pipeline = cpp.Pipeline()
-#         pipeline.load(cStringIO.StringIO(data))
-#         module = pipeline.modules()[0]
-#         self.assertTrue(isinstance(module, LI.LoadImages))
-#         module.location.custom_path = path
-#         m = cpmeas.Measurements()
-#         image_set_list = cpi.ImageSetList()
-#         self.assertTrue(pipeline.prepare_run(cpw.Workspace(
-#             pipeline, module, None, None, m, image_set_list)))
-#         pipeline_text = m.get_experiment_measurement(cpp.M_PIPELINE)
-#         pipeline_text = pipeline_text.encode("us-ascii")
-#         pipeline = cpp.Pipeline()
-#         pipeline.loadtxt(cStringIO.StringIO(pipeline_text))
-#         self.assertEqual(len(pipeline.modules()), 1)
-#         module_out = pipeline.modules()[0]
-#         self.assertTrue(isinstance(module_out, module.__class__))
-#         self.assertEqual(len(module_out.settings()), len(module.settings()))
-#         for m1setting, m2setting in zip(module.settings(), module_out.settings()):
-#             self.assertTrue(isinstance(m1setting, cps.Setting))
-#             self.assertTrue(isinstance(m2setting, cps.Setting))
-#             self.assertEqual(m1setting.value, m2setting.value)
+                #     def test_13_04_pipeline_measurement(self):
+                #         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+                # Version:3
+                # DateRevision:20120709180131
+                # ModuleCount:1
+                # HasImagePlaneDetails:False
+                #
+                # LoadImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|show_window:True|notes:\x5B"Load the images by matching files in the folder against the unique text pattern for each stain\x3A \'Channel1-\' for nuclei, \'Channel2-\' for the GFP image. The two images together comprise an image set."\x5D|batch_state:array(\x5B\x5D, dtype=uint8)]
+                #     File type to be loaded:individual images
+                #     File selection method:Text-Exact match
+                #     Number of images in each group?:3
+                #     Type the text that the excluded images have in common:Do not use
+                #     Analyze all subfolders within the selected folder?:None
+                #     Input image file location:Elsewhere...\x7Cc\x3A\\\\trunk\\\\ExampleImages\\\\ExampleSBSImages
+                #     Check image sets for unmatched or duplicate files?:Yes
+                #     Group images by metadata?:No
+                #     Exclude certain files?:No
+                #     Specify metadata fields to group by:
+                #     Select subfolders to analyze:
+                #     Image count:2
+                #     Text that these images have in common (case-sensitive):Channel1-01
+                #     Position of this image in each group:1
+                #     Extract metadata from where?:File name
+                #     Regular expression that finds metadata in the file name:.*-(?P<ImageNumber>\\\\d*)-(?P<Row>.*)-(?P<Column>\\\\d*)
+                #     Type the regular expression that finds metadata in the subfolder path:.*\x5B\\\\\\\\/\x5D(?P<Date>.*)\x5B\\\\\\\\/\x5D(?P<Run>.*)$
+                #     Channel count:1
+                #     Group the movie frames?:No
+                #     Grouping method:Interleaved
+                #     Number of channels per group:2
+                #     Load the input as images or objects?:Images
+                #     Name this loaded image:rawGFP
+                #     Name this loaded object:Nuclei
+                #     Retain outlines of loaded objects?:No
+                #     Name the outline image:NucleiOutlines
+                #     Channel number:1
+                #     Rescale intensities?:Yes
+                #     Text that these images have in common (case-sensitive):Channel2-01
+                #     Position of this image in each group:2
+                #     Extract metadata from where?:File name
+                #     Regular expression that finds metadata in the file name:.*-(?P<ImageNumber>\\\\d*)-(?P<Row>.*)-(?P<Column>\\\\d*)
+                #     Type the regular expression that finds metadata in the subfolder path:.*\x5B\\\\\\\\/\x5D(?P<Date>.*)\x5B\\\\\\\\/\x5D(?P<Run>.*)$
+                #     Channel count:1
+                #     Group the movie frames?:No
+                #     Grouping method:Interleaved
+                #     Number of channels per group:2
+                #     Load the input as images or objects?:Images
+                #     Name this loaded image:rawDNA
+                #     Name this loaded object:Nuclei
+                #     Retain outlines of loaded objects?:No
+                #     Name the outline image:NucleiOutlines
+                #     Channel number:1
+                #     Rescale intensities?:Yes
+                # """
+                #         maybe_download_sbs()
+                #         path = os.path.join(example_images_directory(), "ExampleSBSImages")
+                #         pipeline = cpp.Pipeline()
+                #         pipeline.load(cStringIO.StringIO(data))
+                #         module = pipeline.modules()[0]
+                #         self.assertTrue(isinstance(module, LI.LoadImages))
+                #         module.location.custom_path = path
+                #         m = cpmeas.Measurements()
+                #         image_set_list = cpi.ImageSetList()
+                #         self.assertTrue(pipeline.prepare_run(cpw.Workspace(
+                #             pipeline, module, None, None, m, image_set_list)))
+                #         pipeline_text = m.get_experiment_measurement(cpp.M_PIPELINE)
+                #         pipeline_text = pipeline_text.encode("us-ascii")
+                #         pipeline = cpp.Pipeline()
+                #         pipeline.loadtxt(cStringIO.StringIO(pipeline_text))
+                #         self.assertEqual(len(pipeline.modules()), 1)
+                #         module_out = pipeline.modules()[0]
+                #         self.assertTrue(isinstance(module_out, module.__class__))
+                #         self.assertEqual(len(module_out.settings()), len(module.settings()))
+                #         for m1setting, m2setting in zip(module.settings(), module_out.settings()):
+                #             self.assertTrue(isinstance(m1setting, cps.Setting))
+                #             self.assertTrue(isinstance(m2setting, cps.Setting))
+                #             self.assertEqual(m1setting.value, m2setting.value)
 
     def test_14_01_unicode_save(self):
         pipeline = get_empty_pipeline()
@@ -760,7 +791,7 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
         self.assertEqual(value, r"\\\\\\u2211")
         mline = lines[7]
         idx0 = mline.find("notes:")
-        mline = mline[(idx0+6):]
+        mline = mline[(idx0 + 6):]
         idx1 = mline.find("|")
         value = eval(mline[:idx1].decode('string_escape'))
         self.assertEqual(value, module.notes)
@@ -771,13 +802,15 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
         #
         cellprofiler.modules.fill_modules()
         cellprofiler.modules.all_modules[MyClassForTest0801.module_name] = \
-                    MyClassForTest0801
+            MyClassForTest0801
         #
         # Continue with test
         #
         pipeline = get_empty_pipeline()
+
         def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         module = MyClassForTest0801()
         module.my_variable.value = u"\\\u2211"
@@ -808,7 +841,7 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
             This directory should contain the pipeline ExampleAllModulesPipeline
             """
             example_dir = example_images_directory()
-            if(not example_dir):
+            if not example_dir:
                 import warnings
                 warnings.warn('example_images_directory not found, skipping profiling of ExampleAllModulesPipeline')
                 return
@@ -816,7 +849,7 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
             pipeline_filename = os.path.join(pipeline_dir, 'ExampleAllModulesPipeline.cp')
             image_dir = os.path.join(pipeline_dir, 'Images')
 
-            #Might be better to write these paths into the pipeline
+            # Might be better to write these paths into the pipeline
             old_image_dir = cpprefs.get_default_image_directory()
             cpprefs.set_default_image_directory(image_dir)
             profile_pipeline(pipeline_filename)
@@ -892,7 +925,7 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
     def test_16_03_get_provider_dictionary_measurement(self):
         pipeline = get_empty_pipeline()
         module = ATestModule(
-            measurement_columns = [(OBJECT_NAME, FEATURE_NAME, cpmeas.COLTYPE_FLOAT)])
+                measurement_columns=[(OBJECT_NAME, FEATURE_NAME, cpmeas.COLTYPE_FLOAT)])
         module.module_num = 1
         pipeline.add_module(module)
         d = pipeline.get_provider_dictionary(cps.MEASUREMENTS_GROUP)
@@ -910,7 +943,7 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
 
     def test_16_04_get_provider_dictionary_other(self):
         pipeline = get_empty_pipeline()
-        module = ATestModule(other_providers = {cps.IMAGE_GROUP: [ IMAGE_NAME]})
+        module = ATestModule(other_providers={cps.IMAGE_GROUP: [IMAGE_NAME]})
         module.module_num = 1
         pipeline.add_module(module)
         d = pipeline.get_provider_dictionary(cps.IMAGE_GROUP)
@@ -928,10 +961,10 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
         image_setting = cps.ImageNameProvider("foo", IMAGE_NAME)
         object_setting = cps.ObjectNameProvider("foo", OBJECT_NAME)
         measurement_columns = [(OBJECT_NAME, FEATURE_NAME, cpmeas.COLTYPE_FLOAT)]
-        other_providers = {cps.IMAGE_GROUP: [ ALT_IMAGE_NAME]}
-        module = ATestModule(settings = [ image_setting, object_setting],
-                             measurement_columns = measurement_columns,
-                             other_providers = other_providers)
+        other_providers = {cps.IMAGE_GROUP: [ALT_IMAGE_NAME]}
+        module = ATestModule(settings=[image_setting, object_setting],
+                             measurement_columns=measurement_columns,
+                             other_providers=other_providers)
         module.module_num = 1
         pipeline.add_module(module)
         d = pipeline.get_provider_dictionary(cps.IMAGE_GROUP)
@@ -982,13 +1015,13 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
         my_image_setting_1 = cps.ImageNameProvider("foo", IMAGE_NAME)
         my_image_setting_2 = cps.ImageNameProvider("foo", IMAGE_NAME)
         my_object_setting = cps.ObjectNameProvider("foo", OBJECT_NAME)
-        module1 = ATestModule(settings = [my_image_setting_1])
-        module2 = ATestModule(settings = [my_object_setting])
-        module3 = ATestModule(settings = [my_image_setting_2])
+        module1 = ATestModule(settings=[my_image_setting_1])
+        module2 = ATestModule(settings=[my_object_setting])
+        module3 = ATestModule(settings=[my_image_setting_2])
         module4 = ATestModule()
 
         for i, module in enumerate((module1, module2, module3, module4)):
-            module.module_num = i+1
+            module.module_num = i + 1
             pipeline.add_module(module)
         d = pipeline.get_provider_dictionary(cps.IMAGE_GROUP)
         self.assertEqual(len(d), 1)
@@ -1025,10 +1058,10 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
     def test_17_01_get_dependency_graph_image(self):
         pipeline = cpp.Pipeline()
         for i, module in enumerate((
-            ATestModule([cps.ImageNameProvider("foo", IMAGE_NAME)]),
-            ATestModule([cps.ImageNameProvider("foo", ALT_IMAGE_NAME)]),
-            ATestModule([cps.ImageNameSubscriber("foo", IMAGE_NAME)]))):
-            module.module_num = i+1
+                ATestModule([cps.ImageNameProvider("foo", IMAGE_NAME)]),
+                ATestModule([cps.ImageNameProvider("foo", ALT_IMAGE_NAME)]),
+                ATestModule([cps.ImageNameSubscriber("foo", IMAGE_NAME)]))):
+            module.module_num = i + 1
             pipeline.add_module(module)
         g = pipeline.get_dependency_graph()
         self.assertEqual(len(g), 1)
@@ -1043,10 +1076,10 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
     def test_17_02_get_dependency_graph_object(self):
         pipeline = cpp.Pipeline()
         for i, module in enumerate((
-            ATestModule([cps.ObjectNameProvider("foo", OBJECT_NAME)]),
-            ATestModule([cps.ImageNameProvider("foo", IMAGE_NAME)]),
-            ATestModule([cps.ObjectNameSubscriber("foo", OBJECT_NAME)]))):
-            module.module_num = i+1
+                ATestModule([cps.ObjectNameProvider("foo", OBJECT_NAME)]),
+                ATestModule([cps.ImageNameProvider("foo", IMAGE_NAME)]),
+                ATestModule([cps.ObjectNameSubscriber("foo", OBJECT_NAME)]))):
+            module.module_num = i + 1
             pipeline.add_module(module)
         g = pipeline.get_dependency_graph()
         self.assertEqual(len(g), 1)
@@ -1062,12 +1095,12 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
         pipeline = cpp.Pipeline()
         measurement_columns = [
             (OBJECT_NAME, FEATURE_NAME, cpmeas.COLTYPE_FLOAT)]
-        measurement_setting = cps.Measurement("text", lambda : OBJECT_NAME, FEATURE_NAME)
+        measurement_setting = cps.Measurement("text", lambda: OBJECT_NAME, FEATURE_NAME)
         for i, module in enumerate((
-            ATestModule(measurement_columns = measurement_columns),
-            ATestModule([cps.ImageNameProvider("foo", ALT_IMAGE_NAME)]),
-            ATestModule([measurement_setting]))):
-            module.module_num = i+1
+                ATestModule(measurement_columns=measurement_columns),
+                ATestModule([cps.ImageNameProvider("foo", ALT_IMAGE_NAME)]),
+                ATestModule([measurement_setting]))):
+            module.module_num = i + 1
             pipeline.add_module(module)
         g = pipeline.get_dependency_graph()
         self.assertEqual(len(g), 1)
@@ -1081,18 +1114,18 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
 
     def test_18_01_read_image_plane_details(self):
         test_data = (
-            ([],['"foo","1","2","3"','"bar","4","5","6"'],
+            ([], ['"foo","1","2","3"', '"bar","4","5","6"'],
              (("foo", 1, 2, 3, {}), ("bar", 4, 5, 6, {}))),
-            (["Well","Plate"],
+            (["Well", "Plate"],
              ['"foo","1","2",,"A01","P-12345"',
               '"bar","4",,"6",,"P-67890"',
               '"baz","7","8",,"A03",'],
-             (("foo", 1, 2, None, {"Well":"A01", "Plate":"P-12345"}),
-              ("bar", 4, None, 6, {"Plate":"P-67890"}),
-              ("baz", 7, 8, None, {"Well":"A03"}))),
+             (("foo", 1, 2, None, {"Well": "A01", "Plate": "P-12345"}),
+              ("bar", 4, None, 6, {"Plate": "P-67890"}),
+              ("baz", 7, 8, None, {"Well": "A03"}))),
             (["Well"],
              ['"foo","1","2","3","\\xce\\xb1\\xce\\xb2"'],
-             [("foo", 1,2,3,{"Well":u"\u03b1\u03b2"})]),
+             [("foo", 1, 2, 3, {"Well": u"\u03b1\u03b2"})]),
             ([],
              [r'"\\foo\"bar","4","5","6"'],
              [(r'\foo"bar', 4, 5, 6)]))
@@ -1100,10 +1133,10 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
             s = '"%s":"%d","%s":"%d"\n' % (
                 cpp.H_VERSION, cpp.IMAGE_PLANE_DESCRIPTOR_VERSION,
                 cpp.H_PLANE_COUNT, len(body_lines))
-            s += '"'+'","'.join([
-                cpp.H_URL, cpp.H_SERIES, cpp.H_INDEX, cpp.H_CHANNEL] +
-                                metadata_columns) + '"\n'
-            s += "\n".join(body_lines)+"\n"
+            s += '"' + '","'.join([
+                                      cpp.H_URL, cpp.H_SERIES, cpp.H_INDEX, cpp.H_CHANNEL] +
+                                  metadata_columns) + '"\n'
+            s += "\n".join(body_lines) + "\n"
             fd = cStringIO.StringIO(s)
             result = cpp.read_file_list(fd)
             self.assertEqual(len(result), len(expected))
@@ -1165,8 +1198,8 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
             self.assertIn(url, p.file_list)
 
     def test_19_04_read_http_file_list(self):
-        url = "https://raw.githubusercontent.com/CellProfiler/CellProfiler/master/cellprofiler/tests/"\
-            "url_file_list.txt"
+        url = "https://raw.githubusercontent.com/CellProfiler/CellProfiler/master/cellprofiler/tests/" \
+              "url_file_list.txt"
         urls = ["http://cellprofiler.org/foo.tif",
                 "https://github.com/foo.tif",
                 "ftp://example.com/foo.tif"]
@@ -1176,14 +1209,15 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
         for url in urls:
             self.assertIn(url, p.file_list)
 
+
 class TestImagePlaneDetails(unittest.TestCase):
     def get_ipd(self,
-                url = "http://cellprofiler.org",
-                series = 0, index=0, channel=0,
-                metadata = {}):
+                url="http://cellprofiler.org",
+                series=0, index=0, channel=0,
+                metadata={}):
         d = cpp.J.make_map(**metadata)
         jipd = cpp.J.run_script(
-            """
+                """
             var uri = new java.net.URI(url);
             var f = new Packages.org.cellprofiler.imageset.ImageFile(uri);
             var fd = new Packages.org.cellprofiler.imageset.ImageFileDetails(f);
@@ -1196,66 +1230,67 @@ class TestImagePlaneDetails(unittest.TestCase):
             """, dict(url=url, series=series, index=index, channel=channel, d=d))
         return cpp.ImagePlaneDetails(jipd)
 
-    # def test_01_01_init(self):
-    #     self.get_ipd();
+        # def test_01_01_init(self):
+        #     self.get_ipd();
 
-    # def test_02_01_path_url(self):
-    #     url = "http://google.com"
-    #     ipd = self.get_ipd(url=url)
-    #     self.assertEquals(ipd.path, url)
+        # def test_02_01_path_url(self):
+        #     url = "http://google.com"
+        #     ipd = self.get_ipd(url=url)
+        #     self.assertEquals(ipd.path, url)
 
-    # def test_02_02_path_file(self):
-    #     path = "file:" + cpp.urllib.pathname2url(__file__)
-    #     ipd = self.get_ipd(url=path)
-    #     if sys.platform == 'win32':
-    #         self.assertEquals(ipd.path.lower(), __file__.lower())
-    #     else:
-    #         self.assertEquals(ipd.path, __file__)
+        # def test_02_02_path_file(self):
+        #     path = "file:" + cpp.urllib.pathname2url(__file__)
+        #     ipd = self.get_ipd(url=path)
+        #     if sys.platform == 'win32':
+        #         self.assertEquals(ipd.path.lower(), __file__.lower())
+        #     else:
+        #         self.assertEquals(ipd.path, __file__)
 
-    # def test_03_01_url(self):
-    #     url = "http://google.com"
-    #     ipd = self.get_ipd(url=url)
-    #     self.assertEquals(ipd.url, url)
+        # def test_03_01_url(self):
+        #     url = "http://google.com"
+        #     ipd = self.get_ipd(url=url)
+        #     self.assertEquals(ipd.url, url)
 
-    # def test_04_01_series(self):
-    #     ipd = self.get_ipd(series = 4)
-    #     self.assertEquals(ipd.series, 4)
+        # def test_04_01_series(self):
+        #     ipd = self.get_ipd(series = 4)
+        #     self.assertEquals(ipd.series, 4)
 
-    # def test_05_01_index(self):
-    #     ipd = self.get_ipd(index = 2)
-    #     self.assertEquals(ipd.index, 2)
+        # def test_05_01_index(self):
+        #     ipd = self.get_ipd(index = 2)
+        #     self.assertEquals(ipd.index, 2)
 
-    # def test_06_01_channel(self):
-    #     ipd = self.get_ipd(channel=3)
-    #     self.assertEquals(ipd.channel, 3)
+        # def test_06_01_channel(self):
+        #     ipd = self.get_ipd(channel=3)
+        #     self.assertEquals(ipd.channel, 3)
 
-    # def test_07_01_metadata(self):
-    #     ipd = self.get_ipd(metadata = dict(foo="Bar", baz="Blech"))
-    #     self.assertEquals(ipd.metadata["foo"], "Bar")
-    #     self.assertEquals(ipd.metadata["baz"], "Blech")
+        # def test_07_01_metadata(self):
+        #     ipd = self.get_ipd(metadata = dict(foo="Bar", baz="Blech"))
+        #     self.assertEquals(ipd.metadata["foo"], "Bar")
+        #     self.assertEquals(ipd.metadata["baz"], "Blech")
 
-    # def test_08_01_save_pipeline_notes(self):
-    #     fd = cStringIO.StringIO()
-    #     pipeline = cpp.Pipeline()
-    #     module = ATestModule()
-    #     module.module_num = 1
-    #     module.notes.append("Hello")
-    #     module.notes.append("World")
-    #     pipeline.add_module(module)
-    #     module = ATestModule()
-    #     module.module_num = 2
-    #     module.enabled = False
-    #     pipeline.add_module(module)
-    #     expected = "\n".join([
-    #         "[   1] [ATestModule]",
-    #         "  Hello",
-    #         "  World",
-    #         "",
-    #         "[   2] [ATestModule] (disabled)",
-    #         ""])
-    #
-    #     pipeline.save_pipeline_notes(fd)
-    #     self.assertEqual(fd.getvalue(), expected)
+        # def test_08_01_save_pipeline_notes(self):
+        #     fd = cStringIO.StringIO()
+        #     pipeline = cpp.Pipeline()
+        #     module = ATestModule()
+        #     module.module_num = 1
+        #     module.notes.append("Hello")
+        #     module.notes.append("World")
+        #     pipeline.add_module(module)
+        #     module = ATestModule()
+        #     module.module_num = 2
+        #     module.enabled = False
+        #     pipeline.add_module(module)
+        #     expected = "\n".join([
+        #         "[   1] [ATestModule]",
+        #         "  Hello",
+        #         "  World",
+        #         "",
+        #         "[   2] [ATestModule] (disabled)",
+        #         ""])
+        #
+        #     pipeline.save_pipeline_notes(fd)
+        #     self.assertEqual(fd.getvalue(), expected)
+
 
 def profile_pipeline(pipeline_filename,
                      output_filename=None,
@@ -1284,28 +1319,30 @@ def profile_pipeline(pipeline_filename,
         measurements = None
         pipeline.load(pipeline_filename)
         measurements = pipeline.run(
-                    image_set_start=image_set_start,
-                    image_set_end=image_set_end,
-                    grouping=groups,
-                    measurements_filename=measurements_filename,
-                    initial_measurements=measurements)
+                image_set_start=image_set_start,
+                image_set_end=image_set_end,
+                grouping=groups,
+                measurements_filename=measurements_filename,
+                initial_measurements=measurements)
 
     if not output_filename:
         pipeline_name = os.path.basename(pipeline_filename).split('.')[0]
         output_filename = os.path.join(cpprefs.get_default_output_directory(), pipeline_name + '_profile')
 
-    if(not os.path.exists(output_filename) or always_run):
-        print 'Profiling %s' % (pipeline_filename)
+    if not os.path.exists(output_filename) or always_run:
+        print 'Profiling %s' % pipeline_filename
         cProfile.runctx('run_pipeline(pipeline_filename)', globals(), locals(), output_filename)
 
     p = pstats.Stats(output_filename)
-    #sort by cumulative time spent, optionally strip directory names
+    # sort by cumulative time spent, optionally strip directory names
     to_print = p.sort_stats('cumulative')
     to_print.print_stats(20)
+
 
 class ATestModule(cpm.CPModule):
     module_name = "ATestModule"
     variable_revision_number = 1
+
     def __init__(self, settings=[], measurement_columns=[], other_providers={}):
         super(type(self), self).__init__()
         self.__settings = settings
@@ -1314,16 +1351,19 @@ class ATestModule(cpm.CPModule):
 
     def settings(self):
         return self.__settings
+
     def get_measurement_columns(self, pipeline):
         return self.__measurement_columns
+
     def other_providers(self, group):
         if group not in self.__other_providers.keys():
             return []
         return self.__other_providers[group]
+
     def get_categories(self, pipeline, object_name):
         categories = set()
         for cobject_name, cfeature_name, ctype \
-            in self.get_measurement_columns(pipeline):
+                in self.get_measurement_columns(pipeline):
             if cobject_name == object_name:
                 categories.add(cfeature_name.split("_")[0])
         return list(categories)
@@ -1331,7 +1371,7 @@ class ATestModule(cpm.CPModule):
     def get_measurements(self, pipeline, object_name, category):
         measurements = set()
         for cobject_name, cfeature_name, ctype \
-            in self.get_measurement_columns(pipeline):
+                in self.get_measurement_columns(pipeline):
             ccategory, measurement = cfeature_name.split("_", 1)
             if cobject_name == object_name and category == category:
                 measurements.add(measurement)
@@ -1344,9 +1384,11 @@ class MyClassForTest0801(cpm.CPModule):
     variable_revision_number = 1
 
     def create_settings(self):
-        self.my_variable = cps.Text('','')
+        self.my_variable = cps.Text('', '')
+
     def settings(self):
         return [self.my_variable]
+
     module_name = "MyClassForTest0801"
     variable_revision_number = 1
 
@@ -1358,11 +1400,14 @@ class MyClassForTest0801(cpm.CPModule):
                  self.my_variable.value,
                  "varchar(255)")]
 
+
 class MyClassForTest1101(cpm.CPModule):
     def create_settings(self):
-        self.my_variable = cps.Text('','')
+        self.my_variable = cps.Text('', '')
+
     def settings(self):
         return [self.my_variable]
+
     module_name = "MyClassForTest1101"
     variable_revision_number = 1
 
@@ -1376,7 +1421,7 @@ class MyClassForTest1101(cpm.CPModule):
 
     def prepare_group(self, workspace, *args):
         image_set = workspace.image_set_list.get_image_set(0)
-        image = cpi.Image(np.zeros((5,5)))
+        image = cpi.Image(np.zeros((5, 5)))
         image_set.add("dummy", image)
         return True
 
@@ -1384,19 +1429,21 @@ class MyClassForTest1101(cpm.CPModule):
         import MySQLdb
         raise MySQLdb.OperationalError("Bogus error")
 
+
 class GroupModule(cpm.CPModule):
     module_name = "Group"
     variable_revision_number = 1
+
     def setup(self, groupings,
-                 prepare_run_callback = None,
-                 prepare_group_callback = None,
-                 run_callback = None,
-                 post_group_callback = None,
-                 post_run_callback = None,
-                 get_measurement_columns_callback = None,
-                 display_callback = None,
-                 display_post_group_callback = None,
-                 display_post_run_callback = None):
+              prepare_run_callback=None,
+              prepare_group_callback=None,
+              run_callback=None,
+              post_group_callback=None,
+              post_run_callback=None,
+              get_measurement_columns_callback=None,
+              display_callback=None,
+              display_post_group_callback=None,
+              display_post_run_callback=None):
         self.prepare_run_callback = prepare_run_callback
         self.prepare_group_callback = prepare_group_callback
         self.run_callback = run_callback
@@ -1407,31 +1454,40 @@ class GroupModule(cpm.CPModule):
         self.display_callback = None
         self.display_post_group_callback = None
         self.display_post_run_callback = None
+
     def settings(self):
         return []
+
     def get_groupings(self, workspace):
         return self.groupings
+
     def prepare_run(self, *args):
         if self.prepare_run_callback is not None:
             return self.prepare_run_callback(*args)
         return True
+
     def prepare_group(self, *args):
         if self.prepare_group_callback is not None:
             return self.prepare_group_callback(*args)
         return True
+
     def run(self, *args):
         if self.run_callback is not None:
             return self.run_callback(*args)
+
     def post_run(self, *args):
         if self.post_run_callback is not None:
             return self.post_run_callback(*args)
+
     def post_group(self, *args):
         if self.post_group_callback is not None:
             return self.post_group_callback(*args)
+
     def get_measurement_columns(self, *args):
         if self.get_measurement_columns_callback is not None:
             return self.get_measurement_columns_callback(*args)
         return []
+
     def display(self, workspace, figure):
         if self.display_callback is not None:
             return self.display_callback(workspace, figure)
@@ -1446,6 +1502,7 @@ class GroupModule(cpm.CPModule):
         if self.display_post_run is not None:
             return self.display_post_run_callback(workspace, figure)
         return super(GroupModule, self).display_post_run(workspace, figure)
+
 
 # Global declarations
 

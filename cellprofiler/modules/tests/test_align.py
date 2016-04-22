@@ -26,8 +26,8 @@ import cellprofiler.modules.align as A
 
 from cellprofiler.modules.loadimages import pathname2url
 
-class TestAlign(unittest.TestCase):
 
+class TestAlign(unittest.TestCase):
     def make_workspace(self, images, masks):
         pipeline = cpp.Pipeline()
         object_set = cpo.ObjectSet()
@@ -44,9 +44,9 @@ class TestAlign(unittest.TestCase):
             if mask is None:
                 image = cpi.Image(pixels)
             else:
-                image = cpi.Image(pixels, mask = mask)
-            input_name = 'Channel%d'%index
-            output_name = 'Aligned%d'%index
+                image = cpi.Image(pixels, mask=mask)
+            input_name = 'Channel%d' % index
+            output_name = 'Aligned%d' % index
             image_set.add(input_name, image)
             if index == 0:
                 module.first_input_image.value = input_name
@@ -59,7 +59,7 @@ class TestAlign(unittest.TestCase):
                 ai = module.additional_images[-1]
                 ai.input_image_name.value = input_name
                 ai.output_image_name.value = output_name
-        return workspace,module
+        return workspace, module
 
     def test_01_01_load_matlab(self):
         '''Load a Matlab pipeline'''
@@ -82,8 +82,10 @@ class TestAlign(unittest.TestCase):
                 'fPVGZuXn10e//jv/d+V9+4SPNuLHW/+dZv1V+Xv6L7Xz0euv10cCALr4bf0=')
         fd = StringIO(zlib.decompress(base64.b64decode(data)))
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.load(fd)
         #
         # The pipeline has three modules and Align is the third. It has
@@ -138,16 +140,17 @@ class TestAlign(unittest.TestCase):
         # Fourth image:  input = Channel4, output = Aligned4, separately
         # Mutual information
         # Don't crop
-        self.assertEqual(len(pipeline.modules()),2)
+        self.assertEqual(len(pipeline.modules()), 2)
         module = pipeline.modules()[1]
-        self.assertEqual(len(module.additional_images),2)
+        self.assertEqual(len(module.additional_images), 2)
         for i, input, output in ((1, module.first_input_image, module.first_output_image),
                                  (2, module.second_input_image, module.second_output_image),
-                                 (3, module.additional_images[0].input_image_name, module.additional_images[0].output_image_name),
-                                 (4, module.additional_images[1].input_image_name, module.additional_images[1].output_image_name)):
-
-            self.assertEqual(input.value, 'Channel%d'%i)
-            self.assertEqual(output.value, 'Aligned%d'%i)
+                                 (3, module.additional_images[0].input_image_name,
+                                  module.additional_images[0].output_image_name),
+                                 (4, module.additional_images[1].input_image_name,
+                                  module.additional_images[1].output_image_name)):
+            self.assertEqual(input.value, 'Channel%d' % i)
+            self.assertEqual(output.value, 'Aligned%d' % i)
         self.assertEqual(module.additional_images[0].align_choice.value, A.A_SIMILARLY)
         self.assertEqual(module.additional_images[1].align_choice.value, A.A_SEPARATELY)
         self.assertEqual(module.alignment_method.value, A.M_MUTUAL_INFORMATION)
@@ -167,8 +170,10 @@ Select the second input image:Image2
 Name the second output image:AlignedImage2
 """
         pipeline = cpp.Pipeline()
+
         def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
@@ -211,14 +216,16 @@ Select the second input image:Image2
 Name the second output image:AlignedImage2
 """
         pipeline = cpp.Pipeline()
+
         def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
         self.assertEqual(len(pipeline.modules()), 3)
         for module, crop_method in zip(
-            pipeline.modules(),
-            (A.C_SAME_SIZE, A.C_CROP, A.C_PAD)):
+                pipeline.modules(),
+                (A.C_SAME_SIZE, A.C_CROP, A.C_PAD)):
             self.assertTrue(isinstance(module, A.Align))
             self.assertEqual(module.alignment_method, A.M_MUTUAL_INFORMATION)
             self.assertEqual(module.crop_mode, crop_method)
@@ -231,31 +238,31 @@ Name the second output image:AlignedImage2
         '''Align two images and crop the result'''
         np.random.seed(0)
         shape = (50, 45)
-        i,j = np.mgrid[0:shape[0],0:shape[1]]
-        for offset in ((3,5),(-3,5),(3,-5),(-3,-5), (0,5), (3,0), (0,0)):
+        i, j = np.mgrid[0:shape[0], 0:shape[1]]
+        for offset in ((3, 5), (-3, 5), (3, -5), (-3, -5), (0, 5), (3, 0), (0, 0)):
             #
             # Do something to give the image some information over
             # the distance, 5,5
             #
             for mask1 in (None,
-                          np.random.uniform(size = shape) > .1):
+                          np.random.uniform(size=shape) > .1):
                 for mask2 in (None,
-                              np.random.uniform(size = shape) > .1):
+                              np.random.uniform(size=shape) > .1):
                     for method in (A.M_MUTUAL_INFORMATION, A.M_CROSS_CORRELATION):
                         if method == A.M_CROSS_CORRELATION and (
-                            (mask1 is not None) or (mask2 is not None)):
+                                    (mask1 is not None) or (mask2 is not None)):
                             continue
 
                         image1 = np.random.randint(0, 10, size=shape).astype(float) / 10.0
-                        image1[np.sqrt(((i-shape[0]/2)**2 + (j-shape[1]/2)**2)) < 20] = .5
+                        image1[np.sqrt(((i - shape[0] / 2) ** 2 + (j - shape[1] / 2) ** 2)) < 20] = .5
                         si1, si2 = self.slice_helper(offset[0], image1.shape[0])
                         sj1, sj2 = self.slice_helper(offset[1], image1.shape[1])
                         image2 = np.zeros(image1.shape)
                         if method == A.M_MUTUAL_INFORMATION:
                             image2[si2, sj2] = 1 - image1[si1, sj1]
                         else:
-                            image2 = image1[(i+shape[0]-offset[0]) % shape[0],
-                                            (j+shape[1]-offset[1]) % shape[1]]
+                            image2 = image1[(i + shape[0] - offset[0]) % shape[0],
+                                            (j + shape[1] - offset[1]) % shape[1]]
                             image2 += (np.random.uniform(size=shape) - .5) * .1 * np.std(image2)
                         if mask1 is not None:
                             image1[~ mask1] = np.random.uniform(size=np.sum(~mask1))
@@ -285,7 +292,7 @@ Name the second output image:AlignedImage2
                         i_slice = self.single_slice_helper(-off_i0, out_shape[0])
                         j_slice = self.single_slice_helper(-off_j0, out_shape[1])
                         np.testing.assert_almost_equal(
-                            image1[i_slice, j_slice], output.pixel_data)
+                                image1[i_slice, j_slice], output.pixel_data)
                         if mask1 is not None:
                             self.assertTrue(np.all(output.mask == mask1[i_slice, j_slice]))
 
@@ -303,7 +310,7 @@ Name the second output image:AlignedImage2
                         j_slice = self.single_slice_helper(-off_j1, out_shape[1])
 
                         np.testing.assert_almost_equal(
-                            image2[i_slice, j_slice], output.pixel_data)
+                                image2[i_slice, j_slice], output.pixel_data)
                         if mask2 is not None:
                             self.assertTrue(np.all(output.mask == mask2[i_slice, j_slice]))
                         if offset[0] == 0 and offset[1] == 0:
@@ -319,7 +326,7 @@ Name the second output image:AlignedImage2
         '''Return a single slice starting at the offset (or zero)'''
         if offset < 0:
             offset = 0
-        return slice(offset, offset+size)
+        return slice(offset, offset + size)
 
     def slice_helper(self, offset, size):
         '''Return slices for the first and second images for copying
@@ -338,26 +345,26 @@ Name the second output image:AlignedImage2
         '''Align two images with padded output'''
         np.random.seed(0)
         shape = (50, 45)
-        i,j = np.mgrid[0:shape[0],0:shape[1]]
-        for offset in ((1,0), (0,1), (1,1), (3,5),(-3,5),(3,-5),(-3,-5), (0,5), (3,0), (0,0)):
+        i, j = np.mgrid[0:shape[0], 0:shape[1]]
+        for offset in ((1, 0), (0, 1), (1, 1), (3, 5), (-3, 5), (3, -5), (-3, -5), (0, 5), (3, 0), (0, 0)):
             for mask1 in (None,
-                          np.random.uniform(size = shape) > .1):
+                          np.random.uniform(size=shape) > .1):
                 for mask2 in (None,
-                              np.random.uniform(size = shape) > .1):
+                              np.random.uniform(size=shape) > .1):
                     for method in (A.M_MUTUAL_INFORMATION, A.M_CROSS_CORRELATION):
                         if method == A.M_CROSS_CORRELATION and (
-                            (mask1 is not None) or (mask2 is not None)):
+                                    (mask1 is not None) or (mask2 is not None)):
                             continue
                         image1 = np.random.randint(0, 10, size=shape).astype(float) / 10.0
-                        image1[np.sqrt(((i-shape[0]/2)**2 + (j-shape[1]/2)**2)) < 20] = .5
+                        image1[np.sqrt(((i - shape[0] / 2) ** 2 + (j - shape[1] / 2) ** 2)) < 20] = .5
                         si1, si2 = self.slice_helper(offset[0], image1.shape[0])
                         sj1, sj2 = self.slice_helper(offset[1], image1.shape[1])
                         image2 = np.zeros(image1.shape)
                         if method == A.M_MUTUAL_INFORMATION:
-                            image2[si2, sj2] = 1-image1[si1, sj1]
+                            image2[si2, sj2] = 1 - image1[si1, sj1]
                         else:
-                            image2 = image1[(i+shape[0]-offset[0]) % shape[0],
-                                            (j+shape[1]-offset[1]) % shape[1]]
+                            image2 = image1[(i + shape[0] - offset[0]) % shape[0],
+                                            (j + shape[1] - offset[1]) % shape[1]]
                             image2 += (np.random.uniform(size=shape) - .5) * .1 * np.std(image2)
                         if mask1 is not None:
                             image1[~ mask1] = np.random.uniform(size=np.sum(~mask1))
@@ -383,7 +390,7 @@ Name the second output image:AlignedImage2
                         i_slice = slice(off_i0, off_i0 + image1.shape[0])
                         j_slice = slice(off_j0, off_j0 + image1.shape[1])
                         np.testing.assert_almost_equal(
-                            image1, output.pixel_data[i_slice, j_slice])
+                                image1, output.pixel_data[i_slice, j_slice])
                         if mask1 is not None:
                             self.assertTrue(np.all(output.mask[i_slice, j_slice] == mask1))
 
@@ -395,7 +402,7 @@ Name the second output image:AlignedImage2
                         i_slice = slice(off_i1, off_i1 + image2.shape[0])
                         j_slice = slice(off_j1, off_j1 + image2.shape[1])
                         np.testing.assert_almost_equal(
-                            image2, output.pixel_data[i_slice, j_slice])
+                                image2, output.pixel_data[i_slice, j_slice])
                         if mask2 is not None:
                             self.assertTrue(np.all(mask2 == output.mask[i_slice, j_slice]))
                         temp = output.mask.copy()
@@ -406,26 +413,26 @@ Name the second output image:AlignedImage2
         '''Align two images keeping sizes the same'''
         np.random.seed(0)
         shape = (50, 45)
-        i,j = np.mgrid[0:shape[0],0:shape[1]]
-        for offset in ((1,0), (0,1), (1,1), (3,5),(-3,5),(3,-5),(-3,-5), (0,5), (3,0), (0,0)):
+        i, j = np.mgrid[0:shape[0], 0:shape[1]]
+        for offset in ((1, 0), (0, 1), (1, 1), (3, 5), (-3, 5), (3, -5), (-3, -5), (0, 5), (3, 0), (0, 0)):
             for mask1 in (None,
-                          np.random.uniform(size = shape) > .1):
+                          np.random.uniform(size=shape) > .1):
                 for mask2 in (None,
-                              np.random.uniform(size = shape) > .1):
+                              np.random.uniform(size=shape) > .1):
                     for method in (A.M_MUTUAL_INFORMATION, A.M_CROSS_CORRELATION):
                         if method == A.M_CROSS_CORRELATION and (
-                            (mask1 is not None) or (mask2 is not None)):
+                                    (mask1 is not None) or (mask2 is not None)):
                             continue
                         image1 = np.random.randint(0, 10, size=shape).astype(float) / 10.0
-                        image1[np.sqrt(((i-shape[0]/2)**2 + (j-shape[1]/2)**2)) < 20] = .5
+                        image1[np.sqrt(((i - shape[0] / 2) ** 2 + (j - shape[1] / 2) ** 2)) < 20] = .5
                         si1, si2 = self.slice_helper(offset[0], image1.shape[0])
                         sj1, sj2 = self.slice_helper(offset[1], image1.shape[1])
                         image2 = np.zeros(image1.shape)
                         if method == A.M_MUTUAL_INFORMATION:
-                            image2[si2, sj2] = 1-image1[si1, sj1]
+                            image2[si2, sj2] = 1 - image1[si1, sj1]
                         else:
-                            image2 = image1[(i+shape[0]-offset[0]) % shape[0],
-                                            (j+shape[1]-offset[1]) % shape[1]]
+                            image2 = image1[(i + shape[0] - offset[0]) % shape[0],
+                                            (j + shape[1] - offset[1]) % shape[1]]
                             image2 += (np.random.uniform(size=shape) - .5) * .1 * np.std(image2)
                         if mask1 is not None:
                             image1[~ mask1] = np.random.uniform(size=np.sum(~mask1))
@@ -451,7 +458,7 @@ Name the second output image:AlignedImage2
                         si_in, si_out = self.slice_same(off_i0, shape[0])
                         sj_in, sj_out = self.slice_same(off_j0, shape[1])
                         np.testing.assert_almost_equal(
-                            image1[si_in, sj_in], output.pixel_data[si_out, sj_out])
+                                image1[si_in, sj_in], output.pixel_data[si_out, sj_out])
                         if mask1 is not None:
                             self.assertTrue(np.all(output.mask[si_out, sj_out] == mask1[si_in, sj_in]))
 
@@ -463,7 +470,7 @@ Name the second output image:AlignedImage2
                         si_in, si_out = self.slice_same(off_i1, shape[0])
                         sj_in, sj_out = self.slice_same(off_j1, shape[1])
                         np.testing.assert_almost_equal(
-                            image2[si_in, sj_in], output.pixel_data[si_out, sj_out])
+                                image2[si_in, sj_in], output.pixel_data[si_out, sj_out])
                         if mask2 is not None:
                             self.assertTrue(np.all(mask2[si_in, sj_in] == output.mask[si_out, sj_out]))
                         temp = output.mask.copy()
@@ -480,17 +487,17 @@ Name the second output image:AlignedImage2
         '''Align a third image similarly to the other two'''
         np.random.seed(0)
         shape = (53, 62)
-        i,j = np.mgrid[0:shape[0],0:shape[1]]
-        for offset in ((3,5),(-3,5),(3,-5),(-3,-5)):
+        i, j = np.mgrid[0:shape[0], 0:shape[1]]
+        for offset in ((3, 5), (-3, 5), (3, -5), (-3, -5)):
             image1 = np.random.randint(0, 10, size=shape).astype(float) / 10.0
-            image1[np.sqrt(((i-shape[0]/2)**2 + (j-shape[1]/2)**2)) < 20] = .5
+            image1[np.sqrt(((i - shape[0] / 2) ** 2 + (j - shape[1] / 2) ** 2)) < 20] = .5
             si1, si2 = self.slice_helper(offset[0], image1.shape[0])
             sj1, sj2 = self.slice_helper(offset[1], image1.shape[1])
             image2 = np.zeros(image1.shape)
-            image2 = image1[(i+shape[0]-offset[0]) % shape[0],
-                            (j+shape[1]-offset[1]) % shape[1]]
+            image2 = image1[(i + shape[0] - offset[0]) % shape[0],
+                            (j + shape[1] - offset[1]) % shape[1]]
             image2 += (np.random.uniform(size=shape) - .5) * .1 * np.std(image2)
-            image3 = (i * 100 + j).astype(np.float32)/10000
+            image3 = (i * 100 + j).astype(np.float32) / 10000
             workspace, module = self.make_workspace((image1, image2, image3),
                                                     (None, None, None))
             self.assertTrue(isinstance(module, A.Align))
@@ -522,18 +529,17 @@ Name the second output image:AlignedImage2
             np.testing.assert_almost_equal(output.pixel_data[i_slice, j_slice],
                                            image3)
 
-
     def test_03_02_align_separately(self):
         '''Align a third image to the first image'''
         np.random.seed(0)
-        shape = (47,53)
-        i,j = np.mgrid[0:shape[0],0:shape[1]]
-        for offset in ((3,5),(-3,5),(3,-5),(-3,-5)):
+        shape = (47, 53)
+        i, j = np.mgrid[0:shape[0], 0:shape[1]]
+        for offset in ((3, 5), (-3, 5), (3, -5), (-3, -5)):
             image1 = np.random.uniform(size=shape).astype(np.float32)
-            image2 = image1[(i+shape[0]-offset[0]-5)%shape[0],
-                            (j+shape[1]-offset[1]-5)%shape[1]]
-            image3 = image1[(i+shape[0]-offset[0])%shape[0],
-                            (j+shape[1]-offset[1])%shape[1]]
+            image2 = image1[(i + shape[0] - offset[0] - 5) % shape[0],
+                            (j + shape[1] - offset[1] - 5) % shape[1]]
+            image3 = image1[(i + shape[0] - offset[0]) % shape[0],
+                            (j + shape[1] - offset[1]) % shape[1]]
             workspace, module = self.make_workspace((image1, image2, image3),
                                                     (None, None, None))
             self.assertTrue(isinstance(module, A.Align))
@@ -549,8 +555,8 @@ Name the second output image:AlignedImage2
             off_j1 = -m.get_current_image_measurement('Align_Xshift_Aligned1')
             off_i2 = -m.get_current_image_measurement('Align_Yshift_Aligned2')
             off_j2 = -m.get_current_image_measurement('Align_Xshift_Aligned2')
-            self.assertEqual(off_i0 - off_i1, offset[0]+5)
-            self.assertEqual(off_j0 - off_j1, offset[1]+5)
+            self.assertEqual(off_i0 - off_i1, offset[0] + 5)
+            self.assertEqual(off_j0 - off_j1, offset[1] + 5)
             self.assertEqual(off_i0 - off_i2, offset[0])
             self.assertEqual(off_j0 - off_j2, offset[1])
             output = workspace.image_set.get_image('Aligned2')
@@ -562,37 +568,37 @@ Name the second output image:AlignedImage2
     def test_03_03_align_color(self):
         np.random.seed(0)
         shape = (50, 45, 3)
-        i,j = np.mgrid[0:shape[0],0:shape[1]]
-        for offset in ((1,0), (0,1), (1,1), (3,5),(-3,5),(3,-5),(-3,-5), (0,5), (3,0), (0,0)):
+        i, j = np.mgrid[0:shape[0], 0:shape[1]]
+        for offset in ((1, 0), (0, 1), (1, 1), (3, 5), (-3, 5), (3, -5), (-3, -5), (0, 5), (3, 0), (0, 0)):
             for mask1 in (None,
-                          np.random.uniform(size = shape[:2]) > .1):
+                          np.random.uniform(size=shape[:2]) > .1):
                 for mask2 in (None,
-                              np.random.uniform(size = shape[:2]) > .1):
+                              np.random.uniform(size=shape[:2]) > .1):
                     for method in (A.M_MUTUAL_INFORMATION, A.M_CROSS_CORRELATION):
                         if method == A.M_CROSS_CORRELATION and (
-                            (mask1 is not None) or (mask2 is not None)):
+                                    (mask1 is not None) or (mask2 is not None)):
                             continue
                         image1 = np.dstack([
-                            np.random.randint(0, 10, size=shape[:2])
-                            .astype(float) / 10.0] * 3)
-                        image1[np.sqrt(((i-shape[0]/2)**2 + (j-shape[1]/2)**2)) < 20, :] = .5
+                                               np.random.randint(0, 10, size=shape[:2])
+                                           .astype(float) / 10.0] * 3)
+                        image1[np.sqrt(((i - shape[0] / 2) ** 2 + (j - shape[1] / 2) ** 2)) < 20, :] = .5
                         si1, si2 = self.slice_helper(offset[0], image1.shape[0])
                         sj1, sj2 = self.slice_helper(offset[1], image1.shape[1])
                         image2 = np.zeros(image1.shape)
                         if method == A.M_MUTUAL_INFORMATION:
-                            image2[si2, sj2, :] = 1-image1[si1, sj1, :]
+                            image2[si2, sj2, :] = 1 - image1[si1, sj1, :]
                         else:
-                            image2 = image1[(i+shape[0]-offset[0]) % shape[0],
-                                            (j+shape[1]-offset[1]) % shape[1], :]
+                            image2 = image1[(i + shape[0] - offset[0]) % shape[0],
+                                     (j + shape[1] - offset[1]) % shape[1], :]
                             image2 += (np.random.uniform(size=shape) - .5) * .1 * np.std(image2)
                         if mask1 is not None:
                             image1[~ mask1, :] = np.random.uniform(
-                                size=(np.sum(~mask1), shape[2]))
+                                    size=(np.sum(~mask1), shape[2]))
                         if mask2 is not None:
                             image2[~ mask2, :] = np.random.uniform(
-                                size=(np.sum(~mask2), shape[2]))
+                                    size=(np.sum(~mask2), shape[2]))
                         workspace, module = self.make_workspace(
-                            (image1, image2), (mask1, mask2))
+                                (image1, image2), (mask1, mask2))
                         self.assertTrue(isinstance(module, A.Align))
                         module.alignment_method.value = method
                         module.crop_mode.value = A.C_SAME_SIZE
@@ -611,7 +617,7 @@ Name the second output image:AlignedImage2
                         si_in, si_out = self.slice_same(off_i0, shape[0])
                         sj_in, sj_out = self.slice_same(off_j0, shape[1])
                         np.testing.assert_almost_equal(
-                            image1[si_in, sj_in, :], output.pixel_data[si_out, sj_out, :])
+                                image1[si_in, sj_in, :], output.pixel_data[si_out, sj_out, :])
                         if mask1 is not None:
                             self.assertTrue(np.all(output.mask[si_out, sj_out] == mask1[si_in, sj_in]))
 
@@ -623,7 +629,7 @@ Name the second output image:AlignedImage2
                         si_in, si_out = self.slice_same(off_i1, shape[0])
                         sj_in, sj_out = self.slice_same(off_j1, shape[1])
                         np.testing.assert_almost_equal(
-                            image2[si_in, sj_in, :], output.pixel_data[si_out, sj_out, :])
+                                image2[si_in, sj_in, :], output.pixel_data[si_out, sj_out, :])
                         if mask2 is not None:
                             self.assertTrue(np.all(mask2[si_in, sj_in] == output.mask[si_out, sj_out]))
                         temp = output.mask.copy()
@@ -633,26 +639,26 @@ Name the second output image:AlignedImage2
     def test_03_04_align_binary(self):
         np.random.seed(0)
         shape = (50, 45)
-        i,j = np.mgrid[0:shape[0],0:shape[1]]
-        for offset in ((1,0), (0,1), (1,1), (3,5),(-3,5),(3,-5),(-3,-5), (0,5), (3,0), (0,0)):
+        i, j = np.mgrid[0:shape[0], 0:shape[1]]
+        for offset in ((1, 0), (0, 1), (1, 1), (3, 5), (-3, 5), (3, -5), (-3, -5), (0, 5), (3, 0), (0, 0)):
             for mask1 in (None,
-                          np.random.uniform(size = shape) > .1):
+                          np.random.uniform(size=shape) > .1):
                 for mask2 in (None,
-                              np.random.uniform(size = shape) > .1):
+                              np.random.uniform(size=shape) > .1):
                     for method in (A.M_MUTUAL_INFORMATION, A.M_CROSS_CORRELATION):
                         if method == A.M_CROSS_CORRELATION and (
-                            (mask1 is not None) or (mask2 is not None)):
+                                    (mask1 is not None) or (mask2 is not None)):
                             continue
                         image1 = np.random.randint(0, 1, size=shape).astype(bool)
-                        image1[np.sqrt(((i-shape[0]/2)**2 + (j-shape[1]/2)**2)) < 10] = True
+                        image1[np.sqrt(((i - shape[0] / 2) ** 2 + (j - shape[1] / 2) ** 2)) < 10] = True
                         si1, si2 = self.slice_helper(offset[0], image1.shape[0])
                         sj1, sj2 = self.slice_helper(offset[1], image1.shape[1])
                         image2 = np.zeros(image1.shape, bool)
                         if method == A.M_MUTUAL_INFORMATION:
-                            image2[si2, sj2] = 1-image1[si1, sj1]
+                            image2[si2, sj2] = 1 - image1[si1, sj1]
                         else:
-                            image2 = image1[(i+shape[0]-offset[0]) % shape[0],
-                                            (j+shape[1]-offset[1]) % shape[1]]
+                            image2 = image1[(i + shape[0] - offset[0]) % shape[0],
+                                            (j + shape[1] - offset[1]) % shape[1]]
                         if mask1 is not None:
                             image1[~ mask1] = np.random.uniform(size=np.sum(~mask1))
                         if mask2 is not None:
@@ -678,7 +684,7 @@ Name the second output image:AlignedImage2
                         sj_in, sj_out = self.slice_same(off_j0, shape[1])
                         self.assertEqual(output.pixel_data.dtype.kind, "b")
                         np.testing.assert_equal(
-                            image1[si_in, sj_in], output.pixel_data[si_out, sj_out])
+                                image1[si_in, sj_in], output.pixel_data[si_out, sj_out])
                         if mask1 is not None:
                             self.assertTrue(np.all(output.mask[si_out, sj_out] == mask1[si_in, sj_in]))
 
@@ -690,7 +696,7 @@ Name the second output image:AlignedImage2
                         si_in, si_out = self.slice_same(off_i1, shape[0])
                         sj_in, sj_out = self.slice_same(off_j1, shape[1])
                         np.testing.assert_equal(
-                            image2[si_in, sj_in], output.pixel_data[si_out, sj_out])
+                                image2[si_in, sj_in], output.pixel_data[si_out, sj_out])
                         if mask2 is not None:
                             self.assertTrue(np.all(mask2[si_in, sj_in] == output.mask[si_out, sj_out]))
                         temp = output.mask.copy()
@@ -698,24 +704,24 @@ Name the second output image:AlignedImage2
                         self.assertTrue(np.all(~ temp))
 
     def test_04_01_measurement_columns(self):
-        workspace, module = self.make_workspace((np.zeros((10,10)),
-                                                 np.zeros((10,10)),
-                                                 np.zeros((10,10))),
+        workspace, module = self.make_workspace((np.zeros((10, 10)),
+                                                 np.zeros((10, 10)),
+                                                 np.zeros((10, 10))),
                                                 (None, None, None))
         self.assertTrue(isinstance(module, A.Align))
         columns = module.get_measurement_columns(workspace.pipeline)
         self.assertEqual(len(columns), 6)
         for i in range(3):
-            for axis in ("X","Y"):
+            for axis in ("X", "Y"):
                 feature = A.MEASUREMENT_FORMAT % (axis, "Aligned%d" % i)
                 self.assertTrue(feature in [c[1] for c in columns])
         self.assertTrue(all([c[0] == cpmeas.IMAGE for c in columns]))
         self.assertTrue(all([c[2] == cpmeas.COLTYPE_INTEGER for c in columns]))
 
     def test_04_02_categories(self):
-        workspace, module = self.make_workspace((np.zeros((10,10)),
-                                                 np.zeros((10,10)),
-                                                 np.zeros((10,10))),
+        workspace, module = self.make_workspace((np.zeros((10, 10)),
+                                                 np.zeros((10, 10)),
+                                                 np.zeros((10, 10))),
                                                 (None, None, None))
         self.assertTrue(isinstance(module, A.Align))
         c = module.get_categories(workspace.pipeline, cpmeas.IMAGE)
@@ -726,9 +732,9 @@ Name the second output image:AlignedImage2
         self.assertEqual(len(c), 0)
 
     def test_04_03_measurements(self):
-        workspace, module = self.make_workspace((np.zeros((10,10)),
-                                                 np.zeros((10,10)),
-                                                 np.zeros((10,10))),
+        workspace, module = self.make_workspace((np.zeros((10, 10)),
+                                                 np.zeros((10, 10)),
+                                                 np.zeros((10, 10))),
                                                 (None, None, None))
         self.assertTrue(isinstance(module, A.Align))
         m = module.get_measurements(workspace.pipeline, cpmeas.IMAGE, A.C_ALIGN)
@@ -737,14 +743,14 @@ Name the second output image:AlignedImage2
         self.assertTrue("Yshift" in m)
 
     def test_04_04_measurement_images(self):
-        workspace, module = self.make_workspace((np.zeros((10,10)),
-                                                 np.zeros((10,10)),
-                                                 np.zeros((10,10))),
+        workspace, module = self.make_workspace((np.zeros((10, 10)),
+                                                 np.zeros((10, 10)),
+                                                 np.zeros((10, 10))),
                                                 (None, None, None))
         self.assertTrue(isinstance(module, A.Align))
         for measurement in ("Xshift", "Yshift"):
             image_names = module.get_measurement_images(
-                workspace.pipeline, cpmeas.IMAGE, A.C_ALIGN, measurement)
+                    workspace.pipeline, cpmeas.IMAGE, A.C_ALIGN, measurement)
             self.assertEqual(len(image_names), 3)
             for i in range(3):
                 self.assertTrue("Aligned%d" % i in image_names)
@@ -756,8 +762,8 @@ Name the second output image:AlignedImage2
         '''
         image = read_example_image("ExampleFlyImages",
                                    '01_POS002_D.TIF')
-        image = image[0:300,0:300] # make smaller so as to be faster
-        workspace, module = self.make_workspace((image, image),(None,None))
+        image = image[0:300, 0:300]  # make smaller so as to be faster
+        workspace, module = self.make_workspace((image, image), (None, None))
         module.alignment_method.value = A.M_MUTUAL_INFORMATION
         module.crop_mode.value = A.C_PAD
         module.run(workspace)
@@ -773,13 +779,13 @@ Name the second output image:AlignedImage2
         np.random.seed(61)
         shape = (61, 43)
         for method in (A.M_CROSS_CORRELATION, A.M_MUTUAL_INFORMATION):
-            i,j = np.mgrid[0:shape[0], 0:shape[1]]
+            i, j = np.mgrid[0:shape[0], 0:shape[1]]
             image1 = np.random.randint(0, 10, size=shape).astype(float) / 10.0
-            image1[np.sqrt(((i-shape[0]/2)**2 + (j-shape[1]/2)**2)) < 20] = .5
-            image2 = image1[2:-2,2:-2]
+            image1[np.sqrt(((i - shape[0] / 2) ** 2 + (j - shape[1] / 2) ** 2)) < 20] = .5
+            image2 = image1[2:-2, 2:-2]
             for order, i1_name, i2_name in (
-                ((image1, image2), "Aligned0", "Aligned1"),
-                ((image2, image1), "Aligned1", "Aligned0")):
+                    ((image1, image2), "Aligned0", "Aligned1"),
+                    ((image2, image1), "Aligned1", "Aligned0")):
                 workspace, module = self.make_workspace(order, (None, None))
                 self.assertTrue(isinstance(module, A.Align))
                 module.alignment_method.value = method
@@ -794,7 +800,7 @@ Name the second output image:AlignedImage2
                 self.assertTrue(np.all(p1 == p2))
                 self.assertTrue(i1.has_crop_mask)
                 crop_mask = np.zeros(shape, bool)
-                crop_mask[2:-2,2:-2] = True
+                crop_mask[2:-2, 2:-2] = True
                 self.assertTrue(np.all(i1.crop_mask == crop_mask))
                 self.assertFalse(i2.has_crop_mask)
 
@@ -805,10 +811,10 @@ Name the second output image:AlignedImage2
         '''
         np.random.seed(612)
         shape = (61, 43)
-        i,j = np.mgrid[0:shape[0], 0:shape[1]]
+        i, j = np.mgrid[0:shape[0], 0:shape[1]]
         image1 = np.random.randint(0, 10, size=shape).astype(float) / 10.0
-        image1[np.sqrt(((i-shape[0]/2)**2 + (j-shape[1]/2)**2)) < 20] = .5
-        image2 = image1[2:-2,2:-2]
+        image1[np.sqrt(((i - shape[0] / 2) ** 2 + (j - shape[1] / 2) ** 2)) < 20] = .5
+        image2 = image1[2:-2, 2:-2]
         workspace, module = self.make_workspace((image1, image2), (None, None))
         self.assertTrue(isinstance(module, A.Align))
         module.crop_mode.value = A.C_PAD
@@ -819,9 +825,9 @@ Name the second output image:AlignedImage2
         i2 = workspace.image_set.get_image("Aligned1")
         p2 = i2.pixel_data
         self.assertEqual(tuple(p1.shape), tuple(p2.shape))
-        self.assertTrue(np.all(p1[2:-2,2:-2] == p2[2:-2,2:-2]))
+        self.assertTrue(np.all(p1[2:-2, 2:-2] == p2[2:-2, 2:-2]))
         self.assertFalse(i1.has_mask)
         mask = np.zeros(shape, bool)
-        mask[2:-2,2:-2] = True
+        mask[2:-2, 2:-2] = True
         self.assertTrue(i2.has_mask)
         self.assertTrue(np.all(mask == i2.mask))

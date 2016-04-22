@@ -36,14 +36,14 @@ if hasattr(sys, 'real_prefix'):
 # So try importing and only ask for ones that are not present.
 packages = []
 for package_name, import_name in [
-        ("clint", "clint"),
-        ("javabridge", "javabridge"),
-        ("matplotlib", "matplotlib"),
-        ("numpy", "numpy"),
-        ("pytest", "pytest"),
-        ("pyzmq", "zmq"),
-        ("requests", "requests"),
-        ("scipy", "scipy")]:
+    ("clint", "clint"),
+    ("javabridge", "javabridge"),
+    ("matplotlib", "matplotlib"),
+    ("numpy", "numpy"),
+    ("pytest", "pytest"),
+    ("pyzmq", "zmq"),
+    ("requests", "requests"),
+    ("scipy", "scipy")]:
     try:
         importlib.import_module(import_name)
     except ImportError:
@@ -84,12 +84,14 @@ if sys.platform.startswith("win"):
     # Recipe needed for py2exe to package libzmq.dll
     os.environ["PATH"] += os.path.pathsep + os.path.split(zmq.__file__)[0]
 
+
 def should_build_version(command):
     '''Test to see whether we should run the "build_version" command'''
     bv_command = command.get_finalized_command("build_version")
     if not os.path.exists(bv_command.frozen_version_filename):
         return True
     return cellprofiler.utilities.version.get_git_dir() is None
+
 
 class BuildPy(setuptools.command.build_py.build_py):
     def run(self):
@@ -107,6 +109,7 @@ class BuildPy(setuptools.command.build_py.build_py):
             source_files.append(fv_filename)
         return sorted(source_files)
 
+
 class BuildVersion(setuptools.Command):
     user_options = [
         ("version", None, "CellProfiler semantic version")]
@@ -120,7 +123,7 @@ class BuildVersion(setuptools.Command):
             self.version = self.distribution.metadata.version
         if self.frozen_version_filename is None:
             self.frozen_version_filename = os.path.join(
-                "cellprofiler", "frozen_version.py")
+                    "cellprofiler", "frozen_version.py")
 
     def run(self):
         with open(self.frozen_version_filename, "w") as fd:
@@ -128,8 +131,10 @@ class BuildVersion(setuptools.Command):
                      cellprofiler.utilities.version.version_string)
             fd.write("dotted_version='%s'\n" % self.version)
 
+
 setuptools.command.sdist.sdist.sub_commands.insert(
-    0, ("build_version", should_build_version))
+        0, ("build_version", should_build_version))
+
 
 class Test(setuptools.Command):
     user_options = [
@@ -204,15 +209,15 @@ if has_py2exe:
             if self.msvcrt_redist is None:
                 try:
                     key = _winreg.OpenKey(
-                        _winreg.HKEY_LOCAL_MACHINE,
-                        r"SOFTWARE\Wow6432Node\Microsoft\VisualStudio\9.0" +
-                        r"\Setup\VC")
+                            _winreg.HKEY_LOCAL_MACHINE,
+                            r"SOFTWARE\Wow6432Node\Microsoft\VisualStudio\9.0" +
+                            r"\Setup\VC")
                     product_dir = _winreg.QueryValueEx(key, "ProductDir")[0]
                     self.msvcrt_redist = os.path.join(
-                        product_dir, "redist", "amd64", "Microsoft.VC90.CRT")
+                            product_dir, "redist", "amd64", "Microsoft.VC90.CRT")
                 except WindowsError:
                     self.announce(
-                        "Package will not include MSVCRT redistributables", 3)
+                            "Package will not include MSVCRT redistributables", 3)
 
         def run(self):
             self.reinitialize_command("build_version", inplace=1)
@@ -228,20 +233,20 @@ if has_py2exe:
             if self.distribution.data_files is None:
                 self.distribution.data_files = []
             self.distribution.data_files.append(
-                ("artwork", glob.glob("artwork/*")))
+                    ("artwork", glob.glob("artwork/*")))
             #
             # javabridge's jars
             #
             import javabridge
             self.distribution.data_files.append(
-                ("javabridge/jars", javabridge.JARS))
+                    ("javabridge/jars", javabridge.JARS))
             #
             # prokaryote's jar
             #
             import prokaryote
             prokaryote_glob = os.path.dirname(prokaryote.__file__) + "/*.jar"
             self.distribution.data_files.append(
-                ("prokaryote", glob.glob(prokaryote_glob)))
+                    ("prokaryote", glob.glob(prokaryote_glob)))
             #
             # py2exe recipe for matplotlib
             #
@@ -263,7 +268,7 @@ if has_py2exe:
                 #
                 if zmq_version >= (14, 0, 0):
                     self.distribution.data_files.append(
-                        (".", [zmq.libzmq.__file__]))
+                            (".", [zmq.libzmq.__file__]))
                     self.dll_excludes.append("libzmq.pyd")
             #
             # Add ilastik UI files
@@ -279,21 +284,21 @@ if has_py2exe:
                                 for ext in ".ui", ".png"])]
                     if len(ui_filenames) > 0:
                         self.distribution.data_files.append(
-                            (relpath, ui_filenames))
+                                (relpath, ui_filenames))
 
                 #
                 # Prevent rename of vigranumpycore similarly to libzmq
                 #
                 import vigra.vigranumpycore
                 self.distribution.data_files.append(
-                    (".", [vigra.vigranumpycore.__file__]))
+                        (".", [vigra.vigranumpycore.__file__]))
 
             if self.msvcrt_redist is not None:
                 sources = [
                     os.path.join(self.msvcrt_redist, filename)
                     for filename in os.listdir(self.msvcrt_redist)]
                 self.distribution.data_files.append(
-                    ("./Microsoft.VC90.CRT", sources))
+                        ("./Microsoft.VC90.CRT", sources))
 
             py2exe.build_exe.py2exe.run(self)
 
@@ -316,7 +321,7 @@ if has_py2exe:
 
         def finalize_options(self):
             self.set_undefined_options(
-                "py2exe", ("dist_dir", "py2exe_dist_dir"))
+                    "py2exe", ("dist_dir", "py2exe_dist_dir"))
             if self.output_dir is None:
                 self.output_dir = ".\\output"
             if self.msi_name is None:
@@ -337,9 +342,9 @@ if has_py2exe:
             with open("ilastik.iss", "w") as fd:
                 if self.with_ilastik:
                     fd.write(
-                        'Name: "{group}\Ilastik"; '
-                        'Filename: "{app}\CellProfiler.exe"; '
-                        'Parameters:"--ilastik"; WorkingDir: "{app}"\n')
+                            'Name: "{group}\Ilastik"; '
+                            'Filename: "{app}\CellProfiler.exe"; '
+                            'Parameters:"--ilastik"; WorkingDir: "{app}"\n')
             if numpy.log(sys.maxsize) / numpy.log(2) > 32:
                 cell_profiler_iss = "CellProfiler64.iss"
             else:
@@ -351,10 +356,10 @@ if has_py2exe:
             compile_command = compile_command.replace("%1", cell_profiler_iss)
             compile_command = shlex.split(compile_command)
             self.make_file(
-                required_files,
-                os.path.join(self.output_dir, self.msi_name + ".msi"),
-                self.spawn, [compile_command],
-                "Compiling %s" % cell_profiler_iss)
+                    required_files,
+                    os.path.join(self.output_dir, self.msi_name + ".msi"),
+                    self.spawn, [compile_command],
+                    "Compiling %s" % cell_profiler_iss)
             os.remove("version.iss")
             os.remove("ilastik.iss")
 
@@ -363,8 +368,8 @@ if has_py2exe:
             """
             try:
                 key = _winreg.OpenKey(
-                    _winreg.HKEY_CLASSES_ROOT,
-                    "InnoSetupScriptFile\\shell\\Compile\\command")
+                        _winreg.HKEY_CLASSES_ROOT,
+                        "InnoSetupScriptFile\\shell\\Compile\\command")
                 result = _winreg.QueryValueEx(key, None)[0]
                 key.Close()
                 return result
@@ -388,75 +393,75 @@ if has_py2exe:
     cmdclass["msi"] = CellProfilerMSI
 
 setuptools.setup(
-    app=[
-        "CellProfiler.py"
-    ],
-    author="cellprofiler-dev",
-    author_email="cellprofiler-dev@broadinstitute.org",
-    classifiers=[
-        "Development Status :: 5 - Production/Stable",
-        "Intended Audience :: Science/Research",
-        "License :: OSI Approved :: BSD License",
-        "Operating System :: OS Independent",
-        "Programming Language :: C",
-        "Programming Language :: C++",
-        "Programming Language :: Cython",
-        "Programming Language :: Python :: 2",
-        "Programming Language :: Python :: 2.6",
-        "Programming Language :: Python :: 2.7",
-        "Topic :: Scientific/Engineering :: Bio-Informatics",
-        "Topic :: Scientific/Engineering :: Image Recognition",
-        "Topic :: Scientific/Engineering"
-    ],
-    cmdclass=cmdclass,
-    console=[
-        {
-            "icon_resources": [
-                (1, "artwork/CellProfilerIcon.ico")
-            ],
-            "script": "CellProfiler.py"
-        }
-    ],
-    description="",
-    entry_points={
-        "console_scripts": [
-            "cellprofiler=cellprofiler.__main__:main"
-        ]
-    },
-    include_package_data=True,
-    install_requires=[
-        "cellh5",
-        "centrosome>=1.0.4",
-        "h5py",
-        "inflect",
-        "javabridge",
-        "libtiff",
-        "matplotlib",
-        "MySQL-python",
-        "numpy",
-        "prokaryote",
-        "pytest",
-        "python-bioformats",
-        "pyzmq",
-        "scipy"
-    ],
-    keywords="",
-    license="BSD",
-    long_description="",
-    name="CellProfiler",
-    package_data={
-        "artwork": glob.glob(os.path.join("artwork", "*"))
-    },
-    packages=setuptools.find_packages(exclude=[
-        "*.tests",
-        "*.tests.*",
-        "tests.*",
-        "tests",
-        "tutorial"
-    ])+["artwork"],
-    setup_requires=[
-        "pytest"
-    ],
-    url="https://github.com/CellProfiler/CellProfiler",
-    version="2.2.0rc2"
+        app=[
+            "CellProfiler.py"
+        ],
+        author="cellprofiler-dev",
+        author_email="cellprofiler-dev@broadinstitute.org",
+        classifiers=[
+            "Development Status :: 5 - Production/Stable",
+            "Intended Audience :: Science/Research",
+            "License :: OSI Approved :: BSD License",
+            "Operating System :: OS Independent",
+            "Programming Language :: C",
+            "Programming Language :: C++",
+            "Programming Language :: Cython",
+            "Programming Language :: Python :: 2",
+            "Programming Language :: Python :: 2.6",
+            "Programming Language :: Python :: 2.7",
+            "Topic :: Scientific/Engineering :: Bio-Informatics",
+            "Topic :: Scientific/Engineering :: Image Recognition",
+            "Topic :: Scientific/Engineering"
+        ],
+        cmdclass=cmdclass,
+        console=[
+            {
+                "icon_resources": [
+                    (1, "artwork/CellProfilerIcon.ico")
+                ],
+                "script": "CellProfiler.py"
+            }
+        ],
+        description="",
+        entry_points={
+            "console_scripts": [
+                "cellprofiler=cellprofiler.__main__:main"
+            ]
+        },
+        include_package_data=True,
+        install_requires=[
+            "cellh5",
+            "centrosome>=1.0.4",
+            "h5py",
+            "inflect",
+            "javabridge",
+            "libtiff",
+            "matplotlib",
+            "MySQL-python",
+            "numpy",
+            "prokaryote",
+            "pytest",
+            "python-bioformats",
+            "pyzmq",
+            "scipy"
+        ],
+        keywords="",
+        license="BSD",
+        long_description="",
+        name="CellProfiler",
+        package_data={
+            "artwork": glob.glob(os.path.join("artwork", "*"))
+        },
+        packages=setuptools.find_packages(exclude=[
+            "*.tests",
+            "*.tests.*",
+            "tests.*",
+            "tests",
+            "tutorial"
+        ]) + ["artwork"],
+        setup_requires=[
+            "pytest"
+        ],
+        url="https://github.com/CellProfiler/CellProfiler",
+        version="2.4.0rc1"
 )

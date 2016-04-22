@@ -1,33 +1,35 @@
-'''sashwindow_tools.py - custom painting of sashwindows
+"""sashwindow_tools.py - custom painting of sashwindows
 
 This module takes over painting the sash window to make it a little more obvious
-'''
+"""
 
+import cellprofiler.preferences
 import wx
-from wx.aui import PyAuiDockArt
-
-from cellprofiler.preferences import get_background_color
+import wx.aui
 
 '''The size of the gripper the long way. This is about 5 dots worth.'''
 GRIPPER_SIZE = 32
 '''The size of the gripper the short way.'''
 GRIPPER_HEIGHT = 8
 
+
 def sw_bind_to_evt_paint(window):
-    '''Bind to wx.EVT_PAINT to take over the painting
+    """Bind to wx.EVT_PAINT to take over the painting
 
     window - a wx.SashWindow
-    '''
+    """
     window.Bind(wx.EVT_PAINT, on_sashwindow_paint)
+
 
 __art = None
 __pane_info = None
+
 
 def get_art_and_pane_info():
     global __art
     global __pane_info
     if __art is None:
-        __art = PyAuiDockArt()
+        __art = wx.aui.PyAuiDockArt()
         __pane_info = wx.aui.AuiPaneInfo()
         __pane_info.Gripper(True)
     return __art, __pane_info
@@ -39,15 +41,15 @@ def on_sashwindow_paint(event):
     assert isinstance(window, wx.SashWindow)
     dc = wx.PaintDC(window)
     dc.BeginDrawing()
-    dc.Background = wx.Brush(get_background_color())
+    dc.Background = wx.Brush(cellprofiler.preferences.get_background_color())
     dc.Clear()
     art, pane_info = get_art_and_pane_info()
     w, h = window.GetClientSizeTuple()
     for edge, orientation in (
-        (wx.SASH_LEFT, wx.VERTICAL),
-        (wx.SASH_TOP, wx.HORIZONTAL),
-        (wx.SASH_RIGHT, wx.VERTICAL),
-        (wx.SASH_BOTTOM, wx.HORIZONTAL)):
+            (wx.SASH_LEFT, wx.VERTICAL),
+            (wx.SASH_TOP, wx.HORIZONTAL),
+            (wx.SASH_RIGHT, wx.VERTICAL),
+            (wx.SASH_BOTTOM, wx.HORIZONTAL)):
         if window.GetSashVisible(edge):
             margin = window.GetEdgeMargin(edge)
             if orientation == wx.VERTICAL:
@@ -80,9 +82,11 @@ def on_sashwindow_paint(event):
             art.DrawGripper(dc, window, wx.Rect(gx, gy, gw, gh), pane_info)
     dc.EndDrawing()
 
+
 def sp_bind_to_evt_paint(window):
-    '''Take over painting the splitter of a splitter window'''
+    """Take over painting the splitter of a splitter window"""
     window.Bind(wx.EVT_PAINT, on_splitter_paint)
+
 
 def on_splitter_paint(event):
     assert isinstance(event, wx.PaintEvent)
@@ -90,7 +94,7 @@ def on_splitter_paint(event):
     assert isinstance(window, wx.SplitterWindow)
     dc = wx.PaintDC(window)
     dc.BeginDrawing()
-    dc.Background = wx.Brush(get_background_color())
+    dc.Background = wx.Brush(cellprofiler.preferences.get_background_color())
     dc.Clear()
     art, pane_info = get_art_and_pane_info()
     w, h = window.GetClientSizeTuple()
@@ -102,7 +106,7 @@ def on_splitter_paint(event):
         sh = h
         sw = margin
         gw = GRIPPER_HEIGHT
-        sx = pos - margin/2
+        sx = pos - margin / 2
         gx = pos - gw / 2
         gy = (h - GRIPPER_SIZE) / 2
         gh = GRIPPER_SIZE

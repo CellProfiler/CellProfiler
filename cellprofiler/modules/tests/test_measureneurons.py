@@ -31,6 +31,7 @@ OBJECT_NAME = "MyObject"
 EDGE_FILE = "my_edges.csv"
 VERTEX_FILE = "my_vertices.csv"
 
+
 class TestMeasureNeurons(unittest.TestCase):
     def setUp(self):
         self.temp_dir = tempfile.mkdtemp()
@@ -67,8 +68,10 @@ class TestMeasureNeurons(unittest.TestCase):
                 'i2vkE+L/tWkcWr3wAedvoYMT2E+42SxQidmXzlf0ZYXLtcLVmy7+d75Z81X9'
                 '2KX/ZXExut8qqz89frLd8vxv4SnR38Wz/0zepv3f3ukznzkA9yxhQQ==')
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 3)
@@ -89,8 +92,10 @@ MeasureNeurons:[module_num:1|svn_version:\'8401\'|variable_revision_number:1|sho
     Branchpoint image name\x3A:BPImg
 """
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
@@ -101,9 +106,9 @@ MeasureNeurons:[module_num:1|svn_version:\'8401\'|variable_revision_number:1|sho
         self.assertTrue(module.wants_branchpoint_image)
         self.assertEqual(module.branchpoint_image_name, "BPImg")
 
-    def make_workspace(self, labels, image, mask = None,
-                       intensity_image = None,
-                       wants_graph = False):
+    def make_workspace(self, labels, image, mask=None,
+                       intensity_image=None,
+                       wants_graph=False):
         m = cpmeas.Measurements()
         image_set_list = cpi.ImageSetList()
         m.add_measurement(cpmeas.IMAGE, cpmeas.GROUP_NUMBER, 1)
@@ -133,9 +138,11 @@ MeasureNeurons:[module_num:1|svn_version:\'8401\'|variable_revision_number:1|sho
         module.module_num = 1
 
         pipeline = cpp.Pipeline()
+
         def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
             self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.add_module(module)
         workspace = cpw.Workspace(pipeline, module, image_set, object_set,
@@ -143,8 +150,8 @@ MeasureNeurons:[module_num:1|svn_version:\'8401\'|variable_revision_number:1|sho
         return workspace, module
 
     def test_02_01_empty(self):
-        workspace, module = self.make_workspace(np.zeros((20,10), int),
-                                                np.zeros((20,10), bool))
+        workspace, module = self.make_workspace(np.zeros((20, 10), int),
+                                                np.zeros((20, 10), bool))
         #
         # Make sure module tells us about the measurements
         #
@@ -159,7 +166,7 @@ MeasureNeurons:[module_num:1|svn_version:\'8401\'|variable_revision_number:1|sho
             self.assertEqual(feature, expected_feature)
             coltypes[expected_feature] = \
                 cpmeas.COLTYPE_FLOAT if expected == M.F_TOTAL_NEURITE_LENGTH \
-                else cpmeas.COLTYPE_INTEGER
+                    else cpmeas.COLTYPE_INTEGER
         self.assertTrue(all([c[0] == OBJECT_NAME for c in columns]))
         self.assertTrue(all([c[2] == coltypes[c[1]] for c in columns]))
 
@@ -173,15 +180,14 @@ MeasureNeurons:[module_num:1|svn_version:\'8401\'|variable_revision_number:1|sho
         self.assertNotEqual(measurements[0], measurements[1])
         self.assertTrue(all([m in M.F_ALL for m in measurements]))
 
-        self.assertEqual(len(module.get_measurements(None,"Foo", M.C_NEURON)), 0)
-        self.assertEqual(len(module.get_measurements(None,OBJECT_NAME, "Foo")), 0)
+        self.assertEqual(len(module.get_measurements(None, "Foo", M.C_NEURON)), 0)
+        self.assertEqual(len(module.get_measurements(None, OBJECT_NAME, "Foo")), 0)
 
         for feature in M.F_ALL:
             images = module.get_measurement_images(None, OBJECT_NAME,
                                                    M.C_NEURON, feature)
             self.assertEqual(len(images), 1)
             self.assertEqual(images[0], IMAGE_NAME)
-
 
         module.run(workspace)
         m = workspace.measurements
@@ -193,10 +199,10 @@ MeasureNeurons:[module_num:1|svn_version:\'8401\'|variable_revision_number:1|sho
 
     def test_02_02_trunk(self):
         '''Create an image with one soma with one neurite'''
-        image = np.zeros((20,15), bool)
-        image[9,5:] = True
-        labels = np.zeros((20,15), int)
-        labels[6:12,2:8] = 1
+        image = np.zeros((20, 15), bool)
+        image[9, 5:] = True
+        labels = np.zeros((20, 15), int)
+        labels[6:12, 2:8] = 1
         workspace, module = self.make_workspace(labels, image)
         module.run(workspace)
         m = workspace.measurements
@@ -210,17 +216,17 @@ MeasureNeurons:[module_num:1|svn_version:\'8401\'|variable_revision_number:1|sho
 
     def test_02_03_trunks(self):
         '''Create an image with two soma and a neurite that goes through both'''
-        image = np.zeros((30,15),bool)
-        image[1:25,7] = True
-        labels = np.zeros((30,15),int)
-        labels[6:13,3:10] = 1
-        labels[18:26,3:10] = 2
+        image = np.zeros((30, 15), bool)
+        image[1:25, 7] = True
+        labels = np.zeros((30, 15), int)
+        labels[6:13, 3:10] = 1
+        labels[18:26, 3:10] = 2
         workspace, module = self.make_workspace(labels, image)
         module.run(workspace)
         m = workspace.measurements
         self.assertTrue(isinstance(m, cpmeas.Measurements))
-        for feature, expected in ((M.F_NUMBER_NON_TRUNK_BRANCHES, [0,0]),
-                                  (M.F_NUMBER_TRUNKS, [2,1])):
+        for feature, expected in ((M.F_NUMBER_NON_TRUNK_BRANCHES, [0, 0]),
+                                  (M.F_NUMBER_TRUNKS, [2, 1])):
             mname = "_".join((M.C_NEURON, feature, IMAGE_NAME))
             data = m.get_current_measurement(OBJECT_NAME, mname)
             self.assertEqual(len(data), 2)
@@ -229,12 +235,12 @@ MeasureNeurons:[module_num:1|svn_version:\'8401\'|variable_revision_number:1|sho
 
     def test_02_04_branch(self):
         '''Create an image with one soma and a neurite with a branch'''
-        image = np.zeros((30,15),bool)
-        image[6:15,7] = True
-        image[15+np.arange(3),7+np.arange(3)] = True
-        image[15+np.arange(3),7-np.arange(3)] = True
-        labels = np.zeros((30,15), int)
-        labels[1:8,3:10] = 1
+        image = np.zeros((30, 15), bool)
+        image[6:15, 7] = True
+        image[15 + np.arange(3), 7 + np.arange(3)] = True
+        image[15 + np.arange(3), 7 - np.arange(3)] = True
+        labels = np.zeros((30, 15), int)
+        labels[1:8, 3:10] = 1
         workspace, module = self.make_workspace(labels, image)
         module.run(workspace)
         m = workspace.measurements
@@ -251,12 +257,12 @@ MeasureNeurons:[module_num:1|svn_version:\'8401\'|variable_revision_number:1|sho
 
         Regression test of IMG-667
         '''
-        image = np.zeros((30,15),bool)
-        image[6:15,7] = True
-        image[15+np.arange(3),7+np.arange(3)] = True
-        image[15+np.arange(3),7-np.arange(3)] = True
-        labels = np.zeros((30,15), int)
-        labels[10,7] = 1
+        image = np.zeros((30, 15), bool)
+        image[6:15, 7] = True
+        image[15 + np.arange(3), 7 + np.arange(3)] = True
+        image[15 + np.arange(3), 7 - np.arange(3)] = True
+        labels = np.zeros((30, 15), int)
+        labels[10, 7] = 1
         workspace, module = self.make_workspace(labels, image)
         module.run(workspace)
         m = workspace.measurements
@@ -283,12 +289,12 @@ MeasureNeurons:[module_num:1|svn_version:\'8401\'|variable_revision_number:1|sho
 
             And there should be 3 trunks (or possibly two trunks and a branch)
         '''
-        image = np.zeros((30,15),bool)
-        image[6:15,7] = True
-        image[15+np.arange(3),7+np.arange(3)] = True
-        image[15+np.arange(3),7-np.arange(3)] = True
-        labels = np.zeros((30,15), int)
-        labels[13,7] = 1
+        image = np.zeros((30, 15), bool)
+        image[6:15, 7] = True
+        image[15 + np.arange(3), 7 + np.arange(3)] = True
+        image[15 + np.arange(3), 7 - np.arange(3)] = True
+        labels = np.zeros((30, 15), int)
+        labels[13, 7] = 1
         workspace, module = self.make_workspace(labels, image)
         module.run(workspace)
         m = workspace.measurements
@@ -307,17 +313,17 @@ MeasureNeurons:[module_num:1|svn_version:\'8401\'|variable_revision_number:1|sho
         Assume that image is primary, labels outside of image are ignored
         and image outside of labels is unlabeled.
         '''
-        image = np.zeros((40,15),bool)
-        image[1:25,7] = True
-        labels = np.zeros((30,20),int)
-        labels[6:13,3:10] = 1
-        labels[18:26,3:10] = 2
+        image = np.zeros((40, 15), bool)
+        image[1:25, 7] = True
+        labels = np.zeros((30, 20), int)
+        labels[6:13, 3:10] = 1
+        labels[18:26, 3:10] = 2
         workspace, module = self.make_workspace(labels, image)
         module.run(workspace)
         m = workspace.measurements
         self.assertTrue(isinstance(m, cpmeas.Measurements))
-        for feature, expected in ((M.F_NUMBER_NON_TRUNK_BRANCHES, [0,0]),
-                                  (M.F_NUMBER_TRUNKS, [2,1])):
+        for feature, expected in ((M.F_NUMBER_NON_TRUNK_BRANCHES, [0, 0]),
+                                  (M.F_NUMBER_TRUNKS, [2, 1])):
             mname = "_".join((M.C_NEURON, feature, IMAGE_NAME))
             data = m.get_current_measurement(OBJECT_NAME, mname)
             self.assertEqual(len(data), 2)
@@ -328,10 +334,10 @@ MeasureNeurons:[module_num:1|svn_version:\'8401\'|variable_revision_number:1|sho
         #
         # Soma ends at x=8, neurite ends at x=15. Length should be 7
         #
-        image = np.zeros((20,20), bool)
-        image[9,5:15] = True
-        labels = np.zeros((20,20), int)
-        labels[6:12,2:8] = 1
+        image = np.zeros((20, 20), bool)
+        image[9, 5:15] = True
+        labels = np.zeros((20, 20), int)
+        labels[6:12, 2:8] = 1
         workspace, module = self.make_workspace(labels, image)
         module.run(workspace)
         m = workspace.measurements
@@ -350,7 +356,7 @@ MeasureNeurons:[module_num:1|svn_version:\'8401\'|variable_revision_number:1|sho
         fd = open(path, "r")
         fields = fd.readline().strip().split(",")
         dt = np.dtype(dict(names=fields,
-                           formats = [type_dict[x] for x in fields]))
+                           formats=[type_dict[x] for x in fields]))
         pos = fd.tell()
         if len(fd.readline()) == 0:
             return np.recarray(0, dt)
@@ -360,9 +366,9 @@ MeasureNeurons:[module_num:1|svn_version:\'8401\'|variable_revision_number:1|sho
     def test_03_00_graph(self):
         '''Does graph neurons work on an empty image?'''
         workspace, module = self.make_workspace(
-            np.zeros((20,10), int),
-            np.zeros((20,10), bool),
-            intensity_image = np.zeros((20,10)), wants_graph = True)
+                np.zeros((20, 10), int),
+                np.zeros((20, 10), bool),
+                intensity_image=np.zeros((20, 10)), wants_graph=True)
         module.prepare_run(workspace)
         module.run(workspace)
         edge_graph = self.read_graph_file(EDGE_FILE)
@@ -379,7 +385,7 @@ MeasureNeurons:[module_num:1|svn_version:\'8401\'|variable_revision_number:1|sho
         #    . .
         #     .
         #     .
-        i,j = np.mgrid[-10:11,-10:11]
+        i, j = np.mgrid[-10:11, -10:11]
         skel = (i < 0) & (np.abs(i) == np.abs(j))
         skel[(i >= 0) & (j == 0)] = True
         #
@@ -388,9 +394,9 @@ MeasureNeurons:[module_num:1|svn_version:\'8401\'|variable_revision_number:1|sho
         labels = np.zeros(skel.shape, int)
         labels[(i > 8) & (np.abs(j) < 2)] = 1
         np.random.seed(31)
-        intensity = np.random.uniform(size = skel.shape)
+        intensity = np.random.uniform(size=skel.shape)
         workspace, module = self.make_workspace(
-            labels, skel, intensity_image = intensity, wants_graph = True)
+                labels, skel, intensity_image=intensity, wants_graph=True)
         module.prepare_run(workspace)
         module.run(workspace)
         edge_graph = self.read_graph_file(EDGE_FILE)
@@ -404,7 +410,7 @@ MeasureNeurons:[module_num:1|svn_version:\'8401\'|variable_revision_number:1|sho
             self.assertEqual(vertex_graph["i"][vidxx], 20)
         vidx = vidx[:-2]
 
-        expected_vertices = ((0,0), (0,20), (10,10), (17,10))
+        expected_vertices = ((0, 0), (0, 20), (10, 10), (17, 10))
         self.assertEqual(len(vidx), len(expected_vertices))
         for idx, v in enumerate(expected_vertices):
             vv = vertex_graph[vidx[idx]]
@@ -414,21 +420,21 @@ MeasureNeurons:[module_num:1|svn_version:\'8401\'|variable_revision_number:1|sho
         #
         # Get rid of edges to the bogus vertices
         #
-        for v in ("v1","v2"):
-            edge_graph = edge_graph[vertex_graph["i"][edge_graph[v]-1] != 20]
+        for v in ("v1", "v2"):
+            edge_graph = edge_graph[vertex_graph["i"][edge_graph[v] - 1] != 20]
 
-        eidx = np.lexsort((vertex_graph["j"][edge_graph["v1"]-1],
-                           vertex_graph["i"][edge_graph["v1"]-1],
-                           vertex_graph["j"][edge_graph["v2"]-1],
-                           vertex_graph["i"][edge_graph["v2"]-1]))
-        expected_edges = (((0,0),(10,10),11, np.sum(intensity[(i <= 0) & (j<=0) & skel])),
-                          ((0,20),(10,10),11, np.sum(intensity[(i <= 0) & (j>=0) & skel])),
-                          ((10,10),(17,10),8, np.sum(intensity[(i >= 0) & (i <= 7) & skel])))
+        eidx = np.lexsort((vertex_graph["j"][edge_graph["v1"] - 1],
+                           vertex_graph["i"][edge_graph["v1"] - 1],
+                           vertex_graph["j"][edge_graph["v2"] - 1],
+                           vertex_graph["i"][edge_graph["v2"] - 1]))
+        expected_edges = (((0, 0), (10, 10), 11, np.sum(intensity[(i <= 0) & (j <= 0) & skel])),
+                          ((0, 20), (10, 10), 11, np.sum(intensity[(i <= 0) & (j >= 0) & skel])),
+                          ((10, 10), (17, 10), 8, np.sum(intensity[(i >= 0) & (i <= 7) & skel])))
         for i, (v1, v2, length, total_intensity) in enumerate(expected_edges):
             ee = edge_graph[eidx[i]]
             for ve, v in ((v1, ee["v1"]), (v2, ee["v2"])):
-                self.assertEqual(ve[0], vertex_graph["i"][v-1])
-                self.assertEqual(ve[1], vertex_graph["j"][v-1])
+                self.assertEqual(ve[0], vertex_graph["i"][v - 1])
+                self.assertEqual(ve[1], vertex_graph["j"][v - 1])
             self.assertEqual(length, ee["length"])
             self.assertAlmostEqual(total_intensity, ee["total_intensity"], 4)
 
@@ -440,55 +446,55 @@ MeasureNeurons:[module_num:1|svn_version:\'8401\'|variable_revision_number:1|sho
         The "best edge wins" code kicks in when a branch touches another branch.
         '''
         skel = np.array(
-            (( 0,0,0,0,0,0,0,0,0,0,0,0,0,0 ),
-             ( 0,1,0,0,0,0,0,0,0,0,0,0,1,0 ),
-             ( 0,0,1,0,0,0,0,0,0,0,0,1,0,0 ),
-             ( 0,0,0,1,1,1,1,1,1,1,1,0,0,0 ),
-             ( 0,0,0,1,0,0,0,0,0,0,1,0,0,0 ),
-             ( 0,0,1,0,1,0,0,0,0,1,0,1,0,0 ),
-             ( 0,1,0,0,0,1,0,0,1,0,0,0,1,0 ),
-             ( 0,0,0,0,0,0,0,0,0,0,0,0,0,0 )), bool)
+                ((0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+                 (0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0),
+                 (0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0),
+                 (0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0),
+                 (0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0),
+                 (0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0),
+                 (0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0),
+                 (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)), bool)
 
         poi = np.array(
-            (( 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ),
-             ( 0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0 ),
-             ( 0, 0,-1, 0, 0, 0, 0, 0, 0, 0, 0,-2, 0, 0 ),
-             ( 0, 0, 0, 2, 1, 1, 1, 1, 1, 1, 4, 0, 0, 0 ),
-             ( 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0 ),
-             ( 0, 0,-3, 0,-4, 0, 0, 0, 0,-5, 0,-6, 0, 0 ),
-             ( 0, 8, 0, 0, 0, 9, 0, 0,10, 0, 0, 0,11, 0 ),
-             ( 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 )), int)
+                ((0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+                 (0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0),
+                 (0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, -2, 0, 0),
+                 (0, 0, 0, 2, 1, 1, 1, 1, 1, 1, 4, 0, 0, 0),
+                 (0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0),
+                 (0, 0, -3, 0, -4, 0, 0, 0, 0, -5, 0, -6, 0, 0),
+                 (0, 8, 0, 0, 0, 9, 0, 0, 10, 0, 0, 0, 11, 0),
+                 (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)), int)
 
         np.random.seed(32)
         image = np.random.uniform(size=skel.shape)
         labels = np.zeros(skel.shape, int)
-        labels[-2:,-2:] = 1 # attach the object to the lower left corner
+        labels[-2:, -2:] = 1  # attach the object to the lower left corner
 
         expected_edges = ((2, 3, 2, -10),
-                          (2, 4, 8,  1),
-                          (2, 5, 8,  1),
+                          (2, 4, 8, 1),
+                          (2, 5, 8, 1),
                           (2, 6, 3, -1),
-                          (3, 4, 8,  1),
-                          (3, 5, 8,  1),
+                          (3, 4, 8, 1),
+                          (3, 5, 8, 1),
                           (3, 8, 3, -3),
                           (3, 9, 3, -4),
                           (4, 5, 2, -10),
                           (4, 7, 3, -2),
-                          (5,10, 3, -5))
+                          (5, 10, 3, -5))
         workspace, module = self.make_workspace(
-            labels, skel, intensity_image = image, wants_graph = True)
+                labels, skel, intensity_image=image, wants_graph=True)
         module.prepare_run(workspace)
         module.run(workspace)
         vertex_graph = self.read_graph_file(VERTEX_FILE)
         edge_graph = self.read_graph_file(EDGE_FILE)
 
-        vertex_number = np.zeros(len(np.unique(poi[poi>=1])), int)
+        vertex_number = np.zeros(len(np.unique(poi[poi >= 1])), int)
         for v in vertex_graph:
-            p = poi[v["i"],v["j"]]
-            if (p > 1):
-                vertex_number[p-2] = v["vertex_number"]
+            p = poi[v["i"], v["j"]]
+            if p > 1:
+                vertex_number[p - 2] = v["vertex_number"]
         poi_number = np.zeros(len(vertex_graph) + 1, int)
-        poi_number[vertex_number] = np.arange(2,len(vertex_number)+2)
+        poi_number[vertex_number] = np.arange(2, len(vertex_number) + 2)
 
         found_edges = [False] * len(expected_edges)
         off = -np.min([x[3] for x in expected_edges])
@@ -503,9 +509,9 @@ MeasureNeurons:[module_num:1|svn_version:\'8401\'|variable_revision_number:1|sho
                 continue
             if poi1 > poi2:
                 poi2, poi1 = (poi1, poi2)
-            ee = [ (i, p1, p2, l, mid) for i, (p1, p2, l, mid)
-                   in enumerate(expected_edges)
-                   if p1 == poi1 and p2 == poi2]
+            ee = [(i, p1, p2, l, mid) for i, (p1, p2, l, mid)
+                  in enumerate(expected_edges)
+                  if p1 == poi1 and p2 == poi2]
             self.assertEqual(len(ee), 1)
             i, p1, p2, l, mid = ee[0]
             self.assertEqual(l, length)

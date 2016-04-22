@@ -35,37 +35,37 @@ S_SLOW = "Slow / circular"
 N_GRADIENT = "Line structures"
 N_TUBENESS = "Tubeness"
 
-class EnhanceOrSuppressFeatures(cpm.CPModule):
 
+class EnhanceOrSuppressFeatures(cpm.CPModule):
     module_name = 'EnhanceOrSuppressFeatures'
     category = "Image Processing"
     variable_revision_number = 5
 
     def create_settings(self):
         self.image_name = cps.ImageNameSubscriber(
-            'Select the input image',
-            cps.NONE,doc="""
+                'Select the input image',
+                cps.NONE, doc="""
             Select the image with features to be enhanced or suppressed.""")
 
         self.filtered_image_name = cps.ImageNameProvider(
-            'Name the output image',
-            'FilteredBlue',doc="""
+                'Name the output image',
+                'FilteredBlue', doc="""
             Enter a name for the feature-enhanced or suppressed image.""")
 
         self.method = cps.Choice(
-            'Select the operation',
-            [ ENHANCE, SUPPRESS], doc="""
+                'Select the operation',
+                [ENHANCE, SUPPRESS], doc="""
             Select whether you want to enhance or suppress the features you designated.
             <ul>
             <li><i>%(ENHANCE)s:</i> Produce an image whose intensity is largely
             composed of the features of interest.</li>
             <li <i>%(SUPPRESS)s:</i> Produce an image with the features largely
             removed.</li>
-            </ul>"""%globals())
+            </ul>""" % globals())
 
         self.enhance_method = cps.Choice(
-            'Feature type',
-            [E_SPECKLES, E_NEURITES, E_DARK_HOLES, E_CIRCLES, E_TEXTURE, E_DIC],doc="""
+                'Feature type',
+                [E_SPECKLES, E_NEURITES, E_DARK_HOLES, E_CIRCLES, E_TEXTURE, E_DIC], doc="""
             <i>(Used only if %(ENHANCE)s is selected)</i><br>
             This module can enhance three kinds of image intensity features:
             <ul>
@@ -115,21 +115,21 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
             by specifying the feature size.""" % globals())
 
         self.object_size = cps.Integer(
-            'Feature size', 10,2,doc="""
+                'Feature size', 10, 2, doc="""
             <i>(Used only if circles, speckles or neurites are selected, or if suppressing features)</i><br>
             Enter the diameter of the largest speckle, the width of the circle
             or the width of the neurites to be enhanced or suppressed, which
-            will be used to calculate an adequate filter size. %(HELP_ON_MEASURING_DISTANCES)s"""%globals())
+            will be used to calculate an adequate filter size. %(HELP_ON_MEASURING_DISTANCES)s""" % globals())
 
         self.hole_size = cps.IntegerRange(
-            'Range of hole sizes', value=(1,10),minval=1, doc="""
+                'Range of hole sizes', value=(1, 10), minval=1, doc="""
             <i>(Used only if %(E_DARK_HOLES)s is selected)</i><br>
             The range of hole sizes to be enhanced. The algorithm will
             identify only holes whose diameters fall between these two
-            values."""%globals())
+            values.""" % globals())
 
         self.smoothing = cps.Float(
-            'Smoothing scale', value = 2.0, minval = 0, doc = """
+                'Smoothing scale', value=2.0, minval=0, doc="""
             <i>(Used only for the %(E_TEXTURE)s, %(E_DIC)s or %(E_NEURITES)s methods)</i><br>
             <ul>
             <li><i>%(E_TEXTURE)s</i>: This is the scale of the texture features, roughly
@@ -154,7 +154,7 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
             is not recommended.""" % globals())
 
         self.angle = cps.Float(
-            'Shear angle', value = 0,doc = """
+                'Shear angle', value=0, doc="""
             <i>(Used only for the %(E_DIC)s method)</i><br>
             The shear angle is the direction of constant value for the
             shadows and highlights in a DIC image. The gradients in a DIC
@@ -163,24 +163,24 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
             to upper right and the highlights appear above the shadows,
             the shear angle is 45&deg;. If the shadows appear on top,
             the shear angle is 180&deg; + 45&deg; = 225&deg;.
-            """%globals())
+            """ % globals())
 
         self.decay = cps.Float(
-            'Decay', value = 0.95, minval = 0.1, maxval = 1,doc =
-            """<i>(Used only for the %(E_DIC)s method)</i><br>
-            The decay setting applies an exponential decay during the process
-            of integration by multiplying the accumulated sum by the decay
-            at each step. This lets the integration recover from accumulated
-            error during the course of the integration, but it also results
-            in diminished intensities in the middle of large objects.
-            Set the decay to a large value, on the order of 1 - 1/diameter
-            of your objects if the intensities decrease toward the middle.
-            Set the decay to a small value if there appears to be a bias
-            in the integration direction."""%globals())
+                'Decay', value=0.95, minval=0.1, maxval=1, doc=
+                """<i>(Used only for the %(E_DIC)s method)</i><br>
+                The decay setting applies an exponential decay during the process
+                of integration by multiplying the accumulated sum by the decay
+                at each step. This lets the integration recover from accumulated
+                error during the course of the integration, but it also results
+                in diminished intensities in the middle of large objects.
+                Set the decay to a large value, on the order of 1 - 1/diameter
+                of your objects if the intensities decrease toward the middle.
+                Set the decay to a small value if there appears to be a bias
+                in the integration direction.""" % globals())
 
         self.neurite_choice = cps.Choice(
-            "Enhancement method",
-            [N_TUBENESS, N_GRADIENT],doc = """
+                "Enhancement method",
+                [N_TUBENESS, N_GRADIENT], doc="""
             <i>(Used only for the %(E_NEURITES)s method)</i><br>
             Two methods can be used to enhance neurites:<br>
             <ul>
@@ -201,12 +201,12 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
             the morphological grayscale opening of the image; a black tophat filtering is the
             morphological grayscale closing of the image minus the image).
             The effect is to enhance lines whose width is the "feature size".</li>
-            </ul>"""%globals())
+            </ul>""" % globals())
 
         self.speckle_accuracy = cps.Choice(
-            "Speed and accuracy",
-            choices = [S_FAST, S_SLOW],
-            doc = """
+                "Speed and accuracy",
+                choices=[S_FAST, S_SLOW],
+                doc="""
             <i>(Used only for the %(E_SPECKLES)s method)</i><br>
             <i>%(E_SPECKLES)s</i> can use a fast or slow algorithm to find
             speckles.
@@ -220,17 +220,17 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
             """ % globals())
 
     def settings(self):
-        return [ self.image_name, self.filtered_image_name,
+        return [self.image_name, self.filtered_image_name,
                 self.method, self.object_size, self.enhance_method,
                 self.hole_size, self.smoothing, self.angle, self.decay,
                 self.neurite_choice, self.speckle_accuracy]
-
 
     def visible_settings(self):
         result = [self.image_name, self.filtered_image_name,
                   self.method]
         if self.method == ENHANCE:
             result += [self.enhance_method]
+            self.object_size.min_value = 2
             if self.enhance_method == E_DARK_HOLES:
                 result += [self.hole_size]
             elif self.enhance_method == E_TEXTURE:
@@ -245,6 +245,7 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
                     result += [self.smoothing]
             elif self.enhance_method == E_SPECKLES:
                 result += [self.object_size, self.speckle_accuracy]
+                self.object_size.min_value = 3
             else:
                 result += [self.object_size]
         else:
@@ -253,11 +254,11 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
 
     def run(self, workspace):
         image = workspace.image_set.get_image(self.image_name.value,
-                                              must_be_grayscale = True)
+                                              must_be_grayscale=True)
         #
         # Match against Matlab's strel('disk') operation.
         #
-        radius = (float(self.object_size.value)-1.0) / 2.0
+        radius = (float(self.object_size.value) - 1.0) / 2.0
         mask = image.mask if image.has_mask else None
         pixel_data = image.pixel_data
         if self.method == ENHANCE:
@@ -270,8 +271,8 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
                     #              = img - dilate(erode)
                     #              = img - median_filter(median_filter(0%) 100%)
                     result = pixel_data - median_filter(
-                        median_filter(pixel_data, mask, radius, percent = 0),
-                        mask, radius, percent = 100)
+                            median_filter(pixel_data, mask, radius, percent=0),
+                            mask, radius, percent=100)
                     if mask is not None:
                         result[~mask] = pixel_data[~mask]
             elif self.enhance_method == E_NEURITES:
@@ -290,8 +291,8 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
                 else:
                     sigma = self.smoothing.value
                     smoothed = gaussian_filter(pixel_data, sigma)
-                    L = hessian(smoothed, return_hessian = False,
-                                return_eigenvectors = False)
+                    L = hessian(smoothed, return_hessian=False,
+                                return_eigenvectors=False)
                     #
                     # The positive values are darker pixels with lighter
                     # neighbors. The original ImageJ code scales the result
@@ -304,8 +305,8 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
                 if image.has_mask:
                     result[~mask] = pixel_data[~mask]
             elif self.enhance_method == E_DARK_HOLES:
-                min_radius = max(1,int(self.hole_size.min / 2))
-                max_radius = int((self.hole_size.max+1)/2)
+                min_radius = max(1, int(self.hole_size.min / 2))
+                max_radius = int((self.hole_size.max + 1) / 2)
                 result = enhance_dark_holes(pixel_data, min_radius,
                                             max_radius, mask)
             elif self.enhance_method == E_CIRCLES:
@@ -313,14 +314,14 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
             elif self.enhance_method == E_TEXTURE:
                 result = variance_transform(pixel_data,
                                             self.smoothing.value,
-                                            mask = mask)
+                                            mask=mask)
             elif self.enhance_method == E_DIC:
                 result = line_integration(pixel_data,
                                           self.angle.value,
                                           self.decay.value,
                                           self.smoothing.value)
             else:
-                raise NotImplementedError("Unimplemented enhance method: %s"%
+                raise NotImplementedError("Unimplemented enhance method: %s" %
                                           self.enhance_method.value)
         elif self.method == SUPPRESS:
             if image.has_mask:
@@ -328,7 +329,7 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
             else:
                 result = opening(image.pixel_data, radius)
         else:
-            raise ValueError("Unknown filtering method: %s"%self.method)
+            raise ValueError("Unknown filtering method: %s" % self.method)
         result_image = cpi.Image(result, parent_image=image)
         workspace.image_set.add(self.filtered_image_name.value, result_image)
 
@@ -344,10 +345,10 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
                                         "Original: %s" % self.image_name.value)
         figure.subplot_imshow_grayscale(1, 0, result,
                                         "Filtered: %s" % self.filtered_image_name.value,
-                                        sharexy = figure.subplot(0, 0))
+                                        sharexy=figure.subplot(0, 0))
 
     def upgrade_settings(self, setting_values, variable_revision_number,
-                             module_name, from_matlab):
+                         module_name, from_matlab):
         '''Adjust setting values if they came from a previous revision
 
         setting_values - a sequence of strings representing the settings
@@ -377,7 +378,7 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
             #
             # V2 -> V3, added texture and DIC
             #
-            setting_values = setting_values + [ "2.0", "0", ".95"]
+            setting_values = setting_values + ["2.0", "0", ".95"]
             variable_revision_number = 3
         if not from_matlab and variable_revision_number == 3:
             setting_values = setting_values + [N_GRADIENT]
@@ -386,5 +387,6 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
             setting_values = setting_values + [S_SLOW]
             variable_revision_number = 5
         return setting_values, variable_revision_number, from_matlab
+
 
 EnhanceOrSuppressSpeckles = EnhanceOrSuppressFeatures

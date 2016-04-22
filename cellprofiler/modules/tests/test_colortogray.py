@@ -24,13 +24,14 @@ from cellprofiler.workspace import Workspace
 IMAGE_NAME = "image"
 OUTPUT_IMAGE_F = "outputimage%d"
 
+
 class TestColorToGray(unittest.TestCase):
     def get_my_image(self):
         """A color image with red in the upper left, green in the lower left and blue in the upper right"""
-        img = np.zeros((50,50,3))
-        img[0:25,0:25,0] = 1
-        img[0:25,25:50,1] = 1
-        img[25:50,0:25,2] = 1
+        img = np.zeros((50, 50, 3))
+        img[0:25, 0:25, 0] = 1
+        img[0:25, 25:50, 1] = 1
+        img[25:50, 0:25, 2] = 1
         return img
 
     def test_00_00_init(self):
@@ -38,7 +39,7 @@ class TestColorToGray(unittest.TestCase):
 
     def test_01_01_combine(self):
         img = self.get_my_image()
-        inj = cpm_inject.InjectImage("my_image",img)
+        inj = cpm_inject.InjectImage("my_image", img)
         inj.module_num = 1
         ctg = cpm_ctg.ColorToGray()
         ctg.module_num = 2
@@ -57,23 +58,23 @@ class TestColorToGray(unittest.TestCase):
         object_set = cpo.ObjectSet()
         image_set_list = cpi.ImageSetList()
         workspace = Workspace(pipeline, inj, None, None, measurements,
-                                  image_set_list, None)
+                              image_set_list, None)
         inj.prepare_run(workspace)
         inj.prepare_group(workspace, {}, [1])
         image_set = image_set_list.get_image_set(0)
-        inj.run(Workspace(pipeline,inj,image_set,object_set,measurements,None))
-        ctg.run(Workspace(pipeline,ctg,image_set,object_set,measurements,None))
+        inj.run(Workspace(pipeline, inj, image_set, object_set, measurements, None))
+        ctg.run(Workspace(pipeline, ctg, image_set, object_set, measurements, None))
         grayscale = image_set.get_image("my_grayscale")
         self.assertTrue(grayscale)
         img = grayscale.image
-        self.assertAlmostEqual(img[0,0],1.0/6.0)
-        self.assertAlmostEqual(img[0,25],1.0/3.0)
-        self.assertAlmostEqual(img[25,0],1.0/2.0)
-        self.assertAlmostEqual(img[25,25],0)
+        self.assertAlmostEqual(img[0, 0], 1.0 / 6.0)
+        self.assertAlmostEqual(img[0, 25], 1.0 / 3.0)
+        self.assertAlmostEqual(img[25, 0], 1.0 / 2.0)
+        self.assertAlmostEqual(img[25, 25], 0)
 
     def test_01_02_split_all(self):
         img = self.get_my_image()
-        inj = cpm_inject.InjectImage("my_image",img)
+        inj = cpm_inject.InjectImage("my_image", img)
         inj.module_num = 1
         ctg = cpm_ctg.ColorToGray()
         ctg.module_num = 2
@@ -82,9 +83,9 @@ class TestColorToGray(unittest.TestCase):
         ctg.use_red.value = True
         ctg.use_blue.value = True
         ctg.use_green.value = True
-        ctg.red_name.value   = "my_red"
+        ctg.red_name.value = "my_red"
         ctg.green_name.value = "my_green"
-        ctg.blue_name.value  = "my_blue"
+        ctg.blue_name.value = "my_blue"
         pipeline = cpp.Pipeline()
         pipeline.add_module(inj)
         pipeline.add_module(ctg)
@@ -98,33 +99,33 @@ class TestColorToGray(unittest.TestCase):
         inj.prepare_run(workspace)
         inj.prepare_group(workspace, {}, [1])
         image_set = image_set_list.get_image_set(0)
-        inj.run(Workspace(pipeline,inj,image_set,object_set,measurements,None))
-        ctg.run(Workspace(pipeline,ctg,image_set,object_set,measurements,None))
+        inj.run(Workspace(pipeline, inj, image_set, object_set, measurements, None))
+        ctg.run(Workspace(pipeline, ctg, image_set, object_set, measurements, None))
         red = image_set.get_image("my_red")
         self.assertTrue(red)
         img = red.image
-        self.assertAlmostEqual(img[0,0],1)
-        self.assertAlmostEqual(img[0,25],0)
-        self.assertAlmostEqual(img[25,0],0)
-        self.assertAlmostEqual(img[25,25],0)
+        self.assertAlmostEqual(img[0, 0], 1)
+        self.assertAlmostEqual(img[0, 25], 0)
+        self.assertAlmostEqual(img[25, 0], 0)
+        self.assertAlmostEqual(img[25, 25], 0)
         green = image_set.get_image("my_green")
         self.assertTrue(green)
         img = green.image
-        self.assertAlmostEqual(img[0,0],0)
-        self.assertAlmostEqual(img[0,25],1)
-        self.assertAlmostEqual(img[25,0],0)
-        self.assertAlmostEqual(img[25,25],0)
+        self.assertAlmostEqual(img[0, 0], 0)
+        self.assertAlmostEqual(img[0, 25], 1)
+        self.assertAlmostEqual(img[25, 0], 0)
+        self.assertAlmostEqual(img[25, 25], 0)
         blue = image_set.get_image("my_blue")
         self.assertTrue(blue)
         img = blue.image
-        self.assertAlmostEqual(img[0,0],0)
-        self.assertAlmostEqual(img[0,25],0)
-        self.assertAlmostEqual(img[25,0],1)
-        self.assertAlmostEqual(img[25,25],0)
+        self.assertAlmostEqual(img[0, 0], 0)
+        self.assertAlmostEqual(img[0, 25], 0)
+        self.assertAlmostEqual(img[25, 0], 1)
+        self.assertAlmostEqual(img[25, 25], 0)
 
     def test_01_03_combine_channels(self):
         np.random.seed(13)
-        image = np.random.uniform(size = (20, 10, 5))
+        image = np.random.uniform(size=(20, 10, 5))
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         image_set.add(IMAGE_NAME, cpi.Image(image))
@@ -138,18 +139,20 @@ class TestColorToGray(unittest.TestCase):
         module.add_channel()
         module.add_channel()
 
-        channel_indexes = np.array([2,0,3])
+        channel_indexes = np.array([2, 0, 3])
         factors = np.random.uniform(size=3)
         divisor = np.sum(factors)
-        expected = np.zeros((20,10))
+        expected = np.zeros((20, 10))
         for i, channel_index in enumerate(channel_indexes):
             module.channels[i].channel_choice.value = module.channel_names[channel_index]
             module.channels[i].contribution.value_text = "%.10f" % factors[i]
-            expected += image[:,:, channel_index] * factors[i] / divisor
+            expected += image[:, :, channel_index] * factors[i] / divisor
 
         pipeline = cpp.Pipeline()
+
         def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.add_module(module)
         workspace = Workspace(pipeline, module, image_set, cpo.ObjectSet(),
@@ -157,12 +160,12 @@ class TestColorToGray(unittest.TestCase):
         module.run(workspace)
         pixels = image_set.get_image(module.grayscale_name.value).pixel_data
         self.assertEqual(pixels.ndim, 2)
-        self.assertEqual(tuple(pixels.shape), (20,10))
+        self.assertEqual(tuple(pixels.shape), (20, 10))
         np.testing.assert_almost_equal(expected, pixels)
 
     def test_01_04_split_channels(self):
         np.random.seed(13)
-        image = np.random.uniform(size = (20, 10, 5))
+        image = np.random.uniform(size=(20, 10, 5))
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         image_set.add(IMAGE_NAME, cpi.Image(image))
@@ -175,14 +178,16 @@ class TestColorToGray(unittest.TestCase):
         module.add_channel()
         module.add_channel()
 
-        channel_indexes = np.array([1,4,2])
+        channel_indexes = np.array([1, 4, 2])
         for i, channel_index in enumerate(channel_indexes):
             module.channels[i].channel_choice.value = module.channel_names[channel_index]
             module.channels[i].image_name.value = OUTPUT_IMAGE_F % i
 
         pipeline = cpp.Pipeline()
+
         def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.add_module(module)
         workspace = Workspace(pipeline, module, image_set, cpo.ObjectSet(),
@@ -191,8 +196,8 @@ class TestColorToGray(unittest.TestCase):
         for i, channel_index in enumerate(channel_indexes):
             pixels = image_set.get_image(module.channels[i].image_name.value).pixel_data
             self.assertEqual(pixels.ndim, 2)
-            self.assertEqual(tuple(pixels.shape), (20,10))
-            np.testing.assert_almost_equal(image[:,:,channel_index], pixels)
+            self.assertEqual(tuple(pixels.shape), (20, 10))
+            np.testing.assert_almost_equal(image[:, :, channel_index], pixels)
 
     def test_2_1_load_matlab_combine(self):
         data = 'TUFUTEFCIDUuMCBNQVQtZmlsZSwgUGxhdGZvcm06IFBDV0lOLCBDcmVhdGVkIG9uOiBNb24gSmFuIDEyIDA5OjE3OjA0IDIwMDkgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAABSU0PAAAAdAEAAHiczZS9TsMwEIAvTdpSKlURA2JkZONvYUR0QAwU1EYVq6teI0uJHeUHUZ6Ax+rMU2G3TupEoUlDB05ynDvfd2efdR4AwFcXoCPmIzFasJG20g1tSH2CcUyZG7XBgjNlX4kxJSElMw+nxEswgkxS+xNbcGcZZEvPfJ54OCK+7ixklPgzDKOXRQqq5Vf6gd6EfiLkJXUb4zuNKGeKV/GL1iwvjwt5B/JjbutglNThRLNL/zvY+lsl/nocW+kORvFjSJZ1+G6Bl/qQ+zPKcJ3/qoI3c7wJ7JIcZN9VeY0cb8C1qte+3E1D7rYm17Q+Zfci6zPG+Zq/r+B7Bb6X1ReRKftf7ulBtOBAi7PvvDJ290Ef8n1Qdd7jwj6lTn3iohvyJPh9H1Vx7UJcOxf3nLI5BnXOe6g8/y1OALvvUe+bOnn1e7eVPuQeDx0un4Ysjt53nYq8LfHXL+Gavit18hkNOEuQ36cb7m3Pul7s8E8ltf8AGWV9Kw=='
@@ -273,8 +278,10 @@ ColorToGray:[module_num:1|svn_version:\'10300\'|variable_revision_number:2|show_
     Image name\x3A:BlueChannel3
 """
         pipeline = cpp.Pipeline()
+
         def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)

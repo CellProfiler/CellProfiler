@@ -28,6 +28,7 @@ import cellprofiler.modules.resize as R
 INPUT_IMAGE_NAME = 'input'
 OUTPUT_IMAGE_NAME = 'output'
 
+
 class TestResize(unittest.TestCase):
     def test_01_01_load_matlab(self):
         data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
@@ -47,8 +48,10 @@ class TestResize(unittest.TestCase):
                 'Wc9nf35N4glbbZkdTYt/xeV4ySTa/9Nf21b/8U6mVkl2QfZ1g57Ic/9X/V9r'
                 '9ZHH9/KTylV/viz5//x3PP/0D/+5L6/t38v5+PKmVY//M5ac/+oEAKjKSvo=')
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 4)
@@ -94,11 +97,13 @@ class TestResize(unittest.TestCase):
                 'wSZXudnrRtdrMcJ/MO80/2Xnb6+zXF+/7tc74/DNpH7nexiDy7iVErgfYLRx'
                 'XbnF3sttXPtf+3UFIg==')
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
-        self.assertEqual(len(pipeline.modules()),2)
+        self.assertEqual(len(pipeline.modules()), 2)
         module = pipeline.modules()[1]
         self.assertEqual(module.image_name, 'DNA')
         self.assertEqual(module.resized_image_name, 'ResizedDNA')
@@ -134,11 +139,13 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
     Additional image count:0
 """
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
-        self.assertEqual(len(pipeline.modules()),2)
+        self.assertEqual(len(pipeline.modules()), 2)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, R.Resize))
         self.assertEqual(module.image_name, "DNA")
@@ -158,7 +165,7 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         self.assertEqual(module.interpolation, R.I_BICUBIC)
 
     def make_workspace(self, image, size_method, interpolation,
-                       mask = None, cropping = None):
+                       mask=None, cropping=None):
         module = R.Resize()
         module.image_name.value = INPUT_IMAGE_NAME
         module.resized_image_name.value = OUTPUT_IMAGE_NAME
@@ -178,138 +185,138 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         return workspace, module
 
     def test_02_01_rescale_triple_color(self):
-        i,j = np.mgrid[0:10,0:10]
-        image = np.zeros((10,10,3))
-        image[:,:,0] = i
-        image[:,:,1] = j
-        i,j = (np.mgrid[0:30,0:30].astype(float) * 9.0 / 29.0 + .5).astype(int)
-        expected = np.zeros((30,30,3))
-        expected[:,:,0] = i
-        expected[:,:,1] = j
+        i, j = np.mgrid[0:10, 0:10]
+        image = np.zeros((10, 10, 3))
+        image[:, :, 0] = i
+        image[:, :, 1] = j
+        i, j = (np.mgrid[0:30, 0:30].astype(float) * 9.0 / 29.0 + .5).astype(int)
+        expected = np.zeros((30, 30, 3))
+        expected[:, :, 0] = i
+        expected[:, :, 1] = j
         workspace, module = self.make_workspace(image, R.R_BY_FACTOR,
                                                 R.I_NEAREST_NEIGHBOR)
         module.resizing_factor.value = 3.0
         module.run(workspace)
         result_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         result = result_image.pixel_data
-        self.assertTrue(np.all(np.abs(result-expected) <=
+        self.assertTrue(np.all(np.abs(result - expected) <=
                                np.finfo(float).eps))
         self.assertTrue(result_image.parent_image is
                         workspace.image_set.get_image(INPUT_IMAGE_NAME))
 
     def test_02_02_rescale_triple_bw(self):
-        i,j = np.mgrid[0:10,0:10]
-        image =  i.astype(float)
-        i,j = (np.mgrid[0:30,0:30].astype(float) * 9.0 / 29.0 + .5).astype(int)
-        expected =  i
+        i, j = np.mgrid[0:10, 0:10]
+        image = i.astype(float)
+        i, j = (np.mgrid[0:30, 0:30].astype(float) * 9.0 / 29.0 + .5).astype(int)
+        expected = i
         workspace, module = self.make_workspace(image, R.R_BY_FACTOR,
                                                 R.I_NEAREST_NEIGHBOR)
         module.resizing_factor.value = 3.0
         module.run(workspace)
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
-        self.assertTrue(np.all(np.abs(result-expected) <=
+        self.assertTrue(np.all(np.abs(result - expected) <=
                                np.finfo(float).eps))
 
     def test_02_03_third(self):
-        i,j = np.mgrid[0:30,0:30]
+        i, j = np.mgrid[0:30, 0:30]
         image = i.astype(float)
-        expected = (np.mgrid[0:10,0:10][0].astype(float) * 29.0/9.0+.5).astype(int)
+        expected = (np.mgrid[0:10, 0:10][0].astype(float) * 29.0 / 9.0 + .5).astype(int)
         workspace, module = self.make_workspace(image, R.R_BY_FACTOR,
                                                 R.I_NEAREST_NEIGHBOR)
-        module.resizing_factor.value = 1.0/3.0
+        module.resizing_factor.value = 1.0 / 3.0
         module.run(workspace)
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
-        self.assertTrue(np.all(np.abs(result-expected) <=
+        self.assertTrue(np.all(np.abs(result - expected) <=
                                np.finfo(float).eps))
 
     def test_03_01_bilinear(self):
-        i,j = np.mgrid[0:10,0:10]
+        i, j = np.mgrid[0:10, 0:10]
         image = i.astype(np.float32)
-        expected = np.mgrid[0:30,0:30][0].astype(np.float32) * 9.0/29.0
+        expected = np.mgrid[0:30, 0:30][0].astype(np.float32) * 9.0 / 29.0
         workspace, module = self.make_workspace(image, R.R_BY_FACTOR,
                                                 R.I_BILINEAR)
         module.resizing_factor.value = 3.0
         module.run(workspace)
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
-        self.assertTrue(np.all(np.abs(result-expected) <=
+        self.assertTrue(np.all(np.abs(result - expected) <=
                                np.sqrt(np.finfo(float).eps)))
 
     def test_03_02_bicubic(self):
         '''Test bicubic interpolation'''
-        i,j = np.mgrid[0:10,0:10]
+        i, j = np.mgrid[0:10, 0:10]
         image = i.astype(float) ** 2
         # Bicubic here should be betweeen nearest neighbor and bilinear
-        i,j = np.mgrid[0:19,0:19]
-        low_bound = (i/2)**2
-        upper_bound = (i.astype(float) /2)**2
+        i, j = np.mgrid[0:19, 0:19]
+        low_bound = (i / 2) ** 2
+        upper_bound = (i.astype(float) / 2) ** 2
         odd_mask = i % 2 == 1
-        upper_bound[odd_mask] = (upper_bound[np.maximum(i-1,0), j] +
-                                 upper_bound[np.minimum(i+1,18),j])[odd_mask]/2
+        upper_bound[odd_mask] = (upper_bound[np.maximum(i - 1, 0), j] +
+                                 upper_bound[np.minimum(i + 1, 18), j])[odd_mask] / 2
         workspace, module = self.make_workspace(image, R.R_BY_FACTOR,
                                                 R.I_BICUBIC)
-        module.resizing_factor.value = 19.0/10.0
+        module.resizing_factor.value = 19.0 / 10.0
         module.run(workspace)
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
         #
         # Need to account for edge effects at the top - a row of zeros
         # is used there
         #
-        self.assertTrue(np.all(result[i<17] >= low_bound[i<17] -
+        self.assertTrue(np.all(result[i < 17] >= low_bound[i < 17] -
                                np.sqrt(np.finfo(float).eps)))
-        self.assertTrue(np.all(result[i<17] <= upper_bound[i<17] +
+        self.assertTrue(np.all(result[i < 17] <= upper_bound[i < 17] +
                                np.sqrt(np.finfo(float).eps)))
 
     def test_04_01_reshape_double(self):
         '''Make an image twice as large by changing the shape'''
-        i,j = np.mgrid[0:10,0:10].astype(float)
-        image = i+j*10
-        i,j = np.mgrid[0:19,0:19].astype(float) / 2.0
-        expected =  i+j*10
+        i, j = np.mgrid[0:10, 0:10].astype(float)
+        image = i + j * 10
+        i, j = np.mgrid[0:19, 0:19].astype(float) / 2.0
+        expected = i + j * 10
         workspace, module = self.make_workspace(image, R.R_TO_SIZE,
                                                 R.I_BILINEAR)
         module.specific_width.value = 19
         module.specific_height.value = 19
         module.run(workspace)
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
-        self.assertTrue(np.all(np.abs(result-expected) <=
+        self.assertTrue(np.all(np.abs(result - expected) <=
                                np.sqrt(np.finfo(float).eps)))
 
     def test_04_02_reshape_half(self):
         '''Make an image half as large by changing the shape'''
-        i,j = np.mgrid[0:19,0:19].astype(float) / 2.0
-        image = i+j*10
-        i,j = np.mgrid[0:10,0:10].astype(float)
-        expected =  i+j*10
+        i, j = np.mgrid[0:19, 0:19].astype(float) / 2.0
+        image = i + j * 10
+        i, j = np.mgrid[0:10, 0:10].astype(float)
+        expected = i + j * 10
         workspace, module = self.make_workspace(image, R.R_TO_SIZE,
                                                 R.I_BILINEAR)
         module.specific_width.value = 10
         module.specific_height.value = 10
         module.run(workspace)
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
-        self.assertTrue(np.all(np.abs(result-expected) <=
+        self.assertTrue(np.all(np.abs(result - expected) <=
                                np.sqrt(np.finfo(float).eps)))
 
     def test_04_03_reshape_half_and_double(self):
         '''Make an image twice as large in one dimension and half in other'''
-        i,j = np.mgrid[0:10,0:19].astype(float)
-        image = i+j*5.0
-        i,j = np.mgrid[0:19,0:10].astype(float)
-        expected =  i*.5+j*10
+        i, j = np.mgrid[0:10, 0:19].astype(float)
+        image = i + j * 5.0
+        i, j = np.mgrid[0:19, 0:10].astype(float)
+        expected = i * .5 + j * 10
         workspace, module = self.make_workspace(image, R.R_TO_SIZE,
                                                 R.I_BILINEAR)
         module.specific_width.value = 10
         module.specific_height.value = 19
         module.run(workspace)
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
-        self.assertTrue(np.all(np.abs(result-expected) <=
+        self.assertTrue(np.all(np.abs(result - expected) <=
                                np.sqrt(np.finfo(float).eps)))
 
     def test_04_04_reshape_using_another_images_dimensions(self):
         ''''Resize to another image's dimensions'''
-        i,j = np.mgrid[0:10,0:19].astype(float)
-        image = i+j
-        i,j = np.mgrid[0:19,0:10].astype(float)
-        expected =  i+j
+        i, j = np.mgrid[0:10, 0:19].astype(float)
+        image = i + j
+        i, j = np.mgrid[0:19, 0:10].astype(float)
+        expected = i + j
         workspace, module = self.make_workspace(image, R.R_TO_SIZE,
                                                 R.I_BILINEAR)
         module.use_manual_or_image.value = R.C_IMAGE
@@ -330,7 +337,7 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         cropping = np.zeros((30, 40), bool)
         cropping[10:20, 10:30] = True
         workspace, module = self.make_workspace(
-            image, R.R_BY_FACTOR, R.I_BILINEAR, mask, cropping)
+                image, R.R_BY_FACTOR, R.I_BILINEAR, mask, cropping)
         assert isinstance(module, R.Resize)
         module.resizing_factor.value = .5
         module.run(workspace)
@@ -351,7 +358,7 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         cropping = np.zeros((30, 40), bool)
         cropping[10:20, 10:30] = True
         workspace, module = self.make_workspace(
-            image, R.R_BY_FACTOR, R.I_BILINEAR, mask, cropping)
+                image, R.R_BY_FACTOR, R.I_BILINEAR, mask, cropping)
         assert isinstance(module, R.Resize)
         module.resizing_factor.value = 2
         module.run(workspace)
@@ -365,7 +372,7 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         # Regression test of issue #1416
         image = np.zeros((20, 22, 3))
         workspace, module = self.make_workspace(
-            image, R.R_BY_FACTOR, R.I_BILINEAR)
+                image, R.R_BY_FACTOR, R.I_BILINEAR)
         assert isinstance(module, R.Resize)
         module.resizing_factor.value = .5
         module.run(workspace)
@@ -377,7 +384,7 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         image = np.zeros((20, 22, 3))
         tgt_image = np.zeros((5, 11))
         workspace, module = self.make_workspace(
-            image, R.R_TO_SIZE, R.I_BILINEAR)
+                image, R.R_TO_SIZE, R.I_BILINEAR)
         assert isinstance(module, R.Resize)
         module.use_manual_or_image.value = R.C_IMAGE
         module.specific_image.value = 'AnotherImage'
@@ -392,7 +399,7 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         image = np.zeros((20, 22, 3))
         tgt_image = np.zeros((10, 11, 3))
         workspace, module = self.make_workspace(
-            image, R.R_TO_SIZE, R.I_BILINEAR)
+                image, R.R_TO_SIZE, R.I_BILINEAR)
         assert isinstance(module, R.Resize)
         module.use_manual_or_image.value = R.C_IMAGE
         module.specific_image.value = 'AnotherImage'

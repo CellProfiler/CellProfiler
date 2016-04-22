@@ -1,33 +1,33 @@
 """ cpfigure_tools.py - cpfigure tools that do not depend on WX
 """
-from cStringIO import StringIO
 
+import centrosome.cpmorphology
+import cStringIO
 import matplotlib
-import numpy as np
+import numpy
 import scipy
-from centrosome.cpmorphology import distance_color_labels
 
 
 def figure_to_image(figure, *args, **kwargs):
-    '''Convert a figure to a numpy array'''
+    """Convert a figure to a numpy array"""
     #
     # Save the figure as a .PNG and then load it using scipy.misc.imread
     #
-    fd = StringIO()
+    fd = cStringIO.StringIO()
     kwargs = kwargs.copy()
     kwargs["format"] = 'png'
     figure.savefig(fd, *args, **kwargs)
     fd.seek(0)
     image = scipy.misc.imread(fd)
-    return image[:,:,:3]
+    return image[:, :, :3]
 
 
 def only_display_image(figure, shape):
-    '''Set up a figure so that the image occupies the entire figure
+    """Set up a figure so that the image occupies the entire figure
 
     figure - a matplotlib figure
     shape - i/j size of the image being displayed
-    '''
+    """
     assert isinstance(figure, matplotlib.figure.Figure)
     figure.set_frameon(False)
     ax = figure.axes[0]
@@ -39,11 +39,11 @@ def only_display_image(figure, shape):
     figure.set_figheight(height)
     figure.set_figwidth(width)
     bbox = matplotlib.transforms.Bbox(
-        np.array([[0.0, 0.0], [width, height]]))
+            numpy.array([[0.0, 0.0], [width, height]]))
     transform = matplotlib.transforms.Affine2D(
-        np.array([[dpi, 0, 0],
-                  [0, dpi, 0],
-                  [0,   0, 1]]))
+            numpy.array([[dpi, 0, 0],
+                         [0, dpi, 0],
+                         [0, 0, 1]]))
     figure.bbox = matplotlib.transforms.TransformedBbox(bbox, transform)
 
 
@@ -55,4 +55,4 @@ def renumber_labels_for_display(labels):
     so a random numbering has more color-distance between labels than a
     straightforward one
     """
-    return distance_color_labels(labels)
+    return centrosome.cpmorphology.distance_color_labels(labels)

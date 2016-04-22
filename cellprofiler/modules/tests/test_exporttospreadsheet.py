@@ -24,16 +24,16 @@ import cellprofiler.workspace as cpw
 import cellprofiler.modules.exporttospreadsheet as E
 from cellprofiler.modules import identifyprimaryobjects
 from cellprofiler.modules.identify import \
-     C_COUNT, M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
+    C_COUNT, M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
 from cellprofiler.modules.tests import \
-     example_images_directory, maybe_download_sbs
+    example_images_directory, maybe_download_sbs
 
 OBJECTS_NAME = "MyObjects"
 IMG_MEAS = "my_image_measurement"
 OBJ_MEAS = "my_object_measurement"
 
-class TestExportToSpreadsheet(unittest.TestCase):
 
+class TestExportToSpreadsheet(unittest.TestCase):
     def setUp(self):
         self.output_dir = tempfile.mkdtemp()
 
@@ -66,8 +66,10 @@ class TestExportToSpreadsheet(unittest.TestCase):
                 'iP1qaxBocVrI/YXocn/fa0tE3Y9a9dxfXqz4cXll9Pnj1dO9DK+fTl32/fSn'
                 'b3v+blP9My9h19+bP4/dm7zjm3zsyo+3AAVEF7c=')
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 2)
@@ -105,8 +107,10 @@ class TestExportToSpreadsheet(unittest.TestCase):
                 'BD/xuK/40q17P44cZ3V8o3H/58k0/nI5LfAX/w/nZgouF+MkisD/DSbLr/sj'
                 '2od9vMr2k8ZN0zTwLyPBmvk=')
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 3)
@@ -133,8 +137,10 @@ class TestExportToSpreadsheet(unittest.TestCase):
                 '5CnH8uS4jyxrTDB/v4lkzx8ZV0LTMSaUYjRl11J9jjRc5yieTyHBJxyXyHal'
                 'lDrE81/W5e10Ez8xwa+Yosv4fxBcd7tm3Q9W8EECf918+P4doGKH5Q==')
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 1)
@@ -172,13 +178,15 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'8947\'|variable_revision_number:
     Name the data file (not including the output filename, if prepending was requested above):Nuclei.csv
 """
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module,E.ExportToSpreadsheet))
+        self.assertTrue(isinstance(module, E.ExportToSpreadsheet))
         self.assertEqual(module.delimiter_char, "\t")
         self.assertFalse(module.add_metadata)
         self.assertFalse(module.excel_limits)
@@ -241,13 +249,15 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'9144\'|variable_revision_number:
     Use the object name for the file name?:Yes
 """
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module,E.ExportToSpreadsheet))
+        self.assertTrue(isinstance(module, E.ExportToSpreadsheet))
         self.assertEqual(module.delimiter, E.DELIMITER_COMMA)
         self.assertFalse(module.add_metadata)
         self.assertFalse(module.excel_limits)
@@ -259,8 +269,8 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'9144\'|variable_revision_number:
                          E.DEFAULT_OUTPUT_FOLDER_NAME)
         self.assertFalse(module.wants_everything)
         for group, object_name in zip(module.object_groups,
-                                      ("Image","Nuclei","PropCells",
-                                       "DistanceCells","DistCytoplasm",
+                                      ("Image", "Nuclei", "PropCells",
+                                       "DistanceCells", "DistCytoplasm",
                                        "PropCytoplasm")):
             self.assertEqual(group.name, object_name)
             self.assertEqual(group.file_name, "%s.csv" % object_name)
@@ -308,13 +318,15 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'9434\'|variable_revision_number:
     Use the object name for the file name?:No
 '''
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module,E.ExportToSpreadsheet))
+        self.assertTrue(isinstance(module, E.ExportToSpreadsheet))
         self.assertEqual(module.delimiter, E.DELIMITER_TAB)
         self.assertEqual(module.directory.dir_choice,
                          E.DEFAULT_OUTPUT_FOLDER_NAME)
@@ -327,11 +339,11 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'9434\'|variable_revision_number:
                              for x in module.columns.selections]))
         self.assertEqual(len(module.columns.selections), 7)
         features = set([module.columns.get_measurement_feature(x)
-                             for x in module.columns.selections])
+                        for x in module.columns.selections])
         for feature in (
-            "FileName_rawGFP", "FileName_IllumGFP", "FileName_IllumDNA",
-            "FileName_rawDNA", "Metadata_SBS_Doses", "Metadata_Well",
-            "Metadata_Controls"):
+                "FileName_rawGFP", "FileName_IllumGFP", "FileName_IllumDNA",
+                "FileName_rawDNA", "Metadata_SBS_Doses", "Metadata_Well",
+                "Metadata_Controls"):
             self.assertTrue(feature in features)
         self.assertFalse(module.wants_aggregate_means)
         self.assertTrue(module.wants_aggregate_medians)
@@ -339,11 +351,11 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'9434\'|variable_revision_number:
         self.assertFalse(module.wants_everything)
         self.assertEqual(len(module.object_groups), 5)
         for i, (object_name, file_name) in enumerate((
-            ( "Image", "Image.csv"),
-            ( "Nuclei", "Nuclei.csv"),
-            ( "PropCells", "PropCells.csv"),
-            ( "DistanceCells", "DistanceCells.csv"),
-            ( "DistCytoplasm", "DistCytoplasm.csv"))):
+                ("Image", "Image.csv"),
+                ("Nuclei", "Nuclei.csv"),
+                ("PropCells", "PropCells.csv"),
+                ("DistanceCells", "DistanceCells.csv"),
+                ("DistCytoplasm", "DistCytoplasm.csv"))):
             group = module.object_groups[i]
             self.assertFalse(group.previous_file)
             self.assertFalse(group.wants_automatic_file_name)
@@ -457,13 +469,15 @@ ExportToSpreadsheet:[module_num:5|svn_version:\'9434\'|variable_revision_number:
     Use the object name for the file name?:Yes
 '''
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
         self.assertEqual(len(pipeline.modules()), 5)
         module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module,E.ExportToSpreadsheet))
+        self.assertTrue(isinstance(module, E.ExportToSpreadsheet))
         self.assertEqual(module.delimiter, E.DELIMITER_TAB)
         self.assertEqual(module.directory.dir_choice,
                          E.DEFAULT_OUTPUT_FOLDER_NAME)
@@ -476,11 +490,11 @@ ExportToSpreadsheet:[module_num:5|svn_version:\'9434\'|variable_revision_number:
                              for x in module.columns.selections]))
         self.assertEqual(len(module.columns.selections), 7)
         features = set([module.columns.get_measurement_feature(x)
-                             for x in module.columns.selections])
+                        for x in module.columns.selections])
         for feature in (
-            "FileName_rawGFP", "FileName_IllumGFP", "FileName_IllumDNA",
-            "FileName_rawDNA", "Metadata_SBS_Doses", "Metadata_Well",
-            "Metadata_Controls"):
+                "FileName_rawGFP", "FileName_IllumGFP", "FileName_IllumDNA",
+                "FileName_rawDNA", "Metadata_SBS_Doses", "Metadata_Well",
+                "Metadata_Controls"):
             self.assertTrue(feature in features)
         self.assertFalse(module.wants_aggregate_means)
         self.assertTrue(module.wants_aggregate_medians)
@@ -488,11 +502,11 @@ ExportToSpreadsheet:[module_num:5|svn_version:\'9434\'|variable_revision_number:
         self.assertFalse(module.wants_everything)
         self.assertEqual(len(module.object_groups), 5)
         for i, (object_name, file_name) in enumerate((
-            ( "Image", "Image.csv"),
-            ( "Nuclei", "Nuclei.csv"),
-            ( "PropCells", "PropCells.csv"),
-            ( "DistanceCells", "DistanceCells.csv"),
-            ( "DistCytoplasm", "DistCytoplasm.csv"))):
+                ("Image", "Image.csv"),
+                ("Nuclei", "Nuclei.csv"),
+                ("PropCells", "PropCells.csv"),
+                ("DistanceCells", "DistanceCells.csv"),
+                ("DistCytoplasm", "DistCytoplasm.csv"))):
             group = module.object_groups[i]
             self.assertFalse(group.previous_file)
             self.assertFalse(group.wants_automatic_file_name)
@@ -500,7 +514,7 @@ ExportToSpreadsheet:[module_num:5|svn_version:\'9434\'|variable_revision_number:
             self.assertEqual(group.file_name, file_name)
 
         module = pipeline.modules()[1]
-        self.assertTrue(isinstance(module,E.ExportToSpreadsheet))
+        self.assertTrue(isinstance(module, E.ExportToSpreadsheet))
         self.assertEqual(module.delimiter, E.DELIMITER_COMMA)
         self.assertEqual(module.directory.dir_choice,
                          E.DEFAULT_INPUT_FOLDER_NAME)
@@ -521,7 +535,7 @@ ExportToSpreadsheet:[module_num:5|svn_version:\'9434\'|variable_revision_number:
                                       (E.DEFAULT_INPUT_SUBFOLDER_NAME,
                                        E.DEFAULT_OUTPUT_SUBFOLDER_NAME,
                                        E.ABSOLUTE_FOLDER_NAME)):
-            self.assertTrue(isinstance(module,E.ExportToSpreadsheet))
+            self.assertTrue(isinstance(module, E.ExportToSpreadsheet))
             self.assertEqual(module.directory.dir_choice, dir_choice)
         self.assertEqual(module.nan_representation, E.NANS_AS_NANS)
 
@@ -556,8 +570,10 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
 
 """
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
@@ -613,8 +629,10 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
 
 """
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
@@ -674,8 +692,10 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
 
 """
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
@@ -737,8 +757,10 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
 
 """
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
@@ -778,7 +800,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.object_groups[0].wants_automatic_file_name.value = False
         module.wants_prefix.value = False
         m = cpmeas.Measurements()
-        m.add_measurement("my_object","my_measurement",np.zeros((0,)))
+        m.add_measurement("my_object", "my_measurement", np.zeros((0,)))
         m.add_image_measurement("Count_my_object", 0)
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
@@ -791,13 +813,13 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                                   m,
                                   image_set_list)
         module.post_run(workspace)
-        fd = open(path,"r")
+        fd = open(path, "r")
         try:
             reader = csv.reader(fd, delimiter=module.delimiter_char)
             header = reader.next()
-            self.assertEqual(len(header),3)
-            self.assertEqual(header[2],"my_measurement")
-            self.assertRaises(StopIteration,reader.next)
+            self.assertEqual(len(header), 3)
+            self.assertEqual(header[2], "my_measurement")
+            self.assertRaises(StopIteration, reader.next)
         finally:
             fd.close()
             del m
@@ -825,17 +847,17 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                                   image_set_list)
         module.post_run(workspace)
         try:
-            fd = open(path,"r")
+            fd = open(path, "r")
             reader = csv.reader(fd, delimiter=module.delimiter_char)
             header = reader.next()
             self.assertEqual(len(header), 2)
             self.assertEqual(header[0], E.EH_KEY)
             self.assertEqual(header[1], E.EH_VALUE)
             row = reader.next()
-            self.assertEqual(len(row),2)
-            self.assertEqual(row[0],"my_measurement")
-            self.assertEqual(row[1],"Hello, world")
-            self.assertRaises(StopIteration,reader.next)
+            self.assertEqual(len(row), 2)
+            self.assertEqual(row[0], "my_measurement")
+            self.assertEqual(row[1], "Hello, world")
+            self.assertRaises(StopIteration, reader.next)
         finally:
             del m
             fd.close()
@@ -854,7 +876,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.object_groups[0].wants_automatic_file_name.value = True
         m = cpmeas.Measurements(mode="memory")
         m.add_experiment_measurement("my_measurement", "Hello, world")
-        m.add_experiment_measurement("my_other_measurement","Goodbye")
+        m.add_experiment_measurement("my_other_measurement", "Goodbye")
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
@@ -865,19 +887,19 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                                   m,
                                   image_set_list)
         module.post_run(workspace)
-        fd = open(path,"r")
+        fd = open(path, "r")
         try:
             reader = csv.reader(fd, delimiter=module.delimiter_char)
             header = reader.next()
             row = reader.next()
-            self.assertEqual(len(row),2)
-            self.assertEqual(row[0],"my_measurement")
-            self.assertEqual(row[1],"Hello, world")
+            self.assertEqual(len(row), 2)
+            self.assertEqual(row[0], "my_measurement")
+            self.assertEqual(row[1], "Hello, world")
             row = reader.next()
-            self.assertEqual(len(row),2)
-            self.assertEqual(row[0],"my_other_measurement")
-            self.assertEqual(row[1],"Goodbye")
-            self.assertRaises(StopIteration,reader.next)
+            self.assertEqual(len(row), 2)
+            self.assertEqual(row[0], "my_other_measurement")
+            self.assertEqual(row[1], "Goodbye")
+            self.assertRaises(StopIteration, reader.next)
         finally:
             fd.close()
 
@@ -942,7 +964,6 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         path = os.path.join(self.output_dir, prefix + "Image.csv")
         self.assertTrue(os.path.exists(path))
 
-
     def test_02_01_image_measurement(self):
         '''Test writing an image measurement'''
         path = os.path.join(self.output_dir, "my_file.csv")
@@ -965,17 +986,17 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                                   m,
                                   image_set_list)
         module.post_run(workspace)
-        fd = open(path,"r")
+        fd = open(path, "r")
         try:
             reader = csv.reader(fd, delimiter=module.delimiter_char)
             header = reader.next()
-            self.assertEqual(len(header),2)
+            self.assertEqual(len(header), 2)
             self.assertEqual(header[0], 'ImageNumber')
             self.assertEqual(header[1], "my_measurement")
             row = reader.next()
-            self.assertEqual(row[0],"1")
-            self.assertEqual(row[1],"Hello, world")
-            self.assertRaises(StopIteration,reader.next)
+            self.assertEqual(row[0], "1")
+            self.assertEqual(row[1], "Hello, world")
+            self.assertRaises(StopIteration, reader.next)
         finally:
             fd.close()
 
@@ -997,7 +1018,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             if i:
                 m.next_image_set()
             for j in range(3):
-                m.add_image_measurement("measurement_%d"%(j), "%d:%d"%(i,j))
+                m.add_image_measurement("measurement_%d" % j, "%d:%d" % (i, j))
         object_set = cpo.ObjectSet()
         workspace = cpw.Workspace(self.make_measurements_pipeline(m),
                                   module,
@@ -1006,20 +1027,20 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                                   m,
                                   image_set_list)
         module.post_run(workspace)
-        fd = open(path,"r")
+        fd = open(path, "r")
         try:
             reader = csv.reader(fd, delimiter=module.delimiter_char)
             header = reader.next()
-            self.assertEqual(len(header),4)
-            self.assertEqual(header[0],"ImageNumber")
+            self.assertEqual(len(header), 4)
+            self.assertEqual(header[0], "ImageNumber")
             for i in range(3):
-                self.assertEqual(header[i+1],"measurement_%d"%(i))
+                self.assertEqual(header[i + 1], "measurement_%d" % i)
             for i in range(2):
                 row = reader.next()
-                self.assertEqual(len(row),4)
+                self.assertEqual(len(row), 4)
                 for j in range(3):
-                    self.assertEqual(row[j+1],"%d:%d"%(i,j))
-            self.assertRaises(StopIteration,reader.next)
+                    self.assertEqual(row[j + 1], "%d:%d" % (i, j))
+            self.assertRaises(StopIteration, reader.next)
         finally:
             fd.close()
 
@@ -1037,7 +1058,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         np.random.seed(0)
         mvalues = np.random.uniform(size=(1,))
         m.add_measurement("my_object", "my_measurement", mvalues)
-        m.add_image_measurement("Count_my_object",1)
+        m.add_image_measurement("Count_my_object", 1)
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
@@ -1050,17 +1071,17 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                                   image_set_list)
         module.post_run(workspace)
         try:
-            fd = open(path,"r")
+            fd = open(path, "r")
             reader = csv.reader(fd, delimiter=module.delimiter_char)
             header = reader.next()
-            self.assertEqual(len(header),3)
-            self.assertEqual(header[0],"ImageNumber")
-            self.assertEqual(header[1],"ObjectNumber")
-            self.assertEqual(header[2],"my_measurement")
+            self.assertEqual(len(header), 3)
+            self.assertEqual(header[0], "ImageNumber")
+            self.assertEqual(header[1], "ObjectNumber")
+            self.assertEqual(header[2], "my_measurement")
             row = reader.next()
-            self.assertEqual(len(row),3)
-            self.assertAlmostEqual(float(row[2]),mvalues[0],4)
-            self.assertRaises(StopIteration,reader.next)
+            self.assertEqual(len(row), 3)
+            self.assertAlmostEqual(float(row[2]), mvalues[0], 4)
+            self.assertRaises(StopIteration, reader.next)
         finally:
             fd.close()
 
@@ -1076,10 +1097,10 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.object_groups[0].wants_automatic_file_name.value = False
         m = cpmeas.Measurements(mode="memory")
         np.random.seed(0)
-        mvalues = np.random.uniform(size=(2,3))
+        mvalues = np.random.uniform(size=(2, 3))
         for i in range(3):
-            m.add_measurement("my_object", "measurement_%d"%(i), mvalues[:,i])
-        m.add_image_measurement("Count_my_object",2)
+            m.add_measurement("my_object", "measurement_%d" % i, mvalues[:, i])
+        m.add_image_measurement("Count_my_object", 2)
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
@@ -1092,22 +1113,22 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                                   image_set_list)
         module.post_run(workspace)
         try:
-            fd = open(path,"r")
+            fd = open(path, "r")
             reader = csv.reader(fd, delimiter=module.delimiter_char)
             header = reader.next()
-            self.assertEqual(len(header),5)
-            self.assertEqual(header[0],"ImageNumber")
-            self.assertEqual(header[1],"ObjectNumber")
+            self.assertEqual(len(header), 5)
+            self.assertEqual(header[0], "ImageNumber")
+            self.assertEqual(header[1], "ObjectNumber")
             for i in range(3):
-                self.assertEqual(header[i+2],"measurement_%d"%(i))
+                self.assertEqual(header[i + 2], "measurement_%d" % i)
             for i in range(2):
                 row = reader.next()
-                self.assertEqual(len(row),5)
-                self.assertEqual(int(row[0]),1)
-                self.assertEqual(int(row[1]),i+1)
+                self.assertEqual(len(row), 5)
+                self.assertEqual(int(row[0]), 1)
+                self.assertEqual(int(row[1]), i + 1)
                 for j in range(3):
-                    self.assertAlmostEqual(float(row[j+2]),mvalues[i,j])
-            self.assertRaises(StopIteration,reader.next)
+                    self.assertAlmostEqual(float(row[j + 2]), mvalues[i, j])
+            self.assertRaises(StopIteration, reader.next)
         finally:
             fd.close()
 
@@ -1128,13 +1149,13 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         m = cpmeas.Measurements()
         np.random.seed(0)
         # cell, measurement, object
-        mvalues = np.random.uniform(size=(4,3,2))
+        mvalues = np.random.uniform(size=(4, 3, 2))
         for oidx in range(2):
             for i in range(3):
-                m.add_measurement("object_%d"%(oidx),
-                                  "measurement_%d"%(i), mvalues[:,i,oidx])
-        m.add_image_measurement("Count_object_0",4)
-        m.add_image_measurement("Count_object_1",4)
+                m.add_measurement("object_%d" % oidx,
+                                  "measurement_%d" % i, mvalues[:, i, oidx])
+        m.add_image_measurement("Count_object_0", 4)
+        m.add_image_measurement("Count_object_1", 4)
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
@@ -1148,30 +1169,30 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                                   image_set_list)
         module.post_run(workspace)
         try:
-            fd = open(path,"r")
+            fd = open(path, "r")
             reader = csv.reader(fd, delimiter=module.delimiter_char)
             header = reader.next()
-            self.assertEqual(len(header),8)
+            self.assertEqual(len(header), 8)
             for oidx in range(2):
                 for i in range(3):
-                    self.assertEqual(header[i+oidx*3+2],"object_%d"%(oidx))
+                    self.assertEqual(header[i + oidx * 3 + 2], "object_%d" % oidx)
             header = reader.next()
-            self.assertEqual(len(header),8)
-            self.assertEqual(header[0],"ImageNumber")
-            self.assertEqual(header[1],"ObjectNumber")
+            self.assertEqual(len(header), 8)
+            self.assertEqual(header[0], "ImageNumber")
+            self.assertEqual(header[1], "ObjectNumber")
             for oidx in range(2):
                 for i in range(3):
-                    self.assertEqual(header[i+oidx*3+2],"measurement_%d"%(i))
+                    self.assertEqual(header[i + oidx * 3 + 2], "measurement_%d" % i)
 
             for i in range(4):
                 row = reader.next()
-                self.assertEqual(len(row),8)
+                self.assertEqual(len(row), 8)
                 self.assertEqual(int(row[0]), 1)
-                self.assertEqual(int(row[1]), i+1)
+                self.assertEqual(int(row[1]), i + 1)
                 for j in range(3):
                     for k in range(2):
-                        self.assertAlmostEqual(float(row[k*3+j+2]),mvalues[i,j,k])
-            self.assertRaises(StopIteration,reader.next)
+                        self.assertAlmostEqual(float(row[k * 3 + j + 2]), mvalues[i, j, k])
+            self.assertRaises(StopIteration, reader.next)
         finally:
             fd.close()
 
@@ -1190,7 +1211,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         mvalues = np.random.uniform(size=(2,))
         mvalues[1] = np.NaN
         m.add_measurement("my_object", "my_measurement", mvalues)
-        m.add_image_measurement("Count_my_object",2)
+        m.add_image_measurement("Count_my_object", 2)
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
@@ -1203,20 +1224,20 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                                   image_set_list)
         module.post_run(workspace)
         try:
-            fd = open(path,"r")
+            fd = open(path, "r")
             reader = csv.reader(fd, delimiter=module.delimiter_char)
             header = reader.next()
-            self.assertEqual(len(header),3)
-            self.assertEqual(header[0],"ImageNumber")
-            self.assertEqual(header[1],"ObjectNumber")
-            self.assertEqual(header[2],"my_measurement")
+            self.assertEqual(len(header), 3)
+            self.assertEqual(header[0], "ImageNumber")
+            self.assertEqual(header[1], "ObjectNumber")
+            self.assertEqual(header[2], "my_measurement")
             row = reader.next()
-            self.assertEqual(len(row),3)
-            self.assertAlmostEqual(float(row[2]),mvalues[0], 4)
+            self.assertEqual(len(row), 3)
+            self.assertAlmostEqual(float(row[2]), mvalues[0], 4)
             row = reader.next()
             self.assertEqual(len(row), 3)
             self.assertEqual(row[2], str(np.NaN))
-            self.assertRaises(StopIteration,reader.next)
+            self.assertRaises(StopIteration, reader.next)
         finally:
             fd.close()
 
@@ -1235,7 +1256,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         mvalues = np.random.uniform(size=(2,))
         mvalues[1] = np.NaN
         m.add_measurement("my_object", "my_measurement", mvalues)
-        m.add_image_measurement("Count_my_object",2)
+        m.add_image_measurement("Count_my_object", 2)
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
@@ -1248,20 +1269,20 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                                   image_set_list)
         module.post_run(workspace)
         try:
-            fd = open(path,"r")
+            fd = open(path, "r")
             reader = csv.reader(fd, delimiter=module.delimiter_char)
             header = reader.next()
-            self.assertEqual(len(header),3)
-            self.assertEqual(header[0],"ImageNumber")
-            self.assertEqual(header[1],"ObjectNumber")
-            self.assertEqual(header[2],"my_measurement")
+            self.assertEqual(len(header), 3)
+            self.assertEqual(header[0], "ImageNumber")
+            self.assertEqual(header[1], "ObjectNumber")
+            self.assertEqual(header[2], "my_measurement")
             row = reader.next()
-            self.assertEqual(len(row),3)
-            self.assertAlmostEqual(float(row[2]),mvalues[0], 4)
+            self.assertEqual(len(row), 3)
+            self.assertAlmostEqual(float(row[2]), mvalues[0], 4)
             row = reader.next()
             self.assertEqual(len(row), 3)
             self.assertEqual(len(row[2]), 0)
-            self.assertRaises(StopIteration,reader.next)
+            self.assertRaises(StopIteration, reader.next)
         finally:
             fd.close()
 
@@ -1278,18 +1299,18 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.nan_representation.value = E.NANS_AS_NANS
         m = cpmeas.Measurements()
         m.add_measurement(
-            cpmeas.IMAGE, "my_image_measurement", 13, image_set_number=1,
-            data_type=np.float64)
+                cpmeas.IMAGE, "my_image_measurement", 13, image_set_number=1,
+                data_type=np.float64)
         mvalues = np.array([np.NaN, np.NaN])
         m.add_measurement(OBJECTS_NAME, OBJ_MEAS, mvalues,
-                          image_set_number=1, data_type = np.float64)
+                          image_set_number=1, data_type=np.float64)
         m.add_measurement(cpmeas.IMAGE, "Count_%s" % OBJECTS_NAME, 2,
-                          image_set_number = 1)
+                          image_set_number=1)
         m.add_measurement(
-            cpmeas.IMAGE, IMG_MEAS, np.NaN, image_set_number=2,
-            data_type=np.float64)
+                cpmeas.IMAGE, IMG_MEAS, np.NaN, image_set_number=2,
+                data_type=np.float64)
         m.add_measurement(cpmeas.IMAGE, "Count_%s" % OBJECTS_NAME, 0,
-                          image_set_number = 2)
+                          image_set_number=2)
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
@@ -1301,7 +1322,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                                   m,
                                   image_set_list)
         module.post_run(workspace)
-        with  open(path,"r") as fd:
+        with  open(path, "r") as fd:
             reader = csv.reader(fd, delimiter=module.delimiter_char)
             header = reader.next()
             d = dict([(h, i) for i, h in enumerate(header)])
@@ -1311,18 +1332,18 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             row = reader.next()
             value = row[d[agg_meas]]
             self.assertEqual(
-                value, str(np.NaN),
-                msg = "Expected nan %s measurement, got %s" %
-                (agg_meas, value))
+                    value, str(np.NaN),
+                    msg="Expected nan %s measurement, got %s" %
+                        (agg_meas, value))
             self.assertEqual(float(row[d[IMG_MEAS]]), 13)
             row = reader.next()
             for meas in agg_meas, IMG_MEAS:
                 value = row[d[meas]]
                 self.assertEqual(
-                    value, str(np.NaN),
-                    msg = "Expected nan %s measurement, got %s" %
-                    (meas, value))
-            self.assertRaises(StopIteration,reader.next)
+                        value, str(np.NaN),
+                        msg="Expected nan %s measurement, got %s" %
+                            (meas, value))
+            self.assertRaises(StopIteration, reader.next)
 
     def test_03_07_null_image_measurements(self):
         path = os.path.join(self.output_dir, "my_file.csv")
@@ -1337,18 +1358,18 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.nan_representation.value = E.NANS_AS_NULLS
         m = cpmeas.Measurements()
         m.add_measurement(
-            cpmeas.IMAGE, "my_image_measurement", 13, image_set_number=1,
-            data_type=np.float64)
+                cpmeas.IMAGE, "my_image_measurement", 13, image_set_number=1,
+                data_type=np.float64)
         mvalues = np.array([np.NaN, np.NaN])
         m.add_measurement(OBJECTS_NAME, OBJ_MEAS, mvalues,
-                          image_set_number=1, data_type = np.float64)
+                          image_set_number=1, data_type=np.float64)
         m.add_measurement(cpmeas.IMAGE, "Count_%s" % OBJECTS_NAME, 2,
-                          image_set_number = 1)
+                          image_set_number=1)
         m.add_measurement(
-            cpmeas.IMAGE, IMG_MEAS, np.NaN, image_set_number=2,
-            data_type=np.float64)
+                cpmeas.IMAGE, IMG_MEAS, np.NaN, image_set_number=2,
+                data_type=np.float64)
         m.add_measurement(cpmeas.IMAGE, "Count_%s" % OBJECTS_NAME, 0,
-                          image_set_number = 2)
+                          image_set_number=2)
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
@@ -1360,7 +1381,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                                   m,
                                   image_set_list)
         module.post_run(workspace)
-        with  open(path,"r") as fd:
+        with  open(path, "r") as fd:
             reader = csv.reader(fd, delimiter=module.delimiter_char)
             header = reader.next()
             d = dict([(h, i) for i, h in enumerate(header)])
@@ -1370,18 +1391,18 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             row = reader.next()
             value = row[d[agg_meas]]
             self.assertEqual(
-                len(value), 0,
-                msg = "Expected null %s measurement, got %s" %
-                (agg_meas, value))
+                    len(value), 0,
+                    msg="Expected null %s measurement, got %s" %
+                        (agg_meas, value))
             self.assertEqual(float(row[d[IMG_MEAS]]), 13)
             row = reader.next()
             for meas in agg_meas, IMG_MEAS:
                 value = row[d[meas]]
                 self.assertEqual(
-                    len(value), 0,
-                    msg = "Expected null %s measurement, got %s" %
-                    (meas, value))
-            self.assertRaises(StopIteration,reader.next)
+                        len(value), 0,
+                        msg="Expected null %s measurement, got %s" %
+                            (meas, value))
+            self.assertRaises(StopIteration, reader.next)
 
     def test_03_08_blob_image_measurements(self):
         path = os.path.join(self.output_dir, "my_file.csv")
@@ -1398,8 +1419,8 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         r.seed(38)
         my_blob = r.randint(0, 256, 100).astype(np.uint8)
         m.add_measurement(
-            cpmeas.IMAGE, IMG_MEAS, my_blob, image_set_number=1,
-            data_type = np.uint8)
+                cpmeas.IMAGE, IMG_MEAS, my_blob, image_set_number=1,
+                data_type=np.uint8)
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
@@ -1410,7 +1431,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                                   m,
                                   image_set_list)
         module.post_run(workspace)
-        with  open(path,"r") as fd:
+        with  open(path, "r") as fd:
             reader = csv.reader(fd, delimiter=module.delimiter_char)
             header = reader.next()
             d = dict([(h, i) for i, h in enumerate(header)])
@@ -1435,8 +1456,8 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         r.seed(38)
         my_blob = r.randint(0, 256, 100).astype(np.uint8)
         m.add_measurement(
-            cpmeas.EXPERIMENT, IMG_MEAS, my_blob, image_set_number=1,
-            data_type = np.uint8)
+                cpmeas.EXPERIMENT, IMG_MEAS, my_blob, image_set_number=1,
+                data_type=np.uint8)
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
@@ -1447,7 +1468,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                                   m,
                                   image_set_list)
         module.post_run(workspace)
-        with  open(path,"r") as fd:
+        with  open(path, "r") as fd:
             reader = csv.reader(fd, delimiter=module.delimiter_char)
             header = reader.next()
             for feature, value in reader:
@@ -1464,8 +1485,8 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         # +++backslash+++ here because Windows and join don't do well
         # if you have the raw backslash
         path = os.path.join(self.output_dir, "+++backslash+++g<tag>.csv")
-        path = path.replace("\\","\\\\")
-        path = path.replace("+++backslash+++","\\")
+        path = path.replace("\\", "\\\\")
+        path = path.replace("+++backslash+++", "\\")
         module = E.ExportToSpreadsheet()
         module.module_num = 1
         module.wants_everything.value = False
@@ -1477,7 +1498,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         np.random.seed(0)
         mvalues = np.random.uniform(size=(4,))
         image_set_list = cpi.ImageSetList()
-        for index,measurement,metadata in zip(range(4),mvalues,('foo','bar','bar','foo')):
+        for index, measurement, metadata in zip(range(4), mvalues, ('foo', 'bar', 'bar', 'foo')):
             image_set = image_set_list.get_image_set(index)
             m.add_measurement("my_object", "my_measurement", np.array([measurement]))
             m.add_image_measurement("Metadata_tag", metadata)
@@ -1494,25 +1515,25 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                                   image_set_list)
         for i in range(4):
             module.post_run(workspace)
-        for file_name,value_indexes in (("foo.csv",(0,3)),
-                                        ("bar.csv",(1,2))):
+        for file_name, value_indexes in (("foo.csv", (0, 3)),
+                                         ("bar.csv", (1, 2))):
             path = os.path.join(self.output_dir, file_name)
-            fd = open(path,"r")
+            fd = open(path, "r")
             try:
                 reader = csv.reader(fd, delimiter=module.delimiter_char)
                 header = reader.next()
-                self.assertEqual(len(header),3)
-                self.assertEqual(header[0],"ImageNumber")
-                self.assertEqual(header[1],"ObjectNumber")
-                self.assertEqual(header[2],"my_measurement")
+                self.assertEqual(len(header), 3)
+                self.assertEqual(header[0], "ImageNumber")
+                self.assertEqual(header[1], "ObjectNumber")
+                self.assertEqual(header[2], "my_measurement")
                 for value_index in value_indexes:
                     row = reader.next()
-                    self.assertEqual(len(row),3)
-                    self.assertEqual(int(row[0]), value_index+1)
+                    self.assertEqual(len(row), 3)
+                    self.assertEqual(int(row[0]), value_index + 1)
                     self.assertEqual(int(row[1]), 1)
                     self.assertAlmostEqual(float(row[2]),
-                                           mvalues[value_index],4)
-                self.assertRaises(StopIteration,reader.next)
+                                           mvalues[value_index], 4)
+                self.assertRaises(StopIteration, reader.next)
             finally:
                 fd.close()
 
@@ -1523,8 +1544,8 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         # +++backslash+++ here because Windows and join don't do well
         # if you have the raw backslash
         path = os.path.join(self.output_dir, "+++backslash+++g<tag>")
-        path = path.replace("\\","\\\\")
-        path = path.replace("+++backslash+++","\\")
+        path = path.replace("\\", "\\\\")
+        path = path.replace("+++backslash+++", "\\")
         module = E.ExportToSpreadsheet()
         module.module_num = 1
         module.wants_everything.value = True
@@ -1535,7 +1556,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         np.random.seed(0)
         mvalues = np.random.uniform(size=(4,))
         image_set_list = cpi.ImageSetList()
-        for index,measurement,metadata in zip(range(4),mvalues,('foo','bar','bar','foo')):
+        for index, measurement, metadata in zip(range(4), mvalues, ('foo', 'bar', 'bar', 'foo')):
             image_set = image_set_list.get_image_set(index)
             m.add_measurement("my_object", "my_measurement", np.array([measurement]))
             m.add_image_measurement("Metadata_tag", metadata)
@@ -1551,33 +1572,33 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                                   m,
                                   image_set_list)
         module.post_run(workspace)
-        for dir_name,value_indexes in (("foo",(0,3)),
-                                        ("bar",(1,2))):
+        for dir_name, value_indexes in (("foo", (0, 3)),
+                                        ("bar", (1, 2))):
             path = os.path.join(self.output_dir, dir_name, "my_object.csv")
             fd = open(path, "r")
             try:
                 reader = csv.reader(fd, delimiter=module.delimiter_char)
                 header = reader.next()
-                self.assertEqual(len(header),3)
-                self.assertEqual(header[0],"ImageNumber")
-                self.assertEqual(header[1],"ObjectNumber")
-                self.assertEqual(header[2],"my_measurement")
+                self.assertEqual(len(header), 3)
+                self.assertEqual(header[0], "ImageNumber")
+                self.assertEqual(header[1], "ObjectNumber")
+                self.assertEqual(header[2], "my_measurement")
                 for value_index in value_indexes:
                     row = reader.next()
-                    self.assertEqual(len(row),3)
-                    self.assertEqual(int(row[0]), value_index+1)
+                    self.assertEqual(len(row), 3)
+                    self.assertEqual(int(row[0]), value_index + 1)
                     self.assertEqual(int(row[1]), 1)
                     self.assertAlmostEqual(float(row[2]),
-                                           mvalues[value_index],4)
-                self.assertRaises(StopIteration,reader.next)
+                                           mvalues[value_index], 4)
+                self.assertRaises(StopIteration, reader.next)
             finally:
                 fd.close()
 
     def test_04_02_image_with_metadata(self):
         '''Test writing image data with 2 pairs of 2 image sets w same metadata'''
         path = os.path.join(self.output_dir, "+++backslash+++g<tag>.csv")
-        path = path.replace("\\","\\\\")
-        path = path.replace("+++backslash+++","\\")
+        path = path.replace("\\", "\\\\")
+        path = path.replace("+++backslash+++", "\\")
         module = E.ExportToSpreadsheet()
         module.module_num = 1
         module.wants_everything.value = False
@@ -1589,7 +1610,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         np.random.seed(0)
         mvalues = np.random.uniform(size=(4,))
         image_set_list = cpi.ImageSetList()
-        for index,measurement,metadata in zip(range(4),mvalues,('foo','bar','bar','foo')):
+        for index, measurement, metadata in zip(range(4), mvalues, ('foo', 'bar', 'bar', 'foo')):
             image_set = image_set_list.get_image_set(index)
             m.add_image_measurement("my_measurement", measurement)
             m.add_image_measurement("Metadata_tag", metadata)
@@ -1605,34 +1626,34 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                                   image_set_list)
         for i in range(4):
             module.post_run(workspace)
-        for file_name,value_indexes in (("foo.csv",(0,3)),
-                                        ("bar.csv",(1,2))):
+        for file_name, value_indexes in (("foo.csv", (0, 3)),
+                                         ("bar.csv", (1, 2))):
             path = os.path.join(self.output_dir, file_name)
-            fd = open(path,"r")
+            fd = open(path, "r")
             try:
                 reader = csv.reader(fd, delimiter=module.delimiter_char)
                 header = reader.next()
-                self.assertEqual(len(header),3)
+                self.assertEqual(len(header), 3)
                 d = {}
                 self.assertTrue("ImageNumber" in header)
                 self.assertTrue("my_measurement" in header)
                 self.assertTrue("Metadata_tag" in header)
-                for caption, index in zip(header,range(3)):
+                for caption, index in zip(header, range(3)):
                     d[caption] = index
                 for value_index in value_indexes:
                     row = reader.next()
-                    self.assertEqual(len(row),3)
+                    self.assertEqual(len(row), 3)
                     self.assertAlmostEqual(float(row[d["my_measurement"]]),
-                                           mvalues[value_index],4)
-                self.assertRaises(StopIteration,reader.next)
+                                           mvalues[value_index], 4)
+                self.assertRaises(StopIteration, reader.next)
             finally:
                 fd.close()
 
     def test_04_03_image_with_path_metadata(self):
         '''Test writing image data with 2 pairs of 2 image sets w same metadata'''
         path = os.path.join(self.output_dir, "+++backslash+++g<tag>")
-        path = path.replace("\\","\\\\")
-        path = path.replace("+++backslash+++","\\")
+        path = path.replace("\\", "\\\\")
+        path = path.replace("+++backslash+++", "\\")
         module = E.ExportToSpreadsheet()
         module.module_num = 1
         module.wants_everything.value = False
@@ -1646,9 +1667,9 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         np.random.seed(0)
         mvalues = np.random.uniform(size=(4,))
         image_set_list = cpi.ImageSetList()
-        metadata_values = ('foo','bar','bar','foo')
+        metadata_values = ('foo', 'bar', 'bar', 'foo')
         for index, (measurement, metadata) in \
-            enumerate(zip(mvalues,metadata_values)):
+                enumerate(zip(mvalues, metadata_values)):
             image_set = image_set_list.get_image_set(index)
             m.add_image_measurement("my_measurement", measurement)
             m.add_image_measurement("Metadata_tag", metadata)
@@ -1663,26 +1684,26 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                                   m,
                                   image_set_list)
         module.post_run(workspace)
-        for path_name,value_indexes in (("foo",(0,3)),
-                                        ("bar",(1,2))):
+        for path_name, value_indexes in (("foo", (0, 3)),
+                                         ("bar", (1, 2))):
             path = os.path.join(self.output_dir, path_name, "output.csv")
-            fd = open(path,"r")
+            fd = open(path, "r")
             try:
                 reader = csv.reader(fd, delimiter=module.delimiter_char)
                 header = reader.next()
-                self.assertEqual(len(header),3)
+                self.assertEqual(len(header), 3)
                 d = {}
                 self.assertTrue("ImageNumber" in header)
                 self.assertTrue("my_measurement" in header)
                 self.assertTrue("Metadata_tag" in header)
-                for caption, index in zip(header,range(3)):
+                for caption, index in zip(header, range(3)):
                     d[caption] = index
                 for value_index in value_indexes:
                     row = reader.next()
-                    self.assertEqual(len(row),3)
+                    self.assertEqual(len(row), 3)
                     self.assertAlmostEqual(float(row[d["my_measurement"]]),
-                                           mvalues[value_index],4)
-                self.assertRaises(StopIteration,reader.next)
+                                           mvalues[value_index], 4)
+                self.assertRaises(StopIteration, reader.next)
             finally:
                 fd.close()
 
@@ -1713,16 +1734,16 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                                   image_set_list)
         module.post_run(workspace)
         try:
-            fd = open(path,"r")
+            fd = open(path, "r")
             reader = csv.reader(fd, delimiter=module.delimiter_char)
             header = reader.next()
-            self.assertEqual(len(header),2)
+            self.assertEqual(len(header), 2)
             self.assertEqual(header[0], 'ImageNumber')
             self.assertEqual(header[1], "my_measurement")
             row = reader.next()
-            self.assertEqual(row[0],"1")
-            self.assertEqual(row[1],"Hello, world")
-            self.assertRaises(StopIteration,reader.next)
+            self.assertEqual(row[0], "1")
+            self.assertEqual(row[1], "Hello, world")
+            self.assertRaises(StopIteration, reader.next)
         finally:
             fd.close()
 
@@ -1754,16 +1775,16 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                                   image_set_list)
         module.post_run(workspace)
         try:
-            fd = open(path,"r")
+            fd = open(path, "r")
             reader = csv.reader(fd, delimiter=module.delimiter_char)
             header = reader.next()
-            self.assertEqual(len(header),2)
+            self.assertEqual(len(header), 2)
             self.assertEqual(header[0], 'ImageNumber')
             self.assertEqual(header[1], "my_measurement")
             row = reader.next()
-            self.assertEqual(row[0],"1")
+            self.assertEqual(row[0], "1")
             self.assertEqual(unicode(row[1], 'utf8'), metadata_value)
-            self.assertRaises(StopIteration,reader.next)
+            self.assertRaises(StopIteration, reader.next)
         finally:
             fd.close()
 
@@ -1788,7 +1809,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         workspace = cpw.Workspace(pipeline, module, m, None, m, None)
         for object_name in (cpmeas.EXPERIMENT, cpmeas.IMAGE, OBJECTS_NAME):
             file_name = module.make_objects_file_name(
-                object_name, workspace, 1)
+                    object_name, workspace, 1)
             with open(file_name, "w") as fd:
                 fd.write("Hello, world.")
             module.wants_overwrite_without_warning.value = True
@@ -1814,7 +1835,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.directory.dir_choice = E.cps.ABSOLUTE_FOLDER_NAME
         module.directory.custom_path = self.output_dir
         g = module.object_groups[0]
-        g.name.value =  OBJECTS_NAME
+        g.name.value = OBJECTS_NAME
         g.wants_automatic_file_name.value = False
         g.file_name.value = "\\g<tag>.csv"
         module.module_num = 2
@@ -1824,7 +1845,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
 
         for image_number in m.get_image_numbers():
             file_name = module.make_objects_file_name(
-                OBJECTS_NAME, workspace, image_number, g)
+                    OBJECTS_NAME, workspace, image_number, g)
             with open(file_name, "w") as fd:
                 fd.write("Hello, world.")
             module.wants_overwrite_without_warning.value = True
@@ -1851,7 +1872,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         m.add_image_measurement("Count_my_objects", 6)
         np.random.seed(0)
         data = np.random.uniform(size=(6,))
-        m.add_measurement("my_objects","my_measurement",data)
+        m.add_measurement("my_objects", "my_measurement", data)
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
@@ -1863,24 +1884,24 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                                   m,
                                   image_set_list)
         module.post_run(workspace)
-        fd = open(path,"r")
+        fd = open(path, "r")
         try:
             reader = csv.reader(fd, delimiter=module.delimiter_char)
             header = reader.next()
-            self.assertEqual(len(header),len(cpmeas.AGG_NAMES)+2)
+            self.assertEqual(len(header), len(cpmeas.AGG_NAMES) + 2)
             d = {}
             for index, caption in enumerate(header):
-                d[caption]=index
+                d[caption] = index
 
             row = reader.next()
-            self.assertEqual(row[d["Count_my_objects"]],"6")
+            self.assertEqual(row[d["Count_my_objects"]], "6")
             for agg in cpmeas.AGG_NAMES:
                 value = (np.mean(data) if agg == cpmeas.AGG_MEAN
                          else np.std(data) if agg == cpmeas.AGG_STD_DEV
-                         else np.median(data) if agg == cpmeas.AGG_MEDIAN
-                         else np.NAN)
-                self.assertAlmostEqual(float(row[d["%s_my_objects_my_measurement"%agg]]), value)
-            self.assertRaises(StopIteration,reader.next)
+                else np.median(data) if agg == cpmeas.AGG_MEDIAN
+                else np.NAN)
+                self.assertAlmostEqual(float(row[d["%s_my_objects_my_measurement" % agg]]), value)
+            self.assertRaises(StopIteration, reader.next)
         finally:
             fd.close()
 
@@ -1901,7 +1922,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         m.add_image_measurement("Count_my_objects", 6)
         np.random.seed(0)
         data = np.random.uniform(size=(6,))
-        m.add_measurement("my_objects","my_measurement",data)
+        m.add_measurement("my_objects", "my_measurement", data)
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
@@ -1914,16 +1935,16 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                                   image_set_list)
         module.post_run(workspace)
         try:
-            fd = open(path,"r")
+            fd = open(path, "r")
             reader = csv.reader(fd, delimiter=module.delimiter_char)
             header = reader.next()
-            self.assertEqual(len(header),2)
+            self.assertEqual(len(header), 2)
             d = {}
             for index, caption in enumerate(header):
-                d[caption]=index
+                d[caption] = index
             row = reader.next()
-            self.assertEqual(row[d["Count_my_objects"]],"6")
-            self.assertRaises(StopIteration,reader.next)
+            self.assertEqual(row[d["Count_my_objects"]], "6")
+            self.assertRaises(StopIteration, reader.next)
         finally:
             del m
             fd.close()
@@ -1969,9 +1990,9 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         m.add_image_measurement("Count_my_objects", 6)
         m.add_image_measurement("first_measurement", np.sum(data))
         m.add_image_measurement("another_measurement", 43.2)
-        m.add_measurement("my_objects","Number_Object_Number", np.arange(1,7))
-        m.add_measurement("my_objects","my_measurement",data)
-        m.add_measurement("my_objects","my_filtered_measurement",
+        m.add_measurement("my_objects", "Number_Object_Number", np.arange(1, 7))
+        m.add_measurement("my_objects", "my_measurement", data)
+        m.add_measurement("my_objects", "my_filtered_measurement",
                           np.random.uniform(size=(6,)))
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
@@ -1985,43 +2006,43 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                                   image_set_list)
         module.post_run(workspace)
         try:
-            fd = open(image_path,"r")
+            fd = open(image_path, "r")
             reader = csv.reader(fd, delimiter=module.delimiter_char)
             header = reader.next()
-            self.assertEqual(len(header),4)
+            self.assertEqual(len(header), 4)
             expected_image_columns = (
                 "ImageNumber", "Count_my_objects", "first_measurement",
                 "Mean_my_objects_my_measurement")
             d = {}
             for index, caption in enumerate(header):
                 self.assertTrue(caption in expected_image_columns)
-                d[caption]=index
+                d[caption] = index
             row = reader.next()
             self.assertEqual(row[d["ImageNumber"]], "1")
-            self.assertEqual(row[d["Count_my_objects"]],"6")
+            self.assertEqual(row[d["Count_my_objects"]], "6")
             self.assertAlmostEqual(float(row[d["first_measurement"]]), np.sum(data))
             self.assertAlmostEqual(float(row[d["Mean_my_objects_my_measurement"]]),
                                    np.mean(data))
-            self.assertRaises(StopIteration,reader.next)
+            self.assertRaises(StopIteration, reader.next)
         finally:
             fd.close()
         try:
             fd = open(object_path, "r")
             reader = csv.reader(fd, delimiter=module.delimiter_char)
             header = reader.next()
-            self.assertEqual(len(header),4)
+            self.assertEqual(len(header), 4)
             expected_object_columns = (
                 "ImageNumber", "ObjectNumber", "Number_Object_Number",
                 "my_measurement")
             d = {}
             for index, caption in enumerate(header):
                 self.assertTrue(caption in expected_object_columns)
-                d[caption]=index
+                d[caption] = index
             for index, row in enumerate(reader):
-                self.assertEqual(row[d["ImageNumber"]],  "1")
-                self.assertEqual(int(row[d["ObjectNumber"]]), index+1)
+                self.assertEqual(row[d["ImageNumber"]], "1")
+                self.assertEqual(int(row[d["ObjectNumber"]]), index + 1)
                 # all object values get written as floats
-                self.assertEqual(int(float(row[d["Number_Object_Number"]])), index+1)
+                self.assertEqual(int(float(row[d["Number_Object_Number"]])), index + 1)
                 self.assertAlmostEqual(float(row[d["my_measurement"]]),
                                        data[index])
         finally:
@@ -2064,16 +2085,16 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                                   image_set_list)
         module.post_run(workspace)
         try:
-            fd = open(image_path,"r")
+            fd = open(image_path, "r")
             reader = csv.reader(fd, delimiter=module.delimiter_char)
             header = reader.next()
-            self.assertEqual(len(header),2)
+            self.assertEqual(len(header), 2)
             expected_image_columns = (
                 "ImageNumber", "first_measurement")
             d = {}
             for index, caption in enumerate(header):
                 self.assertTrue(caption in expected_image_columns)
-                d[caption]=index
+                d[caption] = index
         finally:
             fd.close()
 
@@ -2095,8 +2116,8 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                 )
         for i in range(len(data)):
             image_set = image_set_list.get_image_set(i)
-            m.add_image_measurement("quotation",data[i])
-            if i < len(data)-1:
+            m.add_image_measurement("quotation", data[i])
+            if i < len(data) - 1:
                 m.next_image_set()
         object_set = cpo.ObjectSet()
         workspace = cpw.Workspace(self.make_measurements_pipeline(m),
@@ -2107,17 +2128,17 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                                   image_set_list)
         module.post_run(workspace)
         try:
-            fd = open(path,"r")
+            fd = open(path, "r")
             reader = csv.reader(fd, delimiter=module.delimiter_char)
             header = reader.next()
-            self.assertEqual(len(header),2)
-            self.assertEqual(header[0],E.IMAGE_NUMBER)
-            self.assertEqual(header[1],"quotation")
+            self.assertEqual(len(header), 2)
+            self.assertEqual(header[0], E.IMAGE_NUMBER)
+            self.assertEqual(header[1], "quotation")
             for i in range(len(data)):
                 row = reader.next()
-                self.assertEqual(int(row[0]),i+1)
-                self.assertEqual(row[1],data[i])
-            self.assertRaises(StopIteration,reader.next)
+                self.assertEqual(int(row[0]), i + 1)
+                self.assertEqual(row[1], data[i])
+            self.assertRaises(StopIteration, reader.next)
         finally:
             fd.close()
 
@@ -2134,12 +2155,12 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         m = cpmeas.Measurements()
         np.random.seed(0)
         # Three images with four objects each
-        mvalues = np.random.uniform(size=(3,4))
+        mvalues = np.random.uniform(size=(3, 4))
         for image_idx in range(mvalues.shape[0]):
             if image_idx:
                 m.next_image_set()
             m.add_image_measurement("Count_my_objects", mvalues.shape[1])
-            m.add_measurement("my_objects", "my_measurement", mvalues[image_idx,:])
+            m.add_measurement("my_objects", "my_measurement", mvalues[image_idx, :])
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
@@ -2152,22 +2173,22 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                                   image_set_list)
         module.post_run(workspace)
         try:
-            fd = open(path,"r")
+            fd = open(path, "r")
             reader = csv.reader(fd, delimiter=module.delimiter_char)
             header = reader.next()
-            self.assertEqual(len(header),3)
-            self.assertEqual(header[0],E.IMAGE_NUMBER)
-            self.assertEqual(header[1],E.OBJECT_NUMBER)
-            self.assertEqual(header[2],"my_measurement")
+            self.assertEqual(len(header), 3)
+            self.assertEqual(header[0], E.IMAGE_NUMBER)
+            self.assertEqual(header[1], E.OBJECT_NUMBER)
+            self.assertEqual(header[2], "my_measurement")
             for image_idx in range(mvalues.shape[0]):
                 for object_idx in range(mvalues.shape[1]):
                     row = reader.next()
-                    self.assertEqual(len(row),3)
-                    self.assertEqual(int(row[0]),image_idx+1)
-                    self.assertEqual(int(row[1]),object_idx+1)
+                    self.assertEqual(len(row), 3)
+                    self.assertEqual(int(row[0]), image_idx + 1)
+                    self.assertEqual(int(row[1]), object_idx + 1)
                     self.assertAlmostEqual(float(row[2]),
-                                           mvalues[image_idx,object_idx],4)
-            self.assertRaises(StopIteration,reader.next)
+                                           mvalues[image_idx, object_idx], 4)
+            self.assertRaises(StopIteration, reader.next)
         finally:
             fd.close()
 
@@ -2185,14 +2206,14 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         m = cpmeas.Measurements()
         np.random.seed(0)
         # Three images with four objects each
-        mvalues = np.random.uniform(size=(3,4))
+        mvalues = np.random.uniform(size=(3, 4))
         for image_idx in range(mvalues.shape[0]):
             if image_idx:
                 m.next_image_set()
             m.add_image_measurement("Count_my_objects", mvalues.shape[1])
             m.add_image_measurement("Metadata_Plate", "P-X9TRG")
-            m.add_image_measurement("Metadata_Well", "C0%d"%(image_idx+1))
-            m.add_measurement("my_objects", "my_measurement", mvalues[image_idx,:])
+            m.add_image_measurement("Metadata_Well", "C0%d" % (image_idx + 1))
+            m.add_measurement("my_objects", "my_measurement", mvalues[image_idx, :])
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
@@ -2205,25 +2226,25 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                                   image_set_list)
         module.post_run(workspace)
         try:
-            fd = open(path,"r")
+            fd = open(path, "r")
             reader = csv.reader(fd, delimiter=module.delimiter_char)
             header = reader.next()
-            self.assertEqual(len(header),5)
+            self.assertEqual(len(header), 5)
             d = {}
             for index, column in enumerate(header):
-                d[column]=index
+                d[column] = index
             self.assertTrue(d.has_key("Metadata_Plate"))
             self.assertTrue(d.has_key("Metadata_Well"))
             self.assertTrue(d.has_key("my_measurement"))
             for image_idx in range(mvalues.shape[0]):
                 for object_idx in range(mvalues.shape[1]):
                     row = reader.next()
-                    self.assertEqual(len(row),5)
+                    self.assertEqual(len(row), 5)
                     self.assertEqual(row[d["Metadata_Plate"]], "P-X9TRG")
-                    self.assertEqual(row[d["Metadata_Well"]], "C0%d"%(image_idx+1))
+                    self.assertEqual(row[d["Metadata_Well"]], "C0%d" % (image_idx + 1))
                     self.assertAlmostEqual(float(row[d["my_measurement"]]),
-                                           mvalues[image_idx,object_idx],4)
-            self.assertRaises(StopIteration,reader.next)
+                                           mvalues[image_idx, object_idx], 4)
+            self.assertRaises(StopIteration, reader.next)
         finally:
             fd.close()
 
@@ -2246,14 +2267,14 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         m = cpmeas.Measurements()
         np.random.seed(0)
         # Three images with four objects each
-        mvalues = np.random.uniform(size=(3,4))
+        mvalues = np.random.uniform(size=(3, 4))
         for image_idx in range(mvalues.shape[0]):
             if image_idx:
                 m.next_image_set()
             m.add_image_measurement("Count_my_objects", mvalues.shape[1])
             if image_idx != 1:
                 m.add_image_measurement("my_measurement", 100)
-                m.add_measurement("my_objects", "my_measurement", mvalues[image_idx,:])
+                m.add_measurement("my_objects", "my_measurement", mvalues[image_idx, :])
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
@@ -2266,24 +2287,24 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                                   image_set_list)
         module.post_run(workspace)
         try:
-            fd = open(path,"r")
+            fd = open(path, "r")
             reader = csv.reader(fd, delimiter=module.delimiter_char)
             header = reader.next()
-            self.assertEqual(len(header),3)
+            self.assertEqual(len(header), 3)
             d = {}
             for index, column in enumerate(header):
-                d[column]=index
+                d[column] = index
             self.assertTrue(d.has_key("my_measurement"))
             for image_idx in range(3):
                 for object_idx in range(mvalues.shape[1]):
                     row = reader.next()
-                    self.assertEqual(len(row),3)
+                    self.assertEqual(len(row), 3)
                     if image_idx == 1:
-                        self.assertEqual(row[d["my_measurement"]],str(np.NAN))
+                        self.assertEqual(row[d["my_measurement"]], str(np.NAN))
                     else:
                         self.assertAlmostEqual(float(row[d["my_measurement"]]),
-                                               mvalues[image_idx,object_idx],4)
-            self.assertRaises(StopIteration,reader.next)
+                                               mvalues[image_idx, object_idx], 4)
+            self.assertRaises(StopIteration, reader.next)
         finally:
             fd.close()
 
@@ -2315,7 +2336,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         m[cpmeas.IMAGE, cpmeas.GROUP_NUMBER, 1] = 1
         m[cpmeas.IMAGE, cpmeas.GROUP_INDEX, 1] = 1
         m[cpmeas.IMAGE, "_".join((C_COUNT, OBJECTS_NAME)), 1] = 3
-        m[OBJECTS_NAME, M_LOCATION_CENTER_X, 1 ] = np.array([1, 4, 9], float)
+        m[OBJECTS_NAME, M_LOCATION_CENTER_X, 1] = np.array([1, 4, 9], float)
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
@@ -2328,24 +2349,23 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                                   image_set_list)
         module.post_run(workspace)
         try:
-            fd = open(path,"r")
+            fd = open(path, "r")
             reader = csv.reader(fd, delimiter=module.delimiter_char)
             header = reader.next()
             d = {}
             for index, column in enumerate(header):
-                d[column]=index
+                d[column] = index
             self.assertTrue(d.has_key(M_LOCATION_CENTER_X))
             self.assertTrue(d.has_key(M_LOCATION_CENTER_Y))
             for i in range(3):
                 row = reader.next()
                 x = row[d[M_LOCATION_CENTER_X]]
-                self.assertEqual(float(x), (i+1)**2)
+                self.assertEqual(float(x), (i + 1) ** 2)
                 y = row[d[M_LOCATION_CENTER_Y]]
                 self.assertEqual(y.lower(), "nan")
-            self.assertRaises(StopIteration,reader.next)
+            self.assertRaises(StopIteration, reader.next)
         finally:
             fd.close()
-
 
     def make_pipeline(self, csv_text):
         import cellprofiler.modules.loaddata as L
@@ -2362,8 +2382,10 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.module_num = 1
         pipeline = cpp.Pipeline()
         pipeline.add_module(module)
+
         def error_callback(caller, event):
             self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
+
         pipeline.add_listener(error_callback)
         return pipeline, module, name
 
@@ -2379,22 +2401,23 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             for feature in m.get_feature_names(object_name):
                 if object_name == cpmeas.EXPERIMENT:
                     columns.append(
-                        (object_name, feature, cpmeas.COLTYPE_VARCHAR))
+                            (object_name, feature, cpmeas.COLTYPE_VARCHAR))
                 elif image_number is not None:
                     data = m[object_name, feature, image_number]
                     if isinstance(data, basestring):
                         columns.append(
-                            (object_name, feature, cpmeas.COLTYPE_VARCHAR))
+                                (object_name, feature, cpmeas.COLTYPE_VARCHAR))
                     else:
                         columns.append(
-                            (object_name, feature, cpmeas.COLTYPE_FLOAT))
+                                (object_name, feature, cpmeas.COLTYPE_FLOAT))
 
         class MPipeline(cpp.Pipeline):
             def get_measurement_columns(self, terminating_module=None):
                 return columns
+
         return MPipeline()
 
-    def make_measurements(self, d = None):
+    def make_measurements(self, d=None):
         '''Make a measurements object
 
         d - a dictionary whose keywords are the measurement names and whose
@@ -2405,7 +2428,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                  cpmeas.GROUP_INDEX: [0]}
         m = cpmeas.Measurements()
         for k, v in d.iteritems():
-            m[cpmeas.IMAGE, k, np.arange(len(v))+1] = v
+            m[cpmeas.IMAGE, k, np.arange(len(v)) + 1] = v
         image_numbers = m.get_image_numbers()
         if cpmeas.GROUP_NUMBER not in d:
             m[cpmeas.IMAGE, cpmeas.GROUP_NUMBER, image_numbers] = \
@@ -2415,7 +2438,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                 np.arange(len(image_numbers))
         return m
 
-    def add_gct_settings(self,output_csv_filename):
+    def add_gct_settings(self, output_csv_filename):
         module = E.ExportToSpreadsheet()
         module.module_num = 2
         module.wants_everything.value = False
@@ -2430,7 +2453,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         return module
 
     def test_08_01_basic_gct_check(self):
-    # LoadData with data
+        # LoadData with data
         maybe_download_sbs()
         input_dir = os.path.join(example_images_directory(), "ExampleSBSImages")
         metadata_name = "Metadata_Bar"
@@ -2442,7 +2465,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         csv_text = '''"%s","%s","%s"
 "Channel1-01-A-01.tif","%s","Hi"
 "Channel1-02-A-02.tif","%s","Hello"
-'''%info
+''' % info
         pipeline, module, input_filename = self.make_pipeline(csv_text)
 
         output_csv_filename = os.path.join(tempfile.mkdtemp(), "my_file.csv")
@@ -2456,24 +2479,24 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         try:
             m = pipeline.run()
             self.assertTrue(isinstance(m, cpmeas.Measurements))
-            p,n = os.path.splitext(output_csv_filename)
+            p, n = os.path.splitext(output_csv_filename)
             output_gct_filename = p + '.gct'
-            fd = open(output_gct_filename,"r")
+            fd = open(output_gct_filename, "r")
             reader = csv.reader(fd, delimiter="\t")
             row = reader.next()
-            self.assertEqual(len(row),1)
-            self.assertEqual(row[0],"#1.2")
+            self.assertEqual(len(row), 1)
+            self.assertEqual(row[0], "#1.2")
             row = reader.next()
-            self.assertEqual(len(row),2)
-            self.assertEqual(row[0],"2")
-            self.assertEqual(row[1],"1")
+            self.assertEqual(len(row), 2)
+            self.assertEqual(row[0], "2")
+            self.assertEqual(row[1], "1")
             row = reader.next()
-            self.assertEqual(len(row),3)
-            self.assertEqual(row[0].lower(),"name")
-            self.assertEqual(row[1].lower(),"description")
-            self.assertEqual(row[2],metadata_name)
+            self.assertEqual(len(row), 3)
+            self.assertEqual(row[0].lower(), "name")
+            self.assertEqual(row[1].lower(), "description")
+            self.assertEqual(row[2], metadata_name)
             row = reader.next()
-            self.assertEqual(row[1],input_dir)
+            self.assertEqual(row[1], input_dir)
         finally:
             try:
                 os.remove(input_filename)
@@ -2486,11 +2509,11 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         # LoadData with data
         input_dir = os.path.join(example_images_directory(), "ExampleSBSImages")
         metadata_name = "Metadata_Bar"
-        info = ('Image_FileName_Foo','Image_PathName_Foo',metadata_name,input_dir,input_dir)
+        info = ('Image_FileName_Foo', 'Image_PathName_Foo', metadata_name, input_dir, input_dir)
         csv_text = '''"%s","%s","%s"
 "Channel1-01-A-01.tif","%s","Hi"
 "Channel1-02-A-02.tif","%s","Hello"
-'''%info
+''' % info
         pipeline, module, input_filename = self.make_pipeline(csv_text)
 
         output_csv_filename = os.path.join(tempfile.mkdtemp(), "my_file.csv")
@@ -2504,17 +2527,17 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         try:
             m = pipeline.run()
             self.assertTrue(isinstance(m, cpmeas.Measurements))
-            p,n = os.path.splitext(output_csv_filename)
+            p, n = os.path.splitext(output_csv_filename)
             output_gct_filename = p + '.gct'
-            fd = open(output_gct_filename,"r")
+            fd = open(output_gct_filename, "r")
             reader = csv.reader(fd, delimiter="\t")
             row = reader.next()
             row = reader.next()
             row = reader.next()
             row = reader.next()
-            self.assertEqual(row[0],"Channel1-01-A-01.tif")
+            self.assertEqual(row[0], "Channel1-01-A-01.tif")
             row = reader.next()
-            self.assertEqual(row[0],"Channel1-02-A-02.tif")
+            self.assertEqual(row[0], "Channel1-02-A-02.tif")
             fd.close()
         finally:
             os.remove(input_filename)
@@ -2526,11 +2549,11 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         # LoadData with data
         input_dir = os.path.join(example_images_directory(), "ExampleSBSImages")
         metadata_name = "Metadata_Bar"
-        info = ('Image_FileName_Foo','Image_PathName_Foo',metadata_name,input_dir,input_dir)
+        info = ('Image_FileName_Foo', 'Image_PathName_Foo', metadata_name, input_dir, input_dir)
         csv_text = '''"%s","%s","%s"
 "Channel1-01-A-01.tif","%s","Hi"
 "Channel1-02-A-02.tif","%s","Hello"
-'''%info
+''' % info
         pipeline, module, input_filename = self.make_pipeline(csv_text)
 
         output_csv_filename = os.path.join(tempfile.mkdtemp(), "my_file.csv")
@@ -2544,17 +2567,17 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         try:
             m = pipeline.run()
             self.assertTrue(isinstance(m, cpmeas.Measurements))
-            p,n = os.path.splitext(output_csv_filename)
+            p, n = os.path.splitext(output_csv_filename)
             output_gct_filename = p + '.gct'
-            fd = open(output_gct_filename,"r")
+            fd = open(output_gct_filename, "r")
             reader = csv.reader(fd, delimiter="\t")
             row = reader.next()
             row = reader.next()
             row = reader.next()
             row = reader.next()
-            self.assertEqual(row[0],"Hi")
+            self.assertEqual(row[0], "Hi")
             row = reader.next()
-            self.assertEqual(row[0],"Hello")
+            self.assertEqual(row[0], "Hello")
             fd.close()
         finally:
             os.remove(input_filename)
@@ -2562,7 +2585,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
 
     def test_08_04_test_overwrite_gct_file(self):
         output_csv_filename = os.path.join(
-            self.output_dir, "%s.gct" % cpmeas.IMAGE)
+                self.output_dir, "%s.gct" % cpmeas.IMAGE)
         m = self.make_measurements()
         pipeline = self.make_measurements_pipeline(m)
         module = E.ExportToSpreadsheet()
@@ -2574,7 +2597,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         pipeline.add_module(module)
         workspace = cpw.Workspace(pipeline, module, m, None, m, None)
         self.assertEqual(output_csv_filename, module.make_gct_file_name(
-            workspace, 1))
+                workspace, 1))
 
         self.assertTrue(module.prepare_run(workspace))
         with open(output_csv_filename, "w") as fd:
@@ -2595,20 +2618,20 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.object_groups[0].wants_automatic_file_name.value = False
         m = cpmeas.Measurements()
         image_set_list = cpi.ImageSetList()
-        for i in range(0,10):
+        for i in range(0, 10):
             image_set = image_set_list.get_image_set(i)
-            m.add_image_measurement(cpp.IMAGE_NUMBER, i+1)
+            m.add_image_measurement(cpp.IMAGE_NUMBER, i + 1)
             m.add_image_measurement(cpp.GROUP_NUMBER, 1)
-            m.add_image_measurement(cpp.GROUP_INDEX, i+1)
+            m.add_image_measurement(cpp.GROUP_INDEX, i + 1)
             if i < 9:
                 m.next_image_set()
         my_relationship = "BlahBlah"
         my_object_name1 = "ABC"
         my_object_name2 = "DEF"
-        my_image_numbers1 = r.randint(1,10, size=10)
-        my_object_numbers1 = r.randint(1,10, size=10)
-        my_image_numbers2 = r.randint(1,10, size=10)
-        my_object_numbers2 = r.randint(1,10, size=10)
+        my_image_numbers1 = r.randint(1, 10, size=10)
+        my_object_numbers1 = r.randint(1, 10, size=10)
+        my_image_numbers2 = r.randint(1, 10, size=10)
+        my_object_numbers2 = r.randint(1, 10, size=10)
         m.add_relate_measurement(1, my_relationship,
                                  my_object_name1, my_object_name2,
                                  my_image_numbers1, my_object_numbers1,
@@ -2625,10 +2648,10 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             rdr = csv.reader(fd)
             header = rdr.next()
             for heading, expected in zip(
-                header, ["Module", "Module Number", "Relationship",
-                         "First Object Name", "First Image Number",
-                         "First Object Number", "Second Object Name",
-                         "Second Image Number", "Second Object Number"]):
+                    header, ["Module", "Module Number", "Relationship",
+                             "First Object Name", "First Image Number",
+                             "First Object Number", "Second Object Name",
+                             "Second Image Number", "Second Object Number"]):
                 self.assertEqual(heading, expected)
             for i in range(len(my_image_numbers1)):
                 (module_name, module_number, relationship,

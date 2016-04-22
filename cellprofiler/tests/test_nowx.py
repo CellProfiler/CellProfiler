@@ -9,17 +9,18 @@ import unittest
 from urllib2 import urlopen
 
 from cellprofiler.modules.tests import \
-     example_images_directory, maybe_download_sbs, maybe_download_fly
+    example_images_directory, maybe_download_sbs, maybe_download_fly
 
 
 def import_all_but_wx(name,
-                      globals = __builtin__.globals(),
-                      locals = __builtin__.locals(),
+                      globals=__builtin__.globals(),
+                      locals=__builtin__.locals(),
                       fromlist=[], level=-1,
-                      default_import = __builtin__.__import__):
+                      default_import=__builtin__.__import__):
     if name == "wx" or name.startswith("wx."):
         raise ImportError("Not allowed to import wx!")
     return default_import(name, globals, locals, fromlist, level)
+
 
 @unittest.skipIf(sys.platform.startswith('linux'), "Do not test under Linux")
 class TestNoWX(unittest.TestCase):
@@ -43,21 +44,22 @@ class TestNoWX(unittest.TestCase):
     def test_01_02_throws_on_wx_import(self):
         def import_wx():
             import wx
+
         self.assertRaises(ImportError, import_wx)
 
     def test_01_03_import_modules(self):
         '''Import cellprofiler.modules and make sure it doesn't import wx'''
         import cellprofiler.modules
 
-    def test_01_04_instantiate_all(self):
-        '''Instantiate each module and make sure none import wx'''
-        import cellprofiler.modules as M
-        for name in M.get_module_names():
-            try:
-                M.instantiate_module(name)
-            except:
-                print "Module %s probably imports wx" % name
-                traceback.print_exc()
+    # def test_01_04_instantiate_all(self):
+    #     '''Instantiate each module and make sure none import wx'''
+    #     import cellprofiler.modules as M
+    #     for name in M.get_module_names():
+    #         try:
+    #             M.instantiate_module(name)
+    #         except:
+    #             print "Module %s probably imports wx" % name
+    #             traceback.print_exc()
 
     fly_url = "http://cellprofiler.org/ExampleFlyImages/ExampleFlyURL.cppipe"
 
@@ -66,6 +68,7 @@ class TestNoWX(unittest.TestCase):
         import os
         def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline = cpp.Pipeline()
         pipeline.add_listener(callback)
         try:
@@ -73,36 +76,37 @@ class TestNoWX(unittest.TestCase):
         except IOError, e:
             def bad_url(e=e):
                 raise e
+
             unittest.expectedFailure(bad_url)()
         pipeline.load(fd)
         fd.close()
 
-    # def test_01_06_run_pipeline(self):
-    #     import cellprofiler.pipeline as cpp
-    #     import cellprofiler.cpmodule as cpm
-    #     from cellprofiler.preferences import \
-    #          set_default_image_directory, set_default_output_directory
-    #     def callback(caller, event):
-    #         self.assertFalse(isinstance(event, (cpp.LoadExceptionEvent,
-    #                                             cpp.RunExceptionEvent)))
-    #     pipeline = cpp.Pipeline()
-    #     pipeline.add_listener(callback)
-    #     fd = urlopen(self.fly_url)
-    #     pipeline.load(fd)
-    #     fd.close()
-    #     while True:
-    #         removed_something = False
-    #         for module in reversed(pipeline.modules()):
-    #             self.assertTrue(isinstance(module, cpm.CPModule))
-    #             if module.module_name in ("SaveImages",
-    #                                       "CalculateStatistics",
-    #                                       "ExportToSpreadsheet",
-    #                                       "ExportToDatabase"):
-    #                 pipeline.remove_module(module.module_num)
-    #                 removed_something = True
-    #                 break
-    #         if not removed_something:
-    #             break
-    #     for module in pipeline.modules():
-    #         module.show_window = False
-    #     m = pipeline.run(image_set_end = 1)
+        # def test_01_06_run_pipeline(self):
+        #     import cellprofiler.pipeline as cpp
+        #     import cellprofiler.cpmodule as cpm
+        #     from cellprofiler.preferences import \
+        #          set_default_image_directory, set_default_output_directory
+        #     def callback(caller, event):
+        #         self.assertFalse(isinstance(event, (cpp.LoadExceptionEvent,
+        #                                             cpp.RunExceptionEvent)))
+        #     pipeline = cpp.Pipeline()
+        #     pipeline.add_listener(callback)
+        #     fd = urlopen(self.fly_url)
+        #     pipeline.load(fd)
+        #     fd.close()
+        #     while True:
+        #         removed_something = False
+        #         for module in reversed(pipeline.modules()):
+        #             self.assertTrue(isinstance(module, cpm.CPModule))
+        #             if module.module_name in ("SaveImages",
+        #                                       "CalculateStatistics",
+        #                                       "ExportToSpreadsheet",
+        #                                       "ExportToDatabase"):
+        #                 pipeline.remove_module(module.module_num)
+        #                 removed_something = True
+        #                 break
+        #         if not removed_something:
+        #             break
+        #     for module in pipeline.modules():
+        #         module.show_window = False
+        #     m = pipeline.run(image_set_end = 1)

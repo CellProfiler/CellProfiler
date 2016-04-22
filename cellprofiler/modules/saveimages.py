@@ -35,27 +35,27 @@ from cellprofiler.settings import YES, NO
 import cellprofiler.preferences as cpp
 from cellprofiler.gui.help import USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF
 from cellprofiler.preferences import \
-     standardize_default_folder_names, DEFAULT_INPUT_FOLDER_NAME, \
-     DEFAULT_OUTPUT_FOLDER_NAME, ABSOLUTE_FOLDER_NAME, \
-     DEFAULT_INPUT_SUBFOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME, \
-     IO_FOLDER_CHOICE_HELP_TEXT, IO_WITH_METADATA_HELP_TEXT, \
-     get_default_image_directory
-from cellprofiler.utilities.relpath import relpath
+    standardize_default_folder_names, DEFAULT_INPUT_FOLDER_NAME, \
+    DEFAULT_OUTPUT_FOLDER_NAME, ABSOLUTE_FOLDER_NAME, \
+    DEFAULT_INPUT_SUBFOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME, \
+    IO_FOLDER_CHOICE_HELP_TEXT, IO_WITH_METADATA_HELP_TEXT, \
+    get_default_image_directory
+import os.path
 from cellprofiler.modules.loadimages import C_FILE_NAME, C_PATH_NAME, C_URL
 from cellprofiler.modules.loadimages import \
-     C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME, C_OBJECTS_URL
+    C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME, C_OBJECTS_URL
 from cellprofiler.modules.loadimages import pathname2url
 from centrosome.cpmorphology import distance_color_labels
 from cellprofiler.utilities.version import get_version
 from bioformats.formatwriter import write_image
 import bioformats.omexml as ome
 
-IF_IMAGE       = "Image"
-IF_MASK        = "Mask"
-IF_CROPPING    = "Cropping"
-IF_FIGURE      = "Module window"
-IF_MOVIE       = "Movie"
-IF_OBJECTS     = "Objects"
+IF_IMAGE = "Image"
+IF_MASK = "Mask"
+IF_CROPPING = "Cropping"
+IF_FIGURE = "Module window"
+IF_MOVIE = "Movie"
+IF_OBJECTS = "Objects"
 IF_ALL = [IF_IMAGE, IF_MASK, IF_CROPPING, IF_MOVIE, IF_OBJECTS]
 
 OLD_BIT_DEPTH_8 = "8"
@@ -64,39 +64,39 @@ BIT_DEPTH_8 = "8-bit integer"
 BIT_DEPTH_16 = "16-bit integer"
 BIT_DEPTH_FLOAT = "32-bit floating point"
 
-FN_FROM_IMAGE  = "From image filename"
-FN_SEQUENTIAL  = "Sequential numbers"
+FN_FROM_IMAGE = "From image filename"
+FN_SEQUENTIAL = "Sequential numbers"
 FN_SINGLE_NAME = "Single name"
 SINGLE_NAME_TEXT = "Enter single file name"
 FN_WITH_METADATA = "Name with metadata"
 FN_IMAGE_FILENAME_WITH_METADATA = "Image filename with metadata"
-METADATA_NAME_TEXT = ("""Enter file name with metadata""")
+METADATA_NAME_TEXT = """Enter file name with metadata"""
 SEQUENTIAL_NUMBER_TEXT = "Enter file prefix"
-FF_BMP         = "bmp"
-FF_JPG         = "jpg"
-FF_JPEG        = "jpeg"
-FF_PBM         = "pbm"
-FF_PCX         = "pcx"
-FF_PGM         = "pgm"
-FF_PNG         = "png"
-FF_PNM         = "pnm"
-FF_PPM         = "ppm"
-FF_RAS         = "ras"
-FF_TIF         = "tif"
-FF_TIFF        = "tiff"
-FF_XWD         = "xwd"
-FF_AVI         = "avi"
-FF_MAT         = "mat"
-FF_MOV         = "mov"
+FF_BMP = "bmp"
+FF_JPG = "jpg"
+FF_JPEG = "jpeg"
+FF_PBM = "pbm"
+FF_PCX = "pcx"
+FF_PGM = "pgm"
+FF_PNG = "png"
+FF_PNM = "pnm"
+FF_PPM = "ppm"
+FF_RAS = "ras"
+FF_TIF = "tif"
+FF_TIFF = "tiff"
+FF_XWD = "xwd"
+FF_AVI = "avi"
+FF_MAT = "mat"
+FF_MOV = "mov"
 FF_SUPPORTING_16_BIT = [FF_TIF, FF_TIFF]
-PC_WITH_IMAGE  = "Same folder as image"
+PC_WITH_IMAGE = "Same folder as image"
 OLD_PC_WITH_IMAGE_VALUES = ["Same folder as image"]
-PC_CUSTOM      = "Custom"
+PC_CUSTOM = "Custom"
 PC_WITH_METADATA = "Custom with metadata"
 WS_EVERY_CYCLE = "Every cycle"
 WS_FIRST_CYCLE = "First cycle"
-WS_LAST_CYCLE  = "Last cycle"
-CM_GRAY        = "gray"
+WS_LAST_CYCLE = "Last cycle"
+CM_GRAY = "gray"
 
 GC_GRAYSCALE = "Grayscale"
 GC_COLOR = "Color"
@@ -107,17 +107,17 @@ OFFSET_DIRECTORY_PATH = 11
 '''Offset to the bit depth setting in version 11'''
 OFFSET_BIT_DEPTH_V11 = 12
 
-class SaveImages(cpm.CPModule):
 
+class SaveImages(cpm.CPModule):
     module_name = "SaveImages"
     variable_revision_number = 11
     category = "File Processing"
 
     def create_settings(self):
         self.save_image_or_figure = cps.Choice(
-            "Select the type of image to save",
-            IF_ALL,
-            IF_IMAGE,doc="""
+                "Select the type of image to save",
+                IF_ALL,
+                IF_IMAGE, doc="""
             The following types of images can be saved as a file on the hard drive:
             <ul>
             <li><i>%(IF_IMAGE)s:</i> Any of the images produced upstream of <b>SaveImages</b> can be selected for saving.
@@ -145,29 +145,29 @@ class SaveImages(cpm.CPModule):
             Results may be unpredictable if you save using PNG and there
             are more than 255 objects or if you save using one of the other
             file formats.</li>
-            </ul>"""%globals())
+            </ul>""" % globals())
 
-        self.image_name  = cps.ImageNameSubscriber(
-            "Select the image to save",cps.NONE, doc = """
+        self.image_name = cps.ImageNameSubscriber(
+                "Select the image to save", cps.NONE, doc="""
             <i>(Used only if "%(IF_IMAGE)s", "%(IF_MASK)s" or "%(IF_CROPPING)s" are selected to save)</i><br>
-            Select the image you want to save."""%globals())
+            Select the image you want to save.""" % globals())
 
         self.objects_name = cps.ObjectNameSubscriber(
-            "Select the objects to save", cps.NONE,doc = """
+                "Select the objects to save", cps.NONE, doc="""
             <i>(Used only if saving "%(IF_OBJECTS)s")</i><br>
-            Select the objects that you want to save."""%globals())
+            Select the objects that you want to save.""" % globals())
 
         self.figure_name = cps.FigureSubscriber(
-            "Select the module display window to save",cps.NONE,doc="""
+                "Select the module display window to save", cps.NONE, doc="""
             <i>(Used only if saving "%(IF_FIGURE)s")</i><br>
             Enter the module number/name for which you want to
-            save the module display window."""%globals())
+            save the module display window.""" % globals())
 
         self.file_name_method = cps.Choice(
-            "Select method for constructing file names",
-            [FN_FROM_IMAGE, FN_SEQUENTIAL,
-             FN_SINGLE_NAME],
-             FN_FROM_IMAGE,doc="""
+                "Select method for constructing file names",
+                [FN_FROM_IMAGE, FN_SEQUENTIAL,
+                 FN_SINGLE_NAME],
+                FN_FROM_IMAGE, doc="""
             <i>(Used only if saving non-movie files)</i><br>
             Several choices are available for constructing the image file name:
             <ul>
@@ -190,53 +190,53 @@ class SaveImages(cpm.CPModule):
             (see the <i>Select how often to save</i> setting). The exception to this is to
             use a metadata tag to provide a unique label, as mentioned
             in the <i>%(FN_FROM_IMAGE)s</i> option.</li>
-            </ul>"""%globals())
+            </ul>""" % globals())
 
         self.file_image_name = cps.FileImageNameSubscriber(
-            "Select image name for file prefix",
-            cps.NONE,doc="""
+                "Select image name for file prefix",
+                cps.NONE, doc="""
             <i>(Used only when "%(FN_FROM_IMAGE)s" is selected for contructing the filename)</i><br>
             Select an image loaded using <b>NamesAndTypes</b>. The original filename will be
-            used as the prefix for the output filename."""%globals())
+            used as the prefix for the output filename.""" % globals())
 
         self.single_file_name = cps.Text(
-            SINGLE_NAME_TEXT, "OrigBlue",
-            metadata = True,  doc="""
+                SINGLE_NAME_TEXT, "OrigBlue",
+                metadata=True, doc="""
             <i>(Used only when "%(FN_SEQUENTIAL)s" or "%(FN_SINGLE_NAME)s" are selected for contructing the filename)</i><br>
             Specify the filename text here. If you have metadata
             associated with your images, enter the filename text with the metadata tags. %(USING_METADATA_TAGS_REF)s<br>
-            Do not enter the file extension in this setting; it will be appended automatically."""%globals())
+            Do not enter the file extension in this setting; it will be appended automatically.""" % globals())
 
         self.number_of_digits = cps.Integer(
-            "Number of digits", 4, doc="""
+                "Number of digits", 4, doc="""
             <i>(Used only when "%(FN_SEQUENTIAL)s" is selected for contructing the filename)</i><br>
             Specify the number of digits to be used for the sequential numbering. Zeros will be
             used to left-pad the digits. If the number specified here is less than that needed to
-            contain the number of image sets, the latter will override the value entered."""%globals())
+            contain the number of image sets, the latter will override the value entered.""" % globals())
 
         self.wants_file_name_suffix = cps.Binary(
-            "Append a suffix to the image file name?", False, doc = """
+                "Append a suffix to the image file name?", False, doc="""
             Select <i>%(YES)s</i> to add a suffix to the image's file name.
-            Select <i>%(NO)s</i> to use the image name as-is."""%globals())
+            Select <i>%(NO)s</i> to use the image name as-is.""" % globals())
 
         self.file_name_suffix = cps.Text(
-            "Text to append to the image name",
-            "", metadata = True, doc="""
+                "Text to append to the image name",
+                "", metadata=True, doc="""
             <i>(Used only when constructing the filename from the image filename)</i><br>
             Enter the text that should be appended to the filename specified above.""")
 
         self.file_format = cps.Choice(
-            "Saved file format",
-            [FF_BMP, FF_JPG, FF_JPEG, FF_PNG, FF_TIF, FF_TIFF, FF_MAT],
-            value = FF_TIF, doc="""
+                "Saved file format",
+                [FF_BMP, FF_JPG, FF_JPEG, FF_PNG, FF_TIF, FF_TIFF, FF_MAT],
+                value=FF_TIF, doc="""
             <i>(Used only when saving non-movie files)</i><br>
             Select the image or movie format to save the image(s). Most common
             image formats are available; MAT-files are readable by MATLAB.""")
 
         self.movie_format = cps.Choice(
-            "Saved movie format",
-            [FF_AVI, FF_TIF, FF_MOV],
-            value = FF_AVI, doc="""
+                "Saved movie format",
+                [FF_AVI, FF_TIF, FF_MOV],
+                value=FF_AVI, doc="""
             <i>(Used only when saving movie files)</i><br>
             Select the movie format to use when saving movies. AVI and MOV
             store images from successive image sets as movie frames. TIF
@@ -244,7 +244,7 @@ class SaveImages(cpm.CPModule):
             """)
 
         self.pathname = SaveImagesDirectoryPath(
-            "Output file location", self.file_image_name,doc = """
+                "Output file location", self.file_image_name, doc="""
             <i>(Used only when saving non-movie files)</i><br>
             This setting lets you choose the folder for the output
             files. %(IO_FOLDER_CHOICE_HELP_TEXT)s
@@ -265,12 +265,12 @@ class SaveImages(cpm.CPModule):
             specify the additional folders separated with slashes. For example, "Outlines/Plate1" will create
             a "Plate1" folder in the "Outlines" folder, which in turn is under the Default
             Input/Output Folder. The use of a forward slash ("/") as a folder separator will
-            avoid ambiguity between the various operating systems.</p>"""%globals())
+            avoid ambiguity between the various operating systems.</p>""" % globals())
 
         # TODO:
         self.bit_depth = cps.Choice(
-            "Image bit depth",
-            [BIT_DEPTH_8, BIT_DEPTH_16, BIT_DEPTH_FLOAT],doc="""
+                "Image bit depth",
+                [BIT_DEPTH_8, BIT_DEPTH_16, BIT_DEPTH_FLOAT], doc="""
             <i>(Used only when saving files in a non-MAT format)</i><br>
             Select the bit-depth at which you want to save the images.
             <i>%(BIT_DEPTH_FLOAT)s</i> saves the image as floating-point decimals
@@ -278,19 +278,19 @@ class SaveImages(cpm.CPModule):
             0 and 1.
             <b>%(BIT_DEPTH_16)s and %(BIT_DEPTH_FLOAT)s images are supported only
             for TIF formats. Currently, saving images in 12-bit is not supported.</b>""" %
-            globals())
+                                                                  globals())
 
         self.overwrite = cps.Binary(
-            "Overwrite existing files without warning?",False,doc="""
+                "Overwrite existing files without warning?", False, doc="""
             Select <i>%(YES)s</i> to automatically overwrite a file if it already exists.
             Select <i>%(NO)s</i> to be prompted for confirmation first.
             <p>If you are running the pipeline on a computing cluster,
-            select <i>%(YES)s</i> since you will not be able to intervene and answer the confirmation prompt.</p>"""%globals())
+            select <i>%(YES)s</i> since you will not be able to intervene and answer the confirmation prompt.</p>""" % globals())
 
         self.when_to_save = cps.Choice(
-            "When to save",
-            [WS_EVERY_CYCLE,WS_FIRST_CYCLE,WS_LAST_CYCLE],
-            WS_EVERY_CYCLE, doc="""<a name='when_to_save'>
+                "When to save",
+                [WS_EVERY_CYCLE, WS_FIRST_CYCLE, WS_LAST_CYCLE],
+                WS_EVERY_CYCLE, doc="""<a name='when_to_save'>
             <i>(Used only when saving non-movie files)</i><br>
             Specify at what point during pipeline execution to save file(s). </a>
             <ul>
@@ -302,10 +302,10 @@ class SaveImages(cpm.CPModule):
             <li><i>%(WS_LAST_CYCLE)s</i> Useful for when you are saving an aggregate image completed
             on the last cycle, e.g., <b>CorrectIlluminationCalculate</b> with the <i>All</i>
             setting used on intermediate images generated during each cycle.</li>
-            </ul> """%globals())
+            </ul> """ % globals())
 
         self.rescale = cps.Binary(
-            "Rescale the images? ",False,doc="""
+                "Rescale the images? ", False, doc="""
             <i>(Used only when saving non-MAT file images)</i><br>
             Select <i>%(YES)s</i> if you want the image to occupy the full dynamic range of the bit
             depth you have chosen. For example, if you save an image to an 8-bit file, the
@@ -313,11 +313,11 @@ class SaveImages(cpm.CPModule):
             to 2<sup>8</sup>-1 = 255.
             <p>This will increase the contrast of the output image but will also effectively
             stretch the image data, which may not be desirable in some
-            circumstances. See <b>RescaleIntensity</b> for other rescaling options.</p>"""%globals())
+            circumstances. See <b>RescaleIntensity</b> for other rescaling options.</p>""" % globals())
 
         self.gray_or_color = cps.Choice(
-            "Save as grayscale or color image?",
-            [GC_GRAYSCALE, GC_COLOR],doc = """
+                "Save as grayscale or color image?",
+                [GC_GRAYSCALE, GC_COLOR], doc="""
             <i>(Used only when saving "%(IF_OBJECTS)s")</i><br>
             You can save objects as a grayscale image or as a color image.
             <ul>
@@ -332,17 +332,17 @@ class SaveImages(cpm.CPModule):
             with more than 255 objects.</li>
             <li><i>%(GC_COLOR)s:</i> Assigns different colors to different
             objects.</li>
-            </ul>"""%globals())
+            </ul>""" % globals())
 
         self.colormap = cps.Colormap(
-            'Select colormap',
-            value = CM_GRAY,doc= """
+                'Select colormap',
+                value=CM_GRAY, doc="""
             <i>(Used only when saving non-MAT file images)</i><br>
             This affects how images color intensities are displayed. All available colormaps can be seen
             <a href="http://www.scipy.org/Cookbook/Matplotlib/Show_colormaps">here</a>.""")
 
         self.update_file_names = cps.Binary(
-            "Record the file and path information to the saved image?",False,doc="""
+                "Record the file and path information to the saved image?", False, doc="""
             Select <i>%(YES)s</i> to store filename and pathname data for each of the new files created
             via this module as a per-image measurement.
             <p>Instances in which this information may be useful include:
@@ -353,14 +353,14 @@ class SaveImages(cpm.CPModule):
             the saved images to be displayed along with the original images.</li>
             <li>Allowing downstream modules (e.g., <b>CreateWebPage</b>) to access
             the newly saved files.</li>
-            </ul></p>"""%globals())
+            </ul></p>""" % globals())
 
         self.create_subdirectories = cps.Binary(
-            "Create subfolders in the output folder?",False,doc = """
-            Select <i>%(YES)s</i> to create subfolders to match the input image folder structure."""%globals())
+                "Create subfolders in the output folder?", False, doc="""
+            Select <i>%(YES)s</i> to create subfolders to match the input image folder structure.""" % globals())
 
         self.root_dir = cps.DirectoryPath(
-            "Base image folder", doc = """
+                "Base image folder", doc="""
             <i>Used only if creating subfolders in the output folder</i>
             In subfolder mode, <b>SaveImages</b> determines the folder for
             an image file by examining the path of the matching input file.
@@ -413,7 +413,7 @@ class SaveImages(cpm.CPModule):
             self.single_file_name.text = SINGLE_NAME_TEXT
             result.append(self.single_file_name)
         else:
-            raise NotImplementedError("Unhandled file name method: %s"%(self.file_name_method))
+            raise NotImplementedError("Unhandled file name method: %s" % self.file_name_method)
         if self.save_image_or_figure == IF_MOVIE:
             result.append(self.movie_format)
         else:
@@ -428,7 +428,7 @@ class SaveImages(cpm.CPModule):
         if self.save_image_or_figure != IF_MOVIE:
             result.append(self.when_to_save)
         if (self.save_image_or_figure == IF_IMAGE and
-            self.file_format != FF_MAT):
+                    self.file_format != FF_MAT):
             result.append(self.rescale)
             if self.get_bit_depth() == "8":
                 result.append(self.colormap)
@@ -445,7 +445,7 @@ class SaveImages(cpm.CPModule):
 
     @property
     def module_key(self):
-        return "%s_%d"%(self.module_name, self.module_num)
+        return "%s_%d" % (self.module_name, self.module_num)
 
     def prepare_group(self, workspace, grouping, image_numbers):
         d = self.get_dictionary(workspace.image_set_list)
@@ -459,7 +459,7 @@ class SaveImages(cpm.CPModule):
         if self.create_subdirectories:
             self.root_dir.alter_for_create_batch_files(fn_alter_path)
 
-    def run(self,workspace):
+    def run(self, workspace):
         """Run the module
 
         pipeline     - instance of CellProfiler.Pipeline for this run
@@ -476,10 +476,10 @@ class SaveImages(cpm.CPModule):
         elif self.save_image_or_figure == IF_OBJECTS:
             should_save = self.run_objects(workspace)
         else:
-            raise NotImplementedError(("Saving a %s is not yet supported"%
-                                       (self.save_image_or_figure)))
+            raise NotImplementedError(("Saving a %s is not yet supported" %
+                                       self.save_image_or_figure))
         workspace.display_data.filename = self.get_filename(
-            workspace, make_dirs = False, check_overwrite = False)
+                workspace, make_dirs=False, check_overwrite=False)
 
     def is_aggregation_module(self):
         '''SaveImages is an aggregation module when it writes movies'''
@@ -494,10 +494,9 @@ class SaveImages(cpm.CPModule):
             outcome = ("Wrote %s" if workspace.display_data.wrote_image
                        else "Did not write %s")
             figure.subplot_table(0, 0, [[outcome %
-                                         (workspace.display_data.filename)]])
+                                         workspace.display_data.filename]])
 
-
-    def run_image(self,workspace):
+    def run_image(self, workspace):
         """Handle saving an image"""
         #
         # First, check to see if we should save this image
@@ -512,11 +511,10 @@ class SaveImages(cpm.CPModule):
 
         elif self.when_to_save == WS_LAST_CYCLE:
             workspace.display_data.wrote_image = False
-            self.save_filename_measurements( workspace)
+            self.save_filename_measurements(workspace)
             return
         self.save_image(workspace)
         return True
-
 
     def run_movie(self, workspace):
         out_file = self.get_filename(workspace, check_overwrite=False)
@@ -539,7 +537,7 @@ class SaveImages(cpm.CPModule):
         current_frame = d["CURRENT_FRAME"]
         d["CURRENT_FRAME"] += 1
         self.do_save_image(workspace, out_file, pixels, ome.PT_UINT8,
-                           t = current_frame, size_t = frames)
+                           t=current_frame, size_t=frames)
 
     def run_objects(self, workspace):
         #
@@ -553,7 +551,7 @@ class SaveImages(cpm.CPModule):
 
         elif self.when_to_save == WS_LAST_CYCLE:
             workspace.display_data.wrote_image = False
-            self.save_filename_measurements( workspace)
+            self.save_filename_measurements(workspace)
             return
         self.save_objects(workspace)
 
@@ -567,7 +565,7 @@ class SaveImages(cpm.CPModule):
         labels = [l for l, c in objects.get_labels()]
         if self.get_file_format() == FF_MAT:
             pixels = objects.segmented
-            scipy.io.matlab.mio.savemat(filename,{"Image":pixels},format='5')
+            scipy.io.matlab.mio.savemat(filename, {"Image": pixels}, format='5')
 
         elif self.gray_or_color == GC_GRAYSCALE:
             if objects.count > 255:
@@ -576,7 +574,7 @@ class SaveImages(cpm.CPModule):
                 pixel_type = ome.PT_UINT8
             for i, l in enumerate(labels):
                 self.do_save_image(
-                    workspace, filename, l, pixel_type, t=i, size_t=len(labels))
+                        workspace, filename, l, pixel_type, t=i, size_t=len(labels))
 
         else:
             if self.colormap == cps.DEFAULT:
@@ -602,16 +600,16 @@ class SaveImages(cpm.CPModule):
 
     def post_group(self, workspace, *args):
         if (self.when_to_save == WS_LAST_CYCLE and
-            self.save_image_or_figure != IF_MOVIE):
+                    self.save_image_or_figure != IF_MOVIE):
             if self.save_image_or_figure == IF_OBJECTS:
                 self.save_objects(workspace)
             else:
                 self.save_image(workspace)
 
     def do_save_image(self, workspace, filename, pixels, pixel_type,
-                   c = 0, z = 0, t = 0,
-                   size_c = 1, size_z = 1, size_t = 1,
-                   channel_names = None):
+                      c=0, z=0, t=0,
+                      size_c=1, size_z=1, size_t=1,
+                      channel_names=None):
         '''Save image using bioformats
 
         workspace - the current workspace
@@ -637,9 +635,9 @@ class SaveImages(cpm.CPModule):
         channel_names - names of the channels (make up names if not present
         '''
         write_image(filename, pixels, pixel_type,
-                    c = c, z = z, t = t,
-                    size_c = size_c, size_z = size_z, size_t = size_t,
-                    channel_names = channel_names)
+                    c=c, z=z, t=t,
+                    size_c=size_c, size_z=size_z, size_t=size_t,
+                    channel_names=channel_names)
 
     def save_image(self, workspace):
         if self.show_window:
@@ -656,10 +654,10 @@ class SaveImages(cpm.CPModule):
                     if pixels.ndim == 3:
                         # RGB
                         for i in range(3):
-                            img_min = np.min(pixels[:,:,i])
-                            img_max = np.max(pixels[:,:,i])
+                            img_min = np.min(pixels[:, :, i])
+                            img_max = np.max(pixels[:, :, i])
                             if img_max > img_min:
-                                pixels[:,:,i] = (pixels[:,:,i] - img_min) / (img_max - img_min)
+                                pixels[:, :, i] = (pixels[:, :, i] - img_min) / (img_max - img_min)
                     else:
                         # Grayscale
                         img_min = np.min(pixels)
@@ -670,14 +668,14 @@ class SaveImages(cpm.CPModule):
                     # Clip at 0 and 1
                     if np.max(pixels) > 1 or np.min(pixels) < 0:
                         sys.stderr.write(
-                            "Warning, clipping image %s before output. Some intensities are outside of range 0-1" %
-                            self.image_name.value)
+                                "Warning, clipping image %s before output. Some intensities are outside of range 0-1" %
+                                self.image_name.value)
                         pixels = pixels.copy()
                         pixels[pixels < 0] = 0
                         pixels[pixels > 1] = 1
 
-                if pixels.ndim == 2 and self.colormap != CM_GRAY and\
-                   self.get_bit_depth() == BIT_DEPTH_8:
+                if pixels.ndim == 2 and self.colormap != CM_GRAY and \
+                                self.get_bit_depth() == BIT_DEPTH_8:
                     # Convert grayscale image to rgb for writing
                     if self.colormap == cps.DEFAULT:
                         colormap = cpp.get_default_colormap()
@@ -689,13 +687,13 @@ class SaveImages(cpm.CPModule):
                     pixels = mapper.to_rgba(pixels, bytes=True)
                     pixel_type = ome.PT_UINT8
                 elif self.get_bit_depth() == BIT_DEPTH_8:
-                    pixels = (pixels*255).astype(np.uint8)
+                    pixels = (pixels * 255).astype(np.uint8)
                     pixel_type = ome.PT_UINT8
                 elif self.get_bit_depth() == BIT_DEPTH_FLOAT:
                     pixel_type = ome.PT_FLOAT
                 else:
                     if not u16hack:
-                        pixels = (pixels*65535)
+                        pixels = (pixels * 65535)
                     pixel_type = ome.PT_UINT16
 
         elif self.save_image_or_figure == IF_MASK:
@@ -711,7 +709,7 @@ class SaveImages(cpm.CPModule):
             return
 
         if self.get_file_format() == FF_MAT:
-            scipy.io.matlab.mio.savemat(filename,{"Image":pixels},format='5')
+            scipy.io.matlab.mio.savemat(filename, {"Image": pixels}, format='5')
         elif self.get_file_format() == FF_BMP:
             save_bmp(filename, pixels)
         else:
@@ -729,9 +727,11 @@ class SaveImages(cpm.CPModule):
         '''
         if not self.overwrite.value and os.path.isfile(filename):
             try:
-                return (workspace.interaction_request(self, workspace.measurements.image_set_number, filename) == "Yes")
+                return workspace.interaction_request(self, workspace.measurements.image_set_number, filename) == "Yes"
             except workspace.NoInteractionException:
-                raise ValueError('SaveImages: trying to overwrite %s in headless mode, but Overwrite files is set to "No"' % (filename))
+                raise ValueError(
+                        'SaveImages: trying to overwrite %s in headless mode, but Overwrite files is set to "No"' % (
+                            filename))
         return True
 
     def handle_interaction(self, image_set_number, filename):
@@ -739,15 +739,15 @@ class SaveImages(cpm.CPModule):
         import wx
         dlg = wx.MessageDialog(wx.GetApp().TopWindow,
                                "%s #%d, set #%d - Do you want to overwrite %s?" % \
-                                   (self.module_name, self.module_num, image_set_number, filename),
+                               (self.module_name, self.module_num, image_set_number, filename),
                                "Warning: overwriting file", wx.YES_NO | wx.ICON_QUESTION)
         result = dlg.ShowModal() == wx.ID_YES
         return "Yes" if result else "No"
 
     def save_filename_measurements(self, workspace):
         if self.update_file_names.value:
-            filename = self.get_filename(workspace, make_dirs = False,
-                                         check_overwrite = False)
+            filename = self.get_filename(workspace, make_dirs=False,
+                                         check_overwrite=False)
             pn, fn = os.path.split(filename)
             url = pathname2url(filename)
             workspace.measurements.add_measurement(cpmeas.IMAGE,
@@ -793,8 +793,8 @@ class SaveImages(cpm.CPModule):
         '''The path for the image data, or its first parent with a path'''
         if self.file_name_method.value == FN_FROM_IMAGE:
             path_feature = '%s_%s' % (C_PATH_NAME, self.file_image_name.value)
-            assert workspace.measurements.has_feature(cpmeas.IMAGE, path_feature),\
-                "Image %s does not have a path!" % (self.file_image_name.value)
+            assert workspace.measurements.has_feature(cpmeas.IMAGE, path_feature), \
+                "Image %s does not have a path!" % self.file_image_name.value
             return workspace.measurements.get_current_image_measurement(path_feature)
 
         # ... otherwise, chase the cpimage hierarchy looking for an image with a path
@@ -818,7 +818,7 @@ class SaveImages(cpm.CPModule):
     def get_filename(self, workspace, make_dirs=True, check_overwrite=True):
         "Concoct a filename for the current image based on the user settings"
 
-        measurements=workspace.measurements
+        measurements = workspace.measurements
         if self.file_name_method == FN_SINGLE_NAME:
             filename = self.single_file_name.value
             filename = workspace.measurements.apply_metadata(filename)
@@ -826,10 +826,10 @@ class SaveImages(cpm.CPModule):
             filename = self.single_file_name.value
             filename = workspace.measurements.apply_metadata(filename)
             n_image_sets = workspace.measurements.image_set_count
-            ndigits = int(np.ceil(np.log10(n_image_sets+1)))
-            ndigits = max((ndigits,self.number_of_digits.value))
+            ndigits = int(np.ceil(np.log10(n_image_sets + 1)))
+            ndigits = max((ndigits, self.number_of_digits.value))
             padded_num_string = str(measurements.image_set_number).zfill(ndigits)
-            filename = '%s%s'%(filename, padded_num_string)
+            filename = '%s%s' % (filename, padded_num_string)
         else:
             file_name_feature = self.source_file_name_feature
             filename = measurements.get_current_measurement('Image',
@@ -840,11 +840,11 @@ class SaveImages(cpm.CPModule):
                 suffix = workspace.measurements.apply_metadata(suffix)
                 filename += suffix
 
-        filename = "%s.%s"%(filename,self.get_file_format())
+        filename = "%s.%s" % (filename, self.get_file_format())
         pathname = self.pathname.get_absolute_path(measurements)
         if self.create_subdirectories:
             image_path = self.source_path(workspace)
-            subdir = relpath(image_path, self.root_dir.get_absolute_path())
+            subdir = os.path.relpath(image_path, self.root_dir.get_absolute_path())
             pathname = os.path.join(pathname, subdir)
         if len(pathname) and not os.path.isdir(pathname) and make_dirs:
             try:
@@ -878,7 +878,7 @@ class SaveImages(cpm.CPModule):
 
     def get_bit_depth(self):
         if (self.save_image_or_figure == IF_IMAGE and
-            self.get_file_format() in FF_SUPPORTING_16_BIT):
+                    self.get_file_format() in FF_SUPPORTING_16_BIT):
             return self.bit_depth.value
         else:
             return BIT_DEPTH_8
@@ -889,7 +889,7 @@ class SaveImages(cpm.CPModule):
 
         """
 
-        PC_DEFAULT     = "Default output folder"
+        PC_DEFAULT = "Default output folder"
 
         #################################
         #
@@ -908,7 +908,7 @@ class SaveImages(cpm.CPModule):
         if from_matlab and variable_revision_number == 14:
             new_setting_values = []
             if setting_values[0].isdigit():
-                new_setting_values.extend([IF_FIGURE,setting_values[1]])
+                new_setting_values.extend([IF_FIGURE, setting_values[1]])
             elif setting_values[3] == 'avi':
                 new_setting_values.extend([IF_MOVIE, setting_values[0]])
             elif setting_values[0].startswith("Cropping"):
@@ -921,9 +921,9 @@ class SaveImages(cpm.CPModule):
                 new_setting_values.extend([IF_IMAGE, setting_values[0]])
             new_setting_values.append(new_setting_values[1])
             if setting_values[1] == 'N':
-                new_setting_values.extend([FN_SEQUENTIAL,"None","None"])
+                new_setting_values.extend([FN_SEQUENTIAL, "None", "None"])
             elif setting_values[1][0] == '=':
-                new_setting_values.extend([FN_SINGLE_NAME,setting_values[1][1:],
+                new_setting_values.extend([FN_SINGLE_NAME, setting_values[1][1:],
                                            setting_values[1][1:]])
             else:
                 if len(cpmeas.find_metadata_tokens(setting_values[1])):
@@ -974,7 +974,7 @@ class SaveImages(cpm.CPModule):
             # Default image/output directory -> Default Image Folder
             if setting_values[8].startswith("Default output"):
                 setting_values = (setting_values[:8] +
-                                  [PC_DEFAULT]+ setting_values[9:])
+                                  [PC_DEFAULT] + setting_values[9:])
             elif setting_values[8].startswith("Same"):
                 setting_values = (setting_values[:8] +
                                   [PC_WITH_IMAGE] + setting_values[9:])
@@ -989,7 +989,7 @@ class SaveImages(cpm.CPModule):
             # Changed save type from "Figure" to "Module window"
             if setting_values[0] == "Figure":
                 setting_values[0] = IF_FIGURE
-            setting_values = standardize_default_folder_names(setting_values,8)
+            setting_values = standardize_default_folder_names(setting_values, 8)
             variable_revision_number = 4
 
         #########################
@@ -998,16 +998,16 @@ class SaveImages(cpm.CPModule):
         #
         #########################
         if (not from_matlab) and variable_revision_number == 4:
-            save_image_or_figure, image_name, figure_name,\
-	    file_name_method, file_image_name, \
-	    single_file_name, file_name_suffix, file_format, \
-	    pathname_choice, pathname, bit_depth, \
-	    overwrite, when_to_save, \
+            save_image_or_figure, image_name, figure_name, \
+            file_name_method, file_image_name, \
+            single_file_name, file_name_suffix, file_format, \
+            pathname_choice, pathname, bit_depth, \
+            overwrite, when_to_save, \
             when_to_save_movie, rescale, colormap, \
             update_file_names, create_subdirectories = setting_values
 
             pathname = SaveImagesDirectoryPath.static_join_string(
-                pathname_choice, pathname)
+                    pathname_choice, pathname)
 
             setting_values = [
                 save_image_or_figure, image_name, figure_name,
@@ -1048,7 +1048,7 @@ class SaveImages(cpm.CPModule):
         if (not from_matlab) and (variable_revision_number == 6):
             setting_values = (
                 setting_values[:2] + ["None"] + setting_values[2:14] +
-                [ GC_GRAYSCALE ] + setting_values[14:])
+                [GC_GRAYSCALE] + setting_values[14:])
             variable_revision_number = 7
         ######################
         #
@@ -1068,7 +1068,7 @@ class SaveImages(cpm.CPModule):
         if (not from_matlab) and (variable_revision_number == 8):
             if setting_values[9] == FF_TIF:
                 setting_values = setting_values[:9] + [FF_TIFF] + \
-                    setting_values[10:]
+                                 setting_values[10:]
             variable_revision_number = 9
 
         ######################
@@ -1078,7 +1078,7 @@ class SaveImages(cpm.CPModule):
         ######################
         if (not from_matlab) and (variable_revision_number == 9):
             setting_values = setting_values[:7] + ["4"] + \
-                    setting_values[7:]
+                             setting_values[7:]
             variable_revision_number = 10
 
         ######################
@@ -1087,7 +1087,7 @@ class SaveImages(cpm.CPModule):
         #
         ######################
         if (not from_matlab) and (variable_revision_number == 10):
-            setting_values = setting_values + [ FF_AVI ]
+            setting_values = setting_values + [FF_AVI]
             variable_revision_number = 11
 
         ######################
@@ -1099,10 +1099,10 @@ class SaveImages(cpm.CPModule):
         if variable_revision_number == 11:
             bit_depth = setting_values[OFFSET_BIT_DEPTH_V11]
             bit_depth = {
-                OLD_BIT_DEPTH_8:BIT_DEPTH_8,
-                OLD_BIT_DEPTH_16:BIT_DEPTH_16 }.get(bit_depth, bit_depth)
+                OLD_BIT_DEPTH_8: BIT_DEPTH_8,
+                OLD_BIT_DEPTH_16: BIT_DEPTH_16}.get(bit_depth, bit_depth)
             setting_values = setting_values[:OFFSET_BIT_DEPTH_V11] + \
-                [bit_depth] + setting_values[OFFSET_BIT_DEPTH_V11+1:]
+                             [bit_depth] + setting_values[OFFSET_BIT_DEPTH_V11 + 1:]
 
         setting_values[OFFSET_DIRECTORY_PATH] = \
             SaveImagesDirectoryPath.upgrade_setting(setting_values[OFFSET_DIRECTORY_PATH])
@@ -1111,7 +1111,7 @@ class SaveImages(cpm.CPModule):
 
     def validate_module(self, pipeline):
         if (self.save_image_or_figure in (IF_IMAGE, IF_MASK, IF_CROPPING) and
-            self.when_to_save in (WS_FIRST_CYCLE, WS_EVERY_CYCLE)):
+                    self.when_to_save in (WS_FIRST_CYCLE, WS_EVERY_CYCLE)):
             #
             # Make sure that the image name is available on every cycle
             #
@@ -1135,9 +1135,11 @@ class SaveImages(cpm.CPModule):
             text_str = self.single_file_name.value if self.file_name_method == FN_SINGLE_NAME else self.file_name_suffix.value
             undefined_tags = pipeline.get_undefined_metadata_tags(text_str)
             if len(undefined_tags) > 0:
-                raise cps.ValidationError("%s is not a defined metadata tag. Check the metadata specifications in your load modules" %
-                                     undefined_tags[0],
-                                     self.single_file_name if self.file_name_method == FN_SINGLE_NAME else self.file_name_suffix)
+                raise cps.ValidationError(
+                        "%s is not a defined metadata tag. Check the metadata specifications in your load modules" %
+                        undefined_tags[0],
+                        self.single_file_name if self.file_name_method == FN_SINGLE_NAME else self.file_name_suffix)
+
 
 class SaveImagesDirectoryPath(cps.DirectoryPath):
     '''A specialized version of DirectoryPath to handle saving in the image dir'''
@@ -1149,11 +1151,11 @@ class SaveImagesDirectoryPath(cps.DirectoryPath):
         doc - documentation for user
         '''
         super(SaveImagesDirectoryPath, self).__init__(
-            text, dir_choices = [
-                cps.DEFAULT_OUTPUT_FOLDER_NAME, cps.DEFAULT_INPUT_FOLDER_NAME,
-                PC_WITH_IMAGE, cps.ABSOLUTE_FOLDER_NAME,
-                cps.DEFAULT_OUTPUT_SUBFOLDER_NAME,
-                cps.DEFAULT_INPUT_SUBFOLDER_NAME], doc=doc)
+                text, dir_choices=[
+                    cps.DEFAULT_OUTPUT_FOLDER_NAME, cps.DEFAULT_INPUT_FOLDER_NAME,
+                    PC_WITH_IMAGE, cps.ABSOLUTE_FOLDER_NAME,
+                    cps.DEFAULT_OUTPUT_SUBFOLDER_NAME,
+                    cps.DEFAULT_INPUT_SUBFOLDER_NAME], doc=doc)
         self.file_image_name = file_image_name
 
     def get_absolute_path(self, measurements=None, image_set_index=None):
@@ -1161,7 +1163,7 @@ class SaveImagesDirectoryPath(cps.DirectoryPath):
             path_name_feature = "PathName_%s" % self.file_image_name.value
             return measurements.get_current_image_measurement(path_name_feature)
         return super(SaveImagesDirectoryPath, self).get_absolute_path(
-            measurements, image_set_index)
+                measurements, image_set_index)
 
     def test_valid(self, pipeline):
         if self.dir_choice not in self.dir_choices:
@@ -1185,6 +1187,7 @@ class SaveImagesDirectoryPath(cps.DirectoryPath):
         else:
             return cps.DirectoryPath.upgrade_setting(value)
         return cps.DirectoryPath.static_join_string(dir_choice, custom_path)
+
 
 def save_bmp(path, img):
     '''Save an image as a Microsoft .bmp file
@@ -1222,9 +1225,9 @@ def save_bmp(path, img):
         #
         # Do not understand why but RGB is BGR
         #
-        tmp[:, 2:(w*3):3] = img[:, :, 0]
-        tmp[:, 1:(w*3):3] = img[:, :, 1]
-        tmp[:, 0:(w*3):3] = img[:, :, 2]
+        tmp[:, 2:(w * 3):3] = img[:, :, 0]
+        tmp[:, 1:(w * 3):3] = img[:, :, 1]
+        tmp[:, 0:(w * 3):3] = img[:, :, 2]
         img = tmp
     else:
         rgb = False
@@ -1241,9 +1244,11 @@ def save_bmp(path, img):
         def write2(value):
             '''write a two-byte little-endian value to the file'''
             fd.write(np.array([value], "<u2").data[:2])
+
         def write4(value):
             '''write a four-byte little-endian value to the file'''
             fd.write(np.array([value], "<u4").data[:4])
+
         #
         # Bitmap file header (1st pass)
         # byte
@@ -1252,10 +1257,10 @@ def save_bmp(path, img):
         # 6-9 = 0
         # 10-13 = offset from beginning of file to bitmap bits
         fd.write("BM")
-        length = 14 # BITMAPFILEHEADER
+        length = 14  # BITMAPFILEHEADER
         length += BITMAPINFOHEADER_SIZE
         if not rgb:
-            length += 4 * 256         # 256 color table entries
+            length += 4 * 256  # 256 color table entries
         hdr_length = length
         length += len(bmp)
         write4(length)
@@ -1264,21 +1269,21 @@ def save_bmp(path, img):
         #
         # BITMAPINFOHEADER
         #
-        write4(BITMAPINFOHEADER_SIZE) # biSize
-        write4(w)                     # biWidth
-        write4(h)                     # biHeight
-        write2(1)                     # biPlanes = 1
-        write2(24 if rgb else 8)      # biBitCount
-        write4(0)                     # biCompression = BI_RGB
-        write4(len(bmp))              # biSizeImage
-        write4(7200)                  # biXPelsPerMeter
-        write4(7200)                  # biYPelsPerMeter
-        write4(0 if rgb else 256)     # biClrUsed (no palette)
-        write4(0)                     # biClrImportant
+        write4(BITMAPINFOHEADER_SIZE)  # biSize
+        write4(w)  # biWidth
+        write4(h)  # biHeight
+        write2(1)  # biPlanes = 1
+        write2(24 if rgb else 8)  # biBitCount
+        write4(0)  # biCompression = BI_RGB
+        write4(len(bmp))  # biSizeImage
+        write4(7200)  # biXPelsPerMeter
+        write4(7200)  # biYPelsPerMeter
+        write4(0 if rgb else 256)  # biClrUsed (no palette)
+        write4(0)  # biClrImportant
         if not rgb:
             # The color table
             color_table = np.column_stack(
-                [np.arange(256)]* 3 +
-                [np.zeros(256, np.uint32)]).astype(np.uint8)
+                    [np.arange(256)] * 3 +
+                    [np.zeros(256, np.uint32)]).astype(np.uint8)
             fd.write(np.ascontiguousarray(color_table, np.uint8).data)
         fd.write(bmp)

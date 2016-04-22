@@ -27,6 +27,7 @@ OUTPUT_IMAGE_NAME = 'outputimage'
 OBJECTS_NAME = 'objects'
 MEASUREMENT_NAME = 'measurement'
 
+
 class TestDisplayDataOnImage(unittest.TestCase):
     def test_01_00_load_matlab(self):
         data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
@@ -47,8 +48,10 @@ class TestDisplayDataOnImage(unittest.TestCase):
                 'pOH5r6yr6R8f9uW92/yVJzYmdeuq3kvvXpo9vhrz/Zitmva6rJq+eTG2/57G'
                 '9v+Wzf32b/69R/LTc3/+Z+u5zxEPAO9uZBU=')
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 3)
@@ -86,8 +89,10 @@ class TestDisplayDataOnImage(unittest.TestCase):
                 '8vzCvRxcLaEpGudXMF2+/XxL/2iMi+w/bdw0TZt53DFP7VrTxP9i+v8HLF6T'
                 'LA==')
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 3)
@@ -123,8 +128,10 @@ DisplayDataOnImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
     Color map:jet
 """
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
@@ -167,8 +174,10 @@ DisplayDataOnImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
     Display background image:No
 """
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
@@ -235,8 +244,10 @@ DisplayDataOnImage:[module_num:2|svn_version:\'Unknown\'|variable_revision_numbe
     Color map range:0.05,1.5
 """
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
         self.assertEqual(len(pipeline.modules()), 2)
@@ -245,7 +256,7 @@ DisplayDataOnImage:[module_num:2|svn_version:\'Unknown\'|variable_revision_numbe
         self.assertEqual(module.objects_or_image, D.OI_OBJECTS)
         self.assertEqual(module.objects_name, "Nuclei")
         self.assertEqual(
-            module.measurement, "Texture_AngularSecondMoment_CropBlue_3_0")
+                module.measurement, "Texture_AngularSecondMoment_CropBlue_3_0")
         self.assertEqual(module.image_name, "RGBImage")
         self.assertEqual(module.display_image, "Whatever")
         self.assertEqual(module.font_size, 11)
@@ -263,7 +274,7 @@ DisplayDataOnImage:[module_num:2|svn_version:\'Unknown\'|variable_revision_numbe
         self.assertEqual(module.color_map_scale_choice,
                          D.CMS_USE_MEASUREMENT_RANGE)
 
-    def make_workspace(self, measurement, labels = None, image = None):
+    def make_workspace(self, measurement, labels=None, image=None):
         object_set = cpo.ObjectSet()
         module = D.DisplayDataOnImage()
         module.module_num = 1
@@ -276,21 +287,22 @@ DisplayDataOnImage:[module_num:2|svn_version:\'Unknown\'|variable_revision_numbe
             module.objects_or_image.value = D.OI_IMAGE
             m.add_image_measurement(MEASUREMENT_NAME, measurement)
             if image is None:
-                image = np.zeros((50,120))
+                image = np.zeros((50, 120))
         else:
             module.objects_or_image.value = D.OI_OBJECTS
             o = cpo.Objects()
             o.segmented = labels
             object_set.add_objects(o, OBJECTS_NAME)
             m.add_measurement(OBJECTS_NAME, MEASUREMENT_NAME, np.array(measurement))
-            y,x = centers_of_labels(labels)
-            m.add_measurement(OBJECTS_NAME, "Location_Center_X",x)
-            m.add_measurement(OBJECTS_NAME, "Location_Center_Y",y)
+            y, x = centers_of_labels(labels)
+            m.add_measurement(OBJECTS_NAME, "Location_Center_X", x)
+            m.add_measurement(OBJECTS_NAME, "Location_Center_Y", y)
             if image is None:
                 image = np.zeros(labels.shape)
         module.measurement.value = MEASUREMENT_NAME
 
         pipeline = cpp.Pipeline()
+
         def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
 
@@ -298,7 +310,7 @@ DisplayDataOnImage:[module_num:2|svn_version:\'Unknown\'|variable_revision_numbe
         pipeline.add_module(module)
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        image_set.add(INPUT_IMAGE_NAME,cpi.Image(image))
+        image_set.add(INPUT_IMAGE_NAME, cpi.Image(image))
 
         workspace = cpw.Workspace(pipeline, module, image_set, object_set,
                                   m, image_set_list)
@@ -312,48 +324,48 @@ DisplayDataOnImage:[module_num:2|svn_version:\'Unknown\'|variable_revision_numbe
             image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
 
     def test_02_02_display_objects(self):
-        labels = np.zeros((50,120),int)
-        labels[10:20,20:27] = 1
-        labels[30:35,35:50] = 2
-        labels[5:18,44:100] = 3
+        labels = np.zeros((50, 120), int)
+        labels[10:20, 20:27] = 1
+        labels[30:35, 35:50] = 2
+        labels[5:18, 44:100] = 3
         for display in (D.E_AXES, D.E_FIGURE, D.E_IMAGE):
-            workspace, module = self.make_workspace([0,1,2], labels)
+            workspace, module = self.make_workspace([0, 1, 2], labels)
             module.saved_image_contents.value = display
             module.run(workspace)
             image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
 
     def test_02_03_display_no_objects(self):
-        workspace, module = self.make_workspace([], np.zeros((50,120)))
+        workspace, module = self.make_workspace([], np.zeros((50, 120)))
         module.run(workspace)
         image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
 
     def test_02_04_display_nan_objects(self):
-        labels = np.zeros((50,120),int)
-        labels[10:20,20:27] = 1
-        labels[30:35,35:50] = 2
-        labels[5:18,44:100] = 3
-        for measurements in (np.array([1.0,np.nan, 5.0]), np.array([np.nan]*3)):
+        labels = np.zeros((50, 120), int)
+        labels[10:20, 20:27] = 1
+        labels[30:35, 35:50] = 2
+        labels[5:18, 44:100] = 3
+        for measurements in (np.array([1.0, np.nan, 5.0]), np.array([np.nan] * 3)):
             workspace, module = self.make_workspace(measurements, labels)
             module.run(workspace)
             image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
 
     def test_02_05_display_objects_wrong_size(self):
-        labels = np.zeros((50,120),int)
-        labels[10:20,20:27] = 1
-        labels[30:35,35:50] = 2
-        labels[5:18,44:100] = 3
+        labels = np.zeros((50, 120), int)
+        labels[10:20, 20:27] = 1
+        labels[30:35, 35:50] = 2
+        labels[5:18, 44:100] = 3
         input_image = np.random.uniform(size=(60, 110))
         for display in (D.E_AXES, D.E_FIGURE, D.E_IMAGE):
-            workspace, module = self.make_workspace([0,1,2], labels, input_image)
+            workspace, module = self.make_workspace([0, 1, 2], labels, input_image)
             module.saved_image_contents.value = display
             module.run(workspace)
             image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
 
     def test_02_06_display_colors(self):
-        labels = np.zeros((50,120),int)
-        labels[10:20,20:27] = 1
-        labels[30:35,35:50] = 2
-        labels[5:18,44:100] = 3
+        labels = np.zeros((50, 120), int)
+        labels[10:20, 20:27] = 1
+        labels[30:35, 35:50] = 2
+        labels[5:18, 44:100] = 3
         workspace, module = self.make_workspace([1.1, 2.2, 3.3], labels)
         assert isinstance(module, D.DisplayDataOnImage)
         module.color_or_text.value = D.CT_COLOR
@@ -364,10 +376,10 @@ DisplayDataOnImage:[module_num:2|svn_version:\'Unknown\'|variable_revision_numbe
         #
         # Regression test of issue 1084
         #
-        labels = np.zeros((50,120),int)
-        labels[10:20,20:27] = 1
-        labels[30:35,35:50] = 2
-        labels[5:18,44:100] = 3
+        labels = np.zeros((50, 120), int)
+        labels[10:20, 20:27] = 1
+        labels[30:35, 35:50] = 2
+        labels[5:18, 44:100] = 3
         workspace, module = self.make_workspace([1.1, 2.2], labels)
         assert isinstance(module, D.DisplayDataOnImage)
         module.color_or_text.value = D.CT_COLOR
@@ -378,10 +390,10 @@ DisplayDataOnImage:[module_num:2|svn_version:\'Unknown\'|variable_revision_numbe
         #
         # Regression test of issue 1084
         #
-        labels = np.zeros((50,120),int)
-        labels[10:20,20:27] = 1
-        labels[30:35,35:50] = 2
-        labels[5:18,44:100] = 3
+        labels = np.zeros((50, 120), int)
+        labels[10:20, 20:27] = 1
+        labels[30:35, 35:50] = 2
+        labels[5:18, 44:100] = 3
         workspace, module = self.make_workspace([1.1, np.nan, 2.2], labels)
         assert isinstance(module, D.DisplayDataOnImage)
         module.color_or_text.value = D.CT_COLOR
@@ -392,10 +404,10 @@ DisplayDataOnImage:[module_num:2|svn_version:\'Unknown\'|variable_revision_numbe
         #
         # Just run the code path for manual color map scale
         #
-        labels = np.zeros((50,120),int)
-        labels[10:20,20:27] = 1
-        labels[30:35,35:50] = 2
-        labels[5:18,44:100] = 3
+        labels = np.zeros((50, 120), int)
+        labels[10:20, 20:27] = 1
+        labels[30:35, 35:50] = 2
+        labels[5:18, 44:100] = 3
         workspace, module = self.make_workspace([1.1, 2.2, 3.3], labels)
         assert isinstance(module, D.DisplayDataOnImage)
         module.color_or_text.value = D.CT_COLOR

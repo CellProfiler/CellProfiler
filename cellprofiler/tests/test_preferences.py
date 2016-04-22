@@ -11,39 +11,39 @@ import cellprofiler.preferences as cpprefs
 class TestPreferences(unittest.TestCase):
     def test_01_01_folder_translations(self):
         for expected, value in (
-            (cpprefs.ABSOLUTE_FOLDER_NAME, cpprefs.ABSOLUTE_FOLDER_NAME),
-            (cpprefs.DEFAULT_INPUT_FOLDER_NAME, cpprefs.DEFAULT_INPUT_FOLDER_NAME),
-            (cpprefs.DEFAULT_OUTPUT_FOLDER_NAME, cpprefs.DEFAULT_OUTPUT_FOLDER_NAME),
-            (cpprefs.DEFAULT_INPUT_SUBFOLDER_NAME, cpprefs.DEFAULT_INPUT_SUBFOLDER_NAME),
-            (cpprefs.DEFAULT_OUTPUT_SUBFOLDER_NAME, cpprefs.DEFAULT_OUTPUT_SUBFOLDER_NAME),
-            (cpprefs.ABSOLUTE_FOLDER_NAME, 'Absolute path elsewhere'),
-            (cpprefs.DEFAULT_INPUT_FOLDER_NAME, 'Default Input Folder'),
-            (cpprefs.DEFAULT_OUTPUT_FOLDER_NAME, 'Default Output Folder'),
-            (cpprefs.DEFAULT_INPUT_SUBFOLDER_NAME, 'Default input directory sub-folder'),
-            (cpprefs.DEFAULT_OUTPUT_SUBFOLDER_NAME, 'Default output directory sub-folder')):
+                (cpprefs.ABSOLUTE_FOLDER_NAME, cpprefs.ABSOLUTE_FOLDER_NAME),
+                (cpprefs.DEFAULT_INPUT_FOLDER_NAME, cpprefs.DEFAULT_INPUT_FOLDER_NAME),
+                (cpprefs.DEFAULT_OUTPUT_FOLDER_NAME, cpprefs.DEFAULT_OUTPUT_FOLDER_NAME),
+                (cpprefs.DEFAULT_INPUT_SUBFOLDER_NAME, cpprefs.DEFAULT_INPUT_SUBFOLDER_NAME),
+                (cpprefs.DEFAULT_OUTPUT_SUBFOLDER_NAME, cpprefs.DEFAULT_OUTPUT_SUBFOLDER_NAME),
+                (cpprefs.ABSOLUTE_FOLDER_NAME, 'Absolute path elsewhere'),
+                (cpprefs.DEFAULT_INPUT_FOLDER_NAME, 'Default Input Folder'),
+                (cpprefs.DEFAULT_OUTPUT_FOLDER_NAME, 'Default Output Folder'),
+                (cpprefs.DEFAULT_INPUT_SUBFOLDER_NAME, 'Default input directory sub-folder'),
+                (cpprefs.DEFAULT_OUTPUT_SUBFOLDER_NAME, 'Default output directory sub-folder')):
             self.assertTrue(value in cpprefs.FOLDER_CHOICE_TRANSLATIONS.keys(), "%s not in dictionary" % value)
             self.assertEqual(expected, cpprefs.FOLDER_CHOICE_TRANSLATIONS[value])
 
     def test_01_02_slot_translations(self):
         for expected, value in (
-            (cpprefs.ABSOLUTE_FOLDER_NAME, cpprefs.ABSOLUTE_FOLDER_NAME),
-            (cpprefs.DEFAULT_INPUT_FOLDER_NAME, cpprefs.DEFAULT_INPUT_FOLDER_NAME),
-            (cpprefs.DEFAULT_OUTPUT_FOLDER_NAME, cpprefs.DEFAULT_OUTPUT_FOLDER_NAME),
-            (cpprefs.DEFAULT_INPUT_SUBFOLDER_NAME, cpprefs.DEFAULT_INPUT_SUBFOLDER_NAME),
-            (cpprefs.DEFAULT_OUTPUT_SUBFOLDER_NAME, cpprefs.DEFAULT_OUTPUT_SUBFOLDER_NAME),
-            (cpprefs.ABSOLUTE_FOLDER_NAME, 'Absolute path elsewhere'),
-            (cpprefs.DEFAULT_INPUT_FOLDER_NAME, 'Default Input Folder'),
-            (cpprefs.DEFAULT_OUTPUT_FOLDER_NAME, 'Default Output Folder'),
-            (cpprefs.DEFAULT_INPUT_SUBFOLDER_NAME, 'Default input directory sub-folder'),
-            (cpprefs.DEFAULT_INPUT_SUBFOLDER_NAME, 'Default Input Folder sub-folder'),
-            (cpprefs.DEFAULT_OUTPUT_SUBFOLDER_NAME, 'Default output directory sub-folder'),
-            (cpprefs.DEFAULT_OUTPUT_SUBFOLDER_NAME, 'Default Output Folder sub-folder'),
-            (cpprefs.DEFAULT_INPUT_FOLDER_NAME, 'Default Image Directory')):
+                (cpprefs.ABSOLUTE_FOLDER_NAME, cpprefs.ABSOLUTE_FOLDER_NAME),
+                (cpprefs.DEFAULT_INPUT_FOLDER_NAME, cpprefs.DEFAULT_INPUT_FOLDER_NAME),
+                (cpprefs.DEFAULT_OUTPUT_FOLDER_NAME, cpprefs.DEFAULT_OUTPUT_FOLDER_NAME),
+                (cpprefs.DEFAULT_INPUT_SUBFOLDER_NAME, cpprefs.DEFAULT_INPUT_SUBFOLDER_NAME),
+                (cpprefs.DEFAULT_OUTPUT_SUBFOLDER_NAME, cpprefs.DEFAULT_OUTPUT_SUBFOLDER_NAME),
+                (cpprefs.ABSOLUTE_FOLDER_NAME, 'Absolute path elsewhere'),
+                (cpprefs.DEFAULT_INPUT_FOLDER_NAME, 'Default Input Folder'),
+                (cpprefs.DEFAULT_OUTPUT_FOLDER_NAME, 'Default Output Folder'),
+                (cpprefs.DEFAULT_INPUT_SUBFOLDER_NAME, 'Default input directory sub-folder'),
+                (cpprefs.DEFAULT_INPUT_SUBFOLDER_NAME, 'Default Input Folder sub-folder'),
+                (cpprefs.DEFAULT_OUTPUT_SUBFOLDER_NAME, 'Default output directory sub-folder'),
+                (cpprefs.DEFAULT_OUTPUT_SUBFOLDER_NAME, 'Default Output Folder sub-folder'),
+                (cpprefs.DEFAULT_INPUT_FOLDER_NAME, 'Default Image Directory')):
             for i in range(3):
                 setting_values = ["foo", "bar", "baz"]
                 setting_values[i] = value
                 self.assertEqual(cpprefs.standardize_default_folder_names(
-                    setting_values, i)[i], expected)
+                        setting_values, i)[i], expected)
 
     def test_01_03_unicode_directory(self):
         old = cpprefs.get_default_image_directory()
@@ -57,10 +57,11 @@ class TestPreferences(unittest.TestCase):
 
     def test_01_04_old_users_directory(self):
         gotcha = "c:\\users\\default"
-        cpprefs.set_preferences_from_dict({}) # clear cache
+        cpprefs.set_preferences_from_dict({})  # clear cache
         cpprefs.get_config().Write("test_preferences", gotcha)
         result = cpprefs.config_read("test_preferences")
         self.assertEqual(result, gotcha)
+
 
 class TestPreferences_02(unittest.TestCase):
     def setUp(self):
@@ -68,12 +69,16 @@ class TestPreferences_02(unittest.TestCase):
         class FakeConfig:
             def Exists(self, arg):
                 return True
+
             def Read(self, arg):
                 return None
+
             def Write(self, arg, val):
                 pass
+
             def GetEntryType(self, kwd):
                 return 1
+
         self.old_headless = cpprefs.__dict__['__is_headless']
         self.old_headless_config = cpprefs.__dict__['__headless_config']
         cpprefs.__dict__['__is_headless'] = True
@@ -85,4 +90,4 @@ class TestPreferences_02(unittest.TestCase):
 
     def test_01_01_default_directory_none(self):
         print cpprefs.get_default_image_directory()
-        self.assertTrue(True);
+        self.assertTrue(True)

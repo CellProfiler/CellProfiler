@@ -17,6 +17,7 @@ import uuid
 
 import h5py
 import numpy as np
+
 logger = logging.getLogger(__name__)
 
 version_number = 1
@@ -27,20 +28,29 @@ DATA = "data"
 
 # h5py is nice, but not being able to make zero-length selections is a pain.
 orig_hdf5_getitem = h5py.Dataset.__getitem__
+
+
 def new_getitem(self, args):
     if (isinstance(args, slice) and \
-            args.start is not None and args.start == args.stop):
+                    args.start is not None and args.start == args.stop):
         return np.array([], self.dtype)
     return orig_hdf5_getitem(self, args)
+
+
 setattr(h5py.Dataset, orig_hdf5_getitem.__name__, new_getitem)
 
 orig_hdf5_setitem = h5py.Dataset.__setitem__
+
+
 def new_setitem(self, args, val):
     if isinstance(args, slice) and \
-            args.start is not None and args.start == args.stop:
+                    args.start is not None and args.start == args.stop:
         return np.array([], self.dtype)[0:0]
     return orig_hdf5_setitem(self, args, val)
+
+
 setattr(h5py.Dataset, orig_hdf5_setitem.__name__, new_setitem)
+
 
 def infer_hdf5_type(val):
     if isinstance(val, str) or np.sctype2char(np.asanyarray(val).dtype) == 'S':
@@ -49,6 +59,7 @@ def infer_hdf5_type(val):
     if val.size == 0:
         return int
     return np.asanyarray(val).dtype
+
 
 FILE_LIST_GROUP = "FileList"
 DEFAULT_GROUP = "Default"
@@ -65,6 +76,7 @@ CLASS_VSTRING_ARRAY_INDEX = "VStringArrayIndex"
 CLASS_VSTRING_ARRAY_DATA = "VStringArrayData"
 CLASS_FILELIST_GROUP = "FileListGroup"
 CLASS_SEGMENTATION_GROUP = "SegmentationGroup"
+
 
 class HDF5Dict(object):
     '''The HDF5Dict can be used to store data indexed by a tuple of
@@ -113,12 +125,12 @@ class HDF5Dict(object):
     # XXX - document how data is stored in hdf5 (basically, /Measurements/Object/Feature)
 
     def __init__(self, hdf5_filename,
-                 top_level_group_name = TOP_LEVEL_GROUP_NAME,
-                 run_group_name = None,
-                 is_temporary = False,
-                 copy = None,
-                 mode = "w",
-                 image_numbers = None):
+                 top_level_group_name=TOP_LEVEL_GROUP_NAME,
+                 run_group_name=None,
+                 is_temporary=False,
+                 copy=None,
+                 mode="w",
+                 image_numbers=None):
         '''Initialize the HDF5Dict
 
         hdf5_filename - name of the file to open / create.
@@ -158,19 +170,19 @@ class HDF5Dict(object):
             #
             if sys.platform == "darwin":
                 raise NotImplementedError(
-                    "Sorry, for Mac, the core driver is fatally flawed at "
-                    "this point and will cause you sorrow when you try to "
-                    "flush or close the h5py file.\n"
-                    "See http://code.google.com/p/h5py/issues/detail?id=215")
+                        "Sorry, for Mac, the core driver is fatally flawed at "
+                        "this point and will cause you sorrow when you try to "
+                        "flush or close the h5py file.\n"
+                        "See http://code.google.com/p/h5py/issues/detail?id=215")
             name = "%s.h5" % uuid.uuid4()
-            self.hdf5_file = h5py.File(name, driver = "core",
-                                       backing_store = False)
+            self.hdf5_file = h5py.File(name, driver="core",
+                                       backing_store=False)
         else:
             self.hdf5_file = h5py.File(self.filename, mode)
         try:
             if load_measurements:
                 if (VERSION not in self.hdf5_file.keys() or
-                    top_level_group_name not in self.hdf5_file):
+                            top_level_group_name not in self.hdf5_file):
                     load_measurements = False
                     run_group_name = default_run_group_name
                 else:
@@ -185,12 +197,12 @@ class HDF5Dict(object):
 
                 if mode == "r" and not load_measurements:
                     raise IOError(
-                        "%s was opened read-only but contains no measurements" %
-                        hdf5_filename)
+                            "%s was opened read-only but contains no measurements" %
+                            hdf5_filename)
             if not load_measurements:
                 if VERSION not in self.hdf5_file.keys():
                     vdataset = self.hdf5_file.create_dataset(
-                        VERSION, data = np.array([version_number], int))
+                            VERSION, data=np.array([version_number], int))
                 self.version = VERSION
                 mgroup = self.hdf5_file.create_group(top_level_group_name)
                 self.top_group = mgroup.create_group(run_group_name)
@@ -218,7 +230,7 @@ class HDF5Dict(object):
                                 self.indices[object_name, feature_name] = {}
                 else:
                     image_numbers = np.array(image_numbers)
-                    mask = np.zeros(np.max(image_numbers)+1, bool)
+                    mask = np.zeros(np.max(image_numbers) + 1, bool)
                     mask[image_numbers] = True
                     for object_name in copy.keys():
                         src_object_group = copy[object_name]
@@ -239,19 +251,19 @@ class HDF5Dict(object):
                             src_image_numbers = src_index_dataset[:, 0]
                             max_image_number = np.max(src_image_numbers)
                             if max_image_number >= len(mask):
-                                tmp = np.zeros(max_image_number+1, bool)
+                                tmp = np.zeros(max_image_number + 1, bool)
                                 tmp[:len(mask)] = mask
                                 mask = tmp
                             src_dataset = src_feature_group['data']
                             src_index_dataset = \
-                                src_index_dataset[mask[src_index_dataset[:,0]], :]
+                                src_index_dataset[mask[src_index_dataset[:, 0]], :]
                             #
                             # Almost always, the fast case should work. We can
                             # copy a data chunk from one to the other without
                             # having to restructure.
                             #
                             found_bad_case = False
-                            for (prev_num_idx, prev_start, prev_stop),\
+                            for (prev_num_idx, prev_start, prev_stop), \
                                 (next_num_idx, next_start, next_stop) in zip(
                                     src_index_dataset[:-1], src_index_dataset[1:]):
                                 if prev_stop != next_start:
@@ -259,7 +271,7 @@ class HDF5Dict(object):
                                     break
                             if found_bad_case:
                                 for num_idx, start, stop in src_index_dataset:
-                                    self[object_name, feature_name, num_idx] =\
+                                    self[object_name, feature_name, num_idx] = \
                                         src_dataset[start:stop]
                             else:
                                 src_off = src_index_dataset[0, 1]
@@ -268,10 +280,10 @@ class HDF5Dict(object):
                                 dest_index_dataset[:, 1:] -= src_off
                                 dest_feature_group = dest_object_group.require_group(feature_name)
                                 dest_feature_group.create_dataset(
-                                    'index', data = dest_index_dataset.astype(int),
-                                    compression = None, shuffle=True,
-                                    chunks=(self.chunksize, 3),
-                                    maxshape=(None, 3))
+                                        'index', data=dest_index_dataset.astype(int),
+                                        compression=None, shuffle=True,
+                                        chunks=(self.chunksize, 3),
+                                        maxshape=(None, 3))
                                 src_chunk = src_dataset[src_off:src_stop]
                                 #
                                 # Special handling for strings: create the
@@ -280,20 +292,20 @@ class HDF5Dict(object):
                                 #
                                 if h5py.check_dtype(vlen=src_dataset.dtype) is str:
                                     ds = dest_feature_group.create_dataset(
-                                        'data',
-                                        dtype = h5py.special_dtype(vlen=str),
-                                        compression = 'gzip', shuffle=True,
-                                        chunks = (self.chunksize, ),
-                                        shape = src_chunk.shape,
-                                        maxshape = (None, ))
+                                            'data',
+                                            dtype=h5py.special_dtype(vlen=str),
+                                            compression='gzip', shuffle=True,
+                                            chunks=(self.chunksize,),
+                                            shape=src_chunk.shape,
+                                            maxshape=(None,))
                                     if len(src_chunk) > 0:
                                         ds[:] = src_chunk
                                 else:
                                     dest_feature_group.create_dataset(
-                                        'data', data = src_chunk,
-                                        compression = 'gzip', shuffle=True,
-                                        chunks = (self.chunksize, ),
-                                        maxshape = (None, ))
+                                            'data', data=src_chunk,
+                                            compression='gzip', shuffle=True,
+                                            chunks=(self.chunksize,),
+                                            maxshape=(None,))
             self.hdf5_file.flush()
         except Exception, e:
             logger.exception("Failed during initial processing of %s" % self.filename)
@@ -315,7 +327,8 @@ class HDF5Dict(object):
                 self.hdf5_file.close()
                 os.unlink(self.filename)
             except Exception, e:
-                logger.warn("So sorry. CellProfiler failed to remove the temporary file, %s and there it sits on your disk now." % self.filename)
+                logger.warn(
+                        "So sorry. CellProfiler failed to remove the temporary file, %s and there it sits on your disk now." % self.filename)
         else:
             self.hdf5_file.flush()
             self.hdf5_file.close()
@@ -349,11 +362,12 @@ class HDF5Dict(object):
     @staticmethod
     def __is_positive_int(idx):
         '''Return True if the index is a positive integer suitable for HDF5 indexing'''
-        return (isinstance(idx, int) or isinstance(idx, np.integer)) and idx >=0
+        return (isinstance(idx, int) or isinstance(idx, np.integer)) and idx >= 0
 
     def __getitem__(self, idxs):
         assert isinstance(idxs, tuple), "Accessing HDF5_Dict requires a tuple of (object_name, feature_name[, integer])"
-        assert isinstance(idxs[0], basestring) and isinstance(idxs[1], basestring), "First two indices must be of type str."
+        assert isinstance(idxs[0], basestring) and isinstance(idxs[1],
+                                                              basestring), "First two indices must be of type str."
 
         object_name, feature_name, num_idx = idxs
         if np.isscalar(num_idx):
@@ -367,7 +381,7 @@ class HDF5Dict(object):
             dataset = self.get_dataset(object_name, feature_name)
             if dataset is None or dataset.shape[0] == 0:
                 return [np.array([]) for image_number in num_idx]
-            if (len(indices) / 2 < len(num_idx)):
+            if len(indices) / 2 < len(num_idx):
                 #
                 # Optimize by fetching complete dataset
                 # if fetching more than 1/2 of indices
@@ -378,7 +392,7 @@ class HDF5Dict(object):
                           dest.start is not None and
                           dest.start == dest.stop))
                 else dataset[dest]
-                for dest in [indices.get(image_number, (slice(0,0), 0))[0]
+                for dest in [indices.get(image_number, (slice(0, 0), 0))[0]
                              for image_number in num_idx]]
 
     @staticmethod
@@ -389,8 +403,8 @@ class HDF5Dict(object):
                     for x in vals])
 
     def __make_empty_feature(self, object_name, feature_name,
-                             image_numbers = None,
-                             dtype = int):
+                             image_numbers=None,
+                             dtype=int):
         '''Create a feature that has only nulls
 
         lock must be taken prior to call
@@ -404,18 +418,18 @@ class HDF5Dict(object):
 
         dtype - the desired data type for the array
         '''
-        feature_group = self.top_group.require_group(object_name).\
+        feature_group = self.top_group.require_group(object_name). \
             require_group(feature_name)
         if image_numbers is None:
             index_slices = np.zeros((0, 3), int)
         else:
             index_slices = np.column_stack(
-                [image_numbers, np.zeros((len(image_numbers), 2), int)])
+                    [image_numbers, np.zeros((len(image_numbers), 2), int)])
         self.__create_index(feature_group, index_slices)
         feature_group.create_dataset(
-            'data', (0, ), dtype = dtype,
-            compression='gzip', shuffle=True, chunks=(self.chunksize,),
-            maxshape=(None,))
+                'data', (0,), dtype=dtype,
+                compression='gzip', shuffle=True, chunks=(self.chunksize,),
+                maxshape=(None,))
 
     def __create_index(self, feature_group, index_slices):
         '''Create an index for a feature group
@@ -430,10 +444,10 @@ class HDF5Dict(object):
         assert isinstance(feature_group, h5py.Group)
         _, object_name, feature_name = feature_group.name.rsplit("/", 2)
         feature_group.create_dataset(
-            'index', data = index_slices,
-            dtype = int,
-            compression=None,
-            chunks=(self.chunksize, 3), maxshape=(None, 3))
+                'index', data=index_slices,
+                dtype=int,
+                compression=None,
+                chunks=(self.chunksize, 3), maxshape=(None, 3))
         self.__cache_index(object_name, feature_name, index_slices)
 
     def __cache_index(self, object_name, feature_name, index_slices):
@@ -453,17 +467,17 @@ class HDF5Dict(object):
                        and the second and third are start and stop values
                        for the slice.
         '''
-        self.indices[object_name, feature_name ] = dict(
-            [(image_number, (slice(start, stop), i))
-             for i, (image_number, start, stop) in enumerate(index_slices)])
+        self.indices[object_name, feature_name] = dict(
+                [(image_number, (slice(start, stop), i))
+                 for i, (image_number, start, stop) in enumerate(index_slices)])
 
     def __setitem__(self, idxs, vals):
         assert isinstance(idxs, tuple), \
-               "Assigning to HDF5_Dict requires a tuple of (object_name, feature_name, integer)"
+            "Assigning to HDF5_Dict requires a tuple of (object_name, feature_name, integer)"
         assert isinstance(idxs[0], basestring) and isinstance(idxs[1], basestring), \
-               "First two indices must be of type str."
-        assert (not np.isscalar(idxs[2]) or self.__is_positive_int(idxs[2])),\
-               "Third index must be a non-negative integer"
+            "First two indices must be of type str."
+        assert (not np.isscalar(idxs[2]) or self.__is_positive_int(idxs[2])), \
+            "Third index must be a non-negative integer"
 
         object_name, feature_name, num_idx = idxs[:3]
 
@@ -475,10 +489,10 @@ class HDF5Dict(object):
                 vals = [vals]
             if len(idxs) > 3:
                 return self.__setitem__(
-                    (object_name, feature_name, [num_idx], idxs[3]), [vals])
+                        (object_name, feature_name, [num_idx], idxs[3]), [vals])
             else:
                 return self.__setitem__(
-                    (object_name, feature_name, [num_idx]), [vals])
+                        (object_name, feature_name, [num_idx]), [vals])
 
         num_idx = np.atleast_1d(num_idx)
         if len(num_idx) > 0 and (np.isscalar(vals[0]) or vals[0] is None):
@@ -518,7 +532,7 @@ class HDF5Dict(object):
                     self.__make_empty_feature(object_name, feature_name, num_idx)
                 else:
                     self.add_all(object_name, feature_name, vals,
-                                 idxs=num_idx, data_type = hdf5_type)
+                                 idxs=num_idx, data_type=hdf5_type)
                 return
 
             feature_group = self.top_group[object_name][feature_name]
@@ -542,14 +556,14 @@ class HDF5Dict(object):
                     recast_dataset = True
             if recast_dataset:
                 kwds = dict(
-                    dtype = hdf5_type,
-                    compression = 'gzip', shuffle = True,
-                    chunks = (self.chunksize,),
-                    maxshape = (None, ))
+                        dtype=hdf5_type,
+                        compression='gzip', shuffle=True,
+                        chunks=(self.chunksize,),
+                        maxshape=(None,))
                 if dataset.shape[0] > 0:
                     if hdf5_type_is_string:
                         kwds['data'] = np.array(
-                            [str(v) for v in dataset[:]], object)
+                                [str(v) for v in dataset[:]], object)
                     else:
                         kwds['data'] = dataset[:]
                 else:
@@ -568,8 +582,8 @@ class HDF5Dict(object):
             dataset.resize(old_dataset_len + len(vals), 0)
             dataset[old_dataset_len:] = vals
             index_slices = np.column_stack(
-                [num_idx, old_dataset_len + data_offsets - data_lengths,
-                 old_dataset_len + data_offsets])
+                    [num_idx, old_dataset_len + data_offsets - data_lengths,
+                     old_dataset_len + data_offsets])
             self.__write_indices(object_name, feature_name, index_slices)
 
     def __write_indices(self, object_name, feature_name, index_slices):
@@ -608,7 +622,8 @@ class HDF5Dict(object):
 
     def __delitem__(self, idxs):
         assert isinstance(idxs, tuple), "Accessing HDF5_Dict requires a tuple of (object_name, feature_name, integer)"
-        assert isinstance(idxs[0], basestring) and isinstance(idxs[1], basestring), "First two indices must be of type str."
+        assert isinstance(idxs[0], basestring) and isinstance(idxs[1],
+                                                              basestring), "First two indices must be of type str."
         if len(idxs) == 3:
             assert isinstance(idxs[2], int) and idxs[2] >= 0, "Third index must be a non-negative integer"
 
@@ -626,7 +641,7 @@ class HDF5Dict(object):
                 idx[np.flatnonzero(idx[:, 0] == num_idx), 0] = -1
         else:
             # Delete the entire measurement
-            object_name, feature_name  = idxs
+            object_name, feature_name = idxs
             with self.lock:
                 if self.has_feature(object_name, feature_name):
                     group = self.top_group[object_name][feature_name]
@@ -699,7 +714,7 @@ class HDF5Dict(object):
             return self.top_group[object_name].keys()
 
     def add_all(self, object_name, feature_name, values,
-                idxs = None, data_type=None):
+                idxs=None, data_type=None):
         '''Add all imageset values for a given feature
 
         object_name - name of object supporting the feature
@@ -720,11 +735,11 @@ class HDF5Dict(object):
                     del self.indices[object_name, feature_name]
             self.add_feature(object_name, feature_name)
             if len(values) > 0 and (
-                np.isscalar(values[0]) or values[0] is None):
+                        np.isscalar(values[0]) or values[0] is None):
                 # Convert "images"-style value per imageset to a list
                 values = [[v] if v is not None else [] for v in values]
             if idxs is None:
-                idxs = np.arange(1, len(values)+1)
+                idxs = np.arange(1, len(values) + 1)
             dtype = data_type
             if dtype is None:
                 for vector in values:
@@ -755,24 +770,24 @@ class HDF5Dict(object):
             feature_group = self.top_group[object_name][feature_name]
             if dataset.dtype.kind.upper() == 'O':
                 dest = feature_group.create_dataset(
-                    'data',
-                    dtype = h5py.special_dtype(vlen=str),
-                    compression = 'gzip', shuffle=True,
-                    chunks = (self.chunksize,),
-                    shape = dataset.shape,
-                    maxshape = (None,))
+                        'data',
+                        dtype=h5py.special_dtype(vlen=str),
+                        compression='gzip', shuffle=True,
+                        chunks=(self.chunksize,),
+                        shape=dataset.shape,
+                        maxshape=(None,))
                 for i, value in enumerate(dataset):
                     dest[i] = value
             else:
                 feature_group.create_dataset(
-                    'data', data = dataset,
-                    dtype = dtype, compression = 'gzip', shuffle=True,
-                    chunks = (self.chunksize, ),
-                    maxshape = (None, ))
+                        'data', data=dataset,
+                        dtype=dtype, compression='gzip', shuffle=True,
+                        chunks=(self.chunksize,),
+                        maxshape=(None,))
             feature_group.create_dataset(
-                'index', data = idx, dtype=int,
-                compression = None, chunks = (self.chunksize, 3),
-                maxshape = (None,3))
+                    'index', data=idx, dtype=int,
+                    compression=None, chunks=(self.chunksize, 3),
+                    maxshape=(None, 3))
 
     def reorder(self, object_name, feature_name, image_numbers):
         '''Change the image set order for a feature
@@ -790,7 +805,7 @@ class HDF5Dict(object):
               remapping here is not sufficient.
         '''
         with self.lock:
-            feature_group = self.top_group.require_group(object_name).\
+            feature_group = self.top_group.require_group(object_name). \
                 require_group(feature_name)
             if INDEX not in feature_group:
                 # All values are None for the feature
@@ -800,10 +815,11 @@ class HDF5Dict(object):
             #
             # Reorder sequentially.
             #
-            order = np.lexsort((index_array[:, 0], ))
+            order = np.lexsort((index_array[:, 0],))
             index_array = index_array[order, :]
             feature_group[INDEX][:, :] = index_array
             self.__cache_index(object_name, feature_name, index_array)
+
 
 class HDF5FileList(object):
     '''An HDF5FileList is a hierarchical directory structure backed by HDF5
@@ -844,6 +860,7 @@ class HDF5FileList(object):
     "c:\foo\bar" becomes "file:///C:/foo/bar" as a URL and becomes
     "file", "\2F\2FC\58". SORRY!
     '''
+
     @classmethod
     def has_file_list(cls, hdf5_file):
         '''Return True if the hdf5 file has a file list
@@ -890,8 +907,8 @@ class HDF5FileList(object):
 
     def __init__(self,
                  hdf5_file,
-                 lock = None,
-                 filelist_name = DEFAULT_GROUP):
+                 lock=None,
+                 filelist_name=DEFAULT_GROUP):
         '''Initialize self with an HDF5 file
 
         hdf5_file - a h5py.File or a h5py.Group if you are perverse
@@ -926,6 +943,7 @@ class HDF5FileList(object):
         the HDF5 group for the entry and an array of booleans that indicate
         whether metadata was collected per URL.
         '''
+
         def __init__(self, group, urls, has_metadata):
             self.group = group
             self.urls = tuple(urls)
@@ -939,6 +957,7 @@ class HDF5FileList(object):
         if derivative calculations need to be recalculated.
         '''
         return self.__generation
+
     generation = property(get_generation)
 
     def add_notification_callback(self, callback):
@@ -965,6 +984,7 @@ class HDF5FileList(object):
 
     LEGAL_GROUP_CHARACTERS = \
         "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-+.%="
+
     @staticmethod
     def encode(name):
         '''Encode a name so it can be used as the name of a group
@@ -1004,7 +1024,7 @@ class HDF5FileList(object):
                                    for s in parts[1:]])
 
     @staticmethod
-    def split_url(url, is_directory = False):
+    def split_url(url, is_directory=False):
         '''Split a URL into the pieces that are used to traverse groups
 
         url - a url
@@ -1057,7 +1077,8 @@ class HDF5FileList(object):
             if not d1.has_key(None):
                 d1[None] = []
             d1[None].append(parts[-1])
-        def fn(g, d, parts = []):
+
+        def fn(g, d, parts=[]):
             for k in d:
                 if k is None:
                     g.attrs[A_TIMESTAMP] = timestamp
@@ -1071,19 +1092,20 @@ class HDF5FileList(object):
                         leaves += to_add
                         dest.extend(to_add)
                         sort_order = sorted(
-                            range(len(leaves)),
-                            cmp = lambda x, y: cmp(leaves[x], leaves[y]))
+                                range(len(leaves)),
+                                cmp=lambda x, y: cmp(leaves[x], leaves[y]))
                         dest.reorder(sort_order)
                         metadata.extend([None] * len(to_add))
                         metadata.reorder(sort_order)
                         self.__cache[tuple(parts)] = \
                             self.__CacheEntry(
-                                g, [leaves[i] for i in sort_order],
-                                metadata.is_not_none())
+                                    g, [leaves[i] for i in sort_order],
+                                    metadata.is_not_none())
                 else:
                     g1 = g.require_group(self.encode(k))
                     g1.attrs[A_CLASS] = CLASS_DIRECTORY
                     fn(g1, d[k], parts + [k])
+
         with self.lock:
             fn(self.get_filelist_group(), d)
             self.hdf5_file.flush()
@@ -1097,8 +1119,8 @@ class HDF5FileList(object):
         self.__generation = uuid.uuid4()
         group = self.get_filelist_group()
         with self.lock:
-            schemas = [ k for k in group.keys()
-                        if group[k].attrs[A_CLASS] == CLASS_DIRECTORY]
+            schemas = [k for k in group.keys()
+                       if group[k].attrs[A_CLASS] == CLASS_DIRECTORY]
             for key in schemas:
                 del group[key]
             self.hdf5_file.flush()
@@ -1121,7 +1143,8 @@ class HDF5FileList(object):
             if not d1.has_key(None):
                 d1[None] = []
             d1[None].append(parts[-1])
-        def fn(g, d, parts = []):
+
+        def fn(g, d, parts=[]):
             for k in d:
                 next_parts = parts + [k]
                 parts_tuple = tuple(parts)
@@ -1138,8 +1161,8 @@ class HDF5FileList(object):
                         metadata.reorder(order)
                         self.__cache[parts_tuple] = \
                             self.__CacheEntry(
-                                g, [leaves[o] for o in order],
-                                metadata.is_not_none())
+                                    g, [leaves[o] for o in order],
+                                    metadata.is_not_none())
                     else:
                         dest.delete()
                         del g["metadata"]
@@ -1157,6 +1180,7 @@ class HDF5FileList(object):
                 if g[k].attrs.get(A_CLASS, None) == CLASS_DIRECTORY:
                     return True
             return False
+
         with self.lock:
             fn(self.get_filelist_group(), d)
             self.hdf5_file.flush()
@@ -1167,7 +1191,7 @@ class HDF5FileList(object):
         if any([len(ce.urls) > 0 for ce in self.__cache.values()]):
             return True
         group_list = [self.get_filelist_group()]
-        path_list = [ [] ]
+        path_list = [[]]
         while len(group_list) > 0:
             g = group_list.pop()
             path = path_list.pop()
@@ -1191,7 +1215,7 @@ class HDF5FileList(object):
         return isinstance(g, h5py.Group) and A_CLASS in g.attrs and \
                g.attrs[A_CLASS] == CLASS_DIRECTORY
 
-    def get_filelist(self, root_url = None):
+    def get_filelist(self, root_url=None):
         '''Retrieve all URLs from a filelist
 
         root_url - if present, get the file list below this directory.
@@ -1201,9 +1225,9 @@ class HDF5FileList(object):
         group = self.get_filelist_group()
         with self.lock:
             if root_url is None:
-                schemas = [ k for k in group.keys()
-                            if HDF5FileList.is_dir(group[k])]
-                roots = [(s+":", group[s], [s]) for s in schemas]
+                schemas = [k for k in group.keys()
+                           if HDF5FileList.is_dir(group[k])]
+                roots = [(s + ":", group[s], [s]) for s in schemas]
             else:
                 schema, path = self.split_url(root_url, is_directory=True)
                 g = group[self.encode(schema)]
@@ -1211,16 +1235,16 @@ class HDF5FileList(object):
                     g = g[self.encode(part)]
                 if not root_url.endswith("/"):
                     root_url += "/"
-                roots = [ (root_url, g, path)]
+                roots = [(root_url, g, path)]
 
             def fn(root, g, path):
                 urls = []
                 path_tuple = tuple(path)
                 if path_tuple in self.__cache:
-                    urls += [ root + x for x in self.__cache[path_tuple].urls]
+                    urls += [root + x for x in self.__cache[path_tuple].urls]
                 elif VStringArray.has_vstring_array(g):
                     a = self.cache_urls(g, path_tuple)
-                    urls += [ root + x for x in a]
+                    urls += [root + x for x in a]
                 for k in sorted(g.keys()):
                     g0 = g[k]
                     if self.is_dir(g0):
@@ -1234,6 +1258,7 @@ class HDF5FileList(object):
                         next_path = path + [self.decode(k)]
                         urls += fn(subroot, g0, next_path)
                 return urls
+
             urls = []
             for root, g, path in roots:
                 urls += fn(root, g, path)
@@ -1271,7 +1296,6 @@ class HDF5FileList(object):
                 if encoded_part not in group:
                     return []
                 group = group[encoded_part]
-
 
             if VStringArray.has_vstring_array(group):
                 result = self.cache_urls(group, path_tuple)
@@ -1327,7 +1351,7 @@ class HDF5FileList(object):
                 group = group[encoded_part]
             last_encoded_part = self.encode(parts[-1])
             if (last_encoded_part in group and
-                self.is_dir(group[last_encoded_part])):
+                    self.is_dir(group[last_encoded_part])):
                 return self.TYPE_DIRECTORY
             else:
                 if VStringArray.has_vstring_array(group):
@@ -1401,9 +1425,8 @@ class HDF5FileList(object):
                 has_metadata = self.__cache[path_tuple].has_metadata
             idx = bisect.bisect_left(a, parts[-1])
             if idx < len(a) and a[idx] == parts[-1]:
-                return (group, idx, has_metadata)
+                return group, idx, has_metadata
             return None
-
 
     def get_refresh_timestamp(self, url):
         '''Get the timestamp of the last refresh of the given directory
@@ -1436,10 +1459,10 @@ class HDF5FileList(object):
         '''
         with self.lock:
             group = self.get_filelist_group()
-            stack = [ [k for k in group if self.is_dir(group[k]) ] ]
-            groups = [ group ]
-            roots = [ None ]
-            path = [ None ]
+            stack = [[k for k in group if self.is_dir(group[k])]]
+            groups = [group]
+            roots = [None]
+            path = [None]
             while len(stack):
                 current = stack.pop()
                 g0 = groups.pop()
@@ -1470,6 +1493,7 @@ class HDF5FileList(object):
                     roots.pop()
                     path.pop()
 
+
 class HDF5ImageSet(object):
     '''An HDF5 backing store for an image set
 
@@ -1479,7 +1503,8 @@ class HDF5ImageSet(object):
     By default, each channel's image is stored in the data set,
     "/Images/<channel-name>"
     '''
-    def __init__(self, hdf5_file=None, root_name = IMAGES_GROUP):
+
+    def __init__(self, hdf5_file=None, root_name=IMAGES_GROUP):
         '''Create an HDF5ImageSet instance
 
         hdf5_file the file or other group-like object that is the root.
@@ -1517,8 +1542,8 @@ class HDF5ImageSet(object):
             self.root.create_dataset(image_name, data=data)
         else:
             data_set = self.root[image_name]
-            if tuple(data_set.shape) == tuple(data.shape) and\
-               data_set.dtype == data.dtype:
+            if tuple(data_set.shape) == tuple(data.shape) and \
+                            data_set.dtype == data.dtype:
                 data_set[:] = data
             else:
                 del self.root[image_name]
@@ -1536,6 +1561,7 @@ class HDF5ImageSet(object):
         raises KeyError if your image was not there.
         '''
         return self.root[image_name][:]
+
 
 class HDF5ObjectSet(object):
     '''An HDF5 backing-store for segmentations
@@ -1566,7 +1592,8 @@ class HDF5ObjectSet(object):
     AXIS_Y = "y"
     AXIS_X = "x"
     AXES = (AXIS_C, AXIS_T, AXIS_Z, AXIS_Y, AXIS_X)
-    def __init__(self, hdf5_file, root_name = OBJECTS_GROUP):
+
+    def __init__(self, hdf5_file, root_name=OBJECTS_GROUP):
         '''Create an HDF5ObjectSet instance
 
         hdf5_file the file or other group-like object that is the root.
@@ -1595,13 +1622,13 @@ class HDF5ObjectSet(object):
         segmentation_group = self.__ensure_group(objects_name, segmentation_name)
         if self.DENSE in segmentation_group:
             data_set = segmentation_group[self.DENSE]
-            if tuple(data_set.shape) == tuple(data.shape) and\
-               data_set.dtype == data.dtype:
+            if tuple(data_set.shape) == tuple(data.shape) and \
+                            data_set.dtype == data.dtype:
                 data_set[:] = data
             else:
                 del segmentation_group[self.DENSE]
                 data_set = segmentation_group.create_dataset(
-                    self.DENSE, data=data)
+                        self.DENSE, data=data)
         else:
             data_set = segmentation_group.create_dataset(self.DENSE, data=data)
         data_set.attrs[self.ATTR_STALE] = False
@@ -1650,9 +1677,9 @@ class HDF5ObjectSet(object):
                 del segmentation_group[self.SPARSE]
         if create:
             ds = segmentation_group.create_dataset(
-                self.SPARSE, data=data,
-                chunks=(1024,),
-                maxshape = (None,))
+                    self.SPARSE, data=data,
+                    chunks=(1024,),
+                    maxshape=(None,))
         else:
             ds = segmentation_group[self.SPARSE]
             ds.resize((len(data),))
@@ -1735,7 +1762,8 @@ class HDF5ObjectSet(object):
                     dataset = segmentation_group[dataset_name]
                     dataset.attrs[self.ATTR_STALE] = True
 
-def get_top_level_group(filename, group_name = 'Measurements', open_mode='r'):
+
+def get_top_level_group(filename, group_name='Measurements', open_mode='r'):
     '''Open and return the Measurements HDF5 group
 
     filename - path to HDF5 file
@@ -1748,6 +1776,7 @@ def get_top_level_group(filename, group_name = 'Measurements', open_mode='r'):
     '''
     f = h5py.File(filename, open_mode)
     return f, f.get(group_name)
+
 
 class HDFCSV(object):
     '''An HDF representation of a .CSV file
@@ -1768,7 +1797,7 @@ class HDFCSV(object):
     VERSION = "VERSION"
     HDFCSV_CLASS = "CSV"
 
-    def __init__(self, group, name, lock = None):
+    def __init__(self, group, name, lock=None):
         '''Create or bind to a CSV
 
         group - HDF group hosting the CSV
@@ -1804,7 +1833,7 @@ class HDFCSV(object):
                     del self.top_level_group[key]
             self.columns = {}
 
-    def add_column(self, name, data = None):
+    def add_column(self, name, data=None):
         '''Add a column
 
         name - name of column
@@ -1865,17 +1894,21 @@ class HDFCSV(object):
     def iterkeys(self):
         return self.get_column_names()
 
+
 class NullLock(object):
     '''A "lock" that does nothing if no locking is needed'''
+
     def __enter__(self):
         return
 
     def __exit__(self, t, v, tb):
         return
 
+
 class HDF5Lock:
     def __init__(self):
         self.lock = threading.RLock()
+
     def __enter__(self):
         self.lock.acquire()
         if hasattr(h5py.highlevel, "phil"):
@@ -1885,6 +1918,7 @@ class HDF5Lock:
         if hasattr(h5py.highlevel, "phil"):
             h5py.highlevel.phil.release()
         self.lock.release()
+
 
 class VStringArray(object):
     '''A 1-d array of variable-length strings backed by HDF5 datasets
@@ -1913,7 +1947,7 @@ class VStringArray(object):
                 ("data" in group) and
                 (group["data"].attrs[A_CLASS] == CLASS_VSTRING_ARRAY_DATA))
 
-    def __init__(self, group, lock = None):
+    def __init__(self, group, lock=None):
         '''Initialize or bind to a VStringArray within the named group
 
         group - an HDF5 Group
@@ -1927,24 +1961,24 @@ class VStringArray(object):
             assert self.index.attrs[A_CLASS] == CLASS_VSTRING_ARRAY_INDEX
         else:
             self.index = group.create_dataset(
-                "index",
-                shape = (0, 2),
-                dtype = np.int32,
-                shuffle = True,
-                chunks = (256, 2),
-                maxshape = (None, 2))
+                    "index",
+                    shape=(0, 2),
+                    dtype=np.int32,
+                    shuffle=True,
+                    chunks=(256, 2),
+                    maxshape=(None, 2))
             self.index.attrs[A_CLASS] = CLASS_VSTRING_ARRAY_INDEX
         if "data" in group:
             self.data = group["data"]
             assert self.data.attrs[A_CLASS] == CLASS_VSTRING_ARRAY_DATA
         else:
             self.data = group.create_dataset(
-                "data", (0, ),
-                dtype = "S1",
-                shuffle = True,
-                compression = "gzip",
-                chunks = (32768, ),
-                maxshape = (None, ))
+                    "data", (0,),
+                    dtype="S1",
+                    shuffle=True,
+                    compression="gzip",
+                    chunks=(32768,),
+                    maxshape=(None,))
             self.data.attrs[A_CLASS] = CLASS_VSTRING_ARRAY_DATA
         if lock is None:
             self.lock = NullLock()
@@ -1963,7 +1997,7 @@ class VStringArray(object):
                 idx = self.index.shape[0] - idx
             if value is None:
                 if idx >= self.index.shape[0]:
-                    self.index.resize(idx+1, 0)
+                    self.index.resize(idx + 1, 0)
                 self.index[idx, :] = (self.VS_NULL, 0)
                 return
 
@@ -1972,7 +2006,7 @@ class VStringArray(object):
             else:
                 value = str(value)
             if idx >= self.index.shape[0]:
-                self.index.resize(idx+1, 0)
+                self.index.resize(idx + 1, 0)
                 begin = self.data.shape[0]
                 self.index[idx, 0] = begin
             else:
@@ -2015,8 +2049,8 @@ class VStringArray(object):
             if idx < 0:
                 idx = orig_len - idx
             if idx < orig_len - 1:
-                self.index[idx:(orig_len-1), :] = self.index[(idx+1):, :]
-            self.index.resize(self.index.shape[0]-1,  0)
+                self.index[idx:(orig_len - 1), :] = self.index[(idx + 1):, :]
+            self.index.resize(self.index.shape[0] - 1, 0)
 
     def __len__(self):
         '''The number of strings stored in the array'''
@@ -2027,7 +2061,7 @@ class VStringArray(object):
         with self.lock:
             if self.index.shape[0] == 0:
                 return
-            index = self.index[:,:]
+            index = self.index[:, :]
             data = self.data[:]
         for begin, end in index:
             yield (None if begin > end else
@@ -2039,7 +2073,7 @@ class VStringArray(object):
         nulls = np.array([s is None for s in strings])
         strings = ["" if s is None
                    else s.encode("utf-8") if isinstance(s, unicode)
-                   else str(s) for s in strings]
+        else str(s) for s in strings]
         with self.lock:
             target_len = len(strings)
             self.index.resize(target_len, 0)
@@ -2048,10 +2082,10 @@ class VStringArray(object):
                 index[:, 1] = np.cumsum([len(s) for s in strings])
                 index[0, 0] = 0
                 if len(strings) > 1:
-                    index[1:, 0] = index[:(target_len-1), 1]
+                    index[1:, 0] = index[:(target_len - 1), 1]
                 if np.any(nulls):
                     index[nulls, 0] = self.VS_NULL
-                self.data.resize(index[(target_len-1), 1], 0)
+                self.data.resize(index[(target_len - 1), 1], 0)
                 self.index[:, :] = index
             for s, (begin, end) in zip(strings, index):
                 if begin < end:
@@ -2071,6 +2105,7 @@ class VStringArray(object):
             if len(self) == 0:
                 return
             index = self.index[:, :]
+
             def compare(i, j):
                 i0, i1 = index[i, :]
                 j0, j1 = index[j, :]
@@ -2084,15 +2119,16 @@ class VStringArray(object):
                 l = min(li, lj)
                 # Read 16 byte chunks
                 for idx in range(0, l, 16):
-                    idx_end = min(idx+16, l)
-                    di = self.data[(i0+idx):(i0+idx_end)]
-                    dj = self.data[(j0+idx):(j0+idx_end)]
+                    idx_end = min(idx + 16, l)
+                    di = self.data[(i0 + idx):(i0 + idx_end)]
+                    dj = self.data[(j0 + idx):(j0 + idx_end)]
                     diff = np.argwhere(di != dj).flatten()
                     if len(diff) > 0:
                         return cmp(di[diff[0]], dj[diff[0]])
                 return cmp(li, lj)
+
             order = list(range(len(self)))
-            order.sort(cmp = compare)
+            order.sort(cmp=compare)
             self.index = index[order, :]
             return order
 
@@ -2116,9 +2152,9 @@ class VStringArray(object):
         '''Insert a string into the array at an index'''
         with self.lock:
             old_len = self.index.shape[0]
-            self.index.resize(old_len+1, 0)
+            self.index.resize(old_len + 1, 0)
             if index < old_len:
-                self.index[index+1:, :] = self.index[index:old_len]
+                self.index[index + 1:, :] = self.index[index:old_len]
             self.index[index, :] = (self.VS_NULL, 0)
             self[index] = s
 
@@ -2140,7 +2176,7 @@ class VStringArray(object):
         nulls = np.array([s is None for s in strings])
         strings = ["" if s is None
                    else s.encode("utf-8") if isinstance(s, unicode)
-                   else str(s) for s in strings]
+        else str(s) for s in strings]
         with self.lock:
             old_len = len(self)
             old_data_len = self.data.shape[0]
@@ -2159,11 +2195,11 @@ class VStringArray(object):
             self.index[old_len:, :] = index
             idx_not_nulls = np.where(~nulls)[0]
             for i in range(0, len(idx_not_nulls), 1000):
-                iend = min(i+1000, len(idx_not_nulls))
-                ilast = iend-1
+                iend = min(i + 1000, len(idx_not_nulls))
+                ilast = iend - 1
                 begin = index[idx_not_nulls[i], 0]
                 end = index[idx_not_nulls[ilast], 1]
-                scat = np.zeros(end-begin, "S1")
+                scat = np.zeros(end - begin, "S1")
                 for idx in idx_not_nulls[i:iend]:
                     sbegin = index[idx, 0] - begin
                     send = index[idx, 1] - begin
@@ -2186,7 +2222,7 @@ class VStringArray(object):
         hi = len(self)
         slen = len(s)
         while lo < hi:
-            mid = int((lo+hi)/2)
+            mid = int((lo + hi) / 2)
             i0, i1 = self.index[mid]
             l = min(slen, i1 - i0)
             for s0, s1 in zip(s, self.data[i0:i1]):
@@ -2198,14 +2234,14 @@ class VStringArray(object):
                 elif slen < i1 - i0:
                     hi = mid
                 else:
-                    lo = mid+1
+                    lo = mid + 1
             elif s0 < s1:
                 hi = mid
             else:
-                lo = mid+1
+                lo = mid + 1
         return lo
 
-    def is_not_none(self, index = slice(0, sys.maxint)):
+    def is_not_none(self, index=slice(0, sys.maxint)):
         '''Return True for indices that are not None
 
         index - either a single index (in which case, we return a single
@@ -2227,6 +2263,7 @@ class VStringArray(object):
         del self.group[self.data.name]
         del self.index
         del self.data
+
 
 class StringReferencer(object):
     '''This class implements a B-tree of strings within an HDF5 file's group
@@ -2280,12 +2317,12 @@ class StringReferencer(object):
         as well as the length of the string.
         '''
         ds_ref = self.group.require_dataset(
-            self.SR_REF_DS,
-            (0, 2),
-            dtype = np.uint64,
-            shuffle = True,
-            chunks = (self.blocksize * 4, 2),
-            maxshape = (None, 2))
+                self.SR_REF_DS,
+                (0, 2),
+                dtype=np.uint64,
+                shuffle=True,
+                chunks=(self.blocksize * 4, 2),
+                maxshape=(None, 2))
         return ds_ref
 
     '''The name of the dataset holding the offset and length of strings in a block
@@ -2313,12 +2350,12 @@ class StringReferencer(object):
         Mth string in the Nth block of the string data.
         '''
         ds_ol = self.group.require_dataset(
-            self.SR_BLOCK_DS,
-            (0, self.blocksize, self.SR_BLOCK_ENTRIES),
-            dtype = np.uint32,
-            shuffle = True,
-            chunks = (4, self.blocksize, self.SR_BLOCK_ENTRIES),
-            maxshape = (None, self.blocksize, self.SR_BLOCK_ENTRIES))
+                self.SR_BLOCK_DS,
+                (0, self.blocksize, self.SR_BLOCK_ENTRIES),
+                dtype=np.uint32,
+                shuffle=True,
+                chunks=(4, self.blocksize, self.SR_BLOCK_ENTRIES),
+                maxshape=(None, self.blocksize, self.SR_BLOCK_ENTRIES))
         return ds_ol
 
     '''The name of the dataset holding the strings
@@ -2332,13 +2369,13 @@ class StringReferencer(object):
 
     def get_data_dataset(self):
         ds_data = self.group.require_dataset(
-            self.SR_DATA_DS,
-            (0,0),
-            dtype = np.uint8,
-            shuffle = True,
-            compression = 'gzip',
-            chunks = (1, self.SR_DATA_BLOCKSIZE),
-            maxshape = (None, None))
+                self.SR_DATA_DS,
+                (0, 0),
+                dtype=np.uint8,
+                shuffle=True,
+                compression='gzip',
+                chunks=(1, self.SR_DATA_BLOCKSIZE),
+                maxshape=(None, None))
         return ds_data
 
     '''The dataset holding the block descriptor
@@ -2365,13 +2402,13 @@ class StringReferencer(object):
 
     def get_blockdesc_dataset(self):
         '''Get the dataset holding the block descriptors for each block'''
-        ds_blockdesc  = self.group.require_dataset(
-            self.SR_BLOCKDESC_DS,
-            (0, self.SR_BLOCKDESC_ENTRIES),
-            dtype = np.uint32,
-            shuffle = True,
-            chunks = (256, self.SR_BLOCKDESC_ENTRIES),
-            maxshape = (None, self.SR_BLOCKDESC_ENTRIES))
+        ds_blockdesc = self.group.require_dataset(
+                self.SR_BLOCKDESC_DS,
+                (0, self.SR_BLOCKDESC_ENTRIES),
+                dtype=np.uint32,
+                shuffle=True,
+                chunks=(256, self.SR_BLOCKDESC_ENTRIES),
+                maxshape=(None, self.SR_BLOCKDESC_ENTRIES))
         return ds_blockdesc
 
     @staticmethod
@@ -2398,7 +2435,7 @@ class StringReferencer(object):
         j: index within block
         '''
         data_off, data_len = \
-            self.blocks[i, j, self.SR_BLOCK_OFF:(self.SR_BLOCK_LEN+1)]
+            self.blocks[i, j, self.SR_BLOCK_OFF:(self.SR_BLOCK_LEN + 1)]
         s = str(self.data[i, data_off:(data_off + data_len)].data)
         return s.decode("utf-8")
 
@@ -2423,13 +2460,13 @@ class StringReferencer(object):
         returns a numpy array of ints which are references to the strings
         '''
         strings, reverse_indices = np.unique(np.array(strings, object),
-                                             return_inverse = True)
+                                             return_inverse=True)
         strings = [self.string_to_uint8(s) for s in strings]
         indices = []
         if self.blocks.shape[0] == 0:
             block = self.sr_alloc_block()
             self.blockdesc.attrs[self.SR_ROOT_ATTR] = block
-            self.refs.resize(self.refs.shape[0]+1, 0)
+            self.refs.resize(self.refs.shape[0] + 1, 0)
             #
             # Build the first block
             #
@@ -2437,11 +2474,11 @@ class StringReferencer(object):
             strings = strings[1:]
             indices.append(0)
             self.blockdesc[block, :] = (
-                1, # entries
-                len(s0), # current length of data section
-                self.SR_NULL, # left block ptr
-                self.SR_NULL, # parent block
-                self.SR_NULL) # parent index
+                1,  # entries
+                len(s0),  # current length of data section
+                self.SR_NULL,  # left block ptr
+                self.SR_NULL,  # parent block
+                self.SR_NULL)  # parent index
             self.data.resize(len(s0), 1)
             self.data[block, :len(s0)] = s0
             self.blocks[block, 0, :] = (0, 0, len(s0), self.SR_NULL)
@@ -2454,8 +2491,8 @@ class StringReferencer(object):
                     self.sr_split_block(i)
                     i, j, idx = self.sr_search(s)
                 idx = self.refs.shape[0]
-                self.refs.resize(idx+1, 0)
-                self.refs[idx, : ] = (i, j)
+                self.refs.resize(idx + 1, 0)
+                self.refs[idx, :] = (i, j)
                 self.sr_insert(s, idx, i, j)
             else:
                 idx = self.blocks[i, j, self.SR_BLOCK_REF]
@@ -2472,9 +2509,9 @@ class StringReferencer(object):
         returns the block number
         '''
         idx = self.blockdesc.shape[0]
-        self.blockdesc.resize(idx+1, 0)
-        self.blocks.resize(idx+1, 0)
-        self.data.resize(idx+1, 0)
+        self.blockdesc.resize(idx + 1, 0)
+        self.blocks.resize(idx + 1, 0)
+        self.data.resize(idx + 1, 0)
         self.blockdesc[idx, :] = (0, 0, self.SR_NULL, self.SR_NULL, 0)
         return idx
 
@@ -2489,10 +2526,10 @@ class StringReferencer(object):
         # the index of the ref that's promoted
         i1 = self.sr_alloc_block()
         idx_len, data_len, i0, j0, leftmost_child = self.blockdesc[i, :]
-        j = int((idx_len-1) / 2)
+        j = int((idx_len - 1) / 2)
 
         j_ref, j_data_idx, j_data_len, j_subblock = self.block[i, j, :]
-        j_data = self.data[i, j_data_idx:(j_data_idx+j_data_len)]
+        j_data = self.data[i, j_data_idx:(j_data_idx + j_data_len)]
         if i0 == self.SR_NULL:
             # Splitting the root. We need to promote.
             i0 = self.sr_alloc_block(self.blockdesc, ol, data)
@@ -2508,16 +2545,16 @@ class StringReferencer(object):
         self.sr_insert(j_data, i0, j0, i1)
         if j_subblock != self.SR_NULL:
             self.blockdesc[j_subblock,
-                           self.SR_BLOCKDESC_PARENT:
-                           (self.SR_BLOCKDESC_PARENT_IDX+1)] = (i1, -1)
+            self.SR_BLOCKDESC_PARENT:
+            (self.SR_BLOCKDESC_PARENT_IDX + 1)] = (i1, -1)
             self.blockdesc[i1, self.SR_BLOCKDESC_LEFTMOST_CHILD] = j_subblock
         self.refs[j_ref, self.SR_REF_BLOCK:(self.SR_REF_IDX + 1)] = (i0, j0)
         #
         # Copy the right-hand half to the new block.
         #
-        j_right = j+1
+        j_right = j + 1
         rh_idx_len = idx_len - j_right
-        rh_data_idx = j_data_idx+j_data_len
+        rh_data_idx = j_data_idx + j_data_len
         rh_data_end = self.blockdesc[i, self.SR_BLOCKDESC_DATA_LEN]
         rh_data_len = rh_data_end - rh_data_idx
         self.data[i1, :rh_data_len] = self.data[i, rh_data_idx: rh_data_end]
@@ -2525,15 +2562,15 @@ class StringReferencer(object):
         # Copy the block data - adjust data pointers at same time
         #
         adjustment = np.array([0, - rh_data_idx, 0, 0])[np.newaxis, :]
-        self.block[i1, : rh_idx_len, :] =\
+        self.block[i1, : rh_idx_len, :] = \
             self.block[i, j_right:idx_len, :] - adjustment
         if leftmost_child != self.SR_NULL:
             # If not a leaf, have to adjust children's parents.
             for new_j, subblock in enumerate(
-                self.block[i1, :rh_idx_len, self.SR_BLOCK_SUBBLOCK]):
+                    self.block[i1, :rh_idx_len, self.SR_BLOCK_SUBBLOCK]):
                 self.blockdesc[subblock,
-                               self.SR_BLOCKDESC_PARENT:
-                               (self.SR_BLOCKDESC_PARENT_IDX+1)] = (i1, new_j)
+                self.SR_BLOCKDESC_PARENT:
+                (self.SR_BLOCKDESC_PARENT_IDX + 1)] = (i1, new_j)
         #
         # Readjust old block's blockdesc
         #
@@ -2545,7 +2582,7 @@ class StringReferencer(object):
         self.blockdesc[i1, self.SR_BLOCKDESC_IDX_LEN] = rh_idx_len
         self.blockdesc[i1, self.SR_BLOCKDESC_DATA_LEN] = rh_data_len
 
-    def sr_insert(self, s, idx, i, j, next_child = SR_NULL):
+    def sr_insert(self, s, idx, i, j, next_child=SR_NULL):
         '''Open up a slot in block i at position j and insert string s
 
         s - string to insert
@@ -2575,11 +2612,11 @@ class StringReferencer(object):
             #
             # shift the per-string information
             #
-            self.blocks[i, (j+1):(idx_len+1), :] = self.blocks[i, j:idx_len, :]
+            self.blocks[i, (j + 1):(idx_len + 1), :] = self.blocks[i, j:idx_len, :]
             #
             # shift the strings
             #
-            self.blocks[i, (j+1):(idx_len+1), self.SR_BLOCK_OFF] += len_s
+            self.blocks[i, (j + 1):(idx_len + 1), self.SR_BLOCK_OFF] += len_s
             data_idx = self.blocks[i, j, self.SR_BLOCK_OFF]
             self.data[i, (data_idx + len_s):(data_len + len_s)] = \
                 self.data[i, data_idx:data_len]
@@ -2614,7 +2651,7 @@ class StringReferencer(object):
             hi = block_len
             lo = 0
             while lo < hi:
-                mid = int((lo+hi)/2)
+                mid = int((lo + hi) / 2)
                 s1_off = block[mid, OFF]
                 s1_len = block[mid, LEN]
                 s1 = data[s1_off:(s1_off + s1_len)]
@@ -2624,11 +2661,11 @@ class StringReferencer(object):
                     if s_len == s1_len:
                         return block_idx, mid, True
                     elif s1_len < s_len:
-                        lo = mid+1
+                        lo = mid + 1
                     else:
                         hi = mid
                 elif s1[s_s1_ne][0] < s[s_s1_ne][0]:
-                    lo = mid+1
+                    lo = mid + 1
                 else:
                     hi = mid
             if lo == 0:
@@ -2658,8 +2695,11 @@ if __name__ == '__main__':
     h['Object1', 'objfeature1', 1] = [9, 4.0, 2.5]
     print     h['Object1', 'objfeature1', 1]
 
+
     def randtext():
-        return "".join(["ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"[np.random.randint(0,52)] for _ in range(np.random.randint(5, 8))])
+        return "".join(["ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"[np.random.randint(0, 52)] for _ in
+                        range(np.random.randint(5, 8))])
+
 
     for i in range(1, 20):
         h["Image", "t1", i] = randtext()
@@ -2675,8 +2715,8 @@ if __name__ == '__main__':
         h['Image', 'f2', i] = np.random.randint(0, 100)
         h['Object1', 'objfeature2', i] = np.random.randint(0, 100, size=5)
 
-    hdest = HDF5Dict('temp1.hdf5', copy = h.top_group,
-                     image_numbers=np.arange(4,15))
+    hdest = HDF5Dict('temp1.hdf5', copy=h.top_group,
+                     image_numbers=np.arange(4, 15))
     for i in range(4, 15):
         for object_name, feature_name in (("Image", "f1"),
                                           ("Image", "f2"),

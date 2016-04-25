@@ -188,7 +188,7 @@ def main(args=None):
     try:
         # ---------------------------------------
         #
-        # Handle command-line tasks that that need to load the modules to run
+        # Handle command-line tasks that that need to load the extensions to run
         #
         if options.output_html:
             from cellprofiler.gui.html.manual import generate_html
@@ -349,18 +349,18 @@ def parse_args(args):
                       action="store_true",
                       dest="output_html",
                       default=False,
-                      help=('Output HTML help for all modules. Use with the -o '
+                      help=('Output HTML help for all extensions. Use with the -o '
                             'option to specify the output directory for the '
                             'files. Assumes -b.'))
 
     parser.add_option("--plugins-directory",
                       dest="plugins_directory",
-                      help=("CellProfiler will look for plugin modules in this "
+                      help=("CellProfiler will look for plugin extensions in this "
                             "directory (headless-only)."))
 
     parser.add_option("--ij-plugins-directory",
                       dest="ij_plugins_directory",
-                      help=("CellProfiler will look for ImageJ plugin modules "
+                      help=("CellProfiler will look for ImageJ plugin extensions "
                             "in this directory (headless-only)."))
 
     parser.add_option("-t", "--temporary-directory",
@@ -501,7 +501,7 @@ def parse_args(args):
                       dest="code_statistics",
                       action="store_true",
                       default=False,
-                      help="Print the number of modules, settings and lines of code")
+                      help="Print the number of extensions, settings and lines of code")
 
     if sys.platform == 'darwin':
         parser.add_option("--use-awt",
@@ -598,14 +598,14 @@ def set_omero_credentials_from_string(credentials_string):
 
 
 def print_code_statistics():
-    '''Print # lines of code, # modules, etc to console
+    '''Print # lines of code, # extensions, etc to console
 
     This is the official source of code statistics for things like grants.
     '''
-    from cellprofiler.modules import builtin_modules, all_modules, instantiate_module
+    from cellprofiler.extensions import builtin_modules, all_modules, instantiate_module
     import subprocess
     print "\n\n\n**** CellProfiler code statistics ****"
-    print "# of built-in modules: %d" % len(builtin_modules)
+    print "# of built-in extensions: %d" % len(builtin_modules)
     setting_count = 0
     for module in all_modules.values():
         if module.__module__.find(".") < 0:

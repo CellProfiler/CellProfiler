@@ -1420,7 +1420,7 @@ def get_name_provider_choices(pipeline, last_setting, group):
     '''Scan the pipeline to find name providers for the given group
 
     pipeline - pipeline to scan
-    last_setting - scan the modules in order until you arrive at this setting
+    last_setting - scan the extensions in order until you arrive at this setting
     group - the name of the group of providers to scan
     returns a list of tuples, each with (provider name, module name, module number)
     '''
@@ -1448,7 +1448,7 @@ def get_name_providers(pipeline, last_setting):
     '''Scan the pipeline to find name providers matching the name given in the setting
 
     pipeline - pipeline to scan
-    last_setting - scan the modules in order until you arrive at this setting
+    last_setting - scan the extensions in order until you arrive at this setting
     returns a list of providers that provide a correct "thing" with the
     same name as that of the subscriber
     '''

@@ -20,15 +20,15 @@ import numpy.lib.index_tricks
 import cellprofiler.image as cpi
 import cellprofiler.extension as cpm
 import cellprofiler.measurement as cpmeas
-import cellprofiler.modules
-import cellprofiler.modules.loadimages as LI
+import cellprofiler.extensions
+import cellprofiler.extensions.loadimages as LI
 import cellprofiler.object as cpo
 import cellprofiler.pipeline as cpp
 import cellprofiler.configuration as cpprefs
 import cellprofiler.setting as cps
 import cellprofiler.workspace as cpw
-from cellprofiler.modules.injectimage import InjectImage
-from cellprofiler.modules.tests import \
+from cellprofiler.extensions.injectimage import InjectImage
+from cellprofiler.extensions.tests import \
     example_images_directory, maybe_download_fly, maybe_download_sbs
 
 IMAGE_NAME = "myimage"
@@ -565,12 +565,12 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
 
     def test_12_01_img_286(self):
         '''Regression test for img-286: module name in class'''
-        cellprofiler.modules.fill_modules()
+        cellprofiler.extensions.fill_modules()
         success = True
-        all_keys = list(cellprofiler.modules.all_modules.keys())
+        all_keys = list(cellprofiler.extensions.all_modules.keys())
         all_keys.sort()
         for k in all_keys:
-            v = cellprofiler.modules.all_modules[k]
+            v = cellprofiler.extensions.all_modules[k]
             try:
                 v.module_name
             except:
@@ -580,8 +580,8 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
 
     def test_13_01_save_pipeline(self):
         pipeline = get_empty_pipeline()
-        cellprofiler.modules.fill_modules()
-        module = cellprofiler.modules.instantiate_module("Align")
+        cellprofiler.extensions.fill_modules()
+        module = cellprofiler.extensions.instantiate_module("Align")
         module.module_num = 1
         pipeline.add_module(module)
         fd = cStringIO.StringIO()
@@ -603,8 +603,8 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
 
     def test_13_02_save_measurements(self):
         pipeline = get_empty_pipeline()
-        cellprofiler.modules.fill_modules()
-        module = cellprofiler.modules.instantiate_module("Align")
+        cellprofiler.extensions.fill_modules()
+        module = cellprofiler.extensions.instantiate_module("Align")
         module.module_num = 1
         pipeline.add_module(module)
         measurements = cpmeas.Measurement()
@@ -653,8 +653,8 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
 
     def test_13_03_save_long_measurements(self):
         pipeline = cpp.Pipeline()
-        cellprofiler.modules.fill_modules()
-        module = cellprofiler.modules.instantiate_module("Align")
+        cellprofiler.extensions.fill_modules()
+        module = cellprofiler.extensions.instantiate_module("Align")
         module.module_num = 1
         pipeline.add_module(module)
         measurements = cpmeas.Measurement()
@@ -745,7 +745,7 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
                 #         path = os.path.join(example_images_directory(), "ExampleSBSImages")
                 #         pipeline = cpp.Pipeline()
                 #         pipeline.load(cStringIO.StringIO(data))
-                #         module = pipeline.modules()[0]
+                #         module = pipeline.extensions()[0]
                 #         self.assertTrue(isinstance(module, LI.LoadImages))
                 #         module.location.custom_path = path
                 #         m = cpmeas.Measurements()
@@ -756,8 +756,8 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
                 #         pipeline_text = pipeline_text.encode("us-ascii")
                 #         pipeline = cpp.Pipeline()
                 #         pipeline.loadtxt(cStringIO.StringIO(pipeline_text))
-                #         self.assertEqual(len(pipeline.modules()), 1)
-                #         module_out = pipeline.modules()[0]
+                #         self.assertEqual(len(pipeline.extensions()), 1)
+                #         module_out = pipeline.extensions()[0]
                 #         self.assertTrue(isinstance(module_out, module.__class__))
                 #         self.assertEqual(len(module_out.settings()), len(module.settings()))
                 #         for m1setting, m2setting in zip(module.settings(), module_out.settings()):
@@ -800,8 +800,8 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
         #
         # Put "MyClassForTest0801" into the module list
         #
-        cellprofiler.modules.fill_modules()
-        cellprofiler.modules.all_modules[MyClassForTest0801.module_name] = \
+        cellprofiler.extensions.fill_modules()
+        cellprofiler.extensions.all_modules[MyClassForTest0801.module_name] = \
             MyClassForTest0801
         #
         # Continue with test

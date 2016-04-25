@@ -470,7 +470,7 @@ class PlateViewer(object):
             from bioformats import load_image_url
             import javabridge
             from scipy.io.matlab.mio import loadmat
-            from cellprofiler.modules.loadimages import url2pathname
+            from cellprofiler.extensions.loadimages import url2pathname
 
             javabridge.attach()
             with self.image_dict_lock:

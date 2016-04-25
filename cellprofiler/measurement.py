@@ -1193,7 +1193,7 @@ class Measurement(object):
         the vectors are assumed to be arranged in the correct order already.
         '''
         #
-        # Get image features populated by previous modules. If there are any,
+        # Get image features populated by previous extensions. If there are any,
         # then we launch the desperate heuristics that attempt to match
         # to them, either by order or by common metadata
         #
@@ -1426,7 +1426,7 @@ class Measurement(object):
         is_image - True to load as an image, False to load as objects
         fn_later_path - call this function to alter the path for batch processing
         '''
-        from cellprofiler.modules.loadimages import url2pathname, pathname2url
+        from cellprofiler.extensions.loadimages import url2pathname, pathname2url
         if is_image:
             path_feature = C_PATH_NAME
             file_feature = C_FILE_NAME
@@ -1578,7 +1578,7 @@ class Measurement(object):
         must_be_rgb - raise an exception if 2-d or if # channels not 3 or 4,
                       discard alpha channel.
         """
-        from .modules.loadimages import LoadImagesImageProviderURL
+        from .extensions.loadimages import LoadImagesImageProviderURL
         from .image import GrayscaleImage, RGBImage
         name = str(name)
         if self.__images.has_key(name):

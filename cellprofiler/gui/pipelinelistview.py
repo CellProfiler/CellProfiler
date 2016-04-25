@@ -97,7 +97,7 @@ CHECK_FAIL_SEC = 20
 
 
 class PipelineListView(object):
-    """View on a set of modules
+    """View on a set of extensions
 
     Here is the window hierarchy within the panel:
     pipeline static box
@@ -127,13 +127,13 @@ class PipelineListView(object):
         static_box = wx.StaticBox(self.__panel, label="Pipeline")
         top_sizer = wx.StaticBoxSizer(static_box, wx.VERTICAL)
         panel.Sizer = top_sizer
-        static_box = wx.StaticBox(self.__panel, label="Input modules")
+        static_box = wx.StaticBox(self.__panel, label="Input extensions")
         self.__input_controls = [static_box]
         self.__input_sizer = wx.StaticBoxSizer(static_box, wx.VERTICAL)
         top_sizer.Add(self.__input_sizer, 0, wx.EXPAND)
         self.make_input_panel()
 
-        modules_box = wx.StaticBox(panel, label="Analysis modules")
+        modules_box = wx.StaticBox(panel, label="Analysis extensions")
         self.__sizer = wx.StaticBoxSizer(modules_box, wx.HORIZONTAL)
         top_sizer.Add(self.__sizer, 1, wx.EXPAND)
 
@@ -265,11 +265,11 @@ class PipelineListView(object):
 
         input_list_ctrl.Bind(wx.EVT_MOVE, on_fake_move)
         transparent_window.SetToolTipString(
-                "The current pipeline is a legacy pipeline that does not use these modules")
+                "The current pipeline is a legacy pipeline that does not use these extensions")
         self.transparent_window = transparent_window
 
     def show_input_panel(self, show):
-        """Show or hide the controls for input modules
+        """Show or hide the controls for input extensions
 
         show - True to show the controls, False to hide
         """
@@ -283,7 +283,7 @@ class PipelineListView(object):
                 item.set_state(PLV_STATE_UNAVAILABLE, PLV_STATE_UNAVAILABLE)
                 self.input_list_ctrl.InsertItem(i, item)
         else:
-            # remove the fake modules if present
+            # remove the fake extensions if present
             idx = 0
             while idx < self.input_list_ctrl.ItemCount:
                 if self.input_list_ctrl.items[idx].is_unavailable():
@@ -355,7 +355,7 @@ class PipelineListView(object):
     def reset_debug_module(self):
         """Set the pipeline slider to the first module to be debugged
 
-        Skip the input modules. If there are no other modules, return None,
+        Skip the input extensions. If there are no other extensions, return None,
         otherwise return the first module
         """
         self.list_ctrl.last_running_item = 0
@@ -434,7 +434,7 @@ class PipelineListView(object):
             self.__on_show_window(event)
 
     def notify_directory_change(self):
-        # we can't know which modules use this information
+        # we can't know which extensions use this information
         self.request_validation()
 
     def notify_has_file_list(self, has_files):
@@ -740,7 +740,7 @@ class PipelineListView(object):
 
     def do_drop(self, index, action, data):
         #
-        # Insert the new modules
+        # Insert the new extensions
         #
         wx.BeginBusyCursor()
         try:
@@ -1245,7 +1245,7 @@ class PipelineListCtrl(wx.PyScrolledWindow):
         return self.allow_disable
 
     def SelectAll(self):
-        """Select all modules"""
+        """Select all extensions"""
         if self.CanSelect():
             for i in range(self.GetItemCount()):
                 if not self.IsSelected(i):
@@ -1361,7 +1361,7 @@ class PipelineListCtrl(wx.PyScrolledWindow):
         self.Refresh(eraseBackground=False)
 
     def set_allow_disable(self, state):
-        """Allow disabling of modules / disallow disabling of modules"""
+        """Allow disabling of extensions / disallow disabling of extensions"""
         self.allow_disable = state
         self.Refresh(eraseBackground=False)
 

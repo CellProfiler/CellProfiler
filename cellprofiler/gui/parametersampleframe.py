@@ -874,7 +874,7 @@ class ParameterSampleFrame(wx.Frame):
 
                         # 4.1 Prepare to run pipeline
                         self.prepare_for_run()
-                        # 4.2 Run modules
+                        # 4.2 Run extensions
                         for module in self.__pipeline.modules():
                             if module.get_module_num() <= self.__module.get_module_num():
                                 self.run_module(module)

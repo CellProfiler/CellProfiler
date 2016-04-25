@@ -700,7 +700,7 @@ class ModuleView(object):
         return control
 
     def make_name_subscriber_control(self, v, choices, control_name, control):
-        """Make a read-only combobox with extra feedback about source modules,
+        """Make a read-only combobox with extra feedback about source extensions,
         and a context menu with choices navigable by module name.
 
         v            - the setting
@@ -1525,7 +1525,7 @@ class ModuleView(object):
 
     def make_image_plane_control(self, v, control):
         """Make a control to pick an image plane from the file list"""
-        from cellprofiler.modules.loadimages import url2pathname
+        from cellprofiler.extensions.loadimages import url2pathname
 
         assert isinstance(v, cellprofiler.setting.ImagePlane)
         if not control:

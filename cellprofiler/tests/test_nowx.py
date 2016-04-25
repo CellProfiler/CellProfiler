@@ -8,7 +8,7 @@ import traceback
 import unittest
 from urllib2 import urlopen
 
-from cellprofiler.modules.tests import \
+from cellprofiler.extensions.tests import \
     example_images_directory, maybe_download_sbs, maybe_download_fly
 
 
@@ -48,12 +48,12 @@ class TestNoWX(unittest.TestCase):
         self.assertRaises(ImportError, import_wx)
 
     def test_01_03_import_modules(self):
-        '''Import cellprofiler.modules and make sure it doesn't import wx'''
-        import cellprofiler.modules
+        '''Import cellprofiler.extensions and make sure it doesn't import wx'''
+        import cellprofiler.extensions
 
     # def test_01_04_instantiate_all(self):
     #     '''Instantiate each module and make sure none import wx'''
-    #     import cellprofiler.modules as M
+    #     import cellprofiler.extensions as M
     #     for name in M.get_module_names():
     #         try:
     #             M.instantiate_module(name)
@@ -96,7 +96,7 @@ class TestNoWX(unittest.TestCase):
         #     fd.close()
         #     while True:
         #         removed_something = False
-        #         for module in reversed(pipeline.modules()):
+        #         for module in reversed(pipeline.extensions()):
         #             self.assertTrue(isinstance(module, cpm.CPModule))
         #             if module.module_name in ("SaveImages",
         #                                       "CalculateStatistics",
@@ -107,6 +107,6 @@ class TestNoWX(unittest.TestCase):
         #                 break
         #         if not removed_something:
         #             break
-        #     for module in pipeline.modules():
+        #     for module in pipeline.extensions():
         #         module.show_window = False
         #     m = pipeline.run(image_set_end = 1)

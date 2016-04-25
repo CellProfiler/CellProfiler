@@ -1,7 +1,7 @@
 # coding=utf-8
 import cellprofiler.gui.help
 import cellprofiler.icons
-import cellprofiler.modules
+import cellprofiler.extensions
 import cellprofiler.configuration
 import cellprofiler.utilities.version
 import glob
@@ -15,7 +15,7 @@ import cellprofiler.icons
 import cellprofiler.configuration as cpprefs
 import cellprofiler.utilities.version as version
 from cellprofiler.gui.help import MAIN_HELP
-from cellprofiler.modules import get_module_names, instantiate_module
+from cellprofiler.extensions import get_module_names, instantiate_module
 import os.path
 
 LOCATION_COVERPAGE = os.path.join('images', 'CPCoverPage.png')
@@ -165,8 +165,8 @@ def output_module_html(webpage_path):
         except IOError:
             raise ValueError("Could not create directory %s" % module_path)
 
-    for module_name in sorted(cellprofiler.modules.get_module_names()):
-        module = cellprofiler.modules.instantiate_module(module_name)
+    for module_name in sorted(cellprofiler.extensions.get_module_names()):
+        module = cellprofiler.extensions.instantiate_module(module_name)
         location = os.path.split(
                 module.create_settings.im_func.func_code.co_filename)[0]
         if location == cellprofiler.configuration.get_plugin_directory():
@@ -223,8 +223,8 @@ def search_module_help(text):
                 item, lambda x: __search_fn(x, text))
     count = sum([len(x[2]) for x in matching_help])
 
-    for module_name in cellprofiler.modules.get_module_names():
-        module = cellprofiler.modules.instantiate_module(module_name)
+    for module_name in cellprofiler.extensions.get_module_names():
+        module = cellprofiler.extensions.instantiate_module(module_name)
         location = os.path.split(
                 module.create_settings.im_func.func_code.co_filename)[0]
         if location == cellprofiler.configuration.get_plugin_directory():

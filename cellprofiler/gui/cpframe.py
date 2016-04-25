@@ -19,7 +19,7 @@ import cellprofiler.gui.preferencesdlg
 import cellprofiler.gui.preferencesview
 import cellprofiler.gui.sashwindow_tools
 import cellprofiler.icons
-import cellprofiler.modules
+import cellprofiler.extensions
 import cellprofiler.pipeline
 import cellprofiler.configuration
 import cellprofiler.utilities.version
@@ -146,13 +146,13 @@ class CPFrame(wx.Frame):
 
         self.__module_list_panel = wx.Panel(self.__left_win)
         self.__module_list_panel.SetToolTipString(
-                "The pipeline panel contains the modules in the pipeline. Click on the '+' button below or right-click in the panel to begin adding modules.")
+                "The pipeline panel contains the extensions in the pipeline. Click on the '+' button below or right-click in the panel to begin adding extensions.")
         self.__pipeline_test_panel = wx.Panel(self.__left_win, -1)
         self.__pipeline_test_panel.SetToolTipString(
                 "The test mode panel is used for previewing the module settings prior to an analysis run. Click the buttons or use the 'Test' menu item to begin testing your module settings.")
         self.__module_controls_panel = wx.Panel(self.__left_win, -1, style=wx.BORDER_NONE)
         self.__module_controls_panel.SetToolTipString(
-                "The module controls add, remove, move and get help for modules. Click on the '+' button to begin adding modules.")
+                "The module controls add, remove, move and get help for extensions. Click on the '+' button to begin adding extensions.")
         #
         # The right window has the following structure:
         #
@@ -561,12 +561,12 @@ class CPFrame(wx.Frame):
         submenu.Append(
                 ID_FILE_EXPORT_PIPELINE_NOTES,
                 "Pipeline notes...",
-                "Save a text file outlining the pipeline's modules and module notes")
+                "Save a text file outlining the pipeline's extensions and module notes")
         self.__menu_file.AppendSubMenu(submenu, "Export")
         self.__menu_file.Append(
                 ID_FILE_CLEAR_PIPELINE,
                 'Clear Pipeline',
-                'Remove all modules from the current pipeline')
+                'Remove all extensions from the current pipeline')
         self.__menu_file.AppendSeparator()
         self.__menu_file.Append(
                 ID_FILE_OPEN_IMAGE,
@@ -599,8 +599,8 @@ class CPFrame(wx.Frame):
         self.menu_edit.AppendSeparator()
         self.menu_edit.Append(ID_EDIT_MOVE_UP, "Move Module &Up", "Move module toward the start of the pipeline")
         self.menu_edit.Append(ID_EDIT_MOVE_DOWN, "Move Module &Down", "Move module toward the end of the pipeline")
-        self.menu_edit.Append(ID_EDIT_DELETE, "&Delete Module", "Delete selected modules")
-        self.menu_edit.Append(ID_EDIT_DUPLICATE, "Duplicate Module", "Duplicate selected modules")
+        self.menu_edit.Append(ID_EDIT_DELETE, "&Delete Module", "Delete selected extensions")
+        self.menu_edit.Append(ID_EDIT_DUPLICATE, "Duplicate Module", "Duplicate selected extensions")
         self.menu_edit.Append(
                 ID_EDIT_ENABLE_MODULE, "Disable Module",
                 "Disable a module to skip it when running the pipeline")
@@ -659,9 +659,9 @@ class CPFrame(wx.Frame):
         self.__menu_window.Append(ID_WINDOW_CLOSE_ALL, "Close &All Open Windows\tctrl+L",
                                   "Close all open module display windows")
         self.__menu_window.Append(ID_WINDOW_SHOW_ALL_WINDOWS, "Show All Windows On Run",
-                                  "Show all module display windows for all modules during analysis")
+                                  "Show all module display windows for all extensions during analysis")
         self.__menu_window.Append(ID_WINDOW_HIDE_ALL_WINDOWS, "Hide All Windows On Run",
-                                  "Hide all module display windows for all modules during analysis")
+                                  "Hide all module display windows for all extensions during analysis")
         self.__menu_window.AppendSeparator()
 
         self.__menu_help = wx.Menu()
@@ -764,7 +764,7 @@ class CPFrame(wx.Frame):
             self.__menu_data_tools_help_menu.Append(new_id, "Plate viewer")
             wx.EVT_MENU(self, new_id, on_plate_viewer_help)
 
-            for data_tool_name in cellprofiler.modules.get_data_tool_names():
+            for data_tool_name in cellprofiler.extensions.get_data_tool_names():
                 new_id = wx.NewId()
                 self.__menu_data_tools_help_menu.Append(new_id, data_tool_name)
 
@@ -799,7 +799,7 @@ class CPFrame(wx.Frame):
 
             self.__data_tools_menu.AppendSeparator()
 
-            for data_tool_name in cellprofiler.modules.get_data_tool_names():
+            for data_tool_name in cellprofiler.extensions.get_data_tool_names():
                 new_id = wx.NewId()
                 self.__data_tools_menu.Append(new_id, data_tool_name)
 
@@ -1131,7 +1131,7 @@ class CPFrame(wx.Frame):
                             wildcard="Image file (*.tif,*.tiff,*.jpg,*.jpeg,*.png,*.gif,*.bmp)|*.tif;*.tiff;*.jpg;*.jpeg;*.png;*.gif;*.bmp|*.* (all files)|*.*",
                             style=wx.FD_OPEN)
         if dlg.ShowModal() == wx.ID_OK:
-            from cellprofiler.modules.loadimages import LoadImagesImageProvider
+            from cellprofiler.extensions.loadimages import LoadImagesImageProvider
             from cellprofiler.gui.cpfigure import CPFigureFrame
             lip = LoadImagesImageProvider("dummy", "", dlg.Path)
             image = lip.provide_image(None).pixel_data
@@ -1286,7 +1286,7 @@ class CPFrame(wx.Frame):
         frame.Layout()
 
     def __on_data_tool(self, event, tool_name):
-        module = cellprofiler.modules.instantiate_module(tool_name)
+        module = cellprofiler.extensions.instantiate_module(tool_name)
         args, varargs, varkw, vardef = inspect.getargspec(module.run_as_data_tool)
         if len(args) + (0 if varargs is None else len(varargs)) == 1:
             # Data tool doesn't need the data tool frame because it doesn't
@@ -1304,7 +1304,7 @@ class CPFrame(wx.Frame):
                                                          measurements_file_name=dlg.Path)
 
     def __on_data_tool_help(self, event, tool_name):
-        module = cellprofiler.modules.instantiate_module(tool_name)
+        module = cellprofiler.extensions.instantiate_module(tool_name)
         self.do_help_module(tool_name, module.get_help())
 
     def display_error(self, message, error):

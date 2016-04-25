@@ -19,7 +19,7 @@ class TestImageProcessor(unittest.TestCase):
         J.detach()
 
     def test_01_01_get_image(self):
-        from cellprofiler.modules.tests import maybe_download_example_image
+        from cellprofiler.extensions.tests import maybe_download_example_image
 
         folder = "ExampleCometAssay"
         fn = "CometTails.tif"

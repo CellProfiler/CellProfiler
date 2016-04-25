@@ -538,7 +538,7 @@ class PreferencesView(object):
             self.__image_edit_box.Value = cellprofiler.configuration.get_default_image_directory()
 
     def __notify_pipeline_list_view_directory_change(self, path):
-        # modules may need revalidation
+        # extensions may need revalidation
         if self.__pipeline_list_view is not None:
             self.__pipeline_list_view.notify_directory_change()
 
@@ -675,7 +675,7 @@ class ProgressWatcher(object):
                 per_module_estimates[module_index:] = numpy.median(durations[:self.image_set_index, module_index:], 0)
                 per_module_estimates[module_index] = max(per_module_estimates[module_index], current_module_so_far)
             else:
-                # Guess that the modules that haven't finished yet are
+                # Guess that the extensions that haven't finished yet are
                 # as slow as the slowest one we've seen so far.
                 per_module_estimates[module_index] = current_module_so_far
                 per_module_estimates[module_index:] = per_module_estimates[:module_index + 1].max()

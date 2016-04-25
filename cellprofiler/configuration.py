@@ -285,7 +285,7 @@ FOLDER_CHOICE_TRANSLATIONS = {
 
 IO_FOLDER_CHOICE_HELP_TEXT = """
 You can choose among the following options which are common to all file input/output
-modules:
+extensions:
 <ul>
 <li><i>Default Input Folder</i>: Use the default input folder.</li>
 <li><i>Default Output Folder:</i> Use from the default output folder.</li>

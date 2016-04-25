@@ -68,7 +68,7 @@ class HtmlClickableWindow(wx.html.HtmlWindow):
             pipeline_filename = href[12:]
 
             try:
-                import cellprofiler.modules.loaddata
+                import cellprofiler.extensions.loaddata
                 fd = urllib.urlopen(pipeline_filename)
                 if fd.code < 200 or fd.code > 299:
                     wx.MessageBox(
@@ -82,7 +82,7 @@ class HtmlClickableWindow(wx.html.HtmlWindow):
                     pipeline = wx.GetApp().frame.pipeline
                     pipeline.load(fd)
                     for module in pipeline.modules():
-                        if isinstance(module, cellprofiler.modules.loaddata.LoadData):
+                        if isinstance(module, cellprofiler.extensions.loaddata.LoadData):
                             # Would prefer to call LoadData's do_reload but not sure how at this point
                             global header_cache
                             header_cache = {}

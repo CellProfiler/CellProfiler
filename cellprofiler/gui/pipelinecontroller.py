@@ -15,8 +15,8 @@ import cellprofiler.gui.pathlist
 import cellprofiler.gui.viewworkspace
 import cellprofiler.icons
 import cellprofiler.measurement
-import cellprofiler.modules.loadimages
-import cellprofiler.modules.loadimages
+import cellprofiler.extensions.loadimages
+import cellprofiler.extensions.loadimages
 import cellprofiler.object
 import cellprofiler.pipeline
 import cellprofiler.configuration
@@ -63,7 +63,7 @@ class PipelineController(object):
         pipeline.add_listener(self.__on_pipeline_event)
         self.__analysis = None
         self.__frame = frame
-        self.__add_module_frame = cellprofiler.gui.addmoduleframe.AddModuleFrame(frame, -1, "Add modules")
+        self.__add_module_frame = cellprofiler.gui.addmoduleframe.AddModuleFrame(frame, -1, "Add extensions")
         self.__add_module_frame.add_listener(self.on_add_to_pipeline)
         # ~*~
         self.__parameter_sample_frame = None
@@ -263,7 +263,7 @@ class PipelineController(object):
             self.__module_controls_panel, cpframe.ID_HELP_MODULE,
             "?", (0, 0), (30, -1))
         self.__help_button.SetToolTipString("Get Help for selected module")
-        self.__mcp_text = wx.StaticText(self.__module_controls_panel, -1, "Adjust modules:")
+        self.__mcp_text = wx.StaticText(self.__module_controls_panel, -1, "Adjust extensions:")
         self.__mcp_add_module_button = wx.Button(self.__module_controls_panel, -1, "+", (0, 0), (30, -1))
         self.__mcp_add_module_button.SetToolTipString("Add a module")
         self.__mcp_remove_module_button = wx.Button(
@@ -835,7 +835,7 @@ class PipelineController(object):
                 text = (
                     "Your pipeline contains the legacy module LoadImages, and legacy references\n"
                     "to the Default Input Folder. CellProfiler can convert this pipeline by:\n\n"
-                    u"\u2022 Using the new input modules (Images, Metadata, NamesAndTypes, Groups).\n"
+                    u"\u2022 Using the new input extensions (Images, Metadata, NamesAndTypes, Groups).\n"
                     u"\u2022 Using an existing folder instead of the Default Input Folder.\n\n"
                     "If you choose to convert the pipeline, you should then make sure of the \n"
                     "following:\n"
@@ -1145,7 +1145,7 @@ class PipelineController(object):
         if len(image_numbers) == 0:
             self.display_plate_viewer_help(
                 "Your project does not produce any image sets.\n"
-                "Please configure the input modules correctly.",
+                "Please configure the input extensions correctly.",
                 "Plate viewer: No image sets")
             return
         url_features = [f for f in m.get_feature_names(cellprofiler.measurement.IMAGE)
@@ -1261,7 +1261,7 @@ class PipelineController(object):
             cellprofiler.utilities.version.title_string, filename, path)
 
     def __on_clear_pipeline(self, event):
-        if wx.MessageBox("Do you really want to remove all modules from the pipeline?",
+        if wx.MessageBox("Do you really want to remove all extensions from the pipeline?",
                          "Clearing pipeline",
                          wx.YES_NO | wx.ICON_QUESTION, self.__frame) == wx.YES:
             self.stop_debugging()
@@ -1599,7 +1599,7 @@ class PipelineController(object):
     def on_pathlist_show(self, event=None):
         """Show the focused item's image"""
         from cellprofiler.gui.cpfigure import show_image
-        from cellprofiler.modules.loadimages import url2pathname
+        from cellprofiler.extensions.loadimages import url2pathname
         paths = self.__path_list_ctrl.get_paths(
             self.__path_list_ctrl.FLAG_FOCUS_ITEM_ONLY)
         if len(paths) == 0:
@@ -1722,7 +1722,7 @@ class PipelineController(object):
                     message[0] = "Processing " + pathname
 
                     if os.path.isfile(pathname):
-                        urls.append(cellprofiler.modules.loadimages.pathname2url(pathname))
+                        urls.append(cellprofiler.extensions.loadimages.pathname2url(pathname))
                         if len(urls) > 100:
                             queue.put(urls)
                             urls = []
@@ -1732,7 +1732,7 @@ class PipelineController(object):
                                 if interrupt[0]:
                                     break
                                 path = os.path.join(dirpath, filename)
-                                urls.append(cellprofiler.modules.loadimages.pathname2url(path))
+                                urls.append(cellprofiler.extensions.loadimages.pathname2url(path))
                                 message[0] = "Processing " + path
                                 if len(urls) > 100:
                                     queue.put(urls)
@@ -1848,7 +1848,7 @@ class PipelineController(object):
         """Handle an iteration of file walking"""
 
         hdf_file_list = self.__workspace.get_file_list()
-        file_list = [cellprofiler.modules.loadimages.pathname2url(os.path.join(dirpath, filename))
+        file_list = [cellprofiler.extensions.loadimages.pathname2url(os.path.join(dirpath, filename))
                      for filename in filenames]
         hdf_file_list.add_files_to_filelist(file_list)
         self.__pipeline.add_urls(file_list)
@@ -1902,15 +1902,15 @@ class PipelineController(object):
         self.__add_module_frame.Raise()
 
     def populate_edit_menu(self, menu):
-        """Display a menu of modules to add"""
-        from cellprofiler.modules import get_module_names
+        """Display a menu of extensions to add"""
+        from cellprofiler.extensions import get_module_names
         #
         # Get a two-level dictionary of categories and names
         #
         d = {"All": []}
         for module_name in get_module_names():
             try:
-                module = cellprofiler.modules.get_module_class(module_name)
+                module = cellprofiler.extensions.get_module_class(module_name)
                 if module.is_input_module():
                     continue
                 category = module.category
@@ -1966,7 +1966,7 @@ class PipelineController(object):
         self.__module_view.set_selection(module_num)
 
     def on_menu_add_module(self, event):
-        from cellprofiler.modules import instantiate_module
+        from cellprofiler.extensions import instantiate_module
         from cellprofiler.gui.addmoduleframe import AddToPipelineEvent
         assert isinstance(event, wx.CommandEvent)
         if self.menu_id_to_module_name.has_key(event.Id):
@@ -1984,7 +1984,7 @@ class PipelineController(object):
                 event.Id, event.GetString()))
 
     def __get_selected_modules(self):
-        """Get the modules selected in the GUI, but not input modules"""
+        """Get the extensions selected in the GUI, but not input extensions"""
         return filter(lambda x: not x.is_input_module(),
                       self.__pipeline_list_view.get_selected_modules())
 
@@ -2009,7 +2009,7 @@ class PipelineController(object):
     def remove_selected_modules(self):
         if not self.ok_to_edit_pipeline():
             return
-        with self.__pipeline.undoable_action("Remove modules"):
+        with self.__pipeline.undoable_action("Remove extensions"):
             selected_modules = self.__get_selected_modules()
             for module in selected_modules:
                 for setting in module.settings():
@@ -2022,7 +2022,7 @@ class PipelineController(object):
                                       for m in self.__pipeline.modules()])
             if (not has_input_modules) and (not has_legacy_modules):
                 #
-                # We need input modules if legacy modules have been deleted
+                # We need input extensions if legacy extensions have been deleted
                 #
                 self.__pipeline.init_modules()
             self.exit_test_mode()
@@ -2061,7 +2061,7 @@ class PipelineController(object):
             module_num += 1
 
     def on_module_up(self, event):
-        """Move the currently selected modules up"""
+        """Move the currently selected extensions up"""
         if not self.ok_to_edit_pipeline():
             return
         selected_modules = list(self.__get_selected_modules())
@@ -2081,7 +2081,7 @@ class PipelineController(object):
                 self.show_exiting_test_mode()
 
     def on_module_down(self, event):
-        """Move the currently selected modules down"""
+        """Move the currently selected extensions down"""
         if not self.ok_to_edit_pipeline():
             return
         selected_modules = list(self.__get_selected_modules())
@@ -2173,8 +2173,8 @@ class PipelineController(object):
             #
             message = ("%s is a legacy input module that is incompatible\n"
                        "with the Images, Metadata, NamesAndTypes, and Groups\n"
-                       "input modules. Do you want to remove these input\n"
-                       "modules and use %s instead?") % (
+                       "input extensions. Do you want to remove these input\n"
+                       "extensions and use %s instead?") % (
                           module.module_name, module.module_name)
             if wx.MessageBox(
                     message,
@@ -2740,7 +2740,7 @@ class PipelineController(object):
         module = self.__pipeline_list_view.reset_debug_module()
         if module is None:
             wx.MessageBox("Test mode is disabled because this pipeline\n"
-                          "does not have any modules to run.",
+                          "does not have any extensions to run.",
                           "Test mode is disabled",
                           style=wx.OK | wx.ICON_ERROR,
                           parent=self.__frame)
@@ -2906,7 +2906,7 @@ class PipelineController(object):
         message_format = "Running module %d of %d: %s"
         index = 0
         with wx.ProgressDialog(
-                "Running modules in test mode",
+                "Running extensions in test mode",
                         message_format % (index + 1, count, first_module.module_name),
                 maximum=count,
                 parent=self.__frame,
@@ -3055,8 +3055,8 @@ class PipelineController(object):
             #
             # Put metadata first.
             #
-            file_md_order = (cellprofiler.modules.loadimages.C_FILE_NAME, cellprofiler.modules.loadimages.C_PATH_NAME,
-                             cellprofiler.modules.loadimages.C_FRAME)
+            file_md_order = (cellprofiler.extensions.loadimages.C_FILE_NAME, cellprofiler.extensions.loadimages.C_PATH_NAME,
+                             cellprofiler.extensions.loadimages.C_FRAME)
             cx_is_file_md, cy_is_file_md = \
                 [cz in file_md_order for cz in (cx, cy)]
             if cx_is_file_md:
@@ -3076,8 +3076,8 @@ class PipelineController(object):
         m = self.__debug_measurements
         features = sorted(
             [f for f in m.get_feature_names(cellprofiler.measurement.IMAGE) if f.split("_")[0] in
-             (cellprofiler.measurement.C_METADATA, cellprofiler.modules.loadimages.C_FILE_NAME,
-              cellprofiler.modules.loadimages.C_PATH_NAME, cellprofiler.modules.loadimages.C_FRAME)],
+             (cellprofiler.measurement.C_METADATA, cellprofiler.extensions.loadimages.C_FILE_NAME,
+              cellprofiler.extensions.loadimages.C_PATH_NAME, cellprofiler.extensions.loadimages.C_FRAME)],
             cmp=feature_cmp)
         image_numbers = numpy.array(self.__groupings[self.__grouping_index][1], int)
         columns = dict([
@@ -3202,7 +3202,7 @@ class PipelineController(object):
                 self.debug_init_imageset()
 
     def debug_init_imageset(self):
-        """Initialize the current image set by running the input modules"""
+        """Initialize the current image set by running the input extensions"""
         for module in self.__pipeline.modules():
             if module.is_input_module():
                 if not self.do_step(module, False):
@@ -3217,16 +3217,16 @@ class PipelineController(object):
         return True
 
     def on_debug_reload(self, event):
-        """Reload modules from source, warning the user if the pipeline could
+        """Reload extensions from source, warning the user if the pipeline could
         not be reinstantiated with the new versions.
 
         """
         success = self.__pipeline.reload_modules()
         if not success:
-            wx.MessageBox(("CellProfiler has reloaded modules from source, but "
-                           "couldn't reinstantiate the pipeline with the new modules.\n"
+            wx.MessageBox(("CellProfiler has reloaded extensions from source, but "
+                           "couldn't reinstantiate the pipeline with the new extensions.\n"
                            "See the log for details."),
-                          "Error reloading modules.",
+                          "Error reloading extensions.",
                           wx.ICON_ERROR | wx.OK)
 
     def on_debug_view_workspace(self, event):

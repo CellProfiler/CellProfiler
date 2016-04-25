@@ -51,7 +51,7 @@ def aw_parse_args():
                       default=os.environ.get(AW_LOG_LEVEL, logging.INFO))
     parser.add_option("--plugins-directory",
                       dest="plugins_directory",
-                      help="Folder containing the CellProfiler plugin modules needed by client pipelines",
+                      help="Folder containing the CellProfiler plugin extensions needed by client pipelines",
                       default=None)
     parser.add_option("--ij-plugins-directory",
                       dest="ij_plugins_directory",
@@ -408,7 +408,7 @@ class Worker(object):
 
             # Run prepare group if this is the first image in the group.  We do
             # this here (even if there's no grouping in the pipeline) to ensure
-            # that any changes to the modules' shared state dictionaries get
+            # that any changes to the extensions' shared state dictionaries get
             # propagated correctly.
             should_process = True
             if current_measurements[cpmeas.IMAGE,
@@ -443,13 +443,13 @@ class Worker(object):
                         elif self.pipeline_listener.should_skip:
                             # Report skipped image sets as successful so that
                             # analysis can complete.
-                            # Report their measurements because some modules
+                            # Report their measurements because some extensions
                             # may have provided measurements before skipping.
                             pass
                         successful_image_set_numbers.append(image_set_number)
                         # Send an indication that the image set finished successfully.
                         if send_dictionary:
-                            # The jobserver would like a copy of our modules'
+                            # The jobserver would like a copy of our extensions'
                             # run_state dictionaries.
                             dicts = [m.get_dictionary_for_worker()
                                      for m in current_pipeline.modules()]

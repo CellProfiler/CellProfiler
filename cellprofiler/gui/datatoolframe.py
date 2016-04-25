@@ -7,7 +7,7 @@ import cellprofiler.gui
 import cellprofiler.gui.cpfigure
 import cellprofiler.gui.moduleview
 import cellprofiler.measurement
-import cellprofiler.modules
+import cellprofiler.extensions
 import cellprofiler.object
 import cellprofiler.pipeline
 import cellprofiler.configuration
@@ -40,7 +40,7 @@ class DataToolFrame(wx.Frame):
         del kwds_copy["measurements_file_name"]
         kwds_copy["title"] = "%s data tool" % module_name
         wx.Frame.__init__(self, *args, **kwds_copy)
-        self.module = cellprofiler.modules.instantiate_module(module_name)
+        self.module = cellprofiler.extensions.instantiate_module(module_name)
         self.module.use_as_data_tool = True
         self.pipeline = cellprofiler.pipeline.Pipeline()
         if h5py.is_hdf5(measurements_file_name):

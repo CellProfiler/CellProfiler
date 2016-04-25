@@ -15,12 +15,12 @@ from cellprofiler.bridge import Server, \
     CLEAN_PIPELINE_REQ_1, CLEAN_PIPELINE_REPLY_1
 import cellprofiler.pipeline as cpp
 import cellprofiler.measurement as cpmeas
-from cellprofiler.modules.identifyprimaryobjects import IdentifyPrimaryObjects
-from cellprofiler.modules.identify import TS_MANUAL
-from cellprofiler.modules.flagimage import FlagImage, S_IMAGE
-from cellprofiler.modules.loadimages import LoadImages
-from cellprofiler.modules.measureobjectsizeshape import MeasureObjectSizeShape
-from cellprofiler.modules.saveimages import SaveImages
+from cellprofiler.extensions.identifyprimaryobjects import IdentifyPrimaryObjects
+from cellprofiler.extensions.identify import TS_MANUAL
+from cellprofiler.extensions.flagimage import FlagImage, S_IMAGE
+from cellprofiler.extensions.loadimages import LoadImages
+from cellprofiler.extensions.measureobjectsizeshape import MeasureObjectSizeShape
+from cellprofiler.extensions.saveimages import SaveImages
 
 
 class TestKnimeBridge(unittest.TestCase):

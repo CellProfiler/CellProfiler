@@ -26,7 +26,7 @@ import cellprofiler.icons
 from cellprofiler.setting import YES, NO
 import os.path
 
-# from cellprofiler.modules.metadata import X_AUTOMATIC_EXTRACTION, X_MANUAL_EXTRACTION, X_IMPORTED_EXTRACTION
+# from cellprofiler.extensions.metadata import X_AUTOMATIC_EXTRACTION, X_MANUAL_EXTRACTION, X_IMPORTED_EXTRACTION
 X_AUTOMATIC_EXTRACTION = "Extract from image file headers"
 X_MANUAL_EXTRACTION = "Extract from file/folder names"
 X_IMPORTED_EXTRACTION = "Import from file"
@@ -151,7 +151,7 @@ the overlay image with the <b>SaveImages</b> module.""" % locals()
 NAMING_OUTLINES_HELP = """
 <i>(Used only if the outline image is to be retained for later use in the pipeline)</i> <br>
 Enter a name for the outlines of the identified
-objects. The outlined image can be selected in downstream modules by selecting
+objects. The outlined image can be selected in downstream extensions by selecting
 them from any drop-down image list."""
 
 ##################################################
@@ -161,17 +161,17 @@ them from any drop-down image list."""
 ##################################################
 
 LEGACY_LOAD_MODULES_HELP = """
-<p>Historically, two modules served the same functionality as the current project structure:
+<p>Historically, two extensions served the same functionality as the current project structure:
 <b>LoadImages</b> and <b>LoadData</b>.
-While the approach described above supersedes these modules in part, old pipelines
-loaded into CellProfiler that contain these modules will provide the option of preserving them;
+While the approach described above supersedes these extensions in part, old pipelines
+loaded into CellProfiler that contain these extensions will provide the option of preserving them;
 these pipelines will operate exactly as before.</p>
 <p>Alternately, the user can choose to convert these
-modules into the project equivalent as closely as possible. Both modules remain accesible
+extensions into the project equivalent as closely as possible. Both extensions remain accesible
 via the "Add module" and <img src="memory:%(MODULE_ADD_BUTTON)s">&nbsp;
 button at the bottom of the pipeline panel. The section details
-information relevant for users who would like to continue using these modules. Please note,
-however, that these modules are deprecated and may be removed in the future.</p>
+information relevant for users who would like to continue using these extensions. Please note,
+however, that these extensions are deprecated and may be removed in the future.</p>
 
 <h3>Associating metadata with images</h3>
 <p>Metadata (i.e., additional data about image data) is sometimes available for input images.
@@ -197,7 +197,7 @@ treatment, plate, well, etc) is available as a separate spreadsheet. If this is 
 <b>LoadData</b> to load this information.</li>
 </ul>
 Details for the metadata-specific help is given next to the appropriate settings in
-<b>LoadImages</b> and <b>LoadData</b>, as well the specific settings in other modules which
+<b>LoadImages</b> and <b>LoadData</b>, as well the specific settings in other extensions which
 can make use of metadata. However, here is an overview of how metadata is obtained and used.</p>
 
 <p>In <b>LoadImages</b>, metadata can be extracted from the filename and/or folder
@@ -263,18 +263,18 @@ want grouped together.</li>
 
 DEFAULT_IMAGE_FOLDER_HELP = """
 <p>Please note that the Default Input Folder will be deprecated in the future. The location
-of non-image files needed by some modules will be set to an absolute path
+of non-image files needed by some extensions will be set to an absolute path
 in future versions of CellProfiler. For specifying the location of image files, please
-use the <i>Input modules</i> panel starting with the <b>Images</b> module.</p>
+use the <i>Input extensions</i> panel starting with the <b>Images</b> module.</p>
 
 <p>The <i>Default Input Folder</i> is enabled only if a legacy pipeline is loaded into
 CellProfiler and is accessible by pressing the "View output settings"
 button at the bottom of the pipeline panel. The folder designated as the
 <i>Default Input Folder</i> contains the input image or data files
-that you want to analyze. Several File Processing modules (e.g.,
+that you want to analyze. Several File Processing extensions (e.g.,
 <b>LoadImages</b> or <b>LoadData</b>) provide the option of retrieving images
 from this folder on a default basis unless you specify, within the module, an alternate,
-specific folder on your computer. Within modules, we recommend selecting the
+specific folder on your computer. Within extensions, we recommend selecting the
 Default Input Folder as much as possible, so that your pipeline will
 work even if you transfer your images and pipeline to a different
 computer. If, instead, you type specific folder path names into a module's settings,
@@ -291,15 +291,15 @@ The folder will be created according to the pathname you have typed.</p>""" % gl
 
 DEFAULT_OUTPUT_FOLDER_HELP = """
 <p>Please note that the Default Output Folder will be deprecated in the future. The location
-of files written by the various output modules will be set to an absolute path
+of files written by the various output extensions will be set to an absolute path
 in future versions of CellProfiler.</p>
 
 <p>The <i>Default Output Folder</i> is accessible by pressing the "View output settings"
 button at the bottom of the pipeline panel. The Default Output Folder is the folder that CellProfiler uses to
-store the output file it creates. Also, several File Processing modules (e.g., <b>SaveImages</b> or
+store the output file it creates. Also, several File Processing extensions (e.g., <b>SaveImages</b> or
 <b>ExportToSpreadsheet</b>) provide the option of saving analysis results to
 this folder on a default basis unless you specify, within the module, an alternate,
-specific folder on your computer. Within modules, we recommend selecting the
+specific folder on your computer. Within extensions, we recommend selecting the
 Default Output Folder as much as possible, so that your pipeline will
 work even if you transfer your images and pipeline to a different
 computer. If, instead, you type specific folder path names into a module's settings,
@@ -317,14 +317,14 @@ The folder will be created according to the pathname you have typed.</p>"""
 USING_THE_OUTPUT_FILE_HELP = """
 <p>Please note that the output file will be deprecated in the future. This setting
 is temporarily present for those needing HDF5 or MATLAB formats, and will be moved to
-Export modules in future versions of CellProfiler.</p>
+Export extensions in future versions of CellProfiler.</p>
 
 <p>The <i>output file</i> is a file where all information about the analysis as well
 as any measurements will be stored to the hard drive. <b>Important note:</b> This file
-does <i>not</i> provide the same functionality as the Export modules. If you want to
+does <i>not</i> provide the same functionality as the Export extensions. If you want to
 produce a spreadsheet of measurements easily readable by Excel or a database viewer
 (or similar programs), please refer to the <b>ExportToSpreadsheet</b> or
-<b>ExportToDatabase</b> modules and the associated help.</p>
+<b>ExportToDatabase</b> extensions and the associated help.</p>
 
 <p>The options associated with the output file are accessible by pressing the
 "View output settings" button at the bottom of the pipeline panel. In the
@@ -382,18 +382,18 @@ you require are displayed, simplifying the interface.</li>
 preview the effect of a module setting on your data. You can step backward or forward
 in the pipeline as you modify settings, optimizing your results prior to running an
 actual analysis.</li>
-<li><i>Unlimited number of images/objects as module input:</i> Some modules can accept an arbitrary number
+<li><i>Unlimited number of images/objects as module input:</i> Some extensions can accept an arbitrary number
 of images or objects as input, and you can dynamically add or remove any of these inputs as needed.
 For example, you can specify any number of single images in LoadSingleImage; previously,
 the module could accept only three input images at a time. For example, in OverlayOutlines, you can specify that any number of outlines be
-overlaid on an image; previously, you would have had to string multiple OverlayOutline modules
+overlaid on an image; previously, you would have had to string multiple OverlayOutline extensions
 together.</li>
 <li><i>Image grouping:</i> Images which share common metadata tags, whether
 provided in the filename or in an accompanying text data file, can be processed together.
 This is useful for any situation in which the images are organized
 in groups  and each group needs to be analyzed as an individual set, such as
 illumination correction for multiple plates.</li>
-<li><i>Module drag and drop:</i> You can drag and drop selected modules
+<li><i>Module drag and drop:</i> You can drag and drop selected extensions
 within a pipeline or into another instance of CellProfiler, keeping their associated
 settings intact.</li>
 <li><i>Listing of recent pipelines:</i> A selectable list of recently used pipelines
@@ -456,9 +456,9 @@ from biological images, particularly in high-throughput experiments. CellProfile
 is designed for modular, flexible, high-throughput analysis of images, measuring
 size, shape, intensity, and texture of every cell (or other object) in every image.
 Using the point-and-click graphical user interface (GUI), users construct an image
-analysis "pipeline", a sequential series of modules that each perform
+analysis "pipeline", a sequential series of extensions that each perform
 an image processing function such as illumination correction, object identification
-(segmentation), and object measurement. Users mix and match modules and adjust
+(segmentation), and object measurement. Users mix and match extensions and adjust
 their settings to measure the phenotype of interest. While originally designed for
 high-throughput images, it is equally appropriate for low-throughput assays as
 well (i.e., assays of &lt; 100 images).</p>
@@ -524,7 +524,7 @@ complex image-based screens" <i>BMC Bioinformatics</i> 9(1):482
 """
 
 BUILDING_A_PIPELINE_HELP = """
-<p>A <i>pipeline</i> is a sequential set of image analysis modules. The
+<p>A <i>pipeline</i> is a sequential set of image analysis extensions. The
 best way to learn how to use CellProfiler is to load an example pipeline
 from the CellProfiler website's Examples page and try it out, then adapt it for
 your own images. You can also build a
@@ -543,7 +543,7 @@ CellProfiler.</li>
 <li>Examine the measurements using <i>Data tools</i>. The <i>Data tools</i> options are accessible in
 the main menu of CellProfiler and allow you to plot, view, or export your
 measurements (e.g., to Excel).</li>
-<li>If you modify the modules or settings in the pipeline, you can save the
+<li>If you modify the extensions or settings in the pipeline, you can save the
 pipeline using <i>File > Export > Pipeline...</i>. Alternately, you can save the project as a whole
 using <i>File > Save Project</i> or <i>Save Project As...</i> which also saves the
 file list.</li>
@@ -552,22 +552,22 @@ large batches of images, see <i>%(BATCH_PROCESSING_HELP_REF)s</i>.</li>
 </ol>
 
 <h3>Building a pipeline from scratch</h3>
-<p>Constructing a pipeline involves placing individual modules into a pipeline. The list
-of modules in the pipeline is shown in the <i>pipeline panel</i> (located on the
+<p>Constructing a pipeline involves placing individual extensions into a pipeline. The list
+of extensions in the pipeline is shown in the <i>pipeline panel</i> (located on the
 left-hand side of the CellProfiler window).</p>
 <ol>
-<li><p><i>Place analysis modules in a new pipeline.</i><br>
-<p>Choose image analysis modules to add to your pipeline by clicking the <i>Add</i>
+<li><p><i>Place analysis extensions in a new pipeline.</i><br>
+<p>Choose image analysis extensions to add to your pipeline by clicking the <i>Add</i>
 <img src="memory:%(MODULE_ADD_BUTTON)s">&nbsp;button
 (located underneath the pipeline panel) or right-clicking in the pipeline panel
 itself and selecting a module from the
 pop-up box that appears.</p>
 <p>You can learn more about each module by clicking
-<i>Module Help</i> in the "Add modules" window or the <i>?</i> button after the module
+<i>Module Help</i> in the "Add extensions" window or the <i>?</i> button after the module
 has been placed and selected in the pipeline. Modules are added to the end of the
 pipeline or after the currently selected module, but you can
 adjust their order in the main window by dragging and dropping them, or by selecting a module (or
-modules, using the <i>Shift</i> key) and using the <i>Move Module Up</i>
+extensions, using the <i>Shift</i> key) and using the <i>Move Module Up</i>
 <img src="memory:%(MODULE_MOVEUP_BUTTON)s">&nbsp;and <i>Move Module Down</i>
 <img src="memory:%(MODULE_MOVEDOWN_BUTTON)s">&nbsp;buttons.
 The <i>Remove Module</i> <img src="memory:%(MODULE_REMOVE_BUTTON)s">&nbsp;button will
@@ -576,14 +576,14 @@ delete the selected module(s) from the pipeline.</p>
 CellProfiler, the objects you identify are called <i>primary</i>,
 <i>secondary</i>, or <i>tertiary</i>:
 <ul>
-<li><b>IdentifyPrimary</b> modules identify objects without relying on any
+<li><b>IdentifyPrimary</b> extensions identify objects without relying on any
 information other than a single grayscale input image (e.g., nuclei are
 typically primary objects).</li>
-<li><b>IdentifySecondary</b> modules require a grayscale image plus an image
+<li><b>IdentifySecondary</b> extensions require a grayscale image plus an image
 where primary objects have already been identified, because the secondary
 objects are determined based on the primary objects (e.g., cells can be
 secondary objects when their identification is based on the location of nuclei). </li>
-<li><b>IdentifyTertiary</b> modules require images in which two sets of objects have
+<li><b>IdentifyTertiary</b> extensions require images in which two sets of objects have
 already been identified (e.g., nuclei and cell regions are used to define the
 cytoplasm objects, which are tertiary objects).</li>
 </ul></p>
@@ -608,7 +608,7 @@ the errors/warnings have been resolved, a <img src="memory:%(SETTINGS_OK_ICON)s"
 For more help, click their nearby <i>Help</i> buttons in the main window. </p></li>
 
 <li><p><i>Click <i>Analyze images</i> to start processing.</i><br>
-All of the images in your selected folder(s) will be analyzed using the modules
+All of the images in your selected folder(s) will be analyzed using the extensions
 and settings you have specified. A status window will appear which has the following:
 <ul>
 <li>A <i>progress bar</i> which gives the elapsed time and estimates the time remaining to
@@ -774,27 +774,27 @@ The additional controls allow you to do the following:
 <ul>
 <li><i>Slider:</i> Start/resume execution of the pipeline at any time by moving the slider. However,
 if the selected module depends on objects and/or images
-generated by prior modules, you will see an error message indicating that the data has not
+generated by prior extensions, you will see an error message indicating that the data has not
 been produced yet. To avoid this, it is best to actually run the pipeline up to the module
-of interest, and move the slider to modules already executed.
+of interest, and move the slider to extensions already executed.
 <li><i>Pause:</i> Clicking the pause icon will cause the pipeline test run to halt
 execution when that module is reached (the paused module itself is not executed). The icon
 changes from <img src="memory:%(TESTMODE_GO_ICON)s">&nbsp;to
 <img src="memory:%(TESTMODE_PAUSE_ICON)s">&nbsp;to indicate that a pause has
 been inserted at that point.</li>
 <li><i>Run:</i> Execution of the pipeline will be started/resumed until
-the next module pause is reached. When all modules have been executed for a given image cycle,
+the next module pause is reached. When all extensions have been executed for a given image cycle,
 execution will stop.</li>
 <li><i>Step:</i> Execute the next module (as indicated by the slider location).</li>
 <li><i>Next Image:</i> Skip ahead to the next image cycle as determined by the image
-order in the Input modules. The slider will automatically return to the
+order in the Input extensions. The slider will automatically return to the
 first module in the pipeline.</li>
 </ul>
 </p>
 <p>From the <i>Test</i> menu, you can choose additional options:
 <ul>
 <li><i>Exit Test Mode:</i> Exit <i>Test</i> mode. Loading a new pipeline or adding/subtracting
-modules will also automatically exit test mode.</li>
+extensions will also automatically exit test mode.</li>
 <li><i>Step to Next Module:</i> Execute the next module (as indicated by the slider location)</li>
 <li><i>Next Image Set:</i> Step to the next image set in the current image group.</li>
 <li><i>Next Image Group:</i> Step to the next group in the image set.
@@ -873,7 +873,7 @@ Folder setting will only appear if a legacy pipeline is being run.</li>
 
 <li><i>Create a pipeline for your image set.</i> You should test it on a few example
 images from your image set (if you are unfamilar with the concept of an image set, please
-see the help for the <b>Input</b> modules). The module settings selected for your pipeline will be
+see the help for the <b>Input</b> extensions). The module settings selected for your pipeline will be
 applied to <i>all</i> your images, but the results may vary
 depending on the image quality, so it is critical to insure that your settings be
 robust against your "worst-case" images.<br>
@@ -888,16 +888,16 @@ for more details on how to use this utility.</li>""" % globals() + \
                        This module is needed to resolve the pathnames to your files with respect to
                        your local machine and the cluster computers. If you are processing large batches
                        of images, you may also consider adding <b>ExportToDatabase</b> to your pipeline,
-                       after your measurement modules but before the CreateBatchFiles module. This module
+                       after your measurement extensions but before the CreateBatchFiles module. This module
                        will export your data either directly to a MySQL/SQLite database or into a set of
                        comma-separated files (CSV) along with a script to import your data into a
-                       MySQL database. Please refer to the help for these modules in order learn more
+                       MySQL database. Please refer to the help for these extensions in order learn more
                        about which settings are appropriate.</li>
 
                        <li><i>Run the pipeline to create a batch file.</i> Click the <i>Analyze images</i>
                        button and the analysis will begin processing locally. Do not be surprised if this initial step
                        takes a while since CellProfiler must first create the entire image set list based
-                       on your settings in the <b>Input</b> modules (this process can be sped
+                       on your settings in the <b>Input</b> extensions (this process can be sped
                        up by creating your list of images as a CSV and using the <b>LoadData</b> module to load it).
                        With the <b>CreateBatchFiles</b> module in place, the pipeline will not process all
                        the images, but instead will creates a batch file (a file called
@@ -1072,7 +1072,7 @@ The format of the file is described in greater detail
 
 ACCESSING_OMERO_IMAGES = """
 CellProfiler has first-class support for loading images from
-<a href="http://www.openmicroscopy.org/site/products/omero">OMERO</a>. The input modules
+<a href="http://www.openmicroscopy.org/site/products/omero">OMERO</a>. The input extensions
 and the LoadData module can refer to images by URL, for instance, the example pipeline
 on the welcome page loads its images from <code>http://cellprofiler.org/ExampleFlyImages</code>.
 The first part of a URL (the part before the colon) is the schema. CellProfiler decides
@@ -1111,7 +1111,7 @@ session when headless and would like to work with you to make this work in your
 environment; please contact us for further information on how to modify CellProfiler
 yourself to do this or with suggestions for us to implement.</p>
 
-<h3>Using OMERO URLs with the Input modules</h3>
+<h3>Using OMERO URLs with the Input extensions</h3>
 
 The <b>Images</b> module has a file list panel of all of the image files in a project.
 This file list supports URLs including OMERO URLs. You can drag URLs from a text document
@@ -1172,7 +1172,7 @@ name "Experiment". See <b>CalculateStatistics</b> for an example.
 
 <li><code>SpecificFeatureName:</code> The specific feature recorded by a module (e.g.,
 "Perimeter"). Usually the module recording the measurement assigns this name, but
-a few modules allow the user to type in the name of the feature (e.g., the
+a few extensions allow the user to type in the name of the feature (e.g., the
 <b>CalculateMath</b> module allows the user to name the arithmetic measurement).</li>
 
 <li><code>Parameters:</code> This specifier is to distinguish measurements
@@ -1184,7 +1184,7 @@ channel specified by the <b>Images</b> module or a legacy <b>Load</b> module
 particular spatial scale (e.g., under the category "Texture" or "Neighbors"). Multiple
 parameters are separated by underscores.
 
-<p>Below are additional details specific to various modules:
+<p>Below are additional details specific to various extensions:
 <ul>
 <li>Measurements from the <i>AreaShape</i> and <i>Math</i> categories do not have a
 <code>Parameter</code> specifier.</li>
@@ -1213,7 +1213,7 @@ measurement was made.</li>
 </ul>
 
 <p>See also the <i>Available measurements</i> heading under the main help for many
-of the modules, as well as <b>ExportToSpreadsheet</b> and <b>ExportToDatabase</b> modules.
+of the extensions, as well as <b>ExportToSpreadsheet</b> and <b>ExportToDatabase</b> extensions.
 """
 
 MENU_BAR_FILE_HELP = """
@@ -1221,7 +1221,7 @@ The <i>File</i> menu provides options for loading and saving your pipelines and
 performing an analysis run.
 <ul>
 <li><b>New project:</b> Clears the current project by removing all the analysis
-modules and resetting the input modules.</li>
+extensions and resetting the input extensions.</li>
 <li><b>Open Project...:</b> Open a previously saved CellProfiler project (<i>.cpproj</i> file)
 from your hard drive.</li>
 <li><b>Open Recent:</b> Displays a list of the most recent projects used. Select any
@@ -1239,7 +1239,7 @@ a file, you can point it to a pipeline (<i>.cppipe</i>) file or have it extract 
 a project (<i>.cpproj</i>) file.</li>
 <li><b>Export:</b> You have the choice of exporting the pipeline you are currently working on as a
 CellProfiler <i>.cppipe</i> pipeline file (<i>Pipeline</i>), or the image set list as a CSV (<i>Image set listing</i>).</li>
-<li><b>Clear Pipeline:</b> Removes all modules from the current pipeline.</li>
+<li><b>Clear Pipeline:</b> Removes all extensions from the current pipeline.</li>
 <li><b>View Image:</b> Opens a dialog box prompting you to select an image file for
 display. Images listed in the File list panel in the <b>Images</b> module can be also be displayed by double-clicking
 on the filename.</li>
@@ -1261,7 +1261,7 @@ of saving your current pipeline if you have not done so.</li>
 </ul>"""
 
 MENU_BAR_EDIT_HELP = """
-The <i>Edit</i> menu provides options for modifying modules in your current pipeline.
+The <i>Edit</i> menu provides options for modifying extensions in your current pipeline.
 <ul>
 <li><b>Undo:</b> Undo the last module modification. You can undo multiple actions by using <i>Undo</i>
 repeatedly.</li>
@@ -1269,7 +1269,7 @@ repeatedly.</li>
 <li><b>Copy:</b> Copy the currently selected text to the clipboard.</li>
 <li><b>Paste:</b> Paste clipboard text to the cursor location, if a text setting is active.</li>
 <li><b>Select All:</b> If a text setting is active, select all the text in the setting. If the module
-list is active, select all the modules in the module list.</li>
+list is active, select all the extensions in the module list.</li>
 <li><b>Move Module Up:</b> Move the currently selected module(s) up. You
 can also use the <img src="memory:%(MODULE_MOVEUP_BUTTON)s">&nbsp;button located
 below the Pipeline panel.</li>
@@ -1286,9 +1286,9 @@ The current settings of the selected module(s) are retained in the duplicate.</l
 pipeline. You can also use the <img src="memory:%(MODULE_ADD_BUTTON)s">&nbsp;button located
 under the Pipeline panel.</li>
 </ul>
-You can select multiple modules at once for moving, deletion and duplication
+You can select multiple extensions at once for moving, deletion and duplication
 by selecting the first module and using Shift-click on the last module to select
-all the modules in between.
+all the extensions in between.
 """ % globals()
 
 MENU_BAR_WINDOW_HELP = """
@@ -1338,7 +1338,7 @@ functionality. The difference between the data tool and the module is that the
 data tool takes a CellProfiler output file (i.e., a <i>.mat or .h5</i> file)
 as input, which contains measurements from a previously completed analysis run.
 In contrast, a module uses measurements
-received from the upstream modules during an in-progress analysis run.</p>
+received from the upstream extensions during an in-progress analysis run.</p>
 
 <p>Opening a data tool will present a prompt in which the user is asked to provide
 the location of the output file. Once specified, the user is then prompted to
@@ -1505,10 +1505,10 @@ left and a panel of controls to the right.
 The workspace viewer lets you examine the CellProfiler workspace as you
 progress through your pipeline's execution. A pipeline's <i>workspace</i>
 is the collection of images, objects and measurements that are produced
-by the modules. At the start of the pipeline,
+by the extensions. At the start of the pipeline,
 the only things that are available are the images and objects loaded by the
-input modules. New images, objects and measurements are added to the workspace
-as you step through modules. If you modify a module's setting and re-execute
+input extensions. New images, objects and measurements are added to the workspace
+as you step through extensions. If you modify a module's setting and re-execute
 the module, the images, objects and measurements produced by that module
 will be overwritten.</p>
 
@@ -1517,7 +1517,7 @@ the workspace at the end of a pipeline cycle, then start a new cycle and
 CellProfiler will fill in the images, objects and measurements that you have chosen to
 display as they become available. You can also zoom in on a particular region
 and change settings and the viewer will remain focused on that region with
-the same settings across modules or image cycles.</p>
+the same settings across extensions or image cycles.</p>
 
 <p>All elements of the display are configurable, either through the Subplots menu
 on the viewer, or through the context menu available by right-clicking on the figure
@@ -1532,7 +1532,7 @@ can add, remove and modify displays of <i>images</i>, <i>objects</i>, <i>masks</
 <h4>Images</h4>
 
 <p>The workspace viewer can display any image that is available from the input
-modules or from modules previously executed. To display a single image, select
+extensions or from extensions previously executed. To display a single image, select
 it from the <i>Images</i> drop down and check the <i>Show</i> checkbox. Initially,
 the image will be displayed in color, using the color shown in the "Color" box.
 This color can be changed by clicking on the color box.
@@ -1545,17 +1545,17 @@ can remove images other than the first by hitting the button in the
 
 <h4>Objects</h4>
 
-<p>You can display the objects that have been created or loaded by all modules
+<p>You can display the objects that have been created or loaded by all extensions
 that have been executed. To display a set of objects, select them from the
 <i>Objects</i> drop-down and check the <i>Show</i> checkbox. You can add
 additional objects by pressing the <i>Add Objects</i> button.</p>
 
 <h4>Masks</h4>
 
-<p>You can display the mask for any image produced by any of the modules that
+<p>You can display the mask for any image produced by any of the extensions that
 have been executed. Most images are not masked. In these cases, you can
 display the mask, but the display will show that the whole image is unmasked.
-You can mask an image with the <b>MaskImage</b> or <b>Crop</b> modules.</p>
+You can mask an image with the <b>MaskImage</b> or <b>Crop</b> extensions.</p>
 
 <p>To display the mask of an image, select it from the <i>Masks</i> dropdown and
 check the <i>Show</i> checkbox. You can add additional masks by pressing the
@@ -1566,7 +1566,7 @@ in color.</p>
 
 <h4>Measurements</h4>
 
-<p>You can display any measurement produced by any of the modules that have
+<p>You can display any measurement produced by any of the extensions that have
 been executed. Image measurements will be displayed in the title bar above
 the image. Object measurements will be displayed centered over the measurement's
 object. To display a measurement, select it from the <i>Measurements</i>
@@ -1698,7 +1698,7 @@ Sets the color used for the error alerts associated with misconfigured settings 
 errors."""
 
 PLUGINS_DIRECTORY_HELP = """
-Chooses the directory that holds dynamically-loaded CellProfiler modules. You
+Chooses the directory that holds dynamically-loaded CellProfiler extensions. You
 can write your own module and place it in this directory and CellProfiler
 will make it available for your pipeline. You must restart CellProfiler
 after modifying this setting."""
@@ -1933,7 +1933,7 @@ INTRODUCTION_TO_PROJECTS_HELP = """
 <ul>
 <li>An <i>image file list</i> which is the list of files and their locations that are selected by the user as
 candidates for analysis.</li>
-<li>The <i>pipeline</i>, which is a series of modules put together used to analyze a set of images.</li>
+<li>The <i>pipeline</i>, which is a series of extensions put together used to analyze a set of images.</li>
 <li>Optionally, the associated information about the images (<i>metadata</i>). This
 information may be part of the images themselves, or imported externally by the user.</li>
 </ul>
@@ -1955,8 +1955,8 @@ available on demand. </p>
 <h3>Working with projects</h3>
 <h4>Creating a project</h4>
 <p>Upon starting CellProfiler, you will be presented with a new, blank project.
-At this point, you may start building your project by using the modules located in the "Input
-modules" panel on the upper-left. The modules are:
+At this point, you may start building your project by using the extensions located in the "Input
+extensions" panel on the upper-left. The extensions are:
 <ul>
 <li><b>Images</b>: Assemble the relevant images for analysis (required).</li>
 <li><b>Metadata</b>: Associate metadata with the images (optional).</li>
@@ -1988,13 +1988,13 @@ entering Test mode, or when the user requests a refreshed view of the informatio
 </ul>
 </p>
 
-<h4>Legacy modules: LoadImages and LoadData</h4>
-<p>Historically, two modules were used for project creation: <b>LoadImages</b> and <b>LoadData</b>.
-While the approach described above partly supersedes these modules, you have the option
-of preserving these modules if you load old pipelines into CellProfiler that contain them;
+<h4>Legacy extensions: LoadImages and LoadData</h4>
+<p>Historically, two extensions were used for project creation: <b>LoadImages</b> and <b>LoadData</b>.
+While the approach described above partly supersedes these extensions, you have the option
+of preserving these extensions if you load old pipelines into CellProfiler that contain them;
 these pipelines will operate exactly as before.</p>
 <p>Alternately, the user can choose to convert these
-modules into the project equivalent as closely as possible. Both <b>LoadImages</b> and <b>LoadData</b>
+extensions into the project equivalent as closely as possible. Both <b>LoadImages</b> and <b>LoadData</b>
 remain accessible via the "Add module" and <img src="memory:%(MODULE_ADD_BUTTON)s">&nbsp;
 buttons at the bottom of the pipeline panel.</p>
 """ % globals()
@@ -2002,7 +2002,7 @@ buttons at the bottom of the pipeline panel.</p>
 SELECTING_IMAGES_HELP = """
 <p>Any image analysis project using CellProfiler begins with providing the program with a set of image files
 to be analyzed. You can do this by clicking on
-the <b>Images</b> module to select it (located in the Input modules panel on the left); this module is responsible for collecting
+the <b>Images</b> module to select it (located in the Input extensions panel on the left); this module is responsible for collecting
 the names and locations of the files to be processed.</p>
 
 <p>The most straightforward way to provide files to the <b>Images</b> module is
@@ -2032,10 +2032,10 @@ the Input module tutorials on our <a href="http://cellprofiler.org/tutorials.htm
 
 CONFIGURE_IMAGES_HELP = """
 <p>Once you have used the <b>Images</b> module to produce a list of images to be analyzed, you can use the other
-Input modules to define how images are related to one another, give them a memorable name for future reference,
+Input extensions to define how images are related to one another, give them a memorable name for future reference,
 attach additional image information about the experiment, among other things.</p>
 
-<p>After <b>Images</b>, you can use the following Input modules:
+<p>After <b>Images</b>, you can use the following Input extensions:
 <table border="1" cellpadding="10">
     <tr bgcolor="#555555" align="center">
     <th><font color="#FFFFFF"><b>Module</b></font></th>
@@ -2048,7 +2048,7 @@ attach additional image information about the experiment, among other things.</p
     filename or location, or from a spreadsheet that you provide. If your assay does not require or have such
     information, this module can be safely skipped.</td></tr>
     <tr align="center"><td><b>NamesAndTypes</b></td><td>Assign names to images and/or channels and define their relationship.</td><td>Yes</td>
-    <td>This module gives each image a meaningful name by which modules in the analysis pipeline will refer to it.
+    <td>This module gives each image a meaningful name by which extensions in the analysis pipeline will refer to it.
     The most common usage for this module is to define a collection of channels that represent a single
     field of view. By using this module, each of these channels will be loaded and processed together for each field of view.</td></tr>
     <tr align="center"><td><b>Groups</b></td><td>Define sub-divisions between groups of images for processing.</td><td>No</td>
@@ -2059,7 +2059,7 @@ attach additional image information about the experiment, among other things.</p
     can be safely skipped.</td></tr>
 </table>
 </p>
-<p>For more information on these modules and how to configure them for the best performance, please see the detailed help by selecting the
+<p>For more information on these extensions and how to configure them for the best performance, please see the detailed help by selecting the
 module and clicking the <img src="memory:%(MODULE_HELP_BUTTON)s">&nbsp;button at the bottom of the pipeline panel, or check out
 the Input module tutorials on our <a href="http://cellprofiler.org/tutorials.html">Tutorials</a> page.</p>
 """ % globals()
@@ -2090,7 +2090,7 @@ where the file names are in the format <i>&lt;Stain&gt;-&lt;Well&gt;.&lt;Timepoi
 <li>There are 287 timepoints per movie, and a movie of the 3 channels above is acquired from each well.</li>
 </ul>
 </p>
-<p>In this case, the procedure to set up the input modules to handle these files is as follows:
+<p>In this case, the procedure to set up the input extensions to handle these files is as follows:
 <ul>
 <li>In the <b>Images</b> module, drag-and-drop your folders of images into the File list panel. If
 necessary, set your rules accordingly in order to filter out any files that are not part of a movie
@@ -2183,7 +2183,7 @@ general, we recommend saving stacks and movies in a format such as .TIF.
 <li>Each channel is in grayscale format. </li>
 </ul>
 </p>
-<p>In this case, the procedure to set up the input modules to handle these files is as follows
+<p>In this case, the procedure to set up the input extensions to handle these files is as follows
 (please note that this procedure is basically identical whether the file is for a time-lapse assay
 or a Z-stack assay):
 <ul>
@@ -2261,7 +2261,7 @@ the same manner.</li>
 <li>Each slice is in grayscale format.</li>
 </ul>
 </p>
-<p>In this case, the procedure to set up the input modules to handle these this file is as follows
+<p>In this case, the procedure to set up the input extensions to handle these this file is as follows
 (please note that this procedure is basically identical whether the file is for a time-lapse assay
 or a Z-stack assay):
 <ul>
@@ -2357,7 +2357,7 @@ process the slices in all stacks together as if they were constituents of only o
 HELP_ON_MODULE_BUT_NONE_SELECTED = (
     "The help button can be used to obtain help for the currently selected module "
     "in the pipeline panel on the left side of the CellProfiler interface.\n\n"
-    "You do not have any modules in the pipeline, yet. Add a module to the "
+    "You do not have any extensions in the pipeline, yet. Add a module to the "
     'pipeline using the "+" button or by using File > Load Pipeline.')
 
 HELP_ON_MEASURING_DISTANCES = """To measure distances in an open image, use the "Measure
@@ -2371,7 +2371,7 @@ your mouse over the image, the pixel intensities will appear in the bottom bar o
 
 HELP_ON_FILE_LIST = """The <i>File List</i> panel displays the image files
 that are managed by the <b>Images</b>, <b>Metadata</b>, <b>NamesAndTypes</b>
-and <b>Groups</b> modules. You can drop files and directories into this window
+and <b>Groups</b> extensions. You can drop files and directories into this window
 or use the <i>Browse...</i> button to add files to the list. The context menu
 for the window lets you display or remove files and lets you remove folders.
 <br>

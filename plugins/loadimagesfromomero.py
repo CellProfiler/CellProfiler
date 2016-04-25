@@ -43,7 +43,7 @@ import cellprofiler.configuration as cpp
 import cellprofiler.setting as cps
 # get the default cellprofiler image names for the different
 # channels of an omero image from the loadimages module
-from cellprofiler.modules.loadimages import default_cpimage_name
+from cellprofiler.extensions.loadimages import default_cpimage_name
 
 import omero
 from omero.rtypes import rlong

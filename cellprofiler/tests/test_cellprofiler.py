@@ -13,7 +13,7 @@ from cStringIO import StringIO
 
 import dateutil.parser
 
-from cellprofiler.modules.tests import \
+from cellprofiler.extensions.tests import \
     example_images_directory, maybe_download_example_images
 
 if hasattr(sys, 'frozen'):
@@ -65,7 +65,7 @@ class TestCellProfiler(unittest.TestCase):
         found_setting_stats = False
         found_lines_of_code = False
         for line in fake_stdout.readlines():
-            if line.startswith("# of built-in modules"):
+            if line.startswith("# of built-in extensions"):
                 found_module_stats = True
             elif line.startswith("# of settings"):
                 found_setting_stats = True

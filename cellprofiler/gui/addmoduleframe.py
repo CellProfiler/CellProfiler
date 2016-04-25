@@ -6,14 +6,14 @@ that give you the GUI to add a module to a pipeline
 import cellprofiler.extension
 import cellprofiler.gui
 import cellprofiler.gui.html.manual
-import cellprofiler.modules
+import cellprofiler.extensions
 import cellprofiler.configuration
 import cpframe
 import wx
 
 
 class AddModuleFrame(wx.Frame):
-    """The window frame that lets you add modules to a pipeline
+    """The window frame that lets you add extensions to a pipeline
 
     """
 
@@ -126,9 +126,9 @@ class AddModuleFrame(wx.Frame):
         for key in self.__module_files:
             self.__module_dict[key] = {}
 
-        for mn in cellprofiler.modules.get_module_names():
+        for mn in cellprofiler.extensions.get_module_names():
             def loader(module_num, mn=mn):
-                module = cellprofiler.modules.instantiate_module(mn)
+                module = cellprofiler.extensions.instantiate_module(mn)
                 module.set_module_num(module_num)
                 return module
 
@@ -188,7 +188,7 @@ class AddModuleFrame(wx.Frame):
     def __on_getting_started(self, event):
         from cellprofiler.gui.help import BUILDING_A_PIPELINE_HELP
         self.display_helpframe(BUILDING_A_PIPELINE_HELP,
-                               'Add modules: Getting Started')
+                               'Add extensions: Getting Started')
 
     def display_helpframe(self, help_text, title):
         from cellprofiler.gui.html.htmlwindow import HtmlClickableWindow

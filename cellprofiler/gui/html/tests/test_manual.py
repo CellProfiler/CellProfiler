@@ -15,7 +15,7 @@ class TestManual(unittest.TestCase):
         self.temp_dir = tempfile.mkdtemp()
         # Monkey-patch RunImageJ to keep it from calling ImageJ during
         # create_settings
-        from cellprofiler.modules.run_imagej import RunImageJ
+        from cellprofiler.extensions.run_imagej import RunImageJ
         from cellprofiler.setting import Text
         self.old_make_command_choice = RunImageJ.make_command_choice
 
@@ -32,7 +32,7 @@ class TestManual(unittest.TestCase):
         RunImageJ.populate_language_dictionary = populate_language_dictionary
 
     def tearDown(self):
-        from cellprofiler.modules.run_imagej import RunImageJ
+        from cellprofiler.extensions.run_imagej import RunImageJ
         RunImageJ.make_command_choice = self.old_make_command_choice
         RunImageJ.populate_language_dictionary = \
             self.old_populate_language_dictionary
@@ -44,7 +44,7 @@ class TestManual(unittest.TestCase):
         os.rmdir(self.temp_dir)
 
     def test_01_01_output_module_html(self):
-        from cellprofiler.modules import get_module_names, instantiate_module
+        from cellprofiler.extensions import get_module_names, instantiate_module
         cellprofiler.gui.html.manual.output_module_html(self.temp_dir)
         for module_name in sorted(get_module_names()):
             fd = None

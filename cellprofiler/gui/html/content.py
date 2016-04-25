@@ -16,12 +16,12 @@ nuclei, organelles or something else. </p>
 <table width="75%%" cellpadding="0">
 <tr>
 <td width="75%%" valign="top">
-A number of modules are dedicated to the purpose of detecting these features; the <b>IdentifyPrimaryObjects</b> module is the
+A number of extensions are dedicated to the purpose of detecting these features; the <b>IdentifyPrimaryObjects</b> module is the
 one that is most commonly used. The result of this module is a set of labeled <i>objects</i>; we define an object as a collection of connected pixels
 in an image which share the same label. The challenge here is to find a combination of settings that best identify the objects from
 the image, a task called <i>segmentation</i>. The typical expectation is to end up with one object for each cellular feature of interest
 (for example, each nucleus is assigned to a single object in a DNA stained image). If this is not the
-case, the module settings can be adjusted to make it so (or as close as possible). In some cases, image processing modules must be used beforehand
+case, the module settings can be adjusted to make it so (or as close as possible). In some cases, image processing extensions must be used beforehand
 to transform the image so it is more amenable to object detection.</td>
 <td width="25%%" align="center"><img src="memory:image_to_object_dataflow.png" width="254" height="225"></td>
 </tr>
@@ -32,7 +32,7 @@ to transform the image so it is more amenable to object detection.</td>
 <li><i>Distinguish the foreground from background:</i> The foreground is defined as that part of the image which contains
 the features of interest, as opposed to the <i>background</i> which does not. The module
 assumes that the foreground is brighter than the background, which is the case for fluorescence images; for other
-types of images, other modules can be used to first invert the image, turning dark regions into bright regions
+types of images, other extensions can be used to first invert the image, turning dark regions into bright regions
 and vice versa. </li>
 <li><i>Identify the objects in each foreground region:</i> Each foreground region may contain multiple objects
 of interest (for example, touching nuclei in a DNA stained image). Recognizing the presence of these objects is the
@@ -44,11 +44,11 @@ The module also contains additional settings for filtering the results of this p
 to get the final object set. At this point, the objects are ready for measurements to be made, or for further manipulations
 as a means of extracting other features.</p>
 
-<p>Other modules are able to take the results of this module and use them in combination with additional images
+<p>Other extensions are able to take the results of this module and use them in combination with additional images
 (like <b>IdentifySecondaryObjects</b>) or other objects (like <b>IdentifyTertiaryObjects</b>) to define yet more objects.
 </p>
 
-<p>For more information on these identification modules work and how to configure them for best performance, please see
+<p>For more information on these identification extensions work and how to configure them for best performance, please see
 the detailed help by selecting the <b>IdentifyPrimaryObjects</b> module and clicking the <img src="memory:%(MODULE_HELP_BUTTON)s">&nbsp;
 button at the bottom of the pipeline panel.</p>
 ''' % globals()
@@ -56,7 +56,7 @@ button at the bottom of the pipeline panel.</p>
 MAKING_MEASUREMENTS_REF = urllib.quote("Making measurements")
 MAKING_MEASUREMENTS_HELP = '''
 <p>In most cases, the reason for identifying image features is to make measurements on them. CellProfiler has a number
-of modules dedicated to calculating measurements of various types, on both images and objects; these
+of extensions dedicated to calculating measurements of various types, on both images and objects; these
 are accessible by clicking the <img src="memory:%(MODULE_ADD_BUTTON)s">&nbsp;button
 (located underneath the pipeline panel) </p>
 
@@ -65,10 +65,10 @@ are accessible by clicking the <img src="memory:%(MODULE_ADD_BUTTON)s">&nbsp;but
     <tr bgcolor="#555555" align="center">
     <th><font color="#FFFFFF"><b>Measurement</b></font></th>
     <th><font color="#FFFFFF"><b>Description</b></font></th>
-    <th><font color="#FFFFFF"><b>Relevant modules</b></font></th></tr>
-    <tr align="center"><td><i>Count</i></td><td>The number of objects in an image.</td><td>All modules which produce a new set of objects, such as <b>IdentifyPrimaryObjects</b></td></tr>
+    <th><font color="#FFFFFF"><b>Relevant extensions</b></font></th></tr>
+    <tr align="center"><td><i>Count</i></td><td>The number of objects in an image.</td><td>All extensions which produce a new set of objects, such as <b>IdentifyPrimaryObjects</b></td></tr>
     <tr align="center"><td><i>Location</i></td><td> The (x,y) coordinates of each object, which can be of interest in time-lapse imaging.</td>
-    <td>All modules which produce a new set of objects</td></tr>
+    <td>All extensions which produce a new set of objects</td></tr>
     <tr align="center"><td><i>Morphology</i></td><td> Quantities defining the geometry of the object, as defined by its external boundary.
     This includes quantities like area, perimeter, etc.</td><td><b>MeasureImageAreaOccupied</b>,<b>MeasureObjectSizeShape</b></td></tr>
     <tr align="center"><td><i>Intensity</i></td><td> In fluorescence assays, the intensity of a pixel is related to the substance labeled with
@@ -82,7 +82,7 @@ are accessible by clicking the <img src="memory:%(MODULE_ADD_BUTTON)s">&nbsp;but
 </table>
 </p>
 
-<p>For more information on these modules and how to configure them for best performance, please see
+<p>For more information on these extensions and how to configure them for best performance, please see
 the detailed help by selecting the module and clicking the <img src="memory:%(MODULE_HELP_BUTTON)s">&nbsp;
 button at the bottom of the pipeline panel. You can also find details on measurement nomenclature when exporting under
 <i>%(MEASUREMENT_NAMING_HELP)s</i></p>
@@ -100,12 +100,12 @@ amounts of data generated. A <i>database</i> is a better solution in this case, 
 by the user; the <b>ExportToDatabase</b> module is to be used for this task. If this avenue is needed, it is best to consult
 with your information technology department.</p>
 
-<p>CellProfiler will not save images produce by analysis modules unless told to do so. It is often desirable to save
+<p>CellProfiler will not save images produce by analysis extensions unless told to do so. It is often desirable to save
 the outlines of the objects identified; this can is useful as a sanity check of the object identification results or for quality control
 purposes. The <b>SaveImages</b> module is used for saving images to a variety of output formats, with the
 nomenclature specified by the user.</p>
 
-<p>For more information on these modules and how to configure them for best performance, please see
+<p>For more information on these extensions and how to configure them for best performance, please see
 the detailed help by selecting the module and clicking the <img src="memory:%(MODULE_HELP_BUTTON)s">
 button at the bottom of the pipeline panel. You can also find details on various exporting options under
 <i>%(USING_YOUR_OUTPUT_REF)s</i></p>
@@ -161,8 +161,8 @@ startup_main = '''<html>
 <tr>
     <td>&nbsp;</td>
     <td><i><font size="+2">2: Adjust</font></b></td>
-    <td>Use the Input modules to <a href="help://%(SELECTING_IMAGES_REF)s">select</a> and <a href="help://%(CONFIGURE_IMAGES_REF)s">configure</a> your images for analysis.
-    Add Analysis modules to <a href="help://%(IDENTIFY_FEATUREES_REF)s">identify</a> image features, make <a href="help://%(MAKING_MEASUREMENTS_REF)s">measurements</a> and
+    <td>Use the Input extensions to <a href="help://%(SELECTING_IMAGES_REF)s">select</a> and <a href="help://%(CONFIGURE_IMAGES_REF)s">configure</a> your images for analysis.
+    Add Analysis extensions to <a href="help://%(IDENTIFY_FEATUREES_REF)s">identify</a> image features, make <a href="help://%(MAKING_MEASUREMENTS_REF)s">measurements</a> and
     <a href="help://%(EXPORTING_RESULTS_REF)s">export</a> results.</td>
 </tr>
 <tr>
@@ -214,7 +214,7 @@ startup_main = '''<html>
 startup_interface = '''<html>
 <body>
 <h2>Summary of the Interface</h2>
-The CellProfiler interface has tools for managing images, pipelines and modules. The interface is divided into four main parts, as shown in the following illustration:
+The CellProfiler interface has tools for managing images, pipelines and extensions. The interface is divided into four main parts, as shown in the following illustration:
 <p>
 <center>
 <img src="memory:cp_panel_schematic.png">
@@ -224,8 +224,8 @@ The CellProfiler interface has tools for managing images, pipelines and modules.
 <colgroup><col width="200"><col width="300%"></colgroup>
 <thead><tr valign="top"><th bgcolor="#B2B2B2">Element</th><th bgcolor="#B2B2B2">Description</th></tr></thead>
 <tbody>
-<tr><td><i>Pipeline</i></td><td>Lists the modules in the pipeline, with controls for display and testing. Below this panel
-are tools for adding, removing, and reordering modules and getting help.</td></tr>
+<tr><td><i>Pipeline</i></td><td>Lists the extensions in the pipeline, with controls for display and testing. Below this panel
+are tools for adding, removing, and reordering extensions and getting help.</td></tr>
 <tr><td><i>Files</i></td><td>Lists images and pipeline files in the current input folder.</td></tr>
 <tr><td><i>Module Settings</i></td><td>Contains the options for the currently selected module.</td></tr>
 <tr><td><i>Folders</i></td><td>Dialogs for controlling default input and output folders and output filename.</td></tr>

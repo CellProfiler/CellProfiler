@@ -24,7 +24,7 @@ import cellprofiler.extension as cpm
 import cellprofiler.configuration as cpprefs
 import cellprofiler.measurement as cpmeas
 import cellprofiler.utilities.zmqrequest as cpzmq
-from cellprofiler.modules.tests import example_images_directory, testimages_directory
+from cellprofiler.extensions.tests import example_images_directory, testimages_directory
 
 IMAGE_NAME = "imagename"
 OBJECTS_NAME = "objectsname"
@@ -187,7 +187,7 @@ class TestAnalysis(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.zmq_context = zmq.Context()
-        from cellprofiler.modules import fill_modules
+        from cellprofiler.extensions import fill_modules
         fill_modules()
 
     @classmethod

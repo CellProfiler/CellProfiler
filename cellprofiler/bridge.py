@@ -544,11 +544,11 @@ class Server(threading.Thread):
                  zmq.Frame(message)])
 
     def split_pipeline(self, pipeline):
-        '''Split the pipeline into input modules and everything else
+        '''Split the pipeline into input extensions and everything else
 
         pipeline - the pipeline to be split
 
-        returns a two-tuple of input modules and other
+        returns a two-tuple of input extensions and other
         '''
         input_modules = []
         other_modules = []
@@ -560,7 +560,7 @@ class Server(threading.Thread):
         return input_modules, other_modules
 
     def find_channels(self, input_modules):
-        '''Find image providers in the input modules'''
+        '''Find image providers in the input extensions'''
         channels = []
         for module in input_modules:
             for setting in module.visible_settings():
@@ -569,9 +569,9 @@ class Server(threading.Thread):
         return channels
 
     def find_measurements(self, modules, pipeline):
-        '''Scan the modules for features
+        '''Scan the extensions for features
 
-        modules - modules to scan for features
+        extensions - extensions to scan for features
         pipeline - the pipeline they came from
 
         returns a two tuple of

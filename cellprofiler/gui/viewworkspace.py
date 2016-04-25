@@ -7,7 +7,7 @@ import cellprofiler.gui.cpfigure
 import cellprofiler.gui.help
 import cellprofiler.gui.htmldialog
 import cellprofiler.measurement
-import cellprofiler.modules.identify
+import cellprofiler.extensions.identify
 import cellprofiler.configuration
 import matplotlib
 import numpy
@@ -611,7 +611,7 @@ class ViewWorkspace(object):
             else:
                 if object_name not in object_values:
                     if any([not m.has_feature(object_name, lf) for lf in
-                            cellprofiler.modules.identify.M_LOCATION_CENTER_X, cellprofiler.modules.identify.M_LOCATION_CENTER_Y]):
+                            cellprofiler.extensions.identify.M_LOCATION_CENTER_X, cellprofiler.extensions.identify.M_LOCATION_CENTER_Y]):
                         continue
                     object_values[object_name] = []
                 object_values[object_name].append(
@@ -624,7 +624,7 @@ class ViewWorkspace(object):
             values = [vr[0] for vr in value_rows]
             measurement_rows = [vr[1] for vr in value_rows]
             x, y = [m[object_name, ftr] for ftr in
-                    cellprofiler.modules.identify.M_LOCATION_CENTER_X, cellprofiler.modules.identify.M_LOCATION_CENTER_Y]
+                    cellprofiler.extensions.identify.M_LOCATION_CENTER_X, cellprofiler.extensions.identify.M_LOCATION_CENTER_Y]
             for i in range(len(x)):
                 xi, yi = x[i], y[i]
                 if numpy.isnan(xi) or numpy.isnan(yi):

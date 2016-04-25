@@ -14,7 +14,7 @@ import imagej.imageplus as I
 class TestImagePlus(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        from cellprofiler.modules.tests \
+        from cellprofiler.extensions.tests \
             import example_images_directory, maybe_download_sbs
         maybe_download_sbs()
         cls.root_dir = example_images_directory()

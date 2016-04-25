@@ -38,7 +38,7 @@ ANNOUNCE_DONE = "DONE"
 
 
 class Analysis(object):
-    '''An Analysis is the application of a particular pipeline of modules to a
+    '''An Analysis is the application of a particular pipeline of extensions to a
     set of images to produce measurements.
 
     Multiprocessing for analyses is handled by multiple layers of threads and

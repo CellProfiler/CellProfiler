@@ -63,7 +63,7 @@ class RunMultplePipelinesDialog(wx.Dialog):
         self.file_chooser = wx.ListCtrl(self, style=wx.LC_REPORT)
         self.file_chooser.InsertColumn(FC_FILENAME_COLUMN, "File name")
         self.file_chooser.InsertColumn(FC_DATE_COLUMN, "Last modified")
-        self.file_chooser.InsertColumn(FC_MODULE_COUNT_COLUMN, "# modules")
+        self.file_chooser.InsertColumn(FC_MODULE_COUNT_COLUMN, "# extensions")
         self.file_chooser.SetColumnWidth(FC_MODULE_COUNT_COLUMN, wx.LIST_AUTOSIZE_USEHEADER)
         sizer.Add(self.file_chooser, 1, wx.EXPAND | wx.ALL, 5)
 

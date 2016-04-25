@@ -70,7 +70,7 @@ class Extension(object):
         self.__svn_version = "Unknown"
         self.__enabled = True
         self.__as_data_tool = False
-        self.shared_state = {}  # used for maintaining state between modules, see get_dictionary()
+        self.shared_state = {}  # used for maintaining state between extensions, see get_dictionary()
         self.id = uuid.uuid4()
         self.batch_state = np.zeros((0,), np.uint8)
         # Set the name of the module based on the class name.  A
@@ -155,7 +155,7 @@ class Extension(object):
         takes a variable number of images or objects can increase or decrease
         the number of relevant settings so they map correctly to the values.
 
-        See cellprofiler.modules.measureobjectareashape for an example.
+        See cellprofiler.extensions.measureobjectareashape for an example.
         """
         pass
 
@@ -198,7 +198,7 @@ class Extension(object):
         from_matlab - True if the settings came from a Matlab pipeline, False
                       if the settings are from a CellProfiler 2.0 pipeline.
 
-        Overriding modules should return a tuple of setting_values,
+        Overriding extensions should return a tuple of setting_values,
         variable_revision_number and True if upgraded to CP 2.0, otherwise
         they should leave things as-is so that the caller can report
         an error.
@@ -213,7 +213,7 @@ class Extension(object):
     def get_help(self):
         """Return help text for the module
 
-        The default help is taken from your modules docstring and from
+        The default help is taken from your extensions docstring and from
         the settings.
         """
         if self.__doc__ is None:
@@ -271,7 +271,7 @@ class Extension(object):
     def change_causes_prepare_run(self, setting):
         '''Check to see if changing the given setting means you have to restart
 
-        Some settings, esp in modules like LoadImages, affect more than
+        Some settings, esp in extensions like LoadImages, affect more than
         the current image set when changed. For instance, if you change
         the name specification for files, you have to reload your image_set_list.
         Override this and return True if changing the given setting means
@@ -285,7 +285,7 @@ class Extension(object):
         A module is allowed to create hidden information that it uses
         to turn batch mode on or to save state to be used in batch mode.
         This call signals that the pipeline has been opened for editing,
-        even if it is a batch pipeline; all modules should be restored
+        even if it is a batch pipeline; all extensions should be restored
         to a state that's appropriate for creating a batch file, not
         for running a batch file
         '''
@@ -361,8 +361,8 @@ class Extension(object):
 
         The module's index number or ModuleNum is a one-based index of its
         execution position in the pipeline. It can be used to predict what
-        modules have been run (creating whatever images and measurements
-        those modules create) previous to a given module.
+        extensions have been run (creating whatever images and measurements
+        those extensions create) previous to a given module.
         """
         if self.__module_num == -1:
             raise (Exception('Module has not been created'))
@@ -377,7 +377,7 @@ class Extension(object):
     module_num = property(get_module_num, set_module_num)
 
     def module_class(self):
-        """The class to instantiate, except for the special case of matlab modules.
+        """The class to instantiate, except for the special case of matlab extensions.
 
         """
         return self.__module__ + '.' + self.module_name
@@ -516,16 +516,16 @@ class Extension(object):
 
     @classmethod
     def is_input_module(cls):
-        """If true, the module is one of the input modules
+        """If true, the module is one of the input extensions
 
-        The input modules are "Images", "Metadata", "NamesAndTypes" and "Groups"
+        The input extensions are "Images", "Metadata", "NamesAndTypes" and "Groups"
         """
         return False
 
     def is_create_batch_module(self):
         '''If true, the module will pickle the pipeline into a batch file and exit
 
-        This is needed by modules which can't properly operate in a batch
+        This is needed by extensions which can't properly operate in a batch
         mode (e.g. do all their work post_run or don't work so well if
         run in parallel)
         '''
@@ -534,7 +534,7 @@ class Extension(object):
     def is_aggregation_module(self):
         """If true, the module uses data from other imagesets in a group
 
-        Aggregation modules perform operations that require access to
+        Aggregation extensions perform operations that require access to
         all image sets in a group, generally resulting in an aggregation
         operation during the last image set or in post_group. Examples are
         TrackObjects, MakeProjection and CorrectIllumination_Calculate.
@@ -552,8 +552,8 @@ class Extension(object):
     def convert(self, pipeline, metadata, namesandtypes, groups):
         '''Convert the input processing of this module from the legacy format
 
-        Legacy modules like LoadImages should copy their settings into
-        the Metadata, NamesAndTypes and Groups modules when this call is made.
+        Legacy extensions like LoadImages should copy their settings into
+        the Metadata, NamesAndTypes and Groups extensions when this call is made.
 
         pipeline - the pipeline being converted
 
@@ -605,7 +605,7 @@ class Extension(object):
         workspace.display_data.  The module is given a CPFigure to use for
         display in the third argument.
         """
-        figure.Close()  # modules that don't override display() shouldn't
+        figure.Close()  # extensions that don't override display() shouldn't
         # display anything
 
     def display_post_group(self, workspace, figure):
@@ -799,13 +799,13 @@ class Extension(object):
         category - the category being measured, for instance "Threshold"
         measurement - the name of the measurement being done
 
-        Some modules output image-wide aggregate measurements in addition to
+        Some extensions output image-wide aggregate measurements in addition to
         object measurements. These must be stored using the "Image" object name
         in order to save a single value. A module can override
         get_measurement_objects to tell the user about the object name in
         those situations.
 
-        In addition, some modules may make use of two segmentations, for instance
+        In addition, some extensions may make use of two segmentations, for instance
         when measuring the total value of secondary objects related to primary
         ones. This mechanism can be used to identify the secondary objects used.
         """
@@ -827,11 +827,11 @@ class Extension(object):
     def should_stop_writing_measurements(self):
         '''Returns True if measurements should not be taken after this module
 
-        The ExportToDatabase and ExportToExcel modules expect that no
-        measurements will be recorded in latter modules. This function
+        The ExportToDatabase and ExportToExcel extensions expect that no
+        measurements will be recorded in latter extensions. This function
         returns False in the default, indicating that measurements should
-        keep being made, but returns True for these modules, indicating
-        that any subsequent modules will lose their measurements and should
+        keep being made, but returns True for these extensions, indicating
+        that any subsequent extensions will lose their measurements and should
         not write any.
         '''
         return False
@@ -841,7 +841,7 @@ class Extension(object):
 
         pipeline - pipeline being run
 
-        Legacy modules might need the default image folder as does any module
+        Legacy extensions might need the default image folder as does any module
         that uses the DirectoryPath setting.
         '''
         for setting in self.visible_settings():
@@ -863,7 +863,7 @@ class Extension(object):
 
         workspace - the workspace that's currently running
 
-        on_activated is here to give modules the chance to modify other
+        on_activated is here to give extensions the chance to modify other
         elements of the pipeline, such as the image plane details or image
         set list. You're allowed to modify these parts of the pipeline
         in the UI thread until on_deactivated is called.

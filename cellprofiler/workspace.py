@@ -18,7 +18,7 @@ Set workspace.disposition to DISPOSITION_CONTINUE to go to the next module.
 This is the default.
 '''
 DISPOSITION_CONTINUE = "Continue"
-'''Skip remaining modules
+'''Skip remaining extensions
 
 Set workspace.disposition to DISPOSITION_SKIP to skip to the next image set
 in the pipeline.
@@ -64,7 +64,7 @@ class Workspace(object):
                  outlines={}):
         """Workspace constructor
 
-        pipeline          - the pipeline of modules being run
+        pipeline          - the pipeline of extensions being run
         module            - the current module to run (a CPModule instance)
         image_set         - the set of images available for this iteration
                             (a cpimage.ImageSet instance)

@@ -5,7 +5,7 @@
 import cellprofiler.gui
 import cellprofiler.gui.cornerbuttonmixin
 import cellprofiler.measurement
-import cellprofiler.modules.images
+import cellprofiler.extensions.images
 import cellprofiler.configuration
 import cellprofiler.setting
 import numpy
@@ -436,7 +436,7 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
                     "Sorry, your pipeline doesn't produce any valid image sets "
                     "as currently configured. Check your Input module settings, "
                     "or see Help > %(CREATING_A_PROJECT_CAPTION)s for additional assistance "
-                    "on using the Input modules." % locals(),
+                    "on using the Input extensions." % locals(),
                     caption="No Image Sets Available",
                     style=wx.OK | wx.ICON_INFORMATION,
                     parent=self)
@@ -907,7 +907,7 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
     ###############################
 
     def on_grid_begin_drag(self, event):
-        from cellprofiler.modules.loadimages import url2pathname
+        from cellprofiler.extensions.loadimages import url2pathname
         selections = self.get_selected_cells()
         if len(selections) > 0:
             filenames = [url2pathname(self.Table.get_url(row, col))
@@ -1449,8 +1449,8 @@ class FilterPanelDlg(wx.Dialog):
                         """
         super(self.__class__, self).__init__(parent, size=(640, 480))
         self.Title = "Select images using a filter"
-        from cellprofiler.modules.images import FilePredicate, DirectoryPredicate
-        from cellprofiler.modules.images import ExtensionPredicate
+        from cellprofiler.extensions.images import FilePredicate, DirectoryPredicate
+        from cellprofiler.extensions.images import ExtensionPredicate
 
         self.filter_setting = cellprofiler.setting.Filter(
                 "Filter",
@@ -1469,7 +1469,7 @@ class FilterPanelDlg(wx.Dialog):
 
     def fn_filter(self, url):
         """A filter function that applies the current filter to a URL"""
-        modpath = cellprofiler.modules.images.Images.url_to_modpath(url)
+        modpath = cellprofiler.extensions.images.Images.url_to_modpath(url)
         return self.filter_setting.evaluate(
                 (cellprofiler.setting.FileCollectionDisplay.NODE_IMAGE_PLANE, modpath, None))
 

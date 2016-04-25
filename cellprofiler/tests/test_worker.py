@@ -22,10 +22,10 @@ import cellprofiler.pipeline as cpp
 import cellprofiler.configuration as cpprefs
 import cellprofiler.utilities.zmqrequest as cpzmq
 from cellprofiler.gui.errordialog import ED_CONTINUE, ED_SKIP, ED_STOP
-from cellprofiler.modules.identify import C_COUNT, M_LOCATION_CENTER_X
-from cellprofiler.modules.loadimages import pathname2url
-from cellprofiler.modules.namesandtypes import M_IMAGE_SET
-from cellprofiler.modules.tests import \
+from cellprofiler.extensions.identify import C_COUNT, M_LOCATION_CENTER_X
+from cellprofiler.extensions.loadimages import pathname2url
+from cellprofiler.extensions.namesandtypes import M_IMAGE_SET
+from cellprofiler.extensions.tests import \
     example_images_directory, maybe_download_example_image, maybe_download_sbs
 
 
@@ -38,7 +38,7 @@ class TestAnalysisWorker(unittest.TestCase):
         # Install a bogus display_post_group method in FlipAndRotate
         # to elicit a post-group interaction request
         #
-        from cellprofiler.modules.flipandrotate import FlipAndRotate
+        from cellprofiler.extensions.flipandrotate import FlipAndRotate
         def bogus_display_post_group(self, workspace, figure):
             pass
 
@@ -348,7 +348,7 @@ class TestAnalysisWorker(unittest.TestCase):
         #                   self.awthread.aw.pipelines_and_preferences)
         #     pipe, prefs = self.awthread.aw.pipelines_and_preferences[
         #         self.analysis_id]
-        #     self.assertEqual(len(pipe.modules()), 7)
+        #     self.assertEqual(len(pipe.extensions()), 7)
         #     #
         #     # Cancel and check for exit
         #     #
@@ -470,7 +470,7 @@ class TestAnalysisWorker(unittest.TestCase):
         #     req = self.awthread.recv(self.work_socket)
         #     pipe, prefs = self.awthread.aw.pipelines_and_preferences[
         #         self.analysis_id]
-        #     for d, module in zip(rep.dictionaries, pipe.modules()):
+        #     for d, module in zip(rep.dictionaries, pipe.extensions()):
         #         self.assertDictEqual(module.get_dictionary(), d)
         #     #
         #     # Might as well torpedo the app. It should be stalled waiting
@@ -857,7 +857,7 @@ class TestAnalysisWorker(unittest.TestCase):
 #     Match file and image metadata:\x5B\x5D
 #     Use case insensitive matching?:No
 #
-# NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:5|show_window:False|notes:\x5B\'The NamesAndTypes module allows you to assign a meaningful name to each image by which other modules will refer to it.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+# NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:5|show_window:False|notes:\x5B\'The NamesAndTypes module allows you to assign a meaningful name to each image by which other extensions will refer to it.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
 #     Assign a name to:All images
 #     Select the image type:Grayscale image
 #     Name to assign these images:DNA

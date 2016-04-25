@@ -294,7 +294,7 @@ class Image(object):
         if not self.has_crop_mask:
             raise RuntimeError(
                     "Images are of different size and no crop mask available.\n"
-                    "Use the Crop and Align modules to match images of different sizes.")
+                    "Use the Crop and Align extensions to match images of different sizes.")
         cropped_image = crop_image(image, self.crop_mask)
         if cropped_image.shape[0:2] != self.pixel_data.shape[0:2]:
             raise ValueError("Cropped image is not the same size as the reference image: %s vs %s" %
@@ -723,7 +723,7 @@ class ImageSet(object):
     names = property(get_names)
 
     def get_legacy_fields(self):
-        """Matlab modules can stick legacy junk into the Images handles field. Save it in this dictionary.
+        """Matlab extensions can stick legacy junk into the Images handles field. Save it in this dictionary.
 
         """
         return self.__legacy_fields
@@ -820,7 +820,7 @@ class ImageSetList(object):
         return len(self.__image_sets)
 
     def get_legacy_fields(self):
-        """Matlab modules can stick legacy junk into the Images handles field. Save it in this dictionary.
+        """Matlab extensions can stick legacy junk into the Images handles field. Save it in this dictionary.
 
         """
         return self.__legacy_fields

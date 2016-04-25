@@ -9,7 +9,6 @@ import os
 import re
 import shutil
 import sys
-from glob import glob
 from shutil import copy
 
 import cellprofiler.icons

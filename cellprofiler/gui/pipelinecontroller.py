@@ -419,20 +419,20 @@ class PipelineController(object):
         self.__test_controls_panel.Sizer.Hide(self.__tcp_test_sizer)
         self.__test_controls_panel.Sizer.Hide(self.__tcp_launch_sizer)
         self.__test_controls_panel.Sizer.Show(self.__tcp_analysis_sizer)
-        self.__stop_analysis_button.Enable(True)
+        self.__stop_analysis_button.Enable()
         self.show_pause_button()
         self.__test_controls_panel.Layout()
         self.__test_controls_panel.Parent.Layout()
         self.__frame.enable_analysis_commands()
 
     def show_pause_button(self):
-        self.__pause_button.Enable(True)
+        self.__pause_button.Enable()
         self.__tcp_analysis_sizer.Show(self.__pause_button)
         self.__tcp_analysis_sizer.Hide(self.__resume_button)
         self.__test_controls_panel.Layout()
 
     def show_resume_button(self):
-        self.__resume_button.Enable(True)
+        self.__resume_button.Enable()
         self.__tcp_analysis_sizer.Hide(self.__pause_button)
         self.__tcp_analysis_sizer.Show(self.__resume_button)
         self.__test_controls_panel.Layout()
@@ -454,12 +454,12 @@ class PipelineController(object):
         """Handle the Open Workspace menu command"""
         path = self.do_open_workspace_dlg()
         if path is not None:
-            self.do_open_workspace(path, True)
+            self.do_open_workspace(path)
 
     def __on_revert_workspace(self, event):
         path = cellprofiler.preferences.get_current_workspace_path()
         if path is not None:
-            self.do_open_workspace(path, True)
+            self.do_open_workspace(path)
 
     def do_open_workspace_dlg(self):
         """Display the open workspace dialog, returning the chosen file
@@ -788,8 +788,8 @@ class PipelineController(object):
         If your file name has line feeds in it or whitespace at the start
         or end of the line, maybe you're asking too much :-)
         """
-        with open(path, mode="r") as fd:
-            pathnames = [p.strip().decode("utf-8") for p in fd]
+        with open(path) as fd:
+            pathnames = [p.strip().decode() for p in fd]
             self.__pipeline.add_pathnames_to_file_list(pathnames)
 
     def do_export_text_file_list(self, path):
@@ -802,7 +802,7 @@ class PipelineController(object):
         with open(path, mode="w") as fd:
             for url in self.__workspace.file_list.get_filelist():
                 if isinstance(url, unicode):
-                    url = url.encode("utf-8")
+                    url = url.encode()
                 fd.write(url + "\n")
 
     def is_running(self):
@@ -1758,7 +1758,7 @@ class PipelineController(object):
 
             while not interrupt[0]:
                 try:
-                    urls = queue.get(block=True, timeout=0.1)
+                    urls = queue.get(timeout=0.1)
                     try:
                         while True:
                             urls += queue.get(block=False)

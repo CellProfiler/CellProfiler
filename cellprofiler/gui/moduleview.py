@@ -299,8 +299,8 @@ class ModuleView(object):
             top_panel, label=self.get_module_settings_label())
         module_settings_box_sizer = wx.StaticBoxSizer(self.module_settings_box)
         top_panel.Sizer.Add(module_settings_box_sizer, 1, wx.EXPAND)
-        self.__module_panel = wx.lib.scrolledpanel.ScrolledPanel(top_panel, style=wx.TAB_TRAVERSAL)
-        self.__module_panel.SetupScrolling(True, True)
+        self.__module_panel = wx.lib.scrolledpanel.ScrolledPanel(top_panel)
+        self.__module_panel.SetupScrolling()
         module_settings_box_sizer.Add(self.__module_panel, 1, wx.EXPAND)
         self.__sizer = ModuleSizer(0, 3)
         self.module_panel.Sizer = self.__sizer
@@ -354,7 +354,7 @@ class ModuleView(object):
                 listener['notifier'].remove_listener(listener['listener'])
             self.__value_listeners = []
             self.__module = None
-        self.__sizer.Reset(0, 3)
+        self.__sizer.Reset(0)
         if self.notes_panel is not None:
             self.notes_panel.Hide()
         self.module_settings_box.Label = self.get_module_settings_label()
@@ -1269,7 +1269,7 @@ class ModuleView(object):
                     guess_file = cellprofiler.preferences.get_filename_re_guess_file()
                     guesses = regexp_editor.RE_FILENAME_GUESSES
                 if guess_file is not None and os.path.exists(guess_file):
-                    with open(guess_file, "r") as fd:
+                    with open(guess_file) as fd:
                         guesses = [x.strip() for x in fd.readlines()]
                 new_value = regexp_editor.edit_regexp(panel, control.Value, filename, guesses)
                 if new_value:

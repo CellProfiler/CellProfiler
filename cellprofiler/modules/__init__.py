@@ -89,15 +89,16 @@ pymodule_to_cpmodule = {'align': 'Align',
                         'rescaleintensity': 'RescaleIntensity',
                         'resize': 'Resize',
                         'run_imagej': 'RunImageJ',
-                        'saveimages' : 'SaveImages',
-                        'sendemail' : 'SendEmail',
-                        'smooth' : 'Smooth',
-                        'straightenworms' : 'StraightenWorms',
-                        'trackobjects' : 'TrackObjects',
-                        'tile' : 'Tile',
+                        'saveimages': 'SaveImages',
+                        'sendemail': 'SendEmail',
+                        'smooth': 'Smooth',
+                        'straightenworms': 'StraightenWorms',
+                        'trackobjects': 'TrackObjects',
+                        'tile': 'Tile',
+                        'calculateimageoverlap': 'CalculateImageOverlap',
                         'unmixcolors': 'UnmixColors',
                         'untangleworms': 'UntangleWorms',
-                        'yeast_cell_segmentation' : 'YeastCellSegmentation'
+                        'yeast_cell_segmentation': 'YeastCellSegmentation'
                         }
 
 # the builtin CP modules that will be loaded from the cellprofiler.modules directory

@@ -190,7 +190,7 @@ from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 from centrosome.cpmorphology import centers_of_labels
 from centrosome.cpmorphology import associate_by_distance
 from centrosome.cpmorphology import all_connected_components
-from cellprofiler.cpmath.neighmovetrack import NeighbourMovementTracking, NeighbourMovementTrackingParameters
+from centrosome.neighmovetrack import NeighbourMovementTracking, NeighbourMovementTrackingParameters
 from centrosome.index import Indexes
 from identify import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
 from cellprofiler.gui.help import HELP_ON_MEASURING_DISTANCES

@@ -437,7 +437,7 @@ def wrap_menu_entry(menu_entry):
 def get_command_service(context):
     """Get the command service for a given context
 
-    The command service is used to run modules with command pre and post
+    The command service is used to run extensions with command pre and post
     processing.
     :param context:
     """

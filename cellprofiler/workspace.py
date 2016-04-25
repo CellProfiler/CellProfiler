@@ -9,7 +9,7 @@ import numpy as np
 import h5py
 import os
 
-from cellprofiler.cpgridinfo import CPGridInfo
+from cellprofiler.grid import Grid
 from .utilities.hdf5_dict import HDF5FileList, HDF5Dict
 
 '''Continue to run the pipeline
@@ -18,7 +18,7 @@ Set workspace.disposition to DISPOSITION_CONTINUE to go to the next module.
 This is the default.
 '''
 DISPOSITION_CONTINUE = "Continue"
-'''Skip remaining modules
+'''Skip remaining extensions
 
 Set workspace.disposition to DISPOSITION_SKIP to skip to the next image set
 in the pipeline.
@@ -64,7 +64,7 @@ class Workspace(object):
                  outlines={}):
         """Workspace constructor
 
-        pipeline          - the pipeline of modules being run
+        pipeline          - the pipeline of extensions being run
         module            - the current module to run (a CPModule instance)
         image_set         - the set of images available for this iteration
                             (a cpimage.ImageSet instance)
@@ -214,7 +214,7 @@ class Workspace(object):
         self.measurements.cache_object_set(self.object_set)
 
     def get_frame(self):
-        """The frame is CellProfiler's gui window
+        """The frame is CellProfiler's application window
 
         If the frame is present, a module should do its display
         """
@@ -228,7 +228,7 @@ class Workspace(object):
         self.__do_show = do_show
 
     def get_display(self):
-        """True to provide a gui display"""
+        """True to provide a application display"""
         return self.__frame is not None
 
     display = property(get_display)
@@ -243,8 +243,8 @@ class Workspace(object):
 
     def get_module_figure(self, module, image_set_number, parent=None):
         """Create a CPFigure window or find one already created"""
-        import cellprofiler.gui.cpfigure as cpf
-        import cellprofiler.measurements as cpmeas
+        import cellprofiler.application.cpfigure as cpf
+        import cellprofiler.measurement as cpmeas
 
         # catch any background threads trying to call display functions.
         assert not self.__in_background
@@ -279,7 +279,7 @@ class Workspace(object):
 
     def create_or_find_figure(self, title=None, subplots=None, window_name=None):
         """Create a matplotlib figure window or find one already created"""
-        import cellprofiler.gui.cpfigure as cpf
+        import cellprofiler.application.cpfigure as cpf
 
         # catch any background threads trying to call display functions.
         assert not self.__in_background
@@ -336,9 +336,9 @@ class Workspace(object):
                       workers.
         '''
         # See also:
-        # main().interaction_handler() in analysis_worker.py
+        # main().interaction_handler() in worker.py
         # PipelineController.module_interaction_request() in pipelinecontroller.py
-        import cellprofiler.preferences as cpprefs
+        import cellprofiler.configuration as cpprefs
         if "headless_ok" in kwargs:
             tmp = kwargs.copy()
             del tmp["headless_ok"]
@@ -431,8 +431,8 @@ class Workspace(object):
         import shutil
         from .pipeline import M_PIPELINE, M_DEFAULT_INPUT_FOLDER, \
             M_DEFAULT_OUTPUT_FOLDER
-        import cellprofiler.measurements as cpmeas
-        from cellprofiler.preferences import set_default_image_directory, \
+        import cellprofiler.measurement as cpmeas
+        from cellprofiler.configuration import set_default_image_directory, \
             set_default_output_directory
 
         image_set_and_measurements_are_same = False
@@ -450,7 +450,7 @@ class Workspace(object):
 
             shutil.copyfile(filename, self.__filename)
 
-            self.__measurements = cpmeas.Measurements(
+            self.__measurements = cpmeas.Measurement(
                     filename=self.__filename, mode="r+")
             if self.__file_list is not None:
                 self.__file_list.remove_notification_callback(
@@ -489,12 +489,12 @@ class Workspace(object):
 
         filename - name of the workspace file
         '''
-        from .measurements import Measurements, make_temporary_file
-        if isinstance(self.measurements, Measurements):
+        from .measurement import Measurement, make_temporary_file
+        if isinstance(self.measurements, Measurement):
             self.close()
 
         fd, self.__filename = make_temporary_file()
-        self.__measurements = Measurements(
+        self.__measurements = Measurement(
                 filename=self.__filename, mode="w")
         os.close(fd)
         if self.__file_list is not None:
@@ -549,8 +549,8 @@ class Workspace(object):
     def save_default_folders_to_measurements(self):
         from cellprofiler.pipeline import M_DEFAULT_INPUT_FOLDER
         from cellprofiler.pipeline import M_DEFAULT_OUTPUT_FOLDER
-        from cellprofiler.preferences import get_default_image_directory
-        from cellprofiler.preferences import get_default_output_directory
+        from cellprofiler.configuration import get_default_image_directory
+        from cellprofiler.configuration import get_default_output_directory
 
         self.measurements.add_experiment_measurement(
                 M_DEFAULT_INPUT_FOLDER, get_default_image_directory())
@@ -573,7 +573,7 @@ class Workspace(object):
         assume that the cache reflects pipeline + file list unless "force"
         is true.
         '''
-        import cellprofiler.measurements as cpmeas
+        import cellprofiler.measurement as cpmeas
         if len(self.measurements.get_image_numbers()) == 0 or force:
             self.measurements.clear()
             self.save_pipeline_to_measurements()
@@ -589,7 +589,7 @@ class Workspace(object):
             # TODO: Get rid of image_set_list
             no_image_set_list = self.image_set_list is None
             if no_image_set_list:
-                from cellprofiler.cpimage import ImageSetList
+                from cellprofiler.image import ImageSetList
                 self.__image_set_list = ImageSetList()
             try:
                 result = self.pipeline.prepare_run(self, stop_module)

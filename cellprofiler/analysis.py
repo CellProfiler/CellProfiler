@@ -21,9 +21,9 @@ import numpy as np
 import zmq
 
 import cellprofiler
-import cellprofiler.cpimage as cpimage
-import cellprofiler.measurements as cpmeas
-import cellprofiler.preferences as cpprefs
+import cellprofiler.image as cpimage
+import cellprofiler.measurement as cpmeas
+import cellprofiler.configuration as cpprefs
 import cellprofiler.workspace as cpw
 from cellprofiler.utilities.zmqrequest import AnalysisRequest, Request, Reply, UpstreamExit
 from cellprofiler.utilities.zmqrequest import get_announcer_address
@@ -38,7 +38,7 @@ ANNOUNCE_DONE = "DONE"
 
 
 class Analysis(object):
-    '''An Analysis is the application of a particular pipeline of modules to a
+    '''An Analysis is the application of a particular pipeline of extensions to a
     set of images to produce measurements.
 
     Multiprocessing for analyses is handled by multiple layers of threads and
@@ -72,7 +72,7 @@ class Analysis(object):
         to measurements_filename, optionally starting with previous
         measurements.'''
         self.pipeline = pipeline
-        initial_measurements = cpmeas.Measurements(copy=initial_measurements)
+        initial_measurements = cpmeas.Measurement(copy=initial_measurements)
         self.initial_measurements_buf = initial_measurements.file_contents()
         initial_measurements.close()
         self.output_path = measurements_filename
@@ -321,9 +321,9 @@ class AnalysisRunner(object):
                     fd = os.fdopen(fd, "wb")
                     fd.write(self.initial_measurements_buf)
                     fd.close()
-                    initial_measurements = cpmeas.Measurements(
+                    initial_measurements = cpmeas.Measurement(
                             filename=filename, mode="r")
-                    measurements = cpmeas.Measurements(
+                    measurements = cpmeas.Measurement(
                             image_set_start=None,
                             copy=initial_measurements,
                             mode="a")
@@ -334,9 +334,9 @@ class AnalysisRunner(object):
             else:
                 with open(self.output_path, "wb") as fd:
                     fd.write(self.initial_measurements_buf)
-                measurements = cpmeas.Measurements(image_set_start=None,
-                                                   filename=self.output_path,
-                                                   mode="a")
+                measurements = cpmeas.Measurement(image_set_start=None,
+                                                  filename=self.output_path,
+                                                  mode="a")
             # The shared dicts are needed in jobserver()
             self.shared_dicts = [m.get_dictionary() for m in self.pipeline.modules()]
             workspace = cpw.Workspace(self.pipeline, None, None, None,
@@ -694,8 +694,8 @@ class AnalysisRunner(object):
         if 'CP_DEBUG_WORKER' in os.environ:
             if os.environ['CP_DEBUG_WORKER'] == 'NOT_INPROC':
                 return
-            from cellprofiler.analysis_worker import \
-                AnalysisWorker, NOTIFY_ADDR, NOTIFY_STOP
+            from cellprofiler.worker import \
+                Worker, NOTIFY_ADDR, NOTIFY_STOP
             from cellprofiler.pipeline import CancelledException
 
             class WorkerRunner(threading.Thread):
@@ -706,7 +706,7 @@ class AnalysisRunner(object):
                     self.notify_socket.bind(NOTIFY_ADDR)
 
                 def run(self):
-                    with AnalysisWorker(self.work_announce_address) as aw:
+                    with Worker(self.work_announce_address) as aw:
                         try:
                             aw.run()
                         except CancelledException:
@@ -742,7 +742,7 @@ class AnalysisRunner(object):
                     args = ([executable] + aw_args)
                 elif sys.platform.startswith('linux'):
                     aw_path = os.path.join(os.path.dirname(__file__),
-                                           "analysis_worker.py")
+                                           "worker.py")
                     args = [sys.executable, aw_path] + aw_args
                 else:
                     args = [sys.executable] + aw_args
@@ -837,7 +837,7 @@ def find_worker_env(idx):
 def find_analysis_worker_source():
     # import here to break circular dependency.
     import cellprofiler.analysis  # used to get the path to the code
-    return os.path.join(os.path.dirname(cellprofiler.analysis.__file__), "analysis_worker.py")
+    return os.path.join(os.path.dirname(cellprofiler.analysis.__file__), "worker.py")
 
 
 def start_daemon_thread(target=None, args=(), kwargs=None, name=None):
@@ -1049,7 +1049,7 @@ if sys.platform == "darwin":
 if __name__ == '__main__':
     import time
     import cellprofiler.pipeline
-    import cellprofiler.preferences
+    import cellprofiler.configuration
     import cellprofiler.utilities.thread_excepthook
 
     # This is an ugly hack, but it's necesary to unify the Request/Reply

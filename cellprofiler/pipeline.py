@@ -37,12 +37,12 @@ import re
 
 logger = logging.getLogger(__name__)
 pipeline_stats_logger = logging.getLogger("PipelineStatistics")
-import cellprofiler.preferences as cpprefs
-import cellprofiler.cpimage as cpi
-import cellprofiler.measurements as cpmeas
-import cellprofiler.objects as cpo
+import cellprofiler.configuration as cpprefs
+import cellprofiler.image as cpi
+import cellprofiler.measurement as cpmeas
+import cellprofiler.object as cpo
 import cellprofiler.workspace as cpw
-import cellprofiler.settings as cps
+import cellprofiler.setting as cps
 from cellprofiler.utilities.utf16encode import utf16encode, utf16decode
 from cellprofiler.matlab.cputils import make_cell_struct_dtype, new_string_cell_array, encapsulate_strings_in_arrays
 from cellprofiler.utilities.walk_in_background import WalkCollection, THREAD_STOP
@@ -156,7 +156,7 @@ H_INDEX = "Index"
 '''Channel column header'''
 H_CHANNEL = "Channel"
 
-'''The number of modules in the pipeline'''
+'''The number of extensions in the pipeline'''
 H_MODULE_COUNT = "ModuleCount"
 
 '''Indicates whether the pipeline has an image plane details section'''
@@ -628,7 +628,7 @@ def read_fields(line):
 
 
 class Pipeline(object):
-    """A pipeline represents the modules that a user has put together
+    """A pipeline represents the extensions that a user has put together
     to analyze their images.
 
     """
@@ -644,7 +644,7 @@ class Pipeline(object):
         self.__undo_stack = []
         self.__undo_start = None
         # The file list is the list of URLs operated on by the
-        # input modules
+        # input extensions
         self.__file_list = []
         #
         # A cookie that's shared between the workspace and pipeline
@@ -669,7 +669,7 @@ class Pipeline(object):
         self.__undo_stack = []
 
     def copy(self, save_image_plane_details=True):
-        '''Create a copy of the pipeline modules and settings'''
+        '''Create a copy of the pipeline extensions and settings'''
         fd = StringIO.StringIO()
         self.save(fd, save_image_plane_details=save_image_plane_details)
         pipeline = Pipeline()
@@ -699,7 +699,7 @@ class Pipeline(object):
         return h.digest()
 
     def create_from_handles(self, handles):
-        """Read a pipeline's modules out of the handles structure
+        """Read a pipeline's extensions out of the handles structure
 
         """
         self.__modules = []
@@ -747,21 +747,21 @@ class Pipeline(object):
         self.notify_listeners(PipelineLoadedEvent())
 
     def instantiate_module(self, module_name):
-        import cellprofiler.modules
-        return cellprofiler.modules.instantiate_module(module_name)
+        import cellprofiler.extensions
+        return cellprofiler.extensions.instantiate_module(module_name)
 
     def reload_modules(self):
-        """Reload modules from source, and attempt to update pipeline to new versions.
+        """Reload extensions from source, and attempt to update pipeline to new versions.
         Returns True if pipeline was successfully updated.
 
         """
         # clear previously seen errors on reload
-        import cellprofiler.gui.errordialog
-        cellprofiler.gui.errordialog.clear_old_errors()
-        import cellprofiler.modules
-        reload(cellprofiler.modules)
-        cellprofiler.modules.reload_modules()
-        # attempt to reinstantiate pipeline with new modules
+        import cellprofiler.application.errordialog
+        cellprofiler.application.errordialog.clear_old_errors()
+        import cellprofiler.extensions
+        reload(cellprofiler.extensions)
+        cellprofiler.extensions.reload_modules()
+        # attempt to reinstantiate pipeline with new extensions
         try:
             self.copy()  # if this fails, we probably can't reload
             fd = StringIO.StringIO()
@@ -780,7 +780,7 @@ class Pipeline(object):
         settings = np.ndarray(shape=[1, 1], dtype=SETTINGS_DTYPE)
         handles = {SETTINGS: settings}
         setting = settings[0, 0]
-        # The variables are a (modules,max # of variables) array of cells (objects)
+        # The variables are a (extensions,max # of variables) array of cells (objects)
         # where an empty cell is a (1,0) array of float64
 
         try:
@@ -1056,7 +1056,7 @@ class Pipeline(object):
             else:
                 if ((not cpprefs.get_headless()) and
                             pipeline_version < CURRENT_VERSION):
-                    from cellprofiler.gui.errordialog import show_warning
+                    from cellprofiler.application.errordialog import show_warning
                     if git_hash is not None:
                         message = (
         "Your pipeline was saved using an old version\n"
@@ -1227,7 +1227,7 @@ class Pipeline(object):
         fd_or_filename - can be either a "file descriptor" with a "write"
                          attribute or the path to the file to write.
 
-        modules_to_save - if present, the module numbers of the modules to save
+        modules_to_save - if present, the module numbers of the extensions to save
 
         save_image_plane_details - True to save the image plane details (image
                           URL, series, index, channel and metadata)
@@ -1242,7 +1242,7 @@ class Pipeline(object):
         Line 2: "Version:#" the file format version #
         Line 3: "DateRevision:#" the version # of the CellProfiler
                 that wrote this file (date encoded as int, see cp.utitlities.version)
-        Line 4: "ModuleCount:#" the number of modules saved in the file
+        Line 4: "ModuleCount:#" the number of extensions saved in the file
         Line 5: "HasImagePlaneDetails:True/False" has the list of image plane info after the settings
         Line 5: blank
 
@@ -1358,7 +1358,7 @@ class Pipeline(object):
                         by the UI for the user for cases like a pipeline
                         created by CreateBatchFiles.
         '''
-        assert (isinstance(m, cpmeas.Measurements))
+        assert (isinstance(m, cpmeas.Measurement))
         fd = StringIO.StringIO()
         self.savetxt(fd, save_image_plane_details=False)
         m.add_measurement(cpmeas.EXPERIMENT,
@@ -1501,9 +1501,9 @@ class Pipeline(object):
         return result
 
     def can_convert_legacy_input_modules(self):
-        '''Can legacy modules like LoadImages be converted to modern form?
+        '''Can legacy extensions like LoadImages be converted to modern form?
 
-        Returns True if all legacy input modules can be converted to
+        Returns True if all legacy input extensions can be converted to
         Images / Metadata / NamesAndTypes / Groups.
         '''
         needs_conversion = False
@@ -1519,11 +1519,11 @@ class Pipeline(object):
         '''Convert a pipeline from legacy to using Images, NamesAndTypes etc'''
         if not self.can_convert_legacy_input_modules():
             return
-        from cellprofiler.modules.images import Images, FILTER_CHOICE_NONE
-        from cellprofiler.modules.metadata import Metadata
-        from cellprofiler.modules.namesandtypes import NamesAndTypes
-        from cellprofiler.modules.groups import Groups
-        with self.undoable_action("Legacy modules converted"):
+        from cellprofiler.extensions.images import Images, FILTER_CHOICE_NONE
+        from cellprofiler.extensions.metadata import Metadata
+        from cellprofiler.extensions.namesandtypes import NamesAndTypes
+        from cellprofiler.extensions.groups import Groups
+        with self.undoable_action("Legacy extensions converted"):
             images, metadata, namesandtypes, groups = (
                 Images(), Metadata(), NamesAndTypes(), Groups())
             images.filter_choice.value = FILTER_CHOICE_NONE
@@ -1564,7 +1564,7 @@ class Pipeline(object):
 
     def fix_legacy_pipeline(self):
         '''Perform inter-module fixes needed for some legacy pipelines'''
-        from cellprofiler.modules.loadsingleimage import LoadSingleImage
+        from cellprofiler.extensions.loadsingleimage import LoadSingleImage
         #
         # LoadSingleImage used to work if placed before LoadImages or
         # LoadData, but doesn't any more
@@ -1586,7 +1586,7 @@ class Pipeline(object):
     def requires_aggregation(self):
         '''Return True if the pipeline requires aggregation across image sets
 
-        If a pipeline has aggregation modules, the image sets in a group
+        If a pipeline has aggregation extensions, the image sets in a group
         need to be run sequentially on the same worker.
         '''
         for module in self.modules():
@@ -1595,7 +1595,7 @@ class Pipeline(object):
         return False
 
     def obfuscate(self):
-        '''Tell all modules in the pipeline to obfuscate any sensitive info
+        '''Tell all extensions in the pipeline to obfuscate any sensitive info
 
         This call is designed to erase any information that users might
         not like to see uploaded. You should copy a pipeline before obfuscating.
@@ -1611,8 +1611,8 @@ class Pipeline(object):
         image_dict - dictionary mapping image names to image pixel data in the
                      form of a numpy array.
         """
-        import cellprofiler.settings as cps
-        from cellprofiler import objects as cpo
+        import cellprofiler.setting as cps
+        from cellprofiler import object as cpo
 
         output_image_names = self.find_external_output_images()
         input_image_names = self.find_external_input_images()
@@ -1629,9 +1629,9 @@ class Pipeline(object):
             input_pixels = image_dict[image_name]
             image_set.add(image_name, cpi.Image(input_pixels))
         object_set = cpo.ObjectSet()
-        measurements = cpmeas.Measurements()
+        measurements = cpmeas.Measurement()
 
-        # Run the modules
+        # Run the extensions
         for module in self.modules():
             workspace = cpw.Workspace(self, module, image_set, object_set,
                                       measurements, image_set_list)
@@ -1662,7 +1662,7 @@ class Pipeline(object):
                    grouping to run or None to run all groupings
         measurements_filename - name of file to use for measurements
         """
-        measurements = cpmeas.Measurements(
+        measurements = cpmeas.Measurement(
                 image_set_start=image_set_start,
                 filename=measurements_filename,
                 copy=initial_measurements)
@@ -1710,7 +1710,7 @@ class Pipeline(object):
             keys, groupings = self.get_groupings(workspace)
             if grouping is not None and set(keys) != set(grouping.keys()):
                 raise ValueError(
-                        "The grouping keys specified on the command line (%s) must be the same as those defined by the modules in the pipeline (%s)" % (
+                        "The grouping keys specified on the command line (%s) must be the same as those defined by the extensions in the pipeline (%s)" % (
                             ", ".join(grouping.keys()), ", ".join(keys)))
             for gn, (grouping_keys, image_numbers) in enumerate(groupings):
                 if grouping is not None and grouping != grouping_keys:
@@ -1749,7 +1749,7 @@ class Pipeline(object):
         if image_set_end is not None:
             assert isinstance(image_set_end, int), "Image set end must be an integer"
         if initial_measurements is None:
-            measurements = cpmeas.Measurements(image_set_start)
+            measurements = cpmeas.Measurement(image_set_start)
         else:
             measurements = initial_measurements
 
@@ -2035,7 +2035,7 @@ class Pipeline(object):
 
     def run_group_with_yield(self, workspace, grouping, image_numbers,
                              stop_module, title, message):
-        '''Run the modules for the image_numbers in a group up to an agg module
+        '''Run the extensions for the image_numbers in a group up to an agg module
 
         This method runs a pipeline up to an aggregation step on behalf of
         an aggregation module. At present, you can call this within
@@ -2113,7 +2113,7 @@ class Pipeline(object):
 
         Write the pipeline, version # and timestamp.
         '''
-        assert isinstance(m, cpmeas.Measurements)
+        assert isinstance(m, cpmeas.Measurement)
         self.write_pipeline_measurement(m)
         m.add_experiment_measurement(M_VERSION, cpversion.version_string)
         m.add_experiment_measurement(M_TIMESTAMP,
@@ -2127,17 +2127,17 @@ class Pipeline(object):
 
              pipeline - this pipeline
 
-             image_set_list - the image set list for the run. The modules
+             image_set_list - the image set list for the run. The extensions
                               should set this up with the image sets they need.
                               The caller can set test mode and
                               "combine_path_and_file" on the image set before
                               the call.
 
-             measurements - the modules should record URL information here
+             measurements - the extensions should record URL information here
 
              frame - the CPFigureFrame if not headless
 
-             Returns True if all modules succeeded, False if any module reported
+             Returns True if all extensions succeeded, False if any module reported
              failure or threw an exception
 
         test_mode - None = use pipeline's test mode, True or False to set explicitly
@@ -2236,7 +2236,7 @@ class Pipeline(object):
         image_set_list - the image set list for the run
         frame - the topmost frame window or None if no GUI
         """
-        from cellprofiler.cpmodule import CPModule
+        from cellprofiler.extension import Extension
         if len(args) == 3:
             measurements, image_set_list, frame = args
             workspace = cpw.Workspace(self,
@@ -2261,7 +2261,7 @@ class Pipeline(object):
                 if event.cancel_run:
                     return "Failure"
             if module.show_window and \
-                            module.__class__.display_post_run != CPModule.display_post_run:
+                            module.__class__.display_post_run != Extension.display_post_run:
                 try:
                     workspace.post_run_display(module)
                 except Exception, instance:
@@ -2329,7 +2329,7 @@ class Pipeline(object):
                 groupings = new_groupings
                 grouping_module = module
             else:
-                raise ValueError("The pipeline has two grouping modules: # %d "
+                raise ValueError("The pipeline has two grouping extensions: # %d "
                                  "(%s) and # %d (%s)" %
                                  (grouping_module.module_num,
                                   grouping_module.module_name,
@@ -2390,7 +2390,7 @@ class Pipeline(object):
 
         workspace - the last workspace run
         '''
-        from cellprofiler.cpmodule import CPModule
+        from cellprofiler.extension import Extension
         for module in self.modules():
             try:
                 module.post_group(workspace, grouping)
@@ -2403,7 +2403,7 @@ class Pipeline(object):
                 if event.cancel_run:
                     return False
             if module.show_window and \
-                            module.__class__.display_post_group != CPModule.display_post_group:
+                            module.__class__.display_post_group != Extension.display_post_group:
                 try:
                     workspace.post_group_display(module)
                 except:
@@ -2431,7 +2431,7 @@ class Pipeline(object):
         A module is allowed to create hidden information that it uses
         to turn batch mode on or to save state to be used in batch mode.
         This call signals that the pipeline has been opened for editing,
-        even if it is a batch pipeline; all modules should be restored
+        even if it is a batch pipeline; all extensions should be restored
         to a state that's appropriate for creating a batch file, not
         for running a batch file.
         '''
@@ -2459,12 +2459,12 @@ class Pipeline(object):
     def init_modules(self):
         '''Initialize the module list
 
-        Initialize the modules list to contain the four file modules.
+        Initialize the extensions list to contain the four file extensions.
         '''
-        from cellprofiler.modules.images import Images
-        from cellprofiler.modules.metadata import Metadata
-        from cellprofiler.modules.namesandtypes import NamesAndTypes
-        from cellprofiler.modules.groups import Groups
+        from cellprofiler.extensions.images import Images
+        from cellprofiler.extensions.metadata import Metadata
+        from cellprofiler.extensions.namesandtypes import NamesAndTypes
+        from cellprofiler.extensions.groups import Groups
         for i, module in enumerate(
                 (Images(), Metadata(), NamesAndTypes(), Groups())):
             module.set_module_num(i + 1)
@@ -2475,7 +2475,7 @@ class Pipeline(object):
         """Move module # ModuleNum either DIRECTION_UP or DIRECTION_DOWN in the list
 
         Move the 1-indexed module either up one or down one in the list, displacing
-        the other modules in the list
+        the other extensions in the list
         """
         idx = module_num - 1
         if direction == DIRECTION_DOWN:
@@ -2675,7 +2675,7 @@ class Pipeline(object):
         path - a path to a file or a URL
         '''
         if isinstance(path_or_fd, basestring):
-            from cellprofiler.modules.loadimages import \
+            from cellprofiler.extensions.loadimages import \
                 url2pathname, FILE_SCHEME, PASSTHROUGH_SCHEMES
             pathname = path_or_fd
             if pathname.startswith(FILE_SCHEME):
@@ -2700,7 +2700,7 @@ class Pipeline(object):
 
     def add_pathnames_to_file_list(self, pathnames, add_undo=True):
         '''Add a sequence of paths or URLs to the file list'''
-        from cellprofiler.modules.loadimages import pathname2url
+        from cellprofiler.extensions.loadimages import pathname2url
         urls = []
         for pathname in pathnames:
             if len(pathname) == 0:
@@ -2877,7 +2877,7 @@ class Pipeline(object):
         if end_module is not None:
             end_module_idx = self.modules().index(end_module)
             end_module = pipeline.modules()[end_module_idx]
-        temp_measurements = cpmeas.Measurements(mode="memory")
+        temp_measurements = cpmeas.Measurement(mode="memory")
         new_workspace = None
         try:
             new_workspace = cpw.Workspace(
@@ -3000,9 +3000,9 @@ class Pipeline(object):
             self.__undo_stack.append((undo, name))
 
     def modules(self, exclude_disabled=True):
-        '''Return the list of modules
+        '''Return the list of extensions
 
-        exclude_disabled - only return enabled modules if True (default)
+        exclude_disabled - only return enabled extensions if True (default)
         '''
         if exclude_disabled:
             return [m for m in self.__modules if m.enabled]
@@ -3383,7 +3383,7 @@ class Pipeline(object):
     def get_object_relationships(self):
         '''Return a sequence of five-tuples describing all object relationships
 
-        This returns all relationship categories produced by modules via
+        This returns all relationship categories produced by extensions via
         Measurements.add_relate_measurement. The format is:
         [(<module-number>, # the module number of the module that wrote it
           <relationship-name>, # the descriptive name of the relationship
@@ -3418,7 +3418,7 @@ class Pipeline(object):
         target_module = module
         result = {}
         #
-        # Walk through the modules to find subscriber and provider settings
+        # Walk through the extensions to find subscriber and provider settings
         #
         for module in self.modules():
             if (target_module is not None and
@@ -3512,7 +3512,7 @@ class Pipeline(object):
                                     feature, image, scale):
         '''Turn a measurement requested by a Matlab module into a measurement name
 
-        Some Matlab modules specify measurement names as a combination
+        Some Matlab extensions specify measurement names as a combination
         of category, feature, image name and scale, but not all measurements
         have associated images or scales. This function attempts to match
         the given parts to the measurements available to the module and
@@ -3606,7 +3606,7 @@ class PipelineLoadedEvent(AbstractPipelineEvent):
 
 
 class PipelineClearedEvent(AbstractPipelineEvent):
-    """Indicates that all modules have been removed from the pipeline
+    """Indicates that all extensions have been removed from the pipeline
 
     """
 

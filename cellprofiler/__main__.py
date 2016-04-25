@@ -66,7 +66,7 @@ def main(args=None):
     '''
     if args is None:
         args = sys.argv
-    import cellprofiler.preferences as cpprefs
+    import cellprofiler.configuration as cpprefs
     cpprefs.set_awt_headless(True)
     exit_code = 0
     switches = ('--work-announce', '--knime-bridge-address')
@@ -80,9 +80,9 @@ def main(args=None):
             if arg == "--ij-plugins-directory" and len(args) > i + 1:
                 cpprefs.set_ij_plugin_directory(args[i + 1])
                 break
-        import cellprofiler.analysis_worker
-        cellprofiler.analysis_worker.aw_parse_args()
-        cellprofiler.analysis_worker.main()
+        import cellprofiler.worker
+        cellprofiler.worker.aw_parse_args()
+        cellprofiler.worker.main()
         sys.exit(exit_code)
 
     options, args = parse_args(args)
@@ -98,14 +98,14 @@ def main(args=None):
     # Important to go headless ASAP
     #
     if (not options.show_gui) or options.write_schema_and_exit:
-        import cellprofiler.preferences as cpprefs
+        import cellprofiler.configuration as cpprefs
         cpprefs.set_headless()
         # What's there to do but run if you're running headless?
         # Might want to change later if there's some headless setup
         options.run_pipeline = True
 
     if options.jvm_heap_size is not None:
-        from cellprofiler.preferences import set_jvm_heap_mb
+        from cellprofiler.configuration import set_jvm_heap_mb
         set_jvm_heap_mb(options.jvm_heap_size, False)
     set_log_level(options)
 
@@ -137,8 +137,8 @@ def main(args=None):
         import h5py
         using_hdf5 = h5py.is_hdf5(path)
         if using_hdf5:
-            import cellprofiler.measurements as cpmeas
-            m = cpmeas.Measurements(
+            import cellprofiler.measurement as cpmeas
+            m = cpmeas.Measurement(
                     filename=path, mode="r+")
             pipeline_text = m[cpmeas.EXPERIMENT, "Pipeline_Pipeline"]
         else:
@@ -188,10 +188,10 @@ def main(args=None):
     try:
         # ---------------------------------------
         #
-        # Handle command-line tasks that that need to load the modules to run
+        # Handle command-line tasks that that need to load the extensions to run
         #
         if options.output_html:
-            from cellprofiler.gui.html.manual import generate_html
+            from cellprofiler.application.html.manual import generate_html
             webpage_path = options.output_directory if options.output_directory else None
             generate_html(webpage_path)
             return
@@ -209,7 +209,7 @@ def main(args=None):
         if options.show_gui:
             import wx
             wx.Log.EnableLogging(False)
-            from cellprofiler.gui.app import App
+            from cellprofiler.application.app import App
             from cellprofiler.workspace import is_workspace_file
 
             if options.pipeline_filename:
@@ -349,18 +349,18 @@ def parse_args(args):
                       action="store_true",
                       dest="output_html",
                       default=False,
-                      help=('Output HTML help for all modules. Use with the -o '
+                      help=('Output HTML help for all extensions. Use with the -o '
                             'option to specify the output directory for the '
                             'files. Assumes -b.'))
 
     parser.add_option("--plugins-directory",
                       dest="plugins_directory",
-                      help=("CellProfiler will look for plugin modules in this "
+                      help=("CellProfiler will look for plugin extensions in this "
                             "directory (headless-only)."))
 
     parser.add_option("--ij-plugins-directory",
                       dest="ij_plugins_directory",
-                      help=("CellProfiler will look for ImageJ plugin modules "
+                      help=("CellProfiler will look for ImageJ plugin extensions "
                             "in this directory (headless-only)."))
 
     parser.add_option("-t", "--temporary-directory",
@@ -501,7 +501,7 @@ def parse_args(args):
                       dest="code_statistics",
                       action="store_true",
                       default=False,
-                      help="Print the number of modules, settings and lines of code")
+                      help="Print the number of extensions, settings and lines of code")
 
     if sys.platform == 'darwin':
         parser.add_option("--use-awt",
@@ -545,7 +545,7 @@ def set_omero_credentials_from_string(credentials_string):
                         user - the user name
                         session-id - the session ID used for authentication
     '''
-    import cellprofiler.preferences as cpprefs
+    import cellprofiler.configuration as cpprefs
     from bioformats.formatreader import use_omero_credentials
     from bioformats.formatreader import \
         K_OMERO_SERVER, K_OMERO_PORT, K_OMERO_USER, K_OMERO_SESSION_ID, \
@@ -598,14 +598,14 @@ def set_omero_credentials_from_string(credentials_string):
 
 
 def print_code_statistics():
-    '''Print # lines of code, # modules, etc to console
+    '''Print # lines of code, # extensions, etc to console
 
     This is the official source of code statistics for things like grants.
     '''
-    from cellprofiler.modules import builtin_modules, all_modules, instantiate_module
+    from cellprofiler.extensions import builtin_modules, all_modules, instantiate_module
     import subprocess
     print "\n\n\n**** CellProfiler code statistics ****"
-    print "# of built-in modules: %d" % len(builtin_modules)
+    print "# of built-in extensions: %d" % len(builtin_modules)
     setting_count = 0
     for module in all_modules.values():
         if module.__module__.find(".") < 0:
@@ -679,10 +679,10 @@ def print_groups(filename):
     '''
     import json
 
-    import cellprofiler.measurements as cpmeas
+    import cellprofiler.measurement as cpmeas
 
     path = os.path.expanduser(filename)
-    m = cpmeas.Measurements(filename=path, mode="r")
+    m = cpmeas.Measurement(filename=path, mode="r")
     metadata_tags = m.get_grouping_tags()
     groupings = m.get_groupings(metadata_tags)
     json.dump(groupings, sys.stdout)
@@ -700,10 +700,10 @@ def get_batch_commands(filename):
     CellProfiler --get-batch-commands Batch_data.h5 | sed s/CellProfiler/farm_job.sh/
     '''
 
-    import cellprofiler.measurements as cpmeas
+    import cellprofiler.measurement as cpmeas
 
     path = os.path.expanduser(filename)
-    m = cpmeas.Measurements(filename=path, mode="r")
+    m = cpmeas.Measurement(filename=path, mode="r")
 
     image_numbers = m.get_image_numbers()
     if m.has_feature(cpmeas.IMAGE, cpmeas.GROUP_NUMBER):
@@ -745,8 +745,8 @@ def write_schema(pipeline_filename):
                 "ExportToDatabase module.")
 
     import cellprofiler.pipeline as cpp
-    import cellprofiler.measurements as cpmeas
-    import cellprofiler.objects as cpo
+    import cellprofiler.measurement as cpmeas
+    import cellprofiler.object as cpo
     import cellprofiler.workspace as cpw
     pipeline = cpp.Pipeline()
     pipeline.load(pipeline_filename)
@@ -758,7 +758,7 @@ def write_schema(pipeline_filename):
         raise ValueError(
                 "The pipeline, \"%s\", does not have an ExportToDatabase module" %
                 pipeline_filename)
-    m = cpmeas.Measurements()
+    m = cpmeas.Measurement()
     workspace = cpw.Workspace(
             pipeline, module, m, cpo.ObjectSet, m, None)
     module.prepare_run(workspace)
@@ -873,8 +873,8 @@ def run_pipeline_headless(options, args):
             (not options.pipeline_filename.lower().startswith('http'))):
         options.pipeline_filename = os.path.expanduser(options.pipeline_filename)
     from cellprofiler.pipeline import Pipeline, EXIT_STATUS, M_PIPELINE
-    import cellprofiler.measurements as cpmeas
-    import cellprofiler.preferences as cpprefs
+    import cellprofiler.measurement as cpmeas
+    import cellprofiler.configuration as cpprefs
     pipeline = Pipeline()
     initial_measurements = None
     try:

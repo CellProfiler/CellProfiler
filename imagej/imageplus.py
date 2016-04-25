@@ -59,7 +59,7 @@ def get_imageplus_wrapper(imageplus_obj):
         setSlice = J.make_method('setSlice', '(I)V')
         setTitle = J.make_method('setTitle', '(Ljava/lang/String;)V')
 
-        getWindow = J.make_method('getWindow', '()Lij/gui/ImageWindow;',
+        getWindow = J.make_method('getWindow', '()Lij/application/ImageWindow;',
                                   'Get the ImageWindow associated with this image. getWindow() will return null unless you have previously called show()')
 
     return ImagePlus()

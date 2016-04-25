@@ -2182,8 +2182,6 @@ class ModuleView:
         #
         if bad_setting is None:
             self.module_settings_box.Label = self.get_module_settings_label()
-            self.module_settings_box.SetForegroundColour(
-                    wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOWTEXT))
             self.module_settings_box.SetToolTip(None)
         else:
             msg = "Hover over the %s below for more information" % (
@@ -2191,8 +2189,6 @@ class ModuleView:
             self.module_settings_box.Label = "%s: %s" % (
                 self.get_module_settings_label(), msg)
             self.module_settings_box.SetToolTipString(message)
-            self.module_settings_box.SetForegroundColour(
-                    cellprofiler.preferences.get_error_color())
         # update settings' foreground/background
         try:
             for setting in visible_settings:

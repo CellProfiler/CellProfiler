@@ -104,7 +104,7 @@ recent manual is available <a href="http://d1zymp9ayga15t.cloudfront.net/CPmanua
 
 
 def output_gui_html(webpage_path):
-    '''Output an HTML page for each non-module help item'''
+    """Output an HTML page for each non-module help item"""
     icons_relpath = os.path.relpath(cellprofiler.icons.__path__[0])
 
     help_text = """

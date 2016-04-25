@@ -248,6 +248,7 @@ def config_exists(key):
         return get_config().Read(key) is not None
     return True
 
+
 def cell_profiler_root_directory():
     if __cp_root:
         return __cp_root

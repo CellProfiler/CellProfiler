@@ -670,10 +670,13 @@ class EditObjectsDialog(wx.Dialog):
             ii.append(i[mask])
             jj.append(j[mask])
             vv.append(l[mask])
+<<<<<<< master
 <<<<<<<
         temp = cellprofiler.object.Objects()
 =======
 
+=======
+>>>>>>> Update editobjectsdlg.py
         temp = cellprofiler.objects.Objects()
 >>>>>>>
         temp.set_ijv(

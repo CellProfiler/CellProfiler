@@ -233,7 +233,7 @@ if has_py2exe:
             if self.distribution.data_files is None:
                 self.distribution.data_files = []
             self.distribution.data_files.append(
-                    ("artwork", glob.glob("artwork/*")))
+                    ("resources", glob.glob("resources/*")))
             #
             # javabridge's jars
             #
@@ -417,7 +417,7 @@ setuptools.setup(
         console=[
             {
                 "icon_resources": [
-                    (1, "artwork/CellProfilerIcon.ico")
+                    (1, "resources/CellProfilerIcon.ico")
                 ],
                 "script": "CellProfiler.py"
             }
@@ -450,7 +450,7 @@ setuptools.setup(
         long_description="",
         name="CellProfiler",
         package_data={
-            "artwork": glob.glob(os.path.join("artwork", "*"))
+            "resources": glob.glob(os.path.join("resources", "*"))
         },
         packages=setuptools.find_packages(exclude=[
             "*.tests",
@@ -458,7 +458,7 @@ setuptools.setup(
             "tests.*",
             "tests",
             "tutorial"
-        ]) + ["artwork"],
+        ]) + ["resources"],
         setup_requires=[
             "pytest"
         ],

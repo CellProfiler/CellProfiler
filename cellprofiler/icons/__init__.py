@@ -8,10 +8,10 @@ import sys
 
 if hasattr(sys, 'frozen'):
     path = os.path.split(os.path.abspath(sys.argv[0]))[0]
-    path = os.path.join(path, 'artwork')
+    path = os.path.join(path, 'resources')
 else:
     path = os.path.join(os.path.dirname(os.path.dirname(__path__[0])),
-                        'artwork')
+                        'resources')
 
 image_cache = weakref.WeakValueDictionary()
 

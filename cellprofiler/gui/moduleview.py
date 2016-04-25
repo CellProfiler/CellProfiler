@@ -277,7 +277,6 @@ class ModuleView:
         self.notes_panel = notes_panel
         self.__frame = frame
         self.top_panel = top_panel
-        background_color = cellprofiler.preferences.get_background_color()
         #############################################
         #
         # Build the top-level GUI windows
@@ -417,7 +416,6 @@ class ModuleView:
             self.__module = new_module
             self.__controls = []
             self.__static_texts = []
-            data = []
             if reselecting:
                 self.hide_settings()
             else:
@@ -1580,9 +1578,8 @@ class ModuleView:
                     text = str(text)
                 if getattr(v, "multiline_display", False):
                     style = wx.TE_MULTILINE | wx.TE_PROCESS_ENTER
-                    lines = text.split("\n")
                 else:
-                    lines = [text]
+                    pass
 
                 control = wx.TextCtrl(self.__module_panel,
                                       -1,
@@ -1750,7 +1747,6 @@ class ModuleView:
             def on_x_change(event, setting=v, control=x_ctrl):
                 if not self.__handle_change:
                     return
-                old_value = str(setting)
                 proposed_value = "%s,%s" % (str(control.Value), str(setting.y))
                 setting_edited_event = SettingEditedEvent(setting, self.__module,
                                                           proposed_value, event)
@@ -1761,7 +1757,6 @@ class ModuleView:
             def on_y_change(event, setting=v, control=y_ctrl):
                 if not self.__handle_change:
                     return
-                old_value = str(setting)
                 proposed_value = "%s,%s" % (str(setting.x), str(control.Value))
                 setting_edited_event = SettingEditedEvent(setting, self.__module,
                                                           proposed_value, event)
@@ -2087,7 +2082,6 @@ class ModuleView:
     def __on_min_change(self, event, setting, control):
         if not self.__handle_change:
             return
-        old_value = str(setting)
         proposed_value = setting.compose_min_text(control.Value)
         setting_edited_event = SettingEditedEvent(
                 setting, self.__module, proposed_value, event)
@@ -2097,7 +2091,6 @@ class ModuleView:
     def __on_max_change(self, event, setting, control):
         if not self.__handle_change:
             return
-        old_value = str(setting)
         proposed_value = setting.compose_max_text(control.Value)
         setting_edited_event = SettingEditedEvent(
                 setting, self.__module, proposed_value, event)
@@ -2193,12 +2186,11 @@ class ModuleView:
                 static_text_name = text_control_name(setting)
                 static_text = self.__module_panel.FindWindowByName(static_text_name)
                 if static_text is not None:
-                    desired_fg, desired_bg = default_fg_color, default_bg_color
                     if setting is bad_setting:
                         if level == logging.ERROR:
-                            desired_fg = cellprofiler.preferences.get_error_color()
+                            pass
                         elif level == logging.WARNING:
-                            desired_bg = WARNING_COLOR
+                            pass
         except Exception:
             logger.debug("Caught bare exception in ModuleView.on_validate()", exc_info=True)
             pass
@@ -2237,7 +2229,6 @@ class ModuleView:
             return
         if self.refresh_pending:
             return
-        refresh_pending = True
         wx.CallLater(refresh_delay, self.do_reset)
 
     def do_reset(self):
@@ -2616,7 +2607,6 @@ class FilterPanelController(object):
         return self.find_address(subsequence, address[1:])
 
     def populate_subpanel(self, structure, address):
-        parent_sizer = self.panel.Sizer
         any_all_name = self.anyall_choice_name(address)
         anyall = self.find_and_mark(any_all_name)
         self.hide_show_dict[self.static_text_name(0, address)] = True
@@ -2675,8 +2665,6 @@ class FilterPanelController(object):
                 predicates = self.v.predicates
                 for i, token in enumerate(substructure):
                     if isinstance(token, basestring):
-                        literal_ctrl = self.make_literal(
-                                token, i, subaddress, sizer)
                         predicates = []
                     else:
                         choice_ctrl = self.make_predicate_choice(
@@ -4088,7 +4076,6 @@ class TableController(wx.grid.PyGridTableBase):
         grid = self.grid
         col = event.GetRowOrCol()
         width = grid.GetColSize(col)
-        table = grid.GetTable()
         self.column_size[col] = int(width * 1.1) / grid.CharWidth
         tm = wx.grid.GridTableMessage(
                 self,

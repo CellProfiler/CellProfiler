@@ -83,9 +83,6 @@ class PreferencesDlg(wx.Dialog):
         top_sizer.Add(sizer, 1, wx.EXPAND | wx.ALL, 5)
         index = 0
         controls = []
-        help_bitmap = wx.ArtProvider.GetBitmap(wx.ART_HELP,
-                                               wx.ART_CMN_DIALOG,
-                                               (16, 16))
         for text, getter, setter, ui_info, help_text in p:
             text_ctl = wx.StaticText(scrollpanel, label=text)
             sizer.Add(text_ctl, (index, 0))

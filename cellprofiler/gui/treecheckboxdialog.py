@@ -31,9 +31,7 @@ class TreeCheckboxDialog(wx.Dialog):
         for i, state_flag in enumerate(
                 (0, wx.CONTROL_CHECKED, wx.CONTROL_UNDETERMINED)):
             for j, selection_flag in enumerate((0, wx.CONTROL_CURRENT)):
-                idx = image_list.Add(
-                        self.get_checkbox_bitmap(state_flag | selection_flag,
-                                                 16, 16))
+                pass
         self.tree_ctrl.SetImageList(image_list)
         self.image_list = image_list
         image_index, selected_image_index = self.img_idx(d)

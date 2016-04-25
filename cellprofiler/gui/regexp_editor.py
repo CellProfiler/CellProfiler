@@ -67,7 +67,6 @@ class RegexpDialog(wx.Dialog):
         self.error_font = wx.SystemSettings.GetFont(wx.SYS_ANSI_VAR_FONT)
         temp = wx.ClientDC(self)
         temp.Font = self.font
-        edit_size = temp.GetTextExtent("                                        ")
         temp.Destroy()
 
         sizer = wx.BoxSizer(wx.VERTICAL)

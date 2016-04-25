@@ -124,8 +124,7 @@ class CPFrame(wx.Frame):
         self.__pipeline = cellprofiler.pipeline.Pipeline()
         self.__workspace = cellprofiler.workspace.Workspace(
                 self.__pipeline, None, None, None, None, None)
-        background_color = cellprofiler.preferences.get_background_color()
-        self.BackgroundColour = background_color
+        # background_color = cellprofiler.preferences.get_background_color()
         self.__splitter = wx.SplitterWindow(self, -1, style=wx.SP_BORDER)
         cellprofiler.gui.sashwindow_tools.sp_bind_to_evt_paint(self.__splitter)
         #
@@ -140,22 +139,18 @@ class CPFrame(wx.Frame):
         self.__splitter.BackgroundStyle = 0
 
         self.__right_win = wx.Panel(self.__splitter, style=wx.BORDER_NONE)
-        self.__right_win.BackgroundColour = background_color
         self.__right_win.AutoLayout = True
 
         self.__left_win = wx.Panel(self.__splitter, style=wx.BORDER_NONE)
         # bottom left will be the file browser
 
         self.__module_list_panel = wx.Panel(self.__left_win)
-        self.__module_list_panel.SetBackgroundColour(wx.NullColour)
         self.__module_list_panel.SetToolTipString(
                 "The pipeline panel contains the modules in the pipeline. Click on the '+' button below or right-click in the panel to begin adding modules.")
         self.__pipeline_test_panel = wx.Panel(self.__left_win, -1)
         self.__pipeline_test_panel.SetToolTipString(
                 "The test mode panel is used for previewing the module settings prior to an analysis run. Click the buttons or use the 'Test' menu item to begin testing your module settings.")
-        self.__pipeline_test_panel.BackgroundColour = cellprofiler.preferences.get_background_color()
         self.__module_controls_panel = wx.Panel(self.__left_win, -1, style=wx.BORDER_NONE)
-        self.__module_controls_panel.BackgroundColour = cellprofiler.preferences.get_background_color()
         self.__module_controls_panel.SetToolTipString(
                 "The module controls add, remove, move and get help for modules. Click on the '+' button to begin adding modules.")
         #
@@ -205,7 +200,6 @@ class CPFrame(wx.Frame):
         self.__path_list_sash.SetDefaultSize((screen_width, screen_height / 4))
         self.__path_list_sash.SetDefaultBorderSize(4)
         self.__path_list_sash.SetSashVisible(wx.SASH_BOTTOM, True)
-        self.__path_list_sash.BackgroundColour = cellprofiler.preferences.get_background_color()
         self.__path_list_sash.AutoLayout = True
         self.__path_list_sash.Hide()
         path_list_group_box = wx.StaticBox(
@@ -258,7 +252,6 @@ class CPFrame(wx.Frame):
         ######################################################################
 
         self.__module_panel = wx.Panel(self.__path_module_imageset_panel)
-        self.__module_panel.BackgroundColour = cellprofiler.preferences.get_background_color()
 
         ######################################################################
         #
@@ -294,7 +287,6 @@ class CPFrame(wx.Frame):
         #
         self.__preferences_panel = wx.Panel(self.__right_win, -1)
         self.__right_win.Sizer.Add(self.__preferences_panel, 1, wx.EXPAND)
-        self.__preferences_panel.BackgroundColour = cellprofiler.preferences.get_background_color()
         self.__preferences_panel.SetToolTipString(
                 "The folder panel sets/creates the input and output folders and output filename. Once your pipeline is ready and your folders set, click 'Analyze Images' to begin the analysis run.")
         #
@@ -1185,7 +1177,6 @@ class CPFrame(wx.Frame):
         self.__splitter.SplitVertically(self.__left_win, self.__right_win, 300)
         self.__splitter.BorderSize = 0
         self.__splitter.SashSize = 5
-        self.__splitter.BackgroundColour = self.BackgroundColour
 
         top_left_sizer = wx.BoxSizer(wx.VERTICAL)
         top_left_sizer.Add(self.__module_list_panel, 1, wx.EXPAND | wx.ALL, 1)
@@ -1215,7 +1206,6 @@ class CPFrame(wx.Frame):
         self.search_frame.AutoLayout = True
         self.search_frame.SetIcon(cellprofiler.gui.get_cp_icon())
         self.search_frame.Sizer = wx.BoxSizer(wx.VERTICAL)
-        self.search_frame.BackgroundColour = background_color
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.search_frame.Sizer.Add(sizer, 0, wx.EXPAND | wx.ALL, 4)
         sizer.Add(wx.StaticText(self.search_frame, label="Search:"), 0,
@@ -1282,7 +1272,7 @@ class CPFrame(wx.Frame):
                 self, title="Welcome to CellProfiler",
                 size=(640, 480),
                 name=cellprofiler.gui.html.htmlwindow.WELCOME_SCREEN_FRAME)
-        frame.BackgroundColour = background_color
+        # frame.BackgroundColour = background_color
         frame.Sizer = wx.BoxSizer()
         content = cellprofiler.gui.html.htmlwindow.HtmlClickableWindow(frame)
         content.load_startup_blurb()

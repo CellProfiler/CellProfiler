@@ -59,8 +59,6 @@ class DataToolFrame(wx.Frame):
         self.sizer = wx.BoxSizer(wx.VERTICAL)
 
         module_panel = wx.lib.scrolledpanel.ScrolledPanel(self, -1, style=wx.SUNKEN_BORDER)
-        module_panel.BackgroundColour = cellprofiler.preferences.get_background_color()
-        self.BackgroundColour = cellprofiler.preferences.get_background_color()
 
         self.module_view = cellprofiler.gui.moduleview.ModuleView(module_panel, self.workspace, True)
         self.module_view.set_selection(self.module.module_num)

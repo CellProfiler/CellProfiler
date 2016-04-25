@@ -25,7 +25,6 @@ class AddModuleFrame(wx.Frame):
         # Top level panels
         left_panel = wx.Panel(self, -1)
         right_panel = wx.Panel(self, -1)
-        self.SetBackgroundColour(wx.NullColour)
         # Module categories (in left panel)
         module_categories_text = wx.StaticText(left_panel, -1, 'Module Categories', style=wx.ALIGN_CENTER)
         font = module_categories_text.GetFont()

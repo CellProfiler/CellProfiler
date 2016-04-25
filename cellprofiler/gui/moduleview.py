@@ -303,7 +303,6 @@ class ModuleView:
                 top_panel,
                 style=wx.TAB_TRAVERSAL)
         self.__module_panel.SetupScrolling(True, True)
-        self.__module_panel.BackgroundColour = background_color
         module_settings_box_sizer.Add(self.__module_panel, 1, wx.EXPAND)
         self.__sizer = ModuleSizer(0, 3)
         self.module_panel.Sizer = self.__sizer
@@ -1205,7 +1204,6 @@ class ModuleView:
         assert isinstance(v, cellprofiler.settings.DoThings)
         if not control:
             control = wx.Panel(self.module_panel, name=control_name)
-            control.BackgroundColour = cellprofiler.preferences.get_background_color()
             control.Sizer = wx.BoxSizer(wx.HORIZONTAL)
             for i in range(v.count):
                 if i != 0:
@@ -1965,7 +1963,6 @@ class ModuleView:
                     unit = 32.0
                 control.SetMinSize((v.size[0] * unit, v.size[1] * unit))
         control.SetPage(v.content)
-        control.BackgroundColour = cellprofiler.preferences.get_background_color()
         return control
 
     def make_help_control(self, content, title="Help",
@@ -2182,8 +2179,6 @@ class ModuleView:
         #
         if bad_setting is None:
             self.module_settings_box.Label = self.get_module_settings_label()
-            self.module_settings_box.SetForegroundColour(
-                    wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOWTEXT))
             self.module_settings_box.SetToolTip(None)
         else:
             msg = "Hover over the %s below for more information" % (
@@ -2191,8 +2186,6 @@ class ModuleView:
             self.module_settings_box.Label = "%s: %s" % (
                 self.get_module_settings_label(), msg)
             self.module_settings_box.SetToolTipString(message)
-            self.module_settings_box.SetForegroundColour(
-                    cellprofiler.preferences.get_error_color())
         # update settings' foreground/background
         try:
             for setting in visible_settings:
@@ -2206,10 +2199,6 @@ class ModuleView:
                             desired_fg = cellprofiler.preferences.get_error_color()
                         elif level == logging.WARNING:
                             desired_bg = WARNING_COLOR
-                    if any([
-                        static_text.SetForegroundColour(desired_fg),
-                        static_text.SetBackgroundColour(wx.NullColour)]):
-                        static_text.Refresh()
         except Exception:
             logger.debug("Caught bare exception in ModuleView.on_validate()", exc_info=True)
             pass
@@ -3451,7 +3440,6 @@ class JoinerController(object):
         self.v = v
         self.panel = wx.Panel(module_view.module_panel, -1,
                               name=edit_control_name(v))
-        self.panel.BackgroundColour = wx.WHITE
         self.panel.Sizer = wx.lib.rcsizer.RowColSizer()
         self.panel.joiner_controller = self
         self.update()
@@ -3868,8 +3856,6 @@ class DataTypeController(object):
             self.panel = DoesntInheritBackgroundColor(
                     module_view.module_panel, -1,
                     name=edit_control_name(v))
-            self.panel.BackgroundColour = wx.SystemSettings.GetColour(
-                    wx.SYS_COLOUR_WINDOW)
             self.panel.Sizer = wx.lib.rcsizer.RowColSizer()
             self.panel.Bind(wx.EVT_PAINT, self.on_paint)
         self.panel.controller = self

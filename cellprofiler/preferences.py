@@ -63,7 +63,6 @@ class HeadlessConfig(object):
         '''
         return 1
 
-
 __is_headless = False
 __headless_config = HeadlessConfig()
 

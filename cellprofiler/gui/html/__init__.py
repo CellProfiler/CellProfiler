@@ -1,3 +1,4 @@
+# coding=utf-8
 """cellprofiler.gui.html.__init__
 """
 

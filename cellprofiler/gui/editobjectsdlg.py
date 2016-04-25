@@ -1,3 +1,4 @@
+# coding=utf-8
 """editobjectsdlg.py - a dialog box that lets the user edit objects
 
 """

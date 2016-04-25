@@ -1,3 +1,4 @@
+# coding=utf-8
 """AddModuleFrame.py - this is the window frame and the subwindows
 that give you the GUI to add a module to a pipeline
 """

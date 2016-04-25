@@ -1,3 +1,4 @@
+# coding=utf-8
 """PipelineController.py - controls (modifies) a pipeline
 """
 

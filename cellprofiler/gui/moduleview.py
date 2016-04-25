@@ -1,3 +1,4 @@
+# coding=utf-8
 """ModuleView.py - implements a view on a module
 """
 

@@ -1,3 +1,4 @@
+# coding=utf-8
 """PreferencesView.py - displays the default preferences in the lower right corner
 """
 

@@ -1,3 +1,4 @@
+# coding=utf-8
 """ViewWorkspace.py - view the image sets and object sets in a workspace
 """
 

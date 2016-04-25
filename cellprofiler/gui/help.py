@@ -1,3 +1,4 @@
+# coding=utf-8
 """ help.py - contains menu structures for help menus in CP
 """
 

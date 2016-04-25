@@ -1,3 +1,4 @@
+# coding=utf-8
 import cellprofiler.gui.help
 import cellprofiler.icons
 import cellprofiler.modules

@@ -1,3 +1,4 @@
+# coding=utf-8
 """cpgrid.py - wx.grid helpers for cellprofiler
 """
 

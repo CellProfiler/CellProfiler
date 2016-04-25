@@ -1,3 +1,4 @@
+# coding=utf-8
 """regexp_editor - give a user feedback on their regular expression
 """
 

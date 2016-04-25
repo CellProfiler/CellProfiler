@@ -1,3 +1,4 @@
+# coding=utf-8
 """Tests for cellprofiler.gui.html.manual"""
 
 import cellprofiler.gui.html.manual

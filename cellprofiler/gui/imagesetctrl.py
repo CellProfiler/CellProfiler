@@ -1,3 +1,4 @@
+# coding=utf-8
 """ImageSetCtrl.py - A control to display an imageset
 """
 

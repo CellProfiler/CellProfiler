@@ -1,3 +1,4 @@
+# coding=utf-8
 """datatoolframe.py - Holder for a data tool
 """
 

@@ -1,3 +1,4 @@
+# coding=utf-8
 """namesubscriber.py - implements a combobox with extra information
 """
 

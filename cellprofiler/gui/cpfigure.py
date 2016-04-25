@@ -1,3 +1,4 @@
+# coding=utf-8
 """ cpfigure.py - provides a frame with a figure inside
 """
 

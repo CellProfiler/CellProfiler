@@ -1,3 +1,4 @@
+# coding=utf-8
 """CornerButtonMixin.py - a mixin for wx.grid.Grid that manages a button in the corner
 """
 

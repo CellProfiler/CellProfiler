@@ -1,3 +1,4 @@
+# coding=utf-8
 """plateviewer.py - a user interface to view the image files for a plate
 """
 

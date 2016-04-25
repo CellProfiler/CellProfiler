@@ -172,10 +172,10 @@ try:
 #
 ##################################
 
-    from contrib.cell_star.process.segmentation import Segmentation
-    from contrib.cell_star.parameter_fitting.test_pf import run_pf
-    from contrib.cell_star.parameter_fitting.test_rank_pf import run_rank_pf
-    from contrib.cell_star.utils.python_util import memory_profile, speed_profile
+    from cellstar.process.segmentation import Segmentation
+    from cellstar.parameter_fitting.test_pf import run_pf
+    from cellstar.parameter_fitting.test_rank_pf import run_rank_pf
+    from cellstar.utils.python_util import memory_profile, speed_profile
 
 except ImportError as e: 
     # in new version 2.12 all the errors are properly shown in console (Windows)

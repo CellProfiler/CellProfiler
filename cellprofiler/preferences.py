@@ -1649,8 +1649,17 @@ def set_batchprofiler_url(value):
 __image_set_filename = None
 
 __wants_pony = None
+
+
 def get_wants_pony():
+
+    """
+
+    :return:
+
+    """
     global __wants_pony
+
     if __wants_pony is not None:
         return __wants_pony
     elif config_exists("Pony"):
@@ -1658,11 +1667,20 @@ def get_wants_pony():
     else:
         return False
 
+
 def set_wants_pony(wants_pony):
+    """
+
+    :param wants_pony:
+
+    """
     global __wants_pony
+
     __wants_pony = wants_pony
+
     config_write("Pony", "yes" if wants_pony else "no")
-    
+
+
 def set_image_set_file(filename):
     '''Record the name of the image set that should be loaded upon startup'''
     global __image_set_filename

@@ -152,7 +152,7 @@ def output_module_html(webpage_path):
     """Output an HTML page for each module"""
 
     icons_relpath = os.path.relpath(cellprofiler.icons.__path__[0])
-    all_png_icons = glob(os.path.join(icons_relpath, "*.png"))
+    all_png_icons = glob.glob(os.path.join(icons_relpath, "*.png"))
     icon_names = [os.path.basename(f)[:-4] for f in all_png_icons]
 
     help_text = """

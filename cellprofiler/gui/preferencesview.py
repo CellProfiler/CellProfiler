@@ -23,7 +23,7 @@ WRITE_HDF_FILE_TEXT = WRITE_HDF_FILE
 DO_NOT_WRITE_MEASUREMENTS_TEXT = "Do not write MATLAB or HDF5 files"
 
 
-class PreferencesView:
+class PreferencesView(object):
     """View / controller for the preferences that get displayed in the main window
 
     """
@@ -40,31 +40,31 @@ class PreferencesView:
         self.__image_folder_panel = wx.Panel(panel)
         self.__image_folder_panel.AutoLayout = True
         self.__image_edit_box = self.__make_folder_panel(
-                self.__image_folder_panel,
-                cellprofiler.preferences.get_default_image_directory(),
-                lambda: cellprofiler.preferences.get_recent_files(cellprofiler.preferences.DEFAULT_IMAGE_DIRECTORY),
-                'Default Input Folder',
-                cellprofiler.gui.help.DEFAULT_IMAGE_FOLDER_HELP,
-                [cellprofiler.preferences.set_default_image_directory,
-                 self.__notify_pipeline_list_view_directory_change],
-                refresh_action=self.refresh_input_directory)
+            self.__image_folder_panel,
+            cellprofiler.preferences.get_default_image_directory(),
+            lambda: cellprofiler.preferences.get_recent_files(cellprofiler.preferences.DEFAULT_IMAGE_DIRECTORY),
+            'Default Input Folder',
+            cellprofiler.gui.help.DEFAULT_IMAGE_FOLDER_HELP,
+            [cellprofiler.preferences.set_default_image_directory,
+             self.__notify_pipeline_list_view_directory_change],
+            refresh_action=self.refresh_input_directory)
         self.__output_folder_panel = wx.Panel(panel)
         self.__output_folder_panel.AutoLayout = True
         self.__output_edit_box = self.__make_folder_panel(
-                self.__output_folder_panel,
-                cellprofiler.preferences.get_default_output_directory(),
-                lambda: cellprofiler.preferences.get_recent_files(cellprofiler.preferences.DEFAULT_OUTPUT_DIRECTORY),
-                'Default Output Folder',
-                cellprofiler.gui.help.DEFAULT_OUTPUT_FOLDER_HELP,
-                [cellprofiler.preferences.set_default_output_directory,
-                 self.__notify_pipeline_list_view_directory_change])
+            self.__output_folder_panel,
+            cellprofiler.preferences.get_default_output_directory(),
+            lambda: cellprofiler.preferences.get_recent_files(cellprofiler.preferences.DEFAULT_OUTPUT_DIRECTORY),
+            'Default Output Folder',
+            cellprofiler.gui.help.DEFAULT_OUTPUT_FOLDER_HELP,
+            [cellprofiler.preferences.set_default_output_directory,
+             self.__notify_pipeline_list_view_directory_change])
         self.__odds_and_ends_panel = wx.Panel(panel)
         self.__odds_and_ends_panel.AutoLayout = True
         self.__make_odds_and_ends_panel()
         self.__status_panel = status_panel
         status_panel.Sizer = wx.BoxSizer()
         self.__status_text = wx.StaticText(
-                status_panel, style=wx.SUNKEN_BORDER, label=WELCOME_MESSAGE)
+            status_panel, style=wx.SUNKEN_BORDER, label=WELCOME_MESSAGE)
         status_panel.Sizer.Add(self.__status_text, 1, wx.EXPAND)
         self.__progress_panel = progress_panel
         self.__progress_panel.AutoLayout = True
@@ -184,41 +184,41 @@ class PreferencesView:
         panel = self.__odds_and_ends_panel
         output_filename_text = wx.StaticText(panel, -1, 'Output Filename:')
         output_filename_edit_box = wx.TextCtrl(
-                panel, value=cellprofiler.preferences.get_output_file_name())
+            panel, value=cellprofiler.preferences.get_output_file_name())
         self.__output_filename_edit_box = output_filename_edit_box
         allow_output_filename_overwrite_check_box = \
             wx.CheckBox(panel, label="Allow overwrite?")
         allow_output_filename_overwrite_check_box.Value = \
             cellprofiler.preferences.get_allow_output_file_overwrite()
         write_measurements_combo_box = wx.Choice(
-                panel, choices=
-                [WRITE_HDF_FILE_TEXT, WRITE_MAT_FILE_TEXT,
-                 DO_NOT_WRITE_MEASUREMENTS_TEXT])
+            panel, choices=
+            [WRITE_HDF_FILE_TEXT, WRITE_MAT_FILE_TEXT,
+             DO_NOT_WRITE_MEASUREMENTS_TEXT])
         # set measurements mode, then fake an event to update output
         # filename and which controls are shown.
         measurements_mode_idx = [cellprofiler.preferences.WRITE_HDF5, True, False].index(
-                cellprofiler.preferences.get_write_MAT_files())
+            cellprofiler.preferences.get_write_MAT_files())
         write_measurements_combo_box.SetSelection(measurements_mode_idx)
         output_filename_help_button = wx.Button(
-                panel, label='?', style=wx.BU_EXACTFIT)
+            panel, label='?', style=wx.BU_EXACTFIT)
         output_file_format_text = wx.StaticText(
-                panel, label="Output file format:")
+            panel, label="Output file format:")
         cellprofiler.preferences.add_output_file_name_listener(
-                self.__on_preferences_output_filename_event)
+            self.__on_preferences_output_filename_event)
         cellprofiler.preferences.add_image_directory_listener(
-                self.__on_preferences_image_directory_event)
+            self.__on_preferences_image_directory_event)
         cellprofiler.preferences.add_output_directory_listener(
-                self.__on_preferences_output_directory_event)
+            self.__on_preferences_output_directory_event)
         self.__hold_a_reference_to_progress_callback = self.progress_callback
         cellprofiler.preferences.add_progress_callback(
-                self.__hold_a_reference_to_progress_callback)
+            self.__hold_a_reference_to_progress_callback)
 
         def on_output_filename_changed(event):
             cellprofiler.preferences.set_output_file_name(output_filename_edit_box.Value)
 
         def on_allow_checkbox(event):
             cellprofiler.preferences.set_allow_output_file_overwrite(
-                    allow_output_filename_overwrite_check_box.Value)
+                allow_output_filename_overwrite_check_box.Value)
 
         def on_write_MAT_files_combo_box(event):
             #
@@ -240,7 +240,7 @@ class PreferencesView:
             if output_filename != output_filename_edit_box.Value:
                 output_filename_edit_box.Value = output_filename
                 cellprofiler.preferences.set_output_file_name(
-                        output_filename_edit_box.Value)
+                    output_filename_edit_box.Value)
             #
             # Reconstruct the sizers depending on whether we have one or two rows
             #
@@ -257,11 +257,11 @@ class PreferencesView:
                 output_sizer.AddGrowableCol(2)
                 output_filename_edit_box_sizer = wx.BoxSizer(wx.HORIZONTAL)
                 output_filename_edit_box_sizer.Add(
-                        output_filename_edit_box, 1, wx.EXPAND)
+                    output_filename_edit_box, 1, wx.EXPAND)
                 output_filename_edit_box_sizer.AddSpacer(2)
                 output_filename_edit_box_sizer.Add(
-                        allow_output_filename_overwrite_check_box, 0,
-                        wx.ALIGN_CENTER)
+                    allow_output_filename_overwrite_check_box, 0,
+                    wx.ALIGN_CENTER)
                 output_sizer.Add(output_filename_help_button, 0, wx.EXPAND)
                 output_sizer.Add(output_filename_text, 0, wx.ALIGN_RIGHT)
                 output_sizer.Add(output_filename_edit_box_sizer, 1, wx.EXPAND)
@@ -280,12 +280,12 @@ class PreferencesView:
             panel.Layout()
 
         write_measurements_combo_box.Bind(
-                wx.EVT_CHOICE, on_write_MAT_files_combo_box)
+            wx.EVT_CHOICE, on_write_MAT_files_combo_box)
         allow_output_filename_overwrite_check_box.Bind(
-                wx.EVT_CHECKBOX, on_allow_checkbox)
+            wx.EVT_CHECKBOX, on_allow_checkbox)
         output_filename_help_button.Bind(
-                wx.EVT_BUTTON,
-                lambda event: self.__on_help(event, cellprofiler.gui.help.USING_THE_OUTPUT_FILE_HELP))
+            wx.EVT_BUTTON,
+            lambda event: self.__on_help(event, cellprofiler.gui.help.USING_THE_OUTPUT_FILE_HELP))
         output_filename_edit_box.Bind(wx.EVT_TEXT, on_output_filename_changed)
         panel.Bind(wx.EVT_WINDOW_DESTROY, self.__on_destroy, panel)
         on_write_MAT_files_combo_box(None)
@@ -374,9 +374,9 @@ class PreferencesView:
         self.__progress_dictionary[operation_id] = (progress, message)
         wx.SetCursor(wx.StockCursor(wx.CURSOR_WAIT))
         message = ", ".join(
-                ["%s (%d %%)" % (message, int(progress * 100))
-                 for progress, message in [
-                     self.__progress_dictionary[o] for o in self.__progress_stack]])
+            ["%s (%d %%)" % (message, int(progress * 100))
+             for progress, message in [
+                 self.__progress_dictionary[o] for o in self.__progress_stack]])
         self.set_message_text(message)
         wx.SafeYield(None, True)  # ouch, can't repaint without it.
 
@@ -415,9 +415,9 @@ class PreferencesView:
     def on_analyze_images(self):
         # begin tracking progress
         self.__progress_watcher = ProgressWatcher(
-                self.__progress_panel,
-                self.update_progress,
-                multiprocessing=cellprofiler.analysis.use_analysis)
+            self.__progress_panel,
+            self.update_progress,
+            multiprocessing=cellprofiler.analysis.use_analysis)
         self.show_progress_panel()
 
     def on_pipeline_progress(self, *args):
@@ -547,7 +547,7 @@ class PreferencesView:
         cellprofiler.preferences.fire_image_directory_changed_event()
 
 
-class ProgressWatcher:
+class ProgressWatcher(object):
     """ Tracks pipeline progress and estimates time to completion """
 
     def __init__(self, parent, update_callback, multiprocessing=False):
@@ -592,9 +592,9 @@ class ProgressWatcher:
             status = 'Processing: %d of %d image sets completed' % \
                      (self.num_received, self.num_jobs)
             self.update_callback(
-                    status,
-                    self.elapsed_time(),
-                    self.remaining_time_multiprocessing())
+                status,
+                self.elapsed_time(),
+                self.remaining_time_multiprocessing())
         else:
             status = "Post-processing, please wait"
             self.update_callback(status, self.elapsed_time())

@@ -45,7 +45,7 @@ PRI_VALIDATE_DISPLAY = 0
 PRI_VALIDATE_BACKGROUND = 1
 
 
-class SettingEditedEvent:
+class SettingEditedEvent(object):
     """Represents an attempt by the user to edit a setting
 
     """
@@ -250,7 +250,7 @@ def encode_label(text):
     return text.replace('&', '&&')
 
 
-class ModuleView:
+class ModuleView(object):
     """The module view implements a view on CellProfiler.Module
 
     The module view implements a view on CellProfiler.Module. The view consists
@@ -296,12 +296,12 @@ class ModuleView:
         #############################################
         top_panel.Sizer = wx.BoxSizer()
         self.module_settings_box = wx.StaticBox(
-                top_panel, label=self.get_module_settings_label())
+            top_panel, label=self.get_module_settings_label())
         module_settings_box_sizer = wx.StaticBoxSizer(self.module_settings_box)
         top_panel.Sizer.Add(module_settings_box_sizer, 1, wx.EXPAND)
         self.__module_panel = wx.lib.scrolledpanel.ScrolledPanel(
-                top_panel,
-                style=wx.TAB_TRAVERSAL)
+            top_panel,
+            style=wx.TAB_TRAVERSAL)
         self.__module_panel.SetupScrolling(True, True)
         module_settings_box_sizer.Add(self.__module_panel, 1, wx.EXPAND)
         self.__sizer = ModuleSizer(0, 3)
@@ -328,7 +328,7 @@ class ModuleView:
         """
         self.__pipeline.add_listener(self.__on_pipeline_event)
         self.__workspace.add_notification_callback(
-                self.__on_workspace_event)
+            self.__on_workspace_event)
         self.__started = True
 
     @staticmethod
@@ -382,9 +382,9 @@ class ModuleView:
             assert all([isinstance(s, cellprofiler.settings.Setting) for s in settings])
         except:
             wx.MessageBox(
-                    "Module %s.visible_settings() returned something other than a list of Settings!\n  value: %s" % (
-                        module_name, settings),
-                    "Pipeline Error", wx.ICON_ERROR, self.__module_panel)
+                "Module %s.visible_settings() returned something other than a list of Settings!\n  value: %s" % (
+                    module_name, settings),
+                "Pipeline Error", wx.ICON_ERROR, self.__module_panel)
             settings = []
         return settings
 
@@ -435,7 +435,7 @@ class ModuleView:
             #################################
             if self.notes_panel is not None:
                 self.module_notes_control.Value = u"\n".join(
-                        [_.decode("utf-8") for _ in self.__module.notes])
+                    [_.decode("utf-8") for _ in self.__module.notes])
 
             #################################
             #
@@ -478,10 +478,10 @@ class ModuleView:
                         wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL | wx.ALL
                 elif isinstance(v, cellprofiler.settings.MeasurementMultiChoice):
                     control = self.make_measurement_multichoice_control(
-                            v, control_name, control)
+                        v, control_name, control)
                 elif isinstance(v, cellprofiler.settings.SubdirectoryFilter):
                     control = self.make_subdirectory_filter_control(
-                            v, control_name, control)
+                        v, control_name, control)
                 elif isinstance(v, cellprofiler.settings.MultiChoice):
                     control = self.make_multichoice_control(v, control_name,
                                                             control)
@@ -522,7 +522,7 @@ class ModuleView:
                     flag = wx.ALIGN_LEFT
                 elif isinstance(v, cellprofiler.settings.DoThings):
                     control = self.make_callback_controls(
-                            v, control_name, control)
+                        v, control_name, control)
                 elif isinstance(v,
                                 cellprofiler.settings.IntegerOrUnboundedRange):
                     control = self.make_unbounded_range_control(v, control)
@@ -572,7 +572,7 @@ class ModuleView:
                         pass
                     else:
                         fcd = FileCollectionDisplayController(
-                                self, v, self.__pipeline)
+                            self, v, self.__pipeline)
                         control = fcd.panel
                         fcd.panel.file_collection_display = fcd
                 elif isinstance(v, cellprofiler.settings.Table):
@@ -657,11 +657,11 @@ class ModuleView:
         # plus the notes text control.
         #
         notes_sizer = wx.StaticBoxSizer(
-                wx.StaticBox(self.notes_panel, -1, "Module notes"),
-                wx.VERTICAL)
+            wx.StaticBox(self.notes_panel, -1, "Module notes"),
+            wx.VERTICAL)
         self.notes_panel.SetSizer(notes_sizer)
         self.module_notes_control = wx.TextCtrl(
-                self.notes_panel, -1, style=wx.TE_MULTILINE | wx.TE_PROCESS_ENTER)
+            self.notes_panel, -1, style=wx.TE_MULTILINE | wx.TE_PROCESS_ENTER)
         #
         # If you call self.module_notes_control.GetFullTextExtent(),
         # you will find that the font has a descender of 4 pixels. But
@@ -670,7 +670,7 @@ class ModuleView:
         #
         height = self.module_notes_control.GetTextExtent("M")[1] * 2 + 4
         height = self.module_notes_control.ClientToWindowSize(
-                wx.Size(1, height))[1]
+            wx.Size(1, height))[1]
         self.module_notes_control.SetInitialSize(wx.Size(100, height))
         notes_sizer.Add(self.module_notes_control, 1, wx.EXPAND)
 
@@ -688,9 +688,9 @@ class ModuleView:
         """Make a checkbox control for a Binary setting"""
         if not control:
             control = wx.RadioBox(
-                    self.__module_panel,
-                    choices=[cellprofiler.settings.YES, cellprofiler.settings.NO],
-                    name=control_name)
+                self.__module_panel,
+                choices=[cellprofiler.settings.YES, cellprofiler.settings.NO],
+                name=control_name)
 
             def callback(event, setting=v, control=control):
                 self.__on_radiobox_change(event, setting, control)
@@ -987,7 +987,7 @@ class ModuleView:
                 control.SetSelection(index)
                 if selection not in v.choices:
                     control.SetItemForegroundColour(
-                            index, cellprofiler.preferences.get_error_color())
+                        index, cellprofiler.preferences.get_error_color())
 
             def callback(event, setting=v, control=control):
                 self.__on_multichoice_change(event, setting, control)
@@ -1006,7 +1006,7 @@ class ModuleView:
                     control.Select(i)
                     if choices[i] not in v.choices:
                         control.SetItemForegroundColour(
-                                i, cellprofiler.preferences.get_error_color())
+                            i, cellprofiler.preferences.get_error_color())
         return control
 
     def make_colormap_control(self, v, control_name, control):
@@ -1077,15 +1077,15 @@ class ModuleView:
                 control.bad_color_name = v.value
         if control is None:
             control = wx.lib.colourselect.ColourSelect(
-                    self.__module_panel,
-                    colour=color)
+                self.__module_panel,
+                colour=color)
             control.SetName(control_name)
 
             def on_press(event, v=v, control=control):
                 proposed_value = control.GetColour().GetAsString(
-                        wx.C2S_NAME | wx.C2S_HTML_SYNTAX)
+                    wx.C2S_NAME | wx.C2S_HTML_SYNTAX)
                 setting_edited_event = SettingEditedEvent(
-                        v, self.__module, proposed_value, event)
+                    v, self.__module, proposed_value, event)
                 self.notify(setting_edited_event)
                 self.reset_view()
 
@@ -1120,7 +1120,7 @@ class ModuleView:
             dc.Background = brush
             dc.Clear()
             wx.RendererNative.Get().DrawComboBox(
-                    control, dc, wx.Rect(0, 0, width, height), flags)
+                control, dc, wx.Rect(0, 0, width, height), flags)
             dc.DrawText(new_label, 2, 2)
             return bitmap
 
@@ -1214,7 +1214,7 @@ class ModuleView:
                 def callback(event, index=i):
                     v.on_event_fired(index)
                     setting_edited_event = SettingEditedEvent(
-                            v, self.__module, None, event)
+                        v, self.__module, None, event)
                     self.notify(setting_edited_event)
                     self.__module.on_setting_changed(v, self.__pipeline)
                     self.reset_view()
@@ -1307,11 +1307,11 @@ class ModuleView:
             control.SetSizer(sizer)
             if v.metadata_display:
                 edit_control = metadatactrl.MetadataControl(
-                        self.__pipeline,
-                        self.__module,
-                        control,
-                        value=v.value,
-                        name=edit_name)
+                    self.__pipeline,
+                    self.__module,
+                    control,
+                    value=v.value,
+                    name=edit_name)
             else:
                 edit_control = wx.TextCtrl(control, -1, str(v),
                                            name=edit_name)
@@ -1345,7 +1345,7 @@ class ModuleView:
                         v.set_directory_fn(dlg.Directory)
                     v.value = dlg.Filename
                     setting_edited_event = SettingEditedEvent(
-                            v, self.__module, v.value, event)
+                        v, self.__module, v.value, event)
                     self.notify(setting_edited_event)
                     self.reset_view()
 
@@ -1380,7 +1380,7 @@ class ModuleView:
             choice_sizer.Add(dir_ctrl, 0, wx.ALIGN_LEFT | wx.BOTTOM, 2)
             choice_sizer.AddSpacer(3)
             folder_label = wx.StaticText(
-                    control, name=folder_label_ctrl_name)
+                control, name=folder_label_ctrl_name)
             choice_sizer.Add(folder_label, 0, wx.ALIGN_CENTER_VERTICAL)
 
             custom_sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -1409,7 +1409,7 @@ class ModuleView:
                     return
                 proposed_value = v.join_string(dir_choice=dir_ctrl.StringSelection)
                 setting_edited_event = SettingEditedEvent(
-                        v, self.__module, proposed_value, event)
+                    v, self.__module, proposed_value, event)
                 self.notify(setting_edited_event)
                 self.reset_view()
 
@@ -1419,7 +1419,7 @@ class ModuleView:
                     return
                 proposed_value = v.join_string(custom_path=custom_ctrl.Value)
                 setting_edited_event = SettingEditedEvent(
-                        v, self.__module, proposed_value, event)
+                    v, self.__module, proposed_value, event)
                 self.notify(setting_edited_event)
                 self.reset_view(1000)
 
@@ -1436,7 +1436,7 @@ class ModuleView:
                         # Do escapes on backslashes
                         proposed_value = proposed_value.replace('\\', '\\\\')
                     setting_edited_event = SettingEditedEvent(
-                            v, self.__module, proposed_value, event)
+                        v, self.__module, proposed_value, event)
                     self.notify(setting_edited_event)
                     self.reset_view()
 
@@ -1497,8 +1497,8 @@ class ModuleView:
             text_control = wx.TextCtrl(control, -1,
                                        name=subedit_control_name(v))
             text_control.Bind(
-                    wx.EVT_TEXT,
-                    lambda event: self.__on_cell_change(event, v, text_control))
+                wx.EVT_TEXT,
+                lambda event: self.__on_cell_change(event, v, text_control))
             browse_bitmap = wx.ArtProvider.GetBitmap(wx.ART_FOLDER,
                                                      wx.ART_CMN_DIALOG,
                                                      (16, 16))
@@ -1535,9 +1535,9 @@ class ModuleView:
                                name=edit_control_name(v))
             control.Sizer = wx.BoxSizer(wx.HORIZONTAL)
             url_control = wx.TextCtrl(
-                    control,
-                    style=wx.TE_READONLY,
-                    name=text_control_name(v))
+                control,
+                style=wx.TE_READONLY,
+                name=text_control_name(v))
             control.Sizer.Add(url_control, 1, wx.EXPAND)
             control.Sizer.AddSpacer(2)
             browse_button = wx.Button(control, label="Browse",
@@ -1546,7 +1546,7 @@ class ModuleView:
 
             def on_button(event):
                 url = self.__frame.pipeline_controller.pick_from_pathlist(
-                        v.url, instructions="Select an image file from the list below")
+                    v.url, instructions="Select an image file from the list below")
                 if url is not None:
                     value = v.build(url)
                     self.on_value_change(v, control, value, event)
@@ -1566,11 +1566,11 @@ class ModuleView:
         if not control:
             if v.metadata_display:
                 control = metadatactrl.MetadataControl(
-                        self.__pipeline,
-                        self.__module,
-                        self.__module_panel,
-                        value=v.value,
-                        name=control_name
+                    self.__pipeline,
+                    self.__module,
+                    self.__module_panel,
+                    value=v.value,
+                    name=control_name
                 )
             else:
                 style = 0
@@ -1618,10 +1618,10 @@ class ModuleView:
             sizer = wx.BoxSizer(wx.HORIZONTAL)
             panel.SetSizer(sizer)
             min_ctrl = wx.TextCtrl(
-                    panel, -1, v.min_text, name=min_control_name(v))
+                panel, -1, v.min_text, name=min_control_name(v))
             sizer.Add(min_ctrl, 0, wx.EXPAND | wx.RIGHT, 1)
             max_ctrl = wx.TextCtrl(
-                    panel, -1, v.max_text, name=max_control_name(v))
+                panel, -1, v.max_text, name=max_control_name(v))
             # max_ctrl.SetInitialSize(wx.Size(best_width,-1))
             sizer.Add(max_ctrl, 0, wx.EXPAND)
 
@@ -1735,13 +1735,13 @@ class ModuleView:
             panel.SetSizer(sizer)
             sizer.Add(wx.StaticText(panel, -1, "X:"), 0, wx.EXPAND | wx.RIGHT, 1)
             x_ctrl = wx.TextCtrl(
-                    panel, -1, v.get_x_text(), name=x_control_name(v))
+                panel, -1, v.get_x_text(), name=x_control_name(v))
             best_width = x_ctrl.GetCharWidth() * 5
             x_ctrl.SetInitialSize(wx.Size(best_width, -1))
             sizer.Add(x_ctrl, 0, wx.EXPAND | wx.RIGHT, 1)
             sizer.Add(wx.StaticText(panel, -1, "Y:"), 0, wx.EXPAND | wx.RIGHT, 1)
             y_ctrl = wx.TextCtrl(
-                    panel, -1, v.get_y_text(), name=y_control_name(v))
+                panel, -1, v.get_y_text(), name=y_control_name(v))
             y_ctrl.SetInitialSize(wx.Size(best_width, -1))
             sizer.Add(y_ctrl, 0, wx.EXPAND)
 
@@ -1989,14 +1989,14 @@ class ModuleView:
     def make_table_control(self, v, control):
         if control is None:
             control = wx.lib.resizewidget.ResizeWidget(
-                    self.module_panel,
-                    name=edit_control_name(v))
+                self.module_panel,
+                name=edit_control_name(v))
 
             if v.corner_button is None:
                 grid = wx.grid.Grid(control, name=grid_control_name(v))
             else:
                 grid = self.CornerButtonGrid(
-                        control, name=grid_control_name(v), **v.corner_button)
+                    control, name=grid_control_name(v), **v.corner_button)
             grid.SetTable(TableController(v))
             grid.Table.bind_to_grid(grid)
         else:
@@ -2029,7 +2029,7 @@ class ModuleView:
         if not self.__handle_change:
             return
         self.on_value_change(
-                setting, control, control.GetStringSelection(), event)
+            setting, control, control.GetStringSelection(), event)
 
     def __on_combobox_change(self, event, setting, control):
         if not self.__handle_change:
@@ -2085,7 +2085,7 @@ class ModuleView:
             return
         proposed_value = setting.compose_min_text(control.Value)
         setting_edited_event = SettingEditedEvent(
-                setting, self.__module, proposed_value, event)
+            setting, self.__module, proposed_value, event)
         self.notify(setting_edited_event)
         self.fit_ctrl(control)
 
@@ -2094,7 +2094,7 @@ class ModuleView:
             return
         proposed_value = setting.compose_max_text(control.Value)
         setting_edited_event = SettingEditedEvent(
-                setting, self.__module, proposed_value, event)
+            setting, self.__module, proposed_value, event)
         self.notify(setting_edited_event)
         self.fit_ctrl(control)
 
@@ -2105,7 +2105,7 @@ class ModuleView:
         if self.__validation_request is not None:
             self.__validation_request.cancel()
         self.__validation_request = ValidationRequest(
-                self.__pipeline, module, self.on_validation)
+            self.__pipeline, module, self.on_validation)
         request_module_validation(self.__validation_request)
 
     def __on_pipeline_event(self, pipeline, event):
@@ -2205,7 +2205,7 @@ class ModuleView:
         """
         control_name = edit_control_name(setting)
         control = self.__module_panel.FindWindowByName(
-                control_name)
+            control_name)
         if message is None:
             def set_tool_tip(ctrl):
                 ctrl.SetToolTip(None)

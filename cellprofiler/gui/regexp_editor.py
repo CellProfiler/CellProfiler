@@ -323,7 +323,7 @@ IGNORABLE_GROUPS = (r"\(\?[iLmsux]+\)",
                     )
 
 
-class RegexpState:
+class RegexpState(object):
     def __init__(self):
         self.__group_count = 0
         self.__group_names = []

@@ -1342,7 +1342,7 @@ class ImageSetCtrlDropTarget(wx.FileDropTarget):
         return self.grid.on_drop_files(x, y, filenames)
 
 
-class ImageSetController:
+class ImageSetController(object):
     """Modifies the image set according to GUI notifications"""
 
     def __init__(self):

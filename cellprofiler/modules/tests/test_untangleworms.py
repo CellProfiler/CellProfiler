@@ -13,12 +13,12 @@ import numpy as np
 from centrosome.outline import outline
 from matplotlib.image import pil_to_array
 from scipy.ndimage import binary_dilation
-import cellprofiler.cpimage as cpi
-import cellprofiler.measurements as cpmeas
+import cellprofiler.image as cpi
+import cellprofiler.measurement as cpmeas
 import cellprofiler.modules.untangleworms as U
-import cellprofiler.objects as cpo
+import cellprofiler.object as cpo
 import cellprofiler.pipeline as cpp
-import cellprofiler.settings as cps
+import cellprofiler.setting as cps
 import cellprofiler.workspace as cpw
 
 U.CAROLINAS_HACK = False
@@ -622,7 +622,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
          module.training_set_file_name.value) = os.path.split(self.filename)
 
         workspace = cpw.Workspace(pipeline, module, image_set,
-                                  cpo.ObjectSet(), cpmeas.Measurements(),
+                                  cpo.ObjectSet(), cpmeas.Measurement(),
                                   image_set_list)
         return workspace, module
 
@@ -2779,11 +2779,11 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         object_set = workspace.object_set
         self.assertTrue(isinstance(object_set, cpo.ObjectSet))
         worms = object_set.get_objects(OVERLAP_OBJECTS_NAME)
-        self.assertTrue(isinstance(worms, cpo.Objects))
+        self.assertTrue(isinstance(worms, cpo.Object))
         worm_ijv = worms.get_ijv()
         self.assertEqual(np.max(worm_ijv[:, 2]), 15)
         m = workspace.measurements
-        assert isinstance(m, cpmeas.Measurements)
+        assert isinstance(m, cpmeas.Measurement)
         ocount = m.get_current_image_measurement("Count_" + OVERLAP_OBJECTS_NAME)
         self.assertEqual(ocount, 15)
         ncount = m.get_current_image_measurement("Count_" + NON_OVERLAPPING_OBJECTS_NAME)

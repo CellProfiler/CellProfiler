@@ -44,19 +44,19 @@ import re
 import centrosome.outline
 import numpy as np
 
-import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements as cpmeas
-import cellprofiler.objects as cpo
-import cellprofiler.objects as cpo
-import cellprofiler.preferences as cpprefs
-import cellprofiler.settings as cps
+import cellprofiler.image as cpi
+import cellprofiler.extension as cpm
+import cellprofiler.measurement as cpmeas
+import cellprofiler.object as cpo
+import cellprofiler.object as cpo
+import cellprofiler.configuration as cpprefs
+import cellprofiler.setting as cps
 import identify as I
 from cellprofiler.gui.help import USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF
-from cellprofiler.preferences import standardize_default_folder_names, \
+from cellprofiler.configuration import standardize_default_folder_names, \
     DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME, \
     IO_FOLDER_CHOICE_HELP_TEXT, IO_WITH_METADATA_HELP_TEXT
-from cellprofiler.settings import YES, NO
+from cellprofiler.setting import YES, NO
 from identify import C_COUNT, C_LOCATION, C_NUMBER
 from identify import FTR_CENTER_X, FTR_CENTER_Y, FTR_OBJECT_NUMBER
 from identify import add_object_count_measurements, add_object_location_measurements
@@ -85,7 +85,7 @@ S_IMAGE_NAME_OFFSET_V4 = 1
 S_RESCALE_OFFSET_V4 = 2
 
 
-class LoadSingleImage(cpm.CPModule):
+class LoadSingleImage(cpm.Extension):
     module_name = "LoadSingleImage"
     category = "File Processing"
     variable_revision_number = 5
@@ -321,7 +321,7 @@ class LoadSingleImage(cpm.CPModule):
 
     def prepare_run(self, workspace):
         m = workspace.measurements
-        assert isinstance(m, cpmeas.Measurements)
+        assert isinstance(m, cpmeas.Measurement)
         root = self.get_base_directory(workspace)
 
         if m.image_set_count == 0:
@@ -362,7 +362,7 @@ class LoadSingleImage(cpm.CPModule):
     def run(self, workspace):
         statistics = []
         m = workspace.measurements
-        assert isinstance(m, cpmeas.Measurements)
+        assert isinstance(m, cpmeas.Measurement)
         #
         # Hack: if LoadSingleImage is first, no paths are populated
         #
@@ -409,7 +409,7 @@ class LoadSingleImage(cpm.CPModule):
                 # Turn image into objects
                 #
                 labels = convert_image_to_objects(pixel_data)
-                objects = cpo.Objects()
+                objects = cpo.Object()
                 objects.segmented = labels
                 object_set = workspace.object_set
                 assert isinstance(object_set, cpo.ObjectSet)

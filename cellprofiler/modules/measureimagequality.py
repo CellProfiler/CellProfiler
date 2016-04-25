@@ -66,10 +66,10 @@ import scipy.ndimage as scind
 from scipy.linalg.basic import lstsq
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 import centrosome.haralick
-import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements as cpmeas
-import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
+import cellprofiler.extension as cpm
+import cellprofiler.measurement as cpmeas
+import cellprofiler.setting as cps
+from cellprofiler.setting import YES, NO
 import centrosome.threshold as cpthresh
 import itertools
 import centrosome.radial_power_spectrum as rps
@@ -77,8 +77,8 @@ from identify import O_TWO_CLASS, O_THREE_CLASS, O_WEIGHTED_VARIANCE, O_ENTROPY
 from identify import O_FOREGROUND, O_BACKGROUND
 from centrosome.threshold import TM_MOG, TM_OTSU
 from loadimages import C_FILE_NAME, C_SCALING
-import cellprofiler.preferences as cpprefs
-from cellprofiler.preferences import \
+import cellprofiler.configuration as cpprefs
+from cellprofiler.configuration import \
     DEFAULT_OUTPUT_FOLDER_NAME, DEFAULT_INPUT_FOLDER_NAME, ABSOLUTE_FOLDER_NAME, \
     DEFAULT_INPUT_SUBFOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME, IO_FOLDER_CHOICE_HELP_TEXT
 
@@ -126,7 +126,7 @@ SETTINGS_PER_GROUP_V3 = 11
 IMAGE_GROUP_SETTING_OFFSET = 2
 
 
-class MeasureImageQuality(cpm.CPModule):
+class MeasureImageQuality(cpm.Extension):
     module_name = "MeasureImageQuality"
     category = "Measurement"
     variable_revision_number = 5

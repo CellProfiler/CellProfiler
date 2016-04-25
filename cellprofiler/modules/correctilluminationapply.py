@@ -11,9 +11,9 @@ See also <b>CorrectIlluminationCalculate</b>.'''
 
 import numpy as np
 
-import cellprofiler.cpimage  as cpi
-import cellprofiler.cpmodule as cpm
-import cellprofiler.settings as cps
+import cellprofiler.image  as cpi
+import cellprofiler.extension as cpm
+import cellprofiler.setting as cps
 from cellprofiler.modules.correctilluminationcalculate import IC_BACKGROUND, IC_REGULAR
 
 ######################################
@@ -42,7 +42,7 @@ RE_MATCH = "Match maximums"
 SETTINGS_PER_IMAGE = 4
 
 
-class CorrectIlluminationApply(cpm.CPModule):
+class CorrectIlluminationApply(cpm.Extension):
     category = "Image Processing"
     variable_revision_number = 3
     module_name = "CorrectIlluminationApply"

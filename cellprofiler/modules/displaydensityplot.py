@@ -20,12 +20,12 @@ See also <b>DisplayScatterPlot</b>, <b>DisplayHistogram</b>.
 import matplotlib.cm
 import numpy as np
 
-import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
-import cellprofiler.settings as cps
+import cellprofiler.image as cpi
+import cellprofiler.extension as cpm
+import cellprofiler.setting as cps
 
 
-class DisplayDensityPlot(cpm.CPModule):
+class DisplayDensityPlot(cpm.Extension):
     module_name = "DisplayDensityPlot"
     category = "Data Tools"
     variable_revision_number = 1

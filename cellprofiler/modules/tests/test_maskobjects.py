@@ -12,15 +12,15 @@ import numpy as np
 import scipy.ndimage
 from matplotlib.image import pil_to_array
 
-from cellprofiler.preferences import set_headless
+from cellprofiler.configuration import set_headless
 
 set_headless()
 
 import cellprofiler.pipeline as cpp
-import cellprofiler.cpmodule as cpm
-import cellprofiler.cpimage as cpi
-import cellprofiler.measurements as cpmeas
-import cellprofiler.objects as cpo
+import cellprofiler.extension as cpm
+import cellprofiler.image as cpi
+import cellprofiler.measurement as cpmeas
+import cellprofiler.object as cpo
 import cellprofiler.workspace as cpw
 import cellprofiler.modules.maskobjects as M
 
@@ -257,12 +257,12 @@ MaskObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:1|sho
         pipeline.add_module(module)
 
         object_set = cpo.ObjectSet()
-        io = cpo.Objects()
+        io = cpo.Object()
         io.segmented = labels
         object_set.add_objects(io, INPUT_OBJECTS)
 
         if masking_objects is not None:
-            oo = cpo.Objects()
+            oo = cpo.Object()
             oo.segmented = masking_objects
             object_set.add_objects(oo, MASKING_OBJECTS)
 
@@ -273,7 +273,7 @@ MaskObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:1|sho
             image_set.add(MASKING_IMAGE, mi)
 
         workspace = cpw.Workspace(pipeline, module, image_set, object_set,
-                                  cpmeas.Measurements(), image_set_list)
+                                  cpmeas.Measurement(), image_set_list)
         return workspace, module
 
     def test_02_01_measurement_columns(self):
@@ -347,7 +347,7 @@ MaskObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:1|sho
                                                 np.zeros((20, 10), int))
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         value = m.get_current_image_measurement(M.I.FF_COUNT % OUTPUT_OBJECTS)
         self.assertEqual(value, 0)
         for object_name, feature in (
@@ -377,7 +377,7 @@ MaskObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:1|sho
         expected_x = np.array([4, 4])
         expected_y = np.array([5, 14])
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         value = m.get_current_image_measurement(M.I.FF_COUNT % OUTPUT_OBJECTS)
         self.assertEqual(value, 2)
 
@@ -409,7 +409,7 @@ MaskObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:1|sho
         expected_x = np.array([4, 4])
         expected_y = np.array([5, 14])
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         value = m.get_current_image_measurement(M.I.FF_COUNT % OUTPUT_OBJECTS)
         self.assertEqual(value, 2)
 
@@ -443,7 +443,7 @@ MaskObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:1|sho
         expected_x = np.array([4, 4])
         expected_y = np.array([5, 14])
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         value = m.get_current_image_measurement(M.I.FF_COUNT % OUTPUT_OBJECTS)
         self.assertEqual(value, 2)
 
@@ -477,7 +477,7 @@ MaskObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:1|sho
         expected_x = np.array([4, None, 4])
         expected_y = np.array([5, None, 14])
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         value = m.get_current_image_measurement(M.I.FF_COUNT % OUTPUT_OBJECTS)
         self.assertEqual(value, 3)
 

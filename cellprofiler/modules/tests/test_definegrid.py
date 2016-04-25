@@ -8,16 +8,16 @@ from StringIO import StringIO
 
 import numpy as np
 
-from cellprofiler.preferences import set_headless
+from cellprofiler.configuration import set_headless
 
 set_headless()
 
 import cellprofiler.workspace as cpw
-import cellprofiler.cpgridinfo as cpg
-import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
-import cellprofiler.objects as cpo
-import cellprofiler.measurements as cpmeas
+import cellprofiler.grid as cpg
+import cellprofiler.image as cpi
+import cellprofiler.extension as cpm
+import cellprofiler.object as cpo
+import cellprofiler.measurement as cpmeas
 import cellprofiler.pipeline as cpp
 import cellprofiler.modules.definegrid as D
 from centrosome.filter import enhance_dark_holes
@@ -149,7 +149,7 @@ class TestDefineGrid(unittest.TestCase):
         image_set = image_set_list.get_image_set(0)
         image_set.add(INPUT_IMAGE_NAME, cpi.Image(image))
         object_set = cpo.ObjectSet()
-        objects = cpo.Objects()
+        objects = cpo.Object()
         objects.segmented = labels
         object_set.add_objects(objects, OBJECTS_NAME)
         pipeline = cpp.Pipeline()
@@ -160,7 +160,7 @@ class TestDefineGrid(unittest.TestCase):
 
         pipeline.add_listener(callback)
         pipeline.add_module(module)
-        measurements = cpmeas.Measurements()
+        measurements = cpmeas.Measurement()
         workspace = cpw.Workspace(pipeline, module, image_set,
                                   object_set, measurements,
                                   image_set_list)
@@ -194,7 +194,7 @@ class TestDefineGrid(unittest.TestCase):
         module.wants_image.value = True
         module.run(workspace)
         gridding = workspace.get_grid(GRID_NAME)
-        self.assertTrue(isinstance(gridding, cpg.CPGridInfo))
+        self.assertTrue(isinstance(gridding, cpg.Grid))
         self.assertEqual(gridding.rows, rows)
         self.assertEqual(gridding.columns, columns)
         self.assertEqual(gridding.x_spacing, spacing_x)
@@ -208,7 +208,7 @@ class TestDefineGrid(unittest.TestCase):
         self.assertTrue(np.all(gridding.spot_table == spot_table))
 
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         for feature, value in ((D.F_COLUMNS, columns),
                                (D.F_ROWS, rows),
                                (D.F_X_LOCATION_OF_LOWEST_X_SPOT, first_x),
@@ -262,7 +262,7 @@ class TestDefineGrid(unittest.TestCase):
         module.wants_image.value = True
         module.run(workspace)
         gridding = workspace.get_grid(GRID_NAME)
-        self.assertTrue(isinstance(gridding, cpg.CPGridInfo))
+        self.assertTrue(isinstance(gridding, cpg.Grid))
         self.assertEqual(gridding.rows, rows)
         self.assertEqual(gridding.columns, columns)
         self.assertEqual(gridding.x_spacing, spacing_x)
@@ -276,7 +276,7 @@ class TestDefineGrid(unittest.TestCase):
         self.assertTrue(np.all(gridding.spot_table == spot_table))
 
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         for feature, value in ((D.F_COLUMNS, columns),
                                (D.F_ROWS, rows),
                                (D.F_X_LOCATION_OF_LOWEST_X_SPOT, first_x),

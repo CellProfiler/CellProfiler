@@ -48,10 +48,10 @@ import scipy.stats as scistat
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 from scipy.linalg import lstsq
 
-import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements as cpmeas
-import cellprofiler.objects as cpo
-import cellprofiler.settings as cps
+import cellprofiler.extension as cpm
+import cellprofiler.measurement as cpmeas
+import cellprofiler.object as cpo
+import cellprofiler.setting as cps
 
 M_IMAGES = "Across entire image"
 M_OBJECTS = "Within objects"
@@ -82,7 +82,7 @@ F_RWC_FORMAT = "Correlation_RWC_%s_%s"
 F_COSTES_FORMAT = "Correlation_Costes_%s_%s"
 
 
-class MeasureCorrelation(cpm.CPModule):
+class MeasureCorrelation(cpm.Extension):
     module_name = 'MeasureCorrelation'
     category = 'Measurement'
     variable_revision_number = 3

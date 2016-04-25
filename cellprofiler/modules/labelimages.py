@@ -25,15 +25,15 @@ See also the <b>Metadata</b> module.
 
 import numpy as np
 
-import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements as cpmeas
-import cellprofiler.settings as cps
+import cellprofiler.extension as cpm
+import cellprofiler.measurement as cpmeas
+import cellprofiler.setting as cps
 
 O_ROW = "Row"
 O_COLUMN = "Column"
 
 
-class LabelImages(cpm.CPModule):
+class LabelImages(cpm.Extension):
     module_name = "LabelImages"
     category = "Other"
     variable_revision_number = 1

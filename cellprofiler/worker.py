@@ -32,7 +32,7 @@ knime_bridge_address = None
 
 def aw_parse_args():
     '''Parse the application arguments into setup parameters'''
-    from cellprofiler.preferences import \
+    from cellprofiler.configuration import \
         set_headless, set_awt_headless, \
         set_plugin_directory, set_ij_plugin_directory
     import optparse
@@ -70,7 +70,7 @@ def aw_parse_args():
 
     options, args = parser.parse_args()
     if options.jvm_heap_size is not None:
-        from cellprofiler.preferences import set_jvm_heap_mb
+        from cellprofiler.configuration import set_jvm_heap_mb
         set_jvm_heap_mb(options.jvm_heap_size, False)
     logging.root.setLevel(options.log_level)
     if len(logging.root.handlers) == 0:
@@ -127,8 +127,8 @@ import traceback
 from weakref import WeakSet
 
 import cellprofiler.workspace as cpw
-import cellprofiler.measurements as cpmeas
-import cellprofiler.preferences as cpprefs
+import cellprofiler.measurement as cpmeas
+import cellprofiler.configuration as cpprefs
 from cellprofiler.gui.errordialog import ED_STOP, ED_SKIP
 from cellprofiler.analysis import \
     PipelinePreferencesRequest, InitialMeasurementsRequest, WorkRequest, \
@@ -206,15 +206,15 @@ def main():
     except:
         pass
 
-    from cellprofiler.knime_bridge import KnimeBridgeServer
-    with AnalysisWorker(work_announce_address) as worker:
+    from cellprofiler.bridge import Server
+    with Worker(work_announce_address) as worker:
         worker_thread = threading.Thread(target=worker.run,
                                          name="WorkerThread")
         worker_thread.setDaemon(True)
         worker_thread.start()
-        with KnimeBridgeServer(the_zmq_context,
-                               knime_bridge_address,
-                               NOTIFY_ADDR, NOTIFY_STOP):
+        with Server(the_zmq_context,
+                    knime_bridge_address,
+                    NOTIFY_ADDR, NOTIFY_STOP):
             enter_run_loop()
             worker_thread.join()
 
@@ -232,7 +232,7 @@ def main():
         logger.warn("Failed to stop the JVM", exc_info=1)
 
 
-class AnalysisWorker(object):
+class Worker(object):
     '''An analysis worker processing work at a given address
 
     '''
@@ -386,7 +386,7 @@ class AnalysisWorker(object):
             else:
                 logger.debug("Has initial measurements")
             # Make a copy of the measurements for writing during this job
-            current_measurements = cpmeas.Measurements(copy=current_measurements)
+            current_measurements = cpmeas.Measurement(copy=current_measurements)
             all_measurements.add(current_measurements)
             job_measurements.append(current_measurements)
 

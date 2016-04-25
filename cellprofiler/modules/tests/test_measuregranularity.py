@@ -8,15 +8,15 @@ from StringIO import StringIO
 
 import numpy as np
 
-from cellprofiler.preferences import set_headless
+from cellprofiler.configuration import set_headless
 
 set_headless()
 
 import cellprofiler.pipeline as cpp
-import cellprofiler.cpmodule as cpm
-import cellprofiler.cpimage as cpi
-import cellprofiler.measurements as cpmeas
-import cellprofiler.objects as cpo
+import cellprofiler.extension as cpm
+import cellprofiler.image as cpi
+import cellprofiler.measurement as cpmeas
+import cellprofiler.object as cpo
 import cellprofiler.workspace as cpw
 import cellprofiler.modules.measuregranularity as M
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
@@ -190,13 +190,13 @@ MeasureGranularity:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
         pipeline.add_module(module)
         object_set = cpo.ObjectSet()
         if labels is not None:
-            objects = cpo.Objects()
+            objects = cpo.Object()
             objects.segmented = labels
             object_set.add_objects(objects, OBJECTS_NAME)
             image_setting.add_objects()
             image_setting.objects[0].objects_name.value = OBJECTS_NAME
         workspace = cpw.Workspace(pipeline, module, image_set,
-                                  object_set, cpmeas.Measurements(),
+                                  object_set, cpmeas.Measurement(),
                                   image_set_list)
         return module, workspace
 
@@ -208,7 +208,7 @@ MeasureGranularity:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
         self.assertTrue(isinstance(module, M.MeasureGranularity))
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         for i in range(1, 16):
             feature = module.images[0].granularity_feature(i)
             self.assertTrue(feature in m.get_feature_names(cpmeas.IMAGE))
@@ -222,7 +222,7 @@ MeasureGranularity:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
         self.assertTrue(isinstance(module, M.MeasureGranularity))
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         for i in range(1, 16):
             feature = module.images[0].granularity_feature(i)
             self.assertTrue(feature in m.get_feature_names(cpmeas.IMAGE))
@@ -242,7 +242,7 @@ MeasureGranularity:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
         self.assertTrue(isinstance(module, M.MeasureGranularity))
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         for i in range(1, 16):
             feature = module.images[0].granularity_feature(i)
             self.assertTrue(feature in m.get_feature_names(cpmeas.IMAGE))
@@ -266,7 +266,7 @@ MeasureGranularity:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
         self.assertTrue(isinstance(module, M.MeasureGranularity))
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         for i in range(1, 16):
             feature = module.images[0].granularity_feature(i)
             self.assertTrue(feature in m.get_feature_names(cpmeas.IMAGE))
@@ -294,7 +294,7 @@ MeasureGranularity:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
         self.assertTrue(isinstance(module, M.MeasureGranularity))
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         for i in range(1, 16):
             feature = module.images[0].granularity_feature(i)
             self.assertTrue(feature in m.get_feature_names(cpmeas.IMAGE))
@@ -339,7 +339,7 @@ MeasureGranularity:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
         self.assertTrue(isinstance(module, M.MeasureGranularity))
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         for i in range(1, 16):
             feature = module.images[0].granularity_feature(i)
             self.assertTrue(feature in m.get_feature_names(cpmeas.IMAGE))
@@ -357,7 +357,7 @@ MeasureGranularity:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
         self.assertTrue(isinstance(module, M.MeasureGranularity))
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         for i in range(1, 16):
             feature = module.images[0].granularity_feature(i)
             self.assertTrue(feature in m.get_feature_names(cpmeas.IMAGE))
@@ -377,7 +377,7 @@ MeasureGranularity:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
         self.assertTrue(isinstance(module, M.MeasureGranularity))
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         for i in range(1, 16):
             feature = module.images[0].granularity_feature(i)
             self.assertTrue(feature in m.get_feature_names(cpmeas.IMAGE))
@@ -396,7 +396,7 @@ MeasureGranularity:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
         self.assertTrue(isinstance(module, M.MeasureGranularity))
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         for i in range(1, 16):
             feature = module.images[0].granularity_feature(i)
             self.assertTrue(feature in m.get_feature_names(cpmeas.IMAGE))
@@ -421,7 +421,7 @@ MeasureGranularity:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
         self.assertTrue(isinstance(module, M.MeasureGranularity))
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         for i in range(1, 16):
             feature = module.images[0].granularity_feature(i)
             self.assertTrue(feature in m.get_feature_names(cpmeas.IMAGE))
@@ -450,7 +450,7 @@ MeasureGranularity:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
         self.assertTrue(isinstance(module, M.MeasureGranularity))
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         for i in range(1, 16):
             feature = module.images[0].granularity_feature(i)
             self.assertTrue(feature in m.get_feature_names(cpmeas.IMAGE))

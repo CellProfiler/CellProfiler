@@ -16,16 +16,16 @@ import xml.dom.minidom as DOM
 import zipfile
 import zlib
 
-import cellprofiler.preferences as cpprefs
+import cellprofiler.configuration as cpprefs
 
 cpprefs.set_headless()
 
 import cellprofiler.workspace as cpw
-import cellprofiler.cpgridinfo as cpg
-import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
-import cellprofiler.objects as cpo
-import cellprofiler.measurements as cpmeas
+import cellprofiler.grid as cpg
+import cellprofiler.image as cpi
+import cellprofiler.extension as cpm
+import cellprofiler.object as cpo
+import cellprofiler.measurement as cpmeas
 import cellprofiler.pipeline as cpp
 import cellprofiler.modules.createwebpage as C
 from cellprofiler.modules.loadimages import C_FILE_NAME, C_PATH_NAME, C_URL
@@ -323,7 +323,7 @@ CreateWebPage:[module_num:1|svn_version:\'9401\'|variable_revision_number:2|show
         else:
             module.wants_thumbnails.value = False
 
-        measurements = cpmeas.Measurements()
+        measurements = cpmeas.Measurement()
 
         workspace = cpw.Workspace(pipeline, module,
                                   measurements, None, measurements,

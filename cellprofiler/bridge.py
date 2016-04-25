@@ -25,12 +25,12 @@ if not hasattr(zmq, "Frame"):
 
     zmq.Frame = ZmqFrame
 
-import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements as cpmeas
-import cellprofiler.cpimage as cpi
-import cellprofiler.objects as cpo
+import cellprofiler.extension as cpm
+import cellprofiler.measurement as cpmeas
+import cellprofiler.image as cpi
+import cellprofiler.object as cpo
 import cellprofiler.pipeline as cpp
-import cellprofiler.settings as cps
+import cellprofiler.setting as cps
 import cellprofiler.workspace as cpw
 
 CONNECT_REQ_1 = "connect-request-1"
@@ -46,7 +46,7 @@ CLEAN_PIPELINE_REQ_1 = "clean-pipeline-request-1"
 CLEAN_PIPELINE_REPLY_1 = "clean-pipeline-reply-1"
 
 
-class KnimeBridgeServer(threading.Thread):
+class Server(threading.Thread):
     '''The server maintains the port and hands off the requests to workers
 
     example of use:
@@ -64,7 +64,7 @@ class KnimeBridgeServer(threading.Thread):
     '''
 
     def __init__(self, context, address, notify_address, notify_stop, **kwargs):
-        super(KnimeBridgeServer, self).__init__(**kwargs)
+        super(Server, self).__init__(**kwargs)
         self.setDaemon(True)
         self.setName("Knime bridge server")
         self.address = address
@@ -91,7 +91,7 @@ class KnimeBridgeServer(threading.Thread):
             self.join()
 
     def start(self):
-        super(KnimeBridgeServer, self).start()
+        super(Server, self).start()
         self.start_socket.recv()
         self.start_socket.close()
 
@@ -305,7 +305,7 @@ class KnimeBridgeServer(threading.Thread):
     def run_group_request(self, session_id, message_type, message):
         '''Handle a run-group request message'''
         pipeline = cpp.Pipeline()
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurement()
         image_group = m.hdf5_dict.hdf5_file.create_group("ImageData")
         if len(message) < 2:
             self.raise_cellprofiler_exception(
@@ -485,7 +485,7 @@ class KnimeBridgeServer(threading.Thread):
         grouping_allowed - true to allow grouped images
         '''
         pipeline = cpp.Pipeline()
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurement()
         object_set = cpo.ObjectSet()
         if len(message) < 2:
             self.raise_cellprofiler_exception(
@@ -583,7 +583,7 @@ class KnimeBridgeServer(threading.Thread):
         jtypes = ["java.lang.Integer"]
         features = {}
         for module in modules:
-            assert isinstance(module, cpm.CPModule)
+            assert isinstance(module, cpm.Extension)
             for column in module.get_measurement_columns(pipeline):
                 objects, name, dbtype = column[:3]
                 qualifiers = {} if len(column) < 4 else column[3]
@@ -658,7 +658,7 @@ class KnimeBridgeServer(threading.Thread):
         return pixel_data
 
 
-__all__ = [KnimeBridgeServer]
+__all__ = [Server]
 #
 # For testing only
 #

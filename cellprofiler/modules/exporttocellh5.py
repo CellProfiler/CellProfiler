@@ -15,15 +15,15 @@ import h5py
 import numpy as np
 import scipy.ndimage
 
-import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements as cpmeas
-import cellprofiler.settings as cps
+import cellprofiler.extension as cpm
+import cellprofiler.measurement as cpmeas
+import cellprofiler.setting as cps
 from cellprofiler.gui.help import \
     USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF
 from cellprofiler.modules.identify import R_PARENT
-from cellprofiler.preferences import \
+from cellprofiler.configuration import \
     IO_FOLDER_CHOICE_HELP_TEXT, IO_WITH_METADATA_HELP_TEXT
-from cellprofiler.settings import YES, NO
+from cellprofiler.setting import YES, NO
 from cellprofiler.gui.help import \
     USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF
 import cellh5
@@ -38,7 +38,7 @@ COLORS = [("Red", "0xFF0000"),
           ("Blue", "0x0000FF")]
 
 
-class ExportToCellH5(cpm.CPModule):
+class ExportToCellH5(cpm.Extension):
     #
     # TODO: model z and t. Currently, CellProfiler would analyze each
     #       stack plane independently. I think the easiest way to handle

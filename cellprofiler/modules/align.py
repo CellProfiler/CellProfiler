@@ -27,10 +27,10 @@ import scipy.sparse
 from centrosome.filter import stretch
 from scipy.fftpack import fft2, ifft2
 
-import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements as cpmeas
-import cellprofiler.settings as cps
+import cellprofiler.image as cpi
+import cellprofiler.extension as cpm
+import cellprofiler.measurement as cpmeas
+import cellprofiler.setting as cps
 
 M_MUTUAL_INFORMATION = 'Mutual Information'
 M_CROSS_CORRELATION = 'Normalized Cross Correlation'
@@ -48,7 +48,7 @@ C_ALIGN = "Align"
 MEASUREMENT_FORMAT = C_ALIGN + "_%sshift_%s"
 
 
-class Align(cpm.CPModule):
+class Align(cpm.Extension):
     module_name = "Align"
     category = 'Image Processing'
     variable_revision_number = 3

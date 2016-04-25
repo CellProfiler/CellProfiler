@@ -16,10 +16,10 @@ import numpy as np
 import zmq
 
 import cellprofiler.analysis as cpanalysis
-import cellprofiler.analysis_worker as cpaw
-import cellprofiler.measurements as cpmeas
+import cellprofiler.worker as cpaw
+import cellprofiler.measurement as cpmeas
 import cellprofiler.pipeline as cpp
-import cellprofiler.preferences as cpprefs
+import cellprofiler.configuration as cpprefs
 import cellprofiler.utilities.zmqrequest as cpzmq
 from cellprofiler.gui.errordialog import ED_CONTINUE, ED_SKIP, ED_STOP
 from cellprofiler.modules.identify import C_COUNT, M_LOCATION_CENTER_X
@@ -106,8 +106,8 @@ class TestAnalysisWorker(unittest.TestCase):
         def run(self):
             up_queue_send_socket = cpaw.the_zmq_context.socket(zmq.PUB)
             up_queue_send_socket.connect(self.notify_addr)
-            with cpaw.AnalysisWorker(self.announce_addr,
-                                     with_stop_run_loop=False) as aw:
+            with cpaw.Worker(self.announce_addr,
+                             with_stop_run_loop=False) as aw:
                 aw.enter_thread()
                 self.aw = aw
                 self.up_queue.put("OK")
@@ -1067,7 +1067,7 @@ def get_measurements_for_good_pipeline(nimages=1,
                                        group_numbers=None):
     '''Get an appropriately initialized measurements structure for the good pipeline'''
     path = os.path.join(example_images_directory(), "ExampleSBSImages")
-    m = cpmeas.Measurements()
+    m = cpmeas.Measurement()
     if group_numbers is None:
         group_numbers = [1] * nimages
     group_indexes = [1]

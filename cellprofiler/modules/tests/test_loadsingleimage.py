@@ -12,15 +12,15 @@ from StringIO import StringIO
 import PIL.Image
 import numpy as np
 
-import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements as cpmeas
+import cellprofiler.image as cpi
+import cellprofiler.extension as cpm
+import cellprofiler.measurement as cpmeas
 import cellprofiler.modules.loadimages as LI
 import cellprofiler.modules.loadsingleimage as L
-import cellprofiler.objects as cpo
+import cellprofiler.object as cpo
 import cellprofiler.pipeline as cpp
-import cellprofiler.preferences as cpprefs
-import cellprofiler.settings as cps
+import cellprofiler.configuration as cpprefs
+import cellprofiler.setting as cps
 import cellprofiler.workspace as cpw
 from cellprofiler.modules.identify import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y, M_NUMBER_OBJECT_NUMBER
 from cellprofiler.modules.tests import \
@@ -346,7 +346,7 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
         image_set_list = cpi.ImageSetList()
         workspace = cpw.Workspace(pipeline, module,
                                   image_set_list.get_image_set(0),
-                                  cpo.ObjectSet(), cpmeas.Measurements(),
+                                  cpo.ObjectSet(), cpmeas.Measurement(),
                                   image_set_list)
         return workspace, module
 
@@ -359,7 +359,7 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
         module.prepare_run(workspace)
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         self.assertEqual(m.image_set_count, 1)
         f = m.get_all_measurements(
                 cpmeas.IMAGE,
@@ -422,7 +422,7 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
         li.location.dir_choice = cps.ABSOLUTE_FOLDER_NAME
         li.location.custom_path = path
         li.images[0].common_text.value = "Channel2-"
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurement()
         workspace = cpw.Workspace(pipeline, lsi, m, cpo.ObjectSet(), m,
                                   cpi.ImageSetList())
         self.assertTrue(pipeline.prepare_run(workspace))
@@ -563,7 +563,7 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
 
             pipeline.add_listener(callback)
             pipeline.add_module(module)
-            m = cpmeas.Measurements()
+            m = cpmeas.Measurement()
             object_set = cpo.ObjectSet()
             image_set_list = cpi.ImageSetList()
             image_set = image_set_list.get_image_set(0)
@@ -618,7 +618,7 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
 
             pipeline.add_listener(callback)
             pipeline.add_module(module)
-            m = cpmeas.Measurements()
+            m = cpmeas.Measurement()
             object_set = cpo.ObjectSet()
             image_set_list = cpi.ImageSetList()
             image_set = image_set_list.get_image_set(0)

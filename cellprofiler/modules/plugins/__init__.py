@@ -12,7 +12,7 @@ import imp
 import os.path
 import sys
 
-import cellprofiler.preferences as cpprefs
+import cellprofiler.configuration as cpprefs
 
 
 def plugin_list():

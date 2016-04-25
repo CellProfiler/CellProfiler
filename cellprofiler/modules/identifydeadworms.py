@@ -43,13 +43,13 @@ from centrosome.cpmorphology import get_line_pts
 from scipy.ndimage import binary_erosion, binary_fill_holes
 from scipy.ndimage import mean as mean_of_labels
 
-import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements as cpmeas
-import cellprofiler.objects as cpo
-import cellprofiler.preferences as cpprefs
-import cellprofiler.settings as cps
+import cellprofiler.extension as cpm
+import cellprofiler.measurement as cpmeas
+import cellprofiler.object as cpo
+import cellprofiler.configuration as cpprefs
+import cellprofiler.setting as cps
 import identify as I
-from cellprofiler.settings import YES, NO
+from cellprofiler.setting import YES, NO
 
 C_WORMS = "Worm"
 F_ANGLE = "Angle"
@@ -63,7 +63,7 @@ LABEL_ALPHA = 1.0
 WORM_ALPHA = .25
 
 
-class IdentifyDeadWorms(cpm.CPModule):
+class IdentifyDeadWorms(cpm.Extension):
     module_name = "IdentifyDeadWorms"
     variable_revision_number = 2
     category = ["Other", "Worm Toolbox"]
@@ -245,7 +245,7 @@ class IdentifyDeadWorms(cpm.CPModule):
             labels = np.zeros(mask.shape, int)
 
         m = workspace.measurements
-        assert isinstance(m, cpmeas.Measurements)
+        assert isinstance(m, cpmeas.Measurement)
         object_name = self.object_name.value
         m.add_measurement(object_name, I.M_LOCATION_CENTER_X, center_x)
         m.add_measurement(object_name, I.M_LOCATION_CENTER_Y, center_y)
@@ -257,7 +257,7 @@ class IdentifyDeadWorms(cpm.CPModule):
         #
         object_set = workspace.object_set
         assert isinstance(object_set, cpo.ObjectSet)
-        objects = cpo.Objects()
+        objects = cpo.Object()
         objects.segmented = labels
         objects.parent_image = image
         object_set.add_objects(objects, object_name)

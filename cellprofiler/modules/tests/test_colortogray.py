@@ -6,14 +6,14 @@ from StringIO import StringIO
 
 import numpy as np
 
-from cellprofiler.preferences import set_headless
+from cellprofiler.configuration import set_headless
 
 set_headless()
 
 import cellprofiler.pipeline as cpp
-import cellprofiler.measurements as cpm
-import cellprofiler.cpimage as cpi
-import cellprofiler.objects as cpo
+import cellprofiler.measurement as cpm
+import cellprofiler.image as cpi
+import cellprofiler.object as cpo
 
 import cellprofiler.modules.injectimage as cpm_inject
 import cellprofiler.modules.colortogray as cpm_ctg
@@ -54,7 +54,7 @@ class TestColorToGray(unittest.TestCase):
         pipeline.add_module(ctg)
         pipeline.test_valid()
 
-        measurements = cpm.Measurements()
+        measurements = cpm.Measurement()
         object_set = cpo.ObjectSet()
         image_set_list = cpi.ImageSetList()
         workspace = Workspace(pipeline, inj, None, None, measurements,
@@ -91,7 +91,7 @@ class TestColorToGray(unittest.TestCase):
         pipeline.add_module(ctg)
         pipeline.test_valid()
 
-        measurements = cpm.Measurements()
+        measurements = cpm.Measurement()
         object_set = cpo.ObjectSet()
         image_set_list = cpi.ImageSetList()
         workspace = Workspace(pipeline, inj, None, None, measurements,
@@ -156,7 +156,7 @@ class TestColorToGray(unittest.TestCase):
         pipeline.add_listener(callback)
         pipeline.add_module(module)
         workspace = Workspace(pipeline, module, image_set, cpo.ObjectSet(),
-                              cpm.Measurements(), image_set_list)
+                              cpm.Measurement(), image_set_list)
         module.run(workspace)
         pixels = image_set.get_image(module.grayscale_name.value).pixel_data
         self.assertEqual(pixels.ndim, 2)
@@ -191,7 +191,7 @@ class TestColorToGray(unittest.TestCase):
         pipeline.add_listener(callback)
         pipeline.add_module(module)
         workspace = Workspace(pipeline, module, image_set, cpo.ObjectSet(),
-                              cpm.Measurements(), image_set_list)
+                              cpm.Measurement(), image_set_list)
         module.run(workspace)
         for i, channel_index in enumerate(channel_indexes):
             pixels = image_set.get_image(module.channels[i].image_name.value).pixel_data

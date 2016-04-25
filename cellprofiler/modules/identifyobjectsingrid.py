@@ -42,12 +42,12 @@ import numpy as np
 from centrosome.cpmorphology import centers_of_labels, relabel
 from centrosome.outline import outline
 
-import cellprofiler.cpgridinfo as cpg
-import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements as cpmeas
-import cellprofiler.objects as cpo
-import cellprofiler.settings as cps
+import cellprofiler.grid as cpg
+import cellprofiler.image as cpi
+import cellprofiler.extension as cpm
+import cellprofiler.measurement as cpmeas
+import cellprofiler.object as cpo
+import cellprofiler.setting as cps
 from cellprofiler.gui.help import HELP_ON_MEASURING_DISTANCES
 from cellprofiler.gui.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
 from cellprofiler.modules.identify import add_object_count_measurements
@@ -67,7 +67,7 @@ FAIL_ANY_PREVIOUS = "Any Previous"
 FAIL_FIRST = "The First"
 
 
-class IdentifyObjectsInGrid(cpm.CPModule):
+class IdentifyObjectsInGrid(cpm.Extension):
     module_name = "IdentifyObjectsInGrid"
     variable_revision_number = 2
     category = "Object Processing"
@@ -209,7 +209,7 @@ class IdentifyObjectsInGrid(cpm.CPModule):
             labels = self.run_natural_circle(workspace, gridding)
         elif self.shape_choice == SHAPE_NATURAL:
             labels = self.run_natural(workspace, gridding)
-        objects = cpo.Objects()
+        objects = cpo.Object()
         objects.segmented = labels
         object_count = gridding.rows * gridding.columns
         workspace.object_set.add_objects(objects,
@@ -234,7 +234,7 @@ class IdentifyObjectsInGrid(cpm.CPModule):
 
     def fill_grid(self, workspace, gridding):
         '''Fill a labels matrix by labeling each rectangle in the grid'''
-        assert isinstance(gridding, cpg.CPGridInfo)
+        assert isinstance(gridding, cpg.Grid)
         i, j = np.mgrid[0:gridding.image_height,
                0:gridding.image_width]
         i_min = int(gridding.y_location_of_lowest_y_spot -
@@ -268,7 +268,7 @@ class IdentifyObjectsInGrid(cpm.CPModule):
                    This should have one coordinate per grid cell.
         '''
 
-        assert isinstance(gridding, cpg.CPGridInfo)
+        assert isinstance(gridding, cpg.Grid)
         radius = self.get_radius(workspace, gridding)
         labels = self.fill_grid(workspace, gridding)
         labels = self.fit_labels_to_guiding_objects(workspace, labels)
@@ -360,7 +360,7 @@ class IdentifyObjectsInGrid(cpm.CPModule):
         # a label might be something small in a corner of the grid.
         # This function filters out those parts of the guide labels matrix
         #
-        assert isinstance(gridding, cpg.CPGridInfo)
+        assert isinstance(gridding, cpg.Grid)
         guide_labels = self.get_guide_labels(workspace)
         labels = self.fill_grid(workspace, gridding)
 

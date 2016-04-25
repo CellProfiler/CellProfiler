@@ -11,13 +11,13 @@ import centrosome.threshold as T
 import numpy as np
 import scipy.ndimage
 
-import cellprofiler.cpimage as cpi
-import cellprofiler.measurements as cpmeas
+import cellprofiler.image as cpi
+import cellprofiler.measurement as cpmeas
 import cellprofiler.modules.identify as I
 import cellprofiler.modules.identifyprimaryobjects as ID
-import cellprofiler.objects as cpo
+import cellprofiler.object as cpo
 import cellprofiler.pipeline
-import cellprofiler.settings
+import cellprofiler.setting
 from cellprofiler.modules.injectimage import InjectImage
 from cellprofiler.modules.tests import read_example_image
 from cellprofiler.workspace import Workspace
@@ -57,14 +57,14 @@ class test_IdentifyPrimaryObjects(unittest.TestCase):
 
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_module(module)
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurement()
         cpimage = cpi.Image(image, mask=mask)
         m.add(IMAGE_NAME, cpimage)
         if binary_image is not None:
             m.add(BINARY_IMAGE_NAME, cpi.Image(binary_image))
         object_set = cpo.ObjectSet()
         if labels is not None:
-            o = cpo.Objects()
+            o = cpo.Object()
             o.segmented = labels
             object_set.add_objects(o, MASKING_OBJECTS_NAME)
         workspace = cellprofiler.workspace.Workspace(
@@ -87,7 +87,7 @@ class test_IdentifyPrimaryObjects(unittest.TestCase):
         image_set = image_set_list.get_image_set(0)
         image_set.providers.append(cpi.VanillaImageProvider("my_image", image))
         object_set = cpo.ObjectSet()
-        measurements = cpmeas.Measurements()
+        measurements = cpmeas.Measurement()
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline, x, image_set, object_set, measurements, None))
         self.assertEqual(len(object_set.object_names), 1)
@@ -124,7 +124,7 @@ class test_IdentifyPrimaryObjects(unittest.TestCase):
         image_set = image_set_list.get_image_set(0)
         image_set.providers.append(cpi.VanillaImageProvider("my_image", image))
         object_set = cpo.ObjectSet()
-        measurements = cpmeas.Measurements()
+        measurements = cpmeas.Measurement()
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline, x, image_set, object_set, measurements, None))
         self.assertEqual(len(object_set.object_names), 1)
@@ -147,7 +147,7 @@ class test_IdentifyPrimaryObjects(unittest.TestCase):
         image_set = image_set_list.get_image_set(0)
         image_set.providers.append(cpi.VanillaImageProvider("my_image", image))
         object_set = cpo.ObjectSet()
-        measurements = cpmeas.Measurements()
+        measurements = cpmeas.Measurement()
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline, x, image_set, object_set, measurements, None))
         self.assertEqual(len(object_set.object_names), 1)
@@ -170,7 +170,7 @@ class test_IdentifyPrimaryObjects(unittest.TestCase):
         image_set = image_set_list.get_image_set(0)
         image_set.providers.append(cpi.VanillaImageProvider("my_image", image))
         object_set = cpo.ObjectSet()
-        measurements = cpmeas.Measurements()
+        measurements = cpmeas.Measurement()
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline, x, image_set, object_set, measurements, None))
         self.assertEqual(len(object_set.object_names), 1)
@@ -193,7 +193,7 @@ class test_IdentifyPrimaryObjects(unittest.TestCase):
         image_set = image_set_list.get_image_set(0)
         image_set.providers.append(cpi.VanillaImageProvider("my_image", image))
         object_set = cpo.ObjectSet()
-        measurements = cpmeas.Measurements()
+        measurements = cpmeas.Measurement()
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline, x, image_set, object_set, measurements, None))
         self.assertEqual(len(object_set.object_names), 1)
@@ -217,7 +217,7 @@ class test_IdentifyPrimaryObjects(unittest.TestCase):
         image_set = image_set_list.get_image_set(0)
         image_set.providers.append(cpi.VanillaImageProvider("my_image", image))
         object_set = cpo.ObjectSet()
-        measurements = cpmeas.Measurements()
+        measurements = cpmeas.Measurement()
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline, x, image_set, object_set, measurements, None))
         self.assertEqual(len(object_set.object_names), 1)
@@ -268,7 +268,7 @@ class test_IdentifyPrimaryObjects(unittest.TestCase):
         image_set = image_set_list.get_image_set(0)
         image_set.providers.append(cpi.VanillaImageProvider("my_image", image))
         object_set = cpo.ObjectSet()
-        measurements = cpmeas.Measurements()
+        measurements = cpmeas.Measurement()
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline, x, image_set, object_set, measurements, None))
         self.assertEqual(len(object_set.object_names), 1)
@@ -316,7 +316,7 @@ class test_IdentifyPrimaryObjects(unittest.TestCase):
         image_set = image_set_list.get_image_set(0)
         image_set.providers.append(cpi.VanillaImageProvider("my_image", image))
         object_set = cpo.ObjectSet()
-        measurements = cpmeas.Measurements()
+        measurements = cpmeas.Measurement()
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline, x, image_set, object_set, measurements, None))
         self.assertEqual(len(object_set.object_names), 1)
@@ -364,7 +364,7 @@ class test_IdentifyPrimaryObjects(unittest.TestCase):
         image_set = image_set_list.get_image_set(0)
         image_set.providers.append(cpi.VanillaImageProvider("my_image", image))
         object_set = cpo.ObjectSet()
-        measurements = cpmeas.Measurements()
+        measurements = cpmeas.Measurement()
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline, x, image_set, object_set, measurements, None))
         objects = object_set.get_objects("my_object")
@@ -392,7 +392,7 @@ class test_IdentifyPrimaryObjects(unittest.TestCase):
         image_set = image_set_list.get_image_set(0)
         image_set.providers.append(cpi.VanillaImageProvider("my_image", image))
         object_set = cpo.ObjectSet()
-        measurements = cpmeas.Measurements()
+        measurements = cpmeas.Measurement()
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline, x, image_set, object_set, measurements, None))
         objects = object_set.get_objects("my_object")
@@ -421,7 +421,7 @@ class test_IdentifyPrimaryObjects(unittest.TestCase):
         image_set = image_set_list.get_image_set(0)
         image_set.providers.append(cpi.VanillaImageProvider("my_image", image))
         object_set = cpo.ObjectSet()
-        measurements = cpmeas.Measurements()
+        measurements = cpmeas.Measurement()
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline, x, image_set, object_set, measurements, None))
         objects = object_set.get_objects("my_object")
@@ -475,7 +475,7 @@ class test_IdentifyPrimaryObjects(unittest.TestCase):
         image_set = image_set_list.get_image_set(0)
         image_set.providers.append(cpi.VanillaImageProvider("my_image", image))
         object_set = cpo.ObjectSet()
-        measurements = cpmeas.Measurements()
+        measurements = cpmeas.Measurement()
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline, x, image_set, object_set, measurements, None))
         objects = object_set.get_objects("my_object")
@@ -527,7 +527,7 @@ class test_IdentifyPrimaryObjects(unittest.TestCase):
         image_set = image_set_list.get_image_set(0)
         image_set.providers.append(cpi.VanillaImageProvider("my_image", image))
         object_set = cpo.ObjectSet()
-        measurements = cpmeas.Measurements()
+        measurements = cpmeas.Measurement()
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline, x, image_set, object_set, measurements, None))
         objects = object_set.get_objects("my_object")
@@ -583,7 +583,7 @@ class test_IdentifyPrimaryObjects(unittest.TestCase):
         image_set = image_set_list.get_image_set(0)
         image_set.providers.append(cpi.VanillaImageProvider("my_image", image))
         object_set = cpo.ObjectSet()
-        measurements = cpmeas.Measurements()
+        measurements = cpmeas.Measurement()
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline, x, image_set, object_set, measurements, None))
         objects = object_set.get_objects("my_object")
@@ -637,7 +637,7 @@ class test_IdentifyPrimaryObjects(unittest.TestCase):
         image_set = image_set_list.get_image_set(0)
         image_set.providers.append(cpi.VanillaImageProvider("my_image", image))
         object_set = cpo.ObjectSet()
-        measurements = cpmeas.Measurements()
+        measurements = cpmeas.Measurement()
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline, x, image_set, object_set, measurements, None))
         objects = object_set.get_objects("my_object")
@@ -691,7 +691,7 @@ class test_IdentifyPrimaryObjects(unittest.TestCase):
         image_set = image_set_list.get_image_set(0)
         image_set.providers.append(cpi.VanillaImageProvider("my_image", image))
         object_set = cpo.ObjectSet()
-        measurements = cpmeas.Measurements()
+        measurements = cpmeas.Measurement()
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline, x, image_set, object_set, measurements, None))
         objects = object_set.get_objects("my_object")
@@ -748,7 +748,7 @@ class test_IdentifyPrimaryObjects(unittest.TestCase):
         image_set = image_set_list.get_image_set(0)
         image_set.providers.append(cpi.VanillaImageProvider("my_image", image))
         object_set = cpo.ObjectSet()
-        measurements = cpmeas.Measurements()
+        measurements = cpmeas.Measurement()
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline, x, image_set, object_set, measurements, None))
         objects = object_set.get_objects("my_object")
@@ -802,7 +802,7 @@ class test_IdentifyPrimaryObjects(unittest.TestCase):
         image_set = image_set_list.get_image_set(0)
         image_set.providers.append(cpi.VanillaImageProvider("my_image", image))
         object_set = cpo.ObjectSet()
-        measurements = cpmeas.Measurements()
+        measurements = cpmeas.Measurement()
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline, x, image_set, object_set, measurements, None))
         objects = object_set.get_objects("my_object")
@@ -879,7 +879,7 @@ IdentifyPrimaryObjects:[module_num:1|svn_version:\'9633\'|variable_revision_numb
                     image_set = image_set_list.get_image_set(0)
                     image_set.add(x.image_name.value, image)
                     object_set = cpo.ObjectSet()
-                    measurements = cpmeas.Measurements()
+                    measurements = cpmeas.Measurement()
                     x.run(Workspace(pipeline, x, image_set, object_set, measurements, None))
 
     def test_02_13_maxima_suppression_zero(self):
@@ -919,7 +919,7 @@ IdentifyPrimaryObjects:[module_num:1|svn_version:\'9633\'|variable_revision_numb
             x.module_num = 1
             pipeline.add_module(x)
             object_set = cpo.ObjectSet()
-            measurements = cpmeas.Measurements()
+            measurements = cpmeas.Measurement()
             measurements.add(x.image_name.value, cpi.Image(img))
             x.run(Workspace(pipeline, x, measurements, object_set, measurements,
                             None))
@@ -976,7 +976,7 @@ IdentifyPrimaryObjects:[module_num:1|svn_version:\'9633\'|variable_revision_numb
         self.assertTrue(module.automatic_smoothing.value)
         self.assertTrue(module.automatic_suppression.value)
         self.assertFalse(module.merge_objects.value)
-        self.assertTrue(module.image_name == cellprofiler.settings.DO_NOT_USE)
+        self.assertTrue(module.image_name == cellprofiler.setting.DO_NOT_USE)
         self.assertFalse(module.should_save_outlines.value)
         self.assertEqual(module.save_outlines.value, "None")
         self.assertAlmostEqual(module.threshold_range.min, 0)
@@ -1918,7 +1918,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         image_set = image_set_list.get_image_set(0)
         image_set.providers.append(cpi.VanillaImageProvider("my_image", image))
         object_set = cpo.ObjectSet()
-        measurements = cpmeas.Measurements()
+        measurements = cpmeas.Measurement()
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline, x, image_set, object_set, measurements, None))
         objects = object_set.get_objects("my_object")
@@ -1952,7 +1952,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         image_set = image_set_list.get_image_set(0)
         image_set.providers.append(cpi.VanillaImageProvider("my_image", image))
         object_set = cpo.ObjectSet()
-        measurements = cpmeas.Measurements()
+        measurements = cpmeas.Measurement()
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline, x, image_set, object_set, measurements, None))
         objects = object_set.get_objects("my_object")
@@ -1982,7 +1982,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         image_set = image_set_list.get_image_set(0)
         image_set.providers.append(cpi.VanillaImageProvider("my_image", image))
         object_set = cpo.ObjectSet()
-        measurements = cpmeas.Measurements()
+        measurements = cpmeas.Measurement()
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline, x, image_set, object_set, measurements, None))
         objects = object_set.get_objects("my_object")
@@ -2018,7 +2018,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         image_set = image_set_list.get_image_set(0)
         image_set.providers.append(cpi.VanillaImageProvider("my_image", image))
         object_set = cpo.ObjectSet()
-        measurements = cpmeas.Measurements()
+        measurements = cpmeas.Measurement()
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline, x, image_set, object_set, measurements, None))
         objects = object_set.get_objects("my_object")
@@ -2054,7 +2054,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         image_set = image_set_list.get_image_set(0)
         image_set.providers.append(cpi.VanillaImageProvider("my_image", image))
         object_set = cpo.ObjectSet()
-        measurements = cpmeas.Measurements()
+        measurements = cpmeas.Measurement()
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline, x, image_set, object_set, measurements, None))
         objects = object_set.get_objects("my_object")
@@ -2087,7 +2087,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         image_set = image_set_list.get_image_set(0)
         image_set.providers.append(cpi.VanillaImageProvider("my_image", image))
         object_set = cpo.ObjectSet()
-        measurements = cpmeas.Measurements()
+        measurements = cpmeas.Measurement()
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline, x, image_set, object_set, measurements, None))
         self.assertEqual(len(object_set.object_names), 1)
@@ -2116,7 +2116,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
             image_set = image_set_list.get_image_set(0)
             image_set.providers.append(cpi.VanillaImageProvider("my_image", image))
             object_set = cpo.ObjectSet()
-            measurements = cpmeas.Measurements()
+            measurements = cpmeas.Measurement()
             pipeline = cellprofiler.pipeline.Pipeline()
             x.run(Workspace(pipeline, x, image_set, object_set, measurements, None))
             self.assertEqual(len(object_set.object_names), 1)
@@ -2599,7 +2599,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         x.module_num = 1
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_module(x)
-        measurements = cpmeas.Measurements()
+        measurements = cpmeas.Measurement()
         workspace = Workspace(pipeline, x, image_set, object_set, measurements,
                               image_set_list)
         x.run(workspace)
@@ -2636,7 +2636,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
             x.module_num = 1
             pipeline = cellprofiler.pipeline.Pipeline()
             pipeline.add_module(x)
-            measurements = cpmeas.Measurements()
+            measurements = cpmeas.Measurement()
             workspace = Workspace(pipeline, x, image_set, object_set, measurements,
                                   image_set_list)
             x.run(workspace)
@@ -2675,7 +2675,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         x.module_num = 1
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_module(x)
-        measurements = cpmeas.Measurements()
+        measurements = cpmeas.Measurement()
         workspace = Workspace(pipeline, x, image_set, object_set, measurements,
                               image_set_list)
         x.run(workspace)
@@ -2714,7 +2714,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         x.module_num = 1
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_module(x)
-        measurements = cpmeas.Measurements()
+        measurements = cpmeas.Measurement()
         workspace = Workspace(pipeline, x, image_set, object_set, measurements,
                               image_set_list)
         x.run(workspace)
@@ -2735,7 +2735,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         object_set = cpo.ObjectSet()
 
         pipeline = cellprofiler.pipeline.Pipeline()
-        measurements = cpmeas.Measurements()
+        measurements = cpmeas.Measurement()
         measurements.add_image_measurement("MeanIntensity_MyImage", np.mean(pixels))
 
         x = ID.IdentifyPrimaryObjects()

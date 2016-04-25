@@ -81,18 +81,18 @@ from scipy.io import loadmat
 from scipy.sparse import coo
 
 logger = logging.getLogger(__name__)
-import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements as cpmeas
-import cellprofiler.cpimage as cpi
-import cellprofiler.objects as cpo
-import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
+import cellprofiler.extension as cpm
+import cellprofiler.measurement as cpmeas
+import cellprofiler.image as cpi
+import cellprofiler.object as cpo
+import cellprofiler.setting as cps
+from cellprofiler.setting import YES, NO
 import centrosome.cpmorphology as morph
-import cellprofiler.preferences as cpprefs
+import cellprofiler.configuration as cpprefs
 import identify as I
 from centrosome.propagate import propagate
 from centrosome.outline import outline
-from cellprofiler.preferences import standardize_default_folder_names, \
+from cellprofiler.configuration import standardize_default_folder_names, \
     DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME, NO_FOLDER_NAME, \
     ABSOLUTE_FOLDER_NAME, IO_FOLDER_CHOICE_HELP_TEXT
 from cellprofiler.gui.help import USING_METADATA_GROUPING_HELP_REF
@@ -184,7 +184,7 @@ complexity_limits = {
 }
 
 
-class UntangleWorms(cpm.CPModule):
+class UntangleWorms(cpm.Extension):
     variable_revision_number = 2
     category = ["Object Processing", "Worm Toolbox"]
     module_name = "UntangleWorms"
@@ -732,7 +732,7 @@ class UntangleWorms(cpm.CPModule):
             if workspace.pipeline.test_mode:
                 return
             m = workspace.measurements
-            assert isinstance(m, cpmeas.Measurements)
+            assert isinstance(m, cpmeas.Measurement)
             path = self.training_set_directory.get_absolute_path(m)
             file_name = m.apply_metadata(self.training_set_file_name.value)
             fd = open(os.path.join(path, file_name), "w")
@@ -849,11 +849,11 @@ class UntangleWorms(cpm.CPModule):
         object_set = workspace.object_set
         assert isinstance(object_set, cpo.ObjectSet)
         measurements = workspace.measurements
-        assert isinstance(measurements, cpmeas.Measurements)
+        assert isinstance(measurements, cpmeas.Measurement)
 
         object_names = []
         if self.overlap in (OO_WITH_OVERLAP, OO_BOTH):
-            o = cpo.Objects()
+            o = cpo.Object()
             o.ijv = ijv
             o.parent_image = image
             name = self.overlap_objects.value
@@ -904,7 +904,7 @@ class UntangleWorms(cpm.CPModule):
             labels = coo.coo_matrix((ijv[:, 2], (ijv[:, 0], ijv[:, 1])), mask.shape)
             labels = labels.toarray()
             labels[~ mask] = 0
-            o = cpo.Objects()
+            o = cpo.Object()
             o.segmented = labels
             o.parent_image = image
             name = self.nonoverlapping_objects.value

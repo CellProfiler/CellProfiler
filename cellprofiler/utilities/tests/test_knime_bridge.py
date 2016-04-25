@@ -7,14 +7,14 @@ import unittest
 import uuid
 import zmq
 
-from cellprofiler.analysis_worker import NOTIFY_STOP
-from cellprofiler.knime_bridge import KnimeBridgeServer, \
+from cellprofiler.worker import NOTIFY_STOP
+from cellprofiler.bridge import Server, \
     CONNECT_REQ_1, CONNECT_REPLY_1, \
     PIPELINE_INFO_REQ_1, PIPELINE_INFO_REPLY_1, PIPELINE_EXCEPTION_1, \
     RUN_REQ_1, RUN_GROUP_REQ_1, RUN_REPLY_1, CELLPROFILER_EXCEPTION_1, \
     CLEAN_PIPELINE_REQ_1, CLEAN_PIPELINE_REPLY_1
 import cellprofiler.pipeline as cpp
-import cellprofiler.measurements as cpmeas
+import cellprofiler.measurement as cpmeas
 from cellprofiler.modules.identifyprimaryobjects import IdentifyPrimaryObjects
 from cellprofiler.modules.identify import TS_MANUAL
 from cellprofiler.modules.flagimage import FlagImage, S_IMAGE
@@ -30,7 +30,7 @@ class TestKnimeBridge(unittest.TestCase):
         self.socket_addr = "inproc://" + uuid.uuid4().hex
         self.kill_pub = context.socket(zmq.PUB)
         self.kill_pub.bind(self.notify_addr)
-        self.server = KnimeBridgeServer(
+        self.server = Server(
                 context, self.socket_addr, self.notify_addr, NOTIFY_STOP)
         self.server.start()
         self.session_id = uuid.uuid4().hex

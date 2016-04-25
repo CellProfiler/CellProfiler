@@ -37,11 +37,11 @@ import scipy.ndimage as scind
 #
 ##################################
 
-import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements as cpmeas
-import cellprofiler.objects as cpo
-import cellprofiler.settings as cps
+import cellprofiler.image as cpi
+import cellprofiler.extension as cpm
+import cellprofiler.measurement as cpmeas
+import cellprofiler.object as cpo
+import cellprofiler.setting as cps
 
 from centrosome.zernike import construct_zernike_polynomials
 from centrosome.zernike import get_zernike_indexes
@@ -71,7 +71,7 @@ C_MEASUREMENT_TEMPLATE = "MT"
 #
 ###################################
 
-class MeasurementTemplate(cpm.CPModule):
+class MeasurementTemplate(cpm.Extension):
     ###############################################
     #
     # The module starts by declaring the name that's used for display,
@@ -161,7 +161,7 @@ class MeasurementTemplate(cpm.CPModule):
         # make in here
         #
         meas = workspace.measurements
-        assert isinstance(meas, cpmeas.Measurements)
+        assert isinstance(meas, cpmeas.Measurement)
         #
         # We record some statistics which we will display later.
         # We format them so that Matplotlib can display them in a table.

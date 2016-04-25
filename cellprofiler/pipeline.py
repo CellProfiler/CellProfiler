@@ -37,12 +37,12 @@ import re
 
 logger = logging.getLogger(__name__)
 pipeline_stats_logger = logging.getLogger("PipelineStatistics")
-import cellprofiler.preferences as cpprefs
-import cellprofiler.cpimage as cpi
-import cellprofiler.measurements as cpmeas
-import cellprofiler.objects as cpo
+import cellprofiler.configuration as cpprefs
+import cellprofiler.image as cpi
+import cellprofiler.measurement as cpmeas
+import cellprofiler.object as cpo
 import cellprofiler.workspace as cpw
-import cellprofiler.settings as cps
+import cellprofiler.setting as cps
 from cellprofiler.utilities.utf16encode import utf16encode, utf16decode
 from cellprofiler.matlab.cputils import make_cell_struct_dtype, new_string_cell_array, encapsulate_strings_in_arrays
 from cellprofiler.utilities.walk_in_background import WalkCollection, THREAD_STOP
@@ -1358,7 +1358,7 @@ class Pipeline(object):
                         by the UI for the user for cases like a pipeline
                         created by CreateBatchFiles.
         '''
-        assert (isinstance(m, cpmeas.Measurements))
+        assert (isinstance(m, cpmeas.Measurement))
         fd = StringIO.StringIO()
         self.savetxt(fd, save_image_plane_details=False)
         m.add_measurement(cpmeas.EXPERIMENT,
@@ -1611,8 +1611,8 @@ class Pipeline(object):
         image_dict - dictionary mapping image names to image pixel data in the
                      form of a numpy array.
         """
-        import cellprofiler.settings as cps
-        from cellprofiler import objects as cpo
+        import cellprofiler.setting as cps
+        from cellprofiler import object as cpo
 
         output_image_names = self.find_external_output_images()
         input_image_names = self.find_external_input_images()
@@ -1629,7 +1629,7 @@ class Pipeline(object):
             input_pixels = image_dict[image_name]
             image_set.add(image_name, cpi.Image(input_pixels))
         object_set = cpo.ObjectSet()
-        measurements = cpmeas.Measurements()
+        measurements = cpmeas.Measurement()
 
         # Run the modules
         for module in self.modules():
@@ -1662,7 +1662,7 @@ class Pipeline(object):
                    grouping to run or None to run all groupings
         measurements_filename - name of file to use for measurements
         """
-        measurements = cpmeas.Measurements(
+        measurements = cpmeas.Measurement(
                 image_set_start=image_set_start,
                 filename=measurements_filename,
                 copy=initial_measurements)
@@ -1749,7 +1749,7 @@ class Pipeline(object):
         if image_set_end is not None:
             assert isinstance(image_set_end, int), "Image set end must be an integer"
         if initial_measurements is None:
-            measurements = cpmeas.Measurements(image_set_start)
+            measurements = cpmeas.Measurement(image_set_start)
         else:
             measurements = initial_measurements
 
@@ -2113,7 +2113,7 @@ class Pipeline(object):
 
         Write the pipeline, version # and timestamp.
         '''
-        assert isinstance(m, cpmeas.Measurements)
+        assert isinstance(m, cpmeas.Measurement)
         self.write_pipeline_measurement(m)
         m.add_experiment_measurement(M_VERSION, cpversion.version_string)
         m.add_experiment_measurement(M_TIMESTAMP,
@@ -2236,7 +2236,7 @@ class Pipeline(object):
         image_set_list - the image set list for the run
         frame - the topmost frame window or None if no GUI
         """
-        from cellprofiler.cpmodule import CPModule
+        from cellprofiler.extension import Extension
         if len(args) == 3:
             measurements, image_set_list, frame = args
             workspace = cpw.Workspace(self,
@@ -2261,7 +2261,7 @@ class Pipeline(object):
                 if event.cancel_run:
                     return "Failure"
             if module.show_window and \
-                            module.__class__.display_post_run != CPModule.display_post_run:
+                            module.__class__.display_post_run != Extension.display_post_run:
                 try:
                     workspace.post_run_display(module)
                 except Exception, instance:
@@ -2390,7 +2390,7 @@ class Pipeline(object):
 
         workspace - the last workspace run
         '''
-        from cellprofiler.cpmodule import CPModule
+        from cellprofiler.extension import Extension
         for module in self.modules():
             try:
                 module.post_group(workspace, grouping)
@@ -2403,7 +2403,7 @@ class Pipeline(object):
                 if event.cancel_run:
                     return False
             if module.show_window and \
-                            module.__class__.display_post_group != CPModule.display_post_group:
+                            module.__class__.display_post_group != Extension.display_post_group:
                 try:
                     workspace.post_group_display(module)
                 except:
@@ -2877,7 +2877,7 @@ class Pipeline(object):
         if end_module is not None:
             end_module_idx = self.modules().index(end_module)
             end_module = pipeline.modules()[end_module_idx]
-        temp_measurements = cpmeas.Measurements(mode="memory")
+        temp_measurements = cpmeas.Measurement(mode="memory")
         new_workspace = None
         try:
             new_workspace = cpw.Workspace(

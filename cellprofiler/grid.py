@@ -4,7 +4,7 @@
 import numpy as np
 
 
-class CPGridInfo(object):
+class Grid(object):
     '''Represents all the parameters of a grid'''
 
     def __init__(self):

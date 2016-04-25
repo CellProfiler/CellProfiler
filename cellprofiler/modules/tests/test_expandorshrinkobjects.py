@@ -12,15 +12,15 @@ import numpy as np
 import scipy.ndimage
 from matplotlib.image import pil_to_array
 
-from cellprofiler.preferences import set_headless
+from cellprofiler.configuration import set_headless
 
 set_headless()
 
 import cellprofiler.pipeline as cpp
-import cellprofiler.cpmodule as cpm
-import cellprofiler.cpimage as cpi
-import cellprofiler.measurements as cpmeas
-import cellprofiler.objects as cpo
+import cellprofiler.extension as cpm
+import cellprofiler.image as cpi
+import cellprofiler.measurement as cpmeas
+import cellprofiler.object as cpo
 import cellprofiler.workspace as cpw
 
 import centrosome.cpmorphology as morph
@@ -178,7 +178,7 @@ class TestExpandOrShrinkObjects(unittest.TestCase):
                        wants_outlines=False,
                        wants_fill_holes=False):
         object_set = cpo.ObjectSet()
-        objects = cpo.Objects()
+        objects = cpo.Object()
         objects.segmented = labels
         object_set.add_objects(objects, INPUT_NAME)
         module = E.ExpandOrShrink()
@@ -197,7 +197,7 @@ class TestExpandOrShrinkObjects(unittest.TestCase):
                                   module,
                                   image_set_list.get_image_set(0),
                                   object_set,
-                                  cpmeas.Measurements(),
+                                  cpmeas.Measurement(),
                                   image_set_list)
         return workspace, module
 
@@ -213,7 +213,7 @@ class TestExpandOrShrinkObjects(unittest.TestCase):
         self.assertTrue(np.all(objects.segmented == expected))
         self.assertTrue(OUTLINES_NAME not in workspace.get_outline_names())
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         count = m.get_current_image_measurement("Count_" + OUTPUT_NAME)
         if not np.isscalar(count):
             count = count[0]

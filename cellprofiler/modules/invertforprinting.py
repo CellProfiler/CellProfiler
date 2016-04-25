@@ -15,17 +15,17 @@ If you want to invert the grayscale intensities of an image, use <b>ImageMath</b
 
 import numpy as np
 
-import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
-import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
+import cellprofiler.image as cpi
+import cellprofiler.extension as cpm
+import cellprofiler.setting as cps
+from cellprofiler.setting import YES, NO
 
 CC_GRAYSCALE = "Grayscale"
 CC_COLOR = "Color"
 CC_ALL = [CC_COLOR, CC_GRAYSCALE]
 
 
-class InvertForPrinting(cpm.CPModule):
+class InvertForPrinting(cpm.Extension):
     module_name = "InvertForPrinting"
     category = 'Image Processing'
     variable_revision_number = 1

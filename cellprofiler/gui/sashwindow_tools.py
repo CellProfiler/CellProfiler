@@ -4,7 +4,7 @@
 This module takes over painting the sash window to make it a little more obvious
 """
 
-import cellprofiler.preferences
+import cellprofiler.configuration
 import wx
 import wx.aui
 
@@ -42,7 +42,7 @@ def on_sashwindow_paint(event):
     assert isinstance(window, wx.SashWindow)
     dc = wx.PaintDC(window)
     dc.BeginDrawing()
-    dc.Background = wx.Brush(cellprofiler.preferences.get_background_color())
+    dc.Background = wx.Brush(cellprofiler.configuration.get_background_color())
     dc.Clear()
     art, pane_info = get_art_and_pane_info()
     w, h = window.GetClientSizeTuple()
@@ -95,7 +95,7 @@ def on_splitter_paint(event):
     assert isinstance(window, wx.SplitterWindow)
     dc = wx.PaintDC(window)
     dc.BeginDrawing()
-    dc.Background = wx.Brush(cellprofiler.preferences.get_background_color())
+    dc.Background = wx.Brush(cellprofiler.configuration.get_background_color())
     dc.Clear()
     art, pane_info = get_art_and_pane_info()
     w, h = window.GetClientSizeTuple()

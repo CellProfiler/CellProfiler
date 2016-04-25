@@ -37,12 +37,12 @@ import traceback
 import numpy as np
 
 logger = logging.getLogger(__name__)
-import cellprofiler.cpgridinfo as cpg
-import cellprofiler.cpmodule as cpm
-import cellprofiler.cpimage as cpi
-import cellprofiler.measurements as cpmeas
-import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
+import cellprofiler.grid as cpg
+import cellprofiler.extension as cpm
+import cellprofiler.image as cpi
+import cellprofiler.measurement as cpmeas
+import cellprofiler.setting as cps
+from cellprofiler.setting import YES, NO
 from centrosome.cpmorphology import centers_of_labels
 
 NUM_TOP_LEFT = "Top left"
@@ -84,7 +84,7 @@ F_ROWS = "Rows"
 F_COLUMNS = "Columns"
 
 
-class DefineGrid(cpm.CPModule):
+class DefineGrid(cpm.Extension):
     module_name = "DefineGrid"
     variable_revision_number = 1
     category = "Other"
@@ -715,7 +715,7 @@ class DefineGrid(cpm.CPModule):
             self.canonical_row_and_column(first_row, first_col)
         second_row, second_col = \
             self.canonical_row_and_column(second_row, second_col)
-        gridding = cpg.CPGridInfo()
+        gridding = cpg.Grid()
         gridding.x_spacing = (float(first_x - second_x) /
                               float(first_col - second_col))
         gridding.y_spacing = (float(first_y - second_y) /
@@ -816,7 +816,7 @@ class DefineGrid(cpm.CPModule):
             figure.set_subplots((1, 1))
             figure.clf()
             ax = figure.subplot(0, 0)
-            gridding = cpg.CPGridInfo()
+            gridding = cpg.Grid()
             gridding.deserialize(workspace.display_data.gridding)
             self.display_grid(workspace.display_data.background_image,
                               gridding,
@@ -829,7 +829,7 @@ class DefineGrid(cpm.CPModule):
 
         axes.cla()
         assert isinstance(axes, matplotlib.axes.Axes)
-        assert isinstance(gridding, cpg.CPGridInfo)
+        assert isinstance(gridding, cpg.Grid)
         #
         # draw the image on the figure
         #

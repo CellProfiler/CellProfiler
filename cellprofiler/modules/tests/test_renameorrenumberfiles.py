@@ -10,15 +10,15 @@ from StringIO import StringIO
 
 import numpy as np
 
-from cellprofiler.preferences import set_headless
+from cellprofiler.configuration import set_headless
 
 set_headless()
 
 import cellprofiler.pipeline as cpp
-import cellprofiler.cpmodule as cpm
-import cellprofiler.cpimage as cpi
-import cellprofiler.measurements as cpmeas
-import cellprofiler.objects as cpo
+import cellprofiler.extension as cpm
+import cellprofiler.image as cpi
+import cellprofiler.measurement as cpmeas
+import cellprofiler.object as cpo
 import cellprofiler.workspace as cpw
 import cellprofiler.modules.renameorrenumberfiles as R
 
@@ -184,7 +184,7 @@ RenameOrRenumberFiles:[module_num:1|svn_version:\'1\'|variable_revision_number:1
         pipeline.add_listener(callback)
         pipeline.add_module(module)
 
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurement()
         m.add_image_measurement("FileName_%s" % IMAGE_NAME,
                                 file_name)
         m.add_image_measurement("PathName_%s" % IMAGE_NAME,

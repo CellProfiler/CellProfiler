@@ -50,13 +50,13 @@ import sys
 import h5py
 import numpy as np
 
-import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements as cpmeas
+import cellprofiler.extension as cpm
+import cellprofiler.measurement as cpmeas
 import cellprofiler.pipeline as cpp
-from cellprofiler.preferences import get_headless
+from cellprofiler.configuration import get_headless
 
 
-class MergeOutputFiles(cpm.CPModule):
+class MergeOutputFiles(cpm.Extension):
     module_name = "MergeOutputFiles"
     category = "Data Tools"
     do_not_check = True
@@ -329,11 +329,11 @@ class MergeOutputFiles(cpm.CPModule):
             if has_error[0]:
                 return
             if destination.lower().endswith(".h5"):
-                mdest = cpmeas.Measurements(filename=destination,
-                                            multithread=False)
+                mdest = cpmeas.Measurement(filename=destination,
+                                           multithread=False)
                 h5_dest = True
             else:
-                mdest = cpmeas.Measurements(multithread=False)
+                mdest = cpmeas.Measurement(multithread=False)
                 h5_dest = False
             for source in sources:
                 if not is_headless:
@@ -342,9 +342,9 @@ class MergeOutputFiles(cpm.CPModule):
                     if not keep_going:
                         return
                 if h5py.is_hdf5(source):
-                    msource = cpmeas.Measurements(filename=source,
-                                                  mode="r",
-                                                  multithread=False)
+                    msource = cpmeas.Measurement(filename=source,
+                                                 mode="r",
+                                                 multithread=False)
                 else:
                     msource = cpmeas.load_measurements(source)
                 dest_image_numbers = mdest.get_image_numbers()

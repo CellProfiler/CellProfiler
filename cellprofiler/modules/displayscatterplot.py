@@ -14,10 +14,10 @@ See also <b>DisplayDensityPlot</b>, <b>DisplayHistogram</b>.
 
 import numpy as np
 
-import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements as cpmeas
-import cellprofiler.settings as cps
+import cellprofiler.image as cpi
+import cellprofiler.extension as cpm
+import cellprofiler.measurement as cpmeas
+import cellprofiler.setting as cps
 
 SOURCE_IM = cpmeas.IMAGE
 SOURCE_OBJ = "Object"
@@ -25,7 +25,7 @@ SOURCE_CHOICE = [SOURCE_IM, SOURCE_OBJ]
 SCALE_CHOICE = ['linear', 'log']
 
 
-class DisplayScatterPlot(cpm.CPModule):
+class DisplayScatterPlot(cpm.Extension):
     module_name = "DisplayScatterPlot"
     category = "Data Tools"
     variable_revision_number = 2

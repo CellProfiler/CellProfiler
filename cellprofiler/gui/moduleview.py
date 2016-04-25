@@ -299,9 +299,7 @@ class ModuleView(object):
             top_panel, label=self.get_module_settings_label())
         module_settings_box_sizer = wx.StaticBoxSizer(self.module_settings_box)
         top_panel.Sizer.Add(module_settings_box_sizer, 1, wx.EXPAND)
-        self.__module_panel = wx.lib.scrolledpanel.ScrolledPanel(
-            top_panel,
-            style=wx.TAB_TRAVERSAL)
+        self.__module_panel = wx.lib.scrolledpanel.ScrolledPanel(top_panel, style=wx.TAB_TRAVERSAL)
         self.__module_panel.SetupScrolling(True, True)
         module_settings_box_sizer.Add(self.__module_panel, 1, wx.EXPAND)
         self.__sizer = ModuleSizer(0, 3)

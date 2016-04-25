@@ -1,3 +1,4 @@
+# coding=utf-8
 """PathList - the PathListCtrl displays folders and paths in a scalable way
 """
 

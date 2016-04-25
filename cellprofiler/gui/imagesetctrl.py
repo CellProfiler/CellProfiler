@@ -1,3 +1,4 @@
+# coding=utf-8
 """ImageSetCtrl.py - A control to display an imageset
 """
 
@@ -301,7 +302,7 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
                 feature = cellprofiler.measurements.C_URL + "_" + column.channel
             value = self.cache[feature, image_set]
             if value is not None:
-                return value.encode("utf-8")
+                return value.encode()
 
         def GetRowLabelValue(self, row):
             if row >= len(self.image_numbers):
@@ -374,9 +375,8 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
             display_mode = DISPLAY_MODE_SIMPLE
 
         wx.grid.Grid.__init__(self, *args, **kwargs)
-        cellprofiler.gui.cornerbuttonmixin.CornerButtonMixin.__init__(
-                self, self.on_update,
-                label="Update", tooltip="Update and display the image set")
+        cellprofiler.gui.cornerbuttonmixin.CornerButtonMixin.__init__(self, self.on_update,
+                                                                      tooltip="Update and display the image set")
         gclw = self.GetGridColLabelWindow()
         self.SetTable(self.ImageSetGridTable(workspace, display_mode))
         self.AutoSize()
@@ -484,7 +484,6 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
         bkgnd_brush.Destroy()
         if self.Table.GetNumberCols() == 0:
             return
-        selected_col, hit_code, pressed = self.pressed_button
         cols = self.CalcColLabelsExposed(
                 self.GridColLabelWindow.GetUpdateRegion())
         x, y = self.CalcUnscrolledPosition((0, 0))
@@ -493,7 +492,6 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
         for col in cols:
             rect = self.get_column_rect(col)
             self.col_label_renderer.Draw(self, dc, rect, col)
-        rect = self.get_add_button_rect()
 
     HIT_NOTHING = 0
     HIT_LABEL = 1
@@ -883,7 +881,6 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
 
     def on_drop_files(self, x, y, filenames):
         self.refresh_drop_location()
-        row, col = self.drop_location
         self.drop_location = None
         pass
 
@@ -927,12 +924,11 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
     def remove_selection(self):
         if self.Table.controller is None:
             return
-        to_remove = [[] for col in range(self.GetNumberCols())]
         for row, col in self.get_selected_cells():
             to_remove[col].append(row)
         for rows in to_remove:
             if len(rows) > 0:
-                image_sets = self.Table
+                pass
 
     def recompute(self):
         """Recompute the layout after a change to the image set"""
@@ -1345,7 +1341,7 @@ class ImageSetCtrlDropTarget(wx.FileDropTarget):
         return self.grid.on_drop_files(x, y, filenames)
 
 
-class ImageSetController:
+class ImageSetController(object):
     """Modifies the image set according to GUI notifications"""
 
     def __init__(self):

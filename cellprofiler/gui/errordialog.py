@@ -1,3 +1,4 @@
+# coding=utf-8
 """errordialog - dialog box for reporting error.
 """
 
@@ -309,7 +310,6 @@ def on_report(event, dialog, traceback_text, pipeline):
     import wx
     try:
         conn = urllib2.urlopen(req)
-        response = conn.read()
         wx.MessageBox("Report successfully sent to CellProfiler.org. Thank you.",
                       parent=dialog)
     except urllib2.HTTPError, e:

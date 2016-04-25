@@ -1,3 +1,4 @@
+# coding=utf-8
 from cellprofiler.preferences import get_background_color, set_startup_blurb
 
 import cellprofiler.gui.html.content

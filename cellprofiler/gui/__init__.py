@@ -1,3 +1,4 @@
+# coding=utf-8
 """CellProfilerGUI package
 
 The CellProfilerGUI package holds the viewer and controller portions
@@ -92,8 +93,6 @@ def draw_item_selection_rect(window, dc, rect, flags):
             pen_color = wx.SystemSettings.GetColour(wx.SYS_COLOUR_HIGHLIGHT)
         else:
             pen_color = wx.SystemSettings.GetColour(wx.SYS_COLOUR_GRAYTEXT)
-        old_brush = dc.Brush
         dc.Brush = wx.TRANSPARENT_BRUSH
-        old_pen = dc.Pen
         dc.Pen = wx.Pen(pen_color, width=2)
         dc.DrawRectangle(rect.Left, rect.Top, rect.Width, rect.Height)

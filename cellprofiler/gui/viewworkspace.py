@@ -1,3 +1,4 @@
+# coding=utf-8
 """ViewWorkspace.py - view the image sets and object sets in a workspace
 """
 
@@ -94,7 +95,6 @@ class VWRow(object):
     def update(self):
         name = self.chooser.GetStringSelection()
         names = sorted(self.get_names())
-        image_set = self.vw.workspace.image_set
         if self.show_check.IsChecked() and name in names:
             self.data.name = name
             self.update_data(name)
@@ -123,7 +123,6 @@ class VWRow(object):
 class VWImageRow(VWRow):
     def __init__(self, vw, color, can_delete):
         super(VWImageRow, self).__init__(vw, color, can_delete)
-        image_set = vw.workspace.image_set
         name = self.chooser.GetStringSelection()
 
         im = cellprofiler.preferences.get_intensity_mode()
@@ -582,7 +581,6 @@ class ViewWorkspace(object):
         #
         # Remove all the old text labels
         #
-        to_remove = []
         for artist in list(self.axes.texts):
             artist.remove()
 
@@ -641,30 +639,12 @@ class ViewWorkspace(object):
                         fontstyle = "italic"
                     else:
                         fontstyle = "normal"
-                    color = measurement_row.foreground_color
                     fontcolor, backgroundcolor = [
                         tuple([float(c) / 255 for c in color][:3]) for color in
                         measurement_row.foreground_color,
                         measurement_row.background_color]
 
                     fmt = "%%.%df" % measurement_row.precision
-                    a = self.axes.annotate(
-                            fmt % value,
-                            (xi, yi),
-                            xytext=(0, -height),
-                            textcoords="offset points",
-                            ha="center",
-                            va="center",
-                            bbox={
-                                "boxstyle": measurement_row.box_style,
-                                "fc": backgroundcolor,
-                                "alpha": measurement_row.background_alpha
-                            },
-                            color=fontcolor,
-                            family=font.GetFaceName(),
-                            fontsize=font.GetPointSize(),
-                            fontstyle=fontstyle,
-                            weight=font.GetWeight())
                     height += font.GetPointSize() + 1
 
         self.scale_axes()

@@ -1,3 +1,4 @@
+# coding=utf-8
 """regexp_editor - give a user feedback on their regular expression
 """
 
@@ -67,7 +68,6 @@ class RegexpDialog(wx.Dialog):
         self.error_font = wx.SystemSettings.GetFont(wx.SYS_ANSI_VAR_FONT)
         temp = wx.ClientDC(self)
         temp.Font = self.font
-        edit_size = temp.GetTextExtent("                                        ")
         temp.Destroy()
 
         sizer = wx.BoxSizer(wx.VERTICAL)
@@ -323,7 +323,7 @@ IGNORABLE_GROUPS = (r"\(\?[iLmsux]+\)",
                     )
 
 
-class RegexpState:
+class RegexpState(object):
     def __init__(self):
         self.__group_count = 0
         self.__group_names = []

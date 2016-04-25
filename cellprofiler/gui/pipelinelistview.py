@@ -1,3 +1,4 @@
+# coding=utf-8
 """PipelineListView.py
 """
 
@@ -925,7 +926,6 @@ class PipelineListView(object):
 
         The debugging viewer needs to rewind to rerun a module after a change
         """
-        setting = event.get_setting()
         module = event.get_module()
         list_ctrl, index = self.get_ctrl_and_index(module)
         if (not module.is_input_module() and
@@ -1445,7 +1445,6 @@ class PipelineListCtrl(wx.PyScrolledWindow):
         dc.Background = wx.Brush(wx.SystemSettings.GetColour(wx.SYS_COLOUR_LISTBOX))
         dc.Clear()
         dc.Font = self.Font
-        rn = wx.RendererNative.Get()
         if self.test_mode:
             #
             # Draw the slider

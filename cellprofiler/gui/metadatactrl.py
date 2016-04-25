@@ -1,3 +1,4 @@
+# coding=utf-8
 """metadatadlg.py - dialog for editing an expression that might contain metadata
 """
 
@@ -178,7 +179,6 @@ class MetadataControl(wx.PyControl):
             self.Refresh()
         elif pos < self.padding:
             self.offset = rawpos
-            pos = self.padding
             self.Refresh()
         elif rawpos + self.GetTextExtent("M")[0] < xsize:
             self.offset = 0
@@ -440,7 +440,6 @@ class MetadataControl(wx.PyControl):
         event.Skip()
 
     def hit_test(self, pos):
-        text = self.get_text(0, len(self.__tokens))
         dc = wx.ClientDC(self)
         dc.Font = self.Font
         positions = self.get_positions(dc)
@@ -551,7 +550,6 @@ class MetadataControl(wx.PyControl):
                 dc.SetClippingRect((self.padding, self.padding,
                                     self.ClientSize[0] - 2 * self.padding,
                                     self.ClientSize[1] - 2 * self.padding))
-            text = self.get_text(0, len(self.__tokens))
             positions = self.get_positions(dc)
 
             last_state = "unknown"

@@ -1,3 +1,4 @@
+# coding=utf-8
 """editobjectsdlg.py - a dialog box that lets the user edit objects
 
 """
@@ -268,7 +269,7 @@ class EditObjectsDialog(wx.Dialog):
                 finally:
                     self.Parent.inside_print = False
 
-        self.panel = CanvasPatch(self, -1, self.figure)
+        self.panel = CanvasPatch()
         self.toolbar = cellprofiler.gui.cpfigure.CPNavigationToolbar(self.panel)
         self.sash_parent = wx.Panel(self)
         #
@@ -708,7 +709,6 @@ class EditObjectsDialog(wx.Dialog):
     ##########################################
 
     def display(self):
-        orig_objects_name = self.title
         if len(self.orig_axes.images) > 0:
             # Save zoom and scale if coming through here a second time
             x0, x1 = self.orig_axes.get_xlim()
@@ -1207,7 +1207,6 @@ class EditObjectsDialog(wx.Dialog):
         if (self.mode == self.FREEHAND_DRAW_MODE and
                     self.active_artist is not None):
             self.orig_axes.draw_artist(self.active_artist)
-            old = self.panel.IsShownOnScreen
         #
         # Need to keep "blit" from drawing on the screen.
         #
@@ -1991,7 +1990,6 @@ class EditObjectsDialog(wx.Dialog):
                 # chain and keep adding points until the maximum
                 # error caused by leaving a point out is 4
                 #
-                minarea = 10
                 if len(chain) > 10:
                     accepted = numpy.zeros(len(chain), bool)
                     accepted[0] = True

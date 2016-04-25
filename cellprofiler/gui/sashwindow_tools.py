@@ -1,3 +1,4 @@
+# coding=utf-8
 """sashwindow_tools.py - custom painting of sashwindows
 
 This module takes over painting the sash window to make it a little more obvious

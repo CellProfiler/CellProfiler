@@ -1,3 +1,4 @@
+# coding=utf-8
 """AddModuleFrame.py - this is the window frame and the subwindows
 that give you the GUI to add a module to a pipeline
 """
@@ -130,24 +131,6 @@ class AddModuleFrame(wx.Frame):
                 module = cellprofiler.modules.instantiate_module(mn)
                 module.set_module_num(module_num)
                 return module
-
-            try:
-                module = cellprofiler.modules.get_module_class(mn)
-                if module.is_input_module():
-                    continue
-                categories = ([module.category]
-                              if isinstance(module.category, str)
-                              else list(module.category)) + ['All']
-                for category in categories:
-                    if category not in self.__module_files:
-                        self.__module_files.insert(-2, category)
-                        self.__module_dict[category] = {}
-                    self.__module_dict[category][module.module_name] = loader
-            except Exception, e:
-                import traceback
-                import logging
-                logging.root.error(
-                        "Unable to instantiate module %s.\n\n", mn, exc_info=True)
 
     def __set_categories(self):
         self.__module_categories_list_box.AppendItems(self.__module_files)

@@ -2206,10 +2206,6 @@ class ModuleView:
                             desired_fg = cellprofiler.preferences.get_error_color()
                         elif level == logging.WARNING:
                             desired_bg = WARNING_COLOR
-                    if any([
-                        static_text.SetForegroundColour(desired_fg),
-                        static_text.SetBackgroundColour(wx.NullColour)]):
-                        static_text.Refresh()
         except Exception:
             logger.debug("Caught bare exception in ModuleView.on_validate()", exc_info=True)
             pass

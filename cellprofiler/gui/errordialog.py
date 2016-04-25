@@ -405,7 +405,6 @@ def display_error_message(parent, message, title, buttons=None,
         message_ctrl = wx.TextCtrl(
                 dlg, value=message,
                 style=wx.TE_MULTILINE | wx.TE_READONLY | wx.NO_BORDER)
-        message_ctrl.SetBackgroundColour(dlg.BackgroundColour)
         line_sizes = [message_ctrl.GetTextExtent(line)
                       for line in message.split("\n")]
         width = reduce(max, [x[0] for x in line_sizes])

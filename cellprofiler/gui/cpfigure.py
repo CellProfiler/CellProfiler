@@ -278,7 +278,6 @@ class CPFigureFrame(wx.Frame):
             pos = cellprofiler.preferences.get_next_cpfigure_position()
         super(CPFigureFrame, self).__init__(parent, identifier, title, pos, size, style, name)
         self.close_fn = on_close
-        self.BackgroundColour = cellprofiler.preferences.get_background_color()
         self.mouse_mode = MODE_NONE
         self.length_arrow = None
         self.table = None
@@ -502,7 +501,6 @@ class CPFigureFrame(wx.Frame):
             self.secret_panel.SetSize((sp_width, available_height - nbheight))
             self.secret_panel.Layout()
             self.secret_panel.SetupScrolling()
-            self.secret_panel.BackgroundColour = self.BackgroundColour
             self.secret_panel.ClearBackground()
             self.secret_panel.Refresh()
             for kid in self.secret_panel.GetChildren():
@@ -1452,19 +1450,18 @@ class CPFigureFrame(wx.Frame):
         image = image.astype(numpy.float32)
         if isinstance(colormap, matplotlib.cm.ScalarMappable):
             colormap = colormap.cmap
+        
         # Perform normalization
-        if normalize:
+        if normalize == 'log':
             if is_color_image(image):
-                image = numpy.dstack([auto_contrast(image[:, :, ch])
-                                      for ch in range(image.shape[2])])
-            else:
-                image = auto_contrast(image)
-        elif normalize == 'log':
-            if is_color_image(image):
-                image = numpy.dstack([log_transform(image[:, :, ch])
-                                      for ch in range(image.shape[2])])
+                image = numpy.dstack([log_transform(image[:, :, ch]) for ch in range(image.shape[2])])
             else:
                 image = log_transform(image)
+        elif normalize:
+            if is_color_image(image):
+                image = numpy.dstack([auto_contrast(image[:, :, ch]) for ch in range(image.shape[2])])
+            else:
+                image = auto_contrast(image)
 
         # Apply rgb mask to hide/show channels
         if is_color_image(image):

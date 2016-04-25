@@ -330,7 +330,6 @@ class FlipAndRotate(cpm.CPModule):
                   0, wx.ALIGN_CENTER_HORIZONTAL)
         canvas = wx.StaticBitmap(dialog)
         canvas.SetDoubleBuffered(True)
-        canvas.BackgroundColour = wx.Colour(0, 0, 0, wx.ALPHA_TRANSPARENT)
         sizer.Add(canvas, 0,
                   wx.ALIGN_CENTER_HORIZONTAL |
                   wx.ALIGN_CENTER_VERTICAL | wx.ALL, 5)

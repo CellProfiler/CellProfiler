@@ -18,7 +18,6 @@ WELCOME_SCREEN_FRAME = "WelcomeScreenFrame"
 class HtmlClickableWindow(wx.html.HtmlWindow):
     def __init__(self, *args, **kwargs):
         wx.html.HtmlWindow.__init__(self, *args, **kwargs)
-        self.HTMLBackgroundColour = get_background_color()
 
     def load_startup_blurb(self):
         self.OnLinkClicked(wx.html.HtmlLinkInfo('startup_main', ''))
@@ -46,7 +45,6 @@ class HtmlClickableWindow(wx.html.HtmlWindow):
             html_str = cellprofiler.gui.html.content.WELCOME_HELP[href]
             html_str += '<p>Go <a href="startup_main">back</a> to the welcome screen.</p>'
             self.SetPage(html_str)
-            self.BackgroundColour = get_background_color()
         elif href.startswith('load:'):
             pipeline_filename = href[5:]
             try:
@@ -109,7 +107,6 @@ class HtmlClickableWindow(wx.html.HtmlWindow):
             newpage = content.find_link(href)
             if newpage is not None:
                 self.SetPage(newpage)
-                self.BackgroundColour = get_background_color()
             else:
                 super(HtmlClickableWindow, self).OnLinkClicked(linkinfo)
 

@@ -98,7 +98,6 @@ class ParameterSampleFrame(wx.Frame):
         self.__frame_sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSize(wx.Size(700, 350))
         self.SetSizer(self.__frame_sizer)
-        self.BackgroundColour = cellprofiler.preferences.get_background_color()
 
         # Get parameters
         self.__parameters_list = self.get_parameters_list()

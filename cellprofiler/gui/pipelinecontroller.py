@@ -311,7 +311,6 @@ class PipelineController:
         bkgnd_color = cellprofiler.preferences.get_background_color()
         assert isinstance(panel, wx.Window)
         self.__test_controls_panel = panel
-        panel.SetBackgroundColour(bkgnd_color)
         #
         # There are three sizers, one for each mode:
         # * tcp_launch_sizer - when idle, for launching analysis or test mode
@@ -412,9 +411,6 @@ class PipelineController:
         self.__tcp_next_imageset.SetToolTip(wx.ToolTip("Jump to next image set"))
         self.__tcp_next_imageset.Bind(wx.EVT_BUTTON, self.on_debug_next_image_set)
         sub_sizer.Add(self.__tcp_next_imageset, 1, wx.EXPAND)
-
-        for child in panel.GetChildren():
-            child.SetBackgroundColour(bkgnd_color)
 
         self.show_launch_controls()
 
@@ -580,7 +576,25 @@ class PipelineController:
                 # In response to user interaction, so pass
                 self.__pipeline.clear()
             finally:
-                cellprofiler.preferences.remove_progress_callback(progress_callback_fn)
+                cpprefs.remove_progress_callback(progress_callback_fn)
+        # issue #1855 - apparently there is a WX bug in 3.0 that
+        # disables buttons during the progress bar display (good),
+        # re-enables the buttons after the progress bar is down (good)
+        # but fails to repaint them, leaving them gray (bad).
+        #
+        # I tried "wx.CallAfter" but the progress bar UI is still up
+        # even though the Python progress bar object has been destroyed.
+        #
+        wx.CallLater(250, self.repaint_after_progress_bar)
+
+    def repaint_after_progress_bar(self):
+        parent_stack = [self.__frame]
+        while len(parent_stack) > 0:
+            window = parent_stack.pop()
+            for child in window.GetChildren():
+                if child.IsShown():
+                    child.Refresh(eraseBackground=True)
+                    parent_stack.append(child)
 
     def display_pipeline_message_for_user(self):
         if self.__pipeline.message_for_user is not None:
@@ -592,8 +606,6 @@ class PipelineController:
             frame.Sizer.Add(panel, 1, wx.EXPAND)
             panel.Sizer = wx.BoxSizer(wx.VERTICAL)
             subpanel = wx.Panel(panel)
-            subpanel.BackgroundColour = wx.SystemSettings.GetColour(
-                    wx.SYS_COLOUR_WINDOW)
             panel.Sizer.Add(subpanel, 1, wx.EXPAND)
             subpanel.Sizer = wx.BoxSizer(wx.VERTICAL)
             subpanel.Sizer.AddSpacer(15)
@@ -1065,8 +1077,6 @@ class PipelineController:
         frame.Sizer.Add(panel, 1, wx.EXPAND)
         panel.Sizer = wx.BoxSizer(wx.VERTICAL)
         subpanel = wx.Panel(panel)
-        subpanel.BackgroundColour = wx.SystemSettings.GetColour(
-                wx.SYS_COLOUR_WINDOW)
         panel.Sizer.Add(subpanel, 1, wx.EXPAND)
         subpanel.Sizer = wx.BoxSizer(wx.VERTICAL)
         subpanel.Sizer.AddSpacer(15)
@@ -3420,7 +3430,10 @@ class PipelineController:
         return self.__pipeline.Run(self.__frame)
 
 
-class FLDropTarget(wx.PyDropTarget):
+# TODO: wx 3.0 seems to have broken the composite drop target functionality
+#       so I am reverting to only allowing files, hence the commented-out code
+#
+class FLDropTarget(wx.FileDropTarget):
     """A generic drop target (for the path list)"""
 
     def __init__(self, file_callback_fn, text_callback_fn):
@@ -3432,7 +3445,7 @@ class FLDropTarget(wx.PyDropTarget):
         self.composite_data_object = wx.DataObjectComposite()
         self.composite_data_object.Add(self.file_data_object, True)
         self.composite_data_object.Add(self.text_data_object)
-        self.SetDataObject(self.composite_data_object)
+        #self.SetDataObject(self.composite_data_object)
 
     def OnDropFiles(self, x, y, filenames):
         self.file_callback_fn(x, y, filenames)
@@ -3440,24 +3453,22 @@ class FLDropTarget(wx.PyDropTarget):
     def OnDropText(self, x, y, text):
         self.text_callback_fn(x, y, text)
 
-    @staticmethod
-    def OnEnter(x, y, d):
+    def OnEnter(self, x, y, d):
         return wx.DragCopy
 
-    @staticmethod
-    def OnDragOver(x, y, d):
+    def OnDragOver(self, x, y, d):
         return wx.DragCopy
 
-    def OnData(self, x, y, d):
-        if self.GetData():
-            df = self.composite_data_object.GetReceivedFormat().GetType()
-            if df in (wx.DF_TEXT, wx.DF_UNICODETEXT):
-                self.OnDropText(x, y, self.text_data_object.GetText())
-            elif df == wx.DF_FILENAME:
-                self.OnDropFiles(x, y,
-                                 self.file_data_object.GetFilenames())
-        return wx.DragCopy
-
-    @staticmethod
-    def OnDrop(x, y):
-        return True
+    #def OnData(self, x, y, d):
+    #    if self.GetData():
+    #        df = self.composite_data_object.GetReceivedFormat().GetType()
+    #        if df in (wx.DF_TEXT, wx.DF_UNICODETEXT):
+    #            self.OnDropText(x, y, self.text_data_object.GetText())
+    #        elif df == wx.DF_FILENAME:
+    #            self.OnDropFiles(x, y,
+    #                             self.file_data_object.GetFilenames())
+    #    return wx.DragCopy
+    #
+    #@staticmethod
+    #def OnDrop(x, y):
+    #    return True

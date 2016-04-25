@@ -29,14 +29,6 @@ from cellprofiler.modules.tests import \
     example_images_directory, maybe_download_example_image, maybe_download_sbs
 
 
-def has_rpdb():
-    try:
-        from cellprofiler.utilities.rpdb import Rpdb
-        return True
-    except:
-        return False
-
-
 class TestAnalysisWorker(unittest.TestCase):
     @classmethod
     def setUpClass(cls):

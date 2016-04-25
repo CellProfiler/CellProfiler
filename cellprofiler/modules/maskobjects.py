@@ -337,7 +337,7 @@ class MaskObjects(I.Identify):
     def display(self, workspace, figure):
         '''Create an informative display for the module'''
         import matplotlib
-        from cellprofiler.gui.cpfigure import renumber_labels_for_display
+        from cellprofiler.gui.cpfigure_tools import renumber_labels_for_display
         original_labels = workspace.display_data.original_labels
         final_labels = workspace.display_data.final_labels
         mask = workspace.display_data.mask

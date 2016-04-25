@@ -1,10 +1,11 @@
+*.egg-info/
+*.iml
+*.pyc
 .cache/
 .eggs/
 .idea/
-*.egg-info/
+.python-version
 build/
 dist/
-plugins/
-.python-version
-*.pyc
 frozen_version.py
+plugins/

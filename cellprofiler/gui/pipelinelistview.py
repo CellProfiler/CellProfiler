@@ -142,7 +142,6 @@ class PipelineListView(object):
         self.outputs_panel = wx.Panel(panel)
         outputs_sizer.Add(self.outputs_panel, 1, wx.EXPAND)
         self.outputs_panel.Sizer = wx.BoxSizer()
-        self.outputs_panel.BackgroundColour = wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW)
         if wx.VERSION < (2, 9):
             self.outputs_panel.BackgroundStyle = wx.SOLID
         else:

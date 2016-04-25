@@ -742,6 +742,25 @@ class Number(Text):
             self.__default = self.str_to_value(value_text)
         except:
             logger.debug("Number set to illegal value: %s" % value_text)
+            
+    def set_min_value(self, minval):
+        '''Programatically set the minimum value allowed'''
+        self.__minval = minval
+
+    def set_max_value(self, minval):
+        '''Programatically set the maximum value allowed'''
+        self.__maxval = maxval
+        
+    def get_min_value(self):
+        '''The minimum value (inclusive) that can legally be entered'''
+        return self.__minval
+    
+    def get_max_value(self):
+        '''The maximum value (inclusive) that can legally be entered'''
+        return self.__maxval
+    
+    min_value = property(get_min_value, set_min_value)
+    max_value = property(get_max_value, set_max_value)
 
     def test_valid(self, pipeline):
         """Return true only if the text value is float

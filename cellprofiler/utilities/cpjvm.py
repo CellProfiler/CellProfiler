@@ -246,7 +246,13 @@ def cp_stop_vm(kill=True):
     whatever action is needed to stop AWT and the JVM.
     '''
     from imagej.imagej2 import allow_quit, the_imagej_context
-    ij1 = javabridge.JClassWrapper("ij.IJ").getInstance()
+
+    try:
+        ij1 = javabridge.JClassWrapper("ij.IJ").getInstance()
+    except javabridge.JavaException as e:
+        logger.debug("No available instance: %s" % str(e))
+        ij1 = None
+
     if the_imagej_context is not None:
         #
         # Tell the app service that it's OK to quit without prompt

@@ -129,7 +129,7 @@ from weakref import WeakSet
 import cellprofiler.workspace as cpw
 import cellprofiler.measurement as cpmeas
 import cellprofiler.configuration as cpprefs
-from cellprofiler.gui.errordialog import ED_STOP, ED_SKIP
+from cellprofiler.application.errordialog import ED_STOP, ED_SKIP
 from cellprofiler.analysis import \
     PipelinePreferencesRequest, InitialMeasurementsRequest, WorkRequest, \
     NoWorkReply, MeasurementsReport, InteractionRequest, DisplayRequest, \

@@ -5,14 +5,14 @@
 import cellprofiler.analysis
 import cellprofiler.image
 import cellprofiler.extension
-import cellprofiler.gui.addmoduleframe
-import cellprofiler.gui.help
-import cellprofiler.gui.htmldialog
-import cellprofiler.gui.moduleview
-import cellprofiler.gui.omerologin
-import cellprofiler.gui.parametersampleframe
-import cellprofiler.gui.pathlist
-import cellprofiler.gui.viewworkspace
+import cellprofiler.application.addmoduleframe
+import cellprofiler.application.help
+import cellprofiler.application.htmldialog
+import cellprofiler.application.moduleview
+import cellprofiler.application.omerologin
+import cellprofiler.application.parametersampleframe
+import cellprofiler.application.pathlist
+import cellprofiler.application.viewworkspace
 import cellprofiler.icons
 import cellprofiler.measurement
 import cellprofiler.extensions.loadimages
@@ -63,7 +63,7 @@ class PipelineController(object):
         pipeline.add_listener(self.__on_pipeline_event)
         self.__analysis = None
         self.__frame = frame
-        self.__add_module_frame = cellprofiler.gui.addmoduleframe.AddModuleFrame(frame, -1, "Add extensions")
+        self.__add_module_frame = cellprofiler.application.addmoduleframe.AddModuleFrame(frame, -1, "Add extensions")
         self.__add_module_frame.add_listener(self.on_add_to_pipeline)
         # ~*~
         self.__parameter_sample_frame = None
@@ -447,7 +447,7 @@ class PipelineController(object):
         self.__frame.enable_debug_commands()
 
     def omero_login(self):
-        with cellprofiler.gui.omerologin.OmeroLoginDlg(self.__frame, title="Log into Omero") as dlg:
+        with cellprofiler.application.omerologin.OmeroLoginDlg(self.__frame, title="Log into Omero") as dlg:
             dlg.ShowModal()
 
     def __on_open_workspace(self, event):
@@ -925,7 +925,7 @@ class PipelineController(object):
         except cellprofiler.pipeline.PipelineLoadCancelledException:
             self.__pipeline.clear()
         except Exception, instance:
-            from cellprofiler.gui.errordialog import display_error_dialog
+            from cellprofiler.application.errordialog import display_error_dialog
             errordialog.display_error_dialog(self.__frame, instance, self.__pipeline,
                                              continue_only=True)
 
@@ -1128,7 +1128,7 @@ class PipelineController(object):
                     self.__workspace.pipeline.save_pipeline_notes(fd)
 
     def __on_plateviewer(self, event):
-        import cellprofiler.gui.plateviewer as pv
+        import cellprofiler.application.plateviewer as pv
 
         data = pv.PlateData()
         try:
@@ -1211,8 +1211,8 @@ class PipelineController(object):
                 dlg.EndModal(0)
 
             def do_help(event):
-                cellprofiler.gui.htmldialog.HTMLDialog(self.__frame, "Help for plate viewer",
-                                                       cellprofiler.gui.help.PLATEVIEWER_HELP).Show()
+                cellprofiler.application.htmldialog.HTMLDialog(self.__frame, "Help for plate viewer",
+                                                               cellprofiler.application.help.PLATEVIEWER_HELP).Show()
 
             ok_button.Bind(wx.EVT_BUTTON, do_ok)
             help_button.Bind(wx.EVT_BUTTON, do_help)
@@ -1598,7 +1598,7 @@ class PipelineController(object):
 
     def on_pathlist_show(self, event=None):
         """Show the focused item's image"""
-        from cellprofiler.gui.cpfigure import show_image
+        from cellprofiler.application.cpfigure import show_image
         from cellprofiler.extensions.loadimages import url2pathname
         paths = self.__path_list_ctrl.get_paths(
             self.__path_list_ctrl.FLAG_FOCUS_ITEM_ONLY)
@@ -1827,10 +1827,10 @@ class PipelineController(object):
                 def on_plc_change(event):
                     ok_button.Enable(self.__path_list_ctrl.has_selections())
 
-                self.__path_list_ctrl.Bind(cellprofiler.gui.pathlist.EVT_PLC_SELECTION_CHANGED,
+                self.__path_list_ctrl.Bind(cellprofiler.application.pathlist.EVT_PLC_SELECTION_CHANGED,
                                            on_plc_change)
                 result = dlg.ShowModal()
-                self.__path_list_ctrl.Unbind(cellprofiler.gui.pathlist.EVT_PLC_SELECTION_CHANGED)
+                self.__path_list_ctrl.Unbind(cellprofiler.application.pathlist.EVT_PLC_SELECTION_CHANGED)
                 if result == wx.ID_OK:
                     paths = self.__path_list_ctrl.get_paths(
                         self.__path_list_ctrl.FLAG_SELECTED_ONLY)
@@ -1967,7 +1967,7 @@ class PipelineController(object):
 
     def on_menu_add_module(self, event):
         from cellprofiler.extensions import instantiate_module
-        from cellprofiler.gui.addmoduleframe import AddToPipelineEvent
+        from cellprofiler.application.addmoduleframe import AddToPipelineEvent
         assert isinstance(event, wx.CommandEvent)
         if self.menu_id_to_module_name.has_key(event.Id):
             module_name = self.menu_id_to_module_name[event.Id]
@@ -2203,7 +2203,7 @@ class PipelineController(object):
 
     def __on_module_view_event(self, caller, event):
         assert isinstance(event,
-                          cellprofiler.gui.moduleview.SettingEditedEvent), '%s is not an instance of CellProfiler.CellProfilerGUI.ModuleView.SettingEditedEvent' % (
+                          cellprofiler.application.moduleview.SettingEditedEvent), '%s is not an instance of CellProfiler.CellProfilerGUI.ModuleView.SettingEditedEvent' % (
             str(event))
         setting = event.get_setting()
         proposed_value = event.get_proposed_value()
@@ -2853,7 +2853,7 @@ class PipelineController(object):
                       select_next_module):
                 self.__pipeline_list_view.select_one_module(module.module_num + 1)
             failure = 0
-            cellprofiler.gui.viewworkspace.update_workspace_viewer(workspace)
+            cellprofiler.application.viewworkspace.update_workspace_viewer(workspace)
         except Exception, instance:
             logger.error("Failed to run module %s", module.module_name,
                          exc_info=True)
@@ -3238,7 +3238,7 @@ class PipelineController(object):
             self.__debug_object_set,
             self.__debug_measurements,
             self.__debug_image_set_list)
-        cellprofiler.gui.viewworkspace.show_workspace_viewer(self.__frame, workspace)
+        cellprofiler.application.viewworkspace.show_workspace_viewer(self.__frame, workspace)
 
     def on_sample_init(self, event):
         if self.__module_view is not None:
@@ -3254,7 +3254,7 @@ class PipelineController(object):
             selected_module.test_valid(self.__pipeline)
 
             top_level_frame = self.__frame
-            self.parameter_sample_frame = cellprofiler.gui.parametersampleframe.ParameterSampleFrame(
+            self.parameter_sample_frame = cellprofiler.application.parametersampleframe.ParameterSampleFrame(
                 top_level_frame, selected_module, self.__pipeline, -1)
             self.parameter_sample_frame.Bind(
                 wx.EVT_CLOSE, self.on_parameter_sample_frame_close)

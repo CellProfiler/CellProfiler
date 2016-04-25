@@ -2,9 +2,9 @@
 """ cpfigure.py - provides a frame with a figure inside
 """
 
-import cellprofiler.gui
-import cellprofiler.gui.cpartists
-import cellprofiler.gui.help
+import cellprofiler.application
+import cellprofiler.application.cpartists
+import cellprofiler.application.help
 import cellprofiler.configuration
 import cellprofiler.configuration
 import centrosome.cpmorphology
@@ -259,7 +259,7 @@ class CPFigureFrame(wx.Frame):
                  style=wx.DEFAULT_FRAME_STYLE, name=wx.FrameNameStr,
                  subplots=None, on_close=None,
                  secret_panel_class=None,
-                 help_menu_items=cellprofiler.gui.help.FIGURE_HELP):
+                 help_menu_items=cellprofiler.application.help.FIGURE_HELP):
         """Initialize the frame:
 
         parent   - parent window to this one, typically CPFrame
@@ -321,7 +321,7 @@ class CPFigureFrame(wx.Frame):
         self.figure.canvas.mpl_connect('button_release_event', self.on_button_release)
         self.figure.canvas.mpl_connect('resize_event', self.on_resize)
         try:
-            self.SetIcon(cellprofiler.gui.get_cp_icon())
+            self.SetIcon(cellprofiler.application.get_cp_icon())
         except:
             pass
         if size == wx.DefaultSize:
@@ -357,7 +357,7 @@ class CPFigureFrame(wx.Frame):
                         wx.EVT_MENU(parent, window_id, on_menu_command)
                         self.remove_menu.append([menu, window_id])
 
-    def create_menu(self, figure_help=cellprofiler.gui.help.FIGURE_HELP):
+    def create_menu(self, figure_help=cellprofiler.application.help.FIGURE_HELP):
         self.MenuBar = wx.MenuBar()
         self.__menu_file = wx.Menu()
         self.__menu_file.Append(MENU_FILE_SAVE, "&Save")
@@ -392,7 +392,7 @@ class CPFigureFrame(wx.Frame):
 
         self.SetAcceleratorTable(accelerators)
         wx.EVT_MENU(self, MENU_CLOSE_WINDOW, self.on_close)
-        self.MenuBar.Append(cellprofiler.gui.help.make_help_menu(figure_help, self), "&Help")
+        self.MenuBar.Append(cellprofiler.application.help.make_help_menu(figure_help, self), "&Help")
 
     def create_toolbar(self):
         self.navtoolbar = CPNavigationToolbar(self.figure.canvas)
@@ -637,7 +637,7 @@ class CPFigureFrame(wx.Frame):
             elif isinstance(event.inaxes, matplotlib.axes.Axes):
                 for artist in event.inaxes.artists:
                     if isinstance(
-                            artist, cellprofiler.gui.cpartists.CPImageArtist):
+                            artist, cellprofiler.application.cpartists.CPImageArtist):
                         fields += ["%s: %.4f" % (k, v) for k, v in
                                    artist.get_channel_values(xi, yi).items()]
         else:
@@ -792,7 +792,7 @@ class CPFigureFrame(wx.Frame):
                                      fontsize=cellprofiler.configuration.get_title_font_size())
 
     def clear_subplot(self, x, y):
-        """Clear a subplot of its gui junk. Noop if no subplot exists at x,y
+        """Clear a subplot of its application junk. Noop if no subplot exists at x,y
 
         x - subplot's column
         y - subplot's row
@@ -1888,7 +1888,7 @@ def format_plate_data_as_array(plate_dict, plate_type):
         c = int(well[1:]) - 1
         if r >= data.shape[0] or c >= data.shape[1]:
             if display_error:
-                logging.getLogger("cellprofiler.gui.cpfigure").warning(
+                logging.getLogger("cellprofiler.application.cpfigure").warning(
                         'A well value (%s) does not fit in the given plate type.\n' % well)
                 display_error = False
             continue

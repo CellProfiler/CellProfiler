@@ -214,7 +214,7 @@ class Workspace(object):
         self.measurements.cache_object_set(self.object_set)
 
     def get_frame(self):
-        """The frame is CellProfiler's gui window
+        """The frame is CellProfiler's application window
 
         If the frame is present, a module should do its display
         """
@@ -228,7 +228,7 @@ class Workspace(object):
         self.__do_show = do_show
 
     def get_display(self):
-        """True to provide a gui display"""
+        """True to provide a application display"""
         return self.__frame is not None
 
     display = property(get_display)
@@ -243,7 +243,7 @@ class Workspace(object):
 
     def get_module_figure(self, module, image_set_number, parent=None):
         """Create a CPFigure window or find one already created"""
-        import cellprofiler.gui.cpfigure as cpf
+        import cellprofiler.application.cpfigure as cpf
         import cellprofiler.measurement as cpmeas
 
         # catch any background threads trying to call display functions.
@@ -279,7 +279,7 @@ class Workspace(object):
 
     def create_or_find_figure(self, title=None, subplots=None, window_name=None):
         """Create a matplotlib figure window or find one already created"""
-        import cellprofiler.gui.cpfigure as cpf
+        import cellprofiler.application.cpfigure as cpf
 
         # catch any background threads trying to call display functions.
         assert not self.__in_background

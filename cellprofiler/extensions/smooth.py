@@ -15,7 +15,7 @@ from centrosome.smooth import smooth_with_function_and_mask
 import cellprofiler.image as cpi
 import cellprofiler.extension as cpm
 import cellprofiler.setting as cps
-from cellprofiler.gui.help import HELP_ON_MEASURING_DISTANCES, HELP_ON_PIXEL_INTENSITIES
+from cellprofiler.application.help import HELP_ON_MEASURING_DISTANCES, HELP_ON_PIXEL_INTENSITIES
 from cellprofiler.setting import YES, NO
 
 FIT_POLYNOMIAL = 'Fit Polynomial'

@@ -1,5 +1,5 @@
 import cellprofiler.icons
-from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON
+from cellprofiler.application.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON
 
 __doc__ = '''<b>Identify Secondary Objects</b> identifies objects (e.g., cell edges) using
 objects identified by another module (e.g., nuclei) as a starting point.
@@ -146,7 +146,7 @@ from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 from centrosome.watershed import watershed
 from centrosome.filter import stretch
 from centrosome.outline import outline
-from cellprofiler.gui.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
+from cellprofiler.application.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
 
 M_PROPAGATION = "Propagation"
 M_WATERSHED_G = "Watershed - Gradient"

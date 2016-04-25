@@ -236,8 +236,8 @@ class RunMultplePipelinesDialog(wx.Dialog):
                     self.pipeline_list_view.SetStringItem(item, subitem, dlg.Filename)
 
     def on_help(self, event):
-        from cellprofiler.gui.help import RUN_MULTIPLE_PIPELINES_HELP
-        import cellprofiler.gui.htmldialog as H
+        from cellprofiler.application.help import RUN_MULTIPLE_PIPELINES_HELP
+        import cellprofiler.application.htmldialog as H
         H.HTMLDialog(self, "Run multiple pipelines help",
                      RUN_MULTIPLE_PIPELINES_HELP).Show()
 

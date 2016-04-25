@@ -1,7 +1,7 @@
 # coding=utf-8
-"""Tests for cellprofiler.gui.html.manual"""
+"""Tests for cellprofiler.application.html.manual"""
 
-import cellprofiler.gui.html.manual
+import cellprofiler.application.html.manual
 import cellprofiler.configuration
 import os
 import re
@@ -45,7 +45,7 @@ class TestManual(unittest.TestCase):
 
     def test_01_01_output_module_html(self):
         from cellprofiler.extensions import get_module_names, instantiate_module
-        cellprofiler.gui.html.manual.output_module_html(self.temp_dir)
+        cellprofiler.application.html.manual.output_module_html(self.temp_dir)
         for module_name in sorted(get_module_names()):
             fd = None
             try:

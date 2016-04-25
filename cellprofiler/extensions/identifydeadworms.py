@@ -272,10 +272,10 @@ class IdentifyDeadWorms(cpm.Extension):
     def display(self, workspace, figure):
         '''Show an informative display'''
         import matplotlib
-        import cellprofiler.gui.cpfigure
+        import cellprofiler.application.cpfigure
 
         figure.set_subplots((2, 1))
-        assert isinstance(figure, cellprofiler.gui.cpfigure.CPFigureFrame)
+        assert isinstance(figure, cellprofiler.application.cpfigure.CPFigureFrame)
 
         i = workspace.display_data.i
         j = workspace.display_data.j

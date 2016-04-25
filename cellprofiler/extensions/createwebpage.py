@@ -17,7 +17,7 @@ import cellprofiler.extension as cpm
 import cellprofiler.measurement as cpmeas
 import cellprofiler.configuration as cpprefs
 import cellprofiler.setting as cps
-from cellprofiler.gui.help import USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF
+from cellprofiler.application.help import USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF
 from cellprofiler.extensions.loadimages import C_FILE_NAME, C_PATH_NAME, C_URL
 from cellprofiler.extensions.loadimages import pathname2url
 from cellprofiler.setting import \
@@ -191,7 +191,7 @@ class CreateWebPage(cpm.Extension):
                 self.wants_zip_file, self.zipfile_name]
 
     def visible_settings(self):
-        '''the settings as displayed in the gui'''
+        '''the settings as displayed in the application'''
         result = [self.orig_image_name, self.wants_thumbnails]
         if self.wants_thumbnails:
             result += [self.thumbnail_image_name]

@@ -24,7 +24,7 @@ import cellprofiler.object as cpo
 import cellprofiler.configuration as cpprefs
 import cellprofiler.setting as cps
 import identify as I
-from cellprofiler.gui.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
+from cellprofiler.application.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
 
 TOOL_OUTLINE = "Outline"
 TOOL_ZOOM_IN = "Zoom in"
@@ -137,7 +137,7 @@ class IdentifyObjectsManually(I.Identify):
 
         returns - color image of same size as pixel_data
         '''
-        from cellprofiler.gui.cpfigure_tools import renumber_labels_for_display
+        from cellprofiler.application.cpfigure_tools import renumber_labels_for_display
         import matplotlib
 
         labels = renumber_labels_for_display(labels)
@@ -168,7 +168,7 @@ class IdentifyObjectsManually(I.Identify):
 
     def handle_interaction(self, pixel_data, image_set_number):
         '''Display a UI for editing'''
-        from cellprofiler.gui.editobjectsdlg import EditObjectsDialog
+        from cellprofiler.application.editobjectsdlg import EditObjectsDialog
         from wx import OK
         title = "%s #%d, image cycle #%d: " % (self.module_name,
                                                self.module_num,

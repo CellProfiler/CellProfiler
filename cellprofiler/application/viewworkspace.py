@@ -2,10 +2,10 @@
 """ViewWorkspace.py - view the image sets and object sets in a workspace
 """
 
-import cellprofiler.gui.cpartists
-import cellprofiler.gui.cpfigure
-import cellprofiler.gui.help
-import cellprofiler.gui.htmldialog
+import cellprofiler.application.cpartists
+import cellprofiler.application.cpfigure
+import cellprofiler.application.help
+import cellprofiler.application.htmldialog
 import cellprofiler.measurement
 import cellprofiler.extensions.identify
 import cellprofiler.configuration
@@ -40,7 +40,7 @@ def bind_data_class(data_class, color_select, fn_redraw):
                    to that of the data
     fn_redraw - function to be called
     """
-    assert issubclass(data_class, cellprofiler.gui.cpartists.ColorMixin)
+    assert issubclass(data_class, cellprofiler.application.cpartists.ColorMixin)
     assert isinstance(color_select, wx.lib.colourselect.ColourSelect)
 
     class bdc(data_class):
@@ -98,11 +98,11 @@ class VWRow(object):
         if self.show_check.IsChecked() and name in names:
             self.data.name = name
             self.update_data(name)
-            if self.data.mode == cellprofiler.gui.cpartists.MODE_HIDE:
+            if self.data.mode == cellprofiler.application.cpartists.MODE_HIDE:
                 self.data.mode = self.last_mode
-        elif self.data.mode != cellprofiler.gui.cpartists.MODE_HIDE:
+        elif self.data.mode != cellprofiler.application.cpartists.MODE_HIDE:
             self.last_mode = self.data.get_raw_mode()
-            self.data.mode = cellprofiler.gui.cpartists.MODE_HIDE
+            self.data.mode = cellprofiler.application.cpartists.MODE_HIDE
         self.update_chooser()
 
     def update_chooser(self, first=False):
@@ -127,21 +127,21 @@ class VWImageRow(VWRow):
 
         im = cellprofiler.configuration.get_intensity_mode()
         if im == cellprofiler.configuration.INTENSITY_MODE_LOG:
-            normalization = cellprofiler.gui.cpartists.NORMALIZE_LOG
+            normalization = cellprofiler.application.cpartists.NORMALIZE_LOG
         elif im == cellprofiler.configuration.INTENSITY_MODE_NORMAL:
-            normalization = cellprofiler.gui.cpartists.NORMALIZE_LINEAR
+            normalization = cellprofiler.application.cpartists.NORMALIZE_LINEAR
         else:
-            normalization = cellprofiler.gui.cpartists.NORMALIZE_RAW
+            normalization = cellprofiler.application.cpartists.NORMALIZE_RAW
         alpha = 1.0 / (len(vw.image_rows) + 1.0)
-        self.data = bind_data_class(cellprofiler.gui.cpartists.ImageData, self.color_ctrl, vw.redraw)(
+        self.data = bind_data_class(cellprofiler.application.cpartists.ImageData, self.color_ctrl, vw.redraw)(
                 name, None,
-                mode=cellprofiler.gui.cpartists.MODE_HIDE,
+                mode=cellprofiler.application.cpartists.MODE_HIDE,
                 color=self.color,
                 colormap=cellprofiler.configuration.get_default_colormap(),
                 alpha=alpha,
                 normalization=normalization)
         vw.image.add(self.data)
-        self.last_mode = cellprofiler.gui.cpartists.MODE_COLORIZE
+        self.last_mode = cellprofiler.application.cpartists.MODE_COLORIZE
 
     def get_names(self):
         return self.vw.workspace.image_set.get_names()
@@ -160,14 +160,14 @@ class VWObjectsRow(VWRow):
         super(VWObjectsRow, self).__init__(vw, color, can_delete)
         self.update_chooser(first=True)
         name = self.chooser.GetStringSelection()
-        self.data = bind_data_class(cellprofiler.gui.cpartists.ObjectsData, self.color_ctrl, vw.redraw)(
+        self.data = bind_data_class(cellprofiler.application.cpartists.ObjectsData, self.color_ctrl, vw.redraw)(
                 name, None,
                 outline_color=self.color,
                 colormap=cellprofiler.configuration.get_default_colormap(),
                 alpha=.5,
-                mode=cellprofiler.gui.cpartists.MODE_HIDE)
+                mode=cellprofiler.application.cpartists.MODE_HIDE)
         vw.image.add(self.data)
-        self.last_mode = cellprofiler.gui.cpartists.MODE_LINES
+        self.last_mode = cellprofiler.application.cpartists.MODE_LINES
 
     def get_names(self):
         object_set = self.vw.workspace.object_set
@@ -187,13 +187,13 @@ class VWMaskRow(VWRow):
         self.__cached_names = None
         self.update_chooser(first=True)
         name = self.chooser.GetStringSelection()
-        self.data = bind_data_class(cellprofiler.gui.cpartists.MaskData, self.color_ctrl, vw.redraw)(
+        self.data = bind_data_class(cellprofiler.application.cpartists.MaskData, self.color_ctrl, vw.redraw)(
                 name, None,
                 color=self.color,
                 alpha=.5,
-                mode=cellprofiler.gui.cpartists.MODE_HIDE)
+                mode=cellprofiler.application.cpartists.MODE_HIDE)
         vw.image.add(self.data)
-        self.last_mode = cellprofiler.gui.cpartists.MODE_LINES
+        self.last_mode = cellprofiler.application.cpartists.MODE_LINES
 
     def get_names(self):
         image_set = self.vw.workspace.image_set
@@ -209,7 +209,7 @@ class VWMaskRow(VWRow):
         self.data.mask = image.mask
 
 
-class VWFigureFrame(cellprofiler.gui.cpfigure.CPFigureFrame):
+class VWFigureFrame(cellprofiler.application.cpfigure.CPFigureFrame):
     def on_close(self, event):
         """Hide instead of close"""
         if isinstance(event, wx.CloseEvent):
@@ -228,7 +228,7 @@ class ViewWorkspace(object):
                 parent,
                 title="CellProfiler Workspace",
                 secret_panel_class=wx.lib.scrolledpanel.ScrolledPanel,
-                help_menu_items=cellprofiler.gui.help.WV_FIGURE_HELP)
+                help_menu_items=cellprofiler.application.help.WV_FIGURE_HELP)
         self.workspace = workspace
         self.ignore_redraw = False
         self.image_rows = []
@@ -240,12 +240,12 @@ class ViewWorkspace(object):
         self.axes.invert_yaxis()
         interpolation = cellprofiler.configuration.get_interpolation_mode()
         if interpolation == cellprofiler.configuration.IM_NEAREST:
-            interpolation = cellprofiler.gui.cpartists.INTERPOLATION_NEAREST
+            interpolation = cellprofiler.application.cpartists.INTERPOLATION_NEAREST
         elif interpolation == cellprofiler.configuration.IM_BILINEAR:
-            interpolation = cellprofiler.gui.cpartists.INTERPOLATION_BILINEAR
+            interpolation = cellprofiler.application.cpartists.INTERPOLATION_BILINEAR
         else:
-            interpolation = cellprofiler.gui.cpartists.INTERPOLATION_BICUBIC
-        self.image = cellprofiler.gui.cpartists.CPImageArtist(interpolation=interpolation)
+            interpolation = cellprofiler.application.cpartists.INTERPOLATION_BICUBIC
+        self.image = cellprofiler.application.cpartists.CPImageArtist(interpolation=interpolation)
         assert isinstance(self.axes, matplotlib.axes.Axes)
         self.axes.add_artist(self.image)
         self.axes.set_aspect('equal')
@@ -377,8 +377,8 @@ class ViewWorkspace(object):
         panel.Sizer.Add(help_button, 0, wx.ALIGN_RIGHT)
 
         def on_help(event):
-            cellprofiler.gui.htmldialog.HTMLDialog(panel, "Workspace viewer help",
-                                                   cellprofiler.gui.help.WORKSPACE_VIEWER_HELP).Show()
+            cellprofiler.application.htmldialog.HTMLDialog(panel, "Workspace viewer help",
+                                                           cellprofiler.application.help.WORKSPACE_VIEWER_HELP).Show()
 
         help_button.Bind(wx.EVT_BUTTON, on_help)
         self.image.add_to_menu(self.frame, self.frame.menu_subplots)
@@ -396,7 +396,7 @@ class ViewWorkspace(object):
         if self.frame.navtoolbar.is_home():
             max_x = max_y = 0
             for image_row in self.image_rows:
-                if image_row.data.mode != cellprofiler.gui.cpartists.MODE_HIDE:
+                if image_row.data.mode != cellprofiler.application.cpartists.MODE_HIDE:
                     shape = image_row.data.pixel_data.shape
                     max_x = max(shape[1], max_x)
                     max_y = max(shape[0], max_y)

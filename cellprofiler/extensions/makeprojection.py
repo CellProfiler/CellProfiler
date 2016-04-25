@@ -1,4 +1,4 @@
-from cellprofiler.gui.help import LOADING_IMAGE_SEQ_HELP_REF
+from cellprofiler.application.help import LOADING_IMAGE_SEQ_HELP_REF
 
 __doc__ = '''
 <b>Make Projection</b> combines several two-dimensional images of

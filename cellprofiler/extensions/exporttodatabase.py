@@ -1,5 +1,5 @@
 import cellprofiler.icons
-from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON
+from cellprofiler.application.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON
 
 __doc__ = '''<b>Export To Database</b> exports data directly to a database, or in
 database readable format, including an imported file
@@ -88,7 +88,7 @@ import cellprofiler.measurement as cpmeas
 from cellprofiler.pipeline import GROUP_INDEX, M_MODIFICATION_TIMESTAMP
 from identify import M_NUMBER_OBJECT_NUMBER
 from cellprofiler.extensions.loadimages import C_FILE_NAME, C_PATH_NAME
-from cellprofiler.gui.help import USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF, USING_METADATA_GROUPING_HELP_REF
+from cellprofiler.application.help import USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF, USING_METADATA_GROUPING_HELP_REF
 from cellprofiler.configuration import \
     standardize_default_folder_names, DEFAULT_INPUT_FOLDER_NAME, \
     DEFAULT_OUTPUT_FOLDER_NAME, DEFAULT_INPUT_SUBFOLDER_NAME, \

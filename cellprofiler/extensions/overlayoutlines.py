@@ -226,7 +226,7 @@ class OverlayOutlines(cpm.Extension):
         return True
 
     def display(self, workspace, figure):
-        from cellprofiler.gui.cpfigure import CPLD_LABELS, CPLD_NAME, \
+        from cellprofiler.application.cpfigure import CPLD_LABELS, CPLD_NAME, \
             CPLD_OUTLINE_COLOR, CPLD_MODE, CPLDM_OUTLINES, CPLDM_ALPHA, \
             CPLDM_NONE, CPLD_LINE_WIDTH, CPLD_ALPHA_COLORMAP, CPLD_ALPHA_VALUE
 

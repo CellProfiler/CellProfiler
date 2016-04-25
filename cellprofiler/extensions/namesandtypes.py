@@ -1,5 +1,5 @@
 import cellprofiler.icons
-from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON, NAMESANDTYPES_DISPLAY_TABLE, \
+from cellprofiler.application.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON, NAMESANDTYPES_DISPLAY_TABLE, \
     EXAMPLE_DAPI_PIC, EXAMPLE_GFP_PIC
 
 __doc__ = """
@@ -103,8 +103,8 @@ from cellprofiler.extensions.images import ImagePredicate
 from cellprofiler.extensions.images import DirectoryPredicate
 from cellprofiler.extensions.loadimages import LoadImagesImageProviderURL
 from cellprofiler.extensions.loadimages import convert_image_to_objects
-from cellprofiler.gui.help import FILTER_RULES_BUTTONS_HELP, USING_METADATA_HELP_REF
-from cellprofiler.gui.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
+from cellprofiler.application.help import FILTER_RULES_BUTTONS_HELP, USING_METADATA_HELP_REF
+from cellprofiler.application.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
 from bioformats import get_omexml_metadata, load_image
 import bioformats.omexml as OME
 import javabridge as J

@@ -3,9 +3,9 @@
 """
 
 import cellprofiler.image
-import cellprofiler.gui
-import cellprofiler.gui.cpfigure
-import cellprofiler.gui.moduleview
+import cellprofiler.application
+import cellprofiler.application.cpfigure
+import cellprofiler.application.moduleview
 import cellprofiler.measurement
 import cellprofiler.extensions
 import cellprofiler.object
@@ -61,7 +61,7 @@ class DataToolFrame(wx.Frame):
 
         module_panel = wx.lib.scrolledpanel.ScrolledPanel(self, style=wx.SUNKEN_BORDER)
 
-        self.module_view = cellprofiler.gui.moduleview.ModuleView(module_panel, self.workspace, True)
+        self.module_view = cellprofiler.application.moduleview.ModuleView(module_panel, self.workspace, True)
         self.module_view.set_selection(self.module.module_num)
 
         def on_change(caller, event):
@@ -119,8 +119,8 @@ class DataToolFrame(wx.Frame):
         module_panel.Layout()
         self.Show()
         self.tbicon = wx.TaskBarIcon()
-        self.tbicon.SetIcon(cellprofiler.gui.get_cp_icon(), "CellProfiler2.0")
-        self.SetIcon(cellprofiler.gui.get_cp_icon())
+        self.tbicon.SetIcon(cellprofiler.application.get_cp_icon(), "CellProfiler2.0")
+        self.SetIcon(cellprofiler.application.get_cp_icon())
 
     def on_load_measurements(self, event):
         dlg = wx.FileDialog(self, "Load a measurements file",
@@ -215,7 +215,7 @@ class DataToolFrame(wx.Frame):
         self.module.run_as_data_tool(workspace)
         self.measurements.flush()
         if self.module.show_window:
-            fig = cellprofiler.gui.cpfigure.create_or_find(
+            fig = cellprofiler.application.cpfigure.create_or_find(
                     parent=self,
                     title="%s Output" % self.module.module_name,
                     name="CellProfiler:DataTool:%s" % self.module.module_name)

@@ -1,4 +1,4 @@
-from cellprofiler.gui.help import BATCH_PROCESSING_HELP_REF
+from cellprofiler.application.help import BATCH_PROCESSING_HELP_REF
 
 __doc__ = '''
 <b>Create Batch Files</b> produces files that allow individual batches of images to be processed

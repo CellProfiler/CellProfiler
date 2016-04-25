@@ -21,7 +21,7 @@ import cellprofiler.measurement as cpmeas
 import cellprofiler.pipeline as cpp
 import cellprofiler.configuration as cpprefs
 import cellprofiler.utilities.zmqrequest as cpzmq
-from cellprofiler.gui.errordialog import ED_CONTINUE, ED_SKIP, ED_STOP
+from cellprofiler.application.errordialog import ED_CONTINUE, ED_SKIP, ED_STOP
 from cellprofiler.extensions.identify import C_COUNT, M_LOCATION_CENTER_X
 from cellprofiler.extensions.loadimages import pathname2url
 from cellprofiler.extensions.namesandtypes import M_IMAGE_SET

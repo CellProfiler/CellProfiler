@@ -191,7 +191,7 @@ def main(args=None):
         # Handle command-line tasks that that need to load the extensions to run
         #
         if options.output_html:
-            from cellprofiler.gui.html.manual import generate_html
+            from cellprofiler.application.html.manual import generate_html
             webpage_path = options.output_directory if options.output_directory else None
             generate_html(webpage_path)
             return
@@ -209,7 +209,7 @@ def main(args=None):
         if options.show_gui:
             import wx
             wx.Log.EnableLogging(False)
-            from cellprofiler.gui.app import App
+            from cellprofiler.application.app import App
             from cellprofiler.workspace import is_workspace_file
 
             if options.pipeline_filename:

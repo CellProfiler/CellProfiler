@@ -1,5 +1,5 @@
 import cellprofiler.icons
-from cellprofiler.gui.help import PROTIP_RECOMEND_ICON
+from cellprofiler.application.help import PROTIP_RECOMEND_ICON
 
 __doc__ = '''
 <b>Calculate Image Overlap </b> calculates how much overlap occurs between the white portions of two black and white images

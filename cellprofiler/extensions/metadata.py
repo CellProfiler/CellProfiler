@@ -1,5 +1,5 @@
 import cellprofiler.icons
-from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON, IMAGES_FILELIST_BLANK, \
+from cellprofiler.application.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON, IMAGES_FILELIST_BLANK, \
     IMAGES_FILELIST_FILLED, MODULE_ADD_BUTTON, METADATA_DISPLAY_TABLE
 
 __doc__ = """
@@ -119,7 +119,7 @@ from cellprofiler.extensions.images import DirectoryPredicate
 from cellprofiler.extensions.images import Images
 from cellprofiler.extensions.loadimages import \
     well_metadata_tokens, urlfilename, urlpathname
-from cellprofiler.gui.help import FILTER_RULES_BUTTONS_HELP
+from cellprofiler.application.help import FILTER_RULES_BUTTONS_HELP
 
 X_AUTOMATIC_EXTRACTION = "Extract from image file headers"
 X_MANUAL_EXTRACTION = "Extract from file/folder names"

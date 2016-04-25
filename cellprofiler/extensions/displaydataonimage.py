@@ -222,7 +222,7 @@ class DisplayDataOnImage(cpm.Extension):
         import matplotlib.cm
         import matplotlib.backends.backend_agg
         import matplotlib.transforms
-        from cellprofiler.gui.cpfigure_tools import figure_to_image, only_display_image
+        from cellprofiler.application.cpfigure_tools import figure_to_image, only_display_image
         #
         # Get the image
         #
@@ -463,7 +463,7 @@ if __name__ == "__main__":
     ''' For debugging purposes only...
     '''
     import wx
-    from cellprofiler.gui.datatoolframe import DataToolFrame
+    from cellprofiler.application.datatoolframe import DataToolFrame
 
     app = wx.PySimpleApp()
 

@@ -666,7 +666,7 @@ class LoadData(cpm.Extension):
 
     def browse_csv(self):
         import wx
-        from cellprofiler.gui import get_cp_icon
+        from cellprofiler.application import get_cp_icon
         try:
             fd = self.open_csv()
         except:
@@ -1123,7 +1123,7 @@ class LoadData(cpm.Extension):
 
     def display(self, workspace, figure):
         if hasattr(workspace.display_data, "warning"):
-            from cellprofiler.gui.errordialog import show_warning
+            from cellprofiler.application.errordialog import show_warning
             show_warning("Images have different sizes",
                          workspace.display_data.warning,
                          cpprefs.get_show_report_bad_sizes_dlg,

@@ -35,7 +35,7 @@ import cellprofiler.measurement as cpmeas
 import cellprofiler.setting as cps
 import cellprofiler.utilities.rules as cprules
 import cellprofiler.workspace as cpw
-from cellprofiler.gui.help import USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF
+from cellprofiler.application.help import USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF
 from cellprofiler.configuration import IO_FOLDER_CHOICE_HELP_TEXT
 from cellprofiler.setting import YES, NO
 
@@ -435,7 +435,7 @@ class FlagImage(cpm.Extension):
         if image_set_count > 0:
             import wx
             from wx.grid import Grid, PyGridTableBase, EVT_GRID_LABEL_LEFT_CLICK
-            from cellprofiler.gui import get_cp_icon
+            from cellprofiler.application import get_cp_icon
 
             frame = wx.Frame(workspace.frame, -1, "Flag image results")
             sizer = wx.BoxSizer(wx.VERTICAL)

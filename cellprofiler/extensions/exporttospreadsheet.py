@@ -1,4 +1,4 @@
-from cellprofiler.gui.help import USING_METADATA_TAGS_REF
+from cellprofiler.application.help import USING_METADATA_TAGS_REF
 
 __doc__ = '''
 <b>Export To Spreadsheet</b> exports measurements into one or more files that can be
@@ -59,7 +59,7 @@ from cellprofiler.setting import YES, NO
 from cellprofiler.measurement import IMAGE, EXPERIMENT
 from cellprofiler.configuration import get_absolute_path, get_output_file_name
 from cellprofiler.configuration import ABSPATH_OUTPUT, ABSPATH_IMAGE, get_headless
-from cellprofiler.gui.help import USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF, MEASUREMENT_NAMING_HELP
+from cellprofiler.application.help import USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF, MEASUREMENT_NAMING_HELP
 from cellprofiler.configuration import \
     standardize_default_folder_names, DEFAULT_INPUT_FOLDER_NAME, \
     DEFAULT_OUTPUT_FOLDER_NAME, ABSOLUTE_FOLDER_NAME, \

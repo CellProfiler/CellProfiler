@@ -2,9 +2,9 @@
 """PipelineListView.py
 """
 
-import cellprofiler.gui
-import cellprofiler.gui.cpfigure
-import cellprofiler.gui.moduleview
+import cellprofiler.application
+import cellprofiler.application.cpfigure
+import cellprofiler.application.moduleview
 import cellprofiler.icons
 import cellprofiler.pipeline
 import cellprofiler.configuration
@@ -209,7 +209,7 @@ class PipelineListView(object):
         #
         # Accelerators
         #
-        from cellprofiler.gui.cpframe import ID_EDIT_DELETE
+        from cellprofiler.application.cpframe import ID_EDIT_DELETE
         accelerator_table = wx.AcceleratorTable([
             (wx.ACCEL_NORMAL, wx.WXK_DELETE, ID_EDIT_DELETE)])
         self.list_ctrl.SetAcceleratorTable(accelerator_table)
@@ -320,10 +320,10 @@ class PipelineListView(object):
                     self.on_validate_module(setting_idx, message, level,
                                             module_num, settings_hash)
 
-                validation_request = cellprofiler.gui.moduleview.ValidationRequest(
+                validation_request = cellprofiler.application.moduleview.ValidationRequest(
                         self.__pipeline, module, on_validate_module)
                 self.validation_requests.append(validation_request)
-                cellprofiler.gui.moduleview.request_module_validation(validation_request)
+                cellprofiler.application.moduleview.request_module_validation(validation_request)
 
     def set_debug_mode(self, mode):
         if (mode == True) and (self.__pipeline is not None):
@@ -548,8 +548,8 @@ class PipelineListView(object):
 
     @staticmethod
     def find_module_figure_window(module):
-        name = cellprofiler.gui.cpfigure.window_name(module)
-        return cellprofiler.gui.cpfigure.find_fig(name=name)
+        name = cellprofiler.application.cpfigure.window_name(module)
+        return cellprofiler.application.cpfigure.find_fig(name=name)
 
     def __on_pause_column_clicked(self, event):
         module = self.get_event_module(event)
@@ -576,7 +576,7 @@ class PipelineListView(object):
                 self.__pipeline.enable_module(module)
 
     def __on_list_context_menu(self, event):
-        from cellprofiler.gui.cpframe import \
+        from cellprofiler.application.cpframe import \
             ID_EDIT_DELETE, ID_EDIT_DUPLICATE, ID_HELP_MODULE, \
             ID_EDIT_ENABLE_MODULE
 
@@ -1523,7 +1523,7 @@ class PipelineListCtrl(wx.PyScrolledWindow):
                     if (self.always_draw_current_as_if_selected and
                             not item.selected):
                         flags |= wx.CONTROL_SELECTED
-                cellprofiler.gui.draw_item_selection_rect(self, dc, r, flags)
+                cellprofiler.application.draw_item_selection_rect(self, dc, r, flags)
                 if (flags & wx.CONTROL_SELECTED + wx.CONTROL_FOCUSED) == \
                                 wx.CONTROL_SELECTED + wx.CONTROL_FOCUSED:
                     text_clr = clr_selected

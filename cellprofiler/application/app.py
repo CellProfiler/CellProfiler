@@ -2,7 +2,7 @@
 import sys
 import wx
 import cellprofiler.configuration
-import cellprofiler.gui.errordialog
+import cellprofiler.application.errordialog
 import cellprofiler.utilities.thread_excepthook
 
 
@@ -24,12 +24,12 @@ class App(wx.App):
         super(App, self).__init__(*args, **kwargs)
 
     def OnInit(self):
-        import cellprofiler.gui.cpframe
+        import cellprofiler.application.cpframe
         import cellprofiler.utilities.version
 
         self.SetAppName("CellProfiler{0:s}".format(cellprofiler.utilities.version.dotted_version))
 
-        self.frame = cellprofiler.gui.cpframe.CPFrame(None, -1, "Cell Profiler")
+        self.frame = cellprofiler.application.cpframe.CPFrame(None, -1, "Cell Profiler")
 
         self.frame.start(self.workspace_path, self.pipeline_path)
 
@@ -40,7 +40,7 @@ class App(wx.App):
             def doit():
                 cellprofiler.configuration.cancel_progress()
 
-                cellprofiler.gui.errordialog.display_error_dialog(self.frame, message, None, tb=traceback, continue_only=True, message="Exception in CellProfiler core processing")
+                cellprofiler.application.errordialog.display_error_dialog(self.frame, message, None, tb=traceback, continue_only=True, message="Exception in CellProfiler core processing")
 
             wx.CallAfter(doit)
 

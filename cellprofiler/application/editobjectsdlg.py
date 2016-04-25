@@ -3,9 +3,9 @@
 
 """
 
-import cellprofiler.gui.cpfigure
-import cellprofiler.gui.cpfigure_tools
-import cellprofiler.gui.sashwindow_tools
+import cellprofiler.application.cpfigure
+import cellprofiler.application.cpfigure_tools
+import cellprofiler.application.sashwindow_tools
 import cellprofiler.object
 import cellprofiler.configuration
 import centrosome.cpmorphology
@@ -270,7 +270,7 @@ class EditObjectsDialog(wx.Dialog):
                     self.Parent.inside_print = False
 
         self.panel = CanvasPatch()
-        self.toolbar = cellprofiler.gui.cpfigure.CPNavigationToolbar(self.panel)
+        self.toolbar = cellprofiler.application.cpfigure.CPNavigationToolbar(self.panel)
         self.sash_parent = wx.Panel(self)
         #
         # Need to reparent the canvas after instantiating the toolbar so
@@ -299,7 +299,7 @@ class EditObjectsDialog(wx.Dialog):
         ########################################
         self.help_sash = wx.SashLayoutWindow(self.sash_parent)
         self.help_sash.Bind(wx.EVT_SASH_DRAGGED, self.on_help_sash_drag)
-        cellprofiler.gui.sashwindow_tools.sw_bind_to_evt_paint(self.help_sash)
+        cellprofiler.application.sashwindow_tools.sw_bind_to_evt_paint(self.help_sash)
         self.help_sash.SetOrientation(wx.LAYOUT_HORIZONTAL)
         self.help_sash.SetAlignment(wx.LAYOUT_BOTTOM)
         self.help_sash.SetDefaultBorderSize(4)
@@ -559,7 +559,7 @@ class EditObjectsDialog(wx.Dialog):
                 idxs = numpy.unique(label)
                 idxs = idxs[idxs != 0]
                 distinct_label_count = len(idxs)
-                clabels = cellprofiler.gui.cpfigure_tools.renumber_labels_for_display(label)
+                clabels = cellprofiler.application.cpfigure_tools.renumber_labels_for_display(label)
                 clabels[clabels != 0] += lstart
                 lstart += distinct_label_count
                 label_map[label.flatten()] = clabels.flatten()

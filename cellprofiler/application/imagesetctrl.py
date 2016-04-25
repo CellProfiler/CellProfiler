@@ -2,8 +2,8 @@
 """ImageSetCtrl.py - A control to display an imageset
 """
 
-import cellprofiler.gui
-import cellprofiler.gui.cornerbuttonmixin
+import cellprofiler.application
+import cellprofiler.application.cornerbuttonmixin
 import cellprofiler.measurement
 import cellprofiler.extensions.images
 import cellprofiler.configuration
@@ -113,7 +113,7 @@ class ImageSetCache(object):
         self.cache = dict(cache_kv[-int(self.max_size / 2):])
 
 
-class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButtonMixin):
+class ImageSetCtrl(wx.grid.Grid, cellprofiler.application.cornerbuttonmixin.CornerButtonMixin):
     class ImageSetGridTable(wx.grid.PyGridTableBase):
         DEFAULT_ATTR = wx.grid.GridCellAttr()
         ERROR_ATTR = wx.grid.GridCellAttr()
@@ -375,8 +375,8 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
             display_mode = DISPLAY_MODE_SIMPLE
 
         wx.grid.Grid.__init__(self, *args, **kwargs)
-        cellprofiler.gui.cornerbuttonmixin.CornerButtonMixin.__init__(self, self.on_update,
-                                                                      tooltip="Update and display the image set")
+        cellprofiler.application.cornerbuttonmixin.CornerButtonMixin.__init__(self, self.on_update,
+                                                                              tooltip="Update and display the image set")
         gclw = self.GetGridColLabelWindow()
         self.SetTable(self.ImageSetGridTable(workspace, display_mode))
         self.AutoSize()
@@ -1022,7 +1022,7 @@ class EllipsisGridCellRenderer(wx.grid.PyGridCellRenderer):
                     grid, grid.GetGridWindow(), grid.GetGridColLabelWindow(),
                     grid.GetGridRowLabelWindow(), grid.GetGridCornerLabelWindow()):
                 flags += wx.CONTROL_FOCUSED
-            cellprofiler.gui.draw_item_selection_rect(
+            cellprofiler.application.draw_item_selection_rect(
                     grid.GetGridWindow(), dc, rect, flags)
             dc.SetBackgroundMode(wx.TRANSPARENT)
             if attr.HasTextColour():
@@ -1487,7 +1487,7 @@ class FilterPanelDlg(wx.Dialog):
 
         function_dict - dictionary of button name to function to run.
         """
-        from cellprofiler.gui.moduleview import FilterPanelController
+        from cellprofiler.application.moduleview import FilterPanelController
 
         self.SetSizer(wx.BoxSizer(wx.VERTICAL))
         sizer = wx.BoxSizer(wx.VERTICAL)

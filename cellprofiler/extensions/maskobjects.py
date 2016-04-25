@@ -38,7 +38,7 @@ import cellprofiler.object as cpo
 import cellprofiler.configuration as cpprefs
 import cellprofiler.setting as cps
 import identify as I
-from cellprofiler.gui.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
+from cellprofiler.application.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
 from cellprofiler.setting import YES, NO
 
 MC_OBJECTS = "Objects"
@@ -337,7 +337,7 @@ class MaskObjects(I.Identify):
     def display(self, workspace, figure):
         '''Create an informative display for the module'''
         import matplotlib
-        from cellprofiler.gui.cpfigure_tools import renumber_labels_for_display
+        from cellprofiler.application.cpfigure_tools import renumber_labels_for_display
         original_labels = workspace.display_data.original_labels
         final_labels = workspace.display_data.final_labels
         mask = workspace.display_data.mask

@@ -1,4 +1,4 @@
-from cellprofiler.gui.help import USING_METADATA_HELP_REF, USING_METADATA_GROUPING_HELP_REF, LOADING_IMAGE_SEQ_HELP_REF
+from cellprofiler.application.help import USING_METADATA_HELP_REF, USING_METADATA_GROUPING_HELP_REF, LOADING_IMAGE_SEQ_HELP_REF
 
 TM_OVERLAP = 'Overlap'
 TM_DISTANCE = 'Distance'
@@ -27,7 +27,7 @@ RADIUS_LIMIT_SETTING_TEXT = 'Search radius limit, in pixel units (Min,Max)'
 ONLY_IF_2ND_PHASE_LAP_TEXT = '''<i>(Used only if the %(TM_LAP)s tracking method is applied and the second phase is run)</i>''' % globals()
 
 import cellprofiler.icons
-from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON
+from cellprofiler.application.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON
 
 __doc__ = """
 <b>Track Objects</b> allows tracking objects throughout sequential
@@ -189,7 +189,7 @@ from centrosome.cpmorphology import associate_by_distance
 from centrosome.cpmorphology import all_connected_components
 from centrosome.index import Indexes
 from identify import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
-from cellprofiler.gui.help import HELP_ON_MEASURING_DISTANCES
+from cellprofiler.application.help import HELP_ON_MEASURING_DISTANCES
 
 DT_COLOR_AND_NUMBER = 'Color and Number'
 DT_COLOR_ONLY = 'Color Only'
@@ -972,7 +972,7 @@ class TrackObjects(cpm.Extension):
             import matplotlib.axes
             import matplotlib.backends.backend_agg
             import matplotlib.transforms
-            from cellprofiler.gui.cpfigure_tools import figure_to_image, only_display_image
+            from cellprofiler.application.cpfigure_tools import figure_to_image, only_display_image
 
             figure = matplotlib.figure.Figure()
             canvas = matplotlib.backends.backend_agg.FigureCanvasAgg(figure)

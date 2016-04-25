@@ -17,7 +17,7 @@ from scipy.ndimage import gaussian_filter
 import cellprofiler.image as cpi
 import cellprofiler.extension as cpm
 import cellprofiler.setting as cps
-from cellprofiler.gui.help import HELP_ON_MEASURING_DISTANCES, PROTIP_AVOID_ICON
+from cellprofiler.application.help import HELP_ON_MEASURING_DISTANCES, PROTIP_AVOID_ICON
 
 ENHANCE = 'Enhance'
 SUPPRESS = 'Suppress'

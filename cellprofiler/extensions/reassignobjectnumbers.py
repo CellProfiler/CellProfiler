@@ -46,7 +46,7 @@ import cellprofiler.measurement as cpmeas
 import cellprofiler.object as cpo
 import cellprofiler.configuration as cpprefs
 import cellprofiler.setting as cps
-from cellprofiler.gui.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
+from cellprofiler.application.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
 from cellprofiler.extensions.identify import C_PARENT, C_CHILDREN
 from cellprofiler.extensions.identify import FF_CHILDREN_COUNT, FF_PARENT
 from cellprofiler.extensions.identify import add_object_count_measurements
@@ -343,7 +343,7 @@ class ReassignObjectNumbers(cpm.Extension):
 
         workspace - workspace containing saved display data
         '''
-        from cellprofiler.gui.cpfigure_tools import renumber_labels_for_display
+        from cellprofiler.application.cpfigure_tools import renumber_labels_for_display
         import matplotlib.cm as cm
 
         figure.set_subplots((2, 1))

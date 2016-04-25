@@ -1,5 +1,5 @@
 # coding=utf-8
-import cellprofiler.gui.help
+import cellprofiler.application.help
 import cellprofiler.icons
 import cellprofiler.extensions
 import cellprofiler.configuration
@@ -14,7 +14,7 @@ from shutil import copy
 import cellprofiler.icons
 import cellprofiler.configuration as cpprefs
 import cellprofiler.utilities.version as version
-from cellprofiler.gui.help import MAIN_HELP
+from cellprofiler.application.help import MAIN_HELP
 from cellprofiler.extensions import get_module_names, instantiate_module
 import os.path
 
@@ -141,7 +141,7 @@ def output_gui_html(webpage_path):
         help_text += "</ul>\n"
         return help_text
 
-    help_text = write_menu("Help", cellprofiler.gui.help.MAIN_HELP, help_text)
+    help_text = write_menu("Help", cellprofiler.application.help.MAIN_HELP, help_text)
     help_text += "\n"
 
     return help_text
@@ -218,7 +218,7 @@ def search_module_help(text):
             None if no match found.
     """
     matching_help = []
-    for item in cellprofiler.gui.help.MAIN_HELP:
+    for item in cellprofiler.application.help.MAIN_HELP:
         matching_help += __search_menu_helper(
                 item, lambda x: __search_fn(x, text))
     count = sum([len(x[2]) for x in matching_help])

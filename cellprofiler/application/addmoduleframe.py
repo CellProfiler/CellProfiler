@@ -4,8 +4,8 @@ that give you the GUI to add a module to a pipeline
 """
 
 import cellprofiler.extension
-import cellprofiler.gui
-import cellprofiler.gui.html.manual
+import cellprofiler.application
+import cellprofiler.application.html.manual
 import cellprofiler.extensions
 import cellprofiler.configuration
 import cpframe
@@ -110,7 +110,7 @@ class AddModuleFrame(wx.Frame):
         self.Hide()
 
     def __set_icon(self):
-        icon = cellprofiler.gui.get_cp_icon()
+        icon = cellprofiler.application.get_cp_icon()
         self.SetIcon(icon)
 
     def __get_module_files(self):
@@ -176,7 +176,7 @@ class AddModuleFrame(wx.Frame):
             self.search_text.SetFocus()
             return
 
-        html = cellprofiler.gui.html.manual.search_module_help(self.search_text.Value)
+        html = cellprofiler.application.html.manual.search_module_help(self.search_text.Value)
         if html is None:
             wx.MessageBox('No references found for "%s".' % self.search_text.Value,
                           caption="Text not found",
@@ -186,19 +186,19 @@ class AddModuleFrame(wx.Frame):
             self.display_helpframe(html, 'Help matching "%s"' % self.search_text.Value)
 
     def __on_getting_started(self, event):
-        from cellprofiler.gui.help import BUILDING_A_PIPELINE_HELP
+        from cellprofiler.application.help import BUILDING_A_PIPELINE_HELP
         self.display_helpframe(BUILDING_A_PIPELINE_HELP,
                                'Add extensions: Getting Started')
 
     def display_helpframe(self, help_text, title):
-        from cellprofiler.gui.html.htmlwindow import HtmlClickableWindow
+        from cellprofiler.application.html.htmlwindow import HtmlClickableWindow
         helpframe = wx.Frame(self, -1, title, size=(640, 480))
         sizer = wx.BoxSizer()
         helpframe.SetSizer(sizer)
         window = HtmlClickableWindow(helpframe)
         sizer.Add(window, 1, wx.EXPAND)
         window.AppendToPage(help_text)
-        helpframe.SetIcon(cellprofiler.gui.get_cp_icon())
+        helpframe.SetIcon(cellprofiler.application.get_cp_icon())
         helpframe.Layout()
         helpframe.Show()
 

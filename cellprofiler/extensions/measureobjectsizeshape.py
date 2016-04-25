@@ -1,5 +1,5 @@
 import cellprofiler.icons
-from cellprofiler.gui.help import MEASUREOBJSIZESHAPE_ECCENTRICITY
+from cellprofiler.application.help import MEASUREOBJSIZESHAPE_ECCENTRICITY
 
 __doc__ = '''
 <b>Measure Object Size Shape </b> measures several area and shape

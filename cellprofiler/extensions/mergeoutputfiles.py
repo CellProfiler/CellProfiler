@@ -65,7 +65,7 @@ class MergeOutputFiles(cpm.Extension):
         '''Run the module as a data tool'''
         import wx
         from wx.lib.mixins.listctrl import ListCtrlAutoWidthMixin
-        from cellprofiler.gui import get_cp_icon
+        from cellprofiler.application import get_cp_icon
         #
         # Portions of this were cribbed from the wx listctrl demo code
         # which is part of the wx source distribution
@@ -166,7 +166,7 @@ class MergeOutputFiles(cpm.Extension):
     @staticmethod
     def on_help(event, list_control):
         import cellprofiler.extensions
-        from cellprofiler.gui.htmldialog import HTMLDialog
+        from cellprofiler.application.htmldialog import HTMLDialog
         dlg = HTMLDialog(
                 list_control, 'Help on module,"%s"' % MergeOutputFiles.module_name, __doc__)
         dlg.Show()

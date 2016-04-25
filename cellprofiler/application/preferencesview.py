@@ -3,8 +3,8 @@
 """
 
 import cellprofiler.analysis
-import cellprofiler.gui.help
-import cellprofiler.gui.htmldialog
+import cellprofiler.application.help
+import cellprofiler.application.htmldialog
 import cellprofiler.configuration
 import numpy
 import os
@@ -44,7 +44,7 @@ class PreferencesView(object):
             cellprofiler.configuration.get_default_image_directory(),
             lambda: cellprofiler.configuration.get_recent_files(cellprofiler.configuration.DEFAULT_IMAGE_DIRECTORY),
             'Default Input Folder',
-            cellprofiler.gui.help.DEFAULT_IMAGE_FOLDER_HELP,
+            cellprofiler.application.help.DEFAULT_IMAGE_FOLDER_HELP,
             [cellprofiler.configuration.set_default_image_directory,
              self.__notify_pipeline_list_view_directory_change],
             refresh_action=self.refresh_input_directory)
@@ -55,7 +55,7 @@ class PreferencesView(object):
             cellprofiler.configuration.get_default_output_directory(),
             lambda: cellprofiler.configuration.get_recent_files(cellprofiler.configuration.DEFAULT_OUTPUT_DIRECTORY),
             'Default Output Folder',
-            cellprofiler.gui.help.DEFAULT_OUTPUT_FOLDER_HELP,
+            cellprofiler.application.help.DEFAULT_OUTPUT_FOLDER_HELP,
             [cellprofiler.configuration.set_default_output_directory,
              self.__notify_pipeline_list_view_directory_change])
         self.__odds_and_ends_panel = wx.Panel(panel)
@@ -285,7 +285,7 @@ class PreferencesView(object):
             wx.EVT_CHECKBOX, on_allow_checkbox)
         output_filename_help_button.Bind(
             wx.EVT_BUTTON,
-            lambda event: self.__on_help(event, cellprofiler.gui.help.USING_THE_OUTPUT_FILE_HELP))
+            lambda event: self.__on_help(event, cellprofiler.application.help.USING_THE_OUTPUT_FILE_HELP))
         output_filename_edit_box.Bind(wx.EVT_TEXT, on_output_filename_changed)
         panel.Bind(wx.EVT_WINDOW_DESTROY, self.__on_destroy, panel)
         on_write_MAT_files_combo_box(None)
@@ -513,7 +513,7 @@ class PreferencesView(object):
             self.set_error_text(error_text)
 
     def __on_help(self, event, help_text):
-        dlg = cellprofiler.gui.htmldialog.HTMLDialog(self.__panel, "Help", help_text)
+        dlg = cellprofiler.application.htmldialog.HTMLDialog(self.__panel, "Help", help_text)
         dlg.Show()
 
     def __on_pixel_size_changed(self, event):

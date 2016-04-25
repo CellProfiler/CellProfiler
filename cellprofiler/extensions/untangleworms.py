@@ -95,8 +95,8 @@ from centrosome.outline import outline
 from cellprofiler.configuration import standardize_default_folder_names, \
     DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME, NO_FOLDER_NAME, \
     ABSOLUTE_FOLDER_NAME, IO_FOLDER_CHOICE_HELP_TEXT
-from cellprofiler.gui.help import USING_METADATA_GROUPING_HELP_REF
-from cellprofiler.gui.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
+from cellprofiler.application.help import USING_METADATA_GROUPING_HELP_REF
+from cellprofiler.application.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
 
 OO_WITH_OVERLAP = "With overlap"
 OO_WITHOUT_OVERLAP = "Without overlap"
@@ -932,7 +932,7 @@ class UntangleWorms(cpm.Extension):
                     measurements.add_measurement(name, feature, values[:, i])
 
     def display(self, workspace, figure):
-        from cellprofiler.gui.cpfigure import CPLDM_ALPHA
+        from cellprofiler.application.cpfigure import CPLDM_ALPHA
         if self.mode == MODE_UNTANGLE:
             figure.set_subplots((1, 1))
             cplabels = []

@@ -1,5 +1,5 @@
 # coding=utf-8
-"""cellprofiler.gui.html.__init__
+"""cellprofiler.application.html.__init__
 """
 
 import content

@@ -22,7 +22,7 @@ import cellprofiler.icons
 import cellprofiler.measurement as cpmeas
 import cellprofiler.object
 import cellprofiler.setting as cps
-from cellprofiler.gui.help import HELP_ON_PIXEL_INTENSITIES
+from cellprofiler.application.help import HELP_ON_PIXEL_INTENSITIES
 
 O_TWO_CLASS = 'Two classes'
 O_THREE_CLASS = 'Three classes'

@@ -55,7 +55,7 @@ from cellprofiler.extensions.identify import add_object_count_measurements
 from cellprofiler.extensions.identify import add_object_location_measurements
 from cellprofiler.extensions.identify import get_object_measurement_columns
 from cellprofiler.configuration import IO_FOLDER_CHOICE_HELP_TEXT
-from cellprofiler.gui.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
+from cellprofiler.application.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
 
 '''Minimal filter - pick a single object per image by minimum measured value'''
 FI_MINIMAL = "Minimal"

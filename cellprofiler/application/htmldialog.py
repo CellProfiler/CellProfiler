@@ -20,7 +20,7 @@ non-round objects, the diameter here is actually the 'equivalent
 diameter', meaning the diameter of a circle with the same area as the
 object."""
 
-import cellprofiler.gui.html.htmlwindow
+import cellprofiler.application.html.htmlwindow
 import wx
 
 
@@ -29,7 +29,7 @@ class HTMLDialog(wx.Dialog):
         super(HTMLDialog, self).__init__(parent, -1, title,
                                          style=(wx.DEFAULT_DIALOG_STYLE |
                                                 wx.RESIZE_BORDER))
-        html = cellprofiler.gui.html.htmlwindow.HtmlClickableWindow(parent=self)
+        html = cellprofiler.application.html.htmlwindow.HtmlClickableWindow(parent=self)
         html.SetPage(contents)
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(html, 1, wx.EXPAND | wx.ALL, 5)

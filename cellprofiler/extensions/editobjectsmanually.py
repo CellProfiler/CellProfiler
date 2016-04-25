@@ -275,7 +275,7 @@ class EditObjectsManually(I.Identify):
                                   sharey=ax0)
 
     def run_as_data_tool(self):
-        from cellprofiler.gui.editobjectsdlg import EditObjectsDialog
+        from cellprofiler.application.editobjectsdlg import EditObjectsDialog
         import wx
         from wx.lib.filebrowsebutton import FileBrowseButton
         from cellprofiler.extensions.namesandtypes import ObjectsImageProvider
@@ -429,7 +429,7 @@ class EditObjectsManually(I.Identify):
             project_labels[0, 0, :, :, 0] = mask
 
     def handle_interaction(self, orig_labels, guide_image, image_set_number):
-        from cellprofiler.gui.editobjectsdlg import EditObjectsDialog
+        from cellprofiler.application.editobjectsdlg import EditObjectsDialog
         from wx import OK
         title = "%s #%d, image cycle #%d: " % (self.module_name,
                                                self.module_num,

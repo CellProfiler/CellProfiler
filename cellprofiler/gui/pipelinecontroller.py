@@ -2264,7 +2264,11 @@ class PipelineController(object):
         #
         ##################################
 
+        if cellprofiler.preferences.get_wants_pony():
+            wx.Sound(os.path.join(cellprofiler.icons.path, "HorseWhinnying.wav")).Play()
+
         ok, reason = self.__frame.preferences_view.check_preferences()
+
         if ok:
             try:
                 self.__pipeline.test_valid()

@@ -28,7 +28,7 @@ import cellprofiler.configuration as cpprefs
 import cellprofiler.setting as cps
 import cellprofiler.workspace as cpw
 from cellprofiler.extensions.injectimage import InjectImage
-from cellprofiler.extensions.tests import \
+from tests.cellprofiler.extensions import \
     example_images_directory, maybe_download_fly, maybe_download_sbs
 
 IMAGE_NAME = "myimage"
@@ -1393,7 +1393,7 @@ class MyClassForTest0801(cpm.Extension):
     variable_revision_number = 1
 
     def module_class(self):
-        return "cellprofiler.tests.Test_Pipeline.MyClassForTest0801"
+        return "tests.CellProfiler.Test_Pipeline.MyClassForTest0801"
 
     def get_measurement_columns(self, pipeline):
         return [(cpmeas.IMAGE,
@@ -1412,7 +1412,7 @@ class MyClassForTest1101(cpm.Extension):
     variable_revision_number = 1
 
     def module_class(self):
-        return "cellprofiler.tests.Test_Pipeline.MyClassForTest1101"
+        return "tests.CellProfiler.Test_Pipeline.MyClassForTest1101"
 
     def prepare_run(self, workspace, *args):
         image_set = workspace.image_set_list.get_image_set(0)

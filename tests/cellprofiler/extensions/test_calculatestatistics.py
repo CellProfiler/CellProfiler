@@ -24,7 +24,7 @@ import cellprofiler.pipeline as cpp
 import cellprofiler.object as cpo
 import cellprofiler.workspace as cpw
 import cellprofiler.configuration as cpprefs
-from cellprofiler.extensions.tests import github_url
+from tests.cellprofiler.extensions import github_url
 
 import cellprofiler.extensions.calculatestatistics as C
 

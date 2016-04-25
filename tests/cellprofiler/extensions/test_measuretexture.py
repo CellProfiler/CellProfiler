@@ -24,7 +24,7 @@ import cellprofiler.object as cpo
 import cellprofiler.pipeline as cpp
 import cellprofiler.configuration as cpprefs
 import cellprofiler.workspace as cpw
-from cellprofiler.extensions.tests import \
+from tests.cellprofiler.extensions import \
     example_images_directory, maybe_download_example_image, \
     maybe_download_sbs, github_url
 

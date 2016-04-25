@@ -25,7 +25,7 @@ import cellprofiler.workspace as cpw
 import cellprofiler.setting as cps
 import cellprofiler.extensions.loaddata as L
 from cellprofiler.extensions.loadimages import pathname2url
-from cellprofiler.extensions.tests import \
+from tests.cellprofiler.extensions import \
     example_images_directory, testimages_directory, maybe_download_sbs, \
     maybe_download_example_image, maybe_download_tesst_image, \
     make_12_bit_image, cp_logo_url, cp_logo_url_filename, cp_logo_url_folder, \

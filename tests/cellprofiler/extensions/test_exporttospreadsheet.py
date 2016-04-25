@@ -25,7 +25,7 @@ import cellprofiler.extensions.exporttospreadsheet as E
 from cellprofiler.extensions import identifyprimaryobjects
 from cellprofiler.extensions.identify import \
     C_COUNT, M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
-from cellprofiler.extensions.tests import \
+from tests.cellprofiler.extensions import \
     example_images_directory, maybe_download_sbs
 
 OBJECTS_NAME = "MyObjects"

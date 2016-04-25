@@ -18,7 +18,7 @@ import cellprofiler.object as cpo
 import cellprofiler.extensions.injectimage as cpm_inject
 import cellprofiler.extensions.colortogray as cpm_ctg
 
-import cellprofiler.extensions.tests as cpmt
+import tests.cellprofiler.extensions as cpmt
 from cellprofiler.workspace import Workspace
 
 IMAGE_NAME = "image"

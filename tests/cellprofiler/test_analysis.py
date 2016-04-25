@@ -24,7 +24,7 @@ import cellprofiler.extension as cpm
 import cellprofiler.configuration as cpprefs
 import cellprofiler.measurement as cpmeas
 import cellprofiler.utilities.zmqrequest as cpzmq
-from cellprofiler.extensions.tests import example_images_directory, testimages_directory
+from tests.cellprofiler.extensions import example_images_directory, testimages_directory
 
 IMAGE_NAME = "imagename"
 OBJECTS_NAME = "objectsname"

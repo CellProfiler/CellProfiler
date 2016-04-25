@@ -8,7 +8,7 @@ import traceback
 import unittest
 from urllib2 import urlopen
 
-from cellprofiler.extensions.tests import \
+from tests.cellprofiler.extensions import \
     example_images_directory, maybe_download_sbs, maybe_download_fly
 
 

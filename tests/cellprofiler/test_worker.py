@@ -25,7 +25,7 @@ from cellprofiler.application.errordialog import ED_CONTINUE, ED_SKIP, ED_STOP
 from cellprofiler.extensions.identify import C_COUNT, M_LOCATION_CENTER_X
 from cellprofiler.extensions.loadimages import pathname2url
 from cellprofiler.extensions.namesandtypes import M_IMAGE_SET
-from cellprofiler.extensions.tests import \
+from tests.cellprofiler.extensions import \
     example_images_directory, maybe_download_example_image, maybe_download_sbs
 
 

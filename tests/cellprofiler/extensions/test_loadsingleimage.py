@@ -23,10 +23,10 @@ import cellprofiler.configuration as cpprefs
 import cellprofiler.setting as cps
 import cellprofiler.workspace as cpw
 from cellprofiler.extensions.identify import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y, M_NUMBER_OBJECT_NUMBER
-from cellprofiler.extensions.tests import \
+from tests.cellprofiler.extensions import \
     example_images_directory, maybe_download_example_image, \
     maybe_download_example_images, maybe_download_sbs, make_12_bit_image
-from cellprofiler.extensions.tests.test_loadimages import ConvtesterMixin
+from tests.cellprofiler.extensions.test_loadimages import ConvtesterMixin
 
 OBJECTS_NAME = "myobjects"
 OUTLINES_NAME = "myoutlines"

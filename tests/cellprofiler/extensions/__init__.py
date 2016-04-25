@@ -55,7 +55,7 @@ def example_images_directory():
     if os.environ.has_key('CP_EXAMPLEIMAGES'):
         return os.environ['CP_EXAMPLEIMAGES']
     fyle = os.path.abspath(__file__)
-    d = os.path.split(fyle)[0]  # trunk.CellProfiler.cellprofiler.extensions.tests
+    d = os.path.split(fyle)[0]  # trunk.CellProfiler.tests.cellprofiler.extensions
     d = os.path.split(d)[0]  # trunk.CellProfiler.cellprofiler.extensions
     d = os.path.split(d)[0]  # trunk.CellProfiler.cellprofiler
     d = os.path.split(d)[0]  # trunk.CellProfiler
@@ -94,7 +94,7 @@ def testimages_directory():
     if os.environ.has_key('CP_TESTIMAGES'):
         return os.environ['CP_TESTIMAGES']
     fyle = os.path.abspath(__file__)
-    d = os.path.split(fyle)[0]  # trunk.CellProfiler.cellprofiler.extensions.tests
+    d = os.path.split(fyle)[0]  # trunk.CellProfiler.tests.cellprofiler.extensions
     d = os.path.split(d)[0]  # trunk.CellProfiler.cellprofiler.extensions
     d = os.path.split(d)[0]  # trunk.CellProfiler.cellprofiler
     d = os.path.split(d)[0]  # trunk.CellProfiler

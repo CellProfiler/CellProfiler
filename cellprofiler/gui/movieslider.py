@@ -61,7 +61,6 @@ class SliderCtl(wx.Panel):
         self.__start_value = start_value
         self.__stop_value = stop_value
         self.value_names = value_names
-        self.BackgroundColour = wx.RED
         wx.EVT_PAINT(self, self.on_paint)
         wx.EVT_ERASE_BACKGROUND(self, self.on_erase_background)
         self.Bind(wx.EVT_SIZE, self.on_size, self)
@@ -353,7 +352,6 @@ class MovieSlider(wx.Panel):
         name        - window's name
         """
         super(MovieSlider, self).__init__(parent, identifier, pos, size, style, name)
-        self.BackgroundColour = cellprofiler.preferences.get_background_color()
         self.value_names = value_names
         sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(sizer)

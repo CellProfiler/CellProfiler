@@ -606,8 +606,6 @@ class PipelineController:
             frame.Sizer.Add(panel, 1, wx.EXPAND)
             panel.Sizer = wx.BoxSizer(wx.VERTICAL)
             subpanel = wx.Panel(panel)
-            subpanel.BackgroundColour = wx.SystemSettings.GetColour(
-                    wx.SYS_COLOUR_WINDOW)
             panel.Sizer.Add(subpanel, 1, wx.EXPAND)
             subpanel.Sizer = wx.BoxSizer(wx.VERTICAL)
             subpanel.Sizer.AddSpacer(15)
@@ -1079,8 +1077,6 @@ class PipelineController:
         frame.Sizer.Add(panel, 1, wx.EXPAND)
         panel.Sizer = wx.BoxSizer(wx.VERTICAL)
         subpanel = wx.Panel(panel)
-        subpanel.BackgroundColour = wx.SystemSettings.GetColour(
-                wx.SYS_COLOUR_WINDOW)
         panel.Sizer.Add(subpanel, 1, wx.EXPAND)
         subpanel.Sizer = wx.BoxSizer(wx.VERTICAL)
         subpanel.Sizer.AddSpacer(15)

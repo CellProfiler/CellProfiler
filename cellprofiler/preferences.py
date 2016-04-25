@@ -55,13 +55,14 @@ class HeadlessConfig(object):
 
     def Exists(self, kwd):
         return self.__preferences.has_key(kwd)
-    
+
     def GetEntryType(self, kwd):
         '''Get the data type of the registry key.
-        
+
         Returns wx.Config.Type_String = 1
         '''
         return 1
+
 
 __is_headless = False
 __headless_config = HeadlessConfig()

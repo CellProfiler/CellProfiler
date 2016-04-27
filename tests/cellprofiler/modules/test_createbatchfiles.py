@@ -27,7 +27,7 @@ import cellprofiler.preferences as cpprefs
 
 import cellprofiler.modules.loadimages as LI
 import cellprofiler.modules.createbatchfiles as C
-import cellprofiler.modules.tests as T
+import tests.cellprofiler.modules as T
 
 
 class TestCreateBatchFiles(unittest.TestCase):

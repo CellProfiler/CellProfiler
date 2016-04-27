@@ -22,7 +22,7 @@ import cellprofiler.preferences as cpprefs
 import cellprofiler.settings as cps
 import cellprofiler.workspace as cpw
 from cellprofiler.modules.identify import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y, M_NUMBER_OBJECT_NUMBER
-from cellprofiler.modules.tests import \
+from tests.cellprofiler.modules import \
     example_images_directory, maybe_download_sbs, make_12_bit_image
 from tests.cellprofiler.modules.test_loadimages import ConvtesterMixin
 

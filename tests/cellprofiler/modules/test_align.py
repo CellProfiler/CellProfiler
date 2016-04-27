@@ -14,7 +14,7 @@ from cellprofiler.preferences import set_headless
 
 set_headless()
 
-from cellprofiler.modules.tests import read_example_image
+from tests.cellprofiler.modules import read_example_image
 import cellprofiler.pipeline as cpp
 import cellprofiler.cpmodule as cpm
 import cellprofiler.cpimage as cpi

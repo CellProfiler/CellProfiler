@@ -58,7 +58,14 @@
 #script:
 #  - python setup.py test -a -x
 
-install:
+addons:
+  apt:
+    packages:
+      - libatlas-dev
+      - libatlas-base-dev
+      - liblapack-dev
+      - gfortran
+before_install:
   - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
       wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh;
     fi
@@ -70,8 +77,11 @@ install:
   - conda info -a
   - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION cython matplotlib numpy pandas scipy scikit-image scikit-learn h5py pyzmq scipy networkx mysql-python
   - source activate test-environment
+cache: apt
+install:
   - python setup.py install
 language: python
 python:
   - 2.7
+script: python setup.py test -a -x
 sudo: false

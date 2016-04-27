@@ -35,6 +35,7 @@ cache:
 env:
   - CP_MYSQL_TEST_HOST=127.0.0.1 CP_MYSQL_TEST_PASSWORD=None CP_MYSQL_TEST_USER=travis LC_ALL=en_US.UTF-8
 install:
+  - pip install joblib
   - python setup.py install
 language: python
 python:

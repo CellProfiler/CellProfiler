@@ -33,10 +33,7 @@ cache:
   directories:
     - $HOME/.cache/pip
 env:
-  - CP_MYSQL_TEST_HOST=127.0.0.1
-  - CP_MYSQL_TEST_PASSWORD=None
-  - CP_MYSQL_TEST_USER=travis
-  - LC_ALL=en_US.UTF-8
+  - CP_MYSQL_TEST_HOST=127.0.0.1 CP_MYSQL_TEST_PASSWORD=None CP_MYSQL_TEST_USER=travis LC_ALL=en_US.UTF-8
 install:
   - python setup.py install
 language: python

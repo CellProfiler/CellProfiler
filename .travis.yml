@@ -22,7 +22,7 @@ before_install:
   - conda config --set always_yes yes --set changeps1 no
   - conda update -q conda
   - conda info -a
-  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION dask h5py libtiff lxml matplotlib MySQL-python networkx numpy pandas pyzmq scikit-image scikit-learn scipy wxpython
+  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION cython dask h5py libtiff lxml matplotlib MySQL-python networkx numpy pandas pyzmq scikit-image scikit-learn scipy wxpython
   - source activate test-environment
 before_script:
   - export DISPLAY=:99.0

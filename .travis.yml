@@ -59,7 +59,6 @@
 #  - python setup.py test -a -x
 
 install:
-  - sudo apt-get update
   - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
       wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh;
     fi
@@ -69,7 +68,7 @@ install:
   - conda config --set always_yes yes --set changeps1 no
   - conda update -q conda
   - conda info -a
-  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION numpy scipy scikit-image scikit-learn h5py pyzmq
+  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION cython matplotlib numpy pandas scipy scikit-image scikit-learn h5py pyzmq scipy networkx mysql-python
   - source activate test-environment
   - python setup.py install
 language: python

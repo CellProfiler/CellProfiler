@@ -3,7 +3,6 @@
 import StringIO
 import base64
 import os
-import tempfile
 import unittest
 import zlib
 
@@ -18,7 +17,6 @@ import cellprofiler.modules.identifyprimaryobjects as ID
 import cellprofiler.objects as cpo
 import cellprofiler.pipeline
 import cellprofiler.settings
-from cellprofiler.modules.injectimage import InjectImage
 from cellprofiler.modules.tests import read_example_image
 from cellprofiler.workspace import Workspace
 

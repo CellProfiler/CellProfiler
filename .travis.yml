@@ -1,29 +1,26 @@
+services:
+  - mysql
 addons:
   apt:
     packages:
-      - build-essential
-      - gfortran
-      - libatlas-base-dev
-      - libatlas-dev
-      - libblas-dev
-      - libgtk-3-dev
+      - cython
       - libhdf5-serial-dev
-      - liblapack-dev
-      - libpng-dev
-      - libtiff4-dev
       - libwxgtk2.8-dev
-      - libxml2-dev
-      - libxslt1-dev
-before_install:
-  - wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh
-  - bash miniconda.sh -b -p $HOME/miniconda
-  - export PATH="$HOME/miniconda/bin:$PATH"
-  - hash -r
-  - conda config --set always_yes yes --set changeps1 no
-  - conda update -q conda
-  - conda info -a
-  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION cython dask h5py libtiff lxml matplotlib MySQL-python networkx numpy pandas pyzmq scikit-image scikit-learn scipy wxpython
-  - source activate test-environment
+      - libgtk2.0-dev
+      - python-dateutil
+      - python-imaging
+      - python-lxml
+      - python-matplotlib
+      - python-mysqldb
+      - python-networkx
+      - python-numpy
+      - python-pandas
+      - python-pip
+      - python-scipy
+      - python-tk
+      - python-wxgtk2.8
+env:
+  - LC_ALL="en_US.UTF-8" CP_MYSQL_TEST_HOST="127.0.0.1" CP_MYSQL_TEST_USER="travis" CP_MYSQL_TEST_PASSWORD="None"
 before_script:
   - export DISPLAY=:99.0
   - sh -e /etc/init.d/xvfb start
@@ -32,15 +29,27 @@ cache:
   apt: true
   directories:
     - $HOME/.cache/pip
-env:
-  - CP_MYSQL_TEST_HOST=127.0.0.1 CP_MYSQL_TEST_PASSWORD=None CP_MYSQL_TEST_USER=travis LC_ALL=en_US.UTF-8
-install:
-  - pip install joblib
-  - python setup.py install
 language: python
+notifications:
+  email: false
 python:
   - 2.7
-script: python setup.py test -a -x
-services:
-  - mysql
 sudo: false
+virtualenv:
+  system_site_packages: true
+install:
+  - pip install --upgrade pip
+  - pip install --upgrade wheel
+  - pip install --upgrade pytest
+  - pip install --upgrade cython
+  - pip install joblib
+  - pip install scikit-learn
+  - pip install https://pypi.python.org/packages/source/s/scikit-image/scikit-image-0.12.3.tar.gz#md5=04ea833383e0b6ad5f65da21292c25e1
+  - pip install --no-deps pyzmq==13.1.0
+  - pip install --requirement requirements.txt
+  - pip install --editable git+https://github.com/h5py/h5py.git#egg=h5py
+  - pip install --editable git+https://github.com/CellH5/cellh5.git#egg=cellh5
+  - pip freeze
+  - pip install --no-deps .
+script:
+  - python setup.py test -a -x

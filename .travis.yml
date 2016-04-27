@@ -1,63 +1,3 @@
-#services:
-#  - mysql
-#addons:
-#  apt:
-#    packages:
-#      - cython
-#      - libgtk2.0-dev
-#      - libhdf5-serial-dev
-#      - libwxgtk2.8-dev
-#      - python-dateutil
-#      - python-h5py
-#      - python-imaging
-#      - python-lxml
-#      - python-matplotlib
-#      - python-mysqldb
-#      - python-networkx
-#      - python-numpy
-#      - python-pandas
-#      - python-pip
-#      - python-pytest
-#      - python-scikits-learn
-#      - python-scipy
-#      - python-tk
-#      - python-wheel
-#      - python-wxgtk2.8
-#env:
-#  - LC_ALL="en_US.UTF-8" CP_MYSQL_TEST_HOST="127.0.0.1" CP_MYSQL_TEST_USER="travis" CP_MYSQL_TEST_PASSWORD="None"
-#before_script:
-#  - export DISPLAY=:99.0
-#  - sh -e /etc/init.d/xvfb start
-#  - sleep 3
-#cache:
-#  apt: true
-#  directories:
-#    - $HOME/.cache/pip
-#language: python
-#notifications:
-#  email: false
-#python:
-#  - 2.7
-#sudo: false
-#virtualenv:
-#  system_site_packages: true
-#install:
-#  - pip install --upgrade pip
-#  - pip install --upgrade wheel
-#  - pip install --upgrade pytest
-#  - pip install --upgrade cython
-#  - pip install joblib
-#  - pip install scikit-learn
-#  - pip install https://pypi.python.org/packages/source/s/scikit-image/scikit-image-0.12.3.tar.gz#md5=04ea833383e0b6ad5f65da21292c25e1
-#  - pip install --no-deps pyzmq==13.1.0
-#  - pip install --requirement requirements.txt
-#  - pip install --editable git+https://github.com/h5py/h5py.git#egg=h5py
-#  - pip install --editable git+https://github.com/CellH5/cellh5.git#egg=cellh5
-#  - pip freeze
-#  - pip install --no-deps .
-#script:
-#  - python setup.py test -a -x
-
 addons:
   apt:
     packages:
@@ -72,6 +12,7 @@ addons:
       - liblapack-dev
       - libpng-dev
       - libtiff4-dev
+      - libxml2-dev
       - libwxgtk2.8-dev
 before_install:
   - wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh
@@ -81,14 +22,24 @@ before_install:
   - conda config --set always_yes yes --set changeps1 no
   - conda update -q conda
   - conda info -a
-  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION cython matplotlib numpy pandas scipy scikit-image scikit-learn h5py pyzmq scipy networkx mysql-python
+  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION cython matplotlib numpy pandas scipy scikit-image scikit-learn h5py pyzmq scipy networkx mysql-python wxpython
   - source activate test-environment
+before_script:
+  - export DISPLAY=:99.0
+  - sh -e /etc/init.d/xvfb start
+  - sleep 3
 cache:
   apt: true
+  directories:
+    - $HOME/.cache/pip
+env:
+  - LC_ALL="en_US.UTF-8" CP_MYSQL_TEST_HOST="127.0.0.1" CP_MYSQL_TEST_USER="travis" CP_MYSQL_TEST_PASSWORD="None"
 install:
   - python setup.py install
 language: python
 python:
   - 2.7
 script: python setup.py test -a -x
+services:
+  - mysql
 sudo: false

@@ -585,6 +585,7 @@ class ParameterSampleFrame(wx.Frame):
 
         Assumption: 'self.prepare_for_run()' was called first.
         """
+        failure = 1
         try:
             # ~*~
             # workspace = cellprofiler.workspace.Workspace(

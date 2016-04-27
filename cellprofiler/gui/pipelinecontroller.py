@@ -309,6 +309,7 @@ class PipelineController(object):
         In addition, the PipelineController gets to add whatever buttons it wants to the
         panel.
         """
+        bkgnd_color = cellprofiler.preferences.get_background_color()
         assert isinstance(panel, wx.Window)
         self.__test_controls_panel = panel
         #
@@ -1957,6 +1958,10 @@ class PipelineController(object):
         if len(ids) < len(modules):
             ids += [wx.NewId() for _ in range(len(ids), len(modules))]
         for item_id, module in zip(ids, modules):
+            item = menu.Append(
+                    item_id,
+                    "#%02d %s" % (module.module_num, module.module_name))
+
             def on_goto_module(event, module_num=module.module_num):
                 self.on_goto_module(event, module_num)
 
@@ -2551,6 +2556,7 @@ class PipelineController(object):
 
         def remote_debug(evtlist=evtlist):
             # choose a random string for verification
+            verification = ''.join(random.choice(string.ascii_letters) for x in range(5))
             evt = evtlist[0]
             # Request debugging.  We get back a port.
             evt.reply(
@@ -2814,6 +2820,7 @@ class PipelineController(object):
     def do_step(self, module, select_next_module=True):
         """Do a debugging step by running a module
         """
+        failure = 1
         old_cursor = self.__frame.GetCursor()
         self.__frame.SetCursor(wx.StockCursor(wx.CURSOR_WAIT))
         try:
@@ -2861,6 +2868,7 @@ class PipelineController(object):
             self.__pipeline.notify_listeners(event)
             if event.cancel_run:
                 self.on_debug_stop(event)
+                failure = -1
             failure = 1
         self.__frame.SetCursor(old_cursor)
         if ((module.module_name != 'Restart' or failure == -1) and

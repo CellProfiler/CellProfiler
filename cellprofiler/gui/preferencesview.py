@@ -530,6 +530,7 @@ class PreferencesView(object):
             self.__output_filename_edit_box.Value = cellprofiler.preferences.get_output_file_name()
 
     def __on_preferences_output_directory_event(self, event):
+        old_selection = self.__output_edit_box.Selection
         if self.__output_edit_box.Value != cellprofiler.preferences.get_default_output_directory():
             self.__output_edit_box.Value = cellprofiler.preferences.get_default_output_directory()
 

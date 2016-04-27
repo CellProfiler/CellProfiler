@@ -42,6 +42,7 @@ class NameSubscriberComboBox(wx.Panel):
         if choices is None:
             choices = []
         self.orig_choices = choices
+        self.IDs = [wx.NewId() for c in choices]
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.combo_dlg = wx.ComboBox(
                 self, choices=[choice[0] for choice in choices],
@@ -68,6 +69,7 @@ class NameSubscriberComboBox(wx.Panel):
         self.callbacks = []
 
     def choice_made(self, evt):
+        choice = self.orig_choices[self.combo_dlg.Selection]
         self.update_annotation()
         for cb in self.callbacks:
             cb(evt)

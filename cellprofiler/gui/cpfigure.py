@@ -304,6 +304,7 @@ class CPFigureFrame(wx.Frame):
                                              ('ytick.labelsize', 'x-small')]))
         else:
             matplotlib.rcdefaults()
+        self.figure = figure = matplotlib.figure.Figure()
         self.panel = matplotlib.backends.backend_wxagg.FigureCanvasWxAgg(self, -1, self.figure)
         if secret_panel_class is None:
             secret_panel_class = wx.Panel
@@ -466,6 +467,7 @@ class CPFigureFrame(wx.Frame):
         if height > best_height and valign != wx.EXPAND:
             if valign == wx.ALIGN_BOTTOM:
                 y = y + height - best_height
+                height = best_height
             elif valign in (wx.ALIGN_CENTER, wx.ALIGN_CENTER_VERTICAL):
                 y += (height - best_height) / 2
             height = best_height
@@ -590,6 +592,7 @@ class CPFigureFrame(wx.Frame):
             return
         xi = int(event.xdata + .5)
         yi = int(event.ydata + .5)
+        im = None
         fields = self.get_fields(event, yi, xi, x1)
 
         if self.mouse_down is not None:
@@ -786,6 +789,7 @@ class CPFigureFrame(wx.Frame):
         x - subplot's column
         y - subplot's row
         """
+        fontname = fontname = cellprofiler.preferences.get_title_font_name()
 
         self.subplot(x, y).set_title(title,
                                      fontname=fontname,
@@ -1028,6 +1032,9 @@ class CPFigureFrame(wx.Frame):
                     self.Bind(wx.EVT_MENU, select_mode, id=menu_id)
                 if cplabels[CPLD_MODE] == CPLDM_ALPHA:
                     menu_id = get_menu_id(MENU_LABELS_ALPHA, (x, y, i))
+                    item = submenu.Append(
+                            menu_id, "Adjust transparency",
+                            "Change the alpha-blend for the labels overlay to make it more or less transparent")
                     self.Bind(wx.EVT_MENU,
                               lambda event, cplabels=cplabels:
                               self.on_adjust_labels_alpha(cplabels),
@@ -1049,6 +1056,7 @@ class CPFigureFrame(wx.Frame):
 
     def on_adjust_labels_alpha(self, cplabels):
         with wx.Dialog(self, title="Adjust labels transparency") as dlg:
+            name = cplabels.get(CPLD_NAME, "Objects")
             orig_alpha = int(cplabels[CPLD_ALPHA_VALUE] * 100 + .5)
             dlg.Sizer = wx.BoxSizer(wx.VERTICAL)
             sizer = wx.BoxSizer(wx.VERTICAL)
@@ -1174,6 +1182,10 @@ class CPFigureFrame(wx.Frame):
         colormap = kwargs['colormap']
         colorbar = kwargs['colorbar']
         normalize = kwargs['normalize']
+        vmin = kwargs['vmin']
+        vmax = kwargs['vmax']
+        rgb_mask = kwargs['rgb_mask']
+        interpolation = kwargs['interpolation']
 
         # Note: if we do not do this, then passing in vmin,vmax without setting
         # normalize=False will cause the normalized image to be stretched
@@ -1181,7 +1193,7 @@ class CPFigureFrame(wx.Frame):
         # ??? - We may want to change the normalize vs vmin,vmax behavior so if
         # vmin,vmax are passed in, then normalize is ignored.
         if normalize:
-            pass
+            vmin, vmax = 0, 1
 
         if clear:
             self.clear_subplot(x, y)
@@ -1202,15 +1214,15 @@ class CPFigureFrame(wx.Frame):
 
         # Update colorbar
         if orig_vmin is not None:
-            pass
+            tick_vmin = orig_vmin
         elif normalize == 'log':
-            pass
+            tick_vmin = image[image > 0].min()
         else:
-            pass
+            tick_vmin = image.min()
         if orig_vmax is not None:
-            pass
+            tick_vmax = orig_vmax
         else:
-            pass
+            tick_vmax = image.max()
 
         if isinstance(colormap, basestring):
             colormap = matplotlib.cm.ScalarMappable(cmap=colormap)
@@ -1629,6 +1641,7 @@ class CPFigureFrame(wx.Frame):
         """
         if clear:
             self.clear_subplot(x, y)
+        axes = self.subplot(x, y)
         self.figure.set_facecolor((1, 1, 1))
         self.figure.set_edgecolor((1, 1, 1))
         values = numpy.array(values).flatten()
@@ -1749,6 +1762,7 @@ class CPFigureFrame(wx.Frame):
         plate_names = sorted(plates_dict.keys())
 
         if 'plate_choice' not in self.__dict__:
+            platemap_plate = plate_names[0]
             # Add plate selection choice
             #
             # Make the text transparent so the gradient shows.
@@ -1903,6 +1917,30 @@ def show_image(url, parent=None, needs_raise_after=True):
     parent - parent frame to this one.
     """
     filename = url[(url.rfind("/") + 1):]
+    try:
+        if url.lower().endswith(".mat"):
+            from scipy.io.matlab.mio import loadmat
+            from cellprofiler.modules.loadimages import url2pathname
+            image = loadmat(url2pathname(url), struct_as_record=True)["Image"]
+        else:
+            from bioformats import load_image_url
+            image = load_image_url(url)
+    except IOError:
+        wx.MessageBox('Failed to open file, "%s"' % filename,
+                      caption="File open error")
+        return
+    except javabridge.JavaException, je:
+        wx.MessageBox(
+                'Could not open "%s" as an image.' % filename,
+                caption="File format error")
+        return
+
+    except Exception, e:
+        from cellprofiler.gui.errordialog import display_error_dialog
+        display_error_dialog(None, e, None,
+                             "Failed to load %s" % url,
+                             continue_only=True)
+        return
     frame = CPFigureFrame(parent=parent,
                           title=filename,
                           subplots=(1, 1))

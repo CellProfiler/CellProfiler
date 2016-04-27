@@ -390,9 +390,10 @@ class PlateViewer(object):
     def on_paint_plate(self, evt):
         assert isinstance(evt, wx.PaintEvent)
         if self.plate_bitmap is None:
+            dc = wx.PaintDC(self.plate_panel)
             return
         else:
-            pass
+            dc = wx.BufferedPaintDC(self.plate_panel, self.plate_bitmap)
 
     def on_erase_background(self, evt):
         pass

@@ -46,14 +46,14 @@ from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 from centrosome.cpmorphology import strel_disk, centers_of_labels
 from centrosome.outline import outline
 
-import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements as cpmeas
-import cellprofiler.objects as cpo
-import cellprofiler.preferences as cpprefs
-import cellprofiler.settings as cps
+import cellprofiler.image as cpi
+import cellprofiler.module as cpm
+import cellprofiler.measurement as cpmeas
+import cellprofiler.object as cpo
+import cellprofiler.configuration as cpprefs
+import cellprofiler.setting as cps
 import cellprofiler.workspace as cpw
-from cellprofiler.settings import YES, NO
+from cellprofiler.setting import YES, NO
 
 D_ADJACENT = 'Adjacent'
 D_EXPAND = 'Expand until adjacent'
@@ -78,7 +78,7 @@ S_EXPANDED = 'Expanded'
 S_ADJACENT = 'Adjacent'
 
 
-class MeasureObjectNeighbors(cpm.CPModule):
+class MeasureObjectNeighbors(cpm.Module):
     module_name = 'MeasureObjectNeighbors'
     category = "Measurement"
     variable_revision_number = 2
@@ -203,13 +203,13 @@ class MeasureObjectNeighbors(cpm.CPModule):
 
     def run(self, workspace):
         objects = workspace.object_set.get_objects(self.object_name.value)
-        assert isinstance(objects, cpo.Objects)
+        assert isinstance(objects, cpo.Object)
         has_pixels = objects.areas > 0
         labels = objects.small_removed_segmented
         kept_labels = objects.segmented
         neighbor_objects = workspace.object_set.get_objects(
                 self.neighbors_name.value)
-        assert isinstance(neighbor_objects, cpo.Objects)
+        assert isinstance(neighbor_objects, cpo.Object)
         neighbor_labels = neighbor_objects.small_removed_segmented
         #
         # Need to add in labels touching border.
@@ -466,7 +466,7 @@ class MeasureObjectNeighbors(cpm.CPModule):
         #
         assert (isinstance(workspace, cpw.Workspace))
         m = workspace.measurements
-        assert (isinstance(m, cpmeas.Measurements))
+        assert (isinstance(m, cpmeas.Measurement))
         image_set = workspace.image_set
         features_and_data = [
             (M_NUMBER_OF_NEIGHBORS, neighbor_count),

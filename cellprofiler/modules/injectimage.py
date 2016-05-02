@@ -5,14 +5,14 @@ import hashlib
 
 import numpy as np
 
-import cellprofiler.cpimage
-import cellprofiler.cpmodule
-import cellprofiler.measurements as cpmeas
-import cellprofiler.objects
-import cellprofiler.settings
+import cellprofiler.image
+import cellprofiler.module
+import cellprofiler.measurement as cpmeas
+import cellprofiler.object
+import cellprofiler.setting
 
 
-class InjectImage(cellprofiler.cpmodule.CPModule):
+class InjectImage(cellprofiler.module.Module):
     """This module is intended for testing. It injects an image into the
     image set.
     """
@@ -36,7 +36,7 @@ class InjectImage(cellprofiler.cpmodule.CPModule):
         self.__image_name = image_name
         self.__image = image
         self.__mask = mask
-        self.image_name = cellprofiler.settings.NameProvider("Hardwired image name", "imagegroup", image_name)
+        self.image_name = cellprofiler.setting.NameProvider("Hardwired image name", "imagegroup", image_name)
         self.__release_image = release_image
 
     def settings(self):
@@ -87,7 +87,7 @@ class InjectImage(cellprofiler.cpmodule.CPModule):
             mask = self.__mask[workspace.image_set.image_number - 1]
         else:
             mask = self.__mask
-        image = cellprofiler.cpimage.Image(image, mask)
+        image = cellprofiler.image.Image(image, mask)
         workspace.image_set.add(self.__image_name, image)
 
     def post_run(self, workspace):
@@ -121,7 +121,7 @@ class InjectImage(cellprofiler.cpmodule.CPModule):
         return []
 
 
-class InjectObjects(cellprofiler.cpmodule.CPModule):
+class InjectObjects(cellprofiler.module.Module):
     """Inject objects with labels into the pipeline"""
 
     module_name = "InjectObjects"
@@ -138,7 +138,7 @@ class InjectObjects(cellprofiler.cpmodule.CPModule):
                                   same as segmented
         """
         super(InjectObjects, self).__init__()
-        self.object_name = cellprofiler.settings.ObjectNameProvider("text", object_name)
+        self.object_name = cellprofiler.setting.ObjectNameProvider("text", object_name)
         self.__segmented = segmented
         self.__unedited_segmented = unedited_segmented
         self.__small_removed_segmented = small_removed_segmented
@@ -147,7 +147,7 @@ class InjectObjects(cellprofiler.cpmodule.CPModule):
         return [self.object_name]
 
     def run(self, workspace):
-        my_objects = cellprofiler.objects.Objects()
+        my_objects = cellprofiler.object.Object()
         my_objects.segmented = self.__segmented
         if self.__unedited_segmented is not None:
             my_objects.unedited_segmented = self.__unedited_segmented

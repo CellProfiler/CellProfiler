@@ -5,8 +5,8 @@
 import cellprofiler.gui
 import cellprofiler.gui.cpartists
 import cellprofiler.gui.help
-import cellprofiler.preferences
-import cellprofiler.preferences
+import cellprofiler.configuration
+import cellprofiler.configuration
 import centrosome.cpmorphology
 import centrosome.outline
 import cpfigure_tools
@@ -196,7 +196,7 @@ def close_all(parent):
         else:
             window.Close()
 
-    cellprofiler.preferences.reset_cpfigure_position()
+    cellprofiler.configuration.reset_cpfigure_position()
     try:
         from imagej.windowmanager import close_all_windows
         from javabridge import attach, detach
@@ -276,7 +276,7 @@ class CPFigureFrame(wx.Frame):
         """
         global window_ids
         if pos == wx.DefaultPosition:
-            pos = cellprofiler.preferences.get_next_cpfigure_position()
+            pos = cellprofiler.configuration.get_next_cpfigure_position()
         super(CPFigureFrame, self).__init__(parent, identifier, title, pos, size, style, name)
         self.close_fn = on_close
         self.mouse_mode = MODE_NONE
@@ -292,7 +292,7 @@ class CPFigureFrame(wx.Frame):
         self.widgets = []
         self.mouse_down = None
         self.remove_menu = []
-        if cellprofiler.preferences.get_use_more_figure_space():
+        if cellprofiler.configuration.get_use_more_figure_space():
             matplotlib.rcParams.update(dict([('figure.subplot.left', 0.025),
                                              ('figure.subplot.right', 0.975),
                                              ('figure.subplot.top', 0.975),
@@ -789,11 +789,11 @@ class CPFigureFrame(wx.Frame):
         x - subplot's column
         y - subplot's row
         """
-        fontname = fontname = cellprofiler.preferences.get_title_font_name()
+        fontname = fontname = cellprofiler.configuration.get_title_font_name()
 
         self.subplot(x, y).set_title(title,
                                      fontname=fontname,
-                                     fontsize=cellprofiler.preferences.get_title_font_size())
+                                     fontsize=cellprofiler.configuration.get_title_font_size())
 
     def clear_subplot(self, x, y):
         """Clear a subplot of its gui junk. Noop if no subplot exists at x,y
@@ -1119,10 +1119,10 @@ class CPFigureFrame(wx.Frame):
         if interpolation is None:
             interpolation = get_matplotlib_interpolation_preference()
         if normalize is None:
-            normalize = cellprofiler.preferences.get_intensity_mode()
-            if normalize == cellprofiler.preferences.INTENSITY_MODE_RAW:
+            normalize = cellprofiler.configuration.get_intensity_mode()
+            if normalize == cellprofiler.configuration.INTENSITY_MODE_RAW:
                 normalize = False
-            elif normalize == cellprofiler.preferences.INTENSITY_MODE_LOG:
+            elif normalize == cellprofiler.configuration.INTENSITY_MODE_LOG:
                 normalize = "log"
             else:
                 normalize = True
@@ -1135,17 +1135,17 @@ class CPFigureFrame(wx.Frame):
                 d = d.copy()
                 if CPLD_OUTLINE_COLOR not in d:
                     if i == 0:
-                        d[CPLD_OUTLINE_COLOR] = cellprofiler.preferences.get_primary_outline_color()
+                        d[CPLD_OUTLINE_COLOR] = cellprofiler.configuration.get_primary_outline_color()
                     elif i == 1:
-                        d[CPLD_OUTLINE_COLOR] = cellprofiler.preferences.get_secondary_outline_color()
+                        d[CPLD_OUTLINE_COLOR] = cellprofiler.configuration.get_secondary_outline_color()
                     elif i == 2:
-                        d[CPLD_OUTLINE_COLOR] = cellprofiler.preferences.get_tertiary_outline_color()
+                        d[CPLD_OUTLINE_COLOR] = cellprofiler.configuration.get_tertiary_outline_color()
                 if CPLD_MODE not in d:
                     d[CPLD_MODE] = CPLDM_OUTLINES
                 if CPLD_LINE_WIDTH not in d:
                     d[CPLD_LINE_WIDTH] = 1
                 if CPLD_ALPHA_COLORMAP not in d:
-                    d[CPLD_ALPHA_COLORMAP] = cellprofiler.preferences.get_default_colormap()
+                    d[CPLD_ALPHA_COLORMAP] = cellprofiler.configuration.get_default_colormap()
                 if CPLD_ALPHA_VALUE not in d:
                     d[CPLD_ALPHA_VALUE] = .25
                 new_cplabels.append(d)
@@ -1175,7 +1175,7 @@ class CPFigureFrame(wx.Frame):
         kwargs.update(self.subplot_user_params[(x, y)])
         self.subplot_params[(x, y)].update(kwargs)
         if kwargs["colormap"] is None:
-            kwargs["colormap"] = cellprofiler.preferences.get_default_colormap()
+            kwargs["colormap"] = cellprofiler.configuration.get_default_colormap()
 
         # and fetch back out
         title = kwargs['title']
@@ -1338,7 +1338,7 @@ class CPFigureFrame(wx.Frame):
         if renumber:
             labels = cpfigure_tools.renumber_labels_for_display(labels)
 
-        cm = matplotlib.cm.get_cmap(cellprofiler.preferences.get_default_colormap())
+        cm = matplotlib.cm.get_cmap(cellprofiler.configuration.get_default_colormap())
         cm.set_bad((0, 0, 0))
         labels = numpy.ma.array(labels, mask=labels == 0)
         mappable = matplotlib.cm.ScalarMappable(cmap=cm)
@@ -1381,7 +1381,7 @@ class CPFigureFrame(wx.Frame):
                 shape = [numpy.max(ijv[:, 0]) + 1, numpy.max(ijv[:, 1]) + 1]
         image = numpy.zeros(list(shape) + [3], numpy.float)
         if len(ijv) > 0:
-            cm = matplotlib.cm.get_cmap(cellprofiler.preferences.get_default_colormap())
+            cm = matplotlib.cm.get_cmap(cellprofiler.configuration.get_default_colormap())
             max_label = numpy.max(ijv[:, 2])
             if renumber:
                 numpy.random.seed(0)
@@ -2092,12 +2092,12 @@ class CPImageArtist(matplotlib.artist.Artist):
 
 
 def get_matplotlib_interpolation_preference():
-    interpolation = cellprofiler.preferences.get_interpolation_mode()
-    if interpolation == cellprofiler.preferences.IM_NEAREST:
+    interpolation = cellprofiler.configuration.get_interpolation_mode()
+    if interpolation == cellprofiler.configuration.IM_NEAREST:
         return matplotlib.image.NEAREST
-    elif interpolation == cellprofiler.preferences.IM_BILINEAR:
+    elif interpolation == cellprofiler.configuration.IM_BILINEAR:
         return matplotlib.image.BILINEAR
-    elif interpolation == cellprofiler.preferences.IM_BICUBIC:
+    elif interpolation == cellprofiler.configuration.IM_BICUBIC:
         return matplotlib.image.BICUBIC
     return matplotlib.image.NEAREST
 

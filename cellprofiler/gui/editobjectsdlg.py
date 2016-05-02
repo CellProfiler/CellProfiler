@@ -6,8 +6,8 @@
 import cellprofiler.gui.cpfigure
 import cellprofiler.gui.cpfigure_tools
 import cellprofiler.gui.sashwindow_tools
-import cellprofiler.objects
-import cellprofiler.preferences
+import cellprofiler.object
+import cellprofiler.configuration
 import centrosome.cpmorphology
 import centrosome.cpmorphology
 import centrosome.cpmorphology
@@ -133,7 +133,7 @@ class EditObjectsDialog(wx.Dialog):
         self.active_index = None
         self.mode = self.NORMAL_MODE
         self.scaling_mode = self.SM_NORMALIZED
-        self.interpolation_mode = cellprofiler.preferences.get_interpolation_mode()
+        self.interpolation_mode = cellprofiler.configuration.get_interpolation_mode()
         self.label_display_mode = self.ID_LABELS_OUTLINES
         self.skip_right_button_up = False
         self.split_artist = None
@@ -214,7 +214,7 @@ class EditObjectsDialog(wx.Dialog):
         self.last_ijv = ijvx[:, :3]
         self.last_artist_save = artist_save
         self.last_to_keep = self.to_keep
-        temp = cellprofiler.objects.Objects()
+        temp = cellprofiler.object.Object()
         temp.ijv = self.last_ijv
         self.labels = [l for l, c in temp.get_labels(self.shape)]
         self.init_labels()
@@ -289,8 +289,8 @@ class EditObjectsDialog(wx.Dialog):
         self.orig_axes._adjustable = 'box-forced'
         self.orig_axes.set_title(
                 self.title,
-                fontname=cellprofiler.preferences.get_title_font_name(),
-                fontsize=cellprofiler.preferences.get_title_font_size())
+                fontname=cellprofiler.configuration.get_title_font_name(),
+                fontsize=cellprofiler.configuration.get_title_font_size())
 
         ########################################
         #
@@ -595,7 +595,7 @@ class EditObjectsDialog(wx.Dialog):
                 self.li = numpy.hstack((self.li, li))
                 self.lj = numpy.hstack((self.lj, lj))
                 self.ll = numpy.hstack((self.ll, ll))
-        cm = matplotlib.cm.get_cmap(cellprofiler.preferences.get_default_colormap())
+        cm = matplotlib.cm.get_cmap(cellprofiler.configuration.get_default_colormap())
         cm.set_bad((0, 0, 0))
 
         mappable = matplotlib.cm.ScalarMappable(cmap=cm)
@@ -672,7 +672,7 @@ class EditObjectsDialog(wx.Dialog):
             ii.append(i[mask])
             jj.append(j[mask])
             vv.append(l[mask])
-        temp = cellprofiler.objects.Objects()
+        temp = cellprofiler.object.Object()
         temp.set_ijv(
                 numpy.column_stack([numpy.hstack(x) for x in (ii, jj, vv)]),
                 shape=self.shape)
@@ -724,8 +724,8 @@ class EditObjectsDialog(wx.Dialog):
                 orig_to_show[object_number] = False
         self.orig_axes.clear()
         if self.guide_image is not None and self.wants_image_display:
-            image, _ = cellprofiler.objects.size_similarly(self.orig_labels[0],
-                                                           self.guide_image)
+            image, _ = cellprofiler.object.size_similarly(self.orig_labels[0],
+                                                          self.guide_image)
             if image.ndim == 2:
                 image = numpy.dstack((image, image, image))
             if self.scaling_mode == self.SM_RAW:
@@ -1014,11 +1014,11 @@ class EditObjectsDialog(wx.Dialog):
 
         interpolation_menu = wx.Menu("Interpolation")
         for mid, state, help_text in (
-                (self.ID_INTERPOLATION_NEAREST, cellprofiler.preferences.IM_NEAREST,
+                (self.ID_INTERPOLATION_NEAREST, cellprofiler.configuration.IM_NEAREST,
                  "Display images using the intensity of the nearest pixel (blocky)"),
-                (self.ID_INTERPOLATION_BILINEAR, cellprofiler.preferences.IM_BILINEAR,
+                (self.ID_INTERPOLATION_BILINEAR, cellprofiler.configuration.IM_BILINEAR,
                  "Display images by blending the intensities of the four nearest pixels (smoother)"),
-                (self.ID_INTERPOLATION_BICUBIC, cellprofiler.preferences.IM_BICUBIC,
+                (self.ID_INTERPOLATION_BICUBIC, cellprofiler.configuration.IM_BICUBIC,
                  "Display images by blending intensities using cubic spline interpolation (smoothest)")):
             interpolation_menu.AppendRadioItem(mid, state, help_text)
             if self.interpolation_mode == state:
@@ -1088,15 +1088,15 @@ class EditObjectsDialog(wx.Dialog):
         self.display()
 
     def on_nearest_neighbor_interpolation(self, event):
-        self.interpolation_mode = cellprofiler.preferences.IM_NEAREST
+        self.interpolation_mode = cellprofiler.configuration.IM_NEAREST
         self.display()
 
     def on_bilinear_interpolation(self, event):
-        self.interpolation_mode = cellprofiler.preferences.IM_BILINEAR
+        self.interpolation_mode = cellprofiler.configuration.IM_BILINEAR
         self.display()
 
     def on_bicubic_interpolation(self, event):
-        self.interpolation_mode = cellprofiler.preferences.IM_BICUBIC
+        self.interpolation_mode = cellprofiler.configuration.IM_BICUBIC
         self.display()
 
     def on_mouse_button_up(self, event):
@@ -1439,8 +1439,8 @@ class EditObjectsDialog(wx.Dialog):
 
         self.orig_axes.set_title(
                 title,
-                fontname=cellprofiler.preferences.get_title_font_name(),
-                fontsize=cellprofiler.preferences.get_title_font_size())
+                fontname=cellprofiler.configuration.get_title_font_name(),
+                fontsize=cellprofiler.configuration.get_title_font_size())
 
     def enter_split_mode(self, event):
         self.toolbar.cancel_mode()

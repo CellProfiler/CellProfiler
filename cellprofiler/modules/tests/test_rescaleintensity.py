@@ -8,15 +8,15 @@ import zlib
 
 import numpy as np
 
-from cellprofiler.preferences import set_headless
+from cellprofiler.configuration import set_headless
 
 set_headless()
 
 import cellprofiler.pipeline as cpp
-import cellprofiler.cpmodule as cpm
-import cellprofiler.cpimage as cpi
-import cellprofiler.measurements as cpmeas
-import cellprofiler.objects as cpo
+import cellprofiler.module as cpm
+import cellprofiler.image as cpi
+import cellprofiler.measurement as cpmeas
+import cellprofiler.object as cpo
 import cellprofiler.workspace as cpw
 
 import cellprofiler.modules.rescaleintensity as R
@@ -487,7 +487,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         object_set = cpo.ObjectSet()
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        measurements = cpmeas.Measurements()
+        measurements = cpmeas.Measurement()
         module_number = 1
         module = R.RescaleIntensity()
         module.image_name.value = INPUT_NAME

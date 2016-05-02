@@ -1,7 +1,6 @@
-'''test_cellprofiler - test the CellProfiler command-line interface
-'''
-
+import cStringIO
 import datetime
+import dateutil.parser
 import os
 import shutil
 import subprocess
@@ -9,12 +8,6 @@ import sys
 import tempfile
 import unittest
 import urllib
-from cStringIO import StringIO
-
-import dateutil.parser
-
-from cellprofiler.modules.tests import \
-    example_images_directory, maybe_download_example_images
 
 if hasattr(sys, 'frozen'):
     ARGLIST_START = [sys.executable]
@@ -58,7 +51,7 @@ class TestCellProfiler(unittest.TestCase):
                      "Code statistics are not available in frozen-mode")
     def test_01_02_code_statistics(self):
         old_stdout = sys.stdout
-        fake_stdout = StringIO(
+        fake_stdout = cStringIO.StringIO(
                 self.run_cellprofiler("--code-statistics"))
         fake_stdout.seek(0)
         found_module_stats = False
@@ -109,7 +102,7 @@ class TestCellProfiler(unittest.TestCase):
                                   "-f", "1",
                                   "-l", "1",
                                   measurements_file)
-            import cellprofiler.preferences as cpprefs
+            import cellprofiler.configuration as cpprefs
             self.assertTrue(os.path.exists(measurements_file))
             self.assertTrue(os.path.exists(done_file))
             #

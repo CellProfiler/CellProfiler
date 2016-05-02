@@ -8,7 +8,7 @@ from StringIO import StringIO
 
 import numpy as np
 
-from cellprofiler.preferences import set_headless
+from cellprofiler.configuration import set_headless
 
 set_headless()
 
@@ -16,9 +16,9 @@ import cellprofiler.modules.identify as cpmi
 import cellprofiler.modules.identifytertiaryobjects as cpmit
 import cellprofiler.workspace as cpw
 import cellprofiler.pipeline as cpp
-import cellprofiler.cpimage as cpi
-import cellprofiler.objects as cpo
-import cellprofiler.measurements as cpm
+import cellprofiler.image as cpi
+import cellprofiler.object as cpo
+import cellprofiler.measurement as cpm
 
 PRIMARY = "primary"
 SECONDARY = "secondary"
@@ -49,13 +49,13 @@ class TestIdentifyTertiaryObjects(unittest.TestCase):
                                   module,
                                   isl.get_image_set(0),
                                   cpo.ObjectSet(),
-                                  cpm.Measurements(),
+                                  cpm.Measurement(),
                                   isl)
         workspace.pipeline.add_module(module)
 
         for labels, name in ((primary_labels, PRIMARY),
                              (secondary_labels, SECONDARY)):
-            objects = cpo.Objects()
+            objects = cpo.Object()
             objects.segmented = labels
             workspace.object_set.add_objects(objects, name)
         return workspace

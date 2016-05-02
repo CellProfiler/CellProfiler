@@ -10,16 +10,16 @@ from StringIO import StringIO
 import numpy as np
 import scipy.ndimage
 
-from cellprofiler.preferences import set_headless
+from cellprofiler.configuration import set_headless
 
 set_headless()
 
 from cellprofiler.modules.tests import read_example_image
 import cellprofiler.pipeline as cpp
-import cellprofiler.cpmodule as cpm
-import cellprofiler.cpimage as cpi
-import cellprofiler.measurements as cpmeas
-import cellprofiler.objects as cpo
+import cellprofiler.module as cpm
+import cellprofiler.image as cpi
+import cellprofiler.measurement as cpmeas
+import cellprofiler.object as cpo
 import cellprofiler.workspace as cpw
 
 import cellprofiler.modules.align as A
@@ -38,7 +38,7 @@ class TestAlign(unittest.TestCase):
                                   module,
                                   image_set,
                                   object_set,
-                                  cpmeas.Measurements(),
+                                  cpmeas.Measurement(),
                                   image_set_list)
         for index, (pixels, mask) in enumerate(zip(images, masks)):
             if mask is None:
@@ -276,7 +276,7 @@ Name the second output image:AlignedImage2
                         module.run(workspace)
                         output = workspace.image_set.get_image('Aligned0')
                         m = workspace.measurements
-                        self.assertTrue(isinstance(m, cpmeas.Measurements))
+                        self.assertTrue(isinstance(m, cpmeas.Measurement))
                         off_i0 = -m.get_current_image_measurement('Align_Yshift_Aligned0')
                         off_j0 = -m.get_current_image_measurement('Align_Xshift_Aligned0')
                         off_i1 = -m.get_current_image_measurement('Align_Yshift_Aligned1')
@@ -378,7 +378,7 @@ Name the second output image:AlignedImage2
                         module.run(workspace)
                         output = workspace.image_set.get_image('Aligned0')
                         m = workspace.measurements
-                        self.assertTrue(isinstance(m, cpmeas.Measurements))
+                        self.assertTrue(isinstance(m, cpmeas.Measurement))
                         off_i0 = -m.get_current_image_measurement('Align_Yshift_Aligned0')
                         off_j0 = -m.get_current_image_measurement('Align_Xshift_Aligned0')
                         off_i1 = -m.get_current_image_measurement('Align_Yshift_Aligned1')
@@ -446,7 +446,7 @@ Name the second output image:AlignedImage2
                         module.run(workspace)
                         output = workspace.image_set.get_image('Aligned0')
                         m = workspace.measurements
-                        self.assertTrue(isinstance(m, cpmeas.Measurements))
+                        self.assertTrue(isinstance(m, cpmeas.Measurement))
                         off_i0 = -m.get_current_image_measurement('Align_Yshift_Aligned0')
                         off_j0 = -m.get_current_image_measurement('Align_Xshift_Aligned0')
                         off_i1 = -m.get_current_image_measurement('Align_Yshift_Aligned1')
@@ -512,7 +512,7 @@ Name the second output image:AlignedImage2
             align_measurements = [x for x in m.get_feature_names(cpmeas.IMAGE)
                                   if x.startswith('Align')]
             self.assertEqual(len(align_measurements), 6)
-            self.assertTrue(isinstance(m, cpmeas.Measurements))
+            self.assertTrue(isinstance(m, cpmeas.Measurement))
             off_i0 = -m.get_current_image_measurement('Align_Yshift_Aligned0')
             off_j0 = -m.get_current_image_measurement('Align_Xshift_Aligned0')
             off_i1 = -m.get_current_image_measurement('Align_Yshift_Aligned1')
@@ -548,7 +548,7 @@ Name the second output image:AlignedImage2
             module.additional_images[0].align_choice.value = A.A_SEPARATELY
             module.run(workspace)
             m = workspace.measurements
-            self.assertTrue(isinstance(m, cpmeas.Measurements))
+            self.assertTrue(isinstance(m, cpmeas.Measurement))
             off_i0 = -m.get_current_image_measurement('Align_Yshift_Aligned0')
             off_j0 = -m.get_current_image_measurement('Align_Xshift_Aligned0')
             off_i1 = -m.get_current_image_measurement('Align_Yshift_Aligned1')
@@ -605,7 +605,7 @@ Name the second output image:AlignedImage2
                         module.run(workspace)
                         output = workspace.image_set.get_image('Aligned0')
                         m = workspace.measurements
-                        self.assertTrue(isinstance(m, cpmeas.Measurements))
+                        self.assertTrue(isinstance(m, cpmeas.Measurement))
                         off_i0 = -m.get_current_image_measurement('Align_Yshift_Aligned0')
                         off_j0 = -m.get_current_image_measurement('Align_Xshift_Aligned0')
                         off_i1 = -m.get_current_image_measurement('Align_Yshift_Aligned1')
@@ -671,7 +671,7 @@ Name the second output image:AlignedImage2
                         module.run(workspace)
                         output = workspace.image_set.get_image('Aligned0')
                         m = workspace.measurements
-                        self.assertTrue(isinstance(m, cpmeas.Measurements))
+                        self.assertTrue(isinstance(m, cpmeas.Measurement))
                         off_i0 = -m.get_current_image_measurement('Align_Yshift_Aligned0')
                         off_j0 = -m.get_current_image_measurement('Align_Xshift_Aligned0')
                         off_i1 = -m.get_current_image_measurement('Align_Yshift_Aligned1')

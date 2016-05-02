@@ -12,13 +12,13 @@ import sys
 import re
 import uuid
 
-from cellprofiler.preferences import \
+from cellprofiler.configuration import \
     DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME, \
     DEFAULT_INPUT_SUBFOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME, \
     ABSOLUTE_FOLDER_NAME, URL_FOLDER_NAME, NO_FOLDER_NAME, \
     get_default_image_directory, get_default_output_directory, \
     standardize_default_folder_names
-import cellprofiler.measurements
+import cellprofiler.measurement
 
 from cellprofiler.utilities.utf16encode import utf16encode
 
@@ -1328,10 +1328,10 @@ class ObjectNameProvider(NameProvider):
                                                  *args, **kwargs)
 
     def test_valid(self, pipeline):
-        if self.value_text in cellprofiler.measurements.disallowed_object_names:
+        if self.value_text in cellprofiler.measurement.disallowed_object_names:
             raise ValidationError(
                     "Object names may not be any of %s" % (
-                        ", ".join(cellprofiler.measurements.disallowed_object_names)),
+                        ", ".join(cellprofiler.measurement.disallowed_object_names)),
                     self)
         super(ObjectNameProvider, self).test_valid(pipeline)
 

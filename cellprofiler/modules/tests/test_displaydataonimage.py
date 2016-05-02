@@ -8,16 +8,16 @@ from StringIO import StringIO
 
 import numpy as np
 
-from cellprofiler.preferences import set_headless
+from cellprofiler.configuration import set_headless
 
 set_headless()
 
 import cellprofiler.workspace as cpw
-import cellprofiler.cpgridinfo as cpg
-import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
-import cellprofiler.objects as cpo
-import cellprofiler.measurements as cpmeas
+import cellprofiler.grid as cpg
+import cellprofiler.image as cpi
+import cellprofiler.module as cpm
+import cellprofiler.object as cpo
+import cellprofiler.measurement as cpmeas
 import cellprofiler.pipeline as cpp
 import cellprofiler.modules.displaydataonimage as D
 from centrosome.cpmorphology import centers_of_labels
@@ -281,7 +281,7 @@ DisplayDataOnImage:[module_num:2|svn_version:\'Unknown\'|variable_revision_numbe
         module.image_name.value = INPUT_IMAGE_NAME
         module.display_image.value = OUTPUT_IMAGE_NAME
         module.objects_name.value = OBJECTS_NAME
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurement()
 
         if labels is None:
             module.objects_or_image.value = D.OI_IMAGE
@@ -290,7 +290,7 @@ DisplayDataOnImage:[module_num:2|svn_version:\'Unknown\'|variable_revision_numbe
                 image = np.zeros((50, 120))
         else:
             module.objects_or_image.value = D.OI_OBJECTS
-            o = cpo.Objects()
+            o = cpo.Object()
             o.segmented = labels
             object_set.add_objects(o, OBJECTS_NAME)
             m.add_measurement(OBJECTS_NAME, MEASUREMENT_NAME, np.array(measurement))

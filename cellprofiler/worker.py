@@ -32,7 +32,7 @@ knime_bridge_address = None
 
 def aw_parse_args():
     '''Parse the application arguments into setup parameters'''
-    from cellprofiler.preferences import \
+    from cellprofiler.configuration import \
         set_headless, set_awt_headless, \
         set_plugin_directory, set_ij_plugin_directory
     import optparse
@@ -70,7 +70,7 @@ def aw_parse_args():
 
     options, args = parser.parse_args()
     if options.jvm_heap_size is not None:
-        from cellprofiler.preferences import set_jvm_heap_mb
+        from cellprofiler.configuration import set_jvm_heap_mb
         set_jvm_heap_mb(options.jvm_heap_size, False)
     logging.root.setLevel(options.log_level)
     if len(logging.root.handlers) == 0:
@@ -127,17 +127,20 @@ import traceback
 from weakref import WeakSet
 
 import cellprofiler.workspace as cpw
-import cellprofiler.measurements as cpmeas
-import cellprofiler.preferences as cpprefs
+import cellprofiler.measurement as cpmeas
+import cellprofiler.configuration as cpprefs
 from cellprofiler.gui.errordialog import ED_STOP, ED_SKIP
 from cellprofiler.analysis import \
-    PipelinePreferencesRequest, InitialMeasurementsRequest, WorkRequest, \
-    NoWorkReply, MeasurementsReport, InteractionRequest, DisplayRequest, \
-    DisplayPostGroupRequest, AnalysisCancelRequest, \
-    ExceptionReport, DebugWaiting, DebugComplete, InteractionReply, \
-    ServerExited, ImageSetSuccess, ImageSetSuccessWithDictionary, \
-    SharedDictionaryRequest, Ack, UpstreamExit, ANNOUNCE_DONE, \
-    OmeroLoginRequest, OmeroLoginReply
+    InitialMeasurements, Work, \
+    NoWork, MeasurementsReport, Interaction, Display, \
+    DisplayPostGroup, AnalysisCancel, \
+    ExceptionReport, DebugWaiting, DebugComplete, ImageSetSuccess, ImageSetSuccessWithDictionary, \
+    SharedDictionary, Ack, ANNOUNCE_DONE, \
+    OMEROLogin
+from message.request import PipelinePreferences, InitialMeasurements, Work, ImageSetSuccess, \
+    ImageSetSuccessWithDictionary, MeasurementsReport, Interaction, AnalysisCancel, Display, \
+    DisplayPostGroup, SharedDictionary, ExceptionReport, DebugWaiting, DebugComplete, OMEROLogin
+from message.reply import Interaction, NoWork, OMEROLogin, Ack, ServerExited
 import javabridge as J
 from cellprofiler.utilities.run_loop import enter_run_loop, stop_run_loop
 #
@@ -318,9 +321,9 @@ class AnalysisWorker(object):
                     self.work_socket = the_zmq_context.socket(zmq.REQ)
                     self.work_socket.connect(self.work_request_address)
                     # fetch a job
-                    job = self.send(WorkRequest(self.current_analysis_id))
+                    job = self.send(Work(self.current_analysis_id))
 
-                    if isinstance(job, NoWorkReply):
+                    if isinstance(job, NoWork):
                         time.sleep(0.25)  # avoid hammering server
                         # no work, currently.
                         continue
@@ -347,7 +350,7 @@ class AnalysisWorker(object):
                         self.current_analysis_id, (None, None))
             if not current_pipeline:
                 logger.debug("Fetching pipeline and preferences")
-                rep = self.send(PipelinePreferencesRequest(
+                rep = self.send(PipelinePreferences(
                         self.current_analysis_id))
                 logger.debug("Received pipeline and preferences response")
                 preferences_dict = rep.preferences
@@ -377,7 +380,7 @@ class AnalysisWorker(object):
                     self.current_analysis_id)
             if current_measurements is None:
                 logger.debug("Sending initial measurements request")
-                rep = self.send(InitialMeasurementsRequest(
+                rep = self.send(InitialMeasurements(
                         self.current_analysis_id))
                 logger.debug("Got initial measurements")
                 current_measurements = \
@@ -386,7 +389,7 @@ class AnalysisWorker(object):
             else:
                 logger.debug("Has initial measurements")
             # Make a copy of the measurements for writing during this job
-            current_measurements = cpmeas.Measurements(copy=current_measurements)
+            current_measurements = cpmeas.Measurement(copy=current_measurements)
             all_measurements.add(current_measurements)
             job_measurements.append(current_measurements)
 
@@ -400,7 +403,7 @@ class AnalysisWorker(object):
             if not worker_runs_post_group:
                 # Get the shared state from the first imageset in this run.
                 shared_dicts = self.send(
-                        SharedDictionaryRequest(self.current_analysis_id)).dictionaries
+                        SharedDictionary(self.current_analysis_id)).dictionaries
                 assert len(shared_dicts) == len(current_pipeline.modules())
                 for module, new_dict in zip(current_pipeline.modules(),
                                             shared_dicts):
@@ -456,7 +459,7 @@ class AnalysisWorker(object):
                             req = ImageSetSuccessWithDictionary(
                                     self.current_analysis_id,
                                     image_set_number=image_set_number,
-                                    shared_dicts=dicts)
+                                    shared_dictionaries=dicts)
                         else:
                             req = ImageSetSuccess(
                                     self.current_analysis_id,
@@ -499,7 +502,7 @@ class AnalysisWorker(object):
 
             # send measurements back to server
             req = MeasurementsReport(self.current_analysis_id,
-                                     buf=current_measurements.file_contents(),
+                                     buffer=current_measurements.file_contents(),
                                      image_set_numbers=image_set_numbers)
             rep = self.send(req)
 
@@ -522,7 +525,7 @@ class AnalysisWorker(object):
         # more complex data to be sent by the underlying zmq machinery.
         arg_kwarg_dict = dict([('arg_%d' % idx, v) for idx, v in enumerate(args)] +
                               [('kwarg_%s' % name, v) for (name, v) in kwargs.items()])
-        req = InteractionRequest(
+        req = Interaction(
                 self.current_analysis_id,
                 module_num=module.module_num,
                 num_args=len(args),
@@ -535,18 +538,18 @@ class AnalysisWorker(object):
         '''Handle a cancel request by sending AnalysisCancelRequest
 
         '''
-        self.send(AnalysisCancelRequest(self.current_analysis_id))
+        self.send(AnalysisCancel(self.current_analysis_id))
 
     def display_handler(self, module, display_data, image_set_number):
         '''handle display requests'''
-        req = DisplayRequest(self.current_analysis_id,
-                             module_num=module.module_num,
-                             display_data_dict=display_data.__dict__,
-                             image_set_number=image_set_number)
+        req = Display(self.current_analysis_id,
+                      module_num=module.module_num,
+                      display_data_dict=display_data.__dict__,
+                      image_set_number=image_set_number)
         rep = self.send(req)
 
     def post_group_display_handler(self, module, display_data, image_set_number):
-        req = DisplayPostGroupRequest(
+        req = DisplayPostGroup(
                 self.current_analysis_id,
                 module.module_num, display_data.__dict__, image_set_number)
         rep = self.send(req)
@@ -554,7 +557,7 @@ class AnalysisWorker(object):
     def omero_login_handler(self):
         '''Handle requests for an Omero login'''
         from bioformats.formatreader import use_omero_credentials
-        req = OmeroLoginRequest(self.current_analysis_id)
+        req = OMEROLogin(self.current_analysis_id)
         rep = self.send(req)
         use_omero_credentials(rep.credentials)
 

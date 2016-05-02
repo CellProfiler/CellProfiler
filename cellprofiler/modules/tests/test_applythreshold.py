@@ -8,15 +8,15 @@ from StringIO import StringIO
 
 import numpy as np
 
-from cellprofiler.preferences import set_headless
+from cellprofiler.configuration import set_headless
 
 set_headless()
 
 import cellprofiler.pipeline as cpp
-import cellprofiler.cpmodule as cpm
-import cellprofiler.cpimage as cpi
-import cellprofiler.measurements as cpmeas
-import cellprofiler.objects as cpo
+import cellprofiler.module as cpm
+import cellprofiler.image as cpi
+import cellprofiler.measurement as cpmeas
+import cellprofiler.object as cpo
 import cellprofiler.workspace as cpw
 import cellprofiler.modules.applythreshold as A
 import cellprofiler.modules.identify as I
@@ -42,7 +42,7 @@ class TestApplyThreshold(unittest.TestCase):
                                   module,
                                   image_set,
                                   object_set,
-                                  cpmeas.Measurements(),
+                                  cpmeas.Measurement(),
                                   image_set_list)
         image_set.add(INPUT_IMAGE_NAME,
                       cpi.Image(image) if mask is None
@@ -300,7 +300,7 @@ class TestApplyThreshold(unittest.TestCase):
         self.assertTrue(np.all(output.pixel_data == expected))
 
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         image_features = m.get_feature_names(cpmeas.IMAGE)
         #
         # Check measurement columns = image features
@@ -476,7 +476,7 @@ class TestApplyThreshold(unittest.TestCase):
         expected = image > T.get_otsu_threshold(image[labels == 1])
         expected[labels == 2] = image[labels == 2] > T.get_otsu_threshold(image[labels == 2])
         workspace, module = self.make_workspace(image)
-        objects = cpo.Objects()
+        objects = cpo.Object()
         objects.segmented = labels
         workspace.object_set.add_objects(objects, "HelloKitty")
         module.binary.value = A.BINARY

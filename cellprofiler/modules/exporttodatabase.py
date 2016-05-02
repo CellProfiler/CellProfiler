@@ -80,16 +80,16 @@ except:
     logger.warning("MySQL could not be loaded.", exc_info=True)
     HAS_MYSQL_DB = False
 
-import cellprofiler.cpmodule as cpm
-import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
-import cellprofiler.preferences as cpprefs
-import cellprofiler.measurements as cpmeas
+import cellprofiler.module as cpm
+import cellprofiler.setting as cps
+from cellprofiler.setting import YES, NO
+import cellprofiler.configuration as cpprefs
+import cellprofiler.measurement as cpmeas
 from cellprofiler.pipeline import GROUP_INDEX, M_MODIFICATION_TIMESTAMP
 from identify import M_NUMBER_OBJECT_NUMBER
 from cellprofiler.modules.loadimages import C_FILE_NAME, C_PATH_NAME
 from cellprofiler.gui.help import USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF, USING_METADATA_GROUPING_HELP_REF
-from cellprofiler.preferences import \
+from cellprofiler.configuration import \
     standardize_default_folder_names, DEFAULT_INPUT_FOLDER_NAME, \
     DEFAULT_OUTPUT_FOLDER_NAME, DEFAULT_INPUT_SUBFOLDER_NAME, \
     DEFAULT_OUTPUT_SUBFOLDER_NAME, ABSOLUTE_FOLDER_NAME, \
@@ -341,7 +341,7 @@ class DBContext(object):
         self.connection.close()
 
 
-class ExportToDatabase(cpm.CPModule):
+class ExportToDatabase(cpm.Module):
     module_name = "ExportToDatabase"
     variable_revision_number = 27
     category = ["File Processing", "Data Tools"]
@@ -1717,7 +1717,7 @@ class ExportToDatabase(cpm.CPModule):
         # have to hack our measurement column cache to circumvent this.
         #
         m = workspace.measurements
-        assert isinstance(m, cpmeas.Measurements)
+        assert isinstance(m, cpmeas.Measurement)
         d = self.get_dictionary()
         columns = m.get_measurement_columns()
         for i, (object_name, feature_name, coltype) in enumerate(columns):
@@ -1990,7 +1990,7 @@ class ExportToDatabase(cpm.CPModule):
             # Process the image numbers in the current image's group
             #
             m = workspace.measurements
-            assert isinstance(m, cpmeas.Measurements)
+            assert isinstance(m, cpmeas.Measurement)
             group_number = m[cpmeas.IMAGE, cpmeas.GROUP_NUMBER,
                              m.image_set_number]
             all_image_numbers = m.get_image_numbers()
@@ -2946,7 +2946,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         try:
             zeros_for_nan = False
             measurements = workspace.measurements
-            assert isinstance(measurements, cpmeas.Measurements)
+            assert isinstance(measurements, cpmeas.Measurement)
             pipeline = workspace.pipeline
             image_set_list = workspace.image_set_list
             measurement_cols = self.get_pipeline_measurement_columns(pipeline,

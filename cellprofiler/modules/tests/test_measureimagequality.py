@@ -8,7 +8,7 @@ import unittest
 import numpy as np
 from scipy.io.matlab import savemat
 
-from cellprofiler.preferences import set_headless
+from cellprofiler.configuration import set_headless
 
 set_headless()
 
@@ -18,9 +18,9 @@ import cellprofiler.modules.loadsingleimage
 import cellprofiler.modules.smooth
 import cellprofiler.pipeline as cpp
 import cellprofiler.workspace as cpw
-import cellprofiler.cpimage as cpi
-import cellprofiler.objects as cpo
-import cellprofiler.measurements as cpmeas
+import cellprofiler.image as cpi
+import cellprofiler.object as cpo
+import cellprofiler.measurement as cpmeas
 import centrosome.threshold as cpthresh
 
 MY_IMAGE = "my_image"
@@ -37,7 +37,7 @@ class TestMeasureImageQuality(unittest.TestCase):
             image.mask = mask
         image_set.add(MY_IMAGE, image)
         if not objects is None:
-            o = cpo.Objects()
+            o = cpo.Object()
             o.segmented = objects
             object_set.add_objects(o, MY_OBJECTS)
         module = miq.MeasureImageQuality()
@@ -50,7 +50,7 @@ class TestMeasureImageQuality(unittest.TestCase):
         pipeline.add_module(module)
         workspace = cpw.Workspace(pipeline, module, image_set,
                                   object_set,
-                                  cpmeas.Measurements(), image_set_list)
+                                  cpmeas.Measurement(), image_set_list)
         return workspace
 
     def test_00_00_zeros(self):
@@ -387,7 +387,7 @@ class TestMeasureImageQuality(unittest.TestCase):
         module = workspace.module
         self.assertTrue(isinstance(module, miq.MeasureImageQuality))
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         image_name = module.image_groups[0].image_names.get_selections()[0]
         feature = module.image_groups[0].threshold_groups[0].threshold_feature_name(image_name)
         data = np.random.uniform(size=100)
@@ -417,7 +417,7 @@ class TestMeasureImageQuality(unittest.TestCase):
         module = workspace.module
         self.assertTrue(isinstance(module, miq.MeasureImageQuality))
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         image_name = module.image_groups[0].image_names.get_selections()[0]
         feature = module.image_groups[0].threshold_groups[0].threshold_feature_name(image_name)
         data = np.random.uniform(size=100)

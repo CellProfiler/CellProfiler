@@ -30,14 +30,14 @@ import sys
 
 import numpy as np
 
-import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements as cpmeas
-import cellprofiler.settings as cps
+import cellprofiler.module as cpm
+import cellprofiler.measurement as cpmeas
+import cellprofiler.setting as cps
 import cellprofiler.utilities.rules as cprules
 import cellprofiler.workspace as cpw
 from cellprofiler.gui.help import USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF
-from cellprofiler.preferences import IO_FOLDER_CHOICE_HELP_TEXT
-from cellprofiler.settings import YES, NO
+from cellprofiler.configuration import IO_FOLDER_CHOICE_HELP_TEXT
+from cellprofiler.setting import YES, NO
 
 logger = logging.getLogger(__name__)
 C_ANY = "Flag if any fail"
@@ -62,7 +62,7 @@ N_SETTINGS_PER_MEASUREMENT_V3 = 9
 N_SETTINGS_PER_MEASUREMENT = 10
 
 
-class FlagImage(cpm.CPModule):
+class FlagImage(cpm.Module):
     category = "Data Tools"
     variable_revision_number = 4
     module_name = "FlagImage"
@@ -410,7 +410,7 @@ class FlagImage(cpm.CPModule):
 
     def run_as_data_tool(self, workspace):
         m = workspace.measurements
-        assert isinstance(m, cpmeas.Measurements)
+        assert isinstance(m, cpmeas.Measurement)
         m.is_first_image = True
         image_set_count = m.image_set_count
         for i in range(image_set_count):
@@ -557,7 +557,7 @@ class FlagImage(cpm.CPModule):
                 raise NotImplementedError("Unimplemented combination choice: %s" %
                                           flag.combination_choice.value)
         m = workspace.measurements
-        assert isinstance(m, cpmeas.Measurements)
+        assert isinstance(m, cpmeas.Measurement)
         m.add_image_measurement(self.measurement_name(flag), 0 if ok else 1)
         if (not ok) and flag.wants_skip:
             workspace.disposition = cpw.DISPOSITION_SKIP
@@ -575,7 +575,7 @@ class FlagImage(cpm.CPModule):
                         flag name
         '''
         m = workspace.measurements
-        assert isinstance(m, cpmeas.Measurements)
+        assert isinstance(m, cpmeas.Measurement)
         fail = False
         if ms.source_choice == S_IMAGE:
             value = m.get_current_image_measurement(ms.measurement.value)

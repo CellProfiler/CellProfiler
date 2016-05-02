@@ -34,13 +34,13 @@ import os
 import numpy as np
 import sys
 
-import cellprofiler.preferences as cpprefs
-import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements as cpmeas
-import cellprofiler.objects as cpo
-import cellprofiler.cpimage as cpi
-import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
+import cellprofiler.configuration as cpprefs
+import cellprofiler.module as cpm
+import cellprofiler.measurement as cpmeas
+import cellprofiler.object as cpo
+import cellprofiler.image as cpi
+import cellprofiler.setting as cps
+from cellprofiler.setting import YES, NO
 import cellprofiler.workspace as cpw
 from centrosome.outline import outline
 from centrosome.cpmorphology import triangle_areas
@@ -181,7 +181,7 @@ class EditObjectsManually(I.Identify):
         filtered_objects_name = self.filtered_objects.value
 
         orig_objects = workspace.object_set.get_objects(orig_objects_name)
-        assert isinstance(orig_objects, cpo.Objects)
+        assert isinstance(orig_objects, cpo.Object)
         orig_labels = [l for l, c in orig_objects.get_labels()]
 
         if self.wants_image_display:
@@ -211,7 +211,7 @@ class EditObjectsManually(I.Identify):
         #
         # Make the objects out of the labels
         #
-        filtered_objects = cpo.Objects()
+        filtered_objects = cpo.Object()
         i, j = np.mgrid[0:filtered_labels[0].shape[0],
                0:filtered_labels[0].shape[1]]
         ijv = np.zeros((0, 3), filtered_labels[0].dtype)

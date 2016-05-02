@@ -8,9 +8,9 @@ import threading
 import unittest
 from cStringIO import StringIO
 
-import cellprofiler.measurements as cpmeas
+import cellprofiler.measurement as cpmeas
 import cellprofiler.modules.sendemail as SE
-import cellprofiler.objects as cpo
+import cellprofiler.object as cpo
 import cellprofiler.pipeline as cpp
 import cellprofiler.workspace as cpw
 
@@ -87,7 +87,7 @@ class TestSendEmail(unittest.TestCase):
                        group_numbers=None,
                        group_indexes=None,
                        n_recipients=1):
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurement()
         if group_numbers is None:
             group_numbers = [1] * len(image_numbers)
             group_indexes = range(1, len(image_numbers) + 1)

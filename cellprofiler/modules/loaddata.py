@@ -165,12 +165,12 @@ except:
     from StringIO import StringIO
 import matplotlib.mlab
 
-import cellprofiler.cpmodule as cpm
-import cellprofiler.objects as cpo
-import cellprofiler.measurements as cpmeas
-import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
-import cellprofiler.preferences as cpprefs
+import cellprofiler.module as cpm
+import cellprofiler.object as cpo
+import cellprofiler.measurement as cpmeas
+import cellprofiler.setting as cps
+from cellprofiler.setting import YES, NO
+import cellprofiler.configuration as cpprefs
 import identify as I
 from cellprofiler.modules.loadimages import LoadImagesImageProvider
 from cellprofiler.modules.loadimages import C_FILE_NAME, C_PATH_NAME, C_URL
@@ -178,13 +178,13 @@ from cellprofiler.modules.loadimages import C_SERIES, C_FRAME
 from cellprofiler.modules.loadimages import C_OBJECTS_FILE_NAME
 from cellprofiler.modules.loadimages import C_OBJECTS_PATH_NAME
 from cellprofiler.modules.loadimages import C_OBJECTS_URL
-from cellprofiler.measurements import C_OBJECTS_SERIES, C_OBJECTS_FRAME
+from cellprofiler.measurement import C_OBJECTS_SERIES, C_OBJECTS_FRAME
 from cellprofiler.modules.loadimages import C_MD5_DIGEST, C_SCALING
 from cellprofiler.modules.loadimages import C_HEIGHT, C_WIDTH
 from cellprofiler.modules.loadimages import bad_sizes_warning
 from cellprofiler.modules.loadimages import convert_image_to_objects
 from cellprofiler.modules.loadimages import pathname2url, url2pathname
-from cellprofiler.preferences import standardize_default_folder_names, \
+from cellprofiler.configuration import standardize_default_folder_names, \
     DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME, NO_FOLDER_NAME, \
     ABSOLUTE_FOLDER_NAME, IO_FOLDER_CHOICE_HELP_TEXT
 
@@ -311,7 +311,7 @@ def make_objects_file_name_feature(objects_name):
     return C_OBJECTS_FILE_NAME + '_' + objects_name
 
 
-class LoadData(cpm.CPModule):
+class LoadData(cpm.Module):
     module_name = "LoadData"
     category = 'File Processing'
     variable_revision_number = 6
@@ -757,7 +757,7 @@ class LoadData(cpm.CPModule):
     def prepare_run(self, workspace):
         pipeline = workspace.pipeline
         m = workspace.measurements
-        assert isinstance(m, cpmeas.Measurements)
+        assert isinstance(m, cpmeas.Measurement)
         '''Load the CSV file at the outset and populate the image set list'''
         if pipeline.in_batch_mode():
             return True
@@ -991,7 +991,7 @@ class LoadData(cpm.CPModule):
 
         if self.wants_images:
             m = workspace.measurements
-            assert isinstance(m, cpmeas.Measurements)
+            assert isinstance(m, cpmeas.Measurement)
             image_numbers = m.get_image_numbers()
             all_image_features = m.get_feature_names(cpmeas.IMAGE)
             for url_category, file_category, path_category, names in (
@@ -1063,7 +1063,7 @@ class LoadData(cpm.CPModule):
     def run(self, workspace):
         '''Populate the images and objects'''
         m = workspace.measurements
-        assert isinstance(m, cpmeas.Measurements)
+        assert isinstance(m, cpmeas.Measurement)
         image_set = workspace.image_set
         object_set = workspace.object_set
         statistics = []
@@ -1108,7 +1108,7 @@ class LoadData(cpm.CPModule):
                         objects_name, m, is_image_name=False)
                 image = provider.provide_image(workspace.image_set)
                 pixel_data = convert_image_to_objects(image.pixel_data)
-                o = cpo.Objects()
+                o = cpo.Object()
                 o.segmented = pixel_data
                 object_set.add_objects(o, objects_name)
                 I.add_object_count_measurements(m, objects_name, o.count)
@@ -1144,7 +1144,7 @@ class LoadData(cpm.CPModule):
             if len(keys) == 0:
                 return None
             m = workspace.measurements
-            assert isinstance(m, cpmeas.Measurements)
+            assert isinstance(m, cpmeas.Measurement)
             return keys, m.get_groupings(keys)
         return None
 

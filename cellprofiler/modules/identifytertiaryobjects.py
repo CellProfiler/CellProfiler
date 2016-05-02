@@ -58,15 +58,15 @@ import matplotlib.cm
 import numpy as np
 from centrosome.outline import outline
 
-import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements as cpmeas
-import cellprofiler.objects as cpo
-import cellprofiler.preferences as cpprefs
-import cellprofiler.settings as cps
+import cellprofiler.image as cpi
+import cellprofiler.module as cpm
+import cellprofiler.measurement as cpmeas
+import cellprofiler.object as cpo
+import cellprofiler.configuration as cpprefs
+import cellprofiler.setting as cps
 import identify as cpmi
 from cellprofiler.gui.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
-from cellprofiler.settings import YES, NO
+from cellprofiler.setting import YES, NO
 
 '''The parent object relationship points to the secondary / larger objects'''
 R_PARENT = "Parent"
@@ -74,7 +74,7 @@ R_PARENT = "Parent"
 R_REMOVED = "Removed"
 
 
-class IdentifyTertiaryObjects(cpm.CPModule):
+class IdentifyTertiaryObjects(cpm.Module):
     module_name = "IdentifyTertiaryObjects"
     variable_revision_number = 2
     category = "Object Processing"
@@ -228,7 +228,7 @@ class IdentifyTertiaryObjects(cpm.CPModule):
         #
         # Make the tertiary objects container
         #
-        tertiary_objects = cpo.Objects()
+        tertiary_objects = cpo.Object()
         tertiary_objects.segmented = tertiary_labels
         tertiary_objects.parent_image = tertiary_image
         #

@@ -1,15 +1,9 @@
-"""test_nowx.py - ensure that there's no dependency on wx when headless
-"""
 import __builtin__
-import os
+import cellprofiler.modules.tests
 import sys
 import tempfile
-import traceback
 import unittest
-from urllib2 import urlopen
-
-from cellprofiler.modules.tests import \
-    example_images_directory, maybe_download_sbs, maybe_download_fly
+import urllib2
 
 
 def import_all_but_wx(name,
@@ -25,7 +19,7 @@ def import_all_but_wx(name,
 @unittest.skipIf(sys.platform.startswith('linux'), "Do not test under Linux")
 class TestNoWX(unittest.TestCase):
     def setUp(self):
-        from cellprofiler.preferences import set_headless, set_temporary_directory
+        from cellprofiler.configuration import set_headless, set_temporary_directory
         set_headless()
         set_temporary_directory(tempfile.gettempdir())
         self.old_import = __builtin__.__import__
@@ -35,7 +29,7 @@ class TestNoWX(unittest.TestCase):
         __builtin__.__import__ = self.old_import
 
     def example_dir(self):
-        return example_images_directory()
+        return cellprofiler.modules.tests.example_images_directory()
 
     def test_01_01_can_import(self):
         import os
@@ -72,7 +66,7 @@ class TestNoWX(unittest.TestCase):
         pipeline = cpp.Pipeline()
         pipeline.add_listener(callback)
         try:
-            fd = urlopen(self.fly_url)
+            fd = urllib2.urlopen(self.fly_url)
         except IOError, e:
             def bad_url(e=e):
                 raise e
@@ -81,32 +75,32 @@ class TestNoWX(unittest.TestCase):
         pipeline.load(fd)
         fd.close()
 
-        # def test_01_06_run_pipeline(self):
-        #     import cellprofiler.pipeline as cpp
-        #     import cellprofiler.cpmodule as cpm
-        #     from cellprofiler.preferences import \
-        #          set_default_image_directory, set_default_output_directory
-        #     def callback(caller, event):
-        #         self.assertFalse(isinstance(event, (cpp.LoadExceptionEvent,
-        #                                             cpp.RunExceptionEvent)))
-        #     pipeline = cpp.Pipeline()
-        #     pipeline.add_listener(callback)
-        #     fd = urlopen(self.fly_url)
-        #     pipeline.load(fd)
-        #     fd.close()
-        #     while True:
-        #         removed_something = False
-        #         for module in reversed(pipeline.modules()):
-        #             self.assertTrue(isinstance(module, cpm.CPModule))
-        #             if module.module_name in ("SaveImages",
-        #                                       "CalculateStatistics",
-        #                                       "ExportToSpreadsheet",
-        #                                       "ExportToDatabase"):
-        #                 pipeline.remove_module(module.module_num)
-        #                 removed_something = True
-        #                 break
-        #         if not removed_something:
-        #             break
-        #     for module in pipeline.modules():
-        #         module.show_window = False
-        #     m = pipeline.run(image_set_end = 1)
+        def test_01_06_run_pipeline(self):
+            import cellprofiler.pipeline as cpp
+            import cellprofiler.cpmodule as cpm
+            from cellprofiler.preferences import \
+                 set_default_image_directory, set_default_output_directory
+            def callback(caller, event):
+                self.assertFalse(isinstance(event, (cpp.LoadExceptionEvent,
+                                                    cpp.RunExceptionEvent)))
+            pipeline = cpp.Pipeline()
+            pipeline.add_listener(callback)
+            fd = urllib2.urlopen(self.fly_url)
+            pipeline.load(fd)
+            fd.close()
+            while True:
+                removed_something = False
+                for module in reversed(pipeline.modules()):
+                    self.assertTrue(isinstance(module, cpm.CPModule))
+                    if module.module_name in ("SaveImages",
+                                              "CalculateStatistics",
+                                              "ExportToSpreadsheet",
+                                              "ExportToDatabase"):
+                        pipeline.remove_module(module.module_num)
+                        removed_something = True
+                        break
+                if not removed_something:
+                    break
+            for module in pipeline.modules():
+                module.show_window = False
+            m = pipeline.run(image_set_end = 1)

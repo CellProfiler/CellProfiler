@@ -60,18 +60,18 @@ cached_file_lists = {}
 import scipy.io.matlab.mio
 import uuid
 
-import cellprofiler.objects as cpo
-import cellprofiler.cpmodule as cpmodule
-import cellprofiler.cpimage as cpimage
-import cellprofiler.measurements as cpmeas
+import cellprofiler.object as cpo
+import cellprofiler.module as cpmodule
+import cellprofiler.image as cpimage
+import cellprofiler.measurement as cpmeas
 from cellprofiler.pipeline import GROUP_INDEX
-import cellprofiler.preferences as preferences
-import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
+import cellprofiler.configuration as preferences
+import cellprofiler.setting as cps
+from cellprofiler.setting import YES, NO
 import centrosome.outline
 import identify as I
 import os.path
-from cellprofiler.preferences import \
+from cellprofiler.configuration import \
     standardize_default_folder_names, DEFAULT_INPUT_FOLDER_NAME, \
     DEFAULT_OUTPUT_FOLDER_NAME, ABSOLUTE_FOLDER_NAME, URL_FOLDER_NAME, \
     DEFAULT_INPUT_SUBFOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME, \
@@ -81,7 +81,7 @@ from cellprofiler.preferences import \
 from cellprofiler.gui.help import USING_METADATA_GROUPING_HELP_REF, REGEXP_HELP_REF
 from cellprofiler.gui.errordialog import show_warning
 
-from cellprofiler.measurements import \
+from cellprofiler.measurement import \
     C_FILE_NAME, C_PATH_NAME, C_URL, C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME, \
     C_OBJECTS_URL
 
@@ -227,7 +227,7 @@ def default_cpimage_name(index):
     return 'Channel%d' % (index + 1)
 
 
-class LoadImages(cpmodule.CPModule):
+class LoadImages(cpmodule.Module):
     module_name = "LoadImages"
     variable_revision_number = 11
     category = "File Processing"
@@ -1413,7 +1413,7 @@ class LoadImages(cpmodule.CPModule):
         # OK to use workspace.frame, since we're in prepare_run
         frame = workspace.frame
         m = workspace.measurements
-        assert isinstance(m, cpmeas.Measurements)
+        assert isinstance(m, cpmeas.Measurement)
         image_names = self.image_name_vars()
         list_of_lists = [[] for x in image_names]
         for pathname, image_index in files:
@@ -1562,7 +1562,7 @@ class LoadImages(cpmodule.CPModule):
         # 2: write fresh image set records to measurements.
         #
         measurements = workspace.measurements
-        assert isinstance(measurements, cpmeas.Measurements)
+        assert isinstance(measurements, cpmeas.Measurement)
         if measurements.image_set_count > 0:
             match_metadata = True
             md_dict = self.get_image_numbers_by_tags(workspace, tags)
@@ -1779,7 +1779,7 @@ class LoadImages(cpmodule.CPModule):
         # OK to use workspace.frame, since we're in prepare_run
         frame = workspace.frame
         m = workspace.measurements
-        assert isinstance(m, cpmeas.Measurements)
+        assert isinstance(m, cpmeas.Measurement)
         if m.image_set_count > 0 and self.do_group_by_metadata:
             match_metadata = True
             tags = list(self.get_metadata_tags()) + [M_Z, M_T, C_SERIES]
@@ -2249,7 +2249,7 @@ class LoadImages(cpmodule.CPModule):
                                                   labels[labels != 0] + offset))))
                         if ijv.shape[0] > 0:
                             offset = np.max(ijv[:, 2])
-                    o = cpo.Objects()
+                    o = cpo.Object()
                     o.set_ijv(ijv, shape)
                     object_set = workspace.object_set
                     assert isinstance(object_set, cpo.ObjectSet)
@@ -2337,7 +2337,7 @@ class LoadImages(cpmodule.CPModule):
                   for this channel.
         '''
         if measurements is not None:
-            assert isinstance(measurements, cpmeas.Measurements)
+            assert isinstance(measurements, cpmeas.Measurement)
 
             def add_fn(feature, value):
                 measurements.add_measurement(

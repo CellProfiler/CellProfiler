@@ -54,12 +54,12 @@ See also <b>CalculateMath</b> and any of the modules in the <b>Measure</b> categ
 
 import numpy as np
 
-import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements as cpmeas
-import cellprofiler.preferences as cpprefs
-import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
+import cellprofiler.image as cpi
+import cellprofiler.module as cpm
+import cellprofiler.measurement as cpmeas
+import cellprofiler.configuration as cpprefs
+import cellprofiler.setting as cps
+from cellprofiler.setting import YES, NO
 
 BY_SINGLE_MEASUREMENT = "Single measurement"
 BY_TWO_MEASUREMENTS = "Pair of measurements"
@@ -75,7 +75,7 @@ F_PCT_PER_BIN = 'PctObjectsPerBin'
 F_NUM_PER_BIN = 'NumObjectsPerBin'
 
 
-class ClassifyObjects(cpm.CPModule):
+class ClassifyObjects(cpm.Module):
     category = "Object Processing"
     module_name = "ClassifyObjects"
     variable_revision_number = 2

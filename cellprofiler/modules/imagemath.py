@@ -16,11 +16,11 @@ See also <b>ApplyThreshold</b>, <b>RescaleIntensity</b>, <b>CorrectIlluminationC
 
 import numpy as np
 
-import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements as cpmeas
-import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
+import cellprofiler.image as cpi
+import cellprofiler.module as cpm
+import cellprofiler.measurement as cpmeas
+import cellprofiler.setting as cps
+from cellprofiler.setting import YES, NO
 import inflect
 
 O_ADD = "Add"
@@ -57,7 +57,7 @@ FIXED_SETTING_COUNT_1 = 7
 FIXED_SETTING_COUNT = 8
 
 
-class ImageMath(cpm.CPModule):
+class ImageMath(cpm.Module):
     category = "Image Processing"
     variable_revision_number = 4
     module_name = "ImageMath"
@@ -294,7 +294,7 @@ class ImageMath(cpm.CPModule):
         # weave in the measurements
         idx = 0
         measurements = workspace.measurements
-        assert isinstance(measurements, cpmeas.Measurements)
+        assert isinstance(measurements, cpmeas.Measurement)
         for i in range(self.operand_count):
             if not wants_image[i]:
                 value = measurements.get_current_image_measurement(

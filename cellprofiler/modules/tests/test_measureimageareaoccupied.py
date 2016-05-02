@@ -8,16 +8,16 @@ from StringIO import StringIO
 
 import numpy as np
 
-from cellprofiler.preferences import set_headless
+from cellprofiler.configuration import set_headless
 
 set_headless()
 
 import cellprofiler.pipeline as cpp
 import cellprofiler.workspace as cpw
-import cellprofiler.cpmodule as cpm
-import cellprofiler.cpimage as cpi
-import cellprofiler.measurements as cpmm
-import cellprofiler.objects as cpo
+import cellprofiler.module as cpm
+import cellprofiler.image as cpi
+import cellprofiler.measurement as cpmm
+import cellprofiler.object as cpo
 from centrosome.outline import outline
 import cellprofiler.modules.measureimageareaoccupied as mia
 
@@ -27,7 +27,7 @@ OBJECTS_NAME = "MyObjects"
 class TestMeasureImageArea(unittest.TestCase):
     def make_workspace(self, labels, parent_image=None):
         object_set = cpo.ObjectSet()
-        objects = cpo.Objects()
+        objects = cpo.Object()
         objects.segmented = labels
         objects.parent_image = parent_image
         object_set.add_objects(objects, OBJECTS_NAME)
@@ -41,7 +41,7 @@ class TestMeasureImageArea(unittest.TestCase):
         workspace = cpw.Workspace(pipeline, module,
                                   image_set_list.get_image_set(0),
                                   object_set,
-                                  cpmm.Measurements(),
+                                  cpmm.Measurement(),
                                   image_set_list)
         return workspace
 

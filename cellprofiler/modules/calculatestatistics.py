@@ -116,15 +116,15 @@ import os
 import numpy as np
 import scipy.optimize
 
-import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements as cpmeas
-import cellprofiler.preferences as cpprefs
-import cellprofiler.settings as cps
+import cellprofiler.module as cpm
+import cellprofiler.measurement as cpmeas
+import cellprofiler.configuration as cpprefs
+import cellprofiler.setting as cps
 from cellprofiler.gui.help import USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF
-from cellprofiler.preferences import standardize_default_folder_names, \
+from cellprofiler.configuration import standardize_default_folder_names, \
     DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME, \
     IO_FOLDER_CHOICE_HELP_TEXT, IO_WITH_METADATA_HELP_TEXT
-from cellprofiler.settings import YES, NO
+from cellprofiler.setting import YES, NO
 
 '''# of settings aside from the dose measurements'''
 FIXED_SETTING_COUNT = 1
@@ -133,7 +133,7 @@ VARIABLE_SETTING_COUNT = 5
 PC_CUSTOM = "Custom"
 
 
-class CalculateStatistics(cpm.CPModule):
+class CalculateStatistics(cpm.Module):
     module_name = "CalculateStatistics"
     category = "Data Tools"
     variable_revision_number = 2
@@ -315,7 +315,7 @@ class CalculateStatistics(cpm.CPModule):
         workspace.post_run_display(self)
 
     def get_image_measurements(self, measurements, feature_name):
-        assert isinstance(measurements, cpmeas.Measurements)
+        assert isinstance(measurements, cpmeas.Measurement)
         image_numbers = measurements.get_image_numbers()
         result = np.zeros(len(image_numbers))
         for i, image_number in enumerate(image_numbers):
@@ -326,7 +326,7 @@ class CalculateStatistics(cpm.CPModule):
         return result
 
     def aggregate_measurement(self, measurements, object_name, feature_name):
-        assert isinstance(measurements, cpmeas.Measurements)
+        assert isinstance(measurements, cpmeas.Measurement)
         image_numbers = measurements.get_image_numbers()
         result = np.zeros(len(image_numbers))
         for i, image_number in enumerate(image_numbers):
@@ -349,7 +349,7 @@ class CalculateStatistics(cpm.CPModule):
         workspace - the workspace at the end of the run
         """
         measurements = workspace.measurements
-        assert isinstance(measurements, cpmeas.Measurements)
+        assert isinstance(measurements, cpmeas.Measurement)
         all_objects = [x for x in measurements.get_object_names()
                        if x not in [cpmeas.EXPERIMENT, cpmeas.NEIGHBORS]]
         feature_set = []

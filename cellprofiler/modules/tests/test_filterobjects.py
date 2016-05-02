@@ -11,16 +11,16 @@ import zlib
 
 import numpy as np
 
-from cellprofiler.preferences import set_headless
+from cellprofiler.configuration import set_headless
 
 set_headless()
 
 import cellprofiler.workspace as cpw
 import cellprofiler.pipeline as cpp
-import cellprofiler.objects as cpo
-import cellprofiler.cpimage as cpi
-import cellprofiler.preferences as cpprefs
-import cellprofiler.measurements as cpm
+import cellprofiler.object as cpo
+import cellprofiler.image as cpi
+import cellprofiler.configuration as cpprefs
+import cellprofiler.measurement as cpm
 import cellprofiler.modules.filterobjects as F
 from cellprofiler.modules.identify import \
     FF_PARENT, FF_COUNT, FF_CHILDREN_COUNT, M_NUMBER_OBJECT_NUMBER, \
@@ -47,12 +47,12 @@ class TestFilterObjects(unittest.TestCase):
                                   module,
                                   image_set,
                                   object_set,
-                                  cpm.Measurements(),
+                                  cpm.Measurement(),
                                   image_set_list)
         for key in image_dict.keys():
             image_set.add(key, cpi.Image(image_dict[key]))
         for key in object_dict.keys():
-            o = cpo.Objects()
+            o = cpo.Object()
             o.segmented = object_dict[key]
             object_set.add_objects(o, key)
         return workspace, module
@@ -1640,7 +1640,7 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
         parent_image = cpi.Image(np.zeros((10, 10)), mask=mask)
         workspace.image_set.add(INPUT_IMAGE, parent_image)
 
-        input_objects = cpo.Objects()
+        input_objects = cpo.Object()
         input_objects.segmented = labels
         input_objects.parent_image = parent_image
 
@@ -1666,7 +1666,7 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
         segmented[6:8, 0:4] = 2
 
         workspace, module = self.make_workspace({})
-        input_objects = cpo.Objects()
+        input_objects = cpo.Object()
         workspace.object_set.add_objects(input_objects, INPUT_OBJECTS)
         input_objects.segmented = segmented
         input_objects.unedited_segmented = unedited
@@ -1696,7 +1696,7 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
         segmented[6:8, 0:4] = 2
 
         workspace, module = self.make_workspace({})
-        input_objects = cpo.Objects()
+        input_objects = cpo.Object()
         input_objects.segmented = segmented
         input_objects.unedited_segmented = unedited
         workspace.object_set.add_objects(input_objects, INPUT_OBJECTS)

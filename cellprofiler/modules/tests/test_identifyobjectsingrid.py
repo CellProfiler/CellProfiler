@@ -8,16 +8,16 @@ from StringIO import StringIO
 
 import numpy as np
 
-from cellprofiler.preferences import set_headless
+from cellprofiler.configuration import set_headless
 
 set_headless()
 
 import cellprofiler.workspace as cpw
-import cellprofiler.cpgridinfo as cpg
-import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
-import cellprofiler.objects as cpo
-import cellprofiler.measurements as cpmeas
+import cellprofiler.grid as cpg
+import cellprofiler.image as cpi
+import cellprofiler.module as cpm
+import cellprofiler.object as cpo
+import cellprofiler.measurement as cpmeas
 import cellprofiler.pipeline as cpp
 import cellprofiler.modules.identifyobjectsingrid as I
 import cellprofiler.modules.definegrid as D
@@ -128,7 +128,7 @@ class TestIdentifyObjectsInGrid(unittest.TestCase):
         image_set_list = cpi.ImageSetList()
         object_set = cpo.ObjectSet()
         if labels is not None:
-            my_objects = cpo.Objects()
+            my_objects = cpo.Object()
             my_objects.segmented = labels
             object_set.add_objects(my_objects, GUIDING_OBJECTS_NAME)
         pipeline = cpp.Pipeline()
@@ -140,7 +140,7 @@ class TestIdentifyObjectsInGrid(unittest.TestCase):
         pipeline.add_module(module)
         workspace = cpw.Workspace(pipeline, module,
                                   image_set_list.get_image_set(0),
-                                  object_set, cpmeas.Measurements(),
+                                  object_set, cpmeas.Measurement(),
                                   image_set_list)
         workspace.set_grid(GRID_NAME, gridding)
         return workspace, module
@@ -195,7 +195,7 @@ class TestIdentifyObjectsInGrid(unittest.TestCase):
         # Check measurements
         #
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         xm = m.get_current_measurement(OUTPUT_OBJECTS_NAME, 'Location_Center_X')
         self.assertTrue(np.all(xm == x_locations[1:]))
         ym = m.get_current_measurement(OUTPUT_OBJECTS_NAME, 'Location_Center_Y')
@@ -324,7 +324,7 @@ class TestIdentifyObjectsInGrid(unittest.TestCase):
         labels = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME).segmented
         self.assertTrue(np.all(labels == expected[0:labels.shape[0], 0:labels.shape[1]]))
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         xm = m.get_current_measurement(OUTPUT_OBJECTS_NAME, 'Location_Center_X')
         self.assertTrue(np.all(xm == x_locations[1:]))
         ym = m.get_current_measurement(OUTPUT_OBJECTS_NAME, 'Location_Center_Y')
@@ -389,7 +389,7 @@ class TestIdentifyObjectsInGrid(unittest.TestCase):
         labels = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME).segmented
         self.assertTrue(np.all(labels == expected[0:labels.shape[0], 0:labels.shape[1]]))
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         xm = m.get_current_measurement(OUTPUT_OBJECTS_NAME, 'Location_Center_X')
         self.assertTrue(np.all(xm == x_locations[1:]))
         ym = m.get_current_measurement(OUTPUT_OBJECTS_NAME, 'Location_Center_Y')
@@ -441,7 +441,7 @@ class TestIdentifyObjectsInGrid(unittest.TestCase):
         labels = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME).segmented
         self.assertTrue(np.all(labels == expected[0:labels.shape[0], 0:labels.shape[1]]))
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         xm = m.get_current_measurement(OUTPUT_OBJECTS_NAME, 'Location_Center_X')
         self.assertEqual(len(xm), 96)
         self.assertTrue(np.all(xm[:-1] == x_locations[1:-1]))
@@ -524,7 +524,7 @@ class TestIdentifyObjectsInGrid(unittest.TestCase):
         labels = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME).segmented
         self.assertTrue(np.all(labels == expected[0:labels.shape[0], 0:labels.shape[1]]))
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         xm = m.get_current_measurement(OUTPUT_OBJECTS_NAME, 'Location_Center_X')
         self.assertTrue(np.all(xm == x_locations[1:]))
         ym = m.get_current_measurement(OUTPUT_OBJECTS_NAME, 'Location_Center_Y')

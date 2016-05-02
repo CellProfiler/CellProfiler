@@ -35,10 +35,10 @@ import numpy as np
 import scipy.ndimage as scind
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 
-import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements as cpmeas
-import cellprofiler.settings as cps
+import cellprofiler.image as cpi
+import cellprofiler.module as cpm
+import cellprofiler.measurement as cpmeas
+import cellprofiler.setting as cps
 import cellprofiler.workspace as cpw
 
 'Granularity category'
@@ -52,7 +52,7 @@ OBJECTS_SETTING_COUNT_V3 = 1
 OBJECTS_SETTING_COUNT = OBJECTS_SETTING_COUNT_V3
 
 
-class MeasureGranularity(cpm.CPModule):
+class MeasureGranularity(cpm.Module):
     module_name = 'MeasureGranularity'
     category = "Measurement"
     variable_revision_number = 3

@@ -41,20 +41,20 @@ import traceback
 
 from cellprofiler.modules.identify import FF_PARENT, FF_CHILDREN_COUNT, \
      M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
-import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
-import cellprofiler.objects as cpo
-import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
-import cellprofiler.measurements as cpmeas
-import cellprofiler.preferences as cpprefs
+import cellprofiler.image as cpi
+import cellprofiler.module as cpm
+import cellprofiler.object as cpo
+import cellprofiler.setting as cps
+from cellprofiler.setting import YES, NO
+import cellprofiler.measurement as cpmeas
+import cellprofiler.configuration as cpprefs
 import cellprofiler.utilities.rules as cprules
 from centrosome.outline import outline
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 from cellprofiler.modules.identify import add_object_count_measurements
 from cellprofiler.modules.identify import add_object_location_measurements
 from cellprofiler.modules.identify import get_object_measurement_columns
-from cellprofiler.preferences import IO_FOLDER_CHOICE_HELP_TEXT
+from cellprofiler.configuration import IO_FOLDER_CHOICE_HELP_TEXT
 from cellprofiler.gui.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
 
 '''Minimal filter - pick a single object per image by minimum measured value'''
@@ -101,7 +101,7 @@ PO_PARENT_WITH_MOST_OVERLAP = "Parent with most overlap"
 PO_ALL = [PO_BOTH, PO_PARENT_WITH_MOST_OVERLAP]
 
 
-class FilterObjects(cpm.CPModule):
+class FilterObjects(cpm.Module):
     module_name = 'FilterObjects'
     category = "Object Processing"
     variable_revision_number = 7
@@ -524,7 +524,7 @@ class FilterObjects(cpm.CPModule):
             # segmentation for the new and generally try to copy stuff
             # from the old to the new.
             #
-            target_objects = cpo.Objects()
+            target_objects = cpo.Object()
             target_objects.segmented = target_labels
             target_objects.unedited_segmented = src_objects.unedited_segmented
             #

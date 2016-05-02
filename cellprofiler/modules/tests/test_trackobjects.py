@@ -12,15 +12,15 @@ import numpy as np
 import scipy.ndimage
 from matplotlib.image import pil_to_array
 
-from cellprofiler.preferences import set_headless
+from cellprofiler.configuration import set_headless
 
 set_headless()
 
 import cellprofiler.pipeline as cpp
-import cellprofiler.cpmodule as cpm
-import cellprofiler.cpimage as cpi
-import cellprofiler.measurements as cpmeas
-import cellprofiler.objects as cpo
+import cellprofiler.module as cpm
+import cellprofiler.image as cpi
+import cellprofiler.measurement as cpmeas
+import cellprofiler.object as cpo
 import cellprofiler.workspace as cpw
 from centrosome.filter import permutations
 
@@ -478,7 +478,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         module.object_name.value = OBJECT_NAME
         module.pixel_radius.value = 50
         module.measurement.value = "measurement"
-        measurements = cpmeas.Measurements()
+        measurements = cpmeas.Measurement()
         measurements.add_all_measurements(cpmeas.IMAGE, cpp.GROUP_NUMBER,
                                           [1] * len(labels_list))
         measurements.add_all_measurements(cpmeas.IMAGE, cpp.GROUP_INDEX,
@@ -495,7 +495,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         first = True
         for labels, index in zip(labels_list, range(len(labels_list))):
             object_set = cpo.ObjectSet()
-            objects = cpo.Objects()
+            objects = cpo.Object()
             objects.segmented = labels
             object_set.add_objects(objects, OBJECT_NAME)
             image_set = image_set_list.get_image_set(index)
@@ -1083,7 +1083,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         pipeline.add_listener(callback)
         pipeline.add_module(module)
 
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurement()
         if objs.shape[0] > 0:
             nobjects = np.bincount(objs[:, 0].astype(int))
         else:
@@ -1174,7 +1174,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         d - dictionary of feature name and list of expected measurement values
         '''
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         module = workspace.module
         self.assertTrue(isinstance(module, T.TrackObjects))
         for feature, expected in d.iteritems():
@@ -1208,7 +1208,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         expected_child_image_numbers = np.atleast_1d(expected_child_image_numbers)
         expected_parent_object_numbers = np.atleast_1d(expected_parent_object_numbers)
         expected_child_object_numbers = np.atleast_1d(expected_child_object_numbers)
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         r = m.get_relationships(
                 1, T.R_PARENT, OBJECT_NAME, OBJECT_NAME)
         actual_parent_image_numbers = r[cpmeas.R_FIRST_IMAGE_NUMBER]
@@ -1862,7 +1862,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         module.pixel_radius.value = 50
         module.wants_image.value = True
         module.image_name.value = "outimage"
-        measurements = cpmeas.Measurements()
+        measurements = cpmeas.Measurement()
         measurements.add_image_measurement(cpp.GROUP_NUMBER, 1)
         measurements.add_image_measurement(cpp.GROUP_INDEX, 1)
         pipeline = cpp.Pipeline()
@@ -1874,7 +1874,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
 
         first = True
         object_set = cpo.ObjectSet()
-        objects = cpo.Objects()
+        objects = cpo.Object()
         objects.segmented = np.zeros((640, 480), int)
         object_set.add_objects(objects, OBJECT_NAME)
         image_set = image_set_list.get_image_set(0)

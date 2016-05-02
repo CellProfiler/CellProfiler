@@ -12,15 +12,15 @@ import numpy as np
 import scipy.ndimage
 from matplotlib.image import pil_to_array
 
-from cellprofiler.preferences import set_headless
+from cellprofiler.configuration import set_headless
 
 set_headless()
 
 import cellprofiler.pipeline as cpp
-import cellprofiler.cpmodule as cpm
-import cellprofiler.cpimage as cpi
-import cellprofiler.measurements as cpmeas
-import cellprofiler.objects as cpo
+import cellprofiler.module as cpm
+import cellprofiler.image as cpi
+import cellprofiler.measurement as cpmeas
+import cellprofiler.object as cpo
 import cellprofiler.workspace as cpw
 
 import cellprofiler.modules.conservememory as S
@@ -108,7 +108,7 @@ class TestConserveMemory(unittest.TestCase):
         pipeline.add_listener(callback)
         pipeline.add_module(module)
         workspace = cpw.Workspace(pipeline, module, image_set,
-                                  cpo.ObjectSet(), cpmeas.Measurements(),
+                                  cpo.ObjectSet(), cpmeas.Measurement(),
                                   image_set_list)
         module.run(workspace)
         image = image_set.get_image("Image1")
@@ -133,7 +133,7 @@ class TestConserveMemory(unittest.TestCase):
         pipeline.add_listener(callback)
         pipeline.add_module(module)
         workspace = cpw.Workspace(pipeline, module, image_set, cpo.ObjectSet(),
-                                  cpmeas.Measurements(), image_set_list)
+                                  cpmeas.Measurement(), image_set_list)
         module.run(workspace)
         image = image_set.get_image("Image2")
         self.assertFalse(isinstance(image, cpi.Image))

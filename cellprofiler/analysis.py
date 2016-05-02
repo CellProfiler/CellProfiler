@@ -5,7 +5,6 @@ from __future__ import with_statement
 import Queue
 import cStringIO as StringIO
 import collections
-import gc
 import logging
 import multiprocessing
 import os
@@ -16,18 +15,22 @@ import tempfile
 import threading
 import uuid
 
-import h5py
 import numpy as np
 import zmq
+from message.reply import SharedDictionary, Work, NoWork, Ack
+from message.request import PipelinePreferences, InitialMeasurements, Work, ImageSetSuccess, \
+    ImageSetSuccessWithDictionary, MeasurementsReport, Interaction, AnalysisCancel, Display, \
+    DisplayPostRun, DisplayPostGroup, SharedDictionary, ExceptionReport, DebugWaiting, \
+    DebugComplete, OMEROLogin
 
 import cellprofiler
-import cellprofiler.cpimage as cpimage
-import cellprofiler.measurements as cpmeas
-import cellprofiler.preferences as cpprefs
+import cellprofiler.configuration as cpprefs
+import cellprofiler.image as cpimage
+import cellprofiler.measurement as cpmeas
 import cellprofiler.workspace as cpw
-from cellprofiler.utilities.zmqrequest import AnalysisRequest, Request, Reply, UpstreamExit
+from cellprofiler.utilities.zmqrequest import Reply
 from cellprofiler.utilities.zmqrequest import get_announcer_address
-from cellprofiler.utilities.zmqrequest import register_analysis, cancel_analysis
+from cellprofiler.utilities.zmqrequest import register_analysis
 
 logger = logging.getLogger(__name__)
 
@@ -72,7 +75,7 @@ class Analysis(object):
         to measurements_filename, optionally starting with previous
         measurements.'''
         self.pipeline = pipeline
-        initial_measurements = cpmeas.Measurements(copy=initial_measurements)
+        initial_measurements = cpmeas.Measurement(copy=initial_measurements)
         self.initial_measurements_buf = initial_measurements.file_contents()
         initial_measurements.close()
         self.output_path = measurements_filename
@@ -284,8 +287,8 @@ class AnalysisRunner(object):
         self.event_listener(evt)
 
     def post_run_display_handler(self, workspace, module):
-        event = DisplayPostRunRequest(module.module_num,
-                                      workspace.display_data)
+        event = DisplayPostRun(module.module_num,
+                               workspace.display_data)
         self.event_listener(event)
 
     # XXX - catch and deal with exceptions in interface() and jobserver() threads
@@ -321,9 +324,9 @@ class AnalysisRunner(object):
                     fd = os.fdopen(fd, "wb")
                     fd.write(self.initial_measurements_buf)
                     fd.close()
-                    initial_measurements = cpmeas.Measurements(
+                    initial_measurements = cpmeas.Measurement(
                             filename=filename, mode="r")
-                    measurements = cpmeas.Measurements(
+                    measurements = cpmeas.Measurement(
                             image_set_start=None,
                             copy=initial_measurements,
                             mode="a")
@@ -334,9 +337,9 @@ class AnalysisRunner(object):
             else:
                 with open(self.output_path, "wb") as fd:
                     fd.write(self.initial_measurements_buf)
-                measurements = cpmeas.Measurements(image_set_start=None,
-                                                   filename=self.output_path,
-                                                   mode="a")
+                measurements = cpmeas.Measurement(image_set_start=None,
+                                                  filename=self.output_path,
+                                                  mode="a")
             # The shared dicts are needed in jobserver()
             self.shared_dicts = [m.get_dictionary() for m in self.pipeline.modules()]
             workspace = cpw.Workspace(self.pipeline, None, None, None,
@@ -456,7 +459,7 @@ class AnalysisRunner(object):
                     if waiting_for_first_imageset:
                         assert isinstance(finished_req,
                                           ImageSetSuccessWithDictionary)
-                        self.shared_dicts = finished_req.shared_dicts
+                        self.shared_dicts = finished_req.shared_dictionaries
                         waiting_for_first_imageset = False
                         assert len(self.shared_dicts) == len(self.pipeline.modules())
                         # if we had jobs waiting for the first image set to finish,
@@ -588,21 +591,21 @@ class AnalysisRunner(object):
             except Queue.Empty:
                 continue
 
-            if isinstance(req, PipelinePreferencesRequest):
+            if isinstance(req, PipelinePreferences):
                 logger.debug("Received pipeline preferences request")
                 req.reply(Reply(pipeline_blob=np.array(self.pipeline_as_string()),
                                 preferences=cpprefs.preferences_as_dict()))
                 logger.debug("Replied to pipeline preferences request")
-            elif isinstance(req, InitialMeasurementsRequest):
+            elif isinstance(req, InitialMeasurements):
                 logger.debug("Received initial measurements request")
                 req.reply(Reply(buf=self.initial_measurements_buf))
                 logger.debug("Replied to initial measurements request")
-            elif isinstance(req, WorkRequest):
+            elif isinstance(req, Work):
                 if not self.work_queue.empty():
                     logger.debug("Received work request")
                     job, worker_runs_post_group, wants_dictionary = \
                         self.work_queue.get()
-                    req.reply(WorkReply(
+                    req.reply(Work(
                             image_set_numbers=job,
                             worker_runs_post_group=worker_runs_post_group,
                             wants_dictionary=wants_dictionary))
@@ -612,16 +615,16 @@ class AnalysisRunner(object):
                 else:
                     # there may be no work available, currently, but there
                     # may be some later.
-                    req.reply(NoWorkReply())
+                    req.reply(NoWork())
             elif isinstance(req, ImageSetSuccess):
                 # interface() is responsible for replying, to allow it to
                 # request the shared_state dictionary if needed.
                 logger.debug("Received ImageSetSuccess")
                 self.queue_imageset_finished(req)
                 logger.debug("Enqueued ImageSetSuccess")
-            elif isinstance(req, SharedDictionaryRequest):
+            elif isinstance(req, SharedDictionary):
                 logger.debug("Received shared dictionary request")
-                req.reply(SharedDictionaryReply(dictionaries=self.shared_dicts))
+                req.reply(SharedDictionary(dictionaries=self.shared_dicts))
                 logger.debug("Sent shared dictionary reply")
             elif isinstance(req, MeasurementsReport):
                 logger.debug("Received measurements report")
@@ -629,17 +632,17 @@ class AnalysisRunner(object):
                                                  req.buf)
                 req.reply(Ack())
                 logger.debug("Acknowledged measurements report")
-            elif isinstance(req, AnalysisCancelRequest):
+            elif isinstance(req, AnalysisCancel):
                 # Signal the interface that we are cancelling
                 logger.debug("Received analysis worker cancel request")
                 with self.interface_work_cv:
                     self.cancelled = True
                     self.interface_work_cv.notify()
                 req.reply(Ack())
-            elif isinstance(req, (InteractionRequest, DisplayRequest,
-                                  DisplayPostGroupRequest,
+            elif isinstance(req, (Interaction, Display,
+                                  DisplayPostGroup,
                                   ExceptionReport, DebugWaiting, DebugComplete,
-                                  OmeroLoginRequest)):
+                                  OMEROLogin)):
                 logger.debug("Enqueueing interactive request")
                 # bump upward
                 self.post_event(req)
@@ -694,7 +697,7 @@ class AnalysisRunner(object):
         if 'CP_DEBUG_WORKER' in os.environ:
             if os.environ['CP_DEBUG_WORKER'] == 'NOT_INPROC':
                 return
-            from cellprofiler.analysis_worker import \
+            from cellprofiler.worker import \
                 AnalysisWorker, NOTIFY_ADDR, NOTIFY_STOP
             from cellprofiler.pipeline import CancelledException
 
@@ -742,7 +745,7 @@ class AnalysisRunner(object):
                     args = ([executable] + aw_args)
                 elif sys.platform.startswith('linux'):
                     aw_path = os.path.join(os.path.dirname(__file__),
-                                           "analysis_worker.py")
+                                           "worker.py")
                     args = [sys.executable, aw_path] + aw_args
                 else:
                     args = [sys.executable] + aw_args
@@ -837,7 +840,7 @@ def find_worker_env(idx):
 def find_analysis_worker_source():
     # import here to break circular dependency.
     import cellprofiler.analysis  # used to get the path to the code
-    return os.path.join(os.path.dirname(cellprofiler.analysis.__file__), "analysis_worker.py")
+    return os.path.join(os.path.dirname(cellprofiler.analysis.__file__), "worker.py")
 
 
 def start_daemon_thread(target=None, args=(), kwargs=None, name=None):
@@ -873,158 +876,6 @@ class AnalysisFinished(object):
         self.cancelled = cancelled
 
 
-class PipelinePreferencesRequest(AnalysisRequest):
-    pass
-
-
-class InitialMeasurementsRequest(AnalysisRequest):
-    pass
-
-
-class WorkRequest(AnalysisRequest):
-    pass
-
-
-class ImageSetSuccess(AnalysisRequest):
-    def __init__(self, analysis_id, image_set_number=None):
-        AnalysisRequest.__init__(self, analysis_id,
-                                 image_set_number=image_set_number)
-
-
-class ImageSetSuccessWithDictionary(ImageSetSuccess):
-    def __init__(self, analysis_id, image_set_number, shared_dicts):
-        ImageSetSuccess.__init__(self, analysis_id,
-                                 image_set_number=image_set_number)
-        self.shared_dicts = shared_dicts
-
-
-class DictionaryReqRep(Reply):
-    pass
-
-
-class MeasurementsReport(AnalysisRequest):
-    def __init__(self, analysis_id, buf, image_set_numbers=[]):
-        AnalysisRequest.__init__(self, analysis_id,
-                                 buf=buf,
-                                 image_set_numbers=image_set_numbers)
-
-
-class InteractionRequest(AnalysisRequest):
-    pass
-
-
-class AnalysisCancelRequest(AnalysisRequest):
-    pass
-
-
-class DisplayRequest(AnalysisRequest):
-    pass
-
-
-class DisplayPostRunRequest(object):
-    '''Request a post-run display
-
-    This is a message sent to the UI from the analysis worker'''
-
-    def __init__(self, module_num, display_data):
-        self.module_num = module_num
-        self.display_data = display_data
-
-
-class DisplayPostGroupRequest(AnalysisRequest):
-    '''Request a post-group display
-
-    This is a message sent to the UI from the analysis worker'''
-
-    def __init__(self, analysis_id, module_num, display_data, image_set_number):
-        AnalysisRequest.__init__(
-                self, analysis_id,
-                module_num=module_num,
-                image_set_number=image_set_number,
-                display_data=display_data)
-
-
-class SharedDictionaryRequest(AnalysisRequest):
-    def __init__(self, analysis_id, module_num=-1):
-        AnalysisRequest.__init__(self, analysis_id, module_num=module_num)
-
-
-class SharedDictionaryReply(Reply):
-    def __init__(self, dictionaries=[{}]):
-        Reply.__init__(self, dictionaries=dictionaries)
-
-
-class ExceptionReport(AnalysisRequest):
-    def __init__(self, analysis_id,
-                 image_set_number, module_name,
-                 exc_type, exc_message, exc_traceback,
-                 filename, line_number):
-        AnalysisRequest.__init__(self,
-                                 analysis_id,
-                                 image_set_number=image_set_number,
-                                 module_name=module_name,
-                                 exc_type=exc_type,
-                                 exc_message=exc_message,
-                                 exc_traceback=exc_traceback,
-                                 filename=filename,
-                                 line_number=line_number)
-
-    def __str__(self):
-        return "(Worker) %s: %s" % (self.exc_type, self.exc_message)
-
-
-class ExceptionPleaseDebugReply(Reply):
-    def __init__(self, disposition, verification_hash=None):
-        Reply.__init__(self, disposition=disposition, verification_hash=verification_hash)
-
-
-class DebugWaiting(AnalysisRequest):
-    '''Communicate the debug port to the server and wait for server OK to attach'''
-
-    def __init__(self, analysis_id, port):
-        AnalysisRequest.__init__(self,
-                                 analysis_id=analysis_id,
-                                 port=port)
-
-
-class DebugCancel(Reply):
-    '''If sent in response to DebugWaiting, the user has changed his/her mind'''
-
-
-class DebugComplete(AnalysisRequest):
-    pass
-
-
-class InteractionReply(Reply):
-    pass
-
-
-class WorkReply(Reply):
-    pass
-
-
-class NoWorkReply(Reply):
-    pass
-
-
-class ServerExited(UpstreamExit):
-    pass
-
-
-class OmeroLoginRequest(AnalysisRequest):
-    pass
-
-
-class OmeroLoginReply(Reply):
-    def __init__(self, credentials):
-        Reply.__init__(self, credentials=credentials)
-
-
-class Ack(Reply):
-    def __init__(self, message="THANKS"):
-        Reply.__init__(self, message=message)
-
-
 if sys.platform == "darwin":
     import fcntl
 
@@ -1047,9 +898,8 @@ if sys.platform == "darwin":
                 pass
 
 if __name__ == '__main__':
-    import time
     import cellprofiler.pipeline
-    import cellprofiler.preferences
+    import cellprofiler.configuration
     import cellprofiler.utilities.thread_excepthook
 
     # This is an ugly hack, but it's necesary to unify the Request/Reply

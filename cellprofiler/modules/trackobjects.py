@@ -174,13 +174,13 @@ import numpy.ma
 from scipy.ndimage import distance_transform_edt
 import scipy.ndimage
 import scipy.sparse
-import cellprofiler.cpmodule as cpm
-import cellprofiler.cpimage as cpi
+import cellprofiler.module as cpm
+import cellprofiler.image as cpi
 import cellprofiler.pipeline as cpp
-import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
-import cellprofiler.measurements as cpmeas
-import cellprofiler.preferences as cpprefs
+import cellprofiler.setting as cps
+from cellprofiler.setting import YES, NO
+import cellprofiler.measurement as cpmeas
+import cellprofiler.configuration as cpprefs
 from centrosome.lapjv import lapjv
 import centrosome.filter as cpfilter
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
@@ -282,7 +282,7 @@ F_ALL = [feature for feature, coltype in F_ALL_COLTYPE_ALL]
 F_IMAGE_ALL = [feature for feature, coltype in F_IMAGE_COLTYPE_ALL]
 
 
-class TrackObjects(cpm.CPModule):
+class TrackObjects(cpm.Module):
     module_name = 'TrackObjects'
     category = "Object Processing"
     variable_revision_number = 6
@@ -849,7 +849,7 @@ class TrackObjects(cpm.CPModule):
 
     def get_group_image_numbers(self, workspace):
         m = workspace.measurements
-        assert isinstance(m, cpmeas.Measurements)
+        assert isinstance(m, cpmeas.Measurement)
         d = self.get_ws_dictionary(workspace)
         group_number = m.get_group_number()
         if not d.has_key("group_number") or d["group_number"] != group_number:
@@ -1266,7 +1266,7 @@ class TrackObjects(cpm.CPModule):
             self.map_objects(workspace, np.zeros((0,), int),
                              np.zeros(count, int), i, j)
         m = workspace.measurements
-        assert isinstance(m, cpmeas.Measurements)
+        assert isinstance(m, cpmeas.Measurement)
         m.add_measurement(self.object_name.value,
                           self.measurement_name(F_AREA),
                           areas)
@@ -1420,7 +1420,7 @@ class TrackObjects(cpm.CPModule):
 
     def run_as_data_tool(self, workspace):
         m = workspace.measurements
-        assert isinstance(m, cpmeas.Measurements)
+        assert isinstance(m, cpmeas.Measurement)
         group_numbers = {}
         for i in m.get_image_numbers():
             group_number = m.get_measurement(cpmeas.IMAGE,
@@ -1457,7 +1457,7 @@ class TrackObjects(cpm.CPModule):
         image_numbers = self.get_group_image_numbers(workspace)
         if self.tracking_method != TM_LAP:
             m = workspace.measurements
-            assert (isinstance(m, cpmeas.Measurements))
+            assert (isinstance(m, cpmeas.Measurement))
             self.recalculate_group(workspace, image_numbers)
             return
 
@@ -1476,7 +1476,7 @@ class TrackObjects(cpm.CPModule):
         max_frame_difference = self.max_frame_distance.value
 
         m = workspace.measurements
-        assert (isinstance(m, cpmeas.Measurements))
+        assert (isinstance(m, cpmeas.Measurement))
         image_numbers = self.get_group_image_numbers(workspace)
         object_name = self.object_name.value
         label, object_numbers, a, b, Area, \
@@ -2455,7 +2455,7 @@ class TrackObjects(cpm.CPModule):
         m = workspace.measurements
         object_name = self.object_name.value
 
-        assert isinstance(m, cpmeas.Measurements)
+        assert isinstance(m, cpmeas.Measurement)
 
         image_index = np.zeros(np.max(image_numbers) + 1, int)
         image_index[image_numbers] = np.arange(len(image_numbers))
@@ -2655,7 +2655,7 @@ class TrackObjects(cpm.CPModule):
         i, j - the coordinates for each new object.
         '''
         m = workspace.measurements
-        assert isinstance(m, cpmeas.Measurements)
+        assert isinstance(m, cpmeas.Measurement)
         image_number = m.get_current_image_measurement(cpp.IMAGE_NUMBER)
         new_of_old = new_of_old.astype(int)
         old_of_new = old_of_new.astype(int)

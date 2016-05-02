@@ -1,14 +1,15 @@
-"""test_analysis.py - test the analysis server framework
-"""
-
-import logging
-
-logger = logging.getLogger(__name__)
-# logger.addHandler(logging.StreamHandler())
-# logger.setLevel(logging.DEBUG)
-from cStringIO import StringIO
+import cellprofiler.analysis
+import cellprofiler.configuration
+import cellprofiler.measurement
+import cellprofiler.message.reply
+import cellprofiler.message.request
+import cellprofiler.module
+import cellprofiler.modules.tests
+import cellprofiler.pipeline
+import cellprofiler.utilities.zmqrequest
+import cStringIO
 import inspect
-import numpy as np
+import numpy
 import os
 import Queue
 import tempfile
@@ -17,14 +18,6 @@ import traceback
 import unittest
 import uuid
 import zmq
-
-import cellprofiler.analysis as cpanalysis
-import cellprofiler.pipeline as cpp
-import cellprofiler.cpmodule as cpm
-import cellprofiler.preferences as cpprefs
-import cellprofiler.measurements as cpmeas
-import cellprofiler.utilities.zmqrequest as cpzmq
-from cellprofiler.modules.tests import example_images_directory, testimages_directory
 
 IMAGE_NAME = "imagename"
 OBJECTS_NAME = "objectsname"
@@ -61,7 +54,6 @@ class TestAnalysis(unittest.TestCase):
             self.notify_socket.close()
 
         def run(self):
-            logger.debug("Client thread starting")
             try:
                 self.work_socket = self.zmq_context.socket(zmq.REQ)
                 self.recv_notify_socket = self.zmq_context.socket(zmq.SUB)
@@ -93,17 +85,15 @@ class TestAnalysis(unittest.TestCase):
                             traceback.print_exc()
                             self.response_queue.put((e, None))
             except:
-                logger.warn("Client thread caught exception", exc_info=10)
                 self.start_signal.release()
             finally:
-                logger.debug("Client thread exiting")
+                pass
 
         def stop(self):
             self.keep_going = False
             self.notify_socket.send("Stop")
 
         def send(self, req):
-            logger.debug("    Enqueueing send of %s" % str(type(req)))
             self.queue.put((self.do_send, req))
             self.notify_socket.send("Send")
             return self.recv
@@ -111,17 +101,16 @@ class TestAnalysis(unittest.TestCase):
         def request_work(self):
             '''Send a work request until we get a WorkReply'''
             while True:
-                reply = self.send(cpanalysis.WorkRequest(self.analysis_id))()
-                if isinstance(reply, cpanalysis.WorkReply):
+                reply = self.send(cellprofiler.message.request.Work(self.analysis_id))()
+                if isinstance(reply, cellprofiler.message.reply.Work):
                     return reply
-                elif not isinstance(reply, cpanalysis.NoWorkReply):
+                elif not isinstance(reply, cellprofiler.message.reply.NoWork):
                     raise NotImplementedError(
                             "Received a reply of %s for a work request" %
                             str(type(reply)))
 
         def do_send(self, req):
-            logger.debug("    Sending %s" % str(type(req)))
-            cpzmq.Communicable.send(req, self.work_socket)
+            cellprofiler.utilities.zmqrequest.Communicable.send(req, self.work_socket)
             self.poller.register(self.work_socket, zmq.POLLIN)
             try:
                 while True:
@@ -131,19 +120,15 @@ class TestAnalysis(unittest.TestCase):
                         if not self.keep_going:
                             raise Exception("Cancelled")
                     if socks.get(self.work_socket, None) == zmq.POLLIN:
-                        logger.debug("    Received response for %s" % str(type(req)))
-                        return cpzmq.Communicable.recv(self.work_socket)
+                        return cellprofiler.utilities.zmqrequest.Communicable.recv(self.work_socket)
             finally:
                 self.poller.unregister(self.work_socket)
 
         def recv(self):
-            logger.debug("     Waiting for client thread")
             exception, result = self.response_queue.get()
             if exception is not None:
-                logger.debug("    Client thread communicated exception")
                 raise exception
             else:
-                logger.debug("    Client thread communicated result")
                 return result
 
         def listen_for_announcements(self, work_announce_address):
@@ -192,7 +177,7 @@ class TestAnalysis(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        cpzmq.join_to_the_boundary()
+        cellprofiler.utilities.zmqrequest.join_to_the_boundary()
         try:
             from ilastik.core.jobMachine import GLOBAL_WM
             GLOBAL_WM.stopWorkers()
@@ -222,13 +207,13 @@ class TestAnalysis(unittest.TestCase):
             self.analysis = None
 
     def analysis_event_handler(self, event):
-        if isinstance(event, cpanalysis.AnalysisProgress):
+        if isinstance(event, cellprofiler.analysis.AnalysisProgress):
             return
-        if isinstance(event, cpanalysis.AnalysisFinished):
+        if isinstance(event, cellprofiler.analysis.AnalysisFinished):
             self.measurements_to_close = event.measurements
             if not self.wants_analysis_finished:
                 return
-        if (isinstance(event, cpp.AbstractPipelineEvent) and
+        if (isinstance(event, cellprofiler.pipeline.AbstractPipelineEvent) and
                 not self.wants_pipeline_events):
             return
         self.event_queue.put(event)
@@ -238,7 +223,7 @@ class TestAnalysis(unittest.TestCase):
                                        group_numbers=None,
                                        group_indexes=None,
                                        **kwargs):
-        m = cpmeas.Measurements(mode="memory")
+        m = cellprofiler.measurement.Measurement(mode="memory")
         for i in range(1, nimage_sets + 1):
             if group_numbers is not None:
                 group_number = group_numbers[i - 1]
@@ -246,11 +231,11 @@ class TestAnalysis(unittest.TestCase):
             else:
                 group_number = 1
                 group_index = i
-            m[cpmeas.IMAGE, cpmeas.C_URL + "_" + IMAGE_NAME, i] = "file:/%d.tif" % i
-            m[cpmeas.IMAGE, cpmeas.GROUP_NUMBER, i] = group_number
-            m[cpmeas.IMAGE, cpmeas.GROUP_INDEX, i] = group_index
-        pipeline = cpp.Pipeline()
-        pipeline.loadtxt(StringIO(SBS_PIPELINE), raise_on_error=True)
+            m[cellprofiler.measurement.IMAGE, cellprofiler.measurement.C_URL + "_" + IMAGE_NAME, i] = "file:/%d.tif" % i
+            m[cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_NUMBER, i] = group_number
+            m[cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_INDEX, i] = group_index
+        pipeline = cellprofiler.pipeline.Pipeline()
+        pipeline.loadtxt(cStringIO.StringIO(SBS_PIPELINE), raise_on_error=True)
         return pipeline, m
 
     def make_pipeline_and_measurements_and_start(self, **kwargs):
@@ -258,17 +243,17 @@ class TestAnalysis(unittest.TestCase):
         if "status" in kwargs:
             overwrite = False
             for i, status in enumerate(kwargs["status"]):
-                m.add_measurement(cpmeas.IMAGE,
-                                  cpanalysis.AnalysisRunner.STATUS,
+                m.add_measurement(cellprofiler.measurement.IMAGE,
+                                  cellprofiler.analysis.AnalysisRunner.STATUS,
                                   status, image_set_number=i + 1)
         else:
             overwrite = True
-        self.analysis = cpanalysis.Analysis(pipeline, self.filename, m)
+        self.analysis = cellprofiler.analysis.Analysis(pipeline, self.filename, m)
 
         self.analysis.start(self.analysis_event_handler,
                             num_workers=0, overwrite=overwrite)
         analysis_started = self.event_queue.get()
-        self.assertIsInstance(analysis_started, cpanalysis.AnalysisStarted)
+        self.assertIsInstance(analysis_started, cellprofiler.analysis.AnalysisStarted)
         return pipeline, m
 
     def check_display_post_run_requests(self, pipeline):
@@ -276,29 +261,25 @@ class TestAnalysis(unittest.TestCase):
 
         for module in pipeline.modules():
             if module.show_window and \
-                            module.__class__.display_post_run != cpm.CPModule.display_post_run:
+                            module.__class__.display_post_run != cellprofiler.module.Module.display_post_run:
                 result = self.event_queue.get()
                 self.assertIsInstance(
-                        result, cpanalysis.DisplayPostRunRequest)
-                self.assertEqual(result.module_num, module.module_num)
+                        result, cellprofiler.message.request.DisplayPostRun)
+                self.assertEqual(result.module_index, module.module_num)
 
     def test_01_01_start_and_stop(self):
-
-        logger.debug("Entering %s" % inspect.getframeinfo(inspect.currentframe()).function)
         self.make_pipeline_and_measurements_and_start()
         self.wants_analysis_finished = True
         self.cancel_analysis()
         # The last should be AnalysisFinished. There may be AnalysisProgress
         # prior to that.
         analysis_finished = self.event_queue.get()
-        self.assertIsInstance(analysis_finished, cpanalysis.AnalysisFinished)
+        self.assertIsInstance(analysis_finished, cellprofiler.analysis.AnalysisFinished)
         self.assertTrue(analysis_finished.cancelled)
         self.assertIsInstance(analysis_finished.measurements,
-                              cpmeas.Measurements)
-        logger.debug("Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function)
+                              cellprofiler.measurement.Measurement)
 
     def test_02_01_announcement(self):
-        logger.debug("Entering %s" % inspect.getframeinfo(inspect.currentframe()).function)
         pipeline, m = self.make_pipeline_and_measurements_and_start()
 
         with self.FakeWorker() as worker:
@@ -310,60 +291,53 @@ class TestAnalysis(unittest.TestCase):
             self.cancel_analysis()
             response = worker.listen_for_announcements(work_announce_address)()
             self.assertEqual(len(response), 0)
-        logger.debug("Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function)
 
     def test_03_01_get_work(self):
         pipeline, m = self.make_pipeline_and_measurements_and_start()
         with self.FakeWorker() as worker:
             worker.connect(self.analysis.runner.work_announce_address)
-            response = worker.send(cpanalysis.WorkRequest(worker.analysis_id))()
-            self.assertIsInstance(response, cpanalysis.WorkReply)
+            response = worker.send(cellprofiler.message.request.Work(worker.analysis_id))()
+            self.assertIsInstance(response, cellprofiler.message.reply.Work)
             self.assertSequenceEqual(response.image_set_numbers, (1,))
             self.assertFalse(response.worker_runs_post_group)
             self.assertTrue(response.wants_dictionary)
-        logger.debug("Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function)
 
     def test_03_02_get_work_twice(self):
-        logger.debug("Entering %s" % inspect.getframeinfo(inspect.currentframe()).function)
         pipeline, m = self.make_pipeline_and_measurements_and_start()
 
         with self.FakeWorker() as worker:
             worker.connect(self.analysis.runner.work_announce_address)
-            response = worker.send(cpanalysis.WorkRequest(worker.analysis_id))()
-            self.assertIsInstance(response, cpanalysis.WorkReply)
-            response = worker.send(cpanalysis.WorkRequest(worker.analysis_id))()
-            self.assertIsInstance(response, cpanalysis.NoWorkReply)
-        logger.debug("Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function)
+            response = worker.send(cellprofiler.message.request.Work(worker.analysis_id))()
+            self.assertIsInstance(response, cellprofiler.message.reply.Work)
+            response = worker.send(cellprofiler.message.request.Work(worker.analysis_id))()
+            self.assertIsInstance(response, cellprofiler.message.reply.NoWork)
 
     def test_03_03_cancel_before_work(self):
-        logger.debug("Entering %s" % inspect.getframeinfo(inspect.currentframe()).function)
         pipeline, m = self.make_pipeline_and_measurements_and_start()
 
         with self.FakeWorker() as worker:
             worker.connect(self.analysis.runner.work_announce_address)
             self.cancel_analysis()
-            response = worker.send(cpanalysis.WorkRequest(worker.analysis_id))()
-            self.assertIsInstance(response, cpzmq.BoundaryExited)
-        logger.debug("Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function)
+            response = worker.send(cellprofiler.message.request.Work(worker.analysis_id))()
+            self.assertIsInstance(response, cellprofiler.utilities.zmqrequest.BoundaryExited)
 
     def test_04_01_pipeline_preferences(self):
-        logger.debug("Entering %s" % inspect.getframeinfo(inspect.currentframe()).function)
         pipeline, m = self.make_pipeline_and_measurements_and_start()
-        cpprefs.set_headless()
+        cellprofiler.configuration.set_headless()
         title_font_name = "Rosewood Std Regular"
-        cpprefs.set_title_font_name(title_font_name)
-        cpprefs.set_default_image_directory(example_images_directory())
-        cpprefs.set_default_output_directory(testimages_directory())
+        cellprofiler.configuration.set_title_font_name(title_font_name)
+        cellprofiler.configuration.set_default_image_directory(cellprofiler.modules.tests.example_images_directory())
+        cellprofiler.configuration.set_default_output_directory(cellprofiler.modules.tests.testimages_directory())
         with self.FakeWorker() as worker:
             worker.connect(self.analysis.runner.work_announce_address)
-            response = worker.send(cpanalysis.PipelinePreferencesRequest(
+            response = worker.send(cellprofiler.message.request.PipelinePreferences(
                     worker.analysis_id))()
             #
             # Compare pipelines
             #
-            client_pipeline = cpp.Pipeline()
+            client_pipeline = cellprofiler.pipeline.Pipeline()
             pipeline_txt = response.pipeline_blob.tostring()
-            client_pipeline.loadtxt(StringIO(pipeline_txt),
+            client_pipeline.loadtxt(cStringIO.StringIO(pipeline_txt),
                                     raise_on_error=True)
             self.assertEqual(len(pipeline.modules()),
                              len(client_pipeline.modules()))
@@ -377,30 +351,27 @@ class TestAnalysis(unittest.TestCase):
                     self.assertEqual(ssetting.get_value_text(),
                                      csetting.get_value_text())
             preferences = response.preferences
-            self.assertIn(cpprefs.TITLE_FONT_NAME, preferences)
-            self.assertEqual(preferences[cpprefs.TITLE_FONT_NAME],
+            self.assertIn(cellprofiler.configuration.TITLE_FONT_NAME, preferences)
+            self.assertEqual(preferences[cellprofiler.configuration.TITLE_FONT_NAME],
                              title_font_name)
-            self.assertIn(cpprefs.DEFAULT_IMAGE_DIRECTORY, preferences)
-            self.assertEqual(preferences[cpprefs.DEFAULT_IMAGE_DIRECTORY],
-                             cpprefs.get_default_image_directory())
-            self.assertIn(cpprefs.DEFAULT_OUTPUT_DIRECTORY, preferences)
-            self.assertEqual(preferences[cpprefs.DEFAULT_OUTPUT_DIRECTORY],
-                             cpprefs.get_default_output_directory())
-
-        logger.debug("Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function)
+            self.assertIn(cellprofiler.configuration.DEFAULT_IMAGE_DIRECTORY, preferences)
+            self.assertEqual(preferences[cellprofiler.configuration.DEFAULT_IMAGE_DIRECTORY],
+                             cellprofiler.configuration.get_default_image_directory())
+            self.assertIn(cellprofiler.configuration.DEFAULT_OUTPUT_DIRECTORY, preferences)
+            self.assertEqual(preferences[cellprofiler.configuration.DEFAULT_OUTPUT_DIRECTORY],
+                             cellprofiler.configuration.get_default_output_directory())
 
     def test_04_02_initial_measurements_request(self):
-        logger.debug("Entering %s" % inspect.getframeinfo(inspect.currentframe()).function)
         pipeline, m = self.make_pipeline_and_measurements_and_start()
         with self.FakeWorker() as worker:
             worker.connect(self.analysis.runner.work_announce_address)
-            response = worker.send(cpanalysis.InitialMeasurementsRequest(
+            response = worker.send(cellprofiler.message.request.InitialMeasurements(
                     worker.analysis_id))()
-            client_measurements = cpmeas.load_measurements_from_buffer(
+            client_measurements = cellprofiler.measurement.load_measurements_from_buffer(
                     response.buf)
             try:
-                assert isinstance(client_measurements, cpmeas.Measurements)
-                assert isinstance(m, cpmeas.Measurements)
+                assert isinstance(client_measurements, cellprofiler.measurement.Measurement)
+                assert isinstance(m, cellprofiler.measurement.Measurement)
                 self.assertSequenceEqual(
                         m.get_image_numbers(),
                         client_measurements.get_image_numbers())
@@ -419,84 +390,76 @@ class TestAnalysis(unittest.TestCase):
                             cv = client_measurements.get_measurement(
                                     object_name, feature_name,
                                     image_set_number=image_number)
-                            self.assertEqual(np.isscalar(sv),
-                                             np.isscalar(cv))
-                            if np.isscalar(sv):
+                            self.assertEqual(numpy.isscalar(sv),
+                                             numpy.isscalar(cv))
+                            if numpy.isscalar(sv):
                                 self.assertEqual(sv, cv)
                             else:
-                                np.testing.assert_almost_equal(sv, cv)
+                                numpy.testing.assert_almost_equal(sv, cv)
             finally:
                 client_measurements.close()
-                logger.debug("Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function)
 
     def test_04_03_interaction(self):
-        logger.debug("Entering %s" % inspect.getframeinfo(inspect.currentframe()).function)
         pipeline, m = self.make_pipeline_and_measurements_and_start()
         with self.FakeWorker() as worker:
             worker.connect(self.analysis.runner.work_announce_address)
             fn_interaction_reply = worker.send(
-                    cpanalysis.InteractionRequest(
+                    cellprofiler.message.request.Interaction(
                             worker.analysis_id,
                             foo="bar"))
             request = self.event_queue.get()
-            self.assertIsInstance(request, cpanalysis.InteractionRequest)
+            self.assertIsInstance(request, cellprofiler.message.request.Interaction)
             self.assertEqual(request.foo, "bar")
-            request.reply(cpanalysis.InteractionReply(hello="world"))
+            request.reply(cellprofiler.message.reply.Interaction(hello="world"))
             reply = fn_interaction_reply()
-            self.assertIsInstance(reply, cpanalysis.InteractionReply)
+            self.assertIsInstance(reply, cellprofiler.message.reply.Interaction)
             self.assertEqual(reply.hello, "world")
-        logger.debug("Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function)
 
     def test_04_04_01_display(self):
-        logger.debug("Entering %s" % inspect.getframeinfo(inspect.currentframe()).function)
         pipeline, m = self.make_pipeline_and_measurements_and_start()
         with self.FakeWorker() as worker:
             worker.connect(self.analysis.runner.work_announce_address)
             fn_interaction_reply = worker.send(
-                    cpanalysis.DisplayRequest(
+                    cellprofiler.message.request.Display(
                             worker.analysis_id,
                             foo="bar"))
             #
             # The event queue should be hooked up to the interaction callback
             #
             request = self.event_queue.get()
-            self.assertIsInstance(request, cpanalysis.DisplayRequest)
+            self.assertIsInstance(request, cellprofiler.message.request.Display)
             self.assertEqual(request.foo, "bar")
-            request.reply(cpanalysis.Ack(message="Gimme Pony"))
+            request.reply(cellprofiler.message.reply.Ack(message="Gimme Pony"))
             reply = fn_interaction_reply()
-            self.assertIsInstance(reply, cpanalysis.Ack)
+            self.assertIsInstance(reply, cellprofiler.message.reply.Ack)
             self.assertEqual(reply.message, "Gimme Pony")
-        logger.debug("Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function)
 
     def test_04_04_02_display_post_group(self):
-        logger.debug("Entering %s" % inspect.getframeinfo(inspect.currentframe()).function)
         pipeline, m = self.make_pipeline_and_measurements_and_start()
         with self.FakeWorker() as worker:
             worker.connect(self.analysis.runner.work_announce_address)
             fn_interaction_reply = worker.send(
-                    cpanalysis.DisplayPostGroupRequest(
+                    cellprofiler.message.request.DisplayPostGroup(
                             worker.analysis_id, 1,
                             dict(foo="bar"), 3))
             #
             # The event queue should be hooked up to the interaction callback
             #
             request = self.event_queue.get()
-            self.assertIsInstance(request, cpanalysis.DisplayPostGroupRequest)
+            self.assertIsInstance(request, cellprofiler.message.request.DisplayPostGroup)
             display_data = request.display_data
             self.assertEqual(display_data["foo"], "bar")
-            request.reply(cpanalysis.Ack(message="Gimme Pony"))
+            request.reply(cellprofiler.message.reply.Ack(message="Gimme Pony"))
             reply = fn_interaction_reply()
-            self.assertIsInstance(reply, cpanalysis.Ack)
+            self.assertIsInstance(reply, cellprofiler.message.reply.Ack)
             self.assertEqual(reply.message, "Gimme Pony")
-        logger.debug("Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function)
 
     def test_04_05_exception(self):
-        logger.debug("Entering %s" % inspect.getframeinfo(inspect.currentframe()).function)
         pipeline, m = self.make_pipeline_and_measurements_and_start()
         with self.FakeWorker() as worker:
             worker.connect(self.analysis.runner.work_announce_address)
             fn_interaction_reply = worker.send(
-                    cpanalysis.ExceptionReport(
+                    cellprofiler.message.request.ExceptionReport(
                             worker.analysis_id,
                             image_set_number=1,
                             module_name="Images",
@@ -509,28 +472,27 @@ class TestAnalysis(unittest.TestCase):
             # The event queue should be hooked up to the interaction callback
             #
             request = self.event_queue.get()
-            self.assertIsInstance(request, cpanalysis.ExceptionReport)
+            self.assertIsInstance(request, cellprofiler.message.request.ExceptionReport)
             function = request.exc_traceback[-1][2]
             self.assertEqual(function, inspect.getframeinfo(inspect.currentframe()).function)
             self.assertEqual(request.filename, "test_analysis.py")
-            request.reply(cpanalysis.ExceptionPleaseDebugReply(
+            request.reply(cellprofiler.message.reply.ExceptionPleaseDebug(
                     disposition=1, verification_hash="corned beef"))
             reply = fn_interaction_reply()
-            self.assertIsInstance(reply, cpanalysis.ExceptionPleaseDebugReply)
+            self.assertIsInstance(reply, cellprofiler.message.reply.ExceptionPleaseDebug)
             self.assertEqual(reply.verification_hash, "corned beef")
             self.assertEqual(reply.disposition, 1)
             #
             # Try DebugWaiting and DebugComplete as well
             #
-            for req in (cpanalysis.DebugWaiting(worker.analysis_id, 8080),
-                        cpanalysis.DebugComplete(worker.analysis_id)):
+            for req in (cellprofiler.message.request.DebugWaiting(worker.analysis_id, 8080),
+                        cellprofiler.message.request.DebugComplete(worker.analysis_id)):
                 fn_interaction_reply = worker.send(req)
                 request = self.event_queue.get()
                 self.assertEqual(type(request), type(req))
-                request.reply(cpanalysis.Ack())
+                request.reply(cellprofiler.message.reply.Ack())
                 reply = fn_interaction_reply()
-                self.assertIsInstance(reply, cpanalysis.Ack)
-        logger.debug("Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function)
+                self.assertIsInstance(reply, cellprofiler.message.reply.Ack)
 
     def test_05_01_imageset_with_dictionary(self):
         #
@@ -542,10 +504,9 @@ class TestAnalysis(unittest.TestCase):
         # WorkRequest (with spin until WorkReply received)
         # SharedDictionaryRequest
         #
-        logger.debug("Entering %s" % inspect.getframeinfo(inspect.currentframe()).function)
         pipeline, m = self.make_pipeline_and_measurements_and_start(
                 nimage_sets=2)
-        r = np.random.RandomState()
+        r = numpy.random.RandomState()
         r.seed(51)
         with self.FakeWorker() as worker:
             worker.connect(self.analysis.runner.work_announce_address)
@@ -553,30 +514,28 @@ class TestAnalysis(unittest.TestCase):
             dictionaries = [dict([(uuid.uuid4().hex, r.uniform(size=(10, 15)))
                                   for _ in range(10)])
                             for module in pipeline.modules()]
-            response = worker.send(cpanalysis.ImageSetSuccessWithDictionary(
+            response = worker.send(cellprofiler.message.request.ImageSetSuccessWithDictionary(
                     worker.analysis_id, response.image_set_numbers[0],
                     dictionaries))()
-            self.assertIsInstance(response, cpanalysis.Ack)
+            self.assertIsInstance(response, cellprofiler.message.reply.Ack)
             response = worker.request_work()
             self.assertSequenceEqual(response.image_set_numbers, [2])
-            response = worker.send(cpanalysis.SharedDictionaryRequest(
+            response = worker.send(cellprofiler.message.request.SharedDictionary(
                     worker.analysis_id))()
-            self.assertIsInstance(response, cpanalysis.SharedDictionaryReply)
+            self.assertIsInstance(response, cellprofiler.message.reply.SharedDictionary)
             result = response.dictionaries
             self.assertEqual(len(dictionaries), len(result))
             for ed, d in zip(dictionaries, result):
                 self.assertItemsEqual(ed.keys(), d.keys())
                 for k in ed.keys():
-                    np.testing.assert_almost_equal(ed[k], d[k])
-        logger.debug("Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function)
+                    numpy.testing.assert_almost_equal(ed[k], d[k])
 
     def test_05_02_groups(self):
-        logger.debug("Entering %s" % inspect.getframeinfo(inspect.currentframe()).function)
         pipeline, m = self.make_pipeline_and_measurements_and_start(
                 nimage_sets=4,
                 group_numbers=[1, 1, 2, 2],
                 group_indexes=[1, 2, 1, 2])
-        r = np.random.RandomState()
+        r = numpy.random.RandomState()
         r.seed(52)
         with self.FakeWorker() as worker:
             worker.connect(self.analysis.runner.work_announce_address)
@@ -584,23 +543,21 @@ class TestAnalysis(unittest.TestCase):
             self.assertTrue(response.worker_runs_post_group)
             self.assertFalse(response.wants_dictionary)
             self.assertSequenceEqual(response.image_set_numbers, [1, 2])
-            response = worker.send(cpanalysis.ImageSetSuccess(
+            response = worker.send(cellprofiler.message.request.ImageSetSuccess(
                     worker.analysis_id, response.image_set_numbers[0]))()
             response = worker.request_work()
             self.assertSequenceEqual(response.image_set_numbers, [3, 4])
             self.assertTrue(response.worker_runs_post_group)
             self.assertFalse(response.wants_dictionary)
-        logger.debug("Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function)
 
     def test_06_01_single_imageset(self):
         #
         # Test a full cycle of analysis with an image set list
         # with a single image set
         #
-        logger.debug("Entering %s" % inspect.getframeinfo(inspect.currentframe()).function)
         self.wants_analysis_finished = True
         pipeline, m = self.make_pipeline_and_measurements_and_start()
-        r = np.random.RandomState()
+        r = numpy.random.RandomState()
         r.seed(61)
         with self.FakeWorker() as worker:
             #####################################################
@@ -611,9 +568,9 @@ class TestAnalysis(unittest.TestCase):
             #####################################################
             worker.connect(self.analysis.runner.work_announce_address)
             response = worker.request_work()
-            response = worker.send(cpanalysis.InitialMeasurementsRequest(
+            response = worker.send(cellprofiler.message.request.InitialMeasurements(
                     worker.analysis_id))()
-            client_measurements = cpmeas.load_measurements_from_buffer(
+            client_measurements = cellprofiler.measurement.load_measurements_from_buffer(
                     response.buf)
             #####################################################
             #
@@ -624,13 +581,13 @@ class TestAnalysis(unittest.TestCase):
             dictionaries = [dict([(uuid.uuid4().hex, r.uniform(size=(10, 15)))
                                   for _ in range(10)])
                             for module in pipeline.modules()]
-            response = worker.send(cpanalysis.ImageSetSuccessWithDictionary(
+            response = worker.send(cellprofiler.message.request.ImageSetSuccessWithDictionary(
                     worker.analysis_id, 1, dictionaries))()
             objects_measurements = r.uniform(size=10)
-            client_measurements[cpmeas.IMAGE, IMAGE_FEATURE, 1] = "Hello"
+            client_measurements[cellprofiler.measurement.IMAGE, IMAGE_FEATURE, 1] = "Hello"
             client_measurements[OBJECTS_NAME, OBJECTS_FEATURE, 1] = \
                 objects_measurements
-            req = cpanalysis.MeasurementsReport(
+            req = cellprofiler.message.request.MeasurementsReport(
                     worker.analysis_id,
                     client_measurements.file_contents(),
                     image_set_numbers=[1])
@@ -647,24 +604,23 @@ class TestAnalysis(unittest.TestCase):
             #####################################################
 
             result = self.event_queue.get()
-            self.assertIsInstance(result, cpanalysis.AnalysisFinished)
+            self.assertIsInstance(result, cellprofiler.analysis.AnalysisFinished)
             self.assertFalse(result.cancelled)
             measurements = result.measurements
             self.assertSequenceEqual(measurements.get_image_numbers(), [1])
-            self.assertEqual(measurements[cpmeas.IMAGE, IMAGE_FEATURE, 1],
+            self.assertEqual(measurements[cellprofiler.measurement.IMAGE, IMAGE_FEATURE, 1],
                              "Hello")
-            np.testing.assert_almost_equal(
+            numpy.testing.assert_almost_equal(
                     measurements[OBJECTS_NAME, OBJECTS_FEATURE, 1],
                     objects_measurements)
 
     def test_06_02_test_three_imagesets(self):
         # Test an analysis of three imagesets
         #
-        logger.debug("Entering %s" % inspect.getframeinfo(inspect.currentframe()).function)
         self.wants_analysis_finished = True
         pipeline, m = self.make_pipeline_and_measurements_and_start(
                 nimage_sets=3)
-        r = np.random.RandomState()
+        r = numpy.random.RandomState()
         r.seed(62)
         with self.FakeWorker() as worker:
             #####################################################
@@ -675,9 +631,9 @@ class TestAnalysis(unittest.TestCase):
             #####################################################
             worker.connect(self.analysis.runner.work_announce_address)
             response = worker.request_work()
-            response = worker.send(cpanalysis.InitialMeasurementsRequest(
+            response = worker.send(cellprofiler.message.request.InitialMeasurements(
                     worker.analysis_id))()
-            client_measurements = cpmeas.load_measurements_from_buffer(
+            client_measurements = cellprofiler.measurement.load_measurements_from_buffer(
                     response.buf)
             #####################################################
             #
@@ -688,7 +644,7 @@ class TestAnalysis(unittest.TestCase):
             dictionaries = [dict([(uuid.uuid4().hex, r.uniform(size=(10, 15)))
                                   for _ in range(10)])
                             for module in pipeline.modules()]
-            response = worker.send(cpanalysis.ImageSetSuccessWithDictionary(
+            response = worker.send(cellprofiler.message.request.ImageSetSuccessWithDictionary(
                     worker.analysis_id, 1, dictionaries))()
             #####################################################
             #
@@ -712,14 +668,14 @@ class TestAnalysis(unittest.TestCase):
             for i, om in enumerate(objects_measurements):
                 image_number = i + 1
                 if image_number > 0:
-                    worker.send(cpanalysis.ImageSetSuccess(
+                    worker.send(cellprofiler.message.request.ImageSetSuccess(
                             worker.analysis_id,
                             image_set_number=image_number))
-                m = cpmeas.Measurements(copy=client_measurements)
-                m[cpmeas.IMAGE, IMAGE_FEATURE, image_number] = \
+                m = cellprofiler.measurement.Measurement(copy=client_measurements)
+                m[cellprofiler.measurement.IMAGE, IMAGE_FEATURE, image_number] = \
                     "Hello %d" % image_number
                 m[OBJECTS_NAME, OBJECTS_FEATURE, image_number] = om
-                req = cpanalysis.MeasurementsReport(
+                req = cellprofiler.message.request.MeasurementsReport(
                         worker.analysis_id,
                         m.file_contents(),
                         image_set_numbers=[image_number])
@@ -736,28 +692,27 @@ class TestAnalysis(unittest.TestCase):
 
             self.check_display_post_run_requests(pipeline)
             result = self.event_queue.get()
-            self.assertIsInstance(result, cpanalysis.AnalysisFinished)
+            self.assertIsInstance(result, cellprofiler.analysis.AnalysisFinished)
             self.assertFalse(result.cancelled)
             measurements = result.measurements
             self.assertSequenceEqual(list(measurements.get_image_numbers()),
                                      [1, 2, 3])
             for i in range(1, 4):
-                self.assertEqual(measurements[cpmeas.IMAGE, IMAGE_FEATURE, i],
+                self.assertEqual(measurements[cellprofiler.measurement.IMAGE, IMAGE_FEATURE, i],
                                  "Hello %d" % i)
-                np.testing.assert_almost_equal(
+                numpy.testing.assert_almost_equal(
                         measurements[OBJECTS_NAME, OBJECTS_FEATURE, i],
                         objects_measurements[i - 1])
 
     def test_06_03_test_grouped_imagesets(self):
         # Test an analysis of four imagesets in two groups
         #
-        logger.debug("Entering %s" % inspect.getframeinfo(inspect.currentframe()).function)
         self.wants_analysis_finished = True
         pipeline, m = self.make_pipeline_and_measurements_and_start(
                 nimage_sets=4,
                 group_numbers=[1, 1, 2, 2],
                 group_indexes=[1, 2, 1, 2])
-        r = np.random.RandomState()
+        r = numpy.random.RandomState()
         r.seed(62)
         with self.FakeWorker() as worker:
             #####################################################
@@ -768,11 +723,11 @@ class TestAnalysis(unittest.TestCase):
             #####################################################
             worker.connect(self.analysis.runner.work_announce_address)
             response = worker.request_work()
-            response = worker.send(cpanalysis.InitialMeasurementsRequest(
+            response = worker.send(cellprofiler.message.request.InitialMeasurements(
                     worker.analysis_id))()
-            client_measurements = cpmeas.load_measurements_from_buffer(
+            client_measurements = cellprofiler.measurement.load_measurements_from_buffer(
                     response.buf)
-            response = worker.send(cpanalysis.ImageSetSuccess(
+            response = worker.send(cellprofiler.message.request.ImageSetSuccess(
                     worker.analysis_id, 1))()
             #####################################################
             #
@@ -789,17 +744,17 @@ class TestAnalysis(unittest.TestCase):
             #####################################################
             objects_measurements = [r.uniform(size=10) for _ in range(4)]
             for image_number in range(2, 5):
-                worker.send(cpanalysis.ImageSetSuccess(
+                worker.send(cellprofiler.message.request.ImageSetSuccess(
                         worker.analysis_id,
                         image_set_number=image_number))
             for image_numbers in ((1, 2), (3, 4)):
-                m = cpmeas.Measurements(copy=client_measurements)
+                m = cellprofiler.measurement.Measurement(copy=client_measurements)
                 for image_number in image_numbers:
-                    m[cpmeas.IMAGE, IMAGE_FEATURE, image_number] = \
+                    m[cellprofiler.measurement.IMAGE, IMAGE_FEATURE, image_number] = \
                         "Hello %d" % image_number
                     m[OBJECTS_NAME, OBJECTS_FEATURE, image_number] = \
                         objects_measurements[image_number - 1]
-                req = cpanalysis.MeasurementsReport(
+                req = cellprofiler.message.request.MeasurementsReport(
                         worker.analysis_id,
                         m.file_contents(),
                         image_set_numbers=image_numbers)
@@ -816,29 +771,28 @@ class TestAnalysis(unittest.TestCase):
 
             self.check_display_post_run_requests(pipeline)
             result = self.event_queue.get()
-            self.assertIsInstance(result, cpanalysis.AnalysisFinished)
+            self.assertIsInstance(result, cellprofiler.analysis.AnalysisFinished)
             self.assertFalse(result.cancelled)
             measurements = result.measurements
             self.assertSequenceEqual(list(measurements.get_image_numbers()),
                                      [1, 2, 3, 4])
             for i in range(1, 5):
-                self.assertEqual(measurements[cpmeas.IMAGE, IMAGE_FEATURE, i],
+                self.assertEqual(measurements[cellprofiler.measurement.IMAGE, IMAGE_FEATURE, i],
                                  "Hello %d" % i)
-                np.testing.assert_almost_equal(
+                numpy.testing.assert_almost_equal(
                         measurements[OBJECTS_NAME, OBJECTS_FEATURE, i],
                         objects_measurements[i - 1])
 
     def test_06_04_test_restart(self):
         # Test a restart of an analysis
         #
-        logger.debug("Entering %s" % inspect.getframeinfo(inspect.currentframe()).function)
         self.wants_analysis_finished = True
         pipeline, m = self.make_pipeline_and_measurements_and_start(
                 nimage_sets=3,
-                status=[cpanalysis.AnalysisRunner.STATUS_UNPROCESSED,
-                        cpanalysis.AnalysisRunner.STATUS_DONE,
-                        cpanalysis.AnalysisRunner.STATUS_IN_PROCESS])
-        r = np.random.RandomState()
+                status=[cellprofiler.analysis.AnalysisRunner.STATUS_UNPROCESSED,
+                        cellprofiler.analysis.AnalysisRunner.STATUS_DONE,
+                        cellprofiler.analysis.AnalysisRunner.STATUS_IN_PROCESS])
+        r = numpy.random.RandomState()
         r.seed(62)
         with self.FakeWorker() as worker:
             #####################################################
@@ -849,9 +803,9 @@ class TestAnalysis(unittest.TestCase):
             #####################################################
             worker.connect(self.analysis.runner.work_announce_address)
             response = worker.request_work()
-            response = worker.send(cpanalysis.InitialMeasurementsRequest(
+            response = worker.send(cellprofiler.message.request.InitialMeasurements(
                     worker.analysis_id))()
-            client_measurements = cpmeas.load_measurements_from_buffer(
+            client_measurements = cellprofiler.measurement.load_measurements_from_buffer(
                     response.buf)
             #####################################################
             #
@@ -862,7 +816,7 @@ class TestAnalysis(unittest.TestCase):
             dictionaries = [dict([(uuid.uuid4().hex, r.uniform(size=(10, 15)))
                                   for _ in range(10)])
                             for module in pipeline.modules()]
-            response = worker.send(cpanalysis.ImageSetSuccessWithDictionary(
+            response = worker.send(cellprofiler.message.request.ImageSetSuccessWithDictionary(
                     worker.analysis_id, 1, dictionaries))()
             #####################################################
             #
@@ -882,14 +836,14 @@ class TestAnalysis(unittest.TestCase):
             objects_measurements = [r.uniform(size=10) for _ in range(3)]
             for image_number, om in ((1, objects_measurements[0]),
                                      (3, objects_measurements[2])):
-                worker.send(cpanalysis.ImageSetSuccess(
+                worker.send(cellprofiler.message.request.ImageSetSuccess(
                         worker.analysis_id,
                         image_set_number=image_number))
-                m = cpmeas.Measurements(copy=client_measurements)
-                m[cpmeas.IMAGE, IMAGE_FEATURE, image_number] = \
+                m = cellprofiler.measurement.Measurement(copy=client_measurements)
+                m[cellprofiler.measurement.IMAGE, IMAGE_FEATURE, image_number] = \
                     "Hello %d" % image_number
                 m[OBJECTS_NAME, OBJECTS_FEATURE, image_number] = om
-                req = cpanalysis.MeasurementsReport(
+                req = cellprofiler.message.request.MeasurementsReport(
                         worker.analysis_id,
                         m.file_contents(),
                         image_set_numbers=[image_number])
@@ -906,21 +860,21 @@ class TestAnalysis(unittest.TestCase):
 
             self.check_display_post_run_requests(pipeline)
             result = self.event_queue.get()
-            self.assertIsInstance(result, cpanalysis.AnalysisFinished)
+            self.assertIsInstance(result, cellprofiler.analysis.AnalysisFinished)
             self.assertFalse(result.cancelled)
             measurements = result.measurements
-            assert isinstance(measurements, cpmeas.Measurements)
+            assert isinstance(measurements, cellprofiler.measurement.Measurement)
             self.assertSequenceEqual(list(measurements.get_image_numbers()),
                                      [1, 2, 3])
             for i in range(1, 4):
                 if i == 2:
                     for feature in (IMAGE_FEATURE, OBJECTS_FEATURE):
                         self.assertFalse(measurements.has_measurements(
-                                cpmeas.IMAGE, feature, 2))
+                                cellprofiler.measurement.IMAGE, feature, 2))
                 else:
-                    self.assertEqual(measurements[cpmeas.IMAGE, IMAGE_FEATURE, i],
+                    self.assertEqual(measurements[cellprofiler.measurement.IMAGE, IMAGE_FEATURE, i],
                                      "Hello %d" % i)
-                    np.testing.assert_almost_equal(
+                    numpy.testing.assert_almost_equal(
                             measurements[OBJECTS_NAME, OBJECTS_FEATURE, i],
                             objects_measurements[i - 1])
 
@@ -928,18 +882,17 @@ class TestAnalysis(unittest.TestCase):
         # Test an analysis of four imagesets in two groups with all but one
         # complete.
         #
-        logger.debug("Entering %s" % inspect.getframeinfo(inspect.currentframe()).function)
         self.wants_analysis_finished = True
         pipeline, m = self.make_pipeline_and_measurements_and_start(
                 nimage_sets=4,
                 group_numbers=[1, 1, 2, 2],
                 group_indexes=[1, 2, 1, 2],
-                status=[cpanalysis.AnalysisRunner.STATUS_DONE,
-                        cpanalysis.AnalysisRunner.STATUS_UNPROCESSED,
-                        cpanalysis.AnalysisRunner.STATUS_DONE,
-                        cpanalysis.AnalysisRunner.STATUS_DONE]
+                status=[cellprofiler.analysis.AnalysisRunner.STATUS_DONE,
+                        cellprofiler.analysis.AnalysisRunner.STATUS_UNPROCESSED,
+                        cellprofiler.analysis.AnalysisRunner.STATUS_DONE,
+                        cellprofiler.analysis.AnalysisRunner.STATUS_DONE]
         )
-        r = np.random.RandomState()
+        r = numpy.random.RandomState()
         r.seed(62)
         with self.FakeWorker() as worker:
             #####################################################
@@ -951,21 +904,21 @@ class TestAnalysis(unittest.TestCase):
             worker.connect(self.analysis.runner.work_announce_address)
             response = worker.request_work()
             self.assertSequenceEqual(response.image_set_numbers, [1, 2])
-            response = worker.send(cpanalysis.InitialMeasurementsRequest(
+            response = worker.send(cellprofiler.message.request.InitialMeasurements(
                     worker.analysis_id))()
-            client_measurements = cpmeas.load_measurements_from_buffer(
+            client_measurements = cellprofiler.measurement.load_measurements_from_buffer(
                     response.buf)
             for image_number in (1, 2):
-                response = worker.send(cpanalysis.ImageSetSuccess(
+                response = worker.send(cellprofiler.message.request.ImageSetSuccess(
                         worker.analysis_id, image_number))()
-            m = cpmeas.Measurements(copy=client_measurements)
+            m = cellprofiler.measurement.Measurement(copy=client_measurements)
             objects_measurements = [r.uniform(size=10) for _ in range(2)]
             for image_number in (1, 2):
-                m[cpmeas.IMAGE, IMAGE_FEATURE, image_number] = \
+                m[cellprofiler.measurement.IMAGE, IMAGE_FEATURE, image_number] = \
                     "Hello %d" % image_number
                 m[OBJECTS_NAME, OBJECTS_FEATURE, image_number] = \
                     objects_measurements[image_number - 1]
-            req = cpanalysis.MeasurementsReport(
+            req = cellprofiler.message.request.MeasurementsReport(
                     worker.analysis_id,
                     m.file_contents(),
                     image_set_numbers=(1, 2))
@@ -982,13 +935,13 @@ class TestAnalysis(unittest.TestCase):
 
             self.check_display_post_run_requests(pipeline)
             result = self.event_queue.get()
-            self.assertIsInstance(result, cpanalysis.AnalysisFinished)
+            self.assertIsInstance(result, cellprofiler.analysis.AnalysisFinished)
             self.assertFalse(result.cancelled)
             measurements = result.measurements
             for i in range(1, 3):
-                self.assertEqual(measurements[cpmeas.IMAGE, IMAGE_FEATURE, i],
+                self.assertEqual(measurements[cellprofiler.measurement.IMAGE, IMAGE_FEATURE, i],
                                  "Hello %d" % i)
-                np.testing.assert_almost_equal(
+                numpy.testing.assert_almost_equal(
                         measurements[OBJECTS_NAME, OBJECTS_FEATURE, i],
                         objects_measurements[i - 1])
 
@@ -996,10 +949,9 @@ class TestAnalysis(unittest.TestCase):
         #
         # Test a transfer of the relationships table.
         #
-        logger.debug("Entering %s" % inspect.getframeinfo(inspect.currentframe()).function)
         self.wants_analysis_finished = True
         pipeline, m = self.make_pipeline_and_measurements_and_start()
-        r = np.random.RandomState()
+        r = numpy.random.RandomState()
         r.seed(61)
         with self.FakeWorker() as worker:
             #####################################################
@@ -1010,9 +962,9 @@ class TestAnalysis(unittest.TestCase):
             #####################################################
             worker.connect(self.analysis.runner.work_announce_address)
             response = worker.request_work()
-            response = worker.send(cpanalysis.InitialMeasurementsRequest(
+            response = worker.send(cellprofiler.message.request.InitialMeasurements(
                     worker.analysis_id))()
-            client_measurements = cpmeas.load_measurements_from_buffer(
+            client_measurements = cellprofiler.measurement.load_measurements_from_buffer(
                     response.buf)
             #####################################################
             #
@@ -1023,19 +975,19 @@ class TestAnalysis(unittest.TestCase):
             dictionaries = [dict([(uuid.uuid4().hex, r.uniform(size=(10, 15)))
                                   for _ in range(10)])
                             for module in pipeline.modules()]
-            response = worker.send(cpanalysis.ImageSetSuccessWithDictionary(
+            response = worker.send(cellprofiler.message.request.ImageSetSuccessWithDictionary(
                     worker.analysis_id, 1, dictionaries))()
             n_objects = 10
             objects_measurements = r.uniform(size=n_objects)
             objects_relationship = r.permutation(n_objects) + 1
-            client_measurements[cpmeas.IMAGE, IMAGE_FEATURE, 1] = "Hello"
+            client_measurements[cellprofiler.measurement.IMAGE, IMAGE_FEATURE, 1] = "Hello"
             client_measurements[OBJECTS_NAME, OBJECTS_FEATURE, 1] = \
                 objects_measurements
             client_measurements.add_relate_measurement(
                     1, "Foo", OBJECTS_NAME, OBJECTS_NAME,
-                    np.ones(n_objects, int), np.arange(1, n_objects + 1),
-                    np.ones(n_objects, int), objects_relationship)
-            req = cpanalysis.MeasurementsReport(
+                    numpy.ones(n_objects, int), numpy.arange(1, n_objects + 1),
+                    numpy.ones(n_objects, int), objects_relationship)
+            req = cellprofiler.message.request.MeasurementsReport(
                     worker.analysis_id,
                     client_measurements.file_contents(),
                     image_set_numbers=[1])
@@ -1052,20 +1004,20 @@ class TestAnalysis(unittest.TestCase):
             #####################################################
 
             result = self.event_queue.get()
-            self.assertIsInstance(result, cpanalysis.AnalysisFinished)
+            self.assertIsInstance(result, cellprofiler.analysis.AnalysisFinished)
             self.assertFalse(result.cancelled)
             measurements = result.measurements
-            assert isinstance(measurements, cpmeas.Measurements)
+            assert isinstance(measurements, cellprofiler.measurement.Measurement)
             self.assertSequenceEqual(measurements.get_image_numbers(), [1])
-            self.assertEqual(measurements[cpmeas.IMAGE, IMAGE_FEATURE, 1],
+            self.assertEqual(measurements[cellprofiler.measurement.IMAGE, IMAGE_FEATURE, 1],
                              "Hello")
-            np.testing.assert_almost_equal(
+            numpy.testing.assert_almost_equal(
                     measurements[OBJECTS_NAME, OBJECTS_FEATURE, 1],
                     objects_measurements)
             rg = measurements.get_relationship_groups()
             self.assertEqual(len(rg), 1)
             rk = rg[0]
-            assert isinstance(rk, cpmeas.RelationshipKey)
+            assert isinstance(rk, cellprofiler.measurement.RelationshipKey)
             self.assertEqual(rk.module_number, 1)
             self.assertEqual(rk.object_name1, OBJECTS_NAME)
             self.assertEqual(rk.object_name2, OBJECTS_NAME)
@@ -1073,21 +1025,20 @@ class TestAnalysis(unittest.TestCase):
             r = measurements.get_relationships(
                     1, "Foo", OBJECTS_NAME, OBJECTS_NAME)
             self.assertEqual(len(r), n_objects)
-            np.testing.assert_array_equal(r[cpmeas.R_FIRST_IMAGE_NUMBER], 1)
-            np.testing.assert_array_equal(r[cpmeas.R_SECOND_IMAGE_NUMBER], 1)
-            np.testing.assert_array_equal(r[cpmeas.R_FIRST_OBJECT_NUMBER],
-                                          np.arange(1, n_objects + 1))
-            np.testing.assert_array_equal(r[cpmeas.R_SECOND_OBJECT_NUMBER],
-                                          objects_relationship)
+            numpy.testing.assert_array_equal(r[cellprofiler.measurement.R_FIRST_IMAGE_NUMBER], 1)
+            numpy.testing.assert_array_equal(r[cellprofiler.measurement.R_SECOND_IMAGE_NUMBER], 1)
+            numpy.testing.assert_array_equal(r[cellprofiler.measurement.R_FIRST_OBJECT_NUMBER],
+                                             numpy.arange(1, n_objects + 1))
+            numpy.testing.assert_array_equal(r[cellprofiler.measurement.R_SECOND_OBJECT_NUMBER],
+                                             objects_relationship)
 
     def test_06_07_worker_cancel(self):
         #
         # Test worker sending AnalysisCancelRequest
         #
-        logger.debug("Entering %s" % inspect.getframeinfo(inspect.currentframe()).function)
         self.wants_analysis_finished = True
         pipeline, m = self.make_pipeline_and_measurements_and_start()
-        r = np.random.RandomState()
+        r = numpy.random.RandomState()
         r.seed(61)
         with self.FakeWorker() as worker:
             #####################################################
@@ -1098,7 +1049,7 @@ class TestAnalysis(unittest.TestCase):
             #####################################################
             worker.connect(self.analysis.runner.work_announce_address)
             response = worker.request_work()
-            response = worker.send(cpanalysis.InitialMeasurementsRequest(
+            response = worker.send(cellprofiler.message.request.InitialMeasurements(
                     worker.analysis_id))()
             #####################################################
             #
@@ -1107,10 +1058,10 @@ class TestAnalysis(unittest.TestCase):
             #
             #####################################################
 
-            response = worker.send(cpanalysis.AnalysisCancelRequest(
+            response = worker.send(cellprofiler.message.request.AnalysisCancel(
                     worker.analysis_id))()
             result = self.event_queue.get()
-            self.assertIsInstance(result, cpanalysis.AnalysisFinished)
+            self.assertIsInstance(result, cellprofiler.analysis.AnalysisFinished)
             self.assertTrue(result.cancelled)
 
 

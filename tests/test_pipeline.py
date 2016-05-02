@@ -688,82 +688,82 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
                 self.assertEqual(len(m_in), len(m_out))
                 self.assertTrue(np.all(m_in == m_out))
 
-                #     def test_13_04_pipeline_measurement(self):
-                #         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-                # Version:3
-                # DateRevision:20120709180131
-                # ModuleCount:1
-                # HasImagePlaneDetails:False
-                #
-                # LoadImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|show_window:True|notes:\x5B"Load the images by matching files in the folder against the unique text pattern for each stain\x3A \'Channel1-\' for nuclei, \'Channel2-\' for the GFP image. The two images together comprise an image set."\x5D|batch_state:array(\x5B\x5D, dtype=uint8)]
-                #     File type to be loaded:individual images
-                #     File selection method:Text-Exact match
-                #     Number of images in each group?:3
-                #     Type the text that the excluded images have in common:Do not use
-                #     Analyze all subfolders within the selected folder?:None
-                #     Input image file location:Elsewhere...\x7Cc\x3A\\\\trunk\\\\ExampleImages\\\\ExampleSBSImages
-                #     Check image sets for unmatched or duplicate files?:Yes
-                #     Group images by metadata?:No
-                #     Exclude certain files?:No
-                #     Specify metadata fields to group by:
-                #     Select subfolders to analyze:
-                #     Image count:2
-                #     Text that these images have in common (case-sensitive):Channel1-01
-                #     Position of this image in each group:1
-                #     Extract metadata from where?:File name
-                #     Regular expression that finds metadata in the file name:.*-(?P<ImageNumber>\\\\d*)-(?P<Row>.*)-(?P<Column>\\\\d*)
-                #     Type the regular expression that finds metadata in the subfolder path:.*\x5B\\\\\\\\/\x5D(?P<Date>.*)\x5B\\\\\\\\/\x5D(?P<Run>.*)$
-                #     Channel count:1
-                #     Group the movie frames?:No
-                #     Grouping method:Interleaved
-                #     Number of channels per group:2
-                #     Load the input as images or objects?:Images
-                #     Name this loaded image:rawGFP
-                #     Name this loaded object:Nuclei
-                #     Retain outlines of loaded objects?:No
-                #     Name the outline image:NucleiOutlines
-                #     Channel number:1
-                #     Rescale intensities?:Yes
-                #     Text that these images have in common (case-sensitive):Channel2-01
-                #     Position of this image in each group:2
-                #     Extract metadata from where?:File name
-                #     Regular expression that finds metadata in the file name:.*-(?P<ImageNumber>\\\\d*)-(?P<Row>.*)-(?P<Column>\\\\d*)
-                #     Type the regular expression that finds metadata in the subfolder path:.*\x5B\\\\\\\\/\x5D(?P<Date>.*)\x5B\\\\\\\\/\x5D(?P<Run>.*)$
-                #     Channel count:1
-                #     Group the movie frames?:No
-                #     Grouping method:Interleaved
-                #     Number of channels per group:2
-                #     Load the input as images or objects?:Images
-                #     Name this loaded image:rawDNA
-                #     Name this loaded object:Nuclei
-                #     Retain outlines of loaded objects?:No
-                #     Name the outline image:NucleiOutlines
-                #     Channel number:1
-                #     Rescale intensities?:Yes
-                # """
-                #         maybe_download_sbs()
-                #         path = os.path.join(example_images_directory(), "ExampleSBSImages")
-                #         pipeline = cpp.Pipeline()
-                #         pipeline.load(cStringIO.StringIO(data))
-                #         module = pipeline.modules()[0]
-                #         self.assertTrue(isinstance(module, LI.LoadImages))
-                #         module.location.custom_path = path
-                #         m = cpmeas.Measurements()
-                #         image_set_list = cpi.ImageSetList()
-                #         self.assertTrue(pipeline.prepare_run(cpw.Workspace(
-                #             pipeline, module, None, None, m, image_set_list)))
-                #         pipeline_text = m.get_experiment_measurement(cpp.M_PIPELINE)
-                #         pipeline_text = pipeline_text.encode("us-ascii")
-                #         pipeline = cpp.Pipeline()
-                #         pipeline.loadtxt(cStringIO.StringIO(pipeline_text))
-                #         self.assertEqual(len(pipeline.modules()), 1)
-                #         module_out = pipeline.modules()[0]
-                #         self.assertTrue(isinstance(module_out, module.__class__))
-                #         self.assertEqual(len(module_out.settings()), len(module.settings()))
-                #         for m1setting, m2setting in zip(module.settings(), module_out.settings()):
-                #             self.assertTrue(isinstance(m1setting, cps.Setting))
-                #             self.assertTrue(isinstance(m2setting, cps.Setting))
-                #             self.assertEqual(m1setting.value, m2setting.value)
+                def test_13_04_pipeline_measurement(self):
+                    data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+                Version:3
+                DateRevision:20120709180131
+                ModuleCount:1
+                HasImagePlaneDetails:False
+
+                LoadImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|show_window:True|notes:\x5B"Load the images by matching files in the folder against the unique text pattern for each stain\x3A \'Channel1-\' for nuclei, \'Channel2-\' for the GFP image. The two images together comprise an image set."\x5D|batch_state:array(\x5B\x5D, dtype=uint8)]
+                    File type to be loaded:individual images
+                    File selection method:Text-Exact match
+                    Number of images in each group?:3
+                    Type the text that the excluded images have in common:Do not use
+                    Analyze all subfolders within the selected folder?:None
+                    Input image file location:Elsewhere...\x7Cc\x3A\\\\trunk\\\\ExampleImages\\\\ExampleSBSImages
+                    Check image sets for unmatched or duplicate files?:Yes
+                    Group images by metadata?:No
+                    Exclude certain files?:No
+                    Specify metadata fields to group by:
+                    Select subfolders to analyze:
+                    Image count:2
+                    Text that these images have in common (case-sensitive):Channel1-01
+                    Position of this image in each group:1
+                    Extract metadata from where?:File name
+                    Regular expression that finds metadata in the file name:.*-(?P<ImageNumber>\\\\d*)-(?P<Row>.*)-(?P<Column>\\\\d*)
+                    Type the regular expression that finds metadata in the subfolder path:.*\x5B\\\\\\\\/\x5D(?P<Date>.*)\x5B\\\\\\\\/\x5D(?P<Run>.*)$
+                    Channel count:1
+                    Group the movie frames?:No
+                    Grouping method:Interleaved
+                    Number of channels per group:2
+                    Load the input as images or objects?:Images
+                    Name this loaded image:rawGFP
+                    Name this loaded object:Nuclei
+                    Retain outlines of loaded objects?:No
+                    Name the outline image:NucleiOutlines
+                    Channel number:1
+                    Rescale intensities?:Yes
+                    Text that these images have in common (case-sensitive):Channel2-01
+                    Position of this image in each group:2
+                    Extract metadata from where?:File name
+                    Regular expression that finds metadata in the file name:.*-(?P<ImageNumber>\\\\d*)-(?P<Row>.*)-(?P<Column>\\\\d*)
+                    Type the regular expression that finds metadata in the subfolder path:.*\x5B\\\\\\\\/\x5D(?P<Date>.*)\x5B\\\\\\\\/\x5D(?P<Run>.*)$
+                    Channel count:1
+                    Group the movie frames?:No
+                    Grouping method:Interleaved
+                    Number of channels per group:2
+                    Load the input as images or objects?:Images
+                    Name this loaded image:rawDNA
+                    Name this loaded object:Nuclei
+                    Retain outlines of loaded objects?:No
+                    Name the outline image:NucleiOutlines
+                    Channel number:1
+                    Rescale intensities?:Yes
+                """
+                        maybe_download_sbs()
+                        path = os.path.join(example_images_directory(), "ExampleSBSImages")
+                        pipeline = cpp.Pipeline()
+                        pipeline.load(cStringIO.StringIO(data))
+                        module = pipeline.modules()[0]
+                        self.assertTrue(isinstance(module, LI.LoadImages))
+                        module.location.custom_path = path
+                        m = cpmeas.Measurements()
+                        image_set_list = cpi.ImageSetList()
+                        self.assertTrue(pipeline.prepare_run(cpw.Workspace(
+                            pipeline, module, None, None, m, image_set_list)))
+                        pipeline_text = m.get_experiment_measurement(cpp.M_PIPELINE)
+                        pipeline_text = pipeline_text.encode("us-ascii")
+                        pipeline = cpp.Pipeline()
+                        pipeline.loadtxt(cStringIO.StringIO(pipeline_text))
+                        self.assertEqual(len(pipeline.modules()), 1)
+                        module_out = pipeline.modules()[0]
+                        self.assertTrue(isinstance(module_out, module.__class__))
+                        self.assertEqual(len(module_out.settings()), len(module.settings()))
+                        for m1setting, m2setting in zip(module.settings(), module_out.settings()):
+                            self.assertTrue(isinstance(m1setting, cps.Setting))
+                            self.assertTrue(isinstance(m2setting, cps.Setting))
+                            self.assertEqual(m1setting.value, m2setting.value)
 
     def test_14_01_unicode_save(self):
         pipeline = get_empty_pipeline()
@@ -855,28 +855,28 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
             profile_pipeline(pipeline_filename)
             cpprefs.set_default_image_directory(old_image_dir)
 
-    # def test_15_02_profile_example_fly(self):
-    #     """
-    #     Profile ExampleFlyImages pipeline
-    #
-    #     """
-    #     maybe_download_fly()
-    #     example_dir = example_images_directory()
-    #     pipeline_dir = os.path.join(example_dir, 'ExampleFlyImages')
-    #     pipeline_filename = os.path.join(pipeline_dir, 'ExampleFly.cppipe')
-    #
-    #     #Might be better to write these paths into the pipeline
-    #     old_image_dir = cpprefs.get_default_image_directory()
-    #     cpprefs.set_default_image_directory(pipeline_dir)
-    #     fd = urlopen(
-    #         "http://cellprofiler.org/ExampleFlyImages/ExampleFlyURL.cppipe")
-    #     build_dir = os.path.join(
-    #         os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
-    #         "build")
-    #     if not os.path.isdir(build_dir):
-    #         os.makedirs(build_dir)
-    #     profile_pipeline(fd, output_filename=os.path.join(build_dir, "profile.txt"))
-    #     cpprefs.set_default_image_directory(old_image_dir)
+    def test_15_02_profile_example_fly(self):
+        """
+        Profile ExampleFlyImages pipeline
+
+        """
+        maybe_download_fly()
+        example_dir = example_images_directory()
+        pipeline_dir = os.path.join(example_dir, 'ExampleFlyImages')
+        pipeline_filename = os.path.join(pipeline_dir, 'ExampleFly.cppipe')
+
+        #Might be better to write these paths into the pipeline
+        old_image_dir = cpprefs.get_default_image_directory()
+        cpprefs.set_default_image_directory(pipeline_dir)
+        fd = urlopen(
+            "http://cellprofiler.org/ExampleFlyImages/ExampleFlyURL.cppipe")
+        build_dir = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
+            "build")
+        if not os.path.isdir(build_dir):
+            os.makedirs(build_dir)
+        profile_pipeline(fd, output_filename=os.path.join(build_dir, "profile.txt"))
+        cpprefs.set_default_image_directory(old_image_dir)
 
     def test_16_00_get_provider_dictionary_nothing(self):
         for module in (ATestModule(),
@@ -1669,6 +1669,3 @@ img_942_data = ('eJyVd3VQFN7bLwiKSAtIs7T00p1SUgLSXZIqtdTCLogoISUgHYuggkgo3Q1L'
                 '5Ohg8lP9UZZPjSjiED21MGR7pU+gIGhOUxqSXMfG3SsoG2kcT+j4Chirzj/5'
                 'QjLVt+yntvsIX+lgMwPD7MbhU02piHSKcpBblPnabBPo1ApnheO/1hLCNkco'
                 '7St67i67b+xJLI94h1/d4HsGhvD8F7MQ7RE=')
-
-if __name__ == "__main__":
-    unittest.main()

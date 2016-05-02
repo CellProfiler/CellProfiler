@@ -7,12 +7,10 @@ import os
 import h5py
 import tempfile
 import unittest
-
 import cellprofiler.measurement as cpmeas
 import cellprofiler.pipeline as cpp
 import cellprofiler.workspace as cpw
-from cellprofiler.utilities.hdf5_dict import \
-    FILE_LIST_GROUP, TOP_LEVEL_GROUP_NAME
+from cellprofiler.utilities.hdf5_dict import FILE_LIST_GROUP, TOP_LEVEL_GROUP_NAME
 
 
 class TestWorkspace(unittest.TestCase):

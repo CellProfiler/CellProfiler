@@ -134,9 +134,9 @@ from cellprofiler.analysis import \
     InitialMeasurements, Work, \
     NoWork, MeasurementsReport, Interaction, Display, \
     DisplayPostGroup, AnalysisCancel, \
-    ExceptionReport, DebugWaiting, DebugComplete, ServerExited, ImageSetSuccess, ImageSetSuccessWithDictionary, \
-    SharedDictionary, Ack, UpstreamExit, ANNOUNCE_DONE, \
-    OMEROLogin, OmeroLoginReply
+    ExceptionReport, DebugWaiting, DebugComplete, ImageSetSuccess, ImageSetSuccessWithDictionary, \
+    SharedDictionary, Ack, ANNOUNCE_DONE, \
+    OMEROLogin
 from message.request import PipelinePreferences, InitialMeasurements, Work, ImageSetSuccess, \
     ImageSetSuccessWithDictionary, MeasurementsReport, Interaction, AnalysisCancel, Display, \
     DisplayPostGroup, SharedDictionary, ExceptionReport, DebugWaiting, DebugComplete, OMEROLogin

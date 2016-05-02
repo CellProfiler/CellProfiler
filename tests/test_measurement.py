@@ -1102,46 +1102,46 @@ class TestMeasurements(unittest.TestCase):
         np.testing.assert_array_equal(image_numbers2, ri2[order])
         np.testing.assert_array_equal(object_numbers2, ro2[order])
 
-    # def test_20_03_add_many_different_relationships(self):
-    #     m = cpmeas.Measurements()
-    #     r = np.random.RandomState()
-    #     r.seed(2003)
-    #     image_numbers1, object_numbers1 = [
-    #         x.flatten() for x in np.mgrid[1:4, 1:10]]
-    #     module_numbers = [1, 2]
-    #     relationship_names = ["Foo", "Bar"]
-    #     first_object_names = ["Nuclei", "Cells"]
-    #     second_object_names = ["Alice", "Bob"]
-    #     d = {}
-    #     midxs, ridxs, on1idxs, on2idxs = [
-    #         x.flatten() for x in np.mgrid[0:2, 0:2, 0:2, 0:2]]
-    #     for midx, ridx, on1idx, on2idx in zip(midxs, ridxs, on1idxs, on2idxs):
-    #         key = (module_numbers[midx], relationship_names[ridx],
-    #                first_object_names[on1idx], second_object_names[on2idx])
-    #         order = r.permutation(len(image_numbers1))
-    #         image_numbers2, object_numbers2 = [
-    #             x[order] for x in image_numbers1, object_numbers1]
-    #         d[key] = (image_numbers2, object_numbers2)
-    #         m.add_relate_measurement(key[0], key[1], key[2], key[3],
-    #                                  image_numbers1, object_numbers1,
-    #                                  image_numbers2, object_numbers2)
-    #
-    #     rg = [(x.module_number, x.relationship, x.object_name1, x.object_name2)
-    #           for x in m.get_relationship_groups()]
-    #     self.assertItemsEqual(d.keys(), rg)
-    #
-    #     for key in d:
-    #         image_numbers2, object_numbers2 = d[key]
-    #         r = m.get_relationships(key[0], key[1], key[2], key[3])
-    #         ri1, ro1, ri2, ro2 = [
-    #             r[key] for key in
-    #             cpmeas.R_FIRST_IMAGE_NUMBER, cpmeas.R_FIRST_OBJECT_NUMBER,
-    #             cpmeas.R_SECOND_IMAGE_NUMBER, cpmeas.R_SECOND_OBJECT_NUMBER]
-    #         order = np.lexsort((ro1, ri1))
-    #         np.testing.assert_array_equal(image_numbers1, ri1[order])
-    #         np.testing.assert_array_equal(object_numbers1, ro1[order])
-    #         np.testing.assert_array_equal(image_numbers2, ri2[order])
-    #         np.testing.assert_array_equal(object_numbers2, ro2[order])
+    def test_20_03_add_many_different_relationships(self):
+        m = cpmeas.Measurements()
+        r = np.random.RandomState()
+        r.seed(2003)
+        image_numbers1, object_numbers1 = [
+            x.flatten() for x in np.mgrid[1:4, 1:10]]
+        module_numbers = [1, 2]
+        relationship_names = ["Foo", "Bar"]
+        first_object_names = ["Nuclei", "Cells"]
+        second_object_names = ["Alice", "Bob"]
+        d = {}
+        midxs, ridxs, on1idxs, on2idxs = [
+            x.flatten() for x in np.mgrid[0:2, 0:2, 0:2, 0:2]]
+        for midx, ridx, on1idx, on2idx in zip(midxs, ridxs, on1idxs, on2idxs):
+            key = (module_numbers[midx], relationship_names[ridx],
+                   first_object_names[on1idx], second_object_names[on2idx])
+            order = r.permutation(len(image_numbers1))
+            image_numbers2, object_numbers2 = [
+                x[order] for x in image_numbers1, object_numbers1]
+            d[key] = (image_numbers2, object_numbers2)
+            m.add_relate_measurement(key[0], key[1], key[2], key[3],
+                                     image_numbers1, object_numbers1,
+                                     image_numbers2, object_numbers2)
+
+        rg = [(x.module_number, x.relationship, x.object_name1, x.object_name2)
+              for x in m.get_relationship_groups()]
+        self.assertItemsEqual(d.keys(), rg)
+
+        for key in d:
+            image_numbers2, object_numbers2 = d[key]
+            r = m.get_relationships(key[0], key[1], key[2], key[3])
+            ri1, ro1, ri2, ro2 = [
+                r[key] for key in
+                cpmeas.R_FIRST_IMAGE_NUMBER, cpmeas.R_FIRST_OBJECT_NUMBER,
+                cpmeas.R_SECOND_IMAGE_NUMBER, cpmeas.R_SECOND_OBJECT_NUMBER]
+            order = np.lexsort((ro1, ri1))
+            np.testing.assert_array_equal(image_numbers1, ri1[order])
+            np.testing.assert_array_equal(object_numbers1, ro1[order])
+            np.testing.assert_array_equal(image_numbers2, ri2[order])
+            np.testing.assert_array_equal(object_numbers2, ro2[order])
 
     def test_20_04_saved_relationships(self):
         #
@@ -1422,7 +1422,3 @@ class TestImageSetCache(unittest.TestCase):
         m.add(IMAGE_NAME, image)
         m.cache()
         m.close()
-
-
-if __name__ == "__main__":
-    unittest.main()

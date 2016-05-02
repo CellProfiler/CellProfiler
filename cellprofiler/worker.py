@@ -132,7 +132,7 @@ import cellprofiler.configuration as cpprefs
 from cellprofiler.gui.errordialog import ED_STOP, ED_SKIP
 from cellprofiler.analysis import \
     InitialMeasurementsRequest, WorkRequest, \
-    NoWorkReply, MeasurementsReport, InteractionRequest, DisplayRequest, \
+    NoWork, MeasurementsReport, InteractionRequest, DisplayRequest, \
     DisplayPostGroupRequest, AnalysisCancelRequest, \
     ExceptionReport, DebugWaiting, DebugComplete, ServerExited, ImageSetSuccess, ImageSetSuccessWithDictionary, \
     SharedDictionaryRequest, Ack, UpstreamExit, ANNOUNCE_DONE, \
@@ -140,7 +140,7 @@ from cellprofiler.analysis import \
 from message.request import PipelinePreferencesRequest, InitialMeasurementsRequest, WorkRequest, ImageSetSuccess, \
     ImageSetSuccessWithDictionary, MeasurementsReport, InteractionRequest, AnalysisCancelRequest, DisplayRequest, \
     DisplayPostGroupRequest, SharedDictionaryRequest, ExceptionReport, DebugWaiting, DebugComplete, OmeroLoginRequest
-from message.reply import InteractionReply, NoWorkReply, OmeroLoginReply, Ack, ServerExited
+from message.reply import Interaction, NoWork, OMEROLogin, Ack, ServerExited
 import javabridge as J
 from cellprofiler.utilities.run_loop import enter_run_loop, stop_run_loop
 #
@@ -323,7 +323,7 @@ class AnalysisWorker(object):
                     # fetch a job
                     job = self.send(WorkRequest(self.current_analysis_id))
 
-                    if isinstance(job, NoWorkReply):
+                    if isinstance(job, NoWork):
                         time.sleep(0.25)  # avoid hammering server
                         # no work, currently.
                         continue

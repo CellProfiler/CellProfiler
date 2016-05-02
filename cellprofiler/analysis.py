@@ -17,7 +17,7 @@ import uuid
 
 import numpy as np
 import zmq
-from message.reply import SharedDictionaryReply, WorkReply, NoWorkReply, Ack
+from message.reply import SharedDictionary, Work, NoWork, Ack
 from message.request import PipelinePreferencesRequest, InitialMeasurementsRequest, WorkRequest, ImageSetSuccess, \
     ImageSetSuccessWithDictionary, MeasurementsReport, InteractionRequest, AnalysisCancelRequest, DisplayRequest, \
     DisplayPostRunRequest, DisplayPostGroupRequest, SharedDictionaryRequest, ExceptionReport, DebugWaiting, \
@@ -605,7 +605,7 @@ class AnalysisRunner(object):
                     logger.debug("Received work request")
                     job, worker_runs_post_group, wants_dictionary = \
                         self.work_queue.get()
-                    req.reply(WorkReply(
+                    req.reply(Work(
                             image_set_numbers=job,
                             worker_runs_post_group=worker_runs_post_group,
                             wants_dictionary=wants_dictionary))
@@ -615,7 +615,7 @@ class AnalysisRunner(object):
                 else:
                     # there may be no work available, currently, but there
                     # may be some later.
-                    req.reply(NoWorkReply())
+                    req.reply(NoWork())
             elif isinstance(req, ImageSetSuccess):
                 # interface() is responsible for replying, to allow it to
                 # request the shared_state dictionary if needed.
@@ -624,7 +624,7 @@ class AnalysisRunner(object):
                 logger.debug("Enqueued ImageSetSuccess")
             elif isinstance(req, SharedDictionaryRequest):
                 logger.debug("Received shared dictionary request")
-                req.reply(SharedDictionaryReply(dictionaries=self.shared_dicts))
+                req.reply(SharedDictionary(dictionaries=self.shared_dicts))
                 logger.debug("Sent shared dictionary reply")
             elif isinstance(req, MeasurementsReport):
                 logger.debug("Received measurements report")

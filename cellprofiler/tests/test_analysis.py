@@ -116,9 +116,9 @@ class TestAnalysis(unittest.TestCase):
             '''Send a work request until we get a WorkReply'''
             while True:
                 reply = self.send(message.request.WorkRequest(self.analysis_id))()
-                if isinstance(reply, message.reply.WorkReply):
+                if isinstance(reply, message.reply.Work):
                     return reply
-                elif not isinstance(reply, message.reply.NoWorkReply):
+                elif not isinstance(reply, message.reply.NoWork):
                     raise NotImplementedError(
                             "Received a reply of %s for a work request" %
                             str(type(reply)))
@@ -321,7 +321,7 @@ class TestAnalysis(unittest.TestCase):
         with self.FakeWorker() as worker:
             worker.connect(self.analysis.runner.work_announce_address)
             response = worker.send(message.request.WorkRequest(worker.analysis_id))()
-            self.assertIsInstance(response, message.reply.WorkReply)
+            self.assertIsInstance(response, message.reply.Work)
             self.assertSequenceEqual(response.image_set_numbers, (1,))
             self.assertFalse(response.worker_runs_post_group)
             self.assertTrue(response.wants_dictionary)
@@ -334,9 +334,9 @@ class TestAnalysis(unittest.TestCase):
         with self.FakeWorker() as worker:
             worker.connect(self.analysis.runner.work_announce_address)
             response = worker.send(message.request.WorkRequest(worker.analysis_id))()
-            self.assertIsInstance(response, message.reply.WorkReply)
+            self.assertIsInstance(response, message.reply.Work)
             response = worker.send(message.request.WorkRequest(worker.analysis_id))()
-            self.assertIsInstance(response, message.reply.NoWorkReply)
+            self.assertIsInstance(response, message.reply.NoWork)
         logger.debug("Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function)
 
     def test_03_03_cancel_before_work(self):
@@ -445,9 +445,9 @@ class TestAnalysis(unittest.TestCase):
             request = self.event_queue.get()
             self.assertIsInstance(request, message.request.InteractionRequest)
             self.assertEqual(request.foo, "bar")
-            request.reply(message.reply.InteractionReply(hello="world"))
+            request.reply(message.reply.Interaction(hello="world"))
             reply = fn_interaction_reply()
-            self.assertIsInstance(reply, message.reply.InteractionReply)
+            self.assertIsInstance(reply, message.reply.Interaction)
             self.assertEqual(reply.hello, "world")
         logger.debug("Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function)
 
@@ -517,10 +517,10 @@ class TestAnalysis(unittest.TestCase):
             function = request.exc_traceback[-1][2]
             self.assertEqual(function, inspect.getframeinfo(inspect.currentframe()).function)
             self.assertEqual(request.filename, "test_analysis.py")
-            request.reply(message.reply.ExceptionPleaseDebugReply(
+            request.reply(message.reply.ExceptionPleaseDebug(
                     disposition=1, verification_hash="corned beef"))
             reply = fn_interaction_reply()
-            self.assertIsInstance(reply, message.reply.ExceptionPleaseDebugReply)
+            self.assertIsInstance(reply, message.reply.ExceptionPleaseDebug)
             self.assertEqual(reply.verification_hash, "corned beef")
             self.assertEqual(reply.disposition, 1)
             #
@@ -565,7 +565,7 @@ class TestAnalysis(unittest.TestCase):
             self.assertSequenceEqual(response.image_set_numbers, [2])
             response = worker.send(message.request.SharedDictionaryRequest(
                     worker.analysis_id))()
-            self.assertIsInstance(response, message.reply.SharedDictionaryReply)
+            self.assertIsInstance(response, message.reply.SharedDictionary)
             result = response.dictionaries
             self.assertEqual(len(dictionaries), len(result))
             for ed, d in zip(dictionaries, result):

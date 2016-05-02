@@ -1,7 +1,7 @@
-import math
-import unittest
-import numpy
 import cellprofiler.image
+import math
+import numpy
+import unittest
 
 
 class TestImage(unittest.TestCase):

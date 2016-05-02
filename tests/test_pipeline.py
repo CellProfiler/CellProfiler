@@ -1,26 +1,26 @@
 import base64
+import cellprofiler.configuration
+import cellprofiler.image
+import cellprofiler.measurement
+import cellprofiler.module
+import cellprofiler.modules
+import cellprofiler.modules.injectimage
+import cellprofiler.modules.loadimages
+import cellprofiler.modules.tests
+import cellprofiler.pipeline
+import cellprofiler.setting
+import cellprofiler.workspace
 import cProfile
 import cStringIO
+import numpy
 import os
 import pstats
 import sys
 import tempfile
 import traceback
 import unittest
-import zlib
 import urllib2
-import numpy
-import cellprofiler.image
-import cellprofiler.module
-import cellprofiler.measurement
-import cellprofiler.modules
-import cellprofiler.modules.loadimages
-import cellprofiler.pipeline
-import cellprofiler.configuration
-import cellprofiler.setting
-import cellprofiler.workspace
-import cellprofiler.modules.injectimage
-import cellprofiler.modules.tests
+import zlib
 
 IMAGE_NAME = "myimage"
 ALT_IMAGE_NAME = "altimage"

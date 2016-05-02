@@ -1,4 +1,6 @@
+import cStringIO
 import datetime
+import dateutil.parser
 import os
 import shutil
 import subprocess
@@ -6,8 +8,6 @@ import sys
 import tempfile
 import unittest
 import urllib
-import cStringIO
-import dateutil.parser
 
 if hasattr(sys, 'frozen'):
     ARGLIST_START = [sys.executable]

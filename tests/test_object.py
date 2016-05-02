@@ -1,13 +1,13 @@
 import base64
 import bz2
-import cStringIO
-import unittest
-import numpy
-import scipy.ndimage
-import centrosome.outline
 import cellprofiler.image
 import cellprofiler.object
 import cellprofiler.utilities.hdf5_dict
+import centrosome.outline
+import cStringIO
+import numpy
+import scipy.ndimage
+import unittest
 
 
 class TestObjects(unittest.TestCase):

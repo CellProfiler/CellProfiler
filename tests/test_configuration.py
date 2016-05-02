@@ -1,6 +1,6 @@
+import cellprofiler.configuration
 import tempfile
 import unittest
-import cellprofiler.configuration
 
 
 class TestPreferences(unittest.TestCase):

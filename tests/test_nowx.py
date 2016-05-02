@@ -1,9 +1,9 @@
 import __builtin__
+import cellprofiler.modules.tests
 import sys
 import tempfile
 import unittest
 import urllib2
-import cellprofiler.modules.tests
 
 
 def import_all_but_wx(name,

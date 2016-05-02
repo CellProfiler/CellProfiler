@@ -1,16 +1,16 @@
 import base64
+import cellprofiler.image
+import cellprofiler.measurement
+import cStringIO
 import gc
+import h5py
+import numpy
 import os
 import sys
 import tempfile
 import unittest
 import uuid
 import zlib
-import cStringIO
-import h5py
-import numpy
-import cellprofiler.image
-import cellprofiler.measurement
 
 OBJECT_NAME = "myobjects"
 FEATURE_NAME = "feature"

@@ -1,5 +1,5 @@
-import unittest
 import cellprofiler.setting
+import unittest
 
 
 class TestIntegerSetting(unittest.TestCase):

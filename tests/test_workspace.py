@@ -1,11 +1,11 @@
-import os
-import h5py
-import tempfile
-import unittest
 import cellprofiler.measurement
 import cellprofiler.pipeline
-import cellprofiler.workspace
 import cellprofiler.utilities.hdf5_dict
+import cellprofiler.workspace
+import h5py
+import os
+import tempfile
+import unittest
 
 
 class TestWorkspace(unittest.TestCase):

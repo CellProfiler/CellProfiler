@@ -1,19 +1,19 @@
+import cellprofiler.knime_bridge
+import cellprofiler.measurement
+import cellprofiler.modules.flagimage
+import cellprofiler.modules.identify
+import cellprofiler.modules.identifyprimaryobjects
+import cellprofiler.modules.loadimages
+import cellprofiler.modules.measureobjectsizeshape
+import cellprofiler.modules.saveimages
+import cellprofiler.pipeline
+import cellprofiler.worker
 import cStringIO
 import json
 import numpy
 import unittest
 import uuid
 import zmq
-import cellprofiler.worker
-import cellprofiler.knime_bridge
-import cellprofiler.pipeline
-import cellprofiler.measurement
-import cellprofiler.modules.identifyprimaryobjects
-import cellprofiler.modules.identify
-import cellprofiler.modules.flagimage
-import cellprofiler.modules.loadimages
-import cellprofiler.modules.measureobjectsizeshape
-import cellprofiler.modules.saveimages
 
 
 class TestKnimeBridge(unittest.TestCase):

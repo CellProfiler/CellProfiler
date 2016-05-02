@@ -16,7 +16,7 @@ import cellprofiler.pipeline as cpp
 import cellprofiler.cpmodule as cpm
 import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpmeas
-import cellprofiler.objects as cpo
+import cellprofiler.object as cpo
 import cellprofiler.workspace as cpw
 import cellprofiler.modules.applythreshold as A
 import cellprofiler.modules.identify as I
@@ -476,7 +476,7 @@ class TestApplyThreshold(unittest.TestCase):
         expected = image > T.get_otsu_threshold(image[labels == 1])
         expected[labels == 2] = image[labels == 2] > T.get_otsu_threshold(image[labels == 2])
         workspace, module = self.make_workspace(image)
-        objects = cpo.Objects()
+        objects = cpo.Object()
         objects.segmented = labels
         workspace.object_set.add_objects(objects, "HelloKitty")
         module.binary.value = A.BINARY

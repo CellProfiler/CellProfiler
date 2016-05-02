@@ -15,7 +15,7 @@ import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpmeas
 import cellprofiler.modules.identify as I
 import cellprofiler.modules.identifyprimaryobjects as ID
-import cellprofiler.objects as cpo
+import cellprofiler.object as cpo
 import cellprofiler.pipeline
 import cellprofiler.setting
 from cellprofiler.modules.injectimage import InjectImage
@@ -64,7 +64,7 @@ class test_IdentifyPrimaryObjects(unittest.TestCase):
             m.add(BINARY_IMAGE_NAME, cpi.Image(binary_image))
         object_set = cpo.ObjectSet()
         if labels is not None:
-            o = cpo.Objects()
+            o = cpo.Object()
             o.segmented = labels
             object_set.add_objects(o, MASKING_OBJECTS_NAME)
         workspace = cellprofiler.workspace.Workspace(

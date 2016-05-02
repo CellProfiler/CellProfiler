@@ -16,7 +16,7 @@ from scipy.ndimage import binary_dilation
 import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpmeas
 import cellprofiler.modules.untangleworms as U
-import cellprofiler.objects as cpo
+import cellprofiler.object as cpo
 import cellprofiler.pipeline as cpp
 import cellprofiler.setting as cps
 import cellprofiler.workspace as cpw
@@ -2779,7 +2779,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         object_set = workspace.object_set
         self.assertTrue(isinstance(object_set, cpo.ObjectSet))
         worms = object_set.get_objects(OVERLAP_OBJECTS_NAME)
-        self.assertTrue(isinstance(worms, cpo.Objects))
+        self.assertTrue(isinstance(worms, cpo.Object))
         worm_ijv = worms.get_ijv()
         self.assertEqual(np.max(worm_ijv[:, 2]), 15)
         m = workspace.measurements

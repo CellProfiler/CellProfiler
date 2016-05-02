@@ -17,7 +17,7 @@ import cellprofiler.modules.identifytertiaryobjects as cpmit
 import cellprofiler.workspace as cpw
 import cellprofiler.pipeline as cpp
 import cellprofiler.cpimage as cpi
-import cellprofiler.objects as cpo
+import cellprofiler.object as cpo
 import cellprofiler.measurements as cpm
 
 PRIMARY = "primary"
@@ -55,7 +55,7 @@ class TestIdentifyTertiaryObjects(unittest.TestCase):
 
         for labels, name in ((primary_labels, PRIMARY),
                              (secondary_labels, SECONDARY)):
-            objects = cpo.Objects()
+            objects = cpo.Object()
             objects.segmented = labels
             workspace.object_set.add_objects(objects, name)
         return workspace

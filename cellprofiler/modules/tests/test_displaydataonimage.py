@@ -16,7 +16,7 @@ import cellprofiler.workspace as cpw
 import cellprofiler.cpgridinfo as cpg
 import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
-import cellprofiler.objects as cpo
+import cellprofiler.object as cpo
 import cellprofiler.measurements as cpmeas
 import cellprofiler.pipeline as cpp
 import cellprofiler.modules.displaydataonimage as D
@@ -290,7 +290,7 @@ DisplayDataOnImage:[module_num:2|svn_version:\'Unknown\'|variable_revision_numbe
                 image = np.zeros((50, 120))
         else:
             module.objects_or_image.value = D.OI_OBJECTS
-            o = cpo.Objects()
+            o = cpo.Object()
             o.segmented = labels
             object_set.add_objects(o, OBJECTS_NAME)
             m.add_measurement(OBJECTS_NAME, MEASUREMENT_NAME, np.array(measurement))

@@ -17,7 +17,7 @@ import cellprofiler.pipeline as cpp
 import cellprofiler.cpmodule as cpm
 import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpmeas
-import cellprofiler.objects as cpo
+import cellprofiler.object as cpo
 import cellprofiler.workspace as cpw
 import cellprofiler.modules.convertobjectstoimage as C
 
@@ -39,7 +39,7 @@ class TestConvertObjectsToImage(unittest.TestCase):
                                   object_set,
                                   cpmeas.Measurements(),
                                   image_set_list)
-        objects = cpo.Objects()
+        objects = cpo.Object()
         objects.segmented = labels
         object_set.add_objects(objects, OBJECTS_NAME)
         module.image_name.value = IMAGE_NAME
@@ -174,7 +174,7 @@ class TestConvertObjectsToImage(unittest.TestCase):
                                   object_set,
                                   cpmeas.Measurements(),
                                   image_set_list)
-        objects = cpo.Objects()
+        objects = cpo.Object()
         objects.set_ijv(ijv, shape)
         object_set.add_objects(objects, OBJECTS_NAME)
         self.assertGreater(len(objects.get_labels()), 1)

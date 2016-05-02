@@ -60,7 +60,7 @@ cached_file_lists = {}
 import scipy.io.matlab.mio
 import uuid
 
-import cellprofiler.objects as cpo
+import cellprofiler.object as cpo
 import cellprofiler.cpmodule as cpmodule
 import cellprofiler.cpimage as cpimage
 import cellprofiler.measurements as cpmeas
@@ -2249,7 +2249,7 @@ class LoadImages(cpmodule.CPModule):
                                                   labels[labels != 0] + offset))))
                         if ijv.shape[0] > 0:
                             offset = np.max(ijv[:, 2])
-                    o = cpo.Objects()
+                    o = cpo.Object()
                     o.set_ijv(ijv, shape)
                     object_set = workspace.object_set
                     assert isinstance(object_set, cpo.ObjectSet)

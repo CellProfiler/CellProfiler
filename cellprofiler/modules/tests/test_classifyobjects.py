@@ -16,7 +16,7 @@ import cellprofiler.workspace as cpw
 import cellprofiler.cpgridinfo as cpg
 import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
-import cellprofiler.objects as cpo
+import cellprofiler.object as cpo
 import cellprofiler.measurements as cpmeas
 import cellprofiler.pipeline as cpp
 import cellprofiler.modules.classifyobjects as C
@@ -279,7 +279,7 @@ class TestClassifyObjects(unittest.TestCase):
     def make_workspace(self, labels, contrast_choice,
                        measurement1=None, measurement2=None):
         object_set = cpo.ObjectSet()
-        objects = cpo.Objects()
+        objects = cpo.Object()
         objects.segmented = labels
         object_set.add_objects(objects, OBJECTS_NAME)
 

@@ -45,7 +45,7 @@ from scipy.ndimage import mean as mean_of_labels
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
-import cellprofiler.objects as cpo
+import cellprofiler.object as cpo
 import cellprofiler.configuration as cpprefs
 import cellprofiler.setting as cps
 import identify as I
@@ -257,7 +257,7 @@ class IdentifyDeadWorms(cpm.CPModule):
         #
         object_set = workspace.object_set
         assert isinstance(object_set, cpo.ObjectSet)
-        objects = cpo.Objects()
+        objects = cpo.Object()
         objects.segmented = labels
         objects.parent_image = image
         object_set.add_objects(objects, object_name)

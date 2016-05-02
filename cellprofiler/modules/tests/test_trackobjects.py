@@ -20,7 +20,7 @@ import cellprofiler.pipeline as cpp
 import cellprofiler.cpmodule as cpm
 import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpmeas
-import cellprofiler.objects as cpo
+import cellprofiler.object as cpo
 import cellprofiler.workspace as cpw
 from centrosome.filter import permutations
 
@@ -495,7 +495,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         first = True
         for labels, index in zip(labels_list, range(len(labels_list))):
             object_set = cpo.ObjectSet()
-            objects = cpo.Objects()
+            objects = cpo.Object()
             objects.segmented = labels
             object_set.add_objects(objects, OBJECT_NAME)
             image_set = image_set_list.get_image_set(index)
@@ -1874,7 +1874,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
 
         first = True
         object_set = cpo.ObjectSet()
-        objects = cpo.Objects()
+        objects = cpo.Object()
         objects.segmented = np.zeros((640, 480), int)
         object_set.add_objects(objects, OBJECT_NAME)
         image_set = image_set_list.get_image_set(0)

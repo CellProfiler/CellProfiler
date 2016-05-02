@@ -17,7 +17,7 @@ import cellprofiler.pipeline as cpp
 import cellprofiler.cpmodule as cpm
 import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpmeas
-import cellprofiler.objects as cpo
+import cellprofiler.object as cpo
 import cellprofiler.workspace as cpw
 import cellprofiler.modules.relateobjects as R
 
@@ -58,14 +58,14 @@ class TestRelateObjects(unittest.TestCase):
                                   object_set,
                                   m,
                                   image_set_list)
-        o = cpo.Objects()
+        o = cpo.Object()
         if parents.shape[1] == 3:
             # IJV format
             o.ijv = parents
         else:
             o.segmented = parents
         object_set.add_objects(o, PARENT_OBJECTS)
-        o = cpo.Objects()
+        o = cpo.Object()
         if children.shape[1] == 3:
             o.ijv = children
         else:

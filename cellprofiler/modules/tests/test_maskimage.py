@@ -14,7 +14,7 @@ set_headless()
 
 import cellprofiler.workspace as cpw
 import cellprofiler.pipeline as cpp
-import cellprofiler.objects as cpo
+import cellprofiler.object as cpo
 import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpmeas
 import cellprofiler.modules.maskimage as M
@@ -159,7 +159,7 @@ class TestMaskImage(unittest.TestCase):
         labels[2:5, 3:8] = 1
         labels[5:8, 10:14] = 2
         object_set = cpo.ObjectSet()
-        objects = cpo.Objects()
+        objects = cpo.Object()
         objects.segmented = labels
         object_set.add_objects(objects, OBJECTS_NAME)
 
@@ -194,7 +194,7 @@ class TestMaskImage(unittest.TestCase):
         labels[2:5, 3:8] = 1
         labels[5:8, 10:14] = 2
         object_set = cpo.ObjectSet()
-        objects = cpo.Objects()
+        objects = cpo.Object()
         objects.segmented = labels
         object_set.add_objects(objects, OBJECTS_NAME)
 
@@ -229,7 +229,7 @@ class TestMaskImage(unittest.TestCase):
         labels[2:5, 3:8] = 1
         labels[5:8, 10:14] = 2
         object_set = cpo.ObjectSet()
-        objects = cpo.Objects()
+        objects = cpo.Object()
         objects.segmented = labels
         object_set.add_objects(objects, OBJECTS_NAME)
 

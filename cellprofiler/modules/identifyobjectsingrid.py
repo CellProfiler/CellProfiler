@@ -46,7 +46,7 @@ import cellprofiler.cpgridinfo as cpg
 import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
-import cellprofiler.objects as cpo
+import cellprofiler.object as cpo
 import cellprofiler.setting as cps
 from cellprofiler.gui.help import HELP_ON_MEASURING_DISTANCES
 from cellprofiler.gui.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
@@ -209,7 +209,7 @@ class IdentifyObjectsInGrid(cpm.CPModule):
             labels = self.run_natural_circle(workspace, gridding)
         elif self.shape_choice == SHAPE_NATURAL:
             labels = self.run_natural(workspace, gridding)
-        objects = cpo.Objects()
+        objects = cpo.Object()
         objects.segmented = labels
         object_count = gridding.rows * gridding.columns
         workspace.object_set.add_objects(objects,

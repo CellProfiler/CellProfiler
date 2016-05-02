@@ -16,7 +16,7 @@ import cellprofiler.pipeline as cpp
 import cellprofiler.cpmodule as cpm
 import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpmeas
-import cellprofiler.objects as cpo
+import cellprofiler.object as cpo
 import cellprofiler.workspace as cpw
 import cellprofiler.modules.measureobjectneighbors as M
 
@@ -46,14 +46,14 @@ class TestMeasureObjectNeighbors(unittest.TestCase):
                                   object_set,
                                   measurements,
                                   image_set_list)
-        objects = cpo.Objects()
+        objects = cpo.Object()
         objects.segmented = labels
         object_set.add_objects(objects, OBJECTS_NAME)
         if neighbors_labels is None:
             module.neighbors_name.value = OBJECTS_NAME
         else:
             module.neighbors_name.value = NEIGHBORS_NAME
-            objects = cpo.Objects()
+            objects = cpo.Object()
             objects.segmented = neighbors_labels
             object_set.add_objects(objects, NEIGHBORS_NAME)
         return workspace, module
@@ -414,7 +414,7 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
         object_set = workspace.object_set
         self.assertTrue(isinstance(object_set, cpo.ObjectSet))
         objects = object_set.get_objects(OBJECTS_NAME)
-        self.assertTrue(isinstance(objects, cpo.Objects))
+        self.assertTrue(isinstance(objects, cpo.Object))
 
         sm_labels = labels.copy() * 3
         sm_labels[-1, -1] = 1
@@ -451,7 +451,7 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
         object_set = workspace.object_set
         self.assertTrue(isinstance(object_set, cpo.ObjectSet))
         objects = object_set.get_objects(OBJECTS_NAME)
-        self.assertTrue(isinstance(objects, cpo.Objects))
+        self.assertTrue(isinstance(objects, cpo.Object))
 
         # Needs 2 objects to trigger the bug
         sm_labels = np.zeros((10, 10), int)

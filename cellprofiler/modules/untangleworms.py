@@ -84,7 +84,7 @@ logger = logging.getLogger(__name__)
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.cpimage as cpi
-import cellprofiler.objects as cpo
+import cellprofiler.object as cpo
 import cellprofiler.setting as cps
 from cellprofiler.setting import YES, NO
 import centrosome.cpmorphology as morph
@@ -853,7 +853,7 @@ class UntangleWorms(cpm.CPModule):
 
         object_names = []
         if self.overlap in (OO_WITH_OVERLAP, OO_BOTH):
-            o = cpo.Objects()
+            o = cpo.Object()
             o.ijv = ijv
             o.parent_image = image
             name = self.overlap_objects.value
@@ -904,7 +904,7 @@ class UntangleWorms(cpm.CPModule):
             labels = coo.coo_matrix((ijv[:, 2], (ijv[:, 0], ijv[:, 1])), mask.shape)
             labels = labels.toarray()
             labels[~ mask] = 0
-            o = cpo.Objects()
+            o = cpo.Object()
             o.segmented = labels
             o.parent_image = image
             name = self.nonoverlapping_objects.value

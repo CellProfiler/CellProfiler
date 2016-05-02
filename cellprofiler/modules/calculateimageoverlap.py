@@ -70,7 +70,7 @@ from scipy.sparse import coo_matrix
 
 import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
-import cellprofiler.objects as cpo
+import cellprofiler.object as cpo
 import cellprofiler.measurements as cpmeas
 import cellprofiler.setting as cps
 import centrosome.cpmorphology as morph
@@ -351,9 +351,9 @@ class CalculateImageOverlap(cpm.CPModule):
                                 adjusted_rand_index)
 
         if self.wants_emd:
-            test_objects = cpo.Objects()
+            test_objects = cpo.Object()
             test_objects.segmented = test_labels
-            ground_truth_objects = cpo.Objects()
+            ground_truth_objects = cpo.Object()
             ground_truth_objects.segmented = ground_truth_labels
             emd = self.compute_emd(test_objects, ground_truth_objects)
             m.add_image_measurement(

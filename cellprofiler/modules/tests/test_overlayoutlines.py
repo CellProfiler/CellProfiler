@@ -15,7 +15,7 @@ import cellprofiler.pipeline as cpp
 import cellprofiler.cpmodule as cpm
 import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpmeas
-import cellprofiler.objects as cpo
+import cellprofiler.object as cpo
 import cellprofiler.workspace as cpw
 
 import cellprofiler.modules.overlayoutlines as O
@@ -40,7 +40,7 @@ class TestOverlayOutlines(unittest.TestCase):
             m.add(OUTLINE_NAME, cpi.Image(outline))
             module.outlines[0].outline_choice.value = O.FROM_IMAGES
         if labels is not None:
-            objects = cpo.Objects()
+            objects = cpo.Object()
             if len(labels) > 1:
                 ijv = np.vstack(
                         [np.column_stack(list(np.where(l > 0)) + [l[l > 0]])

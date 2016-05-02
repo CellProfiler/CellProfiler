@@ -114,7 +114,7 @@ import numpy as np
 import scipy.ndimage as scind
 
 import cellprofiler.cpmodule as cpm
-import cellprofiler.objects as cpo
+import cellprofiler.object as cpo
 import cellprofiler.setting as cps
 from cellprofiler.setting import YES, NO
 import centrosome.zernike as cpmz
@@ -294,7 +294,7 @@ class MeasureObjectSizeShape(cpm.CPModule):
     def run_on_objects(self, object_name, workspace):
         """Run, computing the area measurements for a single map of objects"""
         objects = workspace.get_objects(object_name)
-        assert isinstance(objects, cpo.Objects)
+        assert isinstance(objects, cpo.Object)
         #
         # Do the ellipse-related measurements
         #

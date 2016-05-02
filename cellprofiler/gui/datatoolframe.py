@@ -8,7 +8,7 @@ import cellprofiler.gui.cpfigure
 import cellprofiler.gui.moduleview
 import cellprofiler.measurements
 import cellprofiler.modules
-import cellprofiler.objects
+import cellprofiler.object
 import cellprofiler.pipeline
 import cellprofiler.configuration
 import cellprofiler.workspace
@@ -207,7 +207,7 @@ class DataToolFrame(wx.Frame):
         workspace = cellprofiler.workspace.Workspace(self.pipeline,
                                                      self.module,
                                                      image_set,
-                                                     cellprofiler.objects.ObjectSet(),
+                                                     cellprofiler.object.ObjectSet(),
                                                      self.measurements,
                                                      image_set_list,
                                                      frame=self)

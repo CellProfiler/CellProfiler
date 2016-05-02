@@ -26,7 +26,7 @@ import cellprofiler.cpmodule as CPM
 import cellprofiler.measurements as measurements
 import cellprofiler.modules.loadimages as LI
 import cellprofiler.modules.tests as T
-import cellprofiler.objects as cpo
+import cellprofiler.object as cpo
 import cellprofiler.pipeline as cpp
 import cellprofiler.pipeline as P
 import cellprofiler.configuration as cpprefs

@@ -13,7 +13,7 @@ set_headless()
 import cellprofiler.pipeline as cpp
 import cellprofiler.measurements as cpm
 import cellprofiler.cpimage as cpi
-import cellprofiler.objects as cpo
+import cellprofiler.object as cpo
 
 import cellprofiler.modules.injectimage as cpm_inject
 import cellprofiler.modules.colortogray as cpm_ctg

@@ -16,7 +16,7 @@ import cellprofiler.pipeline as cpp
 import cellprofiler.cpmodule as cpm
 import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpmeas
-import cellprofiler.objects as cpo
+import cellprofiler.object as cpo
 import cellprofiler.workspace as cpw
 import cellprofiler.modules.measuregranularity as M
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
@@ -190,7 +190,7 @@ MeasureGranularity:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
         pipeline.add_module(module)
         object_set = cpo.ObjectSet()
         if labels is not None:
-            objects = cpo.Objects()
+            objects = cpo.Object()
             objects.segmented = labels
             object_set.add_objects(objects, OBJECTS_NAME)
             image_setting.add_objects()

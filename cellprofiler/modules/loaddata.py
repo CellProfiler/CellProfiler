@@ -166,7 +166,7 @@ except:
 import matplotlib.mlab
 
 import cellprofiler.cpmodule as cpm
-import cellprofiler.objects as cpo
+import cellprofiler.object as cpo
 import cellprofiler.measurements as cpmeas
 import cellprofiler.setting as cps
 from cellprofiler.setting import YES, NO
@@ -1108,7 +1108,7 @@ class LoadData(cpm.CPModule):
                         objects_name, m, is_image_name=False)
                 image = provider.provide_image(workspace.image_set)
                 pixel_data = convert_image_to_objects(image.pixel_data)
-                o = cpo.Objects()
+                o = cpo.Object()
                 o.segmented = pixel_data
                 object_set.add_objects(o, objects_name)
                 I.add_object_count_measurements(m, objects_name, o.count)

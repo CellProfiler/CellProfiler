@@ -20,7 +20,7 @@ import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.modules.measuretexture as M
-import cellprofiler.objects as cpo
+import cellprofiler.object as cpo
 import cellprofiler.pipeline as cpp
 import cellprofiler.configuration as cpprefs
 import cellprofiler.workspace as cpw
@@ -50,7 +50,7 @@ class TestMeasureTexture(unittest.TestCase):
                                   image_set_list)
         image_set.add(INPUT_IMAGE_NAME, cpi.Image(image, convert=convert,
                                                   mask=mask))
-        objects = cpo.Objects()
+        objects = cpo.Object()
         objects.segmented = labels
         object_set.add_objects(objects, INPUT_OBJECTS_NAME)
         return workspace, module

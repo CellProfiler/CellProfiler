@@ -65,7 +65,7 @@ from centrosome.filter import stretch
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
-import cellprofiler.objects as cpo
+import cellprofiler.object as cpo
 import cellprofiler.setting as cps
 from identify import C_LOCATION
 

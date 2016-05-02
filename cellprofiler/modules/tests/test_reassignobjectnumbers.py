@@ -17,7 +17,7 @@ import cellprofiler.pipeline as cpp
 import cellprofiler.cpmodule as cpm
 import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpmeas
-import cellprofiler.objects as cpo
+import cellprofiler.object as cpo
 import cellprofiler.workspace as cpw
 import cellprofiler.modules.reassignobjectnumbers as R
 import cellprofiler.modules.identify as I
@@ -282,7 +282,7 @@ ReassignObjectNumbers:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
             module.image_name.value = IMAGE_NAME
 
         object_set = cpo.ObjectSet()
-        o = cpo.Objects()
+        o = cpo.Object()
         o.segmented = input_labels
         object_set.add_objects(o, INPUT_OBJECTS_NAME)
 

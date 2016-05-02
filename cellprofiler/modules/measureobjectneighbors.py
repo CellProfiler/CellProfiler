@@ -49,7 +49,7 @@ from centrosome.outline import outline
 import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
-import cellprofiler.objects as cpo
+import cellprofiler.object as cpo
 import cellprofiler.configuration as cpprefs
 import cellprofiler.setting as cps
 import cellprofiler.workspace as cpw
@@ -203,13 +203,13 @@ class MeasureObjectNeighbors(cpm.CPModule):
 
     def run(self, workspace):
         objects = workspace.object_set.get_objects(self.object_name.value)
-        assert isinstance(objects, cpo.Objects)
+        assert isinstance(objects, cpo.Object)
         has_pixels = objects.areas > 0
         labels = objects.small_removed_segmented
         kept_labels = objects.segmented
         neighbor_objects = workspace.object_set.get_objects(
                 self.neighbors_name.value)
-        assert isinstance(neighbor_objects, cpo.Objects)
+        assert isinstance(neighbor_objects, cpo.Object)
         neighbor_labels = neighbor_objects.small_removed_segmented
         #
         # Need to add in labels touching border.

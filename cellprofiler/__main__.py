@@ -746,7 +746,7 @@ def write_schema(pipeline_filename):
 
     import cellprofiler.pipeline as cpp
     import cellprofiler.measurements as cpmeas
-    import cellprofiler.objects as cpo
+    import cellprofiler.object as cpo
     import cellprofiler.workspace as cpw
     pipeline = cpp.Pipeline()
     pipeline.load(pipeline_filename)

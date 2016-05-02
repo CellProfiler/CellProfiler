@@ -10,7 +10,7 @@ import scipy.ndimage
 from centrosome.outline import outline
 
 import cellprofiler.cpimage as cpi
-import cellprofiler.objects as cpo
+import cellprofiler.object as cpo
 from cellprofiler.utilities.hdf5_dict import HDF5ObjectSet
 
 
@@ -27,44 +27,44 @@ class TestObjects(unittest.TestCase):
         self.__small_removed_segmented10[self.__segmented10 == 1] = 0
 
     def relate_ijv(self, parent_ijv, children_ijv):
-        p = cpo.Objects()
+        p = cpo.Object()
         p.ijv = parent_ijv
-        c = cpo.Objects()
+        c = cpo.Object()
         c.ijv = children_ijv
         return p.relate_children(c)
 
     def test_01_01_set_segmented(self):
-        x = cpo.Objects()
+        x = cpo.Object()
         x.set_segmented(self.__segmented10)
         self.assertTrue((self.__segmented10 == x.segmented).all())
 
     def test_01_02_segmented(self):
-        x = cpo.Objects()
+        x = cpo.Object()
         x.segmented = self.__segmented10
         self.assertTrue((self.__segmented10 == x.segmented).all())
 
     def test_01_03_set_unedited_segmented(self):
-        x = cpo.Objects()
+        x = cpo.Object()
         x.set_unedited_segmented(self.__unedited_segmented10)
         self.assertTrue((self.__unedited_segmented10 == x.unedited_segmented).all())
 
     def test_01_04_unedited_segmented(self):
-        x = cpo.Objects()
+        x = cpo.Object()
         x.unedited_segmented = self.__unedited_segmented10
         self.assertTrue((self.__unedited_segmented10 == x.unedited_segmented).all())
 
     def test_01_05_set_small_removed_segmented(self):
-        x = cpo.Objects()
+        x = cpo.Object()
         x.set_small_removed_segmented(self.__small_removed_segmented10)
         self.assertTrue((self.__small_removed_segmented10 == x.small_removed_segmented).all())
 
     def test_01_06_unedited_segmented(self):
-        x = cpo.Objects()
+        x = cpo.Object()
         x.small_removed_segmented = self.__small_removed_segmented10
         self.assertTrue((self.__small_removed_segmented10 == x.small_removed_segmented).all())
 
     def test_02_01_set_all(self):
-        x = cpo.Objects()
+        x = cpo.Object()
         x.segmented = self.__segmented10
         x.unedited_segmented = self.__unedited_segmented10
         x.small_removed_segmented = self.__small_removed_segmented10
@@ -75,7 +75,7 @@ class TestObjects(unittest.TestCase):
     #     self.assertTrue((x.unedited_segmented==x.segmented).all())
 
     def test_03_02_default_small_removed_segmented(self):
-        x = cpo.Objects()
+        x = cpo.Object()
         x.segmented = self.__segmented10
         self.assertTrue((x.small_removed_segmented == self.__segmented10).all())
         x.unedited_segmented = self.__unedited_segmented10
@@ -83,18 +83,18 @@ class TestObjects(unittest.TestCase):
 
     def test_05_01_relate_zero_parents_and_children(self):
         """Test the relate method if both parent and child label matrices are zeros"""
-        x = cpo.Objects()
+        x = cpo.Object()
         x.segmented = np.zeros((10, 10), int)
-        y = cpo.Objects()
+        y = cpo.Object()
         y.segmented = np.zeros((10, 10), int)
         children_per_parent, parents_of_children = x.relate_children(y)
         self.assertEqual(np.product(children_per_parent.shape), 0)
         self.assertEqual(np.product(parents_of_children.shape), 0)
 
     def test_05_02_relate_zero_parents_one_child(self):
-        x = cpo.Objects()
+        x = cpo.Object()
         x.segmented = np.zeros((10, 10), int)
-        y = cpo.Objects()
+        y = cpo.Object()
         labels = np.zeros((10, 10), int)
         labels[3:6, 3:6] = 1
         y.segmented = labels
@@ -104,11 +104,11 @@ class TestObjects(unittest.TestCase):
         self.assertEqual(parents_of_children[0], 0)
 
     def test_05_03_relate_one_parent_no_children(self):
-        x = cpo.Objects()
+        x = cpo.Object()
         labels = np.zeros((10, 10), int)
         labels[3:6, 3:6] = 1
         x.segmented = labels
-        y = cpo.Objects()
+        y = cpo.Object()
         y.segmented = np.zeros((10, 10), int)
         children_per_parent, parents_of_children = x.relate_children(y)
         self.assertEqual(np.product(children_per_parent.shape), 1)
@@ -116,11 +116,11 @@ class TestObjects(unittest.TestCase):
         self.assertEqual(np.product(parents_of_children.shape), 0)
 
     def test_05_04_relate_one_parent_one_child(self):
-        x = cpo.Objects()
+        x = cpo.Object()
         labels = np.zeros((10, 10), int)
         labels[3:6, 3:6] = 1
         x.segmented = labels
-        y = cpo.Objects()
+        y = cpo.Object()
         y.segmented = labels
         children_per_parent, parents_of_children = x.relate_children(y)
         self.assertEqual(np.product(children_per_parent.shape), 1)
@@ -129,12 +129,12 @@ class TestObjects(unittest.TestCase):
         self.assertEqual(parents_of_children[0], 1)
 
     def test_05_05_relate_two_parents_one_child(self):
-        x = cpo.Objects()
+        x = cpo.Object()
         labels = np.zeros((10, 10), int)
         labels[3:6, 3:6] = 1
         labels[3:6, 7:9] = 2
         x.segmented = labels
-        y = cpo.Objects()
+        y = cpo.Object()
         labels = np.zeros((10, 10), int)
         labels[3:6, 5:9] = 1
         y.segmented = labels
@@ -146,11 +146,11 @@ class TestObjects(unittest.TestCase):
         self.assertEqual(parents_of_children[0], 2)
 
     def test_05_06_relate_one_parent_two_children(self):
-        x = cpo.Objects()
+        x = cpo.Object()
         labels = np.zeros((10, 10), int)
         labels[3:6, 3:9] = 1
         x.segmented = labels
-        y = cpo.Objects()
+        y = cpo.Object()
         labels = np.zeros((10, 10), int)
         labels[3:6, 3:6] = 1
         labels[3:6, 7:9] = 2
@@ -290,7 +290,7 @@ class TestObjects(unittest.TestCase):
 
     def test_06_01_segmented_to_ijv(self):
         '''Convert the segmented representation to an IJV one'''
-        x = cpo.Objects()
+        x = cpo.Object()
         np.random.seed(61)
         labels = np.random.randint(0, 10, size=(20, 20))
         x.segmented = labels
@@ -301,7 +301,7 @@ class TestObjects(unittest.TestCase):
 
     def test_06_02_ijv_to_labels_empty(self):
         '''Convert a blank ijv representation to labels'''
-        x = cpo.Objects()
+        x = cpo.Object()
         x.ijv = np.zeros((0, 3), int)
         y = x.get_labels()
         self.assertEqual(len(y), 1)
@@ -311,14 +311,14 @@ class TestObjects(unittest.TestCase):
 
     def test_06_03_ijv_to_labels_simple(self):
         '''Convert an ijv representation w/o overlap to labels'''
-        x = cpo.Objects()
+        x = cpo.Object()
         np.random.seed(63)
         labels = np.zeros((20, 20), int)
         labels[1:-1, 1:-1] = np.random.randint(0, 10, size=(18, 18))
 
         x.segmented = labels
         ijv = x.get_ijv()
-        x = cpo.Objects()
+        x = cpo.Object()
         x.ijv = ijv
         x.parent_image = cpi.Image(np.zeros(labels.shape))
         labels_out = x.get_labels()
@@ -341,7 +341,7 @@ class TestObjects(unittest.TestCase):
                         [4, 5, 4],
                         [4, 5, 5],
                         [5, 5, 5]])
-        x = cpo.Objects()
+        x = cpo.Object()
         x.ijv = ijv
         labels = x.get_labels()
         self.assertEqual(len(labels), 2)
@@ -364,7 +364,7 @@ class TestObjects(unittest.TestCase):
         ijv = np.array([[4, 5, 1],
                         [4, 5, 2],
                         [4, 5, 3]])
-        x = cpo.Objects()
+        x = cpo.Object()
         x.set_ijv(ijv, (8, 9))
         labels = []
         indices = np.zeros(3, bool)
@@ -384,14 +384,14 @@ class TestObjects(unittest.TestCase):
 
     def test_07_00_make_ivj_outlines_empty(self):
         np.random.seed(70)
-        x = cpo.Objects()
+        x = cpo.Object()
         x.segmented = np.zeros((10, 20), int)
         image = x.make_ijv_outlines(np.random.uniform(size=(5, 3)))
         self.assertTrue(np.all(image == 0))
 
     def test_07_01_make_ijv_outlines(self):
         np.random.seed(70)
-        x = cpo.Objects()
+        x = cpo.Object()
         ii, jj = np.mgrid[0:10, 0:20]
         masks = [(ii - ic) ** 2 + (jj - jc) ** 2 < r ** 2
                  for ic, jc, r in ((4, 5, 5), (4, 12, 5), (6, 8, 5))]
@@ -538,9 +538,9 @@ class TestObjects(unittest.TestCase):
              'yHi9D/Zh1YXpNSuDg3nMuV+zU3OZzbX4YIcrm1mhFDDE04GWL/kNGIbqIbGB6PU7nVrJsrdEwpdC'
              '0586EWcLZ2bTo9dlylZc3P6YeRkHtaKSSX/4u5IpwoSDIuO2gA==')
         stream = cStringIO.StringIO(bz2.decompress(base64.b64decode(d)))
-        x = cpo.Objects()
+        x = cpo.Object()
         x.segmented = np.load(stream)
-        y = cpo.Objects()
+        y = cpo.Object()
         y.segmented = np.load(stream)
         labels_children_per_parent, labels_parents_of_children = x.relate_children(y)
         # force generation of ijv
@@ -554,7 +554,7 @@ class TestObjects(unittest.TestCase):
         from cellprofiler.utilities.hdf5_dict import HDF5ObjectSet
         import os
         import tempfile
-        x = cpo.Objects()
+        x = cpo.Object()
         r = np.random.RandomState()
         r.seed(81)
         segmented_unedited = r.randint(0, 5, size=(10, 15))
@@ -565,7 +565,7 @@ class TestObjects(unittest.TestCase):
         x.segmented = segmented
         x.small_removed_segmented = segmented_small_removed
         x.unedited_segmented = segmented_unedited
-        y = cpo.Objects()
+        y = cpo.Object()
         y.segmented = segmented
         y.small_removed_segmented = segmented_small_removed
         y.unedited_segmented = segmented_unedited

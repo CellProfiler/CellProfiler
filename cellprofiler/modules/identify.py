@@ -20,7 +20,7 @@ from centrosome.threshold import weighted_variance, sum_of_entropies
 import cellprofiler.cpmodule
 import cellprofiler.icons
 import cellprofiler.measurements as cpmeas
-import cellprofiler.objects
+import cellprofiler.object
 import cellprofiler.setting as cps
 from cellprofiler.gui.help import HELP_ON_PIXEL_INTENSITIES
 

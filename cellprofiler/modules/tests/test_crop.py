@@ -17,7 +17,7 @@ import cellprofiler.pipeline as cpp
 import cellprofiler.cpimage as cpi
 import cellprofiler.modules.crop as cpmc
 import cellprofiler.measurements as cpm
-import cellprofiler.objects as cpo
+import cellprofiler.object as cpo
 import cellprofiler.configuration as cpprefs
 
 INPUT_IMAGE = "input_image"
@@ -50,7 +50,7 @@ class TestCrop(unittest.TestCase):
             module.cropping_mask_source.value = CROPPING
         object_set = cpo.ObjectSet()
         if crop_objects is not None:
-            objects = cpo.Objects()
+            objects = cpo.Object()
             objects.segmented = crop_objects
             object_set.add_objects(objects, CROP_OBJECTS)
 

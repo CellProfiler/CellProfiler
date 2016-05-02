@@ -40,7 +40,7 @@ pipeline_stats_logger = logging.getLogger("PipelineStatistics")
 import cellprofiler.configuration as cpprefs
 import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpmeas
-import cellprofiler.objects as cpo
+import cellprofiler.object as cpo
 import cellprofiler.workspace as cpw
 import cellprofiler.setting as cps
 from cellprofiler.utilities.utf16encode import utf16encode, utf16decode
@@ -1612,7 +1612,7 @@ class Pipeline(object):
                      form of a numpy array.
         """
         import cellprofiler.setting as cps
-        from cellprofiler import objects as cpo
+        from cellprofiler import object as cpo
 
         output_image_names = self.find_external_output_images()
         input_image_names = self.find_external_input_images()

@@ -17,7 +17,7 @@ import cellprofiler.icons
 import cellprofiler.measurements
 import cellprofiler.modules.loadimages
 import cellprofiler.modules.loadimages
-import cellprofiler.objects
+import cellprofiler.object
 import cellprofiler.pipeline
 import cellprofiler.configuration
 import cellprofiler.utilities.version
@@ -2768,7 +2768,7 @@ class PipelineController(object):
         self.__debug_measurements = cellprofiler.measurements.Measurements(
             copy=self.__workspace.measurements,
             mode="memory")
-        self.__debug_object_set = cellprofiler.objects.ObjectSet(can_overwrite=True)
+        self.__debug_object_set = cellprofiler.object.ObjectSet(can_overwrite=True)
         self.__frame.enable_debug_commands()
         assert isinstance(self.__pipeline, cellprofiler.pipeline.Pipeline)
         self.__debug_image_set_list = cellprofiler.cpimage.ImageSetList(True)

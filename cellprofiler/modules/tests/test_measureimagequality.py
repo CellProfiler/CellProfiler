@@ -19,7 +19,7 @@ import cellprofiler.modules.smooth
 import cellprofiler.pipeline as cpp
 import cellprofiler.workspace as cpw
 import cellprofiler.cpimage as cpi
-import cellprofiler.objects as cpo
+import cellprofiler.object as cpo
 import cellprofiler.measurements as cpmeas
 import centrosome.threshold as cpthresh
 
@@ -37,7 +37,7 @@ class TestMeasureImageQuality(unittest.TestCase):
             image.mask = mask
         image_set.add(MY_IMAGE, image)
         if not objects is None:
-            o = cpo.Objects()
+            o = cpo.Object()
             o.segmented = objects
             object_set.add_objects(o, MY_OBJECTS)
         module = miq.MeasureImageQuality()

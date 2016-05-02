@@ -48,7 +48,7 @@ from scipy.ndimage import binary_erosion, grey_dilation, grey_erosion
 import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
-import cellprofiler.objects as cpo
+import cellprofiler.object as cpo
 import cellprofiler.configuration as cpprefs
 import cellprofiler.setting as cps
 from cellprofiler.setting import YES, NO

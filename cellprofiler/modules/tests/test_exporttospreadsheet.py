@@ -17,7 +17,7 @@ set_headless()
 
 import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpmeas
-import cellprofiler.objects as cpo
+import cellprofiler.object as cpo
 import cellprofiler.configuration as cpprefs
 import cellprofiler.pipeline as cpp
 import cellprofiler.workspace as cpw
@@ -805,7 +805,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
-        object_set.add_objects(cpo.Objects(), "my_object")
+        object_set.add_objects(cpo.Object(), "my_object")
         workspace = cpw.Workspace(self.make_measurements_pipeline(m),
                                   module,
                                   image_set,
@@ -1062,7 +1062,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
-        object_set.add_objects(cpo.Objects(), "my_objects")
+        object_set.add_objects(cpo.Object(), "my_objects")
         workspace = cpw.Workspace(self.make_measurements_pipeline(m),
                                   module,
                                   image_set,
@@ -1104,7 +1104,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
-        object_set.add_objects(cpo.Objects(), "my_objects")
+        object_set.add_objects(cpo.Object(), "my_objects")
         workspace = cpw.Workspace(self.make_measurements_pipeline(m),
                                   module,
                                   image_set,
@@ -1159,8 +1159,8 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
-        object_set.add_objects(cpo.Objects(), "object_0")
-        object_set.add_objects(cpo.Objects(), "object_1")
+        object_set.add_objects(cpo.Object(), "object_0")
+        object_set.add_objects(cpo.Object(), "object_1")
         workspace = cpw.Workspace(self.make_measurements_pipeline(m),
                                   module,
                                   image_set,
@@ -1215,7 +1215,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
-        object_set.add_objects(cpo.Objects(), "my_objects")
+        object_set.add_objects(cpo.Object(), "my_objects")
         workspace = cpw.Workspace(self.make_measurements_pipeline(m),
                                   module,
                                   image_set,
@@ -1260,7 +1260,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
-        object_set.add_objects(cpo.Objects(), "my_objects")
+        object_set.add_objects(cpo.Object(), "my_objects")
         workspace = cpw.Workspace(self.make_measurements_pipeline(m),
                                   module,
                                   image_set,
@@ -1314,7 +1314,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
-        object_set.add_objects(cpo.Objects(), OBJECTS_NAME)
+        object_set.add_objects(cpo.Object(), OBJECTS_NAME)
         workspace = cpw.Workspace(self.make_measurements_pipeline(m),
                                   module,
                                   image_set,
@@ -1373,7 +1373,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
-        object_set.add_objects(cpo.Objects(), OBJECTS_NAME)
+        object_set.add_objects(cpo.Object(), OBJECTS_NAME)
         workspace = cpw.Workspace(self.make_measurements_pipeline(m),
                                   module,
                                   image_set,
@@ -1506,7 +1506,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             if index < 3:
                 m.next_image_set()
         object_set = cpo.ObjectSet()
-        object_set.add_objects(cpo.Objects(), "my_objects")
+        object_set.add_objects(cpo.Object(), "my_objects")
         workspace = cpw.Workspace(self.make_measurements_pipeline(m),
                                   module,
                                   image_set,
@@ -1564,7 +1564,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             if index < 3:
                 m.next_image_set()
         object_set = cpo.ObjectSet()
-        object_set.add_objects(cpo.Objects(), "my_objects")
+        object_set.add_objects(cpo.Object(), "my_objects")
         workspace = cpw.Workspace(self.make_measurements_pipeline(m),
                                   module,
                                   image_set,
@@ -1617,7 +1617,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             if index < 3:
                 m.next_image_set()
         object_set = cpo.ObjectSet()
-        object_set.add_objects(cpo.Objects(), "my_objects")
+        object_set.add_objects(cpo.Object(), "my_objects")
         workspace = cpw.Workspace(self.make_measurements_pipeline(m),
                                   module,
                                   image_set,
@@ -1676,7 +1676,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             if index < 3:
                 m.next_image_set()
         object_set = cpo.ObjectSet()
-        object_set.add_objects(cpo.Objects(), "my_objects")
+        object_set.add_objects(cpo.Object(), "my_objects")
         workspace = cpw.Workspace(self.make_measurements_pipeline(m),
                                   module,
                                   image_set,
@@ -1876,7 +1876,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
-        object_set.add_objects(cpo.Objects(), "my_objects")
+        object_set.add_objects(cpo.Object(), "my_objects")
         workspace = cpw.Workspace(self.make_measurements_pipeline(m),
                                   module,
                                   image_set,
@@ -1926,7 +1926,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
-        object_set.add_objects(cpo.Objects(), "my_objects")
+        object_set.add_objects(cpo.Object(), "my_objects")
         workspace = cpw.Workspace(self.make_measurements_pipeline(m),
                                   module,
                                   image_set,
@@ -1997,7 +1997,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
-        object_set.add_objects(cpo.Objects(), "my_objects")
+        object_set.add_objects(cpo.Object(), "my_objects")
         workspace = cpw.Workspace(self.make_measurements_pipeline(m),
                                   module,
                                   image_set,
@@ -2164,7 +2164,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
-        object_set.add_objects(cpo.Objects(), "my_objects")
+        object_set.add_objects(cpo.Object(), "my_objects")
         workspace = cpw.Workspace(self.make_measurements_pipeline(m),
                                   module,
                                   image_set,
@@ -2217,7 +2217,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
-        object_set.add_objects(cpo.Objects(), "my_objects")
+        object_set.add_objects(cpo.Object(), "my_objects")
         workspace = cpw.Workspace(self.make_measurements_pipeline(m),
                                   module,
                                   image_set,
@@ -2278,7 +2278,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
-        object_set.add_objects(cpo.Objects(), "my_objects")
+        object_set.add_objects(cpo.Object(), "my_objects")
         workspace = cpw.Workspace(self.make_measurements_pipeline(m),
                                   module,
                                   image_set,
@@ -2340,7 +2340,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
-        object_set.add_objects(cpo.Objects(), "my_objects")
+        object_set.add_objects(cpo.Object(), "my_objects")
         workspace = cpw.Workspace(pipeline,
                                   module,
                                   image_set,

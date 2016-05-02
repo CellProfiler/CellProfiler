@@ -19,7 +19,7 @@ import cellprofiler.pipeline as cpp
 import cellprofiler.cpmodule as cpm
 import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpmeas
-import cellprofiler.objects as cpo
+import cellprofiler.object as cpo
 import cellprofiler.workspace as cpw
 import cellprofiler.modules.calculateimageoverlap as C
 
@@ -273,7 +273,7 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
         object_set = cpo.ObjectSet()
         for name, d in ((GROUND_TRUTH_OBJ, ground_truth_obj),
                         (ID_OBJ, id_obj)):
-            object = cpo.Objects()
+            object = cpo.Object()
             if d.shape[1] == 3:
                 object.ijv = d
             else:

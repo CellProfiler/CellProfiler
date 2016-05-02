@@ -43,7 +43,7 @@ from scipy.sparse import coo_matrix
 import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
-import cellprofiler.objects as cpo
+import cellprofiler.object as cpo
 import cellprofiler.configuration as cpprefs
 import cellprofiler.setting as cps
 from cellprofiler.gui.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
@@ -263,7 +263,7 @@ class ReassignObjectNumbers(cpm.CPModule):
     def run(self, workspace):
         objects_name = self.objects_name.value
         objects = workspace.object_set.get_objects(objects_name)
-        assert isinstance(objects, cpo.Objects)
+        assert isinstance(objects, cpo.Object)
         labels = objects.segmented
         if self.relabel_option == OPTION_SPLIT:
             output_labels, count = scind.label(labels > 0, np.ones((3, 3), bool))
@@ -293,7 +293,7 @@ class ReassignObjectNumbers(cpm.CPModule):
                     ijv = morph.fill_convex_hulls(ch_pts, n_pts)
                     output_labels[ijv[:, 0], ijv[:, 1]] = ijv[:, 2]
 
-        output_objects = cpo.Objects()
+        output_objects = cpo.Object()
         output_objects.segmented = output_labels
         if objects.has_small_removed_segmented:
             output_objects.small_removed_segmented = \

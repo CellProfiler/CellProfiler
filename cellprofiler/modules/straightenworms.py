@@ -82,7 +82,7 @@ from scipy.ndimage import standard_deviation as nd_standard_deviation
 import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
-import cellprofiler.objects as cpo
+import cellprofiler.object as cpo
 import cellprofiler.configuration as cpprefs
 import cellprofiler.setting as cps
 from cellprofiler.configuration import IO_FOLDER_CHOICE_HELP_TEXT
@@ -358,7 +358,7 @@ class StraightenWorms(cpm.CPModule):
 
         objects_name = self.objects_name.value
         orig_objects = object_set.get_objects(objects_name)
-        assert isinstance(orig_objects, cpo.Objects)
+        assert isinstance(orig_objects, cpo.Object)
         m = workspace.measurements
         assert isinstance(m, cpmeas.Measurements)
         #
@@ -925,7 +925,7 @@ class StraightenWorms(cpm.CPModule):
         object_set = workspace.object_set
         assert isinstance(object_set, cpo.ObjectSet)
         straightened_objects_name = self.straightened_objects_name.value
-        straightened_objects = cpo.Objects()
+        straightened_objects = cpo.Object()
         straightened_objects.segmented = labels
         object_set.add_objects(straightened_objects, straightened_objects_name)
         add_object_count_measurements(m, straightened_objects_name, nworms)

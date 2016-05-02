@@ -12,7 +12,7 @@ import numpy as np
 
 import cellprofiler.cpimage
 import cellprofiler.measurements
-import cellprofiler.objects
+import cellprofiler.object
 import cellprofiler.setting as cps
 import pipeline as cpp
 

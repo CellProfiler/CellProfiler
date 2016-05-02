@@ -17,7 +17,7 @@ import cellprofiler.workspace as cpw
 import cellprofiler.cpmodule as cpm
 import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpmm
-import cellprofiler.objects as cpo
+import cellprofiler.object as cpo
 from centrosome.outline import outline
 import cellprofiler.modules.measureimageareaoccupied as mia
 
@@ -27,7 +27,7 @@ OBJECTS_NAME = "MyObjects"
 class TestMeasureImageArea(unittest.TestCase):
     def make_workspace(self, labels, parent_image=None):
         object_set = cpo.ObjectSet()
-        objects = cpo.Objects()
+        objects = cpo.Object()
         objects.segmented = labels
         objects.parent_image = parent_image
         object_set.add_objects(objects, OBJECTS_NAME)

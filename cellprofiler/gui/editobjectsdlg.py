@@ -6,7 +6,7 @@
 import cellprofiler.gui.cpfigure
 import cellprofiler.gui.cpfigure_tools
 import cellprofiler.gui.sashwindow_tools
-import cellprofiler.objects
+import cellprofiler.object
 import cellprofiler.configuration
 import centrosome.cpmorphology
 import centrosome.cpmorphology
@@ -214,7 +214,7 @@ class EditObjectsDialog(wx.Dialog):
         self.last_ijv = ijvx[:, :3]
         self.last_artist_save = artist_save
         self.last_to_keep = self.to_keep
-        temp = cellprofiler.objects.Objects()
+        temp = cellprofiler.object.Object()
         temp.ijv = self.last_ijv
         self.labels = [l for l, c in temp.get_labels(self.shape)]
         self.init_labels()
@@ -672,7 +672,7 @@ class EditObjectsDialog(wx.Dialog):
             ii.append(i[mask])
             jj.append(j[mask])
             vv.append(l[mask])
-        temp = cellprofiler.objects.Objects()
+        temp = cellprofiler.object.Object()
         temp.set_ijv(
                 numpy.column_stack([numpy.hstack(x) for x in (ii, jj, vv)]),
                 shape=self.shape)
@@ -724,8 +724,8 @@ class EditObjectsDialog(wx.Dialog):
                 orig_to_show[object_number] = False
         self.orig_axes.clear()
         if self.guide_image is not None and self.wants_image_display:
-            image, _ = cellprofiler.objects.size_similarly(self.orig_labels[0],
-                                                           self.guide_image)
+            image, _ = cellprofiler.object.size_similarly(self.orig_labels[0],
+                                                          self.guide_image)
             if image.ndim == 2:
                 image = numpy.dstack((image, image, image))
             if self.scaling_mode == self.SM_RAW:

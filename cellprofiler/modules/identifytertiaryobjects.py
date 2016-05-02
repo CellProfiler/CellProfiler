@@ -61,7 +61,7 @@ from centrosome.outline import outline
 import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
-import cellprofiler.objects as cpo
+import cellprofiler.object as cpo
 import cellprofiler.configuration as cpprefs
 import cellprofiler.setting as cps
 import identify as cpmi
@@ -228,7 +228,7 @@ class IdentifyTertiaryObjects(cpm.CPModule):
         #
         # Make the tertiary objects container
         #
-        tertiary_objects = cpo.Objects()
+        tertiary_objects = cpo.Object()
         tertiary_objects.segmented = tertiary_labels
         tertiary_objects.parent_image = tertiary_image
         #

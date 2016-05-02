@@ -43,7 +43,7 @@ from cellprofiler.modules.identify import FF_PARENT, FF_CHILDREN_COUNT, \
      M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
 import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
-import cellprofiler.objects as cpo
+import cellprofiler.object as cpo
 import cellprofiler.setting as cps
 from cellprofiler.setting import YES, NO
 import cellprofiler.measurements as cpmeas
@@ -524,7 +524,7 @@ class FilterObjects(cpm.CPModule):
             # segmentation for the new and generally try to copy stuff
             # from the old to the new.
             #
-            target_objects = cpo.Objects()
+            target_objects = cpo.Object()
             target_objects.segmented = target_labels
             target_objects.unedited_segmented = src_objects.unedited_segmented
             #

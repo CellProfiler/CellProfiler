@@ -17,7 +17,7 @@ import cellprofiler.modules.identify as cpmi
 import cellprofiler.pipeline as cpp
 import cellprofiler.workspace as cpw
 import cellprofiler.cpimage as cpi
-import cellprofiler.objects as cpo
+import cellprofiler.object as cpo
 import cellprofiler.measurements as cpm
 
 INPUT_OBJECTS_NAME = "input_objects"
@@ -395,7 +395,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         o_s = cpo.ObjectSet()
         i_l = cpi.ImageSetList()
         image = cpi.Image(image)
-        objects = cpo.Objects()
+        objects = cpo.Object()
         if unedited_segmented is not None:
             objects.unedited_segmented = unedited_segmented
         if small_removed_segmented is not None:
@@ -501,7 +501,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         img[2:7, 2:7] = .3
         img[2:7, 7:17] = .5
         image = cpi.Image(img)
-        objects = cpo.Objects()
+        objects = cpo.Object()
         labels = np.zeros((10, 20), int)
         labels[3:6, 3:6] = 1
         labels[3:6, 13:16] = 2
@@ -572,7 +572,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         o_s = cpo.ObjectSet()
         i_l = cpi.ImageSetList()
         image = cpi.Image(np.zeros((10, 10)))
-        objects = cpo.Objects()
+        objects = cpo.Object()
         objects.unedited_segmented = np.zeros((10, 10), int)
         objects.small_removed_segmented = np.zeros((10, 10), int)
         objects.segmented = np.zeros((10, 10), int)
@@ -603,7 +603,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         img = np.zeros((10, 10))
         img[2:7, 2:7] = .5
         image = cpi.Image(img)
-        objects = cpo.Objects()
+        objects = cpo.Object()
         labels = np.zeros((10, 10), int)
         labels[3:6, 3:6] = 1
         objects.unedited_segmented = labels
@@ -653,7 +653,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         img[2:7, 2:7] = .3
         img[2:7, 7:17] = .5
         image = cpi.Image(img)
-        objects = cpo.Objects()
+        objects = cpo.Object()
         labels = np.zeros((10, 20), int)
         labels[3:6, 3:6] = 1
         labels[3:6, 13:16] = 2
@@ -724,7 +724,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         o_s = cpo.ObjectSet()
         i_l = cpi.ImageSetList()
         image = cpi.Image(np.zeros((10, 10)))
-        objects = cpo.Objects()
+        objects = cpo.Object()
         objects.unedited_segmented = np.zeros((10, 10), int)
         objects.small_removed_segmented = np.zeros((10, 10), int)
         objects.segmented = np.zeros((10, 10), int)
@@ -755,7 +755,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         img = np.zeros((10, 10))
         img[2:7, 2:7] = .5
         image = cpi.Image(img)
-        objects = cpo.Objects()
+        objects = cpo.Object()
         labels = np.zeros((10, 10), int)
         labels[3:6, 3:6] = 1
         objects.unedited_segmented = labels
@@ -798,7 +798,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         img[2:7, 2:7] = .05 * (7 - y[2:7, 2:7])
         img[2:7, 7:17] = .05 * (y[2:7, 7:17] - 6)
         image = cpi.Image(img)
-        objects = cpo.Objects()
+        objects = cpo.Object()
         labels = np.zeros((10, 20), int)
         labels[3:6, 3:6] = 1
         labels[3:6, 13:16] = 2
@@ -861,7 +861,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         o_s = cpo.ObjectSet()
         i_l = cpi.ImageSetList()
         image = cpi.Image(np.zeros((10, 10)))
-        objects = cpo.Objects()
+        objects = cpo.Object()
         objects.unedited_segmented = np.zeros((10, 10), int)
         objects.small_removed_segmented = np.zeros((10, 10), int)
         objects.segmented = np.zeros((10, 10), int)
@@ -891,7 +891,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         i_l = cpi.ImageSetList()
         img = np.zeros((10, 10))
         image = cpi.Image(img)
-        objects = cpo.Objects()
+        objects = cpo.Object()
         labels = np.zeros((10, 10), int)
         labels[3:6, 3:6] = 1
         objects.unedited_segmented = labels
@@ -931,7 +931,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         i_l = cpi.ImageSetList()
         img = np.zeros((10, 20))
         image = cpi.Image(img)
-        objects = cpo.Objects()
+        objects = cpo.Object()
         labels = np.zeros((10, 20), int)
         labels[3:6, 3:6] = 1
         labels[3:6, 13:16] = 2
@@ -995,7 +995,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         img = np.zeros((10, 10))
         img[2:7, 2:7] = .5
         image = cpi.Image(img)
-        objects = cpo.Objects()
+        objects = cpo.Object()
         labels = np.zeros((10, 10), int)
         labels[3:6, 3:6] = 1
         objects.unedited_segmented = labels
@@ -1042,7 +1042,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         img = np.zeros((10, 10))
         img[2:7, 2:7] = .5
         image = cpi.Image(img)
-        objects = cpo.Objects()
+        objects = cpo.Object()
         labels = np.zeros((10, 10), int)
         labels[3:6, 3:6] = 1
         objects.unedited_segmented = labels
@@ -1271,7 +1271,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         o_s = cpo.ObjectSet()
         i_l = cpi.ImageSetList()
         image = cpi.Image(image)
-        objects = cpo.Objects()
+        objects = cpo.Object()
         objects.unedited_segmented = labels
         objects.small_removed_segmented = labels
         objects.segmented = labels
@@ -1332,7 +1332,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         o_s = cpo.ObjectSet()
         i_l = cpi.ImageSetList()
         image = cpi.Image(image)
-        objects = cpo.Objects()
+        objects = cpo.Object()
         objects.unedited_segmented = labels
         objects.small_removed_segmented = labels
         objects.unedited_segmented = labels_unedited
@@ -1395,7 +1395,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         o_s = cpo.ObjectSet()
         i_l = cpi.ImageSetList()
         image = cpi.Image(image)
-        objects = cpo.Objects()
+        objects = cpo.Object()
         objects.unedited_segmented = labels
         objects.small_removed_segmented = labels
         objects.unedited_segmented = labels_unedited
@@ -1449,7 +1449,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         o_s = cpo.ObjectSet()
         i_l = cpi.ImageSetList()
         image = cpi.Image(image)
-        objects = cpo.Objects()
+        objects = cpo.Object()
         objects.unedited_segmented = labels
         objects.small_removed_segmented = labels
         objects.unedited_segmented = labels_unedited

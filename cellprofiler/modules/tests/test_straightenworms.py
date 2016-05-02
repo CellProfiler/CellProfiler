@@ -11,7 +11,7 @@ import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpmeas
 import cellprofiler.modules.identify as I
 import cellprofiler.modules.straightenworms as S
-import cellprofiler.objects as cpo
+import cellprofiler.object as cpo
 import cellprofiler.pipeline as cpp
 import cellprofiler.setting as cps
 import cellprofiler.workspace as cpw
@@ -197,7 +197,7 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
             module.images[1].straightened_image_name.value = AUX_STRAIGHTENED_IMAGE_NAME
 
         object_set = cpo.ObjectSet()
-        objects = cpo.Objects()
+        objects = cpo.Object()
         labels = np.zeros(image.shape, int)
         for i in range(control_points.shape[2]):
             if lengths[i] == 0:

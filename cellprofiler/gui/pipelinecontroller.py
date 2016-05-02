@@ -2520,7 +2520,7 @@ class PipelineController(object):
         """
         module_num = evt.module_num
         # extract args and kwargs from the request.
-        # see main().interaction_handler() in analysis_worker.py
+        # see main().interaction_handler() in worker.py
         args = [evt.__dict__['arg_%d' % idx] for idx in range(evt.num_args)]
         kwargs = dict((name, evt.__dict__['kwarg_%s' % name]) for name in evt.kwargs_names)
         result = ""

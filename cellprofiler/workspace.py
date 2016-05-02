@@ -336,7 +336,7 @@ class Workspace(object):
                       workers.
         '''
         # See also:
-        # main().interaction_handler() in analysis_worker.py
+        # main().interaction_handler() in worker.py
         # PipelineController.module_interaction_request() in pipelinecontroller.py
         import cellprofiler.preferences as cpprefs
         if "headless_ok" in kwargs:

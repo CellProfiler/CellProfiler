@@ -80,9 +80,9 @@ def main(args=None):
             if arg == "--ij-plugins-directory" and len(args) > i + 1:
                 cpprefs.set_ij_plugin_directory(args[i + 1])
                 break
-        import cellprofiler.analysis_worker
-        cellprofiler.analysis_worker.aw_parse_args()
-        cellprofiler.analysis_worker.main()
+        import cellprofiler.worker
+        cellprofiler.worker.aw_parse_args()
+        cellprofiler.worker.main()
         sys.exit(exit_code)
 
     options, args = parse_args(args)

@@ -9,7 +9,7 @@ import numpy as np
 import h5py
 import os
 
-from cellprofiler.cpgridinfo import CPGridInfo
+from cellprofiler.grid import CPGridInfo
 from .utilities.hdf5_dict import HDF5FileList, HDF5Dict
 
 '''Continue to run the pipeline

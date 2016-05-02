@@ -13,7 +13,7 @@ from cellprofiler.configuration import set_headless
 set_headless()
 
 import cellprofiler.workspace as cpw
-import cellprofiler.cpgridinfo as cpg
+import cellprofiler.grid as cpg
 import cellprofiler.image as cpi
 import cellprofiler.module as cpm
 import cellprofiler.object as cpo

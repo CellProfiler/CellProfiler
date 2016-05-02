@@ -37,7 +37,7 @@ import traceback
 import numpy as np
 
 logger = logging.getLogger(__name__)
-import cellprofiler.cpgridinfo as cpg
+import cellprofiler.grid as cpg
 import cellprofiler.module as cpm
 import cellprofiler.image as cpi
 import cellprofiler.measurement as cpmeas

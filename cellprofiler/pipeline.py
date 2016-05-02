@@ -39,7 +39,7 @@ logger = logging.getLogger(__name__)
 pipeline_stats_logger = logging.getLogger("PipelineStatistics")
 import cellprofiler.configuration as cpprefs
 import cellprofiler.cpimage as cpi
-import cellprofiler.measurements as cpmeas
+import cellprofiler.measurement as cpmeas
 import cellprofiler.object as cpo
 import cellprofiler.workspace as cpw
 import cellprofiler.setting as cps
@@ -1358,7 +1358,7 @@ class Pipeline(object):
                         by the UI for the user for cases like a pipeline
                         created by CreateBatchFiles.
         '''
-        assert (isinstance(m, cpmeas.Measurements))
+        assert (isinstance(m, cpmeas.Measurement))
         fd = StringIO.StringIO()
         self.savetxt(fd, save_image_plane_details=False)
         m.add_measurement(cpmeas.EXPERIMENT,
@@ -1629,7 +1629,7 @@ class Pipeline(object):
             input_pixels = image_dict[image_name]
             image_set.add(image_name, cpi.Image(input_pixels))
         object_set = cpo.ObjectSet()
-        measurements = cpmeas.Measurements()
+        measurements = cpmeas.Measurement()
 
         # Run the modules
         for module in self.modules():
@@ -1662,7 +1662,7 @@ class Pipeline(object):
                    grouping to run or None to run all groupings
         measurements_filename - name of file to use for measurements
         """
-        measurements = cpmeas.Measurements(
+        measurements = cpmeas.Measurement(
                 image_set_start=image_set_start,
                 filename=measurements_filename,
                 copy=initial_measurements)
@@ -1749,7 +1749,7 @@ class Pipeline(object):
         if image_set_end is not None:
             assert isinstance(image_set_end, int), "Image set end must be an integer"
         if initial_measurements is None:
-            measurements = cpmeas.Measurements(image_set_start)
+            measurements = cpmeas.Measurement(image_set_start)
         else:
             measurements = initial_measurements
 
@@ -2113,7 +2113,7 @@ class Pipeline(object):
 
         Write the pipeline, version # and timestamp.
         '''
-        assert isinstance(m, cpmeas.Measurements)
+        assert isinstance(m, cpmeas.Measurement)
         self.write_pipeline_measurement(m)
         m.add_experiment_measurement(M_VERSION, cpversion.version_string)
         m.add_experiment_measurement(M_TIMESTAMP,
@@ -2877,7 +2877,7 @@ class Pipeline(object):
         if end_module is not None:
             end_module_idx = self.modules().index(end_module)
             end_module = pipeline.modules()[end_module_idx]
-        temp_measurements = cpmeas.Measurements(mode="memory")
+        temp_measurements = cpmeas.Measurement(mode="memory")
         new_workspace = None
         try:
             new_workspace = cpw.Workspace(

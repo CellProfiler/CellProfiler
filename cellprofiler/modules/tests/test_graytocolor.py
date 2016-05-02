@@ -12,7 +12,7 @@ import numpy as np
 import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements as cpmeas
+import cellprofiler.measurement as cpmeas
 import cellprofiler.modules.graytocolor as G
 import cellprofiler.object as cpo
 import cellprofiler.pipeline as cpp
@@ -76,7 +76,7 @@ class TestGrayToColor(unittest.TestCase):
             if image is not None:
                 image_set.add(image_name, cpi.Image(image))
         workspace = cpw.Workspace(pipeline, module, image_set, cpo.ObjectSet(),
-                                  cpmeas.Measurements(), image_set_list)
+                                  cpmeas.Measurement(), image_set_list)
         return workspace, module
 
     def test_01_01_load_matlab(self):

@@ -117,7 +117,7 @@ import numpy as np
 import scipy.optimize
 
 import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements as cpmeas
+import cellprofiler.measurement as cpmeas
 import cellprofiler.configuration as cpprefs
 import cellprofiler.setting as cps
 from cellprofiler.gui.help import USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF
@@ -315,7 +315,7 @@ class CalculateStatistics(cpm.CPModule):
         workspace.post_run_display(self)
 
     def get_image_measurements(self, measurements, feature_name):
-        assert isinstance(measurements, cpmeas.Measurements)
+        assert isinstance(measurements, cpmeas.Measurement)
         image_numbers = measurements.get_image_numbers()
         result = np.zeros(len(image_numbers))
         for i, image_number in enumerate(image_numbers):
@@ -326,7 +326,7 @@ class CalculateStatistics(cpm.CPModule):
         return result
 
     def aggregate_measurement(self, measurements, object_name, feature_name):
-        assert isinstance(measurements, cpmeas.Measurements)
+        assert isinstance(measurements, cpmeas.Measurement)
         image_numbers = measurements.get_image_numbers()
         result = np.zeros(len(image_numbers))
         for i, image_number in enumerate(image_numbers):
@@ -349,7 +349,7 @@ class CalculateStatistics(cpm.CPModule):
         workspace - the workspace at the end of the run
         """
         measurements = workspace.measurements
-        assert isinstance(measurements, cpmeas.Measurements)
+        assert isinstance(measurements, cpmeas.Measurement)
         all_objects = [x for x in measurements.get_object_names()
                        if x not in [cpmeas.EXPERIMENT, cpmeas.NEIGHBORS]]
         feature_set = []

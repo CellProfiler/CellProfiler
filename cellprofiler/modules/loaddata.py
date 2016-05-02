@@ -167,7 +167,7 @@ import matplotlib.mlab
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.object as cpo
-import cellprofiler.measurements as cpmeas
+import cellprofiler.measurement as cpmeas
 import cellprofiler.setting as cps
 from cellprofiler.setting import YES, NO
 import cellprofiler.configuration as cpprefs
@@ -178,7 +178,7 @@ from cellprofiler.modules.loadimages import C_SERIES, C_FRAME
 from cellprofiler.modules.loadimages import C_OBJECTS_FILE_NAME
 from cellprofiler.modules.loadimages import C_OBJECTS_PATH_NAME
 from cellprofiler.modules.loadimages import C_OBJECTS_URL
-from cellprofiler.measurements import C_OBJECTS_SERIES, C_OBJECTS_FRAME
+from cellprofiler.measurement import C_OBJECTS_SERIES, C_OBJECTS_FRAME
 from cellprofiler.modules.loadimages import C_MD5_DIGEST, C_SCALING
 from cellprofiler.modules.loadimages import C_HEIGHT, C_WIDTH
 from cellprofiler.modules.loadimages import bad_sizes_warning
@@ -757,7 +757,7 @@ class LoadData(cpm.CPModule):
     def prepare_run(self, workspace):
         pipeline = workspace.pipeline
         m = workspace.measurements
-        assert isinstance(m, cpmeas.Measurements)
+        assert isinstance(m, cpmeas.Measurement)
         '''Load the CSV file at the outset and populate the image set list'''
         if pipeline.in_batch_mode():
             return True
@@ -991,7 +991,7 @@ class LoadData(cpm.CPModule):
 
         if self.wants_images:
             m = workspace.measurements
-            assert isinstance(m, cpmeas.Measurements)
+            assert isinstance(m, cpmeas.Measurement)
             image_numbers = m.get_image_numbers()
             all_image_features = m.get_feature_names(cpmeas.IMAGE)
             for url_category, file_category, path_category, names in (
@@ -1063,7 +1063,7 @@ class LoadData(cpm.CPModule):
     def run(self, workspace):
         '''Populate the images and objects'''
         m = workspace.measurements
-        assert isinstance(m, cpmeas.Measurements)
+        assert isinstance(m, cpmeas.Measurement)
         image_set = workspace.image_set
         object_set = workspace.object_set
         statistics = []
@@ -1144,7 +1144,7 @@ class LoadData(cpm.CPModule):
             if len(keys) == 0:
                 return None
             m = workspace.measurements
-            assert isinstance(m, cpmeas.Measurements)
+            assert isinstance(m, cpmeas.Measurement)
             return keys, m.get_groupings(keys)
         return None
 

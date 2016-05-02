@@ -17,7 +17,7 @@ import cellprofiler.cpgridinfo as cpg
 import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.object as cpo
-import cellprofiler.measurements as cpmeas
+import cellprofiler.measurement as cpmeas
 import cellprofiler.pipeline as cpp
 import cellprofiler.modules.classifyobjects as C
 
@@ -283,7 +283,7 @@ class TestClassifyObjects(unittest.TestCase):
         objects.segmented = labels
         object_set.add_objects(objects, OBJECTS_NAME)
 
-        measurements = cpmeas.Measurements()
+        measurements = cpmeas.Measurement()
         module = C.ClassifyObjects()
         m_names = []
         if measurement1 is not None:

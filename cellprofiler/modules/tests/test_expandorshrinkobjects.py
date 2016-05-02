@@ -19,7 +19,7 @@ set_headless()
 import cellprofiler.pipeline as cpp
 import cellprofiler.cpmodule as cpm
 import cellprofiler.cpimage as cpi
-import cellprofiler.measurements as cpmeas
+import cellprofiler.measurement as cpmeas
 import cellprofiler.object as cpo
 import cellprofiler.workspace as cpw
 
@@ -197,7 +197,7 @@ class TestExpandOrShrinkObjects(unittest.TestCase):
                                   module,
                                   image_set_list.get_image_set(0),
                                   object_set,
-                                  cpmeas.Measurements(),
+                                  cpmeas.Measurement(),
                                   image_set_list)
         return workspace, module
 
@@ -213,7 +213,7 @@ class TestExpandOrShrinkObjects(unittest.TestCase):
         self.assertTrue(np.all(objects.segmented == expected))
         self.assertTrue(OUTLINES_NAME not in workspace.get_outline_names())
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         count = m.get_current_image_measurement("Count_" + OUTPUT_NAME)
         if not np.isscalar(count):
             count = count[0]

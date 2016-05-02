@@ -16,7 +16,7 @@ import cellprofiler.workspace as cpw
 import cellprofiler.pipeline as cpp
 import cellprofiler.cpimage as cpi
 import cellprofiler.modules.crop as cpmc
-import cellprofiler.measurements as cpm
+import cellprofiler.measurement as cpm
 import cellprofiler.object as cpo
 import cellprofiler.configuration as cpprefs
 
@@ -61,7 +61,7 @@ class TestCrop(unittest.TestCase):
 
         pipeline.add_listener(callback)
         pipeline.add_module(module)
-        m = cpm.Measurements()
+        m = cpm.Measurement()
         workspace = cpw.Workspace(pipeline,
                                   module,
                                   image_set,

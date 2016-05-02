@@ -15,7 +15,7 @@ set_headless()
 import cellprofiler.pipeline as cpp
 import cellprofiler.cpmodule as cpm
 import cellprofiler.cpimage as cpi
-import cellprofiler.measurements as cpmeas
+import cellprofiler.measurement as cpmeas
 import cellprofiler.object as cpo
 import cellprofiler.setting as cps
 import cellprofiler.workspace as cpw
@@ -707,7 +707,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
             module.heatmaps[i].colormap.value = "gray"
             module.heatmaps[i].measurement.value = a
         pipeline = cpp.Pipeline()
-        measurements = cpmeas.Measurements()
+        measurements = cpmeas.Measurement()
         image_set_list = cpi.ImageSetList()
         image_set = measurements
         img = cpi.Image(image)

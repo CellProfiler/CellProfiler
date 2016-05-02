@@ -12,7 +12,7 @@ set_headless()
 from cellprofiler.modules.injectimage import InjectImage
 import cellprofiler.cpimage
 import cellprofiler.pipeline
-import cellprofiler.measurements as cpmeas
+import cellprofiler.measurement as cpmeas
 import cellprofiler.workspace as cpw
 
 
@@ -25,7 +25,7 @@ class testInjectImage(unittest.TestCase):
         image = numpy.zeros((10, 10), dtype=float)
         ii = InjectImage("my_image", image)
         pipeline = cellprofiler.pipeline.Pipeline()
-        measurements = cpmeas.Measurements()
+        measurements = cpmeas.Measurement()
         workspace = cpw.Workspace(pipeline, ii, measurements, None,
                                   measurements,
                                   cellprofiler.cpimage.ImageSetList())

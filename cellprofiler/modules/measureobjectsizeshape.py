@@ -129,7 +129,7 @@ from centrosome.cpmorphology import maximum_position_of_labels
 from centrosome.cpmorphology import median_of_labels
 from centrosome.cpmorphology import feret_diameter
 from centrosome.cpmorphology import convex_hull_ijv
-from cellprofiler.measurements import COLTYPE_FLOAT
+from cellprofiler.measurement import COLTYPE_FLOAT
 
 """The category of the per-object measurements made by this module"""
 AREA_SHAPE = 'AreaShape'

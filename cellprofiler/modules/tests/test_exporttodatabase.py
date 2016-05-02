@@ -30,7 +30,7 @@ import cellprofiler.setting as cps
 import cellprofiler.cpimage as cpi
 import cellprofiler.workspace as cpw
 import cellprofiler.object as cpo
-import cellprofiler.measurements as cpmeas
+import cellprofiler.measurement as cpmeas
 
 import cellprofiler.modules.exporttodatabase as E
 import cellprofiler.modules.identify as I
@@ -1735,7 +1735,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     return ["Plate", "Well"]
                 return []
 
-        m = cpmeas.Measurements(can_overwrite=True)
+        m = cpmeas.Measurement(can_overwrite=True)
         for i in range(image_set_count):
             if i > 0:
                 m.next_image_set()
@@ -2634,7 +2634,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         self.assertTrue(isinstance(module, E.ExportToDatabase))
         module.objects_choice.value = E.O_NONE
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         m.add_image_measurement(STRING_IMG_MEASUREMENT, backslash_string)
         try:
             module.prepare_run(workspace)
@@ -4047,7 +4047,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         self.assertTrue(isinstance(module, E.ExportToDatabase))
         self.assertTrue(isinstance(workspace, cpw.Workspace))
         measurements = workspace.measurements
-        self.assertTrue(isinstance(measurements, cpmeas.Measurements))
+        self.assertTrue(isinstance(measurements, cpmeas.Measurement))
         module.wants_agg_mean.value = False
         module.wants_agg_median.value = False
         module.wants_agg_std_dev.value = False
@@ -4133,7 +4133,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         self.assertTrue(isinstance(module, E.ExportToDatabase))
         self.assertTrue(isinstance(workspace, cpw.Workspace))
         measurements = workspace.measurements
-        self.assertTrue(isinstance(measurements, cpmeas.Measurements))
+        self.assertTrue(isinstance(measurements, cpmeas.Measurement))
         module.wants_agg_mean.value = True
         module.wants_agg_median.value = False
         module.wants_agg_std_dev.value = False
@@ -4227,7 +4227,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         self.assertTrue(isinstance(module, E.ExportToDatabase))
         self.assertTrue(isinstance(workspace, cpw.Workspace))
         measurements = workspace.measurements
-        self.assertTrue(isinstance(measurements, cpmeas.Measurements))
+        self.assertTrue(isinstance(measurements, cpmeas.Measurement))
         module.wants_agg_mean.value = False
         module.wants_agg_median.value = False
         module.wants_agg_std_dev.value = False
@@ -4307,7 +4307,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         self.assertTrue(isinstance(module, E.ExportToDatabase))
         self.assertTrue(isinstance(workspace, cpw.Workspace))
         measurements = workspace.measurements
-        self.assertTrue(isinstance(measurements, cpmeas.Measurements))
+        self.assertTrue(isinstance(measurements, cpmeas.Measurement))
         module.wants_agg_mean.value = True
         module.wants_agg_median.value = False
         module.wants_agg_std_dev.value = False
@@ -4399,7 +4399,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.assertTrue(isinstance(module, E.ExportToDatabase))
             self.assertTrue(isinstance(workspace, cpw.Workspace))
             measurements = workspace.measurements
-            self.assertTrue(isinstance(measurements, cpmeas.Measurements))
+            self.assertTrue(isinstance(measurements, cpmeas.Measurement))
             module.db_type.value = E.DB_SQLITE
             module.directory.dir_choice = E.ABSOLUTE_FOLDER_NAME
             module.directory.custom_path = output_dir
@@ -4495,7 +4495,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         self.assertTrue(isinstance(module, E.ExportToDatabase))
         self.assertTrue(isinstance(workspace, cpw.Workspace))
         measurements = workspace.measurements
-        self.assertTrue(isinstance(measurements, cpmeas.Measurements))
+        self.assertTrue(isinstance(measurements, cpmeas.Measurement))
         module.wants_agg_mean.value = False
         module.wants_agg_median.value = False
         module.wants_agg_std_dev.value = False

@@ -44,7 +44,7 @@ from scipy.ndimage import binary_erosion, binary_fill_holes
 from scipy.ndimage import mean as mean_of_labels
 
 import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements as cpmeas
+import cellprofiler.measurement as cpmeas
 import cellprofiler.object as cpo
 import cellprofiler.configuration as cpprefs
 import cellprofiler.setting as cps
@@ -245,7 +245,7 @@ class IdentifyDeadWorms(cpm.CPModule):
             labels = np.zeros(mask.shape, int)
 
         m = workspace.measurements
-        assert isinstance(m, cpmeas.Measurements)
+        assert isinstance(m, cpmeas.Measurement)
         object_name = self.object_name.value
         m.add_measurement(object_name, I.M_LOCATION_CENTER_X, center_x)
         m.add_measurement(object_name, I.M_LOCATION_CENTER_Y, center_y)

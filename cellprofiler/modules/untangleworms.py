@@ -82,7 +82,7 @@ from scipy.sparse import coo
 
 logger = logging.getLogger(__name__)
 import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements as cpmeas
+import cellprofiler.measurement as cpmeas
 import cellprofiler.cpimage as cpi
 import cellprofiler.object as cpo
 import cellprofiler.setting as cps
@@ -732,7 +732,7 @@ class UntangleWorms(cpm.CPModule):
             if workspace.pipeline.test_mode:
                 return
             m = workspace.measurements
-            assert isinstance(m, cpmeas.Measurements)
+            assert isinstance(m, cpmeas.Measurement)
             path = self.training_set_directory.get_absolute_path(m)
             file_name = m.apply_metadata(self.training_set_file_name.value)
             fd = open(os.path.join(path, file_name), "w")
@@ -849,7 +849,7 @@ class UntangleWorms(cpm.CPModule):
         object_set = workspace.object_set
         assert isinstance(object_set, cpo.ObjectSet)
         measurements = workspace.measurements
-        assert isinstance(measurements, cpmeas.Measurements)
+        assert isinstance(measurements, cpmeas.Measurement)
 
         object_names = []
         if self.overlap in (OO_WITH_OVERLAP, OO_BOTH):

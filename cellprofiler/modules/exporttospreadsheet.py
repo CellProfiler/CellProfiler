@@ -52,11 +52,11 @@ import os
 import sys
 
 import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements as cpmeas
+import cellprofiler.measurement as cpmeas
 import cellprofiler.pipeline as cpp
 import cellprofiler.setting as cps
 from cellprofiler.setting import YES, NO
-from cellprofiler.measurements import IMAGE, EXPERIMENT
+from cellprofiler.measurement import IMAGE, EXPERIMENT
 from cellprofiler.configuration import get_absolute_path, get_output_file_name
 from cellprofiler.configuration import ABSPATH_OUTPUT, ABSPATH_IMAGE, get_headless
 from cellprofiler.gui.help import USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF, MEASUREMENT_NAMING_HELP
@@ -1103,7 +1103,7 @@ Do you want to save it anyway?""" %
                 OBJECT_RELATIONSHIPS, workspace, image_set_numbers[0],
                 settings_group)
         m = workspace.measurements
-        assert isinstance(m, cpmeas.Measurements)
+        assert isinstance(m, cpmeas.Measurement)
         fd = open(file_name, "wb")
         module_map = {}
         for module in workspace.pipeline.modules():

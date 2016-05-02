@@ -12,7 +12,7 @@ from cellprofiler.configuration import set_headless
 set_headless()
 
 import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements as cpmeas
+import cellprofiler.measurement as cpmeas
 import cellprofiler.pipeline as cpp
 import cellprofiler.workspace as cpw
 import cellprofiler.cpimage as cpi
@@ -32,7 +32,7 @@ class TestMeasureImageIntensity(unittest.TestCase):
                                   module,
                                   image_set,
                                   object_set,
-                                  cpmeas.Measurements(),
+                                  cpmeas.Measurement(),
                                   image_set_list)
         for key in image_dict.keys():
             image_set.add(key, cpi.Image(image_dict[key]))

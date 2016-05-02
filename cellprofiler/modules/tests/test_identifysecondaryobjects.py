@@ -18,7 +18,7 @@ import cellprofiler.pipeline as cpp
 import cellprofiler.workspace as cpw
 import cellprofiler.cpimage as cpi
 import cellprofiler.object as cpo
-import cellprofiler.measurements as cpm
+import cellprofiler.measurement as cpm
 
 INPUT_OBJECTS_NAME = "input_objects"
 OUTPUT_OBJECTS_NAME = "output_objects"
@@ -404,7 +404,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         o_s.add_objects(objects, INPUT_OBJECTS_NAME)
         i_s = i_l.get_image_set(0)
         i_s.add(IMAGE_NAME, image)
-        m = cpm.Measurements()
+        m = cpm.Measurement()
         module = cpmi2.IdentifySecondary()
         module.primary_objects.value = INPUT_OBJECTS_NAME
         module.objects_name.value = OUTPUT_OBJECTS_NAME
@@ -511,7 +511,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         o_s.add_objects(objects, INPUT_OBJECTS_NAME)
         i_s = i_l.get_image_set(0)
         i_s.add(IMAGE_NAME, image)
-        m = cpm.Measurements()
+        m = cpm.Measurement()
         module = cpmi2.IdentifySecondary()
         module.primary_objects.value = INPUT_OBJECTS_NAME
         module.objects_name.value = OUTPUT_OBJECTS_NAME
@@ -579,7 +579,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         o_s.add_objects(objects, INPUT_OBJECTS_NAME)
         i_s = i_l.get_image_set(0)
         i_s.add(IMAGE_NAME, image)
-        m = cpm.Measurements()
+        m = cpm.Measurement()
         module = cpmi2.IdentifySecondary()
         module.primary_objects.value = INPUT_OBJECTS_NAME
         module.objects_name.value = OUTPUT_OBJECTS_NAME
@@ -612,7 +612,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         o_s.add_objects(objects, INPUT_OBJECTS_NAME)
         i_s = i_l.get_image_set(0)
         i_s.add(IMAGE_NAME, image)
-        m = cpm.Measurements()
+        m = cpm.Measurement()
         module = cpmi2.IdentifySecondary()
         module.primary_objects.value = INPUT_OBJECTS_NAME
         module.objects_name.value = OUTPUT_OBJECTS_NAME
@@ -663,7 +663,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         o_s.add_objects(objects, INPUT_OBJECTS_NAME)
         i_s = i_l.get_image_set(0)
         i_s.add(IMAGE_NAME, image)
-        m = cpm.Measurements()
+        m = cpm.Measurement()
         module = cpmi2.IdentifySecondary()
         module.primary_objects.value = INPUT_OBJECTS_NAME
         module.objects_name.value = OUTPUT_OBJECTS_NAME
@@ -731,7 +731,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         o_s.add_objects(objects, INPUT_OBJECTS_NAME)
         i_s = i_l.get_image_set(0)
         i_s.add(IMAGE_NAME, image)
-        m = cpm.Measurements()
+        m = cpm.Measurement()
         module = cpmi2.IdentifySecondary()
         module.primary_objects.value = INPUT_OBJECTS_NAME
         module.objects_name.value = OUTPUT_OBJECTS_NAME
@@ -764,7 +764,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         o_s.add_objects(objects, INPUT_OBJECTS_NAME)
         i_s = i_l.get_image_set(0)
         i_s.add(IMAGE_NAME, image)
-        m = cpm.Measurements()
+        m = cpm.Measurement()
         module = cpmi2.IdentifySecondary()
         module.primary_objects.value = INPUT_OBJECTS_NAME
         module.objects_name.value = OUTPUT_OBJECTS_NAME
@@ -808,7 +808,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         o_s.add_objects(objects, INPUT_OBJECTS_NAME)
         i_s = i_l.get_image_set(0)
         i_s.add(IMAGE_NAME, image)
-        m = cpm.Measurements()
+        m = cpm.Measurement()
         module = cpmi2.IdentifySecondary()
         module.primary_objects.value = INPUT_OBJECTS_NAME
         module.objects_name.value = OUTPUT_OBJECTS_NAME
@@ -868,7 +868,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         o_s.add_objects(objects, INPUT_OBJECTS_NAME)
         i_s = i_l.get_image_set(0)
         i_s.add(IMAGE_NAME, image)
-        m = cpm.Measurements()
+        m = cpm.Measurement()
         module = cpmi2.IdentifySecondary()
         module.primary_objects.value = INPUT_OBJECTS_NAME
         module.objects_name.value = OUTPUT_OBJECTS_NAME
@@ -900,7 +900,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         o_s.add_objects(objects, INPUT_OBJECTS_NAME)
         i_s = i_l.get_image_set(0)
         i_s.add(IMAGE_NAME, image)
-        m = cpm.Measurements()
+        m = cpm.Measurement()
         module = cpmi2.IdentifySecondary()
         module.primary_objects.value = INPUT_OBJECTS_NAME
         module.objects_name.value = OUTPUT_OBJECTS_NAME
@@ -941,7 +941,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         o_s.add_objects(objects, INPUT_OBJECTS_NAME)
         i_s = i_l.get_image_set(0)
         i_s.add(IMAGE_NAME, image)
-        m = cpm.Measurements()
+        m = cpm.Measurement()
         module = cpmi2.IdentifySecondary()
         module.primary_objects.value = INPUT_OBJECTS_NAME
         module.objects_name.value = OUTPUT_OBJECTS_NAME
@@ -1004,7 +1004,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         o_s.add_objects(objects, INPUT_OBJECTS_NAME)
         i_s = i_l.get_image_set(0)
         i_s.add(IMAGE_NAME, image)
-        m = cpm.Measurements()
+        m = cpm.Measurement()
         module = cpmi2.IdentifySecondary()
         module.primary_objects.value = INPUT_OBJECTS_NAME
         module.objects_name.value = OUTPUT_OBJECTS_NAME
@@ -1051,7 +1051,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         o_s.add_objects(objects, INPUT_OBJECTS_NAME)
         i_s = i_l.get_image_set(0)
         i_s.add(IMAGE_NAME, image)
-        m = cpm.Measurements()
+        m = cpm.Measurement()
         module = cpmi2.IdentifySecondary()
         module.primary_objects.value = INPUT_OBJECTS_NAME
         module.objects_name.value = OUTPUT_OBJECTS_NAME
@@ -1278,7 +1278,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         o_s.add_objects(objects, INPUT_OBJECTS_NAME)
         i_s = i_l.get_image_set(0)
         i_s.add(IMAGE_NAME, image)
-        m = cpm.Measurements()
+        m = cpm.Measurement()
         module = cpmi2.IdentifySecondary()
         module.primary_objects.value = INPUT_OBJECTS_NAME
         module.objects_name.value = OUTPUT_OBJECTS_NAME
@@ -1340,7 +1340,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         o_s.add_objects(objects, INPUT_OBJECTS_NAME)
         i_s = i_l.get_image_set(0)
         i_s.add(IMAGE_NAME, image)
-        m = cpm.Measurements()
+        m = cpm.Measurement()
         module = cpmi2.IdentifySecondary()
         module.primary_objects.value = INPUT_OBJECTS_NAME
         module.objects_name.value = OUTPUT_OBJECTS_NAME
@@ -1403,7 +1403,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         o_s.add_objects(objects, INPUT_OBJECTS_NAME)
         i_s = i_l.get_image_set(0)
         i_s.add(IMAGE_NAME, image)
-        m = cpm.Measurements()
+        m = cpm.Measurement()
         module = cpmi2.IdentifySecondary()
         module.primary_objects.value = INPUT_OBJECTS_NAME
         module.objects_name.value = OUTPUT_OBJECTS_NAME
@@ -1457,7 +1457,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         o_s.add_objects(objects, INPUT_OBJECTS_NAME)
         i_s = i_l.get_image_set(0)
         i_s.add(IMAGE_NAME, image)
-        m = cpm.Measurements()
+        m = cpm.Measurement()
         module = cpmi2.IdentifySecondary()
         module.primary_objects.value = INPUT_OBJECTS_NAME
         module.objects_name.value = OUTPUT_OBJECTS_NAME
@@ -1552,7 +1552,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         self.assertTrue(isinstance(module, cpmi2.IdentifySecondary))
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpm.Measurements))
+        self.assertTrue(isinstance(m, cpm.Measurement))
         result = m.get_relationships(
                 module.module_num, cpmi2.R_PARENT,
                 module.primary_objects.value, module.objects_name.value)
@@ -1569,7 +1569,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         module.manual_threshold.value = .25
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpm.Measurements))
+        self.assertTrue(isinstance(m, cpm.Measurement))
         result = m.get_relationships(
                 module.module_num, cpmi2.R_PARENT,
                 module.primary_objects.value, module.objects_name.value)
@@ -1600,7 +1600,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
             module.manual_threshold.value = .25
             module.run(workspace)
             m = workspace.measurements
-            self.assertTrue(isinstance(m, cpm.Measurements))
+            self.assertTrue(isinstance(m, cpm.Measurement))
             result = m.get_relationships(
                     module.module_num, cpmi2.R_PARENT,
                     module.primary_objects.value, module.objects_name.value)

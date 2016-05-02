@@ -40,7 +40,7 @@ logger = logging.getLogger(__name__)
 import cellprofiler.cpgridinfo as cpg
 import cellprofiler.cpmodule as cpm
 import cellprofiler.cpimage as cpi
-import cellprofiler.measurements as cpmeas
+import cellprofiler.measurement as cpmeas
 import cellprofiler.setting as cps
 from cellprofiler.setting import YES, NO
 from centrosome.cpmorphology import centers_of_labels

@@ -14,7 +14,7 @@ set_headless()
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.cpimage as cpi
-import cellprofiler.measurements as cpmeas
+import cellprofiler.measurement as cpmeas
 import cellprofiler.object as cpo
 import cellprofiler.pipeline as cpp
 import cellprofiler.workspace as cpw
@@ -41,7 +41,7 @@ class TestEnhanceEdges(unittest.TestCase):
                                   module,
                                   image_set,
                                   object_set,
-                                  cpmeas.Measurements(),
+                                  cpmeas.Measurement(),
                                   image_set_list)
         image_set.add(INPUT_IMAGE_NAME,
                       cpi.Image(image) if mask is None

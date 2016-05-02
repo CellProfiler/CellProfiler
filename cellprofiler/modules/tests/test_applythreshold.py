@@ -15,7 +15,7 @@ set_headless()
 import cellprofiler.pipeline as cpp
 import cellprofiler.cpmodule as cpm
 import cellprofiler.cpimage as cpi
-import cellprofiler.measurements as cpmeas
+import cellprofiler.measurement as cpmeas
 import cellprofiler.object as cpo
 import cellprofiler.workspace as cpw
 import cellprofiler.modules.applythreshold as A
@@ -42,7 +42,7 @@ class TestApplyThreshold(unittest.TestCase):
                                   module,
                                   image_set,
                                   object_set,
-                                  cpmeas.Measurements(),
+                                  cpmeas.Measurement(),
                                   image_set_list)
         image_set.add(INPUT_IMAGE_NAME,
                       cpi.Image(image) if mask is None
@@ -300,7 +300,7 @@ class TestApplyThreshold(unittest.TestCase):
         self.assertTrue(np.all(output.pixel_data == expected))
 
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         image_features = m.get_feature_names(cpmeas.IMAGE)
         #
         # Check measurement columns = image features

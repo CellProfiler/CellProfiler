@@ -48,7 +48,7 @@ from centrosome.outline import outline
 
 import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements as cpmeas
+import cellprofiler.measurement as cpmeas
 import cellprofiler.object as cpo
 import cellprofiler.configuration as cpprefs
 import cellprofiler.setting as cps
@@ -466,7 +466,7 @@ class MeasureObjectNeighbors(cpm.CPModule):
         #
         assert (isinstance(workspace, cpw.Workspace))
         m = workspace.measurements
-        assert (isinstance(m, cpmeas.Measurements))
+        assert (isinstance(m, cpmeas.Measurement))
         image_set = workspace.image_set
         features_and_data = [
             (M_NUMBER_OF_NEIGHBORS, neighbor_count),

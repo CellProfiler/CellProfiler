@@ -18,7 +18,7 @@ import numpy as np
 
 import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements as cpmeas
+import cellprofiler.measurement as cpmeas
 import cellprofiler.setting as cps
 from cellprofiler.setting import YES, NO
 import inflect
@@ -294,7 +294,7 @@ class ImageMath(cpm.CPModule):
         # weave in the measurements
         idx = 0
         measurements = workspace.measurements
-        assert isinstance(measurements, cpmeas.Measurements)
+        assert isinstance(measurements, cpmeas.Measurement)
         for i in range(self.operand_count):
             if not wants_image[i]:
                 value = measurements.get_current_image_measurement(

@@ -17,7 +17,7 @@ import cellprofiler.cpgridinfo as cpg
 import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.object as cpo
-import cellprofiler.measurements as cpmeas
+import cellprofiler.measurement as cpmeas
 import cellprofiler.pipeline as cpp
 import cellprofiler.modules.definegrid as D
 from centrosome.filter import enhance_dark_holes
@@ -160,7 +160,7 @@ class TestDefineGrid(unittest.TestCase):
 
         pipeline.add_listener(callback)
         pipeline.add_module(module)
-        measurements = cpmeas.Measurements()
+        measurements = cpmeas.Measurement()
         workspace = cpw.Workspace(pipeline, module, image_set,
                                   object_set, measurements,
                                   image_set_list)
@@ -208,7 +208,7 @@ class TestDefineGrid(unittest.TestCase):
         self.assertTrue(np.all(gridding.spot_table == spot_table))
 
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         for feature, value in ((D.F_COLUMNS, columns),
                                (D.F_ROWS, rows),
                                (D.F_X_LOCATION_OF_LOWEST_X_SPOT, first_x),
@@ -276,7 +276,7 @@ class TestDefineGrid(unittest.TestCase):
         self.assertTrue(np.all(gridding.spot_table == spot_table))
 
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         for feature, value in ((D.F_COLUMNS, columns),
                                (D.F_ROWS, rows),
                                (D.F_X_LOCATION_OF_LOWEST_X_SPOT, first_x),

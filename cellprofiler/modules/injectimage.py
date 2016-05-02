@@ -7,7 +7,7 @@ import numpy as np
 
 import cellprofiler.cpimage
 import cellprofiler.cpmodule
-import cellprofiler.measurements as cpmeas
+import cellprofiler.measurement as cpmeas
 import cellprofiler.object
 import cellprofiler.setting
 

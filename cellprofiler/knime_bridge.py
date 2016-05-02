@@ -26,7 +26,7 @@ if not hasattr(zmq, "Frame"):
     zmq.Frame = ZmqFrame
 
 import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements as cpmeas
+import cellprofiler.measurement as cpmeas
 import cellprofiler.cpimage as cpi
 import cellprofiler.object as cpo
 import cellprofiler.pipeline as cpp
@@ -305,7 +305,7 @@ class KnimeBridgeServer(threading.Thread):
     def run_group_request(self, session_id, message_type, message):
         '''Handle a run-group request message'''
         pipeline = cpp.Pipeline()
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurement()
         image_group = m.hdf5_dict.hdf5_file.create_group("ImageData")
         if len(message) < 2:
             self.raise_cellprofiler_exception(
@@ -485,7 +485,7 @@ class KnimeBridgeServer(threading.Thread):
         grouping_allowed - true to allow grouped images
         '''
         pipeline = cpp.Pipeline()
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurement()
         object_set = cpo.ObjectSet()
         if len(message) < 2:
             self.raise_cellprofiler_exception(

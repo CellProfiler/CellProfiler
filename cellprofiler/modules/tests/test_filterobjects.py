@@ -20,7 +20,7 @@ import cellprofiler.pipeline as cpp
 import cellprofiler.object as cpo
 import cellprofiler.cpimage as cpi
 import cellprofiler.configuration as cpprefs
-import cellprofiler.measurements as cpm
+import cellprofiler.measurement as cpm
 import cellprofiler.modules.filterobjects as F
 from cellprofiler.modules.identify import \
     FF_PARENT, FF_COUNT, FF_CHILDREN_COUNT, M_NUMBER_OBJECT_NUMBER, \
@@ -47,7 +47,7 @@ class TestFilterObjects(unittest.TestCase):
                                   module,
                                   image_set,
                                   object_set,
-                                  cpm.Measurements(),
+                                  cpm.Measurement(),
                                   image_set_list)
         for key in image_dict.keys():
             image_set.add(key, cpi.Image(image_dict[key]))

@@ -11,7 +11,7 @@ from cStringIO import StringIO
 import numpy as np
 
 import cellprofiler.cpimage as cpi
-import cellprofiler.measurements as cpmeas
+import cellprofiler.measurement as cpmeas
 import cellprofiler.object as cpo
 import cellprofiler.pipeline as cpp
 import cellprofiler.workspace as cpw
@@ -148,7 +148,7 @@ if has_ilastik:
                     module,
                     image_set,
                     cpo.ObjectSet(),
-                    cpmeas.Measurements(),
+                    cpmeas.Measurement(),
                     image_set_list)
             return workspace, module
 

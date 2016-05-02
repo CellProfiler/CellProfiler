@@ -124,7 +124,7 @@ from centrosome.filter import gabor, stretch
 from centrosome.haralick import Haralick, normalized_per_object
 
 import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements as cpmeas
+import cellprofiler.measurement as cpmeas
 import cellprofiler.object as cpo
 import cellprofiler.setting as cps
 from cellprofiler.setting import YES, NO

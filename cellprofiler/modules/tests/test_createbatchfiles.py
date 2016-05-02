@@ -20,7 +20,7 @@ import cellprofiler.workspace as cpw
 import cellprofiler.pipeline as cpp
 import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements as cpmeas
+import cellprofiler.measurement as cpmeas
 import cellprofiler.object as cpo
 import cellprofiler.setting as cps
 import cellprofiler.configuration as cpprefs
@@ -476,7 +476,7 @@ CreateBatchFiles:[module_num:19|svn_version:\'Unknown\'|variable_revision_number
                 mapping = module.mappings[0]
                 mapping.local_directory.value = ipath
                 self.assertFalse(pipeline.in_batch_mode())
-                measurements = cpmeas.Measurements(mode="memory")
+                measurements = cpmeas.Measurement(mode="memory")
                 image_set_list = cpi.ImageSetList()
                 result = pipeline.prepare_run(
                         cpw.Workspace(pipeline, None, None, None,
@@ -489,9 +489,9 @@ CreateBatchFiles:[module_num:19|svn_version:\'Unknown\'|variable_revision_number
                 pipeline = cpp.Pipeline()
                 pipeline.add_listener(callback)
                 image_set_list = cpi.ImageSetList()
-                measurements = cpmeas.Measurements(mode="memory")
+                measurements = cpmeas.Measurement(mode="memory")
                 workspace = cpw.Workspace(pipeline, None, None, None,
-                                          cpmeas.Measurements(),
+                                          cpmeas.Measurement(),
                                           image_set_list)
                 workspace.load(hfile, True)
                 measurements = workspace.measurements

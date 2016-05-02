@@ -10,7 +10,7 @@ from cStringIO import StringIO
 
 import numpy as np
 
-import cellprofiler.measurements as cpmeas
+import cellprofiler.measurement as cpmeas
 import cellprofiler.modules.images as I
 import cellprofiler.pipeline as cpp
 import cellprofiler.setting as cps
@@ -23,7 +23,7 @@ class TestImages(unittest.TestCase):
         # an HDF5 file.
         #
         self.temp_fd, self.temp_filename = tempfile.mkstemp(".h5")
-        self.measurements = cpmeas.Measurements(
+        self.measurements = cpmeas.Measurement(
                 filename=self.temp_filename)
         os.close(self.temp_fd)
 
@@ -106,7 +106,7 @@ Images:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
         pipeline.add_urls([url])
         module.module_num = 1
         pipeline.add_module(module)
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurement()
         workspace = cpw.Workspace(pipeline, module, None, None, m, None)
         file_list = pipeline.get_filtered_file_list(workspace)
         if expected:

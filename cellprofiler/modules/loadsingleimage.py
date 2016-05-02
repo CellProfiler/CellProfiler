@@ -46,7 +46,7 @@ import numpy as np
 
 import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements as cpmeas
+import cellprofiler.measurement as cpmeas
 import cellprofiler.object as cpo
 import cellprofiler.object as cpo
 import cellprofiler.configuration as cpprefs
@@ -321,7 +321,7 @@ class LoadSingleImage(cpm.CPModule):
 
     def prepare_run(self, workspace):
         m = workspace.measurements
-        assert isinstance(m, cpmeas.Measurements)
+        assert isinstance(m, cpmeas.Measurement)
         root = self.get_base_directory(workspace)
 
         if m.image_set_count == 0:
@@ -362,7 +362,7 @@ class LoadSingleImage(cpm.CPModule):
     def run(self, workspace):
         statistics = []
         m = workspace.measurements
-        assert isinstance(m, cpmeas.Measurements)
+        assert isinstance(m, cpmeas.Measurement)
         #
         # Hack: if LoadSingleImage is first, no paths are populated
         #

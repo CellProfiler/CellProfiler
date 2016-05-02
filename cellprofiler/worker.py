@@ -127,7 +127,7 @@ import traceback
 from weakref import WeakSet
 
 import cellprofiler.workspace as cpw
-import cellprofiler.measurements as cpmeas
+import cellprofiler.measurement as cpmeas
 import cellprofiler.configuration as cpprefs
 from cellprofiler.gui.errordialog import ED_STOP, ED_SKIP
 from cellprofiler.analysis import \
@@ -386,7 +386,7 @@ class AnalysisWorker(object):
             else:
                 logger.debug("Has initial measurements")
             # Make a copy of the measurements for writing during this job
-            current_measurements = cpmeas.Measurements(copy=current_measurements)
+            current_measurements = cpmeas.Measurement(copy=current_measurements)
             all_measurements.add(current_measurements)
             job_measurements.append(current_measurements)
 

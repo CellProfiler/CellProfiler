@@ -11,7 +11,7 @@ import uuid
 import numpy as np
 
 import cellprofiler.cpimage
-import cellprofiler.measurements
+import cellprofiler.measurement
 import cellprofiler.object
 import cellprofiler.setting as cps
 import pipeline as cpp

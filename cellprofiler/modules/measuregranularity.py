@@ -37,7 +37,7 @@ from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 
 import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements as cpmeas
+import cellprofiler.measurement as cpmeas
 import cellprofiler.setting as cps
 import cellprofiler.workspace as cpw
 

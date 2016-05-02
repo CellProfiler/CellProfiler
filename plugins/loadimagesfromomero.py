@@ -38,7 +38,7 @@ import wx
 
 import cellprofiler.cpimage as cpimage
 import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements as cpmeas
+import cellprofiler.measurement as cpmeas
 import cellprofiler.configuration as cpp
 import cellprofiler.setting as cps
 # get the default cellprofiler image names for the different

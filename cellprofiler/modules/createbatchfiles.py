@@ -36,14 +36,14 @@ import zlib
 
 import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements as cpmeas
+import cellprofiler.measurement as cpmeas
 import cellprofiler.pipeline as cpp
 import cellprofiler.setting as cps
 from cellprofiler.setting import YES, NO
 import cellprofiler.configuration as cpprefs
 import cellprofiler.workspace as cpw
 
-from cellprofiler.measurements import F_BATCH_DATA, F_BATCH_DATA_H5
+from cellprofiler.measurement import F_BATCH_DATA, F_BATCH_DATA_H5
 
 '''# of settings aside from the mappings'''
 S_FIXED_COUNT = 9
@@ -279,11 +279,11 @@ class CreateBatchFiles(cpm.CPModule):
 
         image_set_list = workspace.image_set_list
         pipeline = workspace.pipeline
-        m = cpmeas.Measurements(copy=workspace.measurements,
-                                filename=h5_path)
+        m = cpmeas.Measurement(copy=workspace.measurements,
+                               filename=h5_path)
         try:
             assert isinstance(pipeline, cpp.Pipeline)
-            assert isinstance(m, cpmeas.Measurements)
+            assert isinstance(m, cpmeas.Measurement)
 
             orig_pipeline = pipeline
             pipeline = pipeline.copy()

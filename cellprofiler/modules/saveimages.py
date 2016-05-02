@@ -29,7 +29,7 @@ import scipy.io.matlab.mio
 logger = logging.getLogger(__name__)
 
 import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements as cpmeas
+import cellprofiler.measurement as cpmeas
 import cellprofiler.setting as cps
 from cellprofiler.setting import YES, NO
 import cellprofiler.configuration as cpp

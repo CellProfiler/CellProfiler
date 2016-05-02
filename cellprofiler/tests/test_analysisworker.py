@@ -17,7 +17,7 @@ import zmq
 
 import cellprofiler.analysis as cpanalysis
 import cellprofiler.worker as cpaw
-import cellprofiler.measurements as cpmeas
+import cellprofiler.measurement as cpmeas
 import cellprofiler.pipeline as cpp
 import cellprofiler.configuration as cpprefs
 import cellprofiler.utilities.zmqrequest as cpzmq
@@ -1067,7 +1067,7 @@ def get_measurements_for_good_pipeline(nimages=1,
                                        group_numbers=None):
     '''Get an appropriately initialized measurements structure for the good pipeline'''
     path = os.path.join(example_images_directory(), "ExampleSBSImages")
-    m = cpmeas.Measurements()
+    m = cpmeas.Measurement()
     if group_numbers is None:
         group_numbers = [1] * nimages
     group_indexes = [1]

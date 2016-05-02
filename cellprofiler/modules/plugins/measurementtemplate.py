@@ -39,7 +39,7 @@ import scipy.ndimage as scind
 
 import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements as cpmeas
+import cellprofiler.measurement as cpmeas
 import cellprofiler.object as cpo
 import cellprofiler.setting as cps
 
@@ -161,7 +161,7 @@ class MeasurementTemplate(cpm.CPModule):
         # make in here
         #
         meas = workspace.measurements
-        assert isinstance(meas, cpmeas.Measurements)
+        assert isinstance(meas, cpmeas.Measurement)
         #
         # We record some statistics which we will display later.
         # We format them so that Matplotlib can display them in a table.

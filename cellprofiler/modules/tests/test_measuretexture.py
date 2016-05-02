@@ -18,7 +18,7 @@ from scipy.io.matlab import loadmat
 
 import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements as cpmeas
+import cellprofiler.measurement as cpmeas
 import cellprofiler.modules.measuretexture as M
 import cellprofiler.object as cpo
 import cellprofiler.pipeline as cpp
@@ -46,7 +46,7 @@ class TestMeasureTexture(unittest.TestCase):
                                   module,
                                   image_set,
                                   object_set,
-                                  cpmeas.Measurements(),
+                                  cpmeas.Measurement(),
                                   image_set_list)
         image_set.add(INPUT_IMAGE_NAME, cpi.Image(image, convert=convert,
                                                   mask=mask))
@@ -450,7 +450,7 @@ MeasureTexture:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|
         module.wants_gabor.value = False
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         for object_name in (cpmeas.IMAGE, INPUT_OBJECTS_NAME):
             features = m.get_feature_names(object_name)
             self.assertTrue(all([f.find(M.F_GABOR) == -1 for f in features]))
@@ -537,7 +537,7 @@ MeasureTexture:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|
                                                 np.zeros((10, 10), int))
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         for f in m.get_feature_names(INPUT_OBJECTS_NAME):
             if f.startswith(M.TEXTURE):
                 values = m.get_current_measurement(INPUT_OBJECTS_NAME, f)

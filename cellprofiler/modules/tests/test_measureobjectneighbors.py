@@ -15,7 +15,7 @@ set_headless()
 import cellprofiler.pipeline as cpp
 import cellprofiler.cpmodule as cpm
 import cellprofiler.cpimage as cpi
-import cellprofiler.measurements as cpmeas
+import cellprofiler.measurement as cpmeas
 import cellprofiler.object as cpo
 import cellprofiler.workspace as cpw
 import cellprofiler.modules.measureobjectneighbors as M
@@ -37,7 +37,7 @@ class TestMeasureObjectNeighbors(unittest.TestCase):
         object_set = cpo.ObjectSet()
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        measurements = cpmeas.Measurements()
+        measurements = cpmeas.Measurement()
         measurements.group_index = 1
         measurements.group_number = 1
         workspace = cpw.Workspace(pipeline,
@@ -562,7 +562,7 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
                 self.assertTrue(isinstance(module, M.MeasureObjectNeighbors))
                 module.run(workspace)
                 m = workspace.measurements
-                self.assertTrue(isinstance(m, cpmeas.Measurements))
+                self.assertTrue(isinstance(m, cpmeas.Measurement))
                 for feature in module.all_features:
                     v = m.get_current_measurement(
                             OBJECTS_NAME, module.get_measurement_name(feature))
@@ -579,7 +579,7 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
             self.assertTrue(isinstance(module, M.MeasureObjectNeighbors))
             module.run(workspace)
             m = workspace.measurements
-            self.assertTrue(isinstance(m, cpmeas.Measurements))
+            self.assertTrue(isinstance(m, cpmeas.Measurement))
             v = m.get_current_measurement(
                     OBJECTS_NAME,
                     module.get_measurement_name(M.M_FIRST_CLOSEST_OBJECT_NUMBER))
@@ -612,7 +612,7 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
         self.assertTrue(isinstance(module, M.MeasureObjectNeighbors))
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         v = m.get_current_measurement(
                 OBJECTS_NAME,
                 module.get_measurement_name(M.M_FIRST_CLOSEST_OBJECT_NUMBER))
@@ -657,7 +657,7 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
                 labels, M.D_WITHIN, 2)
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         k = m.get_relationship_groups()
         self.assertEqual(len(k), 1)
         k = k[0]
@@ -710,7 +710,7 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
                 labels, M.D_WITHIN, 2, nlabels)
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         k = m.get_relationship_groups()
         self.assertEqual(len(k), 1)
         k = k[0]
@@ -795,7 +795,7 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
         self.assertTrue(isinstance(module, M.MeasureObjectNeighbors))
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         ftr = module.get_measurement_name(M.M_FIRST_CLOSEST_OBJECT_NUMBER)
         values = m[OBJECTS_NAME, ftr]
         self.assertEqual(values[1], 1)

@@ -67,7 +67,7 @@ from scipy.linalg.basic import lstsq
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 import centrosome.haralick
 import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements as cpmeas
+import cellprofiler.measurement as cpmeas
 import cellprofiler.setting as cps
 from cellprofiler.setting import YES, NO
 import centrosome.threshold as cpthresh

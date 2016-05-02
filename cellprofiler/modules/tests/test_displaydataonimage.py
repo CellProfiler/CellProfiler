@@ -17,7 +17,7 @@ import cellprofiler.cpgridinfo as cpg
 import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.object as cpo
-import cellprofiler.measurements as cpmeas
+import cellprofiler.measurement as cpmeas
 import cellprofiler.pipeline as cpp
 import cellprofiler.modules.displaydataonimage as D
 from centrosome.cpmorphology import centers_of_labels
@@ -281,7 +281,7 @@ DisplayDataOnImage:[module_num:2|svn_version:\'Unknown\'|variable_revision_numbe
         module.image_name.value = INPUT_IMAGE_NAME
         module.display_image.value = OUTPUT_IMAGE_NAME
         module.objects_name.value = OBJECTS_NAME
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurement()
 
         if labels is None:
             module.objects_or_image.value = D.OI_IMAGE

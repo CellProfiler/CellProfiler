@@ -23,7 +23,7 @@ import cellprofiler.setting as cps
 import cellprofiler.cpimage as cpi
 import cellprofiler.workspace as cpw
 import cellprofiler.object as cpo
-import cellprofiler.measurements as cpmeas
+import cellprofiler.measurement as cpmeas
 import cellprofiler.configuration as cpprefs
 
 import cellprofiler.modules.flagimage as F
@@ -517,7 +517,7 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
         returns module, workspace
         '''
         module = F.FlagImage()
-        measurements = cpmeas.Measurements()
+        measurements = cpmeas.Measurement()
         for i in range(len(image_measurements)):
             measurements.add_image_measurement(image_measurement_name(i),
                                                image_measurements[i])
@@ -587,7 +587,7 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
         measurement.maximum_value.value = .95
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         self.assertTrue(MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE))
         self.assertEqual(m.get_current_image_measurement(MEASUREMENT_NAME), 1)
         self.assertEqual(workspace.disposition, cpw.DISPOSITION_CONTINUE)
@@ -604,7 +604,7 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
         measurement.wants_maximum.value = False
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         self.assertTrue(MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE))
         self.assertEqual(m.get_current_image_measurement(MEASUREMENT_NAME), 0)
 
@@ -628,7 +628,7 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
                 measurement.maximum_value.value = .2
             module.run(workspace)
             m = workspace.measurements
-            self.assertTrue(isinstance(m, cpmeas.Measurements))
+            self.assertTrue(isinstance(m, cpmeas.Measurement))
             self.assertTrue(MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE))
             self.assertEqual(m.get_current_image_measurement(MEASUREMENT_NAME), 1)
 
@@ -652,7 +652,7 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
                 measurement.maximum_value.value = .2
             module.run(workspace)
             m = workspace.measurements
-            self.assertTrue(isinstance(m, cpmeas.Measurements))
+            self.assertTrue(isinstance(m, cpmeas.Measurement))
             self.assertTrue(MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE))
             self.assertEqual(m.get_current_image_measurement(MEASUREMENT_NAME), 1)
 
@@ -676,7 +676,7 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
                 measurement.maximum_value.value = .3
             module.run(workspace)
             m = workspace.measurements
-            self.assertTrue(isinstance(m, cpmeas.Measurements))
+            self.assertTrue(isinstance(m, cpmeas.Measurement))
             self.assertTrue(MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE))
             self.assertEqual(m.get_current_image_measurement(MEASUREMENT_NAME), 0)
 
@@ -700,7 +700,7 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
                 measurement.minimum_value.value = .15
             module.run(workspace)
             m = workspace.measurements
-            self.assertTrue(isinstance(m, cpmeas.Measurements))
+            self.assertTrue(isinstance(m, cpmeas.Measurement))
             self.assertTrue(MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE))
             self.assertEqual(m.get_current_image_measurement(MEASUREMENT_NAME), 1)
 
@@ -724,7 +724,7 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
                 measurement.minimum_value.value = .15
             module.run(workspace)
             m = workspace.measurements
-            self.assertTrue(isinstance(m, cpmeas.Measurements))
+            self.assertTrue(isinstance(m, cpmeas.Measurement))
             self.assertTrue(MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE))
             self.assertEqual(m.get_current_image_measurement(MEASUREMENT_NAME), 1)
 
@@ -748,7 +748,7 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
                 measurement.minimum_value.value = .05
             module.run(workspace)
             m = workspace.measurements
-            self.assertTrue(isinstance(m, cpmeas.Measurements))
+            self.assertTrue(isinstance(m, cpmeas.Measurement))
             self.assertTrue(MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE))
             self.assertEqual(m.get_current_image_measurement(MEASUREMENT_NAME), 0)
 
@@ -771,7 +771,7 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
                 measurement.maximum_value.value = .5
             module.run(workspace)
             m = workspace.measurements
-            self.assertTrue(isinstance(m, cpmeas.Measurements))
+            self.assertTrue(isinstance(m, cpmeas.Measurement))
             self.assertTrue(MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE))
             self.assertEqual(m.get_current_image_measurement(MEASUREMENT_NAME),
                              expected)
@@ -795,7 +795,7 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
                 measurement.maximum_value.value = .5
             module.run(workspace)
             m = workspace.measurements
-            self.assertTrue(isinstance(m, cpmeas.Measurements))
+            self.assertTrue(isinstance(m, cpmeas.Measurement))
             self.assertTrue(MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE))
             self.assertEqual(m.get_current_image_measurement(MEASUREMENT_NAME),
                              expected)
@@ -839,7 +839,7 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
         measurement.maximum_value.value = .95
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         self.assertTrue(MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE))
         self.assertEqual(m.get_current_image_measurement(MEASUREMENT_NAME), 1)
         self.assertEqual(workspace.disposition, cpw.DISPOSITION_SKIP)
@@ -857,7 +857,7 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
         measurement.wants_maximum.value = False
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         self.assertTrue(MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE))
         self.assertEqual(m.get_current_image_measurement(MEASUREMENT_NAME), 0)
         self.assertEqual(workspace.disposition, cpw.DISPOSITION_CONTINUE)
@@ -886,7 +886,7 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
                 measurement.rules_class.set_value([str(choice)])
                 module.run(workspace)
                 m = workspace.measurements
-                self.assertTrue(isinstance(m, cpmeas.Measurements))
+                self.assertTrue(isinstance(m, cpmeas.Measurement))
                 self.assertIn(MEASUREMENT_NAME, m.get_feature_names(cpmeas.IMAGE))
                 self.assertEqual(
                         m.get_current_image_measurement(MEASUREMENT_NAME), expected)
@@ -923,7 +923,7 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
                     measurement.rules_class.set_value(rules_classes)
 
                     m = workspace.measurements
-                    self.assertTrue(isinstance(m, cpmeas.Measurements))
+                    self.assertTrue(isinstance(m, cpmeas.Measurement))
                     module.run(workspace)
                     self.assertTrue(MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE))
                     value = m.get_current_image_measurement(MEASUREMENT_NAME)

@@ -16,7 +16,7 @@ import cellprofiler.workspace as cpw
 import cellprofiler.pipeline as cpp
 import cellprofiler.object as cpo
 import cellprofiler.cpimage as cpi
-import cellprofiler.measurements as cpm
+import cellprofiler.measurement as cpm
 import cellprofiler.modules.invertforprinting as I
 
 I_RED_IN = "RedInput"
@@ -151,7 +151,7 @@ class TestInvertForPrinting(unittest.TestCase):
         pipeline.add_listener(callback)
         workspace = cpw.Workspace(pipeline, module, image_set,
                                   cpo.ObjectSet(),
-                                  cpm.Measurements(),
+                                  cpm.Measurement(),
                                   image_set_list)
         module.run(workspace)
         result = {}

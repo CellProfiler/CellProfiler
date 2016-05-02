@@ -18,7 +18,7 @@ set_headless()
 import cellprofiler.pipeline as cpp
 import cellprofiler.cpmodule as cpm
 import cellprofiler.cpimage as cpi
-import cellprofiler.measurements as cpmeas
+import cellprofiler.measurement as cpmeas
 import cellprofiler.object as cpo
 import cellprofiler.workspace as cpw
 
@@ -480,7 +480,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
             modify_module_fn(module)
         pipeline = cpp.Pipeline()
         pipeline.add_module(module)
-        measurements = cpmeas.Measurements()
+        measurements = cpmeas.Measurement()
         if measurement is not None:
             measurements.add_image_measurement(MEASUREMENT_NAME, str(measurement))
         workspace = cpw.Workspace(pipeline, module, image_set, cpo.ObjectSet(),
@@ -852,7 +852,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
         #
         r = np.random.RandomState()
         r.seed(1101)
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurement()
         pixel_data = r.uniform(size=(20, 20))
         m.add("inputimage", cpi.Image(pixel_data))
         module = I.ImageMath()
@@ -874,7 +874,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
         #
         r = np.random.RandomState()
         r.seed(1102)
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurement()
         pixel_data = r.uniform(size=(20, 20)) > .5
         m.add("inputimage", cpi.Image(pixel_data))
         module = I.ImageMath()

@@ -16,7 +16,7 @@ import cellprofiler.workspace as cpw
 import cellprofiler.pipeline as cpp
 import cellprofiler.object as cpo
 import cellprofiler.cpimage as cpi
-import cellprofiler.measurements as cpmeas
+import cellprofiler.measurement as cpmeas
 import cellprofiler.modules.flipandrotate as F
 from centrosome.cpmorphology import draw_line
 
@@ -267,7 +267,7 @@ Rotate:[module_num:1|svn_version:\'8913\'|variable_revision_number:2|show_window
             self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
 
         pipeline.add_listener(error_callback)
-        measurements = cpmeas.Measurements()
+        measurements = cpmeas.Measurement()
         workspace = cpw.Workspace(pipeline, module, image_set,
                                   cpo.ObjectSet(), measurements,
                                   image_set_list)

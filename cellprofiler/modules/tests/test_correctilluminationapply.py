@@ -22,7 +22,7 @@ import cellprofiler.cpimage as cpi
 import cellprofiler.pipeline as cpp
 import cellprofiler.workspace as cpw
 import cellprofiler.object as cpo
-import cellprofiler.measurements as cpm
+import cellprofiler.measurement as cpm
 
 
 class TestCorrectIlluminationApply(unittest.TestCase):
@@ -167,7 +167,7 @@ class TestCorrectIlluminationApply(unittest.TestCase):
         image.divide_or_subtract.value = cpmcia.DOS_DIVIDE
         image.rescale_option = cpmcia.RE_NONE
         image_set_list = cpi.ImageSetList()
-        measurements = cpm.Measurements()
+        measurements = cpm.Measurement()
         workspace = cpw.Workspace(pipeline, None, None, None,
                                   measurements, image_set_list)
         pipeline.prepare_run(workspace)
@@ -212,9 +212,9 @@ class TestCorrectIlluminationApply(unittest.TestCase):
         image.corrected_image_name.value = "OutputImage"
         image.divide_or_subtract.value = cpmcia.DOS_SUBTRACT
         image.rescale_option = cpmcia.RE_NONE
-        measurements = cpm.Measurements()
+        measurements = cpm.Measurement()
         image_set_list = cpi.ImageSetList()
-        measurements = cpm.Measurements()
+        measurements = cpm.Measurement()
         workspace = cpw.Workspace(pipeline, None, None, None,
                                   measurements, image_set_list)
         pipeline.prepare_run(workspace)
@@ -259,9 +259,9 @@ class TestCorrectIlluminationApply(unittest.TestCase):
         image.corrected_image_name.value = "OutputImage"
         image.divide_or_subtract.value = cpmcia.DOS_SUBTRACT
         image.rescale_option = cpmcia.RE_NONE
-        measurements = cpm.Measurements()
+        measurements = cpm.Measurement()
         image_set_list = cpi.ImageSetList()
-        measurements = cpm.Measurements()
+        measurements = cpm.Measurement()
         workspace = cpw.Workspace(pipeline, None, None, None,
                                   measurements, image_set_list)
         pipeline.prepare_run(workspace)
@@ -306,9 +306,9 @@ class TestCorrectIlluminationApply(unittest.TestCase):
         image.corrected_image_name.value = "OutputImage"
         image.divide_or_subtract.value = cpmcia.DOS_SUBTRACT
         image.rescale_option = cpmcia.RE_NONE
-        measurements = cpm.Measurements()
+        measurements = cpm.Measurement()
         image_set_list = cpi.ImageSetList()
-        measurements = cpm.Measurements()
+        measurements = cpm.Measurement()
         workspace = cpw.Workspace(pipeline, None, None, None,
                                   measurements, image_set_list)
         pipeline.prepare_run(workspace)

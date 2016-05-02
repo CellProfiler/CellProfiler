@@ -46,7 +46,7 @@ import cellprofiler.cpmodule as cpm
 import cellprofiler.object as cpo
 import cellprofiler.setting as cps
 from cellprofiler.setting import YES, NO
-import cellprofiler.measurements as cpmeas
+import cellprofiler.measurement as cpmeas
 import cellprofiler.configuration as cpprefs
 import cellprofiler.utilities.rules as cprules
 from centrosome.outline import outline

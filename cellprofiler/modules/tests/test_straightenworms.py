@@ -8,7 +8,7 @@ import centrosome.cpmorphology as morph
 import numpy as np
 
 import cellprofiler.cpimage as cpi
-import cellprofiler.measurements as cpmeas
+import cellprofiler.measurement as cpmeas
 import cellprofiler.modules.identify as I
 import cellprofiler.modules.straightenworms as S
 import cellprofiler.object as cpo
@@ -177,7 +177,7 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
 
         pipeline.add_listener(callback)
 
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurement()
         for i, (y, x) in enumerate(control_points):
             for v, f in ((x, S.F_CONTROL_POINT_X),
                          (y, S.F_CONTROL_POINT_Y)):
@@ -305,7 +305,7 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
         labels = objectset.get_objects(STRAIGHTENED_OBJECTS_NAME).segmented
         self.assertTrue(np.all(labels == 0))
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         self.assertEqual(m.get_current_image_measurement(
                 "_".join((I.C_COUNT, STRAIGHTENED_OBJECTS_NAME))), 0)
         self.assertEqual(len(m.get_current_measurement(
@@ -339,7 +339,7 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
         np.testing.assert_almost_equal(pixels, image[16:35, 10:21])
 
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         self.assertEqual(m.get_current_image_measurement(
                 "_".join((I.C_COUNT, STRAIGHTENED_OBJECTS_NAME))), 1)
         v = m.get_current_measurement(
@@ -645,7 +645,7 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
         module.number_of_segments.value = 5
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         for i in range(5):
             for ftr, function in (
                     (S.FTR_MEAN_INTENSITY, np.mean),
@@ -676,7 +676,7 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
         module.number_of_stripes.value = 3
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         oo = workspace.object_set.get_objects(OBJECTS_NAME)
         #
         # The worm goes from 20 to 34. Each segment is 15 / 4 = 3 3/4 long
@@ -746,7 +746,7 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
         module.number_of_stripes.value = 3
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cpmeas.Measurement))
         oo = workspace.object_set.get_objects(OBJECTS_NAME)
         image = workspace.image_set.get_image(STRAIGHTENED_IMAGE_NAME).pixel_data
         f1 = 1.0 / 3.0

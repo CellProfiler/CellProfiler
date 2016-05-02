@@ -51,7 +51,7 @@ from scipy.sparse import coo_matrix
 
 import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements as cpmeas
+import cellprofiler.measurement as cpmeas
 import cellprofiler.object as cpo
 import cellprofiler.configuration as cpprefs
 import cellprofiler.setting as cps
@@ -545,7 +545,7 @@ class MeasureObjectIntensityDistribution(cpm.CPModule):
                                                        image.pixel_data)
         nobjects = np.max(objects.segmented)
         measurements = workspace.measurements
-        assert isinstance(measurements, cpmeas.Measurements)
+        assert isinstance(measurements, cpmeas.Measurement)
         heatmaps = {}
         for heatmap in self.heatmaps:
             if heatmap.object_name.get_objects_name() == object_name and \

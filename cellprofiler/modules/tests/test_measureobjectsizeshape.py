@@ -14,7 +14,7 @@ set_headless()
 import cellprofiler.pipeline as cpp
 import cellprofiler.modules.measureobjectsizeshape as cpmoas
 import cellprofiler.modules.injectimage as ii
-import cellprofiler.measurements as cpmeas
+import cellprofiler.measurement as cpmeas
 import cellprofiler.workspace as cpw
 import cellprofiler.object as cpo
 import cellprofiler.cpimage as cpi
@@ -30,7 +30,7 @@ class TestMeasureObjectSizeShape(unittest.TestCase):
         objects = cpo.Object()
         objects.segmented = labels
         object_set.add_objects(objects, OBJECTS_NAME)
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurement()
         module = cpmoas.MeasureObjectAreaShape()
         module.module_num = 1
         module.object_groups[0].name.value = OBJECTS_NAME
@@ -101,7 +101,7 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
         module.set_settings_from_values(settings, 1, module.module_class())
         module.module_num = 1
         image_set_list = cpi.ImageSetList()
-        measurements = cpmeas.Measurements()
+        measurements = cpmeas.Measurement()
         pipeline = cpp.Pipeline()
         pipeline.add_module(module)
         workspace = cpw.Workspace(pipeline, module,
@@ -143,7 +143,7 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
         module.set_settings_from_values(settings, 1, module.module_class())
         module.module_num = 1
         image_set_list = cpi.ImageSetList()
-        measurements = cpmeas.Measurements()
+        measurements = cpmeas.Measurement()
         pipeline = cpp.Pipeline()
         pipeline.add_module(module)
         workspace = cpw.Workspace(pipeline, module,
@@ -232,7 +232,7 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
         object_set.add_objects(objects, "SomeObjects")
         module.module_num = 1
         image_set_list = cpi.ImageSetList()
-        measurements = cpmeas.Measurements()
+        measurements = cpmeas.Measurement()
         pipeline = cpp.Pipeline()
         pipeline.add_module(module)
 
@@ -268,7 +268,7 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
         module.calculate_zernikes.value = True
         module.module_num = 1
         image_set_list = cpi.ImageSetList()
-        measurements = cpmeas.Measurements()
+        measurements = cpmeas.Measurement()
         pipeline = cpp.Pipeline()
         pipeline.add_module(module)
 
@@ -303,7 +303,7 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
         object_set.add_objects(objects, "SomeObjects")
         module.module_num = 1
         image_set_list = cpi.ImageSetList()
-        measurements = cpmeas.Measurements()
+        measurements = cpmeas.Measurement()
         pipeline = cpp.Pipeline()
         pipeline.add_module(module)
 
@@ -348,7 +348,7 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
             object_set.add_objects(objects, "SomeObjects")
             module.module_num = 1
             image_set_list = cpi.ImageSetList()
-            measurements = cpmeas.Measurements()
+            measurements = cpmeas.Measurement()
             mlist.append(measurements)
             pipeline = cpp.Pipeline()
             pipeline.add_module(module)
@@ -366,7 +366,7 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
             if oname != "SomeObjects":
                 continue
             measurements = mlist[0]
-            self.assertTrue(isinstance(measurements, cpmeas.Measurements))
+            self.assertTrue(isinstance(measurements, cpmeas.Measurement))
             v1 = measurements.get_current_measurement(oname, feature)
             self.assertEqual(len(v1), 1)
             v1 = v1[0]

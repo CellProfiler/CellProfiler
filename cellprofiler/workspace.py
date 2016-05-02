@@ -244,7 +244,7 @@ class Workspace(object):
     def get_module_figure(self, module, image_set_number, parent=None):
         """Create a CPFigure window or find one already created"""
         import cellprofiler.gui.cpfigure as cpf
-        import cellprofiler.measurements as cpmeas
+        import cellprofiler.measurement as cpmeas
 
         # catch any background threads trying to call display functions.
         assert not self.__in_background
@@ -431,7 +431,7 @@ class Workspace(object):
         import shutil
         from .pipeline import M_PIPELINE, M_DEFAULT_INPUT_FOLDER, \
             M_DEFAULT_OUTPUT_FOLDER
-        import cellprofiler.measurements as cpmeas
+        import cellprofiler.measurement as cpmeas
         from cellprofiler.configuration import set_default_image_directory, \
             set_default_output_directory
 
@@ -450,7 +450,7 @@ class Workspace(object):
 
             shutil.copyfile(filename, self.__filename)
 
-            self.__measurements = cpmeas.Measurements(
+            self.__measurements = cpmeas.Measurement(
                     filename=self.__filename, mode="r+")
             if self.__file_list is not None:
                 self.__file_list.remove_notification_callback(
@@ -489,12 +489,12 @@ class Workspace(object):
 
         filename - name of the workspace file
         '''
-        from .measurements import Measurements, make_temporary_file
-        if isinstance(self.measurements, Measurements):
+        from .measurement import Measurement, make_temporary_file
+        if isinstance(self.measurements, Measurement):
             self.close()
 
         fd, self.__filename = make_temporary_file()
-        self.__measurements = Measurements(
+        self.__measurements = Measurement(
                 filename=self.__filename, mode="w")
         os.close(fd)
         if self.__file_list is not None:
@@ -573,7 +573,7 @@ class Workspace(object):
         assume that the cache reflects pipeline + file list unless "force"
         is true.
         '''
-        import cellprofiler.measurements as cpmeas
+        import cellprofiler.measurement as cpmeas
         if len(self.measurements.get_image_numbers()) == 0 or force:
             self.measurements.clear()
             self.save_pipeline_to_measurements()

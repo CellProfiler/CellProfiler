@@ -19,7 +19,7 @@ set_headless()
 import cellprofiler.pipeline as cpp
 import cellprofiler.cpmodule as cpm
 import cellprofiler.cpimage as cpi
-import cellprofiler.measurements as cpmeas
+import cellprofiler.measurement as cpmeas
 import cellprofiler.object as cpo
 import cellprofiler.workspace as cpw
 
@@ -193,7 +193,7 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
         module.projection_type.value = projection_type
         module.frequency.value = frequency
         pipeline.add_module(module)
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurement()
         workspace = cpw.Workspace(pipeline, module, None, None, m, image_set_list)
         module.prepare_run(workspace)
         module.prepare_group(workspace, {}, range(1, len(images_and_masks) + 1))

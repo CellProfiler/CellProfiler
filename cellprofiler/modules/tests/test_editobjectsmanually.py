@@ -16,7 +16,7 @@ import cellprofiler.workspace as cpw
 import cellprofiler.pipeline as cpp
 import cellprofiler.object as cpo
 import cellprofiler.cpimage as cpi
-import cellprofiler.measurements as cpmeas
+import cellprofiler.measurement as cpmeas
 import cellprofiler.modules.editobjectsmanually as E
 
 INPUT_OBJECTS_NAME = "inputobjects"

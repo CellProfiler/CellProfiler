@@ -22,7 +22,7 @@ import zmq
 
 import cellprofiler
 import cellprofiler.cpimage as cpimage
-import cellprofiler.measurements as cpmeas
+import cellprofiler.measurement as cpmeas
 import cellprofiler.configuration as cpprefs
 import cellprofiler.workspace as cpw
 from cellprofiler.utilities.zmqrequest import AnalysisRequest, Request, Reply, UpstreamExit
@@ -72,7 +72,7 @@ class Analysis(object):
         to measurements_filename, optionally starting with previous
         measurements.'''
         self.pipeline = pipeline
-        initial_measurements = cpmeas.Measurements(copy=initial_measurements)
+        initial_measurements = cpmeas.Measurement(copy=initial_measurements)
         self.initial_measurements_buf = initial_measurements.file_contents()
         initial_measurements.close()
         self.output_path = measurements_filename
@@ -321,9 +321,9 @@ class AnalysisRunner(object):
                     fd = os.fdopen(fd, "wb")
                     fd.write(self.initial_measurements_buf)
                     fd.close()
-                    initial_measurements = cpmeas.Measurements(
+                    initial_measurements = cpmeas.Measurement(
                             filename=filename, mode="r")
-                    measurements = cpmeas.Measurements(
+                    measurements = cpmeas.Measurement(
                             image_set_start=None,
                             copy=initial_measurements,
                             mode="a")
@@ -334,9 +334,9 @@ class AnalysisRunner(object):
             else:
                 with open(self.output_path, "wb") as fd:
                     fd.write(self.initial_measurements_buf)
-                measurements = cpmeas.Measurements(image_set_start=None,
-                                                   filename=self.output_path,
-                                                   mode="a")
+                measurements = cpmeas.Measurement(image_set_start=None,
+                                                  filename=self.output_path,
+                                                  mode="a")
             # The shared dicts are needed in jobserver()
             self.shared_dicts = [m.get_dictionary() for m in self.pipeline.modules()]
             workspace = cpw.Workspace(self.pipeline, None, None, None,

@@ -19,7 +19,7 @@ import numpy.lib.index_tricks
 
 import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements as cpmeas
+import cellprofiler.measurement as cpmeas
 import cellprofiler.modules
 import cellprofiler.modules.loadimages as LI
 import cellprofiler.object as cpo
@@ -502,7 +502,7 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
                      post_run_callback=post_run)
         module.module_num = 1
         pipeline.add_module(module)
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurement()
         workspace = cpw.Workspace(pipeline, module, m, None, m,
                                   cpi.ImageSetList)
         workspace.post_group_display_handler = post_group_display_handler
@@ -558,7 +558,7 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
         module.module_num = 1
         pipeline.add_module(module)
         workspace = cpw.Workspace(
-                pipeline, None, None, None, cpmeas.Measurements(),
+                pipeline, None, None, None, cpmeas.Measurement(),
                 cpi.ImageSetList())
         self.assertFalse(pipeline.prepare_run(workspace))
         self.assertEqual(workspace.measurements.image_set_count, 0)
@@ -607,7 +607,7 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
         module = cellprofiler.modules.instantiate_module("Align")
         module.module_num = 1
         pipeline.add_module(module)
-        measurements = cpmeas.Measurements()
+        measurements = cpmeas.Measurement()
         my_measurement = [np.random.uniform(size=np.random.randint(3, 25))
                           for i in range(20)]
         my_image_measurement = [np.random.uniform() for i in range(20)]
@@ -657,7 +657,7 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
         module = cellprofiler.modules.instantiate_module("Align")
         module.module_num = 1
         pipeline.add_module(module)
-        measurements = cpmeas.Measurements()
+        measurements = cpmeas.Measurement()
         # m2 and m3 should go into panic mode because they differ by a cap
         m1_name = "dalkzfsrqoiualkjfrqealkjfqroupifaaalfdskquyalkhfaafdsafdsqteqteqtew"
         m2_name = "lkjxKJDSALKJDSAWQOIULKJFASOIUQELKJFAOIUQRLKFDSAOIURQLKFDSAQOIRALFAJ"

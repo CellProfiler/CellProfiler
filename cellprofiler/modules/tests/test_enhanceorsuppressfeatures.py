@@ -15,7 +15,7 @@ import cellprofiler.workspace as cpw
 import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.object as cpo
-import cellprofiler.measurements as cpmeas
+import cellprofiler.measurement as cpmeas
 import cellprofiler.pipeline as cpp
 import cellprofiler.modules.enhanceorsuppressfeatures as E
 from centrosome.filter import enhance_dark_holes
@@ -36,7 +36,7 @@ class TestEnhanceOrSuppressSpeckles(unittest.TestCase):
                                   module,
                                   image_set,
                                   object_set,
-                                  cpmeas.Measurements(),
+                                  cpmeas.Measurement(),
                                   image_set_list)
         image_set.add(INPUT_IMAGE_NAME, cpi.Image(image, mask))
         module.image_name.value = INPUT_IMAGE_NAME

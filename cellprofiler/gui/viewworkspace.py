@@ -6,7 +6,7 @@ import cellprofiler.gui.cpartists
 import cellprofiler.gui.cpfigure
 import cellprofiler.gui.help
 import cellprofiler.gui.htmldialog
-import cellprofiler.measurements
+import cellprofiler.measurement
 import cellprofiler.modules.identify
 import cellprofiler.configuration
 import matplotlib
@@ -588,7 +588,7 @@ class ViewWorkspace(object):
             artist.remove()
 
         m = self.workspace.measurements
-        assert isinstance(m, cellprofiler.measurements.Measurements)
+        assert isinstance(m, cellprofiler.measurement.Measurement)
         title_lines = []
         object_values = {}
         for measurement_row in self.measurement_rows:
@@ -603,7 +603,7 @@ class ViewWorkspace(object):
                 continue
 
             value = m[object_name, feature]
-            if object_name in (cellprofiler.measurements.IMAGE, cellprofiler.measurements.EXPERIMENT):
+            if object_name in (cellprofiler.measurement.IMAGE, cellprofiler.measurement.EXPERIMENT):
                 if isinstance(value, int):
                     fmt = "%s: %d"
                 elif isinstance(value, float):

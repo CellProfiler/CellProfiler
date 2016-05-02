@@ -6,7 +6,7 @@ import cellprofiler.cpimage
 import cellprofiler.gui
 import cellprofiler.gui.cpfigure
 import cellprofiler.gui.moduleview
-import cellprofiler.measurements
+import cellprofiler.measurement
 import cellprofiler.modules
 import cellprofiler.object
 import cellprofiler.pipeline
@@ -137,7 +137,7 @@ class DataToolFrame(wx.Frame):
             assert isinstance(dlg, wx.FileDialog)
             if dlg.ShowModal() == wx.ID_OK:
                 if dlg.GetFilterIndex() == 0:
-                    new_measurements = cellprofiler.measurements.Measurements(
+                    new_measurements = cellprofiler.measurement.Measurement(
                             filename=dlg.Path,
                             copy=self.measurements)
                     new_measurements.flush()
@@ -161,13 +161,13 @@ class DataToolFrame(wx.Frame):
                          0, wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL)
         metadata_db = {}
         metadata_features = [
-            x for x in self.measurements.get_feature_names(cellprofiler.measurements.IMAGE)
+            x for x in self.measurements.get_feature_names(cellprofiler.measurement.IMAGE)
             if x.startswith('Metadata')]
         sel = None
         for i in self.measurements.get_image_numbers():
             metadata_key = ','.join(['%s=%s' % (
                 feature,
-                self.measurements.get_measurement(cellprofiler.measurements.IMAGE, feature, i))
+                self.measurements.get_measurement(cellprofiler.measurement.IMAGE, feature, i))
                                      for feature in metadata_features])
             metadata_db[i] = metadata_key
             if i == self.measurements.image_set_number:
@@ -196,7 +196,7 @@ class DataToolFrame(wx.Frame):
             self.measurements.image_set_number = index + 1
 
     def load_measurements(self, measurements_file_name):
-        self.measurements = cellprofiler.measurements.load_measurements(
+        self.measurements = cellprofiler.measurement.load_measurements(
                 measurements_file_name, can_overwrite=True)
         # Start on the first image
         self.measurements.next_image_set(1)

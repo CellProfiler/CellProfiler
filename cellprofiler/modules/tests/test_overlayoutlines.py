@@ -14,7 +14,7 @@ set_headless()
 import cellprofiler.pipeline as cpp
 import cellprofiler.cpmodule as cpm
 import cellprofiler.cpimage as cpi
-import cellprofiler.measurements as cpmeas
+import cellprofiler.measurement as cpmeas
 import cellprofiler.object as cpo
 import cellprofiler.workspace as cpw
 
@@ -29,7 +29,7 @@ OBJECTS_NAME = 'objectsname'
 class TestOverlayOutlines(unittest.TestCase):
     def make_workspace(self, image, outline=None, labels=None):
         '''Make a workspace for testing ApplyThreshold'''
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurement()
         object_set = cpo.ObjectSet()
         module = O.OverlayOutlines()
         module.blank_image.value = False

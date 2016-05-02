@@ -15,7 +15,7 @@ import h5py
 import numpy as np
 
 import cellprofiler.cpimage as cpi
-import cellprofiler.measurements as cpmeas
+import cellprofiler.measurement as cpmeas
 
 OBJECT_NAME = "myobjects"
 FEATURE_NAME = "feature"
@@ -23,7 +23,7 @@ FEATURE_NAME = "feature"
 
 class TestMeasurements(unittest.TestCase):
     def test_00_00_init(self):
-        x = cpmeas.Measurements()
+        x = cpmeas.Measurement()
 
     def test_00_01_wrap_unwrap(self):
         test0 = [u"foo", u"foo\\", u"foo\\u0384", u"foo\u0384"]
@@ -31,37 +31,37 @@ class TestMeasurements(unittest.TestCase):
         # numpy.object_
         test += np.array(test0, object).tolist()
         for case in test:
-            result = cpmeas.Measurements.unwrap_string(
-                    cpmeas.Measurements.wrap_string(case))
+            result = cpmeas.Measurement.unwrap_string(
+                    cpmeas.Measurement.wrap_string(case))
             if not isinstance(case, unicode):
                 case = case.decode("utf-8")
             self.assertEqual(result, case)
 
     def test_01_01_image_number_is_zero(self):
-        x = cpmeas.Measurements()
+        x = cpmeas.Measurement()
         self.assertEqual(x.image_set_number, 1)
 
     def test_01_01_next_image(self):
-        x = cpmeas.Measurements()
+        x = cpmeas.Measurement()
         x.next_image_set()
         self.assertEqual(x.image_set_number, 2)
 
     def test_02_01_add_image_measurement(self):
-        x = cpmeas.Measurements()
+        x = cpmeas.Measurement()
         x.add_measurement("Image", "Feature", "Value")
         self.assertEqual(x.get_current_measurement("Image", "Feature"), "Value")
         self.assertTrue("Image" in x.get_object_names())
         self.assertTrue("Feature" in x.get_feature_names("Image"))
 
     def test_02_01b_add_image_measurement_arrayinterface(self):
-        x = cpmeas.Measurements()
+        x = cpmeas.Measurement()
         x["Image", "Feature"] = "Value"
         self.assertEqual(x["Image", "Feature"], "Value")
         self.assertTrue("Image" in x.get_object_names())
         self.assertTrue("Feature" in x.get_feature_names("Image"))
 
     def test_02_02_add_object_measurement(self):
-        x = cpmeas.Measurements()
+        x = cpmeas.Measurement()
         np.random.seed(0)
         m = np.random.rand(10)
         x.add_measurement("Nuclei", "Feature", m)
@@ -70,7 +70,7 @@ class TestMeasurements(unittest.TestCase):
         self.assertTrue("Feature" in x.get_feature_names("Nuclei"))
 
     def test_02_02b_add_object_measurement_arrayinterface(self):
-        x = cpmeas.Measurements()
+        x = cpmeas.Measurement()
         np.random.seed(0)
         m = np.random.rand(10)
         x["Nuclei", "Feature"] = m
@@ -79,7 +79,7 @@ class TestMeasurements(unittest.TestCase):
         self.assertTrue("Feature" in x.get_feature_names("Nuclei"))
 
     def test_02_03_add_two_measurements(self):
-        x = cpmeas.Measurements()
+        x = cpmeas.Measurement()
         x.add_measurement("Image", "Feature", "Value")
         np.random.seed(0)
         m = np.random.rand(10)
@@ -91,7 +91,7 @@ class TestMeasurements(unittest.TestCase):
         self.assertTrue("Feature" in x.get_feature_names("Image"))
 
     def test_02_03b_add_two_measurements_arrayinterface(self):
-        x = cpmeas.Measurements()
+        x = cpmeas.Measurement()
         x["Image", "Feature"] = "Value"
         np.random.seed(0)
         m = np.random.rand(10)
@@ -103,7 +103,7 @@ class TestMeasurements(unittest.TestCase):
         self.assertTrue("Feature" in x.get_feature_names("Image"))
 
     def test_02_04_add_two_measurements_to_object(self):
-        x = cpmeas.Measurements()
+        x = cpmeas.Measurement()
         x.add_measurement("Image", "Feature1", "Value1")
         x.add_measurement("Image", "Feature2", "Value2")
         self.assertEqual(x.get_current_measurement("Image", "Feature1"), "Value1")
@@ -113,7 +113,7 @@ class TestMeasurements(unittest.TestCase):
         self.assertTrue("Feature2" in x.get_feature_names("Image"))
 
     def test_02_04b_add_two_measurements_to_object_arrayinterface(self):
-        x = cpmeas.Measurements()
+        x = cpmeas.Measurement()
         x["Image", "Feature1"] = "Value1"
         x["Image", "Feature2"] = "Value2"
         self.assertEqual(x["Image", "Feature1"], "Value1")
@@ -124,7 +124,7 @@ class TestMeasurements(unittest.TestCase):
 
     def test_03_03_MultipleImageSets(self):
         np.random.seed(0)
-        x = cpmeas.Measurements()
+        x = cpmeas.Measurement()
         x.add_measurement("Image", "Feature", "Value1")
         m1 = np.random.rand(10)
         x.add_measurement("Nuclei", "Feature", m1)
@@ -141,7 +141,7 @@ class TestMeasurements(unittest.TestCase):
 
     def test_03_03b_MultipleImageSets_arrayinterface(self):
         np.random.seed(0)
-        x = cpmeas.Measurements()
+        x = cpmeas.Measurement()
         x["Image", "Feature"] = "Value1"
         m1 = np.random.rand(10)
         x["Nuclei", "Feature"] = m1
@@ -158,7 +158,7 @@ class TestMeasurements(unittest.TestCase):
 
     def test_04_01_get_all_image_measurements_float(self):
         r = np.random.RandomState()
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurement()
         r.seed(41)
         vals = r.uniform(size=100)
         bad_order = r.permutation(np.arange(1, 101))
@@ -170,7 +170,7 @@ class TestMeasurements(unittest.TestCase):
 
     def test_04_01b_get_all_image_measurements_float_arrayinterface(self):
         r = np.random.RandomState()
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurement()
         r.seed(41)
         vals = r.uniform(size=100)
         bad_order = r.permutation(np.arange(1, 101))
@@ -184,7 +184,7 @@ class TestMeasurements(unittest.TestCase):
 
     def test_04_02_get_all_image_measurements_string(self):
         r = np.random.RandomState()
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurement()
         r.seed(42)
         vals = r.uniform(size=100)
         bad_order = r.permutation(np.arange(1, 101))
@@ -197,7 +197,7 @@ class TestMeasurements(unittest.TestCase):
 
     def test_04_02b_get_all_image_measurements_string_arrayinterface(self):
         r = np.random.RandomState()
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurement()
         r.seed(42)
         vals = r.uniform(size=100)
         bad_order = r.permutation(np.arange(1, 101))
@@ -208,7 +208,7 @@ class TestMeasurements(unittest.TestCase):
 
     def test_04_03_get_all_image_measurements_unicode(self):
         r = np.random.RandomState()
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurement()
         r.seed(42)
         vals = [u"\u2211" + str(r.uniform()) for _ in range(100)]
         bad_order = r.permutation(np.arange(1, 101))
@@ -221,7 +221,7 @@ class TestMeasurements(unittest.TestCase):
 
     def test_04_03b_get_all_image_measurements_unicode_arrayinterface(self):
         r = np.random.RandomState()
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurement()
         r.seed(42)
         vals = [u"\u2211" + str(r.uniform()) for _ in range(100)]
         bad_order = r.permutation(np.arange(1, 101))
@@ -232,7 +232,7 @@ class TestMeasurements(unittest.TestCase):
 
     def test_04_04_get_all_object_measurements(self):
         r = np.random.RandomState()
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurement()
         r.seed(42)
         vals = [r.uniform(size=r.randint(10, 100)) for _ in range(100)]
         bad_order = r.permutation(np.arange(1, 101))
@@ -246,7 +246,7 @@ class TestMeasurements(unittest.TestCase):
 
     def test_04_04b_get_all_object_measurements_arrayinterface(self):
         r = np.random.RandomState()
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurement()
         r.seed(42)
         vals = [r.uniform(size=r.randint(10, 100)) for _ in range(100)]
         bad_order = r.permutation(np.arange(1, 101))
@@ -303,7 +303,7 @@ class TestMeasurements(unittest.TestCase):
     def test_04_08_set_one_blob_measurement(self):
         r = np.random.RandomState(408)
         test = r.randint(0, 255, 10).astype(np.uint8)
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurement()
         m[cpmeas.IMAGE, "Feature", 1, np.uint8] = test
         np.testing.assert_array_equal(test, m[cpmeas.IMAGE, "Feature", 1])
 
@@ -316,7 +316,7 @@ class TestMeasurements(unittest.TestCase):
         #
         r = np.random.RandomState(408)
         test = [None, r.randint(0, 255, 10).astype(np.uint8)]
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurement()
         image_numbers = np.arange(1, len(test) + 1)
         m[cpmeas.IMAGE, "Feature", image_numbers, np.uint8] = test
         result = m[cpmeas.IMAGE, "Feature", image_numbers]
@@ -324,31 +324,31 @@ class TestMeasurements(unittest.TestCase):
         np.testing.assert_array_equal(test[1], result[1])
 
     def test_05_01_test_has_current_measurements(self):
-        x = cpmeas.Measurements()
+        x = cpmeas.Measurement()
         self.assertFalse(x.has_current_measurements('Image', 'Feature'))
 
     def test_05_02_test_has_current_measurements(self):
-        x = cpmeas.Measurements()
+        x = cpmeas.Measurement()
         x.add_measurement("Image", "OtherFeature", "Value")
         self.assertFalse(x.has_current_measurements('Image', 'Feature'))
 
     def test_05_02b_test_has_current_measurements_arrayinterface(self):
-        x = cpmeas.Measurements()
+        x = cpmeas.Measurement()
         x["Image", "OtherFeature"] = "Value"
         self.assertFalse(x.has_current_measurements('Image', 'Feature'))
 
     def test_05_03_test_has_current_measurements(self):
-        x = cpmeas.Measurements()
+        x = cpmeas.Measurement()
         x.add_measurement("Image", "Feature", "Value")
         self.assertTrue(x.has_current_measurements('Image', 'Feature'))
 
     def test_05_03b_test_has_current_measurements_arrayinterface(self):
-        x = cpmeas.Measurements()
+        x = cpmeas.Measurement()
         x["Image", "Feature"] = "Value"
         self.assertTrue(x.has_current_measurements('Image', 'Feature'))
 
     def test_06_00_00_dont_apply_metadata(self):
-        x = cpmeas.Measurements()
+        x = cpmeas.Measurement()
         value = "P12345"
         expected = "pre_post"
         x.add_measurement("Image", "Metadata_Plate", value)
@@ -356,7 +356,7 @@ class TestMeasurements(unittest.TestCase):
         self.assertEqual(x.apply_metadata(pattern), expected)
 
     def test_06_00_00b_dont_apply_metadata_arrayinterface(self):
-        x = cpmeas.Measurements()
+        x = cpmeas.Measurement()
         value = "P12345"
         expected = "pre_post"
         x["Image", "Metadata_Plate"] = value
@@ -364,7 +364,7 @@ class TestMeasurements(unittest.TestCase):
         self.assertEqual(x.apply_metadata(pattern), expected)
 
     def test_06_00_01_dont_apply_metadata_with_slash(self):
-        x = cpmeas.Measurements()
+        x = cpmeas.Measurement()
         value = "P12345"
         expected = "pre\\post"
         x.add_measurement("Image", "Metadata_Plate", value)
@@ -372,7 +372,7 @@ class TestMeasurements(unittest.TestCase):
         self.assertEqual(x.apply_metadata(pattern), expected)
 
     def test_06_01_apply_metadata(self):
-        x = cpmeas.Measurements()
+        x = cpmeas.Measurement()
         value = "P12345"
         expected = "pre_" + value + "_post"
         x.add_measurement("Image", "Metadata_Plate", value)
@@ -380,7 +380,7 @@ class TestMeasurements(unittest.TestCase):
         self.assertEqual(x.apply_metadata(pattern), expected)
 
     def test_06_02_apply_metadata_with_slash(self):
-        x = cpmeas.Measurements()
+        x = cpmeas.Measurement()
         value = "P12345"
         expected = "\\" + value + "_post"
         x.add_measurement("Image", "Metadata_Plate", value)
@@ -389,7 +389,7 @@ class TestMeasurements(unittest.TestCase):
 
     def test_06_03_apply_metadata_with_two_slashes(self):
         '''Regression test of img-1144'''
-        x = cpmeas.Measurements()
+        x = cpmeas.Measurement()
         plate = "P12345"
         well = "A01"
         expected = "\\" + plate + "\\" + well
@@ -399,7 +399,7 @@ class TestMeasurements(unittest.TestCase):
         self.assertEqual(x.apply_metadata(pattern), expected)
 
     def test_06_04_apply_metadata_when_user_messes_with_your_head(self):
-        x = cpmeas.Measurements()
+        x = cpmeas.Measurement()
         value = "P12345"
         expected = r"\g<Plate>"
         x.add_measurement("Image", "Metadata_Plate", value)
@@ -408,7 +408,7 @@ class TestMeasurements(unittest.TestCase):
 
     def test_06_05_apply_metadata_twice(self):
         '''Regression test of img-1144 (second part)'''
-        x = cpmeas.Measurements()
+        x = cpmeas.Measurement()
         plate = "P12345"
         well = "A01"
         expected = plate + "_" + well
@@ -418,7 +418,7 @@ class TestMeasurements(unittest.TestCase):
         self.assertEqual(x.apply_metadata(pattern), expected)
 
     def test_06_06_apply_series_and_frame_metadata(self):
-        x = cpmeas.Measurements()
+        x = cpmeas.Measurement()
         x[cpmeas.IMAGE, cpmeas.C_SERIES + "_DNA"] = 1
         x[cpmeas.IMAGE, cpmeas.C_SERIES + "_DNAIllum"] = 0
         x[cpmeas.IMAGE, cpmeas.C_FRAME + "_DNA"] = 2
@@ -427,7 +427,7 @@ class TestMeasurements(unittest.TestCase):
         self.assertEqual(x.apply_metadata(pattern), "1_2")
 
     def test_07_01_copy(self):
-        x = cpmeas.Measurements()
+        x = cpmeas.Measurement()
         r = np.random.RandomState()
         r.seed(71)
         areas = [r.randint(100, 200, size=r.randint(100, 200))
@@ -439,7 +439,7 @@ class TestMeasurements(unittest.TestCase):
             x.add_measurement(OBJECT_NAME, "AreaShape_Area", areas[i],
                               image_set_number=(i + 1))
 
-        y = cpmeas.Measurements(copy=x)
+        y = cpmeas.Measurement(copy=x)
         for i in range(12):
             self.assertEqual(
                     y.get_measurement(cpmeas.IMAGE, "Metadata_Well", (i + 1)),
@@ -488,7 +488,7 @@ class TestMeasurements(unittest.TestCase):
                 print "Failed to remove file %s" % filename
 
     def test_09_01_group_by_metadata(self):
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurement()
         r = np.random.RandomState()
         r.seed(91)
         aa = [None] * 100
@@ -509,7 +509,7 @@ class TestMeasurements(unittest.TestCase):
                 self.assertEqual(d["B"], bb[image_number - 1])
 
     def test_09_02_get_groupings(self):
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurement()
         r = np.random.RandomState()
         r.seed(91)
         aa = [None] * 100
@@ -530,7 +530,7 @@ class TestMeasurements(unittest.TestCase):
                 self.assertEqual(d["Metadata_B"], unicode(bb[image_number - 1]))
 
     def test_10_01_remove_image_measurement(self):
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurement()
         m.add_measurement(cpmeas.IMAGE, "M", "Hello", image_set_number=1)
         m.add_measurement(cpmeas.IMAGE, "M", "World", image_set_number=2)
         m.remove_measurement(cpmeas.IMAGE, "M", 1)
@@ -538,7 +538,7 @@ class TestMeasurements(unittest.TestCase):
         self.assertEqual(m.get_measurement(cpmeas.IMAGE, "M", 2), "World")
 
     def test_10_02_remove_object_measurement(self):
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurement()
         m.add_measurement(OBJECT_NAME, "M", np.arange(5), image_set_number=1)
         m.add_measurement(OBJECT_NAME, "M", np.arange(7), image_set_number=2)
         m.remove_measurement(OBJECT_NAME, "M", 1)
@@ -547,7 +547,7 @@ class TestMeasurements(unittest.TestCase):
                                 np.arange(7))
 
     def test_10_03_remove_image_number(self):
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurement()
         m.add_measurement(cpmeas.IMAGE, "M", "Hello", image_set_number=1)
         m.add_measurement(cpmeas.IMAGE, "M", "World", image_set_number=2)
         np.testing.assert_equal(np.array(m.get_image_numbers()),
@@ -556,7 +556,7 @@ class TestMeasurements(unittest.TestCase):
         np.testing.assert_equal(np.array(m.get_image_numbers()), np.array([2]))
 
     def test_11_00_match_metadata_by_order_nil(self):
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurement()
         result = m.match_metadata(("Metadata_foo", "Metadata_bar"),
                                   (np.zeros(3), np.zeros(3)))
         self.assertEqual(len(result), 3)
@@ -564,7 +564,7 @@ class TestMeasurements(unittest.TestCase):
                              for i, x in enumerate(result)]))
 
     def test_11_01_match_metadata_by_order(self):
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurement()
         m.add_measurement(cpmeas.IMAGE, "Metadata_foo", "Hello", image_set_number=1)
         m.add_measurement(cpmeas.IMAGE, "Metadata_foo", "Hello", image_set_number=2)
         result = m.match_metadata(("Metadata_bar",), (np.zeros(2),))
@@ -573,7 +573,7 @@ class TestMeasurements(unittest.TestCase):
                              for i, x in enumerate(result)]))
 
     def test_11_02_match_metadata_equal_length(self):
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurement()
         m.add_measurement(cpmeas.IMAGE, "Metadata_foo", "Hello", image_set_number=1)
         m.add_measurement(cpmeas.IMAGE, "Metadata_bar", "World", image_set_number=1)
         m.add_measurement(cpmeas.IMAGE, "Metadata_foo", "Goodbye", image_set_number=2)
@@ -587,7 +587,7 @@ class TestMeasurements(unittest.TestCase):
         self.assertEqual(result[1][0], 1)
 
     def test_11_03_match_metadata_different_length(self):
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurement()
         m.add_measurement(cpmeas.IMAGE, "Metadata_foo", "Hello", image_set_number=1)
         m.add_measurement(cpmeas.IMAGE, "Metadata_bar", "World", image_set_number=1)
         m.add_measurement(cpmeas.IMAGE, "Metadata_foo", "Goodbye", image_set_number=2)
@@ -791,7 +791,7 @@ class TestMeasurements(unittest.TestCase):
 
     def test_15_01_get_object_names(self):
         '''Test the get_object_names() function'''
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurement()
         try:
             m.add_measurement(OBJECT_NAME, "Foo", np.zeros(3))
             object_names = m.get_object_names()
@@ -803,7 +803,7 @@ class TestMeasurements(unittest.TestCase):
 
     def test_15_02_get_object_names_relationships(self):
         '''Regression test - don't return Relationships'''
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurement()
         try:
             m.add_image_measurement(cpmeas.GROUP_NUMBER, 1)
             m.add_image_measurement(cpmeas.GROUP_INDEX, 0)
@@ -821,7 +821,7 @@ class TestMeasurements(unittest.TestCase):
     def test_15_03_relate_no_objects(self):
         # regression test of issue #886 - add_relate_measurement called
         #                                 with no objects
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurement()
         m.add_image_measurement(cpmeas.GROUP_NUMBER, 1)
         m.add_image_measurement(cpmeas.GROUP_INDEX, 0)
         m.add_measurement(OBJECT_NAME, "Foo", np.zeros(3))
@@ -833,7 +833,7 @@ class TestMeasurements(unittest.TestCase):
                                  np.zeros(0), np.zeros(0))
 
     def test_16_01_get_feature_names(self):
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurement()
         try:
             m.add_measurement(OBJECT_NAME, "Foo", np.zeros(3))
             feature_names = m.get_feature_names(OBJECT_NAME)
@@ -843,7 +843,7 @@ class TestMeasurements(unittest.TestCase):
             del m
 
     def test_16_01b_get_feature_names_arrayinterface(self):
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurement()
         try:
             m[OBJECT_NAME, "Foo"] = np.zeros(3)
             feature_names = m.get_feature_names(OBJECT_NAME)
@@ -853,7 +853,7 @@ class TestMeasurements(unittest.TestCase):
             del m
 
     def test_17_01_aggregate_measurements(self):
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurement()
         try:
             values = np.arange(5).astype(float)
             m.add_measurement(OBJECT_NAME, "Foo", values)
@@ -870,7 +870,7 @@ class TestMeasurements(unittest.TestCase):
 
     def test_17_02_aggregate_measurements_with_relate(self):
         '''regression test of img-1554'''
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurement()
         try:
             values = np.arange(5).astype(float)
             m.add_measurement(cpmeas.IMAGE, cpmeas.GROUP_NUMBER, 1, image_set_number=1)
@@ -896,7 +896,7 @@ class TestMeasurements(unittest.TestCase):
             del m
 
     def test_18_01_test_add_all_measurements_string(self):
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurement()
         try:
             values = ["Foo", "Bar", "Baz"]
             m.add_all_measurements(cpmeas.IMAGE, FEATURE_NAME, values)
@@ -908,7 +908,7 @@ class TestMeasurements(unittest.TestCase):
             del m
 
     def test_18_02_test_add_all_measurements_unicode(self):
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurement()
         try:
             values = [u"Foo", u"Bar", u"Baz", u"-\u221E < \u221E"]
             m.add_all_measurements(cpmeas.IMAGE, FEATURE_NAME, values)
@@ -920,7 +920,7 @@ class TestMeasurements(unittest.TestCase):
             del m
 
     def test_18_03_test_add_all_measurements_number(self):
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurement()
         try:
             r = np.random.RandomState()
             r.seed(1803)
@@ -934,7 +934,7 @@ class TestMeasurements(unittest.TestCase):
             del m
 
     def test_18_04_test_add_all_measurements_nulls(self):
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurement()
         try:
             values = [u"Foo", u"Bar", None, u"Baz", None, u"-\u221E < \u221E"]
             m.add_all_measurements(cpmeas.IMAGE, FEATURE_NAME, values)
@@ -949,7 +949,7 @@ class TestMeasurements(unittest.TestCase):
             del m
 
     def test_18_05_test_add_all_per_object_measurements(self):
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurement()
         try:
             r = np.random.RandomState()
             r.seed(1803)
@@ -978,7 +978,7 @@ class TestMeasurements(unittest.TestCase):
 1,2,"file://bar/foo.tif","/bar","foo.tif"
 2,1,"file://baz/foobar.tif","/baz","foobar.tif"
 """ % (cpmeas.GROUP_NUMBER, cpmeas.GROUP_INDEX)
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurement()
         try:
             m.load_image_sets(StringIO(data))
             features = m.get_feature_names(cpmeas.IMAGE)
@@ -992,7 +992,7 @@ class TestMeasurements(unittest.TestCase):
             m.close()
 
     def test_19_02_write_and_load_image_sets(self):
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurement()
         m.add_all_measurements(cpmeas.IMAGE, cpmeas.GROUP_NUMBER, [1, 1, 2])
         m.add_all_measurements(cpmeas.IMAGE, cpmeas.GROUP_INDEX, [1, 2, 1])
         m.add_all_measurements(
@@ -1016,7 +1016,7 @@ class TestMeasurements(unittest.TestCase):
         fd = StringIO()
         m.write_image_sets(fd)
         fd.seek(0)
-        mdest = cpmeas.Measurements()
+        mdest = cpmeas.Measurement()
         mdest.load_image_sets(fd)
         expected_features = [
             feature_name for feature_name in m.get_feature_names(cpmeas.IMAGE)
@@ -1029,21 +1029,21 @@ class TestMeasurements(unittest.TestCase):
             self.assertSequenceEqual(list(src), list(dest))
 
     def test_19_03_delete_tempfile(self):
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurement()
         filename = m.hdf5_dict.filename
         del m
         self.assertFalse(os.path.exists(filename))
 
     def test_19_04_dont_delete_file(self):
         fd, filename = tempfile.mkstemp(suffix=".h5")
-        m = cpmeas.Measurements(filename=filename)
+        m = cpmeas.Measurement(filename=filename)
         os.close(fd)
         del m
         self.assertTrue(os.path.exists(filename))
         os.unlink(filename)
 
     def test_20_01_add_one_relationship_measurement(self):
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurement()
         r = np.random.RandomState()
         r.seed(2001)
         image_numbers1, object_numbers1 = [
@@ -1073,7 +1073,7 @@ class TestMeasurements(unittest.TestCase):
         np.testing.assert_array_equal(object_numbers2, ro2[order])
 
     def test_20_02_add_two_sets_of_relationships(self):
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurement()
         r = np.random.RandomState()
         r.seed(2002)
         image_numbers1, object_numbers1 = [
@@ -1149,7 +1149,7 @@ class TestMeasurements(unittest.TestCase):
         # relationships.
         #
         fd, filename = tempfile.mkstemp(suffix=".h5")
-        m = cpmeas.Measurements(filename=filename)
+        m = cpmeas.Measurement(filename=filename)
         os.close(fd)
         try:
             r = np.random.RandomState()
@@ -1175,7 +1175,7 @@ class TestMeasurements(unittest.TestCase):
                                          image_numbers2, object_numbers2)
 
             m.close()
-            m = cpmeas.Measurements(filename=filename, mode="r")
+            m = cpmeas.Measurement(filename=filename, mode="r")
 
             rg = [(x.module_number, x.relationship, x.object_name1, x.object_name2)
                   for x in m.get_relationship_groups()]
@@ -1198,8 +1198,8 @@ class TestMeasurements(unittest.TestCase):
             os.unlink(filename)
 
     def test_20_05_copy_relationships(self):
-        m1 = cpmeas.Measurements()
-        m2 = cpmeas.Measurements()
+        m1 = cpmeas.Measurement()
+        m2 = cpmeas.Measurement()
         r = np.random.RandomState()
         r.seed(2005)
         image_numbers1, object_numbers1 = [
@@ -1233,7 +1233,7 @@ class TestMeasurements(unittest.TestCase):
         # Test writing and reading relationships with a variety of ranges
         # over the whole extent of the storage
         #
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurement()
         r = np.random.RandomState()
         r.seed(2005)
         image_numbers1, image_numbers2 = r.randint(1, 1001, (2, 4000))
@@ -1269,7 +1269,7 @@ class TestMeasurements(unittest.TestCase):
     def test_21_01_load_measurements_from_buffer(self):
         r = np.random.RandomState()
         r.seed(51)
-        m_in = cpmeas.Measurements()
+        m_in = cpmeas.Measurement()
         m_in[cpmeas.IMAGE, FEATURE_NAME, 1] = r.uniform()
         m_in[OBJECT_NAME, FEATURE_NAME, 1] = r.uniform(size=100)
         m_out = cpmeas.load_measurements_from_buffer(
@@ -1417,7 +1417,7 @@ class TestImageSetCache(unittest.TestCase):
                 self.assertEqual(msg, expected.errors[0][1])
 
     def test_04_01_close_measurements(self):
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurement()
         image = cpi.Image(np.zeros((10, 10)))
         m.add(IMAGE_NAME, image)
         m.cache()

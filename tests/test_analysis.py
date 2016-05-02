@@ -54,7 +54,6 @@ class TestAnalysis(unittest.TestCase):
             self.notify_socket.close()
 
         def run(self):
-            logger.debug("Client thread starting")
             try:
                 self.work_socket = self.zmq_context.socket(zmq.REQ)
                 self.recv_notify_socket = self.zmq_context.socket(zmq.SUB)
@@ -86,17 +85,15 @@ class TestAnalysis(unittest.TestCase):
                             traceback.print_exc()
                             self.response_queue.put((e, None))
             except:
-                logger.warn("Client thread caught exception", exc_info=10)
                 self.start_signal.release()
             finally:
-                logger.debug("Client thread exiting")
+                pass
 
         def stop(self):
             self.keep_going = False
             self.notify_socket.send("Stop")
 
         def send(self, req):
-            logger.debug("    Enqueueing send of %s" % str(type(req)))
             self.queue.put((self.do_send, req))
             self.notify_socket.send("Send")
             return self.recv
@@ -113,7 +110,6 @@ class TestAnalysis(unittest.TestCase):
                             str(type(reply)))
 
         def do_send(self, req):
-            logger.debug("    Sending %s" % str(type(req)))
             cellprofiler.utilities.zmqrequest.Communicable.send(req, self.work_socket)
             self.poller.register(self.work_socket, zmq.POLLIN)
             try:
@@ -124,19 +120,15 @@ class TestAnalysis(unittest.TestCase):
                         if not self.keep_going:
                             raise Exception("Cancelled")
                     if socks.get(self.work_socket, None) == zmq.POLLIN:
-                        logger.debug("    Received response for %s" % str(type(req)))
                         return cellprofiler.utilities.zmqrequest.Communicable.recv(self.work_socket)
             finally:
                 self.poller.unregister(self.work_socket)
 
         def recv(self):
-            logger.debug("     Waiting for client thread")
             exception, result = self.response_queue.get()
             if exception is not None:
-                logger.debug("    Client thread communicated exception")
                 raise exception
             else:
-                logger.debug("    Client thread communicated result")
                 return result
 
         def listen_for_announcements(self, work_announce_address):
@@ -276,8 +268,6 @@ class TestAnalysis(unittest.TestCase):
                 self.assertEqual(result.module_index, module.module_num)
 
     def test_01_01_start_and_stop(self):
-
-        logger.debug("Entering %s" % inspect.getframeinfo(inspect.currentframe()).function)
         self.make_pipeline_and_measurements_and_start()
         self.wants_analysis_finished = True
         self.cancel_analysis()
@@ -288,10 +278,8 @@ class TestAnalysis(unittest.TestCase):
         self.assertTrue(analysis_finished.cancelled)
         self.assertIsInstance(analysis_finished.measurements,
                               cellprofiler.measurement.Measurement)
-        logger.debug("Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function)
 
     def test_02_01_announcement(self):
-        logger.debug("Entering %s" % inspect.getframeinfo(inspect.currentframe()).function)
         pipeline, m = self.make_pipeline_and_measurements_and_start()
 
         with self.FakeWorker() as worker:
@@ -303,7 +291,6 @@ class TestAnalysis(unittest.TestCase):
             self.cancel_analysis()
             response = worker.listen_for_announcements(work_announce_address)()
             self.assertEqual(len(response), 0)
-        logger.debug("Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function)
 
     def test_03_01_get_work(self):
         pipeline, m = self.make_pipeline_and_measurements_and_start()
@@ -314,10 +301,8 @@ class TestAnalysis(unittest.TestCase):
             self.assertSequenceEqual(response.image_set_numbers, (1,))
             self.assertFalse(response.worker_runs_post_group)
             self.assertTrue(response.wants_dictionary)
-        logger.debug("Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function)
 
     def test_03_02_get_work_twice(self):
-        logger.debug("Entering %s" % inspect.getframeinfo(inspect.currentframe()).function)
         pipeline, m = self.make_pipeline_and_measurements_and_start()
 
         with self.FakeWorker() as worker:
@@ -326,10 +311,8 @@ class TestAnalysis(unittest.TestCase):
             self.assertIsInstance(response, cellprofiler.message.reply.Work)
             response = worker.send(cellprofiler.message.request.Work(worker.analysis_id))()
             self.assertIsInstance(response, cellprofiler.message.reply.NoWork)
-        logger.debug("Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function)
 
     def test_03_03_cancel_before_work(self):
-        logger.debug("Entering %s" % inspect.getframeinfo(inspect.currentframe()).function)
         pipeline, m = self.make_pipeline_and_measurements_and_start()
 
         with self.FakeWorker() as worker:
@@ -337,10 +320,8 @@ class TestAnalysis(unittest.TestCase):
             self.cancel_analysis()
             response = worker.send(cellprofiler.message.request.Work(worker.analysis_id))()
             self.assertIsInstance(response, cellprofiler.utilities.zmqrequest.BoundaryExited)
-        logger.debug("Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function)
 
     def test_04_01_pipeline_preferences(self):
-        logger.debug("Entering %s" % inspect.getframeinfo(inspect.currentframe()).function)
         pipeline, m = self.make_pipeline_and_measurements_and_start()
         cellprofiler.configuration.set_headless()
         title_font_name = "Rosewood Std Regular"
@@ -380,10 +361,7 @@ class TestAnalysis(unittest.TestCase):
             self.assertEqual(preferences[cellprofiler.configuration.DEFAULT_OUTPUT_DIRECTORY],
                              cellprofiler.configuration.get_default_output_directory())
 
-        logger.debug("Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function)
-
     def test_04_02_initial_measurements_request(self):
-        logger.debug("Entering %s" % inspect.getframeinfo(inspect.currentframe()).function)
         pipeline, m = self.make_pipeline_and_measurements_and_start()
         with self.FakeWorker() as worker:
             worker.connect(self.analysis.runner.work_announce_address)
@@ -420,10 +398,8 @@ class TestAnalysis(unittest.TestCase):
                                 numpy.testing.assert_almost_equal(sv, cv)
             finally:
                 client_measurements.close()
-                logger.debug("Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function)
 
     def test_04_03_interaction(self):
-        logger.debug("Entering %s" % inspect.getframeinfo(inspect.currentframe()).function)
         pipeline, m = self.make_pipeline_and_measurements_and_start()
         with self.FakeWorker() as worker:
             worker.connect(self.analysis.runner.work_announce_address)
@@ -438,10 +414,8 @@ class TestAnalysis(unittest.TestCase):
             reply = fn_interaction_reply()
             self.assertIsInstance(reply, cellprofiler.message.reply.Interaction)
             self.assertEqual(reply.hello, "world")
-        logger.debug("Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function)
 
     def test_04_04_01_display(self):
-        logger.debug("Entering %s" % inspect.getframeinfo(inspect.currentframe()).function)
         pipeline, m = self.make_pipeline_and_measurements_and_start()
         with self.FakeWorker() as worker:
             worker.connect(self.analysis.runner.work_announce_address)
@@ -459,10 +433,8 @@ class TestAnalysis(unittest.TestCase):
             reply = fn_interaction_reply()
             self.assertIsInstance(reply, cellprofiler.message.reply.Ack)
             self.assertEqual(reply.message, "Gimme Pony")
-        logger.debug("Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function)
 
     def test_04_04_02_display_post_group(self):
-        logger.debug("Entering %s" % inspect.getframeinfo(inspect.currentframe()).function)
         pipeline, m = self.make_pipeline_and_measurements_and_start()
         with self.FakeWorker() as worker:
             worker.connect(self.analysis.runner.work_announce_address)
@@ -481,10 +453,8 @@ class TestAnalysis(unittest.TestCase):
             reply = fn_interaction_reply()
             self.assertIsInstance(reply, cellprofiler.message.reply.Ack)
             self.assertEqual(reply.message, "Gimme Pony")
-        logger.debug("Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function)
 
     def test_04_05_exception(self):
-        logger.debug("Entering %s" % inspect.getframeinfo(inspect.currentframe()).function)
         pipeline, m = self.make_pipeline_and_measurements_and_start()
         with self.FakeWorker() as worker:
             worker.connect(self.analysis.runner.work_announce_address)
@@ -523,7 +493,6 @@ class TestAnalysis(unittest.TestCase):
                 request.reply(cellprofiler.message.reply.Ack())
                 reply = fn_interaction_reply()
                 self.assertIsInstance(reply, cellprofiler.message.reply.Ack)
-        logger.debug("Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function)
 
     def test_05_01_imageset_with_dictionary(self):
         #
@@ -535,7 +504,6 @@ class TestAnalysis(unittest.TestCase):
         # WorkRequest (with spin until WorkReply received)
         # SharedDictionaryRequest
         #
-        logger.debug("Entering %s" % inspect.getframeinfo(inspect.currentframe()).function)
         pipeline, m = self.make_pipeline_and_measurements_and_start(
                 nimage_sets=2)
         r = numpy.random.RandomState()
@@ -561,10 +529,8 @@ class TestAnalysis(unittest.TestCase):
                 self.assertItemsEqual(ed.keys(), d.keys())
                 for k in ed.keys():
                     numpy.testing.assert_almost_equal(ed[k], d[k])
-        logger.debug("Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function)
 
     def test_05_02_groups(self):
-        logger.debug("Entering %s" % inspect.getframeinfo(inspect.currentframe()).function)
         pipeline, m = self.make_pipeline_and_measurements_and_start(
                 nimage_sets=4,
                 group_numbers=[1, 1, 2, 2],
@@ -583,14 +549,12 @@ class TestAnalysis(unittest.TestCase):
             self.assertSequenceEqual(response.image_set_numbers, [3, 4])
             self.assertTrue(response.worker_runs_post_group)
             self.assertFalse(response.wants_dictionary)
-        logger.debug("Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function)
 
     def test_06_01_single_imageset(self):
         #
         # Test a full cycle of analysis with an image set list
         # with a single image set
         #
-        logger.debug("Entering %s" % inspect.getframeinfo(inspect.currentframe()).function)
         self.wants_analysis_finished = True
         pipeline, m = self.make_pipeline_and_measurements_and_start()
         r = numpy.random.RandomState()
@@ -653,7 +617,6 @@ class TestAnalysis(unittest.TestCase):
     def test_06_02_test_three_imagesets(self):
         # Test an analysis of three imagesets
         #
-        logger.debug("Entering %s" % inspect.getframeinfo(inspect.currentframe()).function)
         self.wants_analysis_finished = True
         pipeline, m = self.make_pipeline_and_measurements_and_start(
                 nimage_sets=3)
@@ -744,7 +707,6 @@ class TestAnalysis(unittest.TestCase):
     def test_06_03_test_grouped_imagesets(self):
         # Test an analysis of four imagesets in two groups
         #
-        logger.debug("Entering %s" % inspect.getframeinfo(inspect.currentframe()).function)
         self.wants_analysis_finished = True
         pipeline, m = self.make_pipeline_and_measurements_and_start(
                 nimage_sets=4,
@@ -824,7 +786,6 @@ class TestAnalysis(unittest.TestCase):
     def test_06_04_test_restart(self):
         # Test a restart of an analysis
         #
-        logger.debug("Entering %s" % inspect.getframeinfo(inspect.currentframe()).function)
         self.wants_analysis_finished = True
         pipeline, m = self.make_pipeline_and_measurements_and_start(
                 nimage_sets=3,
@@ -921,7 +882,6 @@ class TestAnalysis(unittest.TestCase):
         # Test an analysis of four imagesets in two groups with all but one
         # complete.
         #
-        logger.debug("Entering %s" % inspect.getframeinfo(inspect.currentframe()).function)
         self.wants_analysis_finished = True
         pipeline, m = self.make_pipeline_and_measurements_and_start(
                 nimage_sets=4,
@@ -989,7 +949,6 @@ class TestAnalysis(unittest.TestCase):
         #
         # Test a transfer of the relationships table.
         #
-        logger.debug("Entering %s" % inspect.getframeinfo(inspect.currentframe()).function)
         self.wants_analysis_finished = True
         pipeline, m = self.make_pipeline_and_measurements_and_start()
         r = numpy.random.RandomState()
@@ -1077,7 +1036,6 @@ class TestAnalysis(unittest.TestCase):
         #
         # Test worker sending AnalysisCancelRequest
         #
-        logger.debug("Entering %s" % inspect.getframeinfo(inspect.currentframe()).function)
         self.wants_analysis_finished = True
         pipeline, m = self.make_pipeline_and_measurements_and_start()
         r = numpy.random.RandomState()

@@ -73,11 +73,11 @@ class Interaction(cellprofiler.utilities.zmqrequest.AnalysisRequest):
 
 
 class MeasurementsReport(cellprofiler.utilities.zmqrequest.AnalysisRequest):
-    def __init__(self, analysis_id, buf, image_set_numbers=None):
+    def __init__(self, analysis_id, buffer, image_set_numbers=None):
         if image_set_numbers is None:
             image_set_numbers = []
 
-        cellprofiler.utilities.zmqrequest.AnalysisRequest.__init__(self, analysis_id, buf=buf, image_set_numbers=image_set_numbers)
+        cellprofiler.utilities.zmqrequest.AnalysisRequest.__init__(self, analysis_id, buf=buffer, image_set_numbers=image_set_numbers)
 
 class OMEROLogin(cellprofiler.utilities.zmqrequest.AnalysisRequest):
     pass

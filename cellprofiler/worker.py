@@ -502,7 +502,7 @@ class AnalysisWorker(object):
 
             # send measurements back to server
             req = MeasurementsReport(self.current_analysis_id,
-                                     buf=current_measurements.file_contents(),
+                                     buffer=current_measurements.file_contents(),
                                      image_set_numbers=image_set_numbers)
             rep = self.send(req)
 

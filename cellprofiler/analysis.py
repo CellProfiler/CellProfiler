@@ -18,10 +18,10 @@ import uuid
 import numpy as np
 import zmq
 from message.reply import SharedDictionary, Work, NoWork, Ack
-from message.request import PipelinePreferencesRequest, InitialMeasurementsRequest, WorkRequest, ImageSetSuccess, \
-    ImageSetSuccessWithDictionary, MeasurementsReport, InteractionRequest, AnalysisCancelRequest, DisplayRequest, \
-    DisplayPostRunRequest, DisplayPostGroupRequest, SharedDictionaryRequest, ExceptionReport, DebugWaiting, \
-    DebugComplete, OmeroLoginRequest
+from message.request import PipelinePreferences, InitialMeasurements, Work, ImageSetSuccess, \
+    ImageSetSuccessWithDictionary, MeasurementsReport, Interaction, AnalysisCancel, Display, \
+    DisplayPostRun, DisplayPostGroup, SharedDictionary, ExceptionReport, DebugWaiting, \
+    DebugComplete, OMEROLogin
 
 import cellprofiler
 import cellprofiler.configuration as cpprefs
@@ -287,8 +287,8 @@ class AnalysisRunner(object):
         self.event_listener(evt)
 
     def post_run_display_handler(self, workspace, module):
-        event = DisplayPostRunRequest(module.module_num,
-                                      workspace.display_data)
+        event = DisplayPostRun(module.module_num,
+                               workspace.display_data)
         self.event_listener(event)
 
     # XXX - catch and deal with exceptions in interface() and jobserver() threads
@@ -591,16 +591,16 @@ class AnalysisRunner(object):
             except Queue.Empty:
                 continue
 
-            if isinstance(req, PipelinePreferencesRequest):
+            if isinstance(req, PipelinePreferences):
                 logger.debug("Received pipeline preferences request")
                 req.reply(Reply(pipeline_blob=np.array(self.pipeline_as_string()),
                                 preferences=cpprefs.preferences_as_dict()))
                 logger.debug("Replied to pipeline preferences request")
-            elif isinstance(req, InitialMeasurementsRequest):
+            elif isinstance(req, InitialMeasurements):
                 logger.debug("Received initial measurements request")
                 req.reply(Reply(buf=self.initial_measurements_buf))
                 logger.debug("Replied to initial measurements request")
-            elif isinstance(req, WorkRequest):
+            elif isinstance(req, Work):
                 if not self.work_queue.empty():
                     logger.debug("Received work request")
                     job, worker_runs_post_group, wants_dictionary = \
@@ -622,7 +622,7 @@ class AnalysisRunner(object):
                 logger.debug("Received ImageSetSuccess")
                 self.queue_imageset_finished(req)
                 logger.debug("Enqueued ImageSetSuccess")
-            elif isinstance(req, SharedDictionaryRequest):
+            elif isinstance(req, SharedDictionary):
                 logger.debug("Received shared dictionary request")
                 req.reply(SharedDictionary(dictionaries=self.shared_dicts))
                 logger.debug("Sent shared dictionary reply")
@@ -632,17 +632,17 @@ class AnalysisRunner(object):
                                                  req.buf)
                 req.reply(Ack())
                 logger.debug("Acknowledged measurements report")
-            elif isinstance(req, AnalysisCancelRequest):
+            elif isinstance(req, AnalysisCancel):
                 # Signal the interface that we are cancelling
                 logger.debug("Received analysis worker cancel request")
                 with self.interface_work_cv:
                     self.cancelled = True
                     self.interface_work_cv.notify()
                 req.reply(Ack())
-            elif isinstance(req, (InteractionRequest, DisplayRequest,
-                                  DisplayPostGroupRequest,
+            elif isinstance(req, (Interaction, Display,
+                                  DisplayPostGroup,
                                   ExceptionReport, DebugWaiting, DebugComplete,
-                                  OmeroLoginRequest)):
+                                  OMEROLogin)):
                 logger.debug("Enqueueing interactive request")
                 # bump upward
                 self.post_event(req)

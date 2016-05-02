@@ -115,7 +115,7 @@ class TestAnalysis(unittest.TestCase):
         def request_work(self):
             '''Send a work request until we get a WorkReply'''
             while True:
-                reply = self.send(message.request.WorkRequest(self.analysis_id))()
+                reply = self.send(message.request.Work(self.analysis_id))()
                 if isinstance(reply, message.reply.Work):
                     return reply
                 elif not isinstance(reply, message.reply.NoWork):
@@ -283,7 +283,7 @@ class TestAnalysis(unittest.TestCase):
                             module.__class__.display_post_run != cpm.Module.display_post_run:
                 result = self.event_queue.get()
                 self.assertIsInstance(
-                        result, message.request.DisplayPostRunRequest)
+                        result, message.request.DisplayPostRun)
                 self.assertEqual(result.module_num, module.module_num)
 
     def test_01_01_start_and_stop(self):
@@ -320,7 +320,7 @@ class TestAnalysis(unittest.TestCase):
         pipeline, m = self.make_pipeline_and_measurements_and_start()
         with self.FakeWorker() as worker:
             worker.connect(self.analysis.runner.work_announce_address)
-            response = worker.send(message.request.WorkRequest(worker.analysis_id))()
+            response = worker.send(message.request.Work(worker.analysis_id))()
             self.assertIsInstance(response, message.reply.Work)
             self.assertSequenceEqual(response.image_set_numbers, (1,))
             self.assertFalse(response.worker_runs_post_group)
@@ -333,9 +333,9 @@ class TestAnalysis(unittest.TestCase):
 
         with self.FakeWorker() as worker:
             worker.connect(self.analysis.runner.work_announce_address)
-            response = worker.send(message.request.WorkRequest(worker.analysis_id))()
+            response = worker.send(message.request.Work(worker.analysis_id))()
             self.assertIsInstance(response, message.reply.Work)
-            response = worker.send(message.request.WorkRequest(worker.analysis_id))()
+            response = worker.send(message.request.Work(worker.analysis_id))()
             self.assertIsInstance(response, message.reply.NoWork)
         logger.debug("Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function)
 
@@ -346,7 +346,7 @@ class TestAnalysis(unittest.TestCase):
         with self.FakeWorker() as worker:
             worker.connect(self.analysis.runner.work_announce_address)
             self.cancel_analysis()
-            response = worker.send(message.request.WorkRequest(worker.analysis_id))()
+            response = worker.send(message.request.Work(worker.analysis_id))()
             self.assertIsInstance(response, cpzmq.BoundaryExited)
         logger.debug("Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function)
 
@@ -360,7 +360,7 @@ class TestAnalysis(unittest.TestCase):
         cpprefs.set_default_output_directory(testimages_directory())
         with self.FakeWorker() as worker:
             worker.connect(self.analysis.runner.work_announce_address)
-            response = worker.send(message.request.PipelinePreferencesRequest(
+            response = worker.send(message.request.PipelinePreferences(
                     worker.analysis_id))()
             #
             # Compare pipelines
@@ -398,7 +398,7 @@ class TestAnalysis(unittest.TestCase):
         pipeline, m = self.make_pipeline_and_measurements_and_start()
         with self.FakeWorker() as worker:
             worker.connect(self.analysis.runner.work_announce_address)
-            response = worker.send(message.request.InitialMeasurementsRequest(
+            response = worker.send(message.request.InitialMeasurements(
                     worker.analysis_id))()
             client_measurements = cpmeas.load_measurements_from_buffer(
                     response.buf)
@@ -439,11 +439,11 @@ class TestAnalysis(unittest.TestCase):
         with self.FakeWorker() as worker:
             worker.connect(self.analysis.runner.work_announce_address)
             fn_interaction_reply = worker.send(
-                    message.request.InteractionRequest(
+                    message.request.Interaction(
                             worker.analysis_id,
                             foo="bar"))
             request = self.event_queue.get()
-            self.assertIsInstance(request, message.request.InteractionRequest)
+            self.assertIsInstance(request, message.request.Interaction)
             self.assertEqual(request.foo, "bar")
             request.reply(message.reply.Interaction(hello="world"))
             reply = fn_interaction_reply()
@@ -457,14 +457,14 @@ class TestAnalysis(unittest.TestCase):
         with self.FakeWorker() as worker:
             worker.connect(self.analysis.runner.work_announce_address)
             fn_interaction_reply = worker.send(
-                    message.request.DisplayRequest(
+                    message.request.Display(
                             worker.analysis_id,
                             foo="bar"))
             #
             # The event queue should be hooked up to the interaction callback
             #
             request = self.event_queue.get()
-            self.assertIsInstance(request, message.request.DisplayRequest)
+            self.assertIsInstance(request, message.request.Display)
             self.assertEqual(request.foo, "bar")
             request.reply(message.reply.Ack(message="Gimme Pony"))
             reply = fn_interaction_reply()
@@ -478,14 +478,14 @@ class TestAnalysis(unittest.TestCase):
         with self.FakeWorker() as worker:
             worker.connect(self.analysis.runner.work_announce_address)
             fn_interaction_reply = worker.send(
-                    message.request.DisplayPostGroupRequest(
+                    message.request.DisplayPostGroup(
                             worker.analysis_id, 1,
                             dict(foo="bar"), 3))
             #
             # The event queue should be hooked up to the interaction callback
             #
             request = self.event_queue.get()
-            self.assertIsInstance(request, message.request.DisplayPostGroupRequest)
+            self.assertIsInstance(request, message.request.DisplayPostGroup)
             display_data = request.display_data
             self.assertEqual(display_data["foo"], "bar")
             request.reply(message.reply.Ack(message="Gimme Pony"))
@@ -563,7 +563,7 @@ class TestAnalysis(unittest.TestCase):
             self.assertIsInstance(response, message.reply.Ack)
             response = worker.request_work()
             self.assertSequenceEqual(response.image_set_numbers, [2])
-            response = worker.send(message.request.SharedDictionaryRequest(
+            response = worker.send(message.request.SharedDictionary(
                     worker.analysis_id))()
             self.assertIsInstance(response, message.reply.SharedDictionary)
             result = response.dictionaries
@@ -615,7 +615,7 @@ class TestAnalysis(unittest.TestCase):
             #####################################################
             worker.connect(self.analysis.runner.work_announce_address)
             response = worker.request_work()
-            response = worker.send(message.request.InitialMeasurementsRequest(
+            response = worker.send(message.request.InitialMeasurements(
                     worker.analysis_id))()
             client_measurements = cpmeas.load_measurements_from_buffer(
                     response.buf)
@@ -679,7 +679,7 @@ class TestAnalysis(unittest.TestCase):
             #####################################################
             worker.connect(self.analysis.runner.work_announce_address)
             response = worker.request_work()
-            response = worker.send(message.request.InitialMeasurementsRequest(
+            response = worker.send(message.request.InitialMeasurements(
                     worker.analysis_id))()
             client_measurements = cpmeas.load_measurements_from_buffer(
                     response.buf)
@@ -772,7 +772,7 @@ class TestAnalysis(unittest.TestCase):
             #####################################################
             worker.connect(self.analysis.runner.work_announce_address)
             response = worker.request_work()
-            response = worker.send(message.request.InitialMeasurementsRequest(
+            response = worker.send(message.request.InitialMeasurements(
                     worker.analysis_id))()
             client_measurements = cpmeas.load_measurements_from_buffer(
                     response.buf)
@@ -853,7 +853,7 @@ class TestAnalysis(unittest.TestCase):
             #####################################################
             worker.connect(self.analysis.runner.work_announce_address)
             response = worker.request_work()
-            response = worker.send(message.request.InitialMeasurementsRequest(
+            response = worker.send(message.request.InitialMeasurements(
                     worker.analysis_id))()
             client_measurements = cpmeas.load_measurements_from_buffer(
                     response.buf)
@@ -955,7 +955,7 @@ class TestAnalysis(unittest.TestCase):
             worker.connect(self.analysis.runner.work_announce_address)
             response = worker.request_work()
             self.assertSequenceEqual(response.image_set_numbers, [1, 2])
-            response = worker.send(message.request.InitialMeasurementsRequest(
+            response = worker.send(message.request.InitialMeasurements(
                     worker.analysis_id))()
             client_measurements = cpmeas.load_measurements_from_buffer(
                     response.buf)
@@ -1014,7 +1014,7 @@ class TestAnalysis(unittest.TestCase):
             #####################################################
             worker.connect(self.analysis.runner.work_announce_address)
             response = worker.request_work()
-            response = worker.send(message.request.InitialMeasurementsRequest(
+            response = worker.send(message.request.InitialMeasurements(
                     worker.analysis_id))()
             client_measurements = cpmeas.load_measurements_from_buffer(
                     response.buf)
@@ -1102,7 +1102,7 @@ class TestAnalysis(unittest.TestCase):
             #####################################################
             worker.connect(self.analysis.runner.work_announce_address)
             response = worker.request_work()
-            response = worker.send(message.request.InitialMeasurementsRequest(
+            response = worker.send(message.request.InitialMeasurements(
                     worker.analysis_id))()
             #####################################################
             #
@@ -1111,7 +1111,7 @@ class TestAnalysis(unittest.TestCase):
             #
             #####################################################
 
-            response = worker.send(message.request.AnalysisCancelRequest(
+            response = worker.send(message.request.AnalysisCancel(
                     worker.analysis_id))()
             result = self.event_queue.get()
             self.assertIsInstance(result, cpanalysis.AnalysisFinished)

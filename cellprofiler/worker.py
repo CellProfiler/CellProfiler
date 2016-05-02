@@ -459,7 +459,7 @@ class AnalysisWorker(object):
                             req = ImageSetSuccessWithDictionary(
                                     self.current_analysis_id,
                                     image_set_number=image_set_number,
-                                    shared_dicts=dicts)
+                                    shared_dictionaries=dicts)
                         else:
                             req = ImageSetSuccess(
                                     self.current_analysis_id,

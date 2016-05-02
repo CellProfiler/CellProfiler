@@ -284,7 +284,7 @@ class TestAnalysis(unittest.TestCase):
                 result = self.event_queue.get()
                 self.assertIsInstance(
                         result, message.request.DisplayPostRun)
-                self.assertEqual(result.module_num, module.module_num)
+                self.assertEqual(result.module_index, module.module_num)
 
     def test_01_01_start_and_stop(self):
 

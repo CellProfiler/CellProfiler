@@ -38,8 +38,9 @@ class DisplayPostRun(object):
 
     This is a message sent to the UI from the analysis worker
     """
-    def __init__(self, module_num, display_data):
-        self.module_num = module_num
+    def __init__(self, module_index, display_data):
+        self.module_index = module_index
+
         self.display_data = display_data
 
 
@@ -48,7 +49,7 @@ class ExceptionReport(cellprofiler.utilities.zmqrequest.AnalysisRequest):
         cellprofiler.utilities.zmqrequest.AnalysisRequest.__init__(self, analysis_id, image_set_number=image_set_number, module_name=module_name, exc_type=exc_type, exc_message=exc_message, exc_traceback=exc_traceback, filename=filename, line_number=line_number)
 
     def __str__(self):
-        return "(Worker) %s: %s" % (self.exc_type, self.exc_message)
+        return "(Worker) {}: {}".format(self.exc_type, self.exc_message)
 
 
 class ImageSetSuccess(cellprofiler.utilities.zmqrequest.AnalysisRequest):
@@ -57,10 +58,10 @@ class ImageSetSuccess(cellprofiler.utilities.zmqrequest.AnalysisRequest):
 
 
 class ImageSetSuccessWithDictionary(ImageSetSuccess):
-    def __init__(self, analysis_id, image_set_number, shared_dicts):
+    def __init__(self, analysis_id, image_set_number, shared_dictionaries):
         ImageSetSuccess.__init__(self, analysis_id, image_set_number=image_set_number)
 
-        self.shared_dicts = shared_dicts
+        self.shared_dictionaries = shared_dictionaries
 
 
 class InitialMeasurements(cellprofiler.utilities.zmqrequest.AnalysisRequest):
@@ -87,8 +88,8 @@ class PipelinePreferences(cellprofiler.utilities.zmqrequest.AnalysisRequest):
 
 
 class SharedDictionary(cellprofiler.utilities.zmqrequest.AnalysisRequest):
-    def __init__(self, analysis_id, module_num=-1):
-        cellprofiler.utilities.zmqrequest.AnalysisRequest.__init__(self, analysis_id, module_num=module_num)
+    def __init__(self, analysis_id, module_index=-1):
+        cellprofiler.utilities.zmqrequest.AnalysisRequest.__init__(self, analysis_id, module_index=module_index)
 
 
 class Work(cellprofiler.utilities.zmqrequest.AnalysisRequest):

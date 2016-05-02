@@ -459,7 +459,7 @@ class AnalysisRunner(object):
                     if waiting_for_first_imageset:
                         assert isinstance(finished_req,
                                           ImageSetSuccessWithDictionary)
-                        self.shared_dicts = finished_req.shared_dicts
+                        self.shared_dicts = finished_req.shared_dictionaries
                         waiting_for_first_imageset = False
                         assert len(self.shared_dicts) == len(self.pipeline.modules())
                         # if we had jobs waiting for the first image set to finish,

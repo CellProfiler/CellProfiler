@@ -19,7 +19,7 @@ See also <b>ApplyThreshold</b>, <b>IdentifyPrimaryObjects</b>, <b>IdentifyObject
 import numpy as np
 
 import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
+import cellprofiler.module as cpm
 import cellprofiler.setting as cps
 from cellprofiler.setting import YES, NO
 
@@ -27,7 +27,7 @@ IO_IMAGE = "Image"
 IO_OBJECTS = "Objects"
 
 
-class MaskImage(cpm.CPModule):
+class MaskImage(cpm.Module):
     module_name = "MaskImage"
     category = "Image Processing"
     variable_revision_number = 3

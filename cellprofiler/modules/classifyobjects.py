@@ -55,7 +55,7 @@ See also <b>CalculateMath</b> and any of the modules in the <b>Measure</b> categ
 import numpy as np
 
 import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
+import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
 import cellprofiler.configuration as cpprefs
 import cellprofiler.setting as cps
@@ -75,7 +75,7 @@ F_PCT_PER_BIN = 'PctObjectsPerBin'
 F_NUM_PER_BIN = 'NumObjectsPerBin'
 
 
-class ClassifyObjects(cpm.CPModule):
+class ClassifyObjects(cpm.Module):
     category = "Object Processing"
     module_name = "ClassifyObjects"
     variable_revision_number = 2

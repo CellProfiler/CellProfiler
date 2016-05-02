@@ -37,7 +37,7 @@ import numpy as np
 import wx
 
 import cellprofiler.cpimage as cpimage
-import cellprofiler.cpmodule as cpm
+import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
 import cellprofiler.configuration as cpp
 import cellprofiler.setting as cps
@@ -170,7 +170,7 @@ def create_omero_gateway(host=DEFAULT_OMERO_HOST, port=DEFAULT_OMERO_PORT,
     return omero_client, omero_session, omero_gateway
 
 
-class OmeroLoadImages(cpm.CPModule):
+class OmeroLoadImages(cpm.Module):
     variable_revision_number = 1
     module_name = 'OmeroLoadImages'
     category = 'File Processing'

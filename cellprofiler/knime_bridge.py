@@ -25,7 +25,7 @@ if not hasattr(zmq, "Frame"):
 
     zmq.Frame = ZmqFrame
 
-import cellprofiler.cpmodule as cpm
+import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
 import cellprofiler.cpimage as cpi
 import cellprofiler.object as cpo
@@ -583,7 +583,7 @@ class KnimeBridgeServer(threading.Thread):
         jtypes = ["java.lang.Integer"]
         features = {}
         for module in modules:
-            assert isinstance(module, cpm.CPModule)
+            assert isinstance(module, cpm.Module)
             for column in module.get_measurement_columns(pipeline):
                 objects, name, dbtype = column[:3]
                 qualifiers = {} if len(column) < 4 else column[3]

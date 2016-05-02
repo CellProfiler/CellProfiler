@@ -30,8 +30,8 @@ import logging
 import urllib
 
 import cellprofiler.cpimage  as cpi
-import cellprofiler.cpmodule as cpm
-import cellprofiler.cpmodule as cpm
+import cellprofiler.module as cpm
+import cellprofiler.module as cpm
 import cellprofiler.setting as cps
 from cellprofiler.configuration import standardize_default_folder_names, \
     DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME, NO_FOLDER_NAME, \
@@ -86,7 +86,7 @@ if has_ilastik:
 SI_PROBABILITY_MAP_COUNT = 3
 
 
-class IlastikPixelClassification(cpm.CPModule):
+class IlastikPixelClassification(cpm.Module):
     module_name = 'ilastik_pixel_classification'
     variable_revision_number = 2
     category = "Image Processing"

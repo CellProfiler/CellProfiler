@@ -69,7 +69,7 @@ from scipy.ndimage import label, distance_transform_edt
 from scipy.sparse import coo_matrix
 
 import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
+import cellprofiler.module as cpm
 import cellprofiler.object as cpo
 import cellprofiler.measurement as cpmeas
 import cellprofiler.setting as cps
@@ -107,7 +107,7 @@ DM_KMEANS = "K Means"
 DM_SKEL = "Skeleton"
 
 
-class CalculateImageOverlap(cpm.CPModule):
+class CalculateImageOverlap(cpm.Module):
     category = "Measurement"
     variable_revision_number = 4
     module_name = "CalculateImageOverlap"

@@ -17,7 +17,7 @@ from bioformats.formatreader import load_using_bioformats_url
 from scipy.io.matlab import loadmat
 
 import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
+import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
 import cellprofiler.modules.measuretexture as M
 import cellprofiler.object as cpo

@@ -13,7 +13,7 @@ from centrosome.smooth import fit_polynomial
 from centrosome.smooth import smooth_with_function_and_mask
 
 import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
+import cellprofiler.module as cpm
 import cellprofiler.setting as cps
 from cellprofiler.gui.help import HELP_ON_MEASURING_DISTANCES, HELP_ON_PIXEL_INTENSITIES
 from cellprofiler.setting import YES, NO
@@ -26,7 +26,7 @@ CIRCULAR_AVERAGE_FILTER = 'Circular Average Filter'
 SM_TO_AVERAGE = "Smooth to Average"
 
 
-class Smooth(cpm.CPModule):
+class Smooth(cpm.Module):
     module_name = 'Smooth'
     category = "Image Processing"
     variable_revision_number = 2

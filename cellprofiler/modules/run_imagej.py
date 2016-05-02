@@ -32,7 +32,7 @@ import numpy as np
 import sys
 import uuid
 
-import cellprofiler.cpmodule as cpm
+import cellprofiler.module as cpm
 import cellprofiler.cpimage as cpi
 import cellprofiler.setting as cps
 from cellprofiler.setting import YES, NO
@@ -71,7 +71,7 @@ IDX_POST_COMMAND = 12
 IMAGEJ_SCALE = 255.0
 
 
-class RunImageJ(cpm.CPModule):
+class RunImageJ(cpm.Module):
     module_name = "RunImageJ"
     variable_revision_number = 5
     category = "Image Processing"

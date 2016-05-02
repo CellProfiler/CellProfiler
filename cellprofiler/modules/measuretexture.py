@@ -123,7 +123,7 @@ from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 from centrosome.filter import gabor, stretch
 from centrosome.haralick import Haralick, normalized_per_object
 
-import cellprofiler.cpmodule as cpm
+import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
 import cellprofiler.object as cpo
 import cellprofiler.setting as cps
@@ -163,7 +163,7 @@ IO_OBJECTS = "Objects"
 IO_BOTH = "Both"
 
 
-class MeasureTexture(cpm.CPModule):
+class MeasureTexture(cpm.Module):
     module_name = "MeasureTexture"
     variable_revision_number = 4
     category = 'Measurement'

@@ -393,7 +393,7 @@ import scipy.ndimage as scind
 
 logger = logging.getLogger(__name__)
 
-import cellprofiler.cpmodule as cpm
+import cellprofiler.module as cpm
 import cellprofiler.setting as cps
 from cellprofiler.setting import YES, NO
 import cellprofiler.cpimage as cpi
@@ -462,7 +462,7 @@ FUNCTION_SETTING_COUNT_V3 = 11
 FUNCTION_SETTING_COUNT = 12
 
 
-class Morph(cpm.CPModule):
+class Morph(cpm.Module):
     module_name = "Morph"
     category = "Image Processing"
     variable_revision_number = 4

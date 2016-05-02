@@ -13,7 +13,7 @@ by specifying "Objects" as the type of image to save.
 import numpy as np
 
 import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
+import cellprofiler.module as cpm
 import cellprofiler.configuration as cpprefs
 import cellprofiler.setting as cps
 
@@ -32,7 +32,7 @@ IM_UINT16 = "uint16"
 IM_ALL = [IM_COLOR, IM_BINARY, IM_GRAYSCALE, IM_UINT16]
 
 
-class ConvertObjectsToImage(cpm.CPModule):
+class ConvertObjectsToImage(cpm.Module):
     module_name = "ConvertObjectsToImage"
     category = "Object Processing"
     variable_revision_number = 1

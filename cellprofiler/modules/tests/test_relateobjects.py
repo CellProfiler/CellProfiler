@@ -14,7 +14,7 @@ from cellprofiler.configuration import set_headless
 set_headless()
 
 import cellprofiler.pipeline as cpp
-import cellprofiler.cpmodule as cpm
+import cellprofiler.module as cpm
 import cellprofiler.cpimage as cpi
 import cellprofiler.measurement as cpmeas
 import cellprofiler.object as cpo
@@ -32,7 +32,7 @@ class TestRelateObjects(unittest.TestCase):
         '''Make a workspace for testing Relate'''
         pipeline = cpp.Pipeline()
         if fake_measurement:
-            class FakeModule(cpm.CPModule):
+            class FakeModule(cpm.Module):
                 def get_measurement_columns(self, pipeline):
                     return [(CHILD_OBJECTS, MEASUREMENT, cpmeas.COLTYPE_FLOAT),
                             (CHILD_OBJECTS, IGNORED_MEASUREMENT, cpmeas.COLTYPE_INTEGER)]

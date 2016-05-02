@@ -13,7 +13,7 @@ import PIL.Image
 import numpy as np
 
 import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
+import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
 import cellprofiler.modules.loadimages as LI
 import cellprofiler.modules.loadsingleimage as L

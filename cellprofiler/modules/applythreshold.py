@@ -11,7 +11,7 @@ from scipy.ndimage.morphology import binary_dilation
 
 import cellprofiler.setting as cps
 from cellprofiler import cpimage
-from cellprofiler.cpmodule import CPModule
+from cellprofiler.module import Module
 from cellprofiler.modules.identify import get_threshold_measurement_columns
 from cellprofiler.setting import YES, NO
 from identify import FF_ORIG_THRESHOLD, FF_FINAL_THRESHOLD

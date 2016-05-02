@@ -38,7 +38,7 @@ import numpy as np
 
 logger = logging.getLogger(__name__)
 import cellprofiler.cpgridinfo as cpg
-import cellprofiler.cpmodule as cpm
+import cellprofiler.module as cpm
 import cellprofiler.cpimage as cpi
 import cellprofiler.measurement as cpmeas
 import cellprofiler.setting as cps
@@ -84,7 +84,7 @@ F_ROWS = "Rows"
 F_COLUMNS = "Columns"
 
 
-class DefineGrid(cpm.CPModule):
+class DefineGrid(cpm.Module):
     module_name = "DefineGrid"
     variable_revision_number = 1
     category = "Other"

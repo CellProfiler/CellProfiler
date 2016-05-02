@@ -19,7 +19,7 @@ from centrosome.cpmorphology import fill_labeled_holes
 from centrosome.outline import outline
 
 import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
+import cellprofiler.module as cpm
 import cellprofiler.object as cpo
 import cellprofiler.configuration as cpprefs
 import cellprofiler.setting as cps

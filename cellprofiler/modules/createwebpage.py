@@ -13,7 +13,7 @@ import zipfile
 from cStringIO import StringIO
 from urllib2 import urlopen
 
-import cellprofiler.cpmodule as cpm
+import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
 import cellprofiler.configuration as cpprefs
 import cellprofiler.setting as cps
@@ -46,7 +46,7 @@ TRANSLATION_DICTIONARY = {
     "No": OPEN_NO
 }
 
-class CreateWebPage(cpm.CPModule):
+class CreateWebPage(cpm.Module):
     module_name = "CreateWebPage"
     category = "Other"
     variable_revision_number = 2

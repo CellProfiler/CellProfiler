@@ -17,7 +17,7 @@ import sys
 import traceback
 
 logger = logging.getLogger(__name__)
-import cellprofiler.cpmodule as cpm
+import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
 import cellprofiler.setting as cps
 from cellprofiler.setting import YES, NO
@@ -56,7 +56,7 @@ EVENT_SETTING_COUNT = 4
 K_LAST_IN_GROUP = "Last in group"
 
 
-class SendEmail(cpm.CPModule):
+class SendEmail(cpm.Module):
     module_name = "SendEmail"
     category = "Other"
     variable_revision_number = 2

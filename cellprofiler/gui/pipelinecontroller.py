@@ -4,7 +4,7 @@
 
 import cellprofiler.analysis
 import cellprofiler.cpimage
-import cellprofiler.cpmodule
+import cellprofiler.module
 import cellprofiler.gui.addmoduleframe
 import cellprofiler.gui.help
 import cellprofiler.gui.htmldialog
@@ -2455,7 +2455,7 @@ class PipelineController(object):
         self.__workspace.display_data.__dict__.update(evt.display_data_dict)
         try:
             module = self.__pipeline.modules(exclude_disabled=False)[module_num - 1]
-            if module.display != cellprofiler.cpmodule.CPModule.display:
+            if module.display != cellprofiler.module.Module.display:
                 fig = self.__workspace.get_module_figure(module,
                                                          evt.image_set_number,
                                                          self.__frame)
@@ -2479,7 +2479,7 @@ class PipelineController(object):
         self.__workspace.display_data.__dict__.update(evt.display_data.__dict__)
         try:
             module = self.__pipeline.modules(exclude_disabled=False)[module_num - 1]
-            if module.display_post_run != cellprofiler.cpmodule.CPModule.display_post_run:
+            if module.display_post_run != cellprofiler.module.Module.display_post_run:
                 image_number = self.__workspace.measurements.image_set_count
                 fig = self.__workspace.get_module_figure(module,
                                                          image_number,
@@ -2499,7 +2499,7 @@ class PipelineController(object):
         self.__workspace.display_data.__dict__.update(evt.display_data)
         try:
             module = self.__pipeline.modules(exclude_disabled=False)[module_num - 1]
-            if module.display_post_group != cellprofiler.cpmodule.CPModule.display_post_group:
+            if module.display_post_group != cellprofiler.module.Module.display_post_group:
                 image_number = evt.image_set_number
                 fig = self.__workspace.get_module_figure(module,
                                                          image_number,

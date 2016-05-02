@@ -44,7 +44,7 @@ from centrosome.outline import outline
 
 import cellprofiler.cpgridinfo as cpg
 import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
+import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
 import cellprofiler.object as cpo
 import cellprofiler.setting as cps
@@ -67,7 +67,7 @@ FAIL_ANY_PREVIOUS = "Any Previous"
 FAIL_FIRST = "The First"
 
 
-class IdentifyObjectsInGrid(cpm.CPModule):
+class IdentifyObjectsInGrid(cpm.Module):
     module_name = "IdentifyObjectsInGrid"
     variable_revision_number = 2
     category = "Object Processing"

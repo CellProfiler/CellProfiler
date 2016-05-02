@@ -35,7 +35,7 @@ import numpy as np
 import sys
 
 import cellprofiler.configuration as cpprefs
-import cellprofiler.cpmodule as cpm
+import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
 import cellprofiler.object as cpo
 import cellprofiler.cpimage as cpi

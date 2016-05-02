@@ -106,7 +106,7 @@ import time
 import urllib
 import urlparse
 
-import cellprofiler.cpmodule as cpm
+import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
 import cellprofiler.pipeline as cpp
 import cellprofiler.setting as cps
@@ -155,7 +155,7 @@ LEN_EXTRACTION_METHOD_V1 = 8
 LEN_EXTRACTION_METHOD = 9
 
 
-class Metadata(cpm.CPModule):
+class Metadata(cpm.Module):
     variable_revision_number = 4
     module_name = "Metadata"
     category = "File Processing"

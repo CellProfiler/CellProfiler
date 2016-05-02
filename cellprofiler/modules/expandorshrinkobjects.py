@@ -39,7 +39,7 @@ from centrosome.outline import outline
 from scipy.ndimage import distance_transform_edt
 
 import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
+import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
 import cellprofiler.object as cpo
 import cellprofiler.setting as cps
@@ -60,7 +60,7 @@ O_ALL = [O_SHRINK_INF, O_EXPAND_INF, O_DIVIDE, O_SHRINK, O_EXPAND,
          O_SKELETONIZE, O_SPUR]
 
 
-class ExpandOrShrinkObjects(cpm.CPModule):
+class ExpandOrShrinkObjects(cpm.Module):
     module_name = 'ExpandOrShrinkObjects'
     category = 'Object Processing'
     variable_revision_number = 1

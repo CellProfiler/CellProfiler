@@ -22,7 +22,7 @@ from bioformats.formatwriter import write_image
 from bioformats.omexml import PT_UINT8
 
 import cellprofiler.cpimage as I
-import cellprofiler.cpmodule as CPM
+import cellprofiler.module as CPM
 import cellprofiler.measurement as measurements
 import cellprofiler.modules.loadimages as LI
 import cellprofiler.modules.tests as T

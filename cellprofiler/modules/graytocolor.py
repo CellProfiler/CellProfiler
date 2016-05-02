@@ -13,7 +13,7 @@ relative weights.
 import numpy as np
 
 import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
+import cellprofiler.module as cpm
 import cellprofiler.setting as cps
 
 OFF_RED_IMAGE_NAME = 0
@@ -40,7 +40,7 @@ DEFAULT_COLORS = [
     (128, 128, 0), (128, 0, 128), (0, 128, 128)]
 
 
-class GrayToColor(cpm.CPModule):
+class GrayToColor(cpm.Module):
     module_name = 'GrayToColor'
     variable_revision_number = 3
     category = "Image Processing"

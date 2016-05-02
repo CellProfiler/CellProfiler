@@ -42,7 +42,7 @@ import traceback
 from cellprofiler.modules.identify import FF_PARENT, FF_CHILDREN_COUNT, \
      M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
 import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
+import cellprofiler.module as cpm
 import cellprofiler.object as cpo
 import cellprofiler.setting as cps
 from cellprofiler.setting import YES, NO
@@ -101,7 +101,7 @@ PO_PARENT_WITH_MOST_OVERLAP = "Parent with most overlap"
 PO_ALL = [PO_BOTH, PO_PARENT_WITH_MOST_OVERLAP]
 
 
-class FilterObjects(cpm.CPModule):
+class FilterObjects(cpm.Module):
     module_name = 'FilterObjects'
     category = "Object Processing"
     variable_revision_number = 7

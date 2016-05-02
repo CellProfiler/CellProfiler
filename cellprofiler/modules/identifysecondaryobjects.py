@@ -128,7 +128,7 @@ import os
 import scipy.ndimage as scind
 import scipy.misc as scimisc
 
-import cellprofiler.cpmodule as cpm
+import cellprofiler.module as cpm
 import cellprofiler.cpimage as cpi
 import cellprofiler.measurement as cpmeas
 import cellprofiler.object as cpo

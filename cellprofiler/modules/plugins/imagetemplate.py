@@ -29,7 +29,7 @@ from scipy.ndimage import gaussian_gradient_magnitude, correlate1d
 ##################################
 
 import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
+import cellprofiler.module as cpm
 import cellprofiler.setting as cps
 
 ###################################
@@ -58,7 +58,7 @@ GRADIENT_DIRECTION_Y = "Gradient direction - Y"
 #
 ###################################
 
-class ImageTemplate(cpm.CPModule):
+class ImageTemplate(cpm.Module):
     ###############################################
     #
     # The module starts by declaring the name that's used for display,

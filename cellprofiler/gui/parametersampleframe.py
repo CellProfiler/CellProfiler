@@ -7,7 +7,7 @@ Author: AJ Pretorius
 """
 
 import cellprofiler.cpimage
-import cellprofiler.cpmodule
+import cellprofiler.module
 import cellprofiler.measurement
 import cellprofiler.object
 import cellprofiler.configuration

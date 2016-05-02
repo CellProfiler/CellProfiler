@@ -6,13 +6,13 @@ import hashlib
 import numpy as np
 
 import cellprofiler.cpimage
-import cellprofiler.cpmodule
+import cellprofiler.module
 import cellprofiler.measurement as cpmeas
 import cellprofiler.object
 import cellprofiler.setting
 
 
-class InjectImage(cellprofiler.cpmodule.CPModule):
+class InjectImage(cellprofiler.module.Module):
     """This module is intended for testing. It injects an image into the
     image set.
     """
@@ -121,7 +121,7 @@ class InjectImage(cellprofiler.cpmodule.CPModule):
         return []
 
 
-class InjectObjects(cellprofiler.cpmodule.CPModule):
+class InjectObjects(cellprofiler.module.Module):
     """Inject objects with labels into the pipeline"""
 
     module_name = "InjectObjects"

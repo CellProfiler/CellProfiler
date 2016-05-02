@@ -39,7 +39,7 @@ from centrosome.cpmorphology import centers_of_labels
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 from centrosome.outline import outline
 
-import cellprofiler.cpmodule as cpm
+import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
 import cellprofiler.setting as cps
 from cellprofiler.modules.identify import C_PARENT, C_CHILDREN, R_PARENT, R_CHILD
@@ -78,7 +78,7 @@ FIXED_SETTING_COUNT = 5
 VARIABLE_SETTING_COUNT = 1
 
 
-class RelateObjects(cpm.CPModule):
+class RelateObjects(cpm.Module):
     module_name = 'RelateObjects'
     category = "Object Processing"
     variable_revision_number = 2

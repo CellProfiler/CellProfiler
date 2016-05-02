@@ -66,7 +66,7 @@ import scipy.ndimage as scind
 from scipy.linalg.basic import lstsq
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 import centrosome.haralick
-import cellprofiler.cpmodule as cpm
+import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
 import cellprofiler.setting as cps
 from cellprofiler.setting import YES, NO
@@ -126,7 +126,7 @@ SETTINGS_PER_GROUP_V3 = 11
 IMAGE_GROUP_SETTING_OFFSET = 2
 
 
-class MeasureImageQuality(cpm.CPModule):
+class MeasureImageQuality(cpm.Module):
     module_name = "MeasureImageQuality"
     category = "Measurement"
     variable_revision_number = 5

@@ -18,7 +18,7 @@ from centrosome.otsu import otsu3
 from scipy.ndimage import convolve
 
 import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
+import cellprofiler.module as cpm
 import cellprofiler.setting as cps
 from cellprofiler.setting import YES, NO
 
@@ -37,7 +37,7 @@ E_HORIZONTAL = "Horizontal"
 E_VERTICAL = "Vertical"
 
 
-class EnhanceEdges(cpm.CPModule):
+class EnhanceEdges(cpm.Module):
     module_name = "EnhanceEdges"
     category = "Image Processing"
     variable_revision_number = 2

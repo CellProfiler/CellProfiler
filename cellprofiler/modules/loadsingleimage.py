@@ -45,7 +45,7 @@ import centrosome.outline
 import numpy as np
 
 import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
+import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
 import cellprofiler.object as cpo
 import cellprofiler.object as cpo
@@ -85,7 +85,7 @@ S_IMAGE_NAME_OFFSET_V4 = 1
 S_RESCALE_OFFSET_V4 = 2
 
 
-class LoadSingleImage(cpm.CPModule):
+class LoadSingleImage(cpm.Module):
     module_name = "LoadSingleImage"
     category = "File Processing"
     variable_revision_number = 5

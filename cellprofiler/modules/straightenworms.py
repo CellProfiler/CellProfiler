@@ -80,7 +80,7 @@ from scipy.ndimage import mean as nd_mean
 from scipy.ndimage import standard_deviation as nd_standard_deviation
 
 import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
+import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
 import cellprofiler.object as cpo
 import cellprofiler.configuration as cpprefs
@@ -127,7 +127,7 @@ FIXED_SETTINGS_COUNT_V3 = 11
 VARIABLE_SETTINGS_COUNT_V3 = 2
 
 
-class StraightenWorms(cpm.CPModule):
+class StraightenWorms(cpm.Module):
     variable_revision_number = 3
     category = ["Object Processing", "Worm Toolbox"]
     module_name = "StraightenWorms"

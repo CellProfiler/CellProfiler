@@ -14,7 +14,7 @@ from scipy.ndimage import affine_transform, map_coordinates
 
 logger = logging.getLogger(__name__)
 
-import cellprofiler.cpmodule as cpm
+import cellprofiler.module as cpm
 import cellprofiler.cpimage as cpi
 import cellprofiler.setting as cps
 
@@ -35,7 +35,7 @@ I_ALL = [I_NEAREST_NEIGHBOR, I_BILINEAR, I_BICUBIC]
 S_ADDITIONAL_IMAGE_COUNT = 9
 
 
-class Resize(cpm.CPModule):
+class Resize(cpm.Module):
     category = "Image Processing"
     variable_revision_number = 4
     module_name = "Resize"

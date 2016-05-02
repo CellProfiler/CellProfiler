@@ -28,7 +28,7 @@ from centrosome.filter import stretch
 from scipy.fftpack import fft2, ifft2
 
 import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
+import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
 import cellprofiler.setting as cps
 
@@ -48,7 +48,7 @@ C_ALIGN = "Align"
 MEASUREMENT_FORMAT = C_ALIGN + "_%sshift_%s"
 
 
-class Align(cpm.CPModule):
+class Align(cpm.Module):
     module_name = "Align"
     category = 'Image Processing'
     variable_revision_number = 3

@@ -174,7 +174,7 @@ import numpy.ma
 from scipy.ndimage import distance_transform_edt
 import scipy.ndimage
 import scipy.sparse
-import cellprofiler.cpmodule as cpm
+import cellprofiler.module as cpm
 import cellprofiler.cpimage as cpi
 import cellprofiler.pipeline as cpp
 import cellprofiler.setting as cps
@@ -282,7 +282,7 @@ F_ALL = [feature for feature, coltype in F_ALL_COLTYPE_ALL]
 F_IMAGE_ALL = [feature for feature, coltype in F_IMAGE_COLTYPE_ALL]
 
 
-class TrackObjects(cpm.CPModule):
+class TrackObjects(cpm.Module):
     module_name = 'TrackObjects'
     category = "Object Processing"
     variable_revision_number = 6

@@ -41,7 +41,7 @@ from centrosome.filter import stretch
 from scipy.sparse import coo_matrix
 
 import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
+import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
 import cellprofiler.object as cpo
 import cellprofiler.configuration as cpprefs
@@ -67,7 +67,7 @@ UM_DISCONNECTED = "Disconnected"
 UM_CONVEX_HULL = "Convex hull"
 
 
-class ReassignObjectNumbers(cpm.CPModule):
+class ReassignObjectNumbers(cpm.Module):
     module_name = "ReassignObjectNumbers"
     category = "Object Processing"
     variable_revision_number = 4

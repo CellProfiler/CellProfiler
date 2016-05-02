@@ -11,7 +11,7 @@ import numpy as np
 from centrosome.filter import stretch
 
 import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
+import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
 import cellprofiler.configuration as cpprefs
 import cellprofiler.setting as cps
@@ -48,7 +48,7 @@ HIGH_EACH_IMAGE = 'Maximum for each image'
 HIGH_ALL = [CUSTOM_VALUE, HIGH_EACH_IMAGE, HIGH_ALL_IMAGES]
 
 
-class RescaleIntensity(cpm.CPModule):
+class RescaleIntensity(cpm.Module):
     module_name = "RescaleIntensity"
     category = "Image Processing"
     variable_revision_number = 2

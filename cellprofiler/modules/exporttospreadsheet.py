@@ -51,7 +51,7 @@ import numpy as np
 import os
 import sys
 
-import cellprofiler.cpmodule as cpm
+import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
 import cellprofiler.pipeline as cpp
 import cellprofiler.setting as cps
@@ -122,7 +122,7 @@ NANS_AS_NULLS = "Null"
 NANS_AS_NANS = "NaN"
 
 
-class ExportToSpreadsheet(cpm.CPModule):
+class ExportToSpreadsheet(cpm.Module):
     module_name = 'ExportToSpreadsheet'
     category = ["File Processing", "Data Tools"]
     variable_revision_number = 11

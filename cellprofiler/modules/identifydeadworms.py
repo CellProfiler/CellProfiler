@@ -43,7 +43,7 @@ from centrosome.cpmorphology import get_line_pts
 from scipy.ndimage import binary_erosion, binary_fill_holes
 from scipy.ndimage import mean as mean_of_labels
 
-import cellprofiler.cpmodule as cpm
+import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
 import cellprofiler.object as cpo
 import cellprofiler.configuration as cpprefs
@@ -63,7 +63,7 @@ LABEL_ALPHA = 1.0
 WORM_ALPHA = .25
 
 
-class IdentifyDeadWorms(cpm.CPModule):
+class IdentifyDeadWorms(cpm.Module):
     module_name = "IdentifyDeadWorms"
     variable_revision_number = 2
     category = ["Other", "Worm Toolbox"]

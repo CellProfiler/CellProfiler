@@ -32,7 +32,7 @@ from centrosome.smooth import fit_polynomial
 from centrosome.smooth import smooth_with_function_and_mask
 
 import cellprofiler.cpimage  as cpi
-import cellprofiler.cpmodule as cpm
+import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
 import cellprofiler.object as cpo
 import cellprofiler.pipeline as cpp
@@ -69,7 +69,7 @@ DOS_DIVIDE = "Divide"
 DOS_SUBTRACT = "Subtract"
 
 
-class CorrectIlluminationCalculate(cpm.CPModule):
+class CorrectIlluminationCalculate(cpm.Module):
     module_name = "CorrectIlluminationCalculate"
     variable_revision_number = 2
     category = "Image Processing"

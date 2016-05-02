@@ -46,7 +46,7 @@ from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 from scipy.ndimage import binary_erosion, grey_dilation, grey_erosion
 
 import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
+import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
 import cellprofiler.object as cpo
 import cellprofiler.configuration as cpprefs
@@ -72,7 +72,7 @@ F_ALL = [F_NUMBER_TRUNKS, F_NUMBER_NON_TRUNK_BRANCHES, F_NUMBER_BRANCH_ENDS,
          F_TOTAL_NEURITE_LENGTH]
 
 
-class MeasureNeurons(cpm.CPModule):
+class MeasureNeurons(cpm.Module):
     module_name = "MeasureNeurons"
     category = "Measurement"
     variable_revision_number = 3

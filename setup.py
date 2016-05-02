@@ -439,7 +439,7 @@ setuptools.setup(
             "matplotlib",
             "MySQL-python",
             "numpy",
-            "prokaryote",
+            "prokaryote>=1.0.11",
             "pytest",
             "python-bioformats",
             "pyzmq",

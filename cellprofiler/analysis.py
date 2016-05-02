@@ -5,7 +5,6 @@ from __future__ import with_statement
 import Queue
 import cStringIO as StringIO
 import collections
-import gc
 import logging
 import multiprocessing
 import os
@@ -16,18 +15,22 @@ import tempfile
 import threading
 import uuid
 
-import h5py
 import numpy as np
 import zmq
+from message.reply import SharedDictionaryReply, WorkReply, NoWorkReply, Ack
+from message.request import PipelinePreferencesRequest, InitialMeasurementsRequest, WorkRequest, ImageSetSuccess, \
+    ImageSetSuccessWithDictionary, MeasurementsReport, InteractionRequest, AnalysisCancelRequest, DisplayRequest, \
+    DisplayPostRunRequest, DisplayPostGroupRequest, SharedDictionaryRequest, ExceptionReport, DebugWaiting, \
+    DebugComplete, OmeroLoginRequest
 
 import cellprofiler
+import cellprofiler.configuration as cpprefs
 import cellprofiler.image as cpimage
 import cellprofiler.measurement as cpmeas
-import cellprofiler.configuration as cpprefs
 import cellprofiler.workspace as cpw
-from cellprofiler.utilities.zmqrequest import AnalysisRequest, Request, Reply, UpstreamExit
+from cellprofiler.utilities.zmqrequest import Reply
 from cellprofiler.utilities.zmqrequest import get_announcer_address
-from cellprofiler.utilities.zmqrequest import register_analysis, cancel_analysis
+from cellprofiler.utilities.zmqrequest import register_analysis
 
 logger = logging.getLogger(__name__)
 
@@ -873,158 +876,6 @@ class AnalysisFinished(object):
         self.cancelled = cancelled
 
 
-class PipelinePreferencesRequest(AnalysisRequest):
-    pass
-
-
-class InitialMeasurementsRequest(AnalysisRequest):
-    pass
-
-
-class WorkRequest(AnalysisRequest):
-    pass
-
-
-class ImageSetSuccess(AnalysisRequest):
-    def __init__(self, analysis_id, image_set_number=None):
-        AnalysisRequest.__init__(self, analysis_id,
-                                 image_set_number=image_set_number)
-
-
-class ImageSetSuccessWithDictionary(ImageSetSuccess):
-    def __init__(self, analysis_id, image_set_number, shared_dicts):
-        ImageSetSuccess.__init__(self, analysis_id,
-                                 image_set_number=image_set_number)
-        self.shared_dicts = shared_dicts
-
-
-class DictionaryReqRep(Reply):
-    pass
-
-
-class MeasurementsReport(AnalysisRequest):
-    def __init__(self, analysis_id, buf, image_set_numbers=[]):
-        AnalysisRequest.__init__(self, analysis_id,
-                                 buf=buf,
-                                 image_set_numbers=image_set_numbers)
-
-
-class InteractionRequest(AnalysisRequest):
-    pass
-
-
-class AnalysisCancelRequest(AnalysisRequest):
-    pass
-
-
-class DisplayRequest(AnalysisRequest):
-    pass
-
-
-class DisplayPostRunRequest(object):
-    '''Request a post-run display
-
-    This is a message sent to the UI from the analysis worker'''
-
-    def __init__(self, module_num, display_data):
-        self.module_num = module_num
-        self.display_data = display_data
-
-
-class DisplayPostGroupRequest(AnalysisRequest):
-    '''Request a post-group display
-
-    This is a message sent to the UI from the analysis worker'''
-
-    def __init__(self, analysis_id, module_num, display_data, image_set_number):
-        AnalysisRequest.__init__(
-                self, analysis_id,
-                module_num=module_num,
-                image_set_number=image_set_number,
-                display_data=display_data)
-
-
-class SharedDictionaryRequest(AnalysisRequest):
-    def __init__(self, analysis_id, module_num=-1):
-        AnalysisRequest.__init__(self, analysis_id, module_num=module_num)
-
-
-class SharedDictionaryReply(Reply):
-    def __init__(self, dictionaries=[{}]):
-        Reply.__init__(self, dictionaries=dictionaries)
-
-
-class ExceptionReport(AnalysisRequest):
-    def __init__(self, analysis_id,
-                 image_set_number, module_name,
-                 exc_type, exc_message, exc_traceback,
-                 filename, line_number):
-        AnalysisRequest.__init__(self,
-                                 analysis_id,
-                                 image_set_number=image_set_number,
-                                 module_name=module_name,
-                                 exc_type=exc_type,
-                                 exc_message=exc_message,
-                                 exc_traceback=exc_traceback,
-                                 filename=filename,
-                                 line_number=line_number)
-
-    def __str__(self):
-        return "(Worker) %s: %s" % (self.exc_type, self.exc_message)
-
-
-class ExceptionPleaseDebugReply(Reply):
-    def __init__(self, disposition, verification_hash=None):
-        Reply.__init__(self, disposition=disposition, verification_hash=verification_hash)
-
-
-class DebugWaiting(AnalysisRequest):
-    '''Communicate the debug port to the server and wait for server OK to attach'''
-
-    def __init__(self, analysis_id, port):
-        AnalysisRequest.__init__(self,
-                                 analysis_id=analysis_id,
-                                 port=port)
-
-
-class DebugCancel(Reply):
-    '''If sent in response to DebugWaiting, the user has changed his/her mind'''
-
-
-class DebugComplete(AnalysisRequest):
-    pass
-
-
-class InteractionReply(Reply):
-    pass
-
-
-class WorkReply(Reply):
-    pass
-
-
-class NoWorkReply(Reply):
-    pass
-
-
-class ServerExited(UpstreamExit):
-    pass
-
-
-class OmeroLoginRequest(AnalysisRequest):
-    pass
-
-
-class OmeroLoginReply(Reply):
-    def __init__(self, credentials):
-        Reply.__init__(self, credentials=credentials)
-
-
-class Ack(Reply):
-    def __init__(self, message="THANKS"):
-        Reply.__init__(self, message=message)
-
-
 if sys.platform == "darwin":
     import fcntl
 
@@ -1047,7 +898,6 @@ if sys.platform == "darwin":
                 pass
 
 if __name__ == '__main__':
-    import time
     import cellprofiler.pipeline
     import cellprofiler.configuration
     import cellprofiler.utilities.thread_excepthook

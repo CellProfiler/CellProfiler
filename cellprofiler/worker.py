@@ -131,13 +131,16 @@ import cellprofiler.measurement as cpmeas
 import cellprofiler.configuration as cpprefs
 from cellprofiler.gui.errordialog import ED_STOP, ED_SKIP
 from cellprofiler.analysis import \
-    PipelinePreferencesRequest, InitialMeasurementsRequest, WorkRequest, \
+    InitialMeasurementsRequest, WorkRequest, \
     NoWorkReply, MeasurementsReport, InteractionRequest, DisplayRequest, \
     DisplayPostGroupRequest, AnalysisCancelRequest, \
-    ExceptionReport, DebugWaiting, DebugComplete, InteractionReply, \
-    ServerExited, ImageSetSuccess, ImageSetSuccessWithDictionary, \
+    ExceptionReport, DebugWaiting, DebugComplete, ServerExited, ImageSetSuccess, ImageSetSuccessWithDictionary, \
     SharedDictionaryRequest, Ack, UpstreamExit, ANNOUNCE_DONE, \
     OmeroLoginRequest, OmeroLoginReply
+from message.request import PipelinePreferencesRequest, InitialMeasurementsRequest, WorkRequest, ImageSetSuccess, \
+    ImageSetSuccessWithDictionary, MeasurementsReport, InteractionRequest, AnalysisCancelRequest, DisplayRequest, \
+    DisplayPostGroupRequest, SharedDictionaryRequest, ExceptionReport, DebugWaiting, DebugComplete, OmeroLoginRequest
+from message.reply import InteractionReply, NoWorkReply, OmeroLoginReply, Ack, ServerExited
 import javabridge as J
 from cellprofiler.utilities.run_loop import enter_run_loop, stop_run_loop
 #

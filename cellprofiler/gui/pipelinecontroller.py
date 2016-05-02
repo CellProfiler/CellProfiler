@@ -36,6 +36,10 @@ import os
 import Queue
 import random
 import re
+
+import cellprofiler.message.reply
+
+import cellprofiler.message.request
 import runmultiplepipelinesdialog
 import string
 import sys
@@ -2377,29 +2381,29 @@ class PipelineController(object):
                 self.pipeline_list = []
 
             wx.CallAfter(self.on_stop_analysis, evt)
-        elif isinstance(evt, cellprofiler.analysis.DisplayRequest):
+        elif isinstance(evt, message.request.DisplayRequest):
             wx.CallAfter(self.module_display_request, evt)
-        elif isinstance(evt, cellprofiler.analysis.DisplayPostRunRequest):
+        elif isinstance(evt, message.request.DisplayPostRunRequest):
             wx.CallAfter(self.module_display_post_run_request, evt)
-        elif isinstance(evt, cellprofiler.analysis.DisplayPostGroupRequest):
+        elif isinstance(evt, message.request.DisplayPostGroupRequest):
             wx.CallAfter(self.module_display_post_group_request, evt)
-        elif isinstance(evt, cellprofiler.analysis.InteractionRequest):
+        elif isinstance(evt, message.request.InteractionRequest):
             self.interaction_request_queue.put((PRI_INTERACTION, self.module_interaction_request, evt))
             wx.CallAfter(self.handle_analysis_feedback)
-        elif isinstance(evt, cellprofiler.analysis.OmeroLoginRequest):
+        elif isinstance(evt, message.request.OmeroLoginRequest):
             self.interaction_request_queue.put((PRI_INTERACTION, self.omero_login_request, evt))
             wx.CallAfter(self.handle_analysis_feedback)
-        elif isinstance(evt, cellprofiler.analysis.ExceptionReport):
+        elif isinstance(evt, message.request.ExceptionReport):
             self.interaction_request_queue.put((PRI_EXCEPTION, self.analysis_exception, evt))
             wx.CallAfter(self.handle_analysis_feedback)
-        elif isinstance(evt, (cellprofiler.analysis.DebugWaiting, cellprofiler.analysis.DebugComplete)):
+        elif isinstance(evt, (message.request.DebugWaiting, message.request.DebugComplete)):
             # These are handled by the dialog reading the debug
             # request queue
             if self.debug_request_queue is None:
                 # Things are in a bad state here, possibly because the
                 # user hasn't properly run the debugger. Chances are that
                 # the user knows that something is going wrong.
-                evt.reply(cellprofiler.analysis.ServerExited())
+                evt.reply(message.reply.ServerExited())
             else:
                 self.debug_request_queue.put(evt)
         elif isinstance(evt, cellprofiler.analysis.AnalysisPaused):
@@ -2448,7 +2452,7 @@ class PipelineController(object):
             # Defensive coding: module was deleted?
             logger.warning(
                 "Failed to display module # %d. The pipeline may have been edited during analysis" % module_num)
-            evt.reply(cellprofiler.analysis.Ack())
+            evt.reply(message.reply.Ack())
             return
 
         # use our shared workspace
@@ -2470,7 +2474,7 @@ class PipelineController(object):
                                                      % (module.module_name, module_num))
         finally:
             # we need to ensure that the reply_cb gets a reply
-            evt.reply(cellprofiler.analysis.Ack())
+            evt.reply(message.reply.Ack())
 
     def module_display_post_run_request(self, evt):
         assert wx.Thread_IsMain(), "PipelineController.module_post_run_display_request() must be called from main thread!"
@@ -2512,7 +2516,7 @@ class PipelineController(object):
                                              message="Exception in handling display request for module %s #%d" \
                                                      % (module.module_name, module_num))
         finally:
-            evt.reply(cellprofiler.analysis.Ack())
+            evt.reply(message.reply.Ack())
 
     def module_interaction_request(self, evt):
         """forward a module interaction request from the running pipeline to
@@ -2536,13 +2540,13 @@ class PipelineController(object):
         finally:
             # we need to ensure that the reply_cb gets a reply (even if it
             # being empty causes futher exceptions).
-            evt.reply(cellprofiler.analysis.InteractionReply(result=result))
+            evt.reply(message.reply.InteractionReply(result=result))
 
     @staticmethod
     def omero_login_request(evt):
         """Handle retrieval of the Omero credentials"""
         from bioformats.formatreader import get_omero_credentials
-        evt.reply(cellprofiler.analysis.OmeroLoginReply(get_omero_credentials()))
+        evt.reply(message.reply.OmeroLoginReply(get_omero_credentials()))
 
     def analysis_exception(self, evt):
         """Report an error in analysis to the user, giving options for
@@ -2560,7 +2564,7 @@ class PipelineController(object):
             evt = evtlist[0]
             # Request debugging.  We get back a port.
             evt.reply(
-                cellprofiler.analysis.ExceptionPleaseDebugReply(
+                message.reply.ExceptionPleaseDebugReply(
                     cellprofiler.analysis.DEBUG,
                     hashlib.sha1(verification).hexdigest()))
             evt = self.debug_request_queue.get()
@@ -2571,7 +2575,7 @@ class PipelineController(object):
                 "Remote debugging started.",
                 wx.OK | wx.CANCEL | wx.ICON_INFORMATION)
             if result == wx.ID_CANCEL:
-                evt.reply(cellprofiler.analysis.DebugCancel())
+                evt.reply(message.reply.DebugCancel())
                 return False
             # Acknowledge the port request, and we'll get back a
             # DebugComplete(), which we use as a new evt to reply with the

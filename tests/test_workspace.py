@@ -1,16 +1,11 @@
-"""test_workspace.py - test the workspace
-"""
-import logging
-
-logger = logging.getLogger(__name__)
 import os
 import h5py
 import tempfile
 import unittest
-import cellprofiler.measurement as cpmeas
-import cellprofiler.pipeline as cpp
-import cellprofiler.workspace as cpw
-from cellprofiler.utilities.hdf5_dict import FILE_LIST_GROUP, TOP_LEVEL_GROUP_NAME
+import cellprofiler.measurement
+import cellprofiler.pipeline
+import cellprofiler.workspace
+import cellprofiler.utilities.hdf5_dict
 
 
 class TestWorkspace(unittest.TestCase):
@@ -22,15 +17,14 @@ class TestWorkspace(unittest.TestCase):
             try:
                 os.remove(path)
             except:
-                logger.warn("Failed to close file %s" % path,
-                            exc_info=1)
+                pass
 
     def make_workspace_file(self):
         '''Make a very basic workspace file'''
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.init_modules()
-        m = cpmeas.Measurement()
-        workspace = cpw.Workspace(pipeline, None, m, None, m, None)
+        m = cellprofiler.measurement.Measurement()
+        workspace = cellprofiler.workspace.Workspace(pipeline, None, m, None, m, None)
         fd, path = tempfile.mkstemp(".cpproj")
         file_list = workspace.get_file_list()
         file_list.add_files_to_filelist(
@@ -42,21 +36,21 @@ class TestWorkspace(unittest.TestCase):
 
     def test_01_01_is_workspace_file(self):
         path = self.make_workspace_file()
-        self.assertTrue(cpw.is_workspace_file(path))
+        self.assertTrue(cellprofiler.workspace.is_workspace_file(path))
 
     def test_01_02_is_not_workspace_file(self):
-        self.assertFalse(cpw.is_workspace_file(__file__))
-        for group in TOP_LEVEL_GROUP_NAME, FILE_LIST_GROUP:
+        self.assertFalse(cellprofiler.workspace.is_workspace_file(__file__))
+        for group in cellprofiler.utilities.hdf5_dict.TOP_LEVEL_GROUP_NAME, cellprofiler.utilities.hdf5_dict.FILE_LIST_GROUP:
             path = self.make_workspace_file()
             h5file = h5py.File(path)
             del h5file[group]
             h5file.close()
-            self.assertFalse(cpw.is_workspace_file(path))
+            self.assertFalse(cellprofiler.workspace.is_workspace_file(path))
 
     def test_01_03_file_handle_closed(self):
         # regression test of issue #1326
         path = self.make_workspace_file()
-        self.assertTrue(cpw.is_workspace_file(path))
+        self.assertTrue(cellprofiler.workspace.is_workspace_file(path))
         os.remove(path)
         self.workspace_files.remove(path)
         self.assertFalse(os.path.isfile(path))

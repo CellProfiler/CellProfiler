@@ -1,6 +1,3 @@
-""" test_Measurements.py - tests for CellProfiler.Measurements
-"""
-
 import base64
 import gc
 import os
@@ -9,13 +6,11 @@ import tempfile
 import unittest
 import uuid
 import zlib
-from cStringIO import StringIO
-
+import cStringIO
 import h5py
-import numpy as np
-
-import cellprofiler.image as cpi
-import cellprofiler.measurement as cpmeas
+import numpy
+import cellprofiler.image
+import cellprofiler.measurement
 
 OBJECT_NAME = "myobjects"
 FEATURE_NAME = "feature"
@@ -23,66 +18,66 @@ FEATURE_NAME = "feature"
 
 class TestMeasurements(unittest.TestCase):
     def test_00_00_init(self):
-        x = cpmeas.Measurement()
+        x = cellprofiler.measurement.Measurement()
 
     def test_00_01_wrap_unwrap(self):
         test0 = [u"foo", u"foo\\", u"foo\\u0384", u"foo\u0384"]
         test = test0 + [x.encode("utf-8") for x in test0]
         # numpy.object_
-        test += np.array(test0, object).tolist()
+        test += numpy.array(test0, object).tolist()
         for case in test:
-            result = cpmeas.Measurement.unwrap_string(
-                    cpmeas.Measurement.wrap_string(case))
+            result = cellprofiler.measurement.Measurement.unwrap_string(
+                    cellprofiler.measurement.Measurement.wrap_string(case))
             if not isinstance(case, unicode):
                 case = case.decode("utf-8")
             self.assertEqual(result, case)
 
     def test_01_01_image_number_is_zero(self):
-        x = cpmeas.Measurement()
+        x = cellprofiler.measurement.Measurement()
         self.assertEqual(x.image_set_number, 1)
 
     def test_01_01_next_image(self):
-        x = cpmeas.Measurement()
+        x = cellprofiler.measurement.Measurement()
         x.next_image_set()
         self.assertEqual(x.image_set_number, 2)
 
     def test_02_01_add_image_measurement(self):
-        x = cpmeas.Measurement()
+        x = cellprofiler.measurement.Measurement()
         x.add_measurement("Image", "Feature", "Value")
         self.assertEqual(x.get_current_measurement("Image", "Feature"), "Value")
         self.assertTrue("Image" in x.get_object_names())
         self.assertTrue("Feature" in x.get_feature_names("Image"))
 
     def test_02_01b_add_image_measurement_arrayinterface(self):
-        x = cpmeas.Measurement()
+        x = cellprofiler.measurement.Measurement()
         x["Image", "Feature"] = "Value"
         self.assertEqual(x["Image", "Feature"], "Value")
         self.assertTrue("Image" in x.get_object_names())
         self.assertTrue("Feature" in x.get_feature_names("Image"))
 
     def test_02_02_add_object_measurement(self):
-        x = cpmeas.Measurement()
-        np.random.seed(0)
-        m = np.random.rand(10)
+        x = cellprofiler.measurement.Measurement()
+        numpy.random.seed(0)
+        m = numpy.random.rand(10)
         x.add_measurement("Nuclei", "Feature", m)
         self.assertTrue((x.get_current_measurement("Nuclei", "Feature") == m).all)
         self.assertTrue("Nuclei" in x.get_object_names())
         self.assertTrue("Feature" in x.get_feature_names("Nuclei"))
 
     def test_02_02b_add_object_measurement_arrayinterface(self):
-        x = cpmeas.Measurement()
-        np.random.seed(0)
-        m = np.random.rand(10)
+        x = cellprofiler.measurement.Measurement()
+        numpy.random.seed(0)
+        m = numpy.random.rand(10)
         x["Nuclei", "Feature"] = m
         self.assertTrue((x["Nuclei", "Feature"] == m).all)
         self.assertTrue("Nuclei" in x.get_object_names())
         self.assertTrue("Feature" in x.get_feature_names("Nuclei"))
 
     def test_02_03_add_two_measurements(self):
-        x = cpmeas.Measurement()
+        x = cellprofiler.measurement.Measurement()
         x.add_measurement("Image", "Feature", "Value")
-        np.random.seed(0)
-        m = np.random.rand(10)
+        numpy.random.seed(0)
+        m = numpy.random.rand(10)
         x.add_measurement("Nuclei", "Feature", m)
         self.assertEqual(x.get_current_measurement("Image", "Feature"), "Value")
         self.assertTrue((x.get_current_measurement("Nuclei", "Feature") == m).all())
@@ -91,10 +86,10 @@ class TestMeasurements(unittest.TestCase):
         self.assertTrue("Feature" in x.get_feature_names("Image"))
 
     def test_02_03b_add_two_measurements_arrayinterface(self):
-        x = cpmeas.Measurement()
+        x = cellprofiler.measurement.Measurement()
         x["Image", "Feature"] = "Value"
-        np.random.seed(0)
-        m = np.random.rand(10)
+        numpy.random.seed(0)
+        m = numpy.random.rand(10)
         x["Nuclei", "Feature"] = m
         self.assertEqual(x["Image", "Feature"], "Value")
         self.assertTrue((x["Nuclei", "Feature"] == m).all())
@@ -103,7 +98,7 @@ class TestMeasurements(unittest.TestCase):
         self.assertTrue("Feature" in x.get_feature_names("Image"))
 
     def test_02_04_add_two_measurements_to_object(self):
-        x = cpmeas.Measurement()
+        x = cellprofiler.measurement.Measurement()
         x.add_measurement("Image", "Feature1", "Value1")
         x.add_measurement("Image", "Feature2", "Value2")
         self.assertEqual(x.get_current_measurement("Image", "Feature1"), "Value1")
@@ -113,7 +108,7 @@ class TestMeasurements(unittest.TestCase):
         self.assertTrue("Feature2" in x.get_feature_names("Image"))
 
     def test_02_04b_add_two_measurements_to_object_arrayinterface(self):
-        x = cpmeas.Measurement()
+        x = cellprofiler.measurement.Measurement()
         x["Image", "Feature1"] = "Value1"
         x["Image", "Feature2"] = "Value2"
         self.assertEqual(x["Image", "Feature1"], "Value1")
@@ -123,14 +118,14 @@ class TestMeasurements(unittest.TestCase):
         self.assertTrue("Feature2" in x.get_feature_names("Image"))
 
     def test_03_03_MultipleImageSets(self):
-        np.random.seed(0)
-        x = cpmeas.Measurement()
+        numpy.random.seed(0)
+        x = cellprofiler.measurement.Measurement()
         x.add_measurement("Image", "Feature", "Value1")
-        m1 = np.random.rand(10)
+        m1 = numpy.random.rand(10)
         x.add_measurement("Nuclei", "Feature", m1)
         x.next_image_set()
         x.add_measurement("Image", "Feature", "Value2")
-        m2 = np.random.rand(10)
+        m2 = numpy.random.rand(10)
         x.add_measurement("Nuclei", "Feature", m2)
         self.assertEqual(x.get_current_measurement("Image", "Feature"), "Value2")
         self.assertTrue((x.get_current_measurement("Nuclei", "Feature") == m2).all())
@@ -140,14 +135,14 @@ class TestMeasurements(unittest.TestCase):
             self.assertTrue((a == b).all())
 
     def test_03_03b_MultipleImageSets_arrayinterface(self):
-        np.random.seed(0)
-        x = cpmeas.Measurement()
+        numpy.random.seed(0)
+        x = cellprofiler.measurement.Measurement()
         x["Image", "Feature"] = "Value1"
-        m1 = np.random.rand(10)
+        m1 = numpy.random.rand(10)
         x["Nuclei", "Feature"] = m1
         x.next_image_set()
         x["Image", "Feature"] = "Value2"
-        m2 = np.random.rand(10)
+        m2 = numpy.random.rand(10)
         x["Nuclei", "Feature"] = m2
         self.assertEqual(x["Image", "Feature"], "Value2")
         self.assertTrue((x["Nuclei", "Feature"] == m2).all())
@@ -157,103 +152,103 @@ class TestMeasurements(unittest.TestCase):
             self.assertTrue((a == b).all())
 
     def test_04_01_get_all_image_measurements_float(self):
-        r = np.random.RandomState()
-        m = cpmeas.Measurement()
+        r = numpy.random.RandomState()
+        m = cellprofiler.measurement.Measurement()
         r.seed(41)
         vals = r.uniform(size=100)
-        bad_order = r.permutation(np.arange(1, 101))
+        bad_order = r.permutation(numpy.arange(1, 101))
         for image_number in bad_order:
-            m.add_measurement(cpmeas.IMAGE, "Feature", vals[image_number - 1],
+            m.add_measurement(cellprofiler.measurement.IMAGE, "Feature", vals[image_number - 1],
                               image_set_number=image_number)
-        result = m.get_all_measurements(cpmeas.IMAGE, "Feature")
-        np.testing.assert_equal(result, vals)
+        result = m.get_all_measurements(cellprofiler.measurement.IMAGE, "Feature")
+        numpy.testing.assert_equal(result, vals)
 
     def test_04_01b_get_all_image_measurements_float_arrayinterface(self):
-        r = np.random.RandomState()
-        m = cpmeas.Measurement()
+        r = numpy.random.RandomState()
+        m = cellprofiler.measurement.Measurement()
         r.seed(41)
         vals = r.uniform(size=100)
-        bad_order = r.permutation(np.arange(1, 101))
+        bad_order = r.permutation(numpy.arange(1, 101))
         for image_number in bad_order:
-            m[cpmeas.IMAGE, "Feature", image_number] = vals[image_number - 1]
-        result = m[cpmeas.IMAGE, "Feature", :]
-        np.testing.assert_equal(result, vals)
+            m[cellprofiler.measurement.IMAGE, "Feature", image_number] = vals[image_number - 1]
+        result = m[cellprofiler.measurement.IMAGE, "Feature", :]
+        numpy.testing.assert_equal(result, vals)
         for image_number in bad_order:
-            result = m[cpmeas.IMAGE, "Feature", image_number]
-            np.testing.assert_equal(result, vals[image_number - 1])
+            result = m[cellprofiler.measurement.IMAGE, "Feature", image_number]
+            numpy.testing.assert_equal(result, vals[image_number - 1])
 
     def test_04_02_get_all_image_measurements_string(self):
-        r = np.random.RandomState()
-        m = cpmeas.Measurement()
+        r = numpy.random.RandomState()
+        m = cellprofiler.measurement.Measurement()
         r.seed(42)
         vals = r.uniform(size=100)
-        bad_order = r.permutation(np.arange(1, 101))
+        bad_order = r.permutation(numpy.arange(1, 101))
         for image_number in bad_order:
-            m.add_measurement(cpmeas.IMAGE, "Feature",
+            m.add_measurement(cellprofiler.measurement.IMAGE, "Feature",
                               unicode(vals[image_number - 1]),
                               image_set_number=image_number)
-        result = m.get_all_measurements(cpmeas.IMAGE, "Feature")
+        result = m.get_all_measurements(cellprofiler.measurement.IMAGE, "Feature")
         self.assertTrue(all([r == unicode(v) for r, v in zip(result, vals)]))
 
     def test_04_02b_get_all_image_measurements_string_arrayinterface(self):
-        r = np.random.RandomState()
-        m = cpmeas.Measurement()
+        r = numpy.random.RandomState()
+        m = cellprofiler.measurement.Measurement()
         r.seed(42)
         vals = r.uniform(size=100)
-        bad_order = r.permutation(np.arange(1, 101))
+        bad_order = r.permutation(numpy.arange(1, 101))
         for image_number in bad_order:
-            m[cpmeas.IMAGE, "Feature", image_number] = unicode(vals[image_number - 1])
-        result = m[cpmeas.IMAGE, "Feature", :]
+            m[cellprofiler.measurement.IMAGE, "Feature", image_number] = unicode(vals[image_number - 1])
+        result = m[cellprofiler.measurement.IMAGE, "Feature", :]
         self.assertTrue(all([r == unicode(v) for r, v in zip(result, vals)]))
 
     def test_04_03_get_all_image_measurements_unicode(self):
-        r = np.random.RandomState()
-        m = cpmeas.Measurement()
+        r = numpy.random.RandomState()
+        m = cellprofiler.measurement.Measurement()
         r.seed(42)
         vals = [u"\u2211" + str(r.uniform()) for _ in range(100)]
-        bad_order = r.permutation(np.arange(1, 101))
+        bad_order = r.permutation(numpy.arange(1, 101))
         for image_number in bad_order:
-            m.add_measurement(cpmeas.IMAGE, "Feature",
+            m.add_measurement(cellprofiler.measurement.IMAGE, "Feature",
                               vals[image_number - 1],
                               image_set_number=image_number)
-        result = m.get_all_measurements(cpmeas.IMAGE, "Feature")
+        result = m.get_all_measurements(cellprofiler.measurement.IMAGE, "Feature")
         self.assertTrue(all([r == unicode(v) for r, v in zip(result, vals)]))
 
     def test_04_03b_get_all_image_measurements_unicode_arrayinterface(self):
-        r = np.random.RandomState()
-        m = cpmeas.Measurement()
+        r = numpy.random.RandomState()
+        m = cellprofiler.measurement.Measurement()
         r.seed(42)
         vals = [u"\u2211" + str(r.uniform()) for _ in range(100)]
-        bad_order = r.permutation(np.arange(1, 101))
+        bad_order = r.permutation(numpy.arange(1, 101))
         for image_number in bad_order:
-            m[cpmeas.IMAGE, "Feature", image_number] = vals[image_number - 1]
-        result = m[cpmeas.IMAGE, "Feature", :]
+            m[cellprofiler.measurement.IMAGE, "Feature", image_number] = vals[image_number - 1]
+        result = m[cellprofiler.measurement.IMAGE, "Feature", :]
         self.assertTrue(all([r == unicode(v) for r, v in zip(result, vals)]))
 
     def test_04_04_get_all_object_measurements(self):
-        r = np.random.RandomState()
-        m = cpmeas.Measurement()
+        r = numpy.random.RandomState()
+        m = cellprofiler.measurement.Measurement()
         r.seed(42)
         vals = [r.uniform(size=r.randint(10, 100)) for _ in range(100)]
-        bad_order = r.permutation(np.arange(1, 101))
+        bad_order = r.permutation(numpy.arange(1, 101))
         for image_number in bad_order:
             m.add_measurement(OBJECT_NAME, "Feature",
                               vals[image_number - 1],
                               image_set_number=image_number)
         result = m.get_all_measurements(OBJECT_NAME, "Feature")
-        self.assertTrue(all([np.all(r == v) and len(r) == len(v)
+        self.assertTrue(all([numpy.all(r == v) and len(r) == len(v)
                              for r, v in zip(result, vals)]))
 
     def test_04_04b_get_all_object_measurements_arrayinterface(self):
-        r = np.random.RandomState()
-        m = cpmeas.Measurement()
+        r = numpy.random.RandomState()
+        m = cellprofiler.measurement.Measurement()
         r.seed(42)
         vals = [r.uniform(size=r.randint(10, 100)) for _ in range(100)]
-        bad_order = r.permutation(np.arange(1, 101))
+        bad_order = r.permutation(numpy.arange(1, 101))
         for image_number in bad_order:
             m[OBJECT_NAME, "Feature", image_number] = vals[image_number - 1]
         result = m[OBJECT_NAME, "Feature", :]
-        self.assertTrue(all([np.all(r == v) and len(r) == len(v)
+        self.assertTrue(all([numpy.all(r == v) and len(r) == len(v)
                              for r, v in zip(result, vals)]))
 
     # def test_04_05_get_many_string_measurements(self):
@@ -301,11 +296,11 @@ class TestMeasurements(unittest.TestCase):
     #     np.testing.assert_array_equal(test, result)
 
     def test_04_08_set_one_blob_measurement(self):
-        r = np.random.RandomState(408)
-        test = r.randint(0, 255, 10).astype(np.uint8)
-        m = cpmeas.Measurement()
-        m[cpmeas.IMAGE, "Feature", 1, np.uint8] = test
-        np.testing.assert_array_equal(test, m[cpmeas.IMAGE, "Feature", 1])
+        r = numpy.random.RandomState(408)
+        test = r.randint(0, 255, 10).astype(numpy.uint8)
+        m = cellprofiler.measurement.Measurement()
+        m[cellprofiler.measurement.IMAGE, "Feature", 1, numpy.uint8] = test
+        numpy.testing.assert_array_equal(test, m[cellprofiler.measurement.IMAGE, "Feature", 1])
 
     def test_04_09_set_many_blob_measurements(self):
         #
@@ -314,41 +309,41 @@ class TestMeasurements(unittest.TestCase):
         # when CP attempted to execute something like:
         # np.array([np.nan, np.zeros(5)])
         #
-        r = np.random.RandomState(408)
-        test = [None, r.randint(0, 255, 10).astype(np.uint8)]
-        m = cpmeas.Measurement()
-        image_numbers = np.arange(1, len(test) + 1)
-        m[cpmeas.IMAGE, "Feature", image_numbers, np.uint8] = test
-        result = m[cpmeas.IMAGE, "Feature", image_numbers]
+        r = numpy.random.RandomState(408)
+        test = [None, r.randint(0, 255, 10).astype(numpy.uint8)]
+        m = cellprofiler.measurement.Measurement()
+        image_numbers = numpy.arange(1, len(test) + 1)
+        m[cellprofiler.measurement.IMAGE, "Feature", image_numbers, numpy.uint8] = test
+        result = m[cellprofiler.measurement.IMAGE, "Feature", image_numbers]
         self.assertIsNone(result[0])
-        np.testing.assert_array_equal(test[1], result[1])
+        numpy.testing.assert_array_equal(test[1], result[1])
 
     def test_05_01_test_has_current_measurements(self):
-        x = cpmeas.Measurement()
+        x = cellprofiler.measurement.Measurement()
         self.assertFalse(x.has_current_measurements('Image', 'Feature'))
 
     def test_05_02_test_has_current_measurements(self):
-        x = cpmeas.Measurement()
+        x = cellprofiler.measurement.Measurement()
         x.add_measurement("Image", "OtherFeature", "Value")
         self.assertFalse(x.has_current_measurements('Image', 'Feature'))
 
     def test_05_02b_test_has_current_measurements_arrayinterface(self):
-        x = cpmeas.Measurement()
+        x = cellprofiler.measurement.Measurement()
         x["Image", "OtherFeature"] = "Value"
         self.assertFalse(x.has_current_measurements('Image', 'Feature'))
 
     def test_05_03_test_has_current_measurements(self):
-        x = cpmeas.Measurement()
+        x = cellprofiler.measurement.Measurement()
         x.add_measurement("Image", "Feature", "Value")
         self.assertTrue(x.has_current_measurements('Image', 'Feature'))
 
     def test_05_03b_test_has_current_measurements_arrayinterface(self):
-        x = cpmeas.Measurement()
+        x = cellprofiler.measurement.Measurement()
         x["Image", "Feature"] = "Value"
         self.assertTrue(x.has_current_measurements('Image', 'Feature'))
 
     def test_06_00_00_dont_apply_metadata(self):
-        x = cpmeas.Measurement()
+        x = cellprofiler.measurement.Measurement()
         value = "P12345"
         expected = "pre_post"
         x.add_measurement("Image", "Metadata_Plate", value)
@@ -356,7 +351,7 @@ class TestMeasurements(unittest.TestCase):
         self.assertEqual(x.apply_metadata(pattern), expected)
 
     def test_06_00_00b_dont_apply_metadata_arrayinterface(self):
-        x = cpmeas.Measurement()
+        x = cellprofiler.measurement.Measurement()
         value = "P12345"
         expected = "pre_post"
         x["Image", "Metadata_Plate"] = value
@@ -364,7 +359,7 @@ class TestMeasurements(unittest.TestCase):
         self.assertEqual(x.apply_metadata(pattern), expected)
 
     def test_06_00_01_dont_apply_metadata_with_slash(self):
-        x = cpmeas.Measurement()
+        x = cellprofiler.measurement.Measurement()
         value = "P12345"
         expected = "pre\\post"
         x.add_measurement("Image", "Metadata_Plate", value)
@@ -372,7 +367,7 @@ class TestMeasurements(unittest.TestCase):
         self.assertEqual(x.apply_metadata(pattern), expected)
 
     def test_06_01_apply_metadata(self):
-        x = cpmeas.Measurement()
+        x = cellprofiler.measurement.Measurement()
         value = "P12345"
         expected = "pre_" + value + "_post"
         x.add_measurement("Image", "Metadata_Plate", value)
@@ -380,7 +375,7 @@ class TestMeasurements(unittest.TestCase):
         self.assertEqual(x.apply_metadata(pattern), expected)
 
     def test_06_02_apply_metadata_with_slash(self):
-        x = cpmeas.Measurement()
+        x = cellprofiler.measurement.Measurement()
         value = "P12345"
         expected = "\\" + value + "_post"
         x.add_measurement("Image", "Metadata_Plate", value)
@@ -389,7 +384,7 @@ class TestMeasurements(unittest.TestCase):
 
     def test_06_03_apply_metadata_with_two_slashes(self):
         '''Regression test of img-1144'''
-        x = cpmeas.Measurement()
+        x = cellprofiler.measurement.Measurement()
         plate = "P12345"
         well = "A01"
         expected = "\\" + plate + "\\" + well
@@ -399,7 +394,7 @@ class TestMeasurements(unittest.TestCase):
         self.assertEqual(x.apply_metadata(pattern), expected)
 
     def test_06_04_apply_metadata_when_user_messes_with_your_head(self):
-        x = cpmeas.Measurement()
+        x = cellprofiler.measurement.Measurement()
         value = "P12345"
         expected = r"\g<Plate>"
         x.add_measurement("Image", "Metadata_Plate", value)
@@ -408,7 +403,7 @@ class TestMeasurements(unittest.TestCase):
 
     def test_06_05_apply_metadata_twice(self):
         '''Regression test of img-1144 (second part)'''
-        x = cpmeas.Measurement()
+        x = cellprofiler.measurement.Measurement()
         plate = "P12345"
         well = "A01"
         expected = plate + "_" + well
@@ -418,34 +413,34 @@ class TestMeasurements(unittest.TestCase):
         self.assertEqual(x.apply_metadata(pattern), expected)
 
     def test_06_06_apply_series_and_frame_metadata(self):
-        x = cpmeas.Measurement()
-        x[cpmeas.IMAGE, cpmeas.C_SERIES + "_DNA"] = 1
-        x[cpmeas.IMAGE, cpmeas.C_SERIES + "_DNAIllum"] = 0
-        x[cpmeas.IMAGE, cpmeas.C_FRAME + "_DNA"] = 2
-        x[cpmeas.IMAGE, cpmeas.C_FRAME + "_DNAIllum"] = 0
-        pattern = r"\g<%s>_\g<%s>" % (cpmeas.C_SERIES, cpmeas.C_FRAME)
+        x = cellprofiler.measurement.Measurement()
+        x[cellprofiler.measurement.IMAGE, cellprofiler.measurement.C_SERIES + "_DNA"] = 1
+        x[cellprofiler.measurement.IMAGE, cellprofiler.measurement.C_SERIES + "_DNAIllum"] = 0
+        x[cellprofiler.measurement.IMAGE, cellprofiler.measurement.C_FRAME + "_DNA"] = 2
+        x[cellprofiler.measurement.IMAGE, cellprofiler.measurement.C_FRAME + "_DNAIllum"] = 0
+        pattern = r"\g<%s>_\g<%s>" % (cellprofiler.measurement.C_SERIES, cellprofiler.measurement.C_FRAME)
         self.assertEqual(x.apply_metadata(pattern), "1_2")
 
     def test_07_01_copy(self):
-        x = cpmeas.Measurement()
-        r = np.random.RandomState()
+        x = cellprofiler.measurement.Measurement()
+        r = numpy.random.RandomState()
         r.seed(71)
         areas = [r.randint(100, 200, size=r.randint(100, 200))
                  for _ in range(12)]
 
         for i in range(12):
-            x.add_measurement(cpmeas.IMAGE, "Metadata_Well", "A%02d" % (i + 1),
+            x.add_measurement(cellprofiler.measurement.IMAGE, "Metadata_Well", "A%02d" % (i + 1),
                               image_set_number=(i + 1))
             x.add_measurement(OBJECT_NAME, "AreaShape_Area", areas[i],
                               image_set_number=(i + 1))
 
-        y = cpmeas.Measurement(copy=x)
+        y = cellprofiler.measurement.Measurement(copy=x)
         for i in range(12):
             self.assertEqual(
-                    y.get_measurement(cpmeas.IMAGE, "Metadata_Well", (i + 1)),
+                    y.get_measurement(cellprofiler.measurement.IMAGE, "Metadata_Well", (i + 1)),
                     "A%02d" % (i + 1))
             values = y.get_measurement(OBJECT_NAME, "AreaShape_Area", (i + 1))
-            np.testing.assert_equal(values, areas[i])
+            numpy.testing.assert_equal(values, areas[i])
 
     def test_08_01_load(self):
         data = ('eJzt3M1LFGEcwPFnZtZ2VcSXS29Gewm8BJu9KHgxUtvAl6UX8GDpmmMWauIL'
@@ -474,13 +469,13 @@ class TestMeasurements(unittest.TestCase):
             f = os.fdopen(fd, "wb")
             f.write(data)
             f.close()
-            m = cpmeas.load_measurements(filename)
+            m = cellprofiler.measurement.load_measurements(filename)
             for i in range(1, 4):
                 self.assertEqual(m.get_measurement(
-                        cpmeas.IMAGE, 'ImageNumber', i), i)
+                        cellprofiler.measurement.IMAGE, 'ImageNumber', i), i)
             for i, plate in enumerate(('P-12345', 'P-23456', 'P-34567')):
                 self.assertEqual(m.get_measurement(
-                        cpmeas.IMAGE, 'Metadata_Plate', i + 1), plate)
+                        cellprofiler.measurement.IMAGE, 'Metadata_Plate', i + 1), plate)
         finally:
             try:
                 os.unlink(filename)
@@ -488,19 +483,19 @@ class TestMeasurements(unittest.TestCase):
                 print "Failed to remove file %s" % filename
 
     def test_09_01_group_by_metadata(self):
-        m = cpmeas.Measurement()
-        r = np.random.RandomState()
+        m = cellprofiler.measurement.Measurement()
+        r = numpy.random.RandomState()
         r.seed(91)
         aa = [None] * 100
         bb = [None] * 100
-        for image_number in r.permutation(np.arange(1, 101)):
+        for image_number in r.permutation(numpy.arange(1, 101)):
             a = r.randint(1, 3)
             aa[image_number - 1] = a
             b = "A%02d" % r.randint(1, 12)
             bb[image_number - 1] = b
-            m.add_measurement(cpmeas.IMAGE, "Metadata_A", a,
+            m.add_measurement(cellprofiler.measurement.IMAGE, "Metadata_A", a,
                               image_set_number=image_number)
-            m.add_measurement(cpmeas.IMAGE, "Metadata_B", b,
+            m.add_measurement(cellprofiler.measurement.IMAGE, "Metadata_B", b,
                               image_set_number=image_number)
         result = m.group_by_metadata(["A", "B"])
         for d in result:
@@ -509,19 +504,19 @@ class TestMeasurements(unittest.TestCase):
                 self.assertEqual(d["B"], bb[image_number - 1])
 
     def test_09_02_get_groupings(self):
-        m = cpmeas.Measurement()
-        r = np.random.RandomState()
+        m = cellprofiler.measurement.Measurement()
+        r = numpy.random.RandomState()
         r.seed(91)
         aa = [None] * 100
         bb = [None] * 100
-        for image_number in r.permutation(np.arange(1, 101)):
+        for image_number in r.permutation(numpy.arange(1, 101)):
             a = r.randint(1, 3)
             aa[image_number - 1] = a
             b = "A%02d" % r.randint(1, 12)
             bb[image_number - 1] = b
-            m.add_measurement(cpmeas.IMAGE, "Metadata_A", a,
+            m.add_measurement(cellprofiler.measurement.IMAGE, "Metadata_A", a,
                               image_set_number=image_number)
-            m.add_measurement(cpmeas.IMAGE, "Metadata_B", b,
+            m.add_measurement(cellprofiler.measurement.IMAGE, "Metadata_B", b,
                               image_set_number=image_number)
         result = m.get_groupings(["Metadata_A", "Metadata_B"])
         for d, image_numbers in result:
@@ -530,54 +525,54 @@ class TestMeasurements(unittest.TestCase):
                 self.assertEqual(d["Metadata_B"], unicode(bb[image_number - 1]))
 
     def test_10_01_remove_image_measurement(self):
-        m = cpmeas.Measurement()
-        m.add_measurement(cpmeas.IMAGE, "M", "Hello", image_set_number=1)
-        m.add_measurement(cpmeas.IMAGE, "M", "World", image_set_number=2)
-        m.remove_measurement(cpmeas.IMAGE, "M", 1)
-        self.assertTrue(m.get_measurement(cpmeas.IMAGE, "M", 1) is None)
-        self.assertEqual(m.get_measurement(cpmeas.IMAGE, "M", 2), "World")
+        m = cellprofiler.measurement.Measurement()
+        m.add_measurement(cellprofiler.measurement.IMAGE, "M", "Hello", image_set_number=1)
+        m.add_measurement(cellprofiler.measurement.IMAGE, "M", "World", image_set_number=2)
+        m.remove_measurement(cellprofiler.measurement.IMAGE, "M", 1)
+        self.assertTrue(m.get_measurement(cellprofiler.measurement.IMAGE, "M", 1) is None)
+        self.assertEqual(m.get_measurement(cellprofiler.measurement.IMAGE, "M", 2), "World")
 
     def test_10_02_remove_object_measurement(self):
-        m = cpmeas.Measurement()
-        m.add_measurement(OBJECT_NAME, "M", np.arange(5), image_set_number=1)
-        m.add_measurement(OBJECT_NAME, "M", np.arange(7), image_set_number=2)
+        m = cellprofiler.measurement.Measurement()
+        m.add_measurement(OBJECT_NAME, "M", numpy.arange(5), image_set_number=1)
+        m.add_measurement(OBJECT_NAME, "M", numpy.arange(7), image_set_number=2)
         m.remove_measurement(OBJECT_NAME, "M", 1)
         self.assertEqual(len(m.get_measurement(OBJECT_NAME, "M", 1)), 0)
-        np.testing.assert_equal(m.get_measurement(OBJECT_NAME, "M", 2),
-                                np.arange(7))
+        numpy.testing.assert_equal(m.get_measurement(OBJECT_NAME, "M", 2),
+                                   numpy.arange(7))
 
     def test_10_03_remove_image_number(self):
-        m = cpmeas.Measurement()
-        m.add_measurement(cpmeas.IMAGE, "M", "Hello", image_set_number=1)
-        m.add_measurement(cpmeas.IMAGE, "M", "World", image_set_number=2)
-        np.testing.assert_equal(np.array(m.get_image_numbers()),
-                                np.arange(1, 3))
-        m.remove_measurement(cpmeas.IMAGE, cpmeas.IMAGE_NUMBER, 1)
-        np.testing.assert_equal(np.array(m.get_image_numbers()), np.array([2]))
+        m = cellprofiler.measurement.Measurement()
+        m.add_measurement(cellprofiler.measurement.IMAGE, "M", "Hello", image_set_number=1)
+        m.add_measurement(cellprofiler.measurement.IMAGE, "M", "World", image_set_number=2)
+        numpy.testing.assert_equal(numpy.array(m.get_image_numbers()),
+                                   numpy.arange(1, 3))
+        m.remove_measurement(cellprofiler.measurement.IMAGE, cellprofiler.measurement.IMAGE_NUMBER, 1)
+        numpy.testing.assert_equal(numpy.array(m.get_image_numbers()), numpy.array([2]))
 
     def test_11_00_match_metadata_by_order_nil(self):
-        m = cpmeas.Measurement()
+        m = cellprofiler.measurement.Measurement()
         result = m.match_metadata(("Metadata_foo", "Metadata_bar"),
-                                  (np.zeros(3), np.zeros(3)))
+                                  (numpy.zeros(3), numpy.zeros(3)))
         self.assertEqual(len(result), 3)
         self.assertTrue(all([len(x) == 1 and x[0] == i + 1
                              for i, x in enumerate(result)]))
 
     def test_11_01_match_metadata_by_order(self):
-        m = cpmeas.Measurement()
-        m.add_measurement(cpmeas.IMAGE, "Metadata_foo", "Hello", image_set_number=1)
-        m.add_measurement(cpmeas.IMAGE, "Metadata_foo", "Hello", image_set_number=2)
-        result = m.match_metadata(("Metadata_bar",), (np.zeros(2),))
+        m = cellprofiler.measurement.Measurement()
+        m.add_measurement(cellprofiler.measurement.IMAGE, "Metadata_foo", "Hello", image_set_number=1)
+        m.add_measurement(cellprofiler.measurement.IMAGE, "Metadata_foo", "Hello", image_set_number=2)
+        result = m.match_metadata(("Metadata_bar",), (numpy.zeros(2),))
         self.assertEqual(len(result), 2)
         self.assertTrue(all([len(x) == 1 and x[0] == i + 1
                              for i, x in enumerate(result)]))
 
     def test_11_02_match_metadata_equal_length(self):
-        m = cpmeas.Measurement()
-        m.add_measurement(cpmeas.IMAGE, "Metadata_foo", "Hello", image_set_number=1)
-        m.add_measurement(cpmeas.IMAGE, "Metadata_bar", "World", image_set_number=1)
-        m.add_measurement(cpmeas.IMAGE, "Metadata_foo", "Goodbye", image_set_number=2)
-        m.add_measurement(cpmeas.IMAGE, "Metadata_bar", "Phobos", image_set_number=2)
+        m = cellprofiler.measurement.Measurement()
+        m.add_measurement(cellprofiler.measurement.IMAGE, "Metadata_foo", "Hello", image_set_number=1)
+        m.add_measurement(cellprofiler.measurement.IMAGE, "Metadata_bar", "World", image_set_number=1)
+        m.add_measurement(cellprofiler.measurement.IMAGE, "Metadata_foo", "Goodbye", image_set_number=2)
+        m.add_measurement(cellprofiler.measurement.IMAGE, "Metadata_bar", "Phobos", image_set_number=2)
         result = m.match_metadata(("Metadata_foo", "Metadata_bar"),
                                   (("Goodbye", "Hello"), ("Phobos", "World")))
         self.assertEqual(len(result), 2)
@@ -587,13 +582,13 @@ class TestMeasurements(unittest.TestCase):
         self.assertEqual(result[1][0], 1)
 
     def test_11_03_match_metadata_different_length(self):
-        m = cpmeas.Measurement()
-        m.add_measurement(cpmeas.IMAGE, "Metadata_foo", "Hello", image_set_number=1)
-        m.add_measurement(cpmeas.IMAGE, "Metadata_bar", "World", image_set_number=1)
-        m.add_measurement(cpmeas.IMAGE, "Metadata_foo", "Goodbye", image_set_number=2)
-        m.add_measurement(cpmeas.IMAGE, "Metadata_bar", "Phobos", image_set_number=2)
-        m.add_measurement(cpmeas.IMAGE, "Metadata_foo", "Hello", image_set_number=3)
-        m.add_measurement(cpmeas.IMAGE, "Metadata_bar", "Phobos", image_set_number=3)
+        m = cellprofiler.measurement.Measurement()
+        m.add_measurement(cellprofiler.measurement.IMAGE, "Metadata_foo", "Hello", image_set_number=1)
+        m.add_measurement(cellprofiler.measurement.IMAGE, "Metadata_bar", "World", image_set_number=1)
+        m.add_measurement(cellprofiler.measurement.IMAGE, "Metadata_foo", "Goodbye", image_set_number=2)
+        m.add_measurement(cellprofiler.measurement.IMAGE, "Metadata_bar", "Phobos", image_set_number=2)
+        m.add_measurement(cellprofiler.measurement.IMAGE, "Metadata_foo", "Hello", image_set_number=3)
+        m.add_measurement(cellprofiler.measurement.IMAGE, "Metadata_bar", "Phobos", image_set_number=3)
         result = m.match_metadata(("Metadata_foo",),
                                   (("Goodbye", "Hello"),))
         self.assertEqual(len(result), 2)
@@ -623,9 +618,9 @@ class TestMeasurements(unittest.TestCase):
             fd = os.fdopen(fid, "wb")
             fd.write(data)
             fd.close()
-            m = cpmeas.load_measurements(name)
+            m = cellprofiler.measurement.load_measurements(name)
             self.assertEqual(tuple(m.get_image_numbers()), (1,))
-            self.assertEqual(m.get_measurement(cpmeas.IMAGE, "foo",
+            self.assertEqual(m.get_measurement(cellprofiler.measurement.IMAGE, "foo",
                                                image_set_number=1), 12345)
         finally:
             if m is not None:
@@ -677,18 +672,18 @@ class TestMeasurements(unittest.TestCase):
             fd = os.fdopen(fid, "wb")
             fd.write(data)
             fd.close()
-            m = cpmeas.load_measurements(name)
+            m = cellprofiler.measurement.load_measurements(name)
             self.assertEqual(tuple(m.get_image_numbers()), (1, 2))
-            self.assertEqual(m.get_measurement(cpmeas.IMAGE, "foo",
+            self.assertEqual(m.get_measurement(cellprofiler.measurement.IMAGE, "foo",
                                                image_set_number=1), 12345)
-            self.assertEqual(m.get_measurement(cpmeas.IMAGE, "foo",
+            self.assertEqual(m.get_measurement(cellprofiler.measurement.IMAGE, "foo",
                                                image_set_number=2), 23456)
-            for image_number, expected in ((1, np.array([234567, 123456])),
-                                           (2, np.array([123456, 234567]))):
+            for image_number, expected in ((1, numpy.array([234567, 123456])),
+                                           (2, numpy.array([123456, 234567]))):
                 values = m.get_measurement("Nuclei", "bar",
                                            image_set_number=image_number)
                 self.assertEqual(len(expected), len(values))
-                self.assertTrue(np.all(expected == values))
+                self.assertTrue(numpy.all(expected == values))
         finally:
             if m is not None:
                 del m
@@ -776,9 +771,9 @@ class TestMeasurements(unittest.TestCase):
             fd = os.fdopen(fid, "wb")
             fd.write(data)
             fd.close()
-            m = cpmeas.load_measurements(name)
+            m = cellprofiler.measurement.load_measurements(name)
             self.assertEqual(tuple(m.get_image_numbers()), (1,))
-            self.assertEqual(m.get_measurement(cpmeas.IMAGE, "Count_Nuclei",
+            self.assertEqual(m.get_measurement(cellprofiler.measurement.IMAGE, "Count_Nuclei",
                                                image_set_number=1), 1)
             values = m.get_measurement("Nuclei", "Location_Center_X", 1)
             self.assertEqual(len(values), 1)
@@ -791,51 +786,51 @@ class TestMeasurements(unittest.TestCase):
 
     def test_15_01_get_object_names(self):
         '''Test the get_object_names() function'''
-        m = cpmeas.Measurement()
+        m = cellprofiler.measurement.Measurement()
         try:
-            m.add_measurement(OBJECT_NAME, "Foo", np.zeros(3))
+            m.add_measurement(OBJECT_NAME, "Foo", numpy.zeros(3))
             object_names = m.get_object_names()
             self.assertEqual(len(object_names), 2)
             self.assertTrue(OBJECT_NAME in object_names)
-            self.assertTrue(cpmeas.IMAGE in object_names)
+            self.assertTrue(cellprofiler.measurement.IMAGE in object_names)
         finally:
             del m
 
     def test_15_02_get_object_names_relationships(self):
         '''Regression test - don't return Relationships'''
-        m = cpmeas.Measurement()
+        m = cellprofiler.measurement.Measurement()
         try:
-            m.add_image_measurement(cpmeas.GROUP_NUMBER, 1)
-            m.add_image_measurement(cpmeas.GROUP_INDEX, 0)
-            m.add_measurement(OBJECT_NAME, "Foo", np.zeros(3))
+            m.add_image_measurement(cellprofiler.measurement.GROUP_NUMBER, 1)
+            m.add_image_measurement(cellprofiler.measurement.GROUP_INDEX, 0)
+            m.add_measurement(OBJECT_NAME, "Foo", numpy.zeros(3))
             m.add_relate_measurement(1, "Foo", OBJECT_NAME, OBJECT_NAME,
-                                     np.zeros(3), np.zeros(3),
-                                     np.zeros(3), np.zeros(3))
+                                     numpy.zeros(3), numpy.zeros(3),
+                                     numpy.zeros(3), numpy.zeros(3))
             object_names = m.get_object_names()
             self.assertEqual(len(object_names), 2)
             self.assertTrue(OBJECT_NAME in object_names)
-            self.assertTrue(cpmeas.IMAGE in object_names)
+            self.assertTrue(cellprofiler.measurement.IMAGE in object_names)
         finally:
             del m
 
     def test_15_03_relate_no_objects(self):
         # regression test of issue #886 - add_relate_measurement called
         #                                 with no objects
-        m = cpmeas.Measurement()
-        m.add_image_measurement(cpmeas.GROUP_NUMBER, 1)
-        m.add_image_measurement(cpmeas.GROUP_INDEX, 0)
-        m.add_measurement(OBJECT_NAME, "Foo", np.zeros(3))
+        m = cellprofiler.measurement.Measurement()
+        m.add_image_measurement(cellprofiler.measurement.GROUP_NUMBER, 1)
+        m.add_image_measurement(cellprofiler.measurement.GROUP_INDEX, 0)
+        m.add_measurement(OBJECT_NAME, "Foo", numpy.zeros(3))
         m.add_relate_measurement(1, "Foo", OBJECT_NAME, OBJECT_NAME,
-                                 np.zeros(3), np.zeros(3),
-                                 np.zeros(3), np.zeros(3))
+                                 numpy.zeros(3), numpy.zeros(3),
+                                 numpy.zeros(3), numpy.zeros(3))
         m.add_relate_measurement(1, "Foo", OBJECT_NAME, OBJECT_NAME,
-                                 np.zeros(0), np.zeros(0),
-                                 np.zeros(0), np.zeros(0))
+                                 numpy.zeros(0), numpy.zeros(0),
+                                 numpy.zeros(0), numpy.zeros(0))
 
     def test_16_01_get_feature_names(self):
-        m = cpmeas.Measurement()
+        m = cellprofiler.measurement.Measurement()
         try:
-            m.add_measurement(OBJECT_NAME, "Foo", np.zeros(3))
+            m.add_measurement(OBJECT_NAME, "Foo", numpy.zeros(3))
             feature_names = m.get_feature_names(OBJECT_NAME)
             self.assertEqual(len(feature_names), 1)
             self.assertTrue("Foo" in feature_names)
@@ -843,9 +838,9 @@ class TestMeasurements(unittest.TestCase):
             del m
 
     def test_16_01b_get_feature_names_arrayinterface(self):
-        m = cpmeas.Measurement()
+        m = cellprofiler.measurement.Measurement()
         try:
-            m[OBJECT_NAME, "Foo"] = np.zeros(3)
+            m[OBJECT_NAME, "Foo"] = numpy.zeros(3)
             feature_names = m.get_feature_names(OBJECT_NAME)
             self.assertEqual(len(feature_names), 1)
             self.assertTrue("Foo" in feature_names)
@@ -853,15 +848,15 @@ class TestMeasurements(unittest.TestCase):
             del m
 
     def test_17_01_aggregate_measurements(self):
-        m = cpmeas.Measurement()
+        m = cellprofiler.measurement.Measurement()
         try:
-            values = np.arange(5).astype(float)
+            values = numpy.arange(5).astype(float)
             m.add_measurement(OBJECT_NAME, "Foo", values)
             d = m.compute_aggregate_measurements(1)
             for agg_name, expected in (
-                    (cpmeas.AGG_MEAN, np.mean(values)),
-                    (cpmeas.AGG_MEDIAN, np.median(values)),
-                    (cpmeas.AGG_STD_DEV, np.std(values))):
+                    (cellprofiler.measurement.AGG_MEAN, numpy.mean(values)),
+                    (cellprofiler.measurement.AGG_MEDIAN, numpy.median(values)),
+                    (cellprofiler.measurement.AGG_STD_DEV, numpy.std(values))):
                 feature = "%s_%s_Foo" % (agg_name, OBJECT_NAME)
                 self.assertTrue(d.has_key(feature))
                 self.assertAlmostEqual(d[feature], expected)
@@ -870,25 +865,25 @@ class TestMeasurements(unittest.TestCase):
 
     def test_17_02_aggregate_measurements_with_relate(self):
         '''regression test of img-1554'''
-        m = cpmeas.Measurement()
+        m = cellprofiler.measurement.Measurement()
         try:
-            values = np.arange(5).astype(float)
-            m.add_measurement(cpmeas.IMAGE, cpmeas.GROUP_NUMBER, 1, image_set_number=1)
-            m.add_measurement(cpmeas.IMAGE, cpmeas.GROUP_NUMBER, 1, image_set_number=2)
-            m.add_measurement(cpmeas.IMAGE, cpmeas.GROUP_INDEX, 1, image_set_number=1)
-            m.add_measurement(cpmeas.IMAGE, cpmeas.GROUP_INDEX, 2, image_set_number=1)
+            values = numpy.arange(5).astype(float)
+            m.add_measurement(cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_NUMBER, 1, image_set_number=1)
+            m.add_measurement(cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_NUMBER, 1, image_set_number=2)
+            m.add_measurement(cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_INDEX, 1, image_set_number=1)
+            m.add_measurement(cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_INDEX, 2, image_set_number=1)
             m.add_measurement(OBJECT_NAME, "Foo", values, image_set_number=1)
             m.add_measurement(OBJECT_NAME, "Foo", values, image_set_number=2)
             m.add_relate_measurement(1, "R", "A1", "A2",
-                                     np.array([1, 1, 1, 1, 1], int),
-                                     np.array([1, 2, 3, 4, 5], int),
-                                     np.array([2, 2, 2, 2, 2], int),
-                                     np.array([5, 4, 3, 2, 1], int))
+                                     numpy.array([1, 1, 1, 1, 1], int),
+                                     numpy.array([1, 2, 3, 4, 5], int),
+                                     numpy.array([2, 2, 2, 2, 2], int),
+                                     numpy.array([5, 4, 3, 2, 1], int))
             d = m.compute_aggregate_measurements(1)
             for agg_name, expected in (
-                    (cpmeas.AGG_MEAN, np.mean(values)),
-                    (cpmeas.AGG_MEDIAN, np.median(values)),
-                    (cpmeas.AGG_STD_DEV, np.std(values))):
+                    (cellprofiler.measurement.AGG_MEAN, numpy.mean(values)),
+                    (cellprofiler.measurement.AGG_MEDIAN, numpy.median(values)),
+                    (cellprofiler.measurement.AGG_STD_DEV, numpy.std(values))):
                 feature = "%s_%s_Foo" % (agg_name, OBJECT_NAME)
                 self.assertTrue(d.has_key(feature))
                 self.assertAlmostEqual(d[feature], expected)
@@ -896,50 +891,50 @@ class TestMeasurements(unittest.TestCase):
             del m
 
     def test_18_01_test_add_all_measurements_string(self):
-        m = cpmeas.Measurement()
+        m = cellprofiler.measurement.Measurement()
         try:
             values = ["Foo", "Bar", "Baz"]
-            m.add_all_measurements(cpmeas.IMAGE, FEATURE_NAME, values)
+            m.add_all_measurements(cellprofiler.measurement.IMAGE, FEATURE_NAME, values)
             for i, expected in enumerate(values):
-                value = m.get_measurement(cpmeas.IMAGE, FEATURE_NAME,
+                value = m.get_measurement(cellprofiler.measurement.IMAGE, FEATURE_NAME,
                                           image_set_number=i + 1)
                 self.assertEqual(expected, value)
         finally:
             del m
 
     def test_18_02_test_add_all_measurements_unicode(self):
-        m = cpmeas.Measurement()
+        m = cellprofiler.measurement.Measurement()
         try:
             values = [u"Foo", u"Bar", u"Baz", u"-\u221E < \u221E"]
-            m.add_all_measurements(cpmeas.IMAGE, FEATURE_NAME, values)
+            m.add_all_measurements(cellprofiler.measurement.IMAGE, FEATURE_NAME, values)
             for i, expected in enumerate(values):
-                value = m.get_measurement(cpmeas.IMAGE, FEATURE_NAME,
+                value = m.get_measurement(cellprofiler.measurement.IMAGE, FEATURE_NAME,
                                           image_set_number=i + 1)
                 self.assertEqual(expected, value)
         finally:
             del m
 
     def test_18_03_test_add_all_measurements_number(self):
-        m = cpmeas.Measurement()
+        m = cellprofiler.measurement.Measurement()
         try:
-            r = np.random.RandomState()
+            r = numpy.random.RandomState()
             r.seed(1803)
             values = r.randint(0, 10, size=5)
-            m.add_all_measurements(cpmeas.IMAGE, FEATURE_NAME, values)
+            m.add_all_measurements(cellprofiler.measurement.IMAGE, FEATURE_NAME, values)
             for i, expected in enumerate(values):
-                value = m.get_measurement(cpmeas.IMAGE, FEATURE_NAME,
+                value = m.get_measurement(cellprofiler.measurement.IMAGE, FEATURE_NAME,
                                           image_set_number=i + 1)
                 self.assertEqual(expected, value)
         finally:
             del m
 
     def test_18_04_test_add_all_measurements_nulls(self):
-        m = cpmeas.Measurement()
+        m = cellprofiler.measurement.Measurement()
         try:
             values = [u"Foo", u"Bar", None, u"Baz", None, u"-\u221E < \u221E"]
-            m.add_all_measurements(cpmeas.IMAGE, FEATURE_NAME, values)
+            m.add_all_measurements(cellprofiler.measurement.IMAGE, FEATURE_NAME, values)
             for i, expected in enumerate(values):
-                value = m.get_measurement(cpmeas.IMAGE, FEATURE_NAME,
+                value = m.get_measurement(cellprofiler.measurement.IMAGE, FEATURE_NAME,
                                           image_set_number=i + 1)
                 if expected is None:
                     self.assertTrue(value is None)
@@ -949,12 +944,12 @@ class TestMeasurements(unittest.TestCase):
             del m
 
     def test_18_05_test_add_all_per_object_measurements(self):
-        m = cpmeas.Measurement()
+        m = cellprofiler.measurement.Measurement()
         try:
-            r = np.random.RandomState()
+            r = numpy.random.RandomState()
             r.seed(1803)
-            values = [r.uniform(size=5), np.zeros(0), r.uniform(size=7),
-                      np.zeros(0), r.uniform(size=9), None, r.uniform(size=10)]
+            values = [r.uniform(size=5), numpy.zeros(0), r.uniform(size=7),
+                      numpy.zeros(0), r.uniform(size=9), None, r.uniform(size=10)]
             m.add_all_measurements(OBJECT_NAME, FEATURE_NAME, values)
             for i, expected in enumerate(values):
                 value = m.get_measurement(OBJECT_NAME, FEATURE_NAME,
@@ -962,12 +957,12 @@ class TestMeasurements(unittest.TestCase):
                 if expected is None:
                     self.assertEqual(len(value), 0)
                 else:
-                    np.testing.assert_almost_equal(expected, value)
+                    numpy.testing.assert_almost_equal(expected, value)
         finally:
             del m
 
     def test_19_01_load_image_sets(self):
-        expected_features = [cpmeas.GROUP_NUMBER, cpmeas.GROUP_INDEX,
+        expected_features = [cellprofiler.measurement.GROUP_NUMBER, cellprofiler.measurement.GROUP_INDEX,
                              "URL_DNA", "PathName_DNA", "FileName_DNA"]
         expected_values = [[1, 1, "file://foo/bar.tif", "/foo", "bar.tif"],
                            [1, 2, "file://bar/foo.tif", "/bar", "foo.tif"],
@@ -977,77 +972,77 @@ class TestMeasurements(unittest.TestCase):
 1,1,"file://foo/bar.tif","/foo","bar.tif"
 1,2,"file://bar/foo.tif","/bar","foo.tif"
 2,1,"file://baz/foobar.tif","/baz","foobar.tif"
-""" % (cpmeas.GROUP_NUMBER, cpmeas.GROUP_INDEX)
-        m = cpmeas.Measurement()
+""" % (cellprofiler.measurement.GROUP_NUMBER, cellprofiler.measurement.GROUP_INDEX)
+        m = cellprofiler.measurement.Measurement()
         try:
-            m.load_image_sets(StringIO(data))
-            features = m.get_feature_names(cpmeas.IMAGE)
+            m.load_image_sets(cStringIO.StringIO(data))
+            features = m.get_feature_names(cellprofiler.measurement.IMAGE)
             self.assertItemsEqual(features, expected_features)
             for i, row_values in enumerate(expected_values):
                 image_number = i + 1
                 for value, feature_name in zip(row_values, expected_features):
                     self.assertEqual(value, m.get_measurement(
-                            cpmeas.IMAGE, feature_name, image_set_number=image_number))
+                            cellprofiler.measurement.IMAGE, feature_name, image_set_number=image_number))
         finally:
             m.close()
 
     def test_19_02_write_and_load_image_sets(self):
-        m = cpmeas.Measurement()
-        m.add_all_measurements(cpmeas.IMAGE, cpmeas.GROUP_NUMBER, [1, 1, 2])
-        m.add_all_measurements(cpmeas.IMAGE, cpmeas.GROUP_INDEX, [1, 2, 1])
+        m = cellprofiler.measurement.Measurement()
+        m.add_all_measurements(cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_NUMBER, [1, 1, 2])
+        m.add_all_measurements(cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_INDEX, [1, 2, 1])
         m.add_all_measurements(
-                cpmeas.IMAGE, "URL_DNA",
+                cellprofiler.measurement.IMAGE, "URL_DNA",
                 ["file://foo/bar.tif", "file://bar/foo.tif", "file://baz/foobar.tif"])
         m.add_all_measurements(
-                cpmeas.IMAGE, "PathName_DNA", ["/foo", "/bar", "/baz"])
+                cellprofiler.measurement.IMAGE, "PathName_DNA", ["/foo", "/bar", "/baz"])
         m.add_all_measurements(
-                cpmeas.IMAGE, "FileName_DNA", ["bar.tif", "foo.tif", "foobar.tif"])
+                cellprofiler.measurement.IMAGE, "FileName_DNA", ["bar.tif", "foo.tif", "foobar.tif"])
         m.add_all_measurements(
-                cpmeas.IMAGE, "Metadata_test",
+                cellprofiler.measurement.IMAGE, "Metadata_test",
                 ["quotetest\"", "backslashtest\\", "unicodeescapetest\\u0384"])
         m.add_all_measurements(
-                cpmeas.IMAGE, "Metadata_testunicode",
+                cellprofiler.measurement.IMAGE, "Metadata_testunicode",
                 [u"quotetest\"", u"backslashtest\\", u"unicodeescapetest\u0384"])
         m.add_all_measurements(
-                cpmeas.IMAGE, "Metadata_testnull",
+                cellprofiler.measurement.IMAGE, "Metadata_testnull",
                 ["Something", None, "SomethingElse"])
         m.add_all_measurements(
-                cpmeas.IMAGE, "Dont_copy", ["do", "not", "copy"])
-        fd = StringIO()
+                cellprofiler.measurement.IMAGE, "Dont_copy", ["do", "not", "copy"])
+        fd = cStringIO.StringIO()
         m.write_image_sets(fd)
         fd.seek(0)
-        mdest = cpmeas.Measurement()
+        mdest = cellprofiler.measurement.Measurement()
         mdest.load_image_sets(fd)
         expected_features = [
-            feature_name for feature_name in m.get_feature_names(cpmeas.IMAGE)
+            feature_name for feature_name in m.get_feature_names(cellprofiler.measurement.IMAGE)
             if feature_name != "Dont_copy"]
-        self.assertItemsEqual(expected_features, mdest.get_feature_names(cpmeas.IMAGE))
+        self.assertItemsEqual(expected_features, mdest.get_feature_names(cellprofiler.measurement.IMAGE))
         image_numbers = m.get_image_numbers()
         for feature_name in expected_features:
-            src = m.get_measurement(cpmeas.IMAGE, feature_name, image_numbers)
-            dest = mdest.get_measurement(cpmeas.IMAGE, feature_name, image_numbers)
+            src = m.get_measurement(cellprofiler.measurement.IMAGE, feature_name, image_numbers)
+            dest = mdest.get_measurement(cellprofiler.measurement.IMAGE, feature_name, image_numbers)
             self.assertSequenceEqual(list(src), list(dest))
 
     def test_19_03_delete_tempfile(self):
-        m = cpmeas.Measurement()
+        m = cellprofiler.measurement.Measurement()
         filename = m.hdf5_dict.filename
         del m
         self.assertFalse(os.path.exists(filename))
 
     def test_19_04_dont_delete_file(self):
         fd, filename = tempfile.mkstemp(suffix=".h5")
-        m = cpmeas.Measurement(filename=filename)
+        m = cellprofiler.measurement.Measurement(filename=filename)
         os.close(fd)
         del m
         self.assertTrue(os.path.exists(filename))
         os.unlink(filename)
 
     def test_20_01_add_one_relationship_measurement(self):
-        m = cpmeas.Measurement()
-        r = np.random.RandomState()
+        m = cellprofiler.measurement.Measurement()
+        r = numpy.random.RandomState()
         r.seed(2001)
         image_numbers1, object_numbers1 = [
-            x.flatten() for x in np.mgrid[1:4, 1:10]]
+            x.flatten() for x in numpy.mgrid[1:4, 1:10]]
         order = r.permutation(len(image_numbers1))
         image_numbers2, object_numbers2 = [
             x[order] for x in image_numbers1, object_numbers1]
@@ -1064,20 +1059,20 @@ class TestMeasurements(unittest.TestCase):
         r = m.get_relationships(1, "Foo", "O1", "O2")
         ri1, ro1, ri2, ro2 = [
             r[key] for key in
-            cpmeas.R_FIRST_IMAGE_NUMBER, cpmeas.R_FIRST_OBJECT_NUMBER,
-            cpmeas.R_SECOND_IMAGE_NUMBER, cpmeas.R_SECOND_OBJECT_NUMBER]
-        order = np.lexsort((ro1, ri1))
-        np.testing.assert_array_equal(image_numbers1, ri1[order])
-        np.testing.assert_array_equal(object_numbers1, ro1[order])
-        np.testing.assert_array_equal(image_numbers2, ri2[order])
-        np.testing.assert_array_equal(object_numbers2, ro2[order])
+            cellprofiler.measurement.R_FIRST_IMAGE_NUMBER, cellprofiler.measurement.R_FIRST_OBJECT_NUMBER,
+            cellprofiler.measurement.R_SECOND_IMAGE_NUMBER, cellprofiler.measurement.R_SECOND_OBJECT_NUMBER]
+        order = numpy.lexsort((ro1, ri1))
+        numpy.testing.assert_array_equal(image_numbers1, ri1[order])
+        numpy.testing.assert_array_equal(object_numbers1, ro1[order])
+        numpy.testing.assert_array_equal(image_numbers2, ri2[order])
+        numpy.testing.assert_array_equal(object_numbers2, ro2[order])
 
     def test_20_02_add_two_sets_of_relationships(self):
-        m = cpmeas.Measurement()
-        r = np.random.RandomState()
+        m = cellprofiler.measurement.Measurement()
+        r = numpy.random.RandomState()
         r.seed(2002)
         image_numbers1, object_numbers1 = [
-            x.flatten() for x in np.mgrid[1:4, 1:10]]
+            x.flatten() for x in numpy.mgrid[1:4, 1:10]]
         order = r.permutation(len(image_numbers1))
         image_numbers2, object_numbers2 = [
             x[order] for x in image_numbers1, object_numbers1]
@@ -1094,27 +1089,27 @@ class TestMeasurements(unittest.TestCase):
         r = m.get_relationships(1, "Foo", "O1", "O2")
         ri1, ro1, ri2, ro2 = [
             r[key] for key in
-            cpmeas.R_FIRST_IMAGE_NUMBER, cpmeas.R_FIRST_OBJECT_NUMBER,
-            cpmeas.R_SECOND_IMAGE_NUMBER, cpmeas.R_SECOND_OBJECT_NUMBER]
-        order = np.lexsort((ro1, ri1))
-        np.testing.assert_array_equal(image_numbers1, ri1[order])
-        np.testing.assert_array_equal(object_numbers1, ro1[order])
-        np.testing.assert_array_equal(image_numbers2, ri2[order])
-        np.testing.assert_array_equal(object_numbers2, ro2[order])
+            cellprofiler.measurement.R_FIRST_IMAGE_NUMBER, cellprofiler.measurement.R_FIRST_OBJECT_NUMBER,
+            cellprofiler.measurement.R_SECOND_IMAGE_NUMBER, cellprofiler.measurement.R_SECOND_OBJECT_NUMBER]
+        order = numpy.lexsort((ro1, ri1))
+        numpy.testing.assert_array_equal(image_numbers1, ri1[order])
+        numpy.testing.assert_array_equal(object_numbers1, ro1[order])
+        numpy.testing.assert_array_equal(image_numbers2, ri2[order])
+        numpy.testing.assert_array_equal(object_numbers2, ro2[order])
 
     def test_20_03_add_many_different_relationships(self):
-        m = cpmeas.Measurements()
-        r = np.random.RandomState()
+        m = cellprofiler.measurement.Measurements()
+        r = numpy.random.RandomState()
         r.seed(2003)
         image_numbers1, object_numbers1 = [
-            x.flatten() for x in np.mgrid[1:4, 1:10]]
+            x.flatten() for x in numpy.mgrid[1:4, 1:10]]
         module_numbers = [1, 2]
         relationship_names = ["Foo", "Bar"]
         first_object_names = ["Nuclei", "Cells"]
         second_object_names = ["Alice", "Bob"]
         d = {}
         midxs, ridxs, on1idxs, on2idxs = [
-            x.flatten() for x in np.mgrid[0:2, 0:2, 0:2, 0:2]]
+            x.flatten() for x in numpy.mgrid[0:2, 0:2, 0:2, 0:2]]
         for midx, ridx, on1idx, on2idx in zip(midxs, ridxs, on1idxs, on2idxs):
             key = (module_numbers[midx], relationship_names[ridx],
                    first_object_names[on1idx], second_object_names[on2idx])
@@ -1135,13 +1130,13 @@ class TestMeasurements(unittest.TestCase):
             r = m.get_relationships(key[0], key[1], key[2], key[3])
             ri1, ro1, ri2, ro2 = [
                 r[key] for key in
-                cpmeas.R_FIRST_IMAGE_NUMBER, cpmeas.R_FIRST_OBJECT_NUMBER,
-                cpmeas.R_SECOND_IMAGE_NUMBER, cpmeas.R_SECOND_OBJECT_NUMBER]
-            order = np.lexsort((ro1, ri1))
-            np.testing.assert_array_equal(image_numbers1, ri1[order])
-            np.testing.assert_array_equal(object_numbers1, ro1[order])
-            np.testing.assert_array_equal(image_numbers2, ri2[order])
-            np.testing.assert_array_equal(object_numbers2, ro2[order])
+                cellprofiler.measurement.R_FIRST_IMAGE_NUMBER, cellprofiler.measurement.R_FIRST_OBJECT_NUMBER,
+                cellprofiler.measurement.R_SECOND_IMAGE_NUMBER, cellprofiler.measurement.R_SECOND_OBJECT_NUMBER]
+            order = numpy.lexsort((ro1, ri1))
+            numpy.testing.assert_array_equal(image_numbers1, ri1[order])
+            numpy.testing.assert_array_equal(object_numbers1, ro1[order])
+            numpy.testing.assert_array_equal(image_numbers2, ri2[order])
+            numpy.testing.assert_array_equal(object_numbers2, ro2[order])
 
     def test_20_04_saved_relationships(self):
         #
@@ -1149,20 +1144,20 @@ class TestMeasurements(unittest.TestCase):
         # relationships.
         #
         fd, filename = tempfile.mkstemp(suffix=".h5")
-        m = cpmeas.Measurement(filename=filename)
+        m = cellprofiler.measurement.Measurement(filename=filename)
         os.close(fd)
         try:
-            r = np.random.RandomState()
+            r = numpy.random.RandomState()
             r.seed(2004)
             image_numbers1, object_numbers1 = [
-                x.flatten() for x in np.mgrid[1:4, 1:10]]
+                x.flatten() for x in numpy.mgrid[1:4, 1:10]]
             module_numbers = [1, 2]
             relationship_names = ["Foo", "Bar"]
             first_object_names = ["Nuclei", "Cells"]
             second_object_names = ["Alice", "Bob"]
             d = {}
             midxs, ridxs, on1idxs, on2idxs = [
-                x.flatten() for x in np.mgrid[0:2, 0:2, 0:2, 0:2]]
+                x.flatten() for x in numpy.mgrid[0:2, 0:2, 0:2, 0:2]]
             for midx, ridx, on1idx, on2idx in zip(midxs, ridxs, on1idxs, on2idxs):
                 key = (module_numbers[midx], relationship_names[ridx],
                        first_object_names[on1idx], second_object_names[on2idx])
@@ -1175,7 +1170,7 @@ class TestMeasurements(unittest.TestCase):
                                          image_numbers2, object_numbers2)
 
             m.close()
-            m = cpmeas.Measurement(filename=filename, mode="r")
+            m = cellprofiler.measurement.Measurement(filename=filename, mode="r")
 
             rg = [(x.module_number, x.relationship, x.object_name1, x.object_name2)
                   for x in m.get_relationship_groups()]
@@ -1186,24 +1181,24 @@ class TestMeasurements(unittest.TestCase):
                 r = m.get_relationships(key[0], key[1], key[2], key[3])
                 ri1, ro1, ri2, ro2 = [
                     r[key] for key in
-                    cpmeas.R_FIRST_IMAGE_NUMBER, cpmeas.R_FIRST_OBJECT_NUMBER,
-                    cpmeas.R_SECOND_IMAGE_NUMBER, cpmeas.R_SECOND_OBJECT_NUMBER]
-                order = np.lexsort((ro1, ri1))
-                np.testing.assert_array_equal(image_numbers1, ri1[order])
-                np.testing.assert_array_equal(object_numbers1, ro1[order])
-                np.testing.assert_array_equal(image_numbers2, ri2[order])
-                np.testing.assert_array_equal(object_numbers2, ro2[order])
+                    cellprofiler.measurement.R_FIRST_IMAGE_NUMBER, cellprofiler.measurement.R_FIRST_OBJECT_NUMBER,
+                    cellprofiler.measurement.R_SECOND_IMAGE_NUMBER, cellprofiler.measurement.R_SECOND_OBJECT_NUMBER]
+                order = numpy.lexsort((ro1, ri1))
+                numpy.testing.assert_array_equal(image_numbers1, ri1[order])
+                numpy.testing.assert_array_equal(object_numbers1, ro1[order])
+                numpy.testing.assert_array_equal(image_numbers2, ri2[order])
+                numpy.testing.assert_array_equal(object_numbers2, ro2[order])
         finally:
             m.close()
             os.unlink(filename)
 
     def test_20_05_copy_relationships(self):
-        m1 = cpmeas.Measurement()
-        m2 = cpmeas.Measurement()
-        r = np.random.RandomState()
+        m1 = cellprofiler.measurement.Measurement()
+        m2 = cellprofiler.measurement.Measurement()
+        r = numpy.random.RandomState()
         r.seed(2005)
         image_numbers1, object_numbers1 = [
-            x.flatten() for x in np.mgrid[1:4, 1:10]]
+            x.flatten() for x in numpy.mgrid[1:4, 1:10]]
         image_numbers2 = r.permutation(image_numbers1)
         object_numbers2 = r.permutation(object_numbers1)
         m1.add_relate_measurement(
@@ -1220,21 +1215,21 @@ class TestMeasurements(unittest.TestCase):
         r = m2.get_relationships(1, "Foo", "O1", "O2")
         ri1, ro1, ri2, ro2 = [
             r[key] for key in
-            cpmeas.R_FIRST_IMAGE_NUMBER, cpmeas.R_FIRST_OBJECT_NUMBER,
-            cpmeas.R_SECOND_IMAGE_NUMBER, cpmeas.R_SECOND_OBJECT_NUMBER]
-        order = np.lexsort((ro1, ri1))
-        np.testing.assert_array_equal(image_numbers1, ri1[order])
-        np.testing.assert_array_equal(object_numbers1, ro1[order])
-        np.testing.assert_array_equal(image_numbers2, ri2[order])
-        np.testing.assert_array_equal(object_numbers2, ro2[order])
+            cellprofiler.measurement.R_FIRST_IMAGE_NUMBER, cellprofiler.measurement.R_FIRST_OBJECT_NUMBER,
+            cellprofiler.measurement.R_SECOND_IMAGE_NUMBER, cellprofiler.measurement.R_SECOND_OBJECT_NUMBER]
+        order = numpy.lexsort((ro1, ri1))
+        numpy.testing.assert_array_equal(image_numbers1, ri1[order])
+        numpy.testing.assert_array_equal(object_numbers1, ro1[order])
+        numpy.testing.assert_array_equal(image_numbers2, ri2[order])
+        numpy.testing.assert_array_equal(object_numbers2, ro2[order])
 
     def test_20_06_get_relationship_range(self):
         #
         # Test writing and reading relationships with a variety of ranges
         # over the whole extent of the storage
         #
-        m = cpmeas.Measurement()
-        r = np.random.RandomState()
+        m = cellprofiler.measurement.Measurement()
+        r = numpy.random.RandomState()
         r.seed(2005)
         image_numbers1, image_numbers2 = r.randint(1, 1001, (2, 4000))
         object_numbers1, object_numbers2 = r.randint(1, 10, (2, 4000))
@@ -1249,34 +1244,34 @@ class TestMeasurements(unittest.TestCase):
             result = m.get_relationships(1, "Foo", "O1", "O2", image_numbers)
             ri1, ro1, ri2, ro2 = [
                 result[key] for key in
-                cpmeas.R_FIRST_IMAGE_NUMBER, cpmeas.R_FIRST_OBJECT_NUMBER,
-                cpmeas.R_SECOND_IMAGE_NUMBER, cpmeas.R_SECOND_OBJECT_NUMBER]
-            rorder = np.lexsort((ro2, ri2, ro1, ri1))
-            i, j = [x.flatten() for x in np.mgrid[0:2, 0:3]]
+                cellprofiler.measurement.R_FIRST_IMAGE_NUMBER, cellprofiler.measurement.R_FIRST_OBJECT_NUMBER,
+                cellprofiler.measurement.R_SECOND_IMAGE_NUMBER, cellprofiler.measurement.R_SECOND_OBJECT_NUMBER]
+            rorder = numpy.lexsort((ro2, ri2, ro1, ri1))
+            i, j = [x.flatten() for x in numpy.mgrid[0:2, 0:3]]
             mask = reduce(
-                    np.logical_or,
+                    numpy.logical_or,
                     [(image_numbers1 if ii == 0 else image_numbers2) == image_numbers[jj]
                      for ii, jj in zip(i, j)])
             ei1, eo1, ei2, eo2 = map(
                     lambda x: x[mask], (image_numbers1, object_numbers1,
                                         image_numbers2, object_numbers2))
-            eorder = np.lexsort((eo2, ei2, eo1, ei1))
-            np.testing.assert_array_equal(ri1[rorder], ei1[eorder])
-            np.testing.assert_array_equal(ri2[rorder], ei2[eorder])
-            np.testing.assert_array_equal(ro1[rorder], eo1[eorder])
-            np.testing.assert_array_equal(ro2[rorder], eo2[eorder])
+            eorder = numpy.lexsort((eo2, ei2, eo1, ei1))
+            numpy.testing.assert_array_equal(ri1[rorder], ei1[eorder])
+            numpy.testing.assert_array_equal(ri2[rorder], ei2[eorder])
+            numpy.testing.assert_array_equal(ro1[rorder], eo1[eorder])
+            numpy.testing.assert_array_equal(ro2[rorder], eo2[eorder])
 
     def test_21_01_load_measurements_from_buffer(self):
-        r = np.random.RandomState()
+        r = numpy.random.RandomState()
         r.seed(51)
-        m_in = cpmeas.Measurement()
-        m_in[cpmeas.IMAGE, FEATURE_NAME, 1] = r.uniform()
+        m_in = cellprofiler.measurement.Measurement()
+        m_in[cellprofiler.measurement.IMAGE, FEATURE_NAME, 1] = r.uniform()
         m_in[OBJECT_NAME, FEATURE_NAME, 1] = r.uniform(size=100)
-        m_out = cpmeas.load_measurements_from_buffer(
+        m_out = cellprofiler.measurement.load_measurements_from_buffer(
                 m_in.file_contents())
-        self.assertAlmostEqual(m_in[cpmeas.IMAGE, FEATURE_NAME, 1],
-                               m_out[cpmeas.IMAGE, FEATURE_NAME, 1])
-        np.testing.assert_array_almost_equal(
+        self.assertAlmostEqual(m_in[cellprofiler.measurement.IMAGE, FEATURE_NAME, 1],
+                               m_out[cellprofiler.measurement.IMAGE, FEATURE_NAME, 1])
+        numpy.testing.assert_array_almost_equal(
                 m_in[OBJECT_NAME, FEATURE_NAME, 1],
                 m_out[OBJECT_NAME, FEATURE_NAME, 1])
 
@@ -1303,21 +1298,21 @@ class TestImageSetCache(unittest.TestCase):
             os.unlink(self.path)
 
     def test_01_01_no_cache(self):
-        cache = cpmeas.ImageSetCache(self.f)
+        cache = cellprofiler.measurement.ImageSetCache(self.f)
         self.assertFalse(cache.has_cache)
 
     def test_02_01_one_image(self):
-        cache = cpmeas.ImageSetCache(self.f)
+        cache = cellprofiler.measurement.ImageSetCache(self.f)
         urls = ["file:///foo", "file:///bar"]
         cache.cache_image_set(
-                [(IMAGE_NAME, cpmeas.IMAGE)],
-                [cpmeas.ImageSetCache.ImageSetData(
+                [(IMAGE_NAME, cellprofiler.measurement.IMAGE)],
+                [cellprofiler.measurement.ImageSetCache.ImageSetData(
                         tuple(),
-                        [cpmeas.ImageSetCache.ImageData(url, None, None, None)], [])
+                        [cellprofiler.measurement.ImageSetCache.ImageData(url, None, None, None)], [])
                  for url in urls])
         for reopen in (False, True):
             if reopen:
-                cache = cpmeas.ImageSetCache(self.f)
+                cache = cellprofiler.measurement.ImageSetCache(self.f)
             self.assertTrue(cache.has_cache)
             self.assertSequenceEqual(cache.image_names, [IMAGE_NAME])
             self.assertIsNone(cache.metadata_keys)
@@ -1333,7 +1328,7 @@ class TestImageSetCache(unittest.TestCase):
                 self.assertIsNone(ipd.channel)
 
     def test_02_02_image_and_metadata(self):
-        cache = cpmeas.ImageSetCache(self.f)
+        cache = cellprofiler.measurement.ImageSetCache(self.f)
         metadata_column_name = "Metadata_well"
         urls = ["file:///foo", "file:///bar"]
         series = (0, 2)
@@ -1341,17 +1336,17 @@ class TestImageSetCache(unittest.TestCase):
         channel = (1, 0)
         metadata = ["A01", "A02"]
         cache.cache_image_set(
-                [(IMAGE_NAME, cpmeas.IMAGE)],
-                [cpmeas.ImageSetCache.ImageSetData(
-                        (md,), [cpmeas.ImageSetCache.ImageData(url, s, i, c)], [])
+                [(IMAGE_NAME, cellprofiler.measurement.IMAGE)],
+                [cellprofiler.measurement.ImageSetCache.ImageSetData(
+                        (md,), [cellprofiler.measurement.ImageSetCache.ImageData(url, s, i, c)], [])
                  for url, md, s, i, c in zip(urls, metadata, series, index, channel)],
                 metadata_keys=[metadata_column_name])
         for reopen in (False, True):
             if reopen:
-                cache = cpmeas.ImageSetCache(self.f)
+                cache = cellprofiler.measurement.ImageSetCache(self.f)
             self.assertTrue(cache.has_cache)
             self.assertSequenceEqual(cache.image_names, [IMAGE_NAME])
-            self.assertSequenceEqual(cache.image_or_object, [cpmeas.IMAGE])
+            self.assertSequenceEqual(cache.image_or_object, [cellprofiler.measurement.IMAGE])
             self.assertSequenceEqual(cache.metadata_keys, [metadata_column_name])
             for idx, url, md, s, i, c in zip(
                     (0, 1), urls, metadata, series, index, channel):
@@ -1366,13 +1361,13 @@ class TestImageSetCache(unittest.TestCase):
                 self.assertEqual(image_set_data.ipds[0].channel, c)
 
     def test_02_03_images_and_objects(self):
-        cache = cpmeas.ImageSetCache(self.f)
-        metadata_columns = ["%s_%d" % (cpmeas.C_METADATA, i) for i in range(1, 3)]
+        cache = cellprofiler.measurement.ImageSetCache(self.f)
+        metadata_columns = ["%s_%d" % (cellprofiler.measurement.C_METADATA, i) for i in range(1, 3)]
         image_names = [IMAGE_NAME, ALT_IMAGE_NAME, OBJECT_NAME, ALT_OBJECT_NAME]
-        image_or_object = [cpmeas.IMAGE, cpmeas.IMAGE, cpmeas.OBJECT, cpmeas.OBJECT]
-        data = [cpmeas.ImageSetCache.ImageSetData(
+        image_or_object = [cellprofiler.measurement.IMAGE, cellprofiler.measurement.IMAGE, cellprofiler.measurement.OBJECT, cellprofiler.measurement.OBJECT]
+        data = [cellprofiler.measurement.ImageSetCache.ImageSetData(
                 tuple([uuid.uuid4().hex for _ in metadata_columns]),
-                [cpmeas.ImageSetCache.ImageData("file:///%s" % uuid.uuid4().hex, None, None, None)
+                [cellprofiler.measurement.ImageSetCache.ImageData("file:///%s" % uuid.uuid4().hex, None, None, None)
                  for _ in image_names], []) for __ in range(4)]
         cache.cache_image_set(
                 [(x, y) for x, y in zip(image_names, image_or_object)],
@@ -1380,7 +1375,7 @@ class TestImageSetCache(unittest.TestCase):
                 metadata_columns)
         for reopen in (False, True):
             if reopen:
-                cache = cpmeas.ImageSetCache(self.f)
+                cache = cellprofiler.measurement.ImageSetCache(self.f)
             self.assertTrue(cache.has_cache)
             self.assertSequenceEqual(cache.image_names, image_names)
             self.assertSequenceEqual(cache.image_or_object, image_or_object)
@@ -1395,19 +1390,19 @@ class TestImageSetCache(unittest.TestCase):
                         self.assertIsNone(x)
 
     def test_03_01_errors(self):
-        cache = cpmeas.ImageSetCache(self.f)
+        cache = cellprofiler.measurement.ImageSetCache(self.f)
         image_names = [IMAGE_NAME, ALT_IMAGE_NAME]
         data = [
-            cpmeas.ImageSetCache.ImageSetData(
+            cellprofiler.measurement.ImageSetCache.ImageSetData(
                     [],
-                    [cpmeas.ImageSetCache.ImageData("file:///%s" % uuid.uuid4().hex, None, None, None)
+                    [cellprofiler.measurement.ImageSetCache.ImageData("file:///%s" % uuid.uuid4().hex, None, None, None)
                      for _ in image_names], [(i, uuid.uuid4().hex)])
             for i in range(len(image_names))]
-        cache.cache_image_set([(n, cpmeas.IMAGE) for n in image_names],
+        cache.cache_image_set([(n, cellprofiler.measurement.IMAGE) for n in image_names],
                               data)
         for reopen in (False, True):
             if reopen:
-                cache = cpmeas.ImageSetCache(self.f)
+                cache = cellprofiler.measurement.ImageSetCache(self.f)
             self.assertTrue(cache.has_cache)
             for i, expected in enumerate(data):
                 image_set_data = cache.get_image_set_data(i)
@@ -1417,8 +1412,8 @@ class TestImageSetCache(unittest.TestCase):
                 self.assertEqual(msg, expected.errors[0][1])
 
     def test_04_01_close_measurements(self):
-        m = cpmeas.Measurement()
-        image = cpi.Image(np.zeros((10, 10)))
+        m = cellprofiler.measurement.Measurement()
+        image = cellprofiler.image.Image(numpy.zeros((10, 10)))
         m.add(IMAGE_NAME, image)
         m.cache()
         m.close()

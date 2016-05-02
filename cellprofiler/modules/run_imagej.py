@@ -36,7 +36,7 @@ import cellprofiler.cpmodule as cpm
 import cellprofiler.cpimage as cpi
 import cellprofiler.setting as cps
 from cellprofiler.setting import YES, NO
-import cellprofiler.preferences as cpprefs
+import cellprofiler.configuration as cpprefs
 from cellprofiler.gui.help import BATCH_PROCESSING_HELP_REF
 import imagej.imagej2 as ij2
 from imagej.imagej2 import get_context

@@ -40,7 +40,7 @@ import cellprofiler.measurements as cpmeas
 import cellprofiler.pipeline as cpp
 import cellprofiler.setting as cps
 from cellprofiler.setting import YES, NO
-import cellprofiler.preferences as cpprefs
+import cellprofiler.configuration as cpprefs
 import cellprofiler.workspace as cpw
 
 from cellprofiler.measurements import F_BATCH_DATA, F_BATCH_DATA_H5

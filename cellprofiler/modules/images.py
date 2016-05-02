@@ -89,7 +89,7 @@ particular wavelength.
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.pipeline as cpp
-import cellprofiler.preferences as cpprefs
+import cellprofiler.configuration as cpprefs
 import cellprofiler.setting as cps
 from cellprofiler.setting import YES, NO
 import cellprofiler.workspace as cpw

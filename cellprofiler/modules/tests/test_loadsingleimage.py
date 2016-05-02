@@ -19,7 +19,7 @@ import cellprofiler.modules.loadimages as LI
 import cellprofiler.modules.loadsingleimage as L
 import cellprofiler.objects as cpo
 import cellprofiler.pipeline as cpp
-import cellprofiler.preferences as cpprefs
+import cellprofiler.configuration as cpprefs
 import cellprofiler.setting as cps
 import cellprofiler.workspace as cpw
 from cellprofiler.modules.identify import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y, M_NUMBER_OBJECT_NUMBER

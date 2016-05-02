@@ -83,9 +83,9 @@ import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
-import cellprofiler.preferences as cpprefs
+import cellprofiler.configuration as cpprefs
 import cellprofiler.setting as cps
-from cellprofiler.preferences import IO_FOLDER_CHOICE_HELP_TEXT
+from cellprofiler.configuration import IO_FOLDER_CHOICE_HELP_TEXT
 from cellprofiler.setting import YES, NO
 import itertools
 from identify import C_COUNT, C_LOCATION, FTR_CENTER_X, FTR_CENTER_Y

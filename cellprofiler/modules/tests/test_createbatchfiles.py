@@ -12,7 +12,7 @@ from StringIO import StringIO
 
 import numpy as np
 
-from cellprofiler.preferences import set_headless
+from cellprofiler.configuration import set_headless
 
 set_headless()
 
@@ -23,7 +23,7 @@ import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.setting as cps
-import cellprofiler.preferences as cpprefs
+import cellprofiler.configuration as cpprefs
 
 import cellprofiler.modules.loadimages as LI
 import cellprofiler.modules.createbatchfiles as C

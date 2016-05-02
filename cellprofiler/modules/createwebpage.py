@@ -15,7 +15,7 @@ from urllib2 import urlopen
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
-import cellprofiler.preferences as cpprefs
+import cellprofiler.configuration as cpprefs
 import cellprofiler.setting as cps
 from cellprofiler.gui.help import USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF
 from cellprofiler.modules.loadimages import C_FILE_NAME, C_PATH_NAME, C_URL

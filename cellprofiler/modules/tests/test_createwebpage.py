@@ -16,7 +16,7 @@ import xml.dom.minidom as DOM
 import zipfile
 import zlib
 
-import cellprofiler.preferences as cpprefs
+import cellprofiler.configuration as cpprefs
 
 cpprefs.set_headless()
 

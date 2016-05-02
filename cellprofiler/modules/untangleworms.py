@@ -88,11 +88,11 @@ import cellprofiler.objects as cpo
 import cellprofiler.setting as cps
 from cellprofiler.setting import YES, NO
 import centrosome.cpmorphology as morph
-import cellprofiler.preferences as cpprefs
+import cellprofiler.configuration as cpprefs
 import identify as I
 from centrosome.propagate import propagate
 from centrosome.outline import outline
-from cellprofiler.preferences import standardize_default_folder_names, \
+from cellprofiler.configuration import standardize_default_folder_names, \
     DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME, NO_FOLDER_NAME, \
     ABSOLUTE_FOLDER_NAME, IO_FOLDER_CHOICE_HELP_TEXT
 from cellprofiler.gui.help import USING_METADATA_GROUPING_HELP_REF

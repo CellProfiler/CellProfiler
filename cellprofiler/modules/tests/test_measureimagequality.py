@@ -8,7 +8,7 @@ import unittest
 import numpy as np
 from scipy.io.matlab import savemat
 
-from cellprofiler.preferences import set_headless
+from cellprofiler.configuration import set_headless
 
 set_headless()
 

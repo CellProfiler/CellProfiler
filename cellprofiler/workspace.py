@@ -338,7 +338,7 @@ class Workspace(object):
         # See also:
         # main().interaction_handler() in worker.py
         # PipelineController.module_interaction_request() in pipelinecontroller.py
-        import cellprofiler.preferences as cpprefs
+        import cellprofiler.configuration as cpprefs
         if "headless_ok" in kwargs:
             tmp = kwargs.copy()
             del tmp["headless_ok"]
@@ -432,7 +432,7 @@ class Workspace(object):
         from .pipeline import M_PIPELINE, M_DEFAULT_INPUT_FOLDER, \
             M_DEFAULT_OUTPUT_FOLDER
         import cellprofiler.measurements as cpmeas
-        from cellprofiler.preferences import set_default_image_directory, \
+        from cellprofiler.configuration import set_default_image_directory, \
             set_default_output_directory
 
         image_set_and_measurements_are_same = False
@@ -549,8 +549,8 @@ class Workspace(object):
     def save_default_folders_to_measurements(self):
         from cellprofiler.pipeline import M_DEFAULT_INPUT_FOLDER
         from cellprofiler.pipeline import M_DEFAULT_OUTPUT_FOLDER
-        from cellprofiler.preferences import get_default_image_directory
-        from cellprofiler.preferences import get_default_output_directory
+        from cellprofiler.configuration import get_default_image_directory
+        from cellprofiler.configuration import get_default_output_directory
 
         self.measurements.add_experiment_measurement(
                 M_DEFAULT_INPUT_FOLDER, get_default_image_directory())

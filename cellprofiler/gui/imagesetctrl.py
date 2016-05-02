@@ -6,7 +6,7 @@ import cellprofiler.gui
 import cellprofiler.gui.cornerbuttonmixin
 import cellprofiler.measurements
 import cellprofiler.modules.images
-import cellprofiler.preferences
+import cellprofiler.configuration
 import cellprofiler.setting
 import numpy
 import re
@@ -441,7 +441,7 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
                     style=wx.OK | wx.ICON_INFORMATION,
                     parent=self)
         else:
-            cellprofiler.preferences.report_progress(
+            cellprofiler.configuration.report_progress(
                     "ImageSetCount", None,
                     "Found %d image sets" % n_imagesets)
         self.recompute()

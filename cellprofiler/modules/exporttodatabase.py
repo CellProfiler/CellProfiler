@@ -83,13 +83,13 @@ except:
 import cellprofiler.cpmodule as cpm
 import cellprofiler.setting as cps
 from cellprofiler.setting import YES, NO
-import cellprofiler.preferences as cpprefs
+import cellprofiler.configuration as cpprefs
 import cellprofiler.measurements as cpmeas
 from cellprofiler.pipeline import GROUP_INDEX, M_MODIFICATION_TIMESTAMP
 from identify import M_NUMBER_OBJECT_NUMBER
 from cellprofiler.modules.loadimages import C_FILE_NAME, C_PATH_NAME
 from cellprofiler.gui.help import USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF, USING_METADATA_GROUPING_HELP_REF
-from cellprofiler.preferences import \
+from cellprofiler.configuration import \
     standardize_default_folder_names, DEFAULT_INPUT_FOLDER_NAME, \
     DEFAULT_OUTPUT_FOLDER_NAME, DEFAULT_INPUT_SUBFOLDER_NAME, \
     DEFAULT_OUTPUT_SUBFOLDER_NAME, ABSOLUTE_FOLDER_NAME, \

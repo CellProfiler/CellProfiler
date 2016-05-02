@@ -4,7 +4,7 @@
 
 import cellprofiler.icons
 import cellprofiler.pipeline
-import cellprofiler.preferences
+import cellprofiler.configuration
 import cellprofiler.setting
 import cornerbuttonmixin
 import htmldialog
@@ -278,7 +278,7 @@ class ModuleView(object):
         self.notes_panel = notes_panel
         self.__frame = frame
         self.top_panel = top_panel
-        background_color = cellprofiler.preferences.get_background_color()
+        background_color = cellprofiler.configuration.get_background_color()
         #############################################
         #
         # Build the top-level GUI windows
@@ -987,7 +987,7 @@ class ModuleView(object):
                 control.SetSelection(index)
                 if selection not in v.choices:
                     control.SetItemForegroundColour(
-                        index, cellprofiler.preferences.get_error_color())
+                        index, cellprofiler.configuration.get_error_color())
 
             def callback(event, setting=v, control=control):
                 self.__on_multichoice_change(event, setting, control)
@@ -1006,7 +1006,7 @@ class ModuleView(object):
                     control.Select(i)
                     if choices[i] not in v.choices:
                         control.SetItemForegroundColour(
-                            i, cellprofiler.preferences.get_error_color())
+                            i, cellprofiler.configuration.get_error_color())
         return control
 
     def make_colormap_control(self, v, control_name, control):
@@ -1018,7 +1018,7 @@ class ModuleView(object):
         """
         try:
             if v.value == cellprofiler.setting.DEFAULT:
-                cmap_name = cellprofiler.preferences.get_default_colormap()
+                cmap_name = cellprofiler.configuration.get_default_colormap()
             else:
                 cmap_name = v.value
             cm = matplotlib.cm.get_cmap(cmap_name)
@@ -1252,7 +1252,7 @@ class ModuleView(object):
                 filename = "plateA-2008-08-06_A12_s1_w1_[89A882DE-E675-4C12-9F8E-46C9976C4ABE].tif"
                 try:
                     if setting.get_example_fn is None:
-                        path = cellprofiler.preferences.get_default_image_directory()
+                        path = cellprofiler.configuration.get_default_image_directory()
                         filenames = [x for x in os.listdir(path)
                                      if x.find('.') != -1 and
                                      os.path.splitext(x)[1].upper() in
@@ -1265,10 +1265,10 @@ class ModuleView(object):
                     pass
 
                 if v.guess == cellprofiler.setting.RegexpText.GUESS_FOLDER:
-                    guess_file = cellprofiler.preferences.get_pathname_re_guess_file()
+                    guess_file = cellprofiler.configuration.get_pathname_re_guess_file()
                     guesses = regexp_editor.RE_FOLDER_GUESSES
                 else:
-                    guess_file = cellprofiler.preferences.get_filename_re_guess_file()
+                    guess_file = cellprofiler.configuration.get_filename_re_guess_file()
                     guesses = regexp_editor.RE_FILENAME_GUESSES
                 if guess_file is not None and os.path.exists(guess_file):
                     with open(guess_file) as fd:
@@ -1479,11 +1479,11 @@ class ModuleView(object):
         if v.dir_choice in (cellprofiler.setting.DEFAULT_INPUT_FOLDER_NAME,
                             cellprofiler.setting.DEFAULT_INPUT_SUBFOLDER_NAME):
             folder_label.Label = \
-                "( %s )" % cellprofiler.preferences.get_default_image_directory()
+                "( %s )" % cellprofiler.configuration.get_default_image_directory()
         elif v.dir_choice in (cellprofiler.setting.DEFAULT_OUTPUT_FOLDER_NAME,
                               cellprofiler.setting.DEFAULT_OUTPUT_SUBFOLDER_NAME):
             folder_label.Label = \
-                "( %s )" % cellprofiler.preferences.get_default_output_directory()
+                "( %s )" % cellprofiler.configuration.get_default_output_directory()
         else:
             folder_label.Label = wx.EmptyString
         dir_ctrl.SetToolTipString(folder_label.Label)
@@ -2151,7 +2151,7 @@ class ModuleView(object):
 
     def on_validation(self, setting_idx, message, level):
         default_fg_color = wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOWTEXT)
-        default_bg_color = cellprofiler.preferences.get_background_color()
+        default_bg_color = cellprofiler.configuration.get_background_color()
         if not self.__module:  # defensive coding, in case the module was deleted
             return
 
@@ -2195,7 +2195,7 @@ class ModuleView(object):
                     desired_fg, desired_bg = default_fg_color, default_bg_color
                     if setting is bad_setting:
                         if level == logging.ERROR:
-                            desired_fg = cellprofiler.preferences.get_error_color()
+                            desired_fg = cellprofiler.configuration.get_error_color()
                         elif level == logging.WARNING:
                             desired_bg = WARNING_COLOR
         except Exception:
@@ -3234,7 +3234,7 @@ class FileCollectionDisplayController(object):
         self.update_subtree(self.v.file_tree, self.root_item, False, [],
                             operation_id, 0, total)
         self.manage_expansion()
-        cellprofiler.preferences.report_progress(operation_id, 1, None)
+        cellprofiler.configuration.report_progress(operation_id, 1, None)
 
     def manage_expansion(self):
         """Handle UI expansion issues
@@ -3291,7 +3291,7 @@ class FileCollectionDisplayController(object):
             if x is None:
                 continue
             text, node_type, tooltip = self.v.get_node_info(sub_modpath)
-            cellprofiler.preferences.report_progress(
+            cellprofiler.configuration.report_progress(
                     operation_id,
                     float(count) / float(total),
                     "Processing %s" % text)
@@ -3720,7 +3720,7 @@ class BinaryMatrixController(object):
             wx.SystemSettings.GetMetric(m) for m in (
                 wx.SYS_BORDER_X, wx.SYS_EDGE_X, wx.SYS_SMALLICON_X,
                 wx.SYS_BORDER_Y, wx.SYS_EDGE_Y, wx.SYS_SMALLICON_Y)]
-        paint_dc.Background = wx.Brush(cellprofiler.preferences.get_background_color())
+        paint_dc.Background = wx.Brush(cellprofiler.configuration.get_background_color())
         paint_dc.Clear()
         pShadow = wx.Pen(
                 wx.SystemSettings.GetColour(wx.SYS_COLOUR_BTNSHADOW), 1, wx.SOLID)
@@ -3993,7 +3993,7 @@ class DataTypeController(object):
 class TableController(wx.grid.PyGridTableBase):
     DEFAULT_ATTR = wx.grid.GridCellAttr()
     ERROR_ATTR = wx.grid.GridCellAttr()
-    ERROR_ATTR.TextColour = cellprofiler.preferences.get_error_color()
+    ERROR_ATTR.TextColour = cellprofiler.configuration.get_error_color()
 
     def __init__(self, v):
         super(self.__class__, self).__init__()

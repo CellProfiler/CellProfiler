@@ -9,7 +9,7 @@ from StringIO import StringIO
 import numpy as np
 from scipy.sparse.coo import coo_matrix
 
-from cellprofiler.preferences import set_headless
+from cellprofiler.configuration import set_headless
 
 set_headless()
 

@@ -10,7 +10,7 @@ import os.path
 import glob
 import cellprofiler.cpmodule as cpm
 from cellprofiler.modules.plugins import plugin_list
-from cellprofiler.preferences import get_plugin_directory
+from cellprofiler.configuration import get_plugin_directory
 
 # python modules and their corresponding cellprofiler.module classes
 pymodule_to_cpmodule = {'align': 'Align',

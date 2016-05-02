@@ -7,7 +7,7 @@ from StringIO import StringIO
 
 import numpy as np
 
-from cellprofiler.preferences import set_headless
+from cellprofiler.configuration import set_headless
 
 set_headless()
 

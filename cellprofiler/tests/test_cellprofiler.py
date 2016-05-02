@@ -109,7 +109,7 @@ class TestCellProfiler(unittest.TestCase):
                                   "-f", "1",
                                   "-l", "1",
                                   measurements_file)
-            import cellprofiler.preferences as cpprefs
+            import cellprofiler.configuration as cpprefs
             self.assertTrue(os.path.exists(measurements_file))
             self.assertTrue(os.path.exists(done_file))
             #

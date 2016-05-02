@@ -29,7 +29,7 @@ import cellprofiler.modules.tests as T
 import cellprofiler.objects as cpo
 import cellprofiler.pipeline as cpp
 import cellprofiler.pipeline as P
-import cellprofiler.preferences as cpprefs
+import cellprofiler.configuration as cpprefs
 import cellprofiler.workspace as W
 from cellprofiler.modules.namesandtypes import M_IMAGE_SET
 from cellprofiler.modules.tests import \

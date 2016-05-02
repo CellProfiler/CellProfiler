@@ -5,7 +5,7 @@
 import tempfile
 import unittest
 
-import cellprofiler.preferences as cpprefs
+import cellprofiler.configuration as cpprefs
 
 
 class TestPreferences(unittest.TestCase):

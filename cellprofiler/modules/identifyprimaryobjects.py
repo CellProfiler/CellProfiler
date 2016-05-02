@@ -179,7 +179,7 @@ import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpmeas
 import cellprofiler.setting as cps
 from cellprofiler.setting import YES, NO
-import cellprofiler.preferences as cpp
+import cellprofiler.configuration as cpp
 from centrosome.otsu import otsu
 from centrosome.cpmorphology import fill_labeled_holes, strel_disk
 from centrosome.cpmorphology import binary_shrink, relabel

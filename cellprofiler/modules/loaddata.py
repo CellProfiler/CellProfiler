@@ -170,7 +170,7 @@ import cellprofiler.objects as cpo
 import cellprofiler.measurements as cpmeas
 import cellprofiler.setting as cps
 from cellprofiler.setting import YES, NO
-import cellprofiler.preferences as cpprefs
+import cellprofiler.configuration as cpprefs
 import identify as I
 from cellprofiler.modules.loadimages import LoadImagesImageProvider
 from cellprofiler.modules.loadimages import C_FILE_NAME, C_PATH_NAME, C_URL
@@ -184,7 +184,7 @@ from cellprofiler.modules.loadimages import C_HEIGHT, C_WIDTH
 from cellprofiler.modules.loadimages import bad_sizes_warning
 from cellprofiler.modules.loadimages import convert_image_to_objects
 from cellprofiler.modules.loadimages import pathname2url, url2pathname
-from cellprofiler.preferences import standardize_default_folder_names, \
+from cellprofiler.configuration import standardize_default_folder_names, \
     DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME, NO_FOLDER_NAME, \
     ABSOLUTE_FOLDER_NAME, IO_FOLDER_CHOICE_HELP_TEXT
 

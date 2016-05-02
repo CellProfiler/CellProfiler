@@ -6,7 +6,7 @@ import cellprofiler.cpmodule
 import cellprofiler.gui
 import cellprofiler.gui.html.manual
 import cellprofiler.modules
-import cellprofiler.preferences
+import cellprofiler.configuration
 import cpframe
 import wx
 

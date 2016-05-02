@@ -36,7 +36,7 @@ import cellprofiler.setting as cps
 import cellprofiler.utilities.rules as cprules
 import cellprofiler.workspace as cpw
 from cellprofiler.gui.help import USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF
-from cellprofiler.preferences import IO_FOLDER_CHOICE_HELP_TEXT
+from cellprofiler.configuration import IO_FOLDER_CHOICE_HELP_TEXT
 from cellprofiler.setting import YES, NO
 
 logger = logging.getLogger(__name__)

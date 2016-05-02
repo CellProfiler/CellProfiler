@@ -10,7 +10,7 @@ import cellprofiler.cpimage
 import cellprofiler.cpmodule
 import cellprofiler.measurements
 import cellprofiler.objects
-import cellprofiler.preferences
+import cellprofiler.configuration
 import cellprofiler.setting
 import cellprofiler.workspace
 import numpy

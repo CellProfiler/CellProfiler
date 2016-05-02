@@ -9,7 +9,7 @@ import zlib
 import numpy as np
 import scipy.ndimage as scind
 
-from cellprofiler.preferences import set_headless
+from cellprofiler.configuration import set_headless
 
 set_headless()
 

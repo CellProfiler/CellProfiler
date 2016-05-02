@@ -66,7 +66,7 @@ def main(args=None):
     '''
     if args is None:
         args = sys.argv
-    import cellprofiler.preferences as cpprefs
+    import cellprofiler.configuration as cpprefs
     cpprefs.set_awt_headless(True)
     exit_code = 0
     switches = ('--work-announce', '--knime-bridge-address')
@@ -98,14 +98,14 @@ def main(args=None):
     # Important to go headless ASAP
     #
     if (not options.show_gui) or options.write_schema_and_exit:
-        import cellprofiler.preferences as cpprefs
+        import cellprofiler.configuration as cpprefs
         cpprefs.set_headless()
         # What's there to do but run if you're running headless?
         # Might want to change later if there's some headless setup
         options.run_pipeline = True
 
     if options.jvm_heap_size is not None:
-        from cellprofiler.preferences import set_jvm_heap_mb
+        from cellprofiler.configuration import set_jvm_heap_mb
         set_jvm_heap_mb(options.jvm_heap_size, False)
     set_log_level(options)
 
@@ -545,7 +545,7 @@ def set_omero_credentials_from_string(credentials_string):
                         user - the user name
                         session-id - the session ID used for authentication
     '''
-    import cellprofiler.preferences as cpprefs
+    import cellprofiler.configuration as cpprefs
     from bioformats.formatreader import use_omero_credentials
     from bioformats.formatreader import \
         K_OMERO_SERVER, K_OMERO_PORT, K_OMERO_USER, K_OMERO_SESSION_ID, \
@@ -874,7 +874,7 @@ def run_pipeline_headless(options, args):
         options.pipeline_filename = os.path.expanduser(options.pipeline_filename)
     from cellprofiler.pipeline import Pipeline, EXIT_STATUS, M_PIPELINE
     import cellprofiler.measurements as cpmeas
-    import cellprofiler.preferences as cpprefs
+    import cellprofiler.configuration as cpprefs
     pipeline = Pipeline()
     initial_measurements = None
     try:

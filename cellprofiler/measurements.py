@@ -12,7 +12,7 @@ import numpy as np
 import re
 from scipy.io.matlab import loadmat
 from itertools import repeat
-import cellprofiler.preferences as cpprefs
+import cellprofiler.configuration as cpprefs
 from cellprofiler.utilities.hdf5_dict import HDF5Dict, get_top_level_group
 from cellprofiler.utilities.hdf5_dict import VERSION, HDFCSV, VStringArray
 from cellprofiler.utilities.hdf5_dict import HDF5ObjectSet

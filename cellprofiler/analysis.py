@@ -23,7 +23,7 @@ import zmq
 import cellprofiler
 import cellprofiler.cpimage as cpimage
 import cellprofiler.measurements as cpmeas
-import cellprofiler.preferences as cpprefs
+import cellprofiler.configuration as cpprefs
 import cellprofiler.workspace as cpw
 from cellprofiler.utilities.zmqrequest import AnalysisRequest, Request, Reply, UpstreamExit
 from cellprofiler.utilities.zmqrequest import get_announcer_address
@@ -1049,7 +1049,7 @@ if sys.platform == "darwin":
 if __name__ == '__main__':
     import time
     import cellprofiler.pipeline
-    import cellprofiler.preferences
+    import cellprofiler.configuration
     import cellprofiler.utilities.thread_excepthook
 
     # This is an ugly hack, but it's necesary to unify the Request/Reply

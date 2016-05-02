@@ -10,7 +10,7 @@ import cellprofiler.measurements
 import cellprofiler.modules
 import cellprofiler.objects
 import cellprofiler.pipeline
-import cellprofiler.preferences
+import cellprofiler.configuration
 import cellprofiler.workspace
 import h5py
 import wx

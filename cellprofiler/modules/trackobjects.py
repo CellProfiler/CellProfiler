@@ -180,7 +180,7 @@ import cellprofiler.pipeline as cpp
 import cellprofiler.setting as cps
 from cellprofiler.setting import YES, NO
 import cellprofiler.measurements as cpmeas
-import cellprofiler.preferences as cpprefs
+import cellprofiler.configuration as cpprefs
 from centrosome.lapjv import lapjv
 import centrosome.filter as cpfilter
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix

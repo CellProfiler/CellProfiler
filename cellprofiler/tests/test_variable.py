@@ -6,7 +6,7 @@ import tempfile
 import unittest
 
 import cellprofiler.measurements as cpmeas
-import cellprofiler.preferences as cpprefs
+import cellprofiler.configuration as cpprefs
 import cellprofiler.setting as cps
 
 

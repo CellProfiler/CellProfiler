@@ -8,7 +8,7 @@ import zlib
 
 import numpy as np
 
-from cellprofiler.preferences import set_headless
+from cellprofiler.configuration import set_headless
 
 set_headless()
 
@@ -18,7 +18,7 @@ import cellprofiler.cpimage as cpi
 import cellprofiler.modules.crop as cpmc
 import cellprofiler.measurements as cpm
 import cellprofiler.objects as cpo
-import cellprofiler.preferences as cpprefs
+import cellprofiler.configuration as cpprefs
 
 INPUT_IMAGE = "input_image"
 CROP_IMAGE = "crop_image"

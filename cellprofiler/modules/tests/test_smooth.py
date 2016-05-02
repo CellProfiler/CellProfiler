@@ -9,7 +9,7 @@ import zlib
 import numpy as np
 from scipy.ndimage import gaussian_filter
 
-from cellprofiler.preferences import set_headless
+from cellprofiler.configuration import set_headless
 
 set_headless()
 

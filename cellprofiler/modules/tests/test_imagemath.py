@@ -11,7 +11,7 @@ import numpy as np
 import scipy.ndimage
 from matplotlib.image import pil_to_array
 
-from cellprofiler.preferences import set_headless
+from cellprofiler.configuration import set_headless
 
 set_headless()
 

@@ -96,7 +96,7 @@ import cellprofiler.measurements as cpmeas
 import cellprofiler.pipeline as cpp
 import cellprofiler.setting as cps
 import centrosome.outline
-import cellprofiler.preferences as cpprefs
+import cellprofiler.configuration as cpprefs
 from cellprofiler.modules.images import FilePredicate
 from cellprofiler.modules.images import ExtensionPredicate
 from cellprofiler.modules.images import ImagePredicate

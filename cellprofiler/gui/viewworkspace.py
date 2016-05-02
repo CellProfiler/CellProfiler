@@ -8,7 +8,7 @@ import cellprofiler.gui.help
 import cellprofiler.gui.htmldialog
 import cellprofiler.measurements
 import cellprofiler.modules.identify
-import cellprofiler.preferences
+import cellprofiler.configuration
 import matplotlib
 import numpy
 import wx
@@ -127,10 +127,10 @@ class VWImageRow(VWRow):
         image_set = vw.workspace.image_set
         name = self.chooser.GetStringSelection()
 
-        im = cellprofiler.preferences.get_intensity_mode()
-        if im == cellprofiler.preferences.INTENSITY_MODE_LOG:
+        im = cellprofiler.configuration.get_intensity_mode()
+        if im == cellprofiler.configuration.INTENSITY_MODE_LOG:
             normalization = cellprofiler.gui.cpartists.NORMALIZE_LOG
-        elif im == cellprofiler.preferences.INTENSITY_MODE_NORMAL:
+        elif im == cellprofiler.configuration.INTENSITY_MODE_NORMAL:
             normalization = cellprofiler.gui.cpartists.NORMALIZE_LINEAR
         else:
             normalization = cellprofiler.gui.cpartists.NORMALIZE_RAW
@@ -139,7 +139,7 @@ class VWImageRow(VWRow):
                 name, None,
                 mode=cellprofiler.gui.cpartists.MODE_HIDE,
                 color=self.color,
-                colormap=cellprofiler.preferences.get_default_colormap(),
+                colormap=cellprofiler.configuration.get_default_colormap(),
                 alpha=alpha,
                 normalization=normalization)
         vw.image.add(self.data)
@@ -165,7 +165,7 @@ class VWObjectsRow(VWRow):
         self.data = bind_data_class(cellprofiler.gui.cpartists.ObjectsData, self.color_ctrl, vw.redraw)(
                 name, None,
                 outline_color=self.color,
-                colormap=cellprofiler.preferences.get_default_colormap(),
+                colormap=cellprofiler.configuration.get_default_colormap(),
                 alpha=.5,
                 mode=cellprofiler.gui.cpartists.MODE_HIDE)
         vw.image.add(self.data)
@@ -240,10 +240,10 @@ class ViewWorkspace(object):
         self.frame.set_subplots((1, 1))
         self.axes = self.frame.subplot(0, 0)
         self.axes.invert_yaxis()
-        interpolation = cellprofiler.preferences.get_interpolation_mode()
-        if interpolation == cellprofiler.preferences.IM_NEAREST:
+        interpolation = cellprofiler.configuration.get_interpolation_mode()
+        if interpolation == cellprofiler.configuration.IM_NEAREST:
             interpolation = cellprofiler.gui.cpartists.INTERPOLATION_NEAREST
-        elif interpolation == cellprofiler.preferences.IM_BILINEAR:
+        elif interpolation == cellprofiler.configuration.IM_BILINEAR:
             interpolation = cellprofiler.gui.cpartists.INTERPOLATION_BILINEAR
         else:
             interpolation = cellprofiler.gui.cpartists.INTERPOLATION_BICUBIC

@@ -7,7 +7,7 @@ from StringIO import StringIO
 import numpy as np
 from scipy.ndimage import binary_fill_holes
 
-from cellprofiler.preferences import set_headless
+from cellprofiler.configuration import set_headless
 
 set_headless()
 

@@ -3,7 +3,7 @@
 """
 
 import cellprofiler.measurements
-import cellprofiler.preferences
+import cellprofiler.configuration
 import wx
 import wx.lib.masked
 
@@ -531,7 +531,7 @@ class MetadataControl(wx.PyControl):
         try:
             dc.BackgroundMode = wx.SOLID
             background_color = wx.SystemSettings_GetColour(wx.SYS_COLOUR_WINDOW)
-            metadata_color = cellprofiler.preferences.get_primary_outline_color()
+            metadata_color = cellprofiler.configuration.get_primary_outline_color()
             selected_background_color = wx.SystemSettings_GetColour(wx.SYS_COLOUR_HIGHLIGHT)
             selected_color = wx.SystemSettings_GetColour(wx.SYS_COLOUR_HIGHLIGHTTEXT)
             text_color = wx.SystemSettings_GetColour(wx.SYS_COLOUR_WINDOWTEXT)

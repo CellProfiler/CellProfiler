@@ -65,13 +65,13 @@ import cellprofiler.cpmodule as cpmodule
 import cellprofiler.cpimage as cpimage
 import cellprofiler.measurements as cpmeas
 from cellprofiler.pipeline import GROUP_INDEX
-import cellprofiler.preferences as preferences
+import cellprofiler.configuration as preferences
 import cellprofiler.setting as cps
 from cellprofiler.setting import YES, NO
 import centrosome.outline
 import identify as I
 import os.path
-from cellprofiler.preferences import \
+from cellprofiler.configuration import \
     standardize_default_folder_names, DEFAULT_INPUT_FOLDER_NAME, \
     DEFAULT_OUTPUT_FOLDER_NAME, ABSOLUTE_FOLDER_NAME, URL_FOLDER_NAME, \
     DEFAULT_INPUT_SUBFOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME, \

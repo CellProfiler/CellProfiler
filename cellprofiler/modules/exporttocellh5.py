@@ -21,7 +21,7 @@ import cellprofiler.setting as cps
 from cellprofiler.gui.help import \
     USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF
 from cellprofiler.modules.identify import R_PARENT
-from cellprofiler.preferences import \
+from cellprofiler.configuration import \
     IO_FOLDER_CHOICE_HELP_TEXT, IO_WITH_METADATA_HELP_TEXT
 from cellprofiler.setting import YES, NO
 from cellprofiler.gui.help import \

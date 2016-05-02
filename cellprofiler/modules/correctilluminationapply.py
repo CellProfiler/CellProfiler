@@ -11,7 +11,7 @@ See also <b>CorrectIlluminationCalculate</b>.'''
 
 import numpy as np
 
-import cellprofiler.cpimage  as cpi
+import cellprofiler.image  as cpi
 import cellprofiler.module as cpm
 import cellprofiler.setting as cps
 from cellprofiler.modules.correctilluminationcalculate import IC_BACKGROUND, IC_REGULAR

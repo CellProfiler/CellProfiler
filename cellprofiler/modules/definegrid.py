@@ -39,7 +39,7 @@ import numpy as np
 logger = logging.getLogger(__name__)
 import cellprofiler.cpgridinfo as cpg
 import cellprofiler.module as cpm
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.measurement as cpmeas
 import cellprofiler.setting as cps
 from cellprofiler.setting import YES, NO

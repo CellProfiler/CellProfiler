@@ -10,7 +10,7 @@ from cStringIO import StringIO
 
 import numpy as np
 
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.measurement as cpmeas
 import cellprofiler.object as cpo
 import cellprofiler.pipeline as cpp

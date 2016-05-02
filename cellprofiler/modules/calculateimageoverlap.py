@@ -68,7 +68,7 @@ import numpy as np
 from scipy.ndimage import label, distance_transform_edt
 from scipy.sparse import coo_matrix
 
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.module as cpm
 import cellprofiler.object as cpo
 import cellprofiler.measurement as cpmeas

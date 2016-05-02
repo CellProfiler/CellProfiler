@@ -9,7 +9,7 @@
 import numpy as np
 import scipy.ndimage as scind
 
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
 import cellprofiler.setting as cps

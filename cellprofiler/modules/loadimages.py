@@ -62,7 +62,7 @@ import uuid
 
 import cellprofiler.object as cpo
 import cellprofiler.module as cpmodule
-import cellprofiler.cpimage as cpimage
+import cellprofiler.image as cpimage
 import cellprofiler.measurement as cpmeas
 from cellprofiler.pipeline import GROUP_INDEX
 import cellprofiler.configuration as preferences

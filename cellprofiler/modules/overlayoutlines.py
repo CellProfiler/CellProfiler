@@ -12,7 +12,7 @@ import centrosome.outline
 import numpy as np
 from scipy.ndimage import distance_transform_edt
 
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.module as cpm
 import cellprofiler.setting as cps
 from cellprofiler.setting import YES, NO

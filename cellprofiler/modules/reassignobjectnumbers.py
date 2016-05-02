@@ -40,7 +40,7 @@ import scipy.ndimage as scind
 from centrosome.filter import stretch
 from scipy.sparse import coo_matrix
 
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
 import cellprofiler.object as cpo

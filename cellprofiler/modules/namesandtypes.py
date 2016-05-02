@@ -91,7 +91,7 @@ import traceback
 
 import cellprofiler.module as cpm
 import cellprofiler.object as cpo
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.measurement as cpmeas
 import cellprofiler.pipeline as cpp
 import cellprofiler.setting as cps

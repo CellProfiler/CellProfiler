@@ -13,7 +13,7 @@ import numpy as np
 from centrosome.outline import outline
 from matplotlib.image import pil_to_array
 from scipy.ndimage import binary_dilation
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.measurement as cpmeas
 import cellprofiler.modules.untangleworms as U
 import cellprofiler.object as cpo

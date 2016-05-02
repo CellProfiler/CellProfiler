@@ -42,7 +42,7 @@ See also <b>ColorToGray</b>.
 import numpy as np
 from scipy.linalg import lstsq
 
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.module as cpm
 import cellprofiler.configuration as cpprefs
 import cellprofiler.setting as cps

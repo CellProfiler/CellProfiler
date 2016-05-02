@@ -36,7 +36,7 @@ import traceback
 import numpy as np
 import wx
 
-import cellprofiler.cpimage as cpimage
+import cellprofiler.image as cpimage
 import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
 import cellprofiler.configuration as cpp

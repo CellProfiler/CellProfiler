@@ -49,7 +49,7 @@ from centrosome.propagate import propagate
 from numpy.ma import masked_array
 from scipy.sparse import coo_matrix
 
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
 import cellprofiler.object as cpo

@@ -6,7 +6,7 @@ Author: AJ Pretorius
         a.j.pretorius@leeds.ac.uk
 """
 
-import cellprofiler.cpimage
+import cellprofiler.image
 import cellprofiler.module
 import cellprofiler.measurement
 import cellprofiler.object
@@ -555,7 +555,7 @@ class ParameterSampleFrame(wx.Frame):
         """
         self.__measurements = cellprofiler.measurement.Measurement(can_overwrite=True)
         self.__object_set = cellprofiler.object.ObjectSet(can_overwrite=True)
-        self.__image_set_list = cellprofiler.cpimage.ImageSetList()
+        self.__image_set_list = cellprofiler.image.ImageSetList()
         workspace = cellprofiler.workspace.Workspace(self.__pipeline, None, None, None,
                                                      self.__measurements, self.__image_set_list,
                                                      self.__frame)

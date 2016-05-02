@@ -33,7 +33,7 @@ import sys
 import uuid
 
 import cellprofiler.module as cpm
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.setting as cps
 from cellprofiler.setting import YES, NO
 import cellprofiler.configuration as cpprefs

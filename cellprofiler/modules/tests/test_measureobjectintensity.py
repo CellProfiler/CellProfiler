@@ -18,7 +18,7 @@ import cellprofiler.modules.measureobjectintensity as MOI
 import cellprofiler.pipeline as P
 import cellprofiler.measurement as cpmeas
 import cellprofiler.object as cpo
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.workspace as cpw
 import centrosome.outline as cpmo
 

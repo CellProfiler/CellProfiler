@@ -54,7 +54,7 @@ See also <b>CalculateMath</b> and any of the modules in the <b>Measure</b> categ
 
 import numpy as np
 
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
 import cellprofiler.configuration as cpprefs

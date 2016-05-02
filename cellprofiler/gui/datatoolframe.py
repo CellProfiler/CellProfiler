@@ -2,7 +2,7 @@
 """datatoolframe.py - Holder for a data tool
 """
 
-import cellprofiler.cpimage
+import cellprofiler.image
 import cellprofiler.gui
 import cellprofiler.gui.cpfigure
 import cellprofiler.gui.moduleview
@@ -202,7 +202,7 @@ class DataToolFrame(wx.Frame):
         self.measurements.next_image_set(1)
 
     def on_run(self, event):
-        image_set_list = cellprofiler.cpimage.ImageSetList()
+        image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         workspace = cellprofiler.workspace.Workspace(self.pipeline,
                                                      self.module,

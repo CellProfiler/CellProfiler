@@ -3,7 +3,7 @@
 """
 
 import cellprofiler.analysis
-import cellprofiler.cpimage
+import cellprofiler.image
 import cellprofiler.module
 import cellprofiler.gui.addmoduleframe
 import cellprofiler.gui.help
@@ -2771,7 +2771,7 @@ class PipelineController(object):
         self.__debug_object_set = cellprofiler.object.ObjectSet(can_overwrite=True)
         self.__frame.enable_debug_commands()
         assert isinstance(self.__pipeline, cellprofiler.pipeline.Pipeline)
-        self.__debug_image_set_list = cellprofiler.cpimage.ImageSetList(True)
+        self.__debug_image_set_list = cellprofiler.image.ImageSetList(True)
         workspace = cellprofiler.workspace.Workspace(self.__pipeline, None, None, None,
                                                      self.__debug_measurements,
                                                      self.__debug_image_set_list,

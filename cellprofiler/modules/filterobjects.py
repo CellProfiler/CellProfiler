@@ -41,7 +41,7 @@ import traceback
 
 from cellprofiler.modules.identify import FF_PARENT, FF_CHILDREN_COUNT, \
      M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.module as cpm
 import cellprofiler.object as cpo
 import cellprofiler.setting as cps

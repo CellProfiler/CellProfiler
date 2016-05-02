@@ -38,7 +38,7 @@ import cellprofiler.configuration as cpprefs
 import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
 import cellprofiler.object as cpo
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.setting as cps
 from cellprofiler.setting import YES, NO
 import cellprofiler.workspace as cpw

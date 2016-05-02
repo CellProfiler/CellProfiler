@@ -44,8 +44,8 @@ from cellprofiler.modules.identify import FF_PARENT, FF_CHILDREN_COUNT, \
 import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.objects as cpo
-import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
+import cellprofiler.setting as cps
+from cellprofiler.setting import YES, NO
 import cellprofiler.measurements as cpmeas
 import cellprofiler.preferences as cpprefs
 import cellprofiler.utilities.rules as cprules

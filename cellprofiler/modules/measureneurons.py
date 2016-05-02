@@ -50,8 +50,8 @@ import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.preferences as cpprefs
-import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
+import cellprofiler.setting as cps
+from cellprofiler.setting import YES, NO
 
 '''The measurement category'''
 C_NEURON = "Neuron"

@@ -68,8 +68,8 @@ See also: <b>NamesAndTypes</b>, <b>SaveImages</b>
 import os
 
 import cellprofiler.cpmodule as cpm
-import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
+import cellprofiler.setting as cps
+from cellprofiler.setting import YES, NO
 
 A_RENUMBER = "Renumber"
 A_DELETE = "Delete"

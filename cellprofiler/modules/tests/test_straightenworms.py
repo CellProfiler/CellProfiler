@@ -13,7 +13,7 @@ import cellprofiler.modules.identify as I
 import cellprofiler.modules.straightenworms as S
 import cellprofiler.objects as cpo
 import cellprofiler.pipeline as cpp
-import cellprofiler.settings as cps
+import cellprofiler.setting as cps
 import cellprofiler.workspace as cpw
 
 OBJECTS_NAME = "worms"

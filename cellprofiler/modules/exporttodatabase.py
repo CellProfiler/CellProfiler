@@ -81,8 +81,8 @@ except:
     HAS_MYSQL_DB = False
 
 import cellprofiler.cpmodule as cpm
-import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
+import cellprofiler.setting as cps
+from cellprofiler.setting import YES, NO
 import cellprofiler.preferences as cpprefs
 import cellprofiler.measurements as cpmeas
 from cellprofiler.pipeline import GROUP_INDEX, M_MODIFICATION_TIMESTAMP

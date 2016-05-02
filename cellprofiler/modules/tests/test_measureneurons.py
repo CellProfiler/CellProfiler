@@ -21,7 +21,7 @@ import cellprofiler.cpmodule as cpm
 import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
-import cellprofiler.settings as cps
+import cellprofiler.setting as cps
 import cellprofiler.workspace as cpw
 import cellprofiler.modules.measureneurons as M
 

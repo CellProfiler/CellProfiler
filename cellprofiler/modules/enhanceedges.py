@@ -19,8 +19,8 @@ from scipy.ndimage import convolve
 
 import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
-import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
+import cellprofiler.setting as cps
+from cellprofiler.setting import YES, NO
 
 M_SOBEL = "Sobel"
 M_PREWITT = "Prewitt"

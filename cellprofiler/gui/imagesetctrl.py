@@ -7,7 +7,7 @@ import cellprofiler.gui.cornerbuttonmixin
 import cellprofiler.measurements
 import cellprofiler.modules.images
 import cellprofiler.preferences
-import cellprofiler.settings
+import cellprofiler.setting
 import numpy
 import re
 import urllib
@@ -1456,7 +1456,7 @@ class FilterPanelDlg(wx.Dialog):
         from cellprofiler.modules.images import FilePredicate, DirectoryPredicate
         from cellprofiler.modules.images import ExtensionPredicate
 
-        self.filter_setting = cellprofiler.settings.Filter(
+        self.filter_setting = cellprofiler.setting.Filter(
                 "Filter",
                 predicates=[FilePredicate(),
                             DirectoryPredicate(),
@@ -1475,7 +1475,7 @@ class FilterPanelDlg(wx.Dialog):
         """A filter function that applies the current filter to a URL"""
         modpath = cellprofiler.modules.images.Images.url_to_modpath(url)
         return self.filter_setting.evaluate(
-                (cellprofiler.settings.FileCollectionDisplay.NODE_IMAGE_PLANE, modpath, None))
+                (cellprofiler.setting.FileCollectionDisplay.NODE_IMAGE_PLANE, modpath, None))
 
     def on_value_change(self, setting, panel, new_text, event, timeout):
         self.filter_setting.set_value_text(new_text)

@@ -32,12 +32,12 @@ import numpy as np
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
-import cellprofiler.settings as cps
+import cellprofiler.setting as cps
 import cellprofiler.utilities.rules as cprules
 import cellprofiler.workspace as cpw
 from cellprofiler.gui.help import USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF
 from cellprofiler.preferences import IO_FOLDER_CHOICE_HELP_TEXT
-from cellprofiler.settings import YES, NO
+from cellprofiler.setting import YES, NO
 
 logger = logging.getLogger(__name__)
 C_ANY = "Flag if any fail"

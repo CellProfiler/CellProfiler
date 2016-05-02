@@ -36,9 +36,9 @@ import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.pipeline as cpp
-import cellprofiler.settings as cps
+import cellprofiler.setting as cps
 import cellprofiler.workspace as cpw
-from cellprofiler.settings import YES, NO
+from cellprofiler.setting import YES, NO
 
 IC_REGULAR = "Regular"
 IC_BACKGROUND = "Background"

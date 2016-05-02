@@ -14,7 +14,7 @@ import gc
 import numpy as np
 
 import cellprofiler.cpmodule as cpm
-import cellprofiler.settings as cps
+import cellprofiler.setting as cps
 
 C_REMOVE_OLD = "Remove"
 C_REMOVE = "Images to remove"

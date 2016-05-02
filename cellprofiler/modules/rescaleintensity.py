@@ -14,7 +14,7 @@ import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.preferences as cpprefs
-import cellprofiler.settings as cps
+import cellprofiler.setting as cps
 
 M_STRETCH = 'Stretch each image to use the full intensity range'
 M_MANUAL_INPUT_RANGE = 'Choose specific values to be reset to the full intensity range'

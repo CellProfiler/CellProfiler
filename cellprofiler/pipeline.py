@@ -42,7 +42,7 @@ import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.workspace as cpw
-import cellprofiler.settings as cps
+import cellprofiler.setting as cps
 from cellprofiler.utilities.utf16encode import utf16encode, utf16decode
 from cellprofiler.matlab.cputils import make_cell_struct_dtype, new_string_cell_array, encapsulate_strings_in_arrays
 from cellprofiler.utilities.walk_in_background import WalkCollection, THREAD_STOP
@@ -1611,7 +1611,7 @@ class Pipeline(object):
         image_dict - dictionary mapping image names to image pixel data in the
                      form of a numpy array.
         """
-        import cellprofiler.settings as cps
+        import cellprofiler.setting as cps
         from cellprofiler import objects as cpo
 
         output_image_names = self.find_external_output_images()

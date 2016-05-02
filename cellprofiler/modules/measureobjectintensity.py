@@ -66,7 +66,7 @@ from centrosome.filter import stretch
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
-import cellprofiler.settings as cps
+import cellprofiler.setting as cps
 from identify import C_LOCATION
 
 INTENSITY = 'Intensity'

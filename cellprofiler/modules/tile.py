@@ -44,8 +44,8 @@ import scipy.ndimage as scind
 logger = logging.getLogger(__name__)
 import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
-import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
+import cellprofiler.setting as cps
+from cellprofiler.setting import YES, NO
 import cellprofiler.measurements as cpmeas
 
 T_WITHIN_CYCLES = 'Within cycles'

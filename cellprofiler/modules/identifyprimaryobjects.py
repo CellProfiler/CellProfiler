@@ -177,8 +177,8 @@ import identify as cpmi
 import cellprofiler.cpmodule
 import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpmeas
-import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
+import cellprofiler.setting as cps
+from cellprofiler.setting import YES, NO
 import cellprofiler.preferences as cpp
 from centrosome.otsu import otsu
 from centrosome.cpmorphology import fill_labeled_holes, strel_disk
@@ -190,7 +190,7 @@ from centrosome.propagate import propagate
 from centrosome.smooth import smooth_with_noise
 import centrosome.outline
 import cellprofiler.objects
-from cellprofiler.settings import AUTOMATIC
+from cellprofiler.setting import AUTOMATIC
 import centrosome.threshold as cpthresh
 from identify import TSM_AUTOMATIC, TS_BINARY_IMAGE
 from identify import draw_outline

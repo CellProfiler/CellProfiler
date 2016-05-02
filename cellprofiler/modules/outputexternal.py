@@ -19,7 +19,7 @@ See also <b>RunImageJ</b>
 '''
 
 import cellprofiler.cpmodule as cpm
-import cellprofiler.settings as cps
+import cellprofiler.setting as cps
 
 
 class OutputExternal(cpm.CPModule):

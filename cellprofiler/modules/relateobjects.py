@@ -41,12 +41,12 @@ from centrosome.outline import outline
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
-import cellprofiler.settings as cps
+import cellprofiler.setting as cps
 from cellprofiler.modules.identify import C_PARENT, C_CHILDREN, R_PARENT, R_CHILD
 from cellprofiler.modules.identify import FF_PARENT, FF_CHILDREN_COUNT
 from cellprofiler.modules.identify import \
     M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y, M_NUMBER_OBJECT_NUMBER
-from cellprofiler.settings import YES, NO
+from cellprofiler.setting import YES, NO
 
 D_NONE = "None"
 D_CENTROID = "Centroid"

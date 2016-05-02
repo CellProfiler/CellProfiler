@@ -25,7 +25,7 @@ import cellprofiler.modules.loadimages as LI
 import cellprofiler.objects as cpo
 import cellprofiler.pipeline as cpp
 import cellprofiler.preferences as cpprefs
-import cellprofiler.settings as cps
+import cellprofiler.setting as cps
 import cellprofiler.workspace as cpw
 from cellprofiler.modules.injectimage import InjectImage
 from cellprofiler.modules.tests import \

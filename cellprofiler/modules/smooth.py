@@ -14,9 +14,9 @@ from centrosome.smooth import smooth_with_function_and_mask
 
 import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
-import cellprofiler.settings as cps
+import cellprofiler.setting as cps
 from cellprofiler.gui.help import HELP_ON_MEASURING_DISTANCES, HELP_ON_PIXEL_INTENSITIES
-from cellprofiler.settings import YES, NO
+from cellprofiler.setting import YES, NO
 
 FIT_POLYNOMIAL = 'Fit Polynomial'
 MEDIAN_FILTER = 'Median Filter'

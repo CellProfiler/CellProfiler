@@ -98,8 +98,8 @@ import os
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.pipeline as cpp
-import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
+import cellprofiler.setting as cps
+from cellprofiler.setting import YES, NO
 import cellprofiler.measurements as cpmeas
 
 

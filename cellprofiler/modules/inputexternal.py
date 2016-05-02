@@ -18,7 +18,7 @@ image set at the end.</p>
 See also <b>RunImageJ</b>'''
 
 import cellprofiler.cpmodule as cpm
-import cellprofiler.settings as cps
+import cellprofiler.setting as cps
 
 
 class InputExternal(cpm.CPModule):

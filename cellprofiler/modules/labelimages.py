@@ -27,7 +27,7 @@ import numpy as np
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
-import cellprofiler.settings as cps
+import cellprofiler.setting as cps
 
 O_ROW = "Row"
 O_COLUMN = "Column"

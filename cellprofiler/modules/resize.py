@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.cpimage as cpi
-import cellprofiler.settings as cps
+import cellprofiler.setting as cps
 
 R_BY_FACTOR = "Resize by a fraction or multiple of the original size"
 R_TO_SIZE = "Resize by specifying desired final dimensions"

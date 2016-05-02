@@ -50,13 +50,13 @@ import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.objects as cpo
 import cellprofiler.preferences as cpprefs
-import cellprofiler.settings as cps
+import cellprofiler.setting as cps
 import identify as I
 from cellprofiler.gui.help import USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF
 from cellprofiler.preferences import standardize_default_folder_names, \
     DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME, \
     IO_FOLDER_CHOICE_HELP_TEXT, IO_WITH_METADATA_HELP_TEXT
-from cellprofiler.settings import YES, NO
+from cellprofiler.setting import YES, NO
 from identify import C_COUNT, C_LOCATION, C_NUMBER
 from identify import FTR_CENTER_X, FTR_CENTER_Y, FTR_OBJECT_NUMBER
 from identify import add_object_count_measurements, add_object_location_measurements

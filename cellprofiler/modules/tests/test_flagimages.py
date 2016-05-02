@@ -19,7 +19,7 @@ from .test_filterobjects import make_classifier_pickle
 set_headless()
 
 import cellprofiler.pipeline as cpp
-import cellprofiler.settings as cps
+import cellprofiler.setting as cps
 import cellprofiler.cpimage as cpi
 import cellprofiler.workspace as cpw
 import cellprofiler.objects as cpo

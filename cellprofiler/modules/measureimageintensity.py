@@ -40,8 +40,8 @@ import numpy as np
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
-import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
+import cellprofiler.setting as cps
+from cellprofiler.setting import YES, NO
 
 '''Number of settings saved/loaded per image measured'''
 SETTINGS_PER_IMAGE = 3

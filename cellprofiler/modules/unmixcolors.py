@@ -45,7 +45,7 @@ from scipy.linalg import lstsq
 import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.preferences as cpprefs
-import cellprofiler.settings as cps
+import cellprofiler.setting as cps
 
 
 def html_color(rgb):

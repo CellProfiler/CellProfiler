@@ -126,8 +126,8 @@ from centrosome.haralick import Haralick, normalized_per_object
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
-import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
+import cellprofiler.setting as cps
+from cellprofiler.setting import YES, NO
 
 """The category of the per-object measurements made by this module"""
 TEXTURE = 'Texture'

@@ -34,8 +34,8 @@ import uuid
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.cpimage as cpi
-import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
+import cellprofiler.setting as cps
+from cellprofiler.setting import YES, NO
 import cellprofiler.preferences as cpprefs
 from cellprofiler.gui.help import BATCH_PROCESSING_HELP_REF
 import imagej.imagej2 as ij2

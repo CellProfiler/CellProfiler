@@ -66,8 +66,8 @@ import cellprofiler.cpimage as cpimage
 import cellprofiler.measurements as cpmeas
 from cellprofiler.pipeline import GROUP_INDEX
 import cellprofiler.preferences as preferences
-import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
+import cellprofiler.setting as cps
+from cellprofiler.setting import YES, NO
 import centrosome.outline
 import identify as I
 import os.path

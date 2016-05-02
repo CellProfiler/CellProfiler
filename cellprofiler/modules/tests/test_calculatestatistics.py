@@ -17,7 +17,7 @@ from cellprofiler.preferences import set_headless
 set_headless()
 
 import cellprofiler.cpmodule as cpm
-import cellprofiler.settings as cps
+import cellprofiler.setting as cps
 import cellprofiler.measurements as cpmeas
 import cellprofiler.cpimage as cpi
 import cellprofiler.pipeline as cpp

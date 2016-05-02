@@ -168,8 +168,8 @@ import matplotlib.mlab
 import cellprofiler.cpmodule as cpm
 import cellprofiler.objects as cpo
 import cellprofiler.measurements as cpmeas
-import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
+import cellprofiler.setting as cps
+from cellprofiler.setting import YES, NO
 import cellprofiler.preferences as cpprefs
 import identify as I
 from cellprofiler.modules.loadimages import LoadImagesImageProvider

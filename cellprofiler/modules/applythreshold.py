@@ -9,11 +9,11 @@ from centrosome.threshold import TM_GLOBAL, TM_ADAPTIVE, TM_PER_OBJECT, TM_BINAR
 from centrosome.threshold import TM_METHODS, TM_MANUAL, TM_MOG, TM_OTSU
 from scipy.ndimage.morphology import binary_dilation
 
-import cellprofiler.settings as cps
+import cellprofiler.setting as cps
 from cellprofiler import cpimage
 from cellprofiler.cpmodule import CPModule
 from cellprofiler.modules.identify import get_threshold_measurement_columns
-from cellprofiler.settings import YES, NO
+from cellprofiler.setting import YES, NO
 from identify import FF_ORIG_THRESHOLD, FF_FINAL_THRESHOLD
 from identify import FF_SUM_OF_ENTROPIES, FF_WEIGHTED_VARIANCE
 from identify import FI_IMAGE_SIZE, TSM_NONE

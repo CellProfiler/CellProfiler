@@ -22,7 +22,7 @@ import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.preferences as cpprefs
 import cellprofiler.workspace as cpw
-import cellprofiler.settings as cps
+import cellprofiler.setting as cps
 import cellprofiler.modules.loaddata as L
 from cellprofiler.modules.loadimages import pathname2url
 from cellprofiler.modules.tests import \

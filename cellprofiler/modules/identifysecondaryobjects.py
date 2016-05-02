@@ -134,8 +134,8 @@ import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.preferences as cpprefs
 import cellprofiler.workspace as cpw
-import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
+import cellprofiler.setting as cps
+from cellprofiler.setting import YES, NO
 import identify as cpmi
 from identify import FI_IMAGE_SIZE
 import centrosome.threshold as cpthresh

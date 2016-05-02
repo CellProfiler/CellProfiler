@@ -68,8 +68,8 @@ from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 import centrosome.haralick
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
-import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
+import cellprofiler.setting as cps
+from cellprofiler.setting import YES, NO
 import centrosome.threshold as cpthresh
 import itertools
 import centrosome.radial_power_spectrum as rps

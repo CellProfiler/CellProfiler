@@ -115,8 +115,8 @@ import scipy.ndimage as scind
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.objects as cpo
-import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
+import cellprofiler.setting as cps
+from cellprofiler.setting import YES, NO
 import centrosome.zernike as cpmz
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 from centrosome.cpmorphology import ellipse_from_second_moments_ijv

@@ -16,7 +16,7 @@ import cellprofiler.measurements as cpmeas
 import cellprofiler.modules.graytocolor as G
 import cellprofiler.objects as cpo
 import cellprofiler.pipeline as cpp
-import cellprofiler.settings as cps
+import cellprofiler.setting as cps
 import cellprofiler.workspace as cpw
 
 OUTPUT_IMAGE_NAME = 'outputimage'

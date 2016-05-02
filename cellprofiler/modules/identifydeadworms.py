@@ -47,9 +47,9 @@ import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.preferences as cpprefs
-import cellprofiler.settings as cps
+import cellprofiler.setting as cps
 import identify as I
-from cellprofiler.settings import YES, NO
+from cellprofiler.setting import YES, NO
 
 C_WORMS = "Worm"
 F_ANGLE = "Angle"

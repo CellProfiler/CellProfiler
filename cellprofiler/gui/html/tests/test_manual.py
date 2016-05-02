@@ -16,7 +16,7 @@ class TestManual(unittest.TestCase):
         # Monkey-patch RunImageJ to keep it from calling ImageJ during
         # create_settings
         from cellprofiler.modules.run_imagej import RunImageJ
-        from cellprofiler.settings import Text
+        from cellprofiler.setting import Text
         self.old_make_command_choice = RunImageJ.make_command_choice
 
         def make_command_choice(self, label, doc):

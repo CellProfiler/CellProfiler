@@ -9,7 +9,7 @@ import cellprofiler.cpimage
 import cellprofiler.cpmodule
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects
-import cellprofiler.settings
+import cellprofiler.setting
 
 
 class InjectImage(cellprofiler.cpmodule.CPModule):
@@ -36,7 +36,7 @@ class InjectImage(cellprofiler.cpmodule.CPModule):
         self.__image_name = image_name
         self.__image = image
         self.__mask = mask
-        self.image_name = cellprofiler.settings.NameProvider("Hardwired image name", "imagegroup", image_name)
+        self.image_name = cellprofiler.setting.NameProvider("Hardwired image name", "imagegroup", image_name)
         self.__release_image = release_image
 
     def settings(self):
@@ -138,7 +138,7 @@ class InjectObjects(cellprofiler.cpmodule.CPModule):
                                   same as segmented
         """
         super(InjectObjects, self).__init__()
-        self.object_name = cellprofiler.settings.ObjectNameProvider("text", object_name)
+        self.object_name = cellprofiler.setting.ObjectNameProvider("text", object_name)
         self.__segmented = segmented
         self.__unedited_segmented = unedited_segmented
         self.__small_removed_segmented = small_removed_segmented

@@ -22,7 +22,7 @@ import numpy as np
 
 import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
-import cellprofiler.settings as cps
+import cellprofiler.setting as cps
 
 
 class DisplayDensityPlot(cpm.CPModule):

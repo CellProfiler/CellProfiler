@@ -28,7 +28,7 @@ import cellprofiler.preferences as cpprefs
 import cellprofiler.settings as cps
 import cellprofiler.workspace as cpw
 from cellprofiler.modules.injectimage import InjectImage
-from cellprofiler.modules.tests import \
+from tests.cellprofiler.modules import \
     example_images_directory, maybe_download_fly, maybe_download_sbs
 
 IMAGE_NAME = "myimage"

@@ -33,7 +33,7 @@
 # from centrosome.filter import stretch
 # from bioformats import load_image_url, load_image, get_omexml_metadata
 #
-# import cellprofiler.modules.tests as cpmt
+# import tests.cellprofiler.modules as cpmt
 # IMAGE_NAME = 'inputimage'
 # OBJECTS_NAME = 'inputobjects'
 # FILE_IMAGE_NAME = 'fileimage'

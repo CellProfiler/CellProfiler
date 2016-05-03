@@ -13,7 +13,7 @@ from cStringIO import StringIO
 
 import dateutil.parser
 
-from cellprofiler.modules.tests import \
+from tests.cellprofiler.modules import \
     example_images_directory, maybe_download_example_images
 
 if hasattr(sys, 'frozen'):

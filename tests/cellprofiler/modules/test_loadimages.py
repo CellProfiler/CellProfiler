@@ -25,14 +25,14 @@ import cellprofiler.cpimage as I
 import cellprofiler.cpmodule as CPM
 import cellprofiler.measurements as measurements
 import cellprofiler.modules.loadimages as LI
-import cellprofiler.modules.tests as T
+import tests.cellprofiler.modules as T
 import cellprofiler.objects as cpo
 import cellprofiler.pipeline as cpp
 import cellprofiler.pipeline as P
 import cellprofiler.preferences as cpprefs
 import cellprofiler.workspace as W
 from cellprofiler.modules.namesandtypes import M_IMAGE_SET
-from cellprofiler.modules.tests import \
+from tests.cellprofiler.modules import \
     example_images_directory, maybe_download_example_images, \
     maybe_download_sbs, maybe_download_tesst_image, maybe_download_fly, \
     example_images_url, make_12_bit_image, \

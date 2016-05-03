@@ -1,6 +1,6 @@
 # coding=utf-8
 
-import pkg_resources
+import raven
 import wx
 
 
@@ -12,7 +12,7 @@ class AboutDialogInfo(wx.AboutDialogInfo):
 
         self.Name = "CellProfiler"
 
-        self.Version = pkg_resources.get_distribution("cellprofiler").version
+        self.Version = raven.fetch_package_version("cellprofiler")
 
 
 class Error(wx.MessageDialog):
@@ -22,3 +22,7 @@ class Error(wx.MessageDialog):
         self.SetExtendedMessage(extended_message)
 
         self.SetOKLabel("Continue Processing")
+
+        self.status = self.ShowModal()
+
+        self.Destroy()

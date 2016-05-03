@@ -6,6 +6,7 @@ import cellprofiler.analysis
 import cellprofiler.cpimage
 import cellprofiler.cpmodule
 import cellprofiler.gui.addmoduleframe
+import cellprofiler.gui.dialog
 import cellprofiler.gui.help
 import cellprofiler.gui.htmldialog
 import cellprofiler.gui.moduleview
@@ -26,7 +27,6 @@ import cpframe
 import cStringIO
 import csv
 import datetime
-import errordialog
 import exceptions
 import h5py
 import hashlib
@@ -50,6 +50,9 @@ RECENT_PIPELINE_FILE_MENU_ID = [wx.NewId() for i in range(cellprofiler.preferenc
 RECENT_WORKSPACE_FILE_MENU_ID = [wx.NewId() for i in range(cellprofiler.preferences.RECENT_FILE_COUNT)]
 WRITING_MAT_FILE = "Writing .MAT measurements file..."
 WROTE_MAT_FILE = ".MAT measurements file has been saved"
+ED_STOP = "Stop"
+ED_CONTINUE = "Continue"
+ED_SKIP = "Skip"
 
 
 class PipelineController(object):
@@ -926,9 +929,10 @@ class PipelineController(object):
         except cellprofiler.pipeline.PipelineLoadCancelledException:
             self.__pipeline.clear()
         except Exception, instance:
-            from cellprofiler.gui.errordialog import display_error_dialog
-            errordialog.display_error_dialog(self.__frame, instance, self.__pipeline,
-                                             continue_only=True)
+            error = cellprofiler.gui.dialog.Error("Error")
+
+            if error.status is wx.ID_CANCEL:
+                cellprofiler.preferences.cancel_progress()
 
     def load_hdf5_pipeline(self, pathname):
         """Load a pipeline from an HDF5 measurements file or similar
@@ -1055,9 +1059,10 @@ class PipelineController(object):
                     self.__workspace.refresh_image_set()
                     self.__workspace.measurements.write_image_sets(dlg.Path)
                 except Exception, e:
-                    errordialog.display_error_dialog(self.__frame, e, self.__pipeline,
-                                                     "Failed to export image sets",
-                                                     continue_only=True)
+                    error = cellprofiler.gui.dialog.Error("Error")
+
+                    if error.status is wx.ID_CANCEL:
+                        cellprofiler.preferences.cancel_progress()
         finally:
             dlg.Destroy()
 
@@ -1135,9 +1140,11 @@ class PipelineController(object):
         try:
             self.__workspace.refresh_image_set()
         except Exception, e:
-            errordialog.display_error_dialog(self.__frame, e, self.__pipeline,
-                                             "Failed to make image sets",
-                                             continue_only=True)
+            error = cellprofiler.gui.dialog.Error("Error")
+
+            if error.status is wx.ID_CANCEL:
+                cellprofiler.preferences.cancel_progress()
+
             return
         m = self.__workspace.measurements
         assert isinstance(m, cellprofiler.measurements.Measurements)
@@ -1379,14 +1386,14 @@ class PipelineController(object):
                             "%s\n\nDo you want to stop processing?") %
                            (event.module.module_name, error_msg))
                 continue_only = False
-            result = errordialog.display_error_dialog(self.__frame,
-                                                      event.error,
-                                                      self.__pipeline,
-                                                      message,
-                                                      event.tb,
-                                                      continue_only=continue_only)
-            event.cancel_run = result == errordialog.ED_STOP
-            event.skip_thisset = result == errordialog.ED_SKIP
+
+            error = cellprofiler.gui.dialog.Error("Error", message)
+
+            if error.status is wx.ID_CANCEL:
+                cellprofiler.preferences.cancel_progress()
+
+            # event.cancel_run = result == errordialog.ED_STOP
+            # event.skip_thisset = result == errordialog.ED_SKIP
 
         elif isinstance(event, cellprofiler.pipeline.LoadExceptionEvent):
             self.on_load_exception_event(event)
@@ -1444,10 +1451,11 @@ class PipelineController(object):
                        "\t%s") % (module_name,
                                   event.error.message,
                                   '\n\t'.join(event.settings))
-        if errordialog.display_error_message(
-                self.__frame, message,
-                "Pipeline error",
-                buttons=[wx.ID_YES, wx.ID_NO]) == wx.NO:
+        error = cellprofiler.gui.dialog.Error("Error")
+
+        if error.status is wx.ID_CANCEL:
+            cellprofiler.preferences.cancel_progress()
+
             event.cancel_run = False
 
     def on_urls_added(self, event):
@@ -2319,13 +2327,12 @@ class PipelineController(object):
 
         except Exception, e:
             # Catastrophic failure
-            errordialog.display_error_dialog(self.__frame,
-                                             e,
-                                             self.__pipeline,
-                                             "Failure in analysis startup.",
-                                             sys.exc_info()[2],
-                                             continue_only=True)
-            self.stop_running()
+            error = cellprofiler.gui.dialog.Error("Error")
+
+            if error.status is wx.ID_CANCEL:
+                cellprofiler.preferences.cancel_progress()
+
+                self.stop_running()
         return
 
     def on_prepare_run_error_event(self, pipeline, event):
@@ -2465,9 +2472,11 @@ class PipelineController(object):
                 fig.figure.canvas.Refresh()
         except:
             _, exc, tb = sys.exc_info()
-            errordialog.display_error_dialog(None, exc, self.__pipeline, tb=tb, continue_only=True,
-                                             message="Exception in handling display request for module %s #%d" \
-                                                     % (module.module_name, module_num))
+
+            error = cellprofiler.gui.dialog.Error("Error")
+
+            if error.status is wx.ID_CANCEL:
+                cellprofiler.preferences.cancel_progress()
         finally:
             # we need to ensure that the reply_cb gets a reply
             evt.reply(cellprofiler.analysis.Ack())
@@ -2488,9 +2497,11 @@ class PipelineController(object):
                 fig.Refresh()
         except:
             _, exc, tb = sys.exc_info()
-            errordialog.display_error_dialog(None, exc, self.__pipeline, tb=tb, continue_only=True,
-                                             message="Exception in handling display request for module %s #%d" \
-                                                     % (module.module_name, module_num))
+
+            error = cellprofiler.gui.dialog.Error("Error")
+
+            if error.status is wx.ID_CANCEL:
+                cellprofiler.preferences.cancel_progress()
 
     def module_display_post_group_request(self, evt):
         assert wx.Thread_IsMain(), "PipelineController.module_post_group_display_request() must be called from main thread!"
@@ -2508,9 +2519,11 @@ class PipelineController(object):
                 fig.Refresh()
         except:
             _, exc, tb = sys.exc_info()
-            errordialog.display_error_dialog(None, exc, self.__pipeline, tb=tb, continue_only=True,
-                                             message="Exception in handling display request for module %s #%d" \
-                                                     % (module.module_name, module_num))
+
+            error = cellprofiler.gui.dialog.Error("Error")
+
+            if error.status is wx.ID_CANCEL:
+                cellprofiler.preferences.cancel_progress()
         finally:
             evt.reply(cellprofiler.analysis.Ack())
 
@@ -2530,9 +2543,11 @@ class PipelineController(object):
             result = module.handle_interaction(*args, **kwargs)
         except:
             _, exc, tb = sys.exc_info()
-            errordialog.display_error_dialog(None, exc, self.__pipeline, tb=tb, continue_only=True,
-                                             message="Exception in handling interaction request for module %s(#%d)" \
-                                                     % (module.module_name, module_num))
+
+            error = cellprofiler.gui.dialog.Error("Error")
+
+            if error.status is wx.ID_CANCEL:
+                cellprofiler.preferences.cancel_progress()
         finally:
             # we need to ensure that the reply_cb gets a reply (even if it
             # being empty causes futher exceptions).
@@ -2600,13 +2615,16 @@ class PipelineController(object):
                         "%s\n\nDo you want to stop processing?") %
                        evt)
 
-        disposition = errordialog.display_error_dialog(
-            None, evt.exc_type, self.__pipeline, message,
-            remote_exc_info=(evt.exc_type, evt.exc_message, evt.exc_traceback,
-                             evt.filename, evt.line_number,
-                             remote_debug))
-        if disposition == errordialog.ED_STOP:
+        error = cellprofiler.gui.dialog.Error("Error")
+
+        if error.status is wx.ID_CANCEL:
+            cellprofiler.preferences.cancel_progress()
+
             self.__analysis.cancel()
+
+            disposition = ED_STOP
+        else:
+            disposition = ED_CONTINUE
 
         evtlist[0].reply(cellprofiler.analysis.Reply(disposition=disposition))
 
@@ -2650,13 +2668,11 @@ class PipelineController(object):
                                   overwrite=False)
 
         except Exception, e:
-            # Catastrophic failure
-            errordialog.display_error_dialog(self.__frame,
-                                             e,
-                                             self.__pipeline,
-                                             "Failure in analysis startup.",
-                                             sys.exc_info()[2],
-                                             continue_only=True)
+            error = cellprofiler.gui.dialog.Error("Error")
+
+            if error.status is wx.ID_CANCEL:
+                cellprofiler.preferences.cancel_progress()
+
             self.stop_running()
 
     def on_pause(self, event):

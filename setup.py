@@ -443,6 +443,7 @@ setuptools.setup(
             "pytest",
             "python-bioformats",
             "pyzmq",
+            "raven",
             "scipy"
         ],
         keywords="",

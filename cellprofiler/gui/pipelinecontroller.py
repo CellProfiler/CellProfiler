@@ -568,7 +568,7 @@ class PipelineController(object):
                 # In response to user interaction, so pass
                 self.__pipeline.clear()
             finally:
-                cpprefs.remove_progress_callback(progress_callback_fn)
+                cellprofiler.preferences.remove_progress_callback(progress_callback_fn)
         # issue #1855 - apparently there is a WX bug in 3.0 that
         # disables buttons during the progress bar display (good),
         # re-enables the buttons after the progress bar is down (good)

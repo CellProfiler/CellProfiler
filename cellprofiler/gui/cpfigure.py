@@ -29,6 +29,8 @@ import sys
 import uuid
 import wx
 
+im = None
+
 logger = logging.getLogger(__name__)
 
 #

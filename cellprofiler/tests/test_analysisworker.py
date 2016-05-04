@@ -47,11 +47,6 @@ class TestAnalysisWorker(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        try:
-            from ilastik.core.jobMachine import GLOBAL_WM
-            GLOBAL_WM.stopWorkers()
-        except:
-            pass
         cls.notify_pub_socket.close()
 
     def cancel(self):

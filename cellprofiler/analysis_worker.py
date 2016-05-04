@@ -139,7 +139,6 @@ from cellprofiler.analysis import \
     SharedDictionaryRequest, Ack, UpstreamExit, ANNOUNCE_DONE, \
     OmeroLoginRequest, OmeroLoginReply
 import javabridge as J
-from cellprofiler.utilities.run_loop import enter_run_loop, stop_run_loop
 #
 # CellProfiler expects NaN as a result during calculation
 #
@@ -215,7 +214,6 @@ def main():
         with KnimeBridgeServer(the_zmq_context,
                                knime_bridge_address,
                                NOTIFY_ADDR, NOTIFY_STOP):
-            enter_run_loop()
             worker_thread.join()
 
     #
@@ -300,8 +298,6 @@ class AnalysisWorker(object):
         self.notify_socket.close()
         clear_image_reader_cache()
         J.detach()
-        if self.with_stop_run_loop:
-            stop_run_loop()
 
     def run(self):
         from cellprofiler.pipeline import CancelledException

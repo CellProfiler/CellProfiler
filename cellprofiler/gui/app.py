@@ -56,10 +56,6 @@ class App(wx.App):
         return 1
 
     def OnExit(self):
-        import imagej.imagej2
-
-        imagej.imagej2.allow_quit()
-
         sys.excepthook = self.original_excepthook
 
 

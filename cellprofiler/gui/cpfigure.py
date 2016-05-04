@@ -199,16 +199,6 @@ def close_all(parent):
             window.Close()
 
     cellprofiler.preferences.reset_cpfigure_position()
-    try:
-        from imagej.windowmanager import close_all_windows
-        from javabridge import attach, detach
-        attach()
-        try:
-            close_all_windows()
-        finally:
-            detach()
-    except:
-        pass
 
 
 def allow_sharexy(fn):

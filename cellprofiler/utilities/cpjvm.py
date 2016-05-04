@@ -1,63 +1,23 @@
-"""cpjvm.py - CellProfiler-specific JVM utilities"""
+"""
+cpjvm.py - CellProfiler-specific JVM utilities
+"""
 
+import bioformats.formatreader
+import cellprofiler.preferences
 import javabridge
-import bioformats
-import glob
 import logging
 import os
+import prokaryote
 import sys
 import tempfile
-
-import bioformats
-import javabridge
-
-import cellprofiler.preferences as cpprefs
 
 logger = logging.getLogger(__name__)
 
 
-def get_path_to_jars():
-    import prokaryote
-
-    return os.path.dirname(prokaryote.__file__)
-
-
-def get_patcher_args(class_path):
-    '''Return the JVM args needed to patch ij1 classes
-
-    ImageJ says:
-
-    Please make sure that you initialize the LegacyService before using
-    any ImageJ 1.x class. You can do that by adding this static initializer:
-
-        static {
-            LegacyInjector.preinit();
-        }
-
-    To debug this issue, start the JVM with the option:
-
-    -javaagent:<path-to>/ij1-patcher-0.2.1.jar
-
-    To enforce pre-initialization, start the JVM with the option:
-
-    -javaagent:<path-to>/ij1-patcher-0.2.1.jar=init
-
-    class_path - absolute path to all jars needed by ImageJ
-
-    returns a sequence of arguments to add to the JVM args
-    '''
-
-    patchers = filter(
-            (lambda x: os.path.split(x)[1].startswith("prokaryote")), class_path)
-    if len(patchers) > 0:
-        patcher = patchers[0]
-        return ["-javaagent:%s=init" % patcher]
-    logger.warn("Did not find prokaryote in %s" % repr(class_path))
-    return []
-
-
 def get_jars():
-    '''Get the final list of JAR files passed to javabridge'''
+    """
+    Get the final list of JAR files passed to javabridge
+    """
 
     class_path = []
     if os.environ.has_key("CLASSPATH"):
@@ -66,36 +26,11 @@ def get_jars():
                 "Adding Java class path from environment variable, ""CLASSPATH""")
         logging.debug("    CLASSPATH=" + os.environ["CLASSPATH"])
 
-    imagej_path = get_path_to_jars()
+    pathname = os.path.dirname(prokaryote.__file__)
 
-    jar_files = [os.path.join(imagej_path, f)
-                 for f in os.listdir(imagej_path)
-                 if f.lower().endswith(".jar")]
+    jar_files = [os.path.join(pathname, f) for f in os.listdir(pathname) if f.lower().endswith(".jar")]
+
     class_path += javabridge.JARS + jar_files
-
-    plugin_directory = cpprefs.get_ij_plugin_directory()
-    if (plugin_directory is not None and
-            os.path.isdir(plugin_directory)):
-        logger.debug("Using %s as imagej plugin directory" % plugin_directory)
-        #
-        # Add the plugin directory to pick up .class files in a directory
-        # hierarchy.
-        #
-        class_path.append(plugin_directory)
-        logger.debug("Adding %s to class path" % plugin_directory)
-        #
-        # Add any .jar files in the directory
-        #
-        for jarfile in os.listdir(plugin_directory):
-            jarpath = os.path.join(plugin_directory, jarfile)
-            if jarfile.lower().endswith(".jar"):
-                logger.debug("Adding %s to class path" % jarpath)
-                class_path.append(jarpath)
-            else:
-                logger.debug("Skipping %s" % jarpath)
-    else:
-        logger.info("Plugin directory doesn't point to valid folder: "
-                    + plugin_directory)
 
     if sys.platform.startswith("win") and not hasattr(sys, 'frozen'):
         # Have to find tools.jar
@@ -126,22 +61,6 @@ def find_logback_xml():
             return target
 
 
-def add_logback_xml_arg(args):
-    '''Add the logback.xml configuration arg if appropriate
-
-    args: the args to send to the JVM.
-    '''
-    logback_path = find_logback_xml()
-    if logback_path is not None:
-        if sys.platform.startswith("win"):
-            logback_path = logback_path.replace("\\", "/")
-            if logback_path[1] == ':':
-                # \\localhost\x$ is same as x:
-                logback_path = "//localhost/" + logback_path[0] + "$" + \
-                               logback_path[2:]
-        args.append("-Dlogback.configurationFile=%s" % logback_path)
-
-
 def cp_start_vm():
     '''Start CellProfiler's JVM via Javabridge
 
@@ -155,15 +74,25 @@ def cp_start_vm():
     args = ["-Dloci.bioformats.loaded=true",
             "-Djava.util.prefs.PreferencesFactory=" +
             "org.cellprofiler.headlesspreferences.HeadlessPreferencesFactory"]
-    add_logback_xml_arg(args)
+
+    logback_path = find_logback_xml()
+
+    if logback_path is not None:
+        if sys.platform.startswith("win"):
+            logback_path = logback_path.replace("\\", "/")
+            if logback_path[1] == ':':
+                # \\localhost\x$ is same as x:
+                logback_path = "//localhost/" + logback_path[0] + "$" + \
+                               logback_path[2:]
+        args.append("-Dlogback.configurationFile=%s" % logback_path)
+
     class_path = get_jars()
-    args += get_patcher_args(class_path)
-    awt_headless = cpprefs.get_awt_headless()
+    awt_headless = cellprofiler.preferences.get_awt_headless()
     if awt_headless:
         logger.debug("JVM will be started with AWT in headless mode")
         args.append("-Djava.awt.headless=true")
 
-    heap_size = str(cpprefs.get_jvm_heap_mb()) + "m"
+    heap_size = str(cellprofiler.preferences.get_jvm_heap_mb()) + "m"
     if os.environ.has_key("CP_JDWP_PORT"):
         args.append(
                 ("-agentlib:jdwp=transport=dt_socket,address=127.0.0.1:%s"
@@ -184,8 +113,6 @@ def cp_start_vm():
     # Monkey-patch bioformats.formatreader.get_class_list to add
     # the classes we added to loci.formats.in
     #
-    import bioformats.formatreader
-
     old_get_class_list = bioformats.formatreader.get_class_list
 
     def get_class_list():
@@ -198,7 +125,7 @@ def cp_start_vm():
         # Move any class to the back that thinks it can read garbage
         #
         fd, path = tempfile.mkstemp(suffix=".garbage",
-                                    dir=cpprefs.get_temporary_directory())
+                                    dir=cellprofiler.preferences.get_temporary_directory())
         stream = None
         try:
             os.write(fd, "This is not an image file")
@@ -240,30 +167,7 @@ def cp_start_vm():
 
 
 def cp_stop_vm(kill=True):
-    '''Shut down the Java VM
-
-    Check for headlessness and the state of ImageJ and take
-    whatever action is needed to stop AWT and the JVM.
-    '''
-    from imagej.imagej2 import allow_quit, the_imagej_context
-
-    try:
-        ij1 = javabridge.JClassWrapper("ij.IJ").getInstance()
-    except javabridge.JavaException as e:
-        logger.debug("No available instance: %s" % str(e))
-        ij1 = None
-
-    if the_imagej_context is not None:
-        #
-        # Tell the app service that it's OK to quit without prompt
-        #
-        allow_quit()
-        javabridge.call(the_imagej_context.getContext(), "dispose", "()V")
-    if ij1 is not None:
-        #
-        # Yes, the proper way to get ImageJ to quit is
-        # to start it.
-        #
-        ij1.run()
-    if kill:
-        javabridge.kill_vm()
+    """
+    Shut down the Java VM
+    """
+    javabridge.kill_vm()

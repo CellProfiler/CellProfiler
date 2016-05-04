@@ -158,8 +158,6 @@ class PipelineController(object):
         wx.EVT_MENU(frame, cpframe.ID_DEBUG_CHOOSE_IMAGE_SET, self.on_debug_choose_image_set)
         wx.EVT_MENU(frame, cpframe.ID_DEBUG_CHOOSE_RANDOM_IMAGE_SET, self.on_debug_random_image_set)
         wx.EVT_MENU(frame, cpframe.ID_DEBUG_RELOAD, self.on_debug_reload)
-        wx.EVT_MENU(frame, cpframe.ID_DEBUG_VIEW_WORKSPACE,
-                    self.on_debug_view_workspace)
 
         # ~*~
         wx.EVT_MENU(frame, cpframe.ID_SAMPLE_INIT, self.on_sample_init)

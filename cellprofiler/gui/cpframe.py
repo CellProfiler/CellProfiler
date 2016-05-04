@@ -17,7 +17,6 @@ import cellprofiler.gui.pipelinecontroller
 import cellprofiler.gui.pipelinelistview
 import cellprofiler.gui.preferencesdlg
 import cellprofiler.gui.preferencesview
-import cellprofiler.gui.sashwindow_tools
 import cellprofiler.icons
 import cellprofiler.modules
 import cellprofiler.pipeline
@@ -126,7 +125,6 @@ class CPFrame(wx.Frame):
                 self.__pipeline, None, None, None, None, None)
         # background_color = cellprofiler.preferences.get_background_color()
         self.__splitter = wx.SplitterWindow(self, -1, style=wx.SP_BORDER)
-        cellprofiler.gui.sashwindow_tools.sp_bind_to_evt_paint(self.__splitter)
         #
         # Screen size metrics might be used below
         #
@@ -192,7 +190,6 @@ class CPFrame(wx.Frame):
         #
         self.__path_list_sash = wx.SashLayoutWindow(
                 self.__path_module_imageset_panel, style=wx.NO_BORDER)
-        cellprofiler.gui.sashwindow_tools.sw_bind_to_evt_paint(self.__path_list_sash)
         self.__path_list_sash.Bind(wx.EVT_SASH_DRAGGED,
                                    self.__on_sash_drag)
         self.__path_list_sash.SetOrientation(wx.LAYOUT_HORIZONTAL)
@@ -269,7 +266,6 @@ class CPFrame(wx.Frame):
         self.__imageset_sash.SetSashVisible(wx.SASH_TOP, True)
         self.__imageset_sash.Bind(wx.EVT_SASH_DRAGGED,
                                   self.__on_sash_drag)
-        cellprofiler.gui.sashwindow_tools.sw_bind_to_evt_paint(self.__imageset_sash)
         self.__imageset_sash.Hide()
         self.__imageset_panel = wx.Panel(self.__imageset_sash)
         self.__imageset_panel.Sizer = wx.BoxSizer()

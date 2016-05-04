@@ -5,7 +5,6 @@
 
 import cellprofiler.gui.cpfigure
 import cellprofiler.gui.cpfigure_tools
-import cellprofiler.gui.sashwindow_tools
 import cellprofiler.objects
 import cellprofiler.preferences
 import centrosome.cpmorphology
@@ -299,7 +298,6 @@ class EditObjectsDialog(wx.Dialog):
         ########################################
         self.help_sash = wx.SashLayoutWindow(self.sash_parent)
         self.help_sash.Bind(wx.EVT_SASH_DRAGGED, self.on_help_sash_drag)
-        cellprofiler.gui.sashwindow_tools.sw_bind_to_evt_paint(self.help_sash)
         self.help_sash.SetOrientation(wx.LAYOUT_HORIZONTAL)
         self.help_sash.SetAlignment(wx.LAYOUT_BOTTOM)
         self.help_sash.SetDefaultBorderSize(4)

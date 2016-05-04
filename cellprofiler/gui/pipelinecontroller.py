@@ -12,7 +12,6 @@ import cellprofiler.gui.moduleview
 import cellprofiler.gui.omerologin
 import cellprofiler.gui.parametersampleframe
 import cellprofiler.gui.pathlist
-import cellprofiler.gui.viewworkspace
 import cellprofiler.icons
 import cellprofiler.measurements
 import cellprofiler.modules.loadimages
@@ -382,12 +381,6 @@ class PipelineController(object):
         self.__tcp_step.SetToolTip(wx.ToolTip("Step to next module"))
         self.__tcp_step.Bind(wx.EVT_BUTTON, self.on_debug_step)
         sub_sizer.Add(self.__tcp_step, 1, wx.EXPAND)
-
-        view_bitmap = wx.ArtProvider.GetBitmap(wx.ART_FIND, wx.ART_BUTTON)
-        self.__tcp_view = wx.lib.buttons.GenBitmapTextButton(panel, label="Viewer", bitmap=view_bitmap)
-        self.__tcp_view.SetToolTip(wx.ToolTip("Open the workspace viewer"))
-        self.__tcp_view.Bind(wx.EVT_BUTTON, self.on_debug_view_workspace)
-        sub_sizer.Add(self.__tcp_view)
 
         sub_sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.__tcp_test_sizer.Add(sub_sizer, 1, wx.EXPAND)
@@ -2860,7 +2853,6 @@ class PipelineController(object):
                       select_next_module):
                 self.__pipeline_list_view.select_one_module(module.module_num + 1)
             failure = 0
-            cellprofiler.gui.viewworkspace.update_workspace_viewer(workspace)
         except Exception, instance:
             logger.error("Failed to run module %s", module.module_name,
                          exc_info=True)
@@ -3246,7 +3238,6 @@ class PipelineController(object):
             self.__debug_object_set,
             self.__debug_measurements,
             self.__debug_image_set_list)
-        cellprofiler.gui.viewworkspace.show_workspace_viewer(self.__frame, workspace)
 
     def on_sample_init(self, event):
         if self.__module_view is not None:

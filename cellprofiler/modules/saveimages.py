@@ -13,7 +13,7 @@ in their original format and then saving them in an alternate format.</p>
 <p>Note that saving images in 12-bit format is not supported, and 16-bit format
 is supported for TIFF only.</p>
 
-See also <b>NamesAndTypes</b>, <b>ConserveMemory</b>.
+See also <b>NamesAndTypes</b>.
 '''
 
 import logging

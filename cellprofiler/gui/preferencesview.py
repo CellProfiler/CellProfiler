@@ -12,7 +12,7 @@ import string
 import time
 import wx
 
-WELCOME_MESSAGE = 'Welcome to CellProfiler'
+WELCOME_MESSAGE = ""
 
 WRITE_MAT_FILE = "MATLAB"
 WRITE_HDF_FILE = "HDF5"

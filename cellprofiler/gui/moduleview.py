@@ -671,7 +671,7 @@ class ModuleView(object):
         height = self.module_notes_control.GetTextExtent("M")[1] * 2 + 4
         height = self.module_notes_control.ClientToWindowSize(
             wx.Size(1, height))[1]
-        self.module_notes_control.SetInitialSize(wx.Size(100, height))
+        self.module_notes_control.SetInitialSize(wx.Size(100, 100))
         notes_sizer.Add(self.module_notes_control, 1, wx.EXPAND)
 
         def on_notes_changed(event):

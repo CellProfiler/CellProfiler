@@ -20,7 +20,6 @@ import uuid
 import weakref
 
 import cellprofiler
-from cellprofiler.utilities.utf16encode import utf16encode, utf16decode
 
 logger = logging.getLogger(__name__)
 
@@ -203,7 +202,7 @@ def config_read(key):
         value = None
     if value is not None:
         try:
-            value = utf16decode(value)
+            value = value.decode()
         except:
             logger.warning(
                     "Failed to decode preference (%s=%s), assuming 2.0" %
@@ -225,7 +224,7 @@ def config_write(key, value):
         shutup = wx.LogNull()
     __cached_values[key] = value
     if value is not None:
-        value = utf16encode(value)
+        value = value.encode()
     get_config().Write(key, value)
 
 

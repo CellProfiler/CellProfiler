@@ -391,16 +391,16 @@ CreateBatchFiles:[module_num:19|svn_version:\'Unknown\'|variable_revision_number
         module = pipeline.modules()[0]
         assert isinstance(module, C.CreateBatchFiles)
         self.assertTrue(module.wants_default_output_directory)
-        self.assertEqual(module.custom_output_directory, r"C:\foo\bar")
+        self.assertEqual(module.custom_output_directory, r"C:\\foo\\bar")
         self.assertFalse(module.remote_host_is_windows)
         self.assertFalse(module.distributed_mode)
-        self.assertEqual(module.default_image_directory, r"C:\bar\baz")
+        self.assertEqual(module.default_image_directory, r"C:\\bar\\baz")
         self.assertEqual(module.revision, 0)
         self.assertFalse(module.from_old_matlab)
         self.assertTrue(module.go_to_website)
         self.assertEqual(len(module.mappings), 1)
         mapping = module.mappings[0]
-        self.assertEqual(mapping.local_directory, r"\\argon-cifs\imaging_docs")
+        self.assertEqual(mapping.local_directory, r"\\\\argon-cifs\\imaging_docs")
         self.assertEqual(mapping.remote_directory, r"/imaging/docs")
 
     def test_02_01_module_must_be_last(self):

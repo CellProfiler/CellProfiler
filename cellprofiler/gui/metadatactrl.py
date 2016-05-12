@@ -1,3 +1,4 @@
+# coding=utf-8
 """metadatadlg.py - dialog for editing an expression that might contain metadata
 """
 

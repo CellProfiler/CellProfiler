@@ -1,3 +1,4 @@
+# coding=utf-8
 """ImageSetCtrl.py - A control to display an imageset
 """
 
@@ -301,7 +302,7 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
                 feature = cellprofiler.measurements.C_URL + "_" + column.channel
             value = self.cache[feature, image_set]
             if value is not None:
-                return value.encode("utf-8")
+                return value.encode()
 
         def GetRowLabelValue(self, row):
             if row >= len(self.image_numbers):
@@ -374,9 +375,8 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
             display_mode = DISPLAY_MODE_SIMPLE
 
         wx.grid.Grid.__init__(self, *args, **kwargs)
-        cellprofiler.gui.cornerbuttonmixin.CornerButtonMixin.__init__(
-                self, self.on_update,
-                label="Update", tooltip="Update and display the image set")
+        cellprofiler.gui.cornerbuttonmixin.CornerButtonMixin.__init__(self, self.on_update,
+                                                                      tooltip="Update and display the image set")
         gclw = self.GetGridColLabelWindow()
         self.SetTable(self.ImageSetGridTable(workspace, display_mode))
         self.AutoSize()
@@ -1345,7 +1345,7 @@ class ImageSetCtrlDropTarget(wx.FileDropTarget):
         return self.grid.on_drop_files(x, y, filenames)
 
 
-class ImageSetController:
+class ImageSetController(object):
     """Modifies the image set according to GUI notifications"""
 
     def __init__(self):

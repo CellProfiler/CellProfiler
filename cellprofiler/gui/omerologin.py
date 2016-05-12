@@ -1,3 +1,4 @@
+# coding=utf-8
 """omerologin - dialog box to capture login credentials for Omero
 """
 

@@ -1,3 +1,4 @@
+# coding=utf-8
 """errordialog - dialog box for reporting error.
 """
 

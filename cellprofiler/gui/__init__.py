@@ -1,3 +1,4 @@
+# coding=utf-8
 """CellProfilerGUI package
 
 The CellProfilerGUI package holds the viewer and controller portions

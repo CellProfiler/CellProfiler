@@ -17,7 +17,6 @@ import cellprofiler.gui.pipelinecontroller
 import cellprofiler.gui.pipelinelistview
 import cellprofiler.gui.preferencesdlg
 import cellprofiler.gui.preferencesview
-import cellprofiler.gui.sashwindow_tools
 import cellprofiler.icons
 import cellprofiler.modules
 import cellprofiler.pipeline
@@ -126,7 +125,6 @@ class CPFrame(wx.Frame):
                 self.__pipeline, None, None, None, None, None)
         # background_color = cellprofiler.preferences.get_background_color()
         self.__splitter = wx.SplitterWindow(self, -1, style=wx.SP_BORDER)
-        cellprofiler.gui.sashwindow_tools.sp_bind_to_evt_paint(self.__splitter)
         #
         # Screen size metrics might be used below
         #
@@ -192,7 +190,6 @@ class CPFrame(wx.Frame):
         #
         self.__path_list_sash = wx.SashLayoutWindow(
                 self.__path_module_imageset_panel, style=wx.NO_BORDER)
-        cellprofiler.gui.sashwindow_tools.sw_bind_to_evt_paint(self.__path_list_sash)
         self.__path_list_sash.Bind(wx.EVT_SASH_DRAGGED,
                                    self.__on_sash_drag)
         self.__path_list_sash.SetOrientation(wx.LAYOUT_HORIZONTAL)
@@ -269,7 +266,6 @@ class CPFrame(wx.Frame):
         self.__imageset_sash.SetSashVisible(wx.SASH_TOP, True)
         self.__imageset_sash.Bind(wx.EVT_SASH_DRAGGED,
                                   self.__on_sash_drag)
-        cellprofiler.gui.sashwindow_tools.sw_bind_to_evt_paint(self.__imageset_sash)
         self.__imageset_sash.Hide()
         self.__imageset_panel = wx.Panel(self.__imageset_sash)
         self.__imageset_panel.Sizer = wx.BoxSizer()
@@ -638,7 +634,6 @@ class CPFrame(wx.Frame):
                                  'Choose which image set group to process in test-mode')
         self.__menu_debug.Append(ID_DEBUG_CHOOSE_IMAGE_SET, 'Choose Image Set',
                                  'Choose any of the available image sets')
-        self.__menu_debug.Append(ID_DEBUG_VIEW_WORKSPACE, "View Workspace", "Show the workspace viewer")
         if not hasattr(sys, 'frozen') or os.getenv('CELLPROFILER_DEBUG'):
             self.__menu_debug.Append(ID_DEBUG_RELOAD, "Reload Modules' Source")
             self.__menu_debug.Append(ID_DEBUG_PDB, "Break Into Debugger")
@@ -653,7 +648,6 @@ class CPFrame(wx.Frame):
         self.__menu_debug.Enable(ID_DEBUG_CHOOSE_GROUP, False)
         self.__menu_debug.Enable(ID_DEBUG_CHOOSE_IMAGE_SET, False)
         self.__menu_debug.Enable(ID_DEBUG_CHOOSE_RANDOM_IMAGE_SET, False)
-        self.__menu_debug.Enable(ID_DEBUG_VIEW_WORKSPACE, False)
 
         self.__menu_window = wx.Menu()
         self.__menu_window.Append(ID_WINDOW_CLOSE_ALL, "Close &All Open Windows\tctrl+L",
@@ -880,8 +874,7 @@ class CPFrame(wx.Frame):
     debug_commands = (ID_DEBUG_STEP, ID_DEBUG_NEXT_IMAGE_SET,
                       ID_DEBUG_NEXT_GROUP, ID_DEBUG_CHOOSE_GROUP,
                       ID_DEBUG_CHOOSE_IMAGE_SET,
-                      ID_DEBUG_CHOOSE_RANDOM_IMAGE_SET,
-                      ID_DEBUG_VIEW_WORKSPACE)
+                      ID_DEBUG_CHOOSE_RANDOM_IMAGE_SET)
 
     def enable_debug_commands(self):
         """Enable or disable the debug commands (like ID_DEBUG_STEP)"""
@@ -1356,82 +1349,3 @@ class CPFrame(wx.Frame):
         return self.__pipeline_list_view
 
     pipeline_list_view = property(get_pipeline_list_view)
-
-
-class CPSizer(wx.PySizer):
-    """A grid sizer that deals out leftover sizes to the hungry row and column
-
-    """
-
-    # If this were for use outside of here, it would look at the positioning flags such
-    # as wx.EXPAND and wx.ALIGN... in RecalcSizes, but we assume everything wants
-    # to be expanded
-    def __init__(self, rows, cols, hungry_row, hungry_col):
-        wx.PySizer.__init__(self)
-        self.__rows = rows
-        self.__cols = cols
-        self.__hungry_row = hungry_row
-        self.__hungry_col = hungry_col
-        self.__ignore_width = [[False for j in range(0, rows)] for i in range(0, cols)]
-        self.__ignore_height = [[False for j in range(0, rows)] for i in range(0, cols)]
-
-    def set_ignore_width(self, col, row, ignore=True):
-        """Don't pay any attention to the minimum width of the item in grid cell col,row
-
-        """
-        self.__ignore_width[col][row] = ignore
-
-    def get_ignore_width(self, col, row):
-        """Return true if we should ignore the minimum width of the item at col,row
-
-        """
-        return self.__ignore_width[col][row]
-
-    def set_ignore_height(self, col, row, ignore=True):
-        """Don't pay any attention to the minimum height of the item in grid cell col,row
-
-        """
-        self.__ignore_height[col][row] = ignore
-
-    def get_ignore_height(self, col, row):
-        """Return true if we should ignore the minimum height of the item at col,row
-
-        """
-        return self.__ignore_height[col][row]
-
-    def CalcMin(self):
-        """Calculate the minimum row and column and add
-        """
-        (row_heights, col_widths) = self.__get_min_sizes()
-        return wx.Size(sum(col_widths), sum(row_heights))
-
-    def __get_min_sizes(self):
-        row_heights = [0 for i in range(0, self.__rows)]
-        col_widths = [0 for i in range(0, self.__cols)]
-        idx = 0
-        for item in self.GetChildren():
-            row, col = divmod(idx, self.__rows)
-            size = item.CalcMin()
-            if not self.get_ignore_width(col, row):
-                col_widths[col] = max(col_widths[col], size[0])
-            if not self.get_ignore_height(col, row):
-                row_heights[row] = max(row_heights[row], size[1])
-            idx += 1
-        return row_heights, col_widths
-
-    def RecalcSizes(self):
-        """Recalculate the sizes of our items, distributing leftovers among them
-        """
-        (row_heights, col_widths) = self.__get_min_sizes()
-        size = self.GetSize()
-        leftover_width = size[0] - sum(col_widths)
-        leftover_height = size[1] - sum(row_heights)
-        col_widths[self.__hungry_col] += leftover_width
-        row_heights[self.__hungry_row] += leftover_height
-        idx = 0
-        for item in self.GetChildren():
-            row,col = divmod(idx,self.__rows)
-            item_size = wx.Size(col_widths[col],row_heights[row])
-            item_pos = wx.Point(sum(col_widths[:col]),sum(row_heights[:row]))
-            item.SetDimension(item_pos,item_size)
-            idx+=1

@@ -1,3 +1,4 @@
+# coding=utf-8
 """ an htmldialog with an ok button
 """
 

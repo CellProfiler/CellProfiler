@@ -155,7 +155,6 @@ def set_preferences_from_dict(d):
             "__default_colormap", "__default_image_directory",
             "__default_output_directory", "__allow_output_file_overwrite",
             "__current_pipeline_path", "__has_reported_jvm_error",
-            "__ij_version", "__output_filename",
             "__show_analysis_complete_dlg",
             "__show_exiting_test_mode_dlg", "__show_report_bad_sizes_dlg",
             "__show_sampling", "__show_workspace_choice_dlg",
@@ -1174,38 +1173,6 @@ def set_use_more_figure_space(value):
                  "True" if value else "False")
 
 
-__ij_version = None
-
-
-def get_ij_version():
-    '''Return an indicator of which version of ImageJ to use
-
-    returns one of IJ_1 or IJ_2.
-
-    This determines whether to use the ImageJ 1.44 version, enhanced
-    with the @parameter decoration or to use the new and experimental
-    ImageJ 2.0 codebase.
-    '''
-    global __ij_version
-    if __ij_version is not None:
-        return __ij_version
-    if not config_exists(IJ_VERSION):
-        return IJ_1
-    result = config_read(IJ_VERSION)
-    return IJ_1 if result not in (IJ_1, IJ_2) else result
-
-
-def set_ij_version(value):
-    '''Set the ImageJ version to use
-
-    value: one of IJ_1 or IJ_2
-    '''
-    global __ij_version
-    assert value in (IJ_1, IJ_2)
-    __ij_version = value
-    config_write(IJ_VERSION, value)
-
-
 __workspace_file = None
 
 
@@ -1600,6 +1567,38 @@ def set_batchprofiler_url(value):
 
 
 __image_set_filename = None
+
+__wants_pony = None
+
+
+def get_wants_pony():
+
+    """
+
+    :return:
+
+    """
+    global __wants_pony
+
+    if __wants_pony is not None:
+        return __wants_pony
+    elif config_exists("Pony"):
+        return config_read("Pony").lower() == "yes"
+    else:
+        return False
+
+
+def set_wants_pony(wants_pony):
+    """
+
+    :param wants_pony:
+
+    """
+    global __wants_pony
+
+    __wants_pony = wants_pony
+
+    config_write("Pony", "yes" if wants_pony else "no")
 
 
 def set_image_set_file(filename):

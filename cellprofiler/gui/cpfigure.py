@@ -1,3 +1,4 @@
+# coding=utf-8
 """ cpfigure.py - provides a frame with a figure inside
 """
 
@@ -27,6 +28,8 @@ import scipy.sparse
 import sys
 import uuid
 import wx
+
+im = None
 
 logger = logging.getLogger(__name__)
 
@@ -196,16 +199,6 @@ def close_all(parent):
             window.Close()
 
     cellprofiler.preferences.reset_cpfigure_position()
-    try:
-        from imagej.windowmanager import close_all_windows
-        from javabridge import attach, detach
-        attach()
-        try:
-            close_all_windows()
-        finally:
-            detach()
-    except:
-        pass
 
 
 def allow_sharexy(fn):
@@ -633,7 +626,7 @@ class CPFigureFrame(wx.Frame):
         """Get the standard fields at the cursor location"""
         if event.inaxes:
             fields = ["X: %d" % xi, "Y: %d" % yi]
-            im = self.find_image_for_axes(event.inaxes)
+            self.find_image_for_axes(event.inaxes)
             if im is not None:
                 fields += self.get_pixel_data_fields_for_status_bar(im, x1, yi)
             elif isinstance(event.inaxes, matplotlib.axes.Axes):

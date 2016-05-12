@@ -1,3 +1,4 @@
+# coding=utf-8
 """ cpfigure_tools.py - cpfigure tools that do not depend on WX
 """
 

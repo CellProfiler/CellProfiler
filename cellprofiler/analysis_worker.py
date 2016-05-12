@@ -139,7 +139,6 @@ from cellprofiler.analysis import \
     SharedDictionaryRequest, Ack, UpstreamExit, ANNOUNCE_DONE, \
     OmeroLoginRequest, OmeroLoginReply
 import javabridge as J
-from cellprofiler.utilities.run_loop import enter_run_loop, stop_run_loop
 #
 # CellProfiler expects NaN as a result during calculation
 #
@@ -160,19 +159,6 @@ the_zmq_context = zmq.Context.instance()
 
 
 def main():
-    #
-    # For Windows build with Ilastik, look for site-packages
-    # in order to find Ilastik sources.
-    #
-    if hasattr(sys, 'frozen') and sys.platform == "win32":
-        root = os.path.split(sys.argv[0])[0]
-        if len(root) == 0:
-            root = os.curdir
-        root = os.path.abspath(root)
-        site_packages = os.path.join(root, 'site-packages').encode('utf-8')
-        if os.path.exists(site_packages) and os.path.isdir(site_packages):
-            import site
-            site.addsitedir(site_packages)
     #
     # For OS/X set up the UI elements that users expect from
     # an app.
@@ -196,15 +182,6 @@ def main():
                         name="exit_on_stdin_close")
     deadman_start_socket.recv()
     deadman_start_socket.close()
-    # Limit Ilastik to one job thread.
-    try:
-        from ilastik.core.jobMachine import GLOBAL_WM
-        try:
-            GLOBAL_WM.set_thread_count(1)
-        except:
-            GLOBAL_WM.setThreadCount(1)
-    except:
-        pass
 
     from cellprofiler.knime_bridge import KnimeBridgeServer
     with AnalysisWorker(work_announce_address) as worker:
@@ -215,17 +192,11 @@ def main():
         with KnimeBridgeServer(the_zmq_context,
                                knime_bridge_address,
                                NOTIFY_ADDR, NOTIFY_STOP):
-            enter_run_loop()
             worker_thread.join()
 
     #
     # Shutdown - need to handle some global cleanup here
     #
-    try:
-        from ilastik.core.jobMachine import GLOBAL_WM
-        GLOBAL_WM.stopWorkers()
-    except:
-        logger.warn("Failed to stop Ilastik")
     try:
         cp_stop_vm()
     except:
@@ -300,8 +271,6 @@ class AnalysisWorker(object):
         self.notify_socket.close()
         clear_image_reader_cache()
         J.detach()
-        if self.with_stop_run_loop:
-            stop_run_loop()
 
     def run(self):
         from cellprofiler.pipeline import CancelledException

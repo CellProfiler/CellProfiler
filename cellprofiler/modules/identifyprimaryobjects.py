@@ -39,16 +39,6 @@ should invert the images using the Invert operation in the <b>ImageMath</b> modu
 <li>If you are working with color images, they must first be converted to
 grayscale using the <b>ColorToGray</b> module.</li>
 </ul>
-<p>If you have images in which the foreground and background cannot be distinguished by intensity alone
-(e.g, brightfield or DIC images), you can use the <a href="http://www.ilastik.org/">ilastik</a> package
-bundled with CellProfiler to perform pixel-based classification (Windows only). You first train a classifier
-by identifying areas of images that fall into one of several classes, such as cell body, nucleus,
-background, etc. Then, the <b>ClassifyPixels</b> module takes the classifier and applies it to each image
-to identify areas that correspond to the trained classes. The result of <b>ClassifyPixels</b> is
-an image in which the region that falls into the class of interest is light on a dark background. Since
-this new image satisfies the constraints above, it can be used as input in <b>IdentifyPrimaryObjects</b>.
-See the <b>ClassifyPixels</b> module for more information.</p>
-
 <h4>What do the settings mean?</h4>
 See below for help on the individual settings. The following icons are used to call attention to
 key items:

@@ -1,3 +1,4 @@
+# coding=utf-8
 import cellprofiler.gui.help
 import cellprofiler.icons
 import cellprofiler.modules
@@ -8,7 +9,6 @@ import os
 import re
 import shutil
 import sys
-from glob import glob
 from shutil import copy
 
 import cellprofiler.icons
@@ -103,7 +103,7 @@ recent manual is available <a href="http://d1zymp9ayga15t.cloudfront.net/CPmanua
 
 
 def output_gui_html(webpage_path):
-    '''Output an HTML page for each non-module help item'''
+    """Output an HTML page for each non-module help item"""
     icons_relpath = os.path.relpath(cellprofiler.icons.__path__[0])
 
     help_text = """
@@ -151,7 +151,7 @@ def output_module_html(webpage_path):
     """Output an HTML page for each module"""
 
     icons_relpath = os.path.relpath(cellprofiler.icons.__path__[0])
-    all_png_icons = glob(os.path.join(icons_relpath, "*.png"))
+    all_png_icons = glob.glob(os.path.join(icons_relpath, "*.png"))
     icon_names = [os.path.basename(f)[:-4] for f in all_png_icons]
 
     help_text = """

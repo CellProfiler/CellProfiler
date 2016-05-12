@@ -1,3 +1,4 @@
+# coding=utf-8
 """preferencesdlg.py Edit global preferences
 """
 
@@ -355,8 +356,13 @@ class PreferencesDlg(wx.Dialog):
                  cellprofiler.preferences.get_batchprofiler_url,
                  cellprofiler.preferences.set_batchprofiler_url,
                  None,
-                 cellprofiler.gui.help.BATCHPROFILER_URL_HELP]
-                ]
+                 cellprofiler.gui.help.BATCHPROFILER_URL_HELP],
+                ["Pony",
+                 cellprofiler.preferences.get_wants_pony,
+                 cellprofiler.preferences.set_wants_pony,
+                 CHOICE,
+                 "Pony"
+                ]]
 
     @staticmethod
     def get_title_font():

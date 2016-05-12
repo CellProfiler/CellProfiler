@@ -193,11 +193,7 @@ class TestAnalysis(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         cpzmq.join_to_the_boundary()
-        try:
-            from ilastik.core.jobMachine import GLOBAL_WM
-            GLOBAL_WM.stopWorkers()
-        except:
-            pass
+
         cls.zmq_context.term()
 
     def setUp(self):

@@ -16,9 +16,7 @@ module prior to this module in the pipeline.</li>
 <li>Rescale the images to 8-bit using the <b>RescaleIntensity</b> module, which
 diminished image quality by decreasing the number of graylevels in the image (that is, bit depth)
 but also decreases the size of the image. </li>
-<li> Use the <b>ConserveMemory</b> module just before this module to clear out
-images created previously in the pipeline that are stored in memory but no
-longer needed.
+<li>
 Place this module prior to the <b>Tile</b> module (and maybe also afterwards) and
 set it to retain only those images that are needed for downstream modules. </li>
 </ul>

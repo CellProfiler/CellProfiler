@@ -1,3 +1,4 @@
+# coding=utf-8
 """ runmultiplepipelinesdialog.py - Dialog to collect info for RunMultiplePipelines
 """
 

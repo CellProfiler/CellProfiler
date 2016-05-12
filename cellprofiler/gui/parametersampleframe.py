@@ -1,3 +1,4 @@
+# coding=utf-8
 """ParameterSampleFrame.py - a window for specifying sampling options.
 
 Author: AJ Pretorius

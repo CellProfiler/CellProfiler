@@ -1,3 +1,4 @@
+# coding=utf-8
 """cpartists.py - Specialized matplotlib artists for CellProfiler
 """
 

@@ -11,7 +11,7 @@ Compiled releases for Linux, OS X, and Windows are available from [cellprofiler.
 ### Install from the Python Package Index (PyPI)
 
 ```sh
-$ pip install --pre cellprofiler
+$ pip install --editable git+https://git@github.com:CellProfiler/CellProfiler.git#egg=cellprofiler
 ```
 
 ### Install from Source

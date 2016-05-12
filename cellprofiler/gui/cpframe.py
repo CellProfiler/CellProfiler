@@ -211,6 +211,7 @@ class CPFrame(wx.Frame):
         # Path list control
         #
         self.__path_list_ctrl = cellprofiler.gui.pathlist.PathListCtrl(self.__path_list_sash)
+        self.__path_list_ctrl.SetBackgroundColour(wx.WHITE)
         sizer.Add(self.__path_list_ctrl, 1, wx.EXPAND | wx.ALL)
         #
         # Path list tools horizontal sizer

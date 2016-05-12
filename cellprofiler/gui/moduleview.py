@@ -1265,14 +1265,10 @@ class ModuleView(object):
                     pass
 
                 if v.guess == cellprofiler.settings.RegexpText.GUESS_FOLDER:
-                    guess_file = cellprofiler.preferences.get_pathname_re_guess_file()
                     guesses = regexp_editor.RE_FOLDER_GUESSES
                 else:
-                    guess_file = cellprofiler.preferences.get_filename_re_guess_file()
                     guesses = regexp_editor.RE_FILENAME_GUESSES
-                if guess_file is not None and os.path.exists(guess_file):
-                    with open(guess_file) as fd:
-                        guesses = [x.strip() for x in fd.readlines()]
+
                 new_value = regexp_editor.edit_regexp(panel, control.Value, filename, guesses)
                 if new_value:
                     control.Value = new_value

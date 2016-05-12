@@ -10,7 +10,7 @@ Compiled releases for Linux, OS X, and Windows are available from [cellprofiler.
 
 ### Install from the Python Package Index (PyPI)
 
-*CellProfiler requires Python 2.*
+*CellProfiler requires Python 2*
 
 ```sh
 $ pip install --editable git+git@github.com:CellProfiler/CellProfiler.git#egg=cellprofiler

@@ -1847,21 +1847,6 @@ path and a .txt extension.</li>
 </ul>
 """
 
-FILE_RE_GUESS_HELP = """
-Specifies a text file, if any, containing regular expression guesses for
-image file names. This functionality is used in the
-<b>Metadata</b> module for regular expression matching of file names, via the
-magnifying glass icon.
-<p>The file should have one guess per line. The regular expression
-editor will check each regular expression in the file against the example
-file name and will choose the first one that matches.
-<br>You can use this to customize the regular expression editor's guesses
-or to distribute a standardized list of regular expressions within an
-organization.</p>
-See the <b>Metadata</b> module for more details on regular expression usage
-in CellProfiler.
-"""
-
 BATCHPROFILER_URL_HELP = """
 The base URL for BatchProfiler. BatchProfiler is a set of CGI scripts for
 running CellProfiler on a GridEngine cluster or compatible. If BatchProfiler
@@ -1895,7 +1880,6 @@ EACH_PREFERENCE_HELP = (
     ("Maximum number of workers", MAX_WORKERS_HELP),
     ("Temporary folder", TEMP_DIR_HELP),
     ("Save pipeline and/or file list in addition to project", SAVE_PIPELINE_WITH_PROJECT_HELP),
-    ("File name regular expression guesses", FILE_RE_GUESS_HELP),
     ("BatchProfiler URL", BATCHPROFILER_URL_HELP)
 )
 PREFERENCES_HELP = """The Preferences allow you to change many options in CellProfiler

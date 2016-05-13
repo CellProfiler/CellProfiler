@@ -52,8 +52,8 @@ ERROR = "error"
 WARNING = "warning"
 OK = "ok"
 DISABLED = "disabled"
-EYE = "eye"
-CLOSED_EYE = "closedeye"
+EYE = "eye-open"
+CLOSED_EYE = "eye-close"
 PAUSE = "pause"
 GO = "go"
 NOTDEBUG = "notdebug"
@@ -124,8 +124,7 @@ class PipelineListView(object):
         self.__frame = frame
         self.__module_controls_panel = None
         assert isinstance(panel, wx.Window)
-        static_box = wx.StaticBox(self.__panel, label="Pipeline")
-        top_sizer = wx.StaticBoxSizer(static_box, wx.VERTICAL)
+        top_sizer = wx.BoxSizer(orient=wx.VERTICAL)
         panel.Sizer = top_sizer
         static_box = wx.StaticBox(self.__panel, label="Input modules")
         self.__input_controls = [static_box]
@@ -137,8 +136,7 @@ class PipelineListView(object):
         self.__sizer = wx.StaticBoxSizer(modules_box, wx.HORIZONTAL)
         top_sizer.Add(self.__sizer, 1, wx.EXPAND)
 
-        outputs_box = wx.StaticBox(panel, label="Output")
-        outputs_sizer = wx.StaticBoxSizer(outputs_box, wx.VERTICAL)
+        outputs_sizer = wx.BoxSizer(wx.VERTICAL)
         top_sizer.Add(outputs_sizer, 0, wx.EXPAND)
         self.outputs_panel = wx.Panel(panel)
         outputs_sizer.Add(self.outputs_panel, 1, wx.EXPAND)
@@ -1423,20 +1421,8 @@ class PipelineListCtrl(wx.PyScrolledWindow):
         """
         if not self.test_mode:
             return None
-        top = (self.line_height - self.bmp_slider.Height) / 2 + \
-              self.line_height * self.running_item
+        top = (self.line_height - self.bmp_slider.Height) / 2 + self.line_height * self.running_item
         return wx.Rect(1, top, self.bmp_slider.Width, self.bmp_slider.Height)
-
-    def draw_shading(self, dc, col, row):
-        assert isinstance(dc, wx.DC)
-        r = self.get_button_rect(col, row)
-        dc.SetPen(self.shadow_pen)
-        if self.pressed_row == row and self.pressed_column == col and self.button_is_active:
-            dc.DrawLine(r.left - 1, r.top - 1, r.right - 1, r.top - 1)
-            dc.DrawLine(r.left - 1, r.top - 1, r.left - 1, r.bottom - 1)
-        else:
-            dc.DrawLine(r.left, r.bottom, r.right, r.bottom)
-            dc.DrawLine(r.right, r.top, r.right, r.bottom)
 
     def on_paint(self, event):
         assert isinstance(event, wx.PaintEvent)

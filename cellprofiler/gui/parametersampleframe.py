@@ -15,6 +15,7 @@ import cellprofiler.settings
 import cellprofiler.workspace
 import numpy
 import os
+import skimage.io
 import traceback
 import wx
 import wx.lib.agw.floatspin
@@ -696,7 +697,6 @@ class ParameterSampleFrame(wx.Frame):
     def save_image(image, path):
         """TODO: add comments"""
 
-        import PIL.Image as PILImage
         pixels = image.pixel_data
         if numpy.max(pixels) > 1 or numpy.min(pixels) < 0:
             pixels = pixels.copy()
@@ -704,16 +704,10 @@ class ParameterSampleFrame(wx.Frame):
             pixels[pixels > 1] = 1
 
         pixels = (pixels * 255).astype(numpy.uint8)
-        if pixels.ndim == 3 and pixels.shape[2] == 4:
-            mode = 'RGBA'
-        elif pixels.ndim == 3:
-            mode = 'RGB'
-        else:
-            mode = 'L'
 
-        pil = PILImage.fromarray(pixels, mode)
-        image_pathname = path + '.jpg'
-        pil.save(image_pathname, 'JPEG')
+        pathname = "{}.jpg".format(path)
+
+        skimage.io.imsave(pathname, pixels)
 
     def on_check_box(self, event):
         button_flag = False

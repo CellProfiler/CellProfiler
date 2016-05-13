@@ -327,8 +327,7 @@ class PipelineController(object):
         # Launch sizer
         #
         self.__test_bmp = wx.BitmapFromImage(cellprofiler.icons.get_builtin_image("IMG_TEST"))
-        self.__test_mode_button = wx.lib.buttons.GenBitmapTextButton(panel, bitmap=self.__test_bmp,
-                                                                     label=self.ENTER_TEST_MODE)
+        self.__test_mode_button = wx.lib.buttons.GenBitmapTextButton(panel, bitmap=self.__test_bmp,label=self.ENTER_TEST_MODE)
         self.__test_mode_button.Bind(wx.EVT_BUTTON, self.on_debug_toggle)
         self.__test_mode_button.SetToolTipString(self.ENTER_TEST_MODE_HELP)
 
@@ -346,7 +345,7 @@ class PipelineController(object):
         # Analysis sizer
         #
         stop_bmp = wx.BitmapFromImage(cellprofiler.icons.get_builtin_image("IMG_STOP"))
-        pause_bmp = wx.BitmapFromImage(cellprofiler.icons.get_builtin_image("IMG_PAUSE"))
+        pause_bmp = wx.BitmapFromImage(cellprofiler.icons.get_builtin_image("pause"))
         self.__pause_button = wx.lib.buttons.GenBitmapTextButton(panel, bitmap=pause_bmp, label=self.PAUSE)
         self.__pause_button.Bind(wx.EVT_BUTTON, self.on_pause)
         self.__pause_button.SetToolTipString(self.PAUSE_HELP)

@@ -18,13 +18,13 @@ import wx
 
 logger = logging.getLogger(__name__)
 
-IMG_OK = cellprofiler.icons.get_builtin_image('IMG_OK')
-IMG_ERROR = cellprofiler.icons.get_builtin_image('IMG_ERROR')
-IMG_EYE = cellprofiler.icons.get_builtin_image('IMG_EYE')
-IMG_CLOSED_EYE = cellprofiler.icons.get_builtin_image('IMG_CLOSED_EYE')
+IMG_OK = cellprofiler.icons.get_builtin_image("check")
+IMG_ERROR = cellprofiler.icons.get_builtin_image('remove-sign')
+IMG_EYE = cellprofiler.icons.get_builtin_image("eye-open")
+IMG_CLOSED_EYE = cellprofiler.icons.get_builtin_image("eye-close")
 IMG_PAUSE = cellprofiler.icons.get_builtin_image('IMG_PAUSE')
 IMG_GO = cellprofiler.icons.get_builtin_image('IMG_GO')
-IMG_DISABLED = cellprofiler.icons.get_builtin_image('IMG_DISABLED')
+IMG_DISABLED = cellprofiler.icons.get_builtin_image("unchecked")
 IMG_UNAVAILABLE = cellprofiler.icons.get_builtin_image('IMG_UNAVAILABLE')
 IMG_SLIDER = cellprofiler.icons.get_builtin_image('IMG_SLIDER')
 IMG_SLIDER_ACTIVE = cellprofiler.icons.get_builtin_image('IMG_SLIDER_ACTIVE')
@@ -52,8 +52,8 @@ ERROR = "error"
 WARNING = "warning"
 OK = "ok"
 DISABLED = "disabled"
-EYE = "eye"
-CLOSED_EYE = "closedeye"
+EYE = "eye-open"
+CLOSED_EYE = "eye-close"
 PAUSE = "pause"
 GO = "go"
 NOTDEBUG = "notdebug"
@@ -124,8 +124,7 @@ class PipelineListView(object):
         self.__frame = frame
         self.__module_controls_panel = None
         assert isinstance(panel, wx.Window)
-        static_box = wx.StaticBox(self.__panel, label="Pipeline")
-        top_sizer = wx.StaticBoxSizer(static_box, wx.VERTICAL)
+        top_sizer = wx.BoxSizer(orient=wx.VERTICAL)
         panel.Sizer = top_sizer
         static_box = wx.StaticBox(self.__panel, label="Input modules")
         self.__input_controls = [static_box]
@@ -137,8 +136,7 @@ class PipelineListView(object):
         self.__sizer = wx.StaticBoxSizer(modules_box, wx.HORIZONTAL)
         top_sizer.Add(self.__sizer, 1, wx.EXPAND)
 
-        outputs_box = wx.StaticBox(panel, label="Output")
-        outputs_sizer = wx.StaticBoxSizer(outputs_box, wx.VERTICAL)
+        outputs_sizer = wx.BoxSizer(wx.VERTICAL)
         top_sizer.Add(outputs_sizer, 0, wx.EXPAND)
         self.outputs_panel = wx.Panel(panel)
         outputs_sizer.Add(self.outputs_panel, 1, wx.EXPAND)
@@ -1423,125 +1421,87 @@ class PipelineListCtrl(wx.PyScrolledWindow):
         """
         if not self.test_mode:
             return None
-        top = (self.line_height - self.bmp_slider.Height) / 2 + \
-              self.line_height * self.running_item
+        top = (self.line_height - self.bmp_slider.Height) / 2 + self.line_height * self.running_item
         return wx.Rect(1, top, self.bmp_slider.Width, self.bmp_slider.Height)
-
-    def draw_shading(self, dc, col, row):
-        assert isinstance(dc, wx.DC)
-        r = self.get_button_rect(col, row)
-        dc.SetPen(self.shadow_pen)
-        if self.pressed_row == row and self.pressed_column == col and self.button_is_active:
-            dc.DrawLine(r.left - 1, r.top - 1, r.right - 1, r.top - 1)
-            dc.DrawLine(r.left - 1, r.top - 1, r.left - 1, r.bottom - 1)
-        else:
-            dc.DrawLine(r.left, r.bottom, r.right, r.bottom)
-            dc.DrawLine(r.right, r.top, r.right, r.bottom)
 
     def on_paint(self, event):
         assert isinstance(event, wx.PaintEvent)
-        dc = wx.BufferedPaintDC(self)
-        self.PrepareDC(dc)
-        dc.BeginDrawing()
-        dc.Background = wx.Brush(wx.SystemSettings.GetColour(wx.SYS_COLOUR_LISTBOX))
-        dc.Clear()
-        dc.Font = self.Font
-        rn = wx.RendererNative.Get()
-        if self.test_mode:
-            #
-            # Draw the slider
-            #
-            top = self.line_height / 2
-            bottom = top + self.line_height * (len(self.items) - 1)
-            dc.Pen = self.shadow_pen
-            dc.DrawLine(9, top, 9, bottom)
-            dc.Pen = self.light_pen
-            dc.DrawLine(10, top, 10, bottom)
-            bmp = self.bmp_slider_active if self.active_slider else self.bmp_slider
-            assert isinstance(bmp, wx.Bitmap)
-            if self.running_item is not None:
-                r = self.get_slider_rect()
-                dc.DrawBitmap(bmp, r.Left, r.Top, True)
-                if self.last_running_item != 0:
-                    top = self.line_height * (self.last_running_item + 1)
-                    dc.Pen = self.shadow_pen
-                    dc.DrawLine(r.Left, top, r.Right, top)
-                    dc.Pen = self.light_pen
-                    dc.DrawLine(r.Left, top + 1, r.Right, top + 1)
-        else:
-            #
-            # Draw a green arrow indicating how much of the pipeline is good
-            #
-            for i in range(len(self.items)):
-                if self.items[i].get_error_state() == ERROR or \
-                        not self.items[i].can_proceed():
-                    break
-            else:
-                i = len(self.items)
-            if i > 0:
-                green_pen = wx.Pen(wx.Colour(0, 160, 0), 3)
-                top = 0
-                bottom = i * self.line_height - 3
-                dc.Pen = green_pen
-                dc.DrawLine(9, top, 9, bottom - self.bmp_downarrow.Height)
-                dc.DrawBitmap(self.bmp_downarrow,
-                              9 - self.bmp_downarrow.Width / 2,
-                              bottom - self.bmp_downarrow.Height, True)
 
-        clr_text = wx.SystemSettings.GetColour(wx.SYS_COLOUR_LISTBOXTEXT)
-        clr_selected = wx.SystemSettings.GetColour(wx.SYS_COLOUR_HIGHLIGHTTEXT)
-        for i, item in enumerate(self.items):
+        dc = wx.BufferedPaintDC(self)
+
+        self.PrepareDC(dc)
+
+        dc.BeginDrawing()
+
+        dc.Background = wx.Brush(wx.SystemSettings.GetColour(wx.SYS_COLOUR_LISTBOX))
+
+        dc.Clear()
+
+        dc.Font = self.Font
+
+        text_color = wx.SystemSettings.GetColour(wx.SYS_COLOUR_LISTBOXTEXT)
+
+        text_color_selected = wx.SystemSettings.GetColour(wx.SYS_COLOUR_HIGHLIGHTTEXT)
+
+        for index, item in enumerate(self.items):
             if self.show_go_pause and self.test_mode:
-                r = self.get_go_pause_rect(i)
-                bmp = self.bmp_pause if item.is_paused() else self.bmp_go
-                dc.DrawBitmap(bmp, r.left, r.top, True)
-                self.draw_shading(dc, 0, i)
+                rectangle = self.get_go_pause_rect(index)
+
+                bitmap = self.bmp_pause if item.is_paused() else self.bmp_go
+
+                dc.DrawBitmap(bitmap, rectangle.left, rectangle.top, True)
 
             if self.show_show_frame_column:
-                r = self.get_eye_rect(i)
-                bmp = self.bmp_eye if item.is_shown() else self.bmp_closed_eye
-                dc.DrawBitmap(bmp, r.left, r.top, True)
-                self.draw_shading(dc, 1, i)
+                rectangle = self.get_eye_rect(index)
 
-            r = self.get_error_rect(i)
-            bmp = (self.bmp_unavailable if item.is_unavailable() else
-                   self.bmp_disabled if not item.enabled else
-                   self.bmp_error if item.error_state == ERROR else
-                   BMP_WARNING if item.error_state == WARNING else
-                   self.bmp_ok)
-            dc.DrawBitmap(bmp, r.left, r.top, True)
-            if self.allow_disable:
-                self.draw_shading(dc, 2, i)
+                bitmap = self.bmp_eye if item.is_shown() else self.bmp_closed_eye
 
-            r = self.get_text_rect(i)
-            if item.selected or i == self.active_item:
+                dc.DrawBitmap(bitmap, rectangle.left, rectangle.top, True)
+
+            rectangle = self.get_error_rect(index)
+
+            bitmap = (self.bmp_unavailable if item.is_unavailable() else self.bmp_disabled if not item.enabled else self.bmp_error if item.error_state == ERROR else BMP_WARNING if item.error_state == WARNING else self.bmp_ok)
+
+            dc.DrawBitmap(bitmap, rectangle.left, rectangle.top, True)
+
+            rectangle = self.get_text_rect(index)
+
+            if item.selected or index == self.active_item:
                 flags = wx.CONTROL_DISABLED if not self.Enabled else 0
+
                 if item.selected:
                     flags += wx.CONTROL_SELECTED
+
                 if self.FindFocus() is self:
                     flags += wx.CONTROL_FOCUSED
-                if self.active_item == i:
+
+                if self.active_item == index:
                     flags += wx.CONTROL_CURRENT
-                    if (self.always_draw_current_as_if_selected and
-                            not item.selected):
+
+                    if self.always_draw_current_as_if_selected and not item.selected:
                         flags |= wx.CONTROL_SELECTED
-                cellprofiler.gui.draw_item_selection_rect(self, dc, r, flags)
-                if (flags & wx.CONTROL_SELECTED + wx.CONTROL_FOCUSED) == \
-                                wx.CONTROL_SELECTED + wx.CONTROL_FOCUSED:
-                    text_clr = clr_selected
+
+                cellprofiler.gui.draw_item_selection_rect(self, dc, rectangle, flags)
+
+                if (flags & wx.CONTROL_SELECTED + wx.CONTROL_FOCUSED) == wx.CONTROL_SELECTED + wx.CONTROL_FOCUSED:
+                    text_color = text_color_selected
                 else:
-                    text_clr = clr_text
+                    text_color = text_color
             else:
-                text_clr = clr_text
+                text_color = text_color
+
             dc.SetBackgroundMode(wx.TRANSPARENT)
-            dc.SetTextForeground(text_clr)
-            dc.DrawText(item.module_name,
-                        r.left + self.text_gap,
-                        r.top)
+
+            dc.SetTextForeground(text_color)
+
+            dc.DrawText(item.module_name, rectangle.left + self.text_gap, rectangle.top)
         if self.drop_insert_point is not None:
             y = self.line_height * self.drop_insert_point
+
             dc.SetPen(wx.BLACK_PEN)
+
             dc.DrawLine(0, y, self.GetSizeTuple()[0], y)
+
         dc.EndDrawing()
 
     def make_event(self, py_event_binder, index=None):

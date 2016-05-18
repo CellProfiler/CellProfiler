@@ -3,10 +3,6 @@ import sys
 import wx
 import cellprofiler.preferences
 import cellprofiler.gui.errordialog
-import cellprofiler.utilities.thread_excepthook
-
-
-cellprofiler.utilities.thread_excepthook.install_thread_sys_excepthook()
 
 
 class App(wx.App):

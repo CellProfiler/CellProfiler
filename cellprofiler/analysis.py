@@ -1050,7 +1050,6 @@ if __name__ == '__main__':
     import time
     import cellprofiler.pipeline
     import cellprofiler.preferences
-    import cellprofiler.utilities.thread_excepthook
 
     # This is an ugly hack, but it's necesary to unify the Request/Reply
     # classes above, so that regardless of whether this is the current module,

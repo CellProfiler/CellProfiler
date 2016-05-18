@@ -45,7 +45,6 @@ import cellprofiler.object as cpo
 import cellprofiler.workspace as cpw
 import cellprofiler.setting as cps
 from cellprofiler.utilities.utf16encode import utf16encode, utf16decode
-from cellprofiler.utilities.walk_in_background import logger
 from bioformats.omexml import OMEXML
 import cellprofiler.utilities.version as cpversion
 import javabridge as J

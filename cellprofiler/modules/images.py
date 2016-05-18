@@ -93,7 +93,6 @@ import cellprofiler.preferences as cpprefs
 import cellprofiler.setting as cps
 from cellprofiler.setting import YES, NO
 import cellprofiler.workspace as cpw
-import cellprofiler.utilities.walk_in_background as W
 import javabridge as J
 import os
 import sys

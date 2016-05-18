@@ -313,8 +313,8 @@ class LoadImages(cpmodule.CPModule):
                 dir_choices=[
                     ABSOLUTE_FOLDER_NAME, DEFAULT_INPUT_FOLDER_NAME,
                     DEFAULT_OUTPUT_FOLDER_NAME, DEFAULT_INPUT_SUBFOLDER_NAME,
-                    DEFAULT_OUTPUT_SUBFOLDER_NAME, URL_FOLDER_NAME],
-                allow_metadata=False, support_urls=cps.SUPPORT_URLS_SHOW_DIR,
+                    DEFAULT_OUTPUT_SUBFOLDER_NAME],
+                allow_metadata=False,
                 doc="""Select the folder containing the images to be loaded.
             %(IO_FOLDER_CHOICE_HELP_TEXT)s""" % globals())
 
@@ -1439,10 +1439,7 @@ class LoadImages(cpmodule.CPModule):
         for i in range(image_set_count):
             for j, image_name in enumerate(image_names):
                 image_number = i + 1
-                if self.location.dir_choice == URL_FOLDER_NAME:
-                    full_path = root + "/" + list_of_lists[j, i]
-                else:
-                    full_path = os.path.join(root, list_of_lists[j, i])
+                full_path = os.path.join(root, list_of_lists[j, i])
                 self.write_measurements(
                         m, image_number, self.images[j], full_path)
 
@@ -1581,14 +1578,8 @@ class LoadImages(cpmodule.CPModule):
             else:
                 image_numbers = [idx + 1]
             for i in range(len(self.images)):
-                if self.location.dir_choice == cps.URL_FOLDER_NAME:
-                    full_path = root
-                    if len(image_set[1][i][0]) > 0:
-                        full_path += "/" + image_set[1][i][0]
-                    full_path += "/" + image_set[1][i][1]
-                else:
-                    path = os.path.join(image_set[1][i][0], image_set[1][i][1])
-                    full_path = os.path.join(root, path)
+                path = os.path.join(image_set[1][i][0], image_set[1][i][1])
+                full_path = os.path.join(root, path)
                 for image_number in image_numbers:
                     d = self.write_measurements(
                             None,
@@ -2538,20 +2529,14 @@ class LoadImages(cpmodule.CPModule):
             my_relpath = os.path.relpath
             realpath = os.path.realpath
             join = os.path.join
-            if (root.lower().startswith("http:") or
-                    root.lower().startswith("https:")):
-                from cellprofiler.utilities.read_directory_url \
-                    import walk_url, read_directory_url, IS_FILE
-                w = walk_url(root, topdown=True)
-                listdir = lambda path: [x for x, y in read_directory_url(path)
-                                        if y == IS_FILE]
-                my_relpath = lambda dirpath, root: dirpath[(len(root) + 1):]
-                realpath = lambda x: x
-                join = lambda *x: "/".join(x)
+
+            if root.lower().startswith("http:") or root.lower().startswith("https:"):
+                w = None
             elif sys.version_info[0] == 2 and sys.version_info[1] < 6:
                 w = os.walk(root, topdown=True)
             else:
                 w = os.walk(root, topdown=True, followlinks=True)
+
             if self.analyze_sub_dirs():
                 if self.descend_subdirectories == SUB_SOME:
                     prohibited = self.subdirectory_filter.get_selections()

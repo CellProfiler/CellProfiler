@@ -343,7 +343,7 @@ class ReassignObjectNumbers(cpm.Module):
 
         workspace - workspace containing saved display data
         '''
-        from cellprofiler.gui.cpfigure_tools import renumber_labels_for_display
+        from cellprofiler.gui.tools import renumber_labels_for_display
         import matplotlib.cm as cm
 
         figure.set_subplots((2, 1))

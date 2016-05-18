@@ -283,7 +283,7 @@ class RelateObjects(cpm.Module):
     def display(self, workspace, figure):
         if not self.show_window:
             return
-        from cellprofiler.gui.cpfigure_tools import renumber_labels_for_display
+        from cellprofiler.gui.tools import renumber_labels_for_display
         figure.set_subplots((2, 2))
         renumbered_parent_labels = renumber_labels_for_display(
                 workspace.display_data.parent_labels)

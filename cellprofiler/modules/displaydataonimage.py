@@ -222,7 +222,7 @@ class DisplayDataOnImage(cpm.Module):
         import matplotlib.cm
         import matplotlib.backends.backend_agg
         import matplotlib.transforms
-        from cellprofiler.gui.cpfigure_tools import figure_to_image, only_display_image
+        from cellprofiler.gui.tools import figure_to_image, only_display_image
         #
         # Get the image
         #

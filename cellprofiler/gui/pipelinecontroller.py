@@ -1588,7 +1588,7 @@ class PipelineController(object):
 
     def on_pathlist_show(self, event=None):
         """Show the focused item's image"""
-        from cellprofiler.gui.cpfigure import show_image
+        from cellprofiler.gui.figure import show_image
         from cellprofiler.modules.loadimages import url2pathname
         paths = self.__path_list_ctrl.get_paths(
             self.__path_list_ctrl.FLAG_FOCUS_ITEM_ONLY)

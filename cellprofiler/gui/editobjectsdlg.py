@@ -3,8 +3,8 @@
 
 """
 
-import cellprofiler.gui.cpfigure
-import cellprofiler.gui.cpfigure_tools
+import cellprofiler.gui.figure
+import cellprofiler.gui.tools
 import cellprofiler.object
 import cellprofiler.preferences
 import centrosome.cpmorphology
@@ -269,7 +269,7 @@ class EditObjectsDialog(wx.Dialog):
                     self.Parent.inside_print = False
 
         self.panel = CanvasPatch()
-        self.toolbar = cellprofiler.gui.cpfigure.CPNavigationToolbar(self.panel)
+        self.toolbar = cellprofiler.gui.figure.CPNavigationToolbar(self.panel)
         self.sash_parent = wx.Panel(self)
         #
         # Need to reparent the canvas after instantiating the toolbar so
@@ -557,7 +557,7 @@ class EditObjectsDialog(wx.Dialog):
                 idxs = numpy.unique(label)
                 idxs = idxs[idxs != 0]
                 distinct_label_count = len(idxs)
-                clabels = cellprofiler.gui.cpfigure_tools.renumber_labels_for_display(label)
+                clabels = cellprofiler.gui.tools.renumber_labels_for_display(label)
                 clabels[clabels != 0] += lstart
                 lstart += distinct_label_count
                 label_map[label.flatten()] = clabels.flatten()

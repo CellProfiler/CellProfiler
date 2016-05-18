@@ -243,7 +243,7 @@ class Workspace(object):
 
     def get_module_figure(self, module, image_set_number, parent=None):
         """Create a CPFigure window or find one already created"""
-        import cellprofiler.gui.cpfigure as cpf
+        import cellprofiler.gui.figure as cpf
         import cellprofiler.measurement as cpmeas
 
         # catch any background threads trying to call display functions.
@@ -264,9 +264,9 @@ class Workspace(object):
                                                  image_set_number)
 
         if self.__create_new_window:
-            figure = cpf.CPFigureFrame(parent or self.__frame,
-                                       name=window_name,
-                                       title=title)
+            figure = cpf.Figure(parent or self.__frame,
+                                name=window_name,
+                                title=title)
         else:
             figure = cpf.create_or_find(parent or self.__frame,
                                         name=window_name,
@@ -279,7 +279,7 @@ class Workspace(object):
 
     def create_or_find_figure(self, title=None, subplots=None, window_name=None):
         """Create a matplotlib figure window or find one already created"""
-        import cellprofiler.gui.cpfigure as cpf
+        import cellprofiler.gui.figure as cpf
 
         # catch any background threads trying to call display functions.
         assert not self.__in_background
@@ -291,10 +291,10 @@ class Workspace(object):
             window_name = cpf.window_name(self.__module)
 
         if self.__create_new_window:
-            figure = cpf.CPFigureFrame(self,
-                                       title=title,
-                                       name=window_name,
-                                       subplots=subplots)
+            figure = cpf.Figure(self,
+                                title=title,
+                                name=window_name,
+                                subplots=subplots)
         else:
             figure = cpf.create_or_find(self.__frame, title=title,
                                         name=window_name,

@@ -972,7 +972,7 @@ class TrackObjects(cpm.Module):
             import matplotlib.axes
             import matplotlib.backends.backend_agg
             import matplotlib.transforms
-            from cellprofiler.gui.cpfigure_tools import figure_to_image, only_display_image
+            from cellprofiler.gui.tools import figure_to_image, only_display_image
 
             figure = matplotlib.figure.Figure()
             canvas = matplotlib.backends.backend_agg.FigureCanvasAgg(figure)

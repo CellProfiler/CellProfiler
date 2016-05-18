@@ -114,7 +114,7 @@ class ConvertObjectsToImage(cpm.Module):
                 alpha[mask] = 1
             elif self.image_mode == IM_COLOR:
                 import matplotlib.cm
-                from cellprofiler.gui.cpfigure_tools import renumber_labels_for_display
+                from cellprofiler.gui.tools import renumber_labels_for_display
                 if self.colormap.value == DEFAULT_COLORMAP:
                     cm_name = cpprefs.get_default_colormap()
                 elif self.colormap.value == COLORCUBE:

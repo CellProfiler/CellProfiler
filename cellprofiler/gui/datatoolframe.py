@@ -4,7 +4,7 @@
 
 import cellprofiler.image
 import cellprofiler.gui
-import cellprofiler.gui.cpfigure
+import cellprofiler.gui.figure
 import cellprofiler.gui.moduleview
 import cellprofiler.measurement
 import cellprofiler.modules
@@ -215,7 +215,7 @@ class DataToolFrame(wx.Frame):
         self.module.run_as_data_tool(workspace)
         self.measurements.flush()
         if self.module.show_window:
-            fig = cellprofiler.gui.cpfigure.create_or_find(
+            fig = cellprofiler.gui.figure.create_or_find(
                     parent=self,
                     title="%s Output" % self.module.module_name,
                     name="CellProfiler:DataTool:%s" % self.module.module_name)

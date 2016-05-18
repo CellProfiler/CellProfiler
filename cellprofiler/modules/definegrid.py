@@ -392,7 +392,7 @@ class DefineGrid(cpm.Module):
             import matplotlib.transforms
             import matplotlib.figure
             import matplotlib.backends.backend_agg
-            from cellprofiler.gui.cpfigure_tools import figure_to_image
+            from cellprofiler.gui.tools import figure_to_image
             figure = matplotlib.figure.Figure()
             canvas = matplotlib.backends.backend_agg.FigureCanvasAgg(figure)
             ax = figure.add_subplot(1, 1, 1)

@@ -3,7 +3,7 @@
 """
 
 import cellprofiler.gui
-import cellprofiler.gui.cpfigure
+import cellprofiler.gui.figure
 import cellprofiler.gui.moduleview
 import cellprofiler.icons
 import cellprofiler.pipeline
@@ -528,8 +528,8 @@ class PipelineListView(object):
 
     @staticmethod
     def find_module_figure_window(module):
-        name = cellprofiler.gui.cpfigure.window_name(module)
-        return cellprofiler.gui.cpfigure.find_fig(name=name)
+        name = cellprofiler.gui.figure.window_name(module)
+        return cellprofiler.gui.figure.find_fig(name=name)
 
     def __on_pause_column_clicked(self, event):
         module = self.get_event_module(event)

@@ -1,15 +1,15 @@
 # coding=utf-8
-""" cpfigure.py - provides a frame with a figure inside
+""" figure.py - provides a frame with a figure inside
 """
 
 import cellprofiler.gui
-import cellprofiler.gui.cpartists
+import cellprofiler.gui.artist
 import cellprofiler.gui.help
 import cellprofiler.preferences
 import cellprofiler.preferences
 import centrosome.cpmorphology
 import centrosome.outline
-import cpfigure_tools
+import tools
 import csv
 import functools
 import javabridge
@@ -184,8 +184,8 @@ def create_or_find(parent=None, identifier=-1, title="",
                    on_close=None):
     """Create or find a figure frame window"""
     win = find_fig(parent, title, name, subplots)
-    return win or CPFigureFrame(parent, identifier, title, pos, size, style, name,
-                                subplots, on_close)
+    return win or Figure(parent, identifier, title, pos, size, style, name,
+                         subplots, on_close)
 
 
 def close_all(parent):
@@ -193,7 +193,7 @@ def close_all(parent):
                if isinstance(x, wx.Frame)]
 
     for window in windows:
-        if isinstance(window, CPFigureFrame):
+        if isinstance(window, Figure):
             window.on_close(None)
         else:
             window.Close()
@@ -243,7 +243,7 @@ MODE_NONE = 0
 MODE_MEASURE_LENGTH = 2
 
 
-class CPFigureFrame(wx.Frame):
+class Figure(wx.Frame):
     """A wx.Frame with a figure inside"""
 
     def __init__(self, parent=None, identifier=-1, title="",
@@ -269,7 +269,7 @@ class CPFigureFrame(wx.Frame):
         global window_ids
         if pos == wx.DefaultPosition:
             pos = cellprofiler.preferences.get_next_cpfigure_position()
-        super(CPFigureFrame, self).__init__(parent, identifier, title, pos, size, style, name)
+        super(Figure, self).__init__(parent, identifier, title, pos, size, style, name)
         self.close_fn = on_close
         self.mouse_mode = MODE_NONE
         self.length_arrow = None
@@ -632,7 +632,7 @@ class CPFigureFrame(wx.Frame):
             elif isinstance(event.inaxes, matplotlib.axes.Axes):
                 for artist in event.inaxes.artists:
                     if isinstance(
-                            artist, cellprofiler.gui.cpartists.CPImageArtist):
+                            artist, cellprofiler.gui.artist.CPImageArtist):
                         fields += ["%s: %.4f" % (k, v) for k, v in
                                    artist.get_channel_values(xi, yi).items()]
         else:
@@ -1328,7 +1328,7 @@ class CPFigureFrame(wx.Frame):
                      our own artist.
         """
         if renumber:
-            labels = cpfigure_tools.renumber_labels_for_display(labels)
+            labels = tools.renumber_labels_for_display(labels)
 
         cm = matplotlib.cm.get_cmap(cellprofiler.preferences.get_default_colormap())
         cm.set_bad((0, 0, 0))
@@ -1496,7 +1496,7 @@ class CPFigureFrame(wx.Frame):
                 elif cplabel[CPLD_MODE] == CPLDM_ALPHA:
                     #
                     # For alpha overlays, renumber
-                    lnumbers = cpfigure_tools.renumber_labels_for_display(labels) + loffset
+                    lnumbers = tools.renumber_labels_for_display(labels) + loffset
                     mappable = matplotlib.cm.ScalarMappable(
                             cmap=cplabel[CPLD_ALPHA_COLORMAP])
                     mappable.set_clim(1, ltotal)
@@ -1933,9 +1933,9 @@ def show_image(url, parent=None, needs_raise_after=True):
                              "Failed to load %s" % url,
                              continue_only=True)
         return
-    frame = CPFigureFrame(parent=parent,
-                          title=filename,
-                          subplots=(1, 1))
+    frame = Figure(parent=parent,
+                   title=filename,
+                   subplots=(1, 1))
     if image.ndim == 2:
         frame.subplot_imshow_grayscale(0, 0, image, title=filename)
     else:
@@ -2175,7 +2175,7 @@ class CPNavigationToolbar(matplotlib.backends.backend_wxagg.NavigationToolbar2Wx
         #                    you save using the icon.
         #
         parent = self.GetTopLevelParent()
-        if isinstance(parent, CPFigureFrame):
+        if isinstance(parent, Figure):
             parent.on_file_save(event)
         else:
             super(CPNavigationToolbar, self).save(event)

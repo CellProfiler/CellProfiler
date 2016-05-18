@@ -932,7 +932,7 @@ class UntangleWorms(cpm.Module):
                     measurements.add_measurement(name, feature, values[:, i])
 
     def display(self, workspace, figure):
-        from cellprofiler.gui.cpfigure import CPLDM_ALPHA
+        from cellprofiler.gui.figure import CPLDM_ALPHA
         if self.mode == MODE_UNTANGLE:
             figure.set_subplots((1, 1))
             cplabels = []

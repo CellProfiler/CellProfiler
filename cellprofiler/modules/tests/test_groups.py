@@ -7,7 +7,7 @@ from cStringIO import StringIO
 
 import numpy as np
 
-import cellprofiler.measurements as cpmeas
+import cellprofiler.measurement as cpmeas
 import cellprofiler.modules.groups as G
 import cellprofiler.pipeline as cpp
 import cellprofiler.workspace as cpw

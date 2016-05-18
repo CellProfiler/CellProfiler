@@ -63,10 +63,10 @@ import scipy.ndimage as nd
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 from centrosome.filter import stretch
 
-import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements as cpmeas
-import cellprofiler.objects as cpo
-import cellprofiler.settings as cps
+import cellprofiler.module as cpm
+import cellprofiler.measurement as cpmeas
+import cellprofiler.object as cpo
+import cellprofiler.setting as cps
 from identify import C_LOCATION
 
 INTENSITY = 'Intensity'
@@ -99,7 +99,7 @@ ALL_MEASUREMENTS = [INTEGRATED_INTENSITY, MEAN_INTENSITY, STD_INTENSITY,
 ALL_LOCATION_MEASUREMENTS = [LOC_CMI_X, LOC_CMI_Y, LOC_MAX_X, LOC_MAX_Y]
 
 
-class MeasureObjectIntensity(cpm.CPModule):
+class MeasureObjectIntensity(cpm.Module):
     module_name = "MeasureObjectIntensity"
     variable_revision_number = 3
     category = "Measurement"

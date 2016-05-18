@@ -7,13 +7,13 @@ from StringIO import StringIO
 import centrosome.cpmorphology as morph
 import numpy as np
 
-import cellprofiler.cpimage as cpi
-import cellprofiler.measurements as cpmeas
+import cellprofiler.image as cpi
+import cellprofiler.measurement as cpmeas
 import cellprofiler.modules.identify as I
 import cellprofiler.modules.straightenworms as S
-import cellprofiler.objects as cpo
+import cellprofiler.object as cpo
 import cellprofiler.pipeline as cpp
-import cellprofiler.settings as cps
+import cellprofiler.setting as cps
 import cellprofiler.workspace as cpw
 
 OBJECTS_NAME = "worms"

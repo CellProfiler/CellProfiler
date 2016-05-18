@@ -18,11 +18,11 @@ from centrosome.cpmorphology import draw_line
 from centrosome.cpmorphology import fill_labeled_holes
 from centrosome.outline import outline
 
-import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
-import cellprofiler.objects as cpo
+import cellprofiler.image as cpi
+import cellprofiler.module as cpm
+import cellprofiler.object as cpo
 import cellprofiler.preferences as cpprefs
-import cellprofiler.settings as cps
+import cellprofiler.setting as cps
 import identify as I
 from cellprofiler.gui.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
 
@@ -137,7 +137,7 @@ class IdentifyObjectsManually(I.Identify):
 
         returns - color image of same size as pixel_data
         '''
-        from cellprofiler.gui.cpfigure_tools import renumber_labels_for_display
+        from cellprofiler.gui.tools import renumber_labels_for_display
         import matplotlib
 
         labels = renumber_labels_for_display(labels)

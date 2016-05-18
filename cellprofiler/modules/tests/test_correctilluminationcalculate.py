@@ -14,11 +14,11 @@ from cellprofiler.preferences import set_headless
 set_headless()
 
 import cellprofiler.pipeline as cpp
-import cellprofiler.settings as cps
-import cellprofiler.cpimage as cpi
+import cellprofiler.setting as cps
+import cellprofiler.image as cpi
 import cellprofiler.workspace as cpw
-import cellprofiler.objects as cpo
-import cellprofiler.measurements as cpm
+import cellprofiler.object as cpo
+import cellprofiler.measurement as cpm
 import cellprofiler.modules.injectimage as inj
 import cellprofiler.modules.correctilluminationcalculate as calc
 

@@ -20,9 +20,9 @@ import zmq
 
 import cellprofiler.analysis as cpanalysis
 import cellprofiler.pipeline as cpp
-import cellprofiler.cpmodule as cpm
+import cellprofiler.module as cpm
 import cellprofiler.preferences as cpprefs
-import cellprofiler.measurements as cpmeas
+import cellprofiler.measurement as cpmeas
 import cellprofiler.utilities.zmqrequest as cpzmq
 from cellprofiler.modules.tests import example_images_directory, testimages_directory
 
@@ -272,7 +272,7 @@ class TestAnalysis(unittest.TestCase):
 
         for module in pipeline.modules():
             if module.show_window and \
-                            module.__class__.display_post_run != cpm.CPModule.display_post_run:
+                            module.__class__.display_post_run != cpm.Module.display_post_run:
                 result = self.event_queue.get()
                 self.assertIsInstance(
                         result, cpanalysis.DisplayPostRunRequest)

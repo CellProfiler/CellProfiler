@@ -1,8 +1,8 @@
 # coding=utf-8
-"""cpartists.py - Specialized matplotlib artists for CellProfiler
+"""artist.py - Specialized matplotlib artists for CellProfiler
 """
 
-import cellprofiler.gui.cpfigure_tools
+import cellprofiler.gui.tools
 import centrosome.cpmorphology
 import centrosome.outline
 import matplotlib
@@ -335,7 +335,7 @@ class ObjectsData(OutlinesMixin):
                 continue
             if self.scramble:
                 lmin = numpy.min(l[l != 0])
-            l[l != 0] = cellprofiler.gui.cpfigure_tools.renumber_labels_for_display(l)[l != 0] + lmin
+            l[l != 0] = cellprofiler.gui.tools.renumber_labels_for_display(l)[l != 0] + lmin
             lmin = numpy.max(l)
             if img is None:
                 img = sm.to_rgba(l)

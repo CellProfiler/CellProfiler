@@ -40,19 +40,19 @@ import scipy.ndimage as scind
 from centrosome.filter import stretch
 from scipy.sparse import coo_matrix
 
-import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements as cpmeas
-import cellprofiler.objects as cpo
+import cellprofiler.image as cpi
+import cellprofiler.module as cpm
+import cellprofiler.measurement as cpmeas
+import cellprofiler.object as cpo
 import cellprofiler.preferences as cpprefs
-import cellprofiler.settings as cps
+import cellprofiler.setting as cps
 from cellprofiler.gui.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
 from cellprofiler.modules.identify import C_PARENT, C_CHILDREN
 from cellprofiler.modules.identify import FF_CHILDREN_COUNT, FF_PARENT
 from cellprofiler.modules.identify import add_object_count_measurements
 from cellprofiler.modules.identify import add_object_location_measurements
 from cellprofiler.modules.identify import get_object_measurement_columns
-from cellprofiler.settings import YES, NO
+from cellprofiler.setting import YES, NO
 
 OPTION_UNIFY = "Unify"
 OPTION_SPLIT = "Split"
@@ -67,7 +67,7 @@ UM_DISCONNECTED = "Disconnected"
 UM_CONVEX_HULL = "Convex hull"
 
 
-class ReassignObjectNumbers(cpm.CPModule):
+class ReassignObjectNumbers(cpm.Module):
     module_name = "ReassignObjectNumbers"
     category = "Object Processing"
     variable_revision_number = 4
@@ -343,7 +343,7 @@ class ReassignObjectNumbers(cpm.CPModule):
 
         workspace - workspace containing saved display data
         '''
-        from cellprofiler.gui.cpfigure_tools import renumber_labels_for_display
+        from cellprofiler.gui.tools import renumber_labels_for_display
         import matplotlib.cm as cm
 
         figure.set_subplots((2, 1))

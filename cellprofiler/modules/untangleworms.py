@@ -81,12 +81,12 @@ from scipy.io import loadmat
 from scipy.sparse import coo
 
 logger = logging.getLogger(__name__)
-import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements as cpmeas
-import cellprofiler.cpimage as cpi
-import cellprofiler.objects as cpo
-import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
+import cellprofiler.module as cpm
+import cellprofiler.measurement as cpmeas
+import cellprofiler.image as cpi
+import cellprofiler.object as cpo
+import cellprofiler.setting as cps
+from cellprofiler.setting import YES, NO
 import centrosome.cpmorphology as morph
 import cellprofiler.preferences as cpprefs
 import identify as I
@@ -184,7 +184,7 @@ complexity_limits = {
 }
 
 
-class UntangleWorms(cpm.CPModule):
+class UntangleWorms(cpm.Module):
     variable_revision_number = 2
     category = ["Object Processing", "Worm Toolbox"]
     module_name = "UntangleWorms"
@@ -932,7 +932,7 @@ class UntangleWorms(cpm.CPModule):
                     measurements.add_measurement(name, feature, values[:, i])
 
     def display(self, workspace, figure):
-        from cellprofiler.gui.cpfigure import CPLDM_ALPHA
+        from cellprofiler.gui.figure import CPLDM_ALPHA
         if self.mode == MODE_UNTANGLE:
             figure.set_subplots((1, 1))
             cplabels = []

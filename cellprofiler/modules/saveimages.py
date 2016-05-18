@@ -28,10 +28,10 @@ import scipy.io.matlab.mio
 
 logger = logging.getLogger(__name__)
 
-import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements as cpmeas
-import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
+import cellprofiler.module as cpm
+import cellprofiler.measurement as cpmeas
+import cellprofiler.setting as cps
+from cellprofiler.setting import YES, NO
 import cellprofiler.preferences as cpp
 from cellprofiler.gui.help import USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF
 from cellprofiler.preferences import \
@@ -108,7 +108,7 @@ OFFSET_DIRECTORY_PATH = 11
 OFFSET_BIT_DEPTH_V11 = 12
 
 
-class SaveImages(cpm.CPModule):
+class SaveImages(cpm.Module):
     module_name = "SaveImages"
     variable_revision_number = 11
     category = "File Processing"

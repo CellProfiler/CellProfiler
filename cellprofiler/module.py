@@ -1,8 +1,3 @@
-"""Module.py - represents a CellProfiler pipeline module
-
-    TO-DO: capture and save module revision #s in the handles
-"""
-
 import os
 import re
 import sys
@@ -10,14 +5,14 @@ import uuid
 
 import numpy as np
 
-import cellprofiler.cpimage
-import cellprofiler.measurements
-import cellprofiler.objects
-import cellprofiler.settings as cps
+import cellprofiler.image
+import cellprofiler.measurement
+import cellprofiler.object
+import cellprofiler.setting as cps
 import pipeline as cpp
 
 
-class CPModule(object):
+class Module(object):
     """ Derive from the abstract module class to create your own module in Python
 
     You need to implement the following in the derived class:

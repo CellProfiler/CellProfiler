@@ -3,7 +3,7 @@
 """
 
 import cellprofiler.gui
-import cellprofiler.gui.cpfigure
+import cellprofiler.gui.figure
 import cellprofiler.gui.datatoolframe
 import cellprofiler.gui.dialog
 import cellprofiler.gui.errordialog
@@ -199,10 +199,7 @@ class CPFrame(wx.Frame):
         self.__path_list_sash.SetSashVisible(wx.SASH_BOTTOM, True)
         self.__path_list_sash.AutoLayout = True
         self.__path_list_sash.Hide()
-        path_list_group_box = wx.StaticBox(
-                self.__path_list_sash,
-                label = "File list")
-        sizer = wx.StaticBoxSizer(path_list_group_box, wx.VERTICAL)
+        sizer = wx.BoxSizer(wx.VERTICAL)
         self.__path_list_sash.Sizer = wx.BoxSizer(wx.VERTICAL)
         self.__path_list_sash.Sizer.Add(sizer, 1, wx.EXPAND)
         # Add spacer so that group box doesn't cover sash's handle
@@ -927,7 +924,7 @@ class CPFrame(wx.Frame):
         dlg.Show()
 
     def __on_close_all(self, event):
-        cellprofiler.gui.cpfigure.close_all(self)
+        cellprofiler.gui.figure.close_all(self)
 
     @staticmethod
     def __on_new_cp(event):
@@ -1126,10 +1123,10 @@ class CPFrame(wx.Frame):
                             style=wx.FD_OPEN)
         if dlg.ShowModal() == wx.ID_OK:
             from cellprofiler.modules.loadimages import LoadImagesImageProvider
-            from cellprofiler.gui.cpfigure import CPFigureFrame
+            from cellprofiler.gui.figure import Figure
             lip = LoadImagesImageProvider("dummy", "", dlg.Path)
             image = lip.provide_image(None).pixel_data
-            frame = CPFigureFrame(self, title=dlg.Path, subplots=(1, 1))
+            frame = Figure(self, title=dlg.Path, subplots=(1, 1))
             if image.ndim == 3:
                 frame.subplot_imshow_color(0, 0, image, title=dlg.Path)
             else:

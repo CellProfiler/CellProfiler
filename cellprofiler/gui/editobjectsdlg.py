@@ -3,9 +3,9 @@
 
 """
 
-import cellprofiler.gui.cpfigure
-import cellprofiler.gui.cpfigure_tools
-import cellprofiler.objects
+import cellprofiler.gui.figure
+import cellprofiler.gui.tools
+import cellprofiler.object
 import cellprofiler.preferences
 import centrosome.cpmorphology
 import centrosome.cpmorphology
@@ -213,7 +213,7 @@ class EditObjectsDialog(wx.Dialog):
         self.last_ijv = ijvx[:, :3]
         self.last_artist_save = artist_save
         self.last_to_keep = self.to_keep
-        temp = cellprofiler.objects.Objects()
+        temp = cellprofiler.object.Objects()
         temp.ijv = self.last_ijv
         self.labels = [l for l, c in temp.get_labels(self.shape)]
         self.init_labels()
@@ -269,7 +269,7 @@ class EditObjectsDialog(wx.Dialog):
                     self.Parent.inside_print = False
 
         self.panel = CanvasPatch()
-        self.toolbar = cellprofiler.gui.cpfigure.CPNavigationToolbar(self.panel)
+        self.toolbar = cellprofiler.gui.figure.CPNavigationToolbar(self.panel)
         self.sash_parent = wx.Panel(self)
         #
         # Need to reparent the canvas after instantiating the toolbar so
@@ -557,7 +557,7 @@ class EditObjectsDialog(wx.Dialog):
                 idxs = numpy.unique(label)
                 idxs = idxs[idxs != 0]
                 distinct_label_count = len(idxs)
-                clabels = cellprofiler.gui.cpfigure_tools.renumber_labels_for_display(label)
+                clabels = cellprofiler.gui.tools.renumber_labels_for_display(label)
                 clabels[clabels != 0] += lstart
                 lstart += distinct_label_count
                 label_map[label.flatten()] = clabels.flatten()
@@ -670,7 +670,7 @@ class EditObjectsDialog(wx.Dialog):
             ii.append(i[mask])
             jj.append(j[mask])
             vv.append(l[mask])
-        temp = cellprofiler.objects.Objects()
+        temp = cellprofiler.object.Objects()
         temp.set_ijv(
                 numpy.column_stack([numpy.hstack(x) for x in (ii, jj, vv)]),
                 shape=self.shape)
@@ -722,8 +722,8 @@ class EditObjectsDialog(wx.Dialog):
                 orig_to_show[object_number] = False
         self.orig_axes.clear()
         if self.guide_image is not None and self.wants_image_display:
-            image, _ = cellprofiler.objects.size_similarly(self.orig_labels[0],
-                                                           self.guide_image)
+            image, _ = cellprofiler.object.size_similarly(self.orig_labels[0],
+                                                          self.guide_image)
             if image.ndim == 2:
                 image = numpy.dstack((image, image, image))
             if self.scaling_mode == self.SM_RAW:

@@ -12,10 +12,10 @@ from cellprofiler.preferences import set_headless
 set_headless()
 
 import cellprofiler.workspace as cpw
-import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
-import cellprofiler.objects as cpo
-import cellprofiler.measurements as cpmeas
+import cellprofiler.image as cpi
+import cellprofiler.module as cpm
+import cellprofiler.object as cpo
+import cellprofiler.measurement as cpmeas
 import cellprofiler.pipeline as cpp
 import cellprofiler.modules.enhanceorsuppressfeatures as E
 from centrosome.filter import enhance_dark_holes

@@ -128,8 +128,7 @@ def _display_error_dialog(frame, exc, pipeline, message=None, tb=None, continue_
                                     wx.FONTWEIGHT_BOLD)
     sizer.Add(question_control, 0,
               wx.EXPAND | wx.ALL, 5)
-    error_control = wx.StaticBox(dialog, -1, "Error:")
-    error_box = wx.StaticBoxSizer(error_control, wx.HORIZONTAL)
+    error_box = wx.BoxSizer(wx.HORIZONTAL)
     message_control = wx.StaticText(dialog, -1, message)
     error_box.Add(message_control, 1, wx.EXPAND | wx.RIGHT, 5)
     sizer.Add(error_box, 1, wx.EXPAND | wx.ALL, 5)

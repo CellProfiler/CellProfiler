@@ -3,8 +3,8 @@
 """
 
 import cellprofiler.analysis
-import cellprofiler.cpimage
-import cellprofiler.cpmodule
+import cellprofiler.image
+import cellprofiler.module
 import cellprofiler.gui.addmoduleframe
 import cellprofiler.gui.help
 import cellprofiler.gui.htmldialog
@@ -13,10 +13,10 @@ import cellprofiler.gui.omerologin
 import cellprofiler.gui.parametersampleframe
 import cellprofiler.gui.pathlist
 import cellprofiler.icons
-import cellprofiler.measurements
+import cellprofiler.measurement
 import cellprofiler.modules.loadimages
 import cellprofiler.modules.loadimages
-import cellprofiler.objects
+import cellprofiler.object
 import cellprofiler.pipeline
 import cellprofiler.preferences
 import cellprofiler.utilities.version
@@ -926,13 +926,13 @@ class PipelineController(object):
         pathname - pathname to the file
         """
         assert h5py.is_hdf5(pathname)
-        m = cellprofiler.measurements.Measurements(
+        m = cellprofiler.measurement.Measurements(
             filename=pathname,
             mode="r")
         has_user_pipeline = m.has_feature(
-            cellprofiler.measurements.EXPERIMENT, cellprofiler.pipeline.M_USER_PIPELINE)
+            cellprofiler.measurement.EXPERIMENT, cellprofiler.pipeline.M_USER_PIPELINE)
         has_pipeline = m.has_feature(
-            cellprofiler.measurements.EXPERIMENT, cellprofiler.pipeline.M_PIPELINE)
+            cellprofiler.measurement.EXPERIMENT, cellprofiler.pipeline.M_PIPELINE)
         if has_user_pipeline:
             if has_pipeline:
                 with wx.Dialog(
@@ -953,8 +953,7 @@ class PipelineController(object):
                               os.path.split(pathname)[1]
                     sizer.Add(wx.StaticText(dlg, label=message), 0, wx.EXPAND)
                     sizer.AddSpacer(4)
-                    groupbox = wx.StaticBox(dlg, label="Pipeline choice")
-                    gb_sizer = wx.StaticBoxSizer(groupbox, wx.VERTICAL)
+                    gb_sizer = wx.BoxSizer(groupbox, wx.VERTICAL)
                     sizer.Add(gb_sizer, 1, wx.EXPAND)
                     rb_primary = wx.RadioButton(dlg, label="&Primary pipeline")
                     gb_sizer.Add(rb_primary, 0, wx.ALIGN_LEFT)
@@ -1130,7 +1129,7 @@ class PipelineController(object):
                                              continue_only=True)
             return
         m = self.__workspace.measurements
-        assert isinstance(m, cellprofiler.measurements.Measurements)
+        assert isinstance(m, cellprofiler.measurement.Measurements)
 
         image_numbers = m.get_image_numbers()
         if len(image_numbers) == 0:
@@ -1139,14 +1138,14 @@ class PipelineController(object):
                 "Please configure the input modules correctly.",
                 "Plate viewer: No image sets")
             return
-        url_features = [f for f in m.get_feature_names(cellprofiler.measurements.IMAGE)
-                        if f.startswith(cellprofiler.measurements.C_URL)]
+        url_features = [f for f in m.get_feature_names(cellprofiler.measurement.IMAGE)
+                        if f.startswith(cellprofiler.measurement.C_URL)]
         pws = []
         for feature in ("Plate", "Well", "Site"):
-            measurement = cellprofiler.measurements.C_METADATA + "_" + feature
-            if m.has_feature(cellprofiler.measurements.IMAGE, measurement):
+            measurement = cellprofiler.measurement.C_METADATA + "_" + feature
+            if m.has_feature(cellprofiler.measurement.IMAGE, measurement):
                 pws.append(
-                    m.get_measurement(cellprofiler.measurements.IMAGE, measurement, image_numbers))
+                    m.get_measurement(cellprofiler.measurement.IMAGE, measurement, image_numbers))
             else:
                 pws.append([None] * len(image_numbers))
         plate, well, site = pws
@@ -1159,8 +1158,8 @@ class PipelineController(object):
             return
 
         for url_feature in url_features:
-            channel = [url_feature[(len(cellprofiler.measurements.C_URL) + 1):]] * len(image_numbers)
-            urls = m.get_measurement(cellprofiler.measurements.IMAGE, url_feature, image_numbers)
+            channel = [url_feature[(len(cellprofiler.measurement.C_URL) + 1):]] * len(image_numbers)
+            urls = m.get_measurement(cellprofiler.measurement.IMAGE, url_feature, image_numbers)
             data.add_files(
                 [url.encode('utf-8') for url in urls],
                 plate, well, site, channel_names=channel)
@@ -1589,7 +1588,7 @@ class PipelineController(object):
 
     def on_pathlist_show(self, event=None):
         """Show the focused item's image"""
-        from cellprofiler.gui.cpfigure import show_image
+        from cellprofiler.gui.figure import show_image
         from cellprofiler.modules.loadimages import url2pathname
         paths = self.__path_list_ctrl.get_paths(
             self.__path_list_ctrl.FLAG_FOCUS_ITEM_ONLY)
@@ -2445,7 +2444,7 @@ class PipelineController(object):
         self.__workspace.display_data.__dict__.update(evt.display_data_dict)
         try:
             module = self.__pipeline.modules(exclude_disabled=False)[module_num - 1]
-            if module.display != cellprofiler.cpmodule.CPModule.display:
+            if module.display != cellprofiler.module.Module.display:
                 fig = self.__workspace.get_module_figure(module,
                                                          evt.image_set_number,
                                                          self.__frame)
@@ -2469,7 +2468,7 @@ class PipelineController(object):
         self.__workspace.display_data.__dict__.update(evt.display_data.__dict__)
         try:
             module = self.__pipeline.modules(exclude_disabled=False)[module_num - 1]
-            if module.display_post_run != cellprofiler.cpmodule.CPModule.display_post_run:
+            if module.display_post_run != cellprofiler.module.Module.display_post_run:
                 image_number = self.__workspace.measurements.image_set_count
                 fig = self.__workspace.get_module_figure(module,
                                                          image_number,
@@ -2489,7 +2488,7 @@ class PipelineController(object):
         self.__workspace.display_data.__dict__.update(evt.display_data)
         try:
             module = self.__pipeline.modules(exclude_disabled=False)[module_num - 1]
-            if module.display_post_group != cellprofiler.cpmodule.CPModule.display_post_group:
+            if module.display_post_group != cellprofiler.module.Module.display_post_group:
                 image_number = evt.image_set_number
                 fig = self.__workspace.get_module_figure(module,
                                                          image_number,
@@ -2510,7 +2509,7 @@ class PipelineController(object):
         """
         module_num = evt.module_num
         # extract args and kwargs from the request.
-        # see main().interaction_handler() in analysis_worker.py
+        # see main().interaction_handler() in worker.py
         args = [evt.__dict__['arg_%d' % idx] for idx in range(evt.num_args)]
         kwargs = dict((name, evt.__dict__['kwarg_%s' % name]) for name in evt.kwargs_names)
         result = ""
@@ -2621,7 +2620,7 @@ class PipelineController(object):
         ##################################
 
         try:
-            measurements = cellprofiler.measurements.load_measurements(path)
+            measurements = cellprofiler.measurement.load_measurements(path)
             pipeline_txt = measurements.get_experiment_measurement(
                 cellprofiler.pipeline.M_PIPELINE)
             self.__pipeline.loadtxt(cStringIO.StringIO(pipeline_txt.encode("utf-8")))
@@ -2702,7 +2701,7 @@ class PipelineController(object):
                 self.__pipeline.save_measurements(path, event.measurements)
         finally:
             m = event.measurements
-            status = m[cellprofiler.measurements.IMAGE, cellprofiler.analysis.AnalysisRunner.STATUS,
+            status = m[cellprofiler.measurement.IMAGE, cellprofiler.analysis.AnalysisRunner.STATUS,
                        m.get_image_numbers()]
             n_image_sets = sum([
                                    x == cellprofiler.analysis.AnalysisRunner.STATUS_DONE for x in status])
@@ -2755,13 +2754,13 @@ class PipelineController(object):
                 return False
 
         self.close_debug_measurements()
-        self.__debug_measurements = cellprofiler.measurements.Measurements(
+        self.__debug_measurements = cellprofiler.measurement.Measurements(
             copy=self.__workspace.measurements,
             mode="memory")
-        self.__debug_object_set = cellprofiler.objects.ObjectSet(can_overwrite=True)
+        self.__debug_object_set = cellprofiler.object.ObjectSet(can_overwrite=True)
         self.__frame.enable_debug_commands()
         assert isinstance(self.__pipeline, cellprofiler.pipeline.Pipeline)
-        self.__debug_image_set_list = cellprofiler.cpimage.ImageSetList(True)
+        self.__debug_image_set_list = cellprofiler.image.ImageSetList(True)
         workspace = cellprofiler.workspace.Workspace(self.__pipeline, None, None, None,
                                                      self.__debug_measurements,
                                                      self.__debug_image_set_list,
@@ -3072,13 +3071,13 @@ class PipelineController(object):
 
         m = self.__debug_measurements
         features = sorted(
-            [f for f in m.get_feature_names(cellprofiler.measurements.IMAGE) if f.split("_")[0] in
-             (cellprofiler.measurements.C_METADATA, cellprofiler.modules.loadimages.C_FILE_NAME,
+            [f for f in m.get_feature_names(cellprofiler.measurement.IMAGE) if f.split("_")[0] in
+             (cellprofiler.measurement.C_METADATA, cellprofiler.modules.loadimages.C_FILE_NAME,
               cellprofiler.modules.loadimages.C_PATH_NAME, cellprofiler.modules.loadimages.C_FRAME)],
             cmp=feature_cmp)
         image_numbers = numpy.array(self.__groupings[self.__grouping_index][1], int)
         columns = dict([
-                           (f, m[cellprofiler.measurements.IMAGE, f, image_numbers]) for f in features])
+                           (f, m[cellprofiler.measurement.IMAGE, f, image_numbers]) for f in features])
         choices = {}
         for i, image_number in enumerate(image_numbers):
             choices[image_number] = [columns[f][i] for f in features]
@@ -3124,14 +3123,14 @@ class PipelineController(object):
                 self.list_ctrl.InsertColumn(0, "Image #")
                 total_width = self.list_ctrl.GetTextExtent("Image #")[0]
                 for i, f in enumerate(features):
-                    if f.startswith(cellprofiler.measurements.C_METADATA):
-                        name = f[(len(cellprofiler.measurements.C_METADATA) + 1):]
-                    elif f.startswith(cellprofiler.measurements.C_FILE_NAME):
-                        name = f[(len(cellprofiler.measurements.C_FILE_NAME) + 1):]
-                    elif f.startswith(cellprofiler.measurements.C_FRAME):
-                        name = f[(len(cellprofiler.measurements.C_FRAME) + 1):] + " frame"
+                    if f.startswith(cellprofiler.measurement.C_METADATA):
+                        name = f[(len(cellprofiler.measurement.C_METADATA) + 1):]
+                    elif f.startswith(cellprofiler.measurement.C_FILE_NAME):
+                        name = f[(len(cellprofiler.measurement.C_FILE_NAME) + 1):]
+                    elif f.startswith(cellprofiler.measurement.C_FRAME):
+                        name = f[(len(cellprofiler.measurement.C_FRAME) + 1):] + " frame"
                     else:
-                        name = f[(len(cellprofiler.measurements.C_PATH_NAME) + 1):] + " folder"
+                        name = f[(len(cellprofiler.measurement.C_PATH_NAME) + 1):] + " folder"
                     self.list_ctrl.InsertColumn(i + 1, name)
                     width = 0
                     for row in choices.values():

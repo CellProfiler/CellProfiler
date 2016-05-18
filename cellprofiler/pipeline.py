@@ -34,18 +34,17 @@ import urlparse
 import urllib
 import urllib2
 import re
+import numpy
 
 logger = logging.getLogger(__name__)
 pipeline_stats_logger = logging.getLogger("PipelineStatistics")
 import cellprofiler.preferences as cpprefs
-import cellprofiler.cpimage as cpi
-import cellprofiler.measurements as cpmeas
-import cellprofiler.objects as cpo
+import cellprofiler.image as cpi
+import cellprofiler.measurement as cpmeas
+import cellprofiler.object as cpo
 import cellprofiler.workspace as cpw
-import cellprofiler.settings as cps
+import cellprofiler.setting as cps
 from cellprofiler.utilities.utf16encode import utf16encode, utf16decode
-from cellprofiler.matlab.cputils import make_cell_struct_dtype, new_string_cell_array, encapsulate_strings_in_arrays
-from cellprofiler.utilities.walk_in_background import WalkCollection, THREAD_STOP
 from bioformats.omexml import OMEXML
 import cellprofiler.utilities.version as cpversion
 import javabridge as J
@@ -102,6 +101,16 @@ SETTINGS_DTYPE = np.dtype([(VARIABLE_VALUES, '|O4'),
                            (MODULE_NOTES, '|O4'),
                            (SHOW_WINDOW, '|O4'),
                            (BATCH_STATE, '|O4')])
+
+
+def make_cell_struct_dtype(fields):
+    """Makes the dtype of a struct composed of cells
+
+    fields - the names of the fields in the struct
+    """
+    return numpy.dtype([(str(x), '|O4') for x in fields])
+
+
 CURRENT_DTYPE = make_cell_struct_dtype([NUMBER_OF_IMAGE_SETS,
                                         SET_BEING_ANALYZED, NUMBER_OF_MODULES,
                                         SAVE_OUTPUT_HOW_OFTEN, TIME_STARTED,
@@ -1611,8 +1620,8 @@ class Pipeline(object):
         image_dict - dictionary mapping image names to image pixel data in the
                      form of a numpy array.
         """
-        import cellprofiler.settings as cps
-        from cellprofiler import objects as cpo
+        import cellprofiler.setting as cps
+        from cellprofiler import object as cpo
 
         output_image_names = self.find_external_output_images()
         input_image_names = self.find_external_input_images()
@@ -2236,7 +2245,7 @@ class Pipeline(object):
         image_set_list - the image set list for the run
         frame - the topmost frame window or None if no GUI
         """
-        from cellprofiler.cpmodule import CPModule
+        from cellprofiler.module import Module
         if len(args) == 3:
             measurements, image_set_list, frame = args
             workspace = cpw.Workspace(self,
@@ -2261,7 +2270,7 @@ class Pipeline(object):
                 if event.cancel_run:
                     return "Failure"
             if module.show_window and \
-                            module.__class__.display_post_run != CPModule.display_post_run:
+                            module.__class__.display_post_run != Module.display_post_run:
                 try:
                     workspace.post_run_display(module)
                 except Exception, instance:
@@ -2390,7 +2399,7 @@ class Pipeline(object):
 
         workspace - the last workspace run
         '''
-        from cellprofiler.cpmodule import CPModule
+        from cellprofiler.module import Module
         for module in self.modules():
             try:
                 module.post_group(workspace, grouping)
@@ -2403,7 +2412,7 @@ class Pipeline(object):
                 if event.cancel_run:
                     return False
             if module.show_window and \
-                            module.__class__.display_post_group != CPModule.display_post_group:
+                            module.__class__.display_post_group != Module.display_post_group:
                 try:
                     workspace.post_group_display(module)
                 except:
@@ -3987,3 +3996,293 @@ class MeasurementDependency(Dependency):
 
     def __str__(self):
         return "Measurement: %s.%s" % (self.object_name, self.feature)
+
+
+def new_string_cell_array(shape):
+    """Return a numpy.ndarray that looks like {NxM cell} to Matlab
+
+    Return a numpy.ndarray that looks like {NxM cell} to Matlab.
+    Each of the cells looks empty.
+    shape - the shape of the array that's generated, e.g. (5,19) for a 5x19 cell array.
+            Currently, this must be a 2-d shape.
+    The object returned is a numpy.ndarray with dtype=dtype('object') and the given shape
+    with each cell in the array filled with a numpy.ndarray with shape = (1,0)
+    and dtype=dtype('float64'). This appears to be the form that's created in matlab
+    for this sort of object.
+    """
+    result = numpy.ndarray(shape, dtype=numpy.dtype('object'))
+    for i in range(0, shape[0]):
+        for j in range(0, shape[1]):
+            result[i, j] = numpy.empty((0, 0))
+    return result
+
+
+def encapsulate_strings_in_arrays(handles):
+    """Recursively descend through the handles structure, replacing strings as arrays packed with strings
+
+    This function makes the handles structure loaded through the sandwich compatible with loadmat. It operates on the array in-place.
+    """
+    if handles.dtype.kind == 'O':
+        # cells - descend recursively
+        flat = handles.flat
+        for i in range(0, len(flat)):
+            if isinstance(flat[i], str) or isinstance(flat[i], unicode):
+                flat[i] = encapsulate_string(flat[i])
+            elif isinstance(flat[i], numpy.ndarray):
+                encapsulate_strings_in_arrays(flat[i])
+    elif handles.dtype.fields:
+        # A structure: iterate over all structure elements.
+        for field in handles.dtype.fields.keys():
+            if isinstance(handles[field], str) or isinstance(handles[field], unicode):
+                handles[field] = encapsulate_string(handles[field])
+            elif isinstance(handles[field], numpy.ndarray):
+                encapsulate_strings_in_arrays(handles[field])
+
+
+def encapsulate_string(s):
+    """Encapsulate a string in an array of shape 1 of the length of the string
+    """
+    if isinstance(s, str):
+        result = numpy.ndarray((1,), '<S%d' % (len(s)))
+    else:
+        result = numpy.ndarray((1,), '<U%d' % (len(s)))
+    result[0] = s
+    return result
+
+
+pause_lock = threading.Lock()
+pause_condition = threading.Condition(pause_lock)
+THREAD_RUNNING = "Running"
+THREAD_STOP = "Stop"
+THREAD_STOPPING = "Stopping"
+THREAD_PAUSE = "Pause"
+THREAD_RESUME = "Resume"
+
+
+class InterruptException(Exception):
+    def __init__(self, *args):
+        super(self.__class__, self).__init__(*args)
+
+
+class Checkpoint(object):
+    '''A class that manages pausing and stopping'''
+
+    def __init__(self):
+        self.state = THREAD_RUNNING
+
+    def set_state(self, state):
+        with pause_lock:
+            if state == THREAD_RESUME:
+                state = THREAD_RUNNING
+            self.state = state
+            pause_condition.notify_all()
+
+    def wait(self):
+        with pause_lock:
+            if self.state == THREAD_STOP:
+                raise InterruptException()
+            while self.state == THREAD_PAUSE:
+                pause_condition.wait()
+
+
+exts_that_need_allow_open_files = (".jpg", ".jpeg", ".jpe",
+                                   ".jp2", ".j2k", ".jpf",
+                                   ".jpx", ".dic", ".dcm", ".dicom",
+                                   ".j2ki", ".j2kr", ".ome.tif", ".ome.tiff")
+
+
+def get_metadata(path):
+    import subimager.client as C
+    import subimager.omexml as O
+
+    if path.lower().endswith(exts_that_need_allow_open_files):
+        result = C.get_metadata(path, allowopenfiles="yes")
+    else:
+        result = C.get_metadata(path)
+    if result is not None:
+        return O.OMEXML(result)
+    return None
+
+
+def walk_in_background(path, callback_fn, completed_fn=None, metadata_fn=None):
+    '''Walk a directory tree in the background
+
+    path - path to walk
+
+    callback_fn - a function that's called in the UI thread and incrementally
+                  reports results. The callback is called with the
+                  dirpath, dirnames and filenames for each iteration of walk.
+    completed_fn - called when walk has completed
+    metadata_fn - if present, call back with metadata. The signature is
+                  metadata_fn(path, OMEXML) or metadata_fn(path, None) if
+                  the webserver did not find metadata.
+
+    Returns a function that can be called to interrupt the operation.
+    To stop, call it like this: fn(THREAD_STOP)
+    To pause, call it with THREAD_PAUSE, to resume, call it with
+    THREAD_RESUME
+    '''
+
+    checkpoint = Checkpoint()
+
+    def report(dirpath, dirnames, filenames):
+        if checkpoint.state != THREAD_STOP:
+            callback_fn(dirpath, dirnames, filenames)
+
+    def metadata_report(path, metadata):
+        if checkpoint.state != THREAD_STOP:
+            metadata_fn(path, metadata)
+
+    def complete():
+        if checkpoint.state != THREAD_STOP:
+            completed_fn()
+
+    def fn():
+        try:
+            path_list = []
+            for dirpath, dirnames, filenames in os.walk(path):
+                checkpoint.wait()
+                if len(filenames) == 0:
+                    continue
+                import wx
+                wx.CallAfter(report, dirpath, dirnames, filenames)
+                if metadata_fn is not None:
+                    path_list += [os.path.join(dirpath, filename)
+                                  for filename in filenames]
+            for subpath in sorted(path_list):
+                checkpoint.wait()
+                try:
+                    metadata = get_metadata("file:" + urllib.pathname2url(subpath))
+                    import wx
+                    wx.CallAfter(metadata_report, subpath, metadata)
+                except:
+                    logger.info("Failed to read image metadata for %s" % subpath)
+        except InterruptException:
+            logger.info("Exiting after request to stop")
+        except:
+            logger.exception("Exiting background walk after unhandled exception")
+        finally:
+            if completed_fn is not None:
+                import wx
+                wx.CallAfter(complete)
+
+    thread = threading.Thread(target=fn)
+    thread.setDaemon(True)
+    thread.start()
+    return checkpoint.set_state
+
+
+def get_metadata_in_background(pathnames, fn_callback, fn_completed=None):
+    '''Get image metadata for each path
+
+    pathnames - list of pathnames
+    fn_callback - callback with signature fn_callback(pathname, metadata)
+    fn_completed - called when operation is complete
+
+    Returns a function that can be called to interrupt the operation.
+    '''
+    checkpoint = Checkpoint()
+
+    def metadata_fn(path, metadata):
+        if checkpoint.state != THREAD_STOP:
+            fn_callback(path, metadata)
+
+    def completion_fn():
+        if checkpoint.state != THREAD_STOP:
+            fn_completed()
+
+    def fn():
+        try:
+            for path in pathnames:
+                checkpoint.wait()
+                try:
+                    if not path.startswith("file:"):
+                        url = "file:" + urllib.pathname2url(path)
+                    else:
+                        url = path
+                    metadata = get_metadata(url)
+                    import wx
+                    wx.CallAfter(metadata_fn, path, metadata)
+                except:
+                    logger.info("Failed to read image metadata for %s" % path)
+        except InterruptException:
+            logger.info("Exiting after request to stop")
+        except:
+            logger.exception("Exiting background walk after unhandled exception")
+        finally:
+            if fn_completed is not None:
+                wx.CallAfter(completion_fn)
+
+    thread = threading.Thread(target=fn)
+    thread.start()
+    return checkpoint.set_state
+
+
+class WalkCollection(object):
+    '''A collection of all walks in progress
+
+    This class manages a group of walks that are in progress so that they
+    can be paused, resumed and stopped in unison.
+    '''
+
+    def __init__(self, fn_on_completed):
+        self.fn_on_completed = fn_on_completed
+        self.stop_functions = {}
+        self.paused_tasks = []
+        self.state = THREAD_STOP
+
+    def on_complete(self, uid):
+        if self.stop_functions.has_key(uid):
+            del self.stop_functions[uid]
+            if len(self.stop_functions) == 0:
+                self.state = THREAD_STOP
+                self.fn_on_completed()
+
+    def walk_in_background(self, path, callback_fn, metadata_fn=None):
+        if self.state == THREAD_PAUSE:
+            self.paused_tasks.append(
+                    lambda path, callback_fn, metadata_fn:
+                    self.walk_in_background(path, callback_fn, metadata_fn))
+        else:
+            key = uuid.uuid4()
+            fn_on_complete = lambda key=key: self.on_complete(key)
+            self.stop_functions[key] = walk_in_background(
+                    path, callback_fn, fn_on_complete, metadata_fn)
+            if self.state == THREAD_STOP:
+                self.state = THREAD_RUNNING
+
+    def get_metadata_in_background(self, pathnames, fn_callback):
+        if self.state == THREAD_PAUSE:
+            self.paused_tasks.append(
+                    lambda pathnames, fn_callback:
+                    self.get_metadata_in_background(pathnames, fn_callback))
+        else:
+            key = uuid.uuid4()
+            fn_on_complete = lambda key=key: self.on_complete(key)
+            self.stop_functions[key] = get_metadata_in_background(
+                    pathnames, fn_callback, fn_on_complete)
+
+    def get_state(self):
+        return self.state
+
+    def pause(self):
+        if self.state == THREAD_RUNNING:
+            for stop_fn in self.stop_functions.values():
+                stop_fn(THREAD_PAUSE)
+            self.state = THREAD_PAUSE
+
+    def resume(self):
+        if self.state == THREAD_PAUSE:
+            for stop_fn in self.stop_functions.values():
+                stop_fn(THREAD_RESUME)
+            for fn_task in self.paused_tasks:
+                fn_task()
+            self.paused_tasks = []
+            self.state = THREAD_RUNNING
+
+    def stop(self):
+        if self.state in (THREAD_RUNNING, THREAD_PAUSE):
+            for stop_fn in self.stop_functions.values():
+                stop_fn(THREAD_STOP)
+            self.paused_tasks = []
+            self.state = THREAD_STOPPING

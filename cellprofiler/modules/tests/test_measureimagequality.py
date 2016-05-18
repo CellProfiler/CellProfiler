@@ -18,9 +18,9 @@ import cellprofiler.modules.loadsingleimage
 import cellprofiler.modules.smooth
 import cellprofiler.pipeline as cpp
 import cellprofiler.workspace as cpw
-import cellprofiler.cpimage as cpi
-import cellprofiler.objects as cpo
-import cellprofiler.measurements as cpmeas
+import cellprofiler.image as cpi
+import cellprofiler.object as cpo
+import cellprofiler.measurement as cpmeas
 import centrosome.threshold as cpthresh
 
 MY_IMAGE = "my_image"

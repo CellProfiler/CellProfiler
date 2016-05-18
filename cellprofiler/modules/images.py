@@ -87,13 +87,12 @@ filtered further in NamesAndTypes to specify, for example, that a subset of thes
 particular wavelength.
 """ % globals()
 
-import cellprofiler.cpmodule as cpm
+import cellprofiler.module as cpm
 import cellprofiler.pipeline as cpp
 import cellprofiler.preferences as cpprefs
-import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
+import cellprofiler.setting as cps
+from cellprofiler.setting import YES, NO
 import cellprofiler.workspace as cpw
-import cellprofiler.utilities.walk_in_background as W
 import javabridge as J
 import os
 import sys
@@ -114,7 +113,7 @@ FILTER_CHOICE_ALL = [FILTER_CHOICE_NONE, FILTER_CHOICE_IMAGES,
 FILTER_DEFAULT = 'and (extension does isimage) (directory doesnot containregexp "[\\\\\\\\/]\\\\.")'
 
 
-class Images(cpm.CPModule):
+class Images(cpm.Module):
     variable_revision_number = 2
     module_name = "Images"
     category = "File Processing"
@@ -509,7 +508,7 @@ class ImagePredicate(cps.Filter.FilterPredicate):
             return None
         return args[0](ipd, *args[1:])
 
-    class FakeModule(cpm.CPModule):
+    class FakeModule(cpm.Module):
         '''A fake module for setting validation'''
 
         def get_image_plane_details(self, modpath):

@@ -174,12 +174,12 @@ import numpy.ma
 from scipy.ndimage import distance_transform_edt
 import scipy.ndimage
 import scipy.sparse
-import cellprofiler.cpmodule as cpm
-import cellprofiler.cpimage as cpi
+import cellprofiler.module as cpm
+import cellprofiler.image as cpi
 import cellprofiler.pipeline as cpp
-import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
-import cellprofiler.measurements as cpmeas
+import cellprofiler.setting as cps
+from cellprofiler.setting import YES, NO
+import cellprofiler.measurement as cpmeas
 import cellprofiler.preferences as cpprefs
 from centrosome.lapjv import lapjv
 import centrosome.filter as cpfilter
@@ -282,7 +282,7 @@ F_ALL = [feature for feature, coltype in F_ALL_COLTYPE_ALL]
 F_IMAGE_ALL = [feature for feature, coltype in F_IMAGE_COLTYPE_ALL]
 
 
-class TrackObjects(cpm.CPModule):
+class TrackObjects(cpm.Module):
     module_name = 'TrackObjects'
     category = "Object Processing"
     variable_revision_number = 6
@@ -972,7 +972,7 @@ class TrackObjects(cpm.CPModule):
             import matplotlib.axes
             import matplotlib.backends.backend_agg
             import matplotlib.transforms
-            from cellprofiler.gui.cpfigure_tools import figure_to_image, only_display_image
+            from cellprofiler.gui.tools import figure_to_image, only_display_image
 
             figure = matplotlib.figure.Figure()
             canvas = matplotlib.backends.backend_agg.FigureCanvasAgg(figure)

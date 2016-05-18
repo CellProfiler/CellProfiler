@@ -43,13 +43,13 @@ from centrosome.cpmorphology import get_line_pts
 from scipy.ndimage import binary_erosion, binary_fill_holes
 from scipy.ndimage import mean as mean_of_labels
 
-import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements as cpmeas
-import cellprofiler.objects as cpo
+import cellprofiler.module as cpm
+import cellprofiler.measurement as cpmeas
+import cellprofiler.object as cpo
 import cellprofiler.preferences as cpprefs
-import cellprofiler.settings as cps
+import cellprofiler.setting as cps
 import identify as I
-from cellprofiler.settings import YES, NO
+from cellprofiler.setting import YES, NO
 
 C_WORMS = "Worm"
 F_ANGLE = "Angle"
@@ -63,7 +63,7 @@ LABEL_ALPHA = 1.0
 WORM_ALPHA = .25
 
 
-class IdentifyDeadWorms(cpm.CPModule):
+class IdentifyDeadWorms(cpm.Module):
     module_name = "IdentifyDeadWorms"
     variable_revision_number = 2
     category = ["Other", "Worm Toolbox"]
@@ -272,10 +272,10 @@ class IdentifyDeadWorms(cpm.CPModule):
     def display(self, workspace, figure):
         '''Show an informative display'''
         import matplotlib
-        import cellprofiler.gui.cpfigure
+        import cellprofiler.gui.figure
 
         figure.set_subplots((2, 1))
-        assert isinstance(figure, cellprofiler.gui.cpfigure.CPFigureFrame)
+        assert isinstance(figure, cellprofiler.gui.figure.Figure)
 
         i = workspace.display_data.i
         j = workspace.display_data.j

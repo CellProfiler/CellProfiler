@@ -3,7 +3,7 @@
 """
 
 import cellprofiler.gui
-import cellprofiler.gui.cpfigure
+import cellprofiler.gui.figure
 import cellprofiler.gui.moduleview
 import cellprofiler.icons
 import cellprofiler.pipeline
@@ -126,16 +126,12 @@ class PipelineListView(object):
         assert isinstance(panel, wx.Window)
         top_sizer = wx.BoxSizer(orient=wx.VERTICAL)
         panel.Sizer = top_sizer
-        static_box = wx.StaticBox(self.__panel, label="Input modules")
-        self.__input_controls = [static_box]
-        self.__input_sizer = wx.StaticBoxSizer(static_box, wx.VERTICAL)
+        self.__input_controls = []
+        self.__input_sizer = wx.BoxSizer(wx.VERTICAL)
         top_sizer.Add(self.__input_sizer, 0, wx.EXPAND)
         self.make_input_panel()
-
-        modules_box = wx.StaticBox(panel, label="Analysis modules")
-        self.__sizer = wx.StaticBoxSizer(modules_box, wx.HORIZONTAL)
+        self.__sizer = wx.BoxSizer(wx.HORIZONTAL)
         top_sizer.Add(self.__sizer, 1, wx.EXPAND)
-
         outputs_sizer = wx.BoxSizer(wx.VERTICAL)
         top_sizer.Add(outputs_sizer, 0, wx.EXPAND)
         self.outputs_panel = wx.Panel(panel)
@@ -145,19 +141,15 @@ class PipelineListView(object):
             self.outputs_panel.BackgroundStyle = wx.SOLID
         else:
             self.outputs_panel.BackgroundStyle = wx.BG_STYLE_COLOUR
-        self.outputs_button = wx.Button(self.outputs_panel,
-                                        label="View output settings",
-                                        style=wx.BU_EXACTFIT)
+        self.outputs_button = wx.Button(self.outputs_panel, label="View output settings", style=wx.BU_EXACTFIT)
         self.outputs_panel.Sizer.AddStretchSpacer(1)
-        self.outputs_panel.Sizer.Add(
-                self.outputs_button, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 2)
+        self.outputs_panel.Sizer.Add(self.outputs_button, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 2)
         self.outputs_panel.Sizer.AddStretchSpacer(1)
         self.outputs_button.Bind(wx.EVT_BUTTON, self.on_outputs_button)
         self.outputs_panel.AutoLayout = True
         self.__panel.Layout()
         self.outputs_panel.Layout()
         self.__panel.SetAutoLayout(True)
-
         self.make_list()
         self.set_debug_mode(False)
         self.__adjust_rows()
@@ -180,36 +172,26 @@ class PipelineListView(object):
     def make_list(self):
         """Make the list control with the pipeline items in it"""
         self.list_ctrl = PipelineListCtrl(self.__panel)
-        self.__sizer.Add(self.list_ctrl, 1, wx.EXPAND | wx.ALL, 2)
+        self.__sizer.Add(self.list_ctrl, 1, wx.EXPAND)
         #
         # Bind events
         #
-        self.list_ctrl.Bind(wx.EVT_LIST_ITEM_SELECTED,
-                            self.__on_item_selected)
-        self.list_ctrl.Bind(wx.EVT_LIST_ITEM_DESELECTED,
-                            self.__on_item_deselected)
-        self.list_ctrl.Bind(EVT_PLV_SLIDER_MOTION,
-                            self.__on_slider_motion)
+        self.list_ctrl.Bind(wx.EVT_LIST_ITEM_SELECTED, self.__on_item_selected)
+        self.list_ctrl.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.__on_item_deselected)
+        self.list_ctrl.Bind(EVT_PLV_SLIDER_MOTION, self.__on_slider_motion)
         self.list_ctrl.Bind(wx.EVT_LEFT_DCLICK, self.__on_list_dclick)
         self.list_ctrl.Bind(wx.EVT_CONTEXT_MENU, self.__on_list_context_menu)
-        self.list_ctrl.Bind(EVT_PLV_ERROR_COLUMN_CLICKED,
-                            self.__on_error_column_clicked)
-        self.list_ctrl.Bind(EVT_PLV_EYE_COLUMN_CLICKED,
-                            self.__on_eye_column_clicked)
-        self.list_ctrl.Bind(EVT_PLV_PAUSE_COLUMN_CLICKED,
-                            self.__on_pause_column_clicked)
-        self.list_ctrl.Bind(wx.EVT_LIST_BEGIN_DRAG,
-                            self.start_drag_operation)
-        self.list_ctrl.Bind(wx.EVT_LIST_ITEM_ACTIVATED,
-                            self.__on_item_activated)
-        self.input_list_ctrl.Bind(wx.EVT_LIST_ITEM_ACTIVATED,
-                                  self.__on_item_activated)
+        self.list_ctrl.Bind(EVT_PLV_ERROR_COLUMN_CLICKED, self.__on_error_column_clicked)
+        self.list_ctrl.Bind(EVT_PLV_EYE_COLUMN_CLICKED, self.__on_eye_column_clicked)
+        self.list_ctrl.Bind(EVT_PLV_PAUSE_COLUMN_CLICKED, self.__on_pause_column_clicked)
+        self.list_ctrl.Bind(wx.EVT_LIST_BEGIN_DRAG, self.start_drag_operation)
+        self.list_ctrl.Bind(wx.EVT_LIST_ITEM_ACTIVATED, self.__on_item_activated)
+        self.input_list_ctrl.Bind(wx.EVT_LIST_ITEM_ACTIVATED, self.__on_item_activated)
         #
         # Accelerators
         #
         from cellprofiler.gui.cpframe import ID_EDIT_DELETE
-        accelerator_table = wx.AcceleratorTable([
-            (wx.ACCEL_NORMAL, wx.WXK_DELETE, ID_EDIT_DELETE)])
+        accelerator_table = wx.AcceleratorTable([(wx.ACCEL_NORMAL, wx.WXK_DELETE, ID_EDIT_DELETE)])
         self.list_ctrl.SetAcceleratorTable(accelerator_table)
 
     def make_input_panel(self):
@@ -546,8 +528,8 @@ class PipelineListView(object):
 
     @staticmethod
     def find_module_figure_window(module):
-        name = cellprofiler.gui.cpfigure.window_name(module)
-        return cellprofiler.gui.cpfigure.find_fig(name=name)
+        name = cellprofiler.gui.figure.window_name(module)
+        return cellprofiler.gui.figure.find_fig(name=name)
 
     def __on_pause_column_clicked(self, event):
         module = self.get_event_module(event)

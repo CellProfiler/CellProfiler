@@ -9,14 +9,14 @@ from StringIO import StringIO
 import numpy as np
 import numpy as np
 
-import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
-import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements as cpmeas
+import cellprofiler.image as cpi
+import cellprofiler.module as cpm
+import cellprofiler.module as cpm
+import cellprofiler.measurement as cpmeas
 import cellprofiler.modules.graytocolor as G
-import cellprofiler.objects as cpo
+import cellprofiler.object as cpo
 import cellprofiler.pipeline as cpp
-import cellprofiler.settings as cps
+import cellprofiler.setting as cps
 import cellprofiler.workspace as cpw
 
 OUTPUT_IMAGE_NAME = 'outputimage'

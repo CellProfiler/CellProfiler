@@ -9,12 +9,12 @@ can save to a file using <b>SaveImages</b>.
 
 import numpy as np
 
-import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements as cpmeas
-import cellprofiler.objects as cpo
+import cellprofiler.image as cpi
+import cellprofiler.module as cpm
+import cellprofiler.measurement as cpmeas
+import cellprofiler.object as cpo
 import cellprofiler.preferences as cpprefs
-import cellprofiler.settings as cps
+import cellprofiler.setting as cps
 import cellprofiler.workspace as cpw
 from cellprofiler.modules.identify import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
 
@@ -32,7 +32,7 @@ CMS_USE_MEASUREMENT_RANGE = "Use this image's measurement range"
 CMS_MANUAL = "Manual"
 
 
-class DisplayDataOnImage(cpm.CPModule):
+class DisplayDataOnImage(cpm.Module):
     module_name = 'DisplayDataOnImage'
     category = 'Data Tools'
     variable_revision_number = 6
@@ -222,7 +222,7 @@ class DisplayDataOnImage(cpm.CPModule):
         import matplotlib.cm
         import matplotlib.backends.backend_agg
         import matplotlib.transforms
-        from cellprofiler.gui.cpfigure_tools import figure_to_image, only_display_image
+        from cellprofiler.gui.tools import figure_to_image, only_display_image
         #
         # Get the image
         #

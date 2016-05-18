@@ -8,9 +8,9 @@ import threading
 import unittest
 from cStringIO import StringIO
 
-import cellprofiler.measurements as cpmeas
+import cellprofiler.measurement as cpmeas
 import cellprofiler.modules.sendemail as SE
-import cellprofiler.objects as cpo
+import cellprofiler.object as cpo
 import cellprofiler.pipeline as cpp
 import cellprofiler.workspace as cpw
 

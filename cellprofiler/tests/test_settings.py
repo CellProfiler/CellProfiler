@@ -2,7 +2,7 @@
 
 import unittest
 
-import cellprofiler.settings as cps
+import cellprofiler.setting as cps
 
 
 class TestIntegerSetting(unittest.TestCase):

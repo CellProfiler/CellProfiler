@@ -35,12 +35,12 @@ import numpy as np
 import sys
 
 import cellprofiler.preferences as cpprefs
-import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements as cpmeas
-import cellprofiler.objects as cpo
-import cellprofiler.cpimage as cpi
-import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
+import cellprofiler.module as cpm
+import cellprofiler.measurement as cpmeas
+import cellprofiler.object as cpo
+import cellprofiler.image as cpi
+import cellprofiler.setting as cps
+from cellprofiler.setting import YES, NO
 import cellprofiler.workspace as cpw
 from centrosome.outline import outline
 from centrosome.cpmorphology import triangle_areas
@@ -284,8 +284,7 @@ class EditObjectsManually(I.Identify):
         with wx.Dialog(None) as dlg:
             dlg.Title = "Choose files for editing"
             dlg.Sizer = wx.BoxSizer(wx.VERTICAL)
-            box = wx.StaticBox(dlg, -1, "Choose or create new objects file")
-            sub_sizer = wx.StaticBoxSizer(box, wx.HORIZONTAL)
+            sub_sizer = wx.BoxSizer(wx.HORIZONTAL)
             dlg.Sizer.Add(sub_sizer, 0, wx.EXPAND | wx.ALL, 5)
             new_or_existing_rb = wx.RadioBox(dlg, style=wx.RA_VERTICAL,
                                              choices=("New", "Existing"))

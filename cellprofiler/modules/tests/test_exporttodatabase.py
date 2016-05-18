@@ -24,13 +24,13 @@ from cellprofiler.preferences import set_headless
 
 set_headless()
 
-import cellprofiler.cpmodule as cpm
+import cellprofiler.module as cpm
 import cellprofiler.pipeline as cpp
-import cellprofiler.settings as cps
-import cellprofiler.cpimage as cpi
+import cellprofiler.setting as cps
+import cellprofiler.image as cpi
 import cellprofiler.workspace as cpw
-import cellprofiler.objects as cpo
-import cellprofiler.measurements as cpmeas
+import cellprofiler.object as cpo
+import cellprofiler.measurement as cpmeas
 
 import cellprofiler.modules.exporttodatabase as E
 import cellprofiler.modules.identify as I
@@ -1636,7 +1636,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                        post_run_test=False):
         '''Make a measurements structure with image and object measurements'''
 
-        class TestModule(cpm.CPModule):
+        class TestModule(cpm.Module):
             module_name = "TestModule"
             module_num = 1
             variable_revision_number = 1

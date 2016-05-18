@@ -12,10 +12,10 @@ by specifying "Objects" as the type of image to save.
 
 import numpy as np
 
-import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
+import cellprofiler.image as cpi
+import cellprofiler.module as cpm
 import cellprofiler.preferences as cpprefs
-import cellprofiler.settings as cps
+import cellprofiler.setting as cps
 
 DEFAULT_COLORMAP = "Default"
 COLORCUBE = "colorcube"
@@ -32,7 +32,7 @@ IM_UINT16 = "uint16"
 IM_ALL = [IM_COLOR, IM_BINARY, IM_GRAYSCALE, IM_UINT16]
 
 
-class ConvertObjectsToImage(cpm.CPModule):
+class ConvertObjectsToImage(cpm.Module):
     module_name = "ConvertObjectsToImage"
     category = "Object Processing"
     variable_revision_number = 1
@@ -114,7 +114,7 @@ class ConvertObjectsToImage(cpm.CPModule):
                 alpha[mask] = 1
             elif self.image_mode == IM_COLOR:
                 import matplotlib.cm
-                from cellprofiler.gui.cpfigure_tools import renumber_labels_for_display
+                from cellprofiler.gui.tools import renumber_labels_for_display
                 if self.colormap.value == DEFAULT_COLORMAP:
                     cm_name = cpprefs.get_default_colormap()
                 elif self.colormap.value == COLORCUBE:

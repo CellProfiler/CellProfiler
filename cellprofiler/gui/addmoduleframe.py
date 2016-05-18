@@ -77,7 +77,7 @@ class AddModuleFrame(wx.Frame):
         right_sizer.Add(self.__module_list_box, 1, wx.EXPAND | wx.ALL, 5)
         right_panel.SetSizer(right_sizer)
 
-        selected_module_panel_sizer = wx.StaticBoxSizer(selected_module_static_box, wx.VERTICAL)
+        selected_module_panel_sizer = wx.BoxSizer(wx.VERTICAL)
         selected_module_panel_sizer.Add(add_to_pipeline_button, 0, wx.EXPAND)
         selected_module_panel_sizer.AddSpacer(2)
         selected_module_panel_sizer.Add(module_help_button, 0, wx.EXPAND)

@@ -296,9 +296,7 @@ class ModuleView(object):
         #
         #############################################
         top_panel.Sizer = wx.BoxSizer()
-        self.module_settings_box = wx.StaticBox(
-            top_panel, label=self.get_module_settings_label())
-        module_settings_box_sizer = wx.StaticBoxSizer(self.module_settings_box)
+        module_settings_box_sizer = wx.BoxSizer()
         top_panel.Sizer.Add(module_settings_box_sizer, 1, wx.EXPAND)
         self.__module_panel = wx.lib.scrolledpanel.ScrolledPanel(top_panel)
         self.__module_panel.SetupScrolling()
@@ -358,7 +356,6 @@ class ModuleView(object):
         self.__sizer.Reset(0)
         if self.notes_panel is not None:
             self.notes_panel.Hide()
-        self.module_settings_box.Label = self.get_module_settings_label()
 
     def get_module_settings_label(self):
         if self.__module is None:
@@ -404,8 +401,6 @@ class ModuleView(object):
             if not reselecting:
                 if self.__module is not None:
                     self.__module.on_deactivated()
-                self.module_settings_box.Label = \
-                    self.get_module_settings_label()
                 self.clear_selection()
                 self.request_validation(new_module)
                 try:
@@ -656,9 +651,7 @@ class ModuleView(object):
         # The notes sizer contains a static box that surrounds the notes
         # plus the notes text control.
         #
-        notes_sizer = wx.StaticBoxSizer(
-            wx.StaticBox(self.notes_panel, -1, "Module notes"),
-            wx.VERTICAL)
+        notes_sizer = wx.BoxSizer(wx.VERTICAL)
         self.notes_panel.SetSizer(notes_sizer)
         self.module_notes_control = wx.TextCtrl(
             self.notes_panel, -1, style=wx.TE_MULTILINE | wx.TE_PROCESS_ENTER)
@@ -2169,18 +2162,6 @@ class ModuleView(object):
             except cellprofiler.settings.ValidationError, instance:
                 message = instance.message
                 bad_setting = instance.get_setting()
-        #
-        # Update the group box
-        #
-        if bad_setting is None:
-            self.module_settings_box.Label = self.get_module_settings_label()
-            self.module_settings_box.SetToolTip(None)
-        else:
-            msg = "Hover over the %s below for more information" % (
-                "error" if level == logging.ERROR else "warning")
-            self.module_settings_box.Label = "%s: %s" % (
-                self.get_module_settings_label(), msg)
-            self.module_settings_box.SetToolTipString(message)
         # update settings' foreground/background
         try:
             for setting in visible_settings:

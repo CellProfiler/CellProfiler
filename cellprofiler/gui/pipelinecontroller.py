@@ -953,8 +953,7 @@ class PipelineController(object):
                               os.path.split(pathname)[1]
                     sizer.Add(wx.StaticText(dlg, label=message), 0, wx.EXPAND)
                     sizer.AddSpacer(4)
-                    groupbox = wx.StaticBox(dlg, label="Pipeline choice")
-                    gb_sizer = wx.StaticBoxSizer(groupbox, wx.VERTICAL)
+                    gb_sizer = wx.BoxSizer(groupbox, wx.VERTICAL)
                     sizer.Add(gb_sizer, 1, wx.EXPAND)
                     rb_primary = wx.RadioButton(dlg, label="&Primary pipeline")
                     gb_sizer.Add(rb_primary, 0, wx.ALIGN_LEFT)

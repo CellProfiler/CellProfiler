@@ -126,14 +126,12 @@ class PipelineListView(object):
         assert isinstance(panel, wx.Window)
         top_sizer = wx.BoxSizer(orient=wx.VERTICAL)
         panel.Sizer = top_sizer
-        static_box = wx.StaticBox(self.__panel, label="Input modules")
-        self.__input_controls = [static_box]
-        self.__input_sizer = wx.StaticBoxSizer(static_box, wx.VERTICAL)
+        self.__input_controls = []
+        self.__input_sizer = wx.BoxSizer(wx.VERTICAL)
         top_sizer.Add(self.__input_sizer, 0, wx.EXPAND)
         self.make_input_panel()
 
-        modules_box = wx.StaticBox(panel, label="Analysis modules")
-        self.__sizer = wx.StaticBoxSizer(modules_box, wx.HORIZONTAL)
+        self.__sizer = wx.BoxSizer(wx.HORIZONTAL)
         top_sizer.Add(self.__sizer, 1, wx.EXPAND)
 
         outputs_sizer = wx.BoxSizer(wx.VERTICAL)

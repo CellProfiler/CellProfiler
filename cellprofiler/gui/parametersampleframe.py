@@ -114,9 +114,7 @@ class ParameterSampleFrame(wx.Frame):
 
         # Init settings panel
         self.__settings_panel = wx.Panel(self, -1)
-        self.__settings_panel_sizer = wx.StaticBoxSizer(
-                wx.StaticBox(self.__settings_panel, -1, 'Parameters to sample'),
-                wx.VERTICAL)
+        self.__settings_panel_sizer = wx.BoxSizer(wx.VERTICAL)
         self.__settings_panel.SetSizer(self.__settings_panel_sizer)
         self.__frame_sizer.Add(self.__settings_panel, 1, wx.EXPAND | wx.ALL, 5)
 

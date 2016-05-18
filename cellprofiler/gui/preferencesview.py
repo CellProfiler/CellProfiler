@@ -32,9 +32,8 @@ class PreferencesView(object):
         self.__panel = panel
         self.__parent_sizer = parent_sizer
         panel.AutoLayout = True
-        static_box = wx.StaticBox(panel, label="Folders")
         panel.SetSizer(wx.BoxSizer(wx.VERTICAL))
-        static_box_sizer = wx.StaticBoxSizer(static_box, wx.VERTICAL)
+        static_box_sizer = wx.BoxSizer(wx.VERTICAL)
         panel.Sizer.Add(static_box_sizer, 1, wx.EXPAND)
         self.__sizer = static_box_sizer
         self.__image_folder_panel = wx.Panel(panel)

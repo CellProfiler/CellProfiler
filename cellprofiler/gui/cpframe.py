@@ -199,10 +199,7 @@ class CPFrame(wx.Frame):
         self.__path_list_sash.SetSashVisible(wx.SASH_BOTTOM, True)
         self.__path_list_sash.AutoLayout = True
         self.__path_list_sash.Hide()
-        path_list_group_box = wx.StaticBox(
-                self.__path_list_sash,
-                label = "File list")
-        sizer = wx.StaticBoxSizer(path_list_group_box, wx.VERTICAL)
+        sizer = wx.BoxSizer(wx.VERTICAL)
         self.__path_list_sash.Sizer = wx.BoxSizer(wx.VERTICAL)
         self.__path_list_sash.Sizer.Add(sizer, 1, wx.EXPAND)
         # Add spacer so that group box doesn't cover sash's handle

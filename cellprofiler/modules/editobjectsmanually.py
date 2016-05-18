@@ -284,8 +284,7 @@ class EditObjectsManually(I.Identify):
         with wx.Dialog(None) as dlg:
             dlg.Title = "Choose files for editing"
             dlg.Sizer = wx.BoxSizer(wx.VERTICAL)
-            box = wx.StaticBox(dlg, -1, "Choose or create new objects file")
-            sub_sizer = wx.StaticBoxSizer(box, wx.HORIZONTAL)
+            sub_sizer = wx.BoxSizer(wx.HORIZONTAL)
             dlg.Sizer.Add(sub_sizer, 0, wx.EXPAND | wx.ALL, 5)
             new_or_existing_rb = wx.RadioBox(dlg, style=wx.RA_VERTICAL,
                                              choices=("New", "Existing"))

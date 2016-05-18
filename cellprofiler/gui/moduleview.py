@@ -651,7 +651,7 @@ class ModuleView(object):
         # The notes sizer contains a static box that surrounds the notes
         # plus the notes text control.
         #
-        notes_sizer = wx.BoxSizer(wx.VERTICAL)
+        notes_sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.notes_panel.SetSizer(notes_sizer)
         self.module_notes_control = wx.TextCtrl(
             self.notes_panel, -1, style=wx.TE_MULTILINE | wx.TE_PROCESS_ENTER)
@@ -665,7 +665,7 @@ class ModuleView(object):
         height = self.module_notes_control.ClientToWindowSize(
             wx.Size(1, height))[1]
         self.module_notes_control.SetInitialSize(wx.Size(100, 100))
-        notes_sizer.Add(self.module_notes_control, 1, wx.EXPAND)
+        notes_sizer.Add(self.module_notes_control, 1, wx.ALL, 10)
 
         def on_notes_changed(event):
             if not self.__handle_change:

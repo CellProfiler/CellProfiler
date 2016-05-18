@@ -50,13 +50,13 @@ import sys
 import h5py
 import numpy as np
 
-import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements as cpmeas
+import cellprofiler.module as cpm
+import cellprofiler.measurement as cpmeas
 import cellprofiler.pipeline as cpp
 from cellprofiler.preferences import get_headless
 
 
-class MergeOutputFiles(cpm.CPModule):
+class MergeOutputFiles(cpm.Module):
     module_name = "MergeOutputFiles"
     category = "Data Tools"
     do_not_check = True

@@ -127,7 +127,7 @@ import traceback
 from weakref import WeakSet
 
 import cellprofiler.workspace as cpw
-import cellprofiler.measurements as cpmeas
+import cellprofiler.measurement as cpmeas
 import cellprofiler.preferences as cpprefs
 from cellprofiler.gui.errordialog import ED_STOP, ED_SKIP
 from cellprofiler.analysis import \

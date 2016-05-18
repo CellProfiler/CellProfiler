@@ -14,10 +14,10 @@ set_headless()
 
 import cellprofiler.workspace as cpw
 import cellprofiler.pipeline as cpp
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.modules.crop as cpmc
-import cellprofiler.measurements as cpm
-import cellprofiler.objects as cpo
+import cellprofiler.measurement as cpm
+import cellprofiler.object as cpo
 import cellprofiler.preferences as cpprefs
 
 INPUT_IMAGE = "input_image"

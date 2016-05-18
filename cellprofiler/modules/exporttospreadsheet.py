@@ -51,12 +51,12 @@ import numpy as np
 import os
 import sys
 
-import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements as cpmeas
+import cellprofiler.module as cpm
+import cellprofiler.measurement as cpmeas
 import cellprofiler.pipeline as cpp
-import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
-from cellprofiler.measurements import IMAGE, EXPERIMENT
+import cellprofiler.setting as cps
+from cellprofiler.setting import YES, NO
+from cellprofiler.measurement import IMAGE, EXPERIMENT
 from cellprofiler.preferences import get_absolute_path, get_output_file_name
 from cellprofiler.preferences import ABSPATH_OUTPUT, ABSPATH_IMAGE, get_headless
 from cellprofiler.gui.help import USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF, MEASUREMENT_NAMING_HELP
@@ -122,7 +122,7 @@ NANS_AS_NULLS = "Null"
 NANS_AS_NANS = "NaN"
 
 
-class ExportToSpreadsheet(cpm.CPModule):
+class ExportToSpreadsheet(cpm.Module):
     module_name = 'ExportToSpreadsheet'
     category = ["File Processing", "Data Tools"]
     variable_revision_number = 11

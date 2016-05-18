@@ -16,9 +16,9 @@ import cellprofiler.modules.identifysecondaryobjects as cpmi2
 import cellprofiler.modules.identify as cpmi
 import cellprofiler.pipeline as cpp
 import cellprofiler.workspace as cpw
-import cellprofiler.cpimage as cpi
-import cellprofiler.objects as cpo
-import cellprofiler.measurements as cpm
+import cellprofiler.image as cpi
+import cellprofiler.object as cpo
+import cellprofiler.measurement as cpm
 
 INPUT_OBJECTS_NAME = "input_objects"
 OUTPUT_OBJECTS_NAME = "output_objects"

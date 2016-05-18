@@ -80,9 +80,9 @@ def main(args=None):
             if arg == "--ij-plugins-directory" and len(args) > i + 1:
                 cpprefs.set_ij_plugin_directory(args[i + 1])
                 break
-        import cellprofiler.analysis_worker
-        cellprofiler.analysis_worker.aw_parse_args()
-        cellprofiler.analysis_worker.main()
+        import cellprofiler.worker
+        cellprofiler.worker.aw_parse_args()
+        cellprofiler.worker.main()
         sys.exit(exit_code)
 
     options, args = parse_args(args)
@@ -133,7 +133,7 @@ def main(args=None):
         import h5py
         using_hdf5 = h5py.is_hdf5(path)
         if using_hdf5:
-            import cellprofiler.measurements as cpmeas
+            import cellprofiler.measurement as cpmeas
             m = cpmeas.Measurements(
                     filename=path, mode="r+")
             pipeline_text = m[cpmeas.EXPERIMENT, "Pipeline_Pipeline"]
@@ -663,7 +663,7 @@ def print_groups(filename):
     '''
     import json
 
-    import cellprofiler.measurements as cpmeas
+    import cellprofiler.measurement as cpmeas
 
     path = os.path.expanduser(filename)
     m = cpmeas.Measurements(filename=path, mode="r")
@@ -684,7 +684,7 @@ def get_batch_commands(filename):
     CellProfiler --get-batch-commands Batch_data.h5 | sed s/CellProfiler/farm_job.sh/
     '''
 
-    import cellprofiler.measurements as cpmeas
+    import cellprofiler.measurement as cpmeas
 
     path = os.path.expanduser(filename)
     m = cpmeas.Measurements(filename=path, mode="r")
@@ -729,8 +729,8 @@ def write_schema(pipeline_filename):
                 "ExportToDatabase module.")
 
     import cellprofiler.pipeline as cpp
-    import cellprofiler.measurements as cpmeas
-    import cellprofiler.objects as cpo
+    import cellprofiler.measurement as cpmeas
+    import cellprofiler.object as cpo
     import cellprofiler.workspace as cpw
     pipeline = cpp.Pipeline()
     pipeline.load(pipeline_filename)
@@ -837,7 +837,7 @@ def run_pipeline_headless(options, args):
             (not options.pipeline_filename.lower().startswith('http'))):
         options.pipeline_filename = os.path.expanduser(options.pipeline_filename)
     from cellprofiler.pipeline import Pipeline, EXIT_STATUS, M_PIPELINE
-    import cellprofiler.measurements as cpmeas
+    import cellprofiler.measurement as cpmeas
     import cellprofiler.preferences as cpprefs
     pipeline = Pipeline()
     initial_measurements = None

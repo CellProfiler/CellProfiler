@@ -2,12 +2,12 @@
 
 """
 
-import cellprofiler.cpimage
-import cellprofiler.cpmodule
-import cellprofiler.settings
+import cellprofiler.image
+import cellprofiler.module
+import cellprofiler.setting
 
 
-class Open(cellprofiler.cpmodule.CPModule):
+class Open(cellprofiler.module.Module):
     module_name = "Open"
 
     category = "File Processing"
@@ -15,7 +15,7 @@ class Open(cellprofiler.cpmodule.CPModule):
     variable_revision_number = 1
 
     def create_settings(self):
-        self.directory = cellprofiler.settings.DirectoryPath("Input image file location", support_urls=True, doc="")
+        self.directory = cellprofiler.setting.DirectoryPath("Input image file location", support_urls=True, doc="")
 
     def settings(self):
         return [

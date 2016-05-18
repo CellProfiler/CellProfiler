@@ -13,12 +13,12 @@ import numpy as np
 from centrosome.outline import outline
 from matplotlib.image import pil_to_array
 from scipy.ndimage import binary_dilation
-import cellprofiler.cpimage as cpi
-import cellprofiler.measurements as cpmeas
+import cellprofiler.image as cpi
+import cellprofiler.measurement as cpmeas
 import cellprofiler.modules.untangleworms as U
-import cellprofiler.objects as cpo
+import cellprofiler.object as cpo
 import cellprofiler.pipeline as cpp
-import cellprofiler.settings as cps
+import cellprofiler.setting as cps
 import cellprofiler.workspace as cpw
 
 U.CAROLINAS_HACK = False

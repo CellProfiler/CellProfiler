@@ -9,7 +9,7 @@ import numpy as np
 import h5py
 import os
 
-from cellprofiler.cpgridinfo import CPGridInfo
+from cellprofiler.grid import Grid
 from .utilities.hdf5_dict import HDF5FileList, HDF5Dict
 
 '''Continue to run the pipeline
@@ -244,7 +244,7 @@ class Workspace(object):
     def get_module_figure(self, module, image_set_number, parent=None):
         """Create a CPFigure window or find one already created"""
         import cellprofiler.gui.cpfigure as cpf
-        import cellprofiler.measurements as cpmeas
+        import cellprofiler.measurement as cpmeas
 
         # catch any background threads trying to call display functions.
         assert not self.__in_background
@@ -336,7 +336,7 @@ class Workspace(object):
                       workers.
         '''
         # See also:
-        # main().interaction_handler() in analysis_worker.py
+        # main().interaction_handler() in worker.py
         # PipelineController.module_interaction_request() in pipelinecontroller.py
         import cellprofiler.preferences as cpprefs
         if "headless_ok" in kwargs:
@@ -431,7 +431,7 @@ class Workspace(object):
         import shutil
         from .pipeline import M_PIPELINE, M_DEFAULT_INPUT_FOLDER, \
             M_DEFAULT_OUTPUT_FOLDER
-        import cellprofiler.measurements as cpmeas
+        import cellprofiler.measurement as cpmeas
         from cellprofiler.preferences import set_default_image_directory, \
             set_default_output_directory
 
@@ -489,7 +489,7 @@ class Workspace(object):
 
         filename - name of the workspace file
         '''
-        from .measurements import Measurements, make_temporary_file
+        from .measurement import Measurements, make_temporary_file
         if isinstance(self.measurements, Measurements):
             self.close()
 
@@ -573,7 +573,7 @@ class Workspace(object):
         assume that the cache reflects pipeline + file list unless "force"
         is true.
         '''
-        import cellprofiler.measurements as cpmeas
+        import cellprofiler.measurement as cpmeas
         if len(self.measurements.get_image_numbers()) == 0 or force:
             self.measurements.clear()
             self.save_pipeline_to_measurements()
@@ -589,7 +589,7 @@ class Workspace(object):
             # TODO: Get rid of image_set_list
             no_image_set_list = self.image_set_list is None
             if no_image_set_list:
-                from cellprofiler.cpimage import ImageSetList
+                from cellprofiler.image import ImageSetList
                 self.__image_set_list = ImageSetList()
             try:
                 result = self.pipeline.prepare_run(self, stop_module)

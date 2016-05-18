@@ -13,7 +13,7 @@ import unittest
 class TestManual(unittest.TestCase):
     def setUp(self):
         self.temp_dir = tempfile.mkdtemp()
-        from cellprofiler.settings import Text
+        from cellprofiler.setting import Text
 
         def make_command_choice(self, label, doc):
             return Text(label, "None", doc=doc)

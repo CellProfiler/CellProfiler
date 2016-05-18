@@ -16,8 +16,8 @@ import numpy as np
 import zmq
 
 import cellprofiler.analysis as cpanalysis
-import cellprofiler.analysis_worker as cpaw
-import cellprofiler.measurements as cpmeas
+import cellprofiler.worker as cpaw
+import cellprofiler.measurement as cpmeas
 import cellprofiler.pipeline as cpp
 import cellprofiler.preferences as cpprefs
 import cellprofiler.utilities.zmqrequest as cpzmq

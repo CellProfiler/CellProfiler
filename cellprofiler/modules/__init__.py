@@ -8,7 +8,7 @@ import re
 import sys
 import os.path
 import glob
-import cellprofiler.cpmodule as cpm
+import cellprofiler.module as cpm
 from cellprofiler.modules.plugins import plugin_list
 from cellprofiler.preferences import get_plugin_directory
 
@@ -257,11 +257,11 @@ def check_module(module, name):
         return
     assert name == module.module_name, "Module %s should have module_name %s (is %s)" % (name, name, module.module_name)
     for method_name in do_not_override:
-        assert getattr(module, method_name) == getattr(cpm.CPModule,
+        assert getattr(module, method_name) == getattr(cpm.Module,
                                                        method_name), "Module %s should not override method %s" % (
             name, method_name)
     for method_name in should_override:
-        assert getattr(module, method_name) != getattr(cpm.CPModule,
+        assert getattr(module, method_name) != getattr(cpm.Module,
                                                        method_name), "Module %s should override method %s" % (
             name, method_name)
 
@@ -274,7 +274,7 @@ def find_cpmodule(m):
     returns the CPModule class
     '''
     for v, val in m.__dict__.iteritems():
-        if isinstance(val, type) and issubclass(val, cpm.CPModule):
+        if isinstance(val, type) and issubclass(val, cpm.Module):
             return val
     raise "Could not find cpm.CPModule class in %s" % m.__file__
 

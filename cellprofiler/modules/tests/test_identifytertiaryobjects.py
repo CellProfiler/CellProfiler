@@ -16,9 +16,9 @@ import cellprofiler.modules.identify as cpmi
 import cellprofiler.modules.identifytertiaryobjects as cpmit
 import cellprofiler.workspace as cpw
 import cellprofiler.pipeline as cpp
-import cellprofiler.cpimage as cpi
-import cellprofiler.objects as cpo
-import cellprofiler.measurements as cpm
+import cellprofiler.image as cpi
+import cellprofiler.object as cpo
+import cellprofiler.measurement as cpm
 
 PRIMARY = "primary"
 SECONDARY = "secondary"

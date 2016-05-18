@@ -7,7 +7,7 @@ import unittest
 
 import numpy as np
 
-import cellprofiler.measurements as cpmeas
+import cellprofiler.measurement as cpmeas
 import cellprofiler.modules.mergeoutputfiles as M
 import cellprofiler.pipeline as cpp
 from cellprofiler.modules.loadimages import LoadImages

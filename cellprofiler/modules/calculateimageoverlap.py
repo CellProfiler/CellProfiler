@@ -68,11 +68,11 @@ import numpy as np
 from scipy.ndimage import label, distance_transform_edt
 from scipy.sparse import coo_matrix
 
-import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
-import cellprofiler.objects as cpo
-import cellprofiler.measurements as cpmeas
-import cellprofiler.settings as cps
+import cellprofiler.image as cpi
+import cellprofiler.module as cpm
+import cellprofiler.object as cpo
+import cellprofiler.measurement as cpmeas
+import cellprofiler.setting as cps
 import centrosome.cpmorphology as morph
 from centrosome.index import Indexes
 from centrosome.fastemd import emd_hat_int32
@@ -107,7 +107,7 @@ DM_KMEANS = "K Means"
 DM_SKEL = "Skeleton"
 
 
-class CalculateImageOverlap(cpm.CPModule):
+class CalculateImageOverlap(cpm.Module):
     category = "Measurement"
     variable_revision_number = 4
     module_name = "CalculateImageOverlap"

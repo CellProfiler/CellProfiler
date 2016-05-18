@@ -8,7 +8,7 @@ import h5py
 import tempfile
 import unittest
 
-import cellprofiler.measurements as cpmeas
+import cellprofiler.measurement as cpmeas
 import cellprofiler.pipeline as cpp
 import cellprofiler.workspace as cpw
 from cellprofiler.utilities.hdf5_dict import \

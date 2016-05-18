@@ -5,7 +5,7 @@ import re
 
 import numpy as np
 
-import cellprofiler.measurements as cpmeas
+import cellprofiler.measurement as cpmeas
 
 
 class Rules(object):

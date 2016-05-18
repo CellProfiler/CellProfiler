@@ -165,11 +165,11 @@ except:
     from StringIO import StringIO
 import matplotlib.mlab
 
-import cellprofiler.cpmodule as cpm
-import cellprofiler.objects as cpo
-import cellprofiler.measurements as cpmeas
-import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
+import cellprofiler.module as cpm
+import cellprofiler.object as cpo
+import cellprofiler.measurement as cpmeas
+import cellprofiler.setting as cps
+from cellprofiler.setting import YES, NO
 import cellprofiler.preferences as cpprefs
 import identify as I
 from cellprofiler.modules.loadimages import LoadImagesImageProvider
@@ -178,7 +178,7 @@ from cellprofiler.modules.loadimages import C_SERIES, C_FRAME
 from cellprofiler.modules.loadimages import C_OBJECTS_FILE_NAME
 from cellprofiler.modules.loadimages import C_OBJECTS_PATH_NAME
 from cellprofiler.modules.loadimages import C_OBJECTS_URL
-from cellprofiler.measurements import C_OBJECTS_SERIES, C_OBJECTS_FRAME
+from cellprofiler.measurement import C_OBJECTS_SERIES, C_OBJECTS_FRAME
 from cellprofiler.modules.loadimages import C_MD5_DIGEST, C_SCALING
 from cellprofiler.modules.loadimages import C_HEIGHT, C_WIDTH
 from cellprofiler.modules.loadimages import bad_sizes_warning
@@ -311,7 +311,7 @@ def make_objects_file_name_feature(objects_name):
     return C_OBJECTS_FILE_NAME + '_' + objects_name
 
 
-class LoadData(cpm.CPModule):
+class LoadData(cpm.Module):
     module_name = "LoadData"
     category = 'File Processing'
     variable_revision_number = 6

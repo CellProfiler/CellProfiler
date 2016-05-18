@@ -17,15 +17,15 @@ from urllib2 import urlopen
 import numpy as np
 import numpy.lib.index_tricks
 
-import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements as cpmeas
+import cellprofiler.image as cpi
+import cellprofiler.module as cpm
+import cellprofiler.measurement as cpmeas
 import cellprofiler.modules
 import cellprofiler.modules.loadimages as LI
-import cellprofiler.objects as cpo
+import cellprofiler.object as cpo
 import cellprofiler.pipeline as cpp
 import cellprofiler.preferences as cpprefs
-import cellprofiler.settings as cps
+import cellprofiler.setting as cps
 import cellprofiler.workspace as cpw
 from cellprofiler.modules.injectimage import InjectImage
 from cellprofiler.modules.tests import \
@@ -1339,7 +1339,7 @@ def profile_pipeline(pipeline_filename,
     to_print.print_stats(20)
 
 
-class ATestModule(cpm.CPModule):
+class ATestModule(cpm.Module):
     module_name = "ATestModule"
     variable_revision_number = 1
 
@@ -1378,7 +1378,7 @@ class ATestModule(cpm.CPModule):
         return list(measurements)
 
 
-class MyClassForTest0801(cpm.CPModule):
+class MyClassForTest0801(cpm.Module):
     module_name = "Test0801"
     category = "Test"
     variable_revision_number = 1
@@ -1401,7 +1401,7 @@ class MyClassForTest0801(cpm.CPModule):
                  "varchar(255)")]
 
 
-class MyClassForTest1101(cpm.CPModule):
+class MyClassForTest1101(cpm.Module):
     def create_settings(self):
         self.my_variable = cps.Text('', '')
 
@@ -1430,7 +1430,7 @@ class MyClassForTest1101(cpm.CPModule):
         raise MySQLdb.OperationalError("Bogus error")
 
 
-class GroupModule(cpm.CPModule):
+class GroupModule(cpm.Module):
     module_name = "Group"
     variable_revision_number = 1
 

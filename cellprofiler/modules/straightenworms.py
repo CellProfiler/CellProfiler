@@ -79,14 +79,14 @@ from scipy.ndimage import map_coordinates, extrema
 from scipy.ndimage import mean as nd_mean
 from scipy.ndimage import standard_deviation as nd_standard_deviation
 
-import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements as cpmeas
-import cellprofiler.objects as cpo
+import cellprofiler.image as cpi
+import cellprofiler.module as cpm
+import cellprofiler.measurement as cpmeas
+import cellprofiler.object as cpo
 import cellprofiler.preferences as cpprefs
-import cellprofiler.settings as cps
+import cellprofiler.setting as cps
 from cellprofiler.preferences import IO_FOLDER_CHOICE_HELP_TEXT
-from cellprofiler.settings import YES, NO
+from cellprofiler.setting import YES, NO
 import itertools
 from identify import C_COUNT, C_LOCATION, FTR_CENTER_X, FTR_CENTER_Y
 from identify import C_NUMBER, FTR_OBJECT_NUMBER
@@ -127,7 +127,7 @@ FIXED_SETTINGS_COUNT_V3 = 11
 VARIABLE_SETTINGS_COUNT_V3 = 2
 
 
-class StraightenWorms(cpm.CPModule):
+class StraightenWorms(cpm.Module):
     variable_revision_number = 3
     category = ["Object Processing", "Worm Toolbox"]
     module_name = "StraightenWorms"

@@ -34,6 +34,7 @@ import urlparse
 import urllib
 import urllib2
 import re
+import numpy
 
 logger = logging.getLogger(__name__)
 pipeline_stats_logger = logging.getLogger("PipelineStatistics")

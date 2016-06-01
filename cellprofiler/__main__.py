@@ -140,9 +140,6 @@ def main(args=None):
         if options.print_measurements:
             print_measurements(options)
             return
-        if not hasattr(sys, "frozen") and options.code_statistics:
-            print_code_statistics()
-            return
         if options.write_schema_and_exit:
             write_schema(options.pipeline_filename)
             return
@@ -459,46 +456,6 @@ def set_omero_credentials_from_string(credentials_string):
                     '","'.join([OMERO_CK_HOST, OMERO_CK_PORT, OMERO_CK_SESSION_ID]))
             raise ValueError("Invalid format for --omero-credentials")
     use_omero_credentials(credentials)
-
-
-def print_code_statistics():
-    '''Print # lines of code, # modules, etc to console
-
-    This is the official source of code statistics for things like grants.
-    '''
-    from cellprofiler.modules import builtin_modules, all_modules, instantiate_module
-    import subprocess
-    print "\n\n\n**** CellProfiler code statistics ****"
-    print "# of built-in modules: %d" % len(builtin_modules)
-    setting_count = 0
-    for module in all_modules.values():
-        if module.__module__.find(".") < 0:
-            continue
-        mn = module.__module__.rsplit(".", 1)[1]
-        if mn not in builtin_modules:
-            continue
-        module_instance = instantiate_module(module.module_name)
-        setting_count += len(module_instance.help_settings())
-    directory = os.path.abspath(os.path.split(sys.argv[0])[0])
-    try:
-        filelist = subprocess.Popen(
-                ["git", "ls-files"],
-                stdout=subprocess.PIPE,
-                cwd=directory).communicate()[0].split("\n")
-    except:
-        filelist = []
-        for root, dirs, files in os.walk(directory):
-            filelist += [os.path.join(root, f) for f in files]
-    linecount = 0
-    for filename in filelist:
-        if (os.path.exists(filename) and
-                any([filename.endswith(x) for x in ".py", ".c", ".pyx", ".java"])):
-            if filename.endswith(".c") and os.path.exists(filename[:-1] + "pyx"):
-                continue
-            with open(filename, "r") as fd:
-                linecount += len(fd.readlines())
-    print "# of settings: %d" % setting_count
-    print "# of lines of code: %d" % linecount
 
 
 def print_measurements(options):

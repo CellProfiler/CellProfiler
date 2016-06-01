@@ -381,12 +381,6 @@ def parse_args(args):
                             ("%d or %s for fatal." % (logging.FATAL, "FATAL")) +
                             " Otherwise, the argument is interpreted as the file name of a log configuration file (see http://docs.python.org/library/logging.config.html for file format)"))
 
-    parser.add_option("--code-statistics",
-                      dest="code_statistics",
-                      action="store_true",
-                      default=False,
-                      help="Print the number of modules, settings and lines of code")
-
     options, result_args = parser.parse_args(args[1:])
     if sys.platform == 'darwin' and len(args) == 2:
         if args[1].lower().endswith(".cpproj"):

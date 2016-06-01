@@ -117,41 +117,6 @@ def main(args=None):
         get_batch_commands(options.batch_commands_file)
         return
 
-    if options.add_message_for_user:
-        if len(args) != 3:
-            sys.stderr.write("Usage: (for add_message-for-user)\n")
-            sys.stderr.write("CellProfiler --add-message-for-user <caption> <message> <pipeline-or-project>\n")
-            sys.stderr.write("where:\n")
-            sys.stderr.write("    <caption> - the message box caption\n")
-            sys.stderr.write("    <message> - the message displayed inside the message box\n")
-            sys.stderr.write("    <pipeline-or-project> - the path to the pipeline or project file to modify\n")
-            return
-        caption = args[0]
-        message = args[1]
-        path = args[2]
-
-        import h5py
-        using_hdf5 = h5py.is_hdf5(path)
-        if using_hdf5:
-            import cellprofiler.measurement as cpmeas
-            m = cpmeas.Measurements(
-                    filename=path, mode="r+")
-            pipeline_text = m[cpmeas.EXPERIMENT, "Pipeline_Pipeline"]
-        else:
-            with open(path, "r") as fd:
-                pipeline_text = fd.read()
-        header, body = pipeline_text.split("\n\n", 1)
-        pipeline_text = header + \
-                        ("\nMessageForUser:%s|%s\n\n" % (caption, message)) + body
-        if using_hdf5:
-            m[cpmeas.EXPERIMENT, "Pipeline_Pipeline"] = pipeline_text
-            m.close()
-        else:
-            with open(path, "w") as fd:
-                fd.write(pipeline_text)
-        print "Message added to %s" % path
-        return
-
     # necessary to prevent matplotlib trying to use Tkinter as its backend.
     # has to be done before CellProfilerApp is imported
     from matplotlib import use as mpluse
@@ -369,13 +334,6 @@ def parse_args(args):
                             "Java Virtual Machine (similar to the java -Xmx switch)."
                             "Example formats: 512000k, 512m, 1g"))
 
-    parser.add_option("--add-message-for-user",
-                      dest="add_message_for_user",
-                      default=False,
-                      action="store_true",
-                      help=("This option lets you add a message to a pipeline "
-                            "or project file which will appear in a message box"
-                            "when that pipeline or project file is opened. "))
     parser.add_option("--version",
                       dest="print_version",
                       default=False,

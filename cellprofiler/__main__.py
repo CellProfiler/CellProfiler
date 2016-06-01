@@ -104,9 +104,6 @@ def main(args=None):
         # Might want to change later if there's some headless setup
         options.run_pipeline = True
 
-    if options.jvm_heap_size is not None:
-        from cellprofiler.preferences import set_jvm_heap_mb
-        set_jvm_heap_mb(options.jvm_heap_size, False)
     set_log_level(options)
 
     if options.print_groups_file is not None:
@@ -326,13 +323,6 @@ def parse_args(args):
                             "CellProfiler uses this for downloaded image files "
                             "and for the measurements file, if not specified. "
                             "The default is " + tempfile.gettempdir()))
-
-    parser.add_option("--jvm-heap-size",
-                      dest="jvm_heap_size",
-                      default=None,
-                      help=("This is the amount of memory reserved for the "
-                            "Java Virtual Machine (similar to the java -Xmx switch)."
-                            "Example formats: 512000k, 512m, 1g"))
 
     parser.add_option("--version",
                       dest="print_version",

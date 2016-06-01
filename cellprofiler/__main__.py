@@ -388,11 +388,6 @@ def parse_args(args):
                           default=True,
                           action="store_false",
                           help="Do not build C and Cython extensions")
-        parser.add_option("--build-and-exit",
-                          dest="build_and_exit",
-                          default=False,
-                          action="store_true",
-                          help="Build extensions, then exit CellProfiler")
 
     parser.add_option("-d", "--done-file",
                       dest="done_file",

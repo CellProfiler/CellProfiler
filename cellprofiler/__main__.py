@@ -76,10 +76,6 @@ def main(args=None):
         # Go headless ASAP
         #
         cpprefs.set_headless()
-        for i, arg in enumerate(args):
-            if arg == "--ij-plugins-directory" and len(args) > i + 1:
-                cpprefs.set_ij_plugin_directory(args[i + 1])
-                break
         import cellprofiler.worker
         cellprofiler.worker.aw_parse_args()
         cellprofiler.worker.main()
@@ -124,9 +120,6 @@ def main(args=None):
     if options.plugins_directory is not None:
         cpprefs.set_plugin_directory(options.plugins_directory,
                                      globally=False)
-    if options.ij_plugins_directory is not None:
-        cpprefs.set_ij_plugin_directory(options.ij_plugins_directory,
-                                        globally=False)
     if not options.allow_schema_write:
         cpprefs.set_allow_schema_write(False)
     #
@@ -306,11 +299,6 @@ def parse_args(args):
                       dest="plugins_directory",
                       help=("CellProfiler will look for plugin modules in this "
                             "directory (headless-only)."))
-
-    parser.add_option("--ij-plugins-directory",
-                      dest="ij_plugins_directory",
-                      help=("CellProfiler will look for ImageJ plugin modules "
-                            "in this directory (headless-only)."))
 
     parser.add_option("--version",
                       dest="print_version",

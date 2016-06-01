@@ -127,10 +127,6 @@ def main(args=None):
     if options.ij_plugins_directory is not None:
         cpprefs.set_ij_plugin_directory(options.ij_plugins_directory,
                                         globally=False)
-    if options.temp_dir is not None:
-        if not os.path.exists(options.temp_dir):
-            os.makedirs(options.temp_dir)
-        cpprefs.set_temporary_directory(options.temp_dir, globally=False)
     if not options.allow_schema_write:
         cpprefs.set_allow_schema_write(False)
     #
@@ -315,14 +311,6 @@ def parse_args(args):
                       dest="ij_plugins_directory",
                       help=("CellProfiler will look for ImageJ plugin modules "
                             "in this directory (headless-only)."))
-
-    parser.add_option("-t", "--temporary-directory",
-                      dest="temp_dir",
-                      default=None,
-                      help=("The temporary directory if in headless mode. "
-                            "CellProfiler uses this for downloaded image files "
-                            "and for the measurements file, if not specified. "
-                            "The default is " + tempfile.gettempdir()))
 
     parser.add_option("--version",
                       dest="print_version",

@@ -161,9 +161,6 @@ def main(args=None):
                 else:
                     pipeline_path = os.path.expanduser(options.pipeline_filename)
                     workspace_path = None
-            elif options.new_project:
-                workspace_path = False
-                pipeline_path = None
             else:
                 workspace_path = None
                 pipeline_path = None
@@ -237,11 +234,6 @@ def parse_args(args):
                             'project, the -i flag is also needed unless the '
                             'pipeline is saved with the file list.'),
                       default=None)
-    parser.add_option("-n", "--new-project",
-                      dest="new_project",
-                      help="Open a new project, prompting for its name using a file dialog",
-                      action="store_true",
-                      default=False)
 
     default_show_gui = True
     if sys.platform.startswith('linux'):

@@ -628,62 +628,6 @@ def write_schema(pipeline_filename):
     module.prepare_run(workspace)
 
 
-def build_extensions():
-    '''Compile C and Cython files as needed'''
-    import subprocess
-    import cellprofiler.utilities.setup
-    from distutils.dep_util import newer_group
-    #
-    # Check for dependencies and compile if necessary
-    #
-    compile_scripts = [(os.path.join('cellprofiler', 'utilities', 'mac_setup.py'), cellprofiler.utilities.setup)]
-    env = os.environ.copy()
-    old_pythonpath = os.getenv('PYTHONPATH', None)
-
-    # if we're using a local site_packages, the subprocesses will need
-    # to be able to find it.
-
-    if old_pythonpath:
-        env['PYTHONPATH'] = site_packages + os.pathsep + old_pythonpath
-    else:
-        env['PYTHONPATH'] = site_packages
-
-    use_mingw = (sys.platform == 'win32' and sys.version_info[0] <= 2 and
-                 sys.version_info[1] <= 5)
-    for key in list(env.keys()):
-        value = env[key]
-        if isinstance(key, unicode):
-            key = key.encode("utf-8")
-        if isinstance(value, unicode):
-            value = value.encode("utf-8")
-        env[key] = value
-    for compile_script, my_module in compile_scripts:
-        script_path, script_file = os.path.split(compile_script)
-        script_path = os.path.join(root, script_path)
-        configuration = my_module.configuration()
-        needs_build = False
-        for extension in configuration['ext_modules']:
-            target = extension.name + '.pyd'
-            if newer_group(extension.sources, target):
-                needs_build = True
-        if not needs_build:
-            continue
-        if use_mingw:
-            p = subprocess.Popen([sys.executable,
-                                  script_file,
-                                  "build_ext", "-i",
-                                  "--compiler=mingw32"],
-                                 cwd=script_path,
-                                 env=env)
-        else:
-            p = subprocess.Popen([sys.executable,
-                                  script_file,
-                                  "build_ext", "-i"],
-                                 cwd=script_path,
-                                 env=env)
-        p.communicate()
-
-
 def run_pipeline_headless(options, args):
     '''Run a CellProfiler pipeline in headless mode'''
 

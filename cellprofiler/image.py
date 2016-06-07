@@ -4,6 +4,7 @@ Image        - Represents an image with secondary attributes such as a mask and 
 ImageSetList - Represents the list of image filenames that make up a pipeline run
 """
 
+import cellprofiler.media
 import logging
 import math
 import sys
@@ -18,7 +19,7 @@ from numpy import fromstring, uint8, uint16
 logger = logging.getLogger(__name__)
 
 
-class Image(object):
+class Image(cellprofiler.media.Media):
     """An image composed of a Numpy array plus secondary attributes such as mask and label matrices
 
     The secondary attributes:
@@ -56,16 +57,7 @@ class Image(object):
     significant.
     """
 
-    def __init__(self,
-                 image=None,
-                 mask=None,
-                 crop_mask=None,
-                 parent_image=None,
-                 masking_objects=None,
-                 convert=True,
-                 path_name=None,
-                 file_name=None,
-                 scale=None):
+    def __init__(self, image=None, mask=None, crop_mask=None, parent_image=None, masking_objects=None, convert=True, path_name=None, file_name=None, scale=None):
         self.__image = None
         self.__mask = None
         self.__has_mask = False
@@ -85,6 +77,8 @@ class Image(object):
         self.__file_name = file_name
         self.__path_name = path_name
         self.__channel_names = None
+
+        super(self.__class__, self).__init__()
 
     def get_image(self):
         """Return the primary image"""

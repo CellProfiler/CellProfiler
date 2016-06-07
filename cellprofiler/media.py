@@ -1,5 +1,5 @@
 import abc
 
 
-class Media(metaclass=abc.ABCMeta):
+class Media(abc.ABCMeta):
     pass

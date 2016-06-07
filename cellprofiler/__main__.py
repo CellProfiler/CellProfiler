@@ -19,6 +19,7 @@ import matplotlib
 import numpy
 import optparse
 import os
+import pkg_resources
 import re
 import site
 import sys
@@ -148,10 +149,8 @@ def main(args=None):
 
 
 def __version__(exit_code):
-    print u"CellProfiler {}".format(cellprofiler.utilities.version.dotted_version)
-    print "Git {}".format(cellprofiler.utilities.version.git_hash)
-    print "Version {}".format(cellprofiler.utilities.version.version_number)
-    print "Built {}".format(cellprofiler.utilities.version.version_string.split(" ")[0])
+    print(pkg_resources.get_distribution("CellProfiler").version)
+
     sys.exit(exit_code)
 
 

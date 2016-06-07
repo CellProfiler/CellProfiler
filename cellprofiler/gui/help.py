@@ -1742,11 +1742,6 @@ Determines whether CellProfiler will display a warning dialog
 if images of different sizes are loaded together in an image set.
 Check this preference to show the message box or uncheck it to stop display."""
 
-USE_MORE_FIGURE_SPACE_HELP = """
-Determines whether to reduce the padding space
-and font sizes in module display figures. It is suggested that you
-also set the <i>Title font</i> preference to a smaller value."""
-
 PRIMARY_OUTLINE_COLOR_HELP = """
 Sets the color used for the outline of the object of interest in the
 <b>IdentifyPrimaryObjects</b>, <b>IdentifySecondaryObjects</b> and
@@ -1876,7 +1871,6 @@ EACH_PREFERENCE_HELP = (
     ('Show the "Exiting test mode" message', SHOW_EXITING_TEST_MODE_HELP),
     ("Warn if images are different sizes", SHOW_REPORT_BAD_SIZES_DLG_HELP),
     ("Show the parameter sampling menu", PARAMETER_SAMPLING_MENU_HELP),
-    ("Use more figure space", USE_MORE_FIGURE_SPACE_HELP),
     ("Maximum number of workers", MAX_WORKERS_HELP),
     ("Temporary folder", TEMP_DIR_HELP),
     ("Save pipeline and/or file list in addition to project", SAVE_PIPELINE_WITH_PROJECT_HELP),

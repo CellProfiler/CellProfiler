@@ -1153,26 +1153,6 @@ def set_write_MAT_files(value):
                  WRITE_HDF5 if value == WRITE_HDF5
                  else "True" if value else "False")
 
-__use_more_figure_space = None
-
-
-def get_use_more_figure_space():
-    '''Return True if CP should use more of the figure space'''
-    global __use_more_figure_space
-    if __use_more_figure_space is not None:
-        return __use_more_figure_space
-    if not config_exists(USE_MORE_FIGURE_SPACE):
-        return False
-    return config_read(USE_MORE_FIGURE_SPACE) == "True"
-
-
-def set_use_more_figure_space(value):
-    '''Set the "use more figure space" flag'''
-    global __use_more_figure_space
-    __use_more_figure_space = value
-    config_write(USE_MORE_FIGURE_SPACE,
-                 "True" if value else "False")
-
 
 __workspace_file = None
 

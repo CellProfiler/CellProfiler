@@ -37,7 +37,7 @@ class TestMeasureImageArea(unittest.TestCase):
         module.module_num = 1
         module.operands[0].operand_objects.value = OBJECTS_NAME
         pipeline.add_module(module)
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         workspace = cpw.Workspace(pipeline, module,
                                   image_set_list.get_image_set(0),
                                   object_set,

@@ -1080,7 +1080,7 @@ class LoadData(cpm.Module):
                 provider = self.fetch_provider(image_name, m)
                 image_set.get_providers().append(provider)
                 image = image_set.get_image(image_name)
-                pixel_data = image.pixel_data
+                pixel_data = image.data
                 m.add_image_measurement("_".join((C_MD5_DIGEST, image_name)),
                                         provider.get_md5_hash(m))
                 m.add_image_measurement("_".join((C_SCALING, image_name)),
@@ -1091,10 +1091,10 @@ class LoadData(cpm.Module):
                                         int(pixel_data.shape[1]))
                 if image_size is None:
                     image_size = tuple(pixel_data.shape[:2])
-                    first_filename = image.file_name
+                    first_filename = image.filename
                 elif tuple(pixel_data.shape[:2]) != image_size:
                     warning = bad_sizes_warning(image_size, first_filename,
-                                                pixel_data.shape, image.file_name)
+                                                pixel_data.shape, image.filename)
                     if self.show_window:
                         workspace.display_data.warning = warning
                     else:
@@ -1107,7 +1107,7 @@ class LoadData(cpm.Module):
                 provider = self.fetch_provider(
                         objects_name, m, is_image_name=False)
                 image = provider.provide_image(workspace.image_set)
-                pixel_data = convert_image_to_objects(image.pixel_data)
+                pixel_data = convert_image_to_objects(image.data)
                 o = cpo.Objects()
                 o.segmented = pixel_data
                 object_set.add_objects(o, objects_name)

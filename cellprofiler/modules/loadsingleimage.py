@@ -214,7 +214,7 @@ class LoadSingleImage(cpm.Module):
         """Return the settings in the order in which they appear in a pipeline file"""
         result = [self.directory]
         for file_setting in self.file_settings:
-            result += [file_setting.file_name, file_setting.image_objects_choice,
+            result += [file_setting.filename, file_setting.image_objects_choice,
                        file_setting.image_name, file_setting.objects_name,
                        file_setting.wants_outlines, file_setting.outlines_name,
                        file_setting.rescale]
@@ -223,7 +223,7 @@ class LoadSingleImage(cpm.Module):
     def help_settings(self):
         result = [self.directory]
         image_group = self.file_settings[0]
-        result += [image_group.file_name,
+        result += [image_group.filename,
                    image_group.image_objects_choice,
                    image_group.image_name,
                    image_group.rescale,
@@ -236,10 +236,10 @@ class LoadSingleImage(cpm.Module):
         result = [self.directory]
         for file_setting in self.file_settings:
             url_based = (self.directory.dir_choice == cps.URL_FOLDER_NAME)
-            file_setting.file_name.set_browsable(not url_based)
-            file_setting.file_name.text = URL_TEXT if url_based else FILE_TEXT
+            file_setting.filename.set_browsable(not url_based)
+            file_setting.filename.text = URL_TEXT if url_based else FILE_TEXT
             result += [
-                file_setting.file_name, file_setting.image_objects_choice]
+                file_setting.filename, file_setting.image_objects_choice]
             if file_setting.image_objects_choice == IO_IMAGES:
                 result += [file_setting.image_name, file_setting.rescale]
             else:
@@ -290,7 +290,7 @@ class LoadSingleImage(cpm.Module):
         """
         result = {}
         for file_setting in self.file_settings:
-            file_pattern = file_setting.file_name.value
+            file_pattern = file_setting.filename.value
             file_name = workspace.measurements.apply_metadata(file_pattern,
                                                               image_set_number)
             if file_setting.image_objects_choice == IO_IMAGES:
@@ -392,7 +392,7 @@ class LoadSingleImage(cpm.Module):
             provider = LoadImagesImageProvider(
                     image_name, pathname, filename, rescale)
             image = provider.provide_image(image_set)
-            pixel_data = image.pixel_data
+            pixel_data = image.data
             if wants_images:
                 md5 = provider.get_md5_hash(m)
                 m.add_image_measurement("_".join((C_MD5_DIGEST, image_name)),
@@ -535,13 +535,13 @@ class LoadSingleImage(cpm.Module):
 
         # Make sure metadata tags exist
         for group in self.file_settings:
-            text_str = group.file_name.value
+            text_str = group.filename.value
             undefined_tags = pipeline.get_undefined_metadata_tags(text_str)
             if len(undefined_tags) > 0:
                 raise cps.ValidationError(
                         "%s is not a defined metadata tag. Check the metadata specifications in your load modules" %
                         undefined_tags[0],
-                        group.file_name)
+                        group.filename)
 
     def validate_module_warnings(self, pipeline):
         '''Check for potentially dangerous settings'''
@@ -569,7 +569,7 @@ class LoadSingleImage(cpm.Module):
         edited_modules = set()
         for group in self.file_settings:
             tags = []
-            file_name = group.file_name.value
+            file_name = group.filename.value
             if group.image_objects_choice == IO_IMAGES:
                 name = group.image_name.value
             else:

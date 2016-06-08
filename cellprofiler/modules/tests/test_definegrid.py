@@ -145,7 +145,7 @@ class TestDefineGrid(unittest.TestCase):
         module.display_image_name.value = INPUT_IMAGE_NAME
         module.object_name.value = OBJECTS_NAME
         module.save_image_name.value = OUTPUT_IMAGE_NAME
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         image_set.add(INPUT_IMAGE_NAME, cpi.Image(image))
         object_set = cpo.ObjectSet()
@@ -289,6 +289,6 @@ class TestDefineGrid(unittest.TestCase):
 
         image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         self.assertTrue(image is not None)
-        shape = image.pixel_data.shape
+        shape = image.data.shape
         self.assertEqual(shape[0], 50)
         self.assertEqual(shape[1], 100)

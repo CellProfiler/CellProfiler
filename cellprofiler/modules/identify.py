@@ -853,11 +853,11 @@ class Identify(cellprofiler.module.Module):
         #
         image = workspace.image_set.get_image(image_name,
                                               must_be_grayscale=True)
-        img = image.pixel_data
+        img = image.data
         mask = image.mask
         if self.threshold_scope == TS_BINARY_IMAGE:
             binary_image = workspace.image_set.get_image(
-                    self.binary_image.value, must_be_binary=True).pixel_data
+                    self.binary_image.value, must_be_binary=True).data
             self.add_fg_bg_measurements(
                     workspace.measurements, img, mask, binary_image)
             if wants_local_threshold:
@@ -921,7 +921,7 @@ class Identify(cellprofiler.module.Module):
                     value = min(value, self.threshold_range.max)
                 local_threshold = global_threshold = value
             else:
-                img = image.pixel_data
+                img = image.data
                 if self.threshold_scope == TS_PER_OBJECT:
                     if self.masking_objects == O_FROM_IMAGE:
                         masking_objects = image.masking_objects

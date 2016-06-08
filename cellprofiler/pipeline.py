@@ -217,7 +217,7 @@ def add_all_images(handles, image_set, object_set):
         name = provider.name()
         image = image_set.get_image(name)
         images[name] = image.image
-        if image.has_mask:
+        if image.masked:
             images['CropMask' + name] = image.mask
 
     for object_name in object_set.object_names:
@@ -1632,7 +1632,7 @@ class Pipeline(object):
             assert name in image_dict, 'Image named "%s" was not provided in the input dictionary' % name
 
         # Create image set from provided dict
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         for image_name in input_image_names:
             input_pixels = image_dict[image_name]
@@ -1649,7 +1649,7 @@ class Pipeline(object):
         # Populate a dictionary for output with the images to be exported
         output_dict = {}
         for name in output_image_names:
-            output_dict[name] = image_set.get_image(name).pixel_data
+            output_dict[name] = image_set.get_image(name).data
 
         return output_dict
 
@@ -1762,7 +1762,7 @@ class Pipeline(object):
         else:
             measurements = initial_measurements
 
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         workspace = cpw.Workspace(self, None, None, None,
                                   measurements, image_set_list, frame)
 
@@ -2891,7 +2891,7 @@ class Pipeline(object):
         try:
             new_workspace = cpw.Workspace(
                     pipeline, None, None, None,
-                    temp_measurements, cpi.ImageSetList())
+                    temp_measurements, cpi.List())
             new_workspace.set_file_list(workspace.file_list)
             pipeline.prepare_run(new_workspace, end_module)
 

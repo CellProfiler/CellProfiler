@@ -230,7 +230,7 @@ class Align(cpm.Module):
                                               additional.input_image_name.value)
             offsets.append((a_off_y, a_off_x))
 
-        shapes = [workspace.image_set.get_image(x).pixel_data.shape[:2]
+        shapes = [workspace.image_set.get_image(x).data.shape[:2]
                   for x, _ in names]
         offsets, shapes = self.adjust_offsets(offsets, shapes)
 
@@ -247,9 +247,9 @@ class Align(cpm.Module):
         # save data for display
         workspace.display_data.image_info = \
             [(input_name,
-              workspace.image_set.get_image(input_name).pixel_data,
+              workspace.image_set.get_image(input_name).data,
               output_name,
-              workspace.image_set.get_image(output_name).pixel_data,
+              workspace.image_set.get_image(output_name).data,
               x, y, shape)
              for (input_name, output_name), (y, x), shape
              in zip(names, offsets, shapes)]
@@ -312,9 +312,9 @@ class Align(cpm.Module):
         Returns the x,y (not i,j) offsets.
         '''
         image1 = workspace.image_set.get_image(input1_name)
-        image1_pixels = image1.pixel_data.astype(float)
+        image1_pixels = image1.data.astype(float)
         image2 = workspace.image_set.get_image(input2_name)
-        image2_pixels = image2.pixel_data.astype(float)
+        image2_pixels = image2.data.astype(float)
         if self.alignment_method == M_CROSS_CORRELATION:
             return self.align_cross_correlation(image1_pixels, image2_pixels)
         else:
@@ -516,7 +516,7 @@ class Align(cpm.Module):
         '''
 
         image = workspace.image_set.get_image(input_image_name)
-        pixel_data = image.pixel_data
+        pixel_data = image.data
         if pixel_data.ndim == 2:
             output_shape = (shape[0], shape[1], 1)
             planes = [pixel_data]
@@ -537,7 +537,7 @@ class Align(cpm.Module):
         p2[:, :] = p1[:, :]
         if np.all(output_mask):
             output_mask = None
-        crop_mask = np.zeros(image.pixel_data.shape, bool)
+        crop_mask = np.zeros(image.data.shape, bool)
         p1, p2 = offset_slice(crop_mask, output_pixels, off_y, off_x)
         p1[:, :] = True
         if np.all(crop_mask):
@@ -545,7 +545,7 @@ class Align(cpm.Module):
         output_image = cpi.Image(output_pixels,
                                  mask=output_mask,
                                  crop_mask=crop_mask,
-                                 parent_image=image)
+                                 parent=image)
         workspace.image_set.add(output_image_name, output_image)
 
     def adjust_offsets(self, offsets, shapes):

@@ -157,8 +157,8 @@ class EnhanceEdges(cpm.Module):
     def run(self, workspace):
         image = workspace.image_set.get_image(self.image_name.value,
                                               must_be_grayscale=True)
-        orig_pixels = image.pixel_data
-        if image.has_mask:
+        orig_pixels = image.data
+        if image.masked:
             mask = image.mask
         else:
             mask = np.ones(orig_pixels.shape, bool)
@@ -206,7 +206,7 @@ class EnhanceEdges(cpm.Module):
             raise NotImplementedError("Unimplemented edge detection method: %s" %
                                       self.method.value)
 
-        output_image = cpi.Image(output_pixels, parent_image=image)
+        output_image = cpi.Image(output_pixels, parent=image)
         workspace.image_set.add(self.output_image_name.value, output_image)
 
         if self.show_window:

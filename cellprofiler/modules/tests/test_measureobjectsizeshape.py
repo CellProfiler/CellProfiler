@@ -24,7 +24,7 @@ OBJECTS_NAME = "myobjects"
 
 class TestMeasureObjectSizeShape(unittest.TestCase):
     def make_workspace(self, labels):
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         objects = cpo.Objects()
@@ -100,7 +100,7 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
         settings = ["SomeObjects", "Yes"]
         module.set_settings_from_values(settings, 1, module.module_class())
         module.module_num = 1
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         measurements = cpmeas.Measurements()
         pipeline = cpp.Pipeline()
         pipeline.add_module(module)
@@ -142,7 +142,7 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
         settings = ["SomeObjects", "OtherObjects", "Yes"]
         module.set_settings_from_values(settings, 1, module.module_class())
         module.module_num = 1
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         measurements = cpmeas.Measurements()
         pipeline = cpp.Pipeline()
         pipeline.add_module(module)
@@ -231,7 +231,7 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
         objects.segmented = labels
         object_set.add_objects(objects, "SomeObjects")
         module.module_num = 1
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         measurements = cpmeas.Measurements()
         pipeline = cpp.Pipeline()
         pipeline.add_module(module)
@@ -267,7 +267,7 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
         module.object_groups[0].name.value = "SomeObjects"
         module.calculate_zernikes.value = True
         module.module_num = 1
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         measurements = cpmeas.Measurements()
         pipeline = cpp.Pipeline()
         pipeline.add_module(module)
@@ -302,7 +302,7 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
         objects.segmented = labels
         object_set.add_objects(objects, "SomeObjects")
         module.module_num = 1
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         measurements = cpmeas.Measurements()
         pipeline = cpp.Pipeline()
         pipeline.add_module(module)
@@ -347,7 +347,7 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
             object_set = cpo.ObjectSet()
             object_set.add_objects(objects, "SomeObjects")
             module.module_num = 1
-            image_set_list = cpi.ImageSetList()
+            image_set_list = cpi.List()
             measurements = cpmeas.Measurements()
             mlist.append(measurements)
             pipeline = cpp.Pipeline()

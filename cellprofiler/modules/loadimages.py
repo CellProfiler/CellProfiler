@@ -2182,7 +2182,7 @@ class LoadImages(cpmodule.Module):
                             image_name, path, filename, rescale)
                 if wants_images:
                     image = provider.provide_image(workspace.image_set)
-                    pixel_data = image.pixel_data
+                    pixel_data = image.data
                     image_set.providers.append(provider)
                     m.add_image_measurement(
                             "_".join((C_MD5_DIGEST, image_name)),
@@ -2230,7 +2230,7 @@ class LoadImages(cpmodule.Module):
                     for index in range(n_frames):
                         provider.index = index
                         provider.rescale = False
-                        labels = provider.provide_image(None).pixel_data
+                        labels = provider.provide_image(None).data
                         shape = labels.shape[:2]
                         labels = convert_image_to_objects(labels)
                         i, j = np.mgrid[0:labels.shape[0], 0:labels.shape[1]]
@@ -2256,8 +2256,8 @@ class LoadImages(cpmodule.Module):
                             outlines |= centrosome.outline.outline(l).astype(
                                     outlines.dtype)
                         outline_image = cpimage.Image(outlines,
-                                                      path_name=path,
-                                                      file_name=filename)
+                                                      path=path,
+                                                      filename=filename)
                         workspace.image_set.add(channel.outlines_name.value, outline_image)
 
                 for tag in tags:
@@ -3013,7 +3013,7 @@ def is_movie(filename):
     return ext in SUPPORTED_MOVIE_EXTENSIONS
 
 
-class LoadImagesImageProviderBase(cpimage.AbstractImageProvider):
+class LoadImagesBase(cpimage.Abstract):
     '''Base for image providers: handle pathname and filename & URLs'''
 
     def __init__(self, name, pathname, filename):
@@ -3141,7 +3141,7 @@ class LoadImagesImageProviderBase(cpimage.AbstractImageProvider):
             if not os.path.isfile(path):
                 # No file here - hash the image
                 image = self.provide_image(measurements)
-                hasher.update(image.pixel_data.tostring())
+                hasher.update(image.data.tostring())
             else:
                 with open(self.get_full_name(), "rb") as fd:
                     while True:
@@ -3178,7 +3178,7 @@ class LoadImagesImageProviderBase(cpimage.AbstractImageProvider):
         self.release_memory()
 
 
-class LoadImagesImageProvider(LoadImagesImageProviderBase):
+class LoadImagesImageProvider(LoadImagesBase):
     """Provide an image by filename, loading the file as it is requested
     """
 
@@ -3250,8 +3250,8 @@ class LoadImagesImageProvider(LoadImagesImageProviderBase):
             # Apply a manual rescale
             img = img.astype(np.float32) / self.rescale
         image = cpimage.Image(img,
-                              path_name=self.get_pathname(),
-                              file_name=self.get_filename(),
+                              path=self.get_pathname(),
+                              filename=self.get_filename(),
                               scale=self.scale)
         if img.ndim == 3 and len(channel_names) == img.shape[2]:
             image.channel_names = list(channel_names)

@@ -571,7 +571,7 @@ class OmeroLoadImages(cpm.Module):
                 image_name, channel_number = channel.cpimage_name.value, channel.channel_number.value
                 image_set = workspace.image_set
                 i, j = 0, int(channel_number)
-                pixel_data = image_set.get_image(image_name).pixel_data
+                pixel_data = image_set.get_image(image_name).data
                 if pixel_data.ndim == 2:
                     figure.subplot_imshow_grayscale(i, j, pixel_data,
                                                     title=image_name,
@@ -625,7 +625,7 @@ class OmeroLoadImages(cpm.Module):
 
 # TODO: add exception handling
 # TODO: reconnect when gateway has been disconnected?
-class OmeroImageProvider(cpimage.AbstractImageProvider):
+class OmeroImageProvider(cpimage.Abstract):
     '''Provide a single image based on omero pixels id'''
 
     def __init__(self, name, gateway, pixels_id, z=0, c=0, t=0):

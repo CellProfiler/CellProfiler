@@ -286,17 +286,17 @@ class RescaleIntensity(cpm.Module):
                                         must_be_grayscale=True,
                                         cache=False)
             if self.wants_automatic_high == HIGH_ALL_IMAGES:
-                if image.has_mask:
-                    vmax = np.max(image.pixel_data[image.mask])
+                if image.masked:
+                    vmax = np.max(image.data[image.mask])
                 else:
-                    vmax = np.max(image.pixel_data)
+                    vmax = np.max(image.data)
                     max_value = vmax if max_value is None else max(max_value, vmax)
 
             if self.wants_automatic_low == LOW_ALL_IMAGES:
-                if image.has_mask:
-                    vmin = np.min(image.pixel_data[image.mask])
+                if image.masked:
+                    vmin = np.min(image.data[image.mask])
                 else:
-                    vmin = np.min(image.pixel_data)
+                    vmin = np.min(image.data)
                     min_value = vmin if min_value is None else min(min_value, vmin)
 
         if self.wants_automatic_high == HIGH_ALL_IMAGES:
@@ -333,16 +333,16 @@ class RescaleIntensity(cpm.Module):
         if output_mask is not None:
             rescaled_image = cpi.Image(output_image,
                                        mask=output_mask,
-                                       parent_image=input_image,
+                                       parent=input_image,
                                        convert=False)
         else:
             rescaled_image = cpi.Image(output_image,
-                                       parent_image=input_image,
+                                       parent=input_image,
                                        convert=False)
         workspace.image_set.add(self.rescaled_image_name.value, rescaled_image)
         if self.show_window:
-            workspace.display_data.image_data = [input_image.pixel_data,
-                                                 rescaled_image.pixel_data]
+            workspace.display_data.image_data = [input_image.data,
+                                                 rescaled_image.data]
 
     def display(self, workspace, figure):
         '''Display the input image and rescaled image'''
@@ -364,16 +364,16 @@ class RescaleIntensity(cpm.Module):
 
     def stretch(self, input_image):
         '''Stretch the input image to the range 0:1'''
-        if input_image.has_mask:
-            return stretch(input_image.pixel_data, input_image.mask)
+        if input_image.masked:
+            return stretch(input_image.data, input_image.mask)
         else:
-            return stretch(input_image.pixel_data)
+            return stretch(input_image.data)
 
     def manual_input_range(self, input_image, workspace):
         '''Stretch the input image from the requested range to 0:1'''
 
         src_min, src_max = self.get_source_range(input_image, workspace)
-        rescaled_image = ((input_image.pixel_data - src_min) /
+        rescaled_image = ((input_image.data - src_min) /
                           (src_max - src_min))
         return self.truncate_values(input_image, rescaled_image, 0, 1)
 
@@ -381,7 +381,7 @@ class RescaleIntensity(cpm.Module):
         '''Stretch the input image using manual input and output values'''
 
         src_min, src_max = self.get_source_range(input_image, workspace)
-        rescaled_image = ((input_image.pixel_data - src_min) /
+        rescaled_image = ((input_image.data - src_min) /
                           (src_max - src_min))
         dest_min = self.dest_scale.min
         dest_max = self.dest_scale.max
@@ -393,34 +393,34 @@ class RescaleIntensity(cpm.Module):
     def divide_by_image_minimum(self, input_image):
         '''Divide the image by its minimum to get an illumination correction function'''
 
-        if input_image.has_mask:
-            src_min = np.min(input_image.pixel_data[input_image.mask])
+        if input_image.masked:
+            src_min = np.min(input_image.data[input_image.mask])
         else:
-            src_min = np.min(input_image.pixel_data)
+            src_min = np.min(input_image.data)
         if src_min != 0:
-            rescaled_image = input_image.pixel_data / src_min
+            rescaled_image = input_image.data / src_min
         return rescaled_image
 
     def divide_by_image_maximum(self, input_image):
         '''Stretch the input image from 0 to the image maximum'''
 
-        if input_image.has_mask:
-            src_max = np.max(input_image.pixel_data[input_image.mask])
+        if input_image.masked:
+            src_max = np.max(input_image.data[input_image.mask])
         else:
-            src_max = np.max(input_image.pixel_data)
+            src_max = np.max(input_image.data)
         if src_max != 0:
-            rescaled_image = input_image.pixel_data / src_max
+            rescaled_image = input_image.data / src_max
         return rescaled_image
 
     def divide_by_value(self, input_image):
         '''Divide the image by a user-specified value'''
-        return input_image.pixel_data / self.divisor_value.value
+        return input_image.data / self.divisor_value.value
 
     def divide_by_measurement(self, workspace, input_image):
         '''Divide the image by the value of an image measurement'''
         m = workspace.measurements
         value = m.get_current_image_measurement(self.divisor_measurement.value)
-        return input_image.pixel_data / float(value)
+        return input_image.data / float(value)
 
     def scale_by_image_maximum(self, workspace, input_image):
         '''Scale the image by the maximum of another image
@@ -431,21 +431,21 @@ class RescaleIntensity(cpm.Module):
         range as the reference image
         '''
         reference_image = workspace.image_set.get_image(self.matching_image_name.value)
-        reference_pixels = reference_image.pixel_data
-        if reference_image.has_mask:
+        reference_pixels = reference_image.data
+        if reference_image.masked:
             reference_pixels = reference_pixels[reference_image.mask]
         reference_max = np.max(reference_pixels)
-        if input_image.has_mask:
-            image_max = np.max(input_image.pixel_data[input_image.mask])
+        if input_image.masked:
+            image_max = np.max(input_image.data[input_image.mask])
         else:
-            image_max = np.max(input_image.pixel_data)
+            image_max = np.max(input_image.data)
         if image_max == 0:
-            return input_image.pixel_data
-        return input_image.pixel_data * reference_max / image_max
+            return input_image.data
+        return input_image.data * reference_max / image_max
 
     def convert_to_8_bit(self, input_image):
         '''Convert the image data to uint8'''
-        return (input_image.pixel_data * 255).astype(np.uint8)
+        return (input_image.data * 255).astype(np.uint8)
 
     def get_source_range(self, input_image, workspace):
         '''Get the source range, accounting for automatically computed values'''
@@ -455,8 +455,8 @@ class RescaleIntensity(cpm.Module):
 
         if (self.wants_automatic_low == LOW_EACH_IMAGE or
                     self.wants_automatic_high == HIGH_EACH_IMAGE):
-            input_pixels = input_image.pixel_data
-            if input_image.has_mask:
+            input_pixels = input_image.data
+            if input_image.masked:
                 input_pixels = input_pixels[input_image.mask]
 
         if self.wants_automatic_low == LOW_ALL_IMAGES:
@@ -487,7 +487,7 @@ class RescaleIntensity(cpm.Module):
 
         if (self.low_truncation_choice == R_MASK or
                     self.high_truncation_choice == R_MASK):
-            if input_image.has_mask:
+            if input_image.masked:
                 mask = input_image.mask.copy()
             else:
                 mask = np.ones(rescaled_image.shape, bool)

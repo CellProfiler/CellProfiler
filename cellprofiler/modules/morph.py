@@ -701,11 +701,11 @@ class Morph(cpm.Module):
 
     def run(self, workspace):
         image = workspace.image_set.get_image(self.image_name.value)
-        if image.has_mask:
+        if image.masked:
             mask = image.mask
         else:
             mask = None
-        pixel_data = image.pixel_data
+        pixel_data = image.data
         if pixel_data.ndim == 3:
             if any([np.any(pixel_data[:, :, 0] != pixel_data[:, :, plane])
                     for plane in range(1, pixel_data.shape[2])]):
@@ -713,15 +713,15 @@ class Morph(cpm.Module):
             pixel_data = np.sum(pixel_data, 2) / pixel_data.shape[2]
         for function in self.functions:
             pixel_data = self.run_function(function, pixel_data, mask)
-        new_image = cpi.Image(pixel_data, parent_image=image)
+        new_image = cpi.Image(pixel_data, parent=image)
         workspace.image_set.add(self.output_image_name.value, new_image)
         if self.show_window:
-            workspace.display_data.image = image.pixel_data
-            workspace.display_data.pixel_data = pixel_data
+            workspace.display_data.image = image.data
+            workspace.display_data.data = pixel_data
 
     def display(self, workspace, figure):
         image = workspace.display_data.image
-        pixel_data = workspace.display_data.pixel_data
+        pixel_data = workspace.display_data.data
         figure.set_subplots((2, 1))
         if pixel_data.dtype.kind == 'b':
             figure.subplot_imshow_bw(0, 0, image,

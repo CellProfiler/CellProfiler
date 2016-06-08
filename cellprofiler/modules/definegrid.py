@@ -434,7 +434,7 @@ class DefineGrid(cpm.Module):
                               (gridding.x_location_of_lowest_x_spot -
                                gridding.x_spacing / 2) * 2 + 2, 3))
         else:
-            image = workspace.image_set.get_image(self.display_image_name.value).pixel_data
+            image = workspace.image_set.get_image(self.display_image_name.value).data
             if image.ndim == 2:
                 image = np.dstack((image, image, image))
         return image
@@ -486,7 +486,7 @@ class DefineGrid(cpm.Module):
         '''
         if self.display_image_name.value in workspace.image_set.names:
             image = workspace.image_set.get_image(self.display_image_name.value)
-            shape = image.pixel_data.shape[:2]
+            shape = image.data.shape[:2]
         else:
             shape = None
         return self.build_grid_info(self.first_spot_coordinates.x,

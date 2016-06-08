@@ -177,7 +177,7 @@ MeasureGranularity:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
         image_setting.image_sample_size.value = image_sample_size
         image_setting.element_size.value = element_size
         image_setting.granular_spectrum_length.value = granular_spectrum_length
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         img = cpi.Image(image, mask)
         image_set.add(IMAGE_NAME, img)

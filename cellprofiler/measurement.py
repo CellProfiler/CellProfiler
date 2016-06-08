@@ -1579,7 +1579,7 @@ class Measurements(object):
                       discard alpha channel.
         """
         from .modules.loadimages import LoadImagesImageProviderURL
-        from .image import GrayscaleImage, RGBImage
+        from .image import Grayscale, RGB
         name = str(name)
         if self.__images.has_key(name):
             image = self.__images[name]
@@ -1621,31 +1621,30 @@ class Measurements(object):
             image = matching_providers[0].provide_image(self)
             if cache:
                 self.__images[name] = image
-        if must_be_binary and image.pixel_data.ndim == 3:
+        if must_be_binary and image.data.ndim == 3:
             raise ValueError("Image must be binary, but it was color")
-        if must_be_binary and image.pixel_data.dtype != np.bool:
+        if must_be_binary and image.data.dtype != np.bool:
             raise ValueError("Image was not binary")
-        if must_be_color and image.pixel_data.ndim != 3:
+        if must_be_color and image.data.ndim != 3:
             raise ValueError("Image must be color, but it was grayscale")
         if (must_be_grayscale and
-                (image.pixel_data.ndim != 2)):
-            pd = image.pixel_data
-            if pd.shape[2] >= 3 and \
-                    np.all(pd[:, :, 0] == pd[:, :, 1]) and \
-                    np.all(pd[:, :, 0] == pd[:, :, 2]):
-                return GrayscaleImage(image)
+                (image.data.ndim != 2)):
+            pd = image.data
+            if pd.shape[2] >= 3 and np.all(pd[:, :, 0] == pd[:, :, 1]) and np.all(pd[:, :, 0] == pd[:, :, 2]):
+                return Grayscale(image)
             raise ValueError("Image must be grayscale, but it was color")
-        if must_be_grayscale and image.pixel_data.dtype.kind == 'b':
-            return GrayscaleImage(image)
+        if must_be_grayscale and image.data.dtype.kind == 'b':
+            return Grayscale(image)
         if must_be_rgb:
-            if image.pixel_data.ndim != 3:
+            if image.data.ndim != 3:
                 raise ValueError("Image must be RGB, but it was grayscale")
-            elif image.pixel_data.shape[2] not in (3, 4):
+            elif image.data.shape[2] not in (3, 4):
                 raise ValueError("Image must be RGB, but it had %d channels" %
-                                 image.pixel_data.shape[2])
-            elif image.pixel_data.shape[2] == 4:
+                                 image.data.shape[2])
+            elif image.data.shape[2] == 4:
                 logger.warning("Discarding alpha channel.")
-                return RGBImage(image)
+
+                return RGB(image)
         return image
 
     def get_providers(self):
@@ -1718,14 +1717,14 @@ class Measurements(object):
     names = property(get_names)
 
     def add(self, name, image):
-        from .image import VanillaImageProvider
+        from .image import Vanilla
         old_providers = [provider for provider in self.providers
                          if provider.name == name]
         if len(old_providers) > 0:
             self.clear_image(name)
         for provider in old_providers:
             self.providers.remove(provider)
-        provider = VanillaImageProvider(name, image)
+        provider = Vanilla(name, image)
         self.providers.append(provider)
         self.__images[name] = image
 

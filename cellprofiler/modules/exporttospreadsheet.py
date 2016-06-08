@@ -374,7 +374,7 @@ class ExportToSpreadsheet(cpm.Module):
                   self.wants_prefix, self.prefix,
                   self.wants_overwrite_without_warning]
         for group in self.object_groups:
-            result += [group.name, group.previous_file, group.file_name,
+            result += [group.name, group.previous_file, group.filename,
                        group.wants_automatic_file_name]
         return result
 
@@ -415,7 +415,7 @@ class ExportToSpreadsheet(cpm.Module):
                 if append_file_name:
                     result += [group.wants_automatic_file_name]
                     if not group.wants_automatic_file_name:
-                        result += [group.file_name]
+                        result += [group.filename]
                 result += [group.remover, group.divider]
                 previous_group = group
             result += [self.add_button]
@@ -430,13 +430,13 @@ class ExportToSpreadsheet(cpm.Module):
         '''Make sure metadata tags exist'''
         for group in self.object_groups:
             if not group.wants_automatic_file_name:
-                text_str = group.file_name.value
+                text_str = group.filename.value
                 undefined_tags = pipeline.get_undefined_metadata_tags(text_str)
                 if len(undefined_tags) > 0:
                     raise cps.ValidationError(
                             "%s is not a defined metadata tag. Check the metadata specifications in your load modules" %
                             undefined_tags[0],
-                            group.file_name)
+                            group.filename)
 
     def validate_module_warnings(self, pipeline):
         '''Warn user re: Test mode '''
@@ -446,7 +446,7 @@ class ExportToSpreadsheet(cpm.Module):
 
         '''Warn user that changing the extension may cause Excel to stuff everything into one column'''
         if not self.wants_everything.value:
-            all_extensions = [os.path.splitext(group.file_name.value)[1] for group in self.object_groups]
+            all_extensions = [os.path.splitext(group.filename.value)[1] for group in self.object_groups]
             is_valid_extension = [not group.wants_automatic_file_name.value and (
                 (extension == ".csv" and self.delimiter == DELIMITER_COMMA) or (
                     extension == ".txt" and self.delimiter == DELIMITER_TAB))
@@ -454,7 +454,7 @@ class ExportToSpreadsheet(cpm.Module):
             if not all(is_valid_extension):
                 raise (cps.ValidationError(
                         "To avoid formatting problems in Excel, use the extension .csv for comma-delimited files and .txt for tab-delimited..",
-                        self.object_groups[is_valid_extension.index(False)].file_name))
+                        self.object_groups[is_valid_extension.index(False)].filename))
 
     @property
     def delimiter_char(self):
@@ -591,7 +591,7 @@ class ExportToSpreadsheet(cpm.Module):
         if settings_group is None or settings_group.wants_automatic_file_name:
             tags = []
         else:
-            tags = cpmeas.find_metadata_tokens(settings_group.file_name.value)
+            tags = cpmeas.find_metadata_tokens(settings_group.filename.value)
         if self.directory.is_custom_choice:
             tags += cpmeas.find_metadata_tokens(self.directory.custom_path)
         metadata_groups = workspace.measurements.group_by_metadata(tags)
@@ -679,7 +679,7 @@ class ExportToSpreadsheet(cpm.Module):
         if settings_group.wants_automatic_file_name:
             filename = "%s.%s" % (settings_group.name.value, self.extension())
         else:
-            filename = settings_group.file_name.value
+            filename = settings_group.filename.value
         filename = self.make_full_filename(
                 filename, workspace, image_set_number)
         return filename

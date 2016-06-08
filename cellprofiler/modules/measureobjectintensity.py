@@ -311,8 +311,8 @@ class MeasureObjectIntensity(cpm.Module):
                                                   must_be_grayscale=True)
             for object_name in [obj.name for obj in self.objects]:
                 # Need to refresh image after each iteration...
-                img = image.pixel_data
-                if image.has_mask:
+                img = image.data
+                if image.masked:
                     masked_image = img.copy()
                     masked_image[~image.mask] = 0
                 else:
@@ -344,7 +344,7 @@ class MeasureObjectIntensity(cpm.Module):
                     _, masked_image = cpo.crop_labels_and_image(labels, masked_image)
                     outlines = cpmo.outline(labels)
 
-                    if image.has_mask:
+                    if image.masked:
                         _, mask = cpo.crop_labels_and_image(labels, image.mask)
                         masked_labels = labels.copy()
                         masked_labels[~mask] = 0

@@ -257,13 +257,13 @@ class CalculateImageOverlap(cpm.Module):
                                                  must_be_binary=True)
         test_image = image_set.get_image(self.test_img.value,
                                          must_be_binary=True)
-        ground_truth_pixels = ground_truth_image.pixel_data
+        ground_truth_pixels = ground_truth_image.data
         ground_truth_pixels = test_image.crop_image_similarly(ground_truth_pixels)
         mask = ground_truth_image.mask
         mask = test_image.crop_image_similarly(mask)
-        if test_image.has_mask:
+        if test_image.masked:
             mask = mask & test_image.mask
-        test_pixels = test_image.pixel_data
+        test_pixels = test_image.data
 
         false_positives = test_pixels & ~ ground_truth_pixels
         false_positives[~ mask] = False

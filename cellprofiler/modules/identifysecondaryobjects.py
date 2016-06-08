@@ -496,7 +496,7 @@ class IdentifySecondaryObjects(cpmi.Identify):
         image = workspace.image_set.get_image(image_name,
                                               must_be_grayscale=True)
         workspace.display_data.statistics = []
-        img = image.pixel_data
+        img = image.data
         mask = image.mask
         objects = workspace.object_set.get_objects(self.primary_objects.value)
         global_threshold = None
@@ -633,11 +633,11 @@ class IdentifySecondaryObjects(cpmi.Identify):
                 new_objects.unedited_segmented = objects.unedited_segmented
             if objects.has_small_removed_segmented:
                 new_objects.small_removed_segmented = objects.small_removed_segmented
-            new_objects.parent_image = objects.parent_image
+            new_objects.parent_image = objects.parent
             primary_outline = outline(segmented_labels)
             if self.wants_primary_outlines:
                 out_img = cpi.Image(primary_outline.astype(bool),
-                                    parent_image=image)
+                                    parent=image)
                 workspace.image_set.add(self.new_primary_outlines_name.value,
                                         out_img)
         else:
@@ -656,7 +656,7 @@ class IdentifySecondaryObjects(cpmi.Identify):
         workspace.object_set.add_objects(objects_out, objname)
         if self.use_outlines.value:
             out_img = cpi.Image(secondary_outline.astype(bool),
-                                parent_image=image)
+                                parent=image)
             workspace.image_set.add(self.outlines_name.value, out_img)
         object_count = np.max(segmented_out)
         #
@@ -799,7 +799,7 @@ class IdentifySecondaryObjects(cpmi.Identify):
             segmented_labels_out = labels_out.copy()
         if self.wants_discard_edge:
             image = workspace.image_set.get_image(self.image_name.value)
-            if image.has_mask:
+            if image.masked:
                 mask_border = (image.mask & ~ scind.binary_erosion(image.mask))
                 edge_labels = segmented_labels_out[mask_border]
             else:

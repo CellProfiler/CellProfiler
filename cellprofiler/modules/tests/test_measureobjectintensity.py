@@ -152,7 +152,7 @@ class TestMeasureObjects(unittest.TestCase):
             self.assertTrue(column[2] == cpmeas.COLTYPE_FLOAT)
 
     def make_workspace(self, labels, pixel_data, mask=None):
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         image_set.add(IMAGE_NAME, cpi.Image(pixel_data, mask))
         object_set = cpo.ObjectSet()
@@ -645,7 +645,7 @@ class TestMeasureObjects(unittest.TestCase):
         np.random.seed(41)
         labels = np.ones((20, 50), int)
         image = np.random.uniform(size=(30, 40)).astype(np.float32)
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         image_set.add('MyImage', cpi.Image(image))
         object_set = cpo.ObjectSet()

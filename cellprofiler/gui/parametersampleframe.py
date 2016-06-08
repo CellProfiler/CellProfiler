@@ -554,7 +554,7 @@ class ParameterSampleFrame(wx.Frame):
         """
         self.__measurements = cellprofiler.measurement.Measurements(can_overwrite=True)
         self.__object_set = cellprofiler.object.ObjectSet(can_overwrite=True)
-        self.__image_set_list = cellprofiler.image.ImageSetList()
+        self.__image_set_list = cellprofiler.image.List()
         workspace = cellprofiler.workspace.Workspace(self.__pipeline, None, None, None,
                                                      self.__measurements, self.__image_set_list,
                                                      self.__frame)
@@ -695,7 +695,7 @@ class ParameterSampleFrame(wx.Frame):
     def save_image(image, path):
         """TODO: add comments"""
 
-        pixels = image.pixel_data
+        pixels = image.data
         if numpy.max(pixels) > 1 or numpy.min(pixels) < 0:
             pixels = pixels.copy()
             pixels[pixels < 0] = 0

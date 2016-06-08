@@ -259,8 +259,8 @@ class EnhanceOrSuppressFeatures(cpm.Module):
         # Match against Matlab's strel('disk') operation.
         #
         radius = (float(self.object_size.value) - 1.0) / 2.0
-        mask = image.mask if image.has_mask else None
-        pixel_data = image.pixel_data
+        mask = image.mask if image.masked else None
+        pixel_data = image.data
         if self.method == ENHANCE:
             if self.enhance_method == E_SPECKLES:
                 if self.speckle_accuracy == S_SLOW or radius <= 3:
@@ -302,7 +302,7 @@ class EnhanceOrSuppressFeatures(cpm.Module):
                     # and the gradient is less as sigma gets larger.
                     #
                     result = -L[:, :, 0] * (L[:, :, 0] < 0) * sigma * sigma
-                if image.has_mask:
+                if image.masked:
                     result[~mask] = pixel_data[~mask]
             elif self.enhance_method == E_DARK_HOLES:
                 min_radius = max(1, int(self.hole_size.min / 2))
@@ -324,17 +324,17 @@ class EnhanceOrSuppressFeatures(cpm.Module):
                 raise NotImplementedError("Unimplemented enhance method: %s" %
                                           self.enhance_method.value)
         elif self.method == SUPPRESS:
-            if image.has_mask:
-                result = opening(image.pixel_data, radius, image.mask)
+            if image.masked:
+                result = opening(image.data, radius, image.mask)
             else:
-                result = opening(image.pixel_data, radius)
+                result = opening(image.data, radius)
         else:
             raise ValueError("Unknown filtering method: %s" % self.method)
-        result_image = cpi.Image(result, parent_image=image)
+        result_image = cpi.Image(result, parent=image)
         workspace.image_set.add(self.filtered_image_name.value, result_image)
 
         if self.show_window:
-            workspace.display_data.image = image.pixel_data
+            workspace.display_data.image = image.data
             workspace.display_data.result = result
 
     def display(self, workspace, figure):

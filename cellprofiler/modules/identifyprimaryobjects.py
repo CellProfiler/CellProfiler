@@ -968,7 +968,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
                                        "%.1f" % (self.calc_smoothing_filter_size())])
                     statistics.append(["Maxima suppression size",
                                        "%.1f" % maxima_suppression_size])
-            workspace.display_data.image = image.pixel_data
+            workspace.display_data.image = image.data
             workspace.display_data.labeled_image = labeled_image
             workspace.display_data.size_excluded_labels = size_excluded_labeled_image
             workspace.display_data.border_excluded_labels = border_excluded_labeled_image
@@ -991,7 +991,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
                                               labeled_image)
         if self.should_save_outlines.value:
             out_img = cpi.Image(outline_image.astype(bool),
-                                parent_image=image)
+                                parent=image)
             workspace.image_set.add(self.save_outlines.value, out_img)
 
     def limit_object_count(self, labeled_image, object_count):
@@ -1088,7 +1088,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
 
         cpimage = workspace.image_set.get_image(
                 self.image_name.value, must_be_grayscale=True)
-        image = cpimage.pixel_data
+        image = cpimage.data
         mask = cpimage.mask
 
         reported_LoG_filter_diameter = 5
@@ -1316,7 +1316,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             if any(histogram[1:] > 0):
                 histogram_image = histogram[labeled_image]
                 labeled_image[histogram_image > 0] = 0
-            elif image.has_mask:
+            elif image.masked:
                 # The assumption here is that, if nothing touches the border,
                 # the mask is a large, elliptical mask that tells you where the
                 # well is. That's the way the old Matlab code works and it's duplicated here

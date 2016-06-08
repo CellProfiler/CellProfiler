@@ -461,7 +461,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
                  that allows the test to modify the module.
         measurement - an image measurement value
         '''
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         module = I.ImageMath()
         module.module_num = 1
@@ -490,18 +490,18 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
 
     def check_expected(self, image, expected, mask=None, ignore=False):
         if mask is None and not image.has_crop_mask:
-            self.assertTrue(np.all(np.abs(image.pixel_data - expected <
+            self.assertTrue(np.all(np.abs(image.data - expected <
                                           np.sqrt(np.finfo(np.float32).eps))))
-            self.assertFalse(image.has_mask)
+            self.assertFalse(image.masked)
         elif mask is not None and ignore == True:
-            self.assertTrue(np.all(np.abs(image.pixel_data - expected <
+            self.assertTrue(np.all(np.abs(image.data - expected <
                                           np.sqrt(np.finfo(np.float32).eps))))
-            self.assertTrue(image.has_mask)
+            self.assertTrue(image.masked)
         elif mask is not None and ignore == False:
-            self.assertTrue(image.has_mask)
+            self.assertTrue(image.masked)
             if not image.has_crop_mask:
                 self.assertTrue(np.all(mask == image.mask))
-            self.assertTrue(np.all(np.abs(image.pixel_data[image.mask] -
+            self.assertTrue(np.all(np.abs(image.data[image.mask] -
                                           expected[image.mask]) <
                                    np.sqrt(np.finfo(np.float32).eps)))
 
@@ -726,7 +726,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
         images = [{'pixel_data': np.random.uniform(size=(10, 10)) > .5}
                   for i in range(2)]
         output = self.run_imagemath(images, fn)
-        self.assertTrue(output.pixel_data.dtype == np.bool)
+        self.assertTrue(output.data.dtype == np.bool)
 
     def test_06_01_divide(self):
         def fn(module):
@@ -866,7 +866,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
         workspace = cpw.Workspace(pipeline, module, m, None, m, None)
         module.run(workspace)
         np.testing.assert_array_almost_equal(
-                pixel_data, m.get_image("inputimage").pixel_data)
+                pixel_data, m.get_image("inputimage").data)
 
     def test_11_02_invert_binary_invert(self):
         #
@@ -894,7 +894,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
         for module in pipeline.modules():
             module.run(workspace)
         np.testing.assert_array_equal(
-                pixel_data, m.get_image("inputimage").pixel_data > .5)
+                pixel_data, m.get_image("inputimage").data > .5)
 
     def test_12_01_or_binary(self):
         def fn(module):

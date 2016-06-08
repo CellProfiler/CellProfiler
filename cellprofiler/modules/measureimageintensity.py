@@ -199,18 +199,18 @@ class MeasureImageIntensity(cpm.Module):
         '''
         image = workspace.image_set.get_image(im.image_name.value,
                                               must_be_grayscale=True)
-        pixels = image.pixel_data
+        pixels = image.data
 
         measurement_name = im.image_name.value
         if im.wants_objects.value:
             measurement_name += "_" + im.object_name.value
             objects = workspace.get_objects(im.object_name.value)
-            if image.has_mask:
+            if image.masked:
                 pixels = pixels[np.logical_and(objects.segmented != 0,
                                                image.mask)]
             else:
                 pixels = pixels[objects.segmented != 0]
-        elif image.has_mask:
+        elif image.masked:
             pixels = pixels[image.mask]
 
         pixel_count = np.product(pixels.shape)

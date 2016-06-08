@@ -210,15 +210,15 @@ class MeasureGranularity(cpm.Module):
         #
         # Downsample the image and mask
         #
-        new_shape = np.array(im.pixel_data.shape)
+        new_shape = np.array(im.data.shape)
         if image.subsample_size.value < 1:
             new_shape = new_shape * image.subsample_size.value
             i, j = (np.mgrid[0:new_shape[0], 0:new_shape[1]].astype(float) /
                     image.subsample_size.value)
-            pixels = scind.map_coordinates(im.pixel_data, (i, j), order=1)
+            pixels = scind.map_coordinates(im.data, (i, j), order=1)
             mask = scind.map_coordinates(im.mask.astype(float), (i, j)) > .9
         else:
-            pixels = im.pixel_data
+            pixels = im.data
             mask = im.mask
         #
         # Remove background pixels using a greyscale tophat filter
@@ -260,7 +260,7 @@ class MeasureGranularity(cpm.Module):
                     self.labels = self.labels.copy()
                     self.labels[~ im.mask] = 0
                     self.current_mean = fix(
-                            scind.mean(im.pixel_data,
+                            scind.mean(im.data,
                                        self.labels,
                                        self.range))
                     self.start_mean = np.maximum(
@@ -307,7 +307,7 @@ class MeasureGranularity(cpm.Module):
             # Restore the reconstructed image to the shape of the
             # original image so we can match against object labels
             #
-            orig_shape = im.pixel_data.shape
+            orig_shape = im.data.shape
             i, j = np.mgrid[0:orig_shape[0], 0:orig_shape[1]].astype(float)
             #
             # Make sure the mapping only references the index range of

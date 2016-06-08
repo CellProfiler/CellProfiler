@@ -583,7 +583,7 @@ class ClassifyObjects(cpm.Module):
             labels = object_codes[mapping[objects.segmented]]
             colors = self.get_colors(4)
             image = colors[labels, :3]
-            image = cpi.Image(image, parent_image=objects.parent_image)
+            image = cpi.Image(image, parent=objects.parent)
             workspace.image_set.add(self.image_name.value, image)
 
         if self.show_window:
@@ -698,7 +698,7 @@ class ClassifyObjects(cpm.Module):
                 image = colors[labels, :3]
                 workspace.image_set.add(
                         group.image_name.value,
-                        cpi.Image(image, parent_image=objects.parent_image))
+                        cpi.Image(image, parent=objects.parent))
 
             if self.show_window:
                 workspace.display_data.bins.append(object_bins[~np.isnan(values)])

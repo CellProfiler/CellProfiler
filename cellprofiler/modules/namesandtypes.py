@@ -1519,8 +1519,8 @@ class NamesAndTypes(cpm.Module):
             img = provider.provide_image(m)
         m[cpmeas.IMAGE, C_MD5_DIGEST + "_" + name] = \
             NamesAndTypes.get_file_hash(provider, m)
-        m[cpmeas.IMAGE, C_WIDTH + "_" + name] = img.pixel_data.shape[1]
-        m[cpmeas.IMAGE, C_HEIGHT + "_" + name] = img.pixel_data.shape[0]
+        m[cpmeas.IMAGE, C_WIDTH + "_" + name] = img.data.shape[1]
+        m[cpmeas.IMAGE, C_HEIGHT + "_" + name] = img.data.shape[0]
         if image_or_objects == cpmeas.IMAGE:
             m[cpmeas.IMAGE, C_SCALING + "_" + name] = provider.scale
 
@@ -1585,16 +1585,16 @@ class NamesAndTypes(cpm.Module):
                                        cpmeas.OBJECT)
         image = provider.provide_image(workspace.image_set)
         o = cpo.Objects()
-        if image.pixel_data.shape[2] == 1:
-            o.segmented = image.pixel_data[:, :, 0]
+        if image.data.shape[2] == 1:
+            o.segmented = image.data[:, :, 0]
             add_object_location_measurements(workspace.measurements,
                                              name,
                                              o.segmented,
                                              o.count)
         else:
             ijv = np.zeros((0, 3), int)
-            for i in range(image.pixel_data.shape[2]):
-                plane = image.pixel_data[:, :, i]
+            for i in range(image.data.shape[2]):
+                plane = image.data[:, :, i]
                 shape = plane.shape
                 i, j = np.mgrid[0:shape[0], 0:shape[1]]
                 ijv = np.vstack(
@@ -1606,7 +1606,7 @@ class NamesAndTypes(cpm.Module):
         add_object_count_measurements(workspace.measurements, name, o.count)
         workspace.object_set.add_objects(o, name)
         if should_save_outlines:
-            outline_image = np.zeros(image.pixel_data.shape[:2], bool)
+            outline_image = np.zeros(image.data.shape[:2], bool)
             for labeled_image, indices in o.get_labels():
                 plane = centrosome.outline.outline(labeled_image)
                 outline_image |= plane.astype(outline_image.dtype)
@@ -1979,8 +1979,8 @@ class ColorImageProvider(LoadImagesImageProviderURL):
 
     def provide_image(self, image_set):
         image = LoadImagesImageProviderURL.provide_image(self, image_set)
-        if image.pixel_data.ndim == 2:
-            image.pixel_data = np.dstack([image.pixel_data] * 3)
+        if image.data.ndim == 2:
+            image.data = np.dstack([image.data] * 3)
         return image
 
 
@@ -1996,9 +1996,9 @@ class MonochromeImageProvider(LoadImagesImageProviderURL):
 
     def provide_image(self, image_set):
         image = LoadImagesImageProviderURL.provide_image(self, image_set)
-        if image.pixel_data.ndim == 3:
-            image.pixel_data = \
-                np.sum(image.pixel_data, 2) / image.pixel_data.shape[2]
+        if image.data.ndim == 3:
+            image.data = \
+                np.sum(image.data, 2) / image.data.shape[2]
         return image
 
 
@@ -2014,8 +2014,8 @@ class MaskImageProvider(MonochromeImageProvider):
 
     def provide_image(self, image_set):
         image = MonochromeImageProvider.provide_image(self, image_set)
-        if image.pixel_data.dtype.kind != 'b':
-            image.pixel_data = image.pixel_data != 0
+        if image.data.dtype.kind != 'b':
+            image.data = image.data != 0
         return image
 
 
@@ -2067,7 +2067,7 @@ class ObjectsImageProvider(LoadImagesImageProviderURL):
             planes.append(img)
 
         image = cpi.Image(np.dstack(planes),
-                          path_name=self.get_pathname(),
-                          file_name=self.get_filename(),
+                          path=self.get_pathname(),
+                          filename=self.get_filename(),
                           convert=False)
         return image

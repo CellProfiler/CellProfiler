@@ -31,7 +31,7 @@ class TestAlign(unittest.TestCase):
     def make_workspace(self, images, masks):
         pipeline = cpp.Pipeline()
         object_set = cpo.ObjectSet()
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         module = A.Align()
         workspace = cpw.Workspace(pipeline,
@@ -284,7 +284,7 @@ Name the second output image:AlignedImage2
 
                         self.assertEqual(off_i0 - off_i1, offset[0])
                         self.assertEqual(off_j0 - off_j1, offset[1])
-                        out_shape = output.pixel_data.shape
+                        out_shape = output.data.shape
                         self.assertEqual(out_shape[0],
                                          shape[0] - abs(offset[0]))
                         self.assertEqual(out_shape[1],
@@ -292,7 +292,7 @@ Name the second output image:AlignedImage2
                         i_slice = self.single_slice_helper(-off_i0, out_shape[0])
                         j_slice = self.single_slice_helper(-off_j0, out_shape[1])
                         np.testing.assert_almost_equal(
-                                image1[i_slice, j_slice], output.pixel_data)
+                                image1[i_slice, j_slice], output.data)
                         if mask1 is not None:
                             self.assertTrue(np.all(output.mask == mask1[i_slice, j_slice]))
 
@@ -310,7 +310,7 @@ Name the second output image:AlignedImage2
                         j_slice = self.single_slice_helper(-off_j1, out_shape[1])
 
                         np.testing.assert_almost_equal(
-                                image2[i_slice, j_slice], output.pixel_data)
+                                image2[i_slice, j_slice], output.data)
                         if mask2 is not None:
                             self.assertTrue(np.all(output.mask == mask2[i_slice, j_slice]))
                         if offset[0] == 0 and offset[1] == 0:
@@ -390,7 +390,7 @@ Name the second output image:AlignedImage2
                         i_slice = slice(off_i0, off_i0 + image1.shape[0])
                         j_slice = slice(off_j0, off_j0 + image1.shape[1])
                         np.testing.assert_almost_equal(
-                                image1, output.pixel_data[i_slice, j_slice])
+                                image1, output.data[i_slice, j_slice])
                         if mask1 is not None:
                             self.assertTrue(np.all(output.mask[i_slice, j_slice] == mask1))
 
@@ -402,7 +402,7 @@ Name the second output image:AlignedImage2
                         i_slice = slice(off_i1, off_i1 + image2.shape[0])
                         j_slice = slice(off_j1, off_j1 + image2.shape[1])
                         np.testing.assert_almost_equal(
-                                image2, output.pixel_data[i_slice, j_slice])
+                                image2, output.data[i_slice, j_slice])
                         if mask2 is not None:
                             self.assertTrue(np.all(mask2 == output.mask[i_slice, j_slice]))
                         temp = output.mask.copy()
@@ -458,7 +458,7 @@ Name the second output image:AlignedImage2
                         si_in, si_out = self.slice_same(off_i0, shape[0])
                         sj_in, sj_out = self.slice_same(off_j0, shape[1])
                         np.testing.assert_almost_equal(
-                                image1[si_in, sj_in], output.pixel_data[si_out, sj_out])
+                                image1[si_in, sj_in], output.data[si_out, sj_out])
                         if mask1 is not None:
                             self.assertTrue(np.all(output.mask[si_out, sj_out] == mask1[si_in, sj_in]))
 
@@ -470,7 +470,7 @@ Name the second output image:AlignedImage2
                         si_in, si_out = self.slice_same(off_i1, shape[0])
                         sj_in, sj_out = self.slice_same(off_j1, shape[1])
                         np.testing.assert_almost_equal(
-                                image2[si_in, sj_in], output.pixel_data[si_out, sj_out])
+                                image2[si_in, sj_in], output.data[si_out, sj_out])
                         if mask2 is not None:
                             self.assertTrue(np.all(mask2[si_in, sj_in] == output.mask[si_out, sj_out]))
                         temp = output.mask.copy()
@@ -526,7 +526,7 @@ Name the second output image:AlignedImage2
 
             i_slice = self.single_slice_helper(off_i2, shape[0])
             j_slice = self.single_slice_helper(off_j2, shape[1])
-            np.testing.assert_almost_equal(output.pixel_data[i_slice, j_slice],
+            np.testing.assert_almost_equal(output.data[i_slice, j_slice],
                                            image3)
 
     def test_03_02_align_separately(self):
@@ -562,7 +562,7 @@ Name the second output image:AlignedImage2
             output = workspace.image_set.get_image('Aligned2')
             i_slice = self.single_slice_helper(off_i2, shape[0])
             j_slice = self.single_slice_helper(off_j2, shape[1])
-            np.testing.assert_almost_equal(output.pixel_data[i_slice, j_slice],
+            np.testing.assert_almost_equal(output.data[i_slice, j_slice],
                                            image3)
 
     def test_03_03_align_color(self):
@@ -617,7 +617,7 @@ Name the second output image:AlignedImage2
                         si_in, si_out = self.slice_same(off_i0, shape[0])
                         sj_in, sj_out = self.slice_same(off_j0, shape[1])
                         np.testing.assert_almost_equal(
-                                image1[si_in, sj_in, :], output.pixel_data[si_out, sj_out, :])
+                                image1[si_in, sj_in, :], output.data[si_out, sj_out, :])
                         if mask1 is not None:
                             self.assertTrue(np.all(output.mask[si_out, sj_out] == mask1[si_in, sj_in]))
 
@@ -629,7 +629,7 @@ Name the second output image:AlignedImage2
                         si_in, si_out = self.slice_same(off_i1, shape[0])
                         sj_in, sj_out = self.slice_same(off_j1, shape[1])
                         np.testing.assert_almost_equal(
-                                image2[si_in, sj_in, :], output.pixel_data[si_out, sj_out, :])
+                                image2[si_in, sj_in, :], output.data[si_out, sj_out, :])
                         if mask2 is not None:
                             self.assertTrue(np.all(mask2[si_in, sj_in] == output.mask[si_out, sj_out]))
                         temp = output.mask.copy()
@@ -682,9 +682,9 @@ Name the second output image:AlignedImage2
 
                         si_in, si_out = self.slice_same(off_i0, shape[0])
                         sj_in, sj_out = self.slice_same(off_j0, shape[1])
-                        self.assertEqual(output.pixel_data.dtype.kind, "b")
+                        self.assertEqual(output.data.dtype.kind, "b")
                         np.testing.assert_equal(
-                                image1[si_in, sj_in], output.pixel_data[si_out, sj_out])
+                                image1[si_in, sj_in], output.data[si_out, sj_out])
                         if mask1 is not None:
                             self.assertTrue(np.all(output.mask[si_out, sj_out] == mask1[si_in, sj_in]))
 
@@ -696,7 +696,7 @@ Name the second output image:AlignedImage2
                         si_in, si_out = self.slice_same(off_i1, shape[0])
                         sj_in, sj_out = self.slice_same(off_j1, shape[1])
                         np.testing.assert_equal(
-                                image2[si_in, sj_in], output.pixel_data[si_out, sj_out])
+                                image2[si_in, sj_in], output.data[si_out, sj_out])
                         if mask2 is not None:
                             self.assertTrue(np.all(mask2[si_in, sj_in] == output.mask[si_out, sj_out]))
                         temp = output.mask.copy()
@@ -793,9 +793,9 @@ Name the second output image:AlignedImage2
                 module.run(workspace)
                 i1 = workspace.image_set.get_image(i1_name)
                 self.assertTrue(isinstance(i1, cpi.Image))
-                p1 = i1.pixel_data
+                p1 = i1.data
                 i2 = workspace.image_set.get_image(i2_name)
-                p2 = i2.pixel_data
+                p2 = i2.data
                 self.assertEqual(tuple(p1.shape), tuple(p2.shape))
                 self.assertTrue(np.all(p1 == p2))
                 self.assertTrue(i1.has_crop_mask)
@@ -821,13 +821,13 @@ Name the second output image:AlignedImage2
         module.run(workspace)
         i1 = workspace.image_set.get_image("Aligned0")
         self.assertTrue(isinstance(i1, cpi.Image))
-        p1 = i1.pixel_data
+        p1 = i1.data
         i2 = workspace.image_set.get_image("Aligned1")
-        p2 = i2.pixel_data
+        p2 = i2.data
         self.assertEqual(tuple(p1.shape), tuple(p2.shape))
         self.assertTrue(np.all(p1[2:-2, 2:-2] == p2[2:-2, 2:-2]))
-        self.assertFalse(i1.has_mask)
+        self.assertFalse(i1.masked)
         mask = np.zeros(shape, bool)
         mask[2:-2, 2:-2] = True
-        self.assertTrue(i2.has_mask)
+        self.assertTrue(i2.masked)
         self.assertTrue(np.all(mask == i2.mask))

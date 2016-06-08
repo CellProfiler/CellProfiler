@@ -29,7 +29,7 @@ MY_OBJECTS = "my_objects"
 
 class TestMeasureImageQuality(unittest.TestCase):
     def make_workspace(self, pixel_data, mask=None, objects=None):
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         image = cpi.Image(pixel_data)

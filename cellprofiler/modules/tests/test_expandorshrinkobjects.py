@@ -192,7 +192,7 @@ class TestExpandOrShrinkObjects(unittest.TestCase):
         module.module_num = 1
         pipeline = cpp.Pipeline()
         pipeline.add_module(module)
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         workspace = cpw.Workspace(pipeline,
                                   module,
                                   image_set_list.get_image_set(0),
@@ -340,5 +340,5 @@ class TestExpandOrShrinkObjects(unittest.TestCase):
         objects = workspace.object_set.get_objects(OUTPUT_NAME)
         self.assertTrue(np.all(objects.segmented == expected))
         self.assertTrue(OUTLINES_NAME in workspace.image_set.get_names())
-        outlines = workspace.image_set.get_image(OUTLINES_NAME).pixel_data
+        outlines = workspace.image_set.get_image(OUTLINES_NAME).data
         self.assertTrue(np.all(outlines == expected_outlines))

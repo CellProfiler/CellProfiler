@@ -537,7 +537,7 @@ class FilterObjects(cpm.Module):
                           (src_objects.segmented != 0)] = 0
             target_objects.small_removed_segmented = small_removed
             if src_objects.has_parent_image:
-                target_objects.parent_image = src_objects.parent_image
+                target_objects.parent_image = src_objects.parent
             workspace.object_set.add_objects(target_objects, target_name)
             #
             # Add measurements for the new objects
@@ -561,7 +561,7 @@ class FilterObjects(cpm.Module):
             #
             if wants_outlines:
                 outline_image = cpi.Image(outline(target_labels) > 0,
-                                          parent_image=target_objects.parent_image)
+                                          parent=target_objects.parent_image)
                 workspace.image_set.add(outlines_name, outline_image)
 
         if self.show_window:
@@ -575,11 +575,11 @@ class FilterObjects(cpm.Module):
             if len(image_names) == 0:
                 # Measurement isn't image-based
                 if src_objects.has_parent_image:
-                    image = src_objects.parent_image.pixel_data
+                    image = src_objects.parent.data
                 else:
                     image = None
             else:
-                image = workspace.image_set.get_image(image_names[0]).pixel_data
+                image = workspace.image_set.get_image(image_names[0]).data
 
             workspace.display_data.src_objects_segmented = \
                 src_objects.segmented
@@ -808,7 +808,7 @@ class FilterObjects(cpm.Module):
             histogram_image = histogram[border_labeled_image]
             border_labeled_image[histogram_image > 0] = 0
         elif src_objects.has_parent_image:
-            if src_objects.parent_image.has_mask:
+            if src_objects.parent.masked:
                 # The assumption here is that, if nothing touches the border,
                 # the mask is a large, elliptical mask that tells you where the
                 # well is. That's the way the old Matlab code works and it's duplicated here
@@ -816,7 +816,7 @@ class FilterObjects(cpm.Module):
                 # The operation below gets the mask pixels that are on the border of the mask
                 # The erosion turns all pixels touching an edge to zero. The not of this
                 # is the border + formerly masked-out pixels.
-                image = src_objects.parent_image
+                image = src_objects.parent
                 mask_border = np.logical_not(scind.binary_erosion(image.mask))
                 mask_border = np.logical_and(mask_border, image.mask)
                 border_labels = labeled_image[mask_border]

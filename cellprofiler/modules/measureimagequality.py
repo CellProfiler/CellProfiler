@@ -797,9 +797,9 @@ class MeasureImageQuality(cpm.Module):
 
             image = workspace.image_set.get_image(image_name,
                                                   must_be_grayscale=True)
-            pixel_data = image.pixel_data
-            shape = image.pixel_data.shape
-            if image.has_mask:
+            pixel_data = image.data
+            shape = image.data.shape
+            if image.masked:
                 pixel_data = pixel_data[image.mask]
 
             local_focus_score = []
@@ -822,14 +822,14 @@ class MeasureImageQuality(cpm.Module):
                 i = (i * float(m) / float(shape[0])).astype(int)
                 j = (j * float(n) / float(shape[1])).astype(int)
                 grid = i * n + j + 1
-                if image.has_mask:
+                if image.masked:
                     grid[np.logical_not(image.mask)] = 0
                 grid_range = np.arange(0, m * n + 1, dtype=np.int32)
                 #
                 # Do the math per label
                 #
-                local_means = fix(scind.mean(image.pixel_data, grid, grid_range))
-                local_squared_normalized_image = (image.pixel_data -
+                local_means = fix(scind.mean(image.data, grid, grid_range))
+                local_squared_normalized_image = (image.data -
                                                   local_means[grid]) ** 2
                 #
                 # Compute the sum of local_squared_normalized_image values for each
@@ -881,11 +881,11 @@ class MeasureImageQuality(cpm.Module):
         for image_name in self.images_to_process(image_group, workspace):
             image = workspace.image_set.get_image(image_name,
                                                   must_be_grayscale=True)
-            pixel_data = image.pixel_data
+            pixel_data = image.data
 
             # Compute Haralick's correlation texture for the given scales
             image_labels = np.ones(pixel_data.shape, int)
-            if image.has_mask:
+            if image.masked:
                 image_labels[~image.mask] = 0
             for scale_group in image_group.scale_groups:
                 scale = scale_group.scale.value
@@ -907,8 +907,8 @@ class MeasureImageQuality(cpm.Module):
         for image_name in self.images_to_process(image_group, workspace):
             image = workspace.image_set.get_image(image_name,
                                                   must_be_grayscale=True)
-            pixel_data = image.pixel_data
-            if image.has_mask:
+            pixel_data = image.data
+            if image.masked:
                 pixel_data = pixel_data[image.mask]
             pixel_count = np.product(pixel_data.shape)
             if pixel_count == 0:
@@ -945,8 +945,8 @@ class MeasureImageQuality(cpm.Module):
     def run_intensity_measurement(self, image_name, workspace):
         image = workspace.image_set.get_image(image_name,
                                               must_be_grayscale=True)
-        pixels = image.pixel_data
-        if image.has_mask:
+        pixels = image.data
+        if image.masked:
             pixels = pixels[image.mask]
 
         result = []
@@ -997,9 +997,9 @@ class MeasureImageQuality(cpm.Module):
             image = workspace.image_set.get_image(image_name,
                                                   must_be_grayscale=True)
 
-            pixel_data = image.pixel_data
+            pixel_data = image.data
 
-            if image.has_mask:
+            if image.masked:
                 pixel_data = np.array(pixel_data)  # make a copy
                 masked_pixels = pixel_data[image.mask]
                 pixel_count = np.product(masked_pixels.shape)
@@ -1048,17 +1048,17 @@ class MeasureImageQuality(cpm.Module):
                 (local_threshold, global_threshold) = \
                     (cpthresh.get_threshold(threshold_method,
                                             cpthresh.TM_GLOBAL,
-                                            image.pixel_data,
+                                            image.data,
                                             mask=image.mask,
                                             object_fraction=object_fraction,
                                             two_class_otsu=two_class_otsu,
                                             use_weighted_variance=use_weighted_variance,
                                             assign_middle_to_foreground=assign_middle_to_foreground)
-                     if image.has_mask
+                     if image.masked
                      else
                      cpthresh.get_threshold(threshold_method,
                                             cpthresh.TM_GLOBAL,
-                                            image.pixel_data,
+                                            image.data,
                                             object_fraction=object_fraction,
                                             two_class_otsu=two_class_otsu,
                                             use_weighted_variance=use_weighted_variance,

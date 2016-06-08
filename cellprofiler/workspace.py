@@ -5,12 +5,10 @@ import logging
 
 logger = logging.getLogger(__name__)
 from cStringIO import StringIO
-import numpy as np
 import h5py
 import os
 
-from cellprofiler.grid import Grid
-from .utilities.hdf5_dict import HDF5FileList, HDF5Dict
+from cellprofiler.HDF5 import HDF5FileList, HDF5Dict
 
 '''Continue to run the pipeline
 
@@ -573,7 +571,6 @@ class Workspace(object):
         assume that the cache reflects pipeline + file list unless "force"
         is true.
         '''
-        import cellprofiler.measurement as cpmeas
         if len(self.measurements.get_image_numbers()) == 0 or force:
             self.measurements.clear()
             self.save_pipeline_to_measurements()

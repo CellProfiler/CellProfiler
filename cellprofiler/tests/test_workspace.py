@@ -11,7 +11,7 @@ import unittest
 import cellprofiler.measurement as cpmeas
 import cellprofiler.pipeline as cpp
 import cellprofiler.workspace as cpw
-from cellprofiler.utilities.hdf5_dict import \
+from cellprofiler.HDF5 import \
     FILE_LIST_GROUP, TOP_LEVEL_GROUP_NAME
 
 

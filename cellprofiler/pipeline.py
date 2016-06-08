@@ -3,7 +3,6 @@
 from __future__ import with_statement
 
 import bisect
-import csv
 import gc
 import hashlib
 import json
@@ -26,9 +25,7 @@ import os
 import StringIO  # XXX - replace with cStringIO?
 import sys
 import tempfile
-import traceback
 import datetime
-import traceback
 import threading
 import urlparse
 import urllib
@@ -45,7 +42,6 @@ import cellprofiler.object as cpo
 import cellprofiler.workspace as cpw
 import cellprofiler.setting as cps
 from cellprofiler.utilities.utf16encode import utf16encode, utf16decode
-from bioformats.omexml import OMEXML
 import cellprofiler.utilities.version as cpversion
 import javabridge as J
 
@@ -1065,7 +1061,6 @@ class Pipeline(object):
             else:
                 if ((not cpprefs.get_headless()) and
                             pipeline_version < CURRENT_VERSION):
-                    from cellprofiler.gui.errordialog import show_warning
                     if git_hash is not None:
                         message = (
         "Your pipeline was saved using an old version\n"
@@ -1620,7 +1615,6 @@ class Pipeline(object):
         image_dict - dictionary mapping image names to image pixel data in the
                      form of a numpy array.
         """
-        import cellprofiler.setting as cps
         from cellprofiler import object as cpo
 
         output_image_names = self.find_external_output_images()
@@ -1679,7 +1673,7 @@ class Pipeline(object):
             #
             # Need file list in order to call prepare_run
             #
-            from cellprofiler.utilities.hdf5_dict import HDF5FileList
+            from cellprofiler.HDF5 import HDF5FileList
             src = initial_measurements.hdf5_dict.hdf5_file
             dest = measurements.hdf5_dict.hdf5_file
             if HDF5FileList.has_file_list(src):

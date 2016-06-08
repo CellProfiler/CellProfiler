@@ -9,7 +9,7 @@ import unittest
 import h5py
 import numpy as np
 
-import cellprofiler.utilities.hdf5_dict as H5DICT
+import cellprofiler.HDF5 as H5DICT
 
 E = H5DICT.HDF5FileList.encode
 D = H5DICT.HDF5FileList.decode

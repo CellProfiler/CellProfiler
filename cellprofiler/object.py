@@ -1,13 +1,11 @@
 """ CellProfiler.Objects.py - represents a labelling of objects in an image
 """
 
+import decorator
 import numpy as np
-from centrosome.cpmorphology import all_connected_components
 from centrosome.index import Indexes, all_pairs
 from centrosome.outline import outline
 from scipy.sparse import coo_matrix
-
-import decorator
 
 OBJECT_TYPE_NAME = "objects"
 
@@ -91,7 +89,7 @@ class Objects(object):
         The ijv format is a list of i,j coordinates in slots 0 and 1
         and the label at the pixel in slot 2.
         '''
-        from cellprofiler.utilities.hdf5_dict import HDF5ObjectSet
+        from cellprofiler.HDF5 import HDF5ObjectSet
         sparse = np.core.records.fromarrays(
                 (ijv[:, 0], ijv[:, 1], ijv[:, 2]),
                 [(HDF5ObjectSet.AXIS_Y, ijv.dtype, 1),
@@ -107,7 +105,7 @@ class Objects(object):
         The ijv format is a list of i,j coordinates in slots 0 and 1
         and the label at the pixel in slot 2.
         '''
-        from cellprofiler.utilities.hdf5_dict import HDF5ObjectSet
+        from cellprofiler.HDF5 import HDF5ObjectSet
         sparse = self.__segmented.get_sparse()
         return np.column_stack(
                 [sparse[axis] for axis in
@@ -548,7 +546,7 @@ class Segmentation(object):
             if len(sparse) == 0:
                 self.__shape = (1, 1, 1, 1, 1)
             else:
-                from cellprofiler.utilities.hdf5_dict import HDF5ObjectSet
+                from cellprofiler.HDF5 import HDF5ObjectSet
                 self.__shape = tuple(
                         [np.max(sparse[axis]) + 2
                          if axis in sparse.dtype.fields.keys() else 1
@@ -634,7 +632,7 @@ class Segmentation(object):
 
     def __convert_dense_to_sparse(self):
         dense, indices = self.get_dense()
-        from cellprofiler.utilities.hdf5_dict import HDF5ObjectSet
+        from cellprofiler.HDF5 import HDF5ObjectSet
         axes = list(HDF5ObjectSet.AXES)
         axes, shape = [
             [a for a, s in zip(aa, self.shape) if s > 1]
@@ -688,7 +686,7 @@ class Segmentation(object):
         return dense, self.__indices
 
     def __convert_sparse_to_dense(self):
-        from cellprofiler.utilities.hdf5_dict import HDF5ObjectSet
+        from cellprofiler.HDF5 import HDF5ObjectSet
         sparse = self.get_sparse()
         if len(sparse) == 0:
             return self.__set_or_cache_dense(

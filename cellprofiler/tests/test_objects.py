@@ -11,7 +11,7 @@ from centrosome.outline import outline
 
 import cellprofiler.image as cpi
 import cellprofiler.object as cpo
-from cellprofiler.utilities.hdf5_dict import HDF5ObjectSet
+from cellprofiler.HDF5 import HDF5ObjectSet
 
 
 class TestObjects(unittest.TestCase):
@@ -551,7 +551,7 @@ class TestObjects(unittest.TestCase):
 
     def test_08_01_cache(self):
         import h5py
-        from cellprofiler.utilities.hdf5_dict import HDF5ObjectSet
+        from cellprofiler.HDF5 import HDF5ObjectSet
         import os
         import tempfile
         x = cpo.Objects()

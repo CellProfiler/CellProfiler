@@ -372,7 +372,7 @@ class Image(object):
         The best practice is to use a temporary file dedicated to images and
         maybe objects.
         '''
-        from cellprofiler.utilities.hdf5_dict import HDF5ImageSet
+        from cellprofiler.HDF5 import HDF5ImageSet
         if isinstance(self.__image, ImageCache) and \
                 not self.__image.is_cached():
             self.__image.cache(name, HDF5ImageSet(hdf5_file))

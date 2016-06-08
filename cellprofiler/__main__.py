@@ -1,28 +1,28 @@
+import cStringIO
+import json
+import logging
+import logging.config
+import optparse
+import os
+import re
+import sys
+
 import bioformats.formatreader
-import ctypes
+import h5py
+import matplotlib
+import numpy
+import pkg_resources
+
+import cellprofiler.HDF5
 import cellprofiler.measurement
 import cellprofiler.object
 import cellprofiler.pipeline
 import cellprofiler.preferences
 import cellprofiler.utilities.cpjvm
-import cellprofiler.utilities.hdf5_dict
 import cellprofiler.utilities.version
 import cellprofiler.utilities.zmqrequest
 import cellprofiler.worker
 import cellprofiler.workspace
-import cStringIO
-import h5py
-import json
-import logging
-import logging.config
-import matplotlib
-import numpy
-import optparse
-import os
-import pkg_resources
-import re
-import site
-import sys
 
 OMERO_CK_HOST = "host"
 OMERO_CK_PORT = "port"
@@ -641,8 +641,8 @@ def run_pipeline_headless(options, args):
             #
 
             with h5py.File(options.pipeline_filename, "r") as src:
-                if cellprofiler.utilities.hdf5_dict.HDF5FileList.has_file_list(src):
-                    cellprofiler.utilities.hdf5_dict.HDF5FileList.copy(src, initial_measurements.hdf5_dict.hdf5_file)
+                if cellprofiler.HDF5.HDF5FileList.has_file_list(src):
+                    cellprofiler.HDF5.HDF5FileList.copy(src, initial_measurements.hdf5_dict.hdf5_file)
     else:
         pipeline.load(options.pipeline_filename)
 

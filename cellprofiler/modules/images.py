@@ -1,7 +1,3 @@
-import cellprofiler.icons
-from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON, IMAGES_FILELIST_BLANK, \
-    IMAGES_FILELIST_FILLED
-
 __doc__ = """
 The <b>Images</b> module specifies the location of image files to be analyzed by your pipeline.
 <hr>
@@ -87,22 +83,16 @@ filtered further in NamesAndTypes to specify, for example, that a subset of thes
 particular wavelength.
 """ % globals()
 
+import os
+import urllib
+
+import javabridge as J
+
 import cellprofiler.module as cpm
 import cellprofiler.pipeline as cpp
-import cellprofiler.preferences as cpprefs
 import cellprofiler.setting as cps
-from cellprofiler.setting import YES, NO
-import cellprofiler.workspace as cpw
-import javabridge as J
-import os
-import sys
-import urllib
-import uuid
-
-from .loadimages import pathname2url, SUPPORTED_IMAGE_EXTENSIONS
-from .loadimages import SUPPORTED_MOVIE_EXTENSIONS
-from cellprofiler.utilities.hdf5_dict import HDF5FileList
-from cellprofiler.gui.help import FILTER_RULES_BUTTONS_HELP
+from cellprofiler.HDF5 import HDF5FileList
+from .loadimages import pathname2url
 
 FILTER_CHOICE_NONE = "No filtering"
 FILTER_CHOICE_IMAGES = "Images only"

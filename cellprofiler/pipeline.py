@@ -44,7 +44,6 @@ import cellprofiler.measurement as cpmeas
 import cellprofiler.object as cpo
 import cellprofiler.workspace as cpw
 import cellprofiler.setting as cps
-from cellprofiler.utilities.utf16encode import utf16encode, utf16decode
 from bioformats.omexml import OMEXML
 import cellprofiler.utilities.version as cpversion
 import javabridge as J
@@ -1128,7 +1127,7 @@ class Pipeline(object):
                     text, setting = line.split(':')
                     setting = setting.decode('string_escape')
                     if do_utf16_decode:
-                        setting = utf16decode(setting)
+                        setting = setting.decode("utf-8")
                     settings.append(setting)
                 #
                 # Set up the module
@@ -1312,7 +1311,7 @@ class Pipeline(object):
                     setting_text = str(setting_text)
                 fd.write('    %s:%s\n' % (
                     self.encode_txt(setting_text),
-                    self.encode_txt(utf16encode(setting.unicode_value))))
+                    self.encode_txt(setting.unicode_value.encode("utf-8"))))
         if save_image_plane_details:
             fd.write("\n")
             write_file_list(fd, self.__file_list)

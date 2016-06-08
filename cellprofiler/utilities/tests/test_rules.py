@@ -7,7 +7,7 @@ from StringIO import StringIO
 import numpy as np
 
 import cellprofiler.measurement as cpmeas
-import cellprofiler.utilities.rules as R
+import cellprofiler.rules as R
 
 OBJECT_NAME = "MyObject"
 M_FEATURES = ["Measurement%d" % i for i in range(1, 11)]

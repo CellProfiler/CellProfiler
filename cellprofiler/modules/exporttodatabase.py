@@ -1753,7 +1753,7 @@ class ExportToDatabase(cpm.Module):
                 # image and then save it as a PNG into a StringIO buffer.
                 # Finally read the raw data out of the buffer and add it as
                 # as measurement to be written as a blob.
-                pixels = image_set.get_image(name).pixel_data
+                pixels = image_set.get_image(name).data
 
                 if issubclass(pixels.dtype.type, np.floating) or pixels.dtype == np.bool:
                     factor = 255
@@ -3281,7 +3281,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         """Write the CellProfiler Analyst properties file"""
         all_properties = self.get_property_file_text(workspace)
         for properties in all_properties:
-            fid = open(properties.file_name, "wt")
+            fid = open(properties.filename, "wt")
             fid.write(properties.text)
             fid.close()
 

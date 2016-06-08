@@ -318,7 +318,7 @@ class ColorToGray(cpm.Module):
     def run_combine(self, workspace, image):
         """Combine images to make a grayscale one
         """
-        input_image = image.pixel_data
+        input_image = image.data
         channels, contributions = zip(*self.channels_and_contributions())
         denominator = sum(contributions)
         channels = np.array(channels, int)
@@ -326,7 +326,7 @@ class ColorToGray(cpm.Module):
 
         output_image = np.sum(input_image[:, :, channels] *
                               contributions[np.newaxis, np.newaxis, :], 2)
-        image = cpi.Image(output_image, parent_image=image)
+        image = cpi.Image(output_image, parent=image)
         workspace.image_set.add(self.grayscale_name.value, image)
 
         workspace.display_data.input_image = input_image
@@ -348,17 +348,17 @@ class ColorToGray(cpm.Module):
     def run_split(self, workspace, image):
         """Split image into individual components
         """
-        input_image = image.pixel_data
+        input_image = image.data
         disp_collection = []
         if self.rgb_or_channels in (CH_RGB, CH_CHANNELS):
             for index, name, title in self.channels_and_image_names():
                 output_image = input_image[:, :, index]
-                workspace.image_set.add(name, cpi.Image(output_image, parent_image=image))
+                workspace.image_set.add(name, cpi.Image(output_image, parent=image))
                 disp_collection.append([output_image, title])
         elif self.rgb_or_channels == CH_HSV:
             output_image = matplotlib.colors.rgb_to_hsv(input_image)
             for index, name, title in self.channels_and_image_names():
-                workspace.image_set.add(name, cpi.Image(output_image[:, :, index], parent_image=image))
+                workspace.image_set.add(name, cpi.Image(output_image[:, :, index], parent=image))
                 disp_collection.append([output_image[:, :, index], title])
 
         workspace.display_data.input_image = input_image

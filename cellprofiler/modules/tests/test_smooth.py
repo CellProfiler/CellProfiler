@@ -33,7 +33,7 @@ class TestSmooth(unittest.TestCase):
         module = S.Smooth()
         pipeline = cpp.Pipeline()
         object_set = cpo.ObjectSet()
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         workspace = cpw.Workspace(pipeline,
                                   module,
@@ -150,7 +150,7 @@ Smooth:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
             module.run(workspace)
             result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
             self.assertFalse(result is None)
-            np.testing.assert_almost_equal(result.pixel_data, expected)
+            np.testing.assert_almost_equal(result.data, expected)
 
     def test_03_01_gaussian_auto_small(self):
         '''Test the smooth module with Gaussian smoothing in automatic mode'''
@@ -166,7 +166,7 @@ Smooth:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
         module.run(workspace)
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         self.assertFalse(result is None)
-        np.testing.assert_almost_equal(result.pixel_data, expected)
+        np.testing.assert_almost_equal(result.data, expected)
 
     def test_03_02_gaussian_auto_large(self):
         '''Test the smooth module with Gaussian smoothing in large automatic mode'''
@@ -181,7 +181,7 @@ Smooth:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
         module.run(workspace)
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         self.assertFalse(result is None)
-        np.testing.assert_almost_equal(result.pixel_data, expected)
+        np.testing.assert_almost_equal(result.data, expected)
 
     def test_03_03_gaussian_manual(self):
         '''Test the smooth module with Gaussian smoothing, manual sigma'''
@@ -199,7 +199,7 @@ Smooth:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
         module.run(workspace)
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         self.assertFalse(result is None)
-        np.testing.assert_almost_equal(result.pixel_data, expected)
+        np.testing.assert_almost_equal(result.data, expected)
 
     def test_04_01_median(self):
         '''test the smooth module with median filtering'''
@@ -214,7 +214,7 @@ Smooth:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
         module.run(workspace)
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         self.assertFalse(result is None)
-        np.testing.assert_almost_equal(result.pixel_data, expected)
+        np.testing.assert_almost_equal(result.data, expected)
 
     def test_05_01_bilateral(self):
         '''test the smooth module with bilateral filtering'''
@@ -233,4 +233,4 @@ Smooth:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
         module.run(workspace)
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         self.assertFalse(result is None)
-        np.testing.assert_almost_equal(result.pixel_data, expected)
+        np.testing.assert_almost_equal(result.data, expected)

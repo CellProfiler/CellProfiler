@@ -78,7 +78,7 @@ class TestExportToSpreadsheet(unittest.TestCase):
         self.assertEqual(len(module.object_groups), 1)
         og = module.object_groups[0]
         self.assertEqual(og.name, "Image")
-        self.assertEqual(og.file_name, "Image.csv")
+        self.assertEqual(og.filename, "Image.csv")
 
     def test_000_02_load_v1(self):
         '''Load a version 1 pipeline'''
@@ -119,10 +119,10 @@ class TestExportToSpreadsheet(unittest.TestCase):
         self.assertEqual(len(module.object_groups), 2)
         og = module.object_groups[0]
         self.assertEqual(og.name, "Image")
-        self.assertEqual(og.file_name, "Image.csv")
+        self.assertEqual(og.filename, "Image.csv")
         og = module.object_groups[1]
         self.assertEqual(og.name, "Nuclei")
-        self.assertEqual(og.file_name, "Nuclei.csv")
+        self.assertEqual(og.filename, "Nuclei.csv")
 
     def test_000_03_load_v2(self):
         '''Load a version 2 pipeline'''
@@ -202,7 +202,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'8947\'|variable_revision_number:
                                                  ("Image", "Nuclei"),
                                                  ("PFX_Image.csv", "Nuclei.csv")):
             self.assertEqual(group.name, object_name)
-            self.assertEqual(group.file_name, file_name)
+            self.assertEqual(group.filename, file_name)
             self.assertFalse(group.wants_automatic_file_name)
 
     def test_000_05_load_v4(self):
@@ -273,7 +273,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'9144\'|variable_revision_number:
                                        "DistanceCells", "DistCytoplasm",
                                        "PropCytoplasm")):
             self.assertEqual(group.name, object_name)
-            self.assertEqual(group.file_name, "%s.csv" % object_name)
+            self.assertEqual(group.filename, "%s.csv" % object_name)
             self.assertFalse(group.previous_file)
             self.assertTrue(group.wants_automatic_file_name)
 
@@ -360,7 +360,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'9434\'|variable_revision_number:
             self.assertFalse(group.previous_file)
             self.assertFalse(group.wants_automatic_file_name)
             self.assertEqual(group.name, object_name)
-            self.assertEqual(group.file_name, file_name)
+            self.assertEqual(group.filename, file_name)
 
     def test_000_07_load_v6(self):
         data = r'''CellProfiler Pipeline: http://www.cellprofiler.org
@@ -511,7 +511,7 @@ ExportToSpreadsheet:[module_num:5|svn_version:\'9434\'|variable_revision_number:
             self.assertFalse(group.previous_file)
             self.assertFalse(group.wants_automatic_file_name)
             self.assertEqual(group.name, object_name)
-            self.assertEqual(group.file_name, file_name)
+            self.assertEqual(group.filename, file_name)
 
         module = pipeline.modules()[1]
         self.assertTrue(isinstance(module, E.ExportToSpreadsheet))
@@ -596,7 +596,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         self.assertEqual(module.nan_representation, E.NANS_AS_NULLS)
         self.assertEqual(module.object_groups[0].name, "Nuclei")
         self.assertFalse(module.object_groups[0].previous_file)
-        self.assertEqual(module.object_groups[0].file_name, "Output.csv")
+        self.assertEqual(module.object_groups[0].filename, "Output.csv")
         self.assertTrue(module.object_groups[0].wants_automatic_file_name)
 
     def test_000_09_load_v9(self):
@@ -655,7 +655,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         self.assertEqual(module.nan_representation, E.NANS_AS_NULLS)
         self.assertEqual(module.object_groups[0].name, "Nuclei")
         self.assertFalse(module.object_groups[0].previous_file)
-        self.assertEqual(module.object_groups[0].file_name, "Output.csv")
+        self.assertEqual(module.object_groups[0].filename, "Output.csv")
         self.assertTrue(module.object_groups[0].wants_automatic_file_name)
         self.assertFalse(module.wants_prefix)
         self.assertEqual(module.prefix, "MyExpt_")
@@ -718,7 +718,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         self.assertEqual(module.nan_representation, E.NANS_AS_NULLS)
         self.assertEqual(module.object_groups[0].name, "Nuclei")
         self.assertFalse(module.object_groups[0].previous_file)
-        self.assertEqual(module.object_groups[0].file_name, "Output.csv")
+        self.assertEqual(module.object_groups[0].filename, "Output.csv")
         self.assertTrue(module.object_groups[0].wants_automatic_file_name)
         self.assertTrue(module.wants_prefix)
         self.assertEqual(module.prefix, "Fred")
@@ -783,7 +783,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         self.assertEqual(module.nan_representation, E.NANS_AS_NULLS)
         self.assertEqual(module.object_groups[0].name, "Nuclei")
         self.assertFalse(module.object_groups[0].previous_file)
-        self.assertEqual(module.object_groups[0].file_name, "Output.csv")
+        self.assertEqual(module.object_groups[0].filename, "Output.csv")
         self.assertTrue(module.object_groups[0].wants_automatic_file_name)
         self.assertTrue(module.wants_prefix)
         self.assertEqual(module.prefix, "Fred")
@@ -796,13 +796,13 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.module_num = 1
         module.wants_everything.value = False
         module.object_groups[0].name.value = "my_object"
-        module.object_groups[0].file_name.value = path
+        module.object_groups[0].filename.value = path
         module.object_groups[0].wants_automatic_file_name.value = False
         module.wants_prefix.value = False
         m = cpmeas.Measurements()
         m.add_measurement("my_object", "my_measurement", np.zeros((0,)))
         m.add_image_measurement("Count_my_object", 0)
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         object_set.add_objects(cpo.Objects(), "my_object")
@@ -832,11 +832,11 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.wants_everything.value = False
         module.wants_prefix.value = False
         module.object_groups[0].name.value = cpmeas.EXPERIMENT
-        module.object_groups[0].file_name.value = path
+        module.object_groups[0].filename.value = path
         module.object_groups[0].wants_automatic_file_name.value = False
         m = cpmeas.Measurements()
         m.add_experiment_measurement("my_measurement", "Hello, world")
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         workspace = cpw.Workspace(self.make_measurements_pipeline(m),
@@ -872,12 +872,12 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.wants_everything.value = False
         module.wants_prefix.value = False
         module.object_groups[0].name.value = cpmeas.EXPERIMENT
-        module.object_groups[0].file_name.value = "badfile"
+        module.object_groups[0].filename.value = "badfile"
         module.object_groups[0].wants_automatic_file_name.value = True
         m = cpmeas.Measurements(mode="memory")
         m.add_experiment_measurement("my_measurement", "Hello, world")
         m.add_experiment_measurement("my_other_measurement", "Goodbye")
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         workspace = cpw.Workspace(self.make_measurements_pipeline(m),
@@ -921,7 +921,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         m.add_experiment_measurement("Exit_Status", "Complete")
         image_measurements = np.random.uniform(size=4)
         m.add_all_measurements(cpmeas.IMAGE, "my_measurement", image_measurements)
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         workspace = cpw.Workspace(self.make_measurements_pipeline(m),
@@ -951,7 +951,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         m = cpmeas.Measurements()
         image_measurements = np.random.uniform(size=4)
         m.add_all_measurements(cpmeas.IMAGE, "my_measurement", image_measurements)
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         workspace = cpw.Workspace(self.make_measurements_pipeline(m),
@@ -972,11 +972,11 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.wants_everything.value = False
         module.wants_prefix.value = False
         module.object_groups[0].name.value = cpmeas.IMAGE
-        module.object_groups[0].file_name.value = path
+        module.object_groups[0].filename.value = path
         module.object_groups[0].wants_automatic_file_name.value = False
         m = cpmeas.Measurements()
         m.add_image_measurement("my_measurement", "Hello, world")
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         workspace = cpw.Workspace(self.make_measurements_pipeline(m),
@@ -1008,10 +1008,10 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.wants_everything.value = False
         module.wants_prefix.value = False
         module.object_groups[0].name.value = cpmeas.IMAGE
-        module.object_groups[0].file_name.value = path
+        module.object_groups[0].filename.value = path
         module.object_groups[0].wants_automatic_file_name.value = False
         m = cpmeas.Measurements()
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_sets = [image_set_list.get_image_set(i)
                       for i in range(2)]
         for i in range(2):
@@ -1052,14 +1052,14 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.wants_everything.value = False
         module.wants_prefix.value = False
         module.object_groups[0].name.value = "my_object"
-        module.object_groups[0].file_name.value = path
+        module.object_groups[0].filename.value = path
         module.object_groups[0].wants_automatic_file_name.value = False
         m = cpmeas.Measurements()
         np.random.seed(0)
         mvalues = np.random.uniform(size=(1,))
         m.add_measurement("my_object", "my_measurement", mvalues)
         m.add_image_measurement("Count_my_object", 1)
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         object_set.add_objects(cpo.Objects(), "my_objects")
@@ -1093,7 +1093,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.wants_everything.value = False
         module.wants_prefix.value = False
         module.object_groups[0].name.value = "my_object"
-        module.object_groups[0].file_name.value = path
+        module.object_groups[0].filename.value = path
         module.object_groups[0].wants_automatic_file_name.value = False
         m = cpmeas.Measurements(mode="memory")
         np.random.seed(0)
@@ -1101,7 +1101,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         for i in range(3):
             m.add_measurement("my_object", "measurement_%d" % i, mvalues[:, i])
         m.add_image_measurement("Count_my_object", 2)
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         object_set.add_objects(cpo.Objects(), "my_objects")
@@ -1141,7 +1141,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.wants_prefix.value = False
         module.add_object_group()
         module.object_groups[0].name.value = "object_0"
-        module.object_groups[0].file_name.value = path
+        module.object_groups[0].filename.value = path
         module.object_groups[0].wants_automatic_file_name.value = False
         module.object_groups[1].previous_file.value = True
         module.object_groups[1].name.value = "object_1"
@@ -1156,7 +1156,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                                   "measurement_%d" % i, mvalues[:, i, oidx])
         m.add_image_measurement("Count_object_0", 4)
         m.add_image_measurement("Count_object_1", 4)
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         object_set.add_objects(cpo.Objects(), "object_0")
@@ -1203,7 +1203,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.wants_everything.value = False
         module.wants_prefix.value = False
         module.object_groups[0].name.value = "my_object"
-        module.object_groups[0].file_name.value = path
+        module.object_groups[0].filename.value = path
         module.object_groups[0].wants_automatic_file_name.value = False
         module.nan_representation.value = E.NANS_AS_NANS
         m = cpmeas.Measurements()
@@ -1212,7 +1212,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         mvalues[1] = np.NaN
         m.add_measurement("my_object", "my_measurement", mvalues)
         m.add_image_measurement("Count_my_object", 2)
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         object_set.add_objects(cpo.Objects(), "my_objects")
@@ -1248,7 +1248,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.wants_everything.value = False
         module.wants_prefix.value = False
         module.object_groups[0].name.value = "my_object"
-        module.object_groups[0].file_name.value = path
+        module.object_groups[0].filename.value = path
         module.object_groups[0].wants_automatic_file_name.value = False
         module.nan_representation.value = E.NANS_AS_NULLS
         m = cpmeas.Measurements()
@@ -1257,7 +1257,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         mvalues[1] = np.NaN
         m.add_measurement("my_object", "my_measurement", mvalues)
         m.add_image_measurement("Count_my_object", 2)
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         object_set.add_objects(cpo.Objects(), "my_objects")
@@ -1293,7 +1293,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.wants_everything.value = False
         module.wants_prefix.value = False
         module.object_groups[0].name.value = cpmeas.IMAGE
-        module.object_groups[0].file_name.value = path
+        module.object_groups[0].filename.value = path
         module.object_groups[0].wants_automatic_file_name.value = False
         module.wants_aggregate_means.value = True
         module.nan_representation.value = E.NANS_AS_NANS
@@ -1311,7 +1311,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                 data_type=np.float64)
         m.add_measurement(cpmeas.IMAGE, "Count_%s" % OBJECTS_NAME, 0,
                           image_set_number=2)
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         object_set.add_objects(cpo.Objects(), OBJECTS_NAME)
@@ -1352,7 +1352,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.wants_everything.value = False
         module.wants_prefix.value = False
         module.object_groups[0].name.value = cpmeas.IMAGE
-        module.object_groups[0].file_name.value = path
+        module.object_groups[0].filename.value = path
         module.object_groups[0].wants_automatic_file_name.value = False
         module.wants_aggregate_means.value = True
         module.nan_representation.value = E.NANS_AS_NULLS
@@ -1370,7 +1370,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                 data_type=np.float64)
         m.add_measurement(cpmeas.IMAGE, "Count_%s" % OBJECTS_NAME, 0,
                           image_set_number=2)
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         object_set.add_objects(cpo.Objects(), OBJECTS_NAME)
@@ -1411,7 +1411,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.wants_everything.value = False
         module.wants_prefix.value = False
         module.object_groups[0].name.value = cpmeas.IMAGE
-        module.object_groups[0].file_name.value = path
+        module.object_groups[0].filename.value = path
         module.object_groups[0].wants_automatic_file_name.value = False
         module.wants_aggregate_means.value = False
         m = cpmeas.Measurements()
@@ -1421,7 +1421,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         m.add_measurement(
                 cpmeas.IMAGE, IMG_MEAS, my_blob, image_set_number=1,
                 data_type=np.uint8)
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         workspace = cpw.Workspace(self.make_measurements_pipeline(m),
@@ -1448,7 +1448,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.wants_everything.value = False
         module.wants_prefix.value = False
         module.object_groups[0].name.value = cpmeas.EXPERIMENT
-        module.object_groups[0].file_name.value = path
+        module.object_groups[0].filename.value = path
         module.object_groups[0].wants_automatic_file_name.value = False
         module.wants_aggregate_means.value = False
         m = cpmeas.Measurements()
@@ -1458,7 +1458,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         m.add_measurement(
                 cpmeas.EXPERIMENT, IMG_MEAS, my_blob, image_set_number=1,
                 data_type=np.uint8)
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         workspace = cpw.Workspace(self.make_measurements_pipeline(m),
@@ -1492,12 +1492,12 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.wants_everything.value = False
         module.wants_prefix.value = False
         module.object_groups[0].name.value = "my_object"
-        module.object_groups[0].file_name.value = path
+        module.object_groups[0].filename.value = path
         module.object_groups[0].wants_automatic_file_name.value = False
         m = cpmeas.Measurements()
         np.random.seed(0)
         mvalues = np.random.uniform(size=(4,))
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         for index, measurement, metadata in zip(range(4), mvalues, ('foo', 'bar', 'bar', 'foo')):
             image_set = image_set_list.get_image_set(index)
             m.add_measurement("my_object", "my_measurement", np.array([measurement]))
@@ -1555,7 +1555,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         m = cpmeas.Measurements()
         np.random.seed(0)
         mvalues = np.random.uniform(size=(4,))
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         for index, measurement, metadata in zip(range(4), mvalues, ('foo', 'bar', 'bar', 'foo')):
             image_set = image_set_list.get_image_set(index)
             m.add_measurement("my_object", "my_measurement", np.array([measurement]))
@@ -1604,12 +1604,12 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.wants_everything.value = False
         module.wants_prefix.value = False
         module.object_groups[0].name.value = cpmeas.IMAGE
-        module.object_groups[0].file_name.value = path
+        module.object_groups[0].filename.value = path
         module.object_groups[0].wants_automatic_file_name.value = False
         m = cpmeas.Measurements()
         np.random.seed(0)
         mvalues = np.random.uniform(size=(4,))
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         for index, measurement, metadata in zip(range(4), mvalues, ('foo', 'bar', 'bar', 'foo')):
             image_set = image_set_list.get_image_set(index)
             m.add_image_measurement("my_measurement", measurement)
@@ -1661,12 +1661,12 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.directory.dir_choice = E.ABSOLUTE_FOLDER_NAME
         module.directory.custom_path = path
         module.object_groups[0].name.value = cpmeas.IMAGE
-        module.object_groups[0].file_name.value = "output.csv"
+        module.object_groups[0].filename.value = "output.csv"
         module.object_groups[0].wants_automatic_file_name.value = False
         m = cpmeas.Measurements()
         np.random.seed(0)
         mvalues = np.random.uniform(size=(4,))
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         metadata_values = ('foo', 'bar', 'bar', 'foo')
         for index, (measurement, metadata) in \
                 enumerate(zip(mvalues, metadata_values)):
@@ -1719,11 +1719,11 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.directory.dir_choice = E.DEFAULT_OUTPUT_SUBFOLDER_NAME
         module.directory.custom_path = "./my_dir"
         module.object_groups[0].name.value = cpmeas.IMAGE
-        module.object_groups[0].file_name.value = "my_file.csv"
+        module.object_groups[0].filename.value = "my_file.csv"
         module.object_groups[0].wants_automatic_file_name.value = False
         m = cpmeas.Measurements(mode="memory")
         m.add_image_measurement("my_measurement", "Hello, world")
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         workspace = cpw.Workspace(self.make_measurements_pipeline(m),
@@ -1759,12 +1759,12 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.directory.dir_choice = E.DEFAULT_OUTPUT_SUBFOLDER_NAME
         module.directory.custom_path = "./my_dir"
         module.object_groups[0].name.value = cpmeas.IMAGE
-        module.object_groups[0].file_name.value = "my_file.csv"
+        module.object_groups[0].filename.value = "my_file.csv"
         module.object_groups[0].wants_automatic_file_name.value = False
         m = cpmeas.Measurements(mode="memory")
         metadata_value = u"\u2211(Hello, world)"
         m.add_image_measurement("my_measurement", metadata_value)
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         workspace = cpw.Workspace(self.make_measurements_pipeline(m),
@@ -1837,7 +1837,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         g = module.object_groups[0]
         g.name.value = OBJECTS_NAME
         g.wants_automatic_file_name.value = False
-        g.file_name.value = "\\g<tag>.csv"
+        g.filename.value = "\\g<tag>.csv"
         module.module_num = 2
         pipeline.add_module(module)
 
@@ -1863,7 +1863,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.wants_everything.value = False
         module.wants_prefix.value = False
         module.object_groups[0].name.value = cpmeas.IMAGE
-        module.object_groups[0].file_name.value = path
+        module.object_groups[0].filename.value = path
         module.object_groups[0].wants_automatic_file_name.value = False
         module.wants_aggregate_means.value = True
         module.wants_aggregate_medians.value = True
@@ -1873,7 +1873,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         np.random.seed(0)
         data = np.random.uniform(size=(6,))
         m.add_measurement("my_objects", "my_measurement", data)
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         object_set.add_objects(cpo.Objects(), "my_objects")
@@ -1913,7 +1913,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.wants_everything.value = False
         module.wants_prefix.value = False
         module.object_groups[0].name.value = cpmeas.IMAGE
-        module.object_groups[0].file_name.value = path
+        module.object_groups[0].filename.value = path
         module.object_groups[0].wants_automatic_file_name.value = False
         module.wants_aggregate_means.value = False
         module.wants_aggregate_medians.value = False
@@ -1923,7 +1923,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         np.random.seed(0)
         data = np.random.uniform(size=(6,))
         m.add_measurement("my_objects", "my_measurement", data)
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         object_set.add_objects(cpo.Objects(), "my_objects")
@@ -1963,11 +1963,11 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.wants_everything.value = False
         module.wants_prefix.value = False
         module.object_groups[0].name.value = cpmeas.IMAGE
-        module.object_groups[0].file_name.value = image_path
+        module.object_groups[0].filename.value = image_path
         module.object_groups[0].wants_automatic_file_name.value = False
         module.add_object_group()
         module.object_groups[1].name.value = "my_objects"
-        module.object_groups[1].file_name.value = object_path
+        module.object_groups[1].filename.value = object_path
         module.object_groups[1].wants_automatic_file_name.value = False
         module.wants_aggregate_means.value = True
         module.wants_aggregate_medians.value = False
@@ -1994,7 +1994,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         m.add_measurement("my_objects", "my_measurement", data)
         m.add_measurement("my_objects", "my_filtered_measurement",
                           np.random.uniform(size=(6,)))
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         object_set.add_objects(cpo.Objects(), "my_objects")
@@ -2058,7 +2058,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.wants_everything.value = False
         module.wants_prefix.value = False
         module.object_groups[0].name.value = cpmeas.IMAGE
-        module.object_groups[0].file_name.value = image_path
+        module.object_groups[0].filename.value = image_path
         module.object_groups[0].wants_automatic_file_name.value = False
         module.wants_aggregate_means.value = False
         module.wants_aggregate_medians.value = False
@@ -2074,7 +2074,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         np.random.seed(0)
         data = np.random.uniform(size=(6,))
         m.add_image_measurement("first_measurement", np.sum(data))
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         workspace = cpw.Workspace(self.make_measurements_pipeline(m),
@@ -2106,10 +2106,10 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.wants_everything.value = False
         module.wants_prefix.value = False
         module.object_groups[0].name.value = cpmeas.IMAGE
-        module.object_groups[0].file_name.value = path
+        module.object_groups[0].filename.value = path
         module.object_groups[0].wants_automatic_file_name.value = False
         m = cpmeas.Measurements()
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         data = ("The reverse side also has a reverse side. (Japanese proverb)",
                 "When I was younger, I could remember anything, whether it had happened or not. (Mark Twain)",
                 "A thing worth having is a thing worth cheating for. (W.C. Fields)"
@@ -2150,7 +2150,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.wants_everything.value = False
         module.wants_prefix.value = False
         module.object_groups[0].name.value = "my_objects"
-        module.object_groups[0].file_name.value = path
+        module.object_groups[0].filename.value = path
         module.object_groups[0].wants_automatic_file_name.value = False
         m = cpmeas.Measurements()
         np.random.seed(0)
@@ -2161,7 +2161,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                 m.next_image_set()
             m.add_image_measurement("Count_my_objects", mvalues.shape[1])
             m.add_measurement("my_objects", "my_measurement", mvalues[image_idx, :])
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         object_set.add_objects(cpo.Objects(), "my_objects")
@@ -2200,7 +2200,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.wants_everything.value = False
         module.wants_prefix.value = False
         module.object_groups[0].name.value = "my_objects"
-        module.object_groups[0].file_name.value = path
+        module.object_groups[0].filename.value = path
         module.object_groups[0].wants_automatic_file_name.value = False
         module.add_metadata.value = True
         m = cpmeas.Measurements()
@@ -2214,7 +2214,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             m.add_image_measurement("Metadata_Plate", "P-X9TRG")
             m.add_image_measurement("Metadata_Well", "C0%d" % (image_idx + 1))
             m.add_measurement("my_objects", "my_measurement", mvalues[image_idx, :])
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         object_set.add_objects(cpo.Objects(), "my_objects")
@@ -2261,7 +2261,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.wants_everything.value = False
         module.wants_prefix.value = False
         module.object_groups[0].name.value = "my_objects"
-        module.object_groups[0].file_name.value = path
+        module.object_groups[0].filename.value = path
         module.object_groups[0].wants_automatic_file_name.value = False
         module.add_metadata.value = True
         m = cpmeas.Measurements()
@@ -2275,7 +2275,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             if image_idx != 1:
                 m.add_image_measurement("my_measurement", 100)
                 m.add_measurement("my_objects", "my_measurement", mvalues[image_idx, :])
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         object_set.add_objects(cpo.Objects(), "my_objects")
@@ -2329,7 +2329,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.wants_prefix.value = False
         module.nan_representation.value = E.NANS_AS_NANS
         module.object_groups[0].name.value = OBJECTS_NAME
-        module.object_groups[0].file_name.value = path
+        module.object_groups[0].filename.value = path
         module.object_groups[0].wants_automatic_file_name.value = False
         module.add_metadata.value = False
         m = cpmeas.Measurements()
@@ -2337,7 +2337,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         m[cpmeas.IMAGE, cpmeas.GROUP_INDEX, 1] = 1
         m[cpmeas.IMAGE, "_".join((C_COUNT, OBJECTS_NAME)), 1] = 3
         m[OBJECTS_NAME, M_LOCATION_CENTER_X, 1] = np.array([1, 4, 9], float)
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         object_set.add_objects(cpo.Objects(), "my_objects")
@@ -2444,7 +2444,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.wants_everything.value = False
         module.wants_prefix.value = False
         module.object_groups[0].name.value = cpmeas.IMAGE
-        module.object_groups[0].file_name.value = output_csv_filename
+        module.object_groups[0].filename.value = output_csv_filename
         module.object_groups[0].wants_automatic_file_name.value = False
         module.wants_aggregate_means.value = False
         module.wants_aggregate_medians.value = False
@@ -2614,10 +2614,10 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.wants_everything.value = False
         module.wants_prefix.value = False
         module.object_groups[0].name.value = E.OBJECT_RELATIONSHIPS
-        module.object_groups[0].file_name.value = path
+        module.object_groups[0].filename.value = path
         module.object_groups[0].wants_automatic_file_name.value = False
         m = cpmeas.Measurements()
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         for i in range(0, 10):
             image_set = image_set_list.get_image_set(i)
             m.add_image_measurement(cpp.IMAGE_NUMBER, i + 1)
@@ -2686,7 +2686,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         g = module.object_groups[0]
         g.name.value = E.OBJECT_RELATIONSHIPS
         g.wants_automatic_file_name.value = False
-        g.file_name.value = "my_file.csv"
+        g.filename.value = "my_file.csv"
         module.module_num = 1
         pipeline.add_module(module)
 

@@ -95,7 +95,7 @@ LabelImages:[module_num:2|svn_version:\'9970\'|variable_revision_number:1|show_w
         self.assertEqual(module.order, L.O_ROW)
 
     def make_workspace(self, image_set_count):
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         for i in range(image_set_count):
             image_set = image_set_list.get_image_set(i)
         module = L.LabelImages()

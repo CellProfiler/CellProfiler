@@ -309,7 +309,7 @@ class UnmixColors(cpm.Module):
         input_image_name = self.input_image_name.value
         input_image = workspace.image_set.get_image(input_image_name,
                                                     must_be_rgb=True)
-        input_pixels = input_image.pixel_data
+        input_pixels = input_image.data
         if self.show_window:
             workspace.display_data.input_image = input_pixels
             workspace.display_data.outputs = {}
@@ -318,7 +318,7 @@ class UnmixColors(cpm.Module):
 
     def run_on_output(self, workspace, input_image, output):
         '''Produce one image - storing it in the image set'''
-        input_pixels = input_image.pixel_data
+        input_pixels = input_image.data
         inverse_absorbances = self.get_inverse_absorbances(output)
         #########################################
         #
@@ -347,7 +347,7 @@ class UnmixColors(cpm.Module):
         image[image > 1] = 1
         image = 1 - image
         image_name = output.image_name.value
-        output_image = cpi.Image(image, parent_image=input_image)
+        output_image = cpi.Image(image, parent=input_image)
         workspace.image_set.add(image_name, output_image)
         if self.show_window:
             workspace.display_data.outputs[image_name] = image
@@ -410,7 +410,7 @@ class UnmixColors(cpm.Module):
                         "*.tif;*.tiff;*.bmp;*.png;*.gif;*.jpg")
         if dlg.ShowModal() == wx.ID_OK:
             lip = LoadImagesImageProvider("dummy", "", dlg.Path)
-            image = lip.provide_image(None).pixel_data
+            image = lip.provide_image(None).data
             if image.ndim < 3:
                 wx.MessageBox("You must calibrate the absorbance using a color image",
                               "Error: not color image",

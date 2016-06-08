@@ -187,25 +187,25 @@ class IdentifyTertiaryObjects(cpm.Module):
                 # and apply that mask to resize the secondary labels
                 #
                 secondary_labels = primary_objects.crop_image_similarly(secondary_labels)
-                tertiary_image = primary_objects.parent_image
+                tertiary_image = primary_objects.parent
             elif any([p_size > s_size
                       for p_size, s_size
                       in zip(primary_labels.shape, secondary_labels.shape)]):
                 primary_labels = secondary_objects.crop_image_similarly(primary_labels)
-                tertiary_image = secondary_objects.parent_image
-            elif secondary_objects.parent_image is not None:
-                tertiary_image = secondary_objects.parent_image
+                tertiary_image = secondary_objects.parent
+            elif secondary_objects.parent is not None:
+                tertiary_image = secondary_objects.parent
             else:
-                tertiary_image = primary_objects.parent_image
+                tertiary_image = primary_objects.parent
         except ValueError:
             # No suitable cropping - resize all to fit the secondary
             # labels which are the most critical.
             #
             primary_labels, _ = cpo.size_similarly(secondary_labels, primary_labels)
-            if secondary_objects.parent_image is not None:
-                tertiary_image = secondary_objects.parent_image
+            if secondary_objects.parent is not None:
+                tertiary_image = secondary_objects.parent
             else:
-                tertiary_image = primary_objects.parent_image
+                tertiary_image = primary_objects.parent
                 if tertiary_image is not None:
                     tertiary_image, _ = cpo.size_similarly(secondary_labels, tertiary_image)
         #
@@ -306,7 +306,7 @@ class IdentifyTertiaryObjects(cpm.Module):
         #
         if self.use_outlines.value:
             out_img = cpi.Image(tertiary_outlines.astype(bool),
-                                parent_image=tertiary_image)
+                                parent=tertiary_image)
             workspace.image_set.add(self.outlines_name.value, out_img)
 
         if self.show_window:

@@ -228,16 +228,16 @@ class DisplayDataOnImage(cpm.Module):
         #
         image = workspace.image_set.get_image(self.image_name.value)
         if self.wants_image:
-            pixel_data = image.pixel_data
+            pixel_data = image.data
         else:
-            pixel_data = np.zeros(image.pixel_data.shape[:2])
+            pixel_data = np.zeros(image.data.shape[:2])
         object_set = workspace.object_set
         if self.objects_or_image == OI_OBJECTS:
             if self.objects_name.value in object_set.get_object_names():
                 objects = object_set.get_objects(self.objects_name.value)
             else:
                 objects = None
-        workspace.display_data.pixel_data = pixel_data
+        workspace.display_data.data = pixel_data
         if self.use_color_map():
             workspace.display_data.labels = objects.segmented
         #
@@ -370,7 +370,7 @@ class DisplayDataOnImage(cpm.Module):
         if self.use_color_map():
             labels = workspace.display_data.labels
             if self.wants_image:
-                pixel_data = workspace.display_data.pixel_data
+                pixel_data = workspace.display_data.data
             else:
                 pixel_data = (labels != 0).astype(np.float32)
             if pixel_data.ndim == 3:
@@ -396,7 +396,7 @@ class DisplayDataOnImage(cpm.Module):
             assert isinstance(figure, matplotlib.figure.Figure)
             figure.colorbar(sm, ax=axes)
         else:
-            imshow_fn(workspace.display_data.pixel_data)
+            imshow_fn(workspace.display_data.data)
             for x, y, value in zip(workspace.display_data.x,
                                    workspace.display_data.y,
                                    workspace.display_data.values):

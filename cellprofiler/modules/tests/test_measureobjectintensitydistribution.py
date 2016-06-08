@@ -708,7 +708,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
             module.heatmaps[i].measurement.value = a
         pipeline = cpp.Pipeline()
         measurements = cpmeas.Measurements()
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = measurements
         img = cpi.Image(image)
         image_set.add(IMAGE_NAME, img)
@@ -755,7 +755,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
             self.assertTrue(data[0] > area - .1)
             self.assertTrue(data[0] < area + .1)
             heatmap = workspace.image_set.get_image(
-                    HEAT_MAP_NAME + M.F_FRAC_AT_D).pixel_data
+                    HEAT_MAP_NAME + M.F_FRAC_AT_D).data
             data = data.astype(heatmap.dtype)
             self.assertEqual(mode(heatmap[bins == bin])[0][0], data[0])
             data = m.get_current_measurement(OBJECT_NAME,
@@ -763,7 +763,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
             self.assertEqual(len(data), 1)
             self.assertAlmostEqual(data[0], 1, 2)
             heatmap = workspace.image_set.get_image(
-                    HEAT_MAP_NAME + M.F_MEAN_FRAC).pixel_data
+                    HEAT_MAP_NAME + M.F_MEAN_FRAC).data
             data = data.astype(heatmap.dtype)
             self.assertEqual(mode(heatmap[bins == bin])[0][0], data[0])
             data = m.get_current_measurement(OBJECT_NAME,
@@ -771,7 +771,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
             self.assertEqual(len(data), 1)
             self.assertAlmostEqual(data[0], 0, 2)
             heatmap = workspace.image_set.get_image(
-                    HEAT_MAP_NAME + M.F_RADIAL_CV).pixel_data
+                    HEAT_MAP_NAME + M.F_RADIAL_CV).data
             data = data.astype(heatmap.dtype)
             self.assertEqual(mode(heatmap[bins == bin])[0][0], data[0])
         module = workspace.module
@@ -985,7 +985,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
             self.assertLess(np.abs(data[0] - area), .1)
             self.assertLess(np.abs(data[1] - area * bin_d), .1)
             heatmap = workspace.image_set.get_image(
-                    HEAT_MAP_NAME + M.F_FRAC_AT_D).pixel_data
+                    HEAT_MAP_NAME + M.F_FRAC_AT_D).data
             data = data.astype(heatmap.dtype)
             for label in 1, 2:
                 mask = (bins == bin) & (labels == label)
@@ -995,7 +995,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
             self.assertEqual(len(data), 2)
             self.assertAlmostEqual(data[0], 1, 2)
             heatmap = workspace.image_set.get_image(
-                    HEAT_MAP_NAME + M.F_MEAN_FRAC).pixel_data
+                    HEAT_MAP_NAME + M.F_MEAN_FRAC).data
             data = data.astype(heatmap.dtype)
             for label in 1, 2:
                 mask = (bins == bin) & (labels == label)
@@ -1005,7 +1005,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
             self.assertEqual(len(data), 2)
             self.assertAlmostEqual(data[0], 0, 2)
             heatmap = workspace.image_set.get_image(
-                    HEAT_MAP_NAME + M.F_RADIAL_CV).pixel_data
+                    HEAT_MAP_NAME + M.F_RADIAL_CV).data
             data = data.astype(heatmap.dtype)
             for label in 1, 2:
                 mask = (bins == bin) & (labels == label)

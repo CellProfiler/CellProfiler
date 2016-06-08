@@ -73,10 +73,10 @@ class TestLoadSingleImage(unittest.TestCase, ConvtesterMixin):
         self.assertEqual(module.directory.custom_path, "./foo")
         self.assertEqual(len(module.file_settings), 2)
         fs = module.file_settings[0]
-        self.assertEqual(fs.file_name, "dna_image.tif")
+        self.assertEqual(fs.filename, "dna_image.tif")
         self.assertEqual(fs.image_name, "DNA")
         fs = module.file_settings[1]
-        self.assertEqual(fs.file_name, "cytoplasm_image.tif")
+        self.assertEqual(fs.filename, "cytoplasm_image.tif")
         self.assertEqual(fs.image_name, "Cytoplasm")
 
         module = pipeline.modules()[1]
@@ -85,7 +85,7 @@ class TestLoadSingleImage(unittest.TestCase, ConvtesterMixin):
         self.assertEqual(module.directory.custom_path, "./bar")
         self.assertEqual(len(module.file_settings), 1)
         fs = module.file_settings[0]
-        self.assertEqual(fs.file_name, "DNAIllum.tif")
+        self.assertEqual(fs.filename, "DNAIllum.tif")
         self.assertEqual(fs.image_name, "DNAIllum")
 
     def test_01_01_load_v1(self):
@@ -140,10 +140,10 @@ LoadSingleImage:[module_num:4|svn_version:\'Unknown\'|variable_revision_number:1
         self.assertTrue(isinstance(module, L.LoadSingleImage))
         self.assertEqual(len(module.file_settings), 2)
         fs = module.file_settings[0]
-        self.assertEqual(fs.file_name, "foo.tif")
+        self.assertEqual(fs.filename, "foo.tif")
         self.assertEqual(fs.image_name, "DNA")
         fs = module.file_settings[1]
-        self.assertEqual(fs.file_name, "bar.tif")
+        self.assertEqual(fs.filename, "bar.tif")
         self.assertEqual(fs.image_name, "Cytoplasm")
 
     def test_01_02_load_v2(self):
@@ -186,15 +186,15 @@ LoadSingleImage:[module_num:4|svn_version:\'Unknown\'|variable_revision_number:2
         self.assertTrue(isinstance(module, L.LoadSingleImage))
         self.assertEqual(len(module.file_settings), 2)
         fs = module.file_settings[0]
-        self.assertEqual(fs.file_name, "foo.tif")
+        self.assertEqual(fs.filename, "foo.tif")
         self.assertEqual(fs.image_name, "DNA")
         fs = module.file_settings[1]
-        self.assertEqual(fs.file_name, "bar.tif")
+        self.assertEqual(fs.filename, "bar.tif")
         self.assertEqual(fs.image_name, "Cytoplasm")
         module = pipeline.modules()[3]
         fs = module.file_settings[0]
         self.assertEqual(
-                fs.file_name,
+                fs.filename,
                 "https://svn.broadinstitute.org/CellProfiler/trunk/ExampleImages/"
                 "ExampleSBSImages/Channel1-01-A-01.tif")
 
@@ -230,10 +230,10 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
         self.assertTrue(isinstance(module, L.LoadSingleImage))
         self.assertEqual(len(module.file_settings), 2)
         fs = module.file_settings[0]
-        self.assertEqual(fs.file_name, "foo.tif")
+        self.assertEqual(fs.filename, "foo.tif")
         self.assertEqual(fs.image_name, "DNA")
         fs = module.file_settings[1]
-        self.assertEqual(fs.file_name, "bar.tif")
+        self.assertEqual(fs.filename, "bar.tif")
         self.assertEqual(fs.image_name, "Cytoplasm")
         self.assertTrue(fs.rescale)
 
@@ -264,12 +264,12 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4
         self.assertTrue(isinstance(module, L.LoadSingleImage))
         self.assertEqual(len(module.file_settings), 2)
         fs = module.file_settings[0]
-        self.assertEqual(fs.file_name, "foo.tif")
+        self.assertEqual(fs.filename, "foo.tif")
         self.assertEqual(fs.image_objects_choice, L.IO_IMAGES)
         self.assertEqual(fs.image_name, "DNA")
         self.assertFalse(fs.rescale)
         fs = module.file_settings[1]
-        self.assertEqual(fs.file_name, "bar.tif")
+        self.assertEqual(fs.filename, "bar.tif")
         self.assertEqual(fs.image_name, "Cytoplasm")
         self.assertTrue(fs.rescale)
 
@@ -308,7 +308,7 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
         self.assertTrue(isinstance(module, L.LoadSingleImage))
         self.assertEqual(len(module.file_settings), 2)
         fs = module.file_settings[0]
-        self.assertEqual(fs.file_name, "foo.tif")
+        self.assertEqual(fs.filename, "foo.tif")
         self.assertEqual(fs.image_objects_choice, L.IO_IMAGES)
         self.assertEqual(fs.image_name, "DNA")
         self.assertEqual(fs.objects_name, "MyObjects")
@@ -316,7 +316,7 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
         self.assertEqual(fs.outlines_name, "MyOutlines")
         self.assertFalse(fs.rescale)
         fs = module.file_settings[1]
-        self.assertEqual(fs.file_name, "bar.tif")
+        self.assertEqual(fs.filename, "bar.tif")
         self.assertEqual(fs.image_objects_choice, L.IO_OBJECTS)
         self.assertEqual(fs.image_name, "Cytoplasm")
         self.assertEqual(fs.objects_name, "Cells")
@@ -335,7 +335,7 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
             if i > 0:
                 module.add_file()
             module.file_settings[i].image_name.value = self.get_image_name(i)
-            module.file_settings[i].file_name.value = file_name
+            module.file_settings[i].filename.value = file_name
         pipeline = cpp.Pipeline()
 
         def callback(caller, event):
@@ -343,7 +343,7 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
 
         pipeline.add_listener(callback)
         pipeline.add_module(module)
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         workspace = cpw.Workspace(pipeline, module,
                                   image_set_list.get_image_set(0),
                                   cpo.ObjectSet(), cpmeas.Measurements(),
@@ -393,7 +393,7 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
         module.file_settings[1].rescale.value = True
         module.prepare_run(workspace)
         module.run(workspace)
-        unscaled, scaled = [workspace.image_set.get_image(self.get_image_name(i)).pixel_data
+        unscaled, scaled = [workspace.image_set.get_image(self.get_image_name(i)).data
                             for i in range(2)]
         np.testing.assert_almost_equal(unscaled * 65535. / 4095., scaled)
 
@@ -413,7 +413,7 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
         lsi.directory.dir_choice = cps.ABSOLUTE_FOLDER_NAME
         lsi.directory.custom_path = path
         lsi.file_settings[0].image_name.value = self.get_image_name(0)
-        lsi.file_settings[0].file_name.value = filename
+        lsi.file_settings[0].filename.value = filename
         pipeline.add_module(lsi)
         li = LI.LoadImages()
         li.module_num = 2
@@ -424,7 +424,7 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
         li.images[0].common_text.value = "Channel2-"
         m = cpmeas.Measurements()
         workspace = cpw.Workspace(pipeline, lsi, m, cpo.ObjectSet(), m,
-                                  cpi.ImageSetList())
+                                  cpi.List())
         self.assertTrue(pipeline.prepare_run(workspace))
         self.assertGreater(m.image_set_count, 1)
         pipeline.prepare_group(workspace, {}, m.get_image_numbers())
@@ -441,7 +441,7 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
         #
         # Can we retrieve the image?
         #
-        pixel_data = m.get_image(self.get_image_name(0)).pixel_data
+        pixel_data = m.get_image(self.get_image_name(0)).data
         self.assertFalse(np.isscalar(pixel_data))
 
     def test_03_01_measurement_columns(self):
@@ -553,7 +553,7 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
             module.module_num = 1
             module.directory.set_dir_choice(L.DEFAULT_INPUT_FOLDER_NAME)
             fs = module.file_settings[0]
-            fs.file_name.value = filename
+            fs.filename.value = filename
             fs.image_objects_choice.value = L.IO_OBJECTS
             fs.objects_name.value = OBJECTS_NAME
             pipeline = cpp.Pipeline()
@@ -565,7 +565,7 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
             pipeline.add_module(module)
             m = cpmeas.Measurements()
             object_set = cpo.ObjectSet()
-            image_set_list = cpi.ImageSetList()
+            image_set_list = cpi.List()
             image_set = image_set_list.get_image_set(0)
             workspace = cpw.Workspace(
                     pipeline, module, image_set, object_set, m, image_set_list)
@@ -606,7 +606,7 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
             module.module_num = 1
             module.directory.set_dir_choice(L.DEFAULT_INPUT_FOLDER_NAME)
             fs = module.file_settings[0]
-            fs.file_name.value = filename
+            fs.filename.value = filename
             fs.image_objects_choice.value = L.IO_OBJECTS
             fs.objects_name.value = OBJECTS_NAME
             fs.wants_outlines.value = True
@@ -620,7 +620,7 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
             pipeline.add_module(module)
             m = cpmeas.Measurements()
             object_set = cpo.ObjectSet()
-            image_set_list = cpi.ImageSetList()
+            image_set_list = cpi.List()
             image_set = image_set_list.get_image_set(0)
             workspace = cpw.Workspace(
                     pipeline, module, image_set, object_set, m, image_set_list)
@@ -628,7 +628,7 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
             module.run(workspace)
 
             outlines = image_set.get_image(OUTLINES_NAME)
-            np.testing.assert_equal(outlines.pixel_data, expected_outlines)
+            np.testing.assert_equal(outlines.data, expected_outlines)
         finally:
             try:
                 os.remove(os.path.join(directory, filename))

@@ -70,7 +70,7 @@ class TestGrayToColor(unittest.TestCase):
 
         pipeline.add_listener(callback)
         pipeline.add_module(module)
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         for image, image_name in zip(images, image_names):
             if image is not None:
@@ -240,7 +240,7 @@ GrayToColor:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|sho
                                                     images, adjustments)
             module.run(workspace)
             image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-            pixel_data = image.pixel_data
+            pixel_data = image.data
 
             expected = np.dstack([image if image is not None
                                   else np.zeros((10, 15))
@@ -261,7 +261,7 @@ GrayToColor:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|sho
                                                     images, adjustments)
             module.run(workspace)
             image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-            pixel_data = image.pixel_data
+            pixel_data = image.data
 
             expected = np.array([np.dstack([image * adjustment
                                             if image is not None
@@ -281,7 +281,7 @@ GrayToColor:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|sho
         images = [r.uniform(size=(11, 13)) for _ in range(5)]
         workspace, module = self.make_workspace(G.SCHEME_STACK, images)
         module.run(workspace)
-        output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
+        output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).data
         self.assertSequenceEqual(output.shape[:2], images[0].shape)
         self.assertEqual(output.shape[2], len(images))
         for i, image in enumerate(images):
@@ -298,7 +298,7 @@ GrayToColor:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|sho
         workspace, module = self.make_workspace(
                 G.SCHEME_COMPOSITE, images, colors=color_names, weights=weights)
         module.run(workspace)
-        output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
+        output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).data
         self.assertSequenceEqual(output.shape[:2], images[0].shape)
         self.assertEqual(output.shape[2], 3)
         for i in range(3):

@@ -532,8 +532,8 @@ class MeasureTexture(cpm.Module):
         image = workspace.image_set.get_image(image_name,
                                               must_be_grayscale=True)
         objects = workspace.get_objects(object_name)
-        pixel_data = image.pixel_data
-        if image.has_mask:
+        pixel_data = image.data
+        if image.masked:
             mask = image.mask
         else:
             mask = None
@@ -585,9 +585,9 @@ class MeasureTexture(cpm.Module):
         statistics = []
         image = workspace.image_set.get_image(image_name,
                                               must_be_grayscale=True)
-        pixel_data = image.pixel_data
+        pixel_data = image.data
         image_labels = np.ones(pixel_data.shape, int)
-        if image.has_mask:
+        if image.masked:
             image_labels[~ image.mask] = 0
         scale_i, scale_j = self.get_angle_ij(angle, scale)
         for name, value in zip(F_HARALICK, Haralick(pixel_data,
@@ -606,9 +606,9 @@ class MeasureTexture(cpm.Module):
         if object_count > 0:
             image = workspace.image_set.get_image(image_name,
                                                   must_be_grayscale=True)
-            pixel_data = image.pixel_data
+            pixel_data = image.data
             labels = objects.segmented
-            if image.has_mask:
+            if image.masked:
                 mask = image.mask
             else:
                 mask = None
@@ -648,9 +648,9 @@ class MeasureTexture(cpm.Module):
     def run_image_gabor(self, image_name, scale, workspace):
         image = workspace.image_set.get_image(image_name,
                                               must_be_grayscale=True)
-        pixel_data = image.pixel_data
+        pixel_data = image.data
         labels = np.ones(pixel_data.shape, int)
-        if image.has_mask:
+        if image.masked:
             labels[~image.mask] = 0
         pixel_data = stretch(pixel_data, labels > 0)
         best_score = 0

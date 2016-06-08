@@ -466,7 +466,7 @@ class MeasureObjectIntensityDistribution(cpm.Module):
                             heatmap.image_name.get_image_name())
                     output_img = cpi.Image(
                             output_pixels,
-                            parent_image=parent_image)
+                            parent=parent_image)
                     img_name = heatmap.display_name.value
                     workspace.image_set.add(img_name, output_img)
 
@@ -542,7 +542,7 @@ class MeasureObjectIntensityDistribution(cpm.Module):
                                               must_be_grayscale=True)
         objects = workspace.object_set.get_objects(object_name)
         labels, pixel_data = cpo.crop_labels_and_image(objects.segmented,
-                                                       image.pixel_data)
+                                                       image.data)
         nobjects = np.max(objects.segmented)
         measurements = workspace.measurements
         assert isinstance(measurements, cpmeas.Measurements)
@@ -778,7 +778,7 @@ class MeasureObjectIntensityDistribution(cpm.Module):
                 image_name = image_group.image_name.value
                 image = workspace.image_set.get_image(
                         image_name, must_be_grayscale=True)
-                pixels = image.pixel_data
+                pixels = image.data
                 mask = (ijv[:, 0] < pixels.shape[0]) & \
                        (ijv[:, 1] < pixels.shape[1])
                 mask[mask] = image.mask[ijv[mask, 0], ijv[mask, 1]]

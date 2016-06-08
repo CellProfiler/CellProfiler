@@ -533,7 +533,7 @@ class CPImageArtist(matplotlib.artist.Artist):
         result = {}
         for image in self.__images:
             if image.mode != MODE_HIDE:
-                pixel_data = image.pixel_data
+                pixel_data = image.data
                 if y >= pixel_data.shape[0] or x >= pixel_data.shape[1]:
                     continue
                 if pixel_data.ndim == 3:
@@ -550,7 +550,7 @@ class CPImageArtist(matplotlib.artist.Artist):
             if image.mode == MODE_HIDE:
                 continue
             for i in range(2):
-                shape[i] = max(shape[i], image.pixel_data.shape[i])
+                shape[i] = max(shape[i], image.data.shape[i])
         if any([x == 0 for x in shape]):
             return
         border = self.get_border_count()

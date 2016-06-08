@@ -216,9 +216,9 @@ class MeasureImageAreaOccupied(cpm.Module):
         '''Performs the measurements on the requested objects'''
         objects = workspace.get_objects(operand.operand_objects.value)
         if objects.has_parent_image:
-            area_occupied = np.sum(objects.segmented[objects.parent_image.mask] > 0)
-            perimeter = np.sum(outline(np.logical_and(objects.segmented != 0, objects.parent_image.mask)))
-            total_area = np.sum(objects.parent_image.mask)
+            area_occupied = np.sum(objects.segmented[objects.parent.mask] > 0)
+            perimeter = np.sum(outline(np.logical_and(objects.segmented != 0, objects.parent.mask)))
+            total_area = np.sum(objects.parent.mask)
         else:
             area_occupied = np.sum(objects.segmented > 0)
             perimeter = np.sum(outline(objects.segmented) > 0)
@@ -233,7 +233,7 @@ class MeasureImageAreaOccupied(cpm.Module):
         if operand.should_save_image.value:
             binary_pixels = objects.segmented > 0
             output_image = cpi.Image(binary_pixels,
-                                     parent_image=objects.parent_image)
+                                     parent=objects.parent)
             workspace.image_set.add(operand.image_name.value,
                                     output_image)
         return [[operand.operand_objects.value,
@@ -242,9 +242,9 @@ class MeasureImageAreaOccupied(cpm.Module):
     def measure_images(self, operand, workspace):
         '''Performs measurements on the requested images'''
         image = workspace.image_set.get_image(operand.binary_name.value, must_be_binary=True)
-        area_occupied = np.sum(image.pixel_data > 0)
-        perimeter = np.sum(outline(image.pixel_data) > 0)
-        total_area = np.prod(np.shape(image.pixel_data))
+        area_occupied = np.sum(image.data > 0)
+        perimeter = np.sum(outline(image.data) > 0)
+        total_area = np.prod(np.shape(image.data))
         m = workspace.measurements
         m.add_image_measurement(F_AREA_OCCUPIED % operand.binary_name.value,
                                 np.array([area_occupied], dtype=float))

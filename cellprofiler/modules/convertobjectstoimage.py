@@ -148,19 +148,19 @@ class ConvertObjectsToImage(cpm.Module):
             pixel_data[mask, :] = pixel_data[mask, :] / alpha[mask][:, np.newaxis]
         else:
             pixel_data[mask] = pixel_data[mask] / alpha[mask]
-        image = cpi.Image(pixel_data, parent_image=objects.parent_image,
+        image = cpi.Image(pixel_data, parent=objects.parent,
                           convert=convert)
         workspace.image_set.add(self.image_name.value, image)
         if self.show_window:
             workspace.display_data.ijv = objects.ijv
-            workspace.display_data.pixel_data = pixel_data
+            workspace.display_data.data = pixel_data
 
     def display(self, workspace, figure):
-        pixel_data = workspace.display_data.pixel_data
+        pixel_data = workspace.display_data.data
         figure.set_subplots((2, 1))
         figure.subplot_imshow_ijv(
                 0, 0, workspace.display_data.ijv,
-                shape=workspace.display_data.pixel_data.shape[:2],
+                shape=workspace.display_data.data.shape[:2],
                 title="Original: %s" % self.object_name.value)
         if self.image_mode == IM_BINARY:
             figure.subplot_imshow_bw(1, 0, pixel_data,

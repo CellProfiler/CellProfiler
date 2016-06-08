@@ -41,7 +41,7 @@ class TestFilterObjects(unittest.TestCase):
         module = F.FilterByObjectMeasurement()
         pipeline = cpp.Pipeline()
         object_set = cpo.ObjectSet()
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         workspace = cpw.Workspace(pipeline,
                                   module,

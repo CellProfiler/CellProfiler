@@ -166,7 +166,7 @@ class TestCorrectIlluminationApply(unittest.TestCase):
         image.corrected_image_name.value = "OutputImage"
         image.divide_or_subtract.value = cpmcia.DOS_DIVIDE
         image.rescale_option = cpmcia.RE_NONE
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         measurements = cpm.Measurements()
         workspace = cpw.Workspace(pipeline, None, None, None,
                                   measurements, image_set_list)
@@ -186,7 +186,7 @@ class TestCorrectIlluminationApply(unittest.TestCase):
         illum_module.run(workspace)
         module.run(workspace)
         output_image = workspace.image_set.get_image("OutputImage")
-        self.assertTrue(np.all(output_image.pixel_data == expected))
+        self.assertTrue(np.all(output_image.data == expected))
 
     def test_01_02_subtract(self):
         """Test correction by subtraction"""
@@ -213,7 +213,7 @@ class TestCorrectIlluminationApply(unittest.TestCase):
         image.divide_or_subtract.value = cpmcia.DOS_SUBTRACT
         image.rescale_option = cpmcia.RE_NONE
         measurements = cpm.Measurements()
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         measurements = cpm.Measurements()
         workspace = cpw.Workspace(pipeline, None, None, None,
                                   measurements, image_set_list)
@@ -233,7 +233,7 @@ class TestCorrectIlluminationApply(unittest.TestCase):
         illum_module.run(workspace)
         module.run(workspace)
         output_image = workspace.image_set.get_image("OutputImage")
-        self.assertTrue(np.all(output_image.pixel_data == expected))
+        self.assertTrue(np.all(output_image.data == expected))
 
     def test_02_01_color_by_bw(self):
         '''Correct a color image with a black & white illumination fn'''
@@ -260,7 +260,7 @@ class TestCorrectIlluminationApply(unittest.TestCase):
         image.divide_or_subtract.value = cpmcia.DOS_SUBTRACT
         image.rescale_option = cpmcia.RE_NONE
         measurements = cpm.Measurements()
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         measurements = cpm.Measurements()
         workspace = cpw.Workspace(pipeline, None, None, None,
                                   measurements, image_set_list)
@@ -280,7 +280,7 @@ class TestCorrectIlluminationApply(unittest.TestCase):
         illum_module.run(workspace)
         module.run(workspace)
         output_image = workspace.image_set.get_image("OutputImage")
-        self.assertTrue(np.all(output_image.pixel_data == expected))
+        self.assertTrue(np.all(output_image.data == expected))
 
     def test_02_02_color_by_color(self):
         '''Correct a color image with a black & white illumination fn'''
@@ -307,7 +307,7 @@ class TestCorrectIlluminationApply(unittest.TestCase):
         image.divide_or_subtract.value = cpmcia.DOS_SUBTRACT
         image.rescale_option = cpmcia.RE_NONE
         measurements = cpm.Measurements()
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         measurements = cpm.Measurements()
         workspace = cpw.Workspace(pipeline, None, None, None,
                                   measurements, image_set_list)
@@ -327,4 +327,4 @@ class TestCorrectIlluminationApply(unittest.TestCase):
         illum_module.run(workspace)
         module.run(workspace)
         output_image = workspace.image_set.get_image("OutputImage")
-        self.assertTrue(np.all(output_image.pixel_data == expected))
+        self.assertTrue(np.all(output_image.data == expected))

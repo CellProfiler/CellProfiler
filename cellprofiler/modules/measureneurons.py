@@ -283,8 +283,8 @@ class MeasureNeurons(cpm.Module):
 
         skeleton_image = workspace.image_set.get_image(
                 skeleton_name, must_be_binary=True)
-        skeleton = skeleton_image.pixel_data
-        if skeleton_image.has_mask:
+        skeleton = skeleton_image.data
+        if skeleton_image.masked:
             skeleton = skeleton & skeleton_image.mask
         try:
             labels = skeleton_image.crop_image_similarly(labels)
@@ -439,7 +439,7 @@ class MeasureNeurons(cpm.Module):
                     trunk_mask,
                     branch_points & ~trunk_mask,
                     end_points,
-                    intensity_image.pixel_data)
+                    intensity_image.data)
 
             image_number = workspace.measurements.image_set_number
 
@@ -451,7 +451,7 @@ class MeasureNeurons(cpm.Module):
             if self.show_window:
                 workspace.display_data.edge_graph = edge_graph
                 workspace.display_data.vertex_graph = vertex_graph
-                workspace.display_data.intensity_image = intensity_image.pixel_data
+                workspace.display_data.intensity_image = intensity_image.data
         #
         # Make the display image
         #
@@ -473,7 +473,7 @@ class MeasureNeurons(cpm.Module):
                 workspace.display_data.branchpoint_image = branchpoint_image
             if self.wants_branchpoint_image:
                 bi = cpi.Image(branchpoint_image,
-                               parent_image=skeleton_image)
+                               parent=skeleton_image)
                 workspace.image_set.add(self.branchpoint_image_name.value, bi)
 
     def handle_interaction(self, image_number, edge_path, edge_graph,

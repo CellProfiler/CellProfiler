@@ -242,10 +242,10 @@ class MeasureCorrelation(cpm.Module):
                                                     must_be_grayscale=True)
         second_image = workspace.image_set.get_image(second_image_name,
                                                      must_be_grayscale=True)
-        first_pixel_data = first_image.pixel_data
+        first_pixel_data = first_image.data
         first_mask = first_image.mask
         first_pixel_count = np.product(first_pixel_data.shape)
-        second_pixel_data = second_image.pixel_data
+        second_pixel_data = second_image.data
         second_mask = second_image.mask
         second_pixel_count = np.product(second_pixel_data.shape)
         #
@@ -437,17 +437,17 @@ class MeasureCorrelation(cpm.Module):
         #
         labels = objects.segmented
         try:
-            first_pixels = objects.crop_image_similarly(first_image.pixel_data)
+            first_pixels = objects.crop_image_similarly(first_image.data)
             first_mask = objects.crop_image_similarly(first_image.mask)
         except ValueError:
-            first_pixels, m1 = cpo.size_similarly(labels, first_image.pixel_data)
+            first_pixels, m1 = cpo.size_similarly(labels, first_image.data)
             first_mask, m1 = cpo.size_similarly(labels, first_image.mask)
             first_mask[~m1] = False
         try:
-            second_pixels = objects.crop_image_similarly(second_image.pixel_data)
+            second_pixels = objects.crop_image_similarly(second_image.data)
             second_mask = objects.crop_image_similarly(second_image.mask)
         except ValueError:
-            second_pixels, m1 = cpo.size_similarly(labels, second_image.pixel_data)
+            second_pixels, m1 = cpo.size_similarly(labels, second_image.data)
             second_mask, m1 = cpo.size_similarly(labels, second_image.mask)
             second_mask[~m1] = False
         mask = ((labels > 0) & first_mask & second_mask)
@@ -455,10 +455,10 @@ class MeasureCorrelation(cpm.Module):
         second_pixels = second_pixels[mask]
         labels = labels[mask]
         result = []
-        first_pixel_data = first_image.pixel_data
+        first_pixel_data = first_image.data
         first_mask = first_image.mask
         first_pixel_count = np.product(first_pixel_data.shape)
-        second_pixel_data = second_image.pixel_data
+        second_pixel_data = second_image.data
         second_mask = second_image.mask
         second_pixel_count = np.product(second_pixel_data.shape)
         #

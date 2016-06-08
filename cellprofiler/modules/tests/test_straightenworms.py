@@ -186,7 +186,7 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
         feature = "_".join((S.C_WORM, S.F_LENGTH))
         m.add_measurement(OBJECTS_NAME, feature, lengths)
 
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         image_set.add(IMAGE_NAME, cpi.Image(image, mask))
 
@@ -332,8 +332,8 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
         module.wants_measurements.value = False
         module.run(workspace)
         image_set = workspace.image_set
-        self.assertTrue(isinstance(image_set, cpi.ImageSet))
-        pixels = image_set.get_image(STRAIGHTENED_IMAGE_NAME).pixel_data
+        self.assertTrue(isinstance(image_set, cpi.Set))
+        pixels = image_set.get_image(STRAIGHTENED_IMAGE_NAME).data
         self.assertEqual(pixels.shape[1], 11)
         self.assertEqual(pixels.shape[0], 19)
         np.testing.assert_almost_equal(pixels, image[16:35, 10:21])
@@ -374,8 +374,8 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
         module.width.value = 11
         module.run(workspace)
         image_set = workspace.image_set
-        self.assertTrue(isinstance(image_set, cpi.ImageSet))
-        pixels = image_set.get_image(STRAIGHTENED_IMAGE_NAME).pixel_data
+        self.assertTrue(isinstance(image_set, cpi.Set))
+        pixels = image_set.get_image(STRAIGHTENED_IMAGE_NAME).data
         self.assertEqual(pixels.shape[1], 11)
         self.assertEqual(pixels.shape[0], 31)
         expected = image[control_points[:, 0, 0], control_points[:, 1, 0]]
@@ -400,8 +400,8 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
         module.width.value = 11
         module.run(workspace)
         image_set = workspace.image_set
-        self.assertTrue(isinstance(image_set, cpi.ImageSet))
-        pixels = image_set.get_image(STRAIGHTENED_IMAGE_NAME).pixel_data
+        self.assertTrue(isinstance(image_set, cpi.Set))
+        pixels = image_set.get_image(STRAIGHTENED_IMAGE_NAME).data
         self.assertEqual(pixels.shape[1], 22)
         self.assertEqual(pixels.shape[0], 31)
         np.testing.assert_almost_equal(pixels[0:19, 0:11], image[16:35, 10:21])
@@ -426,8 +426,8 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
         module.width.value = 11
         module.run(workspace)
         image_set = workspace.image_set
-        self.assertTrue(isinstance(image_set, cpi.ImageSet))
-        pixels = image_set.get_image(STRAIGHTENED_IMAGE_NAME).pixel_data
+        self.assertTrue(isinstance(image_set, cpi.Set))
+        pixels = image_set.get_image(STRAIGHTENED_IMAGE_NAME).data
         self.assertEqual(pixels.shape[1], 33)
         self.assertEqual(pixels.shape[0], 31)
         np.testing.assert_almost_equal(pixels[0:19, 0:11], image[16:35, 10:21])
@@ -748,7 +748,7 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
         m = workspace.measurements
         self.assertTrue(isinstance(m, cpmeas.Measurements))
         oo = workspace.object_set.get_objects(OBJECTS_NAME)
-        image = workspace.image_set.get_image(STRAIGHTENED_IMAGE_NAME).pixel_data
+        image = workspace.image_set.get_image(STRAIGHTENED_IMAGE_NAME).data
         f1 = 1.0 / 3.0
         f2 = 2.0 / 3.0
         stripes = [
@@ -877,8 +877,8 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
         module.flip_worms.value = S.FLIP_TOP
         module.run(workspace)
         image_set = workspace.image_set
-        self.assertTrue(isinstance(image_set, cpi.ImageSet))
-        pixels = image_set.get_image(STRAIGHTENED_IMAGE_NAME).pixel_data
+        self.assertTrue(isinstance(image_set, cpi.Set))
+        pixels = image_set.get_image(STRAIGHTENED_IMAGE_NAME).data
         self.assertEqual(pixels.shape[1], 11)
         self.assertEqual(pixels.shape[0], 19)
         np.testing.assert_almost_equal(pixels, image[16:35, 10:21])
@@ -904,8 +904,8 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
         module.flip_worms.value = S.FLIP_TOP
         module.run(workspace)
         image_set = workspace.image_set
-        self.assertTrue(isinstance(image_set, cpi.ImageSet))
-        pixels = image_set.get_image(STRAIGHTENED_IMAGE_NAME).pixel_data
+        self.assertTrue(isinstance(image_set, cpi.Set))
+        pixels = image_set.get_image(STRAIGHTENED_IMAGE_NAME).data
         self.assertEqual(pixels.shape[1], 11)
         self.assertEqual(pixels.shape[0], 19)
         i, j = np.mgrid[34:15:-1, 20:9:-1]
@@ -932,8 +932,8 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
         module.flip_worms.value = S.FLIP_BOTTOM
         module.run(workspace)
         image_set = workspace.image_set
-        self.assertTrue(isinstance(image_set, cpi.ImageSet))
-        pixels = image_set.get_image(STRAIGHTENED_IMAGE_NAME).pixel_data
+        self.assertTrue(isinstance(image_set, cpi.Set))
+        pixels = image_set.get_image(STRAIGHTENED_IMAGE_NAME).data
         self.assertEqual(pixels.shape[1], 11)
         self.assertEqual(pixels.shape[0], 19)
         np.testing.assert_almost_equal(pixels, image[16:35, 10:21])
@@ -959,8 +959,8 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
         module.flip_worms.value = S.FLIP_BOTTOM
         module.run(workspace)
         image_set = workspace.image_set
-        self.assertTrue(isinstance(image_set, cpi.ImageSet))
-        pixels = image_set.get_image(STRAIGHTENED_IMAGE_NAME).pixel_data
+        self.assertTrue(isinstance(image_set, cpi.Set))
+        pixels = image_set.get_image(STRAIGHTENED_IMAGE_NAME).data
         self.assertEqual(pixels.shape[1], 11)
         self.assertEqual(pixels.shape[0], 19)
         i, j = np.mgrid[34:15:-1, 20:9:-1]

@@ -148,7 +148,7 @@ class MakeProjection(cpm.Module):
         provider = ImageProvider.restore_from_state(self.get_dictionary())
         workspace.image_set.providers.append(provider)
         image = workspace.image_set.get_image(self.image_name.value)
-        pixels = image.pixel_data
+        pixels = image.data
         if not provider.has_image:
             provider.set_image(image)
         else:
@@ -157,7 +157,7 @@ class MakeProjection(cpm.Module):
         if self.show_window:
             workspace.display_data.pixels = pixels
             workspace.display_data.provider_pixels = \
-                provider.provide_image(workspace.image_set).pixel_data
+                provider.provide_image(workspace.image_set).data
 
     def is_aggregation_module(self):
         '''Return True because we aggregate over all images in a group'''
@@ -210,7 +210,7 @@ class MakeProjection(cpm.Module):
         return setting_values, variable_revision_number, from_matlab
 
 
-class ImageProvider(cpi.AbstractImageProvider):
+class ImageProvider(cpi.Abstract):
     """Provide the image after averaging but before dilation and smoothing"""
 
     def __init__(self, name, how_to_accumulate, frequency=6):
@@ -324,83 +324,83 @@ class ImageProvider(cpi.AbstractImageProvider):
 
     def set_image(self, image):
         self.__cached_image = None
-        if image.has_mask:
+        if image.masked:
             self.__image_count = image.mask.astype(int)
         else:
-            self.__image_count = np.ones(image.pixel_data.shape[:2], int)
+            self.__image_count = np.ones(image.data.shape[:2], int)
 
         if self.__how_to_accumulate == P_VARIANCE:
-            self.__vsum = image.pixel_data.copy()
+            self.__vsum = image.data.copy()
             self.__vsum[~ image.mask] = 0
             self.__image_count = image.mask.astype(int)
             self.__vsquared = self.__vsum.astype(np.float64) ** 2.0
             return
 
         if self.__how_to_accumulate == P_POWER:
-            self.__vsum = image.pixel_data.copy()
+            self.__vsum = image.data.copy()
             self.__vsum[~ image.mask] = 0
             self.__image_count = image.mask.astype(int)
             #
             # e**0 = 1, so the first image is always in the real plane
             #
             self.__power_mask = self.__image_count.astype(np.complex128).copy()
-            self.__power_image = image.pixel_data.astype(np.complex128).copy()
+            self.__power_image = image.data.astype(np.complex128).copy()
             self.__stack_number = 1
             return
         if self.__how_to_accumulate == P_BRIGHTFIELD:
-            self.__bright_max = image.pixel_data.copy()
-            self.__bright_min = image.pixel_data.copy()
-            self.__norm0 = np.mean(image.pixel_data)
+            self.__bright_max = image.data.copy()
+            self.__bright_min = image.data.copy()
+            self.__norm0 = np.mean(image.data)
             return
 
         if self.__how_to_accumulate == P_MASK:
             self.__image = image.mask
             return
 
-        self.__image = image.pixel_data.copy()
-        if image.has_mask:
+        self.__image = image.data.copy()
+        if image.masked:
             nan_value = 1 if self.__how_to_accumulate == P_MINIMUM else 0
             self.__image[~image.mask] = nan_value
 
     def accumulate_image(self, image):
         self.__cached_image = None
-        if image.has_mask:
+        if image.masked:
             self.__image_count += image.mask.astype(int)
         else:
             self.__image_count += 1
         if self.__how_to_accumulate in [P_AVERAGE, P_SUM]:
-            if image.has_mask:
-                self.__image[image.mask] += image.pixel_data[image.mask]
+            if image.masked:
+                self.__image[image.mask] += image.data[image.mask]
             else:
-                self.__image += image.pixel_data
+                self.__image += image.data
         elif self.__how_to_accumulate == P_MAXIMUM:
-            if image.has_mask:
+            if image.masked:
                 self.__image[image.mask] = np.maximum(self.__image[image.mask],
-                                                      image.pixel_data[image.mask])
+                                                      image.data[image.mask])
             else:
-                self.__image = np.maximum(image.pixel_data, self.__image)
+                self.__image = np.maximum(image.data, self.__image)
         elif self.__how_to_accumulate == P_MINIMUM:
-            if image.has_mask:
+            if image.masked:
                 self.__image[image.mask] = np.minimum(self.__image[image.mask],
-                                                      image.pixel_data[image.mask])
+                                                      image.data[image.mask])
             else:
-                self.__image = np.minimum(image.pixel_data, self.__image)
+                self.__image = np.minimum(image.data, self.__image)
         elif self.__how_to_accumulate == P_VARIANCE:
             mask = image.mask
-            self.__vsum[mask] += image.pixel_data[mask]
-            self.__vsquared[mask] += image.pixel_data[mask].astype(np.float64) ** 2
+            self.__vsum[mask] += image.data[mask]
+            self.__vsquared[mask] += image.data[mask].astype(np.float64) ** 2
         elif self.__how_to_accumulate == P_POWER:
             multiplier = np.exp(2J * np.pi * float(self.__stack_number) /
                                 self.frequency)
             self.__stack_number += 1
             mask = image.mask
-            self.__vsum[mask] += image.pixel_data[mask]
-            self.__power_image[mask] += multiplier * image.pixel_data[mask]
+            self.__vsum[mask] += image.data[mask]
+            self.__power_image[mask] += multiplier * image.data[mask]
             self.__power_mask[mask] += multiplier
         elif self.__how_to_accumulate == P_BRIGHTFIELD:
             mask = image.mask
-            norm = np.mean(image.pixel_data)
-            pixel_data = image.pixel_data * self.__norm0 / norm
+            norm = np.mean(image.data)
+            pixel_data = image.data * self.__norm0 / norm
             max_mask = ((self.__bright_max < pixel_data) & mask)
             min_mask = ((self.__bright_min > pixel_data) & mask)
             self.__bright_min[min_mask] = pixel_data[min_mask]

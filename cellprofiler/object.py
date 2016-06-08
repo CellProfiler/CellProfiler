@@ -211,8 +211,8 @@ class Objects(object):
                             self.__unedited_segmented:
             if segmentation is not None and not segmentation.has_shape():
                 shape = (1, 1, 1,
-                         parent_image.pixel_data.shape[0],
-                         parent_image.pixel_data.shape[1])
+                         parent_image.data.shape[0],
+                         parent_image.data.shape[1])
                 segmentation.set_shape(shape)
 
     parent_image = property(get_parent_image, set_parent_image)

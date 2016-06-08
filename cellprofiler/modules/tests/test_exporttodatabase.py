@@ -1778,7 +1778,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 m.add_relate_measurement(
                         1, RELATIONSHIP_NAME, o1name, o2name, i1, o1, i2, o2)
 
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         image_set.add(IMAGE_NAME, cpi.Image(r.uniform(size=(512, 512))))
         object_set = cpo.ObjectSet()

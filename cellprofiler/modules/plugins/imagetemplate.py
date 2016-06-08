@@ -224,7 +224,7 @@ class ImageTemplate(cpm.Module):
         #
         # Get the pixels - these are a 2-d Numpy array.
         #
-        pixels = input_image.pixel_data
+        pixels = input_image.data
         #
         # Get the smoothing parameter
         #
@@ -256,7 +256,7 @@ class ImageTemplate(cpm.Module):
         # about the parent image - the child inherits the parent's
         # cropping and masking, but it's not absolutely necessary
         #
-        output_image = cpi.Image(output_pixels, parent_image=input_image)
+        output_image = cpi.Image(output_pixels, parent=input_image)
         image_set.add(output_image_name, output_image)
         #
         # Save intermediate results for display if the window frame is on

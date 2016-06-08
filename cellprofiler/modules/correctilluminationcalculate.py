@@ -530,13 +530,13 @@ class CorrectIlluminationCalculate(cpm.Module):
                 workspace.image_set.providers.append(output_image_provider)
         else:
             orig_image = workspace.image_set.get_image(self.image_name.value)
-            pixels = orig_image.pixel_data
+            pixels = orig_image.data
             avg_image = self.preprocess_image_for_averaging(orig_image)
             dilated_image = self.apply_dilation(avg_image, orig_image)
             smoothed_image = self.apply_smoothing(dilated_image, orig_image)
             output_image = self.apply_scaling(smoothed_image, orig_image)
             # for illumination correction, we want the smoothed function to extend beyond the mask.
-            output_image.mask = np.ones(output_image.pixel_data.shape[:2], bool)
+            output_image.mask = np.ones(output_image.data.shape[:2], bool)
             workspace.image_set.add(self.illumination_image_name.value,
                                     output_image)
 
@@ -548,9 +548,9 @@ class CorrectIlluminationCalculate(cpm.Module):
                                     dilated_image)
         if self.show_window:
             # store images for potential display
-            workspace.display_data.avg_image = avg_image.pixel_data
-            workspace.display_data.dilated_image = dilated_image.pixel_data
-            workspace.display_data.output_image = output_image.pixel_data
+            workspace.display_data.avg_image = avg_image.data
+            workspace.display_data.dilated_image = dilated_image.data
+            workspace.display_data.output_image = output_image.data
 
     def is_aggregation_module(self):
         '''Return True if aggregation is performed within a group'''
@@ -640,14 +640,14 @@ class CorrectIlluminationCalculate(cpm.Module):
             def fn(image):
                 return scind.convolve(image, kernel, mode='constant', cval=0)
 
-            if image.pixel_data.ndim == 2:
+            if image.data.ndim == 2:
                 dilated_pixels = smooth_with_function_and_mask(
-                        image.pixel_data, fn, image.mask)
+                        image.data, fn, image.mask)
             else:
                 dilated_pixels = np.dstack([
                                                smooth_with_function_and_mask(x, fn, image.mask)
-                                               for x in image.pixel_data.transpose(2, 0, 1)])
-            return cpi.Image(dilated_pixels, parent_image=orig_image)
+                                               for x in image.data.transpose(2, 0, 1)])
+            return cpi.Image(dilated_pixels, parent=orig_image)
         else:
             return image
 
@@ -668,15 +668,15 @@ class CorrectIlluminationCalculate(cpm.Module):
         """Create a version of the image appropriate for averaging
 
         """
-        pixels = orig_image.pixel_data
+        pixels = orig_image.data
         if (self.intensity_choice == IC_REGULAR or
                     self.smoothing_method == SM_SPLINES):
-            if orig_image.has_mask:
+            if orig_image.masked:
                 if pixels.ndim == 2:
                     pixels[~ orig_image.mask] = 0
                 else:
                     pixels[~ orig_image.mask, :] = 0
-                avg_image = cpi.Image(pixels, parent_image=orig_image)
+                avg_image = cpi.Image(pixels, parent=orig_image)
             else:
                 avg_image = orig_image
         else:
@@ -685,7 +685,7 @@ class CorrectIlluminationCalculate(cpm.Module):
             labels, indexes = cpmm.block(pixels.shape[:2],
                                          (self.block_size.value,
                                           self.block_size.value))
-            if orig_image.has_mask:
+            if orig_image.masked:
                 labels[~ orig_image.mask] = -1
 
             min_block = np.zeros(pixels.shape)
@@ -696,7 +696,7 @@ class CorrectIlluminationCalculate(cpm.Module):
                 for i in range(pixels.shape[2]):
                     minima = fix(scind.minimum(pixels[:, :, i], labels, indexes))
                     min_block[labels != -1, i] = minima[labels[labels != -1]]
-            avg_image = cpi.Image(min_block, parent_image=orig_image)
+            avg_image = cpi.Image(min_block, parent=orig_image)
         return avg_image
 
     def apply_smoothing(self, image, orig_image=None):
@@ -709,7 +709,7 @@ class CorrectIlluminationCalculate(cpm.Module):
         if self.smoothing_method == SM_NONE:
             return image
 
-        pixel_data = image.pixel_data
+        pixel_data = image.data
         if pixel_data.ndim == 3:
             output_pixels = np.zeros(pixel_data.shape, pixel_data.dtype)
             for i in range(pixel_data.shape[2]):
@@ -717,7 +717,7 @@ class CorrectIlluminationCalculate(cpm.Module):
                                                            image.mask)
         else:
             output_pixels = self.smooth_plane(pixel_data, image.mask)
-        output_image = cpi.Image(output_pixels, parent_image=orig_image)
+        output_image = cpi.Image(output_pixels, parent=orig_image)
         return output_image
 
     def smooth_plane(self, pixel_data, mask):
@@ -804,7 +804,7 @@ class CorrectIlluminationCalculate(cpm.Module):
             return image
 
         def scaling_fn_2d(pixel_data):
-            if image.has_mask:
+            if image.masked:
                 sorted_pixel_data = pixel_data[(pixel_data > 0) & image.mask]
             else:
                 sorted_pixel_data = pixel_data[pixel_data > 0]
@@ -823,12 +823,12 @@ class CorrectIlluminationCalculate(cpm.Module):
                 return pixel_data
             return pixel_data / robust_minimum
 
-        if image.pixel_data.ndim == 2:
-            output_pixels = scaling_fn_2d(image.pixel_data)
+        if image.data.ndim == 2:
+            output_pixels = scaling_fn_2d(image.data)
         else:
             output_pixels = np.dstack([
-                                          scaling_fn_2d(x) for x in image.pixel_data.transpose(2, 0, 1)])
-        output_image = cpi.Image(output_pixels, parent_image=orig_image)
+                                          scaling_fn_2d(x) for x in image.data.transpose(2, 0, 1)])
+        output_image = cpi.Image(output_pixels, parent=orig_image)
         return output_image
 
     def validate_module(self, pipeline):
@@ -950,7 +950,7 @@ class CorrectIlluminationCalculate(cpm.Module):
                 self.each_or_all.value = EA_ALL_ACROSS
 
 
-class CorrectIlluminationImageProvider(cpi.AbstractImageProvider):
+class CorrectIlluminationImageProvider(cpi.Abstract):
     """CorrectIlluminationImageProvider provides the illumination correction image
 
     This class accumulates the image data from successive images and
@@ -1007,13 +1007,13 @@ class CorrectIlluminationImageProvider(cpi.AbstractImageProvider):
         """
         self.__dirty = True
         pimage = self.__module.preprocess_image_for_averaging(image)
-        pixel_data = pimage.pixel_data
+        pixel_data = pimage.data
         if self.__image_sum is None:
             self.__image_sum = np.zeros(pixel_data.shape,
                                         pixel_data.dtype)
             self.__mask_count = np.zeros(pixel_data.shape[:2],
                                          np.int32)
-        if image.has_mask:
+        if image.masked:
             mask = image.mask
             if self.__image_sum.ndim == 2:
                 self.__image_sum[mask] = \
@@ -1075,7 +1075,7 @@ class CorrectIlluminationImageProvider(cpi.AbstractImageProvider):
         pass
 
 
-class CorrectIlluminationAvgImageProvider(cpi.AbstractImageProvider):
+class CorrectIlluminationAvgImageProvider(cpi.Abstract):
     """Provide the image after averaging but before dilation and smoothing"""
 
     def __init__(self, name, ci_provider):
@@ -1096,7 +1096,7 @@ class CorrectIlluminationAvgImageProvider(cpi.AbstractImageProvider):
         return self.__name
 
 
-class CorrectIlluminationDilatedImageProvider(cpi.AbstractImageProvider):
+class CorrectIlluminationDilatedImageProvider(cpi.Abstract):
     """Provide the image after averaging but before dilation and smoothing"""
 
     def __init__(self, name, ci_provider):

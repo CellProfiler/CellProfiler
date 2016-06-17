@@ -2213,7 +2213,7 @@ class ModuleView(object):
             return
         if self.refresh_pending:
             return
-        refresh_pending = True
+        self.refresh_pending = True
         wx.CallLater(refresh_delay, self.do_reset)
 
     def do_reset(self):

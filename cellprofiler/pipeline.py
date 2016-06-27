@@ -4,7 +4,6 @@ from __future__ import with_statement
 
 import bisect
 import csv
-import gc
 import hashlib
 import json
 import logging
@@ -1831,7 +1830,6 @@ class Pipeline(object):
                 should_write_measurements = True
                 grids = None
                 for module in self.modules():
-                    gc.collect()
                     if module.should_stop_writing_measurements():
                         should_write_measurements = False
                     else:
@@ -1980,7 +1978,6 @@ class Pipeline(object):
         should_write_measurements = True
         for module in self.modules():
             print "Running module", module.module_name, module.module_num
-            gc.collect()
             if module.should_stop_writing_measurements():
                 should_write_measurements = False
             workspace = cpw.Workspace(self,

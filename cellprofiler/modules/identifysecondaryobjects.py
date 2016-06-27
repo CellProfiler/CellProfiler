@@ -143,7 +143,7 @@ import centrosome.otsu
 from centrosome.propagate import propagate
 from centrosome.cpmorphology import fill_labeled_holes
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
-from centrosome.watershed import watershed
+import skimage.morphology.watershed
 from centrosome.filter import stretch
 from centrosome.outline import outline
 from cellprofiler.gui.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
@@ -577,13 +577,18 @@ class IdentifySecondaryObjects(cpmi.Identify):
             #
             watershed_mask = np.logical_or(thresholded_image, labels_in > 0)
             watershed_mask = np.logical_and(watershed_mask, mask)
+
             #
             # Perform the first watershed
             #
-            labels_out = watershed(sobel_image,
-                                   labels_in,
-                                   np.ones((3, 3), bool),
-                                   mask=watershed_mask)
+
+            labels_out = skimage.morphology.watershed(
+                connectivity=np.ones((3, 3), bool),
+                image=sobel_image,
+                markers=labels_in,
+                mask=watershed_mask
+            )
+
             if self.fill_holes:
                 small_removed_segmented_out = fill_labeled_holes(labels_out)
             else:
@@ -604,10 +609,14 @@ class IdentifySecondaryObjects(cpmi.Identify):
             #
             # Perform the watershed
             #
-            labels_out = watershed(inverted_img,
-                                   labels_in,
-                                   np.ones((3, 3), bool),
-                                   mask=watershed_mask)
+
+            labels_out = skimage.morphology.watershed(
+                connectivity=np.ones((3, 3), bool),
+                image=inverted_img,
+                markers=labels_in,
+                mask=watershed_mask
+            )
+
             if self.fill_holes:
                 small_removed_segmented_out = fill_labeled_holes(labels_out)
             else:

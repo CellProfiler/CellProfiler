@@ -175,7 +175,7 @@ from centrosome.cpmorphology import fill_labeled_holes, strel_disk
 from centrosome.cpmorphology import binary_shrink, relabel
 from centrosome.cpmorphology import is_local_maximum
 from centrosome.filter import stretch, laplacian_of_gaussian
-from centrosome.watershed import watershed
+import skimage.morphology.watershed
 from centrosome.propagate import propagate
 from centrosome.smooth import smooth_with_noise
 import centrosome.outline
@@ -1218,14 +1218,19 @@ class IdentifyPrimaryObjects(cpmi.Identify):
                              else np.int32)
             markers = np.zeros(watershed_image.shape, markers_dtype)
             markers[labeled_maxima > 0] = -labeled_maxima[labeled_maxima > 0]
+
             #
             # Some labels have only one maker in them, some have multiple and
             # will be split up.
             #
-            watershed_boundaries = watershed(watershed_image,
-                                             markers,
-                                             np.ones((3, 3), bool),
-                                             mask=labeled_image != 0)
+
+            watershed_boundaries = skimage.morphology.watershed(
+                connectivity=np.ones((3, 3), bool),
+                image=watershed_image,
+                markers=markers,
+                mask=labeled_image != 0
+            )
+
             watershed_boundaries = -watershed_boundaries
 
         return watershed_boundaries, object_count, reported_maxima_suppression_size, reported_LoG_threshold, reported_LoG_filter_diameter

@@ -122,7 +122,6 @@ import thread
 import random
 import zmq
 import cStringIO as StringIO
-import gc
 import traceback
 from weakref import WeakSet
 
@@ -397,7 +396,6 @@ class AnalysisWorker(object):
             if should_process:
                 abort = False
                 for image_set_number in image_set_numbers:
-                    gc.collect()
                     try:
                         self.pipeline_listener.image_set_number = image_set_number
                         last_workspace = current_pipeline.run_image_set(

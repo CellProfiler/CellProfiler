@@ -5,7 +5,6 @@ from __future__ import with_statement
 import Queue
 import cStringIO as StringIO
 import collections
-import gc
 import logging
 import multiprocessing
 import os

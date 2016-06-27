@@ -3,7 +3,6 @@
 import StringIO
 import base64
 import bioformats
-import gc
 import os
 import tempfile
 import unittest
@@ -273,7 +272,6 @@ class TestUntangleWorms(unittest.TestCase):
         self.filename = tempfile.mktemp(".mat")
 
     def tearDown(self):
-        gc.collect()
         if os.path.exists(self.filename):
             os.remove(self.filename)
 

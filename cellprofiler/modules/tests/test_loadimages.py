@@ -2,7 +2,6 @@
 """
 
 import base64
-import gc
 import glob
 import hashlib
 import os

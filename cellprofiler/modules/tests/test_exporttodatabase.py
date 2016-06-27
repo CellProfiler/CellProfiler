@@ -2,7 +2,6 @@
 '''
 
 import base64
-import gc
 import numpy as np
 import os
 import PIL.Image as PILImage
@@ -1822,7 +1821,6 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             module.directory.custom_path = output_dir
 
             def finally_fn():
-                gc.collect()
                 for filename in os.listdir(output_dir):
                     os.remove(os.path.join(output_dir, filename))
 

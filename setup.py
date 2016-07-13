@@ -8,7 +8,6 @@ import setuptools.command.build_py
 import setuptools.command.sdist
 import setuptools.dist
 import sys
-import cellprofiler.utilities.version
 
 # Recipe needed to get real distutils if virtualenv.
 # Error message is "ImportError: cannot import name dist"
@@ -83,57 +82,6 @@ if sys.platform.startswith("win"):
     # See http://www.py2exe.org/index.cgi/Py2exeAndzmq
     # Recipe needed for py2exe to package libzmq.dll
     os.environ["PATH"] += os.path.pathsep + os.path.split(zmq.__file__)[0]
-
-
-def should_build_version(command):
-    '''Test to see whether we should run the "build_version" command'''
-    bv_command = command.get_finalized_command("build_version")
-    if not os.path.exists(bv_command.frozen_version_filename):
-        return True
-    return cellprofiler.utilities.version.get_git_dir() is None
-
-
-class BuildPy(setuptools.command.build_py.build_py):
-    def run(self):
-        bv_command = self.get_finalized_command("build_version")
-        if should_build_version(bv_command):
-            bv_command.run()
-        setuptools.command.build_py.build_py.run(self)
-
-    def get_source_files(self):
-        source_files = \
-            setuptools.command.build_py.build_py.get_source_files(self)
-        bv_command = self.get_finalized_command("build_version")
-        fv_filename = bv_command.frozen_version_filename
-        if fv_filename not in source_files:
-            source_files.append(fv_filename)
-        return sorted(source_files)
-
-
-class BuildVersion(setuptools.Command):
-    user_options = [
-        ("version", None, "CellProfiler semantic version")]
-
-    def initialize_options(self):
-        self.version = None
-        self.frozen_version_filename = None
-
-    def finalize_options(self):
-        if self.version is None:
-            self.version = self.distribution.metadata.version
-        if self.frozen_version_filename is None:
-            self.frozen_version_filename = os.path.join(
-                    "cellprofiler", "frozen_version.py")
-
-    def run(self):
-        with open(self.frozen_version_filename, "w") as fd:
-            fd.write("version_string='%s'\n" %
-                     cellprofiler.utilities.version.version_string)
-            fd.write("dotted_version='%s'\n" % self.version)
-
-
-setuptools.command.sdist.sdist.sub_commands.insert(
-        0, ("build_version", should_build_version))
 
 
 class Test(setuptools.Command):
@@ -220,8 +168,6 @@ if has_py2exe:
                             "Package will not include MSVCRT redistributables", 3)
 
         def run(self):
-            self.reinitialize_command("build_version", inplace=1)
-            self.run_command("build_version")
             #
             # py2exe runs install_data a second time. We want to inject some
             # data files into the dist but we do it here so that if the user
@@ -325,8 +271,7 @@ if has_py2exe:
             if self.output_dir is None:
                 self.output_dir = ".\\output"
             if self.msi_name is None:
-                self.msi_name = \
-                    "CellProfiler-" + self.distribution.metadata.version
+                self.msi_name = "CellProfiler"
 
         def run(self):
             if not os.path.isdir(self.output_dir):
@@ -383,8 +328,6 @@ if has_py2exe:
                     "Compile\\command"
 
 cmdclass = {
-    "build_version": BuildVersion,
-    "build_py": BuildPy,
     "test": Test
 }
 

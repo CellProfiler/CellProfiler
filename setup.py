@@ -1,6 +1,7 @@
 import distutils
 import glob
 import importlib
+import math
 import os
 import shlex
 import setuptools
@@ -55,7 +56,6 @@ setuptools.dist.Distribution({
 
 try:
     import matplotlib
-    import numpy  # for proper discovery of its libraries by distutils
     import scipy.sparse.csgraph._validation
     import scipy.linalg
     import zmq  # for proper discovery of its libraries by distutils
@@ -345,7 +345,7 @@ if has_py2exe:
                             'Name: "{group}\Ilastik"; '
                             'Filename: "{app}\CellProfiler.exe"; '
                             'Parameters:"--ilastik"; WorkingDir: "{app}"\n')
-            if numpy.log(sys.maxsize) / numpy.log(2) > 32:
+            if math.log(sys.maxsize) / math.log(2) > 32:
                 cell_profiler_iss = "CellProfiler64.iss"
             else:
                 cell_profiler_iss = "CellProfiler.iss"

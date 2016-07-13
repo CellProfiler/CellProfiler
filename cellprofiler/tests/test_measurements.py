@@ -2,7 +2,6 @@
 """
 
 import base64
-import gc
 import os
 import sys
 import tempfile
@@ -784,7 +783,6 @@ class TestMeasurements(unittest.TestCase):
             self.assertEqual(len(values), 1)
             self.assertAlmostEqual(values[0], 34.580433355219959)
         finally:
-            gc.collect()
             if m is not None:
                 del m
             os.unlink(name)

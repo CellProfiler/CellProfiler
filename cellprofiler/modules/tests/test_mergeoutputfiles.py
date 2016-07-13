@@ -1,6 +1,5 @@
 '''test_mergeoutputfiles.py - test the MergeOutputFiles module'''
 
-import gc
 import os
 import tempfile
 import unittest
@@ -29,7 +28,6 @@ class TestMergeOutputFiles(unittest.TestCase):
 
         M.MergeOutputFiles.merge_files(output_file, [x[1] for x in input_files])
         m = cpmeas.load_measurements(output_file)
-        gc.collect()
         os.close(output_fd)
         os.remove(output_file)
         for fd, filename in input_files:

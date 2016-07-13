@@ -2213,7 +2213,7 @@ class ModuleView(object):
             return
         if self.refresh_pending:
             return
-        refresh_pending = True
+        self.refresh_pending = True
         wx.CallLater(refresh_delay, self.do_reset)
 
     def do_reset(self):
@@ -2230,6 +2230,8 @@ class ModuleView(object):
             focus_control = self.module_panel.FindWindowByName(focus_name)
             if focus_control:
                 focus_control.SetFocus()
+                if isinstance(focus_control, wx.TextCtrl):
+                    focus_control.SetSelection(focus_control.GetLastPosition(), focus_control.GetLastPosition())
 
     def disable(self):
         self.__module_panel.Disable()

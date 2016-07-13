@@ -120,16 +120,6 @@ class Test(setuptools.Command):
         except:
             pass
 
-        try:
-            import ilastik.core.jobMachine
-
-            try:
-                ilastik.core.jobMachine.GLOBAL_WM.set_thread_count(1)
-            except AttributeError:
-                ilastik.core.jobMachine.GLOBAL_WM.setThreadCount(1)
-        except ImportError:
-            pass
-
         cellprofiler.utilities.cpjvm.cp_start_vm()
 
         errno = pytest.main(self.pytest_args)
@@ -143,14 +133,11 @@ if has_py2exe:
     class CPPy2Exe(py2exe.build_exe.py2exe):
         user_options = py2exe.build_exe.py2exe.user_options + [
             ("msvcrt-redist=", None,
-             "Directory containing the MSVC redistributables"),
-            ("with-ilastik", None,
-             "Build CellProfiler with Ilastik dependencies")]
+             "Directory containing the MSVC redistributables")]
 
         def initialize_options(self):
             py2exe.build_exe.py2exe.initialize_options(self)
             self.msvcrt_redist = None
-            self.with_ilastik = None
 
         def finalize_options(self):
             py2exe.build_exe.py2exe.finalize_options(self)
@@ -216,28 +203,6 @@ if has_py2exe:
                     self.distribution.data_files.append(
                             (".", [zmq.libzmq.__file__]))
                     self.dll_excludes.append("libzmq.pyd")
-            #
-            # Add ilastik UI files
-            #
-            if self.with_ilastik:
-                import ilastik
-                ilastik_root = os.path.dirname(ilastik.__file__)
-                for root, directories, filenames in os.walk(ilastik_root):
-                    relpath = root[len(os.path.dirname(ilastik_root)) + 1:]
-                    ui_filenames = [
-                        os.path.join(root, f) for f in filenames
-                        if any([f.lower().endswith(ext)
-                                for ext in ".ui", ".png"])]
-                    if len(ui_filenames) > 0:
-                        self.distribution.data_files.append(
-                                (relpath, ui_filenames))
-
-                #
-                # Prevent rename of vigranumpycore similarly to libzmq
-                #
-                import vigra.vigranumpycore
-                self.distribution.data_files.append(
-                        (".", [vigra.vigranumpycore.__file__]))
 
             if self.msvcrt_redist is not None:
                 sources = [
@@ -252,15 +217,12 @@ if has_py2exe:
     class CellProfilerMSI(distutils.core.Command):
         description = \
             "Make CellProfiler.msi using the CellProfiler.iss InnoSetup compiler"
-        user_options = [("with-ilastik", None,
-                         "Include a start menu entry for Ilastik"),
-                        ("output-dir=", None,
+        user_options = [("output-dir=", None,
                          "Output directory for MSI file"),
                         ("msi-name=", None,
                          "Name of MSI file to generate (w/o extension)")]
 
         def initialize_options(self):
-            self.with_ilastik = None
             self.py2exe_dist_dir = None
             self.output_dir = None
             self.msi_name = None
@@ -284,12 +246,6 @@ if has_py2exe:
     """ % (self.distribution.metadata.version,
            self.msi_name,
            self.output_dir))
-            with open("ilastik.iss", "w") as fd:
-                if self.with_ilastik:
-                    fd.write(
-                            'Name: "{group}\Ilastik"; '
-                            'Filename: "{app}\CellProfiler.exe"; '
-                            'Parameters:"--ilastik"; WorkingDir: "{app}"\n')
             if math.log(sys.maxsize) / math.log(2) > 32:
                 cell_profiler_iss = "CellProfiler64.iss"
             else:
@@ -306,7 +262,6 @@ if has_py2exe:
                     self.spawn, [compile_command],
                     "Compiling %s" % cell_profiler_iss)
             os.remove("version.iss")
-            os.remove("ilastik.iss")
 
         def __compile_command(self):
             """Return the command to use to compile an .iss file

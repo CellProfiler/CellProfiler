@@ -1922,4 +1922,248 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         order = np.lexsort((a[:, 1], a[:, 0]))
         a, d = a[order], d[order]
         np.testing.assert_array_equal(a, expected)
+
         np.testing.assert_array_almost_equal(d, expected_d * expected_rho)
+                      
+    def test_10_01_neighbour_track_nothing(self):
+        '''Run TrackObjects on an empty labels matrix'''
+        columns = []
+        def fn(module, workspace, index, columns = columns):
+            if workspace is not None and index == 0:
+                columns += module.get_measurement_columns(workspace.pipeline)
+                module.tracking_method.value = T.TM_FOLLOWNEIGHBORS
+
+        measurements = self.runTrackObjects((np.zeros((10,10),int),
+                                             np.zeros((10,10),int)), fn)
+
+        features = [ feature
+                     for feature in measurements.get_feature_names(OBJECT_NAME)
+                     if feature.startswith(T.F_PREFIX)]
+        self.assertTrue(all([column[1] in features
+                             for column in columns
+                             if column[0] == OBJECT_NAME]))
+        for feature in T.F_ALL:
+            name = "_".join((T.F_PREFIX, feature, "50"))
+            self.assertTrue(name in features)
+            value = measurements.get_current_measurement(OBJECT_NAME, name)
+            self.assertEqual(len(value), 0)
+
+        features = [ feature for feature in measurements.get_feature_names(cpmeas.IMAGE)
+                     if feature.startswith(T.F_PREFIX)]
+        self.assertTrue(all([column[1] in features
+                             for column in columns
+                             if column[0] == cpmeas.IMAGE]))
+        for feature in T.F_IMAGE_ALL:
+            name = "_".join((T.F_PREFIX, feature, OBJECT_NAME, "50"))
+            self.assertTrue(name in features)
+            value = measurements.get_current_image_measurement(name)
+            self.assertEqual(value, 0)
+
+
+    def test_10_01_00_neighbour_track_one_then_nothing(self):
+        '''Run track objects on an object that disappears
+
+        Regression test of IMG-1090
+        '''
+        labels = np.zeros((10,10),int)
+        labels[3:6, 2:7] = 1
+        def fn(module, workspace, index):
+            if workspace is not None and index == 0:
+                module.tracking_method.value = T.TM_FOLLOWNEIGHBORS
+
+        measurements = self.runTrackObjects((labels,
+                                             np.zeros((10,10),int)), fn)
+        feature = "_".join((T.F_PREFIX, T.F_LOST_OBJECT_COUNT,
+                            OBJECT_NAME, "50"))
+        value = measurements.get_current_image_measurement(feature)
+        self.assertEqual(value, 1)
+
+    def test_10_02_neighbour_track_one_by_distance(self):
+        '''Track an object that doesn't move.'''
+        labels = np.zeros((10,10),int)
+        labels[3:6, 2:7] = 1
+        def fn(module, workspace, idx):
+            if idx == 0:
+                module.pixel_radius.value = 1
+                module.tracking_method.value = T.TM_FOLLOWNEIGHBORS
+        measurements = self.runTrackObjects((labels, labels), fn)
+        def m(feature):
+            name = "_".join((T.F_PREFIX, feature, "1"))
+            values = measurements.get_current_measurement(OBJECT_NAME, name)
+            self.assertEqual(len(values), 1)
+            return values[0]
+        self.assertAlmostEqual(m(T.F_TRAJECTORY_X), 0)
+        self.assertAlmostEqual(m(T.F_TRAJECTORY_Y), 0)
+        self.assertAlmostEqual(m(T.F_DISTANCE_TRAVELED), 0)
+        self.assertAlmostEqual(m(T.F_INTEGRATED_DISTANCE), 0)
+        self.assertEqual(m(T.F_LABEL), 1)
+        self.assertEqual(m(T.F_PARENT_OBJECT_NUMBER), 1)
+        self.assertEqual(m(T.F_PARENT_IMAGE_NUMBER), 1)
+        self.assertEqual(m(T.F_LIFETIME), 2)
+        def m(feature):
+            name = "_".join((T.F_PREFIX, feature, OBJECT_NAME, "1"))
+            return measurements.get_current_image_measurement(name)
+        self.assertEqual(m(T.F_NEW_OBJECT_COUNT), 0)
+        self.assertEqual(m(T.F_LOST_OBJECT_COUNT), 0)
+        self.assertEqual(m(T.F_SPLIT_COUNT), 0)
+        self.assertEqual(m(T.F_MERGE_COUNT), 0)
+        self.check_relationships(measurements, [1], [1], [2], [1])
+
+    def test_10_03_neighbour_track_one_moving(self):
+        '''Track an object that moves'''
+
+        labels_list =  []
+        distance = 0
+        last_i, last_j = (0,0)
+        for i_off, j_off in ((0,0),(2,0),(2,1),(0,1)):
+            distance = i_off - last_i + j_off - last_j
+            last_i, last_j = (i_off, j_off)
+            labels = np.zeros((10,10),int)
+            labels[4+i_off:7+i_off,4+j_off:7+j_off] = 1
+            labels_list.append(labels)
+
+        def fn(module, workspace, idx):
+            if idx == 0:
+                module.pixel_radius.value = 3
+                module.tracking_method.value = T.TM_FOLLOWNEIGHBORS
+        measurements = self.runTrackObjects(labels_list, fn)
+        def m(feature, expected):
+            name = "_".join((T.F_PREFIX, feature, "3"))
+            value_set = measurements.get_all_measurements(OBJECT_NAME, name)
+            self.assertEqual(len(expected), len(value_set))
+            for values, x in zip(value_set,expected):
+                self.assertEqual(len(values), 1)
+                self.assertAlmostEqual(values[0], x)
+
+        m(T.F_TRAJECTORY_X, [0,0,1,0])
+        m(T.F_TRAJECTORY_Y, [0,2,0,-2])
+        m(T.F_DISTANCE_TRAVELED, [0,2,1,2])
+        m(T.F_INTEGRATED_DISTANCE, [0,2,3,5])
+        m(T.F_LABEL, [1,1,1,1])
+        m(T.F_LIFETIME, [1,2,3,4])
+        m(T.F_LINEARITY, [1,1,np.sqrt(5)/3,1.0/5.0])
+        def m(feature):
+            name = "_".join((T.F_PREFIX, feature, OBJECT_NAME, "3"))
+            return measurements.get_current_image_measurement(name)
+        self.assertEqual(m(T.F_NEW_OBJECT_COUNT), 0)
+        self.assertEqual(m(T.F_LOST_OBJECT_COUNT), 0)
+        self.assertEqual(m(T.F_SPLIT_COUNT), 0)
+        self.assertEqual(m(T.F_MERGE_COUNT), 0)
+        image_numbers = np.arange(1, len(labels_list) + 1)
+        object_numbers = np.ones(len(image_numbers))
+        self.check_relationships(measurements,
+                                 image_numbers[:-1], object_numbers[:-1],
+                                 image_numbers[1:], object_numbers[1:])
+
+    def test_10_04_neighbour_track_split(self):
+        '''Track an object that splits'''
+        labels1 = np.zeros((11,10), int)
+        labels1[1:10,1:8] = 1
+        labels2 = np.zeros((11,10), int)
+        labels2[1:6,1:8] = 1
+        labels2[6:10,1:8] = 2
+        def fn(module, workspace, idx):
+            if idx == 0:
+                module.pixel_radius.value = 5
+                module.tracking_method.value = T.TM_FOLLOWNEIGHBORS
+        measurements = self.runTrackObjects((labels1,labels2, labels2), fn)
+        def m(feature, idx):
+            name = "_".join((T.F_PREFIX, feature, "5"))
+            values = measurements.get_measurement(OBJECT_NAME, name, idx + 1)
+            self.assertEqual(len(values), 2)
+            return values
+
+        labels = m(T.F_LABEL,2)
+        self.assertEqual(len(labels),2)
+        self.assertTrue(np.all(labels == 1))
+        parents = m(T.F_PARENT_OBJECT_NUMBER,1)
+        self.assertTrue(np.all(parents == 1))
+        self.assertTrue(np.all(m(T.F_PARENT_IMAGE_NUMBER, 1) == 1))
+        parents = m(T.F_PARENT_OBJECT_NUMBER,2)
+        self.assertTrue(np.all(parents == np.array([1,2])))
+        self.assertTrue(np.all(m(T.F_PARENT_IMAGE_NUMBER, 2) == 2))
+        def m(feature):
+            name = "_".join((T.F_PREFIX, feature, OBJECT_NAME, "5"))
+            return measurements.get_all_measurements(cpmeas.IMAGE, name)[1]
+        self.assertEqual(m(T.F_NEW_OBJECT_COUNT), 0)
+        self.assertEqual(m(T.F_LOST_OBJECT_COUNT), 0)
+        self.assertEqual(m(T.F_SPLIT_COUNT), 1)
+        self.assertEqual(m(T.F_MERGE_COUNT), 0)
+        self.check_relationships(measurements,
+                                 [1, 1, 2, 2], [1, 1, 1, 2],
+                                 [2, 2, 3, 3], [1, 2, 1, 2])
+
+    def test_10_05_neighbour_track_negative(self):
+        '''Track unrelated objects'''
+        labels1 = np.zeros((10,10), int)
+        labels1[1:5,1:5] = 1
+        labels2 = np.zeros((10,10), int)
+        labels2[6:9,6:9] = 1
+        def fn(module, workspace, idx):
+            if idx == 0:
+                module.pixel_radius.value = 1
+                module.tracking_method.value = T.TM_FOLLOWNEIGHBORS
+        measurements = self.runTrackObjects((labels1,labels2), fn)
+        def m(feature):
+            name = "_".join((T.F_PREFIX, feature, "1"))
+            values = measurements.get_current_measurement(OBJECT_NAME, name)
+            self.assertEqual(len(values), 1)
+            return values[0]
+        self.assertEqual(m(T.F_LABEL), 2)
+        self.assertEqual(m(T.F_PARENT_OBJECT_NUMBER), 0)
+        def m(feature):
+            name = "_".join((T.F_PREFIX, feature, OBJECT_NAME, "1"))
+            return measurements.get_current_image_measurement(name)
+        self.assertEqual(m(T.F_NEW_OBJECT_COUNT), 1)
+        self.assertEqual(m(T.F_LOST_OBJECT_COUNT), 1)
+        self.assertEqual(m(T.F_SPLIT_COUNT), 0)
+        self.assertEqual(m(T.F_MERGE_COUNT), 0)
+
+    def test_10_06_neighbour_track_ambiguous(self):
+        '''Track disambiguation from among two possible parents'''
+        labels1 = np.zeros((20,20), int)
+        labels1[1:4,1:4] = 1
+        labels1[16:19,16:19] = 2
+        labels2 = np.zeros((20,20), int)
+        labels2[10:15,10:15] = 1
+        def fn(module, workspace, idx):
+            if idx == 0:
+                module.pixel_radius.value = 20
+                module.tracking_method.value = T.TM_FOLLOWNEIGHBORS
+        measurements = self.runTrackObjects((labels1,labels2), fn)
+        def m(feature):
+            name = "_".join((T.F_PREFIX, feature, "20"))
+            values = measurements.get_current_measurement(OBJECT_NAME, name)
+            self.assertEqual(len(values), 1)
+            return values[0]
+        self.assertEqual(m(T.F_LABEL), 2)
+        self.assertEqual(m(T.F_PARENT_OBJECT_NUMBER), 2)
+
+    def test_10_07_neighbour_track_group_with_drop(self):
+        '''Track groups with one lost'''
+        labels1 = np.zeros((20,20), int)
+        labels1[2,2] = 1
+        labels1[4,2] = 2
+        labels1[2,4] = 3
+        labels1[4,4] = 4
+
+        labels2 = np.zeros((20,20), int)
+        labels2[16,16] = 1
+        labels2[18,16] = 2
+        # labels2[16,18] = 3 is no longer present
+        labels2[18,18] = 4
+        def fn(module, workspace, idx):
+            if idx == 0:
+                module.drop_cost.value = 100 # make it always try to match
+                module.pixel_radius.value = 200
+                module.average_cell_diameter.value = 5
+                module.tracking_method.value = T.TM_FOLLOWNEIGHBORS
+        measurements = self.runTrackObjects((labels1,labels2), fn)
+        def m(feature):
+            name = "_".join((T.F_PREFIX, feature, "20"))
+            values = measurements.get_current_measurement(OBJECT_NAME, name)
+            self.assertEqual(len(values), 1)
+            return values[0]
+
+        self.check_relationships(measurements, [1,1,1],[1,2,4],[2,2,2],[1,2,4])
+

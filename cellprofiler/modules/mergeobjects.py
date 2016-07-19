@@ -2,7 +2,7 @@
 
 """
 
-import scipy.ndimage
+import numpy
 import cellprofiler.module
 import cellprofiler.object
 import cellprofiler.setting
@@ -25,19 +25,39 @@ class MergeObjects(cellprofiler.module.Module):
             "Output object name:"
         )
 
+        self.operation = cellprofiler.setting.Choice(
+            "Operation",
+            [
+                "A",
+                "B",
+                "Intersection",
+                "Union",
+                "XOR"
+            ]
+        )
+
     def settings(self):
         return [
             self.input_object_a,
             self.input_object_b,
-            self.output_object
+            self.output_object,
+            self.operation
         ]
 
     def visible_settings(self):
         return [
             self.input_object_a,
             self.input_object_b,
-            self.output_object
+            self.output_object,
+            self.operation
         ]
+
+    # TODO: make static?
+    def overlay_objects(self, labels_top, labels_bottom):
+        labels_bottom[labels_top > 0] = labels_bottom.max() + labels_top[labels_top > 0]
+        object = cellprofiler.object.Objects()
+        object.segmented = labels_bottom
+        return object
 
     def run(self, workspace):
         input_object_a_name = self.input_object_a.value
@@ -47,15 +67,36 @@ class MergeObjects(cellprofiler.module.Module):
         input_object_a = workspace.get_objects(input_object_a_name)
         input_object_b = workspace.get_objects(input_object_b_name)
 
-        input_object_a_segmented = input_object_a.segmented
-        input_object_b_segmented = input_object_b.segmented
+        s1 = input_object_a.segmented
+        s2 = input_object_b.segmented
 
-        merged_segmented = input_object_a_segmented + input_object_b_segmented
+        if self.operation == "Intersection":
+            # Increment the intersections of the segments by the maximum label on
+            # one of the segmentation matrices. Then overlay that on top of the unaltered
+            # segmentation matrix. Less likely to overflow than multiplication.
+            c = numpy.max([s1.max(), s2.max()])
+            intersection = numpy.logical_and(s1 > 0, s2 > 0)
+            s1[intersection] = c + s1[intersection] # TODO: augmented assignment?
 
-        labeled_image, object_count = scipy.ndimage.label(merged_segmented)
+            output_object = self.overlay_objects(s1, s2)
+        elif self.operation == "Union":
+            c = numpy.max([s1.max(), s2.max()]) + 1
+            union = numpy.logical_xor(s1 > 0, s2 > 0)
+            s1[union] = c + s2[union] # TODO: augmented assignment?
 
-        output_object = cellprofiler.object.Objects()
-        output_object.set_segmented(labeled_image)
+            output_object = self.overlay_objects(s1, s2)
+        elif self.operation == "A":
+            output_object = self.overlay_objects(s1, s2)
+        elif self.operation == "B":
+            output_object = self.overlay_objects(s2, s1)
+        elif self.operation == "XOR":
+            zeros = numpy.logical_not(numpy.logical_xor(s1 > 0, s2 > 0))
+            s1[zeros] = 0
+            s2[zeros] = 0
+            s2[s2 > 0] = s1.max() + s2[s2 > 0]
+            merged = s1 + s2
+            output_object = cellprofiler.object.Objects()
+            output_object.segmented = merged
 
         workspace.object_set.add_objects(output_object, output_object_name)
 

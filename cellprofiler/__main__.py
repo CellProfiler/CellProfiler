@@ -699,6 +699,8 @@ def run_pipeline_headless(options, args):
         fd = open(options.done_file, "wt")
         fd.write("%s\n" % done_text)
         fd.close()
+    else:
+        exit_code = 0
 
     if measurements is not None:
         measurements.close()

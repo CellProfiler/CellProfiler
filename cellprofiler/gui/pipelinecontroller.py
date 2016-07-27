@@ -2186,6 +2186,16 @@ class PipelineController(object):
                 return
             remove_input_modules = True
 
+        if module.is_3d_load_module():
+            message = ("%s is a brand new 3D image input module that is currently incompatible with the Images, "
+                       "Metadata, NamesAndTypes, and Groups input modules. These modules will be removed and %s "
+                       "will be used instead.") % (module.module_name, module.module_name)
+            wx.MessageBox(
+                message,
+                caption = "Use 3D image input module, %s" % module.module_name,
+                style = wx.OK)
+            remove_input_modules = True
+
         self.__pipeline.add_module(module)
         if remove_input_modules:
             while True:

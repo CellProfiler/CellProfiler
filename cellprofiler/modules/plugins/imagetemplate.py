@@ -269,7 +269,7 @@ class ImageTemplate(cpm.Module):
     #
     # display lets you use matplotlib to display your results.
     #
-    def display(self, workspace):
+    def display(self, workspace, figure):
         #
         # the "figure" is really the frame around the figure. You almost always
         # use figure.subplot or figure.subplot_imshow to get axes to draw on

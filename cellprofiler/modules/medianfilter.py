@@ -1,5 +1,7 @@
 """
 
+Median filter
+
 """
 
 import cellprofiler.image
@@ -11,29 +13,19 @@ import skimage.morphology
 
 
 class MedianFilter(cellprofiler.module.Module):
-    module_name = "MedianFilter"
     category = "Volumetric"
+    module_name = "MedianFilter"
     variable_revision_number = 1
 
     def create_settings(self):
-
         self.input_image_name = cellprofiler.setting.ImageNameSubscriber(
-                # The text to the left of the edit box
-                "Input image name:",
-                # HTML help that gets displayed when the user presses the
-                # help button to the right of the edit box
-                doc="""This is the image that the module operates on. You can
-            choose any image that is made available by a prior module.
-            <br>
-            <b>ImageTemplate</b> will do something to this image.
-            """)
-
+            "Input"
+        )
 
         self.output_image_name = cellprofiler.setting.ImageNameProvider(
-                "Output image name:",
-                # The second parameter holds a suggested name for the image.
-                "OutputImage",
-                doc="""This is the image resulting from the operation.""")
+            "Output",
+            "OutputImage"
+        )
 
         self.structuring_element = cellprofiler.setting.Choice(
             "Structuing element",
@@ -77,11 +69,13 @@ class MedianFilter(cellprofiler.module.Module):
 
         disk = skimage.morphology.disk(radius)
 
-        output_pixels = [skimage.filters.rank.median(image, disk) for image in pixels]
+        output_pixels = numpy.zeros_like(pixels)
 
-        output_pixels = numpy.asarray(output_pixels)
+        for plane, image in enumerate(output_pixels):
+            output_pixels[plane] = skimage.filters.rank.median(image, disk)
 
         output_image = cellprofiler.image.Image(output_pixels, parent_image=input_image)
+
         image_set.add(output_image_name, output_image)
 
         if self.show_window:
@@ -89,18 +83,24 @@ class MedianFilter(cellprofiler.module.Module):
             workspace.display_data.output_pixels = output_pixels
 
     def display(self, workspace, figure):
-        figure.set_subplots((2, 1))
+        dimensions = (2, 1)
 
-        figure.subplot_imshow_grayscale(
+        input = workspace.display_data.input_pixels[16]
+
+        output = workspace.display_data.output_pixels[16]
+
+        figure.set_subplots(dimensions)
+
+        figure.subplot_imshow(
             0,
             0,
-            workspace.display_data.input_pixels[16],
-            title=self.input_image_name.value
+            input,
+            colormap="gray"
         )
 
-        figure.subplot_imshow_grayscale(
+        figure.subplot_imshow(
             1,
             0,
-            workspace.display_data.output_pixels[16],
-            title=self.output_image_name.value
+            output,
+            colormap="gray"
         )

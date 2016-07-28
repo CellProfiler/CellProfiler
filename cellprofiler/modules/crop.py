@@ -25,7 +25,6 @@ module help for more information on saving cropping shapes.
 
 import logging
 import math
-import sys
 
 import numpy as np
 from centrosome.filter import stretch
@@ -35,7 +34,6 @@ import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
 import cellprofiler.preferences as cpprefs
 import cellprofiler.setting as cps
-from cellprofiler.setting import YES, NO
 
 logger = logging.getLogger(__name__)
 
@@ -52,7 +50,7 @@ RM_NO = "No"
 RM_EDGES = "Edges"
 RM_ALL = "All"
 
-# Doens't seem to like importing defs from cellprofiler.gui.moduleview so define here
+# Doesn't seem to like importing defs from cellprofiler.gui.moduleview so define here
 ABSOLUTE = "Absolute"
 FROM_EDGE = "From edge"
 

@@ -66,7 +66,7 @@ class Load3DImage(cellprofiler.module.Module):
         path = os.path.join(self.directory.get_absolute_path(), self.filename.value)
         pixels = skimage.io.imread(path)[:, :, :, 1]
 
-        image = cellprofiler.image.Image()
+        image = cellprofiler.image.Image(dimensionality=3)
 
         image.pixel_data = pixels
 

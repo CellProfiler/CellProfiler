@@ -55,7 +55,17 @@ class Image(object):
     significant.
     """
 
-    def __init__(self, image=None, mask=None, crop_mask=None, parent_image=None, masking_objects=None, convert=True, path_name=None, file_name=None, scale=None):
+    def __init__(self,
+                 image=None,
+                 mask=None,
+                 crop_mask=None,
+                 parent_image=None,
+                 masking_objects=None,
+                 convert=True,
+                 path_name=None,
+                 file_name=None,
+                 scale=None,
+                 dimensionality=None):
         self.__image = None
 
         self.__mask = None
@@ -86,6 +96,8 @@ class Image(object):
         self.__path_name = path_name
 
         self.channel_names = None
+
+        self.dimensionality = dimensionality
 
     def get_image(self):
         """Return the primary image"""

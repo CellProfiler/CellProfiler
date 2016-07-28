@@ -1,6 +1,6 @@
 """
 
-Noise reduction -- ssshhhhh
+Noise reduction
 
 """
 

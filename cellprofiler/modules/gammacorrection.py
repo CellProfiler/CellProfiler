@@ -5,8 +5,8 @@
 import cellprofiler.image
 import cellprofiler.module
 import cellprofiler.setting
-
 import skimage.exposure
+
 
 class GammaCorrection(cellprofiler.module.Module):
     module_name = "GammaCorrection"

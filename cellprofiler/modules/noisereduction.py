@@ -70,15 +70,13 @@ class NoiseReduction(cellprofiler.module.Module):
         input_image = image_set.get_image(input_image_name)
         pixels = input_image.pixel_data
 
-        output_pixels = skimage.util.apply_parallel(
-            function=skimage.restoration.denoise_nl_means,
-            array=pixels,
-            extra_keywords={
-                'patch_size': size,
-                'patch_distance': distance,
-                'h': cutoff_distance,
-                'multichannel': False
-            }
+        output_pixels = skimage.restoration.denoise_nl_means(
+            image=pixels,
+            patch_size=size,
+            patch_distance=distance,
+            h=cutoff_distance,
+            multichannel=False,
+            fast_mode=True
         )
 
         output_image = cellprofiler.image.Image(output_pixels, parent_image=input_image)

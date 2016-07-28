@@ -10,8 +10,8 @@ import skimage.filters
 import skimage.morphology
 
 
-class LocalOtsu(cellprofiler.module.Module):
-    module_name = "LocalOtsu"
+class Thresholding(cellprofiler.module.Module):
+    module_name = "Thresholding"
     category = "Volumetric"
     variable_revision_number = 1
 

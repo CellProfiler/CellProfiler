@@ -21,7 +21,6 @@ class MorphologicalSkeleton(cellprofiler.module.Module):
             cellprofiler.setting.NONE
         )
 
-
         self.output_image_name = cellprofiler.setting.ImageNameProvider(
             "Output image name:",
             cellprofiler.setting.NONE
@@ -48,10 +47,7 @@ class MorphologicalSkeleton(cellprofiler.module.Module):
         pixels = input_image.pixel_data
 
         pixels = skimage.exposure.rescale_intensity(pixels * 1.0)
-        output_pixels = skimage.util.apply_parallel(
-            function=skimage.morphology.skeletonize_3d,
-            array=pixels
-        )
+        output_pixels = skimage.morphology.skeletonize_3d(pixels)
 
         output_image = cellprofiler.image.Image(output_pixels, parent_image=input_image)
         image_set.add(output_image_name, output_image)

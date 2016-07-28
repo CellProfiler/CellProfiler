@@ -8,7 +8,7 @@ import cellprofiler.image
 import cellprofiler.module
 import cellprofiler.object
 import cellprofiler.setting
-import numpy
+import skimage.color
 import skimage.filters
 import skimage.morphology
 import skimage.segmentation
@@ -65,6 +65,30 @@ class ImageSegmentation(cellprofiler.module.Module):
             ]
         )
 
+        self.random_walker_algorithm_labels = cellprofiler.setting.ImageNameSubscriber(
+            "Labels",
+            cellprofiler.setting.NONE
+        )
+
+        self.random_walker_algorithm_beta = cellprofiler.setting.Float(
+            "Beta",
+            130.0
+        )
+
+        self.random_walker_algorithm_mode = cellprofiler.setting.Choice(
+            "Mode",
+            [
+                "Brute force",
+                "Conjugate gradient",
+                "Conjugate gradient with multigrid preconditioner"
+            ]
+        )
+
+        self.random_walker_algorithm_tolerance = cellprofiler.setting.Float(
+            "Tolerance",
+            0.001
+        )
+
         self.partial_differential_equation_implementation = cellprofiler.setting.Choice(
             "Implementation",
             [
@@ -117,65 +141,90 @@ class ImageSegmentation(cellprofiler.module.Module):
         ]
 
         if self.method.value == "Active contour model":
-            settings.append(self.active_contour_model_implementation)
+            settings = settings + [
+                self.active_contour_model_implementation
+            ]
 
             if self.active_contour_model_implementation == "Chan-Vese":
-                settings.append(self.chan_vese_mask)
-
-                settings.append(self.chan_vese_iterations)
+                settings = settings + [
+                    self.chan_vese_mask,
+                    self.chan_vese_iterations
+                ]
 
         if self.method.value == "Graph partition":
-            settings.append(self.graph_partition_implementation)
+            settings = settings + [
+                self.graph_partition_implementation
+            ]
+
+            if self.graph_partition_implementation == "Random walker algorithm":
+                settings = settings + [
+                    self.random_walker_algorithm_beta,
+                    self.random_walker_algorithm_labels,
+                    self.random_walker_algorithm_mode,
+                    self.random_walker_algorithm_tolerance
+                ]
 
         if self.method.value == "Partial differential equation (PDE)":
-            settings.append(self.partial_differential_equation_implementation)
+            settings = settings + [
+                self.partial_differential_equation_implementation
+            ]
 
         if self.method.value == "Region growing":
-            settings.append(self.region_growing_implementation)
+            settings = settings + [
+                self.region_growing_implementation
+            ]
 
             if self.region_growing_implementation == "Simple Linear Iterative Clustering (SLIC)":
-                settings.append(self.simple_linear_iterative_clustering_segments)
-
-                settings.append(self.simple_linear_iterative_clustering_compactness)
-
-                settings.append(self.simple_linear_iterative_clustering_iterations)
-
-                settings.append(self.simple_linear_iterative_clustering_sigma)
+                settings = settings + [
+                    self.simple_linear_iterative_clustering_segments,
+                    self.simple_linear_iterative_clustering_compactness,
+                    self.simple_linear_iterative_clustering_iterations,
+                    self.simple_linear_iterative_clustering_sigma
+                ]
 
         return settings
 
     def run(self, workspace):
-        input_image_name = self.input_image_name.value
+        name = self.input_image_name.value
 
-        image_set = workspace.image_set
-        input_image = image_set.get_image(input_image_name)
-        pixels = input_image.pixel_data
+        images = workspace.image_set
+
+        image = images.get_image(name)
+
+        data = image.pixel_data
 
         if self.method.value == "Region growing":
             if self.region_growing_implementation == "Simple Linear Iterative Clustering (SLIC)":
-                segmentation = skimage.segmentation.slic(
-                    pixels,
-                    self.simple_linear_iterative_clustering_segments.value,
-                    self.simple_linear_iterative_clustering_compactness.value,
-                    self.simple_linear_iterative_clustering_iterations.value,
-                    self.simple_linear_iterative_clustering_sigma.value
-                )
+                segments = self.simple_linear_iterative_clustering_segments.value
 
+                compactness = self.simple_linear_iterative_clustering_compactness.value
+
+                iterations = self.simple_linear_iterative_clustering_iterations.value
+
+                sigma = self.simple_linear_iterative_clustering_sigma.value
+
+                segmentation = skimage.segmentation.slic(data, segments, compactness, iterations, sigma)
+
+                segmentation = skimage.color.label2rgb(segmentation, data, kind="avg")
+
+        if self.show_window:
+            workspace.display_data.image = image
+
+            workspace.display_data.segmentation = segmentation
 
     def display(self, workspace, figure):
-        pass
-        # figure.set_subplots((2, 1))
-        #
-        # figure.subplot_imshow_grayscale(
-        #     0,
-        #     0,
-        #     workspace.display_data.input_pixels[16],
-        #     title=self.input_image_name.value
-        # )
-        #
-        # figure.subplot_imshow_grayscale(
-        #     1,
-        #     0,
-        #     workspace.display_data.output_pixels[16],
-        #     title=self.output_object.value
-        # )
+        figure.set_subplots((2, 1))
+
+        figure.subplot_imshow_grayscale(
+            0,
+            0,
+            workspace.display_data.image[16],
+            ""
+        )
+
+        figure.subplot_imshow_grayscale(
+            1,
+            0,
+            workspace.display_data.image[16],
+            ""
+        )

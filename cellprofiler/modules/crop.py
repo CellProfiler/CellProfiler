@@ -34,6 +34,7 @@ import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
 import cellprofiler.preferences as cpprefs
 import cellprofiler.setting as cps
+from cellprofiler.setting import YES, NO
 
 logger = logging.getLogger(__name__)
 

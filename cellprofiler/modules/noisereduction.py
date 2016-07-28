@@ -76,7 +76,8 @@ class NoiseReduction(cellprofiler.module.Module):
             extra_keywords={
                 'patch_size': size,
                 'patch_distance': distance,
-                'h': cutoff_distance
+                'h': cutoff_distance,
+                'multichannel': False
             }
         )
 

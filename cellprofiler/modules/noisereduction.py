@@ -8,6 +8,7 @@ import cellprofiler.image
 import cellprofiler.module
 import cellprofiler.setting
 import skimage.restoration
+import skimage.util
 
 
 class NoiseReduction(cellprofiler.module.Module):
@@ -66,15 +67,20 @@ class NoiseReduction(cellprofiler.module.Module):
         cutoff_distance = self.cutoff_distance.value
 
         image_set = workspace.image_set
-
         input_image = image_set.get_image(input_image_name)
-
         pixels = input_image.pixel_data
 
-        output_pixels = skimage.restoration.denoise_nl_means(pixels, size, distance, cutoff_distance)
+        output_pixels = skimage.util.apply_parallel(
+            function=skimage.restoration.denoise_nl_means,
+            array=pixels,
+            extra_keywords={
+                'patch_size': size,
+                'patch_distance': distance,
+                'h': cutoff_distance
+            }
+        )
 
         output_image = cellprofiler.image.Image(output_pixels, parent_image=input_image)
-
         image_set.add(output_image_name, output_image)
 
         if self.show_window:

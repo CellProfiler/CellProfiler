@@ -8,6 +8,7 @@ import cellprofiler.image
 import cellprofiler.module
 import cellprofiler.setting
 import numpy
+import skimage.exposure
 import skimage.filters
 import skimage.morphology
 
@@ -18,11 +19,11 @@ class MedianFilter(cellprofiler.module.Module):
     variable_revision_number = 1
 
     def create_settings(self):
-        self.input_image_name = cellprofiler.setting.ImageNameSubscriber(
+        self.x_name = cellprofiler.setting.ImageNameSubscriber(
             "Input"
         )
 
-        self.output_image_name = cellprofiler.setting.ImageNameProvider(
+        self.y_name = cellprofiler.setting.ImageNameProvider(
             "Output",
             "OutputImage"
         )
@@ -41,66 +42,72 @@ class MedianFilter(cellprofiler.module.Module):
 
     def settings(self):
         return [
-            self.input_image_name,
-            self.output_image_name,
+            self.x_name,
+            self.y_name,
             self.structuring_element,
             self.radius
         ]
 
     def visible_settings(self):
         return [
-            self.input_image_name,
-            self.output_image_name,
+            self.x_name,
+            self.y_name,
             self.structuring_element,
             self.radius
         ]
 
     def run(self, workspace):
-        input_image_name = self.input_image_name.value
-        output_image_name = self.output_image_name.value
+        x_name = self.x_name.value
+        y_name = self.y_name.value
+
         radius = self.radius.value
+
         structuring_element = self.structuring_element.value
 
-        image_set = workspace.image_set
+        images = workspace.image_set
 
-        input_image = image_set.get_image(input_image_name)
+        x = images.get_image(x_name)
 
-        pixels = input_image.pixel_data
+        x_data = x.pixel_data
 
         disk = skimage.morphology.disk(radius)
 
-        output_pixels = numpy.zeros_like(pixels)
+        y_data = numpy.zeros_like(x_data)
 
-        for plane, image in enumerate(output_pixels):
-            output_pixels[plane] = skimage.filters.rank.median(image, disk)
+        for plane, image in enumerate(x_data):
+            y_data[plane] = skimage.filters.rank.median(image, disk)
 
-        output_image = cellprofiler.image.Image(output_pixels, parent_image=input_image)
+        y_data = skimage.exposure.rescale_intensity(y_data * 1.0)
 
-        image_set.add(output_image_name, output_image)
+        y = cellprofiler.image.Image(
+            image=y_data,
+            parent_image=x
+        )
+
+        images.add(y_name, y)
 
         if self.show_window:
-            workspace.display_data.input_pixels = pixels
-            workspace.display_data.output_pixels = output_pixels
+            workspace.display_data.x_data = x_data
+            workspace.display_data.y_data = y_data
 
     def display(self, workspace, figure):
         dimensions = (2, 1)
 
-        input = workspace.display_data.input_pixels[16]
-
-        output = workspace.display_data.output_pixels[16]
+        x_data = workspace.display_data.x_data[16]
+        y_data = workspace.display_data.y_data[16]
 
         figure.set_subplots(dimensions)
 
         figure.subplot_imshow(
             0,
             0,
-            input,
+            x_data,
             colormap="gray"
         )
 
         figure.subplot_imshow(
             1,
             0,
-            output,
+            y_data,
             colormap="gray"
         )

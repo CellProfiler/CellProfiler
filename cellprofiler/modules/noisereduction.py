@@ -7,23 +7,24 @@ Noise reduction
 import cellprofiler.image
 import cellprofiler.module
 import cellprofiler.setting
+import numpy
 import skimage.restoration
 import skimage.util
 
 
 class NoiseReduction(cellprofiler.module.Module):
-    module_name = "NoiseReduction"
     category = "Volumetric"
+    module_name = "NoiseReduction"
     variable_revision_number = 1
 
     def create_settings(self):
-        self.input_image_name = cellprofiler.setting.ImageNameSubscriber(
-            "Input image name:",
+        self.x_name = cellprofiler.setting.ImageNameSubscriber(
+            "Input"
         )
 
-        self.output_image_name = cellprofiler.setting.ImageNameProvider(
-            "Output image name:",
-            "noise_reduction",
+        self.y_name = cellprofiler.setting.ImageNameProvider(
+            "Output",
+            "OutputImage"
         )
 
         self.size = cellprofiler.setting.Integer(
@@ -43,8 +44,8 @@ class NoiseReduction(cellprofiler.module.Module):
 
     def settings(self):
         return [
-            self.input_image_name,
-            self.output_image_name,
+            self.x_name,
+            self.y_name,
             self.size,
             self.distance,
             self.cutoff_distance
@@ -52,26 +53,31 @@ class NoiseReduction(cellprofiler.module.Module):
 
     def visible_settings(self):
         return [
-            self.input_image_name,
-            self.output_image_name,
+            self.x_name,
+            self.y_name,
             self.size,
             self.distance,
             self.cutoff_distance
         ]
 
     def run(self, workspace):
-        input_image_name = self.input_image_name.value
-        output_image_name = self.output_image_name.value
+        x_name = self.x_name.value
+        y_name = self.y_name.value
+
         size = self.size.value
+
         distance = self.distance.value
+
         cutoff_distance = self.cutoff_distance.value
 
-        image_set = workspace.image_set
-        input_image = image_set.get_image(input_image_name)
-        pixels = input_image.pixel_data
+        images = workspace.image_set
 
-        output_pixels = skimage.restoration.denoise_nl_means(
-            image=pixels,
+        x = images.get_image(x_name)
+
+        x_data = x.pixel_data
+
+        y_data = skimage.restoration.denoise_nl_means(
+            image=x_data,
             patch_size=size,
             patch_distance=distance,
             h=cutoff_distance,
@@ -79,26 +85,35 @@ class NoiseReduction(cellprofiler.module.Module):
             fast_mode=True
         )
 
-        output_image = cellprofiler.image.Image(output_pixels, parent_image=input_image)
-        image_set.add(output_image_name, output_image)
-
-        if self.show_window:
-            workspace.display_data.input_pixels = pixels
-            workspace.display_data.output_pixels = output_pixels
-
-    def display(self, workspace, figure):
-        figure.set_subplots((2, 1))
-
-        figure.subplot_imshow_grayscale(
-            0,
-            0,
-            workspace.display_data.input_pixels[16],
-            title=self.input_image_name.value
+        y = cellprofiler.image.Image(
+            image=y_data,
+            parent_image=x
         )
 
-        figure.subplot_imshow_grayscale(
+        images.add(y_name, y)
+
+        if self.show_window:
+            workspace.display_data.x_data = x_data
+            workspace.display_data.y_data = y_data
+
+    def display(self, workspace, figure):
+        dimensions = (2, 1)
+
+        x_data = workspace.display_data.x_data[16]
+        y_data = workspace.display_data.y_data[16]
+
+        figure.set_subplots(dimensions)
+
+        figure.subplot_imshow(
+            0,
+            0,
+            x_data,
+            colormap="gray"
+        )
+
+        figure.subplot_imshow(
             1,
             0,
-            workspace.display_data.output_pixels[16],
-            title=self.output_image_name.value
+            y_data,
+            colormap="gray"
         )

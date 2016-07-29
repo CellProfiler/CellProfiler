@@ -16,11 +16,11 @@ class GammaCorrection(cellprofiler.module.Module):
     variable_revision_number = 1
 
     def create_settings(self):
-        self.input_image_name = cellprofiler.setting.ImageNameSubscriber(
+        self.x_name = cellprofiler.setting.ImageNameSubscriber(
             "Input"
         )
 
-        self.output_image_name = cellprofiler.setting.ImageNameProvider(
+        self.y_name = cellprofiler.setting.ImageNameProvider(
             "Output",
             "OutputImage"
         )
@@ -41,65 +41,65 @@ class GammaCorrection(cellprofiler.module.Module):
 
     def settings(self):
         return [
-            self.input_image_name,
-            self.output_image_name,
+            self.x_name,
+            self.y_name,
             self.gamma,
             self.gain
         ]
 
     def visible_settings(self):
         return [
-            self.input_image_name,
-            self.output_image_name,
+            self.x_name,
+            self.y_name,
             self.gamma,
             self.gain
         ]
 
     def run(self, workspace):
-        input_image_name = self.input_image_name.value
-
-        output_image_name = self.output_image_name.value
+        x_name = self.x_name.value
+        y_name = self.y_name.value
 
         gamma = self.gamma.value
 
         gain = self.gain.value
 
-        image_set = workspace.image_set
+        images = workspace.image_set
 
-        input_image = image_set.get_image(input_image_name)
+        x = images.get_image(x_name)
 
-        pixels = input_image.pixel_data
+        x_data = x.pixel_data
 
-        output_pixels = skimage.exposure.adjust_gamma(pixels, gamma=gamma, gain=gain)
+        y_data = skimage.exposure.adjust_gamma(x_data, gamma, gain)
 
-        output_image = cellprofiler.image.Image(output_pixels, parent_image=input_image)
+        y = cellprofiler.image.Image(
+            image=y_data,
+            parent_image=x
+        )
 
-        image_set.add(output_image_name, output_image)
+        images.add(y_name, y)
 
         if self.show_window:
-            workspace.display_data.input_pixels = pixels
-
-            workspace.display_data.output_pixels = output_pixels
+            workspace.display_data.x_data = x_data
+            workspace.display_data.y_data = y_data
 
     def display(self, workspace, figure):
         dimensions = (2, 1)
 
-        input = workspace.display_data.input_pixels[16]
-
-        output = workspace.display_data.output_pixels[16]
+        x_data = workspace.display_data.x_data[16]
+        y_data = workspace.display_data.y_data[16]
 
         figure.set_subplots(dimensions)
 
         figure.subplot_imshow(
             0,
             0,
-            input,
+            x_data,
             colormap="gray"
         )
 
         figure.subplot_imshow(
             1,
             0,
-            output,
+            y_data,
             colormap="gray"
         )

@@ -304,10 +304,6 @@ class Crop(cpm.Module):
         image_set_list = workspace.image_set_list
         d = self.get_dictionary(image_set_list)
         orig_image = workspace.image_set.get_image(self.image_name.value)
-        
-        if orig_image.dimensionality == 3:
-            # do cropping
-            pass
 
         recalculate_flag = (self.shape not in (SH_ELLIPSE, SH_RECTANGLE) or
                             self.individual_or_once == IO_INDIVIDUALLY or

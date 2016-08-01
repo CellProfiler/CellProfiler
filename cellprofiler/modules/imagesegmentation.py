@@ -131,6 +131,7 @@ class ImageSegmentation(cellprofiler.module.Module):
             self.active_contour_model_implementation,
             self.chan_vese_mask,
             self.chan_vese_iterations,
+            self.graph_partition_implementation,
             self.random_walker_algorithm_labels,
             self.random_walker_algorithm_beta,
             self.random_walker_algorithm_mode,

@@ -235,6 +235,10 @@ class ImageSegmentation(cellprofiler.module.Module):
 
                 segmentation = skimage.color.label2rgb(segmentation, data, kind="avg")
 
+        output_object = cellprofiler.object.Objects()
+        output_object.segmented = segmentation
+        workspace.object_set.add_objects(output_object, self.object_name.value)
+
         if self.show_window:
             workspace.display_data.image = data
 

@@ -2022,9 +2022,11 @@ class PipelineController(object):
                                      for m in self.__pipeline.modules()])
             has_legacy_modules = any([m.is_load_module()
                                       for m in self.__pipeline.modules()])
-            if (not has_input_modules) and (not has_legacy_modules):
+            has_3d_modules = any([m.is_3d_load_module()
+                                  for m in self.__pipeline.modules()])
+            if (not has_input_modules) and not (has_legacy_modules or has_3d_modules):
                 #
-                # We need input modules if legacy modules have been deleted
+                # We need input modules if legacy or 3D load modules have been deleted
                 #
                 self.__pipeline.init_modules()
             self.exit_test_mode()

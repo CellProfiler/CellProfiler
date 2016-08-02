@@ -104,7 +104,8 @@ pymodule_to_cpmodule = {
     'trackobjects': 'TrackObjects',
     'unmixcolors': 'UnmixColors',
     'untangleworms': 'UntangleWorms',
-    'volume': 'Volume'
+    'volume': 'Volume',
+    'watershed': 'Watershed'
 }
 
 # the builtin CP modules that will be loaded from the cellprofiler.modules directory
@@ -198,7 +199,8 @@ builtin_modules = [
     'trackobjects',
     'unmixcolors',
     'untangleworms',
-    'volume'
+    'volume',
+    'watershed'
 ]
 
 # CP-Matlab to CP-python module substitutions

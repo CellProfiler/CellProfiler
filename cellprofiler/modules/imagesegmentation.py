@@ -36,8 +36,7 @@ class ImageSegmentation(cellprofiler.module.Module):
                 "Active contour model",
                 "Graph partition",
                 "Partial differential equation (PDE)",
-                "Region growing",
-                "Watershed"
+                "Region growing"
             ]
         )
 

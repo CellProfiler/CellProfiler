@@ -68,19 +68,12 @@ class Image(object):
         self.channel_names = self.__channel_names
         self.has_parent_image = self.__parent_image is not None
         self.has_masking_objects = self.__masking_objects is not None
+        self.labels = self.crop_image_similarly(self.masking_objects.segmented) if self.has_masking_objects else None
+        self.has_channel_names = self.__channel_names is not None
+        self.scale = self.parent_image.scale if self.__scale is None and self.has_parent_image else self.__scale
 
-    def get_labels(self):
-        """Get the segmentation labels from the masking objects
-
-        returns the "segmented" labels: others are available through
-        the masking_object.
-        """
-        if not self.has_masking_objects:
-            return None
-
-        return self.crop_image_similarly(self.masking_objects.segmented)
-
-    labels = property(get_labels)
+    def grayscale(self):
+        return self.pixel_data[:, :, 0]
 
     def get_mask(self):
         """Return the mask (pixels to be considered) for the primary image
@@ -223,26 +216,6 @@ class Image(object):
 
     path_name = property(get_path_name)
 
-    @property
-    def has_channel_names(self):
-        '''True if there are channel names on this image'''
-        return self.__channel_names is not None
-
-    def get_scale(self):
-        '''The scale at acquisition
-
-        This is the intensity scale used by the acquisition device. For
-        instance, a microscope might use a 12-bit a/d converter to acquire
-        an image and store that information using the TIF MaxSampleValue
-        tag = 4095.
-        '''
-        if self.__scale is None and self.has_parent_image:
-            return self.parent_image.scale
-
-        return self.__scale
-
-    scale = property(get_scale)
-
     def cache(self, name, hdf5_file):
         pass
 
@@ -297,21 +270,6 @@ def crop_image(image, crop_mask, crop_internal=False):
             return image[i_first:i_end, j_first:j_end, :].copy()
         return image[i_first:i_end, j_first:j_end].copy()
 
-# TODO: grayscale should be a method on Image
-class GrayscaleImage(object):
-    """A wrapper around a non-grayscale image
-
-    This is meant to be used if the image is 3-d but all channels
-       are the same or if the image is binary.
-    """
-
-    def __init__(self, image):
-        self.__image = image
-        self.pixel_data = self.__image.pixel_data[:, :, 0]
-
-    def __getattr__(self, name):
-        return getattr(self.__image, name)
-
 # TODO: rgb should be a method on Image
 class RGBImage(object):
     """A wrapper that discards the alpha channel
@@ -339,7 +297,6 @@ def check_consistency(image, mask):
 class AbstractImageProvider(object):
     """Represents an image provider that returns images
     """
-
     def provide_image(self, image_set):
         """Return the image that is associated with the image set
         """
@@ -379,7 +336,7 @@ class VanillaImageProvider(AbstractImageProvider):
         return self.__name
 
     def release_memory(self):
-        self.__image = None
+        pass
 
 
 class CallbackImageProvider(AbstractImageProvider):
@@ -457,12 +414,12 @@ class ImageSet(object):
             pd = image.pixel_data
 
             if pd.shape[2] >= 3 and numpy.all(pd[:, :, 0] == pd[:, :, 1]) and numpy.all(pd[:, :, 0] == pd[:, :, 2]):
-                return GrayscaleImage(image)
+                return image.grayscale()
 
             raise ValueError("Image must be grayscale, but it was color")
 
         if must_be_grayscale and image.pixel_data.dtype.kind == 'b':
-            return GrayscaleImage(image)
+            return image.grayscale()
 
         if must_be_rgb:
             if image.pixel_data.ndim != 3:

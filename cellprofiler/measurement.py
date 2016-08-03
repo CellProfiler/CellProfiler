@@ -1579,7 +1579,7 @@ class Measurements(object):
                       discard alpha channel.
         """
         from .modules.loadimages import LoadImagesImageProviderURL
-        from .image import GrayscaleImage, RGBImage
+        from cellprofiler.image import RGBImage
         name = str(name)
         if self.__images.has_key(name):
             image = self.__images[name]
@@ -1633,10 +1633,10 @@ class Measurements(object):
             if pd.shape[2] >= 3 and \
                     np.all(pd[:, :, 0] == pd[:, :, 1]) and \
                     np.all(pd[:, :, 0] == pd[:, :, 2]):
-                return GrayscaleImage(image)
+                return image.grayscale()
             raise ValueError("Image must be grayscale, but it was color")
         if must_be_grayscale and image.pixel_data.dtype.kind == 'b':
-            return GrayscaleImage(image)
+            return image.grayscale()
         if must_be_rgb:
             if image.pixel_data.ndim != 3:
                 raise ValueError("Image must be RGB, but it was grayscale")

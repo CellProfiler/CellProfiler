@@ -4,7 +4,6 @@ from centrosome.index import Indexes, all_pairs
 from centrosome.outline import outline
 from scipy.sparse import coo_matrix
 
-import decorator
 
 OBJECT_TYPE_NAME = "objects"
 
@@ -55,10 +54,6 @@ class Objects(object):
         dense = downsample_labels(labels)
         dense = dense.reshape((1, 1, 1, 1, dense.shape[0], dense.shape[1]))
         self.__segmented = Segmentation(dense=dense)
-
-        # Clear all cached results.
-        if getattr(self, "memoize_method_dictionary", False):
-            self.memoize_method_dictionary = {}
 
     segmented = property(get_segmented, set_segmented)
 

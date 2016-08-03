@@ -471,6 +471,8 @@ class ModuleView(object):
                     flag = wx.ALIGN_LEFT
                     text_sizer_item.Flag = \
                         wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL | wx.ALL
+                elif isinstance(v, cellprofiler.setting.Checkbox):
+                    control = self.make_checkbox(v, control_name, control)
                 elif isinstance(v, cellprofiler.setting.MeasurementMultiChoice):
                     control = self.make_measurement_multichoice_control(
                         v, control_name, control)
@@ -771,6 +773,29 @@ class ModuleView(object):
         if current_selection != v.value_text:
             control.SetStringSelection(v.value_text)
         return control
+
+    def make_checkbox(self, setting, name, control):
+        def callback(event):
+            sender = event.GetEventObject()
+
+            checked = sender.GetValue()
+
+            if checked:
+                setting.set_value(True)
+            else:
+                setting.set_value(False)
+
+        label = setting.get_text()
+
+        checkbox = wx.CheckBox(self.__module_panel, label=label, name=name)
+
+        value = setting.get_value()
+
+        checkbox.SetValue(value)
+
+        checkbox.Bind(wx.EVT_CHECKBOX, callback)
+
+        return checkbox
 
     def make_name_subscriber_control(self, v, choices, control_name, control):
         """Make a read-only combobox with extra feedback about source modules,

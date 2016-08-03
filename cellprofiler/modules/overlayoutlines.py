@@ -205,7 +205,7 @@ class OverlayOutlines(cpm.Module):
             workspace.image_set.add(self.output_image_name.value, output_image)
         else:
             image = workspace.image_set.get_image(self.image_name.value)
-            output_image = cpi.Image(pixel_data, parent_image=image)
+            output_image = cpi.Image(pixel_data, parent=image)
             workspace.image_set.add(self.output_image_name.value, output_image)
             workspace.display_data.image_pixel_data = image.pixel_data
         if self.__can_composite_objects() and self.show_window:

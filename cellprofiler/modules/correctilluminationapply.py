@@ -209,7 +209,7 @@ class CorrectIlluminationApply(cpm.Module):
         # Save the output image in the image set and have it inherit
         # mask & cropping from the original image.
         #
-        output_image = cpi.Image(output_pixels, parent_image=orig_image)
+        output_image = cpi.Image(output_pixels, parent=orig_image)
         workspace.image_set.add(corrected_image_name, output_image)
         #
         # Save images for display

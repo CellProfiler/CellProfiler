@@ -156,7 +156,7 @@ class ApplyThreshold(Identify):
                         """Threshold setting, "%s" is not "%s" or "%s".""" %
                         (self.low_or_high.value, TH_BELOW_THRESHOLD,
                          TH_ABOVE_THRESHOLD))
-        output = image.Image(pixels, parent_image=input)
+        output = image.Image(pixels, parent=input)
         workspace.image_set.add(self.thresholded_image_name.value, output)
         if self.show_window:
             workspace.display_data.input_pixel_data = input.pixel_data

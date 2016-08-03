@@ -172,7 +172,7 @@ class Smooth(cpm.Module):
         else:
             raise ValueError("Unsupported smoothing method: %s" %
                              self.smoothing_method.value)
-        output_image = cpi.Image(output_pixels, parent_image=image)
+        output_image = cpi.Image(output_pixels, parent=image)
         workspace.image_set.add(self.filtered_image_name.value,
                                 output_image)
         workspace.display_data.pixel_data = pixel_data

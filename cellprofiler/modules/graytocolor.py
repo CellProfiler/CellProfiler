@@ -344,7 +344,7 @@ class GrayToColor(cpm.Module):
         ##############
         # Save image #
         ##############
-        rgb_image = cpi.Image(rgb_pixel_data, parent_image=parent_image)
+        rgb_image = cpi.Image(rgb_pixel_data, parent=parent_image)
         rgb_image.channel_names = channel_names
         imgset.add(self.rgb_image_name.value, rgb_image)
 

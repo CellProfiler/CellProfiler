@@ -251,7 +251,7 @@ class Resize(cpm.Module):
                     order=1, mode='nearest') >= .5
         else:
             cropping = mask
-        output_image = cpi.Image(output_pixels, parent_image=image,
+        output_image = cpi.Image(output_pixels, parent=image,
                                  mask=mask, crop_mask=cropping)
         workspace.image_set.add(output_image_name, output_image)
 

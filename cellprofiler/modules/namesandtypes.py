@@ -2067,7 +2067,7 @@ class ObjectsImageProvider(LoadImagesImageProviderURL):
             planes.append(img)
 
         image = cpi.Image(np.dstack(planes),
-                          path_name=self.get_pathname(),
-                          file_name=self.get_filename(),
+                          pathname=self.get_pathname(),
+                          filename=self.get_filename(),
                           convert=False)
         return image

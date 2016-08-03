@@ -166,7 +166,7 @@ class ExpandOrShrinkObjects(cpm.Module):
                                          output_objects.segmented)
         if self.wants_outlines.value:
             outline_image = cpi.Image(outline(output_objects.segmented) > 0,
-                                      parent_image=input_objects.parent_image)
+                                      parent=input_objects.parent_image)
             workspace.image_set.add(self.outlines_name.value, outline_image)
 
         if self.show_window:

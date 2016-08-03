@@ -411,7 +411,7 @@ class ImageMath(cpm.Module):
         output_image = cpi.Image(output_pixel_data,
                                  mask=output_mask,
                                  crop_mask=crop_mask,
-                                 parent_image=images[0],
+                                 parent=images[0],
                                  masking_objects=masking_objects,
                                  convert=False)
         workspace.image_set.add(self.output_image_name.value, output_image)

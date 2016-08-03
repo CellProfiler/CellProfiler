@@ -148,7 +148,7 @@ class ConvertObjectsToImage(cpm.Module):
             pixel_data[mask, :] = pixel_data[mask, :] / alpha[mask][:, np.newaxis]
         else:
             pixel_data[mask] = pixel_data[mask] / alpha[mask]
-        image = cpi.Image(pixel_data, parent_image=objects.parent_image,
+        image = cpi.Image(pixel_data, parent=objects.parent_image,
                           convert=convert)
         workspace.image_set.add(self.image_name.value, image)
         if self.show_window:

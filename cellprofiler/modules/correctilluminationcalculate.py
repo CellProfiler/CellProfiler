@@ -647,7 +647,7 @@ class CorrectIlluminationCalculate(cpm.Module):
                 dilated_pixels = np.dstack([
                                                smooth_with_function_and_mask(x, fn, image.mask)
                                                for x in image.pixel_data.transpose(2, 0, 1)])
-            return cpi.Image(dilated_pixels, parent_image=orig_image)
+            return cpi.Image(dilated_pixels, parent=orig_image)
         else:
             return image
 
@@ -676,7 +676,7 @@ class CorrectIlluminationCalculate(cpm.Module):
                     pixels[~ orig_image.mask] = 0
                 else:
                     pixels[~ orig_image.mask, :] = 0
-                avg_image = cpi.Image(pixels, parent_image=orig_image)
+                avg_image = cpi.Image(pixels, parent=orig_image)
             else:
                 avg_image = orig_image
         else:
@@ -696,7 +696,7 @@ class CorrectIlluminationCalculate(cpm.Module):
                 for i in range(pixels.shape[2]):
                     minima = fix(scind.minimum(pixels[:, :, i], labels, indexes))
                     min_block[labels != -1, i] = minima[labels[labels != -1]]
-            avg_image = cpi.Image(min_block, parent_image=orig_image)
+            avg_image = cpi.Image(min_block, parent=orig_image)
         return avg_image
 
     def apply_smoothing(self, image, orig_image=None):
@@ -717,7 +717,7 @@ class CorrectIlluminationCalculate(cpm.Module):
                                                            image.mask)
         else:
             output_pixels = self.smooth_plane(pixel_data, image.mask)
-        output_image = cpi.Image(output_pixels, parent_image=orig_image)
+        output_image = cpi.Image(output_pixels, parent=orig_image)
         return output_image
 
     def smooth_plane(self, pixel_data, mask):
@@ -828,7 +828,7 @@ class CorrectIlluminationCalculate(cpm.Module):
         else:
             output_pixels = np.dstack([
                                           scaling_fn_2d(x) for x in image.pixel_data.transpose(2, 0, 1)])
-        output_image = cpi.Image(output_pixels, parent_image=orig_image)
+        output_image = cpi.Image(output_pixels, parent=orig_image)
         return output_image
 
     def validate_module(self, pipeline):

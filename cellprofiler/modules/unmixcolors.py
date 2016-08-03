@@ -347,7 +347,7 @@ class UnmixColors(cpm.Module):
         image[image > 1] = 1
         image = 1 - image
         image_name = output.image_name.value
-        output_image = cpi.Image(image, parent_image=input_image)
+        output_image = cpi.Image(image, parent=input_image)
         workspace.image_set.add(image_name, output_image)
         if self.show_window:
             workspace.display_data.outputs[image_name] = image

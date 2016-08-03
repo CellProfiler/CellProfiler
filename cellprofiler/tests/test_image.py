@@ -17,7 +17,7 @@ class TestImage(unittest.TestCase):
         x = cpi.Image(np.zeros((10, 10)))
 
     def test_01_02_init_image_mask(self):
-        x = cpi.Image(image=np.zeros((10, 10)),
+        x = cpi.Image(data=np.zeros((10, 10)),
                       mask=np.ones((10, 10), dtype=np.bool))
 
     def test_02_01_set_image(self):

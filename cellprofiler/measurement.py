@@ -1644,7 +1644,7 @@ class Measurements(object):
                                  image.pixel_data.shape[2])
             elif image.pixel_data.shape[2] == 4:
                 logger.warning("Discarding alpha channel.")
-                return image.RGB()
+                return image.rgb()
         return image
 
     def get_providers(self):

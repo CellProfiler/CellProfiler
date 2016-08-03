@@ -233,7 +233,7 @@ class MeasureImageAreaOccupied(cpm.Module):
         if operand.should_save_image.value:
             binary_pixels = objects.segmented > 0
             output_image = cpi.Image(binary_pixels,
-                                     parent_image=objects.parent_image)
+                                     parent=objects.parent_image)
             workspace.image_set.add(operand.image_name.value,
                                     output_image)
         return [[operand.operand_objects.value,

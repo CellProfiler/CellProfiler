@@ -713,7 +713,7 @@ class Morph(cpm.Module):
             pixel_data = np.sum(pixel_data, 2) / pixel_data.shape[2]
         for function in self.functions:
             pixel_data = self.run_function(function, pixel_data, mask)
-        new_image = cpi.Image(pixel_data, parent_image=image)
+        new_image = cpi.Image(pixel_data, parent=image)
         workspace.image_set.add(self.output_image_name.value, new_image)
         if self.show_window:
             workspace.display_data.image = image.pixel_data

@@ -991,7 +991,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
                                               labeled_image)
         if self.should_save_outlines.value:
             out_img = cpi.Image(outline_image.astype(bool),
-                                parent_image=image)
+                                parent=image)
             workspace.image_set.add(self.save_outlines.value, out_img)
 
     def limit_object_count(self, labeled_image, object_count):

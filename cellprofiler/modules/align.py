@@ -545,7 +545,7 @@ class Align(cpm.Module):
         output_image = cpi.Image(output_pixels,
                                  mask=output_mask,
                                  crop_mask=crop_mask,
-                                 parent_image=image)
+                                 parent=image)
         workspace.image_set.add(output_image_name, output_image)
 
     def adjust_offsets(self, offsets, shapes):

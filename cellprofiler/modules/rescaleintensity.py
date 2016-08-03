@@ -333,11 +333,11 @@ class RescaleIntensity(cpm.Module):
         if output_mask is not None:
             rescaled_image = cpi.Image(output_image,
                                        mask=output_mask,
-                                       parent_image=input_image,
+                                       parent=input_image,
                                        convert=False)
         else:
             rescaled_image = cpi.Image(output_image,
-                                       parent_image=input_image,
+                                       parent=input_image,
                                        convert=False)
         workspace.image_set.add(self.rescaled_image_name.value, rescaled_image)
         if self.show_window:

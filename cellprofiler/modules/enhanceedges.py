@@ -206,7 +206,7 @@ class EnhanceEdges(cpm.Module):
             raise NotImplementedError("Unimplemented edge detection method: %s" %
                                       self.method.value)
 
-        output_image = cpi.Image(output_pixels, parent_image=image)
+        output_image = cpi.Image(output_pixels, parent=image)
         workspace.image_set.add(self.output_image_name.value, output_image)
 
         if self.show_window:

@@ -561,7 +561,7 @@ class FilterObjects(cpm.Module):
             #
             if wants_outlines:
                 outline_image = cpi.Image(outline(target_labels) > 0,
-                                          parent_image=target_objects.parent_image)
+                                          parent=target_objects.parent_image)
                 workspace.image_set.add(outlines_name, outline_image)
 
         if self.show_window:

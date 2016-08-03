@@ -136,7 +136,7 @@ class MaskImage(cpm.Module):
         masked_pixels = orig_image.pixel_data.copy()
         masked_pixels[np.logical_not(mask)] = 0
         masked_image = cpi.Image(masked_pixels, mask=mask,
-                                 parent_image=orig_image,
+                                 parent=orig_image,
                                  masking_objects=objects)
 
         image_set.add(self.masked_image_name.value, masked_image)

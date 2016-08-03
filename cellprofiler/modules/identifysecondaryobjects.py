@@ -646,7 +646,7 @@ class IdentifySecondaryObjects(cpmi.Identify):
             primary_outline = outline(segmented_labels)
             if self.wants_primary_outlines:
                 out_img = cpi.Image(primary_outline.astype(bool),
-                                    parent_image=image)
+                                    parent=image)
                 workspace.image_set.add(self.new_primary_outlines_name.value,
                                         out_img)
         else:
@@ -665,7 +665,7 @@ class IdentifySecondaryObjects(cpmi.Identify):
         workspace.object_set.add_objects(objects_out, objname)
         if self.use_outlines.value:
             out_img = cpi.Image(secondary_outline.astype(bool),
-                                parent_image=image)
+                                parent=image)
             workspace.image_set.add(self.outlines_name.value, out_img)
         object_count = np.max(segmented_out)
         #

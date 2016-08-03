@@ -330,7 +330,7 @@ class EnhanceOrSuppressFeatures(cpm.Module):
                 result = opening(image.pixel_data, radius)
         else:
             raise ValueError("Unknown filtering method: %s" % self.method)
-        result_image = cpi.Image(result, parent_image=image)
+        result_image = cpi.Image(result, parent=image)
         workspace.image_set.add(self.filtered_image_name.value, result_image)
 
         if self.show_window:

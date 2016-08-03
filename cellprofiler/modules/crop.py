@@ -374,13 +374,13 @@ class Crop(cpm.Module):
         if self.shape == SH_OBJECTS:
             # Special handling for objects - masked objects instead of
             # mask and crop mask
-            output_image = cpi.Image(image=cropped_pixel_data,
+            output_image = cpi.Image(data=cropped_pixel_data,
                                      masking_objects=masking_objects,
-                                     parent_image=orig_image)
+                                     parent=orig_image)
         else:
-            output_image = cpi.Image(image=cropped_pixel_data,
+            output_image = cpi.Image(data=cropped_pixel_data,
                                      mask=image_mask,
-                                     parent_image=orig_image,
+                                     parent=orig_image,
                                      crop_mask=cropping)
         #
         # Display the image

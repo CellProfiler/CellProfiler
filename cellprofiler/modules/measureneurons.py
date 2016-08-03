@@ -473,7 +473,7 @@ class MeasureNeurons(cpm.Module):
                 workspace.display_data.branchpoint_image = branchpoint_image
             if self.wants_branchpoint_image:
                 bi = cpi.Image(branchpoint_image,
-                               parent_image=skeleton_image)
+                               parent=skeleton_image)
                 workspace.image_set.add(self.branchpoint_image_name.value, bi)
 
     def handle_interaction(self, image_number, edge_path, edge_graph,

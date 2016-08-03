@@ -324,7 +324,7 @@ class MaskObjects(I.Identify):
         #
         if self.wants_outlines.value:
             outline_image = cpi.Image(outline(labels) > 0,
-                                      parent_image=original_objects.parent_image)
+                                      parent=original_objects.parent_image)
             workspace.image_set.add(self.outlines_name.value, outline_image)
         #
         # Save the input, mask and output images for display

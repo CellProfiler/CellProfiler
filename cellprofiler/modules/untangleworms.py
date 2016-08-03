@@ -888,7 +888,7 @@ class UntangleWorms(cpm.Module):
                     my_map = ScalarMappable(cmap=colormap)
                     colors = my_map.to_rgba(np.unique(ijv[:, 2]))
                     outline_pixels = o.make_ijv_outlines(colors[:, :3])
-                outline_image = cpi.Image(outline_pixels, parent_image=image)
+                outline_image = cpi.Image(outline_pixels, parent=image)
                 image_set.add(self.overlapping_outlines_name.value,
                               outline_image)
 
@@ -918,7 +918,7 @@ class UntangleWorms(cpm.Module):
 
             if self.wants_nonoverlapping_outlines:
                 outline_pixels = outline(labels) > 0
-                outline_image = cpi.Image(outline_pixels, parent_image=image)
+                outline_image = cpi.Image(outline_pixels, parent=image)
                 image_set.add(self.nonoverlapping_outlines_name.value,
                               outline_image)
         for name in object_names:

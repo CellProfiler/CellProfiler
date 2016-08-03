@@ -2256,8 +2256,8 @@ class LoadImages(cpmodule.Module):
                             outlines |= centrosome.outline.outline(l).astype(
                                     outlines.dtype)
                         outline_image = cpimage.Image(outlines,
-                                                      path_name=path,
-                                                      file_name=filename)
+                                                      pathname=path,
+                                                      filename=filename)
                         workspace.image_set.add(channel.outlines_name.value, outline_image)
 
                 for tag in tags:
@@ -3250,8 +3250,8 @@ class LoadImagesImageProvider(LoadImagesImageProviderBase):
             # Apply a manual rescale
             img = img.astype(np.float32) / self.rescale
         image = cpimage.Image(img,
-                              path_name=self.get_pathname(),
-                              file_name=self.get_filename(),
+                              pathname=self.get_pathname(),
+                              filename=self.get_filename(),
                               scale=self.scale)
         if img.ndim == 3 and len(channel_names) == img.shape[2]:
             image.channel_names = list(channel_names)

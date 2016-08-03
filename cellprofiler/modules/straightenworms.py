@@ -545,7 +545,7 @@ class StraightenWorms(cpm.Module):
             straightened_pixel_data = d[self.K_PIXEL_DATA]
             straightened_image = cpi.Image(d[self.K_PIXEL_DATA],
                                            d[self.K_MASK],
-                                           parent_image=image)
+                                           parent=image)
             image_set.add(straightened_image_name, straightened_image)
             if self.show_window:
                 workspace.display_data.image_pairs.append(

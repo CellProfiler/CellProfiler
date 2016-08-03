@@ -41,14 +41,13 @@ class Image(object):
     significant.
     """
 
-    def __init__(self, image=None, mask=None, crop_mask=None, parent_image=None, masking_objects=None, convert=True, path_name=None, file_name=None, scale=None):
-        self.__image = image
-        self.image = image
-        self.pixel_data = image
+    def __init__(self, data=None, mask=None, crop_mask=None, parent=None, masking_objects=None, convert=True, pathname=None, filename=None, scale=None):
+        self.__image = data
+        self.image = data
+        self.pixel_data = data
         self.__mask = None
         self.__has_mask = False
-        self.__parent_image = parent_image
-        self.parent_image = parent_image
+        self.parent = parent
         self.__crop_mask = None
         if crop_mask is not None:
             self.set_crop_mask(crop_mask)
@@ -58,24 +57,21 @@ class Image(object):
         self.__masking_objects = masking_objects
         self.masking_objects = masking_objects
         self.__scale = scale
-        # if image is not None:
-        #     self.set_image(image, convert)
         if mask is not None:
             self.set_mask(mask)
-        self.__file_name = file_name
-        self.__path_name = path_name
-        self.__channel_names = None
-        self.channel_names = self.__channel_names
-        self.has_parent_image = self.__parent_image is not None
+        self.filename = filename
+        self.pathname = pathname
+        self.channel_names = None
+        self.has_parent_image = self.parent is not None
         self.has_masking_objects = self.__masking_objects is not None
         self.labels = self.crop_image_similarly(self.masking_objects.segmented) if self.has_masking_objects else None
-        self.has_channel_names = self.__channel_names is not None
-        self.scale = self.parent_image.scale if self.__scale is None and self.has_parent_image else self.__scale
+        self.has_channel_names = self.channel_names is not None
+        self.scale = self.parent.scale if self.__scale is None and self.has_parent_image else self.__scale
 
     def grayscale(self):
         return self.pixel_data[:, :, 0]
 
-    def RGB(self):
+    def rgb(self):
         return self.pixel_data[:, :, :3]
 
     def get_mask(self):
@@ -88,7 +84,7 @@ class Image(object):
             return self.crop_image_similarly(self.crop_mask)
 
         if self.has_parent_image:
-            mask = self.parent_image.mask
+            mask = self.parent.mask
 
             return self.crop_image_similarly(mask)
 
@@ -133,8 +129,8 @@ class Image(object):
         if self.has_crop_mask:
             return True
 
-        if self.parent_image is not None:
-            return self.parent_image.has_mask
+        if self.parent is not None:
+            return self.parent.has_mask
 
         return False
 
@@ -149,7 +145,7 @@ class Image(object):
             return self.masking_objects.segmented != 0
 
         if self.has_parent_image:
-            return self.parent_image.crop_mask
+            return self.parent.crop_mask
         #
         # If no crop mask, return the mask which should be all ones
         #
@@ -163,7 +159,7 @@ class Image(object):
     @property
     def has_crop_mask(self):
         '''True if the image or its ancestors has a crop mask'''
-        return (self.__crop_mask is not None or self.has_masking_objects or (self.has_parent_image and self.parent_image.has_crop_mask))
+        return (self.__crop_mask is not None or self.has_masking_objects or (self.has_parent_image and self.parent.has_crop_mask))
 
     def crop_image_similarly(self, image):
         """Crop a 2-d or 3-d image using this image's crop mask
@@ -194,10 +190,10 @@ class Image(object):
         ancestor that has a file name. Return None if the image does not have
         an ancestor or if no ancestor has a file name.
         '''
-        if not self.__file_name is None:
-            return self.__file_name
+        if not self.filename is None:
+            return self.filename
         elif self.has_parent_image:
-            return self.parent_image.file_name
+            return self.parent.file_name
         else:
             return None
 
@@ -210,10 +206,10 @@ class Image(object):
         ancestor that has a path name. Return None if the image does not have
         an ancestor or if no ancestor has a file name.
         '''
-        if not self.__path_name is None:
-            return self.__path_name
+        if not self.pathname is None:
+            return self.pathname
         elif self.has_parent_image:
-            return self.parent_image.path_name
+            return self.parent.path_name
         else:
             return None
 
@@ -402,7 +398,7 @@ class ImageSet(object):
             elif image.pixel_data.shape[2] not in (3, 4):
                 raise ValueError("Image must be RGB, but it had %d channels" % image.pixel_data.shape[2])
             elif image.pixel_data.shape[2] == 4:
-                return image.RGB()
+                return image.rgb()
 
         return image
 

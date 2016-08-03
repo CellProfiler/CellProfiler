@@ -466,7 +466,7 @@ class MeasureObjectIntensityDistribution(cpm.Module):
                             heatmap.image_name.get_image_name())
                     output_img = cpi.Image(
                             output_pixels,
-                            parent_image=parent_image)
+                            parent=parent_image)
                     img_name = heatmap.display_name.value
                     workspace.image_set.add(img_name, output_img)
 

@@ -139,7 +139,8 @@ class Objects(object):
         """Return true if there is a junk object matrix."""
         return self.__small_removed_segmented is not None
 
-    def get_small_removed_segmented(self):
+    @property
+    def small_removed_segmented(self):
         """Get the matrix of segmented objects with the small objects removed
 
         This should be the same as the unedited_segmented label matrix with
@@ -151,13 +152,11 @@ class Objects(object):
             return dense[0, 0, 0, 0]
         return self.unedited_segmented
 
-    def set_small_removed_segmented(self, labels):
+    @small_removed_segmented.setter
+    def small_removed_segmented(self, labels):
         dense = downsample_labels(labels).reshape(
                 (1, 1, 1, 1, labels.shape[0], labels.shape[1]))
         self.__small_removed_segmented = Segmentation(dense=dense)
-
-    small_removed_segmented = property(get_small_removed_segmented,
-                                       set_small_removed_segmented)
 
     def cache(self, hdf5_object_set, objects_name):
         '''Move the segmentations out of memory and into HDF5

@@ -38,24 +38,28 @@ class Objects(object):
         self.__small_removed_segmented = None
         self.__parent_image = None
 
-    def get_segmented(self):
+    @property
+    def segmented(self):
         """Get the de-facto segmentation of the image into objects: a matrix
         of object numbers.
         """
-        assert isinstance(self.__segmented, Segmentation), \
-            "Operation failed because objects were not initialized"
+        assert isinstance(self.__segmented, Segmentation), "Operation failed because objects were not initialized"
+
         dense, indices = self.__segmented.get_dense()
+
         assert len(dense) == 1, "Operation failed because objects overlapped. Please try with non-overlapping objects"
-        assert np.all(np.array(dense.shape[1:-2]) == 1), \
-            "Operation failed because the segmentation was not 2D"
+
+        assert np.all(np.array(dense.shape[1:-2]) == 1), "Operation failed because the segmentation was not 2D"
+
         return dense.reshape(dense.shape[-2:])
 
-    def set_segmented(self, labels):
+    @segmented.setter
+    def segmented(self, labels):
         dense = downsample_labels(labels)
-        dense = dense.reshape((1, 1, 1, 1, dense.shape[0], dense.shape[1]))
-        self.__segmented = Segmentation(dense=dense)
 
-    segmented = property(get_segmented, set_segmented)
+        dense = dense.reshape((1, 1, 1, 1, dense.shape[0], dense.shape[1]))
+
+        self.__segmented = Segmentation(dense=dense)
 
     def set_ijv(self, ijv, shape=None):
         '''Set the segmentation to an IJV object format

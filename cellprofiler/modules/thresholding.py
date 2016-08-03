@@ -21,20 +21,20 @@ class Thresholding(cellprofiler.module.Module):
 
     def create_settings(self):
         self.x_name = cellprofiler.setting.ImageNameSubscriber(
-            "Input"
+            u"Input"
         )
 
         self.y_name = cellprofiler.setting.ImageNameProvider(
-            "Output",
-            "OutputImage"
+            u"Output",
+            u"OutputImage"
         )
 
         self.method = cellprofiler.setting.Choice(
             u"Method",
             [
                 u"Adaptive",
-                u"ISODATA",
-                u"Li’s Minimum Cross Entropy",
+                u"Iterative selection thresholding",
+                u"Minimum cross entropy thresholding",
                 u"Otsu’s method",
                 u"Yen’s method"
             ]
@@ -42,7 +42,7 @@ class Thresholding(cellprofiler.module.Module):
 
         self.adaptive_block_size = cellprofiler.setting.Integer(
             u"Block size",
-            3
+            value=3
         )
 
         self.adaptive_method = cellprofiler.setting.Choice(
@@ -58,7 +58,7 @@ class Thresholding(cellprofiler.module.Module):
 
         self.adaptive_offset = cellprofiler.setting.Float(
             u"Offset",
-            0.0
+            value=0.0
         )
 
         self.adaptive_mode = cellprofiler.setting.Choice(
@@ -75,17 +75,17 @@ class Thresholding(cellprofiler.module.Module):
 
         self.isodata_bins = cellprofiler.setting.Integer(
             u"Bins",
-            256
+            value=256
         )
 
         self.otsu_bins = cellprofiler.setting.Integer(
             u"Bins",
-            256
+            value=256
         )
 
         self.yen_bins = cellprofiler.setting.Integer(
             u"Bins",
-            256
+            value=256
         )
 
     def settings(self):
@@ -117,7 +117,7 @@ class Thresholding(cellprofiler.module.Module):
                 self.adaptive_mode
             ]
 
-        if self.method.value == u"ISODATA":
+        if self.method.value == u"Iterative selection thresholding":
             settings = settings + [
                 self.isodata_bins
             ]
@@ -150,34 +150,38 @@ class Thresholding(cellprofiler.module.Module):
             if self.method.value == u"Adaptive":
                 y_data[plane] = skimage.filters.threshold_adaptive(
                     image=image,
-                    block_size=self.adaptive_block_size,
-                    method=self.adaptive_method,
-                    offset=self.adaptive_offset,
-                    mode=self.adaptive_mode
+                    block_size=self.adaptive_block_size.value,
+                    method=self.adaptive_method.value.lower(),
+                    offset=self.adaptive_offset.value,
+                    mode=self.adaptive_mode.value.lower()
                 )
-            elif self.method.value == u"ISODATA":
+            elif self.method.value == u"Iterative selection thresholding":
                 y_data[plane] = skimage.filters.threshold_isodata(
                     image=image,
-                    nbins=self.isodata_bins
+                    nbins=self.isodata_bins.value
                 )
-            elif self.method.value == u"Li’s Minimum Cross Entropy":
+
+                y_data[plane] = image >= y_data[plane]
+            elif self.method.value == u"Minimum cross entropy thresholding":
                 y_data[plane] = skimage.filters.threshold_li(
                     image=image
                 )
+
+                y_data[plane] = image >= y_data[plane]
             elif self.method.value == u"Otsu’s method":
                 y_data[plane] = skimage.filters.threshold_otsu(
                     image=image,
-                    nbins=self.otsu_bins
+                    nbins=self.otsu_bins.value
                 )
+
+                y_data[plane] = image >= y_data[plane]
             elif self.method.value == u"Yen’s method":
                 y_data[plane] = skimage.filters.threshold_yen(
                     image=image,
-                    nbins=self.yen_bins
+                    nbins=self.yen_bins.value
                 )
 
-        y_data = skimage.exposure.rescale_intensity(y_data * 1.0)
-
-        y_data = x_data >= y_data
+                y_data[plane] = image >= y_data[plane]
 
         y = cellprofiler.image.Image(
             image=y_data,

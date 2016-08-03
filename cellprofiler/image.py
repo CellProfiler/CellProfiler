@@ -82,7 +82,7 @@ class Image(object):
         """Return the mask (pixels to be considered) for the primary image
         """
         if not self.__mask is None:
-            return self.__mask.get()
+            return self.__mask
 
         if self.has_masking_objects:
             return self.crop_image_similarly(self.crop_mask)
@@ -119,7 +119,7 @@ class Image(object):
 
         check_consistency(self.image, m)
 
-        self.__mask = ImageCache(m)
+        self.__mask = m
 
         self.__has_mask = True
 
@@ -143,7 +143,7 @@ class Image(object):
     def get_crop_mask(self):
         """Return the mask used to crop this image"""
         if not self.__crop_mask is None:
-            return self.__crop_mask.get()
+            return self.__crop_mask
 
         if self.has_masking_objects:
             return self.masking_objects.segmented != 0
@@ -156,7 +156,7 @@ class Image(object):
         return self.mask
 
     def set_crop_mask(self, crop_mask):
-        self.__crop_mask = ImageCache(crop_mask)
+        self.__crop_mask = crop_mask
 
     crop_mask = property(get_crop_mask, set_crop_mask)
 
@@ -222,19 +222,6 @@ class Image(object):
     def cache(self, name, hdf5_file):
         pass
 
-# TODO: REMOVEME
-class ImageCache(object):
-    def __init__(self, image):
-        self.__image = image
-
-    def is_cached(self):
-        return True
-
-    def cache(self, name, backing_store):
-        pass
-
-    def get(self):
-        return self.__image
 
 # TODO: crop_image should be a method on Image
 # TODO: implement crop by mask in skimage and use skimage version

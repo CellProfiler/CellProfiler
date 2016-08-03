@@ -75,6 +75,9 @@ class Image(object):
     def grayscale(self):
         return self.pixel_data[:, :, 0]
 
+    def RGB(self):
+        return self.pixel_data[:, :, :3]
+
     def get_mask(self):
         """Return the mask (pixels to be considered) for the primary image
         """
@@ -270,21 +273,6 @@ def crop_image(image, crop_mask, crop_internal=False):
             return image[i_first:i_end, j_first:j_end, :].copy()
         return image[i_first:i_end, j_first:j_end].copy()
 
-# TODO: rgb should be a method on Image
-class RGBImage(object):
-    """A wrapper that discards the alpha channel
-
-    This is meant to be used if the image is 3-d + alpha but the alpha
-    channel is discarded
-    """
-
-    def __init__(self, image):
-        self.__image = image
-        self.pixel_data = self.__image.pixel_data[:, :, :3]
-
-    def __getattr__(self, name):
-        return getattr(self.__image, name)
-
 
 def check_consistency(image, mask):
     """Check that the image, mask and labels arrays have the same shape and that the arrays are of the right dtype"""
@@ -427,7 +415,7 @@ class ImageSet(object):
             elif image.pixel_data.shape[2] not in (3, 4):
                 raise ValueError("Image must be RGB, but it had %d channels" % image.pixel_data.shape[2])
             elif image.pixel_data.shape[2] == 4:
-                return RGBImage(image)
+                return image.RGB()
 
         return image
 

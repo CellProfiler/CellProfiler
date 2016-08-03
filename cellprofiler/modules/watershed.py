@@ -8,6 +8,7 @@ import cellprofiler.image
 import cellprofiler.module
 import cellprofiler.object
 import cellprofiler.setting
+import numpy
 import SimpleITK
 
 
@@ -32,18 +33,25 @@ class Watershed(cellprofiler.module.Module):
             "---SELECT---"
         )
 
+        self.invert_mask = cellprofiler.setting.Binary(
+            "Invert Mask",
+            False
+        )
+
     def settings(self):
         return [
             self.input_image,
             self.output_object,
-            self.mask
+            self.mask,
+            self.invert_mask
         ]
 
     def visible_settings(self):
         return [
             self.input_image,
             self.output_object,
-            self.mask
+            self.mask,
+            self.invert_mask
         ]
 
     def run(self, workspace):
@@ -53,7 +61,10 @@ class Watershed(cellprofiler.module.Module):
 
         mask = images.get_image(self.mask.value)
 
-        features = SimpleITK.GetImageFromArray(mask.pixel_data * 1.0)
+        if self.invert_mask.value:
+            features = SimpleITK.GetImageFromArray(numpy.logical_not(mask.pixel_data) * 1.0)
+        else:
+            features = SimpleITK.GetImageFromArray(mask.pixel_data * 1.0)
 
         features_watershed = SimpleITK.MorphologicalWatershed(
             features,
@@ -80,6 +91,7 @@ class Watershed(cellprofiler.module.Module):
             markWatershedLine=False,
             level=1
         ) # TODO: What is "level"? Do we tune it?
+        # Level refers to "minimum dynamic of minima" -- excludes minima lower than minima at "level"?
 
         segmentation = SimpleITK.Mask(
             distances_watershed,
@@ -88,6 +100,8 @@ class Watershed(cellprofiler.module.Module):
                 distances_watershed.GetPixelID()
             )
         )
+
+        segmentation = SimpleITK.GetArrayFromImage(segmentation)
 
         output_object = cellprofiler.object.Objects()
         output_object.segmented = segmentation

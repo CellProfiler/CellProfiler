@@ -53,20 +53,14 @@ class Image(object):
     significant.
     """
 
-    def __init__(self,
-                 image=None,
-                 mask=None,
-                 crop_mask=None,
-                 parent_image=None,
-                 masking_objects=None,
-                 convert=True,
-                 path_name=None,
-                 file_name=None,
-                 scale=None):
-        self.__image = None
+    def __init__(self, image=None, mask=None, crop_mask=None, parent_image=None, masking_objects=None, convert=True, path_name=None, file_name=None, scale=None):
+        self.__image = image
+        self.image = image
+        self.pixel_data = image
         self.__mask = None
         self.__has_mask = False
         self.__parent_image = parent_image
+        self.parent_image = parent_image
         self.__crop_mask = None
         if crop_mask is not None:
             self.set_crop_mask(crop_mask)
@@ -75,34 +69,13 @@ class Image(object):
             self.__has_crop_mask = False
         self.__masking_objects = masking_objects
         self.__scale = scale
-        if image is not None:
-            self.set_image(image, convert)
+        # if image is not None:
+        #     self.set_image(image, convert)
         if mask is not None:
             self.set_mask(mask)
         self.__file_name = file_name
         self.__path_name = path_name
         self.__channel_names = None
-
-    def get_image(self):
-        """Return the primary image"""
-        if self.__image is None:
-            return
-        return self.__image.get()
-
-    def set_image(self, image, convert=True):
-        self.__image = ImageCache(image)
-
-    image = property(get_image, set_image)
-    pixel_data = property(get_image, set_image)
-
-    def get_parent_image(self):
-        """The image from which this one was derived"""
-        return self.__parent_image
-
-    def set_parent_image(self, parent_image):
-        self.__parent_image = parent_image
-
-    parent_image = property(get_parent_image, set_parent_image)
 
     def get_has_parent_image(self):
         """True if this image has a defined parent"""

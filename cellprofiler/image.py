@@ -1,5 +1,3 @@
-import StringIO
-import pickle
 import numpy
 
 
@@ -59,7 +57,7 @@ class Image(object):
         self.__scale = scale
         if mask is not None:
             self.set_mask(mask)
-        self.filename = filename
+        # self.filename = filename
         self.pathname = pathname
         self.channel_names = None
         self.has_parent_image = self.parent is not None
@@ -183,41 +181,6 @@ class Image(object):
 
         return cropped_image
 
-    def get_file_name(self):
-        '''The name of the file holding this image
-
-        If the image is derived, then return the file name of the first
-        ancestor that has a file name. Return None if the image does not have
-        an ancestor or if no ancestor has a file name.
-        '''
-        if not self.filename is None:
-            return self.filename
-        elif self.has_parent_image:
-            return self.parent.file_name
-        else:
-            return None
-
-    file_name = property(get_file_name)
-
-    def get_path_name(self):
-        '''The path to the file holding this image
-
-        If the image is derived, then return the path name of the first
-        ancestor that has a path name. Return None if the image does not have
-        an ancestor or if no ancestor has a file name.
-        '''
-        if not self.pathname is None:
-            return self.pathname
-        elif self.has_parent_image:
-            return self.parent.path_name
-        else:
-            return None
-
-    path_name = property(get_path_name)
-
-    def cache(self, name, hdf5_file):
-        pass
-
 
 # TODO: crop_image should be a method on Image
 # TODO: implement crop by mask in skimage and use skimage version
@@ -310,26 +273,6 @@ class VanillaImageProvider(AbstractImageProvider):
         pass
 
 
-class CallbackImageProvider(AbstractImageProvider):
-    """An image provider proxy that calls the indicated callback functions (presumably in your module) to implement the methods
-    """
-
-    def __init__(self, name, image_provider_fn):
-        """Constructor
-        name              - name returned by the Name method
-        image_provider_fn - function called during ProvideImage with the arguments, image_set and the CallbackImageProvider instance
-        """
-
-        self.__name = name
-        self.__image_provider_fn = image_provider_fn
-
-    def provide_image(self, image_set):
-        return self.__image_provider_fn(image_set, self)
-
-    def get_name(self):
-        return self.__name
-
-
 class ImageSet(object):
     """Represents the images for a particular iteration of a pipeline
 
@@ -402,11 +345,10 @@ class ImageSet(object):
 
         return image
 
-    def get_providers(self):
+    @property
+    def providers(self):
         """The list of providers (populated during the image discovery phase)"""
         return self.__image_providers
-
-    providers = property(get_providers)
 
     def get_image_provider(self, name):
         """Get a named image provider
@@ -414,29 +356,12 @@ class ImageSet(object):
         name - return the image provider with this name
         """
         providers = filter(lambda x: x.name == name, self.__image_providers)
+
         assert len(providers) > 0, "No provider of the %s image" % name
+
         assert len(providers) == 1, "More than one provider of the %s image" % name
+
         return providers[0]
-
-    def remove_image_provider(self, name):
-        """Remove a named image provider
-
-        name - the name of the provider to remove
-        """
-        self.__image_providers = filter(lambda x: x.name != name, self.__image_providers)
-
-    def clear_image(self, name):
-        '''Remove the image memory associated with a provider
-
-        name - the name of the provider
-        '''
-        self.get_image_provider(name).release_memory()
-        if self.__images.has_key(name):
-            del self.__images[name]
-
-    def clear_cache(self):
-        '''Remove all of the cached images'''
-        self.__images.clear()
 
     def get_names(self):
         """Get the image provider names
@@ -454,13 +379,13 @@ class ImageSet(object):
     legacy_fields = property(get_legacy_fields)
 
     def add(self, name, image):
-        old_providers = [provider for provider in self.providers
-                         if provider.name == name]
-        if len(old_providers) > 0:
-            self.clear_image(name)
+        old_providers = [provider for provider in self.providers if provider.name == name]
+
         for provider in old_providers:
             self.providers.remove(provider)
+
         provider = VanillaImageProvider(name, image)
+
         self.providers.append(provider)
 
 
@@ -474,13 +399,8 @@ class ImageSetList(object):
         self.__image_sets_by_key = {}
         self.__legacy_fields = {}
         self.__associating_by_key = None
-        self.__test_mode = test_mode
+        self.test_mode = test_mode
         self.combine_path_and_file = False
-
-    @property
-    def test_mode(self):
-        '''True if we are in test mode'''
-        return self.__test_mode
 
     def get_image_set(self, keys_or_number):
         """Return either the indexed image set (keys_or_number = index) or the image set with matching keys
@@ -526,24 +446,6 @@ class ImageSetList(object):
         '''
         return self.__associating_by_key
 
-    def purge_image_set(self, number):
-        """Remove the memory associated with an image set"""
-        keys = self.__image_sets[number].keys
-        image_set = self.__image_sets[number]
-        image_set.clear_cache()
-        for provider in image_set.providers:
-            provider.release_memory()
-        self.__image_sets[number] = None
-        self.__image_sets_by_key[repr(keys)] = None
-
-    def add_provider_to_all_image_sets(self, provider):
-        """Provide an image to every image set
-
-        provider - an instance of AbstractImageProvider
-        """
-        for image_set in self.__image_sets:
-            image_set.providers.append(provider)
-
     def count(self):
         return len(self.__image_sets)
 
@@ -556,7 +458,7 @@ class ImageSetList(object):
     legacy_fields = property(get_legacy_fields)
 
     def get_groupings(self, keys):
-        '''Return the groupings of an image set list over a set of keys
+        """Return the groupings of an image set list over a set of keys
 
         keys - a sequence of keys that match some of the image set keys
 
@@ -569,7 +471,7 @@ class ImageSetList(object):
                     that gives the group's values for each key.
                     The second element is a list of image numbers of
                     the images in the group
-        '''
+        """
         #
         # Sort order for dictionary keys
         #
@@ -594,44 +496,6 @@ class ImageSetList(object):
             d[key_values].append(i + 1)
 
         return keys, [(dict(zip(keys, k)), d[k]) for k in sort_order]
-
-    def save_state(self):
-        '''Return a string that can be used to load the image_set_list's state
-
-        load_state will restore the image set list's state. No image_set can
-        have image providers before this call.
-        '''
-        f = StringIO.StringIO()
-        pickle.dump(self.count(), f)
-
-        for i in range(self.count()):
-            image_set = self.get_image_set(i)
-            assert isinstance(image_set, ImageSet)
-            assert len(image_set.providers) == 0, "An image set cannot have providers while saving its state"
-            pickle.dump(image_set.keys, f)
-
-        pickle.dump(self.legacy_fields, f)
-
-        return f.getvalue()
-
-    def load_state(self, state):
-        '''Load an image_set_list's state from the string returned from save_state'''
-
-        self.__image_sets = []
-        self.__image_sets_by_key = {}
-
-        # Make a safe unpickler
-        p = pickle.Unpickler(StringIO.StringIO(state))
-
-        count = p.load()
-        all_keys = [p.load() for i in range(count)]
-        self.__legacy_fields = p.load()
-        #
-        # Have to do in this order in order for the image set's
-        # legacy_fields property to hook to the right legacy_fields
-        #
-        for i in range(count):
-            self.get_image_set(all_keys[i])
 
 
 def make_dictionary_key(key):

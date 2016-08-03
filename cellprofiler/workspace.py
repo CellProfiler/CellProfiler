@@ -210,7 +210,7 @@ class Workspace(object):
         self.__grid[grid_name] = grid_info
 
     def cache(self):
-        self.measurements.cache()
+        # self.measurements.cache()
         self.measurements.cache_object_set(self.object_set)
 
     def get_frame(self):

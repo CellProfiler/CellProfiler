@@ -171,8 +171,8 @@ class Objects(object):
                 (self.__unedited_segmented, Segmentation.UNEDITED_SEGMENTED),
                 (self.__small_removed_segmented, Segmentation.SMALL_REMOVED_SEGMENTED)):
             if segmentation is not None:
-                segmentation.cache(
-                        hdf5_object_set, objects_name, segmentation_name)
+                # segmentation.cache(hdf5_object_set, objects_name, segmentation_name)
+                pass
 
     def get_parent_image(self):
         """The image that was analyzed to yield the objects.

@@ -500,7 +500,6 @@ class CorrectIlluminationCalculate(cpm.Module):
                     image = w.image_set.get_image(self.image_name.value,
                                                   cache=False)
                     output_image_provider.add_image(image)
-                    w.image_set.clear_cache()
             output_image_provider.serialize(d)
 
         return True

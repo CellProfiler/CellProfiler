@@ -89,7 +89,7 @@ class TestImage(unittest.TestCase):
 
         for test_case in test_cases:
             image = cpi.Image(**test_case)
-            image.cache("foo", hdf_file)
+            # image.cache("foo", hdf_file)
             expected = test_case["image"].astype(np.float32)
             np.testing.assert_array_equal(image.pixel_data, expected)
             if "mask" in test_case:

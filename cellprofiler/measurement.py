@@ -1699,11 +1699,12 @@ class Measurements(object):
         '''Move all uncached images to an HDF5 backing-store'''
         self.__ensure_cache_file()
         for name, image in self.__images.items():
-            image.cache(name, self.__image_cache_file)
+            # image.cache(name, self.__image_cache_file)
+            pass
 
     def cache_object_set(self, object_set):
         self.__ensure_cache_file()
-        object_set.cache(self.__hdf5_object_set)
+        # object_set.cache(self.__hdf5_object_set)
 
     def clear_cache(self):
         '''Remove all of the cached images'''

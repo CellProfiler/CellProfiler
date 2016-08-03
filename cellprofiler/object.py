@@ -1,6 +1,3 @@
-""" CellProfiler.Objects.py - represents a labelling of objects in an image
-"""
-
 import numpy as np
 from centrosome.cpmorphology import all_connected_components
 from centrosome.index import Indexes, all_pairs
@@ -10,26 +7,6 @@ from scipy.sparse import coo_matrix
 import decorator
 
 OBJECT_TYPE_NAME = "objects"
-
-
-@decorator.decorator
-def memoize_method(function, *args):
-    """Cache the result of a method in that class's dictionary
-
-    The dictionary is indexed by function name and the values of that
-    dictionary are themselves dictionaries with args[1:] as the keys
-    and the result of applying function to args[1:] as the values.
-    """
-    sself = args[0]
-    d = getattr(sself, "memoize_method_dictionary", False)
-    if not d:
-        d = {}
-        setattr(sself, "memoize_method_dictionary", d)
-    if not d.has_key(function):
-        d[function] = {}
-    if not d[function].has_key(args[1:]):
-        d[function][args[1:]] = function(*args)
-    return d[function][args[1:]]
 
 
 class Objects(object):
@@ -395,7 +372,6 @@ class Objects(object):
         # c.csc?
         return (parent_matrix.tocsc() * child_matrix.tocsc()).toarray()
 
-    @memoize_method
     def get_indices(self):
         """Get the indices for a scipy.ndimage-style function from the segmented labels
 
@@ -412,7 +388,6 @@ class Objects(object):
         """The number of objects labeled"""
         return len(self.indices)
 
-    @memoize_method
     def get_areas(self):
         """The area of each object"""
         if len(self.indices) == 0:
@@ -421,7 +396,6 @@ class Objects(object):
 
     areas = property(get_areas)
 
-    @memoize_method
     def fn_of_label(self, function):
         """Call a function taking just a label matrix
 
@@ -430,7 +404,6 @@ class Objects(object):
     """
         return function(self.segmented)
 
-    @memoize_method
     def fn_of_label_and_index(self, function):
         """Call a function taking a label matrix with the segmented labels
 
@@ -441,7 +414,6 @@ class Objects(object):
         """
         return function(self.segmented, self.indices)
 
-    @memoize_method
     def fn_of_ones_label_and_index(self, function):
         """Call a function taking an image, a label matrix and an index with an image of all ones
 
@@ -458,7 +430,6 @@ class Objects(object):
                         self.segmented,
                         self.indices)
 
-    @memoize_method
     def fn_of_image_label_and_index(self, function, image):
         """Call a function taking an image, a label matrix and an index
 

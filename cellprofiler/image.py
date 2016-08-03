@@ -5,7 +5,6 @@ ImageSetList - Represents the list of image filenames that make up a pipeline ru
 """
 
 import logging
-import math
 import sys
 from StringIO import StringIO
 from cPickle import dump, Unpickler
@@ -14,8 +13,6 @@ from zlib import decompress
 
 import numpy as np
 from numpy import fromstring, uint8, uint16
-
-logger = logging.getLogger(__name__)
 
 
 class Image(object):
@@ -450,9 +447,7 @@ class AbstractImageProvider(object):
         raise NotImplementedError("Please implement get_name for your class")
 
     def release_memory(self):
-        '''Release whatever memory is associated with the image'''
-        logger.warning("Warning: no memory release function implemented for %s image",
-                       self.get_name())
+        pass
 
     name = property(__get_name)
 
@@ -581,7 +576,6 @@ class ImageSet(object):
                 raise ValueError("Image must be RGB, but it had %d channels" %
                                  image.pixel_data.shape[2])
             elif image.pixel_data.shape[2] == 4:
-                logger.warning("Discarding alpha channel.")
                 return RGBImage(image)
         return image
 
@@ -794,12 +788,7 @@ class ImageSetList(object):
         p = Unpickler(StringIO(state))
 
         def find_global(module_name, class_name):
-            logger.debug("Pickler wants %s:%s", module_name, class_name)
             if module_name not in ("numpy", "numpy.core.multiarray"):
-                logger.critical(
-                        "WARNING WARNING WARNING - your batch file has asked to load %s.%s."
-                        " If this looks in any way suspicious please contact us at www.cellprofiler.org",
-                        module_name, class_name)
                 raise ValueError("Illegal attempt to unpickle class %s.%s",
                                  (module_name, class_name))
             __import__(module_name)
@@ -824,49 +813,3 @@ def make_dictionary_key(key):
     return u", ".join([u":".join([unicode(y) for y in x])
                        for x in sorted(key.iteritems())])
 
-
-def readc01(fname):
-    '''Read a Cellomics file into an array
-
-    fname - the name of the file
-    '''
-
-    def readint(f):
-        return unpack("<l", f.read(4))[0]
-
-    def readshort(f):
-        return unpack("<h", f.read(2))[0]
-
-    f = open(fname, "rb")
-
-    # verify it's a c01 format, and skip the first four bytes
-    assert readint(f) == 16 << 24
-
-    # decompress
-    g = StringIO(decompress(f.read()))
-
-    # skip four bytes
-    g.seek(4, 1)
-
-    x = readint(g)
-    y = readint(g)
-
-    nplanes = readshort(g)
-    nbits = readshort(g)
-
-    compression = readint(g)
-    assert compression == 0, "can't read compressed pixel data"
-
-    # skip 4 bytes
-    g.seek(4, 1)
-
-    pixelwidth = readint(g)
-    pixelheight = readint(g)
-    colors = readint(g)
-    colors_important = readint(g)
-
-    # skip 12 bytes
-    g.seek(12, 1)
-
-    data = fromstring(g.read(), uint16 if nbits == 16 else uint8, x * y)
-    return data.reshape(x, y).T

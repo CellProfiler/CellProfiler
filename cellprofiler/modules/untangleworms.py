@@ -862,7 +862,7 @@ class UntangleWorms(cpm.Module):
             I.add_object_count_measurements(measurements, name, o.count)
             if self.show_window:
                 workspace.display_data.overlapping_labels = [
-                    l for l, idx in o.get_labels()]
+                    l for l, idx in o.labels()]
 
             if o.count == 0:
                 center_x = np.zeros(0)
@@ -914,7 +914,7 @@ class UntangleWorms(cpm.Module):
             I.add_object_location_measurements(measurements, name, labels, o.count)
             if self.show_window:
                 workspace.display_data.nonoverlapping_labels = [
-                    l for l, idx in o.get_labels()]
+                    l for l, idx in o.labels()]
 
             if self.wants_nonoverlapping_outlines:
                 outline_pixels = outline(labels) > 0

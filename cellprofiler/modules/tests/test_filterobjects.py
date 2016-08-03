@@ -1765,7 +1765,7 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
             module.run(workspace)
             output_objects = workspace.object_set.get_objects(OUTPUT_OBJECTS)
             self.assertEqual(output_objects.count, 1)
-            labels_out = output_objects.get_labels()[0][0]
+            labels_out = output_objects.labels()[0][0]
             np.testing.assert_array_equal(labels_out[1:4, 1:4], 1)
             np.testing.assert_array_equal(labels_out[5:7, 5:7], 0)
         

@@ -2931,7 +2931,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         module.run(workspace)
         o = workspace.object_set.get_objects(OBJECTS_NAME)
         self.assertEqual(o.count, 2)
-        labels_and_indices = o.get_labels()
+        labels_and_indices = o.labels()
         for n, mask in enumerate(overlapped_objects_data_masks):
             object_number = n + 1
             for label, idx in labels_and_indices:

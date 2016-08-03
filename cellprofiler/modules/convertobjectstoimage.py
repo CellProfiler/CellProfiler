@@ -102,7 +102,7 @@ class ConvertObjectsToImage(cpm.Module):
         else:
             pixel_data = np.zeros((objects.shape[0], objects.shape[1], 3))
         convert = True
-        for labels, indices in objects.get_labels():
+        for labels, indices in objects.labels():
             mask = labels != 0
             if np.all(~ mask):
                 continue

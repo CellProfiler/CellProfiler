@@ -863,7 +863,7 @@ class CalculateImageOverlap(cpm.Module):
 
     def get_labels_mask(self, obj):
         labels_mask = np.zeros(obj.shape, bool)
-        for labels, indexes in obj.get_labels():
+        for labels, indexes in obj.labels():
             labels_mask = labels_mask | labels > 0
         return labels_mask
 
@@ -872,7 +872,7 @@ class CalculateImageOverlap(cpm.Module):
         ii = []
         jj = []
         total_skel = np.zeros(obj.shape, bool)
-        for labels, indexes in obj.get_labels():
+        for labels, indexes in obj.labels():
             colors = morph.color_labels(labels)
             for color in range(1, np.max(colors) + 1):
                 labels_mask = colors == color

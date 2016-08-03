@@ -177,7 +177,7 @@ class TestConvertObjectsToImage(unittest.TestCase):
         objects = cpo.Objects()
         objects.set_ijv(ijv, shape)
         object_set.add_objects(objects, OBJECTS_NAME)
-        self.assertGreater(len(objects.get_labels()), 1)
+        self.assertGreater(len(objects.labels()), 1)
         module.image_name.value = IMAGE_NAME
         module.object_name.value = OBJECTS_NAME
         return workspace, module, ijv

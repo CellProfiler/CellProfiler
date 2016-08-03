@@ -182,7 +182,7 @@ class EditObjectsManually(I.Identify):
 
         orig_objects = workspace.object_set.get_objects(orig_objects_name)
         assert isinstance(orig_objects, cpo.Objects)
-        orig_labels = [l for l, c in orig_objects.get_labels()]
+        orig_labels = [l for l, c in orig_objects.labels()]
 
         if self.wants_image_display:
             guide_image = workspace.image_set.get_image(self.image_name.value)

@@ -337,7 +337,7 @@ class MeasureObjectSizeShape(cpm.Module):
             zf[(n, m)] = np.zeros(nobjects)
         if nobjects > 0:
             chulls, chull_counts = convex_hull_ijv(objects.ijv, objects.indices)
-            for labels, indices in objects.get_labels():
+            for labels, indices in objects.labels():
                 to_indices = indices - 1
                 distances = distance_to_edge(labels)
                 mcenter_y[to_indices], mcenter_x[to_indices] = \

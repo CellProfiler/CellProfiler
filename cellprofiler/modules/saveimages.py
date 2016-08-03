@@ -562,7 +562,7 @@ class SaveImages(cpm.Module):
         if filename is None:  # failed overwrite check
             return
 
-        labels = [l for l, c in objects.get_labels()]
+        labels = [l for l, c in objects.labels()]
         if self.get_file_format() == FF_MAT:
             pixels = objects.segmented
             scipy.io.matlab.mio.savemat(filename, {"Image": pixels}, format='5')

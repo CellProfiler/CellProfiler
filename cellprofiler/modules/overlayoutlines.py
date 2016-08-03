@@ -214,7 +214,7 @@ class OverlayOutlines(cpm.Module):
                 name = outline.objects_name.value
                 objects = workspace.object_set.get_objects(name)
                 workspace.display_data.labels[name] = \
-                    [labels for labels, indexes in objects.get_labels()]
+                    [labels for labels, indexes in objects.labels()]
 
         workspace.display_data.pixel_data = pixel_data
 
@@ -358,7 +358,7 @@ class OverlayOutlines(cpm.Module):
             name = outline.objects_name.value
             objects = workspace.object_set.get_objects(name)
             pixel_data = np.zeros(objects.shape, bool)
-            for labels, indexes in objects.get_labels():
+            for labels, indexes in objects.labels():
                 pixel_data = \
                     pixel_data | centrosome.outline.outline(labels)
         if self.wants_color == WANTS_GRAYSCALE:

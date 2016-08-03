@@ -303,7 +303,7 @@ class TestObjects(unittest.TestCase):
         '''Convert a blank ijv representation to labels'''
         x = cpo.Objects()
         x.ijv = np.zeros((0, 3), int)
-        y = x.get_labels()
+        y = x.labels()
         self.assertEqual(len(y), 1)
         labels, indices = y[0]
         self.assertEqual(len(indices), 0)
@@ -321,7 +321,7 @@ class TestObjects(unittest.TestCase):
         x = cpo.Objects()
         x.ijv = ijv
         x.parent_image = cpi.Image(np.zeros(labels.shape))
-        labels_out = x.get_labels()
+        labels_out = x.labels()
         self.assertEqual(len(labels_out), 1)
         labels_out, indices = labels_out[0]
         self.assertTrue(np.all(labels_out == labels))
@@ -343,7 +343,7 @@ class TestObjects(unittest.TestCase):
                         [5, 5, 5]])
         x = cpo.Objects()
         x.ijv = ijv
-        labels = x.get_labels()
+        labels = x.labels()
         self.assertEqual(len(labels), 2)
         unique_a = np.unique(labels[0][0])[1:]
         unique_b = np.unique(labels[1][0])[1:]
@@ -368,7 +368,7 @@ class TestObjects(unittest.TestCase):
         x.set_ijv(ijv, (8, 9))
         labels = []
         indices = np.zeros(3, bool)
-        for l, i in x.get_labels():
+        for l, i in x.labels():
             labels.append(l)
             self.assertEqual(len(i), 1)
             self.assertTrue(i[0] in (1, 2, 3))

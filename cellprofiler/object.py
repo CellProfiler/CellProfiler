@@ -97,19 +97,20 @@ class Objects(object):
         '''The i and j extents of the labels'''
         return self.__segmented.get_shape()[-2:]
 
-    def get_labels(self, shape=None):
-        '''Get a set of labels matrices consisting of non-overlapping labels
+    # TODO: Use or remove shape parameter
+    # TODO: Make property?
+    def labels(self, shape=None):
+        """Get a set of labels matrices consisting of non-overlapping labels
 
         In IJV format, a single pixel might have multiple labels. If you
         want to use a labels matrix, you have an ambiguous situation and the
         resolution is to process separate labels matrices consisting of
         non-overlapping labels.
 
-        returns a list of label matrixes and the indexes in each
-        '''
+        returns a list of label matrices and the indexes in each
+        """
         dense, indices = self.__segmented.get_dense()
-        return [
-            (dense[i, 0, 0, 0], indices[i]) for i in range(dense.shape[0])]
+        return [(dense[i, 0, 0, 0], indices[i]) for i in range(dense.shape[0])]
 
     def has_unedited_segmented(self):
         """Return true if there is an unedited segmented matrix."""
@@ -222,7 +223,7 @@ class Objects(object):
         # the most similar colors in the color space for objects that
         # don't overlap.
         #
-        all_labels = [(outline(label), indexes) for label, indexes in self.get_labels()]
+        all_labels = [(outline(label), indexes) for label, indexes in self.labels()]
         image = np.zeros(list(all_labels[0][0].shape) + [3], np.float32)
         #
         # Find out how many unique labels in each

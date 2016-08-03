@@ -338,7 +338,7 @@ class MeasureObjectIntensity(cpm.Module):
                 cmi_y = np.zeros((nobjects,))
                 max_x = np.zeros((nobjects,))
                 max_y = np.zeros((nobjects,))
-                for labels, lindexes in objects.get_labels():
+                for labels, lindexes in objects.labels():
                     lindexes = lindexes[lindexes != 0]
                     labels, img = cpo.crop_labels_and_image(labels, img)
                     _, masked_image = cpo.crop_labels_and_image(labels, masked_image)

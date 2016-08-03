@@ -377,7 +377,7 @@ class StraightenWorms(cpm.Module):
             #
             params = self.read_params(workspace)
             ncontrolpoints = params.num_control_points
-            all_labels = [l for l, idx in orig_objects.get_labels()]
+            all_labels = [l for l, idx in orig_objects.labels()]
             control_points, lengths = recalculate_single_worm_control_points(
                     all_labels, ncontrolpoints)
             control_points = control_points.transpose(2, 1, 0)
@@ -416,7 +416,7 @@ class StraightenWorms(cpm.Module):
         # a labels matrix, second is a list of indexes in the matrix.
         # We need this for overlapping worms.
         #
-        orig_labels_and_indexes = orig_objects.get_labels()
+        orig_labels_and_indexes = orig_objects.labels()
         #
         # Handle each of the worm splines separately
         #

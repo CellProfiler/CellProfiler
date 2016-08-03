@@ -761,7 +761,7 @@ class MeasureObjectIntensityDistribution(cpm.Module):
             #
             ij = np.zeros((objects.count + 1, 2))
             r = np.zeros(objects.count + 1)
-            for labels, indexes in objects.get_labels():
+            for labels, indexes in objects.labels():
                 ij_, r_ = minimum_enclosing_circle(labels, indexes)
                 ij[indexes] = ij_
                 r[indexes] = r_

@@ -2252,7 +2252,7 @@ class LoadImages(cpmodule.Module):
                     I.add_object_location_measurements_ijv(m, object_name, ijv)
                     if channel.wants_outlines:
                         outlines = np.zeros(shape, bool)
-                        for l, c in o.get_labels():
+                        for l, c in o.labels():
                             outlines |= centrosome.outline.outline(l).astype(
                                     outlines.dtype)
                         outline_image = cpimage.Image(outlines,

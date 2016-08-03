@@ -334,15 +334,18 @@ class RescaleIntensity(cpm.Module):
             rescaled_image = cpi.Image(output_image,
                                        mask=output_mask,
                                        parent_image=input_image,
-                                       convert=False)
+                                       convert=False,
+                                       dimensions=input_image.dimensions)
         else:
             rescaled_image = cpi.Image(output_image,
                                        parent_image=input_image,
-                                       convert=False)
+                                       convert=False,
+                                       dimensions=input_image.dimensions)
         workspace.image_set.add(self.rescaled_image_name.value, rescaled_image)
         if self.show_window:
             workspace.display_data.image_data = [input_image.pixel_data,
                                                  rescaled_image.pixel_data]
+            workspace.display_data.dimensionality = input_image.dimensions
 
     def display(self, workspace, figure):
         '''Display the input image and rescaled image'''
@@ -352,7 +355,17 @@ class RescaleIntensity(cpm.Module):
                                  (self.rescaled_image_name, 1, 0)):
             image_name = image_name.value
             pixel_data = workspace.display_data.image_data[i]
-            if pixel_data.ndim == 2:
+            if workspace.display_data.dimensionality == 3:
+                figure.subplot_imshow_grayscale(
+                    i,
+                    j,
+                    pixel_data[16],
+                    title=image_name,
+                    vmin=0,
+                    vmax=1,
+                    sharexy=figure.subplot(0, 0)
+                )
+            elif pixel_data.ndim == 2:
                 figure.subplot_imshow_grayscale(i, j, pixel_data,
                                                 title=image_name,
                                                 vmin=0, vmax=1,

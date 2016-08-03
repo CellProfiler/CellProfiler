@@ -14,6 +14,7 @@ from cellprofiler.preferences import get_plugin_directory
 
 # python modules and their corresponding cellprofiler.module classes
 pymodule_to_cpmodule = {
+    'edgedetection': 'EdgeDetection',
     'align': 'Align',
     'applythreshold': 'ApplyThreshold',
     'calculateimageoverlap': 'CalculateImageOverlap',
@@ -110,6 +111,7 @@ pymodule_to_cpmodule = {
 
 # the builtin CP modules that will be loaded from the cellprofiler.modules directory
 builtin_modules = [
+    'edgedetection',
     'align',
     'applythreshold',
     'calculateimageoverlap',

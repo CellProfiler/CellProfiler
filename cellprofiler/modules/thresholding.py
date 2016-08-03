@@ -88,11 +88,6 @@ class Thresholding(cellprofiler.module.Module):
             value=256
         )
 
-        self.test = cellprofiler.setting.Checkbox(
-            u"Test",
-            False
-        )
-
     def settings(self):
         return [
             self.x_name,
@@ -104,16 +99,14 @@ class Thresholding(cellprofiler.module.Module):
             self.adaptive_mode,
             self.isodata_bins,
             self.otsu_bins,
-            self.yen_bins,
-            self.test
+            self.yen_bins
         ]
 
     def visible_settings(self):
         settings = [
             self.x_name,
             self.y_name,
-            self.method,
-            self.test
+            self.method
         ]
 
         if self.method.value == u"Adaptive":

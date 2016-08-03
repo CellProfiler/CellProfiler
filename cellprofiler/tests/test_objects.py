@@ -45,7 +45,7 @@ class TestObjects(unittest.TestCase):
 
     def test_01_03_set_unedited_segmented(self):
         x = cpo.Objects()
-        x.set_unedited_segmented(self.__unedited_segmented10)
+        x.unedited_segmented = self.__unedited_segmented10
         self.assertTrue((self.__unedited_segmented10 == x.unedited_segmented).all())
 
     def test_01_04_unedited_segmented(self):

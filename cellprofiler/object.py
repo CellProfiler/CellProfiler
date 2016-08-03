@@ -116,7 +116,8 @@ class Objects(object):
         """Return true if there is an unedited segmented matrix."""
         return self.__unedited_segmented is not None
 
-    def get_unedited_segmented(self):
+    @property
+    def unedited_segmented(self):
         """Get the segmentation of the image into objects, including junk that
         should be ignored: a matrix of object numbers.
 
@@ -128,13 +129,11 @@ class Objects(object):
             return dense[0, 0, 0, 0]
         return self.segmented
 
-    def set_unedited_segmented(self, labels):
+    @unedited_segmented.setter
+    def unedited_segmented(self, labels):
         dense = downsample_labels(labels).reshape(
                 (1, 1, 1, 1, labels.shape[0], labels.shape[1]))
         self.__unedited_segmented = Segmentation(dense=dense)
-
-    unedited_segmented = property(get_unedited_segmented,
-                                  set_unedited_segmented)
 
     def has_small_removed_segmented(self):
         """Return true if there is a junk object matrix."""

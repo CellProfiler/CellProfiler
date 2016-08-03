@@ -1,18 +1,6 @@
-"""Image.py
-
-Image        - Represents an image with secondary attributes such as a mask and labels
-ImageSetList - Represents the list of image filenames that make up a pipeline run
-"""
-
-import logging
-import sys
-from StringIO import StringIO
-from cPickle import dump, Unpickler
-from struct import unpack
-from zlib import decompress
-
-import numpy as np
-from numpy import fromstring, uint8, uint16
+import StringIO
+import pickle
+import numpy
 
 
 class Image(object):
@@ -78,22 +66,8 @@ class Image(object):
         self.__path_name = path_name
         self.__channel_names = None
         self.channel_names = self.__channel_names
-
-    def get_has_parent_image(self):
-        """True if this image has a defined parent"""
-        return self.__parent_image is not None
-
-    has_parent_image = property(get_has_parent_image)
-
-    def get_has_masking_objects(self):
-        """True if the image was cropped with objects
-
-        If this is true, there will also be a valid labels matrix
-        available through the labels property
-        """
-        return self.__masking_objects is not None
-
-    has_masking_objects = property(get_has_masking_objects)
+        self.has_parent_image = self.__parent_image is not None
+        self.has_masking_objects = self.__masking_objects is not None
 
     def get_labels(self):
         """Get the segmentation labels from the masking objects
@@ -134,7 +108,7 @@ class Image(object):
         else:
             shape = image.shape[1:]
 
-        return np.ones(shape, dtype=np.bool)
+        return numpy.ones(shape, dtype=numpy.bool)
 
     def set_mask(self, mask):
         """Set the mask (pixels to be considered) for the primary image
@@ -142,9 +116,9 @@ class Image(object):
         Convert the input into a numpy array. If the input is numeric,
         we convert it to boolean by testing each element for non-zero.
         """
-        m = np.array(mask)
+        m = numpy.array(mask)
 
-        if not (m.dtype.type is np.bool):
+        if not (m.dtype.type is numpy.bool):
             m = (m != 0)
 
         check_consistency(self.image, m)
@@ -272,7 +246,7 @@ class Image(object):
     def cache(self, name, hdf5_file):
         pass
 
-
+# TODO: REMOVEME
 class ImageCache(object):
     def __init__(self, image):
         self.__image = image
@@ -286,22 +260,23 @@ class ImageCache(object):
     def get(self):
         return self.__image
 
-
+# TODO: crop_image should be a method on Image
+# TODO: implement crop by mask in skimage and use skimage version
 def crop_image(image, crop_mask, crop_internal=False):
     """Crop an image to the size of the nonzero portion of a crop mask"""
     i_histogram = crop_mask.sum(axis=1)
-    i_cumsum = np.cumsum(i_histogram != 0)
+    i_cumsum = numpy.cumsum(i_histogram != 0)
     j_histogram = crop_mask.sum(axis=0)
-    j_cumsum = np.cumsum(j_histogram != 0)
+    j_cumsum = numpy.cumsum(j_histogram != 0)
     if i_cumsum[-1] == 0:
         # The whole image is cropped away
-        return np.zeros((0, 0), dtype=image.dtype)
+        return numpy.zeros((0, 0), dtype=image.dtype)
     if crop_internal:
         #
         # Make up sequences of rows and columns to keep
         #
-        i_keep = np.argwhere(i_histogram > 0)
-        j_keep = np.argwhere(j_histogram > 0)
+        i_keep = numpy.argwhere(i_histogram > 0)
+        j_keep = numpy.argwhere(j_histogram > 0)
         #
         # Then slice the array by I, then by J to get what's not blank
         #
@@ -312,17 +287,17 @@ def crop_image(image, crop_mask, crop_internal=False):
         # The last are at the first where the cumsum is it's max (meaning
         # what came after was all zeros and added nothing)
         #
-        i_first = np.argwhere(i_cumsum == 1)[0]
-        i_last = np.argwhere(i_cumsum == i_cumsum.max())[0]
+        i_first = numpy.argwhere(i_cumsum == 1)[0]
+        i_last = numpy.argwhere(i_cumsum == i_cumsum.max())[0]
         i_end = i_last + 1
-        j_first = np.argwhere(j_cumsum == 1)[0]
-        j_last = np.argwhere(j_cumsum == j_cumsum.max())[0]
+        j_first = numpy.argwhere(j_cumsum == 1)[0]
+        j_last = numpy.argwhere(j_cumsum == j_cumsum.max())[0]
         j_end = j_last + 1
         if image.ndim == 3:
             return image[i_first:i_end, j_first:j_end, :].copy()
         return image[i_first:i_end, j_first:j_end].copy()
 
-
+# TODO: grayscale should be a method on Image
 class GrayscaleImage(object):
     """A wrapper around a non-grayscale image
 
@@ -332,19 +307,12 @@ class GrayscaleImage(object):
 
     def __init__(self, image):
         self.__image = image
+        self.pixel_data = self.__image.pixel_data[:, :, 0]
 
     def __getattr__(self, name):
         return getattr(self.__image, name)
 
-    def get_pixel_data(self):
-        """One 2-d channel of the color image as a numpy array"""
-        if self.__image.pixel_data.dtype.kind == 'b':
-            return self.__image.pixel_data.astype(np.float64)
-        return self.__image.pixel_data[:, :, 0]
-
-    pixel_data = property(get_pixel_data)
-
-
+# TODO: rgb should be a method on Image
 class RGBImage(object):
     """A wrapper that discards the alpha channel
 
@@ -354,15 +322,10 @@ class RGBImage(object):
 
     def __init__(self, image):
         self.__image = image
+        self.pixel_data = self.__image.pixel_data[:, :, :3]
 
     def __getattr__(self, name):
         return getattr(self.__image, name)
-
-    def get_pixel_data(self):
-        '''Return the pixel data without the alpha channel'''
-        return self.__image.pixel_data[:, :, :3]
-
-    pixel_data = property(get_pixel_data)
 
 
 def check_consistency(image, mask):
@@ -370,7 +333,7 @@ def check_consistency(image, mask):
     assert (image is None) or (len(image.shape) in (2, 3)), "Image must have 2 or 3 dimensions"
     assert (mask is None) or (len(mask.shape) == 2), "Mask must have 2 dimensions"
     assert (image is None) or (mask is None) or (image.shape[:2] == mask.shape), "Image and mask sizes don't match"
-    assert (mask is None) or (mask.dtype.type is np.bool_), "Mask must be boolean, was %s" % (repr(mask.dtype.type))
+    assert (mask is None) or (mask.dtype.type is numpy.bool_), "Mask must be boolean, was %s" % (repr(mask.dtype.type))
 
 
 class AbstractImageProvider(object):
@@ -484,7 +447,7 @@ class ImageSet(object):
         if must_be_binary and image.pixel_data.ndim == 3:
             raise ValueError("Image must be binary, but it was color")
 
-        if must_be_binary and image.pixel_data.dtype != np.bool:
+        if must_be_binary and image.pixel_data.dtype != numpy.bool:
             raise ValueError("Image was not binary")
 
         if must_be_color and image.pixel_data.ndim != 3:
@@ -493,7 +456,7 @@ class ImageSet(object):
         if (must_be_grayscale and (image.pixel_data.ndim != 2)):
             pd = image.pixel_data
 
-            if pd.shape[2] >= 3 and np.all(pd[:, :, 0] == pd[:, :, 1]) and np.all(pd[:, :, 0] == pd[:, :, 2]):
+            if pd.shape[2] >= 3 and numpy.all(pd[:, :, 0] == pd[:, :, 1]) and numpy.all(pd[:, :, 0] == pd[:, :, 2]):
                 return GrayscaleImage(image)
 
             raise ValueError("Image must be grayscale, but it was color")
@@ -532,8 +495,7 @@ class ImageSet(object):
 
         name - the name of the provider to remove
         """
-        self.__image_providers = filter(lambda x: x.name != name,
-                                        self.__image_providers)
+        self.__image_providers = filter(lambda x: x.name != name, self.__image_providers)
 
     def clear_image(self, name):
         '''Remove the image memory associated with a provider
@@ -604,14 +566,19 @@ class ImageSetList(object):
             k = make_dictionary_key(keys)
         else:
             keys = keys_or_number
+
             k = make_dictionary_key(keys)
+
             if self.__image_sets_by_key.has_key(k):
                 number = self.__image_sets_by_key[k].get_number()
             else:
                 number = len(self.__image_sets)
+
             self.__associating_by_key = True
+
         if number >= len(self.__image_sets):
             self.__image_sets += [None] * (number - len(self.__image_sets) + 1)
+
         if self.__image_sets[number] is None:
             image_set = ImageSet(number, keys, self.__legacy_fields)
             self.__image_sets[number] = image_set
@@ -679,19 +646,25 @@ class ImageSetList(object):
         # Sort order for dictionary keys
         #
         sort_order = []
-        dictionaries = []
+
         #
         # Dictionary of key_values to list of image numbers
         #
         d = {}
+
         for i in range(self.count()):
             image_set = self.get_image_set(i)
+
             assert isinstance(image_set, ImageSet)
+
             key_values = tuple([str(image_set.keys[key]) for key in keys])
+
             if not d.has_key(key_values):
                 d[key_values] = []
                 sort_order.append(key_values)
+
             d[key_values].append(i + 1)
+
         return keys, [(dict(zip(keys, k)), d[k]) for k in sort_order]
 
     def save_state(self):
@@ -700,16 +673,16 @@ class ImageSetList(object):
         load_state will restore the image set list's state. No image_set can
         have image providers before this call.
         '''
-        f = StringIO()
-        dump(self.count(), f)
+        f = StringIO.StringIO()
+        pickle.dump(self.count(), f)
 
         for i in range(self.count()):
             image_set = self.get_image_set(i)
             assert isinstance(image_set, ImageSet)
             assert len(image_set.providers) == 0, "An image set cannot have providers while saving its state"
-            dump(image_set.keys, f)
+            pickle.dump(image_set.keys, f)
 
-        dump(self.legacy_fields, f)
+        pickle.dump(self.legacy_fields, f)
 
         return f.getvalue()
 
@@ -720,16 +693,7 @@ class ImageSetList(object):
         self.__image_sets_by_key = {}
 
         # Make a safe unpickler
-        p = Unpickler(StringIO(state))
-
-        # def find_global(module_name, class_name):
-        #     if module_name not in ("numpy", "numpy.core.multiarray"):
-        #         raise ValueError("Illegal attempt to unpickle class %s.%s", (module_name, class_name))
-        #     __import__(module_name)
-        #     mod = sys.modules[module_name]
-        #     return getattr(mod, class_name)
-        #
-        # p.find_global = find_global
+        p = pickle.Unpickler(StringIO.StringIO(state))
 
         count = p.load()
         all_keys = [p.load() for i in range(count)]

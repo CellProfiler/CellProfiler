@@ -68,6 +68,7 @@ class Image(object):
         else:
             self.__has_crop_mask = False
         self.__masking_objects = masking_objects
+        self.masking_objects = masking_objects
         self.__scale = scale
         # if image is not None:
         #     self.set_image(image, convert)
@@ -76,21 +77,13 @@ class Image(object):
         self.__file_name = file_name
         self.__path_name = path_name
         self.__channel_names = None
+        self.channel_names = self.__channel_names
 
     def get_has_parent_image(self):
         """True if this image has a defined parent"""
         return self.__parent_image is not None
 
     has_parent_image = property(get_has_parent_image)
-
-    def get_masking_objects(self):
-        """The objects used to crop and mask this image"""
-        return self.__masking_objects
-
-    def set_masking_objects(self, value):
-        self.__masking_objects = value
-
-    masking_objects = property(get_masking_objects, set_masking_objects)
 
     def get_has_masking_objects(self):
         """True if the image was cropped with objects
@@ -110,6 +103,7 @@ class Image(object):
         """
         if not self.has_masking_objects:
             return None
+
         return self.crop_image_similarly(self.masking_objects.segmented)
 
     labels = property(get_labels)
@@ -125,9 +119,11 @@ class Image(object):
 
         if self.has_parent_image:
             mask = self.parent_image.mask
+
             return self.crop_image_similarly(mask)
 
         image = self.image
+
         #
         # Exclude channel, if present, from shape
         #
@@ -137,6 +133,7 @@ class Image(object):
             shape = image.shape[:2]
         else:
             shape = image.shape[1:]
+
         return np.ones(shape, dtype=np.bool)
 
     def set_mask(self, mask):
@@ -146,10 +143,14 @@ class Image(object):
         we convert it to boolean by testing each element for non-zero.
         """
         m = np.array(mask)
+
         if not (m.dtype.type is np.bool):
             m = (m != 0)
+
         check_consistency(self.image, m)
+
         self.__mask = ImageCache(m)
+
         self.__has_mask = True
 
     mask = property(get_mask, set_mask)
@@ -158,10 +159,13 @@ class Image(object):
         """True if the image has a mask"""
         if self.__has_mask:
             return True
+
         if self.has_crop_mask:
             return True
+
         if self.parent_image is not None:
             return self.parent_image.has_mask
+
         return False
 
     has_mask = property(get_has_mask)
@@ -189,9 +193,7 @@ class Image(object):
     @property
     def has_crop_mask(self):
         '''True if the image or its ancestors has a crop mask'''
-        return (self.__crop_mask is not None or
-                self.has_masking_objects or
-                (self.has_parent_image and self.parent_image.has_crop_mask))
+        return (self.__crop_mask is not None or self.has_masking_objects or (self.has_parent_image and self.parent_image.has_crop_mask))
 
     def crop_image_similarly(self, image):
         """Crop a 2-d or 3-d image using this image's crop mask
@@ -201,21 +203,18 @@ class Image(object):
         if image.shape[:2] == self.pixel_data.shape[:2]:
             # Same size - no cropping needed
             return image
-        if any([my_size > other_size
-                for my_size, other_size
-                in zip(self.pixel_data.shape, image.shape)]):
-            raise ValueError("Image to be cropped is smaller: %s vs %s" %
-                             (repr(image.shape),
-                              repr(self.pixel_data.shape)))
+
+        if any([my_size > other_size for my_size, other_size in zip(self.pixel_data.shape, image.shape)]):
+            raise ValueError("Image to be cropped is smaller: %s vs %s" % (repr(image.shape), repr(self.pixel_data.shape)))
+
         if not self.has_crop_mask:
-            raise RuntimeError(
-                    "Images are of different size and no crop mask available.\n"
-                    "Use the Crop and Align modules to match images of different sizes.")
+            raise RuntimeError("Images are of different size and no crop mask available.\nUse the Crop and Align modules to match images of different sizes.")
+
         cropped_image = crop_image(image, self.crop_mask)
+
         if cropped_image.shape[0:2] != self.pixel_data.shape[0:2]:
-            raise ValueError("Cropped image is not the same size as the reference image: %s vs %s" %
-                             (repr(cropped_image.shape),
-                              repr(self.pixel_data.shape)))
+            raise ValueError("Cropped image is not the same size as the reference image: %s vs %s" % (repr(cropped_image.shape), repr(self.pixel_data.shape)))
+
         return cropped_image
 
     def get_file_name(self):
@@ -250,15 +249,6 @@ class Image(object):
 
     path_name = property(get_path_name)
 
-    def get_channel_names(self):
-        '''The user-defined names of the channels in a channel stack'''
-        return self.__channel_names
-
-    def set_channel_names(self, names):
-        self.__channel_names = tuple(names)
-
-    channel_names = property(get_channel_names, set_channel_names)
-
     @property
     def has_channel_names(self):
         '''True if there are channel names on this image'''
@@ -274,30 +264,13 @@ class Image(object):
         '''
         if self.__scale is None and self.has_parent_image:
             return self.parent_image.scale
+
         return self.__scale
 
     scale = property(get_scale)
 
     def cache(self, name, hdf5_file):
-        '''Move all images into backing stores
-
-        name - the channel name of the image
-        hdf5_file - an HDF5 file or group
-
-        We utilize the sub-groups, "Images", "Masks" and "CropMasks".
-        The best practice is to use a temporary file dedicated to images and
-        maybe objects.
-        '''
-        from cellprofiler.utilities.hdf5_dict import HDF5ImageSet
-        if isinstance(self.__image, ImageCache) and \
-                not self.__image.is_cached():
-            self.__image.cache(name, HDF5ImageSet(hdf5_file))
-        if isinstance(self.__mask, ImageCache) and \
-                not self.__mask.is_cached():
-            self.__mask.cache(name, HDF5ImageSet(hdf5_file, "Masks"))
-        if isinstance(self.__crop_mask, ImageCache) and \
-                not self.__crop_mask.is_cached():
-            self.__crop_mask.cache(name, HDF5ImageSet(hdf5_file, "CropMasks"))
+        pass
 
 
 class ImageCache(object):
@@ -483,34 +456,13 @@ class ImageSet(object):
         self.__image_providers = []
         self.__images = {}
         self.__keys = keys
+        self.keys = self.__keys
         self.__number = number
+        self.number = self.__number
+        self.image_number = self.__number + 1
         self.__legacy_fields = legacy_fields
 
-    def get_number(self):
-        """The (zero-based) image set index
-        """
-        return self.__number
-
-    number = property(get_number)
-
-    @property
-    def image_number(self):
-        '''The image number as used in measurements and the database'''
-        return self.__number + 1
-
-    def get_keys(self):
-        """The keys that uniquely identify the image set
-        """
-        return self.__keys
-
-    keys = property(get_keys)
-
-    def get_image(self, name,
-                  must_be_binary=False,
-                  must_be_color=False,
-                  must_be_grayscale=False,
-                  must_be_rgb=False,
-                  cache=True):
+    def get_image(self, name, must_be_binary=False, must_be_color=False, must_be_grayscale=False, must_be_rgb=False, cache=True):
         """Return the image associated with the given name
 
         name - name of the image within the image_set
@@ -520,36 +472,43 @@ class ImageSet(object):
                       discard alpha channel.
         """
         name = str(name)
+
         if not self.__images.has_key(name):
             image = self.get_image_provider(name).provide_image(self)
+
             if cache:
                 self.__images[name] = image
         else:
             image = self.__images[name]
+
         if must_be_binary and image.pixel_data.ndim == 3:
             raise ValueError("Image must be binary, but it was color")
+
         if must_be_binary and image.pixel_data.dtype != np.bool:
             raise ValueError("Image was not binary")
+
         if must_be_color and image.pixel_data.ndim != 3:
             raise ValueError("Image must be color, but it was grayscale")
-        if (must_be_grayscale and
-                (image.pixel_data.ndim != 2)):
+
+        if (must_be_grayscale and (image.pixel_data.ndim != 2)):
             pd = image.pixel_data
-            if pd.shape[2] >= 3 and \
-                    np.all(pd[:, :, 0] == pd[:, :, 1]) and \
-                    np.all(pd[:, :, 0] == pd[:, :, 2]):
+
+            if pd.shape[2] >= 3 and np.all(pd[:, :, 0] == pd[:, :, 1]) and np.all(pd[:, :, 0] == pd[:, :, 2]):
                 return GrayscaleImage(image)
+
             raise ValueError("Image must be grayscale, but it was color")
+
         if must_be_grayscale and image.pixel_data.dtype.kind == 'b':
             return GrayscaleImage(image)
+
         if must_be_rgb:
             if image.pixel_data.ndim != 3:
                 raise ValueError("Image must be RGB, but it was grayscale")
             elif image.pixel_data.shape[2] not in (3, 4):
-                raise ValueError("Image must be RGB, but it had %d channels" %
-                                 image.pixel_data.shape[2])
+                raise ValueError("Image must be RGB, but it had %d channels" % image.pixel_data.shape[2])
             elif image.pixel_data.shape[2] == 4:
                 return RGBImage(image)
+
         return image
 
     def get_providers(self):
@@ -743,12 +702,15 @@ class ImageSetList(object):
         '''
         f = StringIO()
         dump(self.count(), f)
+
         for i in range(self.count()):
             image_set = self.get_image_set(i)
             assert isinstance(image_set, ImageSet)
             assert len(image_set.providers) == 0, "An image set cannot have providers while saving its state"
             dump(image_set.keys, f)
+
         dump(self.legacy_fields, f)
+
         return f.getvalue()
 
     def load_state(self, state):
@@ -760,15 +722,14 @@ class ImageSetList(object):
         # Make a safe unpickler
         p = Unpickler(StringIO(state))
 
-        def find_global(module_name, class_name):
-            if module_name not in ("numpy", "numpy.core.multiarray"):
-                raise ValueError("Illegal attempt to unpickle class %s.%s",
-                                 (module_name, class_name))
-            __import__(module_name)
-            mod = sys.modules[module_name]
-            return getattr(mod, class_name)
-
-        p.find_global = find_global
+        # def find_global(module_name, class_name):
+        #     if module_name not in ("numpy", "numpy.core.multiarray"):
+        #         raise ValueError("Illegal attempt to unpickle class %s.%s", (module_name, class_name))
+        #     __import__(module_name)
+        #     mod = sys.modules[module_name]
+        #     return getattr(mod, class_name)
+        #
+        # p.find_global = find_global
 
         count = p.load()
         all_keys = [p.load() for i in range(count)]
@@ -783,6 +744,5 @@ class ImageSetList(object):
 
 def make_dictionary_key(key):
     '''Make a dictionary into a stable key for another dictionary'''
-    return u", ".join([u":".join([unicode(y) for y in x])
-                       for x in sorted(key.iteritems())])
+    return u", ".join([u":".join([unicode(y) for y in x]) for x in sorted(key.iteritems())])
 

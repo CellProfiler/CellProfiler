@@ -1,4 +1,4 @@
-'''<b>Display Data On Image</b> 
+'''<b>Display Data On Image</b>
 produces an image with measured data on top of identified objects.
 <hr>
 This module displays either a single image measurement on an image of
@@ -233,7 +233,7 @@ class DisplayDataOnImage(cpm.Module):
             pixel_data = np.zeros(image.pixel_data.shape[:2])
         object_set = workspace.object_set
         if self.objects_or_image == OI_OBJECTS:
-            if self.objects_name.value in object_set.get_object_names():
+            if self.objects_name.value in object_set.object_names:
                 objects = object_set.get_objects(self.objects_name.value)
             else:
                 objects = None

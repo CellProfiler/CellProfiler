@@ -848,24 +848,22 @@ class ObjectSet(object):
         assert ((not self.__objects_by_name.has_key(name)) or self.__can_overwrite), "The object, %s, is already in the object set" % name
         self.__objects_by_name[name] = objects
 
-    def get_object_names(self):
+    @property
+    def object_names(self):
         """Return the names of all of the objects
         """
         return self.__objects_by_name.keys()
-
-    object_names = property(get_object_names)
 
     def get_objects(self, name):
         """Return the objects instance with the given name
         """
         return self.__objects_by_name[name]
 
-    def get_all_objects(self):
+    @property
+    def all_objects(self):
         """Return a list of name / objects tuples
         """
         return self.__objects_by_name.items()
-
-    all_objects = property(get_all_objects)
 
     def get_types(self):
         '''Get then names of types of per-image set "things"
@@ -909,7 +907,7 @@ class ObjectSet(object):
                           the segmentations so that they can be
                           flushed out of memory.
         '''
-        for objects_name in self.get_object_names():
+        for objects_name in self.object_names:
             self.get_objects(objects_name).cache(hdf5_object_set, objects_name)
 
 

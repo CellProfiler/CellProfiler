@@ -88,7 +88,7 @@ class Objects(object):
         and the label at the pixel in slot 2.
         '''
         from cellprofiler.utilities.hdf5_dict import HDF5ObjectSet
-        sparse = self.__segmented.get_sparse()
+        sparse = self.__segmented.sparse
         return numpy.column_stack(
                 [sparse[axis] for axis in
                  HDF5ObjectSet.AXIS_Y, HDF5ObjectSet.AXIS_X,
@@ -517,7 +517,7 @@ class Segmentation(object):
         if self.has_dense():
             self.__shape = self.get_dense()[0].shape[1:]
         else:
-            sparse = self.get_sparse()
+            sparse = self.sparse
             if len(sparse) == 0:
                 self.__shape = (1, 1, 1, 1, 1)
             else:
@@ -548,27 +548,30 @@ class Segmentation(object):
     def has_shape(self):
         return self.__explicit_shape or self.has_dense()
 
-    def get_sparse(self):
-        '''Get the sparse representation of the segmentation
+    @property
+    def sparse(self):
+        """Get the sparse representation of the segmentation
 
         returns a Numpy record array where every row represents
         the labeling of a pixel. The dtype record names are taken from
         HDF5ObjectSet.AXIS_[X,Y,Z,C,T] and AXIS_LABELS for the object
         numbers.
-        '''
+        """
         if self.__sparse is not None:
             return self.__sparse
+
         if self.__cache is not None and self.__cache.has_sparse(
                 self.__objects_name, self.__segmentation_name):
             return self.__cache.get_sparse(
                     self.__objects_name, self.__segmentation_name)
+
         if not self.has_dense():
             raise ValueError(
-                    "Can't find object, \"%s\", segmentation, \"%s\"." %
-                    (self.__objects_name, self.__segmentation_name))
-        return self.__convert_dense_to_sparse()
+                "Can't find object, \"%s\", segmentation, \"%s\"." %
+                (self.__objects_name, self.__segmentation_name)
+            )
 
-    sparse = property(get_sparse)
+        return self.__convert_dense_to_sparse()
 
     def get_dense(self):
         '''Get the dense representation of the segmentation
@@ -654,7 +657,7 @@ class Segmentation(object):
 
     def __convert_sparse_to_dense(self):
         from cellprofiler.utilities.hdf5_dict import HDF5ObjectSet
-        sparse = self.get_sparse()
+        sparse = self.sparse
         if len(sparse) == 0:
             return self.__set_or_cache_dense(
                     numpy.zeros([1] + list(self.shape), numpy.uint16))

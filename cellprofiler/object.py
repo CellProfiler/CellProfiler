@@ -540,20 +540,13 @@ class Segmentation(object):
         self.__explicit_shape = True
 
     def has_dense(self):
-        return self.__dense is not None or (
-            self.__cache is not None and self.__cache.has_dense(
-                    self.__objects_name, self.__segmentation_name))
+        return self.__dense is not None or (self.__cache is not None and self.__cache.has_dense(self.__objects_name, self.__segmentation_name))
 
     def has_sparse(self):
-        return self.__sparse is not None or (
-            self.__cache is not None and self.__cache.has_sparse(
-                    self.__objects_name, self.__segmentation_name))
+        return self.__sparse is not None or (self.__cache is not None and self.__cache.has_sparse(self.__objects_name, self.__segmentation_name))
 
     def has_shape(self):
-        if self.__explicit_shape:
-            return True
-
-        return self.has_dense()
+        return self.__explicit_shape or self.has_dense()
 
     def get_sparse(self):
         '''Get the sparse representation of the segmentation

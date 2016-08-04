@@ -595,7 +595,7 @@ class TestSegmentation(unittest.TestCase):
         s = cpo.Segmentation(dense=labels)
         self.assertTrue(s.has_dense())
         self.assertFalse(s.has_sparse())
-        np.testing.assert_array_equal(s.get_dense()[0], labels)
+        np.testing.assert_array_equal(s.dense[0], labels)
 
     def test_01_02_sparse(self):
         r = np.random.RandomState()
@@ -635,7 +635,7 @@ class TestSegmentation(unittest.TestCase):
                                           (HDF5ObjectSet.AXIS_X, np.uint32, 1),
                                           (HDF5ObjectSet.AXIS_LABELS, np.uint32, 1)])
         s = cpo.Segmentation(sparse=ijv, shape=(1, 1, 1, 50, 50))
-        dense, indices = s.get_dense()
+        dense, indices = s.dense
         self.assertEqual(tuple(dense.shape[1:]), (1, 1, 1, 50, 50))
         self.assertEqual(np.sum(dense > 0), len(ijv))
         retrieval = dense[:, 0, 0, 0,

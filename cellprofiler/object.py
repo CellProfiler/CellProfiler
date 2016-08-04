@@ -49,7 +49,7 @@ class Objects(object):
         """
         assert isinstance(self.__segmented, Segmentation), "Operation failed because objects were not initialized"
 
-        dense, indices = self.__segmented.get_dense()
+        dense, indices = self.__segmented.dense
 
         assert len(dense) == 1, "Operation failed because objects overlapped. Please try with non-overlapping objects"
 
@@ -113,7 +113,7 @@ class Objects(object):
 
         returns a list of label matrices and the indexes in each
         """
-        dense, indices = self.__segmented.get_dense()
+        dense, indices = self.__segmented.dense
         return [(dense[i, 0, 0, 0], indices[i]) for i in range(dense.shape[0])]
 
     def has_unedited_segmented(self):
@@ -129,7 +129,7 @@ class Objects(object):
         segmented labeling.
         """
         if self.__unedited_segmented is not None:
-            dense, indices = self.__unedited_segmented.get_dense()
+            dense, indices = self.__unedited_segmented.dense
             return dense[0, 0, 0, 0]
         return self.segmented
 
@@ -152,7 +152,7 @@ class Objects(object):
         or the image mask still present.
         """
         if self.__small_removed_segmented is not None:
-            dense, indices = self.__small_removed_segmented.get_dense()
+            dense, indices = self.__small_removed_segmented.dense
             return dense[0, 0, 0, 0]
         return self.unedited_segmented
 
@@ -515,7 +515,7 @@ class Segmentation(object):
         if self.__shape is not None:
             return self.__shape
         if self.has_dense():
-            self.__shape = self.get_dense()[0].shape[1:]
+            self.__shape = self.dense[0].shape[1:]
         else:
             sparse = self.sparse
             if len(sparse) == 0:
@@ -573,8 +573,9 @@ class Segmentation(object):
 
         return self.__convert_dense_to_sparse()
 
-    def get_dense(self):
-        '''Get the dense representation of the segmentation
+    @property
+    def dense(self):
+        """Get the dense representation of the segmentation
 
         return the segmentation as a 6-D array and a sequence of arrays of the
         object numbers in each 5-D hyperplane of the segmentation. The first
@@ -586,22 +587,23 @@ class Segmentation(object):
             # do something
 
         The remaining axes are in the order, C, T, Z, Y and X
-        '''
+        """
         if self.__dense is not None:
             return self.__dense, self.__indices
-        if self.__cache is not None and self.__cache.has_dense(
-                self.__objects_name, self.__segmentation_name):
-            return (self.__cache.get_dense(
-                    self.__objects_name, self.__segmentation_name),
-                    self.__indices)
+
+        if self.__cache is not None and self.__cache.has_dense(self.__objects_name, self.__segmentation_name):
+            return (self.__cache.get_dense(self.__objects_name, self.__segmentation_name), self.__indices)
+
         if not self.has_sparse():
             raise ValueError(
-                    "Can't find object, \"%s\", segmentation, \"%s\"." %
-                    (self.__objects_name, self.__segmentation_name))
+                "Can't find object, \"%s\", segmentation, \"%s\"." %
+                (self.__objects_name, self.__segmentation_name)
+            )
+
         return self.__convert_sparse_to_dense()
 
     def __convert_dense_to_sparse(self):
-        dense, indices = self.get_dense()
+        dense, indices = self.dense
         from cellprofiler.utilities.hdf5_dict import HDF5ObjectSet
         axes = list(HDF5ObjectSet.AXES)
         axes, shape = [

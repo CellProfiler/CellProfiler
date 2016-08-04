@@ -383,20 +383,19 @@ class Objects(object):
         """The number of objects labeled"""
         return len(self.indices)
 
-    def get_areas(self):
+    @property
+    def areas(self):
         """The area of each object"""
         if len(self.indices) == 0:
             return np.zeros(0, int)
         return np.bincount(self.ijv[:, 2])[self.indices]
-
-    areas = property(get_areas)
 
     def fn_of_label(self, function):
         """Call a function taking just a label matrix
 
         function - should have a signature like
             labels - label_matrix
-    """
+        """
         return function(self.segmented)
 
     def fn_of_label_and_index(self, function):

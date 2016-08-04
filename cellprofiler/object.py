@@ -823,24 +823,6 @@ class Segmentation(object):
         return self.__set_or_cache_dense(dense, indices)
 
 
-def check_consistency(segmented, unedited_segmented, small_removed_segmented):
-    """Check the three components of Objects to make sure they are consistent
-    """
-    assert segmented is None or numpy.all(segmented >= 0)
-    assert unedited_segmented is None or numpy.all(unedited_segmented >= 0)
-    assert small_removed_segmented is None or numpy.all(small_removed_segmented >= 0)
-    assert segmented is None or segmented.ndim == 2, "Segmented label matrix must have two dimensions, has %d" % (
-        segmented.ndim)
-    assert unedited_segmented is None or unedited_segmented.ndim == 2, "Unedited segmented label matrix must have two dimensions, has %d" % (
-        unedited_segmented.ndim)
-    assert small_removed_segmented is None or small_removed_segmented.ndim == 2, "Small removed segmented label matrix must have two dimensions, has %d" % (
-        small_removed_segmented.ndim)
-    assert segmented is None or unedited_segmented is None or segmented.shape == unedited_segmented.shape, "Segmented %s and unedited segmented %s shapes differ" % (
-        repr(segmented.shape), repr(unedited_segmented.shape))
-    assert segmented is None or small_removed_segmented is None or segmented.shape == small_removed_segmented.shape, "Segmented %s and small removed segmented %s shapes differ" % (
-        repr(segmented.shape), repr(small_removed_segmented.shape))
-
-
 class ObjectSet(object):
     """A set of objects.Objects instances.
 

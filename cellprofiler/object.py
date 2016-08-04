@@ -604,11 +604,13 @@ class Segmentation(object):
 
     def __convert_dense_to_sparse(self):
         dense, indices = self.dense
+
+        # TODO: Remove HDF5 caching
         from cellprofiler.utilities.hdf5_dict import HDF5ObjectSet
+
         axes = list(HDF5ObjectSet.AXES)
-        axes, shape = [
-            [a for a, s in zip(aa, self.shape) if s > 1]
-            for aa in axes, self.shape]
+        axes, shape = [[a for a, s in zip(aa, self.shape) if s > 1] for aa in axes, self.shape]
+
         #
         # dense.shape[0] is the overlap-axis - it's usually 1
         # except if there are multiply-labeled pixels and overlapping
@@ -617,10 +619,12 @@ class Segmentation(object):
         dense = dense.reshape([dense.shape[0]] + shape)
         coords = numpy.where(dense != 0)
         plane, coords = coords[0], coords[1:]
+
         if numpy.max(shape) < 2 ** 16:
             coords_dtype = numpy.uint16
         else:
             coords_dtype = numpy.uint32
+
         if len(plane) > 0:
             labels = dense[tuple([plane] + list(coords))]
             max_label = numpy.max(indices)
@@ -633,36 +637,39 @@ class Segmentation(object):
         else:
             labels = numpy.zeros(0, dense.dtype)
             labels_dtype = numpy.uint8
+
         dtype = [(axis, coords_dtype, 1) for axis in axes]
         dtype.append((HDF5ObjectSet.AXIS_LABELS, labels_dtype, 1))
         sparse = numpy.core.records.fromarrays(list(coords) + [labels], dtype=dtype)
+
         if self.__cache is not None:
-            self.__cache.set_sparse(
-                    self.__objects_name, self.__segmentation_name, sparse)
+            self.__cache.set_sparse(self.__objects_name, self.__segmentation_name, sparse)
         else:
             self.__sparse = sparse
+
         return sparse
 
     def __set_or_cache_dense(self, dense, indices=None):
         if self.__cache is not None:
-            self.__cache.set_dense(
-                    self.__objects_name, self.__segmentation_name, dense)
+            self.__cache.set_dense(self.__objects_name, self.__segmentation_name, dense)
         else:
             self.__dense = dense
+
         if indices is not None:
             self.__indices = indices
         else:
             self.__indices = [numpy.unique(d) for d in dense]
-            self.__indices = [
-                idx[1:] if idx[0] == 0 else idx for idx in self.__indices]
+            self.__indices = [idx[1:] if idx[0] == 0 else idx for idx in self.__indices]
+
         return dense, self.__indices
 
     def __convert_sparse_to_dense(self):
+        # TODO: Remove HDF5
         from cellprofiler.utilities.hdf5_dict import HDF5ObjectSet
+
         sparse = self.sparse
         if len(sparse) == 0:
-            return self.__set_or_cache_dense(
-                    numpy.zeros([1] + list(self.shape), numpy.uint16))
+            return self.__set_or_cache_dense(numpy.zeros([1] + list(self.shape), numpy.uint16))
 
         #
         # The code below assigns a "color" to each label so that no
@@ -671,6 +678,7 @@ class Segmentation(object):
         positional_columns = []
         available_columns = []
         lexsort_columns = []
+
         for axis in HDF5ObjectSet.AXES:
             if axis in sparse.dtype.fields.keys():
                 positional_columns.append(sparse[axis])
@@ -678,29 +686,32 @@ class Segmentation(object):
                 lexsort_columns.insert(0, sparse[axis])
             else:
                 positional_columns.append(0)
+
         labels = sparse[HDF5ObjectSet.AXIS_LABELS]
         lexsort_columns.insert(0, labels)
 
         sort_order = numpy.lexsort(lexsort_columns)
         n_labels = numpy.max(labels)
+
         #
         # Find the first of a run that's different from the rest
         #
-        mask = available_columns[0][sort_order[:-1]] != \
-               available_columns[0][sort_order[1:]]
+        mask = available_columns[0][sort_order[:-1]] != available_columns[0][sort_order[1:]]
+
         for column in available_columns[1:]:
-            mask = mask | (column[sort_order[:-1]] !=
-                           column[sort_order[1:]])
+            mask |= column[sort_order[:-1]] != column[sort_order[1:]]
+
         breaks = numpy.hstack(([0], numpy.where(mask)[0] + 1, [len(labels)]))
         firsts = breaks[:-1]
         counts = breaks[1:] - firsts
-        indexer = centrosome.index.Indexes(counts)
+
         #
         # Eliminate the locations that are singly labeled
         #
         mask = counts > 1
         firsts = firsts[mask]
         counts = counts[mask]
+
         if len(counts) == 0:
             dense = numpy.zeros([1] + list(self.shape), labels.dtype)
             dense[[0] + positional_columns] = labels
@@ -711,15 +722,15 @@ class Segmentation(object):
         #
         pairs = centrosome.index.all_pairs(numpy.max(counts))
         pair_counts = counts * (counts - 1)
+
         #
-        # Create an indexer for the inputs (indexes) and for the outputs
-        # (first and second of the pairs)
+        # Create an indexer for the outputs (first and second of the pairs)
         #
         # Remember idx points into sort_order which points into labels
         # to get the nth label, grouped into consecutive positions.
         #
-        input_indexer = centrosome.index.Indexes(counts)
         output_indexer = centrosome.index.Indexes(pair_counts)
+
         #
         # The start of the run of overlaps and the offsets
         #
@@ -727,20 +738,21 @@ class Segmentation(object):
         offs = pairs[output_indexer.idx[0], :]
         first = labels[sort_order[run_starts + offs[:, 0]]]
         second = labels[sort_order[run_starts + offs[:, 1]]]
+
         #
         # And sort these so that we get consecutive lists for each
         #
         pair_sort_order = numpy.lexsort((second, first))
+
         #
         # Eliminate dupes
         #
-        to_keep = numpy.hstack(([True],
-                                (first[1:] != first[:-1]) |
-                                (second[1:] != second[:-1])))
-        to_keep = to_keep & (first != second)
+        to_keep = numpy.hstack(([True], (first[1:] != first[:-1]) | (second[1:] != second[:-1])))
+        to_keep &= first != second
         pair_idx = pair_sort_order[to_keep]
         first = first[pair_idx]
         second = second[pair_idx]
+
         #
         # Bincount each label so we can find the ones that have the
         # most overlap. See cpmorphology.color_labels and
@@ -749,20 +761,24 @@ class Segmentation(object):
         # p 85 (1967)
         #
         overlap_counts = numpy.bincount(first.astype(numpy.int32))
+
         #
         # The index to the i'th label's stuff
         #
         indexes = numpy.cumsum(overlap_counts) - overlap_counts
+
         #
         # A vector of a current color per label. All non-overlapping
         # objects are assigned to plane 1
         #
         v_color = numpy.ones(n_labels + 1, int)
         v_color[0] = 0
+
         #
         # Clear all overlapping objects
         #
         v_color[numpy.unique(first)] = 0
+
         #
         # The processing order is from most overlapping to least
         #
@@ -770,9 +786,9 @@ class Segmentation(object):
         processing_order = numpy.lexsort((ol_labels, overlap_counts[ol_labels]))
 
         for index in ol_labels[processing_order]:
-            neighbors = second[
-                        indexes[index]:indexes[index] + overlap_counts[index]]
+            neighbors = second[indexes[index]:indexes[index] + overlap_counts[index]]
             colors = numpy.unique(v_color[neighbors])
+
             if colors[0] == 0:
                 if len(colors) == 1:
                     # all unassigned - put self in group 1
@@ -781,26 +797,28 @@ class Segmentation(object):
                 else:
                     # otherwise, ignore the unprocessed group and continue
                     colors = colors[1:]
+
             # Match a range against the colors array - the first place
             # they don't match is the first color we can use
             crange = numpy.arange(1, len(colors) + 1)
             misses = crange[colors != crange]
+
             if len(misses):
                 color = misses[0]
             else:
                 max_color = len(colors) + 1
                 color = max_color
+
             v_color[index] = color
+
         #
         # Create the dense matrix by using the color to address the
         # 5-d hyperplane into which we place each label
         #
-        result = []
         dense = numpy.zeros([numpy.max(v_color)] + list(self.shape), labels.dtype)
         slices = tuple([v_color[labels] - 1] + positional_columns)
         dense[slices] = labels
-        indices = [
-            numpy.where(v_color == i)[0] for i in range(1, dense.shape[0] + 1)]
+        indices = [numpy.where(v_color == i)[0] for i in range(1, dense.shape[0] + 1)]
 
         return self.__set_or_cache_dense(dense, indices)
 

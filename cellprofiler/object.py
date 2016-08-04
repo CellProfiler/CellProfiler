@@ -172,7 +172,8 @@ class Objects(object):
                 # segmentation.cache(hdf5_object_set, objects_name, segmentation_name)
                 pass
 
-    def get_parent_image(self):
+    @property
+    def parent_image(self):
         """The image that was analyzed to yield the objects.
 
         The image is an instance of CPImage which means it has the mask
@@ -180,25 +181,22 @@ class Objects(object):
         """
         return self.__parent_image
 
-    def set_parent_image(self, parent_image):
+    @parent_image.setter
+    def parent_image(self, parent_image):
         self.__parent_image = parent_image
-        for segmentation in self.__segmented, self.__small_removed_segmented, \
-                            self.__unedited_segmented:
+        for segmentation in self.__segmented, self.__small_removed_segmented, self.__unedited_segmented:
             if segmentation is not None and not segmentation.has_shape():
                 shape = (1, 1, 1,
                          parent_image.pixel_data.shape[0],
                          parent_image.pixel_data.shape[1])
                 segmentation.set_shape(shape)
 
-    parent_image = property(get_parent_image, set_parent_image)
-
-    def get_has_parent_image(self):
+    @property
+    def has_parent_image(self):
         """True if the objects were derived from a parent image
 
         """
         return self.__parent_image is not None
-
-    has_parent_image = property(get_has_parent_image)
 
     def crop_image_similarly(self, image):
         """Crop an image in the same way as the parent image was cropped."""

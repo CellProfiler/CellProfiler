@@ -717,7 +717,7 @@ class TestSegmentation(unittest.TestCase):
         shape = (1, 1, 1, 50, 50)
         s = cpo.Segmentation(sparse=ijv)
         self.assertFalse(s.has_shape())
-        s.set_shape(shape)
+        s.shape(shape)
         self.assertEqual(tuple(s.shape), shape)
 
 

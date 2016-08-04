@@ -99,7 +99,7 @@ class Objects(object):
     @property
     def shape(self):
         '''The i and j extents of the labels'''
-        return self.__segmented.get_shape()[-2:]
+        return self.__segmented.shape()[-2:]
 
     # TODO: Use or remove shape parameter
     # TODO: Make property?
@@ -193,7 +193,7 @@ class Objects(object):
                 shape = (1, 1, 1,
                          parent_image.pixel_data.shape[0],
                          parent_image.pixel_data.shape[1])
-                segmentation.set_shape(shape)
+                segmentation.shape(shape)
 
     @property
     def has_parent_image(self):
@@ -503,14 +503,15 @@ class Segmentation(object):
         self.__sparse = None
         self.__cache = hdf5_object_set
 
-    def get_shape(self):
-        '''Get or estimate the shape of the segmentation matrix
+    @property
+    def shape(self):
+        """Get or estimate the shape of the segmentation matrix
 
         Order of precedence:
         Shape supplied in the constructor
         Shape of the dense representation
         maximum extent of the sparse representation + 1
-        '''
+        """
         if self.__shape is not None:
             return self.__shape
         if self.has_dense():
@@ -527,17 +528,16 @@ class Segmentation(object):
                          for axis in HDF5ObjectSet.AXES])
         return self.__shape
 
-    def set_shape(self, shape):
-        '''Set the shape of the segmentation array
+    @shape.setter
+    def shape(self, shape):
+        """Set the shape of the segmentation array
 
         shape - the 5D shape of the array
 
         This fixes the shape of the 5D array for sparse representations
-        '''
+        """
         self.__shape = shape
         self.__explicit_shape = True
-
-    shape = property(get_shape, set_shape)
 
     def has_dense(self):
         return self.__dense is not None or (

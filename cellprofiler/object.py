@@ -845,8 +845,7 @@ class ObjectSet(object):
 
     def add_objects(self, objects, name):
         assert isinstance(objects, Objects), "objects must be an instance of CellProfiler.Objects"
-        assert ((not self.__objects_by_name.has_key(name)) or
-                self.__can_overwrite), "The object, %s, is already in the object set" % name
+        assert ((not self.__objects_by_name.has_key(name)) or self.__can_overwrite), "The object, %s, is already in the object set" % name
         self.__objects_by_name[name] = objects
 
     def get_object_names(self):

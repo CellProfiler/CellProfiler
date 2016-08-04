@@ -368,7 +368,8 @@ class Objects(object):
         # c.csc?
         return (parent_matrix.tocsc() * child_matrix.tocsc()).toarray()
 
-    def get_indices(self):
+    @property
+    def indices(self):
         """Get the indices for a scipy.ndimage-style function from the segmented labels
 
         """
@@ -376,8 +377,6 @@ class Objects(object):
             return np.zeros(0, np.int32)
         max_label = np.max(self.ijv[:, 2])
         return np.arange(max_label).astype(np.int32) + 1
-
-    indices = property(get_indices)
 
     @property
     def count(self):

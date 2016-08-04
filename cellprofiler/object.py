@@ -8,6 +8,10 @@ from scipy.sparse import coo_matrix
 OBJECT_TYPE_NAME = "objects"
 
 
+# TODO: remove getter/setter on ivj and instead make method coordinates which converts label matrix to/from coordinate (x, y, label) or (x, y, z, label).
+# TODO: there is no set_labels. Maybe make segmented (or labels) have the same functionality (support overlapping objects).
+# TODO: remove the concept of shaping. Modules should shape then set. This will make for cleaner setters.
+# TODO: remove hdf5
 class Objects(object):
     """Represents a segmentation of an image.
 

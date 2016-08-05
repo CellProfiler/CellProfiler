@@ -5,6 +5,7 @@ import bz2
 import cStringIO
 import unittest
 
+import cellprofiler.segmentation
 import numpy as np
 import scipy.ndimage
 from centrosome.outline import outline
@@ -592,7 +593,7 @@ class TestSegmentation(unittest.TestCase):
         r = np.random.RandomState()
         r.seed(101)
         labels = r.randint(0, 10, size=(2, 3, 4, 5, 6, 7))
-        s = cpo.Segmentation(dense=labels)
+        s = cellprofiler.segmentation.Segmentation(dense=labels)
         self.assertTrue(s.has_dense())
         self.assertFalse(s.has_sparse())
         np.testing.assert_array_equal(s.dense[0], labels)
@@ -605,7 +606,7 @@ class TestSegmentation(unittest.TestCase):
                 [(HDF5ObjectSet.AXIS_Y, np.uint32, 1),
                  (HDF5ObjectSet.AXIS_X, np.uint32, 1),
                  (HDF5ObjectSet.AXIS_LABELS, np.uint32, 1)])
-        s = cpo.Segmentation(sparse=ijv)
+        s = cellprofiler.segmentation.Segmentation(sparse=ijv)
         np.testing.assert_array_equal(s.sparse(), ijv)
         self.assertFalse(s.has_dense())
         self.assertTrue(s.has_sparse())
@@ -634,7 +635,7 @@ class TestSegmentation(unittest.TestCase):
                                          [(HDF5ObjectSet.AXIS_Y, np.uint32, 1),
                                           (HDF5ObjectSet.AXIS_X, np.uint32, 1),
                                           (HDF5ObjectSet.AXIS_LABELS, np.uint32, 1)])
-        s = cpo.Segmentation(sparse=ijv, shape=(1, 1, 1, 50, 50))
+        s = cellprofiler.segmentation.Segmentation(sparse=ijv, shape=(1, 1, 1, 50, 50))
         dense, indices = s.dense
         self.assertEqual(tuple(dense.shape[1:]), (1, 1, 1, 50, 50))
         self.assertEqual(np.sum(dense > 0), len(ijv))
@@ -658,7 +659,7 @@ class TestSegmentation(unittest.TestCase):
             radius = r.uniform() * (max_radius - 5) + 5
             mask = ((i - y_loc) ** 2 + (j - x_loc) ** 2) <= radius ** 2
             dense[idx, 0, 0, 0, mask] = idx + 1
-        s = cpo.Segmentation(dense=dense)
+        s = cellprofiler.segmentation.Segmentation(dense=dense)
         ijv = s.sparse()
         self.assertEqual(np.sum(dense > 0), len(ijv))
         retrieval = dense[:, 0, 0, 0,
@@ -670,7 +671,7 @@ class TestSegmentation(unittest.TestCase):
         r = np.random.RandomState()
         r.seed(101)
         labels = r.randint(0, 10, size=(2, 3, 4, 5, 6, 7))
-        s = cpo.Segmentation(dense=labels)
+        s = cellprofiler.segmentation.Segmentation(dense=labels)
         self.assertTrue(s.has_shape())
         self.assertEqual(tuple(s.shape), tuple(labels.shape[1:]))
 
@@ -683,7 +684,7 @@ class TestSegmentation(unittest.TestCase):
                 [(HDF5ObjectSet.AXIS_Y, np.uint32, 1),
                  (HDF5ObjectSet.AXIS_X, np.uint32, 1),
                  (HDF5ObjectSet.AXIS_LABELS, np.uint32, 1)])
-        s = cpo.Segmentation(sparse=ijv, shape=shape)
+        s = cellprofiler.segmentation.Segmentation(sparse=ijv, shape=shape)
         self.assertTrue(s.has_shape())
         self.assertEqual(tuple(s.shape), shape)
 
@@ -699,7 +700,7 @@ class TestSegmentation(unittest.TestCase):
         ijv[HDF5ObjectSet.AXIS_X] = 11
         ijv[HDF5ObjectSet.AXIS_Y] = 31
         shape = (1, 1, 1, 33, 13)
-        s = cpo.Segmentation(sparse=ijv)
+        s = cellprofiler.segmentation.Segmentation(sparse=ijv)
         self.assertFalse(s.has_shape())
         self.assertEqual(tuple(s.shape), shape)
 
@@ -715,7 +716,7 @@ class TestSegmentation(unittest.TestCase):
         ijv[HDF5ObjectSet.AXIS_X] = 11
         ijv[HDF5ObjectSet.AXIS_Y] = 31
         shape = (1, 1, 1, 50, 50)
-        s = cpo.Segmentation(sparse=ijv)
+        s = cellprofiler.segmentation.Segmentation(sparse=ijv)
         self.assertFalse(s.has_shape())
         s.shape(shape)
         self.assertEqual(tuple(s.shape), shape)

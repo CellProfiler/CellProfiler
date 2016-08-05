@@ -198,8 +198,6 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
         module.prepare_run(workspace)
         module.prepare_group(workspace, {}, range(1, len(images_and_masks) + 1))
         for i in range(image_count):
-            if i > 0:
-                image_set_list.purge_image_set(i - 1)
             w = cpw.Workspace(pipeline, module,
                               image_set_list.get_image_set(i),
                               cpo.Set(),
@@ -259,16 +257,16 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
 
     def test_02_03_average_color(self):
         np.random.seed(0)
-        images_and_masks = [(np.random.uniform(size=(10, 10, 3)).astype(np.float32), None)
-                            for i in range(3)]
+        images_and_masks = [(np.random.uniform(size=(10, 10, 3)).astype(np.float32), None) for i in range(3)]
         expected = np.zeros((10, 10, 3), np.float32)
+
         for image, mask in images_and_masks:
             expected += image
-        expected = expected / len(images_and_masks)
+
+        expected /= len(images_and_masks)
         image = self.run_image_set(M.P_AVERAGE, images_and_masks)
         self.assertFalse(image.has_mask)
-        self.assertTrue(np.all(np.abs(image.pixel_data - expected) <
-                               np.finfo(float).eps))
+        self.assertTrue(np.all(np.abs(image.pixel_data - expected) < np.finfo(float).eps))
 
     def test_02_04_average_masked_color(self):
         np.random.seed(0)

@@ -1091,10 +1091,10 @@ class LoadData(cpm.Module):
                                         int(pixel_data.shape[1]))
                 if image_size is None:
                     image_size = tuple(pixel_data.shape[:2])
-                    first_filename = image.file_name
+                    first_filename = image.filename
                 elif tuple(pixel_data.shape[:2]) != image_size:
                     warning = bad_sizes_warning(image_size, first_filename,
-                                                pixel_data.shape, image.file_name)
+                                                pixel_data.shape, image.filename)
                     if self.show_window:
                         workspace.display_data.warning = warning
                     else:

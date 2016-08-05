@@ -75,7 +75,7 @@ class TestIdentifyTertiaryObjects(unittest.TestCase):
         value = measurements.get_current_measurement("Image", count_feature)
         self.assertEqual(np.product(value.shape), 1)
         self.assertEqual(value, 0)
-        self.assertTrue(TERTIARY in workspace.object_set.get_object_names())
+        self.assertTrue(TERTIARY in workspace.object_set.object_names)
         output_objects = workspace.object_set.get_objects(TERTIARY)
         self.assertTrue(np.all(output_objects.segmented == primary_labels))
         columns = module.get_measurement_columns(workspace.pipeline)
@@ -130,7 +130,7 @@ class TestIdentifyTertiaryObjects(unittest.TestCase):
             self.assertTrue(np.product(value.shape), 1)
             self.assertEqual(value[0], expected)
 
-        self.assertTrue(TERTIARY in workspace.object_set.get_object_names())
+        self.assertTrue(TERTIARY in workspace.object_set.object_names)
         output_objects = workspace.object_set.get_objects(TERTIARY)
         self.assertTrue(np.all(output_objects.segmented == expected_labels))
 

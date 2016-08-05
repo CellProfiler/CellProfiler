@@ -57,7 +57,7 @@ class Image(object):
         self.__scale = scale
         if mask is not None:
             self.set_mask(mask)
-        # self.filename = filename
+        self.filename = filename
         self.pathname = pathname
         self.channel_names = None
         self.has_parent_image = self.parent is not None
@@ -67,7 +67,7 @@ class Image(object):
         self.scale = self.parent.scale if self.__scale is None and self.has_parent_image else self.__scale
 
     def grayscale(self):
-        data = self.pixel_data[:, :, 0]
+        data = self.pixel_data if self.pixel_data.dtype.kind == "b" else self.pixel_data[:, :, 0]
 
         return Image(data)
 
@@ -328,7 +328,7 @@ class ImageSet(object):
         if must_be_color and image.pixel_data.ndim != 3:
             raise ValueError("Image must be color, but it was grayscale")
 
-        if (must_be_grayscale and (image.pixel_data.ndim != 2)):
+        if must_be_grayscale and (image.pixel_data.ndim != 2):
             pd = image.pixel_data
 
             if pd.shape[2] >= 3 and numpy.all(pd[:, :, 0] == pd[:, :, 1]) and numpy.all(pd[:, :, 0] == pd[:, :, 2]):

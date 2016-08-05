@@ -93,7 +93,7 @@ class Region(object):
     @property
     def shape(self):
         """The i and j extents of the labels"""
-        return self.__segmented.shape()[-2:]
+        return self.__segmented.shape[-2:]
 
     # TODO: Use or remove shape parameter
     # TODO: Make property?
@@ -171,7 +171,7 @@ class Region(object):
         self.__parent_image = parent_image
 
         for segmentation in self.__segmented, self.__small_removed_segmented, self.__unedited_segmented:
-            if segmentation is not None and not segmentation.has_shape():
+            if segmentation is not None and not segmentation.has_shape:
                 shape = (1, 1, 1, parent_image.pixel_data.shape[0], parent_image.pixel_data.shape[1])
                 segmentation.shape = shape
 

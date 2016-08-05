@@ -387,14 +387,6 @@ class Region(object):
 
         return numpy.bincount(self.ijv[:, 2])[self.indices]
 
-    def fn_of_label(self, function):
-        """Call a function taking just a label matrix
-
-        function - should have a signature like
-            labels - label_matrix
-        """
-        return function(self.segmented)
-
     def fn_of_label_and_index(self, function):
         """Call a function taking a label matrix with the segmented labels
 
@@ -418,17 +410,6 @@ class Region(object):
         """
 
         return function(numpy.ones(self.segmented.shape), self.segmented, self.indices)
-
-    def fn_of_image_label_and_index(self, function, image):
-        """Call a function taking an image, a label matrix and an index
-
-        function - should have signature like
-                   image  - image with same dimensions as labels
-                   labels - label matrix
-                   index  - sequence of label indices documenting which
-                            label indices are of interest
-        """
-        return function(image, self.segmented, self.indices)
 
 
 class Set(object):

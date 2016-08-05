@@ -36,30 +36,6 @@ class Segmentation(object):
             self.__indices = [
                 idx[1:] if idx[0] == 0 else idx for idx in self.__indices]
 
-    def cache(self, hdf5_object_set, objects_name, segmentation_name):
-        '''Cache the segmentation in the given object set
-
-        hdf5_object_set - an HDF5ObjectSet for moving objects out of memory
-        objects_name - name to use to store the objects
-        segmentation_name - name of this particular segmentation, for instance,
-                            Segmentation.SEGMENTED for the user-visible
-                            segmentation.
-        '''
-        if self.__cache is not None:
-            return
-        self.__objects_name = objects_name
-        self.__segmentation_name = segmentation_name
-        hdf5_object_set.clear(objects_name, segmentation_name)
-        if self.__dense is not None:
-            hdf5_object_set.set_dense(objects_name, segmentation_name,
-                                      self.__dense)
-        if self.__sparse is not None:
-            hdf5_object_set.set_sparse(objects_name, segmentation_name,
-                                       self.__sparse)
-        self.__dense = None
-        self.__sparse = None
-        self.__cache = hdf5_object_set
-
     @property
     def shape(self):
         """Get or estimate the shape of the segmentation matrix

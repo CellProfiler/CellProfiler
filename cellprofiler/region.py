@@ -162,20 +162,6 @@ class Region(object):
                 (1, 1, 1, 1, labels.shape[0], labels.shape[1]))
         self.__small_removed_segmented = cellprofiler.segmentation.Segmentation(dense=dense)
 
-    def cache(self, hdf5_object_set, objects_name):
-        '''Move the segmentations out of memory and into HDF5
-
-        hdf5_object_set - an HDF5ObjectSet attached to an HDF5 file
-        objects_name - name of the objects
-        '''
-        for segmentation, segmentation_name in (
-                (self.__segmented, cellprofiler.segmentation.Segmentation.SEGMENTED),
-                (self.__unedited_segmented, cellprofiler.segmentation.Segmentation.UNEDITED_SEGMENTED),
-                (self.__small_removed_segmented, cellprofiler.segmentation.Segmentation.SMALL_REMOVED_SEGMENTED)):
-            if segmentation is not None:
-                # segmentation.cache(hdf5_object_set, objects_name, segmentation_name)
-                pass
-
     @property
     def parent_image(self):
         """The image that was analyzed to yield the objects.
@@ -521,16 +507,6 @@ class Set(object):
                     instance_name not in self.__types_and_instances[type_name]):
             return None
         return self.__types_and_instances[type_name][instance_name]
-
-    def cache(self, hdf5_object_set):
-        '''Cache all objects in the object set to an HDF5 backing store
-
-        hdf5_object_set - an HDF5ObjectSet that is used to store
-                          the segmentations so that they can be
-                          flushed out of memory.
-        '''
-        for objects_name in self.object_names:
-            self.get_objects(objects_name).cache(hdf5_object_set, objects_name)
 
 
 def downsample_labels(labels):

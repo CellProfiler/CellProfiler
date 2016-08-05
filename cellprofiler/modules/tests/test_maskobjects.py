@@ -20,7 +20,7 @@ import cellprofiler.pipeline as cpp
 import cellprofiler.module as cpm
 import cellprofiler.image as cpi
 import cellprofiler.measurement as cpmeas
-import cellprofiler.object as cpo
+import cellprofiler.region as cpo
 import cellprofiler.workspace as cpw
 import cellprofiler.modules.maskobjects as M
 
@@ -256,13 +256,13 @@ MaskObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:1|sho
         pipeline.add_listener(callback)
         pipeline.add_module(module)
 
-        object_set = cpo.ObjectSet()
-        io = cpo.Objects()
+        object_set = cpo.Set()
+        io = cpo.Region()
         io.segmented = labels
         object_set.add_objects(io, INPUT_OBJECTS)
 
         if masking_objects is not None:
-            oo = cpo.Objects()
+            oo = cpo.Region()
             oo.segmented = masking_objects
             object_set.add_objects(oo, MASKING_OBJECTS)
 

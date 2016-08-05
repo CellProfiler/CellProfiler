@@ -50,7 +50,7 @@ from scipy.linalg import lstsq
 
 import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
-import cellprofiler.object as cpo
+import cellprofiler.region as cpo
 import cellprofiler.setting as cps
 
 M_IMAGES = "Across entire image"

@@ -18,7 +18,7 @@ import cellprofiler.pipeline as cpp
 import cellprofiler.module as cpm
 import cellprofiler.image as cpi
 import cellprofiler.measurement as cpmeas
-import cellprofiler.object as cpo
+import cellprofiler.region as cpo
 import cellprofiler.workspace as cpw
 import cellprofiler.modules.renameorrenumberfiles as R
 
@@ -194,7 +194,7 @@ RenameOrRenumberFiles:[module_num:1|svn_version:\'1\'|variable_revision_number:1
         image_set = image_set_list.get_image_set(0)
 
         workspace = cpw.Workspace(pipeline, module, image_set,
-                                  cpo.ObjectSet(), m, image_set_list)
+                                  cpo.Set(), m, image_set_list)
         return workspace, module
 
     def test_02_01_rename_delete(self):

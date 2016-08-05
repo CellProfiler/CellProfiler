@@ -15,7 +15,7 @@ set_headless()
 import cellprofiler.workspace as cpw
 import cellprofiler.image as cpi
 import cellprofiler.module as cpm
-import cellprofiler.object as cpo
+import cellprofiler.region as cpo
 import cellprofiler.modules.tile as T
 import cellprofiler.pipeline as cpp
 import cellprofiler.measurement as cpmeas
@@ -168,7 +168,7 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
 
         workspace = cpw.Workspace(pipeline, module,
                                   image_set_list.get_image_set(0),
-                                  cpo.ObjectSet(),
+                                  cpo.Set(),
                                   cpmeas.Measurements(),
                                   image_set_list)
         return workspace, module
@@ -532,7 +532,7 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
 
         workspace = cpw.Workspace(pipeline, module,
                                   image_set,
-                                  cpo.ObjectSet(),
+                                  cpo.Set(),
                                   cpmeas.Measurements(),
                                   image_set_list)
         return workspace, module

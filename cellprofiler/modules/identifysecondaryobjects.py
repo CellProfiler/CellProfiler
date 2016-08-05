@@ -131,7 +131,7 @@ import scipy.misc as scimisc
 import cellprofiler.module as cpm
 import cellprofiler.image as cpi
 import cellprofiler.measurement as cpmeas
-import cellprofiler.object as cpo
+import cellprofiler.region as cpo
 import cellprofiler.preferences as cpprefs
 import cellprofiler.workspace as cpw
 import cellprofiler.setting as cps
@@ -636,7 +636,7 @@ class IdentifySecondaryObjects(cpmi.Identify):
             lookup[lookup != 0] = np.arange(np.sum(lookup != 0)) + 1
             segmented_labels = lookup[objects.segmented]
             segmented_out = lookup[segmented_out]
-            new_objects = cpo.Objects()
+            new_objects = cpo.Region()
             new_objects.segmented = segmented_labels
             if objects.has_unedited_segmented:
                 new_objects.unedited_segmented = objects.unedited_segmented
@@ -656,7 +656,7 @@ class IdentifySecondaryObjects(cpmi.Identify):
         #
         # Add the objects to the object set
         #
-        objects_out = cpo.Objects()
+        objects_out = cpo.Region()
         objects_out.unedited_segmented = small_removed_segmented_out
         objects_out.small_removed_segmented = small_removed_segmented_out
         objects_out.segmented = segmented_out

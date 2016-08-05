@@ -22,7 +22,7 @@ import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
 import cellprofiler.modules
 import cellprofiler.modules.loadimages as LI
-import cellprofiler.object as cpo
+import cellprofiler.region as cpo
 import cellprofiler.pipeline as cpp
 import cellprofiler.preferences as cpprefs
 import cellprofiler.setting as cps

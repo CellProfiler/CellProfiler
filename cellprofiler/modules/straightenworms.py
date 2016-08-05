@@ -82,7 +82,7 @@ from scipy.ndimage import standard_deviation as nd_standard_deviation
 import cellprofiler.image as cpi
 import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
-import cellprofiler.object as cpo
+import cellprofiler.region as cpo
 import cellprofiler.preferences as cpprefs
 import cellprofiler.setting as cps
 from cellprofiler.preferences import IO_FOLDER_CHOICE_HELP_TEXT
@@ -352,13 +352,13 @@ class StraightenWorms(cpm.Module):
     def run(self, workspace):
         '''Process one image set'''
         object_set = workspace.object_set
-        assert isinstance(object_set, cpo.ObjectSet)
+        assert isinstance(object_set, cpo.Set)
 
         image_set = workspace.image_set
 
         objects_name = self.objects_name.value
         orig_objects = object_set.get_objects(objects_name)
-        assert isinstance(orig_objects, cpo.Objects)
+        assert isinstance(orig_objects, cpo.Region)
         m = workspace.measurements
         assert isinstance(m, cpmeas.Measurements)
         #
@@ -615,7 +615,7 @@ class StraightenWorms(cpm.Module):
             # Find the minimum and maximum i coordinate of each worm
             #
             object_set = workspace.object_set
-            assert isinstance(object_set, cpo.ObjectSet)
+            assert isinstance(object_set, cpo.Set)
             orig_objects = object_set.get_objects(input_object_name)
 
             i, j = np.mgrid[0:labels.shape[0], 0:labels.shape[1]]
@@ -923,9 +923,9 @@ class StraightenWorms(cpm.Module):
         m = workspace.measurements
         assert isinstance(m, cpmeas.Measurements)
         object_set = workspace.object_set
-        assert isinstance(object_set, cpo.ObjectSet)
+        assert isinstance(object_set, cpo.Set)
         straightened_objects_name = self.straightened_objects_name.value
-        straightened_objects = cpo.Objects()
+        straightened_objects = cpo.Region()
         straightened_objects.segmented = labels
         object_set.add_objects(straightened_objects, straightened_objects_name)
         add_object_count_measurements(m, straightened_objects_name, nworms)

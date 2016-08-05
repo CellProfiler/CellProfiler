@@ -1,4 +1,4 @@
-'''<b>Identify Objects Manually</b> allows you to identify objects 
+'''<b>Identify Objects Manually</b> allows you to identify objects
 in an image by hand rather than automatically.
 <hr>
 This module lets you outline the objects in an image using the mouse. The
@@ -20,7 +20,7 @@ from centrosome.outline import outline
 
 import cellprofiler.image as cpi
 import cellprofiler.module as cpm
-import cellprofiler.object as cpo
+import cellprofiler.region as cpo
 import cellprofiler.preferences as cpprefs
 import cellprofiler.setting as cps
 import identify as I
@@ -85,7 +85,7 @@ class IdentifyObjectsManually(I.Identify):
             # User cancelled. Soldier on as best we can.
             workspace.cancel_request()
             labels = np.zeros(pixel_data.shape[:2], int)
-        objects = cpo.Objects()
+        objects = cpo.Region()
         objects.segmented = labels
         workspace.object_set.add_objects(objects, objects_name)
 

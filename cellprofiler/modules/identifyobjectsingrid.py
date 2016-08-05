@@ -1,4 +1,4 @@
-'''<b>Identify Objects In Grid</b> identifies objects within each section of a grid 
+'''<b>Identify Objects In Grid</b> identifies objects within each section of a grid
 that has been defined by the <b>DefineGrid</b> module.
 <hr>
 This module identifies objects that are contained within in a grid pattern, allowing
@@ -46,7 +46,7 @@ import cellprofiler.grid as cpg
 import cellprofiler.image as cpi
 import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
-import cellprofiler.object as cpo
+import cellprofiler.region as cpo
 import cellprofiler.setting as cps
 from cellprofiler.gui.help import HELP_ON_MEASURING_DISTANCES
 from cellprofiler.gui.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
@@ -209,7 +209,7 @@ class IdentifyObjectsInGrid(cpm.Module):
             labels = self.run_natural_circle(workspace, gridding)
         elif self.shape_choice == SHAPE_NATURAL:
             labels = self.run_natural(workspace, gridding)
-        objects = cpo.Objects()
+        objects = cpo.Region()
         objects.segmented = labels
         object_count = gridding.rows * gridding.columns
         workspace.object_set.add_objects(objects,

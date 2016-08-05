@@ -18,7 +18,7 @@ import cellprofiler.pipeline as cpp
 import cellprofiler.module as cpm
 import cellprofiler.image as cpi
 import cellprofiler.measurement as cpmeas
-import cellprofiler.object as cpo
+import cellprofiler.region as cpo
 import cellprofiler.workspace as cpw
 
 import cellprofiler.modules.labelimages as L
@@ -110,7 +110,7 @@ LabelImages:[module_num:2|svn_version:\'9970\'|variable_revision_number:1|show_w
 
         workspace = cpw.Workspace(pipeline, module,
                                   image_set_list.get_image_set(0),
-                                  cpo.ObjectSet(), cpmeas.Measurements(),
+                                  cpo.Set(), cpmeas.Measurements(),
                                   image_set_list)
         return workspace, module
 

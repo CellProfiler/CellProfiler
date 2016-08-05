@@ -60,7 +60,7 @@ cached_file_lists = {}
 import scipy.io.matlab.mio
 import uuid
 
-import cellprofiler.object as cpo
+import cellprofiler.region as cpo
 import cellprofiler.module as cpmodule
 import cellprofiler.image as cpimage
 import cellprofiler.measurement as cpmeas
@@ -2240,10 +2240,10 @@ class LoadImages(cpmodule.Module):
                                                   labels[labels != 0] + offset))))
                         if ijv.shape[0] > 0:
                             offset = np.max(ijv[:, 2])
-                    o = cpo.Objects()
+                    o = cpo.Region()
                     o.set_ijv(ijv, shape)
                     object_set = workspace.object_set
-                    assert isinstance(object_set, cpo.ObjectSet)
+                    assert isinstance(object_set, cpo.Set)
                     object_name = channel.object_name.value
                     object_set.add_objects(o, object_name)
                     provider.release_memory()

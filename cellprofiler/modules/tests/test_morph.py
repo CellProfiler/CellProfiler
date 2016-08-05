@@ -16,7 +16,7 @@ set_headless()
 import cellprofiler.pipeline as cpp
 import cellprofiler.image as cpi
 import cellprofiler.measurement as cpmeas
-import cellprofiler.object as cpo
+import cellprofiler.region as cpo
 import cellprofiler.pipeline as cpp
 import cellprofiler.setting as cps
 import cellprofiler.workspace as cpw
@@ -439,7 +439,7 @@ Morph:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|show_wind
         if scale is not None:
             module.functions[0].scale.value = scale
         pipeline = cpp.Pipeline()
-        object_set = cpo.ObjectSet()
+        object_set = cpo.Set()
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         workspace = cpw.Workspace(pipeline,

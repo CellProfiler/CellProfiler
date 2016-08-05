@@ -41,7 +41,7 @@ from scipy.ndimage import distance_transform_edt
 import cellprofiler.image as cpi
 import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
-import cellprofiler.object as cpo
+import cellprofiler.region as cpo
 import cellprofiler.setting as cps
 from cellprofiler.gui.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
 from cellprofiler.modules.identify import add_object_count_measurements
@@ -146,7 +146,7 @@ class ExpandOrShrinkObjects(cpm.Module):
 
     def run(self, workspace):
         input_objects = workspace.object_set.get_objects(self.object_name.value)
-        output_objects = cpo.Objects()
+        output_objects = cpo.Region()
         output_objects.segmented = self.do_labels(input_objects.segmented)
         if (input_objects.has_small_removed_segmented and
                     self.operation not in (O_EXPAND, O_EXPAND_INF, O_DIVIDE)):

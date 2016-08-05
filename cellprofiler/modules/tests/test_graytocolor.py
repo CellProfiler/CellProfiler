@@ -14,7 +14,7 @@ import cellprofiler.module as cpm
 import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
 import cellprofiler.modules.graytocolor as G
-import cellprofiler.object as cpo
+import cellprofiler.region as cpo
 import cellprofiler.pipeline as cpp
 import cellprofiler.setting as cps
 import cellprofiler.workspace as cpw
@@ -75,7 +75,7 @@ class TestGrayToColor(unittest.TestCase):
         for image, image_name in zip(images, image_names):
             if image is not None:
                 image_set.add(image_name, cpi.Image(image))
-        workspace = cpw.Workspace(pipeline, module, image_set, cpo.ObjectSet(),
+        workspace = cpw.Workspace(pipeline, module, image_set, cpo.Set(),
                                   cpmeas.Measurements(), image_set_list)
         return workspace, module
 

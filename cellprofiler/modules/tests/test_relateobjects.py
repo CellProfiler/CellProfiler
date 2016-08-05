@@ -17,7 +17,7 @@ import cellprofiler.pipeline as cpp
 import cellprofiler.module as cpm
 import cellprofiler.image as cpi
 import cellprofiler.measurement as cpmeas
-import cellprofiler.object as cpo
+import cellprofiler.region as cpo
 import cellprofiler.workspace as cpw
 import cellprofiler.modules.relateobjects as R
 
@@ -46,7 +46,7 @@ class TestRelateObjects(unittest.TestCase):
         module.find_parent_child_distances.value = R.D_NONE
         module.module_num = 2 if fake_measurement else 1
         pipeline.add_module(module)
-        object_set = cpo.ObjectSet()
+        object_set = cpo.Set()
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         m = cpmeas.Measurements()
@@ -58,14 +58,14 @@ class TestRelateObjects(unittest.TestCase):
                                   object_set,
                                   m,
                                   image_set_list)
-        o = cpo.Objects()
+        o = cpo.Region()
         if parents.shape[1] == 3:
             # IJV format
             o.ijv = parents
         else:
             o.segmented = parents
         object_set.add_objects(o, PARENT_OBJECTS)
-        o = cpo.Objects()
+        o = cpo.Region()
         if children.shape[1] == 3:
             o.ijv = children
         else:

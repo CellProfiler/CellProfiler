@@ -19,7 +19,7 @@ import cellprofiler.pipeline as cpp
 import cellprofiler.module as cpm
 import cellprofiler.image as cpi
 import cellprofiler.measurement as cpmeas
-import cellprofiler.object as cpo
+import cellprofiler.region as cpo
 import cellprofiler.workspace as cpw
 
 import cellprofiler.modules.imagemath as I
@@ -483,7 +483,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
         measurements = cpmeas.Measurements()
         if measurement is not None:
             measurements.add_image_measurement(MEASUREMENT_NAME, str(measurement))
-        workspace = cpw.Workspace(pipeline, module, image_set, cpo.ObjectSet(),
+        workspace = cpw.Workspace(pipeline, module, image_set, cpo.Set(),
                                   measurements, image_set_list)
         module.run(workspace)
         return image_set.get_image('outputimage')

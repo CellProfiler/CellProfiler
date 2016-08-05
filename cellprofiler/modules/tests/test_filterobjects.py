@@ -17,7 +17,7 @@ set_headless()
 
 import cellprofiler.workspace as cpw
 import cellprofiler.pipeline as cpp
-import cellprofiler.object as cpo
+import cellprofiler.region as cpo
 import cellprofiler.image as cpi
 import cellprofiler.preferences as cpprefs
 import cellprofiler.measurement as cpm
@@ -40,7 +40,7 @@ class TestFilterObjects(unittest.TestCase):
         '''Make a workspace for testing FilterByObjectMeasurement'''
         module = F.FilterByObjectMeasurement()
         pipeline = cpp.Pipeline()
-        object_set = cpo.ObjectSet()
+        object_set = cpo.Set()
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         workspace = cpw.Workspace(pipeline,
@@ -52,16 +52,16 @@ class TestFilterObjects(unittest.TestCase):
         for key in image_dict.keys():
             image_set.add(key, cpi.Image(image_dict[key]))
         for key in object_dict.keys():
-            o = cpo.Objects()
+            o = cpo.Region()
             o.segmented = object_dict[key]
             object_set.add_objects(o, key)
         return workspace, module
 
     @contextlib.contextmanager
-    def make_classifier(self, module, 
-                        answers, 
+    def make_classifier(self, module,
+                        answers,
                         classes=None,
-                        class_names = None, 
+                        class_names = None,
                         rules_class = None,
                         name = "Classifier",
                         feature_names = ["Foo_"+TEST_FTR]):
@@ -73,12 +73,12 @@ class TestFilterObjects(unittest.TestCase):
             class_names = ["Class%d" for _ in classes]
         if rules_class is None:
             rules_class = class_names[0]
-        s = make_classifier_pickle(answers, classes, class_names, name, 
+        s = make_classifier_pickle(answers, classes, class_names, name,
                                   feature_names)
         fd, filename = tempfile.mkstemp(".model")
         os.write(fd, s)
         os.close(fd)
-            
+
         module.mode.value = F.MODE_CLASSIFIERS
         module.rules_class.value = rules_class
         module.rules_directory.set_custom_path(os.path.dirname(filename))
@@ -1640,7 +1640,7 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
         parent_image = cpi.Image(np.zeros((10, 10)), mask=mask)
         workspace.image_set.add(INPUT_IMAGE, parent_image)
 
-        input_objects = cpo.Objects()
+        input_objects = cpo.Region()
         input_objects.segmented = labels
         input_objects.parent_image = parent_image
 
@@ -1666,7 +1666,7 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
         segmented[6:8, 0:4] = 2
 
         workspace, module = self.make_workspace({})
-        input_objects = cpo.Objects()
+        input_objects = cpo.Region()
         workspace.object_set.add_objects(input_objects, INPUT_OBJECTS)
         input_objects.segmented = segmented
         input_objects.unedited_segmented = unedited
@@ -1696,7 +1696,7 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
         segmented[6:8, 0:4] = 2
 
         workspace, module = self.make_workspace({})
-        input_objects = cpo.Objects()
+        input_objects = cpo.Region()
         input_objects.segmented = segmented
         input_objects.unedited_segmented = unedited
         workspace.object_set.add_objects(input_objects, INPUT_OBJECTS)
@@ -1713,7 +1713,7 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
         mask = (unedited != 3) & (unedited != 0)
         self.assertTrue(np.all(small_removed[mask] != 0))
         self.assertTrue(np.all(small_removed[~mask] == 0))
-        
+
     def test_11_00_classify_none(self):
         workspace, module = self.make_workspace(
             {INPUT_OBJECTS : np.zeros((10, 10), int)})
@@ -1724,7 +1724,7 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
             module.run(workspace)
             output_objects = workspace.object_set.get_objects(OUTPUT_OBJECTS)
             self.assertEqual(output_objects.count, 0)
-        
+
     def test_11_01_classify_true(self):
         labels = np.zeros((10, 10), int)
         labels[4:7, 4:7] = 1
@@ -1737,7 +1737,7 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
             module.run(workspace)
             output_objects = workspace.object_set.get_objects(OUTPUT_OBJECTS)
             self.assertEqual(output_objects.count, 1)
-    
+
     def test_11_02_classify_false(self):
         labels = np.zeros((10, 10), int)
         labels[4:7, 4:7] = 1
@@ -1750,7 +1750,7 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
             module.run(workspace)
             output_objects = workspace.object_set.get_objects(OUTPUT_OBJECTS)
             self.assertEqual(output_objects.count, 0)
-        
+
     def test_11_03_classify_many(self):
         labels = np.zeros((10, 10), int)
         labels[1:4, 1:4] = 1
@@ -1768,24 +1768,24 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
             labels_out = output_objects.labels()[0][0]
             np.testing.assert_array_equal(labels_out[1:4, 1:4], 1)
             np.testing.assert_array_equal(labels_out[5:7, 5:7], 0)
-        
+
 class FakeClassifier(object):
     def __init__(self, answers, classes):
         '''initializer
-        
+
         answers - a vector of answers to be returned by "predict"
-        
+
         classes - a vector of class numbers to be used to populate self.classes_
         '''
         self.answers_ = answers
         self.classes_ = classes
-        
+
     def predict(self, *args, **kwargs):
         return self.answers_
-    
+
 def make_classifier_pickle(answers, classes, class_names, name, feature_names):
     '''Make a pickle of a fake classifier
-    
+
     answers - the answers you want to get back after calling classifier.predict
     classes - the class #s for the answers.
     class_names - one name per class in the order they appear in classes

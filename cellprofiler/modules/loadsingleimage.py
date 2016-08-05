@@ -47,8 +47,8 @@ import numpy as np
 import cellprofiler.image as cpi
 import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
-import cellprofiler.object as cpo
-import cellprofiler.object as cpo
+import cellprofiler.region as cpo
+import cellprofiler.region as cpo
 import cellprofiler.preferences as cpprefs
 import cellprofiler.setting as cps
 import identify as I
@@ -409,10 +409,10 @@ class LoadSingleImage(cpm.Module):
                 # Turn image into objects
                 #
                 labels = convert_image_to_objects(pixel_data)
-                objects = cpo.Objects()
+                objects = cpo.Region()
                 objects.segmented = labels
                 object_set = workspace.object_set
-                assert isinstance(object_set, cpo.ObjectSet)
+                assert isinstance(object_set, cpo.Set)
                 object_set.add_objects(objects, image_name)
                 add_object_count_measurements(m, image_name, objects.count)
                 add_object_location_measurements(m, image_name, labels)

@@ -20,7 +20,7 @@ import cellprofiler.pipeline as cpp
 import cellprofiler.module as cpm
 import cellprofiler.image as cpi
 import cellprofiler.measurement as cpmeas
-import cellprofiler.object as cpo
+import cellprofiler.region as cpo
 import cellprofiler.workspace as cpw
 
 import cellprofiler.modules.makeprojection as M
@@ -202,7 +202,7 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
                 image_set_list.purge_image_set(i - 1)
             w = cpw.Workspace(pipeline, module,
                               image_set_list.get_image_set(i),
-                              cpo.ObjectSet(),
+                              cpo.Set(),
                               m,
                               image_set_list)
             if i < image_count - 1 or run_last:
@@ -216,7 +216,7 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
         image_set = image_set_list.get_image_set(image_count)
         w = cpw.Workspace(pipeline, module,
                           image_set,
-                          cpo.ObjectSet(),
+                          cpo.Set(),
                           m,
                           image_set_list)
         module.run(w)

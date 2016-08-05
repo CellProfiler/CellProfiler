@@ -19,7 +19,7 @@ import cellprofiler.pipeline as cpp
 import cellprofiler.module as cpm
 import cellprofiler.image as cpi
 import cellprofiler.measurement as cpmeas
-import cellprofiler.object as cpo
+import cellprofiler.region as cpo
 import cellprofiler.workspace as cpw
 
 import cellprofiler.modules.calculatemath as C
@@ -239,7 +239,7 @@ CalculateRatios:[module_num:1|svn_version:\'8913\'|variable_revision_number:6|sh
         workspace = cpw.Workspace(pipeline,
                                   module,
                                   image_set_list.get_image_set(0),
-                                  cpo.ObjectSet(),
+                                  cpo.Set(),
                                   measurements,
                                   image_set_list)
         if setup_fn is not None:

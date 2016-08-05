@@ -16,7 +16,7 @@ import cellprofiler.workspace as cpw
 import cellprofiler.grid as cpg
 import cellprofiler.image as cpi
 import cellprofiler.module as cpm
-import cellprofiler.object as cpo
+import cellprofiler.region as cpo
 import cellprofiler.measurement as cpmeas
 import cellprofiler.pipeline as cpp
 import cellprofiler.modules.displaydataonimage as D
@@ -275,7 +275,7 @@ DisplayDataOnImage:[module_num:2|svn_version:\'Unknown\'|variable_revision_numbe
                          D.CMS_USE_MEASUREMENT_RANGE)
 
     def make_workspace(self, measurement, labels=None, image=None):
-        object_set = cpo.ObjectSet()
+        object_set = cpo.Set()
         module = D.DisplayDataOnImage()
         module.module_num = 1
         module.image_name.value = INPUT_IMAGE_NAME
@@ -290,7 +290,7 @@ DisplayDataOnImage:[module_num:2|svn_version:\'Unknown\'|variable_revision_numbe
                 image = np.zeros((50, 120))
         else:
             module.objects_or_image.value = D.OI_OBJECTS
-            o = cpo.Objects()
+            o = cpo.Region()
             o.segmented = labels
             object_set.add_objects(o, OBJECTS_NAME)
             m.add_measurement(OBJECTS_NAME, MEASUREMENT_NAME, np.array(measurement))

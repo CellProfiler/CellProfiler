@@ -17,7 +17,7 @@ import cellprofiler.modules.injectimage as II
 import cellprofiler.modules.measureobjectintensity as MOI
 import cellprofiler.pipeline as P
 import cellprofiler.measurement as cpmeas
-import cellprofiler.object as cpo
+import cellprofiler.region as cpo
 import cellprofiler.image as cpi
 import cellprofiler.workspace as cpw
 import centrosome.outline as cpmo
@@ -155,8 +155,8 @@ class TestMeasureObjects(unittest.TestCase):
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         image_set.add(IMAGE_NAME, cpi.Image(pixel_data, mask))
-        object_set = cpo.ObjectSet()
-        o = cpo.Objects()
+        object_set = cpo.Set()
+        o = cpo.Region()
         if labels.shape[1] == 3:
             o.ijv = labels
         else:
@@ -648,8 +648,8 @@ class TestMeasureObjects(unittest.TestCase):
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         image_set.add('MyImage', cpi.Image(image))
-        object_set = cpo.ObjectSet()
-        o = cpo.Objects()
+        object_set = cpo.Set()
+        o = cpo.Region()
         o.segmented = labels
         object_set.add_objects(o, "MyObjects")
         pipeline = P.Pipeline()
@@ -682,8 +682,8 @@ class TestMeasureObjects(unittest.TestCase):
         mask = ~ cpmo.outline(labels).astype(bool)
         m = cpmeas.Measurements()
         m.add(IMAGE_NAME, cpi.Image(image, mask=mask))
-        object_set = cpo.ObjectSet()
-        o = cpo.Objects()
+        object_set = cpo.Set()
+        o = cpo.Region()
         o.segmented = labels
         object_set.add_objects(o, OBJECT_NAME)
         pipeline = P.Pipeline()

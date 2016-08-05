@@ -17,7 +17,7 @@ import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
 import cellprofiler.modules.loadimages as LI
 import cellprofiler.modules.loadsingleimage as L
-import cellprofiler.object as cpo
+import cellprofiler.region as cpo
 import cellprofiler.pipeline as cpp
 import cellprofiler.preferences as cpprefs
 import cellprofiler.setting as cps
@@ -346,7 +346,7 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
         image_set_list = cpi.ImageSetList()
         workspace = cpw.Workspace(pipeline, module,
                                   image_set_list.get_image_set(0),
-                                  cpo.ObjectSet(), cpmeas.Measurements(),
+                                  cpo.Set(), cpmeas.Measurements(),
                                   image_set_list)
         return workspace, module
 
@@ -423,7 +423,7 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
         li.location.custom_path = path
         li.images[0].common_text.value = "Channel2-"
         m = cpmeas.Measurements()
-        workspace = cpw.Workspace(pipeline, lsi, m, cpo.ObjectSet(), m,
+        workspace = cpw.Workspace(pipeline, lsi, m, cpo.Set(), m,
                                   cpi.ImageSetList())
         self.assertTrue(pipeline.prepare_run(workspace))
         self.assertGreater(m.image_set_count, 1)
@@ -564,7 +564,7 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
             pipeline.add_listener(callback)
             pipeline.add_module(module)
             m = cpmeas.Measurements()
-            object_set = cpo.ObjectSet()
+            object_set = cpo.Set()
             image_set_list = cpi.ImageSetList()
             image_set = image_set_list.get_image_set(0)
             workspace = cpw.Workspace(
@@ -619,7 +619,7 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
             pipeline.add_listener(callback)
             pipeline.add_module(module)
             m = cpmeas.Measurements()
-            object_set = cpo.ObjectSet()
+            object_set = cpo.Set()
             image_set_list = cpi.ImageSetList()
             image_set = image_set_list.get_image_set(0)
             workspace = cpw.Workspace(

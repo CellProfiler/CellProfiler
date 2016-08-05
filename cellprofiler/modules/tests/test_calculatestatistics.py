@@ -21,7 +21,7 @@ import cellprofiler.setting as cps
 import cellprofiler.measurement as cpmeas
 import cellprofiler.image as cpi
 import cellprofiler.pipeline as cpp
-import cellprofiler.object as cpo
+import cellprofiler.region as cpo
 import cellprofiler.workspace as cpw
 import cellprofiler.preferences as cpprefs
 from cellprofiler.modules.tests import github_url
@@ -522,7 +522,7 @@ CalculateStatistics:[module_num:1|svn_version:\'9495\'|variable_revision_number:
         for i in range(nimages):
             image_set = image_set_list.get_image_set(i)
         workspace = cpw.Workspace(pipeline, module, image_set,
-                                  cpo.ObjectSet(), m, image_set_list)
+                                  cpo.Set(), m, image_set_list)
         return workspace, module
 
     def test_02_02_NAN(self):

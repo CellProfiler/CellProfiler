@@ -40,7 +40,7 @@ import scipy.ndimage as scind
 import cellprofiler.image as cpi
 import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
-import cellprofiler.object as cpo
+import cellprofiler.region as cpo
 import cellprofiler.setting as cps
 
 from centrosome.zernike import construct_zernike_polynomials
@@ -206,7 +206,7 @@ class MeasurementTemplate(cpm.Module):
         # The object set has all of the objects in it.
         #
         object_set = workspace.object_set
-        assert isinstance(object_set, cpo.ObjectSet)
+        assert isinstance(object_set, cpo.Set)
         #
         # Get objects from the object set. The most useful array in
         # the objects is "objects.segmented" which is a labels matrix

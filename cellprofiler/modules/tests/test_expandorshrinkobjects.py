@@ -20,7 +20,7 @@ import cellprofiler.pipeline as cpp
 import cellprofiler.module as cpm
 import cellprofiler.image as cpi
 import cellprofiler.measurement as cpmeas
-import cellprofiler.object as cpo
+import cellprofiler.region as cpo
 import cellprofiler.workspace as cpw
 
 import centrosome.cpmorphology as morph
@@ -177,8 +177,8 @@ class TestExpandOrShrinkObjects(unittest.TestCase):
                        iterations=1,
                        wants_outlines=False,
                        wants_fill_holes=False):
-        object_set = cpo.ObjectSet()
-        objects = cpo.Objects()
+        object_set = cpo.Set()
+        objects = cpo.Region()
         objects.segmented = labels
         object_set.add_objects(objects, INPUT_NAME)
         module = E.ExpandOrShrink()

@@ -10,7 +10,7 @@ from cStringIO import StringIO
 
 import cellprofiler.measurement as cpmeas
 import cellprofiler.modules.sendemail as SE
-import cellprofiler.object as cpo
+import cellprofiler.region as cpo
 import cellprofiler.pipeline as cpp
 import cellprofiler.workspace as cpw
 
@@ -108,7 +108,7 @@ class TestSendEmail(unittest.TestCase):
             recipient.recipient.value = recipient_addr(i)
         pipeline = cpp.Pipeline()
         pipeline.add_module(module)
-        workspace = cpw.Workspace(pipeline, module, m, cpo.ObjectSet(),
+        workspace = cpw.Workspace(pipeline, module, m, cpo.Set(),
                                   m, None)
         return workspace, module
 

@@ -25,7 +25,7 @@ import cellprofiler.module as CPM
 import cellprofiler.measurement as measurements
 import cellprofiler.modules.loadimages as LI
 import cellprofiler.modules.tests as T
-import cellprofiler.object as cpo
+import cellprofiler.region as cpo
 import cellprofiler.pipeline as cpp
 import cellprofiler.pipeline as P
 import cellprofiler.preferences as cpprefs
@@ -1473,7 +1473,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         module.prepare_group(workspace, grouping, image_numbers)
 
         image_set = image_set_list.get_image_set(0)
-        workspace = W.Workspace(pipeline, module, image_set, cpo.ObjectSet(),
+        workspace = W.Workspace(pipeline, module, image_set, cpo.Set(),
                                 m, image_set_list)
         module.run(workspace)
         image = image_set.get_image(IMAGE_NAME)
@@ -1543,7 +1543,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         self.assertEqual(m.image_set_count, 2)
         load_images.prepare_group(workspace, (), [1, 2])
         image_set = image_set_list.get_image_set(0)
-        w = W.Workspace(pipeline, load_images, image_set, cpo.ObjectSet(), m,
+        w = W.Workspace(pipeline, load_images, image_set, cpo.Set(), m,
                         image_set_list)
         load_images.run(w)
         self.assertEqual(image_set.get_image_provider("Channel1").get_filename(),
@@ -1562,7 +1562,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                          "1")
         image_set = image_set_list.get_image_set(1)
         m.next_image_set(2)
-        w = W.Workspace(pipeline, load_images, image_set, cpo.ObjectSet(), m,
+        w = W.Workspace(pipeline, load_images, image_set, cpo.Set(), m,
                         image_set_list)
         load_images.run(w)
         self.assertEqual(image_set.get_image_provider("Channel1").get_filename(),
@@ -1835,7 +1835,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                 load_images.prepare_group(workspace, d, my_groups[0][1])
                 image_set = image_set_list.get_image_set(d)
                 load_images.run(W.Workspace(pipeline, load_images, image_set,
-                                            cpo.ObjectSet(), m, image_set_list))
+                                            cpo.Set(), m, image_set_list))
                 image = image_set.get_image("Channel1")
                 self.assertEqual(image.file_name, filenames[chosen])
             finally:
@@ -1899,7 +1899,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                     m.next_image_set()
                 image_set = image_set_list.get_image_set(i)
                 w = W.Workspace(pipeline, load_images, image_set,
-                                cpo.ObjectSet(), m, image_set_list)
+                                cpo.Set(), m, image_set_list)
                 load_images.run(w)
                 image = image_set.get_image("my_image")
                 self.assertEqual(tuple(image.pixel_data.shape), (48, 32))
@@ -1973,7 +1973,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                     m.next_image_set()
                 image_set = image_set_list.get_image_set(i)
                 w = W.Workspace(pipeline, load_images, image_set,
-                                cpo.ObjectSet(), m, image_set_list)
+                                cpo.Set(), m, image_set_list)
                 load_images.run(w)
                 image = image_set.get_image("my_image")
                 self.assertEqual(tuple(image.pixel_data.shape), (48, 32))
@@ -2303,7 +2303,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                 image_set = image_set_list.get_image_set(image_number - 1)
                 m.next_image_set(image_number)
                 module.run(W.Workspace(pipeline, module, image_set,
-                                       cpo.ObjectSet(), m, image_set_list))
+                                       cpo.Set(), m, image_set_list))
                 provider = image_set.get_image_provider("MyImage")
                 self.assertTrue(isinstance(provider, LI.LoadImagesImageProvider))
                 match = re.search(module.images[0].file_metadata.value,
@@ -2337,7 +2337,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         module.prepare_group(workspace, (), [1, 2, 3])
         image_set = image_set_list.get_image_set(0)
         workspace = W.Workspace(pipeline, module, image_set,
-                                cpo.ObjectSet(), m,
+                                cpo.Set(), m,
                                 image_set_list)
         module.run(workspace)
         self.assertTrue('MyImage' in image_set.get_names())
@@ -2349,7 +2349,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         image_set = image_set_list.get_image_set(1)
         m.next_image_set()
         workspace = W.Workspace(pipeline, module, image_set,
-                                cpo.ObjectSet(), m,
+                                cpo.Set(), m,
                                 image_set_list)
         module.run(workspace)
         self.assertTrue('MyImage' in image_set.get_names())
@@ -2389,7 +2389,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         module.prepare_group(workspace, (), [1, 2, 3])
         image_set = image_set_list.get_image_set(0)
         workspace = W.Workspace(pipeline, module, image_set,
-                                cpo.ObjectSet(), m,
+                                cpo.Set(), m,
                                 image_set_list)
         module.run(workspace)
         self.assertTrue('MyImage' in image_set.get_names())
@@ -2399,7 +2399,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         image_set = image_set_list.get_image_set(1)
         m.next_image_set(2)
         workspace = W.Workspace(pipeline, module, image_set,
-                                cpo.ObjectSet(), m,
+                                cpo.Set(), m,
                                 image_set_list)
         module.run(workspace)
         self.assertTrue('MyImage' in image_set.get_names())
@@ -2459,7 +2459,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         workspace = W.Workspace(pipeline, module, None, None, m,
                                 image_set_list)
         module.prepare_run(workspace)
-        workspace = W.Workspace(pipeline, module, m, cpo.ObjectSet(), m,
+        workspace = W.Workspace(pipeline, module, m, cpo.Set(), m,
                                 image_set_list)
         module.run(workspace)
         image = m.get_image("MyImage")
@@ -2498,7 +2498,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
             for image_number in image_numbers:
                 image_set = image_set_list.get_image_set(image_number - 1)
                 workspace = W.Workspace(pipeline, module, image_set,
-                                        cpo.ObjectSet(), m,
+                                        cpo.Set(), m,
                                         image_set_list)
                 module.run(workspace)
                 for feature, expected in (("Series_Green", int(grouping[LI.C_SERIES])),
@@ -2551,7 +2551,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         module.prepare_group(workspace, (), np.arange(1, 16))
         image_set = image_set_list.get_image_set(0)
         workspace = W.Workspace(pipeline, module, image_set,
-                                cpo.ObjectSet(), m,
+                                cpo.Set(), m,
                                 image_set_list)
         module.run(workspace)
         self.assertTrue('Channel01' in image_set.get_names())
@@ -2570,7 +2570,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         image_set = image_set_list.get_image_set(1)
         m.next_image_set()
         workspace = W.Workspace(pipeline, module, image_set,
-                                cpo.ObjectSet(), m,
+                                cpo.Set(), m,
                                 image_set_list)
         module.run(workspace)
         self.assertTrue('Channel01' in image_set.get_names())
@@ -2620,7 +2620,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         module.prepare_group(workspace, (), np.arange(1, 16))
         image_set = image_set_list.get_image_set(0)
         workspace = W.Workspace(pipeline, module, image_set,
-                                cpo.ObjectSet(), m,
+                                cpo.Set(), m,
                                 image_set_list)
         module.run(workspace)
         self.assertTrue('Channel01' in image_set.get_names())
@@ -2638,7 +2638,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         image_set = image_set_list.get_image_set(1)
         m.next_image_set()
         workspace = W.Workspace(pipeline, module, image_set,
-                                cpo.ObjectSet(), m,
+                                cpo.Set(), m,
                                 image_set_list)
         module.run(workspace)
         self.assertTrue('Channel01' in image_set.get_names())
@@ -2689,7 +2689,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                 m.add_image_measurement(cpp.GROUP_INDEX, group_index)
                 m.add_image_measurement(cpp.GROUP_NUMBER, group_number)
                 workspace = W.Workspace(pipeline, module, image_set,
-                                        cpo.ObjectSet(), m,
+                                        cpo.Set(), m,
                                         image_set_list)
                 module.run(workspace)
                 for feature, expected in (("Series_Green", int(grouping[LI.C_SERIES])),
@@ -2744,7 +2744,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
             for group_index, image_number in enumerate(image_numbers):
                 image_set = image_set_list.get_image_set(image_number - 1)
                 workspace = W.Workspace(pipeline, module, image_set,
-                                        cpo.ObjectSet(), m,
+                                        cpo.Set(), m,
                                         image_set_list)
                 m.add_image_measurement(cpp.GROUP_INDEX, group_index)
                 m.add_image_measurement(cpp.GROUP_NUMBER, group_number)
@@ -2843,7 +2843,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         module.prepare_run(workspace)
         module.prepare_group(workspace, (), [0])
         workspace = W.Workspace(pipeline, module, image_set_list.get_image_set(0),
-                                cpo.ObjectSet(), m,
+                                cpo.Set(), m,
                                 image_set_list)
         return workspace, module
 
@@ -3272,7 +3272,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
             self.assertEqual(expected, url)
         image_set = image_set_list.get_image_set(0)
         module.run(W.Workspace(pipeline, module, image_set,
-                               cpo.ObjectSet(), m, image_set_list))
+                               cpo.Set(), m, image_set_list))
         image = image_set.get_image(IMAGE_NAME, must_be_grayscale=True)
         self.assertEqual(tuple(image.pixel_data.shape), (1006, 1000))
         #

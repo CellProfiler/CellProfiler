@@ -1,4 +1,4 @@
-"""<b>Measure Object Intensity</b> measures several intensity features for 
+"""<b>Measure Object Intensity</b> measures several intensity features for
 identified objects.
 <hr>
 Given an image with objects identified (e.g. nuclei or cells), this
@@ -65,7 +65,7 @@ from centrosome.filter import stretch
 
 import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
-import cellprofiler.object as cpo
+import cellprofiler.region as cpo
 import cellprofiler.setting as cps
 from identify import C_LOCATION
 

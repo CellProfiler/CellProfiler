@@ -1,4 +1,4 @@
-'''<b>Measure Object Neighbors</b> calculates how many neighbors each 
+'''<b>Measure Object Neighbors</b> calculates how many neighbors each
 object has and records various properties about the neighbors' relationships,
 including the percentage of an object's edge pixels that touch a neighbor.
 <hr>
@@ -49,7 +49,7 @@ from centrosome.outline import outline
 import cellprofiler.image as cpi
 import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
-import cellprofiler.object as cpo
+import cellprofiler.region as cpo
 import cellprofiler.preferences as cpprefs
 import cellprofiler.setting as cps
 import cellprofiler.workspace as cpw
@@ -203,13 +203,13 @@ class MeasureObjectNeighbors(cpm.Module):
 
     def run(self, workspace):
         objects = workspace.object_set.get_objects(self.object_name.value)
-        assert isinstance(objects, cpo.Objects)
+        assert isinstance(objects, cpo.Region)
         has_pixels = objects.areas > 0
         labels = objects.small_removed_segmented
         kept_labels = objects.segmented
         neighbor_objects = workspace.object_set.get_objects(
                 self.neighbors_name.value)
-        assert isinstance(neighbor_objects, cpo.Objects)
+        assert isinstance(neighbor_objects, cpo.Region)
         neighbor_labels = neighbor_objects.small_removed_segmented
         #
         # Need to add in labels touching border.

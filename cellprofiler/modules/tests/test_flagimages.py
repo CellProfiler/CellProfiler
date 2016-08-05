@@ -22,7 +22,7 @@ import cellprofiler.pipeline as cpp
 import cellprofiler.setting as cps
 import cellprofiler.image as cpi
 import cellprofiler.workspace as cpw
-import cellprofiler.object as cpo
+import cellprofiler.region as cpo
 import cellprofiler.measurement as cpmeas
 import cellprofiler.preferences as cpprefs
 
@@ -539,7 +539,7 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
         pipeline.add_module(module)
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        workspace = cpw.Workspace(pipeline, module, image_set, cpo.ObjectSet(),
+        workspace = cpw.Workspace(pipeline, module, image_set, cpo.Set(),
                                   measurements, image_set_list)
         return module, workspace
 
@@ -958,7 +958,7 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
 
     def test_09_04_classify_multiple_select_false(self):
         module, workspace = self.make_workspace([1], [])
-        with self.make_classifier(module, 2, 
+        with self.make_classifier(module, 2,
                                   classes = [1, 2, 3],
                                   class_names = ["Foo", "Bar", "Baz"],
                                   rules_classes = ["Foo", "Baz"]):

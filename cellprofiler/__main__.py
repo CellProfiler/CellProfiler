@@ -1,7 +1,7 @@
 import bioformats.formatreader
 import ctypes
 import cellprofiler.measurement
-import cellprofiler.object
+import cellprofiler.region
 import cellprofiler.pipeline
 import cellprofiler.preferences
 import cellprofiler.utilities.cpjvm
@@ -582,7 +582,7 @@ def write_schema(pipeline_filename):
 
     m = cellprofiler.measurement.Measurements()
 
-    workspace = cellprofiler.workspace.Workspace(pipeline, module, m, cellprofiler.object.ObjectSet, m, None)
+    workspace = cellprofiler.workspace.Workspace(pipeline, module, m, cellprofiler.region.Set, m, None)
 
     module.prepare_run(workspace)
 

@@ -28,7 +28,7 @@ if not hasattr(zmq, "Frame"):
 import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
 import cellprofiler.image as cpi
-import cellprofiler.object as cpo
+import cellprofiler.region as cpo
 import cellprofiler.pipeline as cpp
 import cellprofiler.setting as cps
 import cellprofiler.workspace as cpw
@@ -369,7 +369,7 @@ class KnimeBridgeServer(threading.Thread):
                     image_numbers)
 
         for image_index in range(n_image_sets):
-            object_set = cpo.ObjectSet()
+            object_set = cpo.Set()
             m.next_image_set(image_index + 1)
             for channel_name in channel_names:
                 dataset = image_group[channel_name]
@@ -486,7 +486,7 @@ class KnimeBridgeServer(threading.Thread):
         '''
         pipeline = cpp.Pipeline()
         m = cpmeas.Measurements()
-        object_set = cpo.ObjectSet()
+        object_set = cpo.Set()
         if len(message) < 2:
             self.raise_cellprofiler_exception(
                     session_id, "Missing run request sections")

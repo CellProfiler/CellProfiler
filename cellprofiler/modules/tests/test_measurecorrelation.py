@@ -15,7 +15,7 @@ import cellprofiler.pipeline as cpp
 import cellprofiler.module as cpm
 import cellprofiler.image as cpi
 import cellprofiler.measurement as cpmeas
-import cellprofiler.object as cpo
+import cellprofiler.region as cpo
 import cellprofiler.workspace as cpw
 import cellprofiler.modules.measurecorrelation as M
 
@@ -35,7 +35,7 @@ class TestMeasureCorrelation(unittest.TestCase):
                                             (image1, image2)):
             image_group.image_name.value = name
             image_set.add(name, image)
-        object_set = cpo.ObjectSet()
+        object_set = cpo.Set()
         if objects is None:
             module.images_or_objects.value = M.M_IMAGES
         else:
@@ -575,7 +575,7 @@ MeasureCorrelation:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
         image2[labels == 2] = 1 - image1[labels == 2]
         i1 = cpi.Image(image1)
         i2 = cpi.Image(image2)
-        o = cpo.Objects()
+        o = cpo.Region()
         o.segmented = labels
         workspace, module = self.make_workspace(i1, i2, o)
         module.run(workspace)
@@ -611,7 +611,7 @@ MeasureCorrelation:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
         labels = np.zeros((10, 10), int)
         labels[:4, :4] = 1
         labels[6:, 6:] = 2
-        o = cpo.Objects()
+        o = cpo.Region()
         o.segmented = labels
         #
         # Make the objects have the cropped image as a parent
@@ -633,7 +633,7 @@ MeasureCorrelation:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
         image2 = image1.copy()
         i1 = cpi.Image(image1)
         i2 = cpi.Image(image2)
-        o = cpo.Objects()
+        o = cpo.Region()
         o.segmented = labels
         workspace, module = self.make_workspace(i1, i2, o)
         module.run(workspace)
@@ -663,7 +663,7 @@ MeasureCorrelation:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
         labels = np.zeros((10, 30), int)
         labels[:4, :4] = 1
         labels[6:, 6:] = 2
-        o = cpo.Objects()
+        o = cpo.Region()
         o.segmented = labels
         workspace, module = self.make_workspace(i1, i1, o)
         module.run(workspace)
@@ -686,7 +686,7 @@ MeasureCorrelation:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
         labels[3:8, 3:8] = 1
         labels[13:18, 13:18] = 2
         mask = labels != 2
-        objects = cpo.Objects()
+        objects = cpo.Region()
         objects.segmented = labels
 
         for mask1, mask2 in ((mask, None), (None, mask), (mask, mask)):

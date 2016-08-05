@@ -17,7 +17,7 @@ import cellprofiler.modules.identify as cpmi
 import cellprofiler.pipeline as cpp
 import cellprofiler.workspace as cpw
 import cellprofiler.image as cpi
-import cellprofiler.object as cpo
+import cellprofiler.region as cpo
 import cellprofiler.measurement as cpm
 
 INPUT_OBJECTS_NAME = "input_objects"
@@ -392,10 +392,10 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
             self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
 
         p.add_listener(callback)
-        o_s = cpo.ObjectSet()
+        o_s = cpo.Set()
         i_l = cpi.ImageSetList()
         image = cpi.Image(image)
-        objects = cpo.Objects()
+        objects = cpo.Region()
         if unedited_segmented is not None:
             objects.unedited_segmented = unedited_segmented
         if small_removed_segmented is not None:
@@ -495,13 +495,13 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
 
     def test_02_04_two_objects_propagation_distance(self):
         p = cpp.Pipeline()
-        o_s = cpo.ObjectSet()
+        o_s = cpo.Set()
         i_l = cpi.ImageSetList()
         img = np.zeros((10, 20))
         img[2:7, 2:7] = .3
         img[2:7, 7:17] = .5
         image = cpi.Image(img)
-        objects = cpo.Objects()
+        objects = cpo.Region()
         labels = np.zeros((10, 20), int)
         labels[3:6, 3:6] = 1
         labels[3:6, 13:16] = 2
@@ -569,10 +569,10 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
 
     def test_03_01_zeros_watershed_gradient(self):
         p = cpp.Pipeline()
-        o_s = cpo.ObjectSet()
+        o_s = cpo.Set()
         i_l = cpi.ImageSetList()
         image = cpi.Image(np.zeros((10, 10)))
-        objects = cpo.Objects()
+        objects = cpo.Region()
         objects.unedited_segmented = np.zeros((10, 10), int)
         objects.small_removed_segmented = np.zeros((10, 10), int)
         objects.segmented = np.zeros((10, 10), int)
@@ -598,12 +598,12 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
 
     def test_03_02_one_object_watershed_gradient(self):
         p = cpp.Pipeline()
-        o_s = cpo.ObjectSet()
+        o_s = cpo.Set()
         i_l = cpi.ImageSetList()
         img = np.zeros((10, 10))
         img[2:7, 2:7] = .5
         image = cpi.Image(img)
-        objects = cpo.Objects()
+        objects = cpo.Region()
         labels = np.zeros((10, 10), int)
         labels[3:6, 3:6] = 1
         objects.unedited_segmented = labels
@@ -645,7 +645,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
 
     def test_03_03_two_objects_watershed_gradient(self):
         p = cpp.Pipeline()
-        o_s = cpo.ObjectSet()
+        o_s = cpo.Set()
         i_l = cpi.ImageSetList()
         img = np.zeros((10, 20))
         # There should be a gradient at :,7 which should act
@@ -653,7 +653,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         img[2:7, 2:7] = .3
         img[2:7, 7:17] = .5
         image = cpi.Image(img)
-        objects = cpo.Objects()
+        objects = cpo.Region()
         labels = np.zeros((10, 20), int)
         labels[3:6, 3:6] = 1
         labels[3:6, 13:16] = 2
@@ -721,10 +721,10 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
 
     def test_04_01_zeros_watershed_image(self):
         p = cpp.Pipeline()
-        o_s = cpo.ObjectSet()
+        o_s = cpo.Set()
         i_l = cpi.ImageSetList()
         image = cpi.Image(np.zeros((10, 10)))
-        objects = cpo.Objects()
+        objects = cpo.Region()
         objects.unedited_segmented = np.zeros((10, 10), int)
         objects.small_removed_segmented = np.zeros((10, 10), int)
         objects.segmented = np.zeros((10, 10), int)
@@ -750,12 +750,12 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
 
     def test_04_02_one_object_watershed_image(self):
         p = cpp.Pipeline()
-        o_s = cpo.ObjectSet()
+        o_s = cpo.Set()
         i_l = cpi.ImageSetList()
         img = np.zeros((10, 10))
         img[2:7, 2:7] = .5
         image = cpi.Image(img)
-        objects = cpo.Objects()
+        objects = cpo.Region()
         labels = np.zeros((10, 10), int)
         labels[3:6, 3:6] = 1
         objects.unedited_segmented = labels
@@ -789,7 +789,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
 
     def test_04_03_two_objects_watershed_image(self):
         p = cpp.Pipeline()
-        o_s = cpo.ObjectSet()
+        o_s = cpo.Set()
         i_l = cpi.ImageSetList()
         img = np.zeros((10, 20))
         # There should be a saddle at 7 which should serve
@@ -798,7 +798,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         img[2:7, 2:7] = .05 * (7 - y[2:7, 2:7])
         img[2:7, 7:17] = .05 * (y[2:7, 7:17] - 6)
         image = cpi.Image(img)
-        objects = cpo.Objects()
+        objects = cpo.Region()
         labels = np.zeros((10, 20), int)
         labels[3:6, 3:6] = 1
         labels[3:6, 13:16] = 2
@@ -858,10 +858,10 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
 
     def test_05_01_zeros_distance_n(self):
         p = cpp.Pipeline()
-        o_s = cpo.ObjectSet()
+        o_s = cpo.Set()
         i_l = cpi.ImageSetList()
         image = cpi.Image(np.zeros((10, 10)))
-        objects = cpo.Objects()
+        objects = cpo.Region()
         objects.unedited_segmented = np.zeros((10, 10), int)
         objects.small_removed_segmented = np.zeros((10, 10), int)
         objects.segmented = np.zeros((10, 10), int)
@@ -887,11 +887,11 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
 
     def test_05_02_one_object_distance_n(self):
         p = cpp.Pipeline()
-        o_s = cpo.ObjectSet()
+        o_s = cpo.Set()
         i_l = cpi.ImageSetList()
         img = np.zeros((10, 10))
         image = cpi.Image(img)
-        objects = cpo.Objects()
+        objects = cpo.Region()
         labels = np.zeros((10, 10), int)
         labels[3:6, 3:6] = 1
         objects.unedited_segmented = labels
@@ -927,11 +927,11 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
 
     def test_05_03_two_objects_distance_n(self):
         p = cpp.Pipeline()
-        o_s = cpo.ObjectSet()
+        o_s = cpo.Set()
         i_l = cpi.ImageSetList()
         img = np.zeros((10, 20))
         image = cpi.Image(img)
-        objects = cpo.Objects()
+        objects = cpo.Region()
         labels = np.zeros((10, 20), int)
         labels[3:6, 3:6] = 1
         labels[3:6, 13:16] = 2
@@ -990,12 +990,12 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
     def test_06_01_save_outlines(self):
         '''Test the "save_outlines" feature'''
         p = cpp.Pipeline()
-        o_s = cpo.ObjectSet()
+        o_s = cpo.Set()
         i_l = cpi.ImageSetList()
         img = np.zeros((10, 10))
         img[2:7, 2:7] = .5
         image = cpi.Image(img)
-        objects = cpo.Objects()
+        objects = cpo.Region()
         labels = np.zeros((10, 10), int)
         labels[3:6, 3:6] = 1
         objects.unedited_segmented = labels
@@ -1037,12 +1037,12 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
     def test_06_02_save_primary_outlines(self):
         '''Test saving new primary outlines'''
         p = cpp.Pipeline()
-        o_s = cpo.ObjectSet()
+        o_s = cpo.Set()
         i_l = cpi.ImageSetList()
         img = np.zeros((10, 10))
         img[2:7, 2:7] = .5
         image = cpi.Image(img)
-        objects = cpo.Objects()
+        objects = cpo.Region()
         labels = np.zeros((10, 10), int)
         labels[3:6, 3:6] = 1
         objects.unedited_segmented = labels
@@ -1268,10 +1268,10 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
                                       [0, 0, 0, 0, 0]])
 
         p = cpp.Pipeline()
-        o_s = cpo.ObjectSet()
+        o_s = cpo.Set()
         i_l = cpi.ImageSetList()
         image = cpi.Image(image)
-        objects = cpo.Objects()
+        objects = cpo.Region()
         objects.unedited_segmented = labels
         objects.small_removed_segmented = labels
         objects.segmented = labels
@@ -1329,10 +1329,10 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
                                       [0, 0, 0, 0, 0]])
 
         p = cpp.Pipeline()
-        o_s = cpo.ObjectSet()
+        o_s = cpo.Set()
         i_l = cpi.ImageSetList()
         image = cpi.Image(image)
-        objects = cpo.Objects()
+        objects = cpo.Region()
         objects.unedited_segmented = labels
         objects.small_removed_segmented = labels
         objects.unedited_segmented = labels_unedited
@@ -1392,10 +1392,10 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         expected = image.astype(int)
 
         p = cpp.Pipeline()
-        o_s = cpo.ObjectSet()
+        o_s = cpo.Set()
         i_l = cpi.ImageSetList()
         image = cpi.Image(image)
-        objects = cpo.Objects()
+        objects = cpo.Region()
         objects.unedited_segmented = labels
         objects.small_removed_segmented = labels
         objects.unedited_segmented = labels_unedited
@@ -1446,10 +1446,10 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
                           [0, 1, 1, 1, 1, 0]], float)
 
         p = cpp.Pipeline()
-        o_s = cpo.ObjectSet()
+        o_s = cpo.Set()
         i_l = cpi.ImageSetList()
         image = cpi.Image(image)
-        objects = cpo.Objects()
+        objects = cpo.Region()
         objects.unedited_segmented = labels
         objects.small_removed_segmented = labels
         objects.unedited_segmented = labels_unedited

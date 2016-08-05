@@ -1,4 +1,4 @@
-'''<b>Load Data</b> loads text or numerical data to be associated with images, and 
+'''<b>Load Data</b> loads text or numerical data to be associated with images, and
 can also load images specified by file names.
 <hr>
 This module loads a file that supplies text or numerical data associated with
@@ -166,7 +166,7 @@ except:
 import matplotlib.mlab
 
 import cellprofiler.module as cpm
-import cellprofiler.object as cpo
+import cellprofiler.region as cpo
 import cellprofiler.measurement as cpmeas
 import cellprofiler.setting as cps
 from cellprofiler.setting import YES, NO
@@ -1108,7 +1108,7 @@ class LoadData(cpm.Module):
                         objects_name, m, is_image_name=False)
                 image = provider.provide_image(workspace.image_set)
                 pixel_data = convert_image_to_objects(image.pixel_data)
-                o = cpo.Objects()
+                o = cpo.Region()
                 o.segmented = pixel_data
                 object_set.add_objects(o, objects_name)
                 I.add_object_count_measurements(m, objects_name, o.count)

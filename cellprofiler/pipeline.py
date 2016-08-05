@@ -40,7 +40,7 @@ pipeline_stats_logger = logging.getLogger("PipelineStatistics")
 import cellprofiler.preferences as cpprefs
 import cellprofiler.image as cpi
 import cellprofiler.measurement as cpmeas
-import cellprofiler.object as cpo
+import cellprofiler.region as cpo
 import cellprofiler.workspace as cpw
 import cellprofiler.setting as cps
 from cellprofiler.utilities.utf16encode import utf16encode, utf16decode
@@ -1620,7 +1620,7 @@ class Pipeline(object):
                      form of a numpy array.
         """
         import cellprofiler.setting as cps
-        from cellprofiler import object as cpo
+        from cellprofiler import region as cpo
 
         output_image_names = self.find_external_output_images()
         input_image_names = self.find_external_input_images()
@@ -1636,7 +1636,7 @@ class Pipeline(object):
         for image_name in input_image_names:
             input_pixels = image_dict[image_name]
             image_set.add(image_name, cpi.Image(input_pixels))
-        object_set = cpo.ObjectSet()
+        object_set = cpo.Set()
         measurements = cpmeas.Measurements()
 
         # Run the modules
@@ -1824,7 +1824,7 @@ class Pipeline(object):
                 measurements.group_index = group_index
                 numberof_windows = 0
                 slot_number = 0
-                object_set = cpo.ObjectSet()
+                object_set = cpo.Set()
                 image_set = measurements
                 outlines = {}
                 should_write_measurements = True
@@ -1968,7 +1968,7 @@ class Pipeline(object):
         measurements.next_image_set(image_set_number)
         measurements.group_number = measurements[cpmeas.IMAGE, cpmeas.GROUP_NUMBER]
         measurements.group_index = measurements[cpmeas.IMAGE, cpmeas.GROUP_INDEX]
-        object_set = cpo.ObjectSet()
+        object_set = cpo.Set()
         image_set = measurements
         measurements.clear_cache()
         for provider in measurements.providers:
@@ -2076,7 +2076,7 @@ class Pipeline(object):
             for i, image_number in enumerate(image_numbers):
                 m.image_set_number = image_number
                 image_set = m
-                object_set = cpo.ObjectSet()
+                object_set = cpo.Set()
                 old_providers = list(image_set.providers)
                 for module in pipeline.modules():
                     w = cpw.Workspace(self, module, image_set, object_set, m,

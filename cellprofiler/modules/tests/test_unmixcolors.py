@@ -10,7 +10,7 @@ import cellprofiler.image as cpi
 import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
 import cellprofiler.modules.unmixcolors as U
-import cellprofiler.object as cpo
+import cellprofiler.region as cpo
 import cellprofiler.pipeline as cpp
 import cellprofiler.workspace as cpw
 
@@ -150,7 +150,7 @@ UnmixColors:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|sho
         image = cpi.Image(pixels)
         image_set.add(INPUT_IMAGE, image)
 
-        workspace = cpw.Workspace(pipeline, module, image_set, cpo.ObjectSet(),
+        workspace = cpw.Workspace(pipeline, module, image_set, cpo.Set(),
                                   cpmeas.Measurements(), image_set_list)
         return workspace, module
 

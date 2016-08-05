@@ -15,7 +15,7 @@ import cellprofiler.pipeline as cpp
 import cellprofiler.module as cpm
 import cellprofiler.image as cpi
 import cellprofiler.measurement as cpmeas
-import cellprofiler.object as cpo
+import cellprofiler.region as cpo
 import cellprofiler.workspace as cpw
 
 import cellprofiler.modules.identifydeadworms as ID
@@ -109,7 +109,7 @@ IdentifyDeadWorms:[module_num:1|svn_version:\'Unknown\'|variable_revision_number
         pipeline.add_module(module)
 
         workspace = cpw.Workspace(pipeline, module, image_set,
-                                  cpo.ObjectSet(),
+                                  cpo.Set(),
                                   cpmeas.Measurements(),
                                   image_set_list)
         return workspace, module

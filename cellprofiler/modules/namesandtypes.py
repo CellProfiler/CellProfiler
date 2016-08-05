@@ -90,7 +90,7 @@ import re
 import traceback
 
 import cellprofiler.module as cpm
-import cellprofiler.object as cpo
+import cellprofiler.region as cpo
 import cellprofiler.image as cpi
 import cellprofiler.measurement as cpmeas
 import cellprofiler.pipeline as cpp
@@ -1584,7 +1584,7 @@ class NamesAndTypes(cpm.Module):
         self.add_provider_measurements(provider, workspace.measurements,
                                        cpmeas.OBJECT)
         image = provider.provide_image(workspace.image_set)
-        o = cpo.Objects()
+        o = cpo.Region()
         if image.pixel_data.shape[2] == 1:
             o.segmented = image.pixel_data[:, :, 0]
             add_object_location_measurements(workspace.measurements,

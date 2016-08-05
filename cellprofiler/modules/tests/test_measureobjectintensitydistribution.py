@@ -16,7 +16,7 @@ import cellprofiler.pipeline as cpp
 import cellprofiler.module as cpm
 import cellprofiler.image as cpi
 import cellprofiler.measurement as cpmeas
-import cellprofiler.object as cpo
+import cellprofiler.region as cpo
 import cellprofiler.setting as cps
 import cellprofiler.workspace as cpw
 import cellprofiler.modules.measureobjectintensitydistribution as M
@@ -676,8 +676,8 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
         module.zernike_degree.value = zernike_degree
         module.images[0].image_name.value = IMAGE_NAME
         module.objects[0].object_name.value = OBJECT_NAME
-        object_set = cpo.ObjectSet()
-        main_objects = cpo.Objects()
+        object_set = cpo.Set()
+        main_objects = cpo.Region()
         main_objects.segmented = labels
         object_set.add_objects(main_objects, OBJECT_NAME)
         if center_labels is None:
@@ -685,7 +685,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
         else:
             module.objects[0].center_choice.value = center_choice
             module.objects[0].center_object_name.value = CENTER_NAME
-            center_objects = cpo.Objects()
+            center_objects = cpo.Region()
             center_objects.segmented = center_labels
             object_set.add_objects(center_objects, CENTER_NAME)
         module.bin_counts[0].bin_count.value = bin_count

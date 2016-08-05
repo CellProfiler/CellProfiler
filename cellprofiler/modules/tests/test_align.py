@@ -19,7 +19,7 @@ import cellprofiler.pipeline as cpp
 import cellprofiler.module as cpm
 import cellprofiler.image as cpi
 import cellprofiler.measurement as cpmeas
-import cellprofiler.object as cpo
+import cellprofiler.region as cpo
 import cellprofiler.workspace as cpw
 
 import cellprofiler.modules.align as A
@@ -30,7 +30,7 @@ from cellprofiler.modules.loadimages import pathname2url
 class TestAlign(unittest.TestCase):
     def make_workspace(self, images, masks):
         pipeline = cpp.Pipeline()
-        object_set = cpo.ObjectSet()
+        object_set = cpo.Set()
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         module = A.Align()

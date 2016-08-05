@@ -16,7 +16,7 @@ import cellprofiler.workspace as cpw
 import cellprofiler.grid as cpg
 import cellprofiler.image as cpi
 import cellprofiler.module as cpm
-import cellprofiler.object as cpo
+import cellprofiler.region as cpo
 import cellprofiler.measurement as cpmeas
 import cellprofiler.pipeline as cpp
 import cellprofiler.modules.definegrid as D
@@ -148,8 +148,8 @@ class TestDefineGrid(unittest.TestCase):
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         image_set.add(INPUT_IMAGE_NAME, cpi.Image(image))
-        object_set = cpo.ObjectSet()
-        objects = cpo.Objects()
+        object_set = cpo.Set()
+        objects = cpo.Region()
         objects.segmented = labels
         object_set.add_objects(objects, OBJECTS_NAME)
         pipeline = cpp.Pipeline()

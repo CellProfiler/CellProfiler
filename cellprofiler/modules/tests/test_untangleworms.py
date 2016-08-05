@@ -15,7 +15,7 @@ from scipy.ndimage import binary_dilation
 import cellprofiler.image as cpi
 import cellprofiler.measurement as cpmeas
 import cellprofiler.modules.untangleworms as U
-import cellprofiler.object as cpo
+import cellprofiler.region as cpo
 import cellprofiler.pipeline as cpp
 import cellprofiler.setting as cps
 import cellprofiler.workspace as cpw
@@ -620,7 +620,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
          module.training_set_file_name.value) = os.path.split(self.filename)
 
         workspace = cpw.Workspace(pipeline, module, image_set,
-                                  cpo.ObjectSet(), cpmeas.Measurements(),
+                                  cpo.Set(), cpmeas.Measurements(),
                                   image_set_list)
         return workspace, module
 
@@ -2775,9 +2775,9 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         module.override_overlap_weight.value = 3
         module.run(workspace)
         object_set = workspace.object_set
-        self.assertTrue(isinstance(object_set, cpo.ObjectSet))
+        self.assertTrue(isinstance(object_set, cpo.Set))
         worms = object_set.get_objects(OVERLAP_OBJECTS_NAME)
-        self.assertTrue(isinstance(worms, cpo.Objects))
+        self.assertTrue(isinstance(worms, cpo.Region))
         worm_ijv = worms.get_ijv()
         self.assertEqual(np.max(worm_ijv[:, 2]), 15)
         m = workspace.measurements
@@ -2803,7 +2803,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         module.nonoverlapping_outlines_name.value = NON_OVERLAPPING_OUTLINES_NAME
         module.run(workspace)
         object_set = workspace.object_set
-        self.assertTrue(isinstance(object_set, cpo.ObjectSet))
+        self.assertTrue(isinstance(object_set, cpo.Set))
         worms = object_set.get_objects(NON_OVERLAPPING_OBJECTS_NAME).segmented
         outlines = workspace.image_set.get_image(NON_OVERLAPPING_OUTLINES_NAME).pixel_data
         expected = outline(worms) > 0
@@ -2821,7 +2821,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         module.overlapping_outlines_name.value = OVERLAPPING_OUTLINES_NAME
         module.run(workspace)
         object_set = workspace.object_set
-        self.assertTrue(isinstance(object_set, cpo.ObjectSet))
+        self.assertTrue(isinstance(object_set, cpo.Set))
         worms = object_set.get_objects(OVERLAP_OBJECTS_NAME)
         outlines = workspace.image_set.get_image(OVERLAPPING_OUTLINES_NAME).pixel_data
         outlines = np.sum(outlines, 2) > 0  # crunch color dimension

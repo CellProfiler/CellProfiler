@@ -17,7 +17,7 @@ import cellprofiler.pipeline as cpp
 import cellprofiler.setting as cps
 import cellprofiler.image as cpi
 import cellprofiler.workspace as cpw
-import cellprofiler.object as cpo
+import cellprofiler.region as cpo
 import cellprofiler.measurement as cpm
 import cellprofiler.modules.injectimage as inj
 import cellprofiler.modules.correctilluminationcalculate as calc
@@ -68,7 +68,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
                 image = cpi.Image(image, mask)
             image_set.add(INPUT_IMAGE_NAME, image)
             workspace = cpw.Workspace(
-                    pipeline, module, image_set, cpo.ObjectSet(),
+                    pipeline, module, image_set, cpo.Set(),
                     measurements, image_set_list)
             workspaces.append(workspace)
         return workspaces, module
@@ -115,7 +115,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
                                     inj_module.prepare_group(workspace, {}, [1])
                                     module.prepare_group(workspace, {}, [1])
                                     image_set = image_set_list.get_image_set(0)
-                                    object_set = cpo.ObjectSet()
+                                    object_set = cpo.Set()
                                     workspace = cpw.Workspace(pipeline,
                                                               inj_module,
                                                               image_set,
@@ -175,7 +175,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
                                 inj_module.prepare_group(workspace, {}, [1])
                                 module.prepare_group(workspace, {}, [1])
                                 image_set = image_set_list.get_image_set(0)
-                                object_set = cpo.ObjectSet()
+                                object_set = cpo.Set()
                                 workspace = cpw.Workspace(pipeline,
                                                           inj_module,
                                                           image_set,
@@ -236,7 +236,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
                             inj_module.prepare_group(workspace, {}, [1])
                             module.prepare_group(workspace, {}, [1])
                             image_set = image_set_list.get_image_set(0)
-                            object_set = cpo.ObjectSet()
+                            object_set = cpo.Set()
                             workspace = cpw.Workspace(pipeline,
                                                       inj_module,
                                                       image_set,
@@ -359,7 +359,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         inj_module.prepare_group(workspace, {}, [1])
         module.prepare_group(workspace, {}, [1])
         image_set = image_set_list.get_image_set(0)
-        object_set = cpo.ObjectSet()
+        object_set = cpo.Set()
         workspace = cpw.Workspace(pipeline,
                                   inj_module,
                                   image_set,
@@ -401,7 +401,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         inj_module.prepare_group(workspace, {}, [1])
         module.prepare_group(workspace, {}, [1])
         image_set = image_set_list.get_image_set(0)
-        object_set = cpo.ObjectSet()
+        object_set = cpo.Set()
         workspace = cpw.Workspace(pipeline,
                                   inj_module,
                                   image_set,
@@ -451,7 +451,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
             inj_module.prepare_group(workspace, {}, [1])
             module.prepare_group(workspace, {}, [1])
             image_set = image_set_list.get_image_set(0)
-            object_set = cpo.ObjectSet()
+            object_set = cpo.Set()
             workspace = cpw.Workspace(pipeline,
                                       inj_module,
                                       image_set,
@@ -496,7 +496,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         inj_module.prepare_group(workspace, {}, [1])
         module.prepare_group(workspace, {}, [1])
         image_set = image_set_list.get_image_set(0)
-        object_set = cpo.ObjectSet()
+        object_set = cpo.Set()
         workspace = cpw.Workspace(pipeline,
                                   inj_module,
                                   image_set,
@@ -546,7 +546,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         inj_module.prepare_group(workspace, {}, [1])
         module.prepare_group(workspace, {}, [1])
         image_set = image_set_list.get_image_set(0)
-        object_set = cpo.ObjectSet()
+        object_set = cpo.Set()
         workspace = cpw.Workspace(pipeline,
                                   inj_module,
                                   image_set,
@@ -589,7 +589,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         inj_module.prepare_group(workspace, {}, [1])
         module.prepare_group(workspace, {}, [1])
         image_set = image_set_list.get_image_set(0)
-        object_set = cpo.ObjectSet()
+        object_set = cpo.Set()
         workspace = cpw.Workspace(pipeline,
                                   inj_module,
                                   image_set,
@@ -833,7 +833,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
             inj_module.prepare_group(workspace, {}, [1])
             module.prepare_group(workspace, {}, [1])
             image_set = image_set_list.get_image_set(0)
-            object_set = cpo.ObjectSet()
+            object_set = cpo.Set()
             workspace = cpw.Workspace(pipeline,
                                       inj_module,
                                       image_set,
@@ -886,7 +886,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         inj_module.prepare_group(workspace, {}, [1])
         module.prepare_group(workspace, {}, [1])
         image_set = image_set_list.get_image_set(0)
-        object_set = cpo.ObjectSet()
+        object_set = cpo.Set()
         workspace = cpw.Workspace(pipeline,
                                   inj_module,
                                   image_set,
@@ -931,7 +931,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         inj_module.prepare_group(workspace, {}, [1])
         module.prepare_group(workspace, {}, [1])
         image_set = image_set_list.get_image_set(0)
-        object_set = cpo.ObjectSet()
+        object_set = cpo.Set()
         workspace = cpw.Workspace(pipeline,
                                   inj_module,
                                   image_set,

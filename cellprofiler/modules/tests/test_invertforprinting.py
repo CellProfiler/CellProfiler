@@ -14,7 +14,7 @@ set_headless()
 
 import cellprofiler.workspace as cpw
 import cellprofiler.pipeline as cpp
-import cellprofiler.object as cpo
+import cellprofiler.region as cpo
 import cellprofiler.image as cpi
 import cellprofiler.measurement as cpm
 import cellprofiler.modules.invertforprinting as I
@@ -150,7 +150,7 @@ class TestInvertForPrinting(unittest.TestCase):
 
         pipeline.add_listener(callback)
         workspace = cpw.Workspace(pipeline, module, image_set,
-                                  cpo.ObjectSet(),
+                                  cpo.Set(),
                                   cpm.Measurements(),
                                   image_set_list)
         module.run(workspace)

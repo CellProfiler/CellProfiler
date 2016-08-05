@@ -15,7 +15,7 @@ import cellprofiler.pipeline as cpp
 import cellprofiler.module as cpm
 import cellprofiler.image as cpi
 import cellprofiler.measurement as cpmeas
-import cellprofiler.object as cpo
+import cellprofiler.region as cpo
 import cellprofiler.workspace as cpw
 
 import cellprofiler.modules.overlayoutlines as O
@@ -30,7 +30,7 @@ class TestOverlayOutlines(unittest.TestCase):
     def make_workspace(self, image, outline=None, labels=None):
         '''Make a workspace for testing ApplyThreshold'''
         m = cpmeas.Measurements()
-        object_set = cpo.ObjectSet()
+        object_set = cpo.Set()
         module = O.OverlayOutlines()
         module.blank_image.value = False
         module.image_name.value = INPUT_IMAGE_NAME
@@ -40,7 +40,7 @@ class TestOverlayOutlines(unittest.TestCase):
             m.add(OUTLINE_NAME, cpi.Image(outline))
             module.outlines[0].outline_choice.value = O.FROM_IMAGES
         if labels is not None:
-            objects = cpo.Objects()
+            objects = cpo.Region()
             if len(labels) > 1:
                 ijv = np.vstack(
                         [np.column_stack(list(np.where(l > 0)) + [l[l > 0]])

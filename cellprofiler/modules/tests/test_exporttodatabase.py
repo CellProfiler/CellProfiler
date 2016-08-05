@@ -28,7 +28,7 @@ import cellprofiler.pipeline as cpp
 import cellprofiler.setting as cps
 import cellprofiler.image as cpi
 import cellprofiler.workspace as cpw
-import cellprofiler.object as cpo
+import cellprofiler.region as cpo
 import cellprofiler.measurement as cpmeas
 
 import cellprofiler.modules.exporttodatabase as E
@@ -1780,12 +1780,12 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         image_set.add(IMAGE_NAME, cpi.Image(r.uniform(size=(512, 512))))
-        object_set = cpo.ObjectSet()
-        objects = cpo.Objects()
+        object_set = cpo.Set()
+        objects = cpo.Region()
         objects.segmented = np.array([[0, 1, 2, 3], [0, 1, 2, 3]])
         object_set.add_objects(objects, OBJECT_NAME)
         if alt_object:
-            objects = cpo.Objects()
+            objects = cpo.Region()
             objects.segmented = np.array([[0, 1, 2, 3], [0, 1, 2, 3]])
             object_set.add_objects(objects, ALTOBJECT_NAME)
         test_module = TestModule()

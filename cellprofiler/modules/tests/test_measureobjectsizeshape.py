@@ -16,7 +16,7 @@ import cellprofiler.modules.measureobjectsizeshape as cpmoas
 import cellprofiler.modules.injectimage as ii
 import cellprofiler.measurement as cpmeas
 import cellprofiler.workspace as cpw
-import cellprofiler.object as cpo
+import cellprofiler.region as cpo
 import cellprofiler.image as cpi
 
 OBJECTS_NAME = "myobjects"
@@ -26,8 +26,8 @@ class TestMeasureObjectSizeShape(unittest.TestCase):
     def make_workspace(self, labels):
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        object_set = cpo.ObjectSet()
-        objects = cpo.Objects()
+        object_set = cpo.Set()
+        objects = cpo.Region()
         objects.segmented = labels
         object_set.add_objects(objects, OBJECTS_NAME)
         m = cpmeas.Measurements()
@@ -91,9 +91,9 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
 
     def test_01_00_zeros(self):
         """Run on an empty labels matrix"""
-        object_set = cpo.ObjectSet()
+        object_set = cpo.Set()
         labels = np.zeros((10, 20), int)
-        objects = cpo.Objects()
+        objects = cpo.Region()
         objects.segmented = labels
         object_set.add_objects(objects, "SomeObjects")
         module = cpmoas.MeasureObjectAreaShape()
@@ -124,18 +124,18 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
 
     def test_01_02_run(self):
         """Run with a rectangle, cross and circle"""
-        object_set = cpo.ObjectSet()
+        object_set = cpo.Set()
         labels = np.zeros((10, 20), int)
         labels[1:9, 1:5] = 1
         labels[1:9, 11] = 2
         labels[4, 6:19] = 2
-        objects = cpo.Objects()
+        objects = cpo.Region()
         objects.segmented = labels
         object_set.add_objects(objects, "SomeObjects")
         labels = np.zeros((115, 115), int)
         x, y = np.mgrid[-50:51, -50:51]
         labels[:101, :101][x ** 2 + y ** 2 <= 2500] = 1
-        objects = cpo.Objects()
+        objects = cpo.Region()
         objects.segmented = labels
         object_set.add_objects(objects, "OtherObjects")
         module = cpmoas.MeasureObjectAreaShape()
@@ -223,11 +223,11 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
         module = cpmoas.MeasureObjectAreaShape()
         module.object_groups[0].name.value = "SomeObjects"
         module.calculate_zernikes.value = True
-        object_set = cpo.ObjectSet()
+        object_set = cpo.Set()
         labels = np.zeros((10, 20), int)
         labels[1:9, 1:5] = 1
         labels[4:6, 6:19] = 1
-        objects = cpo.Objects()
+        objects = cpo.Region()
         objects.segmented = labels
         object_set.add_objects(objects, "SomeObjects")
         module.module_num = 1
@@ -259,9 +259,9 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
         #
         labels[1:19, 1:19] = (np.random.uniform(size=(18, 18)) > .5).astype(int)
         labels[21:39, 1:19] = (np.random.uniform(size=(18, 18)) > .5).astype(int) * 2
-        objects = cpo.Objects()
+        objects = cpo.Region()
         objects.segmented = labels
-        object_set = cpo.ObjectSet()
+        object_set = cpo.Set()
         object_set.add_objects(objects, "SomeObjects")
         module = cpmoas.MeasureObjectAreaShape()
         module.object_groups[0].name.value = "SomeObjects"
@@ -293,12 +293,12 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
         module = cpmoas.MeasureObjectAreaShape()
         module.object_groups[0].name.value = "SomeObjects"
         module.calculate_zernikes.value = True
-        object_set = cpo.ObjectSet()
+        object_set = cpo.Set()
         labels = np.zeros((10, 20), int)
         # 3/4 of a square is covered
         labels[5:7, 5:10] = 1
         labels[7:9, 5:15] = 1
-        objects = cpo.Objects()
+        objects = cpo.Region()
         objects.segmented = labels
         object_set.add_objects(objects, "SomeObjects")
         module.module_num = 1
@@ -330,21 +330,21 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
         mlist = []
         olist = []
         for m in (m1, m2):
-            objects = cpo.Objects()
+            objects = cpo.Region()
             objects.segmented = m.astype(int)
             olist.append(objects)
         ijv = np.column_stack((
             np.hstack([np.argwhere(m)[:, 0] for m in (m1, m2)]),
             np.hstack([np.argwhere(m)[:, 1] for m in (m1, m2)]),
             np.array([1] * np.sum(m1) + [2] * np.sum(m2))))
-        objects = cpo.Objects()
+        objects = cpo.Region()
         objects.ijv = ijv
         olist.append(objects)
         for objects in olist:
             module = cpmoas.MeasureObjectAreaShape()
             module.object_groups[0].name.value = "SomeObjects"
             module.calculate_zernikes.value = True
-            object_set = cpo.ObjectSet()
+            object_set = cpo.Set()
             object_set.add_objects(objects, "SomeObjects")
             module.module_num = 1
             image_set_list = cpi.ImageSetList()

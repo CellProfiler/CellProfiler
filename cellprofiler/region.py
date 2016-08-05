@@ -12,7 +12,7 @@ OBJECT_TYPE_NAME = "objects"
 # TODO: there is no set_labels. Maybe make segmented (or labels) have the same functionality (support overlapping objects).
 # TODO: remove the concept of shaping. Modules should shape then set. This will make for cleaner setters.
 # TODO: remove hdf5
-class Objects(object):
+class Region(object):
     """Represents a segmentation of an image.
 
     IdentityPrimAutomatic produces three variants of its segmentation
@@ -823,7 +823,7 @@ class Segmentation(object):
         return self.__set_or_cache_dense(dense, indices)
 
 
-class ObjectSet(object):
+class Set(object):
     """A set of objects.Objects instances.
 
     This class allows you to either refer to an object by name or
@@ -844,7 +844,7 @@ class ObjectSet(object):
         return self.__types_and_instances[OBJECT_TYPE_NAME]
 
     def add_objects(self, objects, name):
-        assert isinstance(objects, Objects), "objects must be an instance of CellProfiler.Objects"
+        assert isinstance(objects, Region), "objects must be an instance of CellProfiler.Objects"
         assert ((not self.__objects_by_name.has_key(name)) or self.__can_overwrite), "The object, %s, is already in the object set" % name
         self.__objects_by_name[name] = objects
 

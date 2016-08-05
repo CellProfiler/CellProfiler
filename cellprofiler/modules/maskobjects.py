@@ -34,7 +34,7 @@ from centrosome.outline import outline
 import cellprofiler.image as cpi
 import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
-import cellprofiler.object as cpo
+import cellprofiler.region as cpo
 import cellprofiler.preferences as cpprefs
 import cellprofiler.setting as cps
 import identify as I
@@ -291,7 +291,7 @@ class MaskObjects(I.Identify):
         #
         # Add the objects
         #
-        remaining_objects = cpo.Objects()
+        remaining_objects = cpo.Region()
         remaining_objects.segmented = labels
         remaining_objects.unedited_segmented = original_objects.unedited_segmented
         workspace.object_set.add_objects(remaining_objects,

@@ -20,7 +20,7 @@ import cellprofiler.pipeline as cpp
 import cellprofiler.module as cpm
 import cellprofiler.image as cpi
 import cellprofiler.measurement as cpmeas
-import cellprofiler.object as cpo
+import cellprofiler.region as cpo
 import cellprofiler.workspace as cpw
 
 import cellprofiler.modules.resize as R
@@ -179,7 +179,7 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         image = cpi.Image(image, mask, cropping)
         image_set.add(INPUT_IMAGE_NAME, image)
         workspace = cpw.Workspace(pipeline, module, image_set,
-                                  cpo.ObjectSet(),
+                                  cpo.Set(),
                                   cpmeas.Measurements(),
                                   image_set_list)
         return workspace, module

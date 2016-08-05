@@ -8,7 +8,7 @@ import numpy as np
 import cellprofiler.image
 import cellprofiler.module
 import cellprofiler.measurement as cpmeas
-import cellprofiler.object
+import cellprofiler.region
 import cellprofiler.setting
 
 
@@ -147,7 +147,7 @@ class InjectObjects(cellprofiler.module.Module):
         return [self.object_name]
 
     def run(self, workspace):
-        my_objects = cellprofiler.object.Objects()
+        my_objects = cellprofiler.region.Region()
         my_objects.segmented = self.__segmented
         if self.__unedited_segmented is not None:
             my_objects.unedited_segmented = self.__unedited_segmented

@@ -34,7 +34,7 @@ from centrosome.smooth import smooth_with_function_and_mask
 import cellprofiler.image  as cpi
 import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
-import cellprofiler.object as cpo
+import cellprofiler.region as cpo
 import cellprofiler.pipeline as cpp
 import cellprofiler.setting as cps
 import cellprofiler.workspace as cpw

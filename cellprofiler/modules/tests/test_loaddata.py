@@ -19,7 +19,7 @@ import cellprofiler.pipeline as cpp
 import cellprofiler.module as cpm
 import cellprofiler.image as cpi
 import cellprofiler.measurement as cpmeas
-import cellprofiler.object as cpo
+import cellprofiler.region as cpo
 import cellprofiler.preferences as cpprefs
 import cellprofiler.workspace as cpw
 import cellprofiler.setting as cps
@@ -690,7 +690,7 @@ Channel1-01-A-01.tif,/imaging/analysis/trunk/ExampleImages/ExampleSBSImages
                 image_set = image_set_list.get_image_set(image_number - 1)
                 measurements.next_image_set(image_number)
                 workspace = cpw.Workspace(pipeline, module, image_set,
-                                          cpo.ObjectSet(), measurements,
+                                          cpo.Set(), measurements,
                                           image_set_list)
                 module.run(workspace)
                 provider = image_set.get_image_provider("Cytoplasm")
@@ -799,7 +799,7 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
             self.assertEqual(len(g), 1)
             module.prepare_group(workspace, g[0][0], g[0][1])
             image_set = image_set_list.get_image_set(g[0][1][0] - 1)
-            object_set = cpo.ObjectSet()
+            object_set = cpo.Set()
             workspace = cpw.Workspace(pipeline, module, image_set,
                                       object_set, measurements, image_set_list)
             module.run(workspace)
@@ -893,7 +893,7 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
         module.image_directory.dir_choice = cps.ABSOLUTE_FOLDER_NAME
         module.image_directory.custom_path = self.test_path
         m = cpmeas.Measurements()
-        workspace = cpw.Workspace(pipeline, module, m, cpo.ObjectSet(),
+        workspace = cpw.Workspace(pipeline, module, m, cpo.Set(),
                                   m, cpi.ImageSetList())
         self.assertTrue(module.prepare_run(workspace))
         self.assertEqual(m.get_measurement(cpmeas.IMAGE, "FileName_DNA", 1),
@@ -920,7 +920,7 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
         pipeline, module, filename = self.make_pipeline(csv_text)
         assert isinstance(module, L.LoadData)
         m = cpmeas.Measurements()
-        workspace = cpw.Workspace(pipeline, module, m, cpo.ObjectSet(),
+        workspace = cpw.Workspace(pipeline, module, m, cpo.Set(),
                                   m, cpi.ImageSetList())
         self.assertTrue(module.prepare_run(workspace))
         self.assertEqual(m.get_measurement(cpmeas.IMAGE, "FileName_DNA", 1),
@@ -949,7 +949,7 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
         pipeline, module, filename = self.make_pipeline(csv_text)
         assert isinstance(module, L.LoadData)
         m = cpmeas.Measurements()
-        workspace = cpw.Workspace(pipeline, module, m, cpo.ObjectSet(),
+        workspace = cpw.Workspace(pipeline, module, m, cpo.Set(),
                                   m, cpi.ImageSetList())
         self.assertTrue(module.prepare_run(workspace))
         self.assertEqual(m.get_measurement(cpmeas.IMAGE, "FileName_DNA", 1),
@@ -982,7 +982,7 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
         try:
             assert isinstance(module, L.LoadData)
             m = cpmeas.Measurements()
-            workspace = cpw.Workspace(pipeline, module, m, cpo.ObjectSet(),
+            workspace = cpw.Workspace(pipeline, module, m, cpo.Set(),
                                       m, cpi.ImageSetList())
             self.assertTrue(module.prepare_run(workspace))
             self.assertTrue(isinstance(m, cpmeas.Measurements))
@@ -1012,7 +1012,7 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
         try:
             assert isinstance(module, L.LoadData)
             m = cpmeas.Measurements()
-            workspace = cpw.Workspace(pipeline, module, m, cpo.ObjectSet(),
+            workspace = cpw.Workspace(pipeline, module, m, cpo.Set(),
                                       m, cpi.ImageSetList())
             module.wants_rows.value = True
             module.row_range.min = 2
@@ -1036,7 +1036,7 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
             module.image_directory.dir_choice = cps.ABSOLUTE_FOLDER_NAME
             module.image_directory.custom_path = self.test_path
             m = cpmeas.Measurements()
-            workspace = cpw.Workspace(pipeline, module, m, cpo.ObjectSet(),
+            workspace = cpw.Workspace(pipeline, module, m, cpo.Set(),
                                       m, cpi.ImageSetList())
             self.assertTrue(module.prepare_run(workspace))
             self.assertEqual(m.get_measurement(cpmeas.IMAGE, "FileName_DNA", 1),

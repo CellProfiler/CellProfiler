@@ -20,7 +20,7 @@ import cellprofiler.pipeline as cpp
 import cellprofiler.module as cpm
 import cellprofiler.image as cpi
 import cellprofiler.measurement as cpmeas
-import cellprofiler.object as cpo
+import cellprofiler.region as cpo
 import cellprofiler.setting as cps
 import cellprofiler.workspace as cpw
 import cellprofiler.modules.measureneurons as M
@@ -117,8 +117,8 @@ MeasureNeurons:[module_num:1|svn_version:\'8401\'|variable_revision_number:1|sho
         img = cpi.Image(image, mask)
         image_set.add(IMAGE_NAME, img)
 
-        object_set = cpo.ObjectSet()
-        o = cpo.Objects()
+        object_set = cpo.Set()
+        o = cpo.Region()
         o.segmented = labels
         object_set.add_objects(o, OBJECT_NAME)
 

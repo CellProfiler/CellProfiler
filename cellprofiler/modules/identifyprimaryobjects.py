@@ -179,7 +179,7 @@ import skimage.morphology.watershed
 from centrosome.propagate import propagate
 from centrosome.smooth import smooth_with_noise
 import centrosome.outline
-import cellprofiler.object
+import cellprofiler.region
 from cellprofiler.setting import AUTOMATIC
 import centrosome.threshold as cpthresh
 from identify import TSM_AUTOMATIC, TS_BINARY_IMAGE
@@ -979,7 +979,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         cpmi.add_object_count_measurements(measurements,
                                            objname, object_count)
         # Add label matrices to the object set
-        objects = cellprofiler.object.Objects()
+        objects = cellprofiler.region.Region()
         objects.segmented = labeled_image
         objects.unedited_segmented = unedited_labels
         objects.small_removed_segmented = small_removed_labels

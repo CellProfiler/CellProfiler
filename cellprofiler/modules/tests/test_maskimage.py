@@ -14,7 +14,7 @@ set_headless()
 
 import cellprofiler.workspace as cpw
 import cellprofiler.pipeline as cpp
-import cellprofiler.object as cpo
+import cellprofiler.region as cpo
 import cellprofiler.image as cpi
 import cellprofiler.measurement as cpmeas
 import cellprofiler.modules.maskimage as M
@@ -158,8 +158,8 @@ class TestMaskImage(unittest.TestCase):
         labels = np.zeros((10, 15), int)
         labels[2:5, 3:8] = 1
         labels[5:8, 10:14] = 2
-        object_set = cpo.ObjectSet()
-        objects = cpo.Objects()
+        object_set = cpo.Set()
+        objects = cpo.Region()
         objects.segmented = labels
         object_set.add_objects(objects, OBJECTS_NAME)
 
@@ -193,8 +193,8 @@ class TestMaskImage(unittest.TestCase):
         labels = np.zeros((10, 15), int)
         labels[2:5, 3:8] = 1
         labels[5:8, 10:14] = 2
-        object_set = cpo.ObjectSet()
-        objects = cpo.Objects()
+        object_set = cpo.Set()
+        objects = cpo.Region()
         objects.segmented = labels
         object_set.add_objects(objects, OBJECTS_NAME)
 
@@ -228,8 +228,8 @@ class TestMaskImage(unittest.TestCase):
         labels = np.zeros((10, 15), int)
         labels[2:5, 3:8] = 1
         labels[5:8, 10:14] = 2
-        object_set = cpo.ObjectSet()
-        objects = cpo.Objects()
+        object_set = cpo.Set()
+        objects = cpo.Region()
         objects.segmented = labels
         object_set.add_objects(objects, OBJECTS_NAME)
 
@@ -282,7 +282,7 @@ class TestMaskImage(unittest.TestCase):
         module.invert_mask.value = False
         module.module_num = 1
 
-        workspace = cpw.Workspace(pipeline, module, image_set, cpo.ObjectSet(),
+        workspace = cpw.Workspace(pipeline, module, image_set, cpo.Set(),
                                   cpmeas.Measurements(), image_set_list)
         module.run(workspace)
         masked_image = workspace.image_set.get_image(MASKED_IMAGE_NAME)
@@ -314,7 +314,7 @@ class TestMaskImage(unittest.TestCase):
         module.invert_mask.value = False
         module.module_num = 1
 
-        workspace = cpw.Workspace(pipeline, module, image_set, cpo.ObjectSet(),
+        workspace = cpw.Workspace(pipeline, module, image_set, cpo.Set(),
                                   cpmeas.Measurements(), image_set_list)
         module.run(workspace)
         masked_image = workspace.image_set.get_image(MASKED_IMAGE_NAME)
@@ -347,7 +347,7 @@ class TestMaskImage(unittest.TestCase):
         module.invert_mask.value = False
         module.module_num = 1
 
-        workspace = cpw.Workspace(pipeline, module, image_set, cpo.ObjectSet(),
+        workspace = cpw.Workspace(pipeline, module, image_set, cpo.Set(),
                                   cpmeas.Measurements(), image_set_list)
         module.run(workspace)
         masked_image = workspace.image_set.get_image(MASKED_IMAGE_NAME)

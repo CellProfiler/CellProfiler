@@ -14,7 +14,7 @@ set_headless()
 import cellprofiler.workspace as cpw
 import cellprofiler.image as cpi
 import cellprofiler.module as cpm
-import cellprofiler.object as cpo
+import cellprofiler.region as cpo
 import cellprofiler.measurement as cpmeas
 import cellprofiler.pipeline as cpp
 import cellprofiler.modules.enhanceorsuppressfeatures as E
@@ -29,7 +29,7 @@ class TestEnhanceOrSuppressSpeckles(unittest.TestCase):
         '''Make a workspace for testing FilterByObjectMeasurement'''
         module = E.EnhanceOrSuppressSpeckles()
         pipeline = cpp.Pipeline()
-        object_set = cpo.ObjectSet()
+        object_set = cpo.Set()
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         workspace = cpw.Workspace(pipeline,

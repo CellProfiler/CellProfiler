@@ -1,4 +1,4 @@
-"""<b>Measure Object Intensity Distribution</b> measures the distribution 
+"""<b>Measure Object Intensity Distribution</b> measures the distribution
 of intensities within each object.
 <hr>
 Given an image with objects identified, this module measures the
@@ -52,7 +52,7 @@ from scipy.sparse import coo_matrix
 import cellprofiler.image as cpi
 import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
-import cellprofiler.object as cpo
+import cellprofiler.region as cpo
 import cellprofiler.preferences as cpprefs
 import cellprofiler.setting as cps
 import cellprofiler.workspace as cpw
@@ -533,7 +533,7 @@ class MeasureObjectIntensityDistribution(cpm.Module):
         returns one statistics tuple per ring.
         '''
         assert isinstance(workspace, cpw.Workspace)
-        assert isinstance(workspace.object_set, cpo.ObjectSet)
+        assert isinstance(workspace.object_set, cpo.Set)
         bin_count = bin_count_settings.bin_count.value
         wants_scaled = bin_count_settings.wants_scaled.value
         maximum_radius = bin_count_settings.maximum_radius.value

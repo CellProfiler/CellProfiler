@@ -21,7 +21,7 @@ import cellprofiler.module as cpm
 import cellprofiler.image as cpi
 import cellprofiler.pipeline as cpp
 import cellprofiler.workspace as cpw
-import cellprofiler.object as cpo
+import cellprofiler.region as cpo
 import cellprofiler.measurement as cpm
 
 
@@ -175,7 +175,7 @@ class TestCorrectIlluminationApply(unittest.TestCase):
         illum_module.prepare_group(workspace, {}, [1])
         module.prepare_group(workspace, {}, [1])
         image_set = image_set_list.get_image_set(0)
-        object_set = cpo.ObjectSet()
+        object_set = cpo.Set()
         workspace = cpw.Workspace(pipeline,
                                   input_module,
                                   image_set,
@@ -222,7 +222,7 @@ class TestCorrectIlluminationApply(unittest.TestCase):
         illum_module.prepare_group(workspace, {}, [1])
         module.prepare_group(workspace, {}, [1])
         image_set = image_set_list.get_image_set(0)
-        object_set = cpo.ObjectSet()
+        object_set = cpo.Set()
         workspace = cpw.Workspace(pipeline,
                                   input_module,
                                   image_set,
@@ -269,7 +269,7 @@ class TestCorrectIlluminationApply(unittest.TestCase):
         illum_module.prepare_group(workspace, {}, [1])
         module.prepare_group(workspace, {}, [1])
         image_set = image_set_list.get_image_set(0)
-        object_set = cpo.ObjectSet()
+        object_set = cpo.Set()
         workspace = cpw.Workspace(pipeline,
                                   input_module,
                                   image_set,
@@ -316,7 +316,7 @@ class TestCorrectIlluminationApply(unittest.TestCase):
         illum_module.prepare_group(workspace, {}, [1])
         module.prepare_group(workspace, {}, [1])
         image_set = image_set_list.get_image_set(0)
-        object_set = cpo.ObjectSet()
+        object_set = cpo.Set()
         workspace = cpw.Workspace(pipeline,
                                   input_module,
                                   image_set,

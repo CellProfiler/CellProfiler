@@ -20,7 +20,7 @@ import cellprofiler.pipeline as cpp
 import cellprofiler.module as cpm
 import cellprofiler.image as cpi
 import cellprofiler.measurement as cpmeas
-import cellprofiler.object as cpo
+import cellprofiler.region as cpo
 import cellprofiler.workspace as cpw
 from centrosome.filter import permutations
 
@@ -494,8 +494,8 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
 
         first = True
         for labels, index in zip(labels_list, range(len(labels_list))):
-            object_set = cpo.ObjectSet()
-            objects = cpo.Objects()
+            object_set = cpo.Set()
+            objects = cpo.Region()
             objects.segmented = labels
             object_set.add_objects(objects, OBJECT_NAME)
             image_set = image_set_list.get_image_set(index)
@@ -1163,7 +1163,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         image_set_list = cpi.ImageSetList()
         for i in range(nimages):
             image_set = image_set_list.get_image_set(i)
-        workspace = cpw.Workspace(pipeline, module, image_set, cpo.ObjectSet(),
+        workspace = cpw.Workspace(pipeline, module, image_set, cpo.Set(),
                                   m, image_set_list)
         return workspace, module
 
@@ -1873,8 +1873,8 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
                 pipeline, module, None, None, measurements, image_set_list))
 
         first = True
-        object_set = cpo.ObjectSet()
-        objects = cpo.Objects()
+        object_set = cpo.Set()
+        objects = cpo.Region()
         objects.segmented = np.zeros((640, 480), int)
         object_set.add_objects(objects, OBJECT_NAME)
         image_set = image_set_list.get_image_set(0)

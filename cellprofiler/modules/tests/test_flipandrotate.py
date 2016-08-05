@@ -14,7 +14,7 @@ set_headless()
 
 import cellprofiler.workspace as cpw
 import cellprofiler.pipeline as cpp
-import cellprofiler.object as cpo
+import cellprofiler.region as cpo
 import cellprofiler.image as cpi
 import cellprofiler.measurement as cpmeas
 import cellprofiler.modules.flipandrotate as F
@@ -269,7 +269,7 @@ Rotate:[module_num:1|svn_version:\'8913\'|variable_revision_number:2|show_window
         pipeline.add_listener(error_callback)
         measurements = cpmeas.Measurements()
         workspace = cpw.Workspace(pipeline, module, image_set,
-                                  cpo.ObjectSet(), measurements,
+                                  cpo.Set(), measurements,
                                   image_set_list)
         module.run(workspace)
         feature = F.M_ROTATION_F % OUTPUT_IMAGE

@@ -16,7 +16,7 @@ import cellprofiler.measurement as cpmeas
 import cellprofiler.pipeline as cpp
 import cellprofiler.workspace as cpw
 import cellprofiler.image as cpi
-import cellprofiler.object as cpo
+import cellprofiler.region as cpo
 import cellprofiler.modules.measureimageintensity as M
 
 
@@ -25,7 +25,7 @@ class TestMeasureImageIntensity(unittest.TestCase):
         '''Make a workspace for testing MeasureImageIntensity'''
         module = M.MeasureImageIntensity()
         pipeline = cpp.Pipeline()
-        object_set = cpo.ObjectSet()
+        object_set = cpo.Set()
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         workspace = cpw.Workspace(pipeline,
@@ -37,7 +37,7 @@ class TestMeasureImageIntensity(unittest.TestCase):
         for key in image_dict.keys():
             image_set.add(key, cpi.Image(image_dict[key]))
         for key in object_dict.keys():
-            o = cpo.Objects()
+            o = cpo.Region()
             o.segmented = object_dict[key]
             object_set.add_objects(o, key)
         return workspace, module

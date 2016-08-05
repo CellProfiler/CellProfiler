@@ -16,7 +16,7 @@ import cellprofiler.pipeline as cpp
 import cellprofiler.module as cpm
 import cellprofiler.image as cpi
 import cellprofiler.measurement as cpmeas
-import cellprofiler.object as cpo
+import cellprofiler.region as cpo
 import cellprofiler.workspace as cpw
 import cellprofiler.modules.measureobjectneighbors as M
 
@@ -34,7 +34,7 @@ class TestMeasureObjectNeighbors(unittest.TestCase):
         module.distance.value = distance
         pipeline = cpp.Pipeline()
         pipeline.add_module(module)
-        object_set = cpo.ObjectSet()
+        object_set = cpo.Set()
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         measurements = cpmeas.Measurements()
@@ -46,14 +46,14 @@ class TestMeasureObjectNeighbors(unittest.TestCase):
                                   object_set,
                                   measurements,
                                   image_set_list)
-        objects = cpo.Objects()
+        objects = cpo.Region()
         objects.segmented = labels
         object_set.add_objects(objects, OBJECTS_NAME)
         if neighbors_labels is None:
             module.neighbors_name.value = OBJECTS_NAME
         else:
             module.neighbors_name.value = NEIGHBORS_NAME
-            objects = cpo.Objects()
+            objects = cpo.Region()
             objects.segmented = neighbors_labels
             object_set.add_objects(objects, NEIGHBORS_NAME)
         return workspace, module
@@ -412,9 +412,9 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
         workspace, module = self.make_workspace(labels,
                                                 M.D_ADJACENT, 5)
         object_set = workspace.object_set
-        self.assertTrue(isinstance(object_set, cpo.ObjectSet))
+        self.assertTrue(isinstance(object_set, cpo.Set))
         objects = object_set.get_objects(OBJECTS_NAME)
-        self.assertTrue(isinstance(objects, cpo.Objects))
+        self.assertTrue(isinstance(objects, cpo.Region))
 
         sm_labels = labels.copy() * 3
         sm_labels[-1, -1] = 1
@@ -449,9 +449,9 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
         workspace, module = self.make_workspace(labels,
                                                 M.D_ADJACENT, 5)
         object_set = workspace.object_set
-        self.assertTrue(isinstance(object_set, cpo.ObjectSet))
+        self.assertTrue(isinstance(object_set, cpo.Set))
         objects = object_set.get_objects(OBJECTS_NAME)
-        self.assertTrue(isinstance(objects, cpo.Objects))
+        self.assertTrue(isinstance(objects, cpo.Region))
 
         # Needs 2 objects to trigger the bug
         sm_labels = np.zeros((10, 10), int)

@@ -279,7 +279,6 @@ class Region(object):
         histogram - histogram from histogram_from_ijv or histogram_from_labels
         """
         parent_count = histogram.shape[0] - 1
-        child_count = histogram.shape[1] - 1
 
         parents_of_children = numpy.argmax(histogram, axis=0)
         #

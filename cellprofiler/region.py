@@ -173,7 +173,7 @@ class Region(object):
         for segmentation in self.__segmented, self.__small_removed_segmented, self.__unedited_segmented:
             if segmentation is not None and not segmentation.has_shape():
                 shape = (1, 1, 1, parent_image.pixel_data.shape[0], parent_image.pixel_data.shape[1])
-                segmentation.shape(shape)
+                segmentation.shape = shape
 
     @property
     def has_parent_image(self):

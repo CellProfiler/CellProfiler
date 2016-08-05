@@ -104,7 +104,7 @@ class Region(object):
 
     # TODO: Use or remove shape parameter
     # TODO: Make property?
-    def labels(self, shape=None):
+    def labels(self):
         """Get a set of labels matrices consisting of non-overlapping labels
 
         In IJV format, a single pixel might have multiple labels. If you

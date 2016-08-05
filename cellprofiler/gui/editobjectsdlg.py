@@ -215,7 +215,7 @@ class EditObjectsDialog(wx.Dialog):
         self.last_to_keep = self.to_keep
         temp = cellprofiler.region.Region()
         temp.ijv = self.last_ijv
-        self.labels = [l for l, c in temp.labels(self.shape)]
+        self.labels = [l for l, c in temp.labels()]
         self.init_labels()
         #
         # replace the artists

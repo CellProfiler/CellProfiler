@@ -67,10 +67,14 @@ class Image(object):
         self.scale = self.parent.scale if self.__scale is None and self.has_parent_image else self.__scale
 
     def grayscale(self):
-        return self.pixel_data[:, :, 0]
+        data = self.pixel_data[:, :, 0]
+
+        return Image(data)
 
     def rgb(self):
-        return self.pixel_data[:, :, :3]
+        data = self.pixel_data[:, :, :3]
+
+        return Image(data)
 
     def get_mask(self):
         """Return the mask (pixels to be considered) for the primary image
@@ -418,7 +422,7 @@ class ImageSetList(object):
             k = make_dictionary_key(keys)
 
             if self.__image_sets_by_key.has_key(k):
-                number = self.__image_sets_by_key[k].get_number()
+                number = self.__image_sets_by_key[k].number
             else:
                 number = len(self.__image_sets)
 

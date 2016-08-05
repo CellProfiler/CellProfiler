@@ -5,12 +5,9 @@ import numpy
 class Segmentation(object):
     """A segmentation of a space into labeled objects
 
-    Supports overlapping objects and cacheing. Retrieval can be as a
+    Supports overlapping objects and caching. Retrieval can be as a
     single plane (legacy), as multiple planes and as sparse ijv.
     """
-    SEGMENTED = "segmented"
-    UNEDITED_SEGMENTED = "unedited segmented"
-    SMALL_REMOVED_SEGMENTED = "small removed segmented"
 
     def __init__(self, dense=None, sparse=None, shape=None):
         """Initialize the segmentation with either a dense or sparse labeling
@@ -24,17 +21,19 @@ class Segmentation(object):
 
         self.__dense = dense
         self.__sparse = sparse
+
         if shape is not None:
             self.__shape = shape
             self.__explicit_shape = True
         else:
             self.__shape = None
             self.__explicit_shape = False
+
         self.__cache = None
+
         if dense is not None:
             self.__indices = [numpy.unique(d) for d in dense]
-            self.__indices = [
-                idx[1:] if idx[0] == 0 else idx for idx in self.__indices]
+            self.__indices = [idx[1:] if idx[0] == 0 else idx for idx in self.__indices]
 
     @property
     def shape(self):
@@ -47,18 +46,17 @@ class Segmentation(object):
         """
         if self.__shape is not None:
             return self.__shape
+
         if self.has_dense():
             self.__shape = self.dense[0].shape[1:]
         else:
             sparse = self.sparse
+
             if len(sparse) == 0:
                 self.__shape = (1, 1, 1, 1, 1)
             else:
-                from cellprofiler.utilities.hdf5_dict import HDF5ObjectSet
-                self.__shape = tuple(
-                    [numpy.max(sparse[axis]) + 2
-                     if axis in sparse.dtype.fields.keys() else 1
-                     for axis in HDF5ObjectSet.AXES])
+                self.__shape = tuple([numpy.max(sparse[axis]) + 2 if axis in sparse.dtype.fields.keys() else 1 for axis in ("c", "t", "z", "y", "x")])
+
         return self.__shape
 
     @shape.setter
@@ -93,16 +91,11 @@ class Segmentation(object):
         if self.__sparse is not None:
             return self.__sparse
 
-        if self.__cache is not None and self.__cache.has_sparse(
-                self.__objects_name, self.__segmentation_name):
-            return self.__cache.get_sparse(
-                self.__objects_name, self.__segmentation_name)
+        if self.__cache is not None and self.__cache.has_sparse(self.__objects_name, self.__segmentation_name):
+            return self.__cache.get_sparse(self.__objects_name, self.__segmentation_name)
 
         if not self.has_dense():
-            raise ValueError(
-                "Can't find object, \"%s\", segmentation, \"%s\"." %
-                (self.__objects_name, self.__segmentation_name)
-            )
+            raise ValueError("Can't find object, \"%s\", segmentation, \"%s\"." % (self.__objects_name, self.__segmentation_name))
 
         return self.__convert_dense_to_sparse()
 
@@ -128,20 +121,14 @@ class Segmentation(object):
             return self.__cache.get_dense(self.__objects_name, self.__segmentation_name), self.__indices
 
         if not self.has_sparse():
-            raise ValueError(
-                "Can't find object, \"%s\", segmentation, \"%s\"." %
-                (self.__objects_name, self.__segmentation_name)
-            )
+            raise ValueError("Can't find object, \"%s\", segmentation, \"%s\"." % (self.__objects_name, self.__segmentation_name))
 
         return self.__convert_sparse_to_dense()
 
     def __convert_dense_to_sparse(self):
         dense, indices = self.dense
 
-        # TODO: Remove HDF5 caching
-        from cellprofiler.utilities.hdf5_dict import HDF5ObjectSet
-
-        axes = list(HDF5ObjectSet.AXES)
+        axes = ["c", "t", "z", "y", "x"]
         axes, shape = [[a for a, s in zip(aa, self.shape) if s > 1] for aa in axes, self.shape]
 
         #
@@ -161,6 +148,7 @@ class Segmentation(object):
         if len(plane) > 0:
             labels = dense[tuple([plane] + list(coords))]
             max_label = numpy.max(indices)
+
             if max_label < 2 ** 8:
                 labels_dtype = numpy.uint8
             elif max_label < 2 ** 16:
@@ -172,7 +160,7 @@ class Segmentation(object):
             labels_dtype = numpy.uint8
 
         dtype = [(axis, coords_dtype, 1) for axis in axes]
-        dtype.append((HDF5ObjectSet.AXIS_LABELS, labels_dtype, 1))
+        dtype.append(("label", labels_dtype, 1))
         sparse = numpy.core.records.fromarrays(list(coords) + [labels], dtype=dtype)
 
         if self.__cache is not None:
@@ -197,9 +185,6 @@ class Segmentation(object):
         return dense, self.__indices
 
     def __convert_sparse_to_dense(self):
-        # TODO: Remove HDF5
-        from cellprofiler.utilities.hdf5_dict import HDF5ObjectSet
-
         sparse = self.sparse
         if len(sparse) == 0:
             return self.__set_or_cache_dense(numpy.zeros([1] + list(self.shape), numpy.uint16))
@@ -212,7 +197,7 @@ class Segmentation(object):
         available_columns = []
         lexsort_columns = []
 
-        for axis in HDF5ObjectSet.AXES:
+        for axis in ("c", "t", "z", "y", "x"):
             if axis in sparse.dtype.fields.keys():
                 positional_columns.append(sparse[axis])
                 available_columns.append(sparse[axis])
@@ -220,7 +205,7 @@ class Segmentation(object):
             else:
                 positional_columns.append(0)
 
-        labels = sparse[HDF5ObjectSet.AXIS_LABELS]
+        labels = sparse["label"]
         lexsort_columns.insert(0, labels)
 
         sort_order = numpy.lexsort(lexsort_columns)

@@ -47,8 +47,7 @@ class Region(object):
         """Get the de-facto segmentation of the image into objects: a matrix
         of object numbers.
         """
-        assert isinstance(self.__segmented,
-                          cellprofiler.segmentation.Segmentation), "Operation failed because objects were not initialized"
+        assert isinstance(self.__segmented, cellprofiler.segmentation.Segmentation), "Operation failed because objects were not initialized"
 
         dense, indices = self.__segmented.dense
 
@@ -72,14 +71,11 @@ class Region(object):
         The ijv format is a list of i,j coordinates in slots 0 and 1
         and the label at the pixel in slot 2.
         """
-        from cellprofiler.utilities.hdf5_dict import HDF5ObjectSet
-        sparse = numpy.core.records.fromarrays(
-            (ijv[:, 0], ijv[:, 1], ijv[:, 2]),
-            [(HDF5ObjectSet.AXIS_Y, ijv.dtype, 1),
-             (HDF5ObjectSet.AXIS_X, ijv.dtype, 1),
-             (HDF5ObjectSet.AXIS_LABELS, ijv.dtype, 1)])
+        sparse = numpy.core.records.fromarrays((ijv[:, 0], ijv[:, 1], ijv[:, 2]), [("y", ijv.dtype, 1), ("x", ijv.dtype, 1), ("label", ijv.dtype, 1)])
+
         if shape is not None:
             shape = (1, 1, 1, shape[0], shape[1])
+
         self.__segmented = cellprofiler.segmentation.Segmentation(sparse=sparse, shape=shape)
 
     def get_ijv(self):
@@ -88,12 +84,9 @@ class Region(object):
         The ijv format is a list of i,j coordinates in slots 0 and 1
         and the label at the pixel in slot 2.
         """
-        from cellprofiler.utilities.hdf5_dict import HDF5ObjectSet
         sparse = self.__segmented.sparse
-        return numpy.column_stack(
-            [sparse[axis] for axis in
-             HDF5ObjectSet.AXIS_Y, HDF5ObjectSet.AXIS_X,
-             HDF5ObjectSet.AXIS_LABELS])
+
+        return numpy.column_stack([sparse[axis] for axis in "y", "x", "label"])
 
     ijv = property(get_ijv, set_ijv)
 
@@ -115,6 +108,7 @@ class Region(object):
         returns a list of label matrices and the indexes in each
         """
         dense, indices = self.__segmented.dense
+
         return [(dense[i, 0, 0, 0], indices[i]) for i in range(dense.shape[0])]
 
     def has_unedited_segmented(self):
@@ -132,12 +126,12 @@ class Region(object):
         if self.__unedited_segmented is not None:
             dense, indices = self.__unedited_segmented.dense
             return dense[0, 0, 0, 0]
+
         return self.segmented
 
     @unedited_segmented.setter
     def unedited_segmented(self, labels):
-        dense = downsample_labels(labels).reshape(
-            (1, 1, 1, 1, labels.shape[0], labels.shape[1]))
+        dense = downsample_labels(labels).reshape((1, 1, 1, 1, labels.shape[0], labels.shape[1]))
         self.__unedited_segmented = cellprofiler.segmentation.Segmentation(dense=dense)
 
     def has_small_removed_segmented(self):
@@ -155,12 +149,12 @@ class Region(object):
         if self.__small_removed_segmented is not None:
             dense, indices = self.__small_removed_segmented.dense
             return dense[0, 0, 0, 0]
+
         return self.unedited_segmented
 
     @small_removed_segmented.setter
     def small_removed_segmented(self, labels):
-        dense = downsample_labels(labels).reshape(
-            (1, 1, 1, 1, labels.shape[0], labels.shape[1]))
+        dense = downsample_labels(labels).reshape((1, 1, 1, 1, labels.shape[0], labels.shape[1]))
         self.__small_removed_segmented = cellprofiler.segmentation.Segmentation(dense=dense)
 
     @property
@@ -175,11 +169,10 @@ class Region(object):
     @parent_image.setter
     def parent_image(self, parent_image):
         self.__parent_image = parent_image
+
         for segmentation in self.__segmented, self.__small_removed_segmented, self.__unedited_segmented:
             if segmentation is not None and not segmentation.has_shape():
-                shape = (1, 1, 1,
-                         parent_image.pixel_data.shape[0],
-                         parent_image.pixel_data.shape[1])
+                shape = (1, 1, 1, parent_image.pixel_data.shape[0], parent_image.pixel_data.shape[1])
                 segmentation.shape(shape)
 
     @property
@@ -193,8 +186,10 @@ class Region(object):
         """Crop an image in the same way as the parent image was cropped."""
         if image.shape == self.segmented.shape:
             return image
+
         if self.parent_image is None:
             raise ValueError("Images are of different size and no parent image")
+
         return self.parent_image.crop_image_similarly(image)
 
     def make_ijv_outlines(self, colors):
@@ -212,10 +207,12 @@ class Region(object):
         #
         all_labels = [(centrosome.outline.outline(label), indexes) for label, indexes in self.labels()]
         image = numpy.zeros(list(all_labels[0][0].shape) + [3], numpy.float32)
+
         #
         # Find out how many unique labels in each
         #
         counts = [numpy.sum(numpy.unique(l) != 0) for l, _ in all_labels]
+
         if len(counts) == 1 and counts[0] == 0:
             return image
 
@@ -238,8 +235,7 @@ class Region(object):
             my_labels, indexes = all_labels[i]
             color_idx = numpy.zeros(numpy.max(indexes) + 1, int)
             color_idx[indexes] = numpy.arange(len(indexes)) % ncolors
-            image[my_labels != 0, :] += \
-                my_colors[color_idx[my_labels[my_labels != 0]], :]
+            image[my_labels != 0, :] += my_colors[color_idx[my_labels[my_labels != 0]], :]
             alpha[my_labels != 0] += 1
 
         image[alpha > 0, :] /= alpha[alpha > 0][:, numpy.newaxis]
@@ -257,6 +253,7 @@ class Region(object):
         object number.
         """
         histogram = self.histogram_from_ijv(self.ijv, children.ijv)
+
         return self.relate_histogram(histogram)
 
     def relate_labels(self, parent_labels, child_labels):
@@ -271,6 +268,7 @@ class Region(object):
         object number.
         """
         histogram = self.histogram_from_labels(parent_labels, child_labels)
+
         return self.relate_histogram(histogram)
 
     def relate_histogram(self, histogram):
@@ -281,6 +279,7 @@ class Region(object):
         parent_count = histogram.shape[0] - 1
 
         parents_of_children = numpy.argmax(histogram, axis=0)
+
         #
         # Create a histogram of # of children per parent
         children_per_parent = numpy.histogram(parents_of_children[1:], numpy.arange(parent_count + 2))[0][1:]
@@ -304,25 +303,25 @@ class Region(object):
         """
         parent_count = numpy.max(parent_labels)
         child_count = numpy.max(child_labels)
+
         #
         # If the labels are different shapes, crop to shared shape.
         #
         common_shape = numpy.minimum(parent_labels.shape, child_labels.shape)
         parent_labels = parent_labels[0:common_shape[0], 0:common_shape[1]]
         child_labels = child_labels[0:common_shape[0], 0:common_shape[1]]
+
         #
         # Only look at points that are labeled in parent and child
         #
         not_zero = (parent_labels > 0) & (child_labels > 0)
         not_zero_count = numpy.sum(not_zero)
+
         #
         # each row (axis = 0) is a parent
         # each column (axis = 1) is a child
         #
-        return scipy.sparse.coo_matrix((numpy.ones((not_zero_count,)),
-                                        (parent_labels[not_zero],
-                                         child_labels[not_zero])),
-                                       shape=(parent_count + 1, child_count + 1)).toarray()
+        return scipy.sparse.coo_matrix((numpy.ones((not_zero_count,)), (parent_labels[not_zero], child_labels[not_zero])), shape=(parent_count + 1, child_count + 1)).toarray()
 
     @staticmethod
     def histogram_from_ijv(parent_ijv, child_ijv):
@@ -348,12 +347,16 @@ class Region(object):
         parent_linear_ij = parent_ijv[:, 0] + dim_i * parent_ijv[:, 1].astype(numpy.uint64)
         child_linear_ij = child_ijv[:, 0] + dim_i * child_ijv[:, 1].astype(numpy.uint64)
 
-        parent_matrix = scipy.sparse.coo_matrix((numpy.ones((parent_ijv.shape[0],)),
-                                                 (parent_ijv[:, 2], parent_linear_ij)),
-                                                shape=(parent_count + 1, dim_i * dim_j))
-        child_matrix = scipy.sparse.coo_matrix((numpy.ones((child_ijv.shape[0],)),
-                                                (child_linear_ij, child_ijv[:, 2])),
-                                               shape=(dim_i * dim_j, child_count + 1))
+        parent_matrix = scipy.sparse.coo_matrix(
+            (numpy.ones((parent_ijv.shape[0],)), (parent_ijv[:, 2], parent_linear_ij)),
+            shape=(parent_count + 1, dim_i * dim_j)
+        )
+
+        child_matrix = scipy.sparse.coo_matrix(
+            (numpy.ones((child_ijv.shape[0],)), (child_linear_ij, child_ijv[:, 2])),
+            shape=(dim_i * dim_j, child_count + 1)
+        )
+
         # I surely do not understand the sparse code.  Converting both
         # arrays to csc gives the best peformance... Why not p.csr and
         # c.csc?
@@ -366,7 +369,9 @@ class Region(object):
         """
         if len(self.ijv) == 0:
             return numpy.zeros(0, numpy.int32)
+
         max_label = numpy.max(self.ijv[:, 2])
+
         return numpy.arange(max_label).astype(numpy.int32) + 1
 
     @property
@@ -379,6 +384,7 @@ class Region(object):
         """The area of each object"""
         if len(self.indices) == 0:
             return numpy.zeros(0, int)
+
         return numpy.bincount(self.ijv[:, 2])[self.indices]
 
     def fn_of_label(self, function):
@@ -411,9 +417,7 @@ class Region(object):
         a center or an area
         """
 
-        return function(numpy.ones(self.segmented.shape),
-                        self.segmented,
-                        self.indices)
+        return function(numpy.ones(self.segmented.shape), self.segmented, self.indices)
 
     def fn_of_image_label_and_index(self, function, image):
         """Call a function taking an image, a label matrix and an index
@@ -424,9 +428,7 @@ class Region(object):
                    index  - sequence of label indices documenting which
                             label indices are of interest
         """
-        return function(image,
-                        self.segmented,
-                        self.indices)
+        return function(image, self.segmented, self.indices)
 
 
 class Set(object):
@@ -435,7 +437,6 @@ class Set(object):
     This class allows you to either refer to an object by name or
     iterate over all available objects.
     """
-
     def __init__(self, can_overwrite=False):
         """Initialize the object set
 
@@ -451,7 +452,9 @@ class Set(object):
 
     def add_objects(self, objects, name):
         assert isinstance(objects, Region), "objects must be an instance of CellProfiler.Objects"
+
         assert ((name not in self.__objects_by_name) or self.__can_overwrite), "The object, %s, is already in the object set" % name
+
         self.__objects_by_name[name] = objects
 
     @property
@@ -493,6 +496,7 @@ class Set(object):
         """
         if type_name not in self.__types_and_instances:
             self.__types_and_instances[type_name] = {}
+
         self.__types_and_instances[type_name][instance_name] = instance
 
     def get_type_instance(self, type_name, instance_name):
@@ -503,16 +507,19 @@ class Set(object):
         """
         if type_name not in self.__types_and_instance or instance_name not in self.__types_and_instances[type_name]:
             return None
+
         return self.__types_and_instances[type_name][instance_name]
 
 
 def downsample_labels(labels):
     """Convert a labels matrix to the smallest possible integer format"""
     labels_max = numpy.max(labels)
+
     if labels_max < 128:
         return labels.astype(numpy.int8)
     elif labels_max < 32768:
         return labels.astype(numpy.int16)
+
     return labels.astype(numpy.int32)
 
 
@@ -526,6 +533,7 @@ def crop_labels_and_image(labels, image):
     """
     min_height = min(labels.shape[0], image.shape[0])
     min_width = min(labels.shape[1], image.shape[1])
+
     if image.ndim == 2:
         return (labels[:min_height, :min_width],
                 image[:min_height, :min_width])
@@ -548,25 +556,26 @@ def size_similarly(labels, secondary):
     """
     if labels.shape[:2] == secondary.shape[:2]:
         return secondary, numpy.ones(secondary.shape, bool)
+
     if labels.shape[0] <= secondary.shape[0] and labels.shape[1] <= secondary.shape[1]:
         if secondary.ndim == 2:
-            return (secondary[:labels.shape[0], :labels.shape[1]],
-                    numpy.ones(labels.shape, bool))
+            return (secondary[:labels.shape[0], :labels.shape[1]], numpy.ones(labels.shape, bool))
         else:
-            return (secondary[:labels.shape[0], :labels.shape[1], :],
-                    numpy.ones(labels.shape, bool))
+            return (secondary[:labels.shape[0], :labels.shape[1], :], numpy.ones(labels.shape, bool))
 
     #
     # Some portion of the secondary matrix does not cover the labels
     #
-    result = numpy.zeros(list(labels.shape) + list(secondary.shape[2:]),
-                         secondary.dtype)
+    result = numpy.zeros(list(labels.shape) + list(secondary.shape[2:]), secondary.dtype)
     i_max = min(secondary.shape[0], labels.shape[0])
     j_max = min(secondary.shape[1], labels.shape[1])
+
     if secondary.ndim == 2:
         result[:i_max, :j_max] = secondary[:i_max, :j_max]
     else:
         result[:i_max, :j_max, :] = secondary[:i_max, :j_max, :]
+
     mask = numpy.zeros(labels.shape, bool)
     mask[:i_max, :j_max] = 1
+
     return result, mask

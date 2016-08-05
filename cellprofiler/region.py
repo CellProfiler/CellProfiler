@@ -47,7 +47,8 @@ class Region(object):
         """Get the de-facto segmentation of the image into objects: a matrix
         of object numbers.
         """
-        assert isinstance(self.__segmented, cellprofiler.segmentation.Segmentation), "Operation failed because objects were not initialized"
+        assert isinstance(self.__segmented,
+                          cellprofiler.segmentation.Segmentation), "Operation failed because objects were not initialized"
 
         dense, indices = self.__segmented.dense
 
@@ -66,39 +67,39 @@ class Region(object):
         self.__segmented = cellprofiler.segmentation.Segmentation(dense=dense)
 
     def set_ijv(self, ijv, shape=None):
-        '''Set the segmentation to an IJV object format
+        """Set the segmentation to an IJV object format
 
         The ijv format is a list of i,j coordinates in slots 0 and 1
         and the label at the pixel in slot 2.
-        '''
+        """
         from cellprofiler.utilities.hdf5_dict import HDF5ObjectSet
         sparse = numpy.core.records.fromarrays(
-                (ijv[:, 0], ijv[:, 1], ijv[:, 2]),
-                [(HDF5ObjectSet.AXIS_Y, ijv.dtype, 1),
-                 (HDF5ObjectSet.AXIS_X, ijv.dtype, 1),
-                 (HDF5ObjectSet.AXIS_LABELS, ijv.dtype, 1)])
+            (ijv[:, 0], ijv[:, 1], ijv[:, 2]),
+            [(HDF5ObjectSet.AXIS_Y, ijv.dtype, 1),
+             (HDF5ObjectSet.AXIS_X, ijv.dtype, 1),
+             (HDF5ObjectSet.AXIS_LABELS, ijv.dtype, 1)])
         if shape is not None:
             shape = (1, 1, 1, shape[0], shape[1])
         self.__segmented = cellprofiler.segmentation.Segmentation(sparse=sparse, shape=shape)
 
     def get_ijv(self):
-        '''Get the segmentation in IJV object format
+        """Get the segmentation in IJV object format
 
         The ijv format is a list of i,j coordinates in slots 0 and 1
         and the label at the pixel in slot 2.
-        '''
+        """
         from cellprofiler.utilities.hdf5_dict import HDF5ObjectSet
         sparse = self.__segmented.sparse
         return numpy.column_stack(
-                [sparse[axis] for axis in
-                 HDF5ObjectSet.AXIS_Y, HDF5ObjectSet.AXIS_X,
-                 HDF5ObjectSet.AXIS_LABELS])
+            [sparse[axis] for axis in
+             HDF5ObjectSet.AXIS_Y, HDF5ObjectSet.AXIS_X,
+             HDF5ObjectSet.AXIS_LABELS])
 
     ijv = property(get_ijv, set_ijv)
 
     @property
     def shape(self):
-        '''The i and j extents of the labels'''
+        """The i and j extents of the labels"""
         return self.__segmented.shape()[-2:]
 
     # TODO: Use or remove shape parameter
@@ -136,7 +137,7 @@ class Region(object):
     @unedited_segmented.setter
     def unedited_segmented(self, labels):
         dense = downsample_labels(labels).reshape(
-                (1, 1, 1, 1, labels.shape[0], labels.shape[1]))
+            (1, 1, 1, 1, labels.shape[0], labels.shape[1]))
         self.__unedited_segmented = cellprofiler.segmentation.Segmentation(dense=dense)
 
     def has_small_removed_segmented(self):
@@ -159,7 +160,7 @@ class Region(object):
     @small_removed_segmented.setter
     def small_removed_segmented(self, labels):
         dense = downsample_labels(labels).reshape(
-                (1, 1, 1, 1, labels.shape[0], labels.shape[1]))
+            (1, 1, 1, 1, labels.shape[0], labels.shape[1]))
         self.__small_removed_segmented = cellprofiler.segmentation.Segmentation(dense=dense)
 
     @property
@@ -197,13 +198,13 @@ class Region(object):
         return self.parent_image.crop_image_similarly(image)
 
     def make_ijv_outlines(self, colors):
-        '''Make ijv-style color outlines
+        """Make ijv-style color outlines
 
         Make outlines, coloring each object differently to distinguish between
         objects that might overlap.
 
         colors: a N x 3 color map to be used to color the outlines
-        '''
+        """
         #
         # Get planes of non-overlapping objects. The idea here is to use
         # the most similar colors in the color space for objects that
@@ -259,7 +260,7 @@ class Region(object):
         return self.relate_histogram(histogram)
 
     def relate_labels(self, parent_labels, child_labels):
-        '''relate the object numbers in one label to those in another
+        """relate the object numbers in one label to those in another
 
         parent_labels - 2d label matrix of parent labels
 
@@ -268,15 +269,15 @@ class Region(object):
         Returns two 1-d arrays. The first gives the number of children within
         each parent. The second gives the mapping of each child to its parent's
         object number.
-        '''
+        """
         histogram = self.histogram_from_labels(parent_labels, child_labels)
         return self.relate_histogram(histogram)
 
     def relate_histogram(self, histogram):
-        '''Return child counts and parents of children given a histogram
+        """Return child counts and parents of children given a histogram
 
         histogram - histogram from histogram_from_ijv or histogram_from_labels
-        '''
+        """
         parent_count = histogram.shape[0] - 1
         child_count = histogram.shape[1] - 1
 
@@ -321,7 +322,7 @@ class Region(object):
         #
         return scipy.sparse.coo_matrix((numpy.ones((not_zero_count,)),
                                         (parent_labels[not_zero],
-                            child_labels[not_zero])),
+                                         child_labels[not_zero])),
                                        shape=(parent_count + 1, child_count + 1)).toarray()
 
     @staticmethod
@@ -345,10 +346,8 @@ class Region(object):
 
         dim_i = max(numpy.max(parent_ijv[:, 0]), numpy.max(child_ijv[:, 0])) + 1
         dim_j = max(numpy.max(parent_ijv[:, 1]), numpy.max(child_ijv[:, 1])) + 1
-        parent_linear_ij = parent_ijv[:, 0] + \
-                           dim_i * parent_ijv[:, 1].astype(numpy.uint64)
-        child_linear_ij = child_ijv[:, 0] + \
-                          dim_i * child_ijv[:, 1].astype(numpy.uint64)
+        parent_linear_ij = parent_ijv[:, 0] + dim_i * parent_ijv[:, 1].astype(numpy.uint64)
+        child_linear_ij = child_ijv[:, 0] + dim_i * child_ijv[:, 1].astype(numpy.uint64)
 
         parent_matrix = scipy.sparse.coo_matrix((numpy.ones((parent_ijv.shape[0],)),
                                                  (parent_ijv[:, 2], parent_linear_ij)),
@@ -453,7 +452,7 @@ class Set(object):
 
     def add_objects(self, objects, name):
         assert isinstance(objects, Region), "objects must be an instance of CellProfiler.Objects"
-        assert ((not self.__objects_by_name.has_key(name)) or self.__can_overwrite), "The object, %s, is already in the object set" % name
+        assert ((name not in self.__objects_by_name) or self.__can_overwrite), "The object, %s, is already in the object set" % name
         self.__objects_by_name[name] = objects
 
     @property
@@ -474,16 +473,16 @@ class Set(object):
         return self.__objects_by_name.items()
 
     def get_types(self):
-        '''Get then names of types of per-image set "things"
+        """Get then names of types of per-image set "things"
 
         The object set can store arbitrary types of things other than objects,
         for instance ImageJ data tables. This function returns the thing types
         defined in the object set at this stage of the pipeline.
-        '''
+        """
         return self.__types_and_instances.keys()
 
     def add_type_instance(self, type_name, instance_name, instance):
-        '''Add a named instance of a type
+        """Add a named instance of a type
 
         A thing of a given type can be stored in the object set so that
         it can be retrieved by name later in the pipeline. This function adds
@@ -492,25 +491,24 @@ class Set(object):
         type_name - the name of the instance's type
         instance_name - the name of the instance
         instance - the instance itself
-        '''
+        """
         if type_name not in self.__types_and_instances:
             self.__types_and_instances[type_name] = {}
         self.__types_and_instances[type_name][instance_name] = instance
 
     def get_type_instance(self, type_name, instance_name):
-        '''Get an named instance of a type
+        """Get an named instance of a type
 
         type_name - the name of the type of instance
         instance_name - the name of the instance to retrieve
-        '''
-        if (type_name not in self.__types_and_instance or
-                    instance_name not in self.__types_and_instances[type_name]):
+        """
+        if type_name not in self.__types_and_instance or instance_name not in self.__types_and_instances[type_name]:
             return None
         return self.__types_and_instances[type_name][instance_name]
 
 
 def downsample_labels(labels):
-    '''Convert a labels matrix to the smallest possible integer format'''
+    """Convert a labels matrix to the smallest possible integer format"""
     labels_max = numpy.max(labels)
     if labels_max < 128:
         return labels.astype(numpy.int8)
@@ -520,13 +518,13 @@ def downsample_labels(labels):
 
 
 def crop_labels_and_image(labels, image):
-    '''Crop a labels matrix and an image to the lowest common size
+    """Crop a labels matrix and an image to the lowest common size
 
     labels - a n x m labels matrix
     image - a 2-d or 3-d image
 
     Assumes that points outside of the common boundary should be masked.
-    '''
+    """
     min_height = min(labels.shape[0], image.shape[0])
     min_width = min(labels.shape[1], image.shape[1])
     if image.ndim == 2:
@@ -538,7 +536,7 @@ def crop_labels_and_image(labels, image):
 
 
 def size_similarly(labels, secondary):
-    '''Size the secondary matrix similarly to the labels matrix
+    """Size the secondary matrix similarly to the labels matrix
 
     labels - labels matrix
     secondary - a secondary image or labels matrix which might be of
@@ -548,11 +546,10 @@ def size_similarly(labels, secondary):
 
     Either the mask is all ones or the result is a copy, so you can
     modify the output within the unmasked region w/o destroying the original.
-    '''
+    """
     if labels.shape[:2] == secondary.shape[:2]:
         return secondary, numpy.ones(secondary.shape, bool)
-    if (labels.shape[0] <= secondary.shape[0] and
-                labels.shape[1] <= secondary.shape[1]):
+    if labels.shape[0] <= secondary.shape[0] and labels.shape[1] <= secondary.shape[1]:
         if secondary.ndim == 2:
             return (secondary[:labels.shape[0], :labels.shape[1]],
                     numpy.ones(labels.shape, bool))

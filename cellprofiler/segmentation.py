@@ -3,24 +3,24 @@ import numpy
 
 
 class Segmentation(object):
-    '''A segmentation of a space into labeled objects
+    """A segmentation of a space into labeled objects
 
     Supports overlapping objects and cacheing. Retrieval can be as a
     single plane (legacy), as multiple planes and as sparse ijv.
-    '''
+    """
     SEGMENTED = "segmented"
     UNEDITED_SEGMENTED = "unedited segmented"
     SMALL_REMOVED_SEGMENTED = "small removed segmented"
 
     def __init__(self, dense=None, sparse=None, shape=None):
-        '''Initialize the segmentation with either a dense or sparse labeling
+        """Initialize the segmentation with either a dense or sparse labeling
 
         dense - a 6-D labeling with the first axis allowing for alternative
                 labelings of the same hyper-voxel.
         sparse - the sparse labeling as a record array with axes from
                  cellprofiler.utilities.hdf_dict.HDF5ObjectSet
         shape - the 5-D shape of the imaging site if sparse.
-        '''
+        """
 
         self.__dense = dense
         self.__sparse = sparse
@@ -56,9 +56,9 @@ class Segmentation(object):
             else:
                 from cellprofiler.utilities.hdf5_dict import HDF5ObjectSet
                 self.__shape = tuple(
-                        [numpy.max(sparse[axis]) + 2
-                         if axis in sparse.dtype.fields.keys() else 1
-                         for axis in HDF5ObjectSet.AXES])
+                    [numpy.max(sparse[axis]) + 2
+                     if axis in sparse.dtype.fields.keys() else 1
+                     for axis in HDF5ObjectSet.AXES])
         return self.__shape
 
     @shape.setter
@@ -96,7 +96,7 @@ class Segmentation(object):
         if self.__cache is not None and self.__cache.has_sparse(
                 self.__objects_name, self.__segmentation_name):
             return self.__cache.get_sparse(
-                    self.__objects_name, self.__segmentation_name)
+                self.__objects_name, self.__segmentation_name)
 
         if not self.has_dense():
             raise ValueError(
@@ -125,7 +125,7 @@ class Segmentation(object):
             return self.__dense, self.__indices
 
         if self.__cache is not None and self.__cache.has_dense(self.__objects_name, self.__segmentation_name):
-            return (self.__cache.get_dense(self.__objects_name, self.__segmentation_name), self.__indices)
+            return self.__cache.get_dense(self.__objects_name, self.__segmentation_name), self.__indices
 
         if not self.has_sparse():
             raise ValueError(

@@ -8,19 +8,20 @@ import tempfile
 import unittest
 import zlib
 import PIL.Image
-import numpy as np
-from centrosome.outline import outline
+import numpy
+import centrosome.outline
 from matplotlib.image import pil_to_array
-from scipy.ndimage import binary_dilation
-import cellprofiler.image as cpi
-import cellprofiler.measurement as cpmeas
-import cellprofiler.modules.untangleworms as U
-import cellprofiler.region as cpo
-import cellprofiler.pipeline as cpp
-import cellprofiler.setting as cps
-import cellprofiler.workspace as cpw
+import scipy.ndimage
+import cellprofiler.image
+import cellprofiler.measurement
+import cellprofiler.modules.untangleworms
+import cellprofiler.region
+import cellprofiler.pipeline
+import cellprofiler.preferences
+import cellprofiler.setting
+import cellprofiler.workspace
 
-U.CAROLINAS_HACK = False
+cellprofiler.modules.untangleworms.CAROLINAS_HACK = False
 
 IMAGE_NAME = "myimage"
 OVERLAP_OBJECTS_NAME = "overlapobjects"
@@ -370,34 +371,34 @@ UntangleWorms:[module_num:3|svn_version:\'10598\'|variable_revision_number:1|sho
     Maximum radius percentile:90
     Maximum radius factor:1
 '''
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
         pipeline.load(StringIO.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 3)
         module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, U.UntangleWorms))
+        self.assertTrue(isinstance(module, cellprofiler.modules.untangleworms.UntangleWorms))
         self.assertEqual(module.image_name, "BinaryWorms")
-        self.assertEqual(module.overlap, U.OO_BOTH)
+        self.assertEqual(module.overlap, cellprofiler.modules.untangleworms.OO_BOTH)
         self.assertEqual(module.overlap_objects, "OverlappingWorms")
         self.assertEqual(module.nonoverlapping_objects, "NonOverlappingWorms")
         self.assertFalse(module.wants_training_set_weights)
         self.assertEqual(module.override_overlap_weight.value, 3)
         self.assertEqual(module.override_leftover_weight.value, 5)
-        self.assertEqual(module.mode, U.MODE_TRAIN)
+        self.assertEqual(module.mode, cellprofiler.modules.untangleworms.MODE_TRAIN)
         module = pipeline.modules()[1]
-        self.assertTrue(isinstance(module, U.UntangleWorms))
-        self.assertEqual(module.overlap, U.OO_WITH_OVERLAP)
+        self.assertTrue(isinstance(module, cellprofiler.modules.untangleworms.UntangleWorms))
+        self.assertEqual(module.overlap, cellprofiler.modules.untangleworms.OO_WITH_OVERLAP)
         self.assertTrue(module.wants_training_set_weights)
-        self.assertEqual(module.mode, U.MODE_UNTANGLE)
+        self.assertEqual(module.mode, cellprofiler.modules.untangleworms.MODE_UNTANGLE)
         module = pipeline.modules()[2]
-        self.assertTrue(isinstance(module, U.UntangleWorms))
-        self.assertEqual(module.overlap, U.OO_WITHOUT_OVERLAP)
-        self.assertEqual(module.mode, U.MODE_UNTANGLE)
-        self.assertEqual(module.complexity, U.C_ALL)
+        self.assertTrue(isinstance(module, cellprofiler.modules.untangleworms.UntangleWorms))
+        self.assertEqual(module.overlap, cellprofiler.modules.untangleworms.OO_WITHOUT_OVERLAP)
+        self.assertEqual(module.mode, cellprofiler.modules.untangleworms.MODE_UNTANGLE)
+        self.assertEqual(module.complexity, cellprofiler.modules.untangleworms.C_ALL)
         self.assertEqual(module.custom_complexity, 400)
 
     def test_01_01_load_v2(self):
@@ -565,18 +566,18 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
     Maximum complexity:Custom
     Custom complexity:399
 '''
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
         pipeline.load(StringIO.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 5)
         module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, U.UntangleWorms))
+        self.assertTrue(isinstance(module, cellprofiler.modules.untangleworms.UntangleWorms))
         self.assertEqual(module.image_name, "BinaryWorms")
-        self.assertEqual(module.overlap, U.OO_BOTH)
+        self.assertEqual(module.overlap, cellprofiler.modules.untangleworms.OO_BOTH)
         self.assertEqual(module.overlap_objects, "OverlappingWorms")
         self.assertEqual(module.nonoverlapping_objects, "NonOverlappingWorms")
         self.assertFalse(module.wants_training_set_weights)
@@ -585,8 +586,8 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         self.assertEqual(module.custom_complexity, 399)
 
         for module, complexity in zip(pipeline.modules(),
-                                      (U.C_ALL, U.C_MEDIUM, U.C_HIGH,
-                                       U.C_VERY_HIGH, U.C_CUSTOM)):
+                                      (cellprofiler.modules.untangleworms.C_ALL, cellprofiler.modules.untangleworms.C_MEDIUM, cellprofiler.modules.untangleworms.C_HIGH,
+                                       cellprofiler.modules.untangleworms.C_VERY_HIGH, cellprofiler.modules.untangleworms.C_CUSTOM)):
             self.assertEqual(module.complexity, complexity)
 
     def make_workspace(self, image, data=None, write_mode="wb"):
@@ -599,29 +600,29 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
             with open(self.filename, "wb") as fd:
                 fd.write(data)
 
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, (cpp.RunExceptionEvent, cpp.LoadExceptionEvent)))
+            self.assertFalse(isinstance(event, (cellprofiler.pipeline.RunExceptionEvent, cellprofiler.pipeline.LoadExceptionEvent)))
 
         pipeline.add_listener(callback)
-        module = U.UntangleWorms()
+        module = cellprofiler.modules.untangleworms.UntangleWorms()
         module.image_name.value = IMAGE_NAME
         module.nonoverlapping_objects.value = NON_OVERLAPPING_OBJECTS_NAME
         module.overlap_objects.value = OVERLAP_OBJECTS_NAME
         module.module_num = 1
         pipeline.add_module(module)
-        img = cpi.Image(image)
-        image_set_list = cpi.ImageSetList()
+        img = cellprofiler.image.Image(image)
+        image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         image_set.add(IMAGE_NAME, img)
-        module.training_set_directory.dir_choice = cps.ABSOLUTE_FOLDER_NAME
+        module.training_set_directory.dir_choice = cellprofiler.preferences.ABSOLUTE_FOLDER_NAME
         (module.training_set_directory.custom_path,
          module.training_set_file_name.value) = os.path.split(self.filename)
 
-        workspace = cpw.Workspace(pipeline, module, image_set,
-                                  cpo.Set(), cpmeas.Measurements(),
-                                  image_set_list)
+        workspace = cellprofiler.workspace.Workspace(pipeline, module, image_set,
+                                                     cellprofiler.region.Set(), cellprofiler.measurement.Measurements(),
+                                                     image_set_list)
         return workspace, module
 
     def make_params(self, d):
@@ -642,15 +643,15 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
 
     def test_02_01_load_params(self):
         data = zlib.decompress(base64.b64decode(PARAMS))
-        workspace, module = self.make_workspace(np.zeros((10, 10), bool), data)
-        self.assertTrue(isinstance(module, U.UntangleWorms))
+        workspace, module = self.make_workspace(numpy.zeros((10, 10), bool), data)
+        self.assertTrue(isinstance(module, cellprofiler.modules.untangleworms.UntangleWorms))
         module.prepare_group(workspace, None, None)
         params = module.read_params()
         self.assertAlmostEqual(params.min_worm_area, 601.2, 0)
         self.assertAlmostEqual(params.max_area, 1188.5, 0)
         self.assertAlmostEqual(params.cost_threshold, 200.8174, 3)
         self.assertEqual(params.num_control_points, 21)
-        np.testing.assert_almost_equal(params.mean_angles, np.array([
+        numpy.testing.assert_almost_equal(params.mean_angles, numpy.array([
             -0.00527796256445404, -0.0315202989978013, -0.00811839821858939,
             -0.0268318268190547, -0.0120476701544335, -0.0202651421433172,
             -0.0182919505672029, -0.00990476055380843, -0.0184558846126189,
@@ -658,7 +659,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
             0.0170195137830520, 0.00185471766328753, 0.00913261528049730,
             -0.0106805477987750, 0.00473369321673608, -0.00835547063778011,
             -0.00382606935405797, 127.129708001680]))
-        np.testing.assert_almost_equal(params.inv_angles_covariance_matrix, np.array([
+        numpy.testing.assert_almost_equal(params.inv_angles_covariance_matrix, numpy.array([
             [16.1831499639022, -5.06131059821028, -7.03307454602146, -2.88853420387429, 3.34017866010302,
              3.45512576204933, -1.09841786238497, -2.79348760430306, -1.85931734891389, -0.652858408126458,
              -1.22752367898365, 4.15573185568687, 1.99443112453893, -2.26823701209981, -1.25144655688072,
@@ -747,7 +748,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         self.assertAlmostEqual(params.worm_radius, 5.099019527435303)
         self.assertEqual(params.overlap_weight, 5)
         self.assertEqual(params.leftover_weight, 10)
-        np.testing.assert_almost_equal(params.radii_from_training, np.array(
+        numpy.testing.assert_almost_equal(params.radii_from_training, numpy.array(
                 [1.19132055711746, 2.75003945541382, 3.56039281511307, 4.05681743049622, 4.39353294944763,
                  4.52820824432373, 4.66245639991760, 4.75254730796814, 4.76993056106567, 4.78852712249756,
                  4.73509162521362, 4.76029792976379, 4.75030451583862, 4.69090248298645, 4.59827183151245,
@@ -2168,8 +2169,8 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
 </training-data>
 """
         workspace, module = self.make_workspace(
-                np.zeros((10, 10), bool), data, write_mode="w")
-        self.assertTrue(isinstance(module, U.UntangleWorms))
+                numpy.zeros((10, 10), bool), data, write_mode="w")
+        self.assertTrue(isinstance(module, cellprofiler.modules.untangleworms.UntangleWorms))
         module.prepare_group(workspace, None, None)
         params = module.read_params()
         self.assertEqual(params.version, 10680)
@@ -2184,7 +2185,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         self.assertAlmostEqual(params.max_radius, 5.07108224265)
         self.assertEqual(params.overlap_weight, 5)
         self.assertEqual(params.leftover_weight, 10)
-        expected = np.array([
+        expected = numpy.array([
             -0.010999071156, -0.011369928253, -0.0063572663907,
             -0.00537369691481, -0.00491960423727, -0.00888319810452,
             0.000958176954014, -0.00329354759164, -0.00182154382306,
@@ -2192,16 +2193,16 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
             -0.000221502806058, 0.000541997532415, 7.10858314614e-05,
             -0.000536334650268, 0.00846699296415, 0.00229934152116,
             0.013315157629, 127.475166584])
-        np.testing.assert_almost_equal(expected, params.mean_angles)
-        expected = np.array([
+        numpy.testing.assert_almost_equal(expected, params.mean_angles)
+        expected = numpy.array([
             1.42515381896, 2.85816813675, 3.625274645, 4.0753094944,
             4.35612078737, 4.52117778419, 4.63350649815, 4.68616131779,
             4.72754363339, 4.7538931664, 4.74523602328, 4.73738576257,
             4.71422245337, 4.67997686977, 4.63299502256, 4.54769060478,
             4.37493539203, 4.10516708918, 3.6478380576, 2.87519387935,
             1.41510654664])
-        np.testing.assert_almost_equal(expected, params.radii_from_training)
-        expected = np.array(
+        numpy.testing.assert_almost_equal(expected, params.radii_from_training)
+        expected = numpy.array(
                 [[14.4160767437, -3.62948521476, -5.54563467306, -2.03727846881, 1.28497735663, 1.69152924813,
                   0.155723103489, 0.0968570278119, -0.830941512378, -0.212837030458, 0.343854099462, 0.541856348331,
                   0.0113083798588, -0.526926108341, 0.499035732802, -0.714281934407, 0.407365302927, 0.0412386837587,
@@ -2282,12 +2283,12 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
                   -0.00967309489576, 0.0218279774715, 0.00813673085389, -0.00117994378545, -0.0128674812862,
                   -0.00361862544014, -0.000211505765068, 0.014074799611, 0.00532906905096, 0.0045492369767,
                   -0.0047454750271, -0.0186367239616, 0.00910717515256, 0.00936896857131, 0.00505367806039]])
-        np.testing.assert_almost_equal(expected, params.inv_angles_covariance_matrix)
+        numpy.testing.assert_almost_equal(expected, params.inv_angles_covariance_matrix)
 
     def test_03_00_trace_segments_none(self):
         '''Test the trace_segments function on a blank image'''
-        image = np.zeros((10, 20), bool)
-        module = U.UntangleWorms()
+        image = numpy.zeros((10, 20), bool)
+        module = cellprofiler.modules.untangleworms.UntangleWorms()
         i, j, label, order, distance, count = module.trace_segments(image)
         self.assertEqual(count, 0)
         for x in (i, j, label, order, distance):
@@ -2295,45 +2296,45 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
 
     def test_03_01_trace_one_segment(self):
         '''Trace a single segment'''
-        module = U.UntangleWorms()
-        image = np.zeros((10, 20), bool)
+        module = cellprofiler.modules.untangleworms.UntangleWorms()
+        image = numpy.zeros((10, 20), bool)
         image[5, 1:18] = True
-        expected_order = np.zeros(image.shape, int)
-        expected_order[image] = np.arange(np.sum(image))
+        expected_order = numpy.zeros(image.shape, int)
+        expected_order[image] = numpy.arange(numpy.sum(image))
         i, j, label, order, distance, count = module.trace_segments(image)
         self.assertEqual(count, 1)
-        self.assertTrue(np.all(label == 1))
+        self.assertTrue(numpy.all(label == 1))
         for x in (i, j, order, distance):
-            self.assertEqual(len(x), np.sum(image))
+            self.assertEqual(len(x), numpy.sum(image))
 
-        result_order = np.zeros(image.shape, int)
+        result_order = numpy.zeros(image.shape, int)
         result_order[i, j] = order
-        self.assertTrue(np.all(image[i, j]))
-        self.assertTrue(np.all(expected_order == result_order))
+        self.assertTrue(numpy.all(image[i, j]))
+        self.assertTrue(numpy.all(expected_order == result_order))
 
     def test_03_02_trace_short_segment(self):
         '''Trace a segment of a single point'''
-        module = U.UntangleWorms()
-        image = np.zeros((10, 20), bool)
+        module = cellprofiler.modules.untangleworms.UntangleWorms()
+        image = numpy.zeros((10, 20), bool)
         for i in range(1, 3):
             image[5, 10:(10 + i)] = True
-            expected_order = np.zeros(image.shape, int)
-            expected_order[image] = np.arange(np.sum(image))
+            expected_order = numpy.zeros(image.shape, int)
+            expected_order[image] = numpy.arange(numpy.sum(image))
             i, j, label, order, distance, count = module.trace_segments(image)
             self.assertEqual(count, 1)
-            self.assertTrue(np.all(label == 1))
+            self.assertTrue(numpy.all(label == 1))
             for x in (i, j, order, distance):
-                self.assertEqual(len(x), np.sum(image))
+                self.assertEqual(len(x), numpy.sum(image))
 
-            result_order = np.zeros(image.shape, int)
+            result_order = numpy.zeros(image.shape, int)
             result_order[i, j] = order
-            self.assertTrue(np.all(image[i, j]))
-            self.assertTrue(np.all(expected_order == result_order))
+            self.assertTrue(numpy.all(image[i, j]))
+            self.assertTrue(numpy.all(expected_order == result_order))
 
     def test_03_03_trace_loop(self):
         '''Trace an object that loops on itself'''
-        module = U.UntangleWorms()
-        image = np.zeros((10, 20), bool)
+        module = cellprofiler.modules.untangleworms.UntangleWorms()
+        image = numpy.zeros((10, 20), bool)
         image[1:-1, 1:-1] = True
         image[2:-2, 2:-2] = False
         # Lop off the corners as would happen if skeletonized
@@ -2341,67 +2342,67 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         #
         # It should go clockwise, starting from 1,2
         #
-        expected_order = np.zeros(image.shape, int)
-        i, j = np.mgrid[0:image.shape[0], 0:image.shape[1]]
+        expected_order = numpy.zeros(image.shape, int)
+        i, j = numpy.mgrid[0:image.shape[0], 0:image.shape[1]]
         slices = ((1, slice(2, -2)),
                   (slice(2, -2), -2),
                   (-2, slice(-3, 1, -1)),
                   (slice(-3, 1, -1), 1))
-        ii, jj = np.array((2, 0), int)
-        ii = np.hstack([i[islice, jslice].flatten() for islice, jslice in slices])
-        jj = np.hstack([j[islice, jslice].flatten() for islice, jslice in slices])
-        expected_order[ii, jj] = np.arange(len(ii))
+        ii, jj = numpy.array((2, 0), int)
+        ii = numpy.hstack([i[islice, jslice].flatten() for islice, jslice in slices])
+        jj = numpy.hstack([j[islice, jslice].flatten() for islice, jslice in slices])
+        expected_order[ii, jj] = numpy.arange(len(ii))
         i, j, label, order, distance, count = module.trace_segments(image)
-        result_order = np.zeros(image.shape, int)
+        result_order = numpy.zeros(image.shape, int)
         result_order[i, j] = order
-        self.assertTrue(np.all(expected_order == result_order))
+        self.assertTrue(numpy.all(expected_order == result_order))
 
     def test_03_04_trace_two(self):
         '''Trace two objects'''
-        module = U.UntangleWorms()
-        image = np.zeros((10, 20), bool)
+        module = cellprofiler.modules.untangleworms.UntangleWorms()
+        image = numpy.zeros((10, 20), bool)
         image[1:-1, 5] = True
         image[1:-1, 15] = True
         i, j, label, order, distance, count = module.trace_segments(image)
         self.assertEqual(count, 2)
-        result_order = np.zeros(image.shape, int)
+        result_order = numpy.zeros(image.shape, int)
         result_order[i, j] = order
         for j in (5, 15):
-            self.assertTrue(np.all(result_order[1:-1, j] == np.arange(image.shape[0] - 2)))
+            self.assertTrue(numpy.all(result_order[1:-1, j] == numpy.arange(image.shape[0] - 2)))
 
     def test_04_00_make_incidence_matrix_of_nothing(self):
         '''Make incidence matrix with two empty labels matrices'''
 
-        module = U.UntangleWorms()
-        result = module.make_incidence_matrix(np.zeros((10, 20), int), 0,
-                                              np.zeros((10, 20), int), 0)
+        module = cellprofiler.modules.untangleworms.UntangleWorms()
+        result = module.make_incidence_matrix(numpy.zeros((10, 20), int), 0,
+                                              numpy.zeros((10, 20), int), 0)
         self.assertEqual(tuple(result.shape), (0, 0))
 
     def test_04_01_make_incidence_matrix_of_things_that_do_not_touch(self):
-        module = U.UntangleWorms()
-        L1 = np.zeros((10, 20), int)
-        L2 = np.zeros((10, 20), int)
+        module = cellprofiler.modules.untangleworms.UntangleWorms()
+        L1 = numpy.zeros((10, 20), int)
+        L2 = numpy.zeros((10, 20), int)
         L1[5, 5] = 1
         L2[5, 15] = 1
         result = module.make_incidence_matrix(L1, 1, L2, 1)
         self.assertEqual(tuple(result.shape), (1, 1))
-        self.assertTrue(np.all(~result))
+        self.assertTrue(numpy.all(~result))
 
     def test_04_02_make_incidence_matrix_of_things_that_touch(self):
-        module = U.UntangleWorms()
-        L1 = np.zeros((10, 20), int)
-        L2 = np.zeros((10, 20), int)
+        module = cellprofiler.modules.untangleworms.UntangleWorms()
+        L1 = numpy.zeros((10, 20), int)
+        L2 = numpy.zeros((10, 20), int)
         L1[5, 5] = 1
         for i2, j2 in ((4, 4), (4, 5), (4, 6), (5, 4), (5, 6), (6, 4), (6, 5), (6, 6)):
             L2[i2, j2] = 1
             result = module.make_incidence_matrix(L1, 1, L2, 1)
             self.assertEqual(tuple(result.shape), (1, 1))
-            self.assertTrue(np.all(result))
+            self.assertTrue(numpy.all(result))
 
     def test_04_03_make_incidence_matrix_of_many_things(self):
-        module = U.UntangleWorms()
-        L1 = np.zeros((10, 20), int)
-        L2 = np.zeros((10, 20), int)
+        module = cellprofiler.modules.untangleworms.UntangleWorms()
+        L1 = numpy.zeros((10, 20), int)
+        L2 = numpy.zeros((10, 20), int)
         L1[2, 1:5] = 1
         L1[4, 6:10] = 2
         L1[6, 11:15] = 3
@@ -2412,7 +2413,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         L2[5, 10] = 3
         L2[6, 15] = 4
         L2[1, 15] = 5
-        expected = np.zeros((5, 5), bool)
+        expected = numpy.zeros((5, 5), bool)
         expected[0, 0] = True
         expected[0, 1] = True
         expected[1, 1] = True
@@ -2424,23 +2425,23 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         expected[4, 4] = True
         expected[4, 0] = True
         result = module.make_incidence_matrix(L1, 5, L2, 5)
-        self.assertTrue(np.all(result == expected))
+        self.assertTrue(numpy.all(result == expected))
 
     def test_05_00_get_all_paths_recur_none(self):
-        module = U.UntangleWorms()
+        module = cellprofiler.modules.untangleworms.UntangleWorms()
 
         class Result(object):
             def __init__(self):
                 self.branch_areas = []
                 self.segments = []
-                self.incidence_matrix = np.zeros((0, 0), bool)
+                self.incidence_matrix = numpy.zeros((0, 0), bool)
                 self.segment_lengths = []
 
         paths_list = list(module.get_all_paths_recur(Result(), [], [], 0, 0, 1000))
         self.assertEqual(len(paths_list), 0)
 
     def test_05_01_get_all_paths_recur_one(self):
-        module = U.UntangleWorms()
+        module = cellprofiler.modules.untangleworms.UntangleWorms()
 
         #
         # Branch # 0 connects segment 0 and segment 1
@@ -2449,9 +2450,9 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
             def __init__(self):
                 self.incident_branch_areas = [[0], [0]]
                 self.incident_segments = [[0, 1]]
-                self.segments = [np.zeros((2, 1)), np.zeros((2, 1))]
+                self.segments = [numpy.zeros((2, 1)), numpy.zeros((2, 1))]
                 self.segment_lengths = [1, 1]
-                self.incidence_directions = np.array([[False, True]])
+                self.incidence_directions = numpy.array([[False, True]])
 
         paths_list = list(module.get_all_paths_recur(
                 Result(), [0], [[0]], 1, 0, 1000))
@@ -2462,7 +2463,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         self.assertEqual(tuple(path.branch_areas), (0,))
 
     def test_05_02_get_all_paths_recur_depth_two(self):
-        module = U.UntangleWorms()
+        module = cellprofiler.modules.untangleworms.UntangleWorms()
 
         #
         # Branch # 0 connects segment 0 and segment 1
@@ -2472,10 +2473,10 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
             def __init__(self):
                 self.incident_branch_areas = [[0], [0, 1], [1]]
                 self.incident_segments = [[0, 1], [1, 2]]
-                self.segments = [np.zeros((2, 1)), np.zeros((2, 1))] * 3
+                self.segments = [numpy.zeros((2, 1)), numpy.zeros((2, 1))] * 3
                 self.segment_lengths = [1, 1, 1]
-                self.incidence_directions = np.array([[False, True, False],
-                                                      [False, True, False]])
+                self.incidence_directions = numpy.array([[False, True, False],
+                                                         [False, True, False]])
 
         paths_list = list(module.get_all_paths_recur(Result(), [0], [[0]],
                                                      1, 0, 1000))
@@ -2486,7 +2487,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         self.assertEqual(sorted_list, expected)
 
     def test_05_03_get_all_paths_recur_many(self):
-        module = U.UntangleWorms()
+        module = cellprofiler.modules.untangleworms.UntangleWorms()
 
         #
         # A hopeless tangle where all branches connect to all segments
@@ -2495,9 +2496,9 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
             def __init__(self):
                 self.incident_branch_areas = [list(range(3))] * 4
                 self.incident_segments = [list(range(4))] * 3
-                self.segments = [(np.zeros((2, 1)), np.zeros((2, 1)))] * 4
+                self.segments = [(numpy.zeros((2, 1)), numpy.zeros((2, 1)))] * 4
                 self.segment_lengths = [1] * 4
-                self.incidence_directions = np.ones((3, 4), bool)
+                self.incidence_directions = numpy.ones((3, 4), bool)
 
         paths_list = module.get_all_paths_recur(Result(),
                                                 [0], [[i] for i in range(3)],
@@ -2534,25 +2535,25 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         self.assertEqual(sorted_list, expected)
 
     def test_06_00_get_all_paths_none(self):
-        module = U.UntangleWorms()
+        module = cellprofiler.modules.untangleworms.UntangleWorms()
 
         class Result(object):
             def __init__(self):
                 self.branch_areas = []
                 self.segments = []
-                self.incidence_matrix = np.zeros((0, 0), bool)
+                self.incidence_matrix = numpy.zeros((0, 0), bool)
 
         path_list = list(module.get_all_paths(Result(), 0, 1000))
         self.assertEqual(len(path_list), 0)
 
     def test_06_01_get_all_paths_one(self):
-        module = U.UntangleWorms()
+        module = cellprofiler.modules.untangleworms.UntangleWorms()
 
         class Result(object):
             def __init__(self):
                 self.branch_areas = []
-                self.segments = [[np.zeros((1, 2)), np.zeros((1, 2))]]
-                self.incidence_matrix = np.zeros((0, 1), bool)
+                self.segments = [[numpy.zeros((1, 2)), numpy.zeros((1, 2))]]
+                self.incidence_matrix = numpy.zeros((0, 1), bool)
                 self.incidence_directions = [[True, False]]
 
         path_list = list(module.get_all_paths(Result(), 0, 1000))
@@ -2563,14 +2564,14 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         self.assertEqual(len(path.branch_areas), 0)
 
     def test_06_02_get_all_paths_two_segments(self):
-        module = U.UntangleWorms()
+        module = cellprofiler.modules.untangleworms.UntangleWorms()
 
         class Result(object):
             def __init__(self):
                 self.branch_areas = [1]
-                self.segments = [[np.zeros((1, 2)), np.zeros((1, 2))]] * 2
-                self.incidence_matrix = np.ones((1, 2), bool)
-                self.incidence_directions = np.array([[True, False]])
+                self.segments = [[numpy.zeros((1, 2)), numpy.zeros((1, 2))]] * 2
+                self.incidence_matrix = numpy.ones((1, 2), bool)
+                self.incidence_directions = numpy.array([[True, False]])
 
         path_list = list(module.get_all_paths(Result(), 0, 1000))
         self.assertEqual(len(path_list), 3)
@@ -2582,17 +2583,17 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         self.assertEqual(sorted_list, expected)
 
     def test_06_03_get_all_paths_many(self):
-        module = U.UntangleWorms()
-        np.random.seed(63)
+        module = cellprofiler.modules.untangleworms.UntangleWorms()
+        numpy.random.seed(63)
 
         class Result(object):
             def __init__(self):
                 self.branch_areas = [0, 1, 2]
-                self.segments = [[np.zeros((1, 2)), np.zeros((1, 2))]] * 4
-                self.incidence_directions = np.random.uniform(size=(3, 4)) > .25
+                self.segments = [[numpy.zeros((1, 2)), numpy.zeros((1, 2))]] * 4
+                self.incidence_directions = numpy.random.uniform(size=(3, 4)) > .25
                 self.incidence_matrix = (
                     self.incidence_directions |
-                    (np.random.uniform(size=(3, 4)) > .25))
+                    (numpy.random.uniform(size=(3, 4)) > .25))
 
         graph = Result()
         path_list = module.get_all_paths(graph, 0, 1000)
@@ -2606,9 +2607,9 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
                     self.assertTrue(graph.incidence_matrix[branch_area, next])
 
     def test_07_01_sample_control_points(self):
-        module = U.UntangleWorms()
-        path_coords = np.random.randint(0, 20, size=(11, 2))
-        distances = np.linspace(0.0, 10.0, 11)
+        module = cellprofiler.modules.untangleworms.UntangleWorms()
+        path_coords = numpy.random.randint(0, 20, size=(11, 2))
+        distances = numpy.linspace(0.0, 10.0, 11)
         result = module.sample_control_points(path_coords, distances, 6)
         self.assertEqual(len(result), 6)
         self.assertEqual(tuple(path_coords[0]), tuple(result[0]))
@@ -2617,23 +2618,23 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
             self.assertEqual(tuple(path_coords[i * 2]), tuple(result[i]))
 
     def test_07_02_sample_non_linear_control_points(self):
-        module = U.UntangleWorms()
-        path_coords = np.array([np.arange(11)] * 2).transpose()
-        distances = np.sqrt(np.arange(11))
+        module = cellprofiler.modules.untangleworms.UntangleWorms()
+        path_coords = numpy.array([numpy.arange(11)] * 2).transpose()
+        distances = numpy.sqrt(numpy.arange(11))
         result = module.sample_control_points(path_coords, distances, 6)
-        self.assertTrue(np.all(result[:, 0] >= np.linspace(0.0, 1.0, 6) ** 2 * 10))
-        self.assertTrue(np.all(result[:, 0] < np.linspace(0.0, 1.0, 6) ** 2 * 10 + .5))
+        self.assertTrue(numpy.all(result[:, 0] >= numpy.linspace(0.0, 1.0, 6) ** 2 * 10))
+        self.assertTrue(numpy.all(result[:, 0] < numpy.linspace(0.0, 1.0, 6) ** 2 * 10 + .5))
 
     def test_07_03_only_two_sample_points(self):
-        module = U.UntangleWorms()
-        path_coords = np.array([[0, 0], [1, 2]])
-        distances = np.array([0, 5])
+        module = cellprofiler.modules.untangleworms.UntangleWorms()
+        path_coords = numpy.array([[0, 0], [1, 2]])
+        distances = numpy.array([0, 5])
         result = module.sample_control_points(path_coords, distances, 6)
-        np.testing.assert_almost_equal(result[:, 0], np.linspace(0, 1, 6))
-        np.testing.assert_almost_equal(result[:, 1], np.linspace(0, 2, 6))
+        numpy.testing.assert_almost_equal(result[:, 0], numpy.linspace(0, 1, 6))
+        numpy.testing.assert_almost_equal(result[:, 1], numpy.linspace(0, 2, 6))
 
     def test_08_00_worm_descriptor_building_none(self):
-        module = U.UntangleWorms()
+        module = cellprofiler.modules.untangleworms.UntangleWorms()
         params = self.make_params(
                 dict(worm_radius=5,
                      num_control_points=20))
@@ -2641,125 +2642,125 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         self.assertEqual(len(result), 0)
 
     def test_08_01_worm_descriptor_building_one(self):
-        module = U.UntangleWorms()
+        module = cellprofiler.modules.untangleworms.UntangleWorms()
         params = self.make_params(
-                dict(radii_from_training=np.array([5, 5, 5]),
+                dict(radii_from_training=numpy.array([5, 5, 5]),
                      num_control_points=3))
         result, _, _, _, _ = module.worm_descriptor_building(
-                [np.array([[10, 15], [20, 25]])], params, (40, 50))
-        expected = np.zeros((40, 50), bool)
-        expected[np.arange(10, 21), np.arange(15, 26)] = True
-        ii, jj = np.mgrid[-5:6, -5:6]
-        expected = binary_dilation(expected, ii * ii + jj * jj <= 25)
-        expected = np.argwhere(expected)
-        eorder = np.lexsort((expected[:, 0], expected[:, 1]))
-        rorder = np.lexsort((result[:, 0], result[:, 1]))
-        self.assertTrue(np.all(result[:, 2] == 1))
+                [numpy.array([[10, 15], [20, 25]])], params, (40, 50))
+        expected = numpy.zeros((40, 50), bool)
+        expected[numpy.arange(10, 21), numpy.arange(15, 26)] = True
+        ii, jj = numpy.mgrid[-5:6, -5:6]
+        expected = scipy.ndimage.binary_dilation(expected, ii * ii + jj * jj <= 25)
+        expected = numpy.argwhere(expected)
+        eorder = numpy.lexsort((expected[:, 0], expected[:, 1]))
+        rorder = numpy.lexsort((result[:, 0], result[:, 1]))
+        self.assertTrue(numpy.all(result[:, 2] == 1))
         self.assertEqual(len(expected), len(result))
-        self.assertTrue(np.all(result[rorder, :2] == expected[eorder, :]))
+        self.assertTrue(numpy.all(result[rorder, :2] == expected[eorder, :]))
 
     def test_08_02_worm_descriptor_building_oob(self):
         '''Test performance if part of the worm is out of bounds'''
-        module = U.UntangleWorms()
+        module = cellprofiler.modules.untangleworms.UntangleWorms()
         params = self.make_params(
-                dict(radii_from_training=np.array([5, 5, 5]),
+                dict(radii_from_training=numpy.array([5, 5, 5]),
                      num_control_points=3))
         result, _, _, _, _ = module.worm_descriptor_building(
-                [np.array([[1, 15], [11, 25]])], params, (40, 27))
-        expected = np.zeros((40, 27), bool)
-        expected[np.arange(1, 12), np.arange(15, 26)] = True
-        ii, jj = np.mgrid[-5:6, -5:6]
-        expected = binary_dilation(expected, ii * ii + jj * jj <= 25)
-        expected = np.argwhere(expected)
-        eorder = np.lexsort((expected[:, 0], expected[:, 1]))
-        rorder = np.lexsort((result[:, 0], result[:, 1]))
-        self.assertTrue(np.all(result[:, 2] == 1))
+                [numpy.array([[1, 15], [11, 25]])], params, (40, 27))
+        expected = numpy.zeros((40, 27), bool)
+        expected[numpy.arange(1, 12), numpy.arange(15, 26)] = True
+        ii, jj = numpy.mgrid[-5:6, -5:6]
+        expected = scipy.ndimage.binary_dilation(expected, ii * ii + jj * jj <= 25)
+        expected = numpy.argwhere(expected)
+        eorder = numpy.lexsort((expected[:, 0], expected[:, 1]))
+        rorder = numpy.lexsort((result[:, 0], result[:, 1]))
+        self.assertTrue(numpy.all(result[:, 2] == 1))
         self.assertEqual(len(expected), len(result))
-        self.assertTrue(np.all(result[rorder, :2] == expected[eorder, :]))
+        self.assertTrue(numpy.all(result[rorder, :2] == expected[eorder, :]))
 
     def test_08_03_worm_descriptor_building_two(self):
         '''Test rebuilding two worms'''
 
-        module = U.UntangleWorms()
+        module = cellprofiler.modules.untangleworms.UntangleWorms()
         params = self.make_params(
-                dict(radii_from_training=np.array([5, 5, 5]),
+                dict(radii_from_training=numpy.array([5, 5, 5]),
                      num_control_points=3))
         result, _, _, _, _ = module.worm_descriptor_building(
-                [np.array([[10, 15], [20, 25]]),
-                 np.array([[10, 25], [20, 15]])], params, (40, 50))
-        expected = np.zeros((40, 50), bool)
-        expected[np.arange(10, 21), np.arange(15, 26)] = True
-        ii, jj = np.mgrid[-5:6, -5:6]
-        expected = binary_dilation(expected, ii * ii + jj * jj <= 25)
-        epoints = np.argwhere(expected)
-        elabels = np.ones(len(epoints), int)
+                [numpy.array([[10, 15], [20, 25]]),
+                 numpy.array([[10, 25], [20, 15]])], params, (40, 50))
+        expected = numpy.zeros((40, 50), bool)
+        expected[numpy.arange(10, 21), numpy.arange(15, 26)] = True
+        ii, jj = numpy.mgrid[-5:6, -5:6]
+        expected = scipy.ndimage.binary_dilation(expected, ii * ii + jj * jj <= 25)
+        epoints = numpy.argwhere(expected)
+        elabels = numpy.ones(len(epoints), int)
 
-        expected = np.zeros((40, 50), bool)
-        expected[np.arange(10, 21), np.arange(25, 14, -1)] = True
-        expected = binary_dilation(expected, ii * ii + jj * jj <= 25)
-        epoints = np.vstack((epoints, np.argwhere(expected)))
-        elabels = np.hstack((elabels, np.ones(np.sum(expected), int) * 2))
+        expected = numpy.zeros((40, 50), bool)
+        expected[numpy.arange(10, 21), numpy.arange(25, 14, -1)] = True
+        expected = scipy.ndimage.binary_dilation(expected, ii * ii + jj * jj <= 25)
+        epoints = numpy.vstack((epoints, numpy.argwhere(expected)))
+        elabels = numpy.hstack((elabels, numpy.ones(numpy.sum(expected), int) * 2))
 
-        eorder = np.lexsort((epoints[:, 0], epoints[:, 1]))
-        rorder = np.lexsort((result[:, 0], result[:, 1]))
+        eorder = numpy.lexsort((epoints[:, 0], epoints[:, 1]))
+        rorder = numpy.lexsort((result[:, 0], result[:, 1]))
         self.assertEqual(len(epoints), len(result))
-        self.assertTrue(np.all(result[rorder, 2] == elabels[eorder]))
-        self.assertTrue(np.all(result[rorder, :2] == epoints[eorder]))
+        self.assertTrue(numpy.all(result[rorder, 2] == elabels[eorder]))
+        self.assertTrue(numpy.all(result[rorder, :2] == epoints[eorder]))
 
     def test_09_01_fast_selection_two(self):
-        module = U.UntangleWorms()
-        costs = np.array([1, 1])
-        path_segment_matrix = np.array([[True, False],
-                                        [False, True]])
-        segment_lengths = np.array([5, 5])
+        module = cellprofiler.modules.untangleworms.UntangleWorms()
+        costs = numpy.array([1, 1])
+        path_segment_matrix = numpy.array([[True, False],
+                                           [False, True]])
+        segment_lengths = numpy.array([5, 5])
         best_paths, best_cost = module.fast_selection(
                 costs, path_segment_matrix, segment_lengths, 1, 1, 10000)
         self.assertEqual(tuple(best_paths), (0, 1))
         self.assertEqual(best_cost, 2)
 
     def test_09_02_fast_selection_overlap(self):
-        module = U.UntangleWorms()
-        costs = np.array([1, 1, 10])
-        path_segment_matrix = np.array([[True, False, True],
-                                        [True, True, True],
-                                        [False, True, True]])
-        segment_lengths = np.array([5, 3, 5])
+        module = cellprofiler.modules.untangleworms.UntangleWorms()
+        costs = numpy.array([1, 1, 10])
+        path_segment_matrix = numpy.array([[True, False, True],
+                                           [True, True, True],
+                                           [False, True, True]])
+        segment_lengths = numpy.array([5, 3, 5])
         best_paths, best_cost = module.fast_selection(
                 costs, path_segment_matrix, segment_lengths, 2, 5, 10000)
         self.assertEqual(tuple(best_paths), (0, 1))
         self.assertEqual(best_cost, 2 + 3 * 2)
 
     def test_09_03_fast_selection_gap(self):
-        module = U.UntangleWorms()
-        costs = np.array([1, 1, 10])
-        path_segment_matrix = np.array([[True, False, True],
-                                        [False, False, True],
-                                        [False, True, True]])
-        segment_lengths = np.array([5, 3, 5])
+        module = cellprofiler.modules.untangleworms.UntangleWorms()
+        costs = numpy.array([1, 1, 10])
+        path_segment_matrix = numpy.array([[True, False, True],
+                                           [False, False, True],
+                                           [False, True, True]])
+        segment_lengths = numpy.array([5, 3, 5])
         best_paths, best_cost = module.fast_selection(
                 costs, path_segment_matrix, segment_lengths, 5, 2, 10000)
         self.assertEqual(tuple(best_paths), (0, 1))
         self.assertEqual(best_cost, 2 + 3 * 2)
 
     def test_09_04_fast_selection_no_overlap(self):
-        module = U.UntangleWorms()
-        costs = np.array([1, 1, 7])
-        path_segment_matrix = np.array([[True, False, True],
-                                        [True, True, True],
-                                        [False, True, True]])
-        segment_lengths = np.array([5, 3, 5])
+        module = cellprofiler.modules.untangleworms.UntangleWorms()
+        costs = numpy.array([1, 1, 7])
+        path_segment_matrix = numpy.array([[True, False, True],
+                                           [True, True, True],
+                                           [False, True, True]])
+        segment_lengths = numpy.array([5, 3, 5])
         best_paths, best_cost = module.fast_selection(
                 costs, path_segment_matrix, segment_lengths, 2, 5, 10000)
         self.assertEqual(tuple(best_paths), (2,))
         self.assertEqual(best_cost, 7)
 
     def test_09_05_fast_selection_no_gap(self):
-        module = U.UntangleWorms()
-        costs = np.array([1, 1, 7])
-        path_segment_matrix = np.array([[True, False, True],
-                                        [False, False, True],
-                                        [False, True, True]])
-        segment_lengths = np.array([5, 3, 5])
+        module = cellprofiler.modules.untangleworms.UntangleWorms()
+        costs = numpy.array([1, 1, 7])
+        path_segment_matrix = numpy.array([[True, False, True],
+                                           [False, False, True],
+                                           [False, True, True]])
+        segment_lengths = numpy.array([5, 3, 5])
         best_paths, best_cost = module.fast_selection(
                 costs, path_segment_matrix, segment_lengths, 5, 2, 10000)
         self.assertEqual(tuple(best_paths), (2,))
@@ -2768,20 +2769,20 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
     def test_10_01_A02(self):
         params = zlib.decompress(base64.b64decode(PARAMS))
         workspace, module = self.make_workspace(self.A02_image, params)
-        self.assertTrue(isinstance(module, U.UntangleWorms))
+        self.assertTrue(isinstance(module, cellprofiler.modules.untangleworms.UntangleWorms))
         module.prepare_group(workspace, None, None)
         module.wants_training_set_weights.value = False
         module.override_leftover_weight.value = 6
         module.override_overlap_weight.value = 3
         module.run(workspace)
         object_set = workspace.object_set
-        self.assertTrue(isinstance(object_set, cpo.Set))
+        self.assertTrue(isinstance(object_set, cellprofiler.region.Set))
         worms = object_set.get_objects(OVERLAP_OBJECTS_NAME)
-        self.assertTrue(isinstance(worms, cpo.Region))
+        self.assertTrue(isinstance(worms, cellprofiler.region.Region))
         worm_ijv = worms.get_ijv()
-        self.assertEqual(np.max(worm_ijv[:, 2]), 15)
+        self.assertEqual(numpy.max(worm_ijv[:, 2]), 15)
         m = workspace.measurements
-        assert isinstance(m, cpmeas.Measurements)
+        assert isinstance(m, cellprofiler.measurement.Measurements)
         ocount = m.get_current_image_measurement("Count_" + OVERLAP_OBJECTS_NAME)
         self.assertEqual(ocount, 15)
         ncount = m.get_current_image_measurement("Count_" + NON_OVERLAPPING_OBJECTS_NAME)
@@ -2794,7 +2795,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
     def test_10_02_nonoverlapping_outlines(self):
         params = zlib.decompress(base64.b64decode(PARAMS))
         workspace, module = self.make_workspace(self.A02_image, params)
-        self.assertTrue(isinstance(module, U.UntangleWorms))
+        self.assertTrue(isinstance(module, cellprofiler.modules.untangleworms.UntangleWorms))
         module.prepare_group(workspace, None, None)
         module.wants_training_set_weights.value = False
         module.override_leftover_weight.value = 6
@@ -2803,16 +2804,16 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         module.nonoverlapping_outlines_name.value = NON_OVERLAPPING_OUTLINES_NAME
         module.run(workspace)
         object_set = workspace.object_set
-        self.assertTrue(isinstance(object_set, cpo.Set))
+        self.assertTrue(isinstance(object_set, cellprofiler.region.Set))
         worms = object_set.get_objects(NON_OVERLAPPING_OBJECTS_NAME).segmented
         outlines = workspace.image_set.get_image(NON_OVERLAPPING_OUTLINES_NAME).pixel_data
-        expected = outline(worms) > 0
-        self.assertTrue(np.all(outlines == expected))
+        expected = centrosome.outline.outline(worms) > 0
+        self.assertTrue(numpy.all(outlines == expected))
 
     def test_10_03_overlapping_outlines(self):
         params = zlib.decompress(base64.b64decode(PARAMS))
         workspace, module = self.make_workspace(self.A02_image, params)
-        self.assertTrue(isinstance(module, U.UntangleWorms))
+        self.assertTrue(isinstance(module, cellprofiler.modules.untangleworms.UntangleWorms))
         module.prepare_group(workspace, None, None)
         module.wants_training_set_weights.value = False
         module.override_leftover_weight.value = 6
@@ -2821,25 +2822,25 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         module.overlapping_outlines_name.value = OVERLAPPING_OUTLINES_NAME
         module.run(workspace)
         object_set = workspace.object_set
-        self.assertTrue(isinstance(object_set, cpo.Set))
+        self.assertTrue(isinstance(object_set, cellprofiler.region.Set))
         worms = object_set.get_objects(OVERLAP_OBJECTS_NAME)
         outlines = workspace.image_set.get_image(OVERLAPPING_OUTLINES_NAME).pixel_data
-        outlines = np.sum(outlines, 2) > 0  # crunch color dimension
+        outlines = numpy.sum(outlines, 2) > 0  # crunch color dimension
         i, j, v = worms.ijv.transpose()
-        expected = np.zeros(outlines.shape, bool)
+        expected = numpy.zeros(outlines.shape, bool)
         expected[i, j] = True
         # all outlines are in some object...
-        self.assertTrue(np.all(expected[outlines]))
+        self.assertTrue(numpy.all(expected[outlines]))
 
     def test_11_01_train_dot(self):
         # Test training a single pixel
         # Regression test of bugs regarding this case
         #
-        image = np.zeros((10, 20), bool)
+        image = numpy.zeros((10, 20), bool)
         image[5, 10] = True
         workspace, module = self.make_workspace(image)
-        self.assertTrue(isinstance(module, U.UntangleWorms))
-        module.mode.value = U.MODE_TRAIN
+        self.assertTrue(isinstance(module, cellprofiler.modules.untangleworms.UntangleWorms))
+        module.mode.value = cellprofiler.modules.untangleworms.MODE_TRAIN
         module.prepare_group(workspace, None, None)
         module.run(workspace)
 
@@ -2848,12 +2849,12 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         # Regression test of img-1541, branch_areas_binary is not zero
         # but segments_binary is
         #
-        module = U.UntangleWorms()
+        module = cellprofiler.modules.untangleworms.UntangleWorms()
         i, j, labels, segment_order, distances, num_segments = \
-            module.trace_segments(np.zeros((10, 13), bool))
+            module.trace_segments(numpy.zeros((10, 13), bool))
         self.assertEqual(len(i), 0)
         self.assertEqual(len(j), 0)
-        np.testing.assert_equal(labels, 0)
+        numpy.testing.assert_equal(labels, 0)
         self.assertEqual(len(segment_order), 0)
         self.assertEqual(len(distances), 0)
         self.assertEqual(num_segments, 0)
@@ -2863,11 +2864,11 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         # Regression test of img-1541, branch_areas_binary is not zero
         # but segments_binary is
         #
-        module = U.UntangleWorms()
-        branch_areas = np.zeros((31, 15), bool)
+        module = cellprofiler.modules.untangleworms.UntangleWorms()
+        branch_areas = numpy.zeros((31, 15), bool)
         branch_areas[7:25, 7:10] = True
         result = module.get_graph_from_branching_areas_and_segments(
-                branch_areas, np.zeros(branch_areas.shape, bool))
+                branch_areas, numpy.zeros(branch_areas.shape, bool))
         self.assertEqual(tuple(branch_areas.shape), result.image_size)
         self.assertEqual(len(result.segment_coords), 0)
         self.assertEqual(len(result.segment_counts), 0)
@@ -2875,20 +2876,20 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         self.assertEqual(len(result.segments), 0)
 
     def test_13_01_recalculate_single_worm_control_points(self):
-        i, j = np.mgrid[0:10, 0:10]
+        i, j = numpy.mgrid[0:10, 0:10]
         l0 = ((i == 3) & (j >= 2) & (j <= 6)).astype(int)
         l0[(i == 7) & (j >= 3) & (j <= 7)] = 3
 
         l1 = ((j == 3) & (i >= 2) & (i <= 6)).astype(int) * 2
         l1[(j == 7) & (i >= 3) & (i <= 7)] = 4
 
-        expected = np.array((
+        expected = numpy.array((
             ((3, 2), (3, 4), (3, 6)),
             ((2, 3), (4, 3), (6, 3)),
             ((7, 3), (7, 5), (7, 7)),
             ((3, 7), (5, 7), (7, 7))))
 
-        result, lengths = U.recalculate_single_worm_control_points([l0, l1], 3)
+        result, lengths = cellprofiler.modules.untangleworms.recalculate_single_worm_control_points([l0, l1], 3)
         self.assertEqual(tuple(result.shape), (4, 3, 2))
         self.assertEqual(len(lengths), 4)
         # Flip any worms that aren't ordered canonically
@@ -2896,12 +2897,12 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
             if tuple(result[i, -1, :]) < tuple(result[i, 0, :]):
                 result[i, :, :] = result[i, ::-1, :]
 
-        self.assertTrue(np.all(lengths == 4))
-        np.testing.assert_array_equal(expected, result)
+        self.assertTrue(numpy.all(lengths == 4))
+        numpy.testing.assert_array_equal(expected, result)
 
     def test_13_02_recalculate_single_worm_control_points_no_objects(self):
         # regression test of issue #930
-        result, lengths = U.recalculate_single_worm_control_points(
-                [np.zeros((10, 15), int)], 3)
+        result, lengths = cellprofiler.modules.untangleworms.recalculate_single_worm_control_points(
+                [numpy.zeros((10, 15), int)], 3)
         self.assertEqual(tuple(result.shape), (0, 3, 2))
         self.assertEqual(len(lengths), 0)

@@ -160,7 +160,7 @@ class Image(object):
 
     @property
     def has_crop_mask(self):
-        '''True if the image or its ancestors has a crop mask'''
+        """True if the image or its ancestors has a crop mask"""
         return (self.__crop_mask is not None or self.has_masking_objects or (self.has_parent_image and self.parent.has_crop_mask))
 
     def crop_image_similarly(self, image):
@@ -444,10 +444,10 @@ class ImageSetList(object):
 
     @property
     def associating_by_key(self):
-        '''True if some image set has been added with a key instead of a number
+        """True if some image set has been added with a key instead of a number
 
         This will return "None" if no association has been done.
-        '''
+        """
         return self.__associating_by_key
 
     def count(self):
@@ -503,6 +503,6 @@ class ImageSetList(object):
 
 
 def make_dictionary_key(key):
-    '''Make a dictionary into a stable key for another dictionary'''
+    """Make a dictionary into a stable key for another dictionary"""
     return u", ".join([u":".join([unicode(y) for y in x]) for x in sorted(key.iteritems())])
 

@@ -49,10 +49,10 @@ class HeadlessConfig(object):
         return self.__preferences.has_key(kwd)
 
     def GetEntryType(self, kwd):
-        '''Get the data type of the registry key.
+        """Get the data type of the registry key.
 
         Returns wx.Config.Type_String = 1
-        '''
+        """
         return 1
 
 
@@ -73,7 +73,7 @@ __awt_headless = None
 
 
 def set_awt_headless(value):
-    '''Tell the Javabridge to start Java with AWT headless or not
+    """Tell the Javabridge to start Java with AWT headless or not
 
     value - True to always start Java headless, regardless of headless
             setting or other factors. False to always start Java with
@@ -83,13 +83,13 @@ def set_awt_headless(value):
     If this is not called, Java is started with AWT headless if
     we are headless and the environment variable, CELLPROFILER_USE_XVFB,
     is not present.
-    '''
+    """
     global __awt_headless
     __awt_headless = value
 
 
 def get_awt_headless():
-    '''Return True if Java is to be started with AWT headless, False to use AWT'''
+    """Return True if Java is to be started with AWT headless, False to use AWT"""
     global __awt_headless
     if __awt_headless is None:
         return get_headless() and not os.environ.has_key("CELLPROFILER_USE_XVFB")
@@ -136,7 +136,7 @@ def preferences_as_dict():
 
 
 def set_preferences_from_dict(d):
-    '''Set the preferences by faking the configuration cache'''
+    """Set the preferences by faking the configuration cache"""
     global __cached_values
     __cached_values = d.copy()
     #
@@ -162,14 +162,14 @@ __cached_values = {}
 
 
 def config_read(key):
-    '''Read the given configuration value
+    """Read the given configuration value
 
     Only read from the registry once. This is both technically efficient
     and keeps parallel running instances of CellProfiler from overwriting
     each other's values for things like the current output directory.
 
     Decode escaped config sequences too.
-    '''
+    """
     global __cached_values
     if not __is_headless:
         #
@@ -205,10 +205,10 @@ def config_read(key):
 
 
 def config_write(key, value):
-    '''Write the given configuration value
+    """Write the given configuration value
 
     Encode escaped config sequences.
-    '''
+    """
     if not __is_headless:
         #
         # Keeps popup box from appearing during testing I hope
@@ -222,7 +222,7 @@ def config_write(key, value):
 
 
 def config_exists(key):
-    '''Return True if the key is defined in the configuration'''
+    """Return True if the key is defined in the configuration"""
     global __cached_values
     if key in __cached_values and __cached_values[key] is not None:
         return True
@@ -477,7 +477,7 @@ def set_default_image_directory(path):
 
 
 def fire_image_directory_changed_event():
-    '''Notify listeners of a image directory change'''
+    """Notify listeners of a image directory change"""
     global __default_image_directory
     for listener in __image_directory_listeners:
         listener(PreferenceChangedEvent(__default_image_directory))
@@ -628,7 +628,7 @@ __error_color = None
 
 
 def get_error_color():
-    '''Get the color to be used for error text'''
+    """Get the color to be used for error text"""
     global __error_color
     #
     # Red found here:
@@ -651,10 +651,10 @@ def get_error_color():
 
 
 def set_error_color(color):
-    '''Set the color to be used for error text
+    """Set the color to be used for error text
 
     color - a WX color or ducktyped
-    '''
+    """
     global __error_color
     config_write(ERROR_COLOR,
                  ','.join([str(x) for x in color.Get()]))
@@ -739,7 +739,7 @@ def get_absolute_path(path, abspath_mode=ABSPATH_IMAGE):
 
 
 def is_url_path(path):
-    '''Return True if the path should be treated as a URL'''
+    """Return True if the path should be treated as a URL"""
     for protocol in ('http', 'https', 'ftp'):
         if path.lower().startswith('%s:' % protocol):
             return True
@@ -893,7 +893,7 @@ __data_file = None
 
 
 def get_data_file():
-    '''Get the path to the LoadData data file specified on the command-line'''
+    """Get the path to the LoadData data file specified on the command-line"""
     global __data_file
     return __data_file
 
@@ -937,9 +937,9 @@ def reset_cpfigure_position():
 
 
 def update_cpfigure_position():
-    '''Called by get_next_cpfigure_position to update the screen position at
+    """Called by get_next_cpfigure_position to update the screen position at
     which the next figure frame will be drawn.
-    '''
+    """
     global __cpfigure_position
     import wx
     win_size = (600, 400)
@@ -1007,7 +1007,7 @@ __has_reported_jvm_error = False
 
 
 def get_report_jvm_error():
-    '''Return true if user still wants to report a JVM error'''
+    """Return true if user still wants to report a JVM error"""
     if __has_reported_jvm_error:
         return False
     if not config_exists(JVM_ERROR):
@@ -1020,7 +1020,7 @@ def set_report_jvm_error(should_report):
 
 
 def set_has_reported_jvm_error():
-    '''Call this to remember that we showed the user the JVM error'''
+    """Call this to remember that we showed the user the JVM error"""
     global __has_reported_jvm_error
     __has_reported_jvm_error = True
 
@@ -1029,10 +1029,10 @@ __allow_output_file_overwrite = None
 
 
 def get_allow_output_file_overwrite():
-    '''Return true if the user wants to allow CP to overwrite the output file
+    """Return true if the user wants to allow CP to overwrite the output file
 
     This is the .MAT output file, typically Default_OUT.mat
-    '''
+    """
     global __allow_output_file_overwrite
     if __allow_output_file_overwrite is not None:
         return __allow_output_file_overwrite
@@ -1042,7 +1042,7 @@ def get_allow_output_file_overwrite():
 
 
 def set_allow_output_file_overwrite(value):
-    '''Allow overwrite of .MAT file if true, warn user if false'''
+    """Allow overwrite of .MAT file if true, warn user if false"""
     global __allow_output_file_overwrite
     __allow_output_file_overwrite = value
     config_write(ALLOW_OUTPUT_FILE_OVERWRITE,
@@ -1054,7 +1054,7 @@ __show_analysis_complete_dlg = None
 
 
 def get_show_analysis_complete_dlg():
-    '''Return true if the user wants to see the "analysis complete" dialog'''
+    """Return true if the user wants to see the "analysis complete" dialog"""
     global __show_analysis_complete_dlg
     if __show_analysis_complete_dlg is not None:
         return __show_analysis_complete_dlg
@@ -1064,7 +1064,7 @@ def get_show_analysis_complete_dlg():
 
 
 def set_show_analysis_complete_dlg(value):
-    '''Set the "show analysis complete" flag'''
+    """Set the "show analysis complete" flag"""
     global __show_analysis_complete_dlg
     __show_analysis_complete_dlg = value
     config_write(SHOW_ANALYSIS_COMPLETE_DLG,
@@ -1076,7 +1076,7 @@ __show_exiting_test_mode_dlg = None
 
 
 def get_show_exiting_test_mode_dlg():
-    '''Return true if the user wants to see the "exiting test mode" dialog'''
+    """Return true if the user wants to see the "exiting test mode" dialog"""
     global __show_exiting_test_mode_dlg
     if __show_exiting_test_mode_dlg is not None:
         return __show_exiting_test_mode_dlg
@@ -1086,7 +1086,7 @@ def get_show_exiting_test_mode_dlg():
 
 
 def set_show_exiting_test_mode_dlg(value):
-    '''Set the "exiting test mode" flag'''
+    """Set the "exiting test mode" flag"""
     global __show_exiting_test_mode_dlg
     __show_exiting_test_mode_dlg = value
     config_write(SHOW_EXITING_TEST_MODE_DLG,
@@ -1098,7 +1098,7 @@ __show_report_bad_sizes_dlg = None
 
 
 def get_show_report_bad_sizes_dlg():
-    '''Return true if the user wants to see the "report bad sizes" dialog'''
+    """Return true if the user wants to see the "report bad sizes" dialog"""
     global __show_report_bad_sizes_dlg
     if __show_report_bad_sizes_dlg is not None:
         return __show_report_bad_sizes_dlg
@@ -1108,7 +1108,7 @@ def get_show_report_bad_sizes_dlg():
 
 
 def set_show_report_bad_sizes_dlg(value):
-    '''Set the "exiting test mode" flag'''
+    """Set the "exiting test mode" flag"""
     global __show_report_bad_sizes_dlg
     __show_report_bad_sizes_dlg = value
     config_write(SHOW_BAD_SIZES_DLG,
@@ -1120,10 +1120,10 @@ __write_MAT_files = None
 
 
 def get_write_MAT_files():
-    '''Determine whether to write measurements in .MAT files, .h5 files or not at all
+    """Determine whether to write measurements in .MAT files, .h5 files or not at all
 
     returns True to write .MAT, WRITE_HDF5 to write .h5 files, False to not write
-    '''
+    """
     global __write_MAT_files
     if __write_MAT_files is not None:
         return __write_MAT_files
@@ -1138,7 +1138,7 @@ def get_write_MAT_files():
 
 
 def set_write_MAT_files(value):
-    '''Set the "Write MAT files" flag'''
+    """Set the "Write MAT files" flag"""
     global __write_MAT_files
     __write_MAT_files = value
     config_write(WRITE_MAT,
@@ -1150,7 +1150,7 @@ __workspace_file = None
 
 
 def get_workspace_file():
-    '''Return the path to the workspace file'''
+    """Return the path to the workspace file"""
     global __workspace_file
     if __workspace_file is not None:
         return __workspace_file
@@ -1161,14 +1161,14 @@ def get_workspace_file():
 
 
 def set_workspace_file(path, permanently=True):
-    '''Set the path to the workspace file
+    """Set the path to the workspace file
 
     path - path to the file
 
     permanently - True to write it to the configuration, False if the file
                   should only be set for the running instance (e.g. as a
                   command-line parameter for a scripted run)
-    '''
+    """
     global __workspace_file
     __workspace_file = path
     if permanently:
@@ -1189,7 +1189,7 @@ __omero_session_id = None
 
 
 def get_omero_server():
-    '''Get the DNS name of the Omero server'''
+    """Get the DNS name of the Omero server"""
     global __omero_server
     if __omero_server is None:
         if not config_exists(OMERO_SERVER):
@@ -1199,7 +1199,7 @@ def get_omero_server():
 
 
 def set_omero_server(omero_server, globally=True):
-    '''Set the DNS name of the Omero server'''
+    """Set the DNS name of the Omero server"""
     global __omero_server
     __omero_server = omero_server
     if globally:
@@ -1207,7 +1207,7 @@ def set_omero_server(omero_server, globally=True):
 
 
 def get_omero_port():
-    '''Get the port used to connect to the Omero server'''
+    """Get the port used to connect to the Omero server"""
     global __omero_port
     if __omero_port is None:
         if not config_exists(OMERO_PORT):
@@ -1220,7 +1220,7 @@ def get_omero_port():
 
 
 def set_omero_port(omero_port, globally=True):
-    '''Set the port used to connect to the Omero server'''
+    """Set the port used to connect to the Omero server"""
     global __omero_port
     __omero_port = omero_port
     if globally:
@@ -1228,7 +1228,7 @@ def set_omero_port(omero_port, globally=True):
 
 
 def get_omero_user():
-    '''Get the Omero user name'''
+    """Get the Omero user name"""
     global __omero_user
     if __omero_user is None:
         if not config_exists(OMERO_USER):
@@ -1238,7 +1238,7 @@ def get_omero_user():
 
 
 def set_omero_user(omero_user, globally=True):
-    '''Set the Omero user name'''
+    """Set the Omero user name"""
     global __omero_user
     __omero_user = omero_user
     if globally:
@@ -1246,7 +1246,7 @@ def set_omero_user(omero_user, globally=True):
 
 
 def get_omero_session_id():
-    '''Get the session ID to use to communicate to Omero'''
+    """Get the session ID to use to communicate to Omero"""
     global __omero_session_id
     if __omero_session_id is None:
         if not config_exists(OMERO_SESSION_ID):
@@ -1256,7 +1256,7 @@ def get_omero_session_id():
 
 
 def set_omero_session_id(omero_session_id, globally=True):
-    '''Set the Omero session ID'''
+    """Set the Omero session ID"""
     global __omero_session_id
     __omero_session_id = omero_session_id
     if globally:
@@ -1274,7 +1274,7 @@ __max_workers = None
 
 
 def get_max_workers():
-    '''Get the maximum number of worker processes allowed during analysis'''
+    """Get the maximum number of worker processes allowed during analysis"""
     global __max_workers
     if __max_workers is not None:
         return __max_workers
@@ -1286,7 +1286,7 @@ def get_max_workers():
 
 
 def set_max_workers(value):
-    '''Set the maximum number of worker processes allowed during analysis'''
+    """Set the maximum number of worker processes allowed during analysis"""
     global __max_workers
     get_config().WriteInt(MAX_WORKERS, value)
     __max_workers = value
@@ -1296,11 +1296,11 @@ __temp_dir = None
 
 
 def get_temporary_directory():
-    '''Get the directory to be used for temporary files
+    """Get the directory to be used for temporary files
 
     The default is whatever is returned by tempfile.gettempdir()
     (see http://docs.python.org/2/library/tempfile.html#tempfile.gettempdir)
-    '''
+    """
     global __temp_dir
     if __temp_dir is not None:
         pass
@@ -1314,10 +1314,10 @@ def get_temporary_directory():
 
 
 def set_temporary_directory(tempdir, globally=False):
-    '''Set the directory to be used for temporary files
+    """Set the directory to be used for temporary files
 
     tempdir - pathname of the directory
-    '''
+    """
     global __temp_dir
     if globally:
         config_write(TEMP_DIR, tempdir)
@@ -1332,10 +1332,10 @@ __interpolation_mode = None
 
 
 def get_interpolation_mode():
-    '''Get the interpolation mode for matplotlib
+    """Get the interpolation mode for matplotlib
 
     Returns one of IM_NEAREST, IM_BILINEAR or IM_BICUBIC
-    '''
+    """
     global __interpolation_mode
     if __interpolation_mode is not None:
         return __interpolation_mode
@@ -1356,10 +1356,10 @@ __intensity_mode = None
 
 
 def get_intensity_mode():
-    '''Get the intensity scaling mode for matplotlib
+    """Get the intensity scaling mode for matplotlib
 
     Returns one of INTENSITY_MODE_RAW, INTENSITY_MODE_NORMAL, INTENSITY_MODE_LOG
-    '''
+    """
     global __intensity_mode
     if __intensity_mode is not None:
         return __intensity_mode
@@ -1371,7 +1371,7 @@ def get_intensity_mode():
 
 
 def set_intensity_mode(value):
-    '''Set the intensity scaling mode for matplotlib'''
+    """Set the intensity scaling mode for matplotlib"""
     global __intensity_mode
     __intensity_mode = value
     config_write(INTENSITY_MODE, value)
@@ -1381,7 +1381,7 @@ __jvm_heap_mb = None
 
 
 def get_jvm_heap_mb():
-    '''Get the JVM heap size'''
+    """Get the JVM heap size"""
     global __jvm_heap_mb
     if __jvm_heap_mb is not None:
         return __jvm_heap_mb
@@ -1397,11 +1397,11 @@ def get_jvm_heap_mb():
 
 
 def set_jvm_heap_mb(value, save_config=True):
-    '''Set the JVM heap size
+    """Set the JVM heap size
 
     value - value in megabytes or as a string with a K/ M or G postifx
     save_config - True to save the value in the configuration, False to set locally
-    '''
+    """
     global __jvm_heap_mb
     try:
         value_mb = int(value)
@@ -1443,18 +1443,18 @@ __allow_schema_write = True
 
 
 def get_allow_schema_write():
-    '''Returns True if ExportToDatabase is allowed to write the MySQL schema
+    """Returns True if ExportToDatabase is allowed to write the MySQL schema
 
     For cluster operation without CreateBatchFiles, it's inappropriate to
     have multiple processes overwrite the database schema. Although
     CreateBatchFiles is suggested for this scenario, we put this switch in
     to support disabling schema writes from the command line.
-    '''
+    """
     return __allow_schema_write
 
 
 def set_allow_schema_write(value):
-    '''Allow or disallow database schema writes
+    """Allow or disallow database schema writes
 
     value - True to allow writes (the default) or False to prevent
             ExportToDatabase from writing the schema.
@@ -1463,7 +1463,7 @@ def set_allow_schema_write(value):
     have multiple processes overwrite the database schema. Although
     CreateBatchFiles is suggested for this scenario, we put this switch in
     to support disabling schema writes from the command line.
-    '''
+    """
     global __allow_schema_write
     __allow_schema_write = value
 
@@ -1472,11 +1472,11 @@ __filename_re_guess_file = None
 
 
 def get_filename_re_guess_file():
-    '''The path to the file that contains filename regular expression guesses
+    """The path to the file that contains filename regular expression guesses
 
     The file given by this preference is an optional file that contains
     possible regular expression patterns to match against file names.
-    '''
+    """
     global __filename_re_guess_file
     if __filename_re_guess_file is None:
         if config_exists(FILENAME_RE_GUESSES_FILE):
@@ -1485,7 +1485,7 @@ def get_filename_re_guess_file():
 
 
 def set_filename_re_guess_file(value):
-    '''Set the path to the filename regular expression guess file'''
+    """Set the path to the filename regular expression guess file"""
     global __filename_re_guess_file
     __filename_re_guess_file = value
     config_write(FILENAME_RE_GUESSES_FILE, value)
@@ -1495,11 +1495,11 @@ __pathname_re_guess_file = None
 
 
 def get_pathname_re_guess_file():
-    '''The path to the file that contains pathname regular expression guesses
+    """The path to the file that contains pathname regular expression guesses
 
     The file given by this preference is an optional file that contains
     possible regular expression patterns to match against path names.
-    '''
+    """
     global __pathname_re_guess_file
     if __pathname_re_guess_file is None:
         if config_exists(PATHNAME_RE_GUESSES_FILE):
@@ -1508,7 +1508,7 @@ def get_pathname_re_guess_file():
 
 
 def set_pathname_re_guess_file(value):
-    '''Set the path to the pathname regular expression guess file'''
+    """Set the path to the pathname regular expression guess file"""
     global __pathname_re_guess_file
     __pathname_re_guess_file = value
     config_write(PATHNAME_RE_GUESSES_FILE, value)
@@ -1518,12 +1518,12 @@ __batchprofiler_url = None
 
 
 def get_batchprofiler_url():
-    '''Get the URL base for BatchProfiler
+    """Get the URL base for BatchProfiler
 
     For example: "http://<dns-name>/BatchProfiler/cgi-bin"
 
     Append /NewBatch.py?data_dir=... to get the URL for the batch
-    '''
+    """
     global __batchprofiler_url
     if __batchprofiler_url is None:
         if config_exists(BATCHPROFILER_URL):
@@ -1575,29 +1575,29 @@ def set_wants_pony(wants_pony):
 
 
 def set_image_set_file(filename):
-    '''Record the name of the image set that should be loaded upon startup'''
+    """Record the name of the image set that should be loaded upon startup"""
     global __image_set_filename
     __image_set_filename = filename
 
 
 def clear_image_set_file():
-    '''Remove the recorded image set file name
+    """Remove the recorded image set file name
 
     Call this after loading the image set file to cancel reloading of the
     file during subsequent operations.
-    '''
+    """
     global __image_set_filename
     __image_set_filename = None
 
 
 def get_image_set_file():
-    '''Recover the name of the image set file to use to populate the file list
+    """Recover the name of the image set file to use to populate the file list
 
     Returns either None or the name of the file to use. For the UI, the
     file list should be loaded and clear_image_set_file() should be called,
     for headless, the file list should be loaded after the pipeline has been
     loaded.
-    '''
+    """
     return __image_set_filename
 
 
@@ -1605,7 +1605,7 @@ __choose_image_set_frame_size = None
 
 
 def get_choose_image_set_frame_size():
-    '''Return the size (w, h) for the "Choose image set" dialog frame'''
+    """Return the size (w, h) for the "Choose image set" dialog frame"""
     global __choose_image_set_frame_size
     if __choose_image_set_frame_size is None:
         if config_exists(CHOOSE_IMAGE_SET_FRAME_SIZE):
@@ -1616,14 +1616,14 @@ def get_choose_image_set_frame_size():
 
 
 def set_choose_image_set_frame_size(w, h):
-    '''Set the size of the "Choose image set" dialog frame'''
+    """Set the size of the "Choose image set" dialog frame"""
     global __choose_image_set_frame_size
     __choose_image_set_frame_size = (w, h)
     config_write(CHOOSE_IMAGE_SET_FRAME_SIZE, "%d,%d" % (w, h))
 
 
 def add_progress_callback(callback):
-    '''Add a callback function that listens to progress calls
+    """Add a callback function that listens to progress calls
 
     The progress indicator is designed to monitor progress of operations
     on the user interface thread. The model is that operations are nested
@@ -1656,7 +1656,7 @@ def add_progress_callback(callback):
                 ...
 
     does not work because the reference is lost when __init__ returns.
-    '''
+    """
     global __progress_data
     if __progress_data.callbacks is None:
         __progress_data.callbacks = weakref.WeakSet()
@@ -1671,7 +1671,7 @@ def remove_progress_callback(callback):
 
 
 def report_progress(operation_id, progress, message):
-    '''Report progress to all callbacks registered on the caller's thread
+    """Report progress to all callbacks registered on the caller's thread
 
     operation_id - ID of operation being performed
 
@@ -1680,7 +1680,7 @@ def report_progress(operation_id, progress, message):
                reported at the outset and 1 at the end.
 
     message - an informative message.
-    '''
+    """
     global __progress_data
     if __progress_data.callbacks is None:
         return
@@ -1692,7 +1692,7 @@ def report_progress(operation_id, progress, message):
 
 
 def map_report_progress(fn_map, fn_report, sequence, freq=None):
-    '''Apply a mapping function to a sequence, reporting progress
+    """Apply a mapping function to a sequence, reporting progress
 
     fn_map - function that maps members of the sequence to members of the output
 
@@ -1701,7 +1701,7 @@ def map_report_progress(fn_map, fn_report, sequence, freq=None):
 
     freq - report on mapping every N items. Default is to report 100 or less
            times.
-    '''
+    """
     n_items = len(sequence)
     if n_items == 0:
         return []
@@ -1720,8 +1720,8 @@ def map_report_progress(fn_map, fn_report, sequence, freq=None):
 
 
 def cancel_progress():
-    '''Cancel all progress indicators
+    """Cancel all progress indicators
 
     for instance, after an exception is thrown that bubbles to the top.
-    '''
+    """
     report_progress(None, None, None)

@@ -741,29 +741,29 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
                     Channel number:1
                     Rescale intensities?:Yes
                 """
-                        maybe_download_sbs()
-                        path = os.path.join(example_images_directory(), "ExampleSBSImages")
-                        pipeline = cpp.Pipeline()
-                        pipeline.load(cStringIO.StringIO(data))
-                        module = pipeline.modules()[0]
-                        self.assertTrue(isinstance(module, LI.LoadImages))
-                        module.location.custom_path = path
-                        m = cpmeas.Measurements()
-                        image_set_list = cpi.ImageSetList()
-                        self.assertTrue(pipeline.prepare_run(cpw.Workspace(
-                            pipeline, module, None, None, m, image_set_list)))
-                        pipeline_text = m.get_experiment_measurement(cpp.M_PIPELINE)
-                        pipeline_text = pipeline_text.encode("us-ascii")
-                        pipeline = cpp.Pipeline()
-                        pipeline.loadtxt(cStringIO.StringIO(pipeline_text))
-                        self.assertEqual(len(pipeline.modules()), 1)
-                        module_out = pipeline.modules()[0]
-                        self.assertTrue(isinstance(module_out, module.__class__))
-                        self.assertEqual(len(module_out.settings()), len(module.settings()))
-                        for m1setting, m2setting in zip(module.settings(), module_out.settings()):
-                            self.assertTrue(isinstance(m1setting, cps.Setting))
-                            self.assertTrue(isinstance(m2setting, cps.Setting))
-                            self.assertEqual(m1setting.value, m2setting.value)
+                    maybe_download_sbs()
+                    path = os.path.join(example_images_directory(), "ExampleSBSImages")
+                    pipeline = cpp.Pipeline()
+                    pipeline.load(cStringIO.StringIO(data))
+                    module = pipeline.modules()[0]
+                    self.assertTrue(isinstance(module, LI.LoadImages))
+                    module.location.custom_path = path
+                    m = cpmeas.Measurements()
+                    image_set_list = cpi.ImageSetList()
+                    self.assertTrue(pipeline.prepare_run(cpw.Workspace(
+                        pipeline, module, None, None, m, image_set_list)))
+                    pipeline_text = m.get_experiment_measurement(cpp.M_PIPELINE)
+                    pipeline_text = pipeline_text.encode("us-ascii")
+                    pipeline = cpp.Pipeline()
+                    pipeline.loadtxt(cStringIO.StringIO(pipeline_text))
+                    self.assertEqual(len(pipeline.modules()), 1)
+                    module_out = pipeline.modules()[0]
+                    self.assertTrue(isinstance(module_out, module.__class__))
+                    self.assertEqual(len(module_out.settings()), len(module.settings()))
+                    for m1setting, m2setting in zip(module.settings(), module_out.settings()):
+                        self.assertTrue(isinstance(m1setting, cps.Setting))
+                        self.assertTrue(isinstance(m2setting, cps.Setting))
+                        self.assertEqual(m1setting.value, m2setting.value)
 
     def test_14_01_unicode_save(self):
         pipeline = get_empty_pipeline()

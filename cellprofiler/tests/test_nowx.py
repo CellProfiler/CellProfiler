@@ -81,32 +81,32 @@ class TestNoWX(unittest.TestCase):
         pipeline.load(fd)
         fd.close()
 
-        # def test_01_06_run_pipeline(self):
-        #     import cellprofiler.pipeline as cpp
-        #     import cellprofiler.cpmodule as cpm
-        #     from cellprofiler.preferences import \
-        #          set_default_image_directory, set_default_output_directory
-        #     def callback(caller, event):
-        #         self.assertFalse(isinstance(event, (cpp.LoadExceptionEvent,
-        #                                             cpp.RunExceptionEvent)))
-        #     pipeline = cpp.Pipeline()
-        #     pipeline.add_listener(callback)
-        #     fd = urlopen(self.fly_url)
-        #     pipeline.load(fd)
-        #     fd.close()
-        #     while True:
-        #         removed_something = False
-        #         for module in reversed(pipeline.modules()):
-        #             self.assertTrue(isinstance(module, cpm.CPModule))
-        #             if module.module_name in ("SaveImages",
-        #                                       "CalculateStatistics",
-        #                                       "ExportToSpreadsheet",
-        #                                       "ExportToDatabase"):
-        #                 pipeline.remove_module(module.module_num)
-        #                 removed_something = True
-        #                 break
-        #         if not removed_something:
-        #             break
-        #     for module in pipeline.modules():
-        #         module.show_window = False
-        #     m = pipeline.run(image_set_end = 1)
+        def test_01_06_run_pipeline(self):
+            import cellprofiler.pipeline as cpp
+            import cellprofiler.cpmodule as cpm
+            from cellprofiler.preferences import \
+                 set_default_image_directory, set_default_output_directory
+            def callback(caller, event):
+                self.assertFalse(isinstance(event, (cpp.LoadExceptionEvent,
+                                                    cpp.RunExceptionEvent)))
+            pipeline = cpp.Pipeline()
+            pipeline.add_listener(callback)
+            fd = urlopen(self.fly_url)
+            pipeline.load(fd)
+            fd.close()
+            while True:
+                removed_something = False
+                for module in reversed(pipeline.modules()):
+                    self.assertTrue(isinstance(module, cpm.CPModule))
+                    if module.module_name in ("SaveImages",
+                                              "CalculateStatistics",
+                                              "ExportToSpreadsheet",
+                                              "ExportToDatabase"):
+                        pipeline.remove_module(module.module_num)
+                        removed_something = True
+                        break
+                if not removed_something:
+                    break
+            for module in pipeline.modules():
+                module.show_window = False
+            m = pipeline.run(image_set_end = 1)

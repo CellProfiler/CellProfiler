@@ -625,44 +625,44 @@ class TestApplyThreshold(unittest.TestCase):
         self.assertAlmostEqual(m_threshold, threshold)
 
     # FIXME:
-    # def test_05_06_otsu3_entropy_high(self):
-    #     """Test the three-class otsu, entropy, middle = background"""
-    #     numpy.random.seed(0)
-    #
-    #     image = numpy.hstack((
-    #         numpy.random.exponential(1.5, size=300),
-    #         numpy.random.poisson(15, size=300),
-    #         numpy.random.poisson(30, size=300)
-    #     ))
-    #
-    #     image.shape = (30, 30)
-    #
-    #     image = centrosome.filter.stretch(image)
-    #
-    #     limage, d = centrosome.threshold.log_transform(image)
-    #
-    #     t1, t2 = centrosome.otsu.entropy3(limage)
-    #
-    #     threshold = centrosome.threshold.inverse_log_transform(t1, d)
-    #
-    #     expected = image > threshold
-    #
-    #     workspace, module = self.make_workspace(image)
-    #
-    #     module.binary.value = cellprofiler.modules.applythreshold.BINARY
-    #
-    #     module.threshold_scope.value = cellprofiler.modules.identify.TS_GLOBAL
-    #
-    #     module.threshold_method.value = centrosome.threshold.TM_OTSU
-    #
-    #     module.use_weighted_variance.value = cellprofiler.modules.identify.O_ENTROPY
-    #
-    #     module.two_class_otsu.value = cellprofiler.modules.identify.O_THREE_CLASS
-    #
-    #     module.assign_middle_to_foreground.value = cellprofiler.modules.identify.O_FOREGROUND
-    #
-    #     module.run(workspace)
-    #
-    #     output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-    #
-    #     self.assertTrue(numpy.all(output.pixel_data == expected))
+    def test_05_06_otsu3_entropy_high(self):
+        """Test the three-class otsu, entropy, middle = background"""
+        numpy.random.seed(0)
+
+        image = numpy.hstack((
+            numpy.random.exponential(1.5, size=300),
+            numpy.random.poisson(15, size=300),
+            numpy.random.poisson(30, size=300)
+        ))
+
+        image.shape = (30, 30)
+
+        image = centrosome.filter.stretch(image)
+
+        limage, d = centrosome.threshold.log_transform(image)
+
+        t1, t2 = centrosome.otsu.entropy3(limage)
+
+        threshold = centrosome.threshold.inverse_log_transform(t1, d)
+
+        expected = image > threshold
+
+        workspace, module = self.make_workspace(image)
+
+        module.binary.value = cellprofiler.modules.applythreshold.BINARY
+
+        module.threshold_scope.value = cellprofiler.modules.identify.TS_GLOBAL
+
+        module.threshold_method.value = centrosome.threshold.TM_OTSU
+
+        module.use_weighted_variance.value = cellprofiler.modules.identify.O_ENTROPY
+
+        module.two_class_otsu.value = cellprofiler.modules.identify.O_THREE_CLASS
+
+        module.assign_middle_to_foreground.value = cellprofiler.modules.identify.O_FOREGROUND
+
+        module.run(workspace)
+
+        output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+
+        self.assertTrue(numpy.all(output.pixel_data == expected))

@@ -1,9 +1,9 @@
+import cellprofiler.segmentation
 import centrosome.index
 import centrosome.outline
 import numpy
 import numpy.random
 import scipy.sparse
-import cellprofiler.segmentation
 
 OBJECT_TYPE_NAME = "objects"
 

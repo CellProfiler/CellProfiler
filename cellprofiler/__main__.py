@@ -1,9 +1,8 @@
 import bioformats.formatreader
-import ctypes
 import cellprofiler.measurement
-import cellprofiler.region
 import cellprofiler.pipeline
 import cellprofiler.preferences
+import cellprofiler.region
 import cellprofiler.utilities.cpjvm
 import cellprofiler.utilities.hdf5_dict
 import cellprofiler.utilities.version
@@ -11,6 +10,7 @@ import cellprofiler.utilities.zmqrequest
 import cellprofiler.worker
 import cellprofiler.workspace
 import cStringIO
+import ctypes
 import h5py
 import json
 import logging

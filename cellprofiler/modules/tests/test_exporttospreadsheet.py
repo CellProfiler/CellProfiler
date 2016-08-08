@@ -1,5 +1,5 @@
-'''test_ExportToSpreadsheet.py - test the ExportToSpreadsheet module
-'''
+"""test_ExportToSpreadsheet.py - test the ExportToSpreadsheet module
+"""
 
 import base64
 import csv
@@ -9,24 +9,21 @@ import unittest
 import zlib
 from StringIO import StringIO
 
+import cellprofiler.preferences
 import numpy as np
 
-from cellprofiler.preferences import set_headless
+cellprofiler.preferences.set_headless()
 
-set_headless()
-
-import cellprofiler.image as cpi
-import cellprofiler.measurement as cpmeas
-import cellprofiler.region as cpo
-import cellprofiler.preferences as cpprefs
-import cellprofiler.pipeline as cpp
-import cellprofiler.workspace as cpw
-import cellprofiler.modules.exporttospreadsheet as E
-from cellprofiler.modules import identifyprimaryobjects
-from cellprofiler.modules.identify import \
-    C_COUNT, M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
-from cellprofiler.modules.tests import \
-    example_images_directory, maybe_download_sbs
+import cellprofiler.image
+import cellprofiler.measurement
+import cellprofiler.region
+import cellprofiler.preferences
+import cellprofiler.pipeline
+import cellprofiler.workspace
+import cellprofiler.modules.exporttospreadsheet
+import cellprofiler.modules.identifyprimaryobjects
+import cellprofiler.modules.identify
+import cellprofiler.modules.tests
 
 OBJECTS_NAME = "MyObjects"
 IMG_MEAS = "my_image_measurement"
@@ -49,83 +46,8 @@ class TestExportToSpreadsheet(unittest.TestCase):
         os.rmdir(self.output_dir)
         self.output_dir = None
 
-    def test_000_01_load_mat_pipe(self):
-        '''Load a matlab pipeline'''
-        data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
-                'SU1RyM+zUgjJKFXwTy5RMDBUMDS1MrKwMjJSMDIwsFQgGTAwevryMzAwvGRk'
-                'YKiY83baSb/DBgIOy6W9BVN3FzBouus5cE+XEwzo9LqgFKVosWvlbKmlhVMt'
-                'ND6w1gg+OtGv8FHzhmqm8PYJJkkvFZMjr1kYnzdOPu3HyJAXxvDsx44D1VJ2'
-                'qs9facaLVzEbu/GcPeUoZnb3Z/i99RM9A7yPX/fYvpHV+eOz1W7tZvK/DvuL'
-                'b8l9vaOtqi5Zz3T39UPLQt9X9L177v0oYa+jnCHLUePdh74fUbpS8Dd2n411'
-                'zHSjzLtM799/Xmy1ZIlVx66cH89a/wr2vNks/Grbq83xpdXC1jnbHylM1bQ9'
-                'cmXdgynOFpadyl+y+DMtkmS8J+2/4L/rhMGGug3ROq7n1PULW+q8RJuNjm77'
-                'sEIv8aeOh8zC676LZD8v/jy5UGVOy+SCY5ZHBfy0DngejPPZf1jy7H3p804V'
-                '2UL+L45kTK6+tG3iOoFC1miDc7yrg60O+Dr3+j3/f/Wfy9rLi6ZMv2AqbBuh'
-                'dWljv7DpPJ+G6Y3RcVP3r2nfs29jP9O/TxHn6v6f+/29dtYuv6r0zNd8q32M'
-                'V979bxonkX6p/sSDD3wGXPaXdsx/Mv2J+eufJz/+vf6DKf6+/Kdase93rZav'
-                'iP1qaxBocVrI/YXocn/fa0tE3Y9a9dxfXqz4cXll9Pnj1dO9DK+fTl32/fSn'
-                'b3v+blP9My9h19+bP4/dm7zjm3zsyo+3AAVEF7c=')
-        pipeline = cpp.Pipeline()
-
-        def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
-
-        pipeline.add_listener(callback)
-        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
-        self.assertEqual(len(pipeline.modules()), 2)
-        module = pipeline.modules()[1]
-        self.assertTrue(isinstance(module, E.ExportToSpreadsheet))
-        self.assertEqual(len(module.object_groups), 1)
-        og = module.object_groups[0]
-        self.assertEqual(og.name, "Image")
-        self.assertEqual(og.file_name, "Image.csv")
-
-    def test_000_02_load_v1(self):
-        '''Load a version 1 pipeline'''
-        data = ('eJztWnFv0zgUd7ZuusHpNMRJ8A+S/2R3a5SMTQcTGi103FVHu4pVIISAc1N3'
-                'NXLjKnG2FoTEx+Ej3EfhY9xHuDhzmtTKmrZr1+4ulqzkvfj33s/Pz3ZipVKs'
-                'vyg+hXu6ASvFer5FKIY1iniLOZ192GUu6W3DZw5GHDchs/dhve3BI4tDaEJz'
-                'b//B7r5pwh3DeASmKFq58pO45gFY9y8/+HVFPlqTsharQj7GnBP7xF0DOXBX'
-                '6r/79RVyCGpQ/ApRD7uRi1Bftlus3u8OHlVY06O4ijrxxn6pep0GdtyjVgiU'
-                'j2ukh+kx+YSVLoTNXuJT4hJmS7y0r2oHfhlX/B632dlzx6ej2Bfx+f5zFB9N'
-                'ic+qX+/F9KL9HyBqn0uI561Y+00pE7tJTknTQxSSDjoZsBP2jBR7q0P2VkGp'
-                'WpwKV0eNAFdIwW0q/EWt4x7PH/aQn5kdxK22sPMwxc66YkfIVc+imEzX7zd+'
-                '1MbBaUM4DTyQcU7ju6bwFbJpbO8aYDy+K0P4FVBlYKx431D8CrnEoM049FyZ'
-                'sPOM10W8rwsubT7eUeIr5BJuIY9yWBaTEZaIgy3OnP7C47yu4MIS4jbkdZy8'
-                'uqn0W8hH3PXg75Q1EB3YmWZeBHED881LFWfqxlLmV9J6b+hGULZNeSOfjzNu'
-                'G4q9jTDeuuWexuzMKw65IVxO9MWc9Xo/yzxPjJfNse0S3p9xvBbBO81O0v5x'
-                'HvcoYeb5nqHGzTQuF7dJ93dzStxvCbhZ8lTnUZXZeFbr5SQ8v6b4+xMM54+Q'
-                '399/UnssPlTwgf7r1gchvcaUvmRnB2+L+dq7rVDzjFGvYx+8NfKP3n02t3e+'
-                'nDc+Jj4yUG4NeBRSeEzzHjRJHNop/h8q/oUs+vIGI0d2cPfLVl6oKszmbanb'
-                'kboS6keaRYzzvPI44zlfnkbCe80y8Bxn/VoGnrPet7P8VPNzbyE8Cyk8k75v'
-                '6mcMWhS5rjxhWQTvab4XXmNy0hZngKfiwMu2cMzessU9aZ9+zhx84jDPbi6O'
-                '939l/qnvqXuX9Pft9mTnm1eZN8FhqEic7uX9X+V8ZY2P2OIBcUjsJu7OgEeG'
-                'y3AZLsIVwOh5mbT/x+bltetvhsvy4DrhCmD0uGyC4XERNdrvz7fN69TfDJfl'
-                'T4bLcMuOK4DR82pZv8MyXIbLcBnu/47rahFOPa9TzzFF+79ifpLW+1/A8Hov'
-                'ZAtT2nWY+B/V0TvBT5OuThlqnv+dqL/wb8uxHxUDXil+CoqfwkV+SBPbnLT6'
-                'Xcf35nHWQZxYellqa762GGrH6Z+h+DUu8ot7XeZwznDPf6wfBlKdHQpJHa+N'
-                'BD/xuK/40q17P44cZ3V8o3H/58k0/nI5LfAX/w/nZgouF+MkisD/DSbLr/sj'
-                '2od9vMr2k8ZN0zTwLyPBmvk=')
-        pipeline = cpp.Pipeline()
-
-        def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
-
-        pipeline.add_listener(callback)
-        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
-        self.assertEqual(len(pipeline.modules()), 3)
-        module = pipeline.modules()[2]
-        self.assertTrue(isinstance(module, E.ExportToSpreadsheet))
-        self.assertEqual(len(module.object_groups), 2)
-        og = module.object_groups[0]
-        self.assertEqual(og.name, "Image")
-        self.assertEqual(og.file_name, "Image.csv")
-        og = module.object_groups[1]
-        self.assertEqual(og.name, "Nuclei")
-        self.assertEqual(og.file_name, "Nuclei.csv")
-
     def test_000_03_load_v2(self):
-        '''Load a version 2 pipeline'''
+        """Load a version 2 pipeline"""
         data = ('eJztVtFOwjAU7SYQCMT46GMffdBlmJAILzoVExIHRBaibw7oYGZbSdch+hV+'
                 'Hp/go59gixtsy2QCMUZjk6Y97Tk7997cpFMV7Vo5hxVJhqqiHRmmhWDb0qmB'
                 'iV2DDj2EFwTpFA0gdmpQG3mw1adQLsNypVau1uQKPJblKthsCA11ly2veQBy'
@@ -136,16 +58,16 @@ class TestExportToSpreadsheet(unittest.TestCase):
                 'Trbt71yMH4yAX/jX/RndGVjdZ0UQ7TOOce8B9emQYG/8Y3G/gNX9LYBof9+n'
                 '5CnH8uS4jyxrTDB/v4lkzx8ZV0LTMSaUYjRl11J9jjRc5yieTyHBJxyXyHal'
                 'lDrE81/W5e10Ez8xwa+Yosv4fxBcd7tm3Q9W8EECf918+P4doGKH5Q==')
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
         pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, E.ExportToSpreadsheet))
+        self.assertTrue(isinstance(module, cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet))
         self.assertFalse(module.add_metadata)
         self.assertFalse(module.excel_limits)
         self.assertFalse(module.pick_columns)
@@ -177,16 +99,16 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'8947\'|variable_revision_number:
     Combine these object measurements with those of the previous object?:No
     Name the data file (not including the output filename, if prepending was requested above):Nuclei.csv
 """
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, E.ExportToSpreadsheet))
+        self.assertTrue(isinstance(module, cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet))
         self.assertEqual(module.delimiter_char, "\t")
         self.assertFalse(module.add_metadata)
         self.assertFalse(module.excel_limits)
@@ -194,8 +116,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'8947\'|variable_revision_number:
         self.assertFalse(module.wants_aggregate_means)
         self.assertTrue(module.wants_aggregate_medians)
         self.assertFalse(module.wants_aggregate_std)
-        self.assertEqual(module.directory.dir_choice,
-                         E.DEFAULT_OUTPUT_SUBFOLDER_NAME)
+        self.assertEqual(module.directory.dir_choice, cellprofiler.preferences.DEFAULT_OUTPUT_SUBFOLDER_NAME)
         self.assertEqual(module.directory.custom_path, r"./\<?Plate>")
         self.assertEqual(len(module.object_groups), 2)
         for group, object_name, file_name in zip(module.object_groups,
@@ -248,25 +169,24 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'9144\'|variable_revision_number:
     File name\x3A:PropCytoplasm.csv
     Use the object name for the file name?:Yes
 """
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, E.ExportToSpreadsheet))
-        self.assertEqual(module.delimiter, E.DELIMITER_COMMA)
+        self.assertTrue(isinstance(module, cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet))
+        self.assertEqual(module.delimiter, cellprofiler.modules.exporttospreadsheet.DELIMITER_COMMA)
         self.assertFalse(module.add_metadata)
         self.assertFalse(module.excel_limits)
         self.assertFalse(module.pick_columns)
         self.assertFalse(module.wants_aggregate_means)
         self.assertFalse(module.wants_aggregate_medians)
         self.assertFalse(module.wants_aggregate_std)
-        self.assertEqual(module.directory.dir_choice,
-                         E.DEFAULT_OUTPUT_FOLDER_NAME)
+        self.assertEqual(module.directory.dir_choice, cellprofiler.preferences.DEFAULT_OUTPUT_FOLDER_NAME)
         self.assertFalse(module.wants_everything)
         for group, object_name in zip(module.object_groups,
                                       ("Image", "Nuclei", "PropCells",
@@ -317,19 +237,19 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'9434\'|variable_revision_number:
     File name:DistCytoplasm.csv
     Use the object name for the file name?:No
 '''
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, E.ExportToSpreadsheet))
-        self.assertEqual(module.delimiter, E.DELIMITER_TAB)
+        self.assertTrue(isinstance(module, cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet))
+        self.assertEqual(module.delimiter, cellprofiler.modules.exporttospreadsheet.DELIMITER_TAB)
         self.assertEqual(module.directory.dir_choice,
-                         E.DEFAULT_OUTPUT_FOLDER_NAME)
+                         cellprofiler.preferences.DEFAULT_OUTPUT_FOLDER_NAME)
         self.assertEqual(module.directory.custom_path,
                          "//iodine/imaging_analysis/People/Lee")
         self.assertFalse(module.add_metadata)
@@ -468,19 +388,19 @@ ExportToSpreadsheet:[module_num:5|svn_version:\'9434\'|variable_revision_number:
     File name:Image.csv
     Use the object name for the file name?:Yes
 '''
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
         self.assertEqual(len(pipeline.modules()), 5)
         module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, E.ExportToSpreadsheet))
-        self.assertEqual(module.delimiter, E.DELIMITER_TAB)
+        self.assertTrue(isinstance(module, cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet))
+        self.assertEqual(module.delimiter, cellprofiler.modules.exporttospreadsheet.DELIMITER_TAB)
         self.assertEqual(module.directory.dir_choice,
-                         E.DEFAULT_OUTPUT_FOLDER_NAME)
+                         cellprofiler.preferences.DEFAULT_OUTPUT_FOLDER_NAME)
         self.assertEqual(module.directory.custom_path,
                          "//iodine/imaging_analysis/People/Lee")
         self.assertFalse(module.add_metadata)
@@ -514,10 +434,9 @@ ExportToSpreadsheet:[module_num:5|svn_version:\'9434\'|variable_revision_number:
             self.assertEqual(group.file_name, file_name)
 
         module = pipeline.modules()[1]
-        self.assertTrue(isinstance(module, E.ExportToSpreadsheet))
-        self.assertEqual(module.delimiter, E.DELIMITER_COMMA)
-        self.assertEqual(module.directory.dir_choice,
-                         E.DEFAULT_INPUT_FOLDER_NAME)
+        self.assertTrue(isinstance(module, cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet))
+        self.assertEqual(module.delimiter, cellprofiler.modules.exporttospreadsheet.DELIMITER_COMMA)
+        self.assertEqual(module.directory.dir_choice, cellprofiler.preferences.DEFAULT_INPUT_FOLDER_NAME)
         self.assertEqual(module.directory.custom_path,
                          "//iodine/imaging_analysis/People/Lee")
         self.assertTrue(module.add_metadata)
@@ -532,12 +451,12 @@ ExportToSpreadsheet:[module_num:5|svn_version:\'9434\'|variable_revision_number:
         self.assertTrue(group.wants_automatic_file_name)
 
         for module, dir_choice in zip(pipeline.modules()[2:],
-                                      (E.DEFAULT_INPUT_SUBFOLDER_NAME,
-                                       E.DEFAULT_OUTPUT_SUBFOLDER_NAME,
-                                       E.ABSOLUTE_FOLDER_NAME)):
-            self.assertTrue(isinstance(module, E.ExportToSpreadsheet))
+                                      (cellprofiler.preferences.DEFAULT_INPUT_SUBFOLDER_NAME,
+                                       cellprofiler.preferences.DEFAULT_OUTPUT_SUBFOLDER_NAME,
+                                       cellprofiler.preferences.ABSOLUTE_FOLDER_NAME)):
+            self.assertTrue(isinstance(module, cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet))
             self.assertEqual(module.directory.dir_choice, dir_choice)
-        self.assertEqual(module.nan_representation, E.NANS_AS_NANS)
+        self.assertEqual(module.nan_representation, cellprofiler.modules.exporttospreadsheet.NANS_AS_NANS)
 
     def test_000_08_load_v8(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
@@ -569,31 +488,31 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
     Use the object name for the file name?:Yes
 
 """
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, E.ExportToSpreadsheet))
-        self.assertEqual(module.delimiter, E.DELIMITER_COMMA)
+        self.assertTrue(isinstance(module, cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet))
+        self.assertEqual(module.delimiter, cellprofiler.modules.exporttospreadsheet.DELIMITER_COMMA)
         self.assertFalse(module.add_metadata)
         self.assertFalse(module.excel_limits)
         self.assertFalse(module.wants_aggregate_means)
         self.assertFalse(module.wants_aggregate_medians)
-        self.assertEqual(module.directory.dir_choice, E.ABSOLUTE_FOLDER_NAME)
+        self.assertEqual(module.directory.dir_choice, cellprofiler.preferences.ABSOLUTE_FOLDER_NAME)
         self.assertEqual(module.directory.custom_path,
                          "/imaging/analysis/2005Projects")
         self.assertFalse(module.wants_genepattern_file)
         self.assertEqual(module.how_to_specify_gene_name,
-                         E.GP_NAME_FILENAME)
+                         cellprofiler.modules.exporttospreadsheet.GP_NAME_FILENAME)
         self.assertEqual(module.use_which_image_for_gene_name, "GFP")
         self.assertEqual(module.gene_name_column, "Metadata_GeneName")
         self.assertTrue(module.wants_everything)
-        self.assertEqual(module.nan_representation, E.NANS_AS_NULLS)
+        self.assertEqual(module.nan_representation, cellprofiler.modules.exporttospreadsheet.NANS_AS_NULLS)
         self.assertEqual(module.object_groups[0].name, "Nuclei")
         self.assertFalse(module.object_groups[0].previous_file)
         self.assertEqual(module.object_groups[0].file_name, "Output.csv")
@@ -628,31 +547,31 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
     Use the object name for the file name?:Yes
 
 """
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, E.ExportToSpreadsheet))
-        self.assertEqual(module.delimiter, E.DELIMITER_COMMA)
+        self.assertTrue(isinstance(module, cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet))
+        self.assertEqual(module.delimiter, cellprofiler.modules.exporttospreadsheet.DELIMITER_COMMA)
         self.assertFalse(module.add_metadata)
         self.assertFalse(module.excel_limits)
         self.assertFalse(module.wants_aggregate_means)
         self.assertFalse(module.wants_aggregate_medians)
-        self.assertEqual(module.directory.dir_choice, E.ABSOLUTE_FOLDER_NAME)
+        self.assertEqual(module.directory.dir_choice, cellprofiler.preferences.ABSOLUTE_FOLDER_NAME)
         self.assertEqual(module.directory.custom_path,
                          "/imaging/analysis/2005Projects")
         self.assertFalse(module.wants_genepattern_file)
         self.assertEqual(module.how_to_specify_gene_name,
-                         E.GP_NAME_FILENAME)
+                         cellprofiler.modules.exporttospreadsheet.GP_NAME_FILENAME)
         self.assertEqual(module.use_which_image_for_gene_name, "GFP")
         self.assertEqual(module.gene_name_column, "Metadata_GeneName")
         self.assertTrue(module.wants_everything)
-        self.assertEqual(module.nan_representation, E.NANS_AS_NULLS)
+        self.assertEqual(module.nan_representation, cellprofiler.modules.exporttospreadsheet.NANS_AS_NULLS)
         self.assertEqual(module.object_groups[0].name, "Nuclei")
         self.assertFalse(module.object_groups[0].previous_file)
         self.assertEqual(module.object_groups[0].file_name, "Output.csv")
@@ -691,31 +610,31 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
     Use the object name for the file name?:Yes
 
 """
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, E.ExportToSpreadsheet))
-        self.assertEqual(module.delimiter, E.DELIMITER_COMMA)
+        self.assertTrue(isinstance(module, cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet))
+        self.assertEqual(module.delimiter, cellprofiler.modules.exporttospreadsheet.DELIMITER_COMMA)
         self.assertFalse(module.add_metadata)
         self.assertFalse(module.excel_limits)
         self.assertFalse(module.wants_aggregate_means)
         self.assertFalse(module.wants_aggregate_medians)
-        self.assertEqual(module.directory.dir_choice, E.ABSOLUTE_FOLDER_NAME)
+        self.assertEqual(module.directory.dir_choice, cellprofiler.preferences.ABSOLUTE_FOLDER_NAME)
         self.assertEqual(module.directory.custom_path,
                          "/imaging/analysis/2005Projects")
         self.assertFalse(module.wants_genepattern_file)
         self.assertEqual(module.how_to_specify_gene_name,
-                         E.GP_NAME_FILENAME)
+                         cellprofiler.modules.exporttospreadsheet.GP_NAME_FILENAME)
         self.assertEqual(module.use_which_image_for_gene_name, "GFP")
         self.assertEqual(module.gene_name_column, "Metadata_GeneName")
         self.assertTrue(module.wants_everything)
-        self.assertEqual(module.nan_representation, E.NANS_AS_NULLS)
+        self.assertEqual(module.nan_representation, cellprofiler.modules.exporttospreadsheet.NANS_AS_NULLS)
         self.assertEqual(module.object_groups[0].name, "Nuclei")
         self.assertFalse(module.object_groups[0].previous_file)
         self.assertEqual(module.object_groups[0].file_name, "Output.csv")
@@ -756,31 +675,31 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
     Use the object name for the file name?:Yes
 
 """
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, E.ExportToSpreadsheet))
-        self.assertEqual(module.delimiter, E.DELIMITER_COMMA)
+        self.assertTrue(isinstance(module, cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet))
+        self.assertEqual(module.delimiter, cellprofiler.modules.exporttospreadsheet.DELIMITER_COMMA)
         self.assertFalse(module.add_metadata)
         self.assertFalse(module.excel_limits)
         self.assertFalse(module.wants_aggregate_means)
         self.assertFalse(module.wants_aggregate_medians)
-        self.assertEqual(module.directory.dir_choice, E.ABSOLUTE_FOLDER_NAME)
+        self.assertEqual(module.directory.dir_choice, cellprofiler.preferences.ABSOLUTE_FOLDER_NAME)
         self.assertEqual(module.directory.custom_path,
                          "/imaging/analysis/2005Projects")
         self.assertFalse(module.wants_genepattern_file)
         self.assertEqual(module.how_to_specify_gene_name,
-                         E.GP_NAME_FILENAME)
+                         cellprofiler.modules.exporttospreadsheet.GP_NAME_FILENAME)
         self.assertEqual(module.use_which_image_for_gene_name, "GFP")
         self.assertEqual(module.gene_name_column, "Metadata_GeneName")
         self.assertTrue(module.wants_everything)
-        self.assertEqual(module.nan_representation, E.NANS_AS_NULLS)
+        self.assertEqual(module.nan_representation, cellprofiler.modules.exporttospreadsheet.NANS_AS_NULLS)
         self.assertEqual(module.object_groups[0].name, "Nuclei")
         self.assertFalse(module.object_groups[0].previous_file)
         self.assertEqual(module.object_groups[0].file_name, "Output.csv")
@@ -790,28 +709,28 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         self.assertFalse(module.wants_overwrite_without_warning)
 
     def test_00_00_no_measurements(self):
-        '''Test an image set with objects but no measurements'''
+        """Test an image set with objects but no measurements"""
         path = os.path.join(self.output_dir, "my_file.csv")
-        module = E.ExportToSpreadsheet()
+        module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
         module.module_num = 1
         module.wants_everything.value = False
         module.object_groups[0].name.value = "my_object"
         module.object_groups[0].file_name.value = path
         module.object_groups[0].wants_automatic_file_name.value = False
         module.wants_prefix.value = False
-        m = cpmeas.Measurements()
+        m = cellprofiler.measurement.Measurements()
         m.add_measurement("my_object", "my_measurement", np.zeros((0,)))
         m.add_image_measurement("Count_my_object", 0)
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        object_set = cpo.Set()
-        object_set.add_objects(cpo.Region(), "my_object")
-        workspace = cpw.Workspace(self.make_measurements_pipeline(m),
-                                  module,
-                                  image_set,
-                                  object_set,
-                                  m,
-                                  image_set_list)
+        object_set = cellprofiler.region.Set()
+        object_set.add_objects(cellprofiler.region.Region(), "my_object")
+        workspace = cellprofiler.workspace.Workspace(self.make_measurements_pipeline(m),
+                                                     module,
+                                                     image_set,
+                                                     object_set,
+                                                     m,
+                                                     image_set_list)
         module.post_run(workspace)
         fd = open(path, "r")
         try:
@@ -825,34 +744,34 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             del m
 
     def test_01_01_experiment_measurement(self):
-        '''Test writing one experiment measurement'''
+        """Test writing one experiment measurement"""
         path = os.path.join(self.output_dir, "my_file.csv")
-        module = E.ExportToSpreadsheet()
+        module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
         module.module_num = 1
         module.wants_everything.value = False
         module.wants_prefix.value = False
-        module.object_groups[0].name.value = cpmeas.EXPERIMENT
+        module.object_groups[0].name.value = cellprofiler.measurement.EXPERIMENT
         module.object_groups[0].file_name.value = path
         module.object_groups[0].wants_automatic_file_name.value = False
-        m = cpmeas.Measurements()
+        m = cellprofiler.measurement.Measurements()
         m.add_experiment_measurement("my_measurement", "Hello, world")
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        object_set = cpo.Set()
-        workspace = cpw.Workspace(self.make_measurements_pipeline(m),
-                                  module,
-                                  image_set,
-                                  object_set,
-                                  m,
-                                  image_set_list)
+        object_set = cellprofiler.region.Set()
+        workspace = cellprofiler.workspace.Workspace(self.make_measurements_pipeline(m),
+                                                     module,
+                                                     image_set,
+                                                     object_set,
+                                                     m,
+                                                     image_set_list)
         module.post_run(workspace)
         try:
             fd = open(path, "r")
             reader = csv.reader(fd, delimiter=module.delimiter_char)
             header = reader.next()
             self.assertEqual(len(header), 2)
-            self.assertEqual(header[0], E.EH_KEY)
-            self.assertEqual(header[1], E.EH_VALUE)
+            self.assertEqual(header[0], cellprofiler.modules.exporttospreadsheet.EH_KEY)
+            self.assertEqual(header[1], cellprofiler.modules.exporttospreadsheet.EH_VALUE)
             row = reader.next()
             self.assertEqual(len(row), 2)
             self.assertEqual(row[0], "my_measurement")
@@ -863,29 +782,29 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             fd.close()
 
     def test_01_02_two_experiment_measurements(self):
-        '''Test writing two experiment measurements'''
-        path = os.path.join(self.output_dir, "%s.csv" % cpmeas.EXPERIMENT)
-        module = E.ExportToSpreadsheet()
+        """Test writing two experiment measurements"""
+        path = os.path.join(self.output_dir, "%s.csv" % cellprofiler.measurement.EXPERIMENT)
+        module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
         module.module_num = 1
-        module.directory.dir_choice = E.ABSOLUTE_FOLDER_NAME
+        module.directory.dir_choice = cellprofiler.preferences.ABSOLUTE_FOLDER_NAME
         module.directory.custom_path = self.output_dir
         module.wants_everything.value = False
         module.wants_prefix.value = False
-        module.object_groups[0].name.value = cpmeas.EXPERIMENT
+        module.object_groups[0].name.value = cellprofiler.measurement.EXPERIMENT
         module.object_groups[0].file_name.value = "badfile"
         module.object_groups[0].wants_automatic_file_name.value = True
-        m = cpmeas.Measurements(mode="memory")
+        m = cellprofiler.measurement.Measurements(mode="memory")
         m.add_experiment_measurement("my_measurement", "Hello, world")
         m.add_experiment_measurement("my_other_measurement", "Goodbye")
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        object_set = cpo.Set()
-        workspace = cpw.Workspace(self.make_measurements_pipeline(m),
-                                  module,
-                                  image_set,
-                                  object_set,
-                                  m,
-                                  image_set_list)
+        object_set = cellprofiler.region.Set()
+        workspace = cellprofiler.workspace.Workspace(self.make_measurements_pipeline(m),
+                                                     module,
+                                                     image_set,
+                                                     object_set,
+                                                     m,
+                                                     image_set_list)
         module.post_run(workspace)
         fd = open(path, "r")
         try:
@@ -904,32 +823,32 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             fd.close()
 
     def test_01_04_img_887_no_experiment_file(self):
-        '''Regression test of IMG-887: spirious experiment file
+        """Regression test of IMG-887: spirious experiment file
 
         ExportToSpreadsheet shouldn't generate an experiment file if
         the only measurements are Exit_Status or Complete.
-        '''
+        """
         np.random.seed(14887)
-        module = E.ExportToSpreadsheet()
+        module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
         module.module_num = 1
         module.wants_everything.value = False
         module.wants_prefix.value = False
-        module.directory.dir_choice = E.ABSOLUTE_FOLDER_NAME
+        module.directory.dir_choice = cellprofiler.preferences.ABSOLUTE_FOLDER_NAME
         module.directory.custom_path = self.output_dir
         module.wants_everything.value = True
-        m = cpmeas.Measurements()
+        m = cellprofiler.measurement.Measurements()
         m.add_experiment_measurement("Exit_Status", "Complete")
         image_measurements = np.random.uniform(size=4)
-        m.add_all_measurements(cpmeas.IMAGE, "my_measurement", image_measurements)
-        image_set_list = cpi.ImageSetList()
+        m.add_all_measurements(cellprofiler.measurement.IMAGE, "my_measurement", image_measurements)
+        image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        object_set = cpo.Set()
-        workspace = cpw.Workspace(self.make_measurements_pipeline(m),
-                                  module,
-                                  image_set,
-                                  object_set,
-                                  m,
-                                  image_set_list)
+        object_set = cellprofiler.region.Set()
+        workspace = cellprofiler.workspace.Workspace(self.make_measurements_pipeline(m),
+                                                     module,
+                                                     image_set,
+                                                     object_set,
+                                                     m,
+                                                     image_set_list)
         module.post_run(workspace)
         path = os.path.join(self.output_dir, "Experiment.csv")
         self.assertFalse(os.path.exists(path))
@@ -940,51 +859,51 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         # Use a prefix, check that file name exists
         prefix = "Foo_"
         np.random.seed(14887)
-        module = E.ExportToSpreadsheet()
+        module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
         module.module_num = 1
         module.wants_everything.value = False
         module.wants_prefix.value = True
         module.prefix.value = prefix
-        module.directory.dir_choice = E.ABSOLUTE_FOLDER_NAME
+        module.directory.dir_choice = cellprofiler.preferences.ABSOLUTE_FOLDER_NAME
         module.directory.custom_path = self.output_dir
         module.wants_everything.value = True
-        m = cpmeas.Measurements()
+        m = cellprofiler.measurement.Measurements()
         image_measurements = np.random.uniform(size=4)
-        m.add_all_measurements(cpmeas.IMAGE, "my_measurement", image_measurements)
-        image_set_list = cpi.ImageSetList()
+        m.add_all_measurements(cellprofiler.measurement.IMAGE, "my_measurement", image_measurements)
+        image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        object_set = cpo.Set()
-        workspace = cpw.Workspace(self.make_measurements_pipeline(m),
-                                  module,
-                                  image_set,
-                                  object_set,
-                                  m,
-                                  image_set_list)
+        object_set = cellprofiler.region.Set()
+        workspace = cellprofiler.workspace.Workspace(self.make_measurements_pipeline(m),
+                                                     module,
+                                                     image_set,
+                                                     object_set,
+                                                     m,
+                                                     image_set_list)
         module.post_run(workspace)
         path = os.path.join(self.output_dir, prefix + "Image.csv")
         self.assertTrue(os.path.exists(path))
 
     def test_02_01_image_measurement(self):
-        '''Test writing an image measurement'''
+        """Test writing an image measurement"""
         path = os.path.join(self.output_dir, "my_file.csv")
-        module = E.ExportToSpreadsheet()
+        module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
         module.module_num = 1
         module.wants_everything.value = False
         module.wants_prefix.value = False
-        module.object_groups[0].name.value = cpmeas.IMAGE
+        module.object_groups[0].name.value = cellprofiler.measurement.IMAGE
         module.object_groups[0].file_name.value = path
         module.object_groups[0].wants_automatic_file_name.value = False
-        m = cpmeas.Measurements()
+        m = cellprofiler.measurement.Measurements()
         m.add_image_measurement("my_measurement", "Hello, world")
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        object_set = cpo.Set()
-        workspace = cpw.Workspace(self.make_measurements_pipeline(m),
-                                  module,
-                                  image_set,
-                                  object_set,
-                                  m,
-                                  image_set_list)
+        object_set = cellprofiler.region.Set()
+        workspace = cellprofiler.workspace.Workspace(self.make_measurements_pipeline(m),
+                                                     module,
+                                                     image_set,
+                                                     object_set,
+                                                     m,
+                                                     image_set_list)
         module.post_run(workspace)
         fd = open(path, "r")
         try:
@@ -1001,17 +920,17 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             fd.close()
 
     def test_02_02_three_by_two_image_measurements(self):
-        '''Test writing three image measurements over two image sets'''
+        """Test writing three image measurements over two image sets"""
         path = os.path.join(self.output_dir, "my_file.csv")
-        module = E.ExportToSpreadsheet()
+        module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
         module.module_num = 1
         module.wants_everything.value = False
         module.wants_prefix.value = False
-        module.object_groups[0].name.value = cpmeas.IMAGE
+        module.object_groups[0].name.value = cellprofiler.measurement.IMAGE
         module.object_groups[0].file_name.value = path
         module.object_groups[0].wants_automatic_file_name.value = False
-        m = cpmeas.Measurements()
-        image_set_list = cpi.ImageSetList()
+        m = cellprofiler.measurement.Measurements()
+        image_set_list = cellprofiler.image.ImageSetList()
         image_sets = [image_set_list.get_image_set(i)
                       for i in range(2)]
         for i in range(2):
@@ -1019,13 +938,13 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                 m.next_image_set()
             for j in range(3):
                 m.add_image_measurement("measurement_%d" % j, "%d:%d" % (i, j))
-        object_set = cpo.Set()
-        workspace = cpw.Workspace(self.make_measurements_pipeline(m),
-                                  module,
-                                  image_sets[i],
-                                  object_set,
-                                  m,
-                                  image_set_list)
+        object_set = cellprofiler.region.Set()
+        workspace = cellprofiler.workspace.Workspace(self.make_measurements_pipeline(m),
+                                                     module,
+                                                     image_sets[i],
+                                                     object_set,
+                                                     m,
+                                                     image_set_list)
         module.post_run(workspace)
         fd = open(path, "r")
         try:
@@ -1045,30 +964,30 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             fd.close()
 
     def test_03_01_object_measurement(self):
-        '''Test getting a single object measurement'''
+        """Test getting a single object measurement"""
         path = os.path.join(self.output_dir, "my_file.csv")
-        module = E.ExportToSpreadsheet()
+        module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
         module.module_num = 1
         module.wants_everything.value = False
         module.wants_prefix.value = False
         module.object_groups[0].name.value = "my_object"
         module.object_groups[0].file_name.value = path
         module.object_groups[0].wants_automatic_file_name.value = False
-        m = cpmeas.Measurements()
+        m = cellprofiler.measurement.Measurements()
         np.random.seed(0)
         mvalues = np.random.uniform(size=(1,))
         m.add_measurement("my_object", "my_measurement", mvalues)
         m.add_image_measurement("Count_my_object", 1)
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        object_set = cpo.Set()
-        object_set.add_objects(cpo.Region(), "my_objects")
-        workspace = cpw.Workspace(self.make_measurements_pipeline(m),
-                                  module,
-                                  image_set,
-                                  object_set,
-                                  m,
-                                  image_set_list)
+        object_set = cellprofiler.region.Set()
+        object_set.add_objects(cellprofiler.region.Region(), "my_objects")
+        workspace = cellprofiler.workspace.Workspace(self.make_measurements_pipeline(m),
+                                                     module,
+                                                     image_set,
+                                                     object_set,
+                                                     m,
+                                                     image_set_list)
         module.post_run(workspace)
         try:
             fd = open(path, "r")
@@ -1086,31 +1005,31 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             fd.close()
 
     def test_03_02_three_by_two_object_measurements(self):
-        '''Test getting three measurements from two objects'''
+        """Test getting three measurements from two objects"""
         path = os.path.join(self.output_dir, "my_file.csv")
-        module = E.ExportToSpreadsheet()
+        module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
         module.module_num = 1
         module.wants_everything.value = False
         module.wants_prefix.value = False
         module.object_groups[0].name.value = "my_object"
         module.object_groups[0].file_name.value = path
         module.object_groups[0].wants_automatic_file_name.value = False
-        m = cpmeas.Measurements(mode="memory")
+        m = cellprofiler.measurement.Measurements(mode="memory")
         np.random.seed(0)
         mvalues = np.random.uniform(size=(2, 3))
         for i in range(3):
             m.add_measurement("my_object", "measurement_%d" % i, mvalues[:, i])
         m.add_image_measurement("Count_my_object", 2)
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        object_set = cpo.Set()
-        object_set.add_objects(cpo.Region(), "my_objects")
-        workspace = cpw.Workspace(self.make_measurements_pipeline(m),
-                                  module,
-                                  image_set,
-                                  object_set,
-                                  m,
-                                  image_set_list)
+        object_set = cellprofiler.region.Set()
+        object_set.add_objects(cellprofiler.region.Region(), "my_objects")
+        workspace = cellprofiler.workspace.Workspace(self.make_measurements_pipeline(m),
+                                                     module,
+                                                     image_set,
+                                                     object_set,
+                                                     m,
+                                                     image_set_list)
         module.post_run(workspace)
         try:
             fd = open(path, "r")
@@ -1133,9 +1052,9 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             fd.close()
 
     def test_03_03_get_measurements_from_two_objects(self):
-        '''Get three measurements from four cells and two objects'''
+        """Get three measurements from four cells and two objects"""
         path = os.path.join(self.output_dir, "my_file.csv")
-        module = E.ExportToSpreadsheet()
+        module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
         module.module_num = 1
         module.wants_everything.value = False
         module.wants_prefix.value = False
@@ -1146,7 +1065,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.object_groups[1].previous_file.value = True
         module.object_groups[1].name.value = "object_1"
         module.object_groups[1].wants_automatic_file_name.value = False
-        m = cpmeas.Measurements()
+        m = cellprofiler.measurement.Measurements()
         np.random.seed(0)
         # cell, measurement, object
         mvalues = np.random.uniform(size=(4, 3, 2))
@@ -1156,17 +1075,17 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                                   "measurement_%d" % i, mvalues[:, i, oidx])
         m.add_image_measurement("Count_object_0", 4)
         m.add_image_measurement("Count_object_1", 4)
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        object_set = cpo.Set()
-        object_set.add_objects(cpo.Region(), "object_0")
-        object_set.add_objects(cpo.Region(), "object_1")
-        workspace = cpw.Workspace(self.make_measurements_pipeline(m),
-                                  module,
-                                  image_set,
-                                  object_set,
-                                  m,
-                                  image_set_list)
+        object_set = cellprofiler.region.Set()
+        object_set.add_objects(cellprofiler.region.Region(), "object_0")
+        object_set.add_objects(cellprofiler.region.Region(), "object_1")
+        workspace = cellprofiler.workspace.Workspace(self.make_measurements_pipeline(m),
+                                                     module,
+                                                     image_set,
+                                                     object_set,
+                                                     m,
+                                                     image_set_list)
         module.post_run(workspace)
         try:
             fd = open(path, "r")
@@ -1198,30 +1117,30 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
 
     def test_03_04_nan_measurements(self):
         path = os.path.join(self.output_dir, "my_file.csv")
-        module = E.ExportToSpreadsheet()
+        module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
         module.module_num = 1
         module.wants_everything.value = False
         module.wants_prefix.value = False
         module.object_groups[0].name.value = "my_object"
         module.object_groups[0].file_name.value = path
         module.object_groups[0].wants_automatic_file_name.value = False
-        module.nan_representation.value = E.NANS_AS_NANS
-        m = cpmeas.Measurements()
+        module.nan_representation.value = cellprofiler.modules.exporttospreadsheet.NANS_AS_NANS
+        m = cellprofiler.measurement.Measurements()
         np.random.seed(0)
         mvalues = np.random.uniform(size=(2,))
         mvalues[1] = np.NaN
         m.add_measurement("my_object", "my_measurement", mvalues)
         m.add_image_measurement("Count_my_object", 2)
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        object_set = cpo.Set()
-        object_set.add_objects(cpo.Region(), "my_objects")
-        workspace = cpw.Workspace(self.make_measurements_pipeline(m),
-                                  module,
-                                  image_set,
-                                  object_set,
-                                  m,
-                                  image_set_list)
+        object_set = cellprofiler.region.Set()
+        object_set.add_objects(cellprofiler.region.Region(), "my_objects")
+        workspace = cellprofiler.workspace.Workspace(self.make_measurements_pipeline(m),
+                                                     module,
+                                                     image_set,
+                                                     object_set,
+                                                     m,
+                                                     image_set_list)
         module.post_run(workspace)
         try:
             fd = open(path, "r")
@@ -1243,30 +1162,30 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
 
     def test_03_05_null_measurements(self):
         path = os.path.join(self.output_dir, "my_file.csv")
-        module = E.ExportToSpreadsheet()
+        module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
         module.module_num = 1
         module.wants_everything.value = False
         module.wants_prefix.value = False
         module.object_groups[0].name.value = "my_object"
         module.object_groups[0].file_name.value = path
         module.object_groups[0].wants_automatic_file_name.value = False
-        module.nan_representation.value = E.NANS_AS_NULLS
-        m = cpmeas.Measurements()
+        module.nan_representation.value = cellprofiler.modules.exporttospreadsheet.NANS_AS_NULLS
+        m = cellprofiler.measurement.Measurements()
         np.random.seed(0)
         mvalues = np.random.uniform(size=(2,))
         mvalues[1] = np.NaN
         m.add_measurement("my_object", "my_measurement", mvalues)
         m.add_image_measurement("Count_my_object", 2)
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        object_set = cpo.Set()
-        object_set.add_objects(cpo.Region(), "my_objects")
-        workspace = cpw.Workspace(self.make_measurements_pipeline(m),
-                                  module,
-                                  image_set,
-                                  object_set,
-                                  m,
-                                  image_set_list)
+        object_set = cellprofiler.region.Set()
+        object_set.add_objects(cellprofiler.region.Region(), "my_objects")
+        workspace = cellprofiler.workspace.Workspace(self.make_measurements_pipeline(m),
+                                                     module,
+                                                     image_set,
+                                                     object_set,
+                                                     m,
+                                                     image_set_list)
         module.post_run(workspace)
         try:
             fd = open(path, "r")
@@ -1288,39 +1207,39 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
 
     def test_03_06_nan_image_measurements(self):
         path = os.path.join(self.output_dir, "my_file.csv")
-        module = E.ExportToSpreadsheet()
+        module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
         module.module_num = 1
         module.wants_everything.value = False
         module.wants_prefix.value = False
-        module.object_groups[0].name.value = cpmeas.IMAGE
+        module.object_groups[0].name.value = cellprofiler.measurement.IMAGE
         module.object_groups[0].file_name.value = path
         module.object_groups[0].wants_automatic_file_name.value = False
         module.wants_aggregate_means.value = True
-        module.nan_representation.value = E.NANS_AS_NANS
-        m = cpmeas.Measurements()
+        module.nan_representation.value = cellprofiler.modules.exporttospreadsheet.NANS_AS_NANS
+        m = cellprofiler.measurement.Measurements()
         m.add_measurement(
-                cpmeas.IMAGE, "my_image_measurement", 13, image_set_number=1,
+                cellprofiler.measurement.IMAGE, "my_image_measurement", 13, image_set_number=1,
                 data_type=np.float64)
         mvalues = np.array([np.NaN, np.NaN])
         m.add_measurement(OBJECTS_NAME, OBJ_MEAS, mvalues,
                           image_set_number=1, data_type=np.float64)
-        m.add_measurement(cpmeas.IMAGE, "Count_%s" % OBJECTS_NAME, 2,
+        m.add_measurement(cellprofiler.measurement.IMAGE, "Count_%s" % OBJECTS_NAME, 2,
                           image_set_number=1)
         m.add_measurement(
-                cpmeas.IMAGE, IMG_MEAS, np.NaN, image_set_number=2,
+                cellprofiler.measurement.IMAGE, IMG_MEAS, np.NaN, image_set_number=2,
                 data_type=np.float64)
-        m.add_measurement(cpmeas.IMAGE, "Count_%s" % OBJECTS_NAME, 0,
+        m.add_measurement(cellprofiler.measurement.IMAGE, "Count_%s" % OBJECTS_NAME, 0,
                           image_set_number=2)
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        object_set = cpo.Set()
-        object_set.add_objects(cpo.Region(), OBJECTS_NAME)
-        workspace = cpw.Workspace(self.make_measurements_pipeline(m),
-                                  module,
-                                  image_set,
-                                  object_set,
-                                  m,
-                                  image_set_list)
+        object_set = cellprofiler.region.Set()
+        object_set.add_objects(cellprofiler.region.Region(), OBJECTS_NAME)
+        workspace = cellprofiler.workspace.Workspace(self.make_measurements_pipeline(m),
+                                                     module,
+                                                     image_set,
+                                                     object_set,
+                                                     m,
+                                                     image_set_list)
         module.post_run(workspace)
         with  open(path, "r") as fd:
             reader = csv.reader(fd, delimiter=module.delimiter_char)
@@ -1347,39 +1266,39 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
 
     def test_03_07_null_image_measurements(self):
         path = os.path.join(self.output_dir, "my_file.csv")
-        module = E.ExportToSpreadsheet()
+        module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
         module.module_num = 1
         module.wants_everything.value = False
         module.wants_prefix.value = False
-        module.object_groups[0].name.value = cpmeas.IMAGE
+        module.object_groups[0].name.value = cellprofiler.measurement.IMAGE
         module.object_groups[0].file_name.value = path
         module.object_groups[0].wants_automatic_file_name.value = False
         module.wants_aggregate_means.value = True
-        module.nan_representation.value = E.NANS_AS_NULLS
-        m = cpmeas.Measurements()
+        module.nan_representation.value = cellprofiler.modules.exporttospreadsheet.NANS_AS_NULLS
+        m = cellprofiler.measurement.Measurements()
         m.add_measurement(
-                cpmeas.IMAGE, "my_image_measurement", 13, image_set_number=1,
+                cellprofiler.measurement.IMAGE, "my_image_measurement", 13, image_set_number=1,
                 data_type=np.float64)
         mvalues = np.array([np.NaN, np.NaN])
         m.add_measurement(OBJECTS_NAME, OBJ_MEAS, mvalues,
                           image_set_number=1, data_type=np.float64)
-        m.add_measurement(cpmeas.IMAGE, "Count_%s" % OBJECTS_NAME, 2,
+        m.add_measurement(cellprofiler.measurement.IMAGE, "Count_%s" % OBJECTS_NAME, 2,
                           image_set_number=1)
         m.add_measurement(
-                cpmeas.IMAGE, IMG_MEAS, np.NaN, image_set_number=2,
+                cellprofiler.measurement.IMAGE, IMG_MEAS, np.NaN, image_set_number=2,
                 data_type=np.float64)
-        m.add_measurement(cpmeas.IMAGE, "Count_%s" % OBJECTS_NAME, 0,
+        m.add_measurement(cellprofiler.measurement.IMAGE, "Count_%s" % OBJECTS_NAME, 0,
                           image_set_number=2)
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        object_set = cpo.Set()
-        object_set.add_objects(cpo.Region(), OBJECTS_NAME)
-        workspace = cpw.Workspace(self.make_measurements_pipeline(m),
-                                  module,
-                                  image_set,
-                                  object_set,
-                                  m,
-                                  image_set_list)
+        object_set = cellprofiler.region.Set()
+        object_set.add_objects(cellprofiler.region.Region(), OBJECTS_NAME)
+        workspace = cellprofiler.workspace.Workspace(self.make_measurements_pipeline(m),
+                                                     module,
+                                                     image_set,
+                                                     object_set,
+                                                     m,
+                                                     image_set_list)
         module.post_run(workspace)
         with  open(path, "r") as fd:
             reader = csv.reader(fd, delimiter=module.delimiter_char)
@@ -1406,30 +1325,30 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
 
     def test_03_08_blob_image_measurements(self):
         path = os.path.join(self.output_dir, "my_file.csv")
-        module = E.ExportToSpreadsheet()
+        module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
         module.module_num = 1
         module.wants_everything.value = False
         module.wants_prefix.value = False
-        module.object_groups[0].name.value = cpmeas.IMAGE
+        module.object_groups[0].name.value = cellprofiler.measurement.IMAGE
         module.object_groups[0].file_name.value = path
         module.object_groups[0].wants_automatic_file_name.value = False
         module.wants_aggregate_means.value = False
-        m = cpmeas.Measurements()
+        m = cellprofiler.measurement.Measurements()
         r = np.random.RandomState()
         r.seed(38)
         my_blob = r.randint(0, 256, 100).astype(np.uint8)
         m.add_measurement(
-                cpmeas.IMAGE, IMG_MEAS, my_blob, image_set_number=1,
+                cellprofiler.measurement.IMAGE, IMG_MEAS, my_blob, image_set_number=1,
                 data_type=np.uint8)
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        object_set = cpo.Set()
-        workspace = cpw.Workspace(self.make_measurements_pipeline(m),
-                                  module,
-                                  image_set,
-                                  object_set,
-                                  m,
-                                  image_set_list)
+        object_set = cellprofiler.region.Set()
+        workspace = cellprofiler.workspace.Workspace(self.make_measurements_pipeline(m),
+                                                     module,
+                                                     image_set,
+                                                     object_set,
+                                                     m,
+                                                     image_set_list)
         module.post_run(workspace)
         with  open(path, "r") as fd:
             reader = csv.reader(fd, delimiter=module.delimiter_char)
@@ -1443,30 +1362,30 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
 
     def test_03_09_blob_experiment_measurements(self):
         path = os.path.join(self.output_dir, "my_file.csv")
-        module = E.ExportToSpreadsheet()
+        module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
         module.module_num = 1
         module.wants_everything.value = False
         module.wants_prefix.value = False
-        module.object_groups[0].name.value = cpmeas.EXPERIMENT
+        module.object_groups[0].name.value = cellprofiler.measurement.EXPERIMENT
         module.object_groups[0].file_name.value = path
         module.object_groups[0].wants_automatic_file_name.value = False
         module.wants_aggregate_means.value = False
-        m = cpmeas.Measurements()
+        m = cellprofiler.measurement.Measurements()
         r = np.random.RandomState()
         r.seed(38)
         my_blob = r.randint(0, 256, 100).astype(np.uint8)
         m.add_measurement(
-                cpmeas.EXPERIMENT, IMG_MEAS, my_blob, image_set_number=1,
+                cellprofiler.measurement.EXPERIMENT, IMG_MEAS, my_blob, image_set_number=1,
                 data_type=np.uint8)
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        object_set = cpo.Set()
-        workspace = cpw.Workspace(self.make_measurements_pipeline(m),
-                                  module,
-                                  image_set,
-                                  object_set,
-                                  m,
-                                  image_set_list)
+        object_set = cellprofiler.region.Set()
+        workspace = cellprofiler.workspace.Workspace(self.make_measurements_pipeline(m),
+                                                     module,
+                                                     image_set,
+                                                     object_set,
+                                                     m,
+                                                     image_set_list)
         module.post_run(workspace)
         with  open(path, "r") as fd:
             reader = csv.reader(fd, delimiter=module.delimiter_char)
@@ -1481,23 +1400,23 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                 self.fail("Could not find %s in experiment CSV" % IMG_MEAS)
 
     def test_04_01_01_object_with_metadata(self):
-        '''Test writing objects with 2 pairs of 2 image sets w same metadata'''
+        """Test writing objects with 2 pairs of 2 image sets w same metadata"""
         # +++backslash+++ here because Windows and join don't do well
         # if you have the raw backslash
         path = os.path.join(self.output_dir, "+++backslash+++g<tag>.csv")
         path = path.replace("\\", "\\\\")
         path = path.replace("+++backslash+++", "\\")
-        module = E.ExportToSpreadsheet()
+        module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
         module.module_num = 1
         module.wants_everything.value = False
         module.wants_prefix.value = False
         module.object_groups[0].name.value = "my_object"
         module.object_groups[0].file_name.value = path
         module.object_groups[0].wants_automatic_file_name.value = False
-        m = cpmeas.Measurements()
+        m = cellprofiler.measurement.Measurements()
         np.random.seed(0)
         mvalues = np.random.uniform(size=(4,))
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cellprofiler.image.ImageSetList()
         for index, measurement, metadata in zip(range(4), mvalues, ('foo', 'bar', 'bar', 'foo')):
             image_set = image_set_list.get_image_set(index)
             m.add_measurement("my_object", "my_measurement", np.array([measurement]))
@@ -1505,14 +1424,14 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             m.add_image_measurement("Count_my_object", 1)
             if index < 3:
                 m.next_image_set()
-        object_set = cpo.Set()
-        object_set.add_objects(cpo.Region(), "my_objects")
-        workspace = cpw.Workspace(self.make_measurements_pipeline(m),
-                                  module,
-                                  image_set,
-                                  object_set,
-                                  m,
-                                  image_set_list)
+        object_set = cellprofiler.region.Set()
+        object_set.add_objects(cellprofiler.region.Region(), "my_objects")
+        workspace = cellprofiler.workspace.Workspace(self.make_measurements_pipeline(m),
+                                                     module,
+                                                     image_set,
+                                                     object_set,
+                                                     m,
+                                                     image_set_list)
         for i in range(4):
             module.post_run(workspace)
         for file_name, value_indexes in (("foo.csv", (0, 3)),
@@ -1546,16 +1465,16 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         path = os.path.join(self.output_dir, "+++backslash+++g<tag>")
         path = path.replace("\\", "\\\\")
         path = path.replace("+++backslash+++", "\\")
-        module = E.ExportToSpreadsheet()
+        module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
         module.module_num = 1
         module.wants_everything.value = True
         module.wants_prefix.value = False
-        module.directory.dir_choice = E.ABSOLUTE_FOLDER_NAME
+        module.directory.dir_choice = cellprofiler.preferences.ABSOLUTE_FOLDER_NAME
         module.directory.custom_path = path
-        m = cpmeas.Measurements()
+        m = cellprofiler.measurement.Measurements()
         np.random.seed(0)
         mvalues = np.random.uniform(size=(4,))
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cellprofiler.image.ImageSetList()
         for index, measurement, metadata in zip(range(4), mvalues, ('foo', 'bar', 'bar', 'foo')):
             image_set = image_set_list.get_image_set(index)
             m.add_measurement("my_object", "my_measurement", np.array([measurement]))
@@ -1563,14 +1482,14 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             m.add_image_measurement("Count_my_object", 1)
             if index < 3:
                 m.next_image_set()
-        object_set = cpo.Set()
-        object_set.add_objects(cpo.Region(), "my_objects")
-        workspace = cpw.Workspace(self.make_measurements_pipeline(m),
-                                  module,
-                                  image_set,
-                                  object_set,
-                                  m,
-                                  image_set_list)
+        object_set = cellprofiler.region.Set()
+        object_set.add_objects(cellprofiler.region.Region(), "my_objects")
+        workspace = cellprofiler.workspace.Workspace(self.make_measurements_pipeline(m),
+                                                     module,
+                                                     image_set,
+                                                     object_set,
+                                                     m,
+                                                     image_set_list)
         module.post_run(workspace)
         for dir_name, value_indexes in (("foo", (0, 3)),
                                         ("bar", (1, 2))):
@@ -1595,35 +1514,35 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                 fd.close()
 
     def test_04_02_image_with_metadata(self):
-        '''Test writing image data with 2 pairs of 2 image sets w same metadata'''
+        """Test writing image data with 2 pairs of 2 image sets w same metadata"""
         path = os.path.join(self.output_dir, "+++backslash+++g<tag>.csv")
         path = path.replace("\\", "\\\\")
         path = path.replace("+++backslash+++", "\\")
-        module = E.ExportToSpreadsheet()
+        module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
         module.module_num = 1
         module.wants_everything.value = False
         module.wants_prefix.value = False
-        module.object_groups[0].name.value = cpmeas.IMAGE
+        module.object_groups[0].name.value = cellprofiler.measurement.IMAGE
         module.object_groups[0].file_name.value = path
         module.object_groups[0].wants_automatic_file_name.value = False
-        m = cpmeas.Measurements()
+        m = cellprofiler.measurement.Measurements()
         np.random.seed(0)
         mvalues = np.random.uniform(size=(4,))
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cellprofiler.image.ImageSetList()
         for index, measurement, metadata in zip(range(4), mvalues, ('foo', 'bar', 'bar', 'foo')):
             image_set = image_set_list.get_image_set(index)
             m.add_image_measurement("my_measurement", measurement)
             m.add_image_measurement("Metadata_tag", metadata)
             if index < 3:
                 m.next_image_set()
-        object_set = cpo.Set()
-        object_set.add_objects(cpo.Region(), "my_objects")
-        workspace = cpw.Workspace(self.make_measurements_pipeline(m),
-                                  module,
-                                  image_set,
-                                  object_set,
-                                  m,
-                                  image_set_list)
+        object_set = cellprofiler.region.Set()
+        object_set.add_objects(cellprofiler.region.Region(), "my_objects")
+        workspace = cellprofiler.workspace.Workspace(self.make_measurements_pipeline(m),
+                                                     module,
+                                                     image_set,
+                                                     object_set,
+                                                     m,
+                                                     image_set_list)
         for i in range(4):
             module.post_run(workspace)
         for file_name, value_indexes in (("foo.csv", (0, 3)),
@@ -1650,23 +1569,23 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                 fd.close()
 
     def test_04_03_image_with_path_metadata(self):
-        '''Test writing image data with 2 pairs of 2 image sets w same metadata'''
+        """Test writing image data with 2 pairs of 2 image sets w same metadata"""
         path = os.path.join(self.output_dir, "+++backslash+++g<tag>")
         path = path.replace("\\", "\\\\")
         path = path.replace("+++backslash+++", "\\")
-        module = E.ExportToSpreadsheet()
+        module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
         module.module_num = 1
         module.wants_everything.value = False
         module.wants_prefix.value = False
-        module.directory.dir_choice = E.ABSOLUTE_FOLDER_NAME
+        module.directory.dir_choice = cellprofiler.preferences.ABSOLUTE_FOLDER_NAME
         module.directory.custom_path = path
-        module.object_groups[0].name.value = cpmeas.IMAGE
+        module.object_groups[0].name.value = cellprofiler.measurement.IMAGE
         module.object_groups[0].file_name.value = "output.csv"
         module.object_groups[0].wants_automatic_file_name.value = False
-        m = cpmeas.Measurements()
+        m = cellprofiler.measurement.Measurements()
         np.random.seed(0)
         mvalues = np.random.uniform(size=(4,))
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cellprofiler.image.ImageSetList()
         metadata_values = ('foo', 'bar', 'bar', 'foo')
         for index, (measurement, metadata) in \
                 enumerate(zip(mvalues, metadata_values)):
@@ -1675,14 +1594,14 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             m.add_image_measurement("Metadata_tag", metadata)
             if index < 3:
                 m.next_image_set()
-        object_set = cpo.Set()
-        object_set.add_objects(cpo.Region(), "my_objects")
-        workspace = cpw.Workspace(self.make_measurements_pipeline(m),
-                                  module,
-                                  image_set,
-                                  object_set,
-                                  m,
-                                  image_set_list)
+        object_set = cellprofiler.region.Set()
+        object_set.add_objects(cellprofiler.region.Region(), "my_objects")
+        workspace = cellprofiler.workspace.Workspace(self.make_measurements_pipeline(m),
+                                                     module,
+                                                     image_set,
+                                                     object_set,
+                                                     m,
+                                                     image_set_list)
         module.post_run(workspace)
         for path_name, value_indexes in (("foo", (0, 3)),
                                          ("bar", (1, 2))):
@@ -1708,30 +1627,30 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                 fd.close()
 
     def test_04_04_image_measurement_custom_directory(self):
-        '''Test writing an image measurement'''
+        """Test writing an image measurement"""
         path = os.path.join(self.output_dir, "my_dir", "my_file.csv")
-        cpprefs.set_headless()
-        cpprefs.set_default_output_directory(self.output_dir)
-        module = E.ExportToSpreadsheet()
+        cellprofiler.preferences.set_headless()
+        cellprofiler.preferences.set_default_output_directory(self.output_dir)
+        module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
         module.module_num = 1
         module.wants_everything.value = False
         module.wants_prefix.value = False
-        module.directory.dir_choice = E.DEFAULT_OUTPUT_SUBFOLDER_NAME
+        module.directory.dir_choice = cellprofiler.preferences.DEFAULT_OUTPUT_SUBFOLDER_NAME
         module.directory.custom_path = "./my_dir"
-        module.object_groups[0].name.value = cpmeas.IMAGE
+        module.object_groups[0].name.value = cellprofiler.measurement.IMAGE
         module.object_groups[0].file_name.value = "my_file.csv"
         module.object_groups[0].wants_automatic_file_name.value = False
-        m = cpmeas.Measurements(mode="memory")
+        m = cellprofiler.measurement.Measurements(mode="memory")
         m.add_image_measurement("my_measurement", "Hello, world")
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        object_set = cpo.Set()
-        workspace = cpw.Workspace(self.make_measurements_pipeline(m),
-                                  module,
-                                  image_set,
-                                  object_set,
-                                  m,
-                                  image_set_list)
+        object_set = cellprofiler.region.Set()
+        workspace = cellprofiler.workspace.Workspace(self.make_measurements_pipeline(m),
+                                                     module,
+                                                     image_set,
+                                                     object_set,
+                                                     m,
+                                                     image_set_list)
         module.post_run(workspace)
         try:
             fd = open(path, "r")
@@ -1748,31 +1667,31 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             fd.close()
 
     def test_04_05_unicode_image_metadata(self):
-        '''Write image measurements containing unicode characters'''
+        """Write image measurements containing unicode characters"""
         path = os.path.join(self.output_dir, "my_dir", "my_file.csv")
-        cpprefs.set_headless()
-        cpprefs.set_default_output_directory(self.output_dir)
-        module = E.ExportToSpreadsheet()
+        cellprofiler.preferences.set_headless()
+        cellprofiler.preferences.set_default_output_directory(self.output_dir)
+        module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
         module.module_num = 1
         module.wants_everything.value = False
         module.wants_prefix.value = False
-        module.directory.dir_choice = E.DEFAULT_OUTPUT_SUBFOLDER_NAME
+        module.directory.dir_choice = cellprofiler.preferences.DEFAULT_OUTPUT_SUBFOLDER_NAME
         module.directory.custom_path = "./my_dir"
-        module.object_groups[0].name.value = cpmeas.IMAGE
+        module.object_groups[0].name.value = cellprofiler.measurement.IMAGE
         module.object_groups[0].file_name.value = "my_file.csv"
         module.object_groups[0].wants_automatic_file_name.value = False
-        m = cpmeas.Measurements(mode="memory")
+        m = cellprofiler.measurement.Measurements(mode="memory")
         metadata_value = u"\u2211(Hello, world)"
         m.add_image_measurement("my_measurement", metadata_value)
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        object_set = cpo.Set()
-        workspace = cpw.Workspace(self.make_measurements_pipeline(m),
-                                  module,
-                                  image_set,
-                                  object_set,
-                                  m,
-                                  image_set_list)
+        object_set = cellprofiler.region.Set()
+        workspace = cellprofiler.workspace.Workspace(self.make_measurements_pipeline(m),
+                                                     module,
+                                                     image_set,
+                                                     object_set,
+                                                     m,
+                                                     image_set_list)
         module.post_run(workspace)
         try:
             fd = open(path, "r")
@@ -1794,20 +1713,20 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         #
         # This will give ExportToSpreadsheet some objects to deal with
         #
-        idp = identifyprimaryobjects.IdentifyPrimaryObjects()
+        idp = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
         idp.module_num = 1
         idp.object_name.value = OBJECTS_NAME
         pipeline.add_module(idp)
 
-        module = E.ExportToSpreadsheet()
+        module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
         module.wants_everything.value = True
-        module.directory.dir_choice = E.cps.ABSOLUTE_FOLDER_NAME
+        module.directory.dir_choice = cellprofiler.preferences.ABSOLUTE_FOLDER_NAME
         module.directory.custom_path = self.output_dir
         module.module_num = 2
         pipeline.add_module(module)
 
-        workspace = cpw.Workspace(pipeline, module, m, None, m, None)
-        for object_name in (cpmeas.EXPERIMENT, cpmeas.IMAGE, OBJECTS_NAME):
+        workspace = cellprofiler.workspace.Workspace(pipeline, module, m, None, m, None)
+        for object_name in (cellprofiler.measurement.EXPERIMENT, cellprofiler.measurement.IMAGE, OBJECTS_NAME):
             file_name = module.make_objects_file_name(
                     object_name, workspace, 1)
             with open(file_name, "w") as fd:
@@ -1825,14 +1744,14 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         #
         # This will give ExportToSpreadsheet some objects to deal with
         #
-        idp = identifyprimaryobjects.IdentifyPrimaryObjects()
+        idp = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
         idp.module_num = 1
         idp.object_name.value = OBJECTS_NAME
         pipeline.add_module(idp)
 
-        module = E.ExportToSpreadsheet()
+        module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
         module.wants_everything.value = False
-        module.directory.dir_choice = E.cps.ABSOLUTE_FOLDER_NAME
+        module.directory.dir_choice = cellprofiler.preferences.ABSOLUTE_FOLDER_NAME
         module.directory.custom_path = self.output_dir
         g = module.object_groups[0]
         g.name.value = OBJECTS_NAME
@@ -1841,7 +1760,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.module_num = 2
         pipeline.add_module(module)
 
-        workspace = cpw.Workspace(pipeline, module, m, None, m, None)
+        workspace = cellprofiler.workspace.Workspace(pipeline, module, m, None, m, None)
 
         for image_number in m.get_image_numbers():
             file_name = module.make_objects_file_name(
@@ -1858,47 +1777,47 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
     def test_05_01_aggregate_image_columns(self):
         """Test output of aggregate object data for images"""
         path = os.path.join(self.output_dir, "my_file.csv")
-        module = E.ExportToSpreadsheet()
+        module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
         module.module_num = 1
         module.wants_everything.value = False
         module.wants_prefix.value = False
-        module.object_groups[0].name.value = cpmeas.IMAGE
+        module.object_groups[0].name.value = cellprofiler.measurement.IMAGE
         module.object_groups[0].file_name.value = path
         module.object_groups[0].wants_automatic_file_name.value = False
         module.wants_aggregate_means.value = True
         module.wants_aggregate_medians.value = True
         module.wants_aggregate_std.value = True
-        m = cpmeas.Measurements()
+        m = cellprofiler.measurement.Measurements()
         m.add_image_measurement("Count_my_objects", 6)
         np.random.seed(0)
         data = np.random.uniform(size=(6,))
         m.add_measurement("my_objects", "my_measurement", data)
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        object_set = cpo.Set()
-        object_set.add_objects(cpo.Region(), "my_objects")
-        workspace = cpw.Workspace(self.make_measurements_pipeline(m),
-                                  module,
-                                  image_set,
-                                  object_set,
-                                  m,
-                                  image_set_list)
+        object_set = cellprofiler.region.Set()
+        object_set.add_objects(cellprofiler.region.Region(), "my_objects")
+        workspace = cellprofiler.workspace.Workspace(self.make_measurements_pipeline(m),
+                                                     module,
+                                                     image_set,
+                                                     object_set,
+                                                     m,
+                                                     image_set_list)
         module.post_run(workspace)
         fd = open(path, "r")
         try:
             reader = csv.reader(fd, delimiter=module.delimiter_char)
             header = reader.next()
-            self.assertEqual(len(header), len(cpmeas.AGG_NAMES) + 2)
+            self.assertEqual(len(header), len(cellprofiler.measurement.AGG_NAMES) + 2)
             d = {}
             for index, caption in enumerate(header):
                 d[caption] = index
 
             row = reader.next()
             self.assertEqual(row[d["Count_my_objects"]], "6")
-            for agg in cpmeas.AGG_NAMES:
-                value = (np.mean(data) if agg == cpmeas.AGG_MEAN
-                         else np.std(data) if agg == cpmeas.AGG_STD_DEV
-                else np.median(data) if agg == cpmeas.AGG_MEDIAN
+            for agg in cellprofiler.measurement.AGG_NAMES:
+                value = (np.mean(data) if agg == cellprofiler.measurement.AGG_MEAN
+                         else np.std(data) if agg == cellprofiler.measurement.AGG_STD_DEV
+                else np.median(data) if agg == cellprofiler.measurement.AGG_MEDIAN
                 else np.NAN)
                 self.assertAlmostEqual(float(row[d["%s_my_objects_my_measurement" % agg]]), value)
             self.assertRaises(StopIteration, reader.next)
@@ -1908,31 +1827,31 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
     def test_05_02_no_aggregate_image_columns(self):
         """Test output of aggregate object data for images"""
         path = os.path.join(self.output_dir, "my_file.csv")
-        module = E.ExportToSpreadsheet()
+        module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
         module.module_num = 1
         module.wants_everything.value = False
         module.wants_prefix.value = False
-        module.object_groups[0].name.value = cpmeas.IMAGE
+        module.object_groups[0].name.value = cellprofiler.measurement.IMAGE
         module.object_groups[0].file_name.value = path
         module.object_groups[0].wants_automatic_file_name.value = False
         module.wants_aggregate_means.value = False
         module.wants_aggregate_medians.value = False
         module.wants_aggregate_std.value = False
-        m = cpmeas.Measurements(mode="memory")
+        m = cellprofiler.measurement.Measurements(mode="memory")
         m.add_image_measurement("Count_my_objects", 6)
         np.random.seed(0)
         data = np.random.uniform(size=(6,))
         m.add_measurement("my_objects", "my_measurement", data)
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        object_set = cpo.Set()
-        object_set.add_objects(cpo.Region(), "my_objects")
-        workspace = cpw.Workspace(self.make_measurements_pipeline(m),
-                                  module,
-                                  image_set,
-                                  object_set,
-                                  m,
-                                  image_set_list)
+        object_set = cellprofiler.region.Set()
+        object_set.add_objects(cellprofiler.region.Region(), "my_objects")
+        workspace = cellprofiler.workspace.Workspace(self.make_measurements_pipeline(m),
+                                                     module,
+                                                     image_set,
+                                                     object_set,
+                                                     m,
+                                                     image_set_list)
         module.post_run(workspace)
         try:
             fd = open(path, "r")
@@ -1950,19 +1869,19 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             fd.close()
 
     def test_05_03_aggregate_and_filtered(self):
-        '''Regression test of IMG-987
+        """Regression test of IMG-987
 
         A bug in ExportToSpreadsheet caused it to fail to write any
         aggregate object measurements if measurements were filtered by
         pick_columns.
-        '''
+        """
         image_path = os.path.join(self.output_dir, "my_image_file.csv")
         object_path = os.path.join(self.output_dir, "my_object_file.csv")
-        module = E.ExportToSpreadsheet()
+        module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
         module.module_num = 1
         module.wants_everything.value = False
         module.wants_prefix.value = False
-        module.object_groups[0].name.value = cpmeas.IMAGE
+        module.object_groups[0].name.value = cellprofiler.measurement.IMAGE
         module.object_groups[0].file_name.value = image_path
         module.object_groups[0].wants_automatic_file_name.value = False
         module.add_object_group()
@@ -1975,16 +1894,16 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.pick_columns.value = True
         columns = [module.columns.make_measurement_choice(ob, feature)
                    for ob, feature in (
-                       (cpmeas.IMAGE, "ImageNumber"),
-                       (cpmeas.IMAGE, "Count_my_objects"),
-                       (cpmeas.IMAGE, "first_measurement"),
+                       (cellprofiler.measurement.IMAGE, "ImageNumber"),
+                       (cellprofiler.measurement.IMAGE, "Count_my_objects"),
+                       (cellprofiler.measurement.IMAGE, "first_measurement"),
                        ("my_objects", "my_measurement"),
                        ("my_objects", "ImageNumber"),
                        ("my_objects", "Number_Object_Number")
                    )]
         module.columns.value = module.columns.get_value_string(columns)
 
-        m = cpmeas.Measurements()
+        m = cellprofiler.measurement.Measurements()
         np.random.seed(0)
         data = np.random.uniform(size=(6,))
         m.add_image_measurement("Count_my_objects", 6)
@@ -1994,16 +1913,16 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         m.add_measurement("my_objects", "my_measurement", data)
         m.add_measurement("my_objects", "my_filtered_measurement",
                           np.random.uniform(size=(6,)))
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        object_set = cpo.Set()
-        object_set.add_objects(cpo.Region(), "my_objects")
-        workspace = cpw.Workspace(self.make_measurements_pipeline(m),
-                                  module,
-                                  image_set,
-                                  object_set,
-                                  m,
-                                  image_set_list)
+        object_set = cellprofiler.region.Set()
+        object_set.add_objects(cellprofiler.region.Region(), "my_objects")
+        workspace = cellprofiler.workspace.Workspace(self.make_measurements_pipeline(m),
+                                                     module,
+                                                     image_set,
+                                                     object_set,
+                                                     m,
+                                                     image_set_list)
         module.post_run(workspace)
         try:
             fd = open(image_path, "r")
@@ -2053,11 +1972,11 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         # Always output the ImageNumber column in Image.csv
 
         image_path = os.path.join(self.output_dir, "my_image_file.csv")
-        module = E.ExportToSpreadsheet()
+        module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
         module.module_num = 1
         module.wants_everything.value = False
         module.wants_prefix.value = False
-        module.object_groups[0].name.value = cpmeas.IMAGE
+        module.object_groups[0].name.value = cellprofiler.measurement.IMAGE
         module.object_groups[0].file_name.value = image_path
         module.object_groups[0].wants_automatic_file_name.value = False
         module.wants_aggregate_means.value = False
@@ -2066,23 +1985,23 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.pick_columns.value = True
         columns = [module.columns.make_measurement_choice(ob, feature)
                    for ob, feature in (
-                       (cpmeas.IMAGE, "first_measurement"),
+                       (cellprofiler.measurement.IMAGE, "first_measurement"),
                    )]
         module.columns.value = module.columns.get_value_string(columns)
 
-        m = cpmeas.Measurements()
+        m = cellprofiler.measurement.Measurements()
         np.random.seed(0)
         data = np.random.uniform(size=(6,))
         m.add_image_measurement("first_measurement", np.sum(data))
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        object_set = cpo.Set()
-        workspace = cpw.Workspace(self.make_measurements_pipeline(m),
-                                  module,
-                                  image_set,
-                                  object_set,
-                                  m,
-                                  image_set_list)
+        object_set = cellprofiler.region.Set()
+        workspace = cellprofiler.workspace.Workspace(self.make_measurements_pipeline(m),
+                                                     module,
+                                                     image_set,
+                                                     object_set,
+                                                     m,
+                                                     image_set_list)
         module.post_run(workspace)
         try:
             fd = open(image_path, "r")
@@ -2099,17 +2018,17 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             fd.close()
 
     def test_06_01_image_index_columns(self):
-        '''Test presence of index column'''
+        """Test presence of index column"""
         path = os.path.join(self.output_dir, "my_file.csv")
-        module = E.ExportToSpreadsheet()
+        module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
         module.module_num = 1
         module.wants_everything.value = False
         module.wants_prefix.value = False
-        module.object_groups[0].name.value = cpmeas.IMAGE
+        module.object_groups[0].name.value = cellprofiler.measurement.IMAGE
         module.object_groups[0].file_name.value = path
         module.object_groups[0].wants_automatic_file_name.value = False
-        m = cpmeas.Measurements()
-        image_set_list = cpi.ImageSetList()
+        m = cellprofiler.measurement.Measurements()
+        image_set_list = cellprofiler.image.ImageSetList()
         data = ("The reverse side also has a reverse side. (Japanese proverb)",
                 "When I was younger, I could remember anything, whether it had happened or not. (Mark Twain)",
                 "A thing worth having is a thing worth cheating for. (W.C. Fields)"
@@ -2119,20 +2038,20 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             m.add_image_measurement("quotation", data[i])
             if i < len(data) - 1:
                 m.next_image_set()
-        object_set = cpo.Set()
-        workspace = cpw.Workspace(self.make_measurements_pipeline(m),
-                                  module,
-                                  image_set,
-                                  object_set,
-                                  m,
-                                  image_set_list)
+        object_set = cellprofiler.region.Set()
+        workspace = cellprofiler.workspace.Workspace(self.make_measurements_pipeline(m),
+                                                     module,
+                                                     image_set,
+                                                     object_set,
+                                                     m,
+                                                     image_set_list)
         module.post_run(workspace)
         try:
             fd = open(path, "r")
             reader = csv.reader(fd, delimiter=module.delimiter_char)
             header = reader.next()
             self.assertEqual(len(header), 2)
-            self.assertEqual(header[0], E.IMAGE_NUMBER)
+            self.assertEqual(header[0], cellprofiler.modules.exporttospreadsheet.IMAGE_NUMBER)
             self.assertEqual(header[1], "quotation")
             for i in range(len(data)):
                 row = reader.next()
@@ -2143,16 +2062,16 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             fd.close()
 
     def test_06_02_object_index_columns(self):
-        '''Test presence of image and object index columns'''
+        """Test presence of image and object index columns"""
         path = os.path.join(self.output_dir, "my_file.csv")
-        module = E.ExportToSpreadsheet()
+        module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
         module.module_num = 1
         module.wants_everything.value = False
         module.wants_prefix.value = False
         module.object_groups[0].name.value = "my_objects"
         module.object_groups[0].file_name.value = path
         module.object_groups[0].wants_automatic_file_name.value = False
-        m = cpmeas.Measurements()
+        m = cellprofiler.measurement.Measurements()
         np.random.seed(0)
         # Three images with four objects each
         mvalues = np.random.uniform(size=(3, 4))
@@ -2161,24 +2080,24 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                 m.next_image_set()
             m.add_image_measurement("Count_my_objects", mvalues.shape[1])
             m.add_measurement("my_objects", "my_measurement", mvalues[image_idx, :])
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        object_set = cpo.Set()
-        object_set.add_objects(cpo.Region(), "my_objects")
-        workspace = cpw.Workspace(self.make_measurements_pipeline(m),
-                                  module,
-                                  image_set,
-                                  object_set,
-                                  m,
-                                  image_set_list)
+        object_set = cellprofiler.region.Set()
+        object_set.add_objects(cellprofiler.region.Region(), "my_objects")
+        workspace = cellprofiler.workspace.Workspace(self.make_measurements_pipeline(m),
+                                                     module,
+                                                     image_set,
+                                                     object_set,
+                                                     m,
+                                                     image_set_list)
         module.post_run(workspace)
         try:
             fd = open(path, "r")
             reader = csv.reader(fd, delimiter=module.delimiter_char)
             header = reader.next()
             self.assertEqual(len(header), 3)
-            self.assertEqual(header[0], E.IMAGE_NUMBER)
-            self.assertEqual(header[1], E.OBJECT_NUMBER)
+            self.assertEqual(header[0], cellprofiler.modules.exporttospreadsheet.IMAGE_NUMBER)
+            self.assertEqual(header[1], cellprofiler.modules.exporttospreadsheet.OBJECT_NUMBER)
             self.assertEqual(header[2], "my_measurement")
             for image_idx in range(mvalues.shape[0]):
                 for object_idx in range(mvalues.shape[1]):
@@ -2193,9 +2112,9 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             fd.close()
 
     def test_06_03_object_metadata_columns(self):
-        '''Test addition of image metadata columns to an object metadata file'''
+        """Test addition of image metadata columns to an object metadata file"""
         path = os.path.join(self.output_dir, "my_file.csv")
-        module = E.ExportToSpreadsheet()
+        module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
         module.module_num = 1
         module.wants_everything.value = False
         module.wants_prefix.value = False
@@ -2203,7 +2122,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.object_groups[0].file_name.value = path
         module.object_groups[0].wants_automatic_file_name.value = False
         module.add_metadata.value = True
-        m = cpmeas.Measurements()
+        m = cellprofiler.measurement.Measurements()
         np.random.seed(0)
         # Three images with four objects each
         mvalues = np.random.uniform(size=(3, 4))
@@ -2214,16 +2133,16 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             m.add_image_measurement("Metadata_Plate", "P-X9TRG")
             m.add_image_measurement("Metadata_Well", "C0%d" % (image_idx + 1))
             m.add_measurement("my_objects", "my_measurement", mvalues[image_idx, :])
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        object_set = cpo.Set()
-        object_set.add_objects(cpo.Region(), "my_objects")
-        workspace = cpw.Workspace(self.make_measurements_pipeline(m),
-                                  module,
-                                  image_set,
-                                  object_set,
-                                  m,
-                                  image_set_list)
+        object_set = cellprofiler.region.Set()
+        object_set.add_objects(cellprofiler.region.Region(), "my_objects")
+        workspace = cellprofiler.workspace.Workspace(self.make_measurements_pipeline(m),
+                                                     module,
+                                                     image_set,
+                                                     object_set,
+                                                     m,
+                                                     image_set_list)
         module.post_run(workspace)
         try:
             fd = open(path, "r")
@@ -2249,14 +2168,14 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             fd.close()
 
     def test_07_01_missing_measurements(self):
-        '''Make sure ExportToSpreadsheet can continue when measurements are missing
+        """Make sure ExportToSpreadsheet can continue when measurements are missing
 
         Regression test of IMG-361
         Take measurements for 3 image sets, some measurements missing
         from the middle one.
-        '''
+        """
         path = os.path.join(self.output_dir, "my_file.csv")
-        module = E.ExportToSpreadsheet()
+        module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
         module.module_num = 1
         module.wants_everything.value = False
         module.wants_prefix.value = False
@@ -2264,7 +2183,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.object_groups[0].file_name.value = path
         module.object_groups[0].wants_automatic_file_name.value = False
         module.add_metadata.value = True
-        m = cpmeas.Measurements()
+        m = cellprofiler.measurement.Measurements()
         np.random.seed(0)
         # Three images with four objects each
         mvalues = np.random.uniform(size=(3, 4))
@@ -2275,16 +2194,16 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             if image_idx != 1:
                 m.add_image_measurement("my_measurement", 100)
                 m.add_measurement("my_objects", "my_measurement", mvalues[image_idx, :])
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        object_set = cpo.Set()
-        object_set.add_objects(cpo.Region(), "my_objects")
-        workspace = cpw.Workspace(self.make_measurements_pipeline(m),
-                                  module,
-                                  image_set,
-                                  object_set,
-                                  m,
-                                  image_set_list)
+        object_set = cellprofiler.region.Set()
+        object_set.add_objects(cellprofiler.region.Region(), "my_objects")
+        workspace = cellprofiler.workspace.Workspace(self.make_measurements_pipeline(m),
+                                                     module,
+                                                     image_set,
+                                                     object_set,
+                                                     m,
+                                                     image_set_list)
         module.post_run(workspace)
         try:
             fd = open(path, "r")
@@ -2316,37 +2235,37 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         # no image set makes the measurement
         #
         path = os.path.join(self.output_dir, "my_file.csv")
-        pipeline = cpp.Pipeline()
-        module = identifyprimaryobjects.IdentifyPrimaryObjects()
+        pipeline = cellprofiler.pipeline.Pipeline()
+        module = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
         module.module_num = 1
         pipeline.add_module(module)
         module.image_name.value = "my_image"
         module.object_name.value = OBJECTS_NAME
-        module = E.ExportToSpreadsheet()
+        module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
         module.module_num = 2
         pipeline.add_module(module)
         module.wants_everything.value = False
         module.wants_prefix.value = False
-        module.nan_representation.value = E.NANS_AS_NANS
+        module.nan_representation.value = cellprofiler.modules.exporttospreadsheet.NANS_AS_NANS
         module.object_groups[0].name.value = OBJECTS_NAME
         module.object_groups[0].file_name.value = path
         module.object_groups[0].wants_automatic_file_name.value = False
         module.add_metadata.value = False
-        m = cpmeas.Measurements()
-        m[cpmeas.IMAGE, cpmeas.GROUP_NUMBER, 1] = 1
-        m[cpmeas.IMAGE, cpmeas.GROUP_INDEX, 1] = 1
-        m[cpmeas.IMAGE, "_".join((C_COUNT, OBJECTS_NAME)), 1] = 3
-        m[OBJECTS_NAME, M_LOCATION_CENTER_X, 1] = np.array([1, 4, 9], float)
-        image_set_list = cpi.ImageSetList()
+        m = cellprofiler.measurement.Measurements()
+        m[cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_NUMBER, 1] = 1
+        m[cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_INDEX, 1] = 1
+        m[cellprofiler.measurement.IMAGE, "_".join((cellprofiler.modules.identify.C_COUNT, OBJECTS_NAME)), 1] = 3
+        m[OBJECTS_NAME, cellprofiler.modules.identify.M_LOCATION_CENTER_X, 1] = np.array([1, 4, 9], float)
+        image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        object_set = cpo.Set()
-        object_set.add_objects(cpo.Region(), "my_objects")
-        workspace = cpw.Workspace(pipeline,
-                                  module,
-                                  image_set,
-                                  object_set,
-                                  m,
-                                  image_set_list)
+        object_set = cellprofiler.region.Set()
+        object_set.add_objects(cellprofiler.region.Region(), "my_objects")
+        workspace = cellprofiler.workspace.Workspace(pipeline,
+                                                     module,
+                                                     image_set,
+                                                     object_set,
+                                                     m,
+                                                     image_set_list)
         module.post_run(workspace)
         try:
             fd = open(path, "r")
@@ -2355,13 +2274,13 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             d = {}
             for index, column in enumerate(header):
                 d[column] = index
-            self.assertTrue(d.has_key(M_LOCATION_CENTER_X))
-            self.assertTrue(d.has_key(M_LOCATION_CENTER_Y))
+            self.assertTrue(d.has_key(cellprofiler.modules.identify.M_LOCATION_CENTER_X))
+            self.assertTrue(d.has_key(cellprofiler.modules.identify.M_LOCATION_CENTER_Y))
             for i in range(3):
                 row = reader.next()
-                x = row[d[M_LOCATION_CENTER_X]]
+                x = row[d[cellprofiler.modules.identify.M_LOCATION_CENTER_X]]
                 self.assertEqual(float(x), (i + 1) ** 2)
-                y = row[d[M_LOCATION_CENTER_Y]]
+                y = row[d[cellprofiler.modules.identify.M_LOCATION_CENTER_Y]]
                 self.assertEqual(y.lower(), "nan")
             self.assertRaises(StopIteration, reader.next)
         finally:
@@ -2380,18 +2299,18 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.csv_directory.custom_path = csv_path
         module.csv_file_name.value = csv_file
         module.module_num = 1
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_module(module)
 
         def error_callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.RunExceptionEvent))
 
         pipeline.add_listener(error_callback)
         return pipeline, module, name
 
     def make_measurements_pipeline(self, m):
-        '''Pipeline reports measurements via get_measurement_columns'''
-        assert isinstance(m, cpmeas.Measurements)
+        """Pipeline reports measurements via get_measurement_columns"""
+        assert isinstance(m, cellprofiler.measurement.Measurements)
         columns = []
         if len(m.get_image_numbers()) > 0:
             image_number = m.get_image_numbers()[0]
@@ -2399,51 +2318,51 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             image_number = None
         for object_name in m.get_object_names():
             for feature in m.get_feature_names(object_name):
-                if object_name == cpmeas.EXPERIMENT:
+                if object_name == cellprofiler.measurement.EXPERIMENT:
                     columns.append(
-                            (object_name, feature, cpmeas.COLTYPE_VARCHAR))
+                            (object_name, feature, cellprofiler.measurement.COLTYPE_VARCHAR))
                 elif image_number is not None:
                     data = m[object_name, feature, image_number]
                     if isinstance(data, basestring):
                         columns.append(
-                                (object_name, feature, cpmeas.COLTYPE_VARCHAR))
+                                (object_name, feature, cellprofiler.measurement.COLTYPE_VARCHAR))
                     else:
                         columns.append(
-                                (object_name, feature, cpmeas.COLTYPE_FLOAT))
+                                (object_name, feature, cellprofiler.measurement.COLTYPE_FLOAT))
 
-        class MPipeline(cpp.Pipeline):
+        class MPipeline(cellprofiler.pipeline.Pipeline):
             def get_measurement_columns(self, terminating_module=None):
                 return columns
 
         return MPipeline()
 
     def make_measurements(self, d=None):
-        '''Make a measurements object
+        """Make a measurements object
 
         d - a dictionary whose keywords are the measurement names and whose
             values are sequences of measurement values per image set
-        '''
+        """
         if d is None:
-            d = {cpmeas.GROUP_NUMBER: [0],
-                 cpmeas.GROUP_INDEX: [0]}
-        m = cpmeas.Measurements()
+            d = {cellprofiler.measurement.GROUP_NUMBER: [0],
+                 cellprofiler.measurement.GROUP_INDEX: [0]}
+        m = cellprofiler.measurement.Measurements()
         for k, v in d.iteritems():
-            m[cpmeas.IMAGE, k, np.arange(len(v)) + 1] = v
+            m[cellprofiler.measurement.IMAGE, k, np.arange(len(v)) + 1] = v
         image_numbers = m.get_image_numbers()
-        if cpmeas.GROUP_NUMBER not in d:
-            m[cpmeas.IMAGE, cpmeas.GROUP_NUMBER, image_numbers] = \
+        if cellprofiler.measurement.GROUP_NUMBER not in d:
+            m[cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_NUMBER, image_numbers] = \
                 [0] * len(image_numbers)
-        if cpmeas.GROUP_INDEX not in d:
-            m[cpmeas.IMAGE, cpmeas.GROUP_INDEX, image_numbers] = \
+        if cellprofiler.measurement.GROUP_INDEX not in d:
+            m[cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_INDEX, image_numbers] = \
                 np.arange(len(image_numbers))
         return m
 
     def add_gct_settings(self, output_csv_filename):
-        module = E.ExportToSpreadsheet()
+        module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
         module.module_num = 2
         module.wants_everything.value = False
         module.wants_prefix.value = False
-        module.object_groups[0].name.value = cpmeas.IMAGE
+        module.object_groups[0].name.value = cellprofiler.measurement.IMAGE
         module.object_groups[0].file_name.value = output_csv_filename
         module.object_groups[0].wants_automatic_file_name.value = False
         module.wants_aggregate_means.value = False
@@ -2454,8 +2373,8 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
 
     def test_08_01_basic_gct_check(self):
         # LoadData with data
-        maybe_download_sbs()
-        input_dir = os.path.join(example_images_directory(), "ExampleSBSImages")
+        cellprofiler.modules.tests.maybe_download_sbs()
+        input_dir = os.path.join(cellprofiler.modules.tests.example_images_directory(), "ExampleSBSImages")
         metadata_name = "Metadata_Bar"
         info = ('Image_FileName_Foo',
                 'Image_PathName_Foo',
@@ -2478,7 +2397,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
 
         try:
             m = pipeline.run()
-            self.assertTrue(isinstance(m, cpmeas.Measurements))
+            self.assertTrue(isinstance(m, cellprofiler.measurement.Measurements))
             p, n = os.path.splitext(output_csv_filename)
             output_gct_filename = p + '.gct'
             fd = open(output_gct_filename, "r")
@@ -2505,9 +2424,9 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                 print("Failed to clean up files")
 
     def test_08_02_make_gct_file_with_filename(self):
-        maybe_download_sbs()
+        cellprofiler.modules.tests.maybe_download_sbs()
         # LoadData with data
-        input_dir = os.path.join(example_images_directory(), "ExampleSBSImages")
+        input_dir = os.path.join(cellprofiler.modules.tests.example_images_directory(), "ExampleSBSImages")
         metadata_name = "Metadata_Bar"
         info = ('Image_FileName_Foo', 'Image_PathName_Foo', metadata_name, input_dir, input_dir)
         csv_text = '''"%s","%s","%s"
@@ -2526,7 +2445,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
 
         try:
             m = pipeline.run()
-            self.assertTrue(isinstance(m, cpmeas.Measurements))
+            self.assertTrue(isinstance(m, cellprofiler.measurement.Measurements))
             p, n = os.path.splitext(output_csv_filename)
             output_gct_filename = p + '.gct'
             fd = open(output_gct_filename, "r")
@@ -2544,10 +2463,10 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             os.remove(output_csv_filename)
 
     def test_08_03_make_gct_file_with_metadata(self):
-        maybe_download_sbs()
+        cellprofiler.modules.tests.maybe_download_sbs()
 
         # LoadData with data
-        input_dir = os.path.join(example_images_directory(), "ExampleSBSImages")
+        input_dir = os.path.join(cellprofiler.modules.tests.example_images_directory(), "ExampleSBSImages")
         metadata_name = "Metadata_Bar"
         info = ('Image_FileName_Foo', 'Image_PathName_Foo', metadata_name, input_dir, input_dir)
         csv_text = '''"%s","%s","%s"
@@ -2566,7 +2485,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
 
         try:
             m = pipeline.run()
-            self.assertTrue(isinstance(m, cpmeas.Measurements))
+            self.assertTrue(isinstance(m, cellprofiler.measurement.Measurements))
             p, n = os.path.splitext(output_csv_filename)
             output_gct_filename = p + '.gct'
             fd = open(output_gct_filename, "r")
@@ -2585,17 +2504,17 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
 
     def test_08_04_test_overwrite_gct_file(self):
         output_csv_filename = os.path.join(
-                self.output_dir, "%s.gct" % cpmeas.IMAGE)
+                self.output_dir, "%s.gct" % cellprofiler.measurement.IMAGE)
         m = self.make_measurements()
         pipeline = self.make_measurements_pipeline(m)
-        module = E.ExportToSpreadsheet()
+        module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
         module.wants_genepattern_file.value = True
-        module.directory.dir_choice = E.cps.ABSOLUTE_FOLDER_NAME
+        module.directory.dir_choice = cellprofiler.preferences.ABSOLUTE_FOLDER_NAME
         module.directory.custom_path = self.output_dir
         module.wants_prefix.value = False
         module.module_num = 1
         pipeline.add_module(module)
-        workspace = cpw.Workspace(pipeline, module, m, None, m, None)
+        workspace = cellprofiler.workspace.Workspace(pipeline, module, m, None, m, None)
         self.assertEqual(output_csv_filename, module.make_gct_file_name(
                 workspace, 1))
 
@@ -2609,20 +2528,20 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         r = np.random.RandomState()
         r.seed(91)
         path = os.path.join(self.output_dir, "my_file.csv")
-        module = E.ExportToSpreadsheet()
+        module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
         module.module_num = 1
         module.wants_everything.value = False
         module.wants_prefix.value = False
-        module.object_groups[0].name.value = E.OBJECT_RELATIONSHIPS
+        module.object_groups[0].name.value = cellprofiler.modules.exporttospreadsheet.OBJECT_RELATIONSHIPS
         module.object_groups[0].file_name.value = path
         module.object_groups[0].wants_automatic_file_name.value = False
-        m = cpmeas.Measurements()
-        image_set_list = cpi.ImageSetList()
+        m = cellprofiler.measurement.Measurements()
+        image_set_list = cellprofiler.image.ImageSetList()
         for i in range(0, 10):
             image_set = image_set_list.get_image_set(i)
-            m.add_image_measurement(cpp.IMAGE_NUMBER, i + 1)
-            m.add_image_measurement(cpp.GROUP_NUMBER, 1)
-            m.add_image_measurement(cpp.GROUP_INDEX, i + 1)
+            m.add_image_measurement(cellprofiler.pipeline.IMAGE_NUMBER, i + 1)
+            m.add_image_measurement(cellprofiler.pipeline.GROUP_NUMBER, 1)
+            m.add_image_measurement(cellprofiler.pipeline.GROUP_INDEX, i + 1)
             if i < 9:
                 m.next_image_set()
         my_relationship = "BlahBlah"
@@ -2638,9 +2557,9 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                                  my_image_numbers2, my_object_numbers2)
         pipeline = self.make_measurements_pipeline(m)
         pipeline.add_module(module)
-        workspace = cpw.Workspace(pipeline, module, image_set,
-                                  cpo.Set(), m,
-                                  image_set_list)
+        workspace = cellprofiler.workspace.Workspace(pipeline, module, image_set,
+                                                     cellprofiler.region.Set(), m,
+                                                     image_set_list)
         fd = None
         try:
             module.post_run(workspace)
@@ -2678,19 +2597,19 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         output_csv_filename = os.path.join(self.output_dir, "my_file.csv")
         m = self.make_measurements()
         pipeline = self.make_measurements_pipeline(m)
-        module = E.ExportToSpreadsheet()
-        module.directory.dir_choice = E.cps.ABSOLUTE_FOLDER_NAME
+        module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
+        module.directory.dir_choice = cellprofiler.preferences.ABSOLUTE_FOLDER_NAME
         module.directory.custom_path = self.output_dir
         module.wants_prefix.value = False
         module.wants_everything.value = False
         g = module.object_groups[0]
-        g.name.value = E.OBJECT_RELATIONSHIPS
+        g.name.value = cellprofiler.modules.exporttospreadsheet.OBJECT_RELATIONSHIPS
         g.wants_automatic_file_name.value = False
         g.file_name.value = "my_file.csv"
         module.module_num = 1
         pipeline.add_module(module)
 
-        workspace = cpw.Workspace(pipeline, module, m, None, m, None)
+        workspace = cellprofiler.workspace.Workspace(pipeline, module, m, None, m, None)
         self.assertTrue(module.prepare_run(workspace))
         with open(output_csv_filename, "w") as fd:
             fd.write("Hello, world.\n")

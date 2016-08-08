@@ -1,4 +1,22 @@
-from cellprofiler.gui.help import USING_METADATA_TAGS_REF
+import logging
+
+logger = logging.getLogger(__name__)
+
+import base64
+import csv
+import numpy as np
+import os
+
+import cellprofiler.module
+import cellprofiler.measurement
+import cellprofiler.pipeline
+import cellprofiler.setting
+import cellprofiler.preferences
+
+## FOR DOCUMENTATION
+from cellprofiler.gui.help import USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF, MEASUREMENT_NAMING_HELP
+from cellprofiler.preferences import IO_FOLDER_CHOICE_HELP_TEXT, IO_WITH_METADATA_HELP_TEXT
+from cellprofiler.setting import YES, NO
 
 __doc__ = '''
 <b>Export To Spreadsheet</b> exports measurements into one or more files that can be
@@ -40,31 +58,6 @@ see <i>Help > General Help > How Measurements Are Named</i>.
 
 See also <b>ExportToDatabase</b>.
 ''' % globals()
-
-import logging
-
-logger = logging.getLogger(__name__)
-import base64
-import csv
-import errno
-import numpy as np
-import os
-import sys
-
-import cellprofiler.module as cpm
-import cellprofiler.measurement as cpmeas
-import cellprofiler.pipeline as cpp
-import cellprofiler.setting as cps
-from cellprofiler.setting import YES, NO
-from cellprofiler.measurement import IMAGE, EXPERIMENT
-from cellprofiler.preferences import get_absolute_path, get_output_file_name
-from cellprofiler.preferences import ABSPATH_OUTPUT, ABSPATH_IMAGE, get_headless
-from cellprofiler.gui.help import USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF, MEASUREMENT_NAMING_HELP
-from cellprofiler.preferences import \
-    standardize_default_folder_names, DEFAULT_INPUT_FOLDER_NAME, \
-    DEFAULT_OUTPUT_FOLDER_NAME, ABSOLUTE_FOLDER_NAME, \
-    DEFAULT_INPUT_SUBFOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME, \
-    IO_FOLDER_CHOICE_HELP_TEXT, IO_WITH_METADATA_HELP_TEXT
 
 MAX_EXCEL_COLUMNS = 256
 MAX_EXCEL_ROWS = 65536
@@ -122,25 +115,25 @@ NANS_AS_NULLS = "Null"
 NANS_AS_NANS = "NaN"
 
 
-class ExportToSpreadsheet(cpm.Module):
+class ExportToSpreadsheet(cellprofiler.module.Module):
     module_name = 'ExportToSpreadsheet'
     category = ["File Processing", "Data Tools"]
     variable_revision_number = 11
 
     def create_settings(self):
-        self.delimiter = cps.CustomChoice(
+        self.delimiter = cellprofiler.setting.CustomChoice(
                 "Select the column delimiter", DELIMITERS, doc="""
             Select the delimiter to use, i.e., the character that separates columns in a file. The
             two default choices are tab and comma, but you can type in any single character delimiter
             you would prefer. Be sure that the delimiter you choose is not a character that is present
             within your data (for example, in file names).""")
 
-        self.directory = cps.DirectoryPath(
+        self.directory = cellprofiler.setting.DirectoryPath(
                 "Output file location",
                 dir_choices=[
-                    ABSOLUTE_FOLDER_NAME,
-                    DEFAULT_OUTPUT_FOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME,
-                    DEFAULT_INPUT_FOLDER_NAME, DEFAULT_INPUT_SUBFOLDER_NAME], doc="""
+                    cellprofiler.preferences.ABSOLUTE_FOLDER_NAME,
+                    cellprofiler.preferences.DEFAULT_OUTPUT_FOLDER_NAME, cellprofiler.preferences.DEFAULT_OUTPUT_SUBFOLDER_NAME,
+                    cellprofiler.preferences.DEFAULT_INPUT_FOLDER_NAME, cellprofiler.preferences.DEFAULT_INPUT_SUBFOLDER_NAME], doc="""
             This setting lets you choose the folder for the output
             files. %(IO_FOLDER_CHOICE_HELP_TEXT)s
 
@@ -150,9 +143,9 @@ class ExportToSpreadsheet(cpm.Module):
             and then specifying the subfolder name as "\g&lt;Plate&gt;". The module will
             substitute the metadata values for the current image set for any metadata tags in the
             folder name. %(USING_METADATA_HELP_REF)s.</p>""" % globals())
-        self.directory.dir_choice = DEFAULT_OUTPUT_FOLDER_NAME
+        self.directory.dir_choice = cellprofiler.preferences.DEFAULT_OUTPUT_FOLDER_NAME
 
-        self.wants_prefix = cps.Binary(
+        self.wants_prefix = cellprofiler.setting.Binary(
                 "Add a prefix to file names?",
                 True,
                 doc="""This setting lets you choose whether or not to add
@@ -165,7 +158,7 @@ class ExportToSpreadsheet(cpm.Module):
             without prefixes (e.g. "Images.csv").
             """ % globals())
 
-        self.prefix = cps.Text(
+        self.prefix = cellprofiler.setting.Text(
                 "Filename prefix", "MyExpt_",
                 doc="""(<i>Used only if "Add a prefix to file names?" is %(YES)s</i>)
 
@@ -173,7 +166,7 @@ class ExportToSpreadsheet(cpm.Module):
             produced by <b>ExportToSpreadsheet</b>.
             """ % globals())
 
-        self.wants_overwrite_without_warning = cps.Binary(
+        self.wants_overwrite_without_warning = cellprofiler.setting.Binary(
                 "Overwrite existing files without warning?", False,
                 doc="""This setting either prevents or allows overwriting of
             old .CSV files by <b>ExportToSpreadsheet</b> without confirmation.
@@ -182,18 +175,18 @@ class ExportToSpreadsheet(cpm.Module):
             when running CellProfiler in the GUI and to fail when running
             headless.""" % globals())
 
-        self.add_metadata = cps.Binary(
+        self.add_metadata = cellprofiler.setting.Binary(
                 "Add image metadata columns to your object data file?", False, doc=""""
             Image_Metadata_" columns are normally exported in the Image data file, but if you
             select <i>%(YES)s</i>, they will also be exported with the Object data file(s).""" % globals())
 
-        self.excel_limits = cps.Binary(
+        self.excel_limits = cellprofiler.setting.Binary(
                 "Limit output to a size that is allowed in Excel?", False, doc="""
             If your output has more than 256 columns, select <i>%(YES)s</i> will open a window
             allowing you to select the columns you'd like to export. If your output exceeds
             65,000 rows, you can still open the CSV in Excel, but not all rows will be visible.""" % globals())
 
-        self.nan_representation = cps.Choice(
+        self.nan_representation = cellprofiler.setting.Choice(
                 "Representation of Nan/Inf", [NANS_AS_NANS, NANS_AS_NULLS], doc="""
             This setting controls the output for numeric fields
             if the calculated value is infinite (<i>Inf</i>) or undefined (<i>NaN</i>).
@@ -206,18 +199,18 @@ class ExportToSpreadsheet(cpm.Module):
             </ul>
             """ % globals())
 
-        self.pick_columns = cps.Binary(
+        self.pick_columns = cellprofiler.setting.Binary(
                 "Select the measurements to export", False, doc="""
             Select <i>%(YES)s</i> to provide a button that allows you to select which measurements you want to export.
             This is useful if you know exactly what measurements you want included in the final spreadheet(s). """ % globals())
 
-        self.columns = cps.MeasurementMultiChoice(
+        self.columns = cellprofiler.setting.MeasurementMultiChoice(
                 "", doc="""
             <i>(Used only when selecting the columns of measurements to export)</i><br>
             This setting controls the columns to be exported. Press
             the button and check the measurements or categories to export.""")
 
-        self.wants_aggregate_means = cps.Binary(
+        self.wants_aggregate_means = cellprofiler.setting.Binary(
                 "Calculate the per-image mean values for object measurements?", False, doc="""
             Select <i>%(YES)s</i> for <b>ExportToSpreadsheet</b> to calculate population statistics over all the
             objects in each image and save that value as an aggregate
@@ -232,13 +225,13 @@ class ExportToSpreadsheet(cpm.Module):
             <p>Keep in mind that if you chose to select the specific measurements to export, the aggregate
             statistics will only be computed for the selected per-object measurements.</p>""" % globals())
 
-        self.wants_aggregate_medians = cps.Binary("Calculate the per-image median values for object measurements?",
-                                                  False)
+        self.wants_aggregate_medians = cellprofiler.setting.Binary("Calculate the per-image median values for object measurements?",
+                                                                   False)
 
-        self.wants_aggregate_std = cps.Binary(
+        self.wants_aggregate_std = cellprofiler.setting.Binary(
                 "Calculate the per-image standard deviation values for object measurements?", False)
 
-        self.wants_genepattern_file = cps.Binary(
+        self.wants_genepattern_file = cellprofiler.setting.Binary(
                 "Create a GenePattern GCT file?", False, doc="""
             Select <i>%(YES)s</i> to create a GCT file compatible with
             <a href="http://www.broadinstitute.org/cancer/software/genepattern/">GenePattern</a>.
@@ -256,7 +249,7 @@ class ExportToSpreadsheet(cpm.Module):
             measurements are requested above, those measurements are included
             in the GCT file as well.</p>""" % globals())
 
-        self.how_to_specify_gene_name = cps.Choice(
+        self.how_to_specify_gene_name = cellprofiler.setting.Choice(
                 "Select source of sample row name",
                 GP_NAME_OPTIONS, GP_NAME_METADATA, doc="""
             <i>(Used only if a GenePattern file is requested)</i><br>
@@ -272,21 +265,21 @@ class ExportToSpreadsheet(cpm.Module):
             filename can be used as a surrogate identifier.</li>
             </ul>""" % globals())
 
-        self.gene_name_column = cps.Measurement(
+        self.gene_name_column = cellprofiler.setting.Measurement(
                 "Select the metadata to use as the identifier",
-                lambda: cpmeas.IMAGE, doc="""
+                lambda: cellprofiler.measurement.IMAGE, doc="""
             <i>(Used only if a GenePattern file is requested and metadata is used
             to name each row)</i><br>
             Choose the measurement that corresponds to the identifier, such as
             metadata from the <b>Metadata</b> module.
             %(USING_METADATA_HELP_REF)s.""" % globals())
 
-        self.use_which_image_for_gene_name = cps.ImageNameSubscriber(
-                "Select the image to use as the identifier", cps.NONE, doc="""
+        self.use_which_image_for_gene_name = cellprofiler.setting.ImageNameSubscriber(
+                "Select the image to use as the identifier", cellprofiler.setting.NONE, doc="""
             <i>(Used only if a GenePattern file is requested and image filename is used to name each row)</i><br>
             Select which image whose filename will be used to identify each sample row.""")
 
-        self.wants_everything = cps.Binary(
+        self.wants_everything = cellprofiler.setting.Binary(
                 "Export all measurement types?", True, doc="""
             Select <i>%(YES)s</i> to export every category of measurement.
             <b>ExportToSpreadsheet</b> will create one data file for each object produced
@@ -302,11 +295,11 @@ class ExportToSpreadsheet(cpm.Module):
 
         self.object_groups = []
         self.add_object_group()
-        self.add_button = cps.DoSomething("", "Add another data set",
-                                          self.add_object_group)
+        self.add_button = cellprofiler.setting.DoSomething("", "Add another data set",
+                                                           self.add_object_group)
 
     def add_object_group(self, can_remove=True):
-        group = cps.SettingsGroup()
+        group = cellprofiler.setting.SettingsGroup()
         group.append(
                 "name", EEObjectNameSubscriber("Data to export", doc="""
             <i>(Used only when "Export all measurements?" is set to "%(NO)s")</i><br>
@@ -316,7 +309,7 @@ class ExportToSpreadsheet(cpm.Module):
             for more details on the various measurement types.""" % globals()))
 
         group.append(
-                "previous_file", cps.Binary(
+                "previous_file", cellprofiler.setting.Binary(
                         "Combine these object measurements with those of the previous object?", False, doc="""
             <i>(Used only when "Export all measurements?" is set to "%(NO)s")</i><br>
             Select <i>%(YES)s</i> to create a file composed
@@ -325,7 +318,7 @@ class ExportToSpreadsheet(cpm.Module):
             <p>Select <i>%(NO)s</i> to create separate
             files for this and the previous object.</p>""" % globals()))
 
-        group.append("wants_automatic_file_name", cps.Binary(
+        group.append("wants_automatic_file_name", cellprofiler.setting.Binary(
                 "Use the object name for the file name?", True, doc="""
             <i>(Used only when "Export all measurements?" is set to "%(NO)s")</i><br>
             Select <i>%(YES)s</i> to use the object name as selected above to generate a file
@@ -334,7 +327,7 @@ class ExportToSpreadsheet(cpm.Module):
             your output file will be named "Image.csv".
             <p>Select <i>%(NO)s</i> to name the file yourself.</p>""" % globals()))
 
-        group.append("file_name", cps.Text(
+        group.append("file_name", cellprofiler.setting.Text(
                 "File name", "DATA.csv",
                 metadata=True, doc="""
             <i>(Used only when "Export all measurements?" is set to "%(NO)s")</i><br>
@@ -345,8 +338,8 @@ class ExportToSpreadsheet(cpm.Module):
             associated with your images, this setting will also substitute
             metadata tags if desired. %(USING_METADATA_TAGS_REF)s%(USING_METADATA_HELP_REF)s.""" % globals()))
 
-        group.append("remover", cps.RemoveSettingButton("", "Remove this data set", self.object_groups, group))
-        group.append("divider", cps.Divider(line=False))
+        group.append("remover", cellprofiler.setting.RemoveSettingButton("", "Remove this data set", self.object_groups, group))
+        group.append("divider", cellprofiler.setting.Divider(line=False))
 
         self.object_groups.append(group)
 
@@ -425,7 +418,7 @@ class ExportToSpreadsheet(cpm.Module):
         '''Test the module settings to make sure they are internally consistent'''
         if (len(self.delimiter.value) != 1 and
                 not self.delimiter.value in (DELIMITER_TAB, DELIMITER_COMMA)):
-            raise cps.ValidationError("The CSV field delimiter must be a single character", self.delimiter)
+            raise cellprofiler.setting.ValidationError("The CSV field delimiter must be a single character", self.delimiter)
 
         '''Make sure metadata tags exist'''
         for group in self.object_groups:
@@ -433,7 +426,7 @@ class ExportToSpreadsheet(cpm.Module):
                 text_str = group.file_name.value
                 undefined_tags = pipeline.get_undefined_metadata_tags(text_str)
                 if len(undefined_tags) > 0:
-                    raise cps.ValidationError(
+                    raise cellprofiler.setting.ValidationError(
                             "%s is not a defined metadata tag. Check the metadata specifications in your load modules" %
                             undefined_tags[0],
                             group.file_name)
@@ -441,8 +434,8 @@ class ExportToSpreadsheet(cpm.Module):
     def validate_module_warnings(self, pipeline):
         '''Warn user re: Test mode '''
         if pipeline.test_mode:
-            raise cps.ValidationError("ExportToSpreadsheet will not produce output in Test Mode",
-                                      self.directory)
+            raise cellprofiler.setting.ValidationError("ExportToSpreadsheet will not produce output in Test Mode",
+                                                       self.directory)
 
         '''Warn user that changing the extension may cause Excel to stuff everything into one column'''
         if not self.wants_everything.value:
@@ -452,7 +445,7 @@ class ExportToSpreadsheet(cpm.Module):
                     extension == ".txt" and self.delimiter == DELIMITER_TAB))
                                   for (extension, group) in zip(all_extensions, self.object_groups)]
             if not all(is_valid_extension):
-                raise (cps.ValidationError(
+                raise (cellprofiler.setting.ValidationError(
                         "To avoid formatting problems in Excel, use the extension .csv for comma-delimited files and .txt for tab-delimited..",
                         self.object_groups[is_valid_extension.index(False)].file_name))
 
@@ -591,9 +584,9 @@ class ExportToSpreadsheet(cpm.Module):
         if settings_group is None or settings_group.wants_automatic_file_name:
             tags = []
         else:
-            tags = cpmeas.find_metadata_tokens(settings_group.file_name.value)
+            tags = cellprofiler.measurement.find_metadata_tokens(settings_group.file_name.value)
         if self.directory.is_custom_choice:
-            tags += cpmeas.find_metadata_tokens(self.directory.custom_path)
+            tags += cellprofiler.measurement.find_metadata_tokens(self.directory.custom_path)
         metadata_groups = workspace.measurements.group_by_metadata(tags)
         return metadata_groups
 
@@ -606,12 +599,12 @@ class ExportToSpreadsheet(cpm.Module):
         settings_group - if present, use the settings group for naming.
 
         """
-        if len(object_names) == 1 and object_names[0] == EXPERIMENT:
+        if len(object_names) == 1 and object_names[0] == cellprofiler.measurement.EXPERIMENT:
             self.make_experiment_file(workspace, settings_group)
             return
         metadata_groups = self.get_metadata_groups(workspace, settings_group)
         for metadata_group in metadata_groups:
-            if len(object_names) == 1 and object_names[0] == IMAGE:
+            if len(object_names) == 1 and object_names[0] == cellprofiler.measurement.IMAGE:
                 self.make_image_file(metadata_group.image_numbers,
                                      workspace, settings_group)
                 if self.wants_genepattern_file.value:
@@ -671,7 +664,7 @@ class ExportToSpreadsheet(cpm.Module):
         if self.wants_everything:
             filename = "%s.%s" % (object_name, self.extension())
 
-            if object_name == EXPERIMENT:
+            if object_name == cellprofiler.measurement.EXPERIMENT:
                 # No metadata substitution allowed for experiment file
                 return self.make_full_filename(filename)
             return self.make_full_filename(
@@ -693,7 +686,7 @@ class ExportToSpreadsheet(cpm.Module):
                         if not wants_everything
         '''
         file_name = self.make_objects_file_name(
-                IMAGE, workspace, image_set_number, settings_group)
+                cellprofiler.measurement.IMAGE, workspace, image_set_number, settings_group)
         if any([file_name.lower().endswith(x) for x in ".csv", "txt"]):
             file_name = file_name[:-3] + "gct"
         return file_name
@@ -710,15 +703,15 @@ class ExportToSpreadsheet(cpm.Module):
 
         files_to_check = []
         if self.wants_everything:
-            object_names = set((IMAGE, EXPERIMENT, OBJECT_RELATIONSHIPS))
+            object_names = set((cellprofiler.measurement.IMAGE, cellprofiler.measurement.EXPERIMENT, OBJECT_RELATIONSHIPS))
             object_providers = workspace.pipeline.get_provider_dictionary(
-                    cps.OBJECT_GROUP, self)
+                    cellprofiler.setting.OBJECT_GROUP, self)
             object_names.update(object_providers.keys())
             metadata_groups = self.get_metadata_groups(workspace)
             for object_name in object_names:
                 for metadata_group in metadata_groups:
                     image_number = metadata_group.image_numbers[0]
-                    if object_name == IMAGE and self.wants_genepattern_file:
+                    if object_name == cellprofiler.measurement.IMAGE and self.wants_genepattern_file:
                         files_to_check.append(self.make_gct_file_name(
                                 workspace, image_number))
                     files_to_check.append(self.make_objects_file_name(
@@ -742,7 +735,7 @@ class ExportToSpreadsheet(cpm.Module):
 
         files_to_overwrite = filter(os.path.isfile, files_to_check)
         if len(files_to_overwrite) > 0:
-            if get_headless():
+            if cellprofiler.preferences.get_headless():
                 logger.error(
                         "ExportToSpreadsheet is configured to refrain from overwriting files and the following file(s) already exist: %s" %
                         ", ".join(files_to_overwrite))
@@ -767,11 +760,10 @@ class ExportToSpreadsheet(cpm.Module):
                          is to be exported
         """
         m = workspace.measurements
-        file_name = self.make_objects_file_name(
-                EXPERIMENT, workspace, 1, settings_group)
+        file_name = self.make_objects_file_name(cellprofiler.measurement.EXPERIMENT, workspace, 1, settings_group)
         feature_names = [
-            feature_name for feature_name in m.get_feature_names(EXPERIMENT)
-            if feature_name != cpp.EXIT_STATUS]
+            feature_name for feature_name in m.get_feature_names(cellprofiler.measurement.EXPERIMENT)
+            if feature_name != cellprofiler.pipeline.EXIT_STATUS]
         if len(feature_names) == 0:
             return
         fd = open(file_name, "wb")
@@ -779,7 +771,7 @@ class ExportToSpreadsheet(cpm.Module):
             writer = csv.writer(fd, delimiter=self.delimiter_char)
             writer.writerow((EH_KEY, EH_VALUE))
             for feature_name in feature_names:
-                v = m.get_all_measurements(EXPERIMENT, feature_name)
+                v = m.get_all_measurements(cellprofiler.measurement.EXPERIMENT, feature_name)
                 if isinstance(v, np.ndarray) and \
                                 v.dtype == np.uint8:
                     v = base64.b64encode(v.data)
@@ -800,8 +792,8 @@ class ExportToSpreadsheet(cpm.Module):
         """
         m = workspace.measurements
         file_name = self.make_objects_file_name(
-                IMAGE, workspace, image_set_numbers[0], settings_group)
-        image_features = m.get_feature_names(IMAGE)
+                cellprofiler.measurement.IMAGE, workspace, image_set_numbers[0], settings_group)
+        image_features = m.get_feature_names(cellprofiler.measurement.IMAGE)
         image_features.insert(0, IMAGE_NUMBER)
         if not self.check_excel_limits(workspace, file_name,
                                        len(image_set_numbers),
@@ -813,11 +805,11 @@ class ExportToSpreadsheet(cpm.Module):
             for img_number in image_set_numbers:
                 aggs = []
                 if self.wants_aggregate_means:
-                    aggs.append(cpmeas.AGG_MEAN)
+                    aggs.append(cellprofiler.measurement.AGG_MEAN)
                 if self.wants_aggregate_medians:
-                    aggs.append(cpmeas.AGG_MEDIAN)
+                    aggs.append(cellprofiler.measurement.AGG_MEDIAN)
                 if self.wants_aggregate_std:
-                    aggs.append(cpmeas.AGG_STD_DEV)
+                    aggs.append(cellprofiler.measurement.AGG_STD_DEV)
                 agg_measurements = m.compute_aggregate_measurements(img_number,
                                                                     aggs)
                 if img_number == image_set_numbers[0]:
@@ -826,7 +818,7 @@ class ExportToSpreadsheet(cpm.Module):
                     image_features += ordered_agg_names
                     image_features.sort()
                     image_features = self.filter_columns(image_features,
-                                                         cpmeas.IMAGE)
+                                                         cellprofiler.measurement.IMAGE)
                     if image_features is None:
                         return
                     writer.writerow(image_features)
@@ -839,7 +831,7 @@ class ExportToSpreadsheet(cpm.Module):
                         if agg_measurements.has_key(feature_name):
                             value = agg_measurements[feature_name]
                         else:
-                            value = m[IMAGE, feature_name, img_number]
+                            value = m[cellprofiler.measurement.IMAGE, feature_name, img_number]
                         if value is None:
                             row.append('')
                         elif isinstance(value, unicode):
@@ -896,7 +888,7 @@ class ExportToSpreadsheet(cpm.Module):
             return False
 
         m = workspace.measurements
-        image_features = m.get_feature_names(IMAGE)
+        image_features = m.get_feature_names(cellprofiler.measurement.IMAGE)
         image_features.insert(0, IMAGE_NUMBER)
         if not self.check_excel_limits(workspace, file_name,
                                        len(image_set_numbers),
@@ -909,11 +901,11 @@ class ExportToSpreadsheet(cpm.Module):
             for img_number in image_set_numbers:
                 aggs = []
                 if self.wants_aggregate_means:
-                    aggs.append(cpmeas.AGG_MEAN)
+                    aggs.append(cellprofiler.measurement.AGG_MEAN)
                 if self.wants_aggregate_medians:
-                    aggs.append(cpmeas.AGG_MEDIAN)
+                    aggs.append(cellprofiler.measurement.AGG_MEDIAN)
                 if self.wants_aggregate_std:
-                    aggs.append(cpmeas.AGG_STD_DEV)
+                    aggs.append(cellprofiler.measurement.AGG_STD_DEV)
                 agg_measurements = m.compute_aggregate_measurements(img_number, aggs)
 
                 if img_number == image_set_numbers[0]:
@@ -922,7 +914,7 @@ class ExportToSpreadsheet(cpm.Module):
                     image_features += ordered_agg_names
                     image_features.sort()
                     image_features = self.filter_columns(image_features,
-                                                         cpmeas.IMAGE)
+                                                         cellprofiler.measurement.IMAGE)
                     if image_features is None:
                         return
 
@@ -954,7 +946,7 @@ class ExportToSpreadsheet(cpm.Module):
                 # Output all measurements
                 row = [agg_measurements[feature_name]
                        if agg_measurements.has_key(feature_name)
-                       else m.get_measurement(IMAGE, feature_name, img_number)
+                       else m.get_measurement(cellprofiler.measurement.IMAGE, feature_name, img_number)
                        for feature_name in image_features]
                 row = ['' if x is None
                        else x if np.isscalar(x)
@@ -990,19 +982,19 @@ Do you want to save it anyway?""" %
                 self.columns.get_measurement_feature(x)
                 for x in self.columns.selections
                 if self.columns.get_measurement_object(x) == object_name]
-            if object_name == cpmeas.IMAGE:
-                if cpmeas.IMAGE_NUMBER not in columns:
-                    columns.insert(0, cpmeas.IMAGE_NUMBER)
+            if object_name == cellprofiler.measurement.IMAGE:
+                if cellprofiler.measurement.IMAGE_NUMBER not in columns:
+                    columns.insert(0, cellprofiler.measurement.IMAGE_NUMBER)
                 for agg, wants_it in (
-                        (cpmeas.AGG_MEAN, self.wants_aggregate_means),
-                        (cpmeas.AGG_MEDIAN, self.wants_aggregate_medians),
-                        (cpmeas.AGG_STD_DEV, self.wants_aggregate_std)):
+                        (cellprofiler.measurement.AGG_MEAN, self.wants_aggregate_means),
+                        (cellprofiler.measurement.AGG_MEDIAN, self.wants_aggregate_medians),
+                        (cellprofiler.measurement.AGG_STD_DEV, self.wants_aggregate_std)):
                     if not wants_it:
                         continue
                     for column in self.columns.selections:
                         if self.columns.get_measurement_object(column) not in (
-                                cpmeas.IMAGE, cpmeas.EXPERIMENT, cpmeas.NEIGHBORS):
-                            columns += [cpmeas.get_agg_measurement_name(
+                                cellprofiler.measurement.IMAGE, cellprofiler.measurement.EXPERIMENT, cellprofiler.measurement.NEIGHBORS):
+                            columns += [cellprofiler.measurement.get_agg_measurement_name(
                                     agg, self.columns.get_measurement_object(column),
                                     self.columns.get_measurement_feature(column))]
 
@@ -1024,14 +1016,14 @@ Do you want to save it anyway?""" %
         m = workspace.measurements
         file_name = self.make_objects_file_name(
                 object_names[0], workspace, image_set_numbers[0], settings_group)
-        features = [(IMAGE, IMAGE_NUMBER),
+        features = [(cellprofiler.measurement.IMAGE, IMAGE_NUMBER),
                     (object_names[0], OBJECT_NUMBER)]
         columns = map(
                 (lambda c: c[:2]), workspace.pipeline.get_measurement_columns())
         if self.add_metadata.value:
             mdfeatures = [
-                (IMAGE, name) for object_name, name in columns
-                if name.startswith("Metadata_") and object_name == IMAGE]
+                (cellprofiler.measurement.IMAGE, name) for object_name, name in columns
+                if name.startswith("Metadata_") and object_name == cellprofiler.measurement.IMAGE]
             mdfeatures.sort()
             features += mdfeatures
         for object_name in object_names:
@@ -1047,7 +1039,7 @@ Do you want to save it anyway?""" %
             row_count = 1
             for img_number in image_set_numbers:
                 object_count = \
-                    np.max([m.get_measurement(IMAGE, "Count_%s" % name, img_number)
+                    np.max([m.get_measurement(cellprofiler.measurement.IMAGE, "Count_%s" % name, img_number)
                             for name in object_names])
                 row_count += int(object_count)
             if not self.check_excel_limits(workspace, file_name,
@@ -1064,7 +1056,7 @@ Do you want to save it anyway?""" %
                 writer.writerow([x[i] for x in features])
             for img_number in image_set_numbers:
                 object_count = \
-                    np.max([m.get_measurement(IMAGE, "Count_%s" % name, img_number)
+                    np.max([m.get_measurement(cellprofiler.measurement.IMAGE, "Count_%s" % name, img_number)
                             for name in object_names])
                 object_count = int(object_count) if object_count else 0
                 columns = [np.repeat(img_number, object_count)
@@ -1073,10 +1065,10 @@ Do you want to save it anyway?""" %
                 if feature_name == OBJECT_NUMBER
                 else np.repeat(np.NAN, object_count)
                 if not m.has_feature(object_name, feature_name)
-                else np.repeat(m.get_measurement(IMAGE, feature_name,
+                else np.repeat(m.get_measurement(cellprofiler.measurement.IMAGE, feature_name,
                                                  img_number),
                                object_count)
-                if object_name == IMAGE
+                if object_name == cellprofiler.measurement.IMAGE
                 else m.get_measurement(object_name, feature_name,
                                        img_number)
                            for object_name, feature_name in features]
@@ -1103,7 +1095,7 @@ Do you want to save it anyway?""" %
                 OBJECT_RELATIONSHIPS, workspace, image_set_numbers[0],
                 settings_group)
         m = workspace.measurements
-        assert isinstance(m, cpmeas.Measurements)
+        assert isinstance(m, cellprofiler.measurement.Measurements)
         fd = open(file_name, "wb")
         module_map = {}
         for module in workspace.pipeline.modules():
@@ -1122,10 +1114,10 @@ Do you want to save it anyway?""" %
                         image_numbers=image_set_numbers)
                 for image_number_1, image_number_2, \
                     object_number_1, object_number_2 in zip(
-                        r[cpmeas.R_FIRST_IMAGE_NUMBER],
-                        r[cpmeas.R_SECOND_IMAGE_NUMBER],
-                        r[cpmeas.R_FIRST_OBJECT_NUMBER],
-                        r[cpmeas.R_SECOND_OBJECT_NUMBER]):
+                        r[cellprofiler.measurement.R_FIRST_IMAGE_NUMBER],
+                        r[cellprofiler.measurement.R_SECOND_IMAGE_NUMBER],
+                        r[cellprofiler.measurement.R_FIRST_OBJECT_NUMBER],
+                        r[cellprofiler.measurement.R_SECOND_OBJECT_NUMBER]):
                     module_name = module_map[key.module_number]
                     writer.writerow([
                         module_name, key.module_number, key.relationship,
@@ -1165,16 +1157,16 @@ Do you want to save it anyway?""" %
         if variable_revision_number == 1 and from_matlab:
             # Added create subdirectories questeion
             setting_values = list(setting_values)
-            setting_values.append(cps.NO)
+            setting_values.append(cellprofiler.setting.NO)
             variable_revision_number = 2
         if variable_revision_number == 2 and from_matlab:
-            wants_subdirectories = (setting_values[8] == cps.YES)
+            wants_subdirectories = (setting_values[8] == cellprofiler.setting.YES)
             object_names = [x for x in setting_values[:-1]
-                            if x != cps.DO_NOT_USE]
-            setting_values = [DELIMITER_TAB, cps.YES, cps.NO, cps.NO,
-                              cps.NO, cps.NO]
+                            if x != cellprofiler.setting.DO_NOT_USE]
+            setting_values = [DELIMITER_TAB, cellprofiler.setting.YES, cellprofiler.setting.NO, cellprofiler.setting.NO,
+                              cellprofiler.setting.NO, cellprofiler.setting.NO]
             for name in object_names:
-                setting_values.extend([name, cps.NO, "%s.csv" % name])
+                setting_values.extend([name, cellprofiler.setting.NO, "%s.csv" % name])
             variable_revision_number = 1
             from_matlab = False
         if variable_revision_number == 3 and from_matlab:
@@ -1184,46 +1176,46 @@ Do you want to save it anyway?""" %
             #
             custom_directory = '.'
             if setting_values[8] == '.':
-                directory_choice = DEFAULT_OUTPUT_FOLDER_NAME
+                directory_choice = cellprofiler.preferences.DEFAULT_OUTPUT_FOLDER_NAME
             elif setting_values[8] == '&':
-                directory_choice = DEFAULT_INPUT_FOLDER_NAME
+                directory_choice = cellprofiler.preferences.DEFAULT_INPUT_FOLDER_NAME
             elif setting_values[8].find(r"\(?<"):
                 directory_choice = DIR_CUSTOM_WITH_METADATA
                 custom_directory = setting_values[8]
             else:
                 directory_choice = DIR_CUSTOM
                 custom_directory = setting_values[8]
-            if setting_values[9] != cps.DO_NOT_USE:
+            if setting_values[9] != cellprofiler.setting.DO_NOT_USE:
                 prefix = setting_values[9] + "_"
             else:
                 prefix = ""
             object_names = [x for x in setting_values[:8]
-                            if x != cps.DO_NOT_USE]
-            setting_values = [DELIMITER_TAB, cps.YES, cps.NO, cps.NO,
-                              cps.NO, cps.NO, cps.NO, cps.NO, cps.NO,
+                            if x != cellprofiler.setting.DO_NOT_USE]
+            setting_values = [DELIMITER_TAB, cellprofiler.setting.YES, cellprofiler.setting.NO, cellprofiler.setting.NO,
+                              cellprofiler.setting.NO, cellprofiler.setting.NO, cellprofiler.setting.NO, cellprofiler.setting.NO, cellprofiler.setting.NO,
                               directory_choice, custom_directory]
             for name in object_names:
-                setting_values.extend([name, cps.NO,
+                setting_values.extend([name, cellprofiler.setting.NO,
                                        "%s%s.csv" % (prefix, name)])
             variable_revision_number = 3
             from_matlab = False
         if variable_revision_number == 1 and not from_matlab:
             # Added aggregate questions
-            setting_values = (setting_values[:6] + [cps.NO, cps.NO, cps.NO] +
+            setting_values = (setting_values[:6] + [cellprofiler.setting.NO, cellprofiler.setting.NO, cellprofiler.setting.NO] +
                               setting_values[6:])
             variable_revision_number = 2
         if variable_revision_number == 2 and not from_matlab:
             # Added directory choice questions
             setting_values = (setting_values[:9] +
-                              [DEFAULT_OUTPUT_FOLDER_NAME, "."] +
+                              [cellprofiler.preferences.DEFAULT_OUTPUT_FOLDER_NAME, "."] +
                               setting_values[9:])
             variable_revision_number = 3
         if variable_revision_number == 3 and not from_matlab:
             # Added "wants everything" setting
             #
-            new_setting_values = setting_values[:11] + [cps.NO]
+            new_setting_values = setting_values[:11] + [cellprofiler.setting.NO]
             for i in range(11, len(setting_values), 3):
-                new_setting_values += setting_values[i:i + 3] + [cps.NO]
+                new_setting_values += setting_values[i:i + 3] + [cellprofiler.setting.NO]
 
             setting_values = new_setting_values
             variable_revision_number = 4
@@ -1240,13 +1232,13 @@ Do you want to save it anyway?""" %
             custom_directory = setting_values[10]
             if directory_choice in (DIR_CUSTOM, DIR_CUSTOM_WITH_METADATA):
                 if custom_directory.startswith('.'):
-                    directory_choice = DEFAULT_OUTPUT_SUBFOLDER_NAME
+                    directory_choice = cellprofiler.preferences.DEFAULT_OUTPUT_SUBFOLDER_NAME
                 elif custom_directory.startswith('&'):
-                    directory_choice = DEFAULT_INPUT_SUBFOLDER_NAME
+                    directory_choice = cellprofiler.preferences.DEFAULT_INPUT_SUBFOLDER_NAME
                     custom_directory = '.' + custom_directory[1:]
                 else:
-                    directory_choice = ABSOLUTE_FOLDER_NAME
-            directory = cps.DirectoryPath.static_join_string(
+                    directory_choice = cellprofiler.preferences.ABSOLUTE_FOLDER_NAME
+            directory = cellprofiler.setting.DirectoryPath.static_join_string(
                     directory_choice, custom_directory)
             setting_values = (setting_values[:3] +
                               setting_values[4:9] +
@@ -1260,7 +1252,7 @@ Do you want to save it anyway?""" %
             self.use_which_image_for_gene_name,self.gene_name_column
             '''
             setting_values = (setting_values[:9] +
-                              [cps.NO, GP_NAME_METADATA, cps.NONE, cps.NONE] +
+                              [cellprofiler.setting.NO, GP_NAME_METADATA, cellprofiler.setting.NONE, cellprofiler.setting.NONE] +
                               setting_values[9:])
             variable_revision_number = 7
 
@@ -1279,21 +1271,21 @@ Do you want to save it anyway?""" %
         if variable_revision_number == 9 and not from_matlab:
             # Added prefix
             setting_values = setting_values[:SETTING_OG_OFFSET_V9] + \
-                             [cps.NO, "MyExpt_"] + \
+                             [cellprofiler.setting.NO, "MyExpt_"] + \
                              setting_values[SETTING_OG_OFFSET_V9:]
             variable_revision_number = 10
 
         if variable_revision_number == 10 and not from_matlab:
             # added overwrite choice - legacy value is "Yes"
             setting_values = setting_values[:SETTING_OG_OFFSET_V10] + \
-                             [cps.YES] + \
+                             [cellprofiler.setting.YES] + \
                              setting_values[SETTING_OG_OFFSET_V10:]
             variable_revision_number = 11
 
         # Standardize input/output directory name references
         SLOT_DIRCHOICE = 7
         directory = setting_values[SLOT_DIRCHOICE]
-        directory = cps.DirectoryPath.upgrade_setting(directory)
+        directory = cellprofiler.setting.DirectoryPath.upgrade_setting(directory)
         setting_values = (setting_values[:SLOT_DIRCHOICE] +
                           [directory] +
                           setting_values[SLOT_DIRCHOICE + 1:])
@@ -1303,18 +1295,18 @@ Do you want to save it anyway?""" %
 
 def is_object_group(group):
     """True if the group's object name is not one of the static names"""
-    return not group.name.value in (IMAGE, EXPERIMENT, OBJECT_RELATIONSHIPS)
+    return not group.name.value in (cellprofiler.measurement.IMAGE, cellprofiler.measurement.EXPERIMENT, OBJECT_RELATIONSHIPS)
 
 
-class EEObjectNameSubscriber(cps.ObjectNameSubscriber):
+class EEObjectNameSubscriber(cellprofiler.setting.ObjectNameSubscriber):
     """ExportToExcel needs to prepend "Image" and "Experiment" to the list of objects
 
     """
 
     def get_choices(self, pipeline):
         choices = [
-            (s, '', 0, False) for s in [IMAGE, EXPERIMENT, OBJECT_RELATIONSHIPS]]
-        choices += cps.ObjectNameSubscriber.get_choices(self, pipeline)
+            (s, '', 0, False) for s in [cellprofiler.measurement.IMAGE, cellprofiler.measurement.EXPERIMENT, OBJECT_RELATIONSHIPS]]
+        choices += cellprofiler.setting.ObjectNameSubscriber.get_choices(self, pipeline)
         return choices
 
 

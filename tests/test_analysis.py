@@ -15,7 +15,7 @@ import cellprofiler.module
 import cellprofiler.pipeline
 import cellprofiler.preferences
 import cellprofiler.utilities.zmqrequest
-import numpy as np
+import numpy
 import tests.modules
 import zmq
 
@@ -410,12 +410,12 @@ class TestAnalysis(unittest.TestCase):
                             cv = client_measurements.get_measurement(
                                     object_name, feature_name,
                                     image_set_number=image_number)
-                            self.assertEqual(np.isscalar(sv),
-                                             np.isscalar(cv))
-                            if np.isscalar(sv):
+                            self.assertEqual(numpy.isscalar(sv),
+                                             numpy.isscalar(cv))
+                            if numpy.isscalar(sv):
                                 self.assertEqual(sv, cv)
                             else:
-                                np.testing.assert_almost_equal(sv, cv)
+                                numpy.testing.assert_almost_equal(sv, cv)
             finally:
                 client_measurements.close()
                 logger.debug("Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function)
@@ -536,7 +536,7 @@ class TestAnalysis(unittest.TestCase):
         logger.debug("Entering %s" % inspect.getframeinfo(inspect.currentframe()).function)
         pipeline, m = self.make_pipeline_and_measurements_and_start(
                 nimage_sets=2)
-        r = np.random.RandomState()
+        r = numpy.random.RandomState()
         r.seed(51)
         with self.FakeWorker() as worker:
             worker.connect(self.analysis.runner.work_announce_address)
@@ -558,7 +558,7 @@ class TestAnalysis(unittest.TestCase):
             for ed, d in zip(dictionaries, result):
                 self.assertItemsEqual(ed.keys(), d.keys())
                 for k in ed.keys():
-                    np.testing.assert_almost_equal(ed[k], d[k])
+                    numpy.testing.assert_almost_equal(ed[k], d[k])
         logger.debug("Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function)
 
     def test_05_02_groups(self):
@@ -567,7 +567,7 @@ class TestAnalysis(unittest.TestCase):
                 nimage_sets=4,
                 group_numbers=[1, 1, 2, 2],
                 group_indexes=[1, 2, 1, 2])
-        r = np.random.RandomState()
+        r = numpy.random.RandomState()
         r.seed(52)
         with self.FakeWorker() as worker:
             worker.connect(self.analysis.runner.work_announce_address)
@@ -591,7 +591,7 @@ class TestAnalysis(unittest.TestCase):
         logger.debug("Entering %s" % inspect.getframeinfo(inspect.currentframe()).function)
         self.wants_analysis_finished = True
         pipeline, m = self.make_pipeline_and_measurements_and_start()
-        r = np.random.RandomState()
+        r = numpy.random.RandomState()
         r.seed(61)
         with self.FakeWorker() as worker:
             #####################################################
@@ -644,7 +644,7 @@ class TestAnalysis(unittest.TestCase):
             self.assertSequenceEqual(measurements.get_image_numbers(), [1])
             self.assertEqual(measurements[cellprofiler.measurement.IMAGE, IMAGE_FEATURE, 1],
                              "Hello")
-            np.testing.assert_almost_equal(
+            numpy.testing.assert_almost_equal(
                     measurements[OBJECTS_NAME, OBJECTS_FEATURE, 1],
                     objects_measurements)
 
@@ -655,7 +655,7 @@ class TestAnalysis(unittest.TestCase):
         self.wants_analysis_finished = True
         pipeline, m = self.make_pipeline_and_measurements_and_start(
                 nimage_sets=3)
-        r = np.random.RandomState()
+        r = numpy.random.RandomState()
         r.seed(62)
         with self.FakeWorker() as worker:
             #####################################################
@@ -735,7 +735,7 @@ class TestAnalysis(unittest.TestCase):
             for i in range(1, 4):
                 self.assertEqual(measurements[cellprofiler.measurement.IMAGE, IMAGE_FEATURE, i],
                                  "Hello %d" % i)
-                np.testing.assert_almost_equal(
+                numpy.testing.assert_almost_equal(
                         measurements[OBJECTS_NAME, OBJECTS_FEATURE, i],
                         objects_measurements[i - 1])
 
@@ -748,7 +748,7 @@ class TestAnalysis(unittest.TestCase):
                 nimage_sets=4,
                 group_numbers=[1, 1, 2, 2],
                 group_indexes=[1, 2, 1, 2])
-        r = np.random.RandomState()
+        r = numpy.random.RandomState()
         r.seed(62)
         with self.FakeWorker() as worker:
             #####################################################
@@ -815,7 +815,7 @@ class TestAnalysis(unittest.TestCase):
             for i in range(1, 5):
                 self.assertEqual(measurements[cellprofiler.measurement.IMAGE, IMAGE_FEATURE, i],
                                  "Hello %d" % i)
-                np.testing.assert_almost_equal(
+                numpy.testing.assert_almost_equal(
                         measurements[OBJECTS_NAME, OBJECTS_FEATURE, i],
                         objects_measurements[i - 1])
 
@@ -829,7 +829,7 @@ class TestAnalysis(unittest.TestCase):
                 status=[cellprofiler.analysis.AnalysisRunner.STATUS_UNPROCESSED,
                         cellprofiler.analysis.AnalysisRunner.STATUS_DONE,
                         cellprofiler.analysis.AnalysisRunner.STATUS_IN_PROCESS])
-        r = np.random.RandomState()
+        r = numpy.random.RandomState()
         r.seed(62)
         with self.FakeWorker() as worker:
             #####################################################
@@ -911,7 +911,7 @@ class TestAnalysis(unittest.TestCase):
                 else:
                     self.assertEqual(measurements[cellprofiler.measurement.IMAGE, IMAGE_FEATURE, i],
                                      "Hello %d" % i)
-                    np.testing.assert_almost_equal(
+                    numpy.testing.assert_almost_equal(
                             measurements[OBJECTS_NAME, OBJECTS_FEATURE, i],
                             objects_measurements[i - 1])
 
@@ -930,7 +930,7 @@ class TestAnalysis(unittest.TestCase):
                         cellprofiler.analysis.AnalysisRunner.STATUS_DONE,
                         cellprofiler.analysis.AnalysisRunner.STATUS_DONE]
         )
-        r = np.random.RandomState()
+        r = numpy.random.RandomState()
         r.seed(62)
         with self.FakeWorker() as worker:
             #####################################################
@@ -979,7 +979,7 @@ class TestAnalysis(unittest.TestCase):
             for i in range(1, 3):
                 self.assertEqual(measurements[cellprofiler.measurement.IMAGE, IMAGE_FEATURE, i],
                                  "Hello %d" % i)
-                np.testing.assert_almost_equal(
+                numpy.testing.assert_almost_equal(
                         measurements[OBJECTS_NAME, OBJECTS_FEATURE, i],
                         objects_measurements[i - 1])
 
@@ -990,7 +990,7 @@ class TestAnalysis(unittest.TestCase):
         logger.debug("Entering %s" % inspect.getframeinfo(inspect.currentframe()).function)
         self.wants_analysis_finished = True
         pipeline, m = self.make_pipeline_and_measurements_and_start()
-        r = np.random.RandomState()
+        r = numpy.random.RandomState()
         r.seed(61)
         with self.FakeWorker() as worker:
             #####################################################
@@ -1024,8 +1024,8 @@ class TestAnalysis(unittest.TestCase):
                 objects_measurements
             client_measurements.add_relate_measurement(
                     1, "Foo", OBJECTS_NAME, OBJECTS_NAME,
-                    np.ones(n_objects, int), np.arange(1, n_objects + 1),
-                    np.ones(n_objects, int), objects_relationship)
+                    numpy.ones(n_objects, int), numpy.arange(1, n_objects + 1),
+                    numpy.ones(n_objects, int), objects_relationship)
             req = cellprofiler.analysis.MeasurementsReport(
                     worker.analysis_id,
                     client_measurements.file_contents(),
@@ -1050,7 +1050,7 @@ class TestAnalysis(unittest.TestCase):
             self.assertSequenceEqual(measurements.get_image_numbers(), [1])
             self.assertEqual(measurements[cellprofiler.measurement.IMAGE, IMAGE_FEATURE, 1],
                              "Hello")
-            np.testing.assert_almost_equal(
+            numpy.testing.assert_almost_equal(
                     measurements[OBJECTS_NAME, OBJECTS_FEATURE, 1],
                     objects_measurements)
             rg = measurements.get_relationship_groups()
@@ -1064,12 +1064,12 @@ class TestAnalysis(unittest.TestCase):
             r = measurements.get_relationships(
                     1, "Foo", OBJECTS_NAME, OBJECTS_NAME)
             self.assertEqual(len(r), n_objects)
-            np.testing.assert_array_equal(r[cellprofiler.measurement.R_FIRST_IMAGE_NUMBER], 1)
-            np.testing.assert_array_equal(r[cellprofiler.measurement.R_SECOND_IMAGE_NUMBER], 1)
-            np.testing.assert_array_equal(r[cellprofiler.measurement.R_FIRST_OBJECT_NUMBER],
-                                          np.arange(1, n_objects + 1))
-            np.testing.assert_array_equal(r[cellprofiler.measurement.R_SECOND_OBJECT_NUMBER],
-                                          objects_relationship)
+            numpy.testing.assert_array_equal(r[cellprofiler.measurement.R_FIRST_IMAGE_NUMBER], 1)
+            numpy.testing.assert_array_equal(r[cellprofiler.measurement.R_SECOND_IMAGE_NUMBER], 1)
+            numpy.testing.assert_array_equal(r[cellprofiler.measurement.R_FIRST_OBJECT_NUMBER],
+                                             numpy.arange(1, n_objects + 1))
+            numpy.testing.assert_array_equal(r[cellprofiler.measurement.R_SECOND_OBJECT_NUMBER],
+                                             objects_relationship)
 
     def test_06_07_worker_cancel(self):
         #
@@ -1078,7 +1078,7 @@ class TestAnalysis(unittest.TestCase):
         logger.debug("Entering %s" % inspect.getframeinfo(inspect.currentframe()).function)
         self.wants_analysis_finished = True
         pipeline, m = self.make_pipeline_and_measurements_and_start()
-        r = np.random.RandomState()
+        r = numpy.random.RandomState()
         r.seed(61)
         with self.FakeWorker() as worker:
             #####################################################

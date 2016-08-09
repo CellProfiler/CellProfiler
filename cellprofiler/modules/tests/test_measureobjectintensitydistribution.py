@@ -1,26 +1,21 @@
-'''test_measureobjectradialdistribution.py
-'''
-
+import StringIO
 import base64
 import unittest
 import zlib
-import StringIO
 
-import numpy
-
-import cellprofiler.preferences
-
-cellprofiler.preferences.set_headless()
-
-import cellprofiler.pipeline
-import cellprofiler.module
 import cellprofiler.image
 import cellprofiler.measurement
+import cellprofiler.module
+import cellprofiler.modules.measureobjectintensitydistribution
+import cellprofiler.pipeline
+import cellprofiler.preferences
 import cellprofiler.region
 import cellprofiler.setting
 import cellprofiler.workspace
-import cellprofiler.modules.measureobjectintensitydistribution
+import numpy
 import scipy.stats
+
+cellprofiler.preferences.set_headless()
 
 OBJECT_NAME = 'objectname'
 CENTER_NAME = 'centername'

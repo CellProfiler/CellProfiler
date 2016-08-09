@@ -1,26 +1,21 @@
-"""test_measureobjectintensity - test the MeasureObjectIntensity module
-"""
-
+import StringIO
 import base64
 import math
 import unittest
 import zlib
-import StringIO
 
-import numpy
-
-import cellprofiler.preferences
-
-cellprofiler.preferences.set_headless()
-
+import cellprofiler.image
+import cellprofiler.measurement
 import cellprofiler.modules.injectimage
 import cellprofiler.modules.measureobjectintensity
 import cellprofiler.pipeline
-import cellprofiler.measurement
+import cellprofiler.preferences
 import cellprofiler.region
-import cellprofiler.image
 import cellprofiler.workspace
 import centrosome.outline
+import numpy
+
+cellprofiler.preferences.set_headless()
 
 #
 # This is a pipeline consisting of Matlab modules for LoadImages,

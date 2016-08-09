@@ -1,22 +1,18 @@
-'''test_measuretexture - test the MeasureTexture module
-'''
-
+import StringIO
 import base64
 import unittest
 import zlib
-import StringIO
-
-import numpy
 
 import cellprofiler.image
-import cellprofiler.module
 import cellprofiler.measurement
+import cellprofiler.module
 import cellprofiler.modules.measuretexture
-import cellprofiler.region
+import cellprofiler.modules.tests
 import cellprofiler.pipeline
 import cellprofiler.preferences
+import cellprofiler.region
 import cellprofiler.workspace
-import cellprofiler.modules.tests
+import numpy
 
 INPUT_IMAGE_NAME = 'Cytoplasm'
 INPUT_OBJECTS_NAME = 'inputobjects'

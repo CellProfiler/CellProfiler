@@ -1,16 +1,13 @@
-'''test_metadata.py - test the Metadata module
-'''
-
-import os
 import cStringIO
+import os
 import tempfile
 import unittest
 
-import cellprofiler.pipeline
-import cellprofiler.setting
 import cellprofiler.measurement
 import cellprofiler.modules.images
 import cellprofiler.modules.metadata
+import cellprofiler.pipeline
+import cellprofiler.setting
 import cellprofiler.workspace
 
 OME_XML = open(os.path.join(os.path.split(__file__)[0], "omexml.xml"), "r").read()

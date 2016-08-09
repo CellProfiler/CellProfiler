@@ -1,33 +1,29 @@
-'''test_loaddata - Test the LoadData (formerly LoadText) module'''
-
-import bioformats
+import StringIO
 import base64
-import numpy
+import hashlib
 import os
 import re
-import StringIO
 import tempfile
 import unittest
 import zlib
-import hashlib
 
-import cellprofiler.preferences
-
-cellprofiler.preferences.set_headless()
-
-import cellprofiler.pipeline
-import cellprofiler.module
+import bioformats
+import bioformats.formatreader
 import cellprofiler.image
 import cellprofiler.measurement
-import cellprofiler.region
-import cellprofiler.workspace
-import cellprofiler.setting
+import cellprofiler.module
 import cellprofiler.modules.identify
 import cellprofiler.modules.loaddata
 import cellprofiler.modules.loadimages
 import cellprofiler.modules.tests
+import cellprofiler.pipeline
+import cellprofiler.preferences
+import cellprofiler.region
+import cellprofiler.setting
+import cellprofiler.workspace
+import numpy
 
-import bioformats.formatreader
+cellprofiler.preferences.set_headless()
 
 OBJECTS_NAME = "objects"
 

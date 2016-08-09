@@ -1,3 +1,4 @@
+import StringIO
 import base64
 import glob
 import hashlib
@@ -10,25 +11,23 @@ import traceback
 import unittest
 import urllib
 import zlib
-import StringIO
 
-import numpy
 import bioformats.formatreader
 import bioformats.formatwriter
 import bioformats.omexml
-
 import cellprofiler.image
-import cellprofiler.module
 import cellprofiler.measurement
+import cellprofiler.module
 import cellprofiler.modules.loadimages
+import cellprofiler.modules.namesandtypes
 import cellprofiler.modules.tests
-import cellprofiler.region
+import cellprofiler.modules.tests
 import cellprofiler.pipeline
 import cellprofiler.pipeline
 import cellprofiler.preferences
+import cellprofiler.region
 import cellprofiler.workspace
-import cellprofiler.modules.namesandtypes
-import cellprofiler.modules.tests
+import numpy
 
 IMAGE_NAME = "image"
 ALT_IMAGE_NAME = "altimage"

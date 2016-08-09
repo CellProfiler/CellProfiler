@@ -1,23 +1,18 @@
-"""test_measureobjectsizeshape.py - test the MeasureObjectSizeShape module
-"""
-
 import StringIO
 import base64
 import unittest
 
+import cellprofiler.image
+import cellprofiler.measurement
+import cellprofiler.modules.injectimage
+import cellprofiler.modules.measureobjectsizeshape
+import cellprofiler.pipeline
+import cellprofiler.preferences
+import cellprofiler.region
+import cellprofiler.workspace
 import numpy
 
-import cellprofiler.preferences
-
 cellprofiler.preferences.set_headless()
-
-import cellprofiler.pipeline
-import cellprofiler.modules.measureobjectsizeshape
-import cellprofiler.modules.injectimage
-import cellprofiler.measurement
-import cellprofiler.workspace
-import cellprofiler.region
-import cellprofiler.image
 
 OBJECTS_NAME = "myobjects"
 

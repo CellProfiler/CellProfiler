@@ -1,25 +1,20 @@
-'''test_relateobjects.py - test the RelateObjects module
-'''
-
+import StringIO
 import base64
 import unittest
 import zlib
-import StringIO
 
+import cellprofiler.image
+import cellprofiler.measurement
+import cellprofiler.module
+import cellprofiler.modules.relateobjects
+import cellprofiler.pipeline
+import cellprofiler.preferences
+import cellprofiler.region
+import cellprofiler.workspace
 import numpy
 import scipy.ndimage
 
-import cellprofiler.preferences
-
 cellprofiler.preferences.set_headless()
-
-import cellprofiler.pipeline
-import cellprofiler.module
-import cellprofiler.image
-import cellprofiler.measurement
-import cellprofiler.region
-import cellprofiler.workspace
-import cellprofiler.modules.relateobjects
 
 PARENT_OBJECTS = 'parentobjects'
 CHILD_OBJECTS = 'childobjects'

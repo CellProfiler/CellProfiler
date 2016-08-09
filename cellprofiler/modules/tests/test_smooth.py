@@ -1,27 +1,22 @@
-'''test_smooth.py - test the smooth module
-'''
-
 import StringIO
 import base64
 import unittest
 import zlib
 
+import cellprofiler.image
+import cellprofiler.measurement
+import cellprofiler.module
+import cellprofiler.modules.smooth
+import cellprofiler.pipeline
+import cellprofiler.preferences
+import cellprofiler.region
+import cellprofiler.workspace
+import centrosome.filter
+import centrosome.smooth
 import numpy
 import scipy.ndimage
 
-import cellprofiler.preferences
-
 cellprofiler.preferences.set_headless()
-
-import cellprofiler.workspace
-import cellprofiler.image
-import cellprofiler.module
-import cellprofiler.region
-import cellprofiler.modules.smooth
-import cellprofiler.pipeline
-import cellprofiler.measurement
-import centrosome.smooth
-import centrosome.filter
 
 INPUT_IMAGE_NAME = 'myimage'
 OUTPUT_IMAGE_NAME = 'myfilteredimage'

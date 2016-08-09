@@ -1,24 +1,19 @@
-'''test_makeprojection - Test the MakeProjection module
-'''
-
+import StringIO
 import base64
 import unittest
 import zlib
-import StringIO
-import numpy
 
-import cellprofiler.preferences
-
-cellprofiler.preferences.set_headless()
-
-import cellprofiler.pipeline
-import cellprofiler.module
 import cellprofiler.image
 import cellprofiler.measurement
+import cellprofiler.module
+import cellprofiler.modules.makeprojection
+import cellprofiler.pipeline
+import cellprofiler.preferences
 import cellprofiler.region
 import cellprofiler.workspace
+import numpy
 
-import cellprofiler.modules.makeprojection
+cellprofiler.preferences.set_headless()
 
 IMAGE_NAME = 'image'
 PROJECTED_IMAGE_NAME = 'projectedimage'

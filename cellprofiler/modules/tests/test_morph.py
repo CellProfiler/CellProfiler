@@ -1,27 +1,22 @@
-'''test_morph - test the morphology module
-'''
-
 import StringIO
 import base64
 import unittest
 import zlib
 
-import numpy
-import scipy.ndimage
-
-import cellprofiler.preferences
-
-cellprofiler.preferences.set_headless()
-
-import cellprofiler.pipeline
 import cellprofiler.image
 import cellprofiler.measurement
+import cellprofiler.modules.morph
+import cellprofiler.pipeline
+import cellprofiler.preferences
 import cellprofiler.region
 import cellprofiler.setting
 import cellprofiler.workspace
-import cellprofiler.modules.morph
 import centrosome.cpmorphology
 import centrosome.filter
+import numpy
+import scipy.ndimage
+
+cellprofiler.preferences.set_headless()
 
 
 class TestMorph(unittest.TestCase):

@@ -1,23 +1,24 @@
-import hashlib
-import numpy
-import os
 import cStringIO
+import hashlib
+import os
 import tempfile
 import unittest
 import urllib
+
 import bioformats
-import cellprofiler.pipeline
-import cellprofiler.modules.namesandtypes
 import cellprofiler.measurement
+import cellprofiler.measurement
+import cellprofiler.modules.createbatchfiles
+import cellprofiler.modules.identify
+import cellprofiler.modules.loadimages
+import cellprofiler.modules.loadimages
+import cellprofiler.modules.namesandtypes
+import cellprofiler.modules.tests
+import cellprofiler.pipeline
 import cellprofiler.region
 import cellprofiler.workspace
 import javabridge
-import cellprofiler.modules.tests
-import cellprofiler.modules.loadimages
-import cellprofiler.modules.loadimages
-import cellprofiler.measurement
-import cellprofiler.modules.identify
-import cellprofiler.modules.createbatchfiles
+import numpy
 
 M0, M1, M2, M3, M4, M5, M6 = ["MetadataKey%d" % i for i in range(7)]
 C0, C1, C2, C3, C4, C5, C6 = ["Column%d" % i for i in range(7)]
@@ -903,7 +904,6 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
                       [(M0, C0), (M1, C0), (M2, C1), (M3, C1)], additional)
 
     def test_01_07_one_against_all(self):
-        import os
         n = cellprofiler.modules.namesandtypes.NamesAndTypes()
         n.assignment_method.value = cellprofiler.modules.namesandtypes.ASSIGN_RULES
         n.matching_choice.value = cellprofiler.modules.namesandtypes.MATCH_BY_METADATA

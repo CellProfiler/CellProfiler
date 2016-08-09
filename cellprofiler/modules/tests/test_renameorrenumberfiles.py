@@ -1,24 +1,21 @@
-'''test_renameorrenumberfiles.py - test the RenameOrRenumberFiles module
-'''
-
+import StringIO
 import base64
 import os
 import tempfile
 import unittest
 import zlib
-import StringIO
 
+import cellprofiler.image
+import cellprofiler.measurement
+import cellprofiler.module
+import cellprofiler.modules.renameorrenumberfiles
+import cellprofiler.pipeline
 import cellprofiler.preferences
+import cellprofiler.region
+import cellprofiler.workspace
 
 cellprofiler.preferences.set_headless()
 
-import cellprofiler.pipeline
-import cellprofiler.module
-import cellprofiler.image
-import cellprofiler.measurement
-import cellprofiler.region
-import cellprofiler.workspace
-import cellprofiler.modules.renameorrenumberfiles
 
 IMAGE_NAME = 'myimage'
 

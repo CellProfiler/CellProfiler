@@ -1,22 +1,19 @@
+import StringIO
 import base64
 import unittest
 import zlib
-import StringIO
 
-import numpy
-
-import cellprofiler.preferences
-
-cellprofiler.preferences.set_headless()
-
-import cellprofiler.pipeline
-import cellprofiler.module
 import cellprofiler.image
 import cellprofiler.measurement
+import cellprofiler.module
+import cellprofiler.modules.resize
+import cellprofiler.pipeline
+import cellprofiler.preferences
 import cellprofiler.region
 import cellprofiler.workspace
+import numpy
 
-import cellprofiler.modules.resize
+cellprofiler.preferences.set_headless()
 
 INPUT_IMAGE_NAME = 'input'
 OUTPUT_IMAGE_NAME = 'output'

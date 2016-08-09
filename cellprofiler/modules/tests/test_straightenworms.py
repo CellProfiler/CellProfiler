@@ -1,19 +1,16 @@
-'''test_straightenworms - test the StraightenWorms module'''
-
-import unittest
 import StringIO
-
-import centrosome.cpmorphology
-import numpy
+import unittest
 
 import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.modules.identify
 import cellprofiler.modules.straightenworms
-import cellprofiler.region
 import cellprofiler.pipeline
+import cellprofiler.region
 import cellprofiler.setting
 import cellprofiler.workspace
+import centrosome.cpmorphology
+import numpy
 
 OBJECTS_NAME = "worms"
 STRAIGHTENED_OBJECTS_NAME = "straightenedworms"

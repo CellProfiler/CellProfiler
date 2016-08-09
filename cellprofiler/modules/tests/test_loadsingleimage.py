@@ -1,30 +1,26 @@
-'''test_loadsingleimage - Test the LoadSingleImage module
-'''
-
+import StringIO
 import base64
 import hashlib
 import os
 import tempfile
 import unittest
 import zlib
-import StringIO
 
 import PIL.Image
-import numpy
-
 import cellprofiler.image
-import cellprofiler.module
 import cellprofiler.measurement
+import cellprofiler.module
+import cellprofiler.modules.identify
 import cellprofiler.modules.loadimages
 import cellprofiler.modules.loadsingleimage
-import cellprofiler.region
-import cellprofiler.pipeline
-import cellprofiler.preferences
-import cellprofiler.setting
-import cellprofiler.workspace
-import cellprofiler.modules.identify
 import cellprofiler.modules.tests
 import cellprofiler.modules.tests.test_loadimages
+import cellprofiler.pipeline
+import cellprofiler.preferences
+import cellprofiler.region
+import cellprofiler.setting
+import cellprofiler.workspace
+import numpy
 
 OBJECTS_NAME = "myobjects"
 OUTLINES_NAME = "myoutlines"

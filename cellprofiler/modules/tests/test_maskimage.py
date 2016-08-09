@@ -1,23 +1,18 @@
-'''test_maskimage - Test the MaskImage module
-'''
-
+import StringIO
 import base64
 import unittest
 import zlib
-import StringIO
 
-import numpy
-
-import cellprofiler.preferences
-
-cellprofiler.preferences.set_headless()
-
-import cellprofiler.workspace
-import cellprofiler.pipeline
-import cellprofiler.region
 import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.modules.maskimage
+import cellprofiler.pipeline
+import cellprofiler.preferences
+import cellprofiler.region
+import cellprofiler.workspace
+import numpy
+
+cellprofiler.preferences.set_headless()
 
 MASKING_IMAGE_NAME = "maskingimage"
 MASKED_IMAGE_NAME = "maskedimage"

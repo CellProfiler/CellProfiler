@@ -1,7 +1,7 @@
 import unittest
-import numpy
+
 import cellprofiler.image
-import skimage.data
+import numpy
 
 
 class TestImage(unittest.TestCase):

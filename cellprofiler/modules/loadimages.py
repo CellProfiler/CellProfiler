@@ -49,17 +49,20 @@ import tempfile
 import urllib
 import urlparse
 
+import bioformats.formatreader
+import bioformats.omexml
 import cellprofiler.gui.errordialog
 import cellprofiler.gui.help
 import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.module
 import cellprofiler.modules.identify
+import cellprofiler.modules.loaddata
 import cellprofiler.pipeline
 import cellprofiler.preferences
 import cellprofiler.region
 import cellprofiler.setting
-from cellprofiler.setting import YES, NO
+import cellprofiler.setting
 import centrosome.outline
 import numpy
 import scipy.io.matlab.mio
@@ -108,13 +111,12 @@ IO_ALL = (IO_IMAGES, IO_OBJECTS)
 IMAGE_FOR_OBJECTS_F = "IMAGE_FOR_%s"
 
 # The following is a list of extensions supported by PIL 1.1.7
-SUPPORTED_IMAGE_EXTENSIONS = set([
-    '.ppm', '.grib', '.im', '.rgba', '.rgb', '.pcd', '.h5', '.jpe', '.jfif',
-    '.jpg', '.fli', '.sgi', '.gbr', '.pcx', '.mpeg', '.jpeg', '.ps', '.flc',
-    '.tif', '.hdf', '.icns', '.gif', '.palm', '.mpg', '.fits', '.pgm', '.mic',
-    '.fit', '.xbm', '.eps', '.emf', '.dcx', '.bmp', '.bw', '.pbm', '.dib',
-    '.ras', '.cur', '.fpx', '.png', '.msp', '.iim', '.wmf', '.tga', '.bufr',
-    '.ico', '.psd', '.xpm', '.arg', '.pdf', '.tiff'])
+SUPPORTED_IMAGE_EXTENSIONS = {'.ppm', '.grib', '.im', '.rgba', '.rgb', '.pcd', '.h5', '.jpe', '.jfif', '.jpg', '.fli',
+                              '.sgi', '.gbr', '.pcx', '.mpeg', '.jpeg', '.ps', '.flc', '.tif', '.hdf', '.icns', '.gif',
+                              '.palm', '.mpg', '.fits', '.pgm', '.mic', '.fit', '.xbm', '.eps', '.emf', '.dcx', '.bmp',
+                              '.bw', '.pbm', '.dib', '.ras', '.cur', '.fpx', '.png', '.msp', '.iim', '.wmf', '.tga',
+                              '.bufr', '.ico', '.psd', '.xpm', '.arg', '.pdf', '.tiff'}
+
 SUPPORTED_IMAGE_EXTENSIONS.add(".mat")
 # The following is a list of the extensions as gathered from Bio-formats
 # Missing are .cfg, .csv, .html, .htm, .log, .txt, .xml and .zip which are likely
@@ -144,8 +146,8 @@ SUPPORTED_IMAGE_EXTENSIONS.update(
          ".v", ".vms", ".vsi", ".vws", ".wat", ".wav", ".wlz", ".xdce",
          ".xlog", ".xqd", ".xqf", ".xv", ".xys", ".zfp", ".zfr",
          ".zpo", ".zvi"])
-SUPPORTED_MOVIE_EXTENSIONS = set(['.avi', '.mpeg', '.stk', '.flex', '.mov', '.tif',
-                                  '.tiff', '.zvi'])
+
+SUPPORTED_MOVIE_EXTENSIONS = {'.avi', '.mpeg', '.stk', '.flex', '.mov', '.tif', '.tiff', '.zvi'}
 
 FF = [FF_INDIVIDUAL_IMAGES, FF_STK_MOVIES, FF_AVI_MOVIES, FF_OTHER_MOVIES]
 SUPPORTED_IMAGE_EXTENSIONS.update([
@@ -902,11 +904,10 @@ class LoadImages(cellprofiler.module.Module):
                             raise cellprofiler.setting.ValidationError(warning_text, channel.image_name)
 
         # The best practice is to have a single LoadImages or LoadData module.
-        from cellprofiler.modules.loaddata import LoadData
         for module in pipeline.modules():
             if id(module) == id(self):
                 return
-            if isinstance(module, LoadData):
+            if isinstance(module, cellprofiler.modules.loaddata.LoadData):
                 raise cellprofiler.setting.ValidationError(
                         "Your pipeline has a LoadImages and LoadData module.\n"
                         "The best practice is to have only a single LoadImages\n"
@@ -1744,9 +1745,6 @@ class LoadImages(cellprofiler.module.Module):
 
     def prepare_run_of_flex(self, workspace):
         """Set up image providers for flex files"""
-        import bioformats.omexml
-        from bioformats.formatreader import get_omexml_metadata
-
         pipeline = workspace.pipeline
         # OK to use workspace.frame, since we're in prepare_run
         frame = workspace.frame
@@ -1796,7 +1794,7 @@ class LoadImages(cellprofiler.module.Module):
                 metadata = self.get_filename_metadata(image_settings, filename,
                                                       path)
                 image_set_count = starting_image_index
-                xml = get_omexml_metadata(pathname)
+                xml = bioformats.formatreader.get_omexml_metadata(pathname)
                 omemetadata = bioformats.omexml.OMEXML(xml)
                 image_count = omemetadata.image_count
                 if len(d) == 0:
@@ -2351,11 +2349,9 @@ class LoadImages(cellprofiler.module.Module):
 
     def get_frame_count(self, pathname):
         """Return the # of frames in a movie"""
-        import bioformats.omexml
-        from bioformats.formatreader import get_omexml_metadata
         if self.file_types in (FF_AVI_MOVIES, FF_OTHER_MOVIES, FF_STK_MOVIES):
             url = pathname2url(pathname)
-            xml = get_omexml_metadata(pathname)
+            xml = bioformats.formatreader.get_omexml_metadata(pathname)
             omexml = bioformats.omexml.OMEXML(xml)
             frame_count = omexml.image(0).Pixels.SizeT
             if frame_count == 1:

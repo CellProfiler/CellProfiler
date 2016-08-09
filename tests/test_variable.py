@@ -1,10 +1,6 @@
-"""test_variable.py - test cellprofiler.settings
-"""
-
 import os
 import tempfile
 import unittest
-
 import cellprofiler.measurement as cpmeas
 import cellprofiler.preferences as cpprefs
 import cellprofiler.setting as cps

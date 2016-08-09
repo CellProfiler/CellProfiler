@@ -1,6 +1,3 @@
-""" test_Measurements.py - tests for CellProfiler.Measurements
-"""
-
 import base64
 import os
 import sys
@@ -9,10 +6,8 @@ import unittest
 import uuid
 import zlib
 from cStringIO import StringIO
-
 import h5py
 import numpy as np
-
 import cellprofiler.image as cpi
 import cellprofiler.measurement as cpmeas
 

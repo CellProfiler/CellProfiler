@@ -1,5 +1,3 @@
-"""test_nowx.py - ensure that there's no dependency on wx when headless
-"""
 import __builtin__
 import os
 import sys
@@ -7,9 +5,7 @@ import tempfile
 import traceback
 import unittest
 from urllib2 import urlopen
-
-from tests.modules import \
-    example_images_directory, maybe_download_sbs, maybe_download_fly
+from tests.modules import example_images_directory, maybe_download_sbs, maybe_download_fly
 
 
 def import_all_but_wx(name,

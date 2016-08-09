@@ -1,5 +1,3 @@
-"""test_Pipeline.py - test the CellProfiler.Pipeline module"""
-
 import base64
 import cProfile
 import cStringIO
@@ -13,10 +11,8 @@ import traceback
 import unittest
 import zlib
 from urllib2 import urlopen
-
 import numpy as np
 import numpy.lib.index_tricks
-
 import cellprofiler.image as cpi
 import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
@@ -28,8 +24,7 @@ import cellprofiler.preferences as cpprefs
 import cellprofiler.setting as cps
 import cellprofiler.workspace as cpw
 from cellprofiler.modules.injectimage import InjectImage
-from tests.modules import \
-    example_images_directory, maybe_download_fly, maybe_download_sbs
+from tests.modules import example_images_directory, maybe_download_fly, maybe_download_sbs
 
 IMAGE_NAME = "myimage"
 ALT_IMAGE_NAME = "altimage"

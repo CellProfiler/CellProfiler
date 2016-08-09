@@ -1187,7 +1187,8 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                             matfh.close()
                             pixel_data = image.pixel_data
                             check_data = base64.b64decode(cellprofiler.modules.tests.raw_8_1)
-                            check_image = numpy.fromstring(check_data, numpy.uint8).reshape(cellprofiler.modules.tests.raw_8_1_shape)
+                            check_image = numpy.fromstring(check_data, numpy.uint8).reshape(
+                                cellprofiler.modules.tests.raw_8_1_shape)
                             self.expected_digest = hashlib.md5()
                             self.expected_digest.update(
                                 (check_image.astype(numpy.float32) / 255).tostring())
@@ -1239,7 +1240,8 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                             pixel_data = image.pixel_data
                             pixel_data = (pixel_data * 255+.5).astype(numpy.uint8)
                             check_data = base64.b64decode(cellprofiler.modules.tests.raw_8_1)
-                            check_image = numpy.fromstring(check_data, numpy.uint8).reshape(cellprofiler.modules.tests.raw_8_1_shape)
+                            check_image = numpy.fromstring(check_data, numpy.uint8).reshape(
+                                cellprofiler.modules.tests.raw_8_1_shape)
                             outer_self.assertTrue(numpy.all(pixel_data == check_image))
                     check_image = CheckImage()
                     check_image.module_num = 2
@@ -1279,7 +1281,8 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                             pixel_data = image.pixel_data
                             pixel_data = (pixel_data * 255+.5).astype(numpy.uint8)
                             check_data = base64.b64decode(cellprofiler.modules.tests.raw_8_1)
-                            check_image = numpy.fromstring(check_data, numpy.uint8).reshape(cellprofiler.modules.tests.raw_8_1_shape)
+                            check_image = numpy.fromstring(check_data, numpy.uint8).reshape(
+                                cellprofiler.modules.tests.raw_8_1_shape)
                             outer_self.assertTrue(numpy.all(pixel_data == check_image))
                     check_image = CheckImage()
                     check_image.module_num = 2
@@ -1331,7 +1334,8 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                 matfh.close()
                 pixel_data = (pixel_data * 255).astype(numpy.uint8)
                 check_data = base64.b64decode(cellprofiler.modules.tests.raw_8_1)
-                check_image = numpy.fromstring(check_data, numpy.uint8).reshape(cellprofiler.modules.tests.raw_8_1_shape)
+                check_image = numpy.fromstring(check_data, numpy.uint8).reshape(
+                    cellprofiler.modules.tests.raw_8_1_shape)
                 # JPEG is lossy, apparently even when you ask for no compression
                 epsilon = 1
                 outer_self.assertTrue(numpy.all(numpy.abs(pixel_data.astype(int)

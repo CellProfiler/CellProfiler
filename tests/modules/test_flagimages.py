@@ -452,7 +452,7 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
             class_names = ["Class%d" for _ in classes]
         if rules_classes is None:
             rules_classes = [class_names[0]]
-        s = cellprofiler.modules.tests.test_filterobjects.make_classifier_pickle(
+        s = tests.modules.test_filterobjects.make_classifier_pickle(
             numpy.array([answer]), classes, class_names, name, feature_names)
         fd, filename = tempfile.mkstemp(".model")
         os.write(fd, s)

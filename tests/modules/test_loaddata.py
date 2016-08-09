@@ -38,8 +38,8 @@ class TestLoadData(unittest.TestCase):
         cls.test_filename = "image.tif"
         cls.test_shape = (13, 15)
         path = cellprofiler.modules.tests.maybe_download_example_image([cls.test_folder],
-                                            cls.test_filename,
-                                            shape=cls.test_shape)
+                                                                       cls.test_filename,
+                                                                       shape=cls.test_shape)
         with open(path, "rb") as fd:
             cls.test_md5 = hashlib.md5(fd.read()).hexdigest()
 

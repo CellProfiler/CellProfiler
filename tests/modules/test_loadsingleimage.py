@@ -12,19 +12,19 @@ import cellprofiler.modules.identify
 import cellprofiler.modules.loadimages
 import cellprofiler.modules.loadsingleimage
 import cellprofiler.modules.tests
-import cellprofiler.modules.tests.test_loadimages
 import cellprofiler.pipeline
 import cellprofiler.preferences
 import cellprofiler.region
 import cellprofiler.setting
 import cellprofiler.workspace
 import numpy
+import tests.modules.test_loadimages
 
 OBJECTS_NAME = "myobjects"
 OUTLINES_NAME = "myoutlines"
 
 
-class TestLoadSingleImage(unittest.TestCase, cellprofiler.modules.tests.test_loadimages.ConvtesterMixin):
+class TestLoadSingleImage(unittest.TestCase, tests.modules.test_loadimages.ConvtesterMixin):
     @classmethod
     def setUpClass(cls):
         cellprofiler.modules.tests.maybe_download_sbs()

@@ -4,20 +4,20 @@
 import base64
 import unittest
 import zlib
-from StringIO import StringIO
+import StringIO
 
-import numpy as np
+import numpy
 
-from cellprofiler.preferences import set_headless
+import cellprofiler.preferences
 
-set_headless()
+cellprofiler.preferences.set_headless()
 
-import cellprofiler.workspace as cpw
-import cellprofiler.pipeline as cpp
-import cellprofiler.region as cpo
-import cellprofiler.image as cpi
-import cellprofiler.measurement as cpmeas
-import cellprofiler.modules.maskimage as M
+import cellprofiler.workspace
+import cellprofiler.pipeline
+import cellprofiler.region
+import cellprofiler.image
+import cellprofiler.measurement
+import cellprofiler.modules.maskimage
 
 MASKING_IMAGE_NAME = "maskingimage"
 MASKED_IMAGE_NAME = "maskedimage"
@@ -45,17 +45,17 @@ class TestMaskImage(unittest.TestCase):
                 'v71j97oVX9e+sfx9YkGul7xS5bXPLg8Ft2Uqn/qYYvdpg/b9g6nvYz/O337C'
                 'O2p+zHJrySoT59cblof++qcntf7vitLX+824l7vare+vk/l7bXphfVPS7385'
                 'zfV33p3+r793D88OABdDcYI=')
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
+        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 3)
         module = pipeline.modules()[-1]
-        self.assertTrue(isinstance(module, M.MaskImage))
-        self.assertEqual(module.source_choice, M.IO_OBJECTS)
+        self.assertTrue(isinstance(module, cellprofiler.modules.maskimage.MaskImage))
+        self.assertEqual(module.source_choice, cellprofiler.modules.maskimage.IO_OBJECTS)
         self.assertEqual(module.object_name, "Nuclei")
         self.assertEqual(module.image_name, "OrigBlue")
         self.assertEqual(module.masked_image_name, "MaskBlue")
@@ -86,17 +86,17 @@ class TestMaskImage(unittest.TestCase):
                 'BYl34STeJrY/eePTYFudNzz5Os2H9B/0d8K1rt1Oev4I7ueTr6+c151Xgtf9'
                 '16NBeJNJ9Q/eSxG4ZEAbFC8/rJwtvhZOad8p42x/Vr+p6pHffp5x3KfxyLoS'
                 'E8L9BgVhjWE=')
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
+        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 3)
         module = pipeline.modules()[-1]
-        self.assertTrue(isinstance(module, M.MaskImage))
-        self.assertEqual(module.source_choice, M.IO_OBJECTS)
+        self.assertTrue(isinstance(module, cellprofiler.modules.maskimage.MaskImage))
+        self.assertEqual(module.source_choice, cellprofiler.modules.maskimage.IO_OBJECTS)
         self.assertEqual(module.object_name, "Nuclei")
         self.assertEqual(module.image_name, "DNA")
         self.assertEqual(module.masked_image_name, "MaskBlue")
@@ -130,151 +130,151 @@ class TestMaskImage(unittest.TestCase):
                 'yUxNo9HmYj8UIz8W3Z74/8n2EvTH46cSyM9f1l7UwOfjFoDFeI3i+NMP6/JW'
                 'q5WdCni4T3mWgud+ewoeHlzPvrba+DkAy+uHbX5M9dfpJ40fYHP/RnzVe9tC'
                 'nsdQ/39X3jff')
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
+        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 5)
         module = pipeline.modules()[2]
-        self.assertTrue(isinstance(module, M.MaskImage))
-        self.assertEqual(module.source_choice, M.IO_OBJECTS)
+        self.assertTrue(isinstance(module, cellprofiler.modules.maskimage.MaskImage))
+        self.assertEqual(module.source_choice, cellprofiler.modules.maskimage.IO_OBJECTS)
         self.assertEqual(module.object_name, "Nuclei")
         self.assertEqual(module.image_name, "OrigBlue")
         self.assertEqual(module.masked_image_name, "MaskBlue")
         self.assertFalse(module.invert_mask)
 
         module = pipeline.modules()[-1]
-        self.assertTrue(isinstance(module, M.MaskImage))
-        self.assertEqual(module.source_choice, M.IO_IMAGE)
+        self.assertTrue(isinstance(module, cellprofiler.modules.maskimage.MaskImage))
+        self.assertEqual(module.source_choice, cellprofiler.modules.maskimage.IO_IMAGE)
         self.assertEqual(module.masking_image_name, "ThreshBlue")
         self.assertEqual(module.image_name, "OrigBlue")
         self.assertEqual(module.masked_image_name, "MaskBlue")
         self.assertTrue(module.invert_mask)
 
     def test_02_01_mask_with_objects(self):
-        labels = np.zeros((10, 15), int)
+        labels = numpy.zeros((10, 15), int)
         labels[2:5, 3:8] = 1
         labels[5:8, 10:14] = 2
-        object_set = cpo.Set()
-        objects = cpo.Region()
+        object_set = cellprofiler.region.Set()
+        objects = cellprofiler.region.Region()
         objects.segmented = labels
         object_set.add_objects(objects, OBJECTS_NAME)
 
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        np.random.seed(0)
-        pixel_data = np.random.uniform(size=(10, 15)).astype(np.float32)
-        image_set.add(IMAGE_NAME, cpi.Image(pixel_data))
+        numpy.random.seed(0)
+        pixel_data = numpy.random.uniform(size=(10, 15)).astype(numpy.float32)
+        image_set.add(IMAGE_NAME, cellprofiler.image.Image(pixel_data))
 
-        pipeline = cpp.Pipeline()
-        module = M.MaskImage()
-        module.source_choice.value = M.IO_OBJECTS
+        pipeline = cellprofiler.pipeline.Pipeline()
+        module = cellprofiler.modules.maskimage.MaskImage()
+        module.source_choice.value = cellprofiler.modules.maskimage.IO_OBJECTS
         module.object_name.value = OBJECTS_NAME
         module.image_name.value = IMAGE_NAME
         module.masked_image_name.value = MASKED_IMAGE_NAME
         module.invert_mask.value = False
         module.module_num = 1
 
-        workspace = cpw.Workspace(pipeline, module, image_set, object_set,
-                                  cpmeas.Measurements(), image_set_list)
+        workspace = cellprofiler.workspace.Workspace(pipeline, module, image_set, object_set,
+                                                     cellprofiler.measurement.Measurements(), image_set_list)
         module.run(workspace)
         masked_image = workspace.image_set.get_image(MASKED_IMAGE_NAME)
-        self.assertTrue(isinstance(masked_image, cpi.Image))
-        self.assertTrue(np.all(masked_image.pixel_data[labels > 0] ==
-                               pixel_data[labels > 0]))
-        self.assertTrue(np.all(masked_image.pixel_data[labels == 0] == 0))
-        self.assertTrue(np.all(masked_image.mask == (labels > 0)))
-        self.assertTrue(np.all(masked_image.masking_objects.segmented == labels))
+        self.assertTrue(isinstance(masked_image, cellprofiler.image.Image))
+        self.assertTrue(numpy.all(masked_image.pixel_data[labels > 0] ==
+                                  pixel_data[labels > 0]))
+        self.assertTrue(numpy.all(masked_image.pixel_data[labels == 0] == 0))
+        self.assertTrue(numpy.all(masked_image.mask == (labels > 0)))
+        self.assertTrue(numpy.all(masked_image.masking_objects.segmented == labels))
 
     def test_02_02_mask_invert(self):
-        labels = np.zeros((10, 15), int)
+        labels = numpy.zeros((10, 15), int)
         labels[2:5, 3:8] = 1
         labels[5:8, 10:14] = 2
-        object_set = cpo.Set()
-        objects = cpo.Region()
+        object_set = cellprofiler.region.Set()
+        objects = cellprofiler.region.Region()
         objects.segmented = labels
         object_set.add_objects(objects, OBJECTS_NAME)
 
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        np.random.seed(0)
-        pixel_data = np.random.uniform(size=(10, 15)).astype(np.float32)
-        image_set.add(IMAGE_NAME, cpi.Image(pixel_data))
+        numpy.random.seed(0)
+        pixel_data = numpy.random.uniform(size=(10, 15)).astype(numpy.float32)
+        image_set.add(IMAGE_NAME, cellprofiler.image.Image(pixel_data))
 
-        pipeline = cpp.Pipeline()
-        module = M.MaskImage()
-        module.source_choice.value = M.IO_OBJECTS
+        pipeline = cellprofiler.pipeline.Pipeline()
+        module = cellprofiler.modules.maskimage.MaskImage()
+        module.source_choice.value = cellprofiler.modules.maskimage.IO_OBJECTS
         module.object_name.value = OBJECTS_NAME
         module.image_name.value = IMAGE_NAME
         module.masked_image_name.value = MASKED_IMAGE_NAME
         module.invert_mask.value = True
         module.module_num = 1
 
-        workspace = cpw.Workspace(pipeline, module, image_set, object_set,
-                                  cpmeas.Measurements(), image_set_list)
+        workspace = cellprofiler.workspace.Workspace(pipeline, module, image_set, object_set,
+                                                     cellprofiler.measurement.Measurements(), image_set_list)
         module.run(workspace)
         masked_image = workspace.image_set.get_image(MASKED_IMAGE_NAME)
-        self.assertTrue(isinstance(masked_image, cpi.Image))
-        self.assertTrue(np.all(masked_image.pixel_data[labels == 0] ==
-                               pixel_data[labels == 0]))
-        self.assertTrue(np.all(masked_image.pixel_data[labels > 0] == 0))
-        self.assertTrue(np.all(masked_image.mask == (labels == 0)))
-        self.assertTrue(np.all(masked_image.masking_objects.segmented == labels))
+        self.assertTrue(isinstance(masked_image, cellprofiler.image.Image))
+        self.assertTrue(numpy.all(masked_image.pixel_data[labels == 0] ==
+                                  pixel_data[labels == 0]))
+        self.assertTrue(numpy.all(masked_image.pixel_data[labels > 0] == 0))
+        self.assertTrue(numpy.all(masked_image.mask == (labels == 0)))
+        self.assertTrue(numpy.all(masked_image.masking_objects.segmented == labels))
 
     def test_02_03_double_mask(self):
-        labels = np.zeros((10, 15), int)
+        labels = numpy.zeros((10, 15), int)
         labels[2:5, 3:8] = 1
         labels[5:8, 10:14] = 2
-        object_set = cpo.Set()
-        objects = cpo.Region()
+        object_set = cellprofiler.region.Set()
+        objects = cellprofiler.region.Region()
         objects.segmented = labels
         object_set.add_objects(objects, OBJECTS_NAME)
 
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        np.random.seed(0)
-        pixel_data = np.random.uniform(size=(10, 15)).astype(np.float32)
-        mask = np.random.uniform(size=(10, 15)) > .5
-        image_set.add(IMAGE_NAME, cpi.Image(pixel_data, mask))
+        numpy.random.seed(0)
+        pixel_data = numpy.random.uniform(size=(10, 15)).astype(numpy.float32)
+        mask = numpy.random.uniform(size=(10, 15)) > .5
+        image_set.add(IMAGE_NAME, cellprofiler.image.Image(pixel_data, mask))
 
         expected_mask = (mask & (labels > 0))
 
-        pipeline = cpp.Pipeline()
-        module = M.MaskImage()
-        module.source_choice.value = M.IO_OBJECTS
+        pipeline = cellprofiler.pipeline.Pipeline()
+        module = cellprofiler.modules.maskimage.MaskImage()
+        module.source_choice.value = cellprofiler.modules.maskimage.IO_OBJECTS
         module.object_name.value = OBJECTS_NAME
         module.image_name.value = IMAGE_NAME
         module.masked_image_name.value = MASKED_IMAGE_NAME
         module.invert_mask.value = False
         module.module_num = 1
 
-        workspace = cpw.Workspace(pipeline, module, image_set, object_set,
-                                  cpmeas.Measurements(), image_set_list)
+        workspace = cellprofiler.workspace.Workspace(pipeline, module, image_set, object_set,
+                                                     cellprofiler.measurement.Measurements(), image_set_list)
         module.run(workspace)
         masked_image = workspace.image_set.get_image(MASKED_IMAGE_NAME)
-        self.assertTrue(isinstance(masked_image, cpi.Image))
-        self.assertTrue(np.all(masked_image.pixel_data[expected_mask] ==
-                               pixel_data[expected_mask]))
-        self.assertTrue(np.all(masked_image.pixel_data[~ expected_mask] == 0))
-        self.assertTrue(np.all(masked_image.mask == expected_mask))
-        self.assertTrue(np.all(masked_image.masking_objects.segmented == labels))
+        self.assertTrue(isinstance(masked_image, cellprofiler.image.Image))
+        self.assertTrue(numpy.all(masked_image.pixel_data[expected_mask] ==
+                                  pixel_data[expected_mask]))
+        self.assertTrue(numpy.all(masked_image.pixel_data[~ expected_mask] == 0))
+        self.assertTrue(numpy.all(masked_image.mask == expected_mask))
+        self.assertTrue(numpy.all(masked_image.masking_objects.segmented == labels))
 
     def test_03_01_binary_mask(self):
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        np.random.seed(0)
-        pixel_data = np.random.uniform(size=(10, 15)).astype(np.float32)
-        image_set.add(IMAGE_NAME, cpi.Image(pixel_data))
+        numpy.random.seed(0)
+        pixel_data = numpy.random.uniform(size=(10, 15)).astype(numpy.float32)
+        image_set.add(IMAGE_NAME, cellprofiler.image.Image(pixel_data))
 
-        masking_image = np.random.uniform(size=(10, 15)) > .5
-        image_set.add(MASKING_IMAGE_NAME, cpi.Image(masking_image))
+        masking_image = numpy.random.uniform(size=(10, 15)) > .5
+        image_set.add(MASKING_IMAGE_NAME, cellprofiler.image.Image(masking_image))
 
-        pipeline = cpp.Pipeline()
-        module = M.MaskImage()
-        module.source_choice.value = M.IO_IMAGE
+        pipeline = cellprofiler.pipeline.Pipeline()
+        module = cellprofiler.modules.maskimage.MaskImage()
+        module.source_choice.value = cellprofiler.modules.maskimage.IO_IMAGE
         module.object_name.value = OBJECTS_NAME
         module.image_name.value = IMAGE_NAME
         module.masking_image_name.value = MASKING_IMAGE_NAME
@@ -282,31 +282,31 @@ class TestMaskImage(unittest.TestCase):
         module.invert_mask.value = False
         module.module_num = 1
 
-        workspace = cpw.Workspace(pipeline, module, image_set, cpo.Set(),
-                                  cpmeas.Measurements(), image_set_list)
+        workspace = cellprofiler.workspace.Workspace(pipeline, module, image_set, cellprofiler.region.Set(),
+                                                     cellprofiler.measurement.Measurements(), image_set_list)
         module.run(workspace)
         masked_image = workspace.image_set.get_image(MASKED_IMAGE_NAME)
-        self.assertTrue(isinstance(masked_image, cpi.Image))
-        self.assertTrue(np.all(masked_image.pixel_data[masking_image] ==
-                               pixel_data[masking_image]))
-        self.assertTrue(np.all(masked_image.pixel_data[~masking_image] == 0))
-        self.assertTrue(np.all(masked_image.mask == masking_image))
+        self.assertTrue(isinstance(masked_image, cellprofiler.image.Image))
+        self.assertTrue(numpy.all(masked_image.pixel_data[masking_image] ==
+                                  pixel_data[masking_image]))
+        self.assertTrue(numpy.all(masked_image.pixel_data[~masking_image] == 0))
+        self.assertTrue(numpy.all(masked_image.mask == masking_image))
         self.assertFalse(masked_image.has_masking_objects)
 
     def test_03_02_gray_mask(self):
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        np.random.seed(0)
-        pixel_data = np.random.uniform(size=(10, 15)).astype(np.float32)
-        image_set.add(IMAGE_NAME, cpi.Image(pixel_data))
+        numpy.random.seed(0)
+        pixel_data = numpy.random.uniform(size=(10, 15)).astype(numpy.float32)
+        image_set.add(IMAGE_NAME, cellprofiler.image.Image(pixel_data))
 
-        masking_image = np.random.uniform(size=(10, 15))
-        image_set.add(MASKING_IMAGE_NAME, cpi.Image(masking_image))
+        masking_image = numpy.random.uniform(size=(10, 15))
+        image_set.add(MASKING_IMAGE_NAME, cellprofiler.image.Image(masking_image))
         masking_image = masking_image > .5
 
-        pipeline = cpp.Pipeline()
-        module = M.MaskImage()
-        module.source_choice.value = M.IO_IMAGE
+        pipeline = cellprofiler.pipeline.Pipeline()
+        module = cellprofiler.modules.maskimage.MaskImage()
+        module.source_choice.value = cellprofiler.modules.maskimage.IO_IMAGE
         module.object_name.value = OBJECTS_NAME
         module.image_name.value = IMAGE_NAME
         module.masking_image_name.value = MASKING_IMAGE_NAME
@@ -314,32 +314,32 @@ class TestMaskImage(unittest.TestCase):
         module.invert_mask.value = False
         module.module_num = 1
 
-        workspace = cpw.Workspace(pipeline, module, image_set, cpo.Set(),
-                                  cpmeas.Measurements(), image_set_list)
+        workspace = cellprofiler.workspace.Workspace(pipeline, module, image_set, cellprofiler.region.Set(),
+                                                     cellprofiler.measurement.Measurements(), image_set_list)
         module.run(workspace)
         masked_image = workspace.image_set.get_image(MASKED_IMAGE_NAME)
-        self.assertTrue(isinstance(masked_image, cpi.Image))
-        self.assertTrue(np.all(masked_image.pixel_data[masking_image] ==
-                               pixel_data[masking_image]))
-        self.assertTrue(np.all(masked_image.pixel_data[~masking_image] == 0))
-        self.assertTrue(np.all(masked_image.mask == masking_image))
+        self.assertTrue(isinstance(masked_image, cellprofiler.image.Image))
+        self.assertTrue(numpy.all(masked_image.pixel_data[masking_image] ==
+                                  pixel_data[masking_image]))
+        self.assertTrue(numpy.all(masked_image.pixel_data[~masking_image] == 0))
+        self.assertTrue(numpy.all(masked_image.mask == masking_image))
         self.assertFalse(masked_image.has_masking_objects)
 
     def test_03_03_color_mask(self):
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        np.random.seed(0)
-        pixel_data = np.random.uniform(size=(10, 15, 3)).astype(np.float32)
-        image_set.add(IMAGE_NAME, cpi.Image(pixel_data))
+        numpy.random.seed(0)
+        pixel_data = numpy.random.uniform(size=(10, 15, 3)).astype(numpy.float32)
+        image_set.add(IMAGE_NAME, cellprofiler.image.Image(pixel_data))
 
-        masking_image = np.random.uniform(size=(10, 15))
+        masking_image = numpy.random.uniform(size=(10, 15))
 
-        image_set.add(MASKING_IMAGE_NAME, cpi.Image(masking_image))
+        image_set.add(MASKING_IMAGE_NAME, cellprofiler.image.Image(masking_image))
         expected_mask = masking_image > .5
 
-        pipeline = cpp.Pipeline()
-        module = M.MaskImage()
-        module.source_choice.value = M.IO_IMAGE
+        pipeline = cellprofiler.pipeline.Pipeline()
+        module = cellprofiler.modules.maskimage.MaskImage()
+        module.source_choice.value = cellprofiler.modules.maskimage.IO_IMAGE
         module.object_name.value = OBJECTS_NAME
         module.image_name.value = IMAGE_NAME
         module.masking_image_name.value = MASKING_IMAGE_NAME
@@ -347,13 +347,13 @@ class TestMaskImage(unittest.TestCase):
         module.invert_mask.value = False
         module.module_num = 1
 
-        workspace = cpw.Workspace(pipeline, module, image_set, cpo.Set(),
-                                  cpmeas.Measurements(), image_set_list)
+        workspace = cellprofiler.workspace.Workspace(pipeline, module, image_set, cellprofiler.region.Set(),
+                                                     cellprofiler.measurement.Measurements(), image_set_list)
         module.run(workspace)
         masked_image = workspace.image_set.get_image(MASKED_IMAGE_NAME)
-        self.assertTrue(isinstance(masked_image, cpi.Image))
-        self.assertTrue(np.all(masked_image.pixel_data[expected_mask, :] ==
+        self.assertTrue(isinstance(masked_image, cellprofiler.image.Image))
+        self.assertTrue(numpy.all(masked_image.pixel_data[expected_mask, :] ==
                                pixel_data[expected_mask, :]))
-        self.assertTrue(np.all(masked_image.pixel_data[~expected_mask, :] == 0))
-        self.assertTrue(np.all(masked_image.mask == expected_mask))
+        self.assertTrue(numpy.all(masked_image.pixel_data[~expected_mask, :] == 0))
+        self.assertTrue(numpy.all(masked_image.mask == expected_mask))
         self.assertFalse(masked_image.has_masking_objects)

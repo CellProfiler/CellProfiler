@@ -5,22 +5,22 @@ import base64
 import math
 import unittest
 import zlib
-from StringIO import StringIO
+import StringIO
 
-import numpy as np
+import numpy
 
-from cellprofiler.preferences import set_headless
+import cellprofiler.preferences
 
-set_headless()
+cellprofiler.preferences.set_headless()
 
-import cellprofiler.modules.injectimage as II
-import cellprofiler.modules.measureobjectintensity as MOI
-import cellprofiler.pipeline as P
-import cellprofiler.measurement as cpmeas
-import cellprofiler.region as cpo
-import cellprofiler.image as cpi
-import cellprofiler.workspace as cpw
-import centrosome.outline as cpmo
+import cellprofiler.modules.injectimage
+import cellprofiler.modules.measureobjectintensity
+import cellprofiler.pipeline
+import cellprofiler.measurement
+import cellprofiler.region
+import cellprofiler.image
+import cellprofiler.workspace
+import centrosome.outline
 
 #
 # This is a pipeline consisting of Matlab modules for LoadImages,
@@ -34,17 +34,17 @@ OBJECT_NAME = "MyObjects"
 
 class TestMeasureObjects(unittest.TestCase):
     def error_callback(self, calller, event):
-        if isinstance(event, P.RunExceptionEvent):
+        if isinstance(event, cellprofiler.pipeline.RunExceptionEvent):
             self.fail(event.error.message)
 
     def test_01_01_load(self):
-        pipeline = P.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_listener(self.error_callback)
-        fd = StringIO(base64.b64decode(pipeline_data))
+        fd = StringIO.StringIO(base64.b64decode(pipeline_data))
         pipeline.load(fd)
         self.assertEqual(len(pipeline.modules()), 3)
         module = pipeline.modules()[2]
-        self.assertTrue(isinstance(module, MOI.MeasureObjectIntensity))
+        self.assertTrue(isinstance(module, cellprofiler.modules.measureobjectintensity.MeasureObjectIntensity))
         self.assertEqual(len(module.objects), 1)
         self.assertEqual(module.objects[0].name.value, 'Nuclei')
         self.assertEqual(module.images[0].name.value, 'DNA')
@@ -78,16 +78,16 @@ class TestMeasureObjects(unittest.TestCase):
                 'xjfAyDB1PHmHTpwd0lJ9Unw0LhY2Totxs+HD7+7/rCU9eHh/7ap4A8AbZ7P4'
                 'u3ixCF8ul83eA959d3cDcDngjXuO/wfMF+dbV9R3bFzl+vP6OWMdUf0048lN'
                 'dZq0v5r1/wNnl0Vu')
-        pipeline = P.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, P.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
+        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 4)
         module = pipeline.modules()[-1]
-        self.assertTrue(isinstance(module, MOI.MeasureObjectIntensity))
+        self.assertTrue(isinstance(module, cellprofiler.modules.measureobjectintensity.MeasureObjectIntensity))
         self.assertEqual(len(module.images), 2)
         for expected, actual in zip(("DNA", "Actin"), [img.name for img in module.images]):
             self.assertEqual(expected, actual)
@@ -98,49 +98,49 @@ class TestMeasureObjects(unittest.TestCase):
     def test_02_01_supplied_measurements(self):
         """Test the get_category / get_measurements, get_measurement_images functions"""
 
-        moi = MOI.MeasureObjectIntensity()
+        moi = cellprofiler.modules.measureobjectintensity.MeasureObjectIntensity()
         moi.images[0].name.value = 'MyImage'
         moi.add_object()
         moi.objects[0].name.value = 'MyObjects1'
         moi.objects[1].name.value = 'MyObjects2'
 
         self.assertEqual(tuple(sorted(moi.get_categories(None, 'MyObjects1'))),
-                         tuple(sorted([MOI.INTENSITY, MOI.C_LOCATION])))
+                         tuple(sorted([cellprofiler.modules.measureobjectintensity.INTENSITY, cellprofiler.modules.measureobjectintensity.C_LOCATION])))
         self.assertEqual(moi.get_categories(None, 'Foo'), [])
-        measurements = moi.get_measurements(None, 'MyObjects1', MOI.INTENSITY)
-        self.assertEqual(len(measurements), len(MOI.ALL_MEASUREMENTS))
-        measurements = moi.get_measurements(None, 'MyObjects1', MOI.C_LOCATION)
-        self.assertEqual(len(measurements), len(MOI.ALL_LOCATION_MEASUREMENTS))
-        self.assertTrue(all([m in MOI.ALL_LOCATION_MEASUREMENTS for m in measurements]))
+        measurements = moi.get_measurements(None, 'MyObjects1', cellprofiler.modules.measureobjectintensity.INTENSITY)
+        self.assertEqual(len(measurements), len(cellprofiler.modules.measureobjectintensity.ALL_MEASUREMENTS))
+        measurements = moi.get_measurements(None, 'MyObjects1', cellprofiler.modules.measureobjectintensity.C_LOCATION)
+        self.assertEqual(len(measurements), len(cellprofiler.modules.measureobjectintensity.ALL_LOCATION_MEASUREMENTS))
+        self.assertTrue(all([m in cellprofiler.modules.measureobjectintensity.ALL_LOCATION_MEASUREMENTS for m in measurements]))
         self.assertTrue(moi.get_measurement_images(None, 'MyObjects1',
-                                                   MOI.INTENSITY,
-                                                   MOI.MAX_INTENSITY),
+                                                   cellprofiler.modules.measureobjectintensity.INTENSITY,
+                                                   cellprofiler.modules.measureobjectintensity.MAX_INTENSITY),
                         ['MyImage'])
 
     def test_02_02_get_measurement_columns(self):
         '''test the get_measurement_columns method'''
-        moi = MOI.MeasureObjectIntensity()
+        moi = cellprofiler.modules.measureobjectintensity.MeasureObjectIntensity()
         moi.images[0].name.value = 'MyImage'
         moi.add_object()
         moi.objects[0].name.value = 'MyObjects1'
         moi.objects[1].name.value = 'MyObjects2'
         columns = moi.get_measurement_columns(None)
-        self.assertEqual(len(columns), 2 * len(MOI.ALL_MEASUREMENTS) + 2 * len(MOI.ALL_LOCATION_MEASUREMENTS))
+        self.assertEqual(len(columns), 2 * len(cellprofiler.modules.measureobjectintensity.ALL_MEASUREMENTS) + 2 * len(cellprofiler.modules.measureobjectintensity.ALL_LOCATION_MEASUREMENTS))
         for column in columns:
             self.assertTrue(column[0] in ('MyObjects1', 'MyObjects2'))
-            self.assertEqual(column[2], cpmeas.COLTYPE_FLOAT)
+            self.assertEqual(column[2], cellprofiler.measurement.COLTYPE_FLOAT)
             category = column[1].split('_')[0]
-            self.assertTrue(category in (MOI.INTENSITY, MOI.C_LOCATION))
-            if category == MOI.INTENSITY:
+            self.assertTrue(category in (cellprofiler.modules.measureobjectintensity.INTENSITY, cellprofiler.modules.measureobjectintensity.C_LOCATION))
+            if category == cellprofiler.modules.measureobjectintensity.INTENSITY:
                 self.assertTrue(column[1][column[1].find('_') + 1:] in
-                                [m + '_MyImage' for m in MOI.ALL_MEASUREMENTS])
+                                [m + '_MyImage' for m in cellprofiler.modules.measureobjectintensity.ALL_MEASUREMENTS])
             else:
                 self.assertTrue(column[1][column[1].find('_') + 1:] in
-                                [m + '_MyImage' for m in MOI.ALL_LOCATION_MEASUREMENTS])
+                                [m + '_MyImage' for m in cellprofiler.modules.measureobjectintensity.ALL_LOCATION_MEASUREMENTS])
 
     def features_and_columns_match(self, measurements, module):
         object_names = [x for x in measurements.get_object_names()
-                        if x not in (cpmeas.IMAGE, cpmeas.EXPERIMENT)]
+                        if x not in (cellprofiler.measurement.IMAGE, cellprofiler.measurement.EXPERIMENT)]
         features = [[f for f in measurements.get_feature_names(object_name)
                      if f != 'Exit_Status']
                     for object_name in object_names]
@@ -149,53 +149,53 @@ class TestMeasureObjects(unittest.TestCase):
         for column in columns:
             index = object_names.index(column[0])
             self.assertTrue(column[1] in features[index])
-            self.assertTrue(column[2] == cpmeas.COLTYPE_FLOAT)
+            self.assertTrue(column[2] == cellprofiler.measurement.COLTYPE_FLOAT)
 
     def make_workspace(self, labels, pixel_data, mask=None):
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        image_set.add(IMAGE_NAME, cpi.Image(pixel_data, mask))
-        object_set = cpo.Set()
-        o = cpo.Region()
+        image_set.add(IMAGE_NAME, cellprofiler.image.Image(pixel_data, mask))
+        object_set = cellprofiler.region.Set()
+        o = cellprofiler.region.Region()
         if labels.shape[1] == 3:
             o.ijv = labels
         else:
             o.segmented = labels
         object_set.add_objects(o, OBJECT_NAME)
-        pipeline = P.Pipeline()
-        module = MOI.MeasureObjectIntensity()
+        pipeline = cellprofiler.pipeline.Pipeline()
+        module = cellprofiler.modules.measureobjectintensity.MeasureObjectIntensity()
         module.images[0].name.value = IMAGE_NAME
         module.objects[0].name.value = OBJECT_NAME
         module.module_num = 1
         pipeline.add_listener(self.error_callback)
         pipeline.add_module(module)
-        workspace = cpw.Workspace(pipeline, module, image_set,
-                                  object_set, cpmeas.Measurements(),
-                                  image_set_list)
+        workspace = cellprofiler.workspace.Workspace(pipeline, module, image_set,
+                                                     object_set, cellprofiler.measurement.Measurements(),
+                                                     image_set_list)
         return workspace, module
 
     def test_03_01_00_zero(self):
         """Make sure we can process a blank image"""
-        ii = II.InjectImage('MyImage', np.zeros((10, 10)))
+        ii = cellprofiler.modules.injectimage.InjectImage('MyImage', numpy.zeros((10, 10)))
         ii.module_num = 1
-        io = II.InjectObjects('MyObjects', np.zeros((10, 10), int))
+        io = cellprofiler.modules.injectimage.InjectObjects('MyObjects', numpy.zeros((10, 10), int))
         io.module_num = 2
-        moi = MOI.MeasureObjectIntensity()
+        moi = cellprofiler.modules.measureobjectintensity.MeasureObjectIntensity()
         moi.images[0].name.value = 'MyImage'
         moi.objects[0].name.value = 'MyObjects'
         moi.module_num = 3
-        pipeline = P.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_listener(self.error_callback)
         pipeline.add_module(ii)
         pipeline.add_module(io)
         pipeline.add_module(moi)
         m = pipeline.run()
-        for category, features in ((MOI.INTENSITY, MOI.ALL_MEASUREMENTS),
-                                   (MOI.C_LOCATION, MOI.ALL_LOCATION_MEASUREMENTS)):
+        for category, features in ((cellprofiler.modules.measureobjectintensity.INTENSITY, cellprofiler.modules.measureobjectintensity.ALL_MEASUREMENTS),
+                                   (cellprofiler.modules.measureobjectintensity.C_LOCATION, cellprofiler.modules.measureobjectintensity.ALL_LOCATION_MEASUREMENTS)):
             for meas_name in features:
                 feature_name = "%s_%s_%s" % (category, meas_name, 'MyImage')
                 data = m.get_current_measurement('MyObjects', feature_name)
-                self.assertEqual(np.product(data.shape), 0, "Got data for feature %s" % feature_name)
+                self.assertEqual(numpy.product(data.shape), 0, "Got data for feature %s" % feature_name)
             self.features_and_columns_match(m, moi)
 
     def test_03_01_01_masked(self):
@@ -203,114 +203,114 @@ class TestMeasureObjects(unittest.TestCase):
 
         Regression test of IMG-971
         """
-        ii = II.InjectImage('MyImage', np.zeros((10, 10)),
-                            np.zeros((10, 10), bool))
+        ii = cellprofiler.modules.injectimage.InjectImage('MyImage', numpy.zeros((10, 10)),
+                                                          numpy.zeros((10, 10), bool))
         ii.module_num = 1
-        io = II.InjectObjects('MyObjects', np.ones((10, 10), int))
+        io = cellprofiler.modules.injectimage.InjectObjects('MyObjects', numpy.ones((10, 10), int))
         io.module_num = 2
-        moi = MOI.MeasureObjectIntensity()
+        moi = cellprofiler.modules.measureobjectintensity.MeasureObjectIntensity()
         moi.images[0].name.value = 'MyImage'
         moi.objects[0].name.value = 'MyObjects'
         moi.module_num = 3
-        pipeline = P.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_listener(self.error_callback)
         pipeline.add_module(ii)
         pipeline.add_module(io)
         pipeline.add_module(moi)
         m = pipeline.run()
-        for meas_name in MOI.ALL_MEASUREMENTS:
-            feature_name = "%s_%s_%s" % (MOI.INTENSITY, meas_name, 'MyImage')
+        for meas_name in cellprofiler.modules.measureobjectintensity.ALL_MEASUREMENTS:
+            feature_name = "%s_%s_%s" % (cellprofiler.modules.measureobjectintensity.INTENSITY, meas_name, 'MyImage')
             data = m.get_current_measurement('MyObjects', feature_name)
-            self.assertEqual(np.product(data.shape), 1)
-            self.assertTrue(np.all(np.isnan(data) | (data == 0)))
+            self.assertEqual(numpy.product(data.shape), 1)
+            self.assertTrue(numpy.all(numpy.isnan(data) | (data == 0)))
         self.features_and_columns_match(m, moi)
 
     def test_03_02_00_one(self):
         """Check measurements on a 3x3 square of 1's"""
-        img = np.array([[0, 0, 0, 0, 0, 0, 0],
-                        [0, 0, 1, 1, 1, 0, 0],
-                        [0, 0, 1, 1, 1, 0, 0],
-                        [0, 0, 1, 1, 1, 0, 0],
-                        [0, 0, 0, 0, 0, 0, 0]])
-        ii = II.InjectImage('MyImage', img.astype(float))
+        img = numpy.array([[0, 0, 0, 0, 0, 0, 0],
+                           [0, 0, 1, 1, 1, 0, 0],
+                           [0, 0, 1, 1, 1, 0, 0],
+                           [0, 0, 1, 1, 1, 0, 0],
+                           [0, 0, 0, 0, 0, 0, 0]])
+        ii = cellprofiler.modules.injectimage.InjectImage('MyImage', img.astype(float))
         ii.module_num = 1
-        io = II.InjectObjects('MyObjects', img.astype(int))
+        io = cellprofiler.modules.injectimage.InjectObjects('MyObjects', img.astype(int))
         io.module_num = 2
-        moi = MOI.MeasureObjectIntensity()
+        moi = cellprofiler.modules.measureobjectintensity.MeasureObjectIntensity()
         moi.images[0].name.value = 'MyImage'
         moi.objects[0].name.value = 'MyObjects'
         moi.module_num = 3
-        pipeline = P.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_listener(self.error_callback)
         pipeline.add_module(ii)
         pipeline.add_module(io)
         pipeline.add_module(moi)
         m = pipeline.run()
         for category, meas_name, value in (
-                (MOI.INTENSITY, MOI.INTEGRATED_INTENSITY, 9),
-                (MOI.INTENSITY, MOI.MEAN_INTENSITY, 1),
-                (MOI.INTENSITY, MOI.STD_INTENSITY, 0),
-                (MOI.INTENSITY, MOI.MIN_INTENSITY, 1),
-                (MOI.INTENSITY, MOI.MAX_INTENSITY, 1),
-                (MOI.INTENSITY, MOI.INTEGRATED_INTENSITY_EDGE, 8),
-                (MOI.INTENSITY, MOI.MEAN_INTENSITY_EDGE, 1),
-                (MOI.INTENSITY, MOI.STD_INTENSITY_EDGE, 0),
-                (MOI.INTENSITY, MOI.MIN_INTENSITY_EDGE, 1),
-                (MOI.INTENSITY, MOI.MAX_INTENSITY_EDGE, 1),
-                (MOI.INTENSITY, MOI.MASS_DISPLACEMENT, 0),
-                (MOI.INTENSITY, MOI.LOWER_QUARTILE_INTENSITY, 1),
-                (MOI.INTENSITY, MOI.MEDIAN_INTENSITY, 1),
-                (MOI.INTENSITY, MOI.UPPER_QUARTILE_INTENSITY, 1),
-                (MOI.C_LOCATION, MOI.LOC_CMI_X, 3),
-                (MOI.C_LOCATION, MOI.LOC_CMI_Y, 2)):
+                (cellprofiler.modules.measureobjectintensity.INTENSITY, cellprofiler.modules.measureobjectintensity.INTEGRATED_INTENSITY, 9),
+                (cellprofiler.modules.measureobjectintensity.INTENSITY, cellprofiler.modules.measureobjectintensity.MEAN_INTENSITY, 1),
+                (cellprofiler.modules.measureobjectintensity.INTENSITY, cellprofiler.modules.measureobjectintensity.STD_INTENSITY, 0),
+                (cellprofiler.modules.measureobjectintensity.INTENSITY, cellprofiler.modules.measureobjectintensity.MIN_INTENSITY, 1),
+                (cellprofiler.modules.measureobjectintensity.INTENSITY, cellprofiler.modules.measureobjectintensity.MAX_INTENSITY, 1),
+                (cellprofiler.modules.measureobjectintensity.INTENSITY, cellprofiler.modules.measureobjectintensity.INTEGRATED_INTENSITY_EDGE, 8),
+                (cellprofiler.modules.measureobjectintensity.INTENSITY, cellprofiler.modules.measureobjectintensity.MEAN_INTENSITY_EDGE, 1),
+                (cellprofiler.modules.measureobjectintensity.INTENSITY, cellprofiler.modules.measureobjectintensity.STD_INTENSITY_EDGE, 0),
+                (cellprofiler.modules.measureobjectintensity.INTENSITY, cellprofiler.modules.measureobjectintensity.MIN_INTENSITY_EDGE, 1),
+                (cellprofiler.modules.measureobjectintensity.INTENSITY, cellprofiler.modules.measureobjectintensity.MAX_INTENSITY_EDGE, 1),
+                (cellprofiler.modules.measureobjectintensity.INTENSITY, cellprofiler.modules.measureobjectintensity.MASS_DISPLACEMENT, 0),
+                (cellprofiler.modules.measureobjectintensity.INTENSITY, cellprofiler.modules.measureobjectintensity.LOWER_QUARTILE_INTENSITY, 1),
+                (cellprofiler.modules.measureobjectintensity.INTENSITY, cellprofiler.modules.measureobjectintensity.MEDIAN_INTENSITY, 1),
+                (cellprofiler.modules.measureobjectintensity.INTENSITY, cellprofiler.modules.measureobjectintensity.UPPER_QUARTILE_INTENSITY, 1),
+                (cellprofiler.modules.measureobjectintensity.C_LOCATION, cellprofiler.modules.measureobjectintensity.LOC_CMI_X, 3),
+                (cellprofiler.modules.measureobjectintensity.C_LOCATION, cellprofiler.modules.measureobjectintensity.LOC_CMI_Y, 2)):
             feature_name = "%s_%s_%s" % (category, meas_name, 'MyImage')
             data = m.get_current_measurement('MyObjects', feature_name)
-            self.assertEqual(np.product(data.shape), 1)
+            self.assertEqual(numpy.product(data.shape), 1)
             self.assertEqual(data[0], value, "%s expected %f != actual %f" % (meas_name, value, data[0]))
 
     def test_03_02_01_one_masked(self):
         """Check measurements on a 3x3 square of 1's"""
-        img = np.array([[0, 0, 0, 0, 0, 0, 0],
-                        [0, 0, 1, 1, 1, 0, 0],
-                        [0, 0, 1, 1, 1, 0, 0],
-                        [0, 0, 1, 1, 1, 0, 0],
-                        [0, 0, 0, 0, 0, 0, 0]])
-        ii = II.InjectImage('MyImage', img.astype(float), img > 0)
+        img = numpy.array([[0, 0, 0, 0, 0, 0, 0],
+                           [0, 0, 1, 1, 1, 0, 0],
+                           [0, 0, 1, 1, 1, 0, 0],
+                           [0, 0, 1, 1, 1, 0, 0],
+                           [0, 0, 0, 0, 0, 0, 0]])
+        ii = cellprofiler.modules.injectimage.InjectImage('MyImage', img.astype(float), img > 0)
         ii.module_num = 1
-        io = II.InjectObjects('MyObjects', img.astype(int))
+        io = cellprofiler.modules.injectimage.InjectObjects('MyObjects', img.astype(int))
         io.module_num = 2
-        moi = MOI.MeasureObjectIntensity()
+        moi = cellprofiler.modules.measureobjectintensity.MeasureObjectIntensity()
         moi.images[0].name.value = 'MyImage'
         moi.objects[0].name.value = 'MyObjects'
         moi.module_num = 3
-        pipeline = P.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_listener(self.error_callback)
         pipeline.add_module(ii)
         pipeline.add_module(io)
         pipeline.add_module(moi)
         m = pipeline.run()
-        for meas_name, value in ((MOI.INTEGRATED_INTENSITY, 9),
-                                 (MOI.MEAN_INTENSITY, 1),
-                                 (MOI.STD_INTENSITY, 0),
-                                 (MOI.MIN_INTENSITY, 1),
-                                 (MOI.MAX_INTENSITY, 1),
-                                 (MOI.INTEGRATED_INTENSITY_EDGE, 8),
-                                 (MOI.MEAN_INTENSITY_EDGE, 1),
-                                 (MOI.STD_INTENSITY_EDGE, 0),
-                                 (MOI.MIN_INTENSITY_EDGE, 1),
-                                 (MOI.MAX_INTENSITY_EDGE, 1),
-                                 (MOI.MASS_DISPLACEMENT, 0),
-                                 (MOI.LOWER_QUARTILE_INTENSITY, 1),
-                                 (MOI.MEDIAN_INTENSITY, 1),
-                                 (MOI.MAD_INTENSITY, 0),
-                                 (MOI.UPPER_QUARTILE_INTENSITY, 1)):
-            feature_name = "%s_%s_%s" % (MOI.INTENSITY, meas_name, 'MyImage')
+        for meas_name, value in ((cellprofiler.modules.measureobjectintensity.INTEGRATED_INTENSITY, 9),
+                                 (cellprofiler.modules.measureobjectintensity.MEAN_INTENSITY, 1),
+                                 (cellprofiler.modules.measureobjectintensity.STD_INTENSITY, 0),
+                                 (cellprofiler.modules.measureobjectintensity.MIN_INTENSITY, 1),
+                                 (cellprofiler.modules.measureobjectintensity.MAX_INTENSITY, 1),
+                                 (cellprofiler.modules.measureobjectintensity.INTEGRATED_INTENSITY_EDGE, 8),
+                                 (cellprofiler.modules.measureobjectintensity.MEAN_INTENSITY_EDGE, 1),
+                                 (cellprofiler.modules.measureobjectintensity.STD_INTENSITY_EDGE, 0),
+                                 (cellprofiler.modules.measureobjectintensity.MIN_INTENSITY_EDGE, 1),
+                                 (cellprofiler.modules.measureobjectintensity.MAX_INTENSITY_EDGE, 1),
+                                 (cellprofiler.modules.measureobjectintensity.MASS_DISPLACEMENT, 0),
+                                 (cellprofiler.modules.measureobjectintensity.LOWER_QUARTILE_INTENSITY, 1),
+                                 (cellprofiler.modules.measureobjectintensity.MEDIAN_INTENSITY, 1),
+                                 (cellprofiler.modules.measureobjectintensity.MAD_INTENSITY, 0),
+                                 (cellprofiler.modules.measureobjectintensity.UPPER_QUARTILE_INTENSITY, 1)):
+            feature_name = "%s_%s_%s" % (cellprofiler.modules.measureobjectintensity.INTENSITY, meas_name, 'MyImage')
             data = m.get_current_measurement('MyObjects', feature_name)
-            self.assertEqual(np.product(data.shape), 1)
+            self.assertEqual(numpy.product(data.shape), 1)
             self.assertEqual(data[0], value, "%s expected %f != actual %f" % (meas_name, value, data[0]))
 
     def test_03_02_02_intensity_location(self):
-        image = np.array([
+        image = numpy.array([
             [0, 0, 0, 0, 0, 0, 0],
             [0, 1, 1, 1, 1, 1, 0],
             [0, 1, 1, 1, 1, 2, 0],
@@ -320,11 +320,11 @@ class TestMeasureObjects(unittest.TestCase):
             [0, 0, 0, 0, 0, 0, 0]]).astype(float) / 2.0
         labels = (image != 0).astype(int)
         workspace, module = self.make_workspace(labels, image)
-        self.assertTrue(isinstance(module, MOI.MeasureObjectIntensity))
+        self.assertTrue(isinstance(module, cellprofiler.modules.measureobjectintensity.MeasureObjectIntensity))
         module.run(workspace)
-        for feature, value in ((MOI.LOC_MAX_X, 5),
-                               (MOI.LOC_MAX_Y, 2)):
-            feature_name = "%s_%s_%s" % (MOI.C_LOCATION, feature, 'MyImage')
+        for feature, value in ((cellprofiler.modules.measureobjectintensity.LOC_MAX_X, 5),
+                               (cellprofiler.modules.measureobjectintensity.LOC_MAX_Y, 2)):
+            feature_name = "%s_%s_%s" % (cellprofiler.modules.measureobjectintensity.C_LOCATION, feature, 'MyImage')
             values = workspace.measurements.get_current_measurement(
                     OBJECT_NAME, feature_name)
             self.assertEqual(len(values), 1)
@@ -333,26 +333,26 @@ class TestMeasureObjects(unittest.TestCase):
     def test_03_03_00_mass_displacement(self):
         """Check the mass displacement of three squares"""
 
-        labels = np.array([[0, 0, 0, 0, 0, 0, 0],
-                           [0, 1, 1, 1, 1, 1, 0],
-                           [0, 1, 1, 1, 1, 1, 0],
-                           [0, 1, 1, 1, 1, 1, 0],
-                           [0, 1, 1, 1, 1, 1, 0],
-                           [0, 1, 1, 1, 1, 1, 0],
-                           [0, 0, 0, 0, 0, 0, 0],
-                           [0, 2, 2, 2, 2, 2, 0],
-                           [0, 2, 2, 2, 2, 2, 0],
-                           [0, 2, 2, 2, 2, 2, 0],
-                           [0, 2, 2, 2, 2, 2, 0],
-                           [0, 2, 2, 2, 2, 2, 0],
-                           [0, 0, 0, 0, 0, 0, 0],
-                           [0, 3, 3, 3, 3, 3, 0],
-                           [0, 3, 3, 3, 3, 3, 0],
-                           [0, 3, 3, 3, 3, 3, 0],
-                           [0, 3, 3, 3, 3, 3, 0],
-                           [0, 3, 3, 3, 3, 3, 0],
-                           [0, 0, 0, 0, 0, 0, 0]])
-        image = np.zeros(labels.shape, dtype=float)
+        labels = numpy.array([[0, 0, 0, 0, 0, 0, 0],
+                              [0, 1, 1, 1, 1, 1, 0],
+                              [0, 1, 1, 1, 1, 1, 0],
+                              [0, 1, 1, 1, 1, 1, 0],
+                              [0, 1, 1, 1, 1, 1, 0],
+                              [0, 1, 1, 1, 1, 1, 0],
+                              [0, 0, 0, 0, 0, 0, 0],
+                              [0, 2, 2, 2, 2, 2, 0],
+                              [0, 2, 2, 2, 2, 2, 0],
+                              [0, 2, 2, 2, 2, 2, 0],
+                              [0, 2, 2, 2, 2, 2, 0],
+                              [0, 2, 2, 2, 2, 2, 0],
+                              [0, 0, 0, 0, 0, 0, 0],
+                              [0, 3, 3, 3, 3, 3, 0],
+                              [0, 3, 3, 3, 3, 3, 0],
+                              [0, 3, 3, 3, 3, 3, 0],
+                              [0, 3, 3, 3, 3, 3, 0],
+                              [0, 3, 3, 3, 3, 3, 0],
+                              [0, 0, 0, 0, 0, 0, 0]])
+        image = numpy.zeros(labels.shape, dtype=float)
         #
         # image # 1 has a single value in one of the corners
         # whose distance is sqrt(8) from the center
@@ -365,23 +365,23 @@ class TestMeasureObjects(unittest.TestCase):
         # image # 3 has a single value on the left edge
         # and should have distance 2
         image[15, 1] = 1
-        ii = II.InjectImage('MyImage', image)
+        ii = cellprofiler.modules.injectimage.InjectImage('MyImage', image)
         ii.module_num = 1
-        io = II.InjectObjects('MyObjects', labels)
+        io = cellprofiler.modules.injectimage.InjectObjects('MyObjects', labels)
         io.module_num = 2
-        moi = MOI.MeasureObjectIntensity()
+        moi = cellprofiler.modules.measureobjectintensity.MeasureObjectIntensity()
         moi.images[0].name.value = 'MyImage'
         moi.objects[0].name.value = 'MyObjects'
         moi.module_num = 3
-        pipeline = P.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_listener(self.error_callback)
         pipeline.add_module(ii)
         pipeline.add_module(io)
         pipeline.add_module(moi)
         m = pipeline.run()
-        feature_name = '%s_%s_%s' % (MOI.INTENSITY, MOI.MASS_DISPLACEMENT, 'MyImage')
+        feature_name = '%s_%s_%s' % (cellprofiler.modules.measureobjectintensity.INTENSITY, cellprofiler.modules.measureobjectintensity.MASS_DISPLACEMENT, 'MyImage')
         mass_displacement = m.get_current_measurement('MyObjects', feature_name)
-        self.assertEqual(np.product(mass_displacement.shape), 3)
+        self.assertEqual(numpy.product(mass_displacement.shape), 3)
         self.assertAlmostEqual(mass_displacement[0], math.sqrt(8.0))
         self.assertAlmostEqual(mass_displacement[1], 2.0)
         self.assertAlmostEqual(mass_displacement[2], 2.0)
@@ -389,26 +389,26 @@ class TestMeasureObjects(unittest.TestCase):
     def test_03_03_01_mass_displacement_masked(self):
         """Regression test IMG-766 - mass displacement of a masked image"""
 
-        labels = np.array([[0, 0, 0, 0, 0, 0, 0],
-                           [0, 1, 1, 1, 1, 1, 0],
-                           [0, 1, 1, 1, 1, 1, 0],
-                           [0, 1, 1, 1, 1, 1, 0],
-                           [0, 1, 1, 1, 1, 1, 0],
-                           [0, 1, 1, 1, 1, 1, 0],
-                           [0, 0, 0, 0, 0, 0, 0],
-                           [0, 2, 2, 2, 2, 2, 0],
-                           [0, 2, 2, 2, 2, 2, 0],
-                           [0, 2, 2, 2, 2, 2, 0],
-                           [0, 2, 2, 2, 2, 2, 0],
-                           [0, 2, 2, 2, 2, 2, 0],
-                           [0, 0, 0, 0, 0, 0, 0],
-                           [0, 3, 3, 3, 3, 3, 0],
-                           [0, 3, 3, 3, 3, 3, 0],
-                           [0, 3, 3, 3, 3, 3, 0],
-                           [0, 3, 3, 3, 3, 3, 0],
-                           [0, 3, 3, 3, 3, 3, 0],
-                           [0, 0, 0, 0, 0, 0, 0]])
-        image = np.zeros(labels.shape, dtype=float)
+        labels = numpy.array([[0, 0, 0, 0, 0, 0, 0],
+                              [0, 1, 1, 1, 1, 1, 0],
+                              [0, 1, 1, 1, 1, 1, 0],
+                              [0, 1, 1, 1, 1, 1, 0],
+                              [0, 1, 1, 1, 1, 1, 0],
+                              [0, 1, 1, 1, 1, 1, 0],
+                              [0, 0, 0, 0, 0, 0, 0],
+                              [0, 2, 2, 2, 2, 2, 0],
+                              [0, 2, 2, 2, 2, 2, 0],
+                              [0, 2, 2, 2, 2, 2, 0],
+                              [0, 2, 2, 2, 2, 2, 0],
+                              [0, 2, 2, 2, 2, 2, 0],
+                              [0, 0, 0, 0, 0, 0, 0],
+                              [0, 3, 3, 3, 3, 3, 0],
+                              [0, 3, 3, 3, 3, 3, 0],
+                              [0, 3, 3, 3, 3, 3, 0],
+                              [0, 3, 3, 3, 3, 3, 0],
+                              [0, 3, 3, 3, 3, 3, 0],
+                              [0, 0, 0, 0, 0, 0, 0]])
+        image = numpy.zeros(labels.shape, dtype=float)
         #
         # image # 1 has a single value in one of the corners
         # whose distance is sqrt(8) from the center
@@ -421,77 +421,77 @@ class TestMeasureObjects(unittest.TestCase):
         # image # 3 has a single value on the left edge
         # and should have distance 2
         image[15, 1] = 1
-        mask = np.zeros(image.shape, bool)
+        mask = numpy.zeros(image.shape, bool)
         mask[labels > 0] = True
-        ii = II.InjectImage('MyImage', image, mask)
+        ii = cellprofiler.modules.injectimage.InjectImage('MyImage', image, mask)
         ii.module_num = 1
-        io = II.InjectObjects('MyObjects', labels)
+        io = cellprofiler.modules.injectimage.InjectObjects('MyObjects', labels)
         io.module_num = 2
-        moi = MOI.MeasureObjectIntensity()
+        moi = cellprofiler.modules.measureobjectintensity.MeasureObjectIntensity()
         moi.images[0].name.value = 'MyImage'
         moi.objects[0].name.value = 'MyObjects'
         moi.module_num = 3
-        pipeline = P.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_listener(self.error_callback)
         pipeline.add_module(ii)
         pipeline.add_module(io)
         pipeline.add_module(moi)
         m = pipeline.run()
-        feature_name = '%s_%s_%s' % (MOI.INTENSITY, MOI.MASS_DISPLACEMENT, 'MyImage')
+        feature_name = '%s_%s_%s' % (cellprofiler.modules.measureobjectintensity.INTENSITY, cellprofiler.modules.measureobjectintensity.MASS_DISPLACEMENT, 'MyImage')
         mass_displacement = m.get_current_measurement('MyObjects', feature_name)
-        self.assertEqual(np.product(mass_displacement.shape), 3)
+        self.assertEqual(numpy.product(mass_displacement.shape), 3)
         self.assertAlmostEqual(mass_displacement[0], math.sqrt(8.0))
         self.assertAlmostEqual(mass_displacement[1], 2.0)
         self.assertAlmostEqual(mass_displacement[2], 2.0)
 
     def test_03_04_quartiles(self):
         """test quartile values on a 250x250 square filled with uniform values"""
-        labels = np.ones((250, 250), int)
-        np.random.seed(0)
-        image = np.random.uniform(size=(250, 250))
-        ii = II.InjectImage('MyImage', image)
+        labels = numpy.ones((250, 250), int)
+        numpy.random.seed(0)
+        image = numpy.random.uniform(size=(250, 250))
+        ii = cellprofiler.modules.injectimage.InjectImage('MyImage', image)
         ii.module_num = 1
-        io = II.InjectObjects('MyObjects', labels)
+        io = cellprofiler.modules.injectimage.InjectObjects('MyObjects', labels)
         io.module_num = 2
-        moi = MOI.MeasureObjectIntensity()
+        moi = cellprofiler.modules.measureobjectintensity.MeasureObjectIntensity()
         moi.images[0].name.value = 'MyImage'
         moi.objects[0].name.value = 'MyObjects'
         moi.module_num = 3
-        pipeline = P.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_listener(self.error_callback)
         pipeline.add_module(ii)
         pipeline.add_module(io)
         pipeline.add_module(moi)
         m = pipeline.run()
-        feature_name = '%s_%s_%s' % (MOI.INTENSITY, MOI.LOWER_QUARTILE_INTENSITY, 'MyImage')
+        feature_name = '%s_%s_%s' % (cellprofiler.modules.measureobjectintensity.INTENSITY, cellprofiler.modules.measureobjectintensity.LOWER_QUARTILE_INTENSITY, 'MyImage')
         data = m.get_current_measurement('MyObjects', feature_name)
         self.assertAlmostEqual(data[0], .25, 2)
-        feature_name = '%s_%s_%s' % (MOI.INTENSITY, MOI.MEDIAN_INTENSITY, 'MyImage')
+        feature_name = '%s_%s_%s' % (cellprofiler.modules.measureobjectintensity.INTENSITY, cellprofiler.modules.measureobjectintensity.MEDIAN_INTENSITY, 'MyImage')
         data = m.get_current_measurement('MyObjects', feature_name)
         self.assertAlmostEqual(data[0], .50, 2)
-        feature_name = '%s_%s_%s' % (MOI.INTENSITY, MOI.MAD_INTENSITY, 'MyImage')
+        feature_name = '%s_%s_%s' % (cellprofiler.modules.measureobjectintensity.INTENSITY, cellprofiler.modules.measureobjectintensity.MAD_INTENSITY, 'MyImage')
         data = m.get_current_measurement('MyObjects', feature_name)
         self.assertAlmostEqual(data[0], 0.25, 2)
-        feature_name = '%s_%s_%s' % (MOI.INTENSITY, MOI.UPPER_QUARTILE_INTENSITY, 'MyImage')
+        feature_name = '%s_%s_%s' % (cellprofiler.modules.measureobjectintensity.INTENSITY, cellprofiler.modules.measureobjectintensity.UPPER_QUARTILE_INTENSITY, 'MyImage')
         data = m.get_current_measurement('MyObjects', feature_name)
         self.assertAlmostEqual(data[0], .75, 2)
 
     def test_03_05_quartiles(self):
         """Regression test a bug that occurs in an image with one pixel"""
-        labels = np.zeros((10, 20))
+        labels = numpy.zeros((10, 20))
         labels[2:7, 3:8] = 1
         labels[5, 15] = 2
-        np.random.seed(0)
-        image = np.random.uniform(size=(10, 20))
-        ii = II.InjectImage('MyImage', image)
+        numpy.random.seed(0)
+        image = numpy.random.uniform(size=(10, 20))
+        ii = cellprofiler.modules.injectimage.InjectImage('MyImage', image)
         ii.module_num = 1
-        io = II.InjectObjects('MyObjects', labels)
+        io = cellprofiler.modules.injectimage.InjectObjects('MyObjects', labels)
         io.module_num = 2
-        moi = MOI.MeasureObjectIntensity()
+        moi = cellprofiler.modules.measureobjectintensity.MeasureObjectIntensity()
         moi.images[0].name.value = 'MyImage'
         moi.objects[0].name.value = 'MyObjects'
         moi.module_num = 3
-        pipeline = P.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_listener(self.error_callback)
         pipeline.add_module(ii)
         pipeline.add_module(io)
@@ -501,48 +501,48 @@ class TestMeasureObjects(unittest.TestCase):
 
     def test_03_06_quartiles(self):
         """test quartile values on a 250x250 square with 4 objects"""
-        labels = np.ones((250, 250), int)
+        labels = numpy.ones((250, 250), int)
         labels[125:, :] += 1
         labels[:, 125:] += 2
-        np.random.seed(0)
-        image = np.random.uniform(size=(250, 250))
+        numpy.random.seed(0)
+        image = numpy.random.uniform(size=(250, 250))
         #
         # Make the distributions center around .5, .25, 1/6 and .125
         #
         image /= labels.astype(float)
-        ii = II.InjectImage('MyImage', image)
+        ii = cellprofiler.modules.injectimage.InjectImage('MyImage', image)
         ii.module_num = 1
-        io = II.InjectObjects('MyObjects', labels)
+        io = cellprofiler.modules.injectimage.InjectObjects('MyObjects', labels)
         io.module_num = 2
-        moi = MOI.MeasureObjectIntensity()
+        moi = cellprofiler.modules.measureobjectintensity.MeasureObjectIntensity()
         moi.images[0].name.value = 'MyImage'
         moi.objects[0].name.value = 'MyObjects'
         moi.module_num = 3
-        pipeline = P.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_listener(self.error_callback)
         pipeline.add_module(ii)
         pipeline.add_module(io)
         pipeline.add_module(moi)
         m = pipeline.run()
-        feature_name = '%s_%s_%s' % (MOI.INTENSITY, MOI.LOWER_QUARTILE_INTENSITY, 'MyImage')
+        feature_name = '%s_%s_%s' % (cellprofiler.modules.measureobjectintensity.INTENSITY, cellprofiler.modules.measureobjectintensity.LOWER_QUARTILE_INTENSITY, 'MyImage')
         data = m.get_current_measurement('MyObjects', feature_name)
         self.assertAlmostEqual(data[0], 1.0 / 4.0, 2)
         self.assertAlmostEqual(data[1], 1.0 / 8.0, 2)
         self.assertAlmostEqual(data[2], 1.0 / 12.0, 2)
         self.assertAlmostEqual(data[3], 1.0 / 16.0, 2)
-        feature_name = '%s_%s_%s' % (MOI.INTENSITY, MOI.MEDIAN_INTENSITY, 'MyImage')
+        feature_name = '%s_%s_%s' % (cellprofiler.modules.measureobjectintensity.INTENSITY, cellprofiler.modules.measureobjectintensity.MEDIAN_INTENSITY, 'MyImage')
         data = m.get_current_measurement('MyObjects', feature_name)
         self.assertAlmostEqual(data[0], 1.0 / 2.0, 2)
         self.assertAlmostEqual(data[1], 1.0 / 4.0, 2)
         self.assertAlmostEqual(data[2], 1.0 / 6.0, 2)
         self.assertAlmostEqual(data[3], 1.0 / 8.0, 2)
-        feature_name = '%s_%s_%s' % (MOI.INTENSITY, MOI.UPPER_QUARTILE_INTENSITY, 'MyImage')
+        feature_name = '%s_%s_%s' % (cellprofiler.modules.measureobjectintensity.INTENSITY, cellprofiler.modules.measureobjectintensity.UPPER_QUARTILE_INTENSITY, 'MyImage')
         data = m.get_current_measurement('MyObjects', feature_name)
         self.assertAlmostEqual(data[0], 3.0 / 4.0, 2)
         self.assertAlmostEqual(data[1], 3.0 / 8.0, 2)
         self.assertAlmostEqual(data[2], 3.0 / 12.0, 2)
         self.assertAlmostEqual(data[3], 3.0 / 16.0, 2)
-        feature_name = '%s_%s_%s' % (MOI.INTENSITY, MOI.MAD_INTENSITY, 'MyImage')
+        feature_name = '%s_%s_%s' % (cellprofiler.modules.measureobjectintensity.INTENSITY, cellprofiler.modules.measureobjectintensity.MAD_INTENSITY, 'MyImage')
         data = m.get_current_measurement('MyObjects', feature_name)
 
         self.assertAlmostEqual(data[0], 1.0 / 4.0, 2)
@@ -551,87 +551,87 @@ class TestMeasureObjects(unittest.TestCase):
         self.assertAlmostEqual(data[3], 1.0 / 16.0, 2)
 
     def test_03_07_median_intensity_masked(self):
-        np.random.seed(37)
-        labels = np.ones((10, 10), int)
-        mask = np.ones((10, 10), bool)
+        numpy.random.seed(37)
+        labels = numpy.ones((10, 10), int)
+        mask = numpy.ones((10, 10), bool)
         mask[:, :5] = False
-        pixel_data = np.random.uniform(size=(10, 10)).astype(np.float32)
+        pixel_data = numpy.random.uniform(size=(10, 10)).astype(numpy.float32)
         pixel_data[~mask] = 1
-        expected = np.sort(pixel_data[mask])[np.sum(mask) / 2]
-        self.assertNotEqual(expected, np.median(pixel_data))
+        expected = numpy.sort(pixel_data[mask])[numpy.sum(mask) / 2]
+        self.assertNotEqual(expected, numpy.median(pixel_data))
         workspace, module = self.make_workspace(labels, pixel_data, mask)
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cellprofiler.measurement.Measurements))
         values = m.get_current_measurement(
-                OBJECT_NAME, '_'.join((MOI.INTENSITY, MOI.MEDIAN_INTENSITY, IMAGE_NAME)))
+                OBJECT_NAME, '_'.join((cellprofiler.modules.measureobjectintensity.INTENSITY, cellprofiler.modules.measureobjectintensity.MEDIAN_INTENSITY, IMAGE_NAME)))
         self.assertEqual(len(values), 1)
         self.assertEqual(expected, values[0])
 
     def test_03_08_std_intensity(self):
-        np.random.seed(38)
-        labels = np.ones((40, 30), int)
+        numpy.random.seed(38)
+        labels = numpy.ones((40, 30), int)
         labels[:, 15:] = 3
         labels[20:, :] += 1
-        image = np.random.uniform(size=(40, 30)).astype(np.float32)
+        image = numpy.random.uniform(size=(40, 30)).astype(numpy.float32)
         workspace, module = self.make_workspace(labels, image)
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cellprofiler.measurement.Measurements))
         values = m.get_current_measurement(
-                OBJECT_NAME, '_'.join((MOI.INTENSITY, MOI.STD_INTENSITY, IMAGE_NAME)))
+                OBJECT_NAME, '_'.join((cellprofiler.modules.measureobjectintensity.INTENSITY, cellprofiler.modules.measureobjectintensity.STD_INTENSITY, IMAGE_NAME)))
         self.assertEqual(len(values), 4)
         for i in range(1, 5):
-            self.assertAlmostEqual(values[i - 1], np.std(image[labels == i]))
+            self.assertAlmostEqual(values[i - 1], numpy.std(image[labels == i]))
 
     def test_03_09_std_intensity_edge(self):
-        np.random.seed(39)
-        labels = np.ones((40, 30), int)
+        numpy.random.seed(39)
+        labels = numpy.ones((40, 30), int)
         labels[:, 15:] = 3
         labels[20:, :] += 1
-        edge_mask = np.zeros((40, 30), bool)
-        i, j = np.mgrid[0:40, 0:30]
+        edge_mask = numpy.zeros((40, 30), bool)
+        i, j = numpy.mgrid[0:40, 0:30]
         for ii in (0, 19, 20, -1):
             edge_mask[ii, :] = True
         for jj in (0, 14, 15, -1):
             edge_mask[:, jj] = True
         elabels = labels * edge_mask
-        image = np.random.uniform(size=(40, 30)).astype(np.float32)
+        image = numpy.random.uniform(size=(40, 30)).astype(numpy.float32)
         workspace, module = self.make_workspace(labels, image)
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertTrue(isinstance(m, cellprofiler.measurement.Measurements))
         values = m.get_current_measurement(
-                OBJECT_NAME, '_'.join((MOI.INTENSITY, MOI.STD_INTENSITY_EDGE, IMAGE_NAME)))
+                OBJECT_NAME, '_'.join((cellprofiler.modules.measureobjectintensity.INTENSITY, cellprofiler.modules.measureobjectintensity.STD_INTENSITY_EDGE, IMAGE_NAME)))
         self.assertEqual(len(values), 4)
         for i in range(1, 5):
-            self.assertAlmostEqual(values[i - 1], np.std(image[elabels == i]))
+            self.assertAlmostEqual(values[i - 1], numpy.std(image[elabels == i]))
 
     def test_03_10_ijv(self):
         #
         # Test the module on overlapping objects
         #
-        np.random.seed(310)
-        i, j = np.mgrid[0:30, 0:35]
-        o1 = np.argwhere((i - 10) ** 2 + (j - 10) ** 2 < 49)  # circle radius 7 at 10,10
-        o2 = np.argwhere((i - 12) ** 2 + (j - 15) ** 2 < 25)  # circle radius 5 at 12,15
-        o3 = np.argwhere((i - 15) ** 2 + (j - 25) ** 2 < 49)  # circle radius 7 at 15, 25
-        labels = np.vstack([np.column_stack([x, n * np.ones(x.shape[0], int)])
-                            for n, x in ((1, o1), (2, o2), (3, o3))])
-        image = np.random.uniform(size=i.shape)
+        numpy.random.seed(310)
+        i, j = numpy.mgrid[0:30, 0:35]
+        o1 = numpy.argwhere((i - 10) ** 2 + (j - 10) ** 2 < 49)  # circle radius 7 at 10,10
+        o2 = numpy.argwhere((i - 12) ** 2 + (j - 15) ** 2 < 25)  # circle radius 5 at 12,15
+        o3 = numpy.argwhere((i - 15) ** 2 + (j - 25) ** 2 < 49)  # circle radius 7 at 15, 25
+        labels = numpy.vstack([numpy.column_stack([x, n * numpy.ones(x.shape[0], int)])
+                               for n, x in ((1, o1), (2, o2), (3, o3))])
+        image = numpy.random.uniform(size=i.shape)
         workspace0, module0 = self.make_workspace(labels, image)
         module0.run(workspace0)
         measurements0 = workspace0.measurements
-        assert isinstance(measurements0, cpmeas.Measurements)
+        assert isinstance(measurements0, cellprofiler.measurement.Measurements)
         for i, (workspace, module) in enumerate((
-                self.make_workspace(np.column_stack([o1, np.ones(o1.shape[0], int)]), image),
-                self.make_workspace(np.column_stack([o2, np.ones(o2.shape[0], int)]), image),
-                self.make_workspace(np.column_stack([o3, np.ones(o3.shape[0], int)]), image))):
+                self.make_workspace(numpy.column_stack([o1, numpy.ones(o1.shape[0], int)]), image),
+                self.make_workspace(numpy.column_stack([o2, numpy.ones(o2.shape[0], int)]), image),
+                self.make_workspace(numpy.column_stack([o3, numpy.ones(o3.shape[0], int)]), image))):
             module.run(workspace)
             measurements1 = workspace.measurements
-            assert isinstance(measurements1, cpmeas.Measurements)
-            for cname, fnames in ((MOI.INTENSITY, MOI.ALL_MEASUREMENTS),
-                                  (MOI.C_LOCATION, MOI.ALL_LOCATION_MEASUREMENTS)):
+            assert isinstance(measurements1, cellprofiler.measurement.Measurements)
+            for cname, fnames in ((cellprofiler.modules.measureobjectintensity.INTENSITY, cellprofiler.modules.measureobjectintensity.ALL_MEASUREMENTS),
+                                  (cellprofiler.modules.measureobjectintensity.C_LOCATION, cellprofiler.modules.measureobjectintensity.ALL_LOCATION_MEASUREMENTS)):
                 for fname in fnames:
                     mname = "_".join([cname, fname, IMAGE_NAME])
                     m0 = measurements0.get_measurement(OBJECT_NAME, mname)
@@ -642,61 +642,61 @@ class TestMeasureObjects(unittest.TestCase):
 
     def test_04_01_wrong_image_size(self):
         '''Regression test of IMG-961 - object and image size differ'''
-        np.random.seed(41)
-        labels = np.ones((20, 50), int)
-        image = np.random.uniform(size=(30, 40)).astype(np.float32)
-        image_set_list = cpi.ImageSetList()
+        numpy.random.seed(41)
+        labels = numpy.ones((20, 50), int)
+        image = numpy.random.uniform(size=(30, 40)).astype(numpy.float32)
+        image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        image_set.add('MyImage', cpi.Image(image))
-        object_set = cpo.Set()
-        o = cpo.Region()
+        image_set.add('MyImage', cellprofiler.image.Image(image))
+        object_set = cellprofiler.region.Set()
+        o = cellprofiler.region.Region()
         o.segmented = labels
         object_set.add_objects(o, "MyObjects")
-        pipeline = P.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, P.RunExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.RunExceptionEvent))
 
         pipeline.add_listener(callback)
-        module = MOI.MeasureObjectIntensity()
+        module = cellprofiler.modules.measureobjectintensity.MeasureObjectIntensity()
         module.module_num = 1
         module.images[0].name.value = "MyImage"
         module.objects[0].name.value = "MyObjects"
         pipeline.add_module(module)
-        workspace = cpw.Workspace(pipeline, module, image_set, object_set,
-                                  cpmeas.Measurements(), image_set_list)
+        workspace = cellprofiler.workspace.Workspace(pipeline, module, image_set, object_set,
+                                                     cellprofiler.measurement.Measurements(), image_set_list)
         module.run(workspace)
-        feature_name = '%s_%s_%s' % (MOI.INTENSITY, MOI.INTEGRATED_INTENSITY, "MyImage")
+        feature_name = '%s_%s_%s' % (cellprofiler.modules.measureobjectintensity.INTENSITY, cellprofiler.modules.measureobjectintensity.INTEGRATED_INTENSITY, "MyImage")
         m = workspace.measurements.get_current_measurement("MyObjects", feature_name)
         self.assertEqual(len(m), 1)
-        self.assertAlmostEqual(m[0], np.sum(image[:20, :40]), 4)
+        self.assertAlmostEqual(m[0], numpy.sum(image[:20, :40]), 4)
 
     def test_04_02_masked_edge(self):
         # Regression test of issue #1115
-        labels = np.zeros((20, 50), int)
+        labels = numpy.zeros((20, 50), int)
         labels[15:25, 15:25] = 1
-        image = np.random.uniform(size=labels.shape).astype(np.float32)
+        image = numpy.random.uniform(size=labels.shape).astype(numpy.float32)
         #
         # Mask the edge of the object
         #
-        mask = ~ cpmo.outline(labels).astype(bool)
-        m = cpmeas.Measurements()
-        m.add(IMAGE_NAME, cpi.Image(image, mask=mask))
-        object_set = cpo.Set()
-        o = cpo.Region()
+        mask = ~ centrosome.outline.outline(labels).astype(bool)
+        m = cellprofiler.measurement.Measurements()
+        m.add(IMAGE_NAME, cellprofiler.image.Image(image, mask=mask))
+        object_set = cellprofiler.region.Set()
+        o = cellprofiler.region.Region()
         o.segmented = labels
         object_set.add_objects(o, OBJECT_NAME)
-        pipeline = P.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, P.RunExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.RunExceptionEvent))
 
         pipeline.add_listener(callback)
-        module = MOI.MeasureObjectIntensity()
+        module = cellprofiler.modules.measureobjectintensity.MeasureObjectIntensity()
         module.module_num = 1
         module.images[0].name.value = IMAGE_NAME
         module.objects[0].name.value = OBJECT_NAME
         pipeline.add_module(module)
-        workspace = cpw.Workspace(pipeline, module, m, object_set,
-                                  m, None)
+        workspace = cellprofiler.workspace.Workspace(pipeline, module, m, object_set,
+                                                     m, None)
         module.run(workspace)

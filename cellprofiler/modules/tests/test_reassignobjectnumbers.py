@@ -1,26 +1,24 @@
 '''test_relabelobjects.py - test the RelabelObjects module'''
 
 import base64
-import os
 import unittest
 import zlib
-from StringIO import StringIO
+import StringIO
 
-import numpy as np
-import scipy.ndimage
+import numpy
 
-from cellprofiler.preferences import set_headless
+import cellprofiler.preferences
 
-set_headless()
+cellprofiler.preferences.set_headless()
 
-import cellprofiler.pipeline as cpp
-import cellprofiler.module as cpm
-import cellprofiler.image as cpi
-import cellprofiler.measurement as cpmeas
-import cellprofiler.region as cpo
-import cellprofiler.workspace as cpw
-import cellprofiler.modules.reassignobjectnumbers as R
-import cellprofiler.modules.identify as I
+import cellprofiler.pipeline
+import cellprofiler.module
+import cellprofiler.image
+import cellprofiler.measurement
+import cellprofiler.region
+import cellprofiler.workspace
+import cellprofiler.modules.reassignobjectnumbers
+import cellprofiler.modules.identify
 
 INPUT_OBJECTS_NAME = 'inputobjects'
 OUTPUT_OBJECTS_NAME = 'outputobjects'
@@ -30,7 +28,7 @@ OUTLINE_NAME = 'outlines'
 
 class TestReassignObjectNumbers(unittest.TestCase):
     def test_01_00_implement_load_v5_please(self):
-        assert (R.ReassignObjectNumbers.variable_revision_number == 4)
+        assert (cellprofiler.modules.reassignobjectnumbers.ReassignObjectNumbers.variable_revision_number == 4)
 
     def test_01_000_load_split(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
@@ -42,19 +40,19 @@ SplitIntoContiguousObjects:[module_num:1|svn_version:\'8913\'|variable_revision_
     What did you call the objects you want to filter?:MyObjects
     What do you want to call the relabeled objects?:MySplitObjects
 """
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO(data))
+        pipeline.load(StringIO.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, R.RelabelObjects))
+        self.assertTrue(isinstance(module, cellprofiler.modules.reassignobjectnumbers.RelabelObjects))
         self.assertEqual(module.objects_name, "MyObjects")
         self.assertEqual(module.output_objects_name, "MySplitObjects")
-        self.assertEqual(module.relabel_option, R.OPTION_SPLIT)
+        self.assertEqual(module.relabel_option, cellprofiler.modules.reassignobjectnumbers.OPTION_SPLIT)
 
     def test_01_001_load_unify(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
@@ -68,19 +66,19 @@ UnifyObjects:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_
     Distance within which objects should be unified:10
     Grayscale image:MyImage
 """
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO(data))
+        pipeline.load(StringIO.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, R.RelabelObjects))
+        self.assertTrue(isinstance(module, cellprofiler.modules.reassignobjectnumbers.RelabelObjects))
         self.assertEqual(module.objects_name, "MyObjects")
         self.assertEqual(module.output_objects_name, "MyUnifiedObjects")
-        self.assertEqual(module.relabel_option, R.OPTION_UNIFY)
+        self.assertEqual(module.relabel_option, cellprofiler.modules.reassignobjectnumbers.OPTION_UNIFY)
         self.assertEqual(module.distance_threshold, 10)
         self.assertEqual(module.image_name, "MyImage")
 
@@ -104,21 +102,21 @@ UnifyObjects:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_
                 '1T+/XBZe7Yr12FRzvhjkJW7Bd/8fxe6skLDvDj3f+2H/dmNt9pydcdODHwV+'
                 'WLs4yvOlXBLT1p9e/VuX/q6X8uOvvTfnj9XPv0ozvvNH5N+NX/eh/9a6P/8Z'
                 '35qL/wUAgFx7fg==')
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
+        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 3)
         module = pipeline.modules()[-1]
-        self.assertTrue(isinstance(module, R.RelabelObjects))
+        self.assertTrue(isinstance(module, cellprofiler.modules.reassignobjectnumbers.RelabelObjects))
         self.assertEqual(module.objects_name, "Nuclei")
         self.assertEqual(module.output_objects_name, "RelabeledNuclei")
         self.assertEqual(module.relabel_option, "Unify")
         self.assertAlmostEqual(module.distance_threshold.value, 5)
-        self.assertEqual(module.where_algorithm, R.CA_CENTROIDS)
+        self.assertEqual(module.where_algorithm, cellprofiler.modules.reassignobjectnumbers.CA_CENTROIDS)
         self.assertAlmostEqual(module.minimum_intensity_fraction.value, .9)
         self.assertTrue(module.wants_image)
         self.assertEqual(module.image_name, "OrigRGB")
@@ -147,22 +145,22 @@ UnifyObjects:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_
                 'liC23oxGj8LRejwqec8yePcV3v3reL3Rob7RnpuvR2f8OiNxct52JvAl478R'
                 'So+e370x3wil8zzO/7d3s/BVKtolX/Lcxf0MXCVhU+zn32i6Ovvphvmxj8uc'
                 'P23cNE2b2+8xT+XKppH+5cz/F8mEjuw=')
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
+        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 3)
         module = pipeline.modules()[-1]
-        self.assertTrue(isinstance(module, R.RelabelObjects))
+        self.assertTrue(isinstance(module, cellprofiler.modules.reassignobjectnumbers.RelabelObjects))
         self.assertEqual(module.objects_name, "Nuclei")
         self.assertEqual(module.output_objects_name, "RelabeledNuclei")
         self.assertEqual(module.relabel_option, "Unify")
         self.assertAlmostEqual(module.distance_threshold.value, 5)
         self.assertAlmostEqual(module.minimum_intensity_fraction.value, .8)
-        self.assertEqual(module.where_algorithm, R.CA_CLOSEST_POINT)
+        self.assertEqual(module.where_algorithm, cellprofiler.modules.reassignobjectnumbers.CA_CLOSEST_POINT)
         self.assertTrue(module.wants_image)
         self.assertEqual(module.image_name, "OrigRGB")
 
@@ -204,44 +202,44 @@ ReassignObjectNumbers:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
     Select the parent object:Nuclei
     Output object type:Disconnected
 """
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.loadtxt(StringIO(data))
+        pipeline.loadtxt(StringIO.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 2)
         module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, R.ReassignObjectNumbers))
+        self.assertTrue(isinstance(module, cellprofiler.modules.reassignobjectnumbers.ReassignObjectNumbers))
         self.assertEqual(module.objects_name, "blobs")
         self.assertEqual(module.output_objects_name, "RelabeledBlobs")
-        self.assertEqual(module.relabel_option, R.OPTION_UNIFY)
+        self.assertEqual(module.relabel_option, cellprofiler.modules.reassignobjectnumbers.OPTION_UNIFY)
         self.assertEqual(module.distance_threshold, 2)
         self.assertFalse(module.wants_image)
         self.assertEqual(module.image_name, "Guide")
         self.assertEqual(module.minimum_intensity_fraction, .8)
-        self.assertEqual(module.where_algorithm, R.CA_CLOSEST_POINT)
+        self.assertEqual(module.where_algorithm, cellprofiler.modules.reassignobjectnumbers.CA_CLOSEST_POINT)
         self.assertFalse(module.wants_outlines)
         self.assertEqual(module.outlines_name, "RelabeledNucleiOutlines")
-        self.assertEqual(module.unify_option, R.UNIFY_PARENT)
+        self.assertEqual(module.unify_option, cellprofiler.modules.reassignobjectnumbers.UNIFY_PARENT)
         self.assertEqual(module.parent_object, "Nuclei")
-        self.assertEqual(module.unification_method, R.UM_CONVEX_HULL)
+        self.assertEqual(module.unification_method, cellprofiler.modules.reassignobjectnumbers.UM_CONVEX_HULL)
 
         module = pipeline.modules()[1]
-        self.assertEqual(module.relabel_option, R.OPTION_SPLIT)
+        self.assertEqual(module.relabel_option, cellprofiler.modules.reassignobjectnumbers.OPTION_SPLIT)
         self.assertTrue(module.wants_image)
-        self.assertEqual(module.where_algorithm, R.CA_CENTROIDS)
+        self.assertEqual(module.where_algorithm, cellprofiler.modules.reassignobjectnumbers.CA_CENTROIDS)
         self.assertTrue(module.wants_outlines)
-        self.assertEqual(module.unify_option, R.UNIFY_DISTANCE)
-        self.assertEqual(module.unification_method, R.UM_DISCONNECTED)
+        self.assertEqual(module.unify_option, cellprofiler.modules.reassignobjectnumbers.UNIFY_DISTANCE)
+        self.assertEqual(module.unification_method, cellprofiler.modules.reassignobjectnumbers.UM_DISCONNECTED)
 
     def rruunn(self, input_labels, relabel_option,
-               unify_option=R.UNIFY_DISTANCE,
-               unify_method=R.UM_DISCONNECTED,
+               unify_option=cellprofiler.modules.reassignobjectnumbers.UNIFY_DISTANCE,
+               unify_method=cellprofiler.modules.reassignobjectnumbers.UM_DISCONNECTED,
                distance_threshold=5,
                minimum_intensity_fraction=.9,
-               where_algorithm=R.CA_CLOSEST_POINT,
+               where_algorithm=cellprofiler.modules.reassignobjectnumbers.CA_CLOSEST_POINT,
                image=None,
                wants_outlines=False,
                outline_name="None",
@@ -251,7 +249,7 @@ ReassignObjectNumbers:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
 
         returns the labels matrix and the workspace.
         '''
-        module = R.RelabelObjects()
+        module = cellprofiler.modules.reassignobjectnumbers.RelabelObjects()
         module.module_num = 1
         module.objects_name.value = INPUT_OBJECTS_NAME
         module.output_objects_name.value = OUTPUT_OBJECTS_NAME
@@ -266,70 +264,70 @@ ReassignObjectNumbers:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
         module.wants_outlines.value = wants_outlines
         module.outlines_name.value = outline_name
 
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.RunExceptionEvent))
 
         pipeline.add_listener(callback)
         pipeline.add_module(module)
 
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         if image is not None:
-            img = cpi.Image(image)
+            img = cellprofiler.image.Image(image)
             image_set.add(IMAGE_NAME, img)
             module.image_name.value = IMAGE_NAME
 
-        object_set = cpo.Set()
-        o = cpo.Region()
+        object_set = cellprofiler.region.Set()
+        o = cellprofiler.region.Region()
         o.segmented = input_labels
         object_set.add_objects(o, INPUT_OBJECTS_NAME)
 
-        workspace = cpw.Workspace(pipeline, module, image_set, object_set,
-                                  cpmeas.Measurements(), image_set_list)
+        workspace = cellprofiler.workspace.Workspace(pipeline, module, image_set, object_set,
+                                                     cellprofiler.measurement.Measurements(), image_set_list)
         if parents_of is not None:
             m = workspace.measurements
-            ftr = R.FF_PARENT % parent_object
+            ftr = cellprofiler.modules.reassignobjectnumbers.FF_PARENT % parent_object
             m[INPUT_OBJECTS_NAME, ftr] = parents_of
         module.run(workspace)
         output_objects = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME)
         return output_objects.segmented, workspace
 
     def test_02_01_split_zero(self):
-        labels, workspace = self.rruunn(np.zeros((10, 20), int),
-                                        R.OPTION_SPLIT)
-        self.assertTrue(np.all(labels == 0))
+        labels, workspace = self.rruunn(numpy.zeros((10, 20), int),
+                                        cellprofiler.modules.reassignobjectnumbers.OPTION_SPLIT)
+        self.assertTrue(numpy.all(labels == 0))
         self.assertEqual(labels.shape[0], 10)
         self.assertEqual(labels.shape[1], 20)
 
-        self.assertTrue(isinstance(workspace, cpw.Workspace))
+        self.assertTrue(isinstance(workspace, cellprofiler.workspace.Workspace))
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
-        count = m.get_current_image_measurement(I.FF_COUNT % OUTPUT_OBJECTS_NAME)
+        self.assertTrue(isinstance(m, cellprofiler.measurement.Measurements))
+        count = m.get_current_image_measurement(cellprofiler.modules.identify.FF_COUNT % OUTPUT_OBJECTS_NAME)
         self.assertEqual(count, 0)
-        for feature_name in (I.M_LOCATION_CENTER_X, I.M_LOCATION_CENTER_Y):
+        for feature_name in (cellprofiler.modules.identify.M_LOCATION_CENTER_X, cellprofiler.modules.identify.M_LOCATION_CENTER_Y):
             values = m.get_current_measurement(OUTPUT_OBJECTS_NAME,
                                                feature_name)
             self.assertEqual(len(values), 0)
 
         module = workspace.module
-        self.assertTrue(isinstance(module, R.RelabelObjects))
+        self.assertTrue(isinstance(module, cellprofiler.modules.reassignobjectnumbers.RelabelObjects))
         columns = module.get_measurement_columns(workspace.pipeline)
         self.assertEqual(len(columns), 6)
         for object_name, feature_name, coltype in (
-                (OUTPUT_OBJECTS_NAME, I.M_LOCATION_CENTER_X, cpmeas.COLTYPE_FLOAT),
-                (OUTPUT_OBJECTS_NAME, I.M_LOCATION_CENTER_Y, cpmeas.COLTYPE_FLOAT),
-                (OUTPUT_OBJECTS_NAME, I.M_NUMBER_OBJECT_NUMBER, cpmeas.COLTYPE_INTEGER),
-                (INPUT_OBJECTS_NAME, I.FF_CHILDREN_COUNT % OUTPUT_OBJECTS_NAME,
-                 cpmeas.COLTYPE_INTEGER),
-                (OUTPUT_OBJECTS_NAME, I.FF_PARENT % INPUT_OBJECTS_NAME,
-                 cpmeas.COLTYPE_INTEGER),
-                (cpmeas.IMAGE, I.FF_COUNT % OUTPUT_OBJECTS_NAME, cpmeas.COLTYPE_INTEGER)):
+                (OUTPUT_OBJECTS_NAME, cellprofiler.modules.identify.M_LOCATION_CENTER_X, cellprofiler.measurement.COLTYPE_FLOAT),
+                (OUTPUT_OBJECTS_NAME, cellprofiler.modules.identify.M_LOCATION_CENTER_Y, cellprofiler.measurement.COLTYPE_FLOAT),
+                (OUTPUT_OBJECTS_NAME, cellprofiler.modules.identify.M_NUMBER_OBJECT_NUMBER, cellprofiler.measurement.COLTYPE_INTEGER),
+                (INPUT_OBJECTS_NAME, cellprofiler.modules.identify.FF_CHILDREN_COUNT % OUTPUT_OBJECTS_NAME,
+                 cellprofiler.measurement.COLTYPE_INTEGER),
+                (OUTPUT_OBJECTS_NAME, cellprofiler.modules.identify.FF_PARENT % INPUT_OBJECTS_NAME,
+                 cellprofiler.measurement.COLTYPE_INTEGER),
+                (cellprofiler.measurement.IMAGE, cellprofiler.modules.identify.FF_COUNT % OUTPUT_OBJECTS_NAME, cellprofiler.measurement.COLTYPE_INTEGER)):
             self.assertTrue(any([object_name == c[0] and
                                  feature_name == c[1] and
                                  coltype == c[2] for c in columns]))
-        categories = module.get_categories(workspace.pipeline, cpmeas.IMAGE)
+        categories = module.get_categories(workspace.pipeline, cellprofiler.measurement.IMAGE)
         self.assertEqual(len(categories), 1)
         self.assertEqual(categories[0], "Count")
         categories = module.get_categories(workspace.pipeline, OUTPUT_OBJECTS_NAME)
@@ -340,7 +338,7 @@ ReassignObjectNumbers:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
         categories = module.get_categories(workspace.pipeline, INPUT_OBJECTS_NAME)
         self.assertEqual(len(categories), 1)
         self.assertEqual(categories[0], "Children")
-        f = module.get_measurements(workspace.pipeline, cpmeas.IMAGE, "Count")
+        f = module.get_measurements(workspace.pipeline, cellprofiler.measurement.IMAGE, "Count")
         self.assertEqual(len(f), 1)
         self.assertEqual(f[0], OUTPUT_OBJECTS_NAME)
         f = module.get_measurements(workspace.pipeline, OUTPUT_OBJECTS_NAME,
@@ -364,183 +362,183 @@ ReassignObjectNumbers:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
         self.assertEqual(f[0], "%s_Count" % OUTPUT_OBJECTS_NAME)
 
     def test_02_02_split_one(self):
-        labels = np.zeros((10, 20), int)
+        labels = numpy.zeros((10, 20), int)
         labels[2:5, 3:8] = 1
-        labels_out, workspace = self.rruunn(labels, R.OPTION_SPLIT)
-        self.assertTrue(np.all(labels == labels_out))
+        labels_out, workspace = self.rruunn(labels, cellprofiler.modules.reassignobjectnumbers.OPTION_SPLIT)
+        self.assertTrue(numpy.all(labels == labels_out))
 
-        self.assertTrue(isinstance(workspace, cpw.Workspace))
+        self.assertTrue(isinstance(workspace, cellprofiler.workspace.Workspace))
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
-        count = m.get_current_image_measurement(I.FF_COUNT % OUTPUT_OBJECTS_NAME)
+        self.assertTrue(isinstance(m, cellprofiler.measurement.Measurements))
+        count = m.get_current_image_measurement(cellprofiler.modules.identify.FF_COUNT % OUTPUT_OBJECTS_NAME)
         self.assertEqual(count, 1)
-        for feature_name, value in ((I.M_LOCATION_CENTER_X, 5),
-                                    (I.M_LOCATION_CENTER_Y, 3),
-                                    (I.FF_PARENT % INPUT_OBJECTS_NAME, 1)):
+        for feature_name, value in ((cellprofiler.modules.identify.M_LOCATION_CENTER_X, 5),
+                                    (cellprofiler.modules.identify.M_LOCATION_CENTER_Y, 3),
+                                    (cellprofiler.modules.identify.FF_PARENT % INPUT_OBJECTS_NAME, 1)):
             values = m.get_current_measurement(OUTPUT_OBJECTS_NAME,
                                                feature_name)
             self.assertEqual(len(values), 1)
             self.assertAlmostEqual(values[0], value)
 
         values = m.get_current_measurement(INPUT_OBJECTS_NAME,
-                                           I.FF_CHILDREN_COUNT % OUTPUT_OBJECTS_NAME)
+                                           cellprofiler.modules.identify.FF_CHILDREN_COUNT % OUTPUT_OBJECTS_NAME)
         self.assertEqual(len(values), 1)
         self.assertEqual(values[0], 1)
 
     def test_02_03_split_one_into_two(self):
-        labels = np.zeros((10, 20), int)
+        labels = numpy.zeros((10, 20), int)
         labels[2:5, 3:8] = 1
         labels[2:5, 13:18] = 1
-        labels_out, workspace = self.rruunn(labels, R.OPTION_SPLIT)
-        index = np.array([labels_out[3, 5], labels_out[3, 15]])
+        labels_out, workspace = self.rruunn(labels, cellprofiler.modules.reassignobjectnumbers.OPTION_SPLIT)
+        index = numpy.array([labels_out[3, 5], labels_out[3, 15]])
         self.assertNotEqual(index[0], index[1])
         self.assertTrue(all([x in index for x in (1, 2)]))
-        expected = np.zeros((10, 20), int)
+        expected = numpy.zeros((10, 20), int)
         expected[2:5, 3:8] = index[0]
         expected[2:5, 13:18] = index[1]
-        self.assertTrue(np.all(labels_out == expected))
+        self.assertTrue(numpy.all(labels_out == expected))
         m = workspace.measurements
         values = m.get_current_measurement(OUTPUT_OBJECTS_NAME,
-                                           I.FF_PARENT % INPUT_OBJECTS_NAME)
+                                           cellprofiler.modules.identify.FF_PARENT % INPUT_OBJECTS_NAME)
         self.assertEqual(len(values), 2)
-        self.assertTrue(np.all(values == 1))
+        self.assertTrue(numpy.all(values == 1))
         values = m.get_current_measurement(INPUT_OBJECTS_NAME,
-                                           I.FF_CHILDREN_COUNT % OUTPUT_OBJECTS_NAME)
+                                           cellprofiler.modules.identify.FF_CHILDREN_COUNT % OUTPUT_OBJECTS_NAME)
         self.assertEqual(len(values), 1)
         self.assertEqual(values[0], 2)
 
     def test_03_01_unify_zero(self):
-        labels, workspace = self.rruunn(np.zeros((10, 20), int),
-                                        R.OPTION_UNIFY)
-        self.assertTrue(np.all(labels == 0))
+        labels, workspace = self.rruunn(numpy.zeros((10, 20), int),
+                                        cellprofiler.modules.reassignobjectnumbers.OPTION_UNIFY)
+        self.assertTrue(numpy.all(labels == 0))
         self.assertEqual(labels.shape[0], 10)
         self.assertEqual(labels.shape[1], 20)
 
     def test_03_02_unify_one(self):
-        labels = np.zeros((10, 20), int)
+        labels = numpy.zeros((10, 20), int)
         labels[2:5, 3:8] = 1
-        labels_out, workspace = self.rruunn(labels, R.OPTION_UNIFY)
-        self.assertTrue(np.all(labels == labels_out))
+        labels_out, workspace = self.rruunn(labels, cellprofiler.modules.reassignobjectnumbers.OPTION_UNIFY)
+        self.assertTrue(numpy.all(labels == labels_out))
 
     def test_03_03_unify_two_to_one(self):
-        labels = np.zeros((10, 20), int)
+        labels = numpy.zeros((10, 20), int)
         labels[2:5, 3:8] = 1
         labels[2:5, 13:18] = 2
-        labels_out, workspace = self.rruunn(labels, R.OPTION_UNIFY,
+        labels_out, workspace = self.rruunn(labels, cellprofiler.modules.reassignobjectnumbers.OPTION_UNIFY,
                                             distance_threshold=6)
-        self.assertTrue(np.all(labels_out[labels != 0] == 1))
-        self.assertTrue(np.all(labels_out[labels == 0] == 0))
+        self.assertTrue(numpy.all(labels_out[labels != 0] == 1))
+        self.assertTrue(numpy.all(labels_out[labels == 0] == 0))
 
     def test_03_04_unify_two_stays_two(self):
-        labels = np.zeros((10, 20), int)
+        labels = numpy.zeros((10, 20), int)
         labels[2:5, 3:8] = 1
         labels[2:5, 13:18] = 2
-        labels_out, workspace = self.rruunn(labels, R.OPTION_UNIFY,
+        labels_out, workspace = self.rruunn(labels, cellprofiler.modules.reassignobjectnumbers.OPTION_UNIFY,
                                             distance_threshold=4)
-        self.assertTrue(np.all(labels_out == labels))
+        self.assertTrue(numpy.all(labels_out == labels))
 
     def test_03_05_unify_image_centroids(self):
-        labels = np.zeros((10, 20), int)
+        labels = numpy.zeros((10, 20), int)
         labels[2:5, 3:8] = 1
         labels[2:5, 13:18] = 2
-        image = np.ones((10, 20)) * (labels > 0) * .5
+        image = numpy.ones((10, 20)) * (labels > 0) * .5
         image[3, 8:13] = .41
         image[3, 5] = .6
-        labels_out, workspace = self.rruunn(labels, R.OPTION_UNIFY,
+        labels_out, workspace = self.rruunn(labels, cellprofiler.modules.reassignobjectnumbers.OPTION_UNIFY,
                                             distance_threshold=6,
                                             image=image,
                                             minimum_intensity_fraction=.8,
-                                            where_algorithm=R.CA_CENTROIDS)
-        self.assertTrue(np.all(labels_out[labels != 0] == 1))
-        self.assertTrue(np.all(labels_out[labels == 0] == 0))
+                                            where_algorithm=cellprofiler.modules.reassignobjectnumbers.CA_CENTROIDS)
+        self.assertTrue(numpy.all(labels_out[labels != 0] == 1))
+        self.assertTrue(numpy.all(labels_out[labels == 0] == 0))
 
     def test_03_06_dont_unify_image_centroids(self):
-        labels = np.zeros((10, 20), int)
+        labels = numpy.zeros((10, 20), int)
         labels[2:5, 3:8] = 1
         labels[2:5, 13:18] = 2
-        image = np.ones((10, 20)) * labels * .5
+        image = numpy.ones((10, 20)) * labels * .5
         image[3, 8:12] = .41
         image[3, 5] = .6
         image[3, 15] = .6
-        labels_out, workspace = self.rruunn(labels, R.OPTION_UNIFY,
+        labels_out, workspace = self.rruunn(labels, cellprofiler.modules.reassignobjectnumbers.OPTION_UNIFY,
                                             distance_threshold=6,
                                             image=image,
                                             minimum_intensity_fraction=.8,
-                                            where_algorithm=R.CA_CENTROIDS)
-        self.assertTrue(np.all(labels_out == labels))
+                                            where_algorithm=cellprofiler.modules.reassignobjectnumbers.CA_CENTROIDS)
+        self.assertTrue(numpy.all(labels_out == labels))
 
     def test_03_07_unify_image_closest_point(self):
-        labels = np.zeros((10, 20), int)
+        labels = numpy.zeros((10, 20), int)
         labels[2:5, 3:8] = 1
         labels[2:5, 13:18] = 2
-        image = np.ones((10, 20)) * (labels > 0) * .6
+        image = numpy.ones((10, 20)) * (labels > 0) * .6
         image[2, 8:13] = .41
         image[2, 7] = .5
         image[2, 13] = .5
-        labels_out, workspace = self.rruunn(labels, R.OPTION_UNIFY,
+        labels_out, workspace = self.rruunn(labels, cellprofiler.modules.reassignobjectnumbers.OPTION_UNIFY,
                                             distance_threshold=6,
                                             image=image,
                                             minimum_intensity_fraction=.8,
-                                            where_algorithm=R.CA_CLOSEST_POINT)
-        self.assertTrue(np.all(labels_out[labels != 0] == 1))
-        self.assertTrue(np.all(labels_out[labels == 0] == 0))
+                                            where_algorithm=cellprofiler.modules.reassignobjectnumbers.CA_CLOSEST_POINT)
+        self.assertTrue(numpy.all(labels_out[labels != 0] == 1))
+        self.assertTrue(numpy.all(labels_out[labels == 0] == 0))
 
     def test_03_08_dont_unify_image_closest_point(self):
-        labels = np.zeros((10, 20), int)
+        labels = numpy.zeros((10, 20), int)
         labels[2:5, 3:8] = 1
         labels[2:5, 13:18] = 2
-        image = np.ones((10, 20)) * labels * .6
+        image = numpy.ones((10, 20)) * labels * .6
         image[3, 8:12] = .41
         image[2, 7] = .5
-        labels_out, workspace = self.rruunn(labels, R.OPTION_UNIFY,
+        labels_out, workspace = self.rruunn(labels, cellprofiler.modules.reassignobjectnumbers.OPTION_UNIFY,
                                             distance_threshold=6,
                                             image=image,
                                             minimum_intensity_fraction=.8,
-                                            where_algorithm=R.CA_CLOSEST_POINT)
-        self.assertTrue(np.all(labels_out == labels))
+                                            where_algorithm=cellprofiler.modules.reassignobjectnumbers.CA_CLOSEST_POINT)
+        self.assertTrue(numpy.all(labels_out == labels))
 
     def test_04_00_save_outlines(self):
-        labels = np.zeros((10, 20), int)
+        labels = numpy.zeros((10, 20), int)
         labels[2:5, 3:8] = 1
         labels[2:5, 13:18] = 2
-        labels_out, workspace = self.rruunn(labels, R.OPTION_UNIFY,
+        labels_out, workspace = self.rruunn(labels, cellprofiler.modules.reassignobjectnumbers.OPTION_UNIFY,
                                             distance_threshold=6,
                                             wants_outlines=True, outline_name=OUTLINE_NAME)
-        self.assertTrue(np.all(labels_out[labels != 0] == 1))
-        self.assertTrue(np.all(labels_out[labels == 0] == 0))
+        self.assertTrue(numpy.all(labels_out[labels != 0] == 1))
+        self.assertTrue(numpy.all(labels_out[labels == 0] == 0))
 
     def test_05_00_unify_per_parent(self):
-        labels = np.zeros((10, 20), int)
+        labels = numpy.zeros((10, 20), int)
         labels[2:5, 3:8] = 1
         labels[2:5, 13:18] = 2
 
-        labels_out, workspace = self.rruunn(labels, R.OPTION_UNIFY,
-                                            unify_option=R.UNIFY_PARENT,
+        labels_out, workspace = self.rruunn(labels, cellprofiler.modules.reassignobjectnumbers.OPTION_UNIFY,
+                                            unify_option=cellprofiler.modules.reassignobjectnumbers.UNIFY_PARENT,
                                             parent_object="Parent_object",
-                                            parents_of=np.array([1, 1]))
-        self.assertTrue(np.all(labels_out[labels != 0] == 1))
+                                            parents_of=numpy.array([1, 1]))
+        self.assertTrue(numpy.all(labels_out[labels != 0] == 1))
 
     def test_05_01_unify_convex_hull(self):
-        labels = np.zeros((10, 20), int)
+        labels = numpy.zeros((10, 20), int)
         labels[2:5, 3:8] = 1
         labels[2:5, 13:18] = 2
-        expected = np.zeros(labels.shape, int)
+        expected = numpy.zeros(labels.shape, int)
         expected[2:5, 3:18] = 1
 
-        labels_out, workspace = self.rruunn(labels, R.OPTION_UNIFY,
-                                            unify_option=R.UNIFY_PARENT,
-                                            unify_method=R.UM_CONVEX_HULL,
+        labels_out, workspace = self.rruunn(labels, cellprofiler.modules.reassignobjectnumbers.OPTION_UNIFY,
+                                            unify_option=cellprofiler.modules.reassignobjectnumbers.UNIFY_PARENT,
+                                            unify_method=cellprofiler.modules.reassignobjectnumbers.UM_CONVEX_HULL,
                                             parent_object="Parent_object",
-                                            parents_of=np.array([1, 1]))
-        self.assertTrue(np.all(labels_out == expected))
+                                            parents_of=numpy.array([1, 1]))
+        self.assertTrue(numpy.all(labels_out == expected))
 
     def test_05_02_unify_nothing(self):
-        labels = np.zeros((10, 20), int)
-        for um in R.UM_DISCONNECTED, R.UM_CONVEX_HULL:
+        labels = numpy.zeros((10, 20), int)
+        for um in cellprofiler.modules.reassignobjectnumbers.UM_DISCONNECTED, cellprofiler.modules.reassignobjectnumbers.UM_CONVEX_HULL:
             labels_out, workspace = self.rruunn(
-                    labels, R.OPTION_UNIFY,
-                    unify_option=R.UNIFY_PARENT,
-                    unify_method=R.UM_CONVEX_HULL,
+                    labels, cellprofiler.modules.reassignobjectnumbers.OPTION_UNIFY,
+                    unify_option=cellprofiler.modules.reassignobjectnumbers.UNIFY_PARENT,
+                    unify_method=cellprofiler.modules.reassignobjectnumbers.UM_CONVEX_HULL,
                     parent_object="Parent_object",
-                    parents_of=np.zeros(0, int))
-            self.assertTrue(np.all(labels_out == 0))
+                    parents_of=numpy.zeros(0, int))
+            self.assertTrue(numpy.all(labels_out == 0))

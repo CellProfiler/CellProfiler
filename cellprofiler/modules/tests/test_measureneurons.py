@@ -7,23 +7,22 @@ import tempfile
 import traceback
 import unittest
 import zlib
-from StringIO import StringIO
+import StringIO
 
-import numpy as np
-import scipy.ndimage
+import numpy
 
-from cellprofiler.preferences import set_headless
+import cellprofiler.preferences
 
-set_headless()
+cellprofiler.preferences.set_headless()
 
-import cellprofiler.pipeline as cpp
-import cellprofiler.module as cpm
-import cellprofiler.image as cpi
-import cellprofiler.measurement as cpmeas
-import cellprofiler.region as cpo
-import cellprofiler.setting as cps
-import cellprofiler.workspace as cpw
-import cellprofiler.modules.measureneurons as M
+import cellprofiler.pipeline
+import cellprofiler.module
+import cellprofiler.image
+import cellprofiler.measurement
+import cellprofiler.region
+import cellprofiler.setting
+import cellprofiler.workspace
+import cellprofiler.modules.measureneurons
 
 IMAGE_NAME = "MyImage"
 INTENSITY_IMAGE_NAME = "MyIntensityImage"
@@ -67,16 +66,16 @@ class TestMeasureNeurons(unittest.TestCase):
                 '7ckTrjremGLML7yl5EHKHefH73atuJZ+t/jXRKfrk+yWdJ15PrNJOee0a8vD'
                 'i2vkE+L/tWkcWr3wAedvoYMT2E+42SxQidmXzlf0ZYXLtcLVmy7+d75Z81X9'
                 '2KX/ZXExut8qqz89frLd8vxv4SnR38Wz/0zepv3f3ukznzkA9yxhQQ==')
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
+        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 3)
         module = pipeline.modules()[-1]
-        self.assertTrue(isinstance(module, M.MeasureNeurons))
+        self.assertTrue(isinstance(module, cellprofiler.modules.measureneurons.MeasureNeurons))
         self.assertEqual(module.seed_objects_name, "Soma")
         self.assertEqual(module.image_name, "DNA")
 
@@ -91,16 +90,16 @@ MeasureNeurons:[module_num:1|svn_version:\'8401\'|variable_revision_number:1|sho
     Do you want to save the branchpoint image?:Yes
     Branchpoint image name\x3A:BPImg
 """
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO(data))
+        pipeline.load(StringIO.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[-1]
-        self.assertTrue(isinstance(module, M.MeasureNeurons))
+        self.assertTrue(isinstance(module, cellprofiler.modules.measureneurons.MeasureNeurons))
         self.assertEqual(module.image_name, "DNA")
         self.assertEqual(module.seed_objects_name, "Nucs")
         self.assertTrue(module.wants_branchpoint_image)
@@ -109,125 +108,125 @@ MeasureNeurons:[module_num:1|svn_version:\'8401\'|variable_revision_number:1|sho
     def make_workspace(self, labels, image, mask=None,
                        intensity_image=None,
                        wants_graph=False):
-        m = cpmeas.Measurements()
-        image_set_list = cpi.ImageSetList()
-        m.add_measurement(cpmeas.IMAGE, cpmeas.GROUP_NUMBER, 1)
-        m.add_measurement(cpmeas.IMAGE, cpmeas.GROUP_INDEX, 1)
+        m = cellprofiler.measurement.Measurements()
+        image_set_list = cellprofiler.image.ImageSetList()
+        m.add_measurement(cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_NUMBER, 1)
+        m.add_measurement(cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_INDEX, 1)
         image_set = m
-        img = cpi.Image(image, mask)
+        img = cellprofiler.image.Image(image, mask)
         image_set.add(IMAGE_NAME, img)
 
-        object_set = cpo.Set()
-        o = cpo.Region()
+        object_set = cellprofiler.region.Set()
+        o = cellprofiler.region.Region()
         o.segmented = labels
         object_set.add_objects(o, OBJECT_NAME)
 
-        module = M.MeasureNeurons()
+        module = cellprofiler.modules.measureneurons.MeasureNeurons()
         module.image_name.value = IMAGE_NAME
         module.seed_objects_name.value = OBJECT_NAME
         if intensity_image is not None:
-            img = cpi.Image(intensity_image)
+            img = cellprofiler.image.Image(intensity_image)
             image_set.add(INTENSITY_IMAGE_NAME, img)
             module.intensity_image_name.value = INTENSITY_IMAGE_NAME
         if wants_graph:
             module.wants_neuron_graph.value = True
-            module.directory.dir_choice = cps.ABSOLUTE_FOLDER_NAME
+            module.directory.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
             module.directory.custom_path = self.temp_dir
             module.edge_file_name.value = EDGE_FILE
             module.vertex_file_name.value = VERTEX_FILE
         module.module_num = 1
 
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
-            self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.RunExceptionEvent))
 
         pipeline.add_listener(callback)
         pipeline.add_module(module)
-        workspace = cpw.Workspace(pipeline, module, image_set, object_set,
-                                  m, image_set_list)
+        workspace = cellprofiler.workspace.Workspace(pipeline, module, image_set, object_set,
+                                                     m, image_set_list)
         return workspace, module
 
     def test_02_01_empty(self):
-        workspace, module = self.make_workspace(np.zeros((20, 10), int),
-                                                np.zeros((20, 10), bool))
+        workspace, module = self.make_workspace(numpy.zeros((20, 10), int),
+                                                numpy.zeros((20, 10), bool))
         #
         # Make sure module tells us about the measurements
         #
         columns = module.get_measurement_columns(None)
         features = [c[1] for c in columns]
         features.sort()
-        expected = M.F_ALL
+        expected = cellprofiler.modules.measureneurons.F_ALL
         expected.sort()
         coltypes = {}
         for feature, expected in zip(features, expected):
-            expected_feature = "_".join((M.C_NEURON, expected, IMAGE_NAME))
+            expected_feature = "_".join((cellprofiler.modules.measureneurons.C_NEURON, expected, IMAGE_NAME))
             self.assertEqual(feature, expected_feature)
             coltypes[expected_feature] = \
-                cpmeas.COLTYPE_FLOAT if expected == M.F_TOTAL_NEURITE_LENGTH \
-                    else cpmeas.COLTYPE_INTEGER
+                cellprofiler.measurement.COLTYPE_FLOAT if expected == cellprofiler.modules.measureneurons.F_TOTAL_NEURITE_LENGTH \
+                    else cellprofiler.measurement.COLTYPE_INTEGER
         self.assertTrue(all([c[0] == OBJECT_NAME for c in columns]))
         self.assertTrue(all([c[2] == coltypes[c[1]] for c in columns]))
 
         categories = module.get_categories(None, OBJECT_NAME)
         self.assertEqual(len(categories), 1)
-        self.assertEqual(categories[0], M.C_NEURON)
+        self.assertEqual(categories[0], cellprofiler.modules.measureneurons.C_NEURON)
         self.assertEqual(len(module.get_categories(None, "Foo")), 0)
 
-        measurements = module.get_measurements(None, OBJECT_NAME, M.C_NEURON)
-        self.assertEqual(len(measurements), len(M.F_ALL))
+        measurements = module.get_measurements(None, OBJECT_NAME, cellprofiler.modules.measureneurons.C_NEURON)
+        self.assertEqual(len(measurements), len(cellprofiler.modules.measureneurons.F_ALL))
         self.assertNotEqual(measurements[0], measurements[1])
-        self.assertTrue(all([m in M.F_ALL for m in measurements]))
+        self.assertTrue(all([m in cellprofiler.modules.measureneurons.F_ALL for m in measurements]))
 
-        self.assertEqual(len(module.get_measurements(None, "Foo", M.C_NEURON)), 0)
+        self.assertEqual(len(module.get_measurements(None, "Foo", cellprofiler.modules.measureneurons.C_NEURON)), 0)
         self.assertEqual(len(module.get_measurements(None, OBJECT_NAME, "Foo")), 0)
 
-        for feature in M.F_ALL:
+        for feature in cellprofiler.modules.measureneurons.F_ALL:
             images = module.get_measurement_images(None, OBJECT_NAME,
-                                                   M.C_NEURON, feature)
+                                                   cellprofiler.modules.measureneurons.C_NEURON, feature)
             self.assertEqual(len(images), 1)
             self.assertEqual(images[0], IMAGE_NAME)
 
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
-        for feature in M.F_ALL:
-            mname = "_".join((M.C_NEURON, expected, IMAGE_NAME))
+        self.assertTrue(isinstance(m, cellprofiler.measurement.Measurements))
+        for feature in cellprofiler.modules.measureneurons.F_ALL:
+            mname = "_".join((cellprofiler.modules.measureneurons.C_NEURON, expected, IMAGE_NAME))
             data = m.get_current_measurement(OBJECT_NAME, mname)
             self.assertEqual(len(data), 0)
 
     def test_02_02_trunk(self):
         '''Create an image with one soma with one neurite'''
-        image = np.zeros((20, 15), bool)
+        image = numpy.zeros((20, 15), bool)
         image[9, 5:] = True
-        labels = np.zeros((20, 15), int)
+        labels = numpy.zeros((20, 15), int)
         labels[6:12, 2:8] = 1
         workspace, module = self.make_workspace(labels, image)
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
-        for feature, expected in ((M.F_NUMBER_NON_TRUNK_BRANCHES, 0),
-                                  (M.F_NUMBER_TRUNKS, 1)):
-            mname = "_".join((M.C_NEURON, feature, IMAGE_NAME))
+        self.assertTrue(isinstance(m, cellprofiler.measurement.Measurements))
+        for feature, expected in ((cellprofiler.modules.measureneurons.F_NUMBER_NON_TRUNK_BRANCHES, 0),
+                                  (cellprofiler.modules.measureneurons.F_NUMBER_TRUNKS, 1)):
+            mname = "_".join((cellprofiler.modules.measureneurons.C_NEURON, feature, IMAGE_NAME))
             data = m.get_current_measurement(OBJECT_NAME, mname)
             self.assertEqual(len(data), 1)
             self.assertEqual(data[0], expected)
 
     def test_02_03_trunks(self):
         '''Create an image with two soma and a neurite that goes through both'''
-        image = np.zeros((30, 15), bool)
+        image = numpy.zeros((30, 15), bool)
         image[1:25, 7] = True
-        labels = np.zeros((30, 15), int)
+        labels = numpy.zeros((30, 15), int)
         labels[6:13, 3:10] = 1
         labels[18:26, 3:10] = 2
         workspace, module = self.make_workspace(labels, image)
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
-        for feature, expected in ((M.F_NUMBER_NON_TRUNK_BRANCHES, [0, 0]),
-                                  (M.F_NUMBER_TRUNKS, [2, 1])):
-            mname = "_".join((M.C_NEURON, feature, IMAGE_NAME))
+        self.assertTrue(isinstance(m, cellprofiler.measurement.Measurements))
+        for feature, expected in ((cellprofiler.modules.measureneurons.F_NUMBER_NON_TRUNK_BRANCHES, [0, 0]),
+                                  (cellprofiler.modules.measureneurons.F_NUMBER_TRUNKS, [2, 1])):
+            mname = "_".join((cellprofiler.modules.measureneurons.C_NEURON, feature, IMAGE_NAME))
             data = m.get_current_measurement(OBJECT_NAME, mname)
             self.assertEqual(len(data), 2)
             for i in range(2):
@@ -235,19 +234,19 @@ MeasureNeurons:[module_num:1|svn_version:\'8401\'|variable_revision_number:1|sho
 
     def test_02_04_branch(self):
         '''Create an image with one soma and a neurite with a branch'''
-        image = np.zeros((30, 15), bool)
+        image = numpy.zeros((30, 15), bool)
         image[6:15, 7] = True
-        image[15 + np.arange(3), 7 + np.arange(3)] = True
-        image[15 + np.arange(3), 7 - np.arange(3)] = True
-        labels = np.zeros((30, 15), int)
+        image[15 + numpy.arange(3), 7 + numpy.arange(3)] = True
+        image[15 + numpy.arange(3), 7 - numpy.arange(3)] = True
+        labels = numpy.zeros((30, 15), int)
         labels[1:8, 3:10] = 1
         workspace, module = self.make_workspace(labels, image)
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
-        for feature, expected in ((M.F_NUMBER_NON_TRUNK_BRANCHES, 1),
-                                  (M.F_NUMBER_TRUNKS, 1)):
-            mname = "_".join((M.C_NEURON, feature, IMAGE_NAME))
+        self.assertTrue(isinstance(m, cellprofiler.measurement.Measurements))
+        for feature, expected in ((cellprofiler.modules.measureneurons.F_NUMBER_NON_TRUNK_BRANCHES, 1),
+                                  (cellprofiler.modules.measureneurons.F_NUMBER_TRUNKS, 1)):
+            mname = "_".join((cellprofiler.modules.measureneurons.C_NEURON, feature, IMAGE_NAME))
             data = m.get_current_measurement(OBJECT_NAME, mname)
             self.assertEqual(len(data), 1)
             self.assertEqual(data[0], expected)
@@ -257,19 +256,19 @@ MeasureNeurons:[module_num:1|svn_version:\'8401\'|variable_revision_number:1|sho
 
         Regression test of IMG-667
         '''
-        image = np.zeros((30, 15), bool)
+        image = numpy.zeros((30, 15), bool)
         image[6:15, 7] = True
-        image[15 + np.arange(3), 7 + np.arange(3)] = True
-        image[15 + np.arange(3), 7 - np.arange(3)] = True
-        labels = np.zeros((30, 15), int)
+        image[15 + numpy.arange(3), 7 + numpy.arange(3)] = True
+        image[15 + numpy.arange(3), 7 - numpy.arange(3)] = True
+        labels = numpy.zeros((30, 15), int)
         labels[10, 7] = 1
         workspace, module = self.make_workspace(labels, image)
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
-        for feature, expected in ((M.F_NUMBER_NON_TRUNK_BRANCHES, 1),
-                                  (M.F_NUMBER_TRUNKS, 2)):
-            mname = "_".join((M.C_NEURON, feature, IMAGE_NAME))
+        self.assertTrue(isinstance(m, cellprofiler.measurement.Measurements))
+        for feature, expected in ((cellprofiler.modules.measureneurons.F_NUMBER_NON_TRUNK_BRANCHES, 1),
+                                  (cellprofiler.modules.measureneurons.F_NUMBER_TRUNKS, 2)):
+            mname = "_".join((cellprofiler.modules.measureneurons.C_NEURON, feature, IMAGE_NAME))
             data = m.get_current_measurement(OBJECT_NAME, mname)
             self.assertEqual(len(data), 1)
             self.assertEqual(data[0], expected,
@@ -289,19 +288,19 @@ MeasureNeurons:[module_num:1|svn_version:\'8401\'|variable_revision_number:1|sho
 
             And there should be 3 trunks (or possibly two trunks and a branch)
         '''
-        image = np.zeros((30, 15), bool)
+        image = numpy.zeros((30, 15), bool)
         image[6:15, 7] = True
-        image[15 + np.arange(3), 7 + np.arange(3)] = True
-        image[15 + np.arange(3), 7 - np.arange(3)] = True
-        labels = np.zeros((30, 15), int)
+        image[15 + numpy.arange(3), 7 + numpy.arange(3)] = True
+        image[15 + numpy.arange(3), 7 - numpy.arange(3)] = True
+        labels = numpy.zeros((30, 15), int)
         labels[13, 7] = 1
         workspace, module = self.make_workspace(labels, image)
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
-        for feature, expected in ((M.F_NUMBER_NON_TRUNK_BRANCHES, 0),
-                                  (M.F_NUMBER_TRUNKS, 3)):
-            mname = "_".join((M.C_NEURON, feature, IMAGE_NAME))
+        self.assertTrue(isinstance(m, cellprofiler.measurement.Measurements))
+        for feature, expected in ((cellprofiler.modules.measureneurons.F_NUMBER_NON_TRUNK_BRANCHES, 0),
+                                  (cellprofiler.modules.measureneurons.F_NUMBER_TRUNKS, 3)):
+            mname = "_".join((cellprofiler.modules.measureneurons.C_NEURON, feature, IMAGE_NAME))
             data = m.get_current_measurement(OBJECT_NAME, mname)
             self.assertEqual(len(data), 1)
             self.assertEqual(data[0], expected,
@@ -313,18 +312,18 @@ MeasureNeurons:[module_num:1|svn_version:\'8401\'|variable_revision_number:1|sho
         Assume that image is primary, labels outside of image are ignored
         and image outside of labels is unlabeled.
         '''
-        image = np.zeros((40, 15), bool)
+        image = numpy.zeros((40, 15), bool)
         image[1:25, 7] = True
-        labels = np.zeros((30, 20), int)
+        labels = numpy.zeros((30, 20), int)
         labels[6:13, 3:10] = 1
         labels[18:26, 3:10] = 2
         workspace, module = self.make_workspace(labels, image)
         module.run(workspace)
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
-        for feature, expected in ((M.F_NUMBER_NON_TRUNK_BRANCHES, [0, 0]),
-                                  (M.F_NUMBER_TRUNKS, [2, 1])):
-            mname = "_".join((M.C_NEURON, feature, IMAGE_NAME))
+        self.assertTrue(isinstance(m, cellprofiler.measurement.Measurements))
+        for feature, expected in ((cellprofiler.modules.measureneurons.F_NUMBER_NON_TRUNK_BRANCHES, [0, 0]),
+                                  (cellprofiler.modules.measureneurons.F_NUMBER_TRUNKS, [2, 1])):
+            mname = "_".join((cellprofiler.modules.measureneurons.C_NEURON, feature, IMAGE_NAME))
             data = m.get_current_measurement(OBJECT_NAME, mname)
             self.assertEqual(len(data), 2)
             for i in range(2):
@@ -334,18 +333,18 @@ MeasureNeurons:[module_num:1|svn_version:\'8401\'|variable_revision_number:1|sho
         #
         # Soma ends at x=8, neurite ends at x=15. Length should be 7
         #
-        image = np.zeros((20, 20), bool)
+        image = numpy.zeros((20, 20), bool)
         image[9, 5:15] = True
-        labels = np.zeros((20, 20), int)
+        labels = numpy.zeros((20, 20), int)
         labels[6:12, 2:8] = 1
         workspace, module = self.make_workspace(labels, image)
         module.run(workspace)
         m = workspace.measurements
-        ftr = "_".join((M.C_NEURON, M.F_TOTAL_NEURITE_LENGTH, IMAGE_NAME))
+        ftr = "_".join((cellprofiler.modules.measureneurons.C_NEURON, cellprofiler.modules.measureneurons.F_TOTAL_NEURITE_LENGTH, IMAGE_NAME))
         result = m[OBJECT_NAME, ftr]
         self.assertEqual(len(result), 1)
         self.assertAlmostEqual(result[0], 5,
-                               delta=np.sqrt(np.finfo(np.float32).eps))
+                               delta=numpy.sqrt(numpy.finfo(numpy.float32).eps))
 
     def read_graph_file(self, file_name):
         type_dict = dict(image_number="i4", v1="i4", v2="i4", length="i4",
@@ -355,20 +354,20 @@ MeasureNeurons:[module_num:1|svn_version:\'8401\'|variable_revision_number:1|sho
         path = os.path.join(self.temp_dir, file_name)
         fd = open(path, "r")
         fields = fd.readline().strip().split(",")
-        dt = np.dtype(dict(names=fields,
-                           formats=[type_dict[x] for x in fields]))
+        dt = numpy.dtype(dict(names=fields,
+                              formats=[type_dict[x] for x in fields]))
         pos = fd.tell()
         if len(fd.readline()) == 0:
-            return np.recarray(0, dt)
+            return numpy.recarray(0, dt)
         fd.seek(pos)
-        return np.loadtxt(fd, dt, delimiter=",")
+        return numpy.loadtxt(fd, dt, delimiter=",")
 
     def test_03_00_graph(self):
         '''Does graph neurons work on an empty image?'''
         workspace, module = self.make_workspace(
-                np.zeros((20, 10), int),
-                np.zeros((20, 10), bool),
-                intensity_image=np.zeros((20, 10)), wants_graph=True)
+                numpy.zeros((20, 10), int),
+                numpy.zeros((20, 10), bool),
+                intensity_image=numpy.zeros((20, 10)), wants_graph=True)
         module.prepare_run(workspace)
         module.run(workspace)
         edge_graph = self.read_graph_file(EDGE_FILE)
@@ -385,23 +384,23 @@ MeasureNeurons:[module_num:1|svn_version:\'8401\'|variable_revision_number:1|sho
         #    . .
         #     .
         #     .
-        i, j = np.mgrid[-10:11, -10:11]
-        skel = (i < 0) & (np.abs(i) == np.abs(j))
+        i, j = numpy.mgrid[-10:11, -10:11]
+        skel = (i < 0) & (numpy.abs(i) == numpy.abs(j))
         skel[(i >= 0) & (j == 0)] = True
         #
         # Put a single label at the bottom
         #
-        labels = np.zeros(skel.shape, int)
-        labels[(i > 8) & (np.abs(j) < 2)] = 1
-        np.random.seed(31)
-        intensity = np.random.uniform(size=skel.shape)
+        labels = numpy.zeros(skel.shape, int)
+        labels[(i > 8) & (numpy.abs(j) < 2)] = 1
+        numpy.random.seed(31)
+        intensity = numpy.random.uniform(size=skel.shape)
         workspace, module = self.make_workspace(
                 labels, skel, intensity_image=intensity, wants_graph=True)
         module.prepare_run(workspace)
         module.run(workspace)
         edge_graph = self.read_graph_file(EDGE_FILE)
         vertex_graph = self.read_graph_file(VERTEX_FILE)
-        vidx = np.lexsort((vertex_graph["j"], vertex_graph["i"]))
+        vidx = numpy.lexsort((vertex_graph["j"], vertex_graph["i"]))
         #
         # There should be two vertices at the bottom of the array - these
         # are bogus artifacts of the object hitting the edge of the image
@@ -423,13 +422,13 @@ MeasureNeurons:[module_num:1|svn_version:\'8401\'|variable_revision_number:1|sho
         for v in ("v1", "v2"):
             edge_graph = edge_graph[vertex_graph["i"][edge_graph[v] - 1] != 20]
 
-        eidx = np.lexsort((vertex_graph["j"][edge_graph["v1"] - 1],
-                           vertex_graph["i"][edge_graph["v1"] - 1],
-                           vertex_graph["j"][edge_graph["v2"] - 1],
-                           vertex_graph["i"][edge_graph["v2"] - 1]))
-        expected_edges = (((0, 0), (10, 10), 11, np.sum(intensity[(i <= 0) & (j <= 0) & skel])),
-                          ((0, 20), (10, 10), 11, np.sum(intensity[(i <= 0) & (j >= 0) & skel])),
-                          ((10, 10), (17, 10), 8, np.sum(intensity[(i >= 0) & (i <= 7) & skel])))
+        eidx = numpy.lexsort((vertex_graph["j"][edge_graph["v1"] - 1],
+                              vertex_graph["i"][edge_graph["v1"] - 1],
+                              vertex_graph["j"][edge_graph["v2"] - 1],
+                              vertex_graph["i"][edge_graph["v2"] - 1]))
+        expected_edges = (((0, 0), (10, 10), 11, numpy.sum(intensity[(i <= 0) & (j <= 0) & skel])),
+                          ((0, 20), (10, 10), 11, numpy.sum(intensity[(i <= 0) & (j >= 0) & skel])),
+                          ((10, 10), (17, 10), 8, numpy.sum(intensity[(i >= 0) & (i <= 7) & skel])))
         for i, (v1, v2, length, total_intensity) in enumerate(expected_edges):
             ee = edge_graph[eidx[i]]
             for ve, v in ((v1, ee["v1"]), (v2, ee["v2"])):
@@ -445,7 +444,7 @@ MeasureNeurons:[module_num:1|svn_version:\'8401\'|variable_revision_number:1|sho
         code kicks in when more than one branchpoint touches an edge's end.
         The "best edge wins" code kicks in when a branch touches another branch.
         '''
-        skel = np.array(
+        skel = numpy.array(
                 ((0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
                  (0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0),
                  (0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0),
@@ -455,7 +454,7 @@ MeasureNeurons:[module_num:1|svn_version:\'8401\'|variable_revision_number:1|sho
                  (0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0),
                  (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)), bool)
 
-        poi = np.array(
+        poi = numpy.array(
                 ((0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
                  (0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0),
                  (0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, -2, 0, 0),
@@ -465,9 +464,9 @@ MeasureNeurons:[module_num:1|svn_version:\'8401\'|variable_revision_number:1|sho
                  (0, 8, 0, 0, 0, 9, 0, 0, 10, 0, 0, 0, 11, 0),
                  (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)), int)
 
-        np.random.seed(32)
-        image = np.random.uniform(size=skel.shape)
-        labels = np.zeros(skel.shape, int)
+        numpy.random.seed(32)
+        image = numpy.random.uniform(size=skel.shape)
+        labels = numpy.zeros(skel.shape, int)
         labels[-2:, -2:] = 1  # attach the object to the lower left corner
 
         expected_edges = ((2, 3, 2, -10),
@@ -488,16 +487,16 @@ MeasureNeurons:[module_num:1|svn_version:\'8401\'|variable_revision_number:1|sho
         vertex_graph = self.read_graph_file(VERTEX_FILE)
         edge_graph = self.read_graph_file(EDGE_FILE)
 
-        vertex_number = np.zeros(len(np.unique(poi[poi >= 1])), int)
+        vertex_number = numpy.zeros(len(numpy.unique(poi[poi >= 1])), int)
         for v in vertex_graph:
             p = poi[v["i"], v["j"]]
             if p > 1:
                 vertex_number[p - 2] = v["vertex_number"]
-        poi_number = np.zeros(len(vertex_graph) + 1, int)
-        poi_number[vertex_number] = np.arange(2, len(vertex_number) + 2)
+        poi_number = numpy.zeros(len(vertex_graph) + 1, int)
+        poi_number[vertex_number] = numpy.arange(2, len(vertex_number) + 2)
 
         found_edges = [False] * len(expected_edges)
-        off = -np.min([x[3] for x in expected_edges])
+        off = -numpy.min([x[3] for x in expected_edges])
         for e in edge_graph:
             v1 = e["v1"]
             v2 = e["v2"]
@@ -515,9 +514,9 @@ MeasureNeurons:[module_num:1|svn_version:\'8401\'|variable_revision_number:1|sho
             self.assertEqual(len(ee), 1)
             i, p1, p2, l, mid = ee[0]
             self.assertEqual(l, length)
-            active_poi = np.zeros(np.max(poi) + off + 1, bool)
-            active_poi[np.array([poi1, poi2, mid]) + off] = True
-            expected_intensity = np.sum(image[active_poi[poi + off]])
+            active_poi = numpy.zeros(numpy.max(poi) + off + 1, bool)
+            active_poi[numpy.array([poi1, poi2, mid]) + off] = True
+            expected_intensity = numpy.sum(image[active_poi[poi + off]])
             self.assertAlmostEqual(expected_intensity, total_intensity, 4)
             found_edges[i] = True
         self.assertTrue(all(found_edges))

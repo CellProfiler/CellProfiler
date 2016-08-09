@@ -6,21 +6,21 @@ import base64
 import unittest
 import zlib
 
-import numpy as np
+import numpy
 
-from cellprofiler.preferences import set_headless
+import cellprofiler.preferences
 
-set_headless()
+cellprofiler.preferences.set_headless()
 
-import cellprofiler.pipeline as cpp
-import cellprofiler.module as cpm
-import cellprofiler.image as cpi
-import cellprofiler.measurement as cpmeas
-import cellprofiler.region as cpo
-import cellprofiler.workspace as cpw
+import cellprofiler.pipeline
+import cellprofiler.module
+import cellprofiler.image
+import cellprofiler.measurement
+import cellprofiler.region
+import cellprofiler.workspace
 
-import cellprofiler.modules.rescaleintensity as R
-from cellprofiler.modules.injectimage import InjectImage
+import cellprofiler.modules.rescaleintensity
+import cellprofiler.modules.injectimage
 
 INPUT_NAME = 'input'
 OUTPUT_NAME = 'output'
@@ -55,27 +55,27 @@ RescaleIntensity:[module_num:2|svn_version:\'8913\'|variable_revision_number:2|s
     What should the highest intensity of the rescaled image be (range 0,1)?:0.9
     What did you call the image whose maximum you want the rescaled image to match?:MyOtherImage
 """
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
         pipeline.load(StringIO.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 2)
         module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, R.RescaleIntensity))
+        self.assertTrue(isinstance(module, cellprofiler.modules.rescaleintensity.RescaleIntensity))
         self.assertEqual(module.image_name, "MyImage")
         self.assertEqual(module.rescaled_image_name, "MyRescaledImage")
-        self.assertEqual(module.rescale_method, R.M_STRETCH)
+        self.assertEqual(module.rescale_method, cellprofiler.modules.rescaleintensity.M_STRETCH)
 
         module = pipeline.modules()[1]
-        self.assertTrue(isinstance(module, R.RescaleIntensity))
+        self.assertTrue(isinstance(module, cellprofiler.modules.rescaleintensity.RescaleIntensity))
         self.assertEqual(module.image_name, "MyImage")
         self.assertEqual(module.rescaled_image_name, "MyRescaledImage")
-        self.assertEqual(module.rescale_method, R.M_MANUAL_IO_RANGE)
-        self.assertEqual(module.wants_automatic_low, R.CUSTOM_VALUE)
-        self.assertEqual(module.wants_automatic_high, R.HIGH_ALL_IMAGES)
+        self.assertEqual(module.rescale_method, cellprofiler.modules.rescaleintensity.M_MANUAL_IO_RANGE)
+        self.assertEqual(module.wants_automatic_low, cellprofiler.modules.rescaleintensity.CUSTOM_VALUE)
+        self.assertEqual(module.wants_automatic_high, cellprofiler.modules.rescaleintensity.HIGH_ALL_IMAGES)
         self.assertAlmostEqual(module.dest_scale.min, 0.2)
         self.assertAlmostEqual(module.dest_scale.max, 0.9)
 
@@ -97,21 +97,21 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
     What value should pixels *above* the high end of the original intensity range be mapped to (range 0,1)?:0.99
     What did you call the image whose maximum you want the rescaled image to match?:MyOtherImage
 """
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
         pipeline.load(StringIO.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, R.RescaleIntensity))
+        self.assertTrue(isinstance(module, cellprofiler.modules.rescaleintensity.RescaleIntensity))
         self.assertEqual(module.image_name, "MyImage")
         self.assertEqual(module.rescaled_image_name, "MyRescaledImage")
-        self.assertEqual(module.rescale_method, R.M_MANUAL_IO_RANGE)
-        self.assertEqual(module.wants_automatic_low, R.CUSTOM_VALUE)
-        self.assertEqual(module.wants_automatic_high, R.HIGH_ALL_IMAGES)
+        self.assertEqual(module.rescale_method, cellprofiler.modules.rescaleintensity.M_MANUAL_IO_RANGE)
+        self.assertEqual(module.wants_automatic_low, cellprofiler.modules.rescaleintensity.CUSTOM_VALUE)
+        self.assertEqual(module.wants_automatic_high, cellprofiler.modules.rescaleintensity.HIGH_ALL_IMAGES)
         self.assertAlmostEqual(module.dest_scale.min, 0.2)
         self.assertAlmostEqual(module.dest_scale.max, 0.9)
         self.assertAlmostEqual(module.custom_low_truncation.value, 0.01)
@@ -130,19 +130,19 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
                 'mNV3+UJh5pvkLO3/pS+q1hXHZFrZfONU7jrjpd769vuCc963/3WWJ4gY9xSf'
                 'mvbrTkn5FdPT6+Vk8vd9X5m+9UGk6ud3+x7tlb9xvV23ItPoP3veqZxrAHZa'
                 'yfc=')
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
         pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, R.RescaleIntensity))
+        self.assertTrue(isinstance(module, cellprofiler.modules.rescaleintensity.RescaleIntensity))
         self.assertEqual(module.image_name.value, "RescaledBlue")
         self.assertEqual(module.rescaled_image_name.value, "RescaledBlue")
-        self.assertEqual(module.rescale_method, R.M_STRETCH)
+        self.assertEqual(module.rescale_method, cellprofiler.modules.rescaleintensity.M_STRETCH)
 
     def test_01_02_load_matlab_enter_auto_low(self):
         '''Load a pipeline with automatic low manual scaling'''
@@ -158,26 +158,26 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
                 'y5Q+Rxnhat+HO0/F/X9t66cy18IssINlZm8f++/vjo1FvyeY2n+rl7h4/jan'
                 'x45p531tl6/3ei8V8Ga3iOXce6VGO5T+buGa43by9Grd71FF665Xv9r58Y++'
                 '17uiSgA7HuOs')
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
         pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, R.RescaleIntensity))
-        self.assertEqual(module.rescale_method, R.M_MANUAL_IO_RANGE)
-        self.assertEqual(module.wants_automatic_low.value, R.LOW_ALL_IMAGES)
-        self.assertEqual(module.wants_automatic_high.value, R.CUSTOM_VALUE)
+        self.assertTrue(isinstance(module, cellprofiler.modules.rescaleintensity.RescaleIntensity))
+        self.assertEqual(module.rescale_method, cellprofiler.modules.rescaleintensity.M_MANUAL_IO_RANGE)
+        self.assertEqual(module.wants_automatic_low.value, cellprofiler.modules.rescaleintensity.LOW_ALL_IMAGES)
+        self.assertEqual(module.wants_automatic_high.value, cellprofiler.modules.rescaleintensity.CUSTOM_VALUE)
         self.assertAlmostEqual(module.source_high.value, .5)
         self.assertAlmostEqual(module.dest_scale.min, .25)
         self.assertAlmostEqual(module.dest_scale.max, .75)
         self.assertAlmostEqual(module.custom_low_truncation.value, 0.125)
         self.assertAlmostEqual(module.custom_high_truncation.value, 0.875)
-        self.assertEqual(module.low_truncation_choice.value, R.R_SET_TO_CUSTOM)
-        self.assertEqual(module.high_truncation_choice.value, R.R_SET_TO_CUSTOM)
+        self.assertEqual(module.low_truncation_choice.value, cellprofiler.modules.rescaleintensity.R_SET_TO_CUSTOM)
+        self.assertEqual(module.high_truncation_choice.value, cellprofiler.modules.rescaleintensity.R_SET_TO_CUSTOM)
 
     def test_01_03_load_matlab_enter_auto_high(self):
         '''Load a pipeline with automatic high manual scaling'''
@@ -193,18 +193,18 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
                 'mdLnKCNc7ftw56m4/69t/VTmWpgFdrDM7O1j//3dsbHo9wRT+2/1EhfP3+b0'
                 '2DHtvK/t8vVe76UC3uwWsZx7r9Roh9LfLVxz3E6eXq37Papo3fXqVzs//tF3'
                 'USuqBAART+Do')
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
         pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, R.RescaleIntensity))
-        self.assertEqual(module.wants_automatic_low.value, R.CUSTOM_VALUE)
-        self.assertEqual(module.wants_automatic_high.value, R.HIGH_ALL_IMAGES)
+        self.assertTrue(isinstance(module, cellprofiler.modules.rescaleintensity.RescaleIntensity))
+        self.assertEqual(module.wants_automatic_low.value, cellprofiler.modules.rescaleintensity.CUSTOM_VALUE)
+        self.assertEqual(module.wants_automatic_high.value, cellprofiler.modules.rescaleintensity.HIGH_ALL_IMAGES)
         self.assertAlmostEqual(module.source_low.value, .5)
 
     def test_01_04_load_matlab_enter_manual(self):
@@ -221,18 +221,18 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
                 'eHGyYFbyfk3b6+uu/6/qV3ZV78wVUfRMW/r48LfaCwnba0/Mlv9vz3Pzua+z'
                 'kO7V4mD9F6s372ab8lsv9VxK+VyZdT72i5nSDT79STq7943F9dO6Xw+5/BPf'
                 'nF4UBQBPz9+M')
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
         pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, R.RescaleIntensity))
-        self.assertEqual(module.wants_automatic_low.value, R.CUSTOM_VALUE)
-        self.assertEqual(module.wants_automatic_high.value, R.CUSTOM_VALUE)
+        self.assertTrue(isinstance(module, cellprofiler.modules.rescaleintensity.RescaleIntensity))
+        self.assertEqual(module.wants_automatic_low.value, cellprofiler.modules.rescaleintensity.CUSTOM_VALUE)
+        self.assertEqual(module.wants_automatic_high.value, cellprofiler.modules.rescaleintensity.CUSTOM_VALUE)
         self.assertAlmostEqual(module.source_scale.min, .1)
         self.assertAlmostEqual(module.source_scale.max, .9)
 
@@ -250,18 +250,18 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
                 'ocnxruuPV/VtntLXE3uoU3HzJc6E79UbFtyoPjFr/i99Hgl3scB9PvNnf5q3'
                 'b1tEqML98swi041Z6QWVvyzZC/oU9Ndfu+N9cGfc+xXXl33er5ZeqAwAZ7jf'
                 'Pg==')
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
         pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, R.RescaleIntensity))
+        self.assertTrue(isinstance(module, cellprofiler.modules.rescaleintensity.RescaleIntensity))
         self.assertEqual(module.rescale_method.value,
-                         R.M_DIVIDE_BY_IMAGE_MINIMUM)
+                         cellprofiler.modules.rescaleintensity.M_DIVIDE_BY_IMAGE_MINIMUM)
 
     def test_01_06_load_matlab_match(self):
         '''Load a pipeline, matching to another image'''
@@ -277,19 +277,19 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
                 '/O33qJWHa18JSb+94N/0yWrZouS0kqgrmw0yln0L/for/n3h0hcF95UMPU/+'
                 'eclSUMUnFTLbOe7/kfqkN0dfuJrcW/l8WVxAeHo5r8b3ucssJ98tLd5h9LXH'
                 '2KJ54nf+6ndrk+Ll/Z94T/4YH9ldfBAAEkrtMg==')
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
         pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, R.RescaleIntensity))
+        self.assertTrue(isinstance(module, cellprofiler.modules.rescaleintensity.RescaleIntensity))
         self.assertEqual(module.image_name.value, "OrigBlue")
         self.assertEqual(module.rescaled_image_name.value, "RescaledBlue")
-        self.assertEqual(module.rescale_method, R.M_SCALE_BY_IMAGE_MAXIMUM)
+        self.assertEqual(module.rescale_method, cellprofiler.modules.rescaleintensity.M_SCALE_BY_IMAGE_MAXIMUM)
         self.assertEqual(module.matching_image_name, "ReferenceBlue")
 
     def test_01_07_load_matlab_convert(self):
@@ -306,17 +306,17 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
                 '9WBF1pvVL76GnC9MfHnCwkFG0kh7Lse3/ezsXXvb1/xc+d9pfpGP8KHp33Zq'
                 'yr943RXK+ql2ulq48OowtunL55ezPOf89Cvt7F7ROa/fzqvKtfrPHSxacBwA'
                 '5zLjFA==')
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
         pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, R.RescaleIntensity))
-        self.assertEqual(module.rescale_method, R.M_CONVERT_TO_8_BIT)
+        self.assertTrue(isinstance(module, cellprofiler.modules.rescaleintensity.RescaleIntensity))
+        self.assertEqual(module.rescale_method, cellprofiler.modules.rescaleintensity.M_CONVERT_TO_8_BIT)
 
     def test_01_08_load_matlab_measurement(self):
         data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
@@ -331,17 +331,17 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
                 'Qbd7u4qNnA3/H/i69N7yb9vvH5wZFP8jZMrcn+8OnV4XHFqyylC22UqsauqJ'
                 'Wtld/68Xz9GyOiS+ueNETonNDXt2Xr7ZzkH/n9QveW1QwnTq2qvqCK+V0Q/S'
                 'U0982+u2U8t+tXpB5KuXlhZzJ4df3/9/cuSvqt3q9lsM/vH2PK4vBwDa3/W+')
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
         pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, R.RescaleIntensity))
-        self.assertEqual(module.rescale_method, R.M_DIVIDE_BY_MEASUREMENT)
+        self.assertTrue(isinstance(module, cellprofiler.modules.rescaleintensity.RescaleIntensity))
+        self.assertEqual(module.rescale_method, cellprofiler.modules.rescaleintensity.M_DIVIDE_BY_MEASUREMENT)
         self.assertEqual(module.divisor_measurement, "Metadata_ImageDivisor")
 
     def test_01_09_load_v1(self):
@@ -367,16 +367,16 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
                 'Ka0YTPx/w1C0+p8MTIUyVGp85Ve27NOc74O/4KkE8KQlnnQnHg0j0zJwnYq4'
                 'W5NKvqGtszY3LLvZ/1iReFc68RqNj/EepfN1vsl2dd6m2vD54z9mS7PRmWvn'
                 'W55nb/7/bvTDF41Ernx/mw7AxXw+iUPg/4De1tncNf3dMd5V/38aZ6rY')
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
         pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 3)
         module = pipeline.modules()[2]
-        self.assertTrue(isinstance(module, R.RescaleIntensity))
+        self.assertTrue(isinstance(module, cellprofiler.modules.rescaleintensity.RescaleIntensity))
         #
         # image_name = DNA
         # rescaled_image_name = RescaledDNA
@@ -395,15 +395,15 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         # divisor_measurement = Intensity_MeanIntensity_DNA
         self.assertEqual(module.image_name.value, "DNA")
         self.assertEqual(module.rescaled_image_name.value, "RescaledDNA")
-        self.assertEqual(module.rescale_method.value, R.M_MANUAL_IO_RANGE)
-        self.assertEqual(module.wants_automatic_high.value, R.CUSTOM_VALUE)
-        self.assertEqual(module.wants_automatic_low.value, R.CUSTOM_VALUE)
+        self.assertEqual(module.rescale_method.value, cellprofiler.modules.rescaleintensity.M_MANUAL_IO_RANGE)
+        self.assertEqual(module.wants_automatic_high.value, cellprofiler.modules.rescaleintensity.CUSTOM_VALUE)
+        self.assertEqual(module.wants_automatic_low.value, cellprofiler.modules.rescaleintensity.CUSTOM_VALUE)
         self.assertAlmostEqual(module.source_low.value, .01)
         self.assertAlmostEqual(module.source_high.value, .99)
         self.assertAlmostEqual(module.source_scale.min, .1)
         self.assertAlmostEqual(module.source_scale.max, .9)
-        self.assertEqual(module.low_truncation_choice.value, R.R_SET_TO_CUSTOM)
-        self.assertEqual(module.high_truncation_choice.value, R.R_SET_TO_CUSTOM)
+        self.assertEqual(module.low_truncation_choice.value, cellprofiler.modules.rescaleintensity.R_SET_TO_CUSTOM)
+        self.assertEqual(module.high_truncation_choice.value, cellprofiler.modules.rescaleintensity.R_SET_TO_CUSTOM)
         self.assertAlmostEqual(module.custom_low_truncation.value, .05)
         self.assertAlmostEqual(module.custom_high_truncation.value, .95)
         self.assertEqual(module.matching_image_name.value, "Cytoplasm")
@@ -460,36 +460,36 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
                 'BUdrHbaczqmpGqGIsJol0fviys/9ow0QFciCYljpYMiFAEjdxtDP/QnIsF0f'
                 'c/ElniF+fh/131K+Ifz8BgABJqAFQIDtMQm/tE1/gJbla5zbIdoFCLCjWXv/'
                 'Cz7DUEw=')
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
         pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
         module = pipeline.modules()[2]
-        self.assertTrue(isinstance(module, R.RescaleIntensity))
+        self.assertTrue(isinstance(module, cellprofiler.modules.rescaleintensity.RescaleIntensity))
         self.assertEqual(module.image_name, "OrigGreen")
         self.assertEqual(module.rescaled_image_name, "Rescaledgreen")
-        self.assertEqual(module.rescale_method, R.M_MANUAL_INPUT_RANGE)
-        self.assertEqual(module.wants_automatic_low, R.LOW_EACH_IMAGE)
-        self.assertEqual(module.wants_automatic_high, R.HIGH_EACH_IMAGE)
+        self.assertEqual(module.rescale_method, cellprofiler.modules.rescaleintensity.M_MANUAL_INPUT_RANGE)
+        self.assertEqual(module.wants_automatic_low, cellprofiler.modules.rescaleintensity.LOW_EACH_IMAGE)
+        self.assertEqual(module.wants_automatic_high, cellprofiler.modules.rescaleintensity.HIGH_EACH_IMAGE)
 
     def make_workspace(self, input_image, input_mask=None,
                        reference_image=None, reference_mask=None,
                        measurement=None):
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.RunExceptionEvent))
 
         pipeline.add_listener(callback)
-        object_set = cpo.Set()
-        image_set_list = cpi.ImageSetList()
+        object_set = cellprofiler.region.Set()
+        image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        measurements = cpmeas.Measurements()
+        measurements = cellprofiler.measurement.Measurements()
         module_number = 1
-        module = R.RescaleIntensity()
+        module = cellprofiler.modules.rescaleintensity.RescaleIntensity()
         module.image_name.value = INPUT_NAME
         if isinstance(input_image, (tuple, list)):
             first_input_image = input_image[0]
@@ -500,10 +500,10 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         else:
             first_input_mask = input_mask
         if first_input_mask is None:
-            image = cpi.Image(first_input_image)
+            image = cellprofiler.image.Image(first_input_image)
         else:
-            image = cpi.Image(first_input_image, first_input_mask)
-        ii = InjectImage(INPUT_NAME, input_image, input_mask)
+            image = cellprofiler.image.Image(first_input_image, first_input_mask)
+        ii = cellprofiler.modules.injectimage.InjectImage(INPUT_NAME, input_image, input_mask)
         ii.module_num = module_number
         module_number += 1
         pipeline.add_module(ii)
@@ -512,11 +512,11 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         if reference_image is not None:
             module.matching_image_name.value = REFERENCE_NAME
             if reference_mask is None:
-                image = cpi.Image(reference_image)
+                image = cellprofiler.image.Image(reference_image)
             else:
-                image = cpi.Image(reference_image, mask=reference_mask)
+                image = cellprofiler.image.Image(reference_image, mask=reference_mask)
             image_set.add(REFERENCE_NAME, image)
-            ii = InjectImage(REFERENCE_NAME, reference_image, reference_mask)
+            ii = cellprofiler.modules.injectimage.InjectImage(REFERENCE_NAME, reference_image, reference_mask)
             ii.module_num = module_number
             module_number += 1
             pipeline.add_module(ii)
@@ -525,163 +525,163 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         if measurement is not None:
             module.divisor_measurement.value = MEASUREMENT_NAME
             measurements.add_image_measurement(MEASUREMENT_NAME, measurement)
-        workspace = cpw.Workspace(pipeline,
-                                  module,
-                                  image_set,
-                                  object_set,
-                                  measurements,
-                                  image_set_list)
+        workspace = cellprofiler.workspace.Workspace(pipeline,
+                                                     module,
+                                                     image_set,
+                                                     object_set,
+                                                     measurements,
+                                                     image_set_list)
         return workspace, module
 
     def test_03_01_stretch(self):
-        np.random.seed(0)
-        expected = np.random.uniform(size=(10, 10)).astype(np.float32)
+        numpy.random.seed(0)
+        expected = numpy.random.uniform(size=(10, 10)).astype(numpy.float32)
         expected[0, 0] = 1
         expected[9, 9] = 0
         workspace, module = self.make_workspace(expected / 2 + .1)
-        module.rescale_method.value = R.M_STRETCH
+        module.rescale_method.value = cellprofiler.modules.rescaleintensity.M_STRETCH
         module.run(workspace)
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
-        np.testing.assert_almost_equal(pixels, expected)
+        numpy.testing.assert_almost_equal(pixels, expected)
 
     def test_03_02_stretch_mask(self):
-        np.random.seed(0)
-        expected = np.random.uniform(size=(10, 10)).astype(np.float32)
+        numpy.random.seed(0)
+        expected = numpy.random.uniform(size=(10, 10)).astype(numpy.float32)
         expected[0, 0] = 1
         expected[9, 9] = 0
-        mask = np.ones(expected.shape, bool)
+        mask = numpy.ones(expected.shape, bool)
         mask[3:5, 4:7] = False
         expected[~ mask] = 1.5
         workspace, module = self.make_workspace(expected / 2 + .1, mask)
-        module.rescale_method.value = R.M_STRETCH
+        module.rescale_method.value = cellprofiler.modules.rescaleintensity.M_STRETCH
         module.run(workspace)
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
-        np.testing.assert_almost_equal(pixels[mask], expected[mask])
+        numpy.testing.assert_almost_equal(pixels[mask], expected[mask])
 
     def test_04_01_manual_input_range(self):
-        np.random.seed(0)
-        expected = np.random.uniform(size=(10, 10))
+        numpy.random.seed(0)
+        expected = numpy.random.uniform(size=(10, 10))
         workspace, module = self.make_workspace(expected / 2 + .1)
-        module.rescale_method.value = R.M_MANUAL_INPUT_RANGE
-        module.wants_automatic_low.value = R.CUSTOM_VALUE
-        module.wants_automatic_high.value = R.CUSTOM_VALUE
+        module.rescale_method.value = cellprofiler.modules.rescaleintensity.M_MANUAL_INPUT_RANGE
+        module.wants_automatic_low.value = cellprofiler.modules.rescaleintensity.CUSTOM_VALUE
+        module.wants_automatic_high.value = cellprofiler.modules.rescaleintensity.CUSTOM_VALUE
         module.source_scale.min = .1
         module.source_scale.max = .6
         module.run(workspace)
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
-        np.testing.assert_almost_equal(pixels, expected)
+        numpy.testing.assert_almost_equal(pixels, expected)
 
     def test_04_02_00_manual_input_range_auto_low(self):
-        np.random.seed(0)
-        expected = np.random.uniform(size=(10, 10)).astype(np.float32)
+        numpy.random.seed(0)
+        expected = numpy.random.uniform(size=(10, 10)).astype(numpy.float32)
         expected[0, 0] = 0
         workspace, module = self.make_workspace(expected / 2 + .1)
-        module.rescale_method.value = R.M_MANUAL_INPUT_RANGE
-        module.wants_automatic_low.value = R.LOW_EACH_IMAGE
-        module.wants_automatic_high.value = R.CUSTOM_VALUE
+        module.rescale_method.value = cellprofiler.modules.rescaleintensity.M_MANUAL_INPUT_RANGE
+        module.wants_automatic_low.value = cellprofiler.modules.rescaleintensity.LOW_EACH_IMAGE
+        module.wants_automatic_high.value = cellprofiler.modules.rescaleintensity.CUSTOM_VALUE
         module.source_high.value = .6
         self.assertFalse(module.is_aggregation_module())
         module.run(workspace)
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
-        np.testing.assert_almost_equal(pixels, expected)
+        numpy.testing.assert_almost_equal(pixels, expected)
 
     def test_04_02_01_manual_input_range_auto_low_all(self):
-        np.random.seed(421)
-        image1 = np.random.uniform(size=(10, 20)).astype(np.float32) * .5 + .5
-        image2 = np.random.uniform(size=(10, 20)).astype(np.float32)
-        expected = (image1 - np.min(image2)) / (1 - np.min(image2))
+        numpy.random.seed(421)
+        image1 = numpy.random.uniform(size=(10, 20)).astype(numpy.float32) * .5 + .5
+        image2 = numpy.random.uniform(size=(10, 20)).astype(numpy.float32)
+        expected = (image1 - numpy.min(image2)) / (1 - numpy.min(image2))
         workspace, module = self.make_workspace([image1, image2])
-        self.assertTrue(isinstance(module, R.RescaleIntensity))
-        module.rescale_method.value = R.M_MANUAL_INPUT_RANGE
-        module.wants_automatic_low.value = R.LOW_ALL_IMAGES
-        module.wants_automatic_high.value = R.CUSTOM_VALUE
+        self.assertTrue(isinstance(module, cellprofiler.modules.rescaleintensity.RescaleIntensity))
+        module.rescale_method.value = cellprofiler.modules.rescaleintensity.M_MANUAL_INPUT_RANGE
+        module.wants_automatic_low.value = cellprofiler.modules.rescaleintensity.LOW_ALL_IMAGES
+        module.wants_automatic_high.value = cellprofiler.modules.rescaleintensity.CUSTOM_VALUE
         module.source_high.value = 1
         self.assertTrue(module.is_aggregation_module())
         module.prepare_group(workspace, {}, [1, 2])
         module.run(workspace)
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
-        np.testing.assert_almost_equal(pixels, expected)
+        numpy.testing.assert_almost_equal(pixels, expected)
 
     def test_04_03_00_manual_input_range_auto_high(self):
-        np.random.seed(0)
-        expected = np.random.uniform(size=(10, 10)).astype(np.float32)
+        numpy.random.seed(0)
+        expected = numpy.random.uniform(size=(10, 10)).astype(numpy.float32)
         expected[0, 0] = 1
         workspace, module = self.make_workspace(expected / 2 + .1)
-        module.rescale_method.value = R.M_MANUAL_INPUT_RANGE
-        module.wants_automatic_low.value = R.CUSTOM_VALUE
-        module.wants_automatic_high.value = R.HIGH_EACH_IMAGE
+        module.rescale_method.value = cellprofiler.modules.rescaleintensity.M_MANUAL_INPUT_RANGE
+        module.wants_automatic_low.value = cellprofiler.modules.rescaleintensity.CUSTOM_VALUE
+        module.wants_automatic_high.value = cellprofiler.modules.rescaleintensity.HIGH_EACH_IMAGE
         module.source_low.value = .1
         self.assertFalse(module.is_aggregation_module())
         module.run(workspace)
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
-        np.testing.assert_almost_equal(pixels, expected)
+        numpy.testing.assert_almost_equal(pixels, expected)
 
     def test_04_03_01_manual_input_range_auto_high_all(self):
-        np.random.seed(421)
-        image1 = np.random.uniform(size=(10, 20)).astype(np.float32) * .5
-        image2 = np.random.uniform(size=(10, 20)).astype(np.float32)
-        expected = image1 / np.max(image2)
+        numpy.random.seed(421)
+        image1 = numpy.random.uniform(size=(10, 20)).astype(numpy.float32) * .5
+        image2 = numpy.random.uniform(size=(10, 20)).astype(numpy.float32)
+        expected = image1 / numpy.max(image2)
         workspace, module = self.make_workspace([image1, image2])
-        self.assertTrue(isinstance(module, R.RescaleIntensity))
+        self.assertTrue(isinstance(module, cellprofiler.modules.rescaleintensity.RescaleIntensity))
         image_set_2 = workspace.image_set_list.get_image_set(1)
-        image_set_2.add(INPUT_NAME, cpi.Image(image2))
-        module.rescale_method.value = R.M_MANUAL_INPUT_RANGE
-        module.wants_automatic_low.value = R.CUSTOM_VALUE
-        module.wants_automatic_high.value = R.HIGH_ALL_IMAGES
+        image_set_2.add(INPUT_NAME, cellprofiler.image.Image(image2))
+        module.rescale_method.value = cellprofiler.modules.rescaleintensity.M_MANUAL_INPUT_RANGE
+        module.wants_automatic_low.value = cellprofiler.modules.rescaleintensity.CUSTOM_VALUE
+        module.wants_automatic_high.value = cellprofiler.modules.rescaleintensity.HIGH_ALL_IMAGES
         module.source_low.value = 0
         self.assertTrue(module.is_aggregation_module())
         module.prepare_group(workspace, {}, [1, 2])
         module.run(workspace)
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
-        np.testing.assert_almost_equal(pixels, expected)
+        numpy.testing.assert_almost_equal(pixels, expected)
 
     def test_04_03_02_manual_input_range_auto_low_and_high(self):
-        np.random.seed(0)
-        expected = np.random.uniform(size=(10, 10)).astype(np.float32)
+        numpy.random.seed(0)
+        expected = numpy.random.uniform(size=(10, 10)).astype(numpy.float32)
         expected = expected - expected.min()
         expected = expected / expected.max()
         workspace, module = self.make_workspace(expected / 2 + .1)
-        module.rescale_method.value = R.M_MANUAL_INPUT_RANGE
-        module.wants_automatic_low.value = R.LOW_EACH_IMAGE
-        module.wants_automatic_high.value = R.HIGH_EACH_IMAGE
+        module.rescale_method.value = cellprofiler.modules.rescaleintensity.M_MANUAL_INPUT_RANGE
+        module.wants_automatic_low.value = cellprofiler.modules.rescaleintensity.LOW_EACH_IMAGE
+        module.wants_automatic_high.value = cellprofiler.modules.rescaleintensity.HIGH_EACH_IMAGE
         module.run(workspace)
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
-        np.testing.assert_almost_equal(pixels, expected)
+        numpy.testing.assert_almost_equal(pixels, expected)
 
     def test_04_04_manual_input_range_mask(self):
-        np.random.seed(0)
-        expected = np.random.uniform(size=(10, 10)).astype(np.float32)
+        numpy.random.seed(0)
+        expected = numpy.random.uniform(size=(10, 10)).astype(numpy.float32)
         expected[0, 0] = 1
-        mask = np.ones(expected.shape, bool)
+        mask = numpy.ones(expected.shape, bool)
         mask[3:5, 4:7] = False
         expected[~ mask] = 1.5
         workspace, module = self.make_workspace(expected / 2 + .1, mask)
-        module.rescale_method.value = R.M_MANUAL_INPUT_RANGE
-        module.wants_automatic_low.value = R.CUSTOM_VALUE
-        module.wants_automatic_high.value = R.HIGH_EACH_IMAGE
+        module.rescale_method.value = cellprofiler.modules.rescaleintensity.M_MANUAL_INPUT_RANGE
+        module.wants_automatic_low.value = cellprofiler.modules.rescaleintensity.CUSTOM_VALUE
+        module.wants_automatic_high.value = cellprofiler.modules.rescaleintensity.HIGH_EACH_IMAGE
         module.source_low.value = .1
         module.run(workspace)
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
-        np.testing.assert_almost_equal(pixels[mask], expected[mask])
+        numpy.testing.assert_almost_equal(pixels[mask], expected[mask])
 
     def test_04_05_manual_input_range_truncate(self):
-        np.random.seed(0)
-        expected = np.random.uniform(size=(10, 10)).astype(np.float32)
-        expected_low_mask = np.zeros(expected.shape, bool)
+        numpy.random.seed(0)
+        expected = numpy.random.uniform(size=(10, 10)).astype(numpy.float32)
+        expected_low_mask = numpy.zeros(expected.shape, bool)
         expected_low_mask[2:4, 1:3] = True
         expected[expected_low_mask] = -.05
-        expected_high_mask = np.zeros(expected.shape, bool)
+        expected_high_mask = numpy.zeros(expected.shape, bool)
         expected_high_mask[6:8, 5:7] = True
         expected[expected_high_mask] = 1.05
         mask = ~(expected_low_mask | expected_high_mask)
-        for low_truncate_method in (R.R_MASK, R.R_SCALE, R.R_SET_TO_CUSTOM,
-                                    R.R_SET_TO_ZERO):
-            for high_truncate_method in (R.R_MASK, R.R_SCALE, R.R_SET_TO_CUSTOM,
-                                         R.R_SET_TO_ONE):
+        for low_truncate_method in (cellprofiler.modules.rescaleintensity.R_MASK, cellprofiler.modules.rescaleintensity.R_SCALE, cellprofiler.modules.rescaleintensity.R_SET_TO_CUSTOM,
+                                    cellprofiler.modules.rescaleintensity.R_SET_TO_ZERO):
+            for high_truncate_method in (cellprofiler.modules.rescaleintensity.R_MASK, cellprofiler.modules.rescaleintensity.R_SCALE, cellprofiler.modules.rescaleintensity.R_SET_TO_CUSTOM,
+                                         cellprofiler.modules.rescaleintensity.R_SET_TO_ONE):
                 workspace, module = self.make_workspace(expected / 2 + .1)
-                module.rescale_method.value = R.M_MANUAL_INPUT_RANGE
-                module.wants_automatic_low.value = R.CUSTOM_VALUE
-                module.wants_automatic_high.value = R.CUSTOM_VALUE
+                module.rescale_method.value = cellprofiler.modules.rescaleintensity.M_MANUAL_INPUT_RANGE
+                module.wants_automatic_low.value = cellprofiler.modules.rescaleintensity.CUSTOM_VALUE
+                module.wants_automatic_high.value = cellprofiler.modules.rescaleintensity.CUSTOM_VALUE
                 module.source_scale.min = .1
                 module.source_scale.max = .6
                 module.low_truncation_choice.value = low_truncate_method
@@ -691,31 +691,31 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
                 module.run(workspace)
                 image = workspace.image_set.get_image(OUTPUT_NAME)
                 pixels = image.pixel_data
-                np.testing.assert_almost_equal(pixels[mask], expected[mask])
-                if low_truncate_method == R.R_MASK:
+                numpy.testing.assert_almost_equal(pixels[mask], expected[mask])
+                if low_truncate_method == cellprofiler.modules.rescaleintensity.R_MASK:
                     self.assertTrue(image.has_mask)
-                    self.assertTrue(np.all(image.mask[expected_low_mask] == False))
-                    if high_truncate_method != R.R_MASK:
-                        self.assertTrue(np.all(image.mask[expected_high_mask]))
+                    self.assertTrue(numpy.all(image.mask[expected_low_mask] == False))
+                    if high_truncate_method != cellprofiler.modules.rescaleintensity.R_MASK:
+                        self.assertTrue(numpy.all(image.mask[expected_high_mask]))
                 else:
-                    if low_truncate_method == R.R_SCALE:
+                    if low_truncate_method == cellprofiler.modules.rescaleintensity.R_SCALE:
                         low_value = -.05
-                    elif low_truncate_method == R.R_SET_TO_CUSTOM:
+                    elif low_truncate_method == cellprofiler.modules.rescaleintensity.R_SET_TO_CUSTOM:
                         low_value = -1
-                    elif low_truncate_method == R.R_SET_TO_ZERO:
+                    elif low_truncate_method == cellprofiler.modules.rescaleintensity.R_SET_TO_ZERO:
                         low_value = 0
-                    np.testing.assert_almost_equal(pixels[expected_low_mask], low_value)
-                if high_truncate_method == R.R_MASK:
+                    numpy.testing.assert_almost_equal(pixels[expected_low_mask], low_value)
+                if high_truncate_method == cellprofiler.modules.rescaleintensity.R_MASK:
                     self.assertTrue(image.has_mask)
-                    self.assertTrue(np.all(image.mask[expected_high_mask] == False))
+                    self.assertTrue(numpy.all(image.mask[expected_high_mask] == False))
                 else:
-                    if high_truncate_method == R.R_SCALE:
+                    if high_truncate_method == cellprofiler.modules.rescaleintensity.R_SCALE:
                         high_value = 1.05
-                    elif high_truncate_method == R.R_SET_TO_CUSTOM:
+                    elif high_truncate_method == cellprofiler.modules.rescaleintensity.R_SET_TO_CUSTOM:
                         high_value = 2
-                    elif high_truncate_method == R.R_SET_TO_ONE:
+                    elif high_truncate_method == cellprofiler.modules.rescaleintensity.R_SET_TO_ONE:
                         high_value = 1
-                    np.testing.assert_almost_equal(
+                    numpy.testing.assert_almost_equal(
                             pixels[expected_high_mask], high_value)
 
     def test_04_06_color_mask(self):
@@ -723,144 +723,144 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
 
         The bug: color image yielded a 3-d mask
         '''
-        np.random.seed(0)
-        expected = np.random.uniform(size=(10, 10, 3)).astype(np.float32)
+        numpy.random.seed(0)
+        expected = numpy.random.uniform(size=(10, 10, 3)).astype(numpy.float32)
         expected_mask = (expected >= .2) & (expected <= .8)
         expected_mask = expected_mask[:, :, 0] & expected_mask[:, :, 1] & expected_mask[:, :, 2]
         workspace, module = self.make_workspace(expected / 2 + .1)
-        module.rescale_method.value = R.M_MANUAL_INPUT_RANGE
-        module.wants_automatic_low.value = R.CUSTOM_VALUE
-        module.wants_automatic_high.value = R.CUSTOM_VALUE
+        module.rescale_method.value = cellprofiler.modules.rescaleintensity.M_MANUAL_INPUT_RANGE
+        module.wants_automatic_low.value = cellprofiler.modules.rescaleintensity.CUSTOM_VALUE
+        module.wants_automatic_high.value = cellprofiler.modules.rescaleintensity.CUSTOM_VALUE
         module.source_scale.min = .2
         module.source_scale.max = .5
-        module.low_truncation_choice.value = R.R_MASK
-        module.high_truncation_choice.value = R.R_MASK
+        module.low_truncation_choice.value = cellprofiler.modules.rescaleintensity.R_MASK
+        module.high_truncation_choice.value = cellprofiler.modules.rescaleintensity.R_MASK
         module.run(workspace)
         image = workspace.image_set.get_image(OUTPUT_NAME)
         self.assertEqual(image.mask.ndim, 2)
-        self.assertTrue(np.all(image.mask == expected_mask))
+        self.assertTrue(numpy.all(image.mask == expected_mask))
 
     def test_05_01_manual_io_range(self):
-        np.random.seed(0)
-        expected = np.random.uniform(size=(10, 10)).astype(np.float32)
+        numpy.random.seed(0)
+        expected = numpy.random.uniform(size=(10, 10)).astype(numpy.float32)
         workspace, module = self.make_workspace(expected / 2 + .1)
         expected = expected * .75 + .05
-        module.rescale_method.value = R.M_MANUAL_IO_RANGE
-        module.wants_automatic_low.value = R.CUSTOM_VALUE
-        module.wants_automatic_high.value = R.CUSTOM_VALUE
+        module.rescale_method.value = cellprofiler.modules.rescaleintensity.M_MANUAL_IO_RANGE
+        module.wants_automatic_low.value = cellprofiler.modules.rescaleintensity.CUSTOM_VALUE
+        module.wants_automatic_high.value = cellprofiler.modules.rescaleintensity.CUSTOM_VALUE
         module.source_scale.min = .1
         module.source_scale.max = .6
         module.dest_scale.min = .05
         module.dest_scale.max = .80
         module.run(workspace)
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
-        np.testing.assert_almost_equal(pixels, expected)
+        numpy.testing.assert_almost_equal(pixels, expected)
 
     def test_06_01_divide_by_image_minimum(self):
-        np.random.seed(0)
-        image = np.random.uniform(size=(10, 10)).astype(np.float32)
+        numpy.random.seed(0)
+        image = numpy.random.uniform(size=(10, 10)).astype(numpy.float32)
         image[0, 0] = 0
         image = image / 2 + .25
         expected = image * 4
         workspace, module = self.make_workspace(image)
-        module.rescale_method.value = R.M_DIVIDE_BY_IMAGE_MINIMUM
+        module.rescale_method.value = cellprofiler.modules.rescaleintensity.M_DIVIDE_BY_IMAGE_MINIMUM
         module.run(workspace)
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
-        np.testing.assert_almost_equal(pixels, expected)
+        numpy.testing.assert_almost_equal(pixels, expected)
 
     def test_06_02_divide_by_image_minimum_masked(self):
-        np.random.seed(0)
-        image = np.random.uniform(size=(10, 10))
+        numpy.random.seed(0)
+        image = numpy.random.uniform(size=(10, 10))
         image[0, 0] = 0
         image = image / 2 + .25
-        mask = np.ones(image.shape, bool)
+        mask = numpy.ones(image.shape, bool)
         mask[3:6, 7:9] = False
         image[~mask] = .05
         expected = image * 4
         workspace, module = self.make_workspace(image, mask)
-        module.rescale_method.value = R.M_DIVIDE_BY_IMAGE_MINIMUM
+        module.rescale_method.value = cellprofiler.modules.rescaleintensity.M_DIVIDE_BY_IMAGE_MINIMUM
         module.run(workspace)
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
-        np.testing.assert_almost_equal(pixels[mask], expected[mask])
+        numpy.testing.assert_almost_equal(pixels[mask], expected[mask])
 
     def test_07_01_divide_by_image_maximum(self):
-        np.random.seed(0)
-        image = np.random.uniform(size=(10, 10)).astype(np.float32)
+        numpy.random.seed(0)
+        image = numpy.random.uniform(size=(10, 10)).astype(numpy.float32)
         image = image / 2 + .1
         image[0, 0] = .8
         expected = image / .8
         workspace, module = self.make_workspace(image)
-        module.rescale_method.value = R.M_DIVIDE_BY_IMAGE_MAXIMUM
+        module.rescale_method.value = cellprofiler.modules.rescaleintensity.M_DIVIDE_BY_IMAGE_MAXIMUM
         module.run(workspace)
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
-        np.testing.assert_almost_equal(pixels, expected)
+        numpy.testing.assert_almost_equal(pixels, expected)
 
     def test_07_02_divide_by_image_minimum_masked(self):
-        np.random.seed(0)
-        image = np.random.uniform(size=(10, 10)).astype(np.float32)
+        numpy.random.seed(0)
+        image = numpy.random.uniform(size=(10, 10)).astype(numpy.float32)
         image = image / 2 + .1
         image[0, 0] = .8
-        mask = np.ones(image.shape, bool)
+        mask = numpy.ones(image.shape, bool)
         mask[3:6, 7:9] = False
         image[~mask] = .9
         expected = image / .8
         workspace, module = self.make_workspace(image, mask)
-        module.rescale_method.value = R.M_DIVIDE_BY_IMAGE_MAXIMUM
+        module.rescale_method.value = cellprofiler.modules.rescaleintensity.M_DIVIDE_BY_IMAGE_MAXIMUM
         module.run(workspace)
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
-        np.testing.assert_almost_equal(pixels[mask], expected[mask])
+        numpy.testing.assert_almost_equal(pixels[mask], expected[mask])
 
     def test_08_01_divide_by_value(self):
-        np.random.seed(0)
-        image = np.random.uniform(size=(10, 10)).astype(np.float32)
+        numpy.random.seed(0)
+        image = numpy.random.uniform(size=(10, 10)).astype(numpy.float32)
         image = image / 2 + .1
         value = .9
         expected = image / value
         workspace, module = self.make_workspace(image)
-        module.rescale_method.value = R.M_DIVIDE_BY_VALUE
+        module.rescale_method.value = cellprofiler.modules.rescaleintensity.M_DIVIDE_BY_VALUE
         module.divisor_value.value = value
         module.run(workspace)
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
-        np.testing.assert_almost_equal(pixels, expected)
+        numpy.testing.assert_almost_equal(pixels, expected)
 
     def test_09_01_divide_by_measurement(self):
-        np.random.seed(0)
-        image = np.random.uniform(size=(10, 10)).astype(np.float32)
+        numpy.random.seed(0)
+        image = numpy.random.uniform(size=(10, 10)).astype(numpy.float32)
         image = image / 2 + .1
         value = .75
         expected = image / value
         workspace, module = self.make_workspace(image, measurement=value)
-        module.rescale_method.value = R.M_DIVIDE_BY_MEASUREMENT
+        module.rescale_method.value = cellprofiler.modules.rescaleintensity.M_DIVIDE_BY_MEASUREMENT
         module.run(workspace)
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
-        np.testing.assert_almost_equal(pixels, expected)
+        numpy.testing.assert_almost_equal(pixels, expected)
 
     def test_10_01_scale_by_image_maximum(self):
-        np.random.seed(0)
-        image = np.random.uniform(size=(10, 10)).astype(np.float32)
+        numpy.random.seed(0)
+        image = numpy.random.uniform(size=(10, 10)).astype(numpy.float32)
         image[0, 0] = 1
         image = image / 2 + .1
-        reference = np.random.uniform(size=(10, 10)).astype(np.float32) * .75
+        reference = numpy.random.uniform(size=(10, 10)).astype(numpy.float32) * .75
         reference[0, 0] = .75
         expected = image * .75 / .60
         workspace, module = self.make_workspace(image,
                                                 reference_image=reference)
-        module.rescale_method.value = R.M_SCALE_BY_IMAGE_MAXIMUM
+        module.rescale_method.value = cellprofiler.modules.rescaleintensity.M_SCALE_BY_IMAGE_MAXIMUM
         module.run(workspace)
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
-        np.testing.assert_almost_equal(pixels, expected)
+        numpy.testing.assert_almost_equal(pixels, expected)
 
     def test_10_02_scale_by_image_maximum_mask(self):
-        np.random.seed(0)
-        image = np.random.uniform(size=(10, 10)).astype(np.float32)
+        numpy.random.seed(0)
+        image = numpy.random.uniform(size=(10, 10)).astype(numpy.float32)
         image[0, 0] = 1
         image = image / 2 + .1
-        mask = np.ones(image.shape, bool)
+        mask = numpy.ones(image.shape, bool)
         mask[3:6, 4:8] = False
         image[~mask] = .9
-        reference = np.random.uniform(size=(10, 10)) * .75
+        reference = numpy.random.uniform(size=(10, 10)) * .75
         reference[0, 0] = .75
-        rmask = np.ones(reference.shape, bool)
+        rmask = numpy.ones(reference.shape, bool)
         rmask[7:9, 1:3] = False
         reference[~rmask] = .91
         expected = image * .75 / .60
@@ -868,17 +868,17 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
                                                 input_mask=mask,
                                                 reference_image=reference,
                                                 reference_mask=rmask)
-        module.rescale_method.value = R.M_SCALE_BY_IMAGE_MAXIMUM
+        module.rescale_method.value = cellprofiler.modules.rescaleintensity.M_SCALE_BY_IMAGE_MAXIMUM
         module.run(workspace)
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
-        np.testing.assert_almost_equal(pixels[mask], expected[mask])
+        numpy.testing.assert_almost_equal(pixels[mask], expected[mask])
 
     def test_11_01_convert_to_8_bit(self):
-        np.random.seed(0)
-        image = np.random.uniform(size=(10, 10))
-        expected = (image * 255).astype(np.uint8)
+        numpy.random.seed(0)
+        image = numpy.random.uniform(size=(10, 10))
+        expected = (image * 255).astype(numpy.uint8)
         workspace, module = self.make_workspace(image)
-        module.rescale_method.value = R.M_CONVERT_TO_8_BIT
+        module.rescale_method.value = cellprofiler.modules.rescaleintensity.M_CONVERT_TO_8_BIT
         module.run(workspace)
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
-        np.testing.assert_almost_equal(pixels, expected)
+        numpy.testing.assert_almost_equal(pixels, expected)

@@ -7,10 +7,8 @@ import os
 import tempfile
 import unittest
 import zlib
-import PIL.Image
 import numpy
 import centrosome.outline
-from matplotlib.image import pil_to_array
 import scipy.ndimage
 import cellprofiler.image
 import cellprofiler.measurement

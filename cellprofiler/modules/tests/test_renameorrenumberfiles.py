@@ -6,21 +6,19 @@ import os
 import tempfile
 import unittest
 import zlib
-from StringIO import StringIO
+import StringIO
 
-import numpy as np
+import cellprofiler.preferences
 
-from cellprofiler.preferences import set_headless
+cellprofiler.preferences.set_headless()
 
-set_headless()
-
-import cellprofiler.pipeline as cpp
-import cellprofiler.module as cpm
-import cellprofiler.image as cpi
-import cellprofiler.measurement as cpmeas
-import cellprofiler.region as cpo
-import cellprofiler.workspace as cpw
-import cellprofiler.modules.renameorrenumberfiles as R
+import cellprofiler.pipeline
+import cellprofiler.module
+import cellprofiler.image
+import cellprofiler.measurement
+import cellprofiler.region
+import cellprofiler.workspace
+import cellprofiler.modules.renameorrenumberfiles
 
 IMAGE_NAME = 'myimage'
 
@@ -55,29 +53,29 @@ class TestRenameOrRenumberFiles(unittest.TestCase):
                 'lc++nv7RfE/VuK41l/VO7JH9Z8X9920x2M/3s6ovytxfZGvXPGbdMz8rjny0'
                 'qGN9/WZtnFmEfZW3/YSPl/+Y/9jz22ani/jEyvZNMi9tzrqfUec+xFG+mcmv'
                 'KHmdf9vMxLQ534XDfv9fzv1IfdvKH/Ir75/sBQB5QhVW')
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
+        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 3)
 
         module = pipeline.modules()[1]
-        self.assertTrue(isinstance(module, R.RenameOrRenumberFiles))
+        self.assertTrue(isinstance(module, cellprofiler.modules.renameorrenumberfiles.RenameOrRenumberFiles))
         self.assertEqual(module.image_name, "orig")
         self.assertEqual(module.number_characters_prefix, 22)
         self.assertEqual(module.number_characters_suffix, 4)
-        self.assertEqual(module.action, R.A_DELETE)
+        self.assertEqual(module.action, cellprofiler.modules.renameorrenumberfiles.A_DELETE)
         self.assertFalse(module.wants_text)
 
         module = pipeline.modules()[2]
-        self.assertTrue(isinstance(module, R.RenameOrRenumberFiles))
+        self.assertTrue(isinstance(module, cellprofiler.modules.renameorrenumberfiles.RenameOrRenumberFiles))
         self.assertEqual(module.image_name, "orig")
         self.assertEqual(module.number_characters_prefix, 14)
         self.assertEqual(module.number_characters_suffix, 3)
-        self.assertEqual(module.action, R.A_RENUMBER)
+        self.assertEqual(module.action, cellprofiler.modules.renameorrenumberfiles.A_RENUMBER)
         self.assertTrue(module.wants_text)
         self.assertEqual(module.number_digits, 5)
 
@@ -104,30 +102,30 @@ RenameOrRenumberFiles:[module_num:2|svn_version:\'1\'|variable_revision_number:1
     Do you want to add text to the file name?:Yes
     Replacement text:Text
 """
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO(data))
+        pipeline.load(StringIO.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 2)
 
         module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, R.RenameOrRenumberFiles))
+        self.assertTrue(isinstance(module, cellprofiler.modules.renameorrenumberfiles.RenameOrRenumberFiles))
         self.assertEqual(module.image_name, "orig")
         self.assertEqual(module.number_characters_prefix, 22)
         self.assertEqual(module.number_characters_suffix, 4)
-        self.assertEqual(module.action, R.A_DELETE)
+        self.assertEqual(module.action, cellprofiler.modules.renameorrenumberfiles.A_DELETE)
         self.assertFalse(module.wants_text)
         self.assertFalse(module.wants_to_replace_spaces)
 
         module = pipeline.modules()[1]
-        self.assertTrue(isinstance(module, R.RenameOrRenumberFiles))
+        self.assertTrue(isinstance(module, cellprofiler.modules.renameorrenumberfiles.RenameOrRenumberFiles))
         self.assertEqual(module.image_name, "other")
         self.assertEqual(module.number_characters_prefix, 14)
         self.assertEqual(module.number_characters_suffix, 3)
-        self.assertEqual(module.action, R.A_RENUMBER)
+        self.assertEqual(module.action, cellprofiler.modules.renameorrenumberfiles.A_RENUMBER)
         self.assertTrue(module.wants_text)
         self.assertEqual(module.number_digits, 5)
 
@@ -147,21 +145,21 @@ RenameOrRenumberFiles:[module_num:1|svn_version:\'1\'|variable_revision_number:1
     Replace spaces?:Yes
     Space replacement\x3A:+
 """
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO(data))
+        pipeline.load(StringIO.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
 
         module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, R.RenameOrRenumberFiles))
+        self.assertTrue(isinstance(module, cellprofiler.modules.renameorrenumberfiles.RenameOrRenumberFiles))
         self.assertEqual(module.image_name, "orig")
         self.assertEqual(module.number_characters_prefix, 22)
         self.assertEqual(module.number_characters_suffix, 4)
-        self.assertEqual(module.action, R.A_DELETE)
+        self.assertEqual(module.action, cellprofiler.modules.renameorrenumberfiles.A_DELETE)
         self.assertFalse(module.wants_text)
         self.assertTrue(module.wants_to_replace_spaces)
         self.assertEqual(module.space_replacement, "+")
@@ -172,29 +170,29 @@ RenameOrRenumberFiles:[module_num:1|svn_version:\'1\'|variable_revision_number:1
                  "because it's so hard to figure out how to get the "
                  "bark on.\n-- Woody Allen\n")
         fd.close()
-        module = R.RenameOrRenumberFiles()
+        module = cellprofiler.modules.renameorrenumberfiles.RenameOrRenumberFiles()
         module.image_name.value = IMAGE_NAME
         module.module_num = 1
 
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.RunExceptionEvent))
 
         pipeline.add_listener(callback)
         pipeline.add_module(module)
 
-        m = cpmeas.Measurements()
+        m = cellprofiler.measurement.Measurements()
         m.add_image_measurement("FileName_%s" % IMAGE_NAME,
                                 file_name)
         m.add_image_measurement("PathName_%s" % IMAGE_NAME,
                                 self.path)
 
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
 
-        workspace = cpw.Workspace(pipeline, module, image_set,
-                                  cpo.Set(), m, image_set_list)
+        workspace = cellprofiler.workspace.Workspace(pipeline, module, image_set,
+                                                     cellprofiler.region.Set(), m, image_set_list)
         return workspace, module
 
     def test_02_01_rename_delete(self):
@@ -202,8 +200,8 @@ RenameOrRenumberFiles:[module_num:1|svn_version:\'1\'|variable_revision_number:1
         expected_name = "my.txt"
 
         workspace, module = self.make_workspace(file_name)
-        self.assertTrue(isinstance(module, R.RenameOrRenumberFiles))
-        module.action.value = R.A_DELETE
+        self.assertTrue(isinstance(module, cellprofiler.modules.renameorrenumberfiles.RenameOrRenumberFiles))
+        module.action.value = cellprofiler.modules.renameorrenumberfiles.A_DELETE
         module.number_characters_prefix.value = 2
         module.number_characters_suffix.value = 4
         module.wants_text.value = False
@@ -218,8 +216,8 @@ RenameOrRenumberFiles:[module_num:1|svn_version:\'1\'|variable_revision_number:1
         expected_name = "myfiche.txt"
 
         workspace, module = self.make_workspace(file_name)
-        self.assertTrue(isinstance(module, R.RenameOrRenumberFiles))
-        module.action.value = R.A_DELETE
+        self.assertTrue(isinstance(module, cellprofiler.modules.renameorrenumberfiles.RenameOrRenumberFiles))
+        module.action.value = cellprofiler.modules.renameorrenumberfiles.A_DELETE
         module.number_characters_prefix.value = 2
         module.number_characters_suffix.value = 4
         module.wants_text.value = True
@@ -235,8 +233,8 @@ RenameOrRenumberFiles:[module_num:1|svn_version:\'1\'|variable_revision_number:1
         expected_name = "myfile01.txt"
 
         workspace, module = self.make_workspace(file_name)
-        self.assertTrue(isinstance(module, R.RenameOrRenumberFiles))
-        module.action.value = R.A_RENUMBER
+        self.assertTrue(isinstance(module, cellprofiler.modules.renameorrenumberfiles.RenameOrRenumberFiles))
+        module.action.value = cellprofiler.modules.renameorrenumberfiles.A_RENUMBER
         module.number_characters_prefix.value = 6
         module.number_characters_suffix.value = 4
         module.wants_text.value = False
@@ -252,8 +250,8 @@ RenameOrRenumberFiles:[module_num:1|svn_version:\'1\'|variable_revision_number:1
         expected_name = "myfile001_eek.txt"
 
         workspace, module = self.make_workspace(file_name)
-        self.assertTrue(isinstance(module, R.RenameOrRenumberFiles))
-        module.action.value = R.A_RENUMBER
+        self.assertTrue(isinstance(module, cellprofiler.modules.renameorrenumberfiles.RenameOrRenumberFiles))
+        module.action.value = cellprofiler.modules.renameorrenumberfiles.A_RENUMBER
         module.number_characters_prefix.value = 6
         module.number_characters_suffix.value = 4
         module.wants_text.value = True
@@ -270,11 +268,11 @@ RenameOrRenumberFiles:[module_num:1|svn_version:\'1\'|variable_revision_number:1
         expected_name = "my+file.txt"
 
         workspace, module = self.make_workspace(file_name)
-        self.assertTrue(isinstance(module, R.RenameOrRenumberFiles))
+        self.assertTrue(isinstance(module, cellprofiler.modules.renameorrenumberfiles.RenameOrRenumberFiles))
         #
         # Delete nothing here.
         #
-        module.action.value = R.A_DELETE
+        module.action.value = cellprofiler.modules.renameorrenumberfiles.A_DELETE
         module.number_characters_prefix.value = 7
         module.number_characters_suffix.value = 4
         module.wants_to_replace_spaces.value = True

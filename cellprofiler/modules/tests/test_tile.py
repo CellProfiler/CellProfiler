@@ -4,21 +4,21 @@
 import base64
 import unittest
 import zlib
-from StringIO import StringIO
+import StringIO
 
-import numpy as np
+import numpy
 
-from cellprofiler.preferences import set_headless
+import cellprofiler.preferences
 
-set_headless()
+cellprofiler.preferences.set_headless()
 
-import cellprofiler.workspace as cpw
-import cellprofiler.image as cpi
-import cellprofiler.module as cpm
-import cellprofiler.region as cpo
-import cellprofiler.modules.tile as T
-import cellprofiler.pipeline as cpp
-import cellprofiler.measurement as cpmeas
+import cellprofiler.workspace
+import cellprofiler.image
+import cellprofiler.module
+import cellprofiler.region
+import cellprofiler.modules.tile
+import cellprofiler.pipeline
+import cellprofiler.measurement
 
 INPUT_IMAGE_NAME = "inputimage"
 OUTPUT_IMAGE_NAME = "outputimage"
@@ -47,20 +47,20 @@ class TestTile(unittest.TestCase):
                 '7Q//r//478C3Wo33zxe9/tyilCxheaH7XnrYf+2j7xQfzXf8lr3sSvTjW46L'
                 'Q19YX2z+XZnWeT1gSvWfJT9XNp49Pt0+PkZ23aN/TTW1tV8b/laFpNazz4v4'
                 'LAIAXZRb/Q==')
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
+        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 3)
         module = pipeline.modules()[-1]
-        self.assertTrue(isinstance(module, T.Tile))
+        self.assertTrue(isinstance(module, cellprofiler.modules.tile.Tile))
         self.assertEqual(module.input_image.value, "DNA")
         self.assertEqual(module.output_image.value, "TiledDNA")
-        self.assertEqual(module.tile_method, T.T_ACROSS_CYCLES)
-        self.assertEqual(module.place_first, T.P_BOTTOM_LEFT)
+        self.assertEqual(module.tile_method, cellprofiler.modules.tile.T_ACROSS_CYCLES)
+        self.assertEqual(module.place_first, cellprofiler.modules.tile.P_BOTTOM_LEFT)
         self.assertFalse(module.meander)
         self.assertTrue(module.wants_automatic_rows)
         self.assertTrue(module.wants_automatic_columns)
@@ -80,22 +80,22 @@ class TestTile(unittest.TestCase):
                 'rTWa3osem78+0bZu1z07MdfbqXHPv/94VOE297+zXLBe4p2f79+//z59inru'
                 '/MzK+Ae///v//7/5Vc25C89Xnp78WSfT5tR/i/2nry3eY8207529seHX50+3'
                 'Ws3Plb9/esb6CI9+4yelG/5tW1hwfsK73zl9nfw62X+sK03uuQIAEwIjcg==')
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
+        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 2)
         module = pipeline.modules()[-1]
-        self.assertTrue(isinstance(module, T.Tile))
+        self.assertTrue(isinstance(module, cellprofiler.modules.tile.Tile))
         self.assertEqual(module.input_image, "DNA")
         self.assertEqual(module.output_image, "PlacedImage")
         self.assertEqual(len(module.additional_images), 1)
         self.assertEqual(module.additional_images[0].input_image_name, "Cytoplasm")
-        self.assertEqual(module.tile_method, T.T_WITHIN_CYCLES)
-        self.assertEqual(module.tile_style, T.S_COL)
+        self.assertEqual(module.tile_method, cellprofiler.modules.tile.T_WITHIN_CYCLES)
+        self.assertEqual(module.tile_style, cellprofiler.modules.tile.S_COL)
         self.assertFalse(module.meander)
         self.assertFalse(module.wants_automatic_columns)
         self.assertFalse(module.wants_automatic_rows)
@@ -122,25 +122,25 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
     Select an additional image\x3A:ColorImage
     Select an additional image\x3A:DNA
 """
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO(data))
+        pipeline.load(StringIO.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, T.Tile))
+        self.assertTrue(isinstance(module, cellprofiler.modules.tile.Tile))
         self.assertEqual(module.input_image, "ResizedColorImage")
         self.assertEqual(module.output_image, "TiledImage")
-        self.assertEqual(module.tile_method, T.T_ACROSS_CYCLES)
+        self.assertEqual(module.tile_method, cellprofiler.modules.tile.T_ACROSS_CYCLES)
         self.assertEqual(module.rows, 2)
         self.assertEqual(module.columns, 12)
         self.assertTrue(module.wants_automatic_rows)
         self.assertFalse(module.wants_automatic_columns)
-        self.assertEqual(module.place_first, T.P_TOP_LEFT)
-        self.assertEqual(module.tile_style, T.S_ROW)
+        self.assertEqual(module.place_first, cellprofiler.modules.tile.P_TOP_LEFT)
+        self.assertEqual(module.tile_style, cellprofiler.modules.tile.S_ROW)
         self.assertFalse(module.meander)
         self.assertEqual(len(module.additional_images), 3)
         for g, expected in zip(module.additional_images,
@@ -148,44 +148,44 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
             self.assertEqual(g.input_image_name, expected)
 
     def make_tile_workspace(self, images):
-        module = T.Tile()
+        module = cellprofiler.modules.tile.Tile()
         module.module_num = 1
-        module.tile_method.value = T.T_ACROSS_CYCLES
+        module.tile_method.value = cellprofiler.modules.tile.T_ACROSS_CYCLES
         module.input_image.value = INPUT_IMAGE_NAME
         module.output_image.value = OUTPUT_IMAGE_NAME
 
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.RunExceptionEvent))
 
         pipeline.add_listener(callback)
         pipeline.add_module(module)
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cellprofiler.image.ImageSetList()
         for i, image in enumerate(images):
             image_set = image_set_list.get_image_set(i)
-            image_set.add(INPUT_IMAGE_NAME, cpi.Image(image))
+            image_set.add(INPUT_IMAGE_NAME, cellprofiler.image.Image(image))
 
-        workspace = cpw.Workspace(pipeline, module,
-                                  image_set_list.get_image_set(0),
-                                  cpo.Set(),
-                                  cpmeas.Measurements(),
-                                  image_set_list)
+        workspace = cellprofiler.workspace.Workspace(pipeline, module,
+                                                     image_set_list.get_image_set(0),
+                                                     cellprofiler.region.Set(),
+                                                     cellprofiler.measurement.Measurements(),
+                                                     image_set_list)
         return workspace, module
 
     def test_02_01_manual_rows_and_columns(self):
-        np.random.seed(0)
-        images = [np.random.uniform(size=(20, 10)).astype(np.float32) for i in range(96)]
+        numpy.random.seed(0)
+        images = [numpy.random.uniform(size=(20, 10)).astype(numpy.float32) for i in range(96)]
         workspace, module = self.make_tile_workspace(images)
-        self.assertTrue(isinstance(module, T.Tile))
-        self.assertTrue(isinstance(workspace, cpw.Workspace))
+        self.assertTrue(isinstance(module, cellprofiler.modules.tile.Tile))
+        self.assertTrue(isinstance(workspace, cellprofiler.workspace.Workspace))
         module.wants_automatic_columns.value = False
         module.wants_automatic_rows.value = False
         module.rows.value = 6
         module.columns.value = 16
-        module.tile_style.value = T.S_ROW
+        module.tile_style.value = cellprofiler.modules.tile.S_ROW
 
-        module.prepare_group(workspace, (), np.arange(1, 97))
+        module.prepare_group(workspace, (), numpy.arange(1, 97))
 
         for i in range(96):
             workspace.set_image_set_for_testing_only(i)
@@ -199,22 +199,22 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
             jj = i % 16
             iii = ii * 20
             jjj = jj * 10
-            self.assertTrue(np.all(pixel_data[iii:(iii + 20), jjj:(jjj + 10)] ==
-                                   image))
+            self.assertTrue(numpy.all(pixel_data[iii:(iii + 20), jjj:(jjj + 10)] ==
+                                      image))
 
     def test_02_02_automatic_rows(self):
-        np.random.seed(1)
-        images = [np.random.uniform(size=(20, 10)).astype(np.float32) for i in range(96)]
+        numpy.random.seed(1)
+        images = [numpy.random.uniform(size=(20, 10)).astype(numpy.float32) for i in range(96)]
         workspace, module = self.make_tile_workspace(images)
-        self.assertTrue(isinstance(module, T.Tile))
-        self.assertTrue(isinstance(workspace, cpw.Workspace))
+        self.assertTrue(isinstance(module, cellprofiler.modules.tile.Tile))
+        self.assertTrue(isinstance(workspace, cellprofiler.workspace.Workspace))
         module.wants_automatic_columns.value = False
         module.wants_automatic_rows.value = True
         module.rows.value = 8
         module.columns.value = 16
-        module.tile_style.value = T.S_ROW
+        module.tile_style.value = cellprofiler.modules.tile.S_ROW
 
-        module.prepare_group(workspace, (), np.arange(1, 97))
+        module.prepare_group(workspace, (), numpy.arange(1, 97))
 
         for i in range(96):
             workspace.set_image_set_for_testing_only(i)
@@ -228,22 +228,22 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
             jj = i % 16
             iii = ii * 20
             jjj = jj * 10
-            self.assertTrue(np.all(pixel_data[iii:(iii + 20), jjj:(jjj + 10)] ==
-                                   image))
+            self.assertTrue(numpy.all(pixel_data[iii:(iii + 20), jjj:(jjj + 10)] ==
+                                      image))
 
     def test_02_03_automatic_columns(self):
-        np.random.seed(2)
-        images = [np.random.uniform(size=(20, 10)).astype(np.float32) for i in range(96)]
+        numpy.random.seed(2)
+        images = [numpy.random.uniform(size=(20, 10)).astype(numpy.float32) for i in range(96)]
         workspace, module = self.make_tile_workspace(images)
-        self.assertTrue(isinstance(module, T.Tile))
-        self.assertTrue(isinstance(workspace, cpw.Workspace))
+        self.assertTrue(isinstance(module, cellprofiler.modules.tile.Tile))
+        self.assertTrue(isinstance(workspace, cellprofiler.workspace.Workspace))
         module.wants_automatic_columns.value = True
         module.wants_automatic_rows.value = False
         module.rows.value = 6
         module.columns.value = 365
-        module.tile_style.value = T.S_ROW
+        module.tile_style.value = cellprofiler.modules.tile.S_ROW
 
-        module.prepare_group(workspace, (), np.arange(1, 97))
+        module.prepare_group(workspace, (), numpy.arange(1, 97))
 
         for i in range(96):
             workspace.set_image_set_for_testing_only(i)
@@ -257,22 +257,22 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
             jj = i % 16
             iii = ii * 20
             jjj = jj * 10
-            self.assertTrue(np.all(pixel_data[iii:(iii + 20), jjj:(jjj + 10)] ==
-                                   image))
+            self.assertTrue(numpy.all(pixel_data[iii:(iii + 20), jjj:(jjj + 10)] ==
+                                      image))
 
     def test_02_04_automatic_rows_and_columns(self):
-        np.random.seed(3)
-        images = [np.random.uniform(size=(20, 10)).astype(np.float32) for i in range(96)]
+        numpy.random.seed(3)
+        images = [numpy.random.uniform(size=(20, 10)).astype(numpy.float32) for i in range(96)]
         workspace, module = self.make_tile_workspace(images)
-        self.assertTrue(isinstance(module, T.Tile))
-        self.assertTrue(isinstance(workspace, cpw.Workspace))
+        self.assertTrue(isinstance(module, cellprofiler.modules.tile.Tile))
+        self.assertTrue(isinstance(workspace, cellprofiler.workspace.Workspace))
         module.wants_automatic_columns.value = True
         module.wants_automatic_rows.value = True
         module.rows.value = 365
         module.columns.value = 24
-        module.tile_style.value = T.S_ROW
+        module.tile_style.value = cellprofiler.modules.tile.S_ROW
 
-        module.prepare_group(workspace, (), np.arange(1, 97))
+        module.prepare_group(workspace, (), numpy.arange(1, 97))
         for i in range(96):
             workspace.set_image_set_for_testing_only(i)
             module.run(workspace)
@@ -285,22 +285,22 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
             jj = i % 11
             iii = ii * 20
             jjj = jj * 10
-            self.assertTrue(np.all(pixel_data[iii:(iii + 20), jjj:(jjj + 10)] ==
-                                   image))
+            self.assertTrue(numpy.all(pixel_data[iii:(iii + 20), jjj:(jjj + 10)] ==
+                                      image))
 
     def test_02_05_color(self):
-        np.random.seed(4)
-        images = [np.random.uniform(size=(20, 10, 3)).astype(np.float32) for i in range(96)]
+        numpy.random.seed(4)
+        images = [numpy.random.uniform(size=(20, 10, 3)).astype(numpy.float32) for i in range(96)]
         workspace, module = self.make_tile_workspace(images)
-        self.assertTrue(isinstance(module, T.Tile))
-        self.assertTrue(isinstance(workspace, cpw.Workspace))
+        self.assertTrue(isinstance(module, cellprofiler.modules.tile.Tile))
+        self.assertTrue(isinstance(workspace, cellprofiler.workspace.Workspace))
         module.wants_automatic_columns.value = False
         module.wants_automatic_rows.value = False
         module.rows.value = 6
         module.columns.value = 16
-        module.tile_style.value = T.S_ROW
+        module.tile_style.value = cellprofiler.modules.tile.S_ROW
 
-        module.prepare_group(workspace, (), np.arange(1, 97))
+        module.prepare_group(workspace, (), numpy.arange(1, 97))
 
         for i in range(96):
             workspace.set_image_set_for_testing_only(i)
@@ -314,22 +314,22 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
             jj = i % 16
             iii = ii * 20
             jjj = jj * 10
-            self.assertTrue(np.all(pixel_data[iii:(iii + 20), jjj:(jjj + 10), :] ==
-                                   image))
+            self.assertTrue(numpy.all(pixel_data[iii:(iii + 20), jjj:(jjj + 10), :] ==
+                                      image))
 
     def test_02_06_columns_first(self):
-        np.random.seed(5)
-        images = [np.random.uniform(size=(20, 10)).astype(np.float32) for i in range(96)]
+        numpy.random.seed(5)
+        images = [numpy.random.uniform(size=(20, 10)).astype(numpy.float32) for i in range(96)]
         workspace, module = self.make_tile_workspace(images)
-        self.assertTrue(isinstance(module, T.Tile))
-        self.assertTrue(isinstance(workspace, cpw.Workspace))
+        self.assertTrue(isinstance(module, cellprofiler.modules.tile.Tile))
+        self.assertTrue(isinstance(workspace, cellprofiler.workspace.Workspace))
         module.wants_automatic_columns.value = False
         module.wants_automatic_rows.value = False
         module.rows.value = 6
         module.columns.value = 16
-        module.tile_style.value = T.S_COL
+        module.tile_style.value = cellprofiler.modules.tile.S_COL
 
-        module.prepare_group(workspace, (), np.arange(1, 97))
+        module.prepare_group(workspace, (), numpy.arange(1, 97))
 
         for i in range(96):
             workspace.set_image_set_for_testing_only(i)
@@ -344,23 +344,23 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
             jj = int(i / 6)
             iii = ii * 20
             jjj = jj * 10
-            self.assertTrue(np.all(pixel_data[iii:(iii + 20), jjj:(jjj + 10)] ==
-                                   image))
+            self.assertTrue(numpy.all(pixel_data[iii:(iii + 20), jjj:(jjj + 10)] ==
+                                      image))
 
     def test_02_07_top_right(self):
-        np.random.seed(0)
-        images = [np.random.uniform(size=(20, 10)).astype(np.float32) for i in range(96)]
+        numpy.random.seed(0)
+        images = [numpy.random.uniform(size=(20, 10)).astype(numpy.float32) for i in range(96)]
         workspace, module = self.make_tile_workspace(images)
-        self.assertTrue(isinstance(module, T.Tile))
-        self.assertTrue(isinstance(workspace, cpw.Workspace))
+        self.assertTrue(isinstance(module, cellprofiler.modules.tile.Tile))
+        self.assertTrue(isinstance(workspace, cellprofiler.workspace.Workspace))
         module.wants_automatic_columns.value = False
         module.wants_automatic_rows.value = False
         module.rows.value = 6
         module.columns.value = 16
-        module.tile_style.value = T.S_ROW
-        module.place_first.value = T.P_TOP_RIGHT
+        module.tile_style.value = cellprofiler.modules.tile.S_ROW
+        module.place_first.value = cellprofiler.modules.tile.P_TOP_RIGHT
 
-        module.prepare_group(workspace, (), np.arange(1, 97))
+        module.prepare_group(workspace, (), numpy.arange(1, 97))
 
         for i in range(96):
             workspace.set_image_set_for_testing_only(i)
@@ -375,23 +375,23 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
             jj = 15 - (i % 16)
             iii = ii * 20
             jjj = jj * 10
-            self.assertTrue(np.all(pixel_data[iii:(iii + 20), jjj:(jjj + 10)] ==
-                                   image))
+            self.assertTrue(numpy.all(pixel_data[iii:(iii + 20), jjj:(jjj + 10)] ==
+                                      image))
 
     def test_02_08_bottom_left(self):
-        np.random.seed(8)
-        images = [np.random.uniform(size=(20, 10)).astype(np.float32) for i in range(96)]
+        numpy.random.seed(8)
+        images = [numpy.random.uniform(size=(20, 10)).astype(numpy.float32) for i in range(96)]
         workspace, module = self.make_tile_workspace(images)
-        self.assertTrue(isinstance(module, T.Tile))
-        self.assertTrue(isinstance(workspace, cpw.Workspace))
+        self.assertTrue(isinstance(module, cellprofiler.modules.tile.Tile))
+        self.assertTrue(isinstance(workspace, cellprofiler.workspace.Workspace))
         module.wants_automatic_columns.value = False
         module.wants_automatic_rows.value = False
         module.rows.value = 6
         module.columns.value = 16
-        module.tile_style.value = T.S_ROW
-        module.place_first.value = T.P_BOTTOM_LEFT
+        module.tile_style.value = cellprofiler.modules.tile.S_ROW
+        module.place_first.value = cellprofiler.modules.tile.P_BOTTOM_LEFT
 
-        module.prepare_group(workspace, (), np.arange(1, 97))
+        module.prepare_group(workspace, (), numpy.arange(1, 97))
 
         for i in range(96):
             workspace.set_image_set_for_testing_only(i)
@@ -406,23 +406,23 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
             jj = i % 16
             iii = ii * 20
             jjj = jj * 10
-            self.assertTrue(np.all(pixel_data[iii:(iii + 20), jjj:(jjj + 10)] ==
-                                   image))
+            self.assertTrue(numpy.all(pixel_data[iii:(iii + 20), jjj:(jjj + 10)] ==
+                                      image))
 
     def test_02_09_bottom_right(self):
-        np.random.seed(9)
-        images = [np.random.uniform(size=(20, 10)).astype(np.float32) for i in range(96)]
+        numpy.random.seed(9)
+        images = [numpy.random.uniform(size=(20, 10)).astype(numpy.float32) for i in range(96)]
         workspace, module = self.make_tile_workspace(images)
-        self.assertTrue(isinstance(module, T.Tile))
-        self.assertTrue(isinstance(workspace, cpw.Workspace))
+        self.assertTrue(isinstance(module, cellprofiler.modules.tile.Tile))
+        self.assertTrue(isinstance(workspace, cellprofiler.workspace.Workspace))
         module.wants_automatic_columns.value = False
         module.wants_automatic_rows.value = False
         module.rows.value = 6
         module.columns.value = 16
-        module.tile_style.value = T.S_ROW
-        module.place_first.value = T.P_BOTTOM_RIGHT
+        module.tile_style.value = cellprofiler.modules.tile.S_ROW
+        module.place_first.value = cellprofiler.modules.tile.P_BOTTOM_RIGHT
 
-        module.prepare_group(workspace, (), np.arange(1, 97))
+        module.prepare_group(workspace, (), numpy.arange(1, 97))
 
         for i in range(96):
             workspace.set_image_set_for_testing_only(i)
@@ -437,24 +437,24 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
             jj = 15 - (i % 16)
             iii = ii * 20
             jjj = jj * 10
-            self.assertTrue(np.all(pixel_data[iii:(iii + 20), jjj:(jjj + 10)] ==
-                                   image))
+            self.assertTrue(numpy.all(pixel_data[iii:(iii + 20), jjj:(jjj + 10)] ==
+                                      image))
 
     def test_02_10_different_sizes(self):
-        np.random.seed(10)
-        images = [np.random.uniform(size=(20, 10)).astype(np.float32),
-                  np.random.uniform(size=(10, 20)).astype(np.float32),
-                  np.random.uniform(size=(40, 5)).astype(np.float32),
-                  np.random.uniform(size=(40, 20)).astype(np.float32)]
+        numpy.random.seed(10)
+        images = [numpy.random.uniform(size=(20, 10)).astype(numpy.float32),
+                  numpy.random.uniform(size=(10, 20)).astype(numpy.float32),
+                  numpy.random.uniform(size=(40, 5)).astype(numpy.float32),
+                  numpy.random.uniform(size=(40, 20)).astype(numpy.float32)]
         workspace, module = self.make_tile_workspace(images)
-        self.assertTrue(isinstance(module, T.Tile))
-        self.assertTrue(isinstance(workspace, cpw.Workspace))
+        self.assertTrue(isinstance(module, cellprofiler.modules.tile.Tile))
+        self.assertTrue(isinstance(workspace, cellprofiler.workspace.Workspace))
         module.wants_automatic_columns.value = False
         module.wants_automatic_rows.value = False
         module.rows.value = 1
         module.columns.value = 4
-        module.tile_style.value = T.S_ROW
-        module.prepare_group(workspace, (), np.arange(1, 4))
+        module.tile_style.value = cellprofiler.modules.tile.S_ROW
+        module.prepare_group(workspace, (), numpy.arange(1, 4))
 
         for i in range(4):
             workspace.set_image_set_for_testing_only(i)
@@ -463,27 +463,27 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
         pixel_data = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
         self.assertEqual(pixel_data.shape[0], 20)
         self.assertEqual(pixel_data.shape[1], 40)
-        self.assertTrue(np.all(pixel_data[:, :10] == images[0]))
-        self.assertTrue(np.all(pixel_data[:10, 10:20] == images[1][:, :10]))
-        self.assertTrue(np.all(pixel_data[10:, 10:20] == 0))
-        self.assertTrue(np.all(pixel_data[:, 20:25] == images[2][:20, :]))
-        self.assertTrue(np.all(pixel_data[:, 25:30] == 0))
-        self.assertTrue(np.all(pixel_data[:, 30:] == images[3][:20, :10]))
+        self.assertTrue(numpy.all(pixel_data[:, :10] == images[0]))
+        self.assertTrue(numpy.all(pixel_data[:10, 10:20] == images[1][:, :10]))
+        self.assertTrue(numpy.all(pixel_data[10:, 10:20] == 0))
+        self.assertTrue(numpy.all(pixel_data[:, 20:25] == images[2][:20, :]))
+        self.assertTrue(numpy.all(pixel_data[:, 25:30] == 0))
+        self.assertTrue(numpy.all(pixel_data[:, 30:] == images[3][:20, :10]))
 
     def test_02_11_filtered(self):
-        np.random.seed(9)
-        images = [np.random.uniform(size=(20, 10)).astype(np.float32) for i in range(96)]
+        numpy.random.seed(9)
+        images = [numpy.random.uniform(size=(20, 10)).astype(numpy.float32) for i in range(96)]
         workspace, module = self.make_tile_workspace(images)
-        self.assertTrue(isinstance(module, T.Tile))
-        self.assertTrue(isinstance(workspace, cpw.Workspace))
+        self.assertTrue(isinstance(module, cellprofiler.modules.tile.Tile))
+        self.assertTrue(isinstance(workspace, cellprofiler.workspace.Workspace))
         module.wants_automatic_columns.value = False
         module.wants_automatic_rows.value = False
         module.rows.value = 6
         module.columns.value = 16
-        module.tile_style.value = T.S_ROW
-        module.place_first.value = T.P_BOTTOM_RIGHT
+        module.tile_style.value = cellprofiler.modules.tile.S_ROW
+        module.place_first.value = cellprofiler.modules.tile.P_BOTTOM_RIGHT
 
-        module.prepare_group(workspace, (), np.arange(1, 97))
+        module.prepare_group(workspace, (), numpy.arange(1, 97))
 
         for i in range(95):
             workspace.set_image_set_for_testing_only(i)
@@ -499,15 +499,15 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
             jj = 15 - (i % 16)
             iii = ii * 20
             jjj = jj * 10
-            self.assertTrue(np.all(pixel_data[iii:(iii + 20), jjj:(jjj + 10)] ==
-                                   image))
+            self.assertTrue(numpy.all(pixel_data[iii:(iii + 20), jjj:(jjj + 10)] ==
+                                      image))
 
     def make_place_workspace(self, images):
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        module = T.Tile()
+        module = cellprofiler.modules.tile.Tile()
         module.module_num = 1
-        module.tile_method.value = T.T_WITHIN_CYCLES
+        module.tile_method.value = cellprofiler.modules.tile.T_WITHIN_CYCLES
         module.output_image.value = OUTPUT_IMAGE_NAME
         module.wants_automatic_rows.value = False
         module.wants_automatic_columns.value = True
@@ -520,42 +520,42 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
                 if len(module.additional_images) <= i:
                     module.add_image()
                 module.additional_images[i - 1].input_image_name.value = image_name
-            image_set.add(image_name, cpi.Image(image))
+            image_set.add(image_name, cellprofiler.image.Image(image))
 
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.RunExceptionEvent))
 
         pipeline.add_listener(callback)
         pipeline.add_module(module)
 
-        workspace = cpw.Workspace(pipeline, module,
-                                  image_set,
-                                  cpo.Set(),
-                                  cpmeas.Measurements(),
-                                  image_set_list)
+        workspace = cellprofiler.workspace.Workspace(pipeline, module,
+                                                     image_set,
+                                                     cellprofiler.region.Set(),
+                                                     cellprofiler.measurement.Measurements(),
+                                                     image_set_list)
         return workspace, module
 
     def test_03_01_some_images(self):
-        np.random.seed(31)
+        numpy.random.seed(31)
         for i in range(1, 5):
-            images = [np.random.uniform(size=(20, 10)).astype(np.float32) for ii in range(i)]
+            images = [numpy.random.uniform(size=(20, 10)).astype(numpy.float32) for ii in range(i)]
             workspace, module = self.make_place_workspace(images)
-            self.assertTrue(isinstance(module, T.Tile))
-            self.assertTrue(isinstance(workspace, cpw.Workspace))
+            self.assertTrue(isinstance(module, cellprofiler.modules.tile.Tile))
+            self.assertTrue(isinstance(workspace, cellprofiler.workspace.Workspace))
 
             module.run(workspace)
             image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
             pixel_data = image.pixel_data
             for j, p in enumerate(images):
                 jj = 10 * j
-                self.assertTrue(np.all(pixel_data[:, jj:(jj + 10)] == p))
+                self.assertTrue(numpy.all(pixel_data[:, jj:(jj + 10)] == p))
 
     def test_03_02_mix_color_bw(self):
-        np.random.seed(32)
+        numpy.random.seed(32)
         for color in range(3):
-            images = [np.random.uniform(size=(20, 10, 3) if i == color else (20, 10)).astype(np.float32)
+            images = [numpy.random.uniform(size=(20, 10, 3) if i == color else (20, 10)).astype(numpy.float32)
                       for i in range(3)]
             workspace, module = self.make_place_workspace(images)
             module.run(workspace)
@@ -565,30 +565,30 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
             for j, p in enumerate(images):
                 jj = 10 * j
                 if j == color:
-                    self.assertTrue(np.all(pixel_data[:, jj:(jj + 10), :] == p))
+                    self.assertTrue(numpy.all(pixel_data[:, jj:(jj + 10), :] == p))
                 else:
                     for k in range(3):
-                        self.assertTrue(np.all(pixel_data[:, jj:(jj + 10), k] == p))
+                        self.assertTrue(numpy.all(pixel_data[:, jj:(jj + 10), k] == p))
 
     def test_03_03_different_sizes(self):
-        np.random.seed(33)
-        images = [np.random.uniform(size=(20, 10)).astype(np.float32),
-                  np.random.uniform(size=(10, 20)).astype(np.float32),
-                  np.random.uniform(size=(40, 5)).astype(np.float32),
-                  np.random.uniform(size=(40, 20)).astype(np.float32)]
+        numpy.random.seed(33)
+        images = [numpy.random.uniform(size=(20, 10)).astype(numpy.float32),
+                  numpy.random.uniform(size=(10, 20)).astype(numpy.float32),
+                  numpy.random.uniform(size=(40, 5)).astype(numpy.float32),
+                  numpy.random.uniform(size=(40, 20)).astype(numpy.float32)]
         workspace, module = self.make_place_workspace(images)
         module.run(workspace)
         image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         pixel_data = image.pixel_data
         self.assertEqual(pixel_data.shape[0], 40)
         self.assertEqual(pixel_data.shape[1], 80)
-        mask = np.ones(pixel_data.shape, bool)
-        self.assertTrue(np.all(pixel_data[:20, :10] == images[0]))
+        mask = numpy.ones(pixel_data.shape, bool)
+        self.assertTrue(numpy.all(pixel_data[:20, :10] == images[0]))
         mask[:20, :10] = False
-        self.assertTrue(np.all(pixel_data[:10, 20:40] == images[1]))
+        self.assertTrue(numpy.all(pixel_data[:10, 20:40] == images[1]))
         mask[:10, 20:40] = False
-        self.assertTrue(np.all(pixel_data[:, 40:45] == images[2]))
+        self.assertTrue(numpy.all(pixel_data[:, 40:45] == images[2]))
         mask[:, 40:45] = False
-        self.assertTrue(np.all(pixel_data[:, 60:] == images[3]))
+        self.assertTrue(numpy.all(pixel_data[:, 60:] == images[3]))
         mask[:, 60:] = False
-        self.assertTrue(np.all(pixel_data[mask] == 0))
+        self.assertTrue(numpy.all(pixel_data[mask] == 0))

@@ -6,13 +6,13 @@ import asyncore
 import smtpd
 import threading
 import unittest
-from cStringIO import StringIO
+import cStringIO
 
-import cellprofiler.measurement as cpmeas
-import cellprofiler.modules.sendemail as SE
-import cellprofiler.region as cpo
-import cellprofiler.pipeline as cpp
-import cellprofiler.workspace as cpw
+import cellprofiler.measurement
+import cellprofiler.modules.sendemail
+import cellprofiler.region
+import cellprofiler.pipeline
+import cellprofiler.workspace
 
 SENDER = "sender@cellprofiler.org"
 
@@ -87,29 +87,29 @@ class TestSendEmail(unittest.TestCase):
                        group_numbers=None,
                        group_indexes=None,
                        n_recipients=1):
-        m = cpmeas.Measurements()
+        m = cellprofiler.measurement.Measurements()
         if group_numbers is None:
             group_numbers = [1] * len(image_numbers)
             group_indexes = range(1, len(image_numbers) + 1)
         for image_number, group_number, group_index in zip(
                 image_numbers, group_numbers, group_indexes):
-            m[cpmeas.IMAGE, cpmeas.GROUP_NUMBER, image_number] = group_number
-            m[cpmeas.IMAGE, cpmeas.GROUP_INDEX, image_number] = group_index
+            m[cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_NUMBER, image_number] = group_number
+            m[cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_INDEX, image_number] = group_index
 
-        module = SE.SendEmail()
+        module = cellprofiler.modules.sendemail.SendEmail()
         module.module_num = 1
         module.from_address.value = SENDER
         module.smtp_server.value = 'localhost'
         module.port.value = self.port
-        module.connection_security.value = SE.C_NONE
+        module.connection_security.value = cellprofiler.modules.sendemail.C_NONE
         while len(module.recipients) < n_recipients:
             module.add_recipient()
         for i, recipient in enumerate(module.recipients):
             recipient.recipient.value = recipient_addr(i)
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_module(module)
-        workspace = cpw.Workspace(pipeline, module, m, cpo.Set(),
-                                  m, None)
+        workspace = cellprofiler.workspace.Workspace(pipeline, module, m, cellprofiler.region.Set(),
+                                                     m, None)
         return workspace, module
 
     def test_01_02_load_v2(self):
@@ -157,21 +157,21 @@ SendEmail:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_
     Image cycle count:1
     Message text:Cycle 17
 """
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO(data))
+        pipeline.load(cStringIO.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
-        assert isinstance(module, SE.SendEmail)
+        assert isinstance(module, cellprofiler.modules.sendemail.SendEmail)
         self.assertEqual(module.from_address, "sender@cellprofiler.org")
         self.assertEqual(module.subject, "Hello, world")
         self.assertEqual(module.smtp_server, "smtp.cellprofiler.org")
         self.assertEqual(module.port, 587)
-        self.assertEqual(module.connection_security, SE.C_STARTTLS)
+        self.assertEqual(module.connection_security, cellprofiler.modules.sendemail.C_STARTTLS)
         self.assertTrue(module.use_authentication)
         self.assertEqual(module.username, "sender@cellprofiler.org")
         self.assertEqual(module.password, "rumplestiltskin")
@@ -179,21 +179,21 @@ SendEmail:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_
         self.assertEqual(module.recipients[0].recipient, "recipient@broadinstitute.org")
         self.assertEqual(module.recipients[1].recipient, "recipient@cellprofiler.org")
         self.assertEqual(len(module.when), 6)
-        self.assertEqual(module.when[0].choice, SE.S_FIRST)
+        self.assertEqual(module.when[0].choice, cellprofiler.modules.sendemail.S_FIRST)
         self.assertEqual(module.when[0].message, "First cycle")
-        self.assertEqual(module.when[1].choice, SE.S_LAST)
-        self.assertEqual(module.when[2].choice, SE.S_GROUP_START)
-        self.assertEqual(module.when[3].choice, SE.S_GROUP_END)
-        self.assertEqual(module.when[4].choice, SE.S_EVERY_N)
+        self.assertEqual(module.when[1].choice, cellprofiler.modules.sendemail.S_LAST)
+        self.assertEqual(module.when[2].choice, cellprofiler.modules.sendemail.S_GROUP_START)
+        self.assertEqual(module.when[3].choice, cellprofiler.modules.sendemail.S_GROUP_END)
+        self.assertEqual(module.when[4].choice, cellprofiler.modules.sendemail.S_EVERY_N)
         self.assertEqual(module.when[4].image_set_count, 5)
-        self.assertEqual(module.when[5].choice, SE.S_CYCLE_N)
+        self.assertEqual(module.when[5].choice, cellprofiler.modules.sendemail.S_CYCLE_N)
         self.assertEqual(module.when[5].image_set_number, 17)
 
     def test_02_01_first(self):
         workspace, module = self.make_workspace([1, 2])
 
-        assert isinstance(module, SE.SendEmail)
-        module.when[0].choice.value = SE.S_FIRST
+        assert isinstance(module, cellprofiler.modules.sendemail.SendEmail)
+        module.when[0].choice.value = cellprofiler.modules.sendemail.S_FIRST
         module.when[0].message.value = "First cycle"
         workspace.measurements.next_image_set(1)
         module.run(workspace)
@@ -205,8 +205,8 @@ SendEmail:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_
     def test_02_02_last(self):
         workspace, module = self.make_workspace([1, 2])
 
-        assert isinstance(module, SE.SendEmail)
-        module.when[0].choice.value = SE.S_LAST
+        assert isinstance(module, cellprofiler.modules.sendemail.SendEmail)
+        module.when[0].choice.value = cellprofiler.modules.sendemail.S_LAST
         module.when[0].message.value = "Last cycle"
         workspace.measurements.next_image_set(1)
         module.run(workspace)
@@ -220,8 +220,8 @@ SendEmail:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_
     def test_02_03_cycle(self):
         workspace, module = self.make_workspace([1, 2, 3])
 
-        assert isinstance(module, SE.SendEmail)
-        module.when[0].choice.value = SE.S_CYCLE_N
+        assert isinstance(module, cellprofiler.modules.sendemail.SendEmail)
+        module.when[0].choice.value = cellprofiler.modules.sendemail.S_CYCLE_N
         module.when[0].image_set_number.value = 2
         module.when[0].message.value = "Cycle 2"
         workspace.measurements.next_image_set(1)
@@ -238,8 +238,8 @@ SendEmail:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_
         image_numbers = [1, 2, 3, 4, 5, 6]
         workspace, module = self.make_workspace(image_numbers)
 
-        assert isinstance(module, SE.SendEmail)
-        module.when[0].choice.value = SE.S_EVERY_N
+        assert isinstance(module, cellprofiler.modules.sendemail.SendEmail)
+        module.when[0].choice.value = cellprofiler.modules.sendemail.S_EVERY_N
         module.when[0].image_set_count.value = 3
         module.when[0].message.value = "Every 3"
         for i in image_numbers:
@@ -258,8 +258,8 @@ SendEmail:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_
                                                 group_numbers,
                                                 group_indexes)
 
-        assert isinstance(module, SE.SendEmail)
-        module.when[0].choice.value = SE.S_GROUP_START
+        assert isinstance(module, cellprofiler.modules.sendemail.SendEmail)
+        module.when[0].choice.value = cellprofiler.modules.sendemail.S_GROUP_START
         module.when[0].message.value = "First in group"
         for i, gi in zip(image_numbers, group_indexes):
             workspace.measurements.next_image_set(i)
@@ -278,8 +278,8 @@ SendEmail:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_
                                                 group_numbers,
                                                 group_indexes)
 
-        assert isinstance(module, SE.SendEmail)
-        module.when[0].choice.value = SE.S_GROUP_END
+        assert isinstance(module, cellprofiler.modules.sendemail.SendEmail)
+        module.when[0].choice.value = cellprofiler.modules.sendemail.S_GROUP_END
         module.when[0].message.value = "Last in group"
         for i, group_index, flag in zip(
                 image_numbers, group_indexes, last_in_group):
@@ -296,15 +296,15 @@ SendEmail:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_
 
     def test_03_01_two_hits(self):
         workspace, module = self.make_workspace([1, 2])
-        assert isinstance(module, SE.SendEmail)
-        module.when[0].choice.value = SE.S_GROUP_START
+        assert isinstance(module, cellprofiler.modules.sendemail.SendEmail)
+        module.when[0].choice.value = cellprofiler.modules.sendemail.S_GROUP_START
         module.when[0].message.value = "Group start"
         module.add_when()
-        module.when[1].choice.value = SE.S_CYCLE_N
+        module.when[1].choice.value = cellprofiler.modules.sendemail.S_CYCLE_N
         module.when[1].image_set_number.value = 100
         module.when[1].message.value = "Don't send me"
         module.add_when()
-        module.when[2].choice.value = SE.S_FIRST
+        module.when[2].choice.value = cellprofiler.modules.sendemail.S_FIRST
         module.when[2].message.value = "First image"
         workspace.measurements.next_image_set(1)
         module.run(workspace)
@@ -312,14 +312,14 @@ SendEmail:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_
 
     def test_03_02_metadata_in_subject(self):
         workspace, module = self.make_workspace([1, 2])
-        assert isinstance(module, SE.SendEmail)
-        module.when[0].choice.value = SE.S_EVERY_N
+        assert isinstance(module, cellprofiler.modules.sendemail.SendEmail)
+        module.when[0].choice.value = cellprofiler.modules.sendemail.S_EVERY_N
         module.when[0].image_set_count.value = 1
         module.when[0].message.value = "First image"
         module.subject.value = r"Well \g<Well>"
         m = workspace.measurements
-        m[cpmeas.IMAGE, "Metadata_Well", 1] = "A01"
-        m[cpmeas.IMAGE, "Metadata_Well", 2] = "A02"
+        m[cellprofiler.measurement.IMAGE, "Metadata_Well", 1] = "A01"
+        m[cellprofiler.measurement.IMAGE, "Metadata_Well", 2] = "A02"
         m.next_image_set(1)
         module.run(workspace)
         self.recv(module, [module.when[0]],
@@ -331,13 +331,13 @@ SendEmail:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_
 
     def test_03_03_metadata_in_message(self):
         workspace, module = self.make_workspace([1, 2])
-        assert isinstance(module, SE.SendEmail)
-        module.when[0].choice.value = SE.S_EVERY_N
+        assert isinstance(module, cellprofiler.modules.sendemail.SendEmail)
+        module.when[0].choice.value = cellprofiler.modules.sendemail.S_EVERY_N
         module.when[0].image_set_count.value = 1
         module.when[0].message.value = r"Well \g<Well>"
         m = workspace.measurements
-        m[cpmeas.IMAGE, "Metadata_Well", 1] = "A01"
-        m[cpmeas.IMAGE, "Metadata_Well", 2] = "A02"
+        m[cellprofiler.measurement.IMAGE, "Metadata_Well", 1] = "A01"
+        m[cellprofiler.measurement.IMAGE, "Metadata_Well", 2] = "A02"
         m.next_image_set(1)
         module.run(workspace)
         self.recv(module, [module.when[0]],

@@ -15,13 +15,13 @@ import cellprofiler.module
 import cellprofiler.modules.identify
 import cellprofiler.modules.loaddata
 import cellprofiler.modules.loadimages
-import cellprofiler.modules.tests
 import cellprofiler.pipeline
 import cellprofiler.preferences
 import cellprofiler.region
 import cellprofiler.setting
 import cellprofiler.workspace
 import numpy
+import tests.modules
 
 cellprofiler.preferences.set_headless()
 
@@ -31,13 +31,13 @@ OBJECTS_NAME = "objects"
 class TestLoadData(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cellprofiler.modules.tests.maybe_download_sbs()
+        tests.modules.maybe_download_sbs()
         cls.test_folder = "loaddata"
         cls.test_path = os.path.join(
-                cellprofiler.modules.tests.example_images_directory(), cls.test_folder)
+                tests.modules.example_images_directory(), cls.test_folder)
         cls.test_filename = "image.tif"
         cls.test_shape = (13, 15)
-        path = cellprofiler.modules.tests.maybe_download_example_image([cls.test_folder],
+        path = tests.modules.maybe_download_example_image([cls.test_folder],
                                                                        cls.test_filename,
                                                                        shape=cls.test_shape)
         with open(path, "rb") as fd:
@@ -443,8 +443,8 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
 
     def test_04_03_load_planes(self):
         file_name = "RLM1 SSN3 300308 008015000.flex"
-        cellprofiler.modules.tests.maybe_download_tesst_image(file_name)
-        path = cellprofiler.modules.tests.testimages_directory()
+        tests.modules.maybe_download_tesst_image(file_name)
+        path = tests.modules.testimages_directory()
         pathname = os.path.join(path, file_name)
         url = cellprofiler.modules.loadimages.pathname2url(pathname)
         ftrs = (cellprofiler.measurement.C_URL, cellprofiler.measurement.C_SERIES, cellprofiler.measurement.C_FRAME)
@@ -647,7 +647,7 @@ Channel1-01-A-01.tif,/imaging/analysis/trunk/ExampleImages/ExampleSBSImages
 
     def test_08_01_get_groupings(self):
         '''Test the get_groupings method'''
-        dir = os.path.join(cellprofiler.modules.tests.example_images_directory(), "ExampleSBSImages")
+        dir = os.path.join(tests.modules.example_images_directory(), "ExampleSBSImages")
         pattern = 'Channel1-[0-9]{2}-(?P<ROW>[A-H])-(?P<COL>[0-9]{2})\\.tif'
         csv_text = '"Image_FileName_Cytoplasm","Image_PathName_Cytoplasm","Metadata_ROW","Metadata_COL"\n'
         for filename in os.listdir(dir):
@@ -737,7 +737,7 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
         '''Test loading an image scaled and unscaled'''
         folder = "loaddata"
         file_name = "1-162hrh2ax2.tif"
-        path = cellprofiler.modules.tests.make_12_bit_image(folder, file_name, (22, 18))
+        path = tests.modules.make_12_bit_image(folder, file_name, (22, 18))
         csv_text = ("Image_PathName_MyFile,Image_FileName_MyFile\n%s,%s\n" % os.path.split(path))
         c0_image = []
 
@@ -775,7 +775,7 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
         bioformats.write_image(name, labels, bioformats.PT_UINT8)
         os.close(handle)
         png_path, png_file = os.path.split(name)
-        sbs_dir = os.path.join(cellprofiler.modules.tests.example_images_directory(), "ExampleSBSImages")
+        sbs_dir = os.path.join(tests.modules.example_images_directory(), "ExampleSBSImages")
         csv_text = """%s_%s,%s_%s,%s_DNA,%s_DNA
 %s,%s,Channel2-01-A-01.tif,%s
 """ % (cellprofiler.modules.loaddata.C_OBJECTS_FILE_NAME, OBJECTS_NAME,
@@ -910,7 +910,7 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
         # Load, only specifying URL
         #
         csv_text = '''"Image_URL_DNA"
-"%(cellprofiler.modules.tests.cp_logo_url)s"
+"%(tests.modules.cp_logo_url)s"
 "http:%(cp_logo_url_filename)s"
 "bogusurl.png"
 ''' % globals()
@@ -921,26 +921,26 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
                                                      m, cellprofiler.image.ImageSetList())
         self.assertTrue(module.prepare_run(workspace))
         self.assertEqual(m.get_measurement(cellprofiler.measurement.IMAGE, "FileName_DNA", 1),
-                         cellprofiler.modules.tests.cp_logo_url_filename)
+                         tests.modules.cp_logo_url_filename)
         path = m.get_measurement(cellprofiler.measurement.IMAGE, "PathName_DNA", 1)
-        self.assertEqual(path, cellprofiler.modules.tests.cp_logo_url_folder)
-        self.assertEqual(m[cellprofiler.measurement.IMAGE, "URL_DNA", 1], cellprofiler.modules.tests.cp_logo_url)
-        self.assertEqual(m[cellprofiler.measurement.IMAGE, "FileName_DNA", 2], cellprofiler.modules.tests.cp_logo_url_filename)
+        self.assertEqual(path, tests.modules.cp_logo_url_folder)
+        self.assertEqual(m[cellprofiler.measurement.IMAGE, "URL_DNA", 1], tests.modules.cp_logo_url)
+        self.assertEqual(m[cellprofiler.measurement.IMAGE, "FileName_DNA", 2], tests.modules.cp_logo_url_filename)
         self.assertEqual(m[cellprofiler.measurement.IMAGE, "PathName_DNA", 2], "http:")
         self.assertEqual(m[cellprofiler.measurement.IMAGE, "FileName_DNA", 3], "bogusurl.png")
         self.assertEqual(m[cellprofiler.measurement.IMAGE, "PathName_DNA", 3], "")
         module.prepare_group(workspace, {}, [1])
         module.run(workspace)
         img = workspace.image_set.get_image("DNA", must_be_color=True)
-        self.assertEqual(tuple(img.pixel_data.shape), cellprofiler.modules.tests.cp_logo_url_shape)
+        self.assertEqual(tuple(img.pixel_data.shape), tests.modules.cp_logo_url_shape)
 
     def test_13_03_extra_fields(self):
         #
         # Regression test of issue #853, extra fields
         #
         csv_text = '''"Image_URL_DNA"
-"%(cellprofiler.modules.tests.cp_logo_url)s", "foo"
-"http:%(cellprofiler.modules.tests.cp_logo_url_filename)s"
+"%(tests.modules.cp_logo_url)s", "foo"
+"http:%(tests.modules.cp_logo_url_filename)s"
 "bogusurl.png"
 ''' % globals()
         pipeline, module, filename = self.make_pipeline(csv_text)
@@ -950,25 +950,25 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
                                                      m, cellprofiler.image.ImageSetList())
         self.assertTrue(module.prepare_run(workspace))
         self.assertEqual(m.get_measurement(cellprofiler.measurement.IMAGE, "FileName_DNA", 1),
-                         cellprofiler.modules.tests.cp_logo_url_filename)
+                         tests.modules.cp_logo_url_filename)
         path = m.get_measurement(cellprofiler.measurement.IMAGE, "PathName_DNA", 1)
-        self.assertEqual(path, cellprofiler.modules.tests.cp_logo_url_folder)
+        self.assertEqual(path, tests.modules.cp_logo_url_folder)
         self.assertEqual(m.get_measurement(cellprofiler.measurement.IMAGE, "URL_DNA", 1),
-                         cellprofiler.modules.tests.cp_logo_url)
-        self.assertEqual(m[cellprofiler.measurement.IMAGE, "FileName_DNA", 2], cellprofiler.modules.tests.cp_logo_url_filename)
+                         tests.modules.cp_logo_url)
+        self.assertEqual(m[cellprofiler.measurement.IMAGE, "FileName_DNA", 2], tests.modules.cp_logo_url_filename)
         self.assertEqual(m[cellprofiler.measurement.IMAGE, "PathName_DNA", 2], "http:")
         self.assertEqual(m[cellprofiler.measurement.IMAGE, "FileName_DNA", 3], "bogusurl.png")
         self.assertEqual(m[cellprofiler.measurement.IMAGE, "PathName_DNA", 3], "")
         module.prepare_group(workspace, {}, [1])
         module.run(workspace)
         img = workspace.image_set.get_image("DNA", must_be_color=True)
-        self.assertEqual(tuple(img.pixel_data.shape), cellprofiler.modules.tests.cp_logo_url_shape)
+        self.assertEqual(tuple(img.pixel_data.shape), tests.modules.cp_logo_url_shape)
 
     def test_13_04_extra_lines(self):
         #
         # Regression test of issue #1211 - extra line at end / blank lines
         #
-        dir = os.path.join(cellprofiler.modules.tests.example_images_directory(), "ExampleSBSImages")
+        dir = os.path.join(tests.modules.example_images_directory(), "ExampleSBSImages")
         file_name = 'Channel2-01-A-01.tif'
 
         csv_text = '''"Image_FileName_DNA","Image_PathName_DNA"
@@ -994,7 +994,7 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
         # Regression test of issue #1211 - extra line at end / blank lines
         # Different code path from 13_04
         #
-        path = os.path.join(cellprofiler.modules.tests.example_images_directory(), "ExampleSBSImages")
+        path = os.path.join(tests.modules.example_images_directory(), "ExampleSBSImages")
         file_names = ['Channel2-01-A-01.tif',
                       'Channel2-02-A-02.tif']
 

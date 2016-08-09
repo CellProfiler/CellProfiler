@@ -11,13 +11,13 @@ import cellprofiler.measurement
 import cellprofiler.modules.exporttospreadsheet
 import cellprofiler.modules.identify
 import cellprofiler.modules.identifyprimaryobjects
-import cellprofiler.modules.tests
 import cellprofiler.pipeline
 import cellprofiler.preferences
 import cellprofiler.preferences
 import cellprofiler.region
 import cellprofiler.workspace
 import numpy
+import tests.modules
 
 cellprofiler.preferences.set_headless()
 
@@ -2369,8 +2369,8 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
 
     def test_08_01_basic_gct_check(self):
         # LoadData with data
-        cellprofiler.modules.tests.maybe_download_sbs()
-        input_dir = os.path.join(cellprofiler.modules.tests.example_images_directory(), "ExampleSBSImages")
+        tests.modules.maybe_download_sbs()
+        input_dir = os.path.join(tests.modules.example_images_directory(), "ExampleSBSImages")
         metadata_name = "Metadata_Bar"
         info = ('Image_FileName_Foo',
                 'Image_PathName_Foo',
@@ -2420,9 +2420,9 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                 print("Failed to clean up files")
 
     def test_08_02_make_gct_file_with_filename(self):
-        cellprofiler.modules.tests.maybe_download_sbs()
+        tests.modules.maybe_download_sbs()
         # LoadData with data
-        input_dir = os.path.join(cellprofiler.modules.tests.example_images_directory(), "ExampleSBSImages")
+        input_dir = os.path.join(tests.modules.example_images_directory(), "ExampleSBSImages")
         metadata_name = "Metadata_Bar"
         info = ('Image_FileName_Foo', 'Image_PathName_Foo', metadata_name, input_dir, input_dir)
         csv_text = '''"%s","%s","%s"
@@ -2459,10 +2459,10 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             os.remove(output_csv_filename)
 
     def test_08_03_make_gct_file_with_metadata(self):
-        cellprofiler.modules.tests.maybe_download_sbs()
+        tests.modules.maybe_download_sbs()
 
         # LoadData with data
-        input_dir = os.path.join(cellprofiler.modules.tests.example_images_directory(), "ExampleSBSImages")
+        input_dir = os.path.join(tests.modules.example_images_directory(), "ExampleSBSImages")
         metadata_name = "Metadata_Bar"
         info = ('Image_FileName_Foo', 'Image_PathName_Foo', metadata_name, input_dir, input_dir)
         csv_text = '''"%s","%s","%s"

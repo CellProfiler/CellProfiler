@@ -13,7 +13,6 @@ import cellprofiler.modules.applythreshold
 import cellprofiler.modules.createbatchfiles
 import cellprofiler.modules.loadimages
 import cellprofiler.modules.saveimages
-import cellprofiler.modules.tests
 import cellprofiler.pipeline
 import cellprofiler.preferences
 import cellprofiler.preferences
@@ -23,6 +22,7 @@ import cellprofiler.workspace
 import matplotlib
 import numpy
 import scipy.sparse
+import tests.modules
 
 logger = logging.getLogger(__name__)
 cellprofiler.preferences.set_headless()
@@ -485,7 +485,7 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
         pipeline = cellprofiler.pipeline.Pipeline()
         image_folder_text = pipeline.encode_txt(
             "%s|%s" % (cellprofiler.preferences.ABSOLUTE_FOLDER_NAME,
-                       cellprofiler.modules.tests.example_images_directory()))
+                       tests.modules.example_images_directory()))
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:10782
@@ -540,13 +540,13 @@ SaveImages:[module_num:1|svn_version:\'10581\'|variable_revision_number:8|show_w
         self.assertEqual(module.root_dir.dir_choice,
                          cellprofiler.preferences.ABSOLUTE_FOLDER_NAME)
         self.assertEqual(module.root_dir.custom_path,
-                         cellprofiler.modules.tests.example_images_directory())
+                         tests.modules.example_images_directory())
 
     def test_00_09_load_v9(self):
         pipeline = cellprofiler.pipeline.Pipeline()
         image_folder_text = pipeline.encode_txt(
             "%s|%s" % (cellprofiler.preferences.ABSOLUTE_FOLDER_NAME,
-                       cellprofiler.modules.tests.example_images_directory()))
+                       tests.modules.example_images_directory()))
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:10782
@@ -601,14 +601,14 @@ SaveImages:[module_num:1|svn_version:\'10581\'|variable_revision_number:9|show_w
         self.assertEqual(module.root_dir.dir_choice,
                          cellprofiler.preferences.ABSOLUTE_FOLDER_NAME)
         self.assertEqual(module.root_dir.custom_path,
-                         cellprofiler.modules.tests.example_images_directory())
+                         tests.modules.example_images_directory())
         self.assertEqual(module.movie_format, cellprofiler.modules.saveimages.FF_AVI)
 
     def test_00_10_load_v10(self):
         pipeline = cellprofiler.pipeline.Pipeline()
         image_folder_text = pipeline.encode_txt(
             "%s|%s" % (cellprofiler.preferences.ABSOLUTE_FOLDER_NAME,
-                       cellprofiler.pipeline.utf16encode(cellprofiler.modules.tests.example_images_directory())))
+                       cellprofiler.pipeline.utf16encode(tests.modules.example_images_directory())))
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20140128180905
@@ -667,14 +667,14 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:10|sho
         self.assertEqual(module.root_dir.dir_choice,
                          cellprofiler.preferences.ABSOLUTE_FOLDER_NAME)
         self.assertEqual(module.root_dir.custom_path,
-                         cellprofiler.modules.tests.example_images_directory())
+                         tests.modules.example_images_directory())
         self.assertEqual(module.movie_format, cellprofiler.modules.saveimages.FF_AVI)
 
     def test_00_11_load_v11(self):
         pipeline = cellprofiler.pipeline.Pipeline()
         image_folder_text = pipeline.encode_txt(
             "%s|%s" % (cellprofiler.preferences.ABSOLUTE_FOLDER_NAME,
-                       cellprofiler.pipeline.utf16encode(cellprofiler.modules.tests.example_images_directory())))
+                       cellprofiler.pipeline.utf16encode(tests.modules.example_images_directory())))
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20140128180905
@@ -734,7 +734,7 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
         self.assertEqual(module.root_dir.dir_choice,
                          cellprofiler.preferences.ABSOLUTE_FOLDER_NAME)
         self.assertEqual(module.root_dir.custom_path,
-                         cellprofiler.modules.tests.example_images_directory())
+                         tests.modules.example_images_directory())
         self.assertEqual(module.movie_format, cellprofiler.modules.saveimages.FF_TIF)
 
     def test_01_01_save_first_to_same_tif(self):
@@ -742,8 +742,8 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
         img1_out_filename = os.path.join(self.new_image_directory,'img1OUT.tif')
         img2_filename = os.path.join(self.new_image_directory,'img2.tif')
         img2_out_filename = os.path.join(self.new_image_directory,'img2OUT.tif')
-        make_file(img1_filename, cellprofiler.modules.tests.tif_8_1)
-        make_file(img2_filename, cellprofiler.modules.tests.tif_8_2)
+        make_file(img1_filename, tests.modules.tif_8_1)
+        make_file(img2_filename, tests.modules.tif_8_2)
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_listener(self.on_event)
         load_images = cellprofiler.modules.loadimages.LoadImages()
@@ -799,8 +799,8 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
         img1_out_filename = os.path.join(self.new_image_directory,'img1OUT.tif')
         img2_filename = os.path.join(self.new_image_directory,'img2.tif')
         img2_out_filename = os.path.join(self.new_image_directory,'img2OUT.tif')
-        make_file(img1_filename, cellprofiler.modules.tests.tif_8_1)
-        make_file(img2_filename, cellprofiler.modules.tests.tif_8_2)
+        make_file(img1_filename, tests.modules.tif_8_1)
+        make_file(img2_filename, tests.modules.tif_8_2)
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_listener(self.on_event)
         load_images = cellprofiler.modules.loadimages.LoadImages()
@@ -857,8 +857,8 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
         img1_out_filename = os.path.join(self.new_image_directory,'img1OUT.tif')
         img2_filename = os.path.join(self.new_image_directory,'img2.tif')
         img2_out_filename = os.path.join(self.new_image_directory,'img2OUT.tif')
-        make_file(img1_filename, cellprofiler.modules.tests.tif_8_1)
-        make_file(img2_filename, cellprofiler.modules.tests.tif_8_2)
+        make_file(img1_filename, tests.modules.tif_8_1)
+        make_file(img2_filename, tests.modules.tif_8_2)
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_listener(self.on_event)
         load_images = cellprofiler.modules.loadimages.LoadImages()
@@ -907,8 +907,8 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
         img1_out_filename = os.path.join(self.new_output_directory,'img1OUT.tif')
         img2_filename = os.path.join(self.new_image_directory,'img2.tif')
         img2_out_filename = os.path.join(self.new_output_directory,'img2OUT.tif')
-        make_file(img1_filename, cellprofiler.modules.tests.tif_8_1)
-        make_file(img2_filename, cellprofiler.modules.tests.tif_8_2)
+        make_file(img1_filename, tests.modules.tif_8_1)
+        make_file(img2_filename, tests.modules.tif_8_2)
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_listener(self.on_event)
         load_images = cellprofiler.modules.loadimages.LoadImages()
@@ -965,8 +965,8 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
         img1_out_filename = os.path.join(self.custom_directory,'img1OUT.tif')
         img2_filename = os.path.join(self.new_image_directory,'img2.tif')
         img2_out_filename = os.path.join(self.custom_directory,'img2OUT.tif')
-        make_file(img1_filename, cellprofiler.modules.tests.tif_8_1)
-        make_file(img2_filename, cellprofiler.modules.tests.tif_8_2)
+        make_file(img1_filename, tests.modules.tif_8_1)
+        make_file(img2_filename, tests.modules.tif_8_2)
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_listener(self.on_event)
         load_images = cellprofiler.modules.loadimages.LoadImages()
@@ -1024,8 +1024,8 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
         img1_out_filename = os.path.join(self.custom_directory,'img1OUT.png')
         img2_filename = os.path.join(self.new_image_directory,'img2.tif')
         img2_out_filename = os.path.join(self.custom_directory,'img2OUT.png')
-        make_file(img1_filename, cellprofiler.modules.tests.tif_8_1)
-        make_file(img2_filename, cellprofiler.modules.tests.tif_8_2)
+        make_file(img1_filename, tests.modules.tif_8_1)
+        make_file(img2_filename, tests.modules.tif_8_2)
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_listener(self.on_event)
         load_images = cellprofiler.modules.loadimages.LoadImages()
@@ -1083,8 +1083,8 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
         img1_out_filename = os.path.join(self.custom_directory,'img1OUT.jpg')
         img2_filename = os.path.join(self.new_image_directory,'img2.tif')
         img2_out_filename = os.path.join(self.custom_directory,'img2OUT.jpg')
-        make_file(img1_filename, cellprofiler.modules.tests.tif_8_1)
-        make_file(img2_filename, cellprofiler.modules.tests.tif_8_2)
+        make_file(img1_filename, tests.modules.tif_8_1)
+        make_file(img2_filename, tests.modules.tif_8_2)
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_listener(self.on_event)
         load_images = cellprofiler.modules.loadimages.LoadImages()
@@ -1144,8 +1144,8 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
         img1_out_filename = os.path.join(self.custom_directory,'img1OUT.tif')
         img2_filename = os.path.join(self.new_image_directory,'img2.tif')
         img2_out_filename = os.path.join(self.custom_directory,'img2OUT.tif')
-        make_file(img1_filename, cellprofiler.modules.tests.tif_8_1)
-        make_file(img2_filename, cellprofiler.modules.tests.tif_8_2)
+        make_file(img1_filename, tests.modules.tif_8_1)
+        make_file(img2_filename, tests.modules.tif_8_2)
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_listener(self.on_event)
         load_images = cellprofiler.modules.loadimages.LoadImages()
@@ -1194,8 +1194,8 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
         img1_out_filename = os.path.join(self.custom_directory,'img1OUT.png')
         img2_filename = os.path.join(self.new_image_directory,'img2.tif')
         img2_out_filename = os.path.join(self.custom_directory,'img2OUT.png')
-        make_file(img1_filename, cellprofiler.modules.tests.tif_8_1)
-        make_file(img2_filename, cellprofiler.modules.tests.tif_8_2)
+        make_file(img1_filename, tests.modules.tif_8_1)
+        make_file(img2_filename, tests.modules.tif_8_2)
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_listener(self.on_event)
         load_images = cellprofiler.modules.loadimages.LoadImages()
@@ -1363,8 +1363,8 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
                                          'TEST0002.tif')
         os.mkdir(img_path1)
         os.mkdir(img_path2)
-        make_file(img1_filename, cellprofiler.modules.tests.tif_8_1)
-        make_file(img2_filename, cellprofiler.modules.tests.tif_8_2)
+        make_file(img1_filename, tests.modules.tif_8_1)
+        make_file(img2_filename, tests.modules.tif_8_2)
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_listener(self.on_event)
         load_images = cellprofiler.modules.loadimages.LoadImages()

@@ -13,12 +13,12 @@ import cellprofiler.modules.identify
 import cellprofiler.modules.loadimages
 import cellprofiler.modules.loadimages
 import cellprofiler.modules.namesandtypes
-import cellprofiler.modules.tests
 import cellprofiler.pipeline
 import cellprofiler.region
 import cellprofiler.workspace
 import javabridge
 import numpy
+import tests.modules
 
 M0, M1, M2, M3, M4, M5, M6 = ["MetadataKey%d" % i for i in range(7)]
 C0, C1, C2, C3, C4, C5, C6 = ["Column%d" % i for i in range(7)]
@@ -1177,7 +1177,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         folders = ["ExampleAllModulesPipeline", "Images"]
         aoi = "all_ones_image.tif"
         ooi = "one_object_00_A.tif"
-        path = cellprofiler.modules.tests.maybe_download_example_images(folders, [aoi, ooi])
+        path = tests.modules.maybe_download_example_images(folders, [aoi, ooi])
         aoi_path = os.path.join(path, aoi)
         ooi_path = os.path.join(path, ooi)
         m = cellprofiler.measurement.Measurements()
@@ -1196,7 +1196,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         # Add two files
         #
         current_path = os.path.abspath(os.curdir)
-        target_path = os.path.join(cellprofiler.modules.tests.example_images_directory(), *folders)
+        target_path = os.path.join(tests.modules.example_images_directory(), *folders)
         img_url = cellprofiler.modules.loadimages.pathname2url(os.path.join(current_path, aoi))
         objects_url = cellprofiler.modules.loadimages.pathname2url(os.path.join(current_path, ooi))
         pipeline.add_urls([img_url, objects_url])
@@ -1401,7 +1401,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
 
     def test_03_01_load_color(self):
         shape = (21, 31, 3)
-        path = cellprofiler.modules.tests.maybe_download_example_image(
+        path = tests.modules.maybe_download_example_image(
             ["ExampleColorToGray"], "nt_03_01_color.tif", shape)
         with open(path, "rb") as fd:
             md5 = hashlib.md5(fd.read()).hexdigest()
@@ -1432,7 +1432,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         numpy.testing.assert_equal(pixel_data[:, :, 0], pixel_data[:, :, 2])
 
     def test_03_03_load_color_frame(self):
-        path = cellprofiler.modules.tests.maybe_download_tesst_image("DrosophilaEmbryo_GFPHistone.avi")
+        path = tests.modules.maybe_download_tesst_image("DrosophilaEmbryo_GFPHistone.avi")
         workspace = self.run_workspace(path, cellprofiler.modules.namesandtypes.LOAD_AS_COLOR_IMAGE,
                                        index = 3)
         image = workspace.image_set.get_image(IMAGE_NAME)
@@ -1446,7 +1446,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
     def get_monochrome_image_path(self):
         folder = "ExampleGrayToColor"
         file_name = "AS_09125_050116030001_D03f00d0.tif"
-        return cellprofiler.modules.tests.maybe_download_example_image([folder], file_name)
+        return tests.modules.maybe_download_example_image([folder], file_name)
 
     def test_03_04_load_monochrome(self):
         path = self.get_monochrome_image_path()
@@ -1460,7 +1460,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
 
     def test_03_05_load_color_as_monochrome(self):
         shape = (21, 31, 3)
-        path = cellprofiler.modules.tests.maybe_download_example_image(
+        path = tests.modules.maybe_download_example_image(
             ["ExampleColorToGray"], "nt_03_05_color.tif", shape)
         workspace = self.run_workspace(path, cellprofiler.modules.namesandtypes.LOAD_AS_GRAYSCALE_IMAGE)
         image = workspace.image_set.get_image(IMAGE_NAME)
@@ -1470,7 +1470,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         self.assertTrue(numpy.all(pixel_data <= 1))
 
     def test_03_06_load_monochrome_plane(self):
-        path = cellprofiler.modules.tests.maybe_download_tesst_image("5channel.tif")
+        path = tests.modules.maybe_download_tesst_image("5channel.tif")
 
         for i in range(5):
             workspace = self.run_workspace(path, cellprofiler.modules.namesandtypes.LOAD_AS_GRAYSCALE_IMAGE,
@@ -1486,7 +1486,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
     def test_03_07_load_raw(self):
         folder = "namesandtypes_03_07"
         file_name = "1-162hrh2ax2.tif"
-        path = cellprofiler.modules.tests.make_12_bit_image(folder, file_name, (34, 19))
+        path = tests.modules.make_12_bit_image(folder, file_name, (34, 19))
         workspace = self.run_workspace(path, cellprofiler.modules.namesandtypes.LOAD_AS_ILLUMINATION_FUNCTION)
         image = workspace.image_set.get_image(IMAGE_NAME)
         pixel_data = image.pixel_data
@@ -1495,7 +1495,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         self.assertTrue(numpy.all(pixel_data <= 1. / 16.))
 
     def test_03_08_load_mask(self):
-        path = cellprofiler.modules.tests.maybe_download_example_image(
+        path = tests.modules.maybe_download_example_image(
             ["ExampleSBSImages"], "Channel2-01-A-01.tif")
         target = bioformats.load_image(path)
         workspace = self.run_workspace(path, cellprofiler.modules.namesandtypes.LOAD_AS_MASK)
@@ -1506,7 +1506,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
                          numpy.sum(target == 0))
 
     def test_03_09_load_objects(self):
-        path = cellprofiler.modules.tests.maybe_download_example_image(
+        path = tests.modules.maybe_download_example_image(
             ["ExampleSBSImages"], "Channel2-01-A-01.tif")
         target = bioformats.load_image(path, rescale=False)
         with open(path, "rb") as fd:
@@ -1560,7 +1560,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         # Test all color/monochrome rescaled paths
         folder = "namesandtypes_03_11"
         file_name = "1-162hrh2ax2.tif"
-        path = cellprofiler.modules.tests.make_12_bit_image(folder, file_name, (34, 19))
+        path = tests.modules.make_12_bit_image(folder, file_name, (34, 19))
         for single in (True, False):
             for rescaled in (cellprofiler.modules.namesandtypes.INTENSITY_RESCALING_BY_METADATA,
                              cellprofiler.modules.namesandtypes.INTENSITY_RESCALING_BY_DATATYPE,
@@ -1581,9 +1581,9 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
 
     def test_03_12_load_single_image(self):
         # Test loading a pipeline whose image set loads a single image
-        path = cellprofiler.modules.tests.maybe_download_example_image(
+        path = tests.modules.maybe_download_example_image(
             ["ExampleSBSImages"], "Channel1-01-A-01.tif")
-        lsi_path = cellprofiler.modules.tests.maybe_download_example_image(
+        lsi_path = tests.modules.maybe_download_example_image(
             ["ExampleGrayToColor"], "AS_09125_050116030001_D03f00d0.tif")
         target = bioformats.load_image(lsi_path)
         workspace = self.run_workspace(
@@ -1596,9 +1596,9 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         self.assertSequenceEqual(pixel_data.shape, target.shape)
 
     def test_03_13_load_single_object(self):
-        path = cellprofiler.modules.tests.maybe_download_example_image(
+        path = tests.modules.maybe_download_example_image(
             ["ExampleSBSImages"], "Channel1-01-A-01.tif")
-        lsi_path = cellprofiler.modules.tests.maybe_download_example_image(
+        lsi_path = tests.modules.maybe_download_example_image(
             ["ExampleSBSImages"], "Channel2-01-A-01.tif")
         target = bioformats.load_image(lsi_path, rescale=False)
         with open(lsi_path, "rb") as fd:

@@ -9,7 +9,6 @@ import zlib
 import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.modules.flagimage
-import cellprofiler.modules.tests.test_filterobjects
 import cellprofiler.pipeline
 import cellprofiler.preferences
 import cellprofiler.preferences
@@ -17,6 +16,7 @@ import cellprofiler.region
 import cellprofiler.setting
 import cellprofiler.workspace
 import numpy
+import tests.modules.test_filterobjects
 
 cellprofiler.preferences.set_headless()
 

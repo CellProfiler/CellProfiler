@@ -20,12 +20,12 @@ import cellprofiler.measurement
 import cellprofiler.module
 import cellprofiler.modules.loadimages
 import cellprofiler.modules.namesandtypes
-import cellprofiler.modules.tests
 import cellprofiler.pipeline
 import cellprofiler.preferences
 import cellprofiler.region
 import cellprofiler.workspace
 import numpy
+import tests.modules
 
 IMAGE_NAME = "image"
 ALT_IMAGE_NAME = "altimage"
@@ -128,7 +128,7 @@ class ConvtesterMixin:
 class testLoadImages(unittest.TestCase, ConvtesterMixin):
     @classmethod
     def setUpClass(cls):
-        cellprofiler.modules.tests.maybe_download_sbs()
+        tests.modules.maybe_download_sbs()
 
     def setUp(self):
         self.directory = None
@@ -166,7 +166,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                 l.match_method.value = cellprofiler.modules.loadimages.MS_EXACT_MATCH
                 l.location.dir_choice = cellprofiler.modules.loadimages.ABSOLUTE_FOLDER_NAME
                 l.location.custom_path =\
-                    os.path.join(cellprofiler.modules.tests.cellprofiler.modules.tests.example_images_directory(), "ExampleSBSImages")
+                    os.path.join(tests.modules.tests.modules.example_images_directory(), "ExampleSBSImages")
                 l.images[0].common_text.value = "1-01-A-01.tif"
                 l.images[0].channels[0].image_name.value = "my_image"
                 l.module_num = 1
@@ -193,7 +193,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                 l.match_method.value = cellprofiler.modules.loadimages.MS_EXACT_MATCH
                 l.location.dir_choice = cellprofiler.modules.loadimages.ABSOLUTE_FOLDER_NAME
                 l.location.custom_path =\
-                    os.path.join(cellprofiler.modules.tests.cellprofiler.modules.tests.example_images_directory(), "ExampleSBSImages")
+                    os.path.join(tests.modules.tests.modules.example_images_directory(), "ExampleSBSImages")
                 for i in range(0,4):
                     ii = i+1
                     if i:
@@ -226,7 +226,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                 l.match_method.value = cellprofiler.modules.loadimages.MS_REGEXP
                 l.location.dir_choice = cellprofiler.modules.loadimages.ABSOLUTE_FOLDER_NAME
                 l.location.custom_path =\
-                    os.path.join(cellprofiler.modules.tests.cellprofiler.modules.tests.example_images_directory(), "ExampleSBSImages")
+                    os.path.join(tests.modules.tests.modules.example_images_directory(), "ExampleSBSImages")
                 l.images[0].common_text.value = "Channel1-[0-1][0-9]-A-01"
                 l.images[0].channels[0].image_name.value = "my_image"
                 l.module_num = 1
@@ -252,7 +252,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                     #
                     directory = tempfile.mkdtemp()
                     self.directory = directory
-                    data = base64.b64decode(cellprofiler.modules.tests.tif_8_1)
+                    data = base64.b64decode(tests.modules.tif_8_1)
                     tiff_fmt = "image%02d.tif"
                     for i in range(12):
                         path = os.path.join(directory, tiff_fmt % i)
@@ -338,7 +338,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
 
                 def test_03_01_load_version_2(self):
                     data = 'TUFUTEFCIDUuMCBNQVQtZmlsZSwgUGxhdGZvcm06IFBDV0lOLCBDcmVhdGVkIG9uOiBNb24gSmFuIDA1IDEwOjMwOjQ0IDIwMDkgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAABSU0PAAAAkAEAAHic7ZPNTsJAEMen5UOUZIPxwpEXEInEwJHEiyQKBgj3xS7NJku32bYEPXn0NXwLjz6au7iFbWkoEm+6yWQ70/n/djo7RQDwcQJQlntFmg3fq6R9yzDlj0kYUs8NSlCEuo5/SptiQfGMkSlmEQlgs+J435vzybO/efXAnYiRAV6YyXINosWMiGA4j4X69SNdETamLwSSK04bkSUNKPe0XvPT0Zi/gwck7a2w7YOV0QdkxNXzHWzzixn5dSO/pv0JWYWXI+JGDIsGWfmCBKrAQPF6ObzTFE/5T5xx0Qzp3KjrGM5QUPdWsQxOK4djJTgWXP3rflXXhsPm7ByS96l86jl0SZ0IswZdYDcx53l12AmeDQN+XP3NA88rJHQF8K7wWvdq7f8fq0YcZey9nHNrqb4pWzfLFTzyG7KFxP/LvHj3Yf89mPd+SB1nqTqUf8+x0zcGVXG6BqecwSkbHFv7qIoQquzqs+owv6em/VazfXPd6XTTc5t1vvndtnyyYXfe83RFqXq/+LlOnac0X7WHgow='
-                    pipeline = cellprofiler.modules.tests.load_pipeline(self, data)
+                    pipeline = tests.modules.load_pipeline(self, data)
                     self.assertEqual(len(pipeline.modules()),1)
                     module = pipeline.module(1)
                     self.assertEqual(module.load_choice(), cellprofiler.modules.loadimages.MS_REGEXP)
@@ -352,7 +352,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
 
                 def test_03_02_load_version_4(self):
                     data = 'TUFUTEFCIDUuMCBNQVQtZmlsZSwgUGxhdGZvcm06IFBDV0lOLCBDcmVhdGVkIG9uOiBNb24gSmFuIDA1IDExOjA2OjM5IDIwMDkgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAABSU0PAAAApwEAAHic5VTNTsJAEJ42BdEDwXjQY49eJCIXj8b4A4mCAUK8mYUudZO22/QHwafyEbj5Wu5KC8um0qV6c5LNdGZnvpn9OrtVAFhUAMpMMwU6LKWU2JqwuN3HUUQ8OyyBASeJf8HWEAUEjRw8RE6MQ1hJ6m97EzqY+6utR2rFDu4gVwxm0ondEQ7C7iRNTLafyAw7ffKOYVPSsB6ekpBQL8lP8GXvqi6NpLpVtlrGmgctg4cjwc/jr2Adb2TE14T4WrIGeBad3c7QODJdFI1fVXD2JRxuh42Xt0Z90L4T+rnMwdmTcLjdDYjdw5bSeX7q40LqowgO7+M+wNj7JQ7vp7kjLxUJp5L0c81GWaWPAymf2zfU9GhkxiFWP48qznkOjraBo0Hzj+u3cnAOJRxuE88iU2LFyDGJi+zV7VM5j76Bp0OHFuOhrshD1lzZAZqHY+Sk709VQX9o298Tkaes/Lw+s96Xb3LtgMa+ySjH/n/GK6p92P7fxLkqeq8eKLLawkWQ57mcU1dnX7WMPJV70ChYzyiQZ7DMz+Nl3vOOvJ5uiU8l9X8BnJqT/A=='
-                    pipeline = cellprofiler.modules.tests.load_pipeline(self, data)
+                    pipeline = tests.modules.load_pipeline(self, data)
                     pipeline.add_listener(self.error_callback)
                     self.assertEqual(len(pipeline.modules()),1)
                     module = pipeline.module(1)
@@ -1134,7 +1134,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
 
                 def test_04_01_load_save_and_load(self):
                     data = 'TUFUTEFCIDUuMCBNQVQtZmlsZSwgUGxhdGZvcm06IFBDV0lOLCBDcmVhdGVkIG9uOiBNb24gSmFuIDA1IDExOjA2OjM5IDIwMDkgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAABSU0PAAAApwEAAHic5VTNTsJAEJ42BdEDwXjQY49eJCIXj8b4A4mCAUK8mYUudZO22/QHwafyEbj5Wu5KC8um0qV6c5LNdGZnvpn9OrtVAFhUAMpMMwU6LKWU2JqwuN3HUUQ8OyyBASeJf8HWEAUEjRw8RE6MQ1hJ6m97EzqY+6utR2rFDu4gVwxm0ondEQ7C7iRNTLafyAw7ffKOYVPSsB6ekpBQL8lP8GXvqi6NpLpVtlrGmgctg4cjwc/jr2Adb2TE14T4WrIGeBad3c7QODJdFI1fVXD2JRxuh42Xt0Z90L4T+rnMwdmTcLjdDYjdw5bSeX7q40LqowgO7+M+wNj7JQ7vp7kjLxUJp5L0c81GWaWPAymf2zfU9GhkxiFWP48qznkOjraBo0Hzj+u3cnAOJRxuE88iU2LFyDGJi+zV7VM5j76Bp0OHFuOhrshD1lzZAZqHY+Sk709VQX9o298Tkaes/Lw+s96Xb3LtgMa+ySjH/n/GK6p92P7fxLkqeq8eKLLawkWQ57mcU1dnX7WMPJV70ChYzyiQZ7DMz+Nl3vOOvJ5uiU8l9X8BnJqT/A=='
-                    pipeline = cellprofiler.modules.tests.load_pipeline(self, data)
+                    pipeline = tests.modules.load_pipeline(self, data)
                     (matfd,matpath) = tempfile.mkstemp('.mat')
                     matfh = os.fdopen(matfd,'wb')
                     pipeline.save(matfh)
@@ -1162,7 +1162,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
 
                     Regression test a bug in PIL that flips the image
                     """
-                    data = base64.b64decode(cellprofiler.modules.tests.png_8_1)
+                    data = base64.b64decode(tests.modules.png_8_1)
                     (matfd,matpath) = tempfile.mkstemp('.png')
                     matfh = os.fdopen(matfd,'wb')
                     matfh.write(data)
@@ -1186,9 +1186,9 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                             image = workspace.image_set.get_image('Orig')
                             matfh.close()
                             pixel_data = image.pixel_data
-                            check_data = base64.b64decode(cellprofiler.modules.tests.raw_8_1)
+                            check_data = base64.b64decode(tests.modules.raw_8_1)
                             check_image = numpy.fromstring(check_data, numpy.uint8).reshape(
-                                cellprofiler.modules.tests.raw_8_1_shape)
+                                tests.modules.raw_8_1_shape)
                             self.expected_digest = hashlib.md5()
                             self.expected_digest.update(
                                 (check_image.astype(numpy.float32) / 255).tostring())
@@ -1213,7 +1213,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                     """Test loading of a .GIF file
 
                     """
-                    data = base64.b64decode(cellprofiler.modules.tests.gif_8_1)
+                    data = base64.b64decode(tests.modules.gif_8_1)
                     (matfd,matpath) = tempfile.mkstemp('.gif')
                     matfh = os.fdopen(matfd,'wb')
                     matfh.write(data)
@@ -1239,9 +1239,9 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                             matfh.close()
                             pixel_data = image.pixel_data
                             pixel_data = (pixel_data * 255+.5).astype(numpy.uint8)
-                            check_data = base64.b64decode(cellprofiler.modules.tests.raw_8_1)
+                            check_data = base64.b64decode(tests.modules.raw_8_1)
                             check_image = numpy.fromstring(check_data, numpy.uint8).reshape(
-                                cellprofiler.modules.tests.raw_8_1_shape)
+                                tests.modules.raw_8_1_shape)
                             outer_self.assertTrue(numpy.all(pixel_data == check_image))
                     check_image = CheckImage()
                     check_image.module_num = 2
@@ -1255,7 +1255,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                     """Test loading of a .TIF file
 
                     """
-                    data = base64.b64decode(cellprofiler.modules.tests.tif_8_1)
+                    data = base64.b64decode(tests.modules.tif_8_1)
                     (matfd,matpath) = tempfile.mkstemp('.tif')
                     matfh = os.fdopen(matfd,'wb')
                     matfh.write(data)
@@ -1280,9 +1280,9 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                             matfh.close()
                             pixel_data = image.pixel_data
                             pixel_data = (pixel_data * 255+.5).astype(numpy.uint8)
-                            check_data = base64.b64decode(cellprofiler.modules.tests.raw_8_1)
+                            check_data = base64.b64decode(tests.modules.raw_8_1)
                             check_image = numpy.fromstring(check_data, numpy.uint8).reshape(
-                                cellprofiler.modules.tests.raw_8_1_shape)
+                                tests.modules.raw_8_1_shape)
                             outer_self.assertTrue(numpy.all(pixel_data == check_image))
                     check_image = CheckImage()
                     check_image.module_num = 2
@@ -1304,7 +1304,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         """Test loading of a .JPG file
 
         """
-        data = base64.b64decode(cellprofiler.modules.tests.jpg_8_1)
+        data = base64.b64decode(tests.modules.jpg_8_1)
         (matfd, matpath) = tempfile.mkstemp('.jpg')
         matfh = os.fdopen(matfd, 'wb')
         matfh.write(data)
@@ -1333,9 +1333,9 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                 pixel_data = image.pixel_data
                 matfh.close()
                 pixel_data = (pixel_data * 255).astype(numpy.uint8)
-                check_data = base64.b64decode(cellprofiler.modules.tests.raw_8_1)
+                check_data = base64.b64decode(tests.modules.raw_8_1)
                 check_image = numpy.fromstring(check_data, numpy.uint8).reshape(
-                    cellprofiler.modules.tests.raw_8_1_shape)
+                    tests.modules.raw_8_1_shape)
                 # JPEG is lossy, apparently even when you ask for no compression
                 epsilon = 1
                 outer_self.assertTrue(numpy.all(numpy.abs(pixel_data.astype(int)
@@ -1353,18 +1353,18 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
     def test_05_05_load_url(self):
         lip = cellprofiler.modules.loadimages.LoadImagesImageProvider(
                 "broad",
-                cellprofiler.modules.tests.cp_logo_url_folder,
-                cellprofiler.modules.tests.cp_logo_url_filename, True)
+                tests.modules.cp_logo_url_folder,
+                tests.modules.cp_logo_url_filename, True)
         logo = lip.provide_image(None)
-        self.assertEqual(logo.pixel_data.shape, cellprofiler.modules.tests.cp_logo_url_shape)
+        self.assertEqual(logo.pixel_data.shape, tests.modules.cp_logo_url_shape)
         lip.release_memory()
 
     def test_05_06_load_Nikon_tif(self):
         '''This is the Nikon format TIF file from IMG-838'''
-        cellprofiler.modules.tests.maybe_download_tesst_image("NikonTIF.tif")
+        tests.modules.maybe_download_tesst_image("NikonTIF.tif")
         lip = cellprofiler.modules.loadimages.LoadImagesImageProvider(
                 "nikon",
-                cellprofiler.modules.tests.testimages_directory(),
+                tests.modules.testimages_directory(),
                 "NikonTIF.tif",
                 True)
         image = lip.provide_image(None).pixel_data
@@ -1376,11 +1376,11 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
 
         This file generated a null-pointer exception in the MetamorphReader
         '''
-        cellprofiler.modules.tests.maybe_download_tesst_image(
+        tests.modules.maybe_download_tesst_image(
                 "IXMtest_P24_s9_w560D948A4-4D16-49D0-9080-7575267498F9.tif")
         lip = cellprofiler.modules.loadimages.LoadImagesImageProvider(
                 "nikon",
-                cellprofiler.modules.tests.testimages_directory(),
+                tests.modules.testimages_directory(),
                 "IXMtest_P24_s9_w560D948A4-4D16-49D0-9080-7575267498F9.tif",
                 True)
         image = lip.provide_image(None).pixel_data
@@ -1392,10 +1392,10 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
     @unittest.skip
     def test_05_08_load_5channel_tif(self):
         '''Load a 5-channel image'''
-        cellprofiler.modules.tests.maybe_download_tesst_image("5channel.tif")
-        path = cellprofiler.modules.tests.testimages_directory()
+        tests.modules.maybe_download_tesst_image("5channel.tif")
+        path = tests.modules.testimages_directory()
         filename = "5channel.tif"
-        cellprofiler.modules.tests.maybe_download_tesst_image(filename)
+        tests.modules.maybe_download_tesst_image(filename)
         module = cellprofiler.modules.loadimages.LoadImages()
         module.module_num = 1
         module.file_types.value = cellprofiler.modules.loadimages.FF_INDIVIDUAL_IMAGES
@@ -1437,10 +1437,10 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
     def test_05_09_load_C01(self):
         """IMG-457: Test loading of a .c01 file"""
         filename = "icd002235_090127090001_a01f00d1.c01"
-        cellprofiler.modules.tests.maybe_download_tesst_image(filename)
+        tests.modules.maybe_download_tesst_image(filename)
         lip = cellprofiler.modules.loadimages.LoadImagesImageProvider(
                 "nikon",
-                cellprofiler.modules.tests.testimages_directory(),
+                tests.modules.testimages_directory(),
                 filename,
                 True)
         image = lip.provide_image(None).pixel_data
@@ -1455,7 +1455,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         """
         directory = tempfile.mkdtemp()
         self.directory = directory
-        data = base64.b64decode(cellprofiler.modules.tests.tif_8_1)
+        data = base64.b64decode(tests.modules.tif_8_1)
         filenames = ["MMD-ControlSet-plateA-2008-08-06_A12_s1_w1_[89A882DE-E675-4C12-9F8E-46C9976C4ABE].tif",
                      "MMD-ControlSet-plateA-2008-08-06_A12_s1_w2_[EFBB8532-9A90-4040-8974-477FE1E0F3CA].tif",
                      "MMD-ControlSet-plateA-2008-08-06_A12_s2_w1_[138B5A19-2515-4D46-9AB7-F70CE4D56631].tif",
@@ -1535,7 +1535,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         """Test recovery of path metadata"""
         directory = tempfile.mkdtemp()
         self.directory = directory
-        data = base64.b64decode(cellprofiler.modules.tests.tif_8_1)
+        data = base64.b64decode(tests.modules.tif_8_1)
         path_and_file = [("MMD-ControlSet-plateA-2008-08-06_A12_s1_[89A882DE-E675-4C12-9F8E-46C9976C4ABE]", "w1.tif"),
                          ("MMD-ControlSet-plateA-2008-08-06_A12_s1_[EFBB8532-9A90-4040-8974-477FE1E0F3CA]", "w2.tif"),
                          ("MMD-ControlSet-plateA-2008-08-06_A12_s2_[138B5A19-2515-4D46-9AB7-F70CE4D56631]", "w1.tif"),
@@ -1551,7 +1551,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         """Test expected failure when an image is missing from the set"""
         directory = tempfile.mkdtemp()
         self.directory = directory
-        data = base64.b64decode(cellprofiler.modules.tests.tif_8_1)
+        data = base64.b64decode(tests.modules.tif_8_1)
         filename = "MMD-ControlSet-plateA-2008-08-06_A12_s1_w1_[89A882DE-E675-4C12-9F8E-46C9976C4ABE].tif"
         fd = open(os.path.join(directory, filename), "wb")
         fd.write(data)
@@ -1589,7 +1589,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
     def test_06_04_conflict(self):
         """Test expected failure when two images have the same metadata"""
         directory = tempfile.mkdtemp()
-        data = base64.b64decode(cellprofiler.modules.tests.tif_8_1)
+        data = base64.b64decode(tests.modules.tif_8_1)
         filenames = ["MMD-ControlSet-plateA-2008-08-06_A12_s1_w1_[89A882DE-E675-4C12-9F8E-46C9976C4ABE].tif",
                      "MMD-ControlSet-plateA-2008-08-06_A12_s1_w2_[EFBB8532-9A90-4040-8974-477FE1E0F3CA].tif",
                      "MMD-ControlSet-plateA-2008-08-06_A12_s1_w1_[138B5A19-2515-4D46-9AB7-F70CE4D56631].tif",
@@ -1641,7 +1641,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         The bug is documented in IMG-202
         """
         directory = tempfile.mkdtemp()
-        data = base64.b64decode(cellprofiler.modules.tests.tif_8_1)
+        data = base64.b64decode(tests.modules.tif_8_1)
         filenames = ["2008-08-06-run1-plateA_A12_s1_w1_[89A882DE-E675-4C12-9F8E-46C9976C4ABE].tif",
                      "2008-08-06-run1-plateA_A12_s2_w1_[89A882DE-E675-4C12-9F8E-46C9976C4ABE].tif",
                      "2008-08-07-run1-plateA_A12_s3_w1_[89A882DE-E675-4C12-9F8E-46C9976C4ABE].tif",
@@ -1725,7 +1725,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
             # LoadImages should choose the file that was written last
             #
             directory = tempfile.mkdtemp()
-            data = base64.b64decode(cellprofiler.modules.tests.tif_8_1)
+            data = base64.b64decode(tests.modules.tif_8_1)
             for i in range(len(filenames)):
                 filename = filenames[order[i]]
                 fd = open(os.path.join(directory, filename), "wb")
@@ -1811,7 +1811,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                      ("d1", "foo.tif"),
                      (os.path.join("d2", "d3"), "foo.tif"),
                      (os.path.join("d2", "d4"), "bar.tif")]
-        data = base64.b64decode(cellprofiler.modules.tests.tif_8_1)
+        data = base64.b64decode(tests.modules.tif_8_1)
         try:
             for path, filename in filenames:
                 d = os.path.join(directory, path)
@@ -1888,7 +1888,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                       os.path.join("d5", "d6")]
         expected_filenames = filenames[:2] + [filenames[3]]
 
-        data = base64.b64decode(cellprofiler.modules.tests.tif_8_1)
+        data = base64.b64decode(tests.modules.tif_8_1)
         try:
             for path, filename in filenames:
                 d = os.path.join(directory, path)
@@ -2224,7 +2224,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
 
     def test_08_01_get_groupings(self):
         '''Get groupings for the SBS image set'''
-        sbs_path = os.path.join(cellprofiler.modules.tests.example_images_directory(), 'ExampleSBSImages')
+        sbs_path = os.path.join(tests.modules.example_images_directory(), 'ExampleSBSImages')
         module = cellprofiler.modules.loadimages.LoadImages()
         module.location.dir_choice = cellprofiler.modules.loadimages.ABSOLUTE_FOLDER_NAME
         module.location.custom_path = sbs_path
@@ -2269,8 +2269,8 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
             sys.stderr.write("WARNING: AVI movies not supported\n")
             return
         filename = 'DrosophilaEmbryo_GFPHistone.avi'
-        avi_path = cellprofiler.modules.tests.testimages_directory()
-        cellprofiler.modules.tests.maybe_download_tesst_image(filename)
+        avi_path = tests.modules.testimages_directory()
+        tests.modules.maybe_download_tesst_image(filename)
         module = cellprofiler.modules.loadimages.LoadImages()
         module.file_types.value = cellprofiler.modules.loadimages.FF_AVI_MOVIES
         module.images[0].common_text.value = filename
@@ -2318,7 +2318,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
             '//iodine/imaging_analysis/2009_03_12_CellCycle_WolthuisLab_RobWolthuis/2009_09_19/Images/09_02_11-OA 10nM',
             '/imaging/analysis/2009_03_12_CellCycle_WolthuisLab_RobWolthuis/2009_09_19/Images/09_02_11-OA 10nM',
             '/Volumes/imaging_analysis/2009_03_12_CellCycle_WolthuisLab_RobWolthuis/2009_09_19/Images/09_02_11-OA 10nM',
-            os.path.join(cellprofiler.modules.tests.example_images_directory(), '09_02_11-OA 10nM')]:
+            os.path.join(tests.modules.example_images_directory(), '09_02_11-OA 10nM')]:
             if os.path.isdir(path):
                 break
         else:
@@ -2363,9 +2363,9 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
 
     def test_09_02_01_load_2_stk(self):
         # Regression test of bug 327
-        path = cellprofiler.modules.tests.testimages_directory()
-        cellprofiler.modules.tests.maybe_download_tesst_image("C0.stk")
-        cellprofiler.modules.tests.maybe_download_tesst_image("C1.stk")
+        path = tests.modules.testimages_directory()
+        tests.modules.maybe_download_tesst_image("C0.stk")
+        tests.modules.maybe_download_tesst_image("C1.stk")
         files = [os.path.join(path, x) for x in ("C0.stk", "C1.stk")]
         if not all([os.path.exists(f) for f in files]):
             sys.stderr.write("Warning, could not find test files for STK test: %s\n" % str(files))
@@ -2394,9 +2394,9 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
 
     def test_09_02_02_load_stk(self):
         # Regression test of issue #783 - color STK.
-        path = cellprofiler.modules.tests.testimages_directory()
-        cellprofiler.modules.tests.maybe_download_tesst_image("C0.stk")
-        cellprofiler.modules.tests.maybe_download_tesst_image("C1.stk")
+        path = tests.modules.testimages_directory()
+        tests.modules.maybe_download_tesst_image("C0.stk")
+        tests.modules.maybe_download_tesst_image("C1.stk")
         module = cellprofiler.modules.loadimages.LoadImages()
         module.file_types.value = cellprofiler.modules.loadimages.FF_STK_MOVIES
         module.images[0].common_text.value = 'C0.stk'
@@ -2421,8 +2421,8 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
 
     def test_09_03_load_flex(self):
         filename = 'RLM1 SSN3 300308 008015000.flex'
-        cellprofiler.modules.tests.maybe_download_tesst_image(filename)
-        flex_path = cellprofiler.modules.tests.testimages_directory()
+        tests.modules.maybe_download_tesst_image(filename)
+        flex_path = tests.modules.testimages_directory()
         module = cellprofiler.modules.loadimages.LoadImages()
         module.file_types.value = cellprofiler.modules.loadimages.FF_OTHER_MOVIES
         module.images[0].common_text.value = filename
@@ -2473,8 +2473,8 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
             sys.stderr.write("WARNING: AVI movies not supported\n")
             return
         filename = 'DrosophilaEmbryo_GFPHistone.avi'
-        cellprofiler.modules.tests.maybe_download_tesst_image(filename)
-        avi_path = cellprofiler.modules.tests.testimages_directory()
+        tests.modules.maybe_download_tesst_image(filename)
+        avi_path = tests.modules.testimages_directory()
         module = cellprofiler.modules.loadimages.LoadImages()
         module.file_types.value = cellprofiler.modules.loadimages.FF_AVI_MOVIES
         image = module.images[0]
@@ -2543,8 +2543,8 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
             sys.stderr.write("WARNING: AVI movies not supported\n")
             return
         filename = 'DrosophilaEmbryo_GFPHistone.avi'
-        cellprofiler.modules.tests.maybe_download_tesst_image(filename)
-        avi_path = cellprofiler.modules.tests.testimages_directory()
+        tests.modules.maybe_download_tesst_image(filename)
+        avi_path = tests.modules.testimages_directory()
         module = cellprofiler.modules.loadimages.LoadImages()
         module.file_types.value = cellprofiler.modules.loadimages.FF_AVI_MOVIES
         image = module.images[0]
@@ -2607,8 +2607,8 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
     def test_09_06_load_flex_interleaved(self):
         # needs better test case file
         filename = 'RLM1 SSN3 300308 008015000.flex'
-        cellprofiler.modules.tests.maybe_download_tesst_image(filename)
-        flex_path = cellprofiler.modules.tests.testimages_directory()
+        tests.modules.maybe_download_tesst_image(filename)
+        flex_path = tests.modules.testimages_directory()
         module = cellprofiler.modules.loadimages.LoadImages()
         module.file_types.value = cellprofiler.modules.loadimages.FF_OTHER_MOVIES
         module.images[0].common_text.value = filename
@@ -2662,9 +2662,9 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
 
     def test_09_07_load_flex_separated(self):
         # Needs better test case file
-        flex_path = cellprofiler.modules.tests.testimages_directory()
+        flex_path = tests.modules.testimages_directory()
         filename = 'RLM1 SSN3 300308 008015000.flex'
-        cellprofiler.modules.tests.maybe_download_tesst_image(filename)
+        tests.modules.maybe_download_tesst_image(filename)
         module = cellprofiler.modules.loadimages.LoadImages()
         module.file_types.value = cellprofiler.modules.loadimages.FF_OTHER_MOVIES
         module.images[0].common_text.value = filename
@@ -2720,7 +2720,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
     # def test_10_01_load_unscaled(self):
     #     '''Load a image with and without rescaling'''
     #     make_12_bit_image('ExampleSpecklesImages', '1-162hrh2ax2.tif', (21, 31))
-    #     path = os.path.join(cellprofiler.modules.tests.example_images_directory(),
+    #     path = os.path.join(tests.modules.example_images_directory(),
     #                         "ExampleSpecklesImages")
     #     module = LI.LoadImages()
     #     module.file_types.value = LI.FF_INDIVIDUAL_IMAGES
@@ -2899,7 +2899,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         module = cellprofiler.modules.loadimages.LoadImages()
         module.match_method.value = cellprofiler.modules.loadimages.MS_REGEXP
         module.location.dir_choice = cellprofiler.modules.loadimages.ABSOLUTE_FOLDER_NAME
-        orig_path = os.path.join(cellprofiler.modules.tests.example_images_directory(), "ExampleSBSImages")
+        orig_path = os.path.join(tests.modules.example_images_directory(), "ExampleSBSImages")
         module.location.custom_path = orig_path
         target_path = orig_path.replace("ExampleSBSImages", "ExampleTrackObjects")
         url_path = cellprofiler.modules.loadimages.url2pathname(cellprofiler.modules.loadimages.pathname2url(orig_path))
@@ -2955,7 +2955,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         module.match_method.value = cellprofiler.modules.loadimages.MS_EXACT_MATCH
         module.location.dir_choice = cellprofiler.modules.loadimages.ABSOLUTE_FOLDER_NAME
         module.file_types.value = cellprofiler.modules.loadimages.FF_AVI_MOVIES
-        orig_path = cellprofiler.modules.tests.testimages_directory()
+        orig_path = tests.modules.testimages_directory()
         module.location.custom_path = orig_path
         target_path = os.path.join(orig_path, "Images")
         orig_url = cellprofiler.modules.loadimages.pathname2url(orig_path)
@@ -2963,7 +2963,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         orig_url_path = cellprofiler.modules.loadimages.url2pathname(orig_url)
 
         filename = "DrosophilaEmbryo_GFPHistone.avi"
-        cellprofiler.modules.tests.maybe_download_tesst_image(filename)
+        tests.modules.maybe_download_tesst_image(filename)
         target_url = cellprofiler.modules.loadimages.pathname2url(os.path.join(target_path, filename))
         module.images[0].common_text.value = filename
         module.images[0].channels[0].image_name.value = IMAGE_NAME
@@ -3013,7 +3013,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         module.match_method.value = cellprofiler.modules.loadimages.MS_EXACT_MATCH
         module.location.dir_choice = cellprofiler.modules.loadimages.ABSOLUTE_FOLDER_NAME
         module.file_types.value = cellprofiler.modules.loadimages.FF_OTHER_MOVIES
-        orig_path = cellprofiler.modules.tests.testimages_directory()
+        orig_path = tests.modules.testimages_directory()
         orig_url = cellprofiler.modules.loadimages.pathname2url(orig_path)
         module.location.custom_path = orig_path
         target_path = os.path.join(orig_path, "Images")
@@ -3021,7 +3021,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         orig_url_path = cellprofiler.modules.loadimages.url2pathname(orig_url)
 
         filename = "RLM1 SSN3 300308 008015000.flex"
-        cellprofiler.modules.tests.maybe_download_tesst_image(filename)
+        tests.modules.maybe_download_tesst_image(filename)
         target_url = cellprofiler.modules.loadimages.pathname2url(os.path.join(orig_path, filename))
         module.images[0].common_text.value = filename
         module.images[0].channels[0].image_name.value = IMAGE_NAME
@@ -3124,7 +3124,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         returns tuple of workspace and module
         '''
         self.directory = tempfile.mkdtemp()
-        data = base64.b64decode(cellprofiler.modules.tests.png_8_1)
+        data = base64.b64decode(tests.modules.png_8_1)
         for filename in file_names:
             path = os.path.join(self.directory, filename)
             fd = open(path, "wb")
@@ -3338,8 +3338,8 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
     #     Channel number:1
     #     Rescale intensities?:Yes
     # """
-    #         cellprofiler.modules.tests.maybe_download_fly()
-    #         directory = os.path.join(cellprofiler.modules.tests.example_images_directory(),
+    #         tests.modules.maybe_download_fly()
+    #         directory = os.path.join(tests.modules.example_images_directory(),
     #                                  "ExampleFlyImages")
     #         self.convtester(pipeline_text, directory)
 
@@ -3412,8 +3412,8 @@ LoadImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
     Channel number:1
     Rescale intensities?:Yes
 """
-        cellprofiler.modules.tests.maybe_download_fly()
-        directory = os.path.join(cellprofiler.modules.tests.example_images_directory(),
+        tests.modules.maybe_download_fly()
+        directory = os.path.join(tests.modules.example_images_directory(),
                                  "ExampleFlyImages")
         self.convtester(pipeline_text, directory)
 
@@ -3486,8 +3486,8 @@ LoadImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
     Channel number:1
     Rescale intensities?:Yes
 """
-        cellprofiler.modules.tests.maybe_download_fly()
-        directory = os.path.join(cellprofiler.modules.tests.example_images_directory(),
+        tests.modules.maybe_download_fly()
+        directory = os.path.join(tests.modules.example_images_directory(),
                                  "ExampleFlyImages")
         self.convtester(pipeline_text, directory)
 
@@ -3560,8 +3560,8 @@ LoadImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
     Channel number:1
     Rescale intensities?:Yes
 """
-        cellprofiler.modules.tests.maybe_download_fly()
-        directory = os.path.join(cellprofiler.modules.tests.example_images_directory(),
+        tests.modules.maybe_download_fly()
+        directory = os.path.join(tests.modules.example_images_directory(),
                                  "ExampleFlyImages")
         self.convtester(pipeline_text, directory)
 
@@ -3634,8 +3634,8 @@ LoadImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
     Channel number:1
     Rescale intensities?:Yes
 """
-        cellprofiler.modules.tests.maybe_download_fly()
-        directory = os.path.join(cellprofiler.modules.tests.example_images_directory(),
+        tests.modules.maybe_download_fly()
+        directory = os.path.join(tests.modules.example_images_directory(),
                                  "ExampleFlyImages")
         self.convtester(pipeline_text, directory)
 
@@ -3708,8 +3708,8 @@ LoadImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
     Channel number:1
     Rescale intensities?:Yes
 """
-        cellprofiler.modules.tests.maybe_download_fly()
-        directory = os.path.join(cellprofiler.modules.tests.example_images_directory(),
+        tests.modules.maybe_download_fly()
+        directory = os.path.join(tests.modules.example_images_directory(),
                                  "ExampleFlyImages")
         self.convtester(pipeline_text, directory)
 
@@ -3766,7 +3766,7 @@ LoadImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
     Channel number:1
     Rescale intensities?:Yes
 """
-        directory = os.path.join(cellprofiler.modules.tests.example_images_directory(),
+        directory = os.path.join(tests.modules.example_images_directory(),
                                  "ExampleSBSImages")
         self.convtester(pipeline_text, directory)
 

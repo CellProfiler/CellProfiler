@@ -11,13 +11,13 @@ import cellprofiler.measurement
 import cellprofiler.module
 import cellprofiler.modules.createbatchfiles
 import cellprofiler.modules.loadimages
-import cellprofiler.modules.tests
 import cellprofiler.pipeline
 import cellprofiler.preferences
 import cellprofiler.preferences
 import cellprofiler.region
 import cellprofiler.setting
 import cellprofiler.workspace
+import tests.modules
 
 cellprofiler.preferences.set_headless()
 
@@ -415,13 +415,13 @@ CreateBatchFiles:[module_num:19|svn_version:\'Unknown\'|variable_revision_number
             self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
             self.assertFalse(isinstance(event, cellprofiler.pipeline.RunExceptionEvent))
 
-        cellprofiler.modules.tests.maybe_download_sbs()
+        tests.modules.maybe_download_sbs()
         for windows_mode in ((False, True) if sys.platform.startswith("win")
                              else (False,)):
             pipeline = cellprofiler.pipeline.Pipeline()
             pipeline.add_listener(callback)
             pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
-            ipath = os.path.join(cellprofiler.modules.tests.example_images_directory(), 'ExampleSBSImages')
+            ipath = os.path.join(tests.modules.example_images_directory(), 'ExampleSBSImages')
             bpath = tempfile.mkdtemp()
             bfile = os.path.join(bpath, cellprofiler.modules.createbatchfiles.F_BATCH_DATA)
             hfile = os.path.join(bpath, cellprofiler.modules.createbatchfiles.F_BATCH_DATA_H5)

@@ -7,7 +7,6 @@ import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.module
 import cellprofiler.modules.measuretexture
-import cellprofiler.modules.tests
 import cellprofiler.pipeline
 import cellprofiler.preferences
 import cellprofiler.region

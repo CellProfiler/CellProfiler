@@ -6,12 +6,12 @@ import cellprofiler.measurement
 import cellprofiler.module
 import cellprofiler.modules.align
 import cellprofiler.modules.loadimages
-import cellprofiler.modules.tests
 import cellprofiler.pipeline
 import cellprofiler.preferences
 import cellprofiler.region
 import cellprofiler.workspace
 import numpy
+import tests.modules
 
 cellprofiler.preferences.set_headless()
 
@@ -654,7 +654,7 @@ Name the second output image:AlignedImage2
 
         This is a regression test for the bug, IMG-284
         """
-        image = cellprofiler.modules.tests.read_example_image("ExampleFlyImages",
+        image = tests.modules.read_example_image("ExampleFlyImages",
                                    '01_POS002_D.TIF')
         image = image[0:300, 0:300]  # make smaller so as to be faster
         workspace, module = self.make_workspace((image, image), (None, None))

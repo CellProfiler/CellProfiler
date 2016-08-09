@@ -11,13 +11,13 @@ import cellprofiler.module
 import cellprofiler.modules.identify
 import cellprofiler.modules.loadimages
 import cellprofiler.modules.loadsingleimage
-import cellprofiler.modules.tests
 import cellprofiler.pipeline
 import cellprofiler.preferences
 import cellprofiler.region
 import cellprofiler.setting
 import cellprofiler.workspace
 import numpy
+import tests.modules
 import tests.modules.test_loadimages
 
 OBJECTS_NAME = "myobjects"
@@ -27,11 +27,11 @@ OUTLINES_NAME = "myoutlines"
 class TestLoadSingleImage(unittest.TestCase, tests.modules.test_loadimages.ConvtesterMixin):
     @classmethod
     def setUpClass(cls):
-        cellprofiler.modules.tests.maybe_download_sbs()
+        tests.modules.maybe_download_sbs()
         cls.test_filename = "1-162hrh2ax2.tif"
         cls.test_folder = "loadsingleimage"
         cls.test_shape = (27, 18)
-        path = cellprofiler.modules.tests.make_12_bit_image(cls.test_folder, cls.test_filename, (27, 18))
+        path = tests.modules.make_12_bit_image(cls.test_folder, cls.test_filename, (27, 18))
         cls.test_path = os.path.dirname(path)
         with open(path, "rb") as fd:
             cls.test_md5 = hashlib.md5(fd.read()).hexdigest()
@@ -351,9 +351,9 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
         # If LoadSingleImage appears first, pathname data does not show
         # up in the measurements.
         #
-        cellprofiler.modules.tests.maybe_download_sbs()
+        tests.modules.maybe_download_sbs()
         folder = "ExampleSBSImages"
-        path = os.path.join(cellprofiler.modules.tests.example_images_directory(), folder)
+        path = os.path.join(tests.modules.example_images_directory(), folder)
         filename = "Channel1-01-A-01.tif"
         pipeline = cellprofiler.pipeline.Pipeline()
         lsi = cellprofiler.modules.loadsingleimage.LoadSingleImage()
@@ -647,8 +647,8 @@ LoadSingleImage:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:5
     Name the outlines:NucleiOutlines
     Rescale intensities?:No
 """
-        cellprofiler.modules.tests.maybe_download_sbs()
-        directory = os.path.join(cellprofiler.modules.tests.example_images_directory(),
+        tests.modules.maybe_download_sbs()
+        directory = os.path.join(tests.modules.example_images_directory(),
                                  "ExampleSBSImages")
         self.convtester(pipeline_text, directory)
 
@@ -722,8 +722,8 @@ LoadSingleImage:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:5
     Name the outlines:NucleiOutlines
     Rescale intensities?:No
 """
-        cellprofiler.modules.tests.maybe_download_sbs()
-        directory = os.path.join(cellprofiler.modules.tests.example_images_directory(),
+        tests.modules.maybe_download_sbs()
+        directory = os.path.join(tests.modules.example_images_directory(),
                                  "ExampleSBSImages")
         self.convtester(pipeline_text, directory)
 
@@ -788,8 +788,8 @@ LoadSingleImage:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:5
     Name the outlines:NucleiOutlines
     Rescale intensities?:Yes
 """
-        cellprofiler.modules.tests.maybe_download_sbs()
-        directory = os.path.join(cellprofiler.modules.tests.example_images_directory(),
+        tests.modules.maybe_download_sbs()
+        directory = os.path.join(tests.modules.example_images_directory(),
                                  "ExampleSBSImages")
         self.convtester(pipeline_text, directory)
 
@@ -856,7 +856,7 @@ LoadSingleImage:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:5
     Name the outlines:NucleiOutlines
     Rescale intensities?:No
 """
-        cellprofiler.modules.tests.maybe_download_sbs()
-        directory = os.path.join(cellprofiler.modules.tests.example_images_directory(),
+        tests.modules.maybe_download_sbs()
+        directory = os.path.join(tests.modules.example_images_directory(),
                                  "ExampleSBSImages")
         self.convtester(pipeline_text, directory)

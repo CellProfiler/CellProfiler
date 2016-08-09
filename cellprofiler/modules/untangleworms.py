@@ -1,4 +1,4 @@
-'''<b>UntangleWorms</b> untangles overlapping worms.
+"""<b>UntangleWorms</b> untangles overlapping worms.
 <hr>
 This module either assembles a training set of sample worms in order to create a worm
 model, or takes a binary image and the results of worm training and
@@ -65,7 +65,7 @@ Ausubel FM, Carpenter AE (2012). "An image analysis toolbox for high-throughput
 <p>See also: Our <a href="http://www.cellprofiler.org/wormtoolbox/">Worm
 Toolbox</a> page for sample images and pipelines, as well
 as video tutorials.</p>
-'''
+"""
 
 import logging
 import os
@@ -184,7 +184,7 @@ class UntangleWorms(cellprofiler.module.Module):
     module_name = "UntangleWorms"
 
     def create_settings(self):
-        '''Create the settings that parameterize the module'''
+        """Create the settings that parameterize the module"""
         self.mode = cellprofiler.setting.Choice(
                 "Train or untangle worms?", [MODE_UNTANGLE, MODE_TRAIN], doc="""
             <b>UntangleWorms</b> has two modes:
@@ -286,7 +286,7 @@ class UntangleWorms(cellprofiler.module.Module):
         self.training_set_directory.dir_choice = cellprofiler.preferences.DEFAULT_OUTPUT_FOLDER_NAME
 
         def get_directory_fn():
-            '''Get the directory for the CSV file name'''
+            """Get the directory for the CSV file name"""
             return self.training_set_directory.get_absolute_path()
 
         def set_directory_fn(path):
@@ -552,7 +552,7 @@ class UntangleWorms(cellprofiler.module.Module):
         return result
 
     def overlap_weight(self, params):
-        '''The overlap weight to use in the cost calculation'''
+        """The overlap weight to use in the cost calculation"""
         if not self.wants_training_set_weights:
             return self.override_overlap_weight.value
         elif params is None:
@@ -561,7 +561,7 @@ class UntangleWorms(cellprofiler.module.Module):
             return params.overlap_weight
 
     def leftover_weight(self, params):
-        '''The leftover weight to use in the cost calculation'''
+        """The leftover weight to use in the cost calculation"""
         if not self.wants_training_set_weights:
             return self.override_leftover_weight.value
         elif params is None:
@@ -570,7 +570,7 @@ class UntangleWorms(cellprofiler.module.Module):
             return params.leftover_weight
 
     def ncontrol_points(self):
-        '''# of control points when making a training set'''
+        """# of control points when making a training set"""
         if self.mode == MODE_UNTANGLE:
             params = self.read_params()
             return params.num_control_points
@@ -586,23 +586,23 @@ class UntangleWorms(cellprofiler.module.Module):
         return self.custom_complexity.value
 
     def prepare_group(self, workspace, grouping, image_numbers):
-        '''Prepare to process a group of worms'''
+        """Prepare to process a group of worms"""
         d = self.get_dictionary(workspace.image_set_list)
         d[TRAINING_DATA] = []
 
     def get_dictionary_for_worker(self):
-        '''Don't share the training data dictionary between workers'''
+        """Don't share the training data dictionary between workers"""
         return {TRAINING_DATA: []}
 
     def run(self, workspace):
-        '''Run the module on the current image set'''
+        """Run the module on the current image set"""
         if self.mode == MODE_TRAIN:
             self.run_train(workspace)
         else:
             self.run_untangle(workspace)
 
     class TrainingData(object):
-        '''One worm's training data'''
+        """One worm's training data"""
 
         def __init__(self, area, skel_length, angles, radial_profile):
             self.area = area
@@ -611,7 +611,7 @@ class UntangleWorms(cellprofiler.module.Module):
             self.radial_profile = radial_profile
 
     def run_train(self, workspace):
-        '''Train based on the current image set'''
+        """Train based on the current image set"""
 
         image_name = self.image_name.value
         image_set = workspace.image_set
@@ -659,11 +659,11 @@ class UntangleWorms(cellprofiler.module.Module):
                 dworms.append(control_points)
 
     def is_aggregation_module(self):
-        '''Building the model requires aggregation across image sets'''
+        """Building the model requires aggregation across image sets"""
         return self.mode == MODE_TRAIN
 
     def post_group(self, workspace, grouping):
-        '''Write the training data file as we finish grouping.'''
+        """Write the training data file as we finish grouping."""
         if self.mode == MODE_TRAIN:
             from cellprofiler.utilities.version import version_number
             worms = self.get_dictionary(workspace.image_set_list)[TRAINING_DATA]
@@ -780,7 +780,7 @@ class UntangleWorms(cellprofiler.module.Module):
                     angles_covariance_matrix
 
     def run_untangle(self, workspace):
-        '''Untangle based on the current image set'''
+        """Untangle based on the current image set"""
         params = self.read_params()
         image_name = self.image_name.value
         image_set = workspace.image_set
@@ -995,7 +995,7 @@ class UntangleWorms(cellprofiler.module.Module):
             figure.Refresh()
 
     def single_worm_find_path(self, workspace, labels, i, skeleton, params):
-        '''Finds the worm's skeleton  as a path.
+        """Finds the worm's skeleton  as a path.
 
         labels - the labels matrix, labeling single and clusters of worms
 
@@ -1010,16 +1010,16 @@ class UntangleWorms(cellprofiler.module.Module):
               i coordinates in the first row and j coordinates in the second.)
 
         path_struct: a structure describing the path
-        '''
+        """
         binary_im = labels == i
-        skeleton = skeleton & binary_im
+        skeleton &= binary_im
         graph_struct = self.get_graph_from_binary(binary_im, skeleton)
         return self.get_longest_path_coords(
                 graph_struct, params.max_path_length)
 
     def get_graph_from_binary(self, binary_im, skeleton, max_radius=None,
                               max_skel_length=None):
-        '''Manufacture a graph of the skeleton of the worm
+        """Manufacture a graph of the skeleton of the worm
 
         Given a binary image containing a cluster of worms, returns a structure
         describing the graph structure of the skeleton of the cluster. This graph
@@ -1078,7 +1078,7 @@ class UntangleWorms(cellprofiler.module.Module):
            two branch areas), its orientation is well-defined, i.e. one branch
            area will be chosen as starting end. (Even though in this case, the
            "positive direction" of the segment cannot be determined from the
-           information in graph_struct.segments.)'''
+           information in graph_struct.segments.)"""
         branch_areas_binary = centrosome.cpmorphology.branchpoints(skeleton)
         if max_radius is not None:
             #
@@ -1135,7 +1135,7 @@ class UntangleWorms(cellprofiler.module.Module):
                 branch_areas_binary, segments_binary)
 
     def trace_segments(self, segments_binary):
-        '''Find distance of every point in a segment from a segment endpoint
+        """Find distance of every point in a segment from a segment endpoint
 
         segments_binary - a binary mask of the segments in an image.
 
@@ -1147,7 +1147,7 @@ class UntangleWorms(cellprofiler.module.Module):
                 the segment.)
         distance - the propagation distance of the point from the endpoint
         num_segments - the # of labelled segments
-        '''
+        """
         #
         # Break long skeletons into pieces whose maximum length
         # is max_skel_length.
@@ -1231,7 +1231,7 @@ class UntangleWorms(cellprofiler.module.Module):
 
     def get_graph_from_branching_areas_and_segments(
             self, branch_areas_binary, segments_binary):
-        '''Turn branches + segments into a graph
+        """Turn branches + segments into a graph
 
         branch_areas_binary - binary mask of branch areas
 
@@ -1243,7 +1243,7 @@ class UntangleWorms(cellprofiler.module.Module):
 
         Output is same format as get_graph_from_binary(), so for details, see
         get_graph_from_binary
-        '''
+        """
         branch_areas_labeled, num_branch_areas = scipy.ndimage.label(
                 branch_areas_binary, centrosome.cpmorphology.eight_connect)
 
@@ -1292,7 +1292,7 @@ class UntangleWorms(cellprofiler.module.Module):
         incidence_matrix |= incidence_directions
 
         class Result(object):
-            '''A result graph:
+            """A result graph:
 
             image_size: size of input image
 
@@ -1314,7 +1314,7 @@ class UntangleWorms(cellprofiler.module.Module):
             incidence_matrix: matrix of areas x segments indicating connections
 
             incidence_directions: direction of each connection
-            '''
+            """
 
             def __init__(self, branch_areas_binary, counts, i, j,
                          branch_ij, branch_counts, incidence_matrix,
@@ -1343,7 +1343,7 @@ class UntangleWorms(cellprofiler.module.Module):
                       incidence_matrix, incidence_directions)
 
     def make_incidence_matrix(self, L1, N1, L2, N2):
-        '''Return an N1+1 x N2+1 matrix that marks all L1 and L2 that are 8-connected
+        """Return an N1+1 x N2+1 matrix that marks all L1 and L2 that are 8-connected
 
         L1 - a labels matrix
         N1 - # of labels in L1
@@ -1354,7 +1354,7 @@ class UntangleWorms(cellprofiler.module.Module):
 
         Returns a matrix where M[n,m] is true if there is some pixel in
         L1 with value n that is 8-connected to a pixel in L2 with value m
-        '''
+        """
         #
         # Overlay the two labels matrix
         #
@@ -1393,7 +1393,7 @@ class UntangleWorms(cellprofiler.module.Module):
         return incidence != 0
 
     def get_longest_path_coords(self, graph_struct, max_length):
-        '''Given a graph describing the structure of the skeleton of an image,
+        """Given a graph describing the structure of the skeleton of an image,
         returns the longest non-self-intersecting (with some caveats, see
         get_all_paths.m) path through that graph, specified as a polyline.
 
@@ -1410,7 +1410,7 @@ class UntangleWorms(cellprofiler.module.Module):
 
         path_struct: A structure, with entries 'segments' and 'branch_areas',
         descring the path found, in relation to graph_struct. See
-        get_all_paths.m for details.'''
+        get_all_paths.m for details."""
 
         path_list = self.get_all_paths(graph_struct, 0, max_length)
         current_longest_path_coords = []
@@ -1426,7 +1426,7 @@ class UntangleWorms(cellprofiler.module.Module):
         return current_longest_path_coords, current_path
 
     def path_to_pixel_coords(self, graph_struct, path):
-        '''Given a structure describing paths in a graph, converts those to a
+        """Given a structure describing paths in a graph, converts those to a
         polyline (i.e. successive coordinates) representation of the same graph.
 
         (This is possible because the graph_struct descriptor contains
@@ -1454,7 +1454,7 @@ class UntangleWorms(cellprofiler.module.Module):
         likely to contain segments consisting of runs of pixels where each is
         close to the next (in its 8-neighbourhood), but interleaved with
         reasonably long "jumps", where there is some distance between the end
-        of one segment and the beginning of the next.'''
+        of one segment and the beginning of the next."""
 
         if len(path.segments) == 1:
             return graph_struct.segments[path.segments[0]][0]
@@ -1469,20 +1469,20 @@ class UntangleWorms(cellprofiler.module.Module):
         return numpy.vstack(result)
 
     def calculate_path_length(self, path_coords):
-        '''Return the path length, given path coordinates as Nx2'''
+        """Return the path length, given path coordinates as Nx2"""
         if len(path_coords) < 2:
             return 0
         return numpy.sum(numpy.sqrt(numpy.sum((path_coords[:-1] - path_coords[1:]) ** 2, 1)))
 
     def calculate_cumulative_lengths(self, path_coords):
-        '''return a cumulative length vector given Nx2 path coordinates'''
+        """return a cumulative length vector given Nx2 path coordinates"""
         if len(path_coords) < 2:
             return numpy.array([0] * len(path_coords))
         return numpy.hstack(([0],
                              numpy.cumsum(numpy.sqrt(numpy.sum((path_coords[:-1] - path_coords[1:]) ** 2, 1)))))
 
     def single_worm_filter(self, workspace, path_coords, params):
-        '''Given a path representing a single worm, caculates its shape cost, and
+        """Given a path representing a single worm, caculates its shape cost, and
         either accepts it as a worm or rejects it, depending on whether or not
         the shape cost is higher than some threshold.
 
@@ -1507,7 +1507,7 @@ class UntangleWorms(cellprofiler.module.Module):
             (num_control_points-1)x(num_control_points-1) double matrix. See
             calculate_angle_shape_cost() for how this is used.
 
-         Returns true if worm passes filter'''
+         Returns true if worm passes filter"""
         if len(path_coords) < 2:
             return False
         cumul_lengths = self.calculate_cumulative_lengths(path_coords)
@@ -1520,7 +1520,7 @@ class UntangleWorms(cellprofiler.module.Module):
         return cost < params.cost_threshold
 
     def sample_control_points(self, path_coords, cumul_lengths, num_control_points):
-        '''Sample equally-spaced control points from the Nx2 path coordinates
+        """Sample equally-spaced control points from the Nx2 path coordinates
 
         Inputs:
 
@@ -1541,7 +1541,7 @@ class UntangleWorms(cellprofiler.module.Module):
         jth control point, sampled along the path. The first and last control
         points are equal to the first and last points of the path (i.e. the
         points whose coordinates are the first and last columns of
-        path_coords), respectively.'''
+        path_coords), respectively."""
         assert num_control_points > 2
         #
         # Paranoia - eliminate any coordinates with length = 0, esp the last.
@@ -1575,7 +1575,7 @@ class UntangleWorms(cellprofiler.module.Module):
 
     def calculate_angle_shape_cost(self, control_coords, total_length,
                                    mean_angles, inv_angles_covariance_matrix):
-        '''% Calculates a shape cost based on the angle shape cost model.
+        """% Calculates a shape cost based on the angle shape cost model.
 
         Given a set of N control points, calculates the N-2 angles between
         lines joining consecutive control points, forming them into a vector.
@@ -1623,19 +1623,19 @@ class UntangleWorms(cellprofiler.module.Module):
         the case when two adjacnet line segments are parallel (and thus
         belong to the same line); the angles can be thought of as the
         (signed) angles through which the path "turns", and are thus not the
-        angles between the line segments as such.'''
+        angles between the line segments as such."""
 
         angles = self.get_angles(control_coords)
         feat_vec = numpy.hstack((angles, [total_length])) - mean_angles
         return numpy.dot(numpy.dot(feat_vec, inv_angles_covariance_matrix), feat_vec)
 
     def get_angles(self, control_coords):
-        '''Extract the angles at each interior control point
+        """Extract the angles at each interior control point
 
         control_coords - an Nx2 array of coordinates of control points
 
         returns an N-2 vector of angles between -pi and pi
-        '''
+        """
         segments_delta = control_coords[1:] - control_coords[:-1]
         segment_bearings = numpy.arctan2(segments_delta[:, 0], segments_delta[:, 1])
         angles = segment_bearings[1:] - segment_bearings[:-1]
@@ -1648,7 +1648,7 @@ class UntangleWorms(cellprofiler.module.Module):
 
     def cluster_graph_building(self, workspace, labels, i, skeleton, params):
         binary_im = labels == i
-        skeleton = skeleton & binary_im
+        skeleton &= binary_im
 
         return self.get_graph_from_binary(
                 binary_im, skeleton, params.max_radius,
@@ -1663,7 +1663,7 @@ class UntangleWorms(cellprofiler.module.Module):
             return "{ segments=" + repr(self.segments) + " branch_areas=" + repr(self.branch_areas) + " }"
 
     def get_all_paths(self, graph_struct, min_length, max_length):
-        '''Given a structure describing a graph, returns a cell array containing
+        """Given a structure describing a graph, returns a cell array containing
         a list of all paths through the graph.
 
         The format of graph_struct is exactly that outputted by
@@ -1720,7 +1720,7 @@ class UntangleWorms(cellprofiler.module.Module):
          The output is a list of objects, "o" of the form
 
          o.segments - segment indices of the path
-         o.branch_areas - branch area indices of the path'''
+         o.branch_areas - branch area indices of the path"""
 
         graph_struct.incident_branch_areas, graph_struct.incident_segments = \
             self.build_incidence_lists(graph_struct)
@@ -1748,12 +1748,12 @@ class UntangleWorms(cellprofiler.module.Module):
                 yield path
 
     def build_incidence_lists(self, graph_struct):
-        '''Return a list of all branch areas incident to j for each segment
+        """Return a list of all branch areas incident to j for each segment
 
         incident_branch_areas{j} is a row array containing a list of all those
         branch areas incident to segment j; similary, incident_segments{i} is a
         row array containing a list of all those segments incident to branch area
-        i.'''
+        i."""
         m = graph_struct.incidence_matrix.shape[1]
         n = graph_struct.incidence_matrix.shape[0]
         incident_segments = [
@@ -1767,11 +1767,11 @@ class UntangleWorms(cellprofiler.module.Module):
     def get_all_paths_recur(self, graph,
                             unfinished_segment, unfinished_branch_areas,
                             current_length, min_length, max_length):
-        '''Recursively find paths
+        """Recursively find paths
 
         incident_branch_areas - list of all branch areas incident on a segment
         incident_segments - list of all segments incident on a branch
-        '''
+        """
         if len(unfinished_segment) == 0:
             return
         last_segment = unfinished_segment[-1]
@@ -1984,7 +1984,7 @@ class UntangleWorms(cellprofiler.module.Module):
 
     def fast_selection(self, costs, path_segment_matrix, segment_lengths,
                        overlap_weight, leftover_weight, max_num_worms):
-        '''Select the best subset of paths using a breadth-first search
+        """Select the best subset of paths using a breadth-first search
 
         costs - the shape costs of every path
 
@@ -1998,7 +1998,7 @@ class UntangleWorms(cellprofiler.module.Module):
         leftover_weight - the penalty per pixel of an unincluded segment
 
         max_num_worms - maximum # of worms allowed in returned match.
-        '''
+        """
         current_best_subset = []
         current_best_cost = numpy.sum(segment_lengths) * leftover_weight
         current_costs = costs
@@ -2020,7 +2020,7 @@ class UntangleWorms(cellprofiler.module.Module):
                          current_best_subset, current_best_cost,
                          current_path_segment_matrix, current_path_choices,
                          overlap_weight, leftover_weight):
-        '''Select from among sets of N paths
+        """Select from among sets of N paths
 
         Select the best subset from among all possible sets of N paths,
         then create the list of all sets of N+1 paths
@@ -2046,7 +2046,7 @@ class UntangleWorms(cellprofiler.module.Module):
         returns the current best subset, the current best cost and
         the current_path_segment_matrix and current_path_choices for the
         next round.
-        '''
+        """
         #
         # Compute the cost, not considering uncovered segments
         #
@@ -2108,7 +2108,7 @@ class UntangleWorms(cellprofiler.module.Module):
                      current_subset, last_chosen, current_cost,
                      current_segment_coverings, current_best_subset,
                      current_best_cost, branching_factors, current_level):
-        '''Perform a recursive depth-first search on sets of paths
+        """Perform a recursive depth-first search on sets of paths
 
         Perform a depth-first search recursively,  keeping the best (so far)
         found subset of paths in current_best_subset, current_cost.
@@ -2129,7 +2129,7 @@ class UntangleWorms(cellprofiler.module.Module):
 
         current_segments_coverings, meanwhile, is a logical array of length equal
         to the number of segments in the graph, keeping track of the segments
-        covered by paths in current_subset.'''
+        covered by paths in current_subset."""
 
         # The cost of current_subset, including the leftover cost term
         this_cost = current_cost + leftover_weight * numpy.sum(
@@ -2172,7 +2172,7 @@ class UntangleWorms(cellprofiler.module.Module):
         return current_best_subset, current_best_cost
 
     def worm_descriptor_building(self, all_path_coords, params, shape):
-        '''Return the coordinates of reconstructed worms in i,j,v form
+        """Return the coordinates of reconstructed worms in i,j,v form
 
         Given a list of paths found in an image, reconstructs labeled
         worms.
@@ -2192,7 +2192,7 @@ class UntangleWorms(cellprofiler.module.Module):
         * the lengths of each worm
         * the angles for control points other than the ends
         * the coordinates of the control points
-        '''
+        """
         num_control_points = params.num_control_points
         if len(all_path_coords) == 0:
             return (numpy.zeros((0, 3), int), numpy.zeros(0),
@@ -2232,7 +2232,7 @@ class UntangleWorms(cellprofiler.module.Module):
 
     def rebuild_worm_from_control_points_approx(self, control_coords,
                                                 worm_radii, shape):
-        '''Rebuild a worm from its control coordinates
+        """Rebuild a worm from its control coordinates
 
         Given a worm specified by some control points along its spline,
         reconstructs an approximate binary image representing the worm.
@@ -2251,7 +2251,7 @@ class UntangleWorms(cellprofiler.module.Module):
         final worm.
 
         Outputs:
-        The coordinates of all pixels in the worm in an N x 2 array'''
+        The coordinates of all pixels in the worm in an N x 2 array"""
         index, count, i, j = centrosome.cpmorphology.get_line_pts(control_coords[:-1, 0],
                                                 control_coords[:-1, 1],
                                                 control_coords[1:, 0],
@@ -2315,7 +2315,7 @@ class UntangleWorms(cellprofiler.module.Module):
         return i[mask], j[mask]
 
     def read_params(self):
-        '''Read the parameters file'''
+        """Read the parameters file"""
         if not hasattr(self, "training_params"):
             self.training_params = {}
         return read_params(self.training_set_directory,
@@ -2335,13 +2335,13 @@ class UntangleWorms(cellprofiler.module.Module):
                             self.training_set_file_name)
 
     def validate_module_warnings(self, pipeline):
-        '''Warn user re: Test mode '''
+        """Warn user re: Test mode """
         if pipeline.test_mode and self.mode == MODE_TRAIN:
             raise cellprofiler.setting.ValidationError("UntangleWorms will not produce training set output in Test Mode",
                                                        self.training_set_file_name)
 
     def get_measurement_columns(self, pipeline):
-        '''Return a column of information for each measurement feature'''
+        """Return a column of information for each measurement feature"""
         result = []
         if self.mode == MODE_UNTANGLE:
             object_names = []
@@ -2360,7 +2360,7 @@ class UntangleWorms(cellprofiler.module.Module):
         return result
 
     def angle_features(self):
-        '''Return a list of angle feature names'''
+        """Return a list of angle feature names"""
         try:
             return ["_".join((F_ANGLE, str(n)))
                     for n in range(1, self.ncontrol_points() - 1)]
@@ -2370,10 +2370,10 @@ class UntangleWorms(cellprofiler.module.Module):
             return []
 
     def control_point_features(self, get_x):
-        '''Return a list of control point feature names
+        """Return a list of control point feature names
 
         get_x - return the X coordinate control point features if true, else y
-        '''
+        """
         try:
             return ["_".join((F_CONTROL_POINT_X if get_x else F_CONTROL_POINT_Y, str(n)))
                     for n in range(1, self.ncontrol_points() + 1)]
@@ -2427,7 +2427,7 @@ class UntangleWorms(cellprofiler.module.Module):
         return scales
 
     def prepare_to_create_batch(self, workspace, fn_alter_path):
-        '''Prepare to create a batch file
+        """Prepare to create a batch file
 
         This function is called when CellProfiler is about to create a
         file for batch processing. It will pickle the image set list's
@@ -2441,7 +2441,7 @@ class UntangleWorms(cellprofiler.module.Module):
                         handles issues such as replacing backslashes and
                         mapping mountpoints. It should be called for every
                         pathname stored in the settings or legacy fields.
-        '''
+        """
         self.training_set_directory.alter_for_create_batch_files(fn_alter_path)
         return True
 
@@ -2455,14 +2455,14 @@ class UntangleWorms(cellprofiler.module.Module):
 
 
 def read_params(training_set_directory, training_set_file_name, d):
-    '''Read a training set parameters  file
+    """Read a training set parameters  file
 
     training_set_directory - the training set directory setting
 
     training_set_file_name - the training set file name setting
 
     d - a dictionary that stores cached parameters
-    '''
+    """
 
     #
     # The parameters file is a .xml file with the following structure:
@@ -2506,14 +2506,14 @@ def read_params(training_set_directory, training_set_file_name, d):
     #     radii_from_training: vector ?of length num_control_points?
     #
     class X(object):
-        '''This "class" is used as a vehicle for arbitrary dot notation
+        """This "class" is used as a vehicle for arbitrary dot notation
 
         For instance:
         > x = X()
         > x.foo = 1
         > x.foo
         1
-        '''
+        """
         pass
 
     path = training_set_directory.get_absolute_path()
@@ -2615,7 +2615,7 @@ def read_params(training_set_directory, training_set_file_name, d):
         MATRIX = "matrix"
 
         def mp(*args, **kwargs):
-            '''Look up a field from mat_params'''
+            """Look up a field from mat_params"""
             x = mat_params
             for arg in args[:-1]:
                 x = x[arg][0, 0]
@@ -2662,7 +2662,7 @@ def read_params(training_set_directory, training_set_file_name, d):
 
 
 def recalculate_single_worm_control_points(all_labels, ncontrolpoints):
-    '''Recalculate the control points for labeled single worms
+    """Recalculate the control points for labeled single worms
 
     Given a labeling of single worms, recalculate the control points
     for those worms.
@@ -2679,7 +2679,7 @@ def recalculate_single_worm_control_points(all_labels, ncontrolpoints):
     coordinate.
 
     a vector of N lengths.
-    '''
+    """
 
     all_object_numbers = [
         filter((lambda n: n > 0), numpy.unique(l)) for l in all_labels]

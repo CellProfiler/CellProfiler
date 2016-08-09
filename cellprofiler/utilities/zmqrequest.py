@@ -18,8 +18,8 @@ SD_KEY_DICT = "__keydict__"
 
 
 def make_CP_encoder(buffers):
-    '''create an encoder for CellProfiler data and numpy arrays (which will be
-    stored in the input argument)'''
+    """create an encoder for CellProfiler data and numpy arrays (which will be
+    stored in the input argument)"""
 
     def encoder(data, buffers=buffers):
         if isinstance(data, np.ndarray):
@@ -82,7 +82,7 @@ def make_CP_decoder(buffers):
 
 
 def make_sendable_dictionary(d):
-    '''Make a dictionary that passes muster with JSON'''
+    """Make a dictionary that passes muster with JSON"""
     result = {}
     fake_key_idx = 1
     for k, v in d.items():
@@ -105,7 +105,7 @@ def make_sendable_dictionary(d):
 
 
 def make_sendable_sequence(l):
-    '''Make a list that passes muster with JSON'''
+    """Make a list that passes muster with JSON"""
     result = []
     for v in l:
         if isinstance(v, (list, tuple)):
@@ -118,7 +118,7 @@ def make_sendable_sequence(l):
 
 
 def decode_sendable_dictionary(d):
-    '''Decode the dictionary encoded by make_sendable_dictionary'''
+    """Decode the dictionary encoded by make_sendable_dictionary"""
     result = {}
     for k, v in d.items():
         if k == SD_KEY_DICT:
@@ -136,7 +136,7 @@ def decode_sendable_dictionary(d):
 
 
 def decode_sendable_sequence(l, desired_type):
-    '''Decode a tuple encoded by make_sendable_sequence'''
+    """Decode a tuple encoded by make_sendable_sequence"""
     result = []
     for v in l:
         if isinstance(v, dict):
@@ -149,12 +149,12 @@ def decode_sendable_sequence(l, desired_type):
 
 
 def json_encode(o):
-    '''Encode an object as a JSON string
+    """Encode an object as a JSON string
 
     o - object to encode
 
     returns a 2-tuple of json-encoded object + buffers of binary stuff
-    '''
+    """
     sendable_dict = make_sendable_dictionary(o)
 
     # replace each buffer with its metadata, and send it separately
@@ -165,27 +165,29 @@ def json_encode(o):
 
 
 def json_decode(json_str, buffers):
-    '''Decode a JSON-encoded string
+    """Decode a JSON-encoded string
 
     json_str - the JSON string
 
     buffers - buffers of binary data to feed into the decoder of special cases
 
     return the decoded dictionary
-    '''
+    """
     decoder = make_CP_decoder(buffers)
     attribute_dict = json.loads(json_str, object_hook=decoder)
     return decode_sendable_dictionary(attribute_dict)
 
 
 class Communicable(object):
-    '''Base class for Requests and Replies.
+    """Base class for Requests and Replies.
 
     All subclasses must accept keyword arguments to __init__() corresponding to
     their attributes.
-    '''
+    """
 
-    def send(self, socket, routing=[]):
+    def send(self, socket, routing=None):
+        if routing is None:
+            routing = []
         if hasattr(self, '_remote'):
             assert not self._remote, "send() called on a non-local Communicable object."
         json_str, buffers = json_encode(self.__dict__)
@@ -237,7 +239,7 @@ class Communicable(object):
 
 
 class Request(Communicable):
-    '''A class for making requests and receiving replies across a zmq REQ
+    """A class for making requests and receiving replies across a zmq REQ
     socket.  When communicated through a socket, the class will self-serialize
     any non-callable attributes that do not start with an underscore.
 
@@ -249,7 +251,7 @@ class Request(Communicable):
 
     All subclasses must accept keyword arguments to __init__() corresponding to
     their attributes.
-    '''
+    """
 
     def __init__(self, **kwargs):
         # all keywords become attributes
@@ -261,27 +263,27 @@ class Request(Communicable):
         return Communicable.recv(socket)
 
     def send_only(self, socket):
-        '''Send the request but don't perform the .recv
+        """Send the request but don't perform the .recv
 
         socket - send on this socket
 
         First part of a two-part client-side request: send the request
         with an expected .recv, possibly after polling to make the .recv
         non-blocking.
-        '''
+        """
         Communicable.send(self, socket)
 
     def set_boundary(self, boundary):
-        '''Set the boundary object to use when sending the reply
+        """Set the boundary object to use when sending the reply
 
         boundary - the reply will be enqueued on this boundary's transmit thread
-        '''
+        """
         self._boundary = boundary
 
     def reply(self, reply_obj, please_reply=False):
-        '''send a reply to a request.  If please_reply is True, wait for and
+        """send a reply to a request.  If please_reply is True, wait for and
         return a reply to the reply.  Note that that reply should be treated
-        like a Request object, i.e., it should be replied to.'''
+        like a Request object, i.e., it should be replied to."""
         assert isinstance(reply_obj, Reply), "send_reply() called with something other than a Reply object!"
         if self._boundary is None:
             return Communicable.reply(self, reply_obj, please_reply)
@@ -290,12 +292,12 @@ class Request(Communicable):
 
 
 class AnalysisRequest(Request):
-    '''A request associated with an analysis
+    """A request associated with an analysis
 
     Every analysis request is made with an analysis ID. The Boundary
     will reply with BoundaryExited if the analysis associated with the
     analysis ID has been cancelled.
-    '''
+    """
 
     def __init__(self, analysis_id, **kwargs):
         Request.__init__(self, **kwargs)
@@ -303,10 +305,10 @@ class AnalysisRequest(Request):
 
 
 class LockStatusRequest(Request):
-    '''A request for the status on some locked file
+    """A request for the status on some locked file
 
     uid - the unique ID stored inside the file's lock
-    '''
+    """
 
     def __init__(self, uid, **kwargs):
         self.uid = uid
@@ -314,11 +316,11 @@ class LockStatusRequest(Request):
 
 
 class Reply(Communicable):
-    '''The counterpart to a Request.
+    """The counterpart to a Request.
 
     All subclasses must accept keyword arguments to __init__() corresponding to
     their attributes.
-    '''
+    """
 
     def __init__(self, **kwargs):
         # all keywords become attributes
@@ -335,11 +337,11 @@ class BoundaryExited(UpstreamExit):
 
 
 class LockStatusReply(Reply):
-    '''A reply to the LockStatusRequest
+    """A reply to the LockStatusRequest
 
     self.uid - the unique ID of the locked file
     self.locked - true if locked, false if not
-    '''
+    """
 
     def __init__(self, uid, locked, **kwargs):
         Reply.__init__(self, **kwargs)
@@ -362,7 +364,7 @@ def get_announcer_address():
 
 
 def register_analysis(analysis_id, upward_queue):
-    '''Register for all analysis request messages with the given ID
+    """Register for all analysis request messages with the given ID
 
     analysis_id - the analysis ID present in every AnalysisRequest
 
@@ -371,7 +373,7 @@ def register_analysis(analysis_id, upward_queue):
     upward_cv - the condition variable used to signal the queue's thread
 
     returns the boundary singleton.
-    '''
+    """
     global the_boundary
     start_boundary()
     the_boundary.register_analysis(analysis_id, upward_queue)
@@ -379,7 +381,7 @@ def register_analysis(analysis_id, upward_queue):
 
 
 def cancel_analysis(analysis_id):
-    '''Cancel an analysis.
+    """Cancel an analysis.
 
     analysis_id - analysis ID of the analysis to be cancelled
 
@@ -387,13 +389,13 @@ def cancel_analysis(analysis_id):
     given analysis_id without matching replies will receive replies of
     BoundaryExited and that no request will be added to the upward_queue
     after the call returns.
-    '''
+    """
     global the_boundary
     the_boundary.cancel_analysis(analysis_id)
 
 
 def join_to_the_boundary():
-    '''Send a stop signal to the boundary thread and join to it'''
+    """Send a stop signal to the boundary thread and join to it"""
     global the_boundary
     if the_boundary is not None:
         the_boundary.join()
@@ -401,7 +403,7 @@ def join_to_the_boundary():
 
 
 class AnalysisContext(object):
-    '''The analysis context holds the pieces needed to route analysis requests'''
+    """The analysis context holds the pieces needed to route analysis requests"""
 
     def __init__(self, analysis_id, upq, lock):
         self.lock = lock
@@ -413,7 +415,7 @@ class AnalysisContext(object):
         self.reqs_pending = set()
 
     def reply(self, req, rep):
-        '''Reply to a AnalysisRequest with this analysis ID
+        """Reply to a AnalysisRequest with this analysis ID
 
         rep - the intended reply
 
@@ -421,7 +423,7 @@ class AnalysisContext(object):
         if BoundaryExited was sent instead.
 
         Always executed on the boundary thread.
-        '''
+        """
         with self.lock:
             if self.cancelled:
                 return False
@@ -431,7 +433,7 @@ class AnalysisContext(object):
             return True
 
     def enqueue(self, req):
-        '''Enqueue a request on the upward queue
+        """Enqueue a request on the upward queue
 
         req - request to be enqueued. The enqueue should be done before
               req.reply is replaced.
@@ -441,7 +443,7 @@ class AnalysisContext(object):
         reply to the request.
 
         Always executes on the boundary thread.
-        '''
+        """
         with self.lock:
             if not self.cancelled:
                 assert req not in self.reqs_pending
@@ -453,11 +455,11 @@ class AnalysisContext(object):
                 return False
 
     def cancel(self):
-        '''Cancel this analysis
+        """Cancel this analysis
 
         All analysis requests will receive BoundaryExited() after this
         method returns.
-        '''
+        """
         with self.lock:
             if self.cancelled:
                 return
@@ -465,10 +467,10 @@ class AnalysisContext(object):
             self.upq = None
 
     def handle_cancel(self):
-        '''Handle a cancel in the boundary thread.
+        """Handle a cancel in the boundary thread.
 
         Take care of workers expecting replies.
-        '''
+        """
         with self.lock:
             for req in list(self.reqs_pending):
                 Communicable.reply(req, BoundaryExited())
@@ -476,7 +478,7 @@ class AnalysisContext(object):
 
 
 class Boundary(object):
-    '''This object serves as the interface between a ZMQ socket passing
+    """This object serves as the interface between a ZMQ socket passing
     Requests and Replies, and a thread or threads serving those requests.
     Received requests are received on a ZMQ socket and placed on upward_queue,
     and notify_all() is called on updward_cv.  Replies (via the Request.reply()
@@ -485,14 +487,14 @@ class Boundary(object):
     The Boundary wakes up the socket thread via the notify socket. This lets
     the socket thread poll for changes on the notify and request sockets, but
     allows it to receive Python objects via the downward queue.
-    '''
+    """
 
     def __init__(self, zmq_address, port=None):
-        '''Construction
+        """Construction
 
         zmq_address - the address for announcements and requests
         port - the port for announcements, defaults to random
-        '''
+        """
         self.analysis_dictionary = {}
         self.analysis_dictionary_lock = threading.RLock()
         #
@@ -566,12 +568,12 @@ class Boundary(object):
     NOTIFY_STOP = "stop"
 
     def register_analysis(self, analysis_id, upward_queue):
-        '''Register a queue to receive analysis requests
+        """Register a queue to receive analysis requests
 
         analysis_id - the analysis ID embedded in each analysis request
 
         upward_queue - place the requests on this queue
-        '''
+        """
         with self.analysis_dictionary_lock:
             self.analysis_dictionary[analysis_id] = AnalysisContext(
                     analysis_id, upward_queue,
@@ -582,29 +584,29 @@ class Boundary(object):
         response_queue.get()
 
     def register_request_class(self, cls_request, upward_queue):
-        '''Register a queue to receive requests of the given class
+        """Register a queue to receive requests of the given class
 
         cls_request - requests that match isinstance(request, cls_request) will
                       be routed to the upward_queue
 
         upward_queue - queue that will receive the requests
-        '''
+        """
         self.request_dictionary[cls_request] = upward_queue
 
     def enqueue_reply(self, req, rep):
-        '''Enqueue a reply to be sent from the boundary thread
+        """Enqueue a reply to be sent from the boundary thread
 
         req - original request
         rep - the reply to the request
-        '''
+        """
         self.send_to_boundary_thread(self.NOTIFY_REPLY_READY, (req, rep))
 
     def cancel(self, analysis_id):
-        '''Cancel an analysis
+        """Cancel an analysis
 
         All requests with the given analysis ID will get a BoundaryExited
         reply after this call returns.
-        '''
+        """
         with self.analysis_dictionary_lock:
             if self.analysis_dictionary[analysis_id].cancelled:
                 return
@@ -615,18 +617,18 @@ class Boundary(object):
         response_queue.get()
 
     def handle_cancel(self, analysis_id, response_queue):
-        '''Handle cancellation in the boundary thread'''
+        """Handle cancellation in the boundary thread"""
         with self.analysis_dictionary_lock:
             self.analysis_dictionary[analysis_id].handle_cancel()
         self.announce_analyses()
         response_queue.put("OK")
 
     def join(self):
-        '''Join to the boundary thread.
+        """Join to the boundary thread.
 
         Note that this should only be done at a point where no worker truly
         expects a reply to its requests.
-        '''
+        """
         self.send_to_boundary_thread(self.NOTIFY_STOP, None)
         self.thread.join()
 
@@ -739,7 +741,7 @@ class Boundary(object):
             os._exit(-1)
 
     def send_to_boundary_thread(self, msg, arg):
-        '''Send a message to the boundary thread via the notify socket
+        """Send a message to the boundary thread via the notify socket
 
         Send a wakeup call to the boundary thread by sending arbitrary
         data to the notify socket, placing the real objects of interest
@@ -750,7 +752,7 @@ class Boundary(object):
 
         args - supplementary arguments passed to the boundary thread via
                the downward queue.
-        '''
+        """
         if not hasattr(self.threadlocal, 'notify_socket'):
             self.threadlocal.notify_socket = self.zmq_context.socket(zmq.PUB)
             self.threadlocal.notify_socket.setsockopt(zmq.LINGER, 0)
@@ -778,13 +780,13 @@ class Boundary(object):
             analysis_context.reply(req, rep)
 
     def handle_register_analysis(self, analysis_id, response_queue):
-        '''Handle a request to register an analysis
+        """Handle a request to register an analysis
 
         analysis_id - analysis_id of new analysis
         response_queue - response queue. Any announce subscriber that registers
                          after the response is placed in this queue
                          will receive an announcement of the analysis.
-        '''
+        """
         self.announce_analyses()
         response_queue.put("OK")
 
@@ -798,7 +800,7 @@ UNLOCK_OK = "OK"
 
 
 def start_lock_thread():
-    '''Start the thread that handles file locking'''
+    """Start the thread that handles file locking"""
     global __lock_thread
     if __lock_thread is not None:
         return
@@ -846,20 +848,20 @@ def start_lock_thread():
 
 
 def get_lock_path(path):
-    '''Return the path to the lockfile'''
+    """Return the path to the lockfile"""
     pathpart, filepart = os.path.split(path)
     return os.path.join(pathpart, u"." + filepart + u".lock")
 
 
 def lock_file(path, timeout=3):
-    '''Lock a file
+    """Lock a file
 
     path - path to the file
 
     timeout - timeout in seconds when waiting for announcement
 
     returns True if we obtained the lock, False if the file is already owned.
-    '''
+    """
     lock_path = get_lock_path(path)
     start_boundary()
     uid = uuid.uuid4().hex
@@ -925,7 +927,7 @@ def lock_file(path, timeout=3):
 
 
 def unlock_file(path):
-    '''Unlock the file at the given path'''
+    """Unlock the file at the given path"""
     if the_boundary is None:
         return
     q = Queue.Queue()

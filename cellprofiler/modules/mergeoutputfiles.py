@@ -1,4 +1,4 @@
-'''<b>MergeOutputFiles</b> merges several output .mat files into one.
+"""<b>MergeOutputFiles</b> merges several output .mat files into one.
 <hr>
 This data tool lets you collect the output .mat files from several runs, for instance,
 as might be created by running CellProfiler in batch mode.
@@ -42,7 +42,7 @@ from individual output files directly into a database using <b>ExportDatabase</b
 as a data tool.</p>
 
 <p>See also <b>CreateBatchFiles</b>, <b>ExportToDatabase</b>.</p>
-'''
+"""
 
 import os
 import sys
@@ -61,7 +61,7 @@ class MergeOutputFiles(cellprofiler.module.Module):
     do_not_check = True
 
     def run_as_data_tool(self):
-        '''Run the module as a data tool'''
+        """Run the module as a data tool"""
         import wx
         from wx.lib.mixins.listctrl import ListCtrlAutoWidthMixin
         from cellprofiler.gui import get_cp_icon
@@ -70,7 +70,7 @@ class MergeOutputFiles(cellprofiler.module.Module):
         # which is part of the wx source distribution
         #
         class AWListCtrl(wx.ListCtrl, ListCtrlAutoWidthMixin):
-            '''A list control with autosizing of the last column'''
+            """A list control with autosizing of the last column"""
 
             def __init__(self, parent, ID=wx.ID_ANY, pos=wx.DefaultPosition,
                          size=wx.DefaultSize, style=0):
@@ -171,7 +171,7 @@ class MergeOutputFiles(cellprofiler.module.Module):
 
     @staticmethod
     def on_add(event, list_control, order):
-        '''Handle the add button being pressed'''
+        """Handle the add button being pressed"""
         import wx
         assert isinstance(list_control, wx.ListCtrl)
         dlg = wx.FileDialog(list_control.Parent,
@@ -190,7 +190,7 @@ class MergeOutputFiles(cellprofiler.module.Module):
 
     @staticmethod
     def on_remove(event, list_control, order):
-        '''Remove the selected items for the list control'''
+        """Remove the selected items for the list control"""
         import wx
         assert isinstance(list_control, wx.ListCtrl)
 
@@ -212,7 +212,7 @@ class MergeOutputFiles(cellprofiler.module.Module):
 
     @staticmethod
     def get_anti_order(order):
-        '''Return a dictionary whose values are the keys of the input and vice versa'''
+        """Return a dictionary whose values are the keys of the input and vice versa"""
         anti_order = {}
         for key in order.keys():
             anti_order[order[key]] = key
@@ -278,14 +278,14 @@ class MergeOutputFiles(cellprofiler.module.Module):
 
     @staticmethod
     def sort(list_ctrl, order):
-        '''Sort the items in the list control according to the order
+        """Sort the items in the list control according to the order
 
         list_ctrl - list control with items indicated by order's keys
 
         order - a dictionary where the keys are the item ids
                 and the values are the relative order of those ids
                 with respect to each other
-        '''
+        """
 
         def sortfn(item1, item2):
             return cmp(order[item1], order[item2])

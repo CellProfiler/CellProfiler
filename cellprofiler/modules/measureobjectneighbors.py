@@ -1,4 +1,4 @@
-'''<b>Measure Object Neighbors</b> calculates how many neighbors each
+"""<b>Measure Object Neighbors</b> calculates how many neighbors each
 object has and records various properties about the neighbors' relationships,
 including the percentage of an object's edge pixels that touch a neighbor.
 <hr>
@@ -37,7 +37,7 @@ that object had been discarded, <i>NumberOfNeighbors</i> will be positive, but
 there will not be a corresponding <i>ClosestObjectNumber</i>.
 
 See also the <b>Identify</b> modules.
-'''
+"""
 
 import cellprofiler.image
 import cellprofiler.measurement
@@ -195,7 +195,7 @@ class MeasureObjectNeighbors(cellprofiler.module.Module):
 
     @property
     def neighbors_are_objects(self):
-        '''True if the neighbors are taken from the same object set as objects'''
+        """True if the neighbors are taken from the same object set as objects"""
         return self.object_name.value == self.neighbors_name.value
 
     def run(self, workspace):
@@ -227,7 +227,7 @@ class MeasureObjectNeighbors(cellprofiler.module.Module):
             # Add the border labels if any were excluded
             touching_border_object_number = numpy.cumsum(touching_border) + \
                                             numpy.max(neighbor_labels)
-            touching_border_mask = touching_border_mask & (neighbor_labels == 0)
+            touching_border_mask &= neighbor_labels == 0
             neighbor_labels = neighbor_labels.copy().astype(numpy.int32)
             neighbor_labels[touching_border_mask] = touching_border_object_number[
                 unedited_segmented[touching_border_mask]]
@@ -622,7 +622,7 @@ class MeasureObjectNeighbors(cellprofiler.module.Module):
                              self.neighbors_name.value, scale))
 
     def get_measurement_columns(self, pipeline):
-        '''Return column definitions for measurements made by this module'''
+        """Return column definitions for measurements made by this module"""
         coltypes = dict([(feature,
                           cellprofiler.measurement.COLTYPE_INTEGER
                           if feature in (M_NUMBER_OF_NEIGHBORS,
@@ -636,7 +636,7 @@ class MeasureObjectNeighbors(cellprofiler.module.Module):
                 for feature_name in self.all_features]
 
     def get_object_relationships(self, pipeline):
-        '''Return column definitions for object relationships output by module'''
+        """Return column definitions for object relationships output by module"""
         objects_name = self.object_name.value
         if self.neighbors_are_objects:
             neighbors_name = objects_name
@@ -701,7 +701,7 @@ class MeasureObjectNeighbors(cellprofiler.module.Module):
 
 
 def get_colormap(name):
-    '''Get colormap, accounting for possible request for default'''
+    """Get colormap, accounting for possible request for default"""
     if name == cellprofiler.setting.DEFAULT:
         name = cellprofiler.preferences.get_default_colormap()
     return matplotlib.cm.get_cmap(name)

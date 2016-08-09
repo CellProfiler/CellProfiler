@@ -775,7 +775,7 @@ class FilterObjects(cellprofiler.module.Module):
             if group.wants_maximum.value:
                 hits[values > high_limit] = False
         indexes = numpy.argwhere(hits)[:, 0]
-        indexes = indexes + 1
+        indexes += 1
         return indexes
 
     def discard_border_objects(self, workspace, src_objects):

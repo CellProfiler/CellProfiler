@@ -111,7 +111,7 @@ class Resize(cellprofiler.module.Module):
                                                            self.add_image)
 
     def add_image(self, can_remove=True):
-        '''Add an image + associated questions and buttons'''
+        """Add an image + associated questions and buttons"""
         group = cellprofiler.setting.SettingsGroup()
         if can_remove:
             group.append("divider", cellprofiler.setting.Divider(line=False))
@@ -163,7 +163,7 @@ class Resize(cellprofiler.module.Module):
         return result
 
     def prepare_settings(self, setting_values):
-        '''Create the correct number of additional images'''
+        """Create the correct number of additional images"""
         try:
             additional_image_setting_count = \
                 int(setting_values[S_ADDITIONAL_IMAGE_COUNT])
@@ -266,14 +266,14 @@ class Resize(cellprofiler.module.Module):
                 workspace.display_data.output_image_names += [output_image_name]
 
     def display(self, workspace, figure):
-        '''Display the resized images
+        """Display the resized images
 
         workspace - the workspace being run
         statistics - a list of lists:
             0: index of this statistic
             1: input image name of image being aligned
             2: output image name of image being aligned
-        '''
+        """
         input_images = workspace.display_data.input_images
         output_images = workspace.display_data.output_images
         input_image_names = workspace.display_data.input_image_names

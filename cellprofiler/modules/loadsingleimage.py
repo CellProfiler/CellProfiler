@@ -242,7 +242,7 @@ class LoadSingleImage(cellprofiler.module.Module):
             self.add_file()
 
     def prepare_to_create_batch(self, workspace, fn_alter_path):
-        '''Prepare to create a batch file
+        """Prepare to create a batch file
 
         This function is called when CellProfiler is about to create a
         file for batch processing. It will pickle the image set list's
@@ -256,7 +256,7 @@ class LoadSingleImage(cellprofiler.module.Module):
                         handles issues such as replacing backslashes and
                         mapping mountpoints. It should be called for every
                         pathname stored in the settings or legacy fields.
-        '''
+        """
         self.directory.alter_for_create_batch_files(fn_alter_path)
         return True
 
@@ -284,7 +284,7 @@ class LoadSingleImage(cellprofiler.module.Module):
         return result
 
     def get_file_settings(self, image_name):
-        '''Get the file settings associated with a given image name'''
+        """Get the file settings associated with a given image name"""
         for file_setting in self.file_settings:
             if (file_setting.image_objects_choice == cellprofiler.modules.loadimages.IO_IMAGES and
                         file_setting.image_name == image_name):
@@ -295,7 +295,7 @@ class LoadSingleImage(cellprofiler.module.Module):
         return None
 
     def file_wants_images(self, file_setting):
-        '''True if the file_setting produces images, false if it produces objects'''
+        """True if the file_setting produces images, false if it produces objects"""
         return file_setting.image_objects_choice == cellprofiler.modules.loadimages.IO_IMAGES
 
     def is_load_module(self):
@@ -448,13 +448,13 @@ class LoadSingleImage(cellprofiler.module.Module):
 
     @property
     def wants_images(self):
-        '''True if any file setting loads images'''
+        """True if any file setting loads images"""
         return any([True for file_setting in self.file_settings
                     if file_setting.image_objects_choice == cellprofiler.modules.loadimages.IO_IMAGES])
 
     @property
     def wants_objects(self):
-        '''True if any file setting loads objects'''
+        """True if any file setting loads objects"""
         return any([True for file_setting in self.file_settings
                     if file_setting.image_objects_choice == cellprofiler.modules.loadimages.IO_OBJECTS])
 
@@ -472,11 +472,11 @@ class LoadSingleImage(cellprofiler.module.Module):
         return result
 
     def get_measurements(self, pipeline, object_name, category):
-        '''Return the measurements that this module produces
+        """Return the measurements that this module produces
 
         object_name - return measurements made on this object (or 'Image' for image measurements)
         category - return measurements made in this category
-        '''
+        """
         result = []
         if object_name == cellprofiler.measurement.IMAGE:
             if category in (C_FILE_NAME, cellprofiler.modules.loadimages.C_MD5_DIGEST, C_PATH_NAME, cellprofiler.modules.loadimages.C_SCALING, cellprofiler.modules.loadimages.C_HEIGHT, cellprofiler.modules.loadimages.C_WIDTH):
@@ -526,7 +526,7 @@ class LoadSingleImage(cellprofiler.module.Module):
                         group.file_name)
 
     def validate_module_warnings(self, pipeline):
-        '''Check for potentially dangerous settings'''
+        """Check for potentially dangerous settings"""
         # Check that user-specified names don't have bad characters
         invalid_chars_pattern = "^[A-Za-z][A-Za-z0-9_]+$"
         warning_text = "The image name has questionable characters. The pipeline can use this name " \
@@ -540,7 +540,7 @@ class LoadSingleImage(cellprofiler.module.Module):
         return True
 
     def convert(self, pipeline, metadata, namesandtypes, groups):
-        '''Convert from legacy to modern'''
+        """Convert from legacy to modern"""
         import cellprofiler.modules.metadata as cpmetadata
         import cellprofiler.modules.namesandtypes as cpnamesandtypes
         import cellprofiler.modules.groups as cpgroups

@@ -2426,7 +2426,7 @@ CREATE TABLE %s (
         object_table_pairs = all_objects.items()
         object_table_pairs = [x for x in object_table_pairs if x[0] != selected_object]
         for (current_object, current_table) in object_table_pairs:
-            statement = " ".join((statement, "INNER JOIN %s ON" % current_table, \
+            statement = " ".join((statement, "INNER JOIN %s ON" % current_table,
                                   " AND ".join(("%s.%s = %s.%s" % (
                                       all_objects[selected_object], C_IMAGE_NUMBER, current_table, C_IMAGE_NUMBER),
                                                 "%s.%s_%s = %s.%s_%s" % (
@@ -2788,8 +2788,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                                                         image_set_list, remove_postgroup_key=True)
         agg_columns = self.get_aggregate_columns(pipeline, image_set_list)
         for image_number in measurements.get_image_numbers():
-            image_row = []
-            image_row.append(image_number)
+            image_row = [image_number]
             for object_name, feature, coltype in columns:
                 if object_name != cellprofiler.measurement.IMAGE:
                     continue
@@ -4258,7 +4257,7 @@ class ColumnNameMapping:
                     i = 1
                     while reverse_dictionary.has_key(name + str(i)):
                         i += 1
-                    name = name + str(i)
+                    name += str(i)
             starting_name = name
             starting_positions = [x for x in [name.find("_"), 0]
                                   if x != -1]

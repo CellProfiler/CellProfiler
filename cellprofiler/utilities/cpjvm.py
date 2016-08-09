@@ -45,11 +45,11 @@ def get_jars():
 
 
 def find_logback_xml():
-    '''Find the location of the logback.xml file for Java logging config
+    """Find the location of the logback.xml file for Java logging config
 
     Paths to search are the current directory, the utilities directory
     and ../../java/src/main/resources
-    '''
+    """
     paths = [os.curdir,
              os.path.dirname(__file__),
              os.path.join(
@@ -62,7 +62,7 @@ def find_logback_xml():
 
 
 def cp_start_vm():
-    '''Start CellProfiler's JVM via Javabridge
+    """Start CellProfiler's JVM via Javabridge
 
     JVM parameters are harvested from preferences and
     the environment variables:
@@ -70,7 +70,7 @@ def cp_start_vm():
     CP_JDWP_PORT - port # for debugging Java within the JVM
     cpprefs.get_awt_headless() - controls java.awt.headless to prevent
         awt from being invoked
-    '''
+    """
     args = ["-Dloci.bioformats.loaded=true",
             "-Djava.util.prefs.PreferencesFactory=" +
             "org.cellprofiler.headlesspreferences.HeadlessPreferencesFactory"]
@@ -116,7 +116,7 @@ def cp_start_vm():
     old_get_class_list = bioformats.formatreader.get_class_list
 
     def get_class_list():
-        "Return a wrapped instance of loci.formats.ClassList"
+        """Return a wrapped instance of loci.formats.ClassList"""
 
         env = javabridge.get_env()
         class_list = old_get_class_list()

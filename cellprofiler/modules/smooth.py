@@ -1,9 +1,9 @@
-'''<b>Smooth</b> smooths (i.e., blurs) images.
+"""<b>Smooth</b> smooths (i.e., blurs) images.
 <hr>
 This module allows you to smooth (blur) images, which can be helpful to
 remove artifacts of a particular size.
 Note that smoothing can be a time-consuming process.
-'''
+"""
 
 import cellprofiler.gui.help
 import cellprofiler.image

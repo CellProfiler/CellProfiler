@@ -1,4 +1,4 @@
-'''<b>Load Data</b> loads text or numerical data to be associated with images, and
+"""<b>Load Data</b> loads text or numerical data to be associated with images, and
 can also load images specified by file names.
 <hr>
 This module loads a file that supplies text or numerical data associated with
@@ -148,7 +148,7 @@ image loading was requested by the user.</li>
 </ul>
 
 See also the <b>Input</b> modules, <b>LoadImages</b> and <b>CalculateStatistics</b>.
-'''
+"""
 
 import StringIO
 import csv
@@ -192,12 +192,12 @@ header_cache = {}
 ###################################################################
 
 def header_to_column(field):
-    '''Convert the field name in the header to a column name
+    """Convert the field name in the header to a column name
 
     This function converts Image_FileName to FileName and
     Image_PathName to PathName so that the output column names
     in the database will be Image_FileName and Image_PathName
-    '''
+    """
     for name in (cellprofiler.modules.loadimages.C_PATH_NAME, cellprofiler.modules.loadimages.C_FILE_NAME, cellprofiler.modules.loadimages.C_URL,
                  cellprofiler.modules.loadimages.C_OBJECTS_FILE_NAME, cellprofiler.modules.loadimages.C_OBJECTS_PATH_NAME, cellprofiler.modules.loadimages.C_OBJECTS_URL):
         if field.startswith(cellprofiler.measurement.IMAGE + '_' + name + '_'):
@@ -206,12 +206,12 @@ def header_to_column(field):
 
 
 def is_path_name_feature(feature):
-    '''Return true if the feature name is a path name'''
+    """Return true if the feature name is a path name"""
     return feature.startswith(cellprofiler.modules.loadimages.C_PATH_NAME + '_')
 
 
 def is_file_name_feature(feature):
-    '''Return true if the feature name is a file name'''
+    """Return true if the feature name is a file name"""
     return feature.startswith(cellprofiler.modules.loadimages.C_FILE_NAME + '_')
 
 
@@ -220,12 +220,12 @@ def is_url_name_feature(feature):
 
 
 def is_objects_path_name_feature(feature):
-    '''Return true if the feature name is the path to a labels file'''
+    """Return true if the feature name is the path to a labels file"""
     return feature.startswith(cellprofiler.modules.loadimages.C_OBJECTS_PATH_NAME + "_")
 
 
 def is_objects_file_name_feature(feature):
-    '''Return true if the feature name is a labels file name'''
+    """Return true if the feature name is a labels file name"""
     return feature.startswith(cellprofiler.modules.loadimages.C_OBJECTS_FILE_NAME + "_")
 
 
@@ -234,7 +234,7 @@ def is_objects_url_name_feature(feature):
 
 
 def get_image_name(feature):
-    '''Extract the image name from a feature name'''
+    """Extract the image name from a feature name"""
     if is_path_name_feature(feature):
         return feature[len(cellprofiler.modules.loadimages.C_PATH_NAME + '_'):]
     if is_file_name_feature(feature):
@@ -245,7 +245,7 @@ def get_image_name(feature):
 
 
 def get_objects_name(feature):
-    '''Extract the objects name from a feature name'''
+    """Extract the objects name from a feature name"""
     if is_objects_path_name_feature(feature):
         return feature[len(cellprofiler.modules.loadimages.C_OBJECTS_PATH_NAME + "_"):]
     if is_objects_file_name_feature(feature):
@@ -256,38 +256,38 @@ def get_objects_name(feature):
 
 
 def make_path_name_feature(image):
-    '''Return the path name feature, given an image name
+    """Return the path name feature, given an image name
 
     The path name feature is the name of the measurement that stores
     the image's path name.
-    '''
+    """
     return cellprofiler.modules.loadimages.C_PATH_NAME + '_' + image
 
 
 def make_file_name_feature(image):
-    '''Return the file name feature, given an image name
+    """Return the file name feature, given an image name
 
     The file name feature is the name of the measurement that stores
     the image's file name.
-    '''
+    """
     return cellprofiler.modules.loadimages.C_FILE_NAME + '_' + image
 
 
 def make_objects_path_name_feature(objects_name):
-    '''Return the path name feature, given an object name
+    """Return the path name feature, given an object name
 
     The path name feature is the name of the measurement that stores
     the objects file path name.
-    '''
+    """
     return cellprofiler.modules.loadimages.C_OBJECTS_PATH_NAME + '_' + objects_name
 
 
 def make_objects_file_name_feature(objects_name):
-    '''Return the file name feature, given an object name
+    """Return the file name feature, given an object name
 
     The file name feature is the name of the measurement that stores
     the objects file name.
-    '''
+    """
     return cellprofiler.modules.loadimages.C_OBJECTS_FILE_NAME + '_' + objects_name
 
 
@@ -311,7 +311,7 @@ class LoadData(cellprofiler.module.Module):
             </ul></p>""" % globals())
 
         def get_directory_fn():
-            '''Get the directory for the CSV file name'''
+            """Get the directory for the CSV file name"""
             return self.csv_directory.get_absolute_path()
 
         def set_directory_fn(path):
@@ -450,10 +450,10 @@ class LoadData(cellprofiler.module.Module):
                     (self.csv_path, e), self.csv_file_name)
 
     def validate_module_warnings(self, pipeline):
-        '''Check for potentially dangerous settings
+        """Check for potentially dangerous settings
 
         The best practice is to have a single LoadImages or LoadData module.
-        '''
+        """
         from cellprofiler.modules.loadimages import LoadImages
 
         for module in pipeline.modules():
@@ -579,7 +579,7 @@ class LoadData(cellprofiler.module.Module):
 
     @property
     def csv_path(self):
-        '''The path and file name of the CSV file to be loaded'''
+        """The path and file name of the CSV file to be loaded"""
         if cellprofiler.preferences.get_data_file() is not None:
             return cellprofiler.preferences.get_data_file()
         if self.csv_directory.dir_choice == cellprofiler.preferences.URL_FOLDER_NAME:
@@ -594,11 +594,11 @@ class LoadData(cellprofiler.module.Module):
 
     @property
     def legacy_field_key(self):
-        '''The key to use to retrieve the metadata from the image set list'''
+        """The key to use to retrieve the metadata from the image set list"""
         return 'LoadTextMetadata_%d' % self.module_num
 
     def get_cache_info(self):
-        '''Get the cached information for the data file'''
+        """Get the cached information for the data file"""
         global header_cache
         entry = header_cache.get(self.csv_path, dict(ctime=0))
         if cellprofiler.preferences.is_url_path(self.csv_path):
@@ -612,7 +612,7 @@ class LoadData(cellprofiler.module.Module):
         return entry
 
     def open_csv(self, do_not_cache=False):
-        '''Open the csv file or URL, returning a file descriptor'''
+        """Open the csv file or URL, returning a file descriptor"""
         global header_cache
 
         if cellprofiler.preferences.is_url_path(self.csv_path):
@@ -670,11 +670,11 @@ class LoadData(cellprofiler.module.Module):
         frame.Show()
 
     def get_header(self, do_not_cache=False):
-        '''Read the header fields from the csv file
+        """Read the header fields from the csv file
 
         Open the csv file indicated by the settings and read the fields
         of its first line. These should be the measurement columns.
-        '''
+        """
         entry = self.get_cache_info()
         if entry.has_key("header"):
             return entry["header"]
@@ -709,7 +709,7 @@ class LoadData(cellprofiler.module.Module):
         return list(object_names)
 
     def other_providers(self, group):
-        '''Get name providers from the CSV header'''
+        """Get name providers from the CSV header"""
         if group == 'imagegroup' and self.wants_images.value:
             try:
                 # do not load URLs automatically
@@ -726,12 +726,12 @@ class LoadData(cellprofiler.module.Module):
         return []
 
     def is_image_from_file(self, image_name):
-        '''Return True if LoadData provides the given image name'''
+        """Return True if LoadData provides the given image name"""
         providers = self.other_providers('imagegroup')
         return image_name in providers
 
     def is_load_module(self):
-        '''LoadData can make image sets so it's a load module'''
+        """LoadData can make image sets so it's a load module"""
         return True
 
     def prepare_run(self, workspace):
@@ -953,7 +953,7 @@ class LoadData(cellprofiler.module.Module):
         return True
 
     def prepare_to_create_batch(self, workspace, fn_alter_path):
-        '''Prepare to create a batch file
+        """Prepare to create a batch file
 
         This function is called when CellProfiler is about to create a
         file for batch processing. It will pickle the image set list's
@@ -967,7 +967,7 @@ class LoadData(cellprofiler.module.Module):
                         handles issues such as replacing backslashes and
                         mapping mountpoints. It should be called for every
                         pathname stored in the settings or legacy fields.
-        '''
+        """
 
         if self.wants_images:
             m = workspace.measurements
@@ -1041,7 +1041,7 @@ class LoadData(cellprofiler.module.Module):
                 index=frame)
 
     def run(self, workspace):
-        '''Populate the images and objects'''
+        """Populate the images and objects"""
         m = workspace.measurements
         assert isinstance(m, cellprofiler.measurement.Measurements)
         image_set = workspace.image_set
@@ -1112,10 +1112,10 @@ class LoadData(cellprofiler.module.Module):
         figure.subplot_table(0, 0, workspace.display_data.statistics)
 
     def get_groupings(self, workspace):
-        '''Return the image groupings of the image sets
+        """Return the image groupings of the image sets
 
         See CPModule for documentation
-        '''
+        """
         if (self.wants_images.value and
                 self.wants_image_groupings.value and
                     len(self.metadata_fields.selections) > 0):
@@ -1129,7 +1129,7 @@ class LoadData(cellprofiler.module.Module):
         return None
 
     def get_measurement_columns(self, pipeline):
-        '''Return column definitions for measurements output by this module'''
+        """Return column definitions for measurements output by this module"""
         entry = None
         try:
             entry = self.get_cache_info()
@@ -1262,9 +1262,9 @@ class LoadData(cellprofiler.module.Module):
         return result
 
     def has_synthetic_well_metadata(self):
-        '''Determine if we should synthesize a well metadata feature
+        """Determine if we should synthesize a well metadata feature
 
-        '''
+        """
         fields = self.get_header()
         has_well_col = False
         has_well_row = False
@@ -1297,14 +1297,14 @@ class LoadData(cellprofiler.module.Module):
                  and column[1].startswith(category + "_")]]
 
     def change_causes_prepare_run(self, setting):
-        '''Check to see if changing the given setting means you have to restart
+        """Check to see if changing the given setting means you have to restart
 
         Some settings, esp in modules like LoadImages, affect more than
         the current image set when changed. For instance, if you change
         the name specification for files, you have to reload your image_set_list.
         Override this and return True if changing the given setting means
         that you'll have to do "prepare_run".
-        '''
+        """
         if self.wants_images or setting == self.wants_images:
             return True
         return False
@@ -1401,13 +1401,13 @@ LoadText = LoadData
 
 
 def best_cast(sequence, coltype=None):
-    '''Return the best cast (integer, float or string) of the sequence
+    """Return the best cast (integer, float or string) of the sequence
 
     sequence - a sequence of strings
 
     Try casting all elements to integer and float, returning a numpy
     array of values. If all fail, return a numpy array of strings.
-    '''
+    """
     if (isinstance(coltype, (str, unicode)) and
             coltype.startswith(cellprofiler.measurement.COLTYPE_VARCHAR)):
         # Cast columns already defined as strings as same
@@ -1435,13 +1435,13 @@ int32_min = numpy.iinfo(numpy.int32).min
 
 
 def get_loaddata_type(x):
-    '''Return the type to use to represent x
+    """Return the type to use to represent x
 
     If x is a 32-bit integer, return cpmeas.COLTYPE_INTEGER.
     If x cannot be represented in 32 bits but is an integer,
     return cpmeas.COLTYPE_VARCHAR
     If x can be represented as a float, return COLTYPE_FLOAT
-    '''
+    """
     global int32_max, int32_min
 
     try:

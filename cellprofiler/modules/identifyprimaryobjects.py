@@ -1129,7 +1129,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
                 simage = scipy.ndimage.map_coordinates(image, i_j)
                 smask = scipy.ndimage.map_coordinates(mask.astype(float), i_j) > .99
                 diameter = diameter * image_resize_factor + 1
-                sigma = sigma * image_resize_factor
+                sigma *= image_resize_factor
             else:
                 shrunken = False
                 simage = image
@@ -1190,7 +1190,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
                 distance_transformed_image = \
                     scipy.ndimage.distance_transform_edt(labeled_image > 0)
             watershed_image = -distance_transformed_image
-            watershed_image = watershed_image - np.min(watershed_image)
+            watershed_image -= np.min(watershed_image)
         elif self.watershed_method == WA_PROPAGATE:
             # No image used
             pass

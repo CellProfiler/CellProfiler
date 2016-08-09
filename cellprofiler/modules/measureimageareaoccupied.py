@@ -212,7 +212,7 @@ class MeasureImageAreaOccupied(cellprofiler.module.Module):
                              col_labels=workspace.display_data.col_labels)
 
     def measure_objects(self, operand, workspace):
-        '''Performs the measurements on the requested objects'''
+        """Performs the measurements on the requested objects"""
         objects = workspace.get_objects(operand.operand_objects.value)
         if objects.has_parent_image:
             area_occupied = numpy.sum(objects.segmented[objects.parent_image.mask] > 0)
@@ -239,7 +239,7 @@ class MeasureImageAreaOccupied(cellprofiler.module.Module):
                  str(area_occupied), str(perimeter), str(total_area)]]
 
     def measure_images(self, operand, workspace):
-        '''Performs measurements on the requested images'''
+        """Performs measurements on the requested images"""
         image = workspace.image_set.get_image(operand.binary_name.value, must_be_binary=True)
         area_occupied = numpy.sum(image.pixel_data > 0)
         perimeter = numpy.sum(centrosome.outline.outline(image.pixel_data) > 0)
@@ -254,7 +254,7 @@ class MeasureImageAreaOccupied(cellprofiler.module.Module):
         return [[operand.binary_name.value, str(area_occupied), str(perimeter), str(total_area)]]
 
     def get_measurement_columns(self, pipeline):
-        '''Return column definitions for measurements made by this module'''
+        """Return column definitions for measurements made by this module"""
         columns = []
         for op in self.operands:
             for feature, coltype in ((F_AREA_OCCUPIED, cellprofiler.measurement.COLTYPE_FLOAT),

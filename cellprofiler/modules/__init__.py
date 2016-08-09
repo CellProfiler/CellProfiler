@@ -11,7 +11,6 @@ logger = logging.getLogger(__name__)
 # python modules and their corresponding cellprofiler.module classes
 pymodule_to_cpmodule = {'align': 'Align',
                         'applythreshold': 'ApplyThreshold',
-                        'calculateimageoverlap': 'CalculateImageOverlap',
                         'calculatemath': 'CalculateMath',
                         'calculatestatistics': 'CalculateStatistics',
                         'classifyobjects': 'ClassifyObjects',
@@ -87,7 +86,6 @@ pymodule_to_cpmodule = {'align': 'Align',
                         'straightenworms': 'StraightenWorms',
                         'trackobjects': 'TrackObjects',
                         'tile': 'Tile',
-                        'calculateimageoverlap': 'CalculateImageOverlap',
                         'unmixcolors': 'UnmixColors',
                         'untangleworms': 'UntangleWorms'
                         }
@@ -181,9 +179,7 @@ substitutions = {'Average': 'MakeProjection',
                  'Combine': 'ImageMath',
                  'cellprofiler.modules.converttoimage.ConvertToImage': 'ConvertObjectsToImage',
                  'ConvertToImage': 'ConvertObjectsToImage',
-                 'CorrectIllumination_Apply': 'CorrectIlluminationApply',
                  'cellprofiler.modules.correctillumination_apply.CorrectIllumination_Apply': 'CorrectIlluminationApply',
-                 'CorrectIllumination_Calculate': 'CorrectIlluminationCalculate',
                  'cellprofiler.modules.correctillumination_calculate.CorrectIllumination_Calculate': 'CorrectIlluminationCalculate',
                  'cellprofiler.modules.enhanceorsuppressspeckles.EnhanceOrSuppressSpeckles': 'EnhanceOrSuppressFeatures',
                  'DifferentiateStains': 'UnmixColors',
@@ -232,9 +228,7 @@ substitutions = {'Average': 'MakeProjection',
                  'SplitIntoContiguousObjects': 'ReassignObjectNumbers',
                  'Subtract': 'ImageMath',
                  'UnifyObjects': 'ReassignObjectNumbers',
-                 'cellprofiler.modules.overlay_outlines.OverlayOutlines': 'OverlayOutlines',
-                 'CorrectIllumination_Apply': 'CorrectIlluminationApply',
-                 'CorrectIllumination_Calculate': 'CorrectIlluminationCalculate'
+                 'cellprofiler.modules.overlay_outlines.OverlayOutlines': 'OverlayOutlines'
                  }
 
 all_modules = {}

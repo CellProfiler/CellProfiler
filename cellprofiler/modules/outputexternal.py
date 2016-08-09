@@ -1,4 +1,4 @@
-'''<b>Output External</b> specfies which images can be made
+"""<b>Output External</b> specfies which images can be made
 available to external sources (e.g., Java)
 <hr>
 <b>OutputExternal</b> is a helper module for ImageJ. <b>Do not add it to
@@ -16,7 +16,7 @@ the image set before running the pipeline and remove the images from the
 image set at the end.</p>
 
 See also <b>RunImageJ</b>
-'''
+"""
 
 import cellprofiler.module
 import cellprofiler.setting
@@ -43,7 +43,7 @@ class OutputExternal(cellprofiler.module.Module):
         return result
 
     def add_image(self, can_remove=True):
-        '''Add an image to the list of image names'''
+        """Add an image to the list of image names"""
         group = cellprofiler.setting.SettingsGroup()
         group.append('divider', cellprofiler.setting.Divider(line=False))
         group.append('image_name', cellprofiler.setting.ExternalImageNameSubscriber('Select an image a name to export'))

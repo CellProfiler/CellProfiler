@@ -1,4 +1,4 @@
-'''<b>Measure Granularity</b> outputs spectra of size measurements
+"""<b>Measure Granularity</b> outputs spectra of size measurements
 of the textures in the image.
 <hr>
 Image granularity is a texture measurement that tries a series of structure elements
@@ -28,7 +28,7 @@ Intelligence</i>, 11, N 7, pp. 701-716, 1989</li>
 <i>Applied Informatics</i>, v.14, pp. 41-90, Finances and Statistics, Moskow,
 (in Russian)</li>
 </ul>
-'''
+"""
 
 import cellprofiler.image
 import cellprofiler.measurement
@@ -142,7 +142,7 @@ class MeasureGranularity(cellprofiler.module.Module):
         return group
 
     def validate_module(self, pipeline):
-        '''Make sure settings are compatible. In particular, we make sure that no measurements are duplicated'''
+        """Make sure settings are compatible. In particular, we make sure that no measurements are duplicated"""
         measurements, sources = self.get_measurement_columns(pipeline, return_sources=True)
         d = {}
         for m, s in zip(measurements, sources):
@@ -161,7 +161,7 @@ class MeasureGranularity(cellprofiler.module.Module):
         return result
 
     def prepare_settings(self, setting_values):
-        '''Adjust self.images to account for the expected # of images'''
+        """Adjust self.images to account for the expected # of images"""
         image_count = int(setting_values[0])
         idx = 1
         del self.images[:]

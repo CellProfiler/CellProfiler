@@ -1,4 +1,4 @@
-'''<b>Measure Image Intensity</b> measures the total intensity in an image
+"""<b>Measure Image Intensity</b> measures the total intensity in an image
 by summing all of the pixel intensities (excluding masked pixels).
 <hr>
 This module will sum all pixel values to measure the total image
@@ -34,7 +34,7 @@ of the pixels in the object have lower values.</li>
 </ul>
 
 See also <b>MeasureObjectIntensity</b>, <b>MaskImage</b>.
-'''
+"""
 
 import cellprofiler.measurement
 import cellprofiler.module
@@ -87,7 +87,7 @@ class MeasureImageIntensity(cellprofiler.module.Module):
     variable_revision_number = 2
 
     def create_settings(self):
-        '''Create the settings & name the module'''
+        """Create the settings & name the module"""
         self.divider_top = cellprofiler.setting.Divider(line=False)
         self.images = []
         self.add_image_measurement(can_remove=False)
@@ -164,7 +164,7 @@ class MeasureImageIntensity(cellprofiler.module.Module):
             self.remove_image_measurement(self.images[-1].key)
 
     def get_non_redundant_image_measurements(self):
-        '''Return a non-redundant sequence of image measurement objects'''
+        """Return a non-redundant sequence of image measurement objects"""
         dict = {}
         for im in self.images:
             key = ((im.image_name, im.object_name) if im.wants_objects.value
@@ -173,7 +173,7 @@ class MeasureImageIntensity(cellprofiler.module.Module):
         return dict.values()
 
     def run(self, workspace):
-        '''Perform the measurements on the imageset'''
+        """Perform the measurements on the imageset"""
         #
         # Then measure each
         #
@@ -191,11 +191,11 @@ class MeasureImageIntensity(cellprofiler.module.Module):
                              col_labels=workspace.display_data.col_labels)
 
     def measure(self, im, workspace):
-        '''Perform measurements according to the image measurement in im
+        """Perform measurements according to the image measurement in im
 
         im - image measurement info (see ImageMeasurement class above)
         workspace - has all the details for current image set
-        '''
+        """
         image = workspace.image_set.get_image(im.image_name.value,
                                               must_be_grayscale=True)
         pixels = image.pixel_data
@@ -270,7 +270,7 @@ class MeasureImageIntensity(cellprofiler.module.Module):
                                             ('Total area', pixel_count))]
 
     def get_measurement_columns(self, pipeline):
-        '''Return column definitions for measurements made by this module'''
+        """Return column definitions for measurements made by this module"""
         columns = []
         for im in self.get_non_redundant_image_measurements():
             for feature, coltype in ((F_TOTAL_INTENSITY, cellprofiler.measurement.COLTYPE_FLOAT),
@@ -318,11 +318,11 @@ class MeasureImageIntensity(cellprofiler.module.Module):
     def upgrade_settings(self, setting_values,
                          variable_revision_number,
                          module_name, from_matlab):
-        '''Account for prior versions when loading
+        """Account for prior versions when loading
 
         We handle Matlab revision # 2 here. We don't support thresholding
         because it was generally unused. The first setting is the image name.
-        '''
+        """
         if from_matlab and variable_revision_number == 2:
             setting_values = [setting_values[0],  # image name
                               cellprofiler.setting.NO,  # wants objects

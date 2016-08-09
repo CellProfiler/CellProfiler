@@ -1,4 +1,4 @@
-'''<b>Reassign Object Numbers</b> renumbers previously identified objects.
+"""<b>Reassign Object Numbers</b> renumbers previously identified objects.
 <hr>
 Objects and their measurements are associated
 with each other based on their object numbers (also known as <i>labels</i>). Typically,
@@ -31,7 +31,7 @@ with both the original input and reasigned output objects, in case you need to t
 reassignment.
 
 <p>See also <b>RelateObjects</b>.</p>
-'''
+"""
 
 import cellprofiler.gui.help
 import cellprofiler.image
@@ -334,10 +334,10 @@ class ReassignObjectNumbers(cellprofiler.module.Module):
                     workspace.object_set.get_objects(self.parent_object.value).segmented
 
     def display(self, workspace, figure):
-        '''Display the results of relabeling
+        """Display the results of relabeling
 
         workspace - workspace containing saved display data
-        '''
+        """
 
         figure.set_subplots((2, 1))
         ax = figure.subplot_imshow_labels(
@@ -380,11 +380,11 @@ class ReassignObjectNumbers(cellprofiler.module.Module):
                                          sharexy=ax)
 
     def filter_using_image(self, workspace, mask):
-        '''Filter out connections using local intensity minima between objects
+        """Filter out connections using local intensity minima between objects
 
         workspace - the workspace for the image set
         mask - mask of background points within the minimum distance
-        '''
+        """
         #
         # NOTE: This is an efficient implementation and an improvement
         #       in accuracy over the Matlab version. It would be faster and
@@ -502,7 +502,7 @@ class ReassignObjectNumbers(cellprofiler.module.Module):
 
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
-        '''Adjust setting values if they came from a previous revision
+        """Adjust setting values if they came from a previous revision
 
         setting_values - a sequence of strings representing the settings
                          for the module as stored in the pipeline
@@ -520,7 +520,7 @@ class ReassignObjectNumbers(cellprofiler.module.Module):
         variable_revision_number and True if upgraded to CP 2.0, otherwise
         they should leave things as-is so that the caller can report
         an error.
-        '''
+        """
         if (from_matlab and variable_revision_number == 1 and
                     module_name == 'SplitIntoContiguousObjects'):
             setting_values = setting_values + [OPTION_SPLIT, '0', cellprofiler.setting.DO_NOT_USE]
@@ -562,7 +562,7 @@ class ReassignObjectNumbers(cellprofiler.module.Module):
         return setting_values, variable_revision_number, from_matlab
 
     def get_image(self, workspace):
-        '''Get the image for image-directed merging'''
+        """Get the image for image-directed merging"""
         objects = workspace.object_set.get_objects(self.objects_name.value)
         image = workspace.image_set.get_image(self.image_name.value,
                                               must_be_grayscale=True)
@@ -612,11 +612,11 @@ class ReassignObjectNumbers(cellprofiler.module.Module):
 
 
 def copy_labels(labels, segmented):
-    '''Carry differences between orig_segmented and new_segmented into "labels"
+    """Carry differences between orig_segmented and new_segmented into "labels"
 
     labels - labels matrix similarly segmented to "segmented"
     segmented - the newly numbered labels matrix (a subset of pixels are labeled)
-    '''
+    """
     max_labels = numpy.max(segmented)
     seglabel = scipy.ndimage.minimum(labels, segmented, numpy.arange(1, max_labels + 1))
     labels_new = labels.copy()

@@ -1,4 +1,4 @@
-'''<b>Load Images</b> allows you to specify which images or movies are to be loaded and in
+"""<b>Load Images</b> allows you to specify which images or movies are to be loaded and in
 which order.
 <hr>
 This module tells CellProfiler where to retrieve images and gives each image a
@@ -37,7 +37,7 @@ filename, if requested.</li>
 </ul>
 
 See also the <b>Input</b> modules, <b>LoadData</b>, <b>LoadSingleImage</b>, <b>SaveImages</b>.
-'''
+"""
 
 import hashlib
 import logging
@@ -110,7 +110,7 @@ IMAGE_FOR_OBJECTS_F = "IMAGE_FOR_%s"
 # The following is a list of extensions supported by PIL 1.1.7
 SUPPORTED_IMAGE_EXTENSIONS = set([
     '.ppm', '.grib', '.im', '.rgba', '.rgb', '.pcd', '.h5', '.jpe', '.jfif',
-    '.jpg', '.fli', '.sgi', '.gbr', '.pcx', '.mpeg', '.jpeg', '.ps', '.flc', \
+    '.jpg', '.fli', '.sgi', '.gbr', '.pcx', '.mpeg', '.jpeg', '.ps', '.flc',
     '.tif', '.hdf', '.icns', '.gif', '.palm', '.mpg', '.fits', '.pgm', '.mic',
     '.fit', '.xbm', '.eps', '.emf', '.dcx', '.bmp', '.bw', '.pbm', '.dib',
     '.ras', '.cur', '.fpx', '.png', '.msp', '.iim', '.wmf', '.tga', '.bufr',
@@ -350,11 +350,11 @@ class LoadImages(cellprofiler.module.Module):
         self.add_image = cellprofiler.setting.DoSomething("", "Add another image", self.add_imagecb)
 
     def add_imagecb(self, can_remove=True):
-        'Adds another image to the settings'
+        """Adds another image to the settings"""
         group = cellprofiler.setting.SettingsGroup()
 
         def example_file_fn(path=None):
-            '''Get an example file for use in the file metadata regexp editor'''
+            """Get an example file for use in the file metadata regexp editor"""
             if path is None:
                 path = self.image_directory()
                 default = "plateA-2008-08-06_A12_s1_w1_[89A882DE-E675-4C12-9F8E-46C9976C4ABE].tif"
@@ -389,7 +389,7 @@ class LoadImages(cellprofiler.module.Module):
             return default
 
         def example_path_fn():
-            '''Get an example path for use in the path metadata regexp editor'''
+            """Get an example path for use in the path metadata regexp editor"""
             root = self.image_directory()
             d = [x for x in [os.path.abspath(os.path.join(root, x))
                              for x in os.listdir(root)
@@ -619,11 +619,11 @@ class LoadImages(cellprofiler.module.Module):
                     '', 'Remove this image', self.images, group))
 
     def add_channel(self, image_settings, can_remove=True):
-        '''Add another channel to an image
+        """Add another channel to an image
 
         image_settings - the image's settings group
         can_remove - true if we are allowed to remove this channel
-        '''
+        """
 
         group = cellprofiler.setting.SettingsGroup()
         image_settings.channels.append(group)
@@ -735,7 +735,7 @@ class LoadImages(cellprofiler.module.Module):
                     group))
 
     def channel_wants_images(self, channel):
-        '''True if the channel produces images, false if it produces objects'''
+        """True if the channel produces images, false if it produces objects"""
         return channel.image_object_choice == IO_IMAGES
 
     def help_settings(self):
@@ -863,10 +863,10 @@ class LoadImages(cellprofiler.module.Module):
         return varlist
 
     def validate_module(self, pipeline):
-        '''Validate a module's settings
+        """Validate a module's settings
 
         LoadImages marks the common_text as invalid if it's blank.
-        '''
+        """
         if self.match_method == MS_EXACT_MATCH:
             for image_group in self.images:
                 if len(image_group.common_text.value) == 0:
@@ -877,7 +877,7 @@ class LoadImages(cellprofiler.module.Module):
                             image_group.common_text)
 
     def validate_module_warnings(self, pipeline):
-        '''Check for potentially dangerous settings'''
+        """Check for potentially dangerous settings"""
 
         # Check that user has selected fields for grouping if grouping is turned on
         if self.group_by_metadata.value and (len(self.metadata_fields.selections) == 0):
@@ -1040,7 +1040,7 @@ class LoadImages(cellprofiler.module.Module):
 
     @property
     def is_multichannel(self):
-        '''True if the image is one of the multichannel types and needs to be split'''
+        """True if the image is one of the multichannel types and needs to be split"""
         #
         # Currently, only Flex are handled this way
         #
@@ -1055,18 +1055,18 @@ class LoadImages(cellprofiler.module.Module):
 
     @property
     def do_group_by_metadata(self):
-        '''Return true if we should group by metadata
+        """Return true if we should group by metadata
 
         The group-by-metadata checkbox won't show unless there are
         metadata groupings to group by - so go by the checkbox
         and the presence of metadata to group by
-        '''
+        """
         if not self.group_by_metadata:
             return False
         return self.has_metadata
 
     def get_channel_for_image_name(self, image_name):
-        '''Given an image name, return the channel that holds its settings'''
+        """Given an image name, return the channel that holds its settings"""
         for image_settings in self.images:
             for channel in image_settings.channels:
                 if channel.get_image_name() == image_name:
@@ -1208,7 +1208,7 @@ class LoadImages(cellprofiler.module.Module):
             return setting_values, 5
 
         def upgrade_new_5_to_6(setting_values):
-            '''Added separate channels for flex images'''
+            """Added separate channels for flex images"""
             new_values = list(setting_values[:self.SLOT_FIRST_IMAGE_V5])
             setting_values = setting_values[self.SLOT_FIRST_IMAGE_V5:]
             image_count = (len(setting_values) / self.SLOT_IMAGE_FIELD_COUNT_V5)
@@ -1230,7 +1230,7 @@ class LoadImages(cellprofiler.module.Module):
             return new_values, 6
 
         def upgrade_new_6_to_7(setting_values):
-            '''Added movie frame grouping'''
+            """Added movie frame grouping"""
             new_values = list(setting_values[:self.SLOT_FIRST_IMAGE_V6])
             image_count = int(setting_values[self.SLOT_IMAGE_COUNT_V6])
             setting_values = setting_values[self.SLOT_FIRST_IMAGE_V6:]
@@ -1245,7 +1245,7 @@ class LoadImages(cellprofiler.module.Module):
             return new_values, 7
 
         def upgrade_new_7_to_8(setting_values):
-            '''Added rescale control'''
+            """Added rescale control"""
             new_values = list(setting_values[:self.SLOT_FIRST_IMAGE_V7])
             image_count = int(setting_values[self.SLOT_IMAGE_COUNT_V7])
             setting_values = setting_values[self.SLOT_FIRST_IMAGE_V7:]
@@ -1259,7 +1259,7 @@ class LoadImages(cellprofiler.module.Module):
             return new_values, 8
 
         def upgrade_new_8_to_9(setting_values):
-            '''Added object loading'''
+            """Added object loading"""
             new_values = list(setting_values[:self.SLOT_FIRST_IMAGE_V8])
             image_count = int(setting_values[self.SLOT_IMAGE_COUNT_V8])
             setting_values = setting_values[self.SLOT_FIRST_IMAGE_V8:]
@@ -1278,7 +1278,7 @@ class LoadImages(cellprofiler.module.Module):
             return new_values, 9
 
         def upgrade_new_9_to_10(setting_values):
-            '''Added outlines to object loading'''
+            """Added outlines to object loading"""
             new_values = list(setting_values[:self.SLOT_FIRST_IMAGE_V9])
             image_count = int(setting_values[self.SLOT_IMAGE_COUNT_V9])
             setting_values = setting_values[self.SLOT_FIRST_IMAGE_V9:]
@@ -1294,7 +1294,7 @@ class LoadImages(cellprofiler.module.Module):
             return new_values, 10
 
         def upgrade_new_10_to_11(setting_values):
-            '''Added subdirectory filter'''
+            """Added subdirectory filter"""
             new_values = (setting_values[:self.SLOT_IMAGE_COUNT_V10] +
                           [""] + setting_values[self.SLOT_IMAGE_COUNT_V10:])
             if new_values[self.SLOT_DESCEND_SUBDIRECTORIES] == cellprofiler.setting.YES:
@@ -1353,7 +1353,7 @@ class LoadImages(cellprofiler.module.Module):
         return setting_values, variable_revision_number, from_matlab
 
     def is_load_module(self):
-        '''LoadImages creates image sets so it is a load module'''
+        """LoadImages creates image sets so it is a load module"""
         return True
 
     def prepare_run(self, workspace):
@@ -1611,7 +1611,7 @@ class LoadImages(cellprofiler.module.Module):
         return result
 
     def get_image_numbers_by_tags(self, workspace, tags):
-        '''Make a dictionary of tag values to image numbers
+        """Make a dictionary of tag values to image numbers
 
         Look up the metadata values for each of the tags in "tags" and
         create a dictionary of tag values to the list of image numbers
@@ -1622,7 +1622,7 @@ class LoadImages(cellprofiler.module.Module):
                                  for each tag
 
         tags - the metadata tags to be used for matching
-        '''
+        """
         measurements = workspace.measurements
         metadata_features = [
             x for x in measurements.get_feature_names(cellprofiler.measurement.IMAGE)
@@ -1743,7 +1743,7 @@ class LoadImages(cellprofiler.module.Module):
         my_frame.Show()
 
     def prepare_run_of_flex(self, workspace):
-        '''Set up image providers for flex files'''
+        """Set up image providers for flex files"""
         import bioformats.omexml
         from bioformats.formatreader import get_omexml_metadata
 
@@ -2072,7 +2072,7 @@ class LoadImages(cellprofiler.module.Module):
         return True
 
     def prepare_to_create_batch(self, workspace, fn_alter_path):
-        '''Prepare to create a batch file
+        """Prepare to create a batch file
 
         This function is called when CellProfiler is about to create a
         file for batch processing. The function adjusts any paths in settings
@@ -2086,7 +2086,7 @@ class LoadImages(cellprofiler.module.Module):
                         handles issues such as replacing backslashes and
                         mapping mountpoints. It should be called for every
                         pathname stored in the settings or legacy fields.
-        '''
+        """
         image_set_list = workspace.image_set_list
         m = workspace.measurements
         for image_group in self.images:
@@ -2289,7 +2289,7 @@ class LoadImages(cellprofiler.module.Module):
     def write_measurements(self, measurements, image_number,
                            image_settings, full_path,
                            series=None, frame=None, channel_name=None):
-        '''Write the image filename, path, url and metadata meas. for a file
+        """Write the image filename, path, url and metadata meas. for a file
 
         measurements - write measurements into this measurements structure.
                        if None, return the measurements as a dictionary
@@ -2307,7 +2307,7 @@ class LoadImages(cellprofiler.module.Module):
 
         channel - write measurements for all channels if None, else write only
                   for this channel.
-        '''
+        """
         if measurements is not None:
             assert isinstance(measurements, cellprofiler.measurement.Measurements)
 
@@ -2366,18 +2366,18 @@ class LoadImages(cellprofiler.module.Module):
 
     @staticmethod
     def has_file_metadata(fd):
-        '''True if the metadata choice is either M_FILE_NAME or M_BOTH
+        """True if the metadata choice is either M_FILE_NAME or M_BOTH
 
         fd - one of the image file descriptors from self.images
-        '''
+        """
         return fd.metadata_choice in (M_FILE_NAME, M_BOTH)
 
     @staticmethod
     def has_path_metadata(fd):
-        '''True if the metadata choice is either M_PATH or M_BOTH
+        """True if the metadata choice is either M_PATH or M_BOTH
 
         fd - one of the image file descriptors from self.images
-        '''
+        """
         return fd.metadata_choice in (M_PATH, M_BOTH)
 
     def get_metadata_tags(self, fd=None):
@@ -2407,7 +2407,7 @@ class LoadImages(cellprofiler.module.Module):
         return tags
 
     def get_groupings(self, workspace):
-        '''Return the groupings as indicated by the metadata_fields setting
+        """Return the groupings as indicated by the metadata_fields setting
 
         returns a tuple of key_names and group_list:
         key_names - the names of the keys that identify the groupings
@@ -2423,7 +2423,7 @@ class LoadImages(cellprofiler.module.Module):
 
         Returns None to indicate that the module does not contribute any
         groupings.
-        '''
+        """
         image_name = self.images[0].channels[0].get_image_name()
         url_feature = '_'.join((cellprofiler.measurement.C_URL, image_name))
         if self.do_group_by_metadata:
@@ -2614,12 +2614,12 @@ class LoadImages(cellprofiler.module.Module):
         return True
 
     def assign_filename_by_exact_match(self, filename):
-        '''Assign the file name to an image by matching a portion exactly
+        """Assign the file name to an image by matching a portion exactly
 
         filename - filename in question
 
         Returns either the index of the image or None if no match
-        '''
+        """
         if not self.filter_filename(filename):
             return None
         ttfs = self.text_to_find_vars()
@@ -2629,12 +2629,12 @@ class LoadImages(cellprofiler.module.Module):
         return None
 
     def assign_filename_by_regexp(self, filename):
-        '''Assign the file name to an image by regular expression matching
+        """Assign the file name to an image by regular expression matching
 
         filename - filename in question
 
         Returns either the index of the image or None if no match
-        '''
+        """
         ttfs = self.text_to_find_vars()
         for i, ttf in enumerate(ttfs):
             if re.search(ttf.value, filename):
@@ -2642,13 +2642,13 @@ class LoadImages(cellprofiler.module.Module):
         return None
 
     def assign_filename_by_order(self, index):
-        '''Assign the file name to an image by alphabetical order
+        """Assign the file name to an image by alphabetical order
 
         index - the order in which it appears in the list
 
         Returns either the image index or None if the index, modulo the
         # of files in a group is greater than the number of images.
-        '''
+        """
         result = (index % self.order_group_size.value) + 1
         for i, fd in enumerate(self.images):
             if result == fd.order_position:
@@ -2656,10 +2656,10 @@ class LoadImages(cellprofiler.module.Module):
         return None
 
     def get_categories(self, pipeline, object_name):
-        '''Return the categories of measurements that this module produces
+        """Return the categories of measurements that this module produces
 
         object_name - return measurements made on this object (or 'Image' for image measurements)
-        '''
+        """
         res = []
         object_names = sum(
                 [[channel.object_name.value for channel in image.channels
@@ -2693,11 +2693,11 @@ class LoadImages(cellprofiler.module.Module):
         return res
 
     def get_measurements(self, pipeline, object_name, category):
-        '''Return the measurements that this module produces
+        """Return the measurements that this module produces
 
         object_name - return measurements made on this object (or 'Image' for image measurements)
         category - return measurements made in this category
-        '''
+        """
         result = []
         object_names = sum(
                 [[channel.object_name.value for channel in image.channels
@@ -2718,8 +2718,8 @@ class LoadImages(cellprofiler.module.Module):
         return result
 
     def get_measurement_columns(self, pipeline):
-        '''Return a sequence describing the measurement columns needed by this module
-        '''
+        """Return a sequence describing the measurement columns needed by this module
+        """
         cols = []
         all_tokens = []
         for fd in self.images:
@@ -2790,14 +2790,14 @@ class LoadImages(cellprofiler.module.Module):
         return cols
 
     def change_causes_prepare_run(self, setting):
-        '''Check to see if changing the given setting means you have to restart
+        """Check to see if changing the given setting means you have to restart
 
         Some settings, esp in modules like LoadImages, affect more than
         the current image set when changed. For instance, if you change
         the name specification for files, you have to reload your image_set_list.
         Override this and return True if changing the given setting means
         that you'll have to do "prepare_run".
-        '''
+        """
         #
         # It's safest to say that any change in loadimages requires a restart
         #
@@ -2811,7 +2811,7 @@ class LoadImages(cellprofiler.module.Module):
         return True
 
     def convert(self, pipeline, metadata, namesandtypes, groups):
-        '''Convert to the modern format using the input modules
+        """Convert to the modern format using the input modules
 
         This method converts any LoadImages modules in the pipeline to
         Images / Metadata / NamesAndTypes and Groups
@@ -2820,7 +2820,7 @@ class LoadImages(cellprofiler.module.Module):
         namesandtypes - the namesandtypes module
         groups - the groups module
         first - True if no images have been added to namesandtypes yet.
-        '''
+        """
         import cellprofiler.modules.metadata as cpmetadata
         import cellprofiler.modules.namesandtypes as cpnamesandtypes
         import cellprofiler.modules.groups as cpgroups
@@ -2960,7 +2960,7 @@ class LoadImages(cellprofiler.module.Module):
 
 
 def well_metadata_tokens(tokens):
-    '''Return the well row and well column tokens out of a set of metadata tokens'''
+    """Return the well row and well column tokens out of a set of metadata tokens"""
 
     well_row_token = None
     well_column_token = None
@@ -2973,10 +2973,10 @@ def well_metadata_tokens(tokens):
 
 
 def needs_well_metadata(tokens):
-    '''Return true if, based on a set of metadata tokens, we need a well token
+    """Return true if, based on a set of metadata tokens, we need a well token
 
     Check for a row and column token and the absence of the well token.
-    '''
+    """
     if cellprofiler.measurement.FTR_WELL.lower() in [x.lower() for x in tokens]:
         return False
     well_row_token, well_column_token = well_metadata_tokens(tokens)
@@ -2984,7 +2984,7 @@ def needs_well_metadata(tokens):
 
 
 def is_image(filename):
-    '''Determine if a filename is a potential image file based on extension'''
+    """Determine if a filename is a potential image file based on extension"""
     ext = os.path.splitext(filename)[1].lower()
     return ext in SUPPORTED_IMAGE_EXTENSIONS
 
@@ -2995,15 +2995,15 @@ def is_movie(filename):
 
 
 class LoadImagesImageProviderBase(cellprofiler.image.AbstractImageProvider):
-    '''Base for image providers: handle pathname and filename & URLs'''
+    """Base for image providers: handle pathname and filename & URLs"""
 
     def __init__(self, name, pathname, filename):
-        '''Initializer
+        """Initializer
 
         name - name of image to be provided
         pathname - path to file or base of URL
         filename - filename of file or last chunk of URL
-        '''
+        """
         if pathname.startswith(FILE_SCHEME):
             pathname = url2pathname(pathname)
         self.__name = name
@@ -3034,10 +3034,10 @@ class LoadImagesImageProviderBase(cellprofiler.image.AbstractImageProvider):
         return self.__filename
 
     def cache_file(self):
-        '''Cache a file that needs to be HTTP downloaded
+        """Cache a file that needs to be HTTP downloaded
 
         Return True if the file has been cached
-        '''
+        """
         if self.__cacheing_tried:
             return self.__is_cached
         self.__cacheing_tried = True
@@ -3094,20 +3094,20 @@ class LoadImagesImageProviderBase(cellprofiler.image.AbstractImageProvider):
         return os.path.join(self.get_pathname(), self.get_filename())
 
     def get_url(self):
-        '''Get the URL representation of the file location'''
+        """Get the URL representation of the file location"""
         return self.__url
 
     def is_matlab_file(self):
-        '''Return True if the file name ends with .mat (no Bio-formats)'''
+        """Return True if the file name ends with .mat (no Bio-formats)"""
         path = urlparse.urlparse(self.get_url())[2]
         return path.lower().endswith(".mat")
 
     def get_md5_hash(self, measurements):
-        '''Compute the MD5 hash of the underlying file or use cached value
+        """Compute the MD5 hash of the underlying file or use cached value
 
         measurements - backup for case where MD5 is calculated on image data
                        directly retrieved from URL
-        '''
+        """
         #
         # Cache the MD5 hash on the image reader
         #
@@ -3136,9 +3136,9 @@ class LoadImagesImageProviderBase(cellprofiler.image.AbstractImageProvider):
         return rdr.md5_hash
 
     def release_memory(self):
-        '''Release any image memory
+        """Release any image memory
 
-        Possibly delete the temporary file'''
+        Possibly delete the temporary file"""
         if self.__is_cached:
             if self.is_matlab_file():
                 try:
@@ -3240,7 +3240,7 @@ class LoadImagesImageProvider(LoadImagesImageProviderBase):
 
 
 class LoadImagesImageProviderURL(LoadImagesImageProvider):
-    '''Reference an image via a URL'''
+    """Reference an image via a URL"""
 
     def __init__(self, name, url, rescale=True,
                  series=None, index=None, channel=None):
@@ -3285,25 +3285,25 @@ class LoadImagesSTKFrameProvider(LoadImagesImageProvider):
     """Provide an image by filename:frame from an STK file"""
 
     def __init__(self, name, pathname, filename, frame, rescale):
-        '''Initialize the provider
+        """Initialize the provider
 
         name - name of the provider for access from image set
         pathname - path to the file
         filename - name of the file
         frame - # of the frame to provide
-        '''
+        """
         super(LoadImagesSTKFrameProvider, self).__init__(
                 name, pathname, filename, rescale=rescale, index=frame)
 
 
 def convert_image_to_objects(image):
-    '''Interpret an image as object indices
+    """Interpret an image as object indices
 
     image - a greyscale or color image, assumes zero == background
 
     returns - a similarly shaped integer array with zero representing background
               and other values representing the indices of the associated object.
-    '''
+    """
     assert isinstance(image, numpy.ndarray)
     if image.ndim == 2:
         unique_indices = numpy.unique(image.ravel())
@@ -3330,13 +3330,13 @@ def convert_image_to_objects(image):
 
 def bad_sizes_warning(first_size, first_filename,
                       second_size, second_filename):
-    '''Return a warning message about sizes being wrong
+    """Return a warning message about sizes being wrong
 
     first_size: tuple of height / width of first image
     first_filename: file name of first image
     second_size: tuple of height / width of second image
     second_filename: file name of second image
-    '''
+    """
     warning = ("Warning: loading image files of different dimensions.\n\n"
                "%s: width = %d, height = %d\n"
                "%s: width = %d, height = %d") % (
@@ -3350,7 +3350,7 @@ PASSTHROUGH_SCHEMES = ("http", "https", "ftp", "omero")
 
 
 def pathname2url(path):
-    '''Convert the unicode path to a file: url'''
+    """Convert the unicode path to a file: url"""
     utf8_path = path.encode('utf-8')
     if any([utf8_path.lower().startswith(x) for x in PASSTHROUGH_SCHEMES]):
         return utf8_path
@@ -3372,11 +3372,11 @@ def url2pathname(url):
 
 
 def urlfilename(url):
-    '''Return just the file part of a URL
+    """Return just the file part of a URL
 
     For instance http://cellprofiler.org/linked_files/file%20has%20spaces.txt
     has a file part of "file has spaces.txt"
-    '''
+    """
     if is_file_url(url):
         return os.path.split(url2pathname(url))[1]
     path = urlparse.urlparse(url)[2]
@@ -3387,13 +3387,13 @@ def urlfilename(url):
 
 
 def urlpathname(url):
-    '''Return the path part of a URL
+    """Return the path part of a URL
 
     For instance, http://cellprofiler.org/Comma%2Cseparated/foo.txt
     has a path of http://cellprofiler.org/Comma,separated
 
     A file url has the normal sort of path that you'd expect.
-    '''
+    """
     if is_file_url(url):
         return os.path.split(url2pathname(url))[0]
     scheme, netloc, path = urlparse.urlparse(url)[:3]

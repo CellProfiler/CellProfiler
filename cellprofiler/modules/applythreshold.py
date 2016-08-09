@@ -200,7 +200,7 @@ class ApplyThreshold(cellprofiler.modules.identify.Identify):
 
     def upgrade_settings(self, setting_values, variable_revision_number, module_name, from_matlab):
         if from_matlab and variable_revision_number < 4:
-            raise NotImplementedError, ("TODO: Handle Matlab CP pipelines for ApplyThreshold with revision < 4")
+            raise NotImplementedError, "TODO: Handle Matlab CP pipelines for ApplyThreshold with revision < 4"
 
         if from_matlab and variable_revision_number == 4:
             setting_values = [setting_values[0],  # ImageName

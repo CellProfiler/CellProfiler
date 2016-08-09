@@ -540,7 +540,7 @@ class ClassifyObjects(cellprofiler.module.Module):
                 values = numpy.hstack((
                     values, [numpy.NaN] * (objects.count - len(values))))
             saved_values.append(values)
-            has_nan_measurement = has_nan_measurement | numpy.isnan(values)
+            has_nan_measurement |= numpy.isnan(values)
             if threshold_method == TM_CUSTOM:
                 t = threshold.value
             elif len(values) == 0:

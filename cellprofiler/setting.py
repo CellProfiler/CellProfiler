@@ -1144,7 +1144,7 @@ class IntegerOrUnboundedRange(IntegerRange):
             raise ValidationError("%d can't be greater than %d" %
                                   (self.max, self._maxval), self)
         if ((not self.unbounded_min) and (not self.unbounded_max) and
-                    self.min > self.max and self.max > 0):
+                        self.min > self.max > 0):
             raise ValidationError("%d is greater than %d" % (self.min, self.max), self)
 
 
@@ -1968,11 +1968,13 @@ class TreeChoice(Setting):
         """Return the setting value for a list of menu path parts"""
         return "|".join([x.replace("|", "||") for x in value])
 
-    def get_leaves(self, path=[]):
+    def get_leaves(self, path=None):
         """Get all leaf nodes of a given parent node
 
         path - the names of nodes traversing the path down the tree
         """
+        if path is None:
+            path = []
         current = self.get_tree()
         while len(path) > 0:
             idx = current.index(path[0])
@@ -1982,11 +1984,13 @@ class TreeChoice(Setting):
             path = path[1:]
         return [x[0] for x in current if x[1] is None or len(x[1] == 0)]
 
-    def get_subnodes(self, path=[]):
+    def get_subnodes(self, path=None):
         """Get all child nodes that are not leaves for a  given parent
 
         path - the names of nodes traversing the path down the tree
         """
+        if path is None:
+            path = []
         current = self.get_tree()
         while len(path) > 0:
             idx = current.index(path[0])

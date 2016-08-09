@@ -352,10 +352,10 @@ class ImageMath(cellprofiler.module.Module):
                     if pd.ndim == 2:
                         pd = pd[:, :, numpy.newaxis]
                 if opval == O_EQUALS:
-                    output_pixel_data = output_pixel_data & (comparitor == pd)
+                    output_pixel_data &= comparitor == pd
                 else:
                     output_pixel_data = op(output_pixel_data, pd)
-                if self.ignore_mask == True:
+                if self.ignore_mask:
                     continue
                 else:
                     if output_mask is None:

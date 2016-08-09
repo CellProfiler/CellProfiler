@@ -226,13 +226,13 @@ F_EXPT_FILT_NUMTRACKS = "%s_FilteredNumberOfTracks" % F_PREFIX
 
 
 def kalman_feature(model, matrix_or_vector, i, j=None):
-    '''Return the feature name for a Kalman feature
+    """Return the feature name for a Kalman feature
 
     model - model used for Kalman feature: velocity or static
     matrix_or_vector - the part of the Kalman state to save, vec, COV or noise
     i - the name for the first (or only for vec and noise) index into the vector
     j - the name of the second index into the matrix
-    '''
+    """
     pieces = [F_KALMAN, model, matrix_or_vector, i]
     if j is not None:
         pieces.append(j)
@@ -782,7 +782,7 @@ class TrackObjects(cellprofiler.module.Module):
                 self.max_lifetime, self.mitosis_cost, self.mitosis_max_distance]
 
     def validate_module(self, pipeline):
-        '''Make sure that the user has selected some limits when filtering'''
+        """Make sure that the user has selected some limits when filtering"""
         if (self.tracking_method == TM_LAP and
                 self.wants_lifetime_filtering.value and
                 (self.wants_minimum_lifetime.value == False and self.wants_minimum_lifetime.value == False)):
@@ -869,7 +869,7 @@ class TrackObjects(cellprofiler.module.Module):
         self.__set("coordinates", workspace, value)
 
     def get_orig_coordinates(self, workspace):
-        '''The coordinates of the first occurrence of an object's ancestor'''
+        """The coordinates of the first occurrence of an object's ancestor"""
         return self.__get("orig coordinates", workspace, numpy.zeros((2, 0), int))
 
     def set_orig_coordinates(self, workspace, value):
@@ -912,32 +912,32 @@ class TrackObjects(cellprofiler.module.Module):
         self.__set("kalman_states", workspace, value)
 
     def prepare_group(self, workspace, grouping, image_numbers):
-        '''Erase any tracking information at the start of a run'''
+        """Erase any tracking information at the start of a run"""
         d = self.get_dictionary(workspace.image_set_list)
         d.clear()
 
         return True
 
     def measurement_name(self, feature):
-        '''Return a measurement name for the given feature'''
+        """Return a measurement name for the given feature"""
         if self.tracking_method == TM_LAP:
             return "%s_%s" % (F_PREFIX, feature)
         return "%s_%s_%s" % (F_PREFIX, feature, str(self.pixel_radius.value))
 
     def image_measurement_name(self, feature):
-        '''Return a measurement name for an image measurement'''
+        """Return a measurement name for an image measurement"""
         if self.tracking_method == TM_LAP:
             return "%s_%s_%s" % (F_PREFIX, feature, self.object_name.value)
         return "%s_%s_%s_%s" % (F_PREFIX, feature, self.object_name.value,
                                 str(self.pixel_radius.value))
 
     def add_measurement(self, workspace, feature, values):
-        '''Add a measurement to the workspace's measurements
+        """Add a measurement to the workspace's measurements
 
         workspace - current image set's workspace
         feature - name of feature being measured
         values - one value per object
-        '''
+        """
         workspace.measurements.add_measurement(
                 self.object_name.value,
                 self.measurement_name(feature),
@@ -1026,7 +1026,7 @@ class TrackObjects(cellprofiler.module.Module):
                             arrowprops=dict(visible=False))
 
     def run_distance(self, workspace, objects):
-        '''Track objects based on distance'''
+        """Track objects based on distance"""
         old_i, old_j = self.get_saved_coordinates(workspace)
         if len(old_i):
             distances, (i, j) = scipy.ndimage.distance_transform_edt(objects.segmented == 0,
@@ -1066,7 +1066,7 @@ class TrackObjects(cellprofiler.module.Module):
         self.set_saved_labels(workspace, objects.segmented)
 
     def run_lapdistance(self, workspace, objects):
-        '''Track objects based on distance'''
+        """Track objects based on distance"""
         m = workspace.measurements
 
         old_i, old_j = self.get_saved_coordinates(workspace)
@@ -1136,7 +1136,7 @@ class TrackObjects(cellprofiler.module.Module):
             t = numpy.argwhere((d < minDist))
             x = numpy.sqrt((old_i[t[0:t.size, 0]] - new_i[t[0:t.size, 1]]) ** 2 + (
                 old_j[t[0:t.size, 0]] - new_j[t[0:t.size, 1]]) ** 2)
-            t = t + 1
+            t += 1
             t = numpy.column_stack((t, x))
             a = numpy.arange(len(old_i)) + 2
             x = numpy.searchsorted(t[0:(t.size / 2), 0], a)
@@ -1148,7 +1148,7 @@ class TrackObjects(cellprofiler.module.Module):
 
             i, j = numpy.mgrid[0:len(new_i), 0:len(old_i) + 1]
             i = i + len(old_i) + 1
-            j = j + len(new_i)
+            j += len(new_i)
             j[0:len(new_i) + 1, 0] = i[0:len(new_i) + 1, 0] - len(old_i)
             x = numpy.zeros((len(new_i), len(old_i) + 1))
             x[0:len(new_i) + 1, 0] = costBorn
@@ -1275,7 +1275,7 @@ class TrackObjects(cellprofiler.module.Module):
         self.set_saved_labels(workspace, objects.segmented)
 
     def get_kalman_models(self):
-        '''Return tuples of model and names of the vector elements'''
+        """Return tuples of model and names of the vector elements"""
         if self.static_model:
             models = [(F_STATIC_MODEL, (F_Y, F_X))]
         else:
@@ -1285,7 +1285,7 @@ class TrackObjects(cellprofiler.module.Module):
         return models
 
     def save_kalman_measurements(self, workspace):
-        '''Save the first-pass state_vec, state_cov and state_noise'''
+        """Save the first-pass state_vec, state_cov and state_noise"""
 
         m = workspace.measurements
         object_name = self.object_name.value
@@ -1337,7 +1337,7 @@ class TrackObjects(cellprofiler.module.Module):
                     m.add_measurement(object_name, mname, values)
 
     def run_overlap(self, workspace, objects):
-        '''Track objects by maximum # of overlapping pixels'''
+        """Track objects by maximum # of overlapping pixels"""
         current_labels = objects.segmented
         old_labels = self.get_saved_labels(workspace)
         i, j = (centrosome.cpmorphology.centers_of_labels(objects.segmented) + .5).astype(int)
@@ -1441,7 +1441,7 @@ class TrackObjects(cellprofiler.module.Module):
         return z
 
     def is_aggregation_module(self):
-        '''We connect objects across imagesets within a group = aggregation'''
+        """We connect objects across imagesets within a group = aggregation"""
         return True
 
     def post_group(self, workspace, grouping):
@@ -1853,7 +1853,7 @@ class TrackObjects(cellprofiler.module.Module):
         # Useful debugging diagnostics
         #
         def desc(node):
-            '''Describe a node for graphviz'''
+            """Describe a node for graphviz"""
             fl = F
             if node < start_end_end:
                 fmt = "N%d:%d"
@@ -1881,7 +1881,7 @@ class TrackObjects(cellprofiler.module.Module):
                              int(fl[idx, ONIDX])))
 
         def write_graph(path, x, y):
-            '''Write a graphviz DOT file'''
+            """Write a graphviz DOT file"""
             with open(path, "w") as fd:
                 fd.write("digraph trackobjects {\n")
                 graph_idx = numpy.where(
@@ -1905,7 +1905,7 @@ class TrackObjects(cellprofiler.module.Module):
             # have been assigned to a mitosis, skip
             #
             if x[pidx] == midx + mitosis_off and not \
-                    any([y[idx] >= mitosis_off and y[idx] < mitosis_end
+                    any([mitosis_off <= y[idx] < mitosis_end
                          for idx in lidx, ridx]):
                 alt_score = sum([score_matrix[y[idx], idx] for idx in lidx, ridx])
                 #
@@ -2059,7 +2059,7 @@ class TrackObjects(cellprofiler.module.Module):
                               image_numbers[my_image_index],
                               object_numbers[my_image_index][my_object_index],
                               score_matrix[yi, i]))
-            elif yi >= split_off and yi < split_end:
+            elif split_off <= yi < split_end:
                 # ------------------------------------
                 #
                 #     SPLIT
@@ -2104,7 +2104,7 @@ class TrackObjects(cellprofiler.module.Module):
             if x[i] < start_end_end:
                 a[i + 1] = x[i] + 1
                 d[a[i + 1]] = i + 1
-            elif x[i] >= merge_off and x[i] < merge_end:
+            elif merge_off <= x[i] < merge_end:
                 # -------------------
                 #
                 #    MERGE
@@ -2275,7 +2275,7 @@ class TrackObjects(cellprofiler.module.Module):
         self.recalculate_group(workspace, image_numbers)
 
     def calculate_area_penalty(self, a1, a2):
-        '''Calculate a penalty for areas that don't match
+        """Calculate a penalty for areas that don't match
 
         Ideally, area should be conserved while tracking. We divide the larger
         of the two by the smaller of the two to get the area penalty
@@ -2285,14 +2285,14 @@ class TrackObjects(cellprofiler.module.Module):
         penalty (sqrt((a1 + a2) / b) for a1+a2 > b and b / (a1 + a2) for
         a1+a2 < b. I can't think of a good reason why they should be
         asymmetric.
-        '''
+        """
         result = a1 / a2
         result[result < 1] = 1 / result[result < 1]
         result[numpy.isnan(result)] = numpy.inf
         return result
 
     def get_gap_pair_scores(self, F, L, max_gap):
-        '''Compute scores for matching last frame with first to close gaps
+        """Compute scores for matching last frame with first to close gaps
 
         F - an N x 3 (or more) array giving X, Y and frame # of the first object
             in each track
@@ -2307,7 +2307,7 @@ class TrackObjects(cellprofiler.module.Module):
                  the track whose index is the second element of the array.
 
                  an M-element vector of scores.
-        '''
+        """
         #
         # There have to be at least two things to match
         #
@@ -2377,7 +2377,7 @@ class TrackObjects(cellprofiler.module.Module):
         return numpy.column_stack((ai, aj)), d * rho
 
     def get_mitotic_triple_scores(self, F, L):
-        '''Compute scores for matching a parent to two daughters
+        """Compute scores for matching a parent to two daughters
 
         F - an N x 3 (or more) array giving X, Y and frame # of the first object
             in each track
@@ -2390,7 +2390,7 @@ class TrackObjects(cellprofiler.module.Module):
                  columns are the indices of the daughters in the F array
 
                  an M-element vector of distances of the parent from the expected
-        '''
+        """
         X = 0
         Y = 1
         IIDX = 2
@@ -2440,11 +2440,11 @@ class TrackObjects(cellprofiler.module.Module):
         return numpy.column_stack((i[ij], j[ij], k)), d * rho
 
     def recalculate_group(self, workspace, image_numbers):
-        '''Recalculate all measurements once post_group has run
+        """Recalculate all measurements once post_group has run
 
         workspace - the workspace being operated on
         image_numbers - the image numbers of the group's image sets' measurements
-        '''
+        """
         m = workspace.measurements
         object_name = self.object_name.value
 
@@ -2499,18 +2499,18 @@ class TrackObjects(cellprofiler.module.Module):
         ancestral_object_index = ancestral_object_index[labels]
 
         def start(image_index):
-            '''Return the start index in the array for the given image index'''
+            """Return the start index in the array for the given image index"""
             return idx.fwd_idx[image_index]
 
         def end(image_index):
-            '''Return the end index in the array for the given image index'''
+            """Return the end index in the array for the given image index"""
             return start(image_index) + idx.counts[0][image_index]
 
         def slyce(image_index):
             return slice(start(image_index), end(image_index))
 
         class wrapped(object):
-            '''make an indexable version of a measurement, with parent and ancestor fetching'''
+            """make an indexable version of a measurement, with parent and ancestor fetching"""
 
             def __init__(self, feature_name):
                 self.feature_name = feature_name
@@ -2640,13 +2640,13 @@ class TrackObjects(cellprofiler.module.Module):
             m.add_experiment_measurement(F_EXPT_FILT_NUMTRACKS, nlabels - len(labels_to_filter))
 
     def map_objects(self, workspace, new_of_old, old_of_new, i, j):
-        '''Record the mapping of old to new objects and vice-versa
+        """Record the mapping of old to new objects and vice-versa
 
         workspace - workspace for current image set
         new_to_old - an array of the new labels for every old label
         old_to_new - an array of the old labels for every new label
         i, j - the coordinates for each new object.
-        '''
+        """
         m = workspace.measurements
         assert isinstance(m, cellprofiler.measurement.Measurements)
         image_number = m.get_current_image_measurement(cellprofiler.pipeline.IMAGE_NUMBER)
@@ -2794,7 +2794,7 @@ class TrackObjects(cellprofiler.module.Module):
                         r_image_numbers, r_child_object_numbers)
 
     def recalculate_kalman_filters(self, workspace, image_numbers):
-        '''Rerun the kalman filters to improve the motion models'''
+        """Rerun the kalman filters to improve the motion models"""
         m = workspace.measurements
         object_name = self.object_name.value
         object_number = m[object_name, cellprofiler.measurement.OBJECT_NUMBER, image_numbers]
@@ -2987,7 +2987,7 @@ class TrackObjects(cellprofiler.module.Module):
         return result
 
     def get_object_relationships(self, pipeline):
-        '''Return the object relationships produced by this module'''
+        """Return the object relationships produced by this module"""
         object_name = self.object_name.value
         if self.wants_second_phase and self.tracking_method == TM_LAP:
             when = cellprofiler.measurement.MCA_AVAILABLE_POST_GROUP

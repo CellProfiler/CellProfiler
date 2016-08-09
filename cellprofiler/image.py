@@ -161,7 +161,7 @@ class Image(object):
     @property
     def has_crop_mask(self):
         """True if the image or its ancestors has a crop mask"""
-        return (self.__crop_mask is not None or self.has_masking_objects or (self.has_parent_image and self.parent.has_crop_mask))
+        return self.__crop_mask is not None or self.has_masking_objects or (self.has_parent_image and self.parent.has_crop_mask)
 
     def crop_image_similarly(self, image):
         """Crop a 2-d or 3-d image using this image's crop mask

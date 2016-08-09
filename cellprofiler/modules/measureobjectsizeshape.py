@@ -449,8 +449,8 @@ class MeasureObjectSizeShape(cellprofiler.module.Module):
                      "%.2f" % numpy.std(data)))
 
     def get_measurement_columns(self, pipeline):
-        '''Return measurement column definitions.
-        All cols returned as float even though "Area" will only ever be int'''
+        """Return measurement column definitions.
+        All cols returned as float even though "Area" will only ever be int"""
         object_names = [s.value for s in self.settings()][:-1]
         measurement_names = self.get_feature_names()
         cols = []

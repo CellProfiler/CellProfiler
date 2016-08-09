@@ -1,4 +1,4 @@
-'''<b>Overlay Outlines</b> places outlines produced by an
+"""<b>Overlay Outlines</b> places outlines produced by an
 <b>Identify</b> module over a desired image.
 <hr>
 This module places outlines (in a special format produced by an <b>Identify</b> module)
@@ -6,7 +6,7 @@ on any desired image (grayscale, color, or blank). The
 resulting image can be saved using the <b>SaveImages</b> module.
 
 See also <b>IdentifyPrimaryObjects, IdentifySecondaryObjects, IdentifyTertiaryObjects</b>.
-'''
+"""
 
 import cellprofiler.image
 import cellprofiler.module
@@ -218,7 +218,7 @@ class OverlayOutlines(cellprofiler.module.Module):
         workspace.display_data.pixel_data = pixel_data
 
     def __can_composite_objects(self):
-        '''Return True if we can use object compositing during display'''
+        """Return True if we can use object compositing during display"""
         for outline in self.outlines:
             if outline.outline_choice == FROM_IMAGES:
                 return False
@@ -348,7 +348,7 @@ class OverlayOutlines(cellprofiler.module.Module):
         return pixel_data
 
     def get_outline(self, workspace, outline):
-        '''Get outline, with aliasing and taking widths into account'''
+        """Get outline, with aliasing and taking widths into account"""
         if outline.outline_choice == FROM_IMAGES:
             name = outline.outline_name.value
             pixel_data = workspace.image_set.get_image(name).pixel_data

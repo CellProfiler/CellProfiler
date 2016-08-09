@@ -540,9 +540,9 @@ def size_similarly(labels, secondary):
 
     if labels.shape[0] <= secondary.shape[0] and labels.shape[1] <= secondary.shape[1]:
         if secondary.ndim == 2:
-            return (secondary[:labels.shape[0], :labels.shape[1]], numpy.ones(labels.shape, bool))
+            return secondary[:labels.shape[0], :labels.shape[1]], numpy.ones(labels.shape, bool)
         else:
-            return (secondary[:labels.shape[0], :labels.shape[1], :], numpy.ones(labels.shape, bool))
+            return secondary[:labels.shape[0], :labels.shape[1], :], numpy.ones(labels.shape, bool)
 
     #
     # Some portion of the secondary matrix does not cover the labels

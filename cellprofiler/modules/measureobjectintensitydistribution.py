@@ -169,7 +169,7 @@ class MeasureObjectIntensityDistribution(cellprofiler.module.Module):
         self.add_bin_count(can_remove=False)
 
     def add_image(self, can_remove=True):
-        '''Add an image to be measured'''
+        """Add an image to be measured"""
         group = cellprofiler.setting.SettingsGroup()
         if can_remove:
             group.append("divider", cellprofiler.setting.Divider(line=False))
@@ -182,7 +182,7 @@ class MeasureObjectIntensityDistribution(cellprofiler.module.Module):
         self.images.append(group)
 
     def add_object(self, can_remove=True):
-        '''Add an object to be measured (plus optional centers)'''
+        """Add an object to be measured (plus optional centers)"""
         group = cellprofiler.setting.SettingsGroup()
         if can_remove:
             group.append("divider", cellprofiler.setting.Divider(line=False))
@@ -220,7 +220,7 @@ class MeasureObjectIntensityDistribution(cellprofiler.module.Module):
         self.objects.append(group)
 
     def add_bin_count(self, can_remove=True):
-        '''Add another radial bin count at which to measure'''
+        """Add another radial bin count at which to measure"""
         group = cellprofiler.setting.SettingsGroup()
         if can_remove:
             group.append("divider", cellprofiler.setting.Divider(line=False))
@@ -402,7 +402,7 @@ class MeasureObjectIntensityDistribution(cellprofiler.module.Module):
         return result
 
     def prepare_settings(self, setting_values):
-        '''Adjust the numbers of images, objects and bin counts'''
+        """Adjust the numbers of images, objects and bin counts"""
         image_count, objects_count, bin_counts_count, heatmap_count = \
             [int(x) for x in setting_values[:4]]
         for sequence, add_fn, count in \
@@ -514,7 +514,7 @@ class MeasureObjectIntensityDistribution(cellprofiler.module.Module):
     def do_measurements(self, workspace, image_name, object_name,
                         center_object_name, center_choice,
                         bin_count_settings, dd):
-        '''Perform the radial measurements on the image set
+        """Perform the radial measurements on the image set
 
         workspace - workspace that holds images / objects
         image_name - make measurements on this image
@@ -528,7 +528,7 @@ class MeasureObjectIntensityDistribution(cellprofiler.module.Module):
         d - a dictionary for saving reusable partial results
 
         returns one statistics tuple per ring.
-        '''
+        """
         assert isinstance(workspace, cellprofiler.workspace.Workspace)
         assert isinstance(workspace.object_set, cellprofiler.region.Set)
         bin_count = bin_count_settings.bin_count.value
@@ -808,22 +808,22 @@ class MeasureObjectIntensityDistribution(cellprofiler.module.Module):
                         meas[object_name, ftr] = phase
 
     def get_zernike_magnitude_name(self, image_name, n, m):
-        '''The feature name of the magnitude of a Zernike moment
+        """The feature name of the magnitude of a Zernike moment
 
         image_name - the name of the image being measured
         n - the radial moment of the Zernike
         m - the azimuthal moment of the Zernike
-        '''
+        """
         return "_".join(
                 (M_CATEGORY, FF_ZERNIKE_MAGNITUDE, image_name, str(n), str(m)))
 
     def get_zernike_phase_name(self, image_name, n, m):
-        '''The feature name of the phase of a Zernike moment
+        """The feature name of the phase of a Zernike moment
 
         image_name - the name of the image being measured
         n - the radial moment of the Zernike
         m - the azimuthal moment of the Zernike
-        '''
+        """
         return "_".join(
                 (M_CATEGORY, FF_ZERNIKE_PHASE, image_name, str(n), str(m)))
 
@@ -955,7 +955,7 @@ class MeasureObjectIntensityDistribution(cellprofiler.module.Module):
 
 
 class MORDObjectNameSubscriber(cellprofiler.setting.ObjectNameSubscriber):
-    '''An object name subscriber limited by the objects in the objects' group'''
+    """An object name subscriber limited by the objects in the objects' group"""
 
     def set_module(self, module):
         assert isinstance(module, MeasureObjectIntensityDistribution)
@@ -972,11 +972,11 @@ class MORDObjectNameSubscriber(cellprofiler.setting.ObjectNameSubscriber):
         return filter(self.__is_valid_choice, super_choices)
 
     def is_visible(self):
-        '''Return True if a choice should be displayed'''
+        """Return True if a choice should be displayed"""
         return len(self.__module.objects) > 1
 
     def get_objects_name(self):
-        '''Return the name of the objects to use in the display'''
+        """Return the name of the objects to use in the display"""
         if len(self.__module.objects) == 1:
             return self.__module.objects[0].object_name.value
         else:
@@ -984,7 +984,7 @@ class MORDObjectNameSubscriber(cellprofiler.setting.ObjectNameSubscriber):
 
 
 class MORDImageNameSubscriber(cellprofiler.setting.ImageNameSubscriber):
-    '''An image name subscriber limited by the images in the image group'''
+    """An image name subscriber limited by the images in the image group"""
 
     def set_module(self, module):
         assert isinstance(module, MeasureObjectIntensityDistribution)
@@ -1001,11 +1001,11 @@ class MORDImageNameSubscriber(cellprofiler.setting.ImageNameSubscriber):
         return filter(self.__is_valid_choice, super_choices)
 
     def is_visible(self):
-        '''Return True if a choice should be displayed'''
+        """Return True if a choice should be displayed"""
         return len(self.__module.images) > 1
 
     def get_image_name(self):
-        '''Return the name of the image to use in the display'''
+        """Return the name of the image to use in the display"""
         if len(self.__module.images) == 1:
             return self.__module.images[0].image_name.value
         else:

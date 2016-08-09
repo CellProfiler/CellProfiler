@@ -1004,8 +1004,7 @@ class Pipeline(object):
             else:
                 print line
 
-        if pipeline_version > 20080101000000 and\
-           pipeline_version < 30080101000000:
+        if 20080101000000 < pipeline_version < 30080101000000:
             # being optomistic... a millenium should be OK, no?
             second, minute, hour, day, month = [
                 int(pipeline_version / (100 ** i)) % 100
@@ -3061,7 +3060,7 @@ class Pipeline(object):
         is_image_set_modification = removed_module.is_load_module()
         self.__modules = self.__modules[:idx] + self.__modules[idx + 1:]
         for module in self.__modules[idx:]:
-            module.module_num = module.module_num - 1
+            module.module_num -= 1
         self.notify_listeners(ModuleRemovedPipelineEvent(
                 module_num, is_image_set_modification=is_image_set_modification))
         del self.__settings[idx]

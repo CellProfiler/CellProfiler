@@ -34,17 +34,15 @@ Other packages are referenced <a href="http://graphicssoft.about.com/od/panorama
 '''
 
 import logging
-import sys
 
-import numpy as np
-import scipy.ndimage as scind
+import cellprofiler.image
+import cellprofiler.measurement
+import cellprofiler.module
+import cellprofiler.setting
+import cellprofiler.setting
+import numpy
 
 logger = logging.getLogger(__name__)
-import cellprofiler.image as cpi
-import cellprofiler.module as cpm
-import cellprofiler.setting as cps
-from cellprofiler.setting import YES, NO
-import cellprofiler.measurement as cpmeas
 
 T_WITHIN_CYCLES = 'Within cycles'
 T_ACROSS_CYCLES = 'Across cycles'
@@ -72,29 +70,29 @@ TILE_HEIGHT = "TileHeight"
 FIXED_SETTING_COUNT = 10
 
 
-class Tile(cpm.Module):
+class Tile(cellprofiler.module.Module):
     module_name = "Tile"
     category = 'Image Processing'
     variable_revision_number = 1
 
     def create_settings(self):
-        self.input_image = cps.ImageNameSubscriber(
+        self.input_image = cellprofiler.setting.ImageNameSubscriber(
                 "Select an input image",
-                cps.NONE, doc="""
+                cellprofiler.setting.NONE, doc="""
             Select the image to be tiled. Additional images within the cycle can be added
             later by choosing the "<i>%(T_ACROSS_CYCLES)s</i>"option below.""" % globals())
 
-        self.output_image = cps.ImageNameProvider(
+        self.output_image = cellprofiler.setting.ImageNameProvider(
                 "Name the output image",
                 "TiledImage", doc="""
             Enter a name for the final tiled image.""")
 
         self.additional_images = []
 
-        self.add_button = cps.DoSomething("", "Add another image",
-                                          self.add_image)
+        self.add_button = cellprofiler.setting.DoSomething("", "Add another image",
+                                                           self.add_image)
 
-        self.tile_method = cps.Choice(
+        self.tile_method = cellprofiler.setting.Choice(
                 "Tile assembly method",
                 T_ALL, doc='''
             This setting controls the method by which the final tiled image is asembled:
@@ -111,7 +109,7 @@ class Tile(cpm.Module):
             when processing is complete.</li>
             </ul>''' % globals())
 
-        self.rows = cps.Integer(
+        self.rows = cellprofiler.setting.Integer(
                 "Final number of rows", 8, doc='''
             Specify the number of rows would you like to have in the tiled image.
             For example, if you want to show your images in a 96-well format,
@@ -127,7 +125,7 @@ class Tile(cpm.Module):
             to avoid this error.</li>
             </ul></p>''')
 
-        self.columns = cps.Integer(
+        self.columns = cellprofiler.setting.Integer(
                 "Final number of columns",
                 12, doc='''
             Specify the number of columns you like to have in the tiled image.
@@ -144,18 +142,18 @@ class Tile(cpm.Module):
             to avoid this error.</li>
             </ul></p>''')
 
-        self.place_first = cps.Choice(
+        self.place_first = cellprofiler.setting.Choice(
                 "Image corner to begin tiling", P_ALL, doc='''
             Where do you want the first image to be placed?  Begin in the upper left-hand corner
             for a typical multi-well plate format where the first image is A01.''')
 
-        self.tile_style = cps.Choice(
+        self.tile_style = cellprofiler.setting.Choice(
                 "Direction to begin tiling", S_ALL, doc='''
             This setting specifies the order that the images are to be arranged.
             If your images are named A01, A02, etc,
             enter <i>%(S_ROW)s</i>".''' % globals())
 
-        self.meander = cps.Binary(
+        self.meander = cellprofiler.setting.Binary(
                 "Use meander mode?", False, doc='''
             Select <i>%(YES)s</i> to tile adjacent images in one direction,
             then the next row/column is tiled in the opposite direction.
@@ -165,7 +163,7 @@ class Tile(cpm.Module):
             the next row starts near where the first row started and tiles
             again in the same direction.''' % globals())
 
-        self.wants_automatic_rows = cps.Binary(
+        self.wants_automatic_rows = cellprofiler.setting.Binary(
                 "Automatically calculate number of rows?", False, doc="""
             <b>Tile</b> can automatically calculate the number of rows
             in the grid based on the number of image cycles that will be processed.
@@ -176,7 +174,7 @@ class Tile(cpm.Module):
             will create a grid that has roughly the same number of rows
             and columns.</p>""" % globals())
 
-        self.wants_automatic_columns = cps.Binary(
+        self.wants_automatic_columns = cellprofiler.setting.Binary(
                 "Automatically calculate number of columns?", False, doc="""
             <b>Tile</b> can automatically calculate the number of columns
             in the grid from the number of image cycles that will be processed.
@@ -189,16 +187,16 @@ class Tile(cpm.Module):
 
     def add_image(self, can_remove=True):
         '''Add an image + associated questions and buttons'''
-        group = cps.SettingsGroup()
+        group = cellprofiler.setting.SettingsGroup()
         if can_remove:
-            group.append("divider", cps.Divider(line=True))
+            group.append("divider", cellprofiler.setting.Divider(line=True))
 
         group.append("input_image_name",
-                     cps.ImageNameSubscriber("Select an additional image to tile",
-                                             cps.NONE, doc="""
+                     cellprofiler.setting.ImageNameSubscriber("Select an additional image to tile",
+                                                              cellprofiler.setting.NONE, doc="""
                                             Select an additional image to tile?"""))
         if can_remove:
-            group.append("remover", cps.RemoveSettingButton("", "Remove above image", self.additional_images, group))
+            group.append("remover", cellprofiler.setting.RemoveSettingButton("", "Remove above image", self.additional_images, group))
         self.additional_images.append(group)
 
     def settings(self):
@@ -251,7 +249,7 @@ class Tile(cpm.Module):
             output_pixels = self.place_adjacent(workspace)
         else:
             output_pixels = self.tile(workspace)
-        output_image = cpi.Image(output_pixels)
+        output_image = cellprofiler.image.Image(output_pixels)
         workspace.image_set.add(self.output_image.value, output_image)
         if self.show_window:
             workspace.display_data.image = output_pixels
@@ -262,7 +260,7 @@ class Tile(cpm.Module):
             if self.output_image.value not in image_set.get_names():
                 d = self.get_dictionary(workspace.image_set_list)
                 image_set.add(self.output_image.value,
-                              cpi.Image(d[TILED_IMAGE]))
+                              cellprofiler.image.Image(d[TILED_IMAGE]))
 
     def is_aggregation_module(self):
         '''Need to run all cycles in same worker if across cycles'''
@@ -296,7 +294,7 @@ class Tile(cpm.Module):
                 shape = (height, width, pixels.shape[2])
             else:
                 shape = (height, width)
-            output_pixels = np.zeros(shape)
+            output_pixels = numpy.zeros(shape)
             d[TILED_IMAGE] = output_pixels
             d[TILE_WIDTH] = tile_width
             d[TILE_HEIGHT] = tile_height
@@ -352,9 +350,9 @@ class Tile(cpm.Module):
         height = tile_height * rows
         width = tile_width * columns
         if colors > 0:
-            output_pixels = np.zeros((height, width, colors))
+            output_pixels = numpy.zeros((height, width, colors))
         else:
-            output_pixels = np.zeros((height, width))
+            output_pixels = numpy.zeros((height, width))
         for i, p in enumerate(pixel_data):
             self.put_tile(p, output_pixels, i, rows, columns)
         return output_pixels
@@ -404,7 +402,7 @@ class Tile(cpm.Module):
                 # Take the square root of the # of images & assign as rows.
                 # Maybe add 1 to get # of columns.
                 #
-                i = int(np.sqrt(image_count))
+                i = int(numpy.sqrt(image_count))
                 j = int((image_count + i - 1) / i)
                 return i, j
             else:
@@ -434,7 +432,7 @@ class Tile(cpm.Module):
                 (not self.wants_automatic_columns) and
                         self.rows.value * self.columns.value <
                         len(self.additional_images) + 1):
-            raise cps.ValidationError(
+            raise cellprofiler.setting.ValidationError(
                     "There are too many images (%d) for a %d by %d grid" %
                     (len(self.additional_images) + 1, self.columns.value,
                      self.rows.value),
@@ -464,14 +462,14 @@ class Tile(cpm.Module):
 
             tile_style = S_ROW if row_or_column.lower() == 'row' else S_COL
 
-            wants_automatic_rows = cps.NO
-            wants_automatic_columns = cps.NO
-            if number_rows == cps.AUTOMATIC:
+            wants_automatic_rows = cellprofiler.setting.NO
+            wants_automatic_columns = cellprofiler.setting.NO
+            if number_rows == cellprofiler.setting.AUTOMATIC:
                 number_rows = 8
-                wants_automatic_rows = cps.YES
-            if number_columns == cps.AUTOMATIC:
+                wants_automatic_rows = cellprofiler.setting.YES
+            if number_columns == cellprofiler.setting.AUTOMATIC:
                 number_columns = 12
-                wants_automatic_columns = cps.YES
+                wants_automatic_columns = cellprofiler.setting.YES
             setting_values = [image_name, tiled_image, T_ACROSS_CYCLES,
                               number_rows, number_columns, place_first,
                               tile_style, meander_mode, wants_automatic_rows,
@@ -483,17 +481,17 @@ class Tile(cpm.Module):
         if (from_matlab and module_name == "PlaceAdjacent" and
                     variable_revision_number == 3):
             image_names = [s for s in setting_values[:6]
-                           if s.lower() != cps.DO_NOT_USE.lower()]
+                           if s.lower() != cellprofiler.setting.DO_NOT_USE.lower()]
             adjacent_image_name = setting_values[6]
             horizontal_or_vertical = setting_values[7]
             delete_pipeline = setting_values[8]
-            if delete_pipeline == cps.YES:
+            if delete_pipeline == cellprofiler.setting.YES:
                 logger.warning(
                         "Ignoring memory option when importing PlaceAdjacent "
                         "into Tile. Use the ConserveMemory module to remove "
                         "the image from memory if desired.\n")
             if len(image_names) == 0:
-                image_names.append(cps.DO_NOT_USE)
+                image_names.append(cellprofiler.setting.DO_NOT_USE)
             if horizontal_or_vertical.lower() == "horizontal":
                 tile_style = S_ROW
                 number_rows = "1"
@@ -505,7 +503,7 @@ class Tile(cpm.Module):
 
             setting_values = [image_names[0], adjacent_image_name,
                               T_WITHIN_CYCLES, number_rows, number_columns,
-                              P_TOP_LEFT, tile_style, cps.NO, cps.NO, cps.NO]
+                              P_TOP_LEFT, tile_style, cellprofiler.setting.NO, cellprofiler.setting.NO, cellprofiler.setting.NO]
             setting_values += image_names[1:]
             variable_revision_number = 1
             from_matlab = False

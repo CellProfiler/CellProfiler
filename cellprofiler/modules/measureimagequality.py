@@ -57,30 +57,24 @@ control in large-scale high-content screens." <i>J Biomol Screen</i> 17(2):266-7
 </ul>
 '''
 
+import itertools
 import logging
 
-import numpy as np
+import cellprofiler.measurement
+import cellprofiler.module
+import cellprofiler.modules.identify
+import cellprofiler.modules.loadimages
+import cellprofiler.preferences
+import cellprofiler.setting
+import centrosome.cpmorphology
+import centrosome.haralick
+import centrosome.radial_power_spectrum
+import centrosome.threshold
+import numpy
+import scipy.linalg.basic
+import scipy.ndimage
 
 logger = logging.getLogger(__name__)
-import scipy.ndimage as scind
-from scipy.linalg.basic import lstsq
-from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
-import centrosome.haralick
-import cellprofiler.module as cpm
-import cellprofiler.measurement as cpmeas
-import cellprofiler.setting as cps
-from cellprofiler.setting import YES, NO
-import centrosome.threshold as cpthresh
-import itertools
-import centrosome.radial_power_spectrum as rps
-from identify import O_TWO_CLASS, O_THREE_CLASS, O_WEIGHTED_VARIANCE, O_ENTROPY
-from identify import O_FOREGROUND, O_BACKGROUND
-from centrosome.threshold import TM_MOG, TM_OTSU
-from loadimages import C_FILE_NAME, C_SCALING
-import cellprofiler.preferences as cpprefs
-from cellprofiler.preferences import \
-    DEFAULT_OUTPUT_FOLDER_NAME, DEFAULT_INPUT_FOLDER_NAME, ABSOLUTE_FOLDER_NAME, \
-    DEFAULT_INPUT_SUBFOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME, IO_FOLDER_CHOICE_HELP_TEXT
 
 ##############################################
 #
@@ -126,13 +120,13 @@ SETTINGS_PER_GROUP_V3 = 11
 IMAGE_GROUP_SETTING_OFFSET = 2
 
 
-class MeasureImageQuality(cpm.Module):
+class MeasureImageQuality(cellprofiler.module.Module):
     module_name = "MeasureImageQuality"
     category = "Measurement"
     variable_revision_number = 5
 
     def create_settings(self):
-        self.images_choice = cps.Choice(
+        self.images_choice = cellprofiler.setting.Choice(
                 "Calculate metrics for which images?",
                 [O_ALL_LOADED, O_SELECT], doc="""
             This option lets you choose which images will have quality metrics calculated.
@@ -144,28 +138,28 @@ class MeasureImageQuality(cpm.Module):
             can be added with separate settings.</li>
             </ul>""" % globals())
 
-        self.divider = cps.Divider(line=True)
+        self.divider = cellprofiler.setting.Divider(line=True)
 
         self.image_groups = []
-        self.image_count = cps.HiddenCount(self.image_groups, "Image count")
+        self.image_count = cellprofiler.setting.HiddenCount(self.image_groups, "Image count")
         self.add_image_group(can_remove=False)
-        self.add_image_button = cps.DoSomething("", "Add another image list", self.add_image_group)
+        self.add_image_button = cellprofiler.setting.DoSomething("", "Add another image list", self.add_image_group)
 
     def add_image_group(self, can_remove=True):
-        group = cps.SettingsGroup()
+        group = cellprofiler.setting.SettingsGroup()
 
         group.can_remove = can_remove
         if can_remove:
-            group.append("divider", cps.Divider(line=True))
+            group.append("divider", cellprofiler.setting.Divider(line=True))
 
-        group.append("image_names", cps.ImageNameSubscriberMultiChoice(
+        group.append("image_names", cellprofiler.setting.ImageNameSubscriberMultiChoice(
                 "Select the images to measure", doc="""
             <i>(Used only if "%(O_SELECT)s" is chosen for selecting images)</i><br>
             Choose one or more images from this list. You can select multiple images by clicking
             using the shift or command keys. In addition to loaded images, the list includes
             the images that were created by prior modules.""" % globals()))
 
-        group.append("include_image_scalings", cps.Binary(
+        group.append("include_image_scalings", cellprofiler.setting.Binary(
                 "Include the image rescaling value?",
                 True, doc="""
             Select <i>%(YES)s</i> to add the image's rescaling
@@ -175,7 +169,7 @@ class MeasureImageQuality(cpm.Module):
             device vendors may output this value differently.
             See <b>NamesAndTypes</b> for more information.""" % globals()))
 
-        group.append("check_blur", cps.Binary(
+        group.append("check_blur", cellprofiler.setting.Binary(
                 "Calculate blur metrics?",
                 True, doc="""
             Select <i>%(YES)s</i> to compute a series of blur metrics. The blur metrics are the
@@ -231,26 +225,26 @@ class MeasureImageQuality(cpm.Module):
             <a href="http://dx.doi.org/10.1002/jemt.20118">(link)</a></li>
             </ul>""" % globals()))
 
-        group.append("include_local_blur", cps.Binary(
+        group.append("include_local_blur", cellprofiler.setting.Binary(
                 "Include local blur metrics?",
                 True, doc="""
             """))
 
         group.scale_groups = []
 
-        group.scale_count = cps.HiddenCount(group.scale_groups, "Scale count")
+        group.scale_count = cellprofiler.setting.HiddenCount(group.scale_groups, "Scale count")
 
         def add_scale_group(can_remove=True):
             self.add_scale_group(group, can_remove)
 
         add_scale_group(False)
 
-        group.append("add_scale_button", cps.DoSomething("",
+        group.append("add_scale_button", cellprofiler.setting.DoSomething("",
                                                          "Add another scale",
-                                                         add_scale_group, doc="""
+                                                                          add_scale_group, doc="""
             Press this button to add another scale setting."""))
 
-        group.append("check_saturation", cps.Binary(
+        group.append("check_saturation", cellprofiler.setting.Binary(
                 "Calculate saturation metrics?",
                 True, doc="""
             Select <i>%(YES)s</i> to calculate the saturation metrics <i>%(F_PERCENT_MAXIMAL)s</i>
@@ -264,7 +258,7 @@ class MeasureImageQuality(cpm.Module):
             <i>%(F_PERCENT_MAXIMAL)s</i> will be observed, and if there are no objects, the
             <i>%(F_PERCENT_MINIMAL)s</i> value will increase.</p>""" % globals()))
 
-        group.append("check_intensity", cps.Binary(
+        group.append("check_intensity", cellprofiler.setting.Binary(
                 "Calculate intensity metrics?",
                 True, doc="""
             Select <i>%(YES)s</i> to calculate image-based
@@ -272,7 +266,7 @@ class MeasureImageQuality(cpm.Module):
             and median absolute deviation of pixel intensities. These measures
             are identical to those calculated by <b>MeasureImageIntensity</b>.""" % globals()))
 
-        group.append("calculate_threshold", cps.Binary(
+        group.append("calculate_threshold", cellprofiler.setting.Binary(
                 "Calculate thresholds?",
                 True, doc="""
             Automatically calculate a suggested
@@ -280,7 +274,7 @@ class MeasureImageQuality(cpm.Module):
             values lie within a typical range.
             Outlier images with high or low thresholds often contain artifacts."""))
 
-        group.append("use_all_threshold_methods", cps.Binary(
+        group.append("use_all_threshold_methods", cellprofiler.setting.Binary(
                 "Use all thresholding methods?",
                 False, doc="""
             <i>(Used only if image thresholds are calculcated)</i><br>
@@ -299,33 +293,33 @@ class MeasureImageQuality(cpm.Module):
 
         group.threshold_groups = []
 
-        group.threshold_count = cps.HiddenCount(group.threshold_groups, "Threshold count")
+        group.threshold_count = cellprofiler.setting.HiddenCount(group.threshold_groups, "Threshold count")
 
         def add_threshold_group(can_remove=True):
             self.add_threshold_group(group, can_remove)
 
         add_threshold_group(False)
 
-        group.append("add_threshold_button", cps.DoSomething("",
+        group.append("add_threshold_button", cellprofiler.setting.DoSomething("",
                                                              "Add another threshold method",
-                                                             add_threshold_group, doc="""
+                                                                              add_threshold_group, doc="""
             Press this button to add another set of threshold settings."""))
 
         if can_remove:
             group.append("remove_button",
-                         cps.RemoveSettingButton("", "Remove this image list", self.image_groups, group))
+                         cellprofiler.setting.RemoveSettingButton("", "Remove this image list", self.image_groups, group))
         self.image_groups.append(group)
         return group
 
     def add_scale_group(self, image_group, can_remove=True):
-        group = cps.SettingsGroup()
+        group = cellprofiler.setting.SettingsGroup()
         image_group.scale_groups.append(group)
 
         group.image_names = image_group.image_names
 
-        group.append("divider", cps.Divider(line=False))
+        group.append("divider", cellprofiler.setting.Divider(line=False))
 
-        group.append('scale', cps.Integer(
+        group.append('scale', cellprofiler.setting.Integer(
                 "Spatial scale for blur measurements",
                 len(image_group.scale_groups) * 10 + 10, doc="""
             <i>(Used only if blur measurements are to be calculated)</i> <br>
@@ -341,7 +335,7 @@ class MeasureImageQuality(cpm.Module):
         group.can_remove = can_remove
         if can_remove:
             group.append("remove_button",
-                         cps.RemoveSettingButton("", "Remove this scale", image_group.scale_groups, group))
+                         cellprofiler.setting.RemoveSettingButton("", "Remove this scale", image_group.scale_groups, group))
 
     def add_threshold_group(self, image_group=None, can_remove=True):
         group = ImageQualitySettingsGroup()
@@ -350,25 +344,25 @@ class MeasureImageQuality(cpm.Module):
             image_group.threshold_groups.append(group)
             group.image_names = image_group.image_names
 
-        group.append("divider", cps.Divider(line=False))
+        group.append("divider", cellprofiler.setting.Divider(line=False))
 
-        group.append("threshold_method", cps.Choice("Select a thresholding method",
-                                                    cpthresh.TM_METHODS,
-                                                    cpthresh.TM_OTSU, doc="""
+        group.append("threshold_method", cellprofiler.setting.Choice("Select a thresholding method",
+                                                                     centrosome.threshold.TM_METHODS,
+                                                                     centrosome.threshold.TM_OTSU, doc="""
             <i>(Used only if particular thresholds are to be calculated)</i> <br>
             This setting allows you to apply automatic thresholding
             methods used in the <b>Identify</b> modules. Only the global methods are applied.
             For more help on thresholding, see the <b>Identify</b> modules."""))
 
-        group.append("object_fraction", cps.Float(
+        group.append("object_fraction", cellprofiler.setting.Float(
                 "Typical fraction of the image covered by objects", 0.1, 0, 1, doc="""
             <i>(Used only if threshold are calculated and %(TM_MOG)s thresholding is chosen)</i> <br>
             Enter the approximate fraction of the typical image in the set
             that is covered by objects.""" % globals()))
 
-        group.append("two_class_otsu", cps.Choice(
+        group.append("two_class_otsu", cellprofiler.setting.Choice(
                 'Two-class or three-class thresholding?',
-                [O_TWO_CLASS, O_THREE_CLASS], doc="""
+                [cellprofiler.modules.identify.O_TWO_CLASS, cellprofiler.modules.identify.O_THREE_CLASS], doc="""
             <i>(Used only if thresholds are calculcated and the %(TM_OTSU)s thresholding method is used)</i> <br>
             Select <i>%(O_TWO_CLASS)s</i> if the grayscale levels are readily distinguishable into foregound
             (i.e., objects) and background. Select <i>%(O_THREE_CLASS)s</i> if there is a
@@ -383,20 +377,20 @@ class MeasureImageQuality(cpm.Module):
             there are almost no objects or the entire field of view is covered with
             objects, three-class thresholding may perform worse than two-class.""" % globals()))
 
-        group.append("use_weighted_variance", cps.Choice(
+        group.append("use_weighted_variance", cellprofiler.setting.Choice(
                 'Minimize the weighted variance or the entropy?',
-                [O_WEIGHTED_VARIANCE, O_ENTROPY]))
+                [cellprofiler.modules.identify.O_WEIGHTED_VARIANCE, cellprofiler.modules.identify.O_ENTROPY]))
 
-        group.append("assign_middle_to_foreground", cps.Choice(
+        group.append("assign_middle_to_foreground", cellprofiler.setting.Choice(
                 'Assign pixels in the middle intensity class to the foreground or the background?',
-                [O_FOREGROUND, O_BACKGROUND], doc="""
+                [cellprofiler.modules.identify.O_FOREGROUND, cellprofiler.modules.identify.O_BACKGROUND], doc="""
             <i>(Used only if thresholds are calculcated and the %(TM_OTSU)s thresholding method with %(O_THREE_CLASS)s is used)</i><br>
             Choose whether you want the middle grayscale intensities to be assigned
             to the foreground pixels or the background pixels.""" % globals()))
 
         group.can_remove = can_remove
         if can_remove and image_group is not None:
-            group.append("remove_button", cps.RemoveSettingButton(
+            group.append("remove_button", cellprofiler.setting.RemoveSettingButton(
                     "", "Remove this threshold method", image_group.threshold_groups, group))
 
         if image_group is None:
@@ -494,12 +488,12 @@ class MeasureImageQuality(cpm.Module):
             if threshold_group.can_remove:
                 result += [threshold_group.divider]
             result += [threshold_group.threshold_method]
-            if threshold_group.threshold_method.value == cpthresh.TM_MOG:
+            if threshold_group.threshold_method.value == centrosome.threshold.TM_MOG:
                 result += [threshold_group.object_fraction]
-            elif threshold_group.threshold_method.value == cpthresh.TM_OTSU:
+            elif threshold_group.threshold_method.value == centrosome.threshold.TM_OTSU:
                 result += [threshold_group.use_weighted_variance,
                            threshold_group.two_class_otsu]
-                if threshold_group.two_class_otsu.value == O_THREE_CLASS:
+                if threshold_group.two_class_otsu.value == cellprofiler.modules.identify.O_THREE_CLASS:
                     result += [threshold_group.assign_middle_to_foreground]
             if threshold_group.can_remove:
                 result += [threshold_group.remove_button]
@@ -511,7 +505,7 @@ class MeasureImageQuality(cpm.Module):
         if self.images_choice.value == O_SELECT:
             for image_group in self.image_groups:
                 if not image_group.image_names.get_selections():
-                    raise cps.ValidationError("Please choose at least one image", image_group.image_names)
+                    raise cellprofiler.setting.ValidationError("Please choose at least one image", image_group.image_names)
 
         '''Make sure settings are compatible. In particular, we make sure that no measurements are duplicated'''
         measurements, sources = self.get_measurement_columns(pipeline, return_sources=True)
@@ -519,11 +513,11 @@ class MeasureImageQuality(cpm.Module):
         for m, s in zip(measurements, sources):
             m = (m[0], m[1])
             if m in d:
-                raise cps.ValidationError("Measurement %s for image %s made twice." % (m[1], s[1]), s[0])
+                raise cellprofiler.setting.ValidationError("Measurement %s for image %s made twice." % (m[1], s[1]), s[0])
             d[m] = True
 
     def prepare_run(self, workspace):
-        if cpprefs.get_headless():
+        if cellprofiler.preferences.get_headless():
             logger.warning(
                     "Experiment-wide values for mean threshold, etc calculated by MeasureImageQuality may be incorrect if the run is split into subsets of images.")
         return True
@@ -562,40 +556,40 @@ class MeasureImageQuality(cpm.Module):
             # Image scalings
             if image_group.include_image_scalings.value:
                 for image_name in selected_images:
-                    columns.append((cpmeas.IMAGE,
-                                    '%s_%s_%s' % (C_IMAGE_QUALITY, C_SCALING,
+                    columns.append((cellprofiler.measurement.IMAGE,
+                                    '%s_%s_%s' % (C_IMAGE_QUALITY, cellprofiler.modules.loadimages.C_SCALING,
                                                   image_name),
-                                    cpmeas.COLTYPE_FLOAT))
+                                    cellprofiler.measurement.COLTYPE_FLOAT))
                     sources.append([image_group.include_image_scalings, image_name])
 
             # Blur measurements
             if image_group.check_blur.value:
                 for image_name in selected_images:
-                    columns.append((cpmeas.IMAGE,
+                    columns.append((cellprofiler.measurement.IMAGE,
                                     '%s_%s_%s' % (C_IMAGE_QUALITY, F_FOCUS_SCORE,
                                                   image_name),
-                                    cpmeas.COLTYPE_FLOAT))
+                                    cellprofiler.measurement.COLTYPE_FLOAT))
                     sources.append([image_group.check_blur, image_name])
 
-                    columns.append((cpmeas.IMAGE,
+                    columns.append((cellprofiler.measurement.IMAGE,
                                     '%s_%s_%s' % (C_IMAGE_QUALITY, F_POWER_SPECTRUM_SLOPE,
                                                   image_name),
-                                    cpmeas.COLTYPE_FLOAT))
+                                    cellprofiler.measurement.COLTYPE_FLOAT))
                     sources.append([image_group.check_blur, image_name])
 
                     for scale_group in image_group.scale_groups:
-                        columns.append((cpmeas.IMAGE,
+                        columns.append((cellprofiler.measurement.IMAGE,
                                         '%s_%s_%s_%d' % (C_IMAGE_QUALITY, F_LOCAL_FOCUS_SCORE,
                                                          image_name,
                                                          scale_group.scale.value),
-                                        cpmeas.COLTYPE_FLOAT))
+                                        cellprofiler.measurement.COLTYPE_FLOAT))
                         sources.append([scale_group.scale, image_name])
 
-                        columns.append((cpmeas.IMAGE,
+                        columns.append((cellprofiler.measurement.IMAGE,
                                         '%s_%s_%s_%d' % (C_IMAGE_QUALITY, F_CORRELATION,
                                                          image_name,
                                                          scale_group.scale.value),
-                                        cpmeas.COLTYPE_FLOAT))
+                                        cellprofiler.measurement.COLTYPE_FLOAT))
                         sources.append([scale_group.scale, image_name])
 
             # Intensity measurements
@@ -603,20 +597,20 @@ class MeasureImageQuality(cpm.Module):
                 for image_name in selected_images:
                     for feature in INTENSITY_FEATURES:
                         measurement_name = image_name
-                        columns.append((cpmeas.IMAGE,
+                        columns.append((cellprofiler.measurement.IMAGE,
                                         '%s_%s_%s' % (C_IMAGE_QUALITY, feature,
                                                       measurement_name),
-                                        cpmeas.COLTYPE_FLOAT))
+                                        cellprofiler.measurement.COLTYPE_FLOAT))
                         sources.append([image_group.check_intensity, image_name])
 
             # Saturation measurements
             if image_group.check_saturation.value:
                 for image_name in selected_images:
                     for feature in SATURATION_FEATURES:
-                        columns.append((cpmeas.IMAGE,
+                        columns.append((cellprofiler.measurement.IMAGE,
                                         '%s_%s_%s' % (C_IMAGE_QUALITY, feature,
                                                       image_name),
-                                        cpmeas.COLTYPE_FLOAT))
+                                        cellprofiler.measurement.COLTYPE_FLOAT))
                         sources.append([image_group.check_saturation, image_name])
 
             # Threshold measurements
@@ -625,13 +619,13 @@ class MeasureImageQuality(cpm.Module):
                 for image_name in selected_images:
                     for threshold_group in all_threshold_groups:
                         feature = threshold_group.threshold_feature_name(image_name)
-                        columns.append((cpmeas.IMAGE, feature, cpmeas.COLTYPE_FLOAT))
+                        columns.append((cellprofiler.measurement.IMAGE, feature, cellprofiler.measurement.COLTYPE_FLOAT))
                         for agg in ("Mean", "Median", "Std"):
                             feature = threshold_group.threshold_feature_name(
                                     image_name, agg)
                             columns.append(
-                                    (cpmeas.EXPERIMENT, feature, cpmeas.COLTYPE_FLOAT,
-                                     {cpmeas.MCA_AVAILABLE_POST_RUN: True}))
+                                    (cellprofiler.measurement.EXPERIMENT, feature, cellprofiler.measurement.COLTYPE_FLOAT,
+                                     {cellprofiler.measurement.MCA_AVAILABLE_POST_RUN: True}))
 
                         if image_group.use_all_threshold_methods:
                             sources.append([image_group.use_all_threshold_methods, image_name])
@@ -644,17 +638,17 @@ class MeasureImageQuality(cpm.Module):
             return columns
 
     def get_categories(self, pipeline, object_name):
-        if object_name == cpmeas.IMAGE:
+        if object_name == cellprofiler.measurement.IMAGE:
             return [C_IMAGE_QUALITY]
-        elif object_name == cpmeas.EXPERIMENT and self.any_threshold():
+        elif object_name == cellprofiler.measurement.EXPERIMENT and self.any_threshold():
             return [C_IMAGE_QUALITY]
         return []
 
     def get_measurements(self, pipeline, object_name, category):
-        if object_name == cpmeas.IMAGE and category == C_IMAGE_QUALITY:
+        if object_name == cellprofiler.measurement.IMAGE and category == C_IMAGE_QUALITY:
             result = []
             if self.any_scaling():
-                result += [C_SCALING]
+                result += [cellprofiler.modules.loadimages.C_SCALING]
             if self.any_blur():
                 result += [F_FOCUS_SCORE, F_LOCAL_FOCUS_SCORE, F_POWER_SPECTRUM_SLOPE, F_CORRELATION]
             if self.any_intensity():
@@ -673,7 +667,7 @@ class MeasureImageQuality(cpm.Module):
                 result += sorted(list(set(thresholds)))
 
             return result
-        elif object_name == cpmeas.EXPERIMENT and category == C_IMAGE_QUALITY:
+        elif object_name == cellprofiler.measurement.EXPERIMENT and category == C_IMAGE_QUALITY:
             return [MEAN_THRESH_ALL_IMAGES, MEDIAN_THRESH_ALL_IMAGES,
                     STD_THRESH_ALL_IMAGES]
         return []
@@ -681,7 +675,7 @@ class MeasureImageQuality(cpm.Module):
     def get_measurement_images(self, pipeline, object_name, category,
                                measurement):
 
-        if object_name != cpmeas.IMAGE or category != C_IMAGE_QUALITY:
+        if object_name != cellprofiler.measurement.IMAGE or category != C_IMAGE_QUALITY:
             return []
         if measurement in (F_FOCUS_SCORE, F_LOCAL_FOCUS_SCORE, F_POWER_SPECTRUM_SLOPE, F_CORRELATION):
             result = []
@@ -719,7 +713,7 @@ class MeasureImageQuality(cpm.Module):
     def get_measurement_scales(self, pipeline, object_name, category,
                                measurement, image_names):
         '''Get the scales (window_sizes) for the given measurement'''
-        if object_name == cpmeas.IMAGE and category == C_IMAGE_QUALITY:
+        if object_name == cellprofiler.measurement.IMAGE and category == C_IMAGE_QUALITY:
             if measurement in (F_LOCAL_FOCUS_SCORE, F_CORRELATION):
                 result = []
                 for image_group in self.image_groups:
@@ -781,11 +775,11 @@ class MeasureImageQuality(cpm.Module):
 
         result = []
         for image_name in self.images_to_process(image_group, workspace):
-            feature = "%s_%s_%s" % (C_IMAGE_QUALITY, C_SCALING, image_name)
+            feature = "%s_%s_%s" % (C_IMAGE_QUALITY, cellprofiler.modules.loadimages.C_SCALING, image_name)
             value = workspace.image_set.get_image(image_name).scale
             if not value:  # Set to NaN if not defined, such as for derived images
-                value = np.NaN
-            workspace.add_measurement(cpmeas.IMAGE, feature, value)
+                value = numpy.NaN
+            workspace.add_measurement(cellprofiler.measurement.IMAGE, feature, value)
             result += [["%s scaling" % image_name, value]]
         return result
 
@@ -808,34 +802,34 @@ class MeasureImageQuality(cpm.Module):
 
                 focus_score = 0
                 if len(pixel_data):
-                    mean_image_value = np.mean(pixel_data)
+                    mean_image_value = numpy.mean(pixel_data)
                     squared_normalized_image = (pixel_data - mean_image_value) ** 2
                     if mean_image_value > 0:
-                        focus_score = (np.sum(squared_normalized_image) /
-                                       (np.product(pixel_data.shape) * mean_image_value))
+                        focus_score = (numpy.sum(squared_normalized_image) /
+                                       (numpy.product(pixel_data.shape) * mean_image_value))
                 #
                 # Create a labels matrix that grids the image to the dimensions
                 # of the window size
                 #
-                i, j = np.mgrid[0:shape[0], 0:shape[1]].astype(float)
-                m, n = (np.array(shape) + scale - 1) / scale
+                i, j = numpy.mgrid[0:shape[0], 0:shape[1]].astype(float)
+                m, n = (numpy.array(shape) + scale - 1) / scale
                 i = (i * float(m) / float(shape[0])).astype(int)
                 j = (j * float(n) / float(shape[1])).astype(int)
                 grid = i * n + j + 1
                 if image.has_mask:
-                    grid[np.logical_not(image.mask)] = 0
-                grid_range = np.arange(0, m * n + 1, dtype=np.int32)
+                    grid[numpy.logical_not(image.mask)] = 0
+                grid_range = numpy.arange(0, m * n + 1, dtype=numpy.int32)
                 #
                 # Do the math per label
                 #
-                local_means = fix(scind.mean(image.pixel_data, grid, grid_range))
+                local_means = centrosome.cpmorphology.fixup_scipy_ndimage_result(scipy.ndimage.mean(image.pixel_data, grid, grid_range))
                 local_squared_normalized_image = (image.pixel_data -
                                                   local_means[grid]) ** 2
                 #
                 # Compute the sum of local_squared_normalized_image values for each
                 # grid for means > 0. Exclude grid label = 0 because that's masked
                 #
-                grid_mask = (local_means != 0) & ~ np.isnan(local_means)
+                grid_mask = (local_means != 0) & ~ numpy.isnan(local_means)
                 nz_grid_range = grid_range[grid_mask]
                 if len(nz_grid_range) and nz_grid_range[0] == 0:
                     nz_grid_range = nz_grid_range[1:]
@@ -843,21 +837,21 @@ class MeasureImageQuality(cpm.Module):
                     grid_mask = grid_mask[1:]
                 local_focus_score += [0]  # assume the worst - that we can't calculate it
                 if len(nz_grid_range):
-                    sums = fix(scind.sum(local_squared_normalized_image, grid,
-                                         nz_grid_range))
-                    pixel_counts = fix(scind.sum(np.ones(shape), grid, nz_grid_range))
+                    sums = centrosome.cpmorphology.fixup_scipy_ndimage_result(scipy.ndimage.sum(local_squared_normalized_image, grid,
+                                                                                                nz_grid_range))
+                    pixel_counts = centrosome.cpmorphology.fixup_scipy_ndimage_result(scipy.ndimage.sum(numpy.ones(shape), grid, nz_grid_range))
                     local_norm_var = (sums /
                                       (pixel_counts * local_means[grid_mask]))
-                    local_norm_median = np.median(local_norm_var)
-                    if np.isfinite(local_norm_median) and local_norm_median > 0:
-                        local_focus_score[-1] = np.var(local_norm_var) / local_norm_median
+                    local_norm_median = numpy.median(local_norm_var)
+                    if numpy.isfinite(local_norm_median) and local_norm_median > 0:
+                        local_focus_score[-1] = numpy.var(local_norm_var) / local_norm_median
 
             #
             # Add the measurements
             #
             focus_score_name = "%s_%s_%s" % (C_IMAGE_QUALITY, F_FOCUS_SCORE,
                                              image_name)
-            workspace.add_measurement(cpmeas.IMAGE, focus_score_name,
+            workspace.add_measurement(cellprofiler.measurement.IMAGE, focus_score_name,
                                       focus_score)
             result += [["%s focus score @%d" % (image_name,
                                                 scale), focus_score]]
@@ -868,7 +862,7 @@ class MeasureImageQuality(cpm.Module):
                                                           F_LOCAL_FOCUS_SCORE,
                                                           image_name,
                                                           scale)
-                workspace.add_measurement(cpmeas.IMAGE, local_focus_score_name,
+                workspace.add_measurement(cellprofiler.measurement.IMAGE, local_focus_score_name,
                                           local_focus_score[idx])
                 result += [["%s local focus score @%d" % (image_name,
                                                           scale), local_focus_score[idx]]]
@@ -884,16 +878,16 @@ class MeasureImageQuality(cpm.Module):
             pixel_data = image.pixel_data
 
             # Compute Haralick's correlation texture for the given scales
-            image_labels = np.ones(pixel_data.shape, int)
+            image_labels = numpy.ones(pixel_data.shape, int)
             if image.has_mask:
                 image_labels[~image.mask] = 0
             for scale_group in image_group.scale_groups:
                 scale = scale_group.scale.value
 
                 value = centrosome.haralick.Haralick(pixel_data, image_labels, 0, scale).H3()
-                if not np.isfinite(value):
+                if not numpy.isfinite(value):
                     value = 0.0
-                workspace.add_measurement(cpmeas.IMAGE, "%s_%s_%s_%d" %
+                workspace.add_measurement(cellprofiler.measurement.IMAGE, "%s_%s_%s_%d" %
                                           (C_IMAGE_QUALITY, F_CORRELATION,
                                            image_name, scale),
                                           float(value))
@@ -910,14 +904,14 @@ class MeasureImageQuality(cpm.Module):
             pixel_data = image.pixel_data
             if image.has_mask:
                 pixel_data = pixel_data[image.mask]
-            pixel_count = np.product(pixel_data.shape)
+            pixel_count = numpy.product(pixel_data.shape)
             if pixel_count == 0:
                 percent_saturation = 0
                 percent_maximal = 0
                 percent_minimal = 0
             else:
-                number_pixels_maximal = np.sum(pixel_data == np.max(pixel_data))
-                number_pixels_minimal = np.sum(pixel_data == np.min(pixel_data))
+                number_pixels_maximal = numpy.sum(pixel_data == numpy.max(pixel_data))
+                number_pixels_minimal = numpy.sum(pixel_data == numpy.min(pixel_data))
                 percent_maximal = (100.0 * float(number_pixels_maximal) /
                                    float(pixel_count))
                 percent_minimal = (100.0 * float(number_pixels_minimal) /
@@ -926,9 +920,9 @@ class MeasureImageQuality(cpm.Module):
                                                  image_name)
             percent_minimal_name = "%s_%s_%s" % (C_IMAGE_QUALITY, F_PERCENT_MINIMAL,
                                                  image_name)
-            workspace.add_measurement(cpmeas.IMAGE, percent_maximal_name,
+            workspace.add_measurement(cellprofiler.measurement.IMAGE, percent_maximal_name,
                                       percent_maximal)
-            workspace.add_measurement(cpmeas.IMAGE, percent_minimal_name,
+            workspace.add_measurement(cellprofiler.measurement.IMAGE, percent_minimal_name,
                                       percent_minimal)
             result += [["%s maximal" % image_name, "%.1f %%" % percent_maximal],
                        ["%s minimal" % image_name, "%.1f %%" % percent_minimal]]
@@ -950,7 +944,7 @@ class MeasureImageQuality(cpm.Module):
             pixels = pixels[image.mask]
 
         result = []
-        pixel_count = np.product(pixels.shape)
+        pixel_count = numpy.product(pixels.shape)
         if pixel_count == 0:
             pixel_sum = 0
             pixel_mean = 0
@@ -960,13 +954,13 @@ class MeasureImageQuality(cpm.Module):
             pixel_min = 0
             pixel_max = 0
         else:
-            pixel_sum = np.sum(pixels)
+            pixel_sum = numpy.sum(pixels)
             pixel_mean = pixel_sum / float(pixel_count)
-            pixel_std = np.std(pixels)
-            pixel_median = np.median(pixels)
-            pixel_mad = np.median(np.abs(pixels - pixel_median))
-            pixel_min = np.min(pixels)
-            pixel_max = np.max(pixels)
+            pixel_std = numpy.std(pixels)
+            pixel_median = numpy.median(pixels)
+            pixel_mad = numpy.median(numpy.abs(pixels - pixel_median))
+            pixel_min = numpy.min(pixels)
+            pixel_max = numpy.max(pixels)
 
         m = workspace.measurements
         m.add_image_measurement("_".join((C_IMAGE_QUALITY, F_TOTAL_AREA, image_name)), pixel_count)
@@ -1000,31 +994,31 @@ class MeasureImageQuality(cpm.Module):
             pixel_data = image.pixel_data
 
             if image.has_mask:
-                pixel_data = np.array(pixel_data)  # make a copy
+                pixel_data = numpy.array(pixel_data)  # make a copy
                 masked_pixels = pixel_data[image.mask]
-                pixel_count = np.product(masked_pixels.shape)
+                pixel_count = numpy.product(masked_pixels.shape)
                 if pixel_count > 0:
-                    pixel_data[~ image.mask] = np.mean(masked_pixels)
+                    pixel_data[~ image.mask] = numpy.mean(masked_pixels)
                 else:
                     pixel_data[~ image.mask] = 0
 
-            radii, magnitude, power = rps.rps(pixel_data)
-            if sum(magnitude) > 0 and len(np.unique(pixel_data)) > 1:
+            radii, magnitude, power = centrosome.radial_power_spectrum.rps(pixel_data)
+            if sum(magnitude) > 0 and len(numpy.unique(pixel_data)) > 1:
                 valid = (magnitude > 0)
                 radii = radii[valid].reshape((-1, 1))
                 magnitude = magnitude[valid].reshape((-1, 1))
                 power = power[valid].reshape((-1, 1))
                 if radii.shape[0] > 1:
-                    idx = np.isfinite(np.log(power))
+                    idx = numpy.isfinite(numpy.log(power))
                     powerslope = \
-                        lstsq(np.hstack((np.log(radii)[idx][:, np.newaxis], np.ones(radii.shape)[idx][:, np.newaxis])),
-                              np.log(power)[idx][:, np.newaxis])[0][0]
+                        scipy.linalg.basic.lstsq(numpy.hstack((numpy.log(radii)[idx][:, numpy.newaxis], numpy.ones(radii.shape)[idx][:, numpy.newaxis])),
+                              numpy.log(power)[idx][:, numpy.newaxis])[0][0]
                 else:
                     powerslope = 0
             else:
                 powerslope = 0
 
-            workspace.add_measurement(cpmeas.IMAGE,
+            workspace.add_measurement(cellprofiler.measurement.IMAGE,
                                       "%s_%s_%s" % (C_IMAGE_QUALITY, F_POWER_SPECTRUM_SLOPE, image_name),
                                       powerslope)
             result += [["%s %s" % (image_name, F_POWER_SPECTRUM_SLOPE), "%.1f" % powerslope]]
@@ -1042,34 +1036,34 @@ class MeasureImageQuality(cpm.Module):
             for threshold_group in all_threshold_groups:
                 threshold_method = threshold_group.threshold_algorithm
                 object_fraction = threshold_group.object_fraction.value
-                two_class_otsu = (threshold_group.two_class_otsu.value == O_TWO_CLASS)
-                use_weighted_variance = (threshold_group.use_weighted_variance.value == O_WEIGHTED_VARIANCE)
-                assign_middle_to_foreground = (threshold_group.assign_middle_to_foreground.value == O_FOREGROUND)
+                two_class_otsu = (threshold_group.two_class_otsu.value == cellprofiler.modules.identify.O_TWO_CLASS)
+                use_weighted_variance = (threshold_group.use_weighted_variance.value == cellprofiler.modules.identify.O_WEIGHTED_VARIANCE)
+                assign_middle_to_foreground = (threshold_group.assign_middle_to_foreground.value == cellprofiler.modules.identify.O_FOREGROUND)
                 (local_threshold, global_threshold) = \
-                    (cpthresh.get_threshold(threshold_method,
-                                            cpthresh.TM_GLOBAL,
-                                            image.pixel_data,
-                                            mask=image.mask,
-                                            object_fraction=object_fraction,
-                                            two_class_otsu=two_class_otsu,
-                                            use_weighted_variance=use_weighted_variance,
-                                            assign_middle_to_foreground=assign_middle_to_foreground)
+                    (centrosome.threshold.get_threshold(threshold_method,
+                                                        centrosome.threshold.TM_GLOBAL,
+                                                        image.pixel_data,
+                                                        mask=image.mask,
+                                                        object_fraction=object_fraction,
+                                                        two_class_otsu=two_class_otsu,
+                                                        use_weighted_variance=use_weighted_variance,
+                                                        assign_middle_to_foreground=assign_middle_to_foreground)
                      if image.has_mask
                      else
-                     cpthresh.get_threshold(threshold_method,
-                                            cpthresh.TM_GLOBAL,
-                                            image.pixel_data,
-                                            object_fraction=object_fraction,
-                                            two_class_otsu=two_class_otsu,
-                                            use_weighted_variance=use_weighted_variance,
-                                            assign_middle_to_foreground=assign_middle_to_foreground))
+                     centrosome.threshold.get_threshold(threshold_method,
+                                                        centrosome.threshold.TM_GLOBAL,
+                                                        image.pixel_data,
+                                                        object_fraction=object_fraction,
+                                                        two_class_otsu=two_class_otsu,
+                                                        use_weighted_variance=use_weighted_variance,
+                                                        assign_middle_to_foreground=assign_middle_to_foreground))
 
                 scale = threshold_group.threshold_scale
                 if scale is None:
                     threshold_description = threshold_method
                 else:
                     threshold_description = threshold_method + " " + scale
-                workspace.add_measurement(cpmeas.IMAGE, threshold_group.threshold_feature_name(image_name),
+                workspace.add_measurement(cellprofiler.measurement.IMAGE, threshold_group.threshold_feature_name(image_name),
                                           global_threshold)
                 result += [["%s %s threshold" % (image_name, threshold_description), str(global_threshold)]]
 
@@ -1092,15 +1086,15 @@ class MeasureImageQuality(cpm.Module):
         if image_group.calculate_threshold.value:
             for image_name in self.images_to_process(image_group, workspace):
                 for threshold_group in all_threshold_groups:
-                    values = m.get_all_measurements(cpmeas.IMAGE,
+                    values = m.get_all_measurements(cellprofiler.measurement.IMAGE,
                                                     threshold_group.threshold_feature_name(image_name))
 
-                    values = values[np.isfinite(values)]
+                    values = values[numpy.isfinite(values)]
 
                     for feature in (F_THRESHOLD,):
-                        for fn, agg in ((np.mean, AGG_MEAN),
-                                        (np.median, AGG_MEDIAN),
-                                        (np.std, AGG_STD)):
+                        for fn, agg in ((numpy.mean, AGG_MEAN),
+                                        (numpy.median, AGG_MEDIAN),
+                                        (numpy.std, AGG_STD)):
                             feature_name = threshold_group.threshold_feature_name(
                                     image_name, agg=agg)
                             feature_description = threshold_group.threshold_description(
@@ -1117,16 +1111,16 @@ class MeasureImageQuality(cpm.Module):
         threshold_args = []
         object_fraction = [0.05, 0.25, 0.75, 0.95]
         # Produce list of combinations of the special thresholding method parameters: Otsu, MoG
-        z = itertools.product([cpthresh.TM_OTSU], [0], [O_WEIGHTED_VARIANCE, O_ENTROPY], [O_THREE_CLASS],
-                    [O_FOREGROUND, O_BACKGROUND])
+        z = itertools.product([centrosome.threshold.TM_OTSU], [0], [cellprofiler.modules.identify.O_WEIGHTED_VARIANCE, cellprofiler.modules.identify.O_ENTROPY], [cellprofiler.modules.identify.O_THREE_CLASS],
+                              [cellprofiler.modules.identify.O_FOREGROUND, cellprofiler.modules.identify.O_BACKGROUND])
         threshold_args += [i for i in z]
-        z = itertools.product([cpthresh.TM_OTSU], [0], [O_WEIGHTED_VARIANCE, O_ENTROPY], [O_TWO_CLASS], [O_FOREGROUND])
+        z = itertools.product([centrosome.threshold.TM_OTSU], [0], [cellprofiler.modules.identify.O_WEIGHTED_VARIANCE, cellprofiler.modules.identify.O_ENTROPY], [cellprofiler.modules.identify.O_TWO_CLASS], [cellprofiler.modules.identify.O_FOREGROUND])
         threshold_args += [i for i in z]
-        z = itertools.product([cpthresh.TM_MOG], object_fraction, [O_WEIGHTED_VARIANCE], [O_TWO_CLASS], [O_FOREGROUND])
+        z = itertools.product([centrosome.threshold.TM_MOG], object_fraction, [cellprofiler.modules.identify.O_WEIGHTED_VARIANCE], [cellprofiler.modules.identify.O_TWO_CLASS], [cellprofiler.modules.identify.O_FOREGROUND])
         threshold_args += [i for i in z]
         # Tack on the remaining simpler methods
-        leftover_methods = [i for i in cpthresh.TM_METHODS if i not in [cpthresh.TM_OTSU, cpthresh.TM_MOG]]
-        z = itertools.product(leftover_methods, [0], [O_WEIGHTED_VARIANCE], [O_TWO_CLASS], [O_FOREGROUND])
+        leftover_methods = [i for i in centrosome.threshold.TM_METHODS if i not in [centrosome.threshold.TM_OTSU, centrosome.threshold.TM_MOG]]
+        z = itertools.product(leftover_methods, [0], [cellprofiler.modules.identify.O_WEIGHTED_VARIANCE], [cellprofiler.modules.identify.O_TWO_CLASS], [cellprofiler.modules.identify.O_FOREGROUND])
         threshold_args += [i for i in z]
 
         # Assign the threshold values to a temporary threshold group
@@ -1154,12 +1148,12 @@ class MeasureImageQuality(cpm.Module):
             # Get a dictionary of image name to (module, setting)
             #
             image_providers = pipeline.get_provider_dictionary(
-                    cps.IMAGE_GROUP, self)
+                    cellprofiler.setting.IMAGE_GROUP, self)
             for image_name in image_providers:
                 for module, setting in image_providers[image_name]:
                     if (module.is_load_module() and
-                            ((not isinstance(setting, cps.ImageNameProvider)) or
-                                     cps.FILE_IMAGE_ATTRIBUTE in setting.provided_attributes)):
+                            ((not isinstance(setting, cellprofiler.setting.ImageNameProvider)) or
+                                     cellprofiler.setting.FILE_IMAGE_ATTRIBUTE in setting.provided_attributes)):
                         accepted_image_list.append(image_name)
             return accepted_image_list
 
@@ -1171,7 +1165,7 @@ class MeasureImageQuality(cpm.Module):
                     module_name == 'MeasureImageSaturationBlur'):
             image_names = []
             for image_name in setting_values[:6]:
-                if image_name != cps.DO_NOT_USE:
+                if image_name != cellprofiler.setting.DO_NOT_USE:
                     image_names.append(image_name)
             wants_blur = setting_values[-2]
             local_focus_score = setting_values[-1]
@@ -1180,11 +1174,11 @@ class MeasureImageQuality(cpm.Module):
                 setting_values += [image_name,
                                    wants_blur,
                                    local_focus_score,
-                                   cps.YES,  # check saturation
-                                   cps.NO,  # calculate threshold
-                                   cpthresh.TM_OTSU_GLOBAL,
+                                   cellprofiler.setting.YES,  # check saturation
+                                   cellprofiler.setting.NO,  # calculate threshold
+                                   centrosome.threshold.TM_OTSU_GLOBAL,
                                    .1,  # object fraction
-                                   cps.NO]  # compute power spectrum
+                                   cellprofiler.setting.NO]  # compute power spectrum
             variable_revision_number = 2
             from_matlab = False
             module_name = 'MeasureImageQuality'
@@ -1210,23 +1204,23 @@ class MeasureImageQuality(cpm.Module):
                 saturation_image = setting_values[i]
                 threshold_image = setting_values[i + 1]
                 threshold_method = setting_values[i + 2]
-                if saturation_image != cps.DO_NOT_USE:
+                if saturation_image != cellprofiler.setting.DO_NOT_USE:
                     if not d.has_key(saturation_image):
                         d[saturation_image] = {"check_blur": check_blur,
-                                               "check_saturation": cps.YES,
-                                               "check_threshold": cps.NO,
+                                               "check_saturation": cellprofiler.setting.YES,
+                                               "check_threshold": cellprofiler.setting.NO,
                                                "threshold_method": threshold_method}
                     else:
                         d[saturation_image]["check_blur"] = check_blur
-                        d[saturation_image]["check_saturation"] = cps.YES
-                if threshold_image != cps.DO_NOT_USE:
+                        d[saturation_image]["check_saturation"] = cellprofiler.setting.YES
+                if threshold_image != cellprofiler.setting.DO_NOT_USE:
                     if not d.has_key(threshold_image):
-                        d[threshold_image] = {"check_blur": cps.NO,
-                                              "check_saturation": cps.NO,
-                                              "check_threshold": cps.YES,
+                        d[threshold_image] = {"check_blur": cellprofiler.setting.NO,
+                                              "check_saturation": cellprofiler.setting.NO,
+                                              "check_threshold": cellprofiler.setting.YES,
                                               "threshold_method": threshold_method}
                     else:
-                        d[threshold_image]["check_threshold"] = cps.YES
+                        d[threshold_image]["check_threshold"] = cellprofiler.setting.YES
                         d[threshold_image]["threshold_method"] = threshold_method
             setting_values = []
             for image_name in d.keys():
@@ -1247,7 +1241,7 @@ class MeasureImageQuality(cpm.Module):
             new_settings = []
             for idx in range(num_images):
                 new_settings += setting_values[(idx * 7):(idx * 7 + 7)]
-                new_settings += [cps.YES]
+                new_settings += [cellprofiler.setting.YES]
             setting_values = new_settings
             variable_revision_number = 2
 
@@ -1258,8 +1252,8 @@ class MeasureImageQuality(cpm.Module):
             new_settings = []
             for idx in range(num_images):
                 new_settings += setting_values[(idx * 8):(idx * 8 + 8)]
-                new_settings += [O_TWO_CLASS, O_WEIGHTED_VARIANCE,
-                                 O_FOREGROUND]
+                new_settings += [cellprofiler.modules.identify.O_TWO_CLASS, cellprofiler.modules.identify.O_WEIGHTED_VARIANCE,
+                                 cellprofiler.modules.identify.O_FOREGROUND]
             setting_values = new_settings
             variable_revision_number = 3
 
@@ -1295,10 +1289,10 @@ class MeasureImageQuality(cpm.Module):
                               (idx * SETTINGS_PER_GROUP_V3):(idx * SETTINGS_PER_GROUP_V3 + SETTINGS_PER_GROUP_V3)]
                 image_name = im_settings[0]
                 # Set blur and thresholds if the user sets any of the setting groups.
-                d[image_name]["wants_saturation"] = d[image_name]["wants_saturation"] or (im_settings[3] == cps.YES)
+                d[image_name]["wants_saturation"] = d[image_name]["wants_saturation"] or (im_settings[3] == cellprofiler.setting.YES)
                 d[image_name]["wants_blur"] = d[image_name]["wants_blur"] or (
-                    im_settings[1] == cps.YES or im_settings[7] == cps.YES)
-                d[image_name]["wants_threshold"] = d[image_name]["wants_threshold"] or (im_settings[4] == cps.YES)
+                    im_settings[1] == cellprofiler.setting.YES or im_settings[7] == cellprofiler.setting.YES)
+                d[image_name]["wants_threshold"] = d[image_name]["wants_threshold"] or (im_settings[4] == cellprofiler.setting.YES)
                 #  Collect blur scales and threshold methods
                 d[image_name]["blur_scales"] += [im_settings[2]]
                 d[image_name]["threshold_methods"] += [im_settings[5:7] + im_settings[8:]]
@@ -1317,13 +1311,13 @@ class MeasureImageQuality(cpm.Module):
                              unique_image_names]  # threshold_count
             for image_name in unique_image_names:
                 new_settings += [image_name,  # image_name
-                                 cps.YES if d[image_name]["wants_scaling"] else cps.NO,  # include_image_scalings
-                                 cps.YES if d[image_name]["wants_blur"]    else cps.NO]  # check_blur
+                                 cellprofiler.setting.YES if d[image_name]["wants_scaling"] else cellprofiler.setting.NO,  # include_image_scalings
+                                 cellprofiler.setting.YES if d[image_name]["wants_blur"]    else cellprofiler.setting.NO]  # check_blur
                 new_settings += [k for k in d[image_name]["blur_scales"]]  # scale
-                new_settings += [cps.YES if d[image_name]["wants_saturation"] else cps.NO,  # check_saturation
-                                 cps.YES if d[image_name]["wants_intensity"]  else cps.NO,  # check_intensity
-                                 cps.YES if d[image_name]["wants_threshold"]  else cps.NO,  # calculate_threshold,
-                                 cps.NO]  # use_all_threshold_methods
+                new_settings += [cellprofiler.setting.YES if d[image_name]["wants_saturation"] else cellprofiler.setting.NO,  # check_saturation
+                                 cellprofiler.setting.YES if d[image_name]["wants_intensity"]  else cellprofiler.setting.NO,  # check_intensity
+                                 cellprofiler.setting.YES if d[image_name]["wants_threshold"]  else cellprofiler.setting.NO,  # calculate_threshold,
+                                 cellprofiler.setting.NO]  # use_all_threshold_methods
                 for k in d[image_name]["threshold_methods"]:
                     new_settings += k  # threshold_method, object_fraction, two_class_otsu, use_weighted_variance, assign_middle_to_foreground
 
@@ -1332,15 +1326,15 @@ class MeasureImageQuality(cpm.Module):
 
         if (not from_matlab) and variable_revision_number == 4:
             # Thresholding method name change: Strip off "Global"
-            thresh_dict = dict(zip(cpthresh.TM_GLOBAL_METHODS, cpthresh.TM_METHODS))
+            thresh_dict = dict(zip(centrosome.threshold.TM_GLOBAL_METHODS, centrosome.threshold.TM_METHODS))
             # Naturally, this method assumes that the user didn't name their images "Otsu Global" or something similar
-            setting_values = [thresh_dict[x] if x in cpthresh.TM_GLOBAL_METHODS else x for x in setting_values]
+            setting_values = [thresh_dict[x] if x in centrosome.threshold.TM_GLOBAL_METHODS else x for x in setting_values]
             variable_revision_number = 5
 
         return setting_values, variable_revision_number, from_matlab
 
 
-class ImageQualitySettingsGroup(cps.SettingsGroup):
+class ImageQualitySettingsGroup(cellprofiler.setting.SettingsGroup):
     @property
     def threshold_algorithm(self):
         '''The thresholding algorithm to run'''
@@ -1370,21 +1364,21 @@ class ImageQualitySettingsGroup(cps.SettingsGroup):
         # Distinguish Otsu choices from each other
         #
         threshold_algorithm = self.threshold_algorithm
-        if threshold_algorithm == cpthresh.TM_OTSU:
-            if self.two_class_otsu == O_TWO_CLASS:
+        if threshold_algorithm == centrosome.threshold.TM_OTSU:
+            if self.two_class_otsu == cellprofiler.modules.identify.O_TWO_CLASS:
                 scale = "2"
             else:
                 scale = "3"
-                if self.assign_middle_to_foreground == O_FOREGROUND:
+                if self.assign_middle_to_foreground == cellprofiler.modules.identify.O_FOREGROUND:
                     scale += "F"
                 else:
                     scale += "B"
-            if self.use_weighted_variance == O_WEIGHTED_VARIANCE:
+            if self.use_weighted_variance == cellprofiler.modules.identify.O_WEIGHTED_VARIANCE:
                 scale += "W"
             else:
                 scale += "S"
             return scale
-        elif threshold_algorithm == cpthresh.TM_MOG:
+        elif threshold_algorithm == centrosome.threshold.TM_MOG:
             return str(int(self.object_fraction.value * 100))
 
     def threshold_description(self, image_name, agg=None):
@@ -1394,16 +1388,16 @@ class ImageQualitySettingsGroup(cps.SettingsGroup):
 
         agg - if present, the aggregating method, e.g. "Mean"
         '''
-        if self.threshold_algorithm == cpthresh.TM_OTSU:
-            if self.use_weighted_variance == O_WEIGHTED_VARIANCE:
+        if self.threshold_algorithm == centrosome.threshold.TM_OTSU:
+            if self.use_weighted_variance == cellprofiler.modules.identify.O_WEIGHTED_VARIANCE:
                 wvorentropy = "WV"
             else:
                 wvorentropy = "S"
-            if self.two_class_otsu == O_TWO_CLASS:
+            if self.two_class_otsu == cellprofiler.modules.identify.O_TWO_CLASS:
                 result = "Otsu %s 2 cls" % wvorentropy
             else:
                 result = "Otsu %s 3 cls" % wvorentropy
-                if self.assign_middle_to_foreground == O_FOREGROUND:
+                if self.assign_middle_to_foreground == cellprofiler.modules.identify.O_FOREGROUND:
                     result += " Fg"
                 else:
                     result += " Bg"

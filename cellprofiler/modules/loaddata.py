@@ -150,48 +150,30 @@ image loading was requested by the user.</li>
 See also the <b>Input</b> modules, <b>LoadImages</b> and <b>CalculateStatistics</b>.
 '''
 
+import StringIO
 import csv
 import logging
 import os
 
-import numpy as np
-
-logger = logging.getLogger(__name__)
-try:
-    from cStringIO import StringIO
-except:
-    from StringIO import StringIO
-import matplotlib.mlab
-
-import cellprofiler.module
-import cellprofiler.region
 import cellprofiler.measurement
-import cellprofiler.setting
-from cellprofiler.setting import YES, NO
-import cellprofiler.preferences
+import cellprofiler.module
 import cellprofiler.modules.identify
 import cellprofiler.modules.loadimages
-from cellprofiler.modules.loadimages import C_FILE_NAME, C_PATH_NAME, C_URL
-from cellprofiler.modules.loadimages import C_SERIES, C_FRAME
-from cellprofiler.modules.loadimages import C_OBJECTS_FILE_NAME
-from cellprofiler.modules.loadimages import C_OBJECTS_PATH_NAME
-from cellprofiler.modules.loadimages import C_OBJECTS_URL
-from cellprofiler.measurement import C_OBJECTS_SERIES, C_OBJECTS_FRAME
-from cellprofiler.modules.loadimages import C_MD5_DIGEST, C_SCALING
-from cellprofiler.modules.loadimages import C_HEIGHT, C_WIDTH
-from cellprofiler.modules.loadimages import bad_sizes_warning
-from cellprofiler.modules.loadimages import convert_image_to_objects
-from cellprofiler.modules.loadimages import pathname2url, url2pathname
-from cellprofiler.preferences import standardize_default_folder_names, \
-    DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME, NO_FOLDER_NAME, \
-    ABSOLUTE_FOLDER_NAME, IO_FOLDER_CHOICE_HELP_TEXT
+import cellprofiler.preferences
+import cellprofiler.region
+import cellprofiler.setting
+from cellprofiler.setting import YES, NO
+import matplotlib.mlab
+import numpy
 
-IMAGE_CATEGORIES = (C_URL, C_FILE_NAME, C_PATH_NAME)
-OBJECTS_CATEGORIES = (C_OBJECTS_URL, C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME)
+logger = logging.getLogger(__name__)
+
+IMAGE_CATEGORIES = (cellprofiler.modules.loadimages.C_URL, cellprofiler.modules.loadimages.C_FILE_NAME, cellprofiler.modules.loadimages.C_PATH_NAME)
+OBJECTS_CATEGORIES = (cellprofiler.modules.loadimages.C_OBJECTS_URL, cellprofiler.modules.loadimages.C_OBJECTS_FILE_NAME, cellprofiler.modules.loadimages.C_OBJECTS_PATH_NAME)
 DIR_NONE = 'None'
 DIR_OTHER = 'Elsewhere...'
-DIR_ALL = [DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME,
-           NO_FOLDER_NAME, ABSOLUTE_FOLDER_NAME]
+DIR_ALL = [cellprofiler.preferences.DEFAULT_INPUT_FOLDER_NAME, cellprofiler.preferences.DEFAULT_OUTPUT_FOLDER_NAME,
+           cellprofiler.preferences.NO_FOLDER_NAME, cellprofiler.preferences.ABSOLUTE_FOLDER_NAME]
 
 '''Reserve extra space in pathnames for batch processing name rewrites'''
 PATH_PADDING = 20
@@ -216,8 +198,8 @@ def header_to_column(field):
     Image_PathName to PathName so that the output column names
     in the database will be Image_FileName and Image_PathName
     '''
-    for name in (C_PATH_NAME, C_FILE_NAME, C_URL,
-                 C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME, C_OBJECTS_URL):
+    for name in (cellprofiler.modules.loadimages.C_PATH_NAME, cellprofiler.modules.loadimages.C_FILE_NAME, cellprofiler.modules.loadimages.C_URL,
+                 cellprofiler.modules.loadimages.C_OBJECTS_FILE_NAME, cellprofiler.modules.loadimages.C_OBJECTS_PATH_NAME, cellprofiler.modules.loadimages.C_OBJECTS_URL):
         if field.startswith(cellprofiler.measurement.IMAGE + '_' + name + '_'):
             return field[len(cellprofiler.measurement.IMAGE) + 1:]
     return field
@@ -225,51 +207,51 @@ def header_to_column(field):
 
 def is_path_name_feature(feature):
     '''Return true if the feature name is a path name'''
-    return feature.startswith(C_PATH_NAME + '_')
+    return feature.startswith(cellprofiler.modules.loadimages.C_PATH_NAME + '_')
 
 
 def is_file_name_feature(feature):
     '''Return true if the feature name is a file name'''
-    return feature.startswith(C_FILE_NAME + '_')
+    return feature.startswith(cellprofiler.modules.loadimages.C_FILE_NAME + '_')
 
 
 def is_url_name_feature(feature):
-    return feature.startswith(C_URL + "_")
+    return feature.startswith(cellprofiler.modules.loadimages.C_URL + "_")
 
 
 def is_objects_path_name_feature(feature):
     '''Return true if the feature name is the path to a labels file'''
-    return feature.startswith(C_OBJECTS_PATH_NAME + "_")
+    return feature.startswith(cellprofiler.modules.loadimages.C_OBJECTS_PATH_NAME + "_")
 
 
 def is_objects_file_name_feature(feature):
     '''Return true if the feature name is a labels file name'''
-    return feature.startswith(C_OBJECTS_FILE_NAME + "_")
+    return feature.startswith(cellprofiler.modules.loadimages.C_OBJECTS_FILE_NAME + "_")
 
 
 def is_objects_url_name_feature(feature):
-    return feature.startswith(C_OBJECTS_URL + "_")
+    return feature.startswith(cellprofiler.modules.loadimages.C_OBJECTS_URL + "_")
 
 
 def get_image_name(feature):
     '''Extract the image name from a feature name'''
     if is_path_name_feature(feature):
-        return feature[len(C_PATH_NAME + '_'):]
+        return feature[len(cellprofiler.modules.loadimages.C_PATH_NAME + '_'):]
     if is_file_name_feature(feature):
-        return feature[len(C_FILE_NAME + '_'):]
+        return feature[len(cellprofiler.modules.loadimages.C_FILE_NAME + '_'):]
     if is_url_name_feature(feature):
-        return feature[len(C_URL + '_'):]
+        return feature[len(cellprofiler.modules.loadimages.C_URL + '_'):]
     raise ValueError('"%s" is not a path feature or file name feature' % feature)
 
 
 def get_objects_name(feature):
     '''Extract the objects name from a feature name'''
     if is_objects_path_name_feature(feature):
-        return feature[len(C_OBJECTS_PATH_NAME + "_"):]
+        return feature[len(cellprofiler.modules.loadimages.C_OBJECTS_PATH_NAME + "_"):]
     if is_objects_file_name_feature(feature):
-        return feature[len(C_OBJECTS_FILE_NAME + "_"):]
+        return feature[len(cellprofiler.modules.loadimages.C_OBJECTS_FILE_NAME + "_"):]
     if is_objects_url_name_feature(feature):
-        return feature[len(C_OBJECTS_URL + "_"):]
+        return feature[len(cellprofiler.modules.loadimages.C_OBJECTS_URL + "_"):]
     raise ValueError('"%s" is not a objects path feature or file name feature' % feature)
 
 
@@ -279,7 +261,7 @@ def make_path_name_feature(image):
     The path name feature is the name of the measurement that stores
     the image's path name.
     '''
-    return C_PATH_NAME + '_' + image
+    return cellprofiler.modules.loadimages.C_PATH_NAME + '_' + image
 
 
 def make_file_name_feature(image):
@@ -288,7 +270,7 @@ def make_file_name_feature(image):
     The file name feature is the name of the measurement that stores
     the image's file name.
     '''
-    return C_FILE_NAME + '_' + image
+    return cellprofiler.modules.loadimages.C_FILE_NAME + '_' + image
 
 
 def make_objects_path_name_feature(objects_name):
@@ -297,7 +279,7 @@ def make_objects_path_name_feature(objects_name):
     The path name feature is the name of the measurement that stores
     the objects file path name.
     '''
-    return C_OBJECTS_PATH_NAME + '_' + objects_name
+    return cellprofiler.modules.loadimages.C_OBJECTS_PATH_NAME + '_' + objects_name
 
 
 def make_objects_file_name_feature(objects_name):
@@ -306,7 +288,7 @@ def make_objects_file_name_feature(objects_name):
     The file name feature is the name of the measurement that stores
     the objects file name.
     '''
-    return C_OBJECTS_FILE_NAME + '_' + objects_name
+    return cellprofiler.modules.loadimages.C_OBJECTS_FILE_NAME + '_' + objects_name
 
 
 class LoadData(cellprofiler.module.Module):
@@ -640,7 +622,7 @@ class LoadData(cellprofiler.module.Module):
             if entry.has_key("URLEXCEPTION"):
                 raise entry["URLEXCEPTION"]
             if entry.has_key("URLDATA"):
-                fd = StringIO(entry["URLDATA"])
+                fd = StringIO.StringIO(entry["URLDATA"])
             else:
                 if do_not_cache:
                     raise RuntimeError('Need to fetch URL manually.')
@@ -650,7 +632,7 @@ class LoadData(cellprofiler.module.Module):
                 except Exception, e:
                     entry["URLEXCEPTION"] = e
                     raise e
-                fd = StringIO()
+                fd = StringIO.StringIO()
                 while True:
                     text = url_fd.read()
                     if len(text) == 0:
@@ -848,9 +830,9 @@ class LoadData(cellprofiler.module.Module):
             else:
                 path_base = self.image_path
             for d, url_category, file_name_category, path_name_category in (
-                    (image_columns, C_URL, C_FILE_NAME, C_PATH_NAME),
-                    (object_columns, C_OBJECTS_URL, C_OBJECTS_FILE_NAME,
-                     C_OBJECTS_PATH_NAME)):
+                    (image_columns, cellprofiler.modules.loadimages.C_URL, cellprofiler.modules.loadimages.C_FILE_NAME, cellprofiler.modules.loadimages.C_PATH_NAME),
+                    (object_columns, cellprofiler.modules.loadimages.C_OBJECTS_URL, cellprofiler.modules.loadimages.C_OBJECTS_FILE_NAME,
+                     cellprofiler.modules.loadimages.C_OBJECTS_PATH_NAME)):
                 for name in d.keys():
                     url_column = file_name_column = path_name_column = None
                     for k in d[name]:
@@ -882,7 +864,7 @@ class LoadData(cellprofiler.module.Module):
                                 fullname = os.path.join(
                                         row_path_name, row[file_name_column])
                                 row[path_name_column] = row_path_name
-                            url = pathname2url(fullname)
+                            url = cellprofiler.modules.loadimages.pathname2url(fullname)
                             row.append(url)
                         if path_name_column is None:
                             #
@@ -951,8 +933,8 @@ class LoadData(cellprofiler.module.Module):
             image_numbers = m.match_metadata(
                     metadata_columns.keys(),
                     [columns[k] for k in metadata_columns.keys()])
-            image_numbers = np.array(image_numbers, int).flatten()
-            max_image_number = np.max(image_numbers)
+            image_numbers = numpy.array(image_numbers, int).flatten()
+            max_image_number = numpy.max(image_numbers)
             new_columns = {}
             for key, values in columns.iteritems():
                 new_values = [None] * max_image_number
@@ -993,8 +975,8 @@ class LoadData(cellprofiler.module.Module):
             image_numbers = m.get_image_numbers()
             all_image_features = m.get_feature_names(cellprofiler.measurement.IMAGE)
             for url_category, file_category, path_category, names in (
-                    (C_URL, C_FILE_NAME, C_PATH_NAME, self.get_image_names()),
-                    (C_OBJECTS_URL, C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME,
+                    (cellprofiler.modules.loadimages.C_URL, cellprofiler.modules.loadimages.C_FILE_NAME, cellprofiler.modules.loadimages.C_PATH_NAME, self.get_image_names()),
+                    (cellprofiler.modules.loadimages.C_OBJECTS_URL, cellprofiler.modules.loadimages.C_OBJECTS_FILE_NAME, cellprofiler.modules.loadimages.C_OBJECTS_PATH_NAME,
                      self.get_object_names())):
                 for name in names:
                     url_feature = "_".join((url_category, name))
@@ -1010,10 +992,10 @@ class LoadData(cellprofiler.module.Module):
                     for image_number, url in zip(image_numbers, urls):
                         url = url.encode("utf-8")
                         if url.lower().startswith("file:"):
-                            fullname = url2pathname(url)
+                            fullname = cellprofiler.modules.loadimages.url2pathname(url)
                             fullname = fn_alter_path(fullname)
                             path, filename = os.path.split(fullname)
-                            url = unicode(pathname2url(fullname), "utf-8")
+                            url = unicode(cellprofiler.modules.loadimages.pathname2url(fullname), "utf-8")
                             m.add_measurement(cellprofiler.measurement.IMAGE, url_feature, url,
                                               image_set_number=image_number)
                             if file_feature is not None:
@@ -1033,16 +1015,16 @@ class LoadData(cellprofiler.module.Module):
     def fetch_provider(self, name, measurements, is_image_name=True):
         path_base = self.image_path
         if is_image_name:
-            url_feature = C_URL + "_" + name
-            series_feature = C_SERIES + "_" + name
-            frame_feature = C_FRAME + "_" + name
+            url_feature = cellprofiler.modules.loadimages.C_URL + "_" + name
+            series_feature = cellprofiler.modules.loadimages.C_SERIES + "_" + name
+            frame_feature = cellprofiler.modules.loadimages.C_FRAME + "_" + name
         else:
-            url_feature = C_OBJECTS_URL + "_" + name
-            series_feature = C_OBJECTS_SERIES + "_" + name
-            frame_feature = C_OBJECTS_FRAME + "_" + name
+            url_feature = cellprofiler.modules.loadimages.C_OBJECTS_URL + "_" + name
+            series_feature = cellprofiler.measurement.C_OBJECTS_SERIES + "_" + name
+            frame_feature = cellprofiler.measurement.C_OBJECTS_FRAME + "_" + name
         url = measurements.get_measurement(cellprofiler.measurement.IMAGE, url_feature)
         url = url.encode('utf-8')
-        full_filename = url2pathname(url)
+        full_filename = cellprofiler.modules.loadimages.url2pathname(url)
         path, filename = os.path.split(full_filename)
         if measurements.has_feature(cellprofiler.measurement.IMAGE, series_feature):
             series = measurements[cellprofiler.measurement.IMAGE, series_feature]
@@ -1079,20 +1061,20 @@ class LoadData(cellprofiler.module.Module):
                 image_set.providers.append(provider)
                 image = image_set.get_image(image_name)
                 pixel_data = image.pixel_data
-                m.add_image_measurement("_".join((C_MD5_DIGEST, image_name)),
+                m.add_image_measurement("_".join((cellprofiler.modules.loadimages.C_MD5_DIGEST, image_name)),
                                         provider.get_md5_hash(m))
-                m.add_image_measurement("_".join((C_SCALING, image_name)),
+                m.add_image_measurement("_".join((cellprofiler.modules.loadimages.C_SCALING, image_name)),
                                         image.scale)
-                m.add_image_measurement("_".join((C_HEIGHT, image_name)),
+                m.add_image_measurement("_".join((cellprofiler.modules.loadimages.C_HEIGHT, image_name)),
                                         int(pixel_data.shape[0]))
-                m.add_image_measurement("_".join((C_WIDTH, image_name)),
+                m.add_image_measurement("_".join((cellprofiler.modules.loadimages.C_WIDTH, image_name)),
                                         int(pixel_data.shape[1]))
                 if image_size is None:
                     image_size = tuple(pixel_data.shape[:2])
                     first_filename = image.filename
                 elif tuple(pixel_data.shape[:2]) != image_size:
-                    warning = bad_sizes_warning(image_size, first_filename,
-                                                pixel_data.shape, image.filename)
+                    warning = cellprofiler.modules.loadimages.bad_sizes_warning(image_size, first_filename,
+                                                                                pixel_data.shape, image.filename)
                     if self.show_window:
                         workspace.display_data.warning = warning
                     else:
@@ -1105,7 +1087,7 @@ class LoadData(cellprofiler.module.Module):
                 provider = self.fetch_provider(
                         objects_name, m, is_image_name=False)
                 image = provider.provide_image(workspace.image_set)
-                pixel_data = convert_image_to_objects(image.pixel_data)
+                pixel_data = cellprofiler.modules.loadimages.convert_image_to_objects(image.pixel_data)
                 o = cellprofiler.region.Region()
                 o.segmented = pixel_data
                 object_set.add_objects(o, objects_name)
@@ -1176,21 +1158,21 @@ class LoadData(cellprofiler.module.Module):
                     cellprofiler.measurement.is_well_column_token(header[i].split("_")[1])):
                 coltypes[i] = cellprofiler.measurement.COLTYPE_VARCHAR
             if any([header[i].startswith(x)
-                    for x in (C_PATH_NAME, C_FILE_NAME, C_OBJECTS_FILE_NAME,
-                              C_OBJECTS_PATH_NAME, C_URL, C_OBJECTS_URL)]):
+                    for x in (cellprofiler.modules.loadimages.C_PATH_NAME, cellprofiler.modules.loadimages.C_FILE_NAME, cellprofiler.modules.loadimages.C_OBJECTS_FILE_NAME,
+                              cellprofiler.modules.loadimages.C_OBJECTS_PATH_NAME, cellprofiler.modules.loadimages.C_URL, cellprofiler.modules.loadimages.C_OBJECTS_URL)]):
                 coltypes[i] = cellprofiler.measurement.COLTYPE_VARCHAR
 
         collen = [0] * len(header)
         key_is_path_or_file_name = [
-            (key.startswith(C_PATH_NAME) or
-             key.startswith(C_FILE_NAME) or
-             key.startswith(C_OBJECTS_FILE_NAME) or
-             key.startswith(C_OBJECTS_PATH_NAME)) for key in header]
+            (key.startswith(cellprofiler.modules.loadimages.C_PATH_NAME) or
+             key.startswith(cellprofiler.modules.loadimages.C_FILE_NAME) or
+             key.startswith(cellprofiler.modules.loadimages.C_OBJECTS_FILE_NAME) or
+             key.startswith(cellprofiler.modules.loadimages.C_OBJECTS_PATH_NAME)) for key in header]
         key_is_path_or_url = [
-            (key.startswith(C_PATH_NAME) or
-             key.startswith(C_OBJECTS_PATH_NAME) or
-             key.startswith(C_URL) or
-             key.startswith(C_OBJECTS_URL)) for key in header]
+            (key.startswith(cellprofiler.modules.loadimages.C_PATH_NAME) or
+             key.startswith(cellprofiler.modules.loadimages.C_OBJECTS_PATH_NAME) or
+             key.startswith(cellprofiler.modules.loadimages.C_URL) or
+             key.startswith(cellprofiler.modules.loadimages.C_OBJECTS_URL)) for key in header]
 
         for row in reader:
             if len(row) > len(header):
@@ -1231,13 +1213,13 @@ class LoadData(cellprofiler.module.Module):
                   if colname not in previous_fields]
         if self.wants_images:
             for feature, coltype in (
-                    (C_URL, cellprofiler.measurement.COLTYPE_VARCHAR_PATH_NAME),
-                    (C_PATH_NAME, cellprofiler.measurement.COLTYPE_VARCHAR_PATH_NAME),
-                    (C_FILE_NAME, cellprofiler.measurement.COLTYPE_VARCHAR_FILE_NAME),
-                    (C_MD5_DIGEST, cellprofiler.measurement.COLTYPE_VARCHAR_FORMAT % 32),
-                    (C_SCALING, cellprofiler.measurement.COLTYPE_FLOAT),
-                    (C_HEIGHT, cellprofiler.measurement.COLTYPE_INTEGER),
-                    (C_WIDTH, cellprofiler.measurement.COLTYPE_INTEGER)):
+                    (cellprofiler.modules.loadimages.C_URL, cellprofiler.measurement.COLTYPE_VARCHAR_PATH_NAME),
+                    (cellprofiler.modules.loadimages.C_PATH_NAME, cellprofiler.measurement.COLTYPE_VARCHAR_PATH_NAME),
+                    (cellprofiler.modules.loadimages.C_FILE_NAME, cellprofiler.measurement.COLTYPE_VARCHAR_FILE_NAME),
+                    (cellprofiler.modules.loadimages.C_MD5_DIGEST, cellprofiler.measurement.COLTYPE_VARCHAR_FORMAT % 32),
+                    (cellprofiler.modules.loadimages.C_SCALING, cellprofiler.measurement.COLTYPE_FLOAT),
+                    (cellprofiler.modules.loadimages.C_HEIGHT, cellprofiler.measurement.COLTYPE_INTEGER),
+                    (cellprofiler.modules.loadimages.C_WIDTH, cellprofiler.measurement.COLTYPE_INTEGER)):
                 for image_name in image_names:
                     measurement = feature + '_' + image_name
                     if not any([measurement == c[1] for c in result]):
@@ -1248,10 +1230,10 @@ class LoadData(cellprofiler.module.Module):
             for object_name in self.get_object_names():
                 result += cellprofiler.modules.identify.get_object_measurement_columns(object_name)
                 for feature, coltype in (
-                        (C_OBJECTS_URL, cellprofiler.measurement.COLTYPE_VARCHAR_PATH_NAME),
-                        (C_OBJECTS_PATH_NAME, cellprofiler.measurement.COLTYPE_VARCHAR_PATH_NAME),
-                        (C_OBJECTS_FILE_NAME, cellprofiler.measurement.COLTYPE_VARCHAR_FILE_NAME)):
-                    mname = C_OBJECTS_URL + "_" + object_name
+                        (cellprofiler.modules.loadimages.C_OBJECTS_URL, cellprofiler.measurement.COLTYPE_VARCHAR_PATH_NAME),
+                        (cellprofiler.modules.loadimages.C_OBJECTS_PATH_NAME, cellprofiler.measurement.COLTYPE_VARCHAR_PATH_NAME),
+                        (cellprofiler.modules.loadimages.C_OBJECTS_FILE_NAME, cellprofiler.measurement.COLTYPE_VARCHAR_FILE_NAME)):
+                    mname = cellprofiler.modules.loadimages.C_OBJECTS_URL + "_" + object_name
                     result.append((cellprofiler.measurement.IMAGE, mname, coltype))
         #
         # Try to make a well column out of well row and well column
@@ -1429,7 +1411,7 @@ def best_cast(sequence, coltype=None):
     if (isinstance(coltype, (str, unicode)) and
             coltype.startswith(cellprofiler.measurement.COLTYPE_VARCHAR)):
         # Cast columns already defined as strings as same
-        return np.array(sequence)
+        return numpy.array(sequence)
 
     def fn(x, y):
         if cellprofiler.measurement.COLTYPE_VARCHAR in (x, y):
@@ -1441,15 +1423,15 @@ def best_cast(sequence, coltype=None):
     ldtype = reduce(fn, [get_loaddata_type(x) for x in sequence],
                     cellprofiler.measurement.COLTYPE_INTEGER)
     if ldtype == cellprofiler.measurement.COLTYPE_VARCHAR:
-        return np.array(sequence)
+        return numpy.array(sequence)
     elif ldtype == cellprofiler.measurement.COLTYPE_FLOAT:
-        return np.array(sequence, np.float64)
+        return numpy.array(sequence, numpy.float64)
     else:
-        return np.array(sequence, np.int32)
+        return numpy.array(sequence, numpy.int32)
 
 
-int32_max = np.iinfo(np.int32).max
-int32_min = np.iinfo(np.int32).min
+int32_max = numpy.iinfo(numpy.int32).max
+int32_min = numpy.iinfo(numpy.int32).min
 
 
 def get_loaddata_type(x):

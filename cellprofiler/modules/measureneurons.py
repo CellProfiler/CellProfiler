@@ -38,20 +38,16 @@ the branchpoints that lie outside the seed objects.</li>
 
 import os
 
-import centrosome.cpmorphology as morph
-import centrosome.propagate as propagate
-import numpy as np
-import scipy.ndimage as scind
-from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
-from scipy.ndimage import binary_erosion, grey_dilation, grey_erosion
-
-import cellprofiler.image as cpi
-import cellprofiler.module as cpm
-import cellprofiler.measurement as cpmeas
-import cellprofiler.region as cpo
-import cellprofiler.preferences as cpprefs
-import cellprofiler.setting as cps
-from cellprofiler.setting import YES, NO
+import cellprofiler.image
+import cellprofiler.measurement
+import cellprofiler.module
+import cellprofiler.preferences
+import cellprofiler.region
+import cellprofiler.setting
+import centrosome.cpmorphology
+import centrosome.propagate
+import numpy
+import scipy.ndimage
 
 '''The measurement category'''
 C_NEURON = "Neuron"
@@ -72,72 +68,72 @@ F_ALL = [F_NUMBER_TRUNKS, F_NUMBER_NON_TRUNK_BRANCHES, F_NUMBER_BRANCH_ENDS,
          F_TOTAL_NEURITE_LENGTH]
 
 
-class MeasureNeurons(cpm.Module):
+class MeasureNeurons(cellprofiler.module.Module):
     module_name = "MeasureNeurons"
     category = "Measurement"
     variable_revision_number = 3
 
     def create_settings(self):
         '''Create the UI settings for the module'''
-        self.seed_objects_name = cps.ObjectNameSubscriber(
-                "Select the seed objects", cps.NONE, doc="""
+        self.seed_objects_name = cellprofiler.setting.ObjectNameSubscriber(
+                "Select the seed objects", cellprofiler.setting.NONE, doc="""
             Select the previously identified objects that you want to use as the
             seeds for measuring branches and distances. Branches and trunks are assigned
             per seed object. Seed objects are typically not single points/pixels but
             instead are usually objects of varying sizes.""")
 
-        self.image_name = cps.ImageNameSubscriber(
-                "Select the skeletonized image", cps.NONE, doc="""
+        self.image_name = cellprofiler.setting.ImageNameSubscriber(
+                "Select the skeletonized image", cellprofiler.setting.NONE, doc="""
             Select the skeletonized image of the dendrites
             and/or axons as produced by the <b>Morph</b> module's
             <i>Skel</i> operation.""")
 
-        self.wants_branchpoint_image = cps.Binary(
+        self.wants_branchpoint_image = cellprofiler.setting.Binary(
                 "Retain the branchpoint image?", False, doc="""
             Select <i>%(YES)s</i> if you want to save the color image of
             branchpoints and trunks. This is the image that is displayed
             in the output window for this module.""" % globals())
 
-        self.branchpoint_image_name = cps.ImageNameProvider(
+        self.branchpoint_image_name = cellprofiler.setting.ImageNameProvider(
                 "Name the branchpoint image", "BranchpointImage", doc="""
             <i>(Used only if a branchpoint image is to be retained)</i><br>
             Enter a name for the branchpoint image here. You can then
             use this image in a later module, such as <b>SaveImages</b>.""")
 
-        self.wants_to_fill_holes = cps.Binary(
+        self.wants_to_fill_holes = cellprofiler.setting.Binary(
                 "Fill small holes?", True, doc="""
             The algorithm reskeletonizes the image and this can leave
             artifacts caused by small holes in the image prior to skeletonizing.
             These holes result in false trunks and branchpoints.
             Select <i>%(YES)s</i> to fill in these small holes prior to skeletonizing.""" % globals())
 
-        self.maximum_hole_size = cps.Integer(
+        self.maximum_hole_size = cellprofiler.setting.Integer(
                 "Maximum hole size", 10, minval=1, doc="""
             <i>(Used only when filling small holes)</i><br>
             This is the area of the largest hole to fill, measured
             in pixels. The algorithm will fill in any hole whose area is
             this size or smaller.""")
 
-        self.wants_neuron_graph = cps.Binary(
+        self.wants_neuron_graph = cellprofiler.setting.Binary(
                 "Export the neuron graph relationships?", False, doc="""
             Select <i>%(YES)s</i> to produce an edge file and a vertex
             file that give the relationships between trunks, branchpoints
             and vertices.""" % globals())
 
-        self.intensity_image_name = cps.ImageNameSubscriber(
-                "Intensity image", cps.NONE, doc="""
+        self.intensity_image_name = cellprofiler.setting.ImageNameSubscriber(
+                "Intensity image", cellprofiler.setting.NONE, doc="""
             Select the image to be used to calculate
             the total intensity along the edges between the vertices.""")
 
-        self.directory = cps.DirectoryPath(
+        self.directory = cellprofiler.setting.DirectoryPath(
                 "File output directory",
                 dir_choices=[
-                    cps.DEFAULT_OUTPUT_FOLDER_NAME, cps.DEFAULT_INPUT_FOLDER_NAME,
-                    cps.ABSOLUTE_FOLDER_NAME, cps.DEFAULT_OUTPUT_SUBFOLDER_NAME,
-                    cps.DEFAULT_INPUT_SUBFOLDER_NAME])
-        self.directory.dir_choice = cps.DEFAULT_OUTPUT_FOLDER_NAME
+                    cellprofiler.setting.DEFAULT_OUTPUT_FOLDER_NAME, cellprofiler.setting.DEFAULT_INPUT_FOLDER_NAME,
+                    cellprofiler.setting.ABSOLUTE_FOLDER_NAME, cellprofiler.setting.DEFAULT_OUTPUT_SUBFOLDER_NAME,
+                    cellprofiler.setting.DEFAULT_INPUT_SUBFOLDER_NAME])
+        self.directory.dir_choice = cellprofiler.setting.DEFAULT_OUTPUT_FOLDER_NAME
 
-        self.vertex_file_name = cps.Text(
+        self.vertex_file_name = cellprofiler.setting.Text(
                 "Vertex file name", "vertices.csv", doc="""
             Enter the name of the file that will hold the edge information.
             You can use metadata tags in the file name.
@@ -160,7 +156,7 @@ class MeasureNeurons(cpm.Module):
             <li><b>E:</b> Endpoint</li></ul></li></ul>
             </p>""")
 
-        self.edge_file_name = cps.Text(
+        self.edge_file_name = cellprofiler.setting.Text(
                 "Edge file name", "edges.csv", doc="""
             Enter the name of the file that will hold the edge information.
             You can use metadata tags in the file name. Each line of the file
@@ -249,7 +245,7 @@ class MeasureNeurons(cpm.Module):
         edge_files = set()
         vertex_files = set()
         m = workspace.measurements
-        assert isinstance(m, cpmeas.Measurements)
+        assert isinstance(m, cellprofiler.measurement.Measurements)
         for image_number in m.get_image_numbers():
             edge_path, vertex_path = self.get_graph_file_paths(m, image_number)
             edge_files.add(edge_path)
@@ -278,8 +274,8 @@ class MeasureNeurons(cpm.Module):
         skeleton_name = self.image_name.value
         seed_objects = workspace.object_set.get_objects(seed_objects_name)
         labels = seed_objects.segmented
-        labels_count = np.max(labels)
-        label_range = np.arange(labels_count, dtype=np.int32) + 1
+        labels_count = numpy.max(labels)
+        label_range = numpy.arange(labels_count, dtype=numpy.int32) + 1
 
         skeleton_image = workspace.image_set.get_image(
                 skeleton_name, must_be_binary=True)
@@ -289,7 +285,7 @@ class MeasureNeurons(cpm.Module):
         try:
             labels = skeleton_image.crop_image_similarly(labels)
         except:
-            labels, m1 = cpo.size_similarly(skeleton, labels)
+            labels, m1 = cellprofiler.region.size_similarly(skeleton, labels)
             labels[~m1] = 0
         #
         # The following code makes a ring around the seed objects with
@@ -305,13 +301,13 @@ class MeasureNeurons(cpm.Module):
         #
         # Dilate the objects, then subtract them to make a ring
         #
-        my_disk = morph.strel_disk(1.5).astype(int)
-        dilated_labels = grey_dilation(labels, footprint=my_disk)
+        my_disk = centrosome.cpmorphology.strel_disk(1.5).astype(int)
+        dilated_labels = scipy.ndimage.grey_dilation(labels, footprint=my_disk)
         seed_mask = dilated_labels > 0
         combined_skel = skeleton | seed_mask
 
-        closed_labels = grey_erosion(dilated_labels,
-                                     footprint=my_disk)
+        closed_labels = scipy.ndimage.grey_erosion(dilated_labels,
+                                                   footprint=my_disk)
         seed_center = closed_labels > 0
         combined_skel = combined_skel & (~seed_center)
         #
@@ -322,12 +318,12 @@ class MeasureNeurons(cpm.Module):
             def size_fn(area, is_object):
                 return (~ is_object) and (area <= self.maximum_hole_size.value)
 
-            combined_skel = morph.fill_labeled_holes(
+            combined_skel = centrosome.cpmorphology.fill_labeled_holes(
                     combined_skel, ~seed_center, size_fn)
         #
         # Reskeletonize to make true branchpoints at the ring boundaries
         #
-        combined_skel = morph.skeletonize(combined_skel)
+        combined_skel = centrosome.cpmorphology.skeletonize(combined_skel)
         #
         # The skeleton outside of the labels
         #
@@ -335,9 +331,9 @@ class MeasureNeurons(cpm.Module):
         #
         # Associate all skeleton points with seed objects
         #
-        dlabels, distance_map = propagate.propagate(np.zeros(labels.shape),
-                                                    dilated_labels,
-                                                    combined_skel, 1)
+        dlabels, distance_map = centrosome.propagate.propagate(numpy.zeros(labels.shape),
+                                                               dilated_labels,
+                                                               combined_skel, 1)
         #
         # Get rid of any branchpoints not connected to seeds
         #
@@ -345,7 +341,7 @@ class MeasureNeurons(cpm.Module):
         #
         # Find the branchpoints
         #
-        branch_points = morph.branchpoints(combined_skel)
+        branch_points = centrosome.cpmorphology.branchpoints(combined_skel)
         #
         # Odd case: when four branches meet like this, branchpoints are not
         # assigned because they are arbitrary. So assign them.
@@ -363,17 +359,17 @@ class MeasureNeurons(cpm.Module):
         # Find the branching counts for the trunks (# of extra branches
         # eminating from a point other than the line it might be on).
         #
-        branching_counts = morph.branchings(combined_skel)
-        branching_counts = np.array([0, 0, 0, 1, 2])[branching_counts]
+        branching_counts = centrosome.cpmorphology.branchings(combined_skel)
+        branching_counts = numpy.array([0, 0, 0, 1, 2])[branching_counts]
         #
         # Only take branches within 1 of the outside skeleton
         #
-        dilated_skel = scind.binary_dilation(outside_skel, morph.eight_connect)
+        dilated_skel = scipy.ndimage.binary_dilation(outside_skel, centrosome.cpmorphology.eight_connect)
         branching_counts[~dilated_skel] = 0
         #
         # Find the endpoints
         #
-        end_points = morph.endpoints(combined_skel)
+        end_points = centrosome.cpmorphology.endpoints(combined_skel)
         #
         # We use two ranges for classification here:
         # * anything within one pixel of the dilated image is a trunk
@@ -389,35 +385,35 @@ class MeasureNeurons(cpm.Module):
         # the dilated image.
         #
         if labels_count > 0:
-            trunk_counts = fix(scind.sum(branching_counts, nearby_labels,
-                                         label_range)).astype(int)
+            trunk_counts = centrosome.cpmorphology.fixup_scipy_ndimage_result(scipy.ndimage.sum(branching_counts, nearby_labels,
+                                                                                                label_range)).astype(int)
         else:
-            trunk_counts = np.zeros((0,), int)
+            trunk_counts = numpy.zeros((0,), int)
         #
         # The branches are the branchpoints that lie outside the seed objects
         #
         if labels_count > 0:
-            branch_counts = fix(scind.sum(branch_points, outside_labels,
-                                          label_range))
+            branch_counts = centrosome.cpmorphology.fixup_scipy_ndimage_result(scipy.ndimage.sum(branch_points, outside_labels,
+                                                                                                 label_range))
         else:
-            branch_counts = np.zeros((0,), int)
+            branch_counts = numpy.zeros((0,), int)
         #
         # Save the endpoints
         #
         if labels_count > 0:
-            end_counts = fix(scind.sum(end_points, outside_labels, label_range))
+            end_counts = centrosome.cpmorphology.fixup_scipy_ndimage_result(scipy.ndimage.sum(end_points, outside_labels, label_range))
         else:
-            end_counts = np.zeros((0,), int)
+            end_counts = numpy.zeros((0,), int)
         #
         # Calculate the distances
         #
-        total_distance = morph.skeleton_length(
+        total_distance = centrosome.cpmorphology.skeleton_length(
                 dlabels * outside_skel, label_range)
         #
         # Save measurements
         #
         m = workspace.measurements
-        assert isinstance(m, cpmeas.Measurements)
+        assert isinstance(m, cellprofiler.measurement.Measurements)
         feature = "_".join((C_NEURON, F_NUMBER_TRUNKS, skeleton_name))
         m.add_measurement(seed_objects_name, feature, trunk_counts)
         feature = "_".join((C_NEURON, F_NUMBER_NON_TRUNK_BRANCHES,
@@ -456,9 +452,9 @@ class MeasureNeurons(cpm.Module):
         # Make the display image
         #
         if self.show_window or self.wants_branchpoint_image:
-            branchpoint_image = np.zeros((skeleton.shape[0],
-                                          skeleton.shape[1],
-                                          3))
+            branchpoint_image = numpy.zeros((skeleton.shape[0],
+                                             skeleton.shape[1],
+                                             3))
             trunk_mask = (branching_counts > 0) & (nearby_labels != 0)
             branch_mask = branch_points & (outside_labels != 0)
             end_mask = end_points & (outside_labels != 0)
@@ -472,8 +468,8 @@ class MeasureNeurons(cpm.Module):
             if self.show_window:
                 workspace.display_data.branchpoint_image = branchpoint_image
             if self.wants_branchpoint_image:
-                bi = cpi.Image(branchpoint_image,
-                               parent=skeleton_image)
+                bi = cellprofiler.image.Image(branchpoint_image,
+                                              parent=skeleton_image)
                 workspace.image_set.add(self.branchpoint_image_name.value, bi)
 
     def handle_interaction(self, image_number, edge_path, edge_graph,
@@ -519,14 +515,14 @@ class MeasureNeurons(cpm.Module):
             j = vertex_graph["j"]
             kind = vertex_graph["kind"]
             brightness = edge_graph["total_intensity"] / edge_graph["length"]
-            brightness = ((brightness - np.min(brightness)) /
-                          (np.max(brightness) - np.min(brightness) + .000001))
-            cm = matplotlib.cm.get_cmap(cpprefs.get_default_colormap())
+            brightness = ((brightness - numpy.min(brightness)) /
+                          (numpy.max(brightness) - numpy.min(brightness) + .000001))
+            cm = matplotlib.cm.get_cmap(cellprofiler.preferences.get_default_colormap())
             cmap = matplotlib.cm.ScalarMappable(cmap=cm)
             edge_color = cmap.to_rgba(brightness)
             for idx in range(len(edge_graph["v1"])):
-                v = np.array([edge_graph["v1"][idx] - 1,
-                              edge_graph["v2"][idx] - 1])
+                v = numpy.array([edge_graph["v1"][idx] - 1,
+                                 edge_graph["v2"][idx] - 1])
                 line = Line2D(j[v], i[v], color=edge_color[idx])
                 axes.add_line(line)
 
@@ -535,8 +531,8 @@ class MeasureNeurons(cpm.Module):
         return [
             (self.seed_objects_name.value,
              "_".join((C_NEURON, feature, self.image_name.value)),
-             cpmeas.COLTYPE_FLOAT if feature == F_TOTAL_NEURITE_LENGTH
-             else cpmeas.COLTYPE_INTEGER)
+             cellprofiler.measurement.COLTYPE_FLOAT if feature == F_TOTAL_NEURITE_LENGTH
+             else cellprofiler.measurement.COLTYPE_INTEGER)
             for feature in F_ALL]
 
     def get_categories(self, pipeline, object_name):
@@ -590,23 +586,23 @@ class MeasureNeurons(cpm.Module):
             #
             # Added "Wants branchpoint image" and branchpoint image name
             #
-            setting_values = setting_values + [cps.NO, "Branchpoints"]
+            setting_values = setting_values + [cellprofiler.setting.NO, "Branchpoints"]
             from_matlab = False
             variable_revision_number = 1
         if not from_matlab and variable_revision_number == 1:
             #
             # Added hole size questions
             #
-            setting_values = setting_values + [cps.YES, "10"]
+            setting_values = setting_values + [cellprofiler.setting.YES, "10"]
             variable_revision_number = 2
         if not from_matlab and variable_revision_number == 2:
             #
             # Added graph stuff
             #
             setting_values = setting_values + [
-                cps.NO, cps.NONE,
-                cps.DirectoryPath.static_join_string(cps.DEFAULT_OUTPUT_FOLDER_NAME, cps.NONE),
-                cps.NONE, cps.NONE]
+                cellprofiler.setting.NO, cellprofiler.setting.NONE,
+                cellprofiler.setting.DirectoryPath.static_join_string(cellprofiler.setting.DEFAULT_OUTPUT_FOLDER_NAME, cellprofiler.setting.NONE),
+                cellprofiler.setting.NONE, cellprofiler.setting.NONE]
             variable_revision_number = 3
         return setting_values, variable_revision_number, from_matlab
 
@@ -637,16 +633,16 @@ class MeasureNeurons(cpm.Module):
         label: the vertex's label
         kind: kind of vertex = "T" for trunk, "B" for branchpoint or "E" for endpoint.
         '''
-        i, j = np.mgrid[0:skeleton.shape[0], 0:skeleton.shape[1]]
+        i, j = numpy.mgrid[0:skeleton.shape[0], 0:skeleton.shape[1]]
         #
         # Give each point of interest a unique number
         #
         points_of_interest = trunks | branchpoints | endpoints
-        number_of_points = np.sum(points_of_interest)
+        number_of_points = numpy.sum(points_of_interest)
         #
         # Make up the vertex table
         #
-        tbe = np.zeros(points_of_interest.shape, '|S1')
+        tbe = numpy.zeros(points_of_interest.shape, '|S1')
         tbe[trunks] = 'T'
         tbe[branchpoints] = 'B'
         tbe[endpoints] = 'E'
@@ -667,43 +663,43 @@ class MeasureNeurons(cpm.Module):
         #
         # Label the broken skeleton: this labels each edge differently
         #
-        edge_labels, nlabels = morph.label_skeleton(skeleton)
+        edge_labels, nlabels = centrosome.cpmorphology.label_skeleton(skeleton)
         #
         # Reindex after removing the points of interest
         #
         edge_labels[points_of_interest] = 0
         if nlabels > 0:
-            indexer = np.arange(nlabels + 1)
-            unique_labels = np.sort(np.unique(edge_labels))
+            indexer = numpy.arange(nlabels + 1)
+            unique_labels = numpy.sort(numpy.unique(edge_labels))
             nlabels = len(unique_labels) - 1
-            indexer[unique_labels] = np.arange(len(unique_labels))
+            indexer[unique_labels] = numpy.arange(len(unique_labels))
             edge_labels = indexer[edge_labels]
             #
             # find magnitudes and lengths for all edges
             #
-            magnitudes = fix(scind.sum(image, edge_labels, np.arange(1, nlabels + 1, dtype=np.int32)))
-            lengths = fix(scind.sum(np.ones(edge_labels.shape),
-                                    edge_labels, np.arange(1, nlabels + 1, dtype=np.int32))).astype(int)
+            magnitudes = centrosome.cpmorphology.fixup_scipy_ndimage_result(scipy.ndimage.sum(image, edge_labels, numpy.arange(1, nlabels + 1, dtype=numpy.int32)))
+            lengths = centrosome.cpmorphology.fixup_scipy_ndimage_result(scipy.ndimage.sum(numpy.ones(edge_labels.shape),
+                                                                                           edge_labels, numpy.arange(1, nlabels + 1, dtype=numpy.int32))).astype(int)
         else:
-            magnitudes = np.zeros(0)
-            lengths = np.zeros(0, int)
+            magnitudes = numpy.zeros(0)
+            lengths = numpy.zeros(0, int)
         #
         # combine the edge labels and indexes of points of interest with padding
         #
         edge_mask = edge_labels != 0
-        all_labels = np.zeros(np.array(edge_labels.shape) + 2, int)
+        all_labels = numpy.zeros(numpy.array(edge_labels.shape) + 2, int)
         all_labels[1:-1, 1:-1][edge_mask] = edge_labels[edge_mask] + number_of_points
-        all_labels[i_idx + 1, j_idx + 1] = np.arange(1, number_of_points + 1)
+        all_labels[i_idx + 1, j_idx + 1] = numpy.arange(1, number_of_points + 1)
         #
         # Collect all 8 neighbors for each point of interest
         #
-        p1 = np.zeros(0, int)
-        p2 = np.zeros(0, int)
+        p1 = numpy.zeros(0, int)
+        p2 = numpy.zeros(0, int)
         for i_off, j_off in ((0, 0), (0, 1), (0, 2),
                              (1, 0), (1, 2),
                              (2, 0), (2, 1), (2, 2)):
-            p1 = np.hstack((p1, np.arange(1, number_of_points + 1)))
-            p2 = np.hstack((p2, all_labels[i_idx + i_off, j_idx + j_off]))
+            p1 = numpy.hstack((p1, numpy.arange(1, number_of_points + 1)))
+            p2 = numpy.hstack((p2, all_labels[i_idx + i_off, j_idx + j_off]))
         #
         # Get rid of zeros which are background
         #
@@ -733,7 +729,7 @@ class MeasureNeurons(cpm.Module):
         # take the minimum distance connecting each pair to throw out
         # the edge.
         #
-        edge, p1_edge, p2_edge = morph.pairwise_permutations(edge, p1_edge)
+        edge, p1_edge, p2_edge = centrosome.cpmorphology.pairwise_permutations(edge, p1_edge)
         indexer = edge - number_of_points - 1
         lengths = lengths[indexer]
         magnitudes = magnitudes[indexer]
@@ -741,7 +737,7 @@ class MeasureNeurons(cpm.Module):
         # OK, now we make the edge table. First poi<->poi. Length = 2,
         # magnitude = magnitude at each point
         #
-        poi_length = np.ones(len(p1_poi)) * 2
+        poi_length = numpy.ones(len(p1_poi)) * 2
         poi_magnitude = (image[i_idx[p1_poi - 1], j_idx[p1_poi - 1]] +
                          image[i_idx[p2_poi - 1], j_idx[p2_poi - 1]])
         #
@@ -754,22 +750,22 @@ class MeasureNeurons(cpm.Module):
         #
         # Put together the columns
         #
-        v1 = np.hstack((p1_poi, p1_edge))
-        v2 = np.hstack((p2_poi, p2_edge))
-        lengths = np.hstack((poi_length, poi_edge_length))
-        magnitudes = np.hstack((poi_magnitude, poi_edge_magnitude))
+        v1 = numpy.hstack((p1_poi, p1_edge))
+        v2 = numpy.hstack((p2_poi, p2_edge))
+        lengths = numpy.hstack((poi_length, poi_edge_length))
+        magnitudes = numpy.hstack((poi_magnitude, poi_edge_magnitude))
         #
         # Sort by p1, p2 and length in order to pick the shortest length
         #
-        indexer = np.lexsort((lengths, v1, v2))
+        indexer = numpy.lexsort((lengths, v1, v2))
         v1 = v1[indexer]
         v2 = v2[indexer]
         lengths = lengths[indexer]
         magnitudes = magnitudes[indexer]
         if len(v1) > 0:
-            to_keep = np.hstack(([True],
-                                 (v1[1:] != v1[:-1]) |
-                                 (v2[1:] != v2[:-1])))
+            to_keep = numpy.hstack(([True],
+                                    (v1[1:] != v1[:-1]) |
+                                    (v2[1:] != v2[:-1])))
             v1 = v1[to_keep]
             v2 = v2[to_keep]
             lengths = lengths[to_keep]

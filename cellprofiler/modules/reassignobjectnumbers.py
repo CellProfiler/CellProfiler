@@ -33,26 +33,21 @@ reassignment.
 <p>See also <b>RelateObjects</b>.</p>
 '''
 
-import centrosome.cpmorphology as morph
+import cellprofiler.gui.help
+import cellprofiler.image
+import cellprofiler.measurement
+import cellprofiler.module
+import cellprofiler.modules.identify
+import cellprofiler.preferences
+import cellprofiler.region
+import cellprofiler.setting
+import cellprofiler.setting
+import centrosome.cpmorphology
+import centrosome.filter
 import centrosome.outline
-import numpy as np
-import scipy.ndimage as scind
-from centrosome.filter import stretch
-from scipy.sparse import coo_matrix
-
-import cellprofiler.image as cpi
-import cellprofiler.module as cpm
-import cellprofiler.measurement as cpmeas
-import cellprofiler.region as cpo
-import cellprofiler.preferences as cpprefs
-import cellprofiler.setting as cps
-from cellprofiler.gui.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
-from cellprofiler.modules.identify import C_PARENT, C_CHILDREN
-from cellprofiler.modules.identify import FF_CHILDREN_COUNT, FF_PARENT
-from cellprofiler.modules.identify import add_object_count_measurements
-from cellprofiler.modules.identify import add_object_location_measurements
-from cellprofiler.modules.identify import get_object_measurement_columns
-from cellprofiler.setting import YES, NO
+import numpy
+import scipy.ndimage
+import scipy.sparse
 
 OPTION_UNIFY = "Unify"
 OPTION_SPLIT = "Split"
@@ -67,25 +62,25 @@ UM_DISCONNECTED = "Disconnected"
 UM_CONVEX_HULL = "Convex hull"
 
 
-class ReassignObjectNumbers(cpm.Module):
+class ReassignObjectNumbers(cellprofiler.module.Module):
     module_name = "ReassignObjectNumbers"
     category = "Object Processing"
     variable_revision_number = 4
 
     def create_settings(self):
-        self.objects_name = cps.ObjectNameSubscriber(
+        self.objects_name = cellprofiler.setting.ObjectNameSubscriber(
                 "Select the input objects",
-                cps.NONE, doc="""
+                cellprofiler.setting.NONE, doc="""
             Select the objects whose object numbers you want to reassign.
             You can use any objects that were created in previous modules, such as
             <b>IdentifyPrimaryObjects</b> or <b>IdentifySecondaryObjects</b>.""")
 
-        self.output_objects_name = cps.ObjectNameProvider(
+        self.output_objects_name = cellprofiler.setting.ObjectNameProvider(
                 "Name the new objects", "RelabeledNuclei", doc="""
             Enter a name for the objects whose numbers have been reassigned.
             You can use this name in subsequent modules that take objects as inputs.""")
 
-        self.relabel_option = cps.Choice(
+        self.relabel_option = cellprofiler.setting.Choice(
                 "Operation", [OPTION_UNIFY, OPTION_SPLIT], doc="""
             You can choose one of the following options:
             <ul>
@@ -98,7 +93,7 @@ class ReassignObjectNumbers(cpm.Module):
             operations with the <b>Morph</b> module to objects.</li>
             </ul>""" % globals())
 
-        self.unify_option = cps.Choice(
+        self.unify_option = cellprofiler.setting.Choice(
                 "Unification method", [UNIFY_DISTANCE, UNIFY_PARENT], doc="""
             <i>(Used only with the %(OPTION_UNIFY)s option)</i><br>
             You can unify objects in one of two ways:
@@ -112,7 +107,7 @@ class ReassignObjectNumbers(cpm.Module):
             </ul>
             """ % globals())
 
-        self.unification_method = cps.Choice(
+        self.unification_method = cellprofiler.setting.Choice(
                 "Output object type", [UM_DISCONNECTED, UM_CONVEX_HULL],
                 doc="""
             <i>(Used only with the %(UNIFY_PARENT)s unification method)</i>
@@ -128,8 +123,8 @@ class ReassignObjectNumbers(cpm.Module):
             """ % globals()
         )
 
-        self.parent_object = cps.Choice(
-                "Select the parent object", [cps.NONE],
+        self.parent_object = cellprofiler.setting.Choice(
+                "Select the parent object", [cellprofiler.setting.NONE],
                 choices_fn=self.get_parent_choices, doc="""
             Select the parent object that will be used to
             unify the child objects. Please note the following:
@@ -141,7 +136,7 @@ class ReassignObjectNumbers(cpm.Module):
             sense to unify them here.</li>
             </ul>""")
 
-        self.distance_threshold = cps.Integer(
+        self.distance_threshold = cellprofiler.setting.Integer(
                 "Maximum distance within which to unify objects",
                 0, minval=0, doc="""
             <i>(Used only with the %(OPTION_UNIFY)s option and the %(UNIFY_DISTANCE)s method)</i><br>
@@ -153,7 +148,7 @@ class ReassignObjectNumbers(cpm.Module):
             to the portions of the object. The new, unified object
             may therefore consist of two or more unconnected components.""" % globals())
 
-        self.wants_image = cps.Binary(
+        self.wants_image = cellprofiler.setting.Binary(
                 "Unify using a grayscale image?", False, doc="""
             <i>(Used only with the %(OPTION_UNIFY)s option)</i><br>
             Select <i>%(YES)s</i> to use the objects' intensity features to determine whether two
@@ -162,18 +157,18 @@ class ReassignObjectNumbers(cpm.Module):
             are within the distance you have specified <i>and</i> certain criteria about the objects
             within the grayscale image are met.""" % globals())
 
-        self.image_name = cps.ImageNameSubscriber(
-                "Select the grayscale image to guide unification", cps.NONE, doc="""
+        self.image_name = cellprofiler.setting.ImageNameSubscriber(
+                "Select the grayscale image to guide unification", cellprofiler.setting.NONE, doc="""
             <i>(Used only if a grayscale image is to be used as a guide for unification)</i><br>
             Select the name of an image loaded or created by a previous module.""")
 
-        self.minimum_intensity_fraction = cps.Float(
+        self.minimum_intensity_fraction = cellprofiler.setting.Float(
                 "Minimum intensity fraction", .9, minval=0, maxval=1, doc="""
             <i>(Used only if a grayscale image is to be used as a guide for unification)</i><br>
             Select the minimum acceptable intensity fraction. This will be used
             as described for the method you choose in the next setting.""")
 
-        self.where_algorithm = cps.Choice(
+        self.where_algorithm = cellprofiler.setting.Choice(
                 "Method to find object intensity",
                 [CA_CLOSEST_POINT, CA_CENTROIDS], doc="""
             <i>(Used only if a grayscale image is to be used as a guide for unification)</i><br>
@@ -208,29 +203,29 @@ class ReassignObjectNumbers(cpm.Module):
             as the boundary pixels of both (such as an axon connecting two neurons).</li>
             </ul>""" % globals())
 
-        self.wants_outlines = cps.Binary(
+        self.wants_outlines = cellprofiler.setting.Binary(
                 "Retain outlines of the relabeled objects?", False, doc="""
             %(RETAINING_OUTLINES_HELP)s""" % globals())
 
-        self.outlines_name = cps.OutlineNameProvider(
+        self.outlines_name = cellprofiler.setting.OutlineNameProvider(
                 'Name the outlines',
                 'RelabeledNucleiOutlines', doc="""
             %(NAMING_OUTLINES_HELP)s""" % globals())
 
     def get_parent_choices(self, pipeline):
         columns = pipeline.get_measurement_columns()
-        choices = [cps.NONE]
+        choices = [cellprofiler.setting.NONE]
         for column in columns:
             object_name, feature, coltype = column[:3]
             if (object_name == self.objects_name.value and
-                    feature.startswith(C_PARENT)):
-                choices.append(feature[(len(C_PARENT) + 1):])
+                    feature.startswith(cellprofiler.modules.identify.C_PARENT)):
+                choices.append(feature[(len(cellprofiler.modules.identify.C_PARENT) + 1):])
         return choices
 
     def validate_module(self, pipeline):
-        if self.relabel_option == OPTION_UNIFY and self.unify_option == UNIFY_PARENT and self.parent_object.value == cps.NONE:
-            raise cps.ValidationError(
-                    '%s is not a valid object name' % cps.NONE,
+        if self.relabel_option == OPTION_UNIFY and self.unify_option == UNIFY_PARENT and self.parent_object.value == cellprofiler.setting.NONE:
+            raise cellprofiler.setting.ValidationError(
+                    '%s is not a valid object name' % cellprofiler.setting.NONE,
                     self.parent_object)
 
     def settings(self):
@@ -263,10 +258,10 @@ class ReassignObjectNumbers(cpm.Module):
     def run(self, workspace):
         objects_name = self.objects_name.value
         objects = workspace.object_set.get_objects(objects_name)
-        assert isinstance(objects, cpo.Region)
+        assert isinstance(objects, cellprofiler.region.Region)
         labels = objects.segmented
         if self.relabel_option == OPTION_SPLIT:
-            output_labels, count = scind.label(labels > 0, np.ones((3, 3), bool))
+            output_labels, count = scipy.ndimage.label(labels > 0, numpy.ones((3, 3), bool))
         else:
             if self.unify_option == UNIFY_DISTANCE:
                 mask = labels > 0
@@ -276,24 +271,24 @@ class ReassignObjectNumbers(cpm.Module):
                     # and figure out what points are less than 1/2 of the
                     # distance from an object.
                     #
-                    d = scind.distance_transform_edt(~mask)
+                    d = scipy.ndimage.distance_transform_edt(~mask)
                     mask = d < self.distance_threshold.value / 2 + 1
-                output_labels, count = scind.label(mask, np.ones((3, 3), bool))
+                output_labels, count = scipy.ndimage.label(mask, numpy.ones((3, 3), bool))
                 output_labels[labels == 0] = 0
                 if self.wants_image:
                     output_labels = self.filter_using_image(workspace, mask)
             elif self.unify_option == UNIFY_PARENT:
                 parents_name = self.parent_object.value
                 parents_of = workspace.measurements[
-                    objects_name, "_".join((C_PARENT, parents_name))]
-                output_labels = labels.copy().astype(np.uint32)
+                    objects_name, "_".join((cellprofiler.modules.identify.C_PARENT, parents_name))]
+                output_labels = labels.copy().astype(numpy.uint32)
                 output_labels[labels > 0] = parents_of[labels[labels > 0] - 1]
                 if self.unification_method == UM_CONVEX_HULL:
-                    ch_pts, n_pts = morph.convex_hull(output_labels)
-                    ijv = morph.fill_convex_hulls(ch_pts, n_pts)
+                    ch_pts, n_pts = centrosome.cpmorphology.convex_hull(output_labels)
+                    ijv = centrosome.cpmorphology.fill_convex_hulls(ch_pts, n_pts)
                     output_labels[ijv[:, 0], ijv[:, 1]] = ijv[:, 2]
 
-        output_objects = cpo.Region()
+        output_objects = cellprofiler.region.Region()
         output_objects.segmented = output_labels
         if objects.has_small_removed_segmented:
             output_objects.small_removed_segmented = \
@@ -305,12 +300,12 @@ class ReassignObjectNumbers(cpm.Module):
         workspace.object_set.add_objects(output_objects, self.output_objects_name.value)
 
         measurements = workspace.measurements
-        add_object_count_measurements(measurements,
-                                      self.output_objects_name.value,
-                                      np.max(output_objects.segmented))
-        add_object_location_measurements(measurements,
-                                         self.output_objects_name.value,
-                                         output_objects.segmented)
+        cellprofiler.modules.identify.add_object_count_measurements(measurements,
+                                                                    self.output_objects_name.value,
+                                                                    numpy.max(output_objects.segmented))
+        cellprofiler.modules.identify.add_object_location_measurements(measurements,
+                                                                       self.output_objects_name.value,
+                                                                       output_objects.segmented)
 
         #
         # Relate the output objects to the input ones and record
@@ -319,15 +314,15 @@ class ReassignObjectNumbers(cpm.Module):
         children_per_parent, parents_of_children = \
             objects.relate_children(output_objects)
         measurements.add_measurement(self.objects_name.value,
-                                     FF_CHILDREN_COUNT %
+                                     cellprofiler.modules.identify.FF_CHILDREN_COUNT %
                                      self.output_objects_name.value,
                                      children_per_parent)
         measurements.add_measurement(self.output_objects_name.value,
-                                     FF_PARENT % self.objects_name.value,
+                                     cellprofiler.modules.identify.FF_PARENT % self.objects_name.value,
                                      parents_of_children)
         if self.wants_outlines:
             outlines = centrosome.outline.outline(output_labels)
-            outline_image = cpi.Image(outlines.astype(bool))
+            outline_image = cellprofiler.image.Image(outlines.astype(bool))
             workspace.image_set.add(self.outlines_name.value,
                                     outline_image)
 
@@ -343,8 +338,6 @@ class ReassignObjectNumbers(cpm.Module):
 
         workspace - workspace containing saved display data
         '''
-        from cellprofiler.gui.tools import renumber_labels_for_display
-        import matplotlib.cm as cm
 
         figure.set_subplots((2, 1))
         ax = figure.subplot_imshow_labels(
@@ -362,7 +355,7 @@ class ReassignObjectNumbers(cpm.Module):
                          labels=[workspace.display_data.orig_labels])]
 
             elif self.unify_option == UNIFY_PARENT:
-                image = np.zeros(workspace.display_data.output_labels.shape)
+                image = numpy.zeros(workspace.display_data.output_labels.shape)
                 cplabels = [
                     dict(name=self.output_objects_name.value,
                          labels=[workspace.display_data.output_labels]),
@@ -421,9 +414,9 @@ class ReassignObjectNumbers(cpm.Module):
         # Do a distance transform into the background to label points
         # in the background with their closest foreground object
         #
-        i, j = scind.distance_transform_edt(labels == 0,
-                                            return_indices=True,
-                                            return_distances=False)
+        i, j = scipy.ndimage.distance_transform_edt(labels == 0,
+                                                    return_indices=True,
+                                                    return_distances=False)
         confluent_labels = labels[i, j]
         confluent_labels[~mask] = 0
         if self.where_algorithm == CA_CLOSEST_POINT:
@@ -434,18 +427,18 @@ class ReassignObjectNumbers(cpm.Module):
             #
             object_intensity = image[i, j] * self.minimum_intensity_fraction.value
             confluent_labels[object_intensity > image] = 0
-        count, index, c_j = morph.find_neighbors(confluent_labels)
+        count, index, c_j = centrosome.cpmorphology.find_neighbors(confluent_labels)
         if len(c_j) == 0:
             # Nobody touches - return the labels matrix
             return labels
         #
         # Make a row of i matching the touching j
         #
-        c_i = np.zeros(len(c_j))
+        c_i = numpy.zeros(len(c_j))
         #
         # Eliminate labels without matches
         #
-        label_numbers = np.arange(1, len(count) + 1)[count > 0]
+        label_numbers = numpy.arange(1, len(count) + 1)[count > 0]
         index = index[count > 0]
         count = count[count > 0]
         #
@@ -454,13 +447,13 @@ class ReassignObjectNumbers(cpm.Module):
         #
         label_numbers[1:] = label_numbers[1:] - label_numbers[:-1]
         c_i[index] = label_numbers
-        c_i = np.cumsum(c_i).astype(int)
+        c_i = numpy.cumsum(c_i).astype(int)
         if self.where_algorithm == CA_CENTROIDS:
             #
             # Only connect points > minimum intensity fraction
             #
-            center_i, center_j = morph.centers_of_labels(labels)
-            indexes, counts, i, j = morph.get_line_pts(
+            center_i, center_j = centrosome.cpmorphology.centers_of_labels(labels)
+            indexes, counts, i, j = centrosome.cpmorphology.get_line_pts(
                     center_i[c_i - 1], center_j[c_i - 1],
                     center_i[c_j - 1], center_j[c_j - 1])
             #
@@ -470,7 +463,7 @@ class ReassignObjectNumbers(cpm.Module):
             #
             # The minimum of the intensities at pt0 and pt1
             #
-            centroid_intensities = np.minimum(
+            centroid_intensities = numpy.minimum(
                     image[i[indexes], j[indexes]],
                     image[i[last_indexes], j[last_indexes]])
             #
@@ -478,11 +471,11 @@ class ReassignObjectNumbers(cpm.Module):
             # scipy.ndimage.minimum. The label numbers are indexes into
             # "connections" above.
             #
-            pt_labels = np.zeros(len(i), int)
+            pt_labels = numpy.zeros(len(i), int)
             pt_labels[indexes[1:]] = 1
-            pt_labels = np.cumsum(pt_labels)
-            minima = scind.minimum(image[i, j], pt_labels, np.arange(len(indexes)))
-            minima = morph.fixup_scipy_ndimage_result(minima)
+            pt_labels = numpy.cumsum(pt_labels)
+            minima = scipy.ndimage.minimum(image[i, j], pt_labels, numpy.arange(len(indexes)))
+            minima = centrosome.cpmorphology.fixup_scipy_ndimage_result(minima)
             #
             # Filter the connections using the image
             #
@@ -495,15 +488,15 @@ class ReassignObjectNumbers(cpm.Module):
         #
         # Add in connections from self to self
         #
-        unique_labels = np.unique(labels)
-        i = np.hstack((i, unique_labels))
-        j = np.hstack((j, unique_labels))
+        unique_labels = numpy.unique(labels)
+        i = numpy.hstack((i, unique_labels))
+        j = numpy.hstack((j, unique_labels))
         #
         # Run "all_connected_components" to get a component # for
         # objects identified as same.
         #
-        new_indexes = morph.all_connected_components(i, j)
-        new_labels = np.zeros(labels.shape, int)
+        new_indexes = centrosome.cpmorphology.all_connected_components(i, j)
+        new_labels = numpy.zeros(labels.shape, int)
         new_labels[labels != 0] = new_indexes[labels[labels != 0]]
         return new_labels
 
@@ -530,7 +523,7 @@ class ReassignObjectNumbers(cpm.Module):
         '''
         if (from_matlab and variable_revision_number == 1 and
                     module_name == 'SplitIntoContiguousObjects'):
-            setting_values = setting_values + [OPTION_SPLIT, '0', cps.DO_NOT_USE]
+            setting_values = setting_values + [OPTION_SPLIT, '0', cellprofiler.setting.DO_NOT_USE]
             variable_revision_number = 1
             module_name = 'RelabelObjects'
         if (from_matlab and variable_revision_number == 1 and
@@ -543,8 +536,8 @@ class ReassignObjectNumbers(cpm.Module):
                     module_name == 'RelabelObjects'):
             object_name, relabeled_object_name, relabel_option, \
             distance_threshold, grayscale_image_name = setting_values
-            wants_image = (cps.NO if grayscale_image_name == cps.DO_NOT_USE
-                           else cps.YES)
+            wants_image = (cellprofiler.setting.NO if grayscale_image_name == cellprofiler.setting.DO_NOT_USE
+                           else cellprofiler.setting.YES)
             setting_values = [object_name, relabeled_object_name,
                               relabel_option, distance_threshold,
                               wants_image, grayscale_image_name,
@@ -554,12 +547,12 @@ class ReassignObjectNumbers(cpm.Module):
 
         if (not from_matlab) and variable_revision_number == 1:
             # Added outline options
-            setting_values += [cps.NO, "RelabeledNucleiOutlines"]
+            setting_values += [cellprofiler.setting.NO, "RelabeledNucleiOutlines"]
             variable_revision_number = 2
 
         if (not from_matlab) and variable_revision_number == 1:
             # Added per-parent unification
-            setting_values += [UNIFY_DISTANCE, cps.NONE]
+            setting_values += [UNIFY_DISTANCE, cellprofiler.setting.NONE]
             variable_revision_number = 3
 
         if (not from_matlab) and variable_revision_number == 3:
@@ -577,13 +570,13 @@ class ReassignObjectNumbers(cpm.Module):
         return image
 
     def get_measurement_columns(self, pipeline):
-        columns = get_object_measurement_columns(self.output_objects_name.value)
+        columns = cellprofiler.modules.identify.get_object_measurement_columns(self.output_objects_name.value)
         columns += [(self.output_objects_name.value,
-                     FF_PARENT % self.objects_name.value,
-                     cpmeas.COLTYPE_INTEGER),
+                     cellprofiler.modules.identify.FF_PARENT % self.objects_name.value,
+                     cellprofiler.measurement.COLTYPE_INTEGER),
                     (self.objects_name.value,
-                     FF_CHILDREN_COUNT % self.output_objects_name.value,
-                     cpmeas.COLTYPE_INTEGER)]
+                     cellprofiler.modules.identify.FF_CHILDREN_COUNT % self.output_objects_name.value,
+                     cellprofiler.measurement.COLTYPE_INTEGER)]
         return columns
 
     def get_categories(self, pipeline, object_name):
@@ -624,8 +617,8 @@ def copy_labels(labels, segmented):
     labels - labels matrix similarly segmented to "segmented"
     segmented - the newly numbered labels matrix (a subset of pixels are labeled)
     '''
-    max_labels = np.max(segmented)
-    seglabel = scind.minimum(labels, segmented, np.arange(1, max_labels + 1))
+    max_labels = numpy.max(segmented)
+    seglabel = scipy.ndimage.minimum(labels, segmented, numpy.arange(1, max_labels + 1))
     labels_new = labels.copy()
     labels_new[segmented != 0] = seglabel[segmented[segmented != 0] - 1]
     return labels_new

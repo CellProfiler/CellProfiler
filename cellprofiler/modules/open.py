@@ -1,7 +1,3 @@
-"""
-
-"""
-
 import cellprofiler.image
 import cellprofiler.module
 import cellprofiler.setting

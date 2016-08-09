@@ -69,32 +69,28 @@ as video tutorials.</p>
 
 import logging
 import os
-import sys
 import urllib2
 import xml.dom.minidom
 
+import cellprofiler.gui.help
+import cellprofiler.image
+import cellprofiler.measurement
+import cellprofiler.module
+import cellprofiler.modules.identify
+import cellprofiler.preferences
+import cellprofiler.region
+import cellprofiler.setting
+import centrosome.cpmorphology
+import centrosome.outline
+import centrosome.propagate
 import matplotlib.mlab
 import numpy
-import scipy.ndimage
 import scipy.interpolate
 import scipy.io
+import scipy.ndimage
 import scipy.sparse
 
 logger = logging.getLogger(__name__)
-import cellprofiler.module
-import cellprofiler.measurement
-import cellprofiler.image
-import cellprofiler.region
-import cellprofiler.setting
-from cellprofiler.setting import YES, NO
-import centrosome.cpmorphology
-import cellprofiler.preferences
-import cellprofiler.modules.identify
-import centrosome.propagate
-import centrosome.outline
-from cellprofiler.preferences import IO_FOLDER_CHOICE_HELP_TEXT
-from cellprofiler.gui.help import USING_METADATA_GROUPING_HELP_REF
-from cellprofiler.gui.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
 
 OO_WITH_OVERLAP = "With overlap"
 OO_WITHOUT_OVERLAP = "Without overlap"
@@ -951,8 +947,6 @@ class UntangleWorms(cellprofiler.module.Module):
                 figure.subplot_imshow_grayscale(
                         0, 0, image, title=title, cplabels=cplabels)
         else:
-            from matplotlib.path import Path
-            from matplotlib.patches import PathPatch
             figure.set_subplots((1, 1))
             figure.subplot_imshow_bw(0, 0, workspace.display_data.input_image,
                                      title=self.image_name.value)

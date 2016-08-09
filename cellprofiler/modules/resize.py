@@ -7,16 +7,14 @@ method to use.
 """
 
 import logging
-import traceback
 
-import numpy as np
-from scipy.ndimage import affine_transform, map_coordinates
+import cellprofiler.image
+import cellprofiler.module
+import cellprofiler.setting
+import numpy
+import scipy.ndimage
 
 logger = logging.getLogger(__name__)
-
-import cellprofiler.module as cpm
-import cellprofiler.image as cpi
-import cellprofiler.setting as cps
 
 R_BY_FACTOR = "Resize by a fraction or multiple of the original size"
 R_TO_SIZE = "Resize by specifying desired final dimensions"
@@ -35,21 +33,21 @@ I_ALL = [I_NEAREST_NEIGHBOR, I_BILINEAR, I_BICUBIC]
 S_ADDITIONAL_IMAGE_COUNT = 9
 
 
-class Resize(cpm.Module):
+class Resize(cellprofiler.module.Module):
     category = "Image Processing"
     variable_revision_number = 4
     module_name = "Resize"
 
     def create_settings(self):
-        self.image_name = cps.ImageNameSubscriber(
-                "Select the input image", cps.NONE, doc='''
+        self.image_name = cellprofiler.setting.ImageNameSubscriber(
+                "Select the input image", cellprofiler.setting.NONE, doc='''
             Select the image to be resized.''')
 
-        self.resized_image_name = cps.ImageNameProvider(
+        self.resized_image_name = cellprofiler.setting.ImageNameProvider(
                 "Name the output image", "ResizedBlue", doc='''
             Enter the name of the resized image.''')
 
-        self.size_method = cps.Choice(
+        self.size_method = cellprofiler.setting.Choice(
                 "Resizing method",
                 R_ALL, doc="""
             The following options are available:
@@ -59,14 +57,14 @@ class Resize(cpm.Module):
             <li><i>Resize by specifying desired final dimensions:</i></li>
             Enter the new height and width of the resized image.</ul>""")
 
-        self.resizing_factor = cps.Float(
+        self.resizing_factor = cellprofiler.setting.Float(
                 "Resizing factor",
                 0.25, minval=0, doc='''
             <i>(Used only if resizing by a fraction or multiple of the original size)</i><br>
             Numbers less than one (that is, fractions) will shrink the image;
             numbers greater than one (that is, multiples) will enlarge the image.''')
 
-        self.use_manual_or_image = cps.Choice(
+        self.use_manual_or_image = cellprofiler.setting.Choice(
                 "Method to specify the dimensions", C_ALL, doc="""
             <i>(Used only if resizing by specifying the dimensions)</i><br>
             You have two options on how to resize your image:
@@ -76,22 +74,22 @@ class Resize(cpm.Module):
             to the same dimensions.</li>
             </ul>""" % globals())
 
-        self.specific_width = cps.Integer(
+        self.specific_width = cellprofiler.setting.Integer(
                 "Width of the final image", 100, minval=1, doc='''
             <i>(Used only if resizing by specifying desired final dimensions)</i><br>
             Enter the desired width of the final image, in pixels.''')
 
-        self.specific_height = cps.Integer(
+        self.specific_height = cellprofiler.setting.Integer(
                 "Height of the final image", 100, minval=1, doc='''
             <i>(Used only if resizing by specifying desired final dimensions)</i><br>
             Enter the desired height of the final image, in pixels.''')
 
-        self.specific_image = cps.ImageNameSubscriber(
-                "Select the image with the desired dimensions", cps.NONE, doc=""""
+        self.specific_image = cellprofiler.setting.ImageNameSubscriber(
+                "Select the image with the desired dimensions", cellprofiler.setting.NONE, doc=""""
             <i>(Used only if resizing by specifying desired final dimensions using an image)</i><br>
             The input image will be resized to the dimensions of the specified image.""")
 
-        self.interpolation = cps.Choice(
+        self.interpolation = cellprofiler.setting.Choice(
                 "Interpolation method",
                 I_ALL, doc='''
             <ul><li><i>Nearest Neighbor:</i> Each output pixel is given the intensity of the nearest
@@ -102,34 +100,34 @@ class Resize(cpm.Module):
             of the 4x4 neighborhood at the corresponding position in the input image.</li>
             </ul>''')
 
-        self.separator = cps.Divider(line=False)
+        self.separator = cellprofiler.setting.Divider(line=False)
 
         self.additional_images = []
 
-        self.additional_image_count = cps.HiddenCount(
+        self.additional_image_count = cellprofiler.setting.HiddenCount(
                 self.additional_images, "Additional image count")
 
-        self.add_button = cps.DoSomething("", "Add another image",
-                                          self.add_image)
+        self.add_button = cellprofiler.setting.DoSomething("", "Add another image",
+                                                           self.add_image)
 
     def add_image(self, can_remove=True):
         '''Add an image + associated questions and buttons'''
-        group = cps.SettingsGroup()
+        group = cellprofiler.setting.SettingsGroup()
         if can_remove:
-            group.append("divider", cps.Divider(line=False))
+            group.append("divider", cellprofiler.setting.Divider(line=False))
 
         group.append("input_image_name",
-                     cps.ImageNameSubscriber(
+                     cellprofiler.setting.ImageNameSubscriber(
                              "Select the additional image?",
-                             cps.NONE, doc="""
+                             cellprofiler.setting.NONE, doc="""
                                             What is the name of the additional image to resize? This image will be
                                             resized with the same settings as the first image."""))
         group.append("output_image_name",
-                     cps.ImageNameProvider("Name the output image",
+                     cellprofiler.setting.ImageNameProvider("Name the output image",
                                            "ResizedBlue", doc="""
                                             What is the name of the additional resized image?"""))
         if can_remove:
-            group.append("remover", cps.RemoveSettingButton("", "Remove above image", self.additional_images, group))
+            group.append("remover", cellprofiler.setting.RemoveSettingButton("", "Remove above image", self.additional_images, group))
         self.additional_images.append(group)
 
     def settings(self):
@@ -192,24 +190,24 @@ class Resize(cpm.Module):
         image_pixels = image.pixel_data
         if self.size_method == R_BY_FACTOR:
             factor = self.resizing_factor.value
-            shape = (np.array(image_pixels.shape[:2]) * factor + .5).astype(int)
+            shape = (numpy.array(image_pixels.shape[:2]) * factor + .5).astype(int)
         elif self.size_method == R_TO_SIZE:
             if self.use_manual_or_image == C_MANUAL:
-                shape = np.array([self.specific_height.value,
-                                  self.specific_width.value])
+                shape = numpy.array([self.specific_height.value,
+                                     self.specific_width.value])
             elif self.use_manual_or_image == C_IMAGE:
-                shape = np.array(workspace.image_set.get_image(
+                shape = numpy.array(workspace.image_set.get_image(
                         self.specific_image.value).pixel_data.shape[:2]).astype(int)
-            factor = np.array(shape, float) / \
-                     np.array(image_pixels.shape[:2], float)
+            factor = numpy.array(shape, float) / \
+                     numpy.array(image_pixels.shape[:2], float)
         #
         # Little bit of wierdness here. The input pixels are numbered 0 to
         # shape-1 and so are the output pixels. Therefore the affine transform
         # is the ratio of the two shapes-1
         #
-        ratio = ((np.array(image_pixels.shape[:2]).astype(float) - 1) /
+        ratio = ((numpy.array(image_pixels.shape[:2]).astype(float) - 1) /
                  (shape.astype(float) - 1))
-        transform = np.array([[ratio[0], 0], [0, ratio[1]]])
+        transform = numpy.array([[ratio[0], 0], [0, ratio[1]]])
         if self.interpolation not in I_ALL:
             raise NotImplementedError("Unsupported interpolation method: %s" %
                                       self.interpolation.value)
@@ -217,42 +215,42 @@ class Resize(cpm.Module):
                  else 1 if self.interpolation == I_BILINEAR
         else 2)
         if image_pixels.ndim == 3:
-            output_pixels = np.zeros((shape[0], shape[1], image_pixels.shape[2]),
-                                     image_pixels.dtype)
+            output_pixels = numpy.zeros((shape[0], shape[1], image_pixels.shape[2]),
+                                        image_pixels.dtype)
             for i in range(image_pixels.shape[2]):
-                affine_transform(image_pixels[:, :, i], transform,
-                                 output_shape=tuple(shape),
-                                 output=output_pixels[:, :, i],
-                                 order=order)
+                scipy.ndimage.affine_transform(image_pixels[:, :, i], transform,
+                                               output_shape=tuple(shape),
+                                               output=output_pixels[:, :, i],
+                                               order=order)
         else:
-            output_pixels = affine_transform(image_pixels, transform,
-                                             output_shape=shape,
-                                             order=order)
+            output_pixels = scipy.ndimage.affine_transform(image_pixels, transform,
+                                                           output_shape=shape,
+                                                           order=order)
         # Explicitly provide a mask in order to divorce our mask from
         # any that might be supplied by the parent.
-        mask = affine_transform(image.mask.astype(float), transform,
-                                output_shape=shape[:2],
-                                order=1) >= .5
+        mask = scipy.ndimage.affine_transform(image.mask.astype(float), transform,
+                                              output_shape=shape[:2],
+                                              order=1) >= .5
         if image.has_crop_mask:
             input_cropping = image.crop_mask
             cropping_shape = (
-                np.array(input_cropping.shape, float) * factor + .5).astype(int)
-            eps = np.array([.50001, .50001]) / factor
-            i = np.linspace(eps[0], input_cropping.shape[0] + eps[0],
-                            cropping_shape[0],
-                            endpoint=False)
-            j = np.linspace(eps[1], input_cropping.shape[1] + eps[1],
-                            cropping_shape[1],
-                            endpoint=False)
-            ii, jj = np.mgrid[0:cropping_shape[0], 0:cropping_shape[1]]
-            cropping = map_coordinates(
+                numpy.array(input_cropping.shape, float) * factor + .5).astype(int)
+            eps = numpy.array([.50001, .50001]) / factor
+            i = numpy.linspace(eps[0], input_cropping.shape[0] + eps[0],
+                               cropping_shape[0],
+                               endpoint=False)
+            j = numpy.linspace(eps[1], input_cropping.shape[1] + eps[1],
+                               cropping_shape[1],
+                               endpoint=False)
+            ii, jj = numpy.mgrid[0:cropping_shape[0], 0:cropping_shape[1]]
+            cropping = scipy.ndimage.map_coordinates(
                     input_cropping.astype(float),
                     coordinates=[i[ii], j[jj]],
                     order=1, mode='nearest') >= .5
         else:
             cropping = mask
-        output_image = cpi.Image(output_pixels, parent=image,
-                                 mask=mask, crop_mask=cropping)
+        output_image = cellprofiler.image.Image(output_pixels, parent=image,
+                                                mask=mask, crop_mask=cropping)
         workspace.image_set.add(output_image_name, output_image)
 
         if self.show_window:
@@ -326,7 +324,7 @@ class Resize(cpm.Module):
 
         if (not from_matlab) and variable_revision_number == 3:
             # Add resizing to another image size
-            setting_values = setting_values[:7] + [C_MANUAL, cps.NONE] + setting_values[7:]
+            setting_values = setting_values[:7] + [C_MANUAL, cellprofiler.setting.NONE] + setting_values[7:]
             variable_revision_number = 4
 
         return setting_values, variable_revision_number, from_matlab

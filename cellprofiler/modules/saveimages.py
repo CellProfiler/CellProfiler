@@ -18,37 +18,26 @@ See also <b>NamesAndTypes</b>.
 
 import logging
 import os
-import re
+import os.path
 import sys
-import traceback
 
+import bioformats.formatwriter
+import bioformats.omexml
+import cellprofiler.gui.help
+import cellprofiler.measurement
+import cellprofiler.module
+import cellprofiler.modules.loadimages
+import cellprofiler.preferences
+import cellprofiler.preferences
+import cellprofiler.setting
+import cellprofiler.setting
+import cellprofiler.utilities.version
+import centrosome.cpmorphology
 import matplotlib
-import numpy as np
+import numpy
 import scipy.io.matlab.mio
 
 logger = logging.getLogger(__name__)
-
-import cellprofiler.module as cpm
-import cellprofiler.measurement as cpmeas
-import cellprofiler.setting as cps
-from cellprofiler.setting import YES, NO
-import cellprofiler.preferences as cpp
-from cellprofiler.gui.help import USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF
-from cellprofiler.preferences import \
-    standardize_default_folder_names, DEFAULT_INPUT_FOLDER_NAME, \
-    DEFAULT_OUTPUT_FOLDER_NAME, ABSOLUTE_FOLDER_NAME, \
-    DEFAULT_INPUT_SUBFOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME, \
-    IO_FOLDER_CHOICE_HELP_TEXT, IO_WITH_METADATA_HELP_TEXT, \
-    get_default_image_directory
-import os.path
-from cellprofiler.modules.loadimages import C_FILE_NAME, C_PATH_NAME, C_URL
-from cellprofiler.modules.loadimages import \
-    C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME, C_OBJECTS_URL
-from cellprofiler.modules.loadimages import pathname2url
-from centrosome.cpmorphology import distance_color_labels
-from cellprofiler.utilities.version import get_version
-from bioformats.formatwriter import write_image
-import bioformats.omexml as ome
 
 IF_IMAGE = "Image"
 IF_MASK = "Mask"
@@ -108,13 +97,13 @@ OFFSET_DIRECTORY_PATH = 11
 OFFSET_BIT_DEPTH_V11 = 12
 
 
-class SaveImages(cpm.Module):
+class SaveImages(cellprofiler.module.Module):
     module_name = "SaveImages"
     variable_revision_number = 11
     category = "File Processing"
 
     def create_settings(self):
-        self.save_image_or_figure = cps.Choice(
+        self.save_image_or_figure = cellprofiler.setting.Choice(
                 "Select the type of image to save",
                 IF_ALL,
                 IF_IMAGE, doc="""
@@ -147,23 +136,23 @@ class SaveImages(cpm.Module):
             file formats.</li>
             </ul>""" % globals())
 
-        self.image_name = cps.ImageNameSubscriber(
-                "Select the image to save", cps.NONE, doc="""
+        self.image_name = cellprofiler.setting.ImageNameSubscriber(
+                "Select the image to save", cellprofiler.setting.NONE, doc="""
             <i>(Used only if "%(IF_IMAGE)s", "%(IF_MASK)s" or "%(IF_CROPPING)s" are selected to save)</i><br>
             Select the image you want to save.""" % globals())
 
-        self.objects_name = cps.ObjectNameSubscriber(
-                "Select the objects to save", cps.NONE, doc="""
+        self.objects_name = cellprofiler.setting.ObjectNameSubscriber(
+                "Select the objects to save", cellprofiler.setting.NONE, doc="""
             <i>(Used only if saving "%(IF_OBJECTS)s")</i><br>
             Select the objects that you want to save.""" % globals())
 
-        self.figure_name = cps.FigureSubscriber(
-                "Select the module display window to save", cps.NONE, doc="""
+        self.figure_name = cellprofiler.setting.FigureSubscriber(
+                "Select the module display window to save", cellprofiler.setting.NONE, doc="""
             <i>(Used only if saving "%(IF_FIGURE)s")</i><br>
             Enter the module number/name for which you want to
             save the module display window.""" % globals())
 
-        self.file_name_method = cps.Choice(
+        self.file_name_method = cellprofiler.setting.Choice(
                 "Select method for constructing file names",
                 [FN_FROM_IMAGE, FN_SEQUENTIAL,
                  FN_SINGLE_NAME],
@@ -192,14 +181,14 @@ class SaveImages(cpm.Module):
             in the <i>%(FN_FROM_IMAGE)s</i> option.</li>
             </ul>""" % globals())
 
-        self.file_image_name = cps.FileImageNameSubscriber(
+        self.file_image_name = cellprofiler.setting.FileImageNameSubscriber(
                 "Select image name for file prefix",
-                cps.NONE, doc="""
+                cellprofiler.setting.NONE, doc="""
             <i>(Used only when "%(FN_FROM_IMAGE)s" is selected for contructing the filename)</i><br>
             Select an image loaded using <b>NamesAndTypes</b>. The original filename will be
             used as the prefix for the output filename.""" % globals())
 
-        self.single_file_name = cps.Text(
+        self.single_file_name = cellprofiler.setting.Text(
                 SINGLE_NAME_TEXT, "OrigBlue",
                 metadata=True, doc="""
             <i>(Used only when "%(FN_SEQUENTIAL)s" or "%(FN_SINGLE_NAME)s" are selected for contructing the filename)</i><br>
@@ -207,25 +196,25 @@ class SaveImages(cpm.Module):
             associated with your images, enter the filename text with the metadata tags. %(USING_METADATA_TAGS_REF)s<br>
             Do not enter the file extension in this setting; it will be appended automatically.""" % globals())
 
-        self.number_of_digits = cps.Integer(
+        self.number_of_digits = cellprofiler.setting.Integer(
                 "Number of digits", 4, doc="""
             <i>(Used only when "%(FN_SEQUENTIAL)s" is selected for contructing the filename)</i><br>
             Specify the number of digits to be used for the sequential numbering. Zeros will be
             used to left-pad the digits. If the number specified here is less than that needed to
             contain the number of image sets, the latter will override the value entered.""" % globals())
 
-        self.wants_file_name_suffix = cps.Binary(
+        self.wants_file_name_suffix = cellprofiler.setting.Binary(
                 "Append a suffix to the image file name?", False, doc="""
             Select <i>%(YES)s</i> to add a suffix to the image's file name.
             Select <i>%(NO)s</i> to use the image name as-is.""" % globals())
 
-        self.file_name_suffix = cps.Text(
+        self.file_name_suffix = cellprofiler.setting.Text(
                 "Text to append to the image name",
                 "", metadata=True, doc="""
             <i>(Used only when constructing the filename from the image filename)</i><br>
             Enter the text that should be appended to the filename specified above.""")
 
-        self.file_format = cps.Choice(
+        self.file_format = cellprofiler.setting.Choice(
                 "Saved file format",
                 [FF_BMP, FF_JPG, FF_JPEG, FF_PNG, FF_TIF, FF_TIFF, FF_MAT],
                 value=FF_TIF, doc="""
@@ -233,7 +222,7 @@ class SaveImages(cpm.Module):
             Select the image or movie format to save the image(s). Most common
             image formats are available; MAT-files are readable by MATLAB.""")
 
-        self.movie_format = cps.Choice(
+        self.movie_format = cellprofiler.setting.Choice(
                 "Saved movie format",
                 [FF_AVI, FF_TIF, FF_MOV],
                 value=FF_AVI, doc="""
@@ -268,7 +257,7 @@ class SaveImages(cpm.Module):
             avoid ambiguity between the various operating systems.</p>""" % globals())
 
         # TODO:
-        self.bit_depth = cps.Choice(
+        self.bit_depth = cellprofiler.setting.Choice(
                 "Image bit depth",
                 [BIT_DEPTH_8, BIT_DEPTH_16, BIT_DEPTH_FLOAT], doc="""
             <i>(Used only when saving files in a non-MAT format)</i><br>
@@ -280,14 +269,14 @@ class SaveImages(cpm.Module):
             for TIF formats. Currently, saving images in 12-bit is not supported.</b>""" %
                                                                   globals())
 
-        self.overwrite = cps.Binary(
+        self.overwrite = cellprofiler.setting.Binary(
                 "Overwrite existing files without warning?", False, doc="""
             Select <i>%(YES)s</i> to automatically overwrite a file if it already exists.
             Select <i>%(NO)s</i> to be prompted for confirmation first.
             <p>If you are running the pipeline on a computing cluster,
             select <i>%(YES)s</i> since you will not be able to intervene and answer the confirmation prompt.</p>""" % globals())
 
-        self.when_to_save = cps.Choice(
+        self.when_to_save = cellprofiler.setting.Choice(
                 "When to save",
                 [WS_EVERY_CYCLE, WS_FIRST_CYCLE, WS_LAST_CYCLE],
                 WS_EVERY_CYCLE, doc="""<a name='when_to_save'>
@@ -304,7 +293,7 @@ class SaveImages(cpm.Module):
             setting used on intermediate images generated during each cycle.</li>
             </ul> """ % globals())
 
-        self.rescale = cps.Binary(
+        self.rescale = cellprofiler.setting.Binary(
                 "Rescale the images? ", False, doc="""
             <i>(Used only when saving non-MAT file images)</i><br>
             Select <i>%(YES)s</i> if you want the image to occupy the full dynamic range of the bit
@@ -315,7 +304,7 @@ class SaveImages(cpm.Module):
             stretch the image data, which may not be desirable in some
             circumstances. See <b>RescaleIntensity</b> for other rescaling options.</p>""" % globals())
 
-        self.gray_or_color = cps.Choice(
+        self.gray_or_color = cellprofiler.setting.Choice(
                 "Save as grayscale or color image?",
                 [GC_GRAYSCALE, GC_COLOR], doc="""
             <i>(Used only when saving "%(IF_OBJECTS)s")</i><br>
@@ -334,14 +323,14 @@ class SaveImages(cpm.Module):
             objects.</li>
             </ul>""" % globals())
 
-        self.colormap = cps.Colormap(
+        self.colormap = cellprofiler.setting.Colormap(
                 'Select colormap',
                 value=CM_GRAY, doc="""
             <i>(Used only when saving non-MAT file images)</i><br>
             This affects how images color intensities are displayed. All available colormaps can be seen
             <a href="http://www.scipy.org/Cookbook/Matplotlib/Show_colormaps">here</a>.""")
 
-        self.update_file_names = cps.Binary(
+        self.update_file_names = cellprofiler.setting.Binary(
                 "Record the file and path information to the saved image?", False, doc="""
             Select <i>%(YES)s</i> to store filename and pathname data for each of the new files created
             via this module as a per-image measurement.
@@ -355,11 +344,11 @@ class SaveImages(cpm.Module):
             the newly saved files.</li>
             </ul></p>""" % globals())
 
-        self.create_subdirectories = cps.Binary(
+        self.create_subdirectories = cellprofiler.setting.Binary(
                 "Create subfolders in the output folder?", False, doc="""
             Select <i>%(YES)s</i> to create subfolders to match the input image folder structure.""" % globals())
 
-        self.root_dir = cps.DirectoryPath(
+        self.root_dir = cellprofiler.setting.DirectoryPath(
                 "Base image folder", doc="""
             <i>Used only if creating subfolders in the output folder</i>
             In subfolder mode, <b>SaveImages</b> determines the folder for
@@ -503,7 +492,7 @@ class SaveImages(cpm.Module):
         #
         if self.when_to_save == WS_FIRST_CYCLE:
             d = self.get_dictionary(workspace.image_set_list)
-            if workspace.measurements[cpmeas.IMAGE, cpmeas.GROUP_INDEX] > 1:
+            if workspace.measurements[cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_INDEX] > 1:
                 workspace.display_data.wrote_image = False
                 self.save_filename_measurements(workspace)
                 return
@@ -536,7 +525,7 @@ class SaveImages(cpm.Module):
         frames = d['N_FRAMES']
         current_frame = d["CURRENT_FRAME"]
         d["CURRENT_FRAME"] += 1
-        self.do_save_image(workspace, out_file, pixels, ome.PT_UINT8,
+        self.do_save_image(workspace, out_file, pixels, bioformats.omexml.PT_UINT8,
                            t=current_frame, size_t=frames)
 
     def run_objects(self, workspace):
@@ -544,7 +533,7 @@ class SaveImages(cpm.Module):
         # First, check to see if we should save this image
         #
         if self.when_to_save == WS_FIRST_CYCLE:
-            if workspace.measurements[cpmeas.IMAGE, cpmeas.GROUP_INDEX] > 1:
+            if workspace.measurements[cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_INDEX] > 1:
                 workspace.display_data.wrote_image = False
                 self.save_filename_measurements(workspace)
                 return
@@ -569,31 +558,31 @@ class SaveImages(cpm.Module):
 
         elif self.gray_or_color == GC_GRAYSCALE:
             if objects.count > 255:
-                pixel_type = ome.PT_UINT16
+                pixel_type = bioformats.omexml.PT_UINT16
             else:
-                pixel_type = ome.PT_UINT8
+                pixel_type = bioformats.omexml.PT_UINT8
             for i, l in enumerate(labels):
                 self.do_save_image(
                         workspace, filename, l, pixel_type, t=i, size_t=len(labels))
 
         else:
-            if self.colormap == cps.DEFAULT:
-                colormap = cpp.get_default_colormap()
+            if self.colormap == cellprofiler.setting.DEFAULT:
+                colormap = cellprofiler.preferences.get_default_colormap()
             else:
                 colormap = self.colormap.value
             cm = matplotlib.cm.get_cmap(colormap)
 
-            cpixels = np.zeros((labels[0].shape[0], labels[0].shape[1], 3))
-            counts = np.zeros(labels[0].shape, int)
+            cpixels = numpy.zeros((labels[0].shape[0], labels[0].shape[1], 3))
+            counts = numpy.zeros(labels[0].shape, int)
             mapper = matplotlib.cm.ScalarMappable(cmap=cm)
             for pixels in labels:
                 cpixels[pixels != 0, :] += \
-                    mapper.to_rgba(distance_color_labels(pixels),
+                    mapper.to_rgba(centrosome.cpmorphology.distance_color_labels(pixels),
                                    bytes=True)[pixels != 0, :3]
                 counts[pixels != 0] += 1
             counts[counts == 0] = 1
-            cpixels = cpixels / counts[:, :, np.newaxis]
-            self.do_save_image(workspace, filename, cpixels, ome.PT_UINT8)
+            cpixels = cpixels / counts[:, :, numpy.newaxis]
+            self.do_save_image(workspace, filename, cpixels, bioformats.omexml.PT_UINT8)
         self.save_filename_measurements(workspace)
         if self.show_window:
             workspace.display_data.wrote_image = True
@@ -634,10 +623,10 @@ class SaveImages(cpm.Module):
 
         channel_names - names of the channels (make up names if not present
         '''
-        write_image(filename, pixels, pixel_type,
-                    c=c, z=z, t=t,
-                    size_c=size_c, size_z=size_z, size_t=size_t,
-                    channel_names=channel_names)
+        bioformats.formatwriter.write_image(filename, pixels, pixel_type,
+                                            c=c, z=z, t=t,
+                                            size_c=size_c, size_z=size_z, size_t=size_t,
+                                            channel_names=channel_names)
 
     def save_image(self, workspace):
         if self.show_window:
@@ -654,19 +643,19 @@ class SaveImages(cpm.Module):
                     if pixels.ndim == 3:
                         # RGB
                         for i in range(3):
-                            img_min = np.min(pixels[:, :, i])
-                            img_max = np.max(pixels[:, :, i])
+                            img_min = numpy.min(pixels[:, :, i])
+                            img_max = numpy.max(pixels[:, :, i])
                             if img_max > img_min:
                                 pixels[:, :, i] = (pixels[:, :, i] - img_min) / (img_max - img_min)
                     else:
                         # Grayscale
-                        img_min = np.min(pixels)
-                        img_max = np.max(pixels)
+                        img_min = numpy.min(pixels)
+                        img_max = numpy.max(pixels)
                         if img_max > img_min:
                             pixels = (pixels - img_min) / (img_max - img_min)
                 elif not (u16hack or self.get_bit_depth() == BIT_DEPTH_FLOAT):
                     # Clip at 0 and 1
-                    if np.max(pixels) > 1 or np.min(pixels) < 0:
+                    if numpy.max(pixels) > 1 or numpy.min(pixels) < 0:
                         sys.stderr.write(
                                 "Warning, clipping image %s before output. Some intensities are outside of range 0-1" %
                                 self.image_name.value)
@@ -677,32 +666,32 @@ class SaveImages(cpm.Module):
                 if pixels.ndim == 2 and self.colormap != CM_GRAY and \
                                 self.get_bit_depth() == BIT_DEPTH_8:
                     # Convert grayscale image to rgb for writing
-                    if self.colormap == cps.DEFAULT:
-                        colormap = cpp.get_default_colormap()
+                    if self.colormap == cellprofiler.setting.DEFAULT:
+                        colormap = cellprofiler.preferences.get_default_colormap()
                     else:
                         colormap = self.colormap.value
                     cm = matplotlib.cm.get_cmap(colormap)
 
                     mapper = matplotlib.cm.ScalarMappable(cmap=cm)
                     pixels = mapper.to_rgba(pixels, bytes=True)
-                    pixel_type = ome.PT_UINT8
+                    pixel_type = bioformats.omexml.PT_UINT8
                 elif self.get_bit_depth() == BIT_DEPTH_8:
-                    pixels = (pixels * 255).astype(np.uint8)
-                    pixel_type = ome.PT_UINT8
+                    pixels = (pixels * 255).astype(numpy.uint8)
+                    pixel_type = bioformats.omexml.PT_UINT8
                 elif self.get_bit_depth() == BIT_DEPTH_FLOAT:
-                    pixel_type = ome.PT_FLOAT
+                    pixel_type = bioformats.omexml.PT_FLOAT
                 else:
                     if not u16hack:
                         pixels = (pixels * 65535)
-                    pixel_type = ome.PT_UINT16
+                    pixel_type = bioformats.omexml.PT_UINT16
 
         elif self.save_image_or_figure == IF_MASK:
-            pixels = image.mask.astype(np.uint8) * 255
-            pixel_type = ome.PT_UINT8
+            pixels = image.mask.astype(numpy.uint8) * 255
+            pixel_type = bioformats.omexml.PT_UINT8
 
         elif self.save_image_or_figure == IF_CROPPING:
-            pixels = image.crop_mask.astype(np.uint8) * 255
-            pixel_type = ome.PT_UINT8
+            pixels = image.crop_mask.astype(numpy.uint8) * 255
+            pixel_type = bioformats.omexml.PT_UINT8
 
         filename = self.get_filename(workspace)
         if filename is None:  # failed overwrite check
@@ -749,16 +738,16 @@ class SaveImages(cpm.Module):
             filename = self.get_filename(workspace, make_dirs=False,
                                          check_overwrite=False)
             pn, fn = os.path.split(filename)
-            url = pathname2url(filename)
-            workspace.measurements.add_measurement(cpmeas.IMAGE,
+            url = cellprofiler.modules.loadimages.pathname2url(filename)
+            workspace.measurements.add_measurement(cellprofiler.measurement.IMAGE,
                                                    self.file_name_feature,
                                                    fn,
                                                    can_overwrite=True)
-            workspace.measurements.add_measurement(cpmeas.IMAGE,
+            workspace.measurements.add_measurement(cellprofiler.measurement.IMAGE,
                                                    self.path_name_feature,
                                                    pn,
                                                    can_overwrite=True)
-            workspace.measurements.add_measurement(cpmeas.IMAGE,
+            workspace.measurements.add_measurement(cellprofiler.measurement.IMAGE,
                                                    self.url_feature,
                                                    url,
                                                    can_overwrite=True)
@@ -793,7 +782,7 @@ class SaveImages(cpm.Module):
         '''The path for the image data, or its first parent with a path'''
         if self.file_name_method.value == FN_FROM_IMAGE:
             path_feature = '%s_%s' % (C_PATH_NAME, self.file_image_name.value)
-            assert workspace.measurements.has_feature(cpmeas.IMAGE, path_feature), \
+            assert workspace.measurements.has_feature(cellprofiler.measurement.IMAGE, path_feature), \
                 "Image %s does not have a path!" % self.file_image_name.value
             return workspace.measurements.get_current_image_measurement(path_feature)
 
@@ -806,12 +795,12 @@ class SaveImages(cpm.Module):
 
     def get_measurement_columns(self, pipeline):
         if self.update_file_names.value:
-            return [(cpmeas.IMAGE,
+            return [(cellprofiler.measurement.IMAGE,
                      self.file_name_feature,
-                     cpmeas.COLTYPE_VARCHAR_FILE_NAME),
-                    (cpmeas.IMAGE,
+                     cellprofiler.measurement.COLTYPE_VARCHAR_FILE_NAME),
+                    (cellprofiler.measurement.IMAGE,
                      self.path_name_feature,
-                     cpmeas.COLTYPE_VARCHAR_PATH_NAME)]
+                     cellprofiler.measurement.COLTYPE_VARCHAR_PATH_NAME)]
         else:
             return []
 
@@ -826,7 +815,7 @@ class SaveImages(cpm.Module):
             filename = self.single_file_name.value
             filename = workspace.measurements.apply_metadata(filename)
             n_image_sets = workspace.measurements.image_set_count
-            ndigits = int(np.ceil(np.log10(n_image_sets + 1)))
+            ndigits = int(numpy.ceil(numpy.log10(n_image_sets + 1)))
             ndigits = max((ndigits, self.number_of_digits.value))
             padded_num_string = str(measurements.image_set_number).zfill(ndigits)
             filename = '%s%s' % (filename, padded_num_string)
@@ -903,7 +892,7 @@ class SaveImages(cpm.Module):
             new_setting_values = list(setting_values)
             for i in [3, 12]:
                 if setting_values[i] == '\\':
-                    new_setting_values[i] == cps.DO_NOT_USE
+                    new_setting_values[i] == cellprofiler.setting.DO_NOT_USE
             variable_revision_number = 14
         if from_matlab and variable_revision_number == 14:
             new_setting_values = []
@@ -926,7 +915,7 @@ class SaveImages(cpm.Module):
                 new_setting_values.extend([FN_SINGLE_NAME, setting_values[1][1:],
                                            setting_values[1][1:]])
             else:
-                if len(cpmeas.find_metadata_tokens(setting_values[1])):
+                if len(cellprofiler.measurement.find_metadata_tokens(setting_values[1])):
                     new_setting_values.extend([FN_WITH_METADATA, setting_values[1],
                                                setting_values[1]])
                 else:
@@ -938,7 +927,7 @@ class SaveImages(cpm.Module):
             elif setting_values[4] == '&':
                 new_setting_values.extend([PC_WITH_IMAGE, "None"])
             else:
-                if len(cpmeas.find_metadata_tokens(setting_values[1])):
+                if len(cellprofiler.measurement.find_metadata_tokens(setting_values[1])):
                     new_setting_values.extend([PC_WITH_METADATA,
                                                setting_values[4]])
                 else:
@@ -959,10 +948,10 @@ class SaveImages(cpm.Module):
         ##########################
         if not from_matlab and variable_revision_number == 1:
             # The logic of the question about overwriting was reversed.
-            if setting_values[11] == cps.YES:
-                setting_values[11] = cps.NO
+            if setting_values[11] == cellprofiler.setting.YES:
+                setting_values[11] = cellprofiler.setting.NO
             else:
-                setting_values[11] = cps.YES
+                setting_values[11] = cellprofiler.setting.YES
             variable_revision_number = 2
 
         #########################
@@ -989,7 +978,7 @@ class SaveImages(cpm.Module):
             # Changed save type from "Figure" to "Module window"
             if setting_values[0] == "Figure":
                 setting_values[0] = IF_FIGURE
-            setting_values = standardize_default_folder_names(setting_values, 8)
+            setting_values = cellprofiler.preferences.standardize_default_folder_names(setting_values, 8)
             variable_revision_number = 4
 
         #########################
@@ -1012,7 +1001,7 @@ class SaveImages(cpm.Module):
             setting_values = [
                 save_image_or_figure, image_name, figure_name,
                 file_name_method, file_image_name, single_file_name,
-                file_name_suffix != cps.DO_NOT_USE,
+                file_name_suffix != cellprofiler.setting.DO_NOT_USE,
                 file_name_suffix, file_format,
                 pathname, bit_depth, overwrite, when_to_save,
                 rescale, colormap, update_file_names, create_subdirectories]
@@ -1031,7 +1020,7 @@ class SaveImages(cpm.Module):
             file_name_suffix = setting_values[7]
             if file_name_method == FN_IMAGE_FILENAME_WITH_METADATA:
                 file_name_suffix = single_file_name
-                wants_file_suffix = cps.YES
+                wants_file_suffix = cellprofiler.setting.YES
                 file_name_method = FN_FROM_IMAGE
             elif file_name_method == FN_WITH_METADATA:
                 file_name_method = FN_SINGLE_NAME
@@ -1056,7 +1045,7 @@ class SaveImages(cpm.Module):
         #
         ######################
         if (not from_matlab) and (variable_revision_number == 7):
-            setting_values = setting_values + [DEFAULT_INPUT_FOLDER_NAME]
+            setting_values = setting_values + [cellprofiler.preferences.DEFAULT_INPUT_FOLDER_NAME]
             variable_revision_number = 8
         ######################
         #
@@ -1115,15 +1104,15 @@ class SaveImages(cpm.Module):
             #
             # Make sure that the image name is available on every cycle
             #
-            for setting in cps.get_name_providers(pipeline,
-                                                  self.image_name):
-                if setting.provided_attributes.get(cps.AVAILABLE_ON_LAST_ATTRIBUTE):
+            for setting in cellprofiler.setting.get_name_providers(pipeline,
+                                                                   self.image_name):
+                if setting.provided_attributes.get(cellprofiler.setting.AVAILABLE_ON_LAST_ATTRIBUTE):
                     #
                     # If we fell through, then you can only save on the last cycle
                     #
-                    raise cps.ValidationError("%s is only available after processing all images in an image group" %
-                                              self.image_name.value,
-                                              self.when_to_save)
+                    raise cellprofiler.setting.ValidationError("%s is only available after processing all images in an image group" %
+                                                               self.image_name.value,
+                                                               self.when_to_save)
 
         # XXX - should check that if file_name_method is
         # FN_FROM_IMAGE, that the named image actually has the
@@ -1135,13 +1124,13 @@ class SaveImages(cpm.Module):
             text_str = self.single_file_name.value if self.file_name_method == FN_SINGLE_NAME else self.file_name_suffix.value
             undefined_tags = pipeline.get_undefined_metadata_tags(text_str)
             if len(undefined_tags) > 0:
-                raise cps.ValidationError(
+                raise cellprofiler.setting.ValidationError(
                         "%s is not a defined metadata tag. Check the metadata specifications in your load modules" %
                         undefined_tags[0],
                         self.single_file_name if self.file_name_method == FN_SINGLE_NAME else self.file_name_suffix)
 
 
-class SaveImagesDirectoryPath(cps.DirectoryPath):
+class SaveImagesDirectoryPath(cellprofiler.setting.DirectoryPath):
     '''A specialized version of DirectoryPath to handle saving in the image dir'''
 
     def __init__(self, text, file_image_name, doc):
@@ -1152,10 +1141,10 @@ class SaveImagesDirectoryPath(cps.DirectoryPath):
         '''
         super(SaveImagesDirectoryPath, self).__init__(
                 text, dir_choices=[
-                    cps.DEFAULT_OUTPUT_FOLDER_NAME, cps.DEFAULT_INPUT_FOLDER_NAME,
-                    PC_WITH_IMAGE, cps.ABSOLUTE_FOLDER_NAME,
-                    cps.DEFAULT_OUTPUT_SUBFOLDER_NAME,
-                    cps.DEFAULT_INPUT_SUBFOLDER_NAME], doc=doc)
+                    cellprofiler.setting.DEFAULT_OUTPUT_FOLDER_NAME, cellprofiler.setting.DEFAULT_INPUT_FOLDER_NAME,
+                    PC_WITH_IMAGE, cellprofiler.setting.ABSOLUTE_FOLDER_NAME,
+                    cellprofiler.setting.DEFAULT_OUTPUT_SUBFOLDER_NAME,
+                    cellprofiler.setting.DEFAULT_INPUT_SUBFOLDER_NAME], doc=doc)
         self.file_image_name = file_image_name
 
     def get_absolute_path(self, measurements=None, image_set_index=None):
@@ -1167,26 +1156,26 @@ class SaveImagesDirectoryPath(cps.DirectoryPath):
 
     def test_valid(self, pipeline):
         if self.dir_choice not in self.dir_choices:
-            raise cps.ValidationError("%s is not a valid directory option" %
-                                      self.dir_choice, self)
+            raise cellprofiler.setting.ValidationError("%s is not a valid directory option" %
+                                                       self.dir_choice, self)
 
     @staticmethod
     def upgrade_setting(value):
         '''Upgrade setting from previous version'''
-        dir_choice, custom_path = cps.DirectoryPath.split_string(value)
+        dir_choice, custom_path = cellprofiler.setting.DirectoryPath.split_string(value)
         if dir_choice in OLD_PC_WITH_IMAGE_VALUES:
             dir_choice = PC_WITH_IMAGE
         elif dir_choice in (PC_CUSTOM, PC_WITH_METADATA):
             if custom_path.startswith('.'):
-                dir_choice = cps.DEFAULT_OUTPUT_SUBFOLDER_NAME
+                dir_choice = cellprofiler.setting.DEFAULT_OUTPUT_SUBFOLDER_NAME
             elif custom_path.startswith('&'):
-                dir_choice = cps.DEFAULT_INPUT_SUBFOLDER_NAME
+                dir_choice = cellprofiler.setting.DEFAULT_INPUT_SUBFOLDER_NAME
                 custom_path = '.' + custom_path[1:]
             else:
-                dir_choice = cps.ABSOLUTE_FOLDER_NAME
+                dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
         else:
-            return cps.DirectoryPath.upgrade_setting(value)
-        return cps.DirectoryPath.static_join_string(dir_choice, custom_path)
+            return cellprofiler.setting.DirectoryPath.upgrade_setting(value)
+        return cellprofiler.setting.DirectoryPath.static_join_string(dir_choice, custom_path)
 
 
 def save_bmp(path, img):
@@ -1209,7 +1198,7 @@ def save_bmp(path, img):
     # http://msdn.microsoft.com/en-us/library/dd183376(v=vs.85).aspx
     #
     BITMAPINFOHEADER_SIZE = 40
-    img = img.astype(np.uint8)
+    img = img.astype(numpy.uint8)
     w = img.shape[1]
     h = img.shape[0]
     #
@@ -1221,7 +1210,7 @@ def save_bmp(path, img):
         # Compute padded raster length
         #
         raster_length = (w * 3 + 3) & ~ 3
-        tmp = np.zeros((h, raster_length), np.uint8)
+        tmp = numpy.zeros((h, raster_length), numpy.uint8)
         #
         # Do not understand why but RGB is BGR
         #
@@ -1233,21 +1222,21 @@ def save_bmp(path, img):
         rgb = False
         if w % 4 != 0:
             raster_length = (w + 3) & ~ 3
-            tmp = np.zeros((h, raster_length), np.uint8)
+            tmp = numpy.zeros((h, raster_length), numpy.uint8)
             tmp[:, :w] = img
             img = tmp
     #
     # The image is upside-down in .BMP
     #
-    bmp = np.ascontiguousarray(np.flipud(img)).data
+    bmp = numpy.ascontiguousarray(numpy.flipud(img)).data
     with open(path, "wb") as fd:
         def write2(value):
             '''write a two-byte little-endian value to the file'''
-            fd.write(np.array([value], "<u2").data[:2])
+            fd.write(numpy.array([value], "<u2").data[:2])
 
         def write4(value):
             '''write a four-byte little-endian value to the file'''
-            fd.write(np.array([value], "<u4").data[:4])
+            fd.write(numpy.array([value], "<u4").data[:4])
 
         #
         # Bitmap file header (1st pass)
@@ -1282,8 +1271,8 @@ def save_bmp(path, img):
         write4(0)  # biClrImportant
         if not rgb:
             # The color table
-            color_table = np.column_stack(
-                    [np.arange(256)] * 3 +
-                    [np.zeros(256, np.uint32)]).astype(np.uint8)
-            fd.write(np.ascontiguousarray(color_table, np.uint8).data)
+            color_table = numpy.column_stack(
+                [numpy.arange(256)] * 3 +
+                [numpy.zeros(256, numpy.uint32)]).astype(numpy.uint8)
+            fd.write(numpy.ascontiguousarray(color_table, numpy.uint8).data)
         fd.write(bmp)

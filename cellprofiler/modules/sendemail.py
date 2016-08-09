@@ -14,14 +14,13 @@ import logging
 import os
 import smtplib
 import sys
-import traceback
+
+import cellprofiler.gui.help
+import cellprofiler.measurement
+import cellprofiler.module
+import cellprofiler.setting
 
 logger = logging.getLogger(__name__)
-import cellprofiler.module as cpm
-import cellprofiler.measurement as cpmeas
-import cellprofiler.setting as cps
-from cellprofiler.setting import YES, NO
-from cellprofiler.gui.help import USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF
 
 S_FIRST = "After first cycle"
 S_LAST = "After last cycle"
@@ -31,7 +30,7 @@ S_EVERY_N = "Every # of cycles"
 S_CYCLE_N = "After cycle #"
 S_ALL = [S_FIRST, S_LAST, S_GROUP_START, S_GROUP_END, S_EVERY_N, S_CYCLE_N]
 
-C_NONE = cps.NONE
+C_NONE = cellprofiler.setting.NONE
 C_SSL = "SSL/TLS"
 C_STARTTLS = "STARTTLS"
 C_ALL = [C_NONE, C_SSL, C_STARTTLS]
@@ -56,7 +55,7 @@ EVENT_SETTING_COUNT = 4
 K_LAST_IN_GROUP = "Last in group"
 
 
-class SendEmail(cpm.Module):
+class SendEmail(cellprofiler.module.Module):
     module_name = "SendEmail"
     category = "Other"
     variable_revision_number = 2
@@ -65,9 +64,9 @@ class SendEmail(cpm.Module):
         '''Create the UI settings for this module'''
 
         self.recipients = []
-        self.recipient_count = cps.HiddenCount(self.recipients)
+        self.recipient_count = cellprofiler.setting.HiddenCount(self.recipients)
         self.add_recipient(False)
-        self.add_recipient_button = cps.DoSomething(
+        self.add_recipient_button = cellprofiler.setting.DoSomething(
                 "Add a recipient address.",
                 "Add address",
                 self.add_recipient)
@@ -77,11 +76,11 @@ class SendEmail(cpm.Module):
         else:
             user = os.environ.get("USER", "yourname@yourdomain")
 
-        self.from_address = cps.Text(
+        self.from_address = cellprofiler.setting.Text(
                 "Sender address", user, doc="""
             Enter the address for the email's "From" field.""")
 
-        self.subject = cps.Text(
+        self.subject = cellprofiler.setting.Text(
                 "Subject line", "CellProfiler notification",
                 metadata=True, doc="""
             Enter the text for the email's subject line. If you have metadata
@@ -90,7 +89,7 @@ class SendEmail(cpm.Module):
             you might use the line, "CellProfiler: processing plate " and insert the metadata tag
             for the plate at the end. %(USING_METADATA_HELP_REF)s.""" % globals())
 
-        self.smtp_server = cps.Text(
+        self.smtp_server = cellprofiler.setting.Text(
                 "Server name", "mail", doc="""
             Enter the address of your SMTP server. You can ask your
             network administrator for your outgoing mail server which is often
@@ -99,51 +98,51 @@ class SendEmail(cpm.Module):
             by checking your settings or preferences in whatever email program
             you use.""")
 
-        self.port = cps.Integer(
+        self.port = cellprofiler.setting.Integer(
                 "Port", smtplib.SMTP_PORT, 0, 65535, doc="""
             Enter your server's SMTP port. The default (25) is the
             port used by most SMTP servers. Your network administrator may
             have set up SMTP to use a different port; also, the connection
             security settings may require a different port.""")
 
-        self.connection_security = cps.Choice(
+        self.connection_security = cellprofiler.setting.Choice(
                 "Select connection security", C_ALL, doc="""
             Select the connection security. Your network administrator
             can tell you which setting is appropriate, or you can check the
             settings on your favorite email program.""")
 
-        self.use_authentication = cps.Binary(
+        self.use_authentication = cellprofiler.setting.Binary(
                 "Username and password required to login?", False, doc="""
             Select <i>%(YES)s</i> if you need to enter a username and password
             to authenticate.""" % globals())
 
-        self.username = cps.Text(
+        self.username = cellprofiler.setting.Text(
                 "Username", user, doc="""
             Enter your server's SMTP username.""")
 
-        self.password = cps.Text(
+        self.password = cellprofiler.setting.Text(
                 "Password", "", doc="""
             Enter your server's SMTP password.""")
 
         self.when = []
-        self.when_count = cps.HiddenCount(self.when)
+        self.when_count = cellprofiler.setting.HiddenCount(self.when)
         self.add_when(False)
 
-        self.add_when_button = cps.DoSomething(
+        self.add_when_button = cellprofiler.setting.DoSomething(
                 "Add another email event", "Add email event", self.add_when, doc="""
             Press this button to add another event or condition.
             <b>SendEmail</b> will send an email when this event happens""")
 
     def add_recipient(self, can_delete=True):
         '''Add a recipient for the email to the list of emails'''
-        group = cps.SettingsGroup()
+        group = cellprofiler.setting.SettingsGroup()
 
-        group.append("recipient", cps.Text(
+        group.append("recipient", cellprofiler.setting.Text(
                 "Recipient address", "recipient@domain", doc="""
             Enter the address to which the messages will be sent."""))
 
         if can_delete:
-            group.append("remover", cps.RemoveSettingButton(
+            group.append("remover", cellprofiler.setting.RemoveSettingButton(
                     "Remove above recipient", "Remove recipient",
                     self.recipients, group, doc="""
                 Press this button to remove the above recipient from
@@ -151,8 +150,8 @@ class SendEmail(cpm.Module):
         self.recipients.append(group)
 
     def add_when(self, can_delete=True):
-        group = cps.SettingsGroup()
-        group.append("choice", cps.Choice(
+        group = cellprofiler.setting.SettingsGroup()
+        group.append("choice", cellprofiler.setting.Choice(
                 "When should the email be sent?", S_ALL, doc="""
             Select the kind of event that causes
             <b>SendEmail</b> to send an email. You have the following choices:
@@ -174,14 +173,14 @@ class SendEmail(cpm.Module):
             more events if you want emails after more than one image cycle.</li>
             </ul>""" % globals()))
 
-        group.append("image_set_number", cps.Integer(
+        group.append("image_set_number", cellprofiler.setting.Integer(
                 "Image cycle number", 1, minval=1, doc='''
             <i>(Used only if sending email after a particular cycle number)</i><br>
             Send an email during processing of the given image cycle.
             For instance, if you enter 4, then <b>SendEmail</b>
             will send an email during processing of the fourth image cycle.'''))
 
-        group.append("image_set_count", cps.Integer(
+        group.append("image_set_count", cellprofiler.setting.Integer(
                 "Image cycle count", 1, minval=1, doc='''
             <i>(Used only if sending email after every N cycles)</i><br>
             Send an email each time this number of image cycles have
@@ -189,7 +188,7 @@ class SendEmail(cpm.Module):
             then <b>SendEmail</b> will send an email during processing of
             the fourth, eighth, twelfth, etc. image cycles.'''))
 
-        group.append("message", cps.Text(
+        group.append("message", cellprofiler.setting.Text(
                 "Message text", "Notification from CellProfiler",
                 metadata=True, doc="""
             The body of the message sent from CellProfiler.
@@ -199,9 +198,9 @@ class SendEmail(cpm.Module):
             "Finished processing plate \\g&lt;Plate&gt;". """))
 
         if can_delete:
-            group.append("remover", cps.RemoveSettingButton(
+            group.append("remover", cellprofiler.setting.RemoveSettingButton(
                     "Remove this email event", "Remove event", self.when, group))
-        group.append("divider", cps.Divider())
+        group.append("divider", cellprofiler.setting.Divider())
         self.when.append(group)
 
     def settings(self):
@@ -244,15 +243,15 @@ class SendEmail(cpm.Module):
     def run(self, workspace):
         '''Run every image set'''
         m = workspace.measurements
-        assert isinstance(m, cpmeas.Measurements)
+        assert isinstance(m, cellprofiler.measurement.Measurements)
         d = self.get_dictionary()
         image_number = m.image_set_number
-        if m.has_feature(cpmeas.IMAGE, cpmeas.GROUP_NUMBER):
-            group_number = m[cpmeas.IMAGE, cpmeas.GROUP_NUMBER, image_number]
+        if m.has_feature(cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_NUMBER):
+            group_number = m[cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_NUMBER, image_number]
         else:
             group_number = None
-        if m.has_feature(cpmeas.IMAGE, cpmeas.GROUP_INDEX):
-            group_index = m[cpmeas.IMAGE, cpmeas.GROUP_INDEX, image_number]
+        if m.has_feature(cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_INDEX):
+            group_index = m[cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_INDEX, image_number]
             is_first = group_number == 1 and group_index == 1
             is_first_in_group = group_index == 1
             is_last_in_group = d.get(K_LAST_IN_GROUP) == image_number
@@ -297,7 +296,7 @@ class SendEmail(cpm.Module):
         '''Send an email according to the settings'''
 
         measurements = workspace.measurements
-        assert isinstance(measurements, cpmeas.Measurements)
+        assert isinstance(measurements, cellprofiler.measurement.Measurements)
 
         message = email.message.Message()
         who_from = self.from_address.value
@@ -368,9 +367,9 @@ class SendEmail(cpm.Module):
             image_set_number = [x for x in setting_values[6:] if x != "0"]
 
             events = []
-            if send_first == cps.YES:
+            if send_first == cellprofiler.setting.YES:
                 events.append((S_FIRST, "1", "1", "Starting processing"))
-            if send_last == cps.YES:
+            if send_last == cellprofiler.setting.YES:
                 events.append((S_LAST, "1", "1", "Finished processing"))
             if image_set_count != "0":
                 events.append((S_EVERY_N, "1", image_set_count,
@@ -403,7 +402,7 @@ class SendEmail(cpm.Module):
 
         if not from_matlab and variable_revision_number == 1:
             """Add password setting"""
-            setting_values = setting_values[:6] + [cps.NONE, cps.NO, "", ""] + setting_values[6:]
+            setting_values = setting_values[:6] + [cellprofiler.setting.NONE, cellprofiler.setting.NO, "", ""] + setting_values[6:]
             self.connection_security, self.use_authentication,
             variable_revision_number = 2
 

@@ -1,3 +1,11 @@
+import cellprofiler.image
+import cellprofiler.measurement
+import cellprofiler.module
+import cellprofiler.setting
+import cellprofiler.setting
+import numpy
+import scipy.ndimage
+
 '''<b>Flip and rotate</b> flips (mirror image) and/or rotates an image
 <hr>
 <h4>Available measurements</h4>
@@ -5,15 +13,6 @@
 <li><i>Rotation:</i> Angle of rotation for the input image.</li>
 </ul>
 '''
-
-import numpy as np
-import scipy.ndimage as scind
-
-import cellprofiler.image as cpi
-import cellprofiler.module as cpm
-import cellprofiler.measurement as cpmeas
-import cellprofiler.setting as cps
-from cellprofiler.setting import YES, NO
 
 FLIP_NONE = 'Do not flip'
 FLIP_LEFT_TO_RIGHT = 'Left to right'
@@ -43,25 +42,25 @@ M_ROTATION_CATEGORY = "Rotation"
 M_ROTATION_F = "%s_%%s" % M_ROTATION_CATEGORY
 
 
-class FlipAndRotate(cpm.Module):
+class FlipAndRotate(cellprofiler.module.Module):
     category = 'Image Processing'
     variable_revision_number = 2
     module_name = 'FlipAndRotate'
 
     def create_settings(self):
-        self.image_name = cps.ImageNameSubscriber(
-                "Select the input image", cps.NONE)
+        self.image_name = cellprofiler.setting.ImageNameSubscriber(
+                "Select the input image", cellprofiler.setting.NONE)
 
-        self.output_name = cps.ImageNameProvider(
+        self.output_name = cellprofiler.setting.ImageNameProvider(
                 "Name the output image",
                 "FlippedOrigBlue")
 
-        self.flip_choice = cps.Choice(
+        self.flip_choice = cellprofiler.setting.Choice(
                 "Select method to flip image",
                 FLIP_ALL, doc="""
             Select how the image is to be flipped.""")
 
-        self.rotate_choice = cps.Choice(
+        self.rotate_choice = cellprofiler.setting.Choice(
                 "Select method to rotate image",
                 ROTATE_ALL, doc='''
             <ul>
@@ -79,7 +78,7 @@ class FlipAndRotate(cpm.Module):
             after rotating the image appropriately.</li>
             </ul>''' % globals())
 
-        self.wants_crop = cps.Binary(
+        self.wants_crop = cellprofiler.setting.Binary(
                 "Crop away the rotated edges?", True, doc='''
             <i>(Used only when rotating images)</i> <br>
             When an image is rotated, there will be black space at the
@@ -89,8 +88,8 @@ class FlipAndRotate(cpm.Module):
             is not exactly the same size as the original, which may affect
             downstream modules.</p>''' % globals())
 
-        self.how_often = cps.Choice("Calculate rotation",
-                                    IO_ALL, doc='''
+        self.how_often = cellprofiler.setting.Choice("Calculate rotation",
+                                                     IO_ALL, doc='''
             <i>(Used only when using "%(ROTATE_MOUSE)s" to rotate images)</i> <br>
             Select the cycle(s) at which the calculation is requested and calculated.
             <ul>
@@ -100,13 +99,13 @@ class FlipAndRotate(cpm.Module):
             then apply it to all images.</li>
             </ul>''' % globals())
 
-        self.first_pixel = cps.Coordinates(
+        self.first_pixel = cellprofiler.setting.Coordinates(
                 "Enter coordinates of the top or left pixel", (0, 0))
 
-        self.second_pixel = cps.Coordinates(
+        self.second_pixel = cellprofiler.setting.Coordinates(
                 "Enter the coordinates of the bottom or right pixel", (0, 100))
 
-        self.horiz_or_vert = cps.Choice(
+        self.horiz_or_vert = cellprofiler.setting.Choice(
                 "Select how the specified points should be aligned",
                 C_ALL, doc="""
             <i>(Used only when using "%(ROTATE_COORDINATES)s" to rotate images)</i><br>
@@ -114,7 +113,7 @@ class FlipAndRotate(cpm.Module):
             you entered to be horizontally or
             vertically aligned after the rotation is complete.""" % globals())
 
-        self.angle = cps.Float(
+        self.angle = cellprofiler.setting.Float(
                 "Enter angle of rotation", 0, doc="""
             <i>(Used only when using "%(ROTATE_ANGLE)s" to rotate images)</i> <br>
             Enter the angle you would like to rotate the image.
@@ -146,7 +145,7 @@ class FlipAndRotate(cpm.Module):
 
     def prepare_group(self, workspace, grouping,
                       image_numbers):
-        '''Initialize the angle if appropriate'''
+        """Initialize the angle if appropriate"""
         if self.rotate_choice == ROTATE_MOUSE and self.how_often == IO_ONCE:
             self.get_dictionary(workspace.image_set_list)[D_ANGLE] = None
 
@@ -158,13 +157,13 @@ class FlipAndRotate(cpm.Module):
 
         if self.flip_choice != FLIP_NONE:
             if self.flip_choice == FLIP_LEFT_TO_RIGHT:
-                i, j = np.mgrid[0:pixel_data.shape[0],
+                i, j = numpy.mgrid[0:pixel_data.shape[0],
                        pixel_data.shape[1] - 1:-1:-1]
             elif self.flip_choice == FLIP_TOP_TO_BOTTOM:
-                i, j = np.mgrid[pixel_data.shape[0] - 1:-1:-1,
+                i, j = numpy.mgrid[pixel_data.shape[0] - 1:-1:-1,
                        0:pixel_data.shape[1]]
             elif self.flip_choice == FLIP_BOTH:
-                i, j = np.mgrid[pixel_data.shape[0] - 1:-1:-1,
+                i, j = numpy.mgrid[pixel_data.shape[0] - 1:-1:-1,
                        pixel_data.shape[1] - 1:-1:-1]
             else:
                 raise NotImplementedError("Unknown flipping operation: %s" %
@@ -182,9 +181,9 @@ class FlipAndRotate(cpm.Module):
                 xdiff = self.second_pixel.x - self.first_pixel.x
                 ydiff = self.second_pixel.y - self.first_pixel.y
                 if self.horiz_or_vert == C_VERTICALLY:
-                    angle = -np.arctan2(ydiff, xdiff) * 180.0 / np.pi
+                    angle = -numpy.arctan2(ydiff, xdiff) * 180.0 / numpy.pi
                 elif self.horiz_or_vert == C_HORIZONTALLY:
-                    angle = np.arctan2(xdiff, ydiff) * 180.0 / np.pi
+                    angle = numpy.arctan2(xdiff, ydiff) * 180.0 / numpy.pi
                 else:
                     raise NotImplementedError("Unknown axis: %s" %
                                               self.horiz_or_vert.value)
@@ -201,13 +200,13 @@ class FlipAndRotate(cpm.Module):
             else:
                 raise NotImplementedError("Unknown rotation method: %s" %
                                           self.rotate_choice.value)
-            rangle = angle * np.pi / 180.0
-            mask = scind.rotate(mask.astype(float), angle,
-                                reshape=True) > .50
-            crop = scind.rotate(np.ones(pixel_data.shape[:2]), angle,
-                                reshape=True) > .50
+            rangle = angle * numpy.pi / 180.0
+            mask = scipy.ndimage.rotate(mask.astype(float), angle,
+                                        reshape=True) > .50
+            crop = scipy.ndimage.rotate(numpy.ones(pixel_data.shape[:2]), angle,
+                                        reshape=True) > .50
             mask = mask & crop
-            pixel_data = scind.rotate(pixel_data, angle, reshape=True)
+            pixel_data = scipy.ndimage.rotate(pixel_data, angle, reshape=True)
             if self.wants_crop.value:
                 #
                 # We want to find the largest rectangle that fits inside
@@ -218,32 +217,32 @@ class FlipAndRotate(cpm.Module):
                 # The left and right halves are symmetric, so we compute
                 # on just two of the quadrants.
                 #
-                half = (np.array(crop.shape) / 2).astype(int)
+                half = (numpy.array(crop.shape) / 2).astype(int)
                 #
                 # Operate on the lower right
                 #
                 quartercrop = crop[half[0]:, half[1]:]
-                ci = np.cumsum(quartercrop, 0)
-                cj = np.cumsum(quartercrop, 1)
+                ci = numpy.cumsum(quartercrop, 0)
+                cj = numpy.cumsum(quartercrop, 1)
                 carea_d = ci * cj
                 carea_d[quartercrop == 0] = 0
                 #
                 # Operate on the upper right by flipping I
                 #
                 quartercrop = crop[crop.shape[0] - half[0] - 1::-1, half[1]:]
-                ci = np.cumsum(quartercrop, 0)
-                cj = np.cumsum(quartercrop, 1)
+                ci = numpy.cumsum(quartercrop, 0)
+                cj = numpy.cumsum(quartercrop, 1)
                 carea_u = ci * cj
                 carea_u[quartercrop == 0] = 0
                 carea = carea_d + carea_u
-                max_carea = np.max(carea)
-                max_area = np.argwhere(carea == max_carea)[0] + half
+                max_carea = numpy.max(carea)
+                max_area = numpy.argwhere(carea == max_carea)[0] + half
                 min_i = max(crop.shape[0] - max_area[0] - 1, 0)
                 max_i = max_area[0] + 1
                 min_j = max(crop.shape[1] - max_area[1] - 1, 0)
                 max_j = max_area[1] + 1
-                ii = np.index_exp[min_i:max_i, min_j:max_j]
-                crop = np.zeros(pixel_data.shape, bool)
+                ii = numpy.index_exp[min_i:max_i, min_j:max_j]
+                crop = numpy.zeros(pixel_data.shape, bool)
                 crop[ii] = True
                 mask = mask[ii]
                 pixel_data = pixel_data[ii]
@@ -252,15 +251,15 @@ class FlipAndRotate(cpm.Module):
         else:
             crop = None
             angle = 0
-        output_image = cpi.Image(pixel_data, mask, crop, image)
+        output_image = cellprofiler.image.Image(pixel_data, mask, crop, image)
         image_set.add(self.output_name.value, output_image)
         workspace.measurements.add_image_measurement(
                 M_ROTATION_F % self.output_name.value, angle)
 
-        vmin = min(np.min(image.pixel_data),
-                   np.min(output_image.pixel_data[output_image.mask]))
-        vmax = max(np.max(image.pixel_data),
-                   np.max(output_image.pixel_data[output_image.mask]))
+        vmin = min(numpy.min(image.pixel_data),
+                   numpy.min(output_image.pixel_data[output_image.mask]))
+        vmax = max(numpy.max(image.pixel_data),
+                   numpy.max(output_image.pixel_data[output_image.mask]))
         workspace.display_data.image_pixel_data = image.pixel_data
         workspace.display_data.output_image_pixel_data = output_image.pixel_data
         workspace.display_data.vmin = vmin
@@ -297,14 +296,14 @@ class FlipAndRotate(cpm.Module):
                                   sharexy=figure.subplot(0, 0))
 
     def handle_interaction(self, pixel_data):
-        '''Run a UI that gets an angle from the user'''
+        """Run a UI that gets an angle from the user"""
         import wx
 
         if pixel_data.ndim == 2:
             # make a color matrix for consistency
-            pixel_data = np.dstack((pixel_data, pixel_data, pixel_data))
-        pd_min = np.min(pixel_data)
-        pd_max = np.max(pixel_data)
+            pixel_data = numpy.dstack((pixel_data, pixel_data, pixel_data))
+        pd_min = numpy.min(pixel_data)
+        pd_max = numpy.max(pixel_data)
         if pd_min == pd_max:
             pixel_data[:, :, :] = 0
         else:
@@ -313,12 +312,12 @@ class FlipAndRotate(cpm.Module):
         # Make a 100 x 100 image so it's manageable
         #
         isize = 200
-        i, j, k = np.mgrid[0:isize,
+        i, j, k = numpy.mgrid[0:isize,
                   0:int(isize * pixel_data.shape[1] / pixel_data.shape[0]),
                   0:3].astype(float)
         i *= float(pixel_data.shape[0]) / float(isize)
         j *= float(pixel_data.shape[0]) / float(isize)
-        pixel_data = scind.map_coordinates(pixel_data, (i, j, k))
+        pixel_data = scipy.ndimage.map_coordinates(pixel_data, (i, j, k))
         #
         # Make a dialog box that contains the image
         #
@@ -340,18 +339,18 @@ class FlipAndRotate(cpm.Module):
         def imshow():
             angle_text.Label = "Angle: %d" % int(angle[0])
             angle_text.Refresh()
-            my_angle = -angle[0] * np.pi / 180.0
-            transform = np.array([[np.cos(my_angle), -np.sin(my_angle)],
-                                  [np.sin(my_angle), np.cos(my_angle)]])
+            my_angle = -angle[0] * numpy.pi / 180.0
+            transform = numpy.array([[numpy.cos(my_angle), -numpy.sin(my_angle)],
+                                     [numpy.sin(my_angle), numpy.cos(my_angle)]])
             # Make it rotate about the center
             offset = affine_offset(pixel_data.shape, transform)
-            x = np.dstack((scind.affine_transform(pixel_data[:, :, 0], transform,
-                                                  offset, order=0),
-                           scind.affine_transform(pixel_data[:, :, 1], transform,
-                                                  offset, order=0),
-                           scind.affine_transform(pixel_data[:, :, 2], transform,
-                                                  offset, order=0)))
-            buff = x.astype(np.uint8).tostring()
+            x = numpy.dstack((scipy.ndimage.affine_transform(pixel_data[:, :, 0], transform,
+                                                             offset, order=0),
+                              scipy.ndimage.affine_transform(pixel_data[:, :, 1], transform,
+                                                             offset, order=0),
+                              scipy.ndimage.affine_transform(pixel_data[:, :, 2], transform,
+                                                             offset, order=0)))
+            buff = x.astype(numpy.uint8).tostring()
             bitmap = wx.BitmapFromBuffer(x.shape[1],
                                          x.shape[0],
                                          buff)
@@ -367,10 +366,10 @@ class FlipAndRotate(cpm.Module):
         arrow_cursor = wx.StockCursor(wx.CURSOR_ARROW)
 
         def get_angle(event):
-            center = np.array(canvas.Size) / 2
-            point = np.array(event.GetPositionTuple())
+            center = numpy.array(canvas.Size) / 2
+            point = numpy.array(event.GetPositionTuple())
             offset = point - center
-            return -np.arctan2(offset[1], offset[0]) * 180.0 / np.pi
+            return -numpy.arctan2(offset[1], offset[0]) * 180.0 / numpy.pi
 
         def on_mouse_down(event):
             canvas.Cursor = hand_cursor
@@ -423,16 +422,16 @@ class FlipAndRotate(cpm.Module):
         raise ValueError("Canceled by user in FlipAndRotate")
 
     def get_measurement_columns(self, pipeline):
-        return [(cpmeas.IMAGE, M_ROTATION_F % self.output_name.value,
-                 cpmeas.COLTYPE_FLOAT)]
+        return [(cellprofiler.measurement.IMAGE, M_ROTATION_F % self.output_name.value,
+                 cellprofiler.measurement.COLTYPE_FLOAT)]
 
     def get_categories(self, pipeline, object_name):
-        if object_name == cpmeas.IMAGE:
+        if object_name == cellprofiler.measurement.IMAGE:
             return [M_ROTATION_CATEGORY]
         return []
 
     def get_measurements(self, pipeline, object_name, category):
-        if object_name != cpmeas.IMAGE or category != M_ROTATION_CATEGORY:
+        if object_name != cellprofiler.measurement.IMAGE or category != M_ROTATION_CATEGORY:
             return []
         return [self.output_name.value]
 
@@ -468,29 +467,29 @@ class FlipAndRotate(cpm.Module):
                     module_name == "Flip"):
             image_name, output_name, left_to_right, top_to_bottom = \
                 setting_values
-            if left_to_right == cps.YES:
-                if top_to_bottom == cps.YES:
+            if left_to_right == cellprofiler.setting.YES:
+                if top_to_bottom == cellprofiler.setting.YES:
                     flip_choice = FLIP_BOTH
                 else:
                     flip_choice = FLIP_LEFT_TO_RIGHT
-            elif top_to_bottom == cps.YES:
+            elif top_to_bottom == cellprofiler.setting.YES:
                 flip_choice = FLIP_TOP_TO_BOTTOM
             else:
                 flip_choice = FLIP_NONE
             setting_values = [image_name, output_name, flip_choice,
-                              ROTATE_NONE, cps.NO, "10,10",
+                              ROTATE_NONE, cellprofiler.setting.NO, "10,10",
                               "100,100", C_VERTICALLY, "0"]
             from_matlab = False
             module_name = self.module_name
             variable_revision_number = 2
         if (from_matlab and variable_revision_number == 1 and
                     module_name == self.module_name):
-            if setting_values[2] == cps.YES:
-                if setting_values[3] == cps.YES:
+            if setting_values[2] == cellprofiler.setting.YES:
+                if setting_values[3] == cellprofiler.setting.YES:
                     flip_choice = FLIP_BOTH
                 else:
                     flip_choice = FLIP_LEFT_TO_RIGHT
-            elif setting_values[3] == cps.YES:
+            elif setting_values[3] == cellprofiler.setting.YES:
                 flip_choice = FLIP_TOP_TO_BOTTOM
             else:
                 flip_choice = FLIP_NONE
@@ -522,7 +521,7 @@ class FlipAndRotate(cpm.Module):
 
 
 def affine_offset(shape, transform):
-    '''Calculate an offset given an array's shape and an affine transform
+    """Calculate an offset given an array's shape and an affine transform
 
     shape - the shape of the array to be transformed
     transform - the transform to be performed
@@ -530,6 +529,6 @@ def affine_offset(shape, transform):
     Return an offset for scipy.ndimage.affine_transform that does not
     transform the location of the center of the image (the image rotates
     or is flipped about the center).
-    '''
-    c = (np.array(shape[:2]) - 1).astype(float) / 2.0
-    return -np.dot(transform - np.identity(2), c)
+    """
+    c = (numpy.array(shape[:2]) - 1).astype(float) / 2.0
+    return -numpy.dot(transform - numpy.identity(2), c)

@@ -1,3 +1,16 @@
+import logging
+import os
+
+import cellprofiler.gui.help
+import cellprofiler.measurement
+import cellprofiler.module
+import cellprofiler.preferences
+import cellprofiler.setting
+import cellprofiler.setting
+import cellprofiler.utilities.rules
+import cellprofiler.workspace
+import numpy
+
 '''<b>Flag Image</b> allows you to flag an image based on properties
 that you specify, for example, quality control measurements.
 <hr>
@@ -24,21 +37,6 @@ This module must be placed in the pipeline after the relevant measurement
 modules upon which the flags are based.
 '''
 
-import logging
-import os
-import sys
-
-import numpy as np
-
-import cellprofiler.module as cpm
-import cellprofiler.measurement as cpmeas
-import cellprofiler.setting as cps
-import cellprofiler.utilities.rules as cprules
-import cellprofiler.workspace as cpw
-from cellprofiler.gui.help import USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF
-from cellprofiler.preferences import IO_FOLDER_CHOICE_HELP_TEXT
-from cellprofiler.setting import YES, NO
-
 logger = logging.getLogger(__name__)
 C_ANY = "Flag if any fail"
 C_ALL = "Flag if all fail"
@@ -62,26 +60,26 @@ N_SETTINGS_PER_MEASUREMENT_V3 = 9
 N_SETTINGS_PER_MEASUREMENT = 10
 
 
-class FlagImage(cpm.Module):
+class FlagImage(cellprofiler.module.Module):
     category = "Data Tools"
     variable_revision_number = 4
     module_name = "FlagImage"
 
     def create_settings(self):
         self.flags = []
-        self.flag_count = cps.HiddenCount(self.flags)
-        self.add_flag_button = cps.DoSomething("", "Add another flag",
-                                               self.add_flag)
-        self.spacer_1 = cps.Divider()
+        self.flag_count = cellprofiler.setting.HiddenCount(self.flags)
+        self.add_flag_button = cellprofiler.setting.DoSomething("", "Add another flag",
+                                                                self.add_flag)
+        self.spacer_1 = cellprofiler.setting.Divider()
         self.add_flag(can_delete=False)
 
     def add_flag(self, can_delete=True):
-        group = cps.SettingsGroup()
-        group.append("divider1", cps.Divider(line=False))
+        group = cellprofiler.setting.SettingsGroup()
+        group.append("divider1", cellprofiler.setting.Divider(line=False))
         group.append("measurement_settings", [])
-        group.append("measurement_count", cps.HiddenCount(group.measurement_settings))
+        group.append("measurement_count", cellprofiler.setting.HiddenCount(group.measurement_settings))
         group.append("category",
-                     cps.Text(
+                     cellprofiler.setting.Text(
                              "Name the flag's category", "Metadata", doc='''
                         Name a measurement category by which to categorize the flag. The <i>Metadata</i>
                         category is the default used in CellProfiler to store information about
@@ -90,10 +88,10 @@ class FlagImage(cpm.Module):
                         flag's category and feature name, underscore delimited.
                         For instance, if the measurement category is
                         <i>Metadata</i> and the feature name is <i>QCFlag</i>, then the default
-                        measurement name would be <i>Metadata_QCFlag</i>. %s</p>''' % USING_METADATA_HELP_REF))
+                        measurement name would be <i>Metadata_QCFlag</i>. %s</p>''' % cellprofiler.gui.help.USING_METADATA_HELP_REF))
 
         group.append("feature_name",
-                     cps.Text(
+                     cellprofiler.setting.Text(
                              "Name the flag", "QCFlag", doc='''
                         The flag is stored as a per-image measurement whose name is a combination of the
                         flag's category and feature name, separated by underscores.
@@ -102,7 +100,7 @@ class FlagImage(cpm.Module):
                         measurement name would be <i>Metadata_QCFlag</i>.'''))
 
         group.append("combination_choice",
-                     cps.Choice(
+                     cellprofiler.setting.Choice(
                              "How should measurements be linked?",
                              [C_ANY, C_ALL], doc='''
                         For combinations of measurements, you can set the criteria under which an image set is flagged:
@@ -116,7 +114,7 @@ class FlagImage(cpm.Module):
                         </ul>''' % globals()))
 
         group.append("wants_skip",
-                     cps.Binary(
+                     cellprofiler.setting.Binary(
                              "Skip image set if flagged?", False, doc="""
                         <p>Select <i>%(YES)s</i> to skip the remainder of the pipeline for image sets
                         that are flagged. CellProfiler will not run subsequent modules in the
@@ -131,22 +129,22 @@ class FlagImage(cpm.Module):
                         images before it runs <b>CorrectIllumination_Calculate</b>.</p>""" % globals()))
 
         group.append("add_measurement_button",
-                     cps.DoSomething("",
+                     cellprofiler.setting.DoSomething("",
                                      "Add another measurement",
-                                     self.add_measurement, group))
+                                                      self.add_measurement, group))
         self.add_measurement(group, False if not can_delete else True)
         if can_delete:
-            group.append("remover", cps.RemoveSettingButton("", "Remove this flag", self.flags, group))
-        group.append("divider2", cps.Divider(line=True))
+            group.append("remover", cellprofiler.setting.RemoveSettingButton("", "Remove this flag", self.flags, group))
+        group.append("divider2", cellprofiler.setting.Divider(line=True))
         self.flags.append(group)
 
     def add_measurement(self, flag_settings, can_delete=True):
         measurement_settings = flag_settings.measurement_settings
 
-        group = cps.SettingsGroup()
-        group.append("divider1", cps.Divider(line=False))
+        group = cellprofiler.setting.SettingsGroup()
+        group.append("divider1", cellprofiler.setting.Divider(line=False))
         group.append("source_choice",
-                     cps.Choice(
+                     cellprofiler.setting.Choice(
                              "Flag is based on", S_ALL, doc='''
                         <ul>
                         <li><i>%(S_IMAGE)s:</i> A per-image measurement, such as intensity or
@@ -164,26 +162,26 @@ class FlagImage(cpm.Module):
                         ''' % globals()))
 
         group.append("object_name",
-                     cps.ObjectNameSubscriber(
+                     cellprofiler.setting.ObjectNameSubscriber(
                              "Select the object to be used for flagging",
-                             cps.NONE, doc='''
+                             cellprofiler.setting.NONE, doc='''
                         <i>(Used only when flag is based on an object measurement)</i><br>
                         Select the objects whose measurements you want to use for flagging.'''))
 
         def object_fn():
             if group.source_choice == S_IMAGE:
-                return cpmeas.IMAGE
+                return cellprofiler.measurement.IMAGE
             return group.object_name.value
 
         group.append("rules_directory",
-                     cps.DirectoryPath(
+                     cellprofiler.setting.DirectoryPath(
                              "Rules file location", doc="""
                         <i>(Used only when flagging using %(S_RULES)s)</i><br>
                         Select the location of the rules file that will be used for filtering.
                         %(IO_FOLDER_CHOICE_HELP_TEXT)s""" % globals()))
 
         def get_directory_fn():
-            '''Get the directory for the rules file name'''
+            """Get the directory for the rules file name"""
             return group.rules_directory.get_absolute_path()
 
         def set_directory_fn(path):
@@ -191,7 +189,7 @@ class FlagImage(cpm.Module):
             group.rules_directory.join_parts(dir_choice, custom_path)
 
         group.append("rules_file_name",
-                     cps.FilenameText(
+                     cellprofiler.setting.FilenameText(
                              "Rules file name", "rules.txt",
                              get_directory_fn=get_directory_fn,
                              set_directory_fn=set_directory_fn, doc="""
@@ -209,7 +207,7 @@ class FlagImage(cpm.Module):
                         positive score is higher than the negative score.</p>""" % globals()))
 
         def get_rules_class_choices(group=group):
-            '''Get the available choices from the rules file'''
+            """Get the available choices from the rules file"""
             try:
                 if group.source_choice == S_CLASSIFIER:
                     return self.get_bin_labels(group)
@@ -226,7 +224,7 @@ class FlagImage(cpm.Module):
                 return [str(i) for i in range(1, 3)]
 
         group.append("rules_class",
-                     cps.MultiChoice(
+                     cellprofiler.setting.MultiChoice(
                              "Class number",
                              choices=["1", "2"], doc="""
                         <i>(Used only when flagging using %(S_RULES)s)</i><br>
@@ -245,28 +243,28 @@ class FlagImage(cpm.Module):
         group.rules_class.get_choices = get_rules_class_choices
 
         group.append("measurement",
-                     cps.Measurement("Which measurement?", object_fn))
+                     cellprofiler.setting.Measurement("Which measurement?", object_fn))
 
         group.append("wants_minimum",
-                     cps.Binary(
+                     cellprofiler.setting.Binary(
                              "Flag images based on low values?", True, doc='''
                          Select <i>%(YES)s</i> to flag images with measurements below the specified cutoff.
                          If the measurement evaluates to Not-A-Number (NaN), then the image is not flagged.''' % globals()))
 
-        group.append("minimum_value", cps.Float("Minimum value", 0))
+        group.append("minimum_value", cellprofiler.setting.Float("Minimum value", 0))
 
         group.append("wants_maximum",
-                     cps.Binary(
+                     cellprofiler.setting.Binary(
                              "Flag images based on high values?", True, doc='''
                          Select <i>%(YES)s</i> to flag images with measurements above the specified cutoff.
                          If the measurement evaluates to Not-A-Number (NaN), then the image is not flagged.''' % globals()))
 
-        group.append("maximum_value", cps.Float("Maximum value", 1))
+        group.append("maximum_value", cellprofiler.setting.Float("Maximum value", 1))
 
         if can_delete:
-            group.append("remover", cps.RemoveSettingButton("", "Remove this measurement", measurement_settings, group))
+            group.append("remover", cellprofiler.setting.RemoveSettingButton("", "Remove this measurement", measurement_settings, group))
 
-        group.append("divider2", cps.Divider(line=True))
+        group.append("divider2", cellprofiler.setting.Divider(line=True))
         measurement_settings.append(group)
 
     def settings(self):
@@ -283,7 +281,7 @@ class FlagImage(cpm.Module):
         return result
 
     def prepare_settings(self, setting_values):
-        '''Construct the correct number of flags'''
+        """Construct the correct number of flags"""
         flag_count = int(setting_values[0])
         del self.flags[:]
         self.add_flag(can_delete=False)
@@ -302,7 +300,7 @@ class FlagImage(cpm.Module):
     def visible_settings(self):
         def measurement_visibles(m_g):
             if hasattr(m_g, "remover"):
-                result = [cps.Divider(line=True)]
+                result = [cellprofiler.setting.Divider(line=True)]
             else:
                 result = []
             result += [m_g.source_choice]
@@ -326,12 +324,12 @@ class FlagImage(cpm.Module):
                 if m_g.wants_maximum.value:
                     result += [m_g.maximum_value]
             if hasattr(m_g, "remover"):
-                result += [m_g.remover, cps.Divider(line=True)]
+                result += [m_g.remover, cellprofiler.setting.Divider(line=True)]
             return result
 
         def flag_visibles(flag):
             if hasattr(flag, "remover"):
-                result = [cps.Divider(line=True), cps.Divider(line=True)]
+                result = [cellprofiler.setting.Divider(line=True), cellprofiler.setting.Divider(line=True)]
             else:
                 result = []
             result += [flag.category, flag.feature_name, flag.wants_skip]
@@ -341,7 +339,7 @@ class FlagImage(cpm.Module):
                 result += measurement_visibles(measurement_settings)
             result += [flag.add_measurement_button]
             if hasattr(flag, "remover"):
-                result += [flag.remover, cps.Divider(line=True), cps.Divider(line=True)]
+                result += [flag.remover, cellprofiler.setting.Divider(line=True), cellprofiler.setting.Divider(line=True)]
             return result
 
         result = []
@@ -352,7 +350,7 @@ class FlagImage(cpm.Module):
         return result
 
     def validate_module(self, pipeline):
-        '''If using rules, validate them'''
+        """If using rules, validate them"""
         for flag in self.flags:
             for measurement_setting in flag.measurement_settings:
                 if measurement_setting.source_choice == S_RULES:
@@ -360,30 +358,30 @@ class FlagImage(cpm.Module):
                         rules = self.get_rules(measurement_setting)
                     except Exception, instance:
                         logger.warning("Failed to load rules: %s", str(instance), exc_info=True)
-                        raise cps.ValidationError(str(instance),
-                                                  measurement_setting.rules_file_name)
-                    if not np.all([r.object_name == cpmeas.IMAGE for r in rules.rules]):
-                        raise cps.ValidationError(
+                        raise cellprofiler.setting.ValidationError(str(instance),
+                                                                   measurement_setting.rules_file_name)
+                    if not numpy.all([r.object_name == cellprofiler.measurement.IMAGE for r in rules.rules]):
+                        raise cellprofiler.setting.ValidationError(
                                 "The rules listed in %s describe objects instead of images." % measurement_setting.rules_file_name.value,
                                 measurement_setting.rules_file_name)
                     rule_features = [r.feature for r in rules.rules]
                     measurement_cols = [c[1] for c in pipeline.get_measurement_columns(self)]
                     undef_features = list(set(rule_features).difference(measurement_cols))
                     if len(undef_features) > 0:
-                        raise cps.ValidationError("The rule described by %s has not been measured earlier in the pipeline."%undef_features[0],
-                                                    measurement_setting.rules_file_name)
+                        raise cellprofiler.setting.ValidationError("The rule described by %s has not been measured earlier in the pipeline." % undef_features[0],
+                                                                   measurement_setting.rules_file_name)
                 elif measurement_setting.source_choice == S_CLASSIFIER:
                     try:
                         self.get_classifier(measurement_setting)
                         self.get_classifier_features(measurement_setting)
                         self.get_bin_labels(measurement_setting)
                     except IOError:
-                        raise cps.ValidationError(
+                        raise cellprofiler.setting.ValidationError(
                             "Failed to load classifier file %s" % 
                             measurement_setting.rules_file_name.value, 
                             measurement_setting.rules_file_name)
                     except:
-                        raise cps.ValidationError(
+                        raise cellprofiler.setting.ValidationError(
                         "Unable to load %s as a classifier file" %
                         measurement_setting.rules_file_name.value, 
                         measurement_setting.rules_file_name)
@@ -410,7 +408,7 @@ class FlagImage(cpm.Module):
 
     def run_as_data_tool(self, workspace):
         m = workspace.measurements
-        assert isinstance(m, cpmeas.Measurements)
+        assert isinstance(m, cellprofiler.measurement.Measurements)
         m.is_first_image = True
         image_set_count = m.image_set_count
         for i in range(image_set_count):
@@ -446,7 +444,7 @@ class FlagImage(cpm.Module):
             # The flag table supplies the statistics to the grid
             # using the grid table interface
             #
-            sort_order = np.arange(len(statistics) - 1)
+            sort_order = numpy.arange(len(statistics) - 1)
             sort_col = [None]
             sort_ascending = [None]
 
@@ -459,13 +457,13 @@ class FlagImage(cpm.Module):
                 sort_col[0] = col
                 data = [x[col] for x in statistics[1:]]
                 try:
-                    data = np.array(data, float)
+                    data = numpy.array(data, float)
                 except ValueError:
-                    data = np.array(data)
+                    data = numpy.array(data)
                 if sort_ascending[0]:
-                    sort_order[:] = np.lexsort((data,))
+                    sort_order[:] = numpy.lexsort((data,))
                 else:
-                    sort_order[::-1] = np.lexsort((data,))
+                    sort_order[::-1] = numpy.lexsort((data,))
                 grid.ForceRefresh()
 
             grid.Bind(EVT_GRID_LABEL_LEFT_CLICK, on_label_clicked)
@@ -504,30 +502,30 @@ class FlagImage(cpm.Module):
         return "_".join((flag.category.value, flag.feature_name.value))
 
     def get_rules(self, measurement_group):
-        '''Read the rules from a file'''
+        """Read the rules from a file"""
         rules_file = measurement_group.rules_file_name.value
         rules_directory = measurement_group.rules_directory.get_absolute_path()
         path = os.path.join(rules_directory, rules_file)
         if not os.path.isfile(path):
-            raise cps.ValidationError("No such rules file: %s" % path, rules_file)
+            raise cellprofiler.setting.ValidationError("No such rules file: %s" % path, rules_file)
         else:
-            rules = cprules.Rules()
+            rules = cellprofiler.utilities.rules.Rules()
             rules.parse(path)
             return rules
 
     def load_classifier(self, measurement_group):
-        '''Load the classifier pickle if not cached
+        """Load the classifier pickle if not cached
 
         returns classifier, bin_labels, name and features
-        '''
+        """
         d = self.get_dictionary()
         file_ = measurement_group.rules_file_name.value
         directory_ = measurement_group.rules_directory.get_absolute_path()
         path_ = os.path.join(directory_, file_)
         if path_ not in d:
             if not os.path.isfile(path_):
-                raise cps.ValidationError("No such rules file: %s" % path_, 
-                                          self.rules_file_name)
+                raise cellprofiler.setting.ValidationError("No such rules file: %s" % path_,
+                                                           self.rules_file_name)
             else:
                 from sklearn.externals import joblib
                 d[path_] = joblib.load(path_)
@@ -557,14 +555,14 @@ class FlagImage(cpm.Module):
                 raise NotImplementedError("Unimplemented combination choice: %s" %
                                           flag.combination_choice.value)
         m = workspace.measurements
-        assert isinstance(m, cpmeas.Measurements)
+        assert isinstance(m, cellprofiler.measurement.Measurements)
         m.add_image_measurement(self.measurement_name(flag), 0 if ok else 1)
         if (not ok) and flag.wants_skip:
-            workspace.disposition = cpw.DISPOSITION_SKIP
+            workspace.disposition = cellprofiler.workspace.DISPOSITION_SKIP
         return statistics
 
     def eval_measurement(self, workspace, ms):
-        '''Evaluate a measurement
+        """Evaluate a measurement
 
         workspace - holds the measurements to be evaluated
         ms - the measurement settings indicating how to evaluate
@@ -573,24 +571,24 @@ class FlagImage(cpm.Module):
            first tuple element is True = pass, False = Fail
            second tuple element has all of the statistics except for the
                         flag name
-        '''
+        """
         m = workspace.measurements
-        assert isinstance(m, cpmeas.Measurements)
+        assert isinstance(m, cellprofiler.measurement.Measurements)
         fail = False
         if ms.source_choice == S_IMAGE:
             value = m.get_current_image_measurement(ms.measurement.value)
             min_value = max_value = value
             display_value = str(round(value, 3))
-            source = cpmeas.IMAGE
+            source = cellprofiler.measurement.IMAGE
         elif ms.source_choice == S_AVERAGE_OBJECT:
             data = m.get_current_measurement(ms.object_name.value,
                                              ms.measurement.value)
             if len(data) == 0:
-                min_value = max_value = np.NaN
+                min_value = max_value = numpy.NaN
                 fail = True
                 display_value = "No objects"
             else:
-                min_value = max_value = np.mean(data)
+                min_value = max_value = numpy.mean(data)
                 display_value = str(round(min_value, 3))
             source = "Ave. %s" % ms.object_name.value
         elif ms.source_choice == S_ALL_OBJECTS:
@@ -598,12 +596,12 @@ class FlagImage(cpm.Module):
                                              ms.measurement.value)
             source = ms.object_name.value
             if len(data) == 0:
-                min_value = max_value = np.NaN
+                min_value = max_value = numpy.NaN
                 fail = True
                 display_value = "No objects"
             else:
-                min_value = np.min(data)
-                max_value = np.max(data)
+                min_value = numpy.min(data)
+                max_value = numpy.max(data)
                 if min_value == max_value:
                     display_value = str(min_value)
                 else:
@@ -611,19 +609,19 @@ class FlagImage(cpm.Module):
         elif ms.source_choice == S_RULES:
             rules = self.get_rules(ms)
             scores = rules.score(workspace.measurements)
-            rules_classes = np.array(
+            rules_classes = numpy.array(
                     [int(x) - 1 for x in ms.rules_class.get_selections()])
             #
             # There should only be one in the vector, but if not, take
             # a majority vote (e.g. are there more class 1 objects than
             # class 2?)
             #
-            is_not_nan = np.any(~ np.isnan(scores), 1)
-            objclass = np.argmax(scores[is_not_nan, :], 1).flatten()
-            hit_count = np.sum(
-                    objclass[:, np.newaxis] == rules_classes[np.newaxis, :])
+            is_not_nan = numpy.any(~ numpy.isnan(scores), 1)
+            objclass = numpy.argmax(scores[is_not_nan, :], 1).flatten()
+            hit_count = numpy.sum(
+                objclass[:, numpy.newaxis] == rules_classes[numpy.newaxis, :])
             fail = hit_count > scores.shape[0] - hit_count
-            source = cpmeas.IMAGE
+            source = cellprofiler.measurement.IMAGE
             if len(scores) > 1:
                 display_value = "%d of %d" % (hit_count, scores.shape[0])
             else:
@@ -635,21 +633,21 @@ class FlagImage(cpm.Module):
                 for _ in ms.rules_class.get_selections()]
             features = []
             image_features = workspace.measurements.get_feature_names(
-                cpmeas.IMAGE)
+                cellprofiler.measurement.IMAGE)
             for feature_name in self.get_classifier_features(ms):
                 feature_name = feature_name.split("_", 1)[1]
                 features.append(feature_name)
     
-            feature_vector = np.array([
+            feature_vector = numpy.array([
                 0 if feature_name not in image_features else
-                workspace.measurements[cpmeas.IMAGE, feature_name] 
+                workspace.measurements[cellprofiler.measurement.IMAGE, feature_name]
                 for feature_name in features]).reshape(1, len(features))
             predicted_class = classifier.predict(feature_vector)[0]
             predicted_idx = \
-                np.where(classifier.classes_==predicted_class)[0][0]
+                numpy.where(classifier.classes_ == predicted_class)[0][0]
             fail = predicted_idx in target_idxs
             display_value = self.get_bin_labels(ms)[predicted_idx]
-            source = cpmeas.IMAGE
+            source = cellprofiler.measurement.IMAGE
         else:
             raise NotImplementedError("Source choice of %s not implemented" %
                                       ms.source_choice)
@@ -669,17 +667,17 @@ class FlagImage(cpm.Module):
                              "Fail" if fail else "Pass"))
 
     def get_measurement_columns(self, pipeline):
-        '''Return column definitions for each flag mesurment in the module'''
-        return [(cpmeas.IMAGE, self.measurement_name(flag), cpmeas.COLTYPE_INTEGER)
+        """Return column definitions for each flag mesurment in the module"""
+        return [(cellprofiler.measurement.IMAGE, self.measurement_name(flag), cellprofiler.measurement.COLTYPE_INTEGER)
                 for flag in self.flags]
 
     def get_categories(self, pipeline, object_name):
-        if object_name == cpmeas.IMAGE:
+        if object_name == cellprofiler.measurement.IMAGE:
             return [flag.category.value for flag in self.flags]
         return []
 
     def get_measurements(self, pipeline, object_name, category):
-        if object_name != cpmeas.IMAGE:
+        if object_name != cellprofiler.measurement.IMAGE:
             return []
         return [flag.feature_name.value for flag in self.flags
                 if flag.category.value == category]
@@ -700,15 +698,15 @@ class FlagImage(cpm.Module):
                 measurement_name = '_'.join((category, feature_num_or_name,
                                              image_name, scale))
             if min_value == 'No minimum':
-                wants_minimum = cps.NO
+                wants_minimum = cellprofiler.setting.NO
                 min_value = "0"
             else:
-                wants_minimum = cps.YES
+                wants_minimum = cellprofiler.setting.YES
             if max_value == 'No maximum':
-                wants_maximum = cps.NO
+                wants_maximum = cellprofiler.setting.NO
                 max_value = "1"
             else:
-                wants_maximum = cps.YES
+                wants_maximum = cellprofiler.setting.YES
             if new_or_append == "Append existing flag":
                 logger.warning(
                         "CellProfiler 2.0 can't combine flags from multiple FlagImageForQC modules imported from version 1.0")
@@ -726,7 +724,7 @@ class FlagImage(cpm.Module):
                               flag_feature,
                               C_ANY,  # combination choice
                               S_IMAGE,  # measurement source
-                              cps.NONE,  # object name
+                              cellprofiler.setting.NONE,  # object name
                               measurement_name,
                               wants_minimum,
                               min_value,
@@ -739,7 +737,7 @@ class FlagImage(cpm.Module):
             new_setting_values = [setting_values[0]]
             idx = 1
             for flag_idx in range(int(setting_values[0])):
-                new_setting_values += setting_values[idx:idx + 4] + [cps.NO]
+                new_setting_values += setting_values[idx:idx + 4] + [cellprofiler.setting.NO]
                 meas_count = int(setting_values[idx])
                 idx += 4
                 for meas_idx in range(meas_count):
@@ -769,8 +767,8 @@ class FlagImage(cpm.Module):
                     measurement_source = setting_values[idx]
                     new_setting_values += [measurement_source]
                     new_setting_values += setting_values[(idx + 1):(idx + N_SETTINGS_PER_MEASUREMENT_V2)] + \
-                                          [cps.DirectoryPath.static_join_string(cps.DEFAULT_INPUT_FOLDER_NAME,
-                                                                                cps.NONE), "rules.txt"]
+                                          [cellprofiler.setting.DirectoryPath.static_join_string(cellprofiler.setting.DEFAULT_INPUT_FOLDER_NAME,
+                                                                                                 cellprofiler.setting.NONE), "rules.txt"]
                     idx += N_SETTINGS_PER_MEASUREMENT_V2
             setting_values = new_setting_values
 

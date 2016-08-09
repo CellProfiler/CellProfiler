@@ -1,4 +1,10 @@
-'''<b>Invert For Printing</b> inverts fluorescent images into 
+import cellprofiler.image
+import cellprofiler.module
+import cellprofiler.setting
+import cellprofiler.setting
+import numpy
+
+'''<b>Invert For Printing</b> inverts fluorescent images into
 brightfield-looking images for printing.
 <hr>
 This module turns a single or multi-channel immunofluorescent-stained image
@@ -13,86 +19,79 @@ images or one color image as output.
 If you want to invert the grayscale intensities of an image, use <b>ImageMath</b>.
 '''
 
-import numpy as np
-
-import cellprofiler.image as cpi
-import cellprofiler.module as cpm
-import cellprofiler.setting as cps
-from cellprofiler.setting import YES, NO
-
 CC_GRAYSCALE = "Grayscale"
 CC_COLOR = "Color"
 CC_ALL = [CC_COLOR, CC_GRAYSCALE]
 
 
-class InvertForPrinting(cpm.Module):
+class InvertForPrinting(cellprofiler.module.Module):
     module_name = "InvertForPrinting"
     category = 'Image Processing'
     variable_revision_number = 1
 
     def create_settings(self):
         # Input settings
-        self.input_color_choice = cps.Choice(
+        self.input_color_choice = cellprofiler.setting.Choice(
                 "Input image type", CC_ALL, doc="""
             Specify whether you are combining several grayscale images or
             loading a single color image.""")
 
-        self.wants_red_input = cps.Binary(
+        self.wants_red_input = cellprofiler.setting.Binary(
                 "Use a red image?", True, doc="""
             Select <i>%(YES)s</i> to specify an image to use for the red channel.""" % globals())
 
-        self.red_input_image = cps.ImageNameSubscriber(
-                "Select the red image", cps.NONE)
+        self.red_input_image = cellprofiler.setting.ImageNameSubscriber(
+                "Select the red image", cellprofiler.setting.NONE)
 
-        self.wants_green_input = cps.Binary(
+        self.wants_green_input = cellprofiler.setting.Binary(
                 "Use a green image?", True, doc="""
             Select <i>%(YES)s</i> to specify an image to use for the green channel.""" % globals())
 
-        self.green_input_image = cps.ImageNameSubscriber(
-                "Select the green image", cps.NONE)
+        self.green_input_image = cellprofiler.setting.ImageNameSubscriber(
+                "Select the green image", cellprofiler.setting.NONE)
 
-        self.wants_blue_input = cps.Binary(
+        self.wants_blue_input = cellprofiler.setting.Binary(
                 "Use a blue image?", True, doc="""
             Select <i>%(YES)s</i> to specify an image to use for the blue channel.""" % globals())
 
-        self.blue_input_image = cps.ImageNameSubscriber(
-                "Select the blue image", cps.NONE)
+        self.blue_input_image = cellprofiler.setting.ImageNameSubscriber(
+                "Select the blue image", cellprofiler.setting.NONE)
 
-        self.color_input_image = cps.ImageNameSubscriber(
-                "Select the color image", cps.NONE, doc='''
+        self.color_input_image = cellprofiler.setting.ImageNameSubscriber(
+                "Select the color image", cellprofiler.setting.NONE, doc='''
             Select the color image to use.''')
 
         # Output settings
-        self.output_color_choice = cps.Choice(
+        self.output_color_choice = cellprofiler.setting.Choice(
                 "Output image type", CC_ALL, doc="""
             Specify whether you want to produce several grayscale images or one color image.""")
 
-        self.wants_red_output = cps.Binary(
+        self.wants_red_output = cellprofiler.setting.Binary(
                 "Select <i>%(YES)s</i> to produce a red image." % globals(), True)
 
-        self.red_output_image = cps.ImageNameProvider(
+        self.red_output_image = cellprofiler.setting.ImageNameProvider(
                 "Name the red image", "InvertedRed")
 
-        self.wants_green_output = cps.Binary(
+        self.wants_green_output = cellprofiler.setting.Binary(
                 "Select <i>%(YES)s</i> to produce a green image." % globals(), True)
 
-        self.green_output_image = cps.ImageNameProvider(
+        self.green_output_image = cellprofiler.setting.ImageNameProvider(
                 "Name the green image", "InvertedGreen")
 
-        self.wants_blue_output = cps.Binary(
+        self.wants_blue_output = cellprofiler.setting.Binary(
                 "Select <i>%(YES)s</i> to produce a blue image." % globals(), True)
 
-        self.blue_output_image = cps.ImageNameProvider(
+        self.blue_output_image = cellprofiler.setting.ImageNameProvider(
                 "Name the blue image", "InvertedBlue")
 
-        self.color_output_image = cps.ImageNameProvider(
+        self.color_output_image = cellprofiler.setting.ImageNameProvider(
                 "Name the inverted color image",
                 "InvertedColor", doc='''
             <i>(Used only when producing a color output image)</i><br>
             Enter a name for the inverted color image.''')
 
     def settings(self):
-        '''Return the settings as saved in the pipeline'''
+        """Return the settings as saved in the pipeline"""
         return [self.input_color_choice,
                 self.wants_red_input, self.red_input_image,
                 self.wants_green_input, self.green_input_image,
@@ -117,7 +116,7 @@ class InvertForPrinting(cpm.Module):
                 self.wants_blue_output, self.blue_output_image]
 
     def visible_settings(self):
-        '''Return the settings as displayed in the UI'''
+        """Return the settings as displayed in the UI"""
         result = [self.input_color_choice]
         if self.input_color_choice == CC_GRAYSCALE:
             for wants_input, input_image in \
@@ -143,13 +142,13 @@ class InvertForPrinting(cpm.Module):
         return result
 
     def validate_module(self, pipeline):
-        '''Make sure the user has at least one of the grayscale boxes checked'''
+        """Make sure the user has at least one of the grayscale boxes checked"""
         if (self.input_color_choice == CC_GRAYSCALE and
                 (not self.wants_red_input.value) and
                 (not self.wants_green_input.value) and
                 (not self.wants_blue_input.value)):
-            raise cps.ValidationError("You must supply at least one grayscale input",
-                                      self.wants_red_input)
+            raise cellprofiler.setting.ValidationError("You must supply at least one grayscale input",
+                                                       self.wants_red_input)
 
     def run(self, workspace):
         image_set = workspace.image_set
@@ -176,7 +175,7 @@ class InvertForPrinting(cpm.Module):
                 shape = blue_image.shape
             else:
                 blue_image = 0
-            color_image = np.zeros((shape[0], shape[1], 3))
+            color_image = numpy.zeros((shape[0], shape[1], 3))
             color_image[:, :, 0] = red_image
             color_image[:, :, 1] = green_image
             color_image[:, :, 2] = blue_image
@@ -196,17 +195,17 @@ class InvertForPrinting(cpm.Module):
         inverted_red = (1 - green_image) * (1 - blue_image)
         inverted_green = (1 - red_image) * (1 - blue_image)
         inverted_blue = (1 - red_image) * (1 - green_image)
-        inverted_color = np.dstack((inverted_red, inverted_green, inverted_blue))
+        inverted_color = numpy.dstack((inverted_red, inverted_green, inverted_blue))
         if self.output_color_choice == CC_GRAYSCALE:
             for wants_output, output_image_name, output_image in \
                     ((self.wants_red_output, self.red_output_image, inverted_red),
                      (self.wants_green_output, self.green_output_image, inverted_green),
                      (self.wants_blue_output, self.blue_output_image, inverted_blue)):
                 if wants_output.value:
-                    image = cpi.Image(output_image)
+                    image = cellprofiler.image.Image(output_image)
                     image_set.add(output_image_name.value, image)
         elif self.output_color_choice == CC_COLOR:
-            image = cpi.Image(inverted_color)
+            image = cellprofiler.image.Image(inverted_color)
             image_set.add(self.color_output_image.value, image)
         else:
             raise ValueError("Unimplemented color choice: %s" %
@@ -229,19 +228,19 @@ class InvertForPrinting(cpm.Module):
         if from_matlab and variable_revision_number == 1:
             setting_values = [
                 CC_GRAYSCALE,  # input_color_choice
-                setting_values[0] != cps.NONE,  # wants_red_input
+                setting_values[0] != cellprofiler.setting.NONE,  # wants_red_input
                 setting_values[0],  # red_input_image
-                setting_values[1] != cps.NONE,
+                setting_values[1] != cellprofiler.setting.NONE,
                 setting_values[1],
-                setting_values[2] != cps.NONE,
+                setting_values[2] != cellprofiler.setting.NONE,
                 setting_values[2],
-                cps.NONE,  # color
+                cellprofiler.setting.NONE,  # color
                 CC_GRAYSCALE,  # output_color_choice
-                setting_values[3] != cps.NONE,
+                setting_values[3] != cellprofiler.setting.NONE,
                 setting_values[3],
-                setting_values[4] != cps.NONE,
+                setting_values[4] != cellprofiler.setting.NONE,
                 setting_values[4],
-                setting_values[5] != cps.NONE,
+                setting_values[5] != cellprofiler.setting.NONE,
                 setting_values[5],
                 'InvertedColor']
             from_matlab = False

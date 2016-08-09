@@ -1,3 +1,15 @@
+import os
+
+import cellprofiler.gui.help
+import cellprofiler.measurement
+import cellprofiler.module
+import cellprofiler.preferences
+import cellprofiler.preferences
+import cellprofiler.setting
+import cellprofiler.setting
+import numpy
+import scipy.optimize
+
 """<b>Calculate Statistics</b> calculates measures of assay quality
 (V and Z' factors) and dose response data (EC50) for all measured features
 made from images.
@@ -110,19 +122,6 @@ Here is an example file:<br><br>
 
 See also the <b>Metadata</b> and legacy <b>LoadData</b> modules.
 """
-
-import os
-
-import numpy
-import scipy.optimize
-
-import cellprofiler.module
-import cellprofiler.measurement
-import cellprofiler.preferences
-import cellprofiler.setting
-from cellprofiler.gui.help import USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF
-from cellprofiler.preferences import IO_FOLDER_CHOICE_HELP_TEXT, IO_WITH_METADATA_HELP_TEXT
-from cellprofiler.setting import YES, NO
 
 '''# of settings aside from the dose measurements'''
 FIXED_SETTING_COUNT = 1

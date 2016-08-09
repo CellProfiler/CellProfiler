@@ -1,22 +1,17 @@
-import logging
-
-logger = logging.getLogger(__name__)
-
 import base64
 import csv
-import numpy as np
+import logging
 import os
 
-import cellprofiler.module
+import cellprofiler.gui.help
 import cellprofiler.measurement
+import cellprofiler.module
 import cellprofiler.pipeline
-import cellprofiler.setting
 import cellprofiler.preferences
-
-## FOR DOCUMENTATION
-from cellprofiler.gui.help import USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF, MEASUREMENT_NAMING_HELP
-from cellprofiler.preferences import IO_FOLDER_CHOICE_HELP_TEXT, IO_WITH_METADATA_HELP_TEXT
-from cellprofiler.setting import YES, NO
+import cellprofiler.preferences
+import cellprofiler.setting
+import cellprofiler.setting
+import numpy
 
 __doc__ = '''
 <b>Export To Spreadsheet</b> exports measurements into one or more files that can be
@@ -58,6 +53,8 @@ see <i>Help > General Help > How Measurements Are Named</i>.
 
 See also <b>ExportToDatabase</b>.
 ''' % globals()
+
+logger = logging.getLogger(__name__)
 
 MAX_EXCEL_COLUMNS = 256
 MAX_EXCEL_ROWS = 65536
@@ -415,7 +412,7 @@ class ExportToSpreadsheet(cellprofiler.module.Module):
         return result
 
     def validate_module(self, pipeline):
-        '''Test the module settings to make sure they are internally consistent'''
+        """Test the module settings to make sure they are internally consistent"""
         if (len(self.delimiter.value) != 1 and
                 not self.delimiter.value in (DELIMITER_TAB, DELIMITER_COMMA)):
             raise cellprofiler.setting.ValidationError("The CSV field delimiter must be a single character", self.delimiter)
@@ -432,7 +429,7 @@ class ExportToSpreadsheet(cellprofiler.module.Module):
                             group.file_name)
 
     def validate_module_warnings(self, pipeline):
-        '''Warn user re: Test mode '''
+        """Warn user re: Test mode """
         if pipeline.test_mode:
             raise cellprofiler.setting.ValidationError("ExportToSpreadsheet will not produce output in Test Mode",
                                                        self.directory)
@@ -459,12 +456,12 @@ class ExportToSpreadsheet(cellprofiler.module.Module):
             return self.delimiter.value.encode("ascii")
 
     def prepare_run(self, workspace):
-        '''Prepare an image set to be run
+        """Prepare an image set to be run
 
         workspace - workspace with image set populated (at this point)
 
         returns False if analysis can't be done
-        '''
+        """
         return self.check_overwrite(workspace)
 
     def run(self, workspace):
@@ -507,11 +504,11 @@ class ExportToSpreadsheet(cellprofiler.module.Module):
                                  col_labels=workspace.display_data.header)
 
     def run_as_data_tool(self, workspace):
-        '''Run the module as a data tool
+        """Run the module as a data tool
 
         For ExportToSpreadsheet, we do the "post_run" method in order to write
         out the .csv files as if the experiment had just finished.
-        '''
+        """
         #
         # Set the measurements to the end of the list to mimic the state
         # at the end of the run.
@@ -521,7 +518,7 @@ class ExportToSpreadsheet(cellprofiler.module.Module):
         self.post_run(workspace)
 
     def post_run(self, workspace):
-        '''Save measurements at end of run'''
+        """Save measurements at end of run"""
         #
         # Don't export in test mode
         #
@@ -555,13 +552,13 @@ class ExportToSpreadsheet(cellprofiler.module.Module):
                 object_names = []
 
     def last_in_file(self, i):
-        '''Return true if the group is the last to be included in a csv file
+        """Return true if the group is the last to be included in a csv file
 
         i - the index of the group being considered.
 
         Objects can be collected together in one file. Return true if
         this is the last object in a collection.
-        '''
+        """
 
         group = self.object_groups[i]
         return ((i == len(self.object_groups) - 1) or
@@ -570,17 +567,17 @@ class ExportToSpreadsheet(cellprofiler.module.Module):
                 (not self.object_groups[i + 1].previous_file.value))
 
     def should_stop_writing_measurements(self):
-        '''All subsequent modules should not write measurements'''
+        """All subsequent modules should not write measurements"""
         return True
 
     def get_metadata_groups(self, workspace, settings_group=None):
-        '''Find the metadata groups that are relevant for creating the file name
+        """Find the metadata groups that are relevant for creating the file name
 
         workspace - the workspace with the image set metadata elements and
                     grouping measurements populated.
         settings_group - if saving individual objects, this is the settings
                          group that controls naming the files.
-        '''
+        """
         if settings_group is None or settings_group.wants_automatic_file_name:
             tags = []
         else:
@@ -644,23 +641,23 @@ class ExportToSpreadsheet(cellprofiler.module.Module):
         return os.path.join(path, file)
 
     def extension(self):
-        '''Return the appropriate extension for the CSV file name
+        """Return the appropriate extension for the CSV file name
 
         The appropriate extension is "csv" if comma is used as the
         delimiter, otherwise "txt"
-        '''
+        """
         return "csv" if self.delimiter == DELIMITER_COMMA else "txt"
 
     def make_objects_file_name(
             self, object_name, workspace, image_set_number, settings_group=None):
-        '''Concoct the .CSV filename for some object category
+        """Concoct the .CSV filename for some object category
 
         :param object_name: name of the objects whose measurements are to be
                             saved (or IMAGES or EXPERIMENT)
         :param workspace: the current workspace
         :param image_set_number: the current image set number
         :param settings_group: the settings group used to name the file
-        '''
+        """
         if self.wants_everything:
             filename = "%s.%s" % (object_name, self.extension())
 
@@ -678,13 +675,13 @@ class ExportToSpreadsheet(cellprofiler.module.Module):
         return filename
 
     def make_gct_file_name(self, workspace, image_set_number, settings_group=None):
-        '''Concoct a name for the .gct file
+        """Concoct a name for the .gct file
 
         workspace - workspace containing metadata measurements
         image_number - the first image number in the group being written
         settings_group - the settings group asking for the file to be written
                         if not wants_everything
-        '''
+        """
         file_name = self.make_objects_file_name(
                 cellprofiler.measurement.IMAGE, workspace, image_set_number, settings_group)
         if any([file_name.lower().endswith(x) for x in ".csv", "txt"]):
@@ -772,8 +769,8 @@ class ExportToSpreadsheet(cellprofiler.module.Module):
             writer.writerow((EH_KEY, EH_VALUE))
             for feature_name in feature_names:
                 v = m.get_all_measurements(cellprofiler.measurement.EXPERIMENT, feature_name)
-                if isinstance(v, np.ndarray) and \
-                                v.dtype == np.uint8:
+                if isinstance(v, numpy.ndarray) and \
+                                v.dtype == numpy.uint8:
                     v = base64.b64encode(v.data)
                 else:
                     unicode(v).encode('utf8')
@@ -838,14 +835,14 @@ class ExportToSpreadsheet(cellprofiler.module.Module):
                             row.append(value.encode('utf8'))
                         elif isinstance(value, basestring):
                             row.append(value)
-                        elif isinstance(value, np.ndarray) and \
-                                        value.dtype == np.uint8:
+                        elif isinstance(value, numpy.ndarray) and \
+                                        value.dtype == numpy.uint8:
                             row.append(base64.b64encode(value.data))
-                        elif np.isnan(value):
+                        elif numpy.isnan(value):
                             if self.nan_representation == NANS_AS_NULLS:
                                 row.append('')
                             else:
-                                row.append(str(np.NaN))
+                                row.append(str(numpy.NaN))
                         else:
                             row.append(str(value))
                 writer.writerow(row)
@@ -949,14 +946,14 @@ class ExportToSpreadsheet(cellprofiler.module.Module):
                        else m.get_measurement(cellprofiler.measurement.IMAGE, feature_name, img_number)
                        for feature_name in image_features]
                 row = ['' if x is None
-                       else x if np.isscalar(x)
+                       else x if numpy.isscalar(x)
                 else x[0] for x in row]
                 writer.writerow(row)
         finally:
             fd.close()
 
     def check_excel_limits(self, workspace, file_name, row_count, col_count):
-        '''Return False if we shouldn't write because of Excel'''
+        """Return False if we shouldn't write because of Excel"""
         if self.excel_limits and self.show_window:
             message = None
             if col_count > MAX_EXCEL_COLUMNS:
@@ -1039,8 +1036,8 @@ Do you want to save it anyway?""" %
             row_count = 1
             for img_number in image_set_numbers:
                 object_count = \
-                    np.max([m.get_measurement(cellprofiler.measurement.IMAGE, "Count_%s" % name, img_number)
-                            for name in object_names])
+                    numpy.max([m.get_measurement(cellprofiler.measurement.IMAGE, "Count_%s" % name, img_number)
+                               for name in object_names])
                 row_count += int(object_count)
             if not self.check_excel_limits(workspace, file_name,
                                            row_count, len(features)):
@@ -1056,18 +1053,18 @@ Do you want to save it anyway?""" %
                 writer.writerow([x[i] for x in features])
             for img_number in image_set_numbers:
                 object_count = \
-                    np.max([m.get_measurement(cellprofiler.measurement.IMAGE, "Count_%s" % name, img_number)
-                            for name in object_names])
+                    numpy.max([m.get_measurement(cellprofiler.measurement.IMAGE, "Count_%s" % name, img_number)
+                               for name in object_names])
                 object_count = int(object_count) if object_count else 0
-                columns = [np.repeat(img_number, object_count)
+                columns = [numpy.repeat(img_number, object_count)
                            if feature_name == IMAGE_NUMBER
-                           else np.arange(1, object_count + 1)
+                           else numpy.arange(1, object_count + 1)
                 if feature_name == OBJECT_NUMBER
-                else np.repeat(np.NAN, object_count)
+                else numpy.repeat(numpy.NAN, object_count)
                 if not m.has_feature(object_name, feature_name)
-                else np.repeat(m.get_measurement(cellprofiler.measurement.IMAGE, feature_name,
-                                                 img_number),
-                               object_count)
+                else numpy.repeat(m.get_measurement(cellprofiler.measurement.IMAGE, feature_name,
+                                                    img_number),
+                                  object_count)
                 if object_name == cellprofiler.measurement.IMAGE
                 else m.get_measurement(object_name, feature_name,
                                        img_number)
@@ -1076,12 +1073,12 @@ Do you want to save it anyway?""" %
                     row = [column[obj_index]
                            if (column is not None and
                                obj_index < column.shape[0])
-                           else np.NAN
+                           else numpy.NAN
                            for column in columns]
                     if self.nan_representation == NANS_AS_NULLS:
                         row = [
                             "" if (field is None) or
-                                  (np.isreal(field) and not np.isfinite(field))
+                                  (numpy.isreal(field) and not numpy.isfinite(field))
                             else field for field in row]
                     writer.writerow(row)
         finally:
@@ -1089,7 +1086,7 @@ Do you want to save it anyway?""" %
 
     def make_relationships_file(self, image_set_numbers, workspace,
                                 settings_group=None):
-        '''Create a CSV file documenting the relationships between objects'''
+        """Create a CSV file documenting the relationships between objects"""
 
         file_name = self.make_objects_file_name(
                 OBJECT_RELATIONSHIPS, workspace, image_set_numbers[0],
@@ -1127,7 +1124,7 @@ Do you want to save it anyway?""" %
             fd.close()
 
     def prepare_to_create_batch(self, workspace, fn_alter_path):
-        '''Prepare to create a batch file
+        """Prepare to create a batch file
 
         This function is called when CellProfiler is about to create a
         file for batch processing. It will pickle the image set list's
@@ -1144,7 +1141,7 @@ Do you want to save it anyway?""" %
 
         ExportToSpreadsheet has to convert the path to file names to
         something that can be used on the cluster.
-        '''
+        """
         self.directory.alter_for_create_batch_files(fn_alter_path)
         return True
 

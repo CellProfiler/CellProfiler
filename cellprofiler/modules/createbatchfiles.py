@@ -1,4 +1,22 @@
-from cellprofiler.gui.help import BATCH_PROCESSING_HELP_REF
+import httplib
+import logging
+import os
+import re
+import sys
+import urllib
+import zlib
+
+import cellprofiler.gui.help
+import cellprofiler.image
+import cellprofiler.measurement
+import cellprofiler.measurement
+import cellprofiler.module
+import cellprofiler.pipeline
+import cellprofiler.preferences
+import cellprofiler.setting
+import cellprofiler.setting
+import cellprofiler.workspace
+import numpy
 
 __doc__ = '''
 <b>Create Batch Files</b> produces files that allow individual batches of images to be processed
@@ -23,27 +41,7 @@ the cluster root path, i.e., <tt>/server_name/your_name/</tt>.
 For more details on batch processing, please see <i>%(BATCH_PROCESSING_HELP_REF)s</i>.
 ''' % globals()
 
-import logging
-
 logger = logging.getLogger(__name__)
-import httplib
-import numpy as np
-import os
-import re
-import sys
-import urllib
-import zlib
-
-import cellprofiler.image as cpi
-import cellprofiler.module as cpm
-import cellprofiler.measurement as cpmeas
-import cellprofiler.pipeline as cpp
-import cellprofiler.setting as cps
-from cellprofiler.setting import YES, NO
-import cellprofiler.preferences as cpprefs
-import cellprofiler.workspace as cpw
-
-from cellprofiler.measurement import F_BATCH_DATA, F_BATCH_DATA_H5
 
 '''# of settings aside from the mappings'''
 S_FIXED_COUNT = 9
@@ -51,7 +49,7 @@ S_FIXED_COUNT = 9
 S_PER_MAPPING = 2
 
 
-class CreateBatchFiles(cpm.Module):
+class CreateBatchFiles(cellprofiler.module.Module):
     #
     # How it works:
     #
@@ -73,21 +71,21 @@ class CreateBatchFiles(cpm.Module):
 
     #
     def create_settings(self):
-        '''Create the module settings and name the module'''
-        self.wants_default_output_directory = cps.Binary(
+        """Create the module settings and name the module"""
+        self.wants_default_output_directory = cellprofiler.setting.Binary(
                 "Store batch files in default output folder?", True, doc="""
             Select <i>%(YES)s</i> to store batch files in the Default Output folder. <br>
             Select <i>%(NO)s</i> to enter the path to the folder that will be used to store
             these files.""" % globals())
 
-        self.custom_output_directory = cps.Text(
+        self.custom_output_directory = cellprofiler.setting.Text(
                 "Output folder path",
-                cpprefs.get_default_output_directory(), doc="""
+                cellprofiler.preferences.get_default_output_directory(), doc="""
             Enter the path to the output folder.""")
 
         # Worded this way not because I am windows-centric but because it's
         # easier than listing every other OS in the universe except for VMS
-        self.remote_host_is_windows = cps.Binary(
+        self.remote_host_is_windows = cellprofiler.setting.Binary(
                 "Are the cluster computers running Windows?",
                 False, doc="""
             Select <i>%(YES)s</i> if the cluster computers are running one of the Microsoft
@@ -96,31 +94,31 @@ class CreateBatchFiles(cpm.Module):
             Select <i>%(NO)s</i> for <b>CreateBatchFiles</b> to modify all paths to use
             the Unix or Macintosh file separator (slash &#47;).""" % globals())
 
-        self.batch_mode = cps.Binary("Hidden: in batch mode", False)
-        self.distributed_mode = cps.Binary("Hidden: in distributed mode", False)
-        self.default_image_directory = cps.Setting("Hidden: default input folder at time of save",
-                                                   cpprefs.get_default_image_directory())
-        self.revision = cps.Integer("Hidden: revision number", 0)
-        self.from_old_matlab = cps.Binary("Hidden: from old matlab", False)
-        self.acknowledge_old_matlab = cps.DoSomething(
+        self.batch_mode = cellprofiler.setting.Binary("Hidden: in batch mode", False)
+        self.distributed_mode = cellprofiler.setting.Binary("Hidden: in distributed mode", False)
+        self.default_image_directory = cellprofiler.setting.Setting("Hidden: default input folder at time of save",
+                                                                    cellprofiler.preferences.get_default_image_directory())
+        self.revision = cellprofiler.setting.Integer("Hidden: revision number", 0)
+        self.from_old_matlab = cellprofiler.setting.Binary("Hidden: from old matlab", False)
+        self.acknowledge_old_matlab = cellprofiler.setting.DoSomething(
                 "Could not update CP1.0 pipeline to be compatible with CP2.0.  See module notes.", "OK",
                 self.clear_old_matlab)
         self.mappings = []
         self.add_mapping()
-        self.add_mapping_button = cps.DoSomething("",
+        self.add_mapping_button = cellprofiler.setting.DoSomething("",
                                                   "Add another path mapping", self.add_mapping, doc="""
             Use this option if another path must be mapped because there is a difference
             between how the local computer sees a folder location vs. how the cluster
             computer sees the folder location.""")
 
-        self.go_to_website = cps.Binary(
+        self.go_to_website = cellprofiler.setting.Binary(
                 "Launch BatchProfiler", True,
                 doc="""Launch BatchProfiler after creating the batch file. This
             setting will launch a web browser to the BatchProfiler URL to
             allow you to create batch jobs to run the analysis on a cluster.
             """)
 
-        self.check_path_button = cps.DoSomething(
+        self.check_path_button = cellprofiler.setting.DoSomething(
                 "Press this button to check pathnames on the remote server",
                 "Check paths", self.check_paths, doc="""
             This button will start a routine that will ask the
@@ -129,11 +127,11 @@ class CreateBatchFiles(cpm.Module):
             path mappings exist.""")
 
     def add_mapping(self):
-        group = cps.SettingsGroup()
+        group = cellprofiler.setting.SettingsGroup()
         group.append("local_directory",
-                     cps.Text(
+                     cellprofiler.setting.Text(
                              "Local root path",
-                             cpprefs.get_default_image_directory(), doc="""
+                             cellprofiler.preferences.get_default_image_directory(), doc="""
                         Enter the path to files on this computer.
                         This is the root path on the local machine (i.e., the computer setting up
                         the batch files). If <b>CreateBatchFiles</b> finds
@@ -147,9 +145,9 @@ class CreateBatchFiles(cpm.Module):
                         for the cluster path in the next setting."""))
 
         group.append("remote_directory",
-                     cps.Text(
+                     cellprofiler.setting.Text(
                              "Cluster root path",
-                             cpprefs.get_default_image_directory(), doc="""
+                             cellprofiler.preferences.get_default_image_directory(), doc="""
                         Enter the path to files on the cluster. This is the cluster
                         root path, i.e., how the cluster machine sees the
                         top-most folder where your input/output files are stored.
@@ -160,8 +158,8 @@ class CreateBatchFiles(cpm.Module):
                         you would enter <tt>Z:\</tt> in the previous setting for the
                         local machine path and <t>/server_name/your_name/</tt> here. """))
         group.append("remover",
-                     cps.RemoveSettingButton("", "Remove this path mapping", self.mappings, group))
-        group.append("divider", cps.Divider(line=False))
+                     cellprofiler.setting.RemoveSettingButton("", "Remove this path mapping", self.mappings, group))
+        group.append("divider", cellprofiler.setting.Divider(line=False))
         self.mappings.append(group)
 
     def settings(self):
@@ -200,7 +198,7 @@ class CreateBatchFiles(cpm.Module):
         return result
 
     def prepare_run(self, workspace):
-        '''Invoke the image_set_list pickling mechanism and save the pipeline'''
+        """Invoke the image_set_list pickling mechanism and save the pipeline"""
 
         pipeline = workspace.pipeline
         image_set_list = workspace.image_set_list
@@ -212,7 +210,7 @@ class CreateBatchFiles(cpm.Module):
             return True
         else:
             path = self.save_pipeline(workspace)
-            if not cpprefs.get_headless():
+            if not cellprofiler.preferences.get_headless():
                 import wx
                 wx.MessageBox(
                         "CreateBatchFiles saved pipeline to %s" % path,
@@ -224,7 +222,7 @@ class CreateBatchFiles(cpm.Module):
                     import urllib
                     server_path = self.alter_path(os.path.dirname(path))
                     query = urllib.urlencode(dict(data_dir=server_path))
-                    url = cpprefs.get_batchprofiler_url() + \
+                    url = cellprofiler.preferences.get_batchprofiler_url() + \
                           "/NewBatch.py?" + query
                     webbrowser.open_new(url)
                 except:
@@ -237,69 +235,69 @@ class CreateBatchFiles(cpm.Module):
         pass
 
     def clear_old_matlab(self):
-        self.from_old_matlab.value = cps.NO
+        self.from_old_matlab.value = cellprofiler.setting.NO
 
     def validate_module(self, pipeline):
-        '''Make sure the module settings are valid'''
+        """Make sure the module settings are valid"""
         # Ensure we're not an un-updatable version of the module from way back.
         if self.from_old_matlab.value:
-            raise cps.ValidationError("The pipeline you loaded was from an old version of CellProfiler 1.0, "
+            raise cellprofiler.setting.ValidationError("The pipeline you loaded was from an old version of CellProfiler 1.0, "
                                       "which could not be made compatible with this version of CellProfiler.",
-                                      self.acknowledge_old_matlab)
+                                                       self.acknowledge_old_matlab)
         # This must be the last module in the pipeline
         if id(self) != id(pipeline.modules()[-1]):
-            raise cps.ValidationError("The CreateBatchFiles module must be "
+            raise cellprofiler.setting.ValidationError("The CreateBatchFiles module must be "
                                       "the last in the pipeline.",
-                                      self.wants_default_output_directory)
+                                                       self.wants_default_output_directory)
 
     def validate_module_warnings(self, pipeline):
-        '''Warn user re: Test mode '''
+        """Warn user re: Test mode """
         if pipeline.test_mode:
-            raise cps.ValidationError("CreateBatchFiles will not produce output in Test Mode",
-                                      self.wants_default_output_directory)
+            raise cellprofiler.setting.ValidationError("CreateBatchFiles will not produce output in Test Mode",
+                                                       self.wants_default_output_directory)
 
     def save_pipeline(self, workspace, outf=None):
-        '''Save the pipeline in Batch_data.mat
+        """Save the pipeline in Batch_data.mat
 
         Save the pickled image_set_list state in a setting and put this
         module in batch mode.
 
         if outf is not None, it is used as a file object destination.
-        '''
+        """
         from cellprofiler.utilities.version import version_number
 
         if outf is None:
             if self.wants_default_output_directory.value:
-                path = cpprefs.get_default_output_directory()
+                path = cellprofiler.preferences.get_default_output_directory()
             else:
-                path = cpprefs.get_absolute_path(self.custom_output_directory.value)
-            h5_path = os.path.join(path, F_BATCH_DATA_H5)
+                path = cellprofiler.preferences.get_absolute_path(self.custom_output_directory.value)
+            h5_path = os.path.join(path, cellprofiler.measurement.F_BATCH_DATA_H5)
         else:
             h5_path = outf
 
         image_set_list = workspace.image_set_list
         pipeline = workspace.pipeline
-        m = cpmeas.Measurements(copy=workspace.measurements,
-                                filename=h5_path)
+        m = cellprofiler.measurement.Measurements(copy=workspace.measurements,
+                                                  filename=h5_path)
         try:
-            assert isinstance(pipeline, cpp.Pipeline)
-            assert isinstance(m, cpmeas.Measurements)
+            assert isinstance(pipeline, cellprofiler.pipeline.Pipeline)
+            assert isinstance(m, cellprofiler.measurement.Measurements)
 
             orig_pipeline = pipeline
             pipeline = pipeline.copy()
             # this use of workspace.frame is okay, since we're called from
             # prepare_run which happens in the main wx thread.
-            target_workspace = cpw.Workspace(pipeline, None, None, None,
-                                             m, image_set_list,
-                                             workspace.frame)
+            target_workspace = cellprofiler.workspace.Workspace(pipeline, None, None, None,
+                                                                m, image_set_list,
+                                                                workspace.frame)
             pipeline.prepare_to_create_batch(target_workspace, self.alter_path)
             bizarro_self = pipeline.module(self.module_num)
             bizarro_self.revision.value = version_number
             if self.wants_default_output_directory:
                 bizarro_self.custom_output_directory.value = \
-                    self.alter_path(cpprefs.get_default_output_directory())
+                    self.alter_path(cellprofiler.preferences.get_default_output_directory())
             bizarro_self.default_image_directory.value = \
-                self.alter_path(cpprefs.get_default_image_directory())
+                self.alter_path(cellprofiler.preferences.get_default_image_directory())
             bizarro_self.batch_mode.value = True
             pipeline.write_pipeline_measurement(m)
             orig_pipeline.write_pipeline_measurement(m, user_pipeline=True)
@@ -317,39 +315,39 @@ class CreateBatchFiles(cpm.Module):
         return True
 
     def in_batch_mode(self):
-        '''Tell the system whether we are in batch mode on the cluster'''
+        """Tell the system whether we are in batch mode on the cluster"""
         return self.batch_mode.value
 
     def enter_batch_mode(self, workspace):
-        '''Restore the image set list from its setting as we go into batch mode'''
+        """Restore the image set list from its setting as we go into batch mode"""
         pipeline = workspace.pipeline
-        assert isinstance(pipeline, cpp.Pipeline)
+        assert isinstance(pipeline, cellprofiler.pipeline.Pipeline)
         assert not self.distributed_mode, "Distributed mode no longer supported"
         default_output_directory = self.custom_output_directory.value
         default_image_directory = self.default_image_directory.value
         if os.path.isdir(default_output_directory):
-            cpprefs.set_default_output_directory(default_output_directory)
+            cellprofiler.preferences.set_default_output_directory(default_output_directory)
         else:
             logger.info(
                     "Batch file default output directory, \"%s\", does not exist" %
                     default_output_directory)
         if os.path.isdir(default_image_directory):
-            cpprefs.set_default_image_directory(default_image_directory)
+            cellprofiler.preferences.set_default_image_directory(default_image_directory)
         else:
             logger.info(
                     "Batch file default input directory \"%s\", does not exist" %
                     default_image_directory)
 
     def turn_off_batch_mode(self):
-        '''Remove any indications that we are in batch mode
+        """Remove any indications that we are in batch mode
 
         This call restores the module to an editable state.
-        '''
+        """
         self.batch_mode.value = False
-        self.batch_state = np.zeros((0,), np.uint8)
+        self.batch_state = numpy.zeros((0,), numpy.uint8)
 
     def check_paths(self):
-        '''Check to make sure the default directories are remotely accessible'''
+        """Check to make sure the default directories are remotely accessible"""
         import wx
 
         def check(path):
@@ -371,8 +369,8 @@ class CreateBatchFiles(cpm.Module):
                 wx.MessageBox("Cannot find %s on the server." % path)
                 all_ok = False
         for path, name in (
-                (cpprefs.get_default_image_directory(), "default image folder"),
-                (cpprefs.get_default_output_directory(), "default output folder")):
+                (cellprofiler.preferences.get_default_image_directory(), "default image folder"),
+                (cellprofiler.preferences.get_default_output_directory(), "default output folder")):
             if not check(self.alter_path(path)):
                 wx.MessageBox("Cannot find the %s, \"%s\", on the server." %
                               (name, path))
@@ -382,11 +380,11 @@ class CreateBatchFiles(cpm.Module):
             wx.MessageBox("All paths are accessible")
 
     def alter_path(self, path, **varargs):
-        '''Modify the path passed so that it can be executed on the remote host
+        """Modify the path passed so that it can be executed on the remote host
 
         path = path to modify
         regexp_substitution - if true, exclude \g<...> from substitution
-        '''
+        """
         regexp_substitution = varargs.get("regexp_substitution", False)
         for mapping in self.mappings:
             local_directory = mapping.local_directory.value
@@ -423,20 +421,20 @@ class CreateBatchFiles(cpm.Module):
             self.notes = ["The pipeline you loaded was from an old version of CellProfiler 1.0, "
                           "which could not be made compatible with this version of CellProfiler.",
                           "For reference, previous values were:"] + [str(x) for x in setting_values]
-            setting_values = [cps.NO,
-                              "", cps.NO,
-                              cps.NO, cps.NO,
-                              "", 0, cps.YES]
+            setting_values = [cellprofiler.setting.NO,
+                              "", cellprofiler.setting.NO,
+                              cellprofiler.setting.NO, cellprofiler.setting.NO,
+                              "", 0, cellprofiler.setting.YES]
             variable_revision_number = 6
             from_matlab = False
 
         if from_matlab and variable_revision_number == 8:
             batch_save_path, old_pathname, new_pathname = setting_values[:3]
             if batch_save_path == '.':
-                wants_default_output_directory = cps.YES
-                batch_save_path = cpprefs.get_default_output_directory()
+                wants_default_output_directory = cellprofiler.setting.YES
+                batch_save_path = cellprofiler.preferences.get_default_output_directory()
             else:
-                wants_default_output_directory = cps.NO
+                wants_default_output_directory = cellprofiler.setting.NO
             old_pathnames = old_pathname.split(',')
             new_pathnames = new_pathname.split(',')
             if len(old_pathnames) != len(new_pathnames):
@@ -444,14 +442,14 @@ class CreateBatchFiles(cpm.Module):
                                  "%d local pathnames, but %d remote pathnames" %
                                  (len(old_pathnames), len(new_pathnames)))
             setting_values = [wants_default_output_directory, batch_save_path,
-                              cps.NO, cps.NO, ""]
+                              cellprofiler.setting.NO, cellprofiler.setting.NO, ""]
             for old_pathname, new_pathname in zip(old_pathnames, new_pathnames):
                 setting_values += [old_pathname, new_pathname]
             from_matlab = False
             variable_revision_number = 1
         if (not from_matlab) and variable_revision_number == 1:
             setting_values = (setting_values[:5] +
-                              [cpprefs.get_default_image_directory()] +
+                              [cellprofiler.preferences.get_default_image_directory()] +
                               setting_values[5:])
             variable_revision_number = 2
         if (not from_matlab) and variable_revision_number == 2:
@@ -463,7 +461,7 @@ class CreateBatchFiles(cpm.Module):
             variable_revision_number = 3
         if (not from_matlab) and variable_revision_number == 3:
             # Pickled image list is now the batch state
-            self.batch_state = np.array(zlib.compress(setting_values[4]))
+            self.batch_state = numpy.array(zlib.compress(setting_values[4]))
             setting_values = setting_values[:4] + setting_values[5:]
             variable_revision_number = 4
         if (not from_matlab) and variable_revision_number == 4:

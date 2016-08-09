@@ -1,29 +1,25 @@
-'''<b>Create Web Page</b> creates the html file for a webpage to display images 
+import cStringIO
+import os
+import shutil
+import urllib2
+import zipfile
+
+import cellprofiler.gui.help
+import cellprofiler.measurement
+import cellprofiler.module
+import cellprofiler.modules.loadimages
+import cellprofiler.modules.loadimages
+import cellprofiler.preferences
+import cellprofiler.setting
+import cellprofiler.setting
+import cellprofiler.setting
+
+'''<b>Create Web Page</b> creates the html file for a webpage to display images
 (or their thumbnails, if desired).
 <hr>
 This module creates an html file that displays the specified
 images, and optionally a link to a compressed ZIP file of all of the images shown.
 '''
-
-import os
-import shutil
-import sys
-import uuid
-import zipfile
-from cStringIO import StringIO
-from urllib2 import urlopen
-
-import cellprofiler.module as cpm
-import cellprofiler.measurement as cpmeas
-import cellprofiler.preferences as cpprefs
-import cellprofiler.setting as cps
-from cellprofiler.gui.help import USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF
-from cellprofiler.modules.loadimages import C_FILE_NAME, C_PATH_NAME, C_URL
-from cellprofiler.modules.loadimages import pathname2url
-from cellprofiler.setting import \
-    DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME, \
-    DEFAULT_INPUT_SUBFOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME
-from cellprofiler.setting import YES, NO, ABSOLUTE_FOLDER_NAME
 
 IDX_DIRECTORY_CHOICE_V1 = 4
 
@@ -46,17 +42,17 @@ TRANSLATION_DICTIONARY = {
     "No": OPEN_NO
 }
 
-class CreateWebPage(cpm.Module):
+class CreateWebPage(cellprofiler.module.Module):
     module_name = "CreateWebPage"
     category = "Other"
     variable_revision_number = 2
 
     def create_settings(self):
-        self.orig_image_name = cps.ImageNameSubscriber(
-                "Select the input images", cps.NONE, doc="""
+        self.orig_image_name = cellprofiler.setting.ImageNameSubscriber(
+                "Select the input images", cellprofiler.setting.NONE, doc="""
             Select the images to display on the web page.""")
 
-        self.wants_thumbnails = cps.Binary(
+        self.wants_thumbnails = cellprofiler.setting.Binary(
                 "Use thumbnail images?", False, doc="""
             Select <i>%(YES)s</i> to display thumbnail images (small versions of the
             images) on the web page that link to the full images. <br>
@@ -68,12 +64,12 @@ class CreateWebPage(cpm.Module):
             screening systems, thumbnail files are automatically created and have
             the text "thumb" in the name.</p>""" % globals())
 
-        self.thumbnail_image_name = cps.ImageNameSubscriber(
-                "Select the thumbnail images", cps.NONE, doc="""
+        self.thumbnail_image_name = cellprofiler.setting.ImageNameSubscriber(
+                "Select the thumbnail images", cellprofiler.setting.NONE, doc="""
             <i>(Used only if using thumbnails)</i><br>
             Select the name of the images to use for thumbnails.""")
 
-        self.web_page_file_name = cps.Text(
+        self.web_page_file_name = cellprofiler.setting.Text(
                 "Webpage file name", "images1",
                 metadata=True, doc="""
             Enter the desired file name for the web page. <b>CreateWebPage</b>
@@ -114,7 +110,7 @@ class CreateWebPage(cpm.Module):
             for the subfolder name after making this choice</li>
             </ul>""" % globals())
 
-        self.title = cps.Text(
+        self.title = cellprofiler.setting.Text(
                 "Webpage title", "Image", metadata=True, doc="""
             This is the title that appears at the top of the browser
             window. If you have metadata associated with your images, you can name the
@@ -123,37 +119,37 @@ class CreateWebPage(cpm.Module):
             the metadata tag "Plate" to display the plate metadata item. %(USING_METADATA_HELP_REF)s."""
                                                              % globals())
 
-        self.background_color = cps.Color(
+        self.background_color = cellprofiler.setting.Color(
                 "Webpage background color", "White", doc="""
             This setting controls the background color for the web page.""")
 
-        self.columns = cps.Integer(
+        self.columns = cellprofiler.setting.Integer(
                 "Number of columns", 1, minval=1, doc="""
             This setting determines how many images are displayed
             in each row.""")
 
-        self.table_border_width = cps.Integer(
+        self.table_border_width = cellprofiler.setting.Integer(
                 "Table border width", 1, minval=0, doc="""
             The table border width determines the width of the border
             around the entire grid of displayed images (i.e., the "table" of images)
             and is measured in pixels. This value can be
             set to zero, in which case you will not see the table border.""")
 
-        self.table_border_color = cps.Color(
+        self.table_border_color = cellprofiler.setting.Color(
                 "Table border color", "White")
 
-        self.image_spacing = cps.Integer(
+        self.image_spacing = cellprofiler.setting.Integer(
                 "Image spacing", 1, minval=0, doc="""
             The spacing between images ("table cells"), in pixels.""")
 
-        self.image_border_width = cps.Integer(
+        self.image_border_width = cellprofiler.setting.Integer(
                 "Image border width", 1, minval=0, doc="""
             The image border width determines the width of
             the border around each image and is measured in pixels.
             This value can be set to zero, in which case you will not see the
             image border.""")
 
-        self.create_new_window = cps.Choice(
+        self.create_new_window = cellprofiler.setting.Choice(
                 "Open new window when viewing full image?",
                 [OPEN_ONCE, OPEN_EACH, OPEN_NO], doc="""
             This controls the behavior of the thumbnail links.
@@ -167,21 +163,21 @@ class CreateWebPage(cpm.Module):
             to display the image</li>
             </ul>""" % globals())
 
-        self.wants_zip_file = cps.Binary(
+        self.wants_zip_file = cellprofiler.setting.Binary(
                 "Make a ZIP file containing the full-size images?", False, doc="""
             ZIP files are a common archive and data compression file format, making
             it convenient to download all of the images represented on the web page with a single click.
             Select <i>%(YES)s</i> to create a ZIP file that contains all your images,
             compressed to reduce file size.""" % globals())
 
-        self.zipfile_name = cps.Text(
+        self.zipfile_name = cellprofiler.setting.Text(
                 "Enter the ZIP file name", "Images.zip",
                 metadata=True, doc="""
             <i>(Used only if creating a ZIP file)</i><br>
             Specify the name for the ZIP file.""")
 
     def settings(self):
-        '''The settings as saved in the pipeline'''
+        """The settings as saved in the pipeline"""
         return [self.orig_image_name, self.wants_thumbnails,
                 self.thumbnail_image_name, self.web_page_file_name,
                 self.directory_choice, self.title, self.background_color,
@@ -191,7 +187,7 @@ class CreateWebPage(cpm.Module):
                 self.wants_zip_file, self.zipfile_name]
 
     def visible_settings(self):
-        '''the settings as displayed in the gui'''
+        """the settings as displayed in the gui"""
         result = [self.orig_image_name, self.wants_thumbnails]
         if self.wants_thumbnails:
             result += [self.thumbnail_image_name]
@@ -207,11 +203,11 @@ class CreateWebPage(cpm.Module):
         return result
 
     def validate_module(self, pipeline):
-        '''Make sure metadata tags exist'''
+        """Make sure metadata tags exist"""
         for cntrl in (self.web_page_file_name, self.title):
             undefined_tags = pipeline.get_undefined_metadata_tags(cntrl.value)
             if len(undefined_tags) > 0:
-                raise cps.ValidationError(
+                raise cellprofiler.setting.ValidationError(
                         "%s is not a defined metadata tag. Check the metadata specifications in your load modules" %
                         undefined_tags[0],
                         cntrl)
@@ -233,7 +229,7 @@ class CreateWebPage(cpm.Module):
             figure.subplot_table(0, 0, outcomes)
 
     def post_run(self, workspace):
-        '''Make all the webpages after the run'''
+        """Make all the webpages after the run"""
         d = {}
         zipfiles = {}
         m = workspace.measurements
@@ -301,7 +297,7 @@ class CreateWebPage(cpm.Module):
                 #
                 # Here, we make a new file, including HTML header
                 #
-                d[file_path] = dict(column=0, fd=StringIO())
+                d[file_path] = dict(column=0, fd=cStringIO.StringIO())
                 fd = d[file_path]["fd"]
                 title = m.apply_metadata(self.title.value)
                 bgcolor = self.background_color.value.replace(' ', '')
@@ -373,8 +369,8 @@ class CreateWebPage(cpm.Module):
             with zipfile.ZipFile(zip_file_path, "w") as z:
                 for abs_path_name, url, filename in filenames:
                     if url is not None and not url.lower().startswith("file"):
-                        fd_src = urlopen(url)
-                        fd_dest = StringIO()
+                        fd_src = urllib2.urlopen(url)
+                        fd_dest = cStringIO.StringIO()
                         shutil.copyfileobj(fd_src, fd_dest)
                         fd_src.close()
                         z.writestr(filename, fd_dest.getvalue())
@@ -383,32 +379,32 @@ class CreateWebPage(cpm.Module):
         workspace.display_data.wrote_zip = True
 
     def use_relative_image_urls(self):
-        '''Return True if using relative URL paths for images'''
+        """Return True if using relative URL paths for images"""
         return self.directory_choice.dir_choice in (DIR_ABOVE, DIR_SAME)
 
     def get_image_location(self, workspace, image_name, image_number):
-        '''Get the path and file name for an image
+        """Get the path and file name for an image
 
         workspace - workspace for current image set
         image_name - image whose path should be fetched
-        '''
-        file_name_feature = '_'.join((C_FILE_NAME, image_name))
-        path_name_feature = '_'.join((C_PATH_NAME, image_name))
-        url_feature = '_'.join((C_URL, image_name))
+        """
+        file_name_feature = '_'.join((cellprofiler.modules.loadimages.C_FILE_NAME, image_name))
+        path_name_feature = '_'.join((cellprofiler.modules.loadimages.C_PATH_NAME, image_name))
+        url_feature = '_'.join((cellprofiler.modules.loadimages.C_URL, image_name))
         m = workspace.measurements
-        image_file_name = m[cpmeas.IMAGE, file_name_feature, image_number]
-        image_path_name = m[cpmeas.IMAGE, path_name_feature, image_number]
+        image_file_name = m[cellprofiler.measurement.IMAGE, file_name_feature, image_number]
+        image_path_name = m[cellprofiler.measurement.IMAGE, path_name_feature, image_number]
         if (not self.use_relative_image_urls()) and \
-                m.has_feature(cpmeas.IMAGE, url_feature):
-            image_url = m[cpmeas.IMAGE, url_feature, image_number]
+                m.has_feature(cellprofiler.measurement.IMAGE, url_feature):
+            image_url = m[cellprofiler.measurement.IMAGE, url_feature, image_number]
         else:
             image_url = None
         return image_path_name, image_file_name, image_url
 
     def validate_module_warnings(self, pipeline):
-        '''Warn user re: Test mode '''
+        """Warn user re: Test mode """
         if pipeline.test_mode:
-            raise cps.ValidationError(
+            raise cellprofiler.setting.ValidationError(
                     "CreateWebPage will not produce output in Test Mode",
                     self.orig_image_name)
 
@@ -422,8 +418,8 @@ class CreateWebPage(cpm.Module):
             page_title, bg_color, thumb_cols, table_border_width, \
             table_border_color, thumb_spacing, thumb_border_width, \
             create_new_window, zip_file_name = setting_values
-            wants_thumbnails = thumb_image != cps.DO_NOT_USE
-            wants_zip_file = zip_file_name != cps.DO_NOT_USE
+            wants_thumbnails = thumb_image != cellprofiler.setting.DO_NOT_USE
+            wants_zip_file = zip_file_name != cellprofiler.setting.DO_NOT_USE
 
             setting_values = [
                 orig_image, wants_thumbnails, thumb_image, file_name,
@@ -450,18 +446,18 @@ class CreateWebPage(cpm.Module):
         return setting_values, variable_revision_number, from_matlab
 
 
-class CWPDirectoryPath(cps.DirectoryPath):
-    '''The CreateWebPage DirectoryPath setting
+class CWPDirectoryPath(cellprofiler.setting.DirectoryPath):
+    """The CreateWebPage DirectoryPath setting
 
     This setting has the additional options of DIR_SAME to place the HTML
     file in the same directory as the images or DIR_ABOVE to place the HTML
     one level above the images.
-    '''
+    """
     USE_DIR_SAME = object()
     USE_DIR_ABOVE = object()
 
     def get_absolute_path(self, measurements, image_set_number=None):
-        '''Get the absolute directory path... with some exceptions
+        """Get the absolute directory path... with some exceptions
 
         measurements - the measurements may be used to reconcile metadata tags
 
@@ -471,7 +467,7 @@ class CWPDirectoryPath(cps.DirectoryPath):
 
         If the directory choice is DIR_SAME or DIR_ABOVE, we return one of
         the special tokens, USE_DIR_SAME or USE_DIR_ABOVE
-        '''
+        """
         if self.dir_choice == DIR_SAME:
             return self.USE_DIR_SAME
         elif self.dir_choice == DIR_ABOVE:

@@ -1,3 +1,14 @@
+import cellprofiler.image
+import cellprofiler.module
+import cellprofiler.setting
+import cellprofiler.setting
+import centrosome.filter
+import centrosome.filter
+import centrosome.filter
+import centrosome.kirsch
+import centrosome.otsu
+import numpy
+
 '''<b>Enhance Edges</b> enhances or identifies edges in an image, which can improve object
 identification or other downstream image processing.
 <hr>
@@ -8,19 +19,6 @@ to produce a binary (black/white) mask of edges. The Canny algorithm
 produces a binary (black/white) mask image consisting of the edge pixels.
 
 '''
-
-import numpy as np
-from centrosome.filter import laplacian_of_gaussian
-from centrosome.filter import prewitt, hprewitt, vprewitt, stretch
-from centrosome.filter import roberts, canny, sobel, hsobel, vsobel
-from centrosome.kirsch import kirsch
-from centrosome.otsu import otsu3
-from scipy.ndimage import convolve
-
-import cellprofiler.image as cpi
-import cellprofiler.module as cpm
-import cellprofiler.setting as cps
-from cellprofiler.setting import YES, NO
 
 M_SOBEL = "Sobel"
 M_PREWITT = "Prewitt"
@@ -37,35 +35,35 @@ E_HORIZONTAL = "Horizontal"
 E_VERTICAL = "Vertical"
 
 
-class EnhanceEdges(cpm.Module):
+class EnhanceEdges(cellprofiler.module.Module):
     module_name = "EnhanceEdges"
     category = "Image Processing"
     variable_revision_number = 2
 
     def create_settings(self):
-        self.image_name = cps.ImageNameSubscriber(
-                "Select the input image", cps.NONE, doc='''
+        self.image_name = cellprofiler.setting.ImageNameSubscriber(
+                "Select the input image", cellprofiler.setting.NONE, doc='''
             What did you call the image in which you want to enhance the edges?''')
 
-        self.output_image_name = cps.ImageNameProvider(
+        self.output_image_name = cellprofiler.setting.ImageNameProvider(
                 "Name the output image", "EdgedImage", doc='''
             What do you want to call the image with edges enhanced?''')
 
-        self.wants_automatic_threshold = cps.Binary(
+        self.wants_automatic_threshold = cellprofiler.setting.Binary(
                 "Automatically calculate the threshold?", True, doc='''
             <i>(Used only with the %(M_CANNY)s option and automatic thresholding)</i> <br>
             Select <i>%(YES)s</i> to automatically calculate the threshold using a three-category
             Otsu algorithm performed on the Sobel transform of the image.
             <p>Select <i>%(NO)s</i> to manually enter the threshold value.</p>''' % globals())
 
-        self.manual_threshold = cps.Float(
+        self.manual_threshold = cellprofiler.setting.Float(
                 "Absolute threshold", 0.2, 0, 1, doc='''
             <i>(Used only with the %(M_CANNY)s option and manual thresholding)</i><br>
             The upper cutoff for Canny edges. All Sobel-transformed
             pixels with this value or higher will be marked as an edge.
             You can enter a threshold between 0 and 1.''' % globals())
 
-        self.threshold_adjustment_factor = cps.Float(
+        self.threshold_adjustment_factor = cellprofiler.setting.Float(
                 "Threshold adjustment factor", 1, doc='''
             <i>(Used only with the %(M_CANNY)s option and automatic thresholding)</i><br>
             This threshold adjustment factor is a multiplier that is applied to
@@ -73,7 +71,7 @@ class EnhanceEdges(cpm.Module):
             automatically. An adjustment factor of 1 indicates no adjustment.
             The adjustment factor has no effect on any threshhold entered manually entered.''' % globals())
 
-        self.method = cps.Choice(
+        self.method = cellprofiler.setting.Choice(
                 "Select an edge-finding method",
                 [M_SOBEL, M_PREWITT, M_ROBERTS, M_LOG, M_CANNY, M_KIRSCH], doc='''
             There are several methods that can be used to enhance edges:
@@ -100,7 +98,7 @@ class EnhanceEdges(cpm.Module):
             the maximum as the pixel's value.</li>
             </ul>''' % globals())
 
-        self.direction = cps.Choice(
+        self.direction = cellprofiler.setting.Choice(
                 "Select edge direction to enhance",
                 [E_ALL, E_HORIZONTAL, E_VERTICAL], doc='''
             <i>(Used only with %(M_PREWITT)s and %(M_SOBEL)s methods)</i> <br>
@@ -108,18 +106,18 @@ class EnhanceEdges(cpm.Module):
             are you are identifying in the image (predominantly horizontal, predominantly vertical,
             or both).''' % globals())
 
-        self.wants_automatic_sigma = cps.Binary("Calculate Gaussian's sigma automatically?", True)
+        self.wants_automatic_sigma = cellprofiler.setting.Binary("Calculate Gaussian's sigma automatically?", True)
 
-        self.sigma = cps.Float("Gaussian's sigma value", 10)
+        self.sigma = cellprofiler.setting.Float("Gaussian's sigma value", 10)
 
-        self.wants_automatic_low_threshold = cps.Binary(
+        self.wants_automatic_low_threshold = cellprofiler.setting.Binary(
                 "Calculate value for low threshold automatically?", True, doc="""
             <i>(Used only with the %(M_CANNY)s option and automatic thresholding)</i> <br>
             Select <i>%(YES)s</i> to automatically calculate the low / soft threshold cutoff for
             the %(M_CANNY)s method.
             <p>Select <i>%(NO)s</i> to manually enter the low threshold value.</p>""" % globals())
 
-        self.low_threshold = cps.Float(
+        self.low_threshold = cellprofiler.setting.Float(
                 "Low threshold value", 0.1, 0, 1, doc="""
             <i>(Used only with the %(M_CANNY)s option and manual thresholding)</i><br>
             Enter the soft threshold cutoff for the %(M_CANNY)s method.
@@ -161,27 +159,27 @@ class EnhanceEdges(cpm.Module):
         if image.has_mask:
             mask = image.mask
         else:
-            mask = np.ones(orig_pixels.shape, bool)
+            mask = numpy.ones(orig_pixels.shape, bool)
         if self.method == M_SOBEL:
             if self.direction == E_ALL:
-                output_pixels = sobel(orig_pixels, mask)
+                output_pixels = centrosome.filter.sobel(orig_pixels, mask)
             elif self.direction == E_HORIZONTAL:
-                output_pixels = hsobel(orig_pixels, mask)
+                output_pixels = centrosome.filter.hsobel(orig_pixels, mask)
             elif self.direction == E_VERTICAL:
-                output_pixels = vsobel(orig_pixels, mask)
+                output_pixels = centrosome.filter.vsobel(orig_pixels, mask)
             else:
                 raise NotImplementedError("Unimplemented direction for Sobel: %s", self.direction.value)
         elif self.method == M_LOG:
             sigma = self.get_sigma()
             size = int(sigma * 4) + 1
-            output_pixels = laplacian_of_gaussian(orig_pixels, mask, size, sigma)
+            output_pixels = centrosome.filter.laplacian_of_gaussian(orig_pixels, mask, size, sigma)
         elif self.method == M_PREWITT:
             if self.direction == E_ALL:
-                output_pixels = prewitt(orig_pixels)
+                output_pixels = centrosome.filter.prewitt(orig_pixels)
             elif self.direction == E_HORIZONTAL:
-                output_pixels = hprewitt(orig_pixels, mask)
+                output_pixels = centrosome.filter.hprewitt(orig_pixels, mask)
             elif self.direction == E_VERTICAL:
-                output_pixels = vprewitt(orig_pixels, mask)
+                output_pixels = centrosome.filter.vprewitt(orig_pixels, mask)
             else:
                 raise NotImplementedError("Unimplemented direction for Prewitt: %s", self.direction.value)
         elif self.method == M_CANNY:
@@ -189,24 +187,24 @@ class EnhanceEdges(cpm.Module):
             low_threshold = self.low_threshold.value
             if (self.wants_automatic_low_threshold.value or
                     self.wants_automatic_threshold.value):
-                sobel_image = sobel(orig_pixels, mask)
-                low, high = otsu3(sobel_image[mask])
+                sobel_image = centrosome.filter.sobel(orig_pixels, mask)
+                low, high = centrosome.otsu.otsu3(sobel_image[mask])
                 if self.wants_automatic_low_threshold.value:
                     low_threshold = low * self.threshold_adjustment_factor.value
                 if self.wants_automatic_threshold.value:
                     high_threshold = high * self.threshold_adjustment_factor.value
-            output_pixels = canny(orig_pixels, mask, self.get_sigma(),
-                                  low_threshold,
-                                  high_threshold)
+            output_pixels = centrosome.filter.canny(orig_pixels, mask, self.get_sigma(),
+                                                    low_threshold,
+                                                    high_threshold)
         elif self.method == M_ROBERTS:
-            output_pixels = roberts(orig_pixels, mask)
+            output_pixels = centrosome.filter.roberts(orig_pixels, mask)
         elif self.method == M_KIRSCH:
-            output_pixels = kirsch(orig_pixels)
+            output_pixels = centrosome.kirsch.kirsch(orig_pixels)
         else:
             raise NotImplementedError("Unimplemented edge detection method: %s" %
                                       self.method.value)
 
-        output_image = cpi.Image(output_pixels, parent=image)
+        output_image = cellprofiler.image.Image(output_pixels, parent=image)
         workspace.image_set.add(self.output_image_name.value, output_image)
 
         if self.show_window:
@@ -230,10 +228,10 @@ class EnhanceEdges(cpm.Module):
             figure.subplot_imshow_grayscale(0, 1, output_pixels,
                                             self.output_image_name.value,
                                             sharexy=figure.subplot(0, 0))
-        color_image = np.zeros((output_pixels.shape[0],
-                                output_pixels.shape[1], 3))
-        color_image[:, :, 0] = stretch(orig_pixels)
-        color_image[:, :, 1] = stretch(output_pixels)
+        color_image = numpy.zeros((output_pixels.shape[0],
+                                   output_pixels.shape[1], 3))
+        color_image[:, :, 0] = centrosome.filter.stretch(orig_pixels)
+        color_image[:, :, 1] = centrosome.filter.stretch(output_pixels)
         figure.subplot_imshow(1, 0, color_image, "Composite image",
                               sharexy=figure.subplot(0, 0))
 
@@ -257,21 +255,21 @@ class EnhanceEdges(cpm.Module):
             setting_values = [
                 setting_values[0],  # ImageName
                 setting_values[1],  # OutputName
-                setting_values[2] == cps.DO_NOT_USE,  # Threshold
+                setting_values[2] == cellprofiler.setting.DO_NOT_USE,  # Threshold
                 setting_values[2]
-                if setting_values[2] != cps.DO_NOT_USE
+                if setting_values[2] != cellprofiler.setting.DO_NOT_USE
                 else .5,
                 setting_values[3],  # Threshold adjustment factor
                 setting_values[4],  # Method
                 setting_values[5],  # Filter size
                 setting_values[8],  # Direction
-                setting_values[9] == cps.DO_NOT_USE,  # Sigma
+                setting_values[9] == cellprofiler.setting.DO_NOT_USE,  # Sigma
                 setting_values[9]
-                if setting_values[9] != cps.DO_NOT_USE
+                if setting_values[9] != cellprofiler.setting.DO_NOT_USE
                 else 5,
-                setting_values[10] == cps.DO_NOT_USE,  # Low threshold
+                setting_values[10] == cellprofiler.setting.DO_NOT_USE,  # Low threshold
                 setting_values[10]
-                if setting_values[10] != cps.DO_NOT_USE
+                if setting_values[10] != cellprofiler.setting.DO_NOT_USE
                 else .5]
             from_matlab = False
             variable_revision_number = 1

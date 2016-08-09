@@ -1,3 +1,9 @@
+import cellprofiler.image
+import cellprofiler.measurement
+import cellprofiler.module
+import cellprofiler.setting
+import numpy
+
 '''<b>Display Scatter Plot </b> plots the values for two measurements.
 <hr>
 A scatter plot displays the relationship between two measurements (that is, features) as a
@@ -12,26 +18,19 @@ created from all the measurements collected during the run.</p>
 See also <b>DisplayDensityPlot</b>, <b>DisplayHistogram</b>.
 '''
 
-import numpy as np
-
-import cellprofiler.image as cpi
-import cellprofiler.module as cpm
-import cellprofiler.measurement as cpmeas
-import cellprofiler.setting as cps
-
-SOURCE_IM = cpmeas.IMAGE
+SOURCE_IM = cellprofiler.measurement.IMAGE
 SOURCE_OBJ = "Object"
 SOURCE_CHOICE = [SOURCE_IM, SOURCE_OBJ]
 SCALE_CHOICE = ['linear', 'log']
 
 
-class DisplayScatterPlot(cpm.Module):
+class DisplayScatterPlot(cellprofiler.module.Module):
     module_name = "DisplayScatterPlot"
     category = "Data Tools"
     variable_revision_number = 2
 
     def create_settings(self):
-        self.x_source = cps.Choice(
+        self.x_source = cellprofiler.setting.Choice(
                 "Type of measurement to plot on X-axis", SOURCE_CHOICE, doc='''
             You can plot two types of measurements:
             <ul>
@@ -48,20 +47,20 @@ class DisplayScatterPlot(cpm.Module):
             modules with <b>MeasureObject</b> in the name.</li>
             </ul>''' % globals())
 
-        self.x_object = cps.ObjectNameSubscriber(
+        self.x_object = cellprofiler.setting.ObjectNameSubscriber(
                 'Select the object to plot on the X-axis',
-                cps.NONE, doc='''<i>(Used only when plotting objects)</i><br>
+                cellprofiler.setting.NONE, doc='''<i>(Used only when plotting objects)</i><br>
             Choose the name of objects identified by some previous
             module (such as <b>IdentifyPrimaryObjects</b> or
             <b>IdentifySecondaryObjects</b>) whose measurements are to be displayed on the X-axis.''')
 
-        self.x_axis = cps.Measurement(
+        self.x_axis = cellprofiler.setting.Measurement(
                 'Select the measurement to plot on the X-axis',
-                self.get_x_object, cps.NONE, doc='''
+                self.get_x_object, cellprofiler.setting.NONE, doc='''
             Choose the measurement (made by a previous
             module) to plot on the X-axis.''')
 
-        self.y_source = cps.Choice("Type of measurement to plot on Y-axis", SOURCE_CHOICE, doc='''
+        self.y_source = cellprofiler.setting.Choice("Type of measurement to plot on Y-axis", SOURCE_CHOICE, doc='''
             You can plot two types of measurements:
             <ul>
             <li><i>%(SOURCE_IM)s:</i> For a per-image measurement, one numerical value is
@@ -77,20 +76,20 @@ class DisplayScatterPlot(cpm.Module):
             modules with <b>MeasureObject</b> in the name.</li>
             </ul>''' % globals())
 
-        self.y_object = cps.ObjectNameSubscriber(
+        self.y_object = cellprofiler.setting.ObjectNameSubscriber(
                 'Select the object to plot on the Y-axis',
-                cps.NONE, doc='''<i>(Used only when plotting objects)</i><br>
+                cellprofiler.setting.NONE, doc='''<i>(Used only when plotting objects)</i><br>
             Choose the name of objects identified by some previous
             module (such as <b>IdentifyPrimaryObjects</b> or
             <b>IdentifySecondaryObjects</b>) whose measurements are to be displayed on the Y-axis.''')
 
-        self.y_axis = cps.Measurement(
+        self.y_axis = cellprofiler.setting.Measurement(
                 'Select the measurement to plot on the Y-axis',
-                self.get_y_object, cps.NONE, doc='''
+                self.get_y_object, cellprofiler.setting.NONE, doc='''
             Choose the measurement (made by a previous
             module) to plot on the Y-axis.''')
 
-        self.xscale = cps.Choice(
+        self.xscale = cellprofiler.setting.Choice(
                 'How should the X-axis be scaled?', SCALE_CHOICE, None, doc='''
             The X-axis can be scaled with either a <i>linear</i>
             scale or a <i>log</i> (base 10) scaling.
@@ -100,7 +99,7 @@ class DisplayScatterPlot(cpm.Module):
             measurements that would not easily be seen if the
             measurement is plotted linearly.</p>''')
 
-        self.yscale = cps.Choice(
+        self.yscale = cellprofiler.setting.Choice(
                 'How should the Y-axis be scaled?', SCALE_CHOICE, None, doc='''
             The Y-axis can be scaled with either a <i>linear</i>
             scale or with a <i>log</i> (base 10) scaling.
@@ -110,7 +109,7 @@ class DisplayScatterPlot(cpm.Module):
             measurements that would not easily be seen if the
             measurement is plotted linearly.</p>''')
 
-        self.title = cps.Text(
+        self.title = cellprofiler.setting.Text(
                 'Enter a title for the plot, if desired', '', doc='''
             Enter a title for the plot. If you leave this blank,
             the title will default
@@ -118,13 +117,13 @@ class DisplayScatterPlot(cpm.Module):
             cycle being executed.''')
 
     def get_x_object(self):
-        if self.x_source.value == cpmeas.IMAGE:
-            return cpmeas.IMAGE
+        if self.x_source.value == cellprofiler.measurement.IMAGE:
+            return cellprofiler.measurement.IMAGE
         return self.x_object.value
 
     def get_y_object(self):
-        if self.y_source.value == cpmeas.IMAGE:
-            return cpmeas.IMAGE
+        if self.y_source.value == cellprofiler.measurement.IMAGE:
+            return cellprofiler.measurement.IMAGE
         return self.x_object.value
 
     def settings(self):
@@ -135,12 +134,12 @@ class DisplayScatterPlot(cpm.Module):
 
     def visible_settings(self):
         result = [self.x_source]
-        if self.x_source.value != cpmeas.IMAGE:
+        if self.x_source.value != cellprofiler.measurement.IMAGE:
             result += [self.x_object, self.x_axis]
         else:
             result += [self.x_axis]
         result += [self.y_source]
-        if self.y_source.value != cpmeas.IMAGE:
+        if self.y_source.value != cellprofiler.measurement.IMAGE:
             result += [self.y_object, self.y_axis]
         else:
             result += [self.y_axis]
@@ -150,11 +149,11 @@ class DisplayScatterPlot(cpm.Module):
     def run(self, workspace):
         m = workspace.get_measurements()
         if self.x_source.value == self.y_source.value:
-            if self.x_source.value == cpmeas.IMAGE:
-                xvals = m.get_all_measurements(cpmeas.IMAGE, self.x_axis.value)
-                yvals = m.get_all_measurements(cpmeas.IMAGE, self.y_axis.value)
-                xvals, yvals = np.array([
-                                            (x if np.isscalar(x) else x[0], y if np.isscalar(y) else y[0])
+            if self.x_source.value == cellprofiler.measurement.IMAGE:
+                xvals = m.get_all_measurements(cellprofiler.measurement.IMAGE, self.x_axis.value)
+                yvals = m.get_all_measurements(cellprofiler.measurement.IMAGE, self.y_axis.value)
+                xvals, yvals = numpy.array([
+                                            (x if numpy.isscalar(x) else x[0], y if numpy.isscalar(y) else y[0])
                                             for x, y in zip(xvals, yvals)
                                             if (x is not None) and (y is not None)]).transpose()
                 title = '%s' % self.title.value
@@ -163,16 +162,16 @@ class DisplayScatterPlot(cpm.Module):
                 yvals = m.get_current_measurement(self.get_y_object(), self.y_axis.value)
                 title = '%s (cycle %d)' % (self.title.value, workspace.measurements.image_set_number)
         else:
-            if self.x_source.value == cpmeas.IMAGE:
-                xvals = m.get_all_measurements(cpmeas.IMAGE, self.x_axis.value)
+            if self.x_source.value == cellprofiler.measurement.IMAGE:
+                xvals = m.get_all_measurements(cellprofiler.measurement.IMAGE, self.x_axis.value)
                 yvals = m.get_current_measurement(self.get_y_object(), self.y_axis.value)
-                xvals = np.array([xvals[0]] * len(yvals))
+                xvals = numpy.array([xvals[0]] * len(yvals))
             else:
                 xvals = m.get_current_measurement(self.get_x_object(), self.x_axis.value)
-                yvals = m.get_all_measurements(cpmeas.IMAGE, self.y_axis.value)
-                yvals = np.array([yvals[0]] * len(xvals))
-            xvals, yvals = np.array([
-                                        (x if np.isscalar(x) else x[0], y if np.isscalar(y) else y[0])
+                yvals = m.get_all_measurements(cellprofiler.measurement.IMAGE, self.y_axis.value)
+                yvals = numpy.array([yvals[0]] * len(xvals))
+            xvals, yvals = numpy.array([
+                                        (x if numpy.isscalar(x) else x[0], y if numpy.isscalar(y) else y[0])
                                         for x, y in zip(xvals, yvals)
                                         if (x is not None) and (y is not None)]).transpose()
 
@@ -199,10 +198,10 @@ class DisplayScatterPlot(cpm.Module):
                          module_name, from_matlab):
         """Adjust the setting_values to upgrade from a previous version"""
         if not from_matlab and variable_revision_number == 1:
-            if setting_values[0] == cpmeas.IMAGE:
+            if setting_values[0] == cellprofiler.measurement.IMAGE:
                 # self.source, self.x_axis, "Image", self.y_axis, self.xscale, self.yscale, self.title
-                new_setting_values = [setting_values[0], cps.NONE, setting_values[1], cpmeas.IMAGE,
-                                      cps.NONE] + setting_values[2:]
+                new_setting_values = [setting_values[0], cellprofiler.setting.NONE, setting_values[1], cellprofiler.measurement.IMAGE,
+                                      cellprofiler.setting.NONE] + setting_values[2:]
             else:
                 # self.source, self.x_object, self.x_axis, self.y_object, self.y_axis, self.xscale, self.yscale, self.title
                 new_setting_values = setting_values[:3] + [SOURCE_OBJ] + setting_values[3:]

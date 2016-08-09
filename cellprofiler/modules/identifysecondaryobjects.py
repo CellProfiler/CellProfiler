@@ -1,5 +1,27 @@
+import cellprofiler.gui.help
+import cellprofiler.gui.help
 import cellprofiler.icons
-from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON
+import cellprofiler.image
+import cellprofiler.measurement
+import cellprofiler.module
+import cellprofiler.modules.identify
+import cellprofiler.modules.identify
+import cellprofiler.preferences
+import cellprofiler.region
+import cellprofiler.setting
+import cellprofiler.setting
+import cellprofiler.workspace
+import centrosome.cpmorphology
+import centrosome.cpmorphology
+import centrosome.filter
+import centrosome.otsu
+import centrosome.outline
+import centrosome.propagate
+import centrosome.threshold
+import numpy
+import scipy.misc
+import scipy.ndimage
+import skimage.morphology.watershed
 
 __doc__ = '''<b>Identify Secondary Objects</b> identifies objects (e.g., cell edges) using
 objects identified by another module (e.g., nuclei) as a starting point.
@@ -123,31 +145,6 @@ neighborhood, combined with &lambda; via sqrt(differences<sup>2</sup> + &lambda;
 <p>See also the other <b>Identify</b> modules.</p>
 ''' % globals()
 
-import numpy as np
-import os
-import scipy.ndimage as scind
-import scipy.misc as scimisc
-
-import cellprofiler.module as cpm
-import cellprofiler.image as cpi
-import cellprofiler.measurement as cpmeas
-import cellprofiler.region as cpo
-import cellprofiler.preferences as cpprefs
-import cellprofiler.workspace as cpw
-import cellprofiler.setting as cps
-from cellprofiler.setting import YES, NO
-import identify as cpmi
-from identify import FI_IMAGE_SIZE
-import centrosome.threshold as cpthresh
-import centrosome.otsu
-from centrosome.propagate import propagate
-from centrosome.cpmorphology import fill_labeled_holes
-from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
-import skimage.morphology.watershed
-from centrosome.filter import stretch
-from centrosome.outline import outline
-from cellprofiler.gui.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
-
 M_PROPAGATION = "Propagation"
 M_WATERSHED_G = "Watershed - Gradient"
 M_WATERSHED_I = "Watershed - Image"
@@ -161,23 +158,23 @@ N_SETTING_VALUES = 14
 R_PARENT = "Parent"
 
 
-class IdentifySecondaryObjects(cpmi.Identify):
+class IdentifySecondaryObjects(cellprofiler.modules.identify.Identify):
     module_name = "IdentifySecondaryObjects"
     variable_revision_number = 9
     category = "Object Processing"
 
     def create_settings(self):
-        self.primary_objects = cps.ObjectNameSubscriber(
+        self.primary_objects = cellprofiler.setting.ObjectNameSubscriber(
                 "Select the input objects", "Nuclei", doc="""
             What did you call the objects you want to use as "seeds" to identify a secondary
             object around each one? By definition, each primary object must be associated with exactly one
             secondary object and completely contained within it.""")
 
-        self.objects_name = cps.ObjectNameProvider(
+        self.objects_name = cellprofiler.setting.ObjectNameProvider(
                 "Name the objects to be identified", "Cells", doc="""
             Enter the name that you want to call the objects identified by this module.""")
 
-        self.method = cps.Choice(
+        self.method = cellprofiler.setting.Choice(
                 "Select the method to identify the secondary objects",
                 [M_PROPAGATION, M_WATERSHED_G, M_WATERSHED_I, M_DISTANCE_N, M_DISTANCE_B],
                 M_PROPAGATION, doc="""
@@ -237,21 +234,21 @@ class IdentifySecondaryObjects(cpmi.Identify):
             (<a href="http://dx.doi.org/10.1109/34.87344">link</a>)</li>
             </ul>""" % globals())
 
-        self.image_name = cps.ImageNameSubscriber(
+        self.image_name = cellprofiler.setting.ImageNameSubscriber(
                 "Select the input image",
-                cps.NONE, doc="""
+                cellprofiler.setting.NONE, doc="""
             The selected image will be used to find the edges of the secondary objects.
             For <i>%(M_DISTANCE_N)s</i> this will not affect object identification,
             only the final display.""" % globals())
 
         self.create_threshold_settings()
         # default smoothing choice is different for idprimary and idsecondary
-        self.threshold_smoothing_choice.value = cpmi.TSM_NONE
+        self.threshold_smoothing_choice.value = cellprofiler.modules.identify.TSM_NONE
 
-        self.distance_to_dilate = cps.Integer(
+        self.distance_to_dilate = cellprofiler.setting.Integer(
                 "Number of pixels by which to expand the primary objects", 10, minval=1)
 
-        self.regularization_factor = cps.Float(
+        self.regularization_factor = cellprofiler.setting.Float(
                 "Regularization factor", 0.05, minval=0, doc="""
             <i>(Used only if %(M_PROPAGATION)s method is selected)</i> <br>
             The regularization factor &lambda; can be anywhere in the range 0 to infinity.
@@ -272,15 +269,15 @@ class IdentifySecondaryObjects(cpmi.Identify):
             secondary staining image.</li>
             </ul>""" % globals())
 
-        self.use_outlines = cps.Binary(
+        self.use_outlines = cellprofiler.setting.Binary(
                 "Retain outlines of the identified secondary objects?", False, doc="""
             %(RETAINING_OUTLINES_HELP)s""" % globals())
 
-        self.outlines_name = cps.OutlineNameProvider(
+        self.outlines_name = cellprofiler.setting.OutlineNameProvider(
                 'Name the outline image', "SecondaryOutlines", doc="""
             %(NAMING_OUTLINES_HELP)s""" % globals())
 
-        self.wants_discard_edge = cps.Binary(
+        self.wants_discard_edge = cellprofiler.setting.Binary(
                 "Discard secondary objects touching the border of the image?",
                 False, doc="""
             Select <i>%(YES)s</i> to discard secondary objects which touch
@@ -291,11 +288,11 @@ class IdentifySecondaryObjects(cpmi.Identify):
             as "unedited objects"; this allows them to be considered in downstream modules that modify the
             segmentation.</p>""" % globals())
 
-        self.fill_holes = cps.Binary(
+        self.fill_holes = cellprofiler.setting.Binary(
                 "Fill holes in identified objects?", True, doc="""
             Select <i>%(YES)s</i> to fill any holes inside objects.""" % globals())
 
-        self.wants_discard_primary = cps.Binary(
+        self.wants_discard_primary = cellprofiler.setting.Binary(
                 "Discard the associated primary objects?", False, doc="""
             <i>(Used only if discarding secondary objects touching the image border)</i> <br>
             It might be appropriate to discard the primary object
@@ -304,7 +301,7 @@ class IdentifySecondaryObjects(cpmi.Identify):
             to the original primary objects set, minus the objects for which the associated
             secondary object touches the image edge.</p>""" % globals())
 
-        self.new_primary_objects_name = cps.ObjectNameProvider(
+        self.new_primary_objects_name = cellprofiler.setting.ObjectNameProvider(
                 "Name the new primary objects", "FilteredNuclei", doc="""
             <i>(Used only if associated primary objects are discarded)</i> <br>
             You can name the primary objects that remain after the discarding step.
@@ -314,12 +311,12 @@ class IdentifySecondaryObjects(cpmi.Identify):
             "unedited object"; this allows them to be considered in downstream modules that modify the
             segmentation.""")
 
-        self.wants_primary_outlines = cps.Binary(
+        self.wants_primary_outlines = cellprofiler.setting.Binary(
                 "Retain outlines of the new primary objects?", False, doc="""
             <i>(Used only if associated primary objects are discarded)</i><br>
             %(RETAINING_OUTLINES_HELP)s""" % globals())
 
-        self.new_primary_outlines_name = cps.OutlineNameProvider(
+        self.new_primary_outlines_name = cellprofiler.setting.OutlineNameProvider(
                 "Name the new primary object outlines", "FilteredNucleiOutlines", doc="""
             <i>(Used only if associated primary objects are discarded and saving outlines of new primary objects)</i><br>
             Enter a name for the outlines of the identified
@@ -378,38 +375,38 @@ class IdentifySecondaryObjects(cpmi.Identify):
         if from_matlab and variable_revision_number == 2:
             # Added test mode - default = no
             setting_values = list(setting_values)
-            setting_values.append(cps.NO)
+            setting_values.append(cellprofiler.setting.NO)
             variable_revision_number = 3
         if from_matlab and variable_revision_number == 3:
             new_setting_values = list(setting_values)
             if setting_values[4].isdigit():
                 # User entered manual threshold
-                new_setting_values[4] = cpthresh.TM_MANUAL
+                new_setting_values[4] = centrosome.threshold.TM_MANUAL
                 new_setting_values.append(setting_values[4])
-                new_setting_values.append(cps.DO_NOT_USE)
+                new_setting_values.append(cellprofiler.setting.DO_NOT_USE)
             elif (not setting_values[4] in
-                (cpthresh.TM_OTSU_GLOBAL, cpthresh.TM_OTSU_ADAPTIVE,
-                 cpthresh.TM_OTSU_PER_OBJECT, cpthresh.TM_MOG_GLOBAL,
-                 cpthresh.TM_MOG_ADAPTIVE, cpthresh.TM_MOG_PER_OBJECT,
-                 cpthresh.TM_BACKGROUND_GLOBAL, cpthresh.TM_BACKGROUND_ADAPTIVE,
-                 cpthresh.TM_BACKGROUND_PER_OBJECT, cpthresh.TM_ROBUST_BACKGROUND,
-                 cpthresh.TM_ROBUST_BACKGROUND_GLOBAL,
-                 cpthresh.TM_ROBUST_BACKGROUND_ADAPTIVE,
-                 cpthresh.TM_ROBUST_BACKGROUND_PER_OBJECT,
-                 cpthresh.TM_RIDLER_CALVARD_GLOBAL, cpthresh.TM_RIDLER_CALVARD_ADAPTIVE,
-                 cpthresh.TM_RIDLER_CALVARD_PER_OBJECT, cpthresh.TM_KAPUR_GLOBAL,
-                 cpthresh.TM_KAPUR_ADAPTIVE, cpthresh.TM_KAPUR_PER_OBJECT)):
+                (centrosome.threshold.TM_OTSU_GLOBAL, centrosome.threshold.TM_OTSU_ADAPTIVE,
+                 centrosome.threshold.TM_OTSU_PER_OBJECT, centrosome.threshold.TM_MOG_GLOBAL,
+                 centrosome.threshold.TM_MOG_ADAPTIVE, centrosome.threshold.TM_MOG_PER_OBJECT,
+                 centrosome.threshold.TM_BACKGROUND_GLOBAL, centrosome.threshold.TM_BACKGROUND_ADAPTIVE,
+                 centrosome.threshold.TM_BACKGROUND_PER_OBJECT, centrosome.threshold.TM_ROBUST_BACKGROUND,
+                 centrosome.threshold.TM_ROBUST_BACKGROUND_GLOBAL,
+                 centrosome.threshold.TM_ROBUST_BACKGROUND_ADAPTIVE,
+                 centrosome.threshold.TM_ROBUST_BACKGROUND_PER_OBJECT,
+                 centrosome.threshold.TM_RIDLER_CALVARD_GLOBAL, centrosome.threshold.TM_RIDLER_CALVARD_ADAPTIVE,
+                 centrosome.threshold.TM_RIDLER_CALVARD_PER_OBJECT, centrosome.threshold.TM_KAPUR_GLOBAL,
+                 centrosome.threshold.TM_KAPUR_ADAPTIVE, centrosome.threshold.TM_KAPUR_PER_OBJECT)):
                 # User entered an image name -  guess
-                new_setting_values[4] = cpthresh.TM_BINARY_IMAGE
+                new_setting_values[4] = centrosome.threshold.TM_BINARY_IMAGE
                 new_setting_values.append('0')
                 new_setting_values.append(setting_values[4])
             else:
                 new_setting_values.append('0')
-                new_setting_values.append(cps.DO_NOT_USE)
-            if setting_values[10] == cps.DO_NOT_USE:
-                new_setting_values.append(cps.NO)
+                new_setting_values.append(cellprofiler.setting.DO_NOT_USE)
+            if setting_values[10] == cellprofiler.setting.DO_NOT_USE:
+                new_setting_values.append(cellprofiler.setting.NO)
             else:
-                new_setting_values.append(cps.YES)
+                new_setting_values.append(cellprofiler.setting.YES)
             setting_values = new_setting_values
             from_matlab = False
             variable_revision_number = 1
@@ -422,23 +419,23 @@ class IdentifySecondaryObjects(cpmi.Identify):
             # Removed test mode
             # added Otsu parameters.
             setting_values = setting_values[:11] + setting_values[12:]
-            setting_values += [cpmi.O_TWO_CLASS, cpmi.O_WEIGHTED_VARIANCE,
-                               cpmi.O_FOREGROUND]
+            setting_values += [cellprofiler.modules.identify.O_TWO_CLASS, cellprofiler.modules.identify.O_WEIGHTED_VARIANCE,
+                               cellprofiler.modules.identify.O_FOREGROUND]
             variable_revision_number = 2
 
         if (not from_matlab) and variable_revision_number == 2:
             # Added discarding touching
-            setting_values = setting_values + [cps.NO, cps.NO, "FilteredNuclei"]
+            setting_values = setting_values + [cellprofiler.setting.NO, cellprofiler.setting.NO, "FilteredNuclei"]
             variable_revision_number = 3
 
         if (not from_matlab) and variable_revision_number == 3:
             # Added new primary outlines
-            setting_values = setting_values + [cps.NO, "FilteredNucleiOutlines"]
+            setting_values = setting_values + [cellprofiler.setting.NO, "FilteredNucleiOutlines"]
             variable_revision_number = 4
 
         if (not from_matlab) and variable_revision_number == 4:
             # Added measurements to threshold methods
-            setting_values = setting_values + [cps.NONE]
+            setting_values = setting_values + [cellprofiler.setting.NONE]
             variable_revision_number = 5
 
         if (not from_matlab) and variable_revision_number == 5:
@@ -449,15 +446,15 @@ class IdentifySecondaryObjects(cpmi.Identify):
 
         if (not from_matlab) and variable_revision_number == 6:
             # Fill labeled holes added
-            fill_holes = (cps.NO
+            fill_holes = (cellprofiler.setting.NO
                           if setting_values[2] in (M_DISTANCE_B, M_DISTANCE_N)
-                          else cps.YES)
+                          else cellprofiler.setting.YES)
             setting_values = setting_values + [fill_holes]
             variable_revision_number = 7
 
         if (not from_matlab) and variable_revision_number == 7:
             # Added adaptive thresholding settings
-            setting_values += [FI_IMAGE_SIZE, "10"]
+            setting_values += [cellprofiler.modules.identify.FI_IMAGE_SIZE, "10"]
             variable_revision_number = 8
 
         if (not from_matlab) and variable_revision_number == 8:
@@ -479,7 +476,7 @@ class IdentifySecondaryObjects(cpmi.Identify):
                                  new_primary_objects_name, wants_primary_outlines,
                                  new_primary_outlines_name, fill_holes] + \
                              self.upgrade_legacy_threshold_settings(
-                                     threshold_method, cpmi.TSM_NONE,
+                                     threshold_method, cellprofiler.modules.identify.TSM_NONE,
                                      threshold_correction_factor, threshold_range,
                                      object_fraction, manual_threshold, thresholding_measurement,
                                      binary_image, two_class_otsu, use_weighted_variance,
@@ -491,7 +488,7 @@ class IdentifySecondaryObjects(cpmi.Identify):
         return setting_values, variable_revision_number, from_matlab
 
     def run(self, workspace):
-        assert isinstance(workspace, cpw.Workspace)
+        assert isinstance(workspace, cellprofiler.workspace.Workspace)
         image_name = self.image_name.value
         image = workspace.image_set.get_image(image_name,
                                               must_be_grayscale=True)
@@ -512,10 +509,10 @@ class IdentifySecondaryObjects(cpmi.Identify):
         # * labels touching the edge, including small removed
         #
         labels_in = objects.unedited_segmented.copy()
-        labels_touching_edge = np.hstack(
+        labels_touching_edge = numpy.hstack(
                 (labels_in[0, :], labels_in[-1, :], labels_in[:, 0], labels_in[:, -1]))
-        labels_touching_edge = np.unique(labels_touching_edge)
-        is_touching = np.zeros(np.max(labels_in) + 1, bool)
+        labels_touching_edge = numpy.unique(labels_touching_edge)
+        is_touching = numpy.zeros(numpy.max(labels_in) + 1, bool)
         is_touching[labels_touching_edge] = True
         is_touching = is_touching[labels_in]
 
@@ -525,7 +522,7 @@ class IdentifySecondaryObjects(cpmi.Identify):
         # label matrix, then there's no label in that area.
         #
         if tuple(labels_in.shape) != tuple(img.shape):
-            tmp = np.zeros(img.shape, labels_in.dtype)
+            tmp = numpy.zeros(img.shape, labels_in.dtype)
             i_max = min(img.shape[0], labels_in.shape[0])
             j_max = min(img.shape[1], labels_in.shape[1])
             tmp[:i_max, :j_max] = labels_in[:i_max, :j_max]
@@ -533,20 +530,20 @@ class IdentifySecondaryObjects(cpmi.Identify):
 
         if self.method in (M_DISTANCE_B, M_DISTANCE_N):
             if self.method == M_DISTANCE_N:
-                distances, (i, j) = scind.distance_transform_edt(labels_in == 0,
-                                                                 return_indices=True)
-                labels_out = np.zeros(labels_in.shape, int)
+                distances, (i, j) = scipy.ndimage.distance_transform_edt(labels_in == 0,
+                                                                         return_indices=True)
+                labels_out = numpy.zeros(labels_in.shape, int)
                 dilate_mask = distances <= self.distance_to_dilate.value
                 labels_out[dilate_mask] = \
                     labels_in[i[dilate_mask], j[dilate_mask]]
             else:
-                labels_out, distances = propagate(img, labels_in,
-                                                  thresholded_image,
-                                                  1.0)
+                labels_out, distances = centrosome.propagate.propagate(img, labels_in,
+                                                                       thresholded_image,
+                                                                       1.0)
                 labels_out[distances > self.distance_to_dilate.value] = 0
                 labels_out[labels_in > 0] = labels_in[labels_in > 0]
             if self.fill_holes:
-                small_removed_segmented_out = fill_labeled_holes(labels_out)
+                small_removed_segmented_out = centrosome.cpmorphology.fill_labeled_holes(labels_out)
             else:
                 small_removed_segmented_out = labels_out
             #
@@ -557,11 +554,11 @@ class IdentifySecondaryObjects(cpmi.Identify):
             segmented_out = self.filter_labels(small_removed_segmented_out,
                                                objects, workspace)
         elif self.method == M_PROPAGATION:
-            labels_out, distance = propagate(img, labels_in,
-                                             thresholded_image,
-                                             self.regularization_factor.value)
+            labels_out, distance = centrosome.propagate.propagate(img, labels_in,
+                                                                  thresholded_image,
+                                                                  self.regularization_factor.value)
             if self.fill_holes:
-                small_removed_segmented_out = fill_labeled_holes(labels_out)
+                small_removed_segmented_out = centrosome.cpmorphology.fill_labeled_holes(labels_out)
             else:
                 small_removed_segmented_out = labels_out.copy()
             segmented_out = self.filter_labels(small_removed_segmented_out,
@@ -571,26 +568,26 @@ class IdentifySecondaryObjects(cpmi.Identify):
             # First, apply the sobel filter to the image (both horizontal
             # and vertical). The filter measures gradient.
             #
-            sobel_image = np.abs(scind.sobel(img))
+            sobel_image = numpy.abs(scipy.ndimage.sobel(img))
             #
             # Combine the image mask and threshold to mask the watershed
             #
-            watershed_mask = np.logical_or(thresholded_image, labels_in > 0)
-            watershed_mask = np.logical_and(watershed_mask, mask)
+            watershed_mask = numpy.logical_or(thresholded_image, labels_in > 0)
+            watershed_mask = numpy.logical_and(watershed_mask, mask)
 
             #
             # Perform the first watershed
             #
 
             labels_out = skimage.morphology.watershed(
-                connectivity=np.ones((3, 3), bool),
+                connectivity=numpy.ones((3, 3), bool),
                 image=sobel_image,
                 markers=labels_in,
                 mask=watershed_mask
             )
 
             if self.fill_holes:
-                small_removed_segmented_out = fill_labeled_holes(labels_out)
+                small_removed_segmented_out = centrosome.cpmorphology.fill_labeled_holes(labels_out)
             else:
                 small_removed_segmented_out = labels_out.copy()
             segmented_out = self.filter_labels(small_removed_segmented_out,
@@ -604,21 +601,21 @@ class IdentifySecondaryObjects(cpmi.Identify):
             #
             # Same as above, but perform the watershed on the original image
             #
-            watershed_mask = np.logical_or(thresholded_image, labels_in > 0)
-            watershed_mask = np.logical_and(watershed_mask, mask)
+            watershed_mask = numpy.logical_or(thresholded_image, labels_in > 0)
+            watershed_mask = numpy.logical_and(watershed_mask, mask)
             #
             # Perform the watershed
             #
 
             labels_out = skimage.morphology.watershed(
-                connectivity=np.ones((3, 3), bool),
+                connectivity=numpy.ones((3, 3), bool),
                 image=inverted_img,
                 markers=labels_in,
                 mask=watershed_mask
             )
 
             if self.fill_holes:
-                small_removed_segmented_out = fill_labeled_holes(labels_out)
+                small_removed_segmented_out = centrosome.cpmorphology.fill_labeled_holes(labels_out)
             else:
                 small_removed_segmented_out = labels_out
             segmented_out = self.filter_labels(small_removed_segmented_out,
@@ -628,35 +625,35 @@ class IdentifySecondaryObjects(cpmi.Identify):
             #
             # Make a new primary object
             #
-            lookup = scind.maximum(segmented_out,
-                                   objects.segmented,
-                                   range(np.max(objects.segmented) + 1))
-            lookup = fix(lookup)
+            lookup = scipy.ndimage.maximum(segmented_out,
+                                           objects.segmented,
+                                           range(numpy.max(objects.segmented) + 1))
+            lookup = centrosome.cpmorphology.fixup_scipy_ndimage_result(lookup)
             lookup[0] = 0
-            lookup[lookup != 0] = np.arange(np.sum(lookup != 0)) + 1
+            lookup[lookup != 0] = numpy.arange(numpy.sum(lookup != 0)) + 1
             segmented_labels = lookup[objects.segmented]
             segmented_out = lookup[segmented_out]
-            new_objects = cpo.Region()
+            new_objects = cellprofiler.region.Region()
             new_objects.segmented = segmented_labels
             if objects.has_unedited_segmented:
                 new_objects.unedited_segmented = objects.unedited_segmented
             if objects.has_small_removed_segmented:
                 new_objects.small_removed_segmented = objects.small_removed_segmented
             new_objects.parent_image = objects.parent_image
-            primary_outline = outline(segmented_labels)
+            primary_outline = centrosome.outline.outline(segmented_labels)
             if self.wants_primary_outlines:
-                out_img = cpi.Image(primary_outline.astype(bool),
-                                    parent=image)
+                out_img = cellprofiler.image.Image(primary_outline.astype(bool),
+                                                   parent=image)
                 workspace.image_set.add(self.new_primary_outlines_name.value,
                                         out_img)
         else:
-            primary_outline = outline(objects.segmented)
-        secondary_outline = outline(segmented_out)
+            primary_outline = centrosome.outline.outline(objects.segmented)
+        secondary_outline = centrosome.outline.outline(segmented_out)
 
         #
         # Add the objects to the object set
         #
-        objects_out = cpo.Region()
+        objects_out = cellprofiler.region.Region()
         objects_out.unedited_segmented = small_removed_segmented_out
         objects_out.small_removed_segmented = small_removed_segmented_out
         objects_out.segmented = segmented_out
@@ -664,17 +661,17 @@ class IdentifySecondaryObjects(cpmi.Identify):
         objname = self.objects_name.value
         workspace.object_set.add_objects(objects_out, objname)
         if self.use_outlines.value:
-            out_img = cpi.Image(secondary_outline.astype(bool),
-                                parent=image)
+            out_img = cellprofiler.image.Image(secondary_outline.astype(bool),
+                                               parent=image)
             workspace.image_set.add(self.outlines_name.value, out_img)
-        object_count = np.max(segmented_out)
+        object_count = numpy.max(segmented_out)
         #
         # Add measurements
         #
         measurements = workspace.measurements
-        cpmi.add_object_count_measurements(measurements, objname, object_count)
-        cpmi.add_object_location_measurements(measurements, objname,
-                                              segmented_out)
+        cellprofiler.modules.identify.add_object_count_measurements(measurements, objname, object_count)
+        cellprofiler.modules.identify.add_object_location_measurements(measurements, objname,
+                                                                       segmented_out)
         #
         # Relate the secondary objects to the primary ones and record
         # the relationship.
@@ -682,12 +679,12 @@ class IdentifySecondaryObjects(cpmi.Identify):
         children_per_parent, parents_of_children = \
             objects.relate_children(objects_out)
         measurements.add_measurement(self.primary_objects.value,
-                                     cpmi.FF_CHILDREN_COUNT % objname,
+                                     cellprofiler.modules.identify.FF_CHILDREN_COUNT % objname,
                                      children_per_parent)
         measurements.add_measurement(objname,
-                                     cpmi.FF_PARENT % self.primary_objects.value,
+                                     cellprofiler.modules.identify.FF_PARENT % self.primary_objects.value,
                                      parents_of_children)
-        image_numbers = np.ones(len(parents_of_children), int) * \
+        image_numbers = numpy.ones(len(parents_of_children), int) * \
                         measurements.image_set_number
         mask = parents_of_children > 0
         measurements.add_relate_measurement(
@@ -695,19 +692,19 @@ class IdentifySecondaryObjects(cpmi.Identify):
                 self.primary_objects.value, self.objects_name.value,
                 image_numbers[mask], parents_of_children[mask],
                 image_numbers[mask],
-                np.arange(1, len(parents_of_children) + 1)[mask])
+                numpy.arange(1, len(parents_of_children) + 1)[mask])
         #
         # If primary objects were created, add them
         #
         if self.wants_discard_edge and self.wants_discard_primary:
             workspace.object_set.add_objects(new_objects,
                                              self.new_primary_objects_name.value)
-            cpmi.add_object_count_measurements(measurements,
-                                               self.new_primary_objects_name.value,
-                                               np.max(new_objects.segmented))
-            cpmi.add_object_location_measurements(measurements,
-                                                  self.new_primary_objects_name.value,
-                                                  new_objects.segmented)
+            cellprofiler.modules.identify.add_object_count_measurements(measurements,
+                                                                        self.new_primary_objects_name.value,
+                                                                        numpy.max(new_objects.segmented))
+            cellprofiler.modules.identify.add_object_location_measurements(measurements,
+                                                                           self.new_primary_objects_name.value,
+                                                                           new_objects.segmented)
             for parent_objects, parent_name, child_objects, child_name in (
                     (objects, self.primary_objects.value,
                      new_objects, self.new_primary_objects_name.value),
@@ -716,15 +713,15 @@ class IdentifySecondaryObjects(cpmi.Identify):
                 children_per_parent, parents_of_children = \
                     parent_objects.relate_children(child_objects)
                 measurements.add_measurement(parent_name,
-                                             cpmi.FF_CHILDREN_COUNT % child_name,
+                                             cellprofiler.modules.identify.FF_CHILDREN_COUNT % child_name,
                                              children_per_parent)
                 measurements.add_measurement(child_name,
-                                             cpmi.FF_PARENT % parent_name,
+                                             cellprofiler.modules.identify.FF_PARENT % parent_name,
                                              parents_of_children)
         if self.show_window:
-            object_area = np.sum(segmented_out > 0)
+            object_area = numpy.sum(segmented_out > 0)
             workspace.display_data.object_pct = \
-                100 * object_area / np.product(segmented_out.shape)
+                100 * object_area / numpy.product(segmented_out.shape)
             workspace.display_data.img = img
             workspace.display_data.segmented_out = segmented_out
             workspace.display_data.primary_labels = objects.segmented
@@ -746,11 +743,11 @@ class IdentifySecondaryObjects(cpmi.Identify):
             statistics.append(["Threshold", "%.3f" % global_threshold])
 
         if object_count > 0:
-            areas = scind.sum(np.ones(segmented_out.shape), segmented_out, np.arange(1, object_count + 1))
+            areas = scipy.ndimage.sum(numpy.ones(segmented_out.shape), segmented_out, numpy.arange(1, object_count + 1))
             areas.sort()
-            low_diameter = (np.sqrt(float(areas[object_count / 10]) / np.pi) * 2)
-            median_diameter = (np.sqrt(float(areas[object_count / 2]) / np.pi) * 2)
-            high_diameter = (np.sqrt(float(areas[object_count * 9 / 10]) / np.pi) * 2)
+            low_diameter = (numpy.sqrt(float(areas[object_count / 10]) / numpy.pi) * 2)
+            median_diameter = (numpy.sqrt(float(areas[object_count / 2]) / numpy.pi) * 2)
+            high_diameter = (numpy.sqrt(float(areas[object_count * 9 / 10]) / numpy.pi) * 2)
             statistics.append(["10th pctile diameter",
                                "%.1f pixels" % low_diameter])
             statistics.append(["Median diameter",
@@ -795,13 +792,13 @@ class IdentifySecondaryObjects(cpmi.Identify):
                      small_removed labels
         """
         segmented_labels = objects.segmented
-        max_out = np.max(labels_out)
+        max_out = numpy.max(labels_out)
         if max_out > 0:
-            segmented_labels, m1 = cpo.size_similarly(labels_out, segmented_labels)
+            segmented_labels, m1 = cellprofiler.region.size_similarly(labels_out, segmented_labels)
             segmented_labels[~m1] = 0
-            lookup = scind.maximum(segmented_labels, labels_out,
-                                   range(max_out + 1))
-            lookup = np.array(lookup, int)
+            lookup = scipy.ndimage.maximum(segmented_labels, labels_out,
+                                           range(max_out + 1))
+            lookup = numpy.array(lookup, int)
             lookup[0] = 0
             segmented_labels_out = lookup[labels_out]
         else:
@@ -809,19 +806,19 @@ class IdentifySecondaryObjects(cpmi.Identify):
         if self.wants_discard_edge:
             image = workspace.image_set.get_image(self.image_name.value)
             if image.has_mask:
-                mask_border = (image.mask & ~ scind.binary_erosion(image.mask))
+                mask_border = (image.mask & ~ scipy.ndimage.binary_erosion(image.mask))
                 edge_labels = segmented_labels_out[mask_border]
             else:
-                edge_labels = np.hstack((segmented_labels_out[0, :],
+                edge_labels = numpy.hstack((segmented_labels_out[0, :],
                                          segmented_labels_out[-1, :],
                                          segmented_labels_out[:, 0],
                                          segmented_labels_out[:, -1]))
-            edge_labels = np.unique(edge_labels)
+            edge_labels = numpy.unique(edge_labels)
             #
             # Make a lookup table that translates edge labels to zero
             # but translates everything else to itself
             #
-            lookup = np.arange(max(max_out, np.max(segmented_labels)) + 1)
+            lookup = numpy.arange(max(max_out, numpy.max(segmented_labels)) + 1)
             lookup[edge_labels] = 0
             #
             # Run the segmented labels through this to filter out edge
@@ -831,34 +828,34 @@ class IdentifySecondaryObjects(cpmi.Identify):
         return segmented_labels_out
 
     def is_object_identification_module(self):
-        '''IdentifySecondaryObjects makes secondary objects sets so it's a identification module'''
+        """IdentifySecondaryObjects makes secondary objects sets so it's a identification module"""
         return True
 
     def get_measurement_columns(self, pipeline):
-        '''Return column definitions for measurements made by this module'''
-        columns = cpmi.get_object_measurement_columns(self.objects_name.value)
+        """Return column definitions for measurements made by this module"""
+        columns = cellprofiler.modules.identify.get_object_measurement_columns(self.objects_name.value)
         columns += [(self.primary_objects.value,
-                     cpmi.FF_CHILDREN_COUNT % self.objects_name.value,
-                     cpmeas.COLTYPE_INTEGER),
+                     cellprofiler.modules.identify.FF_CHILDREN_COUNT % self.objects_name.value,
+                     cellprofiler.measurement.COLTYPE_INTEGER),
                     (self.objects_name.value,
-                     cpmi.FF_PARENT % self.primary_objects.value,
-                     cpmeas.COLTYPE_INTEGER)]
+                     cellprofiler.modules.identify.FF_PARENT % self.primary_objects.value,
+                     cellprofiler.measurement.COLTYPE_INTEGER)]
         if self.method != M_DISTANCE_N:
-            columns += cpmi.get_threshold_measurement_columns(self.objects_name.value)
+            columns += cellprofiler.modules.identify.get_threshold_measurement_columns(self.objects_name.value)
         if self.wants_discard_edge and self.wants_discard_primary:
-            columns += cpmi.get_object_measurement_columns(self.new_primary_objects_name.value)
+            columns += cellprofiler.modules.identify.get_object_measurement_columns(self.new_primary_objects_name.value)
             columns += [(self.new_primary_objects_name.value,
-                         cpmi.FF_CHILDREN_COUNT % self.objects_name.value,
-                         cpmeas.COLTYPE_INTEGER),
+                         cellprofiler.modules.identify.FF_CHILDREN_COUNT % self.objects_name.value,
+                         cellprofiler.measurement.COLTYPE_INTEGER),
                         (self.objects_name.value,
-                         cpmi.FF_PARENT % self.new_primary_objects_name.value,
-                         cpmeas.COLTYPE_INTEGER)]
+                         cellprofiler.modules.identify.FF_PARENT % self.new_primary_objects_name.value,
+                         cellprofiler.measurement.COLTYPE_INTEGER)]
             columns += [(self.primary_objects.value,
-                         cpmi.FF_CHILDREN_COUNT % self.new_primary_objects_name.value,
-                         cpmeas.COLTYPE_INTEGER),
+                         cellprofiler.modules.identify.FF_CHILDREN_COUNT % self.new_primary_objects_name.value,
+                         cellprofiler.measurement.COLTYPE_INTEGER),
                         (self.new_primary_objects_name.value,
-                         cpmi.FF_PARENT % self.primary_objects.value,
-                         cpmeas.COLTYPE_INTEGER)]
+                         cellprofiler.modules.identify.FF_PARENT % self.primary_objects.value,
+                         cellprofiler.measurement.COLTYPE_INTEGER)]
 
         return columns
 
@@ -891,10 +888,10 @@ class IdentifySecondaryObjects(cpmi.Identify):
         return result
 
     def get_object_dictionary(self):
-        '''Get the dictionary of parent child relationships
+        """Get the dictionary of parent child relationships
 
         see Identify.get_object_categories, Identify.get_object_measurements
-        '''
+        """
         object_dictionary = {
             self.objects_name.value: [self.primary_objects.value]
         }

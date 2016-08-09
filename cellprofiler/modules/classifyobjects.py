@@ -1,4 +1,12 @@
-'''<b>Classify Objects</b> classifies objects into different classes according 
+import cellprofiler.image
+import cellprofiler.measurement
+import cellprofiler.module
+import cellprofiler.preferences
+import cellprofiler.setting
+import cellprofiler.setting
+import numpy
+
+'''<b>Classify Objects</b> classifies objects into different classes according
 to the value of measurements you choose.
 <hr>
 This module classifies objects into a number of different bins
@@ -52,15 +60,6 @@ binned into bins above ("high") and below ("low") the cutoff.</li>
 See also <b>CalculateMath</b> and any of the modules in the <b>Measure</b> category.
 '''
 
-import numpy as np
-
-import cellprofiler.image as cpi
-import cellprofiler.module as cpm
-import cellprofiler.measurement as cpmeas
-import cellprofiler.preferences as cpprefs
-import cellprofiler.setting as cps
-from cellprofiler.setting import YES, NO
-
 BY_SINGLE_MEASUREMENT = "Single measurement"
 BY_TWO_MEASUREMENTS = "Pair of measurements"
 TM_MEAN = "Mean"
@@ -75,7 +74,7 @@ F_PCT_PER_BIN = 'PctObjectsPerBin'
 F_NUM_PER_BIN = 'NumObjectsPerBin'
 
 
-class ClassifyObjects(cpm.Module):
+class ClassifyObjects(cellprofiler.module.Module):
     category = "Object Processing"
     module_name = "ClassifyObjects"
     variable_revision_number = 2
@@ -85,7 +84,7 @@ class ClassifyObjects(cpm.Module):
 
         Create the settings for the module during initialization.
         """
-        self.contrast_choice = cps.Choice(
+        self.contrast_choice = cellprofiler.setting.Choice(
                 "Make each classification decision on how many measurements?",
                 [BY_SINGLE_MEASUREMENT, BY_TWO_MEASUREMENTS], doc="""
             This setting controls how many measurements are used to make a classifications decision
@@ -105,7 +104,7 @@ class ClassifyObjects(cpm.Module):
         #
         # A count of # of measurements
         #
-        self.single_measurement_count = cps.HiddenCount(self.single_measurements)
+        self.single_measurement_count = cellprofiler.setting.HiddenCount(self.single_measurements)
         #
         # Add one single measurement to start off
         #
@@ -113,15 +112,15 @@ class ClassifyObjects(cpm.Module):
         #
         # A button to press to get another measurement
         #
-        self.add_measurement_button = cps.DoSomething(
+        self.add_measurement_button = cellprofiler.setting.DoSomething(
                 "", "Add another classification", self.add_single_measurement)
         #
         ############### Two-measurement settings #####################
         #
         # The object for the contrasting method
         #
-        self.object_name = cps.ObjectNameSubscriber(
-                "Select the object name", cps.NONE, doc="""
+        self.object_name = cellprofiler.setting.ObjectNameSubscriber(
+                "Select the object name", cellprofiler.setting.NONE, doc="""
             Choose the object that you want to measure from the list.
             This should be an object created by a previous module such as
             <b>IdentifyPrimaryObjects</b>, <b>IdentifySecondaryObjects</b>, or
@@ -133,14 +132,14 @@ class ClassifyObjects(cpm.Module):
         def object_fn():
             return self.object_name.value
 
-        self.first_measurement = cps.Measurement(
+        self.first_measurement = cellprofiler.setting.Measurement(
                 "Select the first measurement", object_fn, doc="""
             Choose a measurement made on the above object. This is
             the first of two measurements that will be contrasted together.
             The measurement should be one made on the object in a prior
             module.""")
 
-        self.first_threshold_method = cps.Choice(
+        self.first_threshold_method = cellprofiler.setting.Choice(
                 "Method to select the cutoff",
                 [TM_MEAN, TM_MEDIAN, TM_CUSTOM], doc="""
             Objects are classified as being above or below a cutoff
@@ -154,19 +153,19 @@ class ClassifyObjects(cpm.Module):
             <li><i>%(TM_CUSTOM)s</i>: You specify a custom threshold value.</li>
             </ul>""" % globals())
 
-        self.first_threshold = cps.Float(
+        self.first_threshold = cellprofiler.setting.Float(
                 "Enter the cutoff value", 0.5, doc="""
             This is the cutoff value separating objects in the two
             classes.""")
 
-        self.second_measurement = cps.Measurement(
+        self.second_measurement = cellprofiler.setting.Measurement(
                 "Select the second measurement", object_fn, doc="""
             Select a measurement made on the above object. This is
             the second of two measurements that will be contrasted together.
             The measurement should be one made on the object in a prior
             module.""")
 
-        self.second_threshold_method = cps.Choice(
+        self.second_threshold_method = cellprofiler.setting.Choice(
                 "Method to select the cutoff",
                 [TM_MEAN, TM_MEDIAN, TM_CUSTOM], doc="""
             Objects are classified as being above or below a cutoff
@@ -180,12 +179,12 @@ class ClassifyObjects(cpm.Module):
             <li><i>%(TM_CUSTOM)s:</i> You specify a custom threshold value.</li>
             </ul>""" % globals())
 
-        self.second_threshold = cps.Float(
+        self.second_threshold = cellprofiler.setting.Float(
                 "Enter the cutoff value", 0.5, doc="""
             This is the cutoff value separating objects in the two
             classes.""")
 
-        self.wants_custom_names = cps.Binary(
+        self.wants_custom_names = cellprofiler.setting.Binary(
                 "Use custom names for the bins?", False, doc="""
             Select <i>%(YES)s</i> if you want to specify the names of each bin
             measurement. <br>
@@ -195,55 +194,55 @@ class ClassifyObjects(cpm.Module):
             the module generates measurements such as
             "Classify_Intensity_MeanIntensity_Green_High_Intensity_TotalIntensity_Low".""" % globals())
 
-        self.low_low_custom_name = cps.AlphanumericText(
+        self.low_low_custom_name = cellprofiler.setting.AlphanumericText(
                 "Enter the low-low bin name", "low_low", doc="""
             <i>(Used only if using a pair of measurements)</i><br>
             Name of the measurement for objects that
             fall below the threshold for both measurements.""")
 
-        self.low_high_custom_name = cps.AlphanumericText(
+        self.low_high_custom_name = cellprofiler.setting.AlphanumericText(
                 "Enter the low-high bin name", "low_high", doc="""
             <i>(Used only if using a pair of measurements)</i><br>
             Name of the measurement for objects whose
             first measurement is below threshold and whose second measurement
             is above threshold.""")
 
-        self.high_low_custom_name = cps.AlphanumericText(
+        self.high_low_custom_name = cellprofiler.setting.AlphanumericText(
                 "Enter the high-low bin name", "high_low", doc="""
             <i>(Used only if using a pair of measurements)</i><br>
             Name of the measurement for objects whose
             first measurement is above threshold and whose second measurement
             is below threshold.""")
 
-        self.high_high_custom_name = cps.AlphanumericText(
+        self.high_high_custom_name = cellprofiler.setting.AlphanumericText(
                 "Enter the high-high bin name", "high_high", doc="""
             <i>(Used only if using a pair of measurements)</i><br>
             Name of the measurement for objects that
             are above the threshold for both measurements.""")
 
-        self.wants_image = cps.Binary(
+        self.wants_image = cellprofiler.setting.Binary(
                 "Retain an image of the classified objects?", False, doc="""
             Select <i>%(YES)s</i> to retain the image of the objects color-coded according
             to their classification, for use later in the pipeline (for example,
             to be saved by a <b>SaveImages</b> module).""" % globals())
 
-        self.image_name = cps.ImageNameProvider(
-                "Enter the image name", cps.NONE, doc="""
+        self.image_name = cellprofiler.setting.ImageNameProvider(
+                "Enter the image name", cellprofiler.setting.NONE, doc="""
             <i>(Used only if the classified object image is to be retained for later use in the pipeline)</i> <br>
             Enter the name to be given to the classified object image.""")
 
     def add_single_measurement(self, can_delete=True):
-        '''Add a single measurement to the group of single measurements
+        """Add a single measurement to the group of single measurements
 
         can_delete - True to include a "remove" button, False if you're not
                      allowed to remove it.
-        '''
-        group = cps.SettingsGroup()
+        """
+        group = cellprofiler.setting.SettingsGroup()
         if can_delete:
-            group.append("divider", cps.Divider(line=True))
+            group.append("divider", cellprofiler.setting.Divider(line=True))
 
-        group.append("object_name", cps.ObjectNameSubscriber(
-                "Select the object to be classified", cps.NONE,
+        group.append("object_name", cellprofiler.setting.ObjectNameSubscriber(
+                "Select the object to be classified", cellprofiler.setting.NONE,
                 doc="""The name of the objects to be classified. You can
             choose from objects created by any previous module. See
             <b>IdentifyPrimaryObjects</b>, <b>IdentifySecondaryObjects</b>, or
@@ -252,13 +251,13 @@ class ClassifyObjects(cpm.Module):
         def object_fn():
             return group.object_name.value
 
-        group.append("measurement", cps.Measurement(
+        group.append("measurement", cellprofiler.setting.Measurement(
                 "Select the measurement to classify by", object_fn, doc="""
             Select a measurement made by a previous module. The objects
             will be classified according to their values for this
             measurement."""))
 
-        group.append("bin_choice", cps.Choice(
+        group.append("bin_choice", cellprofiler.setting.Choice(
                 "Select bin spacing",
                 [BC_EVEN, BC_CUSTOM], doc="""
             Select how you want to define the spacing of the bins.
@@ -276,13 +275,13 @@ class ClassifyObjects(cpm.Module):
             </ul>
             """ % globals()))
 
-        group.append("bin_count", cps.Integer(
+        group.append("bin_count", cellprofiler.setting.Integer(
                 "Number of bins", 3, minval=1, doc="""
             This is the number of bins that will be created between
             the low and high threshold"""
         ))
 
-        group.append("low_threshold", cps.Float(
+        group.append("low_threshold", cellprofiler.setting.Float(
                 "Lower threshold", 0, doc="""
             <i>(Used only if "%(BC_EVEN)s" selected)</i><br>
             This is the threshold that separates the lowest bin from the
@@ -290,7 +289,7 @@ class ClassifyObjects(cpm.Module):
             define the thresholds of bins between the lowest and highest.
             """ % globals()))
 
-        group.append("wants_low_bin", cps.Binary(
+        group.append("wants_low_bin", cellprofiler.setting.Binary(
                 "Use a bin for objects below the threshold?", False, doc="""
             Select <i>%(YES)s</i> if you want to create a bin for objects
             whose values fall below the low threshold. Select <i>%(NO)s</i>
@@ -298,24 +297,24 @@ class ClassifyObjects(cpm.Module):
             """ % globals()))
 
         def min_upper_threshold():
-            return group.low_threshold.value + np.finfo(float).eps
+            return group.low_threshold.value + numpy.finfo(float).eps
 
-        group.append("high_threshold", cps.Float(
+        group.append("high_threshold", cellprofiler.setting.Float(
                 "Upper threshold", 1,
-                minval=cps.NumberConnector(min_upper_threshold), doc="""
+                minval=cellprofiler.setting.NumberConnector(min_upper_threshold), doc="""
             <i>(Used only if "%(BC_EVEN)s" selected)</i><br>
             This is the threshold that separates the last bin from
             the others.
             <i>Note:</i> If you would like two bins, you should select <i>%(BC_CUSTOM)s</i>.
             """ % globals()))
 
-        group.append("wants_high_bin", cps.Binary(
+        group.append("wants_high_bin", cellprofiler.setting.Binary(
                 "Use a bin for objects above the threshold?", False, doc="""
             Select <i>%(YES)s</i> if you want to create a bin for objects
             whose values are above the high threshold. <br>
             Select <i>%(NO)s</i> if you do not want a bin for these objects.""" % globals()))
 
-        group.append("custom_thresholds", cps.Text(
+        group.append("custom_thresholds", cellprofiler.setting.Text(
                 "Enter the custom thresholds separating the values between bins",
                 "0,1", doc="""
             <i>(Used only if "%(BC_CUSTOM)s" selected)</i><br>
@@ -325,26 +324,26 @@ class ClassifyObjects(cpm.Module):
             The module will create one more bin than there are thresholds.
             """ % globals()))
 
-        group.append("wants_custom_names", cps.Binary(
+        group.append("wants_custom_names", cellprofiler.setting.Binary(
                 "Give each bin a name?", False, doc="""
             Select <i>%(YES)s</i> to assign custom names to bins you have
             specified.
             <p>Select <i>%(NO)s</i> for the module to automatically
             assign names based on the measurements and the bin number.""" % globals()))
 
-        group.append("bin_names", cps.Text(
-                "Enter the bin names separated by commas", cps.NONE, doc="""
+        group.append("bin_names", cellprofiler.setting.Text(
+                "Enter the bin names separated by commas", cellprofiler.setting.NONE, doc="""
             <i>(Used only if Give each bin a name? is checked)</i><br>
             Enter names for each of the bins, separated by commas.
             An example including three bins might be <i>First,Second,Third</i>."""))
 
-        group.append("wants_images", cps.Binary(
+        group.append("wants_images", cellprofiler.setting.Binary(
                 "Retain an image of the classified objects?", False, doc="""
             Select <i>%(YES)s</i> to keep an image of the objects which is color-coded according
             to their classification, for use later in the pipeline (for example,
             to be saved by a <b>SaveImages</b> module).""" % globals()))
 
-        group.append("image_name", cps.ImageNameProvider(
+        group.append("image_name", cellprofiler.setting.ImageNameProvider(
                 "Name the output image", "ClassifiedNuclei", doc="""
             Enter the name to be given to the classified object
             image."""))
@@ -352,7 +351,7 @@ class ClassifyObjects(cpm.Module):
         group.can_delete = can_delete
 
         def number_of_bins():
-            '''Return the # of bins in this classification'''
+            """Return the # of bins in this classification"""
             if group.bin_choice == BC_EVEN:
                 value = group.bin_count.value
             else:
@@ -366,10 +365,10 @@ class ClassifyObjects(cpm.Module):
         group.number_of_bins = number_of_bins
 
         def measurement_name():
-            '''Get the measurement name to use inside the bin name
+            """Get the measurement name to use inside the bin name
 
             Account for conflicts with previous measurements
-            '''
+            """
             measurement_name = group.measurement.value
             other_same = 0
             for other in self.single_measurements:
@@ -382,7 +381,7 @@ class ClassifyObjects(cpm.Module):
             return measurement_name
 
         def bin_feature_names():
-            '''Return the feature names for each bin'''
+            """Return the feature names for each bin"""
             if group.wants_custom_names:
                 return [name.strip()
                         for name in group.bin_names.value.split(",")]
@@ -398,23 +397,23 @@ class ClassifyObjects(cpm.Module):
             if bin_count < 1:
                 bad_setting = (group.bin_count if group.bin_choice == BC_EVEN
                                else group.custom_thresholds)
-                raise cps.ValidationError(
+                raise cellprofiler.setting.ValidationError(
                         "You must have at least one bin in order to take measurements. "
                         "Either add more bins or ask for bins for objects above or below threshold",
                         bad_setting)
             if bin_name_count != number_of_bins():
-                raise cps.ValidationError(
+                raise cellprofiler.setting.ValidationError(
                         "The number of bin names (%d) does not match the number of bins (%d)." %
                         (bin_name_count, bin_count), group.bin_names)
             for bin_feature_name in bin_feature_names():
-                cps.AlphanumericText.validate_alphanumeric_text(
+                cellprofiler.setting.AlphanumericText.validate_alphanumeric_text(
                         bin_feature_name, group.bin_names, True)
             if group.bin_choice == BC_CUSTOM:
                 try:
                     [float(x.strip())
                      for x in group.custom_thresholds.value.split(",")]
                 except ValueError:
-                    raise cps.ValidationError(
+                    raise cellprofiler.setting.ValidationError(
                             'Custom thresholds must be a comma-separated list '
                             'of numbers (example: "1.0, 2.3, 4.5")',
                             group.custom_thresholds)
@@ -422,7 +421,7 @@ class ClassifyObjects(cpm.Module):
         group.validate_group = validate_group
 
         if can_delete:
-            group.remove_settings_button = cps.RemoveSettingButton(
+            group.remove_settings_button = cellprofiler.setting.RemoveSettingButton(
                     "", "Remove this classification",
                     self.single_measurements, group)
         self.single_measurements.append(group)
@@ -512,24 +511,24 @@ class ClassifyObjects(cpm.Module):
             self.display_single_measurement(workspace, figure)
 
     def get_feature_name_matrix(self):
-        '''Get a 2x2 matrix of feature names for two measurements'''
+        """Get a 2x2 matrix of feature names for two measurements"""
         if self.wants_custom_names:
-            return np.array([[self.low_low_custom_name.value,
-                              self.low_high_custom_name.value],
-                             [self.high_low_custom_name.value,
+            return numpy.array([[self.low_low_custom_name.value,
+                                 self.low_high_custom_name.value],
+                                [self.high_low_custom_name.value,
                               self.high_high_custom_name.value]])
         else:
             m1 = self.first_measurement.value
             m2 = self.second_measurement.value
-            return np.array([["_".join((m1, a1, m2, a2)) for a2 in ("low", "high")]
-                             for a1 in ("low", "high")])
+            return numpy.array([["_".join((m1, a1, m2, a2)) for a2 in ("low", "high")]
+                                for a1 in ("low", "high")])
 
     def run_two_measurements(self, workspace):
         measurements = workspace.measurements
         in_high_class = []
         saved_values = []
         objects = workspace.object_set.get_objects(self.object_name.value)
-        has_nan_measurement = np.zeros(objects.count, bool)
+        has_nan_measurement = numpy.zeros(objects.count, bool)
         for feature, threshold_method, threshold in (
                 (self.first_measurement, self.first_threshold_method,
                  self.first_threshold),
@@ -538,18 +537,18 @@ class ClassifyObjects(cpm.Module):
             values = measurements.get_current_measurement(
                     self.object_name.value, feature.value)
             if len(values) < objects.count:
-                values = np.hstack((
-                    values, [np.NaN] * (objects.count - len(values))))
+                values = numpy.hstack((
+                    values, [numpy.NaN] * (objects.count - len(values))))
             saved_values.append(values)
-            has_nan_measurement = has_nan_measurement | np.isnan(values)
+            has_nan_measurement = has_nan_measurement | numpy.isnan(values)
             if threshold_method == TM_CUSTOM:
                 t = threshold.value
             elif len(values) == 0:
                 t = 0
             elif threshold_method == TM_MEAN:
-                t = np.mean(values[~np.isnan(values)])
+                t = numpy.mean(values[~numpy.isnan(values)])
             elif threshold_method == TM_MEDIAN:
-                t = np.median(values[~np.isnan(values)])
+                t = numpy.median(values[~numpy.isnan(values)])
             else:
                 raise ValueError("Unknown threshold method: %s" %
                                  threshold_method.value)
@@ -566,24 +565,24 @@ class ClassifyObjects(cpm.Module):
                                              in_class.astype(int))
                 num_hits = in_class.sum()
                 measurement_name = '_'.join((M_CATEGORY, feature_names[i, j], F_NUM_PER_BIN))
-                measurements.add_measurement(cpmeas.IMAGE, measurement_name,
+                measurements.add_measurement(cellprofiler.measurement.IMAGE, measurement_name,
                                              num_hits)
                 measurement_name = '_'.join((M_CATEGORY, feature_names[i, j], F_PCT_PER_BIN))
-                measurements.add_measurement(cpmeas.IMAGE, measurement_name,
+                measurements.add_measurement(cellprofiler.measurement.IMAGE, measurement_name,
                                              100.0 * float(num_hits) / num_values if num_values > 0 else 0)
 
         if self.wants_image:
             class_1, class_2 = in_high_class
             object_codes = class_1.astype(int) + class_2.astype(int) * 2 + 1
-            object_codes = np.hstack(([0], object_codes))
-            object_codes[np.hstack((False, np.isnan(values)))] = 0
+            object_codes = numpy.hstack(([0], object_codes))
+            object_codes[numpy.hstack((False, numpy.isnan(values)))] = 0
             nobjects = len(class_1)
-            mapping = np.zeros(nobjects + 1, int)
-            mapping[1:] = np.arange(1, nobjects + 1)
+            mapping = numpy.zeros(nobjects + 1, int)
+            mapping[1:] = numpy.arange(1, nobjects + 1)
             labels = object_codes[mapping[objects.segmented]]
             colors = self.get_colors(4)
             image = colors[labels, :3]
-            image = cpi.Image(image, parent=objects.parent_image)
+            image = cellprofiler.image.Image(image, parent=objects.parent_image)
             workspace.image_set.add(self.image_name.value, image)
 
         if self.show_window:
@@ -597,7 +596,7 @@ class ClassifyObjects(cpm.Module):
         for i, feature_name in ((0, self.first_measurement.value),
                                 (1, self.second_measurement.value)):
             saved_values = workspace.display_data.saved_values[i]
-            good_saved_values = saved_values[~np.isnan(saved_values)]
+            good_saved_values = saved_values[~numpy.isnan(saved_values)]
             if len(good_saved_values) == 0:
                 figure.subplot_table(
                         i, 0, [["No %s objects found" % object_name]])
@@ -608,13 +607,13 @@ class ClassifyObjects(cpm.Module):
                 axes.set_ylabel("# of %s" % object_name)
         class_1, class_2 = workspace.display_data.in_high_class
         object_codes = class_1.astype(int) + class_2.astype(int) * 2 + 1
-        object_codes = np.hstack(([0], object_codes))
+        object_codes = numpy.hstack(([0], object_codes))
         nobjects = len(class_1)
-        mapping = np.zeros(nobjects + 1, int)
-        mapping[1:] = np.arange(1, nobjects + 1)
+        mapping = numpy.zeros(nobjects + 1, int)
+        mapping[1:] = numpy.arange(1, nobjects + 1)
         for i in range(2):
             saved_values = workspace.display_data.saved_values[i]
-            mapping[np.isnan(saved_values)] = 0
+            mapping[numpy.isnan(saved_values)] = 0
         labels = object_codes[mapping[workspace.display_data.labels]]
         figure.subplot_imshow_labels(0, 1, labels, title=object_name,
                                      renumber=False)
@@ -623,7 +622,7 @@ class ClassifyObjects(cpm.Module):
         #
         axes = figure.subplot(1, 1)
         values = object_codes[1:]
-        axes.hist(values[~np.isnan(values)], bins=4, range=(.5, 4.5))
+        axes.hist(values[~numpy.isnan(values)], bins=4, range=(.5, 4.5))
         axes.set_xticks((1, 2, 3, 4))
         if self.wants_custom_names:
             axes.set_xticklabels((self.low_low_custom_name.value,
@@ -641,7 +640,7 @@ class ClassifyObjects(cpm.Module):
             patch.set_facecolor(colors[i + 1, :])
 
     def run_single_measurement(self, group, workspace):
-        '''Classify objects based on one measurement'''
+        """Classify objects based on one measurement"""
         object_name = group.object_name.value
         feature = group.measurement.value
         objects = workspace.object_set.get_objects(object_name)
@@ -651,13 +650,13 @@ class ClassifyObjects(cpm.Module):
         # Pad values if too few (defensive programming).
         #
         if len(values) < objects.count:
-            values = np.hstack(
-                    (values, [np.NaN] * (objects.count - len(values))))
+            values = numpy.hstack(
+                    (values, [numpy.NaN] * (objects.count - len(values))))
         if group.bin_choice == BC_EVEN:
             low_threshold = group.low_threshold.value
             high_threshold = group.high_threshold.value
             bin_count = group.bin_count.value
-            thresholds = (np.arange(bin_count + 1) *
+            thresholds = (numpy.arange(bin_count + 1) *
                           (high_threshold - low_threshold) / float(bin_count) +
                           low_threshold)
         else:
@@ -667,13 +666,13 @@ class ClassifyObjects(cpm.Module):
         # Put infinities at either end of the thresholds so we can bin the
         # low and high bins
         #
-        thresholds = np.hstack(([-np.inf] if group.wants_low_bin else [],
-                                thresholds,
-                                [np.inf] if group.wants_high_bin else []))
+        thresholds = numpy.hstack(([-numpy.inf] if group.wants_low_bin else [],
+                                   thresholds,
+                                   [numpy.inf] if group.wants_high_bin else []))
         #
         # Do a cross-product of objects and threshold comparisons
         #
-        ob_idx, th_idx = np.mgrid[0:len(values), 0:len(thresholds) - 1]
+        ob_idx, th_idx = numpy.mgrid[0:len(values), 0:len(thresholds) - 1]
         bin_hits = ((values[ob_idx] > thresholds[th_idx]) &
                     (values[ob_idx] <= thresholds[th_idx + 1]))
         num_values = len(values)
@@ -683,30 +682,30 @@ class ClassifyObjects(cpm.Module):
                                          bin_hits[:, bin_idx].astype(int))
             measurement_name = '_'.join((M_CATEGORY, feature_name, F_NUM_PER_BIN))
             num_hits = bin_hits[:, bin_idx].sum()
-            measurements.add_measurement(cpmeas.IMAGE, measurement_name,
+            measurements.add_measurement(cellprofiler.measurement.IMAGE, measurement_name,
                                          num_hits)
             measurement_name = '_'.join((M_CATEGORY, feature_name, F_PCT_PER_BIN))
-            measurements.add_measurement(cpmeas.IMAGE, measurement_name,
+            measurements.add_measurement(cellprofiler.measurement.IMAGE, measurement_name,
                                          100.0 * float(num_hits) / num_values if num_values > 0 else 0)
         if group.wants_images or self.show_window:
             colors = self.get_colors(bin_hits.shape[1])
-            object_bins = np.sum(bin_hits * th_idx, 1) + 1
-            object_color = np.hstack(([0], object_bins))
-            object_color[np.hstack((False, np.isnan(values)))] = 0
+            object_bins = numpy.sum(bin_hits * th_idx, 1) + 1
+            object_color = numpy.hstack(([0], object_bins))
+            object_color[numpy.hstack((False, numpy.isnan(values)))] = 0
             labels = object_color[objects.segmented]
             if group.wants_images:
                 image = colors[labels, :3]
                 workspace.image_set.add(
                         group.image_name.value,
-                        cpi.Image(image, parent=objects.parent_image))
+                        cellprofiler.image.Image(image, parent=objects.parent_image))
 
             if self.show_window:
-                workspace.display_data.bins.append(object_bins[~np.isnan(values)])
+                workspace.display_data.bins.append(object_bins[~numpy.isnan(values)])
                 workspace.display_data.labels.append(labels)
-                workspace.display_data.values.append(values[~np.isnan(values)])
+                workspace.display_data.values.append(values[~numpy.isnan(values)])
 
     def display_single_measurement(self, workspace, figure):
-        '''Display an array of single measurements'''
+        """Display an array of single measurements"""
         figure.set_subplots((3, len(self.single_measurements)))
         for i, group in enumerate(self.single_measurements):
             bin_hits = workspace.display_data.bins[i]
@@ -718,7 +717,7 @@ class ClassifyObjects(cpm.Module):
             # A histogram of the values
             #
             axes = figure.subplot(0, i)
-            axes.hist(values[~np.isnan(values)])
+            axes.hist(values[~numpy.isnan(values)])
             axes.set_xlabel(group.measurement.value)
             axes.set_ylabel("# of %s" % group.object_name.value)
             #
@@ -727,7 +726,7 @@ class ClassifyObjects(cpm.Module):
             axes = figure.subplot(1, i)
             axes.hist(bin_hits, bins=group.number_of_bins(),
                       range=(.5, group.number_of_bins() + .5))
-            axes.set_xticks(np.arange(1, group.number_of_bins() + 1))
+            axes.set_xticks(numpy.arange(1, group.number_of_bins() + 1))
             if group.wants_custom_names:
                 axes.set_xticklabels(group.bin_names.value.split(","))
             axes.set_xlabel(group.measurement.value)
@@ -744,15 +743,15 @@ class ClassifyObjects(cpm.Module):
                                          sharexy=figure.subplot(2, 0))
 
     def get_colors(self, count):
-        '''Get colors used for two-measurement labels image'''
+        """Get colors used for two-measurement labels image"""
         import matplotlib.cm as cm
-        cmap = cm.get_cmap(cpprefs.get_default_colormap())
+        cmap = cm.get_cmap(cellprofiler.preferences.get_default_colormap())
         #
         # Trick the colormap into divulging the values used.
         #
         sm = cm.ScalarMappable(cmap=cmap)
-        colors = sm.to_rgba(np.arange(count) + 1)
-        return np.vstack((np.zeros(colors.shape[1]), colors))
+        colors = sm.to_rgba(numpy.arange(count) + 1)
+        return numpy.vstack((numpy.zeros(colors.shape[1]), colors))
 
     def prepare_settings(self, setting_values):
         """Do any sort of adjustment to the settings required for the given values
@@ -777,7 +776,7 @@ class ClassifyObjects(cpm.Module):
 
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
-        '''Adjust setting values if they came from a previous revision
+        """Adjust setting values if they came from a previous revision
 
         setting_values - a sequence of strings representing the settings
                          for the module as stored in the pipeline
@@ -795,7 +794,7 @@ class ClassifyObjects(cpm.Module):
         variable_revision_number and True if upgraded to CP 2.0, otherwise
         they should leave things as-is so that the caller can report
         an error.
-        '''
+        """
         if (from_matlab and
                     module_name == 'ClassifyObjectsByTwoMeasurements' and
                     variable_revision_number == 2):
@@ -822,17 +821,17 @@ class ClassifyObjects(cpm.Module):
                     separator[i] = TM_CUSTOM
             split_labels = [x.strip() for x in labels.split(',')]
             if len(split_labels) < 4:
-                split_labels += [cps.NONE] * (4 - len(split_labels))
+                split_labels += [cellprofiler.setting.NONE] * (4 - len(split_labels))
             setting_values = [
-                BY_TWO_MEASUREMENTS, "1", cps.NONE, cps.NONE, BC_EVEN,
-                "1", cps.NO, cps.NO, "0", "1", "0,1", cps.NO,
-                "First,Second,Third", cps.NO, "ClassifiedNuclei",
+                BY_TWO_MEASUREMENTS, "1", cellprofiler.setting.NONE, cellprofiler.setting.NONE, BC_EVEN,
+                "1", cellprofiler.setting.NO, cellprofiler.setting.NO, "0", "1", "0,1", cellprofiler.setting.NO,
+                "First,Second,Third", cellprofiler.setting.NO, "ClassifiedNuclei",
                 object_name, measurement[0], separator[0], threshold[0],
                 measurement[1], separator[1], threshold[1],
-                cps.NO if labels == cps.DO_NOT_USE else cps.YES,
+                cellprofiler.setting.NO if labels == cellprofiler.setting.DO_NOT_USE else cellprofiler.setting.YES,
                 split_labels[0], split_labels[1], split_labels[2],
                 split_labels[3],
-                cps.NO if save_colored_objects == cps.DO_NOT_USE else cps.YES,
+                cellprofiler.setting.NO if save_colored_objects == cellprofiler.setting.DO_NOT_USE else cellprofiler.setting.YES,
                 save_colored_objects]
             from_matlab = False
             module_name = self.module_name
@@ -849,9 +848,9 @@ class ClassifyObjects(cpm.Module):
                 measurement += '_' + size_scale
             bin_count = "1"
             low_threshold = "0"
-            wants_low_bin = cps.NO
+            wants_low_bin = cellprofiler.setting.NO
             high_threshold = "1"
-            wants_high_bin = cps.NO
+            wants_high_bin = cellprofiler.setting.NO
             custom_bins = "0,1"
             if bin_type == BC_EVEN:
                 pieces = bin_specifications.split(',')
@@ -862,16 +861,16 @@ class ClassifyObjects(cpm.Module):
                     high_threshold = pieces[2]
             else:
                 custom_bins = bin_specifications
-            wants_labels = cps.NO if labels == cps.DO_NOT_USE else cps.YES
+            wants_labels = cellprofiler.setting.NO if labels == cellprofiler.setting.DO_NOT_USE else cellprofiler.setting.YES
             setting_values = [
                 BY_SINGLE_MEASUREMENT, "1", object_name, measurement,
                 bin_type, bin_count, low_threshold, wants_low_bin,
                 high_threshold, wants_high_bin,
                 custom_bins, wants_labels, labels,
-                cps.NO if save_colored_objects == cps.DO_NOT_USE else cps.YES,
+                cellprofiler.setting.NO if save_colored_objects == cellprofiler.setting.DO_NOT_USE else cellprofiler.setting.YES,
                 save_colored_objects,
-                object_name, cps.NONE, TM_MEAN, ".5", cps.NONE, TM_MEAN, ".5",
-                cps.NO, "LowLow", "HighLow", "LowHigh", "HighHigh", cps.NO,
+                object_name, cellprofiler.setting.NONE, TM_MEAN, ".5", cellprofiler.setting.NONE, TM_MEAN, ".5",
+                cellprofiler.setting.NO, "LowLow", "HighLow", "LowHigh", "HighHigh", cellprofiler.setting.NO,
                 "ClassifiedNuclei"]
             from_matlab = False
             variable_revision_number = 2
@@ -894,8 +893,8 @@ class ClassifyObjects(cpm.Module):
                 # Bin count changed: don't count the outer 2 bins
                 #
                 new_setting_values += [str(int(setting_values[3]) - 2)]
-                new_setting_values += [setting_values[4]] + [cps.YES]
-                new_setting_values += [setting_values[5]] + [cps.YES]
+                new_setting_values += [setting_values[4]] + [cellprofiler.setting.YES]
+                new_setting_values += [setting_values[5]] + [cellprofiler.setting.YES]
                 new_setting_values += setting_values[6:11]
                 setting_values = setting_values[11:]
             new_setting_values += setting_values
@@ -908,31 +907,31 @@ class ClassifyObjects(cpm.Module):
         columns = []
         if self.contrast_choice == BY_SINGLE_MEASUREMENT:
             for group in self.single_measurements:
-                columns += [(cpmeas.IMAGE,
+                columns += [(cellprofiler.measurement.IMAGE,
                              '_'.join((M_CATEGORY, feature_name, F_NUM_PER_BIN)),
-                             cpmeas.COLTYPE_INTEGER)
+                             cellprofiler.measurement.COLTYPE_INTEGER)
                             for feature_name in group.bin_feature_names()]
-                columns += [(cpmeas.IMAGE,
+                columns += [(cellprofiler.measurement.IMAGE,
                              '_'.join((M_CATEGORY, feature_name, F_PCT_PER_BIN)),
-                             cpmeas.COLTYPE_FLOAT)
+                             cellprofiler.measurement.COLTYPE_FLOAT)
                             for feature_name in group.bin_feature_names()]
                 columns += [(group.object_name.value,
                              '_'.join((M_CATEGORY, feature_name)),
-                             cpmeas.COLTYPE_INTEGER)
+                             cellprofiler.measurement.COLTYPE_INTEGER)
                             for feature_name in group.bin_feature_names()]
         else:
             names = self.get_feature_name_matrix()
-            columns += [(cpmeas.IMAGE,
+            columns += [(cellprofiler.measurement.IMAGE,
                          '_'.join((M_CATEGORY, name, F_NUM_PER_BIN)),
-                         cpmeas.COLTYPE_INTEGER)
+                         cellprofiler.measurement.COLTYPE_INTEGER)
                         for name in names.flatten()]
-            columns += [(cpmeas.IMAGE,
+            columns += [(cellprofiler.measurement.IMAGE,
                          '_'.join((M_CATEGORY, name, F_PCT_PER_BIN)),
-                         cpmeas.COLTYPE_FLOAT)
+                         cellprofiler.measurement.COLTYPE_FLOAT)
                         for name in names.flatten()]
             columns += [(self.object_name.value,
                          '_'.join((M_CATEGORY, name)),
-                         cpmeas.COLTYPE_INTEGER)
+                         cellprofiler.measurement.COLTYPE_INTEGER)
                         for name in names.flatten()]
         return columns
 
@@ -941,7 +940,7 @@ class ClassifyObjects(cpm.Module):
 
         object_name - return measurements made on this object (or 'Image' for image measurements)
         """
-        if ((object_name == cpmeas.IMAGE) or
+        if ((object_name == cellprofiler.measurement.IMAGE) or
                 (self.contrast_choice == BY_SINGLE_MEASUREMENT and
                          object_name in [group.object_name.value
                                          for group in self.single_measurements]) or
@@ -964,7 +963,7 @@ class ClassifyObjects(cpm.Module):
             for group in self.single_measurements:
                 if group.object_name == object_name:
                     return group.bin_feature_names()
-                elif object_name == cpmeas.IMAGE:
+                elif object_name == cellprofiler.measurement.IMAGE:
                     for image_features in (F_NUM_PER_BIN, F_PCT_PER_BIN):
                         for bin_feature_names in group.bin_feature_names():
                             result += ['_'.join((bin_feature_names, image_features))]
@@ -972,7 +971,7 @@ class ClassifyObjects(cpm.Module):
         elif self.contrast_choice == BY_TWO_MEASUREMENTS:
             if self.object_name == object_name:
                 return self.get_feature_name_matrix().flatten().tolist()
-            elif object_name == cpmeas.IMAGE:
+            elif object_name == cellprofiler.measurement.IMAGE:
                 result = []
                 for image_features in (F_NUM_PER_BIN, F_PCT_PER_BIN):
                     for bin_feature_names in self.get_feature_name_matrix().flatten().tolist():

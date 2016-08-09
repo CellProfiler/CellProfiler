@@ -1,3 +1,13 @@
+import cellprofiler.image
+import cellprofiler.measurement
+import cellprofiler.module
+import cellprofiler.modules.identify
+import cellprofiler.preferences
+import cellprofiler.region
+import cellprofiler.setting
+import cellprofiler.workspace
+import numpy
+
 '''<b>Display Data On Image</b>
 produces an image with measured data on top of identified objects.
 <hr>
@@ -6,17 +16,6 @@ your choosing, or one object measurement per object on top
 of every object in an image. The display itself is an image which you
 can save to a file using <b>SaveImages</b>.
 '''
-
-import numpy as np
-
-import cellprofiler.image as cpi
-import cellprofiler.module as cpm
-import cellprofiler.measurement as cpmeas
-import cellprofiler.region as cpo
-import cellprofiler.preferences as cpprefs
-import cellprofiler.setting as cps
-import cellprofiler.workspace as cpw
-from cellprofiler.modules.identify import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
 
 OI_OBJECTS = "Object"
 OI_IMAGE = "Image"
@@ -32,7 +31,7 @@ CMS_USE_MEASUREMENT_RANGE = "Use this image's measurement range"
 CMS_MANUAL = "Manual"
 
 
-class DisplayDataOnImage(cpm.Module):
+class DisplayDataOnImage(cellprofiler.module.Module):
     module_name = 'DisplayDataOnImage'
     category = 'Data Tools'
     variable_revision_number = 6
@@ -50,7 +49,7 @@ class DisplayDataOnImage(cpm.Module):
             # Ask the user for a parameter
             self.smoothing_size = cellprofiler.settings.Float(...)
         """
-        self.objects_or_image = cps.Choice(
+        self.objects_or_image = cellprofiler.setting.Choice(
                 "Display object or image measurements?",
                 [OI_OBJECTS, OI_IMAGE], doc="""
             <ul>
@@ -60,8 +59,8 @@ class DisplayDataOnImage(cpm.Module):
             on an image.</li>
             </ul>""" % globals())
 
-        self.objects_name = cps.ObjectNameSubscriber(
-                "Select the input objects", cps.NONE, doc="""
+        self.objects_name = cellprofiler.setting.ObjectNameSubscriber(
+                "Select the input objects", cellprofiler.setting.NONE, doc="""
             <i>(Used only when displaying object measurements)</i><br>
             Choose the name of objects identified by some previous
             module (such as <b>IdentifyPrimaryObjects</b> or
@@ -71,16 +70,16 @@ class DisplayDataOnImage(cpm.Module):
             if self.objects_or_image == OI_OBJECTS:
                 return self.objects_name.value
             else:
-                return cpmeas.IMAGE
+                return cellprofiler.measurement.IMAGE
 
-        self.measurement = cps.Measurement(
+        self.measurement = cellprofiler.setting.Measurement(
                 "Measurement to display", object_fn, doc="""
             Choose the measurement to display. This will be a measurement
             made by some previous module on either the whole image (if
             displaying a single image measurement) or on the objects you
             selected.""")
 
-        self.wants_image = cps.Binary(
+        self.wants_image = cellprofiler.setting.Binary(
                 "Display background image?", True,
                 doc="""Choose whether or not to display the measurements on
             a background image. Usually, you will want to see the image
@@ -89,14 +88,14 @@ class DisplayDataOnImage(cpm.Module):
             overlay image and the original image later. Choose "Yes" to
             display the measurements on top of a background image or "No"
             to display the measurements on a black background.""")
-        self.image_name = cps.ImageNameSubscriber(
-                "Select the image on which to display the measurements", cps.NONE, doc="""
+        self.image_name = cellprofiler.setting.ImageNameSubscriber(
+                "Select the image on which to display the measurements", cellprofiler.setting.NONE, doc="""
             Choose the image to be displayed behind the measurements.
             This can be any image created or loaded by a previous module.
             If you have chosen not to display the background image, the image
             will only be used to determine the dimensions of the displayed image""")
 
-        self.color_or_text = cps.Choice(
+        self.color_or_text = cellprofiler.setting.Choice(
                 "Display mode", [CT_TEXT, CT_COLOR],
                 doc="""<i>(Used only when displaying object measurements)</i><br>
             Choose how to display the measurement information. If you choose
@@ -109,30 +108,30 @@ class DisplayDataOnImage(cpm.Module):
             """ % globals()
         )
 
-        self.colormap = cps.Colormap(
+        self.colormap = cellprofiler.setting.Colormap(
                 "Color map",
                 doc="""<i>(Used only when displaying object measurements)</i><br>
             This is the color map used as the color gradient for coloring the
             objects by their measurement values.
             """)
-        self.text_color = cps.Color(
+        self.text_color = cellprofiler.setting.Color(
                 "Text color", "red", doc="""
             This is the color that will be used when displaying the text.
             """)
 
-        self.display_image = cps.ImageNameProvider(
+        self.display_image = cellprofiler.setting.ImageNameProvider(
                 "Name the output image that has the measurements displayed", "DisplayImage", doc="""
             The name that will be given to the image with
             the measurements superimposed. You can use this name to refer to the image in
             subsequent modules (such as <b>SaveImages</b>).""")
 
-        self.font_size = cps.Integer(
+        self.font_size = cellprofiler.setting.Integer(
                 "Font size (points)", 10, minval=1)
 
-        self.decimals = cps.Integer(
+        self.decimals = cellprofiler.setting.Integer(
                 "Number of decimals", 2, minval=0)
 
-        self.saved_image_contents = cps.Choice(
+        self.saved_image_contents = cellprofiler.setting.Choice(
                 "Image elements to save",
                 [E_IMAGE, E_FIGURE, E_AXES], doc="""
             This setting controls the level of annotation on the image:
@@ -141,14 +140,14 @@ class DisplayDataOnImage(cpm.Module):
             <li><i>%(E_AXES)s:</i> Adds axes with tick marks and image coordinates.</li>
             <li><i>%(E_FIGURE)s:</i> Adds a title and other decorations.</li></ul>""" % globals())
 
-        self.offset = cps.Integer(
+        self.offset = cellprofiler.setting.Integer(
                 "Annotation offset (in pixels)", 0, doc="""
             Add a pixel offset to the measurement. Normally, the text is
             placed at the object (or image) center, which can obscure relevant features of
             the object. This setting adds a specified offset to the text, in a random
             direction.""")
 
-        self.color_map_scale_choice = cps.Choice(
+        self.color_map_scale_choice = cellprofiler.setting.Choice(
                 "Color map scale",
                 [CMS_USE_MEASUREMENT_RANGE, CMS_MANUAL],
                 doc="""<i>(Used only when displaying object measurements as a
@@ -170,7 +169,7 @@ class DisplayDataOnImage(cpm.Module):
             can be compared by a uniform color mapping.</li>
             </ul>
             """ % globals())
-        self.color_map_scale = cps.FloatRange(
+        self.color_map_scale = cellprofiler.setting.FloatRange(
                 "Color map range",
                 value=(0.0, 1.0),
                 doc="""<i>(Used only when setting a manual colormap range)</i><br>
@@ -213,7 +212,7 @@ class DisplayDataOnImage(cpm.Module):
         return result
 
     def use_color_map(self):
-        '''True if the measurement values are rendered using a color map'''
+        """True if the measurement values are rendered using a color map"""
         return self.objects_or_image == OI_OBJECTS and \
                self.color_or_text == CT_COLOR and not self.use_as_data_tool
 
@@ -230,7 +229,7 @@ class DisplayDataOnImage(cpm.Module):
         if self.wants_image:
             pixel_data = image.pixel_data
         else:
-            pixel_data = np.zeros(image.pixel_data.shape[:2])
+            pixel_data = numpy.zeros(image.pixel_data.shape[:2])
         object_set = workspace.object_set
         if self.objects_or_image == OI_OBJECTS:
             if self.objects_name.value in object_set.object_names:
@@ -249,29 +248,29 @@ class DisplayDataOnImage(cpm.Module):
                     self.measurement.value)
             values = [value]
             x = [pixel_data.shape[1] / 2]
-            x_offset = np.random.uniform(high=1.0, low=-1.0)
+            x_offset = numpy.random.uniform(high=1.0, low=-1.0)
             x[0] += x_offset
             y = [pixel_data.shape[0] / 2]
-            y_offset = np.sqrt(1 - x_offset ** 2)
+            y_offset = numpy.sqrt(1 - x_offset ** 2)
             y[0] += y_offset
         else:
             values = measurements.get_current_measurement(
                     self.objects_name.value,
                     self.measurement.value)
             if objects is not None and len(values) < objects.count:
-                temp = np.zeros(objects.count, values.dtype)
+                temp = numpy.zeros(objects.count, values.dtype)
                 temp[:len(values)] = values
-                temp[len(values):] = np.nan
+                temp[len(values):] = numpy.nan
                 values = temp
             x = measurements.get_current_measurement(
-                    self.objects_name.value, M_LOCATION_CENTER_X)
-            x_offset = np.random.uniform(high=1.0, low=-1.0, size=x.shape)
-            y_offset = np.sqrt(1 - x_offset ** 2)
+                    self.objects_name.value, cellprofiler.modules.identify.M_LOCATION_CENTER_X)
+            x_offset = numpy.random.uniform(high=1.0, low=-1.0, size=x.shape)
+            y_offset = numpy.sqrt(1 - x_offset ** 2)
             x += self.offset.value * x_offset
             y = measurements.get_current_measurement(
-                    self.objects_name.value, M_LOCATION_CENTER_Y)
+                    self.objects_name.value, cellprofiler.modules.identify.M_LOCATION_CENTER_Y)
             y += self.offset.value * y_offset
-            mask = ~(np.isnan(values) | np.isnan(x) | np.isnan(y))
+            mask = ~(numpy.isnan(values) | numpy.isnan(x) | numpy.isnan(y))
             values = values[mask]
             x = x[mask]
             y = y[mask]
@@ -288,7 +287,7 @@ class DisplayDataOnImage(cpm.Module):
             img = pixel_data * 255
             img[img < 0] = 0
             img[img > 255] = 255
-            img = img.astype(np.uint8)
+            img = img.astype(numpy.uint8)
             axes.imshow(img, cmap=matplotlib.cm.Greys_r)
 
         self.display_on_figure(workspace, axes, imshow_fn)
@@ -312,7 +311,7 @@ class DisplayDataOnImage(cpm.Module):
                 fig.subplots_adjust(.1, .1, .9, .9, 0, 0)
 
         pixel_data = figure_to_image(fig, dpi=fig.dpi)
-        image = cpi.Image(pixel_data)
+        image = cellprofiler.image.Image(pixel_data)
         workspace.image_set.add(self.display_image.value, image)
 
     def run_as_data_tool(self, workspace):
@@ -327,7 +326,7 @@ class DisplayDataOnImage(cpm.Module):
         image_name = self.image_name.value
         pathname_feature = "_".join((LI.C_PATH_NAME, image_name))
         filename_feature = "_".join((LI.C_FILE_NAME, image_name))
-        if not all([m.has_feature(cpmeas.IMAGE, f)
+        if not all([m.has_feature(cellprofiler.measurement.IMAGE, f)
                     for f in pathname_feature, filename_feature]):
             with wx.FileDialog(
                     None,
@@ -352,7 +351,7 @@ class DisplayDataOnImage(cpm.Module):
     def display(self, workspace, figure):
         figure.set_subplots((1, 1))
         ax = figure.subplot(0, 0)
-        title = "%s_%s" % (self.objects_name.value if self.objects_or_image == OI_OBJECTS else cpmeas.IMAGE,
+        title = "%s_%s" % (self.objects_name.value if self.objects_or_image == OI_OBJECTS else cellprofiler.measurement.IMAGE,
                            self.measurement.value)
 
         def imshow_fn(pixel_data):
@@ -364,7 +363,6 @@ class DisplayDataOnImage(cpm.Module):
         self.display_on_figure(workspace, ax, imshow_fn)
 
     def display_on_figure(self, workspace, axes, imshow_fn):
-        import matplotlib
         import matplotlib.cm
 
         if self.use_color_map():
@@ -372,16 +370,16 @@ class DisplayDataOnImage(cpm.Module):
             if self.wants_image:
                 pixel_data = workspace.display_data.pixel_data
             else:
-                pixel_data = (labels != 0).astype(np.float32)
+                pixel_data = (labels != 0).astype(numpy.float32)
             if pixel_data.ndim == 3:
-                pixel_data = np.sum(pixel_data, 2) / pixel_data.shape[2]
+                pixel_data = numpy.sum(pixel_data, 2) / pixel_data.shape[2]
             colormap_name = self.colormap.value
-            if colormap_name == cps.DEFAULT:
-                colormap_name = cpprefs.get_default_colormap()
+            if colormap_name == cellprofiler.setting.DEFAULT:
+                colormap_name = cellprofiler.preferences.get_default_colormap()
             colormap = matplotlib.cm.get_cmap(colormap_name)
             values = workspace.display_data.values
             vmask = workspace.display_data.mask
-            colors = np.ones((len(vmask) + 1, 4))
+            colors = numpy.ones((len(vmask) + 1, 4))
             colors[1:][~vmask, :3] = 1
             sm = matplotlib.cm.ScalarMappable(cmap=colormap)
             if self.color_map_scale_choice == CMS_MANUAL:
@@ -389,7 +387,7 @@ class DisplayDataOnImage(cpm.Module):
                             self.color_map_scale.max)
             sm.set_array(values)
             colors[1:][vmask, :] = sm.to_rgba(values)
-            img = colors[labels, :3] * pixel_data[:, :, np.newaxis]
+            img = colors[labels, :3] * pixel_data[:, :, numpy.newaxis]
             imshow_fn(img)
             assert isinstance(axes, matplotlib.axes.Axes)
             figure = axes.get_figure()
@@ -419,7 +417,7 @@ class DisplayDataOnImage(cpm.Module):
             object_name, category, feature_nbr, image_name, size_scale, \
             display_image, data_image, dpi_to_save, \
             saved_image_contents = setting_values
-            objects_or_image = (OI_IMAGE if object_name == cpmeas.IMAGE
+            objects_or_image = (OI_IMAGE if object_name == cellprofiler.measurement.IMAGE
                                 else OI_OBJECTS)
             measurement = '_'.join((category, feature_nbr, image_name, size_scale))
             setting_values = [
@@ -444,12 +442,12 @@ class DisplayDataOnImage(cpm.Module):
         if variable_revision_number == 3:
             # Added color map mode
             setting_values = setting_values + [
-                CT_TEXT, cpprefs.get_default_colormap()]
+                CT_TEXT, cellprofiler.preferences.get_default_colormap()]
             variable_revision_number = 4
 
         if variable_revision_number == 4:
             # added wants_image
-            setting_values = setting_values + [cps.YES]
+            setting_values = setting_values + [cellprofiler.setting.YES]
             variable_revision_number = 5
         if variable_revision_number == 5:
             # added color_map_scale_choice and color_map_scale

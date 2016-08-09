@@ -1,16 +1,12 @@
-"""Modules - pipeline processing modules for CellProfiler
-"""
-
 import logging
-
-logger = logging.getLogger(__name__)
 import re
 import sys
-import os.path
-import glob
-import cellprofiler.module as cpm
-from cellprofiler.modules.plugins import plugin_list
-from cellprofiler.preferences import get_plugin_directory
+
+import cellprofiler.module
+import cellprofiler.modules.plugins
+import cellprofiler.preferences
+
+logger = logging.getLogger(__name__)
 
 # python modules and their corresponding cellprofiler.module classes
 pymodule_to_cpmodule = {'align': 'Align',
@@ -257,24 +253,24 @@ def check_module(module, name):
         return
     assert name == module.module_name, "Module %s should have module_name %s (is %s)" % (name, name, module.module_name)
     for method_name in do_not_override:
-        assert getattr(module, method_name) == getattr(cpm.Module,
+        assert getattr(module, method_name) == getattr(cellprofiler.module.Module,
                                                        method_name), "Module %s should not override method %s" % (
             name, method_name)
     for method_name in should_override:
-        assert getattr(module, method_name) != getattr(cpm.Module,
+        assert getattr(module, method_name) != getattr(cellprofiler.module.Module,
                                                        method_name), "Module %s should override method %s" % (
             name, method_name)
 
 
 def find_cpmodule(m):
-    '''Returns the CPModule from within the loaded Python module
+    """Returns the CPModule from within the loaded Python module
 
     m - an imported module
 
     returns the CPModule class
-    '''
+    """
     for v, val in m.__dict__.iteritems():
-        if isinstance(val, type) and issubclass(val, cpm.Module):
+        if isinstance(val, type) and issubclass(val, cellprofiler.module.Module):
             return val
     raise "Could not find cpm.CPModule class in %s" % m.__file__
 
@@ -328,12 +324,12 @@ def fill_modules():
     for mod in builtin_modules:
         add_module('cellprofiler.modules.' + mod, True)
 
-    plugin_directory = get_plugin_directory()
+    plugin_directory = cellprofiler.preferences.get_plugin_directory()
     if plugin_directory is not None:
         old_path = sys.path
         sys.path.insert(0, plugin_directory)
         try:
-            for mod in plugin_list():
+            for mod in cellprofiler.modules.plugins.plugin_list():
                 add_module(mod, False)
         finally:
             sys.path = old_path

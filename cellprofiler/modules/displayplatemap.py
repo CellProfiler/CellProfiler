@@ -1,3 +1,10 @@
+import cellprofiler.gui.help
+import cellprofiler.image
+import cellprofiler.measurement
+import cellprofiler.module
+import cellprofiler.setting
+import numpy
+
 '''<b>Display Platemap </b> displays a desired measurement in a plate map view.
 <hr>
 <b>Display Platemap</b> is a tool for browsing image-based data laid out on
@@ -14,14 +21,6 @@ See also <b>DisplayDensityPlot</b>, <b>DisplayHistogram</b>,
 <b>DisplayScatterPlot</b>.
 '''
 
-import numpy as np
-
-import cellprofiler.image as cpi
-import cellprofiler.module as cpm
-import cellprofiler.measurement as cpmeas
-import cellprofiler.setting as cps
-from cellprofiler.gui.help import USING_METADATA_HELP_REF
-
 AGG_AVG = 'avg'
 AGG_MEDIAN = 'median'
 AGG_STDEV = 'stdev'
@@ -33,7 +32,7 @@ WF_NAME = 'Well name'
 WF_ROWCOL = 'Row & Column'
 
 
-class DisplayPlatemap(cpm.Module):
+class DisplayPlatemap(cellprofiler.module.Module):
     module_name = "DisplayPlatemap"
     category = "Data Tools"
     variable_revision_number = 2
@@ -42,10 +41,10 @@ class DisplayPlatemap(cpm.Module):
         if self.objects_or_image.value == OI_OBJECTS:
             return self.object.value
         else:
-            return cpmeas.IMAGE
+            return cellprofiler.measurement.IMAGE
 
     def create_settings(self):
-        self.objects_or_image = cps.Choice(
+        self.objects_or_image = cellprofiler.setting.Choice(
                 "Display object or image measurements?",
                 [OI_OBJECTS, OI_IMAGE], doc="""
             <ul>
@@ -55,27 +54,27 @@ class DisplayPlatemap(cpm.Module):
             for each well.</li>
             </ul>""" % globals())
 
-        self.object = cps.ObjectNameSubscriber(
+        self.object = cellprofiler.setting.ObjectNameSubscriber(
                 'Select the object whose measurements will be displayed',
-                cps.NONE, doc='''
+                cellprofiler.setting.NONE, doc='''
             Choose the name of objects identified by some previous
             module (such as <b>IdentifyPrimaryObjects</b> or
             <b>IdentifySecondaryObjects</b>) whose measurements are to be displayed.''')
 
-        self.plot_measurement = cps.Measurement(
+        self.plot_measurement = cellprofiler.setting.Measurement(
                 'Select the measurement to plot',
-                self.get_object, cps.NONE, doc='''
+                self.get_object, cellprofiler.setting.NONE, doc='''
             Choose the image or object measurement made by a previous module to plot.''')
 
-        self.plate_name = cps.Measurement('Select your plate metadata',
-                                          lambda: cpmeas.IMAGE,
+        self.plate_name = cellprofiler.setting.Measurement('Select your plate metadata',
+                                                           lambda: cellprofiler.measurement.IMAGE,
                                           'Metadata_Plate', doc='''
             Choose the metadata tag that corresponds to the plate identifier. That is,
             each plate should have a metadata tag containing a specifier corresponding
             uniquely to that plate.
             <p>%(USING_METADATA_HELP_REF)s.</p>''' % globals())
 
-        self.plate_type = cps.Choice(
+        self.plate_type = cellprofiler.setting.Choice(
                 'Multiwell plate format',
                 ['96', '384'], doc=
                 '''The module assumes that your data is laid out in a multi-well plate format
@@ -85,7 +84,7 @@ class DisplayPlatemap(cpm.Module):
                 <li><i>384:</i> A 384-well plate with 16 rows &times; 24 columns</li>
                 </ul>''')
 
-        self.well_format = cps.Choice(
+        self.well_format = cellprofiler.setting.Choice(
                 "Well metadata format",
                 [WF_NAME, WF_ROWCOL], doc="""
             <ul>
@@ -95,9 +94,9 @@ class DisplayPlatemap(cpm.Module):
             for each well.</li>
             </ul>""" % globals())
 
-        self.well_name = cps.Measurement(
+        self.well_name = cellprofiler.setting.Measurement(
                 'Select your well metadata',
-                lambda: cpmeas.IMAGE, 'Metadata_Well', doc='''
+                lambda: cellprofiler.measurement.IMAGE, 'Metadata_Well', doc='''
             Choose the metadata tag that corresponds to the well identifier.
             The row-column format of these entries should be an
             alphabetical character (specifying the plate row), followed by two integer
@@ -106,23 +105,23 @@ class DisplayPlatemap(cpm.Module):
             rows and 24 columns) would span from well "A01" to well "P24"."
             <p>%(USING_METADATA_HELP_REF)s.</p>''' % globals())
 
-        self.well_row = cps.Measurement('Select your well row metadata',
-                                        lambda: cpmeas.IMAGE, 'Metadata_WellRow', doc='''
+        self.well_row = cellprofiler.setting.Measurement('Select your well row metadata',
+                                                         lambda: cellprofiler.measurement.IMAGE, 'Metadata_WellRow', doc='''
             Choose the metadata tag that corresponds to the well row identifier, typically
             specified as an alphabetical character. For example, a standard format
             96-well plate would span from  row "A" to "H", whereas a 384-well plate (16
             rows and 24 columns) would span from row "A" to "P".
             <p>%(USING_METADATA_HELP_REF)s.</p>''' % globals())
 
-        self.well_col = cps.Measurement('Select your well column metadata',
-                                        lambda: cpmeas.IMAGE, 'Metadata_WellCol', doc='''
+        self.well_col = cellprofiler.setting.Measurement('Select your well column metadata',
+                                                         lambda: cellprofiler.measurement.IMAGE, 'Metadata_WellCol', doc='''
             Choose the metadata tag that corresponds to the well column identifier, typically
             specified with two integer characters. For example, a standard format
             96-well plate would span from column "01" to "12", whereas a 384-well plate (16
             rows and 24 columns) would span from column "01" to "24".
             <p>%(USING_METADATA_HELP_REF)s.</p>''' % globals())
 
-        self.agg_method = cps.Choice(
+        self.agg_method = cellprofiler.setting.Choice(
                 'How should the values be aggregated?',
                 AGG_NAMES, AGG_NAMES[0], doc='''
             Measurements must be aggregated to a
@@ -137,7 +136,7 @@ class DisplayPlatemap(cpm.Module):
             different units or widely different means.</li>
             </ul>''' % globals())
 
-        self.title = cps.Text(
+        self.title = cellprofiler.setting.Text(
                 'Enter a title for the plot, if desired', '',
                 doc='''
             Enter a title for the plot. If you leave this blank,
@@ -172,13 +171,13 @@ class DisplayPlatemap(cpm.Module):
             # Get plates
             plates = map(
                     unicode,
-                    m.get_all_measurements(cpmeas.IMAGE, self.plate_name.value))
+                    m.get_all_measurements(cellprofiler.measurement.IMAGE, self.plate_name.value))
             # Get wells
             if self.well_format == WF_NAME:
-                wells = m.get_all_measurements(cpmeas.IMAGE, self.well_name.value)
+                wells = m.get_all_measurements(cellprofiler.measurement.IMAGE, self.well_name.value)
             elif self.well_format == WF_ROWCOL:
-                wells = ['%s%s' % (x, y) for x, y in zip(m.get_all_measurements(cpmeas.IMAGE, self.well_row.value),
-                                                         m.get_all_measurements(cpmeas.IMAGE, self.well_col.value))]
+                wells = ['%s%s' % (x, y) for x, y in zip(m.get_all_measurements(cellprofiler.measurement.IMAGE, self.well_row.value),
+                                                         m.get_all_measurements(cellprofiler.measurement.IMAGE, self.well_col.value))]
             # Get data to plot
             data = m.get_all_measurements(self.get_object(), self.plot_measurement.value)
 
@@ -197,15 +196,15 @@ class DisplayPlatemap(cpm.Module):
 
             for plate, sub_dict in pm_dict.items():
                 for well, vals in sub_dict.items():
-                    vals = np.hstack(vals)
+                    vals = numpy.hstack(vals)
                     if self.agg_method == AGG_AVG:
-                        pm_dict[plate][well] = np.mean(vals)
+                        pm_dict[plate][well] = numpy.mean(vals)
                     elif self.agg_method == AGG_STDEV:
-                        pm_dict[plate][well] = np.std(vals)
+                        pm_dict[plate][well] = numpy.std(vals)
                     elif self.agg_method == AGG_MEDIAN:
-                        pm_dict[plate][well] = np.median(vals)
+                        pm_dict[plate][well] = numpy.median(vals)
                     elif self.agg_method == AGG_CV:
-                        pm_dict[plate][well] = np.std(vals) / np.mean(vals)
+                        pm_dict[plate][well] = numpy.std(vals) / numpy.mean(vals)
                     else:
                         raise NotImplemented
             workspace.display_data.pm_dict = pm_dict

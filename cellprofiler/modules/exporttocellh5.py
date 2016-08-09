@@ -1,3 +1,20 @@
+import os
+import tempfile
+
+import cellh5
+import cellh5.cellh5write
+import cellprofiler.gui.help
+import cellprofiler.gui.help
+import cellprofiler.measurement
+import cellprofiler.module
+import cellprofiler.modules.identify
+import cellprofiler.preferences
+import cellprofiler.setting
+import cellprofiler.setting
+import h5py
+import numpy
+import scipy.ndimage
+
 '''<b>ExportToCellH5</b> exports measurements, objects and object relationships,
 and images to the CellH5 data format.
 <hr>
@@ -8,28 +25,6 @@ to note is that you must keep all .cellh5 files that are generated together
 if you move them to a new folder.
 '''
 
-import os
-import tempfile
-
-import h5py
-import numpy as np
-import scipy.ndimage
-
-import cellprofiler.module as cpm
-import cellprofiler.measurement as cpmeas
-import cellprofiler.setting as cps
-from cellprofiler.gui.help import \
-    USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF
-from cellprofiler.modules.identify import R_PARENT
-from cellprofiler.preferences import \
-    IO_FOLDER_CHOICE_HELP_TEXT, IO_WITH_METADATA_HELP_TEXT
-from cellprofiler.setting import YES, NO
-from cellprofiler.gui.help import \
-    USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF
-import cellh5
-import cellh5.cellh5write
-import numpy as np
-
 OFF_OBJECTS_COUNT = 0
 OFF_IMAGES_COUNT = 1
 
@@ -38,7 +33,7 @@ COLORS = [("Red", "0xFF0000"),
           ("Blue", "0x0000FF")]
 
 
-class ExportToCellH5(cpm.Module):
+class ExportToCellH5(cellprofiler.module.Module):
     #
     # TODO: model z and t. Currently, CellProfiler would analyze each
     #       stack plane independently. I think the easiest way to handle
@@ -66,8 +61,8 @@ class ExportToCellH5(cpm.Module):
     IGNORE_METADATA = "None"
 
     def create_settings(self):
-        '''Create the settings for the ExportToCellH5 module'''
-        self.directory = cps.DirectoryPath(
+        """Create the settings for the ExportToCellH5 module"""
+        self.directory = cellprofiler.setting.DirectoryPath(
                 "Output file location",
                 doc="""
             This setting lets you choose the folder for the output files.
@@ -75,20 +70,20 @@ class ExportToCellH5(cpm.Module):
             """ % globals())
 
         def get_directory_fn():
-            '''Get the directory for the CellH5 file'''
+            """Get the directory for the CellH5 file"""
             return self.directory.get_absolute_path()
 
         def set_directory_fn(path):
             dir_choice, custom_path = self.directory.get_parts_from_path(path)
             self.directory.join_parts(dir_choice, custom_path)
 
-        self.file_name = cps.FilenameText(
+        self.file_name = cellprofiler.setting.FilenameText(
                 "Output file name", "DefaultOut.ch5",
                 get_directory_fn=get_directory_fn,
                 set_directory_fn=set_directory_fn,
                 metadata=True,
                 browse_msg="Choose CellH5 file",
-                mode=cps.FilenameText.MODE_APPEND,
+                mode=cellprofiler.setting.FilenameText.MODE_APPEND,
                 exts=[("CellH5 file (*.cellh5)", "*.ch5"),
                       ("HDF5 file (*.h5)", "*.h5"),
                       ("All files (*.*", "*.*")],
@@ -104,7 +99,7 @@ class ExportToCellH5(cpm.Module):
             folder name.%(USING_METADATA_HELP_REF)s.</p>
 
             """ % globals())
-        self.overwrite_ok = cps.Binary(
+        self.overwrite_ok = cellprofiler.setting.Binary(
                 "Overwrite existing data without warning?", False,
                 doc="""
             Select <i>%(YES)s</i> to automatically overwrite any existing data
@@ -116,7 +111,7 @@ class ExportToCellH5(cpm.Module):
             of CellProfiler cannot write to the same file at the same time,
             so you must ensure that separate names are used on a cluster.
             """ % globals())
-        self.repack = cps.Binary(
+        self.repack = cellprofiler.setting.Binary(
                 "Repack after analysis", True,
                 doc="""
             This setting determines whether CellProfiler in multiprocessing mode
@@ -131,7 +126,7 @@ class ExportToCellH5(cpm.Module):
             this option requires that you keep the master file and the linked
             files together when copying them to a new folder.
             """ % globals())
-        self.plate_metadata = cps.Choice(
+        self.plate_metadata = cellprofiler.setting.Choice(
                 "Plate metadata", [], value="Plate",
                 choices_fn=self.get_metadata_choices,
                 doc="""
@@ -141,13 +136,13 @@ class ExportToCellH5(cpm.Module):
             assay is slide-based, you can use a metadata item that identifies
             the slide as the choice for this setting and set the well
             and site metadata items to <i>None</i>.""")
-        self.well_metadata = cps.Choice(
+        self.well_metadata = cellprofiler.setting.Choice(
                 "Well metadata", [], value="Well",
                 choices_fn=self.get_metadata_choices,
                 doc="""This is the metadata tag that identifies the well name
             for the images in the current cycle. Choose <i>None</i> if
             your assay does not have metadata for the well.""")
-        self.site_metadata = cps.Choice(
+        self.site_metadata = cellprofiler.setting.Choice(
                 "Site metadata", [], value="Site",
                 choices_fn=self.get_metadata_choices,
                 doc=
@@ -155,8 +150,8 @@ class ExportToCellH5(cpm.Module):
                 for the images in the current cycle. Choose <i>None</i> if
                 your assay doesn't divide wells up into sites or if this
                 tag is not required for other reasons.""")
-        self.divider = cps.Divider()
-        self.wants_to_choose_measurements = cps.Binary(
+        self.divider = cellprofiler.setting.Divider()
+        self.wants_to_choose_measurements = cellprofiler.setting.Binary(
                 "Choose measurements?", False,
                 doc="""
             This setting lets you choose between exporting all measurements or
@@ -164,7 +159,7 @@ class ExportToCellH5(cpm.Module):
             measurements to be exported. Select <i>%(NO)s</i> to automatically
             export all measurements available at this stage of the pipeline.
             """ % globals())
-        self.measurements = cps.MeasurementMultiChoice(
+        self.measurements = cellprofiler.setting.MeasurementMultiChoice(
                 "Measurements to export",
                 doc="""
             <i>(Used only if choosing measurements.)</i>
@@ -173,22 +168,22 @@ class ExportToCellH5(cpm.Module):
             Check the measurements you want to export.
             """)
         self.objects_to_export = []
-        self.add_objects_button = cps.DoSomething(
+        self.add_objects_button = cellprofiler.setting.DoSomething(
                 "Add objects to export", "Add objects",
                 self.add_objects)
         self.images_to_export = []
-        self.add_image_button = cps.DoSomething(
+        self.add_image_button = cellprofiler.setting.DoSomething(
                 "Add an image to export", "Add image",
                 self.add_image)
-        self.objects_count = cps.HiddenCount(self.objects_to_export)
-        self.images_count = cps.HiddenCount(self.images_to_export)
+        self.objects_count = cellprofiler.setting.HiddenCount(self.objects_to_export)
+        self.images_count = cellprofiler.setting.HiddenCount(self.images_to_export)
 
     def add_objects(self, can_delete=True):
-        group = cps.SettingsGroup()
+        group = cellprofiler.setting.SettingsGroup()
         self.objects_to_export.append(group)
         group.append(
                 "objects_name",
-                cps.ObjectNameSubscriber(
+                cellprofiler.setting.ObjectNameSubscriber(
                         "Objects name", value="Nuclei",
                         doc="""
                 This setting lets you choose the objects you want to export.
@@ -198,15 +193,15 @@ class ExportToCellH5(cpm.Module):
                 """))
         group.append(
                 "Remover",
-                cps.RemoveSettingButton(
+                cellprofiler.setting.RemoveSettingButton(
                         "Remove the objects above", "Remove",
                         self.objects_to_export, group))
 
     def add_image(self, can_delete=True):
-        group = cps.SettingsGroup()
+        group = cellprofiler.setting.SettingsGroup()
         self.images_to_export.append(group)
         group.append("image_name",
-                     cps.ImageNameSubscriber(
+                     cellprofiler.setting.ImageNameSubscriber(
                              "Image name", value="DNA",
                              doc="""
             This setting lets you choose the images you want to export.
@@ -216,7 +211,7 @@ class ExportToCellH5(cpm.Module):
             """
                      ))
         group.append("remover",
-                     cps.RemoveSettingButton(
+                     cellprofiler.setting.RemoveSettingButton(
                              "Remove the image above", "Remove",
                              self.objects_to_export, group))
 
@@ -225,9 +220,9 @@ class ExportToCellH5(cpm.Module):
         choices = [self.IGNORE_METADATA]
         for column in columns:
             object_name, feature_name, column_type = column[:3]
-            if object_name == cpmeas.IMAGE and \
-                    column_type.startswith(cpmeas.COLTYPE_VARCHAR) and \
-                    feature_name.startswith(cpmeas.C_METADATA + "_"):
+            if object_name == cellprofiler.measurement.IMAGE and \
+                    column_type.startswith(cellprofiler.measurement.COLTYPE_VARCHAR) and \
+                    feature_name.startswith(cellprofiler.measurement.C_METADATA + "_"):
                 choices.append(feature_name.split("_", 1)[1])
         return choices
 
@@ -264,7 +259,7 @@ class ExportToCellH5(cpm.Module):
                             self.file_name.value)
 
     def get_site_path(self, workspace, image_number):
-        '''Get the plate / well / site tuple that identifies a field of view
+        """Get the plate / well / site tuple that identifies a field of view
 
         workspace - workspace for the analysis containing the metadata
                     measurements to be mined.
@@ -273,24 +268,24 @@ class ExportToCellH5(cpm.Module):
 
         returns a tuple which can be used for the hierarchical path
         to the group for a particular field of view
-        '''
+        """
         m = workspace.measurements
         path = []
         for setting in self.plate_metadata, self.well_metadata, self.site_metadata:
             if setting.value == self.IGNORE_METADATA:
                 path.append("NA")
             else:
-                feature = "_".join((cpmeas.C_METADATA, setting.value))
-                path.append(m[cpmeas.IMAGE, feature, image_number])
+                feature = "_".join((cellprofiler.measurement.C_METADATA, setting.value))
+                path.append(m[cellprofiler.measurement.IMAGE, feature, image_number])
         return tuple(path)
 
     def get_subfile_name(self, workspace):
-        '''Contact the UI to find the cellh5 file to use to store results
+        """Contact the UI to find the cellh5 file to use to store results
 
         Internally, this tells the UI to create a link from the master file
         to the plate / well / site group that will be used to store results.
         Then, the worker writes into that file.
-        '''
+        """
         master_file_name = self.get_path_to_master_file(workspace.measurements)
         path = self.get_site_path(
                 workspace,
@@ -299,7 +294,7 @@ class ExportToCellH5(cpm.Module):
                 self, master_file_name, os.getpid(), path, headless_ok=True)
 
     def handle_interaction(self, master_file, pid, path):
-        '''Handle an analysis worker / UI interaction
+        """Handle an analysis worker / UI interaction
 
         This function is used to coordinate linking a group in the master file
         with a group in a subfile that is reserved for a particular
@@ -316,7 +311,7 @@ class ExportToCellH5(cpm.Module):
         returns the name of the subfile to be used. After return, the
         subfile has been closed by the UI and a link has been established
         to the group named by the path.
-        '''
+        """
         master_dict = self.get_dictionary().setdefault(master_file, {})
         if pid not in master_dict:
             md_head, md_tail = os.path.splitext(master_file)
@@ -358,7 +353,7 @@ class ExportToCellH5(cpm.Module):
                     ### get shape of 5D cube
                     shape5D = (len(self.objects_to_export), 1, 1,
                                labels.shape[0], labels.shape[1])
-                    dtype5D = np.uint16
+                    dtype5D = numpy.uint16
 
                     ### create lablel writer for incremental writing
                     c5_label_writer = c5_pos.add_label_image(shape=shape5D, dtype=dtype5D)
@@ -389,8 +384,8 @@ class ExportToCellH5(cpm.Module):
 
             ### get shape of 5D cube
             shape5D = (n_channels, 1, 1, max_i, max_j)
-            for dtype in (np.uint8, np.uint16, np.uint32, np.uint64):
-                if max_scale <= np.iinfo(dtype).max:
+            for dtype in (numpy.uint8, numpy.uint16, numpy.uint32, numpy.uint64):
+                if max_scale <= numpy.iinfo(dtype).max:
                     dtype5D = dtype
                     break
 
@@ -403,7 +398,7 @@ class ExportToCellH5(cpm.Module):
                 image_name = image_group.image_name.value
                 image = m.get_image(image_name).pixel_data
                 scale = m.get_image(image_name).get_scale()
-                if not np.issubdtype(image.dtype, np.dtype(bool).type):
+                if not numpy.issubdtype(image.dtype, numpy.dtype(bool).type):
                     if scale == 1:
                         scale = max_scale
                     image = image * scale
@@ -460,7 +455,7 @@ class ExportToCellH5(cpm.Module):
 
             ### 0) and 1) filter columns for cellular features
             feature_cols = filter(
-                    lambda xxx: (xxx[0] not in (cpmeas.EXPERIMENT, cpmeas.IMAGE)) and
+                    lambda xxx: (xxx[0] not in (cellprofiler.measurement.EXPERIMENT, cellprofiler.measurement.IMAGE)) and
                                 m.has_feature(xxx[0], xxx[1]), columns)
 
             ### iterate over objects to export
@@ -474,7 +469,7 @@ class ExportToCellH5(cpm.Module):
                 c5_object_writer = c5_pos.add_region_object(objects_name)
                 object_labels = objects.indices
 
-                c5_object_writer.write(t=0, object_labels=np.array(object_labels))
+                c5_object_writer.write(t=0, object_labels=numpy.array(object_labels))
                 c5_object_writer.write_definition()
                 c5_object_writer.finalize()
 
@@ -489,14 +484,14 @@ class ExportToCellH5(cpm.Module):
                         values = m[object_name, feature_name]
 
                         feature_names.append(feature_name)
-                        feature_matrix.append(values[:, np.newaxis])
+                        feature_matrix.append(values[:, numpy.newaxis])
 
-                    feature_matrix = np.concatenate(feature_matrix, axis=1)
+                    feature_matrix = numpy.concatenate(feature_matrix, axis=1)
 
                     c5_feature_writer = c5_pos.add_object_feature_matrix(
                             object_name=object_name,
                             feature_name="object_features",
-                            n_features=n_features, dtype=np.float32)
+                            n_features=n_features, dtype=numpy.float32)
                     c5_feature_writer.write(feature_matrix)
                     c5_feature_writer.write_definition(feature_names)
                     c5_feature_writer.finalize()
@@ -519,22 +514,22 @@ class ExportToCellH5(cpm.Module):
                             ijv[:, 1], ijv[:, 2], objects.indices)
                     location_y = scipy.ndimage.mean(
                             ijv[:, 0], ijv[:, 2], objects.indices)
-                    bb = np.c_[min_x, max_x, min_y, max_y]
+                    bb = numpy.c_[min_x, max_x, min_y, max_y]
                 else:
-                    bb = np.zeros((0, 4))
-                    location_x = np.zeros(0)
-                    location_y = np.zeros(0)
+                    bb = numpy.zeros((0, 4))
+                    location_x = numpy.zeros(0)
+                    location_y = numpy.zeros(0)
 
-                c5_bbox.write(bb.astype(np.int32))
+                c5_bbox.write(bb.astype(numpy.int32))
                 c5_bbox.write_definition()
                 c5_bbox.finalize()
 
                 c5_center = c5_pos.add_object_center(object_name=objects_name)
                 locations = {'x': location_x, 'y': location_y}
-                cent = np.column_stack(
+                cent = numpy.column_stack(
                         [locations[axis] for axis in c5_center.dtype.names])
 
-                c5_center.write(cent.astype(np.int32))
+                c5_center.write(cent.astype(numpy.int32))
                 c5_center.write_definition()
                 c5_center.finalize()
             #
@@ -552,7 +547,7 @@ class ExportToCellH5(cpm.Module):
                 for image_number1, image_number2, \
                     object_number1, object_number2 in relationships:
                     if image_number1 == image_number2 and \
-                                    key.relationship == R_PARENT:
+                                    key.relationship == cellprofiler.modules.identify.R_PARENT:
                         #
                         # Object 1 is the parent to object 2 - this is the
                         # most common relationship, so if you can only record

@@ -1,3 +1,27 @@
+import logging
+import os
+
+import cellprofiler.gui.help
+import cellprofiler.image
+import cellprofiler.measurement
+import cellprofiler.module
+import cellprofiler.modules.identify
+import cellprofiler.modules.identify
+import cellprofiler.modules.identify
+import cellprofiler.modules.identify
+import cellprofiler.preferences
+import cellprofiler.preferences
+import cellprofiler.region
+import cellprofiler.setting
+import cellprofiler.setting
+import cellprofiler.utilities.rules
+import centrosome.cpmorphology
+import centrosome.outline
+import numpy
+import scipy
+import scipy.ndimage
+import scipy.sparse
+
 '''<b>Filter Objects</b> eliminates objects based on their measurements (e.g., area, shape,
 texture, intensity).
 <hr>
@@ -29,33 +53,7 @@ See also any of the <b>MeasureObject</b> modules, <b>MeasureTexture</b>,
 <b>MeasureCorrelation</b>, and <b>CalculateRatios</b>.
 '''
 
-import logging
-
 logger = logging.getLogger(__name__)
-import numpy as np
-import os
-import scipy as sp
-import scipy.ndimage as scind
-from scipy.sparse import coo_matrix
-import traceback
-
-from cellprofiler.modules.identify import FF_PARENT, FF_CHILDREN_COUNT, \
-     M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
-import cellprofiler.image as cpi
-import cellprofiler.module as cpm
-import cellprofiler.region as cpo
-import cellprofiler.setting as cps
-from cellprofiler.setting import YES, NO
-import cellprofiler.measurement as cpmeas
-import cellprofiler.preferences as cpprefs
-import cellprofiler.utilities.rules as cprules
-from centrosome.outline import outline
-from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
-from cellprofiler.modules.identify import add_object_count_measurements
-from cellprofiler.modules.identify import add_object_location_measurements
-from cellprofiler.modules.identify import get_object_measurement_columns
-from cellprofiler.preferences import IO_FOLDER_CHOICE_HELP_TEXT
-from cellprofiler.gui.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
 
 '''Minimal filter - pick a single object per image by minimum measured value'''
 FI_MINIMAL = "Minimal"
@@ -101,19 +99,19 @@ PO_PARENT_WITH_MOST_OVERLAP = "Parent with most overlap"
 PO_ALL = [PO_BOTH, PO_PARENT_WITH_MOST_OVERLAP]
 
 
-class FilterObjects(cpm.Module):
+class FilterObjects(cellprofiler.module.Module):
     module_name = 'FilterObjects'
     category = "Object Processing"
     variable_revision_number = 7
 
     def create_settings(self):
-        '''Create the initial settings and name the module'''
-        self.target_name = cps.ObjectNameProvider(
+        """Create the initial settings and name the module"""
+        self.target_name = cellprofiler.setting.ObjectNameProvider(
             'Name the output objects', 'FilteredBlue', doc="""
             Enter a name for the collection of objects that are retained after applying the filter(s).""")
 
-        self.object_name = cps.ObjectNameSubscriber(
-            'Select the object to filter', cps.NONE, doc="""
+        self.object_name = cellprofiler.setting.ObjectNameSubscriber(
+            'Select the object to filter', cellprofiler.setting.NONE, doc="""
             Select the set of objects that you want to filter. This setting
             also controls which measurement choices appear for filtering:
             you can only filter based on measurements made on the object you select.
@@ -122,9 +120,9 @@ class FilterObjects(cpm.Module):
             the first operand's object here, because <b>CalculateMath</b> measurements
             are stored with the first operand's object.""")
 
-        self.spacer_1 = cps.Divider(line=False)
+        self.spacer_1 = cellprofiler.setting.Divider(line=False)
 
-        self.mode = cps.Choice(
+        self.mode = cellprofiler.setting.Choice(
             'Select the filtering mode',
             [MODE_MEASUREMENTS, MODE_RULES, MODE_BORDER, MODE_CLASSIFIERS],
             doc = """
@@ -141,15 +139,15 @@ class FilterObjects(cpm.Module):
             You will need to ensure that the measurements specified by the file are
             produced by upstream modules in the pipeline.</li>
             </ul>""" % globals())
-        self.spacer_2 = cps.Divider(line=False)
+        self.spacer_2 = cellprofiler.setting.Divider(line=False)
 
         self.measurements = []
-        self.measurement_count = cps.HiddenCount(self.measurements,
+        self.measurement_count = cellprofiler.setting.HiddenCount(self.measurements,
                                                  "Measurement count")
         self.add_measurement(False)
-        self.add_measurement_button = cps.DoSomething(
+        self.add_measurement_button = cellprofiler.setting.DoSomething(
             "", "Add another measurement", self.add_measurement)
-        self.filter_choice = cps.Choice(
+        self.filter_choice = cellprofiler.setting.Choice(
             "Select the filtering method", FI_ALL, FI_LIMITS, doc="""
             <i>(Used only if filtering using measurements)</i><br>
             There are five different ways to filter objects:
@@ -171,7 +169,7 @@ class FilterObjects(cpm.Module):
             <li><i>%(FI_MINIMAL_PER_OBJECT)s:</i> Same as <i>Maximal per object</i>, except filtering is based on the minimum value.</li>
             </ul>""" % globals())
 
-        self.per_object_assignment = cps.Choice(
+        self.per_object_assignment = cellprofiler.setting.Choice(
             "Assign overlapping child to", PO_ALL,
             doc="""
             <i>(Used only if filtering per object)</i>
@@ -198,20 +196,20 @@ class FilterObjects(cpm.Module):
             object by a subseequent <b>RelateObjects</b> module.</li></ul>
             """ % globals())
 
-        self.enclosing_object_name = cps.ObjectNameSubscriber(
-            'Select the objects that contain the filtered objects', cps.NONE, doc="""
+        self.enclosing_object_name = cellprofiler.setting.ObjectNameSubscriber(
+            'Select the objects that contain the filtered objects', cellprofiler.setting.NONE, doc="""
             <i>(Used only if a per-object filtering method is selected)</i><br>
             This setting selects the container (i.e., parent) objects for the <i>%(FI_MAXIMAL_PER_OBJECT)s</i>
             and <i>%(FI_MINIMAL_PER_OBJECT)s</i> filtering choices.""" % globals())
 
-        self.rules_directory = cps.DirectoryPath(
+        self.rules_directory = cellprofiler.setting.DirectoryPath(
             "Rules file location", doc="""
             <i>(Used only when filtering using %(MODE_RULES)s)</i>
             <br>
             Select the location of the rules file that will be used for filtering.
             %(IO_FOLDER_CHOICE_HELP_TEXT)s""" % globals())
 
-        self.rules_class = cps.Choice(
+        self.rules_class = cellprofiler.setting.Choice(
             "Class number",
             choices = ["1", "2"],
             choices_fn = self.get_class_choices, doc ="""
@@ -228,14 +226,14 @@ class FilterObjects(cpm.Module):
             </ul></p>""" % globals())
 
         def get_directory_fn():
-            '''Get the directory for the rules file name'''
+            """Get the directory for the rules file name"""
             return self.rules_directory.get_absolute_path()
 
         def set_directory_fn(path):
             dir_choice, custom_path = self.rules_directory.get_parts_from_path(path)
             self.rules_directory.join_parts(dir_choice, custom_path)
 
-        self.rules_file_name = cps.FilenameText(
+        self.rules_file_name = cellprofiler.setting.FilenameText(
             "Rules file name", "rules.txt",
             get_directory_fn=get_directory_fn,
             set_directory_fn=set_directory_fn, doc="""
@@ -254,20 +252,20 @@ class FilterObjects(cpm.Module):
             positive score is higher than the negative score.</p>""" %
                                                                      globals())
 
-        self.wants_outlines = cps.Binary(
+        self.wants_outlines = cellprofiler.setting.Binary(
             'Retain outlines of the identified objects?', False, doc="""
             %(RETAINING_OUTLINES_HELP)s""" % globals())
 
-        self.outlines_name = cps.OutlineNameProvider(
+        self.outlines_name = cellprofiler.setting.OutlineNameProvider(
             'Name the outline image', 'FilteredObjects', doc="""
             %(NAMING_OUTLINES_HELP)s""" % globals())
 
         self.additional_objects = []
-        self.additional_object_count = cps.HiddenCount(self.additional_objects,
+        self.additional_object_count = cellprofiler.setting.HiddenCount(self.additional_objects,
                                                        "Additional object count")
-        self.spacer_3 = cps.Divider(line=False)
+        self.spacer_3 = cellprofiler.setting.Divider(line=False)
 
-        self.additional_object_button = cps.DoSomething(
+        self.additional_object_button = cellprofiler.setting.DoSomething(
             'Relabel additional objects to match the filtered object?',
             'Add an additional object', self.add_additional_object, doc="""
             Click this button to add an object to receive the same post-filtering labels as
@@ -291,61 +289,61 @@ class FilterObjects(cpm.Module):
             return [str(i) for i in range(1, 3)]
 
     def add_measurement(self, can_delete=True):
-        '''Add another measurement to the filter list'''
-        group = cps.SettingsGroup()
-        group.append("measurement", cps.Measurement(
+        """Add another measurement to the filter list"""
+        group = cellprofiler.setting.SettingsGroup()
+        group.append("measurement", cellprofiler.setting.Measurement(
             'Select the measurement to filter by',
             self.object_name.get_value, "AreaShape_Area", doc="""
             <i>(Used only if filtering using %(MODE_MEASUREMENTS)s)</i><br>
             See the <b>Measurements</b> modules help pages
             for more information on the features measured.""" % globals()))
 
-        group.append("wants_minimum", cps.Binary(
+        group.append("wants_minimum", cellprofiler.setting.Binary(
             'Filter using a minimum measurement value?', True, doc="""
             <i>(Used only if %(FI_LIMITS)s is selected for filtering method)</i><br>
             Select <i>%(YES)s</i> to filter the objects based on a minimum acceptable object
             measurement value. Objects which are greater than or equal to this value
             will be retained.""" % globals()))
 
-        group.append("min_limit", cps.Float('Minimum value', 0))
+        group.append("min_limit", cellprofiler.setting.Float('Minimum value', 0))
 
-        group.append("wants_maximum", cps.Binary(
+        group.append("wants_maximum", cellprofiler.setting.Binary(
             'Filter using a maximum measurement value?', True, doc="""
             <i>(Used only if %(FI_LIMITS)s is selected for filtering method)</i><br>
             Select <i>%(YES)s</i> to filter the objects based on a maximum acceptable object
             measurement value. Objects which are less than or equal to this value
             will be retained.""" % globals()))
 
-        group.append("max_limit", cps.Float('Maximum value', 1))
-        group.append("divider", cps.Divider())
+        group.append("max_limit", cellprofiler.setting.Float('Maximum value', 1))
+        group.append("divider", cellprofiler.setting.Divider())
         self.measurements.append(group)
         if can_delete:
-            group.append("remover", cps.RemoveSettingButton(
+            group.append("remover", cellprofiler.setting.RemoveSettingButton(
                 "", "Remove this measurement",
                 self.measurements, group))
 
     def add_additional_object(self):
-        group = cps.SettingsGroup()
+        group = cellprofiler.setting.SettingsGroup()
         group.append("object_name",
-                     cps.ObjectNameSubscriber('Select additional object to relabel',
-                                              cps.NONE))
+                     cellprofiler.setting.ObjectNameSubscriber('Select additional object to relabel',
+                                                               cellprofiler.setting.NONE))
         group.append("target_name",
-                     cps.ObjectNameProvider('Name the relabeled objects', 'FilteredGreen'))
+                     cellprofiler.setting.ObjectNameProvider('Name the relabeled objects', 'FilteredGreen'))
 
         group.append("wants_outlines",
-                     cps.Binary('Retain outlines of relabeled objects?', False))
+                     cellprofiler.setting.Binary('Retain outlines of relabeled objects?', False))
 
         group.append("outlines_name",
-                     cps.OutlineNameProvider('Name the outline image', 'OutlinesFilteredGreen'))
+                     cellprofiler.setting.OutlineNameProvider('Name the outline image', 'OutlinesFilteredGreen'))
 
         group.append("remover",
-                     cps.RemoveSettingButton("", "Remove this additional object", self.additional_objects, group))
-        group.append("divider", cps.Divider(line=False))
+                     cellprofiler.setting.RemoveSettingButton("", "Remove this additional object", self.additional_objects, group))
+        group.append("divider", cellprofiler.setting.Divider(line=False))
         self.additional_objects.append(group)
 
     def prepare_settings(self, setting_values):
-        '''Make sure the # of slots for additional objects matches
-           the anticipated number of additional objects'''
+        """Make sure the # of slots for additional objects matches
+           the anticipated number of additional objects"""
         additional_object_count = int(setting_values[ADDITIONAL_OBJECT_SETTING_INDEX])
         while len(self.additional_objects) > additional_object_count:
             self.remove_additional_object(self.additional_objects[-1].key)
@@ -431,13 +429,13 @@ class FilterObjects(cpm.Module):
         return result
 
     def validate_module(self, pipeline):
-        '''Make sure that the user has selected some limits when filtering'''
+        """Make sure that the user has selected some limits when filtering"""
         if (self.mode == MODE_MEASUREMENTS and
             self.filter_choice == FI_LIMITS):
             for group in self.measurements:
                 if (group.wants_minimum.value == False and
                     group.wants_maximum.value == False):
-                    raise cps.ValidationError(
+                    raise cellprofiler.setting.ValidationError(
                         'Please enter a minimum and/or maximum limit for your measurement',
                         group.wants_minimum)
         if self.mode == MODE_RULES:
@@ -445,13 +443,13 @@ class FilterObjects(cpm.Module):
                 rules = self.get_rules()
             except Exception, instance:
                 logger.warning("Failed to load rules: %s", str(instance), exc_info=True)
-                raise cps.ValidationError(str(instance),
-                                          self.rules_file_name)
+                raise cellprofiler.setting.ValidationError(str(instance),
+                                                           self.rules_file_name)
             measurement_columns = pipeline.get_measurement_columns(self)
             for r in rules.rules:
                 if not any([mc[0] == r.object_name and
                             mc[1] == r.feature for mc in measurement_columns]):
-                    raise cps.ValidationError(
+                    raise cellprofiler.setting.ValidationError(
                         ("The rules file, %s, uses the measurement, %s "
                          "for object %s, but that measurement is not available "
                          "at this stage of the pipeline. Consider editing the "
@@ -465,16 +463,16 @@ class FilterObjects(cpm.Module):
                 self.get_bin_labels()
                 self.get_classifier_features()
             except IOError:
-                raise cps.ValidationError(
+                raise cellprofiler.setting.ValidationError(
                     "Failed to load classifier file %s" %
                     self.rules_file_name.value, self.rules_file_name)
             except:
-                raise cps.ValidationError(
+                raise cellprofiler.setting.ValidationError(
                     "Unable to load %s as a classifier file" %
                     self.rules_file_name.value, self.rules_file_name)
 
     def run(self, workspace):
-        '''Filter objects for this image set, display results'''
+        """Filter objects for this image set, display results"""
         src_objects = workspace.get_objects(self.object_name.value)
         if self.mode == MODE_RULES:
             indexes = self.keep_by_rules(workspace, src_objects)
@@ -499,9 +497,9 @@ class FilterObjects(cpm.Module):
         # All labels to be deleted have a value in this array of zero
         #
         new_object_count = len(indexes)
-        max_label = np.max(src_objects.segmented)
-        label_indexes = np.zeros((max_label + 1,), int)
-        label_indexes[indexes] = np.arange(1, new_object_count + 1)
+        max_label = numpy.max(src_objects.segmented)
+        label_indexes = numpy.zeros((max_label + 1,), int)
+        label_indexes[indexes] = numpy.arange(1, new_object_count + 1)
         #
         # Loop over both the primary and additional objects
         #
@@ -524,7 +522,7 @@ class FilterObjects(cpm.Module):
             # segmentation for the new and generally try to copy stuff
             # from the old to the new.
             #
-            target_objects = cpo.Region()
+            target_objects = cellprofiler.region.Region()
             target_objects.segmented = target_labels
             target_objects.unedited_segmented = src_objects.unedited_segmented
             #
@@ -541,27 +539,27 @@ class FilterObjects(cpm.Module):
             workspace.object_set.add_objects(target_objects, target_name)
             #
             # Add measurements for the new objects
-            add_object_count_measurements(m, target_name, new_object_count)
-            add_object_location_measurements(m, target_name, target_labels)
+            cellprofiler.modules.identify.add_object_count_measurements(m, target_name, new_object_count)
+            cellprofiler.modules.identify.add_object_location_measurements(m, target_name, target_labels)
             #
             # Relate the old numbering to the new numbering
             #
             m.add_measurement(target_name,
-                              FF_PARENT % src_name,
-                              np.array(indexes))
+                              cellprofiler.modules.identify.FF_PARENT % src_name,
+                              numpy.array(indexes))
             #
             # Count the children (0 / 1)
             #
             child_count = (label_indexes[1:] > 0).astype(int)
             m.add_measurement(src_name,
-                              FF_CHILDREN_COUNT % target_name,
+                              cellprofiler.modules.identify.FF_CHILDREN_COUNT % target_name,
                               child_count)
             #
             # Add an outline if asked to do so
             #
             if wants_outlines:
-                outline_image = cpi.Image(outline(target_labels) > 0,
-                                          parent=target_objects.parent_image)
+                outline_image = cellprofiler.image.Image(centrosome.outline.outline(target_labels) > 0,
+                                                         parent=target_objects.parent_image)
                 workspace.image_set.add(outlines_name, outline_image)
 
         if self.show_window:
@@ -588,7 +586,7 @@ class FilterObjects(cpm.Module):
             workspace.display_data.target_objects_segmented = target_objects.segmented
 
     def display(self, workspace, figure):
-        '''Display what was filtered'''
+        """Display what was filtered"""
         src_name = self.object_name.value
         src_objects_segmented = workspace.display_data.src_objects_segmented
         image = workspace.display_data.image
@@ -623,35 +621,35 @@ class FilterObjects(cpm.Module):
                 figure.subplot_imshow_grayscale(
                     0, 0, image, title=title, cplabels=cplabels)
 
-            statistics = [[np.max(src_objects_segmented)],
-                          [np.max(target_objects_segmented)]]
+            statistics = [[numpy.max(src_objects_segmented)],
+                          [numpy.max(target_objects_segmented)]]
             figure.subplot_table(
                 1, 0, statistics,
                 row_labels=("Number of objects pre-filtering",
                             "Number of objects post-filtering"))
 
     def keep_one(self, workspace, src_objects):
-        '''Return an array containing the single object to keep
+        """Return an array containing the single object to keep
 
         workspace - workspace passed into Run
         src_objects - the Objects instance to be filtered
-        '''
+        """
         measurement = self.measurements[0].measurement.value
         src_name = self.object_name.value
         values = workspace.measurements.get_current_measurement(src_name,
                                                                 measurement)
         if len(values) == 0:
-            return np.array([], int)
-        best_idx = (np.argmax(values) if self.filter_choice == FI_MAXIMAL
-                    else np.argmin(values)) + 1
-        return np.array([best_idx], int)
+            return numpy.array([], int)
+        best_idx = (numpy.argmax(values) if self.filter_choice == FI_MAXIMAL
+                    else numpy.argmin(values)) + 1
+        return numpy.array([best_idx], int)
 
     def keep_per_object(self, workspace, src_objects):
-        '''Return an array containing the best object per enclosing object
+        """Return an array containing the best object per enclosing object
 
         workspace - workspace passed into Run
         src_objects - the Objects instance to be filtered
-        '''
+        """
         measurement = self.measurements[0].measurement.value
         src_name = self.object_name.value
         enclosing_name = self.enclosing_object_name.value
@@ -660,8 +658,8 @@ class FilterObjects(cpm.Module):
         enclosing_labels = enclosing_objects.segmented
         enclosing_max = enclosing_objects.count
         if enclosing_max == 0:
-            return np.array([], int)
-        enclosing_range = np.arange(1, enclosing_max + 1)
+            return numpy.array([], int)
+        enclosing_range = numpy.arange(1, enclosing_max + 1)
         #
         # Make a vector of the value of the measurement per label index.
         # We can then label each pixel in the image with the measurement
@@ -682,13 +680,13 @@ class FilterObjects(cpm.Module):
             mask = enclosing_labels * src_labels != 0
             enclosing_labels = enclosing_labels[mask]
             src_labels = src_labels[mask]
-            order = np.lexsort((enclosing_labels, src_labels))
+            order = numpy.lexsort((enclosing_labels, src_labels))
             src_labels = src_labels[order]
             enclosing_labels = enclosing_labels[order]
-            firsts = np.hstack(
+            firsts = numpy.hstack(
                 ([0],
-                 np.where((src_labels[:-1] != src_labels[1:]) |
-                          (enclosing_labels[:-1] != enclosing_labels[1:]))[0] + 1,
+                 numpy.where((src_labels[:-1] != src_labels[1:]) |
+                             (enclosing_labels[:-1] != enclosing_labels[1:]))[0] + 1,
                  [len(src_labels)]))
             areas = firsts[1:] - firsts[:-1]
             enclosing_labels = enclosing_labels[firsts[:-1]]
@@ -700,11 +698,11 @@ class FilterObjects(cpm.Module):
                 svalues = -values
             else:
                 svalues = values
-            order = np.lexsort((-areas, svalues[src_labels - 1]))
+            order = numpy.lexsort((-areas, svalues[src_labels - 1]))
             src_labels, enclosing_labels, areas = [
                 x[order] for x in src_labels, enclosing_labels, areas]
-            firsts = np.hstack((
-                [0], np.where(src_labels[:-1] != src_labels[1:])[0] + 1,
+            firsts = numpy.hstack((
+                [0], numpy.where(src_labels[:-1] != src_labels[1:])[0] + 1,
                 src_labels.shape[:1]))
             counts = firsts[1:] - firsts[:-1]
             #
@@ -712,7 +710,7 @@ class FilterObjects(cpm.Module):
             # will be assigned to the most overlapping parent and that
             # parent will be excluded.
             #
-            best_src_label = np.zeros(enclosing_max + 1, int)
+            best_src_label = numpy.zeros(enclosing_max + 1, int)
             for idx, count in zip(firsts[:-1], counts):
                 for i in range(count):
                     enclosing_object_number = enclosing_labels[idx + i]
@@ -727,21 +725,21 @@ class FilterObjects(cpm.Module):
             best_src_label.sort()
             return best_src_label
         else:
-            tricky_values = np.zeros((len(values) + 1,))
+            tricky_values = numpy.zeros((len(values) + 1,))
             tricky_values[1:] = values
             if wants_max:
-                tricky_values[0] = -np.Inf
+                tricky_values[0] = -numpy.Inf
             else:
-                tricky_values[0] = np.Inf
+                tricky_values[0] = numpy.Inf
             src_values = tricky_values[src_labels]
             #
             # Now find the location of the best for each of the enclosing objects
             #
-            fn = scind.maximum_position if wants_max else scind.minimum_position
+            fn = scipy.ndimage.maximum_position if wants_max else scipy.ndimage.minimum_position
             best_pos = fn(src_values, enclosing_labels, enclosing_range)
-            best_pos = np.array((best_pos,) if isinstance(best_pos, tuple)
+            best_pos = numpy.array((best_pos,) if isinstance(best_pos, tuple)
                                 else best_pos)
-            best_pos = best_pos.astype(np.uint32)
+            best_pos = best_pos.astype(numpy.uint32)
             #
             # Get the label of the pixel at each location
             #
@@ -752,11 +750,11 @@ class FilterObjects(cpm.Module):
             return indexes[1:] if len(indexes) > 0 and indexes[0] == 0 else indexes
 
     def keep_within_limits(self, workspace, src_objects):
-        '''Return an array containing the indices of objects to keep
+        """Return an array containing the indices of objects to keep
 
         workspace - workspace passed into Run
         src_objects - the Objects instance to be filtered
-        '''
+        """
         src_name = self.object_name.value
         hits = None
         m = workspace.measurements
@@ -765,9 +763,9 @@ class FilterObjects(cpm.Module):
             values = m.get_current_measurement(src_name,
                                                measurement)
             if hits is None:
-                hits = np.ones(len(values), bool)
+                hits = numpy.ones(len(values), bool)
             elif len(hits) < len(values):
-                temp = np.ones(len(values), bool)
+                temp = numpy.ones(len(values), bool)
                 temp[~ hits] = False
                 hits = temp
             low_limit = group.min_limit.value
@@ -776,16 +774,16 @@ class FilterObjects(cpm.Module):
                 hits[values < low_limit] = False
             if group.wants_maximum.value:
                 hits[values > high_limit] = False
-        indexes = np.argwhere(hits)[:, 0]
+        indexes = numpy.argwhere(hits)[:, 0]
         indexes = indexes + 1
         return indexes
 
     def discard_border_objects(self, workspace, src_objects):
-        '''Return an array containing the indices of objects to keep
+        """Return an array containing the indices of objects to keep
 
         workspace - workspace passed into Run
         src_objects - the Objects instance to be filtered
-        '''
+        """
         labeled_image = src_objects.segmented
 
         border_labeled_image = labeled_image.copy()
@@ -794,16 +792,16 @@ class FilterObjects(cpm.Module):
         border_labels.extend(border_labeled_image[:, 0])
         border_labels.extend(border_labeled_image[border_labeled_image.shape[0] - 1, :])
         border_labels.extend(border_labeled_image[:, border_labeled_image.shape[1] - 1])
-        border_labels = np.array(border_labels)
+        border_labels = numpy.array(border_labels)
         #
         # the following histogram has a value > 0 for any object
         # with a border pixel
         #
-        histogram = sp.sparse.coo_matrix((np.ones(border_labels.shape),
-                                          (border_labels,
-                                           np.zeros(border_labels.shape))),
-                                         shape=(np.max(border_labeled_image) + 1, 1)).todense()
-        histogram = np.array(histogram).flatten()
+        histogram = scipy.sparse.coo_matrix((numpy.ones(border_labels.shape),
+                                             (border_labels,
+                                           numpy.zeros(border_labels.shape))),
+                                            shape=(numpy.max(border_labeled_image) + 1, 1)).todense()
+        histogram = numpy.array(histogram).flatten()
         if any(histogram[1:] > 0):
             histogram_image = histogram[border_labeled_image]
             border_labeled_image[histogram_image > 0] = 0
@@ -817,48 +815,48 @@ class FilterObjects(cpm.Module):
                 # The erosion turns all pixels touching an edge to zero. The not of this
                 # is the border + formerly masked-out pixels.
                 image = src_objects.parent_image
-                mask_border = np.logical_not(scind.binary_erosion(image.mask))
-                mask_border = np.logical_and(mask_border, image.mask)
+                mask_border = numpy.logical_not(scipy.ndimage.binary_erosion(image.mask))
+                mask_border = numpy.logical_and(mask_border, image.mask)
                 border_labels = labeled_image[mask_border]
                 border_labels = border_labels.flatten()
-                histogram = sp.sparse.coo_matrix(
-                    (np.ones(border_labels.shape),
+                histogram = scipy.sparse.coo_matrix(
+                    (numpy.ones(border_labels.shape),
                      (border_labels,
-                      np.zeros(border_labels.shape))),
-                    shape=(np.max(labeled_image) + 1, 1)).todense()
-                histogram = np.array(histogram).flatten()
+                      numpy.zeros(border_labels.shape))),
+                    shape=(numpy.max(labeled_image) + 1, 1)).todense()
+                histogram = numpy.array(histogram).flatten()
                 if any(histogram[1:] > 0):
                     histogram_image = histogram[labeled_image]
                     border_labeled_image[histogram_image > 0] = 0
 
-        return np.unique(border_labeled_image)[1:]
+        return numpy.unique(border_labeled_image)[1:]
 
     def get_rules(self):
-        '''Read the rules from a file'''
+        """Read the rules from a file"""
         rules_file = self.rules_file_name.value
         rules_directory = self.rules_directory.get_absolute_path()
         path = os.path.join(rules_directory, rules_file)
         if not os.path.isfile(path):
-            raise cps.ValidationError("No such rules file: %s" % path,
-                                      self.rules_file_name)
+            raise cellprofiler.setting.ValidationError("No such rules file: %s" % path,
+                                                       self.rules_file_name)
         else:
-            rules = cprules.Rules()
+            rules = cellprofiler.utilities.rules.Rules()
             rules.parse(path)
             return rules
 
     def load_classifier(self):
-        '''Load the classifier pickle if not cached
+        """Load the classifier pickle if not cached
 
         returns classifier, bin_labels, name and features
-        '''
+        """
         d = self.get_dictionary()
         file_ = self.rules_file_name.value
         directory_ = self.rules_directory.get_absolute_path()
         path_ = os.path.join(directory_, file_)
         if path_ not in d:
             if not os.path.isfile(path_):
-                raise cps.ValidationError("No such rules file: %s" % path_,
-                                          self.rules_file_name)
+                raise cellprofiler.setting.ValidationError("No such rules file: %s" % path_,
+                                                           self.rules_file_name)
             else:
                 from sklearn.externals import joblib
                 d[path_] = joblib.load(path_)
@@ -874,33 +872,33 @@ class FilterObjects(cpm.Module):
         return self.load_classifier()[3]
 
     def keep_by_rules(self, workspace, src_objects):
-        '''Keep objects according to rules
+        """Keep objects according to rules
 
         workspace - workspace holding the measurements for the rules
         src_objects - filter these objects (uses measurement indexes instead)
 
         Open the rules file indicated by the settings and score the
         objects by the rules. Return the indexes of the objects that pass.
-        '''
+        """
         rules = self.get_rules()
         rules_class = int(self.rules_class.value) - 1
         scores = rules.score(workspace.measurements)
         if len(scores) > 0:
-            is_not_nan = np.any(~ np.isnan(scores), 1)
-            best_class = np.argmax(scores[is_not_nan], 1).flatten()
-            hits = np.zeros(scores.shape[0], bool)
+            is_not_nan = numpy.any(~ numpy.isnan(scores), 1)
+            best_class = numpy.argmax(scores[is_not_nan], 1).flatten()
+            hits = numpy.zeros(scores.shape[0], bool)
             hits[is_not_nan] = best_class == rules_class
-            indexes = np.argwhere(hits).flatten() + 1
+            indexes = numpy.argwhere(hits).flatten() + 1
         else:
-            indexes = np.array([], int)
+            indexes = numpy.array([], int)
         return indexes
 
     def keep_by_class(self, workspace, src_objects):
-        ''' Keep objects according to their predicted class
+        """ Keep objects according to their predicted class
         :param workspace: workspace holding the measurements for the rules
         :param src_objects: filter these objects (uses measurement indexes instead)
         :return: indexes (base 1) of the objects that pass
-        '''
+        """
         classifier = self.get_classifier()
         target_idx = self.get_bin_labels().index(self.rules_class.value)
         target_class = classifier.classes_[target_idx]
@@ -908,33 +906,33 @@ class FilterObjects(cpm.Module):
         for feature_name in self.get_classifier_features():
             feature_name = feature_name.split("_", 1)[1]
             if feature_name == "x_loc":
-                feature_name = M_LOCATION_CENTER_X
+                feature_name = cellprofiler.modules.identify.M_LOCATION_CENTER_X
             elif feature_name == "y_loc":
-                feature_name = M_LOCATION_CENTER_Y
+                feature_name = cellprofiler.modules.identify.M_LOCATION_CENTER_Y
             features.append(feature_name)
 
-        feature_vector = np.column_stack([
+        feature_vector = numpy.column_stack([
             workspace.measurements[self.object_name.value, feature_name]
             for feature_name in features])
         predicted_classes = classifier.predict(feature_vector)
         hits = predicted_classes == target_class
-        indexes = np.argwhere(hits) + 1
+        indexes = numpy.argwhere(hits) + 1
         return indexes.flatten()
 
     def get_measurement_columns(self, pipeline):
-        '''Return measurement column defs for the parent/child measurement'''
+        """Return measurement column defs for the parent/child measurement"""
         object_list = ([(self.object_name.value, self.target_name.value)] +
                        [(x.object_name.value, x.target_name.value)
                         for x in self.additional_objects])
         columns = []
         for src_name, target_name in object_list:
             columns += [(target_name,
-                         FF_PARENT % src_name,
-                         cpmeas.COLTYPE_INTEGER),
+                         cellprofiler.modules.identify.FF_PARENT % src_name,
+                         cellprofiler.measurement.COLTYPE_INTEGER),
                         (src_name,
-                         FF_CHILDREN_COUNT % target_name,
-                         cpmeas.COLTYPE_INTEGER)]
-            columns += get_object_measurement_columns(target_name)
+                         cellprofiler.modules.identify.FF_CHILDREN_COUNT % target_name,
+                         cellprofiler.measurement.COLTYPE_INTEGER)]
+            columns += cellprofiler.modules.identify.get_object_measurement_columns(target_name)
         return columns
 
     def get_categories(self, pipeline, object_name):
@@ -943,7 +941,7 @@ class FilterObjects(cpm.Module):
         object_name - return measurements made on this object (or 'Image' for image measurements)
         """
         categories = []
-        if object_name == cpmeas.IMAGE:
+        if object_name == cellprofiler.measurement.IMAGE:
             categories += ["Count"]
         elif object_name == self.object_name:
             categories.append("Children")
@@ -959,7 +957,7 @@ class FilterObjects(cpm.Module):
         """
         result = []
 
-        if object_name == cpmeas.IMAGE:
+        if object_name == cellprofiler.measurement.IMAGE:
             if category == "Count":
                 result += [self.target_name.value]
         if object_name == self.object_name and category == "Children":
@@ -974,7 +972,7 @@ class FilterObjects(cpm.Module):
         return result
 
     def prepare_to_create_batch(self, workspace, fn_alter_path):
-        '''Prepare to create a batch file
+        """Prepare to create a batch file
 
         This function is called when CellProfiler is about to create a
         file for batch processing. It will pickle the image set list's
@@ -988,13 +986,13 @@ class FilterObjects(cpm.Module):
                         handles issues such as replacing backslashes and
                         mapping mountpoints. It should be called for every
                         pathname stored in the settings or legacy fields.
-        '''
+        """
         self.rules_directory.alter_for_create_batch_files(fn_alter_path)
         return True
 
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
-        '''Account for old save formats
+        """Account for old save formats
 
         setting_values - the strings for the settings as saved in the pipeline
         variable_revision_number - the variable revision number at the time
@@ -1004,7 +1002,7 @@ class FilterObjects(cpm.Module):
                       it is KeepLargestObject for Matlab's module of that
                       name.
         from_matlab - true if file was saved by Matlab CP
-        '''
+        """
 
         DIR_DEFAULT_INPUT = "Default input folder"
         DIR_DEFAULT_OUTPUT = "Default output folder"
@@ -1024,8 +1022,8 @@ class FilterObjects(cpm.Module):
                               "AreaShape_Area",
                               FI_MAXIMAL_PER_OBJECT,
                               setting_values[0],
-                              cps.YES, "0", cps.YES, "1",
-                              cps.NO, cps.NONE]
+                              cellprofiler.setting.YES, "0", cellprofiler.setting.YES, "1",
+                              cellprofiler.setting.NO, cellprofiler.setting.NONE]
             from_matlab = False
             variable_revision_number = 1
             module_name = self.module_name
@@ -1045,26 +1043,26 @@ class FilterObjects(cpm.Module):
             measurement = '_'.join((setting_values[2],
                                     setting_values[3]))
             if setting_values[6] == 'No minimum':
-                wants_minimum = cps.NO
+                wants_minimum = cellprofiler.setting.NO
                 min_limit = "0"
             else:
-                wants_minimum = cps.YES
+                wants_minimum = cellprofiler.setting.YES
                 min_limit = setting_values[6]
             if setting_values[7] == 'No maximum':
-                wants_maximum = cps.NO
+                wants_maximum = cellprofiler.setting.NO
                 max_limit = "1"
             else:
-                wants_maximum = cps.YES
+                wants_maximum = cellprofiler.setting.YES
                 max_limit = setting_values[7]
-            if setting_values[8] == cps.DO_NOT_USE:
-                wants_outlines = cps.NO
-                outlines_name = cps.NONE
+            if setting_values[8] == cellprofiler.setting.DO_NOT_USE:
+                wants_outlines = cellprofiler.setting.NO
+                outlines_name = cellprofiler.setting.NONE
             else:
-                wants_outlines = cps.YES
+                wants_outlines = cellprofiler.setting.YES
                 outlines_name = setting_values[8]
 
             setting_values = [setting_values[0], setting_values[1],
-                              measurement, FI_LIMITS, cps.NONE,
+                              measurement, FI_LIMITS, cellprofiler.setting.NONE,
                               wants_minimum, min_limit,
                               wants_maximum, max_limit,
                               wants_outlines, outlines_name]
@@ -1086,7 +1084,7 @@ class FilterObjects(cpm.Module):
             if len(scale) > 0:
                 parts.append(scale)
             measurement = "_".join(parts)
-            if rules_file_name == cps.DO_NOT_USE:
+            if rules_file_name == cellprofiler.setting.DO_NOT_USE:
                 rules_or_measurements = MODE_MEASUREMENTS
                 rules_directory_choice = DIR_DEFAULT_INPUT
             else:
@@ -1098,28 +1096,28 @@ class FilterObjects(cpm.Module):
                 else:
                     rules_directory_choice = DIR_CUSTOM
             if min_value1 == 'No minimum':
-                wants_minimum = cps.NO
+                wants_minimum = cellprofiler.setting.NO
                 min_limit = "0"
             else:
-                wants_minimum = cps.YES
+                wants_minimum = cellprofiler.setting.YES
                 min_limit = min_value1
             if max_value1 == 'No maximum':
-                wants_maximum = cps.NO
+                wants_maximum = cellprofiler.setting.NO
                 max_limit = "1"
             else:
-                wants_maximum = cps.YES
+                wants_maximum = cellprofiler.setting.YES
                 max_limit = max_value1
-            if save_outlines == cps.DO_NOT_USE:
-                wants_outlines = cps.NO
-                outlines_name = cps.NONE
+            if save_outlines == cellprofiler.setting.DO_NOT_USE:
+                wants_outlines = cellprofiler.setting.NO
+                outlines_name = cellprofiler.setting.NONE
             else:
-                wants_outlines = cps.YES
+                wants_outlines = cellprofiler.setting.YES
                 outlines_name = save_outlines
             setting_values = [target_name,
                               object_name,
                               measurement,
                               FI_LIMITS,
-                              cps.NONE,  # enclosing object name
+                              cellprofiler.setting.NONE,  # enclosing object name
                               wants_minimum,
                               min_limit,
                               wants_maximum,
@@ -1177,14 +1175,14 @@ class FilterObjects(cpm.Module):
             rules_directory_choice = setting_values[7]
             rules_path_name = setting_values[8]
             if rules_directory_choice == DIR_CUSTOM:
-                rules_directory_choice == cpprefs.ABSOLUTE_FOLDER_NAME
+                rules_directory_choice == cellprofiler.preferences.ABSOLUTE_FOLDER_NAME
                 if rules_path_name.startswith('.'):
-                    rules_directory_choice = cps.DEFAULT_INPUT_SUBFOLDER_NAME
+                    rules_directory_choice = cellprofiler.setting.DEFAULT_INPUT_SUBFOLDER_NAME
                 elif rules_path_name.startswith('&'):
-                    rules_directory_choice = cps.DEFAULT_OUTPUT_SUBFOLDER_NAME
+                    rules_directory_choice = cellprofiler.setting.DEFAULT_OUTPUT_SUBFOLDER_NAME
                     rules_path_name = "." + rules_path_name[1:]
 
-            rules_directory = cps.DirectoryPath.static_join_string(
+            rules_directory = cellprofiler.setting.DirectoryPath.static_join_string(
                 rules_directory_choice, rules_path_name)
             setting_values = (
                 setting_values[:7] + [rules_directory] + setting_values[9:])
@@ -1206,7 +1204,7 @@ class FilterObjects(cpm.Module):
             variable_revision_number = 7
 
         SLOT_DIRECTORY = 7
-        setting_values[SLOT_DIRECTORY] = cps.DirectoryPath.upgrade_setting(
+        setting_values[SLOT_DIRECTORY] = cellprofiler.setting.DirectoryPath.upgrade_setting(
             setting_values[SLOT_DIRECTORY])
 
         return setting_values, variable_revision_number, from_matlab

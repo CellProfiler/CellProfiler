@@ -2,28 +2,23 @@
 '''
 
 import base64
-import os
 import unittest
 import zlib
-from StringIO import StringIO
+import StringIO
+import numpy
 
-import PIL.Image as PILImage
-import numpy as np
-import scipy.ndimage
-from matplotlib.image import pil_to_array
+import cellprofiler.preferences
 
-from cellprofiler.preferences import set_headless
+cellprofiler.preferences.set_headless()
 
-set_headless()
+import cellprofiler.pipeline
+import cellprofiler.module
+import cellprofiler.image
+import cellprofiler.measurement
+import cellprofiler.region
+import cellprofiler.workspace
 
-import cellprofiler.pipeline as cpp
-import cellprofiler.module as cpm
-import cellprofiler.image as cpi
-import cellprofiler.measurement as cpmeas
-import cellprofiler.region as cpo
-import cellprofiler.workspace as cpw
-
-import cellprofiler.modules.makeprojection as M
+import cellprofiler.modules.makeprojection
 
 IMAGE_NAME = 'image'
 PROJECTED_IMAGE_NAME = 'projectedimage'
@@ -46,13 +41,13 @@ class TestMakeProjection(unittest.TestCase):
                 'X4W6fzu8Wb7j97T9/7UnMpeKzpnTcPitVtXR0u59D/oOv3s5+2jnPO1MTn7P'
                 'NNEQ02s/axk/XvPWPDW9eqmO39faeX1Rb57Xbz/w/d/7x6r/Gt+c+i/ct++O'
                 'NwB/3SPw')
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
+        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 3)
         #
         # Module 2 - image name = DNA, projection_image_name = AverageDNA
@@ -62,10 +57,10 @@ class TestMakeProjection(unittest.TestCase):
         #            projection_type = Maximum
         #
         for i, projection_image_name, projection_type \
-                in ((1, "AverageDNA", M.P_AVERAGE),
-                    (2, "MaxBlue", M.P_MAXIMUM)):
+                in ((1, "AverageDNA", cellprofiler.modules.makeprojection.P_AVERAGE),
+                    (2, "MaxBlue", cellprofiler.modules.makeprojection.P_MAXIMUM)):
             module = pipeline.modules()[i]
-            self.assertTrue(isinstance(module, M.MakeProjection))
+            self.assertTrue(isinstance(module, cellprofiler.modules.makeprojection.MakeProjection))
             self.assertEqual(module.image_name.value, "DNA")
             self.assertEqual(module.projection_image_name.value,
                              projection_image_name)
@@ -92,18 +87,18 @@ class TestMakeProjection(unittest.TestCase):
                 'IJ6y3LxzWmOopbQ38iUqz3Q7+XvwJF08yUE8OvqGG50DX6UgzO75b/86Lfbh'
                 '69U7KKzIg9DQ+gLgrGu33v82JuELBQKXzjmWPHDhnjHZef4G4z1Xy0Pi7Rxv'
                 'Kv4/DzlPxw==')
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
+        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
         module = pipeline.modules()[2]
-        self.assertTrue(isinstance(module, M.MakeProjection))
+        self.assertTrue(isinstance(module, cellprofiler.modules.makeprojection.MakeProjection))
         self.assertEqual(module.image_name.value, "OrigRed")
         self.assertEqual(module.projection_image_name.value, "ProjectionRed")
-        self.assertEqual(module.projection_type, M.P_AVERAGE)
+        self.assertEqual(module.projection_type, cellprofiler.modules.makeprojection.P_AVERAGE)
 
     def test_01_03_load_v2(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
@@ -152,17 +147,17 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
     Name the output image:ProjectionCh00Scale6
     Frequency\x3A:6
 """
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
-        pipeline.load(StringIO(data))
-        methods = (M.P_AVERAGE, M.P_MAXIMUM, M.P_MINIMUM, M.P_SUM, M.P_VARIANCE,
-                   M.P_POWER, M.P_BRIGHTFIELD)
+        pipeline.load(StringIO.StringIO(data))
+        methods = (cellprofiler.modules.makeprojection.P_AVERAGE, cellprofiler.modules.makeprojection.P_MAXIMUM, cellprofiler.modules.makeprojection.P_MINIMUM, cellprofiler.modules.makeprojection.P_SUM, cellprofiler.modules.makeprojection.P_VARIANCE,
+                   cellprofiler.modules.makeprojection.P_POWER, cellprofiler.modules.makeprojection.P_BRIGHTFIELD)
         self.assertEqual(len(pipeline.modules()), len(methods))
         for method, module in zip(methods, pipeline.modules()):
-            self.assertTrue(isinstance(module, M.MakeProjection))
+            self.assertTrue(isinstance(module, cellprofiler.modules.makeprojection.MakeProjection))
             self.assertEqual(module.image_name, "ch02")
             self.assertEqual(module.projection_type, method)
             self.assertEqual(module.projection_image_name, "ProjectionCh00Scale6")
@@ -170,39 +165,39 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
 
     def run_image_set(self, projection_type, images_and_masks,
                       frequency=9, run_last=True):
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cellprofiler.image.ImageSetList()
         image_count = len(images_and_masks)
         for i in range(image_count):
             pixel_data, mask = images_and_masks[i]
             if mask is None:
-                image = cpi.Image(pixel_data)
+                image = cellprofiler.image.Image(pixel_data)
             else:
-                image = cpi.Image(pixel_data, mask)
+                image = cellprofiler.image.Image(pixel_data, mask)
             image_set_list.get_image_set(i).add(IMAGE_NAME, image)
         #
         # Add bogus image at end for 2nd group
         #
-        bogus_image = cpi.Image(np.zeros((10, 20)))
+        bogus_image = cellprofiler.image.Image(numpy.zeros((10, 20)))
         image_set_list.get_image_set(image_count).add(IMAGE_NAME, bogus_image)
 
-        pipeline = cpp.Pipeline()
-        module = M.MakeProjection()
+        pipeline = cellprofiler.pipeline.Pipeline()
+        module = cellprofiler.modules.makeprojection.MakeProjection()
         module.module_num = 1
         module.image_name.value = IMAGE_NAME
         module.projection_image_name.value = PROJECTED_IMAGE_NAME
         module.projection_type.value = projection_type
         module.frequency.value = frequency
         pipeline.add_module(module)
-        m = cpmeas.Measurements()
-        workspace = cpw.Workspace(pipeline, module, None, None, m, image_set_list)
+        m = cellprofiler.measurement.Measurements()
+        workspace = cellprofiler.workspace.Workspace(pipeline, module, None, None, m, image_set_list)
         module.prepare_run(workspace)
         module.prepare_group(workspace, {}, range(1, len(images_and_masks) + 1))
         for i in range(image_count):
-            w = cpw.Workspace(pipeline, module,
-                              image_set_list.get_image_set(i),
-                              cpo.Set(),
-                              m,
-                              image_set_list)
+            w = cellprofiler.workspace.Workspace(pipeline, module,
+                                                 image_set_list.get_image_set(i),
+                                                 cellprofiler.region.Set(),
+                                                 m,
+                                                 image_set_list)
             if i < image_count - 1 or run_last:
                 module.run(w)
         module.post_group(w, {})
@@ -212,218 +207,218 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
         #
         module.prepare_group(workspace, {}, [image_count + 1])
         image_set = image_set_list.get_image_set(image_count)
-        w = cpw.Workspace(pipeline, module,
-                          image_set,
-                          cpo.Set(),
-                          m,
-                          image_set_list)
+        w = cellprofiler.workspace.Workspace(pipeline, module,
+                                             image_set,
+                                             cellprofiler.region.Set(),
+                                             m,
+                                             image_set_list)
         module.run(w)
         image_provider = image_set.get_image_provider(PROJECTED_IMAGE_NAME)
-        self.assertEqual(np.max(image_provider.count), 1)
+        self.assertEqual(numpy.max(image_provider.count), 1)
 
         return image
 
     def test_02_01_average(self):
-        np.random.seed(0)
-        images_and_masks = [(np.random.uniform(size=(10, 10)).astype(np.float32), None)
+        numpy.random.seed(0)
+        images_and_masks = [(numpy.random.uniform(size=(10, 10)).astype(numpy.float32), None)
                             for i in range(3)]
-        expected = np.zeros((10, 10), np.float32)
+        expected = numpy.zeros((10, 10), numpy.float32)
         for image, mask in images_and_masks:
             expected += image
         expected = expected / len(images_and_masks)
-        image = self.run_image_set(M.P_AVERAGE, images_and_masks)
+        image = self.run_image_set(cellprofiler.modules.makeprojection.P_AVERAGE, images_and_masks)
         self.assertFalse(image.has_mask)
-        self.assertTrue(np.all(np.abs(image.pixel_data - expected) <
-                               np.finfo(float).eps))
+        self.assertTrue(numpy.all(numpy.abs(image.pixel_data - expected) <
+                                  numpy.finfo(float).eps))
 
     def test_02_02_average_mask(self):
-        np.random.seed(0)
-        images_and_masks = [(np.random.uniform(size=(100, 100)).astype(np.float32),
-                             np.random.uniform(size=(100, 100)) > .3)
+        numpy.random.seed(0)
+        images_and_masks = [(numpy.random.uniform(size=(100, 100)).astype(numpy.float32),
+                             numpy.random.uniform(size=(100, 100)) > .3)
                             for i in range(3)]
-        expected = np.zeros((100, 100), np.float32)
-        expected_count = np.zeros((100, 100), np.float32)
-        expected_mask = np.zeros((100, 100), bool)
+        expected = numpy.zeros((100, 100), numpy.float32)
+        expected_count = numpy.zeros((100, 100), numpy.float32)
+        expected_mask = numpy.zeros((100, 100), bool)
         for image, mask in images_and_masks:
             expected[mask] += image[mask]
             expected_count[mask] += 1
             expected_mask = mask | expected_mask
         expected = expected / expected_count
-        image = self.run_image_set(M.P_AVERAGE, images_and_masks)
+        image = self.run_image_set(cellprofiler.modules.makeprojection.P_AVERAGE, images_and_masks)
         self.assertTrue(image.has_mask)
-        self.assertTrue(np.all(expected_mask == image.mask))
-        np.testing.assert_almost_equal(image.pixel_data[image.mask],
-                                       expected[expected_mask])
+        self.assertTrue(numpy.all(expected_mask == image.mask))
+        numpy.testing.assert_almost_equal(image.pixel_data[image.mask],
+                                          expected[expected_mask])
 
     def test_02_03_average_color(self):
-        np.random.seed(0)
-        images_and_masks = [(np.random.uniform(size=(10, 10, 3)).astype(np.float32), None) for i in range(3)]
-        expected = np.zeros((10, 10, 3), np.float32)
+        numpy.random.seed(0)
+        images_and_masks = [(numpy.random.uniform(size=(10, 10, 3)).astype(numpy.float32), None) for i in range(3)]
+        expected = numpy.zeros((10, 10, 3), numpy.float32)
 
         for image, mask in images_and_masks:
             expected += image
 
         expected /= len(images_and_masks)
-        image = self.run_image_set(M.P_AVERAGE, images_and_masks)
+        image = self.run_image_set(cellprofiler.modules.makeprojection.P_AVERAGE, images_and_masks)
         self.assertFalse(image.has_mask)
-        self.assertTrue(np.all(np.abs(image.pixel_data - expected) < np.finfo(float).eps))
+        self.assertTrue(numpy.all(numpy.abs(image.pixel_data - expected) < numpy.finfo(float).eps))
 
     def test_02_04_average_masked_color(self):
-        np.random.seed(0)
-        images_and_masks = [(np.random.uniform(size=(10, 10, 3)).astype(np.float32),
-                             np.random.uniform(size=(10, 10)) > .3)
+        numpy.random.seed(0)
+        images_and_masks = [(numpy.random.uniform(size=(10, 10, 3)).astype(numpy.float32),
+                             numpy.random.uniform(size=(10, 10)) > .3)
                             for i in range(3)]
-        expected = np.zeros((10, 10, 3))
-        expected_count = np.zeros((10, 10), np.float32)
-        expected_mask = np.zeros((10, 10), bool)
+        expected = numpy.zeros((10, 10, 3))
+        expected_count = numpy.zeros((10, 10), numpy.float32)
+        expected_mask = numpy.zeros((10, 10), bool)
         for image, mask in images_and_masks:
             expected[mask, :] += image[mask, :]
             expected_count[mask] += 1
             expected_mask = mask | expected_mask
-        expected = expected / expected_count[:, :, np.newaxis]
-        image = self.run_image_set(M.P_AVERAGE, images_and_masks)
+        expected = expected / expected_count[:, :, numpy.newaxis]
+        image = self.run_image_set(cellprofiler.modules.makeprojection.P_AVERAGE, images_and_masks)
         self.assertTrue(image.has_mask)
-        np.testing.assert_equal(image.mask, expected_mask)
-        np.testing.assert_almost_equal(image.pixel_data[expected_mask],
-                                       expected[expected_mask])
+        numpy.testing.assert_equal(image.mask, expected_mask)
+        numpy.testing.assert_almost_equal(image.pixel_data[expected_mask],
+                                          expected[expected_mask])
 
     def test_03_01_maximum(self):
-        np.random.seed(0)
-        images_and_masks = [(np.random.uniform(size=(10, 10)).astype(np.float32), None)
+        numpy.random.seed(0)
+        images_and_masks = [(numpy.random.uniform(size=(10, 10)).astype(numpy.float32), None)
                             for i in range(3)]
-        expected = np.zeros((10, 10), np.float32)
+        expected = numpy.zeros((10, 10), numpy.float32)
         for image, mask in images_and_masks:
-            expected = np.maximum(expected, image)
-        image = self.run_image_set(M.P_MAXIMUM, images_and_masks)
+            expected = numpy.maximum(expected, image)
+        image = self.run_image_set(cellprofiler.modules.makeprojection.P_MAXIMUM, images_and_masks)
         self.assertFalse(image.has_mask)
-        self.assertTrue(np.all(np.abs(image.pixel_data - expected) <
-                               np.finfo(float).eps))
+        self.assertTrue(numpy.all(numpy.abs(image.pixel_data - expected) <
+                                  numpy.finfo(float).eps))
 
     def test_03_02_maximum_mask(self):
-        np.random.seed(0)
-        images_and_masks = [(np.random.uniform(size=(100, 100)).astype(np.float32),
-                             np.random.uniform(size=(100, 100)) > .3)
+        numpy.random.seed(0)
+        images_and_masks = [(numpy.random.uniform(size=(100, 100)).astype(numpy.float32),
+                             numpy.random.uniform(size=(100, 100)) > .3)
                             for i in range(3)]
-        expected = np.zeros((100, 100), np.float32)
-        expected_mask = np.zeros((100, 100), bool)
+        expected = numpy.zeros((100, 100), numpy.float32)
+        expected_mask = numpy.zeros((100, 100), bool)
         for image, mask in images_and_masks:
-            expected[mask] = np.maximum(expected[mask], image[mask])
+            expected[mask] = numpy.maximum(expected[mask], image[mask])
             expected_mask = mask | expected_mask
-        image = self.run_image_set(M.P_MAXIMUM, images_and_masks)
+        image = self.run_image_set(cellprofiler.modules.makeprojection.P_MAXIMUM, images_and_masks)
         self.assertTrue(image.has_mask)
-        self.assertTrue(np.all(expected_mask == image.mask))
-        self.assertTrue(np.all(np.abs(image.pixel_data[image.mask] -
-                                      expected[expected_mask]) <
-                               np.finfo(float).eps))
+        self.assertTrue(numpy.all(expected_mask == image.mask))
+        self.assertTrue(numpy.all(numpy.abs(image.pixel_data[image.mask] -
+                                            expected[expected_mask]) <
+                                  numpy.finfo(float).eps))
 
     def test_03_03_maximum_color(self):
-        np.random.seed(0)
-        images_and_masks = [(np.random.uniform(size=(10, 10, 3)).astype(np.float32), None)
+        numpy.random.seed(0)
+        images_and_masks = [(numpy.random.uniform(size=(10, 10, 3)).astype(numpy.float32), None)
                             for i in range(3)]
-        expected = np.zeros((10, 10, 3), np.float32)
+        expected = numpy.zeros((10, 10, 3), numpy.float32)
         for image, mask in images_and_masks:
-            expected = np.maximum(expected, image)
-        image = self.run_image_set(M.P_MAXIMUM, images_and_masks)
+            expected = numpy.maximum(expected, image)
+        image = self.run_image_set(cellprofiler.modules.makeprojection.P_MAXIMUM, images_and_masks)
         self.assertFalse(image.has_mask)
-        self.assertTrue(np.all(np.abs(image.pixel_data - expected) <
-                               np.finfo(float).eps))
+        self.assertTrue(numpy.all(numpy.abs(image.pixel_data - expected) <
+                                  numpy.finfo(float).eps))
 
     def test_04_01_variance(self):
-        np.random.seed(41)
-        images_and_masks = [(np.random.uniform(size=(20, 10)).astype(np.float32), None)
+        numpy.random.seed(41)
+        images_and_masks = [(numpy.random.uniform(size=(20, 10)).astype(numpy.float32), None)
                             for i in range(10)]
-        image = self.run_image_set(M.P_VARIANCE, images_and_masks)
-        images = np.array([x[0] for x in images_and_masks])
-        x = np.sum(images, 0)
-        x2 = np.sum(images ** 2, 0)
+        image = self.run_image_set(cellprofiler.modules.makeprojection.P_VARIANCE, images_and_masks)
+        images = numpy.array([x[0] for x in images_and_masks])
+        x = numpy.sum(images, 0)
+        x2 = numpy.sum(images ** 2, 0)
         expected = x2 / 10.0 - x ** 2 / 100.0
-        np.testing.assert_almost_equal(image.pixel_data, expected, 4)
+        numpy.testing.assert_almost_equal(image.pixel_data, expected, 4)
 
     def test_05_01_power(self):
-        image = np.ones((20, 10))
+        image = numpy.ones((20, 10))
         images_and_masks = [(image.copy(), None) for i in range(9)]
         for i, (img, _) in enumerate(images_and_masks):
-            img[5, 5] *= np.sin(2 * np.pi * float(i) / 9.0)
-        image_out = self.run_image_set(M.P_POWER, images_and_masks, frequency=9)
-        i, j = np.mgrid[:image.shape[0], :image.shape[1]]
-        np.testing.assert_almost_equal(image_out.pixel_data[(i != 5) & (j != 5)], 0)
+            img[5, 5] *= numpy.sin(2 * numpy.pi * float(i) / 9.0)
+        image_out = self.run_image_set(cellprofiler.modules.makeprojection.P_POWER, images_and_masks, frequency=9)
+        i, j = numpy.mgrid[:image.shape[0], :image.shape[1]]
+        numpy.testing.assert_almost_equal(image_out.pixel_data[(i != 5) & (j != 5)], 0)
         self.assertTrue(image_out.pixel_data[5, 5] > 1)
 
     def test_06_01_brightfield(self):
-        image = np.ones((20, 10))
+        image = numpy.ones((20, 10))
         images_and_masks = [(image.copy(), None) for i in range(9)]
         for i, (img, _) in enumerate(images_and_masks):
             if i < 5:
                 img[:5, :5] = 0
             else:
                 img[:5, 5:] = 0
-        image_out = self.run_image_set(M.P_BRIGHTFIELD, images_and_masks)
-        i, j = np.mgrid[:image.shape[0], :image.shape[1]]
-        np.testing.assert_almost_equal(image_out.pixel_data[(i > 5) | (j < 5)], 0)
-        np.testing.assert_almost_equal(image_out.pixel_data[(i < 5) & (j >= 5)], 1)
+        image_out = self.run_image_set(cellprofiler.modules.makeprojection.P_BRIGHTFIELD, images_and_masks)
+        i, j = numpy.mgrid[:image.shape[0], :image.shape[1]]
+        numpy.testing.assert_almost_equal(image_out.pixel_data[(i > 5) | (j < 5)], 0)
+        numpy.testing.assert_almost_equal(image_out.pixel_data[(i < 5) & (j >= 5)], 1)
 
     def test_07_01_minimum(self):
-        np.random.seed(0)
-        images_and_masks = [(np.random.uniform(size=(10, 10)).astype(np.float32), None)
+        numpy.random.seed(0)
+        images_and_masks = [(numpy.random.uniform(size=(10, 10)).astype(numpy.float32), None)
                             for i in range(3)]
-        expected = np.ones((10, 10), np.float32)
+        expected = numpy.ones((10, 10), numpy.float32)
         for image, mask in images_and_masks:
-            expected = np.minimum(expected, image)
-        image = self.run_image_set(M.P_MINIMUM, images_and_masks)
+            expected = numpy.minimum(expected, image)
+        image = self.run_image_set(cellprofiler.modules.makeprojection.P_MINIMUM, images_and_masks)
         self.assertFalse(image.has_mask)
-        self.assertTrue(np.all(np.abs(image.pixel_data - expected) <
-                               np.finfo(float).eps))
+        self.assertTrue(numpy.all(numpy.abs(image.pixel_data - expected) <
+                                  numpy.finfo(float).eps))
 
     def test_07_02_minimum_mask(self):
-        np.random.seed(72)
-        images_and_masks = [(np.random.uniform(size=(100, 100)).astype(np.float32),
-                             np.random.uniform(size=(100, 100)) > .3)
+        numpy.random.seed(72)
+        images_and_masks = [(numpy.random.uniform(size=(100, 100)).astype(numpy.float32),
+                             numpy.random.uniform(size=(100, 100)) > .3)
                             for i in range(3)]
-        expected = np.ones((100, 100), np.float32)
-        expected_mask = np.zeros((100, 100), bool)
+        expected = numpy.ones((100, 100), numpy.float32)
+        expected_mask = numpy.zeros((100, 100), bool)
         for image, mask in images_and_masks:
-            expected[mask] = np.minimum(expected[mask], image[mask])
+            expected[mask] = numpy.minimum(expected[mask], image[mask])
             expected_mask = mask | expected_mask
-        image = self.run_image_set(M.P_MINIMUM, images_and_masks)
+        image = self.run_image_set(cellprofiler.modules.makeprojection.P_MINIMUM, images_and_masks)
         self.assertTrue(image.has_mask)
-        self.assertTrue(np.any(image.mask == False))
-        self.assertTrue(np.all(expected_mask == image.mask))
-        self.assertTrue(np.all(np.abs(image.pixel_data[image.mask] -
-                                      expected[expected_mask]) <
-                               np.finfo(float).eps))
-        self.assertTrue(np.all(image.pixel_data[~image.mask] == 0))
+        self.assertTrue(numpy.any(image.mask == False))
+        self.assertTrue(numpy.all(expected_mask == image.mask))
+        self.assertTrue(numpy.all(numpy.abs(image.pixel_data[image.mask] -
+                                            expected[expected_mask]) <
+                                  numpy.finfo(float).eps))
+        self.assertTrue(numpy.all(image.pixel_data[~image.mask] == 0))
 
     def test_07_03_minimum_color(self):
-        np.random.seed(0)
-        images_and_masks = [(np.random.uniform(size=(10, 10, 3)).astype(np.float32), None)
+        numpy.random.seed(0)
+        images_and_masks = [(numpy.random.uniform(size=(10, 10, 3)).astype(numpy.float32), None)
                             for i in range(3)]
-        expected = np.ones((10, 10, 3), np.float32)
+        expected = numpy.ones((10, 10, 3), numpy.float32)
         for image, mask in images_and_masks:
-            expected = np.minimum(expected, image)
-        image = self.run_image_set(M.P_MINIMUM, images_and_masks)
+            expected = numpy.minimum(expected, image)
+        image = self.run_image_set(cellprofiler.modules.makeprojection.P_MINIMUM, images_and_masks)
         self.assertFalse(image.has_mask)
-        self.assertTrue(np.all(np.abs(image.pixel_data - expected) <
-                               np.finfo(float).eps))
+        self.assertTrue(numpy.all(numpy.abs(image.pixel_data - expected) <
+                                  numpy.finfo(float).eps))
 
     def test_08_01_mask_unmasked(self):
-        np.random.seed(81)
-        images_and_masks = [(np.random.uniform(size=(10, 10)), None)
+        numpy.random.seed(81)
+        images_and_masks = [(numpy.random.uniform(size=(10, 10)), None)
                             for i in range(3)]
-        image = self.run_image_set(M.P_MASK, images_and_masks)
+        image = self.run_image_set(cellprofiler.modules.makeprojection.P_MASK, images_and_masks)
         self.assertEqual(tuple(image.pixel_data.shape), (10, 10))
-        self.assertTrue(np.all(image.pixel_data == True))
+        self.assertTrue(numpy.all(image.pixel_data == True))
         self.assertFalse(image.has_mask)
 
     def test_08_02_mask(self):
-        np.random.seed(81)
-        images_and_masks = [(np.random.uniform(size=(10, 10)),
-                             np.random.uniform(size=(10, 10)) > .3)
+        numpy.random.seed(81)
+        images_and_masks = [(numpy.random.uniform(size=(10, 10)),
+                             numpy.random.uniform(size=(10, 10)) > .3)
                             for i in range(3)]
-        expected = np.ones((10, 10), bool)
+        expected = numpy.ones((10, 10), bool)
         for _, mask in images_and_masks:
             expected = expected & mask
-        image = self.run_image_set(M.P_MASK, images_and_masks)
-        self.assertTrue(np.all(image.pixel_data == expected))
+        image = self.run_image_set(cellprofiler.modules.makeprojection.P_MASK, images_and_masks)
+        self.assertTrue(numpy.all(image.pixel_data == expected))
 
     def test_09_02_filtered(self):
         '''Make sure the image shows up in the image set even if filtered
@@ -432,11 +427,11 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
         the projection is done and the aggregate image is then missing
         from the image set.
         '''
-        np.random.seed(81)
-        images_and_masks = [(np.random.uniform(size=(10, 10)), None)
+        numpy.random.seed(81)
+        images_and_masks = [(numpy.random.uniform(size=(10, 10)), None)
                             for i in range(3)]
-        image = self.run_image_set(M.P_AVERAGE, images_and_masks,
+        image = self.run_image_set(cellprofiler.modules.makeprojection.P_AVERAGE, images_and_masks,
                                    run_last=False)
-        np.testing.assert_array_almost_equal(
+        numpy.testing.assert_array_almost_equal(
                 image.pixel_data,
                 (images_and_masks[0][0] + images_and_masks[1][0]) / 2)

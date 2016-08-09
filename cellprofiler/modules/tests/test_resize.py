@@ -1,20 +1,16 @@
 import base64
-import os
 import unittest
 import zlib
 import StringIO
 
-import PIL.Image as PILImage
 import numpy
-import scipy.ndimage
-from matplotlib.image import pil_to_array
 
 import cellprofiler.preferences
 
 cellprofiler.preferences.set_headless()
 
 import cellprofiler.pipeline
-import cellprofiler.module as cpm
+import cellprofiler.module
 import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.region

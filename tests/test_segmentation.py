@@ -1,4 +1,5 @@
 import unittest
+
 import cellprofiler.segmentation
 import numpy
 

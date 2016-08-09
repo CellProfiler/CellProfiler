@@ -2,11 +2,12 @@ import base64
 import bz2
 import cStringIO
 import unittest
+
 import cellprofiler.image
 import cellprofiler.region
+import centrosome.outline
 import numpy
 import scipy.ndimage
-import centrosome.outline
 
 
 class TestRegion(unittest.TestCase):

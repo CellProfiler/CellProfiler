@@ -1,11 +1,10 @@
 import __builtin__
-import os
 import sys
 import tempfile
-import traceback
 import unittest
-from urllib2 import urlopen
-from tests.modules import example_images_directory, maybe_download_sbs, maybe_download_fly
+import urllib2
+
+import tests.modules
 
 
 def import_all_but_wx(name,
@@ -31,7 +30,7 @@ class TestNoWX(unittest.TestCase):
         __builtin__.__import__ = self.old_import
 
     def example_dir(self):
-        return example_images_directory()
+        return tests.modules.example_images_directory()
 
     def test_01_01_can_import(self):
         import os
@@ -39,13 +38,12 @@ class TestNoWX(unittest.TestCase):
 
     def test_01_02_throws_on_wx_import(self):
         def import_wx():
-            import wx
+            pass
 
         self.assertRaises(ImportError, import_wx)
 
     def test_01_03_import_modules(self):
         '''Import cellprofiler.modules and make sure it doesn't import wx'''
-        import cellprofiler.modules
 
     # def test_01_04_instantiate_all(self):
     #     '''Instantiate each module and make sure none import wx'''
@@ -61,14 +59,13 @@ class TestNoWX(unittest.TestCase):
 
     def test_01_05_load_pipeline(self):
         import cellprofiler.pipeline as cpp
-        import os
         def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
 
         pipeline = cpp.Pipeline()
         pipeline.add_listener(callback)
         try:
-            fd = urlopen(self.fly_url)
+            fd = urllib2.urlopen(self.fly_url)
         except IOError, e:
             def bad_url(e=e):
                 raise e
@@ -80,14 +77,12 @@ class TestNoWX(unittest.TestCase):
         def test_01_06_run_pipeline(self):
             import cellprofiler.pipeline as cpp
             import cellprofiler.cpmodule as cpm
-            from cellprofiler.preferences import \
-                 set_default_image_directory, set_default_output_directory
             def callback(caller, event):
                 self.assertFalse(isinstance(event, (cpp.LoadExceptionEvent,
                                                     cpp.RunExceptionEvent)))
             pipeline = cpp.Pipeline()
             pipeline.add_listener(callback)
-            fd = urlopen(self.fly_url)
+            fd = urllib2.urlopen(self.fly_url)
             pipeline.load(fd)
             fd.close()
             while True:

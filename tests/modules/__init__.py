@@ -1,27 +1,22 @@
-"""Directory for tests of individual modules
-"""
+import base64
+import hashlib
 import logging
+import os
+import tempfile
+import unittest
+import urllib
+
+import bioformats
+import bioformats.formatwriter
+import bioformats.omexml
+import cellprofiler.modules
+import cellprofiler.preferences
+import numpy
+import scipy.io.matlab.mio
+
+cellprofiler.preferences.set_headless()
 
 logger = logging.getLogger(__name__)
-import base64
-from bioformats.formatwriter import write_image, convert_pixels_to_buffer
-from bioformats import PT_UINT8, PT_UINT16
-from bioformats import OMEXML
-from bioformats.omexml import DO_XYCZT, OM_SAMPLES_PER_PIXEL, OM_BITS_PER_SAMPLE
-import hashlib
-import javabridge
-import numpy as np
-import os
-import unittest
-from urllib import urlretrieve, URLopener
-from urllib2 import HTTPError
-import tempfile
-
-import scipy.io.matlab.mio
-from cellprofiler.preferences import set_headless
-
-set_headless()
-from cellprofiler.modules import builtin_modules, all_modules
 
 __temp_example_images_folder = None
 
@@ -154,12 +149,12 @@ def maybe_download_example_image(folders, file_name, shape=None):
                                             example_images_directory()] + folders))
         if not os.path.isdir(directory):
             os.makedirs(directory)
-        r = np.random.RandomState()
-        r.seed(np.frombuffer(
+        r = numpy.random.RandomState()
+        r.seed(numpy.frombuffer(
                 hashlib.sha1("/".join(folders) + file_name).digest(),
-                np.uint8))
-        img = (r.uniform(size=shape) * 255).astype(np.uint8)
-        write_image(local_path, img, PT_UINT8)
+                numpy.uint8))
+        img = (r.uniform(size=shape) * 255).astype(numpy.uint8)
+        bioformats.formatwriter.write_image(local_path, img, bioformats.PT_UINT8)
     return local_path
 
 
@@ -171,24 +166,24 @@ def make_12_bit_image(folder, filename, shape):
     shape - 2-tuple or 3-tuple of the dimensions of the image. The axis order
             is i, j, c or y, x, c
     '''
-    r = np.random.RandomState()
-    r.seed(np.frombuffer(
+    r = numpy.random.RandomState()
+    r.seed(numpy.frombuffer(
             hashlib.sha1("/".join([folder, filename])).digest(),
-            np.uint8))
-    img = (r.uniform(size=shape) * 4095).astype(np.uint16)
+            numpy.uint8))
+    img = (r.uniform(size=shape) * 4095).astype(numpy.uint16)
     path = os.path.join(example_images_directory(), folder, filename)
     if not os.path.isdir(os.path.dirname(path)):
         os.makedirs(os.path.dirname(path))
 
-    write_image(path, img, PT_UINT16)
+    bioformats.formatwriter.write_image(path, img, bioformats.PT_UINT16)
     #
     # Now go through the file and find the TIF bits per sample IFD (#258) and
     # change it from 16 to 12.
     #
     with open(path, "rb") as fd:
-        data = np.frombuffer(fd.read(), np.uint8).copy()
-    offset = np.frombuffer(data[4:8].data, np.uint32)[0]
-    nentries = np.frombuffer(data[offset:offset + 2], np.uint16)[0]
+        data = numpy.frombuffer(fd.read(), numpy.uint8).copy()
+    offset = numpy.frombuffer(data[4:8].data, numpy.uint32)[0]
+    nentries = numpy.frombuffer(data[offset:offset + 2], numpy.uint16)[0]
     ifds = []
     # Get the IFDs we don't modify
     for idx in range(nentries):
@@ -198,9 +193,9 @@ def make_12_bit_image(folder, filename, shape):
             ifds.append(ifd)
     ifds += [
         # 12 bits/sample
-        np.array([2, 1, 3, 0, 1, 0, 0, 0, 12, 0, 0, 0], np.uint8),
+        numpy.array([2, 1, 3, 0, 1, 0, 0, 0, 12, 0, 0, 0], numpy.uint8),
         # max value = 4095
-        np.array([25, 1, 3, 0, 1, 0, 0, 0, 255, 15, 0, 0], np.uint8)]
+        numpy.array([25, 1, 3, 0, 1, 0, 0, 0, 255, 15, 0, 0], numpy.uint8)]
     ifds = sorted(ifds, cmp=(lambda a, b: cmp(a.tolist(), b.tolist())))
     old_end = offset + 2 + nentries * 12
     new_end = offset + 2 + len(ifds) * 12
@@ -209,13 +204,13 @@ def make_12_bit_image(folder, filename, shape):
     # Fix up the IFD offsets if greater than "offset"
     #
     for ifd in ifds:
-        count = np.frombuffer(ifd[4:8].data, np.uint32)[0]
+        count = numpy.frombuffer(ifd[4:8].data, numpy.uint32)[0]
         if count > 4:
-            ifd_off = np.array(
-                    [np.frombuffer(ifd[8:12].data, np.uint32)[0]]) + diff
+            ifd_off = numpy.array(
+                    [numpy.frombuffer(ifd[8:12].data, numpy.uint32)[0]]) + diff
             if ifd_off > offset:
-                ifd[8:12] = np.frombuffer(ifd_off.data, np.uint8)
-    new_data = np.zeros(len(data) + diff, np.uint8)
+                ifd[8:12] = numpy.frombuffer(ifd_off.data, numpy.uint8)
+    new_data = numpy.zeros(len(data) + diff, numpy.uint8)
     new_data[:offset] = data[:offset]
     new_data[offset] = len(ifds) % 256
     new_data[offset + 1] = int(len(ifds) / 256)
@@ -258,7 +253,7 @@ def maybe_download_sbs():
     #
     import scipy.io.matlab.mio
     for filename in ["Channel1ILLUM.mat", "Channel2ILLUM.mat"]:
-        pixels = np.ones((20, 30))
+        pixels = numpy.ones((20, 30))
         scipy.io.matlab.mio.savemat(
                 os.path.join(path, filename), {"Image": pixels}, format='5')
     return path
@@ -284,7 +279,7 @@ def maybe_download_tesst_image(file_name):
     if not os.path.exists(local_path):
         url = testimages_url() + "/" + file_name
         try:
-            URLopener().retrieve(url, local_path)
+            urllib.URLopener().retrieve(url, local_path)
         except IOError, e:
             # This raises the "expected failure" exception.
             def bad_url(e=e):

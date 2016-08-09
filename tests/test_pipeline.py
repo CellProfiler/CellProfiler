@@ -1198,11 +1198,8 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
             self.assertIn(url, p.file_list)
 
     def test_19_04_read_http_file_list(self):
-        url = "https://raw.githubusercontent.com/CellProfiler/CellProfiler/master/cellprofiler/tests/" \
-              "url_file_list.txt"
-        urls = ["http://cellprofiler.org/foo.tif",
-                "https://github.com/foo.tif",
-                "ftp://example.com/foo.tif"]
+        url = "https://gist.githubusercontent.com/mcquin/67438dc4e8481c5b1d3881df56e1c4c4/raw/274835d9d3fef990d8bf34c4ee5f991b3880d74f/gistfile1.txt"
+        urls = ["http://cellprofiler.org/foo.tif", "https://github.com/foo.tif", "ftp://example.com/foo.tif"]
         p = cpp.Pipeline()
         p.read_file_list(url)
         self.assertEqual(len(p.file_list), len(urls))

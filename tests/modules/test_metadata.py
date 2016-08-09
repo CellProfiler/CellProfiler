@@ -10,7 +10,7 @@ import cellprofiler.pipeline
 import cellprofiler.setting
 import cellprofiler.workspace
 
-OME_XML = open(os.path.join(os.path.split(__file__)[0], "omexml.xml"), "r").read()
+OME_XML = open(os.path.join(os.path.split(__file__)[0], "../resources/omexml.xml"), "r").read()
 
 
 class TestMetadata(unittest.TestCase):

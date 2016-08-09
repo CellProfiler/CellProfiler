@@ -227,7 +227,7 @@ def make_12_bit_image(folder, filename, shape):
         fd.write(new_data.data)
     return path
 
-
+ø
 def maybe_download_example_images(folders, file_names):
     '''Download multiple files to the example images directory
 

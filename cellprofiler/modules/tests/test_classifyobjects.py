@@ -1,25 +1,20 @@
-'''test_classifyobjects - test the ClassifyObjects module
-'''
-
+import StringIO
 import base64
 import unittest
 import zlib
-from StringIO import StringIO
 
-import numpy as np
+import cellprofiler.grid
+import cellprofiler.image
+import cellprofiler.measurement
+import cellprofiler.module
+import cellprofiler.modules.classifyobjects
+import cellprofiler.pipeline
+import cellprofiler.preferences
+import cellprofiler.region
+import cellprofiler.workspace
+import numpy
 
-from cellprofiler.preferences import set_headless
-
-set_headless()
-
-import cellprofiler.workspace as cpw
-import cellprofiler.grid as cpg
-import cellprofiler.image as cpi
-import cellprofiler.module as cpm
-import cellprofiler.region as cpo
-import cellprofiler.measurement as cpmeas
-import cellprofiler.pipeline as cpp
-import cellprofiler.modules.classifyobjects as C
+cellprofiler.preferences.set_headless()
 
 OBJECTS_NAME = "myobjects"
 MEASUREMENT_NAME_1 = "Measurement1"
@@ -50,21 +45,21 @@ class TestClassifyObjects(unittest.TestCase):
                 '+6Kt6TJ72qXmTXo6t/23XFZsS+aTTYLHz6fy+p/czVKk91aa6ZN3qc/ZA/mR'
                 'Xqu//jyq8/39kteh76eKf/kvp7bXy+Bf1d/fv/rV98tp/7VXuGlZVXX0T+Du'
                 'dZ//M3WZT9YGAF3qrqE=')
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
+        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
         module = pipeline.modules()[-1]
-        self.assertTrue(isinstance(module, C.ClassifyObjects))
-        self.assertEqual(module.contrast_choice, C.BY_SINGLE_MEASUREMENT)
+        self.assertTrue(isinstance(module, cellprofiler.modules.classifyobjects.ClassifyObjects))
+        self.assertEqual(module.contrast_choice, cellprofiler.modules.classifyobjects.BY_SINGLE_MEASUREMENT)
         self.assertEqual(len(module.single_measurements), 1)
         group = module.single_measurements[0]
         self.assertEqual(group.object_name, "Nuclei")
         self.assertEqual(group.measurement, "Intensity_IntegratedIntensity_OrigBlue_1")
-        self.assertEqual(group.bin_choice, C.BC_EVEN)
+        self.assertEqual(group.bin_choice, cellprofiler.modules.classifyobjects.BC_EVEN)
         self.assertEqual(group.bin_count, 5)
         self.assertAlmostEqual(group.low_threshold.value, 0.2)
         self.assertFalse(group.wants_low_bin)
@@ -95,22 +90,22 @@ class TestClassifyObjects(unittest.TestCase):
                 '1y98kOSav8Vf98SMD/lOJ/zczuZfkT4sNs/YVF8r48s5ruz9W/bOvlLfZvD4'
                 '6fv0za/+y8jqPd+63+5P4Y/XJ782HvnPdvHb1cvSv/xP7/r2n7ns6/KJAHF9'
                 'smE=')
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
+        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 4)
         module = pipeline.modules()[-1]
-        self.assertTrue(isinstance(module, C.ClassifyObjects))
-        self.assertEqual(module.contrast_choice, C.BY_TWO_MEASUREMENTS)
+        self.assertTrue(isinstance(module, cellprofiler.modules.classifyobjects.ClassifyObjects))
+        self.assertEqual(module.contrast_choice, cellprofiler.modules.classifyobjects.BY_TWO_MEASUREMENTS)
         self.assertEqual(module.object_name, "Nuclei")
         self.assertEqual(module.first_measurement, "Intensity_IntegratedIntensity_OrigBlue_1")
         self.assertEqual(module.second_measurement, "Intensity_MeanIntensity_OrigBlue_1")
-        self.assertEqual(module.first_threshold_method, C.TM_MEAN)
-        self.assertEqual(module.second_threshold_method, C.TM_MEAN)
+        self.assertEqual(module.first_threshold_method, cellprofiler.modules.classifyobjects.TM_MEAN)
+        self.assertEqual(module.second_threshold_method, cellprofiler.modules.classifyobjects.TM_MEAN)
         self.assertFalse(module.wants_custom_names)
         self.assertFalse(module.wants_image)
 
@@ -148,23 +143,23 @@ class TestClassifyObjects(unittest.TestCase):
                 'vMxGqfWzr3rZ3Iuvev0Rw7/H8e+N4zf6Dz93+xVwFP9h6G6f2cmLL/z8/3oE'
                 'X9jfSn769Q8rm9+D58cZAKP+Hfj959+S8pbLJUkCT8fpqxg80/EleHowO2+k'
                 '6cbbT2B8+UGbl6l8kn6S2AFm1zfgKw/rNuBZhvL/A/z19oA=')
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
+        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 5)
         module = pipeline.modules()[-2]
-        self.assertTrue(isinstance(module, C.ClassifyObjects))
-        self.assertEqual(module.contrast_choice.value, C.BY_SINGLE_MEASUREMENT)
+        self.assertTrue(isinstance(module, cellprofiler.modules.classifyobjects.ClassifyObjects))
+        self.assertEqual(module.contrast_choice.value, cellprofiler.modules.classifyobjects.BY_SINGLE_MEASUREMENT)
         self.assertEqual(len(module.single_measurements), 2)
 
         group = module.single_measurements[0]
         self.assertEqual(group.object_name, "Nuclei")
         self.assertEqual(group.measurement.value, "Intensity_IntegratedIntensity_OrigBlue")
-        self.assertEqual(group.bin_choice, C.BC_EVEN)
+        self.assertEqual(group.bin_choice, cellprofiler.modules.classifyobjects.BC_EVEN)
         self.assertEqual(group.bin_count, 3)
         self.assertAlmostEqual(group.low_threshold.value, 0.2)
         self.assertTrue(group.wants_low_bin)
@@ -180,19 +175,19 @@ class TestClassifyObjects(unittest.TestCase):
         group = module.single_measurements[1]
         self.assertEqual(group.object_name, "Nuclei")
         self.assertEqual(group.measurement.value, "Intensity_MaxIntensity_OrigBlue")
-        self.assertEqual(group.bin_choice, C.BC_CUSTOM)
+        self.assertEqual(group.bin_choice, cellprofiler.modules.classifyobjects.BC_CUSTOM)
         self.assertEqual(group.custom_thresholds, ".2,.5,.8")
         self.assertFalse(group.wants_custom_names)
         self.assertFalse(group.wants_images)
 
         module = pipeline.modules()[-1]
-        self.assertTrue(isinstance(module, C.ClassifyObjects))
-        self.assertEqual(module.contrast_choice, C.BY_TWO_MEASUREMENTS)
+        self.assertTrue(isinstance(module, cellprofiler.modules.classifyobjects.ClassifyObjects))
+        self.assertEqual(module.contrast_choice, cellprofiler.modules.classifyobjects.BY_TWO_MEASUREMENTS)
         self.assertEqual(module.object_name, "Nuclei")
         self.assertEqual(module.first_measurement, "Location_Center_X")
-        self.assertEqual(module.first_threshold_method, C.TM_MEDIAN)
+        self.assertEqual(module.first_threshold_method, cellprofiler.modules.classifyobjects.TM_MEDIAN)
         self.assertEqual(module.second_measurement, "Location_Center_Y")
-        self.assertEqual(module.second_threshold_method, C.TM_MEDIAN)
+        self.assertEqual(module.second_threshold_method, cellprofiler.modules.classifyobjects.TM_MEDIAN)
 
     def test_01_04_load_v2(self):
         data = ('eJztne9z2jYYxwUhXdPe7dJtL/qmN7/a7XrEA5bs0rwZ+VEW7kLCDa5rX6WO'
@@ -229,23 +224,23 @@ class TestClassifyObjects(unittest.TestCase):
                 '2HNyPkL873P+9+f5V6cfrhhPG2DKzoctxlPP5qr8+T9ftBPgzx9vRaf85t3W'
                 '+3fg+XEGwGx8e3H/8Gdcv6XSVrEIno7T1yE80/EVeHpjdt4WFhtvv4L5x7t9'
                 '3qTj45ynAruB5fX1/JUe2+b62YTj/wfn4gog')
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
+        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 5)
         module = pipeline.modules()[-2]
-        self.assertTrue(isinstance(module, C.ClassifyObjects))
-        self.assertEqual(module.contrast_choice.value, C.BY_SINGLE_MEASUREMENT)
+        self.assertTrue(isinstance(module, cellprofiler.modules.classifyobjects.ClassifyObjects))
+        self.assertEqual(module.contrast_choice.value, cellprofiler.modules.classifyobjects.BY_SINGLE_MEASUREMENT)
         self.assertEqual(len(module.single_measurements), 2)
 
         group = module.single_measurements[0]
         self.assertEqual(group.object_name, "Nuclei")
         self.assertEqual(group.measurement.value, "Intensity_IntegratedIntensity_OrigBlue")
-        self.assertEqual(group.bin_choice, C.BC_EVEN)
+        self.assertEqual(group.bin_choice, cellprofiler.modules.classifyobjects.BC_EVEN)
         self.assertEqual(group.bin_count, 3)
         self.assertAlmostEqual(group.low_threshold.value, 0.2)
         self.assertTrue(group.wants_low_bin)
@@ -261,30 +256,30 @@ class TestClassifyObjects(unittest.TestCase):
         group = module.single_measurements[1]
         self.assertEqual(group.object_name, "Nuclei")
         self.assertEqual(group.measurement.value, "Intensity_MaxIntensity_OrigBlue")
-        self.assertEqual(group.bin_choice, C.BC_CUSTOM)
+        self.assertEqual(group.bin_choice, cellprofiler.modules.classifyobjects.BC_CUSTOM)
         self.assertEqual(group.custom_thresholds, ".2,.5,.8")
         self.assertFalse(group.wants_custom_names)
         self.assertFalse(group.wants_images)
 
         module = pipeline.modules()[-1]
-        self.assertTrue(isinstance(module, C.ClassifyObjects))
-        self.assertEqual(module.contrast_choice, C.BY_TWO_MEASUREMENTS)
+        self.assertTrue(isinstance(module, cellprofiler.modules.classifyobjects.ClassifyObjects))
+        self.assertEqual(module.contrast_choice, cellprofiler.modules.classifyobjects.BY_TWO_MEASUREMENTS)
         self.assertEqual(module.object_name, "Nuclei")
         self.assertEqual(module.first_measurement, "Location_Center_X")
-        self.assertEqual(module.first_threshold_method, C.TM_MEDIAN)
+        self.assertEqual(module.first_threshold_method, cellprofiler.modules.classifyobjects.TM_MEDIAN)
         self.assertEqual(module.second_measurement, "Location_Center_Y")
-        self.assertEqual(module.second_threshold_method, C.TM_CUSTOM)
+        self.assertEqual(module.second_threshold_method, cellprofiler.modules.classifyobjects.TM_CUSTOM)
         self.assertAlmostEqual(module.second_threshold.value, .4)
 
     def make_workspace(self, labels, contrast_choice,
                        measurement1=None, measurement2=None):
-        object_set = cpo.Set()
-        objects = cpo.Region()
+        object_set = cellprofiler.region.Set()
+        objects = cellprofiler.region.Region()
         objects.segmented = labels
         object_set.add_objects(objects, OBJECTS_NAME)
 
-        measurements = cpmeas.Measurements()
-        module = C.ClassifyObjects()
+        measurements = cellprofiler.measurement.Measurements()
+        module = cellprofiler.modules.classifyobjects.ClassifyObjects()
         m_names = []
         if measurement1 is not None:
             measurements.add_measurement(OBJECTS_NAME, MEASUREMENT_NAME_1,
@@ -295,11 +290,11 @@ class TestClassifyObjects(unittest.TestCase):
                                          measurement2)
             module.add_single_measurement()
             m_names.append(MEASUREMENT_NAME_2)
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
 
         module.contrast_choice.value = contrast_choice
-        if module.contrast_choice == C.BY_SINGLE_MEASUREMENT:
+        if module.contrast_choice == cellprofiler.modules.classifyobjects.BY_SINGLE_MEASUREMENT:
             for i, m in enumerate(m_names):
                 group = module.single_measurements[i]
                 group.object_name.value = OBJECTS_NAME
@@ -311,24 +306,24 @@ class TestClassifyObjects(unittest.TestCase):
             module.first_measurement.value = MEASUREMENT_NAME_1
             module.second_measurement.value = MEASUREMENT_NAME_2
         module.module_num = 1
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.RunExceptionEvent))
 
         pipeline.add_listener(callback)
         pipeline.add_module(module)
-        workspace = cpw.Workspace(pipeline, module, image_set,
-                                  object_set, measurements,
-                                  image_set_list)
+        workspace = cellprofiler.workspace.Workspace(pipeline, module, image_set,
+                                                     object_set, measurements,
+                                                     image_set_list)
         return workspace, module
 
     def test_02_01_classify_single_none(self):
-        '''Make sure the single measurement mode can handle no objects'''
+        """Make sure the single measurement mode can handle no objects"""
         workspace, module = self.make_workspace(
-                np.zeros((10, 10), int),
-                C.BY_SINGLE_MEASUREMENT,
-                np.zeros((0,), float))
+                numpy.zeros((10, 10), int),
+                cellprofiler.modules.classifyobjects.BY_SINGLE_MEASUREMENT,
+                numpy.zeros((0,), float))
         module.run(workspace)
         for m_name in ("Classify_Measurement1_Bin_1",
                        "Classify_Measurement1_Bin_2",
@@ -338,15 +333,15 @@ class TestClassifyObjects(unittest.TestCase):
             self.assertEqual(len(m), 0)
 
     def test_02_02_classify_single_even(self):
-        m = np.array((.5, 0, 1, .1))
-        labels = np.zeros((20, 10), int)
+        m = numpy.array((.5, 0, 1, .1))
+        labels = numpy.zeros((20, 10), int)
         labels[2:5, 3:7] = 1
         labels[12:15, 1:4] = 2
         labels[6:11, 5:9] = 3
         labels[16:19, 5:9] = 4
         workspace, module = self.make_workspace(labels,
-                                                C.BY_SINGLE_MEASUREMENT, m)
-        module.single_measurements[0].bin_choice.value = C.BC_EVEN
+                                                cellprofiler.modules.classifyobjects.BY_SINGLE_MEASUREMENT, m)
+        module.single_measurements[0].bin_choice.value = cellprofiler.modules.classifyobjects.BC_EVEN
         module.single_measurements[0].low_threshold.value = .2
         module.single_measurements[0].high_threshold.value = .7
         module.single_measurements[0].bin_count.value = 1
@@ -368,66 +363,66 @@ class TestClassifyObjects(unittest.TestCase):
             values = workspace.measurements.get_current_measurement(OBJECTS_NAME,
                                                                     measurement)
             self.assertEqual(len(values), 4)
-            self.assertTrue(np.all(values == np.array(expected_values)))
+            self.assertTrue(numpy.all(values == numpy.array(expected_values)))
         for measurement, expected_values in expected_img.iteritems():
-            values = workspace.measurements.get_current_measurement(cpmeas.IMAGE,
+            values = workspace.measurements.get_current_measurement(cellprofiler.measurement.IMAGE,
                                                                     measurement)
             self.assertTrue(values == expected_values)
 
         image = workspace.image_set.get_image(IMAGE_NAME)
         pixel_data = image.pixel_data
-        self.assertTrue(np.all(pixel_data[labels == 0, :] == 0))
+        self.assertTrue(numpy.all(pixel_data[labels == 0, :] == 0))
         colors = [pixel_data[x, y, :] for x, y in ((2, 3), (12, 1), (6, 5))]
         for i, color in enumerate(colors + [colors[1]]):
-            self.assertTrue(np.all(pixel_data[labels == i + 1, :] == color))
+            self.assertTrue(numpy.all(pixel_data[labels == i + 1, :] == color))
 
         columns = module.get_measurement_columns(None)
         self.assertEqual(len(columns), 9)
         self.assertEqual(len(set([column[1] for column in columns])), 9)  # no duplicates
         for column in columns:
             if column[0] != OBJECTS_NAME:  # Must be image
-                self.assertEqual(column[0], cpmeas.IMAGE)
+                self.assertEqual(column[0], cellprofiler.measurement.IMAGE)
                 self.assertTrue(column[1] in expected_img.keys())
-                self.assertTrue(column[2] == cpmeas.COLTYPE_INTEGER if column[1].endswith(
-                        C.F_NUM_PER_BIN) else cpmeas.COLTYPE_FLOAT)
+                self.assertTrue(column[2] == cellprofiler.measurement.COLTYPE_INTEGER if column[1].endswith(
+                        cellprofiler.modules.classifyobjects.F_NUM_PER_BIN) else cellprofiler.measurement.COLTYPE_FLOAT)
             else:
                 self.assertEqual(column[0], OBJECTS_NAME)
                 self.assertTrue(column[1] in expected_obj.keys())
-                self.assertTrue(column[2] == cpmeas.COLTYPE_INTEGER)
+                self.assertTrue(column[2] == cellprofiler.measurement.COLTYPE_INTEGER)
 
-        categories = module.get_categories(None, cpmeas.IMAGE)
+        categories = module.get_categories(None, cellprofiler.measurement.IMAGE)
         self.assertEqual(len(categories), 1)
-        self.assertEqual(categories[0], C.M_CATEGORY)
-        names = module.get_measurements(None, cpmeas.IMAGE, "foo")
+        self.assertEqual(categories[0], cellprofiler.modules.classifyobjects.M_CATEGORY)
+        names = module.get_measurements(None, cellprofiler.measurement.IMAGE, "foo")
         self.assertEqual(len(names), 0)
         categories = module.get_categories(None, OBJECTS_NAME)
         self.assertEqual(len(categories), 1)
-        self.assertEqual(categories[0], C.M_CATEGORY)
+        self.assertEqual(categories[0], cellprofiler.modules.classifyobjects.M_CATEGORY)
         names = module.get_measurements(None, OBJECTS_NAME, "foo")
         self.assertEqual(len(names), 0)
-        names = module.get_measurements(None, "foo", C.M_CATEGORY)
+        names = module.get_measurements(None, "foo", cellprofiler.modules.classifyobjects.M_CATEGORY)
         self.assertEqual(len(names), 0)
-        names = module.get_measurements(None, OBJECTS_NAME, C.M_CATEGORY)
+        names = module.get_measurements(None, OBJECTS_NAME, cellprofiler.modules.classifyobjects.M_CATEGORY)
         self.assertEqual(len(names), 3)
         self.assertEqual(len(set(names)), 3)
-        self.assertTrue(all(['_'.join((C.M_CATEGORY, name)) in expected_obj.keys()
+        self.assertTrue(all(['_'.join((cellprofiler.modules.classifyobjects.M_CATEGORY, name)) in expected_obj.keys()
                              for name in names]))
-        names = module.get_measurements(None, cpmeas.IMAGE, C.M_CATEGORY)
+        names = module.get_measurements(None, cellprofiler.measurement.IMAGE, cellprofiler.modules.classifyobjects.M_CATEGORY)
         self.assertEqual(len(names), 6)
         self.assertEqual(len(set(names)), 6)
-        self.assertTrue(all(['_'.join((C.M_CATEGORY, name)) in expected_img.keys()
+        self.assertTrue(all(['_'.join((cellprofiler.modules.classifyobjects.M_CATEGORY, name)) in expected_img.keys()
                              for name in names]))
 
     def test_02_03_classify_single_custom(self):
-        m = np.array((.5, 0, 1, .1))
-        labels = np.zeros((20, 10), int)
+        m = numpy.array((.5, 0, 1, .1))
+        labels = numpy.zeros((20, 10), int)
         labels[2:5, 3:7] = 1
         labels[12:15, 1:4] = 2
         labels[6:11, 5:9] = 3
         labels[16:19, 5:9] = 4
         workspace, module = self.make_workspace(labels,
-                                                C.BY_SINGLE_MEASUREMENT, m)
-        module.single_measurements[0].bin_choice.value = C.BC_CUSTOM
+                                                cellprofiler.modules.classifyobjects.BY_SINGLE_MEASUREMENT, m)
+        module.single_measurements[0].bin_choice.value = cellprofiler.modules.classifyobjects.BC_CUSTOM
         module.single_measurements[0].custom_thresholds.value = ".2,.7"
         module.single_measurements[0].bin_count.value = 14  # should ignore
         module.single_measurements[0].wants_custom_names.value = True
@@ -450,50 +445,50 @@ class TestClassifyObjects(unittest.TestCase):
             values = workspace.measurements.get_current_measurement(OBJECTS_NAME,
                                                                     measurement)
             self.assertEqual(len(values), 4)
-            self.assertTrue(np.all(values == np.array(expected_values)))
+            self.assertTrue(numpy.all(values == numpy.array(expected_values)))
         for measurement, expected_values in expected_img.iteritems():
-            values = workspace.measurements.get_current_measurement(cpmeas.IMAGE,
+            values = workspace.measurements.get_current_measurement(cellprofiler.measurement.IMAGE,
                                                                     measurement)
             self.assertTrue(values == expected_values)
         image = workspace.image_set.get_image(IMAGE_NAME)
         pixel_data = image.pixel_data
-        self.assertTrue(np.all(pixel_data[labels == 0, :] == 0))
+        self.assertTrue(numpy.all(pixel_data[labels == 0, :] == 0))
         colors = [pixel_data[x, y, :] for x, y in ((2, 3), (12, 1), (6, 5))]
         for i, color in enumerate(colors + [colors[1]]):
-            self.assertTrue(np.all(pixel_data[labels == i + 1, :] == color))
+            self.assertTrue(numpy.all(pixel_data[labels == i + 1, :] == color))
 
         columns = module.get_measurement_columns(None)
         self.assertEqual(len(columns), 9)
         self.assertEqual(len(set([column[1] for column in columns])), 9)  # no duplicates
         for column in columns:
             if column[0] != OBJECTS_NAME:  # Must be image
-                self.assertEqual(column[0], cpmeas.IMAGE)
+                self.assertEqual(column[0], cellprofiler.measurement.IMAGE)
                 self.assertTrue(column[1] in expected_img.keys())
-                self.assertTrue(column[2] == cpmeas.COLTYPE_INTEGER if column[1].endswith(
-                        C.F_NUM_PER_BIN) else cpmeas.COLTYPE_FLOAT)
+                self.assertTrue(column[2] == cellprofiler.measurement.COLTYPE_INTEGER if column[1].endswith(
+                        cellprofiler.modules.classifyobjects.F_NUM_PER_BIN) else cellprofiler.measurement.COLTYPE_FLOAT)
             else:
                 self.assertEqual(column[0], OBJECTS_NAME)
                 self.assertTrue(column[1] in expected_obj.keys())
-                self.assertTrue(column[2] == cpmeas.COLTYPE_INTEGER)
+                self.assertTrue(column[2] == cellprofiler.measurement.COLTYPE_INTEGER)
 
-        categories = module.get_categories(None, cpmeas.IMAGE)
+        categories = module.get_categories(None, cellprofiler.measurement.IMAGE)
         self.assertEqual(len(categories), 1)
         categories = module.get_categories(None, OBJECTS_NAME)
         self.assertEqual(len(categories), 1)
-        self.assertEqual(categories[0], C.M_CATEGORY)
+        self.assertEqual(categories[0], cellprofiler.modules.classifyobjects.M_CATEGORY)
         names = module.get_measurements(None, OBJECTS_NAME, "foo")
         self.assertEqual(len(names), 0)
-        names = module.get_measurements(None, "foo", C.M_CATEGORY)
+        names = module.get_measurements(None, "foo", cellprofiler.modules.classifyobjects.M_CATEGORY)
         self.assertEqual(len(names), 0)
-        names = module.get_measurements(None, OBJECTS_NAME, C.M_CATEGORY)
+        names = module.get_measurements(None, OBJECTS_NAME, cellprofiler.modules.classifyobjects.M_CATEGORY)
         self.assertEqual(len(names), 3)
         self.assertEqual(len(set(names)), 3)
-        self.assertTrue(all(['_'.join((C.M_CATEGORY, name)) in expected_obj.keys()
+        self.assertTrue(all(['_'.join((cellprofiler.modules.classifyobjects.M_CATEGORY, name)) in expected_obj.keys()
                              for name in names]))
-        names = module.get_measurements(None, cpmeas.IMAGE, C.M_CATEGORY)
+        names = module.get_measurements(None, cellprofiler.measurement.IMAGE, cellprofiler.modules.classifyobjects.M_CATEGORY)
         self.assertEqual(len(names), 6)
         self.assertEqual(len(set(names)), 6)
-        self.assertTrue(all(['_'.join((C.M_CATEGORY, name)) in expected_img.keys()
+        self.assertTrue(all(['_'.join((cellprofiler.modules.classifyobjects.M_CATEGORY, name)) in expected_img.keys()
                              for name in names]))
 
     def test_02_04_last_is_nan(self):
@@ -504,17 +499,17 @@ class TestClassifyObjects(unittest.TestCase):
         # if showing the figure and last object has a measurement of NaN
         #
         for leave_last_out in (False, True):
-            m = np.array((.5, 0, 1, np.NaN))
+            m = numpy.array((.5, 0, 1, numpy.NaN))
             if leave_last_out:
                 m = m[:-1]
-            labels = np.zeros((20, 10), int)
+            labels = numpy.zeros((20, 10), int)
             labels[2:5, 3:7] = 1
             labels[12:15, 1:4] = 2
             labels[6:11, 5:9] = 3
             labels[16:19, 5:9] = 4
             workspace, module = self.make_workspace(
-                    labels, C.BY_SINGLE_MEASUREMENT, m)
-            module.single_measurements[0].bin_choice.value = C.BC_CUSTOM
+                    labels, cellprofiler.modules.classifyobjects.BY_SINGLE_MEASUREMENT, m)
+            module.single_measurements[0].bin_choice.value = cellprofiler.modules.classifyobjects.BC_CUSTOM
             module.single_measurements[0].custom_thresholds.value = ".2,.7"
             module.single_measurements[0].bin_count.value = 14  # should ignore
             module.single_measurements[0].wants_custom_names.value = True
@@ -537,24 +532,24 @@ class TestClassifyObjects(unittest.TestCase):
                 values = workspace.measurements.get_current_measurement(
                         OBJECTS_NAME, measurement)
                 self.assertEqual(len(values), 4)
-                self.assertTrue(np.all(values == np.array(expected_values)))
+                self.assertTrue(numpy.all(values == numpy.array(expected_values)))
             for measurement, expected_values in expected_img.iteritems():
                 values = workspace.measurements.get_current_measurement(
-                        cpmeas.IMAGE, measurement)
+                        cellprofiler.measurement.IMAGE, measurement)
                 self.assertTrue(values == expected_values)
             image = workspace.image_set.get_image(IMAGE_NAME)
             pixel_data = image.pixel_data
-            self.assertTrue(np.all(pixel_data[labels == 0, :] == 0))
+            self.assertTrue(numpy.all(pixel_data[labels == 0, :] == 0))
             colors = [pixel_data[x, y, :] for x, y in
                       ((2, 3), (12, 1), (6, 5), (16, 5))]
             for i, color in enumerate(colors + [colors[1]]):
-                self.assertTrue(np.all(pixel_data[labels == i + 1, :] == color))
+                self.assertTrue(numpy.all(pixel_data[labels == i + 1, :] == color))
 
     def test_03_01_two_none(self):
         workspace, module = self.make_workspace(
-                np.zeros((10, 10), int),
-                C.BY_TWO_MEASUREMENTS,
-                np.zeros((0,), float), np.zeros((0,), float))
+                numpy.zeros((10, 10), int),
+                cellprofiler.modules.classifyobjects.BY_TWO_MEASUREMENTS,
+                numpy.zeros((0,), float), numpy.zeros((0,), float))
         module.run(workspace)
         for lh1 in ("low", "high"):
             for lh2 in ("low", "high"):
@@ -565,24 +560,24 @@ class TestClassifyObjects(unittest.TestCase):
                 self.assertEqual(len(m), 0)
 
     def test_03_02_two(self):
-        np.random.seed(0)
-        labels = np.zeros((10, 20), int)
+        numpy.random.seed(0)
+        labels = numpy.zeros((10, 20), int)
         index = 1
         for i_min, i_max in ((1, 4), (6, 9)):
             for j_min, j_max in ((2, 6), (8, 11), (13, 18)):
                 labels[i_min:i_max, j_min:j_max] = index
                 index += 1
         num_labels = index - 1
-        exps = np.exp(np.arange(np.max(labels)))
-        m1 = np.random.permutation(exps)
-        m2 = np.random.permutation(exps)
+        exps = numpy.exp(numpy.arange(numpy.max(labels)))
+        m1 = numpy.random.permutation(exps)
+        m2 = numpy.random.permutation(exps)
         for wants_custom_names in (False, True):
-            for tm1 in (C.TM_MEAN, C.TM_MEDIAN, C.TM_CUSTOM):
-                for tm2 in (C.TM_MEAN, C.TM_MEDIAN, C.TM_CUSTOM):
+            for tm1 in (cellprofiler.modules.classifyobjects.TM_MEAN, cellprofiler.modules.classifyobjects.TM_MEDIAN, cellprofiler.modules.classifyobjects.TM_CUSTOM):
+                for tm2 in (cellprofiler.modules.classifyobjects.TM_MEAN, cellprofiler.modules.classifyobjects.TM_MEDIAN, cellprofiler.modules.classifyobjects.TM_CUSTOM):
                     workspace, module = self.make_workspace(labels,
-                                                            C.BY_TWO_MEASUREMENTS,
+                                                            cellprofiler.modules.classifyobjects.BY_TWO_MEASUREMENTS,
                                                             m1, m2)
-                    self.assertTrue(isinstance(module, C.ClassifyObjects))
+                    self.assertTrue(isinstance(module, cellprofiler.modules.classifyobjects.ClassifyObjects))
                     module.first_threshold_method.value = tm1
                     module.first_threshold.value = 8
                     module.second_threshold_method.value = tm2
@@ -590,10 +585,10 @@ class TestClassifyObjects(unittest.TestCase):
                     module.wants_image.value = True
 
                     def cutoff(method, custom_cutoff):
-                        if method == C.TM_MEAN:
-                            return np.mean(exps)
-                        elif method == C.TM_MEDIAN:
-                            return np.median(exps)
+                        if method == cellprofiler.modules.classifyobjects.TM_MEAN:
+                            return numpy.mean(exps)
+                        elif method == cellprofiler.modules.classifyobjects.TM_MEDIAN:
+                            return numpy.median(exps)
                         else:
                             return custom_cutoff
 
@@ -613,33 +608,33 @@ class TestClassifyObjects(unittest.TestCase):
                                    "Measurement1_low_Measurement2_high",
                                    "Measurement1_high_Measurement2_low",
                                    "Measurement1_high_Measurement2_high")
-                    m_names = ["_".join((C.M_CATEGORY, name))
+                    m_names = ["_".join((cellprofiler.modules.classifyobjects.M_CATEGORY, name))
                                for name in f_names]
 
                     module.run(workspace)
                     columns = module.get_measurement_columns(None)
                     for column in columns:
                         if column[0] != OBJECTS_NAME:  # Must be image
-                            self.assertEqual(column[0], cpmeas.IMAGE)
-                            self.assertTrue(column[2] == cpmeas.COLTYPE_INTEGER if column[1].endswith(
-                                    C.F_NUM_PER_BIN) else cpmeas.COLTYPE_FLOAT)
+                            self.assertEqual(column[0], cellprofiler.measurement.IMAGE)
+                            self.assertTrue(column[2] == cellprofiler.measurement.COLTYPE_INTEGER if column[1].endswith(
+                                    cellprofiler.modules.classifyobjects.F_NUM_PER_BIN) else cellprofiler.measurement.COLTYPE_FLOAT)
                         else:
                             self.assertEqual(column[0], OBJECTS_NAME)
-                            self.assertTrue(column[2] == cpmeas.COLTYPE_INTEGER)
+                            self.assertTrue(column[2] == cellprofiler.measurement.COLTYPE_INTEGER)
 
                     self.assertEqual(len(columns), 12)
                     self.assertEqual(len(set([column[1] for column in columns])), 12)  # no duplicates
 
-                    categories = module.get_categories(None, cpmeas.IMAGE)
+                    categories = module.get_categories(None, cellprofiler.measurement.IMAGE)
                     self.assertEqual(len(categories), 1)
                     categories = module.get_categories(None, OBJECTS_NAME)
                     self.assertEqual(len(categories), 1)
-                    self.assertEqual(categories[0], C.M_CATEGORY)
+                    self.assertEqual(categories[0], cellprofiler.modules.classifyobjects.M_CATEGORY)
                     names = module.get_measurements(None, OBJECTS_NAME, "foo")
                     self.assertEqual(len(names), 0)
-                    names = module.get_measurements(None, "foo", C.M_CATEGORY)
+                    names = module.get_measurements(None, "foo", cellprofiler.modules.classifyobjects.M_CATEGORY)
                     self.assertEqual(len(names), 0)
-                    names = module.get_measurements(None, OBJECTS_NAME, C.M_CATEGORY)
+                    names = module.get_measurements(None, OBJECTS_NAME, cellprofiler.modules.classifyobjects.M_CATEGORY)
                     self.assertEqual(len(names), 4)
 
                     for m_name, expected in zip(m_names,
@@ -647,47 +642,47 @@ class TestClassifyObjects(unittest.TestCase):
                                                  (~m1_over) & m2_over,
                                                  m1_over & ~m2_over,
                                                  m1_over & m2_over)):
-                        m = workspace.measurements.get_current_measurement(cpmeas.IMAGE,
-                                                                           '_'.join((m_name, C.F_NUM_PER_BIN)))
+                        m = workspace.measurements.get_current_measurement(cellprofiler.measurement.IMAGE,
+                                                                           '_'.join((m_name, cellprofiler.modules.classifyobjects.F_NUM_PER_BIN)))
                         self.assertTrue(m == expected.astype(int).sum())
-                        m = workspace.measurements.get_current_measurement(cpmeas.IMAGE,
-                                                                           '_'.join((m_name, C.F_PCT_PER_BIN)))
+                        m = workspace.measurements.get_current_measurement(cellprofiler.measurement.IMAGE,
+                                                                           '_'.join((m_name, cellprofiler.modules.classifyobjects.F_PCT_PER_BIN)))
                         self.assertTrue(m == 100.0 * float(expected.astype(int).sum()) / num_labels)
                         m = workspace.measurements.get_current_measurement(OBJECTS_NAME,
                                                                            m_name)
-                        self.assertTrue(np.all(m == expected.astype(int)))
+                        self.assertTrue(numpy.all(m == expected.astype(int)))
                         self.assertTrue(m_name in [column[1] for column in columns])
-                        self.assertTrue(m_name in ["_".join((C.M_CATEGORY, name))
+                        self.assertTrue(m_name in ["_".join((cellprofiler.modules.classifyobjects.M_CATEGORY, name))
                                                    for name in names])
                     image = workspace.image_set.get_image(IMAGE_NAME).pixel_data
-                    self.assertTrue(np.all(image[labels == 0, :] == 0))
+                    self.assertTrue(numpy.all(image[labels == 0, :] == 0))
                     colors = image[(labels > 0) & (m[labels - 1] == 1), :]
                     if colors.shape[0] > 0:
-                        self.assertTrue(all([np.all(colors[:, i] == colors[0, i])
+                        self.assertTrue(all([numpy.all(colors[:, i] == colors[0, i])
                                              for i in range(3)]))
 
     def test_03_04_nans(self):
         # Test for NaN values in two measurements.
         #
-        labels = np.zeros((10, 15), int)
+        labels = numpy.zeros((10, 15), int)
         labels[3:5, 3:5] = 1
         labels[6:8, 3:5] = 3
         labels[3:5, 6:8] = 4
         labels[6:8, 6:8] = 5
         labels[3:5, 10:12] = 2
 
-        m1 = np.array((1, 2, np.NaN, 1, np.NaN))
-        m2 = np.array((1, 2, 1, np.NaN, np.NaN))
+        m1 = numpy.array((1, 2, numpy.NaN, 1, numpy.NaN))
+        m2 = numpy.array((1, 2, 1, numpy.NaN, numpy.NaN))
         for leave_last_out in (False, True):
-            end = np.max(labels) - 1 if leave_last_out else np.max(labels)
+            end = numpy.max(labels) - 1 if leave_last_out else numpy.max(labels)
             workspace, module = self.make_workspace(
                     labels,
-                    C.BY_TWO_MEASUREMENTS,
+                    cellprofiler.modules.classifyobjects.BY_TWO_MEASUREMENTS,
                     m1[:end], m2[:end])
-            self.assertTrue(isinstance(module, C.ClassifyObjects))
-            module.first_threshold_method.value = C.TM_MEAN
+            self.assertTrue(isinstance(module, cellprofiler.modules.classifyobjects.ClassifyObjects))
+            module.first_threshold_method.value = cellprofiler.modules.classifyobjects.TM_MEAN
             module.first_threshold.value = 2
-            module.second_threshold_method.value = C.TM_MEAN
+            module.second_threshold_method.value = cellprofiler.modules.classifyobjects.TM_MEAN
             module.second_threshold.value = 2
             module.wants_image.value = True
             module.wants_custom_names.value = False
@@ -696,42 +691,42 @@ class TestClassifyObjects(unittest.TestCase):
                        "Measurement1_low_Measurement2_high",
                        "Measurement1_high_Measurement2_low",
                        "Measurement1_high_Measurement2_high")
-            m_names = ["_".join((C.M_CATEGORY, name))
+            m_names = ["_".join((cellprofiler.modules.classifyobjects.M_CATEGORY, name))
                        for name in f_names]
             m = workspace.measurements
             for m_name, expected in zip(
                     m_names,
-                    [np.array((1, 0, 0, 0, 0)),
-                     np.array((0, 0, 0, 0, 0)),
-                     np.array((0, 0, 0, 0, 0)),
-                     np.array((0, 1, 0, 0, 0))]):
+                    [numpy.array((1, 0, 0, 0, 0)),
+                     numpy.array((0, 0, 0, 0, 0)),
+                     numpy.array((0, 0, 0, 0, 0)),
+                     numpy.array((0, 1, 0, 0, 0))]):
                 values = m[OBJECTS_NAME, m_name]
-                np.testing.assert_array_equal(values, expected)
+                numpy.testing.assert_array_equal(values, expected)
 
     def test_03_05_nan_offset_by_1(self):
         # Regression test of 1636
-        labels = np.zeros((10, 15), int)
+        labels = numpy.zeros((10, 15), int)
         labels[3:5, 3:5] = 1
         labels[6:8, 3:5] = 2
 
-        m1 = np.array((4, np.NaN))
-        m2 = np.array((4, 4))
+        m1 = numpy.array((4, numpy.NaN))
+        m2 = numpy.array((4, 4))
         workspace, module = self.make_workspace(
                 labels,
-                C.BY_TWO_MEASUREMENTS,
+                cellprofiler.modules.classifyobjects.BY_TWO_MEASUREMENTS,
                 m1, m2)
-        self.assertTrue(isinstance(module, C.ClassifyObjects))
-        module.first_threshold_method.value = C.TM_MEAN
+        self.assertTrue(isinstance(module, cellprofiler.modules.classifyobjects.ClassifyObjects))
+        module.first_threshold_method.value = cellprofiler.modules.classifyobjects.TM_MEAN
         module.first_threshold.value = 2
-        module.second_threshold_method.value = C.TM_MEAN
+        module.second_threshold_method.value = cellprofiler.modules.classifyobjects.TM_MEAN
         module.second_threshold.value = 2
         module.wants_image.value = True
         module.wants_custom_names.value = False
         module.run(workspace)
         image = workspace.image_set.get_image(IMAGE_NAME).pixel_data
         colors = module.get_colors(4)
-        reverse = np.zeros(image.shape[:2], int)
+        reverse = numpy.zeros(image.shape[:2], int)
         for idx, color in enumerate(colors):
             reverse[
-                np.all(image == color[np.newaxis, np.newaxis, :3], 2)] = idx
-        self.assertTrue(np.all(reverse[labels == 1] == 4))
+                numpy.all(image == color[numpy.newaxis, numpy.newaxis, :3], 2)] = idx
+        self.assertTrue(numpy.all(reverse[labels == 1] == 4))

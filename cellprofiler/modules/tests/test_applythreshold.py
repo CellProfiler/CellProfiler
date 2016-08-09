@@ -1,20 +1,21 @@
+import StringIO
 import base64
-import cellprofiler.preferences
+import unittest
+import zlib
+
 import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.module
 import cellprofiler.modules.applythreshold
 import cellprofiler.modules.identify
 import cellprofiler.pipeline
+import cellprofiler.preferences
 import cellprofiler.region
 import cellprofiler.workspace
 import centrosome.filter
 import centrosome.otsu
 import centrosome.threshold
 import numpy
-import StringIO
-import unittest
-import zlib
 
 cellprofiler.preferences.set_headless()
 
@@ -24,7 +25,7 @@ OUTPUT_IMAGE_NAME = 'outputimage'
 
 class TestApplyThreshold(unittest.TestCase):
     def make_workspace(self, image, mask=None):
-        '''Make a workspace for testing ApplyThreshold'''
+        """Make a workspace for testing ApplyThreshold"""
         module = cellprofiler.modules.applythreshold.ApplyThreshold()
         module.image_name.value = INPUT_IMAGE_NAME
         module.thresholded_image_name.value = OUTPUT_IMAGE_NAME
@@ -47,7 +48,7 @@ class TestApplyThreshold(unittest.TestCase):
         self.assertEqual(cellprofiler.modules.applythreshold.ApplyThreshold.variable_revision_number, 7)
 
     def test_01_01_load_matlab(self):
-        '''Load a matlab pipeline containing ApplyThreshold'''
+        """Load a matlab pipeline containing ApplyThreshold"""
         data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUX'
                 'AuSk0sSU1RyM+zUggpTVXwKs1TMDBSMDSzMjK2MjRWMDIwsFQgGTAw'
                 'evryMzAwPGZkYKiYczfM1/+Qg4Csl6NJm4K6r8WXF65TKg5KS/ioBC'
@@ -86,7 +87,7 @@ class TestApplyThreshold(unittest.TestCase):
         self.assertEqual(module.threshold_smoothing_choice, cellprofiler.modules.applythreshold.TSM_NONE)
 
     def test_01_02_load_v2(self):
-        '''Load a variable_revision_number = 2 pipeline'''
+        """Load a variable_revision_number = 2 pipeline"""
         data = ('eJztWOFP2kAUPxCNzGRzH8z8eB9lE9J2uihZVIRlYwMkylyM0e2AQ7'
                 'pde6S9qmwx8eP+lP0Z+5P2J+wOW4ETaSkj7gMlTXmv7/feu1/fu16v'
                 'mKkUMrtwPaXAYqaSbOgEwzJBrEEtIw1NtgqzFkYM1yE107DiYPjeMa'
@@ -277,7 +278,7 @@ class TestApplyThreshold(unittest.TestCase):
         self.assertEqual(module.adaptive_window_size, 13)
 
     def test_02_01_grayscale_low_threshold(self):
-        '''Apply a low threshold, no shift'''
+        """Apply a low threshold, no shift"""
         numpy.random.seed(0)
         image = numpy.random.uniform(size=(20, 20)).astype(numpy.float32)
         expected = image.copy()
@@ -337,7 +338,7 @@ class TestApplyThreshold(unittest.TestCase):
             self.assertAlmostEqual(value, expected, 1)
 
     def test_02_02_grayscale_low_threshold_shift(self):
-        '''Apply a low threshold, with shift'''
+        """Apply a low threshold, with shift"""
         numpy.random.seed(0)
         image = numpy.random.uniform(size=(20, 20)).astype(numpy.float32)
         expected = image.copy()
@@ -355,7 +356,7 @@ class TestApplyThreshold(unittest.TestCase):
         self.assertTrue(numpy.all(output.pixel_data == expected))
 
     def test_03_01_grayscale_high_threshold(self):
-        '''Apply a high threshold, no dilation'''
+        """Apply a high threshold, no dilation"""
         numpy.random.seed(0)
         image = numpy.random.uniform(size=(20, 20)).astype(numpy.float32)
         expected = image.copy()
@@ -401,7 +402,7 @@ class TestApplyThreshold(unittest.TestCase):
         self.assertTrue(numpy.all(output.pixel_data == expected))
 
     def test_04_01_binary_manual(self):
-        '''Test a binary threshold with manual threshold value'''
+        """Test a binary threshold with manual threshold value"""
         numpy.random.seed(0)
         image = numpy.random.uniform(size=(20, 20))
         expected = image > .5
@@ -414,7 +415,7 @@ class TestApplyThreshold(unittest.TestCase):
         self.assertTrue(numpy.all(output.pixel_data == expected))
 
     def test_04_02_binary_global(self):
-        '''Test a binary threshold with Otsu global method'''
+        """Test a binary threshold with Otsu global method"""
         numpy.random.seed(0)
         image = numpy.random.uniform(size=(20, 20))
         threshold = centrosome.threshold.get_otsu_threshold(image)
@@ -428,7 +429,7 @@ class TestApplyThreshold(unittest.TestCase):
         self.assertTrue(numpy.all(output.pixel_data == expected))
 
     def test_04_03_binary_correction(self):
-        '''Test a binary threshold with a correction factor'''
+        """Test a binary threshold with a correction factor"""
         numpy.random.seed(0)
         image = numpy.random.uniform(size=(20, 20))
         threshold = centrosome.threshold.get_otsu_threshold(image) * .5
@@ -443,7 +444,7 @@ class TestApplyThreshold(unittest.TestCase):
         self.assertTrue(numpy.all(output.pixel_data == expected))
 
     def test_04_04_low_bounds(self):
-        '''Test a binary threshold with a low bound'''
+        """Test a binary threshold with a low bound"""
 
         numpy.random.seed(0)
         image = numpy.random.uniform(size=(20, 20))
@@ -459,7 +460,7 @@ class TestApplyThreshold(unittest.TestCase):
         self.assertTrue(numpy.all(output.pixel_data == expected))
 
     def test_04_05_high_bounds(self):
-        '''Test a binary threshold with a high bound'''
+        """Test a binary threshold with a high bound"""
 
         numpy.random.seed(0)
         image = numpy.random.uniform(size=(40, 40))
@@ -474,7 +475,7 @@ class TestApplyThreshold(unittest.TestCase):
         self.assertTrue(numpy.all(output.pixel_data == expected))
 
     def test_04_06_per_object(self):
-        '''Test that per-object thresholding works'''
+        """Test that per-object thresholding works"""
         numpy.random.seed(0)
         image = numpy.random.uniform(size=(20, 20)) * .5
         labels = numpy.ones((20, 20), int)
@@ -495,7 +496,7 @@ class TestApplyThreshold(unittest.TestCase):
         self.assertTrue(numpy.all(output.pixel_data == expected))
 
     def test_04_07_threshold_from_measurement(self):
-        '''Test a binary threshold from previous measurements'''
+        """Test a binary threshold from previous measurements"""
         numpy.random.seed(0)
         image = numpy.random.uniform(size=(20, 20))
         workspace, module = self.make_workspace(image)
@@ -513,7 +514,7 @@ class TestApplyThreshold(unittest.TestCase):
         module2.run(workspace)
 
     def test_05_01_otsu_wv(self):
-        '''Test the weighted variance version of Otsu'''
+        """Test the weighted variance version of Otsu"""
         numpy.random.seed(0)
         image = numpy.hstack((numpy.random.exponential(1.5, size=600),
                               numpy.random.poisson(15, size=300)))
@@ -534,7 +535,7 @@ class TestApplyThreshold(unittest.TestCase):
         self.assertTrue(numpy.all(output.pixel_data == expected))
 
     def test_05_02_otsu_entropy(self):
-        '''Test the entropy version of Otsu'''
+        """Test the entropy version of Otsu"""
         numpy.random.seed(0)
         image = numpy.hstack((numpy.random.exponential(1.5, size=600),
                               numpy.random.poisson(15, size=300)))
@@ -555,7 +556,7 @@ class TestApplyThreshold(unittest.TestCase):
         self.assertTrue(numpy.all(output.pixel_data == expected))
 
     def test_05_03_otsu3_wv_low(self):
-        '''Test the three-class otsu, weighted variance middle = background'''
+        """Test the three-class otsu, weighted variance middle = background"""
         numpy.random.seed(0)
         image = numpy.hstack((numpy.random.exponential(1.5, size=300),
                               numpy.random.poisson(15, size=300),
@@ -578,7 +579,7 @@ class TestApplyThreshold(unittest.TestCase):
         self.assertAlmostEqual(m_threshold, threshold)
 
     def test_05_04_otsu3_wv_high(self):
-        '''Test the three-class otsu, weighted variance middle = foreground'''
+        """Test the three-class otsu, weighted variance middle = foreground"""
         numpy.random.seed(0)
         image = numpy.hstack((numpy.random.exponential(1.5, size=300),
                               numpy.random.poisson(15, size=300),
@@ -601,7 +602,7 @@ class TestApplyThreshold(unittest.TestCase):
         self.assertAlmostEqual(m_threshold, threshold)
 
     def test_05_05_otsu3_entropy_low(self):
-        '''Test the three-class otsu, entropy, middle = background'''
+        """Test the three-class otsu, entropy, middle = background"""
         numpy.random.seed(0)
         image = numpy.hstack((numpy.random.exponential(1.5, size=300),
                               numpy.random.poisson(15, size=300),

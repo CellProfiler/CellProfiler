@@ -1,29 +1,25 @@
-"""test_ExportToSpreadsheet.py - test the ExportToSpreadsheet module
-"""
-
+import StringIO
 import base64
 import csv
 import os
 import tempfile
 import unittest
 import zlib
-from StringIO import StringIO
-
-import cellprofiler.preferences
-import numpy as np
-
-cellprofiler.preferences.set_headless()
 
 import cellprofiler.image
 import cellprofiler.measurement
-import cellprofiler.region
-import cellprofiler.preferences
-import cellprofiler.pipeline
-import cellprofiler.workspace
 import cellprofiler.modules.exporttospreadsheet
-import cellprofiler.modules.identifyprimaryobjects
 import cellprofiler.modules.identify
+import cellprofiler.modules.identifyprimaryobjects
 import cellprofiler.modules.tests
+import cellprofiler.pipeline
+import cellprofiler.preferences
+import cellprofiler.preferences
+import cellprofiler.region
+import cellprofiler.workspace
+import numpy
+
+cellprofiler.preferences.set_headless()
 
 OBJECTS_NAME = "MyObjects"
 IMG_MEAS = "my_image_measurement"
@@ -64,7 +60,7 @@ class TestExportToSpreadsheet(unittest.TestCase):
             self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
+        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet))
@@ -105,7 +101,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'8947\'|variable_revision_number:
             self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO(data))
+        pipeline.load(StringIO.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet))
@@ -175,7 +171,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'9144\'|variable_revision_number:
             self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO(data))
+        pipeline.load(StringIO.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet))
@@ -243,7 +239,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'9434\'|variable_revision_number:
             self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO(data))
+        pipeline.load(StringIO.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet))
@@ -394,7 +390,7 @@ ExportToSpreadsheet:[module_num:5|svn_version:\'9434\'|variable_revision_number:
             self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO(data))
+        pipeline.load(StringIO.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 5)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet))
@@ -494,7 +490,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO(data))
+        pipeline.load(StringIO.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet))
@@ -553,7 +549,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO(data))
+        pipeline.load(StringIO.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet))
@@ -616,7 +612,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO(data))
+        pipeline.load(StringIO.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet))
@@ -681,7 +677,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO(data))
+        pipeline.load(StringIO.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet))
@@ -719,7 +715,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.object_groups[0].wants_automatic_file_name.value = False
         module.wants_prefix.value = False
         m = cellprofiler.measurement.Measurements()
-        m.add_measurement("my_object", "my_measurement", np.zeros((0,)))
+        m.add_measurement("my_object", "my_measurement", numpy.zeros((0,)))
         m.add_image_measurement("Count_my_object", 0)
         image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
@@ -828,7 +824,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         ExportToSpreadsheet shouldn't generate an experiment file if
         the only measurements are Exit_Status or Complete.
         """
-        np.random.seed(14887)
+        numpy.random.seed(14887)
         module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
         module.module_num = 1
         module.wants_everything.value = False
@@ -838,7 +834,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.wants_everything.value = True
         m = cellprofiler.measurement.Measurements()
         m.add_experiment_measurement("Exit_Status", "Complete")
-        image_measurements = np.random.uniform(size=4)
+        image_measurements = numpy.random.uniform(size=4)
         m.add_all_measurements(cellprofiler.measurement.IMAGE, "my_measurement", image_measurements)
         image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
@@ -858,7 +854,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
     def test_01_05_prefix(self):
         # Use a prefix, check that file name exists
         prefix = "Foo_"
-        np.random.seed(14887)
+        numpy.random.seed(14887)
         module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
         module.module_num = 1
         module.wants_everything.value = False
@@ -868,7 +864,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.directory.custom_path = self.output_dir
         module.wants_everything.value = True
         m = cellprofiler.measurement.Measurements()
-        image_measurements = np.random.uniform(size=4)
+        image_measurements = numpy.random.uniform(size=4)
         m.add_all_measurements(cellprofiler.measurement.IMAGE, "my_measurement", image_measurements)
         image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
@@ -974,8 +970,8 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.object_groups[0].file_name.value = path
         module.object_groups[0].wants_automatic_file_name.value = False
         m = cellprofiler.measurement.Measurements()
-        np.random.seed(0)
-        mvalues = np.random.uniform(size=(1,))
+        numpy.random.seed(0)
+        mvalues = numpy.random.uniform(size=(1,))
         m.add_measurement("my_object", "my_measurement", mvalues)
         m.add_image_measurement("Count_my_object", 1)
         image_set_list = cellprofiler.image.ImageSetList()
@@ -1015,8 +1011,8 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.object_groups[0].file_name.value = path
         module.object_groups[0].wants_automatic_file_name.value = False
         m = cellprofiler.measurement.Measurements(mode="memory")
-        np.random.seed(0)
-        mvalues = np.random.uniform(size=(2, 3))
+        numpy.random.seed(0)
+        mvalues = numpy.random.uniform(size=(2, 3))
         for i in range(3):
             m.add_measurement("my_object", "measurement_%d" % i, mvalues[:, i])
         m.add_image_measurement("Count_my_object", 2)
@@ -1066,9 +1062,9 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.object_groups[1].name.value = "object_1"
         module.object_groups[1].wants_automatic_file_name.value = False
         m = cellprofiler.measurement.Measurements()
-        np.random.seed(0)
+        numpy.random.seed(0)
         # cell, measurement, object
-        mvalues = np.random.uniform(size=(4, 3, 2))
+        mvalues = numpy.random.uniform(size=(4, 3, 2))
         for oidx in range(2):
             for i in range(3):
                 m.add_measurement("object_%d" % oidx,
@@ -1126,9 +1122,9 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.object_groups[0].wants_automatic_file_name.value = False
         module.nan_representation.value = cellprofiler.modules.exporttospreadsheet.NANS_AS_NANS
         m = cellprofiler.measurement.Measurements()
-        np.random.seed(0)
-        mvalues = np.random.uniform(size=(2,))
-        mvalues[1] = np.NaN
+        numpy.random.seed(0)
+        mvalues = numpy.random.uniform(size=(2,))
+        mvalues[1] = numpy.NaN
         m.add_measurement("my_object", "my_measurement", mvalues)
         m.add_image_measurement("Count_my_object", 2)
         image_set_list = cellprofiler.image.ImageSetList()
@@ -1155,7 +1151,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             self.assertAlmostEqual(float(row[2]), mvalues[0], 4)
             row = reader.next()
             self.assertEqual(len(row), 3)
-            self.assertEqual(row[2], str(np.NaN))
+            self.assertEqual(row[2], str(numpy.NaN))
             self.assertRaises(StopIteration, reader.next)
         finally:
             fd.close()
@@ -1171,9 +1167,9 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.object_groups[0].wants_automatic_file_name.value = False
         module.nan_representation.value = cellprofiler.modules.exporttospreadsheet.NANS_AS_NULLS
         m = cellprofiler.measurement.Measurements()
-        np.random.seed(0)
-        mvalues = np.random.uniform(size=(2,))
-        mvalues[1] = np.NaN
+        numpy.random.seed(0)
+        mvalues = numpy.random.uniform(size=(2,))
+        mvalues[1] = numpy.NaN
         m.add_measurement("my_object", "my_measurement", mvalues)
         m.add_image_measurement("Count_my_object", 2)
         image_set_list = cellprofiler.image.ImageSetList()
@@ -1219,15 +1215,15 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         m = cellprofiler.measurement.Measurements()
         m.add_measurement(
                 cellprofiler.measurement.IMAGE, "my_image_measurement", 13, image_set_number=1,
-                data_type=np.float64)
-        mvalues = np.array([np.NaN, np.NaN])
+                data_type=numpy.float64)
+        mvalues = numpy.array([numpy.NaN, numpy.NaN])
         m.add_measurement(OBJECTS_NAME, OBJ_MEAS, mvalues,
-                          image_set_number=1, data_type=np.float64)
+                          image_set_number=1, data_type=numpy.float64)
         m.add_measurement(cellprofiler.measurement.IMAGE, "Count_%s" % OBJECTS_NAME, 2,
                           image_set_number=1)
         m.add_measurement(
-                cellprofiler.measurement.IMAGE, IMG_MEAS, np.NaN, image_set_number=2,
-                data_type=np.float64)
+                cellprofiler.measurement.IMAGE, IMG_MEAS, numpy.NaN, image_set_number=2,
+                data_type=numpy.float64)
         m.add_measurement(cellprofiler.measurement.IMAGE, "Count_%s" % OBJECTS_NAME, 0,
                           image_set_number=2)
         image_set_list = cellprofiler.image.ImageSetList()
@@ -1251,7 +1247,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             row = reader.next()
             value = row[d[agg_meas]]
             self.assertEqual(
-                    value, str(np.NaN),
+                    value, str(numpy.NaN),
                     msg="Expected nan %s measurement, got %s" %
                         (agg_meas, value))
             self.assertEqual(float(row[d[IMG_MEAS]]), 13)
@@ -1259,7 +1255,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             for meas in agg_meas, IMG_MEAS:
                 value = row[d[meas]]
                 self.assertEqual(
-                        value, str(np.NaN),
+                        value, str(numpy.NaN),
                         msg="Expected nan %s measurement, got %s" %
                             (meas, value))
             self.assertRaises(StopIteration, reader.next)
@@ -1278,15 +1274,15 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         m = cellprofiler.measurement.Measurements()
         m.add_measurement(
                 cellprofiler.measurement.IMAGE, "my_image_measurement", 13, image_set_number=1,
-                data_type=np.float64)
-        mvalues = np.array([np.NaN, np.NaN])
+                data_type=numpy.float64)
+        mvalues = numpy.array([numpy.NaN, numpy.NaN])
         m.add_measurement(OBJECTS_NAME, OBJ_MEAS, mvalues,
-                          image_set_number=1, data_type=np.float64)
+                          image_set_number=1, data_type=numpy.float64)
         m.add_measurement(cellprofiler.measurement.IMAGE, "Count_%s" % OBJECTS_NAME, 2,
                           image_set_number=1)
         m.add_measurement(
-                cellprofiler.measurement.IMAGE, IMG_MEAS, np.NaN, image_set_number=2,
-                data_type=np.float64)
+                cellprofiler.measurement.IMAGE, IMG_MEAS, numpy.NaN, image_set_number=2,
+                data_type=numpy.float64)
         m.add_measurement(cellprofiler.measurement.IMAGE, "Count_%s" % OBJECTS_NAME, 0,
                           image_set_number=2)
         image_set_list = cellprofiler.image.ImageSetList()
@@ -1334,12 +1330,12 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.object_groups[0].wants_automatic_file_name.value = False
         module.wants_aggregate_means.value = False
         m = cellprofiler.measurement.Measurements()
-        r = np.random.RandomState()
+        r = numpy.random.RandomState()
         r.seed(38)
-        my_blob = r.randint(0, 256, 100).astype(np.uint8)
+        my_blob = r.randint(0, 256, 100).astype(numpy.uint8)
         m.add_measurement(
                 cellprofiler.measurement.IMAGE, IMG_MEAS, my_blob, image_set_number=1,
-                data_type=np.uint8)
+                data_type=numpy.uint8)
         image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         object_set = cellprofiler.region.Set()
@@ -1357,8 +1353,8 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             self.assertIn(IMG_MEAS, d)
             row = reader.next()
             data = base64.b64decode(row[d[IMG_MEAS]])
-            value = np.frombuffer(data, np.uint8)
-            np.testing.assert_array_equal(value, my_blob)
+            value = numpy.frombuffer(data, numpy.uint8)
+            numpy.testing.assert_array_equal(value, my_blob)
 
     def test_03_09_blob_experiment_measurements(self):
         path = os.path.join(self.output_dir, "my_file.csv")
@@ -1371,12 +1367,12 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.object_groups[0].wants_automatic_file_name.value = False
         module.wants_aggregate_means.value = False
         m = cellprofiler.measurement.Measurements()
-        r = np.random.RandomState()
+        r = numpy.random.RandomState()
         r.seed(38)
-        my_blob = r.randint(0, 256, 100).astype(np.uint8)
+        my_blob = r.randint(0, 256, 100).astype(numpy.uint8)
         m.add_measurement(
                 cellprofiler.measurement.EXPERIMENT, IMG_MEAS, my_blob, image_set_number=1,
-                data_type=np.uint8)
+                data_type=numpy.uint8)
         image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         object_set = cellprofiler.region.Set()
@@ -1393,8 +1389,8 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             for feature, value in reader:
                 if feature == IMG_MEAS:
                     data = base64.b64decode(value)
-                    value = np.frombuffer(data, np.uint8)
-                    np.testing.assert_array_equal(value, my_blob)
+                    value = numpy.frombuffer(data, numpy.uint8)
+                    numpy.testing.assert_array_equal(value, my_blob)
                     break
             else:
                 self.fail("Could not find %s in experiment CSV" % IMG_MEAS)
@@ -1414,12 +1410,12 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.object_groups[0].file_name.value = path
         module.object_groups[0].wants_automatic_file_name.value = False
         m = cellprofiler.measurement.Measurements()
-        np.random.seed(0)
-        mvalues = np.random.uniform(size=(4,))
+        numpy.random.seed(0)
+        mvalues = numpy.random.uniform(size=(4,))
         image_set_list = cellprofiler.image.ImageSetList()
         for index, measurement, metadata in zip(range(4), mvalues, ('foo', 'bar', 'bar', 'foo')):
             image_set = image_set_list.get_image_set(index)
-            m.add_measurement("my_object", "my_measurement", np.array([measurement]))
+            m.add_measurement("my_object", "my_measurement", numpy.array([measurement]))
             m.add_image_measurement("Metadata_tag", metadata)
             m.add_image_measurement("Count_my_object", 1)
             if index < 3:
@@ -1472,12 +1468,12 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.directory.dir_choice = cellprofiler.preferences.ABSOLUTE_FOLDER_NAME
         module.directory.custom_path = path
         m = cellprofiler.measurement.Measurements()
-        np.random.seed(0)
-        mvalues = np.random.uniform(size=(4,))
+        numpy.random.seed(0)
+        mvalues = numpy.random.uniform(size=(4,))
         image_set_list = cellprofiler.image.ImageSetList()
         for index, measurement, metadata in zip(range(4), mvalues, ('foo', 'bar', 'bar', 'foo')):
             image_set = image_set_list.get_image_set(index)
-            m.add_measurement("my_object", "my_measurement", np.array([measurement]))
+            m.add_measurement("my_object", "my_measurement", numpy.array([measurement]))
             m.add_image_measurement("Metadata_tag", metadata)
             m.add_image_measurement("Count_my_object", 1)
             if index < 3:
@@ -1526,8 +1522,8 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.object_groups[0].file_name.value = path
         module.object_groups[0].wants_automatic_file_name.value = False
         m = cellprofiler.measurement.Measurements()
-        np.random.seed(0)
-        mvalues = np.random.uniform(size=(4,))
+        numpy.random.seed(0)
+        mvalues = numpy.random.uniform(size=(4,))
         image_set_list = cellprofiler.image.ImageSetList()
         for index, measurement, metadata in zip(range(4), mvalues, ('foo', 'bar', 'bar', 'foo')):
             image_set = image_set_list.get_image_set(index)
@@ -1583,8 +1579,8 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.object_groups[0].file_name.value = "output.csv"
         module.object_groups[0].wants_automatic_file_name.value = False
         m = cellprofiler.measurement.Measurements()
-        np.random.seed(0)
-        mvalues = np.random.uniform(size=(4,))
+        numpy.random.seed(0)
+        mvalues = numpy.random.uniform(size=(4,))
         image_set_list = cellprofiler.image.ImageSetList()
         metadata_values = ('foo', 'bar', 'bar', 'foo')
         for index, (measurement, metadata) in \
@@ -1789,8 +1785,8 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.wants_aggregate_std.value = True
         m = cellprofiler.measurement.Measurements()
         m.add_image_measurement("Count_my_objects", 6)
-        np.random.seed(0)
-        data = np.random.uniform(size=(6,))
+        numpy.random.seed(0)
+        data = numpy.random.uniform(size=(6,))
         m.add_measurement("my_objects", "my_measurement", data)
         image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
@@ -1815,10 +1811,10 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             row = reader.next()
             self.assertEqual(row[d["Count_my_objects"]], "6")
             for agg in cellprofiler.measurement.AGG_NAMES:
-                value = (np.mean(data) if agg == cellprofiler.measurement.AGG_MEAN
-                         else np.std(data) if agg == cellprofiler.measurement.AGG_STD_DEV
-                else np.median(data) if agg == cellprofiler.measurement.AGG_MEDIAN
-                else np.NAN)
+                value = (numpy.mean(data) if agg == cellprofiler.measurement.AGG_MEAN
+                         else numpy.std(data) if agg == cellprofiler.measurement.AGG_STD_DEV
+                else numpy.median(data) if agg == cellprofiler.measurement.AGG_MEDIAN
+                else numpy.NAN)
                 self.assertAlmostEqual(float(row[d["%s_my_objects_my_measurement" % agg]]), value)
             self.assertRaises(StopIteration, reader.next)
         finally:
@@ -1839,8 +1835,8 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.wants_aggregate_std.value = False
         m = cellprofiler.measurement.Measurements(mode="memory")
         m.add_image_measurement("Count_my_objects", 6)
-        np.random.seed(0)
-        data = np.random.uniform(size=(6,))
+        numpy.random.seed(0)
+        data = numpy.random.uniform(size=(6,))
         m.add_measurement("my_objects", "my_measurement", data)
         image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
@@ -1904,15 +1900,15 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.columns.value = module.columns.get_value_string(columns)
 
         m = cellprofiler.measurement.Measurements()
-        np.random.seed(0)
-        data = np.random.uniform(size=(6,))
+        numpy.random.seed(0)
+        data = numpy.random.uniform(size=(6,))
         m.add_image_measurement("Count_my_objects", 6)
-        m.add_image_measurement("first_measurement", np.sum(data))
+        m.add_image_measurement("first_measurement", numpy.sum(data))
         m.add_image_measurement("another_measurement", 43.2)
-        m.add_measurement("my_objects", "Number_Object_Number", np.arange(1, 7))
+        m.add_measurement("my_objects", "Number_Object_Number", numpy.arange(1, 7))
         m.add_measurement("my_objects", "my_measurement", data)
         m.add_measurement("my_objects", "my_filtered_measurement",
-                          np.random.uniform(size=(6,)))
+                          numpy.random.uniform(size=(6,)))
         image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         object_set = cellprofiler.region.Set()
@@ -1939,9 +1935,9 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             row = reader.next()
             self.assertEqual(row[d["ImageNumber"]], "1")
             self.assertEqual(row[d["Count_my_objects"]], "6")
-            self.assertAlmostEqual(float(row[d["first_measurement"]]), np.sum(data))
+            self.assertAlmostEqual(float(row[d["first_measurement"]]), numpy.sum(data))
             self.assertAlmostEqual(float(row[d["Mean_my_objects_my_measurement"]]),
-                                   np.mean(data))
+                                   numpy.mean(data))
             self.assertRaises(StopIteration, reader.next)
         finally:
             fd.close()
@@ -1990,9 +1986,9 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.columns.value = module.columns.get_value_string(columns)
 
         m = cellprofiler.measurement.Measurements()
-        np.random.seed(0)
-        data = np.random.uniform(size=(6,))
-        m.add_image_measurement("first_measurement", np.sum(data))
+        numpy.random.seed(0)
+        data = numpy.random.uniform(size=(6,))
+        m.add_image_measurement("first_measurement", numpy.sum(data))
         image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         object_set = cellprofiler.region.Set()
@@ -2072,9 +2068,9 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.object_groups[0].file_name.value = path
         module.object_groups[0].wants_automatic_file_name.value = False
         m = cellprofiler.measurement.Measurements()
-        np.random.seed(0)
+        numpy.random.seed(0)
         # Three images with four objects each
-        mvalues = np.random.uniform(size=(3, 4))
+        mvalues = numpy.random.uniform(size=(3, 4))
         for image_idx in range(mvalues.shape[0]):
             if image_idx:
                 m.next_image_set()
@@ -2123,9 +2119,9 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.object_groups[0].wants_automatic_file_name.value = False
         module.add_metadata.value = True
         m = cellprofiler.measurement.Measurements()
-        np.random.seed(0)
+        numpy.random.seed(0)
         # Three images with four objects each
-        mvalues = np.random.uniform(size=(3, 4))
+        mvalues = numpy.random.uniform(size=(3, 4))
         for image_idx in range(mvalues.shape[0]):
             if image_idx:
                 m.next_image_set()
@@ -2184,9 +2180,9 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.object_groups[0].wants_automatic_file_name.value = False
         module.add_metadata.value = True
         m = cellprofiler.measurement.Measurements()
-        np.random.seed(0)
+        numpy.random.seed(0)
         # Three images with four objects each
-        mvalues = np.random.uniform(size=(3, 4))
+        mvalues = numpy.random.uniform(size=(3, 4))
         for image_idx in range(mvalues.shape[0]):
             if image_idx:
                 m.next_image_set()
@@ -2219,7 +2215,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                     row = reader.next()
                     self.assertEqual(len(row), 3)
                     if image_idx == 1:
-                        self.assertEqual(row[d["my_measurement"]], str(np.NAN))
+                        self.assertEqual(row[d["my_measurement"]], str(numpy.NAN))
                     else:
                         self.assertAlmostEqual(float(row[d["my_measurement"]]),
                                                mvalues[image_idx, object_idx], 4)
@@ -2255,7 +2251,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         m[cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_NUMBER, 1] = 1
         m[cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_INDEX, 1] = 1
         m[cellprofiler.measurement.IMAGE, "_".join((cellprofiler.modules.identify.C_COUNT, OBJECTS_NAME)), 1] = 3
-        m[OBJECTS_NAME, cellprofiler.modules.identify.M_LOCATION_CENTER_X, 1] = np.array([1, 4, 9], float)
+        m[OBJECTS_NAME, cellprofiler.modules.identify.M_LOCATION_CENTER_X, 1] = numpy.array([1, 4, 9], float)
         image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         object_set = cellprofiler.region.Set()
@@ -2347,14 +2343,14 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                  cellprofiler.measurement.GROUP_INDEX: [0]}
         m = cellprofiler.measurement.Measurements()
         for k, v in d.iteritems():
-            m[cellprofiler.measurement.IMAGE, k, np.arange(len(v)) + 1] = v
+            m[cellprofiler.measurement.IMAGE, k, numpy.arange(len(v)) + 1] = v
         image_numbers = m.get_image_numbers()
         if cellprofiler.measurement.GROUP_NUMBER not in d:
             m[cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_NUMBER, image_numbers] = \
                 [0] * len(image_numbers)
         if cellprofiler.measurement.GROUP_INDEX not in d:
             m[cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_INDEX, image_numbers] = \
-                np.arange(len(image_numbers))
+                numpy.arange(len(image_numbers))
         return m
 
     def add_gct_settings(self, output_csv_filename):
@@ -2525,7 +2521,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         self.assertFalse(module.prepare_run(workspace))
 
     def test_09_01_relationships_file(self):
-        r = np.random.RandomState()
+        r = numpy.random.RandomState()
         r.seed(91)
         path = os.path.join(self.output_dir, "my_file.csv")
         module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()

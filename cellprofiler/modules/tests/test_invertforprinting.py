@@ -1,23 +1,18 @@
-'''test_invertforprinting - Test the InvertForPrinting module
-'''
-
+import StringIO
 import base64
 import unittest
 import zlib
-from StringIO import StringIO
 
-import numpy as np
+import cellprofiler.image
+import cellprofiler.measurement
+import cellprofiler.modules.invertforprinting
+import cellprofiler.pipeline
+import cellprofiler.preferences
+import cellprofiler.region
+import cellprofiler.workspace
+import numpy
 
-from cellprofiler.preferences import set_headless
-
-set_headless()
-
-import cellprofiler.workspace as cpw
-import cellprofiler.pipeline as cpp
-import cellprofiler.region as cpo
-import cellprofiler.image as cpi
-import cellprofiler.measurement as cpm
-import cellprofiler.modules.invertforprinting as I
+cellprofiler.preferences.set_headless()
 
 I_RED_IN = "RedInput"
 I_GREEN_IN = "GreenInput"
@@ -48,24 +43,24 @@ class TestInvertForPrinting(unittest.TestCase):
                 'b/4p432+8Mv90LspdZGP132u09nBq/v7zuTz5xf9/qbdmBZe0fjsYCbQGfPq'
                 'q3k5fn/pKOzac138++3zR15X30j9H8DxtfP95F1O/Vxbb539FfX95u9nqzNv'
                 'ndrrIbq8eP5t8fP96ce79+w/+Hfe79PWfxZv0/z/39JNhxUAgHNw/Q==')
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
+        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 3)
         module = pipeline.modules()[2]
-        self.assertTrue(isinstance(module, I.InvertForPrinting))
-        self.assertEqual(module.input_color_choice.value, I.CC_GRAYSCALE)
+        self.assertTrue(isinstance(module, cellprofiler.modules.invertforprinting.InvertForPrinting))
+        self.assertEqual(module.input_color_choice.value, cellprofiler.modules.invertforprinting.CC_GRAYSCALE)
         self.assertTrue(module.wants_red_input.value)
         self.assertEqual(module.red_input_image.value, "OrigRed")
         self.assertTrue(module.wants_green_input.value)
         self.assertEqual(module.green_input_image.value, "OrigGreen")
         self.assertTrue(module.wants_blue_input.value)
         self.assertEqual(module.blue_input_image.value, "OrigBlue")
-        self.assertEqual(module.output_color_choice.value, I.CC_GRAYSCALE)
+        self.assertEqual(module.output_color_choice.value, cellprofiler.modules.invertforprinting.CC_GRAYSCALE)
         self.assertTrue(module.wants_red_output.value)
         self.assertEqual(module.red_output_image.value, "InvertedDisplayRed")
         self.assertTrue(module.wants_green_output.value)
@@ -92,35 +87,35 @@ class TestInvertForPrinting(unittest.TestCase):
                 'XRUtW5Mzuc/F42ZnM6YVNxiqdXdD4nvi37xnYyRovzWwDuk0c3XGm5xQuY0V'
                 '77Z3bxkvKY+u39yAel4dwuJveWm47rre7jz83g5SLxL6u968Dy6ilJO4H2C8'
                 'eV4ZEu9wCxr/B5P4OHs=')
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
+        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 2)
         module = pipeline.modules()[1]
-        self.assertTrue(isinstance(module, I.InvertForPrinting))
-        self.assertEqual(module.input_color_choice.value, I.CC_COLOR)
+        self.assertTrue(isinstance(module, cellprofiler.modules.invertforprinting.InvertForPrinting))
+        self.assertEqual(module.input_color_choice.value, cellprofiler.modules.invertforprinting.CC_COLOR)
         self.assertEqual(module.color_input_image.value, "DNA")
-        self.assertEqual(module.output_color_choice.value, I.CC_COLOR)
+        self.assertEqual(module.output_color_choice.value, cellprofiler.modules.invertforprinting.CC_COLOR)
         self.assertEqual(module.color_output_image.value, "InvertedColor")
 
     def run_module(self, color_image=None,
                    red_image=None, green_image=None, blue_image=None,
                    fn=None):
-        '''Run the InvertForPrinting module
+        """Run the InvertForPrinting module
 
         Call this with Numpy arrays for the images and optionally
         specify a function (fn) whose argument is an InvertForPrinting module.
         You can specialize the module inside this function.
 
         Returns a dictionary of the pixel data of the images in the image set
-        '''
-        image_set_list = cpi.ImageSetList()
+        """
+        image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        module = I.InvertForPrinting()
+        module = cellprofiler.modules.invertforprinting.InvertForPrinting()
         module.module_num = 1
         for image, name, setting, check in \
                 ((color_image, I_COLOR_IN, module.color_input_image, None),
@@ -128,7 +123,7 @@ class TestInvertForPrinting(unittest.TestCase):
                  (green_image, I_GREEN_IN, module.green_input_image, module.wants_green_input),
                  (blue_image, I_BLUE_IN, module.blue_input_image, module.wants_blue_input)):
             if image is not None:
-                img = cpi.Image(image)
+                img = cellprofiler.image.Image(image)
                 image_set.add(name, img)
                 setting.value = name
                 if check is not None:
@@ -142,17 +137,17 @@ class TestInvertForPrinting(unittest.TestCase):
             setting.value = name
         if fn is not None:
             fn(module)
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_module(module)
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.RunExceptionEvent))
 
         pipeline.add_listener(callback)
-        workspace = cpw.Workspace(pipeline, module, image_set,
-                                  cpo.Set(),
-                                  cpm.Measurements(),
-                                  image_set_list)
+        workspace = cellprofiler.workspace.Workspace(pipeline, module, image_set,
+                                                     cellprofiler.region.Set(),
+                                                     cellprofiler.measurement.Measurements(),
+                                                     image_set_list)
         module.run(workspace)
         result = {}
         for provider in image_set.providers:
@@ -160,13 +155,13 @@ class TestInvertForPrinting(unittest.TestCase):
         return result
 
     def test_02_01_color_to_color(self):
-        np.random.seed(0)
-        color_image = np.random.uniform(size=(10, 20, 3)).astype(np.float32)
+        numpy.random.seed(0)
+        color_image = numpy.random.uniform(size=(10, 20, 3)).astype(numpy.float32)
 
         def fn(module):
-            self.assertTrue(isinstance(module, I.InvertForPrinting))
-            module.input_color_choice.value = I.CC_COLOR
-            module.output_color_choice.value = I.CC_COLOR
+            self.assertTrue(isinstance(module, cellprofiler.modules.invertforprinting.InvertForPrinting))
+            module.input_color_choice.value = cellprofiler.modules.invertforprinting.CC_COLOR
+            module.output_color_choice.value = cellprofiler.modules.invertforprinting.CC_COLOR
 
         d = self.run_module(color_image=color_image, fn=fn)
         self.assertEqual(len(d), 2)
@@ -175,16 +170,16 @@ class TestInvertForPrinting(unittest.TestCase):
         for o, i1, i2 in ((0, 1, 2), (1, 2, 0), (2, 0, 1)):
             diff = (result[:, :, o] - ((1 - color_image[:, :, i1]) *
                                        (1 - color_image[:, :, i2])))
-            self.assertTrue(np.all(np.abs(diff) <= np.finfo(float).eps))
+            self.assertTrue(numpy.all(numpy.abs(diff) <= numpy.finfo(float).eps))
 
     def test_02_02_color_to_bw(self):
-        np.random.seed(0)
-        color_image = np.random.uniform(size=(10, 20, 3)).astype(np.float32)
+        numpy.random.seed(0)
+        color_image = numpy.random.uniform(size=(10, 20, 3)).astype(numpy.float32)
 
         def fn(module):
-            self.assertTrue(isinstance(module, I.InvertForPrinting))
-            module.input_color_choice.value = I.CC_COLOR
-            module.output_color_choice.value = I.CC_GRAYSCALE
+            self.assertTrue(isinstance(module, cellprofiler.modules.invertforprinting.InvertForPrinting))
+            module.input_color_choice.value = cellprofiler.modules.invertforprinting.CC_COLOR
+            module.output_color_choice.value = cellprofiler.modules.invertforprinting.CC_GRAYSCALE
 
         d = self.run_module(color_image=color_image, fn=fn)
         self.assertEqual(len(d), 4)
@@ -194,16 +189,16 @@ class TestInvertForPrinting(unittest.TestCase):
         for o, i1, i2 in ((0, 1, 2), (1, 2, 0), (2, 0, 1)):
             diff = (result[o] - ((1 - color_image[:, :, i1]) *
                                  (1 - color_image[:, :, i2])))
-            self.assertTrue(np.all(np.abs(diff) <= np.finfo(float).eps))
+            self.assertTrue(numpy.all(numpy.abs(diff) <= numpy.finfo(float).eps))
 
     def test_02_03_bw_to_color(self):
-        np.random.seed(0)
-        color_image = np.random.uniform(size=(10, 20, 3)).astype(np.float32)
+        numpy.random.seed(0)
+        color_image = numpy.random.uniform(size=(10, 20, 3)).astype(numpy.float32)
 
         def fn(module):
-            self.assertTrue(isinstance(module, I.InvertForPrinting))
-            module.input_color_choice.value = I.CC_GRAYSCALE
-            module.output_color_choice.value = I.CC_COLOR
+            self.assertTrue(isinstance(module, cellprofiler.modules.invertforprinting.InvertForPrinting))
+            module.input_color_choice.value = cellprofiler.modules.invertforprinting.CC_GRAYSCALE
+            module.output_color_choice.value = cellprofiler.modules.invertforprinting.CC_COLOR
 
         d = self.run_module(red_image=color_image[:, :, 0],
                             green_image=color_image[:, :, 1],
@@ -213,18 +208,18 @@ class TestInvertForPrinting(unittest.TestCase):
         self.assertTrue(I_COLOR_OUT in d.keys())
         result = d[I_COLOR_OUT]
         for o, i1, i2 in ((0, 1, 2), (1, 2, 0), (2, 0, 1)):
-            np.testing.assert_almost_equal(
+            numpy.testing.assert_almost_equal(
                     result[:, :, o],
                     ((1 - color_image[:, :, i1]) * (1 - color_image[:, :, i2])))
 
     def test_02_04_bw_to_bw(self):
-        np.random.seed(0)
-        color_image = np.random.uniform(size=(10, 20, 3)).astype(np.float32)
+        numpy.random.seed(0)
+        color_image = numpy.random.uniform(size=(10, 20, 3)).astype(numpy.float32)
 
         def fn(module):
-            self.assertTrue(isinstance(module, I.InvertForPrinting))
-            module.input_color_choice.value = I.CC_GRAYSCALE
-            module.output_color_choice.value = I.CC_GRAYSCALE
+            self.assertTrue(isinstance(module, cellprofiler.modules.invertforprinting.InvertForPrinting))
+            module.input_color_choice.value = cellprofiler.modules.invertforprinting.CC_GRAYSCALE
+            module.output_color_choice.value = cellprofiler.modules.invertforprinting.CC_GRAYSCALE
 
         d = self.run_module(red_image=color_image[:, :, 0],
                             green_image=color_image[:, :, 1],
@@ -235,14 +230,14 @@ class TestInvertForPrinting(unittest.TestCase):
                              for color in (I_RED_OUT, I_GREEN_OUT, I_BLUE_OUT)]))
         result = [d[I_RED_OUT], d[I_GREEN_OUT], d[I_BLUE_OUT]]
         for o, i1, i2 in ((0, 1, 2), (1, 2, 0), (2, 0, 1)):
-            np.testing.assert_almost_equal(
+            numpy.testing.assert_almost_equal(
                     result[o],
                     ((1 - color_image[:, :, i1]) *
                      (1 - color_image[:, :, i2])))
 
     def test_03_01_missing_image(self):
-        np.random.seed(0)
-        color_image = np.random.uniform(size=(10, 20, 3)).astype(np.float32)
+        numpy.random.seed(0)
+        color_image = numpy.random.uniform(size=(10, 20, 3)).astype(numpy.float32)
         for present in ((True, True, False),
                         (True, False, True),
                         (True, False, False),
@@ -250,20 +245,20 @@ class TestInvertForPrinting(unittest.TestCase):
                         (False, True, False),
                         (False, False, True)):
             def fn(module):
-                self.assertTrue(isinstance(module, I.InvertForPrinting))
-                module.input_color_choice.value = I.CC_GRAYSCALE
-                module.output_color_choice.value = I.CC_GRAYSCALE
+                self.assertTrue(isinstance(module, cellprofiler.modules.invertforprinting.InvertForPrinting))
+                module.input_color_choice.value = cellprofiler.modules.invertforprinting.CC_GRAYSCALE
+                module.output_color_choice.value = cellprofiler.modules.invertforprinting.CC_GRAYSCALE
 
             d = self.run_module(red_image=color_image[:, :, 0] if present[0] else None,
                                 green_image=color_image[:, :, 1] if present[1] else None,
                                 blue_image=color_image[:, :, 2] if present[2] else None,
                                 fn=fn)
-            self.assertEqual(len(d), 3 + np.sum(present))
+            self.assertEqual(len(d), 3 + numpy.sum(present))
             self.assertTrue(all([color in d.keys()
                                  for color in (I_RED_OUT, I_GREEN_OUT, I_BLUE_OUT)]))
             result = [d[I_RED_OUT], d[I_GREEN_OUT], d[I_BLUE_OUT]]
             for o, i1, i2 in ((0, 1, 2), (1, 2, 0), (2, 0, 1)):
-                np.testing.assert_almost_equal(
+                numpy.testing.assert_almost_equal(
                         result[o],
                         ((1 - color_image[:, :, i1] if present[i1] else 1) *
                          (1 - color_image[:, :, i2] if present[i2] else 1)))

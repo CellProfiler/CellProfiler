@@ -1,34 +1,28 @@
-"""test_injectimage.py - test the InjectImage module (which is used for testing)
-"""
-
 import unittest
 
+import cellprofiler.image
+import cellprofiler.measurement
+import cellprofiler.modules.injectimage
+import cellprofiler.pipeline
+import cellprofiler.preferences
+import cellprofiler.workspace
 import numpy
 
-from cellprofiler.preferences import set_headless
-
-set_headless()
-
-from cellprofiler.modules.injectimage import InjectImage
-import cellprofiler.image
-import cellprofiler.pipeline
-import cellprofiler.measurement as cpmeas
-import cellprofiler.workspace as cpw
-
+cellprofiler.preferences.set_headless()
 
 class testInjectImage(unittest.TestCase):
     def test_00_00_init(self):
         image = numpy.zeros((10, 10), dtype=float)
-        x = InjectImage("my_image", image)
+        x = cellprofiler.modules.injectimage.InjectImage("my_image", image)
 
     def test_01_01_get_from_image_set(self):
         image = numpy.zeros((10, 10), dtype=float)
-        ii = InjectImage("my_image", image)
+        ii = cellprofiler.modules.injectimage.InjectImage("my_image", image)
         pipeline = cellprofiler.pipeline.Pipeline()
-        measurements = cpmeas.Measurements()
-        workspace = cpw.Workspace(pipeline, ii, measurements, None,
-                                  measurements,
-                                  cellprofiler.image.ImageSetList())
+        measurements = cellprofiler.measurement.Measurements()
+        workspace = cellprofiler.workspace.Workspace(pipeline, ii, measurements, None,
+                                                     measurements,
+                                                     cellprofiler.image.ImageSetList())
         ii.prepare_run(workspace)
         ii.prepare_group(workspace, {}, [1])
         ii.run(workspace)

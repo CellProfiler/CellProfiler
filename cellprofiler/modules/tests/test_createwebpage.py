@@ -1,35 +1,31 @@
-'''test_createwebpage - Test the CreateWebPage module
-'''
-
+import StringIO
 import base64
-import numpy as np
 import os
-from bioformats.formatwriter import write_image
-from bioformats import PT_UINT8
 import shutil
-from StringIO import StringIO
 import tempfile
 import unittest
-from urllib import URLopener
-from urllib2 import urlopen
-import xml.dom.minidom as DOM
+import urllib
+import urllib2
+import xml.dom.minidom
 import zipfile
 import zlib
 
-import cellprofiler.preferences as cpprefs
+import bioformats
+import bioformats.formatwriter
+import cellprofiler.grid
+import cellprofiler.image
+import cellprofiler.measurement
+import cellprofiler.module
+import cellprofiler.modules.createwebpage
+import cellprofiler.modules.loadimages
+import cellprofiler.modules.loadimages
+import cellprofiler.pipeline
+import cellprofiler.preferences
+import cellprofiler.region
+import cellprofiler.workspace
+import numpy
 
-cpprefs.set_headless()
-
-import cellprofiler.workspace as cpw
-import cellprofiler.grid as cpg
-import cellprofiler.image as cpi
-import cellprofiler.module as cpm
-import cellprofiler.region as cpo
-import cellprofiler.measurement as cpmeas
-import cellprofiler.pipeline as cpp
-import cellprofiler.modules.createwebpage as C
-from cellprofiler.modules.loadimages import C_FILE_NAME, C_PATH_NAME, C_URL
-from cellprofiler.modules.loadimages import pathname2url, url2pathname
+cellprofiler.preferences.set_headless()
 
 IMAGE_NAME = "image"
 THUMB_NAME = "thumb"
@@ -42,7 +38,7 @@ class TestCreateWebPage(unittest.TestCase):
         #
         # Make a temporary directory structure
         #
-        cpprefs.set_headless()
+        cellprofiler.preferences.set_headless()
         directory = self.directory = tempfile.mkdtemp()
         for i in range(3):
             os.mkdir(os.path.join(directory, str(i)))
@@ -50,7 +46,7 @@ class TestCreateWebPage(unittest.TestCase):
                 os.mkdir(os.path.join(directory, str(i), str(j)))
                 for k in range(3):
                     os.mkdir(os.path.join(directory, str(i), str(j), str(k)))
-        cpprefs.set_default_image_directory(os.path.join(self.directory, "1"))
+        cellprofiler.preferences.set_default_image_directory(os.path.join(self.directory, "1"))
         self.alt_directory = tempfile.mkdtemp()
 
     def tearDown(self):
@@ -58,21 +54,21 @@ class TestCreateWebPage(unittest.TestCase):
         shutil.rmtree(self.alt_directory)
 
     def test_00_00_remember_to_put_new_text_in_the_dictionary(self):
-        '''Make sure people use TRANSLATION_DICTIONARY'''
-        self.assertTrue(C.DIR_ABOVE in C.TRANSLATION_DICTIONARY)
-        self.assertTrue(C.DIR_SAME in C.TRANSLATION_DICTIONARY)
-        self.assertTrue("One level over the images" in C.TRANSLATION_DICTIONARY)
-        self.assertTrue("Same as the images" in C.TRANSLATION_DICTIONARY)
+        """Make sure people use TRANSLATION_DICTIONARY"""
+        self.assertTrue(cellprofiler.modules.createwebpage.DIR_ABOVE in cellprofiler.modules.createwebpage.TRANSLATION_DICTIONARY)
+        self.assertTrue(cellprofiler.modules.createwebpage.DIR_SAME in cellprofiler.modules.createwebpage.TRANSLATION_DICTIONARY)
+        self.assertTrue("One level over the images" in cellprofiler.modules.createwebpage.TRANSLATION_DICTIONARY)
+        self.assertTrue("Same as the images" in cellprofiler.modules.createwebpage.TRANSLATION_DICTIONARY)
 
-        self.assertTrue(C.OPEN_ONCE in C.TRANSLATION_DICTIONARY)
-        self.assertTrue(C.OPEN_EACH in C.TRANSLATION_DICTIONARY)
-        self.assertTrue(C.OPEN_NO in C.TRANSLATION_DICTIONARY)
+        self.assertTrue(cellprofiler.modules.createwebpage.OPEN_ONCE in cellprofiler.modules.createwebpage.TRANSLATION_DICTIONARY)
+        self.assertTrue(cellprofiler.modules.createwebpage.OPEN_EACH in cellprofiler.modules.createwebpage.TRANSLATION_DICTIONARY)
+        self.assertTrue(cellprofiler.modules.createwebpage.OPEN_NO in cellprofiler.modules.createwebpage.TRANSLATION_DICTIONARY)
 
-        self.assertTrue("Once only" in C.TRANSLATION_DICTIONARY)
-        self.assertTrue("For each image" in C.TRANSLATION_DICTIONARY)
-        self.assertTrue("No" in C.TRANSLATION_DICTIONARY)
+        self.assertTrue("Once only" in cellprofiler.modules.createwebpage.TRANSLATION_DICTIONARY)
+        self.assertTrue("For each image" in cellprofiler.modules.createwebpage.TRANSLATION_DICTIONARY)
+        self.assertTrue("No" in cellprofiler.modules.createwebpage.TRANSLATION_DICTIONARY)
 
-        self.assertEqual(len(C.TRANSLATION_DICTIONARY), 5,
+        self.assertEqual(len(cellprofiler.modules.createwebpage.TRANSLATION_DICTIONARY), 5,
                          "Please update this test to include your newly entered translation")
 
     def test_01_01_load_matlab(self):
@@ -92,21 +88,21 @@ class TestCreateWebPage(unittest.TestCase):
                 'wrtVf24eWad/6Obhj08/rtmtrmrTZ1Vk4f1aa9Xn+uf6v/6xlr+3L/4//a66'
                 'eFOPNet7dXa2/r7bdkKd9wtuhMd8+P5z9dMX61csv6nxXT5n6prwrV2Pc77u'
                 'qS/9HPS4zmnj18pa/7o7p579Z9NbdcMfAGQ1SXU=')
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
+        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 2)
         module = pipeline.modules()[1]
-        self.assertTrue(isinstance(module, C.CreateWebPage))
+        self.assertTrue(isinstance(module, cellprofiler.modules.createwebpage.CreateWebPage))
         self.assertEqual(module.orig_image_name, "OrigBlue")
         self.assertTrue(module.wants_thumbnails)
         self.assertEqual(module.thumbnail_image_name, "OrigGreen")
         self.assertEqual(module.web_page_file_name, "images1.html")
-        self.assertEqual(module.directory_choice.dir_choice, C.DIR_SAME)
+        self.assertEqual(module.directory_choice.dir_choice, cellprofiler.modules.createwebpage.DIR_SAME)
         self.assertEqual(module.title, "CellProfiler Images")
         self.assertEqual(module.background_color, "Lime")
         self.assertEqual(module.columns, 3)
@@ -114,7 +110,7 @@ class TestCreateWebPage(unittest.TestCase):
         self.assertEqual(module.table_border_color, "Olive")
         self.assertEqual(module.image_spacing, 2)
         self.assertEqual(module.image_border_width, 2)
-        self.assertEqual(module.create_new_window, C.OPEN_ONCE)
+        self.assertEqual(module.create_new_window, cellprofiler.modules.createwebpage.OPEN_ONCE)
         self.assertFalse(module.wants_zip_file)
 
     def test_01_02_load_v1(self):
@@ -173,21 +169,21 @@ CreateWebPage:[module_num:3|svn_version:\'9401\'|variable_revision_number:1|show
     Make a zipfile containing the full-size images?:Yes
     Zipfile name\x3A:Images.zip
 """
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO(data))
+        pipeline.load(StringIO.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 3)
         module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, C.CreateWebPage))
+        self.assertTrue(isinstance(module, cellprofiler.modules.createwebpage.CreateWebPage))
         self.assertEqual(module.orig_image_name, "ColorImage")
         self.assertTrue(module.wants_thumbnails)
         self.assertEqual(module.thumbnail_image_name, "ColorThumbnail")
         self.assertEqual(module.web_page_file_name, "sbsimages\\g<Controls>.html")
-        self.assertEqual(module.directory_choice.dir_choice, C.DIR_SAME)
+        self.assertEqual(module.directory_choice.dir_choice, cellprofiler.modules.createwebpage.DIR_SAME)
         self.assertEqual(module.title, "SBS Images\x3A Controls=\\g<Controls>")
         self.assertEqual(module.background_color, "light grey")
         self.assertEqual(module.columns, 12)
@@ -195,17 +191,17 @@ CreateWebPage:[module_num:3|svn_version:\'9401\'|variable_revision_number:1|show
         self.assertEqual(module.table_border_color, "blue")
         self.assertEqual(module.image_spacing, 1)
         self.assertEqual(module.image_border_width, 1)
-        self.assertEqual(module.create_new_window, C.OPEN_ONCE)
+        self.assertEqual(module.create_new_window, cellprofiler.modules.createwebpage.OPEN_ONCE)
         self.assertFalse(module.wants_zip_file)
         self.assertEqual(module.zipfile_name, "Images.zip")
 
         module = pipeline.modules()[1]
-        self.assertTrue(isinstance(module, C.CreateWebPage))
+        self.assertTrue(isinstance(module, cellprofiler.modules.createwebpage.CreateWebPage))
         self.assertEqual(module.orig_image_name, "IllumDNA")
         self.assertFalse(module.wants_thumbnails)
         self.assertEqual(module.thumbnail_image_name, "IllumGFP")
         self.assertEqual(module.web_page_file_name, "sbsimages\\g<Controls>.html")
-        self.assertEqual(module.directory_choice.dir_choice, C.DIR_ABOVE)
+        self.assertEqual(module.directory_choice.dir_choice, cellprofiler.modules.createwebpage.DIR_ABOVE)
         self.assertEqual(module.title, "SBS Images: Controls=\\g<Controls>")
         self.assertEqual(module.background_color, "light grey")
         self.assertEqual(module.columns, 1)
@@ -213,17 +209,17 @@ CreateWebPage:[module_num:3|svn_version:\'9401\'|variable_revision_number:1|show
         self.assertEqual(module.table_border_color, "blue")
         self.assertEqual(module.image_spacing, 1)
         self.assertEqual(module.image_border_width, 1)
-        self.assertEqual(module.create_new_window, C.OPEN_EACH)
+        self.assertEqual(module.create_new_window, cellprofiler.modules.createwebpage.OPEN_EACH)
         self.assertTrue(module.wants_zip_file)
         self.assertEqual(module.zipfile_name, "Images.zip")
 
         module = pipeline.modules()[2]
-        self.assertTrue(isinstance(module, C.CreateWebPage))
+        self.assertTrue(isinstance(module, cellprofiler.modules.createwebpage.CreateWebPage))
         self.assertEqual(module.orig_image_name, "IllumDNA")
         self.assertTrue(module.wants_thumbnails)
         self.assertEqual(module.thumbnail_image_name, "IllumGFP")
         self.assertEqual(module.web_page_file_name, "sbsimages.html")
-        self.assertEqual(module.directory_choice.dir_choice, C.DIR_ABOVE)
+        self.assertEqual(module.directory_choice.dir_choice, cellprofiler.modules.createwebpage.DIR_ABOVE)
         self.assertEqual(module.title, "SBS Images")
         self.assertEqual(module.background_color, "light grey")
         self.assertEqual(module.columns, 5)
@@ -231,7 +227,7 @@ CreateWebPage:[module_num:3|svn_version:\'9401\'|variable_revision_number:1|show
         self.assertEqual(module.table_border_color, "blue")
         self.assertEqual(module.image_spacing, 3)
         self.assertEqual(module.image_border_width, 2)
-        self.assertEqual(module.create_new_window, C.OPEN_NO)
+        self.assertEqual(module.create_new_window, cellprofiler.modules.createwebpage.OPEN_NO)
         self.assertTrue(module.wants_zip_file)
         self.assertEqual(module.zipfile_name, "Images.zip")
 
@@ -257,22 +253,22 @@ CreateWebPage:[module_num:1|svn_version:\'9401\'|variable_revision_number:2|show
     Make a zipfile containing the full-size images?:No
     Zipfile name\x3A:Images.zip
 """
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO(data))
+        pipeline.load(StringIO.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, C.CreateWebPage))
+        self.assertTrue(isinstance(module, cellprofiler.modules.createwebpage.CreateWebPage))
         self.assertEqual(module.orig_image_name, "ColorImage")
         self.assertTrue(module.wants_thumbnails)
         self.assertEqual(module.thumbnail_image_name, "ColorThumbnail")
         self.assertEqual(module.web_page_file_name, "sbsimages\\g<Controls>.html")
         self.assertEqual(module.directory_choice.dir_choice,
-                         C.ABSOLUTE_FOLDER_NAME)
+                         cellprofiler.modules.createwebpage.ABSOLUTE_FOLDER_NAME)
         self.assertEqual(module.directory_choice.custom_path,
                          "/imaging/analysis")
         self.assertEqual(module.title, "SBS Images\x3A Controls=\\g<Controls>")
@@ -282,13 +278,13 @@ CreateWebPage:[module_num:1|svn_version:\'9401\'|variable_revision_number:2|show
         self.assertEqual(module.table_border_color, "blue")
         self.assertEqual(module.image_spacing, 1)
         self.assertEqual(module.image_border_width, 1)
-        self.assertEqual(module.create_new_window, C.OPEN_ONCE)
+        self.assertEqual(module.create_new_window, cellprofiler.modules.createwebpage.OPEN_ONCE)
         self.assertFalse(module.wants_zip_file)
         self.assertEqual(module.zipfile_name, "Images.zip")
 
     def run_create_webpage(self, image_paths, thumb_paths=None,
                            metadata=None, alter_fn=None):
-        '''Run the create_webpage module, returning the resulting HTML document
+        """Run the create_webpage module, returning the resulting HTML document
 
         image_paths - list of path / filename tuples. The function will
                       write an image to each of these and put images and
@@ -297,19 +293,19 @@ CreateWebPage:[module_num:1|svn_version:\'9401\'|variable_revision_number:2|show
         metadata    - a dictionary of feature / string values
         alter_fn    - function taking a CreateWebPage module, for you to
                       alter the module's settings
-        '''
+        """
 
-        np.random.seed(0)
-        module = C.CreateWebPage()
+        numpy.random.seed(0)
+        module = cellprofiler.modules.createwebpage.CreateWebPage()
         module.module_num = 1
         module.orig_image_name.value = IMAGE_NAME
         module.web_page_file_name.value = DEFAULT_HTML_FILE
         if alter_fn is not None:
             alter_fn(module)
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.RunExceptionEvent))
 
         pipeline.add_listener(callback)
         pipeline.add_module(module)
@@ -323,24 +319,24 @@ CreateWebPage:[module_num:1|svn_version:\'9401\'|variable_revision_number:2|show
         else:
             module.wants_thumbnails.value = False
 
-        measurements = cpmeas.Measurements()
+        measurements = cellprofiler.measurement.Measurements()
 
-        workspace = cpw.Workspace(pipeline, module,
-                                  measurements, None, measurements,
-                                  None, None)
+        workspace = cellprofiler.workspace.Workspace(pipeline, module,
+                                                     measurements, None, measurements,
+                                                     None, None)
         for i in range(len(image_paths)):
             image_number = i + 1
             if metadata is not None:
                 for key in metadata.keys():
                     values = metadata[key]
-                    feature = cpmeas.C_METADATA + "_" + key
-                    measurements[cpmeas.IMAGE, feature, image_number] = values[i]
+                    feature = cellprofiler.measurement.C_METADATA + "_" + key
+                    measurements[cellprofiler.measurement.IMAGE, feature, image_number] = values[i]
 
             for image_name, paths in images:
-                pixel_data = np.random.uniform(size=(10, 13))
+                pixel_data = numpy.random.uniform(size=(10, 13))
                 path_name, file_name = paths[i]
                 if path_name is None:
-                    path_name = cpprefs.get_default_image_directory()
+                    path_name = cellprofiler.preferences.get_default_image_directory()
                     is_file = True
                 elif path_name.lower().startswith("http"):
                     is_file = False
@@ -350,47 +346,47 @@ CreateWebPage:[module_num:1|svn_version:\'9401\'|variable_revision_number:2|show
                 if is_file:
                     full_path = os.path.abspath(os.path.join(
                             self.directory, path_name, file_name))
-                    url = pathname2url(full_path)
+                    url = cellprofiler.modules.loadimages.pathname2url(full_path)
                     path = os.path.split(full_path)[0]
                 else:
                     full_path = url
                     path = path_name
                 if is_file:
-                    write_image(full_path, pixel_data, PT_UINT8)
-                path_feature = '_'.join((C_PATH_NAME, image_name))
-                file_feature = '_'.join((C_FILE_NAME, image_name))
-                url_feature = '_'.join((C_URL, image_name))
-                measurements[cpmeas.IMAGE, path_feature, image_number] = \
+                    bioformats.formatwriter.write_image(full_path, pixel_data, bioformats.PT_UINT8)
+                path_feature = '_'.join((cellprofiler.modules.loadimages.C_PATH_NAME, image_name))
+                file_feature = '_'.join((cellprofiler.modules.loadimages.C_FILE_NAME, image_name))
+                url_feature = '_'.join((cellprofiler.modules.loadimages.C_URL, image_name))
+                measurements[cellprofiler.measurement.IMAGE, path_feature, image_number] = \
                     path
-                measurements[cpmeas.IMAGE, file_feature, image_number] = \
+                measurements[cellprofiler.measurement.IMAGE, file_feature, image_number] = \
                     file_name
-                measurements[cpmeas.IMAGE, url_feature, image_number] = url
+                measurements[cellprofiler.measurement.IMAGE, url_feature, image_number] = url
 
         module.post_run(workspace)
         return measurements
 
     def read_html(self, html_path=None):
-        '''Read html file, assuming the default location
+        """Read html file, assuming the default location
 
         returns a DOM
-        '''
+        """
         if html_path is None:
-            html_path = os.path.join(cpprefs.get_default_image_directory(),
+            html_path = os.path.join(cellprofiler.preferences.get_default_image_directory(),
                                      DEFAULT_HTML_FILE)
         fd = open(html_path, 'r')
         try:
             data = fd.read()
-            return DOM.parseString(data)
+            return xml.dom.minidom.parseString(data)
         finally:
             fd.close()
 
     def ap(self, path):
-        '''Get the absolute path to the file'''
-        path = os.path.join(cpprefs.get_default_image_directory(), path)
+        """Get the absolute path to the file"""
+        path = os.path.join(cellprofiler.preferences.get_default_image_directory(), path)
         return os.path.abspath(path)
 
     def test_02_01_one_image_file(self):
-        '''Test an image set with one image file'''
+        """Test an image set with one image file"""
         self.run_create_webpage([(None, 'A01.png')])
         dom = self.read_html()
         self.assertTrue(dom.documentElement.tagName.lower(), "html")
@@ -433,7 +429,7 @@ CreateWebPage:[module_num:1|svn_version:\'9401\'|variable_revision_number:2|show
         TITLE = "My Title"
 
         def alter_fn(module):
-            self.assertTrue(isinstance(module, C.CreateWebPage))
+            self.assertTrue(isinstance(module, cellprofiler.modules.createwebpage.CreateWebPage))
             module.title.value = TITLE
 
         self.run_create_webpage([(None, 'A01.png')], alter_fn=alter_fn)
@@ -450,7 +446,7 @@ CreateWebPage:[module_num:1|svn_version:\'9401\'|variable_revision_number:2|show
         expected = "Lee's Title"
 
         def alter_fn(module):
-            self.assertTrue(isinstance(module, C.CreateWebPage))
+            self.assertTrue(isinstance(module, cellprofiler.modules.createwebpage.CreateWebPage))
             module.title.value = "\\g<BelongsToMe> Title"
 
         self.run_create_webpage([(None, 'A01.png')], alter_fn=alter_fn,
@@ -468,7 +464,7 @@ CreateWebPage:[module_num:1|svn_version:\'9401\'|variable_revision_number:2|show
         COLOR = "hazelnut"
 
         def alter_fn(module):
-            self.assertTrue(isinstance(module, C.CreateWebPage))
+            self.assertTrue(isinstance(module, cellprofiler.modules.createwebpage.CreateWebPage))
             module.background_color.value = COLOR
 
         self.run_create_webpage([(None, 'A01.png')], alter_fn=alter_fn)
@@ -483,7 +479,7 @@ CreateWebPage:[module_num:1|svn_version:\'9401\'|variable_revision_number:2|show
         BORDERWIDTH = 15
 
         def alter_fn(module):
-            self.assertTrue(isinstance(module, C.CreateWebPage))
+            self.assertTrue(isinstance(module, cellprofiler.modules.createwebpage.CreateWebPage))
             module.table_border_width.value = BORDERWIDTH
 
         self.run_create_webpage([(None, 'A01.png')], alter_fn=alter_fn)
@@ -498,7 +494,7 @@ CreateWebPage:[module_num:1|svn_version:\'9401\'|variable_revision_number:2|show
         COLOR = "corvetteyellow"
 
         def alter_fn(module):
-            self.assertTrue(isinstance(module, C.CreateWebPage))
+            self.assertTrue(isinstance(module, cellprofiler.modules.createwebpage.CreateWebPage))
             module.table_border_color.value = COLOR
 
         self.run_create_webpage([(None, 'A01.png')], alter_fn=alter_fn)
@@ -513,7 +509,7 @@ CreateWebPage:[module_num:1|svn_version:\'9401\'|variable_revision_number:2|show
         CELL_SPACING = 11
 
         def alter_fn(module):
-            self.assertTrue(isinstance(module, C.CreateWebPage))
+            self.assertTrue(isinstance(module, cellprofiler.modules.createwebpage.CreateWebPage))
             module.image_spacing.value = CELL_SPACING
 
         self.run_create_webpage([(None, 'A01.png')], alter_fn=alter_fn)
@@ -528,7 +524,7 @@ CreateWebPage:[module_num:1|svn_version:\'9401\'|variable_revision_number:2|show
         IMAGE_BORDER_WIDTH = 23
 
         def alter_fn(module):
-            self.assertTrue(isinstance(module, C.CreateWebPage))
+            self.assertTrue(isinstance(module, cellprofiler.modules.createwebpage.CreateWebPage))
             module.image_border_width.value = IMAGE_BORDER_WIDTH
 
         self.run_create_webpage([(None, 'A01.png')], alter_fn=alter_fn)
@@ -541,7 +537,7 @@ CreateWebPage:[module_num:1|svn_version:\'9401\'|variable_revision_number:2|show
 
     def test_02_09_columns(self):
         def alter_fn(module):
-            self.assertTrue(isinstance(module, C.CreateWebPage))
+            self.assertTrue(isinstance(module, cellprofiler.modules.createwebpage.CreateWebPage))
             module.columns.value = 3
 
         self.run_create_webpage(
@@ -567,7 +563,7 @@ CreateWebPage:[module_num:1|svn_version:\'9401\'|variable_revision_number:2|show
 
     def test_02_10_partial_columns(self):
         def alter_fn(module):
-            self.assertTrue(isinstance(module, C.CreateWebPage))
+            self.assertTrue(isinstance(module, cellprofiler.modules.createwebpage.CreateWebPage))
             module.columns.value = 3
 
         self.run_create_webpage(
@@ -613,8 +609,8 @@ CreateWebPage:[module_num:1|svn_version:\'9401\'|variable_revision_number:2|show
 
     def test_03_02_open_once(self):
         def alter_fn(module):
-            self.assertTrue(isinstance(module, C.CreateWebPage))
-            module.create_new_window.value = C.OPEN_ONCE
+            self.assertTrue(isinstance(module, cellprofiler.modules.createwebpage.CreateWebPage))
+            module.create_new_window.value = cellprofiler.modules.createwebpage.OPEN_ONCE
 
         self.run_create_webpage([(None, 'A01.png')],
                                 [(None, 'A01_thumb.png')], alter_fn=alter_fn)
@@ -627,8 +623,8 @@ CreateWebPage:[module_num:1|svn_version:\'9401\'|variable_revision_number:2|show
 
     def test_03_03_open_each(self):
         def alter_fn(module):
-            self.assertTrue(isinstance(module, C.CreateWebPage))
-            module.create_new_window.value = C.OPEN_EACH
+            self.assertTrue(isinstance(module, cellprofiler.modules.createwebpage.CreateWebPage))
+            module.create_new_window.value = cellprofiler.modules.createwebpage.OPEN_EACH
 
         self.run_create_webpage([(None, 'A01.png')],
                                 [(None, 'A01_thumb.png')], alter_fn=alter_fn)
@@ -641,8 +637,8 @@ CreateWebPage:[module_num:1|svn_version:\'9401\'|variable_revision_number:2|show
 
     def test_03_03_open_no(self):
         def alter_fn(module):
-            self.assertTrue(isinstance(module, C.CreateWebPage))
-            module.create_new_window.value = C.OPEN_NO
+            self.assertTrue(isinstance(module, cellprofiler.modules.createwebpage.CreateWebPage))
+            module.create_new_window.value = cellprofiler.modules.createwebpage.OPEN_NO
 
         self.run_create_webpage([(None, 'A01.png')],
                                 [(None, 'A01_thumb.png')], alter_fn=alter_fn)
@@ -653,11 +649,11 @@ CreateWebPage:[module_num:1|svn_version:\'9401\'|variable_revision_number:2|show
         self.assertFalse(link.hasAttribute("target"))
 
     def test_04_01_above_image(self):
-        '''Make the HTML file in the directory above the image'''
+        """Make the HTML file in the directory above the image"""
 
         def alter_fn(module):
-            self.assertTrue(isinstance(module, C.CreateWebPage))
-            module.directory_choice.value = C.DIR_ABOVE
+            self.assertTrue(isinstance(module, cellprofiler.modules.createwebpage.CreateWebPage))
+            module.directory_choice.value = cellprofiler.modules.createwebpage.DIR_ABOVE
 
         self.run_create_webpage([(None, 'A01.png')], alter_fn=alter_fn)
         dom = self.read_html(os.path.join(self.directory, DEFAULT_HTML_FILE))
@@ -668,7 +664,7 @@ CreateWebPage:[module_num:1|svn_version:\'9401\'|variable_revision_number:2|show
         self.assertEqual(img.getAttribute("src"), "1/A01.png")
 
     def test_04_02_thumb_in_other_dir(self):
-        '''Put the image and thumbnail in different directories'''
+        """Put the image and thumbnail in different directories"""
         self.run_create_webpage([(None, 'A01.png')],
                                 [(os.path.join(self.directory, "2"), 'A01_thumb.png')])
         dom = self.read_html()
@@ -679,10 +675,10 @@ CreateWebPage:[module_num:1|svn_version:\'9401\'|variable_revision_number:2|show
         self.assertEqual(img.getAttribute("src"), "../2/A01_thumb.png")
 
     def test_04_03_metadata_filename(self):
-        '''Make two different webpages using metadata'''
+        """Make two different webpages using metadata"""
 
         def alter_fn(module):
-            self.assertTrue(isinstance(module, C.CreateWebPage))
+            self.assertTrue(isinstance(module, cellprofiler.modules.createwebpage.CreateWebPage))
             module.web_page_file_name.value = '\\g<FileName>'
 
         self.run_create_webpage([(None, 'A01.png'), (None, 'A02.png')],
@@ -690,7 +686,7 @@ CreateWebPage:[module_num:1|svn_version:\'9401\'|variable_revision_number:2|show
                                 alter_fn=alter_fn)
         for file_name, image_name in (('foo.html', 'A01.png'),
                                       ('bar.html', 'A02.png')):
-            path = os.path.join(cpprefs.get_default_image_directory(), file_name)
+            path = os.path.join(cellprofiler.preferences.get_default_image_directory(), file_name)
             dom = self.read_html(path)
             imgs = dom.getElementsByTagName("img")
             self.assertEqual(len(imgs), 1)
@@ -701,8 +697,8 @@ CreateWebPage:[module_num:1|svn_version:\'9401\'|variable_revision_number:2|show
     def test_04_04_abspath(self):
         # Specify an absolute path for the images.
         def alter_fn(module):
-            self.assertTrue(isinstance(module, C.CreateWebPage))
-            module.directory_choice.dir_choice = C.ABSOLUTE_FOLDER_NAME
+            self.assertTrue(isinstance(module, cellprofiler.modules.createwebpage.CreateWebPage))
+            module.directory_choice.dir_choice = cellprofiler.modules.createwebpage.ABSOLUTE_FOLDER_NAME
             module.directory_choice.custom_path = self.alt_directory
 
         filenames = [(None, 'A%02d.png' % i) for i in range(1, 3)]
@@ -713,13 +709,13 @@ CreateWebPage:[module_num:1|svn_version:\'9401\'|variable_revision_number:2|show
         for img in imgs:
             self.assertTrue(img.hasAttribute("src"))
             image_name = str(img.getAttribute("src"))
-            path = url2pathname(image_name)
+            path = cellprofiler.modules.loadimages.url2pathname(image_name)
             self.assertTrue(os.path.exists(path))
 
     def test_05_01_zipfiles(self):
         # Test the zipfile function
         def alter_fn(module):
-            self.assertTrue(isinstance(module, C.CreateWebPage))
+            self.assertTrue(isinstance(module, cellprofiler.modules.createwebpage.CreateWebPage))
             module.wants_zip_file.value = True
             module.zipfile_name.value = ZIPFILE_NAME
 
@@ -727,11 +723,11 @@ CreateWebPage:[module_num:1|svn_version:\'9401\'|variable_revision_number:2|show
         self.run_create_webpage([(None, fn) for fn in filenames],
                                 alter_fn=alter_fn)
 
-        zpath = os.path.join(cpprefs.get_default_image_directory(), ZIPFILE_NAME)
+        zpath = os.path.join(cellprofiler.preferences.get_default_image_directory(), ZIPFILE_NAME)
         with zipfile.ZipFile(zpath, "r") as zfile:
             assert isinstance(zfile, zipfile.ZipFile)
             for filename in filenames:
-                fpath = os.path.join(cpprefs.get_default_image_directory(),
+                fpath = os.path.join(cellprofiler.preferences.get_default_image_directory(),
                                      filename)
                 with open(fpath, "rb") as fd:
                     with zfile.open(filename, "r") as zfd:
@@ -740,7 +736,7 @@ CreateWebPage:[module_num:1|svn_version:\'9401\'|variable_revision_number:2|show
     def test_05_02_zipfile_and_metadata(self):
         # Test the zipfile function with metadata substitution
         def alter_fn(module):
-            self.assertTrue(isinstance(module, C.CreateWebPage))
+            self.assertTrue(isinstance(module, cellprofiler.modules.createwebpage.CreateWebPage))
             module.wants_zip_file.value = True
             module.zipfile_name.value = '\\g<FileName>'
 
@@ -752,9 +748,9 @@ CreateWebPage:[module_num:1|svn_version:\'9401\'|variable_revision_number:2|show
                 alter_fn=alter_fn)
 
         for filename, zname in zip(filenames, zipfiles):
-            zpath = os.path.join(cpprefs.get_default_image_directory(), zname)
+            zpath = os.path.join(cellprofiler.preferences.get_default_image_directory(), zname)
             zpath += ".zip"
-            fpath = os.path.join(cpprefs.get_default_image_directory(),
+            fpath = os.path.join(cellprofiler.preferences.get_default_image_directory(),
                                  filename)
             with zipfile.ZipFile(zpath, "r") as zfile:
                 with open(fpath, "rb") as fd:
@@ -764,11 +760,11 @@ CreateWebPage:[module_num:1|svn_version:\'9401\'|variable_revision_number:2|show
     def test_05_03_http_image_zipfile(self):
         # Make a zipfile using files accessed from the web
         def alter_fn(module):
-            self.assertTrue(isinstance(module, C.CreateWebPage))
+            self.assertTrue(isinstance(module, cellprofiler.modules.createwebpage.CreateWebPage))
             module.wants_zip_file.value = True
             module.zipfile_name.value = ZIPFILE_NAME
-            module.directory_choice.dir_choice = C.ABSOLUTE_FOLDER_NAME
-            module.directory_choice.custom_path = cpprefs.get_default_image_directory()
+            module.directory_choice.dir_choice = cellprofiler.modules.createwebpage.ABSOLUTE_FOLDER_NAME
+            module.directory_choice.custom_path = cellprofiler.preferences.get_default_image_directory()
 
         url_root = "http://cellprofiler.org/svnmirror/ExampleImages/ExampleSBSImages/"
         url_query = "?r=11710"
@@ -780,7 +776,7 @@ CreateWebPage:[module_num:1|svn_version:\'9401\'|variable_revision_number:2|show
         #
         try:
             for filename in filenames:
-                URLopener().open("".join(filename)).close()
+                urllib.URLopener().open("".join(filename)).close()
         except IOError, e:
             def bad_url(e=e):
                 raise e
@@ -788,13 +784,13 @@ CreateWebPage:[module_num:1|svn_version:\'9401\'|variable_revision_number:2|show
             unittest.expectedFailure(bad_url)()
 
         self.run_create_webpage(filenames, alter_fn=alter_fn)
-        zpath = os.path.join(cpprefs.get_default_image_directory(),
+        zpath = os.path.join(cellprofiler.preferences.get_default_image_directory(),
                              ZIPFILE_NAME)
         with zipfile.ZipFile(zpath, "r") as zfile:
             for _, filename in filenames:
                 fn = filename.split("?", 1)[0]
                 url = url_root + "/" + filename
-                svn_fd = urlopen(url)
+                svn_fd = urllib2.urlopen(url)
                 with zfile.open(fn, "r") as zip_fd:
                     data = zip_fd.read()
                     offset = 0

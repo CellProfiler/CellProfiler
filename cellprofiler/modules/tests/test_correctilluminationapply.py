@@ -1,33 +1,25 @@
-"""test_correctilluminationapply.py
-"""
-
+import StringIO
 import base64
-import os
-import sys
-import tempfile
 import unittest
 import zlib
-from StringIO import StringIO
 
-import numpy as np
+import cellprofiler.image
+import cellprofiler.measurement
+import cellprofiler.module
+import cellprofiler.modules.correctilluminationapply
+import cellprofiler.modules.injectimage
+import cellprofiler.pipeline
+import cellprofiler.preferences
+import cellprofiler.region
+import cellprofiler.workspace
+import numpy
 
-from cellprofiler.preferences import set_headless
-
-set_headless()
-
-import cellprofiler.modules.correctilluminationapply as cpmcia
-import cellprofiler.modules.injectimage as inj
-import cellprofiler.module as cpm
-import cellprofiler.image as cpi
-import cellprofiler.pipeline as cpp
-import cellprofiler.workspace as cpw
-import cellprofiler.region as cpo
-import cellprofiler.measurement as cpm
+cellprofiler.preferences.set_headless()
 
 
 class TestCorrectIlluminationApply(unittest.TestCase):
     def error_callback(self, calller, event):
-        if isinstance(event, cpp.RunExceptionEvent):
+        if isinstance(event, cellprofiler.pipeline.RunExceptionEvent):
             self.fail(event.error.message)
 
     def test_00_00_load_matlab(self):
@@ -47,16 +39,16 @@ class TestCorrectIlluminationApply(unittest.TestCase):
                 '+LpW5/wsw718L0vXvSjf4Z64f2HR0c3F10zORR14ecJ49Z6Z2rdmXPZ7mJMl'
                 'k7r6t/irzo9fGXYHnNj95qX1eeXFHnMu/to/YdL0SVuurZ7q9PtN3sGvWmk/'
                 'z9Wq5c6T/PHnzq4b+27tivwufuL77/07jtvnfP60n+3dXInPAHjXVAU=')
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
+        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 3)
         module = pipeline.modules()[2]
-        self.assertTrue(isinstance(module, cpmcia.CorrectIlluminationApply))
+        self.assertTrue(isinstance(module, cellprofiler.modules.correctilluminationapply.CorrectIlluminationApply))
         self.assertEqual(len(module.images), 1)
         image = module.images[0]
         self.assertEqual(image.image_name, "OrigPhase")
@@ -84,16 +76,16 @@ class TestCorrectIlluminationApply(unittest.TestCase):
                 '7IqvBc9BtOTpBPDsKDw7d/HUGJfniUTuAYmOTML0E9Ru024id91S8LZkZYsa'
                 'zzkffm9cIuKzNH3/PKjxd+fl3+YofFHtNt9CAC5qR7K3DwHDzfvyPf2dsY3T'
                 'f9jxa0L4DxGFUhU=')
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
+        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 2)
         module = pipeline.modules()[1]
-        self.assertTrue(isinstance(module, cpmcia.CorrectIlluminationApply))
+        self.assertTrue(isinstance(module, cellprofiler.modules.correctilluminationapply.CorrectIlluminationApply))
         self.assertEqual(len(module.images), 1)
         image = module.images[0]
         self.assertEqual(image.image_name, "DNA")
@@ -123,16 +115,16 @@ class TestCorrectIlluminationApply(unittest.TestCase):
                 'onfxVDG9IKjJ1iTLNeUmpcVXd+DbU/j2/sWXZ1y+V8by3SOm0MCMnsFKhTRC'
                 'iVZPyt4Tlz1q/Oa68Nvj4BPS0sz8nXFX491eB3+2+uHz675b+72PHHB+m02W'
                 'n39qva235TvGW3Mc5fhe/abruvYXbnrGEg==')
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
+        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 3)
         module = pipeline.modules()[2]
-        self.assertTrue(isinstance(module, cpmcia.CorrectIlluminationApply))
+        self.assertTrue(isinstance(module, cellprofiler.modules.correctilluminationapply.CorrectIlluminationApply))
         self.assertEqual(len(module.images), 2)
         image = module.images[0]
         self.assertEqual(image.image_name, "rawGFP")
@@ -145,186 +137,186 @@ class TestCorrectIlluminationApply(unittest.TestCase):
 
     def test_01_01_divide(self):
         """Test correction by division"""
-        np.random.seed(0)
-        image = np.random.uniform(size=(10, 10)).astype(np.float32)
-        illum = np.random.uniform(size=(10, 10)).astype(np.float32)
+        numpy.random.seed(0)
+        image = numpy.random.uniform(size=(10, 10)).astype(numpy.float32)
+        illum = numpy.random.uniform(size=(10, 10)).astype(numpy.float32)
         expected = image / illum
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_listener(self.error_callback)
-        input_module = inj.InjectImage("InputImage", image)
+        input_module = cellprofiler.modules.injectimage.InjectImage("InputImage", image)
         input_module.module_num = 1
         pipeline.add_module(input_module)
-        illum_module = inj.InjectImage("IllumImage", illum)
+        illum_module = cellprofiler.modules.injectimage.InjectImage("IllumImage", illum)
         illum_module.module_num = 2
         pipeline.add_module(illum_module)
-        module = cpmcia.CorrectIlluminationApply()
+        module = cellprofiler.modules.correctilluminationapply.CorrectIlluminationApply()
         module.module_num = 3
         pipeline.add_module(module)
         image = module.images[0]
         image.image_name.value = "InputImage"
         image.illum_correct_function_image_name.value = "IllumImage"
         image.corrected_image_name.value = "OutputImage"
-        image.divide_or_subtract.value = cpmcia.DOS_DIVIDE
-        image.rescale_option = cpmcia.RE_NONE
-        image_set_list = cpi.ImageSetList()
-        measurements = cpm.Measurements()
-        workspace = cpw.Workspace(pipeline, None, None, None,
-                                  measurements, image_set_list)
+        image.divide_or_subtract.value = cellprofiler.modules.correctilluminationapply.DOS_DIVIDE
+        image.rescale_option = cellprofiler.modules.correctilluminationapply.RE_NONE
+        image_set_list = cellprofiler.image.ImageSetList()
+        measurements = cellprofiler.module.Measurements()
+        workspace = cellprofiler.workspace.Workspace(pipeline, None, None, None,
+                                                     measurements, image_set_list)
         pipeline.prepare_run(workspace)
         input_module.prepare_group(workspace, {}, [1])
         illum_module.prepare_group(workspace, {}, [1])
         module.prepare_group(workspace, {}, [1])
         image_set = image_set_list.get_image_set(0)
-        object_set = cpo.Set()
-        workspace = cpw.Workspace(pipeline,
-                                  input_module,
-                                  image_set,
-                                  object_set,
-                                  measurements,
-                                  image_set_list)
+        object_set = cellprofiler.region.Set()
+        workspace = cellprofiler.workspace.Workspace(pipeline,
+                                                     input_module,
+                                                     image_set,
+                                                     object_set,
+                                                     measurements,
+                                                     image_set_list)
         input_module.run(workspace)
         illum_module.run(workspace)
         module.run(workspace)
         output_image = workspace.image_set.get_image("OutputImage")
-        self.assertTrue(np.all(output_image.pixel_data == expected))
+        self.assertTrue(numpy.all(output_image.pixel_data == expected))
 
     def test_01_02_subtract(self):
         """Test correction by subtraction"""
-        np.random.seed(0)
-        image = np.random.uniform(size=(10, 10)).astype(np.float32)
-        illum = np.random.uniform(size=(10, 10)).astype(np.float32)
+        numpy.random.seed(0)
+        image = numpy.random.uniform(size=(10, 10)).astype(numpy.float32)
+        illum = numpy.random.uniform(size=(10, 10)).astype(numpy.float32)
         expected = image - illum
         expected[expected < 0] = 0
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_listener(self.error_callback)
-        input_module = inj.InjectImage("InputImage", image)
+        input_module = cellprofiler.modules.injectimage.InjectImage("InputImage", image)
         input_module.module_num = 1
         pipeline.add_module(input_module)
-        illum_module = inj.InjectImage("IllumImage", illum)
+        illum_module = cellprofiler.modules.injectimage.InjectImage("IllumImage", illum)
         illum_module.module_num = 2
         pipeline.add_module(illum_module)
-        module = cpmcia.CorrectIlluminationApply()
+        module = cellprofiler.modules.correctilluminationapply.CorrectIlluminationApply()
         module.module_num = 3
         pipeline.add_module(module)
         image = module.images[0]
         image.image_name.value = "InputImage"
         image.illum_correct_function_image_name.value = "IllumImage"
         image.corrected_image_name.value = "OutputImage"
-        image.divide_or_subtract.value = cpmcia.DOS_SUBTRACT
-        image.rescale_option = cpmcia.RE_NONE
-        measurements = cpm.Measurements()
-        image_set_list = cpi.ImageSetList()
-        measurements = cpm.Measurements()
-        workspace = cpw.Workspace(pipeline, None, None, None,
-                                  measurements, image_set_list)
+        image.divide_or_subtract.value = cellprofiler.modules.correctilluminationapply.DOS_SUBTRACT
+        image.rescale_option = cellprofiler.modules.correctilluminationapply.RE_NONE
+        measurements = cellprofiler.module.Measurements()
+        image_set_list = cellprofiler.image.ImageSetList()
+        measurements = cellprofiler.module.Measurements()
+        workspace = cellprofiler.workspace.Workspace(pipeline, None, None, None,
+                                                     measurements, image_set_list)
         pipeline.prepare_run(workspace)
         input_module.prepare_group(workspace, {}, [1])
         illum_module.prepare_group(workspace, {}, [1])
         module.prepare_group(workspace, {}, [1])
         image_set = image_set_list.get_image_set(0)
-        object_set = cpo.Set()
-        workspace = cpw.Workspace(pipeline,
-                                  input_module,
-                                  image_set,
-                                  object_set,
-                                  measurements,
-                                  image_set_list)
+        object_set = cellprofiler.region.Set()
+        workspace = cellprofiler.workspace.Workspace(pipeline,
+                                                     input_module,
+                                                     image_set,
+                                                     object_set,
+                                                     measurements,
+                                                     image_set_list)
         input_module.run(workspace)
         illum_module.run(workspace)
         module.run(workspace)
         output_image = workspace.image_set.get_image("OutputImage")
-        self.assertTrue(np.all(output_image.pixel_data == expected))
+        self.assertTrue(numpy.all(output_image.pixel_data == expected))
 
     def test_02_01_color_by_bw(self):
-        '''Correct a color image with a black & white illumination fn'''
-        np.random.seed(0)
-        image = np.random.uniform(size=(10, 10, 3)).astype(np.float32)
-        illum = np.random.uniform(size=(10, 10)).astype(np.float32)
-        expected = image - illum[:, :, np.newaxis]
+        """Correct a color image with a black & white illumination fn"""
+        numpy.random.seed(0)
+        image = numpy.random.uniform(size=(10, 10, 3)).astype(numpy.float32)
+        illum = numpy.random.uniform(size=(10, 10)).astype(numpy.float32)
+        expected = image - illum[:, :, numpy.newaxis]
         expected[expected < 0] = 0
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_listener(self.error_callback)
-        input_module = inj.InjectImage("InputImage", image)
+        input_module = cellprofiler.modules.injectimage.InjectImage("InputImage", image)
         input_module.module_num = 1
         pipeline.add_module(input_module)
-        illum_module = inj.InjectImage("IllumImage", illum)
+        illum_module = cellprofiler.modules.injectimage.InjectImage("IllumImage", illum)
         illum_module.module_num = 2
         pipeline.add_module(illum_module)
-        module = cpmcia.CorrectIlluminationApply()
+        module = cellprofiler.modules.correctilluminationapply.CorrectIlluminationApply()
         module.module_num = 3
         pipeline.add_module(module)
         image = module.images[0]
         image.image_name.value = "InputImage"
         image.illum_correct_function_image_name.value = "IllumImage"
         image.corrected_image_name.value = "OutputImage"
-        image.divide_or_subtract.value = cpmcia.DOS_SUBTRACT
-        image.rescale_option = cpmcia.RE_NONE
-        measurements = cpm.Measurements()
-        image_set_list = cpi.ImageSetList()
-        measurements = cpm.Measurements()
-        workspace = cpw.Workspace(pipeline, None, None, None,
-                                  measurements, image_set_list)
+        image.divide_or_subtract.value = cellprofiler.modules.correctilluminationapply.DOS_SUBTRACT
+        image.rescale_option = cellprofiler.modules.correctilluminationapply.RE_NONE
+        measurements = cellprofiler.module.Measurements()
+        image_set_list = cellprofiler.image.ImageSetList()
+        measurements = cellprofiler.module.Measurements()
+        workspace = cellprofiler.workspace.Workspace(pipeline, None, None, None,
+                                                     measurements, image_set_list)
         pipeline.prepare_run(workspace)
         input_module.prepare_group(workspace, {}, [1])
         illum_module.prepare_group(workspace, {}, [1])
         module.prepare_group(workspace, {}, [1])
         image_set = image_set_list.get_image_set(0)
-        object_set = cpo.Set()
-        workspace = cpw.Workspace(pipeline,
-                                  input_module,
-                                  image_set,
-                                  object_set,
-                                  measurements,
-                                  image_set_list)
+        object_set = cellprofiler.region.Set()
+        workspace = cellprofiler.workspace.Workspace(pipeline,
+                                                     input_module,
+                                                     image_set,
+                                                     object_set,
+                                                     measurements,
+                                                     image_set_list)
         input_module.run(workspace)
         illum_module.run(workspace)
         module.run(workspace)
         output_image = workspace.image_set.get_image("OutputImage")
-        self.assertTrue(np.all(output_image.pixel_data == expected))
+        self.assertTrue(numpy.all(output_image.pixel_data == expected))
 
     def test_02_02_color_by_color(self):
-        '''Correct a color image with a black & white illumination fn'''
-        np.random.seed(0)
-        image = np.random.uniform(size=(10, 10, 3)).astype(np.float32)
-        illum = np.random.uniform(size=(10, 10, 3)).astype(np.float32)
+        """Correct a color image with a black & white illumination fn"""
+        numpy.random.seed(0)
+        image = numpy.random.uniform(size=(10, 10, 3)).astype(numpy.float32)
+        illum = numpy.random.uniform(size=(10, 10, 3)).astype(numpy.float32)
         expected = image - illum
         expected[expected < 0] = 0
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_listener(self.error_callback)
-        input_module = inj.InjectImage("InputImage", image)
+        input_module = cellprofiler.modules.injectimage.InjectImage("InputImage", image)
         input_module.module_num = 1
         pipeline.add_module(input_module)
-        illum_module = inj.InjectImage("IllumImage", illum)
+        illum_module = cellprofiler.modules.injectimage.InjectImage("IllumImage", illum)
         illum_module.module_num = 2
         pipeline.add_module(illum_module)
-        module = cpmcia.CorrectIlluminationApply()
+        module = cellprofiler.modules.correctilluminationapply.CorrectIlluminationApply()
         module.module_num = 3
         pipeline.add_module(module)
         image = module.images[0]
         image.image_name.value = "InputImage"
         image.illum_correct_function_image_name.value = "IllumImage"
         image.corrected_image_name.value = "OutputImage"
-        image.divide_or_subtract.value = cpmcia.DOS_SUBTRACT
-        image.rescale_option = cpmcia.RE_NONE
-        measurements = cpm.Measurements()
-        image_set_list = cpi.ImageSetList()
-        measurements = cpm.Measurements()
-        workspace = cpw.Workspace(pipeline, None, None, None,
-                                  measurements, image_set_list)
+        image.divide_or_subtract.value = cellprofiler.modules.correctilluminationapply.DOS_SUBTRACT
+        image.rescale_option = cellprofiler.modules.correctilluminationapply.RE_NONE
+        measurements = cellprofiler.module.Measurements()
+        image_set_list = cellprofiler.image.ImageSetList()
+        measurements = cellprofiler.module.Measurements()
+        workspace = cellprofiler.workspace.Workspace(pipeline, None, None, None,
+                                                     measurements, image_set_list)
         pipeline.prepare_run(workspace)
         input_module.prepare_group(workspace, {}, [1])
         illum_module.prepare_group(workspace, {}, [1])
         module.prepare_group(workspace, {}, [1])
         image_set = image_set_list.get_image_set(0)
-        object_set = cpo.Set()
-        workspace = cpw.Workspace(pipeline,
-                                  input_module,
-                                  image_set,
-                                  object_set,
-                                  measurements,
-                                  image_set_list)
+        object_set = cellprofiler.region.Set()
+        workspace = cellprofiler.workspace.Workspace(pipeline,
+                                                     input_module,
+                                                     image_set,
+                                                     object_set,
+                                                     measurements,
+                                                     image_set_list)
         input_module.run(workspace)
         illum_module.run(workspace)
         module.run(workspace)
         output_image = workspace.image_set.get_image("OutputImage")
-        self.assertTrue(np.all(output_image.pixel_data == expected))
+        self.assertTrue(numpy.all(output_image.pixel_data == expected))

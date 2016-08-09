@@ -1,23 +1,17 @@
-'''test_editobjectsmanually - test the EditObjectsManually module
-'''
-
+import StringIO
 import base64
 import unittest
 import zlib
-from StringIO import StringIO
 
-import numpy as np
+import cellprofiler.image
+import cellprofiler.measurement
+import cellprofiler.modules.editobjectsmanually
+import cellprofiler.pipeline
+import cellprofiler.preferences
+import cellprofiler.region
+import cellprofiler.workspace
 
-from cellprofiler.preferences import set_headless
-
-set_headless()
-
-import cellprofiler.workspace as cpw
-import cellprofiler.pipeline as cpp
-import cellprofiler.region as cpo
-import cellprofiler.image as cpi
-import cellprofiler.measurement as cpmeas
-import cellprofiler.modules.editobjectsmanually as E
+cellprofiler.preferences.set_headless()
 
 INPUT_OBJECTS_NAME = "inputobjects"
 OUTPUT_OBJECTS_NAME = "outputobjects"
@@ -43,20 +37,20 @@ class TestEditObjectsManually(unittest.TestCase):
                 'ujuqPmjef9X7ybKnb/mvPfX3q9fa2ZGvr4SzrV1XctBz87xYoI9juQP72jcb'
                 'S/c/3WzLGxd9UPhbZ2tlfVz0nGCPvdkSM1v/PCleMHGB99XNZbei1v3+u+vn'
                 'q/Oryv/ZT35kcv/53Xvn997XF6/83/D13v/Vov8cb0/5b3+mX74BAJGShuQ=')
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
+        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 3)
         module = pipeline.modules()[-1]
-        self.assertTrue(isinstance(module, E.EditObjectsManually))
+        self.assertTrue(isinstance(module, cellprofiler.modules.editobjectsmanually.EditObjectsManually))
         self.assertEqual(module.object_name, "Nuclei")
         self.assertEqual(module.filtered_objects, "FilteredNuclei")
         self.assertFalse(module.wants_outlines)
-        self.assertEqual(module.renumber_choice, E.R_RENUMBER)
+        self.assertEqual(module.renumber_choice, cellprofiler.modules.editobjectsmanually.R_RENUMBER)
 
     def test_01_02_load_v1(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
@@ -70,21 +64,21 @@ EditObjectsManually:[module_num:1|svn_version:\'1\'|variable_revision_number:1|s
     What do you want to call the outlines?:EditedNucleiOutlines
     Do you want to renumber the objects created by this module or retain the original numbering?:Renumber
 """
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO(data))
+        pipeline.load(StringIO.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, E.EditObjectsManually))
+        self.assertTrue(isinstance(module, cellprofiler.modules.editobjectsmanually.EditObjectsManually))
         self.assertEqual(module.object_name, "Nuclei")
         self.assertEqual(module.filtered_objects, "EditedNuclei")
         self.assertTrue(module.wants_outlines)
         self.assertEqual(module.outlines_name, "EditedNucleiOutlines")
-        self.assertEqual(module.renumber_choice, E.R_RENUMBER)
+        self.assertEqual(module.renumber_choice, cellprofiler.modules.editobjectsmanually.R_RENUMBER)
         self.assertFalse(module.wants_image_display)
 
     def test_01_03_load_v2(self):
@@ -101,20 +95,20 @@ EditObjectsManually:[module_num:1|svn_version:\'10039\'|variable_revision_number
     Display a guiding image?:Yes
     Image name\x3A:DNA
 """
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO(data))
+        pipeline.load(StringIO.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, E.EditObjectsManually))
+        self.assertTrue(isinstance(module, cellprofiler.modules.editobjectsmanually.EditObjectsManually))
         self.assertEqual(module.object_name, "Nuclei")
         self.assertEqual(module.filtered_objects, "EditedNuclei")
         self.assertFalse(module.wants_outlines)
-        self.assertEqual(module.renumber_choice, E.R_RETAIN)
+        self.assertEqual(module.renumber_choice, cellprofiler.modules.editobjectsmanually.R_RETAIN)
         self.assertTrue(module.wants_image_display)
         self.assertEqual(module.image_name, "DNA")
         self.assertFalse(module.allow_overlap)
@@ -134,37 +128,37 @@ EditObjectsManually:[module_num:1|svn_version:\'10039\'|variable_revision_number
     Image name\x3A:DNA
     Allow overlapping objects:Yes
 """
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO(data))
+        pipeline.load(StringIO.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, E.EditObjectsManually))
+        self.assertTrue(isinstance(module, cellprofiler.modules.editobjectsmanually.EditObjectsManually))
         self.assertEqual(module.object_name, "Nuclei")
         self.assertEqual(module.filtered_objects, "EditedNuclei")
         self.assertFalse(module.wants_outlines)
-        self.assertEqual(module.renumber_choice, E.R_RETAIN)
+        self.assertEqual(module.renumber_choice, cellprofiler.modules.editobjectsmanually.R_RETAIN)
         self.assertTrue(module.wants_image_display)
         self.assertEqual(module.image_name, "DNA")
         self.assertTrue(module.allow_overlap)
 
     def test_02_02_measurements(self):
-        module = E.EditObjectsManually()
+        module = cellprofiler.modules.editobjectsmanually.EditObjectsManually()
         module.object_name.value = INPUT_OBJECTS_NAME
         module.filtered_objects.value = OUTPUT_OBJECTS_NAME
 
         columns = module.get_measurement_columns(None)
         expected_columns = [
-            (cpmeas.IMAGE, E.I.FF_COUNT % OUTPUT_OBJECTS_NAME, cpmeas.COLTYPE_INTEGER),
-            (OUTPUT_OBJECTS_NAME, E.I.M_NUMBER_OBJECT_NUMBER, cpmeas.COLTYPE_INTEGER),
-            (OUTPUT_OBJECTS_NAME, E.I.M_LOCATION_CENTER_X, cpmeas.COLTYPE_FLOAT),
-            (OUTPUT_OBJECTS_NAME, E.I.M_LOCATION_CENTER_Y, cpmeas.COLTYPE_FLOAT),
-            (OUTPUT_OBJECTS_NAME, E.I.FF_PARENT % INPUT_OBJECTS_NAME, cpmeas.COLTYPE_INTEGER),
-            (INPUT_OBJECTS_NAME, E.I.FF_CHILDREN_COUNT % OUTPUT_OBJECTS_NAME, cpmeas.COLTYPE_INTEGER)]
+            (cellprofiler.measurement.IMAGE, cellprofiler.modules.editobjectsmanually.I.FF_COUNT % OUTPUT_OBJECTS_NAME, cellprofiler.measurement.COLTYPE_INTEGER),
+            (OUTPUT_OBJECTS_NAME, cellprofiler.modules.editobjectsmanually.I.M_NUMBER_OBJECT_NUMBER, cellprofiler.measurement.COLTYPE_INTEGER),
+            (OUTPUT_OBJECTS_NAME, cellprofiler.modules.editobjectsmanually.I.M_LOCATION_CENTER_X, cellprofiler.measurement.COLTYPE_FLOAT),
+            (OUTPUT_OBJECTS_NAME, cellprofiler.modules.editobjectsmanually.I.M_LOCATION_CENTER_Y, cellprofiler.measurement.COLTYPE_FLOAT),
+            (OUTPUT_OBJECTS_NAME, cellprofiler.modules.editobjectsmanually.I.FF_PARENT % INPUT_OBJECTS_NAME, cellprofiler.measurement.COLTYPE_INTEGER),
+            (INPUT_OBJECTS_NAME, cellprofiler.modules.editobjectsmanually.I.FF_CHILDREN_COUNT % OUTPUT_OBJECTS_NAME, cellprofiler.measurement.COLTYPE_INTEGER)]
 
         for column in columns:
             self.assertTrue(any([all([column[i] == expected[i] for i in range(3)])
@@ -182,14 +176,14 @@ EditObjectsManually:[module_num:1|svn_version:\'10039\'|variable_revision_number
         #
         # Check the measurement features
         #
-        d = {cpmeas.IMAGE: {E.I.C_COUNT: [OUTPUT_OBJECTS_NAME],
+        d = {cellprofiler.measurement.IMAGE: {cellprofiler.modules.editobjectsmanually.I.C_COUNT: [OUTPUT_OBJECTS_NAME],
                             "Foo": []},
-             INPUT_OBJECTS_NAME: {E.I.C_CHILDREN: ["%s_Count" % OUTPUT_OBJECTS_NAME],
+             INPUT_OBJECTS_NAME: {cellprofiler.modules.editobjectsmanually.I.C_CHILDREN: ["%s_Count" % OUTPUT_OBJECTS_NAME],
                                   "Foo": []},
              OUTPUT_OBJECTS_NAME: {
-                 E.I.C_LOCATION: [E.I.FTR_CENTER_X, E.I.FTR_CENTER_Y],
-                 E.I.C_PARENT: [INPUT_OBJECTS_NAME],
-                 E.I.C_NUMBER: [E.I.FTR_OBJECT_NUMBER],
+                 cellprofiler.modules.editobjectsmanually.I.C_LOCATION: [cellprofiler.modules.editobjectsmanually.I.FTR_CENTER_X, cellprofiler.modules.editobjectsmanually.I.FTR_CENTER_Y],
+                 cellprofiler.modules.editobjectsmanually.I.C_PARENT: [INPUT_OBJECTS_NAME],
+                 cellprofiler.modules.editobjectsmanually.I.C_NUMBER: [cellprofiler.modules.editobjectsmanually.I.FTR_OBJECT_NUMBER],
                  "Foo": []},
              "Foo": {}
              }

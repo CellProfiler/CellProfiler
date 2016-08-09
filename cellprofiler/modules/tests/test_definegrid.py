@@ -1,26 +1,20 @@
-'''test_definegrid - test the DefineGrid module
-'''
-
+import StringIO
 import base64
 import unittest
 import zlib
-from StringIO import StringIO
 
-import numpy as np
+import cellprofiler.grid
+import cellprofiler.image
+import cellprofiler.measurement
+import cellprofiler.module
+import cellprofiler.modules.definegrid
+import cellprofiler.pipeline
+import cellprofiler.preferences
+import cellprofiler.region
+import cellprofiler.workspace
+import numpy
 
-from cellprofiler.preferences import set_headless
-
-set_headless()
-
-import cellprofiler.workspace as cpw
-import cellprofiler.grid as cpg
-import cellprofiler.image as cpi
-import cellprofiler.module as cpm
-import cellprofiler.region as cpo
-import cellprofiler.measurement as cpmeas
-import cellprofiler.pipeline as cpp
-import cellprofiler.modules.definegrid as D
-from centrosome.filter import enhance_dark_holes
+cellprofiler.preferences.set_headless()
 
 GRID_NAME = "grid"
 INPUT_IMAGE_NAME = "inputimage"
@@ -63,25 +57,25 @@ class TestDefineGrid(unittest.TestCase):
                 'TKmbf1QWrjiw/HT0t/0m9j1ChZLv/5+LPxp97f3LH9JFN+f8mP87/Nr/aXtW'
                 'f878dS9kzv4Drz4vnOd/2aZm2QXryXoij38L+ho4LtqsW/nk34VVH/afm9/c'
                 'd7P2gvGW6zlr+jf/+Pzp43l3pu/Ma7bb+7+7cL595b/4uKKHnAA6FG1I')
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
+        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 2)
         module = pipeline.modules()[-1]
-        self.assertTrue(isinstance(module, D.DefineGrid))
+        self.assertTrue(isinstance(module, cellprofiler.modules.definegrid.DefineGrid))
         self.assertEqual(module.grid_image, "GridBlue")
         self.assertEqual(module.grid_rows, 9)
         self.assertEqual(module.grid_columns, 13)
-        self.assertEqual(module.origin, D.NUM_TOP_RIGHT)
-        self.assertEqual(module.ordering, D.NUM_BY_COLUMNS)
-        self.assertEqual(module.each_or_once, D.EO_ONCE)
-        self.assertEqual(module.auto_or_manual, D.AM_MANUAL)
+        self.assertEqual(module.origin, cellprofiler.modules.definegrid.NUM_TOP_RIGHT)
+        self.assertEqual(module.ordering, cellprofiler.modules.definegrid.NUM_BY_COLUMNS)
+        self.assertEqual(module.each_or_once, cellprofiler.modules.definegrid.EO_ONCE)
+        self.assertEqual(module.auto_or_manual, cellprofiler.modules.definegrid.AM_MANUAL)
         self.assertEqual(module.object_name, "")
-        self.assertEqual(module.manual_choice, D.MAN_COORDINATES)
+        self.assertEqual(module.manual_choice, cellprofiler.modules.definegrid.MAN_COORDINATES)
         self.assertEqual(module.first_spot_coordinates.x, 15)
         self.assertEqual(module.first_spot_coordinates.y, 23)
         self.assertEqual(module.first_spot_row, 1)
@@ -90,7 +84,7 @@ class TestDefineGrid(unittest.TestCase):
         self.assertEqual(module.second_spot_coordinates.y, 23 + 50 * 8)
         self.assertTrue(module.wants_image)
         self.assertEqual(module.save_image_name, "Grid")
-        self.assertEqual(module.failed_grid_choice, D.FAIL_ANY_PREVIOUS)
+        self.assertEqual(module.failed_grid_choice, cellprofiler.modules.definegrid.FAIL_ANY_PREVIOUS)
 
     def test_01_02_load_v1(self):
         data = ('eJztWN1P2lAUvyi6ocumi4l7vA97UCOMj+mALAoOnSTCiBC3RZ2r9AJ3Kb2k'
@@ -113,63 +107,63 @@ class TestDefineGrid(unittest.TestCase):
                 'ru4Pv104sZ4S6zDw/+qT54qQJ9h1eAvUGHyf1WLt7kdEPaYwSe59lYvtmX+L'
                 'rg90N8ojkwZVCZRmsUL3L1Sx3rpFPHjc+U+Yv/mF6/UWdXb0v9oMwhcO/c03'
                 '64MLW4oB7hcabXyXrvG3cxvHf9T8Q6Hx83B4wv2YEHK+14/q/wcChSof')
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
+        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 2)
         module = pipeline.modules()[-1]
-        self.assertTrue(isinstance(module, D.DefineGrid))
+        self.assertTrue(isinstance(module, cellprofiler.modules.definegrid.DefineGrid))
         self.assertEqual(module.grid_image, "Grid")
         self.assertEqual(module.grid_rows, 8)
         self.assertEqual(module.grid_columns, 12)
-        self.assertEqual(module.origin, D.NUM_BOTTOM_RIGHT)
-        self.assertEqual(module.ordering, D.NUM_BY_ROWS)
-        self.assertEqual(module.each_or_once, D.EO_EACH)
-        self.assertEqual(module.auto_or_manual, D.AM_MANUAL)
+        self.assertEqual(module.origin, cellprofiler.modules.definegrid.NUM_BOTTOM_RIGHT)
+        self.assertEqual(module.ordering, cellprofiler.modules.definegrid.NUM_BY_ROWS)
+        self.assertEqual(module.each_or_once, cellprofiler.modules.definegrid.EO_EACH)
+        self.assertEqual(module.auto_or_manual, cellprofiler.modules.definegrid.AM_MANUAL)
         self.assertEqual(module.object_name, "FilteredSolidWells")
-        self.assertEqual(module.failed_grid_choice, D.FAIL_NO)
-        self.assertEqual(module.manual_choice, D.MAN_MOUSE)
+        self.assertEqual(module.failed_grid_choice, cellprofiler.modules.definegrid.FAIL_NO)
+        self.assertEqual(module.manual_choice, cellprofiler.modules.definegrid.MAN_MOUSE)
         self.assertEqual(module.display_image_name, "GridImage")
         self.assertEqual(module.manual_image, "GridImage")
         self.assertEqual(module.save_image_name, "Grid")
 
     def make_workspace(self, image, labels):
-        module = D.DefineGrid()
+        module = cellprofiler.modules.definegrid.DefineGrid()
         module.module_num = 1
         module.grid_image.value = GRID_NAME
         module.manual_image.value = INPUT_IMAGE_NAME
         module.display_image_name.value = INPUT_IMAGE_NAME
         module.object_name.value = OBJECTS_NAME
         module.save_image_name.value = OUTPUT_IMAGE_NAME
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        image_set.add(INPUT_IMAGE_NAME, cpi.Image(image))
-        object_set = cpo.Set()
-        objects = cpo.Region()
+        image_set.add(INPUT_IMAGE_NAME, cellprofiler.image.Image(image))
+        object_set = cellprofiler.region.Set()
+        objects = cellprofiler.region.Region()
         objects.segmented = labels
         object_set.add_objects(objects, OBJECTS_NAME)
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
-            self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.RunExceptionEvent))
 
         pipeline.add_listener(callback)
         pipeline.add_module(module)
-        measurements = cpmeas.Measurements()
-        workspace = cpw.Workspace(pipeline, module, image_set,
-                                  object_set, measurements,
-                                  image_set_list)
+        measurements = cellprofiler.measurement.Measurements()
+        workspace = cellprofiler.workspace.Workspace(pipeline, module, image_set,
+                                                     object_set, measurements,
+                                                     image_set_list)
         return workspace, module
 
     def test_02_01_grid_automatic(self):
-        image = np.zeros((50, 100))
-        labels = np.zeros((50, 100), int)
-        ii, jj = np.mgrid[0:50, 0:100]
+        image = numpy.zeros((50, 100))
+        labels = numpy.zeros((50, 100), int)
+        ii, jj = numpy.mgrid[0:50, 0:100]
         #
         # Make two circles at 10,11 and 40, 92
         #
@@ -185,58 +179,58 @@ class TestDefineGrid(unittest.TestCase):
                 center_j = first_x + spacing_x * j
                 labels[(ii - center_i) ** 2 + (jj - center_j) ** 2 <= 9] = i * columns + j + 1
         workspace, module = self.make_workspace(image, labels)
-        self.assertTrue(isinstance(module, D.DefineGrid))
-        self.assertTrue(isinstance(workspace, cpw.Workspace))
+        self.assertTrue(isinstance(module, cellprofiler.modules.definegrid.DefineGrid))
+        self.assertTrue(isinstance(workspace, cellprofiler.workspace.Workspace))
         module.grid_rows.value = rows
         module.grid_columns.value = columns
-        module.ordering.value = D.NUM_BY_COLUMNS
-        module.auto_or_manual.value = D.AM_AUTOMATIC
+        module.ordering.value = cellprofiler.modules.definegrid.NUM_BY_COLUMNS
+        module.auto_or_manual.value = cellprofiler.modules.definegrid.AM_AUTOMATIC
         module.wants_image.value = True
         module.run(workspace)
         gridding = workspace.get_grid(GRID_NAME)
-        self.assertTrue(isinstance(gridding, cpg.Grid))
+        self.assertTrue(isinstance(gridding, cellprofiler.grid.Grid))
         self.assertEqual(gridding.rows, rows)
         self.assertEqual(gridding.columns, columns)
         self.assertEqual(gridding.x_spacing, spacing_x)
         self.assertEqual(gridding.y_spacing, spacing_y)
         self.assertEqual(gridding.x_location_of_lowest_x_spot, first_x)
         self.assertEqual(gridding.y_location_of_lowest_y_spot, first_y)
-        self.assertTrue(np.all(gridding.x_locations == first_x + np.arange(columns) * spacing_x))
-        self.assertTrue(np.all(gridding.y_locations == first_y + np.arange(rows) * spacing_y))
-        spot_table = np.arange(rows * columns) + 1
+        self.assertTrue(numpy.all(gridding.x_locations == first_x + numpy.arange(columns) * spacing_x))
+        self.assertTrue(numpy.all(gridding.y_locations == first_y + numpy.arange(rows) * spacing_y))
+        spot_table = numpy.arange(rows * columns) + 1
         spot_table.shape = (rows, columns)
-        self.assertTrue(np.all(gridding.spot_table == spot_table))
+        self.assertTrue(numpy.all(gridding.spot_table == spot_table))
 
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
-        for feature, value in ((D.F_COLUMNS, columns),
-                               (D.F_ROWS, rows),
-                               (D.F_X_LOCATION_OF_LOWEST_X_SPOT, first_x),
-                               (D.F_Y_LOCATION_OF_LOWEST_Y_SPOT, first_y),
-                               (D.F_X_SPACING, spacing_x),
-                               (D.F_Y_SPACING, spacing_y)):
-            measurement = '_'.join((D.M_CATEGORY, GRID_NAME, feature))
-            self.assertTrue(m.has_feature(cpmeas.IMAGE, measurement))
+        self.assertTrue(isinstance(m, cellprofiler.measurement.Measurements))
+        for feature, value in ((cellprofiler.modules.definegrid.F_COLUMNS, columns),
+                               (cellprofiler.modules.definegrid.F_ROWS, rows),
+                               (cellprofiler.modules.definegrid.F_X_LOCATION_OF_LOWEST_X_SPOT, first_x),
+                               (cellprofiler.modules.definegrid.F_Y_LOCATION_OF_LOWEST_Y_SPOT, first_y),
+                               (cellprofiler.modules.definegrid.F_X_SPACING, spacing_x),
+                               (cellprofiler.modules.definegrid.F_Y_SPACING, spacing_y)):
+            measurement = '_'.join((cellprofiler.modules.definegrid.M_CATEGORY, GRID_NAME, feature))
+            self.assertTrue(m.has_feature(cellprofiler.measurement.IMAGE, measurement))
             self.assertEqual(m.get_current_image_measurement(measurement), value)
 
         image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         self.assertTrue(image is not None)
 
     def test_02_02_fail(self):
-        image = np.zeros((50, 100))
-        labels = np.zeros((50, 100), int)
+        image = numpy.zeros((50, 100))
+        labels = numpy.zeros((50, 100), int)
         labels[20:40, 51:62] = 1
         workspace, module = self.make_workspace(image, labels)
-        self.assertTrue(isinstance(module, D.DefineGrid))
-        self.assertTrue(isinstance(workspace, cpw.Workspace))
-        module.ordering.value = D.NUM_BY_COLUMNS
-        module.auto_or_manual.value = D.AM_AUTOMATIC
+        self.assertTrue(isinstance(module, cellprofiler.modules.definegrid.DefineGrid))
+        self.assertTrue(isinstance(workspace, cellprofiler.workspace.Workspace))
+        module.ordering.value = cellprofiler.modules.definegrid.NUM_BY_COLUMNS
+        module.auto_or_manual.value = cellprofiler.modules.definegrid.AM_AUTOMATIC
         module.wants_image.value = True
         self.assertRaises(RuntimeError, module.run, workspace)
 
     def test_03_01_coordinates_plus_savedimagesize(self):
-        image = np.zeros((50, 100))
-        labels = np.zeros((50, 100), int)
+        image = numpy.zeros((50, 100))
+        labels = numpy.zeros((50, 100), int)
         first_x, first_y = (11, 10)
         second_x, second_y = (92, 40)
         rows = 4
@@ -244,13 +238,13 @@ class TestDefineGrid(unittest.TestCase):
         spacing_y = 10
         spacing_x = 9
         workspace, module = self.make_workspace(image, labels)
-        self.assertTrue(isinstance(module, D.DefineGrid))
-        self.assertTrue(isinstance(workspace, cpw.Workspace))
+        self.assertTrue(isinstance(module, cellprofiler.modules.definegrid.DefineGrid))
+        self.assertTrue(isinstance(workspace, cellprofiler.workspace.Workspace))
         module.grid_rows.value = rows
         module.grid_columns.value = columns
-        module.ordering.value = D.NUM_BY_COLUMNS
-        module.auto_or_manual.value = D.AM_MANUAL
-        module.manual_choice.value = D.MAN_COORDINATES
+        module.ordering.value = cellprofiler.modules.definegrid.NUM_BY_COLUMNS
+        module.auto_or_manual.value = cellprofiler.modules.definegrid.AM_MANUAL
+        module.manual_choice.value = cellprofiler.modules.definegrid.MAN_COORDINATES
         module.first_spot_coordinates.value = "%d,%d" % (first_x, first_y)
         module.second_spot_coordinates.value = "%d,%d" % (second_x, second_y)
         module.first_spot_col.value = 1
@@ -262,29 +256,29 @@ class TestDefineGrid(unittest.TestCase):
         module.wants_image.value = True
         module.run(workspace)
         gridding = workspace.get_grid(GRID_NAME)
-        self.assertTrue(isinstance(gridding, cpg.Grid))
+        self.assertTrue(isinstance(gridding, cellprofiler.grid.Grid))
         self.assertEqual(gridding.rows, rows)
         self.assertEqual(gridding.columns, columns)
         self.assertEqual(gridding.x_spacing, spacing_x)
         self.assertEqual(gridding.y_spacing, spacing_y)
         self.assertEqual(gridding.x_location_of_lowest_x_spot, first_x)
         self.assertEqual(gridding.y_location_of_lowest_y_spot, first_y)
-        self.assertTrue(np.all(gridding.x_locations == first_x + np.arange(columns) * spacing_x))
-        self.assertTrue(np.all(gridding.y_locations == first_y + np.arange(rows) * spacing_y))
-        spot_table = np.arange(rows * columns) + 1
+        self.assertTrue(numpy.all(gridding.x_locations == first_x + numpy.arange(columns) * spacing_x))
+        self.assertTrue(numpy.all(gridding.y_locations == first_y + numpy.arange(rows) * spacing_y))
+        spot_table = numpy.arange(rows * columns) + 1
         spot_table.shape = (rows, columns)
-        self.assertTrue(np.all(gridding.spot_table == spot_table))
+        self.assertTrue(numpy.all(gridding.spot_table == spot_table))
 
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
-        for feature, value in ((D.F_COLUMNS, columns),
-                               (D.F_ROWS, rows),
-                               (D.F_X_LOCATION_OF_LOWEST_X_SPOT, first_x),
-                               (D.F_Y_LOCATION_OF_LOWEST_Y_SPOT, first_y),
-                               (D.F_X_SPACING, spacing_x),
-                               (D.F_Y_SPACING, spacing_y)):
-            measurement = '_'.join((D.M_CATEGORY, GRID_NAME, feature))
-            self.assertTrue(m.has_feature(cpmeas.IMAGE, measurement))
+        self.assertTrue(isinstance(m, cellprofiler.measurement.Measurements))
+        for feature, value in ((cellprofiler.modules.definegrid.F_COLUMNS, columns),
+                               (cellprofiler.modules.definegrid.F_ROWS, rows),
+                               (cellprofiler.modules.definegrid.F_X_LOCATION_OF_LOWEST_X_SPOT, first_x),
+                               (cellprofiler.modules.definegrid.F_Y_LOCATION_OF_LOWEST_Y_SPOT, first_y),
+                               (cellprofiler.modules.definegrid.F_X_SPACING, spacing_x),
+                               (cellprofiler.modules.definegrid.F_Y_SPACING, spacing_y)):
+            measurement = '_'.join((cellprofiler.modules.definegrid.M_CATEGORY, GRID_NAME, feature))
+            self.assertTrue(m.has_feature(cellprofiler.measurement.IMAGE, measurement))
             self.assertEqual(m.get_current_image_measurement(measurement), value)
 
         image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)

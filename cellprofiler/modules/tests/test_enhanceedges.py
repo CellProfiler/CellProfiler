@@ -1,27 +1,22 @@
-'''test_enhanceedges - test the EnhanceEdges module
-'''
-
+import StringIO
+import base64
 import unittest
-from StringIO import StringIO
-from base64 import b64decode
-from zlib import decompress
+import zlib
 
-import numpy as np
+import cellprofiler.image
+import cellprofiler.measurement
+import cellprofiler.module
+import cellprofiler.modules.enhanceedges
+import cellprofiler.pipeline
+import cellprofiler.preferences
+import cellprofiler.region
+import cellprofiler.workspace
+import centrosome.filter
+import centrosome.kirsch
+import centrosome.otsu
+import numpy
 
-from cellprofiler.preferences import set_headless
-
-set_headless()
-
-import cellprofiler.module as cpm
-import cellprofiler.image as cpi
-import cellprofiler.measurement as cpmeas
-import cellprofiler.region as cpo
-import cellprofiler.pipeline as cpp
-import cellprofiler.workspace as cpw
-import cellprofiler.modules.enhanceedges as F
-import centrosome.filter as FIL
-from centrosome.kirsch import kirsch
-from centrosome.otsu import otsu3
+cellprofiler.preferences.set_headless()
 
 INPUT_IMAGE_NAME = 'inputimage'
 OUTPUT_IMAGE_NAME = 'outputimage'
@@ -29,27 +24,27 @@ OUTPUT_IMAGE_NAME = 'outputimage'
 
 class TestEnhanceEdges(unittest.TestCase):
     def make_workspace(self, image, mask=None):
-        '''Make a workspace for testing FindEdges'''
-        module = F.FindEdges()
+        """Make a workspace for testing FindEdges"""
+        module = cellprofiler.modules.enhanceedges.FindEdges()
         module.image_name.value = INPUT_IMAGE_NAME
         module.output_image_name.value = OUTPUT_IMAGE_NAME
-        pipeline = cpp.Pipeline()
-        object_set = cpo.Set()
-        image_set_list = cpi.ImageSetList()
+        pipeline = cellprofiler.pipeline.Pipeline()
+        object_set = cellprofiler.region.Set()
+        image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        workspace = cpw.Workspace(pipeline,
-                                  module,
-                                  image_set,
-                                  object_set,
-                                  cpmeas.Measurements(),
-                                  image_set_list)
+        workspace = cellprofiler.workspace.Workspace(pipeline,
+                                                     module,
+                                                     image_set,
+                                                     object_set,
+                                                     cellprofiler.measurement.Measurements(),
+                                                     image_set_list)
         image_set.add(INPUT_IMAGE_NAME,
-                      cpi.Image(image) if mask is None
-                      else cpi.Image(image, mask))
+                      cellprofiler.image.Image(image) if mask is None
+                      else cellprofiler.image.Image(image, mask))
         return workspace, module
 
     def test_01_01_load_matlab(self):
-        '''Load a Matlab pipeline with a version 3 FindEdges module'''
+        """Load a Matlab pipeline with a version 3 FindEdges module"""
         data = ("eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s"
                 "SU1RyM+zUgjJKFXwTaxUMDJUMDSxMjCyMrJQMDIwsFQgGTAwevryMzAwfGNk"
                 "YKiYczfM2/+Qg4Cc18FwlVcnm9vl9v7oEu/LuuChlNEyYUZF5Iso88hdS/hZ"
@@ -64,26 +59,26 @@ class TestEnhanceEdges(unittest.TestCase):
                 "9v70Jeez7+UWsuzLOfOv7nTVkouFQfNrTVsfb9wwfV7+pfqDM84/WtteHflp"
                 "xdfU2Of1D+UPffkX+Lv84r6diSfWebGfWvT7R1d4fab6edXK/yKmX6X/3Lr5"
                 "42a9/62a1pqqOSfXH9973baxur3k9WZ7ZTu57mP1TIUCx5YDAPkpI08=")
-        fd = StringIO(decompress(b64decode(data)))
-        p = cpp.Pipeline()
+        fd = StringIO.StringIO(zlib.decompress(base64.b64decode(data)))
+        p = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         p.add_listener(callback)
         p.load(fd)
         self.assertEqual(len(p.modules()), 2)
         module = p.modules()[1]
-        self.assertTrue(isinstance(module, F.FindEdges))
+        self.assertTrue(isinstance(module, cellprofiler.modules.enhanceedges.FindEdges))
         self.assertEqual(module.image_name.value, "OrigBlue")
         self.assertEqual(module.output_image_name.value, "MyImage")
         self.assertTrue(module.wants_automatic_threshold.value)
         self.assertEqual(module.threshold_adjustment_factor.value, 1)
-        self.assertEqual(module.method.value, F.M_SOBEL)
-        self.assertEqual(module.direction.value, F.E_ALL)
+        self.assertEqual(module.method.value, cellprofiler.modules.enhanceedges.M_SOBEL)
+        self.assertEqual(module.direction.value, cellprofiler.modules.enhanceedges.E_ALL)
 
     def test_01_02_load_v1(self):
-        '''Load a Python pipeline with a version 1 FindEdges module'''
+        """Load a Python pipeline with a version 1 FindEdges module"""
         data = ('eJztWNFu2jAUNZR2o5um7qHqHv0IW4kS1m4UTW0ZdBpaYahF7aqq61wwJZIT'
                 'o+C0ZVOlPe4T9jn7hH3CPqGfMBsSCC5rIC2TNiXICvfmHp/rk2tjXMpVt3Ov'
                 '4aqiwlKummroBMMKQaxBLSMLTbYM8xZGDNchNbOw2rRhCXVgWoPaSlZ7mVVX'
@@ -102,23 +97,23 @@ class TestEnhanceEdges(unittest.TestCase):
                 'MFxvwq7xLXHLouJ82VKM7iFoWyEU1XunkMo2/1r0HEgKng8+PAmJJ/EnnoYo'
                 'cXFIqLzh37rHhbJe8RH9e8cd5Z/FhzfrLOs70P1qIwhfNHKd74EPLuYoJXDf'
                 'wGTvNXFDvDu2oPG/AYtINWo=')
-        fd = StringIO(decompress(b64decode(data)))
-        p = cpp.Pipeline()
+        fd = StringIO.StringIO(zlib.decompress(base64.b64decode(data)))
+        p = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         p.add_listener(callback)
         p.load(fd)
         self.assertEqual(len(p.modules()), 2)
         module = p.modules()[1]
-        self.assertTrue(isinstance(module, F.FindEdges))
+        self.assertTrue(isinstance(module, cellprofiler.modules.enhanceedges.FindEdges))
         self.assertEqual(module.image_name.value, "Worm")
         self.assertEqual(module.output_image_name.value, "WormEdges")
         self.assertFalse(module.wants_automatic_threshold.value)
         self.assertEqual(module.manual_threshold.value, 0.2)
         self.assertEqual(module.threshold_adjustment_factor.value, 1)
-        self.assertEqual(module.method.value, F.M_CANNY)
+        self.assertEqual(module.method.value, cellprofiler.modules.enhanceedges.M_CANNY)
         self.assertFalse(module.wants_automatic_sigma.value)
         self.assertEqual(module.sigma.value, 6.0)
         self.assertFalse(module.wants_automatic_low_threshold.value)
@@ -143,166 +138,166 @@ class TestEnhanceEdges(unittest.TestCase):
                 'lrhtMXm+bGlG7xC0o1GGGtenkNqW+FryHEhKns8+PCmFJ3UXT1O2uDwk1DbF'
                 't95xoVqv5BD/3rzj4jM3c3+d1fr26361GoYvHr/NN+ODSziVkrgfINh7Td1j'
                 '7+YW1v4vvdw1GA==')
-        fd = StringIO(decompress(b64decode(data)))
-        p = cpp.Pipeline()
+        fd = StringIO.StringIO(zlib.decompress(base64.b64decode(data)))
+        p = cellprofiler.pipeline.Pipeline()
 
         def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         p.add_listener(callback)
         p.load(fd)
         self.assertEqual(len(p.modules()), 2)
         module = p.modules()[1]
-        self.assertTrue(isinstance(module, F.FindEdges))
+        self.assertTrue(isinstance(module, cellprofiler.modules.enhanceedges.FindEdges))
         self.assertEqual(module.image_name.value, "Worm")
         self.assertEqual(module.output_image_name.value, "WormEdges")
         self.assertFalse(module.wants_automatic_threshold.value)
         self.assertEqual(module.manual_threshold.value, 0.2)
         self.assertEqual(module.threshold_adjustment_factor.value, 1)
-        self.assertEqual(module.method.value, F.M_CANNY)
+        self.assertEqual(module.method.value, cellprofiler.modules.enhanceedges.M_CANNY)
         self.assertFalse(module.wants_automatic_sigma.value)
         self.assertEqual(module.sigma.value, 6.0)
         self.assertFalse(module.wants_automatic_low_threshold.value)
         self.assertEqual(module.low_threshold.value, 0.1)
 
     def test_02_01_sobel_horizontal(self):
-        '''Test the Sobel horizontal transform'''
-        np.random.seed(0)
-        image = np.random.uniform(size=(20, 20)).astype(np.float32)
+        """Test the Sobel horizontal transform"""
+        numpy.random.seed(0)
+        image = numpy.random.uniform(size=(20, 20)).astype(numpy.float32)
         workspace, module = self.make_workspace(image)
-        module.method.value = F.M_SOBEL
-        module.direction.value = F.E_HORIZONTAL
+        module.method.value = cellprofiler.modules.enhanceedges.M_SOBEL
+        module.direction.value = cellprofiler.modules.enhanceedges.E_HORIZONTAL
         module.run(workspace)
         output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertTrue(np.all(output.pixel_data == FIL.hsobel(image)))
+        self.assertTrue(numpy.all(output.pixel_data == centrosome.filter.hsobel(image)))
 
     def test_02_02_sobel_vertical(self):
-        '''Test the Sobel vertical transform'''
-        np.random.seed(0)
-        image = np.random.uniform(size=(20, 20)).astype(np.float32)
+        """Test the Sobel vertical transform"""
+        numpy.random.seed(0)
+        image = numpy.random.uniform(size=(20, 20)).astype(numpy.float32)
         workspace, module = self.make_workspace(image)
-        module.method.value = F.M_SOBEL
-        module.direction.value = F.E_VERTICAL
+        module.method.value = cellprofiler.modules.enhanceedges.M_SOBEL
+        module.direction.value = cellprofiler.modules.enhanceedges.E_VERTICAL
         module.run(workspace)
         output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertTrue(np.all(output.pixel_data == FIL.vsobel(image)))
+        self.assertTrue(numpy.all(output.pixel_data == centrosome.filter.vsobel(image)))
 
     def test_02_03_sobel_all(self):
-        '''Test the Sobel transform'''
-        np.random.seed(0)
-        image = np.random.uniform(size=(20, 20)).astype(np.float32)
+        """Test the Sobel transform"""
+        numpy.random.seed(0)
+        image = numpy.random.uniform(size=(20, 20)).astype(numpy.float32)
         workspace, module = self.make_workspace(image)
-        module.method.value = F.M_SOBEL
-        module.direction.value = F.E_ALL
+        module.method.value = cellprofiler.modules.enhanceedges.M_SOBEL
+        module.direction.value = cellprofiler.modules.enhanceedges.E_ALL
         module.run(workspace)
         output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertTrue(np.all(output.pixel_data == FIL.sobel(image)))
+        self.assertTrue(numpy.all(output.pixel_data == centrosome.filter.sobel(image)))
 
     def test_03_01_prewitt_horizontal(self):
-        '''Test the prewitt horizontal transform'''
-        np.random.seed(0)
-        image = np.random.uniform(size=(20, 20)).astype(np.float32)
+        """Test the prewitt horizontal transform"""
+        numpy.random.seed(0)
+        image = numpy.random.uniform(size=(20, 20)).astype(numpy.float32)
         workspace, module = self.make_workspace(image)
-        module.method.value = F.M_PREWITT
-        module.direction.value = F.E_HORIZONTAL
+        module.method.value = cellprofiler.modules.enhanceedges.M_PREWITT
+        module.direction.value = cellprofiler.modules.enhanceedges.E_HORIZONTAL
         module.run(workspace)
         output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertTrue(np.all(output.pixel_data == FIL.hprewitt(image)))
+        self.assertTrue(numpy.all(output.pixel_data == centrosome.filter.hprewitt(image)))
 
     def test_03_02_prewitt_vertical(self):
-        '''Test the prewitt vertical transform'''
-        np.random.seed(0)
-        image = np.random.uniform(size=(20, 20)).astype(np.float32)
+        """Test the prewitt vertical transform"""
+        numpy.random.seed(0)
+        image = numpy.random.uniform(size=(20, 20)).astype(numpy.float32)
         workspace, module = self.make_workspace(image)
-        module.method.value = F.M_PREWITT
-        module.direction.value = F.E_VERTICAL
+        module.method.value = cellprofiler.modules.enhanceedges.M_PREWITT
+        module.direction.value = cellprofiler.modules.enhanceedges.E_VERTICAL
         module.run(workspace)
         output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertTrue(np.all(output.pixel_data == FIL.vprewitt(image)))
+        self.assertTrue(numpy.all(output.pixel_data == centrosome.filter.vprewitt(image)))
 
     def test_03_03_prewitt_all(self):
-        '''Test the prewitt transform'''
-        np.random.seed(0)
-        image = np.random.uniform(size=(20, 20)).astype(np.float32)
+        """Test the prewitt transform"""
+        numpy.random.seed(0)
+        image = numpy.random.uniform(size=(20, 20)).astype(numpy.float32)
         workspace, module = self.make_workspace(image)
-        module.method.value = F.M_PREWITT
-        module.direction.value = F.E_ALL
+        module.method.value = cellprofiler.modules.enhanceedges.M_PREWITT
+        module.direction.value = cellprofiler.modules.enhanceedges.E_ALL
         module.run(workspace)
         output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertTrue(np.all(output.pixel_data == FIL.prewitt(image)))
+        self.assertTrue(numpy.all(output.pixel_data == centrosome.filter.prewitt(image)))
 
     def test_04_01_roberts(self):
-        '''Test the roberts transform'''
-        np.random.seed(0)
-        image = np.random.uniform(size=(20, 20)).astype(np.float32)
+        """Test the roberts transform"""
+        numpy.random.seed(0)
+        image = numpy.random.uniform(size=(20, 20)).astype(numpy.float32)
         workspace, module = self.make_workspace(image)
-        module.method.value = F.M_ROBERTS
+        module.method.value = cellprofiler.modules.enhanceedges.M_ROBERTS
         module.run(workspace)
         output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertTrue(np.all(output.pixel_data == FIL.roberts(image)))
+        self.assertTrue(numpy.all(output.pixel_data == centrosome.filter.roberts(image)))
 
     def test_05_01_log_automatic(self):
-        '''Test the laplacian of gaussian with automatic sigma'''
-        np.random.seed(0)
-        image = np.random.uniform(size=(20, 20)).astype(np.float32)
+        """Test the laplacian of gaussian with automatic sigma"""
+        numpy.random.seed(0)
+        image = numpy.random.uniform(size=(20, 20)).astype(numpy.float32)
         workspace, module = self.make_workspace(image)
-        module.method.value = F.M_LOG
+        module.method.value = cellprofiler.modules.enhanceedges.M_LOG
         module.sigma.value = 20
         module.wants_automatic_sigma.value = True
         module.run(workspace)
         output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         sigma = 2.0
-        expected = FIL.laplacian_of_gaussian(image,
-                                             np.ones(image.shape, bool),
-                                             int(sigma * 4) + 1,
-                                             sigma).astype(np.float32)
+        expected = centrosome.filter.laplacian_of_gaussian(image,
+                                                           numpy.ones(image.shape, bool),
+                                                           int(sigma * 4) + 1,
+                                                           sigma).astype(numpy.float32)
 
-        self.assertTrue(np.all(output.pixel_data == expected))
+        self.assertTrue(numpy.all(output.pixel_data == expected))
 
     def test_05_02_log_manual(self):
-        '''Test the laplacian of gaussian with manual sigma'''
-        np.random.seed(0)
-        image = np.random.uniform(size=(20, 20)).astype(np.float32)
+        """Test the laplacian of gaussian with manual sigma"""
+        numpy.random.seed(0)
+        image = numpy.random.uniform(size=(20, 20)).astype(numpy.float32)
         workspace, module = self.make_workspace(image)
-        module.method.value = F.M_LOG
+        module.method.value = cellprofiler.modules.enhanceedges.M_LOG
         module.sigma.value = 4
         module.wants_automatic_sigma.value = False
         module.run(workspace)
         output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         sigma = 4.0
-        expected = FIL.laplacian_of_gaussian(image,
-                                             np.ones(image.shape, bool),
-                                             int(sigma * 4) + 1,
-                                             sigma).astype(np.float32)
+        expected = centrosome.filter.laplacian_of_gaussian(image,
+                                                           numpy.ones(image.shape, bool),
+                                                           int(sigma * 4) + 1,
+                                                           sigma).astype(numpy.float32)
 
-        self.assertTrue(np.all(output.pixel_data == expected))
+        self.assertTrue(numpy.all(output.pixel_data == expected))
 
     def test_06_01_canny(self):
-        '''Test the canny method'''
-        i, j = np.mgrid[-20:20, -20:20]
-        image = np.logical_and(i > j, i ** 2 + j ** 2 < 300).astype(np.float32)
-        np.random.seed(0)
-        image = image * .5 + np.random.uniform(size=image.shape) * .3
-        image = np.ascontiguousarray(image, np.float32)
+        """Test the canny method"""
+        i, j = numpy.mgrid[-20:20, -20:20]
+        image = numpy.logical_and(i > j, i ** 2 + j ** 2 < 300).astype(numpy.float32)
+        numpy.random.seed(0)
+        image = image * .5 + numpy.random.uniform(size=image.shape) * .3
+        image = numpy.ascontiguousarray(image, numpy.float32)
         workspace, module = self.make_workspace(image)
-        module.method.value = F.M_CANNY
+        module.method.value = cellprofiler.modules.enhanceedges.M_CANNY
         module.wants_automatic_threshold.value = True
         module.wants_automatic_low_threshold.value = True
         module.wants_automatic_sigma.value = True
         module.run(workspace)
         output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        t1, t2 = otsu3(FIL.sobel(image))
-        result = FIL.canny(image, np.ones(image.shape, bool), 1.0, t1, t2)
-        self.assertTrue(np.all(output.pixel_data == result))
+        t1, t2 = centrosome.otsu.otsu3(centrosome.filter.sobel(image))
+        result = centrosome.filter.canny(image, numpy.ones(image.shape, bool), 1.0, t1, t2)
+        self.assertTrue(numpy.all(output.pixel_data == result))
 
     def test_07_01_kirsch(self):
-        r = np.random.RandomState([ord(_) for _ in "test_07_01_kirsch"])
-        i, j = np.mgrid[-20:20, -20:20]
-        image = (np.sqrt(i * i + j * j) <= 10).astype(float) * .5
+        r = numpy.random.RandomState([ord(_) for _ in "test_07_01_kirsch"])
+        i, j = numpy.mgrid[-20:20, -20:20]
+        image = (numpy.sqrt(i * i + j * j) <= 10).astype(float) * .5
         image = image + r.uniform(size=image.shape) * .1
         workspace, module = self.make_workspace(image)
-        module.method.value = F.M_KIRSCH
+        module.method.value = cellprofiler.modules.enhanceedges.M_KIRSCH
         module.run(workspace)
         output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        result = kirsch(image)
-        np.testing.assert_almost_equal(output.pixel_data, result, decimal=4)
+        result = centrosome.kirsch.kirsch(image)
+        numpy.testing.assert_almost_equal(output.pixel_data, result, decimal=4)

@@ -1,25 +1,20 @@
-'''test_converttoimage.py - test the ConvertToImage module
-'''
-
+import StringIO
 import base64
 import unittest
 import zlib
-from StringIO import StringIO
 
-import numpy as np
-from scipy.sparse.coo import coo_matrix
+import cellprofiler.image
+import cellprofiler.measurement
+import cellprofiler.module
+import cellprofiler.modules.convertobjectstoimage
+import cellprofiler.pipeline
+import cellprofiler.preferences
+import cellprofiler.region
+import cellprofiler.workspace
+import numpy
+import scipy.sparse.coo
 
-from cellprofiler.preferences import set_headless
-
-set_headless()
-
-import cellprofiler.pipeline as cpp
-import cellprofiler.module as cpm
-import cellprofiler.image as cpi
-import cellprofiler.measurement as cpmeas
-import cellprofiler.region as cpo
-import cellprofiler.workspace as cpw
-import cellprofiler.modules.convertobjectstoimage as C
+cellprofiler.preferences.set_headless()
 
 OBJECTS_NAME = "inputobjects"
 IMAGE_NAME = "outputimage"
@@ -27,19 +22,19 @@ IMAGE_NAME = "outputimage"
 
 class TestConvertObjectsToImage(unittest.TestCase):
     def make_workspace(self):
-        module = C.ConvertToImage()
-        labels = np.reshape(np.arange(256), (16, 16))
-        pipeline = cpp.Pipeline()
-        object_set = cpo.Set()
-        image_set_list = cpi.ImageSetList()
+        module = cellprofiler.modules.convertobjectstoimage.ConvertToImage()
+        labels = numpy.reshape(numpy.arange(256), (16, 16))
+        pipeline = cellprofiler.pipeline.Pipeline()
+        object_set = cellprofiler.region.Set()
+        image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        workspace = cpw.Workspace(pipeline,
-                                  module,
-                                  image_set,
-                                  object_set,
-                                  cpmeas.Measurements(),
-                                  image_set_list)
-        objects = cpo.Region()
+        workspace = cellprofiler.workspace.Workspace(pipeline,
+                                                     module,
+                                                     image_set,
+                                                     object_set,
+                                                     cellprofiler.measurement.Measurements(),
+                                                     image_set_list)
+        objects = cellprofiler.region.Region()
         objects.segmented = labels
         object_set.add_objects(objects, OBJECTS_NAME)
         module.image_name.value = IMAGE_NAME
@@ -47,7 +42,7 @@ class TestConvertObjectsToImage(unittest.TestCase):
         return workspace, module
 
     def test_01_01_load_matlab(self):
-        '''load a matlab pipeline with ConvertToImage in it'''
+        """load a matlab pipeline with ConvertToImage in it"""
         data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0'
                 'sSU1RyM+zUnArylTwKs1TMDRSMDS2Mja3MjBUMDIwsFQgGTAwevryMzAwrG'
                 'BiYKiY8zbcMf+WgUiZgsI1v45A31uNzn3WJbI5l7c81rLK9ZAO0V5lkikuz'
@@ -67,19 +62,19 @@ class TestConvertObjectsToImage(unittest.TestCase):
                 'FnxbvubvA+Pmx/NKJl7ofL6ySfnJPYnAPvXT3uLWn8xD2sNjDwoXTb9oWfR'
                 'zQuv+aVnz1y57sljE46yw8fW/PwPqpx4/Nvf/SRNr4ys/70lt+bflWl3+wc'
                 'Tn/2r660zeef/XfzaV/REATdyFtA==')
-        fd = StringIO(zlib.decompress(base64.b64decode(data)))
-        pipeline = cpp.Pipeline()
+        fd = StringIO.StringIO(zlib.decompress(base64.b64decode(data)))
+        pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.load(fd)
         self.assertEqual(len(pipeline.modules()), 3)
         module = pipeline.modules()[2]
-        self.assertTrue(isinstance(module, C.ConvertToImage))
+        self.assertTrue(isinstance(module, cellprofiler.modules.convertobjectstoimage.ConvertToImage))
         self.assertEqual(module.object_name.value, "Nuclei")
         self.assertEqual(module.image_name.value, "NucleiImage")
         self.assertEqual(module.image_mode.value, "Color")
         self.assertEqual(module.colormap.value, "flag")
 
     def test_01_02_load_v1(self):
-        '''load a pipeline with a variable_revision_number=1 ConvertToImage'''
+        """load a pipeline with a variable_revision_number=1 ConvertToImage"""
         data = ('eJztWltv2jAUNpeidpW6rnvYpL74cZvaKKFF2ngZFNaNqVy0ok57WxoM9WR'
                 'slDgU9kv2U/a4n7SfsBhCSbzQcGm5SIlkwXH8ne+c4xM7OXI5X7/In8GMos'
                 'Jyvn7cxATBGtF5k5ntLKT8CBZMpHPUgIxm4bmJ4WebQi0NtZOspmZPMzCtq'
@@ -102,79 +97,79 @@ class TestConvertObjectsToImage(unittest.TestCase):
                 'vTmR72C9yaENy3xpifxGox2kck5GzipFIZinXkOSMnzthPA541/3JGeHibv'
                 'nW8A/PM8nv+/7+fhiydiAz7vuYHdEFzSY9PIz99gtjx7dc/4kY/LGv8PmsR'
                 'r2g==')
-        fd = StringIO(zlib.decompress(base64.b64decode(data)))
-        pipeline = cpp.Pipeline()
+        fd = StringIO.StringIO(zlib.decompress(base64.b64decode(data)))
+        pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.load(fd)
         self.assertEqual(len(pipeline.modules()), 3)
         module = pipeline.modules()[2]
-        self.assertTrue(isinstance(module, C.ConvertToImage))
+        self.assertTrue(isinstance(module, cellprofiler.modules.convertobjectstoimage.ConvertToImage))
         self.assertEqual(module.object_name.value, "Nuclei")
         self.assertEqual(module.image_name.value, "CellImage")
         self.assertEqual(module.image_mode.value, "Color")
         self.assertEqual(module.colormap.value, "winter")
 
     def test_02_01_bw(self):
-        '''Test conversion of labels to black and white'''
+        """Test conversion of labels to black and white"""
         workspace, module = self.make_workspace()
-        module.image_mode.value = C.IM_BINARY
+        module.image_mode.value = cellprofiler.modules.convertobjectstoimage.IM_BINARY
         module.run(workspace)
         pixel_data = workspace.image_set.get_image(IMAGE_NAME).pixel_data
         self.assertFalse(pixel_data[0, 0])
-        i, j = np.mgrid[0:16, 0:16]
-        self.assertTrue(np.all(pixel_data[i * j > 0]))
+        i, j = numpy.mgrid[0:16, 0:16]
+        self.assertTrue(numpy.all(pixel_data[i * j > 0]))
 
     def test_02_02_gray(self):
-        '''Test conversion of labels to grayscale'''
+        """Test conversion of labels to grayscale"""
         workspace, module = self.make_workspace()
-        module.image_mode.value = C.IM_GRAYSCALE
+        module.image_mode.value = cellprofiler.modules.convertobjectstoimage.IM_GRAYSCALE
         module.run(workspace)
         pixel_data = workspace.image_set.get_image(IMAGE_NAME).pixel_data
-        expected = np.reshape(np.arange(256).astype(np.float32) / 255, (16, 16))
-        self.assertTrue(np.all(pixel_data == expected))
+        expected = numpy.reshape(numpy.arange(256).astype(numpy.float32) / 255, (16, 16))
+        self.assertTrue(numpy.all(pixel_data == expected))
 
     def test_02_03_color(self):
-        '''Test conversion of labels to color'''
-        for color in C.COLORMAPS:
+        """Test conversion of labels to color"""
+        for color in cellprofiler.modules.convertobjectstoimage.COLORMAPS:
             workspace, module = self.make_workspace()
-            module.image_mode.value = C.IM_COLOR
+            module.image_mode.value = cellprofiler.modules.convertobjectstoimage.IM_COLOR
             module.colormap.value = color
             module.run(workspace)
             pixel_data = workspace.image_set.get_image(IMAGE_NAME).pixel_data
-            self.assertEqual(np.product(pixel_data.shape), 256 * 3)
+            self.assertEqual(numpy.product(pixel_data.shape), 256 * 3)
 
     def test_02_04_uint16(self):
         workspace, module = self.make_workspace()
-        module.image_mode.value = C.IM_UINT16
+        module.image_mode.value = cellprofiler.modules.convertobjectstoimage.IM_UINT16
         module.run(workspace)
         pixel_data = workspace.image_set.get_image(IMAGE_NAME).pixel_data
-        expected = np.reshape(np.arange(256), (16, 16))
-        self.assertTrue(np.all(pixel_data == expected))
+        expected = numpy.reshape(numpy.arange(256), (16, 16))
+        self.assertTrue(numpy.all(pixel_data == expected))
 
     def make_workspace_ijv(self):
-        module = C.ConvertToImage()
+        module = cellprofiler.modules.convertobjectstoimage.ConvertToImage()
         shape = (14, 16)
-        r = np.random.RandomState()
+        r = numpy.random.RandomState()
         r.seed(0)
-        i = r.randint(0, shape[0], size=np.prod(shape))
-        j = r.randint(0, shape[1], size=np.prod(shape))
-        v = r.randint(1, 8, size=np.prod(shape))
-        order = np.lexsort((i, j, v))
-        ijv = np.column_stack((i, j, v))
+        i = r.randint(0, shape[0], size=numpy.prod(shape))
+        j = r.randint(0, shape[1], size=numpy.prod(shape))
+        v = r.randint(1, 8, size=numpy.prod(shape))
+        order = numpy.lexsort((i, j, v))
+        ijv = numpy.column_stack((i, j, v))
         ijv = ijv[order, :]
-        same = np.all(ijv[:-1, :] == ijv[1:, :], 1)
+        same = numpy.all(ijv[:-1, :] == ijv[1:, :], 1)
         ijv = ijv[~same, :]
 
-        pipeline = cpp.Pipeline()
-        object_set = cpo.Set()
-        image_set_list = cpi.ImageSetList()
+        pipeline = cellprofiler.pipeline.Pipeline()
+        object_set = cellprofiler.region.Set()
+        image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        workspace = cpw.Workspace(pipeline,
-                                  module,
-                                  image_set,
-                                  object_set,
-                                  cpmeas.Measurements(),
-                                  image_set_list)
-        objects = cpo.Region()
+        workspace = cellprofiler.workspace.Workspace(pipeline,
+                                                     module,
+                                                     image_set,
+                                                     object_set,
+                                                     cellprofiler.measurement.Measurements(),
+                                                     image_set_list)
+        objects = cellprofiler.region.Region()
         objects.set_ijv(ijv, shape)
         object_set.add_objects(objects, OBJECTS_NAME)
         self.assertGreater(len(objects.labels()), 1)
@@ -184,39 +179,39 @@ class TestConvertObjectsToImage(unittest.TestCase):
 
     def test_03_01_binary_ijv(self):
         workspace, module, ijv = self.make_workspace_ijv()
-        self.assertTrue(isinstance(module, C.ConvertObjectsToImage))
-        module.image_mode.value = C.IM_BINARY
+        self.assertTrue(isinstance(module, cellprofiler.modules.convertobjectstoimage.ConvertObjectsToImage))
+        module.image_mode.value = cellprofiler.modules.convertobjectstoimage.IM_BINARY
         module.run(workspace)
         pixel_data = workspace.image_set.get_image(IMAGE_NAME).pixel_data
-        self.assertEqual(len(np.unique(ijv[:, 0] + ijv[:, 1] * pixel_data.shape[0])),
-                         np.sum(pixel_data))
-        self.assertTrue(np.all(pixel_data[ijv[:, 0], ijv[:, 1]]))
+        self.assertEqual(len(numpy.unique(ijv[:, 0] + ijv[:, 1] * pixel_data.shape[0])),
+                         numpy.sum(pixel_data))
+        self.assertTrue(numpy.all(pixel_data[ijv[:, 0], ijv[:, 1]]))
 
     def test_03_02_gray_ijv(self):
         workspace, module, ijv = self.make_workspace_ijv()
-        self.assertTrue(isinstance(module, C.ConvertObjectsToImage))
-        module.image_mode.value = C.IM_GRAYSCALE
+        self.assertTrue(isinstance(module, cellprofiler.modules.convertobjectstoimage.ConvertObjectsToImage))
+        module.image_mode.value = cellprofiler.modules.convertobjectstoimage.IM_GRAYSCALE
         module.run(workspace)
         pixel_data = workspace.image_set.get_image(IMAGE_NAME).pixel_data
 
-        counts = coo_matrix((np.ones(ijv.shape[0]), (ijv[:, 0], ijv[:, 1]))).toarray()
-        self.assertTrue(np.all(pixel_data[counts == 0] == 0))
-        pd_values = np.unique(pixel_data)
-        pd_labels = np.zeros(pixel_data.shape, int)
+        counts = scipy.sparse.coo.coo_matrix((numpy.ones(ijv.shape[0]), (ijv[:, 0], ijv[:, 1]))).toarray()
+        self.assertTrue(numpy.all(pixel_data[counts == 0] == 0))
+        pd_values = numpy.unique(pixel_data)
+        pd_labels = numpy.zeros(pixel_data.shape, int)
         for i in range(1, len(pd_values)):
             pd_labels[pixel_data == pd_values[i]] = i
 
-        dest_v = np.zeros(np.max(ijv[:, 2] + 1), int)
+        dest_v = numpy.zeros(numpy.max(ijv[:, 2] + 1), int)
         dest_v[ijv[:, 2]] = pd_labels[ijv[:, 0], ijv[:, 1]]
-        pd_ok = np.zeros(pixel_data.shape, bool)
+        pd_ok = numpy.zeros(pixel_data.shape, bool)
         ok = pd_labels[ijv[:, 0], ijv[:, 1]] == dest_v[ijv[:, 2]]
         pd_ok[ijv[ok, 0], ijv[ok, 1]] = True
-        self.assertTrue(np.all(pd_ok[counts > 0]))
+        self.assertTrue(numpy.all(pd_ok[counts > 0]))
 
     def test_03_03_color_ijv(self):
         workspace, module, ijv = self.make_workspace_ijv()
-        self.assertTrue(isinstance(module, C.ConvertObjectsToImage))
-        module.image_mode.value = C.IM_COLOR
+        self.assertTrue(isinstance(module, cellprofiler.modules.convertobjectstoimage.ConvertObjectsToImage))
+        module.image_mode.value = cellprofiler.modules.convertobjectstoimage.IM_COLOR
         module.run(workspace)
         pixel_data = workspace.image_set.get_image(IMAGE_NAME).pixel_data
         #
@@ -224,11 +219,11 @@ class TestConvertObjectsToImage(unittest.TestCase):
         # the labels matrix is a matrix of bits that are on
         #
         vbit = 2 ** (ijv[:, 2] - 1)
-        vbit_color = np.zeros((np.max(vbit) * 2, 3))
-        bits = coo_matrix((vbit, (ijv[:, 0], ijv[:, 1]))).toarray()
+        vbit_color = numpy.zeros((numpy.max(vbit) * 2, 3))
+        bits = scipy.sparse.coo.coo_matrix((vbit, (ijv[:, 0], ijv[:, 1]))).toarray()
         #
         # Get some color for every represented bit combo
         #
         vbit_color[bits[ijv[:, 0], ijv[:, 1]], :] = pixel_data[ijv[:, 0], ijv[:, 1], :]
 
-        self.assertTrue(np.all(pixel_data == vbit_color[bits, :]))
+        self.assertTrue(numpy.all(pixel_data == vbit_color[bits, :]))

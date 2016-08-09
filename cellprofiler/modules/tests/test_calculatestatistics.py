@@ -1,27 +1,21 @@
-"""test_calculatestatistics.py - test the CalculateStatistics module
-"""
-
+import StringIO
 import base64
 import os
 import tempfile
 import unittest
 import zlib
-from StringIO import StringIO
 
-import numpy
-
-from cellprofiler.preferences import set_headless
-
-set_headless()
-
-import cellprofiler.measurement
 import cellprofiler.image
+import cellprofiler.measurement
+import cellprofiler.modules.calculatestatistics
 import cellprofiler.pipeline
+import cellprofiler.preferences
+import cellprofiler.preferences
 import cellprofiler.region
 import cellprofiler.workspace
-import cellprofiler.preferences
+import numpy
 
-import cellprofiler.modules.calculatestatistics
+cellprofiler.preferences.set_headless()
 
 INPUT_OBJECTS = "my_object"
 TEST_FTR = "my_measurement"
@@ -47,7 +41,7 @@ class TestCalculateStatistics(unittest.TestCase):
             self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
+        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 2)
         module = pipeline.modules()[-1]
         self.assertTrue(isinstance(module, cellprofiler.modules.calculatestatistics.CalculateStatistics))
@@ -82,7 +76,7 @@ class TestCalculateStatistics(unittest.TestCase):
             self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
+        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
         #
         # The CalculateStatistics module has the following settings:
         #
@@ -136,7 +130,7 @@ CalculateStatistics:[module_num:1|svn_version:\'9495\'|variable_revision_number:
             self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO(data))
+        pipeline.load(StringIO.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, cellprofiler.modules.calculatestatistics.CalculateStatistics))

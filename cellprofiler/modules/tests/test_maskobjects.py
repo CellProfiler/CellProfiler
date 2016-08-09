@@ -1,24 +1,19 @@
-'''test_maskobjects.py - test the MaskObjects module
-'''
-
+import StringIO
 import base64
 import unittest
 import zlib
-import StringIO
 
-import numpy
-
-import cellprofiler.preferences
-
-cellprofiler.preferences.set_headless()
-
-import cellprofiler.pipeline
-import cellprofiler.module
 import cellprofiler.image
 import cellprofiler.measurement
+import cellprofiler.module
+import cellprofiler.modules.maskobjects
+import cellprofiler.pipeline
+import cellprofiler.preferences
 import cellprofiler.region
 import cellprofiler.workspace
-import cellprofiler.modules.maskobjects
+import numpy
+
+cellprofiler.preferences.set_headless()
 
 INPUT_OBJECTS = 'inputobjects'
 OUTPUT_OBJECTS = 'outputobjects'

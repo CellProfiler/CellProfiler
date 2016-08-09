@@ -1,23 +1,19 @@
-'''test_measurecorrelation - test the MeasureCorrelation module'''
-
+import StringIO
 import base64
 import unittest
 import zlib
-import StringIO
 
-import numpy
-
-import cellprofiler.preferences
-
-cellprofiler.preferences.set_headless()
-
-import cellprofiler.pipeline
-import cellprofiler.module
 import cellprofiler.image
 import cellprofiler.measurement
+import cellprofiler.module
+import cellprofiler.modules.measurecorrelation
+import cellprofiler.pipeline
+import cellprofiler.preferences
 import cellprofiler.region
 import cellprofiler.workspace
-import cellprofiler.modules.measurecorrelation
+import numpy
+
+cellprofiler.preferences.set_headless()
 
 IMAGE1_NAME = 'image1'
 IMAGE2_NAME = 'image2'

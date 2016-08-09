@@ -1,26 +1,20 @@
-'''test_rescaleintensity.py - test the RescaleIntensity module
-'''
-
 import StringIO
 import base64
 import unittest
 import zlib
 
-import numpy
-
-import cellprofiler.preferences
-
-cellprofiler.preferences.set_headless()
-
-import cellprofiler.pipeline
-import cellprofiler.module
 import cellprofiler.image
 import cellprofiler.measurement
+import cellprofiler.module
+import cellprofiler.modules.injectimage
+import cellprofiler.modules.rescaleintensity
+import cellprofiler.pipeline
+import cellprofiler.preferences
 import cellprofiler.region
 import cellprofiler.workspace
+import numpy
 
-import cellprofiler.modules.rescaleintensity
-import cellprofiler.modules.injectimage
+cellprofiler.preferences.set_headless()
 
 INPUT_NAME = 'input'
 OUTPUT_NAME = 'output'

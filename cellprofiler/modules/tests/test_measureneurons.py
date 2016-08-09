@@ -1,28 +1,23 @@
-'''test_measureneurons.py - test the MeasureNeurons module
-'''
-
+import StringIO
 import base64
 import os
 import tempfile
 import traceback
 import unittest
 import zlib
-import StringIO
 
-import numpy
-
-import cellprofiler.preferences
-
-cellprofiler.preferences.set_headless()
-
-import cellprofiler.pipeline
-import cellprofiler.module
 import cellprofiler.image
 import cellprofiler.measurement
+import cellprofiler.module
+import cellprofiler.modules.measureneurons
+import cellprofiler.pipeline
+import cellprofiler.preferences
 import cellprofiler.region
 import cellprofiler.setting
 import cellprofiler.workspace
-import cellprofiler.modules.measureneurons
+import numpy
+
+cellprofiler.preferences.set_headless()
 
 IMAGE_NAME = "MyImage"
 INTENSITY_IMAGE_NAME = "MyIntensityImage"

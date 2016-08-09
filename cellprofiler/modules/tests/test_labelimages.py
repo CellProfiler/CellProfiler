@@ -1,6 +1,3 @@
-'''test_labelimages.py - test the labelimages module
-'''
-
 import StringIO
 import base64
 import unittest

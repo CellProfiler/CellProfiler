@@ -1,25 +1,20 @@
-"""test_measureimagearea.py - test the MeasureImageArea module
-"""
-
+import StringIO
 import base64
 import unittest
 import zlib
-import StringIO
 
-import numpy
-
-import cellprofiler.preferences
-
-cellprofiler.preferences.set_headless()
-
-import cellprofiler.pipeline
-import cellprofiler.workspace
-import cellprofiler.module
 import cellprofiler.image
 import cellprofiler.measurement
-import cellprofiler.region
-import centrosome.outline
+import cellprofiler.module
 import cellprofiler.modules.measureimageareaoccupied
+import cellprofiler.pipeline
+import cellprofiler.preferences
+import cellprofiler.region
+import cellprofiler.workspace
+import centrosome.outline
+import numpy
+
+cellprofiler.preferences.set_headless()
 
 OBJECTS_NAME = "MyObjects"
 

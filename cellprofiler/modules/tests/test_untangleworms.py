@@ -1,23 +1,22 @@
-'''test_untangleworms.py - test the UntangleWorms module'''
-
 import StringIO
 import base64
-import bioformats
 import os
 import tempfile
 import unittest
 import zlib
-import numpy
-import centrosome.outline
-import scipy.ndimage
+
+import bioformats
 import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.modules.untangleworms
-import cellprofiler.region
 import cellprofiler.pipeline
 import cellprofiler.preferences
+import cellprofiler.region
 import cellprofiler.setting
 import cellprofiler.workspace
+import centrosome.outline
+import numpy
+import scipy.ndimage
 
 cellprofiler.modules.untangleworms.CAROLINAS_HACK = False
 

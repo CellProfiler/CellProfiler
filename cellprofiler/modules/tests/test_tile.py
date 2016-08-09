@@ -1,24 +1,19 @@
-'''test_tile.py - Test the tile module
-'''
-
+import StringIO
 import base64
 import unittest
 import zlib
-import StringIO
 
-import numpy
-
-import cellprofiler.preferences
-
-cellprofiler.preferences.set_headless()
-
-import cellprofiler.workspace
 import cellprofiler.image
+import cellprofiler.measurement
 import cellprofiler.module
-import cellprofiler.region
 import cellprofiler.modules.tile
 import cellprofiler.pipeline
-import cellprofiler.measurement
+import cellprofiler.preferences
+import cellprofiler.region
+import cellprofiler.workspace
+import numpy
+
+cellprofiler.preferences.set_headless()
 
 INPUT_IMAGE_NAME = "inputimage"
 OUTPUT_IMAGE_NAME = "outputimage"

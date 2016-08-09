@@ -1,27 +1,21 @@
-'''test_trackobjects.py - testing of the TrackObjects module
-'''
-
+import StringIO
 import base64
 import unittest
 import zlib
-import StringIO
 
-import numpy
-
-import cellprofiler.preferences
-
-cellprofiler.preferences.set_headless()
-
-import cellprofiler.pipeline
-import cellprofiler.module
 import cellprofiler.image
 import cellprofiler.measurement
+import cellprofiler.module
+import cellprofiler.modules.identify
+import cellprofiler.modules.trackobjects
+import cellprofiler.pipeline
+import cellprofiler.preferences
 import cellprofiler.region
 import cellprofiler.workspace
 import centrosome.filter
+import numpy
 
-import cellprofiler.modules.trackobjects
-import cellprofiler.modules.identify
+cellprofiler.preferences.set_headless()
 
 OBJECT_NAME = "objects"
 

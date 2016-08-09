@@ -1,17 +1,14 @@
-'''test_sendemail - test the SendEmail module
-'''
-
 import Queue
 import asyncore
+import cStringIO
 import smtpd
 import threading
 import unittest
-import cStringIO
 
 import cellprofiler.measurement
 import cellprofiler.modules.sendemail
-import cellprofiler.region
 import cellprofiler.pipeline
+import cellprofiler.region
 import cellprofiler.workspace
 
 SENDER = "sender@cellprofiler.org"

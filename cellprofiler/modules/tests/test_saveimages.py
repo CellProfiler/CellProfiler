@@ -1,35 +1,32 @@
-"""test_saveimages - test the saveimages module
-"""
-import logging
-logger = logging.getLogger(__name__)
-
+import StringIO
 import base64
+import logging
+import os
+import tempfile
+import unittest
+import zlib
+
+import bioformats
+import cellprofiler.image
+import cellprofiler.measurement
+import cellprofiler.modules.applythreshold
+import cellprofiler.modules.createbatchfiles
+import cellprofiler.modules.loadimages
+import cellprofiler.modules.saveimages
+import cellprofiler.modules.tests
+import cellprofiler.pipeline
+import cellprofiler.preferences
+import cellprofiler.preferences
+import cellprofiler.region
+import cellprofiler.setting
+import cellprofiler.workspace
 import matplotlib
 import numpy
-import os
-import StringIO
-import unittest
-import tempfile
-import zlib
 import scipy.sparse
 
-import cellprofiler.preferences
+logger = logging.getLogger(__name__)
 cellprofiler.preferences.set_headless()
 
-import cellprofiler.modules.saveimages
-import cellprofiler.modules.loadimages
-import cellprofiler.modules.applythreshold
-import cellprofiler.image
-import cellprofiler.workspace
-import cellprofiler.region
-import cellprofiler.measurement
-import cellprofiler.pipeline
-import cellprofiler.setting
-import cellprofiler.preferences
-import cellprofiler.modules.createbatchfiles
-import bioformats
-
-import cellprofiler.modules.tests
 IMAGE_NAME = 'inputimage'
 OBJECTS_NAME = 'inputobjects'
 FILE_IMAGE_NAME = 'fileimage'

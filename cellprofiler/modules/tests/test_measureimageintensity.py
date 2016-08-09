@@ -1,23 +1,18 @@
-'''test_measureimageintensity.py Test the MeasureImageIntensity module
-'''
-
 import StringIO
 import base64
 import unittest
 
+import cellprofiler.image
+import cellprofiler.measurement
+import cellprofiler.module
+import cellprofiler.modules.measureimageintensity
+import cellprofiler.pipeline
+import cellprofiler.preferences
+import cellprofiler.region
+import cellprofiler.workspace
 import numpy
 
-import cellprofiler.preferences
-
 cellprofiler.preferences.set_headless()
-
-import cellprofiler.module
-import cellprofiler.measurement
-import cellprofiler.pipeline
-import cellprofiler.workspace
-import cellprofiler.image
-import cellprofiler.region
-import cellprofiler.modules.measureimageintensity
 
 
 class TestMeasureImageIntensity(unittest.TestCase):

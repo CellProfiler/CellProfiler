@@ -1,26 +1,21 @@
-'''test_measureimagequality.py - test the MeasureImageQuality module
-'''
-
 import StringIO
 import base64
 import unittest
 
-import numpy
-
-import cellprofiler.preferences
-
-cellprofiler.preferences.set_headless()
-
+import cellprofiler.image
+import cellprofiler.measurement
+import cellprofiler.modules.loadsingleimage
 import cellprofiler.modules.measureimagequality
 import cellprofiler.modules.namesandtypes
-import cellprofiler.modules.loadsingleimage
 import cellprofiler.modules.smooth
 import cellprofiler.pipeline
-import cellprofiler.workspace
-import cellprofiler.image
+import cellprofiler.preferences
 import cellprofiler.region
-import cellprofiler.measurement
+import cellprofiler.workspace
 import centrosome.threshold
+import numpy
+
+cellprofiler.preferences.set_headless()
 
 MY_IMAGE = "my_image"
 MY_OBJECTS = "my_objects"

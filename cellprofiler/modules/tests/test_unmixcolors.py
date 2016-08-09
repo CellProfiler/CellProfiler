@@ -1,18 +1,14 @@
-'''test_unmixcolors - test the unmixcolors module
-'''
-
-import unittest
 import StringIO
-
-import numpy
+import unittest
 
 import cellprofiler.image
-import cellprofiler.module
 import cellprofiler.measurement
+import cellprofiler.module
 import cellprofiler.modules.unmixcolors
-import cellprofiler.region
 import cellprofiler.pipeline
+import cellprofiler.region
 import cellprofiler.workspace
+import numpy
 
 INPUT_IMAGE = "inputimage"
 

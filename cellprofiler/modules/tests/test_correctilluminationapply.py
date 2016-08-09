@@ -22,40 +22,6 @@ class TestCorrectIlluminationApply(unittest.TestCase):
         if isinstance(event, cellprofiler.pipeline.RunExceptionEvent):
             self.fail(event.error.message)
 
-    def test_00_00_load_matlab(self):
-        data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
-                'SU1RyM+zUnArylTwTy5RMLBUMDSwMjG3MjRQMDIA8kgGDIyevvwMDAweTAwM'
-                'FXPeTj/vf9tA5PhcM9cAgZI3TOwBfbsv8L7d9HjZ2w1ea9ZqODnxKG4vNc72'
-                'k7nJl2Xu+0je6ZHJ2x3/G+o5d6uoGmr+3Liuh9M77Muc5/3732+t3BbemPOa'
-                'QefE8UVvVAsuazXmuuzaZO3B8ebWHiafDYI9/6f9FTDi2c0i6/RImU9NVyZ/'
-                'B3OVwSe19XYX9/kHCFsFpt+cte+ya892todHHpRK8wu+fJDPcST6xbb+cwbH'
-                'r/A+Y6+pLdmkJ3pr1+pN8Xp3nx288Clg2t/KlJif9Szb/6U53TNT+rf1gJ2D'
-                '88bN/TnzHdIWLjwuEM6089Fer4dTk/cYFcQf2ti3XfPzNBPZU3mGOdv3O8g9'
-                'M+ZOj3yssfvuqyv99t/3v/9nMbPg0iODJBnmK8br5oscrz4Vcc8ibWq/il+z'
-                'wP2V3DYnDq7MmpN1opND69RPB93pXKf/B/tNmmeuOce113idfF24wQ1hfll/'
-                'wXNdxwLLJkd9En7nqNT9aM/XlKc2L3/tL3m6dv36/x//nGk6fTT89MJ0izvX'
-                'Ju+o/H5dmVP70Mxt+5/2GmfWb5SUWVnULFQR+XVq0p1JaxL5T88sWzdTbP4/'
-                'G/P39tttu3vOv/rfJpuhPDvwvva5tZl3onqyE7f374ks+he25/O16dO/L/le'
-                '+LpW5/wsw718L0vXvSjf4Z64f2HR0c3F10zORR14ecJ49Z6Z2rdmXPZ7mJMl'
-                'k7r6t/irzo9fGXYHnNj95qX1eeXFHnMu/to/YdL0SVuurZ7q9PtN3sGvWmk/'
-                'z9Wq5c6T/PHnzq4b+27tivwufuL77/07jtvnfP60n+3dXInPAHjXVAU=')
-        pipeline = cellprofiler.pipeline.Pipeline()
-
-        def callback(caller, event):
-            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
-
-        pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
-        self.assertEqual(len(pipeline.modules()), 3)
-        module = pipeline.modules()[2]
-        self.assertTrue(isinstance(module, cellprofiler.modules.correctilluminationapply.CorrectIlluminationApply))
-        self.assertEqual(len(module.images), 1)
-        image = module.images[0]
-        self.assertEqual(image.image_name, "OrigPhase")
-        self.assertEqual(image.illum_correct_function_image_name, "IllumPhase")
-        self.assertEqual(image.corrected_image_name, "CorrPhase")
-        self.assertEqual(image.divide_or_subtract, "Subtract")
-
     def test_00_01_load_v1(self):
         data = ('eJztWd1O2zAUdkph/EwTu2LalS/pRqu2YxpUE9C1Q1SjpaIVE0KMmdallty4'
                 'chJoNyHtco/IY+wRZpeEpCaQ/kARUlJF6Tn2d77j43Pc2C1mq7vZL/BjIgmL'

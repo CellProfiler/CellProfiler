@@ -23,51 +23,6 @@ IMAGE_NAME = "image"
 
 
 class TestClassifyObjects(unittest.TestCase):
-    def test_01_01_load_matlab_classify_objects(self):
-        data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
-                'SU1RyM+zUnArylRwSU1WMDBRMDSzMja3MjRQMDIwsFQgGTAwevryMzAwsDIz'
-                'MFTMuRtxN++ygUjZ7m23GXKTRTOEFjyd1G146ePiWL5jLFNvWG3MbPI2L7RW'
-                'vr4uKT1q5zPPCiG9CgG9Sp43prlB68/8zL6RdrKr7/Hnn3PO26kfj2RieGPD'
-                'tEBtPvem6Qc3hDLvFHnpZefklHDraWgAY/bBH/43/Re0J85eIOxRc+Tgjt5j'
-                's7cc7mP/+3F17bNfLLIH4ko25bDXre+1ufeqR6T5evsPmYnKf3gbT5rN+sY5'
-                'N7FPkvcLc01tyR494Vu7vDf9j+Or1Mi0CUlZ737s6h9ZgXPrfR7mqhrVq744'
-                '/iLG5rZ1e9+GqgCL5Vzptxs2L3iosfPpw3fRnqWCv0x995dt9OdzrDjhPOtr'
-                'ub/i0o4c0Y37POuPL9i/4qX2Tk/WRTLdjgZxR+xCTGtVzd/0TjfreH5c1jf+'
-                '5PsZrjM31PQ52dtJFLyS8rN9sPi1Y+Mdz7RPW06bPTjj++BMo77Rsc8x9q//'
-                'iR11rmRazsMXsfF3wKwDmo1sO2KfHxCRXy3VN+n7OQFV5u7vC5tjVvdq8n/8'
-                'tOl0S3H44cAi74L7Vf4R0pMOvZ05LTw+98bs6E35zX9+elbnrfe+I360Wc7+'
-                'm9tjtyN79/3rnlE1lXMv1wbzt25Se2tZXgpxvD17Ol/Y784vldX2y/aUx292'
-                'Pjlj1w+e3XYqYu8Ovtvx6tzl9Xsq+k4H33r/2qT+3o+mk90MZf8W21fdyTm2'
-                'RXmd/S9j3nVrdNnvNLK4Fly6xuj5c2ap7cQr8yKvl0f+XHg+cd3vyVPFZdNz'
-                '/72qrjPpTz37XNxz/WvD/fE257ZU9W/dr+Te4hD5uZrl/KSdcl+FP0y9Yid8'
-                'b8t/XcV858+THqhu1V+5t/Cjr0Xl3Om3T93P/Wr/bt/5U/8jH5/7VRn81u/z'
-                '/8afTQldeqqvMn/M9/7/z+7V95Ytz78oN+cZFyl2PL7OzOt+0lc8sNG62Zn/'
-                '+6Kt6TJ72qXmTXo6t/23XFZsS+aTTYLHz6fy+p/czVKk91aa6ZN3qc/ZA/mR'
-                'Xqu//jyq8/39kteh76eKf/kvp7bXy+Bf1d/fv/rV98tp/7VXuGlZVXX0T+Du'
-                'dZ//M3WZT9YGAF3qrqE=')
-        pipeline = cellprofiler.pipeline.Pipeline()
-
-        def callback(caller, event):
-            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
-
-        pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
-        module = pipeline.modules()[-1]
-        self.assertTrue(isinstance(module, cellprofiler.modules.classifyobjects.ClassifyObjects))
-        self.assertEqual(module.contrast_choice, cellprofiler.modules.classifyobjects.BY_SINGLE_MEASUREMENT)
-        self.assertEqual(len(module.single_measurements), 1)
-        group = module.single_measurements[0]
-        self.assertEqual(group.object_name, "Nuclei")
-        self.assertEqual(group.measurement, "Intensity_IntegratedIntensity_OrigBlue_1")
-        self.assertEqual(group.bin_choice, cellprofiler.modules.classifyobjects.BC_EVEN)
-        self.assertEqual(group.bin_count, 5)
-        self.assertAlmostEqual(group.low_threshold.value, 0.2)
-        self.assertFalse(group.wants_low_bin)
-        self.assertAlmostEqual(group.high_threshold.value, 0.8)
-        self.assertFalse(group.wants_high_bin)
-        self.assertFalse(group.wants_custom_names)
-        self.assertFalse(group.wants_images)
-
     def test_01_02_load_matlab_classify_by_two_measurements(self):
         data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
                 'SU1RyM+zUnArylRwSU1WMDBRMDS1MrawMjRTMDIwsFQgGTAwevryMzAw/GBi'

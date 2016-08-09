@@ -24,40 +24,6 @@ MEASUREMENT_NAME = 'measurement'
 
 
 class TestDisplayDataOnImage(unittest.TestCase):
-    def test_01_00_load_matlab(self):
-        data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
-                'SU1RyM+zUggH0i6pyQqGZgqGhlZGQGSuYGRgYKlAMmBg9PTlZ2BgyGJiYKiY'
-                '83b6+fzLBiLH535pD5MIDufsZBayLEpc4+TzuC3AMSRJN+mySl/ea7bFV9Yl'
-                'pWf99P5W/ubIRGX3fypvzmVe3r5hh+cLi4STm+Z9vnf8/H2LbZvbBXbdcV+x'
-                '7pZsaGxJbNaxMqHQ28tdvE7VBDqHfjnx5X/AV5l2EX6mor7mDo4tOoX103t/'
-                '3qzZVVNyyD3QoapiUknYUnFfNhWRv4UyGXL1S4yF5lzKZ1k7/cZb4Z0LmorS'
-                'HvHKf9M7/lSoZ/fyV+ePebGzvwgI3Dr1xfV/6y+e2j9rUbTxw/smX3vOPNm8'
-                '3dhmyj2W0w/Fz1qee/CGoW/bb8Wv9zVW5j7KVoi7fZfzW+dM93k/mgsd0tT+'
-                'GSjfi+wuF/tn9sv0wI5b74w8ZywomlfB7/r1tsn/ban/+IGCdoozVJ8nHN7J'
-                'bnHrXUF/4UvXpjUlJ37Ldb0qD/+5nfvY1Knf7/+r2760XixdvKDMV05Wp7C9'
-                '6+U2y9S12uW9jxeFu5cVTt26gytrv82dV7tWMfdtux9oz+X5r9a2Ui/nV+xe'
-                'g0KOLakvGW9/l7xTe+CqWapylaO7IJ/NquVaQTsKd7/c9fJjjcyKx45+spfP'
-                'edsfKTY8wuj58OYz9us/05fein3F+jnxfKGWO/v9svner0JL9uqJTZb/lJF1'
-                'fie/xa1nzetTNMIXXKmM/HT53fzVNrZfNSdkCtZFWk05+tP+/pef/7Ln7Pn1'
-                '/Kn5XPv3zAX2J3//syuweaXGJzL780vFBxnRf+U5Shv0Az7YK3ZfZ7LJff07'
-                'pOH5r6yr6R8f9uW92/yVJzYmdeuq3kvvXpo9vhrz/Zitmva6rJq+eTG2/57G'
-                '9v+Wzf32b/69R/LTc3/+Z+u5zxEPAO9uZBU=')
-        pipeline = cellprofiler.pipeline.Pipeline()
-
-        def callback(caller, event):
-            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
-
-        pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
-        self.assertEqual(len(pipeline.modules()), 3)
-        module = pipeline.modules()[-1]
-        self.assertTrue(isinstance(module, cellprofiler.modules.displaydataonimage.DisplayDataOnImage))
-        self.assertEqual(module.image_name, "OrigBlue")
-        self.assertEqual(module.text_color, "red")
-        self.assertEqual(module.objects_or_image, cellprofiler.modules.displaydataonimage.OI_IMAGE)
-        self.assertEqual(module.display_image, "OrigDataDisp")
-        self.assertEqual(module.saved_image_contents, "Image")
-
     def test_01_01_load_v1(self):
         data = ('eJztWt1u2zYUphInS1Zga7EC7U0BXg5FIshds7a+qZJ6WQ0kdrAY7XbV0RLt'
                 'cKBFQ6LSuFe97KPsEfpYfYSRshRJhBLJsuOfQQIE+1D8zvfx8BxGoXl62D05'

@@ -71,48 +71,6 @@ class TestCreateWebPage(unittest.TestCase):
         self.assertEqual(len(cellprofiler.modules.createwebpage.TRANSLATION_DICTIONARY), 5,
                          "Please update this test to include your newly entered translation")
 
-    def test_01_01_load_matlab(self):
-        data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
-                'SU1RyM+zUvDNz1PwTSxSMLBQMDSxMjKwMjRVMDIwNFAgGTAwevryMzAw2DEx'
-                'MFTMeRrmmH/ZQKTu5aVVzmuknh5i7JTZaXBNcaHsxVMsU92iL2Z2LL69b9k0'
-                'md1ec1Y93aJs3/m4TsrMe9aREu/JZY8blLWrzv3e9/3nZtmdjAzLeRtmVV0P'
-                'XX8gd7XbxqmvrOQWTJmy21E0p0Kw9/6KOtcarzae9Rzchg2h3ceta5T0pm++'
-                'ulw/ScbojZD+3DVR5l/aXrDv9eTpsfv+kulmwz+HE9ss3mqfy3Rg7f8guN9y'
-                '1yrtJYHhkQzXvx5hP/3B8fcln97Xf/gnPLmdXWPt81Te7a+Q+KezP5t6ljwW'
-                'tJyVNe+yzLxdBxc/nud/1zi1NLKm2svC/dqtFLnfbHX2q/6fdH+iaS9XJWfK'
-                'vP6x8RwO+dPX+2ssbh5pX84Wd/yKsh7b2sUrv0S8Obzuz585hy+bVJTYBKif'
-                'UmxUXv7iTpb3j08ltoY/Sv4EWsR4qPMUFMee55WT3T5x4z59tSkL35cIJe6+'
-                'UjrncHJ6Rc6OBXJ2abXah5MP7naftz/yf4X33crna7NeXCvsv2j573Hl/ANp'
-                'v3/MDIw/PqX/5Zw+50NGx7O1ZSt3eLGFN6678cj+sPsLjnPTol/YNd1dFz+z'
-                'coddJJvyoUe/HRYfqPlmVFP9IXZtkuCf2NeB2+zqvY1+uD79V33CMcum9/Tn'
-                'wrtVf24eWad/6Obhj08/rtmtrmrTZ1Vk4f1aa9Xn+uf6v/6xlr+3L/4//a66'
-                'eFOPNet7dXa2/r7bdkKd9wtuhMd8+P5z9dMX61csv6nxXT5n6prwrV2Pc77u'
-                'qS/9HPS4zmnj18pa/7o7p579Z9NbdcMfAGQ1SXU=')
-        pipeline = cellprofiler.pipeline.Pipeline()
-
-        def callback(caller, event):
-            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
-
-        pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
-        self.assertEqual(len(pipeline.modules()), 2)
-        module = pipeline.modules()[1]
-        self.assertTrue(isinstance(module, cellprofiler.modules.createwebpage.CreateWebPage))
-        self.assertEqual(module.orig_image_name, "OrigBlue")
-        self.assertTrue(module.wants_thumbnails)
-        self.assertEqual(module.thumbnail_image_name, "OrigGreen")
-        self.assertEqual(module.web_page_file_name, "images1.html")
-        self.assertEqual(module.directory_choice.dir_choice, cellprofiler.modules.createwebpage.DIR_SAME)
-        self.assertEqual(module.title, "CellProfiler Images")
-        self.assertEqual(module.background_color, "Lime")
-        self.assertEqual(module.columns, 3)
-        self.assertEqual(module.table_border_width, 0)
-        self.assertEqual(module.table_border_color, "Olive")
-        self.assertEqual(module.image_spacing, 2)
-        self.assertEqual(module.image_border_width, 2)
-        self.assertEqual(module.create_new_window, cellprofiler.modules.createwebpage.OPEN_ONCE)
-        self.assertFalse(module.wants_zip_file)
-
     def test_01_02_load_v1(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1

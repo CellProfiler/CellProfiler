@@ -240,31 +240,6 @@ class TestIdentifyTertiaryObjects(unittest.TestCase):
                                                         must_be_binary=True)
         self.assertTrue(numpy.all(output_labels[output_outlines.pixel_data] > 0))
 
-    def test_02_01_load_matlab(self):
-        """Load a Matlab pipeline with an IdentifyTertiary module"""
-        data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0'
-                'sSU1RyM+zUggpTVXwKs1RMDBXMDS2MjW3MjZRMDIwsFQgGTAwevryMzAwJD'
-                'AyMFTMWRu80e+wgcDekMxQh1VRalqGKSktvYKcbFYBWkGhazyLdd3WyaqaK'
-                'fnUSM1v8517zTTQWcvP6uj7T/d2nz75kvGAt/SCxfNip+pGuN9OOO/V6yzS'
-                'tCH1Hpv8OZ+/3k91TnmIBM9xDUnim63xWnnbg8tKd/dUPehcYtEXZhZ5NGJ'
-                'd0plPx101TdarP5HN9LATKFu8xPah9EnOdLf8P3dfLdMX97s/71R2/m729U'
-                'n8+0L/Pzw87X34B2ux/fkfIs5pTtr6b5lb/ZMXpvt0Wfwzp6yXOnOxtMZkX'
-                'pKaxxTR+pmPb1zMrjnOfMxVofjOuY93CupLa/3n7JP6/EP0edLMwpn/dp+v'
-                '7T1/4KPkm18sLaozou6HPy9/9SPzzNIFLQ/1nd9+5/z9/fXBd3Xqpn/b/ep'
-                '73TmNHMVcK+2dJNN3hOyf8LQ682dZ1rOMlZPjF66edfza16svXx2ou8doFa'
-                '/Z/vyZnPmdz0fl6iRT/0oLzMsPAADtf80+')
-        fd = StringIO.StringIO(zlib.decompress(base64.b64decode(data)))
-        pipeline = cellprofiler.pipeline.Pipeline()
-        pipeline.add_listener(self.on_pipeline_event)
-        pipeline.load(fd)
-        self.assertEqual(len(pipeline.modules()), 1)
-        module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, cellprofiler.modules.identifytertiaryobjects.IdentifyTertiarySubregion))
-        self.assertEqual(module.primary_objects_name.value, "Cytoplasm")
-        self.assertEqual(module.secondary_objects_name.value, "Nuclei")
-        self.assertEqual(module.subregion_objects_name.value, "Tertiary")
-        self.assertFalse(module.use_outlines.value)
-
     def test_02_02_load_v1(self):
         data = ('eJztW89v2zYUlh0nWFagSHfYivXCY7PFhuwmaBoMqT17W7zVjlEbLYqi3Wi'
                 'ZtjnQoiFRabyhwI77k3bcn7PjjjtOdCRLZlSLln9ETiVAcN4Tv/fxPZLvUV'

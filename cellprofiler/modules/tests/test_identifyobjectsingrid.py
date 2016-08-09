@@ -25,48 +25,6 @@ OUTLINES_NAME = 'myoutlines'
 
 
 class TestIdentifyObjectsInGrid(unittest.TestCase):
-    def test_01_01_load_matlab(self):
-        data = ('eJwB/AMD/E1BVExBQiA1LjAgTUFULWZpbGUsIFBsYXRmb3JtOiBQQ1dJTiwg'
-                'Q3JlYXRlZCBvbjogTW9uIE5vdiAyMyAxMDoyMjo1NyAyMDA5ICAgICAgICAg'
-                'ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAAAUlN'
-                'DwAAAHQDAAB4nM1YT2/TMBR3u7YbMG1jEwKhSctxhzJStiG4MQaMSltbbWPA'
-                '0U3czCi1q8SZVs58Hy58AD4KRz4G9pq0qcnqxM26WbKs5/r9+z2/95wuAQBa'
-                'TwGo8HWBzyIYjHJIF2JT0CeIMUwcvwxK4Em4/5vPM+hh2HbRGXQD5IPhiPbr'
-                'pENP+73hT0fUDlzUgN34YT4aQbeNPL/ZiRjDn1v4Erkn+DsC4yM6dowusI8p'
-                'CflD+fLuUC9lkt4lPv8sj3AoSDiU+FyL7Yvzb8DofCkBt5XY+ZVwnqJL9uz9'
-                'JbSY0YXMOhdyXinkVCQ5gj7qH3jYHtih4l+Q+AXd9LDzlodqFvqT+O3aVo84'
-                'A35TwV8a4y+B19Xadhq9ZUmvoD8j1xWRTxO/+xK/oD9gAt1ICJgN/kl+HGPn'
-                'nKXUn8RfM6s7Zsj/UcH/WOIX9D72LBcZDcgCD7rGIbUg44mmjes7ahDKjMBH'
-                'I1xV92JuTM4cOKU9Lb6vvBbc1n1K8ltlx7wkR9D71A26xE/lf3GMvwgaNJ39'
-                '9yS9gt4LGOWFDFtgZH9eOGStC01ioWnir2P3Ub8ZMBcTFKsHefmvVZchCaCb'
-                'zo4HEr+gm8wPjAOXtoWQlP4sSnIEvUf6Rsvj7ZcG/qxxUeWp6n4UxvgLoBby'
-                '5e2HSk5SfPYp9Wzeg6L3i859N6u1MX+y4rEN8ul7WfPb3DJrNxGH7PiZ2vWy'
-                'ThgiPmb9mB/RqurDDyV5gsbExhfY5jlv4C50hq9aXXxOehydTwSzDPUsq5+6'
-                '/Ukn73fM6m70ztHxI6m/pfVDzpstMMV7bbf6Isq7vP3Qked4sO9b0EUxOVnz'
-                'WXxBTNOv0+rV7fez7mtp/bkuP27LHhlf8hzmEh/Zjrzw2axM/s6P19ksuC6D'
-                'cVwF7fA77ng06Bm8UqOednyuivuVoPT2JOdtaM8EfHX6EG1/QxaLe3pz8lR+'
-                'J/3vMsJvIG7S/bpuVelNeq/F/Lh1+1VxWJX0CpoOvm7+C8Qs/VDpSYt7Vrmz'
-                'sj9tvt/VVeXfTd1nec37fkfrl8L1/UJ+1+jG+5BCux57wGv3cdTh7gz+m02L'
-                'yyNJjqDrNiIMd/otD3fjb8dp5TWv8tKvk9BEuZ9XFPgWObW6sjY/zXd8Vn3l'
-                'ucWi/G5X8ZXC/Zcbv9Z/bPxcF/x/QbZ7tDnhfDTu6vl/pcx6DmQQ87M=')
-        pipeline = cellprofiler.pipeline.Pipeline()
-
-        def callback(caller, event):
-            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
-
-        pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
-        self.assertEqual(len(pipeline.modules()), 4)
-        module = pipeline.modules()[-1]
-        self.assertTrue(isinstance(module, cellprofiler.modules.identifyobjectsingrid.IdentifyObjectsInGrid))
-        self.assertEqual(module.grid_name, "MyGrid")
-        self.assertEqual(module.output_objects_name, "FinalWells")
-        self.assertEqual(module.shape_choice, cellprofiler.modules.identifyobjectsingrid.SHAPE_CIRCLE_NATURAL)
-        self.assertEqual(module.guiding_object_name, "Wells")
-        self.assertEqual(module.diameter_choice, cellprofiler.modules.identifyobjectsingrid.AM_AUTOMATIC)
-        self.assertTrue(module.wants_outlines)
-        self.assertEqual(module.outlines_name, "MyOutlines")
-
     def test_01_02_load_v1(self):
         data = ('eJztW1tv2zYUplInTdZhS4EBGzYU4OMwpIKcxMOSPUxOsrYGYjtYjBZ7myLR'
                 'DgeZNCTKjfeL95ifMNKWLJmTo4vlREYkgLAPxe8cngsPSUlsN3uXzTPYUDXY'

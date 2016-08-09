@@ -43,40 +43,6 @@ class TestEnhanceEdges(unittest.TestCase):
                       else cellprofiler.image.Image(image, mask))
         return workspace, module
 
-    def test_01_01_load_matlab(self):
-        """Load a Matlab pipeline with a version 3 FindEdges module"""
-        data = ("eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s"
-                "SU1RyM+zUgjJKFXwTaxUMDJUMDSxMjCyMrJQMDIwsFQgGTAwevryMzAwfGNk"
-                "YKiYczfM2/+Qg4Cc18FwlVcnm9vl9v7oEu/LuuChlNEyYUZF5Iso88hdS/hZ"
-                "6xvtOxfbn43NTdzNOC2p+Viu2tmc57/Tfr19s02VweIei8an31rmzPvcFT8V"
-                "T+Lc39jcsKMvnkG4bPFP/jzdJ4JXlu1ozeioleit2PfKbuOzBeZVIcllHoWy"
-                "pU8T7F4lbu+1/f9Nk82t/72H/GW2ysMTZApv2NYp2iXmtfT/uHozME5Mo9L7"
-                "Tpt2smxRF5/TdNnMuCPzD1rcm7Pg9jSR/aKRwt+bm0/bvWIJE2edm34w+NqH"
-                "NVo2h/Z/7Sg+uFTsRzLvPZ8Hvivm3A99fnL3oieidbkBb5XYncVKX3+JDv9w"
-                "aL3B6dRG0V8V/0pnTHdfnqx3cHLz5J7Pr7/oaNgcyt9gtmz/GufKk1YionIP"
-                "4wXEK5ufvprg/+HJw8b5mvtn/p9zqfXae5FNV9+u/xiTXbENqEb4upr+ET7B"
-                "rR0WHx6td/Xc9brETGgP25VIqz27/Nq96ubaZZ+q5rz/8cKB9wpdqvMqX8+8"
-                "9v70Jeez7+UWsuzLOfOv7nTVkouFQfNrTVsfb9wwfV7+pfqDM84/WtteHflp"
-                "xdfU2Of1D+UPffkX+Lv84r6diSfWebGfWvT7R1d4fab6edXK/yKmX6X/3Lr5"
-                "42a9/62a1pqqOSfXH9973baxur3k9WZ7ZTu57mP1TIUCx5YDAPkpI08=")
-        fd = StringIO.StringIO(zlib.decompress(base64.b64decode(data)))
-        p = cellprofiler.pipeline.Pipeline()
-
-        def callback(caller, event):
-            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
-
-        p.add_listener(callback)
-        p.load(fd)
-        self.assertEqual(len(p.modules()), 2)
-        module = p.modules()[1]
-        self.assertTrue(isinstance(module, cellprofiler.modules.enhanceedges.FindEdges))
-        self.assertEqual(module.image_name.value, "OrigBlue")
-        self.assertEqual(module.output_image_name.value, "MyImage")
-        self.assertTrue(module.wants_automatic_threshold.value)
-        self.assertEqual(module.threshold_adjustment_factor.value, 1)
-        self.assertEqual(module.method.value, cellprofiler.modules.enhanceedges.M_SOBEL)
-        self.assertEqual(module.direction.value, cellprofiler.modules.enhanceedges.E_ALL)
-
     def test_01_02_load_v1(self):
         """Load a Python pipeline with a version 1 FindEdges module"""
         data = ('eJztWNFu2jAUNZR2o5um7qHqHv0IW4kS1m4UTW0ZdBpaYahF7aqq61wwJZIT'

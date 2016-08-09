@@ -168,7 +168,7 @@ class MeasureObjectSizeShape(cellprofiler.module.Module):
 
         self.calculate_zernikes = cellprofiler.setting.Binary(
                 'Calculate the Zernike features?', True, doc="""
-            Select <i>%(YES)s</i> to calculate the Zernike shape features. Since the
+            Select <i>%(cellprofiler.setting.YES)s</i> to calculate the Zernike shape features. Since the
             first 10 Zernike polynomials (from order 0 to order 9) are
             calculated, this operation can be time consuming if the image
             contains a lot of objects.""" % globals())

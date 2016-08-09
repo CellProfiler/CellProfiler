@@ -226,7 +226,7 @@ class Crop(cellprofiler.module.Module):
         self.use_plate_fix = cellprofiler.setting.Binary(
                 "Use Plate Fix?", False, doc="""
             <i>(Used only if %(SH_IMAGE)s selected as cropping shape)</i><br>
-            Select <i>%(YES)s</i> to attempt to regularize the edges around a previously-identified
+            Select <i>%(cellprofiler.setting.YES)s</i> to attempt to regularize the edges around a previously-identified
             plate object.
             <p>When attempting to crop based on a previously identified object
             such as a rectangular plate, the plate may not have

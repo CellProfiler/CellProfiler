@@ -150,14 +150,14 @@ class ExportToSpreadsheet(cellprofiler.module.Module):
             <b>ExportToSpreadsheet</b>. A prefix may be useful if you use
             the same directory for the results of more than one pipeline; you
             can specify a different prefix in each pipeline.
-            Select <i>%(YES)s</i> to add a prefix to each file name
-            (e.g. "MyExpt_Images.csv"). Select <i>%(NO)s</i> to use filenames
+            Select <i>%(cellprofiler.setting.YES)s</i> to add a prefix to each file name
+            (e.g. "MyExpt_Images.csv"). Select <i>%(cellprofiler.setting.NO)s</i> to use filenames
             without prefixes (e.g. "Images.csv").
             """ % globals())
 
         self.prefix = cellprofiler.setting.Text(
                 "Filename prefix", "MyExpt_",
-                doc="""(<i>Used only if "Add a prefix to file names?" is %(YES)s</i>)
+                doc="""(<i>Used only if "Add a prefix to file names?" is %(cellprofiler.setting.YES)s</i>)
 
             The text you enter here is prepended to the names of each file
             produced by <b>ExportToSpreadsheet</b>.
@@ -167,19 +167,19 @@ class ExportToSpreadsheet(cellprofiler.module.Module):
                 "Overwrite existing files without warning?", False,
                 doc="""This setting either prevents or allows overwriting of
             old .CSV files by <b>ExportToSpreadsheet</b> without confirmation.
-            Select <i>%(YES)s</i> to overwrite without warning any .CSV file
-            that already exists. Select <i>%(NO)s</i> to prompt before overwriting
+            Select <i>%(cellprofiler.setting.YES)s</i> to overwrite without warning any .CSV file
+            that already exists. Select <i>%(cellprofiler.setting.NO)s</i> to prompt before overwriting
             when running CellProfiler in the GUI and to fail when running
             headless.""" % globals())
 
         self.add_metadata = cellprofiler.setting.Binary(
                 "Add image metadata columns to your object data file?", False, doc=""""
             Image_Metadata_" columns are normally exported in the Image data file, but if you
-            select <i>%(YES)s</i>, they will also be exported with the Object data file(s).""" % globals())
+            select <i>%(cellprofiler.setting.YES)s</i>, they will also be exported with the Object data file(s).""" % globals())
 
         self.excel_limits = cellprofiler.setting.Binary(
                 "Limit output to a size that is allowed in Excel?", False, doc="""
-            If your output has more than 256 columns, select <i>%(YES)s</i> will open a window
+            If your output has more than 256 columns, select <i>%(cellprofiler.setting.YES)s</i> will open a window
             allowing you to select the columns you'd like to export. If your output exceeds
             65,000 rows, you can still open the CSV in Excel, but not all rows will be visible.""" % globals())
 
@@ -198,7 +198,7 @@ class ExportToSpreadsheet(cellprofiler.module.Module):
 
         self.pick_columns = cellprofiler.setting.Binary(
                 "Select the measurements to export", False, doc="""
-            Select <i>%(YES)s</i> to provide a button that allows you to select which measurements you want to export.
+            Select <i>%(cellprofiler.setting.YES)s</i> to provide a button that allows you to select which measurements you want to export.
             This is useful if you know exactly what measurements you want included in the final spreadheet(s). """ % globals())
 
         self.columns = cellprofiler.setting.MeasurementMultiChoice(
@@ -209,7 +209,7 @@ class ExportToSpreadsheet(cellprofiler.module.Module):
 
         self.wants_aggregate_means = cellprofiler.setting.Binary(
                 "Calculate the per-image mean values for object measurements?", False, doc="""
-            Select <i>%(YES)s</i> for <b>ExportToSpreadsheet</b> to calculate population statistics over all the
+            Select <i>%(cellprofiler.setting.YES)s</i> for <b>ExportToSpreadsheet</b> to calculate population statistics over all the
             objects in each image and save that value as an aggregate
             measurement in the Image file.  For instance, if you are measuring
             the area of the Nuclei objects and you check the box for this option, <b>ExportToSpreadsheet</b> will
@@ -230,7 +230,7 @@ class ExportToSpreadsheet(cellprofiler.module.Module):
 
         self.wants_genepattern_file = cellprofiler.setting.Binary(
                 "Create a GenePattern GCT file?", False, doc="""
-            Select <i>%(YES)s</i> to create a GCT file compatible with
+            Select <i>%(cellprofiler.setting.YES)s</i> to create a GCT file compatible with
             <a href="http://www.broadinstitute.org/cancer/software/genepattern/">GenePattern</a>.
             The GCT file format is a tab-delimited text file format that describes a gene
             expression dataset; the specifics of the format are described
@@ -278,13 +278,13 @@ class ExportToSpreadsheet(cellprofiler.module.Module):
 
         self.wants_everything = cellprofiler.setting.Binary(
                 "Export all measurement types?", True, doc="""
-            Select <i>%(YES)s</i> to export every category of measurement.
+            Select <i>%(cellprofiler.setting.YES)s</i> to export every category of measurement.
             <b>ExportToSpreadsheet</b> will create one data file for each object produced
             in the pipeline, as well as per-image, per-experiment and object relationships,
             if relevant. See <i>%(MEASUREMENT_NAMING_HELP)s</i> for more details on
             the various measurement types. The module will use the object name as the file name,
             optionally prepending the output file name if specified above.
-            <p>Select <i>%(NO)s</i> if you want to do either (or both) of two things:
+            <p>Select <i>%(cellprofiler.setting.NO)s</i> if you want to do either (or both) of two things:
             <ul>
             <li>Specify which objects should be exported;</li>
             <li>Override the automatic nomenclature of the exported files.</li>
@@ -299,7 +299,7 @@ class ExportToSpreadsheet(cellprofiler.module.Module):
         group = cellprofiler.setting.SettingsGroup()
         group.append(
                 "name", EEObjectNameSubscriber("Data to export", doc="""
-            <i>(Used only when "Export all measurements?" is set to "%(NO)s")</i><br>
+            <i>(Used only when "Export all measurements?" is set to "%(cellprofiler.setting.NO)s")</i><br>
             Choose <i>Image</i>, <i>Experiment</i>, <i>Object relationships</i>
             or an object name from the list. <b>ExportToSpreadsheet</b> will write out a
             file of measurements for the given category. See <i>%(MEASUREMENT_NAMING_HELP)s</i>
@@ -308,26 +308,26 @@ class ExportToSpreadsheet(cellprofiler.module.Module):
         group.append(
                 "previous_file", cellprofiler.setting.Binary(
                         "Combine these object measurements with those of the previous object?", False, doc="""
-            <i>(Used only when "Export all measurements?" is set to "%(NO)s")</i><br>
-            Select <i>%(YES)s</i> to create a file composed
+            <i>(Used only when "Export all measurements?" is set to "%(cellprofiler.setting.NO)s")</i><br>
+            Select <i>%(cellprofiler.setting.YES)s</i> to create a file composed
             of measurements made on this object and the one directly
             above it.
-            <p>Select <i>%(NO)s</i> to create separate
+            <p>Select <i>%(cellprofiler.setting.NO)s</i> to create separate
             files for this and the previous object.</p>""" % globals()))
 
         group.append("wants_automatic_file_name", cellprofiler.setting.Binary(
                 "Use the object name for the file name?", True, doc="""
-            <i>(Used only when "Export all measurements?" is set to "%(NO)s")</i><br>
-            Select <i>%(YES)s</i> to use the object name as selected above to generate a file
+            <i>(Used only when "Export all measurements?" is set to "%(cellprofiler.setting.NO)s")</i><br>
+            Select <i>%(cellprofiler.setting.YES)s</i> to use the object name as selected above to generate a file
             name for the spreadsheet. For example, if you selected <i>Image</i>,
             above and have not checked the <i>Prepend output file name</i> option,
             your output file will be named "Image.csv".
-            <p>Select <i>%(NO)s</i> to name the file yourself.</p>""" % globals()))
+            <p>Select <i>%(cellprofiler.setting.NO)s</i> to name the file yourself.</p>""" % globals()))
 
         group.append("file_name", cellprofiler.setting.Text(
                 "File name", "DATA.csv",
                 metadata=True, doc="""
-            <i>(Used only when "Export all measurements?" is set to "%(NO)s")</i><br>
+            <i>(Used only when "Export all measurements?" is set to "%(cellprofiler.setting.NO)s")</i><br>
             Enter a file name for the named objects'
             measurements. <b>ExportToSpreadsheet</b> will
             prepend the name of the measurements file to this

@@ -79,14 +79,14 @@ class Smooth(cellprofiler.module.Module):
         self.wants_automatic_object_size = cellprofiler.setting.Binary(
                 'Calculate artifact diameter automatically?', True, doc="""
             <i>(Used only if "%(GAUSSIAN_FILTER)s", "%(MEDIAN_FILTER)s", "%(SMOOTH_KEEPING_EDGES)s" or "%(CIRCULAR_AVERAGE_FILTER)s" is selected)</i><br>
-            Select <i>%(YES)s</i> to choose an artifact diameter based on
+            Select <i>%(cellprofiler.setting.YES)s</i> to choose an artifact diameter based on
             the size of the image. The minimum size it will choose is 30 pixels,
             otherwise the size is 1/40 of the size of the image.
-            <p>Select <i>%(YES)s</i> to manually enter an artifact diameter.</p>""" % globals())
+            <p>Select <i>%(cellprofiler.setting.YES)s</i> to manually enter an artifact diameter.</p>""" % globals())
 
         self.object_size = cellprofiler.setting.Float(
                 'Typical artifact diameter', 16.0, doc="""
-            <i>(Used only if choosing the artifact diameter automatically is set to "%(NO)s")</i><br>
+            <i>(Used only if choosing the artifact diameter automatically is set to "%(cellprofiler.setting.NO)s")</i><br>
             Enter the approximate diameter (in pixels) of the features to be blurred by
             the smoothing algorithm. This value is used to calculate the size of
             the spatial filter. %(HELP_ON_MEASURING_DISTANCES)s
@@ -109,9 +109,9 @@ class Smooth(cellprofiler.module.Module):
             an output image whose values are outside of the values of the
             input image. This setting controls whether to limit the image
             intensity to the 0 - 1 range used by CellProfiler.
-            <p>Select <i>%(YES)s</i> to set all output image pixels less than zero to zero
+            <p>Select <i>%(cellprofiler.setting.YES)s</i> to set all output image pixels less than zero to zero
             and all pixels greater than one to one. </p>
-            <p>Select <i>%(NO)s</i> to
+            <p>Select <i>%(cellprofiler.setting.NO)s</i> to
             allow values less than zero and greater than one in the output
             image.</p>""" % globals())
 

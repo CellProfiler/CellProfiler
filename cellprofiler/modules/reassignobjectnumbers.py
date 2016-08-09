@@ -151,7 +151,7 @@ class ReassignObjectNumbers(cellprofiler.module.Module):
         self.wants_image = cellprofiler.setting.Binary(
                 "Unify using a grayscale image?", False, doc="""
             <i>(Used only with the %(OPTION_UNIFY)s option)</i><br>
-            Select <i>%(YES)s</i> to use the objects' intensity features to determine whether two
+            Select <i>%(cellprofiler.setting.YES)s</i> to use the objects' intensity features to determine whether two
             objects should be unified. If you choose to use a grayscale image,
             <i>%(OPTION_UNIFY)s</i> will unify two objects only if they
             are within the distance you have specified <i>and</i> certain criteria about the objects

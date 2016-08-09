@@ -52,9 +52,9 @@ class EnhanceEdges(cellprofiler.module.Module):
         self.wants_automatic_threshold = cellprofiler.setting.Binary(
                 "Automatically calculate the threshold?", True, doc='''
             <i>(Used only with the %(M_CANNY)s option and automatic thresholding)</i> <br>
-            Select <i>%(YES)s</i> to automatically calculate the threshold using a three-category
+            Select <i>%(cellprofiler.setting.YES)s</i> to automatically calculate the threshold using a three-category
             Otsu algorithm performed on the Sobel transform of the image.
-            <p>Select <i>%(NO)s</i> to manually enter the threshold value.</p>''' % globals())
+            <p>Select <i>%(cellprofiler.setting.NO)s</i> to manually enter the threshold value.</p>''' % globals())
 
         self.manual_threshold = cellprofiler.setting.Float(
                 "Absolute threshold", 0.2, 0, 1, doc='''
@@ -113,9 +113,9 @@ class EnhanceEdges(cellprofiler.module.Module):
         self.wants_automatic_low_threshold = cellprofiler.setting.Binary(
                 "Calculate value for low threshold automatically?", True, doc="""
             <i>(Used only with the %(M_CANNY)s option and automatic thresholding)</i> <br>
-            Select <i>%(YES)s</i> to automatically calculate the low / soft threshold cutoff for
+            Select <i>%(cellprofiler.setting.YES)s</i> to automatically calculate the low / soft threshold cutoff for
             the %(M_CANNY)s method.
-            <p>Select <i>%(NO)s</i> to manually enter the low threshold value.</p>""" % globals())
+            <p>Select <i>%(cellprofiler.setting.NO)s</i> to manually enter the low threshold value.</p>""" % globals())
 
         self.low_threshold = cellprofiler.setting.Float(
                 "Low threshold value", 0.1, 0, 1, doc="""

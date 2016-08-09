@@ -318,8 +318,8 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         self.exclude_size = cellprofiler.setting.Binary(
                 EXCLUDE_SIZE_SETTING_TEXT,
                 True, doc='''
-            Select <i>%(YES)s</i> to discard objects outside the range you specified in the
-            <i>%(SIZE_RANGE_SETTING_TEXT)s</i> setting. Select <i>%(NO)s</i> to ignore this
+            Select <i>%(cellprofiler.setting.YES)s</i> to discard objects outside the range you specified in the
+            <i>%(SIZE_RANGE_SETTING_TEXT)s</i> setting. Select <i>%(cellprofiler.setting.NO)s</i> to ignore this
             criterion.
             <p>Objects discarded
             based on size are outlined in magenta in the module's display. See also the
@@ -327,7 +327,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             other measurement.
             <dl>
             <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;
-            Select <i>%(YES)s</i> allows you to exclude small objects (e.g., dust, noise,
+            Select <i>%(cellprofiler.setting.YES)s</i> allows you to exclude small objects (e.g., dust, noise,
             and debris) or large objects (e.g., large clumps) if desired. </dd>
             </dl>
             ''' % globals())
@@ -335,7 +335,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         self.merge_objects = cellprofiler.setting.Binary(
                 "Try to merge too small objects with nearby larger objects?",
                 False, doc='''
-            Select <i>%(YES)s</i> to cause objects that are
+            Select <i>%(cellprofiler.setting.YES)s</i> to cause objects that are
             smaller than the specified minimum diameter to be merged, if possible, with
             other surrounding objects.
             <p>This is helpful in cases when an object was
@@ -351,8 +351,8 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         self.exclude_border_objects = cellprofiler.setting.Binary(
                 "Discard objects touching the border of the image?",
                 True, doc='''
-            Select <i>%(YES)s</i> to discard objects that touch the border of the image.
-            Select <i>%(NO)s</i> to ignore this criterion.
+            Select <i>%(cellprofiler.setting.YES)s</i> to discard objects that touch the border of the image.
+            Select <i>%(cellprofiler.setting.NO)s</i> to ignore this criterion.
             <dl>
             <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;
             Removing objects that touch the image border is useful when you do
@@ -471,8 +471,8 @@ class IdentifyPrimaryObjects(cpmi.Identify):
                 AUTOMATIC_SMOOTHING_SETTING_TEXT,
                 True, doc="""
             <i>(Used only when distinguishing between clumped objects)</i><br>
-            Select <i>%(YES)s</i> to automatically calculate the amount of smoothing
-            applied to the image to assist in declumping. Select <i>%(NO)s</i> to
+            Select <i>%(cellprofiler.setting.YES)s</i> to automatically calculate the amount of smoothing
+            applied to the image to assist in declumping. Select <i>%(cellprofiler.setting.NO)s</i> to
             manually enter the smoothing filter size.
 
             <p>This setting, along with the <i>Minimum allowed distance between local maxima</i>
@@ -513,8 +513,8 @@ class IdentifyPrimaryObjects(cpmi.Identify):
                 AUTOMATIC_MAXIMA_SUPPRESSION_SETTING_TEXT,
                 True, doc="""
             <i>(Used only when distinguishing between clumped objects)</i><br>
-            Select <i>%(YES)s</i> to automatically calculate the distance between
-            intensity maxima to assist in declumping. Select <i>%(NO)s</i> to
+            Select <i>%(cellprofiler.setting.YES)s</i> to automatically calculate the distance between
+            intensity maxima to assist in declumping. Select <i>%(cellprofiler.setting.NO)s</i> to
             manually enter the permissible maxima distance.
 
             <p>This setting, along with the <i>%(SMOOTHING_FILTER_SIZE_SETTING_TEXT)s</i> setting,
@@ -547,7 +547,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
                 'Speed up by using lower-resolution image to find local maxima?',
                 True, doc="""
             <i>(Used only when distinguishing between clumped objects)</i><br>
-            Select <i>%(YES)s</i> to down-sample the image for declumping. This can be
+            Select <i>%(cellprofiler.setting.YES)s</i> to down-sample the image for declumping. This can be
             helpful for saving processing time on large images.
             <p>Note that if you have entered a minimum object diameter of 10 or less, checking
             this box will have no effect.</p>""" % globals())
@@ -586,9 +586,9 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         self.wants_automatic_log_diameter = cellprofiler.setting.Binary(
                 WANTS_AUTOMATIC_LOG_DIAMETER_SETTING_TEXT, True, doc="""
             <i>(Used only when applying the LoG thresholding method)</i><br>
-            <p>Select <i>%(YES)s</i> to use the filtering diameter range above
+            <p>Select <i>%(cellprofiler.setting.YES)s</i> to use the filtering diameter range above
             when constructing the LoG filter. </p>
-            <p>Select <i>%(NO)s</i> in order to manually specify the size.
+            <p>Select <i>%(cellprofiler.setting.NO)s</i> in order to manually specify the size.
             You may want to specify a custom size if you want to filter
             using loose criteria, but have objects that are generally of
             similar sizes.</p>""" % globals())

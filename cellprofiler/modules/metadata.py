@@ -162,7 +162,7 @@ class Metadata(cellprofiler.module.Module):
 
         self.wants_metadata = cellprofiler.setting.Binary(
                 "Extract metadata?", False, doc="""
-            Select <i>%(YES)s</i> if your file or path names or file headers contain information
+            Select <i>%(cellprofiler.setting.YES)s</i> if your file or path names or file headers contain information
             (i.e., metadata) you would like to extract and store along with your
             measurements. See the main module
             help for more details.""" % globals())
@@ -417,7 +417,7 @@ class Metadata(cellprofiler.module.Module):
                                                   cellprofiler.modules.images.DirectoryPredicate(),
                                                   cellprofiler.modules.images.ExtensionPredicate()],
                 'and (file does contain "")', doc="""
-            Select <i>%(YES)s</i> to display and use rules to select files for metadata extraction.
+            Select <i>%(cellprofiler.setting.YES)s</i> to display and use rules to select files for metadata extraction.
             <p>%(FILTER_RULES_BUTTONS_HELP)s</p>""" % globals()))
 
         group.append("csv_location", cellprofiler.setting.PathnameOrURL(
@@ -464,9 +464,9 @@ class Metadata(cellprofiler.module.Module):
             applied, your choice on this setting may be the culprit.</dd>
             </dl>
             <ul>
-            <li>Select <i>%(NO)s</i> so that metadata entries that only differ by case
+            <li>Select <i>%(cellprofiler.setting.NO)s</i> so that metadata entries that only differ by case
             (for instance, "A01" and "a01") will not match.</li>
-            <li>Select <i>%(YES)s</i> to match metadata entries that only differ
+            <li>Select <i>%(cellprofiler.setting.YES)s</i> to match metadata entries that only differ
             by case.</li>
             </ul>""" % globals()))
 

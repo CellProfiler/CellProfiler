@@ -116,10 +116,10 @@ class FlagImage(cellprofiler.module.Module):
         group.append("wants_skip",
                      cellprofiler.setting.Binary(
                              "Skip image set if flagged?", False, doc="""
-                        <p>Select <i>%(YES)s</i> to skip the remainder of the pipeline for image sets
+                        <p>Select <i>%(cellprofiler.setting.YES)s</i> to skip the remainder of the pipeline for image sets
                         that are flagged. CellProfiler will not run subsequent modules in the
                         pipeline on the images in any image set that is flagged.
-                        Select <i>%(NO)s</i> for CellProfiler to continue to process the pipeline regardless
+                        Select <i>%(cellprofiler.setting.NO)s</i> for CellProfiler to continue to process the pipeline regardless
                         of flagging.</p>
                         <p>You may want to skip processing in order to filter out
                         unwanted images. For instance, you may want
@@ -248,7 +248,7 @@ class FlagImage(cellprofiler.module.Module):
         group.append("wants_minimum",
                      cellprofiler.setting.Binary(
                              "Flag images based on low values?", True, doc='''
-                         Select <i>%(YES)s</i> to flag images with measurements below the specified cutoff.
+                         Select <i>%(cellprofiler.setting.YES)s</i> to flag images with measurements below the specified cutoff.
                          If the measurement evaluates to Not-A-Number (NaN), then the image is not flagged.''' % globals()))
 
         group.append("minimum_value", cellprofiler.setting.Float("Minimum value", 0))
@@ -256,7 +256,7 @@ class FlagImage(cellprofiler.module.Module):
         group.append("wants_maximum",
                      cellprofiler.setting.Binary(
                              "Flag images based on high values?", True, doc='''
-                         Select <i>%(YES)s</i> to flag images with measurements above the specified cutoff.
+                         Select <i>%(cellprofiler.setting.YES)s</i> to flag images with measurements above the specified cutoff.
                          If the measurement evaluates to Not-A-Number (NaN), then the image is not flagged.''' % globals()))
 
         group.append("maximum_value", cellprofiler.setting.Float("Maximum value", 1))
@@ -377,13 +377,13 @@ class FlagImage(cellprofiler.module.Module):
                         self.get_bin_labels(measurement_setting)
                     except IOError:
                         raise cellprofiler.setting.ValidationError(
-                            "Failed to load classifier file %s" % 
-                            measurement_setting.rules_file_name.value, 
+                            "Failed to load classifier file %s" %
+                            measurement_setting.rules_file_name.value,
                             measurement_setting.rules_file_name)
                     except:
                         raise cellprofiler.setting.ValidationError(
                         "Unable to load %s as a classifier file" %
-                        measurement_setting.rules_file_name.value, 
+                        measurement_setting.rules_file_name.value,
                         measurement_setting.rules_file_name)
 
     def prepare_to_create_batch(self, workspace, fn_alter_path):
@@ -530,13 +530,13 @@ class FlagImage(cellprofiler.module.Module):
                 from sklearn.externals import joblib
                 d[path_] = joblib.load(path_)
         return d[path_]
-    
+
     def get_classifier(self, measurement_group):
         return self.load_classifier(measurement_group)[0]
-    
+
     def get_bin_labels(self, measurement_group):
         return self.load_classifier(measurement_group)[1]
-    
+
     def get_classifier_features(self, measurement_group):
         return self.load_classifier(measurement_group)[3]
 
@@ -637,7 +637,7 @@ class FlagImage(cellprofiler.module.Module):
             for feature_name in self.get_classifier_features(ms):
                 feature_name = feature_name.split("_", 1)[1]
                 features.append(feature_name)
-    
+
             feature_vector = numpy.array([
                 0 if feature_name not in image_features else
                 workspace.measurements[cellprofiler.measurement.IMAGE, feature_name]
@@ -653,17 +653,17 @@ class FlagImage(cellprofiler.module.Module):
                                       ms.source_choice)
         is_rc = ms.source_choice in (S_RULES, S_CLASSIFIER)
         is_meas = not is_rc
-        fail = (( is_meas and 
-                 (fail or (ms.wants_minimum.value and 
+        fail = (( is_meas and
+                 (fail or (ms.wants_minimum.value and
                            min_value < ms.minimum_value.value) or
                   (ms.wants_maximum.value and
                    max_value > ms.maximum_value.value))) or
                 (is_rc and fail))
-        
-        return ((not fail), (source, 
-                             ms.measurement.value if is_meas 
-                             else ms.source_choice.value, 
-                             display_value, 
+
+        return ((not fail), (source,
+                             ms.measurement.value if is_meas
+                             else ms.source_choice.value,
+                             display_value,
                              "Fail" if fail else "Pass"))
 
     def get_measurement_columns(self, pipeline):

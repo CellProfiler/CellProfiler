@@ -92,12 +92,12 @@ class EditObjectsManually(cellprofiler.modules.identify.Identify):
             the neurites of neurons may cross each other and might need to
             be edited with overlapping allowed, whereas a monolayer of cells
             might be best edited with overlapping off. <br>
-            Select <i>%(YES)s</i> to allow overlaps or select <i>%(NO)s</i>
+            Select <i>%(cellprofiler.setting.YES)s</i> to allow overlaps or select <i>%(cellprofiler.setting.NO)s</i>
             to prevent them.""" % globals())
 
         self.wants_outlines = cellprofiler.setting.Binary(
                 "Retain outlines of the edited objects?", False, doc="""
-            Select <i>%(YES)s</i> if you want to keep images of the outlines
+            Select <i>%(cellprofiler.setting.YES)s</i> if you want to keep images of the outlines
             of the objects that remain after editing. This image
             can be saved by downstream modules or overlayed on other images
             using the <b>OverlayOutlines</b> module.""" % globals())
@@ -128,8 +128,8 @@ class EditObjectsManually(cellprofiler.modules.identify.Identify):
 
         self.wants_image_display = cellprofiler.setting.Binary(
                 "Display a guiding image?", True, doc="""
-            Select <i>%(YES)s</i> to display an image and outlines of the objects. <br>
-            Select <i>%(NO)s</i> if you do not want a guide image while editing""" % globals())
+            Select <i>%(cellprofiler.setting.YES)s</i> to display an image and outlines of the objects. <br>
+            Select <i>%(cellprofiler.setting.NO)s</i> if you do not want a guide image while editing""" % globals())
 
         self.image_name = cellprofiler.setting.ImageNameSubscriber(
                 "Select the guiding image", cellprofiler.setting.NONE, doc="""

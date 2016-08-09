@@ -109,7 +109,7 @@ class RelateObjects(cellprofiler.module.Module):
         self.wants_step_parent_distances = cellprofiler.setting.Binary(
                 "Calculate distances to other parents?", False, doc="""
             <i>(Used only if calculating distances)</i><br>
-            Select <i>%(YES)s</i> to calculate the distances of the child objects to
+            Select <i>%(cellprofiler.setting.YES)s</i> to calculate the distances of the child objects to
             some other objects. These objects must be either parents or
             children of your parent object in order for this module to
             determine the distances. For instance, you might find "Nuclei" using
@@ -130,7 +130,7 @@ class RelateObjects(cellprofiler.module.Module):
         self.wants_per_parent_means = cellprofiler.setting.Binary(
                 'Calculate per-parent means for all child measurements?',
                 False, doc="""
-            Select <i>%(YES)s</i> to calculate the per-parent mean values of every upstream
+            Select <i>%(cellprofiler.setting.YES)s</i> to calculate the per-parent mean values of every upstream
             measurement made with the children objects and stores them as a
             measurement for the parent; the nomenclature of this new measurements is
             "Mean_&lt;child&gt;_&lt;category&gt;_&lt;feature&gt;".

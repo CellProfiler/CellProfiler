@@ -82,8 +82,8 @@ class FlipAndRotate(cellprofiler.module.Module):
                 "Crop away the rotated edges?", True, doc='''
             <i>(Used only when rotating images)</i> <br>
             When an image is rotated, there will be black space at the
-            corners/edges; select <i>%(YES)s</i> to crop away the incomplete rows
-            and columns of the image, or select <i>%(NO)s</i> to leave it as-is.
+            corners/edges; select <i>%(cellprofiler.setting.YES)s</i> to crop away the incomplete rows
+            and columns of the image, or select <i>%(cellprofiler.setting.NO)s</i> to leave it as-is.
             <p>This cropping will produce an image that
             is not exactly the same size as the original, which may affect
             downstream modules.</p>''' % globals())

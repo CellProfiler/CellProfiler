@@ -124,10 +124,10 @@ class MaskObjects(cellprofiler.modules.identify.Identify):
             This option reverses the foreground/background relationship of
             the mask.
             <ul>
-            <li>Select <i>%(NO)s</i> for the mask to be composed of the foregound
+            <li>Select <i>%(cellprofiler.setting.NO)s</i> for the mask to be composed of the foregound
             (white portion) of the masking image or the area within the masking
             objects.</li>
-            <li>Select <i>%(YES)s</i> for the mask to instead be composed of the
+            <li>Select <i>%(cellprofiler.setting.YES)s</i> for the mask to instead be composed of the
             <i>background</i> (black portions) of the masking image or the area
             <i>outside</i> the masking objects.</li>
             </ul>""" % globals())

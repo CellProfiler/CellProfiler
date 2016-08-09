@@ -143,7 +143,7 @@ proper use of metadata for grouping"""
 
 from cellprofiler.setting import YES, NO
 
-RETAINING_OUTLINES_HELP = """Select <i>%(YES)s</i> to retain the outlines of the new objects
+RETAINING_OUTLINES_HELP = """Select <i>%(cellprofiler.setting.YES)s</i> to retain the outlines of the new objects
 for later use in the pipeline. For example, a common use is for quality control purposes by
 overlaying them on your image of choice using the <b>OverlayOutlines</b> module and then saving
 the overlay image with the <b>SaveImages</b> module.""" % locals()

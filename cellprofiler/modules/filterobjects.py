@@ -301,7 +301,7 @@ class FilterObjects(cellprofiler.module.Module):
         group.append("wants_minimum", cellprofiler.setting.Binary(
             'Filter using a minimum measurement value?', True, doc="""
             <i>(Used only if %(FI_LIMITS)s is selected for filtering method)</i><br>
-            Select <i>%(YES)s</i> to filter the objects based on a minimum acceptable object
+            Select <i>%(cellprofiler.setting.YES)s</i> to filter the objects based on a minimum acceptable object
             measurement value. Objects which are greater than or equal to this value
             will be retained.""" % globals()))
 
@@ -310,7 +310,7 @@ class FilterObjects(cellprofiler.module.Module):
         group.append("wants_maximum", cellprofiler.setting.Binary(
             'Filter using a maximum measurement value?', True, doc="""
             <i>(Used only if %(FI_LIMITS)s is selected for filtering method)</i><br>
-            Select <i>%(YES)s</i> to filter the objects based on a maximum acceptable object
+            Select <i>%(cellprofiler.setting.YES)s</i> to filter the objects based on a maximum acceptable object
             measurement value. Objects which are less than or equal to this value
             will be retained.""" % globals()))
 

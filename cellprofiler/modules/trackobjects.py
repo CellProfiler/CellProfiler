@@ -360,7 +360,7 @@ class TrackObjects(cellprofiler.module.Module):
             the LAP method depends on the results of the first phase. Therefore, it is a good idea to
             optimize the first phase settings as the initial step.
             <ul>
-            <li>You can disable 2nd phase calculation by selecting <i>%(NO)s</i> for "Run the second
+            <li>You can disable 2nd phase calculation by selecting <i>%(cellprofiler.setting.NO)s</i> for "Run the second
             phase of the LAP algorithm?"</li>
             <li>By maximizing the number of correct frame-to-frame links in the first phase, the
             2nd phase will have less candidates to consider for linking and have a better chance of
@@ -509,8 +509,8 @@ class TrackObjects(cellprofiler.module.Module):
         self.wants_second_phase = cellprofiler.setting.Binary(
                 "Run the second phase of the LAP algorithm?", True, doc="""
             <i>(Used only if the %(TM_LAP)s tracking method is applied)</i><br>
-            Select <i>%(YES)s</i> to run the second phase of the LAP algorithm
-            after processing all images. Select <i>%(NO)s</i> to omit the
+            Select <i>%(cellprofiler.setting.YES)s</i> to run the second phase of the LAP algorithm
+            after processing all images. Select <i>%(cellprofiler.setting.NO)s</i> to omit the
             second phase or to perform the second phase when running the module
             as a data tool.
 
@@ -707,7 +707,7 @@ class TrackObjects(cellprofiler.module.Module):
 
         self.wants_lifetime_filtering = cellprofiler.setting.Binary(
                 'Filter objects by lifetime?', False, doc='''
-            Select <i>%(YES)s</i> if you want objects to be filtered by their
+            Select <i>%(cellprofiler.setting.YES)s</i> if you want objects to be filtered by their
             lifetime, i.e., total duration in frames. This is useful for
             marking objects which transiently appear and disappear, such
             as the results of a mis-segmentation. <br>
@@ -726,7 +726,7 @@ class TrackObjects(cellprofiler.module.Module):
         self.wants_minimum_lifetime = cellprofiler.setting.Binary(
                 'Filter using a minimum lifetime?', True, doc='''
             <i>(Used only if objects are filtered by lifetime)</i><br>
-            Select <i>%(YES)s</i> to filter the object on the basis of a minimum number of frames.''' % globals())
+            Select <i>%(cellprofiler.setting.YES)s</i> to filter the object on the basis of a minimum number of frames.''' % globals())
 
         self.min_lifetime = cellprofiler.setting.Integer(
                 'Minimum lifetime', 1, minval=1, doc="""
@@ -736,7 +736,7 @@ class TrackObjects(cellprofiler.module.Module):
         self.wants_maximum_lifetime = cellprofiler.setting.Binary(
                 'Filter using a maximum lifetime?', False, doc='''
             <i>(Used only if objects are filtered by lifetime)</i><br>
-            Select <i>%(YES)s</i> to filter the object on the basis of a maximum number of frames.''' % globals())
+            Select <i>%(cellprofiler.setting.YES)s</i> to filter the object on the basis of a maximum number of frames.''' % globals())
 
         self.max_lifetime = cellprofiler.setting.Integer(
                 'Maximum lifetime', 100, doc="""
@@ -755,7 +755,7 @@ class TrackObjects(cellprofiler.module.Module):
 
         self.wants_image = cellprofiler.setting.Binary(
                 "Save color-coded image?", False, doc="""
-            Select <i>%(YES)s</i> to retain the image showing the tracked objects
+            Select <i>%(cellprofiler.setting.YES)s</i> to retain the image showing the tracked objects
             for later use in the pipeline. For example, a common use is for quality control purposes
             saving the image with the <b>SaveImages</b> module.
             <p>Please note that if you are using the second phase of the %(TM_LAP)s method,

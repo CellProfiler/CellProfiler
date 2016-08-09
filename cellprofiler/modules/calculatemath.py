@@ -196,7 +196,7 @@ class CalculateMath(cellprofiler.module.Module):
 
         self.wants_log = cellprofiler.setting.Binary(
                 "Take log10 of result?", False, doc="""
-            Select <i>%(YES)s</i> if you want the log (base 10) of the result.""" % globals())
+            Select <i>%(cellprofiler.setting.YES)s</i> if you want the log (base 10) of the result.""" % globals())
 
         self.final_multiplicand = cellprofiler.setting.Float(
                 "Multiply the result by", 1, doc="""
@@ -214,7 +214,7 @@ class CalculateMath(cellprofiler.module.Module):
 
         self.constrain_lower_bound = cellprofiler.setting.Binary(
                 "Constrain the result to a lower bound?", False, doc="""
-            Select <i>%(YES)s</i> if you want the result to be
+            Select <i>%(cellprofiler.setting.YES)s</i> if you want the result to be
             constrained to a lower bound.""" % globals())
 
         self.lower_bound = cellprofiler.setting.Float(
@@ -223,7 +223,7 @@ class CalculateMath(cellprofiler.module.Module):
 
         self.constrain_upper_bound = cellprofiler.setting.Binary(
                 "Constrain the result to an upper bound?", False, doc="""
-            Select <i>%(YES)s</i> if you want the result to be
+            Select <i>%(cellprofiler.setting.YES)s</i> if you want the result to be
             constrained to an upper bound.""" % globals())
 
         self.upper_bound = cellprofiler.setting.Float(

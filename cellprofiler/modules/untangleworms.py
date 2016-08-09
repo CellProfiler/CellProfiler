@@ -304,9 +304,9 @@ class UntangleWorms(cellprofiler.module.Module):
 
         self.wants_training_set_weights = cellprofiler.setting.Binary(
                 "Use training set weights?", True, doc="""
-            Select <i>%(YES)s</i> to use the overlap and leftover
+            Select <i>%(cellprofiler.setting.YES)s</i> to use the overlap and leftover
             weights from the training set.
-            <p>Select <i>%(NO)s</i> to override
+            <p>Select <i>%(cellprofiler.setting.NO)s</i> to override
             these weights with user-specified values.</p>""" % globals())
 
         self.override_overlap_weight = cellprofiler.setting.Float(

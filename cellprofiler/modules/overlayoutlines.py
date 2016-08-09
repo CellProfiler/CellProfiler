@@ -53,9 +53,9 @@ class OverlayOutlines(cellprofiler.module.Module):
         self.blank_image = cellprofiler.setting.Binary(
                 "Display outlines on a blank image?",
                 False, doc="""
-            Select <i>%(YES)s</i> to produce an
+            Select <i>%(cellprofiler.setting.YES)s</i> to produce an
             image of the outlines on a black background.
-            <p>Select <i>%(NO)s</i>, the module will overlay the
+            <p>Select <i>%(cellprofiler.setting.NO)s</i>, the module will overlay the
             outlines on an image of your choosing.</p>""" % globals())
 
         self.image_name = cellprofiler.setting.ImageNameSubscriber(

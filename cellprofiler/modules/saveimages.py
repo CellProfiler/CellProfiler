@@ -205,8 +205,8 @@ class SaveImages(cellprofiler.module.Module):
 
         self.wants_file_name_suffix = cellprofiler.setting.Binary(
                 "Append a suffix to the image file name?", False, doc="""
-            Select <i>%(YES)s</i> to add a suffix to the image's file name.
-            Select <i>%(NO)s</i> to use the image name as-is.""" % globals())
+            Select <i>%(cellprofiler.setting.YES)s</i> to add a suffix to the image's file name.
+            Select <i>%(cellprofiler.setting.NO)s</i> to use the image name as-is.""" % globals())
 
         self.file_name_suffix = cellprofiler.setting.Text(
                 "Text to append to the image name",
@@ -271,10 +271,10 @@ class SaveImages(cellprofiler.module.Module):
 
         self.overwrite = cellprofiler.setting.Binary(
                 "Overwrite existing files without warning?", False, doc="""
-            Select <i>%(YES)s</i> to automatically overwrite a file if it already exists.
-            Select <i>%(NO)s</i> to be prompted for confirmation first.
+            Select <i>%(cellprofiler.setting.YES)s</i> to automatically overwrite a file if it already exists.
+            Select <i>%(cellprofiler.setting.NO)s</i> to be prompted for confirmation first.
             <p>If you are running the pipeline on a computing cluster,
-            select <i>%(YES)s</i> since you will not be able to intervene and answer the confirmation prompt.</p>""" % globals())
+            select <i>%(cellprofiler.setting.YES)s</i> since you will not be able to intervene and answer the confirmation prompt.</p>""" % globals())
 
         self.when_to_save = cellprofiler.setting.Choice(
                 "When to save",
@@ -296,7 +296,7 @@ class SaveImages(cellprofiler.module.Module):
         self.rescale = cellprofiler.setting.Binary(
                 "Rescale the images? ", False, doc="""
             <i>(Used only when saving non-MAT file images)</i><br>
-            Select <i>%(YES)s</i> if you want the image to occupy the full dynamic range of the bit
+            Select <i>%(cellprofiler.setting.YES)s</i> if you want the image to occupy the full dynamic range of the bit
             depth you have chosen. For example, if you save an image to an 8-bit file, the
             smallest grayscale value will be mapped to 0 and the largest value will be mapped
             to 2<sup>8</sup>-1 = 255.
@@ -332,7 +332,7 @@ class SaveImages(cellprofiler.module.Module):
 
         self.update_file_names = cellprofiler.setting.Binary(
                 "Record the file and path information to the saved image?", False, doc="""
-            Select <i>%(YES)s</i> to store filename and pathname data for each of the new files created
+            Select <i>%(cellprofiler.setting.YES)s</i> to store filename and pathname data for each of the new files created
             via this module as a per-image measurement.
             <p>Instances in which this information may be useful include:
             <ul>
@@ -346,7 +346,7 @@ class SaveImages(cellprofiler.module.Module):
 
         self.create_subdirectories = cellprofiler.setting.Binary(
                 "Create subfolders in the output folder?", False, doc="""
-            Select <i>%(YES)s</i> to create subfolders to match the input image folder structure.""" % globals())
+            Select <i>%(cellprofiler.setting.YES)s</i> to create subfolders to match the input image folder structure.""" % globals())
 
         self.root_dir = cellprofiler.setting.DirectoryPath(
                 "Base image folder", doc="""

@@ -113,7 +113,7 @@ class SendEmail(cellprofiler.module.Module):
 
         self.use_authentication = cellprofiler.setting.Binary(
                 "Username and password required to login?", False, doc="""
-            Select <i>%(YES)s</i> if you need to enter a username and password
+            Select <i>%(cellprofiler.setting.YES)s</i> if you need to enter a username and password
             to authenticate.""" % globals())
 
         self.username = cellprofiler.setting.Text(

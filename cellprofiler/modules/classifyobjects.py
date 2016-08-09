@@ -186,9 +186,9 @@ class ClassifyObjects(cellprofiler.module.Module):
 
         self.wants_custom_names = cellprofiler.setting.Binary(
                 "Use custom names for the bins?", False, doc="""
-            Select <i>%(YES)s</i> if you want to specify the names of each bin
+            Select <i>%(cellprofiler.setting.YES)s</i> if you want to specify the names of each bin
             measurement. <br>
-            Select <i>%(NO)s</i> to create names based on the
+            Select <i>%(cellprofiler.setting.NO)s</i> to create names based on the
             measurements. For instance, for
             "Intensity_MeanIntensity_Green" and "Intensity_TotalIntensity_Blue",
             the module generates measurements such as
@@ -222,7 +222,7 @@ class ClassifyObjects(cellprofiler.module.Module):
 
         self.wants_image = cellprofiler.setting.Binary(
                 "Retain an image of the classified objects?", False, doc="""
-            Select <i>%(YES)s</i> to retain the image of the objects color-coded according
+            Select <i>%(cellprofiler.setting.YES)s</i> to retain the image of the objects color-coded according
             to their classification, for use later in the pipeline (for example,
             to be saved by a <b>SaveImages</b> module).""" % globals())
 
@@ -291,8 +291,8 @@ class ClassifyObjects(cellprofiler.module.Module):
 
         group.append("wants_low_bin", cellprofiler.setting.Binary(
                 "Use a bin for objects below the threshold?", False, doc="""
-            Select <i>%(YES)s</i> if you want to create a bin for objects
-            whose values fall below the low threshold. Select <i>%(NO)s</i>
+            Select <i>%(cellprofiler.setting.YES)s</i> if you want to create a bin for objects
+            whose values fall below the low threshold. Select <i>%(cellprofiler.setting.NO)s</i>
             if you do not want a bin for these objects.
             """ % globals()))
 
@@ -310,9 +310,9 @@ class ClassifyObjects(cellprofiler.module.Module):
 
         group.append("wants_high_bin", cellprofiler.setting.Binary(
                 "Use a bin for objects above the threshold?", False, doc="""
-            Select <i>%(YES)s</i> if you want to create a bin for objects
+            Select <i>%(cellprofiler.setting.YES)s</i> if you want to create a bin for objects
             whose values are above the high threshold. <br>
-            Select <i>%(NO)s</i> if you do not want a bin for these objects.""" % globals()))
+            Select <i>%(cellprofiler.setting.NO)s</i> if you do not want a bin for these objects.""" % globals()))
 
         group.append("custom_thresholds", cellprofiler.setting.Text(
                 "Enter the custom thresholds separating the values between bins",
@@ -326,9 +326,9 @@ class ClassifyObjects(cellprofiler.module.Module):
 
         group.append("wants_custom_names", cellprofiler.setting.Binary(
                 "Give each bin a name?", False, doc="""
-            Select <i>%(YES)s</i> to assign custom names to bins you have
+            Select <i>%(cellprofiler.setting.YES)s</i> to assign custom names to bins you have
             specified.
-            <p>Select <i>%(NO)s</i> for the module to automatically
+            <p>Select <i>%(cellprofiler.setting.NO)s</i> for the module to automatically
             assign names based on the measurements and the bin number.""" % globals()))
 
         group.append("bin_names", cellprofiler.setting.Text(
@@ -339,7 +339,7 @@ class ClassifyObjects(cellprofiler.module.Module):
 
         group.append("wants_images", cellprofiler.setting.Binary(
                 "Retain an image of the classified objects?", False, doc="""
-            Select <i>%(YES)s</i> to keep an image of the objects which is color-coded according
+            Select <i>%(cellprofiler.setting.YES)s</i> to keep an image of the objects which is color-coded according
             to their classification, for use later in the pipeline (for example,
             to be saved by a <b>SaveImages</b> module).""" % globals()))
 

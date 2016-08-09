@@ -198,14 +198,14 @@ class CalculateStatistics(cellprofiler.module.Module):
 
         group.append("log_transform", cellprofiler.setting.Binary(
                 "Log-transform the dose values?", False, doc='''
-            Select <i>%(YES)s</i> if you have dose-response data and you want to log-transform
+            Select <i>%(cellprofiler.setting.YES)s</i> if you have dose-response data and you want to log-transform
             the dose values before fitting a sigmoid curve.
-            <p>Select <i>%(NO)s</i> if your data values indicate only positive vs. negative
+            <p>Select <i>%(cellprofiler.setting.NO)s</i> if your data values indicate only positive vs. negative
             controls.</p>''' % globals()))
 
         group.append('wants_save_figure', cellprofiler.setting.Binary(
                 '''Create dose/response plots?''', False, doc='''<a name='wants_save_figure'></a>
-            Select <i>%(YES)s</i> if you want to create and save
+            Select <i>%(cellprofiler.setting.YES)s</i> if you want to create and save
             dose response plots. You will be asked for information on how to save the plots.''' % globals()))
 
         group.append('figure_name', cellprofiler.setting.Text(

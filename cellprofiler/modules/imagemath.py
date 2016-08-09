@@ -137,17 +137,17 @@ class ImageMath(cellprofiler.module.Module):
         self.truncate_low = cellprofiler.setting.Binary(
                 "Set values less than 0 equal to 0?", True, doc="""
             Values outside the range 0 to 1 might not be handled well by other modules.
-            Select <i>%(YES)s</i> to set negative values to 0.""" % globals())
+            Select <i>%(cellprofiler.setting.YES)s</i> to set negative values to 0.""" % globals())
 
         self.truncate_high = cellprofiler.setting.Binary(
                 "Set values greater than 1 equal to 1?", True, doc="""
             Values outside the range 0 to 1 might not be handled well by other modules.
-            Select <i>%(YES)s</i> to set values greater than 1 to a maximum value of 1.""" % globals())
+            Select <i>%(cellprofiler.setting.YES)s</i> to set values greater than 1 to a maximum value of 1.""" % globals())
 
         self.ignore_mask = cellprofiler.setting.Binary(
                 "Ignore the image masks?", False, doc="""
             Usually, the smallest mask of all image operands is applied after
-            image math has been completed. Select <i>%(YES)s</i> to set
+            image math has been completed. Select <i>%(cellprofiler.setting.YES)s</i> to set
             equal to zero all previously masked pixels and operate on the masked
             images as if no mask had been applied.""" % globals())
 

@@ -130,7 +130,7 @@ class CorrectIlluminationCalculate(cellprofiler.module.Module):
             should be dilated with a Gaussian filter in the final averaged
             (projection) image. This is for a sophisticated method of illumination
             correction where model objects are produced.
-            Select <i>%(YES)s</i> to dilate objects for this approach.
+            Select <i>%(cellprofiler.setting.YES)s</i> to dilate objects for this approach.
             ''' % globals())
 
         self.object_dilation_radius = cellprofiler.setting.Integer(
@@ -150,11 +150,11 @@ class CorrectIlluminationCalculate(cellprofiler.module.Module):
             The illumination function can be rescaled so that the pixel intensities
             are all equal to or greater than 1. You have the following options:
             <ul>
-            <li><i>%(YES)s:</i> Rescaling is recommended if you plan to
+            <li><i>%(cellprofiler.setting.YES)s:</i> Rescaling is recommended if you plan to
             use the <i>%(IC_REGULAR)s</i> method (and hence, the <i>%(DOS_DIVIDE)s</i> option in
             <b>CorrectIlluminationApply</b>) so that the corrected images are in the
             range 0 to 1.</li>
-            <li><i>%(NO)s:</i> Rescaling is not recommended if you plan to use the <i>%(IC_BACKGROUND)s</i>
+            <li><i>%(cellprofiler.setting.NO)s:</i> Rescaling is not recommended if you plan to use the <i>%(IC_BACKGROUND)s</i>
             method, which is paired with the <i>%(DOS_SUBTRACT)s</i> option in <b>CorrectIlluminationApply</b>.
             Note that as a result of the illumination function being rescaled from 1 to
             infinity, the rescaling of each image might be dramatic if there is substantial
@@ -288,7 +288,7 @@ class CorrectIlluminationCalculate(cellprofiler.module.Module):
             prior to dilation or smoothing. It is an image produced during the calculations, not typically
             needed for downstream modules. It can be helpful to retain it in case you wish to try several
             different smoothing methods without taking the time to recalculate the averaged image each time.
-            <p>Select <i>%(YES)s</i> to retain this averaged image. Use the <b>SaveImages</b> module to save
+            <p>Select <i>%(cellprofiler.setting.YES)s</i> to retain this averaged image. Use the <b>SaveImages</b> module to save
             it to your hard drive.</p>''' % globals())
 
         self.average_image_name = cellprofiler.setting.ImageNameProvider(
@@ -300,7 +300,7 @@ class CorrectIlluminationCalculate(cellprofiler.module.Module):
                 "Retain the dilated image?", False, doc='''
             The dilated image is the illumination function after dilation but prior to smoothing.
             It is an image produced during the calculations, and is not typically needed for downstream modules.
-            <p>Select <i>%(YES)s</i> to retain this dilated image. Use the <b>SaveImages</b> module to save it
+            <p>Select <i>%(cellprofiler.setting.YES)s</i> to retain this dilated image. Use the <b>SaveImages</b> module to save it
             to your hard drive.</p>''' % globals())
 
         self.dilated_image_name = cellprofiler.setting.ImageNameProvider(
@@ -311,9 +311,9 @@ class CorrectIlluminationCalculate(cellprofiler.module.Module):
         self.automatic_splines = cellprofiler.setting.Binary(
                 "Automatically calculate spline parameters?", True, doc="""
             <i>(Used only if %(SM_SPLINES)s are selected for the smoothing method)</i><br>
-            Select <i>%(YES)s</i> to automatically calculate
+            Select <i>%(cellprofiler.setting.YES)s</i> to automatically calculate
             the parameters for spline fitting.
-            <p>Select <i>%(NO)s</i> to specify the background mode, background threshold, scale,
+            <p>Select <i>%(cellprofiler.setting.NO)s</i> to specify the background mode, background threshold, scale,
             maximum number of iterations and convergence.</p>""" % globals())
 
         self.spline_bg_mode = cellprofiler.setting.Choice(

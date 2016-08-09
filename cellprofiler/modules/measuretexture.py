@@ -195,8 +195,8 @@ class MeasureTexture(cellprofiler.module.Module):
                 "Measure Gabor features?", True, doc=
                 """The Gabor features measure striped texture in an object, and can
                 take a substantial time to calculate.
-                <p>Select <i>%(YES)s</i> to measure the Gabor features. Select
-                <i>%(NO)s</i> to skip the Gabor feature calculation if it is not
+                <p>Select <i>%(cellprofiler.setting.YES)s</i> to measure the Gabor features. Select
+                <i>%(cellprofiler.setting.NO)s</i> to skip the Gabor feature calculation if it is not
                 informative for your images.</p>""" % globals())
 
         self.gabor_angles = cellprofiler.setting.Integer("Number of angles to compute for Gabor", 4, 2, doc="""

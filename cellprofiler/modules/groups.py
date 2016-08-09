@@ -119,7 +119,7 @@ class Groups(cellprofiler.module.Module):
 
         self.wants_groups = cellprofiler.setting.Binary(
                 "Do you want to group your images?", False, doc="""
-            Select <i>%(YES)s</i> if you need to split your images into image subsets (or <i>groups</i>) such that each
+            Select <i>%(cellprofiler.setting.YES)s</i> if you need to split your images into image subsets (or <i>groups</i>) such that each
             group is processed independently of each other. See the main module
             help for more details.""" % globals())
 

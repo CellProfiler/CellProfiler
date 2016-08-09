@@ -85,7 +85,7 @@ class MeasureImageAreaOccupied(cellprofiler.module.Module):
                         "Retain a binary image of the object regions?",
                         False, doc="""
                     <i>(Used only if '%(O_OBJECTS)s' are to be measured)</i><br>
-                    Select <i>%(YES)s</i> if you would like to use a binary image
+                    Select <i>%(cellprofiler.setting.YES)s</i> if you would like to use a binary image
                     later in the pipeline, for example in <b>SaveImages</b>.  The image will
                     display the object area that you have measured as the foreground
                     in white and the background in black. """ % globals())

@@ -332,7 +332,7 @@ class LoadData(cellprofiler.module.Module):
                 "Press to view CSV file contents", "View...", self.browse_csv)
 
         self.wants_images = cellprofiler.setting.Binary("Load images based on this data?", True, doc="""
-            Select <i>%(YES)s</i> to have <b>LoadData</b> load images using the <i>Image_FileName</i> field and the
+            Select <i>%(cellprofiler.setting.YES)s</i> to have <b>LoadData</b> load images using the <i>Image_FileName</i> field and the
             <i>Image_PathName</i> fields (the latter is optional).""" % globals())
 
         self.rescale = cellprofiler.setting.Binary(
@@ -343,10 +343,10 @@ class LoadData(cellprofiler.module.Module):
             For instance, a microscope might acquire images using a 12-bit
             A/D converter which outputs intensity values between zero and 4095,
             but stores the values in a field that can take values up to 65535.
-            <p>Select <i>%(YES)s</i> to rescale the image intensity so that
+            <p>Select <i>%(cellprofiler.setting.YES)s</i> to rescale the image intensity so that
             saturated values are rescaled to 1.0 by dividing all pixels
             in the image by the maximum possible intensity value. </p>
-            <p>Select <i>%(NO)s</i> to ignore the image metadata and rescale the image
+            <p>Select <i>%(cellprofiler.setting.NO)s</i> to ignore the image metadata and rescale the image
             to 0 &ndash; 1.0 by dividing by 255 or 65535, depending on the number
             of bits used to store the image.</p>""" % globals())
 
@@ -366,7 +366,7 @@ class LoadData(cellprofiler.module.Module):
 
         self.wants_image_groupings = cellprofiler.setting.Binary(
                 "Group images by metadata?", False, doc="""
-            Select <i>%(YES)s</i> to break the image sets in an experiment into groups
+            Select <i>%(cellprofiler.setting.YES)s</i> to break the image sets in an experiment into groups
             that can be processed by different nodes on a computing cluster. Each set of
             files that share your selected metadata tags will be processed
             together. See <b>CreateBatchFiles</b> for details on submitting a
@@ -383,7 +383,7 @@ class LoadData(cellprofiler.module.Module):
         self.wants_rows = cellprofiler.setting.Binary(
                 "Process just a range of rows?",
                 False, doc="""
-            Select <i>%(YES)s</i> if you want to process a subset of the rows in the CSV file.
+            Select <i>%(cellprofiler.setting.YES)s</i> if you want to process a subset of the rows in the CSV file.
             Rows are numbered starting at 1 (but do not count the header line).
             <b>LoadData</b> will process up to and including the end row.""" % globals())
 

@@ -115,9 +115,9 @@ class IdentifyDeadWorms(cellprofiler.module.Module):
             <b>IdentifyDeadWorms</b> automatically calculates the parameters
             used to determine whether two found-worm centers belong to the
             same worm.
-            <p>Select <i>%(YES)s</i> to have <b>IdentifyDeadWorms</b>
+            <p>Select <i>%(cellprofiler.setting.YES)s</i> to have <b>IdentifyDeadWorms</b>
             automatically calculate the distance from the worm length
-            and width. Select <i>%(NO)s</i> to set the distances manually.</p>""" % globals())
+            and width. Select <i>%(cellprofiler.setting.NO)s</i> to set the distances manually.</p>""" % globals())
 
         self.space_distance = cellprofiler.setting.Float(
                 "Spatial distance", 5, minval=1, doc="""

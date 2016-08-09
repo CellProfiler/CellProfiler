@@ -185,7 +185,7 @@ class StraightenWorms(cellprofiler.module.Module):
 
         self.wants_measurements = cellprofiler.setting.Binary(
                 "Measure intensity distribution?", True, doc="""
-            Select <i>%(YES)s</i> to divide a worm into sections
+            Select <i>%(cellprofiler.setting.YES)s</i> to divide a worm into sections
             and measure the intensities of each section in each of the
             straightened images. These measurements can help classify
             phenotypes if the staining pattern across the segments differs

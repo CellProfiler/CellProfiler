@@ -403,10 +403,10 @@ class ExportToDatabase(cellprofiler.module.Module):
             <i>Per_Object</i> for the per-object table. Adding a prefix can be useful
             for bookkeeping purposes.
             <ul>
-            <li>Select <i>%(YES)s</i> to add a user-specified prefix to the default table names.
+            <li>Select <i>%(cellprofiler.setting.YES)s</i> to add a user-specified prefix to the default table names.
             If you want to distinguish multiple sets of data written to the same
             database, you probably want to use a prefix.</li>
-            <li>Select <i>%(NO)s</i> to use the default table names. For a one-time export of
+            <li>Select <i>%(cellprofiler.setting.NO)s</i> to use the default table names. For a one-time export of
             data, this option is fine. </li>
             </ul>
             Whether you chose to use a prefix or not, CellProfiler will warn
@@ -448,7 +448,7 @@ class ExportToDatabase(cellprofiler.module.Module):
         self.save_cpa_properties = cellprofiler.setting.Binary(
                 "Create a CellProfiler Analyst properties file?",
                 False, doc="""
-            Select <i>%(YES)s</i> to generate a template properties file that will allow you to use
+            Select <i>%(cellprofiler.setting.YES)s</i> to generate a template properties file that will allow you to use
             your new database with CellProfiler Analyst (a data
             exploration tool which can also be downloaded from
             <a href="http://www.cellprofiler.org/">http://www.cellprofiler.org/</a>).
@@ -541,14 +541,14 @@ class ExportToDatabase(cellprofiler.module.Module):
         self.properties_export_all_image_defaults = cellprofiler.setting.Binary(
                 "Include information for all images, using default values?", True, doc="""
             <i>(Used only if creating a properties file)</i><br>
-            Select <i>%(YES)s</i> to include information in the properties file for all images. This
+            Select <i>%(cellprofiler.setting.YES)s</i> to include information in the properties file for all images. This
             option will do the following:
             <ul>
             <li>All images loaded using the <b>Input</b> modules or saved in <b>SaveImages</b> will be included.</li>
             <li>The CellProfiler image name will be used for the <i>image_name</i> field.</li>
             <li>A channel color listed in the <i>image_channel_colors</i> field will be assigned to the image by default order.</li>
             </ul>
-            <p>Select <i>%(NO)s</i> to specify which images should be included or to override the automatic values.</p>""" % globals())
+            <p>Select <i>%(cellprofiler.setting.NO)s</i> to specify which images should be included or to override the automatic values.</p>""" % globals())
 
         self.image_groups = []
         self.image_group_count = cellprofiler.setting.HiddenCount(self.image_groups, "Properties image group count")
@@ -561,7 +561,7 @@ class ExportToDatabase(cellprofiler.module.Module):
             <i>(Used only if creating a properties file)</i><br>
             <b>Please note that "groups" as defined by CellProfiler Analyst has nothing to do with "grouping" as defined by
             CellProfiler in the Groups module.</b>
-            <p>Select <i>%(YES)s</i> to define a "group" for your image data (for example, when several images represent the same experimental
+            <p>Select <i>%(cellprofiler.setting.YES)s</i> to define a "group" for your image data (for example, when several images represent the same experimental
             sample), by providing column(s) that identify unique images (the <i>image key</i>) to another set of columns
             (the <i>group key</i>).</p>
             <p>The format for a group in CPA is:<br>
@@ -583,14 +583,14 @@ class ExportToDatabase(cellprofiler.module.Module):
         self.properties_wants_filters = cellprofiler.setting.Binary(
                 "Do you want to add filter fields?", False, doc=
                 """<i>(Used only if creating a properties file)</i><br>
-                Select <i>%(YES)s</i> to specify a subset of the images in your experiment by defining a <i>filter</i>.
+                Select <i>%(cellprofiler.setting.YES)s</i> to specify a subset of the images in your experiment by defining a <i>filter</i>.
                 Filters are useful, for example, for fetching and scoring objects in Classifier or making graphs using the
                 plotting tools that satisfy a specific metadata contraint. """ % globals())
 
         self.create_filters_for_plates = cellprofiler.setting.Binary(
                 "Automatically create a filter for each plate?", False, doc="""
             <i>(Used only if creating a properties file and specifiying an image data filter)</i><br>
-            If you have specified a plate metadata tag, selecting <i>%(YES)s</i> to create a set of filters
+            If you have specified a plate metadata tag, selecting <i>%(cellprofiler.setting.YES)s</i> to create a set of filters
             in the properties file, one for each plate.""" % globals())
 
         self.filter_field_groups = []
@@ -631,7 +631,7 @@ class ExportToDatabase(cellprofiler.module.Module):
 
         self.create_workspace_file = cellprofiler.setting.Binary(
                 "Create a CellProfiler Analyst workspace file?", False, doc="""
-            Select <i>%(YES)s</i> to generate a workspace file for use with
+            Select <i>%(cellprofiler.setting.YES)s</i> to generate a workspace file for use with
             CellProfiler Analyst, a data exploration tool which can
             also be downloaded from <a href="http://www.cellprofiler.org/">
             http://www.cellprofiler.org/</a>. A workspace file allows you
@@ -672,7 +672,7 @@ class ExportToDatabase(cellprofiler.module.Module):
 
         self.wants_agg_mean = cellprofiler.setting.Binary(
                 "Calculate the per-image mean values of object measurements?", True, doc="""
-            Select <i>%(YES)s</i> for <b>ExportToDatabase</b> to calculate population statistics over all the objects in each image
+            Select <i>%(cellprofiler.setting.YES)s</i> for <b>ExportToDatabase</b> to calculate population statistics over all the objects in each image
             and store the results in the database. For instance, if
             you are measuring the area of the Nuclei objects and you check the box for this option, <b>ExportToDatabase</b> will create a column in the Per_Image
             table called "Mean_Nuclei_AreaShape_Area".
@@ -693,7 +693,7 @@ class ExportToDatabase(cellprofiler.module.Module):
 
         self.wants_agg_mean_well = cellprofiler.setting.Binary(
                 "Calculate the per-well mean values of object measurements?", False, doc='''
-            Select <i>%(YES)s</i> for <b>ExportToDatabase</b> to calculate statistics over all the objects in each well
+            Select <i>%(cellprofiler.setting.YES)s</i> for <b>ExportToDatabase</b> to calculate statistics over all the objects in each well
             and store the results as columns in a "per-well" table in the database. For instance,
             if you are measuring the area of the Nuclei objects and you check the aggregate
             mean box in this module, <b>ExportToDatabase</b> will create a table in the database called
@@ -709,7 +709,7 @@ class ExportToDatabase(cellprofiler.module.Module):
 
         self.wants_agg_median_well = cellprofiler.setting.Binary(
                 "Calculate the per-well median values of object measurements?", False, doc='''
-            Select <i>%(YES)s</i> for <b>ExportToDatabase</b> to calculate statistics over all the objects in each well
+            Select <i>%(cellprofiler.setting.YES)s</i> for <b>ExportToDatabase</b> to calculate statistics over all the objects in each well
             and store the results as columns in a "per-well" table in the database. For instance,
             if you are measuring the area of the Nuclei objects and you check the aggregate
             median box in this module, <b>ExportToDatabase</b> will create a table in the database called
@@ -726,7 +726,7 @@ class ExportToDatabase(cellprofiler.module.Module):
 
         self.wants_agg_std_dev_well = cellprofiler.setting.Binary(
                 "Calculate the per-well standard deviation values of object measurements?", False, doc='''
-            Select <i>%(YES)s</i> for <b>ExportToDatabase</b> to calculate statistics over all the objects in each well
+            Select <i>%(cellprofiler.setting.YES)s</i> for <b>ExportToDatabase</b> to calculate statistics over all the objects in each well
             and store the results as columns in a "per-well" table in the database. For instance,
             if you are measuring the area of the Nuclei objects and you check the aggregate
             standard deviation box in this module, <b>ExportToDatabase</b> will create a table in the database called
@@ -764,7 +764,7 @@ class ExportToDatabase(cellprofiler.module.Module):
         self.wants_relationship_table_setting = cellprofiler.setting.Binary(
                 "Export object relationships?", True, doc="""
             <i>(Used only for pipelines which relate objects to each other)</i><br>
-            Select <i>%(YES)s</i> to export object relationships to the
+            Select <i>%(cellprofiler.setting.YES)s</i> to export object relationships to the
             RelationshipsView view. Only certain modules produce
             relationships that can be exported by this setting; see
             the <b>TrackObjects</b>, <b>RelateObjects</b>,
@@ -842,7 +842,7 @@ class ExportToDatabase(cellprofiler.module.Module):
         self.want_image_thumbnails = cellprofiler.setting.Binary(
                 "Write image thumbnails directly to the database?", False, doc="""
             <i>(Used only if %(DB_MYSQL)s or %(DB_SQLITE)s are selected as database type)</i><br>
-            Select %(YES)s if you'd like to write image thumbnails directly
+            Select %(cellprofiler.setting.YES)s if you'd like to write image thumbnails directly
             into the database. This will slow down the writing step, but will
             enable new functionality in CellProfiler Analyst such as quickly
             viewing images in the Plate Viewer tool by selecting "thumbnail"
@@ -861,7 +861,7 @@ class ExportToDatabase(cellprofiler.module.Module):
                 doc="""
             <i>(Used only if %(DB_MYSQL)s or %(DB_SQLITE)s are selected as database type
             and writing thumbnails is selected)</i><br>
-            Select <i>%(YES)s</i> if you'd like to automatically rescale
+            Select <i>%(cellprofiler.setting.YES)s</i> if you'd like to automatically rescale
             the thumbnail pixel intensities to the range 0-1, where 0 is
             black/unsaturated, and 1 is white/saturated.""" % globals())
 
@@ -920,8 +920,8 @@ class ExportToDatabase(cellprofiler.module.Module):
                 "wants_automatic_image_name", cellprofiler.setting.Binary(
                         "Use the image name for the display?", True, doc=
                         """<i>(Used only if creating a properties file and specifiying the image information)</i><br>
-                        Select <i>%(YES)s</i> to use the image name as given above for the displayed name.
-                        <p>Select <i>%(NO)s</i> to name the file yourself.</p>""" % globals()))
+                        Select <i>%(cellprofiler.setting.YES)s</i> to use the image name as given above for the displayed name.
+                        <p>Select <i>%(cellprofiler.setting.NO)s</i> to name the file yourself.</p>""" % globals()))
 
         group.append(
                 "image_name", cellprofiler.setting.Text(

@@ -54,9 +54,9 @@ class CreateWebPage(cellprofiler.module.Module):
 
         self.wants_thumbnails = cellprofiler.setting.Binary(
                 "Use thumbnail images?", False, doc="""
-            Select <i>%(YES)s</i> to display thumbnail images (small versions of the
+            Select <i>%(cellprofiler.setting.YES)s</i> to display thumbnail images (small versions of the
             images) on the web page that link to the full images. <br>
-            Select <i>%(NO)s</i> to display the full image directly on the web page.
+            Select <i>%(cellprofiler.setting.NO)s</i> to display the full image directly on the web page.
             <p>If you are going to use thumbnails, you will need to load
             them using the <b>Input</b> modules; you can also run a separate
             pipeline prior to this one to create thumbnails from your originals
@@ -167,7 +167,7 @@ class CreateWebPage(cellprofiler.module.Module):
                 "Make a ZIP file containing the full-size images?", False, doc="""
             ZIP files are a common archive and data compression file format, making
             it convenient to download all of the images represented on the web page with a single click.
-            Select <i>%(YES)s</i> to create a ZIP file that contains all your images,
+            Select <i>%(cellprofiler.setting.YES)s</i> to create a ZIP file that contains all your images,
             compressed to reduce file size.""" % globals())
 
         self.zipfile_name = cellprofiler.setting.Text(

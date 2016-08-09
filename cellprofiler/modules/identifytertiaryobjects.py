@@ -100,10 +100,10 @@ class IdentifyTertiaryObjects(cellprofiler.module.Module):
 
         self.shrink_primary = cellprofiler.setting.Binary(
                 "Shrink smaller object prior to subtraction?", True, doc="""
-            Select <i>%(YES)s</i> to shrink the smaller object by 1 pixel before subtracting the objects.
+            Select <i>%(cellprofiler.setting.YES)s</i> to shrink the smaller object by 1 pixel before subtracting the objects.
             this approach will ensure that there is always a tertiary object produced, even if it is
             only 1 pixel wide.
-            <p>Select <i>%(NO)s</i> to subtract the objects directly, which will ensure that no pixels
+            <p>Select <i>%(cellprofiler.setting.NO)s</i> to subtract the objects directly, which will ensure that no pixels
             are shared between the primary/secondary/tertiary objects and hence measurements for all
             three sets of objects will not use the same pixels multiple times. However, this may result
             in the creation of objects with no area. Measurements can still be made on such objects, but

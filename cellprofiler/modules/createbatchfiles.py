@@ -74,8 +74,8 @@ class CreateBatchFiles(cellprofiler.module.Module):
         """Create the module settings and name the module"""
         self.wants_default_output_directory = cellprofiler.setting.Binary(
                 "Store batch files in default output folder?", True, doc="""
-            Select <i>%(YES)s</i> to store batch files in the Default Output folder. <br>
-            Select <i>%(NO)s</i> to enter the path to the folder that will be used to store
+            Select <i>%(cellprofiler.setting.YES)s</i> to store batch files in the Default Output folder. <br>
+            Select <i>%(cellprofiler.setting.NO)s</i> to enter the path to the folder that will be used to store
             these files.""" % globals())
 
         self.custom_output_directory = cellprofiler.setting.Text(
@@ -88,10 +88,10 @@ class CreateBatchFiles(cellprofiler.module.Module):
         self.remote_host_is_windows = cellprofiler.setting.Binary(
                 "Are the cluster computers running Windows?",
                 False, doc="""
-            Select <i>%(YES)s</i> if the cluster computers are running one of the Microsoft
+            Select <i>%(cellprofiler.setting.YES)s</i> if the cluster computers are running one of the Microsoft
             Windows operating systems. In this case, <b>CreateBatchFiles</b> will
             modify all paths to use the Windows file separator (backslash &#92;). <br>
-            Select <i>%(NO)s</i> for <b>CreateBatchFiles</b> to modify all paths to use
+            Select <i>%(cellprofiler.setting.NO)s</i> for <b>CreateBatchFiles</b> to modify all paths to use
             the Unix or Macintosh file separator (slash &#47;).""" % globals())
 
         self.batch_mode = cellprofiler.setting.Binary("Hidden: in batch mode", False)

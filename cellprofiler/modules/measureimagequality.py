@@ -162,7 +162,7 @@ class MeasureImageQuality(cellprofiler.module.Module):
         group.append("include_image_scalings", cellprofiler.setting.Binary(
                 "Include the image rescaling value?",
                 True, doc="""
-            Select <i>%(YES)s</i> to add the image's rescaling
+            Select <i>%(cellprofiler.setting.YES)s</i> to add the image's rescaling
             value as a quality control metric. This value is set only for images
             that loaded using the <b>Input</b> modules. This is useful in confirming
             that all images are rescaled by the same value, since some acquisition
@@ -172,7 +172,7 @@ class MeasureImageQuality(cellprofiler.module.Module):
         group.append("check_blur", cellprofiler.setting.Binary(
                 "Calculate blur metrics?",
                 True, doc="""
-            Select <i>%(YES)s</i> to compute a series of blur metrics. The blur metrics are the
+            Select <i>%(cellprofiler.setting.YES)s</i> to compute a series of blur metrics. The blur metrics are the
             following, along with recomendations on their use:
             <ul>
             <li><i>%(F_POWER_SPECTRUM_SLOPE)s:</i> The power spectrum contains the frequency information
@@ -247,7 +247,7 @@ class MeasureImageQuality(cellprofiler.module.Module):
         group.append("check_saturation", cellprofiler.setting.Binary(
                 "Calculate saturation metrics?",
                 True, doc="""
-            Select <i>%(YES)s</i> to calculate the saturation metrics <i>%(F_PERCENT_MAXIMAL)s</i>
+            Select <i>%(cellprofiler.setting.YES)s</i> to calculate the saturation metrics <i>%(F_PERCENT_MAXIMAL)s</i>
             and <i>%(F_PERCENT_MINIMAL)s</i>, i.e., the percentage of pixels at
             the upper or lower limit of each individual image.
             <p>For this calculation, the hard limits of 0 and 1 are not used because images often
@@ -261,7 +261,7 @@ class MeasureImageQuality(cellprofiler.module.Module):
         group.append("check_intensity", cellprofiler.setting.Binary(
                 "Calculate intensity metrics?",
                 True, doc="""
-            Select <i>%(YES)s</i> to calculate image-based
+            Select <i>%(cellprofiler.setting.YES)s</i> to calculate image-based
             intensity measures, namely the mean, maximum, minimum, standard deviation
             and median absolute deviation of pixel intensities. These measures
             are identical to those calculated by <b>MeasureImageIntensity</b>.""" % globals()))
@@ -278,7 +278,7 @@ class MeasureImageQuality(cellprofiler.module.Module):
                 "Use all thresholding methods?",
                 False, doc="""
             <i>(Used only if image thresholds are calculcated)</i><br>
-            Select <i>%(YES)s</i> to calculate thresholds using all the available methods. Only the global methods
+            Select <i>%(cellprofiler.setting.YES)s</i> to calculate thresholds using all the available methods. Only the global methods
             are used. <br>
             While most methods are straightfoward, some methods have additional
             parameters that require special handling:

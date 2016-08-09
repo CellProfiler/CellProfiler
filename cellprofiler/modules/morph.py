@@ -614,11 +614,11 @@ class Morph(cellprofiler.module.Module):
         group.append("rescale_values", cellprofiler.setting.Binary(
                 "Rescale values from 0 to 1?", True, doc="""
             <i>(Used only for the %(F_DISTANCE)s operation).</i>
-            <p>Select <i>%(YES)s</i> to rescale the transformed values to lie between 0 and 1.
+            <p>Select <i>%(cellprofiler.setting.YES)s</i> to rescale the transformed values to lie between 0 and 1.
             This is the option to use if the distance transformed image is to be used
             for thresholding by an <b>Identify</b> module or the like, which assumes
             a 0-1 scaling.</p>
-            <p>Select <i>%(NO)s</i> to leave the values in absolute pixel units.
+            <p>Select <i>%(cellprofiler.setting.NO)s</i> to leave the values in absolute pixel units.
             This useful in cases where the actual pixel distances are to be used
             downstream as input for a measurement module.</p>
             """ % globals()))

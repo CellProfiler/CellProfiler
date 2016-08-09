@@ -280,8 +280,8 @@ class IdentifySecondaryObjects(cellprofiler.modules.identify.Identify):
         self.wants_discard_edge = cellprofiler.setting.Binary(
                 "Discard secondary objects touching the border of the image?",
                 False, doc="""
-            Select <i>%(YES)s</i> to discard secondary objects which touch
-            the image border. Select <i>%(NO)s</i> to retain objects regardless
+            Select <i>%(cellprofiler.setting.YES)s</i> to discard secondary objects which touch
+            the image border. Select <i>%(cellprofiler.setting.NO)s</i> to retain objects regardless
             of whether they touch the image edge or not.
             <p>The objects are discarded
             with respect to downstream measurement modules, but they are retained in memory
@@ -290,14 +290,14 @@ class IdentifySecondaryObjects(cellprofiler.modules.identify.Identify):
 
         self.fill_holes = cellprofiler.setting.Binary(
                 "Fill holes in identified objects?", True, doc="""
-            Select <i>%(YES)s</i> to fill any holes inside objects.""" % globals())
+            Select <i>%(cellprofiler.setting.YES)s</i> to fill any holes inside objects.""" % globals())
 
         self.wants_discard_primary = cellprofiler.setting.Binary(
                 "Discard the associated primary objects?", False, doc="""
             <i>(Used only if discarding secondary objects touching the image border)</i> <br>
             It might be appropriate to discard the primary object
             for any secondary object that touches the edge of the image.
-            <p>Select <i>%(YES)s</i> to create a new set of objects that are identical
+            <p>Select <i>%(cellprofiler.setting.YES)s</i> to create a new set of objects that are identical
             to the original primary objects set, minus the objects for which the associated
             secondary object touches the image edge.</p>""" % globals())
 

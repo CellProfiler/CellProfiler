@@ -111,7 +111,7 @@ class MeasureImageIntensity(cellprofiler.module.Module):
         group.append("wants_objects", cellprofiler.setting.Binary(
                 "Measure the intensity only from areas enclosed by objects?",
                 False, doc="""
-            Select <i>%(YES)s</i> to measure only those pixels within an object of choice.""" % globals()))
+            Select <i>%(cellprofiler.setting.YES)s</i> to measure only those pixels within an object of choice.""" % globals()))
 
         group.append("object_name", cellprofiler.setting.ObjectNameSubscriber(
                 "Select the input objects", cellprofiler.setting.NONE, doc='''

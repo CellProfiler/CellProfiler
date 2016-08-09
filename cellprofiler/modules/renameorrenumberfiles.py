@@ -137,7 +137,7 @@ class RenameOrRenumberFiles(cellprofiler.module.Module):
 
         self.wants_text = cellprofiler.setting.Binary(
                 "Add text to the file name?", False, doc="""
-            Select <i>%(YES)s</i> if you want to add text
+            Select <i>%(cellprofiler.setting.YES)s</i> if you want to add text
             to the file name. If you had chosen <i>%(A_RENUMBER)s</i> above,
             the module will add the text after your number.
             If you had chosen <i>%(A_DELETE)s</i>, the module will replace
@@ -150,9 +150,9 @@ class RenameOrRenumberFiles(cellprofiler.module.Module):
 
         self.wants_to_replace_spaces = cellprofiler.setting.Binary(
                 "Replace spaces?", False, doc="""
-            Select <i>%(YES)s</i> to replace spaces in the final
+            Select <i>%(cellprofiler.setting.YES)s</i> to replace spaces in the final
             version of the file name with some other text.
-            <p>Select <i>%(NO)s</i> if the file name can have spaces
+            <p>Select <i>%(cellprofiler.setting.NO)s</i> if the file name can have spaces
             or if none of the file names have spaces.</p>""" % globals())
 
         self.space_replacement = cellprofiler.setting.Text(

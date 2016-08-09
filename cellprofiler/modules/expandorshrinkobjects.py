@@ -108,9 +108,9 @@ class ExpandOrShrinkObjects(cellprofiler.module.Module):
         self.wants_fill_holes = cellprofiler.setting.Binary(
                 "Fill holes in objects so that all objects shrink to a single point?", False, doc="""
             <i>(Used only if one of the "shrink" options selected)</i><br>
-            Select <i>%(YES)s</i> to ensure that each object will shrink
+            Select <i>%(cellprofiler.setting.YES)s</i> to ensure that each object will shrink
             to a single point, by filling the holes in each object.
-            <p>Select <i>%(NO)s</i> to preserve the Euler number. in this case, the
+            <p>Select <i>%(cellprofiler.setting.NO)s</i> to preserve the Euler number. in this case, the
             shrink algorithm preserves each object's Euler number,
             which means that it will erode an object with a hole to a ring in order to
             keep the hole. An object with two holes will be shrunk to two rings

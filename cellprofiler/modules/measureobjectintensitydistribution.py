@@ -227,9 +227,9 @@ class MeasureObjectIntensityDistribution(cellprofiler.module.Module):
 
         group.append("wants_scaled", cellprofiler.setting.Binary(
                 "Scale the bins?", True, doc="""
-                <p>Select <i>%(YES)s</i> to divide the object radially into the number
+                <p>Select <i>%(cellprofiler.setting.YES)s</i> to divide the object radially into the number
                 of bins that you specify. </p>
-                <p>Select <i>%(NO)s</i> to create the number of bins you specify based
+                <p>Select <i>%(cellprofiler.setting.NO)s</i> to create the number of bins you specify based
                 on distance. For this option, the user will be
                 asked to specify a maximum distance so that each object will have the
                 same measurements (which might be zero for small objects) and so that
@@ -312,12 +312,12 @@ class MeasureObjectIntensityDistribution(cellprofiler.module.Module):
                 "Save display as image?", False,
                 doc="""This setting allows you to save the heatmap display as
             an image that can be output using the <b>SaveImages</b> module.
-            Choose <i>%(YES)s</i> to save the display or <i>%(NO)s</i> if the
+            Choose <i>%(cellprofiler.setting.YES)s</i> to save the display or <i>%(cellprofiler.setting.NO)s</i> if the
             display is not needed.""" % globals()))
         group.append("display_name", cellprofiler.setting.ImageNameProvider(
                 "Output image name", "Heatmap",
                 doc="""
-            <i>(Only used if "Save display as image?" is "%(YES)s")</i><br>
+            <i>(Only used if "Save display as image?" is "%(cellprofiler.setting.YES)s")</i><br>
             This setting names the heatmap image so that the name you enter
             here can be selected in a later <b>SaveImages</b> or other module.
             """ % globals()))

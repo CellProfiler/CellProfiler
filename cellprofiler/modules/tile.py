@@ -155,7 +155,7 @@ class Tile(cellprofiler.module.Module):
 
         self.meander = cellprofiler.setting.Binary(
                 "Use meander mode?", False, doc='''
-            Select <i>%(YES)s</i> to tile adjacent images in one direction,
+            Select <i>%(cellprofiler.setting.YES)s</i> to tile adjacent images in one direction,
             then the next row/column is tiled in the opposite direction.
             Some microscopes capture images
             in this fashion. The default mode is "comb", or "typewriter"
@@ -167,9 +167,9 @@ class Tile(cellprofiler.module.Module):
                 "Automatically calculate number of rows?", False, doc="""
             <b>Tile</b> can automatically calculate the number of rows
             in the grid based on the number of image cycles that will be processed.
-            Select <i>%(YES)s</i> to create a grid that has the number of columns
+            Select <i>%(cellprofiler.setting.YES)s</i> to create a grid that has the number of columns
             that you entered and enough rows to display all of your images.
-            Select <i>%(NO)s</i> to specify the number of rows.
+            Select <i>%(cellprofiler.setting.NO)s</i> to specify the number of rows.
             <p>If you check both automatic rows and automatic columns, <b>Tile</b>
             will create a grid that has roughly the same number of rows
             and columns.</p>""" % globals())
@@ -178,9 +178,9 @@ class Tile(cellprofiler.module.Module):
                 "Automatically calculate number of columns?", False, doc="""
             <b>Tile</b> can automatically calculate the number of columns
             in the grid from the number of image cycles that will be processed.
-            Select <i>%(YES)s</i> to create a grid that has the number of rows
+            Select <i>%(cellprofiler.setting.YES)s</i> to create a grid that has the number of rows
             that you entered and enough columns to display all of your images.
-            Select <i>%(NO)s</i> to specify the number of rows.
+            Select <i>%(cellprofiler.setting.NO)s</i> to specify the number of rows.
             <p>If you check both automatic rows and automatic columns, <b>Tile</b>
             will create a grid that has roughly the same number of rows
             and columns.</p>""" % globals())

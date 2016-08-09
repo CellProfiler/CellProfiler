@@ -39,51 +39,33 @@ filename, if requested.</li>
 See also the <b>Input</b> modules, <b>LoadData</b>, <b>LoadSingleImage</b>, <b>SaveImages</b>.
 '''
 
-import cgi
 import hashlib
-import httplib
 import logging
 import os
+import os.path
 import re
-import stat
 import sys
 import tempfile
-import traceback
 import urllib
 import urlparse
 
-import numpy as np
-
-logger = logging.getLogger(__name__)
-cached_file_lists = {}
-
-import scipy.io.matlab.mio
-import uuid
-
-import cellprofiler.region as cpo
-import cellprofiler.module as cpmodule
-import cellprofiler.image as cpimage
-import cellprofiler.measurement as cpmeas
-from cellprofiler.pipeline import GROUP_INDEX
-import cellprofiler.preferences as preferences
-import cellprofiler.setting as cps
+import cellprofiler.gui.errordialog
+import cellprofiler.gui.help
+import cellprofiler.image
+import cellprofiler.measurement
+import cellprofiler.module
+import cellprofiler.modules.identify
+import cellprofiler.pipeline
+import cellprofiler.preferences
+import cellprofiler.region
+import cellprofiler.setting
 from cellprofiler.setting import YES, NO
 import centrosome.outline
-import identify as I
-import os.path
-from cellprofiler.preferences import \
-    standardize_default_folder_names, DEFAULT_INPUT_FOLDER_NAME, \
-    DEFAULT_OUTPUT_FOLDER_NAME, ABSOLUTE_FOLDER_NAME, URL_FOLDER_NAME, \
-    DEFAULT_INPUT_SUBFOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME, \
-    IO_FOLDER_CHOICE_HELP_TEXT, \
-    get_show_report_bad_sizes_dlg, set_show_report_bad_sizes_dlg, \
-    get_headless
-from cellprofiler.gui.help import USING_METADATA_GROUPING_HELP_REF, REGEXP_HELP_REF
-from cellprofiler.gui.errordialog import show_warning
+import numpy
+import scipy.io.matlab.mio
 
-from cellprofiler.measurement import \
-    C_FILE_NAME, C_PATH_NAME, C_URL, C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME, \
-    C_OBJECTS_URL
+cached_file_lists = {}
+logger = logging.getLogger(__name__)
 
 '''STK TIFF Tag UIC1 - for MetaMorph internal use'''
 UIC1_TAG = 33628
@@ -227,14 +209,14 @@ def default_cpimage_name(index):
     return 'Channel%d' % (index + 1)
 
 
-class LoadImages(cpmodule.Module):
+class LoadImages(cellprofiler.module.Module):
     module_name = "LoadImages"
     variable_revision_number = 11
     category = "File Processing"
 
     def create_settings(self):
         # Settings
-        self.file_types = cps.Choice(
+        self.file_types = cellprofiler.setting.Choice(
                 'File type to be loaded', FF, doc="""
             CellProfiler accepts the following image file types. For movie file formats,
             the files are opened as a stack of images and each image is processed individually, although <b> TrackObjects</b>
@@ -256,7 +238,7 @@ class LoadImages(cpmodule.Module):
             used to encode 3D image data, e.g. from fluorescence microscopy. </li>
             </ul>""" % globals())
 
-        self.match_method = cps.Choice(
+        self.match_method = cellprofiler.setting.Choice(
                 'File selection method', [MS_EXACT_MATCH, MS_REGEXP, MS_ORDER], doc="""
             Three options are available:
             <ul>
@@ -274,7 +256,7 @@ class LoadImages(cpmodule.Module):
             group; DAPI is always first).</li>
             </ul>""" % globals())
 
-        self.exclude = cps.Binary(
+        self.exclude = cellprofiler.setting.Binary(
                 'Exclude certain files?', False, doc="""
             <i>(Used only if "%(MS_EXACT_MATCH)s" for loading files is selected)</i> <br>
             The image/movie files specified with the <i>Text</i> options may also include
@@ -282,19 +264,19 @@ class LoadImages(cpmodule.Module):
             by an imaging system). Select <i>%(YES)s</i> to enter text to match against
             such files for exclusion.""" % globals())
 
-        self.match_exclude = cps.Text(
-                'Type the text that the excluded images have in common', cps.DO_NOT_USE, doc="""
+        self.match_exclude = cellprofiler.setting.Text(
+                'Type the text that the excluded images have in common', cellprofiler.setting.DO_NOT_USE, doc="""
             <i>(Used only if file exclusion is selected)</i> <br>
             Specify text that marks files for exclusion. <b>LoadImages</b> looks for this text as an
             exact match within the filename and not as a regular expression. """)
 
-        self.order_group_size = cps.Integer(
+        self.order_group_size = cellprofiler.setting.Integer(
                 'Number of images in each group?', 3, doc="""
             <i>(Used only when Order is selected for file loading)</i><br>
             Enter the number of images that comprise a group. For example, for images given in the order:
             <i>DAPI, FITC, Red; DAPI, FITC, Red</i> and so on, the number of images that in each group would be 3.""")
 
-        self.descend_subdirectories = cps.Choice(
+        self.descend_subdirectories = cellprofiler.setting.Choice(
                 'Analyze all subfolders within the selected folder?',
                 [SUB_NONE, SUB_ALL, SUB_SOME], doc="""
             This setting determines whether <b>LoadImages</b> analyzes
@@ -308,17 +290,17 @@ class LoadImages(cpmodule.Module):
             </ul>""" % globals())
 
         # Location settings
-        self.location = cps.DirectoryPath(
+        self.location = cellprofiler.setting.DirectoryPath(
                 "Input image file location",
                 dir_choices=[
-                    ABSOLUTE_FOLDER_NAME, DEFAULT_INPUT_FOLDER_NAME,
-                    DEFAULT_OUTPUT_FOLDER_NAME, DEFAULT_INPUT_SUBFOLDER_NAME,
-                    DEFAULT_OUTPUT_SUBFOLDER_NAME],
+                    cellprofiler.preferences.ABSOLUTE_FOLDER_NAME, cellprofiler.preferences.DEFAULT_INPUT_FOLDER_NAME,
+                    cellprofiler.preferences.DEFAULT_OUTPUT_FOLDER_NAME, cellprofiler.preferences.DEFAULT_INPUT_SUBFOLDER_NAME,
+                    cellprofiler.preferences.DEFAULT_OUTPUT_SUBFOLDER_NAME],
                 allow_metadata=False,
                 doc="""Select the folder containing the images to be loaded.
             %(IO_FOLDER_CHOICE_HELP_TEXT)s""" % globals())
 
-        self.subdirectory_filter = cps.SubdirectoryFilter(
+        self.subdirectory_filter = cellprofiler.setting.SubdirectoryFilter(
                 "Select subfolders to analyze",
                 directory_path=self.location, doc="""
             Use this control to select some subfolders and exclude
@@ -326,7 +308,7 @@ class LoadImages(cpmodule.Module):
             and check or uncheck the checkboxes to enable or disable analysis
             of the associated folders.""")
 
-        self.check_images = cps.Binary(
+        self.check_images = cellprofiler.setting.Binary(
                 'Check image sets for unmatched or duplicate files?', True, doc="""
             <i>(Used only if metadata is extracted from the image file and not loading by order)</i><br>
             Select <i>%(YES)s</i> to examine the filenames for
@@ -336,7 +318,7 @@ class LoadImages(cpmodule.Module):
             the <i>Extract metadata from where?</i> setting for more details on obtaining, extracting,
             and using metadata tags.""" % globals())
 
-        self.group_by_metadata = cps.Binary(
+        self.group_by_metadata = cellprofiler.setting.Binary(
                 'Group images by metadata?', False, doc="""
             <a name='group_by_metadata'></a>
             <i>(Used only if metadata is extracted from the image file or if movies are used)</i><br>
@@ -350,7 +332,7 @@ class LoadImages(cpmodule.Module):
             <p>Please note that if you are loading a movie file(e.g., TIFs, FLEX, STKs, AVIs, ZVIs), each movie
             is already treated as a group of images, so there is no need to enable here.""" % globals())
 
-        self.metadata_fields = cps.MultiChoice(
+        self.metadata_fields = cellprofiler.setting.MultiChoice(
                 'Specify metadata fields to group by', [], doc="""
             <i>(Used only if grouping images by metadata)</i> <br>
             Select the fields by which you want group the image files. You can select multiple tags. For
@@ -361,15 +343,15 @@ class LoadImages(cpmodule.Module):
         # Add the first image to the images list
         self.images = []
         self.add_imagecb(False)
-        self.image_count = cps.HiddenCount(self.images,
-                                           text="Image count")
+        self.image_count = cellprofiler.setting.HiddenCount(self.images,
+                                                            text="Image count")
 
         # Add another image
-        self.add_image = cps.DoSomething("", "Add another image", self.add_imagecb)
+        self.add_image = cellprofiler.setting.DoSomething("", "Add another image", self.add_imagecb)
 
     def add_imagecb(self, can_remove=True):
         'Adds another image to the settings'
-        group = cps.SettingsGroup()
+        group = cellprofiler.setting.SettingsGroup()
 
         def example_file_fn(path=None):
             '''Get an example file for use in the file metadata regexp editor'''
@@ -419,8 +401,8 @@ class LoadImages(cpmodule.Module):
 
         img_index = len(self.images)
         self.images.append(group)
-        group.append("divider", cps.Divider(line=True))
-        group.append("common_text", cps.Text(
+        group.append("divider", cellprofiler.setting.Divider(line=True))
+        group.append("common_text", cellprofiler.setting.Text(
                 'Text that these images have in common (case-sensitive)', '', doc="""
             <i>(Used only for the image-loading Text options)</i><br>
             For <i>Text-Exact match</i>, type the text string that all the
@@ -430,7 +412,7 @@ class LoadImages(cpmodule.Module):
             that would capture all the images for this channel. See the module
             help for more information on regular expressions."""))
 
-        group.append("order_position", cps.Integer(
+        group.append("order_position", cellprofiler.setting.Integer(
                 'Position of this image in each group', img_index + 1,
                 minval=1,
                 doc="""
@@ -440,7 +422,7 @@ class LoadImages(cpmodule.Module):
             DAPI, FITC, Red" and so on, the DAPI channel would occupy
             position 1."""))
 
-        group.append("metadata_choice", cps.Choice(
+        group.append("metadata_choice", cellprofiler.setting.Choice(
                 'Extract metadata from where?',
                 [M_NONE, M_FILE_NAME, M_PATH, M_BOTH], doc="""
             <a name='where_to_extract'>Metadata fields can be specified from
@@ -450,7 +432,7 @@ class LoadImages(cpmodule.Module):
             additional columns in the exported
             measurements (see the <b>ExportToSpreadsheet</b> module).</a>"""))
 
-        group.append("file_metadata", cps.RegexpText(
+        group.append("file_metadata", cellprofiler.setting.RegexpText(
                 'Regular expression that finds metadata in the file name',
                 '^(?P<Plate>.*)_(?P<Well>[A-P][0-9]{2})_s(?P<Site>[0-9])',
                 get_example_fn=example_file_fn, doc="""
@@ -510,11 +492,11 @@ class LoadImages(cpmodule.Module):
             separated from each other in the filename, but you want to retain the standard
             well nomenclature.</p>"""))
 
-        group.append("path_metadata", cps.RegexpText(
+        group.append("path_metadata", cellprofiler.setting.RegexpText(
                 'Type the regular expression that finds metadata in the subfolder path',
                 '.*[\\\\/](?P<Date>.*)[\\\\/](?P<Run>.*)$',
                 get_example_fn=example_path_fn,
-                guess=cps.RegexpText.GUESS_FOLDER,
+                guess=cellprofiler.setting.RegexpText.GUESS_FOLDER,
                 doc="""
             <i>(Used only if you want to extract metadata from the path)</i><br>
             Enter the regular expression for extracting the metadata from the
@@ -547,7 +529,7 @@ class LoadImages(cpmodule.Module):
             folder of the Date folder.</td></tr>
             </table></p>"""))
 
-        group.append("wants_movie_frame_grouping", cps.Binary(
+        group.append("wants_movie_frame_grouping", cellprofiler.setting.Binary(
                 "Group the movie frames?", False,
                 doc="""
             <i>(Used only if a movie image format is selected as file type)</i><br>
@@ -566,7 +548,7 @@ class LoadImages(cpmodule.Module):
             assign image names to each of the channels individually.
             """ % globals()))
 
-        group.append("interleaving", cps.Choice(
+        group.append("interleaving", cellprofiler.setting.Choice(
                 "Grouping method", [I_INTERLEAVED, I_SEPARATED],
                 doc="""
             <i>(Used only if a movie image format is selected as file type and movie frame grouping are selected)</i><br>
@@ -601,7 +583,7 @@ class LoadImages(cpmodule.Module):
             <p>Note the difference in which frames are processed in which image cycle
             between the two methods."""))
 
-        group.append("channels_per_group", cps.Integer(
+        group.append("channels_per_group", cellprofiler.setting.Integer(
                 "Number of channels per group", 3, minval=2,
                 reset_view=True, doc="""
             <i>(Used only if a movie image format is selected as file type and movie frame grouping is selected)</i><br>
@@ -620,7 +602,7 @@ class LoadImages(cpmodule.Module):
         # we have a list of channels.
         #
         group.channels = []
-        group.append("channel_count", cps.HiddenCount(group.channels,
+        group.append("channel_count", cellprofiler.setting.HiddenCount(group.channels,
                                                       "Channel count"))
 
         def add_channel(can_remove=True):
@@ -628,12 +610,12 @@ class LoadImages(cpmodule.Module):
 
         add_channel(False)
 
-        group.append("add_channel_button", cps.DoSomething(
+        group.append("add_channel_button", cellprofiler.setting.DoSomething(
                 "Add another channel", "Add channel", add_channel))
 
         group.can_remove = can_remove
         if can_remove:
-            group.append("remover", cps.RemoveSettingButton(
+            group.append("remover", cellprofiler.setting.RemoveSettingButton(
                     '', 'Remove this image', self.images, group))
 
     def add_channel(self, image_settings, can_remove=True):
@@ -643,7 +625,7 @@ class LoadImages(cpmodule.Module):
         can_remove - true if we are allowed to remove this channel
         '''
 
-        group = cps.SettingsGroup()
+        group = cellprofiler.setting.SettingsGroup()
         image_settings.channels.append(group)
         img_index = 0
         for ii in self.images:
@@ -652,7 +634,7 @@ class LoadImages(cpmodule.Module):
                     break
                 img_index += 1
 
-        group.append("image_object_choice", cps.Choice(
+        group.append("image_object_choice", cellprofiler.setting.Choice(
                 'Load the input as images or objects?', IO_ALL, doc="""
             This setting determines whether you load an image as image data
             or as segmentation results (i.e., objects):
@@ -672,7 +654,7 @@ class LoadImages(cpmodule.Module):
             for more details.</li>
             </ul>""" % globals()))
 
-        group.append("image_name", cps.FileImageNameProvider(
+        group.append("image_name", cellprofiler.setting.FileImageNameProvider(
                 'Name this loaded image',
                 default_cpimage_name(img_index), doc="""
             What do you want to call the images you are loading for use
@@ -696,19 +678,19 @@ class LoadImages(cpmodule.Module):
             generated later if this limit has been exceeded.</li>
             </ul>"""))
 
-        group.append("object_name", cps.ObjectNameProvider(
+        group.append("object_name", cellprofiler.setting.ObjectNameProvider(
                 'Name this loaded object',
                 "Nuclei", doc="""
             <i>(Used only if objects are output)</i><br>
             This is the name for the objects loaded from your image"""))
 
-        group.append("wants_outlines", cps.Binary(
+        group.append("wants_outlines", cellprofiler.setting.Binary(
                 'Retain outlines of loaded objects?', False, doc="""
             <i>(Used only if objects are output)</i><br>
             Select <i>%(YES)s</i> if you want to create an image of the outlines
             of the loaded objects.""" % globals()))
 
-        group.append("outlines_name", cps.OutlineNameProvider(
+        group.append("outlines_name", cellprofiler.setting.OutlineNameProvider(
                 'Name the outline image', 'LoadedImageOutlines', doc='''
             <i>(Used only if objects are output and outlines are saved)</i> <br>
             Enter a name that will allow the outlines to be selected later in the pipeline.
@@ -723,7 +705,7 @@ class LoadImages(cpmodule.Module):
         channels = [
             str(x) for x in range(1, max(10, len(image_settings.channels) + 2))]
 
-        group.append("channel_number", cps.Choice(
+        group.append("channel_number", cellprofiler.setting.Choice(
                 "Channel number", channels, channels[len(image_settings.channels) - 1], doc="""
             <i>(Used only if a movie image format is selected as file type and movie frame grouping is selected)</i><br>
             The channels of a multichannel image are numbered starting from 1.
@@ -731,7 +713,7 @@ class LoadImages(cpmodule.Module):
             illumination sources and/or optics. Use this setting to pick
             the channel to associate with the above image name."""))
 
-        group.append("rescale", cps.Binary(
+        group.append("rescale", cellprofiler.setting.Binary(
                 "Rescale intensities?", True, doc="""
             This option determines whether image metadata should be
             used to rescale the image's intensities. Some image formats
@@ -748,7 +730,7 @@ class LoadImages(cpmodule.Module):
 
         group.can_remove = can_remove
         if can_remove:
-            group.append("remover", cps.RemoveSettingButton(
+            group.append("remover", cellprofiler.setting.RemoveSettingButton(
                     "Remove this channel", "Remove channel", image_settings.channels,
                     group))
 
@@ -814,11 +796,11 @@ class LoadImages(cpmodule.Module):
                         (fd.path_metadata, M_PATH)):
                     if fd.metadata_choice in (tag, M_BOTH):
                         choices.update(
-                                cpmeas.find_metadata_tokens(setting.value))
-            if (any([cpmeas.is_well_column_token(x) for x in choices]) and
-                    any([cpmeas.is_well_row_token(x) for x in choices]) and not
-            any([x.lower() == cpmeas.FTR_WELL.lower() for x in choices])):
-                choices.add(cpmeas.FTR_WELL)
+                                cellprofiler.measurement.find_metadata_tokens(setting.value))
+            if (any([cellprofiler.measurement.is_well_column_token(x) for x in choices]) and
+                    any([cellprofiler.measurement.is_well_row_token(x) for x in choices]) and not
+            any([x.lower() == cellprofiler.measurement.FTR_WELL.lower() for x in choices])):
+                choices.add(cellprofiler.measurement.FTR_WELL)
             if self.file_types == FF_OTHER_MOVIES:
                 choices.update([M_Z, M_T, C_SERIES])
             elif self.file_types in (FF_AVI_MOVIES, FF_STK_MOVIES):
@@ -888,7 +870,7 @@ class LoadImages(cpmodule.Module):
         if self.match_method == MS_EXACT_MATCH:
             for image_group in self.images:
                 if len(image_group.common_text.value) == 0:
-                    raise cps.ValidationError(
+                    raise cellprofiler.setting.ValidationError(
                             "The matching text is blank. This would match all images.\n"
                             "Use regular expressions to match with a matching\n"
                             'expression of ".*" if this is the desired behavior.',
@@ -899,9 +881,9 @@ class LoadImages(cpmodule.Module):
 
         # Check that user has selected fields for grouping if grouping is turned on
         if self.group_by_metadata.value and (len(self.metadata_fields.selections) == 0):
-            raise cps.ValidationError("Group images by metadata is True, but no metadata "
+            raise cellprofiler.setting.ValidationError("Group images by metadata is True, but no metadata "
                                       "fields have been chosen for grouping.",
-                                      self.metadata_fields)
+                                                       self.metadata_fields)
 
         # Check that user-specified names don't have bad characters
         invalid_chars_pattern = "^[A-Za-z][A-Za-z0-9_]+$"
@@ -912,12 +894,12 @@ class LoadImages(cpmodule.Module):
             if not is_multichannel:
                 if self.channel_wants_images(fd.channels[0]):
                     if not re.match(invalid_chars_pattern, fd.channels[0].image_name.value):
-                        raise cps.ValidationError(warning_text, fd.channels[0].image_name)
+                        raise cellprofiler.setting.ValidationError(warning_text, fd.channels[0].image_name)
             else:
                 for channel in fd.channels:
                     if self.channel_wants_images(channel):
                         if not re.match(invalid_chars_pattern, fd.channels[0].image_name.value):
-                            raise cps.ValidationError(warning_text, channel.image_name)
+                            raise cellprofiler.setting.ValidationError(warning_text, channel.image_name)
 
         # The best practice is to have a single LoadImages or LoadData module.
         from cellprofiler.modules.loaddata import LoadData
@@ -925,7 +907,7 @@ class LoadImages(cpmodule.Module):
             if id(module) == id(self):
                 return
             if isinstance(module, LoadData):
-                raise cps.ValidationError(
+                raise cellprofiler.setting.ValidationError(
                         "Your pipeline has a LoadImages and LoadData module.\n"
                         "The best practice is to have only a single LoadImages\n"
                         "or LoadData module. This LoadImages module will match its\n"
@@ -934,7 +916,7 @@ class LoadImages(cpmodule.Module):
                         "set lists and this can result in image sets with\n"
                         "missing images or metadata.", self.add_image)
             if isinstance(module, LoadImages):
-                raise cps.ValidationError(
+                raise cellprofiler.setting.ValidationError(
                         "Your pipeline has two or more LoadImages modules.\n"
                         "The best practice is to have only one LoadImages module.\n"
                         "Consider loading all of your images using a single\n"
@@ -1125,12 +1107,12 @@ class LoadImages(cpmodule.Module):
         def upgrade_3_to_4(setting_values):
             """Added text exclusion at slot # 10"""
             new_values = list(setting_values)
-            new_values.insert(10, cps.DO_NOT_USE)
+            new_values.insert(10, cellprofiler.setting.DO_NOT_USE)
             return new_values, 4
 
         def upgrade_4_to_5(setting_values):
             new_values = list(setting_values)
-            new_values.append(cps.NO)
+            new_values.append(cellprofiler.setting.NO)
             return new_values, 5
 
         def upgrade_5_to_new_1(setting_values):
@@ -1138,16 +1120,16 @@ class LoadImages(cpmodule.Module):
             loc = setting_values[13]
             custom_path = loc
             if loc == '.':
-                dir_choice = DEFAULT_INPUT_FOLDER_NAME
+                dir_choice = cellprofiler.preferences.DEFAULT_INPUT_FOLDER_NAME
             elif loc == '&':
-                dir_choice = DEFAULT_OUTPUT_FOLDER_NAME
+                dir_choice = cellprofiler.preferences.DEFAULT_OUTPUT_FOLDER_NAME
             elif loc.startswith('.'):
-                dir_choice = DEFAULT_INPUT_SUBFOLDER_NAME
+                dir_choice = cellprofiler.preferences.DEFAULT_INPUT_SUBFOLDER_NAME
             elif loc.startswith('&'):
-                dir_choice = DEFAULT_OUTPUT_SUBFOLDER_NAME
+                dir_choice = cellprofiler.preferences.DEFAULT_OUTPUT_SUBFOLDER_NAME
                 custom_path = '.' + loc[1:]
             else:
-                dir_choice = ABSOLUTE_FOLDER_NAME
+                dir_choice = cellprofiler.preferences.ABSOLUTE_FOLDER_NAME
 
             new_values = [
                 setting_values[11],  # file_types
@@ -1162,8 +1144,8 @@ class LoadImages(cpmodule.Module):
             for i in range(0, 4):
                 text_to_find = setting_values[i * 2 + 1]
                 image_name = setting_values[i * 2 + 2]
-                if text_to_find == cps.DO_NOT_USE or \
-                                image_name == cps.DO_NOT_USE or \
+                if text_to_find == cellprofiler.setting.DO_NOT_USE or \
+                                image_name == cellprofiler.setting.DO_NOT_USE or \
                                 text_to_find == '/' or \
                                 image_name == '/' or \
                                 text_to_find == '\\' or \
@@ -1178,24 +1160,24 @@ class LoadImages(cpmodule.Module):
         def upgrade_new_1_to_2(setting_values):
             """Add the metadata slots to the images"""
             new_values = list(setting_values[:self.SLOT_FIRST_IMAGE_V1])
-            new_values.append(cps.NO)  # Group by metadata is off
+            new_values.append(cellprofiler.setting.NO)  # Group by metadata is off
             for i in range((len(setting_values) - self.SLOT_FIRST_IMAGE_V1) / self.SLOT_IMAGE_FIELD_COUNT_V1):
                 off = self.SLOT_FIRST_IMAGE_V1 + i * self.SLOT_IMAGE_FIELD_COUNT_V1
                 new_values.extend([setting_values[off],
                                    setting_values[off + 1],
                                    setting_values[off + 2],
                                    M_NONE,
-                                   cps.NONE,
-                                   cps.NONE])
+                                   cellprofiler.setting.NONE,
+                                   cellprofiler.setting.NONE])
             return new_values, 2
 
         def upgrade_new_2_to_3(setting_values):
             """Add the checkbox for excluding certain files"""
             new_values = list(setting_values[:self.SLOT_FIRST_IMAGE_V2])
-            if setting_values[self.SLOT_MATCH_EXCLUDE] == cps.DO_NOT_USE:
-                new_values += [cps.NO]
+            if setting_values[self.SLOT_MATCH_EXCLUDE] == cellprofiler.setting.DO_NOT_USE:
+                new_values += [cellprofiler.setting.NO]
             else:
-                new_values += [cps.YES]
+                new_values += [cellprofiler.setting.YES]
             new_values += setting_values[self.SLOT_FIRST_IMAGE_V2:]
             return new_values, 3
 
@@ -1208,17 +1190,17 @@ class LoadImages(cpmodule.Module):
 
         def upgrade_new_4_to_5(setting_values):
             """Combine the location and custom location values"""
-            setting_values = cps.standardize_default_folder_names(
+            setting_values = cellprofiler.setting.standardize_default_folder_names(
                     setting_values, self.SLOT_LOCATION)
             custom_location = setting_values[self.SLOT_LOCATION + 1]
             location = setting_values[self.SLOT_LOCATION]
-            if location == ABSOLUTE_FOLDER_NAME:
+            if location == cellprofiler.preferences.ABSOLUTE_FOLDER_NAME:
                 if custom_location.startswith('.'):
-                    location = cps.DEFAULT_INPUT_SUBFOLDER_NAME
+                    location = cellprofiler.setting.DEFAULT_INPUT_SUBFOLDER_NAME
                 elif custom_location.startswith('&'):
-                    location = cps.DEFAULT_OUTPUT_SUBFOLDER_NAME
+                    location = cellprofiler.setting.DEFAULT_OUTPUT_SUBFOLDER_NAME
                     custom_location = "." + custom_location[1:]
-            location = cps.DirectoryPath.static_join_string(
+            location = cellprofiler.setting.DirectoryPath.static_join_string(
                     location, custom_location)
             setting_values = (setting_values[:self.SLOT_LOCATION] +
                               [location] +
@@ -1254,7 +1236,7 @@ class LoadImages(cpmodule.Module):
             setting_values = setting_values[self.SLOT_FIRST_IMAGE_V6:]
             for i in range(image_count):
                 new_values += setting_values[:self.SLOT_IMAGE_FIELD_COUNT_V5]
-                new_values += [cps.NO, I_INTERLEAVED, "2"]
+                new_values += [cellprofiler.setting.NO, I_INTERLEAVED, "2"]
                 channel_count = int(setting_values[self.SLOT_OFFSET_CHANNEL_COUNT_V6])
                 setting_values = setting_values[self.SLOT_IMAGE_FIELD_COUNT_V5:]
                 channel_field_count = self.SLOT_CHANNEL_FIELD_COUNT_V6 * channel_count
@@ -1272,7 +1254,7 @@ class LoadImages(cpmodule.Module):
                 channel_count = int(setting_values[self.SLOT_OFFSET_CHANNEL_COUNT_V7])
                 setting_values = setting_values[self.SLOT_IMAGE_FIELD_COUNT_V7:]
                 for j in range(channel_count):
-                    new_values += setting_values[:self.SLOT_CHANNEL_FIELD_COUNT_V7] + [cps.YES]
+                    new_values += setting_values[:self.SLOT_CHANNEL_FIELD_COUNT_V7] + [cellprofiler.setting.YES]
                     setting_values = setting_values[self.SLOT_CHANNEL_FIELD_COUNT_V7:]
             return new_values, 8
 
@@ -1306,7 +1288,7 @@ class LoadImages(cpmodule.Module):
                 setting_values = setting_values[self.SLOT_IMAGE_FIELD_COUNT_V9:]
                 for j in range(channel_count):
                     new_values += setting_values[:self.SLOT_OFFSET_OBJECT_NAME_V9] + \
-                                  [cps.NO, "NucleiOutlines"] + \
+                                  [cellprofiler.setting.NO, "NucleiOutlines"] + \
                                   setting_values[self.SLOT_OFFSET_OBJECT_NAME_V9:self.SLOT_CHANNEL_FIELD_COUNT_V9]
                     setting_values = setting_values[self.SLOT_CHANNEL_FIELD_COUNT_V9:]
             return new_values, 10
@@ -1315,7 +1297,7 @@ class LoadImages(cpmodule.Module):
             '''Added subdirectory filter'''
             new_values = (setting_values[:self.SLOT_IMAGE_COUNT_V10] +
                           [""] + setting_values[self.SLOT_IMAGE_COUNT_V10:])
-            if new_values[self.SLOT_DESCEND_SUBDIRECTORIES] == cps.YES:
+            if new_values[self.SLOT_DESCEND_SUBDIRECTORIES] == cellprofiler.setting.YES:
                 new_values[self.SLOT_DESCEND_SUBDIRECTORIES] = SUB_ALL
             else:
                 new_values[self.SLOT_DESCEND_SUBDIRECTORIES] = SUB_NONE
@@ -1358,7 +1340,7 @@ class LoadImages(cpmodule.Module):
 
         # Standardize input/output directory name references
         setting_values[self.SLOT_LOCATION] = \
-            cps.DirectoryPath.upgrade_setting(setting_values[self.SLOT_LOCATION])
+            cellprofiler.setting.DirectoryPath.upgrade_setting(setting_values[self.SLOT_LOCATION])
         # Upgrade the file type slot
         if setting_values[self.SLOT_FILE_TYPE] in FF_OTHER_MOVIES_OLD:
             setting_values[self.SLOT_FILE_TYPE] = FF_OTHER_MOVIES
@@ -1413,7 +1395,7 @@ class LoadImages(cpmodule.Module):
         # OK to use workspace.frame, since we're in prepare_run
         frame = workspace.frame
         m = workspace.measurements
-        assert isinstance(m, cpmeas.Measurements)
+        assert isinstance(m, cellprofiler.measurement.Measurements)
         image_names = self.image_name_vars()
         list_of_lists = [[] for x in image_names]
         for pathname, image_index in files:
@@ -1434,7 +1416,7 @@ class LoadImages(cpmodule.Module):
                               for j in range(image_set_count)]
                     self.report_errors([], images, frame)
                 return False
-        list_of_lists = np.array(list_of_lists)
+        list_of_lists = numpy.array(list_of_lists)
         root = self.image_directory()
         for i in range(image_set_count):
             for j, image_name in enumerate(image_names):
@@ -1559,7 +1541,7 @@ class LoadImages(cpmodule.Module):
         # 2: write fresh image set records to measurements.
         #
         measurements = workspace.measurements
-        assert isinstance(measurements, cpmeas.Measurements)
+        assert isinstance(measurements, cellprofiler.measurement.Measurements)
         if measurements.image_set_count > 0:
             match_metadata = True
             md_dict = self.get_image_numbers_by_tags(workspace, tags)
@@ -1590,7 +1572,7 @@ class LoadImages(cpmodule.Module):
                             features[k] = [None] * n_image_sets
                         features[k][image_number - 1] = v
         for k, v in features.iteritems():
-            workspace.measurements.add_all_measurements(cpmeas.IMAGE, k, v)
+            workspace.measurements.add_all_measurements(cellprofiler.measurement.IMAGE, k, v)
 
         return True
 
@@ -1643,10 +1625,10 @@ class LoadImages(cpmodule.Module):
         '''
         measurements = workspace.measurements
         metadata_features = [
-            x for x in measurements.get_feature_names(cpmeas.IMAGE)
-            if x.startswith(cpmeas.C_METADATA)]
+            x for x in measurements.get_feature_names(cellprofiler.measurement.IMAGE)
+            if x.startswith(cellprofiler.measurement.C_METADATA)]
         for tag in tags:
-            if "_".join((cpmeas.C_METADATA, tag)) not in metadata_features:
+            if "_".join((cellprofiler.measurement.C_METADATA, tag)) not in metadata_features:
                 message = (
                     "LoadImages needs the prior Load modules to define "
                     'the metadata tag, "%s", in order to match metadata' %
@@ -1656,7 +1638,7 @@ class LoadImages(cpmodule.Module):
         md_dict = {}
         for i in measurements.get_image_numbers():
             keys = tuple([measurements.get_measurement(
-                    cpmeas.IMAGE, "_".join((cpmeas.C_METADATA, tag)), i)
+                    cellprofiler.measurement.IMAGE, "_".join((cellprofiler.measurement.C_METADATA, tag)), i)
                           for tag in tags])
             if md_dict.has_key(keys):
                 md_dict.append(i)
@@ -1674,7 +1656,6 @@ class LoadImages(cpmodule.Module):
                         a missing image
         frame: the parent for the error report
         """
-        import wx
         import wx.html
         my_frame = wx.Frame(frame, title="Load images: Error report",
                             size=(600, 800),
@@ -1770,7 +1751,7 @@ class LoadImages(cpmodule.Module):
         # OK to use workspace.frame, since we're in prepare_run
         frame = workspace.frame
         m = workspace.measurements
-        assert isinstance(m, cpmeas.Measurements)
+        assert isinstance(m, cellprofiler.measurement.Measurements)
         if m.image_set_count > 0 and self.do_group_by_metadata:
             match_metadata = True
             tags = list(self.get_metadata_tags()) + [M_Z, M_T, C_SERIES]
@@ -1785,9 +1766,9 @@ class LoadImages(cpmodule.Module):
         #
         # Organize the files into one column per image index.
         #
-        index_count = np.bincount([x[1] for x in files])
-        if np.any(index_count != index_count[0]):
-            bad = np.argwhere(index_count != index_count[0]).flatten()
+        index_count = numpy.bincount([x[1] for x in files])
+        if numpy.any(index_count != index_count[0]):
+            bad = numpy.argwhere(index_count != index_count[0]).flatten()
             raise RuntimeError("Image %s has %d files, but image %s has %d files" %
                                (self.images[0].channels[0].image_name.value,
                                 index_count[0],
@@ -1904,32 +1885,32 @@ class LoadImages(cpmodule.Module):
                                     z = int(cidx / channel_count) % stack_count
                                     t = int(cidx / channel_count / stack_count) % timepoint_count
                                     m.add_measurement(
-                                            cpmeas.IMAGE,
-                                            "_".join((C_FILE_NAME, image_name)),
+                                            cellprofiler.measurement.IMAGE,
+                                            "_".join((cellprofiler.measurement.C_FILE_NAME, image_name)),
                                             filename,
                                             image_set_number=image_number)
                                     m.add_measurement(
-                                            cpmeas.IMAGE,
-                                            "_".join((C_PATH_NAME, image_name)),
+                                            cellprofiler.measurement.IMAGE,
+                                            "_".join((cellprofiler.measurement.C_PATH_NAME, image_name)),
                                             path,
                                             image_set_number=image_number)
                                     m.add_measurement(
-                                            cpmeas.IMAGE,
-                                            "_".join((C_URL, image_name)),
+                                            cellprofiler.measurement.IMAGE,
+                                            "_".join((cellprofiler.measurement.C_URL, image_name)),
                                             url,
                                             image_set_number=image_number)
                                     m.add_measurement(
-                                            cpmeas.IMAGE,
+                                            cellprofiler.measurement.IMAGE,
                                             "_".join((C_SERIES, image_name)), i,
                                             image_set_number=image_number)
                                     m.add_measurement(
-                                            cpmeas.IMAGE,
+                                            cellprofiler.measurement.IMAGE,
                                             "_".join((C_FRAME, image_name)), cidx,
                                             image_set_number=image_number)
                                 for k in frame_metadata.keys():
                                     m.add_measurement(
-                                            cpmeas.IMAGE,
-                                            "_".join((cpmeas.C_METADATA, k)),
+                                            cellprofiler.measurement.IMAGE,
+                                            "_".join((cellprofiler.measurement.C_METADATA, k)),
                                             frame_metadata[k],
                                             image_set_number=image_number)
                                 image_set_count += 1
@@ -1977,33 +1958,33 @@ class LoadImages(cpmodule.Module):
                                             return False
                                         index = c * strideC + t * strideT + z * strideZ
                                         m.add_measurement(
-                                                cpmeas.IMAGE,
-                                                "_".join((C_FILE_NAME, image_name)),
+                                                cellprofiler.measurement.IMAGE,
+                                                "_".join((cellprofiler.measurement.C_FILE_NAME, image_name)),
                                                 filename,
                                                 image_set_number=image_number)
                                         m.add_measurement(
-                                                cpmeas.IMAGE,
-                                                "_".join((C_PATH_NAME, image_name)),
+                                                cellprofiler.measurement.IMAGE,
+                                                "_".join((cellprofiler.measurement.C_PATH_NAME, image_name)),
                                                 path,
                                                 image_set_number=image_number)
                                         m.add_measurement(
-                                                cpmeas.IMAGE,
-                                                "_".join((C_URL, image_name)),
+                                                cellprofiler.measurement.IMAGE,
+                                                "_".join((cellprofiler.measurement.C_URL, image_name)),
                                                 url,
                                                 image_set_number=image_number)
                                         m.add_measurement(
-                                                cpmeas.IMAGE,
+                                                cellprofiler.measurement.IMAGE,
                                                 "_".join((C_SERIES, image_name)), i,
                                                 image_set_number=image_number)
                                         m.add_measurement(
-                                                cpmeas.IMAGE,
+                                                cellprofiler.measurement.IMAGE,
                                                 "_".join((C_FRAME, image_name)),
                                                 index,
                                                 image_set_number=image_number)
                                     for k in frame_metadata.keys():
                                         m.add_measurement(
-                                                cpmeas.IMAGE,
-                                                "_".join((cpmeas.C_METADATA, k)),
+                                                cellprofiler.measurement.IMAGE,
+                                                "_".join((cellprofiler.measurement.C_METADATA, k)),
                                                 frame_metadata[k],
                                                 image_set_number=image_number)
                                     image_set_count += 1
@@ -2076,7 +2057,7 @@ class LoadImages(cpmodule.Module):
                     (image_names[0], image_set_count, name, len(x)))
                 pipeline.report_prepare_run_error(self, message)
                 return False
-        list_of_lists = np.array(list_of_lists, dtype=object)
+        list_of_lists = numpy.array(list_of_lists, dtype=object)
         for i in range(0, image_set_count):
             for name, (file, frame, t, image_group_index) \
                     in zip(image_names, list_of_lists[:, i]):
@@ -2084,8 +2065,8 @@ class LoadImages(cpmodule.Module):
                 self.write_measurements(m, i + 1, image_group, file,
                                         frame=frame,
                                         channel_name=name)
-                m.add_measurement(cpmeas.IMAGE,
-                                  "_".join((cpmeas.C_METADATA, M_T)), t,
+                m.add_measurement(cellprofiler.measurement.IMAGE,
+                                  "_".join((cellprofiler.measurement.C_METADATA, M_T)), t,
                                   image_set_number=i + 1)
 
         return True
@@ -2139,42 +2120,42 @@ class LoadImages(cpmodule.Module):
                 wants_images = self.channel_wants_images(channel)
                 image_name = channel.get_image_name()
                 if wants_images:
-                    feature = C_URL + "_" + image_name
-                    path_feature = C_PATH_NAME + "_" + image_name
-                    file_feature = C_FILE_NAME + "_" + image_name
+                    feature = cellprofiler.measurement.C_URL + "_" + image_name
+                    path_feature = cellprofiler.measurement.C_PATH_NAME + "_" + image_name
+                    file_feature = cellprofiler.measurement.C_FILE_NAME + "_" + image_name
                 else:
-                    feature = C_OBJECTS_URL + "_" + image_name
-                    path_feature = C_OBJECTS_PATH_NAME + "_" + image_name
-                    file_feature = C_OBJECTS_FILE_NAME + "_" + image_name
+                    feature = cellprofiler.measurement.C_OBJECTS_URL + "_" + image_name
+                    path_feature = cellprofiler.measurement.C_OBJECTS_PATH_NAME + "_" + image_name
+                    file_feature = cellprofiler.measurement.C_OBJECTS_FILE_NAME + "_" + image_name
                 row = [image_name,
                        m.get_current_image_measurement(path_feature),
                        m.get_current_image_measurement(file_feature)]
-                url = m.get_measurement(cpmeas.IMAGE, feature)
+                url = m.get_measurement(cellprofiler.measurement.IMAGE, feature)
                 full_name = url2pathname(url.encode('utf-8'))
                 path, filename = os.path.split(full_name)
                 rescale = channel.rescale.value
                 metadata = self.get_filename_metadata(fd, filename, path)
                 if self.file_types == FF_STK_MOVIES:
-                    index = m.get_measurement(cpmeas.IMAGE,
+                    index = m.get_measurement(cellprofiler.measurement.IMAGE,
                                               "_".join((C_FRAME, image_name)))
                     provider = LoadImagesSTKFrameProvider(
                             image_name, path, filename, index, rescale)
                 elif self.file_types == FF_OTHER_MOVIES:
-                    series = m.get_measurement(cpmeas.IMAGE,
+                    series = m.get_measurement(cellprofiler.measurement.IMAGE,
                                                "_".join((C_SERIES, image_name)))
-                    index = m.get_measurement(cpmeas.IMAGE,
+                    index = m.get_measurement(cellprofiler.measurement.IMAGE,
                                               "_".join((C_FRAME, image_name)))
                     metadata[C_SERIES] = series
                     for f in (M_Z, M_T):
-                        feature = cpmeas.C_METADATA + "_" + f
-                        metadata[f] = m.get_measurement(cpmeas.IMAGE, feature)
+                        feature = cellprofiler.measurement.C_METADATA + "_" + f
+                        metadata[f] = m.get_measurement(cellprofiler.measurement.IMAGE, feature)
                     provider = LoadImagesFlexFrameProvider(
                             image_name, path, filename, series, index, rescale)
                 elif self.file_types == FF_AVI_MOVIES:
-                    index = m.get_measurement(cpmeas.IMAGE,
+                    index = m.get_measurement(cellprofiler.measurement.IMAGE,
                                               "_".join((C_FRAME, image_name)))
                     metadata[M_T] = m.get_measurement(
-                            cpmeas.IMAGE, cpmeas.C_METADATA + "_" + M_T)
+                            cellprofiler.measurement.IMAGE, cellprofiler.measurement.C_METADATA + "_" + M_T)
                     provider = LoadImagesMovieFrameProvider(
                             image_name, path, filename, index, rescale)
                 else:
@@ -2199,7 +2180,7 @@ class LoadImages(cpmodule.Module):
                     elif image_size != tuple(pixel_data.shape[:2]):
                         warning = bad_sizes_warning(image_size, first_image_filename,
                                                     pixel_data.shape[:2], filename)
-                        if get_headless():
+                        if cellprofiler.preferences.get_headless():
                             print warning
                         elif self.show_window:
                             workspace.display_data.warning = warning
@@ -2225,7 +2206,7 @@ class LoadImages(cpmodule.Module):
                     else:
                         n_frames = mdpixels.SizeZ * mdpixels.SizeC * mdpixels.SizeT
                     series = provider.series
-                    ijv = np.zeros((0, 3), int)
+                    ijv = numpy.zeros((0, 3), int)
                     offset = 0
                     for index in range(n_frames):
                         provider.index = index
@@ -2233,31 +2214,31 @@ class LoadImages(cpmodule.Module):
                         labels = provider.provide_image(None).pixel_data
                         shape = labels.shape[:2]
                         labels = convert_image_to_objects(labels)
-                        i, j = np.mgrid[0:labels.shape[0], 0:labels.shape[1]]
-                        ijv = np.vstack((
-                            ijv, np.column_stack((i[labels != 0],
-                                                  j[labels != 0],
-                                                  labels[labels != 0] + offset))))
+                        i, j = numpy.mgrid[0:labels.shape[0], 0:labels.shape[1]]
+                        ijv = numpy.vstack((
+                            ijv, numpy.column_stack((i[labels != 0],
+                                                     j[labels != 0],
+                                                     labels[labels != 0] + offset))))
                         if ijv.shape[0] > 0:
-                            offset = np.max(ijv[:, 2])
-                    o = cpo.Region()
+                            offset = numpy.max(ijv[:, 2])
+                    o = cellprofiler.region.Region()
                     o.set_ijv(ijv, shape)
                     object_set = workspace.object_set
-                    assert isinstance(object_set, cpo.Set)
+                    assert isinstance(object_set, cellprofiler.region.Set)
                     object_name = channel.object_name.value
                     object_set.add_objects(o, object_name)
                     provider.release_memory()
                     row[0] = object_name
-                    I.add_object_count_measurements(m, object_name, o.count)
-                    I.add_object_location_measurements_ijv(m, object_name, ijv)
+                    cellprofiler.modules.identify.add_object_count_measurements(m, object_name, o.count)
+                    cellprofiler.modules.identify.add_object_location_measurements_ijv(m, object_name, ijv)
                     if channel.wants_outlines:
-                        outlines = np.zeros(shape, bool)
+                        outlines = numpy.zeros(shape, bool)
                         for l, c in o.labels():
                             outlines |= centrosome.outline.outline(l).astype(
                                     outlines.dtype)
-                        outline_image = cpimage.Image(outlines,
-                                                      pathname=path,
-                                                      filename=filename)
+                        outline_image = cellprofiler.image.Image(outlines,
+                                                                 pathname=path,
+                                                                 filename=filename)
                         workspace.image_set.add(channel.outlines_name.value, outline_image)
 
                 for tag in tags:
@@ -2274,10 +2255,10 @@ class LoadImages(cpmodule.Module):
     def display(self, workspace, figure):
         if self.show_window:
             if hasattr(workspace.display_data, "warning"):
-                show_warning("Images have different sizes",
-                             workspace.display_data.warning,
-                             get_show_report_bad_sizes_dlg,
-                             set_show_report_bad_sizes_dlg)
+                cellprofiler.gui.errordialog.show_warning("Images have different sizes",
+                                                          workspace.display_data.warning,
+                                                          cellprofiler.preferences.get_show_report_bad_sizes_dlg,
+                                                          cellprofiler.preferences.set_show_report_bad_sizes_dlg)
 
             figure.set_subplots((1, 1))
             figure.subplot_table(0, 0,
@@ -2293,16 +2274,16 @@ class LoadImages(cpmodule.Module):
         """
         metadata = {}
         if self.has_file_metadata(fd):
-            metadata.update(cpmeas.extract_metadata(fd.file_metadata.value,
-                                                    filename))
+            metadata.update(cellprofiler.measurement.extract_metadata(fd.file_metadata.value,
+                                                                      filename))
         if self.has_path_metadata(fd):
             path = os.path.abspath(os.path.join(self.image_directory(), path))
-            metadata.update(cpmeas.extract_metadata(fd.path_metadata.value,
-                                                    path))
+            metadata.update(cellprofiler.measurement.extract_metadata(fd.path_metadata.value,
+                                                                      path))
         if needs_well_metadata(metadata.keys()):
             well_row_token, well_column_token = well_metadata_tokens(metadata.keys())
-            metadata[cpmeas.FTR_WELL] = (metadata[well_row_token] +
-                                         metadata[well_column_token])
+            metadata[cellprofiler.measurement.FTR_WELL] = (metadata[well_row_token] +
+                                                           metadata[well_column_token])
         return metadata
 
     def write_measurements(self, measurements, image_number,
@@ -2328,11 +2309,11 @@ class LoadImages(cpmodule.Module):
                   for this channel.
         '''
         if measurements is not None:
-            assert isinstance(measurements, cpmeas.Measurements)
+            assert isinstance(measurements, cellprofiler.measurement.Measurements)
 
             def add_fn(feature, value):
                 measurements.add_measurement(
-                        cpmeas.IMAGE, feature, value,
+                        cellprofiler.measurement.IMAGE, feature, value,
                         image_set_number=image_number)
         else:
             d = {}
@@ -2347,13 +2328,13 @@ class LoadImages(cpmodule.Module):
                         channel_name != channel.get_image_name()):
                 continue
             if self.channel_wants_images(channel):
-                path_name_category = C_PATH_NAME
-                file_name_category = C_FILE_NAME
-                url_category = C_URL
+                path_name_category = cellprofiler.measurement.C_PATH_NAME
+                file_name_category = cellprofiler.measurement.C_FILE_NAME
+                url_category = cellprofiler.measurement.C_URL
             else:
-                path_name_category = C_OBJECTS_PATH_NAME
-                file_name_category = C_OBJECTS_FILE_NAME
-                url_category = C_OBJECTS_URL
+                path_name_category = cellprofiler.measurement.C_OBJECTS_PATH_NAME
+                file_name_category = cellprofiler.measurement.C_OBJECTS_FILE_NAME
+                url_category = cellprofiler.measurement.C_OBJECTS_URL
             image_data = [(path_name_category, path),
                           (file_name_category, filename),
                           (url_category, url)]
@@ -2364,7 +2345,7 @@ class LoadImages(cpmodule.Module):
             for category, value in image_data:
                 add_fn("_".join((category, channel.get_image_name())), value)
         for key in metadata.keys():
-            add_fn("_".join((cpmeas.C_METADATA, key)), metadata[key])
+            add_fn("_".join((cellprofiler.measurement.C_METADATA, key)), metadata[key])
         if measurements is None:
             return d
 
@@ -2414,15 +2395,15 @@ class LoadImages(cpmodule.Module):
 
         tags = []
         if self.has_file_metadata(fd):
-            tags += cpmeas.find_metadata_tokens(fd.file_metadata.value)
+            tags += cellprofiler.measurement.find_metadata_tokens(fd.file_metadata.value)
         if self.has_path_metadata(fd):
-            tags += cpmeas.find_metadata_tokens(fd.path_metadata.value)
+            tags += cellprofiler.measurement.find_metadata_tokens(fd.path_metadata.value)
         if self.file_types == FF_OTHER_MOVIES:
             tags += [M_Z, M_T, C_SERIES]
         elif self.file_types in (FF_AVI_MOVIES, FF_STK_MOVIES):
             tags += [M_T]
         if needs_well_metadata(tags):
-            tags += [cpmeas.FTR_WELL]
+            tags += [cellprofiler.measurement.FTR_WELL]
         return tags
 
     def get_groupings(self, workspace):
@@ -2444,9 +2425,9 @@ class LoadImages(cpmodule.Module):
         groupings.
         '''
         image_name = self.images[0].channels[0].get_image_name()
-        url_feature = '_'.join((C_URL, image_name))
+        url_feature = '_'.join((cellprofiler.measurement.C_URL, image_name))
         if self.do_group_by_metadata:
-            keys = ['_'.join((cpmeas.C_METADATA, s))
+            keys = ['_'.join((cellprofiler.measurement.C_METADATA, s))
                     for s in self.metadata_fields.selections]
             mapping = dict([(key, s) for key, s in zip(
                     keys, self.metadata_fields.selections)])
@@ -2459,11 +2440,11 @@ class LoadImages(cpmodule.Module):
             series_feature = '_'.join((C_SERIES, image_name))
             # Default for Flex is to group by file name and series
             keys = (url_feature, series_feature)
-            mapping = dict(((url_feature, C_URL), (series_feature, C_SERIES)))
+            mapping = dict(((url_feature, cellprofiler.measurement.C_URL), (series_feature, C_SERIES)))
 
         elif self.load_movies():
             keys = (url_feature,)
-            mapping = dict(((url_feature, C_URL),))
+            mapping = dict(((url_feature, cellprofiler.measurement.C_URL),))
         else:
             return None
         groupings = workspace.measurements.get_groupings(keys)
@@ -2627,7 +2608,7 @@ class LoadImages(cpmodule.Module):
                 return False
         elif not is_image(filename):
             return False
-        if ((self.text_to_exclude() != cps.DO_NOT_USE) and
+        if ((self.text_to_exclude() != cellprofiler.setting.DO_NOT_USE) and
                 self.exclude and (filename.find(self.text_to_exclude()) >= 0)):
             return False
         return True
@@ -2689,9 +2670,9 @@ class LoadImages(cpmodule.Module):
                  if channel.image_object_choice == IO_IMAGES])
                               for image in self.images])
 
-        if object_name == cpmeas.IMAGE:
+        if object_name == cellprofiler.measurement.IMAGE:
             if has_image_name:
-                res += [C_FILE_NAME, C_PATH_NAME, C_URL, C_MD5_DIGEST,
+                res += [cellprofiler.measurement.C_FILE_NAME, cellprofiler.measurement.C_PATH_NAME, cellprofiler.measurement.C_URL, C_MD5_DIGEST,
                         C_SCALING, C_HEIGHT, C_WIDTH]
             has_metadata = (self.file_types in
                             (FF_AVI_MOVIES, FF_STK_MOVIES, FF_OTHER_MOVIES))
@@ -2703,12 +2684,12 @@ class LoadImages(cpmodule.Module):
                 if fd.metadata_choice != M_NONE:
                     has_metadata = True
             if has_metadata:
-                res += [cpmeas.C_METADATA]
+                res += [cellprofiler.measurement.C_METADATA]
             if len(object_names) > 0:
-                res += [C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME,
-                        C_OBJECTS_URL, I.C_COUNT]
+                res += [cellprofiler.measurement.C_OBJECTS_FILE_NAME, cellprofiler.measurement.C_OBJECTS_PATH_NAME,
+                        cellprofiler.measurement.C_OBJECTS_URL, cellprofiler.modules.identify.C_COUNT]
         elif object_name in object_names:
-            res += [I.C_LOCATION, I.C_NUMBER]
+            res += [cellprofiler.modules.identify.C_LOCATION, cellprofiler.modules.identify.C_NUMBER]
         return res
 
     def get_measurements(self, pipeline, object_name, category):
@@ -2722,18 +2703,18 @@ class LoadImages(cpmodule.Module):
                 [[channel.object_name.value for channel in image.channels
                   if channel.image_object_choice == IO_OBJECTS]
                  for image in self.images], [])
-        if object_name == cpmeas.IMAGE:
-            if category == I.C_COUNT:
+        if object_name == cellprofiler.measurement.IMAGE:
+            if category == cellprofiler.modules.identify.C_COUNT:
                 result += object_names
             else:
                 result += [c[1].split('_', 1)[1]
                            for c in self.get_measurement_columns(pipeline)
                            if c[1].split('_')[0] == category]
         elif object_name in object_names:
-            if category == I.C_NUMBER:
-                result += [I.FTR_OBJECT_NUMBER]
-            elif category == I.C_LOCATION:
-                result += [I.FTR_CENTER_X, I.FTR_CENTER_Y]
+            if category == cellprofiler.modules.identify.C_NUMBER:
+                result += [cellprofiler.modules.identify.FTR_OBJECT_NUMBER]
+            elif category == cellprofiler.modules.identify.C_LOCATION:
+                result += [cellprofiler.modules.identify.FTR_CENTER_X, cellprofiler.modules.identify.FTR_CENTER_Y]
         return result
 
     def get_measurement_columns(self, pipeline):
@@ -2745,50 +2726,50 @@ class LoadImages(cpmodule.Module):
             for channel in fd.channels:
                 if not self.channel_wants_images(channel):
                     name = channel.object_name.value
-                    cols += I.get_object_measurement_columns(name)
-                    path_name_category = C_OBJECTS_PATH_NAME
-                    file_name_category = C_OBJECTS_FILE_NAME
-                    url_category = C_URL
+                    cols += cellprofiler.modules.identify.get_object_measurement_columns(name)
+                    path_name_category = cellprofiler.measurement.C_OBJECTS_PATH_NAME
+                    file_name_category = cellprofiler.measurement.C_OBJECTS_FILE_NAME
+                    url_category = cellprofiler.measurement.C_URL
                 else:
                     name = channel.get_image_name()
-                    path_name_category = C_PATH_NAME
-                    file_name_category = C_FILE_NAME
-                    url_category = C_URL
-                    cols += [(cpmeas.IMAGE, "_".join((C_MD5_DIGEST, name)),
-                              cpmeas.COLTYPE_VARCHAR_FORMAT % 32)]
-                    cols += [(cpmeas.IMAGE, "_".join((C_SCALING, name)),
-                              cpmeas.COLTYPE_FLOAT)]
-                    cols += [(cpmeas.IMAGE, "_".join((feature, name)),
-                              cpmeas.COLTYPE_INTEGER)
+                    path_name_category = cellprofiler.measurement.C_PATH_NAME
+                    file_name_category = cellprofiler.measurement.C_FILE_NAME
+                    url_category = cellprofiler.measurement.C_URL
+                    cols += [(cellprofiler.measurement.IMAGE, "_".join((C_MD5_DIGEST, name)),
+                              cellprofiler.measurement.COLTYPE_VARCHAR_FORMAT % 32)]
+                    cols += [(cellprofiler.measurement.IMAGE, "_".join((C_SCALING, name)),
+                              cellprofiler.measurement.COLTYPE_FLOAT)]
+                    cols += [(cellprofiler.measurement.IMAGE, "_".join((feature, name)),
+                              cellprofiler.measurement.COLTYPE_INTEGER)
                              for feature in (C_HEIGHT, C_WIDTH)]
 
-                cols += [(cpmeas.IMAGE, "_".join((file_name_category, name)),
-                          cpmeas.COLTYPE_VARCHAR_FILE_NAME)]
-                cols += [(cpmeas.IMAGE, "_".join((path_name_category, name)),
-                          cpmeas.COLTYPE_VARCHAR_PATH_NAME)]
-                cols += [(cpmeas.IMAGE, "_".join((url_category, name)),
-                          cpmeas.COLTYPE_VARCHAR_PATH_NAME)]
+                cols += [(cellprofiler.measurement.IMAGE, "_".join((file_name_category, name)),
+                          cellprofiler.measurement.COLTYPE_VARCHAR_FILE_NAME)]
+                cols += [(cellprofiler.measurement.IMAGE, "_".join((path_name_category, name)),
+                          cellprofiler.measurement.COLTYPE_VARCHAR_PATH_NAME)]
+                cols += [(cellprofiler.measurement.IMAGE, "_".join((url_category, name)),
+                          cellprofiler.measurement.COLTYPE_VARCHAR_PATH_NAME)]
                 if self.file_types == FF_OTHER_MOVIES:
-                    cols += [(cpmeas.IMAGE, "_".join((C_SERIES, name)),
-                              cpmeas.COLTYPE_INTEGER),
-                             (cpmeas.IMAGE, "_".join((C_FRAME, name)),
-                              cpmeas.COLTYPE_INTEGER)]
+                    cols += [(cellprofiler.measurement.IMAGE, "_".join((C_SERIES, name)),
+                              cellprofiler.measurement.COLTYPE_INTEGER),
+                             (cellprofiler.measurement.IMAGE, "_".join((C_FRAME, name)),
+                              cellprofiler.measurement.COLTYPE_INTEGER)]
                 elif self.load_movies():
-                    cols += [(cpmeas.IMAGE, "_".join((C_FRAME, name)),
-                              cpmeas.COLTYPE_INTEGER)]
+                    cols += [(cellprofiler.measurement.IMAGE, "_".join((C_FRAME, name)),
+                              cellprofiler.measurement.COLTYPE_INTEGER)]
 
             if self.has_file_metadata(fd):
-                tokens = cpmeas.find_metadata_tokens(fd.file_metadata.value)
-                cols += [(cpmeas.IMAGE, '_'.join((cpmeas.C_METADATA, token)),
-                          cpmeas.COLTYPE_VARCHAR_FILE_NAME)
+                tokens = cellprofiler.measurement.find_metadata_tokens(fd.file_metadata.value)
+                cols += [(cellprofiler.measurement.IMAGE, '_'.join((cellprofiler.measurement.C_METADATA, token)),
+                          cellprofiler.measurement.COLTYPE_VARCHAR_FILE_NAME)
                          for token in tokens
                          if token not in all_tokens]
                 all_tokens += tokens
 
             if self.has_path_metadata(fd):
-                tokens = cpmeas.find_metadata_tokens(fd.path_metadata.value)
-                cols += [(cpmeas.IMAGE, '_'.join((cpmeas.C_METADATA, token)),
-                          cpmeas.COLTYPE_VARCHAR_PATH_NAME)
+                tokens = cellprofiler.measurement.find_metadata_tokens(fd.path_metadata.value)
+                cols += [(cellprofiler.measurement.IMAGE, '_'.join((cellprofiler.measurement.C_METADATA, token)),
+                          cellprofiler.measurement.COLTYPE_VARCHAR_PATH_NAME)
                          for token in tokens
                          if token not in all_tokens]
                 all_tokens += tokens
@@ -2796,14 +2777,14 @@ class LoadImages(cpmodule.Module):
         # Add a well feature if we have well row and well column
         #
         if needs_well_metadata(all_tokens):
-            cols += [(cpmeas.IMAGE, '_'.join((cpmeas.C_METADATA, cpmeas.FTR_WELL)),
-                      cpmeas.COLTYPE_VARCHAR_FILE_NAME)]
+            cols += [(cellprofiler.measurement.IMAGE, '_'.join((cellprofiler.measurement.C_METADATA, cellprofiler.measurement.FTR_WELL)),
+                      cellprofiler.measurement.COLTYPE_VARCHAR_FILE_NAME)]
         if self.file_types in (FF_AVI_MOVIES, FF_STK_MOVIES):
-            cols += [(cpmeas.IMAGE, "_".join((cpmeas.C_METADATA, M_T)),
-                      cpmeas.COLTYPE_INTEGER)]
+            cols += [(cellprofiler.measurement.IMAGE, "_".join((cellprofiler.measurement.C_METADATA, M_T)),
+                      cellprofiler.measurement.COLTYPE_INTEGER)]
         elif self.file_types == FF_OTHER_MOVIES:
-            cols += [(cpmeas.IMAGE, "_".join((cpmeas.C_METADATA, feature)),
-                      cpmeas.COLTYPE_INTEGER)
+            cols += [(cellprofiler.measurement.IMAGE, "_".join((cellprofiler.measurement.C_METADATA, feature)),
+                      cellprofiler.measurement.COLTYPE_INTEGER)
                      for feature in (M_Z, M_T)]
 
         return cols
@@ -2880,26 +2861,26 @@ class LoadImages(cpmodule.Module):
                     assignment.load_as_choice.value = \
                         cpnamesandtypes.LOAD_AS_OBJECTS
                 rfilter = assignment.rule_filter
-                assert isinstance(rfilter, cps.Filter)
-                structure = [cps.Filter.AND_PREDICATE]
+                assert isinstance(rfilter, cellprofiler.setting.Filter)
+                structure = [cellprofiler.setting.Filter.AND_PREDICATE]
                 fp = cpnamesandtypes.FilePredicate()
                 fp_does, fp_does_not = [
                     [d for d in fp.subpredicates if isinstance(d, c)][0]
-                    for c in (cps.Filter.DoesPredicate, cps.Filter.DoesNotPredicate)]
+                    for c in (cellprofiler.setting.Filter.DoesPredicate, cellprofiler.setting.Filter.DoesNotPredicate)]
                 if self.exclude:
                     # Exclude with a predicate of
                     # File doesnot contain <match_exclude>
                     #
                     structure.append([
-                        fp, fp_does_not, cps.Filter.CONTAINS_PREDICATE,
+                        fp, fp_does_not, cellprofiler.setting.Filter.CONTAINS_PREDICATE,
                         self.match_exclude.value])
                 if self.match_method == MS_EXACT_MATCH:
                     structure.append([
-                        fp, fp_does, cps.Filter.CONTAINS_PREDICATE,
+                        fp, fp_does, cellprofiler.setting.Filter.CONTAINS_PREDICATE,
                         group.common_text.value])
                 else:
                     structure.append([
-                        fp, fp_does, cps.Filter.CONTAINS_REGEXP_PREDICATE,
+                        fp, fp_does, cellprofiler.setting.Filter.CONTAINS_REGEXP_PREDICATE,
                         group.common_text.value])
                 assignment.rule_filter.build(structure)
                 my_tags = set()
@@ -2921,7 +2902,7 @@ class LoadImages(cpmodule.Module):
                         mgroup.filter_choice.value = cpmetadata.F_FILTERED_IMAGES
                         mgroup.extraction_method.value = cpmetadata.X_MANUAL_EXTRACTION
                         mgroup.filter.build(structure)
-                        my_tags.update(cpmeas.find_metadata_tokens(value))
+                        my_tags.update(cellprofiler.measurement.find_metadata_tokens(value))
                 if namesandtypes.matching_choice == cpnamesandtypes.MATCH_BY_METADATA:
                     # Add our metadata tags to the joiner
                     current = namesandtypes.join.parse()
@@ -2984,9 +2965,9 @@ def well_metadata_tokens(tokens):
     well_row_token = None
     well_column_token = None
     for token in tokens:
-        if cpmeas.is_well_row_token(token):
+        if cellprofiler.measurement.is_well_row_token(token):
             well_row_token = token
-        if cpmeas.is_well_column_token(token):
+        if cellprofiler.measurement.is_well_column_token(token):
             well_column_token = token
     return well_row_token, well_column_token
 
@@ -2996,7 +2977,7 @@ def needs_well_metadata(tokens):
 
     Check for a row and column token and the absence of the well token.
     '''
-    if cpmeas.FTR_WELL.lower() in [x.lower() for x in tokens]:
+    if cellprofiler.measurement.FTR_WELL.lower() in [x.lower() for x in tokens]:
         return False
     well_row_token, well_column_token = well_metadata_tokens(tokens)
     return (well_row_token is not None) and (well_column_token is not None)
@@ -3013,7 +2994,7 @@ def is_movie(filename):
     return ext in SUPPORTED_MOVIE_EXTENSIONS
 
 
-class LoadImagesImageProviderBase(cpimage.AbstractImageProvider):
+class LoadImagesImageProviderBase(cellprofiler.image.AbstractImageProvider):
     '''Base for image providers: handle pathname and filename & URLs'''
 
     def __init__(self, name, pathname, filename):
@@ -3091,7 +3072,7 @@ class LoadImagesImageProviderBase(cpimage.AbstractImageProvider):
             # urlretrieve uses the suffix of the path component of the URL
             # to name the temporary file, so we replicate that behavior
             #
-            temp_dir = preferences.get_temporary_directory()
+            temp_dir = cellprofiler.preferences.get_temporary_directory()
             tempfd, temppath = tempfile.mkstemp(suffix=".mat", dir=temp_dir)
             self.__cached_file = temppath
             try:
@@ -3216,7 +3197,7 @@ class LoadImagesImageProvider(LoadImagesImageProviderBase):
             else:
                 rdr = get_image_reader(
                         self.get_name(), url=self.get_url())
-            if np.isscalar(self.index) or self.index is None:
+            if numpy.isscalar(self.index) or self.index is None:
                 img, self.scale = rdr.read(
                         c=self.channel,
                         series=self.series,
@@ -3227,11 +3208,11 @@ class LoadImagesImageProvider(LoadImagesImageProviderBase):
             else:
                 # It's a stack
                 stack = []
-                if np.isscalar(self.series):
+                if numpy.isscalar(self.series):
                     series_list = [self.series] * len(self.index)
                 else:
                     series_list = self.series
-                if not np.isscalar(self.channel):
+                if not numpy.isscalar(self.channel):
                     channel_list = [self.channel] * len(self.index)
                 else:
                     channel_list = self.channel
@@ -3245,14 +3226,14 @@ class LoadImagesImageProvider(LoadImagesImageProviderBase):
                             wants_max_intensity=True,
                             channel_names=channel_names)
                     stack.append(img)
-                img = np.dstack(stack)
+                img = numpy.dstack(stack)
         if isinstance(self.rescale, float):
             # Apply a manual rescale
-            img = img.astype(np.float32) / self.rescale
-        image = cpimage.Image(img,
-                              pathname=self.get_pathname(),
-                              filename=self.get_filename(),
-                              scale=self.scale)
+            img = img.astype(numpy.float32) / self.rescale
+        image = cellprofiler.image.Image(img,
+                                         pathname=self.get_pathname(),
+                                         filename=self.get_filename(),
+                                         scale=self.scale)
         if img.ndim == 3 and len(channel_names) == img.shape[2]:
             image.channel_names = list(channel_names)
         return image
@@ -3323,26 +3304,26 @@ def convert_image_to_objects(image):
     returns - a similarly shaped integer array with zero representing background
               and other values representing the indices of the associated object.
     '''
-    assert isinstance(image, np.ndarray)
+    assert isinstance(image, numpy.ndarray)
     if image.ndim == 2:
-        unique_indices = np.unique(image.ravel())
-        if (len(unique_indices) * 2 > max(np.max(unique_indices), 254) and
-                np.all(np.abs(np.round(unique_indices, 1) - unique_indices) <=
-                           np.finfo(float).eps)):
+        unique_indices = numpy.unique(image.ravel())
+        if (len(unique_indices) * 2 > max(numpy.max(unique_indices), 254) and
+                numpy.all(numpy.abs(numpy.round(unique_indices, 1) - unique_indices) <=
+                           numpy.finfo(float).eps)):
             # Heuristic: reinterpret only if sparse and roughly integer
-            return np.round(image).astype(int)
+            return numpy.round(image).astype(int)
         sorting = lambda x: [x]
         comparison = lambda i0, i1: image.ravel()[i0] != image.ravel()[i1]
     else:
-        i, j = np.mgrid[0:image.shape[0], 0:image.shape[1]]
+        i, j = numpy.mgrid[0:image.shape[0], 0:image.shape[1]]
         sorting = lambda x: [x[:, :, 2], x[:, :, 1], x[:, :, 0]]
         comparison = lambda i0, i1: \
-            np.any(image[i.ravel()[i0], j.ravel()[i0], :] !=
+            numpy.any(image[i.ravel()[i0], j.ravel()[i0], :] !=
                    image[i.ravel()[i1], j.ravel()[i1], :], 1)
-    order = np.lexsort([x.ravel() for x in sorting(image)])
-    different = np.hstack([[False], comparison(order[:-1], order[1:])])
-    index = np.cumsum(different)
-    image = np.zeros(image.shape[:2], index.dtype)
+    order = numpy.lexsort([x.ravel() for x in sorting(image)])
+    different = numpy.hstack([[False], comparison(order[:-1], order[1:])])
+    index = numpy.cumsum(different)
+    image = numpy.zeros(image.shape[:2], index.dtype)
     image.ravel()[order] = index
     return image
 

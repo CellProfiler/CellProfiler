@@ -39,21 +39,18 @@ there will not be a corresponding <i>ClosestObjectNumber</i>.
 See also the <b>Identify</b> modules.
 '''
 
+import cellprofiler.image
+import cellprofiler.measurement
+import cellprofiler.module
+import cellprofiler.preferences
+import cellprofiler.region
+import cellprofiler.setting
+import cellprofiler.workspace
+import centrosome.cpmorphology
+import centrosome.outline
 import matplotlib.cm
-import numpy as np
-import scipy.ndimage as scind
-from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
-from centrosome.cpmorphology import strel_disk, centers_of_labels
-from centrosome.outline import outline
-
-import cellprofiler.image as cpi
-import cellprofiler.module as cpm
-import cellprofiler.measurement as cpmeas
-import cellprofiler.region as cpo
-import cellprofiler.preferences as cpprefs
-import cellprofiler.setting as cps
-import cellprofiler.workspace as cpw
-from cellprofiler.setting import YES, NO
+import numpy
+import scipy.ndimage
 
 D_ADJACENT = 'Adjacent'
 D_EXPAND = 'Expand until adjacent'
@@ -78,24 +75,24 @@ S_EXPANDED = 'Expanded'
 S_ADJACENT = 'Adjacent'
 
 
-class MeasureObjectNeighbors(cpm.Module):
+class MeasureObjectNeighbors(cellprofiler.module.Module):
     module_name = 'MeasureObjectNeighbors'
     category = "Measurement"
     variable_revision_number = 2
 
     def create_settings(self):
-        self.object_name = cps.ObjectNameSubscriber(
-                'Select objects to measure', cps.NONE, doc="""
+        self.object_name = cellprofiler.setting.ObjectNameSubscriber(
+                'Select objects to measure', cellprofiler.setting.NONE, doc="""
             Select the objects whose neighbors you want to measure.""")
 
-        self.neighbors_name = cps.ObjectNameSubscriber(
-                'Select neighboring objects to measure', cps.NONE, doc="""
+        self.neighbors_name = cellprofiler.setting.ObjectNameSubscriber(
+                'Select neighboring objects to measure', cellprofiler.setting.NONE, doc="""
             This is the name of the objects that are potential
             neighbors of the above objects. You can find the neighbors
             within the same set of objects by selecting the same objects
             as above.""")
 
-        self.distance_method = cps.Choice(
+        self.distance_method = cellprofiler.setting.Choice(
                 'Method to determine neighbors',
                 D_ALL, D_EXPAND, doc="""
             There are several methods by which to determine whether objects are neighbors:
@@ -119,14 +116,14 @@ class MeasureObjectNeighbors(cpm.Module):
             percentage of boundary pixels of an <i>expanded</i> object that
             touch adjacent objects.</p>""" % globals())
 
-        self.distance = cps.Integer(
+        self.distance = cellprofiler.setting.Integer(
                 'Neighbor distance', 5, 1, doc="""
             <i>(Used only when "%(D_WITHIN)s" is selected)</i> <br>
             The Neighbor distance is the number of pixels that each object is
             expanded for the neighbor calculation. Expanded objects that touch
             are considered neighbors.""" % globals())
 
-        self.wants_count_image = cps.Binary(
+        self.wants_count_image = cellprofiler.setting.Binary(
                 'Retain the image of objects colored by numbers of neighbors?',
                 False, doc="""
             An output image showing the input objects
@@ -137,7 +134,7 @@ class MeasureObjectNeighbors(cpm.Module):
             neighbors are given a color corresponding to 0. Use the <b>SaveImages</b>
             module to save this image to a file.""")
 
-        self.count_image_name = cps.ImageNameProvider(
+        self.count_image_name = cellprofiler.setting.ImageNameProvider(
                 'Name the output image',
                 'ObjectNeighborCount', doc="""
             <i>(Used only if the image of objects colored by numbers of neighbors
@@ -146,14 +143,14 @@ class MeasureObjectNeighbors(cpm.Module):
             that will allow the image of objects colored by numbers of neighbors
             to be selected later in the pipeline.""")
 
-        self.count_colormap = cps.Colormap(
+        self.count_colormap = cellprofiler.setting.Colormap(
                 'Select colormap', doc="""
             <i>(Used only if the image of objects colored by numbers of neighbors
             is to be retained for later use in the pipeline)</i> <br>
             Select the colormap to use to color the neighbor number image. All available colormaps can be seen
             <a href="http://www.scipy.org/Cookbook/Matplotlib/Show_colormaps">here</a>.""")
 
-        self.wants_percent_touching_image = cps.Binary(
+        self.wants_percent_touching_image = cellprofiler.setting.Binary(
                 'Retain the image of objects colored by percent of touching pixels?',
                 False, doc="""
             Select <i>%(YES)s</i> to keep an image of the input objects
@@ -161,7 +158,7 @@ class MeasureObjectNeighbors(cpm.Module):
             A colormap of your choice is used to show the touching percentage of
             each object. Use the <b>SaveImages</b> module to save this image to a file.""" % globals())
 
-        self.touching_image_name = cps.ImageNameProvider(
+        self.touching_image_name = cellprofiler.setting.ImageNameProvider(
                 'Name the output image',
                 'PercentTouching', doc="""
             <i>(Used only if the image of objects colored by percent touching
@@ -169,7 +166,7 @@ class MeasureObjectNeighbors(cpm.Module):
             Specify a name that will allow the image of objects colored by percent of touching
             pixels to be selected later in the pipeline.""")
 
-        self.touching_colormap = cps.Colormap(
+        self.touching_colormap = cellprofiler.setting.Colormap(
                 'Select a colormap', doc="""
             <i>(Used only if the image of objects colored by percent touching
             is to be retained for later use in the pipeline)</i> <br>
@@ -203,35 +200,35 @@ class MeasureObjectNeighbors(cpm.Module):
 
     def run(self, workspace):
         objects = workspace.object_set.get_objects(self.object_name.value)
-        assert isinstance(objects, cpo.Region)
+        assert isinstance(objects, cellprofiler.region.Region)
         has_pixels = objects.areas > 0
         labels = objects.small_removed_segmented
         kept_labels = objects.segmented
         neighbor_objects = workspace.object_set.get_objects(
                 self.neighbors_name.value)
-        assert isinstance(neighbor_objects, cpo.Region)
+        assert isinstance(neighbor_objects, cellprofiler.region.Region)
         neighbor_labels = neighbor_objects.small_removed_segmented
         #
         # Need to add in labels touching border.
         #
         unedited_segmented = neighbor_objects.unedited_segmented
-        touching_border = np.zeros(np.max(unedited_segmented) + 1, bool)
+        touching_border = numpy.zeros(numpy.max(unedited_segmented) + 1, bool)
         touching_border[unedited_segmented[0, :]] = True
         touching_border[unedited_segmented[-1, :]] = True
         touching_border[unedited_segmented[:, 0]] = True
         touching_border[unedited_segmented[:, -1]] = True
         touching_border[0] = False
         touching_border_mask = touching_border[unedited_segmented]
-        nobjects = np.max(labels)
+        nobjects = numpy.max(labels)
         nkept_objects = objects.count
-        nneighbors = np.max(neighbor_labels)
-        if np.any(touching_border) and \
-                np.all(~ touching_border_mask[neighbor_labels != 0]):
+        nneighbors = numpy.max(neighbor_labels)
+        if numpy.any(touching_border) and \
+                numpy.all(~ touching_border_mask[neighbor_labels != 0]):
             # Add the border labels if any were excluded
-            touching_border_object_number = np.cumsum(touching_border) + \
-                                            np.max(neighbor_labels)
+            touching_border_object_number = numpy.cumsum(touching_border) + \
+                                            numpy.max(neighbor_labels)
             touching_border_mask = touching_border_mask & (neighbor_labels == 0)
-            neighbor_labels = neighbor_labels.copy().astype(np.int32)
+            neighbor_labels = neighbor_labels.copy().astype(numpy.int32)
             neighbor_labels[touching_border_mask] = touching_border_object_number[
                 unedited_segmented[touching_border_mask]]
 
@@ -242,24 +239,24 @@ class MeasureObjectNeighbors(cpm.Module):
         else:
             _, neighbor_numbers = neighbor_objects.relate_labels(
                     neighbor_labels, neighbor_objects.segmented)
-            neighbor_has_pixels = np.bincount(neighbor_labels.ravel())[1:] > 0
-        neighbor_count = np.zeros((nobjects,))
-        pixel_count = np.zeros((nobjects,))
-        first_object_number = np.zeros((nobjects,), int)
-        second_object_number = np.zeros((nobjects,), int)
-        first_x_vector = np.zeros((nobjects,))
-        second_x_vector = np.zeros((nobjects,))
-        first_y_vector = np.zeros((nobjects,))
-        second_y_vector = np.zeros((nobjects,))
-        angle = np.zeros((nobjects,))
-        percent_touching = np.zeros((nobjects,))
+            neighbor_has_pixels = numpy.bincount(neighbor_labels.ravel())[1:] > 0
+        neighbor_count = numpy.zeros((nobjects,))
+        pixel_count = numpy.zeros((nobjects,))
+        first_object_number = numpy.zeros((nobjects,), int)
+        second_object_number = numpy.zeros((nobjects,), int)
+        first_x_vector = numpy.zeros((nobjects,))
+        second_x_vector = numpy.zeros((nobjects,))
+        first_y_vector = numpy.zeros((nobjects,))
+        second_y_vector = numpy.zeros((nobjects,))
+        angle = numpy.zeros((nobjects,))
+        percent_touching = numpy.zeros((nobjects,))
         expanded_labels = None
         if self.distance_method == D_EXPAND:
             # Find the i,j coordinates of the nearest foreground point
             # to every background point
-            i, j = scind.distance_transform_edt(labels == 0,
-                                                return_distances=False,
-                                                return_indices=True)
+            i, j = scipy.ndimage.distance_transform_edt(labels == 0,
+                                                        return_distances=False,
+                                                        return_indices=True)
             # Assign each background pixel to the label of its nearest
             # foreground pixel. Assign label to label for foreground.
             labels = labels[i, j]
@@ -280,24 +277,24 @@ class MeasureObjectNeighbors(cpm.Module):
         if nneighbors > (1 if self.neighbors_are_objects else 0):
             first_objects = []
             second_objects = []
-            object_indexes = np.arange(nobjects, dtype=np.int32) + 1
+            object_indexes = numpy.arange(nobjects, dtype=numpy.int32) + 1
             #
             # First, compute the first and second nearest neighbors,
             # and the angles between self and the first and second
             # nearest neighbors
             #
-            ocenters = centers_of_labels(
+            ocenters = centrosome.cpmorphology.centers_of_labels(
                     objects.small_removed_segmented).transpose()
-            ncenters = centers_of_labels(
+            ncenters = centrosome.cpmorphology.centers_of_labels(
                     neighbor_objects.small_removed_segmented).transpose()
-            areas = fix(scind.sum(np.ones(labels.shape), labels, object_indexes))
-            perimeter_outlines = outline(labels)
-            perimeters = fix(scind.sum(
-                    np.ones(labels.shape), perimeter_outlines, object_indexes))
+            areas = centrosome.cpmorphology.fixup_scipy_ndimage_result(scipy.ndimage.sum(numpy.ones(labels.shape), labels, object_indexes))
+            perimeter_outlines = centrosome.outline.outline(labels)
+            perimeters = centrosome.cpmorphology.fixup_scipy_ndimage_result(scipy.ndimage.sum(
+                    numpy.ones(labels.shape), perimeter_outlines, object_indexes))
 
-            i, j = np.mgrid[0:nobjects, 0:nneighbors]
-            distance_matrix = np.sqrt((ocenters[i, 0] - ncenters[j, 0]) ** 2 +
-                                      (ocenters[i, 1] - ncenters[j, 1]) ** 2)
+            i, j = numpy.mgrid[0:nobjects, 0:nneighbors]
+            distance_matrix = numpy.sqrt((ocenters[i, 0] - ncenters[j, 0]) ** 2 +
+                                         (ocenters[i, 1] - ncenters[j, 1]) ** 2)
             #
             # order[:,0] should be arange(nobjects)
             # order[:,1] should be the nearest neighbor
@@ -306,9 +303,9 @@ class MeasureObjectNeighbors(cpm.Module):
             if distance_matrix.shape[1] == 1:
                 # a little buggy, lexsort assumes that a 2-d array of
                 # second dimension = 1 is a 1-d array
-                order = np.zeros(distance_matrix.shape, int)
+                order = numpy.zeros(distance_matrix.shape, int)
             else:
-                order = np.lexsort([distance_matrix])
+                order = numpy.lexsort([distance_matrix])
             first_neighbor = 1 if self.neighbors_are_objects else 0
             first_object_index = order[:, first_neighbor]
             first_x_vector = ncenters[first_object_index, 1] - ocenters[:, 1]
@@ -317,35 +314,35 @@ class MeasureObjectNeighbors(cpm.Module):
                 second_object_index = order[:, first_neighbor + 1]
                 second_x_vector = ncenters[second_object_index, 1] - ocenters[:, 1]
                 second_y_vector = ncenters[second_object_index, 0] - ocenters[:, 0]
-                v1 = np.array((first_x_vector, first_y_vector))
-                v2 = np.array((second_x_vector, second_y_vector))
+                v1 = numpy.array((first_x_vector, first_y_vector))
+                v2 = numpy.array((second_x_vector, second_y_vector))
                 #
                 # Project the unit vector v1 against the unit vector v2
                 #
-                dot = (np.sum(v1 * v2, 0) /
-                       np.sqrt(np.sum(v1 ** 2, 0) * np.sum(v2 ** 2, 0)))
-                angle = np.arccos(dot) * 180. / np.pi
+                dot = (numpy.sum(v1 * v2, 0) /
+                       numpy.sqrt(numpy.sum(v1 ** 2, 0) * numpy.sum(v2 ** 2, 0)))
+                angle = numpy.arccos(dot) * 180. / numpy.pi
 
             # Make the structuring element for dilation
-            strel = strel_disk(distance)
+            strel = centrosome.cpmorphology.strel_disk(distance)
             #
             # A little bigger one to enter into the border with a structure
             # that mimics the one used to create the outline
             #
-            strel_touching = strel_disk(distance + .5)
+            strel_touching = centrosome.cpmorphology.strel_disk(distance + .5)
             #
             # Get the extents for each object and calculate the patch
             # that excises the part of the image that is "distance"
             # away
-            i, j = np.mgrid[0:labels.shape[0], 0:labels.shape[1]]
+            i, j = numpy.mgrid[0:labels.shape[0], 0:labels.shape[1]]
             min_i, max_i, min_i_pos, max_i_pos = \
-                scind.extrema(i, labels, object_indexes)
+                scipy.ndimage.extrema(i, labels, object_indexes)
             min_j, max_j, min_j_pos, max_j_pos = \
-                scind.extrema(j, labels, object_indexes)
-            min_i = np.maximum(fix(min_i) - distance, 0).astype(int)
-            max_i = np.minimum(fix(max_i) + distance + 1, labels.shape[0]).astype(int)
-            min_j = np.maximum(fix(min_j) - distance, 0).astype(int)
-            max_j = np.minimum(fix(max_j) + distance + 1, labels.shape[1]).astype(int)
+                scipy.ndimage.extrema(j, labels, object_indexes)
+            min_i = numpy.maximum(centrosome.cpmorphology.fixup_scipy_ndimage_result(min_i) - distance, 0).astype(int)
+            max_i = numpy.minimum(centrosome.cpmorphology.fixup_scipy_ndimage_result(max_i) + distance + 1, labels.shape[0]).astype(int)
+            min_j = numpy.maximum(centrosome.cpmorphology.fixup_scipy_ndimage_result(min_j) - distance, 0).astype(int)
+            max_j = numpy.minimum(centrosome.cpmorphology.fixup_scipy_ndimage_result(max_j) + distance + 1, labels.shape[1]).astype(int)
             #
             # Loop over all objects
             # Calculate which ones overlap "index"
@@ -367,15 +364,15 @@ class MeasureObjectNeighbors(cpm.Module):
                 # Find the neighbors
                 #
                 patch_mask = patch == (index + 1)
-                extended = scind.binary_dilation(patch_mask, strel)
-                neighbors = np.unique(npatch[extended])
+                extended = scipy.ndimage.binary_dilation(patch_mask, strel)
+                neighbors = numpy.unique(npatch[extended])
                 neighbors = neighbors[neighbors != 0]
                 if self.neighbors_are_objects:
                     neighbors = neighbors[neighbors != object_number]
                 nc = len(neighbors)
                 neighbor_count[index] = nc
                 if nc > 0:
-                    first_objects.append(np.ones(nc, int) * object_number)
+                    first_objects.append(numpy.ones(nc, int) * object_number)
                     second_objects.append(neighbors)
                 if self.neighbors_are_objects:
                     #
@@ -387,28 +384,28 @@ class MeasureObjectNeighbors(cpm.Module):
                     outline_patch = perimeter_outlines[
                                     min_i[index]:max_i[index],
                                     min_j[index]:max_j[index]] == object_number
-                    extended = scind.binary_dilation(
+                    extended = scipy.ndimage.binary_dilation(
                             (patch != 0) & (patch != object_number), strel_touching)
-                    overlap = np.sum(outline_patch & extended)
+                    overlap = numpy.sum(outline_patch & extended)
                     pixel_count[index] = overlap
             if sum([len(x) for x in first_objects]) > 0:
-                first_objects = np.hstack(first_objects)
-                reverse_object_numbers = np.zeros(
-                        max(np.max(object_numbers), np.max(first_objects)) + 1, int)
-                reverse_object_numbers[object_numbers] = np.arange(len(object_numbers)) + 1
+                first_objects = numpy.hstack(first_objects)
+                reverse_object_numbers = numpy.zeros(
+                    max(numpy.max(object_numbers), numpy.max(first_objects)) + 1, int)
+                reverse_object_numbers[object_numbers] = numpy.arange(len(object_numbers)) + 1
                 first_objects = reverse_object_numbers[first_objects]
 
-                second_objects = np.hstack(second_objects)
-                reverse_neighbor_numbers = np.zeros(
-                        max(np.max(neighbor_numbers), np.max(second_objects)) + 1, int)
-                reverse_neighbor_numbers[neighbor_numbers] = np.arange(len(neighbor_numbers)) + 1
+                second_objects = numpy.hstack(second_objects)
+                reverse_neighbor_numbers = numpy.zeros(
+                    max(numpy.max(neighbor_numbers), numpy.max(second_objects)) + 1, int)
+                reverse_neighbor_numbers[neighbor_numbers] = numpy.arange(len(neighbor_numbers)) + 1
                 second_objects = reverse_neighbor_numbers[second_objects]
                 to_keep = (first_objects > 0) & (second_objects > 0)
                 first_objects = first_objects[to_keep]
                 second_objects = second_objects[to_keep]
             else:
-                first_objects = np.zeros(0, int)
-                second_objects = np.zeros(0, int)
+                first_objects = numpy.zeros(0, int)
+                second_objects = numpy.zeros(0, int)
             if self.neighbors_are_objects:
                 percent_touching = pixel_count * 100 / perimeters
             else:
@@ -418,22 +415,22 @@ class MeasureObjectNeighbors(cpm.Module):
             #
             # Have to recompute nearest
             #
-            first_object_number = np.zeros(nkept_objects, int)
-            second_object_number = np.zeros(nkept_objects, int)
+            first_object_number = numpy.zeros(nkept_objects, int)
+            second_object_number = numpy.zeros(nkept_objects, int)
             if nkept_objects > (1 if self.neighbors_are_objects else 0):
-                di = (ocenters[object_indexes[:, np.newaxis], 0] -
-                      ncenters[neighbor_indexes[np.newaxis, :], 0])
-                dj = (ocenters[object_indexes[:, np.newaxis], 1] -
-                      ncenters[neighbor_indexes[np.newaxis, :], 1])
-                distance_matrix = np.sqrt(di * di + dj * dj)
-                distance_matrix[~ has_pixels, :] = np.inf
-                distance_matrix[:, ~neighbor_has_pixels] = np.inf
+                di = (ocenters[object_indexes[:, numpy.newaxis], 0] -
+                      ncenters[neighbor_indexes[numpy.newaxis, :], 0])
+                dj = (ocenters[object_indexes[:, numpy.newaxis], 1] -
+                      ncenters[neighbor_indexes[numpy.newaxis, :], 1])
+                distance_matrix = numpy.sqrt(di * di + dj * dj)
+                distance_matrix[~ has_pixels, :] = numpy.inf
+                distance_matrix[:, ~neighbor_has_pixels] = numpy.inf
                 #
                 # order[:,0] should be arange(nobjects)
                 # order[:,1] should be the nearest neighbor
                 # order[:,2] should be the next nearest neighbor
                 #
-                order = np.lexsort([distance_matrix]).astype(
+                order = numpy.lexsort([distance_matrix]).astype(
                         first_object_number.dtype)
                 if self.neighbors_are_objects:
                     first_object_number[has_pixels] = order[has_pixels, 1] + 1
@@ -446,8 +443,8 @@ class MeasureObjectNeighbors(cpm.Module):
         else:
             object_indexes = object_numbers - 1
             neighbor_indexes = neighbor_numbers - 1
-            first_objects = np.zeros(0, int)
-            second_objects = np.zeros(0, int)
+            first_objects = numpy.zeros(0, int)
+            second_objects = numpy.zeros(0, int)
         #
         # Now convert all measurements from the small-removed to
         # the final number set.
@@ -464,16 +461,16 @@ class MeasureObjectNeighbors(cpm.Module):
         #
         # Record the measurements
         #
-        assert (isinstance(workspace, cpw.Workspace))
+        assert (isinstance(workspace, cellprofiler.workspace.Workspace))
         m = workspace.measurements
-        assert (isinstance(m, cpmeas.Measurements))
+        assert (isinstance(m, cellprofiler.measurement.Measurements))
         image_set = workspace.image_set
         features_and_data = [
             (M_NUMBER_OF_NEIGHBORS, neighbor_count),
             (M_FIRST_CLOSEST_OBJECT_NUMBER, first_object_number),
-            (M_FIRST_CLOSEST_DISTANCE, np.sqrt(first_x_vector ** 2 + first_y_vector ** 2)),
+            (M_FIRST_CLOSEST_DISTANCE, numpy.sqrt(first_x_vector ** 2 + first_y_vector ** 2)),
             (M_SECOND_CLOSEST_OBJECT_NUMBER, second_object_number),
-            (M_SECOND_CLOSEST_DISTANCE, np.sqrt(second_x_vector ** 2 + second_y_vector ** 2)),
+            (M_SECOND_CLOSEST_DISTANCE, numpy.sqrt(second_x_vector ** 2 + second_y_vector ** 2)),
             (M_ANGLE_BETWEEN_NEIGHBORS, angle)]
         if self.neighbors_are_objects:
             features_and_data.append((M_PERCENT_TOUCHING, percent_touching))
@@ -484,25 +481,25 @@ class MeasureObjectNeighbors(cpm.Module):
         if len(first_objects) > 0:
             m.add_relate_measurement(
                     self.module_num,
-                    cpmeas.NEIGHBORS,
+                    cellprofiler.measurement.NEIGHBORS,
                     self.object_name.value,
                     self.object_name.value if self.neighbors_are_objects
                     else self.neighbors_name.value,
-                    m.image_set_number * np.ones(first_objects.shape, int),
+                m.image_set_number * numpy.ones(first_objects.shape, int),
                     first_objects,
-                    m.image_set_number * np.ones(second_objects.shape, int),
+                m.image_set_number * numpy.ones(second_objects.shape, int),
                     second_objects)
 
         labels = kept_labels
 
-        neighbor_count_image = np.zeros(labels.shape, int)
+        neighbor_count_image = numpy.zeros(labels.shape, int)
         object_mask = objects.segmented != 0
         object_indexes = objects.segmented[object_mask] - 1
         neighbor_count_image[object_mask] = neighbor_count[object_indexes]
         workspace.display_data.neighbor_count_image = neighbor_count_image
 
         if self.neighbors_are_objects:
-            percent_touching_image = np.zeros(labels.shape)
+            percent_touching_image = numpy.zeros(labels.shape)
             percent_touching_image[object_mask] = percent_touching[object_indexes]
             workspace.display_data.percent_touching_image = percent_touching_image
 
@@ -515,10 +512,10 @@ class MeasureObjectNeighbors(cpm.Module):
             img[:, :, 0][~ object_mask] = 0
             img[:, :, 1][~ object_mask] = 0
             img[:, :, 2][~ object_mask] = 0
-            count_image = cpi.Image(img, masking_objects=objects)
+            count_image = cellprofiler.image.Image(img, masking_objects=objects)
             image_set.add(self.count_image_name.value, count_image)
         else:
-            neighbor_cm_name = cpprefs.get_default_colormap()
+            neighbor_cm_name = cellprofiler.preferences.get_default_colormap()
             neighbor_cm = matplotlib.cm.get_cmap(neighbor_cm_name)
         if self.neighbors_are_objects and self.wants_percent_touching_image:
             percent_touching_cm_name = self.touching_colormap.value
@@ -528,11 +525,11 @@ class MeasureObjectNeighbors(cpm.Module):
             img[:, :, 0][~ object_mask] = 0
             img[:, :, 1][~ object_mask] = 0
             img[:, :, 2][~ object_mask] = 0
-            touching_image = cpi.Image(img, masking_objects=objects)
+            touching_image = cellprofiler.image.Image(img, masking_objects=objects)
             image_set.add(self.touching_image_name.value,
                           touching_image)
         else:
-            percent_touching_cm_name = cpprefs.get_default_colormap()
+            percent_touching_cm_name = cellprofiler.preferences.get_default_colormap()
             percent_touching_cm = matplotlib.cm.get_cmap(percent_touching_cm_name)
 
         if self.show_window:
@@ -562,7 +559,7 @@ class MeasureObjectNeighbors(cpm.Module):
             percent_touching_image[~ object_mask] = -1
             percent_touching_cm = \
                 matplotlib.cm.ScalarMappable(cmap=percent_touching_cm)
-        if np.any(object_mask):
+        if numpy.any(object_mask):
             figure.subplot_imshow(0, 1, neighbor_count_image,
                                   "%s colored by # of neighbors" %
                                   self.object_name.value,
@@ -627,11 +624,11 @@ class MeasureObjectNeighbors(cpm.Module):
     def get_measurement_columns(self, pipeline):
         '''Return column definitions for measurements made by this module'''
         coltypes = dict([(feature,
-                          cpmeas.COLTYPE_INTEGER
+                          cellprofiler.measurement.COLTYPE_INTEGER
                           if feature in (M_NUMBER_OF_NEIGHBORS,
                                          M_FIRST_CLOSEST_OBJECT_NUMBER,
                                          M_SECOND_CLOSEST_OBJECT_NUMBER)
-                          else cpmeas.COLTYPE_FLOAT)
+                          else cellprofiler.measurement.COLTYPE_FLOAT)
                          for feature in self.all_features])
         return [(self.object_name.value,
                  self.get_measurement_name(feature_name),
@@ -645,8 +642,8 @@ class MeasureObjectNeighbors(cpm.Module):
             neighbors_name = objects_name
         else:
             neighbors_name = self.neighbors_name.value
-        return [(cpmeas.NEIGHBORS, objects_name, neighbors_name,
-                 cpmeas.MCA_AVAILABLE_EACH_CYCLE)]
+        return [(cellprofiler.measurement.NEIGHBORS, objects_name, neighbors_name,
+                 cellprofiler.measurement.MCA_AVAILABLE_EACH_CYCLE)]
 
     def get_categories(self, pipeline, object_name):
         if object_name == self.object_name:
@@ -681,17 +678,17 @@ class MeasureObjectNeighbors(cpm.Module):
 
     def upgrade_settings(self, setting_values, variable_revision_number, module_name, from_matlab):
         if from_matlab and variable_revision_number == 5:
-            wants_image = setting_values[2] != cps.DO_NOT_USE
+            wants_image = setting_values[2] != cellprofiler.setting.DO_NOT_USE
             distance_method = D_EXPAND if setting_values[1] == "0" else D_WITHIN
             setting_values = [setting_values[0],
                               distance_method,
                               setting_values[1],
-                              cps.YES if wants_image else cps.NO,
+                              cellprofiler.setting.YES if wants_image else cellprofiler.setting.NO,
                               setting_values[2],
-                              cps.DEFAULT,
-                              cps.NO,
+                              cellprofiler.setting.DEFAULT,
+                              cellprofiler.setting.NO,
                               "PercentTouching",
-                              cps.DEFAULT]
+                              cellprofiler.setting.DEFAULT]
             from_matlab = False
             variable_revision_number = 1
         if variable_revision_number == 1:
@@ -705,6 +702,6 @@ class MeasureObjectNeighbors(cpm.Module):
 
 def get_colormap(name):
     '''Get colormap, accounting for possible request for default'''
-    if name == cps.DEFAULT:
-        name = cpprefs.get_default_colormap()
+    if name == cellprofiler.setting.DEFAULT:
+        name = cellprofiler.preferences.get_default_colormap()
     return matplotlib.cm.get_cmap(name)

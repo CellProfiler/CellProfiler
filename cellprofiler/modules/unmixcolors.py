@@ -39,18 +39,17 @@ deconvolution." <i>Analytical & Quantitative Cytology & Histology</i>, 23: 291-2
 See also <b>ColorToGray</b>.
 '''
 
-import numpy as np
-from scipy.linalg import lstsq
-
-import cellprofiler.image as cpi
-import cellprofiler.module as cpm
-import cellprofiler.preferences as cpprefs
-import cellprofiler.setting as cps
+import cellprofiler.image
+import cellprofiler.module
+import cellprofiler.preferences
+import cellprofiler.setting
+import numpy
+import scipy.linalg
 
 
 def html_color(rgb):
     '''Return an HTML color for a given stain'''
-    rgb = np.exp(-np.array(rgb)) * 255
+    rgb = numpy.exp(-numpy.array(rgb)) * 255
     rgb = rgb.astype(int)
     color = hex((rgb[0] * 256 + rgb[1]) * 256 + rgb[2])
     if color.endswith("L"):
@@ -159,23 +158,23 @@ FIXED_SETTING_COUNT = 2
 VARIABLE_SETTING_COUNT = 5
 
 
-class UnmixColors(cpm.Module):
+class UnmixColors(cellprofiler.module.Module):
     module_name = "UnmixColors"
     category = "Image Processing"
     variable_revision_number = 2
 
     def create_settings(self):
         self.outputs = []
-        self.stain_count = cps.HiddenCount(self.outputs, "Stain count")
+        self.stain_count = cellprofiler.setting.HiddenCount(self.outputs, "Stain count")
 
-        self.input_image_name = cps.ImageNameSubscriber(
-                "Select the input color image", cps.NONE, doc="""
+        self.input_image_name = cellprofiler.setting.ImageNameSubscriber(
+                "Select the input color image", cellprofiler.setting.NONE, doc="""
             Choose the name of the histologically stained color image
             loaded or created by some prior module.""")
 
         self.add_image(False)
 
-        self.add_image_button = cps.DoSomething(
+        self.add_image_button = cellprofiler.setting.DoSomething(
                 "", "Add another stain", self.add_image, doc="""
             Press this button to add another stain to the list.
             You will be able to name the image produced and to either pick
@@ -183,15 +182,15 @@ class UnmixColors(cpm.Module):
             custom values for the stain's red, green and blue absorbance.""")
 
     def add_image(self, can_remove=True):
-        group = cps.SettingsGroup()
+        group = cellprofiler.setting.SettingsGroup()
         group.can_remove = can_remove
         if can_remove:
-            group.append("divider", cps.Divider())
+            group.append("divider", cellprofiler.setting.Divider())
         idx = len(self.outputs)
         default_name = STAINS_BY_POPULARITY[idx % len(STAINS_BY_POPULARITY)]
         default_name = default_name.replace(" ", "")
 
-        group.append("image_name", cps.ImageNameProvider(
+        group.append("image_name", cellprofiler.setting.ImageNameProvider(
                 "Name the output name", default_name, doc="""
             Use this setting to name one of the images produced by the
             module for a particular stain. The image can be used in
@@ -199,7 +198,7 @@ class UnmixColors(cpm.Module):
 
         choices = list(sorted(STAIN_DICTIONARY.keys())) + [CHOICE_CUSTOM]
 
-        group.append("stain_choice", cps.Choice(
+        group.append("stain_choice", cellprofiler.setting.Choice(
                 "Stain", choices=choices, doc="""
             Use this setting to choose the absorbance values for a
             particular stain. The stains are:
@@ -233,7 +232,7 @@ class UnmixColors(cpm.Module):
             from a single-stain image).
             """ % globals()))
 
-        group.append("red_absorbance", cps.Float(
+        group.append("red_absorbance", cellprofiler.setting.Float(
                 "Red absorbance", 0.5, 0, 1, doc="""
             <i>(Used only if %(CHOICE_CUSTOM)s is selected for the stain)</i><br>
             The red absorbance setting estimates the dye's
@@ -242,7 +241,7 @@ class UnmixColors(cpm.Module):
             absorbance. You can use the estimator to calculate this
             value automatically.""" % globals()))
 
-        group.append("green_absorbance", cps.Float(
+        group.append("green_absorbance", cellprofiler.setting.Float(
                 "Green absorbance", 0.5, 0, 1, doc="""
             <i>(Used only if %(CHOICE_CUSTOM)s is selected for the stain)</i><br>
             The green absorbance setting estimates the dye's
@@ -251,7 +250,7 @@ class UnmixColors(cpm.Module):
             absorbance. You can use the estimator to calculate this
             value automatically.""" % globals()))
 
-        group.append("blue_absorbance", cps.Float(
+        group.append("blue_absorbance", cellprofiler.setting.Float(
                 "Blue absorbance", 0.5, 0, 1, doc="""
             <i>(Used only if %(CHOICE_CUSTOM)s is selected for the stain)</i><br>
             The blue absorbance setting estimates the dye's
@@ -267,7 +266,7 @@ class UnmixColors(cpm.Module):
                  group.green_absorbance.value,
                  group.blue_absorbance.value) = result
 
-        group.append("estimator_button", cps.DoSomething(
+        group.append("estimator_button", cellprofiler.setting.DoSomething(
                 "Estimate absorbance from image",
                 "Estimate", on_estimate, doc="""
             Press this button to load an image of a sample stained
@@ -276,7 +275,7 @@ class UnmixColors(cpm.Module):
             image."""))
 
         if can_remove:
-            group.append("remover", cps.RemoveSettingButton(
+            group.append("remover", cellprofiler.setting.RemoveSettingButton(
                     "", "Remove this image", self.outputs, group))
         self.outputs.append(group)
 
@@ -330,15 +329,15 @@ class UnmixColors(cpm.Module):
         #
         eps = 1.0 / 256.0 / 2.0
         image = input_pixels + eps
-        log_image = np.log(image)
+        log_image = numpy.log(image)
         #
         # Now multiply the log-transformed image
         #
-        scaled_image = log_image * inverse_absorbances[np.newaxis, np.newaxis, :]
+        scaled_image = log_image * inverse_absorbances[numpy.newaxis, numpy.newaxis, :]
         #
         # Exponentiate to get the image without the dye effect
         #
-        image = np.exp(np.sum(scaled_image, 2))
+        image = numpy.exp(numpy.sum(scaled_image, 2))
         #
         # and subtract out the epsilon we originally introduced
         #
@@ -347,7 +346,7 @@ class UnmixColors(cpm.Module):
         image[image > 1] = 1
         image = 1 - image
         image_name = output.image_name.value
-        output_image = cpi.Image(image, parent=input_image)
+        output_image = cellprofiler.image.Image(image, parent=input_image)
         workspace.image_set.add(image_name, output_image)
         if self.show_window:
             workspace.display_data.outputs[image_name] = image
@@ -370,14 +369,14 @@ class UnmixColors(cpm.Module):
         '''Given one of the outputs, return the red, green and blue absorbance'''
 
         if output.stain_choice == CHOICE_CUSTOM:
-            result = np.array(
+            result = numpy.array(
                     (output.red_absorbance.value,
                      output.green_absorbance.value,
                      output.blue_absorbance.value))
         else:
             result = STAIN_DICTIONARY[output.stain_choice.value]
-        result = np.array(result)
-        result = result / np.sqrt(np.sum(result ** 2))
+        result = numpy.array(result)
+        result = result / numpy.sqrt(numpy.sum(result ** 2))
         return result
 
     def get_inverse_absorbances(self, output):
@@ -389,10 +388,10 @@ class UnmixColors(cpm.Module):
         of absorbances corresponding to the entered row.
         '''
         idx = self.outputs.index(output)
-        absorbance_array = np.array([self.get_absorbances(o)
-                                     for o in self.outputs])
-        absorbance_matrix = np.matrix(absorbance_array)
-        return np.array(absorbance_matrix.I[:, idx]).flatten()
+        absorbance_array = numpy.array([self.get_absorbances(o)
+                                        for o in self.outputs])
+        absorbance_matrix = numpy.matrix(absorbance_array)
+        return numpy.array(absorbance_matrix.I[:, idx]).flatten()
 
     def estimate_absorbance(self):
         '''Load an image and use it to estimate the absorbance of a stain
@@ -405,7 +404,7 @@ class UnmixColors(cpm.Module):
 
         dlg = wx.FileDialog(
                 None, "Choose reference image",
-                cpprefs.get_default_image_directory())
+                cellprofiler.preferences.get_default_image_directory())
         dlg.Wildcard = ("Image file (*.tif, *.tiff, *.bmp, *.png, *.gif, *.jpg)|"
                         "*.tif;*.tiff;*.bmp;*.png;*.gif;*.jpg")
         if dlg.ShowModal() == wx.ID_OK:
@@ -420,25 +419,25 @@ class UnmixColors(cpm.Module):
             # Log-transform the image
             #
             eps = 1.0 / 256.0 / 2.0
-            log_image = np.log(image + eps)
+            log_image = numpy.log(image + eps)
             data = [- log_image[:, :, i].flatten() for i in range(3)]
             #
             # Order channels by strength
             #
-            sums = [np.sum(x) for x in data]
-            order = np.lexsort([sums])
+            sums = [numpy.sum(x) for x in data]
+            order = numpy.lexsort([sums])
             #
             # Calculate relative absorbance against the strongest.
             # Fit Ax = y to find A where x is the strongest and y
             # is each in turn.
             #
-            strongest = data[order[-1]][:, np.newaxis]
-            absorbances = [lstsq(strongest, d)[0][0] for d in data]
+            strongest = data[order[-1]][:, numpy.newaxis]
+            absorbances = [scipy.linalg.lstsq(strongest, d)[0][0] for d in data]
             #
             # Normalize
             #
-            absorbances = np.array(absorbances)
-            return absorbances / np.sqrt(np.sum(absorbances ** 2))
+            absorbances = numpy.array(absorbances)
+            return absorbances / numpy.sqrt(numpy.sum(absorbances ** 2))
         return None
 
     def prepare_settings(self, setting_values):

@@ -23,35 +23,34 @@ number of images per plate is the same. </li>
 See also the <b>Metadata</b> module.
 '''
 
-import numpy as np
-
-import cellprofiler.module as cpm
-import cellprofiler.measurement as cpmeas
-import cellprofiler.setting as cps
+import cellprofiler.measurement
+import cellprofiler.module
+import cellprofiler.setting
+import numpy
 
 O_ROW = "Row"
 O_COLUMN = "Column"
 
 
-class LabelImages(cpm.Module):
+class LabelImages(cellprofiler.module.Module):
     module_name = "LabelImages"
     category = "Other"
     variable_revision_number = 1
 
     def create_settings(self):
-        self.site_count = cps.Integer(
+        self.site_count = cellprofiler.setting.Integer(
                 "Number of image sites per well", 1, minval=1, doc="""
             This setting controls the number of image sets for each well""")
 
-        self.column_count = cps.Integer(
+        self.column_count = cellprofiler.setting.Integer(
                 "Number of columns per plate", 12, minval=1, doc="""
             Enter the number of columns per plate""")
 
-        self.row_count = cps.Integer(
+        self.row_count = cellprofiler.setting.Integer(
                 "Number of rows per plate", 8, minval=1, doc="""
             The number of rows per plate""")
 
-        self.order = cps.Choice(
+        self.order = cellprofiler.setting.Choice(
                 "Order of image data", [O_ROW, O_COLUMN], doc="""
             This setting specifies how the input data is ordered (assuming
             that sites within a well are ordered consecutively):
@@ -101,11 +100,11 @@ class LabelImages(cpm.Module):
         well_template = "%s%0" + str(self.column_digits) + "d"
         well = well_template % (row_text, column_index + 1)
 
-        statistics = [(cpmeas.M_SITE, site_index + 1),
-                      (cpmeas.M_ROW, row_text),
-                      (cpmeas.M_COLUMN, column_index + 1),
-                      (cpmeas.M_WELL, well),
-                      (cpmeas.M_PLATE, plate_index + 1)]
+        statistics = [(cellprofiler.measurement.M_SITE, site_index + 1),
+                      (cellprofiler.measurement.M_ROW, row_text),
+                      (cellprofiler.measurement.M_COLUMN, column_index + 1),
+                      (cellprofiler.measurement.M_WELL, well),
+                      (cellprofiler.measurement.M_PLATE, plate_index + 1)]
         for feature, value in statistics:
             m.add_image_measurement(feature, value)
         workspace.display_data.col_labels = ("Metadata", "Value")
@@ -119,34 +118,34 @@ class LabelImages(cpm.Module):
         If a plate has more than 26 rows, you need two digits. The following
         is sufficiently general.
         '''
-        return int(1 + np.log(self.row_count.value) / np.log(26))
+        return int(1 + numpy.log(self.row_count.value) / numpy.log(26))
 
     @property
     def column_digits(self):
         '''The number of digits it takes to represent a column.'''
 
-        return int(1 + np.log10(self.column_count.value))
+        return int(1 + numpy.log10(self.column_count.value))
 
     def get_measurement_columns(self, pipeline):
-        row_coltype = cpmeas.COLTYPE_VARCHAR_FORMAT % self.row_digits
-        well_coltype = cpmeas.COLTYPE_VARCHAR_FORMAT % (
+        row_coltype = cellprofiler.measurement.COLTYPE_VARCHAR_FORMAT % self.row_digits
+        well_coltype = cellprofiler.measurement.COLTYPE_VARCHAR_FORMAT % (
             self.row_digits + self.column_digits)
         return [
-            (cpmeas.IMAGE, cpmeas.M_SITE, cpmeas.COLTYPE_INTEGER),
-            (cpmeas.IMAGE, cpmeas.M_ROW, row_coltype),
-            (cpmeas.IMAGE, cpmeas.M_COLUMN, cpmeas.COLTYPE_INTEGER),
-            (cpmeas.IMAGE, cpmeas.M_WELL, well_coltype),
-            (cpmeas.IMAGE, cpmeas.M_PLATE, cpmeas.COLTYPE_INTEGER)]
+            (cellprofiler.measurement.IMAGE, cellprofiler.measurement.M_SITE, cellprofiler.measurement.COLTYPE_INTEGER),
+            (cellprofiler.measurement.IMAGE, cellprofiler.measurement.M_ROW, row_coltype),
+            (cellprofiler.measurement.IMAGE, cellprofiler.measurement.M_COLUMN, cellprofiler.measurement.COLTYPE_INTEGER),
+            (cellprofiler.measurement.IMAGE, cellprofiler.measurement.M_WELL, well_coltype),
+            (cellprofiler.measurement.IMAGE, cellprofiler.measurement.M_PLATE, cellprofiler.measurement.COLTYPE_INTEGER)]
 
     def get_categories(self, pipeline, object_name):
-        if object_name == cpmeas.IMAGE:
-            return [cpmeas.C_METADATA]
+        if object_name == cellprofiler.measurement.IMAGE:
+            return [cellprofiler.measurement.C_METADATA]
         return []
 
     def get_measurements(self, pipeline, object_name, category):
-        if object_name == cpmeas.IMAGE and category == cpmeas.C_METADATA:
-            return [cpmeas.FTR_SITE, cpmeas.FTR_ROW, cpmeas.FTR_COLUMN,
-                    cpmeas.FTR_WELL, cpmeas.FTR_PLATE]
+        if object_name == cellprofiler.measurement.IMAGE and category == cellprofiler.measurement.C_METADATA:
+            return [cellprofiler.measurement.FTR_SITE, cellprofiler.measurement.FTR_ROW, cellprofiler.measurement.FTR_COLUMN,
+                    cellprofiler.measurement.FTR_WELL, cellprofiler.measurement.FTR_PLATE]
         return []
 
     def display(self, workspace, figure):

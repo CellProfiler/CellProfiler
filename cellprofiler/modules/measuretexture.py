@@ -117,17 +117,15 @@ SMC-3(6):610-621.
 </ul>
 """
 
-import numpy as np
-import scipy.ndimage as scind
-from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
-from centrosome.filter import gabor, stretch
-from centrosome.haralick import Haralick, normalized_per_object
-
-import cellprofiler.module as cpm
-import cellprofiler.measurement as cpmeas
-import cellprofiler.region as cpo
-import cellprofiler.setting as cps
-from cellprofiler.setting import YES, NO
+import cellprofiler.measurement
+import cellprofiler.module
+import cellprofiler.region
+import cellprofiler.setting
+import centrosome.cpmorphology
+import centrosome.filter
+import centrosome.haralick
+import numpy
+import scipy.ndimage
 
 """The category of the per-object measurements made by this module"""
 TEXTURE = 'Texture'
@@ -163,7 +161,7 @@ IO_OBJECTS = "Objects"
 IO_BOTH = "Both"
 
 
-class MeasureTexture(cpm.Module):
+class MeasureTexture(cellprofiler.module.Module):
     module_name = "MeasureTexture"
     variable_revision_number = 4
     category = 'Measurement'
@@ -177,23 +175,23 @@ class MeasureTexture(cpm.Module):
         self.image_groups = []
         self.object_groups = []
         self.scale_groups = []
-        self.image_count = cps.HiddenCount(self.image_groups)
-        self.object_count = cps.HiddenCount(self.object_groups)
-        self.scale_count = cps.HiddenCount(self.scale_groups)
+        self.image_count = cellprofiler.setting.HiddenCount(self.image_groups)
+        self.object_count = cellprofiler.setting.HiddenCount(self.object_groups)
+        self.scale_count = cellprofiler.setting.HiddenCount(self.scale_groups)
         self.add_image_cb(can_remove=False)
-        self.add_images = cps.DoSomething("", "Add another image",
-                                          self.add_image_cb)
-        self.image_divider = cps.Divider()
+        self.add_images = cellprofiler.setting.DoSomething("", "Add another image",
+                                                           self.add_image_cb)
+        self.image_divider = cellprofiler.setting.Divider()
         self.add_object_cb(can_remove=True)
-        self.add_objects = cps.DoSomething("", "Add another object",
-                                           self.add_object_cb)
-        self.object_divider = cps.Divider()
+        self.add_objects = cellprofiler.setting.DoSomething("", "Add another object",
+                                                            self.add_object_cb)
+        self.object_divider = cellprofiler.setting.Divider()
         self.add_scale_cb(can_remove=False)
-        self.add_scales = cps.DoSomething("", "Add another scale",
-                                          self.add_scale_cb)
-        self.scale_divider = cps.Divider()
+        self.add_scales = cellprofiler.setting.DoSomething("", "Add another scale",
+                                                           self.add_scale_cb)
+        self.scale_divider = cellprofiler.setting.Divider()
 
-        self.wants_gabor = cps.Binary(
+        self.wants_gabor = cellprofiler.setting.Binary(
                 "Measure Gabor features?", True, doc=
                 """The Gabor features measure striped texture in an object, and can
                 take a substantial time to calculate.
@@ -201,12 +199,12 @@ class MeasureTexture(cpm.Module):
                 <i>%(NO)s</i> to skip the Gabor feature calculation if it is not
                 informative for your images.</p>""" % globals())
 
-        self.gabor_angles = cps.Integer("Number of angles to compute for Gabor", 4, 2, doc="""
+        self.gabor_angles = cellprofiler.setting.Integer("Number of angles to compute for Gabor", 4, 2, doc="""
             <i>(Used only if Gabor features are measured)</i><br>
             Enter the number of angles to use for each Gabor texture measurement.
             The default value is 4 which detects bands in the horizontal, vertical and diagonal
             orientations.""")
-        self.images_or_objects = cps.Choice(
+        self.images_or_objects = cellprofiler.setting.Choice(
                 "Measure images or objects?", [IO_IMAGES, IO_OBJECTS, IO_BOTH],
                 value=IO_BOTH,
                 doc="""This setting determines whether the module
@@ -277,16 +275,16 @@ class MeasureTexture(cpm.Module):
         can_delete - set this to False to keep from showing the "remove"
                      button for images that must be present.
         '''
-        group = cps.SettingsGroup()
+        group = cellprofiler.setting.SettingsGroup()
         if can_remove:
-            group.append("divider", cps.Divider(line=False))
+            group.append("divider", cellprofiler.setting.Divider(line=False))
         group.append('image_name',
-                     cps.ImageNameSubscriber(
-                             "Select an image to measure", cps.NONE, doc="""
+                     cellprofiler.setting.ImageNameSubscriber(
+                             "Select an image to measure", cellprofiler.setting.NONE, doc="""
                          Select the grayscale images whose texture you want to measure."""))
 
         if can_remove:
-            group.append("remover", cps.RemoveSettingButton("", "Remove this image", self.image_groups, group))
+            group.append("remover", cellprofiler.setting.RemoveSettingButton("", "Remove this image", self.image_groups, group))
         self.image_groups.append(group)
 
     def add_object_cb(self, can_remove=True):
@@ -295,11 +293,11 @@ class MeasureTexture(cpm.Module):
         can_delete - set this to False to keep from showing the "remove"
                      button for objects that must be present.
         '''
-        group = cps.SettingsGroup()
+        group = cellprofiler.setting.SettingsGroup()
         if can_remove:
-            group.append("divider", cps.Divider(line=False))
+            group.append("divider", cellprofiler.setting.Divider(line=False))
         group.append('object_name',
-                     cps.ObjectNameSubscriber("Select objects to measure", cps.NONE, doc="""
+                     cellprofiler.setting.ObjectNameSubscriber("Select objects to measure", cellprofiler.setting.NONE, doc="""
                         Select the objects whose texture you want to measure.
                         If you only want to measure the texture
                         for the image overall, you can remove all objects using the "Remove this object" button.
@@ -309,7 +307,7 @@ class MeasureTexture(cpm.Module):
                         do not want this behavior, use multiple <b>MeasureTexture</b>
                         modules to specify the particular image-object measures that you want.</p>"""))
         if can_remove:
-            group.append("remover", cps.RemoveSettingButton("", "Remove this object", self.object_groups, group))
+            group.append("remover", cellprofiler.setting.RemoveSettingButton("", "Remove this object", self.object_groups, group))
         self.object_groups.append(group)
 
     def add_scale_cb(self, can_remove=True):
@@ -318,13 +316,13 @@ class MeasureTexture(cpm.Module):
         can_delete - set this to False to keep from showing the "remove"
                      button for scales that must be present.
         '''
-        group = cps.SettingsGroup()
+        group = cellprofiler.setting.SettingsGroup()
         if can_remove:
-            group.append("divider", cps.Divider(line=False))
+            group.append("divider", cellprofiler.setting.Divider(line=False))
         group.append('scale',
-                     cps.Integer("Texture scale to measure",
-                                 len(self.scale_groups) + 3,
-                                 doc="""You can specify the scale of texture to be measured, in pixel units;
+                     cellprofiler.setting.Integer("Texture scale to measure",
+                                                  len(self.scale_groups) + 3,
+                                                  doc="""You can specify the scale of texture to be measured, in pixel units;
                                  the texture scale is the distance between correlated intensities in the image. A
                                  higher number for the scale of texture measures larger patterns of
                                  texture whereas smaller numbers measure more localized patterns of
@@ -333,7 +331,7 @@ class MeasureTexture(cpm.Module):
                                  smaller than most of your objects. For very small objects (smaller than
                                  the scale of texture you are measuring), the texture cannot be measured
                                  and will result in a undefined value in the output file."""))
-        group.append('angles', cps.MultiChoice(
+        group.append('angles', cellprofiler.setting.MultiChoice(
                 "Angles to measure", H_ALL, H_ALL,
                 doc="""The Haralick texture measurements are based on the correlation
         between pixels offset by the scale in one of four directions:
@@ -350,7 +348,7 @@ class MeasureTexture(cpm.Module):
         Choose one or more directions to measure.""" % globals()))
 
         if can_remove:
-            group.append("remover", cps.RemoveSettingButton("", "Remove this scale", self.scale_groups, group))
+            group.append("remover", cellprofiler.setting.RemoveSettingButton("", "Remove this scale", self.scale_groups, group))
         self.scale_groups.append(group)
 
     def validate_module(self, pipeline):
@@ -358,7 +356,7 @@ class MeasureTexture(cpm.Module):
         images = set()
         for group in self.image_groups:
             if group.image_name.value in images:
-                raise cps.ValidationError(
+                raise cellprofiler.setting.ValidationError(
                         "%s has already been selected" % group.image_name.value,
                         group.image_name)
             images.add(group.image_name.value)
@@ -367,7 +365,7 @@ class MeasureTexture(cpm.Module):
             objects = set()
             for group in self.object_groups:
                 if group.object_name.value in objects:
-                    raise cps.ValidationError(
+                    raise cellprofiler.setting.ValidationError(
                             "%s has already been selected" % group.object_name.value,
                             group.object_name)
                 objects.add(group.object_name.value)
@@ -375,7 +373,7 @@ class MeasureTexture(cpm.Module):
         scales = set()
         for group in self.scale_groups:
             if group.scale.value in scales:
-                raise cps.ValidationError(
+                raise cellprofiler.setting.ValidationError(
                         "%s has already been selected" % group.scale.value,
                         group.scale)
             scales.add(group.scale.value)
@@ -390,7 +388,7 @@ class MeasureTexture(cpm.Module):
         if self.wants_object_measurements() and \
                 any([object_name == og.object_name for og in self.object_groups]):
             return [TEXTURE]
-        elif self.wants_image_measurements() and object_name == cpmeas.IMAGE:
+        elif self.wants_image_measurements() and object_name == cellprofiler.measurement.IMAGE:
             return [TEXTURE]
         else:
             return []
@@ -452,19 +450,19 @@ class MeasureTexture(cpm.Module):
                     for sg in self.scale_groups:
                         if feature == F_GABOR:
                             cols += [
-                                (cpmeas.IMAGE,
+                                (cellprofiler.measurement.IMAGE,
                                  '%s_%s_%s_%d' % (TEXTURE, feature,
                                                   im.image_name.value,
                                                   sg.scale.value),
-                                 cpmeas.COLTYPE_FLOAT)]
+                                 cellprofiler.measurement.COLTYPE_FLOAT)]
                         else:
                             for angle in sg.angles.get_selections():
                                 cols += [
-                                    (cpmeas.IMAGE,
+                                    (cellprofiler.measurement.IMAGE,
                                      '%s_%s_%s_%d_%s' % (
                                          TEXTURE, feature, im.image_name.value,
                                          sg.scale.value, H_TO_A[angle]),
-                                     cpmeas.COLTYPE_FLOAT)]
+                                     cellprofiler.measurement.COLTYPE_FLOAT)]
 
         if self.wants_object_measurements():
             for ob in self.object_groups:
@@ -477,7 +475,7 @@ class MeasureTexture(cpm.Module):
                                      "%s_%s_%s_%d" % (
                                          TEXTURE, feature, im.image_name.value,
                                          sg.scale.value),
-                                     cpmeas.COLTYPE_FLOAT)]
+                                     cellprofiler.measurement.COLTYPE_FLOAT)]
                             else:
                                 for angle in sg.angles.get_selections():
                                     cols += [
@@ -486,7 +484,7 @@ class MeasureTexture(cpm.Module):
                                              TEXTURE, feature,
                                              im.image_name.value,
                                              sg.scale.value, H_TO_A[angle]),
-                                         cpmeas.COLTYPE_FLOAT)]
+                                         cellprofiler.measurement.COLTYPE_FLOAT)]
 
         return cols
 
@@ -544,27 +542,27 @@ class MeasureTexture(cpm.Module):
             #
             # Recover by cropping the image to the labels
             #
-            pixel_data, m1 = cpo.size_similarly(labels, pixel_data)
-            if np.any(~m1):
+            pixel_data, m1 = cellprofiler.region.size_similarly(labels, pixel_data)
+            if numpy.any(~m1):
                 if mask is None:
                     mask = m1
                 else:
-                    mask, m2 = cpo.size_similarly(labels, mask)
+                    mask, m2 = cellprofiler.region.size_similarly(labels, mask)
                     mask[~m2] = False
 
-        if np.all(labels == 0):
+        if numpy.all(labels == 0):
             for name in F_HARALICK:
                 statistics += self.record_measurement(
                         workspace, image_name, object_name,
-                        str(scale) + "_" + H_TO_A[angle], name, np.zeros((0,)))
+                        str(scale) + "_" + H_TO_A[angle], name, numpy.zeros((0,)))
         else:
             scale_i, scale_j = self.get_angle_ij(angle, scale)
 
-            for name, value in zip(F_HARALICK, Haralick(pixel_data,
-                                                        labels,
-                                                        scale_i,
-                                                        scale_j,
-                                                        mask=mask).all()):
+            for name, value in zip(F_HARALICK, centrosome.haralick.Haralick(pixel_data,
+                                                                            labels,
+                                                                            scale_i,
+                                                                            scale_j,
+                                                                            mask=mask).all()):
                 statistics += self.record_measurement(
                         workspace, image_name, object_name,
                         str(scale) + "_" + H_TO_A[angle], name, value)
@@ -586,14 +584,14 @@ class MeasureTexture(cpm.Module):
         image = workspace.image_set.get_image(image_name,
                                               must_be_grayscale=True)
         pixel_data = image.pixel_data
-        image_labels = np.ones(pixel_data.shape, int)
+        image_labels = numpy.ones(pixel_data.shape, int)
         if image.has_mask:
             image_labels[~ image.mask] = 0
         scale_i, scale_j = self.get_angle_ij(angle, scale)
-        for name, value in zip(F_HARALICK, Haralick(pixel_data,
-                                                    image_labels,
-                                                    scale_i,
-                                                    scale_j).all()):
+        for name, value in zip(F_HARALICK, centrosome.haralick.Haralick(pixel_data,
+                                                                        image_labels,
+                                                                        scale_i,
+                                                                        scale_j).all()):
             statistics += self.record_image_measurement(
                     workspace, image_name, str(scale) + "_" + H_TO_A[angle],
                     name, value)
@@ -602,7 +600,7 @@ class MeasureTexture(cpm.Module):
     def run_one_gabor(self, image_name, object_name, scale, workspace):
         objects = workspace.get_objects(object_name)
         labels = objects.segmented
-        object_count = np.max(labels)
+        object_count = numpy.max(labels)
         if object_count > 0:
             image = workspace.image_set.get_image(image_name,
                                                   must_be_grayscale=True)
@@ -618,25 +616,25 @@ class MeasureTexture(cpm.Module):
                     mask = objects.crop_image_similarly(mask)
                     labels[~mask] = 0
             except ValueError:
-                pixel_data, m1 = cpo.size_similarly(labels, pixel_data)
+                pixel_data, m1 = cellprofiler.region.size_similarly(labels, pixel_data)
                 labels[~m1] = 0
                 if mask is not None:
-                    mask, m2 = cpo.size_similarly(labels, mask)
+                    mask, m2 = cellprofiler.region.size_similarly(labels, mask)
                     labels[~m2] = 0
                     labels[~mask] = 0
-            pixel_data = normalized_per_object(pixel_data, labels)
-            best_score = np.zeros((object_count,))
+            pixel_data = centrosome.haralick.normalized_per_object(pixel_data, labels)
+            best_score = numpy.zeros((object_count,))
             for angle in range(self.gabor_angles.value):
-                theta = np.pi * angle / self.gabor_angles.value
-                g = gabor(pixel_data, labels, scale, theta)
-                score_r = fix(scind.sum(g.real, labels,
-                                        np.arange(object_count, dtype=np.int32) + 1))
-                score_i = fix(scind.sum(g.imag, labels,
-                                        np.arange(object_count, dtype=np.int32) + 1))
-                score = np.sqrt(score_r ** 2 + score_i ** 2)
-                best_score = np.maximum(best_score, score)
+                theta = numpy.pi * angle / self.gabor_angles.value
+                g = centrosome.filter.gabor(pixel_data, labels, scale, theta)
+                score_r = centrosome.cpmorphology.fixup_scipy_ndimage_result(scipy.ndimage.sum(g.real, labels,
+                                                                                               numpy.arange(object_count, dtype=numpy.int32) + 1))
+                score_i = centrosome.cpmorphology.fixup_scipy_ndimage_result(scipy.ndimage.sum(g.imag, labels,
+                                                                                               numpy.arange(object_count, dtype=numpy.int32) + 1))
+                score = numpy.sqrt(score_r ** 2 + score_i ** 2)
+                best_score = numpy.maximum(best_score, score)
         else:
-            best_score = np.zeros((0,))
+            best_score = numpy.zeros((0,))
         statistics = self.record_measurement(workspace,
                                              image_name,
                                              object_name,
@@ -649,17 +647,17 @@ class MeasureTexture(cpm.Module):
         image = workspace.image_set.get_image(image_name,
                                               must_be_grayscale=True)
         pixel_data = image.pixel_data
-        labels = np.ones(pixel_data.shape, int)
+        labels = numpy.ones(pixel_data.shape, int)
         if image.has_mask:
             labels[~image.mask] = 0
-        pixel_data = stretch(pixel_data, labels > 0)
+        pixel_data = centrosome.filter.stretch(pixel_data, labels > 0)
         best_score = 0
         for angle in range(self.gabor_angles.value):
-            theta = np.pi * angle / self.gabor_angles.value
-            g = gabor(pixel_data, labels, scale, theta)
-            score_r = np.sum(g.real)
-            score_i = np.sum(g.imag)
-            score = np.sqrt(score_r ** 2 + score_i ** 2)
+            theta = numpy.pi * angle / self.gabor_angles.value
+            g = centrosome.filter.gabor(pixel_data, labels, scale, theta)
+            score_r = numpy.sum(g.real)
+            score_i = numpy.sum(g.imag)
+            score = numpy.sqrt(score_r ** 2 + score_i ** 2)
             best_score = max(best_score, score)
         statistics = self.record_image_measurement(workspace,
                                                    image_name,
@@ -673,8 +671,8 @@ class MeasureTexture(cpm.Module):
                            feature_name, result):
         """Record the result of a measurement in the workspace's
         measurements"""
-        data = fix(result)
-        data[~np.isfinite(data)] = 0
+        data = centrosome.cpmorphology.fixup_scipy_ndimage_result(result)
+        data[~numpy.isfinite(data)] = 0
         workspace.add_measurement(
                 object_name,
                 "%s_%s_%s_%s" % (TEXTURE, feature_name, image_name, str(scale)),
@@ -682,11 +680,11 @@ class MeasureTexture(cpm.Module):
         statistics = [[image_name, object_name,
                        "%s %s" % (aggregate_name, feature_name), scale,
                        "%.2f" % fn(data) if len(data) else "-"]
-                      for aggregate_name, fn in (("min", np.min),
-                                                 ("max", np.max),
-                                                 ("mean", np.mean),
-                                                 ("median", np.median),
-                                                 ("std dev", np.std))]
+                      for aggregate_name, fn in (("min", numpy.min),
+                                                 ("max", numpy.max),
+                                                 ("mean", numpy.mean),
+                                                 ("median", numpy.median),
+                                                 ("std dev", numpy.std))]
         return statistics
 
     def record_image_measurement(self, workspace,
@@ -694,7 +692,7 @@ class MeasureTexture(cpm.Module):
                                  feature_name, result):
         """Record the result of a measurement in the workspace's
         measurements"""
-        if not np.isfinite(result):
+        if not numpy.isfinite(result):
             result = 0
         workspace.measurements.add_image_measurement("%s_%s_%s_%s" %
                                                      (TEXTURE, feature_name,
@@ -726,7 +724,7 @@ class MeasureTexture(cpm.Module):
             # scale_count (calculated)
             #
             object_names = [name for name in setting_values[1:7]
-                            if name.upper() != cps.DO_NOT_USE.upper()]
+                            if name.upper() != cellprofiler.setting.DO_NOT_USE.upper()]
             scales = setting_values[7].split(',')
             setting_values = (["1", str(len(object_names)), str(len(scales)),
                                setting_values[0]] + object_names + scales +
@@ -737,7 +735,7 @@ class MeasureTexture(cpm.Module):
             #
             # Added "wants_gabor"
             #
-            setting_values = setting_values[:-1] + [cps.YES] + setting_values[-1:]
+            setting_values = setting_values[:-1] + [cellprofiler.setting.YES] + setting_values[-1:]
             variable_revision_number = 2
         if not from_matlab and variable_revision_number == 2:
             #

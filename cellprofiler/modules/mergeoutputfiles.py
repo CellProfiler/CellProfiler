@@ -47,16 +47,15 @@ as a data tool.</p>
 import os
 import sys
 
+import cellprofiler.measurement
+import cellprofiler.module
+import cellprofiler.pipeline
+import cellprofiler.preferences.get_headless
 import h5py
-import numpy as np
-
-import cellprofiler.module as cpm
-import cellprofiler.measurement as cpmeas
-import cellprofiler.pipeline as cpp
-from cellprofiler.preferences import get_headless
+import numpy
 
 
-class MergeOutputFiles(cpm.Module):
+class MergeOutputFiles(cellprofiler.module.Module):
     module_name = "MergeOutputFiles"
     category = "Data Tools"
     do_not_check = True
@@ -165,7 +164,6 @@ class MergeOutputFiles(cpm.Module):
 
     @staticmethod
     def on_help(event, list_control):
-        import cellprofiler.modules
         from cellprofiler.gui.htmldialog import HTMLDialog
         dlg = HTMLDialog(
                 list_control, 'Help on module,"%s"' % MergeOutputFiles.module_name, __doc__)
@@ -296,7 +294,7 @@ class MergeOutputFiles(cpm.Module):
 
     @staticmethod
     def merge_files(destination, sources, force_headless=False):
-        is_headless = force_headless or get_headless()
+        is_headless = force_headless or cellprofiler.preferences.get_headless()
         if not is_headless:
             import wx
         if len(sources) == 0:
@@ -311,11 +309,11 @@ class MergeOutputFiles(cpm.Module):
                                                wx.PD_REMAINING_TIME)
         count = 0
         try:
-            pipeline = cpp.Pipeline()
+            pipeline = cellprofiler.pipeline.Pipeline()
             has_error = [False]
 
             def callback(caller, event):
-                if isinstance(event, cpp.LoadExceptionEvent):
+                if isinstance(event, cellprofiler.pipeline.LoadExceptionEvent):
                     has_error = True
                     wx.MessageBox(
                             message="Could not load %s: %s" % (
@@ -329,11 +327,11 @@ class MergeOutputFiles(cpm.Module):
             if has_error[0]:
                 return
             if destination.lower().endswith(".h5"):
-                mdest = cpmeas.Measurements(filename=destination,
-                                            multithread=False)
+                mdest = cellprofiler.measurement.Measurements(filename=destination,
+                                                              multithread=False)
                 h5_dest = True
             else:
-                mdest = cpmeas.Measurements(multithread=False)
+                mdest = cellprofiler.measurement.Measurements(multithread=False)
                 h5_dest = False
             for source in sources:
                 if not is_headless:
@@ -342,11 +340,11 @@ class MergeOutputFiles(cpm.Module):
                     if not keep_going:
                         return
                 if h5py.is_hdf5(source):
-                    msource = cpmeas.Measurements(filename=source,
-                                                  mode="r",
-                                                  multithread=False)
+                    msource = cellprofiler.measurement.Measurements(filename=source,
+                                                                    mode="r",
+                                                                    multithread=False)
                 else:
-                    msource = cpmeas.load_measurements(source)
+                    msource = cellprofiler.measurement.load_measurements(source)
                 dest_image_numbers = mdest.get_image_numbers()
                 source_image_numbers = msource.get_image_numbers()
                 if (len(dest_image_numbers) == 0 or
@@ -354,15 +352,15 @@ class MergeOutputFiles(cpm.Module):
                     offset_source_image_numbers = source_image_numbers
                 else:
                     offset_source_image_numbers = (
-                        np.max(dest_image_numbers) -
-                        np.min(source_image_numbers) + source_image_numbers + 1)
+                        numpy.max(dest_image_numbers) -
+                        numpy.min(source_image_numbers) + source_image_numbers + 1)
                 for object_name in msource.get_object_names():
                     if object_name in mdest.get_object_names():
                         destfeatures = mdest.get_feature_names(object_name)
                     else:
                         destfeatures = []
                     for feature in msource.get_feature_names(object_name):
-                        if object_name == cpmeas.EXPERIMENT:
+                        if object_name == cellprofiler.measurement.EXPERIMENT:
                             if not mdest.has_feature(object_name, feature):
                                 src_value = msource.get_experiment_measurement(
                                         feature)

@@ -1,4 +1,4 @@
-"""<b>Mask Image</b> hides certain portions of an image (based on previously identified 
+"""<b>Mask Image</b> hides certain portions of an image (based on previously identified
 objects or a binary image) so they are ignored by subsequent mask-respecting modules
 in the pipeline.
 <hr>
@@ -16,18 +16,17 @@ See also <b>ApplyThreshold</b>, <b>IdentifyPrimaryObjects</b>, <b>IdentifyObject
 
 """
 
-import numpy as np
-
-import cellprofiler.image as cpi
-import cellprofiler.module as cpm
-import cellprofiler.setting as cps
-from cellprofiler.setting import YES, NO
+import cellprofiler.image
+import cellprofiler.module
+import cellprofiler.setting
+import cellprofiler.setting
+import numpy
 
 IO_IMAGE = "Image"
 IO_OBJECTS = "Objects"
 
 
-class MaskImage(cpm.Module):
+class MaskImage(cellprofiler.module.Module):
     module_name = "MaskImage"
     category = "Image Processing"
     variable_revision_number = 3
@@ -36,7 +35,7 @@ class MaskImage(cpm.Module):
         """Create the settings here and set the module name (initialization)
 
         """
-        self.source_choice = cps.Choice(
+        self.source_choice = cellprofiler.setting.Choice(
                 "Use objects or an image as a mask?",
                 [IO_OBJECTS, IO_IMAGE], doc="""
             You can mask an image in two ways:
@@ -53,25 +52,25 @@ class MaskImage(cpm.Module):
             image and have finer control over the intensity choice.</li>
             </ul>""" % globals())
 
-        self.object_name = cps.ObjectNameSubscriber(
-                "Select object for mask", cps.NONE, doc="""
+        self.object_name = cellprofiler.setting.ObjectNameSubscriber(
+                "Select object for mask", cellprofiler.setting.NONE, doc="""
             <i>(Used only if mask is to be made from objects)</i> <br>
             Select the objects you would like to use to mask the input image.""")
 
-        self.masking_image_name = cps.ImageNameSubscriber(
-                "Select image for mask", cps.NONE, doc="""
+        self.masking_image_name = cellprofiler.setting.ImageNameSubscriber(
+                "Select image for mask", cellprofiler.setting.NONE, doc="""
             <i>(Used only if mask is to be made from an image)</i> <br>
             Select the image that you like to use to mask the input image.""")
 
-        self.image_name = cps.ImageNameSubscriber(
-                "Select the input image", cps.NONE, doc="""
+        self.image_name = cellprofiler.setting.ImageNameSubscriber(
+                "Select the input image", cellprofiler.setting.NONE, doc="""
             Select the image that you want to mask.""")
 
-        self.masked_image_name = cps.ImageNameProvider(
+        self.masked_image_name = cellprofiler.setting.ImageNameProvider(
                 "Name the output image", "MaskBlue", doc="""
             Enter the name for the output masked image.""")
 
-        self.invert_mask = cps.Binary(
+        self.invert_mask = cellprofiler.setting.Binary(
                 "Invert the mask?", False, doc=
                 """This option reverses the foreground/background relationship of
                 the mask.
@@ -128,16 +127,16 @@ class MaskImage(cpm.Module):
                 mask = mask == 0
         orig_image = image_set.get_image(self.image_name.value)
         if tuple(mask.shape) != tuple(orig_image.pixel_data.shape[:2]):
-            tmp = np.zeros(orig_image.pixel_data.shape[:2], mask.dtype)
+            tmp = numpy.zeros(orig_image.pixel_data.shape[:2], mask.dtype)
             tmp[mask] = True
             mask = tmp
         if orig_image.has_mask:
-            mask = np.logical_and(mask, orig_image.mask)
+            mask = numpy.logical_and(mask, orig_image.mask)
         masked_pixels = orig_image.pixel_data.copy()
-        masked_pixels[np.logical_not(mask)] = 0
-        masked_image = cpi.Image(masked_pixels, mask=mask,
-                                 parent=orig_image,
-                                 masking_objects=objects)
+        masked_pixels[numpy.logical_not(mask)] = 0
+        masked_image = cellprofiler.image.Image(masked_pixels, mask=mask,
+                                                parent=orig_image,
+                                                masking_objects=objects)
 
         image_set.add(self.masked_image_name.value, masked_image)
 
@@ -177,7 +176,7 @@ class MaskImage(cpm.Module):
             # Added ability to select an image
             #
             setting_values = setting_values + [IO_IMAGE if setting_values[0] == "Image" else IO_OBJECTS,
-                                               cps.NONE]
+                                               cellprofiler.setting.NONE]
             variable_revision_number = 2
 
         if (not from_matlab) and variable_revision_number == 2:

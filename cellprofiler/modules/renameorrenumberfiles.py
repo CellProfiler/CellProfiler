@@ -67,33 +67,32 @@ See also: <b>NamesAndTypes</b>, <b>SaveImages</b>
 
 import os
 
-import cellprofiler.module as cpm
-import cellprofiler.setting as cps
-from cellprofiler.setting import YES, NO
+import cellprofiler.module
+import cellprofiler.setting
 
 A_RENUMBER = "Renumber"
 A_DELETE = "Delete"
 
 
-class RenameOrRenumberFiles(cpm.Module):
+class RenameOrRenumberFiles(cellprofiler.module.Module):
     module_name = "RenameOrRenumberFiles"
     category = "File Processing"
     variable_revision_number = 2
 
     def create_settings(self):
         '''Create the settings for the module's UI'''
-        self.warning = cps.Divider(
+        self.warning = cellprofiler.setting.Divider(
                 "This module allows you to rename (overwrite) your files. Please "
                 "see the help for this module for warnings.")
 
-        self.image_name = cps.FileImageNameSubscriber(
-                'Select the input image', cps.NONE, doc="""
+        self.image_name = cellprofiler.setting.FileImageNameSubscriber(
+                'Select the input image', cellprofiler.setting.NONE, doc="""
             Select the images associated with the files
             you want to rename. This should be an image loaded by the
             <b>Input</b> modules.
             Be very careful because you will be renaming these files!""")
 
-        self.number_characters_prefix = cps.Integer(
+        self.number_characters_prefix = cellprofiler.setting.Integer(
                 "Number of characters to retain at start of file name", 6,
                 minval=0, doc="""
             Number of characters at the start of the old
@@ -102,7 +101,7 @@ class RenameOrRenumberFiles(cpm.Module):
             "Image-734.tif", the output file name will also start with
             "Image-".""")
 
-        self.number_characters_suffix = cps.Integer(
+        self.number_characters_suffix = cellprofiler.setting.Integer(
                 "Number of characters to retain at the end of file name", 4,
                 minval=0, doc="""
             Number of characters at the end of the old
@@ -110,7 +109,7 @@ class RenameOrRenumberFiles(cpm.Module):
             instance, if this setting is "4" and the file name is
             "Image-734.tif", the output file name will also end with ".tif".""")
 
-        self.action = cps.Choice(
+        self.action = cellprofiler.setting.Choice(
                 "Handling of remaining characters",
                 [A_RENUMBER, A_DELETE], doc="""
             You can either treat the characters between the start and
@@ -121,7 +120,7 @@ class RenameOrRenumberFiles(cpm.Module):
             file "Image-<u>734</u>.tif" using four digits, the result would
             be "Image-0734.tif".""")
 
-        self.number_digits = cps.Integer(
+        self.number_digits = cellprofiler.setting.Integer(
                 "Number of digits for numbers",
                 4, minval=0, doc="""
             <i>(Used only if %(A_RENUMBER)s is selected)</i><br>
@@ -136,7 +135,7 @@ class RenameOrRenumberFiles(cpm.Module):
             <tr><td>1000</td><td>1000</td></tr>
             </table></code>""" % globals())
 
-        self.wants_text = cps.Binary(
+        self.wants_text = cellprofiler.setting.Binary(
                 "Add text to the file name?", False, doc="""
             Select <i>%(YES)s</i> if you want to add text
             to the file name. If you had chosen <i>%(A_RENUMBER)s</i> above,
@@ -144,19 +143,19 @@ class RenameOrRenumberFiles(cpm.Module):
             If you had chosen <i>%(A_DELETE)s</i>, the module will replace
             the deleted text with the text you enter here.""" % globals())
 
-        self.text_to_add = cps.Text(
+        self.text_to_add = cellprofiler.setting.Text(
                 "Replacement text", "", doc="""
             <i>(Used only if you chose to add text to the file name)</i><br>
             Enter the text that you want to add to each file name.""")
 
-        self.wants_to_replace_spaces = cps.Binary(
+        self.wants_to_replace_spaces = cellprofiler.setting.Binary(
                 "Replace spaces?", False, doc="""
             Select <i>%(YES)s</i> to replace spaces in the final
             version of the file name with some other text.
             <p>Select <i>%(NO)s</i> if the file name can have spaces
             or if none of the file names have spaces.</p>""" % globals())
 
-        self.space_replacement = cps.Text(
+        self.space_replacement = cellprofiler.setting.Text(
                 "Space replacement", "_", doc="""
             This is the text that will be substituted for spaces
             in your file name.""")
@@ -258,7 +257,7 @@ class RenameOrRenumberFiles(cpm.Module):
     def validate_module_warnings(self, pipeline):
         '''Warn user re: Test mode '''
         if pipeline.test_mode:
-            raise cps.ValidationError(
+            raise cellprofiler.setting.ValidationError(
                     "RenameOrRenumberFiles will not rename files in test mode",
                     self.image_name)
 
@@ -276,10 +275,10 @@ class RenameOrRenumberFiles(cpm.Module):
             image_name, number_characters_prefix, number_characters_suffix, \
             text_to_add, number_digits = setting_values
 
-            wants_text = text_to_add.lower() != cps.DO_NOT_USE.lower()
-            wants_text = cps.YES if wants_text else cps.NO
+            wants_text = text_to_add.lower() != cellprofiler.setting.DO_NOT_USE.lower()
+            wants_text = cellprofiler.setting.YES if wants_text else cellprofiler.setting.NO
 
-            if number_digits.lower() == cps.DO_NOT_USE.lower():
+            if number_digits.lower() == cellprofiler.setting.DO_NOT_USE.lower():
                 number_digits = 4
                 action = A_DELETE
             else:
@@ -294,6 +293,6 @@ class RenameOrRenumberFiles(cpm.Module):
             #
             # Added wants_to_replace_spaces and space_replacement
             #
-            setting_values = setting_values + [cps.NO, "_"]
+            setting_values = setting_values + [cellprofiler.setting.NO, "_"]
             variable_revision_number = 2
         return setting_values, variable_revision_number, from_matlab

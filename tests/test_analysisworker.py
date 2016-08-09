@@ -641,89 +641,6 @@ class TestAnalysisWorker(unittest.TestCase):
             req.reply(cpanalysis.Ack())
             self.awthread.ecute()
 
-        @unittest.skipIf(not has_rpdb(), "rpdb functionality is disabled")
-        def test_03_07_a_sad_ending(self):
-            #
-            # Run using the bad pipeline and lead the analysis worker
-            # through debug post-mortem
-            #
-            self.awthread = self.AWThread(self.announce_addr)
-            self.awthread.start()
-            self.set_work_socket()
-            self.awthread.ex(self.awthread.aw.do_job,
-                             cpanalysis.WorkReply(
-                                 image_set_numbers = [2],
-                                 worker_runs_post_group = False,
-                                 wants_dictionary = False))
-            #
-            # The worker should ask for the pipeline and preferences next.
-            #
-            req = self.awthread.recv(self.work_socket)
-            self.assertIsInstance(req, cpanalysis.PipelinePreferencesRequest)
-            self.assertEqual(req.analysis_id, self.analysis_id)
-
-            input_dir = os.path.join(example_images_directory(), "ExampleSBSImages")
-            cpprefs.set_default_image_directory(input_dir)
-            preferences = {cpprefs.DEFAULT_IMAGE_DIRECTORY:
-                           cpprefs.config_read(cpprefs.DEFAULT_IMAGE_DIRECTORY) }
-
-            rep = cpanalysis.Reply(
-                pipeline_blob = np.array(BAD_PIPELINE),
-                preferences = preferences)
-            req.reply(rep)
-            #
-            # The worker asks for the initial measurements.
-            #
-            req = self.awthread.recv(self.work_socket)
-            self.assertIsInstance(req, cpanalysis.InitialMeasurementsRequest)
-            self.assertEqual(req.analysis_id, self.analysis_id)
-            m = get_measurements_for_good_pipeline(nimages=2)
-            try:
-                req.reply(cpanalysis.Reply(buf = m.file_contents()))
-            finally:
-                m.close()
-            #
-            # Next, the worker asks for the shared dictionary
-            #
-            req = self.awthread.recv(self.work_socket)
-            self.assertIsInstance(req, cpanalysis.SharedDictionaryRequest)
-            shared_dictionaries = [{ ("foo%d" % i):"bar%d" % i} for i in range(1,8)]
-            rep = cpanalysis.SharedDictionaryReply(
-                dictionaries = shared_dictionaries)
-            req.reply(rep)
-            #
-            # The worker should choke somewhere in NamesAndTypes
-            #
-            req = self.awthread.recv(self.work_socket)
-            self.assertIsInstance(req, cpanalysis.ExceptionReport)
-            password = "corned beef"
-            req.reply(cpanalysis.ExceptionPleaseDebugReply(
-                disposition='DEBUG',
-                verification_hash = hashlib.sha1(password).hexdigest()))
-            #
-            # Next, the worker sends DebugWaiting once it binds to a port
-            #
-            req = self.awthread.recv(self.work_socket)
-            self.assertIsInstance(req, cpanalysis.DebugWaiting)
-            handle = None
-            telnet_socket = socket.socket(socket.AF_INET,
-                                          proto = socket.IPPROTO_TCP)
-            telnet_socket.connect(("127.0.0.1", req.port))
-            try:
-                req.reply(cpanalysis.Ack())
-                #
-                # Should say, "Verification: ", but it could change...
-                #
-                prompt = telnet_socket.recv(20)
-                telnet_socket.send("corned beef\n")
-                pdb = telnet_socket.recv(4000)
-                telnet_socket.send("exit\n")
-            finally:
-                telnet_socket.close()
-            req = self.awthread.recv(self.work_socket)
-            self.assertIsInstance(req, cpanalysis.DebugComplete)
-            req.reply(cpanalysis.ExceptionPleaseDebugReply(disposition = ED_STOP))
-
         def test_03_08_a_sad_moment(self):
             #
             # Run using the good pipeline, but change one of the URLs so
@@ -820,139 +737,139 @@ class TestAnalysisWorker(unittest.TestCase):
             self.awthread.ecute()
 
 
-def test_03_09_flag_image_abort(self):
-        #
-        # Regression test of issue #1210
-        # Make a pipeline that aborts during FlagImage
-        #
-        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:3
-DateRevision:20140918122611
-GitHash:ded6939
-ModuleCount:6
-HasImagePlaneDetails:False
+    def test_03_09_flag_image_abort(self):
+                #
+                # Regression test of issue #1210
+                # Make a pipeline that aborts during FlagImage
+                #
+                data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+        Version:3
+        DateRevision:20140918122611
+        GitHash:ded6939
+        ModuleCount:6
+        HasImagePlaneDetails:False
 
-Images:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_window:False|notes:\x5B\'To begin creating your project, use the Images module to compile a list of files and/or folders that you want to analyze. You can also specify a set of rules to include only the desired files in your selected folders.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
-    :
-    Filter images?:Images only
-    Select the rule criteria:and (extension does isimage) (directory doesnot containregexp "\x5B\\\\\\\\\\\\\\\\/\x5D\\\\\\\\.")
+        Images:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_window:False|notes:\x5B\'To begin creating your project, use the Images module to compile a list of files and/or folders that you want to analyze. You can also specify a set of rules to include only the desired files in your selected folders.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+            :
+            Filter images?:Images only
+            Select the rule criteria:and (extension does isimage) (directory doesnot containregexp "\x5B\\\\\\\\\\\\\\\\/\x5D\\\\\\\\.")
 
-Metadata:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:4|show_window:False|notes:\x5B\'The Metadata module optionally allows you to extract information describing your images (i.e, metadata) which will be stored along with your measurements. This information can be contained in the file name and/or location, or in an external file.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
-    Extract metadata?:No
-    Metadata data type:Text
-    Metadata types:{}
-    Extraction method count:1
-    Metadata extraction method:Extract from file/folder names
-    Metadata source:File name
-    Regular expression:^(?P<Plate>.*)_(?P<Well>\x5BA-P\x5D\x5B0-9\x5D{2})_s(?P<Site>\x5B0-9\x5D)_w(?P<ChannelNumber>\x5B0-9\x5D)
-    Regular expression:(?P<Date>\x5B0-9\x5D{4}_\x5B0-9\x5D{2}_\x5B0-9\x5D{2})$
-    Extract metadata from:All images
-    Select the filtering criteria:and (file does contain "")
-    Metadata file location:
-    Match file and image metadata:\x5B\x5D
-    Use case insensitive matching?:No
+        Metadata:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:4|show_window:False|notes:\x5B\'The Metadata module optionally allows you to extract information describing your images (i.e, metadata) which will be stored along with your measurements. This information can be contained in the file name and/or location, or in an external file.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+            Extract metadata?:No
+            Metadata data type:Text
+            Metadata types:{}
+            Extraction method count:1
+            Metadata extraction method:Extract from file/folder names
+            Metadata source:File name
+            Regular expression:^(?P<Plate>.*)_(?P<Well>\x5BA-P\x5D\x5B0-9\x5D{2})_s(?P<Site>\x5B0-9\x5D)_w(?P<ChannelNumber>\x5B0-9\x5D)
+            Regular expression:(?P<Date>\x5B0-9\x5D{4}_\x5B0-9\x5D{2}_\x5B0-9\x5D{2})$
+            Extract metadata from:All images
+            Select the filtering criteria:and (file does contain "")
+            Metadata file location:
+            Match file and image metadata:\x5B\x5D
+            Use case insensitive matching?:No
 
-NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:5|show_window:False|notes:\x5B\'The NamesAndTypes module allows you to assign a meaningful name to each image by which other modules will refer to it.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
-    Assign a name to:All images
-    Select the image type:Grayscale image
-    Name to assign these images:DNA
-    Match metadata:\x5B\x5D
-    Image set matching method:Order
-    Set intensity range from:Image metadata
-    Assignments count:1
-    Single images count:0
-    Select the rule criteria:and (file does contain "")
-    Name to assign these images:DNA
-    Name to assign these objects:Cell
-    Select the image type:Grayscale image
-    Set intensity range from:Image metadata
-    Retain outlines of loaded objects?:No
-    Name the outline image:LoadedOutlines
+        NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:5|show_window:False|notes:\x5B\'The NamesAndTypes module allows you to assign a meaningful name to each image by which other modules will refer to it.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+            Assign a name to:All images
+            Select the image type:Grayscale image
+            Name to assign these images:DNA
+            Match metadata:\x5B\x5D
+            Image set matching method:Order
+            Set intensity range from:Image metadata
+            Assignments count:1
+            Single images count:0
+            Select the rule criteria:and (file does contain "")
+            Name to assign these images:DNA
+            Name to assign these objects:Cell
+            Select the image type:Grayscale image
+            Set intensity range from:Image metadata
+            Retain outlines of loaded objects?:No
+            Name the outline image:LoadedOutlines
 
-Groups:[module_num:4|svn_version:\'Unknown\'|variable_revision_number:2|show_window:False|notes:\x5B\'The Groups module optionally allows you to split your list of images into image subsets (groups) which will be processed independently of each other. Examples of groupings include screening batches, microtiter plates, time-lapse movies, etc.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
-    Do you want to group your images?:No
-    grouping metadata count:1
-    Metadata category:None
+        Groups:[module_num:4|svn_version:\'Unknown\'|variable_revision_number:2|show_window:False|notes:\x5B\'The Groups module optionally allows you to split your list of images into image subsets (groups) which will be processed independently of each other. Examples of groupings include screening batches, microtiter plates, time-lapse movies, etc.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+            Do you want to group your images?:No
+            grouping metadata count:1
+            Metadata category:None
 
-FlagImage:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_window:False|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
-    Hidden:1
-    Hidden:1
-    Name the flag\'s category:Metadata
-    Name the flag:QCFlag
-    Flag if any, or all, measurement(s) fails to meet the criteria?:Flag if any fail
-    Skip image set if flagged?:Yes
-    Flag is based on:Whole-image measurement
-    Select the object to be used for flagging:None
-    Which measurement?:Height_DNA
-    Flag images based on low values?:No
-    Minimum value:0.0
-    Flag images based on high values?:Yes
-    Maximum value:1.0
-    Rules file location:Elsewhere...\x7C
-    Rules file name:rules.txt
-    Class number:
+        FlagImage:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_window:False|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+            Hidden:1
+            Hidden:1
+            Name the flag\'s category:Metadata
+            Name the flag:QCFlag
+            Flag if any, or all, measurement(s) fails to meet the criteria?:Flag if any fail
+            Skip image set if flagged?:Yes
+            Flag is based on:Whole-image measurement
+            Select the object to be used for flagging:None
+            Which measurement?:Height_DNA
+            Flag images based on low values?:No
+            Minimum value:0.0
+            Flag images based on high values?:Yes
+            Maximum value:1.0
+            Rules file location:Elsewhere...\x7C
+            Rules file name:rules.txt
+            Class number:
 
-MeasureImageIntensity:[module_num:6|svn_version:\'Unknown\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
-    Select the image to measure:DNA
-    Measure the intensity only from areas enclosed by objects?:No
-    Select the input objects:None
-"""
-        self.awthread = self.AWThread(self.announce_addr)
-        self.awthread.start()
-        self.set_work_socket()
-        self.awthread.ex(self.awthread.aw.do_job,
-                         cpanalysis.WorkReply(
-                             image_set_numbers = [1],
-                             worker_runs_post_group = False,
-                             wants_dictionary = True))
-        #
-        # The worker should ask for the pipeline and preferences next.
-        #
-        req = self.awthread.recv(self.work_socket)
-        self.assertIsInstance(req, cpanalysis.PipelinePreferencesRequest)
-        self.assertEqual(req.analysis_id, self.analysis_id)
+        MeasureImageIntensity:[module_num:6|svn_version:\'Unknown\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+            Select the image to measure:DNA
+            Measure the intensity only from areas enclosed by objects?:No
+            Select the input objects:None
+        """
+                self.awthread = self.AWThread(self.announce_addr)
+                self.awthread.start()
+                self.set_work_socket()
+                self.awthread.ex(self.awthread.aw.do_job,
+                                 cpanalysis.WorkReply(
+                                     image_set_numbers = [1],
+                                     worker_runs_post_group = False,
+                                     wants_dictionary = True))
+                #
+                # The worker should ask for the pipeline and preferences next.
+                #
+                req = self.awthread.recv(self.work_socket)
+                self.assertIsInstance(req, cpanalysis.PipelinePreferencesRequest)
+                self.assertEqual(req.analysis_id, self.analysis_id)
 
-        input_dir = os.path.join(example_images_directory(), "ExampleSBSImages")
-        cpprefs.set_default_image_directory(input_dir)
-        preferences = {cpprefs.DEFAULT_IMAGE_DIRECTORY:
-                       cpprefs.config_read(cpprefs.DEFAULT_IMAGE_DIRECTORY) }
+                input_dir = os.path.join(example_images_directory(), "ExampleSBSImages")
+                cpprefs.set_default_image_directory(input_dir)
+                preferences = {cpprefs.DEFAULT_IMAGE_DIRECTORY:
+                               cpprefs.config_read(cpprefs.DEFAULT_IMAGE_DIRECTORY) }
 
-        rep = cpanalysis.Reply(
-            pipeline_blob = np.array(data),
-            preferences = preferences)
-        req.reply(rep)
-        #
-        # The worker asks for the initial measurements.
-        #
-        req = self.awthread.recv(self.work_socket)
-        self.assertIsInstance(req, cpanalysis.InitialMeasurementsRequest)
-        self.assertEqual(req.analysis_id, self.analysis_id)
-        m = get_measurements_for_good_pipeline()
-        pipeline = cpp.Pipeline()
-        pipeline.loadtxt(StringIO(data))
-        pipeline.write_pipeline_measurement(m)
+                rep = cpanalysis.Reply(
+                    pipeline_blob = np.array(data),
+                    preferences = preferences)
+                req.reply(rep)
+                #
+                # The worker asks for the initial measurements.
+                #
+                req = self.awthread.recv(self.work_socket)
+                self.assertIsInstance(req, cpanalysis.InitialMeasurementsRequest)
+                self.assertEqual(req.analysis_id, self.analysis_id)
+                m = get_measurements_for_good_pipeline()
+                pipeline = cpp.Pipeline()
+                pipeline.loadtxt(StringIO(data))
+                pipeline.write_pipeline_measurement(m)
 
-        try:
-            req.reply(cpanalysis.Reply(buf = m.file_contents()))
-        finally:
-            m.close()
-        #
-        # Next, the worker asks for the shared dictionary
-        #
-        req = self.awthread.recv(self.work_socket)
-        self.assertIsInstance(req, cpanalysis.SharedDictionaryRequest)
-        shared_dictionaries = [{ ("foo%d" % i):"bar%d" % i} for i in range(1,7)]
-        rep = cpanalysis.SharedDictionaryReply(
-            dictionaries = shared_dictionaries)
-        req.reply(rep)
-        #
-        # MeasureImageIntensity follows FlagImage and it is poised to ask
-        # for a display. So if we get that, we know the module has been run
-        # and we fail the test.
-        #
-        req = self.awthread.recv(self.work_socket)
-        self.assertFalse(isinstance(req, cpanalysis.DisplayRequest))
-        self.assertFalse(isinstance(req, cpanalysis.ExceptionReport))
+                try:
+                    req.reply(cpanalysis.Reply(buf = m.file_contents()))
+                finally:
+                    m.close()
+                #
+                # Next, the worker asks for the shared dictionary
+                #
+                req = self.awthread.recv(self.work_socket)
+                self.assertIsInstance(req, cpanalysis.SharedDictionaryRequest)
+                shared_dictionaries = [{ ("foo%d" % i):"bar%d" % i} for i in range(1,7)]
+                rep = cpanalysis.SharedDictionaryReply(
+                    dictionaries = shared_dictionaries)
+                req.reply(rep)
+                #
+                # MeasureImageIntensity follows FlagImage and it is poised to ask
+                # for a display. So if we get that, we know the module has been run
+                # and we fail the test.
+                #
+                req = self.awthread.recv(self.work_socket)
+                self.assertFalse(isinstance(req, cpanalysis.DisplayRequest))
+                self.assertFalse(isinstance(req, cpanalysis.ExceptionReport))
 
 
 GOOD_PIPELINE = r"""CellProfiler Pipeline: http://www.cellprofiler.org

@@ -1,9 +1,7 @@
 import StringIO
-import base64
 import os
 import tempfile
 import unittest
-import zlib
 
 import cellprofiler.image
 import cellprofiler.measurement
@@ -34,47 +32,6 @@ class TestRenameOrRenumberFiles(unittest.TestCase):
             os.removedirs(self.path)
         except:
             pass
-
-    def test_01_01_load_matlab(self):
-        data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
-                'SU1RyM+zUggpTVXwSsxTMDJTMDSyMjSzMrZQMDIwNFAgGTAwevryMzAwvGNk'
-                'YKiY8zbstN8hB5G9urp2Yiy+Pj4RN5ZKC34QnK53xWNRQsOEHTIJKyZP4XvZ'
-                '3KBtf3rp/QPiPzT9FjpYawZ4HZ1RMPnkE7/3luXPvpxTZmXYKeIw6evuNZ0G'
-                'Zje/svoX/9HaprNo9TIeIZndj+PXXJ3oGOB8uHTJzRstK32PdVfNvsZ29+Xy'
-                '9FubTGOcZPMNNk+6m5lwWGe7usP3z9wvk9d63TP8kSsUdtA2SWjV7orp8+Xn'
-                'PlsqNn26J8N9a2NZFr92luz2eYXq/8TSPgY15GX619zKNb2z/dy73ysyNWVT'
-                'TO/LzLsjJHfyuDKjaccuz5htq9sPddrN4Wg9FLE8tPDn6YIdK14L11gwRuwK'
-                '+Flxh7VldXPth+uNj+8Hui6fljQ7z/H4yc2r8vx8/x0v/fD/sdazPzX7n8bm'
-                'z8/Jquv3ruC3iDuuXtX9xeO02ywnK4+59/gCr52fn64q1d93s8PqXeHr0pqr'
-                'DsybO01kDoiX1XHK5zPFzcyqXyluL/9XhvVTTUf3+8r1ca+vvV4xI6T51t0f'
-                'lc++nv7RfE/VuK41l/VO7JH9Z8X9920x2M/3s6ovytxfZGvXPGbdMz8rjny0'
-                'qGN9/WZtnFmEfZW3/YSPl/+Y/9jz22ani/jEyvZNMi9tzrqfUec+xFG+mcmv'
-                'KHmdf9vMxLQ534XDfv9fzv1IfdvKH/Ir75/sBQB5QhVW')
-        pipeline = cellprofiler.pipeline.Pipeline()
-
-        def callback(caller, event):
-            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
-
-        pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
-        self.assertEqual(len(pipeline.modules()), 3)
-
-        module = pipeline.modules()[1]
-        self.assertTrue(isinstance(module, cellprofiler.modules.renameorrenumberfiles.RenameOrRenumberFiles))
-        self.assertEqual(module.image_name, "orig")
-        self.assertEqual(module.number_characters_prefix, 22)
-        self.assertEqual(module.number_characters_suffix, 4)
-        self.assertEqual(module.action, cellprofiler.modules.renameorrenumberfiles.A_DELETE)
-        self.assertFalse(module.wants_text)
-
-        module = pipeline.modules()[2]
-        self.assertTrue(isinstance(module, cellprofiler.modules.renameorrenumberfiles.RenameOrRenumberFiles))
-        self.assertEqual(module.image_name, "orig")
-        self.assertEqual(module.number_characters_prefix, 14)
-        self.assertEqual(module.number_characters_suffix, 3)
-        self.assertEqual(module.action, cellprofiler.modules.renameorrenumberfiles.A_RENUMBER)
-        self.assertTrue(module.wants_text)
-        self.assertEqual(module.number_digits, 5)
 
     def test_01_02_load_v1(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org

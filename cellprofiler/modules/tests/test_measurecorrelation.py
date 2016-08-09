@@ -47,60 +47,6 @@ class TestMeasureCorrelation(unittest.TestCase):
                                                      image_set_list)
         return workspace, module
 
-    def test_01_01_load_matlab(self):
-        '''Load a Matlab pipeline with a MeasureCorrelation module'''
-        data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0'
-                'sSU1RyM+zUgjJKFXwKs1TMDRUMLC0MjS1MjZTMDIwsFQgGTAwevryMzAwSD'
-                'EzMFTMeRtxN++WgYiZQMT10NjrWZeWFB58qhfBfre/bGefn/Qlroy1Wr63j'
-                'voYXJmcvPjIyoT8zbttj8ml92+UEOLQSzjO0rYsctOaxz9qns95f+O45zdG'
-                'hr/HGUSaCtVfRBrk/Qw4d2TXBH2B5zO+7bHZcGBxwb/wC+sXdCfOXqDtUfO'
-                'k0bP72estp/Xa/55cXHztI2eWg/o+iwze+5nK17PLlI9+KOTmF9h54L7gjN'
-                'yLm/xfsFXPuBhgf2R6unqZ5PQ379hrC+pPObs9Osj1KzAnbk0987LXay33y'
-                'B65Jt/yV4j3x+Vy5ozPk5h31uoWaHHNucPjxzfH1M/9W7z2F65Jfw91xM9W'
-                'sPlWH1tWfmBNrOL1dYpLO+Ysebjdy17/JffONg5Byesnb8d6xp/Yqphey2S'
-                'rPie+1X7qPNPF6Y3hT8VFZfe/96zj3vl0k90bRzmZps77WnNiOd1PpK9xkd'
-                'T/KTfr2P5DditmffhuabF5WdlsvXd7eb2CZ31cXXDplvtNyTk6GQa2vz9/c'
-                '55cXffSNjHXQ+2b77ngu422S042681f9ttx6fSZF083rEq7s8pqStgdLZm7'
-                'NmpP1wety1syb9nU/66VPlH+2senvlL7vH3dX/mn+pl/V4T9y7s3L/uV7qn'
-                'ZjfdO557ZzpV+72/gcplA/s+KHvfnZ/xZcKBa4SGn5GW+fQdl5ScJiYU3ix'
-                '/21va7XF0UWiv837/2XJN4Tc7xN6eTLxUX72Gab/VvxoNvMRZfcjwCeI5/k'
-                'fM/dV5JJlTG83zzOvtlv9Nj/534cyHd4OqfNae6ez5/Pvfp/fuKu56b8p9/'
-                'tNYKsp3+s7Z2TuX7xDV/eW/WcE1ZZn8xI6g/uW5q062eX9lHvLXjRM/t+a8'
-                'ZPGdjtFqpbqadmez3bZ+XV+v5VPq8vvO3///9vni50NJ3AYdEjT5bHhS5q1'
-                'Vy+s/9a4V3P9af1dm3/ul7g8tW3yce9LP95rhQ+LozMMS/8i2SKW/XFbf+W'
-                'J54+bfBod0OZotlXxzbH+xTYe9+4XNsSPK67hNfyt+u/b66qel5joKs3Nu3'
-                'y77aux6Pq9OfPvm/8sovawr+eW+M/BOoI976L39Cjr1t5Ca7rNu7/vE73Wj'
-                '5BgDjormq')
-        #
-        # 4 modules, MeasureCorrelation is last
-        #
-        # Images:
-        #    DNA
-        #    Cytoplasm
-        # Measure images and objects
-        # Objects:
-        #    Nuclei
-        #    Cells
-        #
-        fd = StringIO.StringIO(zlib.decompress(base64.b64decode(data)))
-        pipeline = cellprofiler.pipeline.Pipeline()
-
-        def callback(caller, event):
-            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
-
-        pipeline.add_listener(callback)
-        pipeline.load(fd)
-        self.assertEqual(len(pipeline.modules()), 4)
-        module = pipeline.modules()[-1]
-        self.assertEqual(module.images_or_objects.value, cellprofiler.modules.measurecorrelation.M_IMAGES_AND_OBJECTS)
-        self.assertEqual(module.image_count.value, 2)
-        for name in [x.image_name.value for x in module.image_groups]:
-            self.assertTrue(name in ["DNA", "Cytoplasm"])
-
-        self.assertEqual(module.object_count.value, 2)
-        for name in [x.object_name.value for x in module.object_groups]:
-            self.assertTrue(name in ["Nuclei", "Cells"])
-
     def test_01_02_load_v1(self):
         '''Load a version-1 MeasureCorrelation module'''
         data = ('eJztW++O2kYQXzju2muk6FKpatR82Y+59kCG5NoLqi5Q6B/ag6AcTRRFabs'

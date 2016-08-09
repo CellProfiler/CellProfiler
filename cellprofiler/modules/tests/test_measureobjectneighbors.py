@@ -53,43 +53,6 @@ class TestMeasureObjectNeighbors(unittest.TestCase):
             object_set.add_objects(objects, NEIGHBORS_NAME)
         return workspace, module
 
-    def test_01_01_load_matlab(self):
-        '''Load a Matlab pipeline with a MeasureObjectNeighbors module'''
-        data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0'
-                'sSU1RyM+zUggH0l6leQqG5gqGZlbG5lZGxgpGBgaWCiQDBkZPX34GBoY5TA'
-                'wMFXPuRsTnXzYQKL+9halt2SauI87yn3a056o0CPT7SDd5rVl7w6TxSPfsH'
-                'WvVj68TSs/6mWLzyfSH2ZHcSVZx1/+8jmpRPW31/F15+f6Yc57fGBn+ijH0'
-                'JtSKnNGK6KnSCF+i+cT7iOUy5fV8Jh+M7vyXPZP9IslC4YWUkHylgtzFuna'
-                '+m1dzhOJ3JWzzDxC32lRksGufscO669JubQ+f2s1TKuqsV5ogM/FWeEm37Z'
-                'mMDPlHq3dvjD8muv/3QZs70Z8CAitWsG5Wfcv9lz9h5fq1D9ZqvjQ/XNm67'
-                'M+PxyJRMeUK248xHfc4uFK1IOvBnmqr7//tjq5b+CP/zM+tHIduProf/Ka1'
-                'xqxtitKnXzcMkuVOHZs4rV41MX7m6+kPdc/6ed/IfHD3YrQyd7z/FJvWmnM'
-                'lp3a8q058OO3J3SmV52f//77g2faZx5NZ3U+kG59TY6nii3i05Gmg74MQx+'
-                'mip+fva5I+u1/jf+TP6hNVrwrPX7cXNGtQOXazJKZyfnaxe+GK7yctjIQLn'
-                '5x97OtmvfW8hHrbzu5fEV/nlGm4Xzlco3ZUeO384A/zNCucjl05tv3GN8WL'
-                'G5ndP778LfBR9K266yOLr5bcfEU5oh3Oa2dPFqpZ072Y496JVuPzTSyeFqm'
-                '/7647v3pNocjaft/jhfd/hn6zm/JUcdP/ZWvr46f9dri5zyxfSnn6z8lvLF'
-                'afszXb4SgWzzT1bbbQPLkvFiaaE96vet+Suo/7Ru6RnS8rzOeW3/q1//fv8'
-                'OtbqmwYPOVaztT4GbiWcwUdyw17914/a772rfB9BhnlS8Qn6fy0CS9oubNR'
-                '8GmFxevdNyaef6RToS9ioxiv8OKn3quz8rf1Di3+2NApL5F1P2/JhyDeJc1'
-                'he6/8roir/7r8q/V/1ktvtgQ8d999/d/luB9/WT/d/X/Y9NfFG9P+xcv3CH'
-                '8AAMz0fHw=')
-        #
-        # MeasureObjectNeighbors is module # 3
-        # object_name = Nuclei
-        # distance = 0 which should translate into D_EXPAND
-        #
-        fd = StringIO.StringIO(zlib.decompress(base64.b64decode(data)))
-        pipeline = cellprofiler.pipeline.Pipeline()
-        pipeline.load(fd)
-        self.assertEqual(len(pipeline.modules()), 3)
-        module = pipeline.modules()[2]
-        self.assertTrue(isinstance(module, cellprofiler.modules.measureobjectneighbors.MeasureObjectNeighbors))
-        self.assertEqual(module.object_name, 'Nuclei')
-        self.assertEqual(module.distance_method, cellprofiler.modules.measureobjectneighbors.D_EXPAND)
-        self.assertFalse(module.wants_count_image.value)
-        self.assertFalse(module.wants_percent_touching_image.value)
-
     def test_01_02_load_v1(self):
         '''Load a pipeline with a v1 MeasureObjectNeighbors module'''
         data = ('eJztWt1u2zYUph0naFpg7VoMG9AbXjZdLMhusqbBkNqJu85b7RiN0aAo2o6'

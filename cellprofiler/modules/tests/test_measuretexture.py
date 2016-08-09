@@ -41,50 +41,6 @@ class TestMeasureTexture(unittest.TestCase):
         object_set.add_objects(objects, INPUT_OBJECTS_NAME)
         return workspace, module
 
-    def test_01_01_load_matlab(self):
-        data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUX'
-                'AuSk0sSU1RyM+zUggpTVXwKs1TMLBUMDS0MjSxMjFTMDIA8kgGDIye'
-                'vvwMDAxzmBgYKua8jfDNvm0gEWZ3cpvQrmlO/JY/djhfs9zSLHf94k'
-                'bWayprlhrccC0U8Z+dyxqtdbIusv9v5uQs64lTdYpy1C8ENirF/a6d'
-                '/935k7KmL8OBj4IMpXZmFfrNG64q7VQpVYxX9tqYzm4awHr84mf2e/'
-                'kL+x9ecNx+IVGD4bOY/fuq5CLj2WfiYycKFgfw79pklG/7jG+i/Jfj'
-                'GxO/VDUsP7HzWL2Ax7aIt9K7DjOqxaXIP1zt/7yOM/SP2dHz9xbxqS'
-                '7lE73Hv/S503/miBfh4Vdy4y/d7//FO+vS9vnLLixq4175NfjBnOwC'
-                'Ka6+Cb/tttl/ChJPzM96s5rzt9aOPRIll3+s1a5rvZM8rbkgYn/u7e'
-                'dro303ihcdz5nfWbV05v/pXXsn6Hc+FMzaoBB1wvXRi2cbJx1Y2fD+'
-                'j3RFV+UUYYvUC8rnP288a1NisV5ERvF75oGe83ySTunPP4qY2i9l8e'
-                'MscbC6F3lUevnbzd9+yx5fv05/813O7zt7fs5ftiX4O/fnI29O1HWf'
-                'im//7HRQsOj64hPcBnM9Px55LM57L5vV/8QN6YfWNkkXDDdwv/25Mk'
-                'n6Y263ePjRwoMaD9lFclI7nGPN1S1fbdTr06nYxp/eyCqr8jDl6cs9'
-                '33b9uFzHnvn4xC67WV4yTnznE2vdZN90us5fLnfPOuKEzZO1zjn2K9'
-                'buZz9hM2H6dTnPw984Z4v0C/dHVvTy1Ct22zFJzXl8IaXZJnwuu8qe'
-                'Kxar3/l32xzeYLay/taOKx8t7/+3vp979HeIu2y8TEOKbIvPobkJnQ'
-                'Ypd9xe3t+z6lN1mNwfrwcrtGWPXHpSvOQBx05rJ7mjj28eOL6uhu3k'
-                'rvg4RQkD+c799T827PG/avpVo/jlgw0TX9/btHL/rbjKl/sWb17tZm'
-                'Uf9ffa+7AX3+VyzN7nX3txPDf8Vz3jKX7jVwD5C2/v')
-        fd = StringIO.StringIO(zlib.decompress(base64.b64decode(data)))
-        pipeline = cellprofiler.pipeline.Pipeline()
-        pipeline.load(fd)
-        self.assertEqual(len(pipeline.modules()), 3)
-        module = pipeline.modules()[2]
-        #
-        # image_name = OrigBlue
-        # object_name = Nuclei
-        # scale = 3,4,5
-        #
-        self.assertTrue(isinstance(module, cellprofiler.modules.measuretexture.MeasureTexture))
-        self.assertEqual(module.image_count.value, 1)
-        self.assertEqual(module.image_groups[0].image_name.value, "OrigBlue")
-
-        self.assertEqual(module.object_count.value, 1)
-        self.assertEqual(module.object_groups[0].object_name.value, "Nuclei")
-
-        self.assertEqual(module.scale_count.value, 3)
-        for scale, expected in zip([x.scale.value
-                                    for x in module.scale_groups], [3, 4, 5]):
-            self.assertEqual(scale, expected)
-        self.assertEqual(module.gabor_angles, 4)
-
     def test_01_02_load_v1(self):
         data = ('eJztWk1P2zAYdj9AdEiMcdkkLj5uE0RpB9LgspZ1bJ3oh0bFtNvS1C2eErt'
                 'KHNbutJ+1437OjvsJi9uEJl4gaQptihJhhdfx4+fx69dOeHG90j6rnMBDSY'

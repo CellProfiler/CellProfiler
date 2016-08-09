@@ -84,49 +84,6 @@ class TestRelateObjects(unittest.TestCase):
             index = object_names.index(column[0])
             self.assertTrue(column[1] in features[index])
 
-    def test_01_01_load_matlab_v4(self):
-        '''Load a Matlab pipeline with a version 4 relate module'''
-        data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0'
-                'sSU1RyM+zUggpTVXwKs1TMDRTMLCwMjGwMjBWMDIwsFQgGTAwevryMzAwHG'
-                'ViYKiY8zbidt5lA4my3UtuLZBKFhXyUHg6qdsw6uBRve2GEhMXrL2WJSRkn'
-                'vdKrN9knVB6VqWSXLM3CDHPVl37uNXS+w4zh/u0r9b/9v1/cPh9ijTDh7+C'
-                'DKLX8jZFsYUf7XkyKWDnHccpSfkSMw4w8C/+l79mnrP84Xnd5xZKL2I443U'
-                'nv5r50ty+9PX3Jte9WKQm09kcmdm2WO5T8zUFNrf1tyua7vD9a3LYdOTwuQ'
-                'uqfAYflWqO6H8/90VI6+XdtK/H91bKeAXJ8IRlO9nL13M8e9w7Zcdbjsfli'
-                '265Cv9685XF6oqU46uaRzbsXPN8O9tP68rz90eu2Hxjo+rD7Up/VvZPUP8x'
-                '+XjfOQnL+Td1CmtiG82FKpjnyGx9q1OlPSlOz9z5uGtE/93VF/TPzefK96r'
-                'QM39VrV+5p/QBv+gPa6F5p9WPfOLYekjh1oTKZ/9779ZOZd0+8UBuA3/Oe7'
-                'GDLz+FH51cen/lHw31ilMLPMW6o0vuTLO9vzEu9tvqindeNjF5FxW2+MVea'
-                'l5XJnf338pHMV4fpjgsVsi7+e306yX7rmu0nJbeLi5Z+Gln5P315l0PSo5H'
-                'H51cxndLzjWu4eUXsW8pTztvb+fa91tIfvrG68en75B3un5I2WLOXaHrN8/'
-                'vqVTol3VXVH3zqGtu078lH1O+ut9z/z3r7YW3/nL7FvIvb2SOVfmwRit/3a'
-                '99C7rVV9tXfj+965fy+f7vMutKbFO3Rn/fa37t99U9P63jz3C7fn76XsXoi'
-                '6dFnJ3/rb8Tv+hNcH7u4vp56YH0jXc6j3E/ufx0fZf62/1nbf6Fpy1dmx76'
-                'e/vt//H/919d9e25nsexiadVluh9u7CVdxfHvh250//VxJ2+b1l5/no5y7f'
-                'ch4fmH53PLsQ//a3dJw05n9t2cp3lh1w/PP2ZX9kW43Hxq01U4JGtZ5bcjT'
-                'p75Wu9Qrfd5ijTFPtQC+VX/3/sODrvlXDff8687XXz7hnY6b22+ifOIxZ/F'
-                'wAIq5Eo')
-        #
-        # The Relate module is the fourth in the pipeline:
-        # Children = Speckles
-        # Parents = Nuclei
-        # Calculate per-parent means = yes
-        #
-        fd = StringIO.StringIO(zlib.decompress(base64.b64decode(data)))
-        pipeline = cellprofiler.pipeline.Pipeline()
-
-        def callback(caller, event):
-            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
-
-        pipeline.add_listener(callback)
-        pipeline.load(fd)
-        self.assertEqual(len(pipeline.modules()), 4)
-        module = pipeline.modules()[3]
-        self.assertTrue(isinstance(module, cellprofiler.modules.relateobjects.Relate))
-        self.assertEqual(module.sub_object_name.value, "Speckles")
-        self.assertEqual(module.parent_name.value, "Nuclei")
-        self.assertTrue(module.wants_per_parent_means.value)
-
     def test_01_02_load_v1(self):
         '''Load a pipeline with a version 1 relate module'''
         data = ('eJztm1tP2zAUx90LCIY0sUnTmHixeJomiNINNuBlKTCgEzdBxba3palbvLl'

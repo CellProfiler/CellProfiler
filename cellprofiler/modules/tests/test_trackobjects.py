@@ -21,62 +21,6 @@ OBJECT_NAME = "objects"
 
 
 class TestTrackObjects(unittest.TestCase):
-    def test_01_01_load_matlab(self):
-        '''Load a Matlab pipeline with a TrackObjects module'''
-        data = ('eJwBIwTc+01BVExBQiA1LjAgTUFULWZpbGUsIFBsYXRmb3JtOiBQQ1dJTiwg'
-                'Q3JlYXRlZCBvbjogVGh1IEp1bCAzMCAxMzo0ODo1MCAyMDA5ICAgICAgICAg'
-                'ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAAAUlN'
-                'DwAAAJsDAAB4nORYW2/TMBR2LyuFjWkXQCD1IbzxMLaWCQnedkOjElumrZpA'
-                '4mFu43WGNK5yqVZ+DU/8Dn4O/4EX4iZpHa+tHTfLxmbJck/q851zPtvHl0UA'
-                'wNlLAEp+W/ZrHgRlLpRzTKXyCXJdbLWdOVAEz8Pvv/16Cm0MmyY6haaHHDAs'
-                '0fe6dU4a/e7wrwNieCY6hB22s18OvU4T2Y5+HimGfx/hS2Se4B8IxEvU7Rj1'
-                'sIOJFeqH+PzXoV3icnYX/fpnecRDjuOBtqvMd9p/C4z6F8fwtsT0XwprA126'
-                'rz9cwpardaDbuqA47wQ4DzgcKus2bh/v7wAZ/TKnXw71923Yl9EvcfqlwTi1'
-                'TISBlP2x/veQbcLuQL8q0C/G9ItgX9f3VO3ukk4TW0jKb1HcWwL9R5w+lfeI'
-                'ZhFX85xwIt8Y/8z8EfFfiOkXgLUBle1uVtfe+yVV/kQ4DzkcKm/bCJ5cwG6U'
-                'T7IcT9F6TDoeX/xclqb/Sdcj5TJL+7kYTg7UJPWum7dZ1+F950/V79tu/zFn'
-                'n8q663jatgG7Lu6hjOPIx3Dy4G01W/uT9pOkerX1mlK8hyTw86NA7wkXL5Vp'
-                'jnZa0EQatAwtOFdGcafFn3IeQYbyeaK6XnuzVgvsy8Yzbl/Vm9+Qf7at7zE4'
-                'SdfV5iz2B/soQlYC+/y8qobzSlU/631l0nlix7+KqfJYt1xkOdjtMzxErQhv'
-                'nsOjcsOGre/I8KeHM8QRrb9lDofK2DJwDxseNDXcge3hLW7WeTst3qhVzTOz'
-                '+LXtucS/KOLWDH7x62s9Bb5k/FLBbUf5VSHOSeswKc6s4yi7rtP2SylPeK7p'
-                '34cdkT8lDi8qEV6e0ZONR3a80uYpas/K09972Pwz6/gPklXbJl43e5xx+ZgM'
-                '9ukR0DS+VfI0g6/5ORt1E/An629WOOPe8UbjEISnkv9UxyVtf9P287bzKcKR'
-                'XXeT2vvGZ9I2rXiui5fr8vem7GTl///aiva3FRDnh8okODdd2eDG4f/MTT5n'
-                '5MLf7DljS+DPuPz0iUCjzlyIVNf3LjGJ3SD0mUOan6ccDpXrBrJcfN4/snGH'
-                'vSvI4D3j8Kh8gKDj2Sh4XmAe72XiXODwqDy4jwZoThQne37mz7v8OOVDeWV+'
-                'tTwP1O5h0fuhit253EKhAK7GL9KnftH58rXyoqJXflX+VoLvFOdzYfo8PQDx'
-                'efoKTO4flbvU/y62/wAAAP//42OAgFGatjQAqXa4itAqDLA=')
-        pipeline = cellprofiler.pipeline.Pipeline()
-
-        def callback(caller, event):
-            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
-
-        pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
-        # Module #5: TrackObjects revision - 3
-        # Choose a tracking method    Overlap
-        # What did you call the objects you want to track?    Nuclei
-        # What category of measurement you want to use?    AreaShape
-        # What feature you want to use?  Area
-        # Which image's measurements do you want to use?    OrigRGB
-        # what previously measured size scale do you want to use?    1
-        # Choose the neighborhood    50
-        # How do you want to display the tracked objects?  Grayscale and Number
-        # Select the number you want displayed    Object ID
-        # Do you want to calculate statistics?    Yes
-        # What do you want to call the resulting image with tracked, color-coded objects? Type "Do not use" to ignore.    TrackedObjs
-        self.assertEqual(len(pipeline.modules()), 5)
-        module = pipeline.modules()[4]
-        self.assertTrue(isinstance(module, cellprofiler.modules.trackobjects.TrackObjects))
-        self.assertEqual(module.tracking_method, cellprofiler.modules.trackobjects.TM_OVERLAP)
-        self.assertEqual(module.object_name.value, "Nuclei")
-        self.assertEqual(module.measurement.value, "AreaShape_Area_OrigRGB_1")
-        self.assertEqual(module.pixel_radius.value, 50)
-        self.assertEqual(module.display_type.value, "Grayscale and Number")
-        self.assertTrue(module.wants_image.value)
-        self.assertEqual(module.image_name.value, "TrackedObjs")
-
     def test_01_02_load_v1(self):
         '''load a version 1 pipeline'''
         data = ('eJztnFtv2zYUgOXEua1d4XUP60sB7m0YEsFO563Jy+QkTeIhjoPGaLenjJFo'

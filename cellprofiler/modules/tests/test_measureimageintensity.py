@@ -157,37 +157,6 @@ class TestMeasureImageIntensity(unittest.TestCase):
         self.assertEqual(m.get_current_measurement(cellprofiler.measurement.IMAGE, "Intensity_MeanIntensity_my_image_my_objects"),
                          numpy.sum(pixels[1:9, 1:9]) / 64.0)
 
-    def test_02_01_load_matlab(self):
-        '''Test loading a measure image intensity module saved in Matlab'''
-        data = ('TUFUTEFCIDUuMCBNQVQtZmlsZSwgUGxhdGZvcm06IFBDV0lOLCBDcmV'
-                'hdGVkIG9uOiBGcmkgQXByIDI0IDE1OjMxOjE0IDIwMDkgICAgICAgIC'
-                'AgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgI'
-                'AABSU0PAAAA0AEAAHic7VXNTsJAEJ6WQlATgiQmHjj06MW/ePGoRhNJ'
-                '5CdCSEw8uMBSNyld0m4J+AQ+j0/AY3l0F1tolwotICemmTSzne+b3W+'
-                'nuzkAeDsAyPB3lrsKv5b2YiXgIq5jxohlOGnQ4NgbH3NvIpuglombyH'
-                'SxA1Pzx0tWlzZG/emnMu24Jq6gXjCZW8XttbDtVLs+0PtcI0Ns1skHh'
-                'rD5ac94QBxCLQ/v8cuj07qUSXVz3PXMTAdF0kHoUgiMi/wbmOVrEbrl'
-                'A/l5zxt4yE4fhqjN9B5i7XfBc72EJyvxiLhqE+OOSy3wF0vwWgivwf1'
-                'trRQHp4RwyiR/G/OV617G1Htfqivie6pblOmu4zXOOuveVH3Y8W2EL+'
-                'k+Xv3zfB6X8B1KfCImVocMSMdFpk56yJieSknWqYZ4VajQ9XQ6S6jTn'
-                'rQuERs2GjltZOIAT9z5pEJ8KXjhqmxTD7m+dY5C+G9l8T0R1GPdfps0'
-                'hWFTtz/PF5c36h6a8eq8BXE/infHH80/hr/3X+6/Vff9iaJOKXAgxDl'
-                'fjiQeEZcxclwbT6hKFsOWQ9gI5v+DzJJ1qPwpaKudJ/79nbReWk2O0/'
-                'jzWvwqCtwnJNunkwX5vq2a/wMdg65H')
-        fd = StringIO.StringIO(base64.b64decode(data))
-        p = cellprofiler.pipeline.Pipeline()
-
-        def error_handler(caller, event):
-            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
-
-        p.add_listener(error_handler)
-        p.load(fd)
-        self.assertEqual(len(p.modules()), 2)
-        module = p.modules()[1]
-        self.assertEqual(len(module.images), 1)
-        self.assertEqual(module.images[0].image_name.value, 'OrigBlue')
-        self.assertFalse(module.images[0].wants_objects.value)
-
     def test_02_01_load_v1(self):
         '''Test loading an measure image intensity module saved in V1'''
         data = ('TUFUTEFCIDUuMCBNQVQtZmlsZSBQbGF0Zm9ybTogbnQsIENyZWF0ZWQg'

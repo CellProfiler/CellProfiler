@@ -46,60 +46,6 @@ class TestMeasureObjectIntensityDistribution(unittest.TestCase):
         self.assertEqual(
                 cellprofiler.modules.measureobjectintensitydistribution.MeasureObjectIntensityDistribution.variable_revision_number, 5)
 
-    def test_01_01_load_matlab(self):
-        data = ('eJwBhAR7+01BVExBQiA1LjAgTUFULWZpbGUsIFBsYXRmb3JtOiBQQ1dJTiwg'
-                'Q3JlYXRlZCBvbjogVHVlIEF1ZyAxOCAxNTozODowMiAyMDA5ICAgICAgICAg'
-                'ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAAAUlN'
-                'DwAAAPwDAAB4nOxZ0W6bMBR10iTqNqnKtJftjQ9oO9g6qY+tkmnrQ9OqrSrt'
-                '0SEu9WRsFEyV7Kv2Cfu0QQIELFKDQyDrQLIsG59zj6+vr2U4AACc6gD0/Hrf'
-                'L22wfLphu5UoQfsWcY6p5XZBB7wP+//45R5OMRwTdA+Jh1wQP1H/BX1gd3Mn'
-                'fnXJJh5BI2gnB/vPyLPHaOpePUTA8PU1niFyi38hkH6iYTfoCbuY0RAf8ou9'
-                'sV3GBbsHfvn9YeWHluCHoLxL9Afjz8BqfCfDb/3E+H5Y7tCMH32dQZNrNuTm'
-                'Y8CjS3j2Ujx7YDg6X9g/leB6gv3ewr8mQXipX9WubN6vBLtBezDnzCHQtRP+'
-                'q9v+pv6T6Xgj4IP24BFSiohxpBul6ZDhuwI+aA8QIW5F9uvWv238mQRfVjxm'
-                '6TD0wxM9p46seLyeMgdakPtJMtYh43kt8ATtIdMo45rnIlA6T93xWZU/nskX'
-                'n5L5omje/OGfdVXm7VaKpwVO/jGczE9511v1fJPh2ilcG4yYenxdcdfTvhE2'
-                'hiTWHdVl+aHhKTdOov1cNL4N0KzvLvLk3ZdF40Q/NJr1roFHdV/KcJ0UrgP0'
-                'Y91o1nf31nfdPix6rht6Ol8XjavjF477nBO3bt8o4L78D/utaHxf3gwrnUfW'
-                'PeWCckRdzOegfH/krb9L7L0V7AVtTCf4CU88SDRsQyv+KlmmH1TvE3nnva37'
-                'Stb8zj3ObMixWUBfUb3r8lNdelXsWlM4d01IUIJH9Z5RVO+2vk+UvV/z6lWN'
-                '37r0iv6lH2Gl659X56Z5J6r3+8//t0nm3U3P70WStqbMc/LzZN3v2PgnMvmK'
-                'qEo9L5Unr5+jWuW8TvBp/tmNnC3ylTXfhmcznqz/uKv4XC6byrm9C/P8CwAA'
-                '//9jZWBg4ABiRiDmhtIgIADl5ydlpSaXpBfllxaAxfmA2AGI2aD6WKDqB9Ic'
-                'dJqQuVxo5oL4mbmJ6akIY0kyb6iGG73MEUAzRwAlvBUy81JSC7DF41D170Cn'
-                '/9HwG02/Q8kcQvRgc+9QM4fS9Etv2oOAf4TQ/APi55eW5GTmIfto4P0xUumB'
-                'jr8dTAj7YfYg248sTm570Sc/McUTlIeKife3KJo5IL5nSmpeSWZaZUBRZq5j'
-                'aUl+bmJJZjKR5gmimSeIZF5wanJ+XkpiUSWSPwMImCeJZh6I75uaWFxalBqU'
-                'mJKZmOOSWVxSlJlUWpKZnzdqLoa5DgTM5UUzF8R3rSjILyoJyXetSE7NgZpj'
-                'gWQOGxZzkNMvE5QvJMzDAgRcIP0GBNzByIDsDkYGQwrsZeVhZgQCZnT/E9LP'
-                'Ag2DbbLpspdlveUg8K4MyJwVjKTlXw0G3OphYFQ9bdQDAIDboH02qiiq')
-        pipeline = cellprofiler.pipeline.Pipeline()
-
-        def callback(caller, event):
-            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
-
-        pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
-        self.assertEqual(len(pipeline.modules()), 8)
-        for i, image_name, object_name, center_name in \
-                ((3, "DNA", "Nuclei", None),
-                 (4, "Cytoplasm", "Nuclei", None),
-                 (5, "DNA", "Cells", "Nuclei"),
-                 (6, "Cytoplasm", "Cells", "Nuclei")):
-            module = pipeline.modules()[i]
-            self.assertTrue(isinstance(module, cellprofiler.modules.measureobjectintensitydistribution.MeasureObjectIntensityDistribution))
-            for seq in (module.images, module.objects, module.bin_counts):
-                self.assertEqual(len(seq), 1)
-            self.assertEqual(module.images[0].image_name, image_name)
-            self.assertEqual(module.objects[0].object_name, object_name)
-            if center_name is None:
-                self.assertEqual(module.objects[0].center_choice, cellprofiler.modules.measureobjectintensitydistribution.C_SELF)
-            else:
-                self.assertEqual(module.objects[0].center_choice,
-                                 cellprofiler.modules.measureobjectintensitydistribution.C_CENTERS_OF_OTHER)
-                self.assertEqual(module.objects[0].center_object_name, center_name)
-            self.assertEqual(module.bin_counts[0].bin_count, 4)
-
     def test_01_02_load_v1(self):
         data = ('eJztW92O2kYUHgi7yjZttOlNqqiR5jLbLsiQXXWzijZQ6A9qYNEuShRFaTvg'
                 'ASYae5A93iytIvWyj9HH6GUfp5d9hHrABjPxYmPMAhsjWXCO55vvzJkz5wwD'

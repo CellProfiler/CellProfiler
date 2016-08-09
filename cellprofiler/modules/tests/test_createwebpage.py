@@ -1,5 +1,4 @@
 import StringIO
-import base64
 import os
 import shutil
 import tempfile
@@ -8,7 +7,6 @@ import urllib
 import urllib2
 import xml.dom.minidom
 import zipfile
-import zlib
 
 import bioformats
 import bioformats.formatwriter

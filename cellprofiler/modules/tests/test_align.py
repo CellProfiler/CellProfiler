@@ -1,7 +1,5 @@
 import StringIO
-import base64
 import unittest
-import zlib
 
 import cellprofiler.image
 import cellprofiler.measurement

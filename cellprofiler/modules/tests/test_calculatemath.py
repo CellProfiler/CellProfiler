@@ -128,9 +128,7 @@ CalculateRatios:[module_num:1|svn_version:\'8913\'|variable_revision_number:6|sh
         self.assertEqual(module.operands[0].operand_measurement, "AreaShape_Area")
         self.assertEqual(module.operands[1].operand_measurement, "AreaShape_Perimeter")
 
-    def run_workspace(self, operation, m1_is_image_measurement, m1_data,
-                      m2_is_image_measurement, m2_data,
-                      setup_fn=None):
+    def run_workspace(self, operation, m1_is_image_measurement, m1_data, m2_is_image_measurement, m2_data, setup_fn=None):
         """Create and run a workspace, returning the measurements
 
         m<n>_is_image_measurement - true for an image measurement, false

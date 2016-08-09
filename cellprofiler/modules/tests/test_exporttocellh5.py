@@ -18,6 +18,7 @@ OBJECTS_NAME = "objectsname"
 FEATURE1 = "feature1"
 FEATURE2 = "feature2"
 
+
 class TestExportToCellH5(unittest.TestCase):
     def setUp(self):
         self.temp_dir = tempfile.mkdtemp()
@@ -74,20 +75,20 @@ ExportToCellH5:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:1|
             self.assertEqual(group.objects_name, object_name)
         self.assertEqual(len(module.images_to_export), 4)
         for image_name, group in zip(
-            ("CropBlue", "CropGreen", "CropRed", "RGBImage"),
-            module.images_to_export):
+                ("CropBlue", "CropGreen", "CropRed", "RGBImage"),
+                module.images_to_export):
             self.assertEqual(group.image_name, image_name)
 
     def get_plate_name(self, idx):
         return "Plate%d" % idx
 
     def get_well_name(self, idx):
-        return "%s%02d" % (chr(ord('A')+int(idx/12)), idx % 12)
+        return "%s%02d" % (chr(ord('A') + int(idx / 12)), idx % 12)
 
     def get_site_name(self, idx):
-        return str(idx+1)
+        return str(idx + 1)
 
-    def prepare_workspace(self, sites = None):
+    def prepare_workspace(self, sites=None):
         """Create a module and workspace for testing
 
         returns module, workspace
@@ -111,7 +112,8 @@ ExportToCellH5:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:1|
         pipeline = MyPipeline()
         pipeline.add_module(module)
         pipeline.extra_measurement_columns += [
-            (cellprofiler.measurement.IMAGE, cellprofiler.measurement.M_PLATE, cellprofiler.measurement.COLTYPE_VARCHAR),
+            (
+            cellprofiler.measurement.IMAGE, cellprofiler.measurement.M_PLATE, cellprofiler.measurement.COLTYPE_VARCHAR),
             (cellprofiler.measurement.IMAGE, cellprofiler.measurement.M_WELL, cellprofiler.measurement.COLTYPE_VARCHAR),
             (cellprofiler.measurement.IMAGE, cellprofiler.measurement.M_SITE, cellprofiler.measurement.COLTYPE_VARCHAR)]
         return module, cellprofiler.workspace.Workspace(
@@ -122,13 +124,13 @@ ExportToCellH5:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:1|
         assert isinstance(module, cellprofiler.modules.exporttocellh5.ExportToCellH5)
         r = numpy.random.RandomState()
         r.seed(201)
-        image = cellprofiler.image.Image(r.uniform(size=(20, 35)), scale = 255)
+        image = cellprofiler.image.Image(r.uniform(size=(20, 35)), scale=255)
         workspace.image_set.add(IMAGE_NAME, image)
         module.add_image()
         module.images_to_export[0].image_name.value = IMAGE_NAME
         module.run(workspace)
         with cellh5.ch5open(
-            os.path.join(self.temp_dir, module.file_name.value), "r") as ch5:
+                os.path.join(self.temp_dir, module.file_name.value), "r") as ch5:
             well = self.get_well_name(0)
             site = self.get_site_name(0)
             self.assertTrue(ch5.has_position(well, site))
@@ -146,13 +148,13 @@ ExportToCellH5:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:1|
         assert isinstance(module, cellprofiler.modules.exporttocellh5.ExportToCellH5)
         r = numpy.random.RandomState()
         r.seed(202)
-        image = cellprofiler.image.Image(r.uniform(size=(20, 35, 3)), scale = 255)
+        image = cellprofiler.image.Image(r.uniform(size=(20, 35, 3)), scale=255)
         workspace.image_set.add(IMAGE_NAME, image)
         module.add_image()
         module.images_to_export[0].image_name.value = IMAGE_NAME
         module.run(workspace)
         with cellh5.ch5open(
-            os.path.join(self.temp_dir, module.file_name.value), "r") as ch5:
+                os.path.join(self.temp_dir, module.file_name.value), "r") as ch5:
             well = self.get_well_name(0)
             site = self.get_site_name(0)
             self.assertTrue(ch5.has_position(well, site))
@@ -173,13 +175,13 @@ ExportToCellH5:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:1|
         assert isinstance(module, cellprofiler.modules.exporttocellh5.ExportToCellH5)
         r = numpy.random.RandomState()
         r.seed(203)
-        image = cellprofiler.image.Image(r.uniform(size=(20, 35)), scale = 4095)
+        image = cellprofiler.image.Image(r.uniform(size=(20, 35)), scale=4095)
         workspace.image_set.add(IMAGE_NAME, image)
         module.add_image()
         module.images_to_export[0].image_name.value = IMAGE_NAME
         module.run(workspace)
         with cellh5.ch5open(
-            os.path.join(self.temp_dir, module.file_name.value), "r") as ch5:
+                os.path.join(self.temp_dir, module.file_name.value), "r") as ch5:
             well = self.get_well_name(0)
             site = self.get_site_name(0)
             self.assertTrue(ch5.has_position(well, site))
@@ -209,7 +211,7 @@ ExportToCellH5:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:1|
         module.objects_to_export[0].objects_name.value = OBJECTS_NAME
         module.run(workspace)
         with cellh5.ch5open(
-            os.path.join(self.temp_dir, module.file_name.value), "r") as ch5:
+                os.path.join(self.temp_dir, module.file_name.value), "r") as ch5:
             well = self.get_well_name(0)
             site = self.get_site_name(0)
             self.assertTrue(ch5.has_position(well, site))
@@ -252,7 +254,7 @@ ExportToCellH5:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:1|
             (OBJECTS_NAME, FEATURE2, cellprofiler.measurement.COLTYPE_FLOAT)]
         module.run(workspace)
         with cellh5.ch5open(
-            os.path.join(self.temp_dir, module.file_name.value), "r") as ch5:
+                os.path.join(self.temp_dir, module.file_name.value), "r") as ch5:
             well = self.get_well_name(0)
             site = self.get_site_name(0)
             self.assertTrue(ch5.has_position(well, site))
@@ -295,7 +297,7 @@ ExportToCellH5:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:1|
             (OBJECTS_NAME, FEATURE2, cellprofiler.measurement.COLTYPE_FLOAT)]
         module.run(workspace)
         with cellh5.ch5open(
-            os.path.join(self.temp_dir, module.file_name.value), "r") as ch5:
+                os.path.join(self.temp_dir, module.file_name.value), "r") as ch5:
             well = self.get_well_name(0)
             site = self.get_site_name(0)
             self.assertTrue(ch5.has_position(well, site))
@@ -303,16 +305,18 @@ ExportToCellH5:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:1|
             defs = pos.object_feature_def(OBJECTS_NAME)
             self.assertTrue(FEATURE1 in defs)
             self.assertFalse(FEATURE2 in defs)
-            feature1 = pos.get_object_features(OBJECTS_NAME)\
+            feature1 = pos.get_object_features(OBJECTS_NAME) \
                 [:, defs.index(FEATURE1)]
             numpy.testing.assert_almost_equal(feature1, m[OBJECTS_NAME, FEATURE1])
 
+
 class MyPipeline(cellprofiler.pipeline.Pipeline):
     """Fake pipeline class for mock injecting measurement columns"""
+
     def __init__(self):
         cellprofiler.pipeline.Pipeline.__init__(self)
         self.extra_measurement_columns = []
 
-    def get_measurement_columns(self, terminating_module = None):
+    def get_measurement_columns(self, terminating_module=None):
         return super(MyPipeline, self).get_measurement_columns(
             terminating_module) + self.extra_measurement_columns

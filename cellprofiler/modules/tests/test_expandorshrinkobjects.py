@@ -73,12 +73,7 @@ class TestExpandOrShrinkObjects(unittest.TestCase):
         self.assertEqual(module.output_object_name, "DividedNuclei")
         self.assertEqual(module.operation, cellprofiler.modules.expandorshrinkobjects.O_DIVIDE)
 
-    def make_workspace(self,
-                       labels,
-                       operation,
-                       iterations=1,
-                       wants_outlines=False,
-                       wants_fill_holes=False):
+    def make_workspace(self, labels, operation, iterations=1, wants_outlines=False, wants_fill_holes=False):
         object_set = cellprofiler.region.Set()
         objects = cellprofiler.region.Region()
         objects.segmented = labels

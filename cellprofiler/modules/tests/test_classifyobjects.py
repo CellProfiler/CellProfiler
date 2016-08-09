@@ -23,47 +23,6 @@ IMAGE_NAME = "image"
 
 
 class TestClassifyObjects(unittest.TestCase):
-    def test_01_02_load_matlab_classify_by_two_measurements(self):
-        data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
-                'SU1RyM+zUnArylRwSU1WMDBRMDS1MrawMjRTMDIwsFQgGTAwevryMzAw/GBi'
-                'YKiYczfibt5lA5Gy3duk7Wef0hIQdz6tKp68pEFgeiqzo+q1sDWzHlzKvXst'
-                'OCl8o3HUukqBI5PfFFbwvDHLDRZ+psKbae0dViJTP7/f3vr48ZvMDCZ8DBod'
-                'z/tWRBpoVp4/92PVlvOCz2d8iZB7ciB5/d+oK9wvEm5susC6JebIgTU+t1cv'
-                '8Z69+OCbq5Jvd4itcrx9P3LKrOztEw6/uqt5ofruAeeUuY/fc+hMy9x+/gWX'
-                'sU9n+/cfV6/d3DFF+/G7zl+bLa4rLn4xQXjrk+zpf7UT7tmLL4i+eH3/i6tq'
-                'Up/S37dvOMsr/aks/tOeix/eaNhcWme9o1xpiR9zfMCH1o9WW3Vb1K2OSP7f'
-                'ws/peK3b5Nj1h9pSf2RZ9d9qPewwOOMeVy31ekL4h0t6s93X+wjkyZWL7tly'
-                'P7A5IG8Hz9nnHwMPBwdVeM2Ts2UvuhIZoua534f3/DWm82I/tPZ9VDkeX1Z7'
-                '+ZLi7gOTWU1nvbNKEaswWsCTd93uwseWXvHMn8X+DyeWzTW+/iPhotiWoO/p'
-                '4Q8nfpNsOrL+otWb66HzT2eejf8bd2bxp6BdS1urJYWmRx942lCZM+3xgydy'
-                'sWzhFx9c6rPPPB8/Pdwm4M80MzXZmlZrvS08OYfv6WTfP2Kx59VnW4/+7XrL'
-                'Hyk13ZZe0y4l3ufcJx/G/1WyPfzJMeVrbWKfPh45mxxSHzaX3/Xr8/rny0+/'
-                'cp532OV6emRsyDz92+b/l384flHjt5nH/cILby2vyC45Lzxl+6VrqlmfLSfW'
-                '1xWeE5efr3hOyqRjQXjI/5Iax//dz3b53uk+JH51/4p/bU+vf1TZGp+3um57'
-                '6b/XYvmLXm1/lR70+aZJbElhXfzH8FtXnoqpvVjvIH/k/vk/v2tC35sXfn+u'
-                'zmUder9V7cweOS1gDJUJPNxhnWVx49vzdYk/5DRrLomVmz6zWmH370ztdNWT'
-                '1y98kOSav8Vf98SMD/lOJ/zczuZfkT4sNs/YVF8r48s5ruz9W/bOvlLfZvD4'
-                '6fv0za/+y8jqPd+63+5P4Y/XJ782HvnPdvHb1cvSv/xP7/r2n7ns6/KJAHF9'
-                'smE=')
-        pipeline = cellprofiler.pipeline.Pipeline()
-
-        def callback(caller, event):
-            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
-
-        pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
-        self.assertEqual(len(pipeline.modules()), 4)
-        module = pipeline.modules()[-1]
-        self.assertTrue(isinstance(module, cellprofiler.modules.classifyobjects.ClassifyObjects))
-        self.assertEqual(module.contrast_choice, cellprofiler.modules.classifyobjects.BY_TWO_MEASUREMENTS)
-        self.assertEqual(module.object_name, "Nuclei")
-        self.assertEqual(module.first_measurement, "Intensity_IntegratedIntensity_OrigBlue_1")
-        self.assertEqual(module.second_measurement, "Intensity_MeanIntensity_OrigBlue_1")
-        self.assertEqual(module.first_threshold_method, cellprofiler.modules.classifyobjects.TM_MEAN)
-        self.assertEqual(module.second_threshold_method, cellprofiler.modules.classifyobjects.TM_MEAN)
-        self.assertFalse(module.wants_custom_names)
-        self.assertFalse(module.wants_image)
-
     def test_01_03_load_v1(self):
         data = ('eJztXNtu2zYYphwna1pgSLeLFRiG6SoYCkdQTluWmymHZjEQJ8EcdO1NM0Wi'
                 'bQ4yaUhUEu9J9lh7lD7CRFu2ZEaObFmWLJdCFJs0v/8jP/48/JKg2tHNxdGx'
@@ -226,8 +185,7 @@ class TestClassifyObjects(unittest.TestCase):
         self.assertEqual(module.second_threshold_method, cellprofiler.modules.classifyobjects.TM_CUSTOM)
         self.assertAlmostEqual(module.second_threshold.value, .4)
 
-    def make_workspace(self, labels, contrast_choice,
-                       measurement1=None, measurement2=None):
+    def make_workspace(self, labels, contrast_choice, measurement1=None, measurement2=None):
         object_set = cellprofiler.region.Set()
         objects = cellprofiler.region.Region()
         objects.segmented = labels

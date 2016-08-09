@@ -238,8 +238,7 @@ CreateWebPage:[module_num:1|svn_version:\'9401\'|variable_revision_number:2|show
         self.assertFalse(module.wants_zip_file)
         self.assertEqual(module.zipfile_name, "Images.zip")
 
-    def run_create_webpage(self, image_paths, thumb_paths=None,
-                           metadata=None, alter_fn=None):
+    def run_create_webpage(self, image_paths, thumb_paths=None, metadata=None, alter_fn=None):
         """Run the create_webpage module, returning the resulting HTML document
 
         image_paths - list of path / filename tuples. The function will

@@ -50,11 +50,18 @@ class EnhanceEdges(cellprofiler.module.Module):
             What do you want to call the image with edges enhanced?''')
 
         self.wants_automatic_threshold = cellprofiler.setting.Binary(
-                "Automatically calculate the threshold?", True, doc='''
-            <i>(Used only with the %(M_CANNY)s option and automatic thresholding)</i> <br>
-            Select <i>%(cellprofiler.setting.YES)s</i> to automatically calculate the threshold using a three-category
+            "Automatically calculate the threshold?",
+            True,
+            doc='''
+            <i>(Used only with the {canny} option and automatic thresholding)</i> <br>
+            Select <i>{yes}</i> to automatically calculate the threshold using a three-category
             Otsu algorithm performed on the Sobel transform of the image.
-            <p>Select <i>%(cellprofiler.setting.NO)s</i> to manually enter the threshold value.</p>''' % globals())
+            <p>Select <i>{no}</i> to manually enter the threshold value.</p>'''.format(**{
+                'canny': M_CANNY,
+                'yes': cellprofiler.setting.YES,
+                'no': cellprofiler.setting.NO
+            })
+        )
 
         self.manual_threshold = cellprofiler.setting.Float(
                 "Absolute threshold", 0.2, 0, 1, doc='''
@@ -111,11 +118,18 @@ class EnhanceEdges(cellprofiler.module.Module):
         self.sigma = cellprofiler.setting.Float("Gaussian's sigma value", 10)
 
         self.wants_automatic_low_threshold = cellprofiler.setting.Binary(
-                "Calculate value for low threshold automatically?", True, doc="""
-            <i>(Used only with the %(M_CANNY)s option and automatic thresholding)</i> <br>
-            Select <i>%(cellprofiler.setting.YES)s</i> to automatically calculate the low / soft threshold cutoff for
-            the %(M_CANNY)s method.
-            <p>Select <i>%(cellprofiler.setting.NO)s</i> to manually enter the low threshold value.</p>""" % globals())
+            "Calculate value for low threshold automatically?",
+            True,
+            doc="""
+            <i>(Used only with the {canny} option and automatic thresholding)</i> <br>
+            Select <i>{yes}</i> to automatically calculate the low / soft threshold cutoff for
+            the {canny} method.
+            <p>Select <i>{no}</i> to manually enter the low threshold value.</p>""".format(**{
+                'canny': M_CANNY,
+                'yes': cellprofiler.setting.YES,
+                'no': cellprofiler.setting.NO
+            })
+        )
 
         self.low_threshold = cellprofiler.setting.Float(
                 "Low threshold value", 0.1, 0, 1, doc="""

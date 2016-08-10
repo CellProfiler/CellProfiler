@@ -80,9 +80,13 @@ class ApplyThreshold(cellprofiler.modules.identify.Identify):
         # if not binary and below threshold
 
         self.shift = cellprofiler.setting.Binary(
-                "Subtract the threshold value from the remaining pixel intensities?", False, doc='''
-            <i>(Used only if the output image is %(GRAYSCALE)s and pixels below a given intensity are to be set to zero)</i><br>
-            Select <i>%(cellprofiler.setting.YES)s</i> to shift the value of the dim pixels by the threshold value.''' % globals())
+            "Subtract the threshold value from the remaining pixel intensities?",
+            False,
+            doc='''<i>(Used only if the output image is {grayscale} and pixels below a given intensity are to be set to zero)</i><br>
+                Select <i>{yes}</i> to shift the value of the dim pixels by the threshold value.'''.format(**{
+                    'grayscale': GRAYSCALE,
+                    'yes': cellprofiler.setting.YES
+            }))
 
         # if not binary and above threshold
 

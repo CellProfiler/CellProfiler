@@ -195,8 +195,9 @@ class CalculateMath(cellprofiler.module.Module):
         self.spacer_3 = cellprofiler.setting.Divider(line=True)
 
         self.wants_log = cellprofiler.setting.Binary(
-                "Take log10 of result?", False, doc="""
-            Select <i>%(cellprofiler.setting.YES)s</i> if you want the log (base 10) of the result.""" % globals())
+            "Take log10 of result?",
+            False,
+            doc="""Select <i>{}</i> if you want the log (base 10) of the result.""".format(cellprofiler.setting.YES))
 
         self.final_multiplicand = cellprofiler.setting.Float(
                 "Multiply the result by", 1, doc="""
@@ -213,18 +214,20 @@ class CalculateMath(cellprofiler.module.Module):
             Enter the number you like to add to the result.""")
 
         self.constrain_lower_bound = cellprofiler.setting.Binary(
-                "Constrain the result to a lower bound?", False, doc="""
-            Select <i>%(cellprofiler.setting.YES)s</i> if you want the result to be
-            constrained to a lower bound.""" % globals())
+            "Constrain the result to a lower bound?",
+            False,
+            doc="""Select <i>{}</i> if you want the result to be constrained to a lower bound.""".format(cellprofiler.setting.YES)
+        )
 
         self.lower_bound = cellprofiler.setting.Float(
                 "Enter the lower bound", 0, doc="""
             Enter the lower bound of the result here.""")
 
         self.constrain_upper_bound = cellprofiler.setting.Binary(
-                "Constrain the result to an upper bound?", False, doc="""
-            Select <i>%(cellprofiler.setting.YES)s</i> if you want the result to be
-            constrained to an upper bound.""" % globals())
+            "Constrain the result to an upper bound?",
+            False,
+            doc="""Select <i>{}</i> if you want the result to be constrained to an upper bound.""".format(cellprofiler.setting.YES)
+        )
 
         self.upper_bound = cellprofiler.setting.Float(
                 "Enter the upper bound", 1, doc="""

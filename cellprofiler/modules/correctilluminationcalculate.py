@@ -124,14 +124,16 @@ class CorrectIlluminationCalculate(cellprofiler.module.Module):
              Masking the image beforehand solves this problem.</p>''' % globals())
 
         self.dilate_objects = cellprofiler.setting.Binary(
-                "Dilate objects in the final averaged image?", False, doc='''
+            "Dilate objects in the final averaged image?",
+            False,
+            doc='''
             <i>(Used only if the Regular method is selected)</i><br>
             For some applications, the incoming images are binary and each object
             should be dilated with a Gaussian filter in the final averaged
             (projection) image. This is for a sophisticated method of illumination
             correction where model objects are produced.
-            Select <i>%(cellprofiler.setting.YES)s</i> to dilate objects for this approach.
-            ''' % globals())
+            Select <i>{}</i> to dilate objects for this approach.
+            '''.format(cellprofiler.setting.YES))
 
         self.object_dilation_radius = cellprofiler.setting.Integer(
                 "Dilation radius", 1, 0, doc='''
@@ -145,24 +147,33 @@ class CorrectIlluminationCalculate(cellprofiler.module.Module):
             to contain some background pixels, where no objects are located.''' % globals())
 
         self.rescale_option = cellprofiler.setting.Choice(
-                "Rescale the illumination function?",
-                [cellprofiler.setting.YES, cellprofiler.setting.NO, RE_MEDIAN], doc='''
+            "Rescale the illumination function?",
+            [cellprofiler.setting.YES, cellprofiler.setting.NO, RE_MEDIAN],
+            doc='''
             The illumination function can be rescaled so that the pixel intensities
             are all equal to or greater than 1. You have the following options:
             <ul>
-            <li><i>%(cellprofiler.setting.YES)s:</i> Rescaling is recommended if you plan to
-            use the <i>%(IC_REGULAR)s</i> method (and hence, the <i>%(DOS_DIVIDE)s</i> option in
+            <li><i>{yes}:</i> Rescaling is recommended if you plan to
+            use the <i>{regular}</i> method (and hence, the <i>{divide}</i> option in
             <b>CorrectIlluminationApply</b>) so that the corrected images are in the
             range 0 to 1.</li>
-            <li><i>%(cellprofiler.setting.NO)s:</i> Rescaling is not recommended if you plan to use the <i>%(IC_BACKGROUND)s</i>
-            method, which is paired with the <i>%(DOS_SUBTRACT)s</i> option in <b>CorrectIlluminationApply</b>.
+            <li><i>{no}:</i> Rescaling is not recommended if you plan to use the <i>{background}</i>
+            method, which is paired with the <i>{subtract}</i> option in <b>CorrectIlluminationApply</b>.
             Note that as a result of the illumination function being rescaled from 1 to
             infinity, the rescaling of each image might be dramatic if there is substantial
             variation across the field of view, causing the corrected images
             to be very dark. </li>
-            <li>%(RE_MEDIAN)s<i>:</i> This option chooses the median value in the
+            <li>{median}<i>:</i> This option chooses the median value in the
             image to rescale so that division increases some values and decreases others.</li>
-            </ul>''' % globals())
+            </ul>'''.format(**{
+                'yes': cellprofiler.setting.YES,
+                'regular': IC_REGULAR,
+                'divide': DOS_DIVIDE,
+                'no': cellprofiler.setting.NO,
+                'background': IC_BACKGROUND,
+                'subtract': DOS_SUBTRACT,
+                'median': RE_MEDIAN
+            }))
 
         self.each_or_all = cellprofiler.setting.Choice(
                 "Calculate function for each image individually, or based on all images?",
@@ -283,13 +294,15 @@ class CorrectIlluminationCalculate(cellprofiler.module.Module):
             Enter the size of the desired smoothing filter, in pixels.''' % globals())
 
         self.save_average_image = cellprofiler.setting.Binary(
-                "Retain the averaged image?", False, doc='''
+            "Retain the averaged image?",
+            False,
+            doc='''
             The averaged image is the illumination function
             prior to dilation or smoothing. It is an image produced during the calculations, not typically
             needed for downstream modules. It can be helpful to retain it in case you wish to try several
             different smoothing methods without taking the time to recalculate the averaged image each time.
-            <p>Select <i>%(cellprofiler.setting.YES)s</i> to retain this averaged image. Use the <b>SaveImages</b> module to save
-            it to your hard drive.</p>''' % globals())
+            <p>Select <i>{}</i> to retain this averaged image. Use the <b>SaveImages</b> module to save
+            it to your hard drive.</p>'''.format(cellprofiler.setting.YES))
 
         self.average_image_name = cellprofiler.setting.ImageNameProvider(
                 "Name the averaged image", "IllumBlueAvg", doc='''
@@ -297,11 +310,13 @@ class CorrectIlluminationCalculate(cellprofiler.module.Module):
             Enter a name that will allow the averaged image to be selected later in the pipeline.''')
 
         self.save_dilated_image = cellprofiler.setting.Binary(
-                "Retain the dilated image?", False, doc='''
+            "Retain the dilated image?",
+            False,
+            doc='''
             The dilated image is the illumination function after dilation but prior to smoothing.
             It is an image produced during the calculations, and is not typically needed for downstream modules.
-            <p>Select <i>%(cellprofiler.setting.YES)s</i> to retain this dilated image. Use the <b>SaveImages</b> module to save it
-            to your hard drive.</p>''' % globals())
+            <p>Select <i>{}</i> to retain this dilated image. Use the <b>SaveImages</b> module to save it
+            to your hard drive.</p>'''.format(cellprofiler.setting.YES))
 
         self.dilated_image_name = cellprofiler.setting.ImageNameProvider(
                 "Name the dilated image", "IllumBlueDilated", doc='''
@@ -309,12 +324,18 @@ class CorrectIlluminationCalculate(cellprofiler.module.Module):
             Enter a name that will allow the dilated image to be selected later in the pipeline.''')
 
         self.automatic_splines = cellprofiler.setting.Binary(
-                "Automatically calculate spline parameters?", True, doc="""
-            <i>(Used only if %(SM_SPLINES)s are selected for the smoothing method)</i><br>
-            Select <i>%(cellprofiler.setting.YES)s</i> to automatically calculate
+            "Automatically calculate spline parameters?",
+            True,
+            doc="""
+            <i>(Used only if {splines} are selected for the smoothing method)</i><br>
+            Select <i>{yes}</i> to automatically calculate
             the parameters for spline fitting.
-            <p>Select <i>%(cellprofiler.setting.NO)s</i> to specify the background mode, background threshold, scale,
-            maximum number of iterations and convergence.</p>""" % globals())
+            <p>Select <i>{no}</i> to specify the background mode, background threshold, scale,
+            maximum number of iterations and convergence.</p>""".format(**{
+                'splines': SM_SPLINES,
+                'yes': cellprofiler.setting.YES,
+                'no': cellprofiler.setting.NO
+            }))
 
         self.spline_bg_mode = cellprofiler.setting.Choice(
                 "Background mode",

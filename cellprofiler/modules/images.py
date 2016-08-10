@@ -45,7 +45,7 @@ For image analysis purposes, a lossless format like TIF or PNG is recommended.</
 The most straightforward way to provide image files to the <b>Images</b> module is to simply drag-and-drop
 them on the file list panel (the blank space indicated by the text "Drop files and folders here").
 <table cellpadding="0" width="100%%">
-<tr align="center"><td><img src="memory:%(IMAGES_FILELIST_BLANK)s"></td></tr>
+<tr align="center"><td><img src="memory:{images_filelist_blank}"></td></tr>
 </table>
 
 <p>Using the file explorer tool of your choice (e.g., Explorer in Windows, Finder in Mac), you can drag-and-drop
@@ -53,7 +53,7 @@ individual files and/or entire folders into this panel. You can also right-click
 bring up a file selection window to browse for individual files; on the Mac, folders can be drag-and-dropped
 from this window and you can select multiple files using Ctrl-A (Windows) or Cmd-A (Mac).
 <table cellpadding="0" width="100%%">
-<tr align="center"><td><img src="memory:%(IMAGES_FILELIST_FILLED)s"></td></tr>
+<tr align="center"><td><img src="memory:{images_filelist_filled}"></td></tr>
 </table>
 Right-clicking on the file list panel will provide a context menu with options to modify the file list:
 <ul>
@@ -98,7 +98,10 @@ further processing have been removed, whether manually or using filtering. This 
 collecting metadata (if desired) and when assembling the image sets in NamesAndTypes. The list can be
 filtered further in NamesAndTypes to specify, for example, that a subset of these images represents a
 particular wavelength.
-""" % globals()
+""".format(**{
+    'images_filelist_blank': cellprofiler.gui.help.IMAGES_FILELIST_BLANK,
+    'images_filelist_filled': cellprofiler.gui.help.IMAGES_FILELIST_FILLED
+})
 
 FILTER_CHOICE_NONE = "No filtering"
 FILTER_CHOICE_IMAGES = "Images only"
@@ -144,22 +147,28 @@ class Images(cellprofiler.module.Module):
             you want to ignore.
             <p>Several options are available for this setting:
             <ul>
-            <li><i>%(FILTER_CHOICE_NONE)s:</i> Do not enable filtering; all files in the File list
+            <li><i>{filter_choice_none}:</i> Do not enable filtering; all files in the File list
             panel will be passed to downstream modules for processing. This option can be
             selected if you are sure that only images are specified in the list.</li>
-            <li><i>%(FILTER_CHOICE_IMAGES)s:</i> Only image files will be passed to downstream
+            <li><i>{filter_choice_images}:</i> Only image files will be passed to downstream
             modules. The permissible image formats are provided by a library called Bio-Formats; see
             <a href="http://www.openmicroscopy.org/site/support/bio-formats5/supported-formats.html">here</a> for the formats available.</li>
-            <li><i>%(FILTER_CHOICE_CUSTOM)s:</i> Specify custom rules for selecting a subset of
+            <li><i>{filter_choice_custom}:</i> Specify custom rules for selecting a subset of
             the files from the File list panel. This approach is useful if, for example, you
             drag-and-dropped a folder onto the File list panel which contains a mixture of images
             that you want to analyze and other files that you want to ignore.</li>
-            </ul></p>""" % globals())
+            </ul></p>""".format(**{
+                    'filter_choice_none': FILTER_CHOICE_NONE,
+                    'filter_choice_images': FILTER_CHOICE_IMAGES,
+                    'filter_choice_custom': FILTER_CHOICE_CUSTOM
+                }))
 
         self.filter = cellprofiler.setting.Filter("Select the rule criteria", predicates,
                                                   FILTER_DEFAULT, doc="""
             Specify a set of rules to narrow down the files to be analyzed.
-            <p>%(FILTER_RULES_BUTTONS_HELP)s</p>""" % globals())
+            <p>{filter_rules_buttons_help}</p>""".format(**{
+                'filter_rules_buttons_help': cellprofiler.gui.help.FILTER_RULES_BUTTONS_HELP
+            }))
 
         self.update_button = cellprofiler.setting.PathListRefreshButton(
                 "", "Apply filters to the file list", doc="""

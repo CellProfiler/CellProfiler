@@ -37,22 +37,34 @@ class InvertForPrinting(cellprofiler.module.Module):
             loading a single color image.""")
 
         self.wants_red_input = cellprofiler.setting.Binary(
-                "Use a red image?", True, doc="""
-            Select <i>%(cellprofiler.setting.YES)s</i> to specify an image to use for the red channel.""" % globals())
+            "Use a red image?",
+            True,
+            doc="""Select <i>{yes}</i> to specify an image to use for the red channel.""".format(**{
+                'yes': cellprofiler.setting.YES
+            })
+        )
 
         self.red_input_image = cellprofiler.setting.ImageNameSubscriber(
                 "Select the red image", cellprofiler.setting.NONE)
 
         self.wants_green_input = cellprofiler.setting.Binary(
-                "Use a green image?", True, doc="""
-            Select <i>%(cellprofiler.setting.YES)s</i> to specify an image to use for the green channel.""" % globals())
+            "Use a green image?",
+            True,
+            doc=""" Select <i>{yes}</i> to specify an image to use for the green channel.""".format(**{
+                'yes': cellprofiler.setting.YES
+            })
+        )
 
         self.green_input_image = cellprofiler.setting.ImageNameSubscriber(
                 "Select the green image", cellprofiler.setting.NONE)
 
         self.wants_blue_input = cellprofiler.setting.Binary(
-                "Use a blue image?", True, doc="""
-            Select <i>%(cellprofiler.setting.YES)s</i> to specify an image to use for the blue channel.""" % globals())
+            "Use a blue image?",
+            True,
+            doc="""Select <i>{yes}</i> to specify an image to use for the blue channel.""".format(**{
+                'yes': cellprofiler.setting.YES
+            })
+        )
 
         self.blue_input_image = cellprofiler.setting.ImageNameSubscriber(
                 "Select the blue image", cellprofiler.setting.NONE)
@@ -67,19 +79,31 @@ class InvertForPrinting(cellprofiler.module.Module):
             Specify whether you want to produce several grayscale images or one color image.""")
 
         self.wants_red_output = cellprofiler.setting.Binary(
-                "Select <i>%(cellprofiler.setting.YES)s</i> to produce a red image." % globals(), True)
+            "Select <i>{yes}</i> to produce a red image.".format(**{
+                'yes': cellprofiler.setting.YES
+            }),
+            True
+        )
 
         self.red_output_image = cellprofiler.setting.ImageNameProvider(
                 "Name the red image", "InvertedRed")
 
         self.wants_green_output = cellprofiler.setting.Binary(
-                "Select <i>%(cellprofiler.setting.YES)s</i> to produce a green image." % globals(), True)
+            "Select <i>{yes}</i> to produce a green image.".format(**{
+                'yes': cellprofiler.setting.YES
+            }),
+            True
+        )
 
         self.green_output_image = cellprofiler.setting.ImageNameProvider(
                 "Name the green image", "InvertedGreen")
 
         self.wants_blue_output = cellprofiler.setting.Binary(
-                "Select <i>%(cellprofiler.setting.YES)s</i> to produce a blue image." % globals(), True)
+            "Select <i>{yes}</i> to produce a blue image.".format(**{
+                'yes': cellprofiler.setting.YES
+            }),
+            True
+        )
 
         self.blue_output_image = cellprofiler.setting.ImageNameProvider(
                 "Name the blue image", "InvertedBlue")

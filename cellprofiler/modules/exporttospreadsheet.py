@@ -31,7 +31,7 @@ in separate directories. You can do this by specifying metadata tags for the fol
 file name:
 <ul>
 <li>Choose <i>Elsewhere...</i> or <i>Default Input/Output Folder sub-folder</i> for the output file location.</li>
-<li>Insert the metadata tag of choice into the output path. %(USING_METADATA_TAGS_REF)s In this instance,
+<li>Insert the metadata tag of choice into the output path. {using_metadata_tags} In this instance,
 you would select the metadata tag "Treatment1"</li>
 <li>Uncheck "Export all measurements?"</li>
 <li>Uncheck <i>Use the object name for the file name?</i>.</li>
@@ -52,7 +52,9 @@ For details on the nomenclature used by CellProfiler for the exported measuremen
 see <i>Help > General Help > How Measurements Are Named</i>.
 
 See also <b>ExportToDatabase</b>.
-''' % globals()
+'''.format(**{
+    'using_metadata_tags': cellprofiler.gui.help.USING_METADATA_TAGS_REF
+})
 
 logger = logging.getLogger(__name__)
 
@@ -126,62 +128,88 @@ class ExportToSpreadsheet(cellprofiler.module.Module):
             within your data (for example, in file names).""")
 
         self.directory = cellprofiler.setting.DirectoryPath(
-                "Output file location",
-                dir_choices=[
-                    cellprofiler.preferences.ABSOLUTE_FOLDER_NAME,
-                    cellprofiler.preferences.DEFAULT_OUTPUT_FOLDER_NAME, cellprofiler.preferences.DEFAULT_OUTPUT_SUBFOLDER_NAME,
-                    cellprofiler.preferences.DEFAULT_INPUT_FOLDER_NAME, cellprofiler.preferences.DEFAULT_INPUT_SUBFOLDER_NAME], doc="""
+            "Output file location",
+            dir_choices=[
+                cellprofiler.preferences.ABSOLUTE_FOLDER_NAME,
+                cellprofiler.preferences.DEFAULT_OUTPUT_FOLDER_NAME,
+                cellprofiler.preferences.DEFAULT_OUTPUT_SUBFOLDER_NAME,
+                cellprofiler.preferences.DEFAULT_INPUT_FOLDER_NAME,
+                cellprofiler.preferences.DEFAULT_INPUT_SUBFOLDER_NAME
+            ],
+            doc="""
             This setting lets you choose the folder for the output
-            files. %(IO_FOLDER_CHOICE_HELP_TEXT)s
+            files. {io_folder_choice_help_text}
 
-            <p>%(IO_WITH_METADATA_HELP_TEXT)s %(USING_METADATA_TAGS_REF)s<br>
+            <p>{io_with_metadata_help_text} {using_metadata_tags}<br>
             For instance, if you have a metadata tag named
             "Plate", you can create a per-plate folder by selecting one of the subfolder options
             and then specifying the subfolder name as "\g&lt;Plate&gt;". The module will
             substitute the metadata values for the current image set for any metadata tags in the
-            folder name. %(USING_METADATA_HELP_REF)s.</p>""" % globals())
+            folder name. {using_metadata_help}.</p>""".format(**{
+                'io_folder_choice_help_text': cellprofiler.preferences.IO_FOLDER_CHOICE_HELP_TEXT,
+                'io_with_metadata_help_text': cellprofiler.preferences.IO_WITH_METADATA_HELP_TEXT,
+                'using_metadata_tags': cellprofiler.gui.help.USING_METADATA_TAGS_REF,
+                'using_metadata_help': cellprofiler.gui.help.USING_METADATA_HELP_REF
+            })
+        )
+
         self.directory.dir_choice = cellprofiler.preferences.DEFAULT_OUTPUT_FOLDER_NAME
 
         self.wants_prefix = cellprofiler.setting.Binary(
-                "Add a prefix to file names?",
-                True,
-                doc="""This setting lets you choose whether or not to add
+            "Add a prefix to file names?",
+            True,
+            doc="""This setting lets you choose whether or not to add
             a prefix to each of the .CSV filenames produced by
             <b>ExportToSpreadsheet</b>. A prefix may be useful if you use
             the same directory for the results of more than one pipeline; you
             can specify a different prefix in each pipeline.
-            Select <i>%(cellprofiler.setting.YES)s</i> to add a prefix to each file name
-            (e.g. "MyExpt_Images.csv"). Select <i>%(cellprofiler.setting.NO)s</i> to use filenames
+            Select <i>{yes}</i> to add a prefix to each file name
+            (e.g. "MyExpt_Images.csv"). Select <i>{no}</i> to use filenames
             without prefixes (e.g. "Images.csv").
-            """ % globals())
+            """.format(**{
+                'yes': cellprofiler.setting.YES,
+                'no': cellprofiler.setting.NO
+            })
+        )
 
         self.prefix = cellprofiler.setting.Text(
-                "Filename prefix", "MyExpt_",
-                doc="""(<i>Used only if "Add a prefix to file names?" is %(cellprofiler.setting.YES)s</i>)
+            "Filename prefix",
+            "MyExpt_",
+            doc="""(<i>Used only if "Add a prefix to file names?" is {}</i>)
 
             The text you enter here is prepended to the names of each file
             produced by <b>ExportToSpreadsheet</b>.
-            """ % globals())
+            """.format(cellprofiler.setting.YES)
+        )
 
         self.wants_overwrite_without_warning = cellprofiler.setting.Binary(
-                "Overwrite existing files without warning?", False,
-                doc="""This setting either prevents or allows overwriting of
+            "Overwrite existing files without warning?",
+            False,
+            doc="""This setting either prevents or allows overwriting of
             old .CSV files by <b>ExportToSpreadsheet</b> without confirmation.
-            Select <i>%(cellprofiler.setting.YES)s</i> to overwrite without warning any .CSV file
-            that already exists. Select <i>%(cellprofiler.setting.NO)s</i> to prompt before overwriting
+            Select <i>{yes}</i> to overwrite without warning any .CSV file
+            that already exists. Select <i>{no}</i> to prompt before overwriting
             when running CellProfiler in the GUI and to fail when running
-            headless.""" % globals())
+            headless.""".format(**{
+                'yes': cellprofiler.setting.YES,
+                'no': cellprofiler.setting.NO
+            })
+        )
 
         self.add_metadata = cellprofiler.setting.Binary(
-                "Add image metadata columns to your object data file?", False, doc=""""
-            Image_Metadata_" columns are normally exported in the Image data file, but if you
-            select <i>%(cellprofiler.setting.YES)s</i>, they will also be exported with the Object data file(s).""" % globals())
+            "Add image metadata columns to your object data file?",
+            False,
+            doc=""""Image_Metadata_" columns are normally exported in the Image data file, but if you
+            select <i>{}</i>, they will also be exported with the Object data file(s).""".format(cellprofiler.setting.YES)
+        )
 
         self.excel_limits = cellprofiler.setting.Binary(
-                "Limit output to a size that is allowed in Excel?", False, doc="""
-            If your output has more than 256 columns, select <i>%(cellprofiler.setting.YES)s</i> will open a window
+            "Limit output to a size that is allowed in Excel?",
+            False,
+            doc="""If your output has more than 256 columns, select <i>{}</i> will open a window
             allowing you to select the columns you'd like to export. If your output exceeds
-            65,000 rows, you can still open the CSV in Excel, but not all rows will be visible.""" % globals())
+            65,000 rows, you can still open the CSV in Excel, but not all rows will be visible.""".format(cellprofiler.setting.YES)
+        )
 
         self.nan_representation = cellprofiler.setting.Choice(
                 "Representation of Nan/Inf", [NANS_AS_NANS, NANS_AS_NULLS], doc="""
@@ -197,9 +225,11 @@ class ExportToSpreadsheet(cellprofiler.module.Module):
             """ % globals())
 
         self.pick_columns = cellprofiler.setting.Binary(
-                "Select the measurements to export", False, doc="""
-            Select <i>%(cellprofiler.setting.YES)s</i> to provide a button that allows you to select which measurements you want to export.
-            This is useful if you know exactly what measurements you want included in the final spreadheet(s). """ % globals())
+            "Select the measurements to export",
+            False,
+            doc="""Select <i>{}</i> to provide a button that allows you to select which measurements you want to export.
+            This is useful if you know exactly what measurements you want included in the final spreadheet(s). """.format(cellprofiler.setting.YES)
+        )
 
         self.columns = cellprofiler.setting.MeasurementMultiChoice(
                 "", doc="""
@@ -208,8 +238,10 @@ class ExportToSpreadsheet(cellprofiler.module.Module):
             the button and check the measurements or categories to export.""")
 
         self.wants_aggregate_means = cellprofiler.setting.Binary(
-                "Calculate the per-image mean values for object measurements?", False, doc="""
-            Select <i>%(cellprofiler.setting.YES)s</i> for <b>ExportToSpreadsheet</b> to calculate population statistics over all the
+            "Calculate the per-image mean values for object measurements?",
+            False,
+            doc="""
+            Select <i>{}</i> for <b>ExportToSpreadsheet</b> to calculate population statistics over all the
             objects in each image and save that value as an aggregate
             measurement in the Image file.  For instance, if you are measuring
             the area of the Nuclei objects and you check the box for this option, <b>ExportToSpreadsheet</b> will
@@ -220,17 +252,23 @@ class ExportToSpreadsheet(cellprofiler.module.Module):
             measurements; doing so might exceed Excel's limits on the number of columns (256).</p>
 
             <p>Keep in mind that if you chose to select the specific measurements to export, the aggregate
-            statistics will only be computed for the selected per-object measurements.</p>""" % globals())
+            statistics will only be computed for the selected per-object measurements.</p>""".format(cellprofiler.setting.YES)
+        )
 
-        self.wants_aggregate_medians = cellprofiler.setting.Binary("Calculate the per-image median values for object measurements?",
-                                                                   False)
+        self.wants_aggregate_medians = cellprofiler.setting.Binary(
+            "Calculate the per-image median values for object measurements?",
+            False
+        )
 
         self.wants_aggregate_std = cellprofiler.setting.Binary(
-                "Calculate the per-image standard deviation values for object measurements?", False)
+            "Calculate the per-image standard deviation values for object measurements?",
+            False
+        )
 
         self.wants_genepattern_file = cellprofiler.setting.Binary(
-                "Create a GenePattern GCT file?", False, doc="""
-            Select <i>%(cellprofiler.setting.YES)s</i> to create a GCT file compatible with
+            "Create a GenePattern GCT file?",
+            False,
+            doc="""Select <i>{}</i> to create a GCT file compatible with
             <a href="http://www.broadinstitute.org/cancer/software/genepattern/">GenePattern</a>.
             The GCT file format is a tab-delimited text file format that describes a gene
             expression dataset; the specifics of the format are described
@@ -244,11 +282,14 @@ class ExportToSpreadsheet(cellprofiler.module.Module):
             enabling this option will produce a GCT file with the extension .gct,
             prepended with the text selection above. If per-image aggregate
             measurements are requested above, those measurements are included
-            in the GCT file as well.</p>""" % globals())
+            in the GCT file as well.</p>""".format(cellprofiler.setting.YES)
+        )
 
         self.how_to_specify_gene_name = cellprofiler.setting.Choice(
-                "Select source of sample row name",
-                GP_NAME_OPTIONS, GP_NAME_METADATA, doc="""
+            "Select source of sample row name",
+            GP_NAME_OPTIONS,
+            GP_NAME_METADATA,
+            doc="""
             <i>(Used only if a GenePattern file is requested)</i><br>
             The first column of the GCT file is the unique identifier for each
             sample, which is ordinarily the gene name. This information may be
@@ -257,19 +298,22 @@ class ExportToSpreadsheet(cellprofiler.module.Module):
             <li><i>Metadata:</i> If you used the <b>Metadata</b> modules to
             add metadata to your images, you may specify a metadata tag
             that corresponds to the identifier for this column.
-            %(USING_METADATA_HELP_REF)s.</li>
+            {}.</li>
             <li><i>Image filename:</i> If the gene name is not available, the image
             filename can be used as a surrogate identifier.</li>
-            </ul>""" % globals())
+            </ul>""".format(cellprofiler.gui.help.USING_METADATA_HELP_REF)
+        )
 
         self.gene_name_column = cellprofiler.setting.Measurement(
-                "Select the metadata to use as the identifier",
-                lambda: cellprofiler.measurement.IMAGE, doc="""
+            "Select the metadata to use as the identifier",
+            lambda: cellprofiler.measurement.IMAGE,
+            doc="""
             <i>(Used only if a GenePattern file is requested and metadata is used
             to name each row)</i><br>
             Choose the measurement that corresponds to the identifier, such as
             metadata from the <b>Metadata</b> module.
-            %(USING_METADATA_HELP_REF)s.""" % globals())
+            {}.""".format(cellprofiler.gui.help.USING_METADATA_HELP_REF)
+        )
 
         self.use_which_image_for_gene_name = cellprofiler.setting.ImageNameSubscriber(
                 "Select the image to use as the identifier", cellprofiler.setting.NONE, doc="""
@@ -277,18 +321,25 @@ class ExportToSpreadsheet(cellprofiler.module.Module):
             Select which image whose filename will be used to identify each sample row.""")
 
         self.wants_everything = cellprofiler.setting.Binary(
-                "Export all measurement types?", True, doc="""
-            Select <i>%(cellprofiler.setting.YES)s</i> to export every category of measurement.
+            "Export all measurement types?",
+            True,
+            doc="""
+            Select <i>{yes}</i> to export every category of measurement.
             <b>ExportToSpreadsheet</b> will create one data file for each object produced
             in the pipeline, as well as per-image, per-experiment and object relationships,
-            if relevant. See <i>%(MEASUREMENT_NAMING_HELP)s</i> for more details on
+            if relevant. See <i>{measurement_naming_help}</i> for more details on
             the various measurement types. The module will use the object name as the file name,
             optionally prepending the output file name if specified above.
-            <p>Select <i>%(cellprofiler.setting.NO)s</i> if you want to do either (or both) of two things:
+            <p>Select <i>{no}</i> if you want to do either (or both) of two things:
             <ul>
             <li>Specify which objects should be exported;</li>
             <li>Override the automatic nomenclature of the exported files.</li>
-            </ul></p>""" % globals())
+            </ul></p>""".format(**{
+                'yes': cellprofiler.setting.YES,
+                'measurement_naming_help': cellprofiler.gui.help.MEASUREMENT_NAMING_HELP,
+                'no': cellprofiler.setting.NO
+            })
+        )
 
         self.object_groups = []
         self.add_object_group()
@@ -298,42 +349,77 @@ class ExportToSpreadsheet(cellprofiler.module.Module):
     def add_object_group(self, can_remove=True):
         group = cellprofiler.setting.SettingsGroup()
         group.append(
-                "name", EEObjectNameSubscriber("Data to export", doc="""
-            <i>(Used only when "Export all measurements?" is set to "%(cellprofiler.setting.NO)s")</i><br>
-            Choose <i>Image</i>, <i>Experiment</i>, <i>Object relationships</i>
-            or an object name from the list. <b>ExportToSpreadsheet</b> will write out a
-            file of measurements for the given category. See <i>%(MEASUREMENT_NAMING_HELP)s</i>
-            for more details on the various measurement types.""" % globals()))
+            "name",
+            EEObjectNameSubscriber(
+                "Data to export",
+                doc="""
+                <i>(Used only when "Export all measurements?" is set to "{no}")</i><br>
+                Choose <i>Image</i>, <i>Experiment</i>, <i>Object relationships</i>
+                or an object name from the list. <b>ExportToSpreadsheet</b> will write out a
+                file of measurements for the given category. See <i>{measurement_naming_help}</i>
+                for more details on the various measurement types.""".format(**{
+                    'no': cellprofiler.setting.NO,
+                    'measurement_naming_help': cellprofiler.gui.help.MEASUREMENT_NAMING_HELP
+                })
+            )
+        )
 
         group.append(
-                "previous_file", cellprofiler.setting.Binary(
-                        "Combine these object measurements with those of the previous object?", False, doc="""
-            <i>(Used only when "Export all measurements?" is set to "%(cellprofiler.setting.NO)s")</i><br>
-            Select <i>%(cellprofiler.setting.YES)s</i> to create a file composed
-            of measurements made on this object and the one directly
-            above it.
-            <p>Select <i>%(cellprofiler.setting.NO)s</i> to create separate
-            files for this and the previous object.</p>""" % globals()))
+            "previous_file",
+            cellprofiler.setting.Binary(
+                "Combine these object measurements with those of the previous object?",
+                False,
+                doc="""
+                <i>(Used only when "Export all measurements?" is set to "{no}")</i><br>
+                Select <i>{yes}</i> to create a file composed
+                of measurements made on this object and the one directly
+                above it.
+                <p>Select <i>{no}</i> to create separate
+                files for this and the previous object.</p>""".format(**{
+                    'no': cellprofiler.setting.NO,
+                    'yes': cellprofiler.setting.YES
+                })
+            )
+        )
 
-        group.append("wants_automatic_file_name", cellprofiler.setting.Binary(
-                "Use the object name for the file name?", True, doc="""
-            <i>(Used only when "Export all measurements?" is set to "%(cellprofiler.setting.NO)s")</i><br>
-            Select <i>%(cellprofiler.setting.YES)s</i> to use the object name as selected above to generate a file
-            name for the spreadsheet. For example, if you selected <i>Image</i>,
-            above and have not checked the <i>Prepend output file name</i> option,
-            your output file will be named "Image.csv".
-            <p>Select <i>%(cellprofiler.setting.NO)s</i> to name the file yourself.</p>""" % globals()))
+        group.append(
+            "wants_automatic_file_name",
+            cellprofiler.setting.Binary(
+                "Use the object name for the file name?",
+                True,
+                doc="""
+                <i>(Used only when "Export all measurements?" is set to "{no}")</i><br>
+                Select <i>{yes}</i> to use the object name as selected above to generate a file
+                name for the spreadsheet. For example, if you selected <i>Image</i>,
+                above and have not checked the <i>Prepend output file name</i> option,
+                your output file will be named "Image.csv".
+                <p>Select <i>{no}</i> to name the file yourself.</p>""".format(**{
+                    'no': cellprofiler.setting.NO,
+                    'yes': cellprofiler.setting.YES
+                })
+            )
+        )
 
-        group.append("file_name", cellprofiler.setting.Text(
-                "File name", "DATA.csv",
-                metadata=True, doc="""
-            <i>(Used only when "Export all measurements?" is set to "%(cellprofiler.setting.NO)s")</i><br>
-            Enter a file name for the named objects'
-            measurements. <b>ExportToSpreadsheet</b> will
-            prepend the name of the measurements file to this
-            if you asked to do so above. If you have metadata
-            associated with your images, this setting will also substitute
-            metadata tags if desired. %(USING_METADATA_TAGS_REF)s%(USING_METADATA_HELP_REF)s.""" % globals()))
+        group.append(
+            "file_name",
+            cellprofiler.setting.Text(
+                "File name",
+                "DATA.csv",
+                metadata=True,
+                doc="""
+                <i>(Used only when "Export all measurements?" is set to "{no}")</i><br>
+                Enter a file name for the named objects'
+                measurements. <b>ExportToSpreadsheet</b> will
+                prepend the name of the measurements file to this
+                if you asked to do so above. If you have metadata
+                associated with your images, this setting will also substitute
+                metadata tags if desired. {using_metadata_tags}{using_metadata_help}.""".format(**{
+                    'no': cellprofiler.setting.NO,
+                    'using_metadata_tags': cellprofiler.gui.help.USING_METADATA_TAGS_REF,
+                    'using_metadata_help': cellprofiler.gui.help.USING_METADATA_HELP_REF
+                })
+            )
+        )
 
         group.append("remover", cellprofiler.setting.RemoveSettingButton("", "Remove this data set", self.object_groups, group))
         group.append("divider", cellprofiler.setting.Divider(line=False))

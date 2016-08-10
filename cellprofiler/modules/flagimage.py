@@ -113,20 +113,27 @@ class FlagImage(cellprofiler.module.Module):
                         of QC flaws; for example, you can flag only images that are both bright and out of focus.</li>
                         </ul>''' % globals()))
 
-        group.append("wants_skip",
-                     cellprofiler.setting.Binary(
-                             "Skip image set if flagged?", False, doc="""
-                        <p>Select <i>%(cellprofiler.setting.YES)s</i> to skip the remainder of the pipeline for image sets
-                        that are flagged. CellProfiler will not run subsequent modules in the
-                        pipeline on the images in any image set that is flagged.
-                        Select <i>%(cellprofiler.setting.NO)s</i> for CellProfiler to continue to process the pipeline regardless
-                        of flagging.</p>
-                        <p>You may want to skip processing in order to filter out
-                        unwanted images. For instance, you may want
-                        to exclude out of focus images when running
-                        <b>CorrectIllumination_Calculate</b>. You can do this with a
-                        pipeline that measures image quality and flags inappropriate
-                        images before it runs <b>CorrectIllumination_Calculate</b>.</p>""" % globals()))
+        group.append(
+            "wants_skip",
+            cellprofiler.setting.Binary(
+                "Skip image set if flagged?",
+                False,
+                doc="""<p>Select <i>{yes}</i> to skip the remainder of the pipeline for image sets
+                that are flagged. CellProfiler will not run subsequent modules in the
+                pipeline on the images in any image set that is flagged.
+                Select <i>{no}</i> for CellProfiler to continue to process the pipeline regardless
+                of flagging.</p>
+                <p>You may want to skip processing in order to filter out
+                unwanted images. For instance, you may want
+                to exclude out of focus images when running
+                <b>CorrectIllumination_Calculate</b>. You can do this with a
+                pipeline that measures image quality and flags inappropriate
+                images before it runs <b>CorrectIllumination_Calculate</b>.</p>""".format(**{
+                    'yes': cellprofiler.setting.YES,
+                    'no': cellprofiler.setting.NO
+                })
+            )
+        )
 
         group.append("add_measurement_button",
                      cellprofiler.setting.DoSomething("",
@@ -173,12 +180,18 @@ class FlagImage(cellprofiler.module.Module):
                 return cellprofiler.measurement.IMAGE
             return group.object_name.value
 
-        group.append("rules_directory",
-                     cellprofiler.setting.DirectoryPath(
-                             "Rules file location", doc="""
-                        <i>(Used only when flagging using %(S_RULES)s)</i><br>
-                        Select the location of the rules file that will be used for filtering.
-                        %(IO_FOLDER_CHOICE_HELP_TEXT)s""" % globals()))
+        group.append(
+            "rules_directory",
+            cellprofiler.setting.DirectoryPath(
+                "Rules file location",
+                doc="""<i>(Used only when flagging using {rules})</i><br>
+                Select the location of the rules file that will be used for filtering.
+                {io_folder_choice_help_text}""".format(**{
+                    'rules': S_RULES,
+                    'io_folder_choice_help_text': cellprofiler.preferences.IO_FOLDER_CHOICE_HELP_TEXT
+                })
+            )
+        )
 
         def get_directory_fn():
             """Get the directory for the rules file name"""
@@ -245,19 +258,27 @@ class FlagImage(cellprofiler.module.Module):
         group.append("measurement",
                      cellprofiler.setting.Measurement("Which measurement?", object_fn))
 
-        group.append("wants_minimum",
-                     cellprofiler.setting.Binary(
-                             "Flag images based on low values?", True, doc='''
-                         Select <i>%(cellprofiler.setting.YES)s</i> to flag images with measurements below the specified cutoff.
-                         If the measurement evaluates to Not-A-Number (NaN), then the image is not flagged.''' % globals()))
+        group.append(
+            "wants_minimum",
+            cellprofiler.setting.Binary(
+                "Flag images based on low values?",
+                True,
+                doc='''Select <i>{}</i> to flag images with measurements below the specified cutoff.
+                If the measurement evaluates to Not-A-Number (NaN), then the image is not flagged.'''.format(cellprofiler.setting.YES)
+            )
+        )
 
         group.append("minimum_value", cellprofiler.setting.Float("Minimum value", 0))
 
-        group.append("wants_maximum",
-                     cellprofiler.setting.Binary(
-                             "Flag images based on high values?", True, doc='''
-                         Select <i>%(cellprofiler.setting.YES)s</i> to flag images with measurements above the specified cutoff.
-                         If the measurement evaluates to Not-A-Number (NaN), then the image is not flagged.''' % globals()))
+        group.append(
+            "wants_maximum",
+            cellprofiler.setting.Binary(
+                "Flag images based on high values?",
+                True,
+                doc='''Select <i>{}</i> to flag images with measurements above the specified cutoff.
+                If the measurement evaluates to Not-A-Number (NaN), then the image is not flagged.'''.format(cellprofiler.setting.YES)
+            )
+        )
 
         group.append("maximum_value", cellprofiler.setting.Float("Maximum value", 1))
 

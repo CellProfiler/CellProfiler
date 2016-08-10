@@ -300,10 +300,14 @@ folder called "MyFolder" at the same level as the Default Input Folder.</li>
 """
 
 IO_WITH_METADATA_HELP_TEXT = """
-For <i>%(ABSOLUTE_FOLDER_NAME)s</i>, <i>%(DEFAULT_INPUT_SUBFOLDER_NAME)s</i> and
-<i>%(DEFAULT_OUTPUT_SUBFOLDER_NAME)s</i>, if you have metadata associated with your
+For <i>{absolute_folder}</i>, <i>{default_input_subfolder}</i> and
+<i>{default_output_subfolder}</i>, if you have metadata associated with your
 images via <b>Metadata</b> module, you can name the folder using metadata
-tags.""" % globals()
+tags.""".format(**{
+    'absolute_folder': ABSOLUTE_FOLDER_NAME,
+    'default_input_subfolder': DEFAULT_INPUT_SUBFOLDER_NAME,
+    'default_output_subfolder': DEFAULT_OUTPUT_SUBFOLDER_NAME
+})
 
 PREFERENCES_VERSION = 'PreferencesVersion'
 PREFERENCES_VERSION_NUMBER = 1

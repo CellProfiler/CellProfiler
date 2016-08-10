@@ -149,13 +149,18 @@ class ReassignObjectNumbers(cellprofiler.module.Module):
             may therefore consist of two or more unconnected components.""" % globals())
 
         self.wants_image = cellprofiler.setting.Binary(
-                "Unify using a grayscale image?", False, doc="""
-            <i>(Used only with the %(OPTION_UNIFY)s option)</i><br>
-            Select <i>%(cellprofiler.setting.YES)s</i> to use the objects' intensity features to determine whether two
-            objects should be unified. If you choose to use a grayscale image,
-            <i>%(OPTION_UNIFY)s</i> will unify two objects only if they
-            are within the distance you have specified <i>and</i> certain criteria about the objects
-            within the grayscale image are met.""" % globals())
+            "Unify using a grayscale image?",
+            False,
+            doc="""<i>(Used only with the {unify} option)</i><br>
+                Select <i>{yes}</i> to use the objects' intensity features to determine whether two
+                objects should be unified. If you choose to use a grayscale image,
+                <i>{unify}</i> will unify two objects only if they
+                are within the distance you have specified <i>and</i> certain criteria about the objects
+                within the grayscale image are met.""".format(**{
+                    'unify': OPTION_UNIFY,
+                    'yes': cellprofiler.setting.YES
+            })
+        )
 
         self.image_name = cellprofiler.setting.ImageNameSubscriber(
                 "Select the grayscale image to guide unification", cellprofiler.setting.NONE, doc="""
@@ -204,13 +209,16 @@ class ReassignObjectNumbers(cellprofiler.module.Module):
             </ul>""" % globals())
 
         self.wants_outlines = cellprofiler.setting.Binary(
-                "Retain outlines of the relabeled objects?", False, doc="""
-            %(RETAINING_OUTLINES_HELP)s""" % globals())
+            "Retain outlines of the relabeled objects?",
+            False,
+            doc=cellprofiler.gui.help.RETAINING_OUTLINES_HELP
+        )
 
         self.outlines_name = cellprofiler.setting.OutlineNameProvider(
-                'Name the outlines',
-                'RelabeledNucleiOutlines', doc="""
-            %(NAMING_OUTLINES_HELP)s""" % globals())
+            'Name the outlines',
+            'RelabeledNucleiOutlines',
+            doc=cellprofiler.gui.help.NAMING_OUTLINES_HELP
+        )
 
     def get_parent_choices(self, pipeline):
         columns = pipeline.get_measurement_columns()

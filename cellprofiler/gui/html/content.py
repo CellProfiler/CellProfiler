@@ -1,6 +1,5 @@
 # coding=utf-8
-from cellprofiler.gui.help import MEASUREMENT_NAMING_HELP, USING_YOUR_OUTPUT_REF, TEST_MODE_HELP, RUNNING_YOUR_PIPELINE_HELP, SELECTING_IMAGES_HELP, CONFIGURE_IMAGES_HELP
-from cellprofiler.gui.help import MODULE_HELP_BUTTON, MODULE_ADD_BUTTON
+import cellprofiler.gui.help
 
 import urllib
 
@@ -49,15 +48,17 @@ as a means of extracting other features.</p>
 </p>
 
 <p>For more information on these identification modules work and how to configure them for best performance, please see
-the detailed help by selecting the <b>IdentifyPrimaryObjects</b> module and clicking the <img src="memory:%(MODULE_HELP_BUTTON)s">&nbsp;
+the detailed help by selecting the <b>IdentifyPrimaryObjects</b> module and clicking the <img src="memory:{help_button}">&nbsp;
 button at the bottom of the pipeline panel.</p>
-''' % globals()
+'''.format(**{
+    'help_button': cellprofiler.gui.help.MODULE_HELP_BUTTON
+})
 
 MAKING_MEASUREMENTS_REF = urllib.quote("Making measurements")
 MAKING_MEASUREMENTS_HELP = '''
 <p>In most cases, the reason for identifying image features is to make measurements on them. CellProfiler has a number
 of modules dedicated to calculating measurements of various types, on both images and objects; these
-are accessible by clicking the <img src="memory:%(MODULE_ADD_BUTTON)s">&nbsp;button
+are accessible by clicking the <img src="memory:{add_button}">&nbsp;button
 (located underneath the pipeline panel) </p>
 
 <p>Below is a list of measurement categories; these is not meant to be comprehensive, but are sufficient for most assays:
@@ -83,10 +84,14 @@ are accessible by clicking the <img src="memory:%(MODULE_ADD_BUTTON)s">&nbsp;but
 </p>
 
 <p>For more information on these modules and how to configure them for best performance, please see
-the detailed help by selecting the module and clicking the <img src="memory:%(MODULE_HELP_BUTTON)s">&nbsp;
+the detailed help by selecting the module and clicking the <img src="memory:{help_button}">&nbsp;
 button at the bottom of the pipeline panel. You can also find details on measurement nomenclature when exporting under
-<i>%(MEASUREMENT_NAMING_HELP)s</i></p>
-''' % globals()
+<i>{measurement_naming_help}</i></p>
+'''.format(**{
+    'add_button': cellprofiler.gui.help.MODULE_ADD_BUTTON,
+    'help_button': cellprofiler.gui.help.MODULE_HELP_BUTTON,
+    'measurement_naming_help': cellprofiler.gui.help.MEASUREMENT_NAMING_HELP
+})
 
 EXPORTING_RESULTS_REF = urllib.quote("Exporting results")
 EXPORTING_RESULTS_HELP = '''
@@ -106,31 +111,36 @@ purposes. The <b>SaveImages</b> module is used for saving images to a variety of
 nomenclature specified by the user.</p>
 
 <p>For more information on these modules and how to configure them for best performance, please see
-the detailed help by selecting the module and clicking the <img src="memory:%(MODULE_HELP_BUTTON)s">
+the detailed help by selecting the module and clicking the <img src="memory:{help_button}">
 button at the bottom of the pipeline panel. You can also find details on various exporting options under
-<i>%(USING_YOUR_OUTPUT_REF)s</i></p>
-''' % globals()
+<i>{using_your_output}</i></p>
+'''.format(**{
+    'help_button': cellprofiler.gui.help.MODULE_HELP_BUTTON,
+    'using_your_output': cellprofiler.gui.help.USING_YOUR_OUTPUT_REF
+})
 
 TEST_MODE_REF = urllib.quote("Using test mode")
 RUNNING_YOUR_PIPELINE_REF = urllib.quote("Analyzing your images")
 
 IN_APP_HELP_REF = urllib.quote("Using the help")
 IN_APP_HELP_HELP = '''
-In addition to the Help menu in the main CellProfiler window, there are <img src="memory:%(MODULE_HELP_BUTTON)s">
+In addition to the Help menu in the main CellProfiler window, there are <img src="memory:{help_button}">
 buttons containing more specific documentation for using
 CellProfiler. Clicking the "?" button near the pipeline window will show information about the selected module within the pipeline,
-whereas clicking the <img src="memory:%(MODULE_HELP_BUTTON)s"> button to the right of each of the module setting
+whereas clicking the <img src="memory:{help_button}"> button to the right of each of the module setting
 displays help for that particular setting.
-''' % globals()
+'''.format(**{
+    'help_button': cellprofiler.gui.help.MODULE_HELP_BUTTON
+})
 
 WELCOME_HELP = {
-    SELECTING_IMAGES_REF: SELECTING_IMAGES_HELP,
-    CONFIGURE_IMAGES_REF: CONFIGURE_IMAGES_HELP,
+    SELECTING_IMAGES_REF: cellprofiler.gui.help.SELECTING_IMAGES_HELP,
+    CONFIGURE_IMAGES_REF: cellprofiler.gui.help.CONFIGURE_IMAGES_HELP,
     IDENTIFY_FEATUREES_REF: IDENTIFY_FEATUREES_HELP,
     MAKING_MEASUREMENTS_REF: MAKING_MEASUREMENTS_HELP,
     EXPORTING_RESULTS_REF: EXPORTING_RESULTS_HELP,
-    TEST_MODE_REF: TEST_MODE_HELP,
-    RUNNING_YOUR_PIPELINE_REF: RUNNING_YOUR_PIPELINE_HELP,
+    TEST_MODE_REF: cellprofiler.gui.help.TEST_MODE_HELP,
+    RUNNING_YOUR_PIPELINE_REF: cellprofiler.gui.help.RUNNING_YOUR_PIPELINE_HELP,
     IN_APP_HELP_REF: IN_APP_HELP_HELP
 }
 
@@ -161,19 +171,19 @@ startup_main = '''<html>
 <tr>
     <td>&nbsp;</td>
     <td><i><font size="+2">2: Adjust</font></b></td>
-    <td>Use the Input modules to <a href="help://%(SELECTING_IMAGES_REF)s">select</a> and <a href="help://%(CONFIGURE_IMAGES_REF)s">configure</a> your images for analysis.
-    Add Analysis modules to <a href="help://%(IDENTIFY_FEATUREES_REF)s">identify</a> image features, make <a href="help://%(MAKING_MEASUREMENTS_REF)s">measurements</a> and
-    <a href="help://%(EXPORTING_RESULTS_REF)s">export</a> results.</td>
+    <td>Use the Input modules to <a href="help://{selecting_images}">select</a> and <a href="help://{configure_images}">configure</a> your images for analysis.
+    Add Analysis modules to <a href="help://{identify_featurees}">identify</a> image features, make <a href="help://{making_measurements}">measurements</a> and
+    <a href="help://{exporting_results}">export</a> results.</td>
 </tr>
 <tr>
     <td>&nbsp;</td>
     <td><i><font size="+2">3: Test</font></b></td>
-    <td>Click the "Start Test Mode" button to step through the pipeline and <a href="help://%(TEST_MODE_REF)s">check</a> the module settings on a few images.</td>
+    <td>Click the "Start Test Mode" button to step through the pipeline and <a href="help://{test_mode}">check</a> the module settings on a few images.</td>
 </tr>
 <tr>
     <td>&nbsp;</td>
     <td><i><font size="+2">4: Analyze</font></b></td>
-    <td>Click the "Analyze Images" button to <a href="help://%(RUNNING_YOUR_PIPELINE_REF)s">process</a> all of your images with your pipeline.</td>
+    <td>Click the "Analyze Images" button to <a href="help://{running_your_pipeline}">process</a> all of your images with your pipeline.</td>
 </tr>
 </table>
 <br>
@@ -209,7 +219,15 @@ startup_main = '''<html>
 </table>
 <p>Click <a href="pref:no_display">here</a> to stop displaying this page when CellProfiler starts. This page can be accessed from <i>Help > Show Welcome Screen</i> at any time.</p>
 </body>
-</html>''' % globals()
+</html>'''.format(**{
+    'selecting_images': SELECTING_IMAGES_REF,
+    'configure_images': CONFIGURE_IMAGES_REF,
+    'identify_featurees': IDENTIFY_FEATUREES_REF,
+    'making_measurements': MAKING_MEASUREMENTS_REF,
+    'exporting_results': EXPORTING_RESULTS_REF,
+    'test_mode': TEST_MODE_REF,
+    'running_your_pipeline': RUNNING_YOUR_PIPELINE_REF
+})
 
 startup_interface = '''<html>
 <body>

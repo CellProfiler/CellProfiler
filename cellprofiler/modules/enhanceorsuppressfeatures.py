@@ -113,11 +113,15 @@ class EnhanceOrSuppressFeatures(cellprofiler.module.Module):
             by specifying the feature size.""" % globals())
 
         self.object_size = cellprofiler.setting.Integer(
-                'Feature size', 10, 2, doc="""
+            'Feature size',
+            10,
+            2,
+            doc="""
             <i>(Used only if circles, speckles or neurites are selected, or if suppressing features)</i><br>
             Enter the diameter of the largest speckle, the width of the circle
             or the width of the neurites to be enhanced or suppressed, which
-            will be used to calculate an adequate filter size. %(HELP_ON_MEASURING_DISTANCES)s""" % globals())
+            will be used to calculate an adequate filter size. {}""".format(cellprofiler.gui.help.HELP_ON_MEASURING_DISTANCES)
+        )
 
         self.hole_size = cellprofiler.setting.IntegerRange(
                 'Range of hole sizes', value=(1, 10), minval=1, doc="""
@@ -127,29 +131,39 @@ class EnhanceOrSuppressFeatures(cellprofiler.module.Module):
             values.""" % globals())
 
         self.smoothing = cellprofiler.setting.Float(
-                'Smoothing scale', value=2.0, minval=0, doc="""
-            <i>(Used only for the %(E_TEXTURE)s, %(E_DIC)s or %(E_NEURITES)s methods)</i><br>
+            'Smoothing scale',
+            value=2.0,
+            minval=0,
+            doc="""
+            <i>(Used only for the {texture}, {dic} or {neurites} methods)</i><br>
             <ul>
-            <li><i>%(E_TEXTURE)s</i>: This is the scale of the texture features, roughly
+            <li><i>{texture}</i>: This is the scale of the texture features, roughly
             in pixels. The algorithm uses the smoothing value entered as
             the sigma of the Gaussian used to weight nearby pixels by distance
             in the variance calculation.</li>
-            <li><i>%(E_DIC)s:</i> Specifies the amount of smoothing of the image in the direction parallel to the
+            <li><i>{dic}:</i> Specifies the amount of smoothing of the image in the direction parallel to the
             shear axis of the image. The line integration method will leave
             streaks in the image without smoothing as it encounters noisy
             pixels during the course of the integration. The smoothing takes
             contributions from nearby pixels which decreases the noise but
             smooths the resulting image. </li>
-            <li><i>%(E_DIC)s:</i> Increase the smoothing to
+            <li><i>{dic}:</i> Increase the smoothing to
             eliminate streakiness and decrease the smoothing to sharpen
             the image.</li>
-            <li><i>%(E_NEURITES)s:</i> The <i>%(N_TUBENESS)s</i> option uses this scale
+            <li><i>{neurites}:</i> The <i>{tubeness}</i> option uses this scale
             as the sigma of the Gaussian used to smooth the image prior to
             gradient detection.</li>
             </ul>
-            <img src="memory:%(PROTIP_AVOID_ICON)s">&nbsp;
+            <img src="memory:{protip_avoid_icon}">&nbsp;
             Smoothing can be turned off by entering a value of zero, but this
-            is not recommended.""" % globals())
+            is not recommended.""".format(**{
+                'texture': E_TEXTURE,
+                'dic': E_DIC,
+                'neurites': E_NEURITES,
+                'tubeness': N_TUBENESS,
+                'protip_avoid_icon': cellprofiler.gui.help.PROTIP_AVOID_ICON
+            })
+        )
 
         self.angle = cellprofiler.setting.Float(
                 'Shear angle', value=0, doc="""

@@ -224,9 +224,11 @@ class Crop(cellprofiler.module.Module):
             Select the objects that are to be used as a cropping mask.""" % globals())
 
         self.use_plate_fix = cellprofiler.setting.Binary(
-                "Use Plate Fix?", False, doc="""
-            <i>(Used only if %(SH_IMAGE)s selected as cropping shape)</i><br>
-            Select <i>%(cellprofiler.setting.YES)s</i> to attempt to regularize the edges around a previously-identified
+            "Use Plate Fix?",
+            False,
+            doc="""
+            <i>(Used only if {image} selected as cropping shape)</i><br>
+            Select <i>{yes}</i> to attempt to regularize the edges around a previously-identified
             plate object.
             <p>When attempting to crop based on a previously identified object
             such as a rectangular plate, the plate may not have
@@ -249,7 +251,12 @@ class Crop(cellprofiler.module.Module):
             to include the sides of the plate. If you would like the entire plate to
             be shown, you should enter "1:end" for both coordinates. If, for example, you would like
             to crop 80 pixels from each edge of the plate, you could enter Top, Left and Bottom,
-            Right values of 80 and select <i>%(FROM_EDGE)s</i>.</p>""" % globals())
+            Right values of 80 and select <i>{from_edge}</i>.</p>""".format(**{
+                'image': SH_IMAGE,
+                'yes': cellprofiler.setting.YES,
+                'from_edge': FROM_EDGE
+            })
+        )
 
         self.remove_rows_and_columns = cellprofiler.setting.Choice(
                 "Remove empty rows and columns?",

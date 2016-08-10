@@ -185,14 +185,20 @@ class ClassifyObjects(cellprofiler.module.Module):
             classes.""")
 
         self.wants_custom_names = cellprofiler.setting.Binary(
-                "Use custom names for the bins?", False, doc="""
-            Select <i>%(cellprofiler.setting.YES)s</i> if you want to specify the names of each bin
+            "Use custom names for the bins?",
+            False,
+            doc="""
+            Select <i>{yes}</i> if you want to specify the names of each bin
             measurement. <br>
-            Select <i>%(cellprofiler.setting.NO)s</i> to create names based on the
+            Select <i>{no}</i> to create names based on the
             measurements. For instance, for
             "Intensity_MeanIntensity_Green" and "Intensity_TotalIntensity_Blue",
             the module generates measurements such as
-            "Classify_Intensity_MeanIntensity_Green_High_Intensity_TotalIntensity_Low".""" % globals())
+            "Classify_Intensity_MeanIntensity_Green_High_Intensity_TotalIntensity_Low".""".format(**{
+                'yes': cellprofiler.setting.YES,
+                'no': cellprofiler.setting.NO
+            })
+        )
 
         self.low_low_custom_name = cellprofiler.setting.AlphanumericText(
                 "Enter the low-low bin name", "low_low", doc="""
@@ -221,10 +227,13 @@ class ClassifyObjects(cellprofiler.module.Module):
             are above the threshold for both measurements.""")
 
         self.wants_image = cellprofiler.setting.Binary(
-                "Retain an image of the classified objects?", False, doc="""
-            Select <i>%(cellprofiler.setting.YES)s</i> to retain the image of the objects color-coded according
+            "Retain an image of the classified objects?",
+            False,
+            doc="""
+            Select <i>{}</i> to retain the image of the objects color-coded according
             to their classification, for use later in the pipeline (for example,
-            to be saved by a <b>SaveImages</b> module).""" % globals())
+            to be saved by a <b>SaveImages</b> module).""".format(cellprofiler.setting.YES)
+        )
 
         self.image_name = cellprofiler.setting.ImageNameProvider(
                 "Enter the image name", cellprofiler.setting.NONE, doc="""
@@ -289,12 +298,21 @@ class ClassifyObjects(cellprofiler.module.Module):
             define the thresholds of bins between the lowest and highest.
             """ % globals()))
 
-        group.append("wants_low_bin", cellprofiler.setting.Binary(
-                "Use a bin for objects below the threshold?", False, doc="""
-            Select <i>%(cellprofiler.setting.YES)s</i> if you want to create a bin for objects
-            whose values fall below the low threshold. Select <i>%(cellprofiler.setting.NO)s</i>
-            if you do not want a bin for these objects.
-            """ % globals()))
+        group.append(
+            "wants_low_bin",
+            cellprofiler.setting.Binary(
+                "Use a bin for objects below the threshold?",
+                False,
+                doc="""
+                Select <i>{yes}</i> if you want to create a bin for objects
+                whose values fall below the low threshold. Select <i>{no}</i>
+                if you do not want a bin for these objects.
+                """.format(**{
+                    'yes': cellprofiler.setting.YES,
+                    'no': cellprofiler.setting.NO
+                })
+            )
+        )
 
         def min_upper_threshold():
             return group.low_threshold.value + numpy.finfo(float).eps
@@ -308,11 +326,20 @@ class ClassifyObjects(cellprofiler.module.Module):
             <i>Note:</i> If you would like two bins, you should select <i>%(BC_CUSTOM)s</i>.
             """ % globals()))
 
-        group.append("wants_high_bin", cellprofiler.setting.Binary(
-                "Use a bin for objects above the threshold?", False, doc="""
-            Select <i>%(cellprofiler.setting.YES)s</i> if you want to create a bin for objects
-            whose values are above the high threshold. <br>
-            Select <i>%(cellprofiler.setting.NO)s</i> if you do not want a bin for these objects.""" % globals()))
+        group.append(
+            "wants_high_bin",
+            cellprofiler.setting.Binary(
+                "Use a bin for objects above the threshold?",
+                False,
+                doc="""
+                Select <i>{yes}</i> if you want to create a bin for objects
+                whose values are above the high threshold. <br>
+                Select <i>{no}</i> if you do not want a bin for these objects.""".format(**{
+                    'yes': cellprofiler.setting.YES,
+                    'no': cellprofiler.setting.NO
+                })
+            )
+        )
 
         group.append("custom_thresholds", cellprofiler.setting.Text(
                 "Enter the custom thresholds separating the values between bins",
@@ -324,12 +351,21 @@ class ClassifyObjects(cellprofiler.module.Module):
             The module will create one more bin than there are thresholds.
             """ % globals()))
 
-        group.append("wants_custom_names", cellprofiler.setting.Binary(
-                "Give each bin a name?", False, doc="""
-            Select <i>%(cellprofiler.setting.YES)s</i> to assign custom names to bins you have
-            specified.
-            <p>Select <i>%(cellprofiler.setting.NO)s</i> for the module to automatically
-            assign names based on the measurements and the bin number.""" % globals()))
+        group.append(
+            "wants_custom_names",
+            cellprofiler.setting.Binary(
+                "Give each bin a name?",
+                False,
+                doc="""
+                Select <i>%{yes}</i> to assign custom names to bins you have
+                specified.
+                <p>Select <i>{no}</i> for the module to automatically
+                assign names based on the measurements and the bin number.""".format(**{
+                    'yes': cellprofiler.setting.YES,
+                    'no': cellprofiler.setting.NO
+                })
+            )
+        )
 
         group.append("bin_names", cellprofiler.setting.Text(
                 "Enter the bin names separated by commas", cellprofiler.setting.NONE, doc="""
@@ -337,11 +373,17 @@ class ClassifyObjects(cellprofiler.module.Module):
             Enter names for each of the bins, separated by commas.
             An example including three bins might be <i>First,Second,Third</i>."""))
 
-        group.append("wants_images", cellprofiler.setting.Binary(
-                "Retain an image of the classified objects?", False, doc="""
-            Select <i>%(cellprofiler.setting.YES)s</i> to keep an image of the objects which is color-coded according
-            to their classification, for use later in the pipeline (for example,
-            to be saved by a <b>SaveImages</b> module).""" % globals()))
+        group.append(
+            "wants_images",
+            cellprofiler.setting.Binary(
+                "Retain an image of the classified objects?",
+                False,
+                doc="""
+                Select <i>{}</i> to keep an image of the objects which is color-coded according
+                to their classification, for use later in the pipeline (for example,
+                to be saved by a <b>SaveImages</b> module).""".format(cellprofiler.setting.YES)
+            )
+        )
 
         group.append("image_name", cellprofiler.setting.ImageNameProvider(
                 "Name the output image", "ClassifiedNuclei", doc="""

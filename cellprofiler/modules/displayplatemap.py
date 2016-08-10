@@ -66,13 +66,15 @@ class DisplayPlatemap(cellprofiler.module.Module):
                 self.get_object, cellprofiler.setting.NONE, doc='''
             Choose the image or object measurement made by a previous module to plot.''')
 
-        self.plate_name = cellprofiler.setting.Measurement('Select your plate metadata',
-                                                           lambda: cellprofiler.measurement.IMAGE,
-                                          'Metadata_Plate', doc='''
+        self.plate_name = cellprofiler.setting.Measurement(
+            'Select your plate metadata',
+            lambda: cellprofiler.measurement.IMAGE,
+            'Metadata_Plate',
+            doc='''
             Choose the metadata tag that corresponds to the plate identifier. That is,
             each plate should have a metadata tag containing a specifier corresponding
             uniquely to that plate.
-            <p>%(USING_METADATA_HELP_REF)s.</p>''' % globals())
+            <p>{}.</p>'''.format(cellprofiler.gui.help.USING_METADATA_HELP_REF))
 
         self.plate_type = cellprofiler.setting.Choice(
                 'Multiwell plate format',
@@ -95,31 +97,42 @@ class DisplayPlatemap(cellprofiler.module.Module):
             </ul>""" % globals())
 
         self.well_name = cellprofiler.setting.Measurement(
-                'Select your well metadata',
-                lambda: cellprofiler.measurement.IMAGE, 'Metadata_Well', doc='''
+            'Select your well metadata',
+            lambda: cellprofiler.measurement.IMAGE,
+            'Metadata_Well',
+            doc='''
             Choose the metadata tag that corresponds to the well identifier.
             The row-column format of these entries should be an
             alphabetical character (specifying the plate row), followed by two integer
             characters (specifying the plate column). For example, a standard format
             96-well plate would span from "A1" to "H12", whereas a 384-well plate (16
             rows and 24 columns) would span from well "A01" to well "P24"."
-            <p>%(USING_METADATA_HELP_REF)s.</p>''' % globals())
+            <p>{}.</p>'''.format(cellprofiler.gui.help.USING_METADATA_HELP_REF)
+        )
 
-        self.well_row = cellprofiler.setting.Measurement('Select your well row metadata',
-                                                         lambda: cellprofiler.measurement.IMAGE, 'Metadata_WellRow', doc='''
+        self.well_row = cellprofiler.setting.Measurement(
+            'Select your well row metadata',
+            lambda: cellprofiler.measurement.IMAGE,
+            'Metadata_WellRow',
+            doc='''
             Choose the metadata tag that corresponds to the well row identifier, typically
             specified as an alphabetical character. For example, a standard format
             96-well plate would span from  row "A" to "H", whereas a 384-well plate (16
             rows and 24 columns) would span from row "A" to "P".
-            <p>%(USING_METADATA_HELP_REF)s.</p>''' % globals())
+            <p>{}.</p>'''.format(cellprofiler.gui.help.USING_METADATA_HELP_REF)
+        )
 
-        self.well_col = cellprofiler.setting.Measurement('Select your well column metadata',
-                                                         lambda: cellprofiler.measurement.IMAGE, 'Metadata_WellCol', doc='''
+        self.well_col = cellprofiler.setting.Measurement(
+            'Select your well column metadata',
+            lambda: cellprofiler.measurement.IMAGE,
+            'Metadata_WellCol',
+            doc='''
             Choose the metadata tag that corresponds to the well column identifier, typically
             specified with two integer characters. For example, a standard format
             96-well plate would span from column "01" to "12", whereas a 384-well plate (16
             rows and 24 columns) would span from column "01" to "24".
-            <p>%(USING_METADATA_HELP_REF)s.</p>''' % globals())
+            <p>{}.</p>'''.format(cellprofiler.gui.help.USING_METADATA_HELP_REF)
+        )
 
         self.agg_method = cellprofiler.setting.Choice(
                 'How should the values be aggregated?',

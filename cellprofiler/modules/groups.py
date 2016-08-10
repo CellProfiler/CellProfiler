@@ -80,7 +80,7 @@ in a given group; this is useful as a "sanity check" to make sure that the expec
 comprise the groups.</li>
 </ul>
 <table cellpadding="0" width="100%%">
-<tr align="center"><td><img src="memory:%(GROUPS_DISPLAY_TABLE)s"></td></tr>
+<tr align="center"><td><img src="memory:{groups_display_table}"></td></tr>
 </table>
 </p>
 
@@ -96,7 +96,9 @@ These are written to the per-image table.</li>
 To perform grouping, only one analysis worker (i.e., copy of CellProfiler) will be allocated to handle each group.
 This means that you may have multiple workers created (as set under the Preferences), but only a subset of them
 may actually be active, depending on the number of groups you have.
-""" % globals()
+""".format(**{
+    'groups_display_table': cellprofiler.gui.help.GROUPS_DISPLAY_TABLE
+})
 
 logger = logging.getLogger(__name__)
 
@@ -118,10 +120,13 @@ class Groups(cellprofiler.module.Module):
         self.set_notes([" ".join(module_explanation)])
 
         self.wants_groups = cellprofiler.setting.Binary(
-                "Do you want to group your images?", False, doc="""
-            Select <i>%(cellprofiler.setting.YES)s</i> if you need to split your images into image subsets (or <i>groups</i>) such that each
+            "Do you want to group your images?",
+            False,
+            doc="""
+            Select <i>{}</i> if you need to split your images into image subsets (or <i>groups</i>) such that each
             group is processed independently of each other. See the main module
-            help for more details.""" % globals())
+            help for more details.""".format(cellprofiler.setting.YES)
+        )
 
         self.grouping_text = cellprofiler.setting.HTMLText(
                 "", content="""

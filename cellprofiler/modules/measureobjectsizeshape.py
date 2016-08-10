@@ -1,3 +1,13 @@
+import cellprofiler.gui.help
+import cellprofiler.measurement
+import cellprofiler.module
+import cellprofiler.region
+import cellprofiler.setting
+import centrosome.cpmorphology
+import centrosome.zernike
+import numpy
+import scipy.ndimage
+
 __doc__ = '''
 <b>Measure Object Size Shape </b> measures several area and shape
 features of identified objects.
@@ -44,7 +54,7 @@ value is between 0 and 1. (0 and 1 are degenerate cases; an ellipse whose
 eccentricity is 0 is actually a circle, while an ellipse whose eccentricity
 is 1 is a line segment.)
 <table cellpadding="0" width="100%%">
-<tr align="center"><td><img src="memory:%(MEASUREOBJSIZESHAPE_ECCENTRICITY)s"></td></tr>
+<tr align="center"><td><img src="memory:{measure_eccentricity}"></td></tr>
 </table></li>
 <li><i>MajorAxisLength:</i> The length (in pixels) of the major axis of
 the ellipse that has the same normalized second central moments as the
@@ -105,16 +115,9 @@ vol 3, p. 30 </li>
 </ul>
 
 See also <b>MeasureImageAreaOccupied</b>.
-''' % globals()
-
-import cellprofiler.measurement
-import cellprofiler.module
-import cellprofiler.region
-import cellprofiler.setting
-import centrosome.cpmorphology
-import centrosome.zernike
-import numpy
-import scipy.ndimage
+'''.format(**{
+    'measure_eccentricity': cellprofiler.gui.help.MEASUREOBJSIZESHAPE_ECCENTRICITY
+})
 
 """The category of the per-object measurements made by this module"""
 AREA_SHAPE = 'AreaShape'
@@ -167,11 +170,15 @@ class MeasureObjectSizeShape(cellprofiler.module.Module):
         self.add_objects = cellprofiler.setting.DoSomething("", "Add another object", self.add_object)
 
         self.calculate_zernikes = cellprofiler.setting.Binary(
-                'Calculate the Zernike features?', True, doc="""
-            Select <i>%(cellprofiler.setting.YES)s</i> to calculate the Zernike shape features. Since the
-            first 10 Zernike polynomials (from order 0 to order 9) are
-            calculated, this operation can be time consuming if the image
-            contains a lot of objects.""" % globals())
+            'Calculate the Zernike features?',
+            True,
+            doc="""Select <i>{yes}</i> to calculate the Zernike shape features. Since the
+                first 10 Zernike polynomials (from order 0 to order 9) are
+                calculated, this operation can be time consuming if the image
+                contains a lot of objects.""".format(**{
+                    'yes': cellprofiler.setting.YES
+                })
+        )
 
     def add_object(self, can_remove=True):
         """Add a slot for another object"""

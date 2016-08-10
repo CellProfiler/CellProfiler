@@ -85,22 +85,31 @@ class EditObjectsManually(cellprofiler.modules.identify.Identify):
             subsequent modules.""")
 
         self.allow_overlap = cellprofiler.setting.Binary(
-                "Allow overlapping objects?", False, doc="""
+            "Allow overlapping objects?",
+            False,
+            doc="""
             <b>EditObjectsManually</b> can allow you to edit an
             object so that it overlaps another or it can prevent you from
             overlapping one object with another. Objects such as worms or
             the neurites of neurons may cross each other and might need to
             be edited with overlapping allowed, whereas a monolayer of cells
             might be best edited with overlapping off. <br>
-            Select <i>%(cellprofiler.setting.YES)s</i> to allow overlaps or select <i>%(cellprofiler.setting.NO)s</i>
-            to prevent them.""" % globals())
+            Select <i>{yes}</i> to allow overlaps or select <i>{no}</i>
+            to prevent them.""".format(**{
+                'yes': cellprofiler.setting.YES,
+                'no': cellprofiler.setting.NO
+            })
+        )
 
         self.wants_outlines = cellprofiler.setting.Binary(
-                "Retain outlines of the edited objects?", False, doc="""
-            Select <i>%(cellprofiler.setting.YES)s</i> if you want to keep images of the outlines
+            "Retain outlines of the edited objects?",
+            False,
+            doc="""
+            Select <i>{}</i> if you want to keep images of the outlines
             of the objects that remain after editing. This image
             can be saved by downstream modules or overlayed on other images
-            using the <b>OverlayOutlines</b> module.""" % globals())
+            using the <b>OverlayOutlines</b> module.""".format(cellprofiler.setting.YES)
+        )
 
         self.outlines_name = cellprofiler.setting.OutlineNameProvider(
                 "Name the outline image", "EditedObjectOutlines", doc="""
@@ -127,15 +136,24 @@ class EditObjectsManually(cellprofiler.modules.identify.Identify):
             </ul>""" % globals())
 
         self.wants_image_display = cellprofiler.setting.Binary(
-                "Display a guiding image?", True, doc="""
-            Select <i>%(cellprofiler.setting.YES)s</i> to display an image and outlines of the objects. <br>
-            Select <i>%(cellprofiler.setting.NO)s</i> if you do not want a guide image while editing""" % globals())
+            "Display a guiding image?",
+            True,
+            doc="""
+            Select <i>{yes}</i> to display an image and outlines of the objects. <br>
+            Select <i>{no}</i> if you do not want a guide image while editing""".format(**{
+                'yes': cellprofiler.setting.YES,
+                'no': cellprofiler.setting.NO
+            })
+        )
 
         self.image_name = cellprofiler.setting.ImageNameSubscriber(
-                "Select the guiding image", cellprofiler.setting.NONE, doc="""
+            "Select the guiding image",
+            cellprofiler.setting.NONE,
+            doc="""
             <i>(Used only if a guiding image is desired)</i><br>
             This is the image that will appear when editing objects.
-            Choose an image supplied by a previous module.""")
+            Choose an image supplied by a previous module."""
+        )
 
     def settings(self):
         """Return the settings to be loaded or saved to/from the pipeline

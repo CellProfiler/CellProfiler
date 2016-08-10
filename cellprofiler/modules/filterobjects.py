@@ -203,11 +203,15 @@ class FilterObjects(cellprofiler.module.Module):
             and <i>%(FI_MINIMAL_PER_OBJECT)s</i> filtering choices.""" % globals())
 
         self.rules_directory = cellprofiler.setting.DirectoryPath(
-            "Rules file location", doc="""
+            "Rules file location",
+            doc="""
             <i>(Used only when filtering using %(MODE_RULES)s)</i>
             <br>
             Select the location of the rules file that will be used for filtering.
-            %(IO_FOLDER_CHOICE_HELP_TEXT)s""" % globals())
+            {io_folder_choice_help_text}""".format(**{
+                'io_folder_choice_help_text': cellprofiler.preferences.IO_FOLDER_CHOICE_HELP_TEXT
+            })
+        )
 
         self.rules_class = cellprofiler.setting.Choice(
             "Class number",
@@ -253,12 +257,16 @@ class FilterObjects(cellprofiler.module.Module):
                                                                      globals())
 
         self.wants_outlines = cellprofiler.setting.Binary(
-            'Retain outlines of the identified objects?', False, doc="""
-            %(RETAINING_OUTLINES_HELP)s""" % globals())
+            'Retain outlines of the identified objects?',
+            False,
+            doc=cellprofiler.gui.help.RETAINING_OUTLINES_HELP
+        )
 
         self.outlines_name = cellprofiler.setting.OutlineNameProvider(
-            'Name the outline image', 'FilteredObjects', doc="""
-            %(NAMING_OUTLINES_HELP)s""" % globals())
+            'Name the outline image',
+            'FilteredObjects',
+            doc=cellprofiler.gui.help.NAMING_OUTLINES_HELP
+        )
 
         self.additional_objects = []
         self.additional_object_count = cellprofiler.setting.HiddenCount(self.additional_objects,
@@ -298,21 +306,39 @@ class FilterObjects(cellprofiler.module.Module):
             See the <b>Measurements</b> modules help pages
             for more information on the features measured.""" % globals()))
 
-        group.append("wants_minimum", cellprofiler.setting.Binary(
-            'Filter using a minimum measurement value?', True, doc="""
-            <i>(Used only if %(FI_LIMITS)s is selected for filtering method)</i><br>
-            Select <i>%(cellprofiler.setting.YES)s</i> to filter the objects based on a minimum acceptable object
-            measurement value. Objects which are greater than or equal to this value
-            will be retained.""" % globals()))
+        group.append(
+            "wants_minimum",
+            cellprofiler.setting.Binary(
+                'Filter using a minimum measurement value?',
+                True,
+                doc="""
+                <i>(Used only if {fi_limits} is selected for filtering method)</i><br>
+                Select <i>{yes}</i> to filter the objects based on a minimum acceptable object
+                measurement value. Objects which are greater than or equal to this value
+                will be retained.""".format(**{
+                    'fi_limits': FI_LIMITS,
+                    'yes': cellprofiler.setting.YES
+                })
+            )
+        )
 
         group.append("min_limit", cellprofiler.setting.Float('Minimum value', 0))
 
-        group.append("wants_maximum", cellprofiler.setting.Binary(
-            'Filter using a maximum measurement value?', True, doc="""
-            <i>(Used only if %(FI_LIMITS)s is selected for filtering method)</i><br>
-            Select <i>%(cellprofiler.setting.YES)s</i> to filter the objects based on a maximum acceptable object
-            measurement value. Objects which are less than or equal to this value
-            will be retained.""" % globals()))
+        group.append(
+            "wants_maximum",
+            cellprofiler.setting.Binary(
+                'Filter using a maximum measurement value?',
+                True,
+                doc="""
+                <i>(Used only if {fi_limits} is selected for filtering method)</i><br>
+                Select <i>{yes}</i> to filter the objects based on a maximum acceptable object
+                measurement value. Objects which are less than or equal to this value
+                will be retained.""".format(**{
+                    'fi_limits': FI_LIMITS,
+                    'yes': cellprofiler.setting.YES
+                })
+            )
+        )
 
         group.append("max_limit", cellprofiler.setting.Float('Maximum value', 1))
         group.append("divider", cellprofiler.setting.Divider())

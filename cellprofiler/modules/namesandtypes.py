@@ -1,3 +1,22 @@
+import logging
+import re
+
+import bioformats
+import bioformats.omexml
+import cellprofiler.gui.help
+import cellprofiler.image
+import cellprofiler.measurement
+import cellprofiler.module
+import cellprofiler.modules.images
+import cellprofiler.modules.loadimages
+import cellprofiler.pipeline
+import cellprofiler.preferences
+import cellprofiler.region
+import cellprofiler.setting
+import centrosome.outline
+import javabridge
+import numpy
+
 __doc__ = """
 The <b>NamesAndTypes</b> module gives images and/or channels a meaningful name to a particular image or channel,
 as well as defining the relationships between images to create an image set.
@@ -14,8 +33,8 @@ is acquired by the microscope. Sometimes, the two channels are combined into a s
 times they are stored as two separate grayscale images, as in the figure.
 <table border="0" cellpadding="10" cellspacing="4" width="100%%">
 <tr>
-<td align="right"><img src="memory:%(EXAMPLE_DAPI_PIC)s"></td>
-<td align="left"><img src="memory:%(EXAMPLE_GFP_PIC)s"></td>
+<td align="right"><img src="memory:{example_dapi_pic}"></td>
+<td align="left"><img src="memory:{example_gfp_pic}"></td>
 </tr>
 </table>
 For the purposes of analysis, you want the DAPI and GFP image for a given site to be loaded and processed
@@ -63,7 +82,7 @@ to identify the channel. You can press this button as many times as needed to di
 sets obtained. When you complete your pipeline and perform an analysis run, CellProfiler will process the
 image sets in the order shown.</p>
 <table cellpadding="0" width="100%%">
-<tr align="center"><td><img src="memory:%(NAMESANDTYPES_DISPLAY_TABLE)s"></td></tr>
+<tr align="center"><td><img src="memory:{names_and_types_display_table}"></td></tr>
 </table>
 
 <h4>Available measurements</h4>
@@ -73,26 +92,11 @@ written to the per-image table.</li>
 <li><i>ObjectFileName, ObjectPathName:</i> (For used for images loaded as objects) The prefixes of the
 filename and location, respectively, of each object set written to the per-image table.</li>
 </ul>
-""" % globals()
-
-import logging
-import re
-
-import bioformats
-import bioformats.omexml
-import cellprofiler.gui.help
-import cellprofiler.image
-import cellprofiler.measurement
-import cellprofiler.module
-import cellprofiler.modules.images
-import cellprofiler.modules.loadimages
-import cellprofiler.pipeline
-import cellprofiler.preferences
-import cellprofiler.region
-import cellprofiler.setting
-import centrosome.outline
-import javabridge
-import numpy
+""".format(**{
+    'example_dapi_pic': cellprofiler.gui.help.EXAMPLE_DAPI_PIC,
+    'example_gfp_pic': cellprofiler.gui.help.EXAMPLE_GFP_PIC,
+    'names_and_types_display_table': cellprofiler.gui.help.NAMESANDTYPES_DISPLAY_TABLE
+})
 
 logger = logging.getLogger(__name__)
 
@@ -124,7 +128,7 @@ RESCALING_HELP_TEXT = """
 This option determines how the image intensity should be
 rescaled from 0.0 &ndash; 1.0.
 <ul>
-<li><i>%(INTENSITY_RESCALING_BY_METADATA)s:</i> Rescale the image
+<li><i>{intensity_rescaling_by_metadata}:</i> Rescale the image
 intensity so that saturated values are rescaled to 1.0 by dividing
 all pixels in the image by the maximum possible intensity value
 allowed by the imaging hardware. Some image formats save the maximum
@@ -135,79 +139,92 @@ but stores the values in a field that can take values up to 65535.
 Choosing this setting ensures that the intensity scaling value is
 the maximum allowed by the hardware, and not the maximum allowable
 by the file format. </li>
-<li><i>%(INTENSITY_RESCALING_BY_DATATYPE)s:</i> Ignore the image
+<li><i>{intensity_rescaling_by_datatype}:</i> Ignore the image
 metadata and rescale the image to 0 &ndash; 1 by dividing by 255
 or 65535, depending on the number of bits used to store the image.</li>
-<li><i>%(INTENSITY_MANUAL)s:</i> Divide each pixel value by the value entered
-in the <i>%(MANUAL_INTENSITY_LABEL)s</i> setting. <i>%(INTENSITY_MANUAL)s</i> can be
+<li><i>{intensity_manual}:</i> Divide each pixel value by the value entered
+in the <i>{manual_intensity_label}</i> setting. <i>{intensity_manual}</i> can be
 used to rescale an image whose maximum intensity metadata value is absent or
 incorrect, but is less than the value that would be supplied if
-<i>%(INTENSITY_RESCALING_BY_DATATYPE)s</i> were specified.</li>
+<i>{intensity_rescaling_by_datatype}</i> were specified.</li>
 </ul>
 Please note that CellProfiler does not provide the option of loading
 the image as the raw, unscaled values. If you wish to make measurements
 on the unscaled image, use the <b>ImageMath</b> module to multiply the
-scaled image by the actual image bit-depth.""" % globals()
+scaled image by the actual image bit-depth.""".format(**{
+    'intensity_rescaling_by_metadata': INTENSITY_RESCALING_BY_METADATA,
+    'intensity_rescaling_by_datatype': INTENSITY_RESCALING_BY_DATATYPE,
+    'intensity_manual': INTENSITY_MANUAL,
+    'manual_intensity_label': MANUAL_INTENSITY_LABEL
+})
 
 MANUAL_RESCALE_HELP_TEXT = """
-<i>(Used only if %(INTENSITY_MANUAL)s is chosen)</i><br>
+<i>(Used only if {intensity_manual} is chosen)</i><br>
 <b>NamesAndTypes</b> divides the pixel value, as read from the image file, by
 this value to get the loaded image's per-pixel intensity.
-""" % globals()
+""".format(**{
+    'intensity_manual': INTENSITY_MANUAL
+})
 
 LOAD_AS_CHOICE_HELP_TEXT = """
-    You can specify how these images should be treated:
-    <ul>
-    <li><i>%(LOAD_AS_GRAYSCALE_IMAGE)s:</i> An image in which each pixel
-    represents a single intensity value. Most of the modules in CellProfiler
-    operate on images of this type. <br>
-    If this option is applied to a color image, the red, green and blue
-    pixel intensities will be averaged to produce a single intensity value.</li>
-    <li><i>%(LOAD_AS_COLOR_IMAGE)s:</i> An image in which each pixel
-    repesents a red, green and blue (RGB) triplet of intensity values.
-    Please note that the object detection modules such as <b>IdentifyPrimaryObjects</b>
-    expect a grayscale image, so if you want to identify objects, you
-    should use the <b>ColorToGray</b> module in the analysis pipeline
-    to split the color image into its component channels.<br>
-    You can use the <i>%(LOAD_AS_GRAYSCALE_IMAGE)s</i> option to collapse the
-    color channels to a single grayscale value if you don't need CellProfiler
-    to treat the image as color.</li>
-    <li><i>%(LOAD_AS_MASK)s:</i> A <i>mask</i> is an image where some of the
-    pixel intensity values are zero, and others are non-zero. The most common
-    use for a mask is to exclude particular image regions from consideration. By
-    applying a mask to another image, the portion of the image that overlaps with
-    the non-zero regions of the mask are included. Those that overlap with the
-    zeroed region are "hidden" and not included in downstream calculations.
-    For this option, the input image should be a binary image, i.e, foreground is
-    white, background is black. The module will convert any nonzero values
-    to 1, if needed. You can use this option to load a foreground/background
-    segmentation produced by one of the <b>Identify</b> modules.</li>
-    <li><i>%(LOAD_AS_ILLUMINATION_FUNCTION)s:</i> An <i>illumination correction function</i>
-    is an image which has been generated for the purpose of correcting uneven
-    illumination/lighting/shading or to reduce uneven background in images. Typically,
-    is a file in the MATLAB .mat format. See <b>CorrectIlluminationCalculate</b> and
-    <b>CorrectIlluminationApply</b> for more details. </li>
-    <li><i>%(LOAD_AS_OBJECTS)s:</i> Use this option if the input image
-    is a label matrix and you want to obtain the objects that it defines.
-    A label matrix is a grayscale or color image in which the connected
-    regions share the same label, which defines how objects are represented
-    in CellProfiler. The labels are integer values greater than or equal
-    to 0. The elements equal to 0 are the background, whereas the elements
-    equal to 1 make up one object, the elements equal to 2 make up a second
-    object, and so on. This option allows you to use the objects
-    immediately without needing to insert an <b>Identify</b> module to
-    extract them first. See <b>IdentifyPrimaryObjects</b> for more details. <br>
-    This option can load objects created by the <b>SaveImages</b> module. These objects
-    can take two forms, with different considerations for each:
-    <ul>
-    <li><i>Non-overalapping</i> objects are stored as a label matrix. This matrix should be
-    saved as grayscale, rather than color.</li>
-    <li><i>Overlapping objects</i> are stored in a multi-frame TIF, each frame of which consists of a
-    grayscale label matrix. The frames are constructed so that objects that overlap are placed
-    in different frames.</li>
-    </ul></li>
-    </ul>
-    """ % globals()
+You can specify how these images should be treated:
+<ul>
+<li><i>{load_as_grayscale_image}:</i> An image in which each pixel
+represents a single intensity value. Most of the modules in CellProfiler
+operate on images of this type. <br>
+If this option is applied to a color image, the red, green and blue
+pixel intensities will be averaged to produce a single intensity value.</li>
+<li><i>{load_as_color_image}:</i> An image in which each pixel
+repesents a red, green and blue (RGB) triplet of intensity values.
+Please note that the object detection modules such as <b>IdentifyPrimaryObjects</b>
+expect a grayscale image, so if you want to identify objects, you
+should use the <b>ColorToGray</b> module in the analysis pipeline
+to split the color image into its component channels.<br>
+You can use the <i>{load_as_grayscale_image}</i> option to collapse the
+color channels to a single grayscale value if you don't need CellProfiler
+to treat the image as color.</li>
+<li><i>{load_as_mask}:</i> A <i>mask</i> is an image where some of the
+pixel intensity values are zero, and others are non-zero. The most common
+use for a mask is to exclude particular image regions from consideration. By
+applying a mask to another image, the portion of the image that overlaps with
+the non-zero regions of the mask are included. Those that overlap with the
+zeroed region are "hidden" and not included in downstream calculations.
+For this option, the input image should be a binary image, i.e, foreground is
+white, background is black. The module will convert any nonzero values
+to 1, if needed. You can use this option to load a foreground/background
+segmentation produced by one of the <b>Identify</b> modules.</li>
+<li><i>{load_as_illumination_function}:</i> An <i>illumination correction function</i>
+is an image which has been generated for the purpose of correcting uneven
+illumination/lighting/shading or to reduce uneven background in images. Typically,
+is a file in the MATLAB .mat format. See <b>CorrectIlluminationCalculate</b> and
+<b>CorrectIlluminationApply</b> for more details. </li>
+<li><i>{load_as_objects}:</i> Use this option if the input image
+is a label matrix and you want to obtain the objects that it defines.
+A label matrix is a grayscale or color image in which the connected
+regions share the same label, which defines how objects are represented
+in CellProfiler. The labels are integer values greater than or equal
+to 0. The elements equal to 0 are the background, whereas the elements
+equal to 1 make up one object, the elements equal to 2 make up a second
+object, and so on. This option allows you to use the objects
+immediately without needing to insert an <b>Identify</b> module to
+extract them first. See <b>IdentifyPrimaryObjects</b> for more details. <br>
+This option can load objects created by the <b>SaveImages</b> module. These objects
+can take two forms, with different considerations for each:
+<ul>
+<li><i>Non-overalapping</i> objects are stored as a label matrix. This matrix should be
+saved as grayscale, rather than color.</li>
+<li><i>Overlapping objects</i> are stored in a multi-frame TIF, each frame of which consists of a
+grayscale label matrix. The frames are constructed so that objects that overlap are placed
+in different frames.</li>
+</ul></li>
+</ul>
+""".format(**{
+    'load_as_grayscale_image': LOAD_AS_GRAYSCALE_IMAGE,
+    'load_as_color_image': LOAD_AS_COLOR_IMAGE,
+    'load_as_mask': LOAD_AS_MASK,
+    'load_as_illumination_function': LOAD_AS_ILLUMINATION_FUNCTION,
+    'load_as_objects': LOAD_AS_OBJECTS
+})
 
 IDX_ASSIGNMENTS_COUNT_V2 = 5
 IDX_ASSIGNMENTS_COUNT_V3 = 6
@@ -337,7 +354,7 @@ class NamesAndTypes(cellprofiler.module.Module):
             from one site. </p>
             <p>You can match corresponding channels to each other in one of two ways:
             <ul>
-            <li><i>%(MATCH_BY_ORDER)s</i>: CellProfiler will order the images in
+            <li><i>{match_by_order}</i>: CellProfiler will order the images in
             each channel alphabetically by their file path name and, for movies
             or TIF stacks, will order the frames by their order in the file.
             CellProfiler will then match the first from one channel to the
@@ -347,10 +364,10 @@ class NamesAndTypes(cellprofiler.module.Module):
             The image set list will then get truncated according to the channel with
             the fewer number of files.</li>
 
-            <li><i>%(MATCH_BY_METADATA)s</i>: CellProfiler will match files with
+            <li><i>{match_by_metadata}</i>: CellProfiler will match files with
             the same metadata values. This option is more complex to use than
-            <i>%(MATCH_BY_ORDER)s</i> but is more flexible and less prone to inadvertent
-            errors. %(USING_METADATA_HELP_REF)s.
+            <i>{match_by_order}</i> but is more flexible and less prone to inadvertent
+            errors. {using_metadata_help}.
             <p>As an example, an experiment is run on a single multiwell plate with two
             image channels (OrigBlue, <i>w1</i> and OrigGreen, <i>w2</i>) containing
             well and site metadata extracted using the <b>Metadata</b> module. A set of
@@ -420,7 +437,11 @@ class NamesAndTypes(cellprofiler.module.Module):
             example, an image set will not be created for the plate, well and site combination in question.
             </p>
             </li>
-            </ul>""" % globals())
+            </ul>""".format(**{
+                'match_by_order': MATCH_BY_ORDER,
+                'match_by_metadata': MATCH_BY_METADATA,
+                'using_metadata_help': USING_METADATA_HELP_REF
+            }))
         self.join = cellprofiler.setting.Joiner("Match metadata")
         self.imageset_setting = cellprofiler.setting.ImageSetDisplay("", "Update image set table")
 
@@ -439,15 +460,17 @@ class NamesAndTypes(cellprofiler.module.Module):
         mp.set_metadata_keys(self.metadata_keys)
 
         group.append("rule_filter", cellprofiler.setting.Filter(
-                "Select the rule criteria",
-                [cellprofiler.modules.images.FilePredicate(),
-                 cellprofiler.modules.images.DirectoryPredicate(),
-                 cellprofiler.modules.images.ExtensionPredicate(),
-                 cellprofiler.modules.images.ImagePredicate(),
-                 mp],
-                'and (file does contain "")', doc="""
-            Specify a filter using rules to narrow down the files to be analyzed.
-            <p>%(FILTER_RULES_BUTTONS_HELP)s</p>""" % globals()))
+            "Select the rule criteria",
+            [
+                cellprofiler.modules.images.FilePredicate(),
+                cellprofiler.modules.images.DirectoryPredicate(),
+                cellprofiler.modules.images.ExtensionPredicate(),
+                cellprofiler.modules.images.ImagePredicate(),
+                mp
+            ],
+            'and (file does contain "")',
+            doc="""Specify a filter using rules to narrow down the files to be analyzed.
+                <p>{filter_rules_buttons_help}</p>""".format({'filter_rules_buttons_help': cellprofiler.gui.help.FILTER_RULES_BUTTONS_HELP})))
 
         group.append("image_name", cellprofiler.setting.FileImageNameProvider(
                 "Name to assign these images", unique_image_name, doc="""
@@ -479,27 +502,35 @@ class NamesAndTypes(cellprofiler.module.Module):
                 doc=MANUAL_RESCALE_HELP_TEXT))
 
         group.append("should_save_outlines", cellprofiler.setting.Binary(
-                "Retain outlines of loaded objects?", False, doc="""
-            %(RETAINING_OUTLINES_HELP)s""" % globals()))
+            "Retain outlines of loaded objects?",
+            False,
+            doc="""{retaining_outlines_help}""".format(**{'retaining_outlines_help': cellprofiler.gui.help.RETAINING_OUTLINES_HELP})
+        ))
 
         group.append("save_outlines", cellprofiler.setting.OutlineNameProvider(
-                "Name the outline image", "LoadedOutlines", doc=
-                """%(NAMING_OUTLINES_HELP)s""" % globals()))
+            "Name the outline image",
+            "LoadedOutlines",
+            doc="""{naming_outlines_help}""".format(**{'naming_outlines_help': cellprofiler.gui.help.NAMING_OUTLINES_HELP})
+        ))
 
         def copy_assignment(group=group):
             self.copy_assignment(group, self.assignments, self.add_assignment)
 
         group.append("copy_button", cellprofiler.setting.DoSomething(
-                "", "Duplicate this image", copy_assignment, doc="""
+            "",
+            "Duplicate this image",
+            copy_assignment,
+            doc="""
             Duplicate the channel specification, creating a new image assignment
             with the same settings as this one.
             <dl>
-            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp; This button is
+            <dd><img src="memory:{protip_recomend_icon}">&nbsp; This button is
             useful if you are specifying a long series of channels which differ
             by one or two settings (e.g., an image stack with many frames). Using
             this button will help avoid the tedium of having to select the same settings
             multiple times.</dd>
-            </dl>""" % globals()))
+            </dl>""".format(**{'protip_recomend_icon': cellprofiler.gui.help.PROTIP_RECOMEND_ICON})
+        ))
 
         group.can_remove = can_remove
         if can_remove:

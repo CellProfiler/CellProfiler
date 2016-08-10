@@ -63,11 +63,11 @@ class ExportToCellH5(cellprofiler.module.Module):
     def create_settings(self):
         """Create the settings for the ExportToCellH5 module"""
         self.directory = cellprofiler.setting.DirectoryPath(
-                "Output file location",
-                doc="""
+            "Output file location",
+            doc="""
             This setting lets you choose the folder for the output files.
-            %(IO_FOLDER_CHOICE_HELP_TEXT)s
-            """ % globals())
+            {}
+            """.format(cellprofiler.preferences.IO_FOLDER_CHOICE_HELP_TEXT))
 
         def get_directory_fn():
             """Get the directory for the CellH5 file"""
@@ -78,54 +78,75 @@ class ExportToCellH5(cellprofiler.module.Module):
             self.directory.join_parts(dir_choice, custom_path)
 
         self.file_name = cellprofiler.setting.FilenameText(
-                "Output file name", "DefaultOut.ch5",
-                get_directory_fn=get_directory_fn,
-                set_directory_fn=set_directory_fn,
-                metadata=True,
-                browse_msg="Choose CellH5 file",
-                mode=cellprofiler.setting.FilenameText.MODE_APPEND,
-                exts=[("CellH5 file (*.cellh5)", "*.ch5"),
-                      ("HDF5 file (*.h5)", "*.h5"),
-                      ("All files (*.*", "*.*")],
-                doc="""
+            "Output file name",
+            "DefaultOut.ch5",
+            get_directory_fn=get_directory_fn,
+            set_directory_fn=set_directory_fn,
+            metadata=True,
+            browse_msg="Choose CellH5 file",
+            mode=cellprofiler.setting.FilenameText.MODE_APPEND,
+            exts=[
+                ("CellH5 file (*.cellh5)", "*.ch5"),
+                ("HDF5 file (*.h5)", "*.h5"),
+                ("All files (*.*", "*.*")
+            ],
+            doc="""
             This setting lets you name your CellH5 file. If you choose an
             existing file, CellProfiler will add new data to the file
             or overwrite existing locations.
-            <p>%(IO_WITH_METADATA_HELP_TEXT)s %(USING_METADATA_TAGS_REF)s.
+            <p>{io_with_metadata_help_text} {using_metadata_tags}.
             For instance, if you have a metadata tag named
             "Plate", you can create a per-plate folder by selecting one the subfolder options
             and then specifying the subfolder name as "\g&lt;Plate&gt;". The module will
             substitute the metadata values for the current image set for any metadata tags in the
-            folder name.%(USING_METADATA_HELP_REF)s.</p>
+            folder name. {using_metadata_help}.</p>
 
-            """ % globals())
+            """.format(**{
+                'io_with_metadata_help_text': cellprofiler.preferences.IO_WITH_METADATA_HELP_TEXT,
+                'using_metadata_tags': cellprofiler.gui.help.USING_METADATA_HELP_REF,
+                'using_metadata_help': cellprofiler.gui.help.USING_METADATA_HELP_REF
+            })
+        )
+
         self.overwrite_ok = cellprofiler.setting.Binary(
-                "Overwrite existing data without warning?", False,
-                doc="""
-            Select <i>%(cellprofiler.setting.YES)s</i> to automatically overwrite any existing data
-            for a site. Select <i>%(cellprofiler.setting.NO)s</i> to be prompted first.
+            "Overwrite existing data without warning?",
+            False,
+            doc="""
+            Select <i>{yes}</i> to automatically overwrite any existing data
+            for a site. Select <i>{no}</i> to be prompted first.
 
             If you are running the pipeline on a computing cluster,
-            select <i>%(cellprofiler.setting.YES)s</i> unless you want execution to stop because you
+            select <i>{yes}</i> unless you want execution to stop because you
             will not be prompted to intervene. Also note that two instances
             of CellProfiler cannot write to the same file at the same time,
             so you must ensure that separate names are used on a cluster.
-            """ % globals())
+            """.format(**{
+                'yes': cellprofiler.setting.YES,
+                'no': cellprofiler.setting.NO
+            })
+        )
+
         self.repack = cellprofiler.setting.Binary(
-                "Repack after analysis", True,
-                doc="""
+            "Repack after analysis",
+            True,
+            doc="""
             This setting determines whether CellProfiler in multiprocessing mode
-            repacks the data at the end of analysis. If you select <i>%(cellprofiler.setting.YES)s</i>,
+            repacks the data at the end of analysis. If you select <i>{yes}</i>,
             CellProfiler will combine all of the satellite files into a single
             file upon completion. This option requires some extra temporary disk
             space and takes some time at the end of analysis, but results in
             a single file which may occupy less disk space. If you select
-            <i>%(cellprofiler.setting.NO)s</i>, CellProfiler will create a master file using the
+            <i>{no}</i>, CellProfiler will create a master file using the
             name that you give and this file will have links to individual
             data files that contain the actual data. Using the data generated by
             this option requires that you keep the master file and the linked
             files together when copying them to a new folder.
-            """ % globals())
+            """.format(**{
+                'yes': cellprofiler.setting.YES,
+                'no': cellprofiler.setting.NO
+            })
+        )
+
         self.plate_metadata = cellprofiler.setting.Choice(
                 "Plate metadata", [], value="Plate",
                 choices_fn=self.get_metadata_choices,
@@ -151,14 +172,21 @@ class ExportToCellH5(cellprofiler.module.Module):
                 your assay doesn't divide wells up into sites or if this
                 tag is not required for other reasons.""")
         self.divider = cellprofiler.setting.Divider()
+
         self.wants_to_choose_measurements = cellprofiler.setting.Binary(
-                "Choose measurements?", False,
-                doc="""
+            "Choose measurements?",
+            False,
+            doc="""
             This setting lets you choose between exporting all measurements or
-            just the ones that you choose. Select <i>%(cellprofiler.setting.YES)s</i> to pick the
-            measurements to be exported. Select <i>%(cellprofiler.setting.NO)s</i> to automatically
+            just the ones that you choose. Select <i>{yes}</i> to pick the
+            measurements to be exported. Select <i>{no}</i> to automatically
             export all measurements available at this stage of the pipeline.
-            """ % globals())
+            """.format(**{
+                'yes': cellprofiler.setting.YES,
+                'no': cellprofiler.setting.NO
+            })
+        )
+
         self.measurements = cellprofiler.setting.MeasurementMultiChoice(
                 "Measurements to export",
                 doc="""

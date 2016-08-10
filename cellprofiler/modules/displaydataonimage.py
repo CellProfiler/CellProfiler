@@ -99,13 +99,16 @@ class DisplayDataOnImage(cellprofiler.module.Module):
                 "Display mode", [CT_TEXT, CT_COLOR],
                 doc="""<i>(Used only when displaying object measurements)</i><br>
             Choose how to display the measurement information. If you choose
-            %(CT_TEXT)s, <b>DisplayDataOnImage</b> will display the numeric
-            value on top of each object. If you choose %(CT_COLOR)s,
+            {text}, <b>DisplayDataOnImage</b> will display the numeric
+            value on top of each object. If you choose {color},
             <b>DisplayDataOnImage</b> will convert the image to grayscale, if
             necessary, and display the portion of the image within each object
             using a hue that indicates the measurement value relative to
             the other objects in the set using the default color map.
-            """ % globals()
+            """.format(**{
+                    'text': CT_TEXT,
+                    'color': CT_COLOR
+                })
         )
 
         self.colormap = cellprofiler.setting.Colormap(

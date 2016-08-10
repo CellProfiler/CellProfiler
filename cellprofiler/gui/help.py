@@ -168,7 +168,7 @@ loaded into CellProfiler that contain these modules will provide the option of p
 these pipelines will operate exactly as before.</p>
 <p>Alternately, the user can choose to convert these
 modules into the project equivalent as closely as possible. Both modules remain accesible
-via the "Add module" and <img src="memory:%(MODULE_ADD_BUTTON)s">&nbsp;
+via the "Add module" and <img src="memory:{add_button }">&nbsp;
 button at the bottom of the pipeline panel. The section details
 information relevant for users who would like to continue using these modules. Please note,
 however, that these modules are deprecated and may be removed in the future.</p>
@@ -259,7 +259,9 @@ must also specify the "Plate" metadata tag in the regular expression for the oth
 want grouped together.</li>
 </ul>
 </p>
-""" % globals()
+""".format(**{
+    'add_button ': MODULE_ADD_BUTTON
+})
 
 DEFAULT_IMAGE_FOLDER_HELP = """
 <p>Please note that the Default Input Folder will be deprecated in the future. The location
@@ -281,13 +283,16 @@ computer. If, instead, you type specific folder path names into a module's setti
 your pipeline will not work on someone else's computer until you adjust those
 pathnames within each module.</p>
 
-<p>Use the <i>Browse</i> button <img src="memory:%(BROWSE_BUTTON)s">&nbsp;to specify
+<p>Use the <i>Browse</i> button <img src="memory:{browse_button}">&nbsp;to specify
 the folder you would like to use as the Default Input Folder, or
 type the full folder path in the edit box. If you type a folder path that
 cannot be found, the message box below will indicate this fact until you correct the problem.
 If you want to specify a folder that does not yet exist, type the desired name and
-click on the <i>New folder</i> button <img src="memory:%(CREATE_BUTTON)s">.
-The folder will be created according to the pathname you have typed.</p>""" % globals()
+click on the <i>New folder</i> button <img src="memory:{create_button}">.
+The folder will be created according to the pathname you have typed.</p>""".format(**{
+    'browse_button': BROWSE_BUTTON,
+    'create_button': CREATE_BUTTON
+})
 
 DEFAULT_OUTPUT_FOLDER_HELP = """
 <p>Please note that the Default Output Folder will be deprecated in the future. The location
@@ -360,8 +365,10 @@ overwrite?</i> box to the right.</p>
 that even though the analysis completes, CellProfiler continues to use
 an inordinate amount of your CPU and RAM. This is because the output file is written
 after the analysis is completed and can take a very long time for a lot of measurements.
-If you do not need this file and/or notice this behavior, select "<i>%(DO_NOT_WRITE_MEASUREMENTS)s</i>"
-from the "Measurements file format" drop-down box.</p>""" % globals()
+If you do not need this file and/or notice this behavior, select "<i>{do_not_write}</i>"
+from the "Measurements file format" drop-down box.</p>""".format(**{
+    'do_not_write': DO_NOT_WRITE_MEASUREMENTS
+})
 
 NEW_FEATURES_HELP = """
 A number of new features have been incorporated into this re-engineered Python
@@ -528,7 +535,7 @@ BUILDING_A_PIPELINE_HELP = """
 best way to learn how to use CellProfiler is to load an example pipeline
 from the CellProfiler website's Examples page and try it out, then adapt it for
 your own images. You can also build a
-pipeline from scratch. Click the <i>Help</i> <img src="memory:%(MODULE_HELP_BUTTON)s">
+pipeline from scratch. Click the <i>Help</i> <img src="memory:{help_button}">
 &nbsp;button in the main window to get
 help for a specific module.</p>
 
@@ -548,7 +555,7 @@ pipeline using <i>File > Export > Pipeline...</i>. Alternately, you can save the
 using <i>File > Save Project</i> or <i>Save Project As...</i> which also saves the
 file list.</li>
 <li>To learn how to use a cluster of computers to process
-large batches of images, see <i>%(BATCH_PROCESSING_HELP_REF)s</i>.</li>
+large batches of images, see <i>{batch_processing_help}</i>.</li>
 </ol>
 
 <h3>Building a pipeline from scratch</h3>
@@ -558,7 +565,7 @@ left-hand side of the CellProfiler window).</p>
 <ol>
 <li><p><i>Place analysis modules in a new pipeline.</i><br>
 <p>Choose image analysis modules to add to your pipeline by clicking the <i>Add</i>
-<img src="memory:%(MODULE_ADD_BUTTON)s">&nbsp;button
+<img src="memory:{add_button }">&nbsp;button
 (located underneath the pipeline panel) or right-clicking in the pipeline panel
 itself and selecting a module from the
 pop-up box that appears.</p>
@@ -568,9 +575,9 @@ has been placed and selected in the pipeline. Modules are added to the end of th
 pipeline or after the currently selected module, but you can
 adjust their order in the main window by dragging and dropping them, or by selecting a module (or
 modules, using the <i>Shift</i> key) and using the <i>Move Module Up</i>
-<img src="memory:%(MODULE_MOVEUP_BUTTON)s">&nbsp;and <i>Move Module Down</i>
-<img src="memory:%(MODULE_MOVEDOWN_BUTTON)s">&nbsp;buttons.
-The <i>Remove Module</i> <img src="memory:%(MODULE_REMOVE_BUTTON)s">&nbsp;button will
+<img src="memory:{moveup_button}">&nbsp;and <i>Move Module Down</i>
+<img src="memory:{movedown_button}">&nbsp;buttons.
+The <i>Remove Module</i> <img src="memory:{remove_button}">&nbsp;button will
 delete the selected module(s) from the pipeline.</p>
 <p>Most pipelines depend on one major step: identifying the objects. In
 CellProfiler, the objects you identify are called <i>primary</i>,
@@ -597,11 +604,11 @@ right of each setting, or at the bottom of the pipeline panel
 for the help for all the settings for that module.</p>
 <p>If there is an error with the settings (e.g., a setting refers to an image
 that doesn't exist yet),
-a <img src="memory:%(SETTINGS_ERROR_ICON)s">&nbsp;icon will appear next to the
+a <img src="memory:{error_icon}">&nbsp;icon will appear next to the
 module name. If there is a warning (e.g., a special notification attached to a choice of setting),
-a <img src="memory:%(SETTINGS_WARNING_ICON)s">&nbsp;icon will appear. Errors
+a <img src="memory:{warning_icon}">&nbsp;icon will appear. Errors
 will cause the pipeline to fail upon running, whereas a warning will not. Once
-the errors/warnings have been resolved, a <img src="memory:%(SETTINGS_OK_ICON)s">
+the errors/warnings have been resolved, a <img src="memory:{ok_icon}">
 &nbsp;icon will appear indicating that the module is ready to run.</p>
 </li>
 <li><p><i>Set your Default Input Folder, Default Output Folder and output filename.</i><br>
@@ -613,13 +620,13 @@ and settings you have specified. A status window will appear which has the follo
 <ul>
 <li>A <i>progress bar</i> which gives the elapsed time and estimates the time remaining to
 process the full image set.</li>
-<li>A <i>pause button</i> <img src="memory:%(RUNSTATUS_PAUSE_BUTTON)s">&nbsp;
+<li>A <i>pause button</i> <img src="memory:{pause_button}">&nbsp;
 which pauses execution and allows you to subsequently
 resume the analysis.
-<li>A <i>stop button</i> <img src="memory:%(RUNSTATUS_STOP_BUTTON)s">&nbsp;
+<li>A <i>stop button</i> <img src="memory:{stop_button}">&nbsp;
 which cancels execution after prompting you for a place to
 save the measurements collected to that point.</li>
-<li>A <i>save measurements</i> button <img src="memory:%(RUNSTATUS_SAVE_BUTTON)s">&nbsp;
+<li>A <i>save measurements</i> button <img src="memory:{save_button}">&nbsp;
 which will prompt you for a place to
 save the measurements collected to that point while continuing the analysis run.</li>
 </ul>
@@ -629,7 +636,7 @@ At the end of each cycle, CellProfiler saves the measurements in the output file
 You can optimize your pipeline by selecting the <i>Test</i> option from
 the main menu. Test mode allows you to run the pipeline on a selected
 image, preview the results, and adjust the module settings on the fly. See
-<i>%(TEST_MODE_HELP_REF)s</i> for more details.</p>
+<i>{test_mode_help}</i> for more details.</p>
 </li>
 <li><p>Save your project (which includes your pipeline) via <i>File > Save Project</i>.</p>
 </li>
@@ -639,8 +646,23 @@ of intermediate images produced during processing, images produced during
 processing are not saved to the hard drive unless you specifically request it,
 using a <b>SaveImages</b> module.</p>
 <p><i>Saving data in your pipeline:</i> You can include an <b>Export</b> module to automatically export
-data in a format you prefer. See <i>%(USING_YOUR_OUTPUT_REF)s</i> for more details.</p>
-""" % globals()
+data in a format you prefer. See <i>{using_your_output}</i> for more details.</p>
+""".format(**{
+    'help_button': MODULE_HELP_BUTTON,
+    'batch_processing_help': BATCH_PROCESSING_HELP_REF,
+    'add_button': MODULE_ADD_BUTTON,
+    'moveup_button': MODULE_MOVEUP_BUTTON,
+    'movedown_button': MODULE_MOVEDOWN_BUTTON,
+    'remove_button': MODULE_REMOVE_BUTTON,
+    'error_icon': SETTINGS_ERROR_ICON,
+    'warning_icon': SETTINGS_WARNING_ICON,
+    'ok_icon': SETTINGS_OK_ICON,
+    'pause_button': RUNSTATUS_PAUSE_BUTTON,
+    'stop_button': RUNSTATUS_STOP_BUTTON,
+    'save_button': RUNSTATUS_SAVE_BUTTON,
+    'test_mode_help': TEST_MODE_HELP_REF,
+    'using_your_output': USING_YOUR_OUTPUT_REF
+})
 
 REGEXP_HELP_REF = """
 Patterns are specified using
@@ -744,7 +766,7 @@ have detailed a number of solutions on our forum
 <a href="http://cellprofiler.org/forum/viewtopic.php?f=14&t=806&p=4490#p4490">FAQ</a>
 on this issue. We will continue to add more tips and tricks to this page
 over time.</p>
-""" % globals()
+"""
 
 TEST_MODE_HELP = """
 <p>Before starting an analysis run, you can test the pipeline settings on a selected image
@@ -756,7 +778,7 @@ image, preview the results and adjust the module settings on the fly.</p>
 menu bar in the main window. At this point, you will see the following features appear:
 <ul>
 <li>The module view will have a slider bar appearing on the far left.</li>
-<li>A Pause icon <img src="memory:%(TESTMODE_GO_ICON)s">&nbsp;
+<li>A Pause icon <img src="memory:{go_icon}">&nbsp;
 will appear to the left of each module.</li>
 <li>A series of buttons will appear at the bottom of the pipeline panel above the
 module adjustment buttons.</li>
@@ -779,8 +801,8 @@ been produced yet. To avoid this, it is best to actually run the pipeline up to 
 of interest, and move the slider to modules already executed.
 <li><i>Pause:</i> Clicking the pause icon will cause the pipeline test run to halt
 execution when that module is reached (the paused module itself is not executed). The icon
-changes from <img src="memory:%(TESTMODE_GO_ICON)s">&nbsp;to
-<img src="memory:%(TESTMODE_PAUSE_ICON)s">&nbsp;to indicate that a pause has
+changes from <img src="memory:{go_icon}">&nbsp;to
+<img src="memory:{pause_icon}">&nbsp;to indicate that a pause has
 been inserted at that point.</li>
 <li><i>Run:</i> Execution of the pipeline will be started/resumed until
 the next module pause is reached. When all modules have been executed for a given image cycle,
@@ -810,9 +832,13 @@ the module source code, so any changes to the code will be reflected immediately
 Note that if movies are being loaded, the individual movie is defined as a group automatically.
 Selecting <i>Choose Image Group</i> will allow you to choose the movie file, and <i>Choose Image Set</i>
 will let you choose the individual movie frame from that file.
-<p>%(USING_METADATA_GROUPING_HELP_REF)s</p>
+<p>{using_metadata_grouping_help}</p>
 </p>
-""" % globals()
+""".format(**{
+    'go_icon': TESTMODE_GO_ICON,
+    'pause_icon': TESTMODE_PAUSE_ICON,
+    'using_metadata_grouping_help': USING_METADATA_GROUPING_HELP_REF
+})
 
 RUNNING_YOUR_PIPELINE_HELP = """
 Once you have tested your pipeline using Test mode and you are satisfied with the
@@ -820,18 +846,22 @@ module settings, you are ready to run the pipeline on your entire set of images.
 do this:
 <ul>
 <li>Exit Test mode by clicking the "Exit Test Mode" button or selecting <i>Test > Exit Test Mode</i>.</li>
-<li>Click the "<img src="memory:%(ANALYZE_IMAGE_BUTTON)s">&nbsp;Analyze Images" button and begin processing your data sets.</li>
+<li>Click the "<img src="memory:{analyze_image_button}">&nbsp;Analyze Images" button and begin processing your data sets.</li>
 </ul>
 During the analysis run, the progress will appear in the status bar at the bottom of CellProfiler. It will
 show you the total number of image sets, the number of image sets completed, the time elapsed and the approximate
 time remaining in the run.
-<p>If you need to pause analysis, click the "<img src="memory:%(PAUSE_ANALYSIS_BUTTON)s">&nbsp;Pause" button, then click the
+<p>If you need to pause analysis, click the "<img src="memory:{pause_button}">&nbsp;Pause" button, then click the
 "Resume" button to continue. If you
-want to terminate analysis, click the "<img src="memory:%(STOP_ANALYSIS_BUTTON)s">&nbsp;Stop Analysis" button.</p>
+want to terminate analysis, click the "<img src="memory:{stop_button}">&nbsp;Stop Analysis" button.</p>
 <p>If your computer has multiple processors, CellProfiler will take advantage of them by starting multiple copies
 of itself to process the image sets in parallel. You can set the number of <i>workers</i> (i.e.,copies of
 CellProfiler activated) under <i>File > Preferences...</i></p>
-""" % globals()
+""".format(**{
+    'analyze_image_button': ANALYZE_IMAGE_BUTTON,
+    'pause_button': PAUSE_ANALYSIS_BUTTON,
+    'stop_button': STOP_ANALYSIS_BUTTON
+})
 
 # The help below contains a Google URL shortener since the URL has a control character that the URL reader doesn't interpret correctly
 BATCHPROCESSING_HELP = """
@@ -866,7 +896,7 @@ each of the separate cluster computers will write output files to this folder.
 If you cannot create folders and set read/write permissions to these folders (or don't know
 how), ask your Information Technology (IT) department for help. </li>
 
-<li>Press the "%(VIEW_OUTPUT_SETTINGS_BUTTON_NAME)s" button. In the panel that appears,
+<li>Press the "{view_output_settings_button_name}" button. In the panel that appears,
 set the Default Input and Default Output Folders
 to the <i>images</i> and <i>output</i> folders created above, respectively. The Default Input
 Folder setting will only appear if a legacy pipeline is being run.</li>
@@ -882,8 +912,11 @@ algorithms will incorrectly choose a very low threshold, and therefore "find"
 spurious objects. This can be overcome by setting a lower limit on the threshold in
 the <b>IdentifyPrimaryObjects</b> module.<br>
 The Test mode in CellProfiler may be used for previewing the results of your settings
-on images of your choice. Please refer to <i>%(TEST_MODE_HELP_REF)s</i>
-for more details on how to use this utility.</li>""" % globals() + \
+on images of your choice. Please refer to <i>{test_mode_help}</i>
+for more details on how to use this utility.</li>""".format(**{
+    'view_output_settings_button_name': VIEW_OUTPUT_SETTINGS_BUTTON_NAME,
+    'test_mode_help': TEST_MODE_HELP_REF
+}) + \
                        """<li><i>Add the <b>CreateBatchFiles</b> module to the end of your pipeline.</i>
                        This module is needed to resolve the pathnames to your files with respect to
                        your local machine and the cluster computers. If you are processing large batches
@@ -964,7 +997,7 @@ for more details on how to use this utility.</li>""" % globals() + \
                        our <a href="http://goo.gl/WG9doZ">wiki</a> on
                        adapting CellProfiler to a LIMS environment, or post your questions on
                        the CellProfiler <a href = "http://cellprofiler.org/forum/viewforum.php?f=18">CPCluster forum</a>.</p>
-                       """ % globals()
+                       """
 
 RUN_MULTIPLE_PIPELINES_HELP = """
 <br>The <b>Run multiple pipelines</b> dialog lets you select several pipelines
@@ -1086,7 +1119,7 @@ OMERO web client or the
 <a href="http://www.openmicroscopy.org/site/support/omero4/downloads">Insight software</a>.
 As an example, the screen capture below
 indicates that the image, "Channel1-01-A-01.tif", has an IID of 58038:<br>
-<img src="memory:%(OMERO_IMAGEID_PIC)s"></p>
+<img src="memory:{omero_imageid_pic}"></p>
 <p>At present, manually curating the URL list can be somewhat time-consuming, but we
 are planning to develop plug-ins for Insight that will automatically generate these
 lists for CellProfiler from within the Insight user interface. The plugin will allow
@@ -1103,7 +1136,7 @@ To use the "Log into Omero" dialog, enter your server's name or IP address, the 
 (usually 4064), your user name and password and press the "Connect" button. The
 "Connect" button should turn green and the OK button of the dialog should become
 enabled (see below). Press OK to complete the login.<br>
-<img src="memory:%(OMERO_LOGIN_PIC)s">
+<img src="memory:{omero_login_pic}">
 <p>Currently, CellProfiler cannot establish a connection to OMERO when running
 headless - to do that, we would need to store the user password where it might be
 otherwise visible. We would like to provide a secure mechanism for establishing a
@@ -1141,7 +1174,10 @@ omero:iid=58134,omero:iid=58038
 omero:iid=58135,omero:iid=58039
 omero:iid=58136,omero:iid=58040
 </pre>
-""" % globals()
+""".format(**{
+    'omero_imageid_pic': OMERO_IMAGEID_PIC,
+    'omero_login_pic': OMERO_LOGIN_PIC
+})
 
 MEASUREMENT_NOMENCLATURE_HELP = """
 In CellProfiler, measurements are exported as well as stored internally using the
@@ -1271,25 +1307,30 @@ repeatedly.</li>
 <li><b>Select All:</b> If a text setting is active, select all the text in the setting. If the module
 list is active, select all the modules in the module list.</li>
 <li><b>Move Module Up:</b> Move the currently selected module(s) up. You
-can also use the <img src="memory:%(MODULE_MOVEUP_BUTTON)s">&nbsp;button located
+can also use the <img src="memory:{moveup_button}">&nbsp;button located
 below the Pipeline panel.</li>
 <li><b>Move Module Down:</b> Move the currently selected module(s) down. You
-can also use the <img src="memory:%(MODULE_MOVEDOWN_BUTTON)s">&nbsp;button located
+can also use the <img src="memory:{movedown_button}">&nbsp;button located
 below the Pipeline panel.</li>
 <li><b>Delete Module:</b> Remove the currently selected module(s).
 Pressing the Delete key also removes the module(s). You
-can also use the <img src="memory:%(MODULE_REMOVE_BUTTON)s">&nbsp;button located
+can also use the <img src="memory:{remove_button}">&nbsp;button located
 under the Pipeline panel.</li>
 <li><b>Duplicate Module:</b> Duplicate the currently selected module(s) in the pipeline.
 The current settings of the selected module(s) are retained in the duplicate.</li>
 <li><b>Add Module:</b> Select a module from the pop-up list to inster into the current
-pipeline. You can also use the <img src="memory:%(MODULE_ADD_BUTTON)s">&nbsp;button located
+pipeline. You can also use the <img src="memory:{add_button}">&nbsp;button located
 under the Pipeline panel.</li>
 </ul>
 You can select multiple modules at once for moving, deletion and duplication
 by selecting the first module and using Shift-click on the last module to select
 all the modules in between.
-""" % globals()
+""".format(**{
+    'moveup_button': MODULE_MOVEUP_BUTTON,
+    'movedown_button': MODULE_MOVEDOWN_BUTTON,
+    'remove_button': MODULE_REMOVE_BUTTON,
+    'add_button': MODULE_ADD_BUTTON
+})
 
 MENU_BAR_WINDOW_HELP = """
 The <i>Windows</i> menu provides options for showing and hiding the module display windows.
@@ -1297,13 +1338,16 @@ The <i>Windows</i> menu provides options for showing and hiding the module displ
 <li><b>Close All Open Windows:</b> Closes all display windows that are currently open.</li>
 <li><b>Show All Windows On Run:</b> Select to show all display windows during the
 current test run or next analysis run. The display mode icons next to each module
-in the pipeline panel will switch to <img src="memory:%(DISPLAYMODE_SHOW_ICON)s">.</li>
+in the pipeline panel will switch to <img src="memory:{show_icon}">.</li>
 <li><b>Hide All Windows On Run:</b> Select to show no display windows during the
 current test run or next analysis run. The display mode icons next to each module
-in the pipeline panel will switch to <img src="memory:%(DISPLAYMODE_HIDE_ICON)s">.</li>
+in the pipeline panel will switch to <img src="memory:{hide_icon}">.</li>
 </ul>
 If there are any open windows, the window titles are listed underneath these options. Select any
-of these window titles to bring that window to the front.""" % globals()
+of these window titles to bring that window to the front.""".format(**{
+    'show_icon': DISPLAYMODE_SHOW_ICON,
+    'hide_icon': DISPLAYMODE_HIDE_ICON
+})
 
 PARAMETER_SAMPLING_MENU_HELP = """
 The <i>Sampling</i> menu is an interface for Paramorama, a plugin for an interactive visualization
@@ -1345,8 +1389,10 @@ the location of the output file. Once specified, the user is then prompted to
 enter the desired settings. The settings behave identically as those from the
 corresponding module.</p>
 
-<p>Help for each <i>Data Tool</i> is available under <i>%(DATA_TOOL_HELP_REF)s</i> or the corresponding
-module help.</p>""" % globals()
+<p>Help for each <i>Data Tool</i> is available under <i>{data_too_help}</i> or the corresponding
+module help.</p>""".format(**{
+    'data_tool_help': DATA_TOOL_HELP_REF
+})
 
 ####################################################
 #
@@ -1378,18 +1424,20 @@ estimates of typical object diameters for use in <b>IdentifyPrimaryObjects</b>.<
 
 <li><b>Subplots:</b> If the module display window has multiple subplots (such as
 <b>IdentifyPrimaryObjects</b>), the Image Tool options for the individual subplots
-are displayed here. See <i>%(IMAGE_TOOLS_HELP_REF)s</i> for more details.
+are displayed here. See <i>{image_tools_help}</i> for more details.
 </li>
 </ul>
-""" % globals()
+""".format(**{
+    'image_tools_help': IMAGE_TOOLS_HELP_REF
+})
 
 MODULE_DISPLAY_INTERACTIVE_NAVIGATION_HELP = """
 All figure windows come with a navigation toolbar, which can be used to navigate through the data set.
 <ul>
 <li><b>Home, Forward, Back buttons:</b>
-<i>Home</i> <img src="memory:%(WINDOW_HOME_BUTTON)s"> always takes you to
-the initial, default view of your data. The <i>Forward</i> <img src="memory:%(WINDOW_FORWARD_BUTTON)s">&nbsp;
-and <i>Back</i> <img src="memory:%(WINDOW_BACK_BUTTON)s">&nbsp;buttons are akin
+<i>Home</i> <img src="memory:{home_button}"> always takes you to
+the initial, default view of your data. The <i>Forward</i> <img src="memory:{forward_button}">&nbsp;
+and <i>Back</i> <img src="memory:{back_button}">&nbsp;buttons are akin
 to the web browser forward and back buttons in that they are used to navigate back
 and forth between previously defined views, one step at a time. They will not be
 enabled unless you have already navigated within an image else using
@@ -1397,7 +1445,7 @@ the <b>Pan</b> and <b>Zoom</b> buttons, which are used to define new views. </li
 
 <li><b>Pan/Zoom button:</b>
 This button has two modes: pan and zoom. Click the toolbar button
-<img src="memory:%(WINDOW_PAN_BUTTON)s"> to activate panning
+<img src="memory:{pan_button}"> to activate panning
 and zooming, then put your mouse somewhere over an axes, where it will turn into a hand
 icon.
 <ul>
@@ -1414,19 +1462,26 @@ clicking off the plot. This is a known bug to be corrected in the next release.<
 </ul>
 </li>
 
-<li><b>Zoom-to-rectangle button:</b> Click this toolbar button <img src="memory:%(WINDOW_ZOOMTORECT_BUTTON)s">&nbsp;
+<li><b>Zoom-to-rectangle button:</b> Click this toolbar button <img src="memory:{zoom_to_rect_button}">&nbsp;
 to activate this mode. To zoom in, press the left mouse button and drag in the window
 to draw a box around the area you want to zoom in on. When you release the mouse button,
 the image is re-drawn to display the specified area. Remember that you can always use
 <i>Backward</i> button to go back to the previous zoom level, or use the <i>Home</i>
 button to reset the window to the initial view.</li>
 
-<li><b>Save:</b> Click this button <img src="memory:%(WINDOW_SAVE_BUTTON)s">&nbsp;
+<li><b>Save:</b> Click this button <img src="memory:{save_button}">&nbsp;
 to launch a file save dialog. You can save the figure window to an image file.
 Note that this will save the entire contents of the window, not just the individual
 subplot(s) or images.</li>
 </ul>
-""" % globals()
+""".format(**{
+    'home_button': WINDOW_HOME_BUTTON,
+    'forward_button': WINDOW_FORWARD_BUTTON,
+    'back_button': WINDOW_BACK_BUTTON,
+    'pan_button': WINDOW_PAN_BUTTON,
+    'zoom_to_rect_button': WINDOW_ZOOMTORECT_BUTTON,
+    'save_button': WINDOW_SAVE_BUTTON
+})
 
 INTENSITY_MODE_HELP_LIST = """
 <ul>
@@ -1474,19 +1529,22 @@ zero (dark) to one (bright). If you have an RGB image, the histogram shows the i
 for all three channels combined, even if one or more channels is turned off for viewing.</li>
 <li><i>Image contrast:</i> Presents three options for displaying the color/intensity values in
 the images:
-%(INTENSITY_MODE_HELP_LIST)s
+{intensity_mode_help_list}
 </li>
 <li><i>Interpolation:</i> Presents three options for displaying the resolution in
 the images. This is useful for specifying the amount of detail that you want to be
 visible if you zoom in:
-%(INTERPOLATION_MODE_HELP_LIST)s
+{interpolation_mode_help_list}
 </li>
 <li><i>Save subplot:</i> Save the clicked subplot as an image file. If there is only one p
 lot in the figure, this option will save that one.</li>
 <li><i>Channels:</i> For color images only. You can show any combination of the red,
 green, and blue color channels.</li>
 </ul>
-""" % globals()
+""".format(**{
+    'intensity_mode_help_list': INTENSITY_MODE_HELP_LIST,
+    'interpolation_mode_help_list': INTERPOLATION_MODE_HELP_LIST
+})
 
 FIGURE_HELP = (
     ("Using The Display Window Menu Bar", MODULE_DISPLAY_MENU_BAR_HELP),
@@ -1599,7 +1657,7 @@ configuration option that applies to the entire workspace. Interpolation
 controls how the intensities of pixels are blended together. You can set
 the interpolation mode by selecting <i>Interpolation</i> from the
 <i>Subplots</i> menu. The available modes are:
-%(INTERPOLATION_MODE_HELP_LIST)s
+{interpolation_mode_help_list}
 
 <h4>Images</h4>
 
@@ -1615,7 +1673,7 @@ and transparency.</p>
 <p>The intensity normalization mode controls how the pixel's intensity value is
 translated into the brightness of a pixel on the screen. The modes that are
 available are:
-%(INTENSITY_MODE_HELP_LIST)s</p>
+{intensity_mode_help_list}</p>
 
 <p>The <i>Mode</i> controls how pixel intensities are mapped to colors in the
 image. You can display each image using the following modes:
@@ -1668,7 +1726,10 @@ color maps. You can change the transparency of the overlay by choosing
 <i>Alpha</i> from the objects' menu.</li>
 </ul></p>
 
-""" % globals()
+""".format(**{
+    'interpolation_mode_help_list': INTERPOLATION_MODE_HELP_LIST,
+    'intensity_mode_help_list': INTENSITY_MODE_HELP_LIST
+})
 
 WV_FIGURE_HELP = tuple(list(FIGURE_HELP) + [(
     "How To Use The Workspace Viewer", WORKSPACE_VIEWER_HELP)])
@@ -1957,9 +2018,11 @@ of preserving these modules if you load old pipelines into CellProfiler that con
 these pipelines will operate exactly as before.</p>
 <p>Alternately, the user can choose to convert these
 modules into the project equivalent as closely as possible. Both <b>LoadImages</b> and <b>LoadData</b>
-remain accessible via the "Add module" and <img src="memory:%(MODULE_ADD_BUTTON)s">&nbsp;
+remain accessible via the "Add module" and <img src="memory:{add_button}">&nbsp;
 buttons at the bottom of the pipeline panel.</p>
-""" % globals()
+""".format(**{
+    'add_button': MODULE_ADD_BUTTON
+})
 
 SELECTING_IMAGES_HELP = """
 <p>Any image analysis project using CellProfiler begins with providing the program with a set of image files
@@ -1988,9 +2051,11 @@ want to ignore for now. You may specify as many rules as necessary to define the
 list of images.</p>
 
 <p>For more information on this module and how to configure it for the best performance, please see the detailed help by selecting the
-module and clicking the <img src="memory:%(MODULE_HELP_BUTTON)s">&nbsp;button at the bottom of the pipeline panel, or check out
+module and clicking the <img src="memory:{help_button}">&nbsp;button at the bottom of the pipeline panel, or check out
 the Input module tutorials on our <a href="http://cellprofiler.org/tutorials.html">Tutorials</a> page.</p>
-""" % globals()
+""".format(**{
+    'help_button': MODULE_HELP_BUTTON
+})
 
 CONFIGURE_IMAGES_HELP = """
 <p>Once you have used the <b>Images</b> module to produce a list of images to be analyzed, you can use the other
@@ -2022,9 +2087,11 @@ attach additional image information about the experiment, among other things.</p
 </table>
 </p>
 <p>For more information on these modules and how to configure them for the best performance, please see the detailed help by selecting the
-module and clicking the <img src="memory:%(MODULE_HELP_BUTTON)s">&nbsp;button at the bottom of the pipeline panel, or check out
+module and clicking the <img src="memory:{help_button}">&nbsp;button at the bottom of the pipeline panel, or check out
 the Input module tutorials on our <a href="http://cellprofiler.org/tutorials.html">Tutorials</a> page.</p>
-""" % globals()
+""".format(**{
+    'help_button': MODULE_HELP_BUTTON
+})
 
 LOADING_IMAGE_SEQUENCES_HELP = """
 <h3>Introdution</h3>
@@ -2069,21 +2136,21 @@ in the filename.</li>
 </ul>
 To accomplish this, do the following:
 <ul>
-<li>Select "%(X_MANUAL_EXTRACTION)s" or "%(X_IMPORTED_EXTRACTION)s" as the metadata extraction method. You
+<li>Select "{manual_extraction}" or "{imported_extraction}" as the metadata extraction method. You
 will use these to extract the movie and timepoint tags from the images. </li>
-<li>Use "%(X_MANUAL_EXTRACTION)s" to create a regular expression to extract the metadata from the
+<li>Use "{manual_extraction}" to create a regular expression to extract the metadata from the
 filename and/or path name.</li>
-<li>Or, use "%(X_IMPORTED_EXTRACTION)s" if you have a comma-delimted file (CSV) of the necessary
+<li>Or, use "{imported_extraction}" if you have a comma-delimted file (CSV) of the necessary
 metadata columns (including the movie and timepoint tags) for each image.</li>
 </ul>
 If there are multiple channels for each movie, this step may need to be performed for each channel.
 <p>In this example, you could do the following:
 <ul>
-<li>Select "%(X_MANUAL_EXTRACTION)s" as the method, "From file name" as the source, and
+<li>Select "{manual_extraction}" as the method, "From file name" as the source, and
 <code>.*-(?P&lt;Well&gt;[A-P][0-9]{2})\.(?P&lt;Timepoint&gt;[0-9]{3})</code> as the regular expression.
 This step will extract the well ID and timepoint from each filename.</li>
 <li>Click the "Add" button to add another extraction method.</i>
-<li>In the new group of extraction settings, select "%(X_MANUAL_EXTRACTION)s" as the method, "From folder name" as the source, and
+<li>In the new group of extraction settings, select "{manual_extraction}" as the method, "From folder name" as the source, and
 <code>.*[\\/](?P&lt;Stain>.*)[\\/].*$</code> as the regular expression.
 This step will extract the stain name from each folder name.</li>
 <li>Click the "Update" button below the divider and check the output in the table
@@ -2102,7 +2169,7 @@ For this example, you could do the following:
 <li>Make a new rule <code>[Metadata][Does][Have Stain matching][phase]</code> and name it <i>OrigPhase</i>.
 <li>In the "Image set matching method" setting, select "Metadata".</li>
 <li>Select "Well" for the <i>OrigFluor</i>, <i>OrigFluo2</i>, and <i>OrigPhase</i> channels.</li>
-<li>Click the <img src="memory:%(MODULE_ADD_BUTTON)s">&nbsp;button to the right to add another row,
+<li>Click the <img src="memory:{add_button}">&nbsp;button to the right to add another row,
 and select "Timepoint" for each channel.</li>
 <li>Click the "Update" button below the divider to view the resulting table and confirm that the proper
 files are listed and matched across the channels. The corresponding well and frame for each channel
@@ -2162,7 +2229,7 @@ in the image's internal metadata, in contrast to the image sequence described ab
 </ul>
 To accomplish this, do the following:
 <ul>
-<li>Select "%(X_AUTOMATIC_EXTRACTION)s" as the metadata extraction method. In this case, CellProfiler will
+<li>Select "{automatic_extraction}" as the metadata extraction method. In this case, CellProfiler will
 extract the requisite information from the metadata stored in the image headers.</li>
 <li>Click the "Update metadata" button. A progress bar will appear showing the time elapsed; depending on
 the number of files present, this step may take a while to complete.</li>
@@ -2178,25 +2245,25 @@ channels, you will need to do this for each channel. For this example, you could
 <ul>
 <li>Select "Assign images matching rules".</li>
 <li>Make a new rule <code>[Metadata][Does][Have C matching][0]</code> </li>
-<li>Click the <img src="memory:%(MODULE_ADD_BUTTON)s">&nbsp;button to the right of the rule to add another set of rules underneath.</li>
+<li>Click the <img src="memory:{add_button}">&nbsp;button to the right of the rule to add another set of rules underneath.</li>
 <li>Add the rule <code>[Image][Is][Stack frame]</code>. This
 combination tells CellProfiler not to treat the image as a single file, but rather as a series of frames.</li>
 <li>Name the image <i>DAPI</i>.</li>
 <li>Click the "Add another image" button to define a second image with a set of rules. </li>
 <li>Make a new rule <code>[Metadata][Does][Have C matching][1]</code>
-<li>Click the <img src="memory:%(MODULE_ADD_BUTTON)s">&nbsp;button to the right of the rule to add another set of rules underneath.</li>
+<li>Click the <img src="memory:{add_button}">&nbsp;button to the right of the rule to add another set of rules underneath.</li>
 <li>Add the rule <code>[Image][Is][Stack frame]</code>.</li>
 <li>Name the image <i>GFP</i>.</li>
 <li>Click the "Add another image" button to define a third image with a set of rules. </li>
 <li>Make a new rule <code>[Metadata][Does][Have C matching][2]</code>
-<li>Click the <img src="memory:%(MODULE_ADD_BUTTON)s">&nbsp;button to the right of the rule to add another set of rules underneath.</li>
+<li>Click the <img src="memory:{add_button}">&nbsp;button to the right of the rule to add another set of rules underneath.</li>
 <li>Add the rule <code>[Image][Is][Stack frame]</code>.</li>
 <li>Name the image <i>TxRed</i>.</li>
 <li>In the "Image set matching method" setting, select "Metadata". </li>
 <li>Select "FileLocation" for the DAPI, GFP and TxRed channels. The FileLocation metadata tag identifies the
 individual stack, and selecting this parameter ensures that the channels are first matched within each
 stack, rather than across stacks.</li>
-<li>Click the <img src="memory:%(MODULE_ADD_BUTTON)s">&nbsp; button to the right to add another row, and select <i>Series</i> for each channel. </li>
+<li>Click the <img src="memory:{add_button}">&nbsp; button to the right to add another row, and select <i>Series</i> for each channel. </li>
 <li>Click the "Update" button below the divider to confirm that the proper image slices are listed and matched across the channels.
 The corresponding <i>FileLocation</i> and <i>Series</i> for each channel should now be matched to each other.
 </ul>
@@ -2242,7 +2309,7 @@ is usually contained in the image file's internal metadata.</li>
 </ul>
 To accomplish this, do the following:
 <ul>
-<li>Select "%(X_AUTOMATIC_EXTRACTION)s" as the metadata extraction method. In this case, CellProfiler will
+<li>Select "{automatic_extraction}" as the metadata extraction method. In this case, CellProfiler will
 extract the requisite information from the metadata stored in the image headers.</li>
 <li>Click the "Update metadata" button. A progress bar will appear showing the time elapsed; depending
 on the number of files present, this step may take a while.</li>
@@ -2262,25 +2329,25 @@ multiple channels, you will need to do this for each channel.
 <ul>
 <li>Select "Assign images matching rules".</li>
 <li>Make a new rule <code>[Metadata][Does][Have C matching][0]</code> </li>
-<li>Click the <img src="memory:%(MODULE_ADD_BUTTON)s">&nbsp;button to the right of the rule to add another set of
+<li>Click the <img src="memory:{add_button}">&nbsp;button to the right of the rule to add another set of
 rule options.</li>
 <li>Add the rule <code>[Image][Is][Stack frame]</code>.</li>
 <li>Name the image <i>DAPI</i>.
 <li>Click the "Add another image" button to define a second image with a set of rules.</li>
 <li>Make a new rule <code>[Metadata][Does][Have C matching][1]</code> </li>
-<li>Click the <img src="memory:%(MODULE_ADD_BUTTON)s">&nbsp;button to the right of the rule to add another set of
+<li>Click the <img src="memory:{add_button}">&nbsp;button to the right of the rule to add another set of
 rule options.</li>
 <li>Add the rule <code>[Image][Is][Stack frame]</code>.</li>
 <li>Name the second image <i>GFP</i>.</li>
 <li>Click the "Add another image" button to define a third image with a set of rules.</li>
 <li>Make a new rule <code>[Metadata][Does][Have C matching][2]</code>.</li>
-<li>Click the <img src="memory:%(MODULE_ADD_BUTTON)s">&nbsp;button to the right of the rule to add another set of
+<li>Click the <img src="memory:{add_button}">&nbsp;button to the right of the rule to add another set of
 rule options. </li>
 <li>Add the rule <code>[Image][Is][Stack frame]</code>.</li>
 <li>Name the third image <i>TxRed</i>. </li>
 <li>Click the "Add another image" button to define a fourth image with set of rules.</li>
 <li>Make a new rule <code>[Metadata][Does][Have C matching][3]</code>.</li>
-<li>Click the <img src="memory:%(MODULE_ADD_BUTTON)s">&nbsp;button to the right of the rule to add another set of
+<li>Click the <img src="memory:{add_button}">&nbsp;button to the right of the rule to add another set of
 rule options. </li>
 <li>Add the rule <code>[Image][Is][Stack frame]</code>.</li>
 <li>Name the fourth image <i>Cy3</i>.</li>
@@ -2289,7 +2356,7 @@ rule options. </li>
 <i>FileLocation</i> identifies the individual
 stack, and selecting this parameter insures that the channels are matched within each stack,
 rather than across stacks.</li>
-<li>Click the <img src="memory:%(MODULE_ADD_BUTTON)s">&nbsp;button to the right to add another row,
+<li>Click the <img src="memory:{add_button}">&nbsp;button to the right to add another row,
 and select "Z" for each channel.</li>
 <li>Click "Update table" to confirm the channel matching. The corresponding <i>FileLocation</i> and <i>Z</i> for each
 channel should be matched to each other.</li>
@@ -2307,7 +2374,12 @@ process the slices in all stacks together as if they were constituents of only o
 </li>
 </ul>
 </p>
-""" % globals()
+""".format(**{
+    'manual_extraction': X_MANUAL_EXTRACTION,
+    'imported_extraction': X_IMPORTED_EXTRACTION,
+    'add_button': MODULE_ADD_BUTTON,
+    'automatic_extraction': X_AUTOMATIC_EXTRACTION
+})
 
 #########################################################
 #
@@ -2370,7 +2442,7 @@ the filter finds all files that include the text "Channel", such as "Channel1.ti
 <li>If you select "Does" and "Start with" as the operators and "Channel1" in the Condition box,
 the rule will includes such files as "Channel1.tif" "Channel1-A01.png", and so on.</li></ul>
 <table cellpadding="0" width="100%%">
-<tr align="center"><td><img src="memory:%(IMAGES_USING_RULES_ICON)s"></td></tr>
+<tr align="center"><td><img src="memory:{images_using_rules_icon}"></td></tr>
 </table>
 </li>
 You can also create regular expressions (an advanced syntax for pattern matching; see <a href="#regexp">below</a>) in order to select particular files.
@@ -2388,8 +2460,11 @@ all the conditions you want to include.</p>
 <a name="regexp"><h5>Details on regular expressions</h5></a>
 <p>A <i>regular expression</i> is a general term refering to a method of searching for pattern matches in text. There is a high
 learning curve to using them, but are quite powerful once you understand the basics.</p>
-<p>%(REGEXP_HELP_REF)s</p>
-""" % globals()
+<p>{regexp_help}</p>
+""".format(**{
+    'images_using_rules_icon': IMAGES_USING_RULES_ICON,
+    'regexp_help': REGEXP_HELP_REF
+})
 
 #########################################################
 #

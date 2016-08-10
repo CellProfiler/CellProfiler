@@ -1,3 +1,18 @@
+import logging
+import os
+import re
+import time
+import urllib
+
+import cellprofiler.gui.help
+import cellprofiler.measurement
+import cellprofiler.module
+import cellprofiler.modules.images
+import cellprofiler.modules.loadimages
+import cellprofiler.pipeline
+import cellprofiler.setting
+import javabridge
+
 __doc__ = """
 The <b>Metadata</b> module connects information about the images (i.e., metadata)
 to your list of images for processing in CellProfiler.
@@ -66,7 +81,7 @@ divider to display a table of results using the current settings. Each row corre
 the <b>Images</b> module, and the columns display the metadata obtained for each tag specified.
 You can press this button as many times as needed to display the most current metadata obtained.</p>
 <table cellpadding="0" width="100%%">
-<tr align="center"><td><img src="memory:%(METADATA_DISPLAY_TABLE)s"></td></tr>
+<tr align="center"><td><img src="memory:{metadata_display_table}"></td></tr>
 </table>
 
 <p>Some downstream use cases for metadata include the following:
@@ -89,22 +104,9 @@ module for more details.</p>
 <ul>
 <li><i>Metadata:</i> The prefix of each metadata tag in the per-image table.</li>
 </ul>
-""" % globals()
-
-import logging
-import os
-import re
-import time
-import urllib
-
-import cellprofiler.gui.help
-import cellprofiler.measurement
-import cellprofiler.module
-import cellprofiler.modules.images
-import cellprofiler.modules.loadimages
-import cellprofiler.pipeline
-import cellprofiler.setting
-import javabridge
+""".format(**{
+    'metadata_display_table': cellprofiler.gui.help.METADATA_DISPLAY_TABLE
+})
 
 logger = logging.getLogger(__name__)
 
@@ -161,11 +163,15 @@ class Metadata(cellprofiler.module.Module):
         self.set_notes([" ".join(module_explanation)])
 
         self.wants_metadata = cellprofiler.setting.Binary(
-                "Extract metadata?", False, doc="""
-            Select <i>%(cellprofiler.setting.YES)s</i> if your file or path names or file headers contain information
-            (i.e., metadata) you would like to extract and store along with your
-            measurements. See the main module
-            help for more details.""" % globals())
+            "Extract metadata?",
+            False,
+            doc="""Select <i>{yes}</i> if your file or path names or file headers contain information
+                (i.e., metadata) you would like to extract and store along with your
+                measurements. See the main module
+                help for more details.""".format(**{
+                    'yes': cellprofiler.setting.YES
+            })
+        )
 
         self.extraction_methods = []
         self.add_extraction_method(False)
@@ -179,40 +185,44 @@ class Metadata(cellprofiler.module.Module):
 
         self.dtc_divider = cellprofiler.setting.Divider()
         self.data_type_choice = cellprofiler.setting.Choice(
-                "Metadata data type", DTC_ALL,
-                tooltips=dict(DTC_TEXT="Save all metadata as text",
-                              DTC_CHOOSE="Choose the data type (text or numeric) for each metadata category"),
-                doc="""
-            Metadata can be stored as either a text or numeric value:
-            <ul>
-            <li><i>%(DTC_TEXT)s:</i> Save all metadata item as text.</li>
-            <li><i>%(DTC_CHOOSE)s:</i> Choose the data type separately for each
-            metadata entry. An example of when this approach would be necessary
-            would be if a whole filename is captured as metadata but the file name is
-            numeric, e.g., "0001101". In this situation, if the file name needs to be used for an
-            arithmetic calculation or index, the name would need to be converted to a
-            number and you would select "Integer" as the data type.
-            On the other hand, if it important that the leading zeroes be retained,
-            setting it to an integer would them upon conversion to a number. In this case,
-            storing the metadata values as "Text" would be more appropriate.</li>
-            </ul>
-            """ % globals())
+            "Metadata data type",
+            DTC_ALL,
+            tooltips=dict(DTC_TEXT="Save all metadata as text",
+                          DTC_CHOOSE="Choose the data type (text or numeric) for each metadata category"),
+            doc="""Metadata can be stored as either a text or numeric value:
+                <ul>
+                <li><i>{dtc_text}:</i> Save all metadata item as text.</li>
+                <li><i>{dtc_choose}:</i> Choose the data type separately for each
+                metadata entry. An example of when this approach would be necessary
+                would be if a whole filename is captured as metadata but the file name is
+                numeric, e.g., "0001101". In this situation, if the file name needs to be used for an
+                arithmetic calculation or index, the name would need to be converted to a
+                number and you would select "Integer" as the data type.
+                On the other hand, if it important that the leading zeroes be retained,
+                setting it to an integer would them upon conversion to a number. In this case,
+                storing the metadata values as "Text" would be more appropriate.</li>
+                </ul>
+                """.format(**{
+                    'dtc_text': DTC_TEXT,
+                    'dtc_choose': DTC_CHOOSE
+            }))
 
         self.data_types = cellprofiler.setting.DataTypes(
-                "Metadata types",
-                name_fn=self.get_metadata_keys, doc="""
-            <i>(Used only when %(DTC_CHOOSE)s is selected for the metadata data type)</i><br>
-            This setting determines the data type of each metadata field
-            when stored as a measurement.
-            <ul>
-            <li><i>Text:</i> Save the metadata as text.</li>
-            <li><i>Integer:</i> Save the metadata as an integer.</li>
-            <li><i>Float:</i> Save the metadata as a decimal number.</li>
-            <li><i>None:</i> Do not save the metadata as a measurement.</li>
-            </ul>
-            If you are using the metadata to match images to create your image set, the choice
-            of metadata type here will determine the order of matching. See <b>NamesAndTypes</b>
-            for more details.""" % globals())
+            "Metadata types",
+            name_fn=self.get_metadata_keys,
+            doc="""<i>(Used only when {dtc_choose} is selected for the metadata data type)</i><br>
+                This setting determines the data type of each metadata field
+                when stored as a measurement.
+                <ul>
+                <li><i>Text:</i> Save the metadata as text.</li>
+                <li><i>Integer:</i> Save the metadata as an integer.</li>
+                <li><i>Float:</i> Save the metadata as a decimal number.</li>
+                <li><i>None:</i> Do not save the metadata as a measurement.</li>
+                </ul>
+                If you are using the metadata to match images to create your image set, the choice
+                of metadata type here will determine the order of matching. See <b>NamesAndTypes</b>
+                for more details.""".format(**{'dtc_choose': DTC_CHOOSE})
+        )
 
         self.table = cellprofiler.setting.Table(
                 "", use_sash=True,
@@ -238,28 +248,28 @@ class Metadata(cellprofiler.module.Module):
             The <b>Metadata</b> module can extract internal or external metadata from the images
             in any of three ways:
             <ul>
-            <li><i>%(X_MANUAL_EXTRACTION)s</i>: This approach retrieves information based on the file
+            <li><i>{manual_extraction}</i>: This approach retrieves information based on the file
             nomenclature and/or location. A special syntax called "regular expressions" is used to match
             text patterns in the file name or path, and then assign this text as metadata for the images
             you specify. The tag for each metadata is assigned a name that is meaningful to you.
             <dl>
-            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;
+            <dd><img src="memory:{protip_recomend_icon}">&nbsp;
             <i>When would you want to use this option?</i> If you want to take advantage of the fact that
             acquisition software often automatically assigns a regular nomenclature to the filenames or
             the containing folders. Alternately, the researcher acquiring the images may also have a
             specific nomenclature they adhere to for bookkeeping purposes.</dd>
             </dl></li>
-            <li><i>%(X_IMPORTED_EXTRACTION)s</i>: This option retrieves metadata from a comma-delimited
+            <li><i>{imported_extraction}</i>: This option retrieves metadata from a comma-delimited
             file (known as a CSV file, for comma-separated values) of information; you will be prompted
             to specify the location of the CSV file. You can create such a file using a spreadsheet program
             such as Microsoft Excel.
             <dl>
-            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;
+            <dd><img src="memory:{protip_recomend_icon}">&nbsp;
             <i>When would you want to use this option?</i> You have information curated in software that allows for
             export to a spreadsheet. This is commonly the case for laboratories that use data management systems
             that track samples and acquisition.</dd>
             </dl></li>
-            <li><i>%(X_AUTOMATIC_EXTRACTION)s</i>: This option retrieves information from the internal
+            <li><i>{automatic_extraction}</i>: This option retrieves information from the internal
             structure of the file format itself. Typically, image metadata is embedded in the image file
             as header information; this information includes the dimensions and color depth among other
             things. If you select this method, press the "Update metadata" button to extract the metadata.
@@ -281,14 +291,19 @@ class Metadata(cellprofiler.module.Module):
             illumination sources.</li>
             </ul>
             <dl>
-            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;
+            <dd><img src="memory:{protip_recomend_icon}">&nbsp;
             <i>When would you want to use this option?</i> You want to analyze images that are contained as
             file stacks, i.e., the images that are related to each other in some way, such as by time
             (temporal), space (spatial), or color (spectral).</dd>
             </dl></li>
             </ul>
             Specifics on the metadata extraction options are described below. Any or all of these options
-            may be used at time; press the "Add another extraction method" button to add more.</p>""" % globals()))
+            may be used at time; press the "Add another extraction method" button to add more.</p>""".format(**{
+                'manual_extraction': X_MANUAL_EXTRACTION,
+                'protip_recomend_icon': cellprofiler.gui.help.PROTIP_RECOMEND_ICON,
+                'imported_extraction': X_IMPORTED_EXTRACTION,
+                'automatic_extraction': X_AUTOMATIC_EXTRACTION
+            })))
 
         group.append("source", cellprofiler.setting.Choice(
                 "Metadata source", [XM_FILE_NAME, XM_FOLDER_NAME], doc="""
@@ -394,31 +409,42 @@ class Metadata(cellprofiler.module.Module):
             </table></p>"""))
 
         group.append("filter_choice", cellprofiler.setting.Choice(
-                "Extract metadata from",
-                [F_ALL_IMAGES, F_FILTERED_IMAGES], doc="""
-            Select whether you want to extract metadata from all of the images
-            chosen by the <b>Images</b> module or a subset of the images.
-            <p>This setting controls how different image types (e.g., an image
-            of the GFP stain and a brightfield image) have different metadata
-            extracted. There are two choices:<br>
-            <ul>
-            <li><i>%(F_ALL_IMAGES)s</i>: Extract metadata from all images specified in
-            <b>Images</b>. This is the simplest choice and the appropriate one if you have
-            only one kind of image (or only one image). CellProfiler will
-            extract metadata from all images using the same method per iteration.</li>
-            <li><i>%(F_FILTERED_IMAGES)s</i>: Extract metadata depending on specific file
-            attributes. This is the appropriate choice if more than one image was taken of each
-            imaging site. You can specify distinctive criteria for each image subset with
-            matching metadata.</li>
-            </ul></p>""" % globals()))
+            "Extract metadata from",
+            [F_ALL_IMAGES, F_FILTERED_IMAGES],
+            doc="""Select whether you want to extract metadata from all of the images
+                chosen by the <b>Images</b> module or a subset of the images.
+                <p>This setting controls how different image types (e.g., an image
+                of the GFP stain and a brightfield image) have different metadata
+                extracted. There are two choices:<br>
+                <ul>
+                <li><i>{all_images}</i>: Extract metadata from all images specified in
+                <b>Images</b>. This is the simplest choice and the appropriate one if you have
+                only one kind of image (or only one image). CellProfiler will
+                extract metadata from all images using the same method per iteration.</li>
+                <li><i>{filtered_images}</i>: Extract metadata depending on specific file
+                attributes. This is the appropriate choice if more than one image was taken of each
+                imaging site. You can specify distinctive criteria for each image subset with
+                matching metadata.</li>
+                </ul></p>""".format(**{
+                    'all_images': F_ALL_IMAGES,
+                    'filtered_images': F_FILTERED_IMAGES
+                })
+        ))
 
         group.append("filter", cellprofiler.setting.Filter(
-                "Select the filtering criteria", [cellprofiler.modules.images.FilePredicate(),
-                                                  cellprofiler.modules.images.DirectoryPredicate(),
-                                                  cellprofiler.modules.images.ExtensionPredicate()],
-                'and (file does contain "")', doc="""
-            Select <i>%(cellprofiler.setting.YES)s</i> to display and use rules to select files for metadata extraction.
-            <p>%(FILTER_RULES_BUTTONS_HELP)s</p>""" % globals()))
+            "Select the filtering criteria",
+            [
+                cellprofiler.modules.images.FilePredicate(),
+                cellprofiler.modules.images.DirectoryPredicate(),
+                cellprofiler.modules.images.ExtensionPredicate()
+            ],
+            'and (file does contain "")',
+            doc="""Select <i>{yes}</i> to display and use rules to select files for metadata extraction.
+                <p>{filter_rules_buttons_help}</p>""".format(**{
+                    'yes': cellprofiler.setting.YES,
+                    'filter_rules_buttons_help': cellprofiler.gui.help.FILTER_RULES_BUTTONS_HELP
+                })
+        ))
 
         group.append("csv_location", cellprofiler.setting.PathnameOrURL(
                 "Metadata file location",
@@ -452,23 +478,29 @@ class Metadata(cellprofiler.module.Module):
             different images. Set the drop-downs to pair the metadata tags of the images and the
             CSV, such that each row contains the corresponding tags. This can be done for as many
             metadata correspondences as you may have for each source; press
-            <img src="memory:%(MODULE_ADD_BUTTON)s"> to add more rows.</p>""" % globals()))
+            <img src="memory:{add_button}"> to add more rows.</p>""".format(**{
+                'add_button': cellprofiler.gui.help.MODULE_ADD_BUTTON
+            })))
 
         group.append("wants_case_insensitive", cellprofiler.setting.Binary(
                 "Use case insensitive matching?", False, doc="""
             This setting controls whether row matching takes the metadata case
             into account when matching.
             <dl>
-            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;
+            <dd><img src="memory:{protip_recomend_icon}">&nbsp;
             If you note that your CSV metadata is not being
             applied, your choice on this setting may be the culprit.</dd>
             </dl>
             <ul>
-            <li>Select <i>%(cellprofiler.setting.NO)s</i> so that metadata entries that only differ by case
+            <li>Select <i>{no}</i> so that metadata entries that only differ by case
             (for instance, "A01" and "a01") will not match.</li>
-            <li>Select <i>%(cellprofiler.setting.YES)s</i> to match metadata entries that only differ
+            <li>Select <i>{yes}</i> to match metadata entries that only differ
             by case.</li>
-            </ul>""" % globals()))
+            </ul>""".format(**{
+                'protip_recomend_icon': cellprofiler.gui.help.PROTIP_RECOMEND_ICON,
+                'no': cellprofiler.setting.NO,
+                'yes': cellprofiler.setting.YES
+            })))
 
         group.append("update_metadata", cellprofiler.setting.DoSomething(
                 "", "Update metadata",

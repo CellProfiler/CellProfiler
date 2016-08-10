@@ -106,26 +106,33 @@ class ExpandOrShrinkObjects(cellprofiler.module.Module):
                 "Number of pixels by which to expand or shrink", 1, minval=1)
 
         self.wants_fill_holes = cellprofiler.setting.Binary(
-                "Fill holes in objects so that all objects shrink to a single point?", False, doc="""
+            "Fill holes in objects so that all objects shrink to a single point?",
+            False,
+            doc="""
             <i>(Used only if one of the "shrink" options selected)</i><br>
-            Select <i>%(cellprofiler.setting.YES)s</i> to ensure that each object will shrink
+            Select <i>{yes}</i> to ensure that each object will shrink
             to a single point, by filling the holes in each object.
-            <p>Select <i>%(cellprofiler.setting.NO)s</i> to preserve the Euler number. in this case, the
+            <p>Select <i>{no}</i> to preserve the Euler number. in this case, the
             shrink algorithm preserves each object's Euler number,
             which means that it will erode an object with a hole to a ring in order to
             keep the hole. An object with two holes will be shrunk to two rings
             connected by a line in order to keep from breaking up the object or breaking
-            the hole.</p>""" % globals())
+            the hole.</p>""".format(**{
+                'no': cellprofiler.setting.NO,
+                'yes': cellprofiler.setting.YES
+            })
+        )
 
         self.wants_outlines = cellprofiler.setting.Binary(
-                "Retain the outlines of the identified objects?",
-                False, doc="""
-            %(RETAINING_OUTLINES_HELP)s""" % globals())
+            "Retain the outlines of the identified objects?",
+            False,
+            doc=cellprofiler.gui.help.RETAINING_OUTLINES_HELP
+        )
 
         self.outlines_name = cellprofiler.setting.OutlineNameProvider(
-                "Name the outline image",
-                "ShrunkenNucleiOutlines", doc="""
-            %(NAMING_OUTLINES_HELP)s""" % globals())
+            "Name the outline image",
+            "ShrunkenNucleiOutlines", doc=cellprofiler.gui.help.NAMING_OUTLINES_HELP
+        )
 
     def settings(self):
         return [self.object_name, self.output_object_name, self.operation,

@@ -38,8 +38,10 @@ both, the local root path is the portion prior, i.e., <tt>Z:\</tt> and similarly
 the cluster root path, i.e., <tt>/server_name/your_name/</tt>.
 </p>
 
-For more details on batch processing, please see <i>%(BATCH_PROCESSING_HELP_REF)s</i>.
-''' % globals()
+For more details on batch processing, please see <i>{batch_processing_help}</i>.
+'''.format(**{
+    'batch_processing_help': cellprofiler.gui.help.BATCH_PROCESSING_HELP_REF
+})
 
 logger = logging.getLogger(__name__)
 
@@ -73,10 +75,15 @@ class CreateBatchFiles(cellprofiler.module.Module):
     def create_settings(self):
         """Create the module settings and name the module"""
         self.wants_default_output_directory = cellprofiler.setting.Binary(
-                "Store batch files in default output folder?", True, doc="""
-            Select <i>%(cellprofiler.setting.YES)s</i> to store batch files in the Default Output folder. <br>
-            Select <i>%(cellprofiler.setting.NO)s</i> to enter the path to the folder that will be used to store
-            these files.""" % globals())
+            "Store batch files in default output folder?",
+            True,
+            doc="""
+            Select <i>{yes}</i> to store batch files in the Default Output folder. <br>
+            Select <i>{no}</i> to enter the path to the folder that will be used to store
+            these files.""".format(**{
+                'yes': cellprofiler.setting.YES,
+                'no': cellprofiler.setting.NO
+            }))
 
         self.custom_output_directory = cellprofiler.setting.Text(
                 "Output folder path",
@@ -86,13 +93,18 @@ class CreateBatchFiles(cellprofiler.module.Module):
         # Worded this way not because I am windows-centric but because it's
         # easier than listing every other OS in the universe except for VMS
         self.remote_host_is_windows = cellprofiler.setting.Binary(
-                "Are the cluster computers running Windows?",
-                False, doc="""
-            Select <i>%(cellprofiler.setting.YES)s</i> if the cluster computers are running one of the Microsoft
+            "Are the cluster computers running Windows?",
+            False,
+            doc="""
+            Select <i>{yes}</i> if the cluster computers are running one of the Microsoft
             Windows operating systems. In this case, <b>CreateBatchFiles</b> will
             modify all paths to use the Windows file separator (backslash &#92;). <br>
-            Select <i>%(cellprofiler.setting.NO)s</i> for <b>CreateBatchFiles</b> to modify all paths to use
-            the Unix or Macintosh file separator (slash &#47;).""" % globals())
+            Select <i>{no}</i> for <b>CreateBatchFiles</b> to modify all paths to use
+            the Unix or Macintosh file separator (slash &#47;).""".format(**{
+                'yes': cellprofiler.setting.YES,
+                'no': cellprofiler.setting.NO
+            })
+        )
 
         self.batch_mode = cellprofiler.setting.Binary("Hidden: in batch mode", False)
         self.distributed_mode = cellprofiler.setting.Binary("Hidden: in distributed mode", False)

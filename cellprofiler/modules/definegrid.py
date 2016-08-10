@@ -264,11 +264,13 @@ class DefineGrid(cellprofiler.module.Module):
             A01 and A12 will be 12 and 1, respectively.""" % globals())
 
         self.wants_image = cellprofiler.setting.Binary(
-                "Retain an image of the grid?",
-                False, doc="""
-            Select <i>%(cellprofiler.setting.YES)s</i> to retain an image of the grid for use later in the pipeline.
+            "Retain an image of the grid?",
+            False,
+            doc="""
+            Select <i>{}</i> to retain an image of the grid for use later in the pipeline.
             This module can create an annotated image of the grid
-            that can be saved using the <b>SaveImages</b> module. """ % globals())
+            that can be saved using the <b>SaveImages</b> module. """.format(cellprofiler.setting.YES)
+        )
 
         self.display_image_name = cellprofiler.setting.ImageNameSubscriber(
                 "Select the image on which to display the grid",

@@ -1,3 +1,23 @@
+import logging
+
+import cellprofiler.gui.help
+import cellprofiler.icons
+import cellprofiler.image
+import cellprofiler.measurement
+import cellprofiler.module
+import cellprofiler.modules.identify
+import cellprofiler.pipeline
+import cellprofiler.preferences
+import cellprofiler.setting
+import centrosome.cpmorphology
+import centrosome.filter
+import centrosome.index
+import centrosome.lapjv
+import numpy
+import numpy.ma
+import scipy.ndimage
+import scipy.sparse
+
 TM_OVERLAP = 'Overlap'
 TM_DISTANCE = 'Distance'
 TM_MEASUREMENTS = 'Measurements'
@@ -22,7 +42,7 @@ M_BOTH = "Both"
 
 RADIUS_STD_SETTING_TEXT = 'Number of standard deviations for search radius'
 RADIUS_LIMIT_SETTING_TEXT = 'Search radius limit, in pixel units (Min,Max)'
-ONLY_IF_2ND_PHASE_LAP_TEXT = '''<i>(Used only if the %(TM_LAP)s tracking method is applied and the second phase is run)</i>''' % globals()
+ONLY_IF_2ND_PHASE_LAP_TEXT = '''<i>(Used only if the {} tracking method is applied and the second phase is run)</i>'''.format(TM_LAP)
 
 __doc__ = """
 <b>Track Objects</b> allows tracking objects throughout sequential
@@ -41,12 +61,12 @@ you will need to do the following:
 <ul>
 <li>Define each individual movie using metadata
 either contained within the image file itself or as part of the images nomenclature
-or folder structure. %(USING_METADATA_HELP_REF)s.</li>
+or folder structure. {using_metadata_help}.</li>
 <li>Group the movies to make sure
-that each image sequence is handled individually. %(USING_METADATA_GROUPING_HELP_REF)s.
+that each image sequence is handled individually. {using_metadata_grouping_help}.
 </li>
 </ul>
-For complete details, see <i>%(LOADING_IMAGE_SEQ_HELP_REF)s</i>.</p>
+For complete details, see <i>{loading_image_seq_help}</i>.</p>
 
 <p>For an example pipeline using TrackObjects, see the CellProfiler
 <a href="http://www.cellprofiler.org/examples.html#Tracking">Examples</a> webpage.</p>
@@ -81,22 +101,22 @@ lifetimes of all remaining objects are output.</li>
 frame of the object's life (or the movie ends, whichever comes first). At this point,
 the final age of the object is output; no values are stored for earlier frames.
 <dl>
-<dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;This value
+<dd><img src="memory:{protip_recomend_icon}">&nbsp;This value
 is useful if you want to plot a histogram of the object lifetimes; all but the final age
 can be ignored or filtered out.</dd>
 </dl></li>
 </ul>
-The following object measurements are specific to the %(TM_LAP)s tracking method:
+The following object measurements are specific to the {lap} tracking method:
 <ul>
 <li><i>LinkType:</i> The linking method used to link the object to its parent.
 Possible values are
 <ul>
-<li><b>%(LT_NONE)d</b>: The object was not linked to a parent.</li>
-<li><b>%(LT_PHASE_1)d</b>: The object was linked to a parent in the previous frame.</li>
-<li><b>%(LT_SPLIT)d</b>: The object is linked as the start of a split path.</li>
-<li><b>%(LT_MITOSIS)s</b>: The object was linked to its parent as a daughter of
+<li><b>{none:d}</b>: The object was not linked to a parent.</li>
+<li><b>{phase_1:d}</b>: The object was linked to a parent in the previous frame.</li>
+<li><b>{split:d}</b>: The object is linked as the start of a split path.</li>
+<li><b>{d}</b>: The object was linked to its parent as a daughter of
 a mitotic pair.</li>
-<li><b>%(LT_GAP)d</b>: The object was linked to a parent in a frame prior to the
+<li><b>{gap:d}</b>: The object was linked to a parent in a frame prior to the
 previous frame (a gap).</li>
 </ul>
 Under some circumstances, multiple linking methods may apply to a given object, e.g, an
@@ -104,8 +124,8 @@ object may be both the beginning of a split path and not have a parent. However,
 one linking method is assigned.</li>
 <li><i>MovementModel:</i>The movement model used to track the object.
 <ul>
-<li><b>%(KM_NO_VEL)d</b>: The <i>%(M_RANDOM)s</i> model was used.</li>
-<li><b>%(KM_VEL)d</b>: The <i>%(M_VELOCITY)s</i> model was used.</li>
+<li><b>{no_vel:d}</b>: The <i>{random}</i> model was used.</li>
+<li><b>{vel:d}</b>: The <i>{velocity}</i> model was used.</li>
 <li><b>-1</b>: Neither model was used. This can occur under two circumstances:
 <ul>
 <li>At the beginning of a trajectory, when there is no data to determine the model as
@@ -118,7 +138,7 @@ the link in the first phase.</li>
 <li><i>LinkingDistance:</i>The difference between the propagated position of an
 object and the object to which it is matched.
 <dl>
-<dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;A slowly decaying histogram of
+<dd><img src="memory:{protip_recomend_icon}">&nbsp;A slowly decaying histogram of
 these distances indicates that the search radius is large enough. A cut-off histogram
 is a sign that the search radius is too small.</dd>
 </dl></li>
@@ -127,9 +147,9 @@ of the variance of the error in estimated position for each model.
 This measurement records the linking distance divided by the standard deviation
 of the error when linking the object with its parent.
 <dl>
-<dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp; This value is multiplied by
-the <i>"%(RADIUS_STD_SETTING_TEXT)s"</i> setting to constrain the search distance.
-A histogram of this value can help determine if the <i>"%(RADIUS_LIMIT_SETTING_TEXT)s"</i>
+<dd><img src="memory:{protip_recomend_icon}">&nbsp; This value is multiplied by
+the <i>"{radius_standard_setting_text}"</i> setting to constrain the search distance.
+A histogram of this value can help determine if the <i>"{radius_limit_setting_text}"</i>
 setting is appropriate.</dd>
 </dl>
 </li>
@@ -159,28 +179,24 @@ resulted from the merging of child objects in the previous frame.</li>
 </ul>
 
 See also: Any of the <b>Measure</b> modules, <b>IdentifyPrimaryObjects</b>, <b>Groups</b>.
-""" % globals()
-
-import logging
-
-import cellprofiler.gui.help
-import cellprofiler.icons
-import cellprofiler.image
-import cellprofiler.measurement
-import cellprofiler.module
-import cellprofiler.modules.identify
-import cellprofiler.pipeline
-import cellprofiler.preferences
-import cellprofiler.setting
-import centrosome.cpmorphology
-import centrosome.filter
-import centrosome.index
-import centrosome.lapjv
-import numpy
-import numpy.ma
-import scipy.ndimage
-import scipy.sparse
-
+""".format(**{
+    'using_metadata_help': cellprofiler.gui.help.USING_METADATA_HELP_REF,
+    'using_metadata_grouping_help': cellprofiler.gui.help.USING_METADATA_GROUPING_HELP_REF,
+    'loading_image_seq_help': cellprofiler.gui.help.LOADING_IMAGE_SEQ_HELP_REF,
+    'protip_recomend_icon': cellprofiler.gui.help.PROTIP_RECOMEND_ICON,
+    'lap': TM_LAP,
+    'none': LT_NONE,
+    'phase_1': LT_PHASE_1,
+    'split': LT_SPLIT,
+    'mitosis': LT_MITOSIS,
+    'gap': LT_GAP,
+    'no_vel': KM_NO_VEL,
+    'random': M_RANDOM,
+    'vel': KM_VEL,
+    'velocity': M_VELOCITY,
+    'radius_standard_setting_text': RADIUS_STD_SETTING_TEXT,
+    'radius_limit_setting_text': RADIUS_LIMIT_SETTING_TEXT
+})
 
 logger = logging.getLogger(__name__)
 
@@ -294,27 +310,27 @@ class TrackObjects(cellprofiler.module.Module):
             among these options based on which is most consistent from frame
             to frame of your movie.
             <ul>
-            <li><i>%(TM_OVERLAP)s:</i> Compares the amount of spatial overlap between identified objects in
+            <li><i>{overlap}:</i> Compares the amount of spatial overlap between identified objects in
             the previous frame with those in the current frame. The object with the
             greatest amount of spatial overlap will be assigned the same number (label).
             <dl>
-            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;
+            <dd><img src="memory:{protip_recomend_icon}">&nbsp;
             Recommended when there is a high degree of overlap of an object from one frame to the next,
             which is the case for movies with high frame rates relative to object motion.</dd>
             </dl></li>
 
-            <li><i>%(TM_DISTANCE)s:</i> Compares the distance between each identified
+            <li><i>{distance}:</i> Compares the distance between each identified
             object in the previous frame with that of the current frame. The
             closest objects to each other will be assigned the same number (label).
             Distances are measured from the perimeter of each object.
             <dl>
-            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;
+            <dd><img src="memory:{protip_recomend_icon}">&nbsp;
             Recommended for cases where the objects are not very crowded but where
-            <i>%(TM_OVERLAP)s</i> does not work sufficiently well, which is the case
+            <i>{overlap}</i> does not work sufficiently well, which is the case
             for movies with low frame rates relative to object motion.</dd>
             </dl></li>
 
-            <li><i>%(TM_MEASUREMENTS)s:</i> Compares each object in the
+            <li><i>{measurements}:</i> Compares each object in the
             current frame with objects in the previous frame based on a particular
             feature you have measured for the objects (for example, a particular intensity
             or shape measurement that can distinguish nearby objects). The object
@@ -323,7 +339,7 @@ class TrackObjects(cellprofiler.module.Module):
             specified <b>Measure</b> module previous to this module in the pipeline so
             that the measurement values can be used to track the objects.</li>
 
-            <li><i>%(TM_LAP)s:</i> Uses the linear assignment problem (LAP) framework. The
+            <li><i>{lap}:</i> Uses the linear assignment problem (LAP) framework. The
             linear assignment problem (LAP) algorithm (<i>Jaqaman et al., 2008</i>)
             addresses the challenges of high object density, motion heterogeneity,
             temporary disappearances, and object merging and splitting.
@@ -340,7 +356,7 @@ class TrackObjects(cellprofiler.module.Module):
             between tracked objects and captures merging and splitting events. This step takes
             place at the end of the analysis run.</p>
 
-            <p><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp; Some recommendations on optimizing
+            <p><img src="memory:{protip_recomend_icon}">&nbsp; Some recommendations on optimizing
             the LAP settings<br>
             <ul>
             <li><i>Work with a minimal subset of your data:</i> Attempting to optimize these settings
@@ -360,7 +376,7 @@ class TrackObjects(cellprofiler.module.Module):
             the LAP method depends on the results of the first phase. Therefore, it is a good idea to
             optimize the first phase settings as the initial step.
             <ul>
-            <li>You can disable 2nd phase calculation by selecting <i>%(cellprofiler.setting.NO)s</i> for "Run the second
+            <li>You can disable 2nd phase calculation by selecting <i>{no}</i> for "Run the second
             phase of the LAP algorithm?"</li>
             <li>By maximizing the number of correct frame-to-frame links in the first phase, the
             2nd phase will have less candidates to consider for linking and have a better chance of
@@ -394,7 +410,14 @@ class TrackObjects(cellprofiler.module.Module):
             <a href="http://dx.doi.org/10.1101/pdb.top65">(link)</a></li>
             </ul></p>
             </li>
-            </ul>""" % globals())
+            </ul>""".format(**{
+                'protip_recomend_icon': cellprofiler.gui.help.PROTIP_RECOMEND_ICON,
+                'no': cellprofiler.setting.NO,
+                'overlap': TM_OVERLAP,
+                'distance': TM_DISTANCE,
+                'measurements': TM_MEASUREMENTS,
+                'lap': TM_LAP
+            }))
 
         self.object_name = cellprofiler.setting.ObjectNameSubscriber(
                 'Select the objects to track', cellprofiler.setting.NONE, doc="""
@@ -416,43 +439,49 @@ class TrackObjects(cellprofiler.module.Module):
             Objects in the subsequent frame will be considered potential matches if
             they are within this distance. To determine a suitable pixel distance, you can look
             at the axis increments on each image (shown in pixel units) or
-            use the distance measurement tool. %(HELP_ON_MEASURING_DISTANCES)s""" % globals())
+            use the distance measurement tool. {}""".format(cellprofiler.gui.help.HELP_ON_MEASURING_DISTANCES))
 
         self.model = cellprofiler.setting.Choice(
                 "Select the movement model", [M_RANDOM, M_VELOCITY, M_BOTH], value=M_BOTH, doc="""
-            <i>(Used only if the %(TM_LAP)s tracking method is applied)</i><br>
+            <i>(Used only if the {lap} tracking method is applied)</i><br>
             This setting controls how to predict an object's position in
             the next frame, assuming that each object moves randomly with
             a frame-to-frame variance in position that follows a Gaussian
             distribution.<br>
             <ul>
-            <li><i>%(M_RANDOM)s:</i> A model in which objects move due to
+            <li><i>{random}:</i> A model in which objects move due to
             Brownian Motion or a similar process where the variance in position
             differs between objects.
             <dl>
-            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;
+            <dd><img src="memory:{protip_recomend_icon}">&nbsp;
             Use this model if the objects move with some
             random jitter around a stationary location.</dd>
             </dl></li>
-            <li><i>%(M_VELOCITY)s:</i> A model in which the object moves with
+            <li><i>velocity:</i> A model in which the object moves with
             a velocity. Both velocity and position (after correcting for
             velocity) vary following a Gaussian distribution.
             <dl>
-            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;Use this model if
+            <dd><img src="memory:{protip_recomend_icon}">&nbsp;Use this model if
             the objects move along a spatial trajectory in some direction over time.</dd>
             </dl></li>
-            <li><i>%(M_BOTH)s:</i> <b>TrackObjects</b> will predict each
+            <li><i>{both}:</i> <b>TrackObjects</b> will predict each
             object's position using both models and use the model with the
             lowest penalty to join an object in one frame with one in another.
             <dl>
-            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;Use this
+            <dd><img src="memory:{protip_recomend_icon}">&nbsp;Use this
             option if both models above are applicable over time.</dd>
             </dl></li>
-            </ul>""" % globals())
+            </ul>""".format(**{
+                'protip_recomend_icon': cellprofiler.gui.help.PROTIP_RECOMEND_ICON,
+                'lap': TM_LAP,
+                'random': M_RANDOM,
+                'velocity': M_VELOCITY,
+                'both': M_BOTH
+            }))
 
         self.radius_std = cellprofiler.setting.Float(
                 RADIUS_STD_SETTING_TEXT, 3, minval=1, doc="""
-            <i>(Used only if the %(TM_LAP)s tracking method is applied)</i>
+            <i>(Used only if the {lap} tracking method is applied)</i>
             <br>
             <b>TrackObjects</b> derives a search radius from an error
             estimation based on (a) the standard deviation of the movement and
@@ -463,18 +492,21 @@ class TrackObjects(cellprofiler.module.Module):
             of the error times the number of standard
             deviations that you enter here.
             <dl>
-            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;Recommendations:
+            <dd><img src="memory:{protip_recomend_icon}">&nbsp;Recommendations:
             <ul>
             <li>If the standard deviation is quite small, but the object makes a
             large spatial jump, this value may need to be set higher in order
             to increase the search area and thereby make the frame-to-frame
             linkage.</li>
             </ul></dd>
-            </dl>""" % globals())
+            </dl>""".format(**{
+                'protip_recomend_icon': cellprofiler.gui.help.PROTIP_RECOMEND_ICON,
+                'lap': TM_LAP
+            }))
 
         self.radius_limit = cellprofiler.setting.FloatRange(
                 RADIUS_LIMIT_SETTING_TEXT, (2, 10), minval=0, doc="""
-            <i>(Used only if the %(TM_LAP)s tracking method is applied)</i><br>
+            <i>(Used only if the {lap} tracking method is applied)</i><br>
             <b>TrackObjects</b> derives a search radius from an error
             estimation based on (a) the standard deviation of the movement and
             (b) the diameter of the object. Potentially, the module can make an erroneous assignment
@@ -484,7 +516,7 @@ class TrackObjects(cellprofiler.module.Module):
             that does not track the object in a subsequent frame. The radius
             limit constrains the search radius to reasonable values.
             <dl>
-            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;Recommendations:
+            <dd><img src="memory:{protip_recomend_icon}">&nbsp;Recommendations:
             <ul>
             <li>Special care must be taken to adjust the upper limit appropriate
             to the data.</li>
@@ -504,13 +536,16 @@ class TrackObjects(cellprofiler.module.Module):
             a frame-to-frame linkage is not being made in the case of a unusually
             large displacement, this value may need to be increased.</li>
             </ul></dd>
-            </dl>""" % globals())
+            </dl>""".format(**{
+                'protip_recomend_icon': cellprofiler.gui.help.PROTIP_RECOMEND_ICON,
+                'lap': TM_LAP
+            }))
 
         self.wants_second_phase = cellprofiler.setting.Binary(
                 "Run the second phase of the LAP algorithm?", True, doc="""
-            <i>(Used only if the %(TM_LAP)s tracking method is applied)</i><br>
-            Select <i>%(cellprofiler.setting.YES)s</i> to run the second phase of the LAP algorithm
-            after processing all images. Select <i>%(cellprofiler.setting.NO)s</i> to omit the
+            <i>(Used only if the {lap} tracking method is applied)</i><br>
+            Select <i>{yes}</i> to run the second phase of the LAP algorithm
+            after processing all images. Select <i>{no}</i> to omit the
             second phase or to perform the second phase when running the module
             as a data tool.
 
@@ -521,11 +556,15 @@ class TrackObjects(cellprofiler.module.Module):
             capture merging and splitting events.</p>
 
             <p>For additional details on optimizing the LAP settings, see the help for each
-            the settings.</p>""" % globals())
+            the settings.</p>""".format(**{
+                'lap': TM_LAP,
+                'yes': cellprofiler.setting.YES,
+                'no': cellprofiler.setting.NO
+            }))
 
         self.gap_cost = cellprofiler.setting.Integer(
                 'Gap closing cost', 40, minval=1, doc='''
-            %(ONLY_IF_2ND_PHASE_LAP_TEXT)s<br>
+            {only_if_2nd_phase_lap_text}<br>
             This setting assigns a cost to keeping a gap caused
             when an object is missing from one of the frames of a track (the
             alternative to keeping the gap is to bridge it by connecting
@@ -533,7 +572,7 @@ class TrackObjects(cellprofiler.module.Module):
             The cost of bridging a gap is the distance, in pixels, of the
             displacement of the object between frames.
             <dl>
-            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp; Recommendations:
+            <dd><img src="memory:{protip_recomend_icon}">&nbsp; Recommendations:
             <ul>
             <li>Set the gap closing cost higher if tracks from objects in previous
             frames are being erroneously joined, across a gap, to tracks from
@@ -541,11 +580,14 @@ class TrackObjects(cellprofiler.module.Module):
             <li>Set the gap closing cost lower if tracks
             are not properly joined due to gaps caused by mis-segmentation.</li>
             </ul></dd>
-            </dl></p>''' % globals())
+            </dl></p>'''.format(**{
+                'only_if_2nd_phase_lap_text': ONLY_IF_2ND_PHASE_LAP_TEXT,
+                'protip_recomend_icon': cellprofiler.gui.help.PROTIP_RECOMEND_ICON
+            }))
 
         self.split_cost = cellprofiler.setting.Integer(
                 'Split alternative cost', 40, minval=1, doc='''
-            %(ONLY_IF_2ND_PHASE_LAP_TEXT)s<br>
+            {only_if_2nd_phase_lap_text}<br>
             This setting is the cost of keeping two tracks distinct
             when the alternative is to make them into one track that
             splits. A split occurs when an object in one frame is assigned
@@ -560,7 +602,7 @@ class TrackObjects(cellprofiler.module.Module):
             The split cost is roughly measured in pixels. The split alternative cost is
             (conceptually) subtracted from the cost of making the split.
             <dl>
-            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp; Recommendations:
+            <dd><img src="memory:{protip_recomend_icon}">&nbsp; Recommendations:
             <ul>
             <li>The split cost should be set lower if objects are being split
             that should not be split. </li>
@@ -569,11 +611,14 @@ class TrackObjects(cellprofiler.module.Module):
             <li>If you are confident that there should be no splits present in the data,
             the cost can be set to 1 (the minimum value possible)</li>
             </ul></dd>
-            </dl>''' % globals())
+            </dl>'''.format(**{
+                'only_if_2nd_phase_lap_text': ONLY_IF_2ND_PHASE_LAP_TEXT,
+                'protip_recomend_icon': cellprofiler.gui.help.PROTIP_RECOMEND_ICON
+            }))
 
         self.merge_cost = cellprofiler.setting.Integer(
                 'Merge alternative cost', 40, minval=1, doc='''
-            %(ONLY_IF_2ND_PHASE_LAP_TEXT)s<br>
+            {only_if_2nd_phase_lap_text}<br>
             This setting is the cost of keeping two tracks
             distinct when the alternative is to merge them into one.
             A merge occurs when two objects in one frame are assigned to
@@ -589,7 +634,7 @@ class TrackObjects(cellprofiler.module.Module):
             alternative cost is (conceptually) subtracted from the
             cost of making the merge.
             <dl>
-            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp; Recommendations:
+            <dd><img src="memory:{protip_recomend_icon}">&nbsp; Recommendations:
             <ul>
             <li>Set the merge alternative cost lower if objects are being
             merged when they should otherwise be kept separate. </li>
@@ -598,13 +643,16 @@ class TrackObjects(cellprofiler.module.Module):
             <li>If you are confident that there should be no merges present in the data,
             the cost can be set to 1 (the minimum value possible)</li>
             </ul></dd>
-            </dl>''' % globals())
+            </dl>'''.format(**{
+                'only_if_2nd_phase_lap_text': ONLY_IF_2ND_PHASE_LAP_TEXT,
+                'protip_recomend_icon': cellprofiler.gui.help.PROTIP_RECOMEND_ICON
+            }))
 
         self.mitosis_cost = cellprofiler.setting.Integer(
                 'Mitosis alternative cost', 80, minval=1, doc='''
-            %(ONLY_IF_2ND_PHASE_LAP_TEXT)s<br>
+            {only_if_2nd_phase_lap_text}<br>
             This setting is the cost of not linking a parent and two daughters
-            via the mitosis model. the %(TM_LAP)s tracking method weighs this
+            via the mitosis model. the {lap} tracking method weighs this
             cost against the score of a potential mitosis. The model expects
             the daughters to be equidistant from the parent after mitosis,
             so the parent location is expected to be midway between the daughters.
@@ -614,7 +662,7 @@ class TrackObjects(cellprofiler.module.Module):
             daughters (the larger of Area(daughters) / Area(parent) and
             Area(parent) / Area(daughters)).<br>
             <dl>
-            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp; Recommendations:
+            <dd><img src="memory:{protip_recomend_icon}">&nbsp; Recommendations:
             <ul>
             <li>An accepted mitosis closes two gaps, so all things being equal,
             the mitosis alternative cost should be approximately double the
@@ -623,22 +671,28 @@ class TrackObjects(cellprofiler.module.Module):
             and decrease it to prevent more mitoses candidates from being
             accepted.</li>
             </ul></dd>
-            </dl>''' % globals())
+            </dl>'''.format(**{
+                'only_if_2nd_phase_lap_text': ONLY_IF_2ND_PHASE_LAP_TEXT,
+                'protip_recomend_icon': cellprofiler.gui.help.PROTIP_RECOMEND_ICON,
+                'lap': TM_LAP
+            }))
 
         self.mitosis_max_distance = cellprofiler.setting.Integer(
                 'Maximum mitosis distance, in pixel units', 40, minval=1, doc='''
-            %(ONLY_IF_2ND_PHASE_LAP_TEXT)s<br>
+            {only_if_2nd_phase_lap_text}<br>
             This setting is the maximum allowed distance in pixels of either
             of the daughter candidate centroids after mitosis from the parent candidate.
-            ''' % globals())
+            '''.format(**{
+                'only_if_2nd_phase_lap_text': ONLY_IF_2ND_PHASE_LAP_TEXT
+            }))
 
         self.max_gap_score = cellprofiler.setting.Integer(
                 'Maximum gap displacement, in pixel units', 5, minval=1, doc='''
-            %(ONLY_IF_2ND_PHASE_LAP_TEXT)s<br>
+            {only_if_2nd_phase_lap_text}<br>
             This setting acts as a filter for unreasonably large
             displacements during the second phase.
             <dl>
-            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp; Recommendations:
+            <dd><img src="memory:{protip_recomend_icon}">&nbsp; Recommendations:
             <ul>
             <li>The maximum gap displacement should be set to roughly
             the maximum displacement of an object's center from frame to frame. An object that makes large
@@ -650,11 +704,14 @@ class TrackObjects(cellprofiler.module.Module):
             <li>This setting may be the culprit if an object is not tracked fame-to-frame despite optimizing
             the LAP first-pass settings.</li>
             </ul></dd>
-            </dl>''' % globals())
+            </dl>'''.format(**{
+                'only_if_2nd_phase_lap_text': ONLY_IF_2ND_PHASE_LAP_TEXT,
+                'protip_recomend_icon': cellprofiler.gui.help.PROTIP_RECOMEND_ICON
+            }))
 
         self.max_merge_score = cellprofiler.setting.Integer(
                 'Maximum merge score', 50, minval=1, doc='''
-            %(ONLY_IF_2ND_PHASE_LAP_TEXT)s<br>
+            {only_if_2nd_phase_lap_text}<br>
             This setting acts as a filter for unreasonably large
             merge scores. The merge score has two components:
             <ul>
@@ -663,16 +720,19 @@ class TrackObjects(cellprofiler.module.Module):
             <li>The distances between the objects to be merged and the resulting object. </li>
             </ul>
             <dl>
-            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp; Recommendations:
+            <dd><img src="memory:{protip_recomend_icon}">&nbsp; Recommendations:
             <ul>
             <li>The LAP algorithm will run more slowly with a higher maximum merge score value. </li>
             <li>Objects that would have been merged at a lower maximum merge score will not be considered for merging.</li>
             </ul></dd>
-            </dl>''' % globals())
+            </dl>'''.format(**{
+                'only_if_2nd_phase_lap_text': ONLY_IF_2ND_PHASE_LAP_TEXT,
+                'protip_recomend_icon': cellprofiler.gui.help.PROTIP_RECOMEND_ICON
+            }))
 
         self.max_split_score = cellprofiler.setting.Integer(
                 'Maximum split score', 50, minval=1, doc='''
-            %(ONLY_IF_2ND_PHASE_LAP_TEXT)s<br>
+            {only_if_2nd_phase_lap_text}<br>
             This setting acts as a filter for unreasonably large split scores. The split score has two components:
             <ul>
             <li>The area of the initial object relative to the area of the
@@ -680,39 +740,45 @@ class TrackObjects(cellprofiler.module.Module):
             <li>The distances between the original and resulting objects. </li>
             </ul>
             <dl>
-            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp; Recommendations:
+            <dd><img src="memory:{protip_recomend_icon}">&nbsp; Recommendations:
             <ul>
             <li>The LAP algorithm will run more slowly with a maximum split score value. </li>
             <li>Objects that would have been split at a lower maximum split score will not be considered for splitting.</li>
             </ul></dd>
-            </dl>''' % globals())
+            </dl>'''.format(**{
+                'only_if_2nd_phase_lap_text': ONLY_IF_2ND_PHASE_LAP_TEXT,
+                'protip_recomend_icon': cellprofiler.gui.help.PROTIP_RECOMEND_ICON
+            }))
 
         self.max_frame_distance = cellprofiler.setting.Integer(
                 'Maximum temporal gap, in frames', 5, minval=1, doc='''
-            %(ONLY_IF_2ND_PHASE_LAP_TEXT)s<br>
+            {only_if_2nd_phase_lap_text}<br>
             <b>Care must be taken to adjust this setting appropriate to the data.</b><br>
             This setting controls the maximum number of frames that can
             be skipped when merging a temporal gap caused by an unsegmented object.
             These gaps occur when an image is mis-segmented and identification
             fails to find an object in one or more frames.
             <dl>
-            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp; Recommendations:
+            <dd><img src="memory:{protip_recomend_icon}">&nbsp; Recommendations:
             <ul>
             <li>Set the maximum gap higher in order to have more chance of correctly recapturing an object after
             erroneously losing the original for a few frames.</li>
             <li>Set the maximum gap lower to reduce the chance of erroneously connecting to the wrong object after
             correctly losing the original object (e.g., if the cell dies or moves off-screen).</li>
             </ul></dd>
-            </dl>''' % globals())
+            </dl>'''.format(**{
+                'only_if_2nd_phase_lap_text': ONLY_IF_2ND_PHASE_LAP_TEXT,
+                'protip_recomend_icon': cellprofiler.gui.help.PROTIP_RECOMEND_ICON
+            }))
 
         self.wants_lifetime_filtering = cellprofiler.setting.Binary(
                 'Filter objects by lifetime?', False, doc='''
-            Select <i>%(cellprofiler.setting.YES)s</i> if you want objects to be filtered by their
+            Select <i>{yes}</i> if you want objects to be filtered by their
             lifetime, i.e., total duration in frames. This is useful for
             marking objects which transiently appear and disappear, such
             as the results of a mis-segmentation. <br>
             <dl>
-            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp; Recommendations:
+            <dd><img src="memory:{protip_recomend_icon}">&nbsp; Recommendations:
             <ul>
             <li>This operation does not actually delete the filtered object,
             but merely removes its label from the tracked object list;
@@ -721,22 +787,31 @@ class TrackObjects(cellprofiler.module.Module):
             Splits continue the lifetime count from their parents, so the minimum
             lifetime value does not apply to them.</li>
             </ul></dd>
-            </dl>''' % globals())
+            </dl>'''.format(**{
+                'yes': cellprofiler.setting.YES,
+                'protip_recomend_icon': cellprofiler.gui.help.PROTIP_RECOMEND_ICON
+            }))
 
         self.wants_minimum_lifetime = cellprofiler.setting.Binary(
-                'Filter using a minimum lifetime?', True, doc='''
-            <i>(Used only if objects are filtered by lifetime)</i><br>
-            Select <i>%(cellprofiler.setting.YES)s</i> to filter the object on the basis of a minimum number of frames.''' % globals())
+            'Filter using a minimum lifetime?',
+            True,
+            doc='''<i>(Used only if objects are filtered by lifetime)</i><br>
+                Select <i>{}</i> to filter the object on the basis of a minimum number of frames.'''.format(cellprofiler.setting.YES)
+        )
 
         self.min_lifetime = cellprofiler.setting.Integer(
-                'Minimum lifetime', 1, minval=1, doc="""
-            Enter the minimum number of frames an object is permitted to persist. Objects
-            which last this number of frames or lower are filtered out.""")
+            'Minimum lifetime',
+            1,
+            minval=1,
+            doc="""Enter the minimum number of frames an object is permitted to persist. Objects
+                which last this number of frames or lower are filtered out.""")
 
         self.wants_maximum_lifetime = cellprofiler.setting.Binary(
-                'Filter using a maximum lifetime?', False, doc='''
-            <i>(Used only if objects are filtered by lifetime)</i><br>
-            Select <i>%(cellprofiler.setting.YES)s</i> to filter the object on the basis of a maximum number of frames.''' % globals())
+            'Filter using a maximum lifetime?',
+            False,
+            doc='''<i>(Used only if objects are filtered by lifetime)</i><br>
+                Select <i>{}</i> to filter the object on the basis of a maximum number of frames.'''.format(cellprofiler.setting.YES)
+        )
 
         self.max_lifetime = cellprofiler.setting.Integer(
                 'Maximum lifetime', 100, doc="""
@@ -754,14 +829,18 @@ class TrackObjects(cellprofiler.module.Module):
             </ul>""" % globals())
 
         self.wants_image = cellprofiler.setting.Binary(
-                "Save color-coded image?", False, doc="""
-            Select <i>%(cellprofiler.setting.YES)s</i> to retain the image showing the tracked objects
-            for later use in the pipeline. For example, a common use is for quality control purposes
-            saving the image with the <b>SaveImages</b> module.
-            <p>Please note that if you are using the second phase of the %(TM_LAP)s method,
-            the final labels are not assigned until <i>after</i> the pipeline has
-            completed the analysis run. That means that saving the color-coded image
-            will only show the penultimate result and not the final product.</p>.""" % globals())
+            "Save color-coded image?",
+            False,
+            doc="""Select <i>{yes}</i> to retain the image showing the tracked objects
+                for later use in the pipeline. For example, a common use is for quality control purposes
+                saving the image with the <b>SaveImages</b> module.
+                <p>Please note that if you are using the second phase of the {lap} method,
+                the final labels are not assigned until <i>after</i> the pipeline has
+                completed the analysis run. That means that saving the color-coded image
+                will only show the penultimate result and not the final product.</p>.""".format(**{
+                    'yes': cellprofiler.setting.YES,
+                    'lap': TM_LAP
+            }))
 
         self.image_name = cellprofiler.setting.ImageNameProvider(
                 "Name the output image", "TrackedCells", doc='''

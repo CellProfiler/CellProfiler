@@ -196,17 +196,33 @@ class CalculateStatistics(cellprofiler.module.Module):
             in the CSV input file. See <b>LoadData</b> help for an example text file.
             """))
 
-        group.append("log_transform", cellprofiler.setting.Binary(
-                "Log-transform the dose values?", False, doc='''
-            Select <i>%(cellprofiler.setting.YES)s</i> if you have dose-response data and you want to log-transform
-            the dose values before fitting a sigmoid curve.
-            <p>Select <i>%(cellprofiler.setting.NO)s</i> if your data values indicate only positive vs. negative
-            controls.</p>''' % globals()))
+        group.append(
+            "log_transform",
+            cellprofiler.setting.Binary(
+                "Log-transform the dose values?",
+                False,
+                doc='''Select <i>{yes}</i> if you have dose-response data and you want to log-transform
+                the dose values before fitting a sigmoid curve.
+                <p>Select <i>{no}</i> if your data values indicate only positive vs. negative
+                controls.</p>'''.format(**{
+                    'yes': cellprofiler.setting.YES,
+                    'no': cellprofiler.setting.NO
+                })
+            )
+        )
 
-        group.append('wants_save_figure', cellprofiler.setting.Binary(
-                '''Create dose/response plots?''', False, doc='''<a name='wants_save_figure'></a>
-            Select <i>%(cellprofiler.setting.YES)s</i> if you want to create and save
-            dose response plots. You will be asked for information on how to save the plots.''' % globals()))
+        group.append(
+            'wants_save_figure',
+            cellprofiler.setting.Binary(
+                '''Create dose/response plots?''',
+                False,
+                doc='''<a name='wants_save_figure'></a>
+                Select <i>{}</i> if you want to create and save
+                dose response plots. You will be asked for information on how to save the plots.'''.format(
+                    cellprofiler.setting.YES
+                )
+            )
+        )
 
         group.append('figure_name', cellprofiler.setting.Text(
                 "Figure prefix", "", doc='''
@@ -217,19 +233,28 @@ class CalculateStatistics(cellprofiler.module.Module):
             CellProfiler will save the figure as <i>Dose_Cells_AreaShape_Area.m</i>.
             Leave this setting blank if you do not want a prefix.'''
         ))
-        group.append('pathname', cellprofiler.setting.DirectoryPath(
-            "Output file location",
-            doc="""
-            <i>(Used only when creating dose/response plots)</i><br>
-            This setting lets you choose the folder for the output
-            files. %(IO_FOLDER_CHOICE_HELP_TEXT)s
+        group.append(
+            'pathname',
+            cellprofiler.setting.DirectoryPath(
+                "Output file location",
+                doc="""
+                <i>(Used only when creating dose/response plots)</i><br>
+                This setting lets you choose the folder for the output
+                files. {io_folder_choice_help_text}
 
-            <p>%(IO_WITH_METADATA_HELP_TEXT)s %(USING_METADATA_TAGS_REF)s
-            For instance, if you have a metadata tag named
-            "Plate", you can create a per-plate folder by selecting one of the subfolder options
-            and then specifying the subfolder name as "\g&lt;Plate&gt;". The module will
-            substitute the metadata values for the current image set for any metadata tags in the
-            folder name. %(USING_METADATA_HELP_REF)s.</p>""" % globals()))
+                <p>{io_with_metadata_help_text} {using_metadata_tags}
+                For instance, if you have a metadata tag named
+                "Plate", you can create a per-plate folder by selecting one of the subfolder options
+                and then specifying the subfolder name as "\g&lt;Plate&gt;". The module will
+                substitute the metadata values for the current image set for any metadata tags in the
+                folder name. {using_metadata_help}.</p>""".format(**{
+                    'io_folder_choice_help_text': cellprofiler.preferences.IO_FOLDER_CHOICE_HELP_TEXT,
+                    'io_with_metadata_help_text': cellprofiler.preferences.IO_WITH_METADATA_HELP_TEXT,
+                    'using_metadata_tags': cellprofiler.gui.help.USING_METADATA_TAGS_REF,
+                    'using_metadata_help': cellprofiler.gui.help.USING_METADATA_HELP_REF
+                })
+            )
+        )
 
         group.append("divider", cellprofiler.setting.Divider())
 

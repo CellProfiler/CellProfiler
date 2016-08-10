@@ -79,14 +79,20 @@ class FlipAndRotate(cellprofiler.module.Module):
             </ul>''' % globals())
 
         self.wants_crop = cellprofiler.setting.Binary(
-                "Crop away the rotated edges?", True, doc='''
+            "Crop away the rotated edges?",
+            True,
+            doc='''
             <i>(Used only when rotating images)</i> <br>
             When an image is rotated, there will be black space at the
-            corners/edges; select <i>%(cellprofiler.setting.YES)s</i> to crop away the incomplete rows
-            and columns of the image, or select <i>%(cellprofiler.setting.NO)s</i> to leave it as-is.
+            corners/edges; select <i>{yes}</i> to crop away the incomplete rows
+            and columns of the image, or select <i>{no}</i> to leave it as-is.
             <p>This cropping will produce an image that
             is not exactly the same size as the original, which may affect
-            downstream modules.</p>''' % globals())
+            downstream modules.</p>'''.format(**{
+                'yes': cellprofiler.setting.YES,
+                'no': cellprofiler.setting.NO
+            })
+        )
 
         self.how_often = cellprofiler.setting.Choice("Calculate rotation",
                                                      IO_ALL, doc='''

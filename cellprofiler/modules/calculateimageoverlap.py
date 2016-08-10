@@ -165,28 +165,34 @@ class CalculateImageOverlap(cellprofiler.module.Module):
             the reference image using the point selection method (see below).
             """)
         self.decimation_method = cellprofiler.setting.Choice(
-                "Point selection method",
-                choices=[DM_KMEANS, DM_SKEL],
-                doc="""
+            "Point selection method",
+            choices=[DM_KMEANS, DM_SKEL],
+            doc="""
             <i>(Used only when computing the earth mover's distance)</i> <br>
             The point selection setting determines how the
             representative points are chosen.
             <ul>
-            <li><i>%(DM_KMEANS)s:</i> Select to pick representative points using a
+            <li><i>{kmeans}:</i> Select to pick representative points using a
             K-Means clustering technique. The foregrounds of both images are combined
             and representatives are picked that minimize the distance to the nearest
             representative. The same representatives are then used for the test and
             reference images.</li>
-            <li><i>%(DM_SKEL)s:</i> Select to skeletonize the image and pick
+            <li><i>{skel}:</i> Select to skeletonize the image and pick
             points eqidistant along the skeleton. </li>
             </ul>
             <dl>
-            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;
-            <i>%(DM_KMEANS)s</i> is a
-            choice that's generally applicable to all images. <i>%(DM_SKEL)s</i>
+            <dd><img src="memory:{protip}">&nbsp;
+            <i>{kmeans}</i> is a
+            choice that's generally applicable to all images. <i>{skel}</i>
             is best suited to long, skinny objects such as worms or neurites.</dd>
             </dl>
-            """ % globals())
+            """.format(**{
+                'kmeans': DM_KMEANS,
+                'skel': DM_SKEL,
+                'protip': cellprofiler.gui.help.PROTIP_RECOMEND_ICON
+            })
+        )
+
         self.max_distance = cellprofiler.setting.Integer(
                 "Maximum distance", value=250, minval=1,
                 doc="""

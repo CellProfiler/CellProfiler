@@ -81,11 +81,13 @@ class DisplayHistogram(cellprofiler.module.Module):
             cycle being executed.''')
 
         self.wants_xbounds = cellprofiler.setting.Binary(
-                'Specify min/max bounds for the X-axis?',
-                False, doc='''
-            Select <i>%(cellprofiler.setting.YES)s</i> to specify minimum and maximum values for the
+            'Specify min/max bounds for the X-axis?',
+            False,
+            doc='''
+            Select <i>{}</i> to specify minimum and maximum values for the
             plot on the X-axis. This is helpful if an outlier bin skews the
-            plot such that the bins of interest are no longer visible.''' % globals())
+            plot such that the bins of interest are no longer visible.'''.format(cellprofiler.setting.YES)
+        )
 
         self.xbounds = cellprofiler.setting.FloatRange(
                 'Minimum/maximum values for the X-axis')

@@ -1,3 +1,4 @@
+import cellprofiler.gui.help
 import cellprofiler.image
 import cellprofiler.module
 import cellprofiler.setting
@@ -13,7 +14,7 @@ choice at each pixel position; please refer to the settings help for more inform
 operations. The process of averaging or summing a Z-stack (3D image stack) is known as making a projection.
 
 <p>This module will create a projection of all images specified in the Input modules. For more
-information on loading image stacks and movies, see <i>%(LOADING_IMAGE_SEQ_HELP_REF)s</i>.
+information on loading image stacks and movies, see <i>{loading_image_seq_help}</i>.
 To achieve per-folder projections
 i.e., creating a projection for each set of images in a folder, for all input folders,
 make the following setting specifications:
@@ -30,7 +31,9 @@ output of this module is not complete until all image processing cycles have com
 the projection should be created with a dedicated pipeline.</p>
 
 See also the help for the <b>Input</b> modules.
-''' % globals()
+'''.format(**{
+    'loading_image_seq_help': cellprofiler.gui.help.LOADING_IMAGE_SEQ_HELP_REF
+})
 
 P_AVERAGE = 'Average'
 P_MAXIMUM = 'Maximum'
@@ -61,30 +64,30 @@ class MakeProjection(cellprofiler.module.Module):
                 P_ALL, doc='''
             The final projection image can be created by the following methods:
             <ul>
-            <li><i>%(P_AVERAGE)s:</i> Use the average pixel intensity at each pixel position.</li>
-            <li><i>%(P_MAXIMUM)s:</i> Use the maximum pixel value at each pixel position.</li>
-            <li><i>%(P_MINIMUM)s:</i> Use the minimum pixel value at each pixel position.</li>
-            <li><i>%(P_SUM)s:</i> Add the pixel values at each pixel position.</li>
-            <li><i>%(P_VARIANCE)s:</i> Compute the variance at each pixel position. <br>
+            <li><i>{average}:</i> Use the average pixel intensity at each pixel position.</li>
+            <li><i>{maximum}:</i> Use the maximum pixel value at each pixel position.</li>
+            <li><i>{minimum}:</i> Use the minimum pixel value at each pixel position.</li>
+            <li><i>{sum}:</i> Add the pixel values at each pixel position.</li>
+            <li><i>{variance}:</i> Compute the variance at each pixel position. <br>
             The variance  method is described in Selinummi et al (2009).
             The method is designed to operate on a z-stack of brightfield images taken
             at different focus planes. Background pixels will have relatively uniform
             illumination whereas cytoplasm pixels will have higher variance across the
             z-stack.</li>
-            <li><i>%(P_POWER)s:</i> Compute the power at a given frequency at each pixel position.<br>
+            <li><i>{power}:</i> Compute the power at a given frequency at each pixel position.<br>
             The power method is experimental. The method computes the power at a given
             frequency through the z-stack. It might be used with a phase contrast image
             where the signal at a given pixel will vary sinusoidally with depth. The
             frequency is measured in z-stack steps and pixels that vary with the given
             frequency will have a higher score than other pixels with similar variance,
             but different frequencies.</li>
-            <li><i>%(P_BRIGHTFIELD)s:</i> Perform the brightfield projection at each pixel position.<br>
+            <li><i>{brightfield}:</i> Perform the brightfield projection at each pixel position.<br>
             Artifacts such as dust appear as black spots which are most strongly resolved
             at their focal plane with gradually increasing signals below. The brightfield
             method scores these as zero since the dark appears in the early z-stacks.
             These pixels have a high score for the variance method but have a reduced
             score when using the brightfield method.</li>
-            <li><i>%(P_MASK)s:</i> Compute a binary image of the pixels that are
+            <li><i>{mask}:</i> Compute a binary image of the pixels that are
             masked in any of the input images.<br>
             The mask method operates on any masks that might have been applied to the
             images in a group. The output is a binary image where the "1" pixels are
@@ -104,7 +107,16 @@ class MakeProjection(cellprofiler.module.Module):
             automated analysis of macrophage images", <i>PLoS ONE</i> 4(10): e7497
             <a href="http://dx.doi.org/10.1371/journal.pone.0007497">(link)</a>.</li>
             </ul>
-            </p>''' % globals())
+            </p>'''.format(**{
+                'average': P_AVERAGE,
+                'maximum': P_MAXIMUM,
+                'minimum': P_MINIMUM,
+                'sum': P_SUM,
+                'variance': P_VARIANCE,
+                'power': P_POWER,
+                'brightfield': P_BRIGHTFIELD,
+                'mask': P_MASK
+            }))
 
         self.projection_image_name = cellprofiler.setting.ImageNameProvider(
                 'Name the output image',
@@ -114,12 +126,14 @@ class MakeProjection(cellprofiler.module.Module):
                                      cellprofiler.setting.AVAILABLE_ON_LAST_ATTRIBUTE: True})
         self.frequency = cellprofiler.setting.Float(
                 "Frequency", 6.0, minval=1.0, doc="""
-            <i>(Used only if %(P_POWER)s is selected as the projection method)</i><br>
+            <i>(Used only if {power} is selected as the projection method)</i><br>
             This setting controls the frequency at which the power
             is measured. A frequency of 2 will respond most strongly to
             pixels that alternate between dark and light in successive
             z-stack slices. A frequency of N will respond most strongly
-            to pixels whose brightness cycle every N slices.""" % globals())
+            to pixels whose brightness cycle every N slices.""".format(**{
+                'power': P_POWER
+            }))
 
     def settings(self):
         return [self.image_name, self.projection_type,

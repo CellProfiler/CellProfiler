@@ -23,6 +23,7 @@ import pkg_resources
 import re
 import site
 import sys
+import tempfile
 
 OMERO_CK_HOST = "host"
 OMERO_CK_PORT = "port"
@@ -82,6 +83,11 @@ def main(args=None):
 
     if options.plugins_directory is not None:
         cellprofiler.preferences.set_plugin_directory(options.plugins_directory, globally=False)
+
+    if options.temp_dir is not None:
+        if not os.path.exists(options.temp_dir):
+            os.makedirs(options.temp_dir)
+        cellprofiler.preferences.set_temporary_directory(options.temp_dir, globally=False)
 
     if not options.allow_schema_write:
         cellprofiler.preferences.set_allow_schema_write(False)
@@ -259,6 +265,14 @@ def parse_args(args):
         action="store_true",
         help="Print the version and exit"
     )
+
+    parser.add_option("-t", "--temporary-directory",
+                      dest="temp_dir",
+                      default=None,
+                      help=("Temporary directory. "
+                            "CellProfiler uses this for downloaded image files "
+                            "and for the measurements file, if not specified. "
+                            "The default is " + tempfile.gettempdir()))
 
     parser.add_option(
         "-d",

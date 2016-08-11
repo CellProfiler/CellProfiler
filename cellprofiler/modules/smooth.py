@@ -77,43 +77,71 @@ class Smooth(cellprofiler.module.Module):
             </ul>""" % globals())
 
         self.wants_automatic_object_size = cellprofiler.setting.Binary(
-                'Calculate artifact diameter automatically?', True, doc="""
-            <i>(Used only if "%(GAUSSIAN_FILTER)s", "%(MEDIAN_FILTER)s", "%(SMOOTH_KEEPING_EDGES)s" or "%(CIRCULAR_AVERAGE_FILTER)s" is selected)</i><br>
-            Select <i>%(cellprofiler.setting.YES)s</i> to choose an artifact diameter based on
+            'Calculate artifact diameter automatically?',
+            True,
+            doc="""
+            <i>(Used only if "{gaussian_filter}", "{median_filter}", "{smooth_keeping_edges}" or "{circular_average_filter}" is selected)</i><br>
+            Select <i>{yes}</i> to choose an artifact diameter based on
             the size of the image. The minimum size it will choose is 30 pixels,
             otherwise the size is 1/40 of the size of the image.
-            <p>Select <i>%(cellprofiler.setting.YES)s</i> to manually enter an artifact diameter.</p>""" % globals())
+            <p>Select <i>{yes}</i> to manually enter an artifact diameter.</p>""".format(**{
+                'gaussian_filter': GAUSSIAN_FILTER,
+                'median_filter': MEDIAN_FILTER,
+                'smooth_keeping_edges': SMOOTH_KEEPING_EDGES,
+                'circular_average_filter': CIRCULAR_AVERAGE_FILTER,
+                'yes': cellprofiler.setting.YES
+            })
+        )
 
         self.object_size = cellprofiler.setting.Float(
-                'Typical artifact diameter', 16.0, doc="""
-            <i>(Used only if choosing the artifact diameter automatically is set to "%(cellprofiler.setting.NO)s")</i><br>
+            'Typical artifact diameter',
+            16.0,
+            doc="""
+            <i>(Used only if choosing the artifact diameter automatically is set to "{no}")</i><br>
             Enter the approximate diameter (in pixels) of the features to be blurred by
             the smoothing algorithm. This value is used to calculate the size of
-            the spatial filter. %(HELP_ON_MEASURING_DISTANCES)s
+            the spatial filter. {help_on_measuring_distances}
             For most smoothing methods, selecting a
-            diameter over ~50 will take substantial amounts of time to process.""" % globals())
+            diameter over ~50 will take substantial amounts of time to process.""".format(**{
+                'no': cellprofiler.setting.NO,
+                'help_on_measuring_distances': cellprofiler.gui.help.HELP_ON_MEASURING_DISTANCES
+            })
+        )
 
         self.sigma_range = cellprofiler.setting.Float(
-                'Edge intensity difference', 0.1, doc="""
-            <i>(Used only if "%(SMOOTH_KEEPING_EDGES)s" is selected)</i><br>
+            'Edge intensity difference',
+            0.1,
+            doc="""
+            <i>(Used only if "{smooth_keeping_edges}" is selected)</i><br>
             Enter the intensity step (which indicates an edge in an image) that you want to preserve.
             Edges are locations where the intensity changes precipitously, so this
             setting is used to adjust the rough magnitude of these changes. A lower
             number will preserve weaker edges. A higher number will preserve only stronger edges.
-            Values should be between zero and one. %(HELP_ON_PIXEL_INTENSITIES)s""" % globals())
+            Values should be between zero and one. {help_on_pixel_intensities}""".format(**{
+                'smooth_keeping_edges': SMOOTH_KEEPING_EDGES,
+                'help_on_pixel_intensities': cellprofiler.gui.help.HELP_ON_PIXEL_INTENSITIES
+            })
+        )
 
         self.clip = cellprofiler.setting.Binary(
-                'Clip intensities to 0 and 1?', True, doc="""
-            <i>(Used only if %(FIT_POLYNOMIAL)s is selected)</i><br>
-            The <i>%(FIT_POLYNOMIAL)s</i> method is the only smoothing option that can yield
+            'Clip intensities to 0 and 1?',
+            True,
+            doc="""
+            <i>(Used only if {fit_polynomial} is selected)</i><br>
+            The <i>{fit_polynomial}</i> method is the only smoothing option that can yield
             an output image whose values are outside of the values of the
             input image. This setting controls whether to limit the image
             intensity to the 0 - 1 range used by CellProfiler.
-            <p>Select <i>%(cellprofiler.setting.YES)s</i> to set all output image pixels less than zero to zero
+            <p>Select <i>{yes}</i> to set all output image pixels less than zero to zero
             and all pixels greater than one to one. </p>
-            <p>Select <i>%(cellprofiler.setting.NO)s</i> to
+            <p>Select <i>{no}</i> to
             allow values less than zero and greater than one in the output
-            image.</p>""" % globals())
+            image.</p>""".format(**{
+                'fit_polynomial': FIT_POLYNOMIAL,
+                'yes': cellprofiler.setting.YES,
+                'no': cellprofiler.setting.NO
+            })
+        )
 
     def settings(self):
         return [self.image_name, self.filtered_image_name,

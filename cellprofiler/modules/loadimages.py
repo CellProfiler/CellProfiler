@@ -241,30 +241,44 @@ class LoadImages(cellprofiler.module.Module):
             </ul>""" % globals())
 
         self.match_method = cellprofiler.setting.Choice(
-                'File selection method', [MS_EXACT_MATCH, MS_REGEXP, MS_ORDER], doc="""
+            'File selection method',
+            [MS_EXACT_MATCH, MS_REGEXP, MS_ORDER],
+            doc="""
             Three options are available:
             <ul>
-            <li><i>%(MS_EXACT_MATCH)s:</i> Used to load image (or movie) files that have a particular piece of
+            <li><i>{exact_match}:</i> Used to load image (or movie) files that have a particular piece of
             text in the name. The specific text that is entered will be searched for in the filenames and
             the files that contain that text exactly will be loaded and given the name you specify.
             The search for the text is case-sensitive.</li>
-            <li><i>%(MS_REGEXP)s:</i> Used to load image (or movie) files that match
-            a pattern of regular expressions. %(REGEXP_HELP_REF)s</li>
-            <li><i>%(MS_ORDER)s:</i> Used when image (or movie) files are present in a repeating order,
+            <li><i>{regexp}:</i> Used to load image (or movie) files that match
+            a pattern of regular expressions. {regexp_help}</li>
+            <li><i>{order}:</i> Used when image (or movie) files are present in a repeating order,
             like "DAPI, FITC, Red; DAPI, FITC, Red;" and so on. Images are
             loaded based on the order of their location on the hard disk, and they are
             assigned an identity based on how many images are in each group and what position
             within each group the file is located (e.g., three images per
             group; DAPI is always first).</li>
-            </ul>""" % globals())
+            </ul>""".format(**{
+                'exact_match': MS_EXACT_MATCH,
+                'regexp_help': cellprofiler.gui.help.REGEXP_HELP_REF,
+                'regexp': MS_REGEXP,
+                'order': MS_ORDER
+            })
+        )
 
         self.exclude = cellprofiler.setting.Binary(
-                'Exclude certain files?', False, doc="""
-            <i>(Used only if "%(MS_EXACT_MATCH)s" for loading files is selected)</i> <br>
+            'Exclude certain files?',
+            False,
+            doc="""
+            <i>(Used only if "{exact_match}" for loading files is selected)</i> <br>
             The image/movie files specified with the <i>Text</i> options may also include
             files that you want to exclude from analysis (such as thumbnails created
-            by an imaging system). Select <i>%(cellprofiler.setting.YES)s</i> to enter text to match against
-            such files for exclusion.""" % globals())
+            by an imaging system). Select <i>{yes}</i> to enter text to match against
+            such files for exclusion.""".format(**{
+                'exact_match': MS_EXACT_MATCH,
+                'yes': cellprofiler.setting.YES
+            })
+        )
 
         self.match_exclude = cellprofiler.setting.Text(
                 'Type the text that the excluded images have in common', cellprofiler.setting.DO_NOT_USE, doc="""
@@ -293,14 +307,18 @@ class LoadImages(cellprofiler.module.Module):
 
         # Location settings
         self.location = cellprofiler.setting.DirectoryPath(
-                "Input image file location",
-                dir_choices=[
-                    cellprofiler.preferences.ABSOLUTE_FOLDER_NAME, cellprofiler.preferences.DEFAULT_INPUT_FOLDER_NAME,
-                    cellprofiler.preferences.DEFAULT_OUTPUT_FOLDER_NAME, cellprofiler.preferences.DEFAULT_INPUT_SUBFOLDER_NAME,
-                    cellprofiler.preferences.DEFAULT_OUTPUT_SUBFOLDER_NAME],
-                allow_metadata=False,
-                doc="""Select the folder containing the images to be loaded.
-            %(IO_FOLDER_CHOICE_HELP_TEXT)s""" % globals())
+            "Input image file location",
+            dir_choices=[
+                cellprofiler.preferences.ABSOLUTE_FOLDER_NAME,
+                cellprofiler.preferences.DEFAULT_INPUT_FOLDER_NAME,
+                cellprofiler.preferences.DEFAULT_OUTPUT_FOLDER_NAME,
+                cellprofiler.preferences.DEFAULT_INPUT_SUBFOLDER_NAME,
+                cellprofiler.preferences.DEFAULT_OUTPUT_SUBFOLDER_NAME
+            ],
+            allow_metadata=False,
+            doc="""Select the folder containing the images to be loaded.
+            {}""".format(cellprofiler.preferences.IO_FOLDER_CHOICE_HELP_TEXT)
+        )
 
         self.subdirectory_filter = cellprofiler.setting.SubdirectoryFilter(
                 "Select subfolders to analyze",
@@ -311,28 +329,37 @@ class LoadImages(cellprofiler.module.Module):
             of the associated folders.""")
 
         self.check_images = cellprofiler.setting.Binary(
-                'Check image sets for unmatched or duplicate files?', True, doc="""
+            'Check image sets for unmatched or duplicate files?',
+            True,
+            doc="""
             <i>(Used only if metadata is extracted from the image file and not loading by order)</i><br>
-            Select <i>%(cellprofiler.setting.YES)s</i> to examine the filenames for
+            Select <i>{}</i> to examine the filenames for
             unmatched or duplicate files based on extracted metadata. This is useful for images
             generated by HCS systems where acquisition may produce a corrupted image and create
             a duplicate as a correction or may miss an image entirely. See
             the <i>Extract metadata from where?</i> setting for more details on obtaining, extracting,
-            and using metadata tags.""" % globals())
+            and using metadata tags.""".format(cellprofiler.setting.YES)
+        )
 
         self.group_by_metadata = cellprofiler.setting.Binary(
-                'Group images by metadata?', False, doc="""
+            'Group images by metadata?',
+            False,
+            doc="""
             <a name='group_by_metadata'></a>
             <i>(Used only if metadata is extracted from the image file or if movies are used)</i><br>
-            Select <i>%(cellprofiler.setting.YES)s</i> to process those images that share a particular
+            Select <i>{yes}</i> to process those images that share a particular
             metadata tag as a group. For example, if you are performing per-plate illumination correction and the
             plate metadata is part of the image file name, image grouping will enable you to
             process those images that have the same plate field together (the alternative would be
             to place the images from each plate in a separate folder). The next setting allows you
-            to select the metadata tags by which to group.%(USING_METADATA_GROUPING_HELP_REF)s
+            to select the metadata tags by which to group.{using_metadata_grouping_help}
 
             <p>Please note that if you are loading a movie file(e.g., TIFs, FLEX, STKs, AVIs, ZVIs), each movie
-            is already treated as a group of images, so there is no need to enable here.""" % globals())
+            is already treated as a group of images, so there is no need to enable here.""".format(**{
+                'yes': cellprofiler.setting.YES,
+                'using_metadata_grouping_help': cellprofiler.gui.help.USING_METADATA_GROUPING_HELP_REF
+            })
+        )
 
         self.metadata_fields = cellprofiler.setting.MultiChoice(
                 'Specify metadata fields to group by', [], doc="""
@@ -531,59 +558,68 @@ class LoadImages(cellprofiler.module.Module):
             folder of the Date folder.</td></tr>
             </table></p>"""))
 
-        group.append("wants_movie_frame_grouping", cellprofiler.setting.Binary(
-                "Group the movie frames?", False,
+        group.append(
+            "wants_movie_frame_grouping",
+            cellprofiler.setting.Binary(
+                "Group the movie frames?",
+                False,
                 doc="""
-            <i>(Used only if a movie image format is selected as file type)</i><br>
-            <b>LoadImages</b> can load several frames from a movie
-            into different images within the same cycle. For example, a movie's
-            first frame might be an image of the red fluorescence channel at
-            time zero, the second might be the green channel at time zero,
-            the third might be the red channel at time one, etc.
-            Select <i>%(cellprofiler.setting.YES)s</i> to extract both channels for this movie
-            as separate images within the same cycle.
-            <p>
-            <b>LoadImages</b> refers to the individual images in a group
-            as <i>channels</i>. Channels are numbered consecutively, starting
-            at channel 1. To set up grouping, first specify how the channels
-            are grouped (interleaving and number of channels per group), then
-            assign image names to each of the channels individually.
-            """ % globals()))
+                <i>(Used only if a movie image format is selected as file type)</i><br>
+                <b>LoadImages</b> can load several frames from a movie
+                into different images within the same cycle. For example, a movie's
+                first frame might be an image of the red fluorescence channel at
+                time zero, the second might be the green channel at time zero,
+                the third might be the red channel at time one, etc.
+                Select <i>{}</i> to extract both channels for this movie
+                as separate images within the same cycle.
+                <p>
+                <b>LoadImages</b> refers to the individual images in a group
+                as <i>channels</i>. Channels are numbered consecutively, starting
+                at channel 1. To set up grouping, first specify how the channels
+                are grouped (interleaving and number of channels per group), then
+                assign image names to each of the channels individually.
+                """.format(cellprofiler.setting.YES)
+            )
+        )
 
-        group.append("interleaving", cellprofiler.setting.Choice(
-                "Grouping method", [I_INTERLEAVED, I_SEPARATED],
+        group.append(
+            "interleaving",
+            cellprofiler.setting.Choice(
+                "Grouping method",
+                [I_INTERLEAVED, I_SEPARATED],
                 doc="""
-            <i>(Used only if a movie image format is selected as file type and movie frame grouping are selected)</i><br>
-            Channels in a movie can be interleaved or separated.
-            <p>In an interleaved movie, the first frame is channel 1, the second
-            is channel 2 and so on up to the number of channels per group for a given
-            image cycle.
-            In a separated movie, all of the frames for channel 1 are processed as the first
-            image cycle, then the frames for channel 2 for the second image cycle, and so on.
+                <i>(Used only if a movie image format is selected as file type and movie frame grouping are selected)</i><br>
+                Channels in a movie can be interleaved or separated.
+                <p>In an interleaved movie, the first frame is channel 1, the second
+                is channel 2 and so on up to the number of channels per group for a given
+                image cycle.
+                In a separated movie, all of the frames for channel 1 are processed as the first
+                image cycle, then the frames for channel 2 for the second image cycle, and so on.
 
-            <p>For example, a movie may consist of 6 frames and we would like to
-            process the movie as two channels per group. An interleaved movie would be processed like this:
-            <p><table border="1">
-            <tr><th>Frame #</th><th>Channel #</th><th>Image cycle #</th></tr>
-            <tr><td>1</td><td>1</td><td>1</td></tr>
-            <tr><td>2</td><td>2</td><td>1</td></tr>
-            <tr><td>3</td><td>1</td><td>2</td></tr>
-            <tr><td>4</td><td>2</td><td>2</td></tr>
-            <tr><td>5</td><td>1</td><td>3</td></tr>
-            <tr><td>6</td><td>2</td><td>3</td></tr></table><br>
+                <p>For example, a movie may consist of 6 frames and we would like to
+                process the movie as two channels per group. An interleaved movie would be processed like this:
+                <p><table border="1">
+                <tr><th>Frame #</th><th>Channel #</th><th>Image cycle #</th></tr>
+                <tr><td>1</td><td>1</td><td>1</td></tr>
+                <tr><td>2</td><td>2</td><td>1</td></tr>
+                <tr><td>3</td><td>1</td><td>2</td></tr>
+                <tr><td>4</td><td>2</td><td>2</td></tr>
+                <tr><td>5</td><td>1</td><td>3</td></tr>
+                <tr><td>6</td><td>2</td><td>3</td></tr></table><br>
 
-            <p>For a separated movie, the channels would be processed like this:<br>
-            <p><table border="1">
-            <tr><th>Frame #</th><th>Channel #</th><th>Image cycle #</th></tr>
-            <tr><td>1</td><td>1</td><td>1</td></tr>
-            <tr><td>2</td><td>1</td><td>2</td></tr>
-            <tr><td>3</td><td>1</td><td>3</td></tr>
-            <tr><td>4</td><td>2</td><td>1</td></tr>
-            <tr><td>5</td><td>2</td><td>2</td></tr>
-            <tr><td>6</td><td>2</td><td>3</td></tr></table>
+                <p>For a separated movie, the channels would be processed like this:<br>
+                <p><table border="1">
+                <tr><th>Frame #</th><th>Channel #</th><th>Image cycle #</th></tr>
+                <tr><td>1</td><td>1</td><td>1</td></tr>
+                <tr><td>2</td><td>1</td><td>2</td></tr>
+                <tr><td>3</td><td>1</td><td>3</td></tr>
+                <tr><td>4</td><td>2</td><td>1</td></tr>
+                <tr><td>5</td><td>2</td><td>2</td></tr>
+                <tr><td>6</td><td>2</td><td>3</td></tr></table>
 
-            <p>Note the difference in which frames are processed in which image cycle
-            between the two methods."""))
+                <p>Note the difference in which frames are processed in which image cycle
+                between the two methods.""")
+        )
 
         group.append("channels_per_group", cellprofiler.setting.Integer(
                 "Number of channels per group", 3, minval=2,
@@ -686,11 +722,17 @@ class LoadImages(cellprofiler.module.Module):
             <i>(Used only if objects are output)</i><br>
             This is the name for the objects loaded from your image"""))
 
-        group.append("wants_outlines", cellprofiler.setting.Binary(
-                'Retain outlines of loaded objects?', False, doc="""
-            <i>(Used only if objects are output)</i><br>
-            Select <i>%(cellprofiler.setting.YES)s</i> if you want to create an image of the outlines
-            of the loaded objects.""" % globals()))
+        group.append(
+            "wants_outlines",
+            cellprofiler.setting.Binary(
+                'Retain outlines of loaded objects?',
+                False,
+                doc="""
+                <i>(Used only if objects are output)</i><br>
+                Select <i>{}</i> if you want to create an image of the outlines
+                of the loaded objects.""".format(cellprofiler.setting.YES)
+            )
+        )
 
         group.append("outlines_name", cellprofiler.setting.OutlineNameProvider(
                 'Name the outline image', 'LoadedImageOutlines', doc='''
@@ -715,20 +757,29 @@ class LoadImages(cellprofiler.module.Module):
             illumination sources and/or optics. Use this setting to pick
             the channel to associate with the above image name."""))
 
-        group.append("rescale", cellprofiler.setting.Binary(
-                "Rescale intensities?", True, doc="""
-            This option determines whether image metadata should be
-            used to rescale the image's intensities. Some image formats
-            save the maximum possible intensity value along with the pixel data.
-            For instance, a microscope might acquire images using a 12-bit
-            A/D converter which outputs intensity values between zero and 4095,
-            but stores the values in a field that can take values up to 65535.
-            <p>Select <i>%(cellprofiler.setting.YES)s</i> to rescale the image intensity so that
-            saturated values are rescaled to 1.0 by dividing all pixels
-            in the image by the maximum possible intensity value. </p>
-            <p>Select <i>%(cellprofiler.setting.NO)s</i> to ignore the image metadata and rescale the image
-            to 0 &ndash; 1.0 by dividing by 255 or 65535, depending on the number
-            of bits used to store the image.</p>""" % globals()))
+        group.append(
+            "rescale",
+            cellprofiler.setting.Binary(
+                "Rescale intensities?",
+                True,
+                doc="""
+                This option determines whether image metadata should be
+                used to rescale the image's intensities. Some image formats
+                save the maximum possible intensity value along with the pixel data.
+                For instance, a microscope might acquire images using a 12-bit
+                A/D converter which outputs intensity values between zero and 4095,
+                but stores the values in a field that can take values up to 65535.
+                <p>Select <i>{yes}</i> to rescale the image intensity so that
+                saturated values are rescaled to 1.0 by dividing all pixels
+                in the image by the maximum possible intensity value. </p>
+                <p>Select <i>{no}</i> to ignore the image metadata and rescale the image
+                to 0 &ndash; 1.0 by dividing by 255 or 65535, depending on the number
+                of bits used to store the image.</p>""".format(**{
+                    'yes': cellprofiler.setting.YES,
+                    'no': cellprofiler.setting.NO
+                })
+            )
+        )
 
         group.can_remove = can_remove
         if can_remove:

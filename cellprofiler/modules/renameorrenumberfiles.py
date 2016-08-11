@@ -136,12 +136,19 @@ class RenameOrRenumberFiles(cellprofiler.module.Module):
             </table></code>""" % globals())
 
         self.wants_text = cellprofiler.setting.Binary(
-                "Add text to the file name?", False, doc="""
-            Select <i>%(cellprofiler.setting.YES)s</i> if you want to add text
-            to the file name. If you had chosen <i>%(A_RENUMBER)s</i> above,
+            "Add text to the file name?",
+            False,
+            doc="""
+            Select <i>{yes}</i> if you want to add text
+            to the file name. If you had chosen <i>{renumber}</i> above,
             the module will add the text after your number.
-            If you had chosen <i>%(A_DELETE)s</i>, the module will replace
-            the deleted text with the text you enter here.""" % globals())
+            If you had chosen <i>{delete}</i>, the module will replace
+            the deleted text with the text you enter here.""".format(**{
+                'yes': cellprofiler.setting.YES,
+                'renumber': A_RENUMBER,
+                'delete': A_DELETE
+            })
+        )
 
         self.text_to_add = cellprofiler.setting.Text(
                 "Replacement text", "", doc="""
@@ -149,11 +156,17 @@ class RenameOrRenumberFiles(cellprofiler.module.Module):
             Enter the text that you want to add to each file name.""")
 
         self.wants_to_replace_spaces = cellprofiler.setting.Binary(
-                "Replace spaces?", False, doc="""
-            Select <i>%(cellprofiler.setting.YES)s</i> to replace spaces in the final
+            "Replace spaces?",
+            False,
+            doc="""
+            Select <i>{yes}</i> to replace spaces in the final
             version of the file name with some other text.
-            <p>Select <i>%(cellprofiler.setting.NO)s</i> if the file name can have spaces
-            or if none of the file names have spaces.</p>""" % globals())
+            <p>Select <i>{no}</i> if the file name can have spaces
+            or if none of the file names have spaces.</p>""".format(**{
+                'yes': cellprofiler.setting.YES,
+                'no': cellprofiler.setting.NO
+            })
+        )
 
         self.space_replacement = cellprofiler.setting.Text(
                 "Space replacement", "_", doc="""

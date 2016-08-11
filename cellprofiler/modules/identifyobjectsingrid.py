@@ -134,11 +134,15 @@ class IdentifyObjectsInGrid(cellprofiler.module.Module):
             </ul>""" % globals())
 
         self.diameter = cellprofiler.setting.Integer(
-                "Circle diameter", 20, minval=2, doc="""
+            "Circle diameter",
+            20,
+            minval=2,
+            doc="""
             <i>(Used only if Circle is selected as object shape and diameter is
             specified manually)</i><br>
             Enter the diameter to be used for each grid circle, in pixels.
-            %(HELP_ON_MEASURING_DISTANCES)s""" % globals())
+            {}""".format(cellprofiler.gui.help.HELP_ON_MEASURING_DISTANCES)
+        )
 
         self.guiding_object_name = cellprofiler.setting.ObjectNameSubscriber(
                 "Select the guiding objects", cellprofiler.setting.NONE, doc="""
@@ -149,12 +153,16 @@ class IdentifyObjectsInGrid(cellprofiler.module.Module):
             module, depending on the method chosen.""")
 
         self.wants_outlines = cellprofiler.setting.Binary(
-                "Retain outlines of the identified objects?", False, doc="""
-            %(RETAINING_OUTLINES_HELP)s""" % globals())
+            "Retain outlines of the identified objects?",
+            False,
+            doc=cellprofiler.gui.help.RETAINING_OUTLINES_HELP
+        )
 
         self.outlines_name = cellprofiler.setting.OutlineNameProvider(
-                "Name the outline image", "GridOutlines", doc="""
-            %(NAMING_OUTLINES_HELP)s""" % globals())
+            "Name the outline image",
+            "GridOutlines",
+            doc=cellprofiler.gui.help.NAMING_OUTLINES_HELP
+        )
 
     def settings(self):
         """Return the settings to be loaded or saved to/from the pipeline

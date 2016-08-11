@@ -107,9 +107,11 @@ class RelateObjects(cellprofiler.module.Module):
             </ul>""" % globals())
 
         self.wants_step_parent_distances = cellprofiler.setting.Binary(
-                "Calculate distances to other parents?", False, doc="""
+            "Calculate distances to other parents?",
+            False,
+            doc="""
             <i>(Used only if calculating distances)</i><br>
-            Select <i>%(cellprofiler.setting.YES)s</i> to calculate the distances of the child objects to
+            Select <i>{}</i> to calculate the distances of the child objects to
             some other objects. These objects must be either parents or
             children of your parent object in order for this module to
             determine the distances. For instance, you might find "Nuclei" using
@@ -119,7 +121,9 @@ class RelateObjects(cellprofiler.module.Module):
             speckles to cells and then measure distances to nuclei and
             cytoplasm. You could not use <b>RelateObjects</b> to relate speckles to
             cytoplasm and then measure distances to nuclei, because nuclei is
-            neither a direct parent or child of cytoplasm.""" % globals())
+            neither a direct parent or child of cytoplasm.""".format(cellprofiler.setting.YES)
+        )
+
         self.step_parent_names = []
 
         self.add_step_parent(can_delete=False)
@@ -128,14 +132,16 @@ class RelateObjects(cellprofiler.module.Module):
                                                                        self.add_step_parent)
 
         self.wants_per_parent_means = cellprofiler.setting.Binary(
-                'Calculate per-parent means for all child measurements?',
-                False, doc="""
-            Select <i>%(cellprofiler.setting.YES)s</i> to calculate the per-parent mean values of every upstream
+            'Calculate per-parent means for all child measurements?',
+            False,
+            doc="""
+            Select <i>{}</i> to calculate the per-parent mean values of every upstream
             measurement made with the children objects and stores them as a
             measurement for the parent; the nomenclature of this new measurements is
             "Mean_&lt;child&gt;_&lt;category&gt;_&lt;feature&gt;".
             For this reason, this module should be placed <i>after</i> all <b>Measure</b>
-            modules that make measurements of the children objects.""" % globals())
+            modules that make measurements of the children objects.""".format(cellprofiler.setting.YES)
+        )
 
     def add_step_parent(self, can_delete=True):
         group = cellprofiler.setting.SettingsGroup()

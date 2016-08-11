@@ -135,21 +135,30 @@ class ImageMath(cellprofiler.module.Module):
             Enter a number to add to the result *after* the chosen operation""")
 
         self.truncate_low = cellprofiler.setting.Binary(
-                "Set values less than 0 equal to 0?", True, doc="""
+            "Set values less than 0 equal to 0?",
+            True,
+            doc="""
             Values outside the range 0 to 1 might not be handled well by other modules.
-            Select <i>%(cellprofiler.setting.YES)s</i> to set negative values to 0.""" % globals())
+            Select <i>{}</i> to set negative values to 0.""".format(cellprofiler.setting.YES)
+        )
 
         self.truncate_high = cellprofiler.setting.Binary(
-                "Set values greater than 1 equal to 1?", True, doc="""
+            "Set values greater than 1 equal to 1?",
+            True,
+            doc="""
             Values outside the range 0 to 1 might not be handled well by other modules.
-            Select <i>%(cellprofiler.setting.YES)s</i> to set values greater than 1 to a maximum value of 1.""" % globals())
+            Select <i>{}</i> to set values greater than 1 to a maximum value of 1.""".format(cellprofiler.setting.YES)
+        )
 
         self.ignore_mask = cellprofiler.setting.Binary(
-                "Ignore the image masks?", False, doc="""
+            "Ignore the image masks?",
+            False,
+            doc="""
             Usually, the smallest mask of all image operands is applied after
-            image math has been completed. Select <i>%(cellprofiler.setting.YES)s</i> to set
+            image math has been completed. Select <i>{}</i> to set
             equal to zero all previously masked pixels and operate on the masked
-            images as if no mask had been applied.""" % globals())
+            images as if no mask had been applied.""".format(cellprofiler.setting.YES)
+        )
 
         self.output_image_name = cellprofiler.setting.ImageNameProvider(
                 "Name the output image", "ImageAfterMath", doc="""

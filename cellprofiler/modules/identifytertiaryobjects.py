@@ -99,22 +99,33 @@ class IdentifyTertiaryObjects(cellprofiler.module.Module):
             will consist of the smaller object subtracted from the larger object.""")
 
         self.shrink_primary = cellprofiler.setting.Binary(
-                "Shrink smaller object prior to subtraction?", True, doc="""
-            Select <i>%(cellprofiler.setting.YES)s</i> to shrink the smaller object by 1 pixel before subtracting the objects.
+            "Shrink smaller object prior to subtraction?",
+            True,
+            doc="""
+            Select <i>{yes}</i> to shrink the smaller object by 1 pixel before subtracting the objects.
             this approach will ensure that there is always a tertiary object produced, even if it is
             only 1 pixel wide.
-            <p>Select <i>%(cellprofiler.setting.NO)s</i> to subtract the objects directly, which will ensure that no pixels
+            <p>Select <i>{no}</i> to subtract the objects directly, which will ensure that no pixels
             are shared between the primary/secondary/tertiary objects and hence measurements for all
             three sets of objects will not use the same pixels multiple times. However, this may result
             in the creation of objects with no area. Measurements can still be made on such objects, but
-            the results will be zero or not-a-number (NaN)</p>""" % globals())
+            the results will be zero or not-a-number (NaN)</p>""".format(**{
+                'yes': cellprofiler.setting.YES,
+                'no': cellprofiler.setting.NO
+            })
+        )
 
-        self.use_outlines = cellprofiler.setting.Binary("Retain outlines of the tertiary objects?", False, doc="""
-            %(RETAINING_OUTLINES_HELP)s""" % globals())
+        self.use_outlines = cellprofiler.setting.Binary(
+            "Retain outlines of the tertiary objects?",
+            False,
+            doc=cellprofiler.gui.help.RETAINING_OUTLINES_HELP
+        )
 
         self.outlines_name = cellprofiler.setting.OutlineNameProvider(
-                "Name the outline image", "CytoplasmOutlines", doc="""
-            %(NAMING_OUTLINES_HELP)s""" % globals())
+            "Name the outline image",
+            "CytoplasmOutlines",
+            doc=cellprofiler.gui.help.NAMING_OUTLINES_HELP
+        )
 
     def settings(self):
         """All of the settings to be loaded and saved in the pipeline file

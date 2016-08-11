@@ -152,10 +152,12 @@ class StraightenWorms(cellprofiler.module.Module):
             worm's background in the straightened image.""")
 
         self.training_set_directory = cellprofiler.setting.DirectoryPath(
-                "Training set file location", support_urls=True,
-                allow_metadata=False, doc="""
+            "Training set file location",
+            support_urls=True,
+            allow_metadata=False,
+            doc="""
             Select the folder containing the training set to be loaded.
-            %(IO_FOLDER_CHOICE_HELP_TEXT)s
+            {}
             <p>An additional option is the following:
             <ul>
             <li><i>URL</i>: Use the path part of a URL. For instance, your
@@ -164,7 +166,8 @@ class StraightenWorms(cellprofiler.module.Module):
             To access this file, you would choose <i>URL</i> and enter
             <i>http://my_institution.edu/server/my_username/</i>
             as the path location.</li>
-            </ul></p>""" % globals())
+            </ul></p>""".format(cellprofiler.preferences.IO_FOLDER_CHOICE_HELP_TEXT)
+        )
 
         def get_directory_fn():
             """Get the directory for the CSV file name"""
@@ -184,12 +187,15 @@ class StraightenWorms(cellprofiler.module.Module):
                       ("All files (*.*)", "*.*")])
 
         self.wants_measurements = cellprofiler.setting.Binary(
-                "Measure intensity distribution?", True, doc="""
-            Select <i>%(cellprofiler.setting.YES)s</i> to divide a worm into sections
+            "Measure intensity distribution?",
+            True,
+            doc="""
+            Select <i>{}</i> to divide a worm into sections
             and measure the intensities of each section in each of the
             straightened images. These measurements can help classify
             phenotypes if the staining pattern across the segments differs
-            between phenotypes.""" % globals())
+            between phenotypes.""".format(cellprofiler.setting.YES)
+        )
 
         self.number_of_segments = cellprofiler.setting.Integer(
                 "Number of transverse segments", 4, 1, doc="""

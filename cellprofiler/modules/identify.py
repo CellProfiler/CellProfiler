@@ -551,7 +551,10 @@ class Identify(cellprofiler.module.Module):
 
         self.manual_threshold = cellprofiler.setting.Float(
             "Manual threshold",
-            value=0.0, minval=0.0, maxval=1.0, doc="""
+            value=0.0,
+            minval=0.0,
+            maxval=1.0,
+            doc="""
             <i>(Used only if Manual selected for thresholding method)</i><br>
             Enter the value that will act as an absolute threshold for the images, a value from 0 to 1.""")
 
@@ -576,13 +579,14 @@ class Identify(cellprofiler.module.Module):
 
         self.two_class_otsu = cellprofiler.setting.Choice(
             'Two-class or three-class thresholding?',
-            [O_TWO_CLASS, O_THREE_CLASS], doc="""
+            [O_TWO_CLASS, O_THREE_CLASS],
+            doc="""
             <i>(Used only for the Otsu thresholding method)</i> <br>
             <ul>
-            <li><i>%(O_TWO_CLASS)s:</i> Select this option if the grayscale levels are readily
+            <li><i>{two_class}:</i> Select this option if the grayscale levels are readily
             distinguishable into only two classes: foreground (i.e., regions of interest)
             and background.</li>
-            <li><i>%(O_THREE_CLASS)s</i>: Choose this option if the grayscale
+            <li><i>{three_class}</i>: Choose this option if the grayscale
             levels fall instead into three classes: foreground, background and a middle intensity
             between the two. You will then be asked whether
             the middle intensity class should be added to the foreground or background
@@ -592,7 +596,7 @@ class Identify(cellprofiler.module.Module):
             two- or three-class thresholding is chosen, the image pixels are always
             finally assigned two classes: foreground and background.
             <dl>
-            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;
+            <dd><img src="memory:{protip_recomend_icon}">&nbsp;
             Three-class thresholding may be useful for images in which you have nuclear staining along with
             low-intensity non-specific cell staining. Where two-class thresholding
             might incorrectly assign this intermediate staining to the nuclei
@@ -600,11 +604,17 @@ class Identify(cellprofiler.module.Module):
             foreground or background as desired. </dd>
             </dl>
             <dl>
-            <dd><img src="memory:%(PROTIP_AVOID_ICON)s">&nbsp;
+            <dd><img src="memory:{protip_avoid_icon}">&nbsp;
             However, in extreme cases where either
             there are almost no objects or the entire field of view is covered with
             objects, three-class thresholding may perform worse than two-class.</dd>
-            </dl>""" % globals())
+            </dl>""".format(**{
+                'two_class': O_TWO_CLASS,
+                'three_class': O_THREE_CLASS,
+                'protip_recomend_icon': cellprofiler.gui.help.PROTIP_RECOMEND_ICON,
+                'protip_avoid_icon': cellprofiler.gui.help.PROTIP_AVOID_ICON
+            })
+        )
 
         self.use_weighted_variance = cellprofiler.setting.Choice(
             'Minimize the weighted variance or the entropy?',
@@ -618,76 +628,99 @@ class Identify(cellprofiler.module.Module):
             to the foreground class or the background class.""")
 
         self.rb_custom_choice = cellprofiler.setting.Choice(
-            "Use default parameters?", [RB_DEFAULT, RB_CUSTOM],
+            "Use default parameters?",
+            [RB_DEFAULT, RB_CUSTOM],
             doc="""
-            <i>(Used only with the %(TM_ROBUST_BACKGROUND)s method)</i><br>
-            This setting determines whether the %(TM_ROBUST_BACKGROUND)s method
+            <i>(Used only with the {robust_background} method)</i><br>
+            This setting determines whether the {robust_background} method
             uses its default parameters or lets the user customize them.
             <ul>
-            <li><i>%(RB_DEFAULT)s:</i> Use the default parameters,
+            <li><i>{default}:</i> Use the default parameters,
             discarding the 5%% highest and lowest
             intensity pixels and calculating the threshold as the mean plus
             two standard deviations of the remaining pixels.</li>
-            <li><i>%(RB_CUSTOM)s:</i> Choose this option to fully customize the method.</li>
+            <li><i>{custom}:</i> Choose this option to fully customize the method.</li>
             </ul>
-            """ % globals())
+            """.format(**{
+                'robust_background': centrosome.threshold.TM_ROBUST_BACKGROUND,
+                'default': RB_DEFAULT,
+                'custom': RB_CUSTOM
+            })
+        )
 
         self.lower_outlier_fraction = cellprofiler.setting.Float(
-            "Lower outlier fraction", .05,
+            "Lower outlier fraction",
+            .05,
             minval=0,
             maxval=1,
             doc="""
-            <i>(Used only when customizing the %(TM_ROBUST_BACKGROUND)s method)</i><br>
+            <i>(Used only when customizing the {} method)</i><br>
             Discard this fraction of the pixels in the image starting with
             those of the lowest intensity.
-            """ % globals())
+            """.format(centrosome.threshold.TM_ROBUST_BACKGROUND)
+        )
 
         self.upper_outlier_fraction = cellprofiler.setting.Float(
-            "Upper outlier fraction", .05,
+            "Upper outlier fraction",
+            .05,
             minval=0,
             maxval=1,
             doc="""
-            <i>(Used only when customizing the %(TM_ROBUST_BACKGROUND)s method)</i><br>
+            <i>(Used only when customizing the {} method)</i><br>
             Discard this fraction of the pixels in the image starting with
             those of the highest intensity.
-            """ % globals())
+            """.format(centrosome.threshold.TM_ROBUST_BACKGROUND)
+        )
 
         self.averaging_method = cellprofiler.setting.Choice(
             "Averaging method",
             [RB_MEAN, RB_MEDIAN, RB_MODE],
             doc="""
-            <i>(Used only when customizing the %(TM_ROBUST_BACKGROUND)s method)</i><br>
+            <i>(Used only when customizing the {robust_background} method)</i><br>
             This setting determines how the intensity midpoint is determined.
-            <br><ul><li><i>%(RB_MEAN)s</i>: Use the mean of the pixels
+            <br><ul><li><i>{mean}</i>: Use the mean of the pixels
             remaining after discarding the outliers. This is a good choice if
             the cell density is variable or high.</li>
-            <li><i>%(RB_MEDIAN)s</i>: Use the median of the pixels. This is a
+            <li><i>{median}</i>: Use the median of the pixels. This is a
             good choice if, for all images, more than half of the pixels
             are in the background after removing outliers.</li>
-            <li><i>%(RB_MODE)s</i>: Use the most frequently occurring value
-            from among the pixel values. The %(TM_ROBUST_BACKGROUND)s method groups
+            <li><i>{mode}</i>: Use the most frequently occurring value
+            from among the pixel values. The {robust_background} method groups
             the intensities into bins (the number of bins is the square root
             of the number of pixels in the unmasked portion of the image) and
             chooses the intensity associated with the bin with the most pixels.
             </li></ul>
-            """ % globals())
+            """.format(**{
+                'robust_background': centrosome.threshold.TM_ROBUST_BACKGROUND,
+                'mean': RB_MEAN,
+                'median': RB_MEDIAN,
+                'mode': RB_MODE
+            })
+        )
+
         self.variance_method = cellprofiler.setting.Choice(
             "Variance method",
             [RB_SD, RB_MAD],
             doc="""
-            <i>(Used only when customizing the %(TM_ROBUST_BACKGROUND)s method)</i><br>
+            <i>(Used only when customizing the {robust_background} method)</i><br>
             Robust background adds a number of deviations (standard or MAD) to
             the average to get the final background. This setting chooses the
             method used to assess the variance in the pixels, after removing
-            outliers.<br>Choose one of <i>%(RB_SD)s</i> or <i>%(RB_MAD)s</i>
+            outliers.<br>Choose one of <i>{standard}</i> or <i>{mad}</i>
             (the median of the absolute difference of the pixel intensities
             from their median).
-            """ % globals())
+            """.format(**{
+                'robust_background': centrosome.threshold.TM_ROBUST_BACKGROUND,
+                'standard': RB_SD,
+                'mad': RB_MAD
+            })
+        )
 
         self.number_of_deviations = cellprofiler.setting.Float(
-            "# of deviations", 2,
+            "# of deviations",
+            2,
             doc="""
-            <i>(Used only when customizing the %(TM_ROBUST_BACKGROUND)s method)</i><br>
+            <i>(Used only when customizing the {} method)</i><br>
             Robust background calculates the variance, multiplies it by the
             value given by this setting and adds it to the average. Adding
             several deviations raises the background value above the average,
@@ -697,7 +730,8 @@ class Identify(cellprofiler.module.Module):
             foreground pixels. It's possible to use a negative number
             to lower the threshold if the averaging method picks a threshold
             that is within the range of foreground pixel intensities.
-            """ % globals())
+            """.format(centrosome.threshold.TM_ROBUST_BACKGROUND)
+        )
 
         self.adaptive_window_method = cellprofiler.setting.Choice(
             "Method to calculate adaptive window size",

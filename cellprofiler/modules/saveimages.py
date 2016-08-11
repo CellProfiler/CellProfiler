@@ -153,14 +153,14 @@ class SaveImages(cellprofiler.module.Module):
             save the module display window.""" % globals())
 
         self.file_name_method = cellprofiler.setting.Choice(
-                "Select method for constructing file names",
-                [FN_FROM_IMAGE, FN_SEQUENTIAL,
-                 FN_SINGLE_NAME],
-                FN_FROM_IMAGE, doc="""
+            "Select method for constructing file names",
+            [FN_FROM_IMAGE, FN_SEQUENTIAL, FN_SINGLE_NAME],
+            FN_FROM_IMAGE,
+            doc="""
             <i>(Used only if saving non-movie files)</i><br>
             Several choices are available for constructing the image file name:
             <ul>
-            <li><i>%(FN_FROM_IMAGE)s:</i> The filename will be constructed based
+            <li><i>{from_image}:</i> The filename will be constructed based
             on the original filename of an input image specified in <b>NamesAndTypes</b>.
             You will have the opportunity to prefix or append
             additional text.
@@ -169,17 +169,24 @@ class SaveImages(cellprofiler.module.Module):
             want your output given a unique label according to the metadata corresponding
             to an image group. The name of the metadata to substitute can be provided for
             each image for each cycle using the <b>Metadata</b> module.
-            %(USING_METADATA_TAGS_REF)s%(USING_METADATA_HELP_REF)s.</p></li>
-            <li><i>%(FN_SEQUENTIAL)s:</i> Same as above, but in addition, each filename
+            {using_metadata_tags}{using_metadata_help}.</p></li>
+            <li><i>{sequential}:</i> Same as above, but in addition, each filename
             will have a number appended to the end that corresponds to
             the image cycle number (starting at 1).</li>
-            <li><i>%(FN_SINGLE_NAME)s:</i> A single name will be given to the
+            <li><i>{single_name}:</i> A single name will be given to the
             file. Since the filename is fixed, this file will be overwritten with each cycle.
             In this case, you would probably want to save the image on the last cycle
             (see the <i>Select how often to save</i> setting). The exception to this is to
             use a metadata tag to provide a unique label, as mentioned
-            in the <i>%(FN_FROM_IMAGE)s</i> option.</li>
-            </ul>""" % globals())
+            in the <i>{from_image}</i> option.</li>
+            </ul>""".format(**{
+                'from_image': FN_FROM_IMAGE,
+                'using_metadata_tags': cellprofiler.gui.help.USING_METADATA_TAGS_REF,
+                'using_metadata_help': cellprofiler.gui.help.USING_METADATA_HELP_REF,
+                'sequential': FN_SEQUENTIAL,
+                'single_name': FN_SINGLE_NAME,
+            })
+        )
 
         self.file_image_name = cellprofiler.setting.FileImageNameSubscriber(
                 "Select image name for file prefix",
@@ -189,24 +196,40 @@ class SaveImages(cellprofiler.module.Module):
             used as the prefix for the output filename.""" % globals())
 
         self.single_file_name = cellprofiler.setting.Text(
-                SINGLE_NAME_TEXT, "OrigBlue",
-                metadata=True, doc="""
-            <i>(Used only when "%(FN_SEQUENTIAL)s" or "%(FN_SINGLE_NAME)s" are selected for contructing the filename)</i><br>
+            SINGLE_NAME_TEXT,
+            "OrigBlue",
+            metadata=True,
+            doc="""
+            <i>(Used only when "{sequential}" or "{single_name}" are selected for contructing the filename)</i><br>
             Specify the filename text here. If you have metadata
-            associated with your images, enter the filename text with the metadata tags. %(USING_METADATA_TAGS_REF)s<br>
-            Do not enter the file extension in this setting; it will be appended automatically.""" % globals())
+            associated with your images, enter the filename text with the metadata tags. {using_metadata_tags}<br>
+            Do not enter the file extension in this setting; it will be appended automatically.""".format(**{
+                'sequential': FN_SEQUENTIAL,
+                'single_name': FN_SINGLE_NAME,
+                'using_metadata_tags': cellprofiler.gui.help.USING_METADATA_TAGS_REF
+            })
+        )
 
         self.number_of_digits = cellprofiler.setting.Integer(
-                "Number of digits", 4, doc="""
-            <i>(Used only when "%(FN_SEQUENTIAL)s" is selected for contructing the filename)</i><br>
+            "Number of digits",
+            4,
+            doc="""
+            <i>(Used only when "{}" is selected for contructing the filename)</i><br>
             Specify the number of digits to be used for the sequential numbering. Zeros will be
             used to left-pad the digits. If the number specified here is less than that needed to
-            contain the number of image sets, the latter will override the value entered.""" % globals())
+            contain the number of image sets, the latter will override the value entered.""".format(FN_SEQUENTIAL)
+        )
 
         self.wants_file_name_suffix = cellprofiler.setting.Binary(
-                "Append a suffix to the image file name?", False, doc="""
-            Select <i>%(cellprofiler.setting.YES)s</i> to add a suffix to the image's file name.
-            Select <i>%(cellprofiler.setting.NO)s</i> to use the image name as-is.""" % globals())
+            "Append a suffix to the image file name?",
+            False,
+            doc="""
+            Select <i>{yes}</i> to add a suffix to the image's file name.
+            Select <i>{no}</i> to use the image name as-is.""".format(**{
+                'yes': cellprofiler.setting.YES,
+                'no': cellprofiler.setting.NO
+            })
+        )
 
         self.file_name_suffix = cellprofiler.setting.Text(
                 "Text to append to the image name",
@@ -233,28 +256,35 @@ class SaveImages(cellprofiler.module.Module):
             """)
 
         self.pathname = SaveImagesDirectoryPath(
-                "Output file location", self.file_image_name, doc="""
+            "Output file location",
+            self.file_image_name, doc="""
             <i>(Used only when saving non-movie files)</i><br>
             This setting lets you choose the folder for the output
-            files. %(IO_FOLDER_CHOICE_HELP_TEXT)s
+            files. {io_folder_choice_help_text}
             <p>An additional option is the following:
             <ul>
             <li><i>Same folder as image</i>: Place the output file in the same folder
             that the source image is located.</li>
             </ul></p>
-            <p>%(IO_WITH_METADATA_HELP_TEXT)s %(USING_METADATA_TAGS_REF)s.
+            <p>{io_with_metadata_help_text} {using_metadata_tags}.
             For instance, if you have a metadata tag named
             "Plate", you can create a per-plate folder by selecting one the subfolder options
             and then specifying the subfolder name as "\g&lt;Plate&gt;". The module will
             substitute the metadata values for the current image set for any metadata tags in the
-            folder name.%(USING_METADATA_HELP_REF)s.</p>
+            folder name.{using_metadata_help}.</p>
             <p>If the subfolder does not exist when the pipeline is run, CellProfiler will
             create it.</p>
             <p>If you are creating nested subfolders using the sub-folder options, you can
             specify the additional folders separated with slashes. For example, "Outlines/Plate1" will create
             a "Plate1" folder in the "Outlines" folder, which in turn is under the Default
             Input/Output Folder. The use of a forward slash ("/") as a folder separator will
-            avoid ambiguity between the various operating systems.</p>""" % globals())
+            avoid ambiguity between the various operating systems.</p>""".format(**{
+                'io_folder_choice_help_text': cellprofiler.preferences.IO_FOLDER_CHOICE_HELP_TEXT,
+                'io_with_metadata_help_text': cellprofiler.preferences.IO_WITH_METADATA_HELP_TEXT,
+                'using_metadata_tags': cellprofiler.gui.help.USING_METADATA_TAGS_REF,
+                'using_metadata_help': cellprofiler.gui.help.USING_METADATA_HELP_REF
+            })
+        )
 
         # TODO:
         self.bit_depth = cellprofiler.setting.Choice(
@@ -270,11 +300,17 @@ class SaveImages(cellprofiler.module.Module):
                                                                   globals())
 
         self.overwrite = cellprofiler.setting.Binary(
-                "Overwrite existing files without warning?", False, doc="""
-            Select <i>%(cellprofiler.setting.YES)s</i> to automatically overwrite a file if it already exists.
-            Select <i>%(cellprofiler.setting.NO)s</i> to be prompted for confirmation first.
+            "Overwrite existing files without warning?",
+            False,
+            doc="""
+            Select <i>{yes}</i> to automatically overwrite a file if it already exists.
+            Select <i>{no}</i> to be prompted for confirmation first.
             <p>If you are running the pipeline on a computing cluster,
-            select <i>%(cellprofiler.setting.YES)s</i> since you will not be able to intervene and answer the confirmation prompt.</p>""" % globals())
+            select <i>{yes}</i> since you will not be able to intervene and answer the confirmation prompt.</p>""".format(**{
+                'yes': cellprofiler.setting.YES,
+                'no': cellprofiler.setting.NO
+            })
+        )
 
         self.when_to_save = cellprofiler.setting.Choice(
                 "When to save",
@@ -294,15 +330,18 @@ class SaveImages(cellprofiler.module.Module):
             </ul> """ % globals())
 
         self.rescale = cellprofiler.setting.Binary(
-                "Rescale the images? ", False, doc="""
+            "Rescale the images? ",
+            False,
+            doc="""
             <i>(Used only when saving non-MAT file images)</i><br>
-            Select <i>%(cellprofiler.setting.YES)s</i> if you want the image to occupy the full dynamic range of the bit
+            Select <i>{}</i> if you want the image to occupy the full dynamic range of the bit
             depth you have chosen. For example, if you save an image to an 8-bit file, the
             smallest grayscale value will be mapped to 0 and the largest value will be mapped
             to 2<sup>8</sup>-1 = 255.
             <p>This will increase the contrast of the output image but will also effectively
             stretch the image data, which may not be desirable in some
-            circumstances. See <b>RescaleIntensity</b> for other rescaling options.</p>""" % globals())
+            circumstances. See <b>RescaleIntensity</b> for other rescaling options.</p>""".format(cellprofiler.setting.YES)
+        )
 
         self.gray_or_color = cellprofiler.setting.Choice(
                 "Save as grayscale or color image?",
@@ -331,8 +370,10 @@ class SaveImages(cellprofiler.module.Module):
             <a href="http://www.scipy.org/Cookbook/Matplotlib/Show_colormaps">here</a>.""")
 
         self.update_file_names = cellprofiler.setting.Binary(
-                "Record the file and path information to the saved image?", False, doc="""
-            Select <i>%(cellprofiler.setting.YES)s</i> to store filename and pathname data for each of the new files created
+            "Record the file and path information to the saved image?",
+            False,
+            doc="""
+            Select <i>{}</i> to store filename and pathname data for each of the new files created
             via this module as a per-image measurement.
             <p>Instances in which this information may be useful include:
             <ul>
@@ -342,11 +383,15 @@ class SaveImages(cellprofiler.module.Module):
             the saved images to be displayed along with the original images.</li>
             <li>Allowing downstream modules (e.g., <b>CreateWebPage</b>) to access
             the newly saved files.</li>
-            </ul></p>""" % globals())
+            </ul></p>""".format(cellprofiler.setting.YES)
+        )
 
         self.create_subdirectories = cellprofiler.setting.Binary(
-                "Create subfolders in the output folder?", False, doc="""
-            Select <i>%(cellprofiler.setting.YES)s</i> to create subfolders to match the input image folder structure.""" % globals())
+            "Create subfolders in the output folder?",
+            False,
+            doc="""
+            Select <i>{}</i> to create subfolders to match the input image folder structure.""".format(cellprofiler.setting.YES)
+        )
 
         self.root_dir = cellprofiler.setting.DirectoryPath(
                 "Base image folder", doc="""

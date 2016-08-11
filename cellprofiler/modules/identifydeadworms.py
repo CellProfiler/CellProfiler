@@ -110,14 +110,20 @@ class IdentifyDeadWorms(cellprofiler.module.Module):
             after rotating it by 180&deg;.""")
 
         self.wants_automatic_distance = cellprofiler.setting.Binary(
-                "Automatically calculate distance parameters?", True, doc="""
+            "Automatically calculate distance parameters?",
+            True,
+            doc="""
             This setting determines whether or not
             <b>IdentifyDeadWorms</b> automatically calculates the parameters
             used to determine whether two found-worm centers belong to the
             same worm.
-            <p>Select <i>%(cellprofiler.setting.YES)s</i> to have <b>IdentifyDeadWorms</b>
+            <p>Select <i>{yes}</i> to have <b>IdentifyDeadWorms</b>
             automatically calculate the distance from the worm length
-            and width. Select <i>%(cellprofiler.setting.NO)s</i> to set the distances manually.</p>""" % globals())
+            and width. Select <i>{no}</i> to set the distances manually.</p>""".format(**{
+                'yes': cellprofiler.setting.YES,
+                'no': cellprofiler.setting.NO
+            })
+        )
 
         self.space_distance = cellprofiler.setting.Float(
                 "Spatial distance", 5, minval=1, doc="""

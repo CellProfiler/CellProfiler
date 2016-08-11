@@ -77,19 +77,27 @@ class LoadSingleImage(cellprofiler.module.Module):
 
         """
         self.directory = cellprofiler.setting.DirectoryPath(
-                "Input image file location", support_urls=True, doc='''
+            "Input image file location",
+            support_urls=True,
+            doc='''
             Select the folder containing the image(s) to be loaded. Generally,
             it is best to store the image you want to load in either the Default Input or
             Output Folder, so that the correct image is loaded into the pipeline
-            and typos are avoided. %(IO_FOLDER_CHOICE_HELP_TEXT)s
+            and typos are avoided. {io_folder_choice_help_text}
 
-            <p>%(IO_WITH_METADATA_HELP_TEXT)s %(USING_METADATA_TAGS_REF)s For instance,
+            <p>{io_with_metadata_help_text} {using_metadata_tags} For instance,
             if you have a "Plate" metadata tag, and your single files are
             organized in subfolders named with the "Plate" tag, you can select one of the
             subfolder options and then specify a subfolder name of "\g&lt;Plate&gt;"
             to get the files from the subfolder associated with that image's plate. The module will
             substitute the metadata values for the current image set for any metadata tags in the
-            folder name. %(USING_METADATA_HELP_REF)s.</p>''' % globals())
+            folder name. {using_metadata_help}.</p>'''.format(**{
+                'io_folder_choice_help_text': cellprofiler.preferences.IO_FOLDER_CHOICE_HELP_TEXT,
+                'io_with_metadata_help_text': cellprofiler.preferences.IO_WITH_METADATA_HELP_TEXT,
+                'using_metadata_tags': cellprofiler.gui.help.USING_METADATA_TAGS_REF,
+                'using_metadata_help': cellprofiler.gui.help.USING_METADATA_HELP_REF
+            })
+        )
 
         self.file_settings = []
         self.add_file(can_remove=False)
@@ -104,7 +112,9 @@ class LoadSingleImage(cellprofiler.module.Module):
         def get_directory_fn():
             return self.directory.get_absolute_path()
 
-        group.append("file_name", cellprofiler.setting.FilenameText(
+        group.append(
+            "file_name",
+            cellprofiler.setting.FilenameText(
                 FILE_TEXT,
                 cellprofiler.setting.NONE,
                 metadata=True,
@@ -115,18 +125,24 @@ class LoadSingleImage(cellprofiler.module.Module):
                       ("BMP - Windows Bitmap (*.bmp)", "*.bmp"),
                       ("Compuserve GIF file (*.gif)", "*.gif"),
                       ("MATLAB image (*.mat)", "*.mat"),
-                      ("All files (*.*)", "*.*")], doc="""
-                    The filename can be constructed in one of two ways:
-                    <ul>
-                    <li>As a fixed filename (e.g., <i>Exp1_D03f00d0.tif</i>). </li>
-                    <li>Using the metadata associated with an image set in
-                    <b>LoadImages</b> or <b>LoadData</b>. This is especially useful
-                    if you want your output given a unique label according to the
-                    metadata corresponding to an image group. The name of the metadata
-                    to substitute is included in a special tag format embedded
-                    in your file specification. %(USING_METADATA_TAGS_REF)s%(USING_METADATA_HELP_REF)s.</li>
-                    </ul>
-                    <p>Keep in mind that in either case, the image file extension, if any, must be included.""" % globals()))
+                      ("All files (*.*)", "*.*")],
+                doc="""
+                The filename can be constructed in one of two ways:
+                <ul>
+                <li>As a fixed filename (e.g., <i>Exp1_D03f00d0.tif</i>). </li>
+                <li>Using the metadata associated with an image set in
+                <b>LoadImages</b> or <b>LoadData</b>. This is especially useful
+                if you want your output given a unique label according to the
+                metadata corresponding to an image group. The name of the metadata
+                to substitute is included in a special tag format embedded
+                in your file specification. {using_metadata_tags}{using_metadata_help}.</li>
+                </ul>
+                <p>Keep in mind that in either case, the image file extension, if any, must be included.""".format(**{
+                    'using_metadata_tags': cellprofiler.gui.help.USING_METADATA_TAGS_REF,
+                    'using_metadata_help': cellprofiler.gui.help.USING_METADATA_HELP_REF
+                })
+            )
+        )
 
         group.append("image_objects_choice", cellprofiler.setting.Choice(
                 'Load as images or objects?', cellprofiler.modules.loadimages.IO_ALL, doc="""
@@ -154,21 +170,30 @@ class LoadSingleImage(cellprofiler.module.Module):
                     Enter the name of the image that will be loaded.
                     You can use this name to select the image in downstream modules.'''))
 
-        group.append("rescale", cellprofiler.setting.Binary(
-                "Rescale intensities?", True, doc="""
-                    <i>(Used only if an image is output)</i><br>
-                    This option determines whether image metadata should be
-                    used to rescale the image's intensities. Some image formats
-                    save the maximum possible intensity value along with the pixel data.
-                    For instance, a microscope might acquire images using a 12-bit
-                    A/D converter which outputs intensity values between zero and 4095,
-                    but stores the values in a field that can take values up to 65535.
-                    <p>Select <i>%(cellprofiler.setting.YES)s</i> to rescale the image intensity so that
-                    saturated values are rescaled to 1.0 by dividing all pixels
-                    in the image by the maximum possible intensity value. </p>
-                    <p>Select <i>%(cellprofiler.setting.NO)s</i> to ignore the image metadata and rescale the image
-                    to 0 &ndash; 1.0 by dividing by 255 or 65535, depending on the number
-                    of bits used to store the image.</p>""" % globals()))
+        group.append(
+            "rescale",
+            cellprofiler.setting.Binary(
+                "Rescale intensities?",
+                True,
+                doc="""
+                <i>(Used only if an image is output)</i><br>
+                This option determines whether image metadata should be
+                used to rescale the image's intensities. Some image formats
+                save the maximum possible intensity value along with the pixel data.
+                For instance, a microscope might acquire images using a 12-bit
+                A/D converter which outputs intensity values between zero and 4095,
+                but stores the values in a field that can take values up to 65535.
+                <p>Select <i>{yes}</i> to rescale the image intensity so that
+                saturated values are rescaled to 1.0 by dividing all pixels
+                in the image by the maximum possible intensity value. </p>
+                <p>Select <i>{no}</i> to ignore the image metadata and rescale the image
+                to 0 &ndash; 1.0 by dividing by 255 or 65535, depending on the number
+                of bits used to store the image.</p>""".format(**{
+                    'yes': cellprofiler.setting.YES,
+                    'no': cellprofiler.setting.NO
+                })
+            )
+        )
 
         group.append("objects_name", cellprofiler.setting.ObjectNameProvider(
                 'Name this loaded object',
@@ -176,11 +201,17 @@ class LoadSingleImage(cellprofiler.module.Module):
                 doc="""<i>(Used only if objects are output)</i><br>
                     This is the name for the objects loaded from your image"""))
 
-        group.append("wants_outlines", cellprofiler.setting.Binary(
-                "Retain outlines of loaded objects?", False, doc="""
-                    <i>(Used only if objects are output)</i><br>
-                    Select <i>%(cellprofiler.setting.YES)s</i> if you want to save an image of the outlines
-                    of the loaded objects.""" % globals()))
+        group.append(
+            "wants_outlines",
+            cellprofiler.setting.Binary(
+                "Retain outlines of loaded objects?",
+                False,
+                doc="""
+                <i>(Used only if objects are output)</i><br>
+                Select <i>{}</i> if you want to save an image of the outlines
+                of the loaded objects.""".format(cellprofiler.setting.YES)
+            )
+        )
 
         group.append("outlines_name", cellprofiler.setting.OutlineNameProvider(
                 'Name the outlines',

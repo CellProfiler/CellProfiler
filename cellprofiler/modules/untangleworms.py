@@ -186,15 +186,22 @@ class UntangleWorms(cellprofiler.module.Module):
     def create_settings(self):
         """Create the settings that parameterize the module"""
         self.mode = cellprofiler.setting.Choice(
-                "Train or untangle worms?", [MODE_UNTANGLE, MODE_TRAIN], doc="""
+            "Train or untangle worms?",
+            [MODE_UNTANGLE, MODE_TRAIN],
+            doc="""
             <b>UntangleWorms</b> has two modes:
             <ul>
-            <li><i>%(MODE_TRAIN)s</i> creates one training set per image group,
+            <li><i>{train}</i> creates one training set per image group,
             using all of the worms in the training set as examples. It then writes
             the training file at the end of each image group.</li>
-            <li><i>%(MODE_UNTANGLE)s</i> uses the training file to untangle images of worms.</li>
+            <li><i>{untangle}</i> uses the training file to untangle images of worms.</li>
             </ul>
-            %(USING_METADATA_GROUPING_HELP_REF)s""" % globals())
+            {using_metadata_grouping_help}""".format(**{
+                'train': MODE_TRAIN,
+                'untangle': MODE_UNTANGLE,
+                'using_metadata_grouping_help': cellprofiler.gui.help.USING_METADATA_GROUPING_HELP_REF
+            })
+        )
 
         self.image_name = cellprofiler.setting.ImageNameSubscriber(
                 "Select the input binary image", cellprofiler.setting.NONE, doc="""
@@ -228,9 +235,17 @@ class UntangleWorms(cellprofiler.module.Module):
             these pixels in the measurements of both worms.""" % globals())
 
         self.wants_overlapping_outlines = cellprofiler.setting.Binary(
-                "Retain outlines of the overlapping objects?", False, doc="""
-            <i>(Used only if "%(MODE_UNTANGLE)s" mode and "%(OO_BOTH)s" or "%(OO_WITH_OVERLAP)s" overlap style are selected)</i> <br>
-            %(RETAINING_OUTLINES_HELP)s""" % globals())
+            "Retain outlines of the overlapping objects?",
+            False,
+            doc="""
+            <i>(Used only if "{untangle}" mode and "{both}" or "{with_overlap}" overlap style are selected)</i> <br>
+            {retaining_outlines_help}""".format(**{
+                'untangle': MODE_UNTANGLE,
+                'both': OO_BOTH,
+                'with_overlap': OO_WITH_OVERLAP,
+                'retaining_outlines_help': cellprofiler.gui.help.RETAINING_OUTLINES_HELP
+            })
+        )
 
         self.overlapping_outlines_colormap = cellprofiler.setting.Colormap(
                 "Outline colormap?", doc="""
@@ -257,9 +272,15 @@ class UntangleWorms(cellprofiler.module.Module):
             measurements of either worm.""" % globals())
 
         self.wants_nonoverlapping_outlines = cellprofiler.setting.Binary(
-                "Retain outlines of the non-overlapping worms?", False,
-                """<i>(Used only if "%(MODE_UNTANGLE)s" mode and "%(OO_BOTH)s" or "%(OO_WITH_OVERLAP)s" overlap style are selected)</i> <br>
-                %(RETAINING_OUTLINES_HELP)s""" % globals())
+                "Retain outlines of the non-overlapping worms?",
+                False,
+                doc="""<i>(Used only if "{untangle}" mode and "{both}" or "{with_overlap}" overlap style are selected)</i> <br>
+                {retaining_outlines_help}""".format(**{
+                'untangle': MODE_UNTANGLE,
+                'both': OO_BOTH,
+                'with_overlap': OO_WITH_OVERLAP,
+                'retaining_outlines_help': cellprofiler.gui.help.RETAINING_OUTLINES_HELP
+            }))
 
         self.nonoverlapping_outlines_name = cellprofiler.setting.OutlineNameProvider(
                 "Name the non-overlapped outlines image",
@@ -269,11 +290,12 @@ class UntangleWorms(cellprofiler.module.Module):
             with the overlapping sections removed.""" % globals())
 
         self.training_set_directory = cellprofiler.setting.DirectoryPath(
-                "Training set file location",
-                support_urls=True,
-                allow_metadata=False, doc="""
+            "Training set file location",
+            support_urls=True,
+            allow_metadata=False,
+            doc="""
             Select the folder containing the training set to be loaded.
-            %(IO_FOLDER_CHOICE_HELP_TEXT)s
+            {}
             <p>An additional option is the following:
             <ul>
             <li><i>URL</i>: Use the path part of a URL. For instance, your
@@ -282,7 +304,9 @@ class UntangleWorms(cellprofiler.module.Module):
             To access this file, you would choose <i>URL</i> and enter
             <code>http://my_institution.edu/server/my_username/</code>
             as the path location.</li>
-            </ul></p>""" % globals())
+            </ul></p>""".format(cellprofiler.preferences.IO_FOLDER_CHOICE_HELP_TEXT)
+        )
+
         self.training_set_directory.dir_choice = cellprofiler.preferences.DEFAULT_OUTPUT_FOLDER_NAME
 
         def get_directory_fn():
@@ -303,11 +327,17 @@ class UntangleWorms(cellprofiler.module.Module):
                       ("All files (*.*)", "*.*")])
 
         self.wants_training_set_weights = cellprofiler.setting.Binary(
-                "Use training set weights?", True, doc="""
-            Select <i>%(cellprofiler.setting.YES)s</i> to use the overlap and leftover
+            "Use training set weights?",
+            True,
+            doc="""
+            Select <i>{yes}</i> to use the overlap and leftover
             weights from the training set.
-            <p>Select <i>%(cellprofiler.setting.NO)s</i> to override
-            these weights with user-specified values.</p>""" % globals())
+            <p>Select <i>{no}</i> to override
+            these weights with user-specified values.</p>""".format(**{
+                'yes': cellprofiler.setting.YES,
+                'no': cellprofiler.setting.NO
+            })
+        )
 
         self.override_overlap_weight = cellprofiler.setting.Float(
                 "Overlap weight", 5, 0, doc="""

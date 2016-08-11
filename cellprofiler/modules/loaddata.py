@@ -298,9 +298,11 @@ class LoadData(cellprofiler.module.Module):
 
     def create_settings(self):
         self.csv_directory = cellprofiler.setting.DirectoryPath(
-                "Input data file location", allow_metadata=False, support_urls=True,
-                doc="""Select the folder containing the CSV file to be loaded.
-            %(IO_FOLDER_CHOICE_HELP_TEXT)s
+            "Input data file location",
+            allow_metadata=False,
+            support_urls=True,
+            doc="""Select the folder containing the CSV file to be loaded.
+            {}
             <p>An additional option is the following:
             <ul>
             <li><i>URL</i>: Use the path part of a URL. For instance, an example .CSV file
@@ -308,7 +310,7 @@ class LoadData(cellprofiler.module.Module):
             To access this file, you would choose <i>URL</i> and enter
             <i>http://cellprofiler.org/svnmirror/ExampleImages/ExampleSBSImages</i>
             as the path location.</li>
-            </ul></p>""" % globals())
+            </ul></p>""".format(cellprofiler.preferences.IO_FOLDER_CHOICE_HELP_TEXT))
 
         def get_directory_fn():
             """Get the directory for the CSV file name"""
@@ -331,24 +333,34 @@ class LoadData(cellprofiler.module.Module):
         self.browse_csv_button = cellprofiler.setting.DoSomething(
                 "Press to view CSV file contents", "View...", self.browse_csv)
 
-        self.wants_images = cellprofiler.setting.Binary("Load images based on this data?", True, doc="""
-            Select <i>%(cellprofiler.setting.YES)s</i> to have <b>LoadData</b> load images using the <i>Image_FileName</i> field and the
-            <i>Image_PathName</i> fields (the latter is optional).""" % globals())
+        self.wants_images = cellprofiler.setting.Binary(
+            "Load images based on this data?",
+            True,
+            doc="""
+            Select <i>{}</i> to have <b>LoadData</b> load images using the <i>Image_FileName</i> field and the
+            <i>Image_PathName</i> fields (the latter is optional).""".format(cellprofiler.setting.YES)
+        )
 
         self.rescale = cellprofiler.setting.Binary(
-                "Rescale intensities?", True, doc="""
+            "Rescale intensities?",
+            True,
+            doc="""
             This option determines whether image metadata should be
             used to rescale the image's intensities. Some image formats
             save the maximum possible intensity value along with the pixel data.
             For instance, a microscope might acquire images using a 12-bit
             A/D converter which outputs intensity values between zero and 4095,
             but stores the values in a field that can take values up to 65535.
-            <p>Select <i>%(cellprofiler.setting.YES)s</i> to rescale the image intensity so that
+            <p>Select <i>{yes}</i> to rescale the image intensity so that
             saturated values are rescaled to 1.0 by dividing all pixels
             in the image by the maximum possible intensity value. </p>
-            <p>Select <i>%(cellprofiler.setting.NO)s</i> to ignore the image metadata and rescale the image
+            <p>Select <i>{no}</i> to ignore the image metadata and rescale the image
             to 0 &ndash; 1.0 by dividing by 255 or 65535, depending on the number
-            of bits used to store the image.</p>""" % globals())
+            of bits used to store the image.</p>""".format(**{
+                'yes': cellprofiler.setting.YES,
+                'no': cellprofiler.setting.NO
+            })
+        )
 
         self.image_directory = cellprofiler.setting.DirectoryPath(
                 "Base image location",
@@ -365,12 +377,15 @@ class LoadData(cellprofiler.module.Module):
             </ul>""")
 
         self.wants_image_groupings = cellprofiler.setting.Binary(
-                "Group images by metadata?", False, doc="""
-            Select <i>%(cellprofiler.setting.YES)s</i> to break the image sets in an experiment into groups
+            "Group images by metadata?",
+            False,
+            doc="""
+            Select <i>{}</i> to break the image sets in an experiment into groups
             that can be processed by different nodes on a computing cluster. Each set of
             files that share your selected metadata tags will be processed
             together. See <b>CreateBatchFiles</b> for details on submitting a
-            CellProfiler pipeline to a computing cluster for processing.""" % globals())
+            CellProfiler pipeline to a computing cluster for processing.""".format(cellprofiler.setting.YES)
+        )
 
         self.metadata_fields = cellprofiler.setting.MultiChoice(
                 "Select metadata tags for grouping", None, doc="""
@@ -381,11 +396,13 @@ class LoadData(cellprofiler.module.Module):
             images that share the same [<i>Run</i>,<i>Plate</i>] pair of tags.""")
 
         self.wants_rows = cellprofiler.setting.Binary(
-                "Process just a range of rows?",
-                False, doc="""
-            Select <i>%(cellprofiler.setting.YES)s</i> if you want to process a subset of the rows in the CSV file.
+            "Process just a range of rows?",
+            False,
+            doc="""
+            Select <i>{}</i> if you want to process a subset of the rows in the CSV file.
             Rows are numbered starting at 1 (but do not count the header line).
-            <b>LoadData</b> will process up to and including the end row.""" % globals())
+            <b>LoadData</b> will process up to and including the end row.""".format(cellprofiler.setting.YES)
+        )
 
         self.row_range = cellprofiler.setting.IntegerRange(
                 "Rows to process",

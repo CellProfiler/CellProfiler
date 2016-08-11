@@ -42,18 +42,26 @@ class IdentifyObjectsManually(cellprofiler.modules.identify.Identify):
             selection user interface.""")
 
         self.objects_name = cellprofiler.setting.ObjectNameProvider(
-                "Name the objects to be identified", "Cells", doc="""
+            "Name the objects to be identified",
+            "Cells",
+            doc="""
             What do you want to call the objects
             that you identify using this module? You can use this name to
-            refer to your objects in subsequent modules.""")
+            refer to your objects in subsequent modules."""
+        )
 
-        self.wants_outlines = cellprofiler.setting.Binary(
-                "Retain outlines of the identified objects?", False, doc="""
-            %(RETAINING_OUTLINES_HELP)s""" % globals())
+        if __name__ == '__main__':
+            self.wants_outlines = cellprofiler.setting.Binary(
+                "Retain outlines of the identified objects?",
+                False,
+                doc=cellprofiler.gui.help.RETAINING_OUTLINES_HELP
+            )
 
         self.outlines_name = cellprofiler.setting.OutlineNameProvider(
-                "Name the outlines", "CellOutlines", doc="""
-            %(NAMING_OUTLINES_HELP)s""" % globals())
+                "Name the outlines",
+            "CellOutlines",
+            doc=cellprofiler.gui.help.NAMING_OUTLINES_HELP
+        )
 
     def settings(self):
         """The settings as saved in the pipeline"""

@@ -51,12 +51,17 @@ class OverlayOutlines(cellprofiler.module.Module):
 
     def create_settings(self):
         self.blank_image = cellprofiler.setting.Binary(
-                "Display outlines on a blank image?",
-                False, doc="""
-            Select <i>%(cellprofiler.setting.YES)s</i> to produce an
+            "Display outlines on a blank image?",
+            False,
+            doc="""
+            Select <i>{yes}</i> to produce an
             image of the outlines on a black background.
-            <p>Select <i>%(cellprofiler.setting.NO)s</i>, the module will overlay the
-            outlines on an image of your choosing.</p>""" % globals())
+            <p>Select <i>{no}</i>, the module will overlay the
+            outlines on an image of your choosing.</p>""".format(**{
+                'yes': cellprofiler.setting.YES,
+                'no': cellprofiler.setting.NO
+            })
+        )
 
         self.image_name = cellprofiler.setting.ImageNameSubscriber(
                 "Select image on which to display outlines", cellprofiler.setting.NONE, doc="""

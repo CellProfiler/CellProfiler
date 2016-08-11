@@ -114,7 +114,7 @@ Possible values are
 <li><b>{none:d}</b>: The object was not linked to a parent.</li>
 <li><b>{phase_1:d}</b>: The object was linked to a parent in the previous frame.</li>
 <li><b>{split:d}</b>: The object is linked as the start of a split path.</li>
-<li><b>{d}</b>: The object was linked to its parent as a daughter of
+<li><b>{mitosis:d}</b>: The object was linked to its parent as a daughter of
 a mitotic pair.</li>
 <li><b>{gap:d}</b>: The object was linked to a parent in a frame prior to the
 previous frame (a gap).</li>

@@ -788,7 +788,7 @@ class FlagImage(cellprofiler.module.Module):
                     measurement_source = setting_values[idx]
                     new_setting_values += [measurement_source]
                     new_setting_values += setting_values[(idx + 1):(idx + N_SETTINGS_PER_MEASUREMENT_V2)] + \
-                                          [cellprofiler.setting.DirectoryPath.static_join_string(cellprofiler.setting.DEFAULT_INPUT_FOLDER_NAME,
+                                          [cellprofiler.setting.DirectoryPath.static_join_string(cellprofiler.preferences.DEFAULT_INPUT_FOLDER_NAME,
                                                                                                  cellprofiler.setting.NONE), "rules.txt"]
                     idx += N_SETTINGS_PER_MEASUREMENT_V2
             setting_values = new_setting_values

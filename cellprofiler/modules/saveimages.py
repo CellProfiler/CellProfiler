@@ -801,15 +801,15 @@ class SaveImages(cellprofiler.module.Module):
     def file_name_feature(self):
         """The file name measurement for the output file"""
         if self.save_image_or_figure == IF_OBJECTS:
-            return '_'.join((C_OBJECTS_FILE_NAME, self.objects_name.value))
-        return '_'.join((C_FILE_NAME, self.image_name.value))
+            return '_'.join((cellprofiler.measurement.C_OBJECTS_FILE_NAME, self.objects_name.value))
+        return '_'.join((cellprofiler.measurement.C_FILE_NAME, self.image_name.value))
 
     @property
     def path_name_feature(self):
         """The path name measurement for the output file"""
         if self.save_image_or_figure == IF_OBJECTS:
-            return '_'.join((C_OBJECTS_PATH_NAME, self.objects_name.value))
-        return '_'.join((C_PATH_NAME, self.image_name.value))
+            return '_'.join((cellprofiler.measurement.C_OBJECTS_PATH_NAME, self.objects_name.value))
+        return '_'.join((cellprofiler.measurement.C_PATH_NAME, self.image_name.value))
 
     @property
     def url_feature(self):
@@ -821,12 +821,12 @@ class SaveImages(cellprofiler.module.Module):
     @property
     def source_file_name_feature(self):
         """The file name measurement for the exemplar disk image"""
-        return '_'.join((C_FILE_NAME, self.file_image_name.value))
+        return '_'.join((cellprofiler.measurement.C_FILE_NAME, self.file_image_name.value))
 
     def source_path(self, workspace):
         """The path for the image data, or its first parent with a path"""
         if self.file_name_method.value == FN_FROM_IMAGE:
-            path_feature = '%s_%s' % (C_PATH_NAME, self.file_image_name.value)
+            path_feature = '%s_%s' % (cellprofiler.measurement.C_PATH_NAME, self.file_image_name.value)
             assert workspace.measurements.has_feature(cellprofiler.measurement.IMAGE, path_feature), \
                 "Image %s does not have a path!" % self.file_image_name.value
             return workspace.measurements.get_current_image_measurement(path_feature)
@@ -1186,10 +1186,10 @@ class SaveImagesDirectoryPath(cellprofiler.setting.DirectoryPath):
         """
         super(SaveImagesDirectoryPath, self).__init__(
                 text, dir_choices=[
-                    cellprofiler.setting.DEFAULT_OUTPUT_FOLDER_NAME, cellprofiler.setting.DEFAULT_INPUT_FOLDER_NAME,
-                    PC_WITH_IMAGE, cellprofiler.setting.ABSOLUTE_FOLDER_NAME,
-                    cellprofiler.setting.DEFAULT_OUTPUT_SUBFOLDER_NAME,
-                    cellprofiler.setting.DEFAULT_INPUT_SUBFOLDER_NAME], doc=doc)
+                    cellprofiler.preferences.DEFAULT_OUTPUT_FOLDER_NAME, cellprofiler.preferences.DEFAULT_INPUT_FOLDER_NAME,
+                    PC_WITH_IMAGE, cellprofiler.preferences.ABSOLUTE_FOLDER_NAME,
+                    cellprofiler.preferences.DEFAULT_OUTPUT_SUBFOLDER_NAME,
+                    cellprofiler.preferences.DEFAULT_INPUT_SUBFOLDER_NAME], doc=doc)
         self.file_image_name = file_image_name
 
     def get_absolute_path(self, measurements=None, image_set_index=None):
@@ -1212,12 +1212,12 @@ class SaveImagesDirectoryPath(cellprofiler.setting.DirectoryPath):
             dir_choice = PC_WITH_IMAGE
         elif dir_choice in (PC_CUSTOM, PC_WITH_METADATA):
             if custom_path.startswith('.'):
-                dir_choice = cellprofiler.setting.DEFAULT_OUTPUT_SUBFOLDER_NAME
+                dir_choice = cellprofiler.preferences.DEFAULT_OUTPUT_SUBFOLDER_NAME
             elif custom_path.startswith('&'):
-                dir_choice = cellprofiler.setting.DEFAULT_INPUT_SUBFOLDER_NAME
+                dir_choice = cellprofiler.preferences.DEFAULT_INPUT_SUBFOLDER_NAME
                 custom_path = '.' + custom_path[1:]
             else:
-                dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
+                dir_choice = cellprofiler.preferences.ABSOLUTE_FOLDER_NAME
         else:
             return cellprofiler.setting.DirectoryPath.upgrade_setting(value)
         return cellprofiler.setting.DirectoryPath.static_join_string(dir_choice, custom_path)

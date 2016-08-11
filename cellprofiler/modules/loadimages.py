@@ -1248,9 +1248,9 @@ class LoadImages(cellprofiler.module.Module):
             location = setting_values[self.SLOT_LOCATION]
             if location == cellprofiler.preferences.ABSOLUTE_FOLDER_NAME:
                 if custom_location.startswith('.'):
-                    location = cellprofiler.setting.DEFAULT_INPUT_SUBFOLDER_NAME
+                    location = cellprofiler.preferences.DEFAULT_INPUT_SUBFOLDER_NAME
                 elif custom_location.startswith('&'):
-                    location = cellprofiler.setting.DEFAULT_OUTPUT_SUBFOLDER_NAME
+                    location = cellprofiler.preferences.DEFAULT_OUTPUT_SUBFOLDER_NAME
                     custom_location = "." + custom_location[1:]
             location = cellprofiler.setting.DirectoryPath.static_join_string(
                     location, custom_location)

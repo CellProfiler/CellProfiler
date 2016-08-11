@@ -91,7 +91,7 @@ MeasureNeurons:[module_num:1|svn_version:\'8401\'|variable_revision_number:1|sho
             module.intensity_image_name.value = INTENSITY_IMAGE_NAME
         if wants_graph:
             module.wants_neuron_graph.value = True
-            module.directory.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
+            module.directory.dir_choice = cellprofiler.preferences.ABSOLUTE_FOLDER_NAME
             module.directory.custom_path = self.temp_dir
             module.edge_file_name.value = EDGE_FILE
             module.vertex_file_name.value = VERTEX_FILE

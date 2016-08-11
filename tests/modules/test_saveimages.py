@@ -168,7 +168,7 @@ SaveImages:[module_num:60|svn_version:\'9438\'|variable_revision_number:4|show_w
         self.assertEqual(module.file_name_suffix, "_outlines")
         self.assertEqual(module.file_format, cellprofiler.modules.saveimages.FF_PNG)
         self.assertEqual(module.pathname.dir_choice,
-                         cellprofiler.setting.DEFAULT_INPUT_SUBFOLDER_NAME)
+                         cellprofiler.preferences.DEFAULT_INPUT_SUBFOLDER_NAME)
         self.assertEqual(module.pathname.custom_path,
                          "./\\g<Directory>/\\g<Subdirectory>")
         self.assertEqual(module.bit_depth, cellprofiler.modules.saveimages.BIT_DEPTH_8)
@@ -317,12 +317,12 @@ SaveImages:[module_num:6|svn_version:\'9507\'|variable_revision_number:5|show_wi
         wts = [cellprofiler.modules.saveimages.WS_EVERY_CYCLE, cellprofiler.modules.saveimages.WS_FIRST_CYCLE,
                cellprofiler.modules.saveimages.WS_LAST_CYCLE, cellprofiler.modules.saveimages.WS_LAST_CYCLE,
                cellprofiler.modules.saveimages.WS_EVERY_CYCLE, cellprofiler.modules.saveimages.WS_EVERY_CYCLE]
-        dir_choice = [cellprofiler.setting.DEFAULT_OUTPUT_FOLDER_NAME,
-                      cellprofiler.setting.DEFAULT_INPUT_FOLDER_NAME,
+        dir_choice = [cellprofiler.preferences.DEFAULT_OUTPUT_FOLDER_NAME
+                      cellprofiler.preferences.DEFAULT_INPUT_FOLDER_NAME,
                       cellprofiler.modules.saveimages.PC_WITH_IMAGE,
-                      cellprofiler.setting.ABSOLUTE_FOLDER_NAME,
-                      cellprofiler.setting.DEFAULT_OUTPUT_SUBFOLDER_NAME,
-                      cellprofiler.setting.DEFAULT_INPUT_SUBFOLDER_NAME]
+                      cellprofiler.preferences.ABSOLUTE_FOLDER_NAME,
+                      cellprofiler.preferences.DEFAULT_OUTPUT_SUBFOLDER_NAME,
+                      cellprofiler.preferences.DEFAULT_INPUT_SUBFOLDER_NAME]
         rescale = [ False, False, True, False, False, False]
         cm = [ "gray", "copper", "gray", "gray", "gray", "gray" ]
         up = [ True, False, True, False, False, False]
@@ -392,7 +392,7 @@ SaveImages:[module_num:1|svn_version:\'10244\'|variable_revision_number:6|show_w
         self.assertFalse(module.wants_file_name_suffix)
         self.assertEqual(module.file_name_suffix, "MySuffix")
         self.assertEqual(module.file_format, cellprofiler.modules.saveimages.FF_BMP)
-        self.assertEqual(module.pathname.dir_choice, cellprofiler.setting.DEFAULT_OUTPUT_SUBFOLDER_NAME)
+        self.assertEqual(module.pathname.dir_choice, cellprofiler.preferences.DEFAULT_OUTPUT_SUBFOLDER_NAME)
         self.assertEqual(module.pathname.custom_path, r"DNA_\g<WellRow>")
         self.assertEqual(module.bit_depth, cellprofiler.modules.saveimages.BIT_DEPTH_8)
         self.assertFalse(module.overwrite)
@@ -994,7 +994,7 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
         save_images.wants_file_name_suffix.value = True
         save_images.file_name_suffix.value ='OUT'
         save_images.file_format.value = cellprofiler.modules.saveimages.FF_TIF
-        save_images.pathname.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
+        save_images.pathname.dir_choice = cellprofiler.preferences.ABSOLUTE_FOLDER_NAME
         save_images.pathname.custom_path = self.custom_directory
         save_images.when_to_save.value = cellprofiler.modules.saveimages.WS_EVERY_CYCLE
         save_images.update_file_names.value = True
@@ -1053,7 +1053,7 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
         save_images.wants_file_name_suffix.value = True
         save_images.file_name_suffix.value ='OUT'
         save_images.file_format.value = cellprofiler.modules.saveimages.FF_PNG
-        save_images.pathname.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
+        save_images.pathname.dir_choice = cellprofiler.preferences.ABSOLUTE_FOLDER_NAME
         save_images.pathname.custom_path = self.custom_directory
         save_images.when_to_save.value = cellprofiler.modules.saveimages.WS_EVERY_CYCLE
         save_images.update_file_names.value = True
@@ -1112,7 +1112,7 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
         save_images.wants_file_name_suffix.value = True
         save_images.file_name_suffix.value ='OUT'
         save_images.file_format.value = cellprofiler.modules.saveimages.FF_JPG
-        save_images.pathname.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
+        save_images.pathname.dir_choice = cellprofiler.preferences.ABSOLUTE_FOLDER_NAME
         save_images.pathname.custom_path = self.custom_directory
         save_images.when_to_save.value = cellprofiler.modules.saveimages.WS_EVERY_CYCLE
         save_images.update_file_names.value = True
@@ -1172,7 +1172,7 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
         save_images.file_name_method.value = cellprofiler.modules.saveimages.FN_SINGLE_NAME
         save_images.single_file_name.value ='img1OUT'
         save_images.file_format.value = cellprofiler.modules.saveimages.FF_TIF
-        save_images.pathname.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
+        save_images.pathname.dir_choice = cellprofiler.preferences.ABSOLUTE_FOLDER_NAME
         save_images.pathname.custom_path = self.custom_directory
         save_images.when_to_save.value = cellprofiler.modules.saveimages.WS_FIRST_CYCLE
         save_images.update_file_names.value = False
@@ -1223,7 +1223,7 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
         save_images.wants_file_name_suffix.value = True
         save_images.file_name_suffix.value ='OUT'
         save_images.file_format.value = cellprofiler.modules.saveimages.FF_PNG
-        save_images.pathname.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
+        save_images.pathname.dir_choice = cellprofiler.preferences.ABSOLUTE_FOLDER_NAME
         save_images.pathname.custom_path = self.custom_directory
         save_images.when_to_save.value = cellprofiler.modules.saveimages.WS_EVERY_CYCLE
         #
@@ -1267,7 +1267,7 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
         module.file_name_method.value = cellprofiler.modules.saveimages.FN_SINGLE_NAME
         module.single_file_name.value = "img1"
         module.file_format.value = cellprofiler.modules.saveimages.FF_TIFF
-        module.pathname.dir_choice = cellprofiler.setting.DEFAULT_INPUT_SUBFOLDER_NAME
+        module.pathname.dir_choice = cellprofiler.preferences.DEFAULT_INPUT_SUBFOLDER_NAME
         module.pathname.custom_path = "test"
         module.run(workspace)
         self.assertTrue(os.path.exists(img_filename))
@@ -1283,7 +1283,7 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
         module.file_name_method.value = cellprofiler.modules.saveimages.FN_SINGLE_NAME
         module.single_file_name.value = "img1"
         module.file_format.value = cellprofiler.modules.saveimages.FF_TIFF
-        module.pathname.dir_choice = cellprofiler.setting.DEFAULT_OUTPUT_SUBFOLDER_NAME
+        module.pathname.dir_choice = cellprofiler.preferences.DEFAULT_OUTPUT_SUBFOLDER_NAME
         module.pathname.custom_path = "test"
         module.run(workspace)
         self.assertTrue(os.path.exists(img_filename))
@@ -1299,7 +1299,7 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
         module.file_name_method.value = cellprofiler.modules.saveimages.FN_SINGLE_NAME
         module.single_file_name.value = "img1"
         module.file_format.value = cellprofiler.modules.saveimages.FF_TIF
-        module.pathname.dir_choice = cellprofiler.setting.DEFAULT_OUTPUT_SUBFOLDER_NAME
+        module.pathname.dir_choice = cellprofiler.preferences.DEFAULT_OUTPUT_SUBFOLDER_NAME
         module.pathname.custom_path = "\\g<T>"
         module.run(workspace)
         self.assertTrue(os.path.exists(img_filename))
@@ -1418,7 +1418,7 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
             self.assertEqual(path, orig_path)
             return '/imaging/analysis'
         module = cellprofiler.modules.saveimages.SaveImages()
-        module.pathname.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
+        module.pathname.dir_choice = cellprofiler.preferences.ABSOLUTE_FOLDER_NAME
         module.pathname.custom_path = orig_path
         module.prepare_to_create_batch(None, fn_alter_path)
         self.assertEqual(module.pathname.custom_path, '/imaging/analysis')
@@ -1431,7 +1431,7 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
         cmodule = cellprofiler.modules.createbatchfiles.CreateBatchFiles()
         module = cellprofiler.modules.saveimages.SaveImages()
         module.pathname.custom_path = '.\\\\\\g<Test>Outlines\\\\g<Run>_\\g<Plate>'
-        module.pathname.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
+        module.pathname.dir_choice = cellprofiler.preferences.ABSOLUTE_FOLDER_NAME
         module.prepare_to_create_batch(None, cmodule.alter_path)
         self.assertEqual(module.pathname.custom_path, './\\g<Test>Outlines/g<Run>_\\g<Plate>')
 
@@ -1442,7 +1442,7 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
             if path == orig_path:
                 return '/imaging/analysis'
         module = cellprofiler.modules.saveimages.SaveImages()
-        module.root_dir.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
+        module.root_dir.dir_choice = cellprofiler.preferences.ABSOLUTE_FOLDER_NAME
         module.root_dir.custom_path = orig_path
         module.create_subdirectories.value = True
         module.prepare_to_create_batch(None, fn_alter_path)
@@ -1645,7 +1645,7 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
         module.save_image_or_figure.value = cellprofiler.modules.saveimages.IF_MOVIE
         module.image_name.value = IMAGE_NAME
         module.file_image_name.value = IMAGE_NAME
-        module.pathname.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
+        module.pathname.dir_choice = cellprofiler.preferences.ABSOLUTE_FOLDER_NAME
         module.pathname.custom_path = self.custom_directory
         module.file_name_method.value = cellprofiler.modules.saveimages.FN_SINGLE_NAME
         module.single_file_name.value = FILE_NAME
@@ -1807,7 +1807,7 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
             module.module_num = 1
             module.save_image_or_figure.value = cellprofiler.modules.saveimages.IF_IMAGE
             module.image_name.value = IMAGE_NAME
-            module.pathname.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
+            module.pathname.dir_choice = cellprofiler.preferences.ABSOLUTE_FOLDER_NAME
             module.pathname.custom_path = self.custom_directory
             module.file_name_method.value = cellprofiler.modules.saveimages.FN_SINGLE_NAME
             module.single_file_name.value = FILE_NAME+str(i)
@@ -1854,7 +1854,7 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
             module.module_num = 1
             module.save_image_or_figure.value = cellprofiler.modules.saveimages.IF_IMAGE
             module.image_name.value = IMAGE_NAME
-            module.pathname.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
+            module.pathname.dir_choice = cellprofiler.preferences.ABSOLUTE_FOLDER_NAME
             module.pathname.custom_path = self.custom_directory
             module.file_name_method.value = cellprofiler.modules.saveimages.FN_SINGLE_NAME
             module.single_file_name.value = FILE_NAME+str(i)
@@ -1895,7 +1895,7 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
             assert isinstance(module, cellprofiler.modules.saveimages.SaveImages)
             module.save_image_or_figure.value = image_type
             module.image_name.value = IMAGE_NAME
-            module.pathname.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
+            module.pathname.dir_choice = cellprofiler.preferences.ABSOLUTE_FOLDER_NAME
             module.pathname.custom_path = self.custom_directory
             module.file_name_method.value = cellprofiler.modules.saveimages.FN_SINGLE_NAME
             module.single_file_name.value = FILE_NAME
@@ -1926,7 +1926,7 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
         assert isinstance(module, cellprofiler.modules.saveimages.SaveImages)
         module.update_file_names.value = True
         module.gray_or_color.value = cellprofiler.modules.saveimages.GC_GRAYSCALE
-        module.pathname.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
+        module.pathname.dir_choice = cellprofiler.preferences.ABSOLUTE_FOLDER_NAME
         module.pathname.custom_path = self.custom_directory
         module.file_name_method.value = cellprofiler.modules.saveimages.FN_SINGLE_NAME
         module.file_format.value = cellprofiler.modules.saveimages.FF_TIFF
@@ -1954,7 +1954,7 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
         assert isinstance(module, cellprofiler.modules.saveimages.SaveImages)
         module.update_file_names.value = True
         module.gray_or_color.value = cellprofiler.modules.saveimages.GC_GRAYSCALE
-        module.pathname.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
+        module.pathname.dir_choice = cellprofiler.preferences.ABSOLUTE_FOLDER_NAME
         module.pathname.custom_path = self.custom_directory
         module.file_name_method.value = cellprofiler.modules.saveimages.FN_SINGLE_NAME
         module.file_format.value = cellprofiler.modules.saveimages.FF_TIFF
@@ -1982,7 +1982,7 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
         assert isinstance(module, cellprofiler.modules.saveimages.SaveImages)
         module.update_file_names.value = True
         module.gray_or_color.value = cellprofiler.modules.saveimages.GC_GRAYSCALE
-        module.pathname.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
+        module.pathname.dir_choice = cellprofiler.preferences.ABSOLUTE_FOLDER_NAME
         module.pathname.custom_path = self.custom_directory
         module.file_name_method.value = cellprofiler.modules.saveimages.FN_SINGLE_NAME
         module.file_format.value = cellprofiler.modules.saveimages.FF_PNG
@@ -2010,7 +2010,7 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
         assert isinstance(module, cellprofiler.modules.saveimages.SaveImages)
         module.update_file_names.value = True
         module.gray_or_color.value = cellprofiler.modules.saveimages.GC_COLOR
-        module.pathname.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
+        module.pathname.dir_choice = cellprofiler.preferences.ABSOLUTE_FOLDER_NAME
         module.pathname.custom_path = self.custom_directory
         module.file_name_method.value = cellprofiler.modules.saveimages.FN_SINGLE_NAME
         module.file_format.value = cellprofiler.modules.saveimages.FF_PNG
@@ -2055,7 +2055,7 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
         assert isinstance(module, cellprofiler.modules.saveimages.SaveImages)
         module.update_file_names.value = True
         module.gray_or_color.value = cellprofiler.modules.saveimages.GC_GRAYSCALE
-        module.pathname.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
+        module.pathname.dir_choice = cellprofiler.preferences.ABSOLUTE_FOLDER_NAME
         module.pathname.custom_path = self.custom_directory
         module.file_name_method.value = cellprofiler.modules.saveimages.FN_SINGLE_NAME
         module.file_format.value = cellprofiler.modules.saveimages.FF_TIFF
@@ -2096,7 +2096,7 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
         assert isinstance(module, cellprofiler.modules.saveimages.SaveImages)
         module.update_file_names.value = True
         module.gray_or_color.value = cellprofiler.modules.saveimages.GC_GRAYSCALE
-        module.pathname.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
+        module.pathname.dir_choice = cellprofiler.preferences.ABSOLUTE_FOLDER_NAME
         module.pathname.custom_path = self.custom_directory
         module.file_name_method.value = cellprofiler.modules.saveimages.FN_SINGLE_NAME
         module.file_format.value = cellprofiler.modules.saveimages.FF_TIFF

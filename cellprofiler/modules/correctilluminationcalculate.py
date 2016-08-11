@@ -338,28 +338,41 @@ class CorrectIlluminationCalculate(cellprofiler.module.Module):
             }))
 
         self.spline_bg_mode = cellprofiler.setting.Choice(
-                "Background mode",
-                [centrosome.bg_compensate.MODE_AUTO, centrosome.bg_compensate.MODE_DARK, centrosome.bg_compensate.MODE_BRIGHT, centrosome.bg_compensate.MODE_GRAY], doc="""
-            <i>(Used only if %(SM_SPLINES)s are selected for the smoothing method and
+            "Background mode",
+            [
+                centrosome.bg_compensate.MODE_AUTO,
+                centrosome.bg_compensate.MODE_DARK,
+                centrosome.bg_compensate.MODE_BRIGHT,
+                centrosome.bg_compensate.MODE_GRAY
+            ],
+            doc="""
+            <i>(Used only if {splines} are selected for the smoothing method and
             spline parameters are not calculated automatically)</i><br>
             This setting determines which pixels are background
             and which are foreground.<br>
-            <ul><li><i>%(MODE_AUTO)s</i>: Determine the mode from the image.
-            This will set the mode to %(MODE_DARK)s if most of the pixels are
-            dark, %(MODE_BRIGHT)s if most of the pixels are bright and
-            %(MODE_GRAY)s if there are relatively few dark and light pixels
+            <ul><li><i>{auto}</i>: Determine the mode from the image.
+            This will set the mode to {dark} if most of the pixels are
+            dark, {bright} if most of the pixels are bright and
+            {gray} if there are relatively few dark and light pixels
             relative to the number of mid-level pixels</li>
-            <li><i>%(MODE_DARK)s</i>: Fit the spline to the darkest pixels
+            <li><i>{dark}</i>: Fit the spline to the darkest pixels
             in the image, excluding brighter pixels from consideration.
             This may be appropriate for a fluorescent image.
             </li>
-            <li><i>%(MODE_BRIGHT)s</i>: Fit the spline to the lightest pixels
+            <li><i>{bright}</i>: Fit the spline to the lightest pixels
             in the image, excluding the darker pixels. This may be appropriate
             for a histologically stained image.</li>
-            <li><i>%(MODE_GRAY)s</i>: Fit the spline to mid-range pixels,
+            <li><i>{gray}</i>: Fit the spline to mid-range pixels,
             excluding both dark and light pixels. This may be appropriate
             for a brightfield image where the objects of interest have
-            light and dark features.</li></ul>""" % globals())
+            light and dark features.</li></ul>""".format(**{
+                'auto': centrosome.bg_compensate.MODE_AUTO,
+                'dark': centrosome.bg_compensate.MODE_DARK,
+                'bright': centrosome.bg_compensate.MODE_BRIGHT,
+                'gray': centrosome.bg_compensate.MODE_GRAY,
+                'splines': SM_SPLINES
+            })
+        )
 
         self.spline_threshold = cellprofiler.setting.Float(
                 "Background threshold", 2, minval=.1, maxval=5.0, doc="""

@@ -76,15 +76,15 @@ class MaskImage(cellprofiler.module.Module):
                 """This option reverses the foreground/background relationship of
                 the mask.
                 <ul>
-                <li>Select <i>{cellprofiler.setting.no}</i> to produce the mask from the foregound
+                <li>Select <i>{no}</i> to produce the mask from the foregound
                 (white portion) of the masking image or the area within the masking
                 objects.</li>
-                <li>Select <i>{cellprofiler.setting.yes}</i>to instead produce the mask from the
+                <li>Select <i>{yes}</i>to instead produce the mask from the
                 <i>background</i> (black portions) of the masking image or the area
                 <i>outside</i> the masking objects.</li>
                 </ul>""".format(**{
-                    'cellprofiler.setting.no': cellprofiler.setting.NO,
-                    'cellprofiler.setting.yes': cellprofiler.setting.YES
+                    'no': cellprofiler.setting.NO,
+                    'yes': cellprofiler.setting.YES
                 })
         )
 

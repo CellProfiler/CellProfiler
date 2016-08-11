@@ -380,7 +380,7 @@ class MeasureImageQuality(cellprofiler.module.Module):
                 "Typical fraction of the image covered by objects", 0.1, 0, 1, doc="""
             <i>(Used only if threshold are calculated and {} thresholding is chosen)</i> <br>
             Enter the approximate fraction of the typical image in the set
-            that is covered by objects.""".format(TM_MOG)))
+            that is covered by objects.""".format(centrosome.threshold.TM_MOG)))
 
         group.append("two_class_otsu", cellprofiler.setting.Choice(
                 'Two-class or three-class thresholding?',

@@ -77,8 +77,8 @@ LoadSingleImage:[module_num:4|svn_version:\'Unknown\'|variable_revision_number:1
         self.assertEqual(len(pipeline.modules()), 4)
 
         dir_choice = [
-            cellprofiler.setting.DEFAULT_INPUT_FOLDER_NAME, cellprofiler.setting.DEFAULT_OUTPUT_FOLDER_NAME,
-            cellprofiler.setting.ABSOLUTE_FOLDER_NAME, cellprofiler.setting.ABSOLUTE_FOLDER_NAME]
+            cellprofiler.preferences.DEFAULT_INPUT_FOLDER_NAME, cellprofiler.preferences.DEFAULT_OUTPUT_FOLDER_NAME
+            cellprofiler.preferences.ABSOLUTE_FOLDER_NAME, cellprofiler.preferences.ABSOLUTE_FOLDER_NAME]
         for i, module in enumerate(pipeline.modules()):
             self.assertTrue(isinstance(module, cellprofiler.modules.loadsingleimage.LoadSingleImage))
             self.assertEqual(module.directory.dir_choice, dir_choice[i])
@@ -147,8 +147,8 @@ LoadSingleImage:[module_num:4|svn_version:\'Unknown\'|variable_revision_number:2
                 "ExampleSBSImages/Channel1-01-A-01.tif")
 
         dir_choice = [
-            cellprofiler.setting.DEFAULT_INPUT_FOLDER_NAME, cellprofiler.setting.DEFAULT_OUTPUT_FOLDER_NAME,
-            cellprofiler.setting.ABSOLUTE_FOLDER_NAME, cellprofiler.setting.URL_FOLDER_NAME]
+            cellprofiler.preferences.DEFAULT_INPUT_FOLDER_NAME, cellprofiler.preferences.DEFAULT_OUTPUT_FOLDER_NAME
+            cellprofiler.preferences.ABSOLUTE_FOLDER_NAME, cellprofiler.preferences.URL_FOLDER_NAME]
         for i, module in enumerate(pipeline.modules()):
             self.assertTrue(isinstance(module, cellprofiler.modules.loadsingleimage.LoadSingleImage))
             self.assertEqual(module.directory.dir_choice, dir_choice[i])
@@ -358,7 +358,7 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
         pipeline = cellprofiler.pipeline.Pipeline()
         lsi = cellprofiler.modules.loadsingleimage.LoadSingleImage()
         lsi.module_num = 1
-        lsi.directory.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
+        lsi.directory.dir_choice = cellprofiler.preferences.ABSOLUTE_FOLDER_NAME
         lsi.directory.custom_path = path
         lsi.file_settings[0].image_name.value = self.get_image_name(0)
         lsi.file_settings[0].file_name.value = filename
@@ -367,7 +367,7 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
         li.module_num = 2
         pipeline.add_module(li)
         li.match_method.value = cellprofiler.modules.loadimages.MS_EXACT_MATCH
-        li.location.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
+        li.location.dir_choice = cellprofiler.preferences.ABSOLUTE_FOLDER_NAME
         li.location.custom_path = path
         li.images[0].common_text.value = "Channel2-"
         m = cellprofiler.measurement.Measurements()

@@ -869,7 +869,7 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
 
         module = cellprofiler.modules.flagimage.FlagImage()
         rd = module.flags[0].measurement_settings[0].rules_directory
-        rd.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
+        rd.dir_choice = cellprofiler.preferences.ABSOLUTE_FOLDER_NAME
         rd.custom_path = orig_path
         module.prepare_to_create_batch(None, fn_alter_path)
         self.assertEqual(rd.custom_path, '/imaging/analysis')

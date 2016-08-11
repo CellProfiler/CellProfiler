@@ -50,7 +50,7 @@ import sys
 import cellprofiler.measurement
 import cellprofiler.module
 import cellprofiler.pipeline
-import cellprofiler.preferences.get_headless
+import cellprofiler.preferences
 import h5py
 import numpy
 

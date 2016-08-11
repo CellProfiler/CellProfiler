@@ -106,7 +106,7 @@ ExportToCellH5:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:1|
         module.plate_metadata.value = cellprofiler.measurement.FTR_PLATE
         module.well_metadata.value = cellprofiler.measurement.FTR_WELL
         module.site_metadata.value = cellprofiler.measurement.FTR_SITE
-        module.directory.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
+        module.directory.dir_choice = cellprofiler.preferences.ABSOLUTE_FOLDER_NAME
         module.directory.custom_path = self.temp_dir
         module.module_num = 1
         pipeline = MyPipeline()

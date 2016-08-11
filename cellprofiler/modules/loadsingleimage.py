@@ -248,7 +248,7 @@ class LoadSingleImage(cellprofiler.module.Module):
     def visible_settings(self):
         result = [self.directory]
         for file_setting in self.file_settings:
-            url_based = (self.directory.dir_choice == cellprofiler.setting.URL_FOLDER_NAME)
+            url_based = (self.directory.dir_choice == cellprofiler.preferences.URL_FOLDER_NAME)
             file_setting.file_name.set_browsable(not url_based)
             file_setting.file_name.text = URL_TEXT if url_based else FILE_TEXT
             result += [
@@ -351,16 +351,16 @@ class LoadSingleImage(cellprofiler.module.Module):
                     #
                     # Add measurements
                     #
-                    path_name_category = C_PATH_NAME
-                    file_name_category = C_FILE_NAME
-                    url_category = C_URL
+                    path_name_category = cellprofiler.measurement.C_PATH_NAME
+                    file_name_category = cellprofiler.measurement.C_FILE_NAME
+                    url_category = cellprofiler.measurement.C_URL
                 else:
                     #
                     # Add measurements
                     #
-                    path_name_category = C_OBJECTS_PATH_NAME
-                    file_name_category = C_OBJECTS_FILE_NAME
-                    url_category = C_OBJECTS_URL
+                    path_name_category = cellprofiler.measurement.C_OBJECTS_PATH_NAME
+                    file_name_category = cellprofiler.measurement.C_OBJECTS_FILE_NAME
+                    url_category = cellprofiler.measurement.C_OBJECTS_URL
 
                 url = cellprofiler.modules.loadimages.pathname2url(os.path.join(root, dict[image_name]))
                 for category, value in (
@@ -380,10 +380,10 @@ class LoadSingleImage(cellprofiler.module.Module):
         # Hack: if LoadSingleImage is first, no paths are populated
         #
         if self.file_wants_images(self.file_settings[0]):
-            m_path = "_".join((C_PATH_NAME,
+            m_path = "_".join((cellprofiler.measurement.C_PATH_NAME,
                                self.file_settings[0].image_name.value))
         else:
-            m_path = "_".join((C_OBJECTS_PATH_NAME,
+            m_path = "_".join((cellprofiler.measurement.C_OBJECTS_PATH_NAME,
                                self.file_settings[0].objects_name.value))
         if m.get_current_image_measurement(m_path) is None:
             self.prepare_run(workspace)
@@ -395,8 +395,8 @@ class LoadSingleImage(cellprofiler.module.Module):
                 file_setting.objects_name.value
             m_path, m_file, m_md5_digest, m_scaling, m_height, m_width = [
                 "_".join((c, image_name)) for c in (
-                    C_PATH_NAME if wants_images else C_OBJECTS_PATH_NAME,
-                    C_FILE_NAME if wants_images else C_OBJECTS_FILE_NAME,
+                    cellprofiler.measurement.C_PATH_NAME if wants_images else cellprofiler.measurement.C_OBJECTS_PATH_NAME,
+                    cellprofiler.measurement.C_FILE_NAME if wants_images else cellprofiler.measurement.C_OBJECTS_FILE_NAME,
                     cellprofiler.modules.loadimages.C_MD5_DIGEST, cellprofiler.modules.loadimages.C_SCALING, cellprofiler.modules.loadimages.C_HEIGHT, cellprofiler.modules.loadimages.C_WIDTH)]
             pathname = m.get_current_image_measurement(m_path)
             filename = m.get_current_image_measurement(m_file)
@@ -457,8 +457,8 @@ class LoadSingleImage(cellprofiler.module.Module):
         for file_setting in self.file_settings:
             if file_setting.image_objects_choice == cellprofiler.modules.loadimages.IO_IMAGES:
                 image_name = file_setting.image_name.value
-                path_name_category = C_PATH_NAME
-                file_name_category = C_FILE_NAME
+                path_name_category = cellprofiler.measurement.C_PATH_NAME
+                file_name_category = cellprofiler.measurement.C_FILE_NAME
                 columns += [
                     (cellprofiler.measurement.IMAGE, "_".join((cellprofiler.modules.loadimages.C_MD5_DIGEST, image_name)), cellprofiler.measurement.COLTYPE_VARCHAR_FORMAT % 32),
                     (cellprofiler.measurement.IMAGE, "_".join((cellprofiler.modules.loadimages.C_SCALING, image_name)), cellprofiler.measurement.COLTYPE_FLOAT),
@@ -466,8 +466,8 @@ class LoadSingleImage(cellprofiler.module.Module):
                     (cellprofiler.measurement.IMAGE, "_".join((cellprofiler.modules.loadimages.C_WIDTH, image_name)), cellprofiler.measurement.COLTYPE_INTEGER)]
             else:
                 image_name = file_setting.objects_name.value
-                path_name_category = C_OBJECTS_PATH_NAME
-                file_name_category = C_OBJECTS_FILE_NAME
+                path_name_category = cellprofiler.measurement.C_OBJECTS_PATH_NAME
+                file_name_category = cellprofiler.measurement.C_OBJECTS_FILE_NAME
                 columns += cellprofiler.modules.identify.get_object_measurement_columns(image_name)
 
             columns += [(cellprofiler.measurement.IMAGE, '_'.join((feature, image_name)), coltype)
@@ -493,9 +493,9 @@ class LoadSingleImage(cellprofiler.module.Module):
         result = []
         if object_name == cellprofiler.measurement.IMAGE:
             if self.wants_images:
-                result += [C_FILE_NAME, cellprofiler.modules.loadimages.C_MD5_DIGEST, C_PATH_NAME, cellprofiler.modules.loadimages.C_SCALING, cellprofiler.modules.loadimages.C_HEIGHT, cellprofiler.modules.loadimages.C_WIDTH]
+                result += [cellprofiler.measurement.C_FILE_NAME, cellprofiler.modules.loadimages.C_MD5_DIGEST, cellprofiler.measurement.C_PATH_NAME, cellprofiler.modules.loadimages.C_SCALING, cellprofiler.modules.loadimages.C_HEIGHT, cellprofiler.modules.loadimages.C_WIDTH]
             if self.wants_objects:
-                result += [cellprofiler.modules.identify.C_COUNT, C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME]
+                result += [cellprofiler.modules.identify.C_COUNT, cellprofiler.measurement.C_OBJECTS_FILE_NAME, cellprofiler.measurement.C_OBJECTS_PATH_NAME]
         if any([True for file_setting in self.file_settings
                 if file_setting.image_objects_choice == cellprofiler.modules.loadimages.IO_OBJECTS and
                                 object_name == file_setting.objects_name]):
@@ -510,11 +510,11 @@ class LoadSingleImage(cellprofiler.module.Module):
         """
         result = []
         if object_name == cellprofiler.measurement.IMAGE:
-            if category in (C_FILE_NAME, cellprofiler.modules.loadimages.C_MD5_DIGEST, C_PATH_NAME, cellprofiler.modules.loadimages.C_SCALING, cellprofiler.modules.loadimages.C_HEIGHT, cellprofiler.modules.loadimages.C_WIDTH):
+            if category in (cellprofiler.measurement.C_FILE_NAME, cellprofiler.modules.loadimages.C_MD5_DIGEST, cellprofiler.measurement.C_PATH_NAME, cellprofiler.modules.loadimages.C_SCALING, cellprofiler.modules.loadimages.C_HEIGHT, cellprofiler.modules.loadimages.C_WIDTH):
                 result += [file_setting.image_name.value
                            for file_setting in self.file_settings
                            if file_setting.image_objects_choice == cellprofiler.modules.loadimages.IO_IMAGES]
-            if category in (C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME, cellprofiler.modules.identify.C_COUNT):
+            if category in (cellprofiler.measurement.C_OBJECTS_FILE_NAME, cellprofiler.measurement.C_OBJECTS_PATH_NAME, cellprofiler.modules.identify.C_COUNT):
                 result += [file_setting.objects_name.value
                            for file_setting in self.file_settings
                            if file_setting.image_objects_choice == cellprofiler.modules.loadimages.IO_OBJECTS]
@@ -681,7 +681,7 @@ class LoadSingleImage(cellprofiler.module.Module):
             # The first setting was blank in Matlab. Now it contains
             # the directory choice
             if setting_values[1] == '.':
-                new_setting_values[0] = cellprofiler.setting.DEFAULT_INPUT_FOLDER_NAME
+                new_setting_values[0] = cellprofiler.preferences.DEFAULT_INPUT_FOLDER_NAME
             elif setting_values[1] == '&':
                 new_setting_values[0] = cellprofiler.setting.DEFAULT_OUTPUT_FOLDER_NAME
             else:
@@ -700,17 +700,17 @@ class LoadSingleImage(cellprofiler.module.Module):
         #
         if variable_revision_number == 1 and not from_matlab:
             if setting_values[0].startswith("Default image"):
-                dir_choice = cellprofiler.setting.DEFAULT_INPUT_FOLDER_NAME
+                dir_choice = cellprofiler.preferences.DEFAULT_INPUT_FOLDER_NAME
                 custom_directory = setting_values[1]
             elif setting_values[0] in (DIR_CUSTOM_FOLDER, DIR_CUSTOM_WITH_METADATA):
                 custom_directory = setting_values[1]
                 if custom_directory[0] == ".":
-                    dir_choice = cellprofiler.setting.DEFAULT_INPUT_SUBFOLDER_NAME
+                    dir_choice = cellprofiler.preferences.DEFAULT_INPUT_SUBFOLDER_NAME
                 elif custom_directory[0] == "&":
-                    dir_choice = cellprofiler.setting.DEFAULT_OUTPUT_SUBFOLDER_NAME
+                    dir_choice = cellprofiler.preferences.DEFAULT_OUTPUT_SUBFOLDER_NAME
                     custom_directory = "." + custom_directory[1:]
                 else:
-                    dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
+                    dir_choice = cellprofiler.preferences.ABSOLUTE_FOLDER_NAME
             else:
                 dir_choice = setting_values[0]
                 custom_directory = setting_values[1]
@@ -728,7 +728,7 @@ class LoadSingleImage(cellprofiler.module.Module):
             # changes to DirectoryPath and URL handling
             dir = setting_values[0]
             dir_choice, custom_dir = cellprofiler.setting.DirectoryPath.split_string(dir)
-            if dir_choice == cellprofiler.setting.URL_FOLDER_NAME:
+            if dir_choice == cellprofiler.preferences.URL_FOLDER_NAME:
                 dir = cellprofiler.setting.DirectoryPath.static_join_string(dir_choice, '')
 
                 filenames = setting_values[1::2]

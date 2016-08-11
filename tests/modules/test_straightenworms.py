@@ -123,7 +123,7 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
             self.assertEqual(module.straightened_objects_name, "StraightenedWorms")
             self.assertEqual(module.width, 20)
             self.assertEqual(module.training_set_directory.dir_choice,
-                             cellprofiler.setting.DEFAULT_INPUT_FOLDER_NAME)
+                             cellprofiler.preferences.DEFAULT_INPUT_FOLDER_NAME)
             self.assertEqual(module.training_set_file_name, "TrainingSet.mat")
             self.assertEqual(len(module.images), 1)
             self.assertTrue(module.wants_measurements)
@@ -160,7 +160,7 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
             def __init__(self):
                 self.radii_from_training = radii
 
-        module.training_set_directory.dir_choice = cellprofiler.setting.URL_FOLDER_NAME
+        module.training_set_directory.dir_choice = cellprofiler.preferences.URL_FOLDER_NAME
         module.training_set_directory.custom_path = "http://www.cellprofiler.org"
         module.training_set_file_name.value = "TrainingSet.xml"
         module.training_params = {"TrainingSet.xml": (P(), "URL")}

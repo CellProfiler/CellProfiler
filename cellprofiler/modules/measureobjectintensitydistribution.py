@@ -245,7 +245,7 @@ class MeasureObjectIntensityDistribution(cellprofiler.module.Module):
                 asked to specify a maximum distance so that each object will have the
                 same measurements (which might be zero for small objects) and so that
                 the measurements can be taken without knowing the maximum object radius
-                before the run starts.</p>""".format(*{
+                before the run starts.</p>""".format(**{
                 'yes': cellprofiler.setting.YES,
                 'no': cellprofiler.setting.NO
             })))

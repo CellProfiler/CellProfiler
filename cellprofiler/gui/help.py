@@ -562,7 +562,7 @@ left-hand side of the CellProfiler window).</p>
 <ol>
 <li><p><i>Place analysis modules in a new pipeline.</i><br>
 <p>Choose image analysis modules to add to your pipeline by clicking the <i>Add</i>
-<img src="memory:{add_button }">&nbsp;button
+<img src="memory:{add_button}">&nbsp;button
 (located underneath the pipeline panel) or right-clicking in the pipeline panel
 itself and selecting a module from the
 pop-up box that appears.</p>
@@ -1386,7 +1386,7 @@ the location of the output file. Once specified, the user is then prompted to
 enter the desired settings. The settings behave identically as those from the
 corresponding module.</p>
 
-<p>Help for each <i>Data Tool</i> is available under <i>{data_too_help}</i> or the corresponding
+<p>Help for each <i>Data Tool</i> is available under <i>{data_tool_help}</i> or the corresponding
 module help.</p>""".format(**{
     'data_tool_help': DATA_TOOL_HELP_REF
 })
@@ -2144,7 +2144,7 @@ If there are multiple channels for each movie, this step may need to be performe
 <p>In this example, you could do the following:
 <ul>
 <li>Select "{manual_extraction}" as the method, "From file name" as the source, and
-<code>.*-(?P&lt;Well&gt;[A-P][0-9]{2})\.(?P&lt;Timepoint&gt;[0-9]{3})</code> as the regular expression.
+<code>{regexp}</code> as the regular expression.
 This step will extract the well ID and timepoint from each filename.</li>
 <li>Click the "Add" button to add another extraction method.</i>
 <li>In the new group of extraction settings, select "{manual_extraction}" as the method, "From folder name" as the source, and
@@ -2375,7 +2375,8 @@ process the slices in all stacks together as if they were constituents of only o
     'manual_extraction': X_MANUAL_EXTRACTION,
     'imported_extraction': X_IMPORTED_EXTRACTION,
     'add_button': MODULE_ADD_BUTTON,
-    'automatic_extraction': X_AUTOMATIC_EXTRACTION
+    'automatic_extraction': X_AUTOMATIC_EXTRACTION,
+    'regexp': ".*-(?P&lt;Well&gt;[A-P][0-9]{2})\.(?P&lt;Timepoint&gt;[0-9]{3})"
 })
 
 #########################################################

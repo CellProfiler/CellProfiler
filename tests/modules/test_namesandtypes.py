@@ -15,6 +15,7 @@ import cellprofiler.modules.loadimages
 import cellprofiler.modules.namesandtypes
 import cellprofiler.pipeline
 import cellprofiler.region
+import cellprofiler.utilities.url
 import cellprofiler.workspace
 import javabridge
 import numpy
@@ -1197,8 +1198,8 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         #
         current_path = os.path.abspath(os.curdir)
         target_path = os.path.join(tests.modules.example_images_directory(), *folders)
-        img_url = cellprofiler.modules.loadimages.pathname2url(os.path.join(current_path, aoi))
-        objects_url = cellprofiler.modules.loadimages.pathname2url(os.path.join(current_path, ooi))
+        img_url = cellprofiler.utilities.url.pathname2url(os.path.join(current_path, aoi))
+        objects_url = cellprofiler.utilities.url.pathname2url(os.path.join(current_path, ooi))
         pipeline.add_urls([img_url, objects_url])
         workspace.file_list.add_files_to_filelist([img_url, objects_url])
         #
@@ -1291,7 +1292,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         n.module_num = 1
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_module(n)
-        url = cellprofiler.modules.loadimages.pathname2url(path)
+        url = cellprofiler.utilities.url.pathname2url(path)
         pathname, filename = os.path.split(path)
         m = cellprofiler.measurement.Measurements()
         if load_as_type == cellprofiler.modules.namesandtypes.LOAD_AS_OBJECTS:
@@ -1356,7 +1357,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
             si.should_save_outlines.value = should_save_outlines
             si.save_outlines.value = outlines_name
 
-            url = cellprofiler.modules.loadimages.pathname2url(path)
+            url = cellprofiler.utilities.url.pathname2url(path)
             pathname, filename = os.path.split(path)
             if load_as_type == cellprofiler.modules.namesandtypes.LOAD_AS_OBJECTS:
                 url_feature = cellprofiler.measurement.C_OBJECTS_URL + "_" + name

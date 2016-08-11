@@ -19,6 +19,7 @@ import cellprofiler.modules.loadimages
 import cellprofiler.region
 import cellprofiler.pipeline
 import cellprofiler.preferences
+import cellprofiler.utilities.url
 import cellprofiler.utilities.version
 import cellprofiler.workspace
 import cpframe
@@ -1589,7 +1590,7 @@ class PipelineController(object):
     def on_pathlist_show(self, event=None):
         """Show the focused item's image"""
         from cellprofiler.gui.figure import show_image
-        from cellprofiler.modules.loadimages import url2pathname
+        from cellprofiler.utilities.url import url2pathname
         paths = self.__path_list_ctrl.get_paths(
             self.__path_list_ctrl.FLAG_FOCUS_ITEM_ONLY)
         if len(paths) == 0:
@@ -1712,7 +1713,7 @@ class PipelineController(object):
                     message[0] = "Processing " + pathname
 
                     if os.path.isfile(pathname):
-                        urls.append(cellprofiler.modules.loadimages.pathname2url(pathname))
+                        urls.append(cellprofiler.utilities.url.pathname2url(pathname))
                         if len(urls) > 100:
                             queue.put(urls)
                             urls = []
@@ -1722,7 +1723,7 @@ class PipelineController(object):
                                 if interrupt[0]:
                                     break
                                 path = os.path.join(dirpath, filename)
-                                urls.append(cellprofiler.modules.loadimages.pathname2url(path))
+                                urls.append(cellprofiler.utilities.url.pathname2url(path))
                                 message[0] = "Processing " + path
                                 if len(urls) > 100:
                                     queue.put(urls)
@@ -1838,7 +1839,7 @@ class PipelineController(object):
         """Handle an iteration of file walking"""
 
         hdf_file_list = self.__workspace.get_file_list()
-        file_list = [cellprofiler.modules.loadimages.pathname2url(os.path.join(dirpath, filename))
+        file_list = [cellprofiler.utilities.url.pathname2url(os.path.join(dirpath, filename))
                      for filename in filenames]
         hdf_file_list.add_files_to_filelist(file_list)
         self.__pipeline.add_urls(file_list)

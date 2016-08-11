@@ -30,6 +30,7 @@ import cellprofiler.modules
 import cellprofiler.modules.loadimages
 import cellprofiler.preferences
 import cellprofiler.setting
+import cellprofiler.utilities.url
 import cellprofiler.utilities.version
 import centrosome.cpmorphology
 import matplotlib
@@ -782,7 +783,7 @@ class SaveImages(cellprofiler.module.Module):
             filename = self.get_filename(workspace, make_dirs=False,
                                          check_overwrite=False)
             pn, fn = os.path.split(filename)
-            url = cellprofiler.modules.loadimages.pathname2url(filename)
+            url = cellprofiler.utilities.url.pathname2url(filename)
             workspace.measurements.add_measurement(cellprofiler.measurement.IMAGE,
                                                    self.file_name_feature,
                                                    fn,

@@ -65,9 +65,11 @@ import cellprofiler.pipeline
 import cellprofiler.preferences
 import cellprofiler.region
 import cellprofiler.setting
+import cellprofiler.utilities.url
 import centrosome.outline
 import numpy
 import scipy.io.matlab.mio
+import cellprofiler.utilities.url
 
 cached_file_lists = {}
 logger = logging.getLogger(__name__)
@@ -1843,7 +1845,7 @@ class LoadImages(cellprofiler.module.Module):
                     zip(self.images, image_set_files):
                 pathname = os.path.join(self.image_directory(), file_pathname)
                 path, filename = os.path.split(pathname)
-                url = pathname2url(os.path.abspath(pathname))
+                url = cellprofiler.utilities.url.pathname2url(os.path.abspath(pathname))
                 metadata = self.get_filename_metadata(image_settings, filename,
                                                       path)
                 image_set_count = starting_image_index
@@ -2182,7 +2184,7 @@ class LoadImages(cellprofiler.module.Module):
                        m.get_current_image_measurement(path_feature),
                        m.get_current_image_measurement(file_feature)]
                 url = m.get_measurement(cellprofiler.measurement.IMAGE, feature)
-                full_name = url2pathname(url.encode('utf-8'))
+                full_name = cellprofiler.utilities.url.url2pathname(url.encode('utf-8'))
                 path, filename = os.path.split(full_name)
                 rescale = channel.rescale.value
                 metadata = self.get_filename_metadata(fd, filename, path)
@@ -2372,7 +2374,7 @@ class LoadImages(cellprofiler.module.Module):
             def add_fn(feature, value):
                 d[feature] = value
         path, filename = os.path.split(full_path)
-        url = pathname2url(full_path)
+        url = cellprofiler.utilities.url.pathname2url(full_path)
         metadata = self.get_filename_metadata(image_settings, filename, path)
         for channel in image_settings.channels:
             if (channel_name is not None and
@@ -2403,7 +2405,7 @@ class LoadImages(cellprofiler.module.Module):
     def get_frame_count(self, pathname):
         """Return the # of frames in a movie"""
         if self.file_types in (FF_AVI_MOVIES, FF_OTHER_MOVIES, FF_STK_MOVIES):
-            url = pathname2url(pathname)
+            url = cellprofiler.utilities.url.pathname2url(pathname)
             xml = bioformats.formatreader.get_omexml_metadata(pathname)
             omexml = bioformats.omexml.OMEXML(xml)
             frame_count = omexml.image(0).Pixels.SizeT
@@ -3053,8 +3055,8 @@ class LoadImagesImageProviderBase(cellprofiler.image.AbstractImageProvider):
         pathname - path to file or base of URL
         filename - filename of file or last chunk of URL
         """
-        if pathname.startswith(FILE_SCHEME):
-            pathname = url2pathname(pathname)
+        if pathname.startswith(cellprofiler.utilities.url.FILE_SCHEME):
+            pathname = cellprofiler.utilities.url.url2pathname(pathname)
         self.__name = name
         self.__pathname = pathname
         self.__filename = filename
@@ -3063,15 +3065,15 @@ class LoadImagesImageProviderBase(cellprofiler.image.AbstractImageProvider):
         self.__cacheing_tried = False
         if pathname is None:
             self.__url = filename
-        elif any([pathname.startswith(s + ":") for s in PASSTHROUGH_SCHEMES]):
+        elif any([pathname.startswith(s + ":") for s in cellprofiler.utilities.url.PASSTHROUGH_SCHEMES]):
             if filename is not None:
                 self.__url = pathname + "/" + filename
             else:
                 self.__url = pathname
         elif filename is None:
-            self.__url = pathname2url(pathname)
+            self.__url = cellprofiler.utilities.url.pathname2url(pathname)
         else:
-            self.__url = pathname2url(os.path.join(pathname, filename))
+            self.__url = cellprofiler.utilities.url.pathname2url(os.path.join(pathname, filename))
 
     def get_name(self):
         return self.__name
@@ -3115,7 +3117,7 @@ class LoadImagesImageProviderBase(cellprofiler.image.AbstractImageProvider):
             if len(parsed_path.scheme) < 2:
                 raise IOError("Test for access to directory failed. Directory: %s" % path)
         if parsed_path.scheme == 'file':
-            self.__cached_file = url2pathname(path)
+            self.__cached_file = cellprofiler.utilities.url.url2pathname(path)
         elif self.is_matlab_file():
             #
             # urlretrieve uses the suffix of the path component of the URL
@@ -3294,7 +3296,7 @@ class LoadImagesImageProviderURL(LoadImagesImageProvider):
     def __init__(self, name, url, rescale=True,
                  series=None, index=None, channel=None):
         if url.lower().startswith("file:"):
-            path = url2pathname(url)
+            path = cellprofiler.utilities.url.url2pathname(url)
             pathname, filename = os.path.split(path)
         else:
             pathname = ""
@@ -3392,62 +3394,3 @@ def bad_sizes_warning(first_size, first_filename,
                   first_filename, first_size[1], first_size[0],
                   second_filename, second_size[1], second_size[0])
     return warning
-
-
-FILE_SCHEME = "file:"
-PASSTHROUGH_SCHEMES = ("http", "https", "ftp", "omero")
-
-
-def pathname2url(path):
-    """Convert the unicode path to a file: url"""
-    utf8_path = path.encode('utf-8')
-    if any([utf8_path.lower().startswith(x) for x in PASSTHROUGH_SCHEMES]):
-        return utf8_path
-    return FILE_SCHEME + urllib.pathname2url(utf8_path)
-
-
-def is_file_url(url):
-    return url.lower().startswith(FILE_SCHEME)
-
-
-def url2pathname(url):
-    if isinstance(url, unicode):
-        url = url.encode("utf-8")
-    if any([url.lower().startswith(x) for x in PASSTHROUGH_SCHEMES]):
-        return url
-    assert is_file_url(url)
-    utf8_url = urllib.url2pathname(url[len(FILE_SCHEME):])
-    return unicode(utf8_url, 'utf-8')
-
-
-def urlfilename(url):
-    """Return just the file part of a URL
-
-    For instance http://cellprofiler.org/linked_files/file%20has%20spaces.txt
-    has a file part of "file has spaces.txt"
-    """
-    if is_file_url(url):
-        return os.path.split(url2pathname(url))[1]
-    path = urlparse.urlparse(url)[2]
-    if "/" in path:
-        return urllib.unquote(path.rsplit("/", 1)[1])
-    else:
-        return urllib.unquote(path)
-
-
-def urlpathname(url):
-    """Return the path part of a URL
-
-    For instance, http://cellprofiler.org/Comma%2Cseparated/foo.txt
-    has a path of http://cellprofiler.org/Comma,separated
-
-    A file url has the normal sort of path that you'd expect.
-    """
-    if is_file_url(url):
-        return os.path.split(url2pathname(url))[0]
-    scheme, netloc, path = urlparse.urlparse(url)[:3]
-    path = urlparse.urlunparse([scheme, netloc, path, "", "", ""])
-    if "/" in path:
-        return urllib.unquote(path.rsplit("/", 1)[0])
-    else:
-        return urllib.unquote(path)

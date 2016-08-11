@@ -10,6 +10,7 @@ import cellprofiler.pipeline
 import cellprofiler.preferences
 import cellprofiler.setting
 import cellprofiler.utilities.hdf5_dict
+import cellprofiler.utilities.url
 import cellprofiler.workspace
 import javabridge
 
@@ -186,7 +187,7 @@ class Images(cellprofiler.module.Module):
                 return modpath[0] + ":" + modpath[1] + "/" + "/".join(
                         [urllib.quote(part) for part in modpath[2:]])
         path = os.path.join(*modpath)
-        return cellprofiler.modules.loadimages.pathname2url(path)
+        return cellprofiler.utilities.url.pathname2url(path)
 
     @staticmethod
     def url_to_modpath(url):

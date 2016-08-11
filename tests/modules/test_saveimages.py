@@ -18,6 +18,7 @@ import cellprofiler.preferences
 import cellprofiler.preferences
 import cellprofiler.region
 import cellprofiler.setting
+import cellprofiler.utilities.url
 import cellprofiler.workspace
 import matplotlib
 import numpy
@@ -2075,7 +2076,7 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
         self.assertEqual(m_pathname, os.path.split(filename)[0])
         feature = cellprofiler.modules.loadimages.C_OBJECTS_URL + "_" + OBJECTS_NAME
         m_url = m.get_current_image_measurement(feature)
-        self.assertEqual(m_url, cellprofiler.modules.loadimages.pathname2url(filename))
+        self.assertEqual(m_url, cellprofiler.utilities.url.pathname2url(filename))
         for i in range(2):
             im = bioformats.load_image(filename, index=i, rescale=False)
             o = o1 if 1 in numpy.unique(im) else o2

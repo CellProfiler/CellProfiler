@@ -11,6 +11,7 @@ import cellprofiler.preferences
 import cellprofiler.region
 import cellprofiler.setting
 import cellprofiler.setting
+import cellprofiler.utilities.url
 import cellprofiler.workspace
 import centrosome.cpmorphology
 import centrosome.outline
@@ -347,7 +348,7 @@ class EditObjectsManually(cellprofiler.identify.Identify):
         if new_or_existing_rb.GetSelection() == 1:
             provider = ObjectsImageProvider(
                     "InputObjects",
-                    cellprofiler.modules.loadimages.pathname2url(fullname),
+                    cellprofiler.utilities.url.pathname2url(fullname),
                     None, None)
             image = provider.provide_image(None)
             pixel_data = image.pixel_data

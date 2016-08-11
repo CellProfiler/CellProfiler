@@ -12,6 +12,7 @@ import cellprofiler.modules.images
 import cellprofiler.modules.loadimages
 import cellprofiler.pipeline
 import cellprofiler.setting
+import cellprofiler.utilities.url
 import javabridge
 
 __doc__ = """
@@ -697,7 +698,7 @@ class Metadata(cellprofiler.module.Module):
             else:
                 urls = self.pipeline.file_list
             if len(urls) > 0:
-                return cellprofiler.modules.loadimages.urlfilename(urls[0])
+                return cellprofiler.utilities.url.urlfilename(urls[0])
         return "PLATE_A01_s1_w11C78E18A-356E-48EC-B204-3F4379DC43AB.tif"
 
     def example_directory_fn(self):
@@ -710,7 +711,7 @@ class Metadata(cellprofiler.module.Module):
             else:
                 urls = self.pipeline.file_list
             if len(urls) > 0:
-                return cellprofiler.modules.loadimages.urlpathname(urls[0])
+                return cellprofiler.utilities.url.urlpathname(urls[0])
         return "/images/2012_01_12"
 
     def change_causes_prepare_run(self, setting):

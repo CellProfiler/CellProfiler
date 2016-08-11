@@ -15,6 +15,7 @@ import cellprofiler.modules.loadimages
 import cellprofiler.modules.namesandtypes
 import cellprofiler.pipeline
 import cellprofiler.preferences
+import cellprofiler.utilities.url
 import cellprofiler.utilities.zmqrequest
 import cellprofiler.worker
 import javabridge
@@ -988,7 +989,7 @@ def get_measurements_for_good_pipeline(nimages=1,
     for i in range(1, nimages + 1):
         filename = ("Channel2-%02d-%s-%02d.tif" %
                     (i, "ABCDEFGH"[int((i - 1) / 12)], ((i - 1) % 12) + 1))
-        url = cellprofiler.modules.loadimages.pathname2url(os.path.join(path, filename))
+        url = cellprofiler.utilities.url.pathname2url(os.path.join(path, filename))
         m[cellprofiler.measurement.IMAGE, cellprofiler.measurement.C_FILE_NAME + "_DNA", i] = filename
         m[cellprofiler.measurement.IMAGE, cellprofiler.measurement.C_PATH_NAME + "_DNA", i] = path
         m[cellprofiler.measurement.IMAGE, cellprofiler.measurement.C_URL + "_DNA", i] = url

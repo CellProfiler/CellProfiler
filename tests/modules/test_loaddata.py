@@ -19,6 +19,7 @@ import cellprofiler.pipeline
 import cellprofiler.preferences
 import cellprofiler.region
 import cellprofiler.setting
+import cellprofiler.utilities.url
 import cellprofiler.workspace
 import numpy
 import tests.modules
@@ -446,7 +447,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
         tests.modules.maybe_download_tesst_image(file_name)
         path = tests.modules.testimages_directory()
         pathname = os.path.join(path, file_name)
-        url = cellprofiler.modules.loadimages.pathname2url(pathname)
+        url = cellprofiler.utilities.url.pathname2url(pathname)
         ftrs = (cellprofiler.measurement.C_URL, cellprofiler.measurement.C_SERIES, cellprofiler.measurement.C_FRAME)
         channels = ("Channel1", "Channel2")
         header = ",".join([",".join(["_".join((ftr, channel)) for ftr in ftrs])
@@ -899,7 +900,7 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
         self.assertEqual(path, self.test_path)
         self.assertEqual(
                 m.get_measurement(cellprofiler.measurement.IMAGE, "URL_DNA", 1),
-                cellprofiler.modules.loaddata.cellprofiler.modules.loadimages.pathname2url(os.path.join(self.test_path, self.test_filename)))
+                cellprofiler.utilities.url.pathname2url(os.path.join(self.test_path, self.test_filename)))
         module.prepare_group(workspace, {}, [1])
         module.run(workspace)
         img = workspace.image_set.get_image("DNA", must_be_grayscale=True)
@@ -1042,7 +1043,7 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
             self.assertEqual(self.test_path, path_out)
             self.assertEqual(
                     m.get_measurement(cellprofiler.measurement.IMAGE, "URL_DNA", 1),
-                    cellprofiler.modules.loaddata.cellprofiler.modules.loadimages.pathname2url(os.path.join(self.test_path, self.test_filename)))
+                    cellprofiler.utilities.url.pathname2url(os.path.join(self.test_path, self.test_filename)))
             module.prepare_group(workspace, {}, [1])
             module.run(workspace)
             img = workspace.image_set.get_image("DNA", must_be_grayscale=True)

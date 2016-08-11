@@ -2674,8 +2674,9 @@ class Pipeline(object):
         path - a path to a file or a URL
         """
         if isinstance(path_or_fd, basestring):
-            from cellprofiler.modules.loadimages import \
-                url2pathname, FILE_SCHEME, PASSTHROUGH_SCHEMES
+            from cellprofiler.utilities.url import PASSTHROUGH_SCHEMES
+            from cellprofiler.utilities.url import FILE_SCHEME
+            from cellprofiler.utilities.url import url2pathname
             pathname = path_or_fd
             if pathname.startswith(FILE_SCHEME):
                 pathname = url2pathname(pathname)
@@ -2699,7 +2700,7 @@ class Pipeline(object):
 
     def add_pathnames_to_file_list(self, pathnames, add_undo=True):
         """Add a sequence of paths or URLs to the file list"""
-        from cellprofiler.modules.loadimages import pathname2url
+        from cellprofiler.utilities.url import pathname2url
         urls = []
         for pathname in pathnames:
             if len(pathname) == 0:

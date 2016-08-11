@@ -1431,7 +1431,7 @@ class Figure(wx.Frame):
         image = image.astype(numpy.float32)
         if isinstance(colormap, matplotlib.cm.ScalarMappable):
             colormap = colormap.cmap
-        
+
         # Perform normalization
         if normalize == 'log':
             if is_color_image(image):
@@ -1900,7 +1900,7 @@ def show_image(url, parent=None, needs_raise_after=True):
     try:
         if url.lower().endswith(".mat"):
             from scipy.io.matlab.mio import loadmat
-            from cellprofiler.modules.loadimages import url2pathname
+            from cellprofiler.utilities.url import url2pathname
             image = loadmat(url2pathname(url), struct_as_record=True)["Image"]
         else:
             from bioformats import load_image_url

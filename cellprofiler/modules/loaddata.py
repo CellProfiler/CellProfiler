@@ -163,6 +163,7 @@ import cellprofiler.modules.loadimages
 import cellprofiler.preferences
 import cellprofiler.region
 import cellprofiler.setting
+import cellprofiler.utilities.url
 import matplotlib.mlab
 import numpy
 
@@ -881,7 +882,7 @@ class LoadData(cellprofiler.module.Module):
                                 fullname = os.path.join(
                                         row_path_name, row[file_name_column])
                                 row[path_name_column] = row_path_name
-                            url = cellprofiler.modules.loadimages.pathname2url(fullname)
+                            url = cellprofiler.utilities.url.pathname2url(fullname)
                             row.append(url)
                         if path_name_column is None:
                             #
@@ -1009,10 +1010,10 @@ class LoadData(cellprofiler.module.Module):
                     for image_number, url in zip(image_numbers, urls):
                         url = url.encode("utf-8")
                         if url.lower().startswith("file:"):
-                            fullname = cellprofiler.modules.loadimages.url2pathname(url)
+                            fullname = cellprofiler.utilities.url.url2pathname(url)
                             fullname = fn_alter_path(fullname)
                             path, filename = os.path.split(fullname)
-                            url = unicode(cellprofiler.modules.loadimages.pathname2url(fullname), "utf-8")
+                            url = unicode(cellprofiler.utilities.url.pathname2url(fullname), "utf-8")
                             m.add_measurement(cellprofiler.measurement.IMAGE, url_feature, url,
                                               image_set_number=image_number)
                             if file_feature is not None:
@@ -1041,7 +1042,7 @@ class LoadData(cellprofiler.module.Module):
             frame_feature = cellprofiler.measurement.C_OBJECTS_FRAME + "_" + name
         url = measurements.get_measurement(cellprofiler.measurement.IMAGE, url_feature)
         url = url.encode('utf-8')
-        full_filename = cellprofiler.modules.loadimages.url2pathname(url)
+        full_filename = cellprofiler.utilities.url.url2pathname(url)
         path, filename = os.path.split(full_filename)
         if measurements.has_feature(cellprofiler.measurement.IMAGE, series_feature):
             series = measurements[cellprofiler.measurement.IMAGE, series_feature]

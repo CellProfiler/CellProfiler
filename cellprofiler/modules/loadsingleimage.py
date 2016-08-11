@@ -54,6 +54,7 @@ import cellprofiler.modules.namesandtypes
 import cellprofiler.preferences
 import cellprofiler.region
 import cellprofiler.setting
+import cellprofiler.utilities.url
 import centrosome.outline
 
 DIR_CUSTOM_FOLDER = "Custom folder"
@@ -367,7 +368,7 @@ class LoadSingleImage(cellprofiler.module.Module):
                     file_name_category = cellprofiler.measurement.C_OBJECTS_FILE_NAME
                     url_category = cellprofiler.measurement.C_OBJECTS_URL
 
-                url = cellprofiler.modules.loadimages.pathname2url(os.path.join(root, dict[image_name]))
+                url = cellprofiler.utilities.url.pathname2url(os.path.join(root, dict[image_name]))
                 for category, value in (
                         (path_name_category, root),
                         (file_name_category, dict[image_name]),

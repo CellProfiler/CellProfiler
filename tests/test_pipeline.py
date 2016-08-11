@@ -20,6 +20,7 @@ import cellprofiler.pipeline
 import cellprofiler.preferences
 import cellprofiler.region
 import cellprofiler.setting
+import cellprofiler.utilities.url
 import cellprofiler.workspace
 import numpy
 import numpy.lib.index_tricks
@@ -1159,11 +1160,11 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
         p.read_file_list(fd)
         self.assertEqual(len(p.file_list), 2)
         for path in paths:
-            self.assertIn(cellprofiler.modules.loadimages.pathname2url(path), p.file_list)
+            self.assertIn(cellprofiler.utilities.url.pathname2url(path), p.file_list)
 
     def test_19_02_read_file_list_urls(self):
         root = os.path.split(__file__)[0]
-        file_url = cellprofiler.modules.loadimages.pathname2url(os.path.join(root, "foo.tif"))
+        file_url = cellprofiler.utilities.url.pathname2url(os.path.join(root, "foo.tif"))
         urls = ["http://cellprofiler.org/foo.tif",
                 file_url,
                 "https://github.com/foo.tif",

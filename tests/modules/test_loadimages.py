@@ -23,6 +23,7 @@ import cellprofiler.modules.namesandtypes
 import cellprofiler.pipeline
 import cellprofiler.preferences
 import cellprofiler.region
+import cellprofiler.utilities.url
 import cellprofiler.workspace
 import numpy
 import tests.modules
@@ -63,7 +64,7 @@ class ConvtesterMixin:
 
         m2 = cellprofiler.measurement.Measurements()
         w2 = cellprofiler.workspace.Workspace(pipeline, m, m2, None, m2, None)
-        urls = [cellprofiler.modules.loadimages.pathname2url(os.path.join(directory, filename))
+        urls = [cellprofiler.utilities.url.pathname2url(os.path.join(directory, filename))
                 for filename in os.listdir(directory)
                 if fn_filter(filename)]
         w2.file_list.add_files_to_filelist(urls)
@@ -119,8 +120,8 @@ class ConvtesterMixin:
                       f1.startswith(cellprofiler.measurement.C_OBJECTS_URL)):
                 for p1, p2 in zip(v1, v2):
                     self.assertEqual(
-                            os.path.normcase(cellprofiler.modules.loadimages.url2pathname(p1.encode("utf-8"))),
-                            os.path.normcase(cellprofiler.modules.loadimages.url2pathname(p2.encode("utf-8"))))
+                            os.path.normcase(cellprofiler.utilities.url.url2pathname(p1.encode("utf-8"))),
+                            os.path.normcase(cellprofiler.utilities.url.url2pathname(p2.encode("utf-8"))))
             else:
                 numpy.testing.assert_array_equal(v1, v2)
 
@@ -2902,7 +2903,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         orig_path = os.path.join(tests.modules.example_images_directory(), "ExampleSBSImages")
         module.location.custom_path = orig_path
         target_path = orig_path.replace("ExampleSBSImages", "ExampleTrackObjects")
-        url_path = cellprofiler.modules.loadimages.url2pathname(cellprofiler.modules.loadimages.pathname2url(orig_path))
+        url_path = cellprofiler.utilities.url.url2pathname(cellprofiler.utilities.url.pathname2url(orig_path))
 
         file_regexp = "^Channel1-[0-9]{2}-[A-P]-[0-9]{2}.tif$"
         module.images[0].common_text.value = file_regexp
@@ -2947,7 +2948,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
             url = m.get_measurement(cellprofiler.measurement.IMAGE,
                                     cellprofiler.modules.loadimages.C_URL + "_" + IMAGE_NAME,
                                     image_set_number=image_number)
-            self.assertEqual(url, cellprofiler.modules.loadimages.pathname2url(
+            self.assertEqual(url, cellprofiler.utilities.url.pathname2url(
                     os.path.join(path, filename)))
 
     def test_13_02_batch_movies(self):
@@ -2958,13 +2959,13 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         orig_path = tests.modules.testimages_directory()
         module.location.custom_path = orig_path
         target_path = os.path.join(orig_path, "Images")
-        orig_url = cellprofiler.modules.loadimages.pathname2url(orig_path)
+        orig_url = cellprofiler.utilities.url.pathname2url(orig_path)
         # Can switch cases in Windows.
-        orig_url_path = cellprofiler.modules.loadimages.url2pathname(orig_url)
+        orig_url_path = cellprofiler.utilities.url.url2pathname(orig_url)
 
         filename = "DrosophilaEmbryo_GFPHistone.avi"
         tests.modules.maybe_download_tesst_image(filename)
-        target_url = cellprofiler.modules.loadimages.pathname2url(os.path.join(target_path, filename))
+        target_url = cellprofiler.utilities.url.pathname2url(os.path.join(target_path, filename))
         module.images[0].common_text.value = filename
         module.images[0].channels[0].image_name.value = IMAGE_NAME
         module.module_num = 1
@@ -3014,15 +3015,15 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         module.location.dir_choice = cellprofiler.modules.loadimages.ABSOLUTE_FOLDER_NAME
         module.file_types.value = cellprofiler.modules.loadimages.FF_OTHER_MOVIES
         orig_path = tests.modules.testimages_directory()
-        orig_url = cellprofiler.modules.loadimages.pathname2url(orig_path)
+        orig_url = cellprofiler.utilities.url.pathname2url(orig_path)
         module.location.custom_path = orig_path
         target_path = os.path.join(orig_path, "Images")
         # Can switch cases in Windows.
-        orig_url_path = cellprofiler.modules.loadimages.url2pathname(orig_url)
+        orig_url_path = cellprofiler.utilities.url.url2pathname(orig_url)
 
         filename = "RLM1 SSN3 300308 008015000.flex"
         tests.modules.maybe_download_tesst_image(filename)
-        target_url = cellprofiler.modules.loadimages.pathname2url(os.path.join(orig_path, filename))
+        target_url = cellprofiler.utilities.url.pathname2url(os.path.join(orig_path, filename))
         module.images[0].common_text.value = filename
         module.images[0].channels[0].image_name.value = IMAGE_NAME
         module.module_num = 1

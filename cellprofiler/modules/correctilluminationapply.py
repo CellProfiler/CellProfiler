@@ -1,7 +1,5 @@
 import cellprofiler.image
 import cellprofiler.module
-import cellprofiler.modules
-import cellprofiler.modules.correctilluminationcalculate
 import cellprofiler.setting
 import numpy
 
@@ -15,6 +13,9 @@ either loaded by <b>LoadSingleImage</b> or created by <b>CorrectIlluminationCalc
 This module corrects each image in the pipeline using the function specified.
 
 See also <b>CorrectIlluminationCalculate</b>.'''
+
+IC_REGULAR = "Regular"
+IC_BACKGROUND = "Background"
 
 ######################################
 #
@@ -92,9 +93,9 @@ class CorrectIlluminationApply(cellprofiler.module.Module):
             then you will want to choose <i>{divide}</i> here.</li>
             </ul>'''.format(**{
                 'subtract': DOS_SUBTRACT,
-                'background': cellprofiler.modules.correctilluminationcalculate.IC_BACKGROUND,
+                'background': IC_BACKGROUND,
                 'divide': DOS_DIVIDE,
-                'regular': cellprofiler.modules.correctilluminationcalculate.IC_REGULAR
+                'regular': IC_REGULAR
             })
         )
 

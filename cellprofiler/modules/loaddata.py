@@ -1079,13 +1079,13 @@ class LoadData(cellprofiler.module.Module):
                 image_set.providers.append(provider)
                 image = image_set.get_image(image_name)
                 pixel_data = image.pixel_data
-                m.add_image_measurement("_".join((cellprofiler.modules.loadimages.C_MD5_DIGEST, image_name)),
+                m.add_image_measurement("_".join((cellprofiler.measurement.C_MD5_DIGEST, image_name)),
                                         provider.get_md5_hash(m))
-                m.add_image_measurement("_".join((cellprofiler.modules.loadimages.C_SCALING, image_name)),
+                m.add_image_measurement("_".join((cellprofiler.measurement.C_SCALING, image_name)),
                                         image.scale)
-                m.add_image_measurement("_".join((cellprofiler.modules.loadimages.C_HEIGHT, image_name)),
+                m.add_image_measurement("_".join((cellprofiler.measurement.C_HEIGHT, image_name)),
                                         int(pixel_data.shape[0]))
-                m.add_image_measurement("_".join((cellprofiler.modules.loadimages.C_WIDTH, image_name)),
+                m.add_image_measurement("_".join((cellprofiler.measurement.C_WIDTH, image_name)),
                                         int(pixel_data.shape[1]))
                 if image_size is None:
                     image_size = tuple(pixel_data.shape[:2])
@@ -1234,10 +1234,10 @@ class LoadData(cellprofiler.module.Module):
                     (cellprofiler.measurement.C_URL, cellprofiler.measurement.COLTYPE_VARCHAR_PATH_NAME),
                     (cellprofiler.measurement.C_PATH_NAME, cellprofiler.measurement.COLTYPE_VARCHAR_PATH_NAME),
                     (cellprofiler.measurement.C_FILE_NAME, cellprofiler.measurement.COLTYPE_VARCHAR_FILE_NAME),
-                    (cellprofiler.modules.loadimages.C_MD5_DIGEST, cellprofiler.measurement.COLTYPE_VARCHAR_FORMAT % 32),
-                    (cellprofiler.modules.loadimages.C_SCALING, cellprofiler.measurement.COLTYPE_FLOAT),
-                    (cellprofiler.modules.loadimages.C_HEIGHT, cellprofiler.measurement.COLTYPE_INTEGER),
-                    (cellprofiler.modules.loadimages.C_WIDTH, cellprofiler.measurement.COLTYPE_INTEGER)):
+                    (cellprofiler.measurement.C_MD5_DIGEST, cellprofiler.measurement.COLTYPE_VARCHAR_FORMAT % 32),
+                    (cellprofiler.measurement.C_SCALING, cellprofiler.measurement.COLTYPE_FLOAT),
+                    (cellprofiler.measurement.C_HEIGHT, cellprofiler.measurement.COLTYPE_INTEGER),
+                    (cellprofiler.measurement.C_WIDTH, cellprofiler.measurement.COLTYPE_INTEGER)):
                 for image_name in image_names:
                     measurement = feature + '_' + image_name
                     if not any([measurement == c[1] for c in result]):

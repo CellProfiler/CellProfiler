@@ -1414,9 +1414,9 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         self.assertTrue(numpy.all(pixel_data <= 1))
         m = workspace.measurements
         self.assertEqual(
-            m[cellprofiler.measurement.IMAGE, cellprofiler.modules.loadimages.C_MD5_DIGEST + "_" + IMAGE_NAME], md5)
-        self.assertEqual(m[cellprofiler.measurement.IMAGE, cellprofiler.modules.loadimages.C_HEIGHT + "_" + IMAGE_NAME], 21)
-        self.assertEqual(m[cellprofiler.measurement.IMAGE, cellprofiler.modules.loadimages.C_WIDTH + "_" + IMAGE_NAME], 31)
+            m[cellprofiler.measurement.IMAGE, cellprofiler.measurement.C_MD5_DIGEST + "_" + IMAGE_NAME], md5)
+        self.assertEqual(m[cellprofiler.measurement.IMAGE, cellprofiler.measurement.C_HEIGHT + "_" + IMAGE_NAME], 21)
+        self.assertEqual(m[cellprofiler.measurement.IMAGE, cellprofiler.measurement.C_WIDTH + "_" + IMAGE_NAME], 31)
 
 
     def test_03_02_load_monochrome_as_color(self):
@@ -1522,8 +1522,8 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         self.assertEqual(areas[2], counts[3])
         m = workspace.measurements
         self.assertEqual(
-            m[cellprofiler.measurement.IMAGE, cellprofiler.modules.loadimages.C_MD5_DIGEST + "_" + OBJECTS_NAME], md5)
-        self.assertEqual(m[cellprofiler.measurement.IMAGE, cellprofiler.modules.loadimages.C_WIDTH + "_" + OBJECTS_NAME],
+            m[cellprofiler.measurement.IMAGE, cellprofiler.measurement.C_MD5_DIGEST + "_" + OBJECTS_NAME], md5)
+        self.assertEqual(m[cellprofiler.measurement.IMAGE, cellprofiler.measurement.C_WIDTH + "_" + OBJECTS_NAME],
                          target.shape[1])
         outlines = workspace.image_set.get_image(OUTLINES_NAME)
         self.assertEqual(o.shape, outlines.pixel_data.shape)
@@ -1620,8 +1620,8 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         self.assertEqual(areas[2], counts[3])
         m = workspace.measurements
         self.assertEqual(
-            m[cellprofiler.measurement.IMAGE, cellprofiler.modules.loadimages.C_MD5_DIGEST + "_lsi"], md5)
-        self.assertEqual(m[cellprofiler.measurement.IMAGE, cellprofiler.modules.loadimages.C_WIDTH + "_lsi"], target.shape[1])
+            m[cellprofiler.measurement.IMAGE, cellprofiler.measurement.C_MD5_DIGEST + "_lsi"], md5)
+        self.assertEqual(m[cellprofiler.measurement.IMAGE, cellprofiler.measurement.C_WIDTH + "_lsi"], target.shape[1])
         outlines = workspace.image_set.get_image("lsi_outlines")
         self.assertEqual(o.shape, outlines.pixel_data.shape)
 
@@ -1639,14 +1639,14 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
 
         columns = m.get_measurement_columns(p)
 
-        for ftr in cellprofiler.measurement.C_FILE_NAME, cellprofiler.measurement.C_PATH_NAME, cellprofiler.measurement.C_URL, cellprofiler.modules.loadimages.C_MD5_DIGEST, cellprofiler.modules.loadimages.C_SCALING, \
-                   cellprofiler.modules.loadimages.C_HEIGHT, cellprofiler.modules.loadimages.C_WIDTH, cellprofiler.measurement.C_SERIES, cellprofiler.measurement.C_FRAME:
+        for ftr in cellprofiler.measurement.C_FILE_NAME, cellprofiler.measurement.C_PATH_NAME, cellprofiler.measurement.C_URL, cellprofiler.measurement.C_MD5_DIGEST, cellprofiler.measurement.C_SCALING, \
+                   cellprofiler.measurement.C_HEIGHT, cellprofiler.measurement.C_WIDTH, cellprofiler.measurement.C_SERIES, cellprofiler.measurement.C_FRAME:
             mname = "_".join((ftr, IMAGE_NAME))
             self.assertTrue(any([c[0] == cellprofiler.measurement.IMAGE and c[1] == mname
                                  for c in columns]))
 
-        for ftr in cellprofiler.measurement.C_OBJECTS_FILE_NAME, cellprofiler.measurement.C_OBJECTS_PATH_NAME, cellprofiler.modules.loadimages.C_MD5_DIGEST, \
-                   cellprofiler.measurement.C_OBJECTS_URL, cellprofiler.modules.loadimages.C_HEIGHT, cellprofiler.modules.loadimages.C_WIDTH, cellprofiler.measurement.C_OBJECTS_SERIES, cellprofiler.measurement.C_OBJECTS_FRAME, cellprofiler.identify.C_COUNT:
+        for ftr in cellprofiler.measurement.C_OBJECTS_FILE_NAME, cellprofiler.measurement.C_OBJECTS_PATH_NAME, cellprofiler.measurement.C_MD5_DIGEST, \
+                   cellprofiler.measurement.C_OBJECTS_URL, cellprofiler.measurement.C_HEIGHT, cellprofiler.measurement.C_WIDTH, cellprofiler.measurement.C_OBJECTS_SERIES, cellprofiler.measurement.C_OBJECTS_FRAME, cellprofiler.identify.C_COUNT:
             mname = "_".join((ftr, OBJECTS_NAME))
             self.assertTrue(any([c[0] == cellprofiler.measurement.IMAGE and c[1] == mname
                                  for c in columns]))
@@ -1670,10 +1670,10 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         self.assertTrue(cellprofiler.measurement.C_FILE_NAME in categories)
         self.assertTrue(cellprofiler.measurement.C_PATH_NAME in categories)
         self.assertTrue(cellprofiler.measurement.C_URL in categories)
-        self.assertTrue(cellprofiler.modules.loadimages.C_MD5_DIGEST in categories)
-        self.assertTrue(cellprofiler.modules.loadimages.C_SCALING in categories)
-        self.assertTrue(cellprofiler.modules.loadimages.C_WIDTH in categories)
-        self.assertTrue(cellprofiler.modules.loadimages.C_HEIGHT in categories)
+        self.assertTrue(cellprofiler.measurement.C_MD5_DIGEST in categories)
+        self.assertTrue(cellprofiler.measurement.C_SCALING in categories)
+        self.assertTrue(cellprofiler.measurement.C_WIDTH in categories)
+        self.assertTrue(cellprofiler.measurement.C_HEIGHT in categories)
         self.assertTrue(cellprofiler.measurement.C_SERIES in categories)
         self.assertTrue(cellprofiler.measurement.C_FRAME in categories)
         m.add_assignment()
@@ -1708,7 +1708,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
             self.assertEqual(len(mnames), 1)
             self.assertEqual(mnames[0], OBJECTS_NAME)
 
-        for cname in cellprofiler.modules.loadimages.C_MD5_DIGEST, cellprofiler.modules.loadimages.C_SCALING, cellprofiler.modules.loadimages.C_HEIGHT, cellprofiler.modules.loadimages.C_WIDTH, \
+        for cname in cellprofiler.measurement.C_MD5_DIGEST, cellprofiler.measurement.C_SCALING, cellprofiler.measurement.C_HEIGHT, cellprofiler.measurement.C_WIDTH, \
                      cellprofiler.measurement.C_SERIES, cellprofiler.measurement.C_FRAME:
             mnames = m.get_measurements(p, cellprofiler.measurement.IMAGE, cname)
             self.assertEqual(len(mnames), 2)

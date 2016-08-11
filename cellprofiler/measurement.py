@@ -162,6 +162,16 @@ C_CHANNEL_TYPE = "ChannelType"
 '''The automatically-collected file location (as a URL)'''
 C_FILE_LOCATION = "File_Location"
 
+'''The MD5 digest measurement category'''
+C_MD5_DIGEST = "MD5Digest"
+
+'''The intensity scaling metadata for this file'''
+C_SCALING = "Scaling"
+
+'''The dimension metadata for the image'''
+C_HEIGHT = "Height"
+C_WIDTH = "Width"
+
 '''The experiment feature name used to store the image set's metadata tags'''
 M_METADATA_TAGS = "_".join((C_METADATA, "Tags"))
 

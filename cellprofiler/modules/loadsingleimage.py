@@ -403,7 +403,8 @@ class LoadSingleImage(cellprofiler.module.Module):
                 "_".join((c, image_name)) for c in (
                     cellprofiler.measurement.C_PATH_NAME if wants_images else cellprofiler.measurement.C_OBJECTS_PATH_NAME,
                     cellprofiler.measurement.C_FILE_NAME if wants_images else cellprofiler.measurement.C_OBJECTS_FILE_NAME,
-                    cellprofiler.modules.loadimages.C_MD5_DIGEST, cellprofiler.modules.loadimages.C_SCALING, cellprofiler.modules.loadimages.C_HEIGHT, cellprofiler.modules.loadimages.C_WIDTH)]
+                    cellprofiler.measurement.C_MD5_DIGEST, cellprofiler.measurement.C_SCALING,
+                    cellprofiler.measurement.C_HEIGHT, cellprofiler.measurement.C_WIDTH)]
             pathname = m.get_current_image_measurement(m_path)
             filename = m.get_current_image_measurement(m_file)
             rescale = (wants_images and file_setting.rescale.value)
@@ -414,13 +415,13 @@ class LoadSingleImage(cellprofiler.module.Module):
             pixel_data = image.pixel_data
             if wants_images:
                 md5 = provider.get_md5_hash(m)
-                m.add_image_measurement("_".join((cellprofiler.modules.loadimages.C_MD5_DIGEST, image_name)),
+                m.add_image_measurement("_".join((cellprofiler.measurement.C_MD5_DIGEST, image_name)),
                                         md5)
-                m.add_image_measurement("_".join((cellprofiler.modules.loadimages.C_SCALING, image_name)),
+                m.add_image_measurement("_".join((cellprofiler.measurement.C_SCALING, image_name)),
                                         image.scale)
-                m.add_image_measurement("_".join((cellprofiler.modules.loadimages.C_HEIGHT, image_name)),
+                m.add_image_measurement("_".join((cellprofiler.measurement.C_HEIGHT, image_name)),
                                         int(pixel_data.shape[0]))
-                m.add_image_measurement("_".join((cellprofiler.modules.loadimages.C_WIDTH, image_name)),
+                m.add_image_measurement("_".join((cellprofiler.measurement.C_WIDTH, image_name)),
                                         int(pixel_data.shape[1]))
                 image_set.providers.append(provider)
             else:
@@ -466,10 +467,10 @@ class LoadSingleImage(cellprofiler.module.Module):
                 path_name_category = cellprofiler.measurement.C_PATH_NAME
                 file_name_category = cellprofiler.measurement.C_FILE_NAME
                 columns += [
-                    (cellprofiler.measurement.IMAGE, "_".join((cellprofiler.modules.loadimages.C_MD5_DIGEST, image_name)), cellprofiler.measurement.COLTYPE_VARCHAR_FORMAT % 32),
-                    (cellprofiler.measurement.IMAGE, "_".join((cellprofiler.modules.loadimages.C_SCALING, image_name)), cellprofiler.measurement.COLTYPE_FLOAT),
-                    (cellprofiler.measurement.IMAGE, "_".join((cellprofiler.modules.loadimages.C_HEIGHT, image_name)), cellprofiler.measurement.COLTYPE_INTEGER),
-                    (cellprofiler.measurement.IMAGE, "_".join((cellprofiler.modules.loadimages.C_WIDTH, image_name)), cellprofiler.measurement.COLTYPE_INTEGER)]
+                    (cellprofiler.measurement.IMAGE, "_".join((cellprofiler.measurement.C_MD5_DIGEST, image_name)), cellprofiler.measurement.COLTYPE_VARCHAR_FORMAT % 32),
+                    (cellprofiler.measurement.IMAGE, "_".join((cellprofiler.measurement.C_SCALING, image_name)), cellprofiler.measurement.COLTYPE_FLOAT),
+                    (cellprofiler.measurement.IMAGE, "_".join((cellprofiler.measurement.C_HEIGHT, image_name)), cellprofiler.measurement.COLTYPE_INTEGER),
+                    (cellprofiler.measurement.IMAGE, "_".join((cellprofiler.measurement.C_WIDTH, image_name)), cellprofiler.measurement.COLTYPE_INTEGER)]
             else:
                 image_name = file_setting.objects_name.value
                 path_name_category = cellprofiler.measurement.C_OBJECTS_PATH_NAME
@@ -499,7 +500,9 @@ class LoadSingleImage(cellprofiler.module.Module):
         result = []
         if object_name == cellprofiler.measurement.IMAGE:
             if self.wants_images:
-                result += [cellprofiler.measurement.C_FILE_NAME, cellprofiler.modules.loadimages.C_MD5_DIGEST, cellprofiler.measurement.C_PATH_NAME, cellprofiler.modules.loadimages.C_SCALING, cellprofiler.modules.loadimages.C_HEIGHT, cellprofiler.modules.loadimages.C_WIDTH]
+                result += [cellprofiler.measurement.C_FILE_NAME, cellprofiler.measurement.C_MD5_DIGEST, cellprofiler.measurement.C_PATH_NAME,
+                           cellprofiler.measurement.C_SCALING, cellprofiler.measurement.C_HEIGHT,
+                           cellprofiler.measurement.C_WIDTH]
             if self.wants_objects:
                 result += [cellprofiler.identify.C_COUNT, cellprofiler.measurement.C_OBJECTS_FILE_NAME, cellprofiler.measurement.C_OBJECTS_PATH_NAME]
         if any([True for file_setting in self.file_settings
@@ -516,7 +519,9 @@ class LoadSingleImage(cellprofiler.module.Module):
         """
         result = []
         if object_name == cellprofiler.measurement.IMAGE:
-            if category in (cellprofiler.measurement.C_FILE_NAME, cellprofiler.modules.loadimages.C_MD5_DIGEST, cellprofiler.measurement.C_PATH_NAME, cellprofiler.modules.loadimages.C_SCALING, cellprofiler.modules.loadimages.C_HEIGHT, cellprofiler.modules.loadimages.C_WIDTH):
+            if category in (cellprofiler.measurement.C_FILE_NAME, cellprofiler.measurement.C_MD5_DIGEST, cellprofiler.measurement.C_PATH_NAME,
+                            cellprofiler.measurement.C_SCALING, cellprofiler.measurement.C_HEIGHT,
+                            cellprofiler.measurement.C_WIDTH):
                 result += [file_setting.image_name.value
                            for file_setting in self.file_settings
                            if file_setting.image_objects_choice == cellprofiler.modules.loadimages.IO_IMAGES]

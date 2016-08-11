@@ -331,7 +331,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                                                                                  image_set_list)
                                     l.run(workspace)
                                     for j in range(image_count):
-                                        feature = cellprofiler.modules.loadimages.C_FILE_NAME + ("_image%d" % (j + 1))
+                                        feature = cellprofiler.measurement.C_FILE_NAME + ("_image%d" % (j + 1))
                                         idx = i * group_size + indexes[j]
                                         expected = tiff_fmt % idx
                                         value = m.get_current_image_measurement(feature)
@@ -1205,7 +1205,8 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                     m = pipeline.run()
                     self.assertEqual(check_image.digest.hexdigest(),
                                      check_image.expected_digest.hexdigest())
-                    md5 = m[cellprofiler.measurement.IMAGE, "_".join((cellprofiler.modules.loadimages.C_MD5_DIGEST, "Orig")), 1]
+                    md5 = m[cellprofiler.measurement.IMAGE, "_".join((
+                                                                     cellprofiler.measurement.C_MD5_DIGEST, "Orig")), 1]
                     expected_md5 = hashlib.md5()
                     expected_md5.update(data)
                     self.assertEqual(md5, expected_md5.hexdigest())
@@ -1697,12 +1698,12 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
             for i in range(12):
                 channel1_filename = m.get_measurement(
                         cellprofiler.measurement.IMAGE,
-                    cellprofiler.modules.loadimages.C_FILE_NAME + "_" + "Channel1", i + 1)
+                    cellprofiler.measurement.C_FILE_NAME + "_" + "Channel1", i + 1)
                 ctags = re.search(load_images.images[0].file_metadata.value,
                                   channel1_filename).groupdict()
                 illum_filename = m.get_measurement(
                         cellprofiler.measurement.IMAGE,
-                    cellprofiler.modules.loadimages.C_FILE_NAME + "_" + "Illum", i + 1)
+                    cellprofiler.measurement.C_FILE_NAME + "_" + "Illum", i + 1)
                 itags = re.search(load_images.images[1].file_metadata.value,
                                   illum_filename).groupdict()
                 self.assertEqual(ctags["Run"], itags["Run"])
@@ -2938,11 +2939,11 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         module.prepare_group(workspace, group_keys, image_numbers)
         for image_number in image_numbers:
             path = m.get_measurement(cellprofiler.measurement.IMAGE,
-                                     cellprofiler.modules.loadimages.C_PATH_NAME + "_" + IMAGE_NAME,
+                                     cellprofiler.measurement.C_PATH_NAME + "_" + IMAGE_NAME,
                                      image_set_number=image_number)
             self.assertEqual(path, target_path)
             filename = m.get_measurement(cellprofiler.measurement.IMAGE,
-                                         cellprofiler.modules.loadimages.C_FILE_NAME + "_" + IMAGE_NAME,
+                                         cellprofiler.measurement.C_FILE_NAME + "_" + IMAGE_NAME,
                                          image_set_number=image_number)
             self.assertTrue(re.match(file_regexp, filename) is not None)
             url = m.get_measurement(cellprofiler.measurement.IMAGE,
@@ -3171,8 +3172,8 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                 full_path = os.path.join(self.directory, filename)
                 url = "file:" + urllib.pathname2url(full_path)
                 for category, expected in (
-                        (cellprofiler.modules.loadimages.C_FILE_NAME, filename),
-                        (cellprofiler.modules.loadimages.C_PATH_NAME, self.directory),
+                        (cellprofiler.measurement.C_FILE_NAME, filename),
+                        (cellprofiler.measurement.C_PATH_NAME, self.directory),
                         (cellprofiler.modules.loadimages.C_URL, url)):
                     value = m.get_measurement(cellprofiler.measurement.IMAGE,
                                               "_".join((category, image_name)),

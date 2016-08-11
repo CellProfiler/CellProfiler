@@ -595,7 +595,7 @@ class MeasureImageQuality(cellprofiler.module.Module):
             if image_group.include_image_scalings.value:
                 for image_name in selected_images:
                     columns.append((cellprofiler.measurement.IMAGE,
-                                    '%s_%s_%s' % (C_IMAGE_QUALITY, cellprofiler.modules.loadimages.C_SCALING,
+                                    '%s_%s_%s' % (C_IMAGE_QUALITY, cellprofiler.measurement.C_SCALING,
                                                   image_name),
                                     cellprofiler.measurement.COLTYPE_FLOAT))
                     sources.append([image_group.include_image_scalings, image_name])
@@ -686,7 +686,7 @@ class MeasureImageQuality(cellprofiler.module.Module):
         if object_name == cellprofiler.measurement.IMAGE and category == C_IMAGE_QUALITY:
             result = []
             if self.any_scaling():
-                result += [cellprofiler.modules.loadimages.C_SCALING]
+                result += [cellprofiler.measurement.C_SCALING]
             if self.any_blur():
                 result += [F_FOCUS_SCORE, F_LOCAL_FOCUS_SCORE, F_POWER_SPECTRUM_SLOPE, F_CORRELATION]
             if self.any_intensity():
@@ -813,7 +813,7 @@ class MeasureImageQuality(cellprofiler.module.Module):
 
         result = []
         for image_name in self.images_to_process(image_group, workspace):
-            feature = "%s_%s_%s" % (C_IMAGE_QUALITY, cellprofiler.modules.loadimages.C_SCALING, image_name)
+            feature = "%s_%s_%s" % (C_IMAGE_QUALITY, cellprofiler.measurement.C_SCALING, image_name)
             value = workspace.image_set.get_image(image_name).scale
             if not value:  # Set to NaN if not defined, such as for derived images
                 value = numpy.NaN

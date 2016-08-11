@@ -1528,8 +1528,10 @@ class NamesAndTypes(cellprofiler.module.Module):
         image_or_objects - cpmeas.IMAGE if the provider is an image provider
                            otherwise cpmeas.OBJECT if it provides objects
         """
-        from cellprofiler.modules.loadimages import \
-            C_MD5_DIGEST, C_SCALING, C_HEIGHT, C_WIDTH
+        from cellprofiler.measurement import C_WIDTH
+        from cellprofiler.measurement import C_HEIGHT
+        from cellprofiler.measurement import C_SCALING
+        from cellprofiler.measurement import C_MD5_DIGEST
 
         name = provider.get_name()
         if name in m.get_names():
@@ -1701,10 +1703,10 @@ class NamesAndTypes(cellprofiler.module.Module):
                            (cellprofiler.measurement.cellprofiler.measurement.C_FILE_NAME, cellprofiler.measurement.COLTYPE_VARCHAR_FILE_NAME),
                            (cellprofiler.measurement.cellprofiler.measurement.C_PATH_NAME, cellprofiler.measurement.COLTYPE_VARCHAR_PATH_NAME),
                            (cellprofiler.measurement.cellprofiler.measurement.C_URL, cellprofiler.measurement.COLTYPE_VARCHAR_PATH_NAME),
-                           (cellprofiler.modules.loadimages.C_MD5_DIGEST, cellprofiler.measurement.COLTYPE_VARCHAR_FORMAT % 32),
-                           (cellprofiler.modules.loadimages.C_SCALING, cellprofiler.measurement.COLTYPE_FLOAT),
-                           (cellprofiler.modules.loadimages.C_WIDTH, cellprofiler.measurement.COLTYPE_INTEGER),
-                           (cellprofiler.modules.loadimages.C_HEIGHT, cellprofiler.measurement.COLTYPE_INTEGER),
+                           (cellprofiler.measurement.C_MD5_DIGEST, cellprofiler.measurement.COLTYPE_VARCHAR_FORMAT % 32),
+                           (cellprofiler.measurement.C_SCALING, cellprofiler.measurement.COLTYPE_FLOAT),
+                           (cellprofiler.measurement.C_WIDTH, cellprofiler.measurement.COLTYPE_INTEGER),
+                           (cellprofiler.measurement.C_HEIGHT, cellprofiler.measurement.COLTYPE_INTEGER),
                            (cellprofiler.modules.loadimages.C_SERIES, cellprofiler.measurement.COLTYPE_INTEGER),
                            (cellprofiler.modules.loadimages.C_FRAME, cellprofiler.measurement.COLTYPE_INTEGER)
                        )]
@@ -1717,9 +1719,9 @@ class NamesAndTypes(cellprofiler.module.Module):
                            (cellprofiler.measurement.cellprofiler.measurement.C_OBJECTS_PATH_NAME, cellprofiler.measurement.COLTYPE_VARCHAR_PATH_NAME),
                            (cellprofiler.measurement.cellprofiler.measurement.C_OBJECTS_URL, cellprofiler.measurement.COLTYPE_VARCHAR_PATH_NAME),
                            (cellprofiler.identify.C_COUNT, cellprofiler.measurement.COLTYPE_INTEGER),
-                           (cellprofiler.modules.loadimages.C_MD5_DIGEST, cellprofiler.measurement.COLTYPE_VARCHAR_FORMAT % 32),
-                           (cellprofiler.modules.loadimages.C_WIDTH, cellprofiler.measurement.COLTYPE_INTEGER),
-                           (cellprofiler.modules.loadimages.C_HEIGHT, cellprofiler.measurement.COLTYPE_INTEGER),
+                           (cellprofiler.measurement.C_MD5_DIGEST, cellprofiler.measurement.COLTYPE_VARCHAR_FORMAT % 32),
+                           (cellprofiler.measurement.C_WIDTH, cellprofiler.measurement.COLTYPE_INTEGER),
+                           (cellprofiler.measurement.C_HEIGHT, cellprofiler.measurement.COLTYPE_INTEGER),
                            (cellprofiler.measurement.C_OBJECTS_SERIES, cellprofiler.measurement.COLTYPE_INTEGER),
                            (cellprofiler.measurement.C_OBJECTS_FRAME, cellprofiler.measurement.COLTYPE_INTEGER)
                        )]
@@ -1739,7 +1741,8 @@ class NamesAndTypes(cellprofiler.module.Module):
             if has_objects:
                 result += [cellprofiler.measurement.C_OBJECTS_FILE_NAME, cellprofiler.measurement.C_OBJECTS_PATH_NAME,
                            cellprofiler.measurement.C_OBJECTS_URL, cellprofiler.identify.C_COUNT]
-            result += [cellprofiler.modules.loadimages.C_MD5_DIGEST, cellprofiler.modules.loadimages.C_SCALING, cellprofiler.modules.loadimages.C_HEIGHT, cellprofiler.modules.loadimages.C_WIDTH, cellprofiler.modules.loadimages.C_SERIES,
+            result += [cellprofiler.measurement.C_MD5_DIGEST, cellprofiler.measurement.C_SCALING,
+                       cellprofiler.measurement.C_HEIGHT, cellprofiler.measurement.C_WIDTH, cellprofiler.modules.loadimages.C_SERIES,
                        cellprofiler.modules.loadimages.C_FRAME]
         elif object_name in self.get_object_names():
             result += [cellprofiler.identify.C_LOCATION, cellprofiler.identify.C_NUMBER]
@@ -1756,7 +1759,8 @@ class NamesAndTypes(cellprofiler.module.Module):
                 return object_names
             elif category == cellprofiler.identify.C_COUNT:
                 return object_names
-            elif category in (cellprofiler.modules.loadimages.C_MD5_DIGEST, cellprofiler.modules.loadimages.C_SCALING, cellprofiler.modules.loadimages.C_HEIGHT, cellprofiler.modules.loadimages.C_WIDTH,
+            elif category in (cellprofiler.measurement.C_MD5_DIGEST, cellprofiler.measurement.C_SCALING,
+                              cellprofiler.measurement.C_HEIGHT, cellprofiler.measurement.C_WIDTH,
                               cellprofiler.modules.loadimages.C_SERIES, cellprofiler.modules.loadimages.C_FRAME):
                 return list(image_names) + list(object_names)
         elif object_name in self.get_object_names():

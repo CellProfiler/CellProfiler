@@ -66,10 +66,11 @@ import cellprofiler.preferences
 import cellprofiler.region
 import cellprofiler.setting
 import cellprofiler.utilities.url
+import cellprofiler.utilities.url
 import centrosome.outline
 import numpy
 import scipy.io.matlab.mio
-import cellprofiler.utilities.url
+from cellprofiler.measurement import C_MD5_DIGEST, C_SCALING, C_HEIGHT, C_WIDTH
 
 cached_file_lists = {}
 logger = logging.getLogger(__name__)
@@ -82,16 +83,6 @@ UIC2_TAG = 33629
 UIC3_TAG = 33630
 '''STK TIFF TAG UIC4 - internal'''
 UIC4_TAG = 33631
-
-'''The MD5 digest measurement category'''
-C_MD5_DIGEST = "MD5Digest"
-
-'''The intensity scaling metadata for this file'''
-C_SCALING = "Scaling"
-
-'''The dimension metadata for the image'''
-C_HEIGHT = "Height"
-C_WIDTH = "Width"
 
 # strings for choice variables
 MS_EXACT_MATCH = 'Text-Exact match'
@@ -175,10 +166,6 @@ M_BOTH = "Both"
 #
 M_Z = "Z"
 M_T = "T"
-'''For formats like TIF, the series is the image stack index'''
-C_SERIES = "Series"
-'''The frame is the frame number in a movie or in a TIF image stack'''
-C_FRAME = "Frame"
 
 '''The provider name for the image file image provider'''
 P_IMAGES = "LoadImagesImageProvider"
@@ -859,7 +846,7 @@ class LoadImages(cellprofiler.module.Module):
             any([x.lower() == cellprofiler.measurement.FTR_WELL.lower() for x in choices])):
                 choices.add(cellprofiler.measurement.FTR_WELL)
             if self.file_types == FF_OTHER_MOVIES:
-                choices.update([M_Z, M_T, C_SERIES])
+                choices.update([M_Z, M_T, cellprofiler.measurement.C_SERIES])
             elif self.file_types in (FF_AVI_MOVIES, FF_STK_MOVIES):
                 choices.add(M_T)
             choices = list(choices)
@@ -1807,7 +1794,7 @@ class LoadImages(cellprofiler.module.Module):
         assert isinstance(m, cellprofiler.measurement.Measurements)
         if m.image_set_count > 0 and self.do_group_by_metadata:
             match_metadata = True
-            tags = list(self.get_metadata_tags()) + [M_Z, M_T, C_SERIES]
+            tags = list(self.get_metadata_tags()) + [M_Z, M_T, cellprofiler.measurement.C_SERIES]
             md_dict = self.get_image_numbers_by_tags(workspace, tags)
             if md_dict is None:
                 return False
@@ -1914,7 +1901,7 @@ class LoadImages(cellprofiler.module.Module):
                             frame_metadata = metadata.copy()
                             frame_metadata[M_Z] = 0  # so sorry, real Z obliterated
                             frame_metadata[M_T] = idx
-                            frame_metadata[C_SERIES] = i
+                            frame_metadata[cellprofiler.measurement.C_SERIES] = i
                             image_numbers = [image_set_count + 1]
                             if match_metadata:
                                 key = dict([(k, str(v))
@@ -1954,11 +1941,11 @@ class LoadImages(cellprofiler.module.Module):
                                             image_set_number=image_number)
                                     m.add_measurement(
                                             cellprofiler.measurement.IMAGE,
-                                            "_".join((C_SERIES, image_name)), i,
+                                            "_".join((cellprofiler.measurement.C_SERIES, image_name)), i,
                                             image_set_number=image_number)
                                     m.add_measurement(
                                             cellprofiler.measurement.IMAGE,
-                                            "_".join((C_FRAME, image_name)), cidx,
+                                            "_".join((cellprofiler.measurement.C_FRAME, image_name)), cidx,
                                             image_set_number=image_number)
                                 for k in frame_metadata.keys():
                                     m.add_measurement(
@@ -1984,7 +1971,7 @@ class LoadImages(cellprofiler.module.Module):
                                 frame_metadata = metadata.copy()
                                 frame_metadata[M_Z] = z
                                 frame_metadata[M_T] = t
-                                frame_metadata[C_SERIES] = i
+                                frame_metadata[cellprofiler.measurement.C_SERIES] = i
                                 image_numbers = [image_set_count + 1]
                                 if match_metadata:
                                     key = dict([(k, str(v))
@@ -2027,11 +2014,11 @@ class LoadImages(cellprofiler.module.Module):
                                                 image_set_number=image_number)
                                         m.add_measurement(
                                                 cellprofiler.measurement.IMAGE,
-                                                "_".join((C_SERIES, image_name)), i,
+                                                "_".join((cellprofiler.measurement.C_SERIES, image_name)), i,
                                                 image_set_number=image_number)
                                         m.add_measurement(
                                                 cellprofiler.measurement.IMAGE,
-                                                "_".join((C_FRAME, image_name)),
+                                                "_".join((cellprofiler.measurement.C_FRAME, image_name)),
                                                 index,
                                                 image_set_number=image_number)
                                     for k in frame_metadata.keys():
@@ -2190,15 +2177,15 @@ class LoadImages(cellprofiler.module.Module):
                 metadata = self.get_filename_metadata(fd, filename, path)
                 if self.file_types == FF_STK_MOVIES:
                     index = m.get_measurement(cellprofiler.measurement.IMAGE,
-                                              "_".join((C_FRAME, image_name)))
+                                              "_".join((cellprofiler.measurement.C_FRAME, image_name)))
                     provider = LoadImagesSTKFrameProvider(
                             image_name, path, filename, index, rescale)
                 elif self.file_types == FF_OTHER_MOVIES:
                     series = m.get_measurement(cellprofiler.measurement.IMAGE,
-                                               "_".join((C_SERIES, image_name)))
+                                               "_".join((cellprofiler.measurement.C_SERIES, image_name)))
                     index = m.get_measurement(cellprofiler.measurement.IMAGE,
-                                              "_".join((C_FRAME, image_name)))
-                    metadata[C_SERIES] = series
+                                              "_".join((cellprofiler.measurement.C_FRAME, image_name)))
+                    metadata[cellprofiler.measurement.C_SERIES] = series
                     for f in (M_Z, M_T):
                         feature = cellprofiler.measurement.C_METADATA + "_" + f
                         metadata[f] = m.get_measurement(cellprofiler.measurement.IMAGE, feature)
@@ -2206,7 +2193,7 @@ class LoadImages(cellprofiler.module.Module):
                             image_name, path, filename, series, index, rescale)
                 elif self.file_types == FF_AVI_MOVIES:
                     index = m.get_measurement(cellprofiler.measurement.IMAGE,
-                                              "_".join((C_FRAME, image_name)))
+                                              "_".join((cellprofiler.measurement.C_FRAME, image_name)))
                     metadata[M_T] = m.get_measurement(
                             cellprofiler.measurement.IMAGE, cellprofiler.measurement.C_METADATA + "_" + M_T)
                     provider = LoadImagesMovieFrameProvider(
@@ -2392,9 +2379,9 @@ class LoadImages(cellprofiler.module.Module):
                           (file_name_category, filename),
                           (url_category, url)]
             if series is not None:
-                image_data.append((C_SERIES, series))
+                image_data.append((cellprofiler.measurement.C_SERIES, series))
             if frame is not None:
-                image_data.append((C_FRAME, frame))
+                image_data.append((cellprofiler.measurement.C_FRAME, frame))
             for category, value in image_data:
                 add_fn("_".join((category, channel.get_image_name())), value)
         for key in metadata.keys():
@@ -2450,7 +2437,7 @@ class LoadImages(cellprofiler.module.Module):
         if self.has_path_metadata(fd):
             tags += cellprofiler.measurement.find_metadata_tokens(fd.path_metadata.value)
         if self.file_types == FF_OTHER_MOVIES:
-            tags += [M_Z, M_T, C_SERIES]
+            tags += [M_Z, M_T, cellprofiler.measurement.C_SERIES]
         elif self.file_types in (FF_AVI_MOVIES, FF_STK_MOVIES):
             tags += [M_T]
         if needs_well_metadata(tags):
@@ -2488,10 +2475,10 @@ class LoadImages(cellprofiler.module.Module):
             #
             # Pick the first channel for grouping movie frames
             #
-            series_feature = '_'.join((C_SERIES, image_name))
+            series_feature = '_'.join((cellprofiler.measurement.C_SERIES, image_name))
             # Default for Flex is to group by file name and series
             keys = (url_feature, series_feature)
-            mapping = dict(((url_feature, cellprofiler.measurement.C_URL), (series_feature, C_SERIES)))
+            mapping = dict(((url_feature, cellprofiler.measurement.C_URL), (series_feature, cellprofiler.measurement.C_SERIES)))
 
         elif self.load_movies():
             keys = (url_feature,)
@@ -2723,14 +2710,15 @@ class LoadImages(cellprofiler.module.Module):
 
         if object_name == cellprofiler.measurement.IMAGE:
             if has_image_name:
-                res += [cellprofiler.measurement.C_FILE_NAME, cellprofiler.measurement.C_PATH_NAME, cellprofiler.measurement.C_URL, C_MD5_DIGEST,
+                res += [cellprofiler.measurement.C_FILE_NAME, cellprofiler.measurement.C_PATH_NAME, cellprofiler.measurement.C_URL,
+                        C_MD5_DIGEST,
                         C_SCALING, C_HEIGHT, C_WIDTH]
             has_metadata = (self.file_types in
                             (FF_AVI_MOVIES, FF_STK_MOVIES, FF_OTHER_MOVIES))
             if self.file_types == FF_OTHER_MOVIES:
-                res += [C_SERIES, C_FRAME]
+                res += [cellprofiler.measurement.C_SERIES, cellprofiler.measurement.C_FRAME]
             elif self.load_movies():
-                res += [C_FRAME]
+                res += [cellprofiler.measurement.C_FRAME]
             for fd in self.images:
                 if fd.metadata_choice != M_NONE:
                     has_metadata = True
@@ -2801,12 +2789,12 @@ class LoadImages(cellprofiler.module.Module):
                 cols += [(cellprofiler.measurement.IMAGE, "_".join((url_category, name)),
                           cellprofiler.measurement.COLTYPE_VARCHAR_PATH_NAME)]
                 if self.file_types == FF_OTHER_MOVIES:
-                    cols += [(cellprofiler.measurement.IMAGE, "_".join((C_SERIES, name)),
+                    cols += [(cellprofiler.measurement.IMAGE, "_".join((cellprofiler.measurement.C_SERIES, name)),
                               cellprofiler.measurement.COLTYPE_INTEGER),
-                             (cellprofiler.measurement.IMAGE, "_".join((C_FRAME, name)),
+                             (cellprofiler.measurement.IMAGE, "_".join((cellprofiler.measurement.C_FRAME, name)),
                               cellprofiler.measurement.COLTYPE_INTEGER)]
                 elif self.load_movies():
-                    cols += [(cellprofiler.measurement.IMAGE, "_".join((C_FRAME, name)),
+                    cols += [(cellprofiler.measurement.IMAGE, "_".join((cellprofiler.measurement.C_FRAME, name)),
                               cellprofiler.measurement.COLTYPE_INTEGER)]
 
             if self.has_file_metadata(fd):

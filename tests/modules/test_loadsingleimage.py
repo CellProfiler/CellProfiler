@@ -366,7 +366,7 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
         li = cellprofiler.modules.loadimages.LoadImages()
         li.module_num = 2
         pipeline.add_module(li)
-        li.match_method.value = cellprofiler.modules.loadimages.MS_EXACT_MATCH
+        li.match_method.value = cellprofiler.image.MS_EXACT_MATCH
         li.location.dir_choice = cellprofiler.preferences.ABSOLUTE_FOLDER_NAME
         li.location.custom_path = path
         li.images[0].common_text.value = "Channel2-"

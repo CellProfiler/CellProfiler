@@ -10,7 +10,6 @@ import cellprofiler.measurement
 import cellprofiler.module
 import cellprofiler.modules
 import cellprofiler.modules.images
-import cellprofiler.modules.loadimages
 import cellprofiler.pipeline
 import cellprofiler.preferences
 import cellprofiler.region
@@ -1707,8 +1706,8 @@ class NamesAndTypes(cellprofiler.module.Module):
                            (cellprofiler.measurement.C_SCALING, cellprofiler.measurement.COLTYPE_FLOAT),
                            (cellprofiler.measurement.C_WIDTH, cellprofiler.measurement.COLTYPE_INTEGER),
                            (cellprofiler.measurement.C_HEIGHT, cellprofiler.measurement.COLTYPE_INTEGER),
-                           (cellprofiler.modules.loadimages.C_SERIES, cellprofiler.measurement.COLTYPE_INTEGER),
-                           (cellprofiler.modules.loadimages.C_FRAME, cellprofiler.measurement.COLTYPE_INTEGER)
+                           (cellprofiler.measurement.C_SERIES, cellprofiler.measurement.COLTYPE_INTEGER),
+                           (cellprofiler.measurement.C_FRAME, cellprofiler.measurement.COLTYPE_INTEGER)
                        )]
         for object_name in object_names:
             result += [(cellprofiler.measurement.IMAGE,
@@ -1742,8 +1741,8 @@ class NamesAndTypes(cellprofiler.module.Module):
                 result += [cellprofiler.measurement.C_OBJECTS_FILE_NAME, cellprofiler.measurement.C_OBJECTS_PATH_NAME,
                            cellprofiler.measurement.C_OBJECTS_URL, cellprofiler.identify.C_COUNT]
             result += [cellprofiler.measurement.C_MD5_DIGEST, cellprofiler.measurement.C_SCALING,
-                       cellprofiler.measurement.C_HEIGHT, cellprofiler.measurement.C_WIDTH, cellprofiler.modules.loadimages.C_SERIES,
-                       cellprofiler.modules.loadimages.C_FRAME]
+                       cellprofiler.measurement.C_HEIGHT, cellprofiler.measurement.C_WIDTH, cellprofiler.measurement.C_SERIES,
+                       cellprofiler.measurement.C_FRAME]
         elif object_name in self.get_object_names():
             result += [cellprofiler.identify.C_LOCATION, cellprofiler.identify.C_NUMBER]
         return result
@@ -1761,7 +1760,7 @@ class NamesAndTypes(cellprofiler.module.Module):
                 return object_names
             elif category in (cellprofiler.measurement.C_MD5_DIGEST, cellprofiler.measurement.C_SCALING,
                               cellprofiler.measurement.C_HEIGHT, cellprofiler.measurement.C_WIDTH,
-                              cellprofiler.modules.loadimages.C_SERIES, cellprofiler.modules.loadimages.C_FRAME):
+                              cellprofiler.measurement.C_SERIES, cellprofiler.measurement.C_FRAME):
                 return list(image_names) + list(object_names)
         elif object_name in self.get_object_names():
             if category == cellprofiler.identify.C_NUMBER:
@@ -1970,34 +1969,34 @@ class MetadataPredicate(cellprofiler.setting.Filter.FilterPredicate):
               NamesAndTypes.FakeModpathResolver(modpath, ipd)), *args)
 
 
-class ColorImageProvider(cellprofiler.modules.loadimages.LoadImagesImageProviderURL):
+class ColorImageProvider(cellprofiler.image.LoadImagesImageProviderURL):
     """Provide a color image, tripling a monochrome plane if needed"""
 
     def __init__(self, name, url, series, index, rescale=True):
-        cellprofiler.modules.loadimages.LoadImagesImageProviderURL.__init__(self, name, url,
-                                                                            rescale=rescale,
-                                                                            series=series,
-                                                                            index=index)
+        cellprofiler.image.LoadImagesImageProviderURL.__init__(self, name, url,
+                                                               rescale=rescale,
+                                                               series=series,
+                                                               index=index)
 
     def provide_image(self, image_set):
-        image = cellprofiler.modules.loadimages.LoadImagesImageProviderURL.provide_image(self, image_set)
+        image = cellprofiler.image.LoadImagesImageProviderURL.provide_image(self, image_set)
         if image.pixel_data.ndim == 2:
             image.pixel_data = numpy.dstack([image.pixel_data] * 3)
         return image
 
 
-class MonochromeImageProvider(cellprofiler.modules.loadimages.LoadImagesImageProviderURL):
+class MonochromeImageProvider(cellprofiler.image.LoadImagesImageProviderURL):
     """Provide a monochrome image, combining RGB if needed"""
 
     def __init__(self, name, url, series, index, channel, rescale=True):
-        cellprofiler.modules.loadimages.LoadImagesImageProviderURL.__init__(self, name, url,
-                                                                            rescale=rescale,
-                                                                            series=series,
-                                                                            index=index,
-                                                                            channel=channel)
+        cellprofiler.image.LoadImagesImageProviderURL.__init__(self, name, url,
+                                                               rescale=rescale,
+                                                               series=series,
+                                                               index=index,
+                                                               channel=channel)
 
     def provide_image(self, image_set):
-        image = cellprofiler.modules.loadimages.LoadImagesImageProviderURL.provide_image(self, image_set)
+        image = cellprofiler.image.LoadImagesImageProviderURL.provide_image(self, image_set)
         if image.pixel_data.ndim == 3:
             image.pixel_data = \
                 numpy.sum(image.pixel_data, 2) / image.pixel_data.shape[2]
@@ -2021,14 +2020,14 @@ class MaskImageProvider(MonochromeImageProvider):
         return image
 
 
-class ObjectsImageProvider(cellprofiler.modules.loadimages.LoadImagesImageProviderURL):
+class ObjectsImageProvider(cellprofiler.image.LoadImagesImageProviderURL):
     """Provide a multi-plane integer image, interpreting an image file as objects"""
 
     def __init__(self, name, url, series, index):
-        cellprofiler.modules.loadimages.LoadImagesImageProviderURL.__init__(self, name, url,
-                                                                            rescale=False,
-                                                                            series=series,
-                                                                            index=index)
+        cellprofiler.image.LoadImagesImageProviderURL.__init__(self, name, url,
+                                                               rescale=False,
+                                                               series=series,
+                                                               index=index)
 
     def provide_image(self, image_set):
         """Load an image from a pathname
@@ -2063,7 +2062,7 @@ class ObjectsImageProvider(cellprofiler.modules.loadimages.LoadImagesImageProvid
             img = bioformats.load_image(
                     self.get_full_name(),
                     rescale=False, **properties).astype(int)
-            img = cellprofiler.modules.loadimages.convert_image_to_objects(img).astype(numpy.int32)
+            img = cellprofiler.image.convert_image_to_objects(img).astype(numpy.int32)
             img[img != 0] += offset
             offset += numpy.max(img)
             planes.append(img)

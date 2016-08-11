@@ -27,7 +27,6 @@ import cellprofiler.gui.help
 import cellprofiler.measurement
 import cellprofiler.module
 import cellprofiler.modules
-import cellprofiler.modules.loadimages
 import cellprofiler.preferences
 import cellprofiler.setting
 import cellprofiler.utilities.url

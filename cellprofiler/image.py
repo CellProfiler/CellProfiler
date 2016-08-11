@@ -1,4 +1,123 @@
+import hashlib
+import os
+import tempfile
+import urllib
+import urlparse
+
+import cellprofiler.measurement
+import cellprofiler.preferences
+import cellprofiler.utilities
 import numpy
+import scipy.io
+
+'''Tag for loading images as images'''
+IO_IMAGES = "Images"
+'''Tag for loading images as segmentation results'''
+IO_OBJECTS = "Objects"
+IO_ALL = (IO_IMAGES, IO_OBJECTS)
+
+SUPPORTED_IMAGE_EXTENSIONS = {'.ppm', '.grib', '.im', '.rgba', '.rgb', '.pcd', '.h5', '.jpe', '.jfif', '.jpg', '.fli',
+                              '.sgi', '.gbr', '.pcx', '.mpeg', '.jpeg', '.ps', '.flc', '.tif', '.hdf', '.icns', '.gif',
+                              '.palm', '.mpg', '.fits', '.pgm', '.mic', '.fit', '.xbm', '.eps', '.emf', '.dcx', '.bmp',
+                              '.bw', '.pbm', '.dib', '.ras', '.cur', '.fpx', '.png', '.msp', '.iim', '.wmf', '.tga',
+                              '.bufr', '.ico', '.psd', '.xpm', '.arg', '.pdf', '.tiff'}
+
+SUPPORTED_IMAGE_EXTENSIONS.add(".mat")
+# The following is a list of the extensions as gathered from Bio-formats
+# Missing are .cfg, .csv, .html, .htm, .log, .txt, .xml and .zip which are likely
+# not to be images but you are welcome to add if needed
+#
+SUPPORTED_IMAGE_EXTENSIONS.update(
+        [".1sc", ".2fl", ".acff", ".afi", ".afm", ".aiix", ".aim", ".aisf",
+         ".al3d", ".ali", ".am", ".amiramesh", ".ano", ".apl", ".arf", ".atsf",
+         ".avi", ".bip", ".bmp", ".btf", ".c01", ".cr2", ".crw",
+         ".cxd", ".czi", ".dat", ".dcm", ".df3", ".dib", ".dic", ".dicom", ".dm2",
+         ".dm3", ".dm4", ".dti", ".dv", ".dv.log", ".eps", ".epsi", ".ets",
+         ".exp", ".fake", ".fdf", ".fff", ".ffr", ".fits", ".flex", ".fli",
+         ".frm", ".fts", ".gel", ".gif", ".grey", ".hdr", ".hed", ".his", ".htd",
+         ".hx", ".ics", ".ids", ".ima", ".img", ".ims", ".inf", ".inr", ".ipl",
+         ".ipm", ".ipw", ".j2k", ".j2ki", ".j2kr", ".jp2", ".jpe", ".jpeg",
+         ".jpf", ".jpg", ".jpk", ".jpx", ".l2d", ".labels", ".lei", ".lif",
+         ".liff", ".lim", ".lsm", ".lut", ".map", ".mdb", ".mea",
+         ".mnc", ".mng", ".mod", ".mrc", ".mrw", ".msr", ".mtb",
+         ".mvd2", ".naf", ".nd", ".nd2", ".ndpi", ".ndpis", ".nef", ".nhdr",
+         ".nii", ".nrrd", ".obf", ".oib", ".oif", ".ome", ".ome.tif",
+         ".ome.tiff", ".par", ".pcoraw", ".pct", ".pcx", ".pgm", ".pic",
+         ".pict", ".png", ".pnl", ".pr3", ".ps", ".psd", ".pst", ".pty",
+         ".r3d", ".r3d.log", ".r3d_d3d", ".raw", ".rec", ".res", ".scn",
+         ".sdt", ".seq", ".sif", ".sld", ".sm2", ".sm3", ".spi", ".spl",
+         ".st", ".stk", ".stp", ".svs", ".sxm", ".tf2", ".tf8", ".tfr",
+         ".tga", ".thm", ".tif", ".tiff", ".tim", ".tnb", ".top",
+         ".v", ".vms", ".vsi", ".vws", ".wat", ".wav", ".wlz", ".xdce",
+         ".xlog", ".xqd", ".xqf", ".xv", ".xys", ".zfp", ".zfr",
+         ".zpo", ".zvi"])
+
+SUPPORTED_MOVIE_EXTENSIONS = {'.avi', '.mpeg', '.stk', '.flex', '.mov', '.tif', '.tiff', '.zvi'}
+
+SUPPORTED_IMAGE_EXTENSIONS.update([
+    ".1sc", ".2fl", ".afm", ".aim", ".avi", ".co1", ".flex", ".fli", ".gel",
+    ".ics", ".ids", ".im", ".img", ".j2k", ".lif", ".lsm", ".mpeg", ".pic",
+    ".pict", ".ps", ".raw", ".svs", ".stk", ".tga", ".zvi", ".c01", ".xdce"])
+
+SUPPORTED_MOVIE_EXTENSIONS.update(['mng'])
+
+'''STK TIFF Tag UIC1 - for MetaMorph internal use'''
+UIC1_TAG = 33628
+
+'''STK TIFF Tag UIC2 - stack z distance, creation time...'''
+UIC2_TAG = 33629
+
+'''STK TIFF TAG UIC3 - wavelength'''
+UIC3_TAG = 33630
+
+'''STK TIFF TAG UIC4 - internal'''
+UIC4_TAG = 33631
+
+# strings for choice variables
+MS_EXACT_MATCH = 'Text-Exact match'
+MS_REGEXP = 'Text-Regular expressions'
+MS_ORDER = 'Order'
+FF_INDIVIDUAL_IMAGES = 'individual images'
+FF_STK_MOVIES = 'stk movies'
+FF_AVI_MOVIES = 'avi,mov movies'
+FF_AVI_MOVIES_OLD = ['avi movies']
+FF_OTHER_MOVIES = 'tif,tiff,flex,zvi movies'
+FF_OTHER_MOVIES_OLD = ['tif,tiff,flex movies', 'tif,tiff,flex movies, zvi movies']
+IMAGE_FOR_OBJECTS_F = "IMAGE_FOR_%s"
+FF = [FF_INDIVIDUAL_IMAGES, FF_STK_MOVIES, FF_AVI_MOVIES, FF_OTHER_MOVIES]
+M_NONE = "None"
+M_FILE_NAME = "File name"
+M_PATH = "Path"
+M_BOTH = "Both"
+M_Z = "Z"
+M_T = "T"
+
+'''The provider name for the image file image provider'''
+P_IMAGES = "LoadImagesImageProvider"
+'''The version number for the __init__ method of the image file image provider'''
+V_IMAGES = 1
+
+'''The provider name for the movie file image provider'''
+P_MOVIES = "LoadImagesMovieProvider"
+'''The version number for the __init__ method of the movie file image provider'''
+V_MOVIES = 2
+
+'''The provider name for the flex file image provider'''
+P_FLEX = 'LoadImagesFlexFrameProvider'
+'''The version number for the __init__ method of the flex file image provider'''
+V_FLEX = 1
+
+
+'''Interleaved movies'''
+I_INTERLEAVED = "Interleaved"
+
+'''Separated movies'''
+I_SEPARATED = "Separated"
+
+'''Subfolder choosing options'''
+SUB_NONE = "None"
+SUB_ALL = "All"
+SUB_SOME = "Some"
 
 
 class Image(object):
@@ -39,7 +158,8 @@ class Image(object):
     significant.
     """
 
-    def __init__(self, data=None, mask=None, crop_mask=None, parent=None, masking_objects=None, convert=True, pathname=None, filename=None, scale=None):
+    def __init__(self, data=None, mask=None, crop_mask=None, parent=None, masking_objects=None, convert=True,
+                 pathname=None, filename=None, scale=None):
         self.__image = data
         self.image = data
         self.pixel_data = data
@@ -161,7 +281,8 @@ class Image(object):
     @property
     def has_crop_mask(self):
         """True if the image or its ancestors has a crop mask"""
-        return self.__crop_mask is not None or self.has_masking_objects or (self.has_parent_image and self.parent.has_crop_mask)
+        return self.__crop_mask is not None or self.has_masking_objects or (
+        self.has_parent_image and self.parent.has_crop_mask)
 
     def crop_image_similarly(self, image):
         """Crop a 2-d or 3-d image using this image's crop mask
@@ -173,15 +294,18 @@ class Image(object):
             return image
 
         if any([my_size > other_size for my_size, other_size in zip(self.pixel_data.shape, image.shape)]):
-            raise ValueError("Image to be cropped is smaller: %s vs %s" % (repr(image.shape), repr(self.pixel_data.shape)))
+            raise ValueError(
+                "Image to be cropped is smaller: %s vs %s" % (repr(image.shape), repr(self.pixel_data.shape)))
 
         if not self.has_crop_mask:
-            raise RuntimeError("Images are of different size and no crop mask available.\nUse the Crop and Align modules to match images of different sizes.")
+            raise RuntimeError(
+                "Images are of different size and no crop mask available.\nUse the Crop and Align modules to match images of different sizes.")
 
         cropped_image = crop_image(image, self.crop_mask)
 
         if cropped_image.shape[0:2] != self.pixel_data.shape[0:2]:
-            raise ValueError("Cropped image is not the same size as the reference image: %s vs %s" % (repr(cropped_image.shape), repr(self.pixel_data.shape)))
+            raise ValueError("Cropped image is not the same size as the reference image: %s vs %s" % (
+            repr(cropped_image.shape), repr(self.pixel_data.shape)))
 
         return cropped_image
 
@@ -235,6 +359,7 @@ def check_consistency(image, mask):
 class AbstractImageProvider(object):
     """Represents an image provider that returns images
     """
+
     def provide_image(self, image_set):
         """Return the image that is associated with the image set
         """
@@ -300,7 +425,8 @@ class ImageSet(object):
         self.image_number = self.__number + 1
         self.__legacy_fields = legacy_fields
 
-    def get_image(self, name, must_be_binary=False, must_be_color=False, must_be_grayscale=False, must_be_rgb=False, cache=True):
+    def get_image(self, name, must_be_binary=False, must_be_color=False, must_be_grayscale=False, must_be_rgb=False,
+                  cache=True):
         """Return the image associated with the given name
 
         name - name of the image within the image_set
@@ -506,3 +632,395 @@ def make_dictionary_key(key):
     """Make a dictionary into a stable key for another dictionary"""
     return u", ".join([u":".join([unicode(y) for y in x]) for x in sorted(key.iteritems())])
 
+
+def default_cpimage_name(index):
+    # the usual suspects
+    names = ['DNA', 'Actin', 'Protein']
+    if index < len(names):
+        return names[index]
+    return 'Channel%d' % (index + 1)
+
+
+def well_metadata_tokens(tokens):
+    """Return the well row and well column tokens out of a set of metadata tokens"""
+
+    well_row_token = None
+    well_column_token = None
+    for token in tokens:
+        if cellprofiler.measurement.is_well_row_token(token):
+            well_row_token = token
+        if cellprofiler.measurement.is_well_column_token(token):
+            well_column_token = token
+    return well_row_token, well_column_token
+
+
+def needs_well_metadata(tokens):
+    """Return true if, based on a set of metadata tokens, we need a well token
+
+    Check for a row and column token and the absence of the well token.
+    """
+    if cellprofiler.measurement.FTR_WELL.lower() in [x.lower() for x in tokens]:
+        return False
+    well_row_token, well_column_token = well_metadata_tokens(tokens)
+    return (well_row_token is not None) and (well_column_token is not None)
+
+
+def is_image(filename):
+    """Determine if a filename is a potential image file based on extension"""
+    ext = os.path.splitext(filename)[1].lower()
+    return ext in SUPPORTED_IMAGE_EXTENSIONS
+
+
+def is_movie(filename):
+    ext = os.path.splitext(filename)[1].lower()
+    return ext in SUPPORTED_MOVIE_EXTENSIONS
+
+
+class LoadImagesImageProviderBase(cellprofiler.image.AbstractImageProvider):
+    """Base for image providers: handle pathname and filename & URLs"""
+
+    def __init__(self, name, pathname, filename):
+        """Initializer
+
+        name - name of image to be provided
+        pathname - path to file or base of URL
+        filename - filename of file or last chunk of URL
+        """
+        if pathname.startswith(cellprofiler.utilities.url.FILE_SCHEME):
+            pathname = cellprofiler.utilities.url.url2pathname(pathname)
+        self.__name = name
+        self.__pathname = pathname
+        self.__filename = filename
+        self.__cached_file = None
+        self.__is_cached = False
+        self.__cacheing_tried = False
+        if pathname is None:
+            self.__url = filename
+        elif any([pathname.startswith(s + ":") for s in cellprofiler.utilities.url.PASSTHROUGH_SCHEMES]):
+            if filename is not None:
+                self.__url = pathname + "/" + filename
+            else:
+                self.__url = pathname
+        elif filename is None:
+            self.__url = cellprofiler.utilities.url.pathname2url(pathname)
+        else:
+            self.__url = cellprofiler.utilities.url.pathname2url(os.path.join(pathname, filename))
+
+    def get_name(self):
+        return self.__name
+
+    def get_pathname(self):
+        return self.__pathname
+
+    def get_filename(self):
+        return self.__filename
+
+    def cache_file(self):
+        """Cache a file that needs to be HTTP downloaded
+
+        Return True if the file has been cached
+        """
+        if self.__cacheing_tried:
+            return self.__is_cached
+        self.__cacheing_tried = True
+        #
+        # Check to see if the pathname can be accessed as a directory
+        # If so, handle normally
+        #
+        path = self.get_pathname()
+        if len(path) == 0:
+            filename = self.get_filename()
+            if os.path.exists(filename):
+                return False
+            parsed_path = urlparse.urlparse(filename)
+            url = filename
+            if len(parsed_path.scheme) < 2:
+                raise IOError("Test for access to file failed. File: %s" % filename)
+        elif os.path.exists(path):
+            return False
+        else:
+            parsed_path = urlparse.urlparse(path)
+            url = '/'.join((path, self.get_filename()))
+            #
+            # Scheme length == 0 means no scheme
+            # Scheme length == 1 - probably DOS drive letter
+            #
+            if len(parsed_path.scheme) < 2:
+                raise IOError("Test for access to directory failed. Directory: %s" % path)
+        if parsed_path.scheme == 'file':
+            self.__cached_file = cellprofiler.utilities.url.url2pathname(path)
+        elif self.is_matlab_file():
+            #
+            # urlretrieve uses the suffix of the path component of the URL
+            # to name the temporary file, so we replicate that behavior
+            #
+            temp_dir = cellprofiler.preferences.get_temporary_directory()
+            tempfd, temppath = tempfile.mkstemp(suffix=".mat", dir=temp_dir)
+            self.__cached_file = temppath
+            try:
+                self.__cached_file, headers = urllib.urlretrieve(
+                        url, filename=temppath)
+            finally:
+                os.close(tempfd)
+        else:
+            from bioformats.formatreader import get_image_reader
+            rdr = get_image_reader(id(self), url=url)
+            self.__cached_file = rdr.path
+        self.__is_cached = True
+        return True
+
+    def get_full_name(self):
+        self.cache_file()
+        if self.__is_cached:
+            return self.__cached_file
+        return os.path.join(self.get_pathname(), self.get_filename())
+
+    def get_url(self):
+        """Get the URL representation of the file location"""
+        return self.__url
+
+    def is_matlab_file(self):
+        """Return True if the file name ends with .mat (no Bio-formats)"""
+        path = urlparse.urlparse(self.get_url())[2]
+        return path.lower().endswith(".mat")
+
+    def get_md5_hash(self, measurements):
+        """Compute the MD5 hash of the underlying file or use cached value
+
+        measurements - backup for case where MD5 is calculated on image data
+                       directly retrieved from URL
+        """
+        #
+        # Cache the MD5 hash on the image reader
+        #
+        if self.is_matlab_file():
+            rdr = None
+        else:
+            from bioformats.formatreader import get_image_reader
+            rdr = get_image_reader(None, url=self.get_url())
+        if rdr is None or not hasattr(rdr, "md5_hash"):
+            hasher = hashlib.md5()
+            path = self.get_full_name()
+            if not os.path.isfile(path):
+                # No file here - hash the image
+                image = self.provide_image(measurements)
+                hasher.update(image.pixel_data.tostring())
+            else:
+                with open(self.get_full_name(), "rb") as fd:
+                    while True:
+                        buf = fd.read(65536)
+                        if len(buf) == 0:
+                            break
+                        hasher.update(buf)
+            if rdr is None:
+                return hasher.hexdigest()
+            rdr.md5_hash = hasher.hexdigest()
+        return rdr.md5_hash
+
+    def release_memory(self):
+        """Release any image memory
+
+        Possibly delete the temporary file"""
+        if self.__is_cached:
+            if self.is_matlab_file():
+                try:
+                    os.remove(self.__cached_file)
+                except:
+                    pass
+            else:
+                from bioformats.formatreader import release_image_reader
+                release_image_reader(id(self))
+            self.__is_cached = False
+            self.__cacheing_tried = False
+            self.__cached_file = None
+
+    def __del__(self):
+        # using __del__ is all kinds of bad, but we need to remove the
+        # files to keep the system from filling up.
+        self.release_memory()
+
+
+class LoadImagesImageProvider(LoadImagesImageProviderBase):
+    """Provide an image by filename, loading the file as it is requested
+    """
+
+    def __init__(self, name, pathname, filename, rescale=True,
+                 series=None, index=None, channel=None):
+        super(LoadImagesImageProvider, self).__init__(name, pathname, filename)
+        self.rescale = rescale
+        self.series = series
+        self.index = index
+        self.channel = channel
+
+    def provide_image(self, image_set):
+        """Load an image from a pathname
+        """
+        from bioformats.formatreader import get_image_reader
+        self.cache_file()
+        filename = self.get_filename()
+        channel_names = []
+        if isinstance(self.rescale, float):
+            rescale = False
+        else:
+            rescale = self.rescale
+        if self.is_matlab_file():
+            with open(self.get_full_name(), "rb") as fd:
+                imgdata = scipy.io.matlab.mio.loadmat(
+                        fd, struct_as_record=True)
+            img = imgdata["Image"]
+            # floating point - scale = 1:1
+            self.scale = 1.0
+            pixel_type_scale = 1.0
+        else:
+            url = self.get_url()
+            if url.lower().startswith("omero:"):
+                rdr = get_image_reader(self.get_name(), url=url)
+            else:
+                rdr = get_image_reader(
+                        self.get_name(), url=self.get_url())
+            if numpy.isscalar(self.index) or self.index is None:
+                img, self.scale = rdr.read(
+                        c=self.channel,
+                        series=self.series,
+                        index=self.index,
+                        rescale=self.rescale,
+                        wants_max_intensity=True,
+                        channel_names=channel_names)
+            else:
+                # It's a stack
+                stack = []
+                if numpy.isscalar(self.series):
+                    series_list = [self.series] * len(self.index)
+                else:
+                    series_list = self.series
+                if not numpy.isscalar(self.channel):
+                    channel_list = [self.channel] * len(self.index)
+                else:
+                    channel_list = self.channel
+                for series, index, channel in zip(
+                        series_list, self.index, channel_list):
+                    img, self.scale = rdr.read(
+                            c=channel,
+                            series=series,
+                            index=index,
+                            rescale=self.rescale,
+                            wants_max_intensity=True,
+                            channel_names=channel_names)
+                    stack.append(img)
+                img = numpy.dstack(stack)
+        if isinstance(self.rescale, float):
+            # Apply a manual rescale
+            img = img.astype(numpy.float32) / self.rescale
+        image = cellprofiler.image.Image(img,
+                                         pathname=self.get_pathname(),
+                                         filename=self.get_filename(),
+                                         scale=self.scale)
+        if img.ndim == 3 and len(channel_names) == img.shape[2]:
+            image.channel_names = list(channel_names)
+        return image
+
+
+class LoadImagesImageProviderURL(LoadImagesImageProvider):
+    """Reference an image via a URL"""
+
+    def __init__(self, name, url, rescale=True,
+                 series=None, index=None, channel=None):
+        if url.lower().startswith("file:"):
+            path = cellprofiler.utilities.url.url2pathname(url)
+            pathname, filename = os.path.split(path)
+        else:
+            pathname = ""
+            filename = url
+        super(LoadImagesImageProviderURL, self).__init__(
+                name, pathname, filename, rescale, series, index, channel)
+        self.url = url
+
+    def get_url(self):
+        if self.cache_file():
+            return super(LoadImagesImageProviderURL, self).get_url()
+        return self.url
+
+
+class LoadImagesMovieFrameProvider(LoadImagesImageProvider):
+    """Provide an image by filename:frame, loading the file as it is requested
+    """
+
+    def __init__(self, name, pathname, filename, frame, rescale):
+        super(LoadImagesMovieFrameProvider, self).__init__(
+                name, pathname, filename, rescale, index=frame)
+
+
+class LoadImagesFlexFrameProvider(LoadImagesImageProvider):
+    """Provide an image by filename:frame, loading the file as it is requested
+    """
+
+    def __init__(self, name, pathname, filename, series, index, rescale):
+        super(LoadImagesFlexFrameProvider, self).__init__(
+                name, pathname, filename,
+                rescale=rescale,
+                series=series,
+                index=index)
+
+
+class LoadImagesSTKFrameProvider(LoadImagesImageProvider):
+    """Provide an image by filename:frame from an STK file"""
+
+    def __init__(self, name, pathname, filename, frame, rescale):
+        """Initialize the provider
+
+        name - name of the provider for access from image set
+        pathname - path to the file
+        filename - name of the file
+        frame - # of the frame to provide
+        """
+        super(LoadImagesSTKFrameProvider, self).__init__(
+                name, pathname, filename, rescale=rescale, index=frame)
+
+
+def convert_image_to_objects(image):
+    """Interpret an image as object indices
+
+    image - a greyscale or color image, assumes zero == background
+
+    returns - a similarly shaped integer array with zero representing background
+              and other values representing the indices of the associated object.
+    """
+    assert isinstance(image, numpy.ndarray)
+    if image.ndim == 2:
+        unique_indices = numpy.unique(image.ravel())
+        if (len(unique_indices) * 2 > max(numpy.max(unique_indices), 254) and
+                numpy.all(numpy.abs(numpy.round(unique_indices, 1) - unique_indices) <=
+                           numpy.finfo(float).eps)):
+            # Heuristic: reinterpret only if sparse and roughly integer
+            return numpy.round(image).astype(int)
+        sorting = lambda x: [x]
+        comparison = lambda i0, i1: image.ravel()[i0] != image.ravel()[i1]
+    else:
+        i, j = numpy.mgrid[0:image.shape[0], 0:image.shape[1]]
+        sorting = lambda x: [x[:, :, 2], x[:, :, 1], x[:, :, 0]]
+        comparison = lambda i0, i1: \
+            numpy.any(image[i.ravel()[i0], j.ravel()[i0], :] !=
+                   image[i.ravel()[i1], j.ravel()[i1], :], 1)
+    order = numpy.lexsort([x.ravel() for x in sorting(image)])
+    different = numpy.hstack([[False], comparison(order[:-1], order[1:])])
+    index = numpy.cumsum(different)
+    image = numpy.zeros(image.shape[:2], index.dtype)
+    image.ravel()[order] = index
+    return image
+
+
+def bad_sizes_warning(first_size, first_filename,
+                      second_size, second_filename):
+    """Return a warning message about sizes being wrong
+
+    first_size: tuple of height / width of first image
+    first_filename: file name of first image
+    second_size: tuple of height / width of second image
+    second_filename: file name of second image
+    """
+    warning = ("Warning: loading image files of different dimensions.\n\n"
+               "%s: width = %d, height = %d\n"
+               "%s: width = %d, height = %d") % (
+                  first_filename, first_size[1], first_size[0],
+                  second_filename, second_size[1], second_size[0])
+    return warning

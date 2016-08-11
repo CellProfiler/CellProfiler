@@ -48,7 +48,6 @@ import cellprofiler.module
 import cellprofiler.modules
 import cellprofiler.modules.groups
 import cellprofiler.modules.images
-import cellprofiler.modules.loadimages
 import cellprofiler.modules.metadata
 import cellprofiler.modules.namesandtypes
 import cellprofiler.preferences
@@ -151,7 +150,7 @@ class LoadSingleImage(cellprofiler.module.Module):
         )
 
         group.append("image_objects_choice", cellprofiler.setting.Choice(
-                'Load as images or objects?', cellprofiler.modules.loadimages.IO_ALL, doc="""
+                'Load as images or objects?', cellprofiler.image.IO_ALL, doc="""
                     This setting determines whether you load an image as image data
                     or as segmentation results (i.e., objects):
                     <ul>
@@ -259,7 +258,7 @@ class LoadSingleImage(cellprofiler.module.Module):
             file_setting.file_name.text = URL_TEXT if url_based else FILE_TEXT
             result += [
                 file_setting.file_name, file_setting.image_objects_choice]
-            if file_setting.image_objects_choice == cellprofiler.modules.loadimages.IO_IMAGES:
+            if file_setting.image_objects_choice == cellprofiler.image.IO_IMAGES:
                 result += [file_setting.image_name, file_setting.rescale]
             else:
                 result += [file_setting.objects_name, file_setting.wants_outlines]
@@ -312,7 +311,7 @@ class LoadSingleImage(cellprofiler.module.Module):
             file_pattern = file_setting.file_name.value
             file_name = workspace.measurements.apply_metadata(file_pattern,
                                                               image_set_number)
-            if file_setting.image_objects_choice == cellprofiler.modules.loadimages.IO_IMAGES:
+            if file_setting.image_objects_choice == cellprofiler.image.IO_IMAGES:
                 image_name = file_setting.image_name.value
             else:
                 image_name = file_setting.objects_name.value
@@ -323,17 +322,17 @@ class LoadSingleImage(cellprofiler.module.Module):
     def get_file_settings(self, image_name):
         """Get the file settings associated with a given image name"""
         for file_setting in self.file_settings:
-            if (file_setting.image_objects_choice == cellprofiler.modules.loadimages.IO_IMAGES and
+            if (file_setting.image_objects_choice == cellprofiler.image.IO_IMAGES and
                         file_setting.image_name == image_name):
                 return file_setting
-            if (file_setting.image_objects_choice == cellprofiler.modules.loadimages.IO_OBJECTS and
+            if (file_setting.image_objects_choice == cellprofiler.image.IO_OBJECTS and
                         file_setting.objects_name == image_name):
                 return file_setting
         return None
 
     def file_wants_images(self, file_setting):
         """True if the file_setting produces images, false if it produces objects"""
-        return file_setting.image_objects_choice == cellprofiler.modules.loadimages.IO_IMAGES
+        return file_setting.image_objects_choice == cellprofiler.image.IO_IMAGES
 
     def is_load_module(self):
         return True
@@ -353,7 +352,7 @@ class LoadSingleImage(cellprofiler.module.Module):
             dict = self.get_file_names(workspace, image_set_number=image_number)
             for image_name in dict.keys():
                 file_settings = self.get_file_settings(image_name)
-                if file_settings.image_objects_choice == cellprofiler.modules.loadimages.IO_IMAGES:
+                if file_settings.image_objects_choice == cellprofiler.image.IO_IMAGES:
                     #
                     # Add measurements
                     #
@@ -409,7 +408,7 @@ class LoadSingleImage(cellprofiler.module.Module):
             filename = m.get_current_image_measurement(m_file)
             rescale = (wants_images and file_setting.rescale.value)
 
-            provider = cellprofiler.modules.loadimages.LoadImagesImageProvider(
+            provider = cellprofiler.image.LoadImagesImageProvider(
                     image_name, pathname, filename, rescale)
             image = provider.provide_image(image_set)
             pixel_data = image.pixel_data
@@ -428,7 +427,7 @@ class LoadSingleImage(cellprofiler.module.Module):
                 #
                 # Turn image into objects
                 #
-                labels = cellprofiler.modules.loadimages.convert_image_to_objects(pixel_data)
+                labels = cellprofiler.image.convert_image_to_objects(pixel_data)
                 objects = cellprofiler.region.Region()
                 objects.segmented = labels
                 object_set = workspace.object_set
@@ -462,7 +461,7 @@ class LoadSingleImage(cellprofiler.module.Module):
     def get_measurement_columns(self, pipeline):
         columns = []
         for file_setting in self.file_settings:
-            if file_setting.image_objects_choice == cellprofiler.modules.loadimages.IO_IMAGES:
+            if file_setting.image_objects_choice == cellprofiler.image.IO_IMAGES:
                 image_name = file_setting.image_name.value
                 path_name_category = cellprofiler.measurement.C_PATH_NAME
                 file_name_category = cellprofiler.measurement.C_FILE_NAME
@@ -488,13 +487,13 @@ class LoadSingleImage(cellprofiler.module.Module):
     def wants_images(self):
         """True if any file setting loads images"""
         return any([True for file_setting in self.file_settings
-                    if file_setting.image_objects_choice == cellprofiler.modules.loadimages.IO_IMAGES])
+                    if file_setting.image_objects_choice == cellprofiler.image.IO_IMAGES])
 
     @property
     def wants_objects(self):
         """True if any file setting loads objects"""
         return any([True for file_setting in self.file_settings
-                    if file_setting.image_objects_choice == cellprofiler.modules.loadimages.IO_OBJECTS])
+                    if file_setting.image_objects_choice == cellprofiler.image.IO_OBJECTS])
 
     def get_categories(self, pipeline, object_name):
         result = []
@@ -506,7 +505,7 @@ class LoadSingleImage(cellprofiler.module.Module):
             if self.wants_objects:
                 result += [cellprofiler.identify.C_COUNT, cellprofiler.measurement.C_OBJECTS_FILE_NAME, cellprofiler.measurement.C_OBJECTS_PATH_NAME]
         if any([True for file_setting in self.file_settings
-                if file_setting.image_objects_choice == cellprofiler.modules.loadimages.IO_OBJECTS and
+                if file_setting.image_objects_choice == cellprofiler.image.IO_OBJECTS and
                                 object_name == file_setting.objects_name]):
             result += [cellprofiler.identify.C_LOCATION, cellprofiler.identify.C_NUMBER]
         return result
@@ -524,12 +523,12 @@ class LoadSingleImage(cellprofiler.module.Module):
                             cellprofiler.measurement.C_WIDTH):
                 result += [file_setting.image_name.value
                            for file_setting in self.file_settings
-                           if file_setting.image_objects_choice == cellprofiler.modules.loadimages.IO_IMAGES]
+                           if file_setting.image_objects_choice == cellprofiler.image.IO_IMAGES]
             if category in (cellprofiler.measurement.C_OBJECTS_FILE_NAME, cellprofiler.measurement.C_OBJECTS_PATH_NAME, cellprofiler.identify.C_COUNT):
                 result += [file_setting.objects_name.value
                            for file_setting in self.file_settings
-                           if file_setting.image_objects_choice == cellprofiler.modules.loadimages.IO_OBJECTS]
-        elif any([file_setting.image_objects_choice == cellprofiler.modules.loadimages.IO_OBJECTS and
+                           if file_setting.image_objects_choice == cellprofiler.image.IO_OBJECTS]
+        elif any([file_setting.image_objects_choice == cellprofiler.image.IO_OBJECTS and
                                   file_setting.objects_name == object_name
                   for file_setting in self.file_settings]):
             if category == cellprofiler.identify.C_NUMBER:
@@ -574,7 +573,7 @@ class LoadSingleImage(cellprofiler.module.Module):
         warning_text = "The image name has questionable characters. The pipeline can use this name " \
                        "and produce results, but downstream programs that use this data (e.g, MATLAB, MySQL) may error."
         for file_setting in self.file_settings:
-            if file_setting.image_objects_choice == cellprofiler.modules.loadimages.IO_IMAGES:
+            if file_setting.image_objects_choice == cellprofiler.image.IO_IMAGES:
                 if not re.match(invalid_chars_pattern, file_setting.image_name.value):
                     raise cellprofiler.setting.ValidationError(warning_text, file_setting.image_name)
 
@@ -591,7 +590,7 @@ class LoadSingleImage(cellprofiler.module.Module):
         for group in self.file_settings:
             tags = []
             file_name = group.file_name.value
-            if group.image_objects_choice == cellprofiler.modules.loadimages.IO_IMAGES:
+            if group.image_objects_choice == cellprofiler.image.IO_IMAGES:
                 name = group.image_name.value
             else:
                 name = group.objects_name.value
@@ -674,7 +673,7 @@ class LoadSingleImage(cellprofiler.module.Module):
                 namesandtypes.join.build(joins)
 
             assignment.rule_filter.build(structure)
-            if group.image_objects_choice == cellprofiler.modules.loadimages.IO_IMAGES:
+            if group.image_objects_choice == cellprofiler.image.IO_IMAGES:
                 assignment.image_name.value = name
                 assignment.load_as_choice.value = cellprofiler.modules.namesandtypes.LOAD_AS_GRAYSCALE_IMAGE
             else:
@@ -760,7 +759,7 @@ class LoadSingleImage(cellprofiler.module.Module):
             for i in range(1, len(setting_values), S_FILE_SETTINGS_COUNT_V4):
                 new_setting_values += [
                     setting_values[i + S_FILE_NAME_OFFSET_V4],
-                    cellprofiler.modules.loadimages.IO_IMAGES,
+                    cellprofiler.image.IO_IMAGES,
                     setting_values[i + S_IMAGE_NAME_OFFSET_V4],
                     "Nuclei",
                     cellprofiler.setting.NO,

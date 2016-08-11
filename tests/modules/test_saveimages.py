@@ -748,9 +748,9 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_listener(self.on_event)
         load_images = cellprofiler.modules.loadimages.LoadImages()
-        load_images.file_types.value = cellprofiler.modules.loadimages.FF_INDIVIDUAL_IMAGES
+        load_images.file_types.value = cellprofiler.image.FF_INDIVIDUAL_IMAGES
         load_images.location.dir_choice = cellprofiler.preferences.DEFAULT_INPUT_FOLDER_NAME
-        load_images.match_method.value = cellprofiler.modules.loadimages.MS_EXACT_MATCH
+        load_images.match_method.value = cellprofiler.image.MS_EXACT_MATCH
         load_images.images[0].common_text.value = '.tif'
         load_images.images[0].channels[0].image_name.value = 'Orig'
         load_images.module_num = 1
@@ -806,8 +806,8 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
         pipeline.add_listener(self.on_event)
         load_images = cellprofiler.modules.loadimages.LoadImages()
         load_images.location.dir_choice = cellprofiler.preferences.DEFAULT_INPUT_FOLDER_NAME
-        load_images.file_types.value = cellprofiler.modules.loadimages.FF_INDIVIDUAL_IMAGES
-        load_images.match_method.value = cellprofiler.modules.loadimages.MS_EXACT_MATCH
+        load_images.file_types.value = cellprofiler.image.FF_INDIVIDUAL_IMAGES
+        load_images.match_method.value = cellprofiler.image.MS_EXACT_MATCH
         load_images.images[0].common_text.value = '.tif'
         load_images.images[0].channels[0].image_name.value = 'Orig'
         load_images.module_num = 1
@@ -864,8 +864,8 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
         pipeline.add_listener(self.on_event)
         load_images = cellprofiler.modules.loadimages.LoadImages()
         load_images.location.dir_choice = cellprofiler.preferences.DEFAULT_INPUT_FOLDER_NAME
-        load_images.file_types.value = cellprofiler.modules.loadimages.FF_INDIVIDUAL_IMAGES
-        load_images.match_method.value = cellprofiler.modules.loadimages.MS_EXACT_MATCH
+        load_images.file_types.value = cellprofiler.image.FF_INDIVIDUAL_IMAGES
+        load_images.match_method.value = cellprofiler.image.MS_EXACT_MATCH
         load_images.images[0].common_text.value = '.tif'
         load_images.images[0].channels[0].image_name.value = 'Orig'
         load_images.module_num = 1
@@ -914,8 +914,8 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
         pipeline.add_listener(self.on_event)
         load_images = cellprofiler.modules.loadimages.LoadImages()
         load_images.location.dir_choice = cellprofiler.preferences.DEFAULT_INPUT_FOLDER_NAME
-        load_images.file_types.value = cellprofiler.modules.loadimages.FF_INDIVIDUAL_IMAGES
-        load_images.match_method.value = cellprofiler.modules.loadimages.MS_EXACT_MATCH
+        load_images.file_types.value = cellprofiler.image.FF_INDIVIDUAL_IMAGES
+        load_images.match_method.value = cellprofiler.image.MS_EXACT_MATCH
         load_images.images[0].common_text.value = '.tif'
         load_images.images[0].channels[0].image_name.value = 'Orig'
         load_images.module_num = 1
@@ -972,8 +972,8 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
         pipeline.add_listener(self.on_event)
         load_images = cellprofiler.modules.loadimages.LoadImages()
         load_images.location.dir_choice = cellprofiler.preferences.DEFAULT_INPUT_FOLDER_NAME
-        load_images.file_types.value = cellprofiler.modules.loadimages.FF_INDIVIDUAL_IMAGES
-        load_images.match_method.value = cellprofiler.modules.loadimages.MS_EXACT_MATCH
+        load_images.file_types.value = cellprofiler.image.FF_INDIVIDUAL_IMAGES
+        load_images.match_method.value = cellprofiler.image.MS_EXACT_MATCH
         load_images.images[0].common_text.value = '.tif'
         load_images.images[0].channels[0].image_name.value = 'Orig'
         load_images.module_num = 1
@@ -1031,8 +1031,8 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
         pipeline.add_listener(self.on_event)
         load_images = cellprofiler.modules.loadimages.LoadImages()
         load_images.location.dir_choice = cellprofiler.preferences.DEFAULT_INPUT_FOLDER_NAME
-        load_images.file_types.value = cellprofiler.modules.loadimages.FF_INDIVIDUAL_IMAGES
-        load_images.match_method.value = cellprofiler.modules.loadimages.MS_EXACT_MATCH
+        load_images.file_types.value = cellprofiler.image.FF_INDIVIDUAL_IMAGES
+        load_images.match_method.value = cellprofiler.image.MS_EXACT_MATCH
         load_images.images[0].common_text.value = '.tif'
         load_images.images[0].channels[0].image_name.value = 'Orig'
         load_images.module_num = 1
@@ -1090,8 +1090,8 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
         pipeline.add_listener(self.on_event)
         load_images = cellprofiler.modules.loadimages.LoadImages()
         load_images.location.dir_choice = cellprofiler.preferences.DEFAULT_INPUT_FOLDER_NAME
-        load_images.file_types.value = cellprofiler.modules.loadimages.FF_INDIVIDUAL_IMAGES
-        load_images.match_method.value = cellprofiler.modules.loadimages.MS_EXACT_MATCH
+        load_images.file_types.value = cellprofiler.image.FF_INDIVIDUAL_IMAGES
+        load_images.match_method.value = cellprofiler.image.MS_EXACT_MATCH
         load_images.images[0].common_text.value = '.tif'
         load_images.images[0].channels[0].image_name.value = 'Orig'
         load_images.module_num = 1
@@ -1151,8 +1151,8 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
         pipeline.add_listener(self.on_event)
         load_images = cellprofiler.modules.loadimages.LoadImages()
         load_images.location.dir_choice = cellprofiler.preferences.DEFAULT_INPUT_FOLDER_NAME
-        load_images.file_types.value = cellprofiler.modules.loadimages.FF_INDIVIDUAL_IMAGES
-        load_images.match_method.value = cellprofiler.modules.loadimages.MS_EXACT_MATCH
+        load_images.file_types.value = cellprofiler.image.FF_INDIVIDUAL_IMAGES
+        load_images.match_method.value = cellprofiler.image.MS_EXACT_MATCH
         load_images.images[0].common_text.value = '.tif'
         load_images.images[0].channels[0].image_name.value = 'Orig'
         load_images.module_num = 1
@@ -1201,8 +1201,8 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
         pipeline.add_listener(self.on_event)
         load_images = cellprofiler.modules.loadimages.LoadImages()
         load_images.location.dir_choice = cellprofiler.preferences.DEFAULT_INPUT_FOLDER_NAME
-        load_images.file_types.value = cellprofiler.modules.loadimages.FF_INDIVIDUAL_IMAGES
-        load_images.match_method.value = cellprofiler.modules.loadimages.MS_EXACT_MATCH
+        load_images.file_types.value = cellprofiler.image.FF_INDIVIDUAL_IMAGES
+        load_images.match_method.value = cellprofiler.image.MS_EXACT_MATCH
         load_images.images[0].common_text.value = '.tif'
         load_images.images[0].channels[0].image_name.value = 'Orig'
         load_images.module_num = 1
@@ -1370,9 +1370,9 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
         pipeline.add_listener(self.on_event)
         load_images = cellprofiler.modules.loadimages.LoadImages()
         load_images.location.dir_choice = cellprofiler.preferences.DEFAULT_INPUT_FOLDER_NAME
-        load_images.file_types.value = cellprofiler.modules.loadimages.FF_INDIVIDUAL_IMAGES
-        load_images.match_method.value = cellprofiler.modules.loadimages.MS_EXACT_MATCH
-        load_images.descend_subdirectories.value = cellprofiler.modules.loadimages.SUB_ALL
+        load_images.file_types.value = cellprofiler.image.FF_INDIVIDUAL_IMAGES
+        load_images.match_method.value = cellprofiler.image.MS_EXACT_MATCH
+        load_images.descend_subdirectories.value = cellprofiler.image.SUB_ALL
         load_images.images[0].common_text.value = '.tif'
         load_images.images[0].channels[0].image_name.value = 'Orig'
         load_images.module_num = 1

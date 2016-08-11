@@ -156,10 +156,10 @@ import logging
 import os
 
 import cellprofiler.identify
+import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.module
 import cellprofiler.modules
-import cellprofiler.modules.loadimages
 import cellprofiler.preferences
 import cellprofiler.region
 import cellprofiler.setting
@@ -472,7 +472,6 @@ class LoadData(cellprofiler.module.Module):
 
         The best practice is to have a single LoadImages or LoadData module.
         """
-        from cellprofiler.modules.loadimages import LoadImages
 
         for module in pipeline.modules():
             if id(module) == id(self):
@@ -484,15 +483,15 @@ class LoadData(cellprofiler.module.Module):
                         "Consider combining the CSV files from all of your\n"
                         "LoadData modules into one and using only a single\n"
                         "LoadData module", self.csv_file_name)
-            if isinstance(module, LoadImages):
-                raise cellprofiler.setting.ValidationError(
-                        "Your pipeline has a LoadImages and LoadData module.\n"
-                        "The best practice is to have only a single LoadImages\n"
-                        "or LoadData module. This LoadData module will match its\n"
-                        "metadata against that of the previous LoadImages module\n"
-                        "in an attempt to reconcile the two modules' image\n"
-                        "set lists and this can result in image sets with\n"
-                        "missing images or metadata.", self.csv_file_name)
+            # if isinstance(module, LoadImages):
+            #     raise cellprofiler.setting.ValidationError(
+            #             "Your pipeline has a LoadImages and LoadData module.\n"
+            #             "The best practice is to have only a single LoadImages\n"
+            #             "or LoadData module. This LoadData module will match its\n"
+            #             "metadata against that of the previous LoadImages module\n"
+            #             "in an attempt to reconcile the two modules' image\n"
+            #             "set lists and this can result in image sets with\n"
+            #             "missing images or metadata.", self.csv_file_name)
 
         # check that user has selected fields for grouping if grouping is turned on
         if self.wants_image_groupings.value and (len(self.metadata_fields.selections) == 0):
@@ -1034,8 +1033,8 @@ class LoadData(cellprofiler.module.Module):
         path_base = self.image_path
         if is_image_name:
             url_feature = cellprofiler.measurement.C_URL + "_" + name
-            series_feature = cellprofiler.modules.loadimages.C_SERIES + "_" + name
-            frame_feature = cellprofiler.modules.loadimages.C_FRAME + "_" + name
+            series_feature = cellprofiler.measurement.C_SERIES + "_" + name
+            frame_feature = cellprofiler.measurement.C_FRAME + "_" + name
         else:
             url_feature = cellprofiler.measurement.C_OBJECTS_URL + "_" + name
             series_feature = cellprofiler.measurement.C_OBJECTS_SERIES + "_" + name
@@ -1052,7 +1051,7 @@ class LoadData(cellprofiler.module.Module):
             frame = measurements[cellprofiler.measurement.IMAGE, frame_feature]
         else:
             frame = None
-        return cellprofiler.modules.loadimages.LoadImagesImageProvider(
+        return cellprofiler.image.LoadImagesImageProvider(
                 name, path, filename,
                 rescale=self.rescale.value and is_image_name,
                 series=series,
@@ -1091,8 +1090,8 @@ class LoadData(cellprofiler.module.Module):
                     image_size = tuple(pixel_data.shape[:2])
                     first_filename = image.filename
                 elif tuple(pixel_data.shape[:2]) != image_size:
-                    warning = cellprofiler.modules.loadimages.bad_sizes_warning(image_size, first_filename,
-                                                                                pixel_data.shape, image.filename)
+                    warning = cellprofiler.image.bad_sizes_warning(image_size, first_filename,
+                                                                   pixel_data.shape, image.filename)
                     if self.show_window:
                         workspace.display_data.warning = warning
                     else:
@@ -1105,7 +1104,7 @@ class LoadData(cellprofiler.module.Module):
                 provider = self.fetch_provider(
                         objects_name, m, is_image_name=False)
                 image = provider.provide_image(workspace.image_set)
-                pixel_data = cellprofiler.modules.loadimages.convert_image_to_objects(image.pixel_data)
+                pixel_data = cellprofiler.image.convert_image_to_objects(image.pixel_data)
                 o = cellprofiler.region.Region()
                 o.segmented = pixel_data
                 object_set.add_objects(o, objects_name)

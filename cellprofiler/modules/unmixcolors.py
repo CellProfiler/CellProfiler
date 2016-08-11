@@ -400,7 +400,7 @@ class UnmixColors(cellprofiler.module.Module):
         Returns a 3-tuple of the R/G/B absorbances
         """
 
-        from cellprofiler.modules.loadimages import LoadImagesImageProvider
+        from cellprofiler.image import LoadImagesImageProvider
         import wx
 
         dlg = wx.FileDialog(

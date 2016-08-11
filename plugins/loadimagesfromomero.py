@@ -43,7 +43,7 @@ import cellprofiler.preferences as cpp
 import cellprofiler.setting as cps
 # get the default cellprofiler image names for the different
 # channels of an omero image from the loadimages module
-from cellprofiler.modules.loadimages import default_cpimage_name
+from cellprofiler.image import default_cpimage_name
 
 import omero
 from omero.rtypes import rlong
@@ -310,7 +310,7 @@ class OmeroLoadImages(cpm.Module):
                 "Channel number:", channel_numbers, channel_numbers[len(self.channels) - 1],
                 doc="""(Used only for multichannel images)
 			The channels of a multichannel image are numbered starting from 0 (zero).
-			
+
 			Each channel is a greyscale image, acquired using different
 			illumination sources and/or optics. Use this setting to pick
 			the channel to associate with the image or images you load from

@@ -347,7 +347,7 @@ class DisplayDataOnImage(cellprofiler.module.Module):
         # Add the image to the workspace ImageSetList
         image_set_list = workspace.image_set_list
         image_set = image_set_list.get_image_set(0)
-        ip = LI.LoadImagesImageProvider(im_id, pathname, filename)
+        ip = cellprofiler.image.LoadImagesImageProvider(im_id, pathname, filename)
         image_set.providers.append(ip)
 
         self.run(workspace)

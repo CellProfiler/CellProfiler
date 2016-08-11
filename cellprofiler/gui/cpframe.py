@@ -1122,7 +1122,7 @@ class CPFrame(wx.Frame):
                             wildcard="Image file (*.tif,*.tiff,*.jpg,*.jpeg,*.png,*.gif,*.bmp)|*.tif;*.tiff;*.jpg;*.jpeg;*.png;*.gif;*.bmp|*.* (all files)|*.*",
                             style=wx.FD_OPEN)
         if dlg.ShowModal() == wx.ID_OK:
-            from cellprofiler.modules.loadimages import LoadImagesImageProvider
+            from cellprofiler.image import LoadImagesImageProvider
             from cellprofiler.gui.figure import Figure
             lip = LoadImagesImageProvider("dummy", "", dlg.Path)
             image = lip.provide_image(None).pixel_data

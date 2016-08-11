@@ -9,7 +9,6 @@ import cellprofiler.measurement
 import cellprofiler.module
 import cellprofiler.modules
 import cellprofiler.modules.images
-import cellprofiler.modules.loadimages
 import cellprofiler.pipeline
 import cellprofiler.setting
 import cellprofiler.utilities.url

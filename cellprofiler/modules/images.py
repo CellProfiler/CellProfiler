@@ -4,8 +4,6 @@ import urllib
 import cellprofiler.gui.help
 import cellprofiler.icons
 import cellprofiler.module
-import cellprofiler.modules
-import cellprofiler.modules.loadimages
 import cellprofiler.pipeline
 import cellprofiler.preferences
 import cellprofiler.setting

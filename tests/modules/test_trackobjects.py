@@ -3,10 +3,10 @@ import base64
 import unittest
 import zlib
 
+import cellprofiler.identify
 import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.module
-import cellprofiler.modules.identify
 import cellprofiler.modules.trackobjects
 import cellprofiler.pipeline
 import cellprofiler.preferences
@@ -1041,7 +1041,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
             #
             # Add blanks of the right sizes for measurements that are recalculated
             #
-            m.add_measurement(cellprofiler.measurement.IMAGE, '_'.join((cellprofiler.modules.identify.C_COUNT, OBJECT_NAME)),
+            m.add_measurement(cellprofiler.measurement.IMAGE, '_'.join((cellprofiler.identify.C_COUNT, OBJECT_NAME)),
                               nobjects[i], i + 1)
             for feature in (cellprofiler.modules.trackobjects.F_DISTANCE_TRAVELED, cellprofiler.modules.trackobjects.F_DISPLACEMENT,
                             cellprofiler.modules.trackobjects.F_INTEGRATED_DISTANCE, cellprofiler.modules.trackobjects.F_TRAJECTORY_X,

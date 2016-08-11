@@ -5,10 +5,10 @@ based on a threshold which can be pre-selected or calculated automatically using
 """
 
 import cellprofiler
+import cellprofiler.identify
 import cellprofiler.image
 import cellprofiler.module
 import cellprofiler.modules
-import cellprofiler.modules.identify
 import cellprofiler.setting
 import centrosome.cpmorphology
 import centrosome.threshold
@@ -26,7 +26,7 @@ TH_ABOVE_THRESHOLD = "Above threshold"
 N_SETTINGS = 6
 
 
-class ApplyThreshold(cellprofiler.modules.identify.Identify):
+class ApplyThreshold(cellprofiler.identify.Identify):
     module_name = "ApplyThreshold"
     variable_revision_number = 7
     category = "Image Processing"
@@ -93,7 +93,7 @@ class ApplyThreshold(cellprofiler.modules.identify.Identify):
             thresholded region around those bright objects by a certain distance so as to avoid a "halo" effect.''')
 
         self.create_threshold_settings(threshold_methods)
-        self.threshold_smoothing_choice.value = cellprofiler.modules.identify.TSM_NONE
+        self.threshold_smoothing_choice.value = cellprofiler.identify.TSM_NONE
 
     def visible_settings(self):
         vv = [self.image_name, self.thresholded_image_name, self.binary]
@@ -185,7 +185,7 @@ class ApplyThreshold(cellprofiler.modules.identify.Identify):
         return self.thresholded_image_name.value
 
     def get_measurement_columns(self, pipeline):
-        return cellprofiler.modules.identify.get_threshold_measurement_columns(self.thresholded_image_name.value)
+        return cellprofiler.identify.get_threshold_measurement_columns(self.thresholded_image_name.value)
 
     def get_categories(self, pipeline, object_name):
         return self.get_threshold_categories(pipeline, object_name)
@@ -230,7 +230,7 @@ class ApplyThreshold(cellprofiler.modules.identify.Identify):
         if (not from_matlab) and variable_revision_number == 2:
             # Added Otsu options
             setting_values = list(setting_values)
-            setting_values += [cellprofiler.modules.identify.O_TWO_CLASS, cellprofiler.modules.identify.O_WEIGHTED_VARIANCE, cellprofiler.modules.identify.O_FOREGROUND]
+            setting_values += [cellprofiler.identify.O_TWO_CLASS, cellprofiler.identify.O_WEIGHTED_VARIANCE, cellprofiler.identify.O_FOREGROUND]
             variable_revision_number = 3
 
         if (not from_matlab) and variable_revision_number == 3:
@@ -269,12 +269,12 @@ class ApplyThreshold(cellprofiler.modules.identify.Identify):
 
         if (not from_matlab) and variable_revision_number == 5:
             # Added adaptive thresholding settings
-            setting_values += [cellprofiler.modules.identify.FI_IMAGE_SIZE, "10"]
+            setting_values += [cellprofiler.identify.FI_IMAGE_SIZE, "10"]
             variable_revision_number = 6
 
         if (not from_matlab) and variable_revision_number == 6:
             image_name, thresholded_image_name, binary, low_or_high, shift, dilation, threshold_method, manual_threshold, threshold_range, threshold_correction_factor, object_fraction, enclosing_objects_name, two_class_otsu, use_weighted_variance, assign_middle_to_foreground, thresholding_measurement = setting_values[:16]
-            setting_values = [image_name, thresholded_image_name, binary, low_or_high, shift, dilation] + self.upgrade_legacy_threshold_settings(threshold_method, cellprofiler.modules.identify.TSM_NONE, threshold_correction_factor, threshold_range, object_fraction, manual_threshold, thresholding_measurement, cellprofiler.setting.NONE, two_class_otsu, use_weighted_variance, assign_middle_to_foreground, cellprofiler.modules.identify.FI_IMAGE_SIZE, "10", masking_objects=enclosing_objects_name)
+            setting_values = [image_name, thresholded_image_name, binary, low_or_high, shift, dilation] + self.upgrade_legacy_threshold_settings(threshold_method, cellprofiler.identify.TSM_NONE, threshold_correction_factor, threshold_range, object_fraction, manual_threshold, thresholding_measurement, cellprofiler.setting.NONE, two_class_otsu, use_weighted_variance, assign_middle_to_foreground, cellprofiler.identify.FI_IMAGE_SIZE, "10", masking_objects=enclosing_objects_name)
             variable_revision_number = 7
 
         #

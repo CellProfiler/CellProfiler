@@ -7,10 +7,10 @@ import re
 
 import cellprofiler.gui.help
 import cellprofiler.icons
+import cellprofiler.identify
 import cellprofiler.measurement
 import cellprofiler.module
 import cellprofiler.modules
-import cellprofiler.modules.identify
 import cellprofiler.modules.loadimages
 import cellprofiler.pipeline
 import cellprofiler.preferences
@@ -220,7 +220,7 @@ OT_DICTIONARY = {
     "Single object table": OT_COMBINE,
     "Single object view": OT_VIEW
 }
-from identify import C_PARENT
+from cellprofiler.identify import C_PARENT
 
 T_EXPERIMENT = "Experiment"
 T_EXPERIMENT_PROPERTIES = "Experiment_Properties"
@@ -2487,7 +2487,7 @@ CREATE TABLE %s (
             statement += ',%s INTEGER' % C_OBJECT_NUMBER
             object_pk = C_OBJECT_NUMBER
         else:
-            object_pk = "_".join((object_name, cellprofiler.modules.identify.M_NUMBER_OBJECT_NUMBER))
+            object_pk = "_".join((object_name, cellprofiler.identify.M_NUMBER_OBJECT_NUMBER))
         column_defs = self.get_pipeline_measurement_columns(pipeline,
                                                             image_set_list)
         mappings = self.get_column_name_mappings(pipeline, image_set_list)
@@ -2529,7 +2529,7 @@ CREATE TABLE %s (
 
         selected_object = object_names[0]
         all_columns = ["%s.%s" % (all_objects[selected_object], C_IMAGE_NUMBER),
-                       "%s_%s AS %s" % (selected_object, cellprofiler.modules.identify.M_NUMBER_OBJECT_NUMBER, C_OBJECT_NUMBER)] + all_columns
+                       "%s_%s AS %s" % (selected_object, cellprofiler.identify.M_NUMBER_OBJECT_NUMBER, C_OBJECT_NUMBER)] + all_columns
 
         # Create the new view
         statement = "CREATE OR REPLACE VIEW " if self.db_type == DB_MYSQL else "CREATE VIEW "
@@ -2543,8 +2543,8 @@ CREATE TABLE %s (
                                       all_objects[selected_object], C_IMAGE_NUMBER, current_table, C_IMAGE_NUMBER),
                                                 "%s.%s_%s = %s.%s_%s" % (
                                                     all_objects[selected_object], selected_object,
-                                                    cellprofiler.modules.identify.M_NUMBER_OBJECT_NUMBER,
-                                                    current_table, current_object, cellprofiler.modules.identify.M_NUMBER_OBJECT_NUMBER)))))
+                                                    cellprofiler.identify.M_NUMBER_OBJECT_NUMBER,
+                                                    current_table, current_object, cellprofiler.identify.M_NUMBER_OBJECT_NUMBER)))))
         return statement
 
     def get_create_relationships_table_statements(self, pipeline):
@@ -2852,12 +2852,12 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                 fid.write(
                         "RIGHT JOIN (SELECT DISTINCT %s, %s FROM\n" % (C_IMAGE_NUMBER, C_OBJECT_NUMBER))
                 fid.write("(SELECT %s, %s_%s as %s FROM %s\n" %
-                          (C_IMAGE_NUMBER, object_names[0], cellprofiler.modules.identify.M_NUMBER_OBJECT_NUMBER, C_OBJECT_NUMBER,
+                          (C_IMAGE_NUMBER, object_names[0], cellprofiler.identify.M_NUMBER_OBJECT_NUMBER, C_OBJECT_NUMBER,
                            self.get_table_name(object_names[0])))
                 for object_name in object_names[1:]:
                     fid.write("UNION SELECT %s, %s_%s as %s "
                               "FROM %s\n" %
-                              (C_IMAGE_NUMBER, object_name, cellprofiler.modules.identify.M_NUMBER_OBJECT_NUMBER, C_OBJECT_NUMBER,
+                              (C_IMAGE_NUMBER, object_name, cellprofiler.identify.M_NUMBER_OBJECT_NUMBER, C_OBJECT_NUMBER,
                                self.get_table_name(object_name)))
                 fid.write(") N_INNER) N ON IT.%s = N.%s\n" % (C_IMAGE_NUMBER, C_IMAGE_NUMBER))
                 for i, object_name in enumerate(object_names):
@@ -2865,7 +2865,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                               (self.get_table_name(object_name), i + 1))
                     fid.write("ON N.%s = OT%d.%s " % (C_IMAGE_NUMBER, i + 1, C_IMAGE_NUMBER))
                     fid.write("AND N.%s = OT%d.%s_%s\n" %
-                              (C_OBJECT_NUMBER, i + 1, object_name, cellprofiler.modules.identify.M_NUMBER_OBJECT_NUMBER))
+                              (C_OBJECT_NUMBER, i + 1, object_name, cellprofiler.identify.M_NUMBER_OBJECT_NUMBER))
             fid.write("GROUP BY IT.Image_Metadata_Plate, "
                       "IT.Image_Metadata_Well;\n\n""")
 
@@ -3185,9 +3185,9 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                             object_cols += [object_number_column]
                         object_numbers = numpy.arange(1, max_count + 1)
                     else:
-                        object_number_column = "_".join((object_name, cellprofiler.modules.identify.M_NUMBER_OBJECT_NUMBER))
+                        object_number_column = "_".join((object_name, cellprofiler.identify.M_NUMBER_OBJECT_NUMBER))
                         object_numbers = measurements.get_measurement(
-                                object_name, cellprofiler.modules.identify.M_NUMBER_OBJECT_NUMBER, image_number)
+                                object_name, cellprofiler.identify.M_NUMBER_OBJECT_NUMBER, image_number)
 
                     object_cols += [mapping["%s_%s" % (column[0], column[1])]
                                     for column in columns]
@@ -3953,9 +3953,9 @@ CP version : %d\n""" % version_number
                     return 1
                 else:
                     return cmp(x[0], y[0])
-            if x[1] == cellprofiler.modules.identify.M_NUMBER_OBJECT_NUMBER:
+            if x[1] == cellprofiler.identify.M_NUMBER_OBJECT_NUMBER:
                 return -1
-            if y[1] == cellprofiler.modules.identify.M_NUMBER_OBJECT_NUMBER:
+            if y[1] == cellprofiler.identify.M_NUMBER_OBJECT_NUMBER:
                 return 1
             return cmp(x[1], y[1])
 

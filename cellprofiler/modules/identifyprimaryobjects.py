@@ -3,11 +3,11 @@ import re
 
 import cellprofiler.gui.help
 import cellprofiler.icons
+import cellprofiler.identify
 import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.module
 import cellprofiler.modules
-import cellprofiler.modules.identify
 import cellprofiler.preferences
 import cellprofiler.region
 import cellprofiler.setting
@@ -18,12 +18,12 @@ import centrosome.outline
 import centrosome.propagate
 import centrosome.smooth
 import centrosome.threshold
-import identify as cpmi
 import numpy as np
 import scipy.ndimage
 import scipy.sparse
 import scipy.stats
 import skimage.morphology.watershed
+from cellprofiler import identify as cpmi
 
 __doc__ = '''
 <b>Identify Primary Objects</b> identifies biological components of interest in grayscale images
@@ -793,7 +793,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
 
         if (not from_matlab) and variable_revision_number == 8:
             # Added adaptive thresholding settings
-            setting_values += [cellprofiler.modules.identify.FI_IMAGE_SIZE, "10"]
+            setting_values += [cellprofiler.identify.FI_IMAGE_SIZE, "10"]
             variable_revision_number = 9
 
         if (not from_matlab) and variable_revision_number == 9:
@@ -814,7 +814,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             adaptive_window_size = setting_values[OFF_ADAPTIVE_WINDOW_SIZE_V9]
 
             threshold_settings = self.upgrade_legacy_threshold_settings(
-                    threshold_method, cellprofiler.modules.identify.TSM_AUTOMATIC, threshold_correction,
+                    threshold_method, cellprofiler.identify.TSM_AUTOMATIC, threshold_correction,
                     threshold_range, object_fraction, manual_threshold,
                     thresholding_measurement, binary_image, two_class_otsu,
                     use_weighted_variance, assign_middle_to_foreground,
@@ -984,7 +984,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
                 statistics.append(["Area covered by objects",
                                    "%.1f %%" % (100.0 * float(object_area) /
                                                 float(total_area))])
-                if self.threshold_scope != cellprofiler.modules.identify.TS_BINARY_IMAGE:
+                if self.threshold_scope != cellprofiler.identify.TS_BINARY_IMAGE:
                     statistics.append(["Thresholding filter size",
                                        "%.1f" % workspace.display_data.threshold_sigma])
                 if self.unclump_method != UN_NONE:

@@ -73,11 +73,11 @@ import urllib2
 import xml.dom.minidom
 
 import cellprofiler.gui.help
+import cellprofiler.identify
 import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.module
 import cellprofiler.modules
-import cellprofiler.modules.identify
 import cellprofiler.preferences
 import cellprofiler.region
 import cellprofiler.setting
@@ -884,7 +884,7 @@ class UntangleWorms(cellprofiler.module.Module):
             name = self.overlap_objects.value
             object_names.append(name)
             object_set.add_objects(o, name)
-            cellprofiler.modules.identify.add_object_count_measurements(measurements, name, o.count)
+            cellprofiler.identify.add_object_count_measurements(measurements, name, o.count)
             if self.show_window:
                 workspace.display_data.overlapping_labels = [
                     l for l, idx in o.labels()]
@@ -895,9 +895,9 @@ class UntangleWorms(cellprofiler.module.Module):
             else:
                 center_x = numpy.bincount(ijv[:, 2], ijv[:, 1])[o.indices] / o.areas
                 center_y = numpy.bincount(ijv[:, 2], ijv[:, 0])[o.indices] / o.areas
-            measurements.add_measurement(name, cellprofiler.modules.identify.M_LOCATION_CENTER_X, center_x)
-            measurements.add_measurement(name, cellprofiler.modules.identify.M_LOCATION_CENTER_Y, center_y)
-            measurements.add_measurement(name, cellprofiler.modules.identify.M_NUMBER_OBJECT_NUMBER, o.indices)
+            measurements.add_measurement(name, cellprofiler.identify.M_LOCATION_CENTER_X, center_x)
+            measurements.add_measurement(name, cellprofiler.identify.M_LOCATION_CENTER_Y, center_y)
+            measurements.add_measurement(name, cellprofiler.identify.M_NUMBER_OBJECT_NUMBER, o.indices)
             #
             # Save outlines
             #
@@ -935,8 +935,8 @@ class UntangleWorms(cellprofiler.module.Module):
             name = self.nonoverlapping_objects.value
             object_names.append(name)
             object_set.add_objects(o, name)
-            cellprofiler.modules.identify.add_object_count_measurements(measurements, name, o.count)
-            cellprofiler.modules.identify.add_object_location_measurements(measurements, name, labels, o.count)
+            cellprofiler.identify.add_object_count_measurements(measurements, name, o.count)
+            cellprofiler.identify.add_object_location_measurements(measurements, name, labels, o.count)
             if self.show_window:
                 workspace.display_data.nonoverlapping_labels = [
                     l for l, idx in o.labels()]
@@ -2381,7 +2381,7 @@ class UntangleWorms(cellprofiler.module.Module):
             if self.overlap in (OO_WITHOUT_OVERLAP, OO_BOTH):
                 object_names.append(self.nonoverlapping_objects.value)
             for object_name in object_names:
-                result += cellprofiler.modules.identify.get_object_measurement_columns(object_name)
+                result += cellprofiler.identify.get_object_measurement_columns(object_name)
                 all_features = ([F_LENGTH] + self.angle_features() +
                                 self.control_point_features(True) +
                                 self.control_point_features(False))
@@ -2416,29 +2416,29 @@ class UntangleWorms(cellprofiler.module.Module):
 
     def get_categories(self, pipeline, object_name):
         if object_name == cellprofiler.measurement.IMAGE:
-            return [cellprofiler.modules.identify.C_COUNT]
+            return [cellprofiler.identify.C_COUNT]
         if ((object_name == self.overlap_objects.value and
                      self.overlap in (OO_BOTH, OO_WITH_OVERLAP)) or
                 (object_name == self.nonoverlapping_objects.value and
                          self.overlap in (OO_BOTH, OO_WITHOUT_OVERLAP))):
-            return [cellprofiler.modules.identify.C_LOCATION, cellprofiler.modules.identify.C_NUMBER, C_WORM]
+            return [cellprofiler.identify.C_LOCATION, cellprofiler.identify.C_NUMBER, C_WORM]
         return []
 
     def get_measurements(self, pipeline, object_name, category):
         wants_overlapping = self.overlap in (OO_BOTH, OO_WITH_OVERLAP)
         wants_nonoverlapping = self.overlap in (OO_BOTH, OO_WITHOUT_OVERLAP)
         result = []
-        if object_name == cellprofiler.measurement.IMAGE and category == cellprofiler.modules.identify.C_COUNT:
+        if object_name == cellprofiler.measurement.IMAGE and category == cellprofiler.identify.C_COUNT:
             if wants_overlapping:
                 result += [self.overlap_objects.value]
             if wants_nonoverlapping:
                 result += [self.nonoverlapping_objects.value]
         if ((wants_overlapping and object_name == self.overlap_objects) or
                 (wants_nonoverlapping and object_name == self.nonoverlapping_objects)):
-            if category == cellprofiler.modules.identify.C_LOCATION:
-                result += [cellprofiler.modules.identify.FTR_CENTER_X, cellprofiler.modules.identify.FTR_CENTER_Y]
-            elif category == cellprofiler.modules.identify.C_NUMBER:
-                result += [cellprofiler.modules.identify.FTR_OBJECT_NUMBER]
+            if category == cellprofiler.identify.C_LOCATION:
+                result += [cellprofiler.identify.FTR_CENTER_X, cellprofiler.identify.FTR_CENTER_Y]
+            elif category == cellprofiler.identify.C_NUMBER:
+                result += [cellprofiler.identify.FTR_OBJECT_NUMBER]
             elif category == C_WORM:
                 result += [F_LENGTH, F_ANGLE, F_CONTROL_POINT_X, F_CONTROL_POINT_Y]
         return result

@@ -1,9 +1,9 @@
 import logging
 
+import cellprofiler.identify
 import cellprofiler.measurement
 import cellprofiler.module
 import cellprofiler.modules
-import cellprofiler.modules.identify
 import cellprofiler.setting
 import cellprofiler.setting
 import numpy
@@ -325,7 +325,7 @@ class CalculateMath(cellprofiler.module.Module):
             g = m.get_relationship_groups()
 
             for gg in g:
-                if gg.relationship == cellprofiler.modules.identify.R_PARENT:
+                if gg.relationship == cellprofiler.identify.R_PARENT:
                     #
                     # first is parent of second
                     #

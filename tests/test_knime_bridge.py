@@ -3,10 +3,10 @@ import json
 import unittest
 import uuid
 
+import cellprofiler.identify
 import cellprofiler.knime_bridge
 import cellprofiler.measurement
 import cellprofiler.modules.flagimage
-import cellprofiler.modules.identify
 import cellprofiler.modules.identifyprimaryobjects
 import cellprofiler.modules.loadimages
 import cellprofiler.modules.measureobjectsizeshape
@@ -159,7 +159,7 @@ class TestKnimeBridge(unittest.TestCase):
         identify.module_num = 2
         identify.image_name.value = "Foo"
         identify.object_name.value = "dizzy"
-        identify.threshold_scope.value = cellprofiler.modules.identify.TS_MANUAL
+        identify.threshold_scope.value = cellprofiler.identify.TS_MANUAL
         identify.manual_threshold.value = .5
         identify.exclude_size.value = False
         pipeline.add_module(identify)
@@ -202,7 +202,7 @@ class TestKnimeBridge(unittest.TestCase):
         identify.module_num = 2
         identify.image_name.value = "Foo"
         identify.object_name.value = "dizzy"
-        identify.threshold_scope.value = cellprofiler.modules.identify.TS_MANUAL
+        identify.threshold_scope.value = cellprofiler.identify.TS_MANUAL
         identify.manual_threshold.value = .5
         identify.exclude_size.value = False
         pipeline.add_module(identify)
@@ -245,7 +245,7 @@ class TestKnimeBridge(unittest.TestCase):
         identify.module_num = 2
         identify.image_name.value = "Foo"
         identify.object_name.value = "dizzy"
-        identify.threshold_scope.value = cellprofiler.modules.identify.TS_MANUAL
+        identify.threshold_scope.value = cellprofiler.identify.TS_MANUAL
         identify.manual_threshold.value = .5
         identify.exclude_size.value = False
         pipeline.add_module(identify)
@@ -305,7 +305,7 @@ class TestKnimeBridge(unittest.TestCase):
         identify.module_num = 2
         identify.image_name.value = "Foo"
         identify.object_name.value = "dizzy"
-        identify.threshold_scope.value = cellprofiler.modules.identify.TS_MANUAL
+        identify.threshold_scope.value = cellprofiler.identify.TS_MANUAL
         identify.manual_threshold.value = .5
         identify.exclude_size.value = False
         pipeline.add_module(identify)
@@ -353,7 +353,7 @@ class TestKnimeBridge(unittest.TestCase):
         identify.module_num = 2
         identify.image_name.value = "Foo"
         identify.object_name.value = "dizzy"
-        identify.threshold_scope.value = cellprofiler.modules.identify.TS_MANUAL
+        identify.threshold_scope.value = cellprofiler.identify.TS_MANUAL
         identify.manual_threshold.value = .5
         identify.exclude_size.value = False
         pipeline.add_module(identify)

@@ -2,11 +2,11 @@ import logging
 import os
 
 import cellprofiler.gui.help
+import cellprofiler.identify
 import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.module
 import cellprofiler.modules
-import cellprofiler.modules.identify
 import cellprofiler.preferences
 import cellprofiler.region
 import cellprofiler.setting
@@ -561,20 +561,20 @@ class FilterObjects(cellprofiler.module.Module):
             workspace.object_set.add_objects(target_objects, target_name)
             #
             # Add measurements for the new objects
-            cellprofiler.modules.identify.add_object_count_measurements(m, target_name, new_object_count)
-            cellprofiler.modules.identify.add_object_location_measurements(m, target_name, target_labels)
+            cellprofiler.identify.add_object_count_measurements(m, target_name, new_object_count)
+            cellprofiler.identify.add_object_location_measurements(m, target_name, target_labels)
             #
             # Relate the old numbering to the new numbering
             #
             m.add_measurement(target_name,
-                              cellprofiler.modules.identify.FF_PARENT % src_name,
+                              cellprofiler.identify.FF_PARENT % src_name,
                               numpy.array(indexes))
             #
             # Count the children (0 / 1)
             #
             child_count = (label_indexes[1:] > 0).astype(int)
             m.add_measurement(src_name,
-                              cellprofiler.modules.identify.FF_CHILDREN_COUNT % target_name,
+                              cellprofiler.identify.FF_CHILDREN_COUNT % target_name,
                               child_count)
             #
             # Add an outline if asked to do so
@@ -928,9 +928,9 @@ class FilterObjects(cellprofiler.module.Module):
         for feature_name in self.get_classifier_features():
             feature_name = feature_name.split("_", 1)[1]
             if feature_name == "x_loc":
-                feature_name = cellprofiler.modules.identify.M_LOCATION_CENTER_X
+                feature_name = cellprofiler.identify.M_LOCATION_CENTER_X
             elif feature_name == "y_loc":
-                feature_name = cellprofiler.modules.identify.M_LOCATION_CENTER_Y
+                feature_name = cellprofiler.identify.M_LOCATION_CENTER_Y
             features.append(feature_name)
 
         feature_vector = numpy.column_stack([
@@ -949,12 +949,12 @@ class FilterObjects(cellprofiler.module.Module):
         columns = []
         for src_name, target_name in object_list:
             columns += [(target_name,
-                         cellprofiler.modules.identify.FF_PARENT % src_name,
+                         cellprofiler.identify.FF_PARENT % src_name,
                          cellprofiler.measurement.COLTYPE_INTEGER),
                         (src_name,
-                         cellprofiler.modules.identify.FF_CHILDREN_COUNT % target_name,
+                         cellprofiler.identify.FF_CHILDREN_COUNT % target_name,
                          cellprofiler.measurement.COLTYPE_INTEGER)]
-            columns += cellprofiler.modules.identify.get_object_measurement_columns(target_name)
+            columns += cellprofiler.identify.get_object_measurement_columns(target_name)
         return columns
 
     def get_categories(self, pipeline, object_name):

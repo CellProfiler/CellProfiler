@@ -1,7 +1,7 @@
+import cellprofiler.identify
 import cellprofiler.measurement
 import cellprofiler.module
 import cellprofiler.modules
-import cellprofiler.modules.identify
 import cellprofiler.preferences
 import cellprofiler.region
 import cellprofiler.setting
@@ -249,11 +249,11 @@ class IdentifyDeadWorms(cellprofiler.module.Module):
         m = workspace.measurements
         assert isinstance(m, cellprofiler.measurement.Measurements)
         object_name = self.object_name.value
-        m.add_measurement(object_name, cellprofiler.modules.identify.M_LOCATION_CENTER_X, center_x)
-        m.add_measurement(object_name, cellprofiler.modules.identify.M_LOCATION_CENTER_Y, center_y)
+        m.add_measurement(object_name, cellprofiler.identify.M_LOCATION_CENTER_X, center_x)
+        m.add_measurement(object_name, cellprofiler.identify.M_LOCATION_CENTER_Y, center_y)
         m.add_measurement(object_name, M_ANGLE, angles * 180 / numpy.pi)
-        m.add_measurement(object_name, cellprofiler.modules.identify.M_NUMBER_OBJECT_NUMBER, label_indexes)
-        m.add_image_measurement(cellprofiler.modules.identify.FF_COUNT % object_name, nlabels)
+        m.add_measurement(object_name, cellprofiler.identify.M_NUMBER_OBJECT_NUMBER, label_indexes)
+        m.add_image_measurement(cellprofiler.identify.FF_COUNT % object_name, nlabels)
         #
         # Make the objects
         #
@@ -523,28 +523,28 @@ class IdentifyDeadWorms(cellprofiler.module.Module):
     def get_measurement_columns(self, pipeline):
         """Return column definitions for measurements made by this module"""
         object_name = self.object_name.value
-        return [(object_name, cellprofiler.modules.identify.M_LOCATION_CENTER_X, cellprofiler.measurement.COLTYPE_INTEGER),
-                (object_name, cellprofiler.modules.identify.M_LOCATION_CENTER_Y, cellprofiler.measurement.COLTYPE_INTEGER),
+        return [(object_name, cellprofiler.identify.M_LOCATION_CENTER_X, cellprofiler.measurement.COLTYPE_INTEGER),
+                (object_name, cellprofiler.identify.M_LOCATION_CENTER_Y, cellprofiler.measurement.COLTYPE_INTEGER),
                 (object_name, M_ANGLE, cellprofiler.measurement.COLTYPE_FLOAT),
-                (object_name, cellprofiler.modules.identify.M_NUMBER_OBJECT_NUMBER, cellprofiler.measurement.COLTYPE_INTEGER),
-                (cellprofiler.measurement.IMAGE, cellprofiler.modules.identify.FF_COUNT % object_name, cellprofiler.measurement.COLTYPE_INTEGER)]
+                (object_name, cellprofiler.identify.M_NUMBER_OBJECT_NUMBER, cellprofiler.measurement.COLTYPE_INTEGER),
+                (cellprofiler.measurement.IMAGE, cellprofiler.identify.FF_COUNT % object_name, cellprofiler.measurement.COLTYPE_INTEGER)]
 
     def get_categories(self, pipeline, object_name):
         if object_name == cellprofiler.measurement.IMAGE:
-            return [cellprofiler.modules.identify.C_COUNT]
+            return [cellprofiler.identify.C_COUNT]
         elif object_name == self.object_name:
-            return [cellprofiler.modules.identify.C_LOCATION, cellprofiler.modules.identify.C_NUMBER, C_WORMS]
+            return [cellprofiler.identify.C_LOCATION, cellprofiler.identify.C_NUMBER, C_WORMS]
         else:
             return []
 
     def get_measurements(self, pipeline, object_name, category):
-        if object_name == cellprofiler.measurement.IMAGE and category == cellprofiler.modules.identify.C_COUNT:
+        if object_name == cellprofiler.measurement.IMAGE and category == cellprofiler.identify.C_COUNT:
             return [self.object_name.value]
         elif object_name == self.object_name:
-            if category == cellprofiler.modules.identify.C_LOCATION:
-                return [cellprofiler.modules.identify.FTR_CENTER_X, cellprofiler.modules.identify.FTR_CENTER_Y]
-            elif category == cellprofiler.modules.identify.C_NUMBER:
-                return [cellprofiler.modules.identify.FTR_OBJECT_NUMBER]
+            if category == cellprofiler.identify.C_LOCATION:
+                return [cellprofiler.identify.FTR_CENTER_X, cellprofiler.identify.FTR_CENTER_Y]
+            elif category == cellprofiler.identify.C_NUMBER:
+                return [cellprofiler.identify.FTR_OBJECT_NUMBER]
             elif category == C_WORMS:
                 return [F_ANGLE]
         return []

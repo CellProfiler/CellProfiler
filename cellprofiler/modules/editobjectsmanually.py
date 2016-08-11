@@ -1,12 +1,11 @@
 import logging
 import os
-import wx
 
+import cellprofiler.identify
 import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.module
 import cellprofiler.modules
-import cellprofiler.modules.identify
 import cellprofiler.modules.loadimages
 import cellprofiler.preferences
 import cellprofiler.region
@@ -16,6 +15,7 @@ import cellprofiler.workspace
 import centrosome.cpmorphology
 import centrosome.outline
 import numpy
+import wx
 
 '''<b>Edit Objects Manually</b> allows you create, remove and edit objects previously defined.
 <hr>
@@ -56,7 +56,7 @@ R_RENUMBER = "Renumber"
 R_RETAIN = "Retain"
 
 
-class EditObjectsManually(cellprofiler.modules.identify.Identify):
+class EditObjectsManually(cellprofiler.identify.Identify):
     category = "Object Processing"
     variable_revision_number = 3
     module_name = 'EditObjectsManually'
@@ -250,20 +250,20 @@ class EditObjectsManually(cellprofiler.modules.identify.Identify):
         m = workspace.measurements
         child_count, parents = orig_objects.relate_children(filtered_objects)
         m.add_measurement(filtered_objects_name,
-                          cellprofiler.modules.identify.FF_PARENT % orig_objects_name,
+                          cellprofiler.identify.FF_PARENT % orig_objects_name,
                           parents)
         m.add_measurement(orig_objects_name,
-                          cellprofiler.modules.identify.FF_CHILDREN_COUNT % filtered_objects_name,
+                          cellprofiler.identify.FF_CHILDREN_COUNT % filtered_objects_name,
                           child_count)
         #
         # The object count
         #
-        cellprofiler.modules.identify.add_object_count_measurements(m, filtered_objects_name,
-                                                                    object_count)
+        cellprofiler.identify.add_object_count_measurements(m, filtered_objects_name,
+                                                            object_count)
         #
         # The object locations
         #
-        cellprofiler.modules.identify.add_object_location_measurements_ijv(m, filtered_objects_name, ijv)
+        cellprofiler.identify.add_object_location_measurements_ijv(m, filtered_objects_name, ijv)
         #
         # Outlines if we want them
         #
@@ -464,12 +464,12 @@ class EditObjectsManually(cellprofiler.modules.identify.Identify):
         """Return information to use when creating database columns"""
         orig_image_name = self.object_name.value
         filtered_image_name = self.filtered_objects.value
-        columns = cellprofiler.modules.identify.get_object_measurement_columns(filtered_image_name)
+        columns = cellprofiler.identify.get_object_measurement_columns(filtered_image_name)
         columns += [(orig_image_name,
-                     cellprofiler.modules.identify.FF_CHILDREN_COUNT % filtered_image_name,
+                     cellprofiler.identify.FF_CHILDREN_COUNT % filtered_image_name,
                      cellprofiler.measurement.COLTYPE_INTEGER),
                     (filtered_image_name,
-                     cellprofiler.modules.identify.FF_PARENT % orig_image_name,
+                     cellprofiler.identify.FF_PARENT % orig_image_name,
                      cellprofiler.measurement.COLTYPE_INTEGER)]
         return columns
 

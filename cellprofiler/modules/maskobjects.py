@@ -27,11 +27,11 @@ mass of the masked objects.</li>
 """
 
 import cellprofiler.gui.help
+import cellprofiler.identify
 import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.module
 import cellprofiler.modules
-import cellprofiler.modules.identify
 import cellprofiler.preferences
 import cellprofiler.region
 import cellprofiler.setting
@@ -76,7 +76,7 @@ def s_lookup(x):
     return S_DICTIONARY.get(x, x)
 
 
-class MaskObjects(cellprofiler.modules.identify.Identify):
+class MaskObjects(cellprofiler.identify.Identify):
     category = "Object Processing"
     module_name = "MaskObjects"
     variable_revision_number = 2
@@ -324,7 +324,7 @@ class MaskObjects(cellprofiler.modules.identify.Identify):
         #
         m = workspace.measurements
         m.add_measurement(remaining_object_name,
-                          cellprofiler.modules.identify.FF_PARENT % object_name,
+                          cellprofiler.identify.FF_PARENT % object_name,
                           parent_objects)
         if numpy.max(original_objects.segmented) == 0:
             child_count = numpy.array([], int)
@@ -333,15 +333,15 @@ class MaskObjects(cellprofiler.modules.identify.Identify):
                                                                                                numpy.arange(1, nobjects + 1, dtype=numpy.int32)))
             child_count = (child_count > 0).astype(int)
         m.add_measurement(object_name,
-                          cellprofiler.modules.identify.FF_CHILDREN_COUNT % remaining_object_name,
+                          cellprofiler.identify.FF_CHILDREN_COUNT % remaining_object_name,
                           child_count)
         if self.retain_or_renumber == R_RETAIN:
             remaining_object_count = nobjects
         else:
             remaining_object_count = len(unique_labels)
-        cellprofiler.modules.identify.add_object_count_measurements(m, remaining_object_name,
-                                                                    remaining_object_count)
-        cellprofiler.modules.identify.add_object_location_measurements(m, remaining_object_name, labels)
+        cellprofiler.identify.add_object_count_measurements(m, remaining_object_name,
+                                                            remaining_object_count)
+        cellprofiler.identify.add_object_location_measurements(m, remaining_object_name, labels)
         #
         # Add an outline if asked to do so
         #
@@ -403,10 +403,10 @@ class MaskObjects(cellprofiler.modules.identify.Identify):
 
         object_name = self.object_name.value
         remaining_object_name = self.remaining_objects.value
-        columns = cellprofiler.modules.identify.get_object_measurement_columns(self.remaining_objects.value)
-        columns += [(object_name, cellprofiler.modules.identify.FF_CHILDREN_COUNT % remaining_object_name,
+        columns = cellprofiler.identify.get_object_measurement_columns(self.remaining_objects.value)
+        columns += [(object_name, cellprofiler.identify.FF_CHILDREN_COUNT % remaining_object_name,
                      cellprofiler.measurement.COLTYPE_INTEGER),
-                    (remaining_object_name, cellprofiler.modules.identify.FF_PARENT % object_name,
+                    (remaining_object_name, cellprofiler.identify.FF_PARENT % object_name,
                      cellprofiler.measurement.COLTYPE_INTEGER)]
         return columns
 

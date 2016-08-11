@@ -1,8 +1,8 @@
+import cellprofiler.identify
 import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.module
 import cellprofiler.modules
-import cellprofiler.modules.identify
 import cellprofiler.preferences
 import cellprofiler.region
 import cellprofiler.setting
@@ -267,12 +267,12 @@ class DisplayDataOnImage(cellprofiler.module.Module):
                 temp[len(values):] = numpy.nan
                 values = temp
             x = measurements.get_current_measurement(
-                    self.objects_name.value, cellprofiler.modules.identify.M_LOCATION_CENTER_X)
+                    self.objects_name.value, cellprofiler.identify.M_LOCATION_CENTER_X)
             x_offset = numpy.random.uniform(high=1.0, low=-1.0, size=x.shape)
             y_offset = numpy.sqrt(1 - x_offset ** 2)
             x += self.offset.value * x_offset
             y = measurements.get_current_measurement(
-                    self.objects_name.value, cellprofiler.modules.identify.M_LOCATION_CENTER_Y)
+                    self.objects_name.value, cellprofiler.identify.M_LOCATION_CENTER_Y)
             y += self.offset.value * y_offset
             mask = ~(numpy.isnan(values) | numpy.isnan(x) | numpy.isnan(y))
             values = values[mask]

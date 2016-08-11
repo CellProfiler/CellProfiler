@@ -60,10 +60,10 @@ control in large-scale high-content screens." <i>J Biomol Screen</i> 17(2):266-7
 import itertools
 import logging
 
+import cellprofiler.identify
 import cellprofiler.measurement
 import cellprofiler.module
 import cellprofiler.modules
-import cellprofiler.modules.identify
 import cellprofiler.modules.loadimages
 import cellprofiler.preferences
 import cellprofiler.setting
@@ -388,8 +388,8 @@ class MeasureImageQuality(cellprofiler.module.Module):
             cellprofiler.setting.Choice(
                 'Two-class or three-class thresholding?',
                 [
-                    cellprofiler.modules.identify.O_TWO_CLASS,
-                    cellprofiler.modules.identify.O_THREE_CLASS
+                    cellprofiler.identify.O_TWO_CLASS,
+                    cellprofiler.identify.O_THREE_CLASS
                 ],
                 doc="""
                 <i>(Used only if thresholds are calculcated and the {tm_otsu} thresholding method is used)</i> <br>
@@ -406,24 +406,24 @@ class MeasureImageQuality(cellprofiler.module.Module):
                 there are almost no objects or the entire field of view is covered with
                 objects, three-class thresholding may perform worse than two-class.""".format(**{
                     'tm_otsu': centrosome.threshold.TM_OTSU,
-                    'o_two_class': cellprofiler.modules.identify.O_TWO_CLASS,
-                    'o_three_class': cellprofiler.modules.identify.O_THREE_CLASS
+                    'o_two_class': cellprofiler.identify.O_TWO_CLASS,
+                    'o_three_class': cellprofiler.identify.O_THREE_CLASS
                 })
             )
         )
 
         group.append("use_weighted_variance", cellprofiler.setting.Choice(
                 'Minimize the weighted variance or the entropy?',
-                [cellprofiler.modules.identify.O_WEIGHTED_VARIANCE, cellprofiler.modules.identify.O_ENTROPY]))
+                [cellprofiler.identify.O_WEIGHTED_VARIANCE, cellprofiler.identify.O_ENTROPY]))
 
         group.append("assign_middle_to_foreground", cellprofiler.setting.Choice(
                 'Assign pixels in the middle intensity class to the foreground or the background?',
-                [cellprofiler.modules.identify.O_FOREGROUND, cellprofiler.modules.identify.O_BACKGROUND], doc="""
+                [cellprofiler.identify.O_FOREGROUND, cellprofiler.identify.O_BACKGROUND], doc="""
             <i>(Used only if thresholds are calculcated and the {tm_otsu} thresholding method with {o_three_class} is used)</i><br>
             Choose whether you want the middle grayscale intensities to be assigned
             to the foreground pixels or the background pixels.""".format(**{
                 'tm_otsu': centrosome.threshold.TM_OTSU,
-                'o_three_class': cellprofiler.modules.identify.O_THREE_CLASS
+                'o_three_class': cellprofiler.identify.O_THREE_CLASS
             })))
 
         group.can_remove = can_remove
@@ -531,7 +531,7 @@ class MeasureImageQuality(cellprofiler.module.Module):
             elif threshold_group.threshold_method.value == centrosome.threshold.TM_OTSU:
                 result += [threshold_group.use_weighted_variance,
                            threshold_group.two_class_otsu]
-                if threshold_group.two_class_otsu.value == cellprofiler.modules.identify.O_THREE_CLASS:
+                if threshold_group.two_class_otsu.value == cellprofiler.identify.O_THREE_CLASS:
                     result += [threshold_group.assign_middle_to_foreground]
             if threshold_group.can_remove:
                 result += [threshold_group.remove_button]
@@ -1074,9 +1074,9 @@ class MeasureImageQuality(cellprofiler.module.Module):
             for threshold_group in all_threshold_groups:
                 threshold_method = threshold_group.threshold_algorithm
                 object_fraction = threshold_group.object_fraction.value
-                two_class_otsu = (threshold_group.two_class_otsu.value == cellprofiler.modules.identify.O_TWO_CLASS)
-                use_weighted_variance = (threshold_group.use_weighted_variance.value == cellprofiler.modules.identify.O_WEIGHTED_VARIANCE)
-                assign_middle_to_foreground = (threshold_group.assign_middle_to_foreground.value == cellprofiler.modules.identify.O_FOREGROUND)
+                two_class_otsu = (threshold_group.two_class_otsu.value == cellprofiler.identify.O_TWO_CLASS)
+                use_weighted_variance = (threshold_group.use_weighted_variance.value == cellprofiler.identify.O_WEIGHTED_VARIANCE)
+                assign_middle_to_foreground = (threshold_group.assign_middle_to_foreground.value == cellprofiler.identify.O_FOREGROUND)
                 (local_threshold, global_threshold) = \
                     (centrosome.threshold.get_threshold(threshold_method,
                                                         centrosome.threshold.TM_GLOBAL,
@@ -1149,16 +1149,21 @@ class MeasureImageQuality(cellprofiler.module.Module):
         threshold_args = []
         object_fraction = [0.05, 0.25, 0.75, 0.95]
         # Produce list of combinations of the special thresholding method parameters: Otsu, MoG
-        z = itertools.product([centrosome.threshold.TM_OTSU], [0], [cellprofiler.modules.identify.O_WEIGHTED_VARIANCE, cellprofiler.modules.identify.O_ENTROPY], [cellprofiler.modules.identify.O_THREE_CLASS],
-                              [cellprofiler.modules.identify.O_FOREGROUND, cellprofiler.modules.identify.O_BACKGROUND])
+        z = itertools.product([centrosome.threshold.TM_OTSU], [0], [cellprofiler.identify.O_WEIGHTED_VARIANCE, cellprofiler.identify.O_ENTROPY], [
+            cellprofiler.identify.O_THREE_CLASS],
+                              [cellprofiler.identify.O_FOREGROUND, cellprofiler.identify.O_BACKGROUND])
         threshold_args += [i for i in z]
-        z = itertools.product([centrosome.threshold.TM_OTSU], [0], [cellprofiler.modules.identify.O_WEIGHTED_VARIANCE, cellprofiler.modules.identify.O_ENTROPY], [cellprofiler.modules.identify.O_TWO_CLASS], [cellprofiler.modules.identify.O_FOREGROUND])
+        z = itertools.product([centrosome.threshold.TM_OTSU], [0], [cellprofiler.identify.O_WEIGHTED_VARIANCE, cellprofiler.identify.O_ENTROPY], [
+            cellprofiler.identify.O_TWO_CLASS], [cellprofiler.identify.O_FOREGROUND])
         threshold_args += [i for i in z]
-        z = itertools.product([centrosome.threshold.TM_MOG], object_fraction, [cellprofiler.modules.identify.O_WEIGHTED_VARIANCE], [cellprofiler.modules.identify.O_TWO_CLASS], [cellprofiler.modules.identify.O_FOREGROUND])
+        z = itertools.product([centrosome.threshold.TM_MOG], object_fraction, [
+            cellprofiler.identify.O_WEIGHTED_VARIANCE], [cellprofiler.identify.O_TWO_CLASS], [
+                                  cellprofiler.identify.O_FOREGROUND])
         threshold_args += [i for i in z]
         # Tack on the remaining simpler methods
         leftover_methods = [i for i in centrosome.threshold.TM_METHODS if i not in [centrosome.threshold.TM_OTSU, centrosome.threshold.TM_MOG]]
-        z = itertools.product(leftover_methods, [0], [cellprofiler.modules.identify.O_WEIGHTED_VARIANCE], [cellprofiler.modules.identify.O_TWO_CLASS], [cellprofiler.modules.identify.O_FOREGROUND])
+        z = itertools.product(leftover_methods, [0], [cellprofiler.identify.O_WEIGHTED_VARIANCE], [
+            cellprofiler.identify.O_TWO_CLASS], [cellprofiler.identify.O_FOREGROUND])
         threshold_args += [i for i in z]
 
         # Assign the threshold values to a temporary threshold group
@@ -1290,8 +1295,8 @@ class MeasureImageQuality(cellprofiler.module.Module):
             new_settings = []
             for idx in range(num_images):
                 new_settings += setting_values[(idx * 8):(idx * 8 + 8)]
-                new_settings += [cellprofiler.modules.identify.O_TWO_CLASS, cellprofiler.modules.identify.O_WEIGHTED_VARIANCE,
-                                 cellprofiler.modules.identify.O_FOREGROUND]
+                new_settings += [cellprofiler.identify.O_TWO_CLASS, cellprofiler.identify.O_WEIGHTED_VARIANCE,
+                                 cellprofiler.identify.O_FOREGROUND]
             setting_values = new_settings
             variable_revision_number = 3
 
@@ -1403,15 +1408,15 @@ class ImageQualitySettingsGroup(cellprofiler.setting.SettingsGroup):
         #
         threshold_algorithm = self.threshold_algorithm
         if threshold_algorithm == centrosome.threshold.TM_OTSU:
-            if self.two_class_otsu == cellprofiler.modules.identify.O_TWO_CLASS:
+            if self.two_class_otsu == cellprofiler.identify.O_TWO_CLASS:
                 scale = "2"
             else:
                 scale = "3"
-                if self.assign_middle_to_foreground == cellprofiler.modules.identify.O_FOREGROUND:
+                if self.assign_middle_to_foreground == cellprofiler.identify.O_FOREGROUND:
                     scale += "F"
                 else:
                     scale += "B"
-            if self.use_weighted_variance == cellprofiler.modules.identify.O_WEIGHTED_VARIANCE:
+            if self.use_weighted_variance == cellprofiler.identify.O_WEIGHTED_VARIANCE:
                 scale += "W"
             else:
                 scale += "S"
@@ -1427,15 +1432,15 @@ class ImageQualitySettingsGroup(cellprofiler.setting.SettingsGroup):
         agg - if present, the aggregating method, e.g. "Mean"
         """
         if self.threshold_algorithm == centrosome.threshold.TM_OTSU:
-            if self.use_weighted_variance == cellprofiler.modules.identify.O_WEIGHTED_VARIANCE:
+            if self.use_weighted_variance == cellprofiler.identify.O_WEIGHTED_VARIANCE:
                 wvorentropy = "WV"
             else:
                 wvorentropy = "S"
-            if self.two_class_otsu == cellprofiler.modules.identify.O_TWO_CLASS:
+            if self.two_class_otsu == cellprofiler.identify.O_TWO_CLASS:
                 result = "Otsu %s 2 cls" % wvorentropy
             else:
                 result = "Otsu %s 3 cls" % wvorentropy
-                if self.assign_middle_to_foreground == cellprofiler.modules.identify.O_FOREGROUND:
+                if self.assign_middle_to_foreground == cellprofiler.identify.O_FOREGROUND:
                     result += " Fg"
                 else:
                     result += " Bg"

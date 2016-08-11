@@ -1,9 +1,9 @@
 import cellprofiler.gui.help
+import cellprofiler.identify
 import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.module
 import cellprofiler.modules
-import cellprofiler.modules.identify
 import cellprofiler.region
 import cellprofiler.setting
 import centrosome.cpmorphology
@@ -160,12 +160,12 @@ class ExpandOrShrinkObjects(cellprofiler.module.Module):
                 self.do_labels(input_objects.unedited_segmented)
         workspace.object_set.add_objects(output_objects,
                                          self.output_object_name.value)
-        cellprofiler.modules.identify.add_object_count_measurements(workspace.measurements,
-                                                                    self.output_object_name.value,
-                                                                    numpy.max(output_objects.segmented))
-        cellprofiler.modules.identify.add_object_location_measurements(workspace.measurements,
-                                                                       self.output_object_name.value,
-                                                                       output_objects.segmented)
+        cellprofiler.identify.add_object_count_measurements(workspace.measurements,
+                                                            self.output_object_name.value,
+                                                            numpy.max(output_objects.segmented))
+        cellprofiler.identify.add_object_location_measurements(workspace.measurements,
+                                                               self.output_object_name.value,
+                                                               output_objects.segmented)
         if self.wants_outlines.value:
             outline_image = cellprofiler.image.Image(centrosome.outline.outline(output_objects.segmented) > 0,
                                                      parent=input_objects.parent_image)
@@ -247,7 +247,7 @@ class ExpandOrShrinkObjects(cellprofiler.module.Module):
 
     def get_measurement_columns(self, pipeline):
         """Return column definitions for measurements made by this module"""
-        columns = cellprofiler.modules.identify.get_object_measurement_columns(self.output_object_name.value)
+        columns = cellprofiler.identify.get_object_measurement_columns(self.output_object_name.value)
         return columns
 
     def get_categories(self, pipeline, object_name):

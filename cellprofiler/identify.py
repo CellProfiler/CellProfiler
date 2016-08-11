@@ -144,7 +144,6 @@ TECH_NOTE_ICON = "gear.png"
 
 
 class Identify(cellprofiler.module.Module):
-    module_name = "Identify"
     threshold_setting_version = 2
 
     def create_threshold_settings(self, methods=centrosome.threshold.TM_METHODS):

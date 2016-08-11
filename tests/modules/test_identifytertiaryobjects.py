@@ -3,9 +3,9 @@ import base64
 import unittest
 import zlib
 
+import cellprofiler.identify
 import cellprofiler.image
 import cellprofiler.measurement
-import cellprofiler.modules.identify
 import cellprofiler.modules.identifytertiaryobjects
 import cellprofiler.pipeline
 import cellprofiler.preferences
@@ -289,14 +289,14 @@ class TestIdentifyTertiaryObjects(unittest.TestCase):
         module.secondary_objects_name.value = SECONDARY
         module.subregion_objects_name.value = TERTIARY
         columns = module.get_measurement_columns(None)
-        expected = ((cellprofiler.measurement.IMAGE, cellprofiler.modules.identify.FF_COUNT % TERTIARY, cellprofiler.measurement.COLTYPE_INTEGER),
-                    (TERTIARY, cellprofiler.modules.identify.M_LOCATION_CENTER_X, cellprofiler.measurement.COLTYPE_FLOAT),
-                    (TERTIARY, cellprofiler.modules.identify.M_LOCATION_CENTER_Y, cellprofiler.measurement.COLTYPE_FLOAT),
-                    (TERTIARY, cellprofiler.modules.identify.M_NUMBER_OBJECT_NUMBER, cellprofiler.measurement.COLTYPE_INTEGER),
-                    (PRIMARY, cellprofiler.modules.identify.FF_CHILDREN_COUNT % TERTIARY, cellprofiler.measurement.COLTYPE_INTEGER),
-                    (SECONDARY, cellprofiler.modules.identify.FF_CHILDREN_COUNT % TERTIARY, cellprofiler.measurement.COLTYPE_INTEGER),
-                    (TERTIARY, cellprofiler.modules.identify.FF_PARENT % PRIMARY, cellprofiler.measurement.COLTYPE_INTEGER),
-                    (TERTIARY, cellprofiler.modules.identify.FF_PARENT % SECONDARY, cellprofiler.measurement.COLTYPE_INTEGER))
+        expected = ((cellprofiler.measurement.IMAGE, cellprofiler.identify.FF_COUNT % TERTIARY, cellprofiler.measurement.COLTYPE_INTEGER),
+                    (TERTIARY, cellprofiler.identify.M_LOCATION_CENTER_X, cellprofiler.measurement.COLTYPE_FLOAT),
+                    (TERTIARY, cellprofiler.identify.M_LOCATION_CENTER_Y, cellprofiler.measurement.COLTYPE_FLOAT),
+                    (TERTIARY, cellprofiler.identify.M_NUMBER_OBJECT_NUMBER, cellprofiler.measurement.COLTYPE_INTEGER),
+                    (PRIMARY, cellprofiler.identify.FF_CHILDREN_COUNT % TERTIARY, cellprofiler.measurement.COLTYPE_INTEGER),
+                    (SECONDARY, cellprofiler.identify.FF_CHILDREN_COUNT % TERTIARY, cellprofiler.measurement.COLTYPE_INTEGER),
+                    (TERTIARY, cellprofiler.identify.FF_PARENT % PRIMARY, cellprofiler.measurement.COLTYPE_INTEGER),
+                    (TERTIARY, cellprofiler.identify.FF_PARENT % SECONDARY, cellprofiler.measurement.COLTYPE_INTEGER))
         self.assertEqual(len(columns), len(expected))
         for column in columns:
             self.assertTrue(any([all([cv == ev for cv, ev in zip(column, ec)])
@@ -370,7 +370,7 @@ class TestIdentifyTertiaryObjects(unittest.TestCase):
                 self.assertEqual(parent_of[child - 1], child)
 
         for location_feature in (
-                cellprofiler.modules.identify.M_LOCATION_CENTER_X, cellprofiler.modules.identify.M_LOCATION_CENTER_Y):
+                cellprofiler.identify.M_LOCATION_CENTER_X, cellprofiler.identify.M_LOCATION_CENTER_Y):
             values = measurements.get_current_measurement(
                     TERTIARY, location_feature)
             self.assertTrue(numpy.all(numpy.isnan(values) == [False, True, False]))
@@ -406,20 +406,20 @@ class TestIdentifyTertiaryObjects(unittest.TestCase):
 
                 child_name = module.subregion_objects_name.value
                 primary_name = module.primary_objects_name.value
-                ftr = cellprofiler.modules.identify.FF_PARENT % primary_name
+                ftr = cellprofiler.identify.FF_PARENT % primary_name
                 pparents = m[child_name, ftr]
                 self.assertEqual(len(pparents), 3 if missing_primary else 2)
                 if missing_primary:
                     self.assertEqual(pparents[missing - 1], 0)
 
                 secondary_name = module.secondary_objects_name.value
-                ftr = cellprofiler.modules.identify.FF_PARENT % secondary_name
+                ftr = cellprofiler.identify.FF_PARENT % secondary_name
                 pparents = m[child_name, ftr]
                 self.assertEqual(len(pparents), 3 if missing_primary else 2)
                 if not missing_primary:
                     self.assertTrue(all([x in pparents for x in range(1, 3)]))
 
-                ftr = cellprofiler.modules.identify.FF_CHILDREN_COUNT % child_name
+                ftr = cellprofiler.identify.FF_CHILDREN_COUNT % child_name
                 children = m[primary_name, ftr]
                 self.assertEqual(len(children), 2 if missing_primary else 3)
                 if not missing_primary:

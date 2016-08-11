@@ -53,12 +53,12 @@ import bioformats.formatreader
 import bioformats.omexml
 import cellprofiler.gui.errordialog
 import cellprofiler.gui.help
+import cellprofiler.identify
 import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.module
 import cellprofiler.modules
 import cellprofiler.modules.groups
-import cellprofiler.modules.identify
 import cellprofiler.modules.loaddata
 import cellprofiler.modules.metadata
 import cellprofiler.pipeline
@@ -2280,8 +2280,8 @@ class LoadImages(cellprofiler.module.Module):
                     object_set.add_objects(o, object_name)
                     provider.release_memory()
                     row[0] = object_name
-                    cellprofiler.modules.identify.add_object_count_measurements(m, object_name, o.count)
-                    cellprofiler.modules.identify.add_object_location_measurements_ijv(m, object_name, ijv)
+                    cellprofiler.identify.add_object_count_measurements(m, object_name, o.count)
+                    cellprofiler.identify.add_object_location_measurements_ijv(m, object_name, ijv)
                     if channel.wants_outlines:
                         outlines = numpy.zeros(shape, bool)
                         for l, c in o.labels():
@@ -2736,9 +2736,9 @@ class LoadImages(cellprofiler.module.Module):
                 res += [cellprofiler.measurement.C_METADATA]
             if len(object_names) > 0:
                 res += [cellprofiler.measurement.C_OBJECTS_FILE_NAME, cellprofiler.measurement.C_OBJECTS_PATH_NAME,
-                        cellprofiler.measurement.C_OBJECTS_URL, cellprofiler.modules.identify.C_COUNT]
+                        cellprofiler.measurement.C_OBJECTS_URL, cellprofiler.identify.C_COUNT]
         elif object_name in object_names:
-            res += [cellprofiler.modules.identify.C_LOCATION, cellprofiler.modules.identify.C_NUMBER]
+            res += [cellprofiler.identify.C_LOCATION, cellprofiler.identify.C_NUMBER]
         return res
 
     def get_measurements(self, pipeline, object_name, category):
@@ -2753,17 +2753,17 @@ class LoadImages(cellprofiler.module.Module):
                   if channel.image_object_choice == IO_OBJECTS]
                  for image in self.images], [])
         if object_name == cellprofiler.measurement.IMAGE:
-            if category == cellprofiler.modules.identify.C_COUNT:
+            if category == cellprofiler.identify.C_COUNT:
                 result += object_names
             else:
                 result += [c[1].split('_', 1)[1]
                            for c in self.get_measurement_columns(pipeline)
                            if c[1].split('_')[0] == category]
         elif object_name in object_names:
-            if category == cellprofiler.modules.identify.C_NUMBER:
-                result += [cellprofiler.modules.identify.FTR_OBJECT_NUMBER]
-            elif category == cellprofiler.modules.identify.C_LOCATION:
-                result += [cellprofiler.modules.identify.FTR_CENTER_X, cellprofiler.modules.identify.FTR_CENTER_Y]
+            if category == cellprofiler.identify.C_NUMBER:
+                result += [cellprofiler.identify.FTR_OBJECT_NUMBER]
+            elif category == cellprofiler.identify.C_LOCATION:
+                result += [cellprofiler.identify.FTR_CENTER_X, cellprofiler.identify.FTR_CENTER_Y]
         return result
 
     def get_measurement_columns(self, pipeline):
@@ -2775,7 +2775,7 @@ class LoadImages(cellprofiler.module.Module):
             for channel in fd.channels:
                 if not self.channel_wants_images(channel):
                     name = channel.object_name.value
-                    cols += cellprofiler.modules.identify.get_object_measurement_columns(name)
+                    cols += cellprofiler.identify.get_object_measurement_columns(name)
                     path_name_category = cellprofiler.measurement.C_OBJECTS_PATH_NAME
                     file_name_category = cellprofiler.measurement.C_OBJECTS_FILE_NAME
                     url_category = cellprofiler.measurement.C_URL

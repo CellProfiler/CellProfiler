@@ -5,10 +5,10 @@ import tempfile
 import unittest
 
 import PIL.Image
+import cellprofiler.identify
 import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.module
-import cellprofiler.modules.identify
 import cellprofiler.modules.loadimages
 import cellprofiler.modules.loadsingleimage
 import cellprofiler.pipeline
@@ -528,7 +528,7 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
                     "_".join((cellprofiler.modules.loadsingleimage.C_OBJECTS_FILE_NAME, OBJECTS_NAME))), filename)
             self.assertEqual(m.get_current_image_measurement(
                     "_".join((cellprofiler.modules.loadsingleimage.C_OBJECTS_PATH_NAME, OBJECTS_NAME))), directory)
-            for feature in (cellprofiler.modules.identify.M_LOCATION_CENTER_X, cellprofiler.modules.identify.M_LOCATION_CENTER_Y, cellprofiler.modules.identify.M_NUMBER_OBJECT_NUMBER):
+            for feature in (cellprofiler.identify.M_LOCATION_CENTER_X, cellprofiler.identify.M_LOCATION_CENTER_Y, cellprofiler.identify.M_NUMBER_OBJECT_NUMBER):
                 values = m.get_current_measurement(OBJECTS_NAME, feature)
                 self.assertEqual(len(values), 9)
         finally:

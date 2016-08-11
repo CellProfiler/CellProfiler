@@ -9,10 +9,10 @@ import zlib
 
 import bioformats
 import bioformats.formatreader
+import cellprofiler.identify
 import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.module
-import cellprofiler.modules.identify
 import cellprofiler.modules.loaddata
 import cellprofiler.modules.loadimages
 import cellprofiler.pipeline
@@ -632,10 +632,10 @@ Channel1-01-A-01.tif,/imaging/analysis/trunk/ExampleImages/ExampleSBSImages
             (cellprofiler.measurement.IMAGE, cellprofiler.modules.loaddata.C_OBJECTS_URL + "_" + OBJECTS_NAME),
             (cellprofiler.measurement.IMAGE, cellprofiler.modules.loaddata.C_OBJECTS_FILE_NAME + "_" + OBJECTS_NAME),
             (cellprofiler.measurement.IMAGE, cellprofiler.modules.loaddata.C_OBJECTS_PATH_NAME + "_" + OBJECTS_NAME),
-            (cellprofiler.measurement.IMAGE, cellprofiler.modules.identify.C_COUNT + "_" + OBJECTS_NAME),
-            (OBJECTS_NAME, cellprofiler.modules.identify.M_LOCATION_CENTER_X),
-            (OBJECTS_NAME, cellprofiler.modules.identify.M_LOCATION_CENTER_Y),
-            (OBJECTS_NAME, cellprofiler.modules.identify.M_NUMBER_OBJECT_NUMBER))
+            (cellprofiler.measurement.IMAGE, cellprofiler.identify.C_COUNT + "_" + OBJECTS_NAME),
+            (OBJECTS_NAME, cellprofiler.identify.M_LOCATION_CENTER_X),
+            (OBJECTS_NAME, cellprofiler.identify.M_LOCATION_CENTER_Y),
+            (OBJECTS_NAME, cellprofiler.identify.M_NUMBER_OBJECT_NUMBER))
         for column in columns:
             self.assertTrue(any([
                                     True for object_name, feature in expected_columns
@@ -803,10 +803,10 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
             objects = object_set.get_objects(OBJECTS_NAME)
             self.assertTrue(numpy.all(objects.segmented == labels))
             self.assertEqual(measurements.get_current_image_measurement(
-                cellprofiler.modules.identify.FF_COUNT % OBJECTS_NAME), 9)
-            for feature in (cellprofiler.modules.identify.M_LOCATION_CENTER_X,
-                            cellprofiler.modules.identify.M_LOCATION_CENTER_Y,
-                            cellprofiler.modules.identify.M_NUMBER_OBJECT_NUMBER):
+                cellprofiler.identify.FF_COUNT % OBJECTS_NAME), 9)
+            for feature in (cellprofiler.identify.M_LOCATION_CENTER_X,
+                            cellprofiler.identify.M_LOCATION_CENTER_Y,
+                            cellprofiler.identify.M_NUMBER_OBJECT_NUMBER):
                 value = measurements.get_current_measurement(
                         OBJECTS_NAME, feature)
                 self.assertEqual(len(value), 9)

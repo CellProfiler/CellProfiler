@@ -34,11 +34,11 @@ reassignment.
 """
 
 import cellprofiler.gui.help
+import cellprofiler.identify
 import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.module
 import cellprofiler.modules
-import cellprofiler.modules.identify
 import cellprofiler.preferences
 import cellprofiler.region
 import cellprofiler.setting
@@ -227,8 +227,8 @@ class ReassignObjectNumbers(cellprofiler.module.Module):
         for column in columns:
             object_name, feature, coltype = column[:3]
             if (object_name == self.objects_name.value and
-                    feature.startswith(cellprofiler.modules.identify.C_PARENT)):
-                choices.append(feature[(len(cellprofiler.modules.identify.C_PARENT) + 1):])
+                    feature.startswith(cellprofiler.identify.C_PARENT)):
+                choices.append(feature[(len(cellprofiler.identify.C_PARENT) + 1):])
         return choices
 
     def validate_module(self, pipeline):
@@ -289,7 +289,7 @@ class ReassignObjectNumbers(cellprofiler.module.Module):
             elif self.unify_option == UNIFY_PARENT:
                 parents_name = self.parent_object.value
                 parents_of = workspace.measurements[
-                    objects_name, "_".join((cellprofiler.modules.identify.C_PARENT, parents_name))]
+                    objects_name, "_".join((cellprofiler.identify.C_PARENT, parents_name))]
                 output_labels = labels.copy().astype(numpy.uint32)
                 output_labels[labels > 0] = parents_of[labels[labels > 0] - 1]
                 if self.unification_method == UM_CONVEX_HULL:
@@ -309,12 +309,12 @@ class ReassignObjectNumbers(cellprofiler.module.Module):
         workspace.object_set.add_objects(output_objects, self.output_objects_name.value)
 
         measurements = workspace.measurements
-        cellprofiler.modules.identify.add_object_count_measurements(measurements,
-                                                                    self.output_objects_name.value,
-                                                                    numpy.max(output_objects.segmented))
-        cellprofiler.modules.identify.add_object_location_measurements(measurements,
-                                                                       self.output_objects_name.value,
-                                                                       output_objects.segmented)
+        cellprofiler.identify.add_object_count_measurements(measurements,
+                                                            self.output_objects_name.value,
+                                                            numpy.max(output_objects.segmented))
+        cellprofiler.identify.add_object_location_measurements(measurements,
+                                                               self.output_objects_name.value,
+                                                               output_objects.segmented)
 
         #
         # Relate the output objects to the input ones and record
@@ -323,11 +323,11 @@ class ReassignObjectNumbers(cellprofiler.module.Module):
         children_per_parent, parents_of_children = \
             objects.relate_children(output_objects)
         measurements.add_measurement(self.objects_name.value,
-                                     cellprofiler.modules.identify.FF_CHILDREN_COUNT %
+                                     cellprofiler.identify.FF_CHILDREN_COUNT %
                                      self.output_objects_name.value,
                                      children_per_parent)
         measurements.add_measurement(self.output_objects_name.value,
-                                     cellprofiler.modules.identify.FF_PARENT % self.objects_name.value,
+                                     cellprofiler.identify.FF_PARENT % self.objects_name.value,
                                      parents_of_children)
         if self.wants_outlines:
             outlines = centrosome.outline.outline(output_labels)
@@ -579,12 +579,12 @@ class ReassignObjectNumbers(cellprofiler.module.Module):
         return image
 
     def get_measurement_columns(self, pipeline):
-        columns = cellprofiler.modules.identify.get_object_measurement_columns(self.output_objects_name.value)
+        columns = cellprofiler.identify.get_object_measurement_columns(self.output_objects_name.value)
         columns += [(self.output_objects_name.value,
-                     cellprofiler.modules.identify.FF_PARENT % self.objects_name.value,
+                     cellprofiler.identify.FF_PARENT % self.objects_name.value,
                      cellprofiler.measurement.COLTYPE_INTEGER),
                     (self.objects_name.value,
-                     cellprofiler.modules.identify.FF_CHILDREN_COUNT % self.output_objects_name.value,
+                     cellprofiler.identify.FF_CHILDREN_COUNT % self.output_objects_name.value,
                      cellprofiler.measurement.COLTYPE_INTEGER)]
         return columns
 

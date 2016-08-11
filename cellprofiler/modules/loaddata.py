@@ -155,10 +155,10 @@ import csv
 import logging
 import os
 
+import cellprofiler.identify
 import cellprofiler.measurement
 import cellprofiler.module
 import cellprofiler.modules
-import cellprofiler.modules.identify
 import cellprofiler.modules.loadimages
 import cellprofiler.preferences
 import cellprofiler.region
@@ -1108,8 +1108,8 @@ class LoadData(cellprofiler.module.Module):
                 o = cellprofiler.region.Region()
                 o.segmented = pixel_data
                 object_set.add_objects(o, objects_name)
-                cellprofiler.modules.identify.add_object_count_measurements(m, objects_name, o.count)
-                cellprofiler.modules.identify.add_object_location_measurements(m, objects_name, pixel_data)
+                cellprofiler.identify.add_object_count_measurements(m, objects_name, o.count)
+                cellprofiler.identify.add_object_location_measurements(m, objects_name, pixel_data)
 
         for feature_name in sorted(features):
             value = m.get_measurement(cellprofiler.measurement.IMAGE, feature_name)
@@ -1245,7 +1245,7 @@ class LoadData(cellprofiler.module.Module):
             # Add the object features
             #
             for object_name in self.get_object_names():
-                result += cellprofiler.modules.identify.get_object_measurement_columns(object_name)
+                result += cellprofiler.identify.get_object_measurement_columns(object_name)
                 for feature, coltype in (
                         (cellprofiler.measurement.C_OBJECTS_URL, cellprofiler.measurement.COLTYPE_VARCHAR_PATH_NAME),
                         (cellprofiler.measurement.C_OBJECTS_PATH_NAME, cellprofiler.measurement.COLTYPE_VARCHAR_PATH_NAME),

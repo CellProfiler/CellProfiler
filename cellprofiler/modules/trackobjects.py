@@ -2,11 +2,11 @@ import logging
 
 import cellprofiler.gui.help
 import cellprofiler.icons
+import cellprofiler.identify
 import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.module
 import cellprofiler.modules
-import cellprofiler.modules.identify
 import cellprofiler.pipeline
 import cellprofiler.preferences
 import cellprofiler.setting
@@ -1559,8 +1559,8 @@ class TrackObjects(cellprofiler.module.Module):
             for feature, mtype in (
                 (self.measurement_name(F_LABEL), int),
                 (cellprofiler.measurement.OBJECT_NUMBER, int),
-                (cellprofiler.modules.identify.M_LOCATION_CENTER_X, float),
-                (cellprofiler.modules.identify.M_LOCATION_CENTER_Y, float),
+                (cellprofiler.identify.M_LOCATION_CENTER_X, float),
+                (cellprofiler.identify.M_LOCATION_CENTER_Y, float),
                 (self.measurement_name(F_AREA), float),
                 (self.measurement_name(F_PARENT_OBJECT_NUMBER), int),
                 (self.measurement_name(F_PARENT_IMAGE_NUMBER), int)
@@ -2629,8 +2629,8 @@ class TrackObjects(cellprofiler.module.Module):
         #
         # Recalculate the trajectories
         #
-        x = wrapped(cellprofiler.modules.identify.M_LOCATION_CENTER_X)
-        y = wrapped(cellprofiler.modules.identify.M_LOCATION_CENTER_Y)
+        x = wrapped(cellprofiler.identify.M_LOCATION_CENTER_X)
+        y = wrapped(cellprofiler.identify.M_LOCATION_CENTER_Y)
         trajectory_x = wrapped(self.measurement_name(F_TRAJECTORY_X))
         trajectory_y = wrapped(self.measurement_name(F_TRAJECTORY_Y))
         integrated = wrapped(self.measurement_name(F_INTEGRATED_DISTANCE))
@@ -2887,14 +2887,14 @@ class TrackObjects(cellprofiler.module.Module):
         # parent_y = y[idx.fwd_idx[image_number - fi] + object_number - 1]
         #
         # #######################
-        x = m[object_name, cellprofiler.modules.identify.M_LOCATION_CENTER_X, image_numbers]
+        x = m[object_name, cellprofiler.identify.M_LOCATION_CENTER_X, image_numbers]
         fi = numpy.min(image_numbers)
         max_image = numpy.max(image_numbers) + 1
         counts = numpy.zeros(max_image - fi, int)
         counts[image_numbers - fi] = numpy.array([len(xx) for xx in x])
         idx = centrosome.index.Indexes(counts)
         x = numpy.hstack(x)
-        y = numpy.hstack(m[object_name, cellprofiler.modules.identify.M_LOCATION_CENTER_Y, image_numbers])
+        y = numpy.hstack(m[object_name, cellprofiler.identify.M_LOCATION_CENTER_Y, image_numbers])
         area = numpy.hstack(
                 m[object_name,
                   self.measurement_name(F_AREA),

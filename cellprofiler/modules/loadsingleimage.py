@@ -41,12 +41,12 @@ import os
 import re
 
 import cellprofiler.gui.help
+import cellprofiler.identify
 import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.module
 import cellprofiler.modules
 import cellprofiler.modules.groups
-import cellprofiler.modules.identify
 import cellprofiler.modules.images
 import cellprofiler.modules.loadimages
 import cellprofiler.modules.metadata
@@ -432,8 +432,8 @@ class LoadSingleImage(cellprofiler.module.Module):
                 object_set = workspace.object_set
                 assert isinstance(object_set, cellprofiler.region.Set)
                 object_set.add_objects(objects, image_name)
-                cellprofiler.modules.identify.add_object_count_measurements(m, image_name, objects.count)
-                cellprofiler.modules.identify.add_object_location_measurements(m, image_name, labels)
+                cellprofiler.identify.add_object_count_measurements(m, image_name, objects.count)
+                cellprofiler.identify.add_object_location_measurements(m, image_name, labels)
                 #
                 # Add outlines if appropriate
                 #
@@ -473,7 +473,7 @@ class LoadSingleImage(cellprofiler.module.Module):
                 image_name = file_setting.objects_name.value
                 path_name_category = cellprofiler.measurement.C_OBJECTS_PATH_NAME
                 file_name_category = cellprofiler.measurement.C_OBJECTS_FILE_NAME
-                columns += cellprofiler.modules.identify.get_object_measurement_columns(image_name)
+                columns += cellprofiler.identify.get_object_measurement_columns(image_name)
 
             columns += [(cellprofiler.measurement.IMAGE, '_'.join((feature, image_name)), coltype)
                         for feature, coltype in (
@@ -500,11 +500,11 @@ class LoadSingleImage(cellprofiler.module.Module):
             if self.wants_images:
                 result += [cellprofiler.measurement.C_FILE_NAME, cellprofiler.modules.loadimages.C_MD5_DIGEST, cellprofiler.measurement.C_PATH_NAME, cellprofiler.modules.loadimages.C_SCALING, cellprofiler.modules.loadimages.C_HEIGHT, cellprofiler.modules.loadimages.C_WIDTH]
             if self.wants_objects:
-                result += [cellprofiler.modules.identify.C_COUNT, cellprofiler.measurement.C_OBJECTS_FILE_NAME, cellprofiler.measurement.C_OBJECTS_PATH_NAME]
+                result += [cellprofiler.identify.C_COUNT, cellprofiler.measurement.C_OBJECTS_FILE_NAME, cellprofiler.measurement.C_OBJECTS_PATH_NAME]
         if any([True for file_setting in self.file_settings
                 if file_setting.image_objects_choice == cellprofiler.modules.loadimages.IO_OBJECTS and
                                 object_name == file_setting.objects_name]):
-            result += [cellprofiler.modules.identify.C_LOCATION, cellprofiler.modules.identify.C_NUMBER]
+            result += [cellprofiler.identify.C_LOCATION, cellprofiler.identify.C_NUMBER]
         return result
 
     def get_measurements(self, pipeline, object_name, category):
@@ -519,17 +519,17 @@ class LoadSingleImage(cellprofiler.module.Module):
                 result += [file_setting.image_name.value
                            for file_setting in self.file_settings
                            if file_setting.image_objects_choice == cellprofiler.modules.loadimages.IO_IMAGES]
-            if category in (cellprofiler.measurement.C_OBJECTS_FILE_NAME, cellprofiler.measurement.C_OBJECTS_PATH_NAME, cellprofiler.modules.identify.C_COUNT):
+            if category in (cellprofiler.measurement.C_OBJECTS_FILE_NAME, cellprofiler.measurement.C_OBJECTS_PATH_NAME, cellprofiler.identify.C_COUNT):
                 result += [file_setting.objects_name.value
                            for file_setting in self.file_settings
                            if file_setting.image_objects_choice == cellprofiler.modules.loadimages.IO_OBJECTS]
         elif any([file_setting.image_objects_choice == cellprofiler.modules.loadimages.IO_OBJECTS and
                                   file_setting.objects_name == object_name
                   for file_setting in self.file_settings]):
-            if category == cellprofiler.modules.identify.C_NUMBER:
-                result += [cellprofiler.modules.identify.FTR_OBJECT_NUMBER]
-            elif category == cellprofiler.modules.identify.C_LOCATION:
-                result += [cellprofiler.modules.identify.FTR_CENTER_X, cellprofiler.modules.identify.FTR_CENTER_Y]
+            if category == cellprofiler.identify.C_NUMBER:
+                result += [cellprofiler.identify.FTR_OBJECT_NUMBER]
+            elif category == cellprofiler.identify.C_LOCATION:
+                result += [cellprofiler.identify.FTR_CENTER_X, cellprofiler.identify.FTR_CENTER_Y]
         return result
 
     def validate_module(self, pipeline):

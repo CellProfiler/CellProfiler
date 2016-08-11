@@ -57,10 +57,10 @@ the pixel with the maximum intensity within the object.</li>
 See also <b>NamesAndTypes</b>, <b>MeasureImageIntensity</b>.
 """
 
+import cellprofiler.identify
 import cellprofiler.measurement
 import cellprofiler.module
 import cellprofiler.modules
-import cellprofiler.modules.identify
 import cellprofiler.region
 import cellprofiler.setting
 import centrosome.cpmorphology
@@ -252,7 +252,7 @@ class MeasureObjectIntensity(cellprofiler.module.Module):
             for object_name in [obj.name for obj in self.objects]:
                 for category, features in (
                         (INTENSITY, ALL_MEASUREMENTS),
-                        (cellprofiler.modules.identify.C_LOCATION, ALL_LOCATION_MEASUREMENTS)):
+                        (cellprofiler.identify.C_LOCATION, ALL_LOCATION_MEASUREMENTS)):
                     for feature in features:
                         columns.append((object_name.value,
                                         "%s_%s_%s" % (category, feature,
@@ -270,12 +270,12 @@ class MeasureObjectIntensity(cellprofiler.module.Module):
         """
         for object_name_variable in [obj.name for obj in self.objects]:
             if object_name_variable.value == object_name:
-                return [INTENSITY, cellprofiler.modules.identify.C_LOCATION]
+                return [INTENSITY, cellprofiler.identify.C_LOCATION]
         return []
 
     def get_measurements(self, pipeline, object_name, category):
         """Get the measurements made on the given object in the given category"""
-        if category == cellprofiler.modules.identify.C_LOCATION:
+        if category == cellprofiler.identify.C_LOCATION:
             all_measurements = ALL_LOCATION_MEASUREMENTS
         elif category == INTENSITY:
             all_measurements = ALL_MEASUREMENTS
@@ -291,7 +291,7 @@ class MeasureObjectIntensity(cellprofiler.module.Module):
         if category == INTENSITY:
             if measurement not in ALL_MEASUREMENTS:
                 return []
-        elif category == cellprofiler.modules.identify.C_LOCATION:
+        elif category == cellprofiler.identify.C_LOCATION:
             if measurement not in ALL_LOCATION_MEASUREMENTS:
                 return []
         else:
@@ -475,10 +475,10 @@ class MeasureObjectIntensity(cellprofiler.module.Module):
                          (INTENSITY, MEDIAN_INTENSITY, median_intensity),
                          (INTENSITY, MAD_INTENSITY, mad_intensity),
                          (INTENSITY, UPPER_QUARTILE_INTENSITY, upper_quartile_intensity),
-                         (cellprofiler.modules.identify.C_LOCATION, LOC_CMI_X, cmi_x),
-                         (cellprofiler.modules.identify.C_LOCATION, LOC_CMI_Y, cmi_y),
-                         (cellprofiler.modules.identify.C_LOCATION, LOC_MAX_X, max_x),
-                         (cellprofiler.modules.identify.C_LOCATION, LOC_MAX_Y, max_y)):
+                         (cellprofiler.identify.C_LOCATION, LOC_CMI_X, cmi_x),
+                         (cellprofiler.identify.C_LOCATION, LOC_CMI_Y, cmi_y),
+                         (cellprofiler.identify.C_LOCATION, LOC_MAX_X, max_x),
+                         (cellprofiler.identify.C_LOCATION, LOC_MAX_Y, max_y)):
                     measurement_name = "%s_%s_%s" % (category, feature_name,
                                                      image_name.value)
                     m.add_measurement(object_name.value, measurement_name,

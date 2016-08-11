@@ -4,10 +4,10 @@ import tempfile
 import cellh5
 import cellh5.cellh5write
 import cellprofiler.gui.help
+import cellprofiler.identify
 import cellprofiler.measurement
 import cellprofiler.module
 import cellprofiler.modules
-import cellprofiler.modules.identify
 import cellprofiler.preferences
 import cellprofiler.setting
 import h5py
@@ -574,7 +574,7 @@ class ExportToCellH5(cellprofiler.module.Module):
                 for image_number1, image_number2, \
                     object_number1, object_number2 in relationships:
                     if image_number1 == image_number2 and \
-                                    key.relationship == cellprofiler.modules.identify.R_PARENT:
+                                    key.relationship == cellprofiler.identify.R_PARENT:
                         #
                         # Object 1 is the parent to object 2 - this is the
                         # most common relationship, so if you can only record

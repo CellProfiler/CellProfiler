@@ -1,10 +1,10 @@
 import cellprofiler.gui.help
 import cellprofiler.icons
+import cellprofiler.identify
 import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.module
 import cellprofiler.modules
-import cellprofiler.modules.identify
 import cellprofiler.preferences
 import cellprofiler.region
 import cellprofiler.setting
@@ -159,7 +159,7 @@ N_SETTING_VALUES = 14
 R_PARENT = "Parent"
 
 
-class IdentifySecondaryObjects(cellprofiler.modules.identify.Identify):
+class IdentifySecondaryObjects(cellprofiler.identify.Identify):
     module_name = "IdentifySecondaryObjects"
     variable_revision_number = 9
     category = "Object Processing"
@@ -252,7 +252,7 @@ class IdentifySecondaryObjects(cellprofiler.modules.identify.Identify):
 
         self.create_threshold_settings()
         # default smoothing choice is different for idprimary and idsecondary
-        self.threshold_smoothing_choice.value = cellprofiler.modules.identify.TSM_NONE
+        self.threshold_smoothing_choice.value = cellprofiler.identify.TSM_NONE
 
         self.distance_to_dilate = cellprofiler.setting.Integer(
                 "Number of pixels by which to expand the primary objects", 10, minval=1)
@@ -444,8 +444,8 @@ class IdentifySecondaryObjects(cellprofiler.modules.identify.Identify):
             # Removed test mode
             # added Otsu parameters.
             setting_values = setting_values[:11] + setting_values[12:]
-            setting_values += [cellprofiler.modules.identify.O_TWO_CLASS, cellprofiler.modules.identify.O_WEIGHTED_VARIANCE,
-                               cellprofiler.modules.identify.O_FOREGROUND]
+            setting_values += [cellprofiler.identify.O_TWO_CLASS, cellprofiler.identify.O_WEIGHTED_VARIANCE,
+                               cellprofiler.identify.O_FOREGROUND]
             variable_revision_number = 2
 
         if (not from_matlab) and variable_revision_number == 2:
@@ -479,7 +479,7 @@ class IdentifySecondaryObjects(cellprofiler.modules.identify.Identify):
 
         if (not from_matlab) and variable_revision_number == 7:
             # Added adaptive thresholding settings
-            setting_values += [cellprofiler.modules.identify.FI_IMAGE_SIZE, "10"]
+            setting_values += [cellprofiler.identify.FI_IMAGE_SIZE, "10"]
             variable_revision_number = 8
 
         if (not from_matlab) and variable_revision_number == 8:
@@ -501,7 +501,7 @@ class IdentifySecondaryObjects(cellprofiler.modules.identify.Identify):
                                  new_primary_objects_name, wants_primary_outlines,
                                  new_primary_outlines_name, fill_holes] + \
                              self.upgrade_legacy_threshold_settings(
-                                     threshold_method, cellprofiler.modules.identify.TSM_NONE,
+                                     threshold_method, cellprofiler.identify.TSM_NONE,
                                      threshold_correction_factor, threshold_range,
                                      object_fraction, manual_threshold, thresholding_measurement,
                                      binary_image, two_class_otsu, use_weighted_variance,
@@ -694,9 +694,9 @@ class IdentifySecondaryObjects(cellprofiler.modules.identify.Identify):
         # Add measurements
         #
         measurements = workspace.measurements
-        cellprofiler.modules.identify.add_object_count_measurements(measurements, objname, object_count)
-        cellprofiler.modules.identify.add_object_location_measurements(measurements, objname,
-                                                                       segmented_out)
+        cellprofiler.identify.add_object_count_measurements(measurements, objname, object_count)
+        cellprofiler.identify.add_object_location_measurements(measurements, objname,
+                                                               segmented_out)
         #
         # Relate the secondary objects to the primary ones and record
         # the relationship.
@@ -704,10 +704,10 @@ class IdentifySecondaryObjects(cellprofiler.modules.identify.Identify):
         children_per_parent, parents_of_children = \
             objects.relate_children(objects_out)
         measurements.add_measurement(self.primary_objects.value,
-                                     cellprofiler.modules.identify.FF_CHILDREN_COUNT % objname,
+                                     cellprofiler.identify.FF_CHILDREN_COUNT % objname,
                                      children_per_parent)
         measurements.add_measurement(objname,
-                                     cellprofiler.modules.identify.FF_PARENT % self.primary_objects.value,
+                                     cellprofiler.identify.FF_PARENT % self.primary_objects.value,
                                      parents_of_children)
         image_numbers = numpy.ones(len(parents_of_children), int) * \
                         measurements.image_set_number
@@ -724,12 +724,12 @@ class IdentifySecondaryObjects(cellprofiler.modules.identify.Identify):
         if self.wants_discard_edge and self.wants_discard_primary:
             workspace.object_set.add_objects(new_objects,
                                              self.new_primary_objects_name.value)
-            cellprofiler.modules.identify.add_object_count_measurements(measurements,
-                                                                        self.new_primary_objects_name.value,
-                                                                        numpy.max(new_objects.segmented))
-            cellprofiler.modules.identify.add_object_location_measurements(measurements,
-                                                                           self.new_primary_objects_name.value,
-                                                                           new_objects.segmented)
+            cellprofiler.identify.add_object_count_measurements(measurements,
+                                                                self.new_primary_objects_name.value,
+                                                                numpy.max(new_objects.segmented))
+            cellprofiler.identify.add_object_location_measurements(measurements,
+                                                                   self.new_primary_objects_name.value,
+                                                                   new_objects.segmented)
             for parent_objects, parent_name, child_objects, child_name in (
                     (objects, self.primary_objects.value,
                      new_objects, self.new_primary_objects_name.value),
@@ -738,10 +738,10 @@ class IdentifySecondaryObjects(cellprofiler.modules.identify.Identify):
                 children_per_parent, parents_of_children = \
                     parent_objects.relate_children(child_objects)
                 measurements.add_measurement(parent_name,
-                                             cellprofiler.modules.identify.FF_CHILDREN_COUNT % child_name,
+                                             cellprofiler.identify.FF_CHILDREN_COUNT % child_name,
                                              children_per_parent)
                 measurements.add_measurement(child_name,
-                                             cellprofiler.modules.identify.FF_PARENT % parent_name,
+                                             cellprofiler.identify.FF_PARENT % parent_name,
                                              parents_of_children)
         if self.show_window:
             object_area = numpy.sum(segmented_out > 0)
@@ -754,7 +754,7 @@ class IdentifySecondaryObjects(cellprofiler.modules.identify.Identify):
             workspace.display_data.object_count = object_count
 
     def display(self, workspace, figure):
-        from identify import TS_BINARY_IMAGE
+        from cellprofiler.identify import TS_BINARY_IMAGE
 
         object_pct = workspace.display_data.object_pct
         img = workspace.display_data.img
@@ -858,28 +858,28 @@ class IdentifySecondaryObjects(cellprofiler.modules.identify.Identify):
 
     def get_measurement_columns(self, pipeline):
         """Return column definitions for measurements made by this module"""
-        columns = cellprofiler.modules.identify.get_object_measurement_columns(self.objects_name.value)
+        columns = cellprofiler.identify.get_object_measurement_columns(self.objects_name.value)
         columns += [(self.primary_objects.value,
-                     cellprofiler.modules.identify.FF_CHILDREN_COUNT % self.objects_name.value,
+                     cellprofiler.identify.FF_CHILDREN_COUNT % self.objects_name.value,
                      cellprofiler.measurement.COLTYPE_INTEGER),
                     (self.objects_name.value,
-                     cellprofiler.modules.identify.FF_PARENT % self.primary_objects.value,
+                     cellprofiler.identify.FF_PARENT % self.primary_objects.value,
                      cellprofiler.measurement.COLTYPE_INTEGER)]
         if self.method != M_DISTANCE_N:
-            columns += cellprofiler.modules.identify.get_threshold_measurement_columns(self.objects_name.value)
+            columns += cellprofiler.identify.get_threshold_measurement_columns(self.objects_name.value)
         if self.wants_discard_edge and self.wants_discard_primary:
-            columns += cellprofiler.modules.identify.get_object_measurement_columns(self.new_primary_objects_name.value)
+            columns += cellprofiler.identify.get_object_measurement_columns(self.new_primary_objects_name.value)
             columns += [(self.new_primary_objects_name.value,
-                         cellprofiler.modules.identify.FF_CHILDREN_COUNT % self.objects_name.value,
+                         cellprofiler.identify.FF_CHILDREN_COUNT % self.objects_name.value,
                          cellprofiler.measurement.COLTYPE_INTEGER),
                         (self.objects_name.value,
-                         cellprofiler.modules.identify.FF_PARENT % self.new_primary_objects_name.value,
+                         cellprofiler.identify.FF_PARENT % self.new_primary_objects_name.value,
                          cellprofiler.measurement.COLTYPE_INTEGER)]
             columns += [(self.primary_objects.value,
-                         cellprofiler.modules.identify.FF_CHILDREN_COUNT % self.new_primary_objects_name.value,
+                         cellprofiler.identify.FF_CHILDREN_COUNT % self.new_primary_objects_name.value,
                          cellprofiler.measurement.COLTYPE_INTEGER),
                         (self.new_primary_objects_name.value,
-                         cellprofiler.modules.identify.FF_PARENT % self.primary_objects.value,
+                         cellprofiler.identify.FF_PARENT % self.primary_objects.value,
                          cellprofiler.measurement.COLTYPE_INTEGER)]
 
         return columns

@@ -6,10 +6,10 @@ import tempfile
 import unittest
 import zlib
 
+import cellprofiler.identify
 import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.modules.exporttospreadsheet
-import cellprofiler.modules.identify
 import cellprofiler.modules.identifyprimaryobjects
 import cellprofiler.pipeline
 import cellprofiler.preferences
@@ -2250,8 +2250,8 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         m = cellprofiler.measurement.Measurements()
         m[cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_NUMBER, 1] = 1
         m[cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_INDEX, 1] = 1
-        m[cellprofiler.measurement.IMAGE, "_".join((cellprofiler.modules.identify.C_COUNT, OBJECTS_NAME)), 1] = 3
-        m[OBJECTS_NAME, cellprofiler.modules.identify.M_LOCATION_CENTER_X, 1] = numpy.array([1, 4, 9], float)
+        m[cellprofiler.measurement.IMAGE, "_".join((cellprofiler.identify.C_COUNT, OBJECTS_NAME)), 1] = 3
+        m[OBJECTS_NAME, cellprofiler.identify.M_LOCATION_CENTER_X, 1] = numpy.array([1, 4, 9], float)
         image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         object_set = cellprofiler.region.Set()
@@ -2270,13 +2270,13 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             d = {}
             for index, column in enumerate(header):
                 d[column] = index
-            self.assertTrue(d.has_key(cellprofiler.modules.identify.M_LOCATION_CENTER_X))
-            self.assertTrue(d.has_key(cellprofiler.modules.identify.M_LOCATION_CENTER_Y))
+            self.assertTrue(d.has_key(cellprofiler.identify.M_LOCATION_CENTER_X))
+            self.assertTrue(d.has_key(cellprofiler.identify.M_LOCATION_CENTER_Y))
             for i in range(3):
                 row = reader.next()
-                x = row[d[cellprofiler.modules.identify.M_LOCATION_CENTER_X]]
+                x = row[d[cellprofiler.identify.M_LOCATION_CENTER_X]]
                 self.assertEqual(float(x), (i + 1) ** 2)
-                y = row[d[cellprofiler.modules.identify.M_LOCATION_CENTER_Y]]
+                y = row[d[cellprofiler.identify.M_LOCATION_CENTER_Y]]
                 self.assertEqual(y.lower(), "nan")
             self.assertRaises(StopIteration, reader.next)
         finally:

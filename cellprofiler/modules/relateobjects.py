@@ -32,10 +32,10 @@ See also: <b>ReassignObjectNumbers</b>, <b>MaskObjects</b>.
 
 import re
 
+import cellprofiler.identify
 import cellprofiler.measurement
 import cellprofiler.module
 import cellprofiler.modules
-import cellprofiler.modules.identify
 import cellprofiler.setting
 import centrosome.cpmorphology
 import centrosome.cpmorphology
@@ -172,20 +172,20 @@ class RelateObjects(cellprofiler.module.Module):
             # Objects that are the parent of the parents
             #
             grandparents = module.get_measurements(pipeline, parent_name,
-                                                   cellprofiler.modules.identify.C_PARENT)
+                                                   cellprofiler.identify.C_PARENT)
             step_parents.update(grandparents)
             #
             # Objects that are the children of the parents
             #
             siblings = module.get_measurements(pipeline, parent_name,
-                                               cellprofiler.modules.identify.C_CHILDREN)
+                                               cellprofiler.identify.C_CHILDREN)
             for sibling in siblings:
                 match = re.match("^([^_]+)_Count", sibling)
                 if match is not None:
                     sibling_name = match.groups()[0]
                     if parent_name in module.get_measurements(pipeline,
                                                               sibling_name,
-                                                              cellprofiler.modules.identify.C_PARENT):
+                                                              cellprofiler.identify.C_PARENT):
                         step_parents.add(sibling_name)
         return list(step_parents)
 
@@ -222,17 +222,17 @@ class RelateObjects(cellprofiler.module.Module):
         m = workspace.measurements
         assert isinstance(m, cellprofiler.measurement.Measurements)
         m.add_measurement(self.sub_object_name.value,
-                          cellprofiler.modules.identify.FF_PARENT % self.parent_name.value,
+                          cellprofiler.identify.FF_PARENT % self.parent_name.value,
                           parents_of)
         m.add_measurement(self.parent_name.value,
-                          cellprofiler.modules.identify.FF_CHILDREN_COUNT % self.sub_object_name.value,
+                          cellprofiler.identify.FF_CHILDREN_COUNT % self.sub_object_name.value,
                           child_count)
         good_parents = parents_of[parents_of != 0]
         image_numbers = numpy.ones(len(good_parents), int) * m.image_set_number
         good_children = numpy.argwhere(parents_of != 0).flatten() + 1
         if numpy.any(good_parents):
             m.add_relate_measurement(self.module_num,
-                                     cellprofiler.modules.identify.R_PARENT,
+                                     cellprofiler.identify.R_PARENT,
                                      self.parent_name.value,
                                      self.sub_object_name.value,
                                      image_numbers,
@@ -240,7 +240,7 @@ class RelateObjects(cellprofiler.module.Module):
                                      image_numbers,
                                      good_children)
             m.add_relate_measurement(self.module_num,
-                                     cellprofiler.modules.identify.R_CHILD,
+                                     cellprofiler.identify.R_CHILD,
                                      self.sub_object_name.value,
                                      self.parent_name.value,
                                      image_numbers,
@@ -443,10 +443,10 @@ class RelateObjects(cellprofiler.module.Module):
         """
         meas = workspace.measurements
         assert isinstance(meas, cellprofiler.measurement.Measurements)
-        parent_feature = cellprofiler.modules.identify.FF_PARENT % parent_name
+        parent_feature = cellprofiler.identify.FF_PARENT % parent_name
         primary_parent = self.parent_name.value
         sub_object_name = self.sub_object_name.value
-        primary_parent_feature = cellprofiler.modules.identify.FF_PARENT % primary_parent
+        primary_parent_feature = cellprofiler.identify.FF_PARENT % primary_parent
         if parent_feature in meas.get_feature_names(sub_object_name):
             parents_of = meas.get_current_measurement(sub_object_name,
                                                       parent_feature)
@@ -486,7 +486,7 @@ class RelateObjects(cellprofiler.module.Module):
                              (primary_parent, parent_name))
         return parents_of
 
-    ignore_features = set(cellprofiler.modules.identify.M_NUMBER_OBJECT_NUMBER)
+    ignore_features = set(cellprofiler.identify.M_NUMBER_OBJECT_NUMBER)
 
     def should_aggregate_feature(self, feature_name):
         """Return True if aggregate measurements should be made on a feature
@@ -495,7 +495,7 @@ class RelateObjects(cellprofiler.module.Module):
         """
         if feature_name.startswith(C_MEAN):
             return False
-        if feature_name.startswith(cellprofiler.modules.identify.C_PARENT):
+        if feature_name.startswith(cellprofiler.identify.C_PARENT):
             return False
         if feature_name in self.ignore_features:
             return False
@@ -552,10 +552,10 @@ class RelateObjects(cellprofiler.module.Module):
     def get_measurement_columns(self, pipeline):
         """Return the column definitions for this module's measurements"""
         columns = [(self.sub_object_name.value,
-                    cellprofiler.modules.identify.FF_PARENT % self.parent_name.value,
+                    cellprofiler.identify.FF_PARENT % self.parent_name.value,
                     cellprofiler.measurement.COLTYPE_INTEGER),
                    (self.parent_name.value,
-                    cellprofiler.modules.identify.FF_CHILDREN_COUNT % self.sub_object_name.value,
+                    cellprofiler.identify.FF_CHILDREN_COUNT % self.sub_object_name.value,
                     cellprofiler.measurement.COLTYPE_INTEGER)]
         if self.wants_per_parent_means.value:
             child_columns = self.get_child_columns(pipeline)
@@ -570,9 +570,9 @@ class RelateObjects(cellprofiler.module.Module):
         """Return the object relationships produced by this module"""
         parent_name = self.parent_name.value
         sub_object_name = self.sub_object_name.value
-        return [(cellprofiler.modules.identify.R_PARENT, parent_name, sub_object_name,
+        return [(cellprofiler.identify.R_PARENT, parent_name, sub_object_name,
                  cellprofiler.measurement.MCA_AVAILABLE_EACH_CYCLE),
-                (cellprofiler.modules.identify.R_CHILD, sub_object_name, parent_name,
+                (cellprofiler.identify.R_CHILD, sub_object_name, parent_name,
                  cellprofiler.measurement.MCA_AVAILABLE_EACH_CYCLE)]
 
     def get_categories(self, pipeline, object_name):

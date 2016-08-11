@@ -7,10 +7,10 @@ import tempfile
 import unittest
 import zlib
 
+import cellprofiler.identify
 import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.modules.filterobjects
-import cellprofiler.modules.identify
 import cellprofiler.pipeline
 import cellprofiler.preferences
 import cellprofiler.preferences
@@ -144,11 +144,11 @@ class TestFilterObjects(unittest.TestCase):
         labels = workspace.object_set.get_objects(OUTPUT_OBJECTS)
         self.assertTrue(numpy.all(labels.segmented == expected))
         parents = m.get_current_measurement(
-                OUTPUT_OBJECTS, cellprofiler.modules.identify.FF_PARENT % INPUT_OBJECTS)
+                OUTPUT_OBJECTS, cellprofiler.identify.FF_PARENT % INPUT_OBJECTS)
         self.assertEqual(len(parents), 1)
         self.assertEqual(parents[0], 2)
         self.assertEqual(m.get_current_image_measurement(
-            cellprofiler.modules.identify.FF_COUNT % OUTPUT_OBJECTS), 1)
+            cellprofiler.identify.FF_COUNT % OUTPUT_OBJECTS), 1)
         feature = cellprofiler.modules.filterobjects.FF_CHILDREN_COUNT % OUTPUT_OBJECTS
         child_count = m.get_current_measurement(INPUT_OBJECTS, feature)
         self.assertEqual(len(child_count), 2)
@@ -1410,26 +1410,26 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
                 self.assertTrue(column[1] in result_features)
 
         for feature, coltype in (
-                (cellprofiler.modules.identify.M_LOCATION_CENTER_X, cellprofiler.measurement.COLTYPE_FLOAT),
-                (cellprofiler.modules.identify.M_LOCATION_CENTER_Y, cellprofiler.measurement.COLTYPE_FLOAT),
-                (cellprofiler.modules.identify.M_NUMBER_OBJECT_NUMBER, cellprofiler.measurement.COLTYPE_INTEGER),
-                (cellprofiler.modules.identify.FF_PARENT % INPUT_OBJECTS, cellprofiler.measurement.COLTYPE_INTEGER),
-                (cellprofiler.modules.identify.FF_CHILDREN_COUNT % OUTPUT_OBJECTS, cellprofiler.measurement.COLTYPE_INTEGER),
-                (cellprofiler.modules.identify.FF_COUNT % OUTPUT_OBJECTS, cellprofiler.measurement.COLTYPE_INTEGER)):
+                (cellprofiler.identify.M_LOCATION_CENTER_X, cellprofiler.measurement.COLTYPE_FLOAT),
+                (cellprofiler.identify.M_LOCATION_CENTER_Y, cellprofiler.measurement.COLTYPE_FLOAT),
+                (cellprofiler.identify.M_NUMBER_OBJECT_NUMBER, cellprofiler.measurement.COLTYPE_INTEGER),
+                (cellprofiler.identify.FF_PARENT % INPUT_OBJECTS, cellprofiler.measurement.COLTYPE_INTEGER),
+                (cellprofiler.identify.FF_CHILDREN_COUNT % OUTPUT_OBJECTS, cellprofiler.measurement.COLTYPE_INTEGER),
+                (cellprofiler.identify.FF_COUNT % OUTPUT_OBJECTS, cellprofiler.measurement.COLTYPE_INTEGER)):
             fcolumns = [x for x in columns if x[1] == feature]
             self.assertEqual(
                     len(fcolumns), 1, "Missing or duplicate column: %s" % feature)
             self.assertEqual(fcolumns[0][2], coltype)
 
         m_output_objects_count = \
-            (cellprofiler.modules.identify.FF_CHILDREN_COUNT % OUTPUT_OBJECTS).partition("_")[-1]
+            (cellprofiler.identify.FF_CHILDREN_COUNT % OUTPUT_OBJECTS).partition("_")[-1]
         for object_name, category in (
                 (cellprofiler.measurement.IMAGE, dict(Count=[OUTPUT_OBJECTS])),
-                (INPUT_OBJECTS, {cellprofiler.modules.identify.C_CHILDREN: [m_output_objects_count]}),
+                (INPUT_OBJECTS, {cellprofiler.identify.C_CHILDREN: [m_output_objects_count]}),
                 (OUTPUT_OBJECTS, {
-                    cellprofiler.modules.identify.C_LOCATION: [cellprofiler.modules.identify.FTR_CENTER_X, cellprofiler.modules.identify.FTR_CENTER_Y],
-                    cellprofiler.modules.identify.C_PARENT: [INPUT_OBJECTS],
-                    cellprofiler.modules.identify.C_NUMBER: [cellprofiler.modules.identify.FTR_OBJECT_NUMBER]})):
+                    cellprofiler.identify.C_LOCATION: [cellprofiler.identify.FTR_CENTER_X, cellprofiler.identify.FTR_CENTER_Y],
+                    cellprofiler.identify.C_PARENT: [INPUT_OBJECTS],
+                    cellprofiler.identify.C_NUMBER: [cellprofiler.identify.FTR_OBJECT_NUMBER]})):
             categories = module.get_categories(None, object_name)
             for c in category.keys():
                 self.assertTrue(c in categories)

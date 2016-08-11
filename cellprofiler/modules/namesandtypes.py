@@ -4,11 +4,11 @@ import re
 import bioformats
 import bioformats.omexml
 import cellprofiler.gui.help
+import cellprofiler.identify
 import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.module
 import cellprofiler.modules
-import cellprofiler.modules.identify
 import cellprofiler.modules.images
 import cellprofiler.modules.loadimages
 import cellprofiler.pipeline
@@ -1559,9 +1559,9 @@ class NamesAndTypes(cellprofiler.module.Module):
         outlines_name - the name of the outlines image in the pipeline
         stack - the ImagePlaneDetailsStack representing the planes to be loaded
         """
-        from cellprofiler.modules.identify import add_object_count_measurements
-        from cellprofiler.modules.identify import add_object_location_measurements
-        from cellprofiler.modules.identify import add_object_location_measurements_ijv
+        from cellprofiler.identify import add_object_count_measurements
+        from cellprofiler.identify import add_object_location_measurements
+        from cellprofiler.identify import add_object_location_measurements_ijv
 
         num_dimensions = javabridge.call(stack, "numDimensions", "()I")
         if num_dimensions == 2:
@@ -1716,14 +1716,14 @@ class NamesAndTypes(cellprofiler.module.Module):
                            (cellprofiler.measurement.cellprofiler.measurement.C_OBJECTS_FILE_NAME, cellprofiler.measurement.COLTYPE_VARCHAR_FILE_NAME),
                            (cellprofiler.measurement.cellprofiler.measurement.C_OBJECTS_PATH_NAME, cellprofiler.measurement.COLTYPE_VARCHAR_PATH_NAME),
                            (cellprofiler.measurement.cellprofiler.measurement.C_OBJECTS_URL, cellprofiler.measurement.COLTYPE_VARCHAR_PATH_NAME),
-                           (cellprofiler.modules.identify.C_COUNT, cellprofiler.measurement.COLTYPE_INTEGER),
+                           (cellprofiler.identify.C_COUNT, cellprofiler.measurement.COLTYPE_INTEGER),
                            (cellprofiler.modules.loadimages.C_MD5_DIGEST, cellprofiler.measurement.COLTYPE_VARCHAR_FORMAT % 32),
                            (cellprofiler.modules.loadimages.C_WIDTH, cellprofiler.measurement.COLTYPE_INTEGER),
                            (cellprofiler.modules.loadimages.C_HEIGHT, cellprofiler.measurement.COLTYPE_INTEGER),
                            (cellprofiler.measurement.C_OBJECTS_SERIES, cellprofiler.measurement.COLTYPE_INTEGER),
                            (cellprofiler.measurement.C_OBJECTS_FRAME, cellprofiler.measurement.COLTYPE_INTEGER)
                        )]
-            result += cellprofiler.modules.identify.get_object_measurement_columns(object_name)
+            result += cellprofiler.identify.get_object_measurement_columns(object_name)
         result += [(cellprofiler.measurement.IMAGE, ftr, cellprofiler.measurement.COLTYPE_VARCHAR)
                    for ftr in self.get_metadata_features()]
 
@@ -1738,11 +1738,11 @@ class NamesAndTypes(cellprofiler.module.Module):
                 result += [cellprofiler.measurement.C_FILE_NAME, cellprofiler.measurement.C_PATH_NAME, cellprofiler.measurement.C_URL]
             if has_objects:
                 result += [cellprofiler.measurement.C_OBJECTS_FILE_NAME, cellprofiler.measurement.C_OBJECTS_PATH_NAME,
-                           cellprofiler.measurement.C_OBJECTS_URL, cellprofiler.modules.identify.C_COUNT]
+                           cellprofiler.measurement.C_OBJECTS_URL, cellprofiler.identify.C_COUNT]
             result += [cellprofiler.modules.loadimages.C_MD5_DIGEST, cellprofiler.modules.loadimages.C_SCALING, cellprofiler.modules.loadimages.C_HEIGHT, cellprofiler.modules.loadimages.C_WIDTH, cellprofiler.modules.loadimages.C_SERIES,
                        cellprofiler.modules.loadimages.C_FRAME]
         elif object_name in self.get_object_names():
-            result += [cellprofiler.modules.identify.C_LOCATION, cellprofiler.modules.identify.C_NUMBER]
+            result += [cellprofiler.identify.C_LOCATION, cellprofiler.identify.C_NUMBER]
         return result
 
     def get_measurements(self, pipeline, object_name, category):
@@ -1754,16 +1754,16 @@ class NamesAndTypes(cellprofiler.module.Module):
             elif category in (cellprofiler.measurement.C_OBJECTS_FILE_NAME, cellprofiler.measurement.C_OBJECTS_PATH_NAME,
                               cellprofiler.measurement.C_OBJECTS_URL):
                 return object_names
-            elif category == cellprofiler.modules.identify.C_COUNT:
+            elif category == cellprofiler.identify.C_COUNT:
                 return object_names
             elif category in (cellprofiler.modules.loadimages.C_MD5_DIGEST, cellprofiler.modules.loadimages.C_SCALING, cellprofiler.modules.loadimages.C_HEIGHT, cellprofiler.modules.loadimages.C_WIDTH,
                               cellprofiler.modules.loadimages.C_SERIES, cellprofiler.modules.loadimages.C_FRAME):
                 return list(image_names) + list(object_names)
         elif object_name in self.get_object_names():
-            if category == cellprofiler.modules.identify.C_NUMBER:
-                return [cellprofiler.modules.identify.FTR_OBJECT_NUMBER]
-            elif category == cellprofiler.modules.identify.C_LOCATION:
-                return [cellprofiler.modules.identify.FTR_CENTER_X, cellprofiler.modules.identify.FTR_CENTER_Y]
+            if category == cellprofiler.identify.C_NUMBER:
+                return [cellprofiler.identify.FTR_OBJECT_NUMBER]
+            elif category == cellprofiler.identify.C_LOCATION:
+                return [cellprofiler.identify.FTR_CENTER_X, cellprofiler.identify.FTR_CENTER_Y]
         return []
 
     def validate_module(self, pipeline):

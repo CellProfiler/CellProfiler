@@ -1,8 +1,8 @@
 import cellprofiler.gui.help
+import cellprofiler.identify
 import cellprofiler.image
 import cellprofiler.module
 import cellprofiler.modules
-import cellprofiler.modules.identify
 import cellprofiler.preferences
 import cellprofiler.region
 import cellprofiler.setting
@@ -30,7 +30,7 @@ TOOL_ZOOM_IN = "Zoom in"
 TOOL_ERASE = "Erase"
 
 
-class IdentifyObjectsManually(cellprofiler.modules.identify.Identify):
+class IdentifyObjectsManually(cellprofiler.identify.Identify):
     category = "Object Processing"
     module_name = "IdentifyObjectsManually"
     variable_revision_number = 1
@@ -105,11 +105,11 @@ class IdentifyObjectsManually(cellprofiler.modules.identify.Identify):
         # The object count
         #
         object_count = numpy.max(labels)
-        cellprofiler.modules.identify.add_object_count_measurements(m, objects_name, object_count)
+        cellprofiler.identify.add_object_count_measurements(m, objects_name, object_count)
         #
         # The object locations
         #
-        cellprofiler.modules.identify.add_object_location_measurements(m, objects_name, labels)
+        cellprofiler.identify.add_object_location_measurements(m, objects_name, labels)
         #
         # Outlines if we want them
         #
@@ -211,7 +211,7 @@ class IdentifyObjectsManually(cellprofiler.modules.identify.Identify):
 
         Return a list of tuples of object name, measurement name and data type
         """
-        result = cellprofiler.modules.identify.get_object_measurement_columns(self.objects_name.value)
+        result = cellprofiler.identify.get_object_measurement_columns(self.objects_name.value)
         return result
 
     @property

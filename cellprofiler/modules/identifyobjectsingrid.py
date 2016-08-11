@@ -1,10 +1,10 @@
 import cellprofiler.grid
 import cellprofiler.gui.help
+import cellprofiler.identify
 import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.module
 import cellprofiler.modules
-import cellprofiler.modules.identify
 import cellprofiler.region
 import cellprofiler.setting
 import centrosome.cpmorphology
@@ -219,12 +219,12 @@ class IdentifyObjectsInGrid(cellprofiler.module.Module):
         object_count = gridding.rows * gridding.columns
         workspace.object_set.add_objects(objects,
                                          self.output_objects_name.value)
-        cellprofiler.modules.identify.add_object_location_measurements(workspace.measurements,
-                                                                       self.output_objects_name.value,
-                                                                       labels, object_count)
-        cellprofiler.modules.identify.add_object_count_measurements(workspace.measurements,
-                                                                    self.output_objects_name.value,
-                                                                    object_count)
+        cellprofiler.identify.add_object_location_measurements(workspace.measurements,
+                                                               self.output_objects_name.value,
+                                                               labels, object_count)
+        cellprofiler.identify.add_object_count_measurements(workspace.measurements,
+                                                            self.output_objects_name.value,
+                                                            object_count)
         if self.wants_outlines:
             outlines = centrosome.outline.outline(labels != 0)
             outline_image = cellprofiler.image.Image(outlines)
@@ -484,7 +484,7 @@ class IdentifyObjectsInGrid(cellprofiler.module.Module):
 
     def get_measurement_columns(self, pipeline):
         """Column definitions for measurements made by IdentifyPrimaryObjects"""
-        return cellprofiler.modules.identify.get_object_measurement_columns(self.output_objects_name.value)
+        return cellprofiler.identify.get_object_measurement_columns(self.output_objects_name.value)
 
     def get_categories(self, pipeline, object_name):
         """Return the categories of measurements that this module produces

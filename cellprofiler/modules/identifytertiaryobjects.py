@@ -1,9 +1,9 @@
 import cellprofiler.gui.help
+import cellprofiler.identify
 import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.module
 import cellprofiler.modules
-import cellprofiler.modules.identify
 import cellprofiler.preferences
 import cellprofiler.region
 import cellprofiler.setting
@@ -281,10 +281,10 @@ class IdentifyTertiaryObjects(cellprofiler.module.Module):
                 (self.secondary_objects_name, secondary_parents,
                  child_count_of_secondary, R_PARENT)):
             m.add_measurement(self.subregion_objects_name.value,
-                              cellprofiler.modules.identify.FF_PARENT % parent_objects_name.value,
+                              cellprofiler.identify.FF_PARENT % parent_objects_name.value,
                               parents_of)
             m.add_measurement(parent_objects_name.value,
-                              cellprofiler.modules.identify.FF_CHILDREN_COUNT % self.subregion_objects_name.value,
+                              cellprofiler.identify.FF_CHILDREN_COUNT % self.subregion_objects_name.value,
                               child_count)
             mask = parents_of != 0
             image_number = numpy.ones(numpy.sum(mask), int) * m.image_set_number
@@ -300,15 +300,15 @@ class IdentifyTertiaryObjects(cellprofiler.module.Module):
         #
         # The object count
         #
-        cellprofiler.modules.identify.add_object_count_measurements(workspace.measurements,
-                                                                    self.subregion_objects_name.value,
-                                                                    object_count)
+        cellprofiler.identify.add_object_count_measurements(workspace.measurements,
+                                                            self.subregion_objects_name.value,
+                                                            object_count)
         #
         # The object locations
         #
-        cellprofiler.modules.identify.add_object_location_measurements(workspace.measurements,
-                                                                       self.subregion_objects_name.value,
-                                                                       tertiary_labels)
+        cellprofiler.identify.add_object_location_measurements(workspace.measurements,
+                                                               self.subregion_objects_name.value,
+                                                               tertiary_labels)
         #
         # The outlines
         #
@@ -353,14 +353,14 @@ class IdentifyTertiaryObjects(cellprofiler.module.Module):
     def get_measurement_columns(self, pipeline):
         """Return column definitions for measurements made by this module"""
         subregion_name = self.subregion_objects_name.value
-        columns = cellprofiler.modules.identify.get_object_measurement_columns(subregion_name)
+        columns = cellprofiler.identify.get_object_measurement_columns(subregion_name)
         for parent in (self.primary_objects_name.value,
                        self.secondary_objects_name.value):
             columns += [(parent,
-                         cellprofiler.modules.identify.FF_CHILDREN_COUNT % subregion_name,
+                         cellprofiler.identify.FF_CHILDREN_COUNT % subregion_name,
                          cellprofiler.measurement.COLTYPE_INTEGER),
                         (subregion_name,
-                         cellprofiler.modules.identify.FF_PARENT % parent,
+                         cellprofiler.identify.FF_PARENT % parent,
                          cellprofiler.measurement.COLTYPE_INTEGER)]
         return columns
 

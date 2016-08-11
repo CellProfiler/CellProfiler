@@ -97,31 +97,36 @@ class MeasureObjectNeighbors(cellprofiler.module.Module):
                 D_ALL, D_EXPAND, doc="""
             There are several methods by which to determine whether objects are neighbors:
             <ul>
-            <li><i>%(D_ADJACENT)s:</i> In this mode, two objects must have adjacent
+            <li><i>{d_adjacent}:</i> In this mode, two objects must have adjacent
             boundary pixels to be neighbors. </li>
-            <li><i>%(D_EXPAND)s:</i> The objects are expanded until all
+            <li><i>{d_expand}:</i> The objects are expanded until all
             pixels on the object boundaries are touching another. Two objects are
             neighbors if any of their boundary pixels are adjacent after
             expansion.</li>
-            <li><i>%(D_WITHIN)s:</i> Each object is expanded by
+            <li><i>{d_within}:</i> Each object is expanded by
             the number of pixels you specify. Two objects are
             neighbors if they have adjacent pixels after expansion. </li>
             </ul>
 
-            <p>For <i>%(D_ADJACENT)s</i> and <i>%(D_EXPAND)s</i>, the
-            <i>%(M_PERCENT_TOUCHING)s</i> measurement is the percentage of pixels on the boundary
-            of an object that touch adjacent objects. For <i>%(D_WITHIN)s</i>,
+            <p>For <i>{d_adjacent}</i> and <i>{d_expand}</i>, the
+            <i>{m_percent_touching}</i> measurement is the percentage of pixels on the boundary
+            of an object that touch adjacent objects. For <i>{d_within}</i>,
             two objects are touching if any of their boundary
-            pixels are adjacent after expansion and <i>%(M_PERCENT_TOUCHING)s</i> measures the
+            pixels are adjacent after expansion and <i>{m_percent_touching}</i> measures the
             percentage of boundary pixels of an <i>expanded</i> object that
-            touch adjacent objects.</p>""" % globals())
+            touch adjacent objects.</p>""".format(**{
+                'd_adjacent': D_ADJACENT,
+                'd_expand': D_EXPAND,
+                'd_within': D_WITHIN,
+                'm_percent_touching': M_PERCENT_TOUCHING
+            }))
 
         self.distance = cellprofiler.setting.Integer(
                 'Neighbor distance', 5, 1, doc="""
-            <i>(Used only when "%(D_WITHIN)s" is selected)</i> <br>
+            <i>(Used only when "{}" is selected)</i> <br>
             The Neighbor distance is the number of pixels that each object is
             expanded for the neighbor calculation. Expanded objects that touch
-            are considered neighbors.""" % globals())
+            are considered neighbors.""".format(D_WITHIN))
 
         self.wants_count_image = cellprofiler.setting.Binary(
                 'Retain the image of objects colored by numbers of neighbors?',
@@ -153,10 +158,10 @@ class MeasureObjectNeighbors(cellprofiler.module.Module):
         self.wants_percent_touching_image = cellprofiler.setting.Binary(
                 'Retain the image of objects colored by percent of touching pixels?',
                 False, doc="""
-            Select <i>%(cellprofiler.setting.YES)s</i> to keep an image of the input objects
+            Select <i>{}</i> to keep an image of the input objects
             colored by the percentage of the boundary touching their neighbors.
             A colormap of your choice is used to show the touching percentage of
-            each object. Use the <b>SaveImages</b> module to save this image to a file.""" % globals())
+            each object. Use the <b>SaveImages</b> module to save this image to a file.""".format(cellprofiler.setting.YES))
 
         self.touching_image_name = cellprofiler.setting.ImageNameProvider(
                 'Name the output image',

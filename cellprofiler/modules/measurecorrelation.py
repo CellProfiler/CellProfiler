@@ -97,21 +97,30 @@ class MeasureCorrelation(cellprofiler.module.Module):
         self.add_image_button = cellprofiler.setting.DoSomething("", 'Add another image', self.add_image)
         self.spacer_2 = cellprofiler.setting.Divider()
         self.thr = cellprofiler.setting.Float(
-                "Set threshold as percentage of maximum intensity for the images",
-                15, minval=0, maxval=99, doc='''\
-            Select the threshold as a percentage of the maximum intensity of the above image [0-99].''')
+            "Set threshold as percentage of maximum intensity for the images",
+            15,
+            minval=0,
+            maxval=99,
+            doc='''Select the threshold as a percentage of the maximum intensity of the above image [0-99].'''
+        )
 
         self.images_or_objects = cellprofiler.setting.Choice(
-                'Select where to measure correlation',
-                [M_IMAGES, M_OBJECTS, M_IMAGES_AND_OBJECTS], doc='''
+            'Select where to measure correlation',
+            [M_IMAGES, M_OBJECTS, M_IMAGES_AND_OBJECTS],
+            doc='''
             You can measure the correlation in several ways:
             <ul>
-            <li><i>%(M_OBJECTS)s:</i> Measure correlation only in those pixels previously
+            <li><i>{m_objects}:</i> Measure correlation only in those pixels previously
             identified as an object. You will be asked to specify which object to measure from.</li>
-            <li><i>%(M_IMAGES)s:</i> Measure the correlation across all pixels in the images.</li>
-            <li><i>%(M_IMAGES_AND_OBJECTS)s:</i> Calculate both measurements above.</li>
+            <li><i>{m_images}:</i> Measure the correlation across all pixels in the images.</li>
+            <li><i>{m_images_and_objects}:</i> Calculate both measurements above.</li>
             </ul>
-            All methods measure correlation on a pixel by pixel basis.''' % globals())
+            All methods measure correlation on a pixel by pixel basis.'''.format(**{
+                'm_objects': M_OBJECTS,
+                'm_images': M_IMAGES,
+                'm_images_and_objects': M_IMAGES_AND_OBJECTS
+            })
+        )
 
         self.object_groups = []
         self.add_object(can_delete=False)

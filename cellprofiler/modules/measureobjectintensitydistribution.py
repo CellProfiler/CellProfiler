@@ -134,14 +134,18 @@ class MeasureObjectIntensityDistribution(cellprofiler.module.Module):
         self.wants_zernikes = cellprofiler.setting.Choice(
                 "Calculate intensity Zernikes?", Z_ALL,
                 doc="""This setting determines whether the intensity Zernike
-            moments are calculated. Choose <i>%(Z_NONE)s</i> to save computation
+            moments are calculated. Choose <i>{z_none}</i> to save computation
             time by not calculating the Zernike moments. Choose
-            <i>%(Z_MAGNITUDES)s</i> to only save the magnitude information
+            <i>{z_magnitudes}</i> to only save the magnitude information
             and discard information related to the object's angular orientation.
-            Choose <i>%(Z_MAGNITUDES_AND_PHASE)s</i> to save the phase information
+            Choose <i>{z_magnitudes_and_phase}</i> to save the phase information
             as well. The last option lets you recover each object's rough
             appearance from the Zernikes but may not contribute useful
-            information if used to classify phenotypes.""" % globals())
+            information if used to classify phenotypes.""".format(**{
+                    'z_none': Z_NONE,
+                    'z_magnitudes': Z_MAGNITUDES,
+                    'z_magnitudes_and_phase': Z_MAGNITUDES_AND_PHASE
+                }))
         self.zernike_degree = cellprofiler.setting.Integer(
                 "Maximum zernike moment", value=9, minval=1, maxval=20,
                 doc="""(<i>Only if "%s" is %s or %s</i>)<br>
@@ -194,26 +198,33 @@ class MeasureObjectIntensityDistribution(cellprofiler.module.Module):
                 "Object to use as center?", C_ALL, doc="""
                 There are three ways to specify the center of the radial measurement:
                 <ul>
-                <li><i>%(C_SELF)s:</i> Use the centers of these objects for the
+                <li><i>{c_self}:</i> Use the centers of these objects for the
                 radial measurement.</li>
-                <li><i>%(C_CENTERS_OF_OTHER)s:</i> Use the centers of other objects
+                <li><i>{c_centers_of_other}:</i> Use the centers of other objects
                 for the radial measurement.</li>
-                <li><i>%(C_EDGES_OF_OTHER)s:</i> Measure distances from the
+                <li><i>{c_edges_of_other}:</i> Measure distances from the
                 edge of the other object to each pixel outside of the
                 centering object. Do not include pixels within the centering
                 object in the radial measurement calculations.</li>
                 </ul>
                 For example, if measuring the radial distribution in a Cell
-                object, you can use the center of the Cell objects (<i>%(C_SELF)s</i>)
+                object, you can use the center of the Cell objects (<i>{c_self}</i>)
                 or you can use previously identified Nuclei objects as
-                the centers (<i>%(C_CENTERS_OF_OTHER)s</i>).""" % globals()))
+                the centers (<i>{c_centers_of_other}</i>).""".format(**{
+                'c_self': C_SELF,
+                'c_centers_of_other': C_CENTERS_OF_OTHER,
+                'c_edges_of_other': C_EDGES_OF_OTHER
+            })))
 
         group.append("center_object_name", cellprofiler.setting.ObjectNameSubscriber(
                 "Select objects to use as centers", cellprofiler.setting.NONE, doc="""
-                <i>(Used only if "%(C_CENTERS_OF_OTHER)s" are selected for centers)</i><br>
+                <i>(Used only if "{c_centers_of_other}" are selected for centers)</i><br>
                 Select the object to use as the center, or select <i>None</i> to
                 use the input object centers (which is the same as selecting
-                <i>%(C_SELF)s</i> for the object centers).""" % globals()))
+                <i>{c_self}</i> for the object centers).""".format(**{
+                'c_self': C_SELF,
+                'c_centers_of_other': C_CENTERS_OF_OTHER
+            })))
 
         if can_remove:
             group.append("remover", cellprofiler.setting.RemoveSettingButton("", "Remove this object", self.objects, group))
@@ -227,14 +238,17 @@ class MeasureObjectIntensityDistribution(cellprofiler.module.Module):
 
         group.append("wants_scaled", cellprofiler.setting.Binary(
                 "Scale the bins?", True, doc="""
-                <p>Select <i>%(cellprofiler.setting.YES)s</i> to divide the object radially into the number
+                <p>Select <i>{yes}</i> to divide the object radially into the number
                 of bins that you specify. </p>
-                <p>Select <i>%(cellprofiler.setting.NO)s</i> to create the number of bins you specify based
+                <p>Select <i>{no}</i> to create the number of bins you specify based
                 on distance. For this option, the user will be
                 asked to specify a maximum distance so that each object will have the
                 same measurements (which might be zero for small objects) and so that
                 the measurements can be taken without knowing the maximum object radius
-                before the run starts.</p>""" % globals()))
+                before the run starts.</p>""".format(*{
+                'yes': cellprofiler.setting.YES,
+                'no': cellprofiler.setting.NO
+            })))
 
         group.append("bin_count", cellprofiler.setting.Integer(
                 "Number of bins", 4, 2, doc="""
@@ -312,15 +326,18 @@ class MeasureObjectIntensityDistribution(cellprofiler.module.Module):
                 "Save display as image?", False,
                 doc="""This setting allows you to save the heatmap display as
             an image that can be output using the <b>SaveImages</b> module.
-            Choose <i>%(cellprofiler.setting.YES)s</i> to save the display or <i>%(cellprofiler.setting.NO)s</i> if the
-            display is not needed.""" % globals()))
+            Choose <i>{yes}</i> to save the display or <i>{no}</i> if the
+            display is not needed.""".format(**{
+                    'yes': cellprofiler.setting.YES,
+                    'no': cellprofiler.setting.NO
+                })))
         group.append("display_name", cellprofiler.setting.ImageNameProvider(
                 "Output image name", "Heatmap",
                 doc="""
-            <i>(Only used if "Save display as image?" is "%(cellprofiler.setting.YES)s")</i><br>
+            <i>(Only used if "Save display as image?" is "{}")</i><br>
             This setting names the heatmap image so that the name you enter
             here can be selected in a later <b>SaveImages</b> or other module.
-            """ % globals()))
+            """.format(cellprofiler.setting.YES)))
         group.append("remover", cellprofiler.setting.RemoveSettingButton(
                 "", "Remove this heatmap display", self.heatmaps, group))
         self.heatmaps.append(group)

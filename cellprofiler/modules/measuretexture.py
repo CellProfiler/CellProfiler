@@ -195,9 +195,12 @@ class MeasureTexture(cellprofiler.module.Module):
                 "Measure Gabor features?", True, doc=
                 """The Gabor features measure striped texture in an object, and can
                 take a substantial time to calculate.
-                <p>Select <i>%(cellprofiler.setting.YES)s</i> to measure the Gabor features. Select
-                <i>%(cellprofiler.setting.NO)s</i> to skip the Gabor feature calculation if it is not
-                informative for your images.</p>""" % globals())
+                <p>Select <i>{yes}</i> to measure the Gabor features. Select
+                <i>{no}</i> to skip the Gabor feature calculation if it is not
+                informative for your images.</p>""".format(**{
+                    'yes': cellprofiler.setting.YES,
+                    'no': cellprofiler.setting.NO
+                }))
 
         self.gabor_angles = cellprofiler.setting.Integer("Number of angles to compute for Gabor", 4, 2, doc="""
             <i>(Used only if Gabor features are measured)</i><br>
@@ -210,11 +213,16 @@ class MeasureTexture(cellprofiler.module.Module):
                 doc="""This setting determines whether the module
             computes image-wide measurements, per-object measurements or both.
             <ul>
-            <li><i>%(IO_IMAGES)s:</i> Select if you only want to measure the texture of objects.</li>
-            <li><i>%(IO_OBJECTS)s:</i> Select if your pipeline does not contain objects or if
+            <li><i>{io_images}:</i> Select if you only want to measure the texture of objects.</li>
+            <li><i>{io_objects}:</i> Select if your pipeline does not contain objects or if
             you only want to make per-image measurements.</li>
-            <li><i>%(IO_BOTH)s:</i> Select to make both image and object measurements.</li>
-            </ul>""" % globals())
+            <li><i>{io_both}:</i> Select to make both image and object measurements.</li>
+            </ul>""".format(**{
+                    'io_images': IO_IMAGES,
+                    'io_objects': IO_OBJECTS,
+                    'io_both': IO_BOTH
+                })
+        )
 
     def settings(self):
         """The settings as they appear in the save file."""
@@ -336,16 +344,21 @@ class MeasureTexture(cellprofiler.module.Module):
                 doc="""The Haralick texture measurements are based on the correlation
         between pixels offset by the scale in one of four directions:
         <p><ul>
-        <li><i>%(H_HORIZONTAL)s</i> - the correlated pixel is "scale" pixels
+        <li><i>{h_horizontal}</i> - the correlated pixel is "scale" pixels
         to the right of the pixel of interest.</li>
-        <li><i>%(H_VERTICAL)s</i> - the correlated pixel is "scale" pixels
+        <li><i>{h_vertical}</i> - the correlated pixel is "scale" pixels
         below the pixel of interest.</li>
-        <li><i>%(H_DIAGONAL)s</i> - the correlated pixel is "scale" pixels
+        <li><i>{h_diagonal}</i> - the correlated pixel is "scale" pixels
         to the right and "scale" pixels below the pixel of interest.</li>
-        <li><i>%(H_ANTIDIAGONAL)s</i> - the correlated pixel is "scale"
+        <li><i>{h_antidiagonal}</i> - the correlated pixel is "scale"
         pixels to the left and "scale" pixels below the pixel of interest.</li>
         </ul><p>
-        Choose one or more directions to measure.""" % globals()))
+        Choose one or more directions to measure.""".format(**{
+                    'h_horizontal': H_HORIZONTAL,
+                    'h_vertical': H_VERTICAL,
+                    'h_diagonal': H_DIAGONAL,
+                    'h_antidiagonal': H_ANTIDIAGONAL
+                })))
 
         if can_remove:
             group.append("remover", cellprofiler.setting.RemoveSettingButton("", "Remove this scale", self.scale_groups, group))

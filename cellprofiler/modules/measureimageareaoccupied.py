@@ -24,7 +24,6 @@ import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.module
 import cellprofiler.setting
-import cellprofiler.setting
 import centrosome.outline
 import numpy
 
@@ -66,43 +65,56 @@ class MeasureImageAreaOccupied(cellprofiler.module.Module):
             def __init__(self):
                 self.__spacer = cellprofiler.setting.Divider(line=True)
                 self.__operand_choice = cellprofiler.setting.Choice(
-                        "Measure the area occupied in a binary image, or in objects?",
-                        [O_BINARY_IMAGE, O_OBJECTS], doc="""
+                    "Measure the area occupied in a binary image, or in objects?",
+                    [O_BINARY_IMAGE, O_OBJECTS],
+                    doc="""
                     The area can be measured in two ways:
                     <ul>
-                    <li><i>%(O_BINARY_IMAGE)s:</i> The area occupied by the foreground in a binary (black
+                    <li><i>{o_binary_image}:</i> The area occupied by the foreground in a binary (black
                     and white) image.</li>
-                    <li><i>%(O_OBJECTS)s:</i> The area occupied by previously-identified objects.</li>
-                    </ul>""" % globals())
+                    <li><i>{o_objects}:</i> The area occupied by previously-identified objects.</li>
+                    </ul>""".format(**{
+                        'o_binary_image': O_BINARY_IMAGE,
+                        'o_objects': O_OBJECTS
+                    })
+                )
 
                 self.__operand_objects = cellprofiler.setting.ObjectNameSubscriber(
-                        "Select objects to measure",
-                        cellprofiler.setting.NONE, doc="""
-                    <i>(Used only if '%(O_OBJECTS)s' are to be measured)</i> <br>
-                    Select the previously identified objects you would like to measure.""" % globals())
+                    "Select objects to measure",
+                    cellprofiler.setting.NONE,
+                    doc="""
+                    <i>(Used only if '{}' are to be measured)</i> <br>
+                    Select the previously identified objects you would like to measure.""".format(O_OBJECTS)
+                )
 
                 self.__should_save_image = cellprofiler.setting.Binary(
-                        "Retain a binary image of the object regions?",
-                        False, doc="""
-                    <i>(Used only if '%(O_OBJECTS)s' are to be measured)</i><br>
-                    Select <i>%(cellprofiler.setting.YES)s</i> if you would like to use a binary image
+                    "Retain a binary image of the object regions?",
+                    False, doc="""
+                    <i>(Used only if '{o_object}' are to be measured)</i><br>
+                    Select <i>{yes}</i> if you would like to use a binary image
                     later in the pipeline, for example in <b>SaveImages</b>.  The image will
                     display the object area that you have measured as the foreground
-                    in white and the background in black. """ % globals())
+                    in white and the background in black. """.format(**{
+                        'o_object': O_OBJECTS,
+                        'yes': cellprofiler.setting.YES
+                    }))
 
                 self.__image_name = cellprofiler.setting.ImageNameProvider(
-                        "Name the output binary image",
-                        "Stain", doc="""
+                    "Name the output binary image",
+                    "Stain",
+                    doc="""
                     <i>(Used only if the binary image of the objects is to be retained for later use in the pipeline)</i> <br>
                     Specify a name that will allow the binary image of the objects to be selected later in the pipeline.""")
 
                 self.__binary_name = cellprofiler.setting.ImageNameSubscriber(
-                        "Select a binary image to measure",
-                        cellprofiler.setting.NONE, doc="""
-                    <i>(Used only if '%(O_BINARY_IMAGE)s' is to be measured)</i><br>
+                    "Select a binary image to measure",
+                    cellprofiler.setting.NONE,
+                    doc="""
+                    <i>(Used only if '{}' is to be measured)</i><br>
                     This is a binary image created earlier in the pipeline,
                     where you would like to measure the area occupied by the foreground
-                    in the image.""" % globals())
+                    in the image.""".format(O_BINARY_IMAGE)
+                )
 
             @property
             def spacer(self):

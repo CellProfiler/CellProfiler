@@ -40,17 +40,18 @@ class MaskImage(cellprofiler.module.Module):
                 [IO_OBJECTS, IO_IMAGE], doc="""
             You can mask an image in two ways:
             <ul>
-            <li><i>%(IO_OBJECTS)s</i>: Using objects created by another
+            <li><i>{io_objects}</i>: Using objects created by another
             module (for instance <b>IdentifyPrimaryObjects</b>). The module
             will mask out all parts of the image that are not within one
             of the objects (unless you invert the mask).</li>
-            <li><i>5(IO_IMAGE)s</i>: Using a binary image as the mask, where black
+            <li><i>{io_objects}</i>: Using a binary image as the mask, where black
             portions of the image (false or zero-value pixels) will be masked out.
             If the image is not binary, the module will use
             all pixels whose intensity is greater than 0.5 as the mask's
             foreground (white area). You can use <b>ApplyThreshold</b> instead to create a binary
             image and have finer control over the intensity choice.</li>
-            </ul>""" % globals())
+            </ul>""".format(**{'io_objects': IO_OBJECTS})
+        )
 
         self.object_name = cellprofiler.setting.ObjectNameSubscriber(
                 "Select object for mask", cellprofiler.setting.NONE, doc="""
@@ -75,13 +76,17 @@ class MaskImage(cellprofiler.module.Module):
                 """This option reverses the foreground/background relationship of
                 the mask.
                 <ul>
-                <li>Select <i>%(cellprofiler.setting.NO)s</i> to produce the mask from the foregound
+                <li>Select <i>{cellprofiler.setting.no}</i> to produce the mask from the foregound
                 (white portion) of the masking image or the area within the masking
                 objects.</li>
-                <li>Select <i>%(cellprofiler.setting.YES)s</i>to instead produce the mask from the
+                <li>Select <i>{cellprofiler.setting.yes}</i>to instead produce the mask from the
                 <i>background</i> (black portions) of the masking image or the area
                 <i>outside</i> the masking objects.</li>
-                </ul>""" % globals())
+                </ul>""".format(**{
+                    'cellprofiler.setting.no': cellprofiler.setting.NO,
+                    'cellprofiler.setting.yes': cellprofiler.setting.YES
+                })
+        )
 
     def settings(self):
         """Return the settings in the order that they will be saved or loaded

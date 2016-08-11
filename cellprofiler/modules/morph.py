@@ -508,11 +508,15 @@ class Morph(cellprofiler.module.Module):
             This setting controls the number of times that the same operation is applied
             successively to the image.
             <ul>
-            <li><i>%(R_ONCE)s:</i> Perform the operation once on the image.</li>
-            <li><i>%(R_FOREVER)s:</i> Perform the operation on the image until successive
+            <li><i>{r_once}:</i> Perform the operation once on the image.</li>
+            <li><i>{r_forever}:</i> Perform the operation on the image until successive
             iterations yield the same image.</li>
-            <li><i>%(R_CUSTOM)s:</i> Perform the operation a custom number of times.</li>
-            </ul>""" % globals()))
+            <li><i>{r_custom}:</i> Perform the operation a custom number of times.</li>
+            </ul>""".format(**{
+                'r_once': R_ONCE,
+                'r_forever': R_FOREVER,
+                'r_custom': R_CUSTOM
+            })))
 
         group.append("custom_repeats", cellprofiler.setting.Integer(self.CUSTOM_REPEATS_TEXT, 2, 1,
                                                                     doc=self.CUSTOM_REPEATS_DOC))
@@ -530,15 +534,15 @@ class Morph(cellprofiler.module.Module):
 
             <p>The structuring elements are:<br>
             <ul>
-            <li><i>%(SE_DISK)s</i>: A disk centered on the pixel. The diameter
+            <li><i>{se_disk}</i>: A disk centered on the pixel. The diameter
             setting determines the circle's diameter and all pixels that are
             at or closer than that diameter will be in the neighborhood.</li>
-            <li><i>%(SE_ARBITRARY)s</i>: A structuring element which lets
+            <li><i>{se_arbitrary}</i>: A structuring element which lets
             the user choose the exact neighborhood pixels to use.</li>
-            <li><i>%(SE_DIAMOND)s</i>: A diamond centered on the pixel. The
+            <li><i>{se_diamond}</i>: A diamond centered on the pixel. The
             diameter setting determines the distance between the top and bottom
             and left and right corners of the diamond.</li>
-            <li><i>%(SE_LINE)s</i>: A line centered on the pixel. The line
+            <li><i>{se_line}</i>: A line centered on the pixel. The line
             has two settings. The angle setting gives the rotation of the line
             in the counter-clockwise direction in degrees, with a horizontal
             line having an angle of zero. The length of the line is determined
@@ -546,24 +550,34 @@ class Morph(cellprofiler.module.Module):
             diameter are included in the neighborhood. The line is drawn using
             the <a href="http://dx.doi.org/10.1147%%2Fsj.41.0025">
             Bresenham algorithm</a>.</li>
-            <li><i>%(SE_OCTAGON)s</i>: An octagon centered on the pixel. The
+            <li><i>{se_octagon}</i>: An octagon centered on the pixel. The
             octagon is inscribed inside a square. The diameter setting controls
             the length of the square's side. The diameter is rounded to the nearest
             integer in the series, n * 6 + 1 so a perfect octagon can be drawn.</li>
-            <li><i>%(SE_PAIR)s</i>: The neighborhood of the pixel is
+            <li><i>{se_pair}</i>: The neighborhood of the pixel is
             composed of the pixel itself and the pixel at the x and y offsets
             given by the settings.</li>
-            <li><i>%(SE_PERIODIC_LINE)s</i>: The points along a line described
+            <li><i>{se_periodic_line}</i>: The points along a line described
             by an offset, centered on the pixel. The periodic line has three
             settings. The neighborhood pixels are all within a circle whose
             diameter is the diameter setting. Within the circle, pixels are
             chosen at N times the x and y offset from the center for positive
             and negative values of N.</li>
-            <li><i>%(SE_RECTANGLE)s</i>: A rectangle centered on the pixel.
+            <li><i>{se_rectangle}</i>: A rectangle centered on the pixel.
             The rectangle's height and width are given by two settings.</li>
-            <li><i>%(SE_SQUARE)s</i>: a square centered on the pixel. The
+            <li><i>{se_square}</i>: a square centered on the pixel. The
             diameter setting determines the length of the square's side.</li>
-            </ul></p>""" % globals()))
+            </ul></p>""".format(**{
+                'se_disk': SE_DISK,
+                'se_arbitrary': SE_ARBITRARY,
+                'se_diamond': SE_DIAMOND,
+                'se_line': SE_LINE,
+                'se_octagon': SE_OCTAGON,
+                'se_pair': SE_PAIR,
+                'se_periodic_line': SE_PERIODIC_LINE,
+                'se_rectangle': SE_RECTANGLE,
+                'se_square': SE_SQUARE
+            })))
 
         group.append("scale", cellprofiler.setting.Float(
                 "Diameter", 3, minval=3, doc="""

@@ -128,15 +128,19 @@ class MeasureImageQuality(cellprofiler.module.Module):
     def create_settings(self):
         self.images_choice = cellprofiler.setting.Choice(
                 "Calculate metrics for which images?",
-                [O_ALL_LOADED, O_SELECT], doc="""
+            [O_ALL_LOADED, O_SELECT],
+            doc="""
             This option lets you choose which images will have quality metrics calculated.
             <ul>
-            <li><i>%(O_ALL_LOADED)s:</i> Use all images loaded with the <b>Input</b> modules.
+            <li><i>{o_all_loaded}:</i> Use all images loaded with the <b>Input</b> modules.
             The quality metrics selected below will be applied to all loaded images.</li>
-            <li><i>%(O_SELECT)s:</i> Select the desired images from a list. The quality
+            <li><i>{o_select}:</i> Select the desired images from a list. The quality
             metric settings selected will be applied to all these images. Additional lists
             can be added with separate settings.</li>
-            </ul>""" % globals())
+            </ul>""".format(**{
+                'o_all_loaded': O_ALL_LOADED,
+                'o_select': O_SELECT
+            }))
 
         self.divider = cellprofiler.setting.Divider(line=True)
 
@@ -154,32 +158,32 @@ class MeasureImageQuality(cellprofiler.module.Module):
 
         group.append("image_names", cellprofiler.setting.ImageNameSubscriberMultiChoice(
                 "Select the images to measure", doc="""
-            <i>(Used only if "%(O_SELECT)s" is chosen for selecting images)</i><br>
+            <i>(Used only if "{}" is chosen for selecting images)</i><br>
             Choose one or more images from this list. You can select multiple images by clicking
             using the shift or command keys. In addition to loaded images, the list includes
-            the images that were created by prior modules.""" % globals()))
+            the images that were created by prior modules.""".format(O_SELECT)))
 
         group.append("include_image_scalings", cellprofiler.setting.Binary(
                 "Include the image rescaling value?",
                 True, doc="""
-            Select <i>%(cellprofiler.setting.YES)s</i> to add the image's rescaling
+            Select <i>{}</i> to add the image's rescaling
             value as a quality control metric. This value is set only for images
             that loaded using the <b>Input</b> modules. This is useful in confirming
             that all images are rescaled by the same value, since some acquisition
             device vendors may output this value differently.
-            See <b>NamesAndTypes</b> for more information.""" % globals()))
+            See <b>NamesAndTypes</b> for more information.""".format(cellprofiler.setting.YES)))
 
         group.append("check_blur", cellprofiler.setting.Binary(
                 "Calculate blur metrics?",
                 True, doc="""
-            Select <i>%(cellprofiler.setting.YES)s</i> to compute a series of blur metrics. The blur metrics are the
+            Select <i>{yes}</i> to compute a series of blur metrics. The blur metrics are the
             following, along with recomendations on their use:
             <ul>
-            <li><i>%(F_POWER_SPECTRUM_SLOPE)s:</i> The power spectrum contains the frequency information
+            <li><i>{f_power_spectrum_slope}:</i> The power spectrum contains the frequency information
             of the image, and the slope gives a measure of image blur. A higher slope indicates
             more lower frequency components, and hence more blur (<i>Field, 1997</i>). This metric is
             recommended for blur detection in most cases.</li>
-            <li><i>%(F_CORRELATION)s:</i> This is a measure of the image spatial intensity distribution
+            <li><i>{f_correlation}:</i> This is a measure of the image spatial intensity distribution
             computed across sub-regions of an image for a given spatial scale (<i>Haralick, 1973</i>).
             If an image is blurred, the correlation between neighboring pixels becomes high,
             producing a high correlation value. A similar approach was found to give optimal
@@ -190,7 +194,7 @@ class MeasureImageQuality(cellprofiler.module.Module):
             are more likely to reflect intercellular confluence than focal blur. A spatial scale
             no bigger than the feature of interest is recommended, although you can select as
             many scales as desired.</li>
-            <li><i>%(F_FOCUS_SCORE)s:</i> This score is calculated using a normalized variance,
+            <li><i>{f_focus_score}:</i> This score is calculated using a normalized variance,
             which was the best-ranking algorithm for brightfield, phase contrast, and DIC images
             (<i>Sun, 2004</i>). Higher focus scores correspond to lower bluriness. <br>
             More specifically, the focus score computes the intensity variance of the entire
@@ -199,7 +203,7 @@ class MeasureImageQuality(cellprofiler.module.Module):
             overall intensity and the number of objects in the image is constant, making it less
             useful for comparision images of different fields of view. For distinguishing
             extremely blurry images, however, it performs well.</li>
-            <li><i>%(F_LOCAL_FOCUS_SCORE)s:</i> A local version of the Focus Score, it subdivides the
+            <li><i>{f_local_focus_score}:</i> A local version of the Focus Score, it subdivides the
             image into non-overlapping tiles, computes the normalized variance for each, and
             takes the mean of these values as the final metric. It is potentially more useful
             for comparing focus between images of different fields of view, but is subject
@@ -223,7 +227,13 @@ class MeasureImageQuality(cellprofiler.module.Module):
             Selecting the optimal focus algorithm" <i>Microscopy Research and
             Technique</i>, 65:139-149
             <a href="http://dx.doi.org/10.1002/jemt.20118">(link)</a></li>
-            </ul>""" % globals()))
+            </ul>""".format(**{
+                'yes': cellprofiler.setting.YES,
+                'f_power_spectrum_slope': F_POWER_SPECTRUM_SLOPE,
+                'f_correlation': F_CORRELATION,
+                'f_focus_score': F_FOCUS_SCORE,
+                'f_local_focus_score': F_LOCAL_FOCUS_SCORE
+            })))
 
         group.append("include_local_blur", cellprofiler.setting.Binary(
                 "Include local blur metrics?",
@@ -247,24 +257,28 @@ class MeasureImageQuality(cellprofiler.module.Module):
         group.append("check_saturation", cellprofiler.setting.Binary(
                 "Calculate saturation metrics?",
                 True, doc="""
-            Select <i>%(cellprofiler.setting.YES)s</i> to calculate the saturation metrics <i>%(F_PERCENT_MAXIMAL)s</i>
-            and <i>%(F_PERCENT_MINIMAL)s</i>, i.e., the percentage of pixels at
+            Select <i>{yes}</i> to calculate the saturation metrics <i>{f_percent_maximal}</i>
+            and <i>{f_percent_minimal}</i>, i.e., the percentage of pixels at
             the upper or lower limit of each individual image.
             <p>For this calculation, the hard limits of 0 and 1 are not used because images often
             have undergone some kind of transformation such that no pixels
             ever reach the absolute maximum or minimum of the image format.  Given
             the noise typical in images, both these measures should be a low percentage but if the
             images were saturated during imaging, a higher than usual
-            <i>%(F_PERCENT_MAXIMAL)s</i> will be observed, and if there are no objects, the
-            <i>%(F_PERCENT_MINIMAL)s</i> value will increase.</p>""" % globals()))
+            <i>{f_percent_maximal}</i> will be observed, and if there are no objects, the
+            <i>{f_percent_minimal}</i> value will increase.</p>""".format(**{
+                'yes': cellprofiler.setting.YES,
+                'f_percent_minimal': F_PERCENT_MINIMAL,
+                'f_percent_maximal': F_PERCENT_MAXIMAL
+            })))
 
         group.append("check_intensity", cellprofiler.setting.Binary(
                 "Calculate intensity metrics?",
                 True, doc="""
-            Select <i>%(cellprofiler.setting.YES)s</i> to calculate image-based
+            Select <i>{}</i> to calculate image-based
             intensity measures, namely the mean, maximum, minimum, standard deviation
             and median absolute deviation of pixel intensities. These measures
-            are identical to those calculated by <b>MeasureImageIntensity</b>.""" % globals()))
+            are identical to those calculated by <b>MeasureImageIntensity</b>.""".format(cellprofiler.setting.YES)))
 
         group.append("calculate_threshold", cellprofiler.setting.Binary(
                 "Calculate thresholds?",
@@ -278,18 +292,22 @@ class MeasureImageQuality(cellprofiler.module.Module):
                 "Use all thresholding methods?",
                 False, doc="""
             <i>(Used only if image thresholds are calculcated)</i><br>
-            Select <i>%(cellprofiler.setting.YES)s</i> to calculate thresholds using all the available methods. Only the global methods
+            Select <i>{yes}</i> to calculate thresholds using all the available methods. Only the global methods
             are used. <br>
             While most methods are straightfoward, some methods have additional
             parameters that require special handling:
             <ul>
-            <li><i>%(TM_OTSU)s:</i> Thresholds for all combinations of class number, minimzation
+            <li><i>{tm_otsu}:</i> Thresholds for all combinations of class number, minimzation
             parameter and middle class assignment are computed.</li>
-            <li><i>Mixture of Gaussians (%(TM_MOG)s):</i> Thresholds for image coverage fractions
+            <li><i>Mixture of Gaussians ({tm_mog}):</i> Thresholds for image coverage fractions
             of 0.05, 0.25, 0.75 and 0.95 are computed.</li>
             </ul>
             See the <b>IdentifyPrimaryObjects</b> module for more information on thresholding
-            methods.""" % globals()))
+            methods.""".format(**{
+                'yes': cellprofiler.setting.YES,
+                'tm_otsu': centrosome.threshold.TM_OTSU,
+                'tm_mog': centrosome.threshold.TM_MOG
+            })))
 
         group.threshold_groups = []
 
@@ -323,14 +341,18 @@ class MeasureImageQuality(cellprofiler.module.Module):
                 "Spatial scale for blur measurements",
                 len(image_group.scale_groups) * 10 + 10, doc="""
             <i>(Used only if blur measurements are to be calculated)</i> <br>
-            The <i>%(F_LOCAL_FOCUS_SCORE)s</i> is measured within an <i>N &times; N</i> pixel
-            window applied to the image, whereas the <i>%(F_CORRELATION)s</i> of a pixel is
+            The <i>{f_local_focus_score}</i> is measured within an <i>N &times; N</i> pixel
+            window applied to the image, whereas the <i>{f_correlation}</i> of a pixel is
             measured with repsect to its neighbors <i>N</i> pixels away.
             <p>A higher number for the window size measures larger patterns of
             image blur whereas smaller numbers measure more localized patterns of
             blur. We suggest selecting a window size that is on the order of the feature of interest
             (e.g., the object diameter). You can measure these metrics for multiple window sizes
-            by selecting additional scales for each image.</p>""" % globals()))
+            by selecting additional scales for each image.</p>""".format(**{
+                'f_local_focus_score': F_LOCAL_FOCUS_SCORE,
+                'f_correlation': F_CORRELATION
+            })
+        ))
 
         group.can_remove = can_remove
         if can_remove:
@@ -356,16 +378,16 @@ class MeasureImageQuality(cellprofiler.module.Module):
 
         group.append("object_fraction", cellprofiler.setting.Float(
                 "Typical fraction of the image covered by objects", 0.1, 0, 1, doc="""
-            <i>(Used only if threshold are calculated and %(TM_MOG)s thresholding is chosen)</i> <br>
+            <i>(Used only if threshold are calculated and {} thresholding is chosen)</i> <br>
             Enter the approximate fraction of the typical image in the set
-            that is covered by objects.""" % globals()))
+            that is covered by objects.""".format(TM_MOG)))
 
         group.append("two_class_otsu", cellprofiler.setting.Choice(
                 'Two-class or three-class thresholding?',
                 [cellprofiler.modules.identify.O_TWO_CLASS, cellprofiler.modules.identify.O_THREE_CLASS], doc="""
-            <i>(Used only if thresholds are calculcated and the %(TM_OTSU)s thresholding method is used)</i> <br>
-            Select <i>%(O_TWO_CLASS)s</i> if the grayscale levels are readily distinguishable into foregound
-            (i.e., objects) and background. Select <i>%(O_THREE_CLASS)s</i> if there is a
+            <i>(Used only if thresholds are calculcated and the {tm_otsu} thresholding method is used)</i> <br>
+            Select <i>{o_two_class}</i> if the grayscale levels are readily distinguishable into foregound
+            (i.e., objects) and background. Select <i>{o_three_class}</i> if there is a
             middle set of grayscale levels that belongs to neither the
             foreground nor background.
             <p>For example, three-class thresholding may
@@ -375,7 +397,11 @@ class MeasureImageQuality(cellprofiler.module.Module):
             objects, three-class thresholding allows you to assign it to the
             foreground or background as desired. However, in extreme cases where either
             there are almost no objects or the entire field of view is covered with
-            objects, three-class thresholding may perform worse than two-class.""" % globals()))
+            objects, three-class thresholding may perform worse than two-class.""".format(**{
+                'tm_otsu': centrosome.threshold.TM_OTSU,
+                'o_two_class': cellprofiler.modules.identify.O_TWO_CLASS,
+                'o_three_class': cellprofiler.modules.identify.O_THREE_CLASS
+            })))
 
         group.append("use_weighted_variance", cellprofiler.setting.Choice(
                 'Minimize the weighted variance or the entropy?',
@@ -384,9 +410,12 @@ class MeasureImageQuality(cellprofiler.module.Module):
         group.append("assign_middle_to_foreground", cellprofiler.setting.Choice(
                 'Assign pixels in the middle intensity class to the foreground or the background?',
                 [cellprofiler.modules.identify.O_FOREGROUND, cellprofiler.modules.identify.O_BACKGROUND], doc="""
-            <i>(Used only if thresholds are calculcated and the %(TM_OTSU)s thresholding method with %(O_THREE_CLASS)s is used)</i><br>
+            <i>(Used only if thresholds are calculcated and the {tm_otsu} thresholding method with {o_three_class} is used)</i><br>
             Choose whether you want the middle grayscale intensities to be assigned
-            to the foreground pixels or the background pixels.""" % globals()))
+            to the foreground pixels or the background pixels.""".format(**{
+                'tm_otsu': centrosome.threshold.TM_OTSU,
+                'o_three_class': cellprofiler.modules.identify.O_THREE_CLASS
+            })))
 
         group.can_remove = can_remove
         if can_remove and image_group is not None:

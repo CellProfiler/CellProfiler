@@ -99,8 +99,12 @@ class MaskObjects(cellprofiler.modules.identify.Identify):
                 "Mask using a region defined by other objects or by binary image?",
                 [MC_OBJECTS, MC_IMAGE], doc="""
             You can mask your objects by defining a region using objects
-            you previously identified in your pipeline (<i>%(MC_OBJECTS)s</i>) or by defining a
-            region based on the white regions in a binary image (<i>%(MC_IMAGE)s</i>).""" % globals())
+            you previously identified in your pipeline (<i>{mc_objects}</i>) or by defining a
+            region based on the white regions in a binary image (<i>{mc_image}</i>).""".format(**{
+                'mc_objects': MC_OBJECTS,
+                'mc_image': MC_IMAGE
+            })
+        )
 
         self.masking_objects = cellprofiler.setting.ObjectNameSubscriber(
                 "Select the masking object", cellprofiler.setting.NONE, doc="""
@@ -124,13 +128,17 @@ class MaskObjects(cellprofiler.modules.identify.Identify):
             This option reverses the foreground/background relationship of
             the mask.
             <ul>
-            <li>Select <i>%(cellprofiler.setting.NO)s</i> for the mask to be composed of the foregound
+            <li>Select <i>{cellprofiler.setting.no}</i> for the mask to be composed of the foregound
             (white portion) of the masking image or the area within the masking
             objects.</li>
-            <li>Select <i>%(cellprofiler.setting.YES)s</i> for the mask to instead be composed of the
+            <li>Select <i>{cellprofiler.setting.yes}</i> for the mask to instead be composed of the
             <i>background</i> (black portions) of the masking image or the area
             <i>outside</i> the masking objects.</li>
-            </ul>""" % globals())
+            </ul>""".format(**{
+                'cellprofiler.setting.no': cellprofiler.setting.NO,
+                'cellprofiler.setting.yes': cellprofiler.setting.YES
+            })
+        )
 
         self.overlap_choice = cellprofiler.setting.Choice(
                 "Handling of objects that are partially masked",
@@ -139,24 +147,30 @@ class MaskObjects(cellprofiler.modules.identify.Identify):
             pixels both inside and outside the region. <b>MaskObjects</b>
             can handle this in one of three ways:<br>
             <ul>
-            <li><i>%(P_MASK)s:</i> Choosing this option
+            <li><i>{p_mask}:</i> Choosing this option
             will reduce the size of partially overlapping objects. The part
             of the object that overlaps the region will be retained. The
             part of the object that is outside of the region will be removed.</li>
-            <li><i>%(P_KEEP)s:</i> If you choose this option, <b>MaskObjects</b>
+            <li><i>{p_keep}:</i> If you choose this option, <b>MaskObjects</b>
             will keep the whole object if any part of it overlaps the masking
             region.</li>
-            <li><i>%(P_REMOVE)s:</i> Objects that are partially outside
+            <li><i>{p_remove}:</i> Objects that are partially outside
             of the masking region will be completely removed if you choose
             this option.</li>
-            <li><i>%(P_REMOVE_PERCENTAGE)s:</i> Determine whether to
+            <li><i>{p_remove_percentage}:</i> Determine whether to
             remove or keep an object depending on how much of the object
             overlaps the masking region. <b>MaskObjects</b> will keep an
             object if at least a certain fraction (which you enter below) of
             the object falls within the masking region. <b>MaskObjects</b>
             completely removes the object if too little of it overlaps
             the masking region.</li>
-            </ul>""" % globals())
+            </ul>""".format(*{
+                'p_mask': P_MASK,
+                'p_keep': P_KEEP,
+                'p_remove': P_REMOVE,
+                'p_remove_percentage': P_REMOVE_PERCENTAGE
+            })
+        )
 
         self.overlap_fraction = cellprofiler.setting.Float(
                 "Fraction of object that must overlap", .5,
@@ -173,25 +187,33 @@ class MaskObjects(cellprofiler.modules.identify.Identify):
             Choose how to number the objects that
             remain after masking, which controls how remaining objects are associated with their predecessors:
             <ul>
-            <li><i>%(R_RENUMBER)s:</i> The objects that remain will be renumbered
+            <li><i>{r_renumber}:</i> The objects that remain will be renumbered
             using consecutive numbers. This
             is a good choice if you do not plan to use measurements from the
             original objects; your object measurements for the
             masked objects will not have gaps (where removed objects are missing).</li>
-            <li><i>%(R_RETAIN)s:</i>: The original labels for the objects will be retained.
+            <li><i>{r_retain}:</i>: The original labels for the objects will be retained.
             This allows any measurements you make from
             the masked objects to be directly aligned with measurements you might
             have made of the original, unmasked objects (or objects directly
             associated with them).</li>
-            </ul>""" % globals())
+            </ul>""".format(**{
+                'r_renumber': R_RENUMBER,
+                'r_retain': R_RETAIN
+            })
+        )
 
         self.wants_outlines = cellprofiler.setting.Binary(
-                "Retain outlines of the resulting objects?", False, doc="""
-            %(RETAINING_OUTLINES_HELP)s""" % globals())
+            "Retain outlines of the resulting objects?",
+            False,
+            doc=cellprofiler.gui.help.RETAINING_OUTLINES_HELP
+        )
 
         self.outlines_name = cellprofiler.setting.OutlineNameProvider(
-                "Name the outline image", "MaskedOutlines", doc="""
-            %(NAMING_OUTLINES_HELP)s""" % globals())
+            "Name the outline image",
+            "MaskedOutlines",
+            doc=cellprofiler.gui.help.NAMING_OUTLINES_HELP
+        )
 
     def settings(self):
         """The settings as they appear in the pipeline"""

@@ -90,9 +90,9 @@ class MeasureNeurons(cellprofiler.module.Module):
 
         self.wants_branchpoint_image = cellprofiler.setting.Binary(
                 "Retain the branchpoint image?", False, doc="""
-            Select <i>%(cellprofiler.setting.YES)s</i> if you want to save the color image of
+            Select <i>{}</i> if you want to save the color image of
             branchpoints and trunks. This is the image that is displayed
-            in the output window for this module.""" % globals())
+            in the output window for this module.""".format(cellprofiler.setting.YES))
 
         self.branchpoint_image_name = cellprofiler.setting.ImageNameProvider(
                 "Name the branchpoint image", "BranchpointImage", doc="""
@@ -105,7 +105,7 @@ class MeasureNeurons(cellprofiler.module.Module):
             The algorithm reskeletonizes the image and this can leave
             artifacts caused by small holes in the image prior to skeletonizing.
             These holes result in false trunks and branchpoints.
-            Select <i>%(cellprofiler.setting.YES)s</i> to fill in these small holes prior to skeletonizing.""" % globals())
+            Select <i>{}</i> to fill in these small holes prior to skeletonizing.""".format(cellprofiler.setting.YES))
 
         self.maximum_hole_size = cellprofiler.setting.Integer(
                 "Maximum hole size", 10, minval=1, doc="""
@@ -116,9 +116,9 @@ class MeasureNeurons(cellprofiler.module.Module):
 
         self.wants_neuron_graph = cellprofiler.setting.Binary(
                 "Export the neuron graph relationships?", False, doc="""
-            Select <i>%(cellprofiler.setting.YES)s</i> to produce an edge file and a vertex
+            Select <i>{}</i> to produce an edge file and a vertex
             file that give the relationships between trunks, branchpoints
-            and vertices.""" % globals())
+            and vertices.""".format(cellprofiler.setting.YES))
 
         self.intensity_image_name = cellprofiler.setting.ImageNameSubscriber(
                 "Intensity image", cellprofiler.setting.NONE, doc="""

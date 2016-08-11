@@ -9,12 +9,11 @@ import cellprofiler.gui.help
 import cellprofiler.icons
 import cellprofiler.measurement
 import cellprofiler.module
+import cellprofiler.modules
 import cellprofiler.modules.identify
 import cellprofiler.modules.loadimages
 import cellprofiler.pipeline
 import cellprofiler.preferences
-import cellprofiler.preferences
-import cellprofiler.setting
 import cellprofiler.setting
 import numpy
 

@@ -3,7 +3,7 @@ import re
 import sys
 
 import cellprofiler.module
-import cellprofiler.modules.plugins
+# import cellprofiler.modules.plugins
 import cellprofiler.preferences
 
 logger = logging.getLogger(__name__)
@@ -310,15 +310,15 @@ def fill_modules():
     for mod in builtin_modules:
         add_module('cellprofiler.modules.' + mod, True)
 
-    plugin_directory = cellprofiler.preferences.get_plugin_directory()
-    if plugin_directory is not None:
-        old_path = sys.path
-        sys.path.insert(0, plugin_directory)
-        try:
-            for mod in cellprofiler.modules.plugins.plugin_list():
-                add_module(mod, False)
-        finally:
-            sys.path = old_path
+    # plugin_directory = cellprofiler.preferences.get_plugin_directory()
+    # if plugin_directory is not None:
+    #     old_path = sys.path
+    #     sys.path.insert(0, plugin_directory)
+    #     try:
+    #         for mod in cellprofiler.modules.plugins.plugin_list():
+    #             add_module(mod, False)
+    #     finally:
+    #         sys.path = old_path
 
     datatools.sort()
     if len(badmodules) > 0:

@@ -7,6 +7,8 @@ import cellprofiler.gui.help
 import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.module
+import cellprofiler.modules
+import cellprofiler.modules.identify
 import cellprofiler.modules.images
 import cellprofiler.modules.loadimages
 import cellprofiler.pipeline
@@ -440,7 +442,7 @@ class NamesAndTypes(cellprofiler.module.Module):
             </ul>""".format(**{
                 'match_by_order': MATCH_BY_ORDER,
                 'match_by_metadata': MATCH_BY_METADATA,
-                'using_metadata_help': USING_METADATA_HELP_REF
+                'using_metadata_help': cellprofiler.gui.help.USING_METADATA_HELP_REF
             }))
         self.join = cellprofiler.setting.Joiner("Match metadata")
         self.imageset_setting = cellprofiler.setting.ImageSetDisplay("", "Update image set table")
@@ -470,7 +472,7 @@ class NamesAndTypes(cellprofiler.module.Module):
             ],
             'and (file does contain "")',
             doc="""Specify a filter using rules to narrow down the files to be analyzed.
-                <p>{filter_rules_buttons_help}</p>""".format({'filter_rules_buttons_help': cellprofiler.gui.help.FILTER_RULES_BUTTONS_HELP})))
+                <p>{}</p>""".format(cellprofiler.gui.help.FILTER_RULES_BUTTONS_HELP)))
 
         group.append("image_name", cellprofiler.setting.FileImageNameProvider(
                 "Name to assign these images", unique_image_name, doc="""
@@ -890,16 +892,16 @@ class NamesAndTypes(cellprofiler.module.Module):
         for i, iscd in enumerate(iscds):
             image_set_column_idx = channel_map[column_names[i]]
             if iscd.channel_type == ImageSetChannelDescriptor.CT_OBJECTS:
-                url_category = cellprofiler.measurement.C_OBJECTS_URL
-                path_name_category = cellprofiler.measurement.C_OBJECTS_PATH_NAME
-                file_name_category = cellprofiler.measurement.C_OBJECTS_FILE_NAME
+                url_category = cellprofiler.measurement.cellprofiler.measurement.C_OBJECTS_URL
+                path_name_category = cellprofiler.measurement.cellprofiler.measurement.C_OBJECTS_PATH_NAME
+                file_name_category = cellprofiler.measurement.cellprofiler.measurement.C_OBJECTS_FILE_NAME
                 series_category = cellprofiler.measurement.C_OBJECTS_SERIES
                 frame_category = cellprofiler.measurement.C_OBJECTS_FRAME
                 channel_category = cellprofiler.measurement.C_OBJECTS_CHANNEL
             else:
-                url_category = cellprofiler.measurement.C_URL
-                path_name_category = cellprofiler.measurement.C_PATH_NAME
-                file_name_category = cellprofiler.measurement.C_FILE_NAME
+                url_category = cellprofiler.measurement.cellprofiler.measurement.C_URL
+                path_name_category = cellprofiler.measurement.cellprofiler.measurement.C_PATH_NAME
+                file_name_category = cellprofiler.measurement.cellprofiler.measurement.C_FILE_NAME
                 series_category = cellprofiler.measurement.C_SERIES
                 frame_category = cellprofiler.measurement.C_FRAME
                 channel_category = cellprofiler.measurement.C_CHANNEL
@@ -1688,15 +1690,6 @@ class NamesAndTypes(cellprofiler.module.Module):
         For NamesAndTypes, we anticipate that the pipeline will create
         the text measurements for the images.
         """
-        from cellprofiler.modules.loadimages import \
-            C_FILE_NAME, C_PATH_NAME, C_URL, C_MD5_DIGEST, C_SCALING, \
-            C_HEIGHT, C_WIDTH, C_SERIES, C_FRAME, \
-            C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME, C_OBJECTS_URL
-        from cellprofiler.measurement import \
-            C_OBJECTS_SERIES, C_OBJECTS_FRAME
-        from cellprofiler.modules.identify import C_COUNT, \
-            get_object_measurement_columns
-
         image_names = self.get_image_names()
         object_names = self.get_object_names()
         result = []
@@ -1705,84 +1698,72 @@ class NamesAndTypes(cellprofiler.module.Module):
                         "_".join([category, image_name]),
                         coltype)
                        for category, coltype in (
-                           (C_FILE_NAME, cellprofiler.measurement.COLTYPE_VARCHAR_FILE_NAME),
-                           (C_PATH_NAME, cellprofiler.measurement.COLTYPE_VARCHAR_PATH_NAME),
-                           (C_URL, cellprofiler.measurement.COLTYPE_VARCHAR_PATH_NAME),
-                           (C_MD5_DIGEST, cellprofiler.measurement.COLTYPE_VARCHAR_FORMAT % 32),
-                           (C_SCALING, cellprofiler.measurement.COLTYPE_FLOAT),
-                           (C_WIDTH, cellprofiler.measurement.COLTYPE_INTEGER),
-                           (C_HEIGHT, cellprofiler.measurement.COLTYPE_INTEGER),
-                           (C_SERIES, cellprofiler.measurement.COLTYPE_INTEGER),
-                           (C_FRAME, cellprofiler.measurement.COLTYPE_INTEGER)
+                           (cellprofiler.measurement.cellprofiler.measurement.C_FILE_NAME, cellprofiler.measurement.COLTYPE_VARCHAR_FILE_NAME),
+                           (cellprofiler.measurement.cellprofiler.measurement.C_PATH_NAME, cellprofiler.measurement.COLTYPE_VARCHAR_PATH_NAME),
+                           (cellprofiler.measurement.cellprofiler.measurement.C_URL, cellprofiler.measurement.COLTYPE_VARCHAR_PATH_NAME),
+                           (cellprofiler.modules.loadimages.C_MD5_DIGEST, cellprofiler.measurement.COLTYPE_VARCHAR_FORMAT % 32),
+                           (cellprofiler.modules.loadimages.C_SCALING, cellprofiler.measurement.COLTYPE_FLOAT),
+                           (cellprofiler.modules.loadimages.C_WIDTH, cellprofiler.measurement.COLTYPE_INTEGER),
+                           (cellprofiler.modules.loadimages.C_HEIGHT, cellprofiler.measurement.COLTYPE_INTEGER),
+                           (cellprofiler.modules.loadimages.C_SERIES, cellprofiler.measurement.COLTYPE_INTEGER),
+                           (cellprofiler.modules.loadimages.C_FRAME, cellprofiler.measurement.COLTYPE_INTEGER)
                        )]
         for object_name in object_names:
             result += [(cellprofiler.measurement.IMAGE,
                         "_".join([category, object_name]),
                         coltype)
                        for category, coltype in (
-                           (C_OBJECTS_FILE_NAME, cellprofiler.measurement.COLTYPE_VARCHAR_FILE_NAME),
-                           (C_OBJECTS_PATH_NAME, cellprofiler.measurement.COLTYPE_VARCHAR_PATH_NAME),
-                           (C_OBJECTS_URL, cellprofiler.measurement.COLTYPE_VARCHAR_PATH_NAME),
-                           (C_COUNT, cellprofiler.measurement.COLTYPE_INTEGER),
-                           (C_MD5_DIGEST, cellprofiler.measurement.COLTYPE_VARCHAR_FORMAT % 32),
-                           (C_WIDTH, cellprofiler.measurement.COLTYPE_INTEGER),
-                           (C_HEIGHT, cellprofiler.measurement.COLTYPE_INTEGER),
-                           (C_OBJECTS_SERIES, cellprofiler.measurement.COLTYPE_INTEGER),
-                           (C_OBJECTS_FRAME, cellprofiler.measurement.COLTYPE_INTEGER)
+                           (cellprofiler.measurement.cellprofiler.measurement.C_OBJECTS_FILE_NAME, cellprofiler.measurement.COLTYPE_VARCHAR_FILE_NAME),
+                           (cellprofiler.measurement.cellprofiler.measurement.C_OBJECTS_PATH_NAME, cellprofiler.measurement.COLTYPE_VARCHAR_PATH_NAME),
+                           (cellprofiler.measurement.cellprofiler.measurement.C_OBJECTS_URL, cellprofiler.measurement.COLTYPE_VARCHAR_PATH_NAME),
+                           (cellprofiler.modules.identify.C_COUNT, cellprofiler.measurement.COLTYPE_INTEGER),
+                           (cellprofiler.modules.loadimages.C_MD5_DIGEST, cellprofiler.measurement.COLTYPE_VARCHAR_FORMAT % 32),
+                           (cellprofiler.modules.loadimages.C_WIDTH, cellprofiler.measurement.COLTYPE_INTEGER),
+                           (cellprofiler.modules.loadimages.C_HEIGHT, cellprofiler.measurement.COLTYPE_INTEGER),
+                           (cellprofiler.measurement.C_OBJECTS_SERIES, cellprofiler.measurement.COLTYPE_INTEGER),
+                           (cellprofiler.measurement.C_OBJECTS_FRAME, cellprofiler.measurement.COLTYPE_INTEGER)
                        )]
-            result += get_object_measurement_columns(object_name)
+            result += cellprofiler.modules.identify.get_object_measurement_columns(object_name)
         result += [(cellprofiler.measurement.IMAGE, ftr, cellprofiler.measurement.COLTYPE_VARCHAR)
                    for ftr in self.get_metadata_features()]
 
         return result
 
     def get_categories(self, pipeline, object_name):
-        from cellprofiler.modules.loadimages import \
-            C_FILE_NAME, C_PATH_NAME, C_URL, C_MD5_DIGEST, C_SCALING, \
-            C_HEIGHT, C_WIDTH, C_SERIES, C_FRAME, \
-            C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME, C_OBJECTS_URL
-        from cellprofiler.modules.identify import C_LOCATION, C_NUMBER, C_COUNT
         result = []
         if object_name == cellprofiler.measurement.IMAGE:
             has_images = any(self.get_image_names())
             has_objects = any(self.get_object_names())
             if has_images:
-                result += [C_FILE_NAME, C_PATH_NAME, C_URL]
+                result += [cellprofiler.measurement.C_FILE_NAME, cellprofiler.measurement.C_PATH_NAME, cellprofiler.measurement.C_URL]
             if has_objects:
-                result += [C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME,
-                           C_OBJECTS_URL, C_COUNT]
-            result += [C_MD5_DIGEST, C_SCALING, C_HEIGHT, C_WIDTH, C_SERIES,
-                       C_FRAME]
+                result += [cellprofiler.measurement.C_OBJECTS_FILE_NAME, cellprofiler.measurement.C_OBJECTS_PATH_NAME,
+                           cellprofiler.measurement.C_OBJECTS_URL, cellprofiler.modules.identify.C_COUNT]
+            result += [cellprofiler.modules.loadimages.C_MD5_DIGEST, cellprofiler.modules.loadimages.C_SCALING, cellprofiler.modules.loadimages.C_HEIGHT, cellprofiler.modules.loadimages.C_WIDTH, cellprofiler.modules.loadimages.C_SERIES,
+                       cellprofiler.modules.loadimages.C_FRAME]
         elif object_name in self.get_object_names():
-            result += [C_LOCATION, C_NUMBER]
+            result += [cellprofiler.modules.identify.C_LOCATION, cellprofiler.modules.identify.C_NUMBER]
         return result
 
     def get_measurements(self, pipeline, object_name, category):
-        from cellprofiler.modules.loadimages import \
-            C_FILE_NAME, C_PATH_NAME, C_URL, C_MD5_DIGEST, C_SCALING, \
-            C_HEIGHT, C_WIDTH, C_SERIES, C_FRAME, \
-            C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME, C_OBJECTS_URL
-        from cellprofiler.modules.identify import C_NUMBER, C_COUNT, \
-            C_LOCATION, FTR_OBJECT_NUMBER, FTR_CENTER_X, FTR_CENTER_Y
-
         image_names = self.get_image_names()
         object_names = self.get_object_names()
         if object_name == cellprofiler.measurement.IMAGE:
-            if category in (C_FILE_NAME, C_PATH_NAME, C_URL):
+            if category in (cellprofiler.measurement.C_FILE_NAME, cellprofiler.measurement.C_PATH_NAME, cellprofiler.measurement.C_URL):
                 return image_names
-            elif category in (C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME,
-                              C_OBJECTS_URL):
+            elif category in (cellprofiler.measurement.C_OBJECTS_FILE_NAME, cellprofiler.measurement.C_OBJECTS_PATH_NAME,
+                              cellprofiler.measurement.C_OBJECTS_URL):
                 return object_names
-            elif category == C_COUNT:
+            elif category == cellprofiler.modules.identify.C_COUNT:
                 return object_names
-            elif category in (C_MD5_DIGEST, C_SCALING, C_HEIGHT, C_WIDTH,
-                              C_SERIES, C_FRAME):
+            elif category in (cellprofiler.modules.loadimages.C_MD5_DIGEST, cellprofiler.modules.loadimages.C_SCALING, cellprofiler.modules.loadimages.C_HEIGHT, cellprofiler.modules.loadimages.C_WIDTH,
+                              cellprofiler.modules.loadimages.C_SERIES, cellprofiler.modules.loadimages.C_FRAME):
                 return list(image_names) + list(object_names)
         elif object_name in self.get_object_names():
-            if category == C_NUMBER:
-                return [FTR_OBJECT_NUMBER]
-            elif category == C_LOCATION:
-                return [FTR_CENTER_X, FTR_CENTER_Y]
+            if category == cellprofiler.modules.identify.C_NUMBER:
+                return [cellprofiler.modules.identify.FTR_OBJECT_NUMBER]
+            elif category == cellprofiler.modules.identify.C_LOCATION:
+                return [cellprofiler.modules.identify.FTR_CENTER_X, cellprofiler.modules.identify.FTR_CENTER_Y]
         return []
 
     def validate_module(self, pipeline):

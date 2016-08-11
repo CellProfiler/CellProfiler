@@ -59,6 +59,7 @@ See also <b>NamesAndTypes</b>, <b>MeasureImageIntensity</b>.
 
 import cellprofiler.measurement
 import cellprofiler.module
+import cellprofiler.modules
 import cellprofiler.modules.identify
 import cellprofiler.region
 import cellprofiler.setting

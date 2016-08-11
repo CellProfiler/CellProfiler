@@ -62,6 +62,7 @@ import logging
 
 import cellprofiler.measurement
 import cellprofiler.module
+import cellprofiler.modules
 import cellprofiler.modules.identify
 import cellprofiler.modules.loadimages
 import cellprofiler.preferences
@@ -382,26 +383,34 @@ class MeasureImageQuality(cellprofiler.module.Module):
             Enter the approximate fraction of the typical image in the set
             that is covered by objects.""".format(centrosome.threshold.TM_MOG)))
 
-        group.append("two_class_otsu", cellprofiler.setting.Choice(
+        group.append(
+            "two_class_otsu",
+            cellprofiler.setting.Choice(
                 'Two-class or three-class thresholding?',
-                [cellprofiler.modules.identify.O_TWO_CLASS, cellprofiler.modules.identify.O_THREE_CLASS], doc="""
-            <i>(Used only if thresholds are calculcated and the {tm_otsu} thresholding method is used)</i> <br>
-            Select <i>{o_two_class}</i> if the grayscale levels are readily distinguishable into foregound
-            (i.e., objects) and background. Select <i>{o_three_class}</i> if there is a
-            middle set of grayscale levels that belongs to neither the
-            foreground nor background.
-            <p>For example, three-class thresholding may
-            be useful for images in which you have nuclear staining along with a
-            low-intensity non-specific cell staining. Where two-class thresholding
-            might incorrectly assign this intemediate staining to the nuclei
-            objects, three-class thresholding allows you to assign it to the
-            foreground or background as desired. However, in extreme cases where either
-            there are almost no objects or the entire field of view is covered with
-            objects, three-class thresholding may perform worse than two-class.""".format(**{
-                'tm_otsu': centrosome.threshold.TM_OTSU,
-                'o_two_class': cellprofiler.modules.identify.O_TWO_CLASS,
-                'o_three_class': cellprofiler.modules.identify.O_THREE_CLASS
-            })))
+                [
+                    cellprofiler.modules.identify.O_TWO_CLASS,
+                    cellprofiler.modules.identify.O_THREE_CLASS
+                ],
+                doc="""
+                <i>(Used only if thresholds are calculcated and the {tm_otsu} thresholding method is used)</i> <br>
+                Select <i>{o_two_class}</i> if the grayscale levels are readily distinguishable into foregound
+                (i.e., objects) and background. Select <i>{o_three_class}</i> if there is a
+                middle set of grayscale levels that belongs to neither the
+                foreground nor background.
+                <p>For example, three-class thresholding may
+                be useful for images in which you have nuclear staining along with a
+                low-intensity non-specific cell staining. Where two-class thresholding
+                might incorrectly assign this intemediate staining to the nuclei
+                objects, three-class thresholding allows you to assign it to the
+                foreground or background as desired. However, in extreme cases where either
+                there are almost no objects or the entire field of view is covered with
+                objects, three-class thresholding may perform worse than two-class.""".format(**{
+                    'tm_otsu': centrosome.threshold.TM_OTSU,
+                    'o_two_class': cellprofiler.modules.identify.O_TWO_CLASS,
+                    'o_three_class': cellprofiler.modules.identify.O_THREE_CLASS
+                })
+            )
+        )
 
         group.append("use_weighted_variance", cellprofiler.setting.Choice(
                 'Minimize the weighted variance or the entropy?',

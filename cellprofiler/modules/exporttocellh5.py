@@ -4,12 +4,11 @@ import tempfile
 import cellh5
 import cellh5.cellh5write
 import cellprofiler.gui.help
-import cellprofiler.gui.help
 import cellprofiler.measurement
 import cellprofiler.module
+import cellprofiler.modules
 import cellprofiler.modules.identify
 import cellprofiler.preferences
-import cellprofiler.setting
 import cellprofiler.setting
 import h5py
 import numpy

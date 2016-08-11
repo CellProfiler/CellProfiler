@@ -56,12 +56,14 @@ import cellprofiler.gui.help
 import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.module
+import cellprofiler.modules
+import cellprofiler.modules.groups
 import cellprofiler.modules.identify
 import cellprofiler.modules.loaddata
+import cellprofiler.modules.metadata
 import cellprofiler.pipeline
 import cellprofiler.preferences
 import cellprofiler.region
-import cellprofiler.setting
 import cellprofiler.setting
 import centrosome.outline
 import numpy
@@ -2868,12 +2870,12 @@ class LoadImages(cellprofiler.module.Module):
         groups - the groups module
         first - True if no images have been added to namesandtypes yet.
         """
-        import cellprofiler.modules.metadata as cpmetadata
-        import cellprofiler.modules.namesandtypes as cpnamesandtypes
-        import cellprofiler.modules.groups as cpgroups
-        assert isinstance(metadata, cpmetadata.Metadata)
-        assert isinstance(namesandtypes, cpnamesandtypes.NamesAndTypes)
-        assert isinstance(groups, cpgroups.Groups)
+
+        import cellprofiler.modules.namesandtypes
+
+        assert isinstance(metadata, cellprofiler.modules.metadata.Metadata)
+        assert isinstance(namesandtypes, cellprofiler.modules.namesandtypes.NamesAndTypes)
+        assert isinstance(groups, cellprofiler.modules.groups.Groups)
 
         if self.match_method not in (MS_EXACT_MATCH, MS_REGEXP):
             raise ValueError(
@@ -2889,9 +2891,9 @@ class LoadImages(cellprofiler.module.Module):
         edited_modules = set()
         for group in self.images:
             for channel in group.channels:
-                if namesandtypes.assignment_method == cpnamesandtypes.ASSIGN_ALL:
+                if namesandtypes.assignment_method == cellprofiler.modules.namesandtypes.ASSIGN_ALL:
                     namesandtypes.assignment_method.value = \
-                        cpnamesandtypes.ASSIGN_RULES
+                        cellprofiler.modules.namesandtypes.ASSIGN_RULES
                 else:
                     namesandtypes.add_assignment()
                 edited_modules.add(namesandtypes)
@@ -2900,17 +2902,17 @@ class LoadImages(cellprofiler.module.Module):
                     name = assignment.image_name.value = \
                         channel.image_name.value
                     assignment.load_as_choice.value = \
-                        cpnamesandtypes.LOAD_AS_GRAYSCALE_IMAGE
+                        cellprofiler.modules.namesandtypes.LOAD_AS_GRAYSCALE_IMAGE
                     warn_gray_color = True
                 else:
                     name = assignment.object_name.value = \
                         channel.object_name.value
                     assignment.load_as_choice.value = \
-                        cpnamesandtypes.LOAD_AS_OBJECTS
+                        cellprofiler.modules.namesandtypes.LOAD_AS_OBJECTS
                 rfilter = assignment.rule_filter
                 assert isinstance(rfilter, cellprofiler.setting.Filter)
                 structure = [cellprofiler.setting.Filter.AND_PREDICATE]
-                fp = cpnamesandtypes.FilePredicate()
+                fp = cellprofiler.modules.namesandtypes.FilePredicate()
                 fp_does, fp_does_not = [
                     [d for d in fp.subpredicates if isinstance(d, c)][0]
                     for c in (cellprofiler.setting.Filter.DoesPredicate, cellprofiler.setting.Filter.DoesNotPredicate)]
@@ -2932,8 +2934,8 @@ class LoadImages(cellprofiler.module.Module):
                 assignment.rule_filter.build(structure)
                 my_tags = set()
                 for metadata_choice, source, value in (
-                        (M_FILE_NAME, cpmetadata.XM_FILE_NAME, group.file_metadata.value),
-                        (M_PATH, cpmetadata.XM_FOLDER_NAME, group.path_metadata.value)):
+                        (M_FILE_NAME, cellprofiler.modules.metadata.XM_FILE_NAME, group.file_metadata.value),
+                        (M_PATH, cellprofiler.modules.metadata.XM_FOLDER_NAME, group.path_metadata.value)):
                     if group.metadata_choice in (metadata_choice, M_BOTH):
                         if not metadata.wants_metadata:
                             metadata.wants_metadata.value = True
@@ -2946,11 +2948,11 @@ class LoadImages(cellprofiler.module.Module):
                             mgroup.file_regexp.value = value
                         else:
                             mgroup.folder_regexp.value = value
-                        mgroup.filter_choice.value = cpmetadata.F_FILTERED_IMAGES
-                        mgroup.extraction_method.value = cpmetadata.X_MANUAL_EXTRACTION
+                        mgroup.filter_choice.value = cellprofiler.modules.metadata.F_FILTERED_IMAGES
+                        mgroup.extraction_method.value = cellprofiler.modules.metadata.X_MANUAL_EXTRACTION
                         mgroup.filter.build(structure)
                         my_tags.update(cellprofiler.measurement.find_metadata_tokens(value))
-                if namesandtypes.matching_choice == cpnamesandtypes.MATCH_BY_METADATA:
+                if namesandtypes.matching_choice == cellprofiler.modules.namesandtypes.MATCH_BY_METADATA:
                     # Add our metadata tags to the joiner
                     current = namesandtypes.join.parse()
                     for d in current:
@@ -2976,7 +2978,7 @@ class LoadImages(cellprofiler.module.Module):
                     edited_modules.add(namesandtypes)
                 elif len(my_tags) > 0:
                     namesandtypes.matching_choice.value = \
-                        cpnamesandtypes.MATCH_BY_METADATA
+                        cellprofiler.modules.namesandtypes.MATCH_BY_METADATA
                     namesandtypes.join.build([{name: tag} for tag in my_tags])
                     edited_modules.add(namesandtypes)
         if self.group_by_metadata:

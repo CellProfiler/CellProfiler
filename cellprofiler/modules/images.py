@@ -2,14 +2,12 @@ import os
 import urllib
 
 import cellprofiler.gui.help
-import cellprofiler.gui.help
 import cellprofiler.icons
 import cellprofiler.module
-import cellprofiler.modules.loadimages
+import cellprofiler.modules
 import cellprofiler.modules.loadimages
 import cellprofiler.pipeline
 import cellprofiler.preferences
-import cellprofiler.setting
 import cellprofiler.setting
 import cellprofiler.utilities.hdf5_dict
 import cellprofiler.workspace

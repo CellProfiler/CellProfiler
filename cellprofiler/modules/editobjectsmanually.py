@@ -1,9 +1,11 @@
 import logging
 import os
+import wx
 
 import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.module
+import cellprofiler.modules
 import cellprofiler.modules.identify
 import cellprofiler.modules.loadimages
 import cellprofiler.preferences
@@ -401,7 +403,7 @@ class EditObjectsManually(cellprofiler.modules.identify.Identify):
                     break
             else:
                 wx.MessageBox("Sorry, could not find the file, %s, in the project, %s" %
-                              (guidname, project_name))
+                              (guidename, project_name))
             project_labels = data_item["labels"]["data"]
             mask = numpy.ones(project_labels.shape[2:4], project_labels.dtype)
             for label in labels:

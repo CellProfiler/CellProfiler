@@ -5,6 +5,7 @@ import cellprofiler.icons
 import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.module
+import cellprofiler.modules
 import cellprofiler.modules.identify
 import cellprofiler.pipeline
 import cellprofiler.preferences

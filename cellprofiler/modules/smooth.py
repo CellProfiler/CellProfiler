@@ -8,6 +8,7 @@ Note that smoothing can be a time-consuming process.
 import cellprofiler.gui.help
 import cellprofiler.image
 import cellprofiler.module
+import cellprofiler.modules
 import cellprofiler.setting
 import cellprofiler.setting
 import centrosome.filter

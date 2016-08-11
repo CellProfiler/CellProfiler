@@ -1,5 +1,6 @@
 import cellprofiler.image
 import cellprofiler.module
+import cellprofiler.modules
 import cellprofiler.modules.correctilluminationcalculate
 import cellprofiler.setting
 import numpy
@@ -74,21 +75,28 @@ class CorrectIlluminationApply(cellprofiler.module.Module):
             <b>LoadSingleImage</b>.''')
 
         divide_or_subtract = cellprofiler.setting.Choice(
-                "Select how the illumination function is applied",
-                [DOS_DIVIDE, DOS_SUBTRACT], doc='''
+            "Select how the illumination function is applied",
+            [DOS_DIVIDE, DOS_SUBTRACT],
+            doc='''
             This choice depends on how the illumination function was calculated
             and on your physical model of the way illumination variation affects the
             background of images relative to the objects in images; it is also somewhat empirical.
             <ul>
-            <li><i>%(DOS_SUBTRACT)s:</i> Use this option if the background signal is significant
+            <li><i>{subtract}:</i> Use this option if the background signal is significant
             relative to the real signal coming from the cells.  If you created the illumination
-            correction function using <i>%(IC_BACKGROUND)s</i>,
-            then you will want to choose <i>%(DOS_SUBTRACT)s</i> here.</li>
-            <li><i>%(DOS_DIVIDE)s:</i> Choose this option if the signal to background ratio
+            correction function using <i>{background}</i>,
+            then you will want to choose <i>{subtract}</i> here.</li>
+            <li><i>{divide}:</i> Choose this option if the signal to background ratio
             is high (the cells are stained very strongly). If you created the illumination correction
-            function using <i>%(IC_REGULAR)s</i>,
-            then you will want to choose <i>%(DOS_DIVIDE)s</i> here.</li>
-            </ul>''' % globals())
+            function using <i>{regular}</i>,
+            then you will want to choose <i>{divide}</i> here.</li>
+            </ul>'''.format(**{
+                'subtract': DOS_SUBTRACT,
+                'background': cellprofiler.modules.correctilluminationcalculate.IC_BACKGROUND,
+                'divide': DOS_DIVIDE,
+                'regular': cellprofiler.modules.correctilluminationcalculate.IC_REGULAR
+            })
+        )
 
         image_settings = cellprofiler.setting.SettingsGroup()
         image_settings.append("image_name", image_name)

@@ -30,6 +30,7 @@ import cellprofiler.gui.help
 import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.module
+import cellprofiler.modules
 import cellprofiler.modules.identify
 import cellprofiler.preferences
 import cellprofiler.region
@@ -37,6 +38,7 @@ import cellprofiler.setting
 import cellprofiler.setting
 import centrosome.cpmorphology
 import centrosome.outline
+import matplotlib.cm
 import numpy
 import scipy.ndimage
 
@@ -128,15 +130,15 @@ class MaskObjects(cellprofiler.modules.identify.Identify):
             This option reverses the foreground/background relationship of
             the mask.
             <ul>
-            <li>Select <i>{cellprofiler.setting.no}</i> for the mask to be composed of the foregound
+            <li>Select <i>{no}</i> for the mask to be composed of the foregound
             (white portion) of the masking image or the area within the masking
             objects.</li>
-            <li>Select <i>{cellprofiler.setting.yes}</i> for the mask to instead be composed of the
+            <li>Select <i>{yes}</i> for the mask to instead be composed of the
             <i>background</i> (black portions) of the masking image or the area
             <i>outside</i> the masking objects.</li>
             </ul>""".format(**{
-                'cellprofiler.setting.no': cellprofiler.setting.NO,
-                'cellprofiler.setting.yes': cellprofiler.setting.YES
+                'no': cellprofiler.setting.NO,
+                'yes': cellprofiler.setting.YES
             })
         )
 
@@ -164,7 +166,7 @@ class MaskObjects(cellprofiler.modules.identify.Identify):
             the object falls within the masking region. <b>MaskObjects</b>
             completely removes the object if too little of it overlaps
             the masking region.</li>
-            </ul>""".format(*{
+            </ul>""".format(**{
                 'p_mask': P_MASK,
                 'p_keep': P_KEEP,
                 'p_remove': P_REMOVE,

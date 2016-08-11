@@ -68,6 +68,7 @@ See also: <b>NamesAndTypes</b>, <b>SaveImages</b>
 import os
 
 import cellprofiler.module
+import cellprofiler.modules
 import cellprofiler.setting
 
 A_RENUMBER = "Renumber"

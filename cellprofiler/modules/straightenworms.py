@@ -74,6 +74,7 @@ import os
 import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.module
+import cellprofiler.modules
 import cellprofiler.modules.identify
 import cellprofiler.modules.untangleworms
 import cellprofiler.preferences

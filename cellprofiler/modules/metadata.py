@@ -7,6 +7,7 @@ import urllib
 import cellprofiler.gui.help
 import cellprofiler.measurement
 import cellprofiler.module
+import cellprofiler.modules
 import cellprofiler.modules.images
 import cellprofiler.modules.loadimages
 import cellprofiler.pipeline

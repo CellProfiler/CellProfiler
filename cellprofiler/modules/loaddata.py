@@ -157,19 +157,19 @@ import os
 
 import cellprofiler.measurement
 import cellprofiler.module
+import cellprofiler.modules
 import cellprofiler.modules.identify
 import cellprofiler.modules.loadimages
 import cellprofiler.preferences
 import cellprofiler.region
 import cellprofiler.setting
-from cellprofiler.setting import YES, NO
 import matplotlib.mlab
 import numpy
 
 logger = logging.getLogger(__name__)
 
-IMAGE_CATEGORIES = (cellprofiler.modules.loadimages.C_URL, cellprofiler.modules.loadimages.C_FILE_NAME, cellprofiler.modules.loadimages.C_PATH_NAME)
-OBJECTS_CATEGORIES = (cellprofiler.modules.loadimages.C_OBJECTS_URL, cellprofiler.modules.loadimages.C_OBJECTS_FILE_NAME, cellprofiler.modules.loadimages.C_OBJECTS_PATH_NAME)
+IMAGE_CATEGORIES = (cellprofiler.measurement.C_URL, cellprofiler.measurement.C_FILE_NAME, cellprofiler.measurement.C_PATH_NAME)
+OBJECTS_CATEGORIES = (cellprofiler.measurement.C_OBJECTS_URL, cellprofiler.measurement.C_OBJECTS_FILE_NAME, cellprofiler.measurement.C_OBJECTS_PATH_NAME)
 DIR_NONE = 'None'
 DIR_OTHER = 'Elsewhere...'
 DIR_ALL = [cellprofiler.preferences.DEFAULT_INPUT_FOLDER_NAME, cellprofiler.preferences.DEFAULT_OUTPUT_FOLDER_NAME,
@@ -198,8 +198,8 @@ def header_to_column(field):
     Image_PathName to PathName so that the output column names
     in the database will be Image_FileName and Image_PathName
     """
-    for name in (cellprofiler.modules.loadimages.C_PATH_NAME, cellprofiler.modules.loadimages.C_FILE_NAME, cellprofiler.modules.loadimages.C_URL,
-                 cellprofiler.modules.loadimages.C_OBJECTS_FILE_NAME, cellprofiler.modules.loadimages.C_OBJECTS_PATH_NAME, cellprofiler.modules.loadimages.C_OBJECTS_URL):
+    for name in (cellprofiler.measurement.C_PATH_NAME, cellprofiler.measurement.C_FILE_NAME, cellprofiler.measurement.C_URL,
+                 cellprofiler.measurement.C_OBJECTS_FILE_NAME, cellprofiler.measurement.C_OBJECTS_PATH_NAME, cellprofiler.measurement.C_OBJECTS_URL):
         if field.startswith(cellprofiler.measurement.IMAGE + '_' + name + '_'):
             return field[len(cellprofiler.measurement.IMAGE) + 1:]
     return field
@@ -207,51 +207,51 @@ def header_to_column(field):
 
 def is_path_name_feature(feature):
     """Return true if the feature name is a path name"""
-    return feature.startswith(cellprofiler.modules.loadimages.C_PATH_NAME + '_')
+    return feature.startswith(cellprofiler.measurement.C_PATH_NAME + '_')
 
 
 def is_file_name_feature(feature):
     """Return true if the feature name is a file name"""
-    return feature.startswith(cellprofiler.modules.loadimages.C_FILE_NAME + '_')
+    return feature.startswith(cellprofiler.measurement.C_FILE_NAME + '_')
 
 
 def is_url_name_feature(feature):
-    return feature.startswith(cellprofiler.modules.loadimages.C_URL + "_")
+    return feature.startswith(cellprofiler.measurement.C_URL + "_")
 
 
 def is_objects_path_name_feature(feature):
     """Return true if the feature name is the path to a labels file"""
-    return feature.startswith(cellprofiler.modules.loadimages.C_OBJECTS_PATH_NAME + "_")
+    return feature.startswith(cellprofiler.measurement.C_OBJECTS_PATH_NAME + "_")
 
 
 def is_objects_file_name_feature(feature):
     """Return true if the feature name is a labels file name"""
-    return feature.startswith(cellprofiler.modules.loadimages.C_OBJECTS_FILE_NAME + "_")
+    return feature.startswith(cellprofiler.measurement.C_OBJECTS_FILE_NAME + "_")
 
 
 def is_objects_url_name_feature(feature):
-    return feature.startswith(cellprofiler.modules.loadimages.C_OBJECTS_URL + "_")
+    return feature.startswith(cellprofiler.measurement.C_OBJECTS_URL + "_")
 
 
 def get_image_name(feature):
     """Extract the image name from a feature name"""
     if is_path_name_feature(feature):
-        return feature[len(cellprofiler.modules.loadimages.C_PATH_NAME + '_'):]
+        return feature[len(cellprofiler.measurement.C_PATH_NAME + '_'):]
     if is_file_name_feature(feature):
-        return feature[len(cellprofiler.modules.loadimages.C_FILE_NAME + '_'):]
+        return feature[len(cellprofiler.measurement.C_FILE_NAME + '_'):]
     if is_url_name_feature(feature):
-        return feature[len(cellprofiler.modules.loadimages.C_URL + '_'):]
+        return feature[len(cellprofiler.measurement.C_URL + '_'):]
     raise ValueError('"%s" is not a path feature or file name feature' % feature)
 
 
 def get_objects_name(feature):
     """Extract the objects name from a feature name"""
     if is_objects_path_name_feature(feature):
-        return feature[len(cellprofiler.modules.loadimages.C_OBJECTS_PATH_NAME + "_"):]
+        return feature[len(cellprofiler.measurement.C_OBJECTS_PATH_NAME + "_"):]
     if is_objects_file_name_feature(feature):
-        return feature[len(cellprofiler.modules.loadimages.C_OBJECTS_FILE_NAME + "_"):]
+        return feature[len(cellprofiler.measurement.C_OBJECTS_FILE_NAME + "_"):]
     if is_objects_url_name_feature(feature):
-        return feature[len(cellprofiler.modules.loadimages.C_OBJECTS_URL + "_"):]
+        return feature[len(cellprofiler.measurement.C_OBJECTS_URL + "_"):]
     raise ValueError('"%s" is not a objects path feature or file name feature' % feature)
 
 
@@ -261,7 +261,7 @@ def make_path_name_feature(image):
     The path name feature is the name of the measurement that stores
     the image's path name.
     """
-    return cellprofiler.modules.loadimages.C_PATH_NAME + '_' + image
+    return cellprofiler.measurement.C_PATH_NAME + '_' + image
 
 
 def make_file_name_feature(image):
@@ -270,7 +270,7 @@ def make_file_name_feature(image):
     The file name feature is the name of the measurement that stores
     the image's file name.
     """
-    return cellprofiler.modules.loadimages.C_FILE_NAME + '_' + image
+    return cellprofiler.measurement.C_FILE_NAME + '_' + image
 
 
 def make_objects_path_name_feature(objects_name):
@@ -279,7 +279,7 @@ def make_objects_path_name_feature(objects_name):
     The path name feature is the name of the measurement that stores
     the objects file path name.
     """
-    return cellprofiler.modules.loadimages.C_OBJECTS_PATH_NAME + '_' + objects_name
+    return cellprofiler.measurement.C_OBJECTS_PATH_NAME + '_' + objects_name
 
 
 def make_objects_file_name_feature(objects_name):
@@ -288,7 +288,7 @@ def make_objects_file_name_feature(objects_name):
     The file name feature is the name of the measurement that stores
     the objects file name.
     """
-    return cellprofiler.modules.loadimages.C_OBJECTS_FILE_NAME + '_' + objects_name
+    return cellprofiler.measurement.C_OBJECTS_FILE_NAME + '_' + objects_name
 
 
 class LoadData(cellprofiler.module.Module):
@@ -847,9 +847,9 @@ class LoadData(cellprofiler.module.Module):
             else:
                 path_base = self.image_path
             for d, url_category, file_name_category, path_name_category in (
-                    (image_columns, cellprofiler.modules.loadimages.C_URL, cellprofiler.modules.loadimages.C_FILE_NAME, cellprofiler.modules.loadimages.C_PATH_NAME),
-                    (object_columns, cellprofiler.modules.loadimages.C_OBJECTS_URL, cellprofiler.modules.loadimages.C_OBJECTS_FILE_NAME,
-                     cellprofiler.modules.loadimages.C_OBJECTS_PATH_NAME)):
+                    (image_columns, cellprofiler.measurement.C_URL, cellprofiler.measurement.C_FILE_NAME, cellprofiler.measurement.C_PATH_NAME),
+                    (object_columns, cellprofiler.measurement.C_OBJECTS_URL, cellprofiler.measurement.C_OBJECTS_FILE_NAME,
+                     cellprofiler.measurement.C_OBJECTS_PATH_NAME)):
                 for name in d.keys():
                     url_column = file_name_column = path_name_column = None
                     for k in d[name]:
@@ -992,8 +992,8 @@ class LoadData(cellprofiler.module.Module):
             image_numbers = m.get_image_numbers()
             all_image_features = m.get_feature_names(cellprofiler.measurement.IMAGE)
             for url_category, file_category, path_category, names in (
-                    (cellprofiler.modules.loadimages.C_URL, cellprofiler.modules.loadimages.C_FILE_NAME, cellprofiler.modules.loadimages.C_PATH_NAME, self.get_image_names()),
-                    (cellprofiler.modules.loadimages.C_OBJECTS_URL, cellprofiler.modules.loadimages.C_OBJECTS_FILE_NAME, cellprofiler.modules.loadimages.C_OBJECTS_PATH_NAME,
+                    (cellprofiler.measurement.C_URL, cellprofiler.measurement.C_FILE_NAME, cellprofiler.measurement.C_PATH_NAME, self.get_image_names()),
+                    (cellprofiler.measurement.C_OBJECTS_URL, cellprofiler.measurement.C_OBJECTS_FILE_NAME, cellprofiler.measurement.C_OBJECTS_PATH_NAME,
                      self.get_object_names())):
                 for name in names:
                     url_feature = "_".join((url_category, name))
@@ -1032,11 +1032,11 @@ class LoadData(cellprofiler.module.Module):
     def fetch_provider(self, name, measurements, is_image_name=True):
         path_base = self.image_path
         if is_image_name:
-            url_feature = cellprofiler.modules.loadimages.C_URL + "_" + name
+            url_feature = cellprofiler.measurement.C_URL + "_" + name
             series_feature = cellprofiler.modules.loadimages.C_SERIES + "_" + name
             frame_feature = cellprofiler.modules.loadimages.C_FRAME + "_" + name
         else:
-            url_feature = cellprofiler.modules.loadimages.C_OBJECTS_URL + "_" + name
+            url_feature = cellprofiler.measurement.C_OBJECTS_URL + "_" + name
             series_feature = cellprofiler.measurement.C_OBJECTS_SERIES + "_" + name
             frame_feature = cellprofiler.measurement.C_OBJECTS_FRAME + "_" + name
         url = measurements.get_measurement(cellprofiler.measurement.IMAGE, url_feature)
@@ -1175,21 +1175,21 @@ class LoadData(cellprofiler.module.Module):
                     cellprofiler.measurement.is_well_column_token(header[i].split("_")[1])):
                 coltypes[i] = cellprofiler.measurement.COLTYPE_VARCHAR
             if any([header[i].startswith(x)
-                    for x in (cellprofiler.modules.loadimages.C_PATH_NAME, cellprofiler.modules.loadimages.C_FILE_NAME, cellprofiler.modules.loadimages.C_OBJECTS_FILE_NAME,
-                              cellprofiler.modules.loadimages.C_OBJECTS_PATH_NAME, cellprofiler.modules.loadimages.C_URL, cellprofiler.modules.loadimages.C_OBJECTS_URL)]):
+                    for x in (cellprofiler.measurement.C_PATH_NAME, cellprofiler.measurement.C_FILE_NAME, cellprofiler.measurement.C_OBJECTS_FILE_NAME,
+                              cellprofiler.measurement.C_OBJECTS_PATH_NAME, cellprofiler.measurement.C_URL, cellprofiler.measurement.C_OBJECTS_URL)]):
                 coltypes[i] = cellprofiler.measurement.COLTYPE_VARCHAR
 
         collen = [0] * len(header)
         key_is_path_or_file_name = [
-            (key.startswith(cellprofiler.modules.loadimages.C_PATH_NAME) or
-             key.startswith(cellprofiler.modules.loadimages.C_FILE_NAME) or
-             key.startswith(cellprofiler.modules.loadimages.C_OBJECTS_FILE_NAME) or
-             key.startswith(cellprofiler.modules.loadimages.C_OBJECTS_PATH_NAME)) for key in header]
+            (key.startswith(cellprofiler.measurement.C_PATH_NAME) or
+             key.startswith(cellprofiler.measurement.C_FILE_NAME) or
+             key.startswith(cellprofiler.measurement.C_OBJECTS_FILE_NAME) or
+             key.startswith(cellprofiler.measurement.C_OBJECTS_PATH_NAME)) for key in header]
         key_is_path_or_url = [
-            (key.startswith(cellprofiler.modules.loadimages.C_PATH_NAME) or
-             key.startswith(cellprofiler.modules.loadimages.C_OBJECTS_PATH_NAME) or
-             key.startswith(cellprofiler.modules.loadimages.C_URL) or
-             key.startswith(cellprofiler.modules.loadimages.C_OBJECTS_URL)) for key in header]
+            (key.startswith(cellprofiler.measurement.C_PATH_NAME) or
+             key.startswith(cellprofiler.measurement.C_OBJECTS_PATH_NAME) or
+             key.startswith(cellprofiler.measurement.C_URL) or
+             key.startswith(cellprofiler.measurement.C_OBJECTS_URL)) for key in header]
 
         for row in reader:
             if len(row) > len(header):
@@ -1230,9 +1230,9 @@ class LoadData(cellprofiler.module.Module):
                   if colname not in previous_fields]
         if self.wants_images:
             for feature, coltype in (
-                    (cellprofiler.modules.loadimages.C_URL, cellprofiler.measurement.COLTYPE_VARCHAR_PATH_NAME),
-                    (cellprofiler.modules.loadimages.C_PATH_NAME, cellprofiler.measurement.COLTYPE_VARCHAR_PATH_NAME),
-                    (cellprofiler.modules.loadimages.C_FILE_NAME, cellprofiler.measurement.COLTYPE_VARCHAR_FILE_NAME),
+                    (cellprofiler.measurement.C_URL, cellprofiler.measurement.COLTYPE_VARCHAR_PATH_NAME),
+                    (cellprofiler.measurement.C_PATH_NAME, cellprofiler.measurement.COLTYPE_VARCHAR_PATH_NAME),
+                    (cellprofiler.measurement.C_FILE_NAME, cellprofiler.measurement.COLTYPE_VARCHAR_FILE_NAME),
                     (cellprofiler.modules.loadimages.C_MD5_DIGEST, cellprofiler.measurement.COLTYPE_VARCHAR_FORMAT % 32),
                     (cellprofiler.modules.loadimages.C_SCALING, cellprofiler.measurement.COLTYPE_FLOAT),
                     (cellprofiler.modules.loadimages.C_HEIGHT, cellprofiler.measurement.COLTYPE_INTEGER),
@@ -1247,10 +1247,10 @@ class LoadData(cellprofiler.module.Module):
             for object_name in self.get_object_names():
                 result += cellprofiler.modules.identify.get_object_measurement_columns(object_name)
                 for feature, coltype in (
-                        (cellprofiler.modules.loadimages.C_OBJECTS_URL, cellprofiler.measurement.COLTYPE_VARCHAR_PATH_NAME),
-                        (cellprofiler.modules.loadimages.C_OBJECTS_PATH_NAME, cellprofiler.measurement.COLTYPE_VARCHAR_PATH_NAME),
-                        (cellprofiler.modules.loadimages.C_OBJECTS_FILE_NAME, cellprofiler.measurement.COLTYPE_VARCHAR_FILE_NAME)):
-                    mname = cellprofiler.modules.loadimages.C_OBJECTS_URL + "_" + object_name
+                        (cellprofiler.measurement.C_OBJECTS_URL, cellprofiler.measurement.COLTYPE_VARCHAR_PATH_NAME),
+                        (cellprofiler.measurement.C_OBJECTS_PATH_NAME, cellprofiler.measurement.COLTYPE_VARCHAR_PATH_NAME),
+                        (cellprofiler.measurement.C_OBJECTS_FILE_NAME, cellprofiler.measurement.COLTYPE_VARCHAR_FILE_NAME)):
+                    mname = cellprofiler.measurement.C_OBJECTS_URL + "_" + object_name
                     result.append((cellprofiler.measurement.IMAGE, mname, coltype))
         #
         # Try to make a well column out of well row and well column

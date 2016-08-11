@@ -10,6 +10,7 @@ do not preserve the relative intensities from image to image.
 import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.module
+import cellprofiler.modules
 import cellprofiler.preferences
 import cellprofiler.setting
 import centrosome.filter

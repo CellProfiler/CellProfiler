@@ -2,21 +2,15 @@ import math
 import re
 
 import cellprofiler.gui.help
-import cellprofiler.gui.help
 import cellprofiler.icons
 import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.module
-import cellprofiler.modules.identify
-import cellprofiler.modules.identify
+import cellprofiler.modules
 import cellprofiler.modules.identify
 import cellprofiler.preferences
 import cellprofiler.region
 import cellprofiler.setting
-import cellprofiler.setting
-import cellprofiler.setting
-import centrosome.cpmorphology
-import centrosome.cpmorphology
 import centrosome.cpmorphology
 import centrosome.filter
 import centrosome.otsu

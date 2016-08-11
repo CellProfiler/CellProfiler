@@ -128,10 +128,13 @@ class MeasureNeurons(cellprofiler.module.Module):
         self.directory = cellprofiler.setting.DirectoryPath(
                 "File output directory",
                 dir_choices=[
-                    cellprofiler.preferences.DEFAULT_OUTPUT_FOLDER_NAME cellprofiler.preferences.DEFAULT_INPUT_FOLDER_NAME,
-                    cellprofiler.preferences.ABSOLUTE_FOLDER_NAME, cellprofiler.preferences.DEFAULT_OUTPUT_SUBFOLDER_NAME,
-                    cellprofiler.preferences.DEFAULT_INPUT_SUBFOLDER_NAME])
-        self.directory.dir_choice = cellprofiler.setting.DEFAULT_OUTPUT_FOLDER_NAME
+                    cellprofiler.preferences.DEFAULT_OUTPUT_FOLDER_NAME,
+                    cellprofiler.preferences.DEFAULT_INPUT_FOLDER_NAME,
+                    cellprofiler.preferences.ABSOLUTE_FOLDER_NAME,
+                    cellprofiler.preferences.DEFAULT_OUTPUT_SUBFOLDER_NAME,
+                    cellprofiler.preferences.DEFAULT_INPUT_SUBFOLDER_NAME
+                ])
+        self.directory.dir_choice = cellprofiler.preferences.DEFAULT_OUTPUT_FOLDER_NAME
 
         self.vertex_file_name = cellprofiler.setting.Text(
                 "Vertex file name", "vertices.csv", doc="""
@@ -600,9 +603,15 @@ class MeasureNeurons(cellprofiler.module.Module):
             # Added graph stuff
             #
             setting_values = setting_values + [
-                cellprofiler.setting.NO, cellprofiler.setting.NONE,
-                cellprofiler.setting.DirectoryPath.static_join_string(cellprofiler.preferences.DEFAULT_OUTPUT_FOLDER_NAME cellprofiler.setting.NONE),
-                cellprofiler.setting.NONE, cellprofiler.setting.NONE]
+                cellprofiler.setting.NO,
+                cellprofiler.setting.NONE,
+                cellprofiler.setting.DirectoryPath.static_join_string(
+                    cellprofiler.preferences.DEFAULT_OUTPUT_FOLDER_NAME,
+                    cellprofiler.setting.NONE
+                ),
+                cellprofiler.setting.NONE,
+                cellprofiler.setting.NONE
+            ]
             variable_revision_number = 3
         return setting_values, variable_revision_number, from_matlab
 

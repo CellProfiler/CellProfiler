@@ -4,17 +4,11 @@ import cellprofiler.module
 import cellprofiler.pipeline
 import cellprofiler.region
 import cellprofiler.setting
-import cellprofiler.setting
 import cellprofiler.workspace
 import centrosome.bg_compensate
-import centrosome.bg_compensate
-import centrosome.cpmorphology
-import centrosome.cpmorphology
 import centrosome.cpmorphology
 import centrosome.filter
 import centrosome.rankorder
-import centrosome.smooth
-import centrosome.smooth
 import centrosome.smooth
 import numpy
 import scipy.linalg

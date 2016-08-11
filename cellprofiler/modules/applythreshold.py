@@ -5,18 +5,12 @@ based on a threshold which can be pre-selected or calculated automatically using
 """
 
 import cellprofiler
+import cellprofiler.image
 import cellprofiler.module
+import cellprofiler.modules
 import cellprofiler.modules.identify
-import cellprofiler.modules.identify
-import cellprofiler.modules.identify
-import cellprofiler.modules.identify
-import cellprofiler.modules.identify
-import cellprofiler.modules.identify
-import cellprofiler.modules.identify
-import cellprofiler.setting
 import cellprofiler.setting
 import centrosome.cpmorphology
-import centrosome.threshold
 import centrosome.threshold
 import scipy.ndimage.morphology
 

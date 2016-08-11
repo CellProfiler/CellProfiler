@@ -44,8 +44,13 @@ import cellprofiler.gui.help
 import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.module
+import cellprofiler.modules
+import cellprofiler.modules.groups
 import cellprofiler.modules.identify
+import cellprofiler.modules.images
 import cellprofiler.modules.loadimages
+import cellprofiler.modules.metadata
+import cellprofiler.modules.namesandtypes
 import cellprofiler.preferences
 import cellprofiler.region
 import cellprofiler.setting
@@ -572,12 +577,9 @@ class LoadSingleImage(cellprofiler.module.Module):
 
     def convert(self, pipeline, metadata, namesandtypes, groups):
         """Convert from legacy to modern"""
-        import cellprofiler.modules.metadata as cpmetadata
-        import cellprofiler.modules.namesandtypes as cpnamesandtypes
-        import cellprofiler.modules.groups as cpgroups
-        assert isinstance(metadata, cpmetadata.Metadata)
-        assert isinstance(namesandtypes, cpnamesandtypes.NamesAndTypes)
-        assert isinstance(groups, cpgroups.Groups)
+        assert isinstance(metadata, cellprofiler.modules.metadata.Metadata)
+        assert isinstance(namesandtypes, cellprofiler.modules.namesandtypes.NamesAndTypes)
+        assert isinstance(groups, cellprofiler.modules.groups.Groups)
 
         edited_modules = set()
         for group in self.file_settings:
@@ -603,14 +605,14 @@ class LoadSingleImage(cellprofiler.module.Module):
                 if loc == len(file_name):
                     break
             regexp += re.escape(file_name[loc:]) + "$"
-            if namesandtypes.assignment_method != cpnamesandtypes.ASSIGN_RULES:
-                namesandtypes.assignment_method.value = cpnamesandtypes.ASSIGN_RULES
+            if namesandtypes.assignment_method != cellprofiler.modules.namesandtypes.ASSIGN_RULES:
+                namesandtypes.assignment_method.value = cellprofiler.modules.namesandtypes.ASSIGN_RULES
             else:
                 namesandtypes.add_assignment()
             edited_modules.add(namesandtypes)
             assignment = namesandtypes.assignments[-1]
             structure = [cellprofiler.setting.Filter.AND_PREDICATE]
-            fp = cpnamesandtypes.FilePredicate()
+            fp = cellprofiler.modules.images.FilePredicate()
             fp_does, fp_does_not = [
                 [d for d in fp.subpredicates if isinstance(d, c)][0]
                 for c in (cellprofiler.setting.Filter.DoesPredicate, cellprofiler.setting.Filter.DoesNotPredicate)]
@@ -644,16 +646,16 @@ class LoadSingleImage(cellprofiler.module.Module):
                     metadata.add_extraction_method()
                 edited_modules.add(metadata)
                 em = metadata.extraction_methods[-1]
-                em.extraction_method.value = cpmetadata.X_MANUAL_EXTRACTION
-                em.source.value = cpmetadata.XM_FILE_NAME
+                em.extraction_method.value = cellprofiler.modules.metadata.X_MANUAL_EXTRACTION
+                em.source.value = cellprofiler.modules.metadata.XM_FILE_NAME
                 em.file_regexp.value = regexp
-                em.filter_choice.value = cpmetadata.F_FILTERED_IMAGES
+                em.filter_choice.value = cellprofiler.modules.metadata.F_FILTERED_IMAGES
                 em.filter.build(structure)
             #
             # If there was metadata to match, namesandtypes should
             # have a metadata joiner.
             #
-            if namesandtypes.matching_choice == cpnamesandtypes.MATCH_BY_METADATA:
+            if namesandtypes.matching_choice == cellprofiler.modules.namesandtypes.MATCH_BY_METADATA:
                 joins = namesandtypes.join.parse()
                 for d in joins:
                     for v in d.values():
@@ -668,10 +670,10 @@ class LoadSingleImage(cellprofiler.module.Module):
             assignment.rule_filter.build(structure)
             if group.image_objects_choice == cellprofiler.modules.loadimages.IO_IMAGES:
                 assignment.image_name.value = name
-                assignment.load_as_choice.value = cpnamesandtypes.LOAD_AS_GRAYSCALE_IMAGE
+                assignment.load_as_choice.value = cellprofiler.modules.namesandtypes.LOAD_AS_GRAYSCALE_IMAGE
             else:
                 assignment.object_name.value = name
-                assignment.load_as_choice.value = cpnamesandtypes.LOAD_AS_OBJECTS
+                assignment.load_as_choice.value = cellprofiler.modules.namesandtypes.LOAD_AS_OBJECTS
         for module in edited_modules:
             pipeline.edit_module(module.module_num, True)
 
@@ -683,7 +685,7 @@ class LoadSingleImage(cellprofiler.module.Module):
             if setting_values[1] == '.':
                 new_setting_values[0] = cellprofiler.preferences.DEFAULT_INPUT_FOLDER_NAME
             elif setting_values[1] == '&':
-                new_setting_values[0] = cellprofiler.setting.DEFAULT_OUTPUT_FOLDER_NAME
+                new_setting_values[0] = cellprofiler.preferences.DEFAULT_OUTPUT_FOLDER_NAME
             else:
                 new_setting_values[0] = DIR_CUSTOM_FOLDER
             #

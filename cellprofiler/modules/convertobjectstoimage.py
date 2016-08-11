@@ -1,3 +1,10 @@
+import cellprofiler.image
+import cellprofiler.module
+import cellprofiler.modules
+import cellprofiler.preferences
+import cellprofiler.setting
+import numpy
+
 '''<b>Convert Objects To Image </b> converts objects you have identified into an image.
 <hr>
 
@@ -9,13 +16,6 @@ with the <b>SaveImages</b> modules.
 you can by bypass this module and use the <b>SaveImages</b> module directly
 by specifying "Objects" as the type of image to save.
 '''
-
-import numpy as np
-
-import cellprofiler.image as cpi
-import cellprofiler.module as cpm
-import cellprofiler.preferences as cpprefs
-import cellprofiler.setting as cps
 
 DEFAULT_COLORMAP = "Default"
 COLORCUBE = "colorcube"
@@ -32,21 +32,21 @@ IM_UINT16 = "uint16"
 IM_ALL = [IM_COLOR, IM_BINARY, IM_GRAYSCALE, IM_UINT16]
 
 
-class ConvertObjectsToImage(cpm.Module):
+class ConvertObjectsToImage(cellprofiler.module.Module):
     module_name = "ConvertObjectsToImage"
     category = "Object Processing"
     variable_revision_number = 1
 
     def create_settings(self):
-        self.object_name = cps.ObjectNameSubscriber(
-                "Select the input objects", cps.NONE, doc="""
+        self.object_name = cellprofiler.setting.ObjectNameSubscriber(
+                "Select the input objects", cellprofiler.setting.NONE, doc="""
             Choose the name of the objects you want to convert to an image.""")
 
-        self.image_name = cps.ImageNameProvider(
+        self.image_name = cellprofiler.setting.ImageNameProvider(
                 "Name the output image", "CellImage", doc="""
             Enter the name of the resulting image.""")
 
-        self.image_mode = cps.Choice(
+        self.image_mode = cellprofiler.setting.Choice(
                 "Select the color format",
                 IM_ALL, doc="""
             Select which colors the resulting image should use. You have the following
@@ -72,7 +72,7 @@ class ConvertObjectsToImage(cpm.Module):
             You can choose <i>%(IM_COLOR)s</i> with a <i>Gray</i> colormap to produce
             jumbled gray objects.""" % globals())
 
-        self.colormap = cps.Colormap(
+        self.colormap = cellprofiler.setting.Colormap(
                 "Select the colormap", doc="""
             <i>(Used only if "<i>%(IM_COLOR)s</i>" output image selected)</i><br>
             Choose the colormap to be used, which affects how the objects are colored.
@@ -92,31 +92,31 @@ class ConvertObjectsToImage(cpm.Module):
 
     def run(self, workspace):
         objects = workspace.object_set.get_objects(self.object_name.value)
-        alpha = np.zeros(objects.shape)
+        alpha = numpy.zeros(objects.shape)
         if self.image_mode == IM_BINARY:
-            pixel_data = np.zeros(objects.shape, bool)
+            pixel_data = numpy.zeros(objects.shape, bool)
         elif self.image_mode == IM_GRAYSCALE:
-            pixel_data = np.zeros(objects.shape)
+            pixel_data = numpy.zeros(objects.shape)
         elif self.image_mode == IM_UINT16:
-            pixel_data = np.zeros(objects.shape, np.int32)
+            pixel_data = numpy.zeros(objects.shape, numpy.int32)
         else:
-            pixel_data = np.zeros((objects.shape[0], objects.shape[1], 3))
+            pixel_data = numpy.zeros((objects.shape[0], objects.shape[1], 3))
         convert = True
-        for labels, indices in objects.get_labels():
+        for labels, indices in objects.labels():
             mask = labels != 0
-            if np.all(~ mask):
+            if numpy.all(~ mask):
                 continue
             if self.image_mode == IM_BINARY:
                 pixel_data[mask] = True
                 alpha[mask] = 1
             elif self.image_mode == IM_GRAYSCALE:
-                pixel_data[mask] = labels[mask].astype(float) / np.max(labels)
+                pixel_data[mask] = labels[mask].astype(float) / numpy.max(labels)
                 alpha[mask] = 1
             elif self.image_mode == IM_COLOR:
                 import matplotlib.cm
                 from cellprofiler.gui.tools import renumber_labels_for_display
                 if self.colormap.value == DEFAULT_COLORMAP:
-                    cm_name = cpprefs.get_default_colormap()
+                    cm_name = cellprofiler.preferences.get_default_colormap()
                 elif self.colormap.value == COLORCUBE:
                     # Colorcube missing from matplotlib
                     cm_name = "gist_rainbow"
@@ -145,11 +145,11 @@ class ConvertObjectsToImage(cpm.Module):
         if self.image_mode == IM_BINARY:
             pass
         elif self.image_mode == IM_COLOR:
-            pixel_data[mask, :] = pixel_data[mask, :] / alpha[mask][:, np.newaxis]
+            pixel_data[mask, :] = pixel_data[mask, :] / alpha[mask][:, numpy.newaxis]
         else:
             pixel_data[mask] = pixel_data[mask] / alpha[mask]
-        image = cpi.Image(pixel_data, parent_image=objects.parent_image,
-                          convert=convert)
+        image = cellprofiler.image.Image(pixel_data, parent=objects.parent_image,
+                                         convert=convert)
         workspace.image_set.add(self.image_name.value, image)
         if self.show_window:
             workspace.display_data.ijv = objects.ijv

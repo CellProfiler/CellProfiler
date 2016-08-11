@@ -1,4 +1,4 @@
-'''<b>Measure Granularity</b> outputs spectra of size measurements 
+"""<b>Measure Granularity</b> outputs spectra of size measurements
 of the textures in the image.
 <hr>
 Image granularity is a texture measurement that tries a series of structure elements
@@ -28,18 +28,17 @@ Intelligence</i>, 11, N 7, pp. 701-716, 1989</li>
 <i>Applied Informatics</i>, v.14, pp. 41-90, Finances and Statistics, Moskow,
 (in Russian)</li>
 </ul>
-'''
+"""
 
-import centrosome.cpmorphology as morph
-import numpy as np
-import scipy.ndimage as scind
-from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
-
-import cellprofiler.image as cpi
-import cellprofiler.module as cpm
-import cellprofiler.measurement as cpmeas
-import cellprofiler.setting as cps
-import cellprofiler.workspace as cpw
+import cellprofiler.image
+import cellprofiler.measurement
+import cellprofiler.module
+import cellprofiler.setting
+import cellprofiler.workspace
+import centrosome.cpmorphology
+import centrosome.cpmorphology
+import numpy
+import scipy.ndimage
 
 'Granularity category'
 C_GRANULARITY = "Granularity_%s_%s"
@@ -52,32 +51,32 @@ OBJECTS_SETTING_COUNT_V3 = 1
 OBJECTS_SETTING_COUNT = OBJECTS_SETTING_COUNT_V3
 
 
-class MeasureGranularity(cpm.Module):
+class MeasureGranularity(cellprofiler.module.Module):
     module_name = 'MeasureGranularity'
     category = "Measurement"
     variable_revision_number = 3
 
     def create_settings(self):
-        self.divider_top = cps.Divider(line=False)
+        self.divider_top = cellprofiler.setting.Divider(line=False)
         self.images = []
-        self.image_count = cps.HiddenCount(self.images, "Image count")
+        self.image_count = cellprofiler.setting.HiddenCount(self.images, "Image count")
         self.add_image(can_remove=False)
-        self.add_button = cps.DoSomething("", "Add another image", self.add_image)
-        self.divider_bottom = cps.Divider(line=False)
+        self.add_button = cellprofiler.setting.DoSomething("", "Add another image", self.add_image)
+        self.divider_bottom = cellprofiler.setting.Divider(line=False)
 
     def add_image(self, can_remove=True):
         group = GranularitySettingsGroup()
         group.can_remove = can_remove
         if can_remove:
-            group.append("divider", cps.Divider(line=True))
+            group.append("divider", cellprofiler.setting.Divider(line=True))
 
-        group.append("image_name", cps.ImageNameSubscriber(
-                "Select an image to measure", cps.NONE, doc="""
+        group.append("image_name", cellprofiler.setting.ImageNameSubscriber(
+                "Select an image to measure", cellprofiler.setting.NONE, doc="""
             Select the grayscale images whose granularity you want to measure."""))
 
-        group.append("subsample_size", cps.Float(
+        group.append("subsample_size", cellprofiler.setting.Float(
                 "Subsampling factor for granularity measurements",
-                0.25, minval=np.finfo(float).eps, maxval=1, doc='''
+                0.25, minval=numpy.finfo(float).eps, maxval=1, doc='''
             If the textures of
             interest are larger than a few pixels, we recommend you subsample the image with a factor
             &lt;1 to speed up the processing. Down sampling the image will let you detect larger
@@ -97,9 +96,9 @@ class MeasureGranularity(cpm.Module):
             See this <a href="http://www.ravkin.net/presentations/Statistical%20properties%20of%20algorithms%20for%20analysis%20of%20cell%20images.pdf">
             pdf</a>, slides 27-31, 49-50.'''))
 
-        group.append("image_sample_size", cps.Float(
+        group.append("image_sample_size", cellprofiler.setting.Float(
                 "Subsampling factor for background reduction",
-                .25, minval=np.finfo(float).eps, maxval=1, doc='''
+                .25, minval=numpy.finfo(float).eps, maxval=1, doc='''
             It is important to
             remove low frequency image background variations as they will affect the final granularity
             measurement. Any method can be used as a pre-processing step prior to this module;
@@ -110,7 +109,7 @@ class MeasureGranularity(cpm.Module):
             volume at certain granular size is normalized by total image volume, which depends on
             how the background was removed.'''))
 
-        group.append("element_size", cps.Integer(
+        group.append("element_size", cellprofiler.setting.Integer(
                 "Radius of structuring element",
                 10, minval=1, doc='''
             This radius should correspond to the radius of the textures of interest <i>after</i>
@@ -118,14 +117,14 @@ class MeasureGranularity(cpm.Module):
             pixels, and a subsampling factor of 0.25 is used, the structuring element size should be
             10 or slightly smaller, and the range of the spectrum defined below will cover more sizes.'''))
 
-        group.append("granular_spectrum_length", cps.Integer(
+        group.append("granular_spectrum_length", cellprofiler.setting.Integer(
                 "Range of the granular spectrum",
                 16, minval=1, doc='''
             You may need a trial run to see which granular
             spectrum range yields informative measurements. Start by using a wide spectrum and
             narrow it down to the informative range to save time.'''))
 
-        group.append("add_objects_button", cps.DoSomething(
+        group.append("add_objects_button", cellprofiler.setting.DoSomething(
                 "", "Add another object", group.add_objects, doc="""
             Press this button to add granularity measurements for
             objects, such as those identified by a prior
@@ -135,20 +134,20 @@ class MeasureGranularity(cpm.Module):
 
         group.objects = []
 
-        group.object_count = cps.HiddenCount(group.objects, "Object count")
+        group.object_count = cellprofiler.setting.HiddenCount(group.objects, "Object count")
 
         if can_remove:
-            group.append("remover", cps.RemoveSettingButton("", "Remove this image", self.images, group))
+            group.append("remover", cellprofiler.setting.RemoveSettingButton("", "Remove this image", self.images, group))
         self.images.append(group)
         return group
 
     def validate_module(self, pipeline):
-        '''Make sure settings are compatible. In particular, we make sure that no measurements are duplicated'''
+        """Make sure settings are compatible. In particular, we make sure that no measurements are duplicated"""
         measurements, sources = self.get_measurement_columns(pipeline, return_sources=True)
         d = {}
         for m, s in zip(measurements, sources):
             if m in d:
-                raise cps.ValidationError("Measurement %s made twice." % (m[1]), s[0])
+                raise cellprofiler.setting.ValidationError("Measurement %s made twice." % (m[1]), s[0])
             d[m] = True
 
     def settings(self):
@@ -162,7 +161,7 @@ class MeasureGranularity(cpm.Module):
         return result
 
     def prepare_settings(self, setting_values):
-        '''Adjust self.images to account for the expected # of images'''
+        """Adjust self.images to account for the expected # of images"""
         image_count = int(setting_values[0])
         idx = 1
         del self.images[:]
@@ -182,8 +181,8 @@ class MeasureGranularity(cpm.Module):
         return result
 
     def run(self, workspace):
-        max_scale = np.max([image.granular_spectrum_length.value
-                            for image in self.images])
+        max_scale = numpy.max([image.granular_spectrum_length.value
+                               for image in self.images])
         col_labels = (["Image name"] +
                       ["GS%d" % n for n in range(1, max_scale + 1)])
         statistics = []
@@ -202,7 +201,7 @@ class MeasureGranularity(cpm.Module):
         figure.subplot_table(0, 0, statistics, col_labels=col_labels)
 
     def run_on_image_setting(self, workspace, image):
-        assert isinstance(workspace, cpw.Workspace)
+        assert isinstance(workspace, cellprofiler.workspace.Workspace)
         image_set = workspace.image_set
         measurements = workspace.measurements
         im = image_set.get_image(image.image_name.value,
@@ -210,13 +209,13 @@ class MeasureGranularity(cpm.Module):
         #
         # Downsample the image and mask
         #
-        new_shape = np.array(im.pixel_data.shape)
+        new_shape = numpy.array(im.pixel_data.shape)
         if image.subsample_size.value < 1:
             new_shape = new_shape * image.subsample_size.value
-            i, j = (np.mgrid[0:new_shape[0], 0:new_shape[1]].astype(float) /
+            i, j = (numpy.mgrid[0:new_shape[0], 0:new_shape[1]].astype(float) /
                     image.subsample_size.value)
-            pixels = scind.map_coordinates(im.pixel_data, (i, j), order=1)
-            mask = scind.map_coordinates(im.mask.astype(float), (i, j)) > .9
+            pixels = scipy.ndimage.map_coordinates(im.pixel_data, (i, j), order=1)
+            mask = scipy.ndimage.map_coordinates(im.mask.astype(float), (i, j)) > .9
         else:
             pixels = im.pixel_data
             mask = im.mask
@@ -225,25 +224,25 @@ class MeasureGranularity(cpm.Module):
         #
         if image.image_sample_size.value < 1:
             back_shape = new_shape * image.image_sample_size.value
-            i, j = (np.mgrid[0:back_shape[0], 0:back_shape[1]].astype(float) /
+            i, j = (numpy.mgrid[0:back_shape[0], 0:back_shape[1]].astype(float) /
                     image.image_sample_size.value)
-            back_pixels = scind.map_coordinates(pixels, (i, j), order=1)
-            back_mask = scind.map_coordinates(mask.astype(float), (i, j)) > .9
+            back_pixels = scipy.ndimage.map_coordinates(pixels, (i, j), order=1)
+            back_mask = scipy.ndimage.map_coordinates(mask.astype(float), (i, j)) > .9
         else:
             back_pixels = pixels
             back_mask = mask
         radius = image.element_size.value
-        back_pixels = morph.grey_erosion(back_pixels, radius, back_mask)
-        back_pixels = morph.grey_dilation(back_pixels, radius, back_mask)
+        back_pixels = centrosome.cpmorphology.grey_erosion(back_pixels, radius, back_mask)
+        back_pixels = centrosome.cpmorphology.grey_dilation(back_pixels, radius, back_mask)
         if image.image_sample_size.value < 1:
-            i, j = np.mgrid[0:new_shape[0], 0:new_shape[1]].astype(float)
+            i, j = numpy.mgrid[0:new_shape[0], 0:new_shape[1]].astype(float)
             #
             # Make sure the mapping only references the index range of
             # back_pixels.
             #
             i *= float(back_shape[0] - 1) / float(new_shape[0] - 1)
             j *= float(back_shape[1] - 1) / float(new_shape[1] - 1)
-            back_pixels = scind.map_coordinates(back_pixels, (i, j), order=1)
+            back_pixels = scipy.ndimage.map_coordinates(back_pixels, (i, j), order=1)
         pixels -= back_pixels
         pixels[pixels < 0] = 0
 
@@ -254,17 +253,17 @@ class MeasureGranularity(cpm.Module):
             def __init__(self, name):
                 self.name = name
                 self.labels = workspace.object_set.get_objects(name).segmented
-                self.nobjects = np.max(self.labels)
+                self.nobjects = numpy.max(self.labels)
                 if self.nobjects != 0:
-                    self.range = np.arange(1, np.max(self.labels) + 1)
+                    self.range = numpy.arange(1, numpy.max(self.labels) + 1)
                     self.labels = self.labels.copy()
                     self.labels[~ im.mask] = 0
-                    self.current_mean = fix(
-                            scind.mean(im.pixel_data,
-                                       self.labels,
-                                       self.range))
-                    self.start_mean = np.maximum(
-                            self.current_mean, np.finfo(float).eps)
+                    self.current_mean = centrosome.cpmorphology.fixup_scipy_ndimage_result(
+                            scipy.ndimage.mean(im.pixel_data,
+                                               self.labels,
+                                               self.range))
+                    self.start_mean = numpy.maximum(
+                            self.current_mean, numpy.finfo(float).eps)
 
         object_records = [ObjectRecord(ob.objects_name.value)
                           for ob in image.objects]
@@ -281,24 +280,24 @@ class MeasureGranularity(cpm.Module):
         # THIS IMPLEMENTATION INSTEAD OF OPENING USES EROSION FOLLOWED BY RECONSTRUCTION
         #
         ng = image.granular_spectrum_length.value
-        startmean = np.mean(pixels[mask])
+        startmean = numpy.mean(pixels[mask])
         ero = pixels.copy()
         # Mask the test image so that masked pixels will have no effect
         # during reconstruction
         #
         ero[~mask] = 0
         currentmean = startmean
-        startmean = max(startmean, np.finfo(float).eps)
+        startmean = max(startmean, numpy.finfo(float).eps)
 
-        footprint = np.array([[False, True, False],
-                              [True, True, True],
-                              [False, True, False]])
+        footprint = numpy.array([[False, True, False],
+                                 [True, True, True],
+                                 [False, True, False]])
         statistics = [image.image_name.value]
         for i in range(1, ng + 1):
             prevmean = currentmean
-            ero = morph.grey_erosion(ero, mask=mask, footprint=footprint)
-            rec = morph.grey_reconstruction(ero, pixels, footprint)
-            currentmean = np.mean(rec[mask])
+            ero = centrosome.cpmorphology.grey_erosion(ero, mask=mask, footprint=footprint)
+            rec = centrosome.cpmorphology.grey_reconstruction(ero, pixels, footprint)
+            currentmean = numpy.mean(rec[mask])
             gs = (prevmean - currentmean) * 100 / startmean
             statistics += ["%.2f" % gs]
             feature = image.granularity_feature(i)
@@ -308,14 +307,14 @@ class MeasureGranularity(cpm.Module):
             # original image so we can match against object labels
             #
             orig_shape = im.pixel_data.shape
-            i, j = np.mgrid[0:orig_shape[0], 0:orig_shape[1]].astype(float)
+            i, j = numpy.mgrid[0:orig_shape[0], 0:orig_shape[1]].astype(float)
             #
             # Make sure the mapping only references the index range of
             # back_pixels.
             #
             i *= float(new_shape[0] - 1) / float(orig_shape[0] - 1)
             j *= float(new_shape[1] - 1) / float(orig_shape[1] - 1)
-            rec = scind.map_coordinates(rec, (i, j), order=1)
+            rec = scipy.ndimage.map_coordinates(rec, (i, j), order=1)
 
             #
             # Calculate the means for the objects
@@ -323,13 +322,13 @@ class MeasureGranularity(cpm.Module):
             for object_record in object_records:
                 assert isinstance(object_record, ObjectRecord)
                 if object_record.nobjects > 0:
-                    new_mean = fix(scind.mean(rec, object_record.labels,
-                                              object_record.range))
+                    new_mean = centrosome.cpmorphology.fixup_scipy_ndimage_result(scipy.ndimage.mean(rec, object_record.labels,
+                                                                                                     object_record.range))
                     gss = ((object_record.current_mean - new_mean) * 100 /
                            object_record.start_mean)
                     object_record.current_mean = new_mean
                 else:
-                    gss = np.zeros((0,))
+                    gss = numpy.zeros((0,))
                 measurements.add_measurement(object_record.name, feature, gss)
         return statistics
 
@@ -339,15 +338,15 @@ class MeasureGranularity(cpm.Module):
         for image in self.images:
             gslength = image.granular_spectrum_length.value
             for i in range(1, gslength + 1):
-                result += [(cpmeas.IMAGE,
+                result += [(cellprofiler.measurement.IMAGE,
                             image.granularity_feature(i),
-                            cpmeas.COLTYPE_FLOAT)]
+                            cellprofiler.measurement.COLTYPE_FLOAT)]
                 sources += [(image.image_name, image.granularity_feature(i))]
             for ob in image.objects:
                 for i in range(1, gslength + 1):
                     result += [(ob.objects_name.value,
                                 image.granularity_feature(i),
-                                cpmeas.COLTYPE_FLOAT)]
+                                cellprofiler.measurement.COLTYPE_FLOAT)]
                     sources += [(ob.objects_name.value, image.granularity_feature(i))]
 
         if return_sources:
@@ -360,7 +359,7 @@ class MeasureGranularity(cpm.Module):
 
         object_name - name of an object or IMAGE to match all
         """
-        if object_name == cpmeas.IMAGE:
+        if object_name == cellprofiler.measurement.IMAGE:
             return self.images
         return [image for image in self.images
                 if object_name in [ob.objects_name.value
@@ -418,19 +417,19 @@ class MeasureGranularity(cpm.Module):
         return setting_values, variable_revision_number, from_matlab
 
 
-class GranularitySettingsGroup(cps.SettingsGroup):
+class GranularitySettingsGroup(cellprofiler.setting.SettingsGroup):
     def granularity_feature(self, length):
         return C_GRANULARITY % (length, self.image_name.value)
 
     def add_objects(self):
-        og = cps.SettingsGroup()
-        og.append("objects_name", cps.ObjectNameSubscriber(
-                "Select objects to measure", cps.NONE,
+        og = cellprofiler.setting.SettingsGroup()
+        og.append("objects_name", cellprofiler.setting.ObjectNameSubscriber(
+                "Select objects to measure", cellprofiler.setting.NONE,
                 doc="""Select the objects whose granualarity
             will be measured. You can select objects from prior modules
             that identify objects, such as <b>IdentifyPrimaryObjects</b>. If you only want to measure the granularity
             for the image overall, you can remove all objects using the "Remove this object" button."""))
-        og.append("remover", cps.RemoveSettingButton(
+        og.append("remover", cellprofiler.setting.RemoveSettingButton(
                 "", "Remove this object", self.objects, og))
         self.objects.append(og)
 

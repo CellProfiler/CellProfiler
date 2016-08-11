@@ -1,21 +1,16 @@
-"""Modules - pipeline processing modules for CellProfiler
-"""
-
 import logging
-
-logger = logging.getLogger(__name__)
 import re
 import sys
-import os.path
-import glob
-import cellprofiler.module as cpm
-from cellprofiler.modules.plugins import plugin_list
-from cellprofiler.preferences import get_plugin_directory
+
+import cellprofiler.module
+# import cellprofiler.modules.plugins
+import cellprofiler.preferences
+
+logger = logging.getLogger(__name__)
 
 # python modules and their corresponding cellprofiler.module classes
 pymodule_to_cpmodule = {'align': 'Align',
                         'applythreshold': 'ApplyThreshold',
-                        'calculateimageoverlap': 'CalculateImageOverlap',
                         'calculatemath': 'CalculateMath',
                         'calculatestatistics': 'CalculateStatistics',
                         'classifyobjects': 'ClassifyObjects',
@@ -24,7 +19,6 @@ pymodule_to_cpmodule = {'align': 'Align',
                         'correctilluminationcalculate': 'CorrectIlluminationCalculate',
                         'correctilluminationapply': 'CorrectIlluminationApply',
                         'createbatchfiles': 'CreateBatchFiles',
-                        'createwebpage': 'CreateWebPage',
                         'crop': 'Crop',
                         'definegrid': 'DefineGrid',
                         'displaydensityplot': 'DisplayDensityPlot',
@@ -39,8 +33,6 @@ pymodule_to_cpmodule = {'align': 'Align',
                         'exporttocellh5': 'ExportToCellH5',
                         'exporttodatabase': 'ExportToDatabase',
                         'exporttospreadsheet': 'ExportToSpreadsheet',
-                        'inputexternal': 'InputExternal',
-                        'outputexternal': 'OutputExternal',
                         'filterobjects': 'FilterObjects',
                         'flagimage': 'FlagImage',
                         'flipandrotate': 'FlipAndRotate',
@@ -86,12 +78,10 @@ pymodule_to_cpmodule = {'align': 'Align',
                         'rescaleintensity': 'RescaleIntensity',
                         'resize': 'Resize',
                         'saveimages': 'SaveImages',
-                        'sendemail': 'SendEmail',
                         'smooth': 'Smooth',
                         'straightenworms': 'StraightenWorms',
                         'trackobjects': 'TrackObjects',
                         'tile': 'Tile',
-                        'calculateimageoverlap': 'CalculateImageOverlap',
                         'unmixcolors': 'UnmixColors',
                         'untangleworms': 'UntangleWorms'
                         }
@@ -108,7 +98,6 @@ builtin_modules = ['align',
                    'correctilluminationcalculate',
                    'correctilluminationapply',
                    'createbatchfiles',
-                   'createwebpage',
                    'crop',
                    'definegrid',
                    'displaydataonimage',
@@ -123,8 +112,6 @@ builtin_modules = ['align',
                    'exporttocellh5',
                    'exporttodatabase',
                    'exporttospreadsheet',
-                   'inputexternal',
-                   'outputexternal',
                    'filterobjects',
                    'flagimage',
                    'flipandrotate',
@@ -169,7 +156,6 @@ builtin_modules = ['align',
                    'rescaleintensity',
                    'resize',
                    'saveimages',
-                   'sendemail',
                    'smooth',
                    'straightenworms',
                    'trackobjects',
@@ -185,9 +171,7 @@ substitutions = {'Average': 'MakeProjection',
                  'Combine': 'ImageMath',
                  'cellprofiler.modules.converttoimage.ConvertToImage': 'ConvertObjectsToImage',
                  'ConvertToImage': 'ConvertObjectsToImage',
-                 'CorrectIllumination_Apply': 'CorrectIlluminationApply',
                  'cellprofiler.modules.correctillumination_apply.CorrectIllumination_Apply': 'CorrectIlluminationApply',
-                 'CorrectIllumination_Calculate': 'CorrectIlluminationCalculate',
                  'cellprofiler.modules.correctillumination_calculate.CorrectIllumination_Calculate': 'CorrectIlluminationCalculate',
                  'cellprofiler.modules.enhanceorsuppressspeckles.EnhanceOrSuppressSpeckles': 'EnhanceOrSuppressFeatures',
                  'DifferentiateStains': 'UnmixColors',
@@ -236,9 +220,7 @@ substitutions = {'Average': 'MakeProjection',
                  'SplitIntoContiguousObjects': 'ReassignObjectNumbers',
                  'Subtract': 'ImageMath',
                  'UnifyObjects': 'ReassignObjectNumbers',
-                 'cellprofiler.modules.overlay_outlines.OverlayOutlines': 'OverlayOutlines',
-                 'CorrectIllumination_Apply': 'CorrectIlluminationApply',
-                 'CorrectIllumination_Calculate': 'CorrectIlluminationCalculate'
+                 'cellprofiler.modules.overlay_outlines.OverlayOutlines': 'OverlayOutlines'
                  }
 
 all_modules = {}
@@ -257,24 +239,24 @@ def check_module(module, name):
         return
     assert name == module.module_name, "Module %s should have module_name %s (is %s)" % (name, name, module.module_name)
     for method_name in do_not_override:
-        assert getattr(module, method_name) == getattr(cpm.Module,
+        assert getattr(module, method_name) == getattr(cellprofiler.module.Module,
                                                        method_name), "Module %s should not override method %s" % (
             name, method_name)
     for method_name in should_override:
-        assert getattr(module, method_name) != getattr(cpm.Module,
+        assert getattr(module, method_name) != getattr(cellprofiler.module.Module,
                                                        method_name), "Module %s should override method %s" % (
             name, method_name)
 
 
 def find_cpmodule(m):
-    '''Returns the CPModule from within the loaded Python module
+    """Returns the CPModule from within the loaded Python module
 
     m - an imported module
 
     returns the CPModule class
-    '''
+    """
     for v, val in m.__dict__.iteritems():
-        if isinstance(val, type) and issubclass(val, cpm.Module):
+        if isinstance(val, type) and issubclass(val, cellprofiler.module.Module):
             return val
     raise "Could not find cpm.CPModule class in %s" % m.__file__
 
@@ -328,15 +310,15 @@ def fill_modules():
     for mod in builtin_modules:
         add_module('cellprofiler.modules.' + mod, True)
 
-    plugin_directory = get_plugin_directory()
-    if plugin_directory is not None:
-        old_path = sys.path
-        sys.path.insert(0, plugin_directory)
-        try:
-            for mod in plugin_list():
-                add_module(mod, False)
-        finally:
-            sys.path = old_path
+    # plugin_directory = cellprofiler.preferences.get_plugin_directory()
+    # if plugin_directory is not None:
+    #     old_path = sys.path
+    #     sys.path.insert(0, plugin_directory)
+    #     try:
+    #         for mod in cellprofiler.modules.plugins.plugin_list():
+    #             add_module(mod, False)
+    #     finally:
+    #         sys.path = old_path
 
     datatools.sort()
     if len(badmodules) > 0:

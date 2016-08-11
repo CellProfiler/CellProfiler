@@ -1,5 +1,13 @@
+import logging
+
+import cellprofiler.gui.help
 import cellprofiler.icons
-from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON, GROUPS_DISPLAY_TABLE
+import cellprofiler.measurement
+import cellprofiler.module
+import cellprofiler.pipeline
+import cellprofiler.setting
+import cellprofiler.setting
+import numpy
 
 __doc__ = """
 The <b>Groups</b> module organizes sets of images into groups.
@@ -72,7 +80,7 @@ in a given group; this is useful as a "sanity check" to make sure that the expec
 comprise the groups.</li>
 </ul>
 <table cellpadding="0" width="100%%">
-<tr align="center"><td><img src="memory:%(GROUPS_DISPLAY_TABLE)s"></td></tr>
+<tr align="center"><td><img src="memory:{groups_display_table}"></td></tr>
 </table>
 </p>
 
@@ -88,22 +96,13 @@ These are written to the per-image table.</li>
 To perform grouping, only one analysis worker (i.e., copy of CellProfiler) will be allocated to handle each group.
 This means that you may have multiple workers created (as set under the Preferences), but only a subset of them
 may actually be active, depending on the number of groups you have.
-""" % globals()
-
-import logging
+""".format(**{
+    'groups_display_table': cellprofiler.gui.help.GROUPS_DISPLAY_TABLE
+})
 
 logger = logging.getLogger(__name__)
-import numpy as np
-import os
 
-import cellprofiler.module as cpm
-import cellprofiler.pipeline as cpp
-import cellprofiler.setting as cps
-from cellprofiler.setting import YES, NO
-import cellprofiler.measurement as cpmeas
-
-
-class Groups(cpm.Module):
+class Groups(cellprofiler.module.Module):
     variable_revision_number = 2
     module_name = "Groups"
     category = "File Processing"
@@ -120,25 +119,28 @@ class Groups(cpm.Module):
             "groupings include screening batches, microtiter plates, time-lapse movies, etc."]
         self.set_notes([" ".join(module_explanation)])
 
-        self.wants_groups = cps.Binary(
-                "Do you want to group your images?", False, doc="""
-            Select <i>%(YES)s</i> if you need to split your images into image subsets (or <i>groups</i>) such that each
+        self.wants_groups = cellprofiler.setting.Binary(
+            "Do you want to group your images?",
+            False,
+            doc="""
+            Select <i>{}</i> if you need to split your images into image subsets (or <i>groups</i>) such that each
             group is processed independently of each other. See the main module
-            help for more details.""" % globals())
+            help for more details.""".format(cellprofiler.setting.YES)
+        )
 
-        self.grouping_text = cps.HTMLText(
+        self.grouping_text = cellprofiler.setting.HTMLText(
                 "", content="""
             Each unique metadata value (or combination of values)
             will be defined as a group""", size=(30, 2))
         self.grouping_metadata = []
-        self.grouping_metadata_count = cps.HiddenCount(
+        self.grouping_metadata_count = cellprofiler.setting.HiddenCount(
                 self.grouping_metadata,
                 "grouping metadata count")
         self.add_grouping_metadata(can_remove=False)
-        self.add_grouping_metadata_button = cps.DoSomething(
+        self.add_grouping_metadata_button = cellprofiler.setting.DoSomething(
                 "", "Add another metadata item", self.add_grouping_metadata)
 
-        self.grouping_list = cps.Table("Grouping list", min_size=(300, 100), doc="""
+        self.grouping_list = cellprofiler.setting.Table("Grouping list", min_size=(300, 100), doc="""
             This list shows the unique values of the selected metadata under the "Group" column; each of the unique values
             comprises a group. The "Count" column shows the number of image sets that included in a given group; this
             is useful as a "sanity check", to make sure that the expected number of images are present. For example,
@@ -146,28 +148,28 @@ class Groups(cpm.Module):
             you would expect to see 3 groups (each from the 3 unique plate IDs), with 384 wells &times; 2 sites/well
             = 768 image sets in each.""")
 
-        self.image_set_list = cps.Table("Image sets", doc="""
+        self.image_set_list = cellprofiler.setting.Table("Image sets", doc="""
             This list displays the file name and location of each of the image sets that comprise the
             group. For example, if you are grouping by per-plate metadata from a 384-well assay with 2 sites per well
             consisting of 3 plates, you would expect to see a table consisting of 3 plates &times; 384 wells/plate
             &times;2 sites/well = 2304 rows.""")
 
     def add_grouping_metadata(self, can_remove=True):
-        group = cps.SettingsGroup()
+        group = cellprofiler.setting.SettingsGroup()
         self.grouping_metadata.append(group)
 
         def get_group_metadata_choices(pipeline):
             choices = self.get_metadata_choices(pipeline, group)
             if len(choices) == 0:
-                choices.append(cps.NONE)
+                choices.append(cellprofiler.setting.NONE)
             return choices
 
         if self.pipeline is not None:
             choices = get_group_metadata_choices(self.pipeline)
         else:
-            choices = [cps.NONE]
+            choices = [cellprofiler.setting.NONE]
 
-        group.append("metadata_choice", cps.Choice(
+        group.append("metadata_choice", cellprofiler.setting.Choice(
                 "Metadata category", choices,
                 choices_fn=get_group_metadata_choices, doc="""
             Specify the metadata category with which to define a group. Once a selection
@@ -225,10 +227,10 @@ class Groups(cpm.Module):
             Each group will be processed independently from the others, which is the desired behavior.
             </p>"""))
 
-        group.append("divider", cps.Divider())
+        group.append("divider", cellprofiler.setting.Divider())
         group.can_remove = can_remove
         if can_remove:
-            group.append("remover", cps.RemoveSettingButton(
+            group.append("remover", cellprofiler.setting.RemoveSettingButton(
                     "", "Remove this metadata item",
                     self.grouping_metadata, group))
 
@@ -277,7 +279,7 @@ class Groups(cpm.Module):
     def on_activated(self, workspace):
         self.pipeline = workspace.pipeline
         self.workspace = workspace
-        assert isinstance(self.pipeline, cpp.Pipeline)
+        assert isinstance(self.pipeline, cellprofiler.pipeline.Pipeline)
         if self.wants_groups:
             self.metadata_keys = []
             self.image_sets_initialized = workspace.refresh_image_set()
@@ -331,7 +333,7 @@ class Groups(cpm.Module):
             except:
                 return
             m = self.workspace.measurements
-            assert isinstance(m, cpmeas.Measurements)
+            assert isinstance(m, cellprofiler.measurement.Measurements)
             channel_descriptors = m.get_channel_descriptors()
 
             self.grouping_list.clear_columns()
@@ -342,13 +344,13 @@ class Groups(cpm.Module):
                 group.metadata_choice.value
                 for group in self.grouping_metadata
                 if group.metadata_choice.value != "None"]
-            metadata_feature_names = ["_".join((cpmeas.C_METADATA, key))
+            metadata_feature_names = ["_".join((cellprofiler.measurement.C_METADATA, key))
                                       for key in metadata_key_names]
             metadata_key_names = [
-                x[(len(cpmeas.C_METADATA) + 1):]
+                x[(len(cellprofiler.measurement.C_METADATA) + 1):]
                 for x in metadata_feature_names]
             image_set_feature_names = [
-                                          cpmeas.GROUP_NUMBER, cpmeas.GROUP_INDEX] + metadata_feature_names
+                                          cellprofiler.measurement.GROUP_NUMBER, cellprofiler.measurement.GROUP_INDEX] + metadata_feature_names
             self.image_set_list.insert_column(0, "Group number")
             self.image_set_list.insert_column(1, "Group index")
 
@@ -360,16 +362,16 @@ class Groups(cpm.Module):
             self.grouping_list.insert_column(len(metadata_key_names), "Count")
 
             image_numbers = m.get_image_numbers()
-            group_indexes = m[cpmeas.IMAGE,
-                              cpmeas.GROUP_INDEX,
+            group_indexes = m[cellprofiler.measurement.IMAGE,
+                              cellprofiler.measurement.GROUP_INDEX,
                               image_numbers][:]
-            group_numbers = m[cpmeas.IMAGE,
-                              cpmeas.GROUP_NUMBER,
+            group_numbers = m[cellprofiler.measurement.IMAGE,
+                              cellprofiler.measurement.GROUP_NUMBER,
                               image_numbers][:]
-            counts = np.bincount(group_numbers)
-            first_indexes = np.argwhere(group_indexes == 1).flatten()
+            counts = numpy.bincount(group_numbers)
+            first_indexes = numpy.argwhere(group_indexes == 1).flatten()
             group_keys = [
-                m[cpmeas.IMAGE, feature, image_numbers]
+                m[cellprofiler.measurement.IMAGE, feature, image_numbers]
                 for feature in metadata_feature_names]
             k_count = sorted([(group_numbers[i],
                                [x[i] for x in group_keys],
@@ -380,32 +382,32 @@ class Groups(cpm.Module):
                 self.grouping_list.data.append(row)
 
             for i, iscd in enumerate(channel_descriptors):
-                assert isinstance(iscd, cpp.Pipeline.ImageSetChannelDescriptor)
+                assert isinstance(iscd, cellprofiler.pipeline.Pipeline.ImageSetChannelDescriptor)
                 image_name = iscd.name
                 idx = len(image_set_feature_names)
                 self.image_set_list.insert_column(idx, "Path: %s" % image_name)
                 self.image_set_list.insert_column(idx + 1, "File: %s" % image_name)
                 if iscd.channel_type == iscd.CT_OBJECTS:
                     image_set_feature_names.append(
-                            cpmeas.C_OBJECTS_PATH_NAME + "_" + iscd.name)
+                        cellprofiler.measurement.C_OBJECTS_PATH_NAME + "_" + iscd.name)
                     image_set_feature_names.append(
-                            cpmeas.C_OBJECTS_FILE_NAME + "_" + iscd.name)
+                        cellprofiler.measurement.C_OBJECTS_FILE_NAME + "_" + iscd.name)
                 else:
                     image_set_feature_names.append(
-                            cpmeas.C_PATH_NAME + "_" + iscd.name)
+                        cellprofiler.measurement.C_PATH_NAME + "_" + iscd.name)
                     image_set_feature_names.append(
-                            cpmeas.C_FILE_NAME + "_" + iscd.name)
+                        cellprofiler.measurement.C_FILE_NAME + "_" + iscd.name)
 
-            all_features = [m[cpmeas.IMAGE, ftr, image_numbers]
+            all_features = [m[cellprofiler.measurement.IMAGE, ftr, image_numbers]
                             for ftr in image_set_feature_names]
-            order = np.lexsort((group_indexes, group_numbers))
+            order = numpy.lexsort((group_indexes, group_numbers))
 
             for idx in order:
                 row = [unicode(x[idx]) for x in all_features]
                 self.image_set_list.data.append(row)
 
     def get_groupings(self, workspace):
-        '''Return the image groupings of the image sets in an image set list
+        """Return the image groupings of the image sets in an image set list
 
         returns a tuple of key_names and group_list:
         key_names - the names of the keys that identify the groupings
@@ -418,15 +420,15 @@ class Groups(cpm.Module):
         and 'Metadata_Column' and a group_list of:
         [ ({'Row':'A','Column':'01'), [0,96,192]),
           (('Row':'A','Column':'02'), [1,97,193]),... ]
-        '''
+        """
         if not self.wants_groups:
             return
         key_list = self.get_grouping_tags()
         m = workspace.measurements
         for key in key_list:
-            if key not in m.get_feature_names(cpmeas.IMAGE):
-                if key.startswith(cpmeas.C_METADATA):
-                    key = key[len(cpmeas.C_METADATA) + 1:]
+            if key not in m.get_feature_names(cellprofiler.measurement.IMAGE):
+                if key.startswith(cellprofiler.measurement.C_METADATA):
+                    key = key[len(cellprofiler.measurement.C_METADATA) + 1:]
                 workspace.pipeline.report_prepare_run_error(
                         self,
                         ('The groups module is misconfigured. "%s" was chosen as\n'
@@ -436,25 +438,25 @@ class Groups(cpm.Module):
         return key_list, m.get_groupings(key_list)
 
     def get_grouping_tags(self):
-        '''Return the metadata keys used for grouping'''
+        """Return the metadata keys used for grouping"""
         if not self.wants_groups:
             return None
-        return ["_".join((cpmeas.C_METADATA, g.metadata_choice.value))
+        return ["_".join((cellprofiler.measurement.C_METADATA, g.metadata_choice.value))
                 for g in self.grouping_metadata]
 
     def change_causes_prepare_run(self, setting):
-        '''Return True if changing the setting passed changes the image sets
+        """Return True if changing the setting passed changes the image sets
 
         setting - the setting that was changed
-        '''
+        """
         return setting in self.settings()
 
     def is_load_module(self):
-        '''Marks this module as a module that affects the image sets
+        """Marks this module as a module that affects the image sets
 
         Groups is a load module because it can reorder image sets, but only
         if grouping is turned on.
-        '''
+        """
         return self.wants_groups.value
 
     @classmethod
@@ -462,7 +464,7 @@ class Groups(cpm.Module):
         return True
 
     def prepare_run(self, workspace):
-        '''Reorder the image sets and assign group number and index'''
+        """Reorder the image sets and assign group number and index"""
         if workspace.pipeline.in_batch_mode():
             return True
 
@@ -483,29 +485,29 @@ class Groups(cpm.Module):
         #
         # Create arrays of group number, group_index and image_number
         #
-        group_numbers = np.hstack([
-                                      np.ones(len(image_numbers), int) * (i + 1)
-                                      for i, (keys, image_numbers) in enumerate(groupings)])
-        group_indexes = np.hstack([
-                                      np.arange(len(image_numbers)) + 1
-                                      for keys, image_numbers in groupings])
-        image_numbers = np.hstack([
+        group_numbers = numpy.hstack([
+                                         numpy.ones(len(image_numbers), int) * (i + 1)
+                                         for i, (keys, image_numbers) in enumerate(groupings)])
+        group_indexes = numpy.hstack([
+                                         numpy.arange(len(image_numbers)) + 1
+                                         for keys, image_numbers in groupings])
+        image_numbers = numpy.hstack([
                                       image_numbers for keys, image_numbers in groupings])
-        order = np.lexsort((group_indexes, group_numbers))
+        order = numpy.lexsort((group_indexes, group_numbers))
         group_numbers = group_numbers[order]
         group_indexes = group_indexes[order]
 
         m = workspace.measurements
-        assert isinstance(m, cpmeas.Measurements)
+        assert isinstance(m, cellprofiler.measurement.Measurements)
         #
         # Downstream processing requires that image sets be ordered by
         # increasing group number, then increasing group index.
         #
-        new_image_numbers = np.zeros(np.max(image_numbers) + 1, int)
-        new_image_numbers[image_numbers[order]] = np.arange(len(image_numbers)) + 1
+        new_image_numbers = numpy.zeros(numpy.max(image_numbers) + 1, int)
+        new_image_numbers[image_numbers[order]] = numpy.arange(len(image_numbers)) + 1
         m.reorder_image_measurements(new_image_numbers)
-        m.add_all_measurements(cpmeas.IMAGE, cpmeas.GROUP_NUMBER, group_numbers)
-        m.add_all_measurements(cpmeas.IMAGE, cpmeas.GROUP_INDEX, group_indexes)
+        m.add_all_measurements(cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_NUMBER, group_numbers)
+        m.add_all_measurements(cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_INDEX, group_indexes)
         m.set_grouping_tags(self.get_grouping_tags())
         return True
 
@@ -513,22 +515,22 @@ class Groups(cpm.Module):
         pass
 
     def get_measurement_columns(self, pipeline):
-        '''Return the measurments recorded by this module
+        """Return the measurments recorded by this module
 
         GroupNumber and GroupIndex are accounted for by the pipeline itself.
-        '''
+        """
         result = []
         if self.wants_groups:
-            result.append((cpmeas.EXPERIMENT,
-                           cpmeas.M_GROUPING_TAGS,
-                           cpmeas.COLTYPE_VARCHAR))
+            result.append((cellprofiler.measurement.EXPERIMENT,
+                           cellprofiler.measurement.M_GROUPING_TAGS,
+                           cellprofiler.measurement.COLTYPE_VARCHAR))
             #
             # These are bound to be produced elsewhere, but it is quite
             # computationally expensive to find that out. If they are
             # duplicated by another module, no big deal.
             #
             for ftr in self.get_grouping_tags():
-                result.append((cpmeas.IMAGE, ftr, cpmeas.COLTYPE_VARCHAR))
+                result.append((cellprofiler.measurement.IMAGE, ftr, cellprofiler.measurement.COLTYPE_VARCHAR))
         return result
 
     def upgrade_settings(self, setting_values, variable_revision_number,

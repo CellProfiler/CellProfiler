@@ -1,4 +1,4 @@
-'''<b>MeasurementTemplate</b> - an example measurement module
+"""<b>MeasurementTemplate</b> - an example measurement module
 <hr>
 This is an example of a module that measures a property of an image both
 for the image as a whole and for every object in the image. It demonstrates
@@ -18,7 +18,7 @@ parts.
 
 Features names are in the format,
 "MT_Intensity_<i>Image name</i>_N<i>(radial degree)</i>M<i>(Azimuthal degree)</i>
-'''
+"""
 #################################
 #
 # Imports from useful Python libraries
@@ -40,7 +40,7 @@ import scipy.ndimage as scind
 import cellprofiler.image as cpi
 import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
-import cellprofiler.object as cpo
+import cellprofiler.region as cpo
 import cellprofiler.setting as cps
 
 from centrosome.zernike import construct_zernike_polynomials
@@ -206,7 +206,7 @@ class MeasurementTemplate(cpm.Module):
         # The object set has all of the objects in it.
         #
         object_set = workspace.object_set
-        assert isinstance(object_set, cpo.ObjectSet)
+        assert isinstance(object_set, cpo.Set)
         #
         # Get objects from the object set. The most useful array in
         # the objects is "objects.segmented" which is a labels matrix
@@ -240,7 +240,7 @@ class MeasurementTemplate(cpm.Module):
         # First, get an array that lists the whole range of indexes in
         # the labels matrix.
         #
-        indexes = objects.get_indices()
+        indexes = objects.indices()
         #
         # Then ask for the minimum_enclosing_circle for each object named
         # in those indexes. MEC returns the i and j coordinate of the center
@@ -293,13 +293,13 @@ class MeasurementTemplate(cpm.Module):
         figure.subplot_table(0, 0, statistics)
 
     def get_zernike_indexes(self, wants_negative=False):
-        '''Get an N x 2 numpy array containing the M and N Zernike degrees
+        """Get an N x 2 numpy array containing the M and N Zernike degrees
 
         Use the radial_degree setting to determine which Zernikes to do.
 
         wants_negative - if True, return both positive and negative M, if false
                          return only positive
-        '''
+        """
         zi = get_zernike_indexes(self.radial_degree.value + 1)
         if wants_negative:
             #
@@ -324,7 +324,7 @@ class MeasurementTemplate(cpm.Module):
         # I'll put some documentation in here to explain what it does.
         # If someone ever wants to call it, their editor might display
         # the documentation.
-        '''Measure the intensity of the image with Zernike (N, M)
+        """Measure the intensity of the image with Zernike (N, M)
 
         pixels - the intensity image to be measured
         labels - the labels matrix that labels each object with an integer
@@ -335,7 +335,7 @@ class MeasurementTemplate(cpm.Module):
 
         See http://en.wikipedia.org/wiki/Zernike_polynomials for an
         explanation of the Zernike polynomials
-        '''
+        """
         #
         # The strategy here is to operate on the whole array instead
         # of operating on one object at a time. The most important thing
@@ -432,7 +432,7 @@ class MeasurementTemplate(cpm.Module):
     # use the same functions in different places.
     #
     def get_feature_name(self, n, m):
-        '''Return a measurement feature name for the given Zernike'''
+        """Return a measurement feature name for the given Zernike"""
         #
         # Something nice and simple for a name... Intensity_DNA_N4M2 for instance
         #
@@ -442,7 +442,7 @@ class MeasurementTemplate(cpm.Module):
             return "Intensity_%s_N%dMM%d" % (self.input_image_name.value, n, -m)
 
     def get_measurement_name(self, n, m):
-        '''Return the whole measurement name'''
+        """Return the whole measurement name"""
         input_image_name = self.input_image_name.value
         return '_'.join([C_MEASUREMENT_TEMPLATE,
                          self.get_feature_name(n, m)])
@@ -520,11 +520,11 @@ class MeasurementTemplate(cpm.Module):
 
     def get_measurement_scales(self, pipeline, object_name, category,
                                measurement, image_name):
-        '''Get the scales for a measurement
+        """Get the scales for a measurement
 
         For the Zernikes, the scales are of the form, N2M2 or N2MM2 for
         negative azimuthal degree
-        '''
+        """
         if image_name in self.get_measurement_images(
                 pipeline, object_name, category, measurement):
             return [("N%dM%d" % (n, m)) if m >= 0 else
@@ -534,7 +534,7 @@ class MeasurementTemplate(cpm.Module):
 
     @staticmethod
     def get_image_from_features(radius, feature_dictionary):
-        '''Reconstruct the intensity image from the zernike features
+        """Reconstruct the intensity image from the zernike features
 
         radius - the radius of the minimum enclosing circle
 
@@ -542,7 +542,7 @@ class MeasurementTemplate(cpm.Module):
         magnitudes.
 
         returns a greyscale image based on the feature dictionary.
-        '''
+        """
         i, j = np.mgrid[-radius:(radius + 1), -radius:(radius + 1)].astype(float) / radius
         mask = (i * i + j * j) <= 1
 

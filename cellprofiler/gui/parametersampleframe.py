@@ -9,7 +9,7 @@ Author: AJ Pretorius
 import cellprofiler.image
 import cellprofiler.module
 import cellprofiler.measurement
-import cellprofiler.object
+import cellprofiler.region
 import cellprofiler.preferences
 import cellprofiler.setting
 import cellprofiler.workspace
@@ -553,7 +553,7 @@ class ParameterSampleFrame(wx.Frame):
         using it as a black box for the time being.
         """
         self.__measurements = cellprofiler.measurement.Measurements(can_overwrite=True)
-        self.__object_set = cellprofiler.object.ObjectSet(can_overwrite=True)
+        self.__object_set = cellprofiler.region.Set(can_overwrite=True)
         self.__image_set_list = cellprofiler.image.ImageSetList()
         workspace = cellprofiler.workspace.Workspace(self.__pipeline, None, None, None,
                                                      self.__measurements, self.__image_set_list,

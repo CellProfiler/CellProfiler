@@ -1,4 +1,4 @@
-'''
+"""
 <b>Morph</b> performs low-level morphological operations on binary or grayscale images
 <hr>
 
@@ -383,22 +383,21 @@ in <b>Morph</b> to achieve the same result.</td>
   <td>Binary</td>
 </tr>
 </table>
-'''
+"""
 
 import logging
-import sys
 
-import numpy as np
-import scipy.ndimage as scind
+import cellprofiler.image
+import cellprofiler.module
+import cellprofiler.modules
+import cellprofiler.setting
+import cellprofiler.setting
+import centrosome.cpmorphology
+import centrosome.filter
+import numpy
+import scipy.ndimage
 
 logger = logging.getLogger(__name__)
-
-import cellprofiler.module as cpm
-import cellprofiler.setting as cps
-from cellprofiler.setting import YES, NO
-import cellprofiler.image as cpi
-import centrosome.cpmorphology as morph
-from centrosome.filter import poisson_equation
 
 F_BOTHAT = 'bothat'
 F_BRANCHPOINTS = 'branchpoints'
@@ -462,27 +461,27 @@ FUNCTION_SETTING_COUNT_V3 = 11
 FUNCTION_SETTING_COUNT = 12
 
 
-class Morph(cpm.Module):
+class Morph(cellprofiler.module.Module):
     module_name = "Morph"
     category = "Image Processing"
     variable_revision_number = 4
 
     def create_settings(self):
-        self.image_name = cps.ImageNameSubscriber(
-                "Select the input image", cps.NONE, doc="""
+        self.image_name = cellprofiler.setting.ImageNameSubscriber(
+                "Select the input image", cellprofiler.setting.NONE, doc="""
             Select the image that you want to perform a morphological operation on.
             A grayscale image can be
             converted to binary using the <b>ApplyThreshold</b> module. Objects can be
             converted to binary using the <b>ConvertToImage</b> module.""")
 
-        self.output_image_name = cps.ImageNameProvider(
+        self.output_image_name = cellprofiler.setting.ImageNameProvider(
                 "Name the output image", "MorphBlue", doc="""
             Enter the name for the output image It will be of the same type as the
             input image.""")
 
-        self.add_button = cps.DoSomething("",
+        self.add_button = cellprofiler.setting.DoSomething("",
                                           "Add another operation",
-                                          self.add_function, doc="""
+                                                           self.add_function, doc="""
             Press this button to add an operation that will be applied to the
             image resulting from the previous operation(s). The module repeats
             the previous operation the number of times you select before applying
@@ -498,28 +497,32 @@ class Morph(cpm.Module):
         group = MorphSettingsGroup()
         group.can_remove = can_remove
         if can_remove:
-            group.append("divider", cps.Divider(line=False))
-        group.append("function", cps.Choice(
+            group.append("divider", cellprofiler.setting.Divider(line=False))
+        group.append("function", cellprofiler.setting.Choice(
                 "Select the operation to perform",
                 F_ALL, F_OPEN, doc="""
             Choose one of the operations described in this module's help."""))
 
-        group.append("repeats_choice", cps.Choice(
+        group.append("repeats_choice", cellprofiler.setting.Choice(
                 "Number of times to repeat operation",
                 R_ALL, doc="""
             This setting controls the number of times that the same operation is applied
             successively to the image.
             <ul>
-            <li><i>%(R_ONCE)s:</i> Perform the operation once on the image.</li>
-            <li><i>%(R_FOREVER)s:</i> Perform the operation on the image until successive
+            <li><i>{r_once}:</i> Perform the operation once on the image.</li>
+            <li><i>{r_forever}:</i> Perform the operation on the image until successive
             iterations yield the same image.</li>
-            <li><i>%(R_CUSTOM)s:</i> Perform the operation a custom number of times.</li>
-            </ul>""" % globals()))
+            <li><i>{r_custom}:</i> Perform the operation a custom number of times.</li>
+            </ul>""".format(**{
+                'r_once': R_ONCE,
+                'r_forever': R_FOREVER,
+                'r_custom': R_CUSTOM
+            })))
 
-        group.append("custom_repeats", cps.Integer(self.CUSTOM_REPEATS_TEXT, 2, 1,
-                                                   doc=self.CUSTOM_REPEATS_DOC))
+        group.append("custom_repeats", cellprofiler.setting.Integer(self.CUSTOM_REPEATS_TEXT, 2, 1,
+                                                                    doc=self.CUSTOM_REPEATS_DOC))
 
-        group.append("structuring_element", cps.Choice(
+        group.append("structuring_element", cellprofiler.setting.Choice(
                 "Structuring element", SE_ALL, SE_DISK, doc="""
             <i>(Used only for %(SE_F_TEXT)s)</i><br>
             The structuring element controls which neighboring pixels participate
@@ -532,15 +535,15 @@ class Morph(cpm.Module):
 
             <p>The structuring elements are:<br>
             <ul>
-            <li><i>%(SE_DISK)s</i>: A disk centered on the pixel. The diameter
+            <li><i>{se_disk}</i>: A disk centered on the pixel. The diameter
             setting determines the circle's diameter and all pixels that are
             at or closer than that diameter will be in the neighborhood.</li>
-            <li><i>%(SE_ARBITRARY)s</i>: A structuring element which lets
+            <li><i>{se_arbitrary}</i>: A structuring element which lets
             the user choose the exact neighborhood pixels to use.</li>
-            <li><i>%(SE_DIAMOND)s</i>: A diamond centered on the pixel. The
+            <li><i>{se_diamond}</i>: A diamond centered on the pixel. The
             diameter setting determines the distance between the top and bottom
             and left and right corners of the diamond.</li>
-            <li><i>%(SE_LINE)s</i>: A line centered on the pixel. The line
+            <li><i>{se_line}</i>: A line centered on the pixel. The line
             has two settings. The angle setting gives the rotation of the line
             in the counter-clockwise direction in degrees, with a horizontal
             line having an angle of zero. The length of the line is determined
@@ -548,89 +551,109 @@ class Morph(cpm.Module):
             diameter are included in the neighborhood. The line is drawn using
             the <a href="http://dx.doi.org/10.1147%%2Fsj.41.0025">
             Bresenham algorithm</a>.</li>
-            <li><i>%(SE_OCTAGON)s</i>: An octagon centered on the pixel. The
+            <li><i>{se_octagon}</i>: An octagon centered on the pixel. The
             octagon is inscribed inside a square. The diameter setting controls
             the length of the square's side. The diameter is rounded to the nearest
             integer in the series, n * 6 + 1 so a perfect octagon can be drawn.</li>
-            <li><i>%(SE_PAIR)s</i>: The neighborhood of the pixel is
+            <li><i>{se_pair}</i>: The neighborhood of the pixel is
             composed of the pixel itself and the pixel at the x and y offsets
             given by the settings.</li>
-            <li><i>%(SE_PERIODIC_LINE)s</i>: The points along a line described
+            <li><i>{se_periodic_line}</i>: The points along a line described
             by an offset, centered on the pixel. The periodic line has three
             settings. The neighborhood pixels are all within a circle whose
             diameter is the diameter setting. Within the circle, pixels are
             chosen at N times the x and y offset from the center for positive
             and negative values of N.</li>
-            <li><i>%(SE_RECTANGLE)s</i>: A rectangle centered on the pixel.
+            <li><i>{se_rectangle}</i>: A rectangle centered on the pixel.
             The rectangle's height and width are given by two settings.</li>
-            <li><i>%(SE_SQUARE)s</i>: a square centered on the pixel. The
+            <li><i>{se_square}</i>: a square centered on the pixel. The
             diameter setting determines the length of the square's side.</li>
-            </ul></p>""" % globals()))
+            </ul></p>""".format(**{
+                'se_disk': SE_DISK,
+                'se_arbitrary': SE_ARBITRARY,
+                'se_diamond': SE_DIAMOND,
+                'se_line': SE_LINE,
+                'se_octagon': SE_OCTAGON,
+                'se_pair': SE_PAIR,
+                'se_periodic_line': SE_PERIODIC_LINE,
+                'se_rectangle': SE_RECTANGLE,
+                'se_square': SE_SQUARE
+            })))
 
-        group.append("scale", cps.Float(
+        group.append("scale", cellprofiler.setting.Float(
                 "Diameter", 3, minval=3, doc="""
             Morphological open, close, erode and dialate are performed
             with structuring elements which determine the diameter of the
             circle enclosing the pixels to consider when applying the operation.
             This setting controls the diameter of the structuring element."""))
 
-        group.append("x_offset", cps.Float(
+        group.append("x_offset", cellprofiler.setting.Float(
                 "X offset", 1, doc="""
             <i>(Used only for the %(SE_PAIR)s and %(SE_PERIODIC_LINE)s
             settings)</i>. The X offset to the first neighborhood pixel in
             the structuring element.
             """ % globals()))
 
-        group.append("y_offset", cps.Float(
+        group.append("y_offset", cellprofiler.setting.Float(
                 "Y offset", 1, doc="""
             <i>(Used only for the %(SE_PAIR)s and %(SE_PERIODIC_LINE)s
             structuring elements)</i>. The Y offset to the first neighborhood
             pixel in the structuring element.
             """ % globals()))
 
-        group.append("angle", cps.Float(
+        group.append("angle", cellprofiler.setting.Float(
                 "Angle", 0, minval=-180, maxval=180, doc="""
             <i>(Used only for the %(SE_LINE)s structuring element).</i>
             The angle, in degrees counter-clockwise from the horizontal,
             of the line.
             """ % globals()))
 
-        group.append("width", cps.Float(
+        group.append("width", cellprofiler.setting.Float(
                 "Width", 3, minval=1, doc="""
             <i>(Used only for the %(SE_RECTANGLE)s structuring element).</i>
             The width of the rectangle in pixels.
             """ % globals()))
 
-        group.append("height", cps.Float(
+        group.append("height", cellprofiler.setting.Float(
                 "Height", 3, minval=1, doc="""
             <i>(Used only for the %(SE_RECTANGLE)s structuring element).</i>
             The height of the rectangle in pixels.
             """ % globals()))
 
-        group.append("strel", cps.BinaryMatrix(
+        group.append("strel", cellprofiler.setting.BinaryMatrix(
                 "Custom", doc="""
             <i>(Used only for the %(SE_ARBITRARY)s structuring element).</i>
             This control lets you specify a custom structuring element.
             """ % globals()))
 
-        group.append("rescale_values", cps.Binary(
-                "Rescale values from 0 to 1?", True, doc="""
-            <i>(Used only for the %(F_DISTANCE)s operation).</i>
-            <p>Select <i>%(YES)s</i> to rescale the transformed values to lie between 0 and 1.
-            This is the option to use if the distance transformed image is to be used
-            for thresholding by an <b>Identify</b> module or the like, which assumes
-            a 0-1 scaling.</p>
-            <p>Select <i>%(NO)s</i> to leave the values in absolute pixel units.
-            This useful in cases where the actual pixel distances are to be used
-            downstream as input for a measurement module.</p>
-            """ % globals()))
+        group.append(
+            "rescale_values",
+            cellprofiler.setting.Binary(
+                "Rescale values from 0 to 1?",
+                True,
+                doc="""
+                <i>(Used only for the {distance} operation).</i>
+                <p>Select <i>{yes}</i> to rescale the transformed values to lie between 0 and 1.
+                This is the option to use if the distance transformed image is to be used
+                for thresholding by an <b>Identify</b> module or the like, which assumes
+                a 0-1 scaling.</p>
+                <p>Select <i>{no}</i> to leave the values in absolute pixel units.
+                This useful in cases where the actual pixel distances are to be used
+                downstream as input for a measurement module.</p>
+                """.format(**{
+                    'distance': F_DISTANCE,
+                    'yes': cellprofiler.setting.YES,
+                    'no': cellprofiler.setting.NO
+                })
+            )
+        )
 
         if can_remove:
-            group.append("remove", cps.RemoveSettingButton("", "Remove this operation", self.functions, group))
+            group.append("remove", cellprofiler.setting.RemoveSettingButton("", "Remove this operation", self.functions, group))
         self.functions.append(group)
 
     def prepare_settings(self, setting_values):
-        '''Adjust the # of functions to match the # of setting values'''
+        """Adjust the # of functions to match the # of setting values"""
         assert (len(setting_values) - 2) % FUNCTION_SETTING_COUNT == 0
         function_count = (len(setting_values) - 2) / FUNCTION_SETTING_COUNT
         del self.functions[function_count:]
@@ -638,7 +661,7 @@ class Morph(cpm.Module):
             self.add_function()
 
     def settings(self):
-        '''Return the settings as saved in the pipeline file'''
+        """Return the settings as saved in the pipeline file"""
         result = [self.image_name, self.output_image_name]
         for function in self.functions:
             result += [function.function, function.repeats_choice,
@@ -651,7 +674,7 @@ class Morph(cpm.Module):
         return result
 
     def visible_settings(self):
-        '''Return the settings as displayed to the user'''
+        """Return the settings as displayed to the user"""
         result = [self.image_name, self.output_image_name]
         for function in self.functions:
             if function.can_remove:
@@ -707,13 +730,13 @@ class Morph(cpm.Module):
             mask = None
         pixel_data = image.pixel_data
         if pixel_data.ndim == 3:
-            if any([np.any(pixel_data[:, :, 0] != pixel_data[:, :, plane])
+            if any([numpy.any(pixel_data[:, :, 0] != pixel_data[:, :, plane])
                     for plane in range(1, pixel_data.shape[2])]):
                 logger.warn("Image is color, converting to grayscale")
-            pixel_data = np.sum(pixel_data, 2) / pixel_data.shape[2]
+            pixel_data = numpy.sum(pixel_data, 2) / pixel_data.shape[2]
         for function in self.functions:
             pixel_data = self.run_function(function, pixel_data, mask)
-        new_image = cpi.Image(pixel_data, parent_image=image)
+        new_image = cellprofiler.image.Image(pixel_data, parent=image)
         workspace.image_set.add(self.output_image_name.value, new_image)
         if self.show_window:
             workspace.display_data.image = image.pixel_data
@@ -739,7 +762,7 @@ class Morph(cpm.Module):
                                             sharexy=figure.subplot(0, 0))
 
     def run_function(self, function, pixel_data, mask):
-        '''Apply the function once to the image, returning the result'''
+        """Apply the function once to the image, returning the result"""
         count = function.repeat_count
         function_name = function.function.value
         scale = function.scale.value
@@ -747,29 +770,29 @@ class Morph(cpm.Module):
 
         is_binary = pixel_data.dtype.kind == 'b'
         if function.structuring_element == SE_ARBITRARY:
-            strel = np.array(function.strel.get_matrix())
+            strel = numpy.array(function.strel.get_matrix())
         elif function.structuring_element == SE_DISK:
-            strel = morph.strel_disk(scale / 2.0)
+            strel = centrosome.cpmorphology.strel_disk(scale / 2.0)
         elif function.structuring_element == SE_DIAMOND:
-            strel = morph.strel_diamond(scale / 2.0)
+            strel = centrosome.cpmorphology.strel_diamond(scale / 2.0)
         elif function.structuring_element == SE_LINE:
-            strel = morph.strel_line(scale, function.angle.value)
+            strel = centrosome.cpmorphology.strel_line(scale, function.angle.value)
         elif function.structuring_element == SE_OCTAGON:
-            strel = morph.strel_octagon(scale / 2.0)
+            strel = centrosome.cpmorphology.strel_octagon(scale / 2.0)
         elif function.structuring_element == SE_PAIR:
-            strel = morph.strel_pair(function.x_offset.value,
-                                     function.y_offset.value)
+            strel = centrosome.cpmorphology.strel_pair(function.x_offset.value,
+                                                       function.y_offset.value)
         elif function.structuring_element == SE_PERIODIC_LINE:
             xoff = function.x_offset.value
             yoff = function.y_offset.value
-            n = max(scale / 2.0 / np.sqrt(float(xoff * xoff + yoff * yoff)), 1)
-            strel = morph.strel_periodicline(
+            n = max(scale / 2.0 / numpy.sqrt(float(xoff * xoff + yoff * yoff)), 1)
+            strel = centrosome.cpmorphology.strel_periodicline(
                     xoff, yoff, n)
         elif function.structuring_element == SE_RECTANGLE:
-            strel = morph.strel_rectangle(
+            strel = centrosome.cpmorphology.strel_rectangle(
                     function.width.value, function.height.value)
         else:
-            strel = morph.strel_square(scale)
+            strel = centrosome.cpmorphology.strel_square(scale)
 
         if (function_name in (F_BRANCHPOINTS, F_BRIDGE, F_CLEAN, F_DIAG,
                               F_CONVEX_HULL, F_DISTANCE, F_ENDPOINTS, F_FILL,
@@ -794,53 +817,53 @@ class Morph(cpm.Module):
             # All of these have an iterations argument or it makes no
             # sense to iterate
             if function_name == F_BRANCHPOINTS:
-                return morph.branchpoints(pixel_data, mask)
+                return centrosome.cpmorphology.branchpoints(pixel_data, mask)
             elif function_name == F_BRIDGE:
-                return morph.bridge(pixel_data, mask, count)
+                return centrosome.cpmorphology.bridge(pixel_data, mask, count)
             elif function_name == F_CLEAN:
-                return morph.clean(pixel_data, mask, count)
+                return centrosome.cpmorphology.clean(pixel_data, mask, count)
             elif function_name == F_CLOSE:
                 if mask is None:
-                    return scind.binary_closing(pixel_data,
-                                                strel,
-                                                iterations=count)
+                    return scipy.ndimage.binary_closing(pixel_data,
+                                                        strel,
+                                                        iterations=count)
                 else:
-                    return (scind.binary_closing(pixel_data & mask,
-                                                 strel,
-                                                 iterations=count) |
+                    return (scipy.ndimage.binary_closing(pixel_data & mask,
+                                                         strel,
+                                                         iterations=count) |
                             (pixel_data & ~ mask))
             elif function_name == F_CONVEX_HULL:
                 if mask is None:
-                    return morph.convex_hull_image(pixel_data)
+                    return centrosome.cpmorphology.convex_hull_image(pixel_data)
                 else:
-                    return morph.convex_hull_image(pixel_data & mask)
+                    return centrosome.cpmorphology.convex_hull_image(pixel_data & mask)
             elif function_name == F_DIAG:
-                return morph.diag(pixel_data, mask, count)
+                return centrosome.cpmorphology.diag(pixel_data, mask, count)
             elif function_name == F_DILATE:
-                return scind.binary_dilation(pixel_data,
-                                             strel,
-                                             iterations=count,
-                                             mask=mask)
+                return scipy.ndimage.binary_dilation(pixel_data,
+                                                     strel,
+                                                     iterations=count,
+                                                     mask=mask)
             elif function_name == F_DISTANCE:
-                image = scind.distance_transform_edt(pixel_data)
+                image = scipy.ndimage.distance_transform_edt(pixel_data)
                 if function.rescale_values.value:
-                    image = image / np.max(image)
+                    image /= numpy.max(image)
                 return image
             elif function_name == F_ENDPOINTS:
-                return morph.endpoints(pixel_data, mask)
+                return centrosome.cpmorphology.endpoints(pixel_data, mask)
             elif function_name == F_ERODE:
-                return scind.binary_erosion(pixel_data, strel,
-                                            iterations=count,
-                                            mask=mask)
+                return scipy.ndimage.binary_erosion(pixel_data, strel,
+                                                    iterations=count,
+                                                    mask=mask)
             elif function_name == F_FILL:
-                return morph.fill(pixel_data, mask, count)
+                return centrosome.cpmorphology.fill(pixel_data, mask, count)
             elif function_name == F_FILL_SMALL:
                 def small_fn(area, foreground):
                     return (not foreground) and (area <= custom_repeats)
 
-                return morph.fill_labeled_holes(pixel_data, mask, small_fn)
+                return centrosome.cpmorphology.fill_labeled_holes(pixel_data, mask, small_fn)
             elif function_name == F_HBREAK:
-                return morph.hbreak(pixel_data, mask, count)
+                return centrosome.cpmorphology.hbreak(pixel_data, mask, count)
             elif function_name == F_INVERT:
                 if is_binary:
                     if mask is None:
@@ -855,68 +878,68 @@ class Morph(cpm.Module):
                     result[mask] = 1 - result[mask]
                     return result
             elif function_name == F_LIFE:
-                return morph.life(pixel_data, count)
+                return centrosome.cpmorphology.life(pixel_data, count)
             elif function_name == F_MAJORITY:
-                return morph.majority(pixel_data, mask, count)
+                return centrosome.cpmorphology.majority(pixel_data, mask, count)
             elif function_name == F_OPEN:
                 if mask is None:
-                    return scind.binary_opening(pixel_data,
-                                                strel,
-                                                iterations=count)
+                    return scipy.ndimage.binary_opening(pixel_data,
+                                                        strel,
+                                                        iterations=count)
                 else:
-                    return (scind.binary_opening(pixel_data & mask,
-                                                 strel,
-                                                 iterations=count) |
+                    return (scipy.ndimage.binary_opening(pixel_data & mask,
+                                                         strel,
+                                                         iterations=count) |
                             (pixel_data & ~ mask))
             elif function_name == F_OPENLINES:
-                return morph.openlines(pixel_data, linelength=custom_repeats, mask=mask)
+                return centrosome.cpmorphology.openlines(pixel_data, linelength=custom_repeats, mask=mask)
             elif function_name == F_REMOVE:
-                return morph.remove(pixel_data, mask, count)
+                return centrosome.cpmorphology.remove(pixel_data, mask, count)
             elif function_name == F_SHRINK:
-                return morph.binary_shrink(pixel_data, count)
+                return centrosome.cpmorphology.binary_shrink(pixel_data, count)
             elif function_name == F_SKEL:
-                return morph.skeletonize(pixel_data, mask)
+                return centrosome.cpmorphology.skeletonize(pixel_data, mask)
             elif function_name == F_SKELPE:
-                return morph.skeletonize(
+                return centrosome.cpmorphology.skeletonize(
                         pixel_data, mask,
-                        scind.distance_transform_edt(pixel_data) *
-                        poisson_equation(pixel_data))
+                    scipy.ndimage.distance_transform_edt(pixel_data) *
+                    centrosome.filter.poisson_equation(pixel_data))
             elif function_name == F_SPUR:
-                return morph.spur(pixel_data, mask, count)
+                return centrosome.cpmorphology.spur(pixel_data, mask, count)
             elif function_name == F_THICKEN:
-                return morph.thicken(pixel_data, mask, count)
+                return centrosome.cpmorphology.thicken(pixel_data, mask, count)
             elif function_name == F_THIN:
-                return morph.thin(pixel_data, mask, count)
+                return centrosome.cpmorphology.thin(pixel_data, mask, count)
             elif function_name == F_VBREAK:
-                return morph.vbreak(pixel_data, mask)
+                return centrosome.cpmorphology.vbreak(pixel_data, mask)
             else:
                 raise NotImplementedError("Unimplemented morphological function: %s" %
                                           function_name)
         else:
             for i in range(count):
                 if function_name == F_BOTHAT:
-                    new_pixel_data = morph.black_tophat(pixel_data, mask=mask,
-                                                        footprint=strel)
+                    new_pixel_data = centrosome.cpmorphology.black_tophat(pixel_data, mask=mask,
+                                                                          footprint=strel)
                 elif function_name == F_CLOSE:
 
-                    new_pixel_data = morph.closing(pixel_data, mask=mask,
-                                                   footprint=strel)
+                    new_pixel_data = centrosome.cpmorphology.closing(pixel_data, mask=mask,
+                                                                     footprint=strel)
                 elif function_name == F_DILATE:
-                    new_pixel_data = morph.grey_dilation(pixel_data, mask=mask,
-                                                         footprint=strel)
+                    new_pixel_data = centrosome.cpmorphology.grey_dilation(pixel_data, mask=mask,
+                                                                           footprint=strel)
                 elif function_name == F_ERODE:
-                    new_pixel_data = morph.grey_erosion(pixel_data, mask=mask,
-                                                        footprint=strel)
+                    new_pixel_data = centrosome.cpmorphology.grey_erosion(pixel_data, mask=mask,
+                                                                          footprint=strel)
                 elif function_name == F_OPEN:
-                    new_pixel_data = morph.opening(pixel_data, mask=mask,
-                                                   footprint=strel)
+                    new_pixel_data = centrosome.cpmorphology.opening(pixel_data, mask=mask,
+                                                                     footprint=strel)
                 elif function_name == F_TOPHAT:
-                    new_pixel_data = morph.white_tophat(pixel_data, mask=mask,
-                                                        footprint=strel)
+                    new_pixel_data = centrosome.cpmorphology.white_tophat(pixel_data, mask=mask,
+                                                                          footprint=strel)
                 else:
                     raise NotImplementedError("Unimplemented morphological function: %s" %
                                               function_name)
-                if np.all(new_pixel_data == pixel_data):
+                if numpy.all(new_pixel_data == pixel_data):
                     break
                 pixel_data = new_pixel_data
             return pixel_data
@@ -924,7 +947,7 @@ class Morph(cpm.Module):
     def upgrade_settings(self, setting_values,
                          variable_revision_number, module_name,
                          from_matlab):
-        '''Adjust the setting_values of previous revisions to match this one'''
+        """Adjust the setting_values of previous revisions to match this one"""
         if from_matlab and variable_revision_number in (1, 2):
             # Settings:
             # image name
@@ -932,7 +955,7 @@ class Morph(cpm.Module):
             # (function, count) repeated 6 times
             new_setting_values = [setting_values[0], setting_values[1]]
             for i in range(6):
-                if setting_values[i * 2 + 2] != cps.DO_NOT_USE:
+                if setting_values[i * 2 + 2] != cellprofiler.setting.DO_NOT_USE:
                     new_setting_values.append(setting_values[i * 2 + 2])
                     if (setting_values[i * 2 + 3].isdigit() and
                                 int(setting_values[i * 2 + 3]) == 1):
@@ -978,17 +1001,17 @@ class Morph(cpm.Module):
             new_setting_values = setting_values[:2]
             for i in range(2, len(setting_values), FUNCTION_SETTING_COUNT_V3):
                 new_setting_values += setting_values[i:i + FUNCTION_SETTING_COUNT_V3]
-                new_setting_values += [cps.YES]
+                new_setting_values += [cellprofiler.setting.YES]
             setting_values = new_setting_values
             variable_revision_number = 4
 
         return setting_values, variable_revision_number, from_matlab
 
 
-class MorphSettingsGroup(cps.SettingsGroup):
+class MorphSettingsGroup(cellprofiler.setting.SettingsGroup):
     @property
     def repeat_count(self):
-        ''  # of times to repeat'''
+        """"""  # of times to repeat'''
         if self.repeats_choice == R_ONCE:
             return 1
         elif self.repeats_choice == R_FOREVER:

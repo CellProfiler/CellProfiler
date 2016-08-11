@@ -1,3 +1,15 @@
+import cellprofiler.gui.help
+import cellprofiler.image
+import cellprofiler.measurement
+import cellprofiler.module
+import cellprofiler.modules
+import cellprofiler.modules.identify
+import cellprofiler.preferences
+import cellprofiler.region
+import cellprofiler.setting
+import centrosome.outline
+import numpy
+
 '''<b>Identify Tertiary Objects</b> identifies tertiary objects (e.g., cytoplasm) by removing smaller primary
 objects (e.g. nuclei) from larger secondary objects (e.g., cells), leaving a ring shape.
 <hr>
@@ -53,28 +65,13 @@ identified tertiary objects.</li>
 See also <b>IdentifyPrimaryObject</b> and <b>IdentifySecondaryObject</b> modules.
 '''
 
-import matplotlib
-import matplotlib.cm
-import numpy as np
-from centrosome.outline import outline
-
-import cellprofiler.image as cpi
-import cellprofiler.module as cpm
-import cellprofiler.measurement as cpmeas
-import cellprofiler.object as cpo
-import cellprofiler.preferences as cpprefs
-import cellprofiler.setting as cps
-import identify as cpmi
-from cellprofiler.gui.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
-from cellprofiler.setting import YES, NO
-
 '''The parent object relationship points to the secondary / larger objects'''
 R_PARENT = "Parent"
 '''The removed object relationship points to the primary / smaller objects'''
 R_REMOVED = "Removed"
 
 
-class IdentifyTertiaryObjects(cpm.Module):
+class IdentifyTertiaryObjects(cellprofiler.module.Module):
     module_name = "IdentifyTertiaryObjects"
     variable_revision_number = 2
     category = "Object Processing"
@@ -84,40 +81,51 @@ class IdentifyTertiaryObjects(cpm.Module):
 
         Create the settings for the module during initialization.
         """
-        self.secondary_objects_name = cps.ObjectNameSubscriber(
-                "Select the larger identified objects", cps.NONE, doc="""
+        self.secondary_objects_name = cellprofiler.setting.ObjectNameSubscriber(
+                "Select the larger identified objects", cellprofiler.setting.NONE, doc="""
             Select the larger identified objects. This will usually
             be an object previously identified by a <b>IdentifySecondaryObjects</b>
             module.""")
 
-        self.primary_objects_name = cps.ObjectNameSubscriber(
-                "Select the smaller identified objects", cps.NONE, doc="""
+        self.primary_objects_name = cellprofiler.setting.ObjectNameSubscriber(
+                "Select the smaller identified objects", cellprofiler.setting.NONE, doc="""
             Select the smaller identified objects. This will usually
             be an object previously identified by a <b>IdentifyPrimaryObjects</b>
             module.""")
 
-        self.subregion_objects_name = cps.ObjectNameProvider(
+        self.subregion_objects_name = cellprofiler.setting.ObjectNameProvider(
                 "Name the tertiary objects to be identified", "Cytoplasm", doc="""
             Enter a name for the new tertiary objects. The tertiary objects
             will consist of the smaller object subtracted from the larger object.""")
 
-        self.shrink_primary = cps.Binary(
-                "Shrink smaller object prior to subtraction?", True, doc="""
-            Select <i>%(YES)s</i> to shrink the smaller object by 1 pixel before subtracting the objects.
+        self.shrink_primary = cellprofiler.setting.Binary(
+            "Shrink smaller object prior to subtraction?",
+            True,
+            doc="""
+            Select <i>{yes}</i> to shrink the smaller object by 1 pixel before subtracting the objects.
             this approach will ensure that there is always a tertiary object produced, even if it is
             only 1 pixel wide.
-            <p>Select <i>%(NO)s</i> to subtract the objects directly, which will ensure that no pixels
+            <p>Select <i>{no}</i> to subtract the objects directly, which will ensure that no pixels
             are shared between the primary/secondary/tertiary objects and hence measurements for all
             three sets of objects will not use the same pixels multiple times. However, this may result
             in the creation of objects with no area. Measurements can still be made on such objects, but
-            the results will be zero or not-a-number (NaN)</p>""" % globals())
+            the results will be zero or not-a-number (NaN)</p>""".format(**{
+                'yes': cellprofiler.setting.YES,
+                'no': cellprofiler.setting.NO
+            })
+        )
 
-        self.use_outlines = cps.Binary("Retain outlines of the tertiary objects?", False, doc="""
-            %(RETAINING_OUTLINES_HELP)s""" % globals())
+        self.use_outlines = cellprofiler.setting.Binary(
+            "Retain outlines of the tertiary objects?",
+            False,
+            doc=cellprofiler.gui.help.RETAINING_OUTLINES_HELP
+        )
 
-        self.outlines_name = cps.OutlineNameProvider(
-                "Name the outline image", "CytoplasmOutlines", doc="""
-            %(NAMING_OUTLINES_HELP)s""" % globals())
+        self.outlines_name = cellprofiler.setting.OutlineNameProvider(
+            "Name the outline image",
+            "CytoplasmOutlines",
+            doc=cellprofiler.gui.help.NAMING_OUTLINES_HELP
+        )
 
     def settings(self):
         """All of the settings to be loaded and saved in the pipeline file
@@ -201,34 +209,34 @@ class IdentifyTertiaryObjects(cpm.Module):
             # No suitable cropping - resize all to fit the secondary
             # labels which are the most critical.
             #
-            primary_labels, _ = cpo.size_similarly(secondary_labels, primary_labels)
+            primary_labels, _ = cellprofiler.region.size_similarly(secondary_labels, primary_labels)
             if secondary_objects.parent_image is not None:
                 tertiary_image = secondary_objects.parent_image
             else:
                 tertiary_image = primary_objects.parent_image
                 if tertiary_image is not None:
-                    tertiary_image, _ = cpo.size_similarly(secondary_labels, tertiary_image)
+                    tertiary_image, _ = cellprofiler.region.size_similarly(secondary_labels, tertiary_image)
         #
         # Find the outlines of the primary image and use this to shrink the
         # primary image by one. This guarantees that there is something left
         # of the secondary image after subtraction
         #
-        primary_outline = outline(primary_labels)
+        primary_outline = centrosome.outline.outline(primary_labels)
         tertiary_labels = secondary_labels.copy()
         if self.shrink_primary:
-            primary_mask = np.logical_or(primary_labels == 0,
-                                         primary_outline)
+            primary_mask = numpy.logical_or(primary_labels == 0,
+                                            primary_outline)
         else:
             primary_mask = primary_labels == 0
         tertiary_labels[primary_mask == False] = 0
         #
         # Get the outlines of the tertiary image
         #
-        tertiary_outlines = outline(tertiary_labels) != 0
+        tertiary_outlines = centrosome.outline.outline(tertiary_labels) != 0
         #
         # Make the tertiary objects container
         #
-        tertiary_objects = cpo.Objects()
+        tertiary_objects = cellprofiler.region.Region()
         tertiary_objects.segmented = tertiary_labels
         tertiary_objects.parent_image = tertiary_image
         #
@@ -245,14 +253,14 @@ class IdentifyTertiaryObjects(cpm.Module):
             _, secondary_of_primary = \
                 secondary_objects.relate_children(primary_objects)
             mask = secondary_of_primary != 0
-            child_count_of_primary = np.zeros(mask.shape, int)
+            child_count_of_primary = numpy.zeros(mask.shape, int)
             child_count_of_primary[mask] = child_count_of_secondary[
                 secondary_of_primary[mask] - 1]
-            primary_parents = np.zeros(secondary_parents.shape,
-                                       secondary_parents.dtype)
-            primary_of_secondary = np.zeros(secondary_objects.count + 1, int)
+            primary_parents = numpy.zeros(secondary_parents.shape,
+                                          secondary_parents.dtype)
+            primary_of_secondary = numpy.zeros(secondary_objects.count + 1, int)
             primary_of_secondary[secondary_of_primary] = \
-                np.arange(1, len(secondary_of_primary) + 1)
+                numpy.arange(1, len(secondary_of_primary) + 1)
             primary_of_secondary[0] = 0
             primary_parents = primary_of_secondary[secondary_parents]
         #
@@ -273,14 +281,14 @@ class IdentifyTertiaryObjects(cpm.Module):
                 (self.secondary_objects_name, secondary_parents,
                  child_count_of_secondary, R_PARENT)):
             m.add_measurement(self.subregion_objects_name.value,
-                              cpmi.FF_PARENT % parent_objects_name.value,
+                              cellprofiler.modules.identify.FF_PARENT % parent_objects_name.value,
                               parents_of)
             m.add_measurement(parent_objects_name.value,
-                              cpmi.FF_CHILDREN_COUNT % self.subregion_objects_name.value,
+                              cellprofiler.modules.identify.FF_CHILDREN_COUNT % self.subregion_objects_name.value,
                               child_count)
             mask = parents_of != 0
-            image_number = np.ones(np.sum(mask), int) * m.image_set_number
-            child_object_number = np.argwhere(mask).flatten() + 1
+            image_number = numpy.ones(numpy.sum(mask), int) * m.image_set_number
+            child_object_number = numpy.argwhere(mask).flatten() + 1
             parent_object_number = parents_of[mask]
             m.add_relate_measurement(
                     self.module_num, relationship,
@@ -292,21 +300,21 @@ class IdentifyTertiaryObjects(cpm.Module):
         #
         # The object count
         #
-        cpmi.add_object_count_measurements(workspace.measurements,
-                                           self.subregion_objects_name.value,
-                                           object_count)
+        cellprofiler.modules.identify.add_object_count_measurements(workspace.measurements,
+                                                                    self.subregion_objects_name.value,
+                                                                    object_count)
         #
         # The object locations
         #
-        cpmi.add_object_location_measurements(workspace.measurements,
-                                              self.subregion_objects_name.value,
-                                              tertiary_labels)
+        cellprofiler.modules.identify.add_object_location_measurements(workspace.measurements,
+                                                                       self.subregion_objects_name.value,
+                                                                       tertiary_labels)
         #
         # The outlines
         #
         if self.use_outlines.value:
-            out_img = cpi.Image(tertiary_outlines.astype(bool),
-                                parent_image=tertiary_image)
+            out_img = cellprofiler.image.Image(tertiary_outlines.astype(bool),
+                                               parent=tertiary_image)
             workspace.image_set.add(self.outlines_name.value, out_img)
 
         if self.show_window:
@@ -339,21 +347,21 @@ class IdentifyTertiaryObjects(cpm.Module):
                                  sharexy=figure.subplot(0, 0))
 
     def is_object_identification_module(self):
-        '''IdentifyTertiaryObjects makes tertiary objects sets so it's a identification module'''
+        """IdentifyTertiaryObjects makes tertiary objects sets so it's a identification module"""
         return True
 
     def get_measurement_columns(self, pipeline):
-        '''Return column definitions for measurements made by this module'''
+        """Return column definitions for measurements made by this module"""
         subregion_name = self.subregion_objects_name.value
-        columns = cpmi.get_object_measurement_columns(subregion_name)
+        columns = cellprofiler.modules.identify.get_object_measurement_columns(subregion_name)
         for parent in (self.primary_objects_name.value,
                        self.secondary_objects_name.value):
             columns += [(parent,
-                         cpmi.FF_CHILDREN_COUNT % subregion_name,
-                         cpmeas.COLTYPE_INTEGER),
+                         cellprofiler.modules.identify.FF_CHILDREN_COUNT % subregion_name,
+                         cellprofiler.measurement.COLTYPE_INTEGER),
                         (subregion_name,
-                         cpmi.FF_PARENT % parent,
-                         cpmeas.COLTYPE_INTEGER)]
+                         cellprofiler.modules.identify.FF_PARENT % parent,
+                         cellprofiler.measurement.COLTYPE_INTEGER)]
         return columns
 
     def upgrade_settings(self,
@@ -388,18 +396,18 @@ class IdentifyTertiaryObjects(cpm.Module):
             # if the Matlab outlines name was "Do not use", turn
             # use_outlines off, otherwise turn it on
             #
-            if new_setting_values[3] == cps.DO_NOT_USE:
+            if new_setting_values[3] == cellprofiler.setting.DO_NOT_USE:
                 # The text value, "No", sets use_outlines to False
-                new_setting_values.append(cps.NO)
+                new_setting_values.append(cellprofiler.setting.NO)
             else:
                 # The text value, "Yes", sets use_outlines to True
-                new_setting_values.append(cps.YES)
+                new_setting_values.append(cellprofiler.setting.YES)
             setting_values = new_setting_values
             from_matlab = False
             variable_revision_number = 1
 
         if (not from_matlab) and variable_revision_number == 1:
-            setting_values = setting_values + [cps.YES]
+            setting_values = setting_values + [cellprofiler.setting.YES]
             variable_revision_number = 2
 
         return setting_values, variable_revision_number, from_matlab
@@ -410,7 +418,7 @@ class IdentifyTertiaryObjects(cpm.Module):
         object_name - return measurements made on this object (or 'Image' for image measurements)
         """
         categories = []
-        if object_name == cpmeas.IMAGE:
+        if object_name == cellprofiler.measurement.IMAGE:
             categories += ["Count"]
         elif (object_name == self.primary_objects_name or
                       object_name == self.secondary_objects_name):
@@ -427,7 +435,7 @@ class IdentifyTertiaryObjects(cpm.Module):
         """
         result = []
 
-        if object_name == cpmeas.IMAGE:
+        if object_name == cellprofiler.measurement.IMAGE:
             if category == "Count":
                 result += [self.subregion_objects_name.value]
         if (object_name in

@@ -1,9 +1,8 @@
 import bioformats.formatreader
-import ctypes
 import cellprofiler.measurement
-import cellprofiler.object
 import cellprofiler.pipeline
 import cellprofiler.preferences
+import cellprofiler.region
 import cellprofiler.utilities.cpjvm
 import cellprofiler.utilities.hdf5_dict
 import cellprofiler.utilities.version
@@ -11,6 +10,7 @@ import cellprofiler.utilities.zmqrequest
 import cellprofiler.worker
 import cellprofiler.workspace
 import cStringIO
+import ctypes
 import h5py
 import json
 import logging
@@ -338,15 +338,22 @@ def parse_args(args):
         help=(
                  "Enter login credentials for OMERO. The credentials"
                  " are entered as comma-separated key/value pairs with"
-                 " keys, \"%(OMERO_CK_HOST)s\" - the DNS host name for the OMERO server"
-                 ", \"%(OMERO_CK_PORT)s\" - the server's port # (typically 4064)"
-                 ", \"%(OMERO_CK_USER)s\" - the name of the connecting user"
-                 ", \"%(OMERO_CK_PASSWORD)s\" - the connecting user's password"
-                 ", \"%(OMERO_CK_SESSION_ID)s\" - the session ID for an OMERO client session."
-                 ", \"%(OMERO_CK_CONFIG_FILE)s\" - the path to the OMERO credentials config file."
+                 " keys, \"{host}\" - the DNS host name for the OMERO server"
+                 ", \"{port}\" - the server's port # (typically 4064)"
+                 ", \"{user}\" - the name of the connecting user"
+                 ", \"{password}\" - the connecting user's password"
+                 ", \"{session_id}\" - the session ID for an OMERO client session."
+                 ", \"{config_file}\" - the path to the OMERO credentials config file."
                  " A typical set of credentials might be:"
-                 " --omero-credentials host=demo.openmicroscopy.org,port=4064,session-id=atrvomvjcjfe7t01e8eu59amixmqqkfp"
-             ) % globals()
+                 " --omero-credentials host=demo.openmicroscopy.org,port=4064,session-id=atrvomvjcjfe7t01e8eu59amixmqqkfp".format(**{
+                     'host': OMERO_CK_HOST,
+                     'port': OMERO_CK_PORT,
+                     'user': OMERO_CK_USER,
+                     'password': OMERO_CK_PASSWORD,
+                     'session_id': OMERO_CK_SESSION_ID,
+                     'config_file': OMERO_CK_CONFIG_FILE
+                 })
+             )
     )
 
     parser.add_option(
@@ -454,7 +461,8 @@ def set_omero_credentials_from_string(credentials_string):
         else:
             logging.root.error('Unknown --omero-credentials keyword: "%s"' % k)
 
-            logging.root.error('Acceptable keywords are: "%s"' % '","'.join([OMERO_CK_HOST, OMERO_CK_PORT, OMERO_CK_SESSION_ID]))
+            logging.root.error(
+                'Acceptable keywords are: "%s"' % '","'.join([OMERO_CK_HOST, OMERO_CK_PORT, OMERO_CK_SESSION_ID]))
 
             raise ValueError("Invalid format for --omero-credentials")
 
@@ -545,7 +553,7 @@ def get_batch_commands(filename):
         group_indexes = m[cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_INDEX, image_numbers]
 
         if numpy.any(group_numbers != 1) and numpy.all((group_indexes[1:] == group_indexes[:-1] + 1) | (
-            (group_indexes[1:] == 1) & (group_numbers[1:] == group_numbers[:-1] + 1))):
+                    (group_indexes[1:] == 1) & (group_numbers[1:] == group_numbers[:-1] + 1))):
             #
             # Do -f and -l if more than one group and group numbers
             # and indices are properly constructed
@@ -596,7 +604,7 @@ def write_schema(pipeline_filename):
 
     m = cellprofiler.measurement.Measurements()
 
-    workspace = cellprofiler.workspace.Workspace(pipeline, module, m, cellprofiler.object.ObjectSet, m, None)
+    workspace = cellprofiler.workspace.Workspace(pipeline, module, m, cellprofiler.region.Set, m, None)
 
     module.prepare_run(workspace)
 
@@ -638,7 +646,8 @@ def run_pipeline_headless(options, args):
 
     try:
         if h5py.is_hdf5(options.pipeline_filename):
-            initial_measurements = cellprofiler.measurement.load_measurements(options.pipeline_filename, image_numbers=image_set_numbers)
+            initial_measurements = cellprofiler.measurement.load_measurements(options.pipeline_filename,
+                                                                              image_numbers=image_set_numbers)
     except:
         logging.root.info("Failed to load measurements from pipeline")
 
@@ -701,7 +710,8 @@ def run_pipeline_headless(options, args):
         pipeline.save_measurements(args[0], measurements)
 
     if options.done_file is not None:
-        if measurements is not None and measurements.has_feature(cellprofiler.measurement.EXPERIMENT, cellprofiler.pipeline.EXIT_STATUS):
+        if measurements is not None and measurements.has_feature(cellprofiler.measurement.EXPERIMENT,
+                                                                 cellprofiler.pipeline.EXIT_STATUS):
             done_text = measurements.get_experiment_measurement(cellprofiler.pipeline.EXIT_STATUS)
 
             exit_code = (0 if done_text == "Complete" else -1)

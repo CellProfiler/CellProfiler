@@ -1,3 +1,22 @@
+import logging
+import os
+import wx
+
+import cellprofiler.image
+import cellprofiler.measurement
+import cellprofiler.module
+import cellprofiler.modules
+import cellprofiler.modules.identify
+import cellprofiler.modules.loadimages
+import cellprofiler.preferences
+import cellprofiler.region
+import cellprofiler.setting
+import cellprofiler.setting
+import cellprofiler.workspace
+import centrosome.cpmorphology
+import centrosome.outline
+import numpy
+
 '''<b>Edit Objects Manually</b> allows you create, remove and edit objects previously defined.
 <hr>
 The interface will show the image that you selected as the
@@ -26,27 +45,7 @@ and continue the pipeline.
 See also <b>FilterObjects</b>, <b>MaskObject</b>, <b>OverlayOutlines</b>, <b>ConvertToImage</b>.
 '''
 
-import logging
-
 logger = logging.getLogger(__name__)
-
-import os
-import numpy as np
-import sys
-
-import cellprofiler.preferences as cpprefs
-import cellprofiler.module as cpm
-import cellprofiler.measurement as cpmeas
-import cellprofiler.object as cpo
-import cellprofiler.image as cpi
-import cellprofiler.setting as cps
-from cellprofiler.setting import YES, NO
-import cellprofiler.workspace as cpw
-from centrosome.outline import outline
-from centrosome.cpmorphology import triangle_areas
-
-from cellprofiler.modules.loadimages import pathname2url
-import identify as I
 
 ###########################################
 #
@@ -57,7 +56,7 @@ R_RENUMBER = "Renumber"
 R_RETAIN = "Retain"
 
 
-class EditObjectsManually(I.Identify):
+class EditObjectsManually(cellprofiler.modules.identify.Identify):
     category = "Object Processing"
     variable_revision_number = 3
     module_name = 'EditObjectsManually'
@@ -75,42 +74,51 @@ class EditObjectsManually(I.Identify):
             # Ask the user for a parameter
             self.smoothing_size = cellprofiler.settings.Float(...)
         """
-        self.object_name = cps.ObjectNameSubscriber(
-                "Select the objects to be edited", cps.NONE, doc="""
+        self.object_name = cellprofiler.setting.ObjectNameSubscriber(
+                "Select the objects to be edited", cellprofiler.setting.NONE, doc="""
             Choose a set of previously identified objects
             for editing, such as those produced by one of the
             <b>Identify</b> modules.""")
 
-        self.filtered_objects = cps.ObjectNameProvider(
+        self.filtered_objects = cellprofiler.setting.ObjectNameProvider(
                 "Name the edited objects", "EditedObjects", doc="""
             Enter the name for the objects that remain
             after editing. These objects will be available for use by
             subsequent modules.""")
 
-        self.allow_overlap = cps.Binary(
-                "Allow overlapping objects?", False, doc="""
+        self.allow_overlap = cellprofiler.setting.Binary(
+            "Allow overlapping objects?",
+            False,
+            doc="""
             <b>EditObjectsManually</b> can allow you to edit an
             object so that it overlaps another or it can prevent you from
             overlapping one object with another. Objects such as worms or
             the neurites of neurons may cross each other and might need to
             be edited with overlapping allowed, whereas a monolayer of cells
             might be best edited with overlapping off. <br>
-            Select <i>%(YES)s</i> to allow overlaps or select <i>%(NO)s</i>
-            to prevent them.""" % globals())
+            Select <i>{yes}</i> to allow overlaps or select <i>{no}</i>
+            to prevent them.""".format(**{
+                'yes': cellprofiler.setting.YES,
+                'no': cellprofiler.setting.NO
+            })
+        )
 
-        self.wants_outlines = cps.Binary(
-                "Retain outlines of the edited objects?", False, doc="""
-            Select <i>%(YES)s</i> if you want to keep images of the outlines
+        self.wants_outlines = cellprofiler.setting.Binary(
+            "Retain outlines of the edited objects?",
+            False,
+            doc="""
+            Select <i>{}</i> if you want to keep images of the outlines
             of the objects that remain after editing. This image
             can be saved by downstream modules or overlayed on other images
-            using the <b>OverlayOutlines</b> module.""" % globals())
+            using the <b>OverlayOutlines</b> module.""".format(cellprofiler.setting.YES)
+        )
 
-        self.outlines_name = cps.OutlineNameProvider(
+        self.outlines_name = cellprofiler.setting.OutlineNameProvider(
                 "Name the outline image", "EditedObjectOutlines", doc="""
             <i>(Used only if you have selected to retain outlines of edited objects)</i><br>
             Enter a name for the outline image.""")
 
-        self.renumber_choice = cps.Choice(
+        self.renumber_choice = cellprofiler.setting.Choice(
                 "Numbering of the edited objects",
                 [R_RENUMBER, R_RETAIN], doc="""
             Choose how to number the objects that
@@ -129,16 +137,25 @@ class EditObjectsManually(I.Identify):
             associated with them).</li>
             </ul>""" % globals())
 
-        self.wants_image_display = cps.Binary(
-                "Display a guiding image?", True, doc="""
-            Select <i>%(YES)s</i> to display an image and outlines of the objects. <br>
-            Select <i>%(NO)s</i> if you do not want a guide image while editing""" % globals())
+        self.wants_image_display = cellprofiler.setting.Binary(
+            "Display a guiding image?",
+            True,
+            doc="""
+            Select <i>{yes}</i> to display an image and outlines of the objects. <br>
+            Select <i>{no}</i> if you do not want a guide image while editing""".format(**{
+                'yes': cellprofiler.setting.YES,
+                'no': cellprofiler.setting.NO
+            })
+        )
 
-        self.image_name = cps.ImageNameSubscriber(
-                "Select the guiding image", cps.NONE, doc="""
+        self.image_name = cellprofiler.setting.ImageNameSubscriber(
+            "Select the guiding image",
+            cellprofiler.setting.NONE,
+            doc="""
             <i>(Used only if a guiding image is desired)</i><br>
             This is the image that will appear when editing objects.
-            Choose an image supplied by a previous module.""")
+            Choose an image supplied by a previous module."""
+        )
 
     def settings(self):
         """Return the settings to be loaded or saved to/from the pipeline
@@ -181,14 +198,14 @@ class EditObjectsManually(I.Identify):
         filtered_objects_name = self.filtered_objects.value
 
         orig_objects = workspace.object_set.get_objects(orig_objects_name)
-        assert isinstance(orig_objects, cpo.Objects)
-        orig_labels = [l for l, c in orig_objects.get_labels()]
+        assert isinstance(orig_objects, cellprofiler.region.Region)
+        orig_labels = [l for l, c in orig_objects.labels()]
 
         if self.wants_image_display:
             guide_image = workspace.image_set.get_image(self.image_name.value)
             guide_image = guide_image.pixel_data
-            if np.any(guide_image != np.min(guide_image)):
-                guide_image = (guide_image - np.min(guide_image)) / (np.max(guide_image) - np.min(guide_image))
+            if numpy.any(guide_image != numpy.min(guide_image)):
+                guide_image = (guide_image - numpy.min(guide_image)) / (numpy.max(guide_image) - numpy.min(guide_image))
         else:
             guide_image = None
         filtered_labels = workspace.interaction_request(
@@ -201,25 +218,25 @@ class EditObjectsManually(I.Identify):
         #
         # Renumber objects consecutively if asked to do so
         #
-        unique_labels = np.unique(np.array(filtered_labels))
+        unique_labels = numpy.unique(numpy.array(filtered_labels))
         unique_labels = unique_labels[unique_labels != 0]
         object_count = len(unique_labels)
         if self.renumber_choice == R_RENUMBER:
-            mapping = np.zeros(1 if len(unique_labels) == 0 else np.max(unique_labels) + 1, int)
-            mapping[unique_labels] = np.arange(1, object_count + 1)
+            mapping = numpy.zeros(1 if len(unique_labels) == 0 else numpy.max(unique_labels) + 1, int)
+            mapping[unique_labels] = numpy.arange(1, object_count + 1)
             filtered_labels = [mapping[l] for l in filtered_labels]
         #
         # Make the objects out of the labels
         #
-        filtered_objects = cpo.Objects()
-        i, j = np.mgrid[0:filtered_labels[0].shape[0],
+        filtered_objects = cellprofiler.region.Region()
+        i, j = numpy.mgrid[0:filtered_labels[0].shape[0],
                0:filtered_labels[0].shape[1]]
-        ijv = np.zeros((0, 3), filtered_labels[0].dtype)
+        ijv = numpy.zeros((0, 3), filtered_labels[0].dtype)
         for l in filtered_labels:
-            ijv = np.vstack((ijv,
-                             np.column_stack((i[l != 0],
-                                              j[l != 0],
-                                              l[l != 0]))))
+            ijv = numpy.vstack((ijv,
+                                numpy.column_stack((i[l != 0],
+                                                    j[l != 0],
+                                                    l[l != 0]))))
         filtered_objects.set_ijv(ijv, orig_labels[0].shape)
         if orig_objects.has_unedited_segmented():
             filtered_objects.unedited_segmented = orig_objects.unedited_segmented
@@ -233,27 +250,27 @@ class EditObjectsManually(I.Identify):
         m = workspace.measurements
         child_count, parents = orig_objects.relate_children(filtered_objects)
         m.add_measurement(filtered_objects_name,
-                          I.FF_PARENT % orig_objects_name,
+                          cellprofiler.modules.identify.FF_PARENT % orig_objects_name,
                           parents)
         m.add_measurement(orig_objects_name,
-                          I.FF_CHILDREN_COUNT % filtered_objects_name,
+                          cellprofiler.modules.identify.FF_CHILDREN_COUNT % filtered_objects_name,
                           child_count)
         #
         # The object count
         #
-        I.add_object_count_measurements(m, filtered_objects_name,
-                                        object_count)
+        cellprofiler.modules.identify.add_object_count_measurements(m, filtered_objects_name,
+                                                                    object_count)
         #
         # The object locations
         #
-        I.add_object_location_measurements_ijv(m, filtered_objects_name, ijv)
+        cellprofiler.modules.identify.add_object_location_measurements_ijv(m, filtered_objects_name, ijv)
         #
         # Outlines if we want them
         #
         if self.wants_outlines:
             outlines_name = self.outlines_name.value
-            outlines = outline(filtered_labels[0]).astype(bool)
-            outlines_image = cpi.Image(outlines)
+            outlines = centrosome.outline.outline(filtered_labels[0]).astype(bool)
+            outlines_image = cellprofiler.image.Image(outlines)
             workspace.image_set.add(outlines_name, outlines_image)
 
         workspace.display_data.orig_ijv = orig_objects.ijv
@@ -330,7 +347,7 @@ class EditObjectsManually(I.Identify):
         if new_or_existing_rb.GetSelection() == 1:
             provider = ObjectsImageProvider(
                     "InputObjects",
-                    pathname2url(fullname),
+                    cellprofiler.modules.loadimages.pathname2url(fullname),
                     None, None)
             image = provider.provide_image(None)
             pixel_data = image.pixel_data
@@ -342,12 +359,12 @@ class EditObjectsManually(I.Identify):
         # Load the guide image
         #
         guide_image = load_image(guidename)
-        if np.min(guide_image) != np.max(guide_image):
-            guide_image = ((guide_image - np.min(guide_image)) /
-                           (np.max(guide_image) - np.min(guide_image)))
+        if numpy.min(guide_image) != numpy.max(guide_image):
+            guide_image = ((guide_image - numpy.min(guide_image)) /
+                           (numpy.max(guide_image) - numpy.min(guide_image)))
         if labels is None:
             shape = guide_image.shape[:2]
-            labels = [np.zeros(shape, int)]
+            labels = [numpy.zeros(shape, int)]
         with EditObjectsDialog(
                 guide_image, labels,
                 self.allow_overlap, self.object_name.value) as dialog_box:
@@ -386,39 +403,39 @@ class EditObjectsManually(I.Identify):
                     break
             else:
                 wx.MessageBox("Sorry, could not find the file, %s, in the project, %s" %
-                              (guidname, project_name))
+                              (guidename, project_name))
             project_labels = data_item["labels"]["data"]
-            mask = np.ones(project_labels.shape[2:4], project_labels.dtype)
+            mask = numpy.ones(project_labels.shape[2:4], project_labels.dtype)
             for label in labels:
                 mask[label != 0] = 2
             #
             # "only" use the first 100,000 points in the image
             #
             subsample = 100000
-            npts = np.prod(mask.shape)
+            npts = numpy.prod(mask.shape)
             if npts > subsample:
-                r = np.random.RandomState()
-                r.seed(np.sum(mask) % (2 ** 16))
-                i, j = np.mgrid[0:mask.shape[0], 0:mask.shape[1]]
+                r = numpy.random.RandomState()
+                r.seed(numpy.sum(mask) % (2 ** 16))
+                i, j = numpy.mgrid[0:mask.shape[0], 0:mask.shape[1]]
                 i0 = i[mask == 1]
                 j0 = j[mask == 1]
                 i1 = i[mask == 2]
                 j1 = j[mask == 2]
                 if len(i1) < subsample / 2:
                     p0 = r.permutation(len(i0))[:(subsample - len(i1))]
-                    p1 = np.arange(len(i1))
+                    p1 = numpy.arange(len(i1))
                 elif len(i0) < subsample / 2:
-                    p0 = np.arange(len(i0))
+                    p0 = numpy.arange(len(i0))
                     p1 = r.permutation(len(i1))[:(subsample - len(i0))]
                 else:
                     p0 = r.permutation(len(i0))[:(subsample / 2)]
                     p1 = r.permutation(len(i1))[:(subsample / 2)]
-                mask_copy = np.zeros(mask.shape, mask.dtype)
+                mask_copy = numpy.zeros(mask.shape, mask.dtype)
                 mask_copy[i0[p0], j0[p0]] = 1
                 mask_copy[i1[p1], j1[p1]] = 2
                 if "prediction" in data_item:
                     prediction = data_item["prediction"]
-                    if np.max(prediction[0, 0, :, :, 0]) > .5:
+                    if numpy.max(prediction[0, 0, :, :, 0]) > .5:
                         # Only do if prediction was done (otherwise all == 0)
                         for n in range(2):
                             p = prediction[0, 0, :, :, n]
@@ -444,46 +461,46 @@ class EditObjectsManually(I.Identify):
             return dialog_box.labels
 
     def get_measurement_columns(self, pipeline):
-        '''Return information to use when creating database columns'''
+        """Return information to use when creating database columns"""
         orig_image_name = self.object_name.value
         filtered_image_name = self.filtered_objects.value
-        columns = I.get_object_measurement_columns(filtered_image_name)
+        columns = cellprofiler.modules.identify.get_object_measurement_columns(filtered_image_name)
         columns += [(orig_image_name,
-                     I.FF_CHILDREN_COUNT % filtered_image_name,
-                     cpmeas.COLTYPE_INTEGER),
+                     cellprofiler.modules.identify.FF_CHILDREN_COUNT % filtered_image_name,
+                     cellprofiler.measurement.COLTYPE_INTEGER),
                     (filtered_image_name,
-                     I.FF_PARENT % orig_image_name,
-                     cpmeas.COLTYPE_INTEGER)]
+                     cellprofiler.modules.identify.FF_PARENT % orig_image_name,
+                     cellprofiler.measurement.COLTYPE_INTEGER)]
         return columns
 
     def get_object_dictionary(self):
-        '''Return the dictionary that's used by identify.get_object_*'''
+        """Return the dictionary that's used by identify.get_object_*"""
         return {self.filtered_objects.value: [self.object_name.value]}
 
     def get_categories(self, pipeline, object_name):
-        '''Get the measurement categories produced by this module
+        """Get the measurement categories produced by this module
 
         pipeline - pipeline being run
         object_name - fetch categories for this object
-        '''
+        """
         categories = self.get_object_categories(pipeline, object_name,
                                                 self.get_object_dictionary())
         return categories
 
     def get_measurements(self, pipeline, object_name, category):
-        '''Get the measurement features produced by this module
+        """Get the measurement features produced by this module
 
         pipeline - pipeline being run
         object_name - fetch features for this object
         category - fetch features for this category
-        '''
+        """
         measurements = self.get_object_measurements(
                 pipeline, object_name, category, self.get_object_dictionary())
         return measurements
 
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
-        '''Upgrade the settings written by a prior version of this module
+        """Upgrade the settings written by a prior version of this module
 
         setting_values - array of string values for the module's settings
         variable_revision_number - revision number of module at time of saving
@@ -491,7 +508,7 @@ class EditObjectsManually(I.Identify):
         from_matlab - was a pipeline saved by CP 1.0
 
         returns upgraded settings, new variable revision number and matlab flag
-        '''
+        """
         if from_matlab and variable_revision_number == 2:
             object_name, filtered_object_name, outlines_name, \
             renumber_or_retain = setting_values
@@ -501,10 +518,10 @@ class EditObjectsManually(I.Identify):
             else:
                 renumber_or_retain = R_RETAIN
 
-            if outlines_name == cps.DO_NOT_USE:
-                wants_outlines = cps.NO
+            if outlines_name == cellprofiler.setting.DO_NOT_USE:
+                wants_outlines = cellprofiler.setting.NO
             else:
-                wants_outlines = cps.YES
+                wants_outlines = cellprofiler.setting.YES
 
             setting_values = [object_name, filtered_object_name,
                               wants_outlines, outlines_name, renumber_or_retain]
@@ -514,12 +531,12 @@ class EditObjectsManually(I.Identify):
 
         if (not from_matlab) and variable_revision_number == 1:
             # Added wants image + image
-            setting_values = setting_values + [cps.NO, cps.NONE]
+            setting_values = setting_values + [cellprofiler.setting.NO, cellprofiler.setting.NONE]
             variable_revision_number = 2
 
         if (not from_matlab) and variable_revision_number == 2:
             # Added allow overlap, default = False
-            setting_values = setting_values + [cps.NO]
+            setting_values = setting_values + [cellprofiler.setting.NO]
             variable_revision_number = 3
 
         return setting_values, variable_revision_number, from_matlab

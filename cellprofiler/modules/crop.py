@@ -1,3 +1,16 @@
+import logging
+import math
+
+import cellprofiler.image
+import cellprofiler.measurement
+import cellprofiler.module
+import cellprofiler.modules
+import cellprofiler.preferences
+import cellprofiler.setting
+import cellprofiler.setting
+import centrosome.filter
+import numpy
+
 '''<b>Crop</b> crops or masks an image.
 <hr>
 This module crops images into a rectangle, ellipse, an arbitrary shape provided by
@@ -22,20 +35,6 @@ you drew) so that you can use the <i>Image</i> option in future analyses. To do
 this, save either the mask or cropping in <b>SaveImages</b>. See the <b>SaveImages</b>
 module help for more information on saving cropping shapes.
 '''
-
-import logging
-import math
-import sys
-
-import numpy as np
-from centrosome.filter import stretch
-
-import cellprofiler.image as cpi
-import cellprofiler.module as cpm
-import cellprofiler.measurement as cpmeas
-import cellprofiler.preferences as cpprefs
-import cellprofiler.setting as cps
-from cellprofiler.setting import YES, NO
 
 logger = logging.getLogger(__name__)
 
@@ -89,21 +88,21 @@ D_FIRST_CROPPING = "FirstCropping"
 D_FIRST_CROPPING_MASK = "FirstCroppingMask"
 
 
-class Crop(cpm.Module):
+class Crop(cellprofiler.module.Module):
     module_name = "Crop"
     variable_revision_number = 2
     category = "Image Processing"
 
     def create_settings(self):
-        self.image_name = cps.ImageNameSubscriber(
-                "Select the input image", cps.NONE, doc="""
+        self.image_name = cellprofiler.setting.ImageNameSubscriber(
+                "Select the input image", cellprofiler.setting.NONE, doc="""
             Choose the image to be cropped.""")
 
-        self.cropped_image_name = cps.CroppingNameProvider(
+        self.cropped_image_name = cellprofiler.setting.CroppingNameProvider(
                 "Name the output image", "CropBlue", doc="""
             Enter the name to be given to cropped image.""")
 
-        self.shape = cps.Choice(
+        self.shape = cellprofiler.setting.Choice(
                 "Select the cropping shape",
                 [SH_RECTANGLE, SH_ELLIPSE, SH_IMAGE,
                  SH_OBJECTS, SH_CROPPING],
@@ -134,7 +133,7 @@ class Crop(cpm.Module):
             you choose.</li>
             </ul>""" % globals())
 
-        self.crop_method = cps.Choice(
+        self.crop_method = cellprofiler.setting.Choice(
                 "Select the cropping method",
                 [CM_COORDINATES, CM_MOUSE], CM_COORDINATES, doc="""
             Choose whether you would like to crop by typing in pixel coordinates or clicking with the mouse.
@@ -150,7 +149,7 @@ class Crop(cpm.Module):
             retain.</li>
             </ul>""" % globals())
 
-        self.individual_or_once = cps.Choice(
+        self.individual_or_once = cellprofiler.setting.Choice(
                 "Apply which cycle's cropping pattern?",
                 [IO_INDIVIDUALLY, IO_FIRST], IO_INDIVIDUALLY, doc="""
             Specify how a given cropping pattern should be
@@ -162,7 +161,7 @@ class Crop(cpm.Module):
             <li><i>%(IO_INDIVIDUALLY)s:</i> Every image cycle is cropped individually.</li>
             </ul>""" % globals())
 
-        self.horizontal_limits = cps.IntegerOrUnboundedRange(
+        self.horizontal_limits = cellprofiler.setting.IntegerOrUnboundedRange(
                 "Left and right rectangle positions",
                 minval=0, doc="""
             <i>(Used only if %(SH_RECTANGLE)s selected as cropping shape, or if using Plate Fix)</i><br>
@@ -178,7 +177,7 @@ class Crop(cpm.Module):
             of the image's original size.</li>
             </ul>""" % globals())
 
-        self.vertical_limits = cps.IntegerOrUnboundedRange(
+        self.vertical_limits = cellprofiler.setting.IntegerOrUnboundedRange(
                 "Top and bottom rectangle positions",
                 minval=0, doc="""
             <i>(Used only if %(SH_RECTANGLE)s selected as cropping shape, or if using Plate Fix)</i><br>
@@ -194,41 +193,43 @@ class Crop(cpm.Module):
             of their size.</li>
             </ul>""" % globals())
 
-        self.ellipse_center = cps.Coordinates(
+        self.ellipse_center = cellprofiler.setting.Coordinates(
                 "Coordinates of ellipse center",
                 (500, 500), doc="""
             <i>(Used only if %(SH_ELLIPSE)s selected as cropping shape)</i><br>
             Specify the center pixel position of the ellipse.""" % globals())
 
-        self.ellipse_x_radius = cps.Integer(
+        self.ellipse_x_radius = cellprofiler.setting.Integer(
                 "Ellipse radius, X direction", 400, doc="""
             <i>(Used only if %(SH_ELLIPSE)s selected as cropping shape)</i><br>
             Specify the radius of the ellipse in the X direction.""" % globals())
 
-        self.ellipse_y_radius = cps.Integer(
+        self.ellipse_y_radius = cellprofiler.setting.Integer(
                 "Ellipse radius, Y direction", 200, doc="""
             <i>(Used only if %(SH_ELLIPSE)s selected as cropping shape)</i><br>
             Specify the radius of the ellipse in the Y direction.""" % globals())
 
-        self.image_mask_source = cps.ImageNameSubscriber(
-                "Select the masking image", cps.NONE, doc="""
+        self.image_mask_source = cellprofiler.setting.ImageNameSubscriber(
+                "Select the masking image", cellprofiler.setting.NONE, doc="""
             <i>(Used only if %(SH_IMAGE)s selected as cropping shape)</i><br>
             Select the image to be use as a cropping mask.""" % globals())
 
-        self.cropping_mask_source = cps.CroppingNameSubscriber(
-                "Select the image with a cropping mask", cps.NONE, doc="""
+        self.cropping_mask_source = cellprofiler.setting.CroppingNameSubscriber(
+                "Select the image with a cropping mask", cellprofiler.setting.NONE, doc="""
             <i>(Used only if %(SH_CROPPING)s selected as cropping shape)</i><br>
             Select the image associated with the cropping mask that you want to use.""" % globals())
 
-        self.objects_source = cps.ObjectNameSubscriber(
-                "Select the objects", cps.NONE, doc="""
+        self.objects_source = cellprofiler.setting.ObjectNameSubscriber(
+                "Select the objects", cellprofiler.setting.NONE, doc="""
             <i>(Used only if %(SH_OBJECTS)s selected as cropping shape)</i><br>
             Select the objects that are to be used as a cropping mask.""" % globals())
 
-        self.use_plate_fix = cps.Binary(
-                "Use Plate Fix?", False, doc="""
-            <i>(Used only if %(SH_IMAGE)s selected as cropping shape)</i><br>
-            Select <i>%(YES)s</i> to attempt to regularize the edges around a previously-identified
+        self.use_plate_fix = cellprofiler.setting.Binary(
+            "Use Plate Fix?",
+            False,
+            doc="""
+            <i>(Used only if {image} selected as cropping shape)</i><br>
+            Select <i>{yes}</i> to attempt to regularize the edges around a previously-identified
             plate object.
             <p>When attempting to crop based on a previously identified object
             such as a rectangular plate, the plate may not have
@@ -251,9 +252,14 @@ class Crop(cpm.Module):
             to include the sides of the plate. If you would like the entire plate to
             be shown, you should enter "1:end" for both coordinates. If, for example, you would like
             to crop 80 pixels from each edge of the plate, you could enter Top, Left and Bottom,
-            Right values of 80 and select <i>%(FROM_EDGE)s</i>.</p>""" % globals())
+            Right values of 80 and select <i>{from_edge}</i>.</p>""".format(**{
+                'image': SH_IMAGE,
+                'yes': cellprofiler.setting.YES,
+                'from_edge': FROM_EDGE
+            })
+        )
 
-        self.remove_rows_and_columns = cps.Choice(
+        self.remove_rows_and_columns = cellprofiler.setting.Choice(
                 "Remove empty rows and columns?",
                 [RM_NO, RM_EDGES, RM_ALL],
                 RM_ALL, doc="""
@@ -301,7 +307,7 @@ class Crop(cpm.Module):
 
     def run(self, workspace):
         first_image_set = workspace.measurements.get_current_image_measurement(
-                cpmeas.GROUP_INDEX) == 1
+                cellprofiler.measurement.GROUP_INDEX) == 1
         image_set_list = workspace.image_set_list
         d = self.get_dictionary(image_set_list)
         orig_image = workspace.image_set.get_image(self.image_name.value)
@@ -347,7 +353,7 @@ class Crop(cpm.Module):
             if cropped_pixel_data.ndim == 3:
                 cropped_pixel_data[~cropping, :] = 0
             else:
-                cropped_pixel_data[np.logical_not(cropping)] = 0
+                cropped_pixel_data[numpy.logical_not(cropping)] = 0
             if mask is None:
                 mask = cropping
             if orig_image.has_mask:
@@ -356,13 +362,13 @@ class Crop(cpm.Module):
                 image_mask = mask
         else:
             internal_cropping = self.remove_rows_and_columns == RM_ALL
-            cropped_pixel_data = cpi.crop_image(orig_image.pixel_data,
-                                                cropping,
-                                                internal_cropping)
+            cropped_pixel_data = cellprofiler.image.crop_image(orig_image.pixel_data,
+                                                               cropping,
+                                                               internal_cropping)
             if mask is None:
-                mask = cpi.crop_image(cropping, cropping, internal_cropping)
+                mask = cellprofiler.image.crop_image(cropping, cropping, internal_cropping)
             if orig_image.has_mask:
-                image_mask = cpi.crop_image(
+                image_mask = cellprofiler.image.crop_image(
                         orig_image.get_mask(), cropping, internal_cropping) & mask
             else:
                 image_mask = mask
@@ -374,14 +380,14 @@ class Crop(cpm.Module):
         if self.shape == SH_OBJECTS:
             # Special handling for objects - masked objects instead of
             # mask and crop mask
-            output_image = cpi.Image(image=cropped_pixel_data,
-                                     masking_objects=masking_objects,
-                                     parent_image=orig_image)
+            output_image = cellprofiler.image.Image(data=cropped_pixel_data,
+                                                    masking_objects=masking_objects,
+                                                    parent=orig_image)
         else:
-            output_image = cpi.Image(image=cropped_pixel_data,
-                                     mask=image_mask,
-                                     parent_image=orig_image,
-                                     crop_mask=cropping)
+            output_image = cellprofiler.image.Image(data=cropped_pixel_data,
+                                                    mask=image_mask,
+                                                    parent=orig_image,
+                                                    crop_mask=cropping)
         #
         # Display the image
         #
@@ -400,15 +406,15 @@ class Crop(cpm.Module):
         #
         # Save the old and new image sizes
         #
-        original_image_area = np.product(orig_image.pixel_data.shape[:2])
-        area_retained_after_cropping = np.sum(cropping)
+        original_image_area = numpy.product(orig_image.pixel_data.shape[:2])
+        area_retained_after_cropping = numpy.sum(cropping)
         feature = FF_AREA_RETAINED % self.cropped_image_name.value
         m = workspace.measurements
         m.add_measurement('Image', feature,
-                          np.array([area_retained_after_cropping]))
+                          numpy.array([area_retained_after_cropping]))
         feature = FF_ORIGINAL_AREA % self.cropped_image_name.value
         m.add_measurement('Image', feature,
-                          np.array([original_image_area]))
+                          numpy.array([original_image_area]))
 
     def display(self, workspace, figure):
         orig_image_pixel_data = workspace.display_data.orig_image_pixel_data
@@ -422,10 +428,10 @@ class Crop(cpm.Module):
                                  self.cropped_image_name.value)
 
     def get_measurement_columns(self, pipeline):
-        '''Return information on the measurements made during cropping'''
-        return [(cpmeas.IMAGE,
+        """Return information on the measurements made during cropping"""
+        return [(cellprofiler.measurement.IMAGE,
                  x % self.cropped_image_name.value,
-                 cpmeas.COLTYPE_INTEGER)
+                 cellprofiler.measurement.COLTYPE_INTEGER)
                 for x in (FF_AREA_RETAINED, FF_ORIGINAL_AREA)]
 
     def ui_crop(self, workspace, orig_image):
@@ -441,12 +447,12 @@ class Crop(cpm.Module):
             return self.apply_rectangle_cropping(workspace, orig_image)
 
     def handle_interaction(self, current_shape, orig_image):
-        '''Show the cropping user interface'''
+        """Show the cropping user interface"""
         import matplotlib as M
         import matplotlib.cm
         import wx
         from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
-        pixel_data = stretch(orig_image)
+        pixel_data = centrosome.filter.stretch(orig_image)
         #
         # Create the UI - a dialog with a figure inside
         #
@@ -478,7 +484,7 @@ class Crop(cpm.Module):
         current_handle = [None]
 
         def data_xy(mouse_event):
-            '''Return the mouse event's x & y converted into data-relative coords'''
+            """Return the mouse event's x & y converted into data-relative coords"""
             x = mouse_event.xdata
             y = mouse_event.ydata
             return x, y
@@ -491,8 +497,8 @@ class Crop(cpm.Module):
                 x = max(0, min(x, pixel_data.shape[1]))
                 y = max(0, min(y, pixel_data.shape[0]))
                 self.__selected = False
-                self.__color = cpprefs.get_primary_outline_color()
-                self.__color = np.hstack((self.__color, [255])).astype(float) / 255.0
+                self.__color = cellprofiler.preferences.get_primary_outline_color()
+                self.__color = numpy.hstack((self.__color, [255])).astype(float) / 255.0
                 self.__on_move = on_move
                 super(handle, self).__init__((x - self.width / 2, y - self.height / 2),
                                              self.width, self.height,
@@ -523,12 +529,12 @@ class Crop(cpm.Module):
 
             @property
             def center_x(self):
-                '''The handle's notion of its x coordinate'''
+                """The handle's notion of its x coordinate"""
                 return self.get_x() + self.get_width() / 2
 
             @property
             def center_y(self):
-                '''The handle's notion of its y coordinate'''
+                """The handle's notion of its y coordinate"""
                 return self.get_y() + self.get_height() / 2
 
             def handle_pick(self, event):
@@ -561,8 +567,8 @@ class Crop(cpm.Module):
             def __init__(self, top_left, bottom_right):
                 self.__left, self.__top = top_left
                 self.__right, self.__bottom = bottom_right
-                color = cpprefs.get_primary_outline_color()
-                color = np.hstack((color, [255])).astype(float) / 255.0
+                color = cellprofiler.preferences.get_primary_outline_color()
+                color = numpy.hstack((color, [255])).astype(float) / 255.0
                 self.rectangle = M.patches.Rectangle(
                         (min(self.__left, self.__right),
                          min(self.__bottom, self.__top)),
@@ -622,13 +628,13 @@ class Crop(cpm.Module):
 
         class crop_ellipse(object):
             def __init__(self, center, radius):
-                '''Draw an ellipse with control points at the ellipse center and
-                a given x and y radius'''
+                """Draw an ellipse with control points at the ellipse center and
+                a given x and y radius"""
                 self.center_x, self.center_y = center
                 self.radius_x = self.center_x + radius[0] / 2
                 self.radius_y = self.center_y + radius[1] / 2
-                color = cpprefs.get_primary_outline_color()
-                color = np.hstack((color, [255])).astype(float) / 255.0
+                color = cellprofiler.preferences.get_primary_outline_color()
+                color = numpy.hstack((color, [255])).astype(float) / 255.0
                 self.ellipse = M.patches.Ellipse(center, self.width, self.height,
                                                  edgecolor=color,
                                                  facecolor="none")
@@ -770,15 +776,15 @@ class Crop(cpm.Module):
 
         focus_1_x, focus_1_y = (x_center - dist_x, y_center - dist_y)
         focus_2_x, focus_2_y = (x_center + dist_x, y_center + dist_y)
-        y, x = np.mgrid[0:y_max, 0:x_max]
-        d1 = np.sqrt((x - focus_1_x) ** 2 + (y - focus_1_y) ** 2)
-        d2 = np.sqrt((x - focus_2_x) ** 2 + (y - focus_2_y) ** 2)
+        y, x = numpy.mgrid[0:y_max, 0:x_max]
+        d1 = numpy.sqrt((x - focus_1_x) ** 2 + (y - focus_1_y) ** 2)
+        d2 = numpy.sqrt((x - focus_2_x) ** 2 + (y - focus_2_y) ** 2)
         cropping = d1 + d2 <= major_radius * 2
         return cropping
 
     def get_rectangle_cropping(self, workspace, orig_image):
         """Crop into a rectangle using user-specified coordinates"""
-        cropping = np.ones(orig_image.pixel_data.shape[:2], bool)
+        cropping = numpy.ones(orig_image.pixel_data.shape[:2], bool)
         if not self.horizontal_limits.unbounded_min:
             cropping[:, :self.horizontal_limits.min] = False
         if not self.horizontal_limits.unbounded_max:
@@ -790,7 +796,7 @@ class Crop(cpm.Module):
         return cropping
 
     def apply_rectangle_cropping(self, workspace, orig_image):
-        cropping = np.ones(orig_image.pixel_data.shape[:2], bool)
+        cropping = numpy.ones(orig_image.pixel_data.shape[:2], bool)
         d = self.get_dictionary(workspace.image_set_list)
         r = d[SH_RECTANGLE]
         left, top, right, bottom = [
@@ -814,14 +820,14 @@ class Crop(cpm.Module):
         """
         pixel_data = pixel_data.copy()
         i_histogram = pixel_data.sum(axis=1)
-        i_cumsum = np.cumsum(i_histogram > pixel_data.shape[0] / 2)
+        i_cumsum = numpy.cumsum(i_histogram > pixel_data.shape[0] / 2)
         j_histogram = pixel_data.sum(axis=0)
-        j_cumsum = np.cumsum(j_histogram > pixel_data.shape[1] / 2)
-        i_first = np.argwhere(i_cumsum == 1)[0]
-        i_last = np.argwhere(i_cumsum == i_cumsum.max())[0]
+        j_cumsum = numpy.cumsum(j_histogram > pixel_data.shape[1] / 2)
+        i_first = numpy.argwhere(i_cumsum == 1)[0]
+        i_last = numpy.argwhere(i_cumsum == i_cumsum.max())[0]
         i_end = i_last + 1
-        j_first = np.argwhere(j_cumsum == 1)[0]
-        j_last = np.argwhere(j_cumsum == j_cumsum.max())[0]
+        j_first = numpy.argwhere(j_cumsum == 1)[0]
+        j_last = numpy.argwhere(j_cumsum == j_cumsum.max())[0]
         j_end = j_last + 1
         if not self.horizontal_limits.unbounded_min:
             j_first = max(j_first, self.horizontal_limits.min)
@@ -858,13 +864,13 @@ class Crop(cpm.Module):
         if from_matlab and variable_revision_number == 4:
             # Added OFF_REMOVE_ROWS_AND_COLUMNS
             new_setting_values = list(setting_values)
-            new_setting_values.append(cps.NO)
+            new_setting_values.append(cellprofiler.setting.NO)
             variable_revision_number = 5
         if from_matlab and variable_revision_number == 5:
             # added image mask source, cropping mask source and reworked
             # the shape to add SH_IMAGE and SH_CROPPING
             new_setting_values = list(setting_values)
-            new_setting_values.extend([cps.NONE, cps.NONE, cps.NONE])
+            new_setting_values.extend([cellprofiler.setting.NONE, cellprofiler.setting.NONE, cellprofiler.setting.NONE])
             shape = setting_values[OFF_SHAPE]
             if shape not in (SH_ELLIPSE, SH_RECTANGLE):
                 # the "shape" is the name of some image file. If it
@@ -877,7 +883,7 @@ class Crop(cpm.Module):
                 else:
                     new_setting_values[OFF_IMAGE_MASK_SOURCE] = shape
                     new_setting_values[OFF_SHAPE] = SH_IMAGE
-            if new_setting_values[OFF_REMOVE_ROWS_AND_COLUMNS] == cps.YES:
+            if new_setting_values[OFF_REMOVE_ROWS_AND_COLUMNS] == cellprofiler.setting.YES:
                 new_setting_values[OFF_REMOVE_ROWS_AND_COLUMNS] = RM_EDGES
             setting_values = new_setting_values
             variable_revision_number = 2
@@ -886,7 +892,7 @@ class Crop(cpm.Module):
         if (not from_matlab) and variable_revision_number == 1:
             # Added ability to crop objects
             new_setting_values = list(setting_values)
-            new_setting_values.append(cps.NONE)
+            new_setting_values.append(cellprofiler.setting.NONE)
             variable_revision_number = 2
 
         if variable_revision_number == 2 and not from_matlab:

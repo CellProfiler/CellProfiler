@@ -1,3 +1,0 @@
-http://cellprofiler.org/foo.tif
-https://github.com/foo.tif
-ftp://example.com/foo.tif

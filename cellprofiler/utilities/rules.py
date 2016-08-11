@@ -1,5 +1,5 @@
-'''rules - code for parsing and applying rules from CPA
-'''
+"""rules - code for parsing and applying rules from CPA
+"""
 
 import re
 
@@ -9,13 +9,13 @@ import cellprofiler.measurement as cpmeas
 
 
 class Rules(object):
-    '''Represents a set of CPA rules'''
+    """Represents a set of CPA rules"""
 
     class Rule(object):
-        '''Represents a single rule'''
+        """Represents a single rule"""
 
         def __init__(self, object_name, feature, comparitor, threshold, weights):
-            '''Create a rule
+            """Create a rule
 
             object_name - the name of the object in the measurements
             feature - the name of the measurement (for instance,
@@ -26,7 +26,7 @@ class Rules(object):
                       scores for the rule being true and
                       weights[1,:] are the scores for the rule being false
                       and there are N categories.
-            '''
+            """
             self.object_name = object_name
             self.comparitor = comparitor
             self.threshold = threshold
@@ -34,7 +34,7 @@ class Rules(object):
             self.weights = weights
 
         def score(self, measurements):
-            '''Score a rule
+            """Score a rule
 
             measurements - a measurements structure
                            (cellprofiler.measurements.Measurements). Look
@@ -43,7 +43,7 @@ class Rules(object):
             Returns a MxN matrix where M is the number of measurements taken
             for the given feature in the current image set and N is the
             number of categories as indicated by the weights.
-            '''
+            """
             values = measurements.get_current_measurement(self.object_name,
                                                           self.feature)
             if values is None:
@@ -69,20 +69,20 @@ class Rules(object):
             return score
 
     def __init__(self):
-        '''Create an empty set of rules.
+        """Create an empty set of rules.
 
         Use "parse" to read in the rules file or add rules programatically
         to self.rules.
-        '''
+        """
         self.rules = []
 
     def parse(self, fd_or_file):
-        '''Parse a rules file
+        """Parse a rules file
 
         fd_or_file - either a filename or a file descriptor. Parse assumes
                      that fd_or_file is a file name if it's a string or
                      unicode, otherwise it assumes that it's a file descriptor.
-        '''
+        """
         line_pattern = ("^IF\\s+\\((?P<object_name>[^_]+)"
                         "_(?P<feature>\\S+)"
                         "\\s*(?P<comparitor>[><]=?)"
@@ -117,7 +117,7 @@ class Rules(object):
                 fd.close()
 
     def score(self, measurements):
-        '''Score the measurements according to the rules list'''
+        """Score the measurements according to the rules list"""
         if len(self.rules) == 0:
             raise ValueError("No rules to apply")
         score = self.rules[0].score(measurements)

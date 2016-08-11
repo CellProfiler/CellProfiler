@@ -1,4 +1,14 @@
-'''<b>Enhance Or Suppress Features</b> enhances or suppresses certain image features 
+import cellprofiler.gui.help
+import cellprofiler.image
+import cellprofiler.module
+import cellprofiler.setting
+import centrosome.cpmorphology
+import centrosome.filter
+import centrosome.filter
+import centrosome.filter
+import scipy.ndimage
+
+'''<b>Enhance Or Suppress Features</b> enhances or suppresses certain image features
 (such as speckles, ring shapes, and neurites), which can improve subsequent
 identification of objects.
 <hr>
@@ -6,18 +16,6 @@ This module enhances or suppresses the intensity of certain pixels relative
 to the rest of the image, by applying image processing filters to the image. It
 produces a grayscale image in which objects can be identified using an <b>Identify</b> module.
 '''
-
-import numpy as np
-from centrosome.cpmorphology import opening, closing, white_tophat
-from centrosome.filter import enhance_dark_holes, circular_hough
-from centrosome.filter import hessian, median_filter
-from centrosome.filter import variance_transform, line_integration
-from scipy.ndimage import gaussian_filter
-
-import cellprofiler.image as cpi
-import cellprofiler.module as cpm
-import cellprofiler.setting as cps
-from cellprofiler.gui.help import HELP_ON_MEASURING_DISTANCES, PROTIP_AVOID_ICON
 
 ENHANCE = 'Enhance'
 SUPPRESS = 'Suppress'
@@ -36,23 +34,23 @@ N_GRADIENT = "Line structures"
 N_TUBENESS = "Tubeness"
 
 
-class EnhanceOrSuppressFeatures(cpm.Module):
+class EnhanceOrSuppressFeatures(cellprofiler.module.Module):
     module_name = 'EnhanceOrSuppressFeatures'
     category = "Image Processing"
     variable_revision_number = 5
 
     def create_settings(self):
-        self.image_name = cps.ImageNameSubscriber(
+        self.image_name = cellprofiler.setting.ImageNameSubscriber(
                 'Select the input image',
-                cps.NONE, doc="""
+                cellprofiler.setting.NONE, doc="""
             Select the image with features to be enhanced or suppressed.""")
 
-        self.filtered_image_name = cps.ImageNameProvider(
+        self.filtered_image_name = cellprofiler.setting.ImageNameProvider(
                 'Name the output image',
                 'FilteredBlue', doc="""
             Enter a name for the feature-enhanced or suppressed image.""")
 
-        self.method = cps.Choice(
+        self.method = cellprofiler.setting.Choice(
                 'Select the operation',
                 [ENHANCE, SUPPRESS], doc="""
             Select whether you want to enhance or suppress the features you designated.
@@ -63,7 +61,7 @@ class EnhanceOrSuppressFeatures(cpm.Module):
             removed.</li>
             </ul>""" % globals())
 
-        self.enhance_method = cps.Choice(
+        self.enhance_method = cellprofiler.setting.Choice(
                 'Feature type',
                 [E_SPECKLES, E_NEURITES, E_DARK_HOLES, E_CIRCLES, E_TEXTURE, E_DIC], doc="""
             <i>(Used only if %(ENHANCE)s is selected)</i><br>
@@ -114,46 +112,60 @@ class EnhanceOrSuppressFeatures(cpm.Module):
             In addition, this module enables you to suppress certain features (such as speckles)
             by specifying the feature size.""" % globals())
 
-        self.object_size = cps.Integer(
-                'Feature size', 10, 2, doc="""
+        self.object_size = cellprofiler.setting.Integer(
+            'Feature size',
+            10,
+            2,
+            doc="""
             <i>(Used only if circles, speckles or neurites are selected, or if suppressing features)</i><br>
             Enter the diameter of the largest speckle, the width of the circle
             or the width of the neurites to be enhanced or suppressed, which
-            will be used to calculate an adequate filter size. %(HELP_ON_MEASURING_DISTANCES)s""" % globals())
+            will be used to calculate an adequate filter size. {}""".format(cellprofiler.gui.help.HELP_ON_MEASURING_DISTANCES)
+        )
 
-        self.hole_size = cps.IntegerRange(
+        self.hole_size = cellprofiler.setting.IntegerRange(
                 'Range of hole sizes', value=(1, 10), minval=1, doc="""
             <i>(Used only if %(E_DARK_HOLES)s is selected)</i><br>
             The range of hole sizes to be enhanced. The algorithm will
             identify only holes whose diameters fall between these two
             values.""" % globals())
 
-        self.smoothing = cps.Float(
-                'Smoothing scale', value=2.0, minval=0, doc="""
-            <i>(Used only for the %(E_TEXTURE)s, %(E_DIC)s or %(E_NEURITES)s methods)</i><br>
+        self.smoothing = cellprofiler.setting.Float(
+            'Smoothing scale',
+            value=2.0,
+            minval=0,
+            doc="""
+            <i>(Used only for the {texture}, {dic} or {neurites} methods)</i><br>
             <ul>
-            <li><i>%(E_TEXTURE)s</i>: This is the scale of the texture features, roughly
+            <li><i>{texture}</i>: This is the scale of the texture features, roughly
             in pixels. The algorithm uses the smoothing value entered as
             the sigma of the Gaussian used to weight nearby pixels by distance
             in the variance calculation.</li>
-            <li><i>%(E_DIC)s:</i> Specifies the amount of smoothing of the image in the direction parallel to the
+            <li><i>{dic}:</i> Specifies the amount of smoothing of the image in the direction parallel to the
             shear axis of the image. The line integration method will leave
             streaks in the image without smoothing as it encounters noisy
             pixels during the course of the integration. The smoothing takes
             contributions from nearby pixels which decreases the noise but
             smooths the resulting image. </li>
-            <li><i>%(E_DIC)s:</i> Increase the smoothing to
+            <li><i>{dic}:</i> Increase the smoothing to
             eliminate streakiness and decrease the smoothing to sharpen
             the image.</li>
-            <li><i>%(E_NEURITES)s:</i> The <i>%(N_TUBENESS)s</i> option uses this scale
+            <li><i>{neurites}:</i> The <i>{tubeness}</i> option uses this scale
             as the sigma of the Gaussian used to smooth the image prior to
             gradient detection.</li>
             </ul>
-            <img src="memory:%(PROTIP_AVOID_ICON)s">&nbsp;
+            <img src="memory:{protip_avoid_icon}">&nbsp;
             Smoothing can be turned off by entering a value of zero, but this
-            is not recommended.""" % globals())
+            is not recommended.""".format(**{
+                'texture': E_TEXTURE,
+                'dic': E_DIC,
+                'neurites': E_NEURITES,
+                'tubeness': N_TUBENESS,
+                'protip_avoid_icon': cellprofiler.gui.help.PROTIP_AVOID_ICON
+            })
+        )
 
-        self.angle = cps.Float(
+        self.angle = cellprofiler.setting.Float(
                 'Shear angle', value=0, doc="""
             <i>(Used only for the %(E_DIC)s method)</i><br>
             The shear angle is the direction of constant value for the
@@ -165,7 +177,7 @@ class EnhanceOrSuppressFeatures(cpm.Module):
             the shear angle is 180&deg; + 45&deg; = 225&deg;.
             """ % globals())
 
-        self.decay = cps.Float(
+        self.decay = cellprofiler.setting.Float(
                 'Decay', value=0.95, minval=0.1, maxval=1, doc=
                 """<i>(Used only for the %(E_DIC)s method)</i><br>
                 The decay setting applies an exponential decay during the process
@@ -178,7 +190,7 @@ class EnhanceOrSuppressFeatures(cpm.Module):
                 Set the decay to a small value if there appears to be a bias
                 in the integration direction.""" % globals())
 
-        self.neurite_choice = cps.Choice(
+        self.neurite_choice = cellprofiler.setting.Choice(
                 "Enhancement method",
                 [N_TUBENESS, N_GRADIENT], doc="""
             <i>(Used only for the %(E_NEURITES)s method)</i><br>
@@ -203,7 +215,7 @@ class EnhanceOrSuppressFeatures(cpm.Module):
             The effect is to enhance lines whose width is the "feature size".</li>
             </ul>""" % globals())
 
-        self.speckle_accuracy = cps.Choice(
+        self.speckle_accuracy = cellprofiler.setting.Choice(
                 "Speed and accuracy",
                 choices=[S_FAST, S_SLOW],
                 doc="""
@@ -264,14 +276,14 @@ class EnhanceOrSuppressFeatures(cpm.Module):
         if self.method == ENHANCE:
             if self.enhance_method == E_SPECKLES:
                 if self.speckle_accuracy == S_SLOW or radius <= 3:
-                    result = white_tophat(pixel_data, radius, mask)
+                    result = centrosome.cpmorphology.white_tophat(pixel_data, radius, mask)
                 else:
                     #
                     # white_tophat = img - opening
                     #              = img - dilate(erode)
                     #              = img - median_filter(median_filter(0%) 100%)
-                    result = pixel_data - median_filter(
-                            median_filter(pixel_data, mask, radius, percent=0),
+                    result = pixel_data - centrosome.filter.median_filter(
+                            centrosome.filter.median_filter(pixel_data, mask, radius, percent=0),
                             mask, radius, percent=100)
                     if mask is not None:
                         result[~mask] = pixel_data[~mask]
@@ -284,15 +296,15 @@ class EnhanceOrSuppressFeatures(cpm.Module):
                     #                = img + img - opening - closing + img
                     #                = 3*img - opening - closing
                     result = (3 * pixel_data -
-                              opening(pixel_data, radius, mask) -
-                              closing(pixel_data, radius, mask))
+                              centrosome.cpmorphology.opening(pixel_data, radius, mask) -
+                              centrosome.cpmorphology.closing(pixel_data, radius, mask))
                     result[result > 1] = 1
                     result[result < 0] = 0
                 else:
                     sigma = self.smoothing.value
-                    smoothed = gaussian_filter(pixel_data, sigma)
-                    L = hessian(smoothed, return_hessian=False,
-                                return_eigenvectors=False)
+                    smoothed = scipy.ndimage.gaussian_filter(pixel_data, sigma)
+                    L = centrosome.filter.hessian(smoothed, return_hessian=False,
+                                                  return_eigenvectors=False)
                     #
                     # The positive values are darker pixels with lighter
                     # neighbors. The original ImageJ code scales the result
@@ -307,30 +319,30 @@ class EnhanceOrSuppressFeatures(cpm.Module):
             elif self.enhance_method == E_DARK_HOLES:
                 min_radius = max(1, int(self.hole_size.min / 2))
                 max_radius = int((self.hole_size.max + 1) / 2)
-                result = enhance_dark_holes(pixel_data, min_radius,
-                                            max_radius, mask)
+                result = centrosome.filter.enhance_dark_holes(pixel_data, min_radius,
+                                                              max_radius, mask)
             elif self.enhance_method == E_CIRCLES:
-                result = circular_hough(pixel_data, radius + .5, mask=mask)
+                result = centrosome.filter.circular_hough(pixel_data, radius + .5, mask=mask)
             elif self.enhance_method == E_TEXTURE:
-                result = variance_transform(pixel_data,
-                                            self.smoothing.value,
-                                            mask=mask)
+                result = centrosome.filter.variance_transform(pixel_data,
+                                                              self.smoothing.value,
+                                                              mask=mask)
             elif self.enhance_method == E_DIC:
-                result = line_integration(pixel_data,
-                                          self.angle.value,
-                                          self.decay.value,
-                                          self.smoothing.value)
+                result = centrosome.filter.line_integration(pixel_data,
+                                                            self.angle.value,
+                                                            self.decay.value,
+                                                            self.smoothing.value)
             else:
                 raise NotImplementedError("Unimplemented enhance method: %s" %
                                           self.enhance_method.value)
         elif self.method == SUPPRESS:
             if image.has_mask:
-                result = opening(image.pixel_data, radius, image.mask)
+                result = centrosome.cpmorphology.opening(image.pixel_data, radius, image.mask)
             else:
-                result = opening(image.pixel_data, radius)
+                result = centrosome.cpmorphology.opening(image.pixel_data, radius)
         else:
             raise ValueError("Unknown filtering method: %s" % self.method)
-        result_image = cpi.Image(result, parent_image=image)
+        result_image = cellprofiler.image.Image(result, parent=image)
         workspace.image_set.add(self.filtered_image_name.value, result_image)
 
         if self.show_window:
@@ -349,7 +361,7 @@ class EnhanceOrSuppressFeatures(cpm.Module):
 
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
-        '''Adjust setting values if they came from a previous revision
+        """Adjust setting values if they came from a previous revision
 
         setting_values - a sequence of strings representing the settings
                          for the module as stored in the pipeline
@@ -367,7 +379,7 @@ class EnhanceOrSuppressFeatures(cpm.Module):
         variable_revision_number and True if upgraded to CP 2.0, otherwise
         they should leave things as-is so that the caller can report
         an error.
-        '''
+        """
         if not from_matlab and variable_revision_number == 1:
             #
             # V1 -> V2, added enhance method and hole size

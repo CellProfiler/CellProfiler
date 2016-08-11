@@ -1,5 +1,29 @@
+import math
+import re
+
+import cellprofiler.gui.help
 import cellprofiler.icons
-from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON
+import cellprofiler.image
+import cellprofiler.measurement
+import cellprofiler.module
+import cellprofiler.modules
+import cellprofiler.modules.identify
+import cellprofiler.preferences
+import cellprofiler.region
+import cellprofiler.setting
+import centrosome.cpmorphology
+import centrosome.filter
+import centrosome.otsu
+import centrosome.outline
+import centrosome.propagate
+import centrosome.smooth
+import centrosome.threshold
+import identify as cpmi
+import numpy as np
+import scipy.ndimage
+import scipy.sparse
+import scipy.stats
+import skimage.morphology.watershed
 
 __doc__ = '''
 <b>Identify Primary Objects</b> identifies biological components of interest in grayscale images
@@ -43,11 +67,11 @@ grayscale using the <b>ColorToGray</b> module.</li>
 See below for help on the individual settings. The following icons are used to call attention to
 key items:
 <ul>
-<li><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;Our recommendation or example use case
+<li><img src="memory:{recommend_icon}">&nbsp;Our recommendation or example use case
 for which a particular setting is best used.</li>
-<li><img src="memory:%(PROTIP_AVOID_ICON)s">&nbsp;Indicates a condition under which
+<li><img src="memory:{avoid_icon}">&nbsp;Indicates a condition under which
 a particular setting may not work well.</li>
-<li><img src="memory:%(TECH_NOTE_ICON)s">&nbsp;Technical note. Provides more
+<li><img src="memory:{tech_note_icon}">&nbsp;Technical note. Provides more
 detailed information on the setting.</li>
 </ul>
 
@@ -154,38 +178,11 @@ segmentation of cell nuclei in tissue sections." <i>J Microsc</i> 215, 67-76.
 
 <p>See also <b>IdentifySecondaryObjects</b>, <b>IdentifyTertiaryObjects</b>,
 <b>IdentifyObjectsManually</b> and <b>ClassifyPixels</b> </p>
-''' % globals()
-
-import math
-import scipy.ndimage
-import scipy.sparse
-import numpy as np
-import re
-import scipy.stats
-
-import identify as cpmi
-import cellprofiler.module
-import cellprofiler.image as cpi
-import cellprofiler.measurement as cpmeas
-import cellprofiler.setting as cps
-from cellprofiler.setting import YES, NO
-import cellprofiler.preferences as cpp
-from centrosome.otsu import otsu
-from centrosome.cpmorphology import fill_labeled_holes, strel_disk
-from centrosome.cpmorphology import binary_shrink, relabel
-from centrosome.cpmorphology import is_local_maximum
-from centrosome.filter import stretch, laplacian_of_gaussian
-import skimage.morphology.watershed
-from centrosome.propagate import propagate
-from centrosome.smooth import smooth_with_noise
-import centrosome.outline
-import cellprofiler.object
-from cellprofiler.setting import AUTOMATIC
-import centrosome.threshold as cpthresh
-from identify import TSM_AUTOMATIC, TS_BINARY_IMAGE
-from identify import draw_outline
-from identify import FI_IMAGE_SIZE
-from cellprofiler.gui.help import HELP_ON_MEASURING_DISTANCES, RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
+'''.format(**{
+    'recommend_icon': cellprofiler.gui.help.PROTIP_RECOMEND_ICON,
+    'avoid_icon': cellprofiler.gui.help.PROTIP_AVOID_ICON,
+    'tech_note_icon': cellprofiler.gui.help.TECH_NOTE_ICON
+})
 
 #################################################
 #
@@ -278,65 +275,97 @@ class IdentifyPrimaryObjects(cpmi.Identify):
     category = "Object Processing"
     module_name = "IdentifyPrimaryObjects"
 
+    docvars = {
+        'exclude_size_setting_text': EXCLUDE_SIZE_SETTING_TEXT,
+        'protip_recommend_icon': cellprofiler.gui.help.PROTIP_RECOMEND_ICON,
+        'help_on_measuring_distances': cellprofiler.gui.help.HELP_ON_MEASURING_DISTANCES,
+        'automatic_smoothing_setting_text': AUTOMATIC_SMOOTHING_SETTING_TEXT,
+        'automatic_maxima_suppression_setting_text': AUTOMATIC_MAXIMA_SUPPRESSION_SETTING_TEXT,
+        'wants_automatic_log_diameter_setting_text': WANTS_AUTOMATIC_LOG_DIAMETER_SETTING_TEXT,
+        'yes': cellprofiler.setting.YES,
+        'size_range_setting_text': SIZE_RANGE_SETTING_TEXT,
+        'no': cellprofiler.setting.NO,
+        'limit_none': LIMIT_NONE,
+        'limit_truncate': LIMIT_TRUNCATE,
+        'limit_erase': LIMIT_ERASE,
+        'un_intensity': UN_INTENSITY,
+        'un_shape': UN_SHAPE,
+        'intensity_declumping_icon': INTENSITY_DECLUMPING_ICON,
+        'tech_note_icon': cellprofiler.gui.help.TECH_NOTE_ICON,
+        'shape_declumping_icon': SHAPE_DECLUMPING_ICON,
+        'un_log': UN_LOG,
+        'un_none': UN_NONE,
+        'wa_intensity': WA_INTENSITY,
+        'wa_shape': WA_SHAPE,
+        'wa_propagate': WA_PROPAGATE,
+        'wa_none': WA_NONE,
+        'smoothing_filter_size_setting_text': SMOOTHING_FILTER_SIZE_SETTING_TEXT,
+        'retaining_outlines_help': cellprofiler.gui.help.RETAINING_OUTLINES_HELP,
+        'naming_outlines_help': cellprofiler.gui.help.NAMING_OUTLINES_HELP,
+        'fh_thresholding': FH_THRESHOLDING,
+        'fh_declump': FH_DECLUMP,
+        'fh_never': FH_NEVER
+    }
+
     def create_settings(self):
 
-        self.image_name = cps.ImageNameSubscriber(
+        self.image_name = cellprofiler.setting.ImageNameSubscriber(
                 "Select the input image", doc="""
             Select the image that you want to use to identify objects.""")
 
-        self.object_name = cps.ObjectNameProvider(
+        self.object_name = cellprofiler.setting.ObjectNameProvider(
                 "Name the primary objects to be identified",
                 "Nuclei", doc="""
             Enter the name that you want to call the objects identified by this module.""")
 
-        self.size_range = cps.IntegerRange(
+        self.size_range = cellprofiler.setting.IntegerRange(
                 SIZE_RANGE_SETTING_TEXT,
                 (10, 40), minval=1, doc='''
             This setting allows the user to make a distinction on the basis of size, which can
-            be used in conjunction with the <i>%(EXCLUDE_SIZE_SETTING_TEXT)s</i> setting
+            be used in conjunction with the <i>{exclude_size_setting_text}</i> setting
             below to remove objects that fail this criteria.
             <dl>
-            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;
+            <dd><img src="memory:{protip_recommend_icon}">&nbsp;
             The units used here are pixels so that it is easy to zoom in on objects and determine
-            typical diameters. %(HELP_ON_MEASURING_DISTANCES)s</dd>
+            typical diameters. {help_on_measuring_distances}</dd>
             </dl>
             <p>A few important notes:
             <ul>
             <li>Several other settings make use of the minimum object size entered here,
-            whether the <i>%(EXCLUDE_SIZE_SETTING_TEXT)s</i> setting is used or not:
+            whether the <i>{exclude_size_setting_text}</i> setting is used or not:
             <ul>
-            <li><i>%(AUTOMATIC_SMOOTHING_SETTING_TEXT)s</i></li>
-            <li><i>%(AUTOMATIC_MAXIMA_SUPPRESSION_SETTING_TEXT)s</i></li>
-            <li><i>%(WANTS_AUTOMATIC_LOG_DIAMETER_SETTING_TEXT)s</i> (shown only if Laplacian of
+            <li><i>{automatic_smoothing_setting_text}</i></li>
+            <li><i>{automatic_maxima_suppression_setting_text}</i></li>
+            <li><i>{wants_automatic_log_diameter_setting_text}</i> (shown only if Laplacian of
             Gaussian is selected as the declumping method)</li>
             </ul>
             </li>
             <li>For non-round objects, the diameter here is actually the "equivalent diameter", i.e.,
             the diameter of a circle with the same area as the object.</li>
             </ul>
-            </p>''' % globals())
+            </p>'''.format(**self.docvars))
 
-        self.exclude_size = cps.Binary(
+        self.exclude_size = cellprofiler.setting.Binary(
                 EXCLUDE_SIZE_SETTING_TEXT,
                 True, doc='''
-            Select <i>%(YES)s</i> to discard objects outside the range you specified in the
-            <i>%(SIZE_RANGE_SETTING_TEXT)s</i> setting. Select <i>%(NO)s</i> to ignore this
+            Select <i>{yes}</i> to discard objects outside the range you specified in the
+            <i>{size_range_setting_text}</i> setting. Select <i>{no}</i> to ignore this
             criterion.
             <p>Objects discarded
             based on size are outlined in magenta in the module's display. See also the
             <b>FilterObjects</b> module to further discard objects based on some
             other measurement.
             <dl>
-            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;
-            Select <i>%(YES)s</i> allows you to exclude small objects (e.g., dust, noise,
+            <dd><img src="memory:{protip_recommend_icon}">&nbsp;
+            Select <i>{yes}</i> allows you to exclude small objects (e.g., dust, noise,
             and debris) or large objects (e.g., large clumps) if desired. </dd>
             </dl>
-            ''' % globals())
+            '''.format(**self.docvars))
 
-        self.merge_objects = cps.Binary(
+        self.merge_objects = cellprofiler.setting.Binary(
                 "Try to merge too small objects with nearby larger objects?",
                 False, doc='''
-            Select <i>%(YES)s</i> to cause objects that are
+            Select <i>{yes}</i> to cause objects that are
             smaller than the specified minimum diameter to be merged, if possible, with
             other surrounding objects.
             <p>This is helpful in cases when an object was
@@ -347,15 +376,15 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             not notice that this is the case, since it may successfully piece together the
             objects again. It is therefore a good idea to run the
             module first without merging objects to make sure the settings are
-            reasonably effective.</p>''' % globals())
+            reasonably effective.</p>'''.format(**self.docvars))
 
-        self.exclude_border_objects = cps.Binary(
+        self.exclude_border_objects = cellprofiler.setting.Binary(
                 "Discard objects touching the border of the image?",
                 True, doc='''
-            Select <i>%(YES)s</i> to discard objects that touch the border of the image.
-            Select <i>%(NO)s</i> to ignore this criterion.
+            Select <i>{yes}</i> to discard objects that touch the border of the image.
+            Select <i>{no}</i> to ignore this criterion.
             <dl>
-            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;
+            <dd><img src="memory:{protip_recommend_icon}">&nbsp;
             Removing objects that touch the image border is useful when you do
             not want to make downstream measurements of objects that are not fully within the
             field of view. For example, morphological measurements obtained from
@@ -364,11 +393,11 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             <p>Objects discarded due to border touching are outlined in yellow in the module's display.
             Note that if a per-object thresholding method is used or if the image has been
             previously cropped or masked, objects that touch the
-            border of the cropped or masked region may also discarded.</p>''' % globals())
+            border of the cropped or masked region may also discarded.</p>'''.format(**self.docvars))
 
         self.create_threshold_settings()
 
-        self.unclump_method = cps.Choice(
+        self.unclump_method = cellprofiler.setting.Choice(
                 'Method to distinguish clumped objects',
                 [UN_INTENSITY, UN_SHAPE, UN_LOG, UN_NONE], doc="""
             This setting allows you to choose the method that is used to segment
@@ -377,74 +406,74 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             <ul>
             <li>
             <table cellpadding="0"><tr><td>
-            <i>%(UN_INTENSITY)s:</i> For objects that tend to have only a single peak of brightness
+            <i>{un_intensity}:</i> For objects that tend to have only a single peak of brightness
             (e.g. objects that are brighter towards their interiors and
             dimmer towards their edges), this option counts each intensity peak as a separate object.
             The objects can
             be any shape, so they need not be round and uniform in size as would be
-            required for the <i>%(UN_SHAPE)s</i> option.
+            required for the <i>{un_shape}</i> option.
             <dl>
-            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;
+            <dd><img src="memory:{protip_recommend_icon}">&nbsp;
             This choice is more successful when
             the objects have a smooth texture. By default, the image is automatically
             blurred to attempt to achieve appropriate smoothness (see <i>Smoothing filter</i> options),
             but overriding the default value can improve the outcome on
             lumpy-textured objects.</dd>
             </dl></td>
-            <td><img src="memory:%(INTENSITY_DECLUMPING_ICON)s"></td>
+            <td><img src="memory:{intensity_declumping_icon}"></td>
             </tr></table>
             <dl>
-            <dd><img src="memory:%(TECH_NOTE_ICON)s">&nbsp;
+            <dd><img src="memory:{tech_note_icon}">&nbsp;
             The object centers are defined as local intensity maxima in the smoothed image.</dd></dl></li>
 
             <li>
             <table cellpadding="0"><tr><td>
-            <i>%(UN_SHAPE)s:</i> For cases when there are definite indentations separating
+            <i>{un_shape}:</i> For cases when there are definite indentations separating
             objects. The image is converted to
             black and white (binary) and the shape determines whether clumped
             objects will be distinguished. The
             declumping results of this method are affected by the thresholding
             method you choose.
             <dl>
-            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;
+            <dd><img src="memory:{protip_recommend_icon}">&nbsp;
             This choice works best for objects that are round. In this case, the intensity
             patterns in the original image are largely irrelevant. Therefore, the cells need not be brighter
-            towards the interior as is required for the <i>%(UN_INTENSITY)s</i> option.</dd>
+            towards the interior as is required for the <i>{un_intensity}</i> option.</dd>
             </dl></td>
-            <td><img src="memory:%(SHAPE_DECLUMPING_ICON)s"></td>
+            <td><img src="memory:{shape_declumping_icon}"></td>
             </tr></table>
             <dl>
-            <dd><img src="memory:%(TECH_NOTE_ICON)s">&nbsp;
+            <dd><img src="memory:{tech_note_icon}">&nbsp;
             The binary thresholded image is
             distance-transformed and object centers are defined as peaks in this
             image. A distance-transform gives each pixel a value equal to the distance
-            to the nearest pixel below a certain threshold, so it indicates the <i>%(UN_SHAPE)s</i>
+            to the nearest pixel below a certain threshold, so it indicates the <i>{un_shape}</i>
             of the object.</dd>
             </dl></li>
-            <li><i>%(UN_LOG)s:</i> For objects that have an increasing intensity
+            <li><i>{un_log}:</i> For objects that have an increasing intensity
             gradient toward their center, this option performs a Laplacian of Gaussian (or Mexican hat)
             transform on the image, which accentuates pixels that are local maxima of a desired size. It
             thresholds the result and finds pixels that are both local maxima and above
             threshold. These pixels are used as the seeds for objects in the watershed.</li>
-            <li><i>%(UN_NONE)s:</i> If objects are well separated and bright relative to the
+            <li><i>{un_none}:</i> If objects are well separated and bright relative to the
             background, it may be unnecessary to attempt to separate clumped objects.
-            Using the very fast <i>%(UN_NONE)s</i> option, a simple threshold will be used to identify
+            Using the very fast <i>{un_none}</i> option, a simple threshold will be used to identify
             objects. This will override any declumping method chosen in the settings below.</li>
-            </ul>""" % globals())
+            </ul>""".format(**self.docvars))
 
-        self.watershed_method = cps.Choice(
+        self.watershed_method = cellprofiler.setting.Choice(
                 'Method to draw dividing lines between clumped objects',
                 [WA_INTENSITY, WA_SHAPE, WA_PROPAGATE, WA_NONE], doc="""
             This setting allows you to choose the method that is used to draw the line
             bewteen segmented objects, provided that you have chosen to declump the objects.
             To decide between these methods, you can run Test mode to see the results of each.
             <ul>
-            <li><i>%(WA_INTENSITY)s:</i> Works best where the dividing lines between clumped
+            <li><i>{wa_intensity}:</i> Works best where the dividing lines between clumped
             objects are dimmer than the remainder of the objects.
             <p><b>Technical description:</b>
             Using the previously identified local maxima as seeds, this method is a
             watershed (<i>Vincent and Soille, 1991</i>) on the intensity image.</p></li>
-            <li><i>%(WA_SHAPE)s:</i> Dividing lines between clumped objects are based on the
+            <li><i>{wa_shape}:</i> Dividing lines between clumped objects are based on the
             shape of the clump. For example, when a clump contains two objects, the
             dividing line will be placed where indentations occur between the two
             objects. The intensity patterns in the original image are largely irrelevant: the
@@ -452,7 +481,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             Technical description: Using the previously identified local maxima as seeds,
             this method is a
             watershed on the distance-transformed thresholded image.</li>
-            <li><i>%(WA_PROPAGATE)s:</i> This method uses a propagation algorithm
+            <li><i>{wa_propagate}:</i> This method uses a propagation algorithm
             instead of a watershed. The image is ignored and the pixels are
             assigned to the objects by repeatedly adding unassigned pixels to
             the objects that are immediately adjacent to them. This method
@@ -461,19 +490,19 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             the cell body along the branch, assigning pixels in the branch
             along the way. See the help for the <b>IdentifySecondary</b> module for more
             details on this method.</li>
-            <li><i>%(WA_NONE)s</i>: If objects are well separated and bright relative to the
+            <li><i>{wa_none}</i>: If objects are well separated and bright relative to the
             background, it may be unnecessary to attempt to separate clumped objects.
-            Using the very fast <i>%(WA_NONE)s</i> option, a simple threshold will be used to identify
+            Using the very fast <i>{wa_none}</i> option, a simple threshold will be used to identify
             objects. This will override any declumping method chosen in the previous
             question.</li>
-            </ul>""" % globals())
+            </ul>""".format(**self.docvars))
 
-        self.automatic_smoothing = cps.Binary(
+        self.automatic_smoothing = cellprofiler.setting.Binary(
                 AUTOMATIC_SMOOTHING_SETTING_TEXT,
                 True, doc="""
             <i>(Used only when distinguishing between clumped objects)</i><br>
-            Select <i>%(YES)s</i> to automatically calculate the amount of smoothing
-            applied to the image to assist in declumping. Select <i>%(NO)s</i> to
+            Select <i>{yes}</i> to automatically calculate the amount of smoothing
+            applied to the image to assist in declumping. Select <i>{no}</i> to
             manually enter the smoothing filter size.
 
             <p>This setting, along with the <i>Minimum allowed distance between local maxima</i>
@@ -487,13 +516,13 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             which is applied <i>before</i> thresholding.</p>
 
             <p>The size of the smoothing filter is automatically
-            calculated based on the <i>%(SIZE_RANGE_SETTING_TEXT)s</i> setting above.
+            calculated based on the <i>{size_range_setting_text}</i> setting above.
             If you see too many objects merged that ought to be separate
             or too many objects split up that
             ought to be merged, you may want to override the automatically
-            calculated value.</p>""" % globals())
+            calculated value.</p>""".format(**self.docvars))
 
-        self.smoothing_filter_size = cps.Integer(
+        self.smoothing_filter_size = cellprofiler.setting.Integer(
                 SMOOTHING_FILTER_SIZE_SETTING_TEXT, 10, doc="""
             <i>(Used only when distinguishing between clumped objects)</i> <br>
             If you see too many objects merged that ought to be separated
@@ -510,27 +539,27 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             objects will be recognized as only one object. Note that increasing the
             size of the smoothing filter increases the processing time exponentially.</p>""")
 
-        self.automatic_suppression = cps.Binary(
+        self.automatic_suppression = cellprofiler.setting.Binary(
                 AUTOMATIC_MAXIMA_SUPPRESSION_SETTING_TEXT,
                 True, doc="""
             <i>(Used only when distinguishing between clumped objects)</i><br>
-            Select <i>%(YES)s</i> to automatically calculate the distance between
-            intensity maxima to assist in declumping. Select <i>%(NO)s</i> to
+            Select <i>{yes}</i> to automatically calculate the distance between
+            intensity maxima to assist in declumping. Select <i>{no}</i> to
             manually enter the permissible maxima distance.
 
-            <p>This setting, along with the <i>%(SMOOTHING_FILTER_SIZE_SETTING_TEXT)s</i> setting,
+            <p>This setting, along with the <i>{smoothing_filter_size_setting_text}</i> setting,
             affects whether objects close to each other are considered a single object
             or multiple objects. It does not affect the dividing lines between an object and the
             background. Local maxima that are closer together than the minimum
             allowed distance will be suppressed (the local intensity histogram is smoothed to
             remove the peaks within that distance). The distance can be automatically
             calculated based on the minimum entered for the
-            <i>%(SIZE_RANGE_SETTING_TEXT)s</i> setting above,
+            <i>{size_range_setting_text}</i> setting above,
             but if you see too many objects merged that ought to be separate, or
             too many objects split up that ought to be merged, you may want to override the
-            automatically calculated value.""" % globals())
+            automatically calculated value.""".format(**self.docvars))
 
-        self.maxima_suppression_size = cps.Float(
+        self.maxima_suppression_size = cellprofiler.setting.Float(
                 'Suppress local maxima that are closer than this minimum allowed distance',
                 7, minval=0, doc="""
             <i>(Used only when distinguishing between clumped objects)</i><br>
@@ -544,57 +573,57 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             are within two times this distance from each other will be assumed to be
             actually two lumpy parts of the same object, and they will be merged.</p>""")
 
-        self.low_res_maxima = cps.Binary(
+        self.low_res_maxima = cellprofiler.setting.Binary(
                 'Speed up by using lower-resolution image to find local maxima?',
                 True, doc="""
             <i>(Used only when distinguishing between clumped objects)</i><br>
-            Select <i>%(YES)s</i> to down-sample the image for declumping. This can be
+            Select <i>{yes}</i> to down-sample the image for declumping. This can be
             helpful for saving processing time on large images.
             <p>Note that if you have entered a minimum object diameter of 10 or less, checking
-            this box will have no effect.</p>""" % globals())
+            this box will have no effect.</p>""".format(**self.docvars))
 
-        self.should_save_outlines = cps.Binary(
+        self.should_save_outlines = cellprofiler.setting.Binary(
                 'Retain outlines of the identified objects?', False, doc="""
-            %(RETAINING_OUTLINES_HELP)s""" % globals())
+            {retaining_outlines_help}""".format(**self.docvars))
 
-        self.save_outlines = cps.OutlineNameProvider(
+        self.save_outlines = cellprofiler.setting.OutlineNameProvider(
                 'Name the outline image', "PrimaryOutlines", doc="""
-            %(NAMING_OUTLINES_HELP)s""" % globals())
+            {naming_outlines_help}""".format(**self.docvars))
 
-        self.fill_holes = cps.Choice(
+        self.fill_holes = cellprofiler.setting.Choice(
                 'Fill holes in identified objects?',
                 FH_ALL, value=FH_THRESHOLDING,
                 doc="""
             This option controls how holes are filled in:
             <ul>
-            <li><i>%(FH_THRESHOLDING)s:</i> Fill in background holes
+            <li><i>{fh_thresholding}:</i> Fill in background holes
             that are smaller than the maximum object size prior to declumping
             and to fill in any holes after declumping.</li>
-            <li><i>%(FH_DECLUMP)s:</i> Fill in background holes
+            <li><i>{fh_declump}:</i> Fill in background holes
             located within identified objects after declumping.</li>
-            <li><i>%(FH_NEVER)s:</i> Leave holes within objects.<br>
+            <li><i>{fh_never}:</i> Leave holes within objects.<br>
             Please note that if a foreground object is located within a hole
             and this option is enabled, the object will be lost when the hole
             is filled in.</li>
-            </ul>""" % globals())
+            </ul>""".format(**self.docvars))
 
-        self.wants_automatic_log_threshold = cps.Binary(
+        self.wants_automatic_log_threshold = cellprofiler.setting.Binary(
                 'Automatically calculate the threshold using the Otsu method?', True)
 
-        self.manual_log_threshold = cps.Float(
+        self.manual_log_threshold = cellprofiler.setting.Float(
                 'Enter Laplacian of Gaussian threshold', .5, 0, 1)
 
-        self.wants_automatic_log_diameter = cps.Binary(
+        self.wants_automatic_log_diameter = cellprofiler.setting.Binary(
                 WANTS_AUTOMATIC_LOG_DIAMETER_SETTING_TEXT, True, doc="""
             <i>(Used only when applying the LoG thresholding method)</i><br>
-            <p>Select <i>%(YES)s</i> to use the filtering diameter range above
+            <p>Select <i>{yes}</i> to use the filtering diameter range above
             when constructing the LoG filter. </p>
-            <p>Select <i>%(NO)s</i> in order to manually specify the size.
+            <p>Select <i>{no}</i> in order to manually specify the size.
             You may want to specify a custom size if you want to filter
             using loose criteria, but have objects that are generally of
-            similar sizes.</p>""" % globals())
+            similar sizes.</p>""".format(**self.docvars))
 
-        self.log_diameter = cps.Float(
+        self.log_diameter = cellprofiler.setting.Float(
                 'Enter LoG filter diameter',
                 5, minval=1, maxval=100, doc="""
             <i>(Used only when applying the LoG thresholding method)</i><br>
@@ -602,7 +631,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             the local maxima of objects whose diameters are roughly the entered
             number or smaller.""")
 
-        self.limit_choice = cps.Choice(
+        self.limit_choice = cellprofiler.setting.Choice(
                 "Handling of objects if excessive number of objects identified",
                 [LIMIT_NONE, LIMIT_TRUNCATE, LIMIT_ERASE], doc="""
             This setting deals with images that are segmented
@@ -611,19 +640,19 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             unusual artifacts. <b>IdentifyPrimaryObjects</b> can handle
             this condition in one of three ways:
             <ul>
-            <li><i>%(LIMIT_NONE)s</i>: Don't check for large numbers
+            <li><i>{limit_none}</i>: Don't check for large numbers
             of objects.</li>
-            <li><i>%(LIMIT_TRUNCATE)s</i>: Limit the number of objects.
+            <li><i>{limit_truncate}</i>: Limit the number of objects.
             Arbitrarily erase objects to limit the number to the maximum
             allowed.</li>
-            <li><i>%(LIMIT_ERASE)s</i>: Erase all objects if the number of
+            <li><i>{limit_erase}</i>: Erase all objects if the number of
             objects exceeds the maximum. This results in an image with
             no primary objects. This option is a good choice if a large
             number of objects indicates that the image should not be
             processed.</li>
-            </ul>""" % globals())
+            </ul>""".format(**self.docvars))
 
-        self.maximum_object_count = cps.Integer(
+        self.maximum_object_count = cellprofiler.setting.Integer(
                 "Maximum number of objects",
                 value=500, minval=2, doc="""
             <i>(Used only when handling images with large numbers of objects by truncating)</i> <br>
@@ -668,34 +697,34 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             del new_setting_values[15]
             # Automatic smoothing checkbox - replace "Automatic" with
             # a number
-            if setting_values[SMOOTHING_SIZE_VAR] == cps.AUTOMATIC:
-                new_setting_values += [cps.YES]
+            if setting_values[SMOOTHING_SIZE_VAR] == cellprofiler.setting.AUTOMATIC:
+                new_setting_values += [cellprofiler.setting.YES]
                 new_setting_values[SMOOTHING_SIZE_VAR] = '10'
             else:
-                new_setting_values += [cps.NO]
+                new_setting_values += [cellprofiler.setting.NO]
             #
             # Automatic maxima suppression size
             #
-            if setting_values[MAXIMA_SUPPRESSION_SIZE_VAR] == cps.AUTOMATIC:
-                new_setting_values += [cps.YES]
+            if setting_values[MAXIMA_SUPPRESSION_SIZE_VAR] == cellprofiler.setting.AUTOMATIC:
+                new_setting_values += [cellprofiler.setting.YES]
                 new_setting_values[MAXIMA_SUPPRESSION_SIZE_VAR] = '5'
             else:
-                new_setting_values += [cps.NO]
-            if not setting_values[THRESHOLD_METHOD_VAR] in cpthresh.TM_METHODS:
+                new_setting_values += [cellprofiler.setting.NO]
+            if not setting_values[THRESHOLD_METHOD_VAR] in centrosome.threshold.TM_METHODS:
                 # Try to figure out what the user wants if it's not one of the
                 # pre-selected choices.
                 try:
                     # If it's a floating point number, then the user
                     # was trying to type in a manual threshold
                     ignore = float(setting_values[THRESHOLD_METHOD_VAR])
-                    new_setting_values[THRESHOLD_METHOD_VAR] = cpthresh.TM_MANUAL
+                    new_setting_values[THRESHOLD_METHOD_VAR] = centrosome.threshold.TM_MANUAL
                     # Set the manual threshold to be the contents of the
                     # old threshold method variable and ignore the binary mask
                     new_setting_values += [setting_values[THRESHOLD_METHOD_VAR],
-                                           cps.DO_NOT_USE]
+                                           cellprofiler.setting.DO_NOT_USE]
                 except:
                     # Otherwise, assume that it's the name of a binary image
-                    new_setting_values[THRESHOLD_METHOD_VAR] = cpthresh.TM_BINARY_IMAGE
+                    new_setting_values[THRESHOLD_METHOD_VAR] = centrosome.threshold.TM_BINARY_IMAGE
                     new_setting_values += ['0.0',
                                            setting_values[THRESHOLD_METHOD_VAR]]
             else:
@@ -711,22 +740,22 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             # Check the "DO_NOT_USE" status of the save outlines variable
             # to get the value for should_save_outlines
             #
-            if new_setting_values[SAVE_OUTLINES_VAR] == cps.DO_NOT_USE:
-                new_setting_values += [cps.NO]
-                new_setting_values[SAVE_OUTLINES_VAR] = cps.NONE
+            if new_setting_values[SAVE_OUTLINES_VAR] == cellprofiler.setting.DO_NOT_USE:
+                new_setting_values += [cellprofiler.setting.NO]
+                new_setting_values[SAVE_OUTLINES_VAR] = cellprofiler.setting.NONE
             else:
-                new_setting_values += [cps.YES]
+                new_setting_values += [cellprofiler.setting.YES]
             setting_values = new_setting_values
-            if new_setting_values[UNCLUMP_METHOD_VAR] == cps.DO_NOT_USE:
+            if new_setting_values[UNCLUMP_METHOD_VAR] == cellprofiler.setting.DO_NOT_USE:
                 new_setting_values[UNCLUMP_METHOD_VAR] = UN_NONE
-            if new_setting_values[WATERSHED_VAR] == cps.DO_NOT_USE:
+            if new_setting_values[WATERSHED_VAR] == cellprofiler.setting.DO_NOT_USE:
                 new_setting_values[WATERSHED_VAR] = WA_NONE
             variable_revision_number = 1
             from_matlab = False
         if (not from_matlab) and variable_revision_number == 1:
             # Added LOG method
             setting_values = list(setting_values)
-            setting_values += [cps.YES, ".5"]
+            setting_values += [cellprofiler.setting.YES, ".5"]
             variable_revision_number = 2
 
         if (not from_matlab) and variable_revision_number == 2:
@@ -738,7 +767,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
 
         if (not from_matlab) and variable_revision_number == 3:
             # Added more LOG options
-            setting_values = setting_values + [cps.YES, "5"]
+            setting_values = setting_values + [cellprofiler.setting.YES, "5"]
             variable_revision_number = 4
 
         if (not from_matlab) and variable_revision_number == 4:
@@ -754,7 +783,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
 
         if (not from_matlab) and variable_revision_number == 6:
             # Added measurements to threshold method
-            setting_values = setting_values + [cps.NONE]
+            setting_values = setting_values + [cellprofiler.setting.NONE]
             variable_revision_number = 7
         if (not from_matlab) and variable_revision_number == 7:
             # changed DISTANCE to SHAPE
@@ -764,7 +793,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
 
         if (not from_matlab) and variable_revision_number == 8:
             # Added adaptive thresholding settings
-            setting_values += [FI_IMAGE_SIZE, "10"]
+            setting_values += [cellprofiler.modules.identify.FI_IMAGE_SIZE, "10"]
             variable_revision_number = 9
 
         if (not from_matlab) and variable_revision_number == 9:
@@ -785,7 +814,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             adaptive_window_size = setting_values[OFF_ADAPTIVE_WINDOW_SIZE_V9]
 
             threshold_settings = self.upgrade_legacy_threshold_settings(
-                    threshold_method, TSM_AUTOMATIC, threshold_correction,
+                    threshold_method, cellprofiler.modules.identify.TSM_AUTOMATIC, threshold_correction,
                     threshold_range, object_fraction, manual_threshold,
                     thresholding_measurement, binary_image, two_class_otsu,
                     use_weighted_variance, assign_middle_to_foreground,
@@ -803,9 +832,9 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             variable_revision_number = 10
         if variable_revision_number == 10:
             setting_values = list(setting_values)
-            if setting_values[OFF_FILL_HOLES_V10] == cps.NO:
+            if setting_values[OFF_FILL_HOLES_V10] == cellprofiler.setting.NO:
                 setting_values[OFF_FILL_HOLES_V10] = FH_NEVER
-            elif setting_values[OFF_FILL_HOLES_V10] == cps.YES:
+            elif setting_values[OFF_FILL_HOLES_V10] == cellprofiler.setting.YES:
                 setting_values[OFF_FILL_HOLES_V10] = FH_THRESHOLDING
 
         # upgrade threshold settings
@@ -887,7 +916,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             return size < self.size_range.max * self.size_range.max
 
         if self.fill_holes.value == FH_THRESHOLDING:
-            binary_image = fill_labeled_holes(binary_image, size_fn=size_fn)
+            binary_image = centrosome.cpmorphology.fill_labeled_holes(binary_image, size_fn=size_fn)
 
         labeled_image, object_count = scipy.ndimage.label(binary_image,
                                                           np.ones((3, 3), bool))
@@ -912,10 +941,10 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         # Fill holes again after watershed
         #
         if self.fill_holes != FH_NEVER:
-            labeled_image = fill_labeled_holes(labeled_image)
+            labeled_image = centrosome.cpmorphology.fill_labeled_holes(labeled_image)
 
         # Relabel the image
-        labeled_image, object_count = relabel(labeled_image)
+        labeled_image, object_count = centrosome.cpmorphology.relabel(labeled_image)
         new_labeled_image, new_object_count = self.limit_object_count(
                 labeled_image, object_count)
         if new_object_count < object_count:
@@ -955,7 +984,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
                 statistics.append(["Area covered by objects",
                                    "%.1f %%" % (100.0 * float(object_area) /
                                                 float(total_area))])
-                if self.threshold_scope != TS_BINARY_IMAGE:
+                if self.threshold_scope != cellprofiler.modules.identify.TS_BINARY_IMAGE:
                     statistics.append(["Thresholding filter size",
                                        "%.1f" % workspace.display_data.threshold_sigma])
                 if self.unclump_method != UN_NONE:
@@ -979,7 +1008,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         cpmi.add_object_count_measurements(measurements,
                                            objname, object_count)
         # Add label matrices to the object set
-        objects = cellprofiler.object.Objects()
+        objects = cellprofiler.region.Region()
         objects.segmented = labeled_image
         objects.unedited_segmented = unedited_labels
         objects.small_removed_segmented = small_removed_labels
@@ -990,18 +1019,18 @@ class IdentifyPrimaryObjects(cpmi.Identify):
                                               self.object_name.value,
                                               labeled_image)
         if self.should_save_outlines.value:
-            out_img = cpi.Image(outline_image.astype(bool),
-                                parent_image=image)
+            out_img = cellprofiler.image.Image(outline_image.astype(bool),
+                                               parent=image)
             workspace.image_set.add(self.save_outlines.value, out_img)
 
     def limit_object_count(self, labeled_image, object_count):
-        '''Limit the object count according to the rules
+        """Limit the object count according to the rules
 
         labeled_image - image to be limited
         object_count - check to see if this exceeds the maximum
 
         returns a new labeled_image and object count
-        '''
+        """
         if object_count > self.maximum_object_count.value:
             if self.limit_choice == LIMIT_ERASE:
                 labeled_image = np.zeros(labeled_image.shape, int)
@@ -1110,7 +1139,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             else:
                 maxima_suppression_size = self.maxima_suppression_size.value
             reported_maxima_suppression_size = maxima_suppression_size
-        maxima_mask = strel_disk(max(1, maxima_suppression_size - .5))
+        maxima_mask = centrosome.cpmorphology.strel_disk(max(1, maxima_suppression_size - .5))
         distance_transformed_image = None
         if self.unclump_method == UN_LOG:
             if self.wants_automatic_log_diameter.value:
@@ -1130,24 +1159,24 @@ class IdentifyPrimaryObjects(cpmi.Identify):
                 simage = scipy.ndimage.map_coordinates(image, i_j)
                 smask = scipy.ndimage.map_coordinates(mask.astype(float), i_j) > .99
                 diameter = diameter * image_resize_factor + 1
-                sigma = sigma * image_resize_factor
+                sigma *= image_resize_factor
             else:
                 shrunken = False
                 simage = image
                 smask = mask
-            normalized_image = 1 - stretch(simage, smask)
+            normalized_image = 1 - centrosome.filter.stretch(simage, smask)
 
             window = max(3, int(diameter * 3 / 2))
-            log_image = laplacian_of_gaussian(normalized_image, smask,
-                                              window, sigma)
+            log_image = centrosome.filter.laplacian_of_gaussian(normalized_image, smask,
+                                                                window, sigma)
             if shrunken:
                 i_j = (np.mgrid[0:image.shape[0],
                        0:image.shape[1]].astype(float) *
                        image_resize_factor)
                 log_image = scipy.ndimage.map_coordinates(log_image, i_j)
-            log_image = stretch(log_image, mask)
+            log_image = centrosome.filter.stretch(log_image, mask)
             if self.wants_automatic_log_threshold.value:
-                log_threshold = otsu(log_image[mask], 0, 1, 256)
+                log_threshold = centrosome.otsu.otsu(log_image[mask], 0, 1, 256)
             else:
                 log_threshold = self.manual_log_threshold.value
             reported_LoG_threshold = log_threshold
@@ -1166,7 +1195,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
                 # For shape, even if the user doesn't want to fill holes,
                 # a point far away from the edge might be near a hole.
                 # So we fill just for this part.
-                foreground = fill_labeled_holes(labeled_image) > 0
+                foreground = centrosome.cpmorphology.fill_labeled_holes(labeled_image) > 0
             else:
                 foreground = labeled_image > 0
             distance_transformed_image = \
@@ -1191,7 +1220,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
                 distance_transformed_image = \
                     scipy.ndimage.distance_transform_edt(labeled_image > 0)
             watershed_image = -distance_transformed_image
-            watershed_image = watershed_image - np.min(watershed_image)
+            watershed_image -= np.min(watershed_image)
         elif self.watershed_method == WA_PROPAGATE:
             # No image used
             pass
@@ -1209,9 +1238,9 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             scipy.ndimage.label(maxima_image, np.ones((3, 3), bool))
         if self.watershed_method == WA_PROPAGATE:
             watershed_boundaries, distance = \
-                propagate(np.zeros(labeled_maxima.shape),
-                          labeled_maxima,
-                          labeled_image != 0, 1.0)
+                centrosome.propagate.propagate(np.zeros(labeled_maxima.shape),
+                                               labeled_maxima,
+                                               labeled_image != 0, 1.0)
         else:
             markers_dtype = (np.int16
                              if object_count < np.iinfo(np.int16).max
@@ -1251,9 +1280,9 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         # find local maxima
         #
         if maxima_mask is not None:
-            binary_maxima_image = is_local_maximum(resized_image,
-                                                   resized_labels,
-                                                   maxima_mask)
+            binary_maxima_image = centrosome.cpmorphology.is_local_maximum(resized_image,
+                                                                           resized_labels,
+                                                                           maxima_mask)
             binary_maxima_image[resized_image <= 0] = 0
         else:
             binary_maxima_image = (resized_image > 0) & (labeled_image > 0)
@@ -1270,7 +1299,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
 
         # Erode blobs of touching maxima to a single point
 
-        shrunk_image = binary_shrink(binary_maxima_image)
+        shrunk_image = centrosome.cpmorphology.binary_shrink(binary_maxima_image)
         return shrunk_image
 
     def filter_on_size(self, labeled_image, object_count):
@@ -1387,16 +1416,16 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             return self.smoothing_filter_size.value
 
     def is_object_identification_module(self):
-        '''IdentifyPrimaryObjects makes primary objects sets so it's a identification module'''
+        """IdentifyPrimaryObjects makes primary objects sets so it's a identification module"""
         return True
 
     def get_measurement_objects_name(self):
-        '''Return the name to be appended to image measurements made by module
-        '''
+        """Return the name to be appended to image measurements made by module
+        """
         return self.object_name.value
 
     def get_measurement_columns(self, pipeline):
-        '''Column definitions for measurements made by IdentifyPrimAutomatic'''
+        """Column definitions for measurements made by IdentifyPrimAutomatic"""
         columns = cpmi.get_object_measurement_columns(self.object_name.value)
         columns += self.get_threshold_measurement_columns(pipeline)
         return columns

@@ -1,3 +1,10 @@
+import cellprofiler.image
+import cellprofiler.module
+import cellprofiler.modules
+import cellprofiler.modules.correctilluminationcalculate
+import cellprofiler.setting
+import numpy
+
 '''<b>Correct Illumination - Apply</b> applies an illumination function, usually created by
 <b>CorrectIlluminationCalculate</b>, to an image in order to correct for uneven
 illumination (uneven shading).
@@ -8,13 +15,6 @@ either loaded by <b>LoadSingleImage</b> or created by <b>CorrectIlluminationCalc
 This module corrects each image in the pipeline using the function specified.
 
 See also <b>CorrectIlluminationCalculate</b>.'''
-
-import numpy as np
-
-import cellprofiler.image  as cpi
-import cellprofiler.module as cpm
-import cellprofiler.setting as cps
-from cellprofiler.modules.correctilluminationcalculate import IC_BACKGROUND, IC_REGULAR
 
 ######################################
 #
@@ -42,7 +42,7 @@ RE_MATCH = "Match maximums"
 SETTINGS_PER_IMAGE = 4
 
 
-class CorrectIlluminationApply(cpm.Module):
+class CorrectIlluminationApply(cellprofiler.module.Module):
     category = "Image Processing"
     variable_revision_number = 3
     module_name = "CorrectIlluminationApply"
@@ -51,47 +51,54 @@ class CorrectIlluminationApply(cpm.Module):
         """Make settings here (and set the module name)"""
         self.images = []
         self.add_image(can_delete=False)
-        self.add_image_button = cps.DoSomething("", "Add another image",
-                                                self.add_image)
+        self.add_image_button = cellprofiler.setting.DoSomething("", "Add another image",
+                                                                 self.add_image)
 
     def add_image(self, can_delete=True):
-        '''Add an image and its settings to the list of images'''
-        image_name = cps.ImageNameSubscriber(
+        """Add an image and its settings to the list of images"""
+        image_name = cellprofiler.setting.ImageNameSubscriber(
                 "Select the input image",
-                cps.NONE, doc='''
+                cellprofiler.setting.NONE, doc='''
             Select the image to be corrected.''')
 
-        corrected_image_name = cps.ImageNameProvider(
+        corrected_image_name = cellprofiler.setting.ImageNameProvider(
                 "Name the output image",
                 "CorrBlue", doc='''
             Enter a name for the corrected image.''')
 
-        illum_correct_function_image_name = cps.ImageNameSubscriber(
+        illum_correct_function_image_name = cellprofiler.setting.ImageNameSubscriber(
                 "Select the illumination function",
-                cps.NONE, doc='''
+                cellprofiler.setting.NONE, doc='''
             Select the illumination correction function image that will be used to
             carry out the correction. This image is usually produced by another module
             or loaded as a .mat format image using the <b>Images</b> module or
             <b>LoadSingleImage</b>.''')
 
-        divide_or_subtract = cps.Choice(
-                "Select how the illumination function is applied",
-                [DOS_DIVIDE, DOS_SUBTRACT], doc='''
+        divide_or_subtract = cellprofiler.setting.Choice(
+            "Select how the illumination function is applied",
+            [DOS_DIVIDE, DOS_SUBTRACT],
+            doc='''
             This choice depends on how the illumination function was calculated
             and on your physical model of the way illumination variation affects the
             background of images relative to the objects in images; it is also somewhat empirical.
             <ul>
-            <li><i>%(DOS_SUBTRACT)s:</i> Use this option if the background signal is significant
+            <li><i>{subtract}:</i> Use this option if the background signal is significant
             relative to the real signal coming from the cells.  If you created the illumination
-            correction function using <i>%(IC_BACKGROUND)s</i>,
-            then you will want to choose <i>%(DOS_SUBTRACT)s</i> here.</li>
-            <li><i>%(DOS_DIVIDE)s:</i> Choose this option if the signal to background ratio
+            correction function using <i>{background}</i>,
+            then you will want to choose <i>{subtract}</i> here.</li>
+            <li><i>{divide}:</i> Choose this option if the signal to background ratio
             is high (the cells are stained very strongly). If you created the illumination correction
-            function using <i>%(IC_REGULAR)s</i>,
-            then you will want to choose <i>%(DOS_DIVIDE)s</i> here.</li>
-            </ul>''' % globals())
+            function using <i>{regular}</i>,
+            then you will want to choose <i>{divide}</i> here.</li>
+            </ul>'''.format(**{
+                'subtract': DOS_SUBTRACT,
+                'background': cellprofiler.modules.correctilluminationcalculate.IC_BACKGROUND,
+                'divide': DOS_DIVIDE,
+                'regular': cellprofiler.modules.correctilluminationcalculate.IC_REGULAR
+            })
+        )
 
-        image_settings = cps.SettingsGroup()
+        image_settings = cellprofiler.setting.SettingsGroup()
         image_settings.append("image_name", image_name)
         image_settings.append("corrected_image_name", corrected_image_name)
         image_settings.append("illum_correct_function_image_name",
@@ -101,10 +108,10 @@ class CorrectIlluminationApply(cpm.Module):
 
         if can_delete:
             image_settings.append("remover",
-                                  cps.RemoveSettingButton("", "Remove this image",
-                                                          self.images,
-                                                          image_settings))
-        image_settings.append("divider", cps.Divider())
+                                  cellprofiler.setting.RemoveSettingButton("", "Remove this image",
+                                                                           self.images,
+                                                                           image_settings))
+        image_settings.append("divider", cellprofiler.setting.Divider())
         self.images.append(image_settings)
 
     def settings(self):
@@ -173,9 +180,9 @@ class CorrectIlluminationApply(cpm.Module):
             self.run_image(image, workspace)
 
     def run_image(self, image, workspace):
-        '''Perform illumination according to the parameters of one image setting group
+        """Perform illumination according to the parameters of one image setting group
 
-        '''
+        """
         #
         # Get the image names from the settings
         #
@@ -193,7 +200,7 @@ class CorrectIlluminationApply(cpm.Module):
                     illum_correct_name, must_be_grayscale=True)
         else:
             if illum_function_pixel_data.ndim == 2:
-                illum_function_pixel_data = illum_function_pixel_data[:, :, np.newaxis]
+                illum_function_pixel_data = illum_function_pixel_data[:, :, numpy.newaxis]
         #
         # Either divide or subtract the illumination image from the original
         #
@@ -209,7 +216,7 @@ class CorrectIlluminationApply(cpm.Module):
         # Save the output image in the image set and have it inherit
         # mask & cropping from the original image.
         #
-        output_image = cpi.Image(output_pixels, parent_image=orig_image)
+        output_image = cellprofiler.image.Image(output_pixels, parent=orig_image)
         workspace.image_set.add(corrected_image_name, output_image)
         #
         # Save images for display
@@ -222,7 +229,7 @@ class CorrectIlluminationApply(cpm.Module):
             workspace.display_data.images[illum_correct_name] = illum_function.pixel_data
 
     def display(self, workspace, figure):
-        ''' Display one row of orig / illum / output per image setting group'''
+        """ Display one row of orig / illum / output per image setting group"""
         figure.set_subplots((3, len(self.images)))
         for j, image in enumerate(self.images):
             image_name = image.image_name.value
@@ -259,11 +266,11 @@ class CorrectIlluminationApply(cpm.Module):
         """If a CP 1.0 pipeline used a rescaling option other than 'No rescaling', warn the user."""
         for j, image in enumerate(self.images):
             if image.rescale_option != RE_NONE:
-                raise cps.ValidationError(("Your original pipeline used '%s' to rescale the final image, "
+                raise cellprofiler.setting.ValidationError(("Your original pipeline used '%s' to rescale the final image, "
                                            "but the rescaling option has been removed. Please use "
                                            "RescaleIntensity to rescale your output image. Save your "
                                            "pipeline to get rid of this warning.") % image.rescale_option,
-                                          image.divide_or_subtract)
+                                                           image.divide_or_subtract)
 
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):

@@ -1,4 +1,4 @@
-'''<b>Mask Objects</b> removes objects outside of a specified region or regions.
+"""<b>Mask Objects</b> removes objects outside of a specified region or regions.
 <hr>
 This module allows you to delete the objects or portions of objects that are
 outside of a region (mask) you specify. For example, after
@@ -24,22 +24,23 @@ of the region. </p>
 <li><i>Location_X, Location_Y:</i> The pixel (X,Y) coordinates of the center of
 mass of the masked objects.</li>
 </ul>
-'''
+"""
 
-import numpy as np
-import scipy.ndimage as scind
-from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
-from centrosome.outline import outline
-
-import cellprofiler.image as cpi
-import cellprofiler.module as cpm
-import cellprofiler.measurement as cpmeas
-import cellprofiler.object as cpo
-import cellprofiler.preferences as cpprefs
-import cellprofiler.setting as cps
-import identify as I
-from cellprofiler.gui.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
-from cellprofiler.setting import YES, NO
+import cellprofiler.gui.help
+import cellprofiler.image
+import cellprofiler.measurement
+import cellprofiler.module
+import cellprofiler.modules
+import cellprofiler.modules.identify
+import cellprofiler.preferences
+import cellprofiler.region
+import cellprofiler.setting
+import cellprofiler.setting
+import centrosome.cpmorphology
+import centrosome.outline
+import matplotlib.cm
+import numpy
+import scipy.ndimage
 
 MC_OBJECTS = "Objects"
 MC_IMAGE = "Image"
@@ -68,50 +69,54 @@ S_DICTIONARY = {
 
 
 def s_lookup(x):
-    '''Look up the current value for a setting choice w/backwards compatibility
+    """Look up the current value for a setting choice w/backwards compatibility
 
     x - setting value from pipeline
-    '''
+    """
     return S_DICTIONARY.get(x, x)
 
 
-class MaskObjects(I.Identify):
+class MaskObjects(cellprofiler.modules.identify.Identify):
     category = "Object Processing"
     module_name = "MaskObjects"
     variable_revision_number = 2
 
     def create_settings(self):
-        '''Create the settings that control this module'''
-        self.object_name = cps.ObjectNameSubscriber(
-                "Select objects to be masked", cps.NONE, doc="""
+        """Create the settings that control this module"""
+        self.object_name = cellprofiler.setting.ObjectNameSubscriber(
+                "Select objects to be masked", cellprofiler.setting.NONE, doc="""
             Select the objects that will be masked (that is, excluded in whole
             or in part based on the other settings in the module).
             You can choose from any objects created by
             a previous object processing module, such as <b>IdentifyPrimaryObjects</b>,
             <b>IdentifySecondaryObjects</b> or <b>IdentifyTertiaryObjects</b>.""")
 
-        self.remaining_objects = cps.ObjectNameProvider(
+        self.remaining_objects = cellprofiler.setting.ObjectNameProvider(
                 "Name the masked objects", "MaskedNuclei", doc="""
             Enter a name for the objects that remain after
             the masking operation. You can refer to the masked objects in
             subsequent modules by this name.""")
 
-        self.mask_choice = cps.Choice(
+        self.mask_choice = cellprofiler.setting.Choice(
                 "Mask using a region defined by other objects or by binary image?",
                 [MC_OBJECTS, MC_IMAGE], doc="""
             You can mask your objects by defining a region using objects
-            you previously identified in your pipeline (<i>%(MC_OBJECTS)s</i>) or by defining a
-            region based on the white regions in a binary image (<i>%(MC_IMAGE)s</i>).""" % globals())
+            you previously identified in your pipeline (<i>{mc_objects}</i>) or by defining a
+            region based on the white regions in a binary image (<i>{mc_image}</i>).""".format(**{
+                'mc_objects': MC_OBJECTS,
+                'mc_image': MC_IMAGE
+            })
+        )
 
-        self.masking_objects = cps.ObjectNameSubscriber(
-                "Select the masking object", cps.NONE, doc="""
+        self.masking_objects = cellprofiler.setting.ObjectNameSubscriber(
+                "Select the masking object", cellprofiler.setting.NONE, doc="""
             Select the objects that will be used to define the
             masking region. You can choose from any objects created
             by a previous object processing module, such as <b>IdentifyPrimaryObjects</b>,
             <b>IdentifySecondaryObjects</b>, or <b>IdentifyTertiaryObjects</b>.""")
 
-        self.masking_image = cps.ImageNameSubscriber(
-                "Select the masking image", cps.NONE, doc="""
+        self.masking_image = cellprofiler.setting.ImageNameSubscriber(
+                "Select the masking image", cellprofiler.setting.NONE, doc="""
             Select an image that was either loaded or
             created by a previous module. The image should be a binary image where
             the white portion of the image is the region(s) you will use for masking.
@@ -120,46 +125,56 @@ class MaskObjects(I.Identify):
             You can also create a binary image from a grayscale
             image using <b>ApplyThreshold</b>.""")
 
-        self.wants_inverted_mask = cps.Binary(
+        self.wants_inverted_mask = cellprofiler.setting.Binary(
                 "Invert the mask?", False, doc="""
             This option reverses the foreground/background relationship of
             the mask.
             <ul>
-            <li>Select <i>%(NO)s</i> for the mask to be composed of the foregound
+            <li>Select <i>{no}</i> for the mask to be composed of the foregound
             (white portion) of the masking image or the area within the masking
             objects.</li>
-            <li>Select <i>%(YES)s</i> for the mask to instead be composed of the
+            <li>Select <i>{yes}</i> for the mask to instead be composed of the
             <i>background</i> (black portions) of the masking image or the area
             <i>outside</i> the masking objects.</li>
-            </ul>""" % globals())
+            </ul>""".format(**{
+                'no': cellprofiler.setting.NO,
+                'yes': cellprofiler.setting.YES
+            })
+        )
 
-        self.overlap_choice = cps.Choice(
+        self.overlap_choice = cellprofiler.setting.Choice(
                 "Handling of objects that are partially masked",
                 [P_MASK, P_KEEP, P_REMOVE, P_REMOVE_PERCENTAGE], doc="""
             An object might partially overlap the mask region, with
             pixels both inside and outside the region. <b>MaskObjects</b>
             can handle this in one of three ways:<br>
             <ul>
-            <li><i>%(P_MASK)s:</i> Choosing this option
+            <li><i>{p_mask}:</i> Choosing this option
             will reduce the size of partially overlapping objects. The part
             of the object that overlaps the region will be retained. The
             part of the object that is outside of the region will be removed.</li>
-            <li><i>%(P_KEEP)s:</i> If you choose this option, <b>MaskObjects</b>
+            <li><i>{p_keep}:</i> If you choose this option, <b>MaskObjects</b>
             will keep the whole object if any part of it overlaps the masking
             region.</li>
-            <li><i>%(P_REMOVE)s:</i> Objects that are partially outside
+            <li><i>{p_remove}:</i> Objects that are partially outside
             of the masking region will be completely removed if you choose
             this option.</li>
-            <li><i>%(P_REMOVE_PERCENTAGE)s:</i> Determine whether to
+            <li><i>{p_remove_percentage}:</i> Determine whether to
             remove or keep an object depending on how much of the object
             overlaps the masking region. <b>MaskObjects</b> will keep an
             object if at least a certain fraction (which you enter below) of
             the object falls within the masking region. <b>MaskObjects</b>
             completely removes the object if too little of it overlaps
             the masking region.</li>
-            </ul>""" % globals())
+            </ul>""".format(**{
+                'p_mask': P_MASK,
+                'p_keep': P_KEEP,
+                'p_remove': P_REMOVE,
+                'p_remove_percentage': P_REMOVE_PERCENTAGE
+            })
+        )
 
-        self.overlap_fraction = cps.Float(
+        self.overlap_fraction = cellprofiler.setting.Float(
                 "Fraction of object that must overlap", .5,
                 minval=0, maxval=1, doc="""
             <i>(Used only if removing based on a overlap)</i><br>
@@ -168,34 +183,42 @@ class MaskObjects(I.Identify):
             For instance, if the fraction is 0.75, then 3/4 of an object
             must be within the masking region for that object to be retained.""")
 
-        self.retain_or_renumber = cps.Choice(
+        self.retain_or_renumber = cellprofiler.setting.Choice(
                 "Numbering of resulting objects",
                 [R_RENUMBER, R_RETAIN], doc="""
             Choose how to number the objects that
             remain after masking, which controls how remaining objects are associated with their predecessors:
             <ul>
-            <li><i>%(R_RENUMBER)s:</i> The objects that remain will be renumbered
+            <li><i>{r_renumber}:</i> The objects that remain will be renumbered
             using consecutive numbers. This
             is a good choice if you do not plan to use measurements from the
             original objects; your object measurements for the
             masked objects will not have gaps (where removed objects are missing).</li>
-            <li><i>%(R_RETAIN)s:</i>: The original labels for the objects will be retained.
+            <li><i>{r_retain}:</i>: The original labels for the objects will be retained.
             This allows any measurements you make from
             the masked objects to be directly aligned with measurements you might
             have made of the original, unmasked objects (or objects directly
             associated with them).</li>
-            </ul>""" % globals())
+            </ul>""".format(**{
+                'r_renumber': R_RENUMBER,
+                'r_retain': R_RETAIN
+            })
+        )
 
-        self.wants_outlines = cps.Binary(
-                "Retain outlines of the resulting objects?", False, doc="""
-            %(RETAINING_OUTLINES_HELP)s""" % globals())
+        self.wants_outlines = cellprofiler.setting.Binary(
+            "Retain outlines of the resulting objects?",
+            False,
+            doc=cellprofiler.gui.help.RETAINING_OUTLINES_HELP
+        )
 
-        self.outlines_name = cps.OutlineNameProvider(
-                "Name the outline image", "MaskedOutlines", doc="""
-            %(NAMING_OUTLINES_HELP)s""" % globals())
+        self.outlines_name = cellprofiler.setting.OutlineNameProvider(
+            "Name the outline image",
+            "MaskedOutlines",
+            doc=cellprofiler.gui.help.NAMING_OUTLINES_HELP
+        )
 
     def settings(self):
-        '''The settings as they appear in the pipeline'''
+        """The settings as they appear in the pipeline"""
         return [self.object_name, self.remaining_objects, self.mask_choice,
                 self.masking_objects, self.masking_image, self.overlap_choice,
                 self.overlap_fraction, self.retain_or_renumber,
@@ -203,7 +226,7 @@ class MaskObjects(I.Identify):
                 self.wants_inverted_mask]
 
     def help_settings(self):
-        '''The settings as they appear in the pipeline'''
+        """The settings as they appear in the pipeline"""
         return [self.object_name, self.remaining_objects, self.mask_choice,
                 self.masking_objects, self.masking_image,
                 self.wants_inverted_mask,
@@ -211,7 +234,7 @@ class MaskObjects(I.Identify):
                 self.wants_outlines, self.outlines_name]
 
     def visible_settings(self):
-        '''The settings as they appear in the UI'''
+        """The settings as they appear in the UI"""
         result = [self.object_name, self.remaining_objects, self.mask_choice,
                   self.masking_image if self.mask_choice == MC_IMAGE
                   else self.masking_objects, self.wants_inverted_mask,
@@ -226,7 +249,7 @@ class MaskObjects(I.Identify):
         return result
 
     def run(self, workspace):
-        '''Run the module on an image set'''
+        """Run the module on an image set"""
 
         object_name = self.object_name.value
         remaining_object_name = self.remaining_objects.value
@@ -246,11 +269,11 @@ class MaskObjects(I.Identify):
         # Load the labels
         #
         labels = original_objects.segmented.copy()
-        nobjects = np.max(labels)
+        nobjects = numpy.max(labels)
         #
         # Resize the mask to cover the objects
         #
-        mask, m1 = cpo.size_similarly(labels, mask)
+        mask, m1 = cellprofiler.region.size_similarly(labels, mask)
         mask[~m1] = False
         #
         # Apply the mask according to the overlap choice.
@@ -260,13 +283,13 @@ class MaskObjects(I.Identify):
         elif self.overlap_choice == P_MASK:
             labels = labels * mask
         else:
-            pixel_counts = fix(scind.sum(mask, labels,
-                                         np.arange(1, nobjects + 1, dtype=np.int32)))
+            pixel_counts = centrosome.cpmorphology.fixup_scipy_ndimage_result(scipy.ndimage.sum(mask, labels,
+                                                                                                numpy.arange(1, nobjects + 1, dtype=numpy.int32)))
             if self.overlap_choice == P_KEEP:
                 keep = pixel_counts > 0
             else:
-                total_pixels = fix(scind.sum(np.ones(labels.shape), labels,
-                                             np.arange(1, nobjects + 1, dtype=np.int32)))
+                total_pixels = centrosome.cpmorphology.fixup_scipy_ndimage_result(scipy.ndimage.sum(numpy.ones(labels.shape), labels,
+                                                                                                    numpy.arange(1, nobjects + 1, dtype=numpy.int32)))
                 if self.overlap_choice == P_REMOVE:
                     keep = pixel_counts == total_pixels
                 elif self.overlap_choice == P_REMOVE_PERCENTAGE:
@@ -275,23 +298,23 @@ class MaskObjects(I.Identify):
                 else:
                     raise NotImplementedError("Unknown overlap-handling choice: %s",
                                               self.overlap_choice.value)
-            keep = np.hstack(([False], keep))
+            keep = numpy.hstack(([False], keep))
             labels[~ keep[labels]] = 0
         #
         # Renumber the labels matrix if requested
         #
         if self.retain_or_renumber == R_RENUMBER:
-            unique_labels = np.unique(labels[labels != 0])
-            indexer = np.zeros(nobjects + 1, int)
-            indexer[unique_labels] = np.arange(1, len(unique_labels) + 1)
+            unique_labels = numpy.unique(labels[labels != 0])
+            indexer = numpy.zeros(nobjects + 1, int)
+            indexer[unique_labels] = numpy.arange(1, len(unique_labels) + 1)
             labels = indexer[labels]
             parent_objects = unique_labels
         else:
-            parent_objects = np.arange(1, nobjects + 1)
+            parent_objects = numpy.arange(1, nobjects + 1)
         #
         # Add the objects
         #
-        remaining_objects = cpo.Objects()
+        remaining_objects = cellprofiler.region.Region()
         remaining_objects.segmented = labels
         remaining_objects.unedited_segmented = original_objects.unedited_segmented
         workspace.object_set.add_objects(remaining_objects,
@@ -301,30 +324,30 @@ class MaskObjects(I.Identify):
         #
         m = workspace.measurements
         m.add_measurement(remaining_object_name,
-                          I.FF_PARENT % object_name,
+                          cellprofiler.modules.identify.FF_PARENT % object_name,
                           parent_objects)
-        if np.max(original_objects.segmented) == 0:
-            child_count = np.array([], int)
+        if numpy.max(original_objects.segmented) == 0:
+            child_count = numpy.array([], int)
         else:
-            child_count = fix(scind.sum(labels, original_objects.segmented,
-                                        np.arange(1, nobjects + 1, dtype=np.int32)))
+            child_count = centrosome.cpmorphology.fixup_scipy_ndimage_result(scipy.ndimage.sum(labels, original_objects.segmented,
+                                                                                               numpy.arange(1, nobjects + 1, dtype=numpy.int32)))
             child_count = (child_count > 0).astype(int)
         m.add_measurement(object_name,
-                          I.FF_CHILDREN_COUNT % remaining_object_name,
+                          cellprofiler.modules.identify.FF_CHILDREN_COUNT % remaining_object_name,
                           child_count)
         if self.retain_or_renumber == R_RETAIN:
             remaining_object_count = nobjects
         else:
             remaining_object_count = len(unique_labels)
-        I.add_object_count_measurements(m, remaining_object_name,
-                                        remaining_object_count)
-        I.add_object_location_measurements(m, remaining_object_name, labels)
+        cellprofiler.modules.identify.add_object_count_measurements(m, remaining_object_name,
+                                                                    remaining_object_count)
+        cellprofiler.modules.identify.add_object_location_measurements(m, remaining_object_name, labels)
         #
         # Add an outline if asked to do so
         #
         if self.wants_outlines.value:
-            outline_image = cpi.Image(outline(labels) > 0,
-                                      parent_image=original_objects.parent_image)
+            outline_image = cellprofiler.image.Image(centrosome.outline.outline(labels) > 0,
+                                                     parent=original_objects.parent_image)
             workspace.image_set.add(self.outlines_name.value, outline_image)
         #
         # Save the input, mask and output images for display
@@ -335,7 +358,7 @@ class MaskObjects(I.Identify):
             workspace.display_data.mask = mask
 
     def display(self, workspace, figure):
-        '''Create an informative display for the module'''
+        """Create an informative display for the module"""
         import matplotlib
         from cellprofiler.gui.tools import renumber_labels_for_display
         original_labels = workspace.display_data.original_labels
@@ -345,9 +368,9 @@ class MaskObjects(I.Identify):
         # Create a composition of the final labels and mask
         #
         final_labels = renumber_labels_for_display(final_labels)
-        outlines = outline(original_labels) > 0
+        outlines = centrosome.outline.outline(original_labels) > 0
 
-        cm = matplotlib.cm.get_cmap(cpprefs.get_default_colormap())
+        cm = matplotlib.cm.get_cmap(cellprofiler.preferences.get_default_colormap())
         sm = matplotlib.cm.ScalarMappable(cmap=cm)
         #
         # Paint the labels in color
@@ -362,11 +385,11 @@ class MaskObjects(I.Identify):
         # Make the outlines of the kept objects the primary color
         # and the outlines of removed objects red.
         #
-        final_outlines = outline(final_labels) > 0
-        original_color = np.array(cpprefs.get_secondary_outline_color(), float) / 255
-        final_color = np.array(cpprefs.get_primary_outline_color(), float) / 255
-        image[outlines, :] = original_color[np.newaxis, :]
-        image[final_outlines, :] = final_color[np.newaxis, :]
+        final_outlines = centrosome.outline.outline(final_labels) > 0
+        original_color = numpy.array(cellprofiler.preferences.get_secondary_outline_color(), float) / 255
+        final_color = numpy.array(cellprofiler.preferences.get_primary_outline_color(), float) / 255
+        image[outlines, :] = original_color[numpy.newaxis, :]
+        image[final_outlines, :] = final_color[numpy.newaxis, :]
 
         figure.set_subplots((2, 1))
         figure.subplot_imshow_labels(0, 0, original_labels,
@@ -376,15 +399,15 @@ class MaskObjects(I.Identify):
                                     sharexy=figure.subplot(0, 0))
 
     def get_measurement_columns(self, pipeline):
-        '''Return column definitions for measurements made by this module'''
+        """Return column definitions for measurements made by this module"""
 
         object_name = self.object_name.value
         remaining_object_name = self.remaining_objects.value
-        columns = I.get_object_measurement_columns(self.remaining_objects.value)
-        columns += [(object_name, I.FF_CHILDREN_COUNT % remaining_object_name,
-                     cpmeas.COLTYPE_INTEGER),
-                    (remaining_object_name, I.FF_PARENT % object_name,
-                     cpmeas.COLTYPE_INTEGER)]
+        columns = cellprofiler.modules.identify.get_object_measurement_columns(self.remaining_objects.value)
+        columns += [(object_name, cellprofiler.modules.identify.FF_CHILDREN_COUNT % remaining_object_name,
+                     cellprofiler.measurement.COLTYPE_INTEGER),
+                    (remaining_object_name, cellprofiler.modules.identify.FF_PARENT % object_name,
+                     cellprofiler.measurement.COLTYPE_INTEGER)]
         return columns
 
     def get_categories(self, pipeline, object_name):
@@ -398,22 +421,22 @@ class MaskObjects(I.Identify):
                                           object_dictionary)
 
     def get_object_dictionary(self):
-        '''Get the dictionary of parent child relationships
+        """Get the dictionary of parent child relationships
 
         see Identify.get_object_categories, Identify.get_object_measurements
-        '''
+        """
         object_dictionary = {
             self.remaining_objects.value: [self.object_name.value]
         }
         return object_dictionary
 
     def get_measurements(self, pipeline, object_name, category):
-        '''Return names of the measurements made by this module
+        """Return names of the measurements made by this module
 
         pipeline - pipeline being run
         object_name - object being measured (or Image)
         category - category of measurement, for instance, "Location"
-        '''
+        """
         return self.get_object_measurements(pipeline, object_name, category,
                                             self.get_object_dictionary())
 
@@ -426,8 +449,8 @@ class MaskObjects(I.Identify):
         if from_matlab and variable_revision_number == 2:
             object_name, mask_region_name, remaining_object_name, \
             renumber, save_outlines, remove_overlapping = setting_values
-            wants_outlines = (cps.NO if save_outlines.lower() ==
-                                        cps.DO_NOT_USE.lower() else cps.YES)
+            wants_outlines = (cellprofiler.setting.NO if save_outlines.lower() ==
+                                                         cellprofiler.setting.DO_NOT_USE.lower() else cellprofiler.setting.YES)
             renumber = (R_RENUMBER if renumber == "Renumber"
                         else R_RETAIN if renumber == "Retain"
             else renumber)
@@ -444,7 +467,7 @@ class MaskObjects(I.Identify):
 
         if variable_revision_number == 1 and not from_matlab:
             # Added "wants_inverted_mask"
-            setting_values = setting_values + [cps.NO]
+            setting_values = setting_values + [cellprofiler.setting.NO]
             variable_revision_number = 2
 
         setting_values = list(setting_values)

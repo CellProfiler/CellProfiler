@@ -1,4 +1,8 @@
-from cellprofiler.gui.help import LOADING_IMAGE_SEQ_HELP_REF
+import cellprofiler.gui.help
+import cellprofiler.image
+import cellprofiler.module
+import cellprofiler.setting
+import numpy
 
 __doc__ = '''
 <b>Make Projection</b> combines several two-dimensional images of
@@ -10,7 +14,7 @@ choice at each pixel position; please refer to the settings help for more inform
 operations. The process of averaging or summing a Z-stack (3D image stack) is known as making a projection.
 
 <p>This module will create a projection of all images specified in the Input modules. For more
-information on loading image stacks and movies, see <i>%(LOADING_IMAGE_SEQ_HELP_REF)s</i>.
+information on loading image stacks and movies, see <i>{loading_image_seq_help}</i>.
 To achieve per-folder projections
 i.e., creating a projection for each set of images in a folder, for all input folders,
 make the following setting specifications:
@@ -27,13 +31,9 @@ output of this module is not complete until all image processing cycles have com
 the projection should be created with a dedicated pipeline.</p>
 
 See also the help for the <b>Input</b> modules.
-''' % globals()
-
-import numpy as np
-
-import cellprofiler.module as cpm
-import cellprofiler.image as cpi
-import cellprofiler.setting as cps
+'''.format(**{
+    'loading_image_seq_help': cellprofiler.gui.help.LOADING_IMAGE_SEQ_HELP_REF
+})
 
 P_AVERAGE = 'Average'
 P_MAXIMUM = 'Maximum'
@@ -49,45 +49,45 @@ P_ALL = [P_AVERAGE, P_MAXIMUM, P_MINIMUM, P_SUM, P_VARIANCE, P_POWER,
 K_PROVIDER = "Provider"
 
 
-class MakeProjection(cpm.Module):
+class MakeProjection(cellprofiler.module.Module):
     module_name = 'MakeProjection'
     category = 'Image Processing'
     variable_revision_number = 2
 
     def create_settings(self):
-        self.image_name = cps.ImageNameSubscriber(
-                'Select the input image', cps.NONE, doc='''
+        self.image_name = cellprofiler.setting.ImageNameSubscriber(
+                'Select the input image', cellprofiler.setting.NONE, doc='''
             Select the image to be made into a projection.''')
 
-        self.projection_type = cps.Choice(
+        self.projection_type = cellprofiler.setting.Choice(
                 'Type of projection',
                 P_ALL, doc='''
             The final projection image can be created by the following methods:
             <ul>
-            <li><i>%(P_AVERAGE)s:</i> Use the average pixel intensity at each pixel position.</li>
-            <li><i>%(P_MAXIMUM)s:</i> Use the maximum pixel value at each pixel position.</li>
-            <li><i>%(P_MINIMUM)s:</i> Use the minimum pixel value at each pixel position.</li>
-            <li><i>%(P_SUM)s:</i> Add the pixel values at each pixel position.</li>
-            <li><i>%(P_VARIANCE)s:</i> Compute the variance at each pixel position. <br>
+            <li><i>{average}:</i> Use the average pixel intensity at each pixel position.</li>
+            <li><i>{maximum}:</i> Use the maximum pixel value at each pixel position.</li>
+            <li><i>{minimum}:</i> Use the minimum pixel value at each pixel position.</li>
+            <li><i>{sum}:</i> Add the pixel values at each pixel position.</li>
+            <li><i>{variance}:</i> Compute the variance at each pixel position. <br>
             The variance  method is described in Selinummi et al (2009).
             The method is designed to operate on a z-stack of brightfield images taken
             at different focus planes. Background pixels will have relatively uniform
             illumination whereas cytoplasm pixels will have higher variance across the
             z-stack.</li>
-            <li><i>%(P_POWER)s:</i> Compute the power at a given frequency at each pixel position.<br>
+            <li><i>{power}:</i> Compute the power at a given frequency at each pixel position.<br>
             The power method is experimental. The method computes the power at a given
             frequency through the z-stack. It might be used with a phase contrast image
             where the signal at a given pixel will vary sinusoidally with depth. The
             frequency is measured in z-stack steps and pixels that vary with the given
             frequency will have a higher score than other pixels with similar variance,
             but different frequencies.</li>
-            <li><i>%(P_BRIGHTFIELD)s:</i> Perform the brightfield projection at each pixel position.<br>
+            <li><i>{brightfield}:</i> Perform the brightfield projection at each pixel position.<br>
             Artifacts such as dust appear as black spots which are most strongly resolved
             at their focal plane with gradually increasing signals below. The brightfield
             method scores these as zero since the dark appears in the early z-stacks.
             These pixels have a high score for the variance method but have a reduced
             score when using the brightfield method.</li>
-            <li><i>%(P_MASK)s:</i> Compute a binary image of the pixels that are
+            <li><i>{mask}:</i> Compute a binary image of the pixels that are
             masked in any of the input images.<br>
             The mask method operates on any masks that might have been applied to the
             images in a group. The output is a binary image where the "1" pixels are
@@ -107,22 +107,33 @@ class MakeProjection(cpm.Module):
             automated analysis of macrophage images", <i>PLoS ONE</i> 4(10): e7497
             <a href="http://dx.doi.org/10.1371/journal.pone.0007497">(link)</a>.</li>
             </ul>
-            </p>''' % globals())
+            </p>'''.format(**{
+                'average': P_AVERAGE,
+                'maximum': P_MAXIMUM,
+                'minimum': P_MINIMUM,
+                'sum': P_SUM,
+                'variance': P_VARIANCE,
+                'power': P_POWER,
+                'brightfield': P_BRIGHTFIELD,
+                'mask': P_MASK
+            }))
 
-        self.projection_image_name = cps.ImageNameProvider(
+        self.projection_image_name = cellprofiler.setting.ImageNameProvider(
                 'Name the output image',
                 'ProjectionBlue', doc='''
             Enter the name for the projected image.''',
-                provided_attributes={cps.AGGREGATE_IMAGE_ATTRIBUTE: True,
-                                     cps.AVAILABLE_ON_LAST_ATTRIBUTE: True})
-        self.frequency = cps.Float(
+                provided_attributes={cellprofiler.setting.AGGREGATE_IMAGE_ATTRIBUTE: True,
+                                     cellprofiler.setting.AVAILABLE_ON_LAST_ATTRIBUTE: True})
+        self.frequency = cellprofiler.setting.Float(
                 "Frequency", 6.0, minval=1.0, doc="""
-            <i>(Used only if %(P_POWER)s is selected as the projection method)</i><br>
+            <i>(Used only if {power} is selected as the projection method)</i><br>
             This setting controls the frequency at which the power
             is measured. A frequency of 2 will respond most strongly to
             pixels that alternate between dark and light in successive
             z-stack slices. A frequency of N will respond most strongly
-            to pixels whose brightness cycle every N slices.""" % globals())
+            to pixels whose brightness cycle every N slices.""".format(**{
+                'power': P_POWER
+            }))
 
     def settings(self):
         return [self.image_name, self.projection_type,
@@ -136,7 +147,7 @@ class MakeProjection(cpm.Module):
         return result
 
     def prepare_group(self, workspace, grouping, image_numbers):
-        '''Reset the aggregate image at the start of group processing'''
+        """Reset the aggregate image at the start of group processing"""
         if len(image_numbers) > 0:
             provider = ImageProvider(self.projection_image_name.value,
                                      self.projection_type.value,
@@ -160,15 +171,15 @@ class MakeProjection(cpm.Module):
                 provider.provide_image(workspace.image_set).pixel_data
 
     def is_aggregation_module(self):
-        '''Return True because we aggregate over all images in a group'''
+        """Return True because we aggregate over all images in a group"""
         return True
 
     def post_group(self, workspace, grouping):
-        '''Handle processing that takes place at the end of a group
+        """Handle processing that takes place at the end of a group
 
         Add the provider to the workspace if not present. This could
         happen if the image set didn't reach this module.
-        '''
+        """
         image_set = workspace.image_set
         if self.projection_image_name.value not in image_set.get_names():
             provider = ImageProvider.restore_from_state(self.get_dictionary())
@@ -210,7 +221,7 @@ class MakeProjection(cpm.Module):
         return setting_values, variable_revision_number, from_matlab
 
 
-class ImageProvider(cpi.AbstractImageProvider):
+class ImageProvider(cellprofiler.image.AbstractImageProvider):
     """Provide the image after averaging but before dilation and smoothing"""
 
     def __init__(self, name, how_to_accumulate, frequency=6):
@@ -259,10 +270,10 @@ class ImageProvider(cpi.AbstractImageProvider):
     D_NORM0 = "norm0"
 
     def save_state(self, d):
-        '''Save the provider state to a dictionary
+        """Save the provider state to a dictionary
 
         d - store state in this dictionary
-        '''
+        """
         d[self.D_NAME] = self.__name
         d[self.D_FREQUENCY] = self.frequency
         d[self.D_IMAGE] = self.__image
@@ -279,12 +290,12 @@ class ImageProvider(cpi.AbstractImageProvider):
 
     @staticmethod
     def restore_from_state(d):
-        '''Create a provider from the state stored in the dictionary
+        """Create a provider from the state stored in the dictionary
 
         d - dictionary from call to save_state
 
         returns a new ImageProvider built from the saved state
-        '''
+        """
         name = d[ImageProvider.D_NAME]
         frequency = d[ImageProvider.D_FREQUENCY]
         how_to_accumulate = d[ImageProvider.D_HOW_TO_ACCUMULATE]
@@ -302,7 +313,7 @@ class ImageProvider(cpi.AbstractImageProvider):
         return image_provider
 
     def reset(self):
-        '''Reset accumulator at start of groups'''
+        """Reset accumulator at start of groups"""
         self.__image_count = None
         self.__image = None
         self.__cached_image = None
@@ -327,13 +338,13 @@ class ImageProvider(cpi.AbstractImageProvider):
         if image.has_mask:
             self.__image_count = image.mask.astype(int)
         else:
-            self.__image_count = np.ones(image.pixel_data.shape[:2], int)
+            self.__image_count = numpy.ones(image.pixel_data.shape[:2], int)
 
         if self.__how_to_accumulate == P_VARIANCE:
             self.__vsum = image.pixel_data.copy()
             self.__vsum[~ image.mask] = 0
             self.__image_count = image.mask.astype(int)
-            self.__vsquared = self.__vsum.astype(np.float64) ** 2.0
+            self.__vsquared = self.__vsum.astype(numpy.float64) ** 2.0
             return
 
         if self.__how_to_accumulate == P_POWER:
@@ -343,14 +354,14 @@ class ImageProvider(cpi.AbstractImageProvider):
             #
             # e**0 = 1, so the first image is always in the real plane
             #
-            self.__power_mask = self.__image_count.astype(np.complex128).copy()
-            self.__power_image = image.pixel_data.astype(np.complex128).copy()
+            self.__power_mask = self.__image_count.astype(numpy.complex128).copy()
+            self.__power_image = image.pixel_data.astype(numpy.complex128).copy()
             self.__stack_number = 1
             return
         if self.__how_to_accumulate == P_BRIGHTFIELD:
             self.__bright_max = image.pixel_data.copy()
             self.__bright_min = image.pixel_data.copy()
-            self.__norm0 = np.mean(image.pixel_data)
+            self.__norm0 = numpy.mean(image.pixel_data)
             return
 
         if self.__how_to_accumulate == P_MASK:
@@ -375,23 +386,23 @@ class ImageProvider(cpi.AbstractImageProvider):
                 self.__image += image.pixel_data
         elif self.__how_to_accumulate == P_MAXIMUM:
             if image.has_mask:
-                self.__image[image.mask] = np.maximum(self.__image[image.mask],
-                                                      image.pixel_data[image.mask])
+                self.__image[image.mask] = numpy.maximum(self.__image[image.mask],
+                                                         image.pixel_data[image.mask])
             else:
-                self.__image = np.maximum(image.pixel_data, self.__image)
+                self.__image = numpy.maximum(image.pixel_data, self.__image)
         elif self.__how_to_accumulate == P_MINIMUM:
             if image.has_mask:
-                self.__image[image.mask] = np.minimum(self.__image[image.mask],
-                                                      image.pixel_data[image.mask])
+                self.__image[image.mask] = numpy.minimum(self.__image[image.mask],
+                                                         image.pixel_data[image.mask])
             else:
-                self.__image = np.minimum(image.pixel_data, self.__image)
+                self.__image = numpy.minimum(image.pixel_data, self.__image)
         elif self.__how_to_accumulate == P_VARIANCE:
             mask = image.mask
             self.__vsum[mask] += image.pixel_data[mask]
-            self.__vsquared[mask] += image.pixel_data[mask].astype(np.float64) ** 2
+            self.__vsquared[mask] += image.pixel_data[mask].astype(numpy.float64) ** 2
         elif self.__how_to_accumulate == P_POWER:
-            multiplier = np.exp(2J * np.pi * float(self.__stack_number) /
-                                self.frequency)
+            multiplier = numpy.exp(2J * numpy.pi * float(self.__stack_number) /
+                                   self.frequency)
             self.__stack_number += 1
             mask = image.mask
             self.__vsum[mask] += image.pixel_data[mask]
@@ -399,7 +410,7 @@ class ImageProvider(cpi.AbstractImageProvider):
             self.__power_mask[mask] += multiplier
         elif self.__how_to_accumulate == P_BRIGHTFIELD:
             mask = image.mask
-            norm = np.mean(image.pixel_data)
+            norm = numpy.mean(image.pixel_data)
             pixel_data = image.pixel_data * self.__norm0 / norm
             max_mask = ((self.__bright_max < pixel_data) & mask)
             min_mask = ((self.__bright_min > pixel_data) & mask)
@@ -424,41 +435,41 @@ class ImageProvider(cpi.AbstractImageProvider):
         else:
             ndim_image = self.__image
         if ndim_image.ndim == 3:
-            image_count = np.dstack([image_count] * ndim_image.shape[2])
+            image_count = numpy.dstack([image_count] * ndim_image.shape[2])
         mask = image_count > 0
         if self.__cached_image is not None:
             return self.__cached_image
         if self.__how_to_accumulate == P_AVERAGE:
             cached_image = self.__image / image_count
         elif self.__how_to_accumulate == P_VARIANCE:
-            cached_image = np.zeros(self.__vsquared.shape, np.float32)
+            cached_image = numpy.zeros(self.__vsquared.shape, numpy.float32)
             cached_image[mask] = self.__vsquared[mask] / image_count[mask]
             cached_image[mask] -= self.__vsum[mask] ** 2 / (image_count[mask] ** 2)
         elif self.__how_to_accumulate == P_POWER:
-            cached_image = np.zeros(image_count.shape, np.complex128)
+            cached_image = numpy.zeros(image_count.shape, numpy.complex128)
             cached_image[mask] = self.__power_image[mask]
             cached_image[mask] -= (self.__vsum[mask] * self.__power_mask[mask] /
                                    image_count[mask])
             cached_image = \
-                (cached_image * np.conj(cached_image)).real.astype(np.float32)
+                (cached_image * numpy.conj(cached_image)).real.astype(numpy.float32)
         elif self.__how_to_accumulate == P_BRIGHTFIELD:
-            cached_image = np.zeros(image_count.shape, np.float32)
+            cached_image = numpy.zeros(image_count.shape, numpy.float32)
             cached_image[mask] = self.__bright_max[mask] - self.__bright_min[mask]
-        elif self.__how_to_accumulate == P_MINIMUM and np.any(~mask):
+        elif self.__how_to_accumulate == P_MINIMUM and numpy.any(~mask):
             cached_image = self.__image.copy()
             cached_image[~mask] = 0
         else:
             cached_image = self.__image
         cached_image[~mask] = 0
-        if np.all(mask) or self.__how_to_accumulate == P_MASK:
-            self.__cached_image = cpi.Image(cached_image)
+        if numpy.all(mask) or self.__how_to_accumulate == P_MASK:
+            self.__cached_image = cellprofiler.image.Image(cached_image)
         else:
-            self.__cached_image = cpi.Image(cached_image, mask=mask_2d)
+            self.__cached_image = cellprofiler.image.Image(cached_image, mask=mask_2d)
         return self.__cached_image
 
     def get_name(self):
         return self.__name
 
     def release_memory(self):
-        '''Don't discard the image at end of image set'''
+        """Don't discard the image at end of image set"""
         pass

@@ -1,4 +1,4 @@
-'''<b>ImageTemplate</b> - an example image processing module
+"""<b>ImageTemplate</b> - an example image processing module
 <hr>
 This is an example of a module that takes one image as an input and
 produces a second image for downstream processing. You can use this as
@@ -9,7 +9,7 @@ The text you see here will be displayed as the help for your module. You
 can use HTML markup here and in the settings text; the Python HTML control
 does not fully support the HTML specification, so you may have to experiment
 to get it to display correctly.
-'''
+"""
 #################################
 #
 # Imports from useful Python libraries
@@ -256,7 +256,7 @@ class ImageTemplate(cpm.Module):
         # about the parent image - the child inherits the parent's
         # cropping and masking, but it's not absolutely necessary
         #
-        output_image = cpi.Image(output_pixels, parent_image=input_image)
+        output_image = cpi.Image(output_pixels, parent=input_image)
         image_set.add(output_image_name, output_image)
         #
         # Save intermediate results for display if the window frame is on

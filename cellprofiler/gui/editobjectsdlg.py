@@ -5,7 +5,7 @@
 
 import cellprofiler.gui.figure
 import cellprofiler.gui.tools
-import cellprofiler.object
+import cellprofiler.region
 import cellprofiler.preferences
 import centrosome.cpmorphology
 import centrosome.cpmorphology
@@ -213,9 +213,9 @@ class EditObjectsDialog(wx.Dialog):
         self.last_ijv = ijvx[:, :3]
         self.last_artist_save = artist_save
         self.last_to_keep = self.to_keep
-        temp = cellprofiler.object.Objects()
+        temp = cellprofiler.region.Region()
         temp.ijv = self.last_ijv
-        self.labels = [l for l, c in temp.get_labels(self.shape)]
+        self.labels = [l for l, c in temp.labels()]
         self.init_labels()
         #
         # replace the artists
@@ -670,11 +670,11 @@ class EditObjectsDialog(wx.Dialog):
             ii.append(i[mask])
             jj.append(j[mask])
             vv.append(l[mask])
-        temp = cellprofiler.object.Objects()
+        temp = cellprofiler.region.Region()
         temp.set_ijv(
                 numpy.column_stack([numpy.hstack(x) for x in (ii, jj, vv)]),
                 shape=self.shape)
-        self.labels = [l for l, c in temp.get_labels()]
+        self.labels = [l for l, c in temp.labels()]
 
     def add_label(self, mask):
         object_number = len(self.to_keep)
@@ -722,7 +722,7 @@ class EditObjectsDialog(wx.Dialog):
                 orig_to_show[object_number] = False
         self.orig_axes.clear()
         if self.guide_image is not None and self.wants_image_display:
-            image, _ = cellprofiler.object.size_similarly(self.orig_labels[0],
+            image, _ = cellprofiler.region.size_similarly(self.orig_labels[0],
                                                           self.guide_image)
             if image.ndim == 2:
                 image = numpy.dstack((image, image, image))

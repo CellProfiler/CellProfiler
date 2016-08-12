@@ -3016,20 +3016,24 @@ class Pipeline(object):
         ModuleNum - the one-based index for the placement of the module in the pipeline
         """
         is_image_set_modification = new_module.is_load_module()
+
         module_num = new_module.module_num
+
         idx = module_num - 1
+
         self.__modules = self.__modules[:idx] + [new_module] + self.__modules[idx:]
+
         for module, mn in zip(self.__modules[idx + 1:], range(module_num + 1, len(self.__modules) + 1)):
             module.module_num = mn
-        self.notify_listeners(ModuleAddedPipelineEvent(
-                module_num, is_image_set_modification=is_image_set_modification))
+
+        self.notify_listeners(ModuleAddedPipelineEvent(module_num, is_image_set_modification=is_image_set_modification))
+
         self.__settings.insert(idx, self.capture_module_settings(new_module))
 
         def undo():
             self.remove_module(new_module.module_num)
 
-        self.__undo_stack.append((undo,
-                                  "Add %s module" % new_module.module_name))
+        self.__undo_stack.append((undo, "Add %s module" % new_module.module_name))
 
     def remove_module(self, module_num):
         """Remove a module from the pipeline

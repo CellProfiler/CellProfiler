@@ -55,7 +55,6 @@ import cellprofiler.measurement
 import cellprofiler.metadata
 import cellprofiler.module
 import cellprofiler.modules
-import cellprofiler.modules.loaddata
 import cellprofiler.pipeline
 import cellprofiler.preferences
 import cellprofiler.region
@@ -849,15 +848,7 @@ class LoadImages(cellprofiler.module.Module):
         for module in pipeline.modules():
             if id(module) == id(self):
                 return
-            if isinstance(module, cellprofiler.modules.loaddata.LoadData):
-                raise cellprofiler.setting.ValidationError(
-                    "Your pipeline has a LoadImages and LoadData module.\n"
-                    "The best practice is to have only a single LoadImages\n"
-                    "or LoadData module. This LoadImages module will match its\n"
-                    "metadata against that of the previous LoadData module\n"
-                    "in an attempt to reconcile the two modules' image\n"
-                    "set lists and this can result in image sets with\n"
-                    "missing images or metadata.", self.add_image)
+
             if isinstance(module, LoadImages):
                 raise cellprofiler.setting.ValidationError(
                     "Your pipeline has two or more LoadImages modules.\n"

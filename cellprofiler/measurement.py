@@ -306,7 +306,6 @@ class Measurements(object):
         self.__relationships = set()
         self.__images = {}
         self.__image_providers = []
-        self.__images = {}
         self.__image_providers = []
         self.__image_number_relationships = {}
         self.__image_cache_file = None
@@ -1695,10 +1694,6 @@ class Measurements(object):
                     self.__image_cache_path, "w")
             self.__hdf5_object_set = HDF5ObjectSet(self.__image_cache_file)
             os.close(h)
-
-    def cache_object_set(self, object_set):
-        self.__ensure_cache_file()
-        object_set.cache(self.__hdf5_object_set)
 
     def clear_cache(self):
         '''Remove all of the cached images'''

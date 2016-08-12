@@ -2105,14 +2105,7 @@ class Pipeline(object):
         Run the CellProfiler module with whatever preparation and cleanup
         needs to be done before and after.
         '''
-        try:
-            module.run(workspace)
-        finally:
-            try:
-                workspace.cache()
-            except:
-                logger.error("Exception while trying to cache",
-                             exc_info=True)
+        module.run(workspace)
 
     def write_experiment_measurements(self, m):
         '''Write the standard experiment measurments to the measurements file

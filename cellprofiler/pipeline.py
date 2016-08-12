@@ -1520,25 +1520,38 @@ class Pipeline(object):
         """Convert a pipeline from legacy to using Images, NamesAndTypes etc"""
         if not self.can_convert_legacy_input_modules():
             return
-        from cellprofiler.modules.images import Images, FILTER_CHOICE_NONE
-        from cellprofiler.modules.metadata import Metadata
-        from cellprofiler.modules.namesandtypes import NamesAndTypes
-        from cellprofiler.modules.groups import Groups
+
+        import cellprofiler.modules.images
+        import cellprofiler.modules.metadata
+        import cellprofiler.modules.namesandtypes
+        import cellprofiler.modules.groups
+
         with self.undoable_action("Legacy modules converted"):
-            images, metadata, namesandtypes, groups = (
-                Images(), Metadata(), NamesAndTypes(), Groups())
-            images.filter_choice.value = FILTER_CHOICE_NONE
+            images = cellprofiler.modules.images.Images()
+            metadata = cellprofiler.modules.metadata.Metadata()
+            namesandtypes = cellprofiler.modules.namesandtypes.NamesAndTypes()
+            groups = cellprofiler.modules.groups.Groups()
+
+            images.filter_choice.value = cellprofiler.modules.images.FILTER_CHOICE_NONE
+
             for i, module in enumerate((images, metadata, namesandtypes, groups)):
                 module.set_module_num(i + 1)
+
                 module.show_window = cellprofiler.preferences.get_headless()
+
                 if module.notes:
                     module.notes += ["---"]
+
                 module.notes += ["Settings converted from legacy pipeline."]
+
                 self.add_module(module)
+
             for module in list(self.__modules):
                 if module.needs_conversion():
                     module.convert(self, metadata, namesandtypes, groups)
+
                     self.remove_module(module.module_num)
+
             self.notify_listeners(PipelineLoadedEvent())
 
     def convert_default_input_folder(self, path):
@@ -2461,14 +2474,21 @@ class Pipeline(object):
 
         Initialize the modules list to contain the four file modules.
         """
-        from cellprofiler.modules.images import Images
-        from cellprofiler.modules.metadata import Metadata
-        from cellprofiler.modules.namesandtypes import NamesAndTypes
-        from cellprofiler.modules.groups import Groups
-        for i, module in enumerate(
-                (Images(), Metadata(), NamesAndTypes(), Groups())):
+        import cellprofiler.modules.images
+        import cellprofiler.modules.metadata
+        import cellprofiler.modules.namesandtypes
+        import cellprofiler.modules.groups
+
+        for i, module in enumerate((
+                cellprofiler.modules.images.Images(),
+                cellprofiler.modules.metadata.Metadata(),
+                cellprofiler.modules.namesandtypes.NamesAndTypes(),
+                cellprofiler.modules.groups.Groups()
+        )):
             module.set_module_num(i + 1)
+
             module.show_window = cellprofiler.preferences.get_headless()
+
             self.add_module(module)
 
     def move_module(self, module_num, direction):

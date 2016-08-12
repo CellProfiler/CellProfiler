@@ -13,6 +13,8 @@ import cellprofiler.pipeline
 import cellprofiler.setting
 import cellprofiler.utilities.url
 import javabridge
+from cellprofiler.metadata import XM_FILE_NAME, XM_FOLDER_NAME, F_ALL_IMAGES, F_FILTERED_IMAGES, X_AUTOMATIC_EXTRACTION, \
+    X_MANUAL_EXTRACTION, X_IMPORTED_EXTRACTION, X_ALL_EXTRACTION_METHODS
 
 __doc__ = """
 The <b>Metadata</b> module connects information about the images (i.e., metadata)
@@ -111,21 +113,10 @@ module for more details.</p>
 
 logger = logging.getLogger(__name__)
 
-X_AUTOMATIC_EXTRACTION = "Extract from image file headers"
-X_MANUAL_EXTRACTION = "Extract from file/folder names"
-X_IMPORTED_EXTRACTION = "Import from file"
-X_ALL_EXTRACTION_METHODS = [X_MANUAL_EXTRACTION,
-                            X_IMPORTED_EXTRACTION,
-                            X_AUTOMATIC_EXTRACTION]
-XM_FILE_NAME = "File name"
-XM_FOLDER_NAME = "Folder name"
-
 DTC_TEXT = "Text"
 DTC_CHOOSE = "Choose for each"
 DTC_ALL = [DTC_TEXT, DTC_CHOOSE]
 
-F_ALL_IMAGES = "All images"
-F_FILTERED_IMAGES = "Images matching a rule"
 COL_PATH = "Path / URL"
 COL_SERIES = "Series"
 COL_INDEX = "Frame"

@@ -44,11 +44,11 @@ import cellprofiler.gui.help
 import cellprofiler.identify
 import cellprofiler.image
 import cellprofiler.measurement
+import cellprofiler.metadata
 import cellprofiler.module
 import cellprofiler.modules
 import cellprofiler.modules.groups
 import cellprofiler.modules.images
-import cellprofiler.modules.metadata
 import cellprofiler.modules.namesandtypes
 import cellprofiler.preferences
 import cellprofiler.region
@@ -582,11 +582,8 @@ class LoadSingleImage(cellprofiler.module.Module):
 
     def convert(self, pipeline, metadata, namesandtypes, groups):
         """Convert from legacy to modern"""
-        assert isinstance(metadata, cellprofiler.modules.metadata.Metadata)
-        assert isinstance(namesandtypes, cellprofiler.modules.namesandtypes.NamesAndTypes)
-        assert isinstance(groups, cellprofiler.modules.groups.Groups)
-
         edited_modules = set()
+
         for group in self.file_settings:
             tags = []
             file_name = group.file_name.value
@@ -651,10 +648,10 @@ class LoadSingleImage(cellprofiler.module.Module):
                     metadata.add_extraction_method()
                 edited_modules.add(metadata)
                 em = metadata.extraction_methods[-1]
-                em.extraction_method.value = cellprofiler.modules.metadata.X_MANUAL_EXTRACTION
-                em.source.value = cellprofiler.modules.metadata.XM_FILE_NAME
+                em.extraction_method.value = cellprofiler.metadata.X_MANUAL_EXTRACTION
+                em.source.value = cellprofiler.metadata.XM_FILE_NAME
                 em.file_regexp.value = regexp
-                em.filter_choice.value = cellprofiler.modules.metadata.F_FILTERED_IMAGES
+                em.filter_choice.value = cellprofiler.metadata.F_FILTERED_IMAGES
                 em.filter.build(structure)
             #
             # If there was metadata to match, namesandtypes should

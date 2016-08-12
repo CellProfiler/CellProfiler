@@ -4,6 +4,7 @@ import tempfile
 import unittest
 
 import cellprofiler.measurement
+import cellprofiler.metadata
 import cellprofiler.modules.images
 import cellprofiler.modules.metadata
 import cellprofiler.pipeline
@@ -52,19 +53,19 @@ Metadata:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:1|show_w
         self.assertTrue(module.wants_metadata)
         self.assertEqual(len(module.extraction_methods), 2)
         em0, em1 = module.extraction_methods
-        self.assertEqual(em0.extraction_method, cellprofiler.modules.metadata.X_MANUAL_EXTRACTION)
-        self.assertEqual(em0.source, cellprofiler.modules.metadata.XM_FILE_NAME)
+        self.assertEqual(em0.extraction_method, cellprofiler.metadata.X_MANUAL_EXTRACTION)
+        self.assertEqual(em0.source, cellprofiler.metadata.XM_FILE_NAME)
         self.assertEqual(em0.file_regexp.value,
                          r"^Channel(?P<ChannelNumber>[12])-(?P<Index>[0-9]+)-(?P<WellRow>[A-H])-(?P<WellColumn>[0-9]{2}).tif$")
         self.assertEqual(em0.folder_regexp.value,
                          r"(?P<Date>[0-9]{4}_[0-9]{2}_[0-9]{2})$")
-        self.assertEqual(em0.filter_choice, cellprofiler.modules.metadata.F_ALL_IMAGES)
+        self.assertEqual(em0.filter_choice, cellprofiler.metadata.F_ALL_IMAGES)
         self.assertEqual(em0.filter, 'or (file does contain "Channel2")')
         self.assertFalse(em0.wants_case_insensitive)
 
-        self.assertEqual(em1.extraction_method, cellprofiler.modules.metadata.X_IMPORTED_EXTRACTION)
-        self.assertEqual(em1.source, cellprofiler.modules.metadata.XM_FOLDER_NAME)
-        self.assertEqual(em1.filter_choice, cellprofiler.modules.metadata.F_FILTERED_IMAGES)
+        self.assertEqual(em1.extraction_method, cellprofiler.metadata.X_IMPORTED_EXTRACTION)
+        self.assertEqual(em1.source, cellprofiler.metadata.XM_FOLDER_NAME)
+        self.assertEqual(em1.filter_choice, cellprofiler.metadata.F_FILTERED_IMAGES)
         self.assertEqual(em1.csv_location, "/imaging/analysis/metadata.csv")
         self.assertEqual(em1.csv_joiner.value, "[{'Image Metadata': u'ChannelNumber', 'CSV Metadata': u'Wavelength'}]")
         self.assertFalse(em1.wants_case_insensitive)
@@ -109,19 +110,19 @@ Metadata:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:2|show_w
         self.assertTrue(module.wants_metadata)
         self.assertEqual(len(module.extraction_methods), 2)
         em0, em1 = module.extraction_methods
-        self.assertEqual(em0.extraction_method, cellprofiler.modules.metadata.X_MANUAL_EXTRACTION)
-        self.assertEqual(em0.source, cellprofiler.modules.metadata.XM_FILE_NAME)
+        self.assertEqual(em0.extraction_method, cellprofiler.metadata.X_MANUAL_EXTRACTION)
+        self.assertEqual(em0.source, cellprofiler.metadata.XM_FILE_NAME)
         self.assertEqual(em0.file_regexp.value,
                          r"^Channel(?P<ChannelNumber>[12])-(?P<Index>[0-9]+)-(?P<WellRow>[A-H])-(?P<WellColumn>[0-9]{2}).tif$")
         self.assertEqual(em0.folder_regexp.value,
                          r"(?P<Date>[0-9]{4}_[0-9]{2}_[0-9]{2})$")
-        self.assertEqual(em0.filter_choice, cellprofiler.modules.metadata.F_ALL_IMAGES)
+        self.assertEqual(em0.filter_choice, cellprofiler.metadata.F_ALL_IMAGES)
         self.assertEqual(em0.filter, 'or (file does contain "Channel2")')
         self.assertFalse(em0.wants_case_insensitive)
 
-        self.assertEqual(em1.extraction_method, cellprofiler.modules.metadata.X_IMPORTED_EXTRACTION)
-        self.assertEqual(em1.source, cellprofiler.modules.metadata.XM_FOLDER_NAME)
-        self.assertEqual(em1.filter_choice, cellprofiler.modules.metadata.F_FILTERED_IMAGES)
+        self.assertEqual(em1.extraction_method, cellprofiler.metadata.X_IMPORTED_EXTRACTION)
+        self.assertEqual(em1.source, cellprofiler.metadata.XM_FOLDER_NAME)
+        self.assertEqual(em1.filter_choice, cellprofiler.metadata.F_FILTERED_IMAGES)
         self.assertEqual(em1.csv_location, "/imaging/analysis/metadata.csv")
         self.assertEqual(em1.csv_joiner.value, "[{'Image Metadata': u'ChannelNumber', 'CSV Metadata': u'Wavelength'}]")
         self.assertTrue(em1.wants_case_insensitive)
@@ -167,19 +168,19 @@ Metadata:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:3|show_w
         self.assertEqual(module.data_type_choice, cellprofiler.modules.metadata.DTC_TEXT)
         self.assertEqual(len(module.extraction_methods), 2)
         em0, em1 = module.extraction_methods
-        self.assertEqual(em0.extraction_method, cellprofiler.modules.metadata.X_MANUAL_EXTRACTION)
-        self.assertEqual(em0.source, cellprofiler.modules.metadata.XM_FILE_NAME)
+        self.assertEqual(em0.extraction_method, cellprofiler.metadata.X_MANUAL_EXTRACTION)
+        self.assertEqual(em0.source, cellprofiler.metadata.XM_FILE_NAME)
         self.assertEqual(em0.file_regexp.value,
                          r"^Channel(?P<ChannelNumber>[12])-(?P<Index>[0-9]+)-(?P<WellRow>[A-H])-(?P<WellColumn>[0-9]{2}).tif$")
         self.assertEqual(em0.folder_regexp.value,
                          r"(?P<Date>[0-9]{4}_[0-9]{2}_[0-9]{2})$")
-        self.assertEqual(em0.filter_choice, cellprofiler.modules.metadata.F_ALL_IMAGES)
+        self.assertEqual(em0.filter_choice, cellprofiler.metadata.F_ALL_IMAGES)
         self.assertEqual(em0.filter, 'or (file does contain "Channel2")')
         self.assertFalse(em0.wants_case_insensitive)
 
-        self.assertEqual(em1.extraction_method, cellprofiler.modules.metadata.X_IMPORTED_EXTRACTION)
-        self.assertEqual(em1.source, cellprofiler.modules.metadata.XM_FOLDER_NAME)
-        self.assertEqual(em1.filter_choice, cellprofiler.modules.metadata.F_FILTERED_IMAGES)
+        self.assertEqual(em1.extraction_method, cellprofiler.metadata.X_IMPORTED_EXTRACTION)
+        self.assertEqual(em1.source, cellprofiler.metadata.XM_FOLDER_NAME)
+        self.assertEqual(em1.filter_choice, cellprofiler.metadata.F_FILTERED_IMAGES)
         self.assertEqual(em1.csv_location, "/imaging/analysis/metadata.csv")
         self.assertEqual(em1.csv_joiner.value, "[{'Image Metadata': u'ChannelNumber', 'CSV Metadata': u'Wavelength'}]")
         self.assertTrue(em1.wants_case_insensitive)
@@ -234,19 +235,19 @@ Metadata:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_w
             self.assertEqual(d[k], v)
         self.assertEqual(len(module.extraction_methods), 2)
         em0, em1 = module.extraction_methods
-        self.assertEqual(em0.extraction_method, cellprofiler.modules.metadata.X_MANUAL_EXTRACTION)
-        self.assertEqual(em0.source, cellprofiler.modules.metadata.XM_FILE_NAME)
+        self.assertEqual(em0.extraction_method, cellprofiler.metadata.X_MANUAL_EXTRACTION)
+        self.assertEqual(em0.source, cellprofiler.metadata.XM_FILE_NAME)
         self.assertEqual(em0.file_regexp.value,
                          r"^Channel(?P<ChannelNumber>[12])-(?P<Index>[0-9]+)-(?P<WellRow>[A-H])-(?P<WellColumn>[0-9]{2}).tif$")
         self.assertEqual(em0.folder_regexp.value,
                          r"(?P<Date>[0-9]{4}_[0-9]{2}_[0-9]{2})$")
-        self.assertEqual(em0.filter_choice, cellprofiler.modules.metadata.F_ALL_IMAGES)
+        self.assertEqual(em0.filter_choice, cellprofiler.metadata.F_ALL_IMAGES)
         self.assertEqual(em0.filter, 'or (file does contain "Channel2")')
         self.assertFalse(em0.wants_case_insensitive)
 
-        self.assertEqual(em1.extraction_method, cellprofiler.modules.metadata.X_IMPORTED_EXTRACTION)
-        self.assertEqual(em1.source, cellprofiler.modules.metadata.XM_FOLDER_NAME)
-        self.assertEqual(em1.filter_choice, cellprofiler.modules.metadata.F_FILTERED_IMAGES)
+        self.assertEqual(em1.extraction_method, cellprofiler.metadata.X_IMPORTED_EXTRACTION)
+        self.assertEqual(em1.source, cellprofiler.metadata.XM_FOLDER_NAME)
+        self.assertEqual(em1.filter_choice, cellprofiler.metadata.F_FILTERED_IMAGES)
         self.assertEqual(em1.csv_location, "/imaging/analysis/metadata.csv")
         self.assertEqual(em1.csv_joiner.value, "[{'Image Metadata': u'ChannelNumber', 'CSV Metadata': u'Wavelength'}]")
         self.assertTrue(em1.wants_case_insensitive)
@@ -280,11 +281,11 @@ Metadata:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_w
         module = cellprofiler.modules.metadata.Metadata()
         module.wants_metadata.value=True
         em = module.extraction_methods[0]
-        em.filter_choice.value = cellprofiler.modules.metadata.F_ALL_IMAGES
-        em.extraction_method.value = cellprofiler.modules.metadata.X_MANUAL_EXTRACTION
-        em.source.value = cellprofiler.modules.metadata.XM_FILE_NAME
+        em.filter_choice.value = cellprofiler.metadata.F_ALL_IMAGES
+        em.extraction_method.value = cellprofiler.metadata.X_MANUAL_EXTRACTION
+        em.source.value = cellprofiler.metadata.XM_FILE_NAME
         em.file_regexp.value = "^(?P<Plate>[^_]+)_(?P<Well>[A-H][0-9]{2})_s(?P<Site>[0-9])_w(?P<Wavelength>[0-9])"
-        em.filter_choice.value = cellprofiler.modules.metadata.F_ALL_IMAGES
+        em.filter_choice.value = cellprofiler.metadata.F_ALL_IMAGES
         url = "file:/imaging/analysis/P-12345_B08_s5_w2.tif"
         self.check(module, url,
                    [{ "Plate":"P-12345",
@@ -297,11 +298,11 @@ Metadata:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_w
         module = cellprofiler.modules.metadata.Metadata()
         module.wants_metadata.value = True
         em = module.extraction_methods[0]
-        em.filter_choice.value = cellprofiler.modules.metadata.F_ALL_IMAGES
-        em.extraction_method.value = cellprofiler.modules.metadata.X_MANUAL_EXTRACTION
-        em.source.value = cellprofiler.modules.metadata.XM_FOLDER_NAME
+        em.filter_choice.value = cellprofiler.metadata.F_ALL_IMAGES
+        em.extraction_method.value = cellprofiler.metadata.X_MANUAL_EXTRACTION
+        em.source.value = cellprofiler.metadata.XM_FOLDER_NAME
         em.folder_regexp.value = r".*[/\\](?P<Plate>.+)$"
-        em.filter_choice.value = cellprofiler.modules.metadata.F_ALL_IMAGES
+        em.filter_choice.value = cellprofiler.metadata.F_ALL_IMAGES
         url = "file:/imaging/analysis/P-12345/_B08_s5_w2.tif"
         self.check(module, url, [{ "Plate":"P-12345" }], ("Plate",))
 
@@ -309,12 +310,12 @@ Metadata:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_w
         module = cellprofiler.modules.metadata.Metadata()
         module.wants_metadata.value=True
         em = module.extraction_methods[0]
-        em.filter_choice.value = cellprofiler.modules.metadata.F_FILTERED_IMAGES
+        em.filter_choice.value = cellprofiler.metadata.F_FILTERED_IMAGES
         em.filter.value = 'or (file does contain "B08")'
-        em.extraction_method.value = cellprofiler.modules.metadata.X_MANUAL_EXTRACTION
-        em.source.value = cellprofiler.modules.metadata.XM_FILE_NAME
+        em.extraction_method.value = cellprofiler.metadata.X_MANUAL_EXTRACTION
+        em.source.value = cellprofiler.metadata.XM_FILE_NAME
         em.file_regexp.value = "^(?P<Plate>[^_]+)_(?P<Well>[A-H][0-9]{2})_s(?P<Site>[0-9])_w(?P<Wavelength>[0-9])"
-        em.filter_choice.value = cellprofiler.modules.metadata.F_ALL_IMAGES
+        em.filter_choice.value = cellprofiler.metadata.F_ALL_IMAGES
         url = "file:/imaging/analysis/P-12345_B08_s5_w2.tif"
         self.check(module, url,
                    [{ "Plate":"P-12345",
@@ -326,12 +327,12 @@ Metadata:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_w
         module = cellprofiler.modules.metadata.Metadata()
         module.wants_metadata.value=True
         em = module.extraction_methods[0]
-        em.filter_choice.value = cellprofiler.modules.metadata.F_FILTERED_IMAGES
+        em.filter_choice.value = cellprofiler.metadata.F_FILTERED_IMAGES
         em.filter.value = 'or (file doesnot contain "B08")'
-        em.extraction_method.value = cellprofiler.modules.metadata.X_MANUAL_EXTRACTION
-        em.source.value = cellprofiler.modules.metadata.XM_FILE_NAME
+        em.extraction_method.value = cellprofiler.metadata.X_MANUAL_EXTRACTION
+        em.source.value = cellprofiler.metadata.XM_FILE_NAME
         em.file_regexp.value = "^(?P<Plate>[^_]+)_(?P<Well>[A-H][0-9]{2})_s(?P<Site>[0-9])_w(?P<Wavelength>[0-9])"
-        em.filter_choice.value = cellprofiler.modules.metadata.F_ALL_IMAGES
+        em.filter_choice.value = cellprofiler.metadata.F_ALL_IMAGES
         url = "file:/imaging/analysis/P-12345_B08_s5_w2.tif"
         self.check(module, url,
                    [{ "Plate":"P-12345",
@@ -361,15 +362,15 @@ C10,BRD041618,1.5,2
                 Counter=cellprofiler.setting.DataTypes.DT_NONE))
             module.add_extraction_method()
             em = module.extraction_methods[0]
-            em.filter_choice.value = cellprofiler.modules.metadata.F_ALL_IMAGES
-            em.extraction_method.value = cellprofiler.modules.metadata.X_MANUAL_EXTRACTION
-            em.source.value = cellprofiler.modules.metadata.XM_FILE_NAME
+            em.filter_choice.value = cellprofiler.metadata.F_ALL_IMAGES
+            em.extraction_method.value = cellprofiler.metadata.X_MANUAL_EXTRACTION
+            em.source.value = cellprofiler.metadata.XM_FILE_NAME
             em.file_regexp.value = "^(?P<Plate>[^_]+)_(?P<Well>[A-Ha-h][0-9]{2})_s(?P<Site>[0-9])_w(?P<Wavelength>[0-9])"
-            em.filter_choice.value = cellprofiler.modules.metadata.F_ALL_IMAGES
+            em.filter_choice.value = cellprofiler.metadata.F_ALL_IMAGES
 
             em = module.extraction_methods[1]
-            em.filter_choice.value = cellprofiler.modules.metadata.F_ALL_IMAGES
-            em.extraction_method.value = cellprofiler.modules.metadata.X_IMPORTED_EXTRACTION
+            em.filter_choice.value = cellprofiler.metadata.F_ALL_IMAGES
+            em.extraction_method.value = cellprofiler.metadata.X_IMPORTED_EXTRACTION
             em.csv_location.value = path
             em.csv_joiner.value = '[{"%s":"WellName","%s":"Well"}]' % (
                 module.CSV_JOIN_NAME, module.IPD_JOIN_NAME)
@@ -432,15 +433,15 @@ C10,BRD041618
             module.wants_metadata.value=True
             module.add_extraction_method()
             em = module.extraction_methods[0]
-            em.filter_choice.value = cellprofiler.modules.metadata.F_ALL_IMAGES
-            em.extraction_method.value = cellprofiler.modules.metadata.X_MANUAL_EXTRACTION
-            em.source.value = cellprofiler.modules.metadata.XM_FILE_NAME
+            em.filter_choice.value = cellprofiler.metadata.F_ALL_IMAGES
+            em.extraction_method.value = cellprofiler.metadata.X_MANUAL_EXTRACTION
+            em.source.value = cellprofiler.metadata.XM_FILE_NAME
             em.file_regexp.value = "^(?P<Plate>[^_]+)_(?P<Well>[A-Ha-h][0-9]{2})_s(?P<Site>[0-9])_w(?P<Wavelength>[0-9])"
-            em.filter_choice.value = cellprofiler.modules.metadata.F_ALL_IMAGES
+            em.filter_choice.value = cellprofiler.metadata.F_ALL_IMAGES
 
             em = module.extraction_methods[1]
-            em.filter_choice.value = cellprofiler.modules.metadata.F_ALL_IMAGES
-            em.extraction_method.value = cellprofiler.modules.metadata.X_IMPORTED_EXTRACTION
+            em.filter_choice.value = cellprofiler.metadata.F_ALL_IMAGES
+            em.extraction_method.value = cellprofiler.metadata.X_IMPORTED_EXTRACTION
             em.csv_location.value = path
             em.csv_joiner.value = '[{"%s":"WellName","%s":"Well"}]' % (
                 module.CSV_JOIN_NAME, module.IPD_JOIN_NAME)
@@ -485,15 +486,15 @@ C10,BRD041618
             module.wants_metadata.value=True
             module.add_extraction_method()
             em = module.extraction_methods[0]
-            em.filter_choice.value = cellprofiler.modules.metadata.F_ALL_IMAGES
-            em.extraction_method.value = cellprofiler.modules.metadata.X_MANUAL_EXTRACTION
-            em.source.value = cellprofiler.modules.metadata.XM_FILE_NAME
+            em.filter_choice.value = cellprofiler.metadata.F_ALL_IMAGES
+            em.extraction_method.value = cellprofiler.metadata.X_MANUAL_EXTRACTION
+            em.source.value = cellprofiler.metadata.XM_FILE_NAME
             em.file_regexp.value = "^(?P<Plate>[^_]+)_(?P<Well>[A-H][0-9]{2})_s(?P<Site>[0-9])_w(?P<Wavelength>[0-9])"
-            em.filter_choice.value = cellprofiler.modules.metadata.F_ALL_IMAGES
+            em.filter_choice.value = cellprofiler.metadata.F_ALL_IMAGES
 
             em = module.extraction_methods[1]
-            em.filter_choice.value = cellprofiler.modules.metadata.F_ALL_IMAGES
-            em.extraction_method.value = cellprofiler.modules.metadata.X_IMPORTED_EXTRACTION
+            em.filter_choice.value = cellprofiler.metadata.F_ALL_IMAGES
+            em.extraction_method.value = cellprofiler.metadata.X_IMPORTED_EXTRACTION
             em.csv_location.value = path
             em.csv_joiner.value = '[{"%s":"WellName","%s":"Well"}]' % (
                 module.CSV_JOIN_NAME, module.IPD_JOIN_NAME)
@@ -542,15 +543,15 @@ C10,BRD041618
             module.data_type_choice.value = cellprofiler.modules.metadata.DTC_CHOOSE
             module.add_extraction_method()
             em = module.extraction_methods[0]
-            em.filter_choice.value = cellprofiler.modules.metadata.F_ALL_IMAGES
-            em.extraction_method.value = cellprofiler.modules.metadata.X_MANUAL_EXTRACTION
-            em.source.value = cellprofiler.modules.metadata.XM_FILE_NAME
+            em.filter_choice.value = cellprofiler.metadata.F_ALL_IMAGES
+            em.extraction_method.value = cellprofiler.metadata.X_MANUAL_EXTRACTION
+            em.source.value = cellprofiler.metadata.XM_FILE_NAME
             em.file_regexp.value = "^(?P<Plate>[^_]+)_(?P<Well>[A-H][0-9]{2})_s(?P<Site>[0-9])_w(?P<Wavelength>[0-9])"
-            em.filter_choice.value = cellprofiler.modules.metadata.F_ALL_IMAGES
+            em.filter_choice.value = cellprofiler.metadata.F_ALL_IMAGES
 
             em = module.extraction_methods[1]
-            em.filter_choice.value = cellprofiler.modules.metadata.F_ALL_IMAGES
-            em.extraction_method.value = cellprofiler.modules.metadata.X_IMPORTED_EXTRACTION
+            em.filter_choice.value = cellprofiler.metadata.F_ALL_IMAGES
+            em.extraction_method.value = cellprofiler.metadata.X_IMPORTED_EXTRACTION
             em.csv_location.value = path
             em.csv_joiner.value = '[{"%s":"Site","%s":"Site"}]' % (
                 module.CSV_JOIN_NAME, module.IPD_JOIN_NAME)
@@ -598,15 +599,15 @@ C10,BRD041618,bar
             module.wants_metadata.value=True
             module.add_extraction_method()
             em = module.extraction_methods[0]
-            em.filter_choice.value = cellprofiler.modules.metadata.F_ALL_IMAGES
-            em.extraction_method.value = cellprofiler.modules.metadata.X_MANUAL_EXTRACTION
-            em.source.value = cellprofiler.modules.metadata.XM_FILE_NAME
+            em.filter_choice.value = cellprofiler.metadata.F_ALL_IMAGES
+            em.extraction_method.value = cellprofiler.metadata.X_MANUAL_EXTRACTION
+            em.source.value = cellprofiler.metadata.XM_FILE_NAME
             em.file_regexp.value = "^(?P<Plate>[^_]+)_(?P<Well>[A-Ha-h][0-9]{2})_s(?P<Site>[0-9])_w(?P<Wavelength>[0-9])"
-            em.filter_choice.value = cellprofiler.modules.metadata.F_ALL_IMAGES
+            em.filter_choice.value = cellprofiler.metadata.F_ALL_IMAGES
 
             em = module.extraction_methods[1]
-            em.filter_choice.value = cellprofiler.modules.metadata.F_ALL_IMAGES
-            em.extraction_method.value = cellprofiler.modules.metadata.X_IMPORTED_EXTRACTION
+            em.filter_choice.value = cellprofiler.metadata.F_ALL_IMAGES
+            em.extraction_method.value = cellprofiler.metadata.X_IMPORTED_EXTRACTION
             em.csv_location.value = path
             em.csv_joiner.value = '[{"%s":"WellName","%s":"Well"}]' % (
                 module.CSV_JOIN_NAME, module.IPD_JOIN_NAME)
@@ -648,14 +649,14 @@ C10,BRD041618,bar
             module = cellprofiler.modules.metadata.Metadata()
             module.wants_metadata.value=True
             em = module.extraction_methods[0]
-            em.filter_choice.value = cellprofiler.modules.metadata.F_ALL_IMAGES
-            em.extraction_method.value = cellprofiler.modules.metadata.X_MANUAL_EXTRACTION
-            em.source.value = cellprofiler.modules.metadata.XM_FILE_NAME
+            em.filter_choice.value = cellprofiler.metadata.F_ALL_IMAGES
+            em.extraction_method.value = cellprofiler.metadata.X_MANUAL_EXTRACTION
+            em.source.value = cellprofiler.metadata.XM_FILE_NAME
             em.file_regexp.value = (
                 "^Channel(?P<Wavelength>[1-2])-"
                 "(?P<%(row_tag)s>[A-H])-"
                 "(?P<%(column_tag)s>[0-9]{2}).tif$") % locals()
-            em.filter_choice.value = cellprofiler.modules.metadata.F_ALL_IMAGES
+            em.filter_choice.value = cellprofiler.metadata.F_ALL_IMAGES
             url = "file:/imaging/analysis/Channel1-C-05.tif"
             self.check(module, url,
                        [{ "Wavelength":"1",
@@ -681,14 +682,14 @@ C10,BRD041618,bar
         module = cellprofiler.modules.metadata.Metadata()
         module.wants_metadata.value=True
         em = module.extraction_methods[0]
-        em.filter_choice.value = cellprofiler.modules.metadata.F_ALL_IMAGES
-        em.extraction_method.value = cellprofiler.modules.metadata.X_MANUAL_EXTRACTION
-        em.source.value = cellprofiler.modules.metadata.XM_FILE_NAME
+        em.filter_choice.value = cellprofiler.metadata.F_ALL_IMAGES
+        em.extraction_method.value = cellprofiler.metadata.X_MANUAL_EXTRACTION
+        em.source.value = cellprofiler.metadata.XM_FILE_NAME
         em.file_regexp.value = (
             "^Channel(?P<Wavelength>[1-2])-"
             "(?P<%s>[A-H])-"
             "(?P<%s>[0-9]{2}).tif$") %(cellprofiler.measurement.FTR_ROW, cellprofiler.measurement.FTR_COLUMN)
-        em.filter_choice.value = cellprofiler.modules.metadata.F_ALL_IMAGES
+        em.filter_choice.value = cellprofiler.metadata.F_ALL_IMAGES
         module.add_extraction_method()
         metadata_csv = """WellName,Treatment
 C05,DMSO
@@ -699,9 +700,9 @@ C05,DMSO
         fd.close()
         try:
             em = module.extraction_methods[1]
-            em.extraction_method.value = cellprofiler.modules.metadata.X_IMPORTED_EXTRACTION
-            em.filter_choice.value = cellprofiler.modules.metadata.F_ALL_IMAGES
-            em.extraction_method.value = cellprofiler.modules.metadata.X_IMPORTED_EXTRACTION
+            em.extraction_method.value = cellprofiler.metadata.X_IMPORTED_EXTRACTION
+            em.filter_choice.value = cellprofiler.metadata.F_ALL_IMAGES
+            em.extraction_method.value = cellprofiler.metadata.X_IMPORTED_EXTRACTION
             em.csv_location.value = path
             em.csv_joiner.value = '[{"%s":"WellName","%s":"Well"}]' % (
                 module.CSV_JOIN_NAME, module.IPD_JOIN_NAME)
@@ -721,8 +722,8 @@ C05,DMSO
         module = cellprofiler.modules.metadata.Metadata()
         module.wants_metadata.value=True
         em = module.extraction_methods[0]
-        em.filter_choice.value = cellprofiler.modules.metadata.F_ALL_IMAGES
-        em.extraction_method.value = cellprofiler.modules.metadata.X_AUTOMATIC_EXTRACTION
+        em.filter_choice.value = cellprofiler.metadata.F_ALL_IMAGES
+        em.extraction_method.value = cellprofiler.metadata.X_AUTOMATIC_EXTRACTION
         url = "file:/imaging/analysis/Channel1-C-05.tif"
         metadata = []
         for series in range(4):

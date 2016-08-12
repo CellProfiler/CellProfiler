@@ -52,11 +52,12 @@ import cellprofiler.gui.help
 import cellprofiler.identify
 import cellprofiler.image
 import cellprofiler.measurement
+import cellprofiler.metadata
 import cellprofiler.module
 import cellprofiler.modules
+import cellprofiler.modules.images
 import cellprofiler.modules.groups
 import cellprofiler.modules.loaddata
-import cellprofiler.modules.metadata
 import cellprofiler.pipeline
 import cellprofiler.preferences
 import cellprofiler.region
@@ -2774,10 +2775,6 @@ class LoadImages(cellprofiler.module.Module):
 
         import cellprofiler.modules.namesandtypes
 
-        assert isinstance(metadata, cellprofiler.modules.metadata.Metadata)
-        assert isinstance(namesandtypes, cellprofiler.modules.namesandtypes.NamesAndTypes)
-        assert isinstance(groups, cellprofiler.modules.groups.Groups)
-
         if self.match_method not in (cellprofiler.image.MS_EXACT_MATCH, cellprofiler.image.MS_REGEXP):
             raise ValueError(
                 "Can't convert a LoadImages module that matches images by %s" %
@@ -2813,7 +2810,7 @@ class LoadImages(cellprofiler.module.Module):
                 rfilter = assignment.rule_filter
                 assert isinstance(rfilter, cellprofiler.setting.Filter)
                 structure = [cellprofiler.setting.Filter.AND_PREDICATE]
-                fp = cellprofiler.modules.namesandtypes.FilePredicate()
+                fp = cellprofiler.modules.images.FilePredicate()
                 fp_does, fp_does_not = [
                     [d for d in fp.subpredicates if isinstance(d, c)][0]
                     for c in (cellprofiler.setting.Filter.DoesPredicate, cellprofiler.setting.Filter.DoesNotPredicate)]
@@ -2835,9 +2832,9 @@ class LoadImages(cellprofiler.module.Module):
                 assignment.rule_filter.build(structure)
                 my_tags = set()
                 for metadata_choice, source, value in (
-                        (cellprofiler.image.M_FILE_NAME, cellprofiler.modules.metadata.Xcellprofiler.image.M_FILE_NAME,
+                        (cellprofiler.image.M_FILE_NAME, cellprofiler.metadata.XM_FILE_NAME,
                          group.file_metadata.value),
-                        (cellprofiler.image.M_PATH, cellprofiler.modules.metadata.XM_FOLDER_NAME,
+                        (cellprofiler.image.M_PATH, cellprofiler.metadata.XM_FOLDER_NAME,
                          group.path_metadata.value)):
                     if group.metadata_choice in (metadata_choice, cellprofiler.image.M_BOTH):
                         if not metadata.wants_metadata:
@@ -2851,8 +2848,8 @@ class LoadImages(cellprofiler.module.Module):
                             mgroup.file_regexp.value = value
                         else:
                             mgroup.folder_regexp.value = value
-                        mgroup.filter_choice.value = cellprofiler.modules.metadata.F_FILTERED_IMAGES
-                        mgroup.extraction_method.value = cellprofiler.modules.metadata.X_MANUAL_EXTRACTION
+                        mgroup.filter_choice.value = cellprofiler.metadata.F_FILTERED_IMAGES
+                        mgroup.extraction_method.value = cellprofiler.metadata.X_MANUAL_EXTRACTION
                         mgroup.filter.build(structure)
                         my_tags.update(cellprofiler.measurement.find_metadata_tokens(value))
                 if namesandtypes.matching_choice == cellprofiler.modules.namesandtypes.MATCH_BY_METADATA:

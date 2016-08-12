@@ -943,20 +943,14 @@ class ExportToSpreadsheet(cellprofiler.module.Module):
         image_set_numbers - the image sets whose data gets extracted
         workspace - workspace containing the measurements
         """
-        from cellprofiler.measurement import is_file_name_feature, is_path_name_feature
-        from loadimages import C_PATH_NAME, C_FILE_NAME, C_URL
-        from cellprofiler.measurement import C_WIDTH
-        from cellprofiler.measurement import C_HEIGHT
-        from cellprofiler.measurement import C_SCALING
-        from cellprofiler.measurement import C_MD5_DIGEST
 
         file_name = self.make_gct_file_name(workspace, image_set_numbers[0],
                                             settings_group)
 
         def ignore_feature(feature_name):
             """Return true if we should ignore a feature"""
-            if (is_file_name_feature(feature_name) or
-                    is_path_name_feature(feature_name) or
+            if (cellprofiler.measurement.is_file_name_feature(feature_name) or
+                    cellprofiler.measurement.is_path_name_feature(feature_name) or
                     feature_name.startswith('ImageNumber') or
                     feature_name.startswith("Group_Number") or
                     feature_name.startswith("Group_Index") or
@@ -964,11 +958,11 @@ class ExportToSpreadsheet(cellprofiler.module.Module):
                     feature_name.startswith('ModuleError_') or
                     feature_name.startswith('TimeElapsed_') or
                     feature_name.startswith('ExecutionTime_') or
-                    feature_name.startswith(C_URL) or
-                    feature_name.startswith(C_MD5_DIGEST) or
-                    feature_name.startswith(C_SCALING) or
-                    feature_name.startswith(C_HEIGHT) or
-                    feature_name.startswith(C_WIDTH)
+                    feature_name.startswith(cellprofiler.measurement.C_URL) or
+                    feature_name.startswith(cellprofiler.measurement.C_MD5_DIGEST) or
+                    feature_name.startswith(cellprofiler.measurement.C_SCALING) or
+                    feature_name.startswith(cellprofiler.measurement.C_HEIGHT) or
+                    feature_name.startswith(cellprofiler.measurement.C_WIDTH)
                 ):
                 return True
             return False
@@ -1021,12 +1015,12 @@ class ExportToSpreadsheet(cellprofiler.module.Module):
                     writer.writerow(written_image_names)
 
                     # Place the one of the paths and desired info column up front in image feature list
-                    description_feature = [x for x in image_features if x.startswith(C_PATH_NAME + "_")]
+                    description_feature = [x for x in image_features if x.startswith(cellprofiler.measurement.C_PATH_NAME + "_")]
                     if self.how_to_specify_gene_name == GP_NAME_METADATA:
                         name_feature = [self.gene_name_column.value]
                     elif self.how_to_specify_gene_name == GP_NAME_FILENAME:
                         name_feature = [x for x in image_features if
-                                        x.startswith("_".join((C_FILE_NAME, self.use_which_image_for_gene_name.value)))]
+                                        x.startswith("_".join((cellprofiler.measurement.C_FILE_NAME, self.use_which_image_for_gene_name.value)))]
                     image_features = [name_feature[0], description_feature[0]] + measurement_feature_names
 
                 # Output all measurements

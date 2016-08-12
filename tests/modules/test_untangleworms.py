@@ -14,6 +14,7 @@ import cellprofiler.preferences
 import cellprofiler.region
 import cellprofiler.setting
 import cellprofiler.workspace
+import cellprofiler.worms
 import centrosome.outline
 import numpy
 import scipy.ndimage
@@ -379,23 +380,23 @@ UntangleWorms:[module_num:3|svn_version:\'10598\'|variable_revision_number:1|sho
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, cellprofiler.modules.untangleworms.UntangleWorms))
         self.assertEqual(module.image_name, "BinaryWorms")
-        self.assertEqual(module.overlap, cellprofiler.modules.untangleworms.OO_BOTH)
+        self.assertEqual(module.overlap, cellprofiler.worms.OO_BOTH)
         self.assertEqual(module.overlap_objects, "OverlappingWorms")
         self.assertEqual(module.nonoverlapping_objects, "NonOverlappingWorms")
         self.assertFalse(module.wants_training_set_weights)
         self.assertEqual(module.override_overlap_weight.value, 3)
         self.assertEqual(module.override_leftover_weight.value, 5)
-        self.assertEqual(module.mode, cellprofiler.modules.untangleworms.MODE_TRAIN)
+        self.assertEqual(module.mode, cellprofiler.worms.MODE_TRAIN)
         module = pipeline.modules()[1]
         self.assertTrue(isinstance(module, cellprofiler.modules.untangleworms.UntangleWorms))
-        self.assertEqual(module.overlap, cellprofiler.modules.untangleworms.OO_WITH_OVERLAP)
+        self.assertEqual(module.overlap, cellprofiler.worms.OO_WITH_OVERLAP)
         self.assertTrue(module.wants_training_set_weights)
-        self.assertEqual(module.mode, cellprofiler.modules.untangleworms.MODE_UNTANGLE)
+        self.assertEqual(module.mode, cellprofiler.worms.MODE_UNTANGLE)
         module = pipeline.modules()[2]
         self.assertTrue(isinstance(module, cellprofiler.modules.untangleworms.UntangleWorms))
-        self.assertEqual(module.overlap, cellprofiler.modules.untangleworms.OO_WITHOUT_OVERLAP)
-        self.assertEqual(module.mode, cellprofiler.modules.untangleworms.MODE_UNTANGLE)
-        self.assertEqual(module.complexity, cellprofiler.modules.untangleworms.C_ALL)
+        self.assertEqual(module.overlap, cellprofiler.worms.OO_WITHOUT_OVERLAP)
+        self.assertEqual(module.mode, cellprofiler.worms.MODE_UNTANGLE)
+        self.assertEqual(module.complexity, cellprofiler.worms.C_ALL)
         self.assertEqual(module.custom_complexity, 400)
 
     def test_01_01_load_v2(self):
@@ -574,7 +575,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, cellprofiler.modules.untangleworms.UntangleWorms))
         self.assertEqual(module.image_name, "BinaryWorms")
-        self.assertEqual(module.overlap, cellprofiler.modules.untangleworms.OO_BOTH)
+        self.assertEqual(module.overlap, cellprofiler.worms.OO_BOTH)
         self.assertEqual(module.overlap_objects, "OverlappingWorms")
         self.assertEqual(module.nonoverlapping_objects, "NonOverlappingWorms")
         self.assertFalse(module.wants_training_set_weights)
@@ -583,8 +584,8 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         self.assertEqual(module.custom_complexity, 399)
 
         for module, complexity in zip(pipeline.modules(),
-                                      (cellprofiler.modules.untangleworms.C_ALL, cellprofiler.modules.untangleworms.C_MEDIUM, cellprofiler.modules.untangleworms.C_HIGH,
-                                       cellprofiler.modules.untangleworms.C_VERY_HIGH, cellprofiler.modules.untangleworms.C_CUSTOM)):
+                                      (cellprofiler.worms.C_ALL, cellprofiler.worms.C_MEDIUM, cellprofiler.worms.C_HIGH,
+                                       cellprofiler.worms.C_VERY_HIGH, cellprofiler.worms.C_CUSTOM)):
             self.assertEqual(module.complexity, complexity)
 
     def make_workspace(self, image, data=None, write_mode="wb"):
@@ -2837,7 +2838,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         image[5, 10] = True
         workspace, module = self.make_workspace(image)
         self.assertTrue(isinstance(module, cellprofiler.modules.untangleworms.UntangleWorms))
-        module.mode.value = cellprofiler.modules.untangleworms.MODE_TRAIN
+        module.mode.value = cellprofiler.worms.MODE_TRAIN
         module.prepare_group(workspace, None, None)
         module.run(workspace)
 
@@ -2886,7 +2887,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
             ((7, 3), (7, 5), (7, 7)),
             ((3, 7), (5, 7), (7, 7))))
 
-        result, lengths = cellprofiler.modules.untangleworms.recalculate_single_worm_control_points([l0, l1], 3)
+        result, lengths = cellprofiler.worms.recalculate_single_worm_control_points([l0, l1], 3)
         self.assertEqual(tuple(result.shape), (4, 3, 2))
         self.assertEqual(len(lengths), 4)
         # Flip any worms that aren't ordered canonically
@@ -2899,7 +2900,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
 
     def test_13_02_recalculate_single_worm_control_points_no_objects(self):
         # regression test of issue #930
-        result, lengths = cellprofiler.modules.untangleworms.recalculate_single_worm_control_points(
+        result, lengths = cellprofiler.worms.recalculate_single_worm_control_points(
                 [numpy.zeros((10, 15), int)], 3)
         self.assertEqual(tuple(result.shape), (0, 3, 2))
         self.assertEqual(len(lengths), 0)

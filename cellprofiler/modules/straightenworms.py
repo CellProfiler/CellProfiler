@@ -75,11 +75,10 @@ import cellprofiler.identify
 import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.module
-import cellprofiler.modules
-import cellprofiler.modules.untangleworms
 import cellprofiler.preferences
 import cellprofiler.region
 import cellprofiler.setting
+import cellprofiler.worms
 import centrosome.cpmorphology
 import centrosome.index
 import numpy
@@ -362,9 +361,9 @@ class StraightenWorms(cellprofiler.module.Module):
         #
         features = m.get_feature_names(objects_name)
         cpx = [f for f in features
-               if f.startswith("_".join((cellprofiler.modules.untangleworms.C_WORM, cellprofiler.modules.untangleworms.F_CONTROL_POINT_X)))]
+               if f.startswith("_".join((cellprofiler.worms.C_WORM, cellprofiler.worms.F_CONTROL_POINT_X)))]
         cpy = [f for f in features
-               if f.startswith("_".join((cellprofiler.modules.untangleworms.C_WORM, cellprofiler.modules.untangleworms.F_CONTROL_POINT_Y)))]
+               if f.startswith("_".join((cellprofiler.worms.C_WORM, cellprofiler.worms.F_CONTROL_POINT_Y)))]
         ncontrolpoints = len(cpx)
         if ncontrolpoints == 0:
             #
@@ -373,7 +372,7 @@ class StraightenWorms(cellprofiler.module.Module):
             params = self.read_params(workspace)
             ncontrolpoints = params.num_control_points
             all_labels = [l for l, idx in orig_objects.labels()]
-            control_points, lengths = cellprofiler.modules.untangleworms.recalculate_single_worm_control_points(
+            control_points, lengths = cellprofiler.worms.recalculate_single_worm_control_points(
                     all_labels, ncontrolpoints)
             control_points = control_points.transpose(2, 1, 0)
         else:
@@ -388,7 +387,7 @@ class StraightenWorms(cellprofiler.module.Module):
             control_points = numpy.array([
                                           [m.get_current_measurement(objects_name, f) for f in cp]
                                           for cp in (cpy, cpx)])
-            m_length = "_".join((cellprofiler.modules.untangleworms.C_WORM, cellprofiler.modules.untangleworms.F_LENGTH))
+            m_length = "_".join((cellprofiler.worms.C_WORM, cellprofiler.worms.F_LENGTH))
             lengths = numpy.ceil(m.get_current_measurement(objects_name, m_length))
 
         nworms = len(lengths)
@@ -560,9 +559,9 @@ class StraightenWorms(cellprofiler.module.Module):
         """Read the training params or use the cached value"""
         if not hasattr(self, "training_params"):
             self.training_params = {}
-        params = cellprofiler.modules.untangleworms.read_params(self.training_set_directory,
-                                                                self.training_set_file_name,
-                                                                self.training_params)
+        params = cellprofiler.worms.read_params(self.training_set_directory,
+                                                self.training_set_file_name,
+                                                self.training_params)
         return params
 
     def measure_worms(self, workspace, labels, nworms, width):
@@ -585,14 +584,14 @@ class StraightenWorms(cellprofiler.module.Module):
                     if nbins_vertical > 1:
                         for b in range(nbins_vertical):
                             measurement = "_".join(
-                                    (cellprofiler.modules.untangleworms.C_WORM, ftr, image_name,
+                                    (cellprofiler.worms.C_WORM, ftr, image_name,
                                      self.get_scale_name(None, b)))
                             m.add_measurement(
                                     input_object_name, measurement, numpy.zeros(0))
                     if nbins_horizontal > 1:
                         for b in range(nbins_horizontal):
                             measurement = "_".join(
-                                    (cellprofiler.modules.untangleworms.C_WORM, ftr, image_name,
+                                    (cellprofiler.worms.C_WORM, ftr, image_name,
                                      self.get_scale_name(b, None)))
                             m.add_measurement(
                                     input_object_name, measurement, numpy.zeros(0))
@@ -600,7 +599,7 @@ class StraightenWorms(cellprofiler.module.Module):
                             for v in range(nbins_vertical):
                                 for h in range(nbins_horizontal):
                                     measurement = "_".join(
-                                            (cellprofiler.modules.untangleworms.C_WORM, ftr, image_name,
+                                            (cellprofiler.worms.C_WORM, ftr, image_name,
                                              self.get_scale_name(h, v)))
                                     m.add_measurement(
                                             input_object_name, measurement, numpy.zeros(0))
@@ -911,7 +910,7 @@ class StraightenWorms(cellprofiler.module.Module):
                             (bin_means, FTR_MEAN_INTENSITY),
                             (bin_stds, FTR_STD_INTENSITY)):
                         measurement = "_".join(
-                                (cellprofiler.modules.untangleworms.C_WORM, ftr, image_name, scales[i][j]))
+                                (cellprofiler.worms.C_WORM, ftr, image_name, scales[i][j]))
                         m.add_measurement(orig_name, measurement, values[i, j])
 
     def make_objects(self, workspace, labels, nworms):
@@ -976,7 +975,7 @@ class StraightenWorms(cellprofiler.module.Module):
             worms_name = self.objects_name.value
             if nsegments > 1:
                 result += [(worms_name,
-                            "_".join((cellprofiler.modules.untangleworms.C_WORM, ftr,
+                            "_".join((cellprofiler.worms.C_WORM, ftr,
                                       group.straightened_image_name.value,
                                       self.get_scale_name(None, segment))),
                             cellprofiler.measurement.COLTYPE_FLOAT)
@@ -986,7 +985,7 @@ class StraightenWorms(cellprofiler.module.Module):
                                       range(nsegments))]
             if nstripes > 1:
                 result += [(worms_name,
-                            "_".join((cellprofiler.modules.untangleworms.C_WORM, ftr,
+                            "_".join((cellprofiler.worms.C_WORM, ftr,
                                       group.straightened_image_name.value,
                                       self.get_scale_name(stripe, None))),
                             cellprofiler.measurement.COLTYPE_FLOAT)
@@ -996,7 +995,7 @@ class StraightenWorms(cellprofiler.module.Module):
                                       range(nstripes))]
             if nsegments > 1 and nstripes > 1:
                 result += [(worms_name,
-                            "_".join((cellprofiler.modules.untangleworms.C_WORM, ftr,
+                            "_".join((cellprofiler.worms.C_WORM, ftr,
                                       group.straightened_image_name.value,
                                       self.get_scale_name(stripe, segment))),
                             cellprofiler.measurement.COLTYPE_FLOAT)
@@ -1014,7 +1013,7 @@ class StraightenWorms(cellprofiler.module.Module):
         elif object_name == self.straightened_objects_name:
             result += [cellprofiler.identify.C_LOCATION, cellprofiler.identify.C_NUMBER]
         elif object_name == self.objects_name and self.wants_measurements:
-            result += [cellprofiler.modules.untangleworms.C_WORM]
+            result += [cellprofiler.worms.C_WORM]
         return result
 
     def get_measurements(self, pipeline, object_name, category):
@@ -1025,13 +1024,13 @@ class StraightenWorms(cellprofiler.module.Module):
                 return [cellprofiler.identify.FTR_CENTER_X, cellprofiler.identify.FTR_CENTER_Y]
             elif category == cellprofiler.identify.C_NUMBER:
                 return [cellprofiler.identify.FTR_OBJECT_NUMBER]
-        elif category == cellprofiler.modules.untangleworms.C_WORM and object_name == self.objects_name:
+        elif category == cellprofiler.worms.C_WORM and object_name == self.objects_name:
             return [FTR_MEAN_INTENSITY, FTR_STD_INTENSITY]
         return []
 
     def get_measurement_images(self, pipeline, object_name, category, measurement):
         if (object_name == self.objects_name and
-                    category == cellprofiler.modules.untangleworms.C_WORM and
+                    category == cellprofiler.worms.C_WORM and
                     measurement in (FTR_MEAN_INTENSITY, FTR_STD_INTENSITY)):
             return [group.straightened_image_name.value
                     for group in self.images]

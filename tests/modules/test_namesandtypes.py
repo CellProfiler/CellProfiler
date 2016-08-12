@@ -7,6 +7,7 @@ import urllib
 
 import bioformats
 import cellprofiler.identify
+import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.measurement
 import cellprofiler.modules.createbatchfiles
@@ -116,18 +117,20 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:1|s
         self.assertEqual(len(pipeline.modules()), 3)
         module = pipeline.modules()[2]
         self.assertTrue(isinstance(module, cellprofiler.modules.namesandtypes.NamesAndTypes))
-        self.assertEqual(module.assignment_method, cellprofiler.modules.namesandtypes.ASSIGN_RULES)
-        self.assertEqual(module.single_load_as_choice, cellprofiler.modules.namesandtypes.LOAD_AS_COLOR_IMAGE)
+        self.assertEqual(module.assignment_method, cellprofiler.image.ASSIGN_RULES)
+        self.assertEqual(module.single_load_as_choice, cellprofiler.image.LOAD_AS_COLOR_IMAGE)
         self.assertEqual(module.single_image_provider.value, "PI")
-        self.assertEqual(module.matching_choice, cellprofiler.modules.namesandtypes.MATCH_BY_ORDER)
+        self.assertEqual(module.matching_choice, cellprofiler.image.MATCH_BY_ORDER)
         self.assertEqual(module.assignments_count.value, 5)
         aa = module.assignments
         for assignment, rule, image_name, objects_name, load_as in (
-            (aa[0], 'or (metadata does ChannelNumber "0")', "DNA", "Nuclei", cellprofiler.modules.namesandtypes.LOAD_AS_GRAYSCALE_IMAGE),
-            (aa[1], 'or (image does ismonochrome) (metadata does ChannelNumber "1") (extension does istif)', "Actin", "Cells", cellprofiler.modules.namesandtypes.LOAD_AS_COLOR_IMAGE),
-            (aa[2], 'or (metadata does ChannelNumber "2")', "GFP", "Cells", cellprofiler.modules.namesandtypes.LOAD_AS_MASK),
-            (aa[3], 'or (metadata does ChannelNumber "2")', "Foo", "Cells", cellprofiler.modules.namesandtypes.LOAD_AS_OBJECTS),
-            (aa[4], 'or (metadata does ChannelNumber "2")', "Illum", "Cells", cellprofiler.modules.namesandtypes.LOAD_AS_ILLUMINATION_FUNCTION)):
+            (aa[0], 'or (metadata does ChannelNumber "0")', "DNA", "Nuclei", cellprofiler.image.LOAD_AS_GRAYSCALE_IMAGE),
+            (aa[1], 'or (image does ismonochrome) (metadata does ChannelNumber "1") (extension does istif)', "Actin", "Cells",
+             cellprofiler.image.LOAD_AS_COLOR_IMAGE),
+            (aa[2], 'or (metadata does ChannelNumber "2")', "GFP", "Cells", cellprofiler.image.LOAD_AS_MASK),
+            (aa[3], 'or (metadata does ChannelNumber "2")', "Foo", "Cells", cellprofiler.image.LOAD_AS_OBJECTS),
+            (aa[4], 'or (metadata does ChannelNumber "2")', "Illum", "Cells",
+             cellprofiler.image.LOAD_AS_ILLUMINATION_FUNCTION)):
             self.assertEqual(assignment.rule_filter.value, rule)
             self.assertEqual(assignment.image_name, image_name)
             self.assertEqual(assignment.object_name, objects_name)
@@ -201,18 +204,21 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2|s
             self.assertEqual(len(pipeline.modules()), 3)
             module = pipeline.modules()[2]
             self.assertTrue(isinstance(module, cellprofiler.modules.namesandtypes.NamesAndTypes))
-            self.assertEqual(module.assignment_method, cellprofiler.modules.namesandtypes.ASSIGN_RULES)
-            self.assertEqual(module.single_load_as_choice, cellprofiler.modules.namesandtypes.LOAD_AS_COLOR_IMAGE)
+            self.assertEqual(module.assignment_method, cellprofiler.image.ASSIGN_RULES)
+            self.assertEqual(module.single_load_as_choice, cellprofiler.image.LOAD_AS_COLOR_IMAGE)
             self.assertEqual(module.single_image_provider.value, "PI")
-            self.assertEqual(module.matching_choice, cellprofiler.modules.namesandtypes.MATCH_BY_ORDER)
+            self.assertEqual(module.matching_choice, cellprofiler.image.MATCH_BY_ORDER)
             self.assertEqual(module.assignments_count.value, 5)
             aa = module.assignments
             for assignment, rule, image_name, objects_name, load_as in (
-                (aa[0], 'or (metadata does ChannelNumber "0")', "DNA", "Nuclei", cellprofiler.modules.namesandtypes.LOAD_AS_GRAYSCALE_IMAGE),
-                (aa[1], 'or (image does ismonochrome) (metadata does ChannelNumber "1") (extension does istif)', "Actin", "Cells", cellprofiler.modules.namesandtypes.LOAD_AS_COLOR_IMAGE),
-                (aa[2], 'or (metadata does ChannelNumber "2")', "GFP", "Cells", cellprofiler.modules.namesandtypes.LOAD_AS_MASK),
-                (aa[3], 'or (metadata does ChannelNumber "2")', "Foo", "Cells", cellprofiler.modules.namesandtypes.LOAD_AS_OBJECTS),
-                (aa[4], 'or (metadata does ChannelNumber "2")', "Illum", "Cells", cellprofiler.modules.namesandtypes.LOAD_AS_ILLUMINATION_FUNCTION)):
+                (aa[0], 'or (metadata does ChannelNumber "0")', "DNA", "Nuclei",
+                 cellprofiler.image.LOAD_AS_GRAYSCALE_IMAGE),
+                (aa[1], 'or (image does ismonochrome) (metadata does ChannelNumber "1") (extension does istif)', "Actin", "Cells",
+                 cellprofiler.image.LOAD_AS_COLOR_IMAGE),
+                (aa[2], 'or (metadata does ChannelNumber "2")', "GFP", "Cells", cellprofiler.image.LOAD_AS_MASK),
+                (aa[3], 'or (metadata does ChannelNumber "2")', "Foo", "Cells", cellprofiler.image.LOAD_AS_OBJECTS),
+                (aa[4], 'or (metadata does ChannelNumber "2")', "Illum", "Cells",
+                 cellprofiler.image.LOAD_AS_ILLUMINATION_FUNCTION)):
                 self.assertEqual(assignment.rule_filter.value, rule)
                 self.assertEqual(assignment.image_name, image_name)
                 self.assertEqual(assignment.object_name, objects_name)
@@ -284,19 +290,24 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:3|s
             self.assertEqual(len(pipeline.modules()), 3)
             module = pipeline.modules()[2]
             self.assertTrue(isinstance(module, cellprofiler.modules.namesandtypes.NamesAndTypes))
-            self.assertEqual(module.assignment_method, cellprofiler.modules.namesandtypes.ASSIGN_RULES)
-            self.assertEqual(module.single_load_as_choice, cellprofiler.modules.namesandtypes.LOAD_AS_COLOR_IMAGE)
+            self.assertEqual(module.assignment_method, cellprofiler.image.ASSIGN_RULES)
+            self.assertEqual(module.single_load_as_choice, cellprofiler.image.LOAD_AS_COLOR_IMAGE)
             self.assertEqual(module.single_image_provider.value, "PI")
-            self.assertEqual(module.single_rescale, cellprofiler.modules.namesandtypes.INTENSITY_RESCALING_BY_DATATYPE)
-            self.assertEqual(module.matching_choice, cellprofiler.modules.namesandtypes.MATCH_BY_ORDER)
+            self.assertEqual(module.single_rescale, cellprofiler.image.INTENSITY_RESCALING_BY_DATATYPE)
+            self.assertEqual(module.matching_choice, cellprofiler.image.MATCH_BY_ORDER)
             self.assertEqual(module.assignments_count.value, 5)
             aa = module.assignments
             for assignment, rule, image_name, objects_name, load_as, rescale in (
-                (aa[0], 'or (metadata does ChannelNumber "0")', "DNA", "Nuclei", cellprofiler.modules.namesandtypes.LOAD_AS_GRAYSCALE_IMAGE, cellprofiler.modules.namesandtypes.INTENSITY_RESCALING_BY_METADATA),
-                (aa[1], 'or (image does ismonochrome) (metadata does ChannelNumber "1") (extension does istif)', "Actin", "Cells", cellprofiler.modules.namesandtypes.LOAD_AS_COLOR_IMAGE, cellprofiler.modules.namesandtypes.INTENSITY_RESCALING_BY_DATATYPE),
-                (aa[2], 'or (metadata does ChannelNumber "2")', "GFP", "Cells", cellprofiler.modules.namesandtypes.LOAD_AS_MASK, cellprofiler.modules.namesandtypes.INTENSITY_RESCALING_BY_METADATA),
-                (aa[3], 'or (metadata does ChannelNumber "2")', "Foo", "Cells", cellprofiler.modules.namesandtypes.LOAD_AS_OBJECTS, cellprofiler.modules.namesandtypes.INTENSITY_RESCALING_BY_DATATYPE),
-                (aa[4], 'or (metadata does ChannelNumber "2")', "Illum", "Cells", cellprofiler.modules.namesandtypes.LOAD_AS_ILLUMINATION_FUNCTION, cellprofiler.modules.namesandtypes.INTENSITY_RESCALING_BY_METADATA)):
+                (aa[0], 'or (metadata does ChannelNumber "0")', "DNA", "Nuclei",
+                 cellprofiler.image.LOAD_AS_GRAYSCALE_IMAGE, cellprofiler.image.INTENSITY_RESCALING_BY_METADATA),
+                (aa[1], 'or (image does ismonochrome) (metadata does ChannelNumber "1") (extension does istif)', "Actin", "Cells",
+                 cellprofiler.image.LOAD_AS_COLOR_IMAGE, cellprofiler.image.INTENSITY_RESCALING_BY_DATATYPE),
+                (aa[2], 'or (metadata does ChannelNumber "2")', "GFP", "Cells", cellprofiler.image.LOAD_AS_MASK,
+                 cellprofiler.image.INTENSITY_RESCALING_BY_METADATA),
+                (aa[3], 'or (metadata does ChannelNumber "2")', "Foo", "Cells", cellprofiler.image.LOAD_AS_OBJECTS,
+                 cellprofiler.image.INTENSITY_RESCALING_BY_DATATYPE),
+                (aa[4], 'or (metadata does ChannelNumber "2")', "Illum", "Cells",
+                 cellprofiler.image.LOAD_AS_ILLUMINATION_FUNCTION, cellprofiler.image.INTENSITY_RESCALING_BY_METADATA)):
                 self.assertEqual(assignment.rule_filter.value, rule)
                 self.assertEqual(assignment.image_name, image_name)
                 self.assertEqual(assignment.object_name, objects_name)
@@ -379,20 +390,25 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
             self.assertEqual(len(pipeline.modules()), 3)
             module = pipeline.modules()[2]
             self.assertTrue(isinstance(module, cellprofiler.modules.namesandtypes.NamesAndTypes))
-            self.assertEqual(module.assignment_method, cellprofiler.modules.namesandtypes.ASSIGN_RULES)
-            self.assertEqual(module.single_load_as_choice, cellprofiler.modules.namesandtypes.LOAD_AS_COLOR_IMAGE)
+            self.assertEqual(module.assignment_method, cellprofiler.image.ASSIGN_RULES)
+            self.assertEqual(module.single_load_as_choice, cellprofiler.image.LOAD_AS_COLOR_IMAGE)
             self.assertEqual(module.single_image_provider.value, "PI")
-            self.assertEqual(module.single_rescale, cellprofiler.modules.namesandtypes.INTENSITY_RESCALING_BY_DATATYPE)
-            self.assertEqual(module.matching_choice, cellprofiler.modules.namesandtypes.MATCH_BY_ORDER)
+            self.assertEqual(module.single_rescale, cellprofiler.image.INTENSITY_RESCALING_BY_DATATYPE)
+            self.assertEqual(module.matching_choice, cellprofiler.image.MATCH_BY_ORDER)
             self.assertEqual(module.assignments_count.value, 5)
             aa = module.assignments
             for assignment, rule, image_name, objects_name, load_as, \
                 rescale, should_save_outlines, outlines_name in (
-                (aa[0], 'or (metadata does ChannelNumber "0")', "DNA", "Nuclei", cellprofiler.modules.namesandtypes.LOAD_AS_GRAYSCALE_IMAGE, cellprofiler.modules.namesandtypes.INTENSITY_RESCALING_BY_METADATA, False, "LoadedOutlines"),
-                (aa[1], 'or (image does ismonochrome) (metadata does ChannelNumber "1") (extension does istif)', "Actin", "Cells", cellprofiler.modules.namesandtypes.LOAD_AS_COLOR_IMAGE, cellprofiler.modules.namesandtypes.INTENSITY_RESCALING_BY_DATATYPE, False, "LoadedOutlines"),
-                (aa[2], 'or (metadata does ChannelNumber "2")', "GFP", "Cells", cellprofiler.modules.namesandtypes.LOAD_AS_MASK, cellprofiler.modules.namesandtypes.INTENSITY_RESCALING_BY_METADATA, False, "LoadedOutlines"),
-                (aa[3], 'or (metadata does ChannelNumber "2")', "Foo", "Cells", cellprofiler.modules.namesandtypes.LOAD_AS_OBJECTS, cellprofiler.modules.namesandtypes.INTENSITY_RESCALING_BY_DATATYPE, True, "MyCellOutlines"),
-                (aa[4], 'or (metadata does ChannelNumber "2")', "Illum", "Cells", cellprofiler.modules.namesandtypes.LOAD_AS_ILLUMINATION_FUNCTION, cellprofiler.modules.namesandtypes.INTENSITY_RESCALING_BY_METADATA, False, "LoadedOutlines")):
+                (aa[0], 'or (metadata does ChannelNumber "0")', "DNA", "Nuclei",
+                 cellprofiler.image.LOAD_AS_GRAYSCALE_IMAGE, cellprofiler.image.INTENSITY_RESCALING_BY_METADATA, False, "LoadedOutlines"),
+                (aa[1], 'or (image does ismonochrome) (metadata does ChannelNumber "1") (extension does istif)', "Actin", "Cells",
+                 cellprofiler.image.LOAD_AS_COLOR_IMAGE, cellprofiler.image.INTENSITY_RESCALING_BY_DATATYPE, False, "LoadedOutlines"),
+                (aa[2], 'or (metadata does ChannelNumber "2")', "GFP", "Cells", cellprofiler.image.LOAD_AS_MASK,
+                 cellprofiler.image.INTENSITY_RESCALING_BY_METADATA, False, "LoadedOutlines"),
+                (aa[3], 'or (metadata does ChannelNumber "2")', "Foo", "Cells", cellprofiler.image.LOAD_AS_OBJECTS,
+                 cellprofiler.image.INTENSITY_RESCALING_BY_DATATYPE, True, "MyCellOutlines"),
+                (aa[4], 'or (metadata does ChannelNumber "2")', "Illum", "Cells",
+                 cellprofiler.image.LOAD_AS_ILLUMINATION_FUNCTION, cellprofiler.image.INTENSITY_RESCALING_BY_METADATA, False, "LoadedOutlines")):
                 self.assertEqual(assignment.rule_filter.value, rule)
                 self.assertEqual(assignment.image_name, image_name)
                 self.assertEqual(assignment.object_name, objects_name)
@@ -400,7 +416,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
                 self.assertEqual(assignment.rescale, rescale)
                 self.assertEqual(assignment.should_save_outlines, should_save_outlines)
                 self.assertEqual(assignment.save_outlines, outlines_name)
-                self.assertEqual(assignment.manual_rescale, cellprofiler.modules.namesandtypes.DEFAULT_MANUAL_RESCALE)
+                self.assertEqual(assignment.manual_rescale, cellprofiler.image.DEFAULT_MANUAL_RESCALE)
             self.assertEqual(len(module.single_images), 0)
 
     def test_00_05_load_v5(self):
@@ -487,11 +503,11 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:5|s
             self.assertEqual(len(pipeline.modules()), 3)
             module = pipeline.modules()[2]
             self.assertTrue(isinstance(module, cellprofiler.modules.namesandtypes.NamesAndTypes))
-            self.assertEqual(module.assignment_method, cellprofiler.modules.namesandtypes.ASSIGN_RULES)
-            self.assertEqual(module.single_load_as_choice, cellprofiler.modules.namesandtypes.LOAD_AS_COLOR_IMAGE)
+            self.assertEqual(module.assignment_method, cellprofiler.image.ASSIGN_RULES)
+            self.assertEqual(module.single_load_as_choice, cellprofiler.image.LOAD_AS_COLOR_IMAGE)
             self.assertEqual(module.single_image_provider.value, "PI")
-            self.assertEqual(module.single_rescale, cellprofiler.modules.namesandtypes.INTENSITY_RESCALING_BY_DATATYPE)
-            self.assertEqual(module.matching_choice, cellprofiler.modules.namesandtypes.MATCH_BY_ORDER)
+            self.assertEqual(module.single_rescale, cellprofiler.image.INTENSITY_RESCALING_BY_DATATYPE)
+            self.assertEqual(module.matching_choice, cellprofiler.image.MATCH_BY_ORDER)
             self.assertEqual(module.assignments_count.value, 1)
             self.assertEqual(module.single_images_count.value, 5)
             assignment = module.assignments[0]
@@ -499,19 +515,24 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:5|s
                              'or (metadata does ChannelNumber "0")')
             self.assertEqual(assignment.image_name, "DNA")
             self.assertEqual(assignment.object_name, "Nuclei")
-            self.assertEqual(assignment.load_as_choice, cellprofiler.modules.namesandtypes.LOAD_AS_GRAYSCALE_IMAGE)
-            self.assertEqual(assignment.rescale, cellprofiler.modules.namesandtypes.INTENSITY_RESCALING_BY_METADATA)
+            self.assertEqual(assignment.load_as_choice, cellprofiler.image.LOAD_AS_GRAYSCALE_IMAGE)
+            self.assertEqual(assignment.rescale, cellprofiler.image.INTENSITY_RESCALING_BY_METADATA)
             self.assertEqual(assignment.should_save_outlines, False)
             self.assertEqual(assignment.save_outlines, "LoadedOutlines")
             aa = module.single_images
             first = True
             for assignment, image_name, objects_name, load_as, \
                 rescale, should_save_outlines, outlines_name in (
-                (aa[0], "sDNA", "sNuclei", cellprofiler.modules.namesandtypes.LOAD_AS_GRAYSCALE_IMAGE, cellprofiler.modules.namesandtypes.INTENSITY_RESCALING_BY_METADATA, False, "LoadedOutlines"),
-                (aa[1], "Actin", "Cells", cellprofiler.modules.namesandtypes.LOAD_AS_COLOR_IMAGE, cellprofiler.modules.namesandtypes.INTENSITY_RESCALING_BY_DATATYPE, False, "LoadedOutlines"),
-                (aa[2], "GFP", "Cells", cellprofiler.modules.namesandtypes.LOAD_AS_MASK, cellprofiler.modules.namesandtypes.INTENSITY_RESCALING_BY_METADATA, False, "LoadedOutlines"),
-                (aa[3], "Foo", "Cells", cellprofiler.modules.namesandtypes.LOAD_AS_OBJECTS, cellprofiler.modules.namesandtypes.INTENSITY_RESCALING_BY_DATATYPE, True, "MyCellOutlines"),
-                (aa[4], "Illum", "Cells", cellprofiler.modules.namesandtypes.LOAD_AS_ILLUMINATION_FUNCTION, cellprofiler.modules.namesandtypes.INTENSITY_RESCALING_BY_METADATA, False, "LoadedOutlines")):
+                (aa[0], "sDNA", "sNuclei", cellprofiler.image.LOAD_AS_GRAYSCALE_IMAGE,
+                 cellprofiler.image.INTENSITY_RESCALING_BY_METADATA, False, "LoadedOutlines"),
+                (aa[1], "Actin", "Cells", cellprofiler.image.LOAD_AS_COLOR_IMAGE,
+                 cellprofiler.image.INTENSITY_RESCALING_BY_DATATYPE, False, "LoadedOutlines"),
+                (aa[2], "GFP", "Cells", cellprofiler.image.LOAD_AS_MASK,
+                 cellprofiler.image.INTENSITY_RESCALING_BY_METADATA, False, "LoadedOutlines"),
+                (aa[3], "Foo", "Cells", cellprofiler.image.LOAD_AS_OBJECTS,
+                 cellprofiler.image.INTENSITY_RESCALING_BY_DATATYPE, True, "MyCellOutlines"),
+                (aa[4], "Illum", "Cells", cellprofiler.image.LOAD_AS_ILLUMINATION_FUNCTION,
+                 cellprofiler.image.INTENSITY_RESCALING_BY_METADATA, False, "LoadedOutlines")):
                 ipd = assignment.image_plane
                 self.assertEqual(ipd.url, "file:///foo/bar")
                 if first:
@@ -624,11 +645,11 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         self.assertEqual(len(pipeline.modules()), 3)
         module = pipeline.modules()[2]
         self.assertTrue(isinstance(module, cellprofiler.modules.namesandtypes.NamesAndTypes))
-        self.assertEqual(module.assignment_method, cellprofiler.modules.namesandtypes.ASSIGN_RULES)
-        self.assertEqual(module.single_load_as_choice, cellprofiler.modules.namesandtypes.LOAD_AS_COLOR_IMAGE)
+        self.assertEqual(module.assignment_method, cellprofiler.image.ASSIGN_RULES)
+        self.assertEqual(module.single_load_as_choice, cellprofiler.image.LOAD_AS_COLOR_IMAGE)
         self.assertEqual(module.single_image_provider.value, "PI")
-        self.assertEqual(module.single_rescale, cellprofiler.modules.namesandtypes.INTENSITY_RESCALING_BY_DATATYPE)
-        self.assertEqual(module.matching_choice, cellprofiler.modules.namesandtypes.MATCH_BY_ORDER)
+        self.assertEqual(module.single_rescale, cellprofiler.image.INTENSITY_RESCALING_BY_DATATYPE)
+        self.assertEqual(module.matching_choice, cellprofiler.image.MATCH_BY_ORDER)
         self.assertEqual(module.assignments_count.value, 1)
         self.assertEqual(module.single_images_count.value, 5)
         self.assertEqual(module.manual_rescale.value, 100)
@@ -637,8 +658,8 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
                          'or (metadata does ChannelNumber "0")')
         self.assertEqual(assignment.image_name, "DNA")
         self.assertEqual(assignment.object_name, "Nuclei")
-        self.assertEqual(assignment.load_as_choice, cellprofiler.modules.namesandtypes.LOAD_AS_GRAYSCALE_IMAGE)
-        self.assertEqual(assignment.rescale, cellprofiler.modules.namesandtypes.INTENSITY_RESCALING_BY_METADATA)
+        self.assertEqual(assignment.load_as_choice, cellprofiler.image.LOAD_AS_GRAYSCALE_IMAGE)
+        self.assertEqual(assignment.rescale, cellprofiler.image.INTENSITY_RESCALING_BY_METADATA)
         self.assertEqual(assignment.should_save_outlines, False)
         self.assertEqual(assignment.save_outlines, "LoadedOutlines")
         self.assertEqual(assignment.manual_rescale.value, 200)
@@ -646,11 +667,15 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         first = True
         for assignment, image_name, objects_name, load_as, \
             rescale, should_save_outlines, outlines_name, manual_rescale in (
-            (aa[0], "sDNA", "sNuclei", cellprofiler.modules.namesandtypes.LOAD_AS_GRAYSCALE_IMAGE, cellprofiler.modules.namesandtypes.INTENSITY_RESCALING_BY_METADATA, False, "LoadedOutlines", 300),
-            (aa[1], "Actin", "Cells", cellprofiler.modules.namesandtypes.LOAD_AS_COLOR_IMAGE, cellprofiler.modules.namesandtypes.INTENSITY_RESCALING_BY_DATATYPE, False, "LoadedOutlines", 400),
-            (aa[2], "GFP", "Cells", cellprofiler.modules.namesandtypes.LOAD_AS_MASK, cellprofiler.modules.namesandtypes.INTENSITY_RESCALING_BY_METADATA, False, "LoadedOutlines", 500),
-            (aa[3], "Foo", "Cells", cellprofiler.modules.namesandtypes.LOAD_AS_OBJECTS, cellprofiler.modules.namesandtypes.INTENSITY_RESCALING_BY_DATATYPE, True, "MyCellOutlines", 600),
-            (aa[4], "Illum", "Cells", cellprofiler.modules.namesandtypes.LOAD_AS_ILLUMINATION_FUNCTION, cellprofiler.modules.namesandtypes.INTENSITY_RESCALING_BY_METADATA, False, "LoadedOutlines", 700)):
+            (aa[0], "sDNA", "sNuclei", cellprofiler.image.LOAD_AS_GRAYSCALE_IMAGE,
+             cellprofiler.image.INTENSITY_RESCALING_BY_METADATA, False, "LoadedOutlines", 300),
+            (aa[1], "Actin", "Cells", cellprofiler.image.LOAD_AS_COLOR_IMAGE,
+             cellprofiler.image.INTENSITY_RESCALING_BY_DATATYPE, False, "LoadedOutlines", 400),
+            (aa[2], "GFP", "Cells", cellprofiler.image.LOAD_AS_MASK, cellprofiler.image.INTENSITY_RESCALING_BY_METADATA, False, "LoadedOutlines", 500),
+            (aa[3], "Foo", "Cells", cellprofiler.image.LOAD_AS_OBJECTS,
+             cellprofiler.image.INTENSITY_RESCALING_BY_DATATYPE, True, "MyCellOutlines", 600),
+            (aa[4], "Illum", "Cells", cellprofiler.image.LOAD_AS_ILLUMINATION_FUNCTION,
+             cellprofiler.image.INTENSITY_RESCALING_BY_METADATA, False, "LoadedOutlines", 700)):
             ipd = assignment.image_plane
             self.assertEqual(ipd.url, "file:///foo/bar")
             if first:
@@ -773,15 +798,15 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
 
     def test_01_00_01_all(self):
         n = cellprofiler.modules.namesandtypes.NamesAndTypes()
-        n.assignment_method.value = cellprofiler.modules.namesandtypes.ASSIGN_ALL
+        n.assignment_method.value = cellprofiler.image.ASSIGN_ALL
         n.single_image_provider.value = C0
         data = { C0: [("images/1.jpg", {M0:"1"})] }
         self.do_teest(n, data, [(cellprofiler.measurement.IMAGE_NUMBER,)], [(M0, C0)])
 
     def test_01_01_one(self):
         n = cellprofiler.modules.namesandtypes.NamesAndTypes()
-        n.assignment_method.value = cellprofiler.modules.namesandtypes.ASSIGN_RULES
-        n.matching_choice.value = cellprofiler.modules.namesandtypes.MATCH_BY_METADATA
+        n.assignment_method.value = cellprofiler.image.ASSIGN_RULES
+        n.matching_choice.value = cellprofiler.image.MATCH_BY_METADATA
         n.assignments[0].image_name.value = C0
         n.join.build("[{\"%s\":\"%s\"}]" % (C0, M0))
         # It should match by order, even if match by metadata and the joiner
@@ -793,8 +818,8 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
 
     def test_01_02_match_one_same_key(self):
         n = cellprofiler.modules.namesandtypes.NamesAndTypes()
-        n.assignment_method.value = cellprofiler.modules.namesandtypes.ASSIGN_RULES
-        n.matching_choice.value = cellprofiler.modules.namesandtypes.MATCH_BY_METADATA
+        n.assignment_method.value = cellprofiler.image.ASSIGN_RULES
+        n.matching_choice.value = cellprofiler.image.MATCH_BY_METADATA
         n.add_assignment()
         n.assignments[0].image_name.value = C0
         n.assignments[1].image_name.value = C1
@@ -807,8 +832,8 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
 
     def test_01_03_match_one_different_key(self):
         n = cellprofiler.modules.namesandtypes.NamesAndTypes()
-        n.assignment_method.value = cellprofiler.modules.namesandtypes.ASSIGN_RULES
-        n.matching_choice.value = cellprofiler.modules.namesandtypes.MATCH_BY_METADATA
+        n.assignment_method.value = cellprofiler.image.ASSIGN_RULES
+        n.matching_choice.value = cellprofiler.image.MATCH_BY_METADATA
         n.add_assignment()
         n.assignments[0].image_name.value = C0
         n.assignments[1].image_name.value = C1
@@ -821,8 +846,8 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
 
     def test_01_04_match_two_one_key(self):
         n = cellprofiler.modules.namesandtypes.NamesAndTypes()
-        n.assignment_method.value = cellprofiler.modules.namesandtypes.ASSIGN_RULES
-        n.matching_choice.value = cellprofiler.modules.namesandtypes.MATCH_BY_METADATA
+        n.assignment_method.value = cellprofiler.image.ASSIGN_RULES
+        n.matching_choice.value = cellprofiler.image.MATCH_BY_METADATA
         n.add_assignment()
         n.assignments[0].image_name.value = C0
         n.assignments[1].image_name.value = C1
@@ -838,8 +863,8 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
 
     def test_01_05_match_two_and_two(self):
         n = cellprofiler.modules.namesandtypes.NamesAndTypes()
-        n.assignment_method.value = cellprofiler.modules.namesandtypes.ASSIGN_RULES
-        n.matching_choice.value = cellprofiler.modules.namesandtypes.MATCH_BY_METADATA
+        n.assignment_method.value = cellprofiler.image.ASSIGN_RULES
+        n.matching_choice.value = cellprofiler.image.MATCH_BY_METADATA
         n.add_assignment()
         n.assignments[0].image_name.value = C0
         n.assignments[1].image_name.value = C1
@@ -857,8 +882,8 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
 
     def test_01_06_01_two_with_same_metadata(self):
         n = cellprofiler.modules.namesandtypes.NamesAndTypes()
-        n.assignment_method.value = cellprofiler.modules.namesandtypes.ASSIGN_RULES
-        n.matching_choice.value = cellprofiler.modules.namesandtypes.MATCH_BY_METADATA
+        n.assignment_method.value = cellprofiler.image.ASSIGN_RULES
+        n.matching_choice.value = cellprofiler.image.MATCH_BY_METADATA
         n.add_assignment()
         n.assignments[0].image_name.value = C0
         n.assignments[1].image_name.value = C1
@@ -882,8 +907,8 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
 
     def test_01_06_02_missing(self):
         n = cellprofiler.modules.namesandtypes.NamesAndTypes()
-        n.assignment_method.value = cellprofiler.modules.namesandtypes.ASSIGN_RULES
-        n.matching_choice.value = cellprofiler.modules.namesandtypes.MATCH_BY_METADATA
+        n.assignment_method.value = cellprofiler.image.ASSIGN_RULES
+        n.matching_choice.value = cellprofiler.image.MATCH_BY_METADATA
         n.add_assignment()
         n.assignments[0].image_name.value = C0
         n.assignments[1].image_name.value = C1
@@ -906,8 +931,8 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
 
     def test_01_07_one_against_all(self):
         n = cellprofiler.modules.namesandtypes.NamesAndTypes()
-        n.assignment_method.value = cellprofiler.modules.namesandtypes.ASSIGN_RULES
-        n.matching_choice.value = cellprofiler.modules.namesandtypes.MATCH_BY_METADATA
+        n.assignment_method.value = cellprofiler.image.ASSIGN_RULES
+        n.matching_choice.value = cellprofiler.image.MATCH_BY_METADATA
         n.add_assignment()
         n.assignments[0].image_name.value = C0
         n.assignments[1].image_name.value = C1
@@ -928,8 +953,8 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         for cA, cB in ((C0, C1), (C1, C0)):
             for j0, j1 in ((0,1),(1,0)):
                 n = cellprofiler.modules.namesandtypes.NamesAndTypes()
-                n.assignment_method.value = cellprofiler.modules.namesandtypes.ASSIGN_RULES
-                n.matching_choice.value = cellprofiler.modules.namesandtypes.MATCH_BY_METADATA
+                n.assignment_method.value = cellprofiler.image.ASSIGN_RULES
+                n.matching_choice.value = cellprofiler.image.MATCH_BY_METADATA
                 n.add_assignment()
                 n.assignments[0].image_name.value = cA
                 n.assignments[1].image_name.value = cB
@@ -951,8 +976,8 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
 
     def test_01_10_by_order(self):
         n = cellprofiler.modules.namesandtypes.NamesAndTypes()
-        n.assignment_method.value = cellprofiler.modules.namesandtypes.ASSIGN_RULES
-        n.matching_choice.value = cellprofiler.modules.namesandtypes.MATCH_BY_ORDER
+        n.assignment_method.value = cellprofiler.image.ASSIGN_RULES
+        n.matching_choice.value = cellprofiler.image.MATCH_BY_ORDER
         n.add_assignment()
         n.assignments[0].image_name.value = C0
         n.assignments[1].image_name.value = C1
@@ -966,8 +991,8 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
     def test_01_11_by_order_bad(self):
         # Regression test of issue #392: columns of different lengths
         n = cellprofiler.modules.namesandtypes.NamesAndTypes()
-        n.assignment_method.value = cellprofiler.modules.namesandtypes.ASSIGN_RULES
-        n.matching_choice.value = cellprofiler.modules.namesandtypes.MATCH_BY_ORDER
+        n.assignment_method.value = cellprofiler.image.ASSIGN_RULES
+        n.matching_choice.value = cellprofiler.image.MATCH_BY_ORDER
         n.add_assignment()
         n.assignments[0].image_name.value = C0
         n.assignments[1].image_name.value = C1
@@ -986,8 +1011,8 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
 
     def test_01_12_single_image_by_order(self):
         n = cellprofiler.modules.namesandtypes.NamesAndTypes()
-        n.assignment_method.value = cellprofiler.modules.namesandtypes.ASSIGN_RULES
-        n.matching_choice.value = cellprofiler.modules.namesandtypes.MATCH_BY_ORDER
+        n.assignment_method.value = cellprofiler.image.ASSIGN_RULES
+        n.matching_choice.value = cellprofiler.image.MATCH_BY_ORDER
         n.add_assignment()
         n.assignments[0].image_name.value = C0
         n.assignments[1].image_name.value = C1
@@ -997,7 +1022,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         si = n.single_images[0]
         si.image_plane.value = si.image_plane.build(self.url_root + "/illum.tif")
         si.image_name.value = C2
-        si.load_as_choice.value = cellprofiler.modules.namesandtypes.LOAD_AS_GRAYSCALE_IMAGE
+        si.load_as_choice.value = cellprofiler.image.LOAD_AS_GRAYSCALE_IMAGE
         data = {
             C0:[("%s%d" % (C0, i+1), m) for i, m in enumerate(md([(M0, 2)]))],
             C1:[("%s%d" % (C1, i+1), m) for i, m in enumerate(md([(M1, 2)]))],
@@ -1014,8 +1039,8 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
 
     def test_01_13_single_image_by_metadata(self):
         n = cellprofiler.modules.namesandtypes.NamesAndTypes()
-        n.assignment_method.value = cellprofiler.modules.namesandtypes.ASSIGN_RULES
-        n.matching_choice.value = cellprofiler.modules.namesandtypes.MATCH_BY_METADATA
+        n.assignment_method.value = cellprofiler.image.ASSIGN_RULES
+        n.matching_choice.value = cellprofiler.image.MATCH_BY_METADATA
         n.add_assignment()
         n.assignments[0].image_name.value = C0
         n.assignments[1].image_name.value = C1
@@ -1027,7 +1052,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         si = n.single_images[0]
         si.image_plane.value = si.image_plane.build(self.url_root + "/illum.tif")
         si.image_name.value = C2
-        si.load_as_choice.value = cellprofiler.modules.namesandtypes.LOAD_AS_GRAYSCALE_IMAGE
+        si.load_as_choice.value = cellprofiler.image.LOAD_AS_GRAYSCALE_IMAGE
         data = {
             C0:[("%s%s%s" % (C0, m[M0], m[M1]), m)
                 for i, m in enumerate(md([(M1, 3), (M0, 2)]))],
@@ -1041,7 +1066,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
     def test_02_01_prepare_to_create_batch_single(self):
         n = cellprofiler.modules.namesandtypes.NamesAndTypes()
         n.module_num = 1
-        n.assignment_method.value = cellprofiler.modules.namesandtypes.ASSIGN_ALL
+        n.assignment_method.value = cellprofiler.image.ASSIGN_ALL
         n.single_image_provider.value = IMAGE_NAME
         m = cellprofiler.measurement.Measurements(mode="memory")
         pathnames = ["foo", "fuu"]
@@ -1075,11 +1100,11 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
     def test_02_02_prepare_to_create_batch_multiple(self):
         n = cellprofiler.modules.namesandtypes.NamesAndTypes()
         n.module_num = 1
-        n.assignment_method.value = cellprofiler.modules.namesandtypes.ASSIGN_RULES
+        n.assignment_method.value = cellprofiler.image.ASSIGN_RULES
         n.add_assignment()
-        n.assignments[0].load_as_choice.value = cellprofiler.modules.namesandtypes.LOAD_AS_GRAYSCALE_IMAGE
+        n.assignments[0].load_as_choice.value = cellprofiler.image.LOAD_AS_GRAYSCALE_IMAGE
         n.assignments[0].image_name.value = IMAGE_NAME
-        n.assignments[1].load_as_choice.value = cellprofiler.modules.namesandtypes.LOAD_AS_OBJECTS
+        n.assignments[1].load_as_choice.value = cellprofiler.image.LOAD_AS_OBJECTS
         n.assignments[1].object_name.value = OBJECTS_NAME
         m = cellprofiler.measurement.Measurements(mode="memory")
         pathnames = ["foo", "fuu"]
@@ -1126,14 +1151,14 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
 
         n = cellprofiler.modules.namesandtypes.NamesAndTypes()
         n.module_num = 1
-        n.assignment_method.value = cellprofiler.modules.namesandtypes.ASSIGN_RULES
-        n.assignments[0].load_as_choice.value = cellprofiler.modules.namesandtypes.LOAD_AS_GRAYSCALE_IMAGE
+        n.assignment_method.value = cellprofiler.image.ASSIGN_RULES
+        n.assignments[0].load_as_choice.value = cellprofiler.image.LOAD_AS_GRAYSCALE_IMAGE
         n.assignments[0].image_name.value = IMAGE_NAME
         for name, url in zip(si_names, urlnames):
             n.add_single_image()
             si = n.single_images[-1]
             si.image_plane.value = si.image_plane.build(url)
-            si.load_as_choice.value = cellprofiler.modules.namesandtypes.LOAD_AS_GRAYSCALE_IMAGE
+            si.load_as_choice.value = cellprofiler.image.LOAD_AS_GRAYSCALE_IMAGE
             si.image_name.value = name
 
         m = cellprofiler.measurement.Measurements(mode="memory")
@@ -1205,15 +1230,15 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         #
         # Set up NamesAndTypes to read 1 image and 1 object
         #
-        module.assignment_method.value = cellprofiler.modules.namesandtypes.ASSIGN_RULES
+        module.assignment_method.value = cellprofiler.image.ASSIGN_RULES
         module.add_assignment()
         a = module.assignments[0]
         a.rule_filter.value = 'and (file does contain "_image")'
         a.image_name.value = IMAGE_NAME
-        a.load_as_choice.value = cellprofiler.modules.namesandtypes.LOAD_AS_GRAYSCALE_IMAGE
+        a.load_as_choice.value = cellprofiler.image.LOAD_AS_GRAYSCALE_IMAGE
         a = module.assignments[1]
         a.rule_filter.value = 'and (file does contain "_object_")'
-        a.load_as_choice.value = cellprofiler.modules.namesandtypes.LOAD_AS_OBJECTS
+        a.load_as_choice.value = cellprofiler.image.LOAD_AS_OBJECTS
         a.object_name.value = OBJECTS_NAME
         #
         # Set up CreateBatchFiles to change names.
@@ -1254,7 +1279,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
     def run_workspace(self, path, load_as_type,
                       series = None, index = None, channel = None,
                       single=False,
-                      rescaled=cellprofiler.modules.namesandtypes.INTENSITY_RESCALING_BY_METADATA, lsi = []):
+                      rescaled=cellprofiler.image.INTENSITY_RESCALING_BY_METADATA, lsi = []):
         '''Run a workspace to load a file
 
         path - path to the file
@@ -1273,11 +1298,11 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         '''
         if isinstance(rescaled, float):
             manual_rescale = rescaled
-            rescaled = cellprofiler.modules.namesandtypes.INTENSITY_MANUAL
+            rescaled = cellprofiler.image.INTENSITY_MANUAL
         else:
             manual_rescale = 255.
         n = cellprofiler.modules.namesandtypes.NamesAndTypes()
-        n.assignment_method.value = cellprofiler.modules.namesandtypes.ASSIGN_ALL if single else cellprofiler.modules.namesandtypes.ASSIGN_RULES
+        n.assignment_method.value = cellprofiler.image.ASSIGN_ALL if single else cellprofiler.image.ASSIGN_RULES
         n.single_image_provider.value = IMAGE_NAME
         n.single_load_as_choice.value = load_as_type
         n.single_rescale.value = rescaled
@@ -1295,7 +1320,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         url = cellprofiler.utilities.url.pathname2url(path)
         pathname, filename = os.path.split(path)
         m = cellprofiler.measurement.Measurements()
-        if load_as_type == cellprofiler.modules.namesandtypes.LOAD_AS_OBJECTS:
+        if load_as_type == cellprofiler.image.LOAD_AS_OBJECTS:
             url_feature = cellprofiler.measurement.C_OBJECTS_URL + "_" + OBJECTS_NAME
             path_feature = cellprofiler.measurement.C_OBJECTS_PATH_NAME + "_" + OBJECTS_NAME
             file_feature = cellprofiler.measurement.C_OBJECTS_FILE_NAME + "_" + OBJECTS_NAME
@@ -1324,11 +1349,11 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
             m.add_measurement(cellprofiler.measurement.IMAGE, channel_feature, channel)
         m.add_measurement(cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_NUMBER, 1)
         m.add_measurement(cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_INDEX, 1)
-        if load_as_type == cellprofiler.modules.namesandtypes.LOAD_AS_COLOR_IMAGE:
+        if load_as_type == cellprofiler.image.LOAD_AS_COLOR_IMAGE:
             stack="Color"
             if channel is None:
                 channel = "INTERLEAVED"
-        elif load_as_type == cellprofiler.modules.namesandtypes.LOAD_AS_OBJECTS:
+        elif load_as_type == cellprofiler.image.LOAD_AS_OBJECTS:
             stack="Objects"
             if channel is None:
                 channel = "OBJECT_PLANES"
@@ -1359,7 +1384,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
 
             url = cellprofiler.utilities.url.pathname2url(path)
             pathname, filename = os.path.split(path)
-            if load_as_type == cellprofiler.modules.namesandtypes.LOAD_AS_OBJECTS:
+            if load_as_type == cellprofiler.image.LOAD_AS_OBJECTS:
                 url_feature = cellprofiler.measurement.C_OBJECTS_URL + "_" + name
                 path_feature = cellprofiler.measurement.C_OBJECTS_PATH_NAME + "_" + name
                 file_feature = cellprofiler.measurement.C_OBJECTS_FILE_NAME + "_" + name
@@ -1391,7 +1416,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         """ % stack
         blob = javabridge.run_script(script, dict(ipds=ipds.o, names=names.o))
         blob = javabridge.get_env().get_byte_array_elements(blob)
-        m.add_measurement(cellprofiler.measurement.IMAGE, cellprofiler.modules.namesandtypes.M_IMAGE_SET, blob,
+        m.add_measurement(cellprofiler.measurement.IMAGE, cellprofiler.image.M_IMAGE_SET, blob,
                           data_type=numpy.uint8)
 
         workspace = cellprofiler.workspace.Workspace(pipeline, n, m,
@@ -1406,7 +1431,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
             ["ExampleColorToGray"], "nt_03_01_color.tif", shape)
         with open(path, "rb") as fd:
             md5 = hashlib.md5(fd.read()).hexdigest()
-        workspace = self.run_workspace(path, cellprofiler.modules.namesandtypes.LOAD_AS_COLOR_IMAGE)
+        workspace = self.run_workspace(path, cellprofiler.image.LOAD_AS_COLOR_IMAGE)
         image = workspace.image_set.get_image(IMAGE_NAME)
         pixel_data = image.pixel_data
         self.assertSequenceEqual(pixel_data.shape, shape)
@@ -1423,7 +1448,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         path = self.get_monochrome_image_path()
         target = bioformats.load_image(path)
         target_shape = (target.shape[0], target.shape[1], 3)
-        workspace = self.run_workspace(path, cellprofiler.modules.namesandtypes.LOAD_AS_COLOR_IMAGE)
+        workspace = self.run_workspace(path, cellprofiler.image.LOAD_AS_COLOR_IMAGE)
         image = workspace.image_set.get_image(IMAGE_NAME)
         pixel_data = image.pixel_data
         self.assertSequenceEqual(pixel_data.shape, target_shape)
@@ -1434,7 +1459,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
 
     def test_03_03_load_color_frame(self):
         path = tests.modules.maybe_download_tesst_image("DrosophilaEmbryo_GFPHistone.avi")
-        workspace = self.run_workspace(path, cellprofiler.modules.namesandtypes.LOAD_AS_COLOR_IMAGE,
+        workspace = self.run_workspace(path, cellprofiler.image.LOAD_AS_COLOR_IMAGE,
                                        index = 3)
         image = workspace.image_set.get_image(IMAGE_NAME)
         pixel_data = image.pixel_data
@@ -1452,7 +1477,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
     def test_03_04_load_monochrome(self):
         path = self.get_monochrome_image_path()
         target = bioformats.load_image(path)
-        workspace = self.run_workspace(path, cellprofiler.modules.namesandtypes.LOAD_AS_GRAYSCALE_IMAGE)
+        workspace = self.run_workspace(path, cellprofiler.image.LOAD_AS_GRAYSCALE_IMAGE)
         image = workspace.image_set.get_image(IMAGE_NAME)
         pixel_data = image.pixel_data
         self.assertSequenceEqual(pixel_data.shape, target.shape)
@@ -1463,7 +1488,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         shape = (21, 31, 3)
         path = tests.modules.maybe_download_example_image(
             ["ExampleColorToGray"], "nt_03_05_color.tif", shape)
-        workspace = self.run_workspace(path, cellprofiler.modules.namesandtypes.LOAD_AS_GRAYSCALE_IMAGE)
+        workspace = self.run_workspace(path, cellprofiler.image.LOAD_AS_GRAYSCALE_IMAGE)
         image = workspace.image_set.get_image(IMAGE_NAME)
         pixel_data = image.pixel_data
         self.assertSequenceEqual(pixel_data.shape, shape[:2])
@@ -1474,7 +1499,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         path = tests.modules.maybe_download_tesst_image("5channel.tif")
 
         for i in range(5):
-            workspace = self.run_workspace(path, cellprofiler.modules.namesandtypes.LOAD_AS_GRAYSCALE_IMAGE,
+            workspace = self.run_workspace(path, cellprofiler.image.LOAD_AS_GRAYSCALE_IMAGE,
                                            index=i)
             image = workspace.image_set.get_image(IMAGE_NAME)
             pixel_data = image.pixel_data
@@ -1488,7 +1513,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         folder = "namesandtypes_03_07"
         file_name = "1-162hrh2ax2.tif"
         path = tests.modules.make_12_bit_image(folder, file_name, (34, 19))
-        workspace = self.run_workspace(path, cellprofiler.modules.namesandtypes.LOAD_AS_ILLUMINATION_FUNCTION)
+        workspace = self.run_workspace(path, cellprofiler.image.LOAD_AS_ILLUMINATION_FUNCTION)
         image = workspace.image_set.get_image(IMAGE_NAME)
         pixel_data = image.pixel_data
         self.assertSequenceEqual(pixel_data.shape, (34, 19))
@@ -1499,7 +1524,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         path = tests.modules.maybe_download_example_image(
             ["ExampleSBSImages"], "Channel2-01-A-01.tif")
         target = bioformats.load_image(path)
-        workspace = self.run_workspace(path, cellprofiler.modules.namesandtypes.LOAD_AS_MASK)
+        workspace = self.run_workspace(path, cellprofiler.image.LOAD_AS_MASK)
         image = workspace.image_set.get_image(IMAGE_NAME)
         pixel_data = image.pixel_data
         self.assertSequenceEqual(pixel_data.shape, target.shape)
@@ -1512,7 +1537,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         target = bioformats.load_image(path, rescale=False)
         with open(path, "rb") as fd:
             md5 = hashlib.md5(fd.read()).hexdigest()
-        workspace = self.run_workspace(path, cellprofiler.modules.namesandtypes.LOAD_AS_OBJECTS)
+        workspace = self.run_workspace(path, cellprofiler.image.LOAD_AS_OBJECTS)
         o = workspace.object_set.get_objects(OBJECTS_NAME)
         assert isinstance(o, cellprofiler.modules.namesandtypes.cpo.Objects)
         areas = o.areas
@@ -1536,7 +1561,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         f.write(overlapped_objects_data)
         f.close()
         try:
-            workspace = self.run_workspace(path, cellprofiler.modules.namesandtypes.LOAD_AS_OBJECTS)
+            workspace = self.run_workspace(path, cellprofiler.image.LOAD_AS_OBJECTS)
             o = workspace.object_set.get_objects(OBJECTS_NAME)
             assert isinstance(o, cellprofiler.modules.namesandtypes.cpo.Objects)
             self.assertEqual(o.count, 2)
@@ -1563,18 +1588,18 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         file_name = "1-162hrh2ax2.tif"
         path = tests.modules.make_12_bit_image(folder, file_name, (34, 19))
         for single in (True, False):
-            for rescaled in (cellprofiler.modules.namesandtypes.INTENSITY_RESCALING_BY_METADATA,
-                             cellprofiler.modules.namesandtypes.INTENSITY_RESCALING_BY_DATATYPE,
+            for rescaled in (cellprofiler.image.INTENSITY_RESCALING_BY_METADATA,
+                             cellprofiler.image.INTENSITY_RESCALING_BY_DATATYPE,
                              float(2**17)):
-                for load_as in cellprofiler.modules.namesandtypes.LOAD_AS_COLOR_IMAGE, cellprofiler.modules.namesandtypes.LOAD_AS_GRAYSCALE_IMAGE:
+                for load_as in cellprofiler.image.LOAD_AS_COLOR_IMAGE, cellprofiler.image.LOAD_AS_GRAYSCALE_IMAGE:
                     workspace = self.run_workspace(
                         path, load_as, single=single, rescaled=rescaled)
                     image = workspace.image_set.get_image(IMAGE_NAME)
                     pixel_data = image.pixel_data
                     self.assertTrue(numpy.all(pixel_data >= 0))
-                    if rescaled == cellprofiler.modules.namesandtypes.INTENSITY_RESCALING_BY_METADATA:
+                    if rescaled == cellprofiler.image.INTENSITY_RESCALING_BY_METADATA:
                         self.assertTrue(numpy.any(pixel_data > 1. / 16.))
-                    elif rescaled == cellprofiler.modules.namesandtypes.INTENSITY_RESCALING_BY_DATATYPE:
+                    elif rescaled == cellprofiler.image.INTENSITY_RESCALING_BY_DATATYPE:
                         self.assertTrue(numpy.all(pixel_data <= 1. / 16.))
                         self.assertTrue(numpy.any(pixel_data > 1. / 32.))
                     else:
@@ -1588,9 +1613,9 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
             ["ExampleGrayToColor"], "AS_09125_050116030001_D03f00d0.tif")
         target = bioformats.load_image(lsi_path)
         workspace = self.run_workspace(
-            path, cellprofiler.modules.namesandtypes.LOAD_AS_COLOR_IMAGE, lsi= [{
+            path, cellprofiler.image.LOAD_AS_COLOR_IMAGE, lsi= [{
                 "path":lsi_path,
-                "load_as_type":cellprofiler.modules.namesandtypes.LOAD_AS_GRAYSCALE_IMAGE,
+                "load_as_type": cellprofiler.image.LOAD_AS_GRAYSCALE_IMAGE,
                 "name":"lsi"}])
         image = workspace.image_set.get_image("lsi")
         pixel_data = image.pixel_data
@@ -1605,9 +1630,9 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         with open(lsi_path, "rb") as fd:
             md5 = hashlib.md5(fd.read()).hexdigest()
         workspace = self.run_workspace(
-            path, cellprofiler.modules.namesandtypes.LOAD_AS_GRAYSCALE_IMAGE, lsi= [{
+            path, cellprofiler.image.LOAD_AS_GRAYSCALE_IMAGE, lsi= [{
                 "path":lsi_path,
-                "load_as_type":cellprofiler.modules.namesandtypes.LOAD_AS_OBJECTS,
+                "load_as_type": cellprofiler.image.LOAD_AS_OBJECTS,
                 "name":"lsi",
                 "should_save_outlines":True
             }])
@@ -1631,10 +1656,10 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         nts = [m for m in p.modules() if isinstance(m, cellprofiler.modules.namesandtypes.NamesAndTypes)]
         self.assertEqual(len(nts), 1)
         m = nts[0]
-        m.assignment_method.value = cellprofiler.modules.namesandtypes.ASSIGN_RULES
+        m.assignment_method.value = cellprofiler.image.ASSIGN_RULES
         m.add_assignment()
         m.assignments[0].image_name.value = IMAGE_NAME
-        m.assignments[1].load_as_choice.value = cellprofiler.modules.namesandtypes.LOAD_AS_OBJECTS
+        m.assignments[1].load_as_choice.value = cellprofiler.image.LOAD_AS_OBJECTS
         m.assignments[1].object_name.value = OBJECTS_NAME
 
         columns = m.get_measurement_columns(p)
@@ -1661,7 +1686,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         nts = [m for m in p.modules() if isinstance(m, cellprofiler.modules.namesandtypes.NamesAndTypes)]
         self.assertEqual(len(nts), 1)
         m = nts[0]
-        m.assignment_method.value = cellprofiler.modules.namesandtypes.ASSIGN_RULES
+        m.assignment_method.value = cellprofiler.image.ASSIGN_RULES
         m.assignments[0].image_name.value = IMAGE_NAME
         categories = m.get_categories(p, cellprofiler.measurement.IMAGE)
         self.assertFalse(cellprofiler.measurement.C_OBJECTS_FILE_NAME in categories)
@@ -1677,7 +1702,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         self.assertTrue(cellprofiler.measurement.C_SERIES in categories)
         self.assertTrue(cellprofiler.measurement.C_FRAME in categories)
         m.add_assignment()
-        m.assignments[1].load_as_choice.value = cellprofiler.modules.namesandtypes.LOAD_AS_OBJECTS
+        m.assignments[1].load_as_choice.value = cellprofiler.image.LOAD_AS_OBJECTS
         m.assignments[1].object_name.value = OBJECTS_NAME
         categories = m.get_categories(p, cellprofiler.measurement.IMAGE)
         self.assertTrue(cellprofiler.measurement.C_OBJECTS_FILE_NAME in categories)
@@ -1692,10 +1717,10 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         nts = [m for m in p.modules() if isinstance(m, cellprofiler.modules.namesandtypes.NamesAndTypes)]
         self.assertEqual(len(nts), 1)
         m = nts[0]
-        m.assignment_method.value = cellprofiler.modules.namesandtypes.ASSIGN_RULES
+        m.assignment_method.value = cellprofiler.image.ASSIGN_RULES
         m.assignments[0].image_name.value = IMAGE_NAME
         m.add_assignment()
-        m.assignments[1].load_as_choice.value = cellprofiler.modules.namesandtypes.LOAD_AS_OBJECTS
+        m.assignments[1].load_as_choice.value = cellprofiler.image.LOAD_AS_OBJECTS
         m.assignments[1].object_name.value = OBJECTS_NAME
         for cname in cellprofiler.measurement.C_FILE_NAME, cellprofiler.measurement.C_PATH_NAME, cellprofiler.measurement.C_URL:
             mnames = m.get_measurements(p, cellprofiler.measurement.IMAGE, cname)
@@ -1726,8 +1751,8 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         pipeline.init_modules()
         for module in pipeline.modules():
             if isinstance(module, cellprofiler.modules.namesandtypes.NamesAndTypes):
-                module.assignment_method.value = cellprofiler.modules.namesandtypes.ASSIGN_RULES
-                module.matching_choice.value = cellprofiler.modules.namesandtypes.MATCH_BY_METADATA
+                module.assignment_method.value = cellprofiler.image.ASSIGN_RULES
+                module.matching_choice.value = cellprofiler.image.MATCH_BY_METADATA
                 module.assignments[0].image_name.value = IMAGE_NAME
                 module.join.build([{IMAGE_NAME:None}])
                 module.validate_module(pipeline)

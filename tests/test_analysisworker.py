@@ -10,6 +10,7 @@ import uuid
 import cellprofiler.analysis
 import cellprofiler.gui.errordialog
 import cellprofiler.identify
+import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.modules.loadimages
 import cellprofiler.modules.namesandtypes
@@ -392,7 +393,7 @@ class TestAnalysisWorker(unittest.TestCase):
                 for object_name in m.get_object_names():
                     for feature_name in m.get_feature_names(object_name):
                         self.assertTrue(cm.has_feature(object_name, feature_name))
-                        if feature_name == cellprofiler.modules.namesandtypes.M_IMAGE_SET:
+                        if feature_name == cellprofiler.image.M_IMAGE_SET:
                             numpy.testing.assert_array_equal(
                                 cm[object_name, feature_name, 1],
                                          m[object_name, feature_name, 1])
@@ -672,7 +673,7 @@ class TestAnalysisWorker(unittest.TestCase):
             self.assertIsInstance(req, cellprofiler.analysis.InitialMeasurementsRequest)
             self.assertEqual(req.analysis_id, self.analysis_id)
             m = get_measurements_for_good_pipeline(nimages=3)
-            m[cellprofiler.measurement.IMAGE, cellprofiler.modules.namesandtypes.M_IMAGE_SET, 2] = numpy.zeros(100, numpy.uint8)
+            m[cellprofiler.measurement.IMAGE, cellprofiler.image.M_IMAGE_SET, 2] = numpy.zeros(100, numpy.uint8)
             try:
                 req.reply(cellprofiler.analysis.Reply(buf = m.file_contents()))
             finally:
@@ -1011,7 +1012,7 @@ def get_measurements_for_good_pipeline(nimages=1,
         imageSet.compress(java.util.Collections.singletonList("DNA"), null);
         """, dict(url=url, imageNumber=str(i)))
         blob = javabridge.get_env().get_byte_array_elements(jblob)
-        m[cellprofiler.measurement.IMAGE, cellprofiler.modules.namesandtypes.M_IMAGE_SET, i, blob.dtype] = blob
+        m[cellprofiler.measurement.IMAGE, cellprofiler.image.M_IMAGE_SET, i, blob.dtype] = blob
     pipeline = cellprofiler.pipeline.Pipeline()
     pipeline.loadtxt(cStringIO.StringIO(GOOD_PIPELINE))
     pipeline.write_pipeline_measurement(m)

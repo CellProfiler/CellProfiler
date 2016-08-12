@@ -1,10 +1,8 @@
-import logging
 import re
 
-import bioformats
-import bioformats.omexml
 import cellprofiler.gui.help
 import cellprofiler.identify
+import cellprofiler.image
 import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.module
@@ -16,6 +14,7 @@ import cellprofiler.utilities.predicate
 import centrosome.outline
 import javabridge
 import numpy
+import cellprofiler.image
 
 __doc__ = """
 The <b>NamesAndTypes</b> module gives images and/or channels a meaningful name to a particular image or channel,
@@ -98,179 +97,6 @@ filename and location, respectively, of each object set written to the per-image
     'names_and_types_display_table': cellprofiler.gui.help.NAMESANDTYPES_DISPLAY_TABLE
 })
 
-logger = logging.getLogger(__name__)
-
-ASSIGN_ALL = "All images"
-ASSIGN_GUESS = "Try to guess image assignment"
-ASSIGN_RULES = "Images matching rules"
-
-LOAD_AS_GRAYSCALE_IMAGE = "Grayscale image"
-LOAD_AS_COLOR_IMAGE = "Color image"
-LOAD_AS_MASK = "Binary mask"
-LOAD_AS_MASK_V5A = "Mask"
-LOAD_AS_ILLUMINATION_FUNCTION = "Illumination function"
-LOAD_AS_OBJECTS = "Objects"
-LOAD_AS_ALL = [LOAD_AS_GRAYSCALE_IMAGE,
-               LOAD_AS_COLOR_IMAGE,
-               LOAD_AS_MASK,
-               LOAD_AS_ILLUMINATION_FUNCTION,
-               LOAD_AS_OBJECTS]
-
-INTENSITY_RESCALING_BY_METADATA = "Image metadata"
-INTENSITY_RESCALING_BY_DATATYPE = "Image bit-depth"
-INTENSITY_MANUAL = "Manual"
-INTENSITY_ALL = [INTENSITY_RESCALING_BY_METADATA,
-                 INTENSITY_RESCALING_BY_DATATYPE,
-                 INTENSITY_MANUAL]
-MANUAL_INTENSITY_LABEL = "Maximum intensity"
-
-RESCALING_HELP_TEXT = """
-This option determines how the image intensity should be
-rescaled from 0.0 &ndash; 1.0.
-<ul>
-<li><i>{intensity_rescaling_by_metadata}:</i> Rescale the image
-intensity so that saturated values are rescaled to 1.0 by dividing
-all pixels in the image by the maximum possible intensity value
-allowed by the imaging hardware. Some image formats save the maximum
-possible intensity value along with the pixel data.
-For instance, a microscope might acquire images using a 12-bit
-A/D converter which outputs intensity values between zero and 4095,
-but stores the values in a field that can take values up to 65535.
-Choosing this setting ensures that the intensity scaling value is
-the maximum allowed by the hardware, and not the maximum allowable
-by the file format. </li>
-<li><i>{intensity_rescaling_by_datatype}:</i> Ignore the image
-metadata and rescale the image to 0 &ndash; 1 by dividing by 255
-or 65535, depending on the number of bits used to store the image.</li>
-<li><i>{intensity_manual}:</i> Divide each pixel value by the value entered
-in the <i>{manual_intensity_label}</i> setting. <i>{intensity_manual}</i> can be
-used to rescale an image whose maximum intensity metadata value is absent or
-incorrect, but is less than the value that would be supplied if
-<i>{intensity_rescaling_by_datatype}</i> were specified.</li>
-</ul>
-Please note that CellProfiler does not provide the option of loading
-the image as the raw, unscaled values. If you wish to make measurements
-on the unscaled image, use the <b>ImageMath</b> module to multiply the
-scaled image by the actual image bit-depth.""".format(**{
-    'intensity_rescaling_by_metadata': INTENSITY_RESCALING_BY_METADATA,
-    'intensity_rescaling_by_datatype': INTENSITY_RESCALING_BY_DATATYPE,
-    'intensity_manual': INTENSITY_MANUAL,
-    'manual_intensity_label': MANUAL_INTENSITY_LABEL
-})
-
-MANUAL_RESCALE_HELP_TEXT = """
-<i>(Used only if {intensity_manual} is chosen)</i><br>
-<b>NamesAndTypes</b> divides the pixel value, as read from the image file, by
-this value to get the loaded image's per-pixel intensity.
-""".format(**{
-    'intensity_manual': INTENSITY_MANUAL
-})
-
-LOAD_AS_CHOICE_HELP_TEXT = """
-You can specify how these images should be treated:
-<ul>
-<li><i>{load_as_grayscale_image}:</i> An image in which each pixel
-represents a single intensity value. Most of the modules in CellProfiler
-operate on images of this type. <br>
-If this option is applied to a color image, the red, green and blue
-pixel intensities will be averaged to produce a single intensity value.</li>
-<li><i>{load_as_color_image}:</i> An image in which each pixel
-repesents a red, green and blue (RGB) triplet of intensity values.
-Please note that the object detection modules such as <b>IdentifyPrimaryObjects</b>
-expect a grayscale image, so if you want to identify objects, you
-should use the <b>ColorToGray</b> module in the analysis pipeline
-to split the color image into its component channels.<br>
-You can use the <i>{load_as_grayscale_image}</i> option to collapse the
-color channels to a single grayscale value if you don't need CellProfiler
-to treat the image as color.</li>
-<li><i>{load_as_mask}:</i> A <i>mask</i> is an image where some of the
-pixel intensity values are zero, and others are non-zero. The most common
-use for a mask is to exclude particular image regions from consideration. By
-applying a mask to another image, the portion of the image that overlaps with
-the non-zero regions of the mask are included. Those that overlap with the
-zeroed region are "hidden" and not included in downstream calculations.
-For this option, the input image should be a binary image, i.e, foreground is
-white, background is black. The module will convert any nonzero values
-to 1, if needed. You can use this option to load a foreground/background
-segmentation produced by one of the <b>Identify</b> modules.</li>
-<li><i>{load_as_illumination_function}:</i> An <i>illumination correction function</i>
-is an image which has been generated for the purpose of correcting uneven
-illumination/lighting/shading or to reduce uneven background in images. Typically,
-is a file in the MATLAB .mat format. See <b>CorrectIlluminationCalculate</b> and
-<b>CorrectIlluminationApply</b> for more details. </li>
-<li><i>{load_as_objects}:</i> Use this option if the input image
-is a label matrix and you want to obtain the objects that it defines.
-A label matrix is a grayscale or color image in which the connected
-regions share the same label, which defines how objects are represented
-in CellProfiler. The labels are integer values greater than or equal
-to 0. The elements equal to 0 are the background, whereas the elements
-equal to 1 make up one object, the elements equal to 2 make up a second
-object, and so on. This option allows you to use the objects
-immediately without needing to insert an <b>Identify</b> module to
-extract them first. See <b>IdentifyPrimaryObjects</b> for more details. <br>
-This option can load objects created by the <b>SaveImages</b> module. These objects
-can take two forms, with different considerations for each:
-<ul>
-<li><i>Non-overalapping</i> objects are stored as a label matrix. This matrix should be
-saved as grayscale, rather than color.</li>
-<li><i>Overlapping objects</i> are stored in a multi-frame TIF, each frame of which consists of a
-grayscale label matrix. The frames are constructed so that objects that overlap are placed
-in different frames.</li>
-</ul></li>
-</ul>
-""".format(**{
-    'load_as_grayscale_image': LOAD_AS_GRAYSCALE_IMAGE,
-    'load_as_color_image': LOAD_AS_COLOR_IMAGE,
-    'load_as_mask': LOAD_AS_MASK,
-    'load_as_illumination_function': LOAD_AS_ILLUMINATION_FUNCTION,
-    'load_as_objects': LOAD_AS_OBJECTS
-})
-
-IDX_ASSIGNMENTS_COUNT_V2 = 5
-IDX_ASSIGNMENTS_COUNT_V3 = 6
-IDX_ASSIGNMENTS_COUNT_V5 = 6
-IDX_ASSIGNMENTS_COUNT_V6 = 6
-IDX_ASSIGNMENTS_COUNT = 6
-
-IDX_SINGLE_IMAGES_COUNT_V5 = 7
-IDX_SINGLE_IMAGES_COUNT_V6 = 7
-IDX_SINGLE_IMAGES_COUNT = 7
-
-IDX_FIRST_ASSIGNMENT_V3 = 7
-IDX_FIRST_ASSIGNMENT_V4 = 7
-IDX_FIRST_ASSIGNMENT_V5 = 8
-IDX_FIRST_ASSIGNMENT_V6 = 9
-IDX_FIRST_ASSIGNMENT = 9
-
-NUM_ASSIGNMENT_SETTINGS_V2 = 4
-NUM_ASSIGNMENT_SETTINGS_V3 = 5
-NUM_ASSIGNMENT_SETTINGS_V5 = 7
-NUM_ASSIGNMENT_SETTINGS_V6 = 8
-NUM_ASSIGNMENT_SETTINGS = 8
-
-NUM_SINGLE_IMAGE_SETTINGS_V5 = 7
-NUM_SINGLE_IMAGE_SETTINGS_V6 = 8
-NUM_SINGLE_IMAGE_SETTINGS = 8
-
-OFF_LOAD_AS_CHOICE_V5 = 3
-OFF_LOAD_AS_CHOICE = 3
-
-OFF_SI_LOAD_AS_CHOICE_V5 = 3
-OFF_SI_LOAD_AS_CHOICE = 3
-
-MATCH_BY_ORDER = "Order"
-MATCH_BY_METADATA = "Metadata"
-
-IMAGE_NAMES = ["DNA", "GFP", "Actin"]
-OBJECT_NAMES = ["Cell", "Nucleus", "Cytoplasm", "Speckle"]
-
-DEFAULT_MANUAL_RESCALE = 255
-
-'''The experiment measurement that holds the ZLIB compression dictionary for image sets'''
-M_IMAGE_SET_ZIP_DICTIONARY = "ImageSet_Zip_Dictionary"
-'''The image measurement that holds the compressed image set'''
-M_IMAGE_SET = "ImageSet_ImageSet"
-
 
 class NamesAndTypes(cellprofiler.module.Module):
     variable_revision_number = 6
@@ -289,7 +115,7 @@ class NamesAndTypes(cellprofiler.module.Module):
         self.metadata_keys = []
 
         self.assignment_method = cellprofiler.setting.Choice(
-                "Assign a name to", [ASSIGN_ALL, ASSIGN_RULES], doc="""
+            "Assign a name to", [cellprofiler.image.ASSIGN_ALL, cellprofiler.image.ASSIGN_RULES], doc="""
             This setting allows the user to specify a name to images or subsets
             of images so they can be treated separately by downstream modules.
             For example, giving a different name to a GFP stain image and a
@@ -311,42 +137,42 @@ class NamesAndTypes(cellprofiler.module.Module):
             """ % globals())
 
         self.single_load_as_choice = cellprofiler.setting.Choice(
-                "Select the image type", [LOAD_AS_GRAYSCALE_IMAGE,
-                                          LOAD_AS_COLOR_IMAGE,
-                                          LOAD_AS_MASK],
-                doc=LOAD_AS_CHOICE_HELP_TEXT)
+            "Select the image type", [cellprofiler.image.LOAD_AS_GRAYSCALE_IMAGE,
+                                      cellprofiler.image.LOAD_AS_COLOR_IMAGE,
+                                      cellprofiler.image.LOAD_AS_MASK],
+            doc=cellprofiler.image.LOAD_AS_CHOICE_HELP_TEXT)
 
         self.single_image_provider = cellprofiler.setting.FileImageNameProvider(
-                "Name to assign these images", IMAGE_NAMES[0])
+            "Name to assign these images", cellprofiler.image.IMAGE_NAMES[0])
 
         self.single_rescale = cellprofiler.setting.Choice(
-                "Set intensity range from",
-                INTENSITY_ALL,
-                value=INTENSITY_RESCALING_BY_METADATA,
-                doc=RESCALING_HELP_TEXT)
+            "Set intensity range from",
+            cellprofiler.image.INTENSITY_ALL,
+            value=cellprofiler.image.INTENSITY_RESCALING_BY_METADATA,
+            doc=cellprofiler.image.RESCALING_HELP_TEXT)
 
         self.manual_rescale = cellprofiler.setting.Float(
-                MANUAL_INTENSITY_LABEL, DEFAULT_MANUAL_RESCALE,
-                minval=numpy.finfo(numpy.float32).eps,
-                doc=MANUAL_RESCALE_HELP_TEXT)
+            cellprofiler.image.MANUAL_INTENSITY_LABEL, cellprofiler.image.DEFAULT_MANUAL_RESCALE,
+            minval=numpy.finfo(numpy.float32).eps,
+            doc=cellprofiler.image.MANUAL_RESCALE_HELP_TEXT)
 
         self.assignments = []
         self.single_images = []
 
         self.assignments_count = cellprofiler.setting.HiddenCount(self.assignments,
-                                                 "Assignments count")
+                                                                  "Assignments count")
         self.single_images_count = cellprofiler.setting.HiddenCount(
-                self.single_images, "Single images count")
+            self.single_images, "Single images count")
         self.add_assignment(can_remove=False)
 
         self.add_assignment_divider = cellprofiler.setting.Divider()
         self.add_assignment_button = cellprofiler.setting.DoThings(
-                "", (("Add another image", self.add_assignment),
-                     ("Add a single image", self.add_single_image)))
+            "", (("Add another image", self.add_assignment),
+                 ("Add a single image", self.add_single_image)))
 
         self.matching_choice = cellprofiler.setting.Choice(
-                "Image set matching method",
-                [MATCH_BY_ORDER, MATCH_BY_METADATA], doc="""
+            "Image set matching method",
+            [cellprofiler.image.MATCH_BY_ORDER, cellprofiler.image.MATCH_BY_METADATA], doc="""
             Select how you want to match the image from one channel with
             the images from other channels.
             <p>This setting controls how CellProfiler picks which images
@@ -438,8 +264,8 @@ class NamesAndTypes(cellprofiler.module.Module):
             </p>
             </li>
             </ul>""".format(**{
-                'match_by_order': MATCH_BY_ORDER,
-                'match_by_metadata': MATCH_BY_METADATA,
+                'match_by_order': cellprofiler.image.MATCH_BY_ORDER,
+                'match_by_metadata': cellprofiler.image.MATCH_BY_METADATA,
                 'using_metadata_help': cellprofiler.gui.help.USING_METADATA_HELP_REF
             }))
         self.join = cellprofiler.setting.Joiner("Match metadata")
@@ -455,8 +281,8 @@ class NamesAndTypes(cellprofiler.module.Module):
         if can_remove:
             group.append("divider", cellprofiler.setting.Divider())
 
-        mp = MetadataPredicate("Metadata", "Have %s matching",
-                               doc="Has metadata matching the value you enter")
+        mp = cellprofiler.image.MetadataPredicate("Metadata", "Have %s matching",
+                                                  doc="Has metadata matching the value you enter")
         mp.set_metadata_keys(self.metadata_keys)
 
         group.append("rule_filter", cellprofiler.setting.Filter(
@@ -473,44 +299,46 @@ class NamesAndTypes(cellprofiler.module.Module):
                 <p>{}</p>""".format(cellprofiler.gui.help.FILTER_RULES_BUTTONS_HELP)))
 
         group.append("image_name", cellprofiler.setting.FileImageNameProvider(
-                "Name to assign these images", unique_image_name, doc="""
+            "Name to assign these images", unique_image_name, doc="""
             Enter the name that you want to call this image.
             After this point, this image will be referred to by this
             name, and can be selected from any drop-down menu that
             requests an image selection."""))
 
         group.append("object_name", cellprofiler.setting.ObjectNameProvider(
-                "Name to assign these objects", unique_object_name, doc="""
+            "Name to assign these objects", unique_object_name, doc="""
             Enter the name that you want to call this set of objects.
             After this point, this object will be referred to by this
             name, and can be selected from any drop-down menu that
             requests an object selection."""))
 
         group.append("load_as_choice", cellprofiler.setting.Choice(
-                "Select the image type", LOAD_AS_ALL,
-                doc=LOAD_AS_CHOICE_HELP_TEXT))
+            "Select the image type", cellprofiler.image.LOAD_AS_ALL,
+            doc=cellprofiler.image.LOAD_AS_CHOICE_HELP_TEXT))
 
         group.append("rescale", cellprofiler.setting.Choice(
-                "Set intensity range from",
-                INTENSITY_ALL,
-                value=INTENSITY_RESCALING_BY_METADATA,
-                doc=RESCALING_HELP_TEXT))
+            "Set intensity range from",
+            cellprofiler.image.INTENSITY_ALL,
+            value=cellprofiler.image.INTENSITY_RESCALING_BY_METADATA,
+            doc=cellprofiler.image.RESCALING_HELP_TEXT))
 
         group.append("manual_rescale", cellprofiler.setting.Float(
-                MANUAL_INTENSITY_LABEL, value=DEFAULT_MANUAL_RESCALE,
-                minval=numpy.finfo(numpy.float32).eps,
-                doc=MANUAL_RESCALE_HELP_TEXT))
+            cellprofiler.image.MANUAL_INTENSITY_LABEL, value=cellprofiler.image.DEFAULT_MANUAL_RESCALE,
+            minval=numpy.finfo(numpy.float32).eps,
+            doc=cellprofiler.image.MANUAL_RESCALE_HELP_TEXT))
 
         group.append("should_save_outlines", cellprofiler.setting.Binary(
             "Retain outlines of loaded objects?",
             False,
-            doc="""{retaining_outlines_help}""".format(**{'retaining_outlines_help': cellprofiler.gui.help.RETAINING_OUTLINES_HELP})
+            doc="""{retaining_outlines_help}""".format(
+                **{'retaining_outlines_help': cellprofiler.gui.help.RETAINING_OUTLINES_HELP})
         ))
 
         group.append("save_outlines", cellprofiler.setting.OutlineNameProvider(
             "Name the outline image",
             "LoadedOutlines",
-            doc="""{naming_outlines_help}""".format(**{'naming_outlines_help': cellprofiler.gui.help.NAMING_OUTLINES_HELP})
+            doc="""{naming_outlines_help}""".format(
+                **{'naming_outlines_help': cellprofiler.gui.help.NAMING_OUTLINES_HELP})
         ))
 
         def copy_assignment(group=group):
@@ -535,9 +363,9 @@ class NamesAndTypes(cellprofiler.module.Module):
         group.can_remove = can_remove
         if can_remove:
             group.append(
-                    "remover",
-                    cellprofiler.setting.RemoveSettingButton(
-                            '', "Remove this image", self.assignments, group))
+                "remover",
+                cellprofiler.setting.RemoveSettingButton(
+                    '', "Remove this image", self.assignments, group))
 
     def copy_assignment(self, assignment, assignment_list, add_assignment_fn):
         """Make a copy of an assignment
@@ -563,7 +391,7 @@ class NamesAndTypes(cellprofiler.module.Module):
         all_image_names = [
             other_group.image_name for other_group in
             self.assignments + self.single_images]
-        for image_name in IMAGE_NAMES:
+        for image_name in cellprofiler.image.IMAGE_NAMES:
             if image_name not in all_image_names:
                 return image_name
         else:
@@ -577,7 +405,7 @@ class NamesAndTypes(cellprofiler.module.Module):
         all_object_names = [
             other_group.object_name for other_group in
             self.assignments + self.single_images]
-        for object_name in OBJECT_NAMES:
+        for object_name in cellprofiler.image.OBJECT_NAMES:
             if object_name not in all_object_names:
                 return object_name
         else:
@@ -595,59 +423,59 @@ class NamesAndTypes(cellprofiler.module.Module):
 
         group.append("divider", cellprofiler.setting.Divider())
         group.append("image_plane", cellprofiler.setting.ImagePlane(
-                "Single image location",
-                doc="""Choose the single image to add to all image sets. You can
+            "Single image location",
+            doc="""Choose the single image to add to all image sets. You can
             either drag an image onto the setting to select it and add it
             to the image file list or you can press the "Browse" button to
             select an existing image from the file list."""))
         group.append("image_name", cellprofiler.setting.FileImageNameProvider(
-                "Name to assign this image", unique_image_name, doc="""
+            "Name to assign this image", unique_image_name, doc="""
             Enter the name that you want to call this image.
             After this point, this image will be referred to by this
             name, and can be selected from any drop-down menu that
             requests an image selection."""))
 
         group.append("object_name", cellprofiler.setting.ObjectNameProvider(
-                "Name to assign these objects", unique_object_name, doc="""
+            "Name to assign these objects", unique_object_name, doc="""
             Enter the name that you want to call this set of objects.
             After this point, this object will be referred to by this
             name, and can be selected from any drop-down menu that
             requests an object selection."""))
 
         group.append("load_as_choice", cellprofiler.setting.Choice(
-                "Select the image type", LOAD_AS_ALL,
-                doc=LOAD_AS_CHOICE_HELP_TEXT))
+            "Select the image type", cellprofiler.image.LOAD_AS_ALL,
+            doc=cellprofiler.image.LOAD_AS_CHOICE_HELP_TEXT))
 
         group.append("rescale", cellprofiler.setting.Choice(
-                "Set intensity range from",
-                INTENSITY_ALL,
-                value=INTENSITY_RESCALING_BY_METADATA, doc=RESCALING_HELP_TEXT))
+            "Set intensity range from",
+            cellprofiler.image.INTENSITY_ALL,
+            value=cellprofiler.image.INTENSITY_RESCALING_BY_METADATA, doc=cellprofiler.image.RESCALING_HELP_TEXT))
 
         group.append("manual_rescale", cellprofiler.setting.Float(
-                MANUAL_INTENSITY_LABEL, value=DEFAULT_MANUAL_RESCALE,
-                minval=numpy.finfo(numpy.float32).eps,
-                doc=MANUAL_RESCALE_HELP_TEXT))
+            cellprofiler.image.MANUAL_INTENSITY_LABEL, value=cellprofiler.image.DEFAULT_MANUAL_RESCALE,
+            minval=numpy.finfo(numpy.float32).eps,
+            doc=cellprofiler.image.MANUAL_RESCALE_HELP_TEXT))
 
         group.append("should_save_outlines", cellprofiler.setting.Binary(
-                "Retain object outlines?", False, doc=cellprofiler.gui.help.RETAINING_OUTLINES_HELP))
+            "Retain object outlines?", False, doc=cellprofiler.gui.help.RETAINING_OUTLINES_HELP))
 
         group.append("save_outlines", cellprofiler.setting.OutlineNameProvider(
-                "Name the outline image", "LoadedOutlines",
-                doc=cellprofiler.gui.help.NAMING_OUTLINES_HELP))
+            "Name the outline image", "LoadedOutlines",
+            doc=cellprofiler.gui.help.NAMING_OUTLINES_HELP))
 
         def copy_assignment(group=group):
             self.copy_assignment(
-                    group, self.single_images, self.add_single_image)
+                group, self.single_images, self.add_single_image)
 
         group.append("copy_button", cellprofiler.setting.DoSomething(
-                "", "Copy", copy_assignment,
-                doc="Make a copy of this channel specification"))
+            "", "Copy", copy_assignment,
+            doc="Make a copy of this channel specification"))
 
         group.can_remove = True
         group.append(
-                "remover",
-                cellprofiler.setting.RemoveSettingButton(
-                        '', "Remove this image", self.single_images, group))
+            "remover",
+            cellprofiler.setting.RemoveSettingButton(
+                '', "Remove this image", self.single_images, group))
 
     def settings(self):
         result = [self.assignment_method, self.single_load_as_choice,
@@ -669,29 +497,29 @@ class NamesAndTypes(cellprofiler.module.Module):
 
     def visible_settings(self):
         result = [self.assignment_method]
-        if self.assignment_method == ASSIGN_ALL:
+        if self.assignment_method == cellprofiler.image.ASSIGN_ALL:
             result += [self.single_load_as_choice, self.single_image_provider]
-            if self.single_load_as_choice in (LOAD_AS_COLOR_IMAGE,
-                                              LOAD_AS_GRAYSCALE_IMAGE):
+            if self.single_load_as_choice in (cellprofiler.image.LOAD_AS_COLOR_IMAGE,
+                                              cellprofiler.image.LOAD_AS_GRAYSCALE_IMAGE):
                 result += [self.single_rescale]
-                if self.single_rescale == INTENSITY_MANUAL:
+                if self.single_rescale == cellprofiler.image.INTENSITY_MANUAL:
                     result += [self.manual_rescale]
-        elif self.assignment_method == ASSIGN_RULES:
+        elif self.assignment_method == cellprofiler.image.ASSIGN_RULES:
             for assignment in self.assignments:
                 if assignment.can_remove:
                     result += [assignment.divider]
                 result += [assignment.rule_filter]
-                if assignment.load_as_choice == LOAD_AS_OBJECTS:
+                if assignment.load_as_choice == cellprofiler.image.LOAD_AS_OBJECTS:
                     result += [assignment.object_name]
                 else:
                     result += [assignment.image_name]
                 result += [assignment.load_as_choice]
-                if assignment.load_as_choice in (LOAD_AS_COLOR_IMAGE,
-                                                 LOAD_AS_GRAYSCALE_IMAGE):
+                if assignment.load_as_choice in (cellprofiler.image.LOAD_AS_COLOR_IMAGE,
+                                                 cellprofiler.image.LOAD_AS_GRAYSCALE_IMAGE):
                     result += [assignment.rescale]
-                    if assignment.rescale == INTENSITY_MANUAL:
+                    if assignment.rescale == cellprofiler.image.INTENSITY_MANUAL:
                         result += [self.manual_rescale]
-                elif assignment.load_as_choice == LOAD_AS_OBJECTS:
+                elif assignment.load_as_choice == cellprofiler.image.LOAD_AS_OBJECTS:
                     result += [assignment.should_save_outlines]
                     if assignment.should_save_outlines.value:
                         result += [assignment.save_outlines]
@@ -700,17 +528,17 @@ class NamesAndTypes(cellprofiler.module.Module):
                     result += [assignment.remover]
             for single_image in self.single_images:
                 result += [single_image.divider, single_image.image_plane]
-                if single_image.load_as_choice == LOAD_AS_OBJECTS:
+                if single_image.load_as_choice == cellprofiler.image.LOAD_AS_OBJECTS:
                     result += [single_image.object_name]
                 else:
                     result += [single_image.image_name]
                 result += [single_image.load_as_choice]
                 if single_image.load_as_choice in (
-                        LOAD_AS_COLOR_IMAGE, LOAD_AS_GRAYSCALE_IMAGE):
+                        cellprofiler.image.LOAD_AS_COLOR_IMAGE, cellprofiler.image.LOAD_AS_GRAYSCALE_IMAGE):
                     result += [single_image.rescale]
-                    if single_image.rescale == INTENSITY_MANUAL:
+                    if single_image.rescale == cellprofiler.image.INTENSITY_MANUAL:
                         result += [single_image.manual_rescale]
-                elif single_image.load_as_choice == LOAD_AS_OBJECTS:
+                elif single_image.load_as_choice == cellprofiler.image.LOAD_AS_OBJECTS:
                     result += [single_image.should_save_outlines]
                     if single_image.should_save_outlines.value:
                         result += [single_image.save_outlines]
@@ -718,18 +546,18 @@ class NamesAndTypes(cellprofiler.module.Module):
             result += [self.add_assignment_divider, self.add_assignment_button]
             if len(self.assignments) > 1:
                 result += [self.matching_choice]
-                if self.matching_method == MATCH_BY_METADATA:
+                if self.matching_method == cellprofiler.image.MATCH_BY_METADATA:
                     result += [self.join]
         result += [self.imageset_setting]
         return result
 
     def prepare_settings(self, setting_values):
-        n_assignments = int(setting_values[IDX_ASSIGNMENTS_COUNT])
+        n_assignments = int(setting_values[cellprofiler.image.IDX_ASSIGNMENTS_COUNT])
         if len(self.assignments) > n_assignments:
             del self.assignments[n_assignments:]
         while len(self.assignments) < n_assignments:
             self.add_assignment()
-        n_single_images = int(setting_values[IDX_SINGLE_IMAGES_COUNT])
+        n_single_images = int(setting_values[cellprofiler.image.IDX_SINGLE_IMAGES_COUNT])
         if len(self.single_images) > n_single_images:
             del self.single_images[n_single_images:]
         while len(self.single_images) < n_single_images:
@@ -737,7 +565,7 @@ class NamesAndTypes(cellprofiler.module.Module):
 
     def post_pipeline_load(self, pipeline):
         """Fix up metadata predicates after the pipeline loads"""
-        if self.assignment_method == ASSIGN_RULES:
+        if self.assignment_method == cellprofiler.image.ASSIGN_RULES:
             filters = []
             self.metadata_keys = []
             for group in self.assignments:
@@ -758,7 +586,7 @@ class NamesAndTypes(cellprofiler.module.Module):
                 # the filter's text to parse if the text is valid.
                 #
                 pattern = r"\(%s (?:%s|%s) ((?:\\.|[^ )])+)" % \
-                          (MetadataPredicate.SYMBOL,
+                          (cellprofiler.image.MetadataPredicate.SYMBOL,
                            cellprofiler.setting.Filter.DoesNotPredicate.SYMBOL,
                            cellprofiler.setting.Filter.DoesPredicate.SYMBOL)
                 text = rules_filter.value_text
@@ -767,13 +595,13 @@ class NamesAndTypes(cellprofiler.module.Module):
                     if match is None:
                         break
                     key = cellprofiler.setting.Filter.FilterPredicate.decode_symbol(
-                            match.groups()[0])
+                        match.groups()[0])
                     self.metadata_keys.append(key)
                     text = text[match.end():]
             self.metadata_keys = list(set(self.metadata_keys))
             for rules_filter in filters:
                 for predicate in rules_filter.predicates:
-                    if isinstance(predicate, MetadataPredicate):
+                    if isinstance(predicate, cellprofiler.image.MetadataPredicate):
                         predicate.set_metadata_keys(self.metadata_keys)
 
     def is_load_module(self):
@@ -798,17 +626,17 @@ class NamesAndTypes(cellprofiler.module.Module):
         """
         column_names = self.get_column_names()
         result = []
-        if self.matching_method == MATCH_BY_METADATA:
+        if self.matching_method == cellprofiler.image.MATCH_BY_METADATA:
             md_keys = self.join.parse()
             for column_name in column_names:
                 if all([k[column_name] is not None for k in md_keys]):
                     for k in md_keys:
                         if k[column_name] in (cellprofiler.measurement.C_FRAME, cellprofiler.measurement.C_SERIES):
                             result.append(
-                                    '_'.join((k[column_name], column_name)))
+                                '_'.join((k[column_name], column_name)))
                         else:
                             result.append(
-                                    '_'.join((cellprofiler.measurement.C_METADATA, k[column_name])))
+                                '_'.join((cellprofiler.measurement.C_METADATA, k[column_name])))
                     break
         return result
 
@@ -836,29 +664,29 @@ class NamesAndTypes(cellprofiler.module.Module):
         m.add_all_measurements(cellprofiler.measurement.IMAGE, cellprofiler.measurement.IMAGE_NUMBER,
                                image_numbers)
 
-        if self.assignment_method == ASSIGN_ALL:
+        if self.assignment_method == cellprofiler.image.ASSIGN_ALL:
             load_choices = [self.single_load_as_choice.value]
-        elif self.assignment_method == ASSIGN_RULES:
+        elif self.assignment_method == cellprofiler.image.ASSIGN_RULES:
             load_choices = [group.load_as_choice.value
                             for group in self.assignments + self.single_images]
-            if self.matching_method == MATCH_BY_METADATA:
+            if self.matching_method == cellprofiler.image.MATCH_BY_METADATA:
                 m.set_metadata_tags(self.get_metadata_features())
             else:
                 m.set_metadata_tags([cellprofiler.measurement.IMAGE_NUMBER])
 
         ImageSetChannelDescriptor = workspace.pipeline.ImageSetChannelDescriptor
         d = {
-            LOAD_AS_COLOR_IMAGE: ImageSetChannelDescriptor.CT_COLOR,
-            LOAD_AS_GRAYSCALE_IMAGE: ImageSetChannelDescriptor.CT_GRAYSCALE,
-            LOAD_AS_ILLUMINATION_FUNCTION: ImageSetChannelDescriptor.CT_FUNCTION,
-            LOAD_AS_MASK: ImageSetChannelDescriptor.CT_MASK,
-            LOAD_AS_OBJECTS: ImageSetChannelDescriptor.CT_OBJECTS}
+            cellprofiler.image.LOAD_AS_COLOR_IMAGE: ImageSetChannelDescriptor.CT_COLOR,
+            cellprofiler.image.LOAD_AS_GRAYSCALE_IMAGE: ImageSetChannelDescriptor.CT_GRAYSCALE,
+            cellprofiler.image.LOAD_AS_ILLUMINATION_FUNCTION: ImageSetChannelDescriptor.CT_FUNCTION,
+            cellprofiler.image.LOAD_AS_MASK: ImageSetChannelDescriptor.CT_MASK,
+            cellprofiler.image.LOAD_AS_OBJECTS: ImageSetChannelDescriptor.CT_OBJECTS}
         iscds = [ImageSetChannelDescriptor(column_name, d[load_choice])
                  for column_name, load_choice in zip(column_names, load_choices)]
         m.set_channel_descriptors(iscds)
 
         zip_dict = self.create_imageset_dictionary(
-                workspace, image_sets, image_set_channel_names)
+            workspace, image_sets, image_set_channel_names)
         env = javabridge.get_env()
         intcls = env.find_class("[I")
         strcls = env.find_class("[Ljava/lang/String;")
@@ -879,10 +707,10 @@ class NamesAndTypes(cellprofiler.module.Module):
                   channel=channel,
                   dict=zip_dict))
         m.add_all_measurements(
-                cellprofiler.measurement.IMAGE, M_IMAGE_SET,
-                [env.get_byte_array_elements(x)
-                 for x in env.get_object_array_elements(image_set_blobs)],
-                data_type=numpy.uint8)
+            cellprofiler.measurement.IMAGE, cellprofiler.image.M_IMAGE_SET,
+            [env.get_byte_array_elements(x)
+             for x in env.get_object_array_elements(image_set_blobs)],
+            data_type=numpy.uint8)
 
         urls, path_names, file_names, series, index, channel = [
             env.get_object_array_elements(x) for x in
@@ -914,7 +742,7 @@ class NamesAndTypes(cellprofiler.module.Module):
                 col_values = [
                     env.get_string(x)
                     for x in env.get_object_array_elements(
-                            jarray[image_set_column_idx])]
+                        jarray[image_set_column_idx])]
                 m.add_all_measurements(cellprofiler.measurement.IMAGE, ftr, col_values)
                 del col_values
 
@@ -922,7 +750,7 @@ class NamesAndTypes(cellprofiler.module.Module):
                                 (frame_feature, index),
                                 (channel_feature, channel)):
                 col_values = list(env.get_int_array_elements(
-                        jarray[image_set_column_idx]))
+                    jarray[image_set_column_idx]))
                 m.add_all_measurements(cellprofiler.measurement.IMAGE, ftr, col_values)
 
         #
@@ -931,7 +759,7 @@ class NamesAndTypes(cellprofiler.module.Module):
         # metadata items (see issue #971).
         #
         must_have = javabridge.make_map()
-        if self.matching_method == MATCH_BY_METADATA:
+        if self.matching_method == cellprofiler.image.MATCH_BY_METADATA:
             md_keys = self.join.parse()
             for column_name in column_names:
                 for k in md_keys:
@@ -942,16 +770,16 @@ class NamesAndTypes(cellprofiler.module.Module):
         # Make a Java map of metadata key to metadata comparator
         #
         comparators = javabridge.make_map(**dict(
-                [(key, self.get_metadata_comparator(workspace, key))
-                 for key in workspace.pipeline.get_available_metadata_keys()]))
+            [(key, self.get_metadata_comparator(workspace, key))
+             for key in workspace.pipeline.get_available_metadata_keys()]))
         #
         # Do the giant collation in Java
         #
         md_dict = javabridge.get_map_wrapper(javabridge.static_call(
-                "org/cellprofiler/imageset/MetadataUtils",
-                "getImageSetMetadata",
-                "(Ljava/util/List;Ljava/util/Map;Ljava/util/Map;)Ljava/util/Map;",
-                image_sets.o, must_have.o, comparators.o))
+            "org/cellprofiler/imageset/MetadataUtils",
+            "getImageSetMetadata",
+            "(Ljava/util/List;Ljava/util/Map;Ljava/util/Map;)Ljava/util/Map;",
+            image_sets.o, must_have.o, comparators.o))
         #
         # Populate the metadata measurements
         #
@@ -1003,11 +831,11 @@ class NamesAndTypes(cellprofiler.module.Module):
 
         returns either MATCH_BY_ORDER or MATCH_BY_METADATA
         """
-        if self.assignment_method == ASSIGN_ALL:
+        if self.assignment_method == cellprofiler.image.ASSIGN_ALL:
             # A single column, match in the simplest way
-            return MATCH_BY_ORDER
+            return cellprofiler.image.MATCH_BY_ORDER
         elif len(self.assignments) == 1:
-            return MATCH_BY_ORDER
+            return cellprofiler.image.MATCH_BY_ORDER
         return self.matching_choice.value
 
     def java_make_image_sets(self, workspace):
@@ -1022,16 +850,16 @@ class NamesAndTypes(cellprofiler.module.Module):
         #
         ipd_list = javabridge.make_list([ipd.jipd for ipd in ipds])
 
-        if self.assignment_method == ASSIGN_ALL:
+        if self.assignment_method == cellprofiler.image.ASSIGN_ALL:
             image_sets = self.java_make_image_sets_assign_all(
-                    workspace, ipd_list)
+                workspace, ipd_list)
             channels = {self.single_image_provider.value: 0}
-        elif self.matching_method == MATCH_BY_ORDER:
+        elif self.matching_method == cellprofiler.image.MATCH_BY_ORDER:
             image_sets = self.java_make_image_sets_by_order(
-                    workspace, ipd_list)
+                workspace, ipd_list)
             channels = {}
             for i, group in enumerate(self.assignments + self.single_images):
-                if group.load_as_choice == LOAD_AS_OBJECTS:
+                if group.load_as_choice == cellprofiler.image.LOAD_AS_OBJECTS:
                     channels[group.object_name.value] = i
                 else:
                     channels[group.image_name.value] = i
@@ -1053,9 +881,9 @@ class NamesAndTypes(cellprofiler.module.Module):
         for color.
         """
         script = "Packages.org.cellprofiler.imageset.PlaneStack.%s;"
-        if load_as_choice == LOAD_AS_COLOR_IMAGE:
+        if load_as_choice == cellprofiler.image.LOAD_AS_COLOR_IMAGE:
             return javabridge.run_script(script % "XYCAxes")
-        elif load_as_choice == LOAD_AS_OBJECTS:
+        elif load_as_choice == cellprofiler.image.LOAD_AS_OBJECTS:
             return javabridge.run_script(script % "XYOAxes")
         else:
             return javabridge.run_script(script % "XYAxes")
@@ -1072,7 +900,7 @@ class NamesAndTypes(cellprofiler.module.Module):
         """
         axes = self.get_axes_for_load_as_choice(group.load_as_choice.value)
         return javabridge.run_script(
-                script, dict(expr=group.rule_filter.value, name=name, axes=axes))
+            script, dict(expr=group.rule_filter.value, name=name, axes=axes))
 
     def get_metadata_comparator(self, workspace, key):
         """Get a Java Comparator<String> for a metadata key"""
@@ -1134,7 +962,7 @@ class NamesAndTypes(cellprofiler.module.Module):
                     anchor_cf = self.make_channel_filter(group, name)
         if anchor_cf is None:
             raise ValueError(
-                    "Please choose valid metadata keys for at least one channel in the metadata matcher")
+                "Please choose valid metadata keys for at least one channel in the metadata matcher")
         channels = dict([(c, 0 if i == anchor_channel
         else i + 1 if i < anchor_channel
         else i) for i, c in enumerate(channel_names)])
@@ -1143,16 +971,16 @@ class NamesAndTypes(cellprofiler.module.Module):
         #
         jkeys = javabridge.make_list(anchor_keys)
         jcomparators = javabridge.make_list([
-                                       self.get_metadata_comparator(workspace, key)
-                                       for key in anchor_keys])
+                                                self.get_metadata_comparator(workspace, key)
+                                                for key in anchor_keys])
 
         script = """
         importPackage(Packages.org.cellprofiler.imageset);
         new Joiner(anchor_cf, keys, comparators)
         """
         joiner = javabridge.run_script(
-                script, dict(anchor_cf=anchor_cf, keys=jkeys,
-                             comparators=jcomparators))
+            script, dict(anchor_cf=anchor_cf, keys=jkeys,
+                         comparators=jcomparators))
         #
         # Make the column filters and joins for the others
         #
@@ -1164,7 +992,7 @@ class NamesAndTypes(cellprofiler.module.Module):
             for j, join in enumerate(joins):
                 if join.get(name) is not None:
                     joining_keys.add(self.make_metadata_key_pair(
-                            workspace, anchor_keys[j], join[name]))
+                        workspace, anchor_keys[j], join[name]))
             javabridge.run_script("""
             joiner.addChannel(cf, joiningKeys);
             """, dict(joiner=joiner, cf=cf, joiningKeys=joining_keys))
@@ -1187,7 +1015,7 @@ class NamesAndTypes(cellprofiler.module.Module):
                    the IPDs to be composed into channels.
         """
         axes = self.get_axes_for_load_as_choice(
-                self.single_load_as_choice.value)
+            self.single_load_as_choice.value)
         name = self.single_image_provider.value
         errors = javabridge.make_list()
         image_sets = javabridge.run_script("""
@@ -1209,8 +1037,8 @@ class NamesAndTypes(cellprofiler.module.Module):
                    the IPDs to be composed into channels.
         """
         channel_filters = javabridge.make_list(
-                [self.make_channel_filter(group, name)
-                 for group, name in zip(self.assignments, self.get_column_names())])
+            [self.make_channel_filter(group, name)
+             for group, name in zip(self.assignments, self.get_column_names())])
         errors = javabridge.make_list()
         image_sets = javabridge.run_script("""
         importPackage(Packages.org.cellprofiler.imageset);
@@ -1232,17 +1060,17 @@ class NamesAndTypes(cellprofiler.module.Module):
             series = group.image_plane.series or 0
             index = group.image_plane.index or 0
             axes = self.get_axes_for_load_as_choice(group.load_as_choice.value)
-            if group.load_as_choice == LOAD_AS_COLOR_IMAGE:
+            if group.load_as_choice == cellprofiler.image.LOAD_AS_COLOR_IMAGE:
                 field_name = "INTERLEAVED"
-            elif group.load_as_choice == LOAD_AS_OBJECTS:
+            elif group.load_as_choice == cellprofiler.image.LOAD_AS_OBJECTS:
                 field_name = "OBJECT_PLANES"
             else:
                 field_name = "ALWAYS_MONOCHROME"
             channel = javabridge.get_static_field(
-                    "org/cellprofiler/imageset/ImagePlane", field_name, "I")
+                "org/cellprofiler/imageset/ImagePlane", field_name, "I")
             stack = javabridge.make_instance(
-                    "org/cellprofiler/imageset/ImagePlaneDetailsStack",
-                    "([Lnet/imglib2/meta/TypedAxis;)V", axes)
+                "org/cellprofiler/imageset/ImagePlaneDetailsStack",
+                "([Lnet/imglib2/meta/TypedAxis;)V", axes)
             javabridge.run_script("""
             importPackage(Packages.org.cellprofiler.imageset);
             importClass(java.net.URI);
@@ -1263,7 +1091,7 @@ class NamesAndTypes(cellprofiler.module.Module):
             }
             """,
                                   dict(url=url, series=series, index=index, stack=stack,
-                              channel=channel, image_sets=image_sets))
+                                       channel=channel, image_sets=image_sets))
 
     def handle_errors(self, errors):
         """Handle UI presentation of errors and user's response
@@ -1278,21 +1106,21 @@ class NamesAndTypes(cellprofiler.module.Module):
 
         for error in errors:
             key = " / ".join(javabridge.get_collection_wrapper(
-                    javabridge.call(error, "getKey", "()Ljava/util/List;"), javabridge.to_string))
+                javabridge.call(error, "getKey", "()Ljava/util/List;"), javabridge.to_string))
             echannel = javabridge.call(error, "getChannelName", "()Ljava/lang/String;")
             message = javabridge.call(error, "getMessage", "()Ljava/lang/String;")
-            logger.warning(
-                    "Error for image set, channel=%s, metadata=%s: %s" %
-                    (str(key), echannel, message))
+            cellprofiler.image.logger.warning(
+                "Error for image set, channel=%s, metadata=%s: %s" %
+                (str(key), echannel, message))
         if not cellprofiler.preferences.get_headless():
             msg = (
                       "Warning: %d image set errors found (see log for details)\n"
                       "Do you want to continue?") % (errors.size())
             import wx
             result = wx.MessageBox(
-                    msg,
-                    caption="NamesAndTypes: matching by order error",
-                    style=wx.YES_NO | wx.ICON_QUESTION)
+                msg,
+                caption="NamesAndTypes: matching by order error",
+                style=wx.YES_NO | wx.ICON_QUESTION)
             if result == wx.NO:
                 return False
         return True
@@ -1312,21 +1140,21 @@ class NamesAndTypes(cellprofiler.module.Module):
             # Pick somewhere between four and 8 image sets from the whole
             dlist = javabridge.make_list(image_sets[::int(len(image_sets) / 4)])
         cd = javabridge.run_script(
-                """importPackage(Packages.org.cellprofiler.imageset);
+            """importPackage(Packages.org.cellprofiler.imageset);
                    ImageSet.createCompressionDictionary(image_sets, channel_names);
                 """,
-                dict(image_sets=dlist,
-                     channel_names=javabridge.make_list(channel_names).o))
+            dict(image_sets=dlist,
+                 channel_names=javabridge.make_list(channel_names).o))
         m = workspace.measurements
         np_d = javabridge.get_env().get_byte_array_elements(cd)
-        m[cellprofiler.measurement.EXPERIMENT, M_IMAGE_SET_ZIP_DICTIONARY, 0, numpy.uint8] = np_d
+        m[cellprofiler.measurement.EXPERIMENT, cellprofiler.image.M_IMAGE_SET_ZIP_DICTIONARY, 0, numpy.uint8] = np_d
         return cd
 
     def get_imageset_dictionary(self, workspace):
         """Returns the imageset dictionary as a Java byte array"""
         m = workspace.measurements
-        if m.has_feature(cellprofiler.measurement.EXPERIMENT, M_IMAGE_SET_ZIP_DICTIONARY):
-            d = m[cellprofiler.measurement.EXPERIMENT, M_IMAGE_SET_ZIP_DICTIONARY]
+        if m.has_feature(cellprofiler.measurement.EXPERIMENT, cellprofiler.image.M_IMAGE_SET_ZIP_DICTIONARY):
+            d = m[cellprofiler.measurement.EXPERIMENT, cellprofiler.image.M_IMAGE_SET_ZIP_DICTIONARY]
             return javabridge.get_env().make_byte_array(d.astype(numpy.uint8))
         return None
 
@@ -1334,14 +1162,14 @@ class NamesAndTypes(cellprofiler.module.Module):
         """Get the Java ImageSet for the current image number"""
         compression_dictionary = self.get_imageset_dictionary(workspace)
         m = workspace.measurements
-        blob = m[cellprofiler.measurement.IMAGE, M_IMAGE_SET]
+        blob = m[cellprofiler.measurement.IMAGE, cellprofiler.image.M_IMAGE_SET]
         if blob is None:
             return None
         jblob = javabridge.get_env().make_byte_array(blob)
         column_names = javabridge.make_list(self.get_column_names())
-        if self.assignment_method == ASSIGN_ALL:
+        if self.assignment_method == cellprofiler.image.ASSIGN_ALL:
             load_choices = [self.single_load_as_choice.value]
-        elif self.assignment_method == ASSIGN_RULES:
+        elif self.assignment_method == cellprofiler.image.ASSIGN_RULES:
             load_choices = [group.load_as_choice.value
                             for group in self.assignments + self.single_images]
         axes = javabridge.make_list([self.get_axes_for_load_as_choice(load_as_choice)
@@ -1364,10 +1192,10 @@ class NamesAndTypes(cellprofiler.module.Module):
         if single_image.image_plane.url is None:
             raise ValueError("Single image is not yet specified")
         ipd = cellprofiler.pipeline.find_image_plane_details(cellprofiler.pipeline.ImagePlaneDetails(
-                single_image.image_plane.url,
-                single_image.image_plane.series,
-                single_image.image_plane.index,
-                single_image.image_plane.channel), ipds)
+            single_image.image_plane.url,
+            single_image.image_plane.series,
+            single_image.image_plane.index,
+            single_image.image_plane.channel), ipds)
         if ipd is None:
             raise ValueError("Could not find single image %s in file list",
                              single_image.image_plane.url)
@@ -1380,14 +1208,14 @@ class NamesAndTypes(cellprofiler.module.Module):
         fn_alter_path - call this function to alter any path to target
                         operating environment
         """
-        if self.assignment_method == ASSIGN_ALL:
+        if self.assignment_method == cellprofiler.image.ASSIGN_ALL:
             names = [self.single_image_provider.value]
             is_image = [True]
         else:
             names = []
             is_image = []
             for group in self.assignments + self.single_images:
-                if group.load_as_choice == LOAD_AS_OBJECTS:
+                if group.load_as_choice == cellprofiler.image.LOAD_AS_OBJECTS:
                     names.append(group.object_name.value)
                     is_image.append(False)
                 else:
@@ -1395,7 +1223,7 @@ class NamesAndTypes(cellprofiler.module.Module):
                     is_image.append(True)
         for name, iz_image in zip(names, is_image):
             workspace.measurements.alter_path_for_create_batch(
-                    name, iz_image, fn_alter_path)
+                name, iz_image, fn_alter_path)
 
     @classmethod
     def is_input_module(self):
@@ -1403,18 +1231,18 @@ class NamesAndTypes(cellprofiler.module.Module):
 
     def run(self, workspace):
         image_set = self.get_imageset(workspace)
-        if self.assignment_method == ASSIGN_ALL:
+        if self.assignment_method == cellprofiler.image.ASSIGN_ALL:
             name = self.single_image_provider.value
             load_choice = self.single_load_as_choice.value
             rescale = self.single_rescale.value
-            if rescale == INTENSITY_MANUAL:
+            if rescale == cellprofiler.image.INTENSITY_MANUAL:
                 rescale = self.manual_rescale.value
             self.add_image_provider(workspace, name, load_choice,
                                     rescale, image_set[0])
         else:
             for group, stack in zip(self.assignments + self.single_images,
                                     image_set):
-                if group.load_as_choice == LOAD_AS_OBJECTS:
+                if group.load_as_choice == cellprofiler.image.LOAD_AS_OBJECTS:
                     self.add_objects(workspace,
                                      group.object_name.value,
                                      group.should_save_outlines.value,
@@ -1422,7 +1250,7 @@ class NamesAndTypes(cellprofiler.module.Module):
                                      stack)
                 else:
                     rescale = group.rescale.value
-                    if rescale == INTENSITY_MANUAL:
+                    if rescale == cellprofiler.image.INTENSITY_MANUAL:
                         rescale = group.manual_rescale.value
                     self.add_image_provider(workspace,
                                             group.image_name.value,
@@ -1442,9 +1270,9 @@ class NamesAndTypes(cellprofiler.module.Module):
                   or a floating point manual value.
         stack - the ImagePlaneDetailsStack that describes the image's planes
         """
-        if rescale == INTENSITY_RESCALING_BY_METADATA:
+        if rescale == cellprofiler.image.INTENSITY_RESCALING_BY_METADATA:
             rescale = True
-        elif rescale == INTENSITY_RESCALING_BY_DATATYPE:
+        elif rescale == cellprofiler.image.INTENSITY_RESCALING_BY_DATATYPE:
             rescale = False
         # else it's a manual rescale.
         num_dimensions = javabridge.call(stack, "numDimensions", "()I")
@@ -1452,7 +1280,7 @@ class NamesAndTypes(cellprofiler.module.Module):
             coords = javabridge.get_env().make_int_array(numpy.zeros(2, numpy.int32))
             ipds = [
                 cellprofiler.pipeline.ImagePlaneDetails(
-                        javabridge.call(stack, "get", "([I)Ljava/lang/Object;", coords))]
+                    javabridge.call(stack, "get", "([I)Ljava/lang/Object;", coords))]
         else:
             coords = numpy.zeros(num_dimensions, numpy.int32)
             ipds = []
@@ -1460,13 +1288,13 @@ class NamesAndTypes(cellprofiler.module.Module):
                 coords[2] = i
                 jcoords = javabridge.get_env().make_int_array(coords)
                 ipds.append(cellprofiler.pipeline.ImagePlaneDetails(
-                        javabridge.call(stack, "get", "([I)Ljava/lang/Object;", coords)))
+                    javabridge.call(stack, "get", "([I)Ljava/lang/Object;", coords)))
 
         if len(ipds) == 1:
             interleaved = javabridge.get_static_field(
-                    "org/cellprofiler/imageset/ImagePlane", "INTERLEAVED", "I")
+                "org/cellprofiler/imageset/ImagePlane", "INTERLEAVED", "I")
             monochrome = javabridge.get_static_field(
-                    "org/cellprofiler/imageset/ImagePlane", "ALWAYS_MONOCHROME", "I")
+                "org/cellprofiler/imageset/ImagePlane", "ALWAYS_MONOCHROME", "I")
             ipd = ipds[0]
             url = ipd.url
             series = ipd.series
@@ -1479,8 +1307,8 @@ class NamesAndTypes(cellprofiler.module.Module):
                 if index == 0:
                     index = None
             self.add_simple_image(
-                    workspace, name, load_choice, rescale, url,
-                    series, index, channel)
+                workspace, name, load_choice, rescale, url,
+                series, index, channel)
         elif all([ipd.url == ipds[0].url for ipd in ipds[1:]]):
             # Can load a simple image with a vector of series/index/channel
             url = ipds[0].url
@@ -1488,8 +1316,8 @@ class NamesAndTypes(cellprofiler.module.Module):
             index = [ipd.index for ipd in ipds]
             channel = [None if ipd.channel < 0 else ipd.channel for ipd in ipds]
             self.add_simple_image(
-                    workspace, name, load_choice, rescale, url,
-                    series, index, channel)
+                workspace, name, load_choice, rescale, url,
+                series, index, channel)
         else:
             # Different URLs - someone is a clever sadist
             # At this point, I believe there's no way to do this using
@@ -1501,16 +1329,16 @@ class NamesAndTypes(cellprofiler.module.Module):
     def add_simple_image(self, workspace, name, load_choice, rescale, url, series, index, channel):
         m = workspace.measurements
         url = m.alter_url_post_create_batch(url)
-        if load_choice == LOAD_AS_COLOR_IMAGE:
-            provider = ColorImageProvider(name, url, series, index, rescale)
-        elif load_choice == LOAD_AS_GRAYSCALE_IMAGE:
-            provider = MonochromeImageProvider(name, url, series, index,
-                                               channel, rescale)
-        elif load_choice == LOAD_AS_ILLUMINATION_FUNCTION:
-            provider = MonochromeImageProvider(name, url, series, index,
-                                               channel, False)
-        elif load_choice == LOAD_AS_MASK:
-            provider = MaskImageProvider(name, url, series, index, channel)
+        if load_choice == cellprofiler.image.LOAD_AS_COLOR_IMAGE:
+            provider = cellprofiler.image.ColorImageProvider(name, url, series, index, rescale)
+        elif load_choice == cellprofiler.image.LOAD_AS_GRAYSCALE_IMAGE:
+            provider = cellprofiler.image.MonochromeImageProvider(name, url, series, index,
+                                                                  channel, rescale)
+        elif load_choice == cellprofiler.image.LOAD_AS_ILLUMINATION_FUNCTION:
+            provider = cellprofiler.image.MonochromeImageProvider(name, url, series, index,
+                                                                  channel, False)
+        elif load_choice == cellprofiler.image.LOAD_AS_MASK:
+            provider = cellprofiler.image.MaskImageProvider(name, url, series, index, channel)
         workspace.image_set.providers.append(provider)
         self.add_provider_measurements(provider, workspace.measurements,
                                        cellprofiler.measurement.IMAGE)
@@ -1571,7 +1399,7 @@ class NamesAndTypes(cellprofiler.module.Module):
             series = None
             coords = javabridge.get_env().make_int_array(numpy.zeros(2, int))
             ipd = cellprofiler.pipeline.ImagePlaneDetails(
-                    javabridge.call(stack, "get", "([I)Ljava/lang/Object;", coords))
+                javabridge.call(stack, "get", "([I)Ljava/lang/Object;", coords))
             url = ipd.url
         else:
             coords = numpy.zeros(num_dimensions, numpy.int32)
@@ -1580,10 +1408,10 @@ class NamesAndTypes(cellprofiler.module.Module):
                 coords[2] = i
                 jcoords = javabridge.get_env().make_int_array(coords)
                 ipds.append(cellprofiler.pipeline.ImagePlaneDetails(
-                        javabridge.call(stack, "get", "([I)Ljava/lang/Object;", coords)))
+                    javabridge.call(stack, "get", "([I)Ljava/lang/Object;", coords)))
             OBJECTS_CHANNEL = javabridge.get_static_field(
-                    "org/cellprofiler/imageset/ImagePlane",
-                    "OBJECT_PLANES", "I")
+                "org/cellprofiler/imageset/ImagePlane",
+                "OBJECT_PLANES", "I")
             if len(ipds) == 1 and ipds[0].channel == OBJECTS_CHANNEL and \
                             ipds[0].series == 0 and ipds[0].index == 0:
                 # Most likely metadata has not been read.
@@ -1594,13 +1422,13 @@ class NamesAndTypes(cellprofiler.module.Module):
             else:
                 if any([ipd.url != ipds[0].url for ipd in ipds[1:]]):
                     raise NotImplementedError(
-                            "Planes from different files not yet supported.")
+                        "Planes from different files not yet supported.")
                 index = [ipd.index for ipd in ipds]
                 series = [ipd.series for ipd in ipds]
                 url = ipds[0].url
 
         url = workspace.measurements.alter_url_post_create_batch(url)
-        provider = ObjectsImageProvider(name, url, series, index)
+        provider = cellprofiler.image.ObjectsImageProvider(name, url, series, index)
         self.add_provider_measurements(provider, workspace.measurements,
                                        cellprofiler.measurement.OBJECT)
         image = provider.provide_image(workspace.image_set)
@@ -1618,8 +1446,8 @@ class NamesAndTypes(cellprofiler.module.Module):
                 shape = plane.shape
                 i, j = numpy.mgrid[0:shape[0], 0:shape[1]]
                 ijv = numpy.vstack(
-                        (ijv,
-                         numpy.column_stack([x[plane != 0] for x in (i, j, plane)])))
+                    (ijv,
+                     numpy.column_stack([x[plane != 0] for x in (i, j, plane)])))
             o.set_ijv(ijv, shape)
             add_object_location_measurements_ijv(workspace.measurements,
                                                  name, o.ijv, o.count)
@@ -1648,37 +1476,37 @@ class NamesAndTypes(cellprofiler.module.Module):
         self.update_all_metadata_predicates()
 
     def update_all_metadata_predicates(self):
-        if self.assignment_method == ASSIGN_RULES:
+        if self.assignment_method == cellprofiler.image.ASSIGN_RULES:
             for group in self.assignments:
                 rules_filter = group.rule_filter
                 for predicate in rules_filter.predicates:
-                    if isinstance(predicate, MetadataPredicate):
+                    if isinstance(predicate, cellprofiler.image.MetadataPredicate):
                         predicate.set_metadata_keys(self.metadata_keys)
 
     def get_image_names(self):
         """Return the names of all images produced by this module"""
-        if self.assignment_method == ASSIGN_ALL:
+        if self.assignment_method == cellprofiler.image.ASSIGN_ALL:
             return [self.single_image_provider.value]
-        elif self.assignment_method == ASSIGN_RULES:
+        elif self.assignment_method == cellprofiler.image.ASSIGN_RULES:
             return [group.image_name.value
                     for group in self.assignments + self.single_images
-                    if group.load_as_choice != LOAD_AS_OBJECTS]
+                    if group.load_as_choice != cellprofiler.image.LOAD_AS_OBJECTS]
         return []
 
     def get_object_names(self):
         """Return the names of all objects produced by this module"""
-        if self.assignment_method == ASSIGN_RULES:
+        if self.assignment_method == cellprofiler.image.ASSIGN_RULES:
             return [group.object_name.value
                     for group in self.assignments + self.single_images
-                    if group.load_as_choice == LOAD_AS_OBJECTS]
+                    if group.load_as_choice == cellprofiler.image.LOAD_AS_OBJECTS]
         return []
 
     def get_column_names(self):
-        if self.assignment_method == ASSIGN_ALL:
+        if self.assignment_method == cellprofiler.image.ASSIGN_ALL:
             return self.get_image_names()
         column_names = []
         for group in self.assignments + self.single_images:
-            if group.load_as_choice == LOAD_AS_OBJECTS:
+            if group.load_as_choice == cellprofiler.image.LOAD_AS_OBJECTS:
                 column_names.append(group.object_name.value)
             else:
                 column_names.append(group.image_name.value)
@@ -1698,10 +1526,14 @@ class NamesAndTypes(cellprofiler.module.Module):
                         "_".join([category, image_name]),
                         coltype)
                        for category, coltype in (
-                           (cellprofiler.measurement.cellprofiler.measurement.C_FILE_NAME, cellprofiler.measurement.COLTYPE_VARCHAR_FILE_NAME),
-                           (cellprofiler.measurement.cellprofiler.measurement.C_PATH_NAME, cellprofiler.measurement.COLTYPE_VARCHAR_PATH_NAME),
-                           (cellprofiler.measurement.cellprofiler.measurement.C_URL, cellprofiler.measurement.COLTYPE_VARCHAR_PATH_NAME),
-                           (cellprofiler.measurement.C_MD5_DIGEST, cellprofiler.measurement.COLTYPE_VARCHAR_FORMAT % 32),
+                           (cellprofiler.measurement.cellprofiler.measurement.C_FILE_NAME,
+                            cellprofiler.measurement.COLTYPE_VARCHAR_FILE_NAME),
+                           (cellprofiler.measurement.cellprofiler.measurement.C_PATH_NAME,
+                            cellprofiler.measurement.COLTYPE_VARCHAR_PATH_NAME),
+                           (cellprofiler.measurement.cellprofiler.measurement.C_URL,
+                            cellprofiler.measurement.COLTYPE_VARCHAR_PATH_NAME),
+                           (
+                           cellprofiler.measurement.C_MD5_DIGEST, cellprofiler.measurement.COLTYPE_VARCHAR_FORMAT % 32),
                            (cellprofiler.measurement.C_SCALING, cellprofiler.measurement.COLTYPE_FLOAT),
                            (cellprofiler.measurement.C_WIDTH, cellprofiler.measurement.COLTYPE_INTEGER),
                            (cellprofiler.measurement.C_HEIGHT, cellprofiler.measurement.COLTYPE_INTEGER),
@@ -1713,11 +1545,15 @@ class NamesAndTypes(cellprofiler.module.Module):
                         "_".join([category, object_name]),
                         coltype)
                        for category, coltype in (
-                           (cellprofiler.measurement.cellprofiler.measurement.C_OBJECTS_FILE_NAME, cellprofiler.measurement.COLTYPE_VARCHAR_FILE_NAME),
-                           (cellprofiler.measurement.cellprofiler.measurement.C_OBJECTS_PATH_NAME, cellprofiler.measurement.COLTYPE_VARCHAR_PATH_NAME),
-                           (cellprofiler.measurement.cellprofiler.measurement.C_OBJECTS_URL, cellprofiler.measurement.COLTYPE_VARCHAR_PATH_NAME),
+                           (cellprofiler.measurement.cellprofiler.measurement.C_OBJECTS_FILE_NAME,
+                            cellprofiler.measurement.COLTYPE_VARCHAR_FILE_NAME),
+                           (cellprofiler.measurement.cellprofiler.measurement.C_OBJECTS_PATH_NAME,
+                            cellprofiler.measurement.COLTYPE_VARCHAR_PATH_NAME),
+                           (cellprofiler.measurement.cellprofiler.measurement.C_OBJECTS_URL,
+                            cellprofiler.measurement.COLTYPE_VARCHAR_PATH_NAME),
                            (cellprofiler.identify.C_COUNT, cellprofiler.measurement.COLTYPE_INTEGER),
-                           (cellprofiler.measurement.C_MD5_DIGEST, cellprofiler.measurement.COLTYPE_VARCHAR_FORMAT % 32),
+                           (
+                           cellprofiler.measurement.C_MD5_DIGEST, cellprofiler.measurement.COLTYPE_VARCHAR_FORMAT % 32),
                            (cellprofiler.measurement.C_WIDTH, cellprofiler.measurement.COLTYPE_INTEGER),
                            (cellprofiler.measurement.C_HEIGHT, cellprofiler.measurement.COLTYPE_INTEGER),
                            (cellprofiler.measurement.C_OBJECTS_SERIES, cellprofiler.measurement.COLTYPE_INTEGER),
@@ -1735,12 +1571,14 @@ class NamesAndTypes(cellprofiler.module.Module):
             has_images = any(self.get_image_names())
             has_objects = any(self.get_object_names())
             if has_images:
-                result += [cellprofiler.measurement.C_FILE_NAME, cellprofiler.measurement.C_PATH_NAME, cellprofiler.measurement.C_URL]
+                result += [cellprofiler.measurement.C_FILE_NAME, cellprofiler.measurement.C_PATH_NAME,
+                           cellprofiler.measurement.C_URL]
             if has_objects:
                 result += [cellprofiler.measurement.C_OBJECTS_FILE_NAME, cellprofiler.measurement.C_OBJECTS_PATH_NAME,
                            cellprofiler.measurement.C_OBJECTS_URL, cellprofiler.identify.C_COUNT]
             result += [cellprofiler.measurement.C_MD5_DIGEST, cellprofiler.measurement.C_SCALING,
-                       cellprofiler.measurement.C_HEIGHT, cellprofiler.measurement.C_WIDTH, cellprofiler.measurement.C_SERIES,
+                       cellprofiler.measurement.C_HEIGHT, cellprofiler.measurement.C_WIDTH,
+                       cellprofiler.measurement.C_SERIES,
                        cellprofiler.measurement.C_FRAME]
         elif object_name in self.get_object_names():
             result += [cellprofiler.identify.C_LOCATION, cellprofiler.identify.C_NUMBER]
@@ -1750,10 +1588,12 @@ class NamesAndTypes(cellprofiler.module.Module):
         image_names = self.get_image_names()
         object_names = self.get_object_names()
         if object_name == cellprofiler.measurement.IMAGE:
-            if category in (cellprofiler.measurement.C_FILE_NAME, cellprofiler.measurement.C_PATH_NAME, cellprofiler.measurement.C_URL):
+            if category in (
+            cellprofiler.measurement.C_FILE_NAME, cellprofiler.measurement.C_PATH_NAME, cellprofiler.measurement.C_URL):
                 return image_names
-            elif category in (cellprofiler.measurement.C_OBJECTS_FILE_NAME, cellprofiler.measurement.C_OBJECTS_PATH_NAME,
-                              cellprofiler.measurement.C_OBJECTS_URL):
+            elif category in (
+            cellprofiler.measurement.C_OBJECTS_FILE_NAME, cellprofiler.measurement.C_OBJECTS_PATH_NAME,
+            cellprofiler.measurement.C_OBJECTS_URL):
                 return object_names
             elif category == cellprofiler.identify.C_COUNT:
                 return object_names
@@ -1774,8 +1614,8 @@ class NamesAndTypes(cellprofiler.module.Module):
         Make sure the metadata matcher has at least one completely
         specified channel.
         """
-        if self.assignment_method == ASSIGN_RULES \
-                and self.matching_choice == MATCH_BY_METADATA \
+        if self.assignment_method == cellprofiler.image.ASSIGN_RULES \
+                and self.matching_choice == cellprofiler.image.MATCH_BY_METADATA \
                 and len(self.assignments) > 1:
             joins = self.join.parse()
             for name in self.get_column_names():
@@ -1785,45 +1625,45 @@ class NamesAndTypes(cellprofiler.module.Module):
                 else:
                     return
             raise cellprofiler.setting.ValidationError(
-                    "At least one channel must have all metadata keys specified. "
-                    "All channels have at least one metadata key of (None).", self.join)
+                "At least one channel must have all metadata keys specified. "
+                "All channels have at least one metadata key of (None).", self.join)
 
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
         if variable_revision_number == 1:
             # Changed naming of assignment methods
-            setting_values[0] = ASSIGN_ALL if setting_values[0] == "Assign all images" else ASSIGN_RULES
+            setting_values[0] = cellprofiler.image.ASSIGN_ALL if setting_values[0] == "Assign all images" else cellprofiler.image.ASSIGN_RULES
             variable_revision_number = 2
 
         if variable_revision_number == 2:
             # Added single rescale and assignment method rescale
-            n_assignments = int(setting_values[IDX_ASSIGNMENTS_COUNT_V2])
-            new_setting_values = setting_values[:IDX_ASSIGNMENTS_COUNT_V2] + [
-                "Yes", setting_values[IDX_ASSIGNMENTS_COUNT_V2]]
-            idx = IDX_ASSIGNMENTS_COUNT_V2 + 1
+            n_assignments = int(setting_values[cellprofiler.image.IDX_ASSIGNMENTS_COUNT_V2])
+            new_setting_values = setting_values[:cellprofiler.image.IDX_ASSIGNMENTS_COUNT_V2] + [
+                "Yes", setting_values[cellprofiler.image.IDX_ASSIGNMENTS_COUNT_V2]]
+            idx = cellprofiler.image.IDX_ASSIGNMENTS_COUNT_V2 + 1
             for i in range(n_assignments):
-                next_idx = idx + NUM_ASSIGNMENT_SETTINGS_V2
+                next_idx = idx + cellprofiler.image.NUM_ASSIGNMENT_SETTINGS_V2
                 new_setting_values += setting_values[idx:next_idx]
-                new_setting_values.append(INTENSITY_RESCALING_BY_METADATA)
+                new_setting_values.append(cellprofiler.image.INTENSITY_RESCALING_BY_METADATA)
                 idx = next_idx
             setting_values = new_setting_values
             variable_revision_number = 3
         if variable_revision_number == 3:
             # Added object outlines
-            n_assignments = int(setting_values[IDX_ASSIGNMENTS_COUNT_V3])
-            new_setting_values = setting_values[:IDX_FIRST_ASSIGNMENT_V3]
+            n_assignments = int(setting_values[cellprofiler.image.IDX_ASSIGNMENTS_COUNT_V3])
+            new_setting_values = setting_values[:cellprofiler.image.IDX_FIRST_ASSIGNMENT_V3]
             for i in range(n_assignments):
-                idx = IDX_FIRST_ASSIGNMENT_V3 + NUM_ASSIGNMENT_SETTINGS_V3 * i
+                idx = cellprofiler.image.IDX_FIRST_ASSIGNMENT_V3 + cellprofiler.image.NUM_ASSIGNMENT_SETTINGS_V3 * i
                 new_setting_values += setting_values[
-                                      idx:(idx + NUM_ASSIGNMENT_SETTINGS_V3)]
+                                      idx:(idx + cellprofiler.image.NUM_ASSIGNMENT_SETTINGS_V3)]
                 new_setting_values += [cellprofiler.setting.NO, "LoadedObjects"]
             setting_values = new_setting_values
             variable_revision_number = 4
 
         if variable_revision_number == 4:
             # Added single images (+ single image count)
-            setting_values = setting_values[:IDX_SINGLE_IMAGES_COUNT_V5] + \
-                             ["0"] + setting_values[IDX_SINGLE_IMAGES_COUNT_V5:]
+            setting_values = setting_values[:cellprofiler.image.IDX_SINGLE_IMAGES_COUNT_V5] + \
+                             ["0"] + setting_values[cellprofiler.image.IDX_SINGLE_IMAGES_COUNT_V5:]
             variable_revision_number = 5
         if variable_revision_number == 5:
             #
@@ -1833,54 +1673,43 @@ class NamesAndTypes(cellprofiler.module.Module):
             # Added manual_rescale
             #
             new_setting_values = setting_values[
-                                 :IDX_FIRST_ASSIGNMENT_V5] + [DEFAULT_MANUAL_RESCALE]
-            n_assignments = int(setting_values[IDX_ASSIGNMENTS_COUNT_V5])
-            n_single_images = int(setting_values[IDX_SINGLE_IMAGES_COUNT_V5])
+                                 :cellprofiler.image.IDX_FIRST_ASSIGNMENT_V5] + [
+                                     cellprofiler.image.DEFAULT_MANUAL_RESCALE]
+            n_assignments = int(setting_values[cellprofiler.image.IDX_ASSIGNMENTS_COUNT_V5])
+            n_single_images = int(setting_values[cellprofiler.image.IDX_SINGLE_IMAGES_COUNT_V5])
             for i in range(n_assignments):
-                offset = IDX_FIRST_ASSIGNMENT_V5 + \
-                         NUM_ASSIGNMENT_SETTINGS_V5 * i
+                offset = cellprofiler.image.IDX_FIRST_ASSIGNMENT_V5 + \
+                         cellprofiler.image.NUM_ASSIGNMENT_SETTINGS_V5 * i
                 new_setting_values += \
-                    setting_values[offset: offset + OFF_LOAD_AS_CHOICE_V5]
-                load_as = setting_values[offset + OFF_LOAD_AS_CHOICE_V5]
-                if load_as == LOAD_AS_MASK_V5A:
-                    load_as = LOAD_AS_MASK
+                    setting_values[offset: offset + cellprofiler.image.OFF_LOAD_AS_CHOICE_V5]
+                load_as = setting_values[offset + cellprofiler.image.OFF_LOAD_AS_CHOICE_V5]
+                if load_as == cellprofiler.image.LOAD_AS_MASK_V5A:
+                    load_as = cellprofiler.image.LOAD_AS_MASK
                 new_setting_values += [load_as] + \
-                                      setting_values[offset + OFF_LOAD_AS_CHOICE_V5 + 1:
-                                      offset + NUM_ASSIGNMENT_SETTINGS_V5] + \
-                                      [DEFAULT_MANUAL_RESCALE]
+                                      setting_values[offset + cellprofiler.image.OFF_LOAD_AS_CHOICE_V5 + 1:
+                                      offset + cellprofiler.image.NUM_ASSIGNMENT_SETTINGS_V5] + \
+                                      [cellprofiler.image.DEFAULT_MANUAL_RESCALE]
             for i in range(n_single_images):
-                offset = IDX_FIRST_ASSIGNMENT_V5 + \
-                         NUM_ASSIGNMENT_SETTINGS_V5 * n_assignments + \
-                         NUM_SINGLE_IMAGE_SETTINGS_V5 * i
+                offset = cellprofiler.image.IDX_FIRST_ASSIGNMENT_V5 + \
+                         cellprofiler.image.NUM_ASSIGNMENT_SETTINGS_V5 * n_assignments + \
+                         cellprofiler.image.NUM_SINGLE_IMAGE_SETTINGS_V5 * i
                 new_setting_values += \
-                    setting_values[offset: offset + OFF_SI_LOAD_AS_CHOICE_V5]
-                load_as = setting_values[offset + OFF_SI_LOAD_AS_CHOICE_V5]
-                if load_as == LOAD_AS_MASK_V5A:
-                    load_as = LOAD_AS_MASK
+                    setting_values[offset: offset + cellprofiler.image.OFF_SI_LOAD_AS_CHOICE_V5]
+                load_as = setting_values[offset + cellprofiler.image.OFF_SI_LOAD_AS_CHOICE_V5]
+                if load_as == cellprofiler.image.LOAD_AS_MASK_V5A:
+                    load_as = cellprofiler.image.LOAD_AS_MASK
                 new_setting_values += [load_as] + \
-                                      setting_values[offset + OFF_SI_LOAD_AS_CHOICE_V5 + 1:
-                                      offset + NUM_ASSIGNMENT_SETTINGS_V5] + \
-                                      [DEFAULT_MANUAL_RESCALE]
+                                      setting_values[offset + cellprofiler.image.OFF_SI_LOAD_AS_CHOICE_V5 + 1:
+                                      offset + cellprofiler.image.NUM_ASSIGNMENT_SETTINGS_V5] + \
+                                      [cellprofiler.image.DEFAULT_MANUAL_RESCALE]
             setting_values = new_setting_values
             variable_revision_number = 6
 
         return setting_values, variable_revision_number, from_matlab
 
-    class FakeModpathResolver(object):
-        """Resolve one modpath to one ipd"""
-
-        def __init__(self, modpath, ipd):
-            self.modpath = modpath
-            self.ipd = ipd
-
-        def get_image_plane_details(self, modpath):
-            assert len(modpath) == len(self.modpath)
-            assert all([m1 == m2 for m1, m2 in zip(self.modpath, modpath)])
-            return self.ipd
-
     def update_joiner(self):
         """Update the joiner setting's entities"""
-        if self.assignment_method == ASSIGN_RULES:
+        if self.assignment_method == cellprofiler.image.ASSIGN_RULES:
             self.join.entities = dict([
                                           (column_name, self.metadata_keys)
                                           for column_name in self.get_column_names()])
@@ -1905,7 +1734,7 @@ class NamesAndTypes(cellprofiler.module.Module):
                 pass  # bad field value
 
     def get_metadata_column_names(self):
-        if self.matching_method == MATCH_BY_METADATA:
+        if self.matching_method == cellprofiler.image.MATCH_BY_METADATA:
             joins = self.join.parse()
             metadata_columns = [
                 " / ".join(set([k for k in join.values() if k is not None]))
@@ -1913,161 +1742,3 @@ class NamesAndTypes(cellprofiler.module.Module):
         else:
             metadata_columns = [cellprofiler.measurement.IMAGE_NUMBER]
         return metadata_columns
-
-
-class MetadataPredicate(cellprofiler.setting.Filter.FilterPredicate):
-    """A predicate that compares an ifd against a metadata key and value"""
-
-    SYMBOL = "metadata"
-
-    def __init__(self, display_name, display_fmt="%s", **kwargs):
-        subpredicates = [cellprofiler.setting.Filter.DoesPredicate([]),
-                         cellprofiler.setting.Filter.DoesNotPredicate([])]
-
-        super(self.__class__, self).__init__(
-                self.SYMBOL, display_name, MetadataPredicate.do_filter,
-                subpredicates, **kwargs)
-        self.display_fmt = display_fmt
-
-    def set_metadata_keys(self, keys):
-        """Define the possible metadata keys to be matched against literal values
-
-        keys - a list of keys
-        """
-        sub_subpredicates = [
-            cellprofiler.setting.Filter.FilterPredicate(
-                    key,
-                    self.display_fmt % key,
-                    lambda ipd, match, key=key:
-                    ipd.metadata.has_key(key) and
-                    ipd.metadata[key] == match,
-                    [cellprofiler.setting.Filter.LITERAL_PREDICATE])
-            for key in keys]
-        #
-        # The subpredicates are "Does" and "Does not", so we add one level
-        # below that.
-        #
-        for subpredicate in self.subpredicates:
-            subpredicate.subpredicates = sub_subpredicates
-
-    @classmethod
-    def do_filter(cls, arg, *vargs):
-        """Perform the metadata predicate's filter function
-
-        The metadata predicate has subpredicates that look up their
-        metadata key in the ipd and compare it against a literal.
-        """
-        node_type, modpath, resolver = arg
-        ipd = resolver.get_image_plane_details(modpath)
-        return vargs[0](ipd, *vargs[1:])
-
-    def test_valid(self, pipeline, *args):
-        modpath = ["imaging", "image.png"]
-        ipd = cellprofiler.pipeline.ImagePlaneDetails("/imaging/image.png", None, None, None)
-        self((cellprofiler.setting.FileCollectionDisplay.NODE_IMAGE_PLANE, modpath,
-              NamesAndTypes.FakeModpathResolver(modpath, ipd)), *args)
-
-
-class ColorImageProvider(cellprofiler.image.LoadImagesImageProviderURL):
-    """Provide a color image, tripling a monochrome plane if needed"""
-
-    def __init__(self, name, url, series, index, rescale=True):
-        cellprofiler.image.LoadImagesImageProviderURL.__init__(self, name, url,
-                                                               rescale=rescale,
-                                                               series=series,
-                                                               index=index)
-
-    def provide_image(self, image_set):
-        image = cellprofiler.image.LoadImagesImageProviderURL.provide_image(self, image_set)
-        if image.pixel_data.ndim == 2:
-            image.pixel_data = numpy.dstack([image.pixel_data] * 3)
-        return image
-
-
-class MonochromeImageProvider(cellprofiler.image.LoadImagesImageProviderURL):
-    """Provide a monochrome image, combining RGB if needed"""
-
-    def __init__(self, name, url, series, index, channel, rescale=True):
-        cellprofiler.image.LoadImagesImageProviderURL.__init__(self, name, url,
-                                                               rescale=rescale,
-                                                               series=series,
-                                                               index=index,
-                                                               channel=channel)
-
-    def provide_image(self, image_set):
-        image = cellprofiler.image.LoadImagesImageProviderURL.provide_image(self, image_set)
-        if image.pixel_data.ndim == 3:
-            image.pixel_data = \
-                numpy.sum(image.pixel_data, 2) / image.pixel_data.shape[2]
-        return image
-
-
-class MaskImageProvider(MonochromeImageProvider):
-    """Provide a boolean image, converting nonzero to True, zero to False if needed"""
-
-    def __init__(self, name, url, series, index, channel):
-        MonochromeImageProvider.__init__(self, name, url,
-                                         rescale=True,
-                                         series=series,
-                                         index=index,
-                                         channel=channel)
-
-    def provide_image(self, image_set):
-        image = MonochromeImageProvider.provide_image(self, image_set)
-        if image.pixel_data.dtype.kind != 'b':
-            image.pixel_data = image.pixel_data != 0
-        return image
-
-
-class ObjectsImageProvider(cellprofiler.image.LoadImagesImageProviderURL):
-    """Provide a multi-plane integer image, interpreting an image file as objects"""
-
-    def __init__(self, name, url, series, index):
-        cellprofiler.image.LoadImagesImageProviderURL.__init__(self, name, url,
-                                                               rescale=False,
-                                                               series=series,
-                                                               index=index)
-
-    def provide_image(self, image_set):
-        """Load an image from a pathname
-        """
-        self.cache_file()
-        filename = self.get_filename()
-        channel_names = []
-        url = self.get_url()
-        properties = {}
-        if self.index is None:
-            metadata = bioformats.get_omexml_metadata(self.get_full_name())
-
-            ometadata = bioformats.omexml.OMEXML(metadata)
-            pixel_metadata = ometadata.image(0 if self.series is None
-                                             else self.series).Pixels
-            nplanes = (pixel_metadata.SizeC * pixel_metadata.SizeZ *
-                       pixel_metadata.SizeT)
-            indexes = range(nplanes)
-        elif numpy.isscalar(self.index):
-            indexes = [self.index]
-        else:
-            indexes = self.index
-        planes = []
-        offset = 0
-        for i, index in enumerate(indexes):
-            properties["index"] = str(index)
-            if self.series is not None:
-                if numpy.isscalar(self.series):
-                    properties["series"] = self.series
-                else:
-                    properties["series"] = self.series[i]
-            img = bioformats.load_image(
-                    self.get_full_name(),
-                    rescale=False, **properties).astype(int)
-            img = cellprofiler.image.convert_image_to_objects(img).astype(numpy.int32)
-            img[img != 0] += offset
-            offset += numpy.max(img)
-            planes.append(img)
-
-        image = cellprofiler.image.Image(numpy.dstack(planes),
-                                         pathname=self.get_pathname(),
-                                         filename=self.get_filename(),
-                                         convert=False)
-        return image

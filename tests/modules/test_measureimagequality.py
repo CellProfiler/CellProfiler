@@ -839,12 +839,12 @@ MeasureImageQuality:[module_num:5|svn_version:\'10368\'|variable_revision_number
         module1 = cellprofiler.modules.namesandtypes.NamesAndTypes()
         module1.module_num = 1
         module1.assignment_method.value = \
-            cellprofiler.modules.namesandtypes.ASSIGN_RULES
+            cellprofiler.image.ASSIGN_RULES
         module1.add_assignment()
         module1.add_assignment()
         module1.assignments[0].image_name.value = expected_names[0]
         module1.assignments[0].load_as_choice.value = \
-            cellprofiler.modules.namesandtypes.LOAD_AS_GRAYSCALE_IMAGE
+            cellprofiler.image.LOAD_AS_GRAYSCALE_IMAGE
         #
         # TO_DO: issue #652
         #    This test should fail at some later date when we can detect
@@ -852,9 +852,9 @@ MeasureImageQuality:[module_num:5|svn_version:\'10368\'|variable_revision_number
         #
         module1.assignments[1].image_name.value = expected_names[1]
         module1.assignments[1].load_as_choice.value = \
-            cellprofiler.modules.namesandtypes.LOAD_AS_ILLUMINATION_FUNCTION
+            cellprofiler.image.LOAD_AS_ILLUMINATION_FUNCTION
         module1.assignments[2].load_as_choice.value = \
-            cellprofiler.modules.namesandtypes.LOAD_AS_OBJECTS
+            cellprofiler.image.LOAD_AS_OBJECTS
         pipeline.add_module(module1)
 
         module2 = cellprofiler.modules.smooth.Smooth()

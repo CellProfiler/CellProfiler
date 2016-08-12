@@ -1516,44 +1516,6 @@ class Pipeline(object):
         except:
             return False
 
-    def convert_legacy_input_modules(self):
-        """Convert a pipeline from legacy to using Images, NamesAndTypes etc"""
-        if not self.can_convert_legacy_input_modules():
-            return
-
-        import cellprofiler.modules.images
-        import cellprofiler.modules.metadata
-        import cellprofiler.modules.namesandtypes
-        import cellprofiler.modules.groups
-
-        with self.undoable_action("Legacy modules converted"):
-            images = cellprofiler.modules.images.Images()
-            metadata = cellprofiler.modules.metadata.Metadata()
-            namesandtypes = cellprofiler.modules.namesandtypes.NamesAndTypes()
-            groups = cellprofiler.modules.groups.Groups()
-
-            images.filter_choice.value = cellprofiler.modules.images.FILTER_CHOICE_NONE
-
-            for i, module in enumerate((images, metadata, namesandtypes, groups)):
-                module.set_module_num(i + 1)
-
-                module.show_window = cellprofiler.preferences.get_headless()
-
-                if module.notes:
-                    module.notes += ["---"]
-
-                module.notes += ["Settings converted from legacy pipeline."]
-
-                self.add_module(module)
-
-            for module in list(self.__modules):
-                if module.needs_conversion():
-                    module.convert(self, metadata, namesandtypes, groups)
-
-                    self.remove_module(module.module_num)
-
-            self.notify_listeners(PipelineLoadedEvent())
-
     def convert_default_input_folder(self, path):
         """Convert all references to the default input folder to abolute paths
 

@@ -47,7 +47,7 @@ import cellprofiler.measurement
 import cellprofiler.metadata
 import cellprofiler.module
 import cellprofiler.modules
-import cellprofiler.modules.namesandtypes
+import cellprofiler.image
 import cellprofiler.preferences
 import cellprofiler.region
 import cellprofiler.setting
@@ -606,8 +606,8 @@ class LoadSingleImage(cellprofiler.module.Module):
                 if loc == len(file_name):
                     break
             regexp += re.escape(file_name[loc:]) + "$"
-            if namesandtypes.assignment_method != cellprofiler.modules.namesandtypes.ASSIGN_RULES:
-                namesandtypes.assignment_method.value = cellprofiler.modules.namesandtypes.ASSIGN_RULES
+            if namesandtypes.assignment_method != cellprofiler.image.ASSIGN_RULES:
+                namesandtypes.assignment_method.value = cellprofiler.image.ASSIGN_RULES
             else:
                 namesandtypes.add_assignment()
             edited_modules.add(namesandtypes)
@@ -656,7 +656,7 @@ class LoadSingleImage(cellprofiler.module.Module):
             # If there was metadata to match, namesandtypes should
             # have a metadata joiner.
             #
-            if namesandtypes.matching_choice == cellprofiler.modules.namesandtypes.MATCH_BY_METADATA:
+            if namesandtypes.matching_choice == cellprofiler.image.MATCH_BY_METADATA:
                 joins = namesandtypes.join.parse()
                 for d in joins:
                     for v in d.values():
@@ -671,10 +671,10 @@ class LoadSingleImage(cellprofiler.module.Module):
             assignment.rule_filter.build(structure)
             if group.image_objects_choice == cellprofiler.image.IO_IMAGES:
                 assignment.image_name.value = name
-                assignment.load_as_choice.value = cellprofiler.modules.namesandtypes.LOAD_AS_GRAYSCALE_IMAGE
+                assignment.load_as_choice.value = cellprofiler.image.LOAD_AS_GRAYSCALE_IMAGE
             else:
                 assignment.object_name.value = name
-                assignment.load_as_choice.value = cellprofiler.modules.namesandtypes.LOAD_AS_OBJECTS
+                assignment.load_as_choice.value = cellprofiler.image.LOAD_AS_OBJECTS
         for module in edited_modules:
             pipeline.edit_module(module.module_num, True)
 

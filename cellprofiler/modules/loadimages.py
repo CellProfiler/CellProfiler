@@ -2771,9 +2771,6 @@ class LoadImages(cellprofiler.module.Module):
         groups - the groups module
         first - True if no images have been added to namesandtypes yet.
         """
-
-        import cellprofiler.modules.namesandtypes
-
         if self.match_method not in (cellprofiler.image.MS_EXACT_MATCH, cellprofiler.image.MS_REGEXP):
             raise ValueError(
                 "Can't convert a LoadImages module that matches images by %s" %
@@ -2788,9 +2785,9 @@ class LoadImages(cellprofiler.module.Module):
         edited_modules = set()
         for group in self.images:
             for channel in group.channels:
-                if namesandtypes.assignment_method == cellprofiler.modules.namesandtypes.ASSIGN_ALL:
+                if namesandtypes.assignment_method == cellprofiler.image.ASSIGN_ALL:
                     namesandtypes.assignment_method.value = \
-                        cellprofiler.modules.namesandtypes.ASSIGN_RULES
+                        cellprofiler.image.ASSIGN_RULES
                 else:
                     namesandtypes.add_assignment()
                 edited_modules.add(namesandtypes)
@@ -2799,13 +2796,13 @@ class LoadImages(cellprofiler.module.Module):
                     name = assignment.image_name.value = \
                         channel.image_name.value
                     assignment.load_as_choice.value = \
-                        cellprofiler.modules.namesandtypes.LOAD_AS_GRAYSCALE_IMAGE
+                        cellprofiler.image.LOAD_AS_GRAYSCALE_IMAGE
                     warn_gray_color = True
                 else:
                     name = assignment.object_name.value = \
                         channel.object_name.value
                     assignment.load_as_choice.value = \
-                        cellprofiler.modules.namesandtypes.LOAD_AS_OBJECTS
+                        cellprofiler.image.LOAD_AS_OBJECTS
                 rfilter = assignment.rule_filter
                 assert isinstance(rfilter, cellprofiler.setting.Filter)
                 structure = [cellprofiler.setting.Filter.AND_PREDICATE]
@@ -2851,7 +2848,7 @@ class LoadImages(cellprofiler.module.Module):
                         mgroup.extraction_method.value = cellprofiler.metadata.X_MANUAL_EXTRACTION
                         mgroup.filter.build(structure)
                         my_tags.update(cellprofiler.measurement.find_metadata_tokens(value))
-                if namesandtypes.matching_choice == cellprofiler.modules.namesandtypes.MATCH_BY_METADATA:
+                if namesandtypes.matching_choice == cellprofiler.image.MATCH_BY_METADATA:
                     # Add our metadata tags to the joiner
                     current = namesandtypes.join.parse()
                     for d in current:
@@ -2877,7 +2874,7 @@ class LoadImages(cellprofiler.module.Module):
                     edited_modules.add(namesandtypes)
                 elif len(my_tags) > 0:
                     namesandtypes.matching_choice.value = \
-                        cellprofiler.modules.namesandtypes.MATCH_BY_METADATA
+                        cellprofiler.image.MATCH_BY_METADATA
                     namesandtypes.join.build([{name: tag} for tag in my_tags])
                     edited_modules.add(namesandtypes)
         if self.group_by_metadata:

@@ -294,7 +294,7 @@ class EditObjectsManually(cellprofiler.identify.Identify):
         from cellprofiler.gui.editobjectsdlg import EditObjectsDialog
         import wx
         from wx.lib.filebrowsebutton import FileBrowseButton
-        from cellprofiler.modules.namesandtypes import ObjectsImageProvider
+        from cellprofiler.image import ObjectsImageProvider
         from bioformats import load_image
 
         with wx.Dialog(None) as dlg:

@@ -1,11 +1,15 @@
 import hashlib
+import logging
 import os
 import tempfile
 import urllib
 import urlparse
 
+import bioformats
 import cellprofiler.measurement
+import cellprofiler.pipeline
 import cellprofiler.preferences
+import cellprofiler.setting
 import cellprofiler.utilities
 import numpy
 import scipy.io
@@ -676,7 +680,7 @@ def is_movie(filename):
     return ext in SUPPORTED_MOVIE_EXTENSIONS
 
 
-class LoadImagesImageProviderBase(cellprofiler.image.AbstractImageProvider):
+class LoadImagesImageProviderBase(AbstractImageProvider):
     """Base for image providers: handle pathname and filename & URLs"""
 
     def __init__(self, name, pathname, filename):
@@ -911,10 +915,7 @@ class LoadImagesImageProvider(LoadImagesImageProviderBase):
         if isinstance(self.rescale, float):
             # Apply a manual rescale
             img = img.astype(numpy.float32) / self.rescale
-        image = cellprofiler.image.Image(img,
-                                         pathname=self.get_pathname(),
-                                         filename=self.get_filename(),
-                                         scale=self.scale)
+        image = Image(img, pathname=self.get_pathname(), filename=self.get_filename(), scale=self.scale)
         if img.ndim == 3 and len(channel_names) == img.shape[2]:
             image.channel_names = list(channel_names)
         return image
@@ -1024,3 +1025,325 @@ def bad_sizes_warning(first_size, first_filename,
                   first_filename, first_size[1], first_size[0],
                   second_filename, second_size[1], second_size[0])
     return warning
+
+
+class ObjectsImageProvider(LoadImagesImageProviderURL):
+    """Provide a multi-plane integer image, interpreting an image file as objects"""
+
+    def __init__(self, name, url, series, index):
+        LoadImagesImageProviderURL.__init__(self, name, url, rescale=False, series=series, index=index)
+
+    def provide_image(self, image_set):
+        """Load an image from a pathname
+        """
+        self.cache_file()
+        filename = self.get_filename()
+        channel_names = []
+        url = self.get_url()
+        properties = {}
+        if self.index is None:
+            metadata = bioformats.get_omexml_metadata(self.get_full_name())
+
+            ometadata = bioformats.omexml.OMEXML(metadata)
+            pixel_metadata = ometadata.image(0 if self.series is None
+                                             else self.series).Pixels
+            nplanes = (pixel_metadata.SizeC * pixel_metadata.SizeZ *
+                       pixel_metadata.SizeT)
+            indexes = range(nplanes)
+        elif numpy.isscalar(self.index):
+            indexes = [self.index]
+        else:
+            indexes = self.index
+        planes = []
+        offset = 0
+        for i, index in enumerate(indexes):
+            properties["index"] = str(index)
+            if self.series is not None:
+                if numpy.isscalar(self.series):
+                    properties["series"] = self.series
+                else:
+                    properties["series"] = self.series[i]
+            img = bioformats.load_image(
+                    self.get_full_name(),
+                    rescale=False, **properties).astype(int)
+            img = convert_image_to_objects(img).astype(numpy.int32)
+            img[img != 0] += offset
+            offset += numpy.max(img)
+            planes.append(img)
+
+        image = Image(numpy.dstack(planes), pathname=self.get_pathname(), filename=self.get_filename(), convert=False)
+        return image
+
+
+INTENSITY_RESCALING_BY_METADATA = "Image metadata"
+INTENSITY_RESCALING_BY_DATATYPE = "Image bit-depth"
+INTENSITY_MANUAL = "Manual"
+INTENSITY_ALL = [INTENSITY_RESCALING_BY_METADATA,
+                 INTENSITY_RESCALING_BY_DATATYPE,
+                 INTENSITY_MANUAL]
+MANUAL_INTENSITY_LABEL = "Maximum intensity"
+RESCALING_HELP_TEXT = """
+This option determines how the image intensity should be
+rescaled from 0.0 &ndash; 1.0.
+<ul>
+<li><i>{intensity_rescaling_by_metadata}:</i> Rescale the image
+intensity so that saturated values are rescaled to 1.0 by dividing
+all pixels in the image by the maximum possible intensity value
+allowed by the imaging hardware. Some image formats save the maximum
+possible intensity value along with the pixel data.
+For instance, a microscope might acquire images using a 12-bit
+A/D converter which outputs intensity values between zero and 4095,
+but stores the values in a field that can take values up to 65535.
+Choosing this setting ensures that the intensity scaling value is
+the maximum allowed by the hardware, and not the maximum allowable
+by the file format. </li>
+<li><i>{intensity_rescaling_by_datatype}:</i> Ignore the image
+metadata and rescale the image to 0 &ndash; 1 by dividing by 255
+or 65535, depending on the number of bits used to store the image.</li>
+<li><i>{intensity_manual}:</i> Divide each pixel value by the value entered
+in the <i>{manual_intensity_label}</i> setting. <i>{intensity_manual}</i> can be
+used to rescale an image whose maximum intensity metadata value is absent or
+incorrect, but is less than the value that would be supplied if
+<i>{intensity_rescaling_by_datatype}</i> were specified.</li>
+</ul>
+Please note that CellProfiler does not provide the option of loading
+the image as the raw, unscaled values. If you wish to make measurements
+on the unscaled image, use the <b>ImageMath</b> module to multiply the
+scaled image by the actual image bit-depth.""".format(**{
+    'intensity_rescaling_by_metadata': INTENSITY_RESCALING_BY_METADATA,
+    'intensity_rescaling_by_datatype': INTENSITY_RESCALING_BY_DATATYPE,
+    'intensity_manual': INTENSITY_MANUAL,
+    'manual_intensity_label': MANUAL_INTENSITY_LABEL
+})
+MANUAL_RESCALE_HELP_TEXT = """
+<i>(Used only if {intensity_manual} is chosen)</i><br>
+<b>NamesAndTypes</b> divides the pixel value, as read from the image file, by
+this value to get the loaded image's per-pixel intensity.
+""".format(**{
+    'intensity_manual': INTENSITY_MANUAL
+})
+LOAD_AS_GRAYSCALE_IMAGE = "Grayscale image"
+LOAD_AS_COLOR_IMAGE = "Color image"
+LOAD_AS_MASK = "Binary mask"
+LOAD_AS_ILLUMINATION_FUNCTION = "Illumination function"
+LOAD_AS_OBJECTS = "Objects"
+LOAD_AS_CHOICE_HELP_TEXT = """
+You can specify how these images should be treated:
+<ul>
+<li><i>{load_as_grayscale_image}:</i> An image in which each pixel
+represents a single intensity value. Most of the modules in CellProfiler
+operate on images of this type. <br>
+If this option is applied to a color image, the red, green and blue
+pixel intensities will be averaged to produce a single intensity value.</li>
+<li><i>{load_as_color_image}:</i> An image in which each pixel
+repesents a red, green and blue (RGB) triplet of intensity values.
+Please note that the object detection modules such as <b>IdentifyPrimaryObjects</b>
+expect a grayscale image, so if you want to identify objects, you
+should use the <b>ColorToGray</b> module in the analysis pipeline
+to split the color image into its component channels.<br>
+You can use the <i>{load_as_grayscale_image}</i> option to collapse the
+color channels to a single grayscale value if you don't need CellProfiler
+to treat the image as color.</li>
+<li><i>{load_as_mask}:</i> A <i>mask</i> is an image where some of the
+pixel intensity values are zero, and others are non-zero. The most common
+use for a mask is to exclude particular image regions from consideration. By
+applying a mask to another image, the portion of the image that overlaps with
+the non-zero regions of the mask are included. Those that overlap with the
+zeroed region are "hidden" and not included in downstream calculations.
+For this option, the input image should be a binary image, i.e, foreground is
+white, background is black. The module will convert any nonzero values
+to 1, if needed. You can use this option to load a foreground/background
+segmentation produced by one of the <b>Identify</b> modules.</li>
+<li><i>{load_as_illumination_function}:</i> An <i>illumination correction function</i>
+is an image which has been generated for the purpose of correcting uneven
+illumination/lighting/shading or to reduce uneven background in images. Typically,
+is a file in the MATLAB .mat format. See <b>CorrectIlluminationCalculate</b> and
+<b>CorrectIlluminationApply</b> for more details. </li>
+<li><i>{load_as_objects}:</i> Use this option if the input image
+is a label matrix and you want to obtain the objects that it defines.
+A label matrix is a grayscale or color image in which the connected
+regions share the same label, which defines how objects are represented
+in CellProfiler. The labels are integer values greater than or equal
+to 0. The elements equal to 0 are the background, whereas the elements
+equal to 1 make up one object, the elements equal to 2 make up a second
+object, and so on. This option allows you to use the objects
+immediately without needing to insert an <b>Identify</b> module to
+extract them first. See <b>IdentifyPrimaryObjects</b> for more details. <br>
+This option can load objects created by the <b>SaveImages</b> module. These objects
+can take two forms, with different considerations for each:
+<ul>
+<li><i>Non-overalapping</i> objects are stored as a label matrix. This matrix should be
+saved as grayscale, rather than color.</li>
+<li><i>Overlapping objects</i> are stored in a multi-frame TIF, each frame of which consists of a
+grayscale label matrix. The frames are constructed so that objects that overlap are placed
+in different frames.</li>
+</ul></li>
+</ul>
+""".format(**{
+    'load_as_grayscale_image': LOAD_AS_GRAYSCALE_IMAGE,
+    'load_as_color_image': LOAD_AS_COLOR_IMAGE,
+    'load_as_mask': LOAD_AS_MASK,
+    'load_as_illumination_function': LOAD_AS_ILLUMINATION_FUNCTION,
+    'load_as_objects': LOAD_AS_OBJECTS
+})
+IDX_ASSIGNMENTS_COUNT_V2 = 5
+IDX_ASSIGNMENTS_COUNT_V3 = 6
+IDX_ASSIGNMENTS_COUNT_V5 = 6
+IDX_ASSIGNMENTS_COUNT_V6 = 6
+IDX_ASSIGNMENTS_COUNT = 6
+IDX_SINGLE_IMAGES_COUNT_V5 = 7
+IDX_SINGLE_IMAGES_COUNT_V6 = 7
+IDX_SINGLE_IMAGES_COUNT = 7
+IDX_FIRST_ASSIGNMENT_V3 = 7
+IDX_FIRST_ASSIGNMENT_V4 = 7
+IDX_FIRST_ASSIGNMENT_V5 = 8
+IDX_FIRST_ASSIGNMENT_V6 = 9
+IDX_FIRST_ASSIGNMENT = 9
+NUM_ASSIGNMENT_SETTINGS_V2 = 4
+NUM_ASSIGNMENT_SETTINGS_V3 = 5
+NUM_ASSIGNMENT_SETTINGS_V5 = 7
+NUM_ASSIGNMENT_SETTINGS_V6 = 8
+NUM_ASSIGNMENT_SETTINGS = 8
+NUM_SINGLE_IMAGE_SETTINGS_V5 = 7
+NUM_SINGLE_IMAGE_SETTINGS_V6 = 8
+NUM_SINGLE_IMAGE_SETTINGS = 8
+OFF_LOAD_AS_CHOICE_V5 = 3
+OFF_LOAD_AS_CHOICE = 3
+OFF_SI_LOAD_AS_CHOICE_V5 = 3
+OFF_SI_LOAD_AS_CHOICE = 3
+MATCH_BY_ORDER = "Order"
+MATCH_BY_METADATA = "Metadata"
+IMAGE_NAMES = ["DNA", "GFP", "Actin"]
+OBJECT_NAMES = ["Cell", "Nucleus", "Cytoplasm", "Speckle"]
+DEFAULT_MANUAL_RESCALE = 255
+M_IMAGE_SET_ZIP_DICTIONARY = "ImageSet_Zip_Dictionary"
+M_IMAGE_SET = "ImageSet_ImageSet"
+
+
+class MetadataPredicate(cellprofiler.setting.Filter.FilterPredicate):
+    """A predicate that compares an ifd against a metadata key and value"""
+
+    SYMBOL = "metadata"
+
+    def __init__(self, display_name, display_fmt="%s", **kwargs):
+        subpredicates = [cellprofiler.setting.Filter.DoesPredicate([]),
+                         cellprofiler.setting.Filter.DoesNotPredicate([])]
+
+        super(self.__class__, self).__init__(
+                self.SYMBOL, display_name, MetadataPredicate.do_filter,
+                subpredicates, **kwargs)
+        self.display_fmt = display_fmt
+
+    def set_metadata_keys(self, keys):
+        """Define the possible metadata keys to be matched against literal values
+
+        keys - a list of keys
+        """
+        sub_subpredicates = [
+            cellprofiler.setting.Filter.FilterPredicate(
+                    key,
+                    self.display_fmt % key,
+                    lambda ipd, match, key=key:
+                    ipd.metadata.has_key(key) and
+                    ipd.metadata[key] == match,
+                    [cellprofiler.setting.Filter.LITERAL_PREDICATE])
+            for key in keys]
+        #
+        # The subpredicates are "Does" and "Does not", so we add one level
+        # below that.
+        #
+        for subpredicate in self.subpredicates:
+            subpredicate.subpredicates = sub_subpredicates
+
+    @classmethod
+    def do_filter(cls, arg, *vargs):
+        """Perform the metadata predicate's filter function
+
+        The metadata predicate has subpredicates that look up their
+        metadata key in the ipd and compare it against a literal.
+        """
+        node_type, modpath, resolver = arg
+        ipd = resolver.get_image_plane_details(modpath)
+        return vargs[0](ipd, *vargs[1:])
+
+    def test_valid(self, pipeline, *args):
+        modpath = ["imaging", "image.png"]
+        ipd = cellprofiler.pipeline.ImagePlaneDetails("/imaging/image.png", None, None, None)
+        self((cellprofiler.setting.FileCollectionDisplay.NODE_IMAGE_PLANE, modpath,
+              FakeModpathResolver(modpath, ipd)), *args)
+
+
+class ColorImageProvider(cellprofiler.image.LoadImagesImageProviderURL):
+    """Provide a color image, tripling a monochrome plane if needed"""
+
+    def __init__(self, name, url, series, index, rescale=True):
+        cellprofiler.image.LoadImagesImageProviderURL.__init__(self, name, url,
+                                                               rescale=rescale,
+                                                               series=series,
+                                                               index=index)
+
+    def provide_image(self, image_set):
+        image = cellprofiler.image.LoadImagesImageProviderURL.provide_image(self, image_set)
+        if image.pixel_data.ndim == 2:
+            image.pixel_data = numpy.dstack([image.pixel_data] * 3)
+        return image
+
+
+class MonochromeImageProvider(cellprofiler.image.LoadImagesImageProviderURL):
+    """Provide a monochrome image, combining RGB if needed"""
+
+    def __init__(self, name, url, series, index, channel, rescale=True):
+        cellprofiler.image.LoadImagesImageProviderURL.__init__(self, name, url,
+                                                               rescale=rescale,
+                                                               series=series,
+                                                               index=index,
+                                                               channel=channel)
+
+    def provide_image(self, image_set):
+        image = cellprofiler.image.LoadImagesImageProviderURL.provide_image(self, image_set)
+        if image.pixel_data.ndim == 3:
+            image.pixel_data = \
+                numpy.sum(image.pixel_data, 2) / image.pixel_data.shape[2]
+        return image
+
+
+class MaskImageProvider(MonochromeImageProvider):
+    """Provide a boolean image, converting nonzero to True, zero to False if needed"""
+
+    def __init__(self, name, url, series, index, channel):
+        MonochromeImageProvider.__init__(self, name, url,
+                                         rescale=True,
+                                         series=series,
+                                         index=index,
+                                         channel=channel)
+
+    def provide_image(self, image_set):
+        image = MonochromeImageProvider.provide_image(self, image_set)
+        if image.pixel_data.dtype.kind != 'b':
+            image.pixel_data = image.pixel_data != 0
+        return image
+
+
+ASSIGN_RULES = "Images matching rules"
+LOAD_AS_MASK_V5A = "Mask"
+LOAD_AS_ALL = [LOAD_AS_GRAYSCALE_IMAGE,
+               LOAD_AS_COLOR_IMAGE,
+               LOAD_AS_MASK,
+               LOAD_AS_ILLUMINATION_FUNCTION,
+               LOAD_AS_OBJECTS]
+logger = logging.getLogger(__name__)
+ASSIGN_ALL = "All images"
+ASSIGN_GUESS = "Try to guess image assignment"
+
+
+class FakeModpathResolver(object):
+    """Resolve one modpath to one ipd"""
+
+    def __init__(self, modpath, ipd):
+        self.modpath = modpath
+        self.ipd = ipd
+
+    def get_image_plane_details(self, modpath):
+        assert len(modpath) == len(self.modpath)
+        assert all([m1 == m2 for m1, m2 in zip(self.modpath, modpath)])
+        return self.ipd

@@ -1,6 +1,5 @@
 import cellprofiler.image
 import cellprofiler.module
-import cellprofiler.modules
 import cellprofiler.preferences
 import cellprofiler.setting
 import numpy

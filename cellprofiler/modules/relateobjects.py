@@ -35,7 +35,6 @@ import re
 import cellprofiler.identify
 import cellprofiler.measurement
 import cellprofiler.module
-import cellprofiler.modules
 import cellprofiler.setting
 import centrosome.cpmorphology
 import centrosome.cpmorphology

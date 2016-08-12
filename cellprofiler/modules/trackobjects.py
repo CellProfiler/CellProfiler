@@ -6,7 +6,6 @@ import cellprofiler.identify
 import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.module
-import cellprofiler.modules
 import cellprofiler.pipeline
 import cellprofiler.preferences
 import cellprofiler.setting

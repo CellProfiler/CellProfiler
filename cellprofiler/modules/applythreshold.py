@@ -8,7 +8,6 @@ import cellprofiler
 import cellprofiler.identify
 import cellprofiler.image
 import cellprofiler.module
-import cellprofiler.modules
 import cellprofiler.setting
 import centrosome.cpmorphology
 import centrosome.threshold

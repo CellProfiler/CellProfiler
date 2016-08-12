@@ -60,7 +60,6 @@ See also <b>NamesAndTypes</b>, <b>MeasureImageIntensity</b>.
 import cellprofiler.identify
 import cellprofiler.measurement
 import cellprofiler.module
-import cellprofiler.modules
 import cellprofiler.region
 import cellprofiler.setting
 import centrosome.cpmorphology

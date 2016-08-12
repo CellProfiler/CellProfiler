@@ -24,7 +24,6 @@ aligned image with respect to the original image.</li>
 import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.module
-import cellprofiler.modules
 import cellprofiler.setting
 import centrosome.filter
 import numpy

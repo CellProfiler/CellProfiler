@@ -4,7 +4,6 @@ import cellprofiler.grid
 import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.module
-import cellprofiler.modules
 import cellprofiler.setting
 import cellprofiler.setting
 import centrosome.cpmorphology

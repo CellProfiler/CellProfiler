@@ -387,7 +387,6 @@ class MergeOutputFiles(cellprofiler.module.Module):
 
 
 if __name__ == "__main__":
-    import cellprofiler.modules
     import wx
 
     app = wx.PySimpleApp(False)

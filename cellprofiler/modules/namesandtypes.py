@@ -8,12 +8,11 @@ import cellprofiler.identify
 import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.module
-import cellprofiler.modules
-import cellprofiler.modules.images
 import cellprofiler.pipeline
 import cellprofiler.preferences
 import cellprofiler.region
 import cellprofiler.setting
+import cellprofiler.utilities.predicate
 import centrosome.outline
 import javabridge
 import numpy
@@ -463,10 +462,10 @@ class NamesAndTypes(cellprofiler.module.Module):
         group.append("rule_filter", cellprofiler.setting.Filter(
             "Select the rule criteria",
             [
-                cellprofiler.modules.images.FilePredicate(),
-                cellprofiler.modules.images.DirectoryPredicate(),
-                cellprofiler.modules.images.ExtensionPredicate(),
-                cellprofiler.modules.images.ImagePredicate(),
+                cellprofiler.utilities.predicate.FilePredicate(),
+                cellprofiler.utilities.predicate.DirectoryPredicate(),
+                cellprofiler.utilities.predicate.ExtensionPredicate(),
+                cellprofiler.utilities.predicate.ImagePredicate(),
                 mp
             ],
             'and (file does contain "")',

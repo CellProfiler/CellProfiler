@@ -5,9 +5,9 @@
 import cellprofiler.gui
 import cellprofiler.gui.cornerbuttonmixin
 import cellprofiler.measurement
-import cellprofiler.modules.images
 import cellprofiler.preferences
 import cellprofiler.setting
+import cellprofiler.utilities.url
 import numpy
 import re
 import urllib
@@ -1453,8 +1453,9 @@ class FilterPanelDlg(wx.Dialog):
                         """
         super(self.__class__, self).__init__(parent, size=(640, 480))
         self.Title = "Select images using a filter"
-        from cellprofiler.modules.images import FilePredicate, DirectoryPredicate
-        from cellprofiler.modules.images import ExtensionPredicate
+        from cellprofiler.utilities.predicate import FilePredicate
+        from cellprofiler.utilities.predicate import DirectoryPredicate
+        from cellprofiler.utilities.predicate import ExtensionPredicate
 
         self.filter_setting = cellprofiler.setting.Filter(
                 "Filter",
@@ -1473,7 +1474,7 @@ class FilterPanelDlg(wx.Dialog):
 
     def fn_filter(self, url):
         """A filter function that applies the current filter to a URL"""
-        modpath = cellprofiler.modules.images.Images.url_to_modpath(url)
+        modpath = cellprofiler.utilities.url.url_to_modpath(url)
         return self.filter_setting.evaluate(
                 (cellprofiler.setting.FileCollectionDisplay.NODE_IMAGE_PLANE, modpath, None))
 

@@ -47,11 +47,11 @@ import cellprofiler.measurement
 import cellprofiler.metadata
 import cellprofiler.module
 import cellprofiler.modules
-import cellprofiler.modules.images
 import cellprofiler.modules.namesandtypes
 import cellprofiler.preferences
 import cellprofiler.region
 import cellprofiler.setting
+import cellprofiler.utilities.predicate
 import cellprofiler.utilities.url
 import centrosome.outline
 
@@ -613,7 +613,7 @@ class LoadSingleImage(cellprofiler.module.Module):
             edited_modules.add(namesandtypes)
             assignment = namesandtypes.assignments[-1]
             structure = [cellprofiler.setting.Filter.AND_PREDICATE]
-            fp = cellprofiler.modules.images.FilePredicate()
+            fp = cellprofiler.utilities.predicate.FilePredicate()
             fp_does, fp_does_not = [
                 [d for d in fp.subpredicates if isinstance(d, c)][0]
                 for c in (cellprofiler.setting.Filter.DoesPredicate, cellprofiler.setting.Filter.DoesNotPredicate)]

@@ -7,10 +7,9 @@ import urllib
 import cellprofiler.gui.help
 import cellprofiler.measurement
 import cellprofiler.module
-import cellprofiler.modules
-import cellprofiler.modules.images
 import cellprofiler.pipeline
 import cellprofiler.setting
+import cellprofiler.utilities.predicate
 import cellprofiler.utilities.url
 import javabridge
 from cellprofiler.metadata import XM_FILE_NAME, XM_FOLDER_NAME, F_ALL_IMAGES, F_FILTERED_IMAGES, X_AUTOMATIC_EXTRACTION, \
@@ -426,9 +425,9 @@ class Metadata(cellprofiler.module.Module):
         group.append("filter", cellprofiler.setting.Filter(
             "Select the filtering criteria",
             [
-                cellprofiler.modules.images.FilePredicate(),
-                cellprofiler.modules.images.DirectoryPredicate(),
-                cellprofiler.modules.images.ExtensionPredicate()
+                cellprofiler.utilities.predicate.FilePredicate(),
+                cellprofiler.utilities.predicate.DirectoryPredicate(),
+                cellprofiler.utilities.predicate.ExtensionPredicate()
             ],
             'and (file does contain "")',
             doc="""Select <i>{yes}</i> to display and use rules to select files for metadata extraction.
@@ -869,7 +868,7 @@ class Metadata(cellprofiler.module.Module):
                 if group.filter_choice == F_FILTERED_IMAGES:
                     match = group.filter.evaluate(
                             (cellprofiler.setting.FileCollectionDisplay.NODE_IMAGE_PLANE,
-                             cellprofiler.modules.images.Images.url_to_modpath(url), self))
+                             cellprofiler.utilities.url.url_to_modpath(url), self))
                     if not match:
                         continue
                 metadata = filelist.get_metadata(url)

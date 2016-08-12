@@ -2,6 +2,8 @@ import os
 import urllib
 import urlparse
 
+import cellprofiler.utilities.hdf5_dict
+
 FILE_SCHEME = "file:"
 PASSTHROUGH_SCHEMES = ("http", "https", "ftp", "omero")
 
@@ -59,3 +61,32 @@ def urlpathname(url):
         return urllib.unquote(path.rsplit("/", 1)[0])
     else:
         return urllib.unquote(path)
+
+
+def modpath_to_url(modpath):
+    if modpath[0] in ("http", "https", "ftp"):
+        if len(modpath) == 1:
+            return modpath[0] + ":"
+        elif len(modpath) == 2:
+            return modpath[0] + ":" + modpath[1]
+        else:
+            return modpath[0] + ":" + modpath[1] + "/" + "/".join(
+                [urllib.quote(part) for part in modpath[2:]])
+    path = os.path.join(*modpath)
+    return pathname2url(path)
+
+
+def url_to_modpath(url):
+    if not url.lower().startswith("file:"):
+        schema, rest = cellprofiler.utilities.hdf5_dict.HDF5FileList.split_url(url)
+        return [schema] + rest[0:1] + [urllib.unquote(part) for part in rest[1:]]
+    path = urllib.url2pathname(url[5:])
+    parts = []
+    while True:
+        new_path, part = os.path.split(path)
+        if len(new_path) == 0 or len(part) == 0:
+            parts.insert(0, path)
+            break
+        parts.insert(0, part)
+        path = new_path
+    return parts

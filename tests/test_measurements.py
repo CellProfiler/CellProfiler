@@ -1414,13 +1414,6 @@ class TestImageSetCache(unittest.TestCase):
                 self.assertEqual(idx, i)
                 self.assertEqual(msg, expected.errors[0][1])
 
-    def test_04_01_close_measurements(self):
-        m = cpmeas.Measurements()
-        image = cpi.Image(np.zeros((10, 10)))
-        m.add(IMAGE_NAME, image)
-        m.cache()
-        m.close()
-
 
 if __name__ == "__main__":
     unittest.main()

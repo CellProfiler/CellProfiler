@@ -166,6 +166,7 @@ import cellprofiler.setting
 import cellprofiler.utilities.url
 import matplotlib.mlab
 import numpy
+import cellprofiler.measurement
 
 logger = logging.getLogger(__name__)
 
@@ -191,105 +192,6 @@ header_cache = {}
 # These need to be converted to FileName_<image-name> and
 # PathName_<image-name> internally.
 ###################################################################
-
-def header_to_column(field):
-    """Convert the field name in the header to a column name
-
-    This function converts Image_FileName to FileName and
-    Image_PathName to PathName so that the output column names
-    in the database will be Image_FileName and Image_PathName
-    """
-    for name in (cellprofiler.measurement.C_PATH_NAME, cellprofiler.measurement.C_FILE_NAME, cellprofiler.measurement.C_URL,
-                 cellprofiler.measurement.C_OBJECTS_FILE_NAME, cellprofiler.measurement.C_OBJECTS_PATH_NAME, cellprofiler.measurement.C_OBJECTS_URL):
-        if field.startswith(cellprofiler.measurement.IMAGE + '_' + name + '_'):
-            return field[len(cellprofiler.measurement.IMAGE) + 1:]
-    return field
-
-
-def is_path_name_feature(feature):
-    """Return true if the feature name is a path name"""
-    return feature.startswith(cellprofiler.measurement.C_PATH_NAME + '_')
-
-
-def is_file_name_feature(feature):
-    """Return true if the feature name is a file name"""
-    return feature.startswith(cellprofiler.measurement.C_FILE_NAME + '_')
-
-
-def is_url_name_feature(feature):
-    return feature.startswith(cellprofiler.measurement.C_URL + "_")
-
-
-def is_objects_path_name_feature(feature):
-    """Return true if the feature name is the path to a labels file"""
-    return feature.startswith(cellprofiler.measurement.C_OBJECTS_PATH_NAME + "_")
-
-
-def is_objects_file_name_feature(feature):
-    """Return true if the feature name is a labels file name"""
-    return feature.startswith(cellprofiler.measurement.C_OBJECTS_FILE_NAME + "_")
-
-
-def is_objects_url_name_feature(feature):
-    return feature.startswith(cellprofiler.measurement.C_OBJECTS_URL + "_")
-
-
-def get_image_name(feature):
-    """Extract the image name from a feature name"""
-    if is_path_name_feature(feature):
-        return feature[len(cellprofiler.measurement.C_PATH_NAME + '_'):]
-    if is_file_name_feature(feature):
-        return feature[len(cellprofiler.measurement.C_FILE_NAME + '_'):]
-    if is_url_name_feature(feature):
-        return feature[len(cellprofiler.measurement.C_URL + '_'):]
-    raise ValueError('"%s" is not a path feature or file name feature' % feature)
-
-
-def get_objects_name(feature):
-    """Extract the objects name from a feature name"""
-    if is_objects_path_name_feature(feature):
-        return feature[len(cellprofiler.measurement.C_OBJECTS_PATH_NAME + "_"):]
-    if is_objects_file_name_feature(feature):
-        return feature[len(cellprofiler.measurement.C_OBJECTS_FILE_NAME + "_"):]
-    if is_objects_url_name_feature(feature):
-        return feature[len(cellprofiler.measurement.C_OBJECTS_URL + "_"):]
-    raise ValueError('"%s" is not a objects path feature or file name feature' % feature)
-
-
-def make_path_name_feature(image):
-    """Return the path name feature, given an image name
-
-    The path name feature is the name of the measurement that stores
-    the image's path name.
-    """
-    return cellprofiler.measurement.C_PATH_NAME + '_' + image
-
-
-def make_file_name_feature(image):
-    """Return the file name feature, given an image name
-
-    The file name feature is the name of the measurement that stores
-    the image's file name.
-    """
-    return cellprofiler.measurement.C_FILE_NAME + '_' + image
-
-
-def make_objects_path_name_feature(objects_name):
-    """Return the path name feature, given an object name
-
-    The path name feature is the name of the measurement that stores
-    the objects file path name.
-    """
-    return cellprofiler.measurement.C_OBJECTS_PATH_NAME + '_' + objects_name
-
-
-def make_objects_file_name_feature(objects_name):
-    """Return the file name feature, given an object name
-
-    The file name feature is the name of the measurement that stores
-    the objects file name.
-    """
-    return cellprofiler.measurement.C_OBJECTS_FILE_NAME + '_' + objects_name
 
 
 class LoadData(cellprofiler.module.Module):
@@ -706,23 +608,23 @@ class LoadData(cellprofiler.module.Module):
             except Exception, e:
                 raise RuntimeError("%s" % e)
             header = data.dtype.names
-        entry["header"] = [header_to_column(column) for column in header]
+        entry["header"] = [cellprofiler.measurement.header_to_column(column) for column in header]
         return entry["header"]
 
     def get_image_names(self, do_not_cache=False):
         header = self.get_header(do_not_cache=do_not_cache)
         image_names = set([
-                              get_image_name(field)
+                              cellprofiler.measurement.get_image_name(field)
                               for field in header
-                              if is_file_name_feature(field) or is_url_name_feature(field)])
+                              if cellprofiler.measurement.is_file_name_feature(field) or cellprofiler.measurement.is_url_name_feature(field)])
         return list(image_names)
 
     def get_object_names(self, do_not_cache=False):
         header = self.get_header(do_not_cache=do_not_cache)
-        object_names = set([get_objects_name(field)
+        object_names = set([cellprofiler.measurement.get_objects_name(field)
                             for field in header
-                            if is_objects_file_name_feature(field) or
-                            is_objects_url_name_feature(field)])
+                            if cellprofiler.measurement.is_objects_file_name_feature(field) or
+                            cellprofiler.measurement.is_objects_url_name_feature(field)])
         return list(object_names)
 
     def other_providers(self, group):
@@ -760,7 +662,7 @@ class LoadData(cellprofiler.module.Module):
             return True
         fd = self.open_csv()
         reader = csv.reader(fd)
-        header = [header_to_column(column) for column in reader.next()]
+        header = [cellprofiler.measurement.header_to_column(column) for column in reader.next()]
         if header[0].startswith('ELN_RUN_ID'):
             reader = self.convert()
             header = list(reader.dtype.names)
@@ -1154,7 +1056,7 @@ class LoadData(cellprofiler.module.Module):
                 return entry["measurement_columns"]
             fd = self.open_csv()
             reader = csv.reader(fd)
-            header = [header_to_column(x) for x in reader.next()]
+            header = [cellprofiler.measurement.header_to_column(x) for x in reader.next()]
             if header[0].startswith('ELN_RUN_ID'):
                 reader = self.convert()
                 header = reader.dtype.names

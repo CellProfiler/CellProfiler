@@ -943,7 +943,7 @@ class ExportToSpreadsheet(cellprofiler.module.Module):
         image_set_numbers - the image sets whose data gets extracted
         workspace - workspace containing the measurements
         """
-        from loaddata import is_path_name_feature, is_file_name_feature
+        from cellprofiler.measurement import is_file_name_feature, is_path_name_feature
         from loadimages import C_PATH_NAME, C_FILE_NAME, C_URL
         from cellprofiler.measurement import C_WIDTH
         from cellprofiler.measurement import C_HEIGHT

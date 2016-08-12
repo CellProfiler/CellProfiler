@@ -47,7 +47,6 @@ import cellprofiler.measurement
 import cellprofiler.metadata
 import cellprofiler.module
 import cellprofiler.modules
-import cellprofiler.modules.groups
 import cellprofiler.modules.images
 import cellprofiler.modules.namesandtypes
 import cellprofiler.preferences

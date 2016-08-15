@@ -387,14 +387,13 @@ class GrayscaleImage(object):
     def __getattr__(self, name):
         return getattr(self.__image, name)
 
-    def get_pixel_data(self):
+    @property
+    def pixel_data(self):
         """One 2-d channel of the color image as a numpy array"""
         if self.__image.pixel_data.dtype.kind == 'b':
             return self.__image.pixel_data.astype(numpy.float64)
+
         return self.__image.pixel_data[:, :, 0]
-
-    pixel_data = property(get_pixel_data)
-
 
 class RGBImage(object):
     """A wrapper that discards the alpha channel

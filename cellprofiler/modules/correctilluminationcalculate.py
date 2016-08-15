@@ -569,15 +569,15 @@ class CorrectIlluminationCalculate(cpm.Module):
             output_image_provider = CorrectIlluminationImageProvider.deserialize(
                     d, self)
             assert isinstance(output_image_provider, CorrectIlluminationImageProvider)
-            if not self.illumination_image_name.value in image_set.get_names():
+            if not self.illumination_image_name.value in image_set.names:
                 workspace.image_set.providers.append(output_image_provider)
             if (self.save_average_image and
-                        self.average_image_name.value not in image_set.get_names()):
+                        self.average_image_name.value not in image_set.names):
                 workspace.image_set.add(
                         self.average_image_name.value,
                         output_image_provider.provide_avg_image())
             if (self.save_dilated_image and
-                        self.dilated_image_name.value not in image_set.get_names()):
+                        self.dilated_image_name.value not in image_set.names):
                 workspace.image_set.add(
                         self.dilated_image_name.value,
                         output_image_provider.provide_dilated_image())

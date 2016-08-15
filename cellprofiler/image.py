@@ -507,28 +507,10 @@ class ImageSet(object):
         """
         self.__image_providers = []
         self.__images = {}
-        self.__keys = keys
-        self.__number = number
-        self.__legacy_fields = legacy_fields
-
-    def get_number(self):
-        """The (zero-based) image set index
-        """
-        return self.__number
-
-    number = property(get_number)
-
-    @property
-    def image_number(self):
-        '''The image number as used in measurements and the database'''
-        return self.__number + 1
-
-    def get_keys(self):
-        """The keys that uniquely identify the image set
-        """
-        return self.__keys
-
-    keys = property(get_keys)
+        self.keys = keys
+        self.number = number
+        self.legacy_fields = legacy_fields
+        self.image_number = number + 1
 
     def get_image(self, name,
                   must_be_binary=False,
@@ -576,11 +558,10 @@ class ImageSet(object):
                 return RGBImage(image)
         return image
 
-    def get_providers(self):
+    @property
+    def providers(self):
         """The list of providers (populated during the image discovery phase)"""
         return self.__image_providers
-
-    providers = property(get_providers)
 
     def get_image_provider(self, name):
         """Get a named image provider
@@ -609,20 +590,11 @@ class ImageSet(object):
         if self.__images.has_key(name):
             del self.__images[name]
 
-    def get_names(self):
+    @property
+    def names(self):
         """Get the image provider names
         """
         return [provider.name for provider in self.providers]
-
-    names = property(get_names)
-
-    def get_legacy_fields(self):
-        """Matlab modules can stick legacy junk into the Images handles field. Save it in this dictionary.
-
-        """
-        return self.__legacy_fields
-
-    legacy_fields = property(get_legacy_fields)
 
     def add(self, name, image):
         old_providers = [provider for provider in self.providers
@@ -667,7 +639,7 @@ class ImageSetList(object):
             keys = keys_or_number
             k = make_dictionary_key(keys)
             if self.__image_sets_by_key.has_key(k):
-                number = self.__image_sets_by_key[k].get_number()
+                number = self.__image_sets_by_key[k].number
             else:
                 number = len(self.__image_sets)
             self.__associating_by_key = True

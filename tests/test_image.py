@@ -167,28 +167,28 @@ class TestImageSetList(unittest.TestCase):
         x = cpi.ImageSetList()
         y = x.get_image_set(0)
         self.assertEqual(x.count(), 1, "# of elements was %d, should be 1" % (x.count()))
-        self.assertEqual(y.get_number(), 0, "The image set should be #0, was %d" % (y.get_number()))
-        self.assertTrue(y.get_keys().has_key("number"), "The image set was missing a number key")
-        self.assertEqual(y.get_keys()["number"], 0,
-                         "The number key should be zero, was %s" % (repr(y.get_keys()["number"])))
+        self.assertEqual(y.number, 0, "The image set should be #0, was %d" % y.number)
+        self.assertTrue(y.keys.has_key("number"), "The image set was missing a number key")
+        self.assertEqual(y.keys["number"], 0,
+                         "The number key should be zero, was %s" % (repr(y.keys["number"])))
 
     def test_01_02_add_image_set_by_key(self):
         x = cpi.ImageSetList()
         key = {"key": "value"}
         y = x.get_image_set(key)
         self.assertEqual(x.count(), 1, "# of elements was %d, should be 1" % (x.count()))
-        self.assertEqual(y.get_number(), 0, "The image set should be #0, was %d" % (y.get_number()))
+        self.assertEqual(y.number, 0, "The image set should be #0, was %d" % y.number)
         self.assertEquals(y, x.get_image_set(0), "The image set should be retrievable by index")
         self.assertEquals(y, x.get_image_set(key), "The image set should be retrievable by key")
-        self.assertEquals(repr(key), repr(y.get_keys()))
+        self.assertEquals(repr(key), repr(y.keys))
 
     def test_01_03_add_two_image_sets(self):
         x = cpi.ImageSetList()
         y = x.get_image_set(0)
         z = x.get_image_set(1)
         self.assertEqual(x.count(), 2, "# of elements was %d, should be 2" % (x.count()))
-        self.assertEqual(y.number, 0, "The image set should be #0, was %d" % (y.get_number()))
-        self.assertEqual(z.number, 1, "The image set should be #1, was %d" % (y.get_number()))
+        self.assertEqual(y.number, 0, "The image set should be #0, was %d" % y.number)
+        self.assertEqual(z.number, 1, "The image set should be #1, was %d" % y.number)
         self.assertEquals(y, x.get_image_set(0), "The first image set was not retrieved by index")
         self.assertEquals(z, x.get_image_set(1), "The second image set was not retrieved by index")
 

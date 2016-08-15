@@ -190,8 +190,8 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
             #     image_set = image_set_list.get_image_set(0)
             #     l.run(W.Workspace(pipeline, l, image_set, cpo.ObjectSet(),
             #                       m, image_set_list))
-            #     self.assertEqual(len(image_set.get_names()),1)
-            #     self.assertEqual(image_set.get_names()[0],"my_image")
+            #     self.assertEqual(len(image_set.names),1)
+            #     self.assertEqual(image_set.names[0],"my_image")
             #     self.assertTrue(image_set.get_image("my_image"))
             #
             # def test_01_02load_image_text_match_many(self):
@@ -222,9 +222,9 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
             #     image_set = image_set_list.get_image_set(0)
             #     l.run(W.Workspace(pipeline, l, image_set, cpo.ObjectSet(),
             #                       m, image_set_list))
-            #     self.assertEqual(len(image_set.get_names()),4)
+            #     self.assertEqual(len(image_set.names),4)
             #     for i in range(0,4):
-            #         self.assertTrue("my_image%d"%(i) in image_set.get_names())
+            #         self.assertTrue("my_image%d"%(i) in image_set.names)
             #         self.assertTrue(image_set.get_image("my_image%d"%(i)))
             #
             # def test_02_01_load_image_regex_match(self):
@@ -248,8 +248,8 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
             #     image_set = image_set_list.get_image_set(0)
             #     l.run(W.Workspace(pipeline, l, image_set, cpo.ObjectSet(), m,
             #                       image_set_list))
-            #     self.assertEqual(len(image_set.get_names()),1)
-            #     self.assertEqual(image_set.get_names()[0],"my_image")
+            #     self.assertEqual(len(image_set.names),1)
+            #     self.assertEqual(image_set.names[0],"my_image")
             #     self.assertTrue(image_set.get_image("my_image"))
 
             #     def test_02_02_load_image_by_order(self):
@@ -2336,7 +2336,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                                 cpo.ObjectSet(), m,
                                 image_set_list)
         module.run(workspace)
-        self.assertTrue('MyImage' in image_set.get_names())
+        self.assertTrue('MyImage' in image_set.names)
         image = image_set.get_image('MyImage')
         img1 = image.pixel_data
         self.assertEqual(tuple(img1.shape), (264, 542, 3))
@@ -2348,7 +2348,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                                 cpo.ObjectSet(), m,
                                 image_set_list)
         module.run(workspace)
-        self.assertTrue('MyImage' in image_set.get_names())
+        self.assertTrue('MyImage' in image_set.names)
         image = image_set.get_image('MyImage')
         img2 = image.pixel_data
         self.assertEqual(tuple(img2.shape), (264, 542, 3))
@@ -2388,7 +2388,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                                 cpo.ObjectSet(), m,
                                 image_set_list)
         module.run(workspace)
-        self.assertTrue('MyImage' in image_set.get_names())
+        self.assertTrue('MyImage' in image_set.names)
         image = image_set.get_image('MyImage')
         img1 = image.pixel_data
         self.assertEqual(tuple(img1.shape), (1040, 1388))
@@ -2398,7 +2398,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                                 cpo.ObjectSet(), m,
                                 image_set_list)
         module.run(workspace)
-        self.assertTrue('MyImage' in image_set.get_names())
+        self.assertTrue('MyImage' in image_set.names)
         image = image_set.get_image('MyImage')
         img2 = image.pixel_data
         self.assertEqual(tuple(img2.shape), (1040, 1388))
@@ -2550,12 +2550,12 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                                 cpo.ObjectSet(), m,
                                 image_set_list)
         module.run(workspace)
-        self.assertTrue('Channel01' in image_set.get_names())
+        self.assertTrue('Channel01' in image_set.names)
         image = image_set.get_image('Channel01')
         img1 = image.pixel_data
         self.assertEqual(tuple(img1.shape), (264, 542, 3))
         self.assertAlmostEqual(np.mean(img1), .07897, 3)
-        self.assertTrue('Channel03' in image_set.get_names())
+        self.assertTrue('Channel03' in image_set.names)
         self.assertEqual(m.get_current_image_measurement("Frame_Channel03"), 2)
         image = image_set.get_image('Channel03')
         img3 = image.pixel_data
@@ -2569,7 +2569,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                                 cpo.ObjectSet(), m,
                                 image_set_list)
         module.run(workspace)
-        self.assertTrue('Channel01' in image_set.get_names())
+        self.assertTrue('Channel01' in image_set.names)
         image = image_set.get_image('Channel01')
         img2 = image.pixel_data
         self.assertEqual(tuple(img2.shape), (264, 542, 3))
@@ -2619,7 +2619,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                                 cpo.ObjectSet(), m,
                                 image_set_list)
         module.run(workspace)
-        self.assertTrue('Channel01' in image_set.get_names())
+        self.assertTrue('Channel01' in image_set.names)
         image = image_set.get_image('Channel01')
         img1 = image.pixel_data
         self.assertEqual(tuple(img1.shape), (264, 542, 3))
@@ -2637,7 +2637,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                                 cpo.ObjectSet(), m,
                                 image_set_list)
         module.run(workspace)
-        self.assertTrue('Channel01' in image_set.get_names())
+        self.assertTrue('Channel01' in image_set.names)
         self.assertEqual(m.get_current_image_measurement("Frame_Channel01"), 1)
         image = image_set.get_image('Channel01')
         img2 = image.pixel_data

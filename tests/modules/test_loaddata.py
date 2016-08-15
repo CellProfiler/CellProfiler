@@ -434,7 +434,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
 
         def callback(workspace):
             imgset = workspace.image_set
-            self.assertEqual(len(imgset.get_names()), 0)
+            self.assertEqual(len(imgset.names), 0)
             c0_ran[0] = True
 
         c0 = C0()

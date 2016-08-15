@@ -549,43 +549,6 @@ class TestObjects(unittest.TestCase):
         np.testing.assert_array_equal(labels_children_per_parent, ijv_children_per_parent)
         np.testing.assert_array_equal(labels_parents_of_children, ijv_parents_of_children)
 
-    def test_08_01_cache(self):
-        import h5py
-        from cellprofiler.utilities.hdf5_dict import HDF5ObjectSet
-        import os
-        import tempfile
-        x = cpo.Objects()
-        r = np.random.RandomState()
-        r.seed(81)
-        segmented_unedited = r.randint(0, 5, size=(10, 15))
-        segmented_small_removed = segmented_unedited.copy()
-        segmented_small_removed[segmented_small_removed == 4] = 0
-        segmented = segmented_small_removed.copy()
-        segmented[segmented == 3] = 0
-        x.segmented = segmented
-        x.small_removed_segmented = segmented_small_removed
-        x.unedited_segmented = segmented_unedited
-        y = cpo.Objects()
-        y.segmented = segmented
-        y.small_removed_segmented = segmented_small_removed
-        y.unedited_segmented = segmented_unedited
-
-        fd, path = tempfile.mkstemp(".h5")
-        f = h5py.File(path)
-        try:
-            cache = HDF5ObjectSet(f)
-            x.cache(cache, "whatever")
-            np.testing.assert_array_equal(x.segmented, segmented)
-            np.testing.assert_array_equal(x.small_removed_segmented,
-                                          segmented_small_removed)
-            np.testing.assert_array_equal(x.unedited_segmented,
-                                          segmented_unedited)
-            np.testing.assert_array_equal(y.ijv, x.ijv)
-        finally:
-            f.close()
-            os.close(fd)
-            os.remove(path)
-
 
 class TestSegmentation(unittest.TestCase):
     def test_01_01_dense(self):

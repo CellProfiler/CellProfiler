@@ -50,7 +50,8 @@ class TestImage(unittest.TestCase):
     def test_04_01_image_mask_missize(self):
         x = cpi.Image()
         x.image = np.ones((10, 10))
-        self.assertRaises(AssertionError, x.set_mask, np.ones((5, 5)))
+        with self.assertRaises(AssertionError):
+            x.mask = np.ones((5, 5))
 
     def test_05_01_mask_of3D(self):
         """The mask of a 3-d image should be 2-d"""

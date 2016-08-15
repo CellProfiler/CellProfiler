@@ -612,18 +612,12 @@ class ImageSetList(object):
 
     """
 
-    def __init__(self, test_mode=False):
+    def __init__(self):
         self.__image_sets = []
         self.__image_sets_by_key = {}
-        self.__legacy_fields = {}
+        self.legacy_fields = {}
         self.__associating_by_key = None
-        self.__test_mode = test_mode
         self.combine_path_and_file = False
-
-    @property
-    def test_mode(self):
-        '''True if we are in test mode'''
-        return self.__test_mode
 
     def get_image_set(self, keys_or_number):
         """Return either the indexed image set (keys_or_number = index) or the image set with matching keys
@@ -646,23 +640,15 @@ class ImageSetList(object):
         if number >= len(self.__image_sets):
             self.__image_sets += [None] * (number - len(self.__image_sets) + 1)
         if self.__image_sets[number] is None:
-            image_set = ImageSet(number, keys, self.__legacy_fields)
+            image_set = ImageSet(number, keys, self.legacy_fields)
             self.__image_sets[number] = image_set
             self.__image_sets_by_key[k] = image_set
-            if self.associating_by_key:
+            if self.__associating_by_key:
                 k = make_dictionary_key(dict(number=number))
                 self.__image_sets_by_key[k] = image_set
         else:
             image_set = self.__image_sets[number]
         return image_set
-
-    @property
-    def associating_by_key(self):
-        '''True if some image set has been added with a key instead of a number
-
-        This will return "None" if no association has been done.
-        '''
-        return self.__associating_by_key
 
     def purge_image_set(self, number):
         """Remove the memory associated with an image set"""
@@ -683,14 +669,6 @@ class ImageSetList(object):
 
     def count(self):
         return len(self.__image_sets)
-
-    def get_legacy_fields(self):
-        """Matlab modules can stick legacy junk into the Images handles field. Save it in this dictionary.
-
-        """
-        return self.__legacy_fields
-
-    legacy_fields = property(get_legacy_fields)
 
     def get_groupings(self, keys):
         '''Return the groupings of an image set list over a set of keys
@@ -768,7 +746,7 @@ class ImageSetList(object):
 
         count = p.load()
         all_keys = [p.load() for i in range(count)]
-        self.__legacy_fields = p.load()
+        self.legacy_fields = p.load()
         #
         # Have to do in this order in order for the image set's
         # legacy_fields property to hook to the right legacy_fields

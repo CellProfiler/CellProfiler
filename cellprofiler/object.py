@@ -39,7 +39,8 @@ class Objects(object):
         self.__small_removed_segmented = None
         self.__parent_image = None
 
-    def get_segmented(self):
+    @property
+    def segmented(self):
         """Get the de-facto segmentation of the image into objects: a matrix
         of object numbers.
         """
@@ -51,12 +52,11 @@ class Objects(object):
             "Operation failed because the segmentation was not 2D"
         return dense.reshape(dense.shape[-2:])
 
-    def set_segmented(self, labels):
+    @segmented.setter
+    def segmented(self, labels):
         dense = downsample_labels(labels)
         dense = dense.reshape((1, 1, 1, 1, dense.shape[0], dense.shape[1]))
         self.__segmented = Segmentation(dense=dense)
-
-    segmented = property(get_segmented, set_segmented)
 
     def set_ijv(self, ijv, shape=None):
         '''Set the segmentation to an IJV object format
@@ -92,7 +92,7 @@ class Objects(object):
         '''The i and j extents of the labels'''
         return self.__segmented.get_shape()[-2:]
 
-    def get_labels(self, shape=None):
+    def get_labels(self):
         '''Get a set of labels matrices consisting of non-overlapping labels
 
         In IJV format, a single pixel might have multiple labels. If you
@@ -110,7 +110,8 @@ class Objects(object):
         """Return true if there is an unedited segmented matrix."""
         return self.__unedited_segmented is not None
 
-    def get_unedited_segmented(self):
+    @property
+    def unedited_segmented(self):
         """Get the segmentation of the image into objects, including junk that
         should be ignored: a matrix of object numbers.
 
@@ -122,19 +123,18 @@ class Objects(object):
             return dense[0, 0, 0, 0]
         return self.segmented
 
-    def set_unedited_segmented(self, labels):
+    @unedited_segmented.setter
+    def unedited_segmented(self, labels):
         dense = downsample_labels(labels).reshape(
                 (1, 1, 1, 1, labels.shape[0], labels.shape[1]))
         self.__unedited_segmented = Segmentation(dense=dense)
-
-    unedited_segmented = property(get_unedited_segmented,
-                                  set_unedited_segmented)
 
     def has_small_removed_segmented(self):
         """Return true if there is a junk object matrix."""
         return self.__small_removed_segmented is not None
 
-    def get_small_removed_segmented(self):
+    @property
+    def small_removed_segmented(self):
         """Get the matrix of segmented objects with the small objects removed
 
         This should be the same as the unedited_segmented label matrix with
@@ -146,15 +146,14 @@ class Objects(object):
             return dense[0, 0, 0, 0]
         return self.unedited_segmented
 
-    def set_small_removed_segmented(self, labels):
+    @small_removed_segmented.setter
+    def small_removed_segmented(self, labels):
         dense = downsample_labels(labels).reshape(
                 (1, 1, 1, 1, labels.shape[0], labels.shape[1]))
         self.__small_removed_segmented = Segmentation(dense=dense)
 
-    small_removed_segmented = property(get_small_removed_segmented,
-                                       set_small_removed_segmented)
-
-    def get_parent_image(self):
+    @property
+    def parent_image(self):
         """The image that was analyzed to yield the objects.
 
         The image is an instance of CPImage which means it has the mask
@@ -162,25 +161,20 @@ class Objects(object):
         """
         return self.__parent_image
 
-    def set_parent_image(self, parent_image):
+    @parent_image.setter
+    def parent_image(self, parent_image):
         self.__parent_image = parent_image
-        for segmentation in self.__segmented, self.__small_removed_segmented, \
-                            self.__unedited_segmented:
+        for segmentation in self.__segmented, self.__small_removed_segmented, self.__unedited_segmented:
             if segmentation is not None and not segmentation.has_shape():
-                shape = (1, 1, 1,
-                         parent_image.pixel_data.shape[0],
-                         parent_image.pixel_data.shape[1])
+                shape = (1, 1, 1, parent_image.pixel_data.shape[0], parent_image.pixel_data.shape[1])
                 segmentation.set_shape(shape)
 
-    parent_image = property(get_parent_image, set_parent_image)
-
-    def get_has_parent_image(self):
+    @property
+    def has_parent_image(self):
         """True if the objects were derived from a parent image
 
         """
         return self.__parent_image is not None
-
-    has_parent_image = property(get_has_parent_image)
 
     def crop_image_similarly(self, image):
         """Crop an image in the same way as the parent image was cropped."""
@@ -352,30 +346,29 @@ class Objects(object):
         # c.csc?
         return (parent_matrix.tocsc() * child_matrix.tocsc()).toarray()
 
-    def get_indices(self):
+    @property
+    def indices(self):
         """Get the indices for a scipy.ndimage-style function from the segmented labels
 
         """
         if len(self.ijv) == 0:
             return numpy.zeros(0, numpy.int32)
         max_label = numpy.max(self.ijv[:, 2])
-        return numpy.arange(max_label).astype(numpy.int32) + 1
 
-    indices = property(get_indices)
+        return numpy.arange(max_label).astype(numpy.int32) + 1
 
     @property
     def count(self):
         """The number of objects labeled"""
         return len(self.indices)
 
-    def get_areas(self):
+    @property
+    def areas(self):
         """The area of each object"""
         if len(self.indices) == 0:
             return numpy.zeros(0, int)
 
         return numpy.bincount(self.ijv[:, 2])[self.indices]
-
-    areas = property(get_areas)
 
     def fn_of_label_and_index(self, function):
         """Call a function taking a label matrix with the segmented labels

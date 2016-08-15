@@ -1622,8 +1622,7 @@ class HDF5ObjectSet(object):
         segmentation_group = self.__ensure_group(objects_name, segmentation_name)
         if self.DENSE in segmentation_group:
             data_set = segmentation_group[self.DENSE]
-            if tuple(data_set.shape) == tuple(data.shape) and \
-                            data_set.dtype == data.dtype:
+            if tuple(data_set.shape) == tuple(data.shape) and data_set.dtype == data.dtype:
                 data_set[:] = data
             else:
                 del segmentation_group[self.DENSE]

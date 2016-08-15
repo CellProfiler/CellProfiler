@@ -88,9 +88,7 @@ class Image(object):
 
     def get_image(self):
         """Return the primary image"""
-        if self.__image is None:
-            return
-        return self.__image.get()
+        return self.__image
 
     def set_image(self, image, convert=True):
         """Set the primary image
@@ -104,7 +102,7 @@ class Image(object):
         """
         img = np.asanyarray(image)
         if img.dtype.name == "bool" or not convert:
-            self.__image = ImageCache(img)
+            self.__image = img
             return
         mval = 0.
         scale = 1.
@@ -147,7 +145,7 @@ class Image(object):
             # These types will always have ranges between 0 and 1. Make it so.
             np.clip(img, 0, 1, out=img)
         check_consistency(img, self.__mask)
-        self.__image = ImageCache(img)
+        self.__image = img
 
     image = property(get_image, set_image)
     pixel_data = property(get_image, set_image)
@@ -202,7 +200,7 @@ class Image(object):
         """Return the mask (pixels to be considered) for the primary image
         """
         if not self.__mask is None:
-            return self.__mask.get()
+            return self.__mask
 
         if self.has_masking_objects:
             return self.crop_image_similarly(self.crop_mask)
@@ -233,7 +231,7 @@ class Image(object):
         if not (m.dtype.type is np.bool):
             m = (m != 0)
         check_consistency(self.image, m)
-        self.__mask = ImageCache(m)
+        self.__mask = m
         self.__has_mask = True
 
     mask = property(get_mask, set_mask)
@@ -253,7 +251,7 @@ class Image(object):
     def get_crop_mask(self):
         """Return the mask used to crop this image"""
         if not self.__crop_mask is None:
-            return self.__crop_mask.get()
+            return self.__crop_mask
 
         if self.has_masking_objects:
             return self.masking_objects.segmented != 0
@@ -266,7 +264,7 @@ class Image(object):
         return self.mask
 
     def set_crop_mask(self, crop_mask):
-        self.__crop_mask = ImageCache(crop_mask)
+        self.__crop_mask = crop_mask
 
     crop_mask = property(get_crop_mask, set_crop_mask)
 
@@ -361,80 +359,6 @@ class Image(object):
         return self.__scale
 
     scale = property(get_scale)
-
-    def cache(self, name, hdf5_file):
-        '''Move all images into backing stores
-
-        name - the channel name of the image
-        hdf5_file - an HDF5 file or group
-
-        We utilize the sub-groups, "Images", "Masks" and "CropMasks".
-        The best practice is to use a temporary file dedicated to images and
-        maybe objects.
-        '''
-        from cellprofiler.utilities.hdf5_dict import HDF5ImageSet
-        if isinstance(self.__image, ImageCache) and \
-                not self.__image.is_cached():
-            self.__image.cache(name, HDF5ImageSet(hdf5_file))
-        if isinstance(self.__mask, ImageCache) and \
-                not self.__mask.is_cached():
-            self.__mask.cache(name, HDF5ImageSet(hdf5_file, "Masks"))
-        if isinstance(self.__crop_mask, ImageCache) and \
-                not self.__crop_mask.is_cached():
-            self.__crop_mask.cache(name, HDF5ImageSet(hdf5_file, "CropMasks"))
-
-
-class ImageCache(object):
-    '''An HDF5 cache that can store an image, mask or crop mask
-
-    '''
-    IC_MONOCHROME = "Monochrome"
-    IC_COLOR = "Color"
-    IC_5D = "5D"
-
-    def __init__(self, image):
-        '''Initialize with the image to control'''
-        self.__backing_store = None
-        self.__name = None
-        if image.ndim == 2:
-            self.__type = ImageCache.IC_MONOCHROME
-            self.__image = image.reshape(1, 1, 1, image.shape[0], image.shape[1])
-        elif image.ndim == 3:
-            self.__type = ImageCache.IC_COLOR
-            self.__image = image.transpose(2, 0, 1).reshape(
-                    image.shape[2], 1, 1, image.shape[0], image.shape[1])
-        else:
-            self.__type = ImageCache.IC_5D
-            self.__image = image
-
-    def is_cached(self):
-        '''Return True if image is already cached by a backing store
-
-        '''
-        return self.__backing_store is not None
-
-    def cache(self, name, backing_store):
-        '''Cache an image into a backing store
-
-        name - unique channel name of the image
-        backing_store - an HDF5ImageSet
-        '''
-        self.__backing_store = backing_store
-        self.__name = name
-        self.__backing_store.set_image(self.__name, self.__image)
-        del self.__image
-
-    def get(self):
-        '''Get the image in its original format'''
-        if self.is_cached():
-            image = self.__backing_store.get_image(self.__name)
-        else:
-            image = self.__image
-        if self.__type == ImageCache.IC_MONOCHROME:
-            return image.reshape(image.shape[3], image.shape[4])
-        elif self.__type == ImageCache.IC_COLOR:
-            return image.reshape(
-                    image.shape[0], image.shape[3], image.shape[4]).transpose(1, 2, 0)
 
 
 def crop_image(image, crop_mask, crop_internal=False):
@@ -634,8 +558,7 @@ class ImageSet(object):
                   must_be_binary=False,
                   must_be_color=False,
                   must_be_grayscale=False,
-                  must_be_rgb=False,
-                  cache=True):
+                  must_be_rgb=False):
         """Return the image associated with the given name
 
         name - name of the image within the image_set
@@ -647,8 +570,7 @@ class ImageSet(object):
         name = str(name)
         if not self.__images.has_key(name):
             image = self.get_image_provider(name).provide_image(self)
-            if cache:
-                self.__images[name] = image
+
         else:
             image = self.__images[name]
         if must_be_binary and image.pixel_data.ndim == 3:
@@ -710,10 +632,6 @@ class ImageSet(object):
         self.get_image_provider(name).release_memory()
         if self.__images.has_key(name):
             del self.__images[name]
-
-    def clear_cache(self):
-        '''Remove all of the cached images'''
-        self.__images.clear()
 
     def get_names(self):
         """Get the image provider names
@@ -802,7 +720,6 @@ class ImageSetList(object):
         """Remove the memory associated with an image set"""
         keys = self.__image_sets[number].keys
         image_set = self.__image_sets[number]
-        image_set.clear_cache()
         for provider in image_set.providers:
             provider.release_memory()
         self.__image_sets[number] = None

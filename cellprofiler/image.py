@@ -395,6 +395,7 @@ class GrayscaleImage(object):
 
         return self.__image.pixel_data[:, :, 0]
 
+
 class RGBImage(object):
     """A wrapper that discards the alpha channel
 
@@ -408,11 +409,10 @@ class RGBImage(object):
     def __getattr__(self, name):
         return getattr(self.__image, name)
 
-    def get_pixel_data(self):
+    @property
+    def pixel_data(self):
         '''Return the pixel data without the alpha channel'''
         return self.__image.pixel_data[:, :, :3]
-
-    pixel_data = property(get_pixel_data)
 
 
 def check_consistency(image, mask):

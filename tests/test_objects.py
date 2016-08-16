@@ -78,10 +78,20 @@ class TestObjects(unittest.TestCase):
         x.small_removed_segmented = self.__small_removed_segmented10
         self.assertTrue((self.__small_removed_segmented10 == x.small_removed_segmented).all())
 
-    def test_01_06_unedited_segmented(self):
+    def test_01_06_small_removed_segmented(self):
         x = cellprofiler.object.Objects()
         x.small_removed_segmented = self.__small_removed_segmented10
         self.assertTrue((self.__small_removed_segmented10 == x.small_removed_segmented).all())
+
+    def test_3D_small_removed_segmented(self):
+        small_removed_segmented3d = numpy.zeros((5, 10, 10))
+        small_removed_segmented3d[1:3, 2:4, 2:4] = 1
+        small_removed_segmented3d[2:4, 5:7, 5:7] = 2
+
+        objects = cellprofiler.object.Objects()
+        objects.small_removed_segmented = small_removed_segmented3d
+
+        self.assertTrue(numpy.all(small_removed_segmented3d == objects.small_removed_segmented))
 
     def test_02_01_set_all(self):
         x = cellprofiler.object.Objects()

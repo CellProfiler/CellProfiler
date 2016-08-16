@@ -763,12 +763,11 @@ class ObjectSet(object):
         """
         return self.__objects_by_name[name]
 
-    def get_all_objects(self):
+    @property
+    def all_objects(self):
         """Return a list of name / objects tuples
         """
         return self.__objects_by_name.items()
-
-    all_objects = property(get_all_objects)
 
     def get_types(self):
         '''Get then names of types of per-image set "things"

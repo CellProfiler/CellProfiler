@@ -579,6 +579,22 @@ class TestObjects(unittest.TestCase):
         numpy.testing.assert_array_equal(labels_children_per_parent, ijv_children_per_parent)
         numpy.testing.assert_array_equal(labels_parents_of_children, ijv_parents_of_children)
 
+    def test_2D_shape(self):
+        shape = (10, 10)
+
+        objects = cellprofiler.object.Objects()
+        objects.segmented = numpy.zeros(shape)
+
+        self.assertTrue(shape == objects.shape)
+
+    def test_3D_shape(self):
+        shape = (5, 10, 10)
+
+        objects = cellprofiler.object.Objects()
+        objects.segmented = numpy.zeros(shape)
+
+        self.assertTrue(shape == objects.shape)
+
 
 class TestSegmentation(unittest.TestCase):
     def test_01_01_dense(self):

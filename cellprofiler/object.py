@@ -3,31 +3,10 @@
 
 import centrosome.index
 import centrosome.outline
-import decorator
 import numpy
 import scipy.sparse
 
 OBJECT_TYPE_NAME = "objects"
-
-
-@decorator.decorator
-def memoize_method(function, *args):
-    """Cache the result of a method in that class's dictionary
-
-    The dictionary is indexed by function name and the values of that
-    dictionary are themselves dictionaries with args[1:] as the keys
-    and the result of applying function to args[1:] as the values.
-    """
-    sself = args[0]
-    d = getattr(sself, "memoize_method_dictionary", False)
-    if not d:
-        d = {}
-        setattr(sself, "memoize_method_dictionary", d)
-    if not d.has_key(function):
-        d[function] = {}
-    if not d[function].has_key(args[1:]):
-        d[function][args[1:]] = function(*args)
-    return d[function][args[1:]]
 
 
 class Objects(object):
@@ -76,10 +55,6 @@ class Objects(object):
         dense = downsample_labels(labels)
         dense = dense.reshape((1, 1, 1, 1, dense.shape[0], dense.shape[1]))
         self.__segmented = Segmentation(dense=dense)
-
-        # Clear all cached results.
-        if getattr(self, "memoize_method_dictionary", False):
-            self.memoize_method_dictionary = {}
 
     segmented = property(get_segmented, set_segmented)
 
@@ -377,7 +352,6 @@ class Objects(object):
         # c.csc?
         return (parent_matrix.tocsc() * child_matrix.tocsc()).toarray()
 
-    @memoize_method
     def get_indices(self):
         """Get the indices for a scipy.ndimage-style function from the segmented labels
 
@@ -394,25 +368,15 @@ class Objects(object):
         """The number of objects labeled"""
         return len(self.indices)
 
-    @memoize_method
     def get_areas(self):
         """The area of each object"""
         if len(self.indices) == 0:
             return numpy.zeros(0, int)
+
         return numpy.bincount(self.ijv[:, 2])[self.indices]
 
     areas = property(get_areas)
 
-    @memoize_method
-    def fn_of_label(self, function):
-        """Call a function taking just a label matrix
-
-        function - should have a signature like
-            labels - label_matrix
-    """
-        return function(self.segmented)
-
-    @memoize_method
     def fn_of_label_and_index(self, function):
         """Call a function taking a label matrix with the segmented labels
 
@@ -423,7 +387,6 @@ class Objects(object):
         """
         return function(self.segmented, self.indices)
 
-    @memoize_method
     def fn_of_ones_label_and_index(self, function):
         """Call a function taking an image, a label matrix and an index with an image of all ones
 
@@ -435,24 +398,7 @@ class Objects(object):
         Pass this function an "image" of all ones, for instance to compute
         a center or an area
         """
-
-        return function(numpy.ones(self.segmented.shape),
-                        self.segmented,
-                        self.indices)
-
-    @memoize_method
-    def fn_of_image_label_and_index(self, function, image):
-        """Call a function taking an image, a label matrix and an index
-
-        function - should have signature like
-                   image  - image with same dimensions as labels
-                   labels - label matrix
-                   index  - sequence of label indices documenting which
-                            label indices are of interest
-        """
-        return function(image,
-                        self.segmented,
-                        self.indices)
+        return function(numpy.ones(self.segmented.shape), self.segmented, self.indices)
 
 
 class Segmentation(object):

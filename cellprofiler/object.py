@@ -79,7 +79,7 @@ class Objects(object):
         The ijv format is a list of i,j coordinates in slots 0 and 1
         and the label at the pixel in slot 2.
         '''
-        sparse = self.__segmented.get_sparse()
+        sparse = self.__segmented.sparse
         return numpy.column_stack(
                 [sparse[axis] for axis in
                  "y", "x",
@@ -90,7 +90,7 @@ class Objects(object):
     @property
     def shape(self):
         '''The i and j extents of the labels'''
-        return self.__segmented.get_shape()[-2:]
+        return self.__segmented.shape[-2:]
 
     def get_labels(self):
         '''Get a set of labels matrices consisting of non-overlapping labels
@@ -167,7 +167,7 @@ class Objects(object):
         for segmentation in self.__segmented, self.__small_removed_segmented, self.__unedited_segmented:
             if segmentation is not None and not segmentation.has_shape():
                 shape = (1, 1, 1, parent_image.pixel_data.shape[0], parent_image.pixel_data.shape[1])
-                segmentation.set_shape(shape)
+                segmentation.shape = shape
 
     @property
     def has_parent_image(self):
@@ -428,7 +428,8 @@ class Segmentation(object):
             self.__indices = [
                 idx[1:] if idx[0] == 0 else idx for idx in self.__indices]
 
-    def get_shape(self):
+    @property
+    def shape(self):
         '''Get or estimate the shape of the segmentation matrix
 
         Order of precedence:
@@ -451,7 +452,8 @@ class Segmentation(object):
                          for axis in ("c", "t", "z", "y", "x")])
         return self.__shape
 
-    def set_shape(self, shape):
+    @shape.setter
+    def shape(self, shape):
         '''Set the shape of the segmentation array
 
         shape - the 5D shape of the array
@@ -460,8 +462,6 @@ class Segmentation(object):
         '''
         self.__shape = shape
         self.__explicit_shape = True
-
-    shape = property(get_shape, set_shape)
 
     def has_dense(self):
         return self.__dense is not None
@@ -475,7 +475,8 @@ class Segmentation(object):
 
         return self.has_dense()
 
-    def get_sparse(self):
+    @property
+    def sparse(self):
         '''Get the sparse representation of the segmentation
 
         returns a Numpy record array where every row represents
@@ -490,8 +491,6 @@ class Segmentation(object):
             raise ValueError("Can't find object, \"%s\", segmentation, \"%s\"." % (self.__objects_name, self.__segmentation_name))
 
         return self.__convert_dense_to_sparse()
-
-    sparse = property(get_sparse)
 
     def get_dense(self):
         '''Get the dense representation of the segmentation
@@ -562,7 +561,7 @@ class Segmentation(object):
         return dense, self.__indices
 
     def __convert_sparse_to_dense(self):
-        sparse = self.get_sparse()
+        sparse = self.sparse
         if len(sparse) == 0:
             return self.__set_dense(
                     numpy.zeros([1] + list(self.shape), numpy.uint16))

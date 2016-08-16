@@ -42,6 +42,17 @@ class TestObjects(unittest.TestCase):
         x.segmented = self.__segmented10
         self.assertTrue((self.__segmented10 == x.segmented).all())
 
+    def test_3D_segmented(self):
+        # are all 3D images read as z, x, y?
+        segmented3d = numpy.zeros((5, 10, 10))
+        segmented3d[1:3, 2:4, 2:4] = 1
+        segmented3d[2:4, 5:7, 5:7] = 2
+
+        objects = cellprofiler.object.Objects()
+        objects.segmented = segmented3d
+
+        self.assertTrue(numpy.all(segmented3d == objects.segmented))
+
     def test_01_03_set_unedited_segmented(self):
         x = cellprofiler.object.Objects()
         x.unedited_segmented = self.__unedited_segmented10

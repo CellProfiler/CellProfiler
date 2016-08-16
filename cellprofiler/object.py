@@ -44,20 +44,25 @@ class Objects(object):
         """Get the de-facto segmentation of the image into objects: a matrix
         of object numbers.
         """
-        assert isinstance(self.__segmented, Segmentation), \
-            "Operation failed because objects were not initialized"
+        assert isinstance(self.__segmented, Segmentation), "Operation failed because objects were not initialized"
+
         dense, indices = self.__segmented.get_dense()
+
         assert len(dense) == 1, "Operation failed because objects overlapped. Please try with non-overlapping objects"
-        assert numpy.all(numpy.array(dense.shape[1:-2]) == 1), \
-            "Operation failed because the segmentation was not 2D"
-        return dense.reshape(dense.shape[-2:])
+
+        if numpy.all(numpy.array(dense.shape[1:-2]) == 1):
+            return dense.reshape(dense.shape[-2:])
+        elif numpy.all(numpy.array(dense.shape[1:-3]) == 1):
+            return dense.reshape(dense.shape[-3:])
+        else:
+            assert False, "Operation failed because the segmentation was not 2D or 3D"
 
     @segmented.setter
     def segmented(self, labels):
         dense = downsample_labels(labels)
 
         if len(labels.shape) == 3:
-            dense = dense.reshape((1, 1, 1, dense.shape[2], dense.shape[0], dense.shape[1]))
+            dense = dense.reshape((1, 1, 1, dense.shape[0], dense.shape[1], dense.shape[2]))
         else:
             dense = dense.reshape((1, 1, 1, 1, dense.shape[0], dense.shape[1]))
 

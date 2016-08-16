@@ -170,7 +170,7 @@ class MakeProjection(cpm.Module):
         happen if the image set didn't reach this module.
         '''
         image_set = workspace.image_set
-        if self.projection_image_name.value not in image_set.get_names():
+        if self.projection_image_name.value not in image_set.names:
             provider = ImageProvider.restore_from_state(self.get_dictionary())
             image_set.providers.append(provider)
 

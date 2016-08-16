@@ -339,6 +339,6 @@ class TestExpandOrShrinkObjects(unittest.TestCase):
         module.run(workspace)
         objects = workspace.object_set.get_objects(OUTPUT_NAME)
         self.assertTrue(np.all(objects.segmented == expected))
-        self.assertTrue(OUTLINES_NAME in workspace.image_set.get_names())
+        self.assertTrue(OUTLINES_NAME in workspace.image_set.names)
         outlines = workspace.image_set.get_image(OUTLINES_NAME).pixel_data
         self.assertTrue(np.all(outlines == expected_outlines))

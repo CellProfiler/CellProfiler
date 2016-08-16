@@ -142,7 +142,7 @@ class VWImageRow(VWRow):
         self.last_mode = cellprofiler.gui.artist.MODE_COLORIZE
 
     def get_names(self):
-        return self.vw.workspace.image_set.get_names()
+        return self.vw.workspace.image_set.names
 
     def update_data(self, name):
         """Update the image data from the workspace"""
@@ -196,7 +196,7 @@ class VWMaskRow(VWRow):
     def get_names(self):
         image_set = self.vw.workspace.image_set
         names = [
-            name for name in image_set.get_names()
+            name for name in image_set.names
             if image_set.get_image(name).has_mask]
         return names
 

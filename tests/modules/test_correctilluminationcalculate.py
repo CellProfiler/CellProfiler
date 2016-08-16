@@ -281,13 +281,13 @@ class TestCorrectImage_Calculate(unittest.TestCase):
             assert isinstance(workspace, cpw.Workspace)
             module.run(workspace)
         image_set = workspaces[-1].image_set
-        self.assertNotIn(OUTPUT_IMAGE_NAME, image_set.get_names())
-        self.assertNotIn(DILATED_IMAGE_NAME, image_set.get_names())
-        self.assertNotIn(AVERAGE_IMAGE_NAME, image_set.get_names())
+        self.assertNotIn(OUTPUT_IMAGE_NAME, image_set.names)
+        self.assertNotIn(DILATED_IMAGE_NAME, image_set.names)
+        self.assertNotIn(AVERAGE_IMAGE_NAME, image_set.names)
         module.post_group(workspaces[-1], None)
-        self.assertIn(OUTPUT_IMAGE_NAME, image_set.get_names())
-        self.assertIn(DILATED_IMAGE_NAME, image_set.get_names())
-        self.assertIn(AVERAGE_IMAGE_NAME, image_set.get_names())
+        self.assertIn(OUTPUT_IMAGE_NAME, image_set.names)
+        self.assertIn(DILATED_IMAGE_NAME, image_set.names)
+        self.assertIn(AVERAGE_IMAGE_NAME, image_set.names)
 
     def test_01_04_not_filtered(self):
         '''Regression test of issue #310, negative case
@@ -315,9 +315,9 @@ class TestCorrectImage_Calculate(unittest.TestCase):
             assert isinstance(workspace, cpw.Workspace)
             module.run(workspace)
         image_set = workspaces[-1].image_set
-        self.assertIn(OUTPUT_IMAGE_NAME, image_set.get_names())
-        self.assertIn(DILATED_IMAGE_NAME, image_set.get_names())
-        self.assertIn(AVERAGE_IMAGE_NAME, image_set.get_names())
+        self.assertIn(OUTPUT_IMAGE_NAME, image_set.names)
+        self.assertIn(DILATED_IMAGE_NAME, image_set.names)
+        self.assertIn(AVERAGE_IMAGE_NAME, image_set.names)
         module.post_group(workspaces[-1], None)
         #
         # Make sure it appears only once
@@ -325,7 +325,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         for image_name in (
                 OUTPUT_IMAGE_NAME, DILATED_IMAGE_NAME, AVERAGE_IMAGE_NAME):
             self.assertEqual(len(filter(lambda x: x == image_name,
-                                        image_set.get_names())), 1)
+                                        image_set.names)), 1)
 
     def test_02_02_Background(self):
         """Test an image with four distinct backgrounds"""

@@ -569,7 +569,7 @@ class TestSegmentation(unittest.TestCase):
                  (HDF5ObjectSet.AXIS_X, np.uint32, 1),
                  (HDF5ObjectSet.AXIS_LABELS, np.uint32, 1)])
         s = cpo.Segmentation(sparse=ijv)
-        np.testing.assert_array_equal(s.get_sparse(), ijv)
+        np.testing.assert_array_equal(s.sparse, ijv)
         self.assertFalse(s.has_dense())
         self.assertTrue(s.has_sparse())
 
@@ -622,7 +622,7 @@ class TestSegmentation(unittest.TestCase):
             mask = ((i - y_loc) ** 2 + (j - x_loc) ** 2) <= radius ** 2
             dense[idx, 0, 0, 0, mask] = idx + 1
         s = cpo.Segmentation(dense=dense)
-        ijv = s.get_sparse()
+        ijv = s.sparse
         self.assertEqual(np.sum(dense > 0), len(ijv))
         retrieval = dense[:, 0, 0, 0,
                     ijv[HDF5ObjectSet.AXIS_Y], ijv[HDF5ObjectSet.AXIS_X]]
@@ -680,7 +680,7 @@ class TestSegmentation(unittest.TestCase):
         shape = (1, 1, 1, 50, 50)
         s = cpo.Segmentation(sparse=ijv)
         self.assertFalse(s.has_shape())
-        s.set_shape(shape)
+        s.shape = shape
         self.assertEqual(tuple(s.shape), shape)
 
 

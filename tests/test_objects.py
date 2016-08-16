@@ -63,6 +63,16 @@ class TestObjects(unittest.TestCase):
         x.unedited_segmented = self.__unedited_segmented10
         self.assertTrue((self.__unedited_segmented10 == x.unedited_segmented).all())
 
+    def test_3D_unedited_segmented(self):
+        unedited_segmented3d = numpy.zeros((5, 10, 10))
+        unedited_segmented3d[1:3, 2:4, 2:4] = 1
+        unedited_segmented3d[2:4, 5:7, 5:7] = 2
+
+        objects = cellprofiler.object.Objects()
+        objects.unedited_segmented = unedited_segmented3d
+
+        self.assertTrue(numpy.all(unedited_segmented3d == objects.unedited_segmented))
+
     def test_01_05_set_small_removed_segmented(self):
         x = cellprofiler.object.Objects()
         x.small_removed_segmented = self.__small_removed_segmented10

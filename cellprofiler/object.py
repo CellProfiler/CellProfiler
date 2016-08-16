@@ -50,23 +50,11 @@ class Objects(object):
 
         assert len(dense) == 1, "Operation failed because objects overlapped. Please try with non-overlapping objects"
 
-        if numpy.all(numpy.array(dense.shape[1:-2]) == 1):
-            return dense.reshape(dense.shape[-2:])
-        elif numpy.all(numpy.array(dense.shape[1:-3]) == 1):
-            return dense.reshape(dense.shape[-3:])
-        else:
-            assert False, "Operation failed because the segmentation was not 2D or 3D"
+        return self.__to_labels(dense)
 
     @segmented.setter
     def segmented(self, labels):
-        dense = downsample_labels(labels)
-
-        if len(labels.shape) == 3:
-            dense = dense.reshape((1, 1, 1, dense.shape[0], dense.shape[1], dense.shape[2]))
-        else:
-            dense = dense.reshape((1, 1, 1, 1, dense.shape[0], dense.shape[1]))
-
-        self.__segmented = Segmentation(dense=dense)
+        self.__segmented = self.__from_labels(labels)
 
     def set_ijv(self, ijv, shape=None):
         '''Set the segmentation to an IJV object format
@@ -130,14 +118,14 @@ class Objects(object):
         """
         if self.__unedited_segmented is not None:
             dense, indices = self.__unedited_segmented.get_dense()
-            return dense[0, 0, 0, 0]
+
+            return self.__to_labels(dense)
+
         return self.segmented
 
     @unedited_segmented.setter
     def unedited_segmented(self, labels):
-        dense = downsample_labels(labels).reshape(
-                (1, 1, 1, 1, labels.shape[0], labels.shape[1]))
-        self.__unedited_segmented = Segmentation(dense=dense)
+        self.__unedited_segmented = self.__from_labels(labels)
 
     def has_small_removed_segmented(self):
         """Return true if there is a junk object matrix."""
@@ -402,6 +390,22 @@ class Objects(object):
         a center or an area
         """
         return function(numpy.ones(self.segmented.shape), self.segmented, self.indices)
+
+    def __from_labels(self, labels):
+        dense = downsample_labels(labels)
+
+        if len(labels.shape) == 3:
+            dense = dense.reshape((1, 1, 1, dense.shape[0], dense.shape[1], dense.shape[2]))
+        else:
+            dense = dense.reshape((1, 1, 1, 1, dense.shape[0], dense.shape[1]))
+
+        return Segmentation(dense=dense)
+
+    def __to_labels(self, dense):
+        if numpy.all(numpy.array(dense.shape[1:-2]) == 1):
+            return dense.reshape(dense.shape[-2:])
+        else:
+            return dense.reshape(dense.shape[-3:])
 
 
 class Segmentation(object):

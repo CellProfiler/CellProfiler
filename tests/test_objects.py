@@ -35,7 +35,7 @@ class TestObjects(unittest.TestCase):
 
     def test_01_01_set_segmented(self):
         x = cpo.Objects()
-        x.set_segmented(self.__segmented10)
+        x.segmented = self.__segmented10
         self.assertTrue((self.__segmented10 == x.segmented).all())
 
     def test_01_02_segmented(self):
@@ -45,7 +45,7 @@ class TestObjects(unittest.TestCase):
 
     def test_01_03_set_unedited_segmented(self):
         x = cpo.Objects()
-        x.set_unedited_segmented(self.__unedited_segmented10)
+        x.unedited_segmented = self.__unedited_segmented10
         self.assertTrue((self.__unedited_segmented10 == x.unedited_segmented).all())
 
     def test_01_04_unedited_segmented(self):
@@ -55,7 +55,7 @@ class TestObjects(unittest.TestCase):
 
     def test_01_05_set_small_removed_segmented(self):
         x = cpo.Objects()
-        x.set_small_removed_segmented(self.__small_removed_segmented10)
+        x.small_removed_segmented = self.__small_removed_segmented10
         self.assertTrue((self.__small_removed_segmented10 == x.small_removed_segmented).all())
 
     def test_01_06_unedited_segmented(self):
@@ -569,7 +569,7 @@ class TestSegmentation(unittest.TestCase):
                  (HDF5ObjectSet.AXIS_X, np.uint32, 1),
                  (HDF5ObjectSet.AXIS_LABELS, np.uint32, 1)])
         s = cpo.Segmentation(sparse=ijv)
-        np.testing.assert_array_equal(s.get_sparse(), ijv)
+        np.testing.assert_array_equal(s.sparse, ijv)
         self.assertFalse(s.has_dense())
         self.assertTrue(s.has_sparse())
 
@@ -622,7 +622,7 @@ class TestSegmentation(unittest.TestCase):
             mask = ((i - y_loc) ** 2 + (j - x_loc) ** 2) <= radius ** 2
             dense[idx, 0, 0, 0, mask] = idx + 1
         s = cpo.Segmentation(dense=dense)
-        ijv = s.get_sparse()
+        ijv = s.sparse
         self.assertEqual(np.sum(dense > 0), len(ijv))
         retrieval = dense[:, 0, 0, 0,
                     ijv[HDF5ObjectSet.AXIS_Y], ijv[HDF5ObjectSet.AXIS_X]]
@@ -680,7 +680,7 @@ class TestSegmentation(unittest.TestCase):
         shape = (1, 1, 1, 50, 50)
         s = cpo.Segmentation(sparse=ijv)
         self.assertFalse(s.has_shape())
-        s.set_shape(shape)
+        s.shape = shape
         self.assertEqual(tuple(s.shape), shape)
 
 

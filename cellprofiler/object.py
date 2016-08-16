@@ -46,11 +46,7 @@ class Objects(object):
         """
         assert isinstance(self.__segmented, Segmentation), "Operation failed because objects were not initialized"
 
-        dense, indices = self.__segmented.get_dense()
-
-        assert len(dense) == 1, "Operation failed because objects overlapped. Please try with non-overlapping objects"
-
-        return self.__to_labels(dense)
+        return self.__to_labels(self.__segmented)
 
     @segmented.setter
     def segmented(self, labels):
@@ -88,7 +84,7 @@ class Objects(object):
     @property
     def shape(self):
         '''The i and j extents of the labels'''
-        return self.__segmented.shape[-2:]
+        return self.__to_labels(self.__segmented).shape
 
     def get_labels(self):
         '''Get a set of labels matrices consisting of non-overlapping labels
@@ -117,9 +113,7 @@ class Objects(object):
         segmented labeling.
         """
         if self.__unedited_segmented is not None:
-            dense, indices = self.__unedited_segmented.get_dense()
-
-            return self.__to_labels(dense)
+            return self.__to_labels(self.__unedited_segmented)
 
         return self.segmented
 
@@ -140,9 +134,7 @@ class Objects(object):
         or the image mask still present.
         """
         if self.__small_removed_segmented is not None:
-            dense, indices = self.__small_removed_segmented.get_dense()
-
-            return self.__to_labels(dense)
+            return self.__to_labels(self.__small_removed_segmented)
 
         return self.unedited_segmented
 
@@ -401,7 +393,11 @@ class Objects(object):
 
         return Segmentation(dense=dense)
 
-    def __to_labels(self, dense):
+    def __to_labels(self, segmentation):
+        dense, indices = segmentation.get_dense()
+
+        assert len(dense) == 1, "Operation failed because objects overlapped. Please try with non-overlapping objects"
+
         if numpy.all(numpy.array(dense.shape[1:-2]) == 1):
             return dense.reshape(dense.shape[-2:])
         else:

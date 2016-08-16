@@ -55,7 +55,12 @@ class Objects(object):
     @segmented.setter
     def segmented(self, labels):
         dense = downsample_labels(labels)
-        dense = dense.reshape((1, 1, 1, 1, dense.shape[0], dense.shape[1]))
+
+        if len(labels.shape) == 3:
+            dense = dense.reshape((1, 1, 1, dense.shape[2], dense.shape[0], dense.shape[1]))
+        else:
+            dense = dense.reshape((1, 1, 1, 1, dense.shape[0], dense.shape[1]))
+
         self.__segmented = Segmentation(dense=dense)
 
     def set_ijv(self, ijv, shape=None):

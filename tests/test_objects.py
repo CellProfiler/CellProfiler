@@ -7,7 +7,6 @@ import unittest
 
 import cellprofiler.image
 import cellprofiler.object
-import cellprofiler.utilities.hdf5_dict
 import centrosome.outline
 import numpy
 import scipy.ndimage
@@ -611,9 +610,9 @@ class TestSegmentation(unittest.TestCase):
         r.seed(102)
         ijv = numpy.core.records.fromarrays(
                 [r.randint(0, 10, size=20) for _ in range(3)],
-                [(cellprofiler.utilities.hdf5_dict.HDF5ObjectSet.AXIS_Y, numpy.uint32, 1),
-                 (cellprofiler.utilities.hdf5_dict.HDF5ObjectSet.AXIS_X, numpy.uint32, 1),
-                 (cellprofiler.utilities.hdf5_dict.HDF5ObjectSet.AXIS_LABELS, numpy.uint32, 1)])
+                [("y", numpy.uint32, 1),
+                 ("x", numpy.uint32, 1),
+                 ("label", numpy.uint32, 1)])
         s = cellprofiler.object.Segmentation(sparse=ijv)
         numpy.testing.assert_array_equal(s.get_sparse(), ijv)
         self.assertFalse(s.has_dense())
@@ -640,16 +639,16 @@ class TestSegmentation(unittest.TestCase):
             vv.append(numpy.ones(numpy.sum(mask), numpy.uint32) * (idx + 1))
         ijv = numpy.core.records.fromarrays([
                                                 numpy.hstack(x) for x in ii, jj, vv],
-                                            [(cellprofiler.utilities.hdf5_dict.HDF5ObjectSet.AXIS_Y, numpy.uint32, 1),
-                                             (cellprofiler.utilities.hdf5_dict.HDF5ObjectSet.AXIS_X, numpy.uint32, 1),
-                                             (cellprofiler.utilities.hdf5_dict.HDF5ObjectSet.AXIS_LABELS, numpy.uint32, 1)])
+                                            [("y", numpy.uint32, 1),
+                                             ("x", numpy.uint32, 1),
+                                             ("label", numpy.uint32, 1)])
         s = cellprofiler.object.Segmentation(sparse=ijv, shape=(1, 1, 1, 50, 50))
         dense, indices = s.get_dense()
         self.assertEqual(tuple(dense.shape[1:]), (1, 1, 1, 50, 50))
         self.assertEqual(numpy.sum(dense > 0), len(ijv))
         retrieval = dense[:, 0, 0, 0,
-                    ijv[cellprofiler.utilities.hdf5_dict.HDF5ObjectSet.AXIS_Y], ijv[cellprofiler.utilities.hdf5_dict.HDF5ObjectSet.AXIS_X]]
-        matches = (retrieval == ijv[cellprofiler.utilities.hdf5_dict.HDF5ObjectSet.AXIS_LABELS][None, :])
+                    ijv["y"], ijv["x"]]
+        matches = (retrieval == ijv["label"][None, :])
         self.assertTrue(numpy.all(numpy.sum(matches, 0) == 1))
 
     def test_02_02_dense_to_sparse(self):
@@ -671,8 +670,8 @@ class TestSegmentation(unittest.TestCase):
         ijv = s.sparse
         self.assertEqual(numpy.sum(dense > 0), len(ijv))
         retrieval = dense[:, 0, 0, 0,
-                    ijv[cellprofiler.utilities.hdf5_dict.HDF5ObjectSet.AXIS_Y], ijv[cellprofiler.utilities.hdf5_dict.HDF5ObjectSet.AXIS_X]]
-        matches = (retrieval == ijv[cellprofiler.utilities.hdf5_dict.HDF5ObjectSet.AXIS_LABELS][None, :])
+                    ijv["y"], ijv["x"]]
+        matches = (retrieval == ijv["label"][None, :])
         self.assertTrue(numpy.all(numpy.sum(matches, 0) == 1))
 
     def test_03_01_shape_dense(self):
@@ -689,9 +688,9 @@ class TestSegmentation(unittest.TestCase):
         shape = (1, 1, 1, 50, 50)
         ijv = numpy.core.records.fromarrays(
                 [r.randint(0, 10, size=20) for _ in range(3)],
-                [(cellprofiler.utilities.hdf5_dict.HDF5ObjectSet.AXIS_Y, numpy.uint32, 1),
-                 (cellprofiler.utilities.hdf5_dict.HDF5ObjectSet.AXIS_X, numpy.uint32, 1),
-                 (cellprofiler.utilities.hdf5_dict.HDF5ObjectSet.AXIS_LABELS, numpy.uint32, 1)])
+                [("y", numpy.uint32, 1),
+                 ("x", numpy.uint32, 1),
+                 ("label", numpy.uint32, 1)])
         s = cellprofiler.object.Segmentation(sparse=ijv, shape=shape)
         self.assertTrue(s.has_shape())
         self.assertEqual(tuple(s.shape), shape)
@@ -702,11 +701,11 @@ class TestSegmentation(unittest.TestCase):
         shape = (1, 1, 1, 50, 50)
         ijv = numpy.core.records.fromarrays(
                 [r.randint(0, 10, size=20) for _ in range(3)],
-                [(cellprofiler.utilities.hdf5_dict.HDF5ObjectSet.AXIS_Y, numpy.uint32, 1),
-                 (cellprofiler.utilities.hdf5_dict.HDF5ObjectSet.AXIS_X, numpy.uint32, 1),
-                 (cellprofiler.utilities.hdf5_dict.HDF5ObjectSet.AXIS_LABELS, numpy.uint32, 1)])
-        ijv[cellprofiler.utilities.hdf5_dict.HDF5ObjectSet.AXIS_X] = 11
-        ijv[cellprofiler.utilities.hdf5_dict.HDF5ObjectSet.AXIS_Y] = 31
+                [("y", numpy.uint32, 1),
+                 ("x", numpy.uint32, 1),
+                 ("label", numpy.uint32, 1)])
+        ijv["x"] = 11
+        ijv["y"] = 31
         shape = (1, 1, 1, 33, 13)
         s = cellprofiler.object.Segmentation(sparse=ijv)
         self.assertFalse(s.has_shape())
@@ -718,11 +717,11 @@ class TestSegmentation(unittest.TestCase):
         shape = (1, 1, 1, 50, 50)
         ijv = numpy.core.records.fromarrays(
                 [r.randint(0, 10, size=20) for _ in range(3)],
-                [(cellprofiler.utilities.hdf5_dict.HDF5ObjectSet.AXIS_Y, numpy.uint32, 1),
-                 (cellprofiler.utilities.hdf5_dict.HDF5ObjectSet.AXIS_X, numpy.uint32, 1),
-                 (cellprofiler.utilities.hdf5_dict.HDF5ObjectSet.AXIS_LABELS, numpy.uint32, 1)])
-        ijv[cellprofiler.utilities.hdf5_dict.HDF5ObjectSet.AXIS_X] = 11
-        ijv[cellprofiler.utilities.hdf5_dict.HDF5ObjectSet.AXIS_Y] = 31
+                [("y", numpy.uint32, 1),
+                 ("x", numpy.uint32, 1),
+                 ("label", numpy.uint32, 1)])
+        ijv["x"] = 11
+        ijv["y"] = 31
         shape = (1, 1, 1, 50, 50)
         s = cellprofiler.object.Segmentation(sparse=ijv)
         self.assertFalse(s.has_shape())

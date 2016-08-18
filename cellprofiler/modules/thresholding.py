@@ -1,4 +1,5 @@
 # coding=utf-8
+
 """
 
 Thresholding
@@ -34,6 +35,7 @@ class Thresholding(cellprofiler.module.Module):
             [
                 u"Adaptive",
                 u"Iterative selection thresholding",
+                u"Manual",
                 u"Minimum cross entropy thresholding",
                 u"Otsu’s method",
                 u"Yen’s method"
@@ -88,17 +90,29 @@ class Thresholding(cellprofiler.module.Module):
             value=256
         )
 
+        self.lower = cellprofiler.setting.Float(
+            u"Lower",
+            value=0.0
+        )
+
+        self.upper = cellprofiler.setting.Float(
+            u"Upper",
+            value=1.0
+        )
+
     def settings(self):
         return [
-            self.x_name,
-            self.y_name,
-            self.method,
             self.adaptive_block_size,
             self.adaptive_method,
-            self.adaptive_offset,
             self.adaptive_mode,
+            self.adaptive_offset,
             self.isodata_bins,
+            self.lower,
+            self.method,
             self.otsu_bins,
+            self.upper,
+            self.x_name,
+            self.y_name,
             self.yen_bins
         ]
 
@@ -120,6 +134,12 @@ class Thresholding(cellprofiler.module.Module):
         if self.method.value == u"Iterative selection thresholding":
             settings = settings + [
                 self.isodata_bins
+            ]
+
+        if self.method.value == u"Manual":
+            settings = settings + [
+                self.lower,
+                self.upper
             ]
 
         if self.method.value == u"Otsu’s method":
@@ -146,9 +166,9 @@ class Thresholding(cellprofiler.module.Module):
 
         y_data = numpy.zeros_like(x_data)
 
-        for plane, image in enumerate(x_data):
+        for z, image in enumerate(x_data):
             if self.method.value == u"Adaptive":
-                y_data[plane] = skimage.filters.threshold_adaptive(
+                y_data[z] = skimage.filters.threshold_adaptive(
                     image=image,
                     block_size=self.adaptive_block_size.value,
                     method=self.adaptive_method.value.lower(),
@@ -156,32 +176,35 @@ class Thresholding(cellprofiler.module.Module):
                     mode=self.adaptive_mode.value.lower()
                 )
             elif self.method.value == u"Iterative selection thresholding":
-                y_data[plane] = skimage.filters.threshold_isodata(
+                y_data[z] = skimage.filters.threshold_isodata(
                     image=image,
                     nbins=self.isodata_bins.value
                 )
 
-                y_data[plane] = image >= y_data[plane]
+                y_data[z] = image >= y_data[z]
+            elif self.method.value == u"Manual":
+                y_data[z] = image > self.lower
+                y_data[z] = image < self.upper
             elif self.method.value == u"Minimum cross entropy thresholding":
-                y_data[plane] = skimage.filters.threshold_li(
+                y_data[z] = skimage.filters.threshold_li(
                     image=image
                 )
 
-                y_data[plane] = image >= y_data[plane]
+                y_data[z] = image >= y_data[z]
             elif self.method.value == u"Otsu’s method":
-                y_data[plane] = skimage.filters.threshold_otsu(
+                y_data[z] = skimage.filters.threshold_otsu(
                     image=image,
                     nbins=self.otsu_bins.value
                 )
 
-                y_data[plane] = image >= y_data[plane]
+                y_data[z] = image >= y_data[z]
             elif self.method.value == u"Yen’s method":
-                y_data[plane] = skimage.filters.threshold_yen(
+                y_data[z] = skimage.filters.threshold_yen(
                     image=image,
                     nbins=self.yen_bins.value
                 )
 
-                y_data[plane] = image >= y_data[plane]
+                y_data[z] = image >= y_data[z]
 
         y = cellprofiler.image.Image(
             image=y_data,

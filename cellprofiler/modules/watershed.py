@@ -9,7 +9,10 @@ import cellprofiler.module
 import cellprofiler.object
 import cellprofiler.setting
 import numpy
-import SimpleITK
+import skimage.exposure
+import skimage.filters
+import skimage.measure
+import skimage.morphology
 
 
 class Watershed(cellprofiler.module.Module):
@@ -18,116 +21,102 @@ class Watershed(cellprofiler.module.Module):
     variable_revision_number = 1
 
     def create_settings(self):
-        self.input_image = cellprofiler.setting.ImageNameSubscriber(
-            "Input image",
-            "---SELECT---"
+        self.x_name = cellprofiler.setting.ImageNameSubscriber(
+            "Input"
         )
 
-        self.output_object = cellprofiler.setting.ObjectNameProvider(
-            "Output object",
+        self.object_name = cellprofiler.setting.ObjectNameProvider(
+            "Object name",
             ""
         )
 
-        self.mask = cellprofiler.setting.ImageNameSubscriber(
-            "Mask",
-            "---SELECT---"
+        self.markers = cellprofiler.setting.ImageNameSubscriber(
+            "Markers"
         )
 
-        self.invert_mask = cellprofiler.setting.Binary(
-            "Invert Mask",
-            False
+        self.connectivity = cellprofiler.setting.ImageNameSubscriber(
+            "Connectivity"
         )
+
+        self.mask = cellprofiler.setting.ImageNameSubscriber(
+            "Mask"
+        )
+
 
     def settings(self):
         return [
-            self.input_image,
-            self.output_object,
-            self.mask,
-            self.invert_mask
+            self.x_name,
+            self.object_name,
+            self.markers,
+            self.connectivity,
+            self.mask
         ]
 
     def visible_settings(self):
         return [
-            self.input_image,
-            self.output_object,
-            self.mask,
-            self.invert_mask
+            self.x_name,
+            self.object_name,
+            self.markers,
+            self.connectivity,
+            self.mask
         ]
 
     def run(self, workspace):
+        x_name = self.x_name.value
+        object_name = self.object_name.value
+
+        markers_name = self.markers.value
+
+        connectivity_name = self.connectivity.value
+
+        mask_name = self.mask.value
+
         images = workspace.image_set
 
-        image = images.get_image(self.input_image.value)
+        x = images.get_image(x_name)
 
-        mask = images.get_image(self.mask.value)
+        x_data = x.pixel_data
 
-        if self.invert_mask.value:
-            features = SimpleITK.GetImageFromArray(numpy.logical_not(mask.pixel_data) * 1.0)
-        else:
-            features = SimpleITK.GetImageFromArray(mask.pixel_data * 1.0)
+        markers = images.get_image(markers_name)
 
-        features_watershed = SimpleITK.MorphologicalWatershed(
-            features,
-            markWatershedLine=True,
-            fullyConnected=False
-        ) # TODO: Expose/configure "level" option
+        markers_data = markers.pixel_data
 
-        # TODO: Requires objects to be cleared from edges.
-        # Alternatively, remove the mode (scipy.stats) though finding
-        # the mode is expensive. Perhaps perform over only one slice?
-        connected_segmentation = SimpleITK.ConnectedComponent(features_watershed != features_watershed[0,0,0])
+        connectivity = images.get_image(connectivity_name)
 
-        filled = SimpleITK.BinaryFillhole(connected_segmentation != 0)
+        connectivity_data = connectivity.pixel_data
 
-        distances = SimpleITK.SignedMaurerDistanceMap(
-            filled,
-            insideIsPositive=False,
-            squaredDistance=False,
-            useImageSpacing=False
+        mask = images.get_image(mask_name)
+
+        mask_data = mask.pixel_data
+
+        y_data = numpy.zeros_like(x_data)
+
+        segmentation = skimage.morphology.watershed(
+            image=x_data,
+            markers=markers_data
         )
 
-        distances_watershed = SimpleITK.MorphologicalWatershed(
-            distances,
-            markWatershedLine=False,
-            level=1
-        ) # TODO: What is "level"? Do we tune it?
-        # Level refers to "minimum dynamic of minima" -- excludes minima lower than minima at "level"?
+        labels = skimage.measure.label(segmentation)
 
-        segmentation = SimpleITK.Mask(
-            distances_watershed,
-            SimpleITK.Cast(
-                connected_segmentation,
-                distances_watershed.GetPixelID()
-            )
-        )
+        objects = cellprofiler.object.Objects()
 
-        segmentation = SimpleITK.GetArrayFromImage(segmentation)
+        objects.segmented = labels
 
-        output_object = cellprofiler.object.Objects()
-        output_object.segmented = segmentation
-        workspace.object_set.add_objects(output_object, self.output_object.value)
+        workspace.object_set.add_objects(objects, object_name)
 
         if self.show_window:
-            workspace.display_data.image = image.pixel_data
-            workspace.display_data.segmentation = segmentation
+            workspace.display_data.x_data = x_data
 
     def display(self, workspace, figure):
-        dimensions = (2, 1)
+        dimensions = (1, 1)
 
-        image = workspace.display_data.image[16]
-        segmentation = workspace.display_data.segmentation[16]
+        x_data = workspace.display_data.x_data[16]
 
         figure.set_subplots(dimensions)
 
         figure.subplot_imshow(
             0,
             0,
-            image,
+            x_data,
             colormap="gray"
-        )
-
-        figure.subplot_imshow_labels(
-            1,
-            0,
-            segmentation
         )

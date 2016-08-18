@@ -230,7 +230,7 @@ class ImageSegmentation(cellprofiler.module.Module):
 
                 sigma = self.simple_linear_iterative_clustering_sigma.value
 
-                segmentation = skimage.segmentation.slic(data, segments, compactness, iterations, sigma)
+                segmentation = skimage.segmentation.slic(data, segments, compactness, iterations, sigma, spacing=image.spacing)
 
                 segmentation = skimage.color.label2rgb(segmentation, data, kind="avg")
 

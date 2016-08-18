@@ -39,12 +39,30 @@ class Volume(cellprofiler.module.Module):
             text = "Name"
         )
 
+        self.x = cellprofiler.setting.Float(
+            "x",
+            1.0
+        )
+
+        self.y = cellprofiler.setting.Float(
+            "y",
+            1.0
+        )
+
+        self.z = cellprofiler.setting.Float(
+            "z",
+            1.0
+        )
+
     def settings(self):
         return [
             self.directory,
             self.filename,
             self.name,
-            self.channel
+            self.channel,
+            self.x,
+            self.y,
+            self.z
         ]
 
     def visible_settings(self):
@@ -52,7 +70,10 @@ class Volume(cellprofiler.module.Module):
             self.directory,
             self.filename,
             self.name,
-            self.channel
+            self.channel,
+            self.x,
+            self.y,
+            self.z
         ]
 
     def prepare_run(self, workspace):
@@ -78,7 +99,8 @@ class Volume(cellprofiler.module.Module):
         x = skimage.io.imread(path)[:, :, :, channel]
 
         image = cellprofiler.image.Image(
-            dimensions=3
+            dimensions=3,
+            spacing=(self.z.value, self.x.value, self.y.value)
         )
 
         image.pixel_data = x

@@ -49,6 +49,8 @@ class MorphologicalSkeleton(cellprofiler.module.Module):
 
         x_data = x.pixel_data
 
+        x_data = skimage.img_as_uint(x_data)
+
         x_data = skimage.exposure.rescale_intensity(x_data * 1.0)
 
         y_data = skimage.morphology.skeletonize_3d(x_data)

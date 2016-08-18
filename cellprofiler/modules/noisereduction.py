@@ -76,6 +76,8 @@ class NoiseReduction(cellprofiler.module.Module):
 
         x_data = x.pixel_data
 
+        x_data = skimage.img_as_uint(x_data)
+
         y_data = skimage.restoration.denoise_nl_means(
             image=x_data,
             patch_size=size,

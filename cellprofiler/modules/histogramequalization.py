@@ -70,6 +70,8 @@ class HistogramEqualization(cellprofiler.module.Module):
 
         x_data = x.pixel_data
 
+        x_data = skimage.img_as_uint(x_data)
+
         disk = skimage.morphology.disk(radius)
 
         y_data = numpy.zeros_like(x_data)

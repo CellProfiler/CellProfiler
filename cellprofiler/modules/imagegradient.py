@@ -70,6 +70,8 @@ class ImageGradient(cellprofiler.module.Module):
 
         x_data = x.pixel_data
 
+        x_data = skimage.img_as_uint(x_data)
+
         disk = skimage.morphology.disk(radius)
 
         y_data = numpy.zeros_like(x_data)
@@ -78,9 +80,11 @@ class ImageGradient(cellprofiler.module.Module):
             y_data[z] = skimage.filters.rank.gradient(image, disk)
 
         y = cellprofiler.image.Image(
-            image=y_data,
+            dimensions=3,
             parent_image=x
         )
+
+        y.pixel_data = y_data
 
         images.add(y_name, y)
 
@@ -96,14 +100,16 @@ class ImageGradient(cellprofiler.module.Module):
 
         figure.set_subplots(dimensions)
 
-        figure.subplot_imshow_grayscale(
+        figure.imshow(
             0,
             0,
-            x_data
+            x_data,
+            "gray"
         )
 
-        figure.subplot_imshow_grayscale(
+        figure.imshow(
             1,
             0,
-            y_data
+            y_data,
+            "gray"
         )

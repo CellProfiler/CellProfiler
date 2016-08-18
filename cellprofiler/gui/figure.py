@@ -1065,6 +1065,11 @@ class Figure(wx.Frame):
                 slider.Value = orig_alpha
                 on_slider(None)
 
+    def imshow(self, x, y, image, cmap):
+        subplot = self.subplot(x, y)
+
+        subplot.imshow(image, cmap=cmap)
+
     @allow_sharexy
     def subplot_imshow(self, x, y, image, title=None, clear=True, colormap=None,
                        colorbar=False, normalize=None, vmin=0, vmax=1,

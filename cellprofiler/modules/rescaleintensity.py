@@ -1,4 +1,4 @@
-'''<b>RescaleIntensity</b> changes the intensity range of an image to your 
+'''<b>RescaleIntensity</b> changes the intensity range of an image to your
 desired specifications.
 <hr>
 This module lets you rescale the intensity of the input images by any of several
@@ -359,7 +359,7 @@ class RescaleIntensity(cpm.Module):
                 figure.subplot_imshow_grayscale(
                     i,
                     j,
-                    pixel_data[16],
+                    pixel_data[0],
                     title=image_name,
                     vmin=0,
                     vmax=1,

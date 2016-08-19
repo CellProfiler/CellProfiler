@@ -8,8 +8,6 @@ import cellprofiler.image
 import cellprofiler.module
 import cellprofiler.object
 import cellprofiler.setting
-import numpy
-import scipy.ndimage
 import skimage.exposure
 import skimage.feature
 import skimage.filters

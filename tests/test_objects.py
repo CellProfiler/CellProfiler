@@ -591,7 +591,20 @@ class TestObjects(unittest.TestCase):
 
         self.assertTrue(shape == objects.shape)
 
-# TODO: Uncomment me
+    def test_segmented_from_empty_ijv(self):
+        objects = cellprofiler.object.Objects()
+        objects.ijv = numpy.zeros((0,3), int)
+
+        self.assertTrue(numpy.all(objects.segmented == numpy.zeros((1,1))))
+
+    def test_shape_from_empty_ijv(self):
+        objects = cellprofiler.object.Objects()
+        objects.ijv = numpy.zeros((0, 3), int)
+
+        self.assertTrue(objects.shape == (1,1))
+
+
+# TODO: uncommentme
 # class TestDownsampleLabels(unittest.TestCase):
 #     def test_01_01_downsample_127(self):
 #         i, j = numpy.mgrid[0:16, 0:8]

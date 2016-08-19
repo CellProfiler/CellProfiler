@@ -442,8 +442,7 @@ class Objects(object):
         elif self.has_parent_image:
             return self.parent_image.pixel_data.shape
         elif numpy.all(numpy.array(ijv) == 0):
-            # get array([], shape=SHAPE, ...) when given numpy.zeros(SHAPE)
-            return ijv.shape
+            return 1, 1
 
         x = ijv[:, 0]
         y = ijv[:, 1]

@@ -1070,6 +1070,12 @@ class Figure(wx.Frame):
 
         subplot.imshow(image, cmap=cmap)
 
+    def plot(self, x, y, image, markers, markercolor="+r", markersize=15):
+        subplot = self.subplot(x, y)
+
+        subplot.imshow(image, cmap='gray')
+        subplot.plot(markers[:, 1], markers[:, 0], markercolor, markersize=markersize)
+
     @allow_sharexy
     def subplot_imshow(self, x, y, image, title=None, clear=True, colormap=None,
                        colorbar=False, normalize=None, vmin=0, vmax=1,
@@ -1436,7 +1442,7 @@ class Figure(wx.Frame):
         image = image.astype(numpy.float32)
         if isinstance(colormap, matplotlib.cm.ScalarMappable):
             colormap = colormap.cmap
-        
+
         # Perform normalization
         if normalize == 'log':
             if is_color_image(image):

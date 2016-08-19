@@ -45,6 +45,3 @@ class Save(cellprofiler.module.Module):
         image = images.get_image(self.image.value).pixel_data
 
         imageio.mimsave(filename, image)
-
-    def display(self, workspace, figure):
-        pass

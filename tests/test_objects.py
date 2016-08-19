@@ -120,6 +120,20 @@ class TestObjects(unittest.TestCase):
         self.assertEqual(numpy.product(children_per_parent.shape), 0)
         self.assertEqual(numpy.product(parents_of_children.shape), 0)
 
+    def test_relate_zero_parents_and_children_3D(self):
+        """Test the relate method if both parent and child label matrices are zeros"""
+        x = cellprofiler.object.Objects()
+        x.segmented = numpy.zeros((5, 10, 10), int)
+
+        y = cellprofiler.object.Objects()
+        y.segmented = numpy.zeros((5, 10, 10), int)
+
+        children_per_parent, parents_of_children = x.relate_children(y)
+
+        self.assertEqual(numpy.product(children_per_parent.shape), 0)
+
+        self.assertEqual(numpy.product(parents_of_children.shape), 0)
+
     def test_05_02_relate_zero_parents_one_child(self):
         x = cellprofiler.object.Objects()
         x.segmented = numpy.zeros((10, 10), int)
@@ -130,6 +144,24 @@ class TestObjects(unittest.TestCase):
         children_per_parent, parents_of_children = x.relate_children(y)
         self.assertEqual(numpy.product(children_per_parent.shape), 0)
         self.assertEqual(numpy.product(parents_of_children.shape), 1)
+        self.assertEqual(parents_of_children[0], 0)
+
+    def test_relate_zero_parents_one_child_3D(self):
+        x = cellprofiler.object.Objects()
+        x.segmented = numpy.zeros((5, 10, 10), int)
+
+        labels = numpy.zeros((5, 10, 10), int)
+        labels[2:4, 3:6, 3:6] = 1
+
+        y = cellprofiler.object.Objects()
+        y.segmented = labels
+
+        children_per_parent, parents_of_children = x.relate_children(y)
+
+        self.assertEqual(numpy.product(children_per_parent.shape), 0)
+
+        self.assertEqual(numpy.product(parents_of_children.shape), 1)
+
         self.assertEqual(parents_of_children[0], 0)
 
     def test_05_03_relate_one_parent_no_children(self):
@@ -602,6 +634,25 @@ class TestObjects(unittest.TestCase):
         objects.ijv = numpy.zeros((0, 3), int)
 
         self.assertTrue(objects.shape == (1,1))
+
+    def test_ijv_from_segmented_3D(self):
+        shape = (5, 10, 10)
+
+        ijv = numpy.asarray([
+            [1, 1, 1, 1], [1, 1, 2, 1], [1, 2, 1, 1], [1, 2, 2, 1],
+            [2, 1, 1, 1], [2, 1, 2, 1], [2, 2, 1, 1], [2, 2, 2, 1],
+            [3, 3, 3, 2], [3, 3, 4, 2], [3, 4, 3, 2], [3, 4, 4, 2],
+            [4, 3, 3, 2], [4, 3, 4, 2], [4, 4, 3, 2], [4, 4, 4, 2]
+        ])
+
+        labels = numpy.zeros(shape, dtype=numpy.uint8)
+        labels[1:3, 1:3, 1:3] = 1
+        labels[3:5, 3:5, 3:5] = 2
+
+        objects = cellprofiler.object.Objects()
+        objects.segmented = labels
+
+        self.assertTrue(numpy.all(objects.ijv == ijv))
 
 
 # TODO: uncommentme

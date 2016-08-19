@@ -55,7 +55,6 @@ class Objects(object):
     def segmented(self, labels):
         self.__segmented = self.__downsample_labels(labels)
 
-    # TODO: Can this be removed?
     @property
     def unedited_segmented(self):
         if self.__unedited_segmented is not None:
@@ -67,7 +66,6 @@ class Objects(object):
     def unedited_segmented(self, labels):
         self.__unedited_segmented = self.__downsample_labels(labels)
 
-    # TODO: Can this be removed?
     @property
     def small_removed_segmented(self):
         if self.__small_removed_segmented is not None:
@@ -83,42 +81,45 @@ class Objects(object):
 
     # TODO: rename to cellprofiler.object.labels_to_coordinates (or similar)
     def get_ijv(self):
-        '''Get the segmentation in IJV object format
+        """Get the segmentation in IJV object format
         The ijv format is a list of i,j coordinates in slots 0 and 1
         and the label at the pixel in slot 2.
-        '''
+        """
 
         if self.__ijv[0] is not None:
             return self.__ijv[0]
         elif numpy.all(self.__segmented == 0):
             return numpy.zeros((0, 3), dtype=numpy.uint16)
 
-        x, y = numpy.nonzero(self.__segmented)
-        values = self.__segmented[x, y]
+        coordinates = numpy.nonzero(self.__segmented)
+        values = self.__segmented[coordinates]
 
-        return numpy.asarray(zip(x, y, values))
+        ijv = numpy.concatenate((coordinates, [values]))
+        ijv = zip(*ijv)
+
+        return numpy.asarray(ijv)
 
     # TODO: rename to cellprofiler.object.coordinates_to_labels (or similar)
     def set_ijv(self, ijv, shape=None):
-        '''Set the segmentation to an IJV object format
+        """Set the segmentation to an IJV object format
 
         The ijv format is a list of i,j coordinates in slots 0 and 1
         and the label at the pixel in slot 2.
-        '''
+        """
         self.__ijv = (ijv, shape)
 
     ijv = property(get_ijv, set_ijv)
 
     @property
     def shape(self):
-        '''The i and j extents of the labels'''
+        """The i and j and sometimes k extents of the labels"""
         if self.__segmented is not None:
             return self.__segmented.shape
 
         return self.__shape_from_ijv()
 
     def get_labels(self, shape=None):
-        '''Get a set of labels matrices consisting of non-overlapping labels
+        """Get a set of labels matrices consisting of non-overlapping labels
 
         In IJV format, a single pixel might have multiple labels. If you
         want to use a labels matrix, you have an ambiguous situation and the
@@ -126,7 +127,7 @@ class Objects(object):
         non-overlapping labels.
 
         returns a list of label matrixes and the indexes in each
-        '''
+        """
         if self.__segmented is not None:
             return [(self.__segmented, numpy.unique(self.__segmented))]
 
@@ -166,10 +167,8 @@ class Objects(object):
                 labeling_matrices.append(labeling_matrix)
 
         # TODO: Can we return only the list of labeling matrices?
-        result = [(
-                      self.__downsample_labels(labeling_matrix),
-                      numpy.asarray(numpy.unique(labeling_matrix)[1:], dtype=int)
-                  ) for labeling_matrix in labeling_matrices]
+        result = [(self.__downsample_labels(labeling_matrix),
+                   numpy.asarray(numpy.unique(labeling_matrix)[1:], dtype=int)) for labeling_matrix in labeling_matrices]
 
         return result
 
@@ -269,11 +268,11 @@ class Objects(object):
         each parent. The second gives the mapping of each child to its parent's
         object number.
         """
-        histogram = self.histogram_from_ijv(self.ijv, children.ijv)
-        return self.relate_histogram(histogram)
+        histogram = self.__histogram_from_ijv(self.ijv, children.ijv)
+        return self.__relate_histogram(histogram)
 
     def relate_labels(self, parent_labels, child_labels):
-        '''relate the object numbers in one label to those in another
+        """relate the object numbers in one label to those in another
 
         parent_labels - 2d label matrix of parent labels
 
@@ -282,19 +281,20 @@ class Objects(object):
         Returns two 1-d arrays. The first gives the number of children within
         each parent. The second gives the mapping of each child to its parent's
         object number.
-        '''
-        histogram = self.histogram_from_labels(parent_labels, child_labels)
-        return self.relate_histogram(histogram)
+        """
+        histogram = self.__histogram_from_labels(parent_labels, child_labels)
+        return self.__relate_histogram(histogram)
 
-    def relate_histogram(self, histogram):
-        '''Return child counts and parents of children given a histogram
+    def __relate_histogram(self, histogram):
+        """Return child counts and parents of children given a histogram
 
         histogram - histogram from histogram_from_ijv or histogram_from_labels
-        '''
+        """
         parent_count = histogram.shape[0] - 1
         child_count = histogram.shape[1] - 1
 
         parents_of_children = numpy.argmax(histogram, axis=0)
+
         #
         # Create a histogram of # of children per parent
         children_per_parent = numpy.histogram(parents_of_children[1:], numpy.arange(parent_count + 2))[0][1:]
@@ -305,7 +305,7 @@ class Objects(object):
         return children_per_parent, parents_of_children[1:]
 
     @staticmethod
-    def histogram_from_labels(parent_labels, child_labels):
+    def __histogram_from_labels(parent_labels, child_labels):
         """Find per pixel overlap of parent labels and child labels
 
         parent_labels - the parents which contain the children
@@ -339,7 +339,7 @@ class Objects(object):
                                        shape=(parent_count + 1, child_count + 1)).toarray()
 
     @staticmethod
-    def histogram_from_ijv(parent_ijv, child_ijv):
+    def __histogram_from_ijv(parent_ijv, child_ijv):
         """Find per pixel overlap of parent labels and child labels,
         stored in ijv format.
 
@@ -359,17 +359,12 @@ class Objects(object):
 
         dim_i = max(numpy.max(parent_ijv[:, 0]), numpy.max(child_ijv[:, 0])) + 1
         dim_j = max(numpy.max(parent_ijv[:, 1]), numpy.max(child_ijv[:, 1])) + 1
-        parent_linear_ij = parent_ijv[:, 0] + \
-                           dim_i * parent_ijv[:, 1].astype(numpy.uint64)
-        child_linear_ij = child_ijv[:, 0] + \
-                          dim_i * child_ijv[:, 1].astype(numpy.uint64)
+        parent_linear_ij = parent_ijv[:, 0] + dim_i * parent_ijv[:, 1].astype(numpy.uint64)
+        child_linear_ij = child_ijv[:, 0] + dim_i * child_ijv[:, 1].astype(numpy.uint64)
 
-        parent_matrix = scipy.sparse.coo_matrix((numpy.ones((parent_ijv.shape[0],)),
-                                                 (parent_ijv[:, 2], parent_linear_ij)),
-                                                shape=(parent_count + 1, dim_i * dim_j))
-        child_matrix = scipy.sparse.coo_matrix((numpy.ones((child_ijv.shape[0],)),
-                                                (child_linear_ij, child_ijv[:, 2])),
-                                               shape=(dim_i * dim_j, child_count + 1))
+        parent_matrix = scipy.sparse.coo_matrix((numpy.ones((parent_ijv.shape[0],)), (parent_ijv[:, 2], parent_linear_ij)), shape=(parent_count + 1, dim_i * dim_j))
+        child_matrix = scipy.sparse.coo_matrix((numpy.ones((child_ijv.shape[0],)), (child_linear_ij, child_ijv[:, 2])), shape=(dim_i * dim_j, child_count + 1))
+
         # I surely do not understand the sparse code.  Converting both
         # arrays to csc gives the best peformance... Why not p.csr and
         # c.csc?
@@ -448,6 +443,7 @@ class Objects(object):
         y = ijv[:, 1]
 
         return numpy.max(x) + 2, numpy.max(y) + 2  # whyyyyy???
+
 
 def check_consistency(segmented, unedited_segmented, small_removed_segmented):
     """Check the three components of Objects to make sure they are consistent

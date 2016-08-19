@@ -39,7 +39,8 @@ class Watershed(cellprofiler.module.Module):
         )
 
         self.mask = cellprofiler.setting.ImageNameSubscriber(
-            "Mask"
+            "Mask",
+            can_be_blank=True
         )
 
     def settings(self):
@@ -65,7 +66,9 @@ class Watershed(cellprofiler.module.Module):
 
         markers = images.get_image(self.markers.value).pixel_data
 
-        mask = images.get_image(self.mask.value).pixel_data
+        mask = None
+        if not self.mask.is_blank:
+            mask = images.get_image(self.mask.value).pixel_data
 
         labels = skimage.morphology.watershed(image, markers, mask=mask)
 

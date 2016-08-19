@@ -87,9 +87,9 @@ class Watershed(cellprofiler.module.Module):
     def display(self, workspace, figure):
         dimensions = (2, 1)
 
-        image = workspace.display_data.image[16]
+        image = workspace.display_data.image[0]
 
-        labels = workspace.display_data.labels[16]
+        labels = workspace.display_data.labels[0]
 
         figure.set_subplots(dimensions)
 

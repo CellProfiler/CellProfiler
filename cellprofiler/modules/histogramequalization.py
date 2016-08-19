@@ -95,8 +95,8 @@ class HistogramEqualization(cellprofiler.module.Module):
     def display(self, workspace, figure):
         dimensions = (2, 1)
 
-        x_data = workspace.display_data.x_data[16]
-        y_data = workspace.display_data.y_data[16]
+        x_data = workspace.display_data.x_data[0]
+        y_data = workspace.display_data.y_data[0]
 
         figure.set_subplots(dimensions)
 

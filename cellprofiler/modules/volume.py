@@ -114,7 +114,7 @@ class Volume(cellprofiler.module.Module):
     # display lets you use matplotlib to display your results.
     #
     def display(self, workspace, figure):
-        image = workspace.display_data.image[15]
+        image = workspace.display_data.image[0]
 
         dimensions = (1, 1)
 

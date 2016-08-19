@@ -22,7 +22,7 @@ class EdgeDetection(cellprofiler.module.Module):
 
     def create_settings(self):
         self.x_name = cellprofiler.setting.ImageNameSubscriber(
-            u"Input"
+            u"Input",
         )
 
         self.y_name = cellprofiler.setting.ImageNameProvider(
@@ -46,7 +46,8 @@ class EdgeDetection(cellprofiler.module.Module):
         )
 
         self.mask = cellprofiler.setting.ImageNameSubscriber(
-            u"Mask"
+            u"Mask",
+            can_be_blank=True
         )
 
     def settings(self):
@@ -98,19 +99,21 @@ class EdgeDetection(cellprofiler.module.Module):
 
         x_data = x.pixel_data
 
-        x_data = skimage.img_as_uint(x_data)
-
         y_data = numpy.zeros_like(x_data)
+
+        mask = self.mask.value
+        if self.mask.is_blank:
+            mask = None
 
         for plane, image in enumerate(x_data):
             if self.operation.value == u"Canny edge detection":
-                y_data[plane] = skimage.feature.canny(x_data[plane], sigma=self.sigma.value)
+                y_data[plane] = skimage.feature.canny(x_data[plane], sigma=self.sigma.value, mask=mask)
             elif self.operation.value == u"Prewitt operator":
-                y_data[plane] = skimage.filters.prewitt(x_data[plane])
+                y_data[plane] = skimage.filters.prewitt(x_data[plane], mask=mask)
             elif self.operation.value == u"Roberts’ cross":
-                y_data[plane] = skimage.filters.roberts(x_data[plane])
+                y_data[plane] = skimage.filters.roberts(x_data[plane], mask=mask)
             elif self.operation.value == u"Sobel operator":
-                y_data[plane] = skimage.filters.sobel(x_data[plane])
+                y_data[plane] = skimage.filters.sobel(x_data[plane], mask=mask)
 
         y_data = skimage.exposure.rescale_intensity(y_data * 1.0)
 

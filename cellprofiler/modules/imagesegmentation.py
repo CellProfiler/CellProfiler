@@ -10,6 +10,7 @@ import cellprofiler.object
 import cellprofiler.setting
 import skimage.color
 import skimage.filters
+import skimage.measure
 import skimage.morphology
 import skimage.segmentation
 
@@ -203,6 +204,8 @@ class ImageSegmentation(cellprofiler.module.Module):
 
         data = image.pixel_data
 
+        segmentation = None
+
         if self.method.value == "Active contour model":
             if self.active_contour_model_implementation == "Chan-Vese":
                 mask = self.chan_vese_mask.value
@@ -232,12 +235,6 @@ class ImageSegmentation(cellprofiler.module.Module):
 
                 segmentation = skimage.segmentation.slic(data, segments, compactness, iterations, sigma, spacing=image.spacing)
 
-                segmentation = skimage.color.label2rgb(segmentation, data, kind="avg")
-
-        output_object = cellprofiler.object.Objects()
-        output_object.segmented = segmentation
-        workspace.object_set.add_objects(output_object, self.object_name.value)
-
         if self.show_window:
             workspace.display_data.image = data
 
@@ -246,18 +243,16 @@ class ImageSegmentation(cellprofiler.module.Module):
     def display(self, workspace, figure):
         figure.set_subplots((2, 1))
 
-        figure.subplot_imshow_grayscale(
+        figure.subplot_imshow_color(
             0,
             0,
-            workspace.display_data.image[16],
-            ""
+            workspace.display_data.image[0]
         )
 
-        figure.subplot_imshow_grayscale(
+        figure.subplot_imshow(
             1,
             0,
-            workspace.display_data.segmentation[16],
-            ""
+            workspace.display_data.segmentation[0]
         )
 
 

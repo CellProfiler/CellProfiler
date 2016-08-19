@@ -64,7 +64,7 @@ class MorphologicalSkeleton(cellprofiler.module.Module):
 
         if self.show_window:
             workspace.display_data.x_data = x_data
-            workspace.display_data.y_data = x_data
+            workspace.display_data.y_data = y_data
 
     def display(self, workspace, figure):
         dimensions = (2, 1)

@@ -22,6 +22,7 @@ class DistanceTransform(cellprofiler.module.Module):
         )
 
         self.y_name = cellprofiler.setting.ImageNameProvider(
+            "Output",
             "distance"
         )
 

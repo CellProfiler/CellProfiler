@@ -19,7 +19,9 @@ import matplotlib.backends.backend_wxagg
 import matplotlib.backends.backend_wxagg
 import matplotlib.cm
 import matplotlib.colorbar
+import matplotlib.gridspec
 import matplotlib.patches
+import matplotlib.pyplot
 import numpy
 import numpy.ma
 import os
@@ -284,8 +286,11 @@ class Figure(wx.Frame):
         self.widgets = []
         self.mouse_down = None
         self.remove_menu = []
-        self.figure = figure = matplotlib.figure.Figure()
+        self.figure = matplotlib.pyplot.Figure()
         self.panel = matplotlib.backends.backend_wxagg.FigureCanvasWxAgg(self, -1, self.figure)
+        self.__gridspec = None
+        self.__grid_size = None
+        self.__grid_center = None
         if secret_panel_class is None:
             secret_panel_class = wx.Panel
         self.secret_panel = secret_panel_class(self)
@@ -541,7 +546,7 @@ class Figure(wx.Frame):
             y1 = max(self.mouse_down[1], evt.ydata)
         if self.mouse_mode == MODE_MEASURE_LENGTH:
             self.on_mouse_move_measure_length(evt, x0, y0, x1, y1)
-        elif not self.mouse_mode == MODE_MEASURE_LENGTH:
+        elif not self.mouse_mode == MODE_NONE:
             self.on_mouse_move_show_pixel_data(evt, x0, y0, x1, y1)
 
     def get_pixel_data_fields_for_status_bar(self, im, xi, yi):
@@ -1069,6 +1074,48 @@ class Figure(wx.Frame):
         subplot = self.subplot(x, y)
 
         subplot.imshow(image, cmap=cmap)
+
+    def gridspec(self, dimensions, grid_size):
+        self.__gridspec = matplotlib.gridspec.GridSpec(*dimensions)
+
+        self.__grid_size = grid_size
+
+    def __find_grid_center(self, image):
+        if self.__grid_center is not None:
+            return self.__grid_center
+
+        means = [numpy.mean(img) for _idx, img in enumerate(image)]
+
+        max_mean = numpy.max(means)
+
+        self.__grid_center = means.index(max_mean)
+
+        return self.__grid_center
+
+    def add_grid(self, index, image, cmap='gray'):
+        # TODO: handle index out of bounds
+        center = self.__find_grid_center(image)
+
+        start = center - 4
+
+        stop = center + 5
+
+        gridspec = matplotlib.gridspec.GridSpecFromSubplotSpec(*self.__grid_size, subplot_spec=self.__gridspec[index])
+
+        for idx, img in enumerate(image[start:stop]):
+            ax = matplotlib.pyplot.Subplot(self.figure, gridspec[idx])
+
+            if idx / 3 != 2:
+                ax.set_xticklabels([])
+
+            if idx % 3 != 0:
+                ax.set_yticklabels([])
+
+            ax.imshow(img, cmap=cmap)
+
+            self.figure.add_subplot(ax)
+
+        matplotlib.pyplot.show()
 
     def plot(self, x, y, image, markers, markercolor="+r", markersize=15):
         subplot = self.subplot(x, y)

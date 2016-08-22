@@ -93,23 +93,8 @@ class Opening(cellprofiler.module.Module):
             workspace.display_data.y_data = y_data
 
     def display(self, workspace, figure):
-        dimensions = (2, 1)
+        figure.gridspec((1, 2), (3, 3))
 
-        x_data = workspace.display_data.x_data[0]
-        y_data = workspace.display_data.y_data[0]
+        figure.add_grid(0, workspace.display_data.x_data)
 
-        figure.set_subplots(dimensions)
-
-        figure.subplot_imshow(
-            0,
-            0,
-            x_data,
-            colormap="gray"
-        )
-
-        figure.subplot_imshow(
-            1,
-            0,
-            y_data,
-            colormap="gray"
-        )
+        figure.add_grid(1, workspace.display_data.y_data)

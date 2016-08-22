@@ -241,19 +241,11 @@ class ImageSegmentation(cellprofiler.module.Module):
             workspace.display_data.segmentation = segmentation
 
     def display(self, workspace, figure):
-        figure.set_subplots((2, 1))
+        figure.gridspec((1, 2), (3, 3))
 
-        figure.subplot_imshow_color(
-            0,
-            0,
-            workspace.display_data.image[0]
-        )
+        figure.add_grid(0, workspace.display_data.x_data)
 
-        figure.subplot_imshow(
-            1,
-            0,
-            workspace.display_data.segmentation[0]
-        )
+        figure.add_grid(1, workspace.display_data.y_data)
 
 
 import numpy as np

@@ -86,23 +86,8 @@ class Watershed(cellprofiler.module.Module):
             workspace.display_data.labels = labels
 
     def display(self, workspace, figure):
-        dimensions = (2, 1)
+        figure.gridspec((1, 2), (3, 3))
 
-        image = workspace.display_data.image[0]
+        figure.add_grid(0, workspace.display_data.image)
 
-        labels = workspace.display_data.labels[0]
-
-        figure.set_subplots(dimensions)
-
-        figure.subplot_imshow(
-            0,
-            0,
-            image,
-            colormap="gray"
-        )
-
-        figure.subplot_imshow_labels(
-            1,
-            0,
-            labels
-        )
+        figure.add_grid(1, workspace.display_data.labels)

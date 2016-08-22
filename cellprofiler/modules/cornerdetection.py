@@ -26,24 +26,88 @@ class CornerDetection(cellprofiler.module.Module):
             u"Output"
         )
 
+        self.method = cellprofiler.setting.Choice(
+            u"Harris corner method",
+            [
+                "Sensitivity factor",  # k -- default
+                "Normalization factor"  # eps
+            ],
+            "Sensitivity factor"
+        )
+
+        self.k = cellprofiler.setting.Float(
+            u"Sensitivity factor",
+            0.05
+        )
+
+        self.eps = cellprofiler.setting.Float(
+            u"Normalization factor",
+            1e-06
+        )
+
         self.minimum_distance = cellprofiler.setting.Float(
             u"Minimum distance",
             1
+        )
+
+        self.exclude_border = cellprofiler.setting.Binary(
+            u"Exclude peaks from boarder?",
+            False
+        )
+
+        self.exclude_border_distance = cellprofiler.setting.Integer(
+            u"Distance from boarder",
+            0
+        )
+
+        self.num_peaks = cellprofiler.setting.Integer(
+            u"Number of peaks",
+            0
+        )
+
+        self.window_size = cellprofiler.setting.Integer(
+            u"Window size",
+            13
         )
 
     def settings(self):
         return [
             self.x_name,
             self.y_name,
-            self.minimum_distance
+            self.method,
+            self.minimum_distance,
+            self.exclude_border,
+            self.exclude_border_distance,
+            self.num_peaks,
+            self.window_size
         ]
 
     def visible_settings(self):
         settings = [
             self.x_name,
             self.y_name,
-            self.minimum_distance
+            self.minimum_distance,
+            self.num_peaks,
+            self.window_size,
+            self.method
         ]
+
+        if self.method.value == "Sensitivity factor":
+            settings = settings + [
+                self.k
+            ]
+
+        if self.method.value == "Normalization factor":
+            settings = settings + [
+                self.eps
+            ]
+
+        settings = settings + [self.exclude_border]
+
+        if self.exclude_border.value:
+            settings = settings + [
+                self.exclude_border_distance
+            ]
 
         return settings
 
@@ -53,13 +117,30 @@ class CornerDetection(cellprofiler.module.Module):
 
         minimum_distance = self.minimum_distance.value
 
-        coordinates = [skimage.feature.corner_peaks(skimage.feature.corner_harris(data), min_distance=minimum_distance) for data in x_data]
+        coordinates = [
+            skimage.feature.corner_peaks(
+                skimage.feature.corner_harris(
+                    data,
+                    method=self.__method(),
+                    k=self.k.value,
+                    eps=self.eps.value
+                ),
+                min_distance=minimum_distance,
+                exclude_border=self.exclude_border_distance.value,
+                num_peaks=self.__num_peaks()
+            ) for data in x_data
+        ]
 
-        corners = [skimage.feature.corner_subpix(data, point, window_size=25) for data, point in zip(x_data, coordinates)]
+        corners = [
+            skimage.feature.corner_subpix(
+                data,
+                point,
+                window_size=self.window_size.value
+            ) for data, point in zip(x_data, coordinates)
+        ]
 
-        # Corners are floats
-        print(corners[0])
-
+        # TODO: Save corners as an... image? segmentation?
+        # Convert corners from float to integers?
         # y_data = numpy.zeros_like(x_data)
         # y_data[corners[:, 1], corners[:, 0]] = 1
 
@@ -82,3 +163,14 @@ class CornerDetection(cellprofiler.module.Module):
             corners
         )
 
+    def __method(self):
+        if self.method.value == "Sensitivity factor":
+            return "k"
+
+        return "eps"
+
+    def __num_peaks(self):
+        if self.num_peaks.value == 0:
+            return numpy.inf
+
+        return self.num_peaks.value

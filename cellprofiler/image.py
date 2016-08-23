@@ -612,12 +612,13 @@ class ImageSetList(object):
 
     """
 
-    def __init__(self):
+    def __init__(self, test_mode=False):
         self.__image_sets = []
         self.__image_sets_by_key = {}
         self.legacy_fields = {}
         self.__associating_by_key = None
         self.combine_path_and_file = False
+        self.test_mode = test_mode
 
     def get_image_set(self, keys_or_number):
         """Return either the indexed image set (keys_or_number = index) or the image set with matching keys

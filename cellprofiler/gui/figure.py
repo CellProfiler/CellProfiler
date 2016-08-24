@@ -289,8 +289,7 @@ class Figure(wx.Frame):
         self.figure = matplotlib.pyplot.Figure()
         self.panel = matplotlib.backends.backend_wxagg.FigureCanvasWxAgg(self, -1, self.figure)
         self.__gridspec = None
-        self.__grid_size = None
-        self.__grid_center = None
+        self.__grid_config = None
         if secret_panel_class is None:
             secret_panel_class = wx.Panel
         self.secret_panel = secret_panel_class(self)
@@ -1075,37 +1074,42 @@ class Figure(wx.Frame):
 
         subplot.imshow(image, cmap=cmap)
 
-    def gridspec(self, dimensions, grid_size):
-        self.__gridspec = matplotlib.gridspec.GridSpec(*dimensions)
+    def set_grids(self, shape):
+        self.__gridspec = matplotlib.gridspec.GridSpec(*shape)
 
-        self.__grid_size = grid_size
-
-    def __find_grid_center(self, image):
-        if self.__grid_center is not None:
-            return self.__grid_center
-
+    def __set_grid_config(self, image):
+        # Center the grid at the slice with the greatest mean intensity.
         means = [numpy.mean(img) for _idx, img in enumerate(image)]
-
         max_mean = numpy.max(means)
+        center = means.index(max_mean)
 
-        self.__grid_center = means.index(max_mean)
+        # Determine the indices of the first and last slices to display.
+        start = max(0, center - 4)
+        stop = min(center + 5, image.shape[0])
 
-        return self.__grid_center
+        # From the number of slices that are displayable, determine the
+        # shape of the grid these can be displayed in.
+        n_slices = stop - start
+        n_rows = n_slices / 3 + (1 if n_slices % 3 != 0 else 0)
+        n_cols = 3 if n_rows != 1 else n_slices
 
-    def add_grid(self, index, image, cmap='gray'):
-        # TODO: handle index out of bounds
-        center = self.__find_grid_center(image)
+        self.__grid_config = ((n_rows, n_cols), start, stop)
 
-        start = center - 4
+    def gridshow(self, x, y, image, cmap='gray'):
+        if self.__grid_config is None:
+            self.__set_grid_config(image)
 
-        stop = center + 5
+        dimensions, start, stop = self.__grid_config
 
-        gridspec = matplotlib.gridspec.GridSpecFromSubplotSpec(*self.__grid_size, subplot_spec=self.__gridspec[index])
+        gx, gy = self.__gridspec.get_geometry()
+        idx = gx * x + y
+
+        gridspec = matplotlib.gridspec.GridSpecFromSubplotSpec(*dimensions, subplot_spec=self.__gridspec[idx])
 
         for idx, img in enumerate(image[start:stop]):
             ax = matplotlib.pyplot.Subplot(self.figure, gridspec[idx])
 
-            if idx / 3 != 2:
+            if idx / 3 != (dimensions[0] - 1):
                 ax.set_xticklabels([])
 
             if idx % 3 != 0:

@@ -3,112 +3,116 @@
 import base64
 import bz2
 import cStringIO
-import unittest
 
 import cellprofiler.image
 import cellprofiler.object
 import centrosome.outline
 import numpy
+import pytest
 import scipy.ndimage
 
 
-class TestObjects(unittest.TestCase):
-    def setUp(self):
-        self.__image10 = numpy.zeros((10, 10), dtype=numpy.bool)
-        self.__image10[2:4, 2:4] = 1
-        self.__image10[5:7, 5:7] = 1
-        self.__unedited_segmented10, count = scipy.ndimage.label(self.__image10)
-        assert count == 2
-        self.__segmented10 = self.__unedited_segmented10.copy()
-        self.__segmented10[self.__segmented10 == 2] = 0
-        self.__small_removed_segmented10 = self.__unedited_segmented10.copy()
-        self.__small_removed_segmented10[self.__segmented10 == 1] = 0
+@pytest.fixture
+def unedited_segmented():
+    labels = numpy.zeros((10, 10), dtype=numpy.bool)
+    labels[2:4, 2:4] = 1
+    labels[5:7, 5:7] = 1
 
-    def relate_ijv(self, parent_ijv, children_ijv):
-        p = cellprofiler.object.Objects()
-        p.ijv = parent_ijv
-        c = cellprofiler.object.Objects()
-        c.ijv = children_ijv
-        return p.relate_children(c)
+    return scipy.ndimage.label(labels)[0]
 
-    def test_01_01_set_segmented(self):
-        x = cellprofiler.object.Objects()
-        x.segmented = self.__segmented10
-        self.assertTrue((self.__segmented10 == x.segmented).all())
 
-    def test_01_02_segmented(self):
-        x = cellprofiler.object.Objects()
-        x.segmented = self.__segmented10
-        self.assertTrue((self.__segmented10 == x.segmented).all())
+@pytest.fixture
+def unedited_segmented_3d():
+    labels = numpy.zeros((5, 10, 10), dtype=numpy.bool)
+    labels[1:4, 2:4, 2:4] = 1
+    labels[2:5, 5:7, 5:7] = 1
 
-    def test_3D_segmented(self):
-        # are all 3D images read as z, x, y?
-        segmented3d = numpy.zeros((5, 10, 10))
-        segmented3d[1:3, 2:4, 2:4] = 1
-        segmented3d[2:4, 5:7, 5:7] = 2
+    return scipy.ndimage.label(labels)[0]
 
-        objects = cellprofiler.object.Objects()
-        objects.segmented = segmented3d
 
-        self.assertTrue(numpy.all(segmented3d == objects.segmented))
+@pytest.fixture
+def segmented(unedited_segmented):
+    labels = unedited_segmented.copy()
+    labels[labels == 2] = 0
 
-    def test_01_03_set_unedited_segmented(self):
-        x = cellprofiler.object.Objects()
-        x.unedited_segmented = self.__unedited_segmented10
-        self.assertTrue((self.__unedited_segmented10 == x.unedited_segmented).all())
+    return labels
 
-    def test_01_04_unedited_segmented(self):
-        x = cellprofiler.object.Objects()
-        x.unedited_segmented = self.__unedited_segmented10
-        self.assertTrue((self.__unedited_segmented10 == x.unedited_segmented).all())
 
-    def test_3D_unedited_segmented(self):
-        unedited_segmented3d = numpy.zeros((5, 10, 10))
-        unedited_segmented3d[1:3, 2:4, 2:4] = 1
-        unedited_segmented3d[2:4, 5:7, 5:7] = 2
+@pytest.fixture
+def segmented_3d(unedited_segmented_3d):
+    labels = unedited_segmented_3d.copy()
+    labels[labels == 2] = 0
 
-        objects = cellprofiler.object.Objects()
-        objects.unedited_segmented = unedited_segmented3d
+    return labels
 
-        self.assertTrue(numpy.all(unedited_segmented3d == objects.unedited_segmented))
 
-    def test_01_05_set_small_removed_segmented(self):
-        x = cellprofiler.object.Objects()
-        x.small_removed_segmented = self.__small_removed_segmented10
-        self.assertTrue((self.__small_removed_segmented10 == x.small_removed_segmented).all())
+@pytest.fixture
+def small_removed_segmented(segmented, unedited_segmented):
+    labels = unedited_segmented.copy()
+    labels[segmented == 1] = 0
 
-    def test_01_06_small_removed_segmented(self):
-        x = cellprofiler.object.Objects()
-        x.small_removed_segmented = self.__small_removed_segmented10
-        self.assertTrue((self.__small_removed_segmented10 == x.small_removed_segmented).all())
+    return labels
 
-    def test_3D_small_removed_segmented(self):
-        small_removed_segmented3d = numpy.zeros((5, 10, 10))
-        small_removed_segmented3d[1:3, 2:4, 2:4] = 1
-        small_removed_segmented3d[2:4, 5:7, 5:7] = 2
 
-        objects = cellprofiler.object.Objects()
-        objects.small_removed_segmented = small_removed_segmented3d
+@pytest.fixture
+def small_removed_segmented_3d(segmented_3d, unedited_segmented_3d):
+    labels = unedited_segmented_3d.copy()
+    labels[segmented_3d == 1] = 0
 
-        self.assertTrue(numpy.all(small_removed_segmented3d == objects.small_removed_segmented))
+    return labels
 
-    def test_02_01_set_all(self):
-        x = cellprofiler.object.Objects()
-        x.segmented = self.__segmented10
-        x.unedited_segmented = self.__unedited_segmented10
-        x.small_removed_segmented = self.__small_removed_segmented10
 
-    # def test_03_01_default_unedited_segmented(self):
-    #     x = cpo.Objects()
-    #     x.segmented = self.__segmented10
-    #     self.assertTrue((x.unedited_segmented==x.segmented).all())
+@pytest.fixture
+def objects():
+    return cellprofiler.object.Objects()
 
-    def test_03_02_default_small_removed_segmented(self):
-        x = cellprofiler.object.Objects()
-        x.segmented = self.__segmented10
-        self.assertTrue((x.small_removed_segmented == self.__segmented10).all())
-        x.unedited_segmented = self.__unedited_segmented10
-        self.assertTrue((x.small_removed_segmented == self.__unedited_segmented10).all())
+
+@pytest.fixture
+def relate_ijv(parent_ijv, children_ijv):
+    p = cellprofiler.object.Objects()
+    p.ijv = parent_ijv
+    c = cellprofiler.object.Objects()
+    c.ijv = children_ijv
+    return p.relate_children(c)
+
+
+class TestObjects:
+    def test_segmented(self, objects, segmented):
+        objects.segmented = segmented
+        assert numpy.all(segmented == objects.segmented)
+
+    def test_segmented_3d(self, objects, segmented_3d):
+        objects.segmented = segmented_3d
+
+        assert numpy.all(objects.segmented == segmented_3d)
+
+    def test_unedited_segmented(self, objects, unedited_segmented):
+        objects.unedited_segmented = unedited_segmented
+        assert numpy.all(unedited_segmented == objects.unedited_segmented)
+
+    def test_unedited_segmented_3d(self, objects, unedited_segmented_3d):
+        objects.unedited_segmented = unedited_segmented_3d
+
+        assert numpy.all(objects.unedited_segmented == unedited_segmented_3d)
+
+    def test_small_removed_segmented(self, objects, small_removed_segmented):
+        objects.small_removed_segmented = small_removed_segmented
+        assert numpy.all(small_removed_segmented == objects.small_removed_segmented)
+
+    def test_small_removed_segmented_3d(self, objects, small_removed_segmented_3d):
+        objects.small_removed_segmented = small_removed_segmented_3d
+
+        assert numpy.all(objects.small_removed_segmented == small_removed_segmented_3d)
+
+    def test_unedited_segmented_default(self, objects, segmented):
+        objects.segmented = segmented
+        assert numpy.all(objects.unedited_segmented == segmented)
+
+    def test_small_removed_segmented_default(self, objects, segmented, unedited_segmented):
+        objects.segmented = segmented
+        assert numpy.all(objects.small_removed_segmented == segmented)
+        objects.unedited_segmented = unedited_segmented
+        assert numpy.all(objects.small_removed_segmented == unedited_segmented)
 
     def test_05_01_relate_zero_parents_and_children(self):
         """Test the relate method if both parent and child label matrices are zeros"""
@@ -117,8 +121,8 @@ class TestObjects(unittest.TestCase):
         y = cellprofiler.object.Objects()
         y.segmented = numpy.zeros((10, 10), int)
         children_per_parent, parents_of_children = x.relate_children(y)
-        self.assertEqual(numpy.product(children_per_parent.shape), 0)
-        self.assertEqual(numpy.product(parents_of_children.shape), 0)
+        assert numpy.product(children_per_parent.shape) == 0
+        assert numpy.product(parents_of_children.shape) == 0
 
     def test_relate_zero_parents_and_children_3D(self):
         """Test the relate method if both parent and child label matrices are zeros"""
@@ -130,9 +134,9 @@ class TestObjects(unittest.TestCase):
 
         children_per_parent, parents_of_children = x.relate_children(y)
 
-        self.assertEqual(numpy.product(children_per_parent.shape), 0)
+        assert numpy.product(children_per_parent.shape) == 0
 
-        self.assertEqual(numpy.product(parents_of_children.shape), 0)
+        assert numpy.product(parents_of_children.shape) == 0
 
     def test_05_02_relate_zero_parents_one_child(self):
         x = cellprofiler.object.Objects()
@@ -142,9 +146,9 @@ class TestObjects(unittest.TestCase):
         labels[3:6, 3:6] = 1
         y.segmented = labels
         children_per_parent, parents_of_children = x.relate_children(y)
-        self.assertEqual(numpy.product(children_per_parent.shape), 0)
-        self.assertEqual(numpy.product(parents_of_children.shape), 1)
-        self.assertEqual(parents_of_children[0], 0)
+        assert numpy.product(children_per_parent.shape) == 0
+        assert numpy.product(parents_of_children.shape) == 1
+        assert parents_of_children[0] == 0
 
     def test_relate_zero_parents_one_child_3D(self):
         x = cellprofiler.object.Objects()
@@ -158,11 +162,11 @@ class TestObjects(unittest.TestCase):
 
         children_per_parent, parents_of_children = x.relate_children(y)
 
-        self.assertEqual(numpy.product(children_per_parent.shape), 0)
+        assert numpy.product(children_per_parent.shape) == 0
 
-        self.assertEqual(numpy.product(parents_of_children.shape), 1)
+        assert numpy.product(parents_of_children.shape) == 1
 
-        self.assertEqual(parents_of_children[0], 0)
+        assert parents_of_children[0] == 0
 
     def test_05_03_relate_one_parent_no_children(self):
         x = cellprofiler.object.Objects()
@@ -172,9 +176,9 @@ class TestObjects(unittest.TestCase):
         y = cellprofiler.object.Objects()
         y.segmented = numpy.zeros((10, 10), int)
         children_per_parent, parents_of_children = x.relate_children(y)
-        self.assertEqual(numpy.product(children_per_parent.shape), 1)
-        self.assertEqual(children_per_parent[0], 0)
-        self.assertEqual(numpy.product(parents_of_children.shape), 0)
+        assert numpy.product(children_per_parent.shape) == 1
+        assert children_per_parent[0] == 0
+        assert numpy.product(parents_of_children.shape) == 0
 
     def test_05_04_relate_one_parent_one_child(self):
         x = cellprofiler.object.Objects()
@@ -184,10 +188,10 @@ class TestObjects(unittest.TestCase):
         y = cellprofiler.object.Objects()
         y.segmented = labels
         children_per_parent, parents_of_children = x.relate_children(y)
-        self.assertEqual(numpy.product(children_per_parent.shape), 1)
-        self.assertEqual(children_per_parent[0], 1)
-        self.assertEqual(numpy.product(parents_of_children.shape), 1)
-        self.assertEqual(parents_of_children[0], 1)
+        assert numpy.product(children_per_parent.shape) == 1
+        assert children_per_parent[0] == 1
+        assert numpy.product(parents_of_children.shape) == 1
+        assert parents_of_children[0] == 1
 
     def test_05_05_relate_two_parents_one_child(self):
         x = cellprofiler.object.Objects()
@@ -200,11 +204,11 @@ class TestObjects(unittest.TestCase):
         labels[3:6, 5:9] = 1
         y.segmented = labels
         children_per_parent, parents_of_children = x.relate_children(y)
-        self.assertEqual(numpy.product(children_per_parent.shape), 2)
-        self.assertEqual(children_per_parent[0], 0)
-        self.assertEqual(children_per_parent[1], 1)
-        self.assertEqual(numpy.product(parents_of_children.shape), 1)
-        self.assertEqual(parents_of_children[0], 2)
+        assert numpy.product(children_per_parent.shape) == 2
+        assert children_per_parent[0] == 0
+        assert children_per_parent[1] == 1
+        assert numpy.product(parents_of_children.shape) == 1
+        assert parents_of_children[0] == 2
 
     def test_05_06_relate_one_parent_two_children(self):
         x = cellprofiler.object.Objects()
@@ -217,42 +221,42 @@ class TestObjects(unittest.TestCase):
         labels[3:6, 7:9] = 2
         y.segmented = labels
         children_per_parent, parents_of_children = x.relate_children(y)
-        self.assertEqual(numpy.product(children_per_parent.shape), 1)
-        self.assertEqual(children_per_parent[0], 2)
-        self.assertEqual(numpy.product(parents_of_children.shape), 2)
-        self.assertEqual(parents_of_children[0], 1)
-        self.assertEqual(parents_of_children[1], 1)
+        assert numpy.product(children_per_parent.shape) == 1
+        assert children_per_parent[0] == 2
+        assert numpy.product(parents_of_children.shape) == 2
+        assert parents_of_children[0] == 1
+        assert parents_of_children[1] == 1
 
     def test_05_07_relate_ijv_none(self):
-        child_counts, parents_of = self.relate_ijv(numpy.zeros((0, 3), int), numpy.zeros((0, 3), int))
-        self.assertEqual(len(child_counts), 0)
-        self.assertEqual(len(parents_of), 0)
+        child_counts, parents_of = relate_ijv(numpy.zeros((0, 3), int), numpy.zeros((0, 3), int))
+        assert len(child_counts) == 0
+        assert len(parents_of) == 0
 
-        child_counts, parents_of = self.relate_ijv(numpy.zeros((0, 3), int), numpy.array([[1, 2, 3]]))
-        self.assertEqual(len(child_counts), 0)
-        self.assertEqual(len(parents_of), 3)
-        self.assertEqual(parents_of[2], 0)
+        child_counts, parents_of = relate_ijv(numpy.zeros((0, 3), int), numpy.array([[1, 2, 3]]))
+        assert len(child_counts) == 0
+        assert len(parents_of) == 3
+        assert parents_of[2] == 0
 
-        child_counts, parents_of = self.relate_ijv(numpy.array([[1, 2, 3]]), numpy.zeros((0, 3), int))
-        self.assertEqual(len(child_counts), 3)
-        self.assertEqual(child_counts[2], 0)
-        self.assertEqual(len(parents_of), 0)
+        child_counts, parents_of = relate_ijv(numpy.array([[1, 2, 3]]), numpy.zeros((0, 3), int))
+        assert len(child_counts) == 3
+        assert child_counts[2] == 0
+        assert len(parents_of) == 0
 
     def test_05_08_relate_ijv_no_match(self):
-        child_counts, parents_of = self.relate_ijv(
+        child_counts, parents_of = relate_ijv(
                 numpy.array([[3, 2, 1]]), numpy.array([[5, 6, 1]]))
-        self.assertEqual(len(child_counts), 1)
-        self.assertEqual(child_counts[0], 0)
-        self.assertEqual(len(parents_of), 1)
-        self.assertEqual(parents_of[0], 0)
+        assert len(child_counts) == 1
+        assert child_counts[0] == 0
+        assert len(parents_of) == 1
+        assert parents_of[0] == 0
 
     def test_05_09_relate_ijv_one_match(self):
-        child_counts, parents_of = self.relate_ijv(
+        child_counts, parents_of = relate_ijv(
                 numpy.array([[3, 2, 1]]), numpy.array([[3, 2, 1]]))
-        self.assertEqual(len(child_counts), 1)
-        self.assertEqual(child_counts[0], 1)
-        self.assertEqual(len(parents_of), 1)
-        self.assertEqual(parents_of[0], 1)
+        assert len(child_counts) == 1
+        assert child_counts[0] == 1
+        assert len(parents_of) == 1
+        assert parents_of[0] == 1
 
     def test_05_10_relate_ijv_many_points_one_match(self):
         r = numpy.random.RandomState()
@@ -261,12 +265,12 @@ class TestObjects(unittest.TestCase):
             r.randint(0, 10, size=(100, 2)), numpy.ones(100, int)))
         child_ijv = numpy.column_stack((
             r.randint(0, 10, size=(100, 2)), numpy.ones(100, int)))
-        child_counts, parents_of = self.relate_ijv(
+        child_counts, parents_of = relate_ijv(
                 parent_ijv, child_ijv)
-        self.assertEqual(len(child_counts), 1)
-        self.assertEqual(child_counts[0], 1)
-        self.assertEqual(len(parents_of), 1)
-        self.assertEqual(parents_of[0], 1)
+        assert len(child_counts) == 1
+        assert child_counts[0] == 1
+        assert len(parents_of) == 1
+        assert parents_of[0] == 1
 
     def test_05_11_relate_many_many(self):
         r = numpy.random.RandomState()
@@ -279,61 +283,61 @@ class TestObjects(unittest.TestCase):
         child_ijv[:, 2] = (
             1 + (child_ijv[:, 0] >= 5).astype(int) +
             2 * (child_ijv[:, 1] >= 5).astype(int))
-        child_counts, parents_of = self.relate_ijv(
+        child_counts, parents_of = relate_ijv(
                 parent_ijv, child_ijv)
-        self.assertEqual(len(child_counts), 2)
-        self.assertEqual(tuple(child_counts), (2, 2))
-        self.assertEqual(len(parents_of), 4)
-        self.assertEqual(parents_of[0], 1)
-        self.assertEqual(parents_of[1], 2)
-        self.assertEqual(parents_of[2], 1)
-        self.assertEqual(parents_of[3], 2)
+        assert len(child_counts) == 2
+        assert tuple(child_counts), (2 == 2)
+        assert len(parents_of) == 4
+        assert parents_of[0] == 1
+        assert parents_of[1] == 2
+        assert parents_of[2] == 1
+        assert parents_of[3] == 2
 
     def test_05_12_relate_many_parent_missing_child(self):
         parent_ijv = numpy.array([[1, 0, 1], [2, 0, 2], [3, 0, 3]])
         child_ijv = numpy.array([[1, 0, 1], [3, 0, 2]])
-        child_counts, parents_of = self.relate_ijv(
+        child_counts, parents_of = relate_ijv(
                 parent_ijv, child_ijv)
-        self.assertEqual(len(child_counts), 3)
-        self.assertEqual(tuple(child_counts), (1, 0, 1))
-        self.assertEqual(len(parents_of), 2)
-        self.assertEqual(parents_of[0], 1)
-        self.assertEqual(parents_of[1], 3)
+        assert len(child_counts) == 3
+        assert tuple(child_counts), (1, 0 == 1)
+        assert len(parents_of) == 2
+        assert parents_of[0] == 1
+        assert parents_of[1] == 3
 
     def test_05_13_relate_many_child_missing_parent(self):
         child_ijv = numpy.array([[1, 0, 1], [2, 0, 2], [3, 0, 3]])
         parent_ijv = numpy.array([[1, 0, 1], [3, 0, 2]])
-        child_counts, parents_of = self.relate_ijv(
+        child_counts, parents_of = relate_ijv(
                 parent_ijv, child_ijv)
-        self.assertEqual(len(child_counts), 2)
-        self.assertEqual(tuple(child_counts), (1, 1))
-        self.assertEqual(len(parents_of), 3)
-        self.assertEqual(parents_of[0], 1)
-        self.assertEqual(parents_of[1], 0)
-        self.assertEqual(parents_of[2], 2)
+        assert len(child_counts) == 2
+        assert tuple(child_counts), (1 == 1)
+        assert len(parents_of) == 3
+        assert parents_of[0] == 1
+        assert parents_of[1] == 0
+        assert parents_of[2] == 2
 
     def test_05_14_relate_many_parent_missing_child_end(self):
         parent_ijv = numpy.array([[1, 0, 1], [2, 0, 2], [3, 0, 3]])
         child_ijv = numpy.array([[1, 0, 1], [2, 0, 2]])
-        child_counts, parents_of = self.relate_ijv(
+        child_counts, parents_of = relate_ijv(
                 parent_ijv, child_ijv)
-        self.assertEqual(len(child_counts), 3)
-        self.assertEqual(tuple(child_counts), (1, 1, 0))
-        self.assertEqual(len(parents_of), 2)
-        self.assertEqual(parents_of[0], 1)
-        self.assertEqual(parents_of[1], 2)
+        assert len(child_counts) == 3
+        assert tuple(child_counts), (1, 1 == 0)
+        assert len(parents_of) == 2
+        assert parents_of[0] == 1
+        assert parents_of[1] == 2
 
     def test_05_15_relate_many_child_missing_end(self):
         child_ijv = numpy.array([[1, 0, 1], [2, 0, 2], [3, 0, 3]])
         parent_ijv = numpy.array([[1, 0, 1], [2, 0, 2]])
-        child_counts, parents_of = self.relate_ijv(
+        child_counts, parents_of = relate_ijv(
                 parent_ijv, child_ijv)
-        self.assertEqual(len(child_counts), 2)
-        self.assertEqual(tuple(child_counts), (1, 1))
-        self.assertEqual(len(parents_of), 3)
-        self.assertEqual(parents_of[0], 1)
-        self.assertEqual(parents_of[1], 2)
-        self.assertEqual(parents_of[2], 0)
+        assert len(child_counts) == 2
+        assert tuple(child_counts), (1 == 1)
+        assert len(parents_of) == 3
+        assert parents_of[0] == 1
+        assert parents_of[1] == 2
+        assert parents_of[2] == 0
 
     def test_05_16_relate_uint16(self):
         # Regression test of issue 1285 - uint16 ijv values
@@ -342,7 +346,7 @@ class TestObjects(unittest.TestCase):
         # 4096 * 16 = 0 in uint16 arithmetic
         child_ijv = numpy.array([[4095, 0, 1]], numpy.uint16)
         parent_ijv = numpy.array([[4095, 16, 1]], numpy.uint16)
-        child_counts, parents_of = self.relate_ijv(
+        child_counts, parents_of = relate_ijv(
                 parent_ijv, child_ijv)
         assert (numpy.all(child_counts == 0))
 
@@ -355,17 +359,17 @@ class TestObjects(unittest.TestCase):
         ijv = x.get_ijv()
         new_labels = numpy.zeros(labels.shape, int)
         new_labels[ijv[:, 0], ijv[:, 1]] = ijv[:, 2]
-        self.assertTrue(numpy.all(labels == new_labels))
+        assert numpy.all(labels == new_labels)
 
     def test_06_02_ijv_to_labels_empty(self):
         '''Convert a blank ijv representation to labels'''
         x = cellprofiler.object.Objects()
         x.ijv = numpy.zeros((0, 3), int)
         y = x.get_labels()
-        self.assertEqual(len(y), 1)
+        assert len(y) == 1
         labels, indices = y[0]
-        self.assertEqual(len(indices), 0)
-        self.assertTrue(numpy.all(labels == 0))
+        assert len(indices) == 0
+        assert numpy.all(labels == 0)
 
     def test_06_03_ijv_to_labels_simple(self):
         '''Convert an ijv representation w/o overlap to labels'''
@@ -380,11 +384,11 @@ class TestObjects(unittest.TestCase):
         x.ijv = ijv
         x.parent_image = cellprofiler.image.Image(numpy.zeros(labels.shape))
         labels_out = x.get_labels()
-        self.assertEqual(len(labels_out), 1)
+        assert len(labels_out) == 1
         labels_out, indices = labels_out[0]
-        self.assertTrue(numpy.all(labels_out == labels))
-        self.assertEqual(len(indices), 9)
-        self.assertTrue(numpy.all(numpy.unique(indices) == numpy.arange(1, 10)))
+        assert numpy.all(labels_out == labels)
+        assert len(indices) == 9
+        assert numpy.all(numpy.unique(indices) == numpy.arange(1, 10))
 
     def test_06_04_ijv_to_labels_overlapping(self):
         '''Convert an ijv representation with overlap to labels'''
@@ -402,16 +406,16 @@ class TestObjects(unittest.TestCase):
         x = cellprofiler.object.Objects()
         x.ijv = ijv
         labels = x.get_labels()
-        self.assertEqual(len(labels), 2)
+        assert len(labels) == 2
         unique_a = numpy.unique(labels[0][0])[1:]
         unique_b = numpy.unique(labels[1][0])[1:]
         for a in unique_a:
-            self.assertTrue(a not in unique_b)
+            assert a not in unique_b
         for b in unique_b:
-            self.assertTrue(b not in unique_a)
+            assert b not in unique_a
         for i, j, v in ijv:
             mylabels = labels[0][0] if v in unique_a else labels[1][0]
-            self.assertEqual(mylabels[i, j], v)
+            assert mylabels[i, j] == v
 
     def test_06_05_ijv_three_overlapping(self):
         #
@@ -428,24 +432,24 @@ class TestObjects(unittest.TestCase):
         indices = numpy.zeros(3, bool)
         for l, i in x.get_labels():
             labels.append(l)
-            self.assertEqual(len(i), 1)
-            self.assertTrue(i[0] in (1, 2, 3))
+            assert len(i) == 1
+            assert i[0] in (1, 2, 3)
             indices[i[0] - 1] = True
-        self.assertTrue(numpy.all(indices))
-        self.assertEqual(len(labels), 3)
+        assert numpy.all(indices)
+        assert len(labels) == 3
         lstacked = numpy.dstack(labels)
         i, j, k = numpy.mgrid[0:lstacked.shape[0],
                   0:lstacked.shape[1],
                   0:lstacked.shape[2]]
-        self.assertTrue(numpy.all(lstacked[(i != 4) | (j != 5)] == 0))
-        self.assertEqual((1, 2, 3), tuple(sorted(lstacked[4, 5, :])))
+        assert numpy.all(lstacked[(i != 4) | (j != 5)] == 0)
+        assert (1, 2, 3) == tuple(sorted(lstacked[4, 5, :]))
 
     def test_07_00_make_ivj_outlines_empty(self):
         numpy.random.seed(70)
         x = cellprofiler.object.Objects()
         x.segmented = numpy.zeros((10, 20), int)
         image = x.make_ijv_outlines(numpy.random.uniform(size=(5, 3)))
-        self.assertTrue(numpy.all(image == 0))
+        assert numpy.all(image == 0)
 
     def test_07_01_make_ijv_outlines(self):
         numpy.random.seed(70)
@@ -462,13 +466,13 @@ class TestObjects(unittest.TestCase):
         colors = numpy.random.uniform(size=(3, 3)).astype(numpy.float32)
         image = x.make_ijv_outlines(colors)
         i1 = [i for i, color in enumerate(colors) if numpy.all(color == image[0, 5, :])]
-        self.assertEqual(len(i1), 1)
+        assert len(i1) == 1
         i2 = [i for i, color in enumerate(colors) if numpy.all(color == image[0, 12, :])]
-        self.assertEqual(len(i2), 1)
+        assert len(i2) == 1
         i3 = [i for i, color in enumerate(colors) if numpy.all(color == image[-1, 8, :])]
-        self.assertEqual(len(i3), 1)
-        self.assertNotEqual(i1[0], i2[0])
-        self.assertNotEqual(i2[0], i3[0])
+        assert len(i3) == 1
+        assert i1[0] != i2[0]
+        assert i2[0] != i3[0]
         colors = colors[numpy.array([i1[0], i2[0], i3[0]])]
         outlines = numpy.zeros((10, 20, 3), numpy.float32)
         alpha = numpy.zeros((10, 20))
@@ -613,7 +617,7 @@ class TestObjects(unittest.TestCase):
         objects = cellprofiler.object.Objects()
         objects.segmented = numpy.zeros(shape)
 
-        self.assertTrue(shape == objects.shape)
+        assert shape == objects.shape
 
     def test_3D_shape(self):
         shape = (5, 10, 10)
@@ -621,19 +625,19 @@ class TestObjects(unittest.TestCase):
         objects = cellprofiler.object.Objects()
         objects.segmented = numpy.zeros(shape)
 
-        self.assertTrue(shape == objects.shape)
+        assert shape == objects.shape
 
     def test_segmented_from_empty_ijv(self):
         objects = cellprofiler.object.Objects()
         objects.ijv = numpy.zeros((0,3), int)
 
-        self.assertTrue(numpy.all(objects.segmented == numpy.zeros((1,1))))
+        assert numpy.all(objects.segmented == numpy.zeros((1,1)))
 
     def test_shape_from_empty_ijv(self):
         objects = cellprofiler.object.Objects()
         objects.ijv = numpy.zeros((0, 3), int)
 
-        self.assertTrue(objects.shape == (1,1))
+        assert objects.shape == (1,1)
 
     def test_ijv_from_segmented_3D(self):
         shape = (5, 10, 10)
@@ -652,7 +656,7 @@ class TestObjects(unittest.TestCase):
         objects = cellprofiler.object.Objects()
         objects.segmented = labels
 
-        self.assertTrue(numpy.all(objects.ijv == ijv))
+        assert numpy.all(objects.ijv == ijv)
 
 
 # TODO: uncommentme
@@ -684,7 +688,6 @@ class TestObjects(unittest.TestCase):
 #         result = cellprofiler.object.downsample_labels(labels)
 #         self.assertEqual(result.dtype, numpy.dtype(numpy.int32))
 #         self.assertTrue(numpy.all(result == labels))
-#
 #
 # class TestCropLabelsAndImage(unittest.TestCase):
 #     def test_01_01_crop_same(self):

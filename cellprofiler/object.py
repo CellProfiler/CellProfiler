@@ -269,6 +269,7 @@ class Objects(object):
         object number.
         """
         histogram = self.__histogram_from_ijv(self.ijv, children.ijv)
+
         return self.__relate_histogram(histogram)
 
     def relate_labels(self, parent_labels, child_labels):
@@ -351,23 +352,48 @@ class Objects(object):
         correspond to parent and child labels of 0.
 
         """
-        parent_count = 0 if (parent_ijv.shape[0] == 0) else numpy.max(parent_ijv[:, 2])
-        child_count = 0 if (child_ijv.shape[0] == 0) else numpy.max(child_ijv[:, 2])
+        parent_count = 0 if (parent_ijv.shape[0] == 0) else numpy.max(parent_ijv[:, -1])
+        child_count = 0 if (child_ijv.shape[0] == 0) else numpy.max(child_ijv[:, -1])
 
         if parent_count == 0 or child_count == 0:
             return numpy.zeros((parent_count + 1, child_count + 1), int)
 
         dim_i = max(numpy.max(parent_ijv[:, 0]), numpy.max(child_ijv[:, 0])) + 1
-        dim_j = max(numpy.max(parent_ijv[:, 1]), numpy.max(child_ijv[:, 1])) + 1
-        parent_linear_ij = parent_ijv[:, 0] + dim_i * parent_ijv[:, 1].astype(numpy.uint64)
-        child_linear_ij = child_ijv[:, 0] + dim_i * child_ijv[:, 1].astype(numpy.uint64)
 
-        parent_matrix = scipy.sparse.coo_matrix((numpy.ones((parent_ijv.shape[0],)), (parent_ijv[:, 2], parent_linear_ij)), shape=(parent_count + 1, dim_i * dim_j))
-        child_matrix = scipy.sparse.coo_matrix((numpy.ones((child_ijv.shape[0],)), (child_linear_ij, child_ijv[:, 2])), shape=(dim_i * dim_j, child_count + 1))
+        dim_j = max(numpy.max(parent_ijv[:, 1]), numpy.max(child_ijv[:, 1])) + 1
+
+        # TODO: (understand this and) generalize
+
+        if parent_ijv.shape[1] == 3:
+            parent_linear_ij = parent_ijv[:, 0] + dim_i * parent_ijv[:, 1].astype(numpy.uint64)
+
+            child_linear_ij = child_ijv[:, 0] + dim_i * child_ijv[:, 1].astype(numpy.uint64)
+
+            shape = dim_i * dim_j
+        else:
+            dim_k = max(numpy.max(parent_ijv[:, 2]), numpy.max(child_ijv[:, 2])) + 1
+
+            parent_linear_ij = parent_ijv[:, 0] + dim_i * (parent_ijv[:, 1].astype(numpy.uint64) + dim_j * parent_ijv[:, 2].astype(numpy.uint64))
+
+            child_linear_ij = child_ijv[:, 0] + dim_i * (child_ijv[:, 1].astype(numpy.uint64) + dim_j * child_ijv[:, 2].astype(numpy.uint64))
+
+            shape = dim_i * dim_j * dim_k
+
+        parent_matrix = scipy.sparse.coo_matrix(
+            (numpy.ones((parent_ijv.shape[0],)), (parent_ijv[:, -1], parent_linear_ij)),
+            shape=(parent_count + 1, shape)
+        )
+
+        child_matrix = scipy.sparse.coo_matrix(
+            (numpy.ones((child_ijv.shape[0],)), (child_linear_ij, child_ijv[:, -1])),
+            shape=(shape, child_count + 1)
+        )
 
         # I surely do not understand the sparse code.  Converting both
         # arrays to csc gives the best peformance... Why not p.csr and
         # c.csc?
+
+        # array([[ 0.,  0.], [ 0.,  9.]])
         return (parent_matrix.tocsc() * child_matrix.tocsc()).toarray()
 
     @property

@@ -124,7 +124,7 @@ class TestObjects:
         assert numpy.product(children_per_parent.shape) == 0
         assert numpy.product(parents_of_children.shape) == 0
 
-    def test_relate_zero_parents_and_children_3D(self):
+    def test_relate_zero_parents_and_children_3d(self):
         """Test the relate method if both parent and child label matrices are zeros"""
         x = cellprofiler.object.Objects()
         x.segmented = numpy.zeros((5, 10, 10), int)
@@ -150,7 +150,7 @@ class TestObjects:
         assert numpy.product(parents_of_children.shape) == 1
         assert parents_of_children[0] == 0
 
-    def test_relate_zero_parents_one_child_3D(self):
+    def test_relate_zero_parents_one_child_3d(self):
         x = cellprofiler.object.Objects()
         x.segmented = numpy.zeros((5, 10, 10), int)
 
@@ -180,6 +180,24 @@ class TestObjects:
         assert children_per_parent[0] == 0
         assert numpy.product(parents_of_children.shape) == 0
 
+    def test_relate_one_parent_no_children_3d(self):
+        labels = numpy.zeros((5, 10, 10), int)
+        labels[2:4, 3:6, 3:6] = 1
+
+        x = cellprofiler.object.Objects()
+        x.segmented = labels
+
+        y = cellprofiler.object.Objects()
+        y.segmented = numpy.zeros((5, 10, 10), int)
+
+        children_per_parent, parents_of_children = x.relate_children(y)
+
+        assert numpy.product(children_per_parent.shape) == 1
+
+        assert children_per_parent[0] == 0
+
+        assert numpy.product(parents_of_children.shape) == 0
+
     def test_05_04_relate_one_parent_one_child(self):
         x = cellprofiler.object.Objects()
         labels = numpy.zeros((10, 10), int)
@@ -191,6 +209,26 @@ class TestObjects:
         assert numpy.product(children_per_parent.shape) == 1
         assert children_per_parent[0] == 1
         assert numpy.product(parents_of_children.shape) == 1
+        assert parents_of_children[0] == 1
+
+    def test_relate_one_parent_one_child_3d(self):
+        labels = numpy.zeros((5, 10, 10), int)
+        labels[2:4, 3:6, 3:6] = 1
+
+        x = cellprofiler.object.Objects()
+        x.segmented = labels
+
+        y = cellprofiler.object.Objects()
+        y.segmented = labels
+
+        children_per_parent, parents_of_children = x.relate_children(y)
+
+        assert numpy.product(children_per_parent.shape) == 1
+
+        assert children_per_parent[0] == 1
+
+        assert numpy.product(parents_of_children.shape) == 1
+
         assert parents_of_children[0] == 1
 
     def test_05_05_relate_two_parents_one_child(self):

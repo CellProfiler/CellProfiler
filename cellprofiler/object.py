@@ -358,26 +358,16 @@ class Objects(object):
         if parent_count == 0 or child_count == 0:
             return numpy.zeros((parent_count + 1, child_count + 1), int)
 
-        dim_i = max(numpy.max(parent_ijv[:, 0]), numpy.max(child_ijv[:, 0])) + 1
+        dims = [max(numpy.max(parent), numpy.max(child)) + 1 for parent, child in zip(parent_ijv.T, child_ijv.T)[:-1]]
+        shape = numpy.product(dims)
 
-        dim_j = max(numpy.max(parent_ijv[:, 1]), numpy.max(child_ijv[:, 1])) + 1
+        parent_linear_ij = numpy.zeros_like(parent_ijv[:, 0])
+        for idx, row in enumerate(parent_ijv.T[:-1]):
+            parent_linear_ij = parent_linear_ij + numpy.product(dims[:idx]) * row.astype(numpy.uint64)
 
-        # TODO: (understand this and) generalize
-
-        if parent_ijv.shape[1] == 3:
-            parent_linear_ij = parent_ijv[:, 0] + dim_i * parent_ijv[:, 1].astype(numpy.uint64)
-
-            child_linear_ij = child_ijv[:, 0] + dim_i * child_ijv[:, 1].astype(numpy.uint64)
-
-            shape = dim_i * dim_j
-        else:
-            dim_k = max(numpy.max(parent_ijv[:, 2]), numpy.max(child_ijv[:, 2])) + 1
-
-            parent_linear_ij = parent_ijv[:, 0] + dim_i * (parent_ijv[:, 1].astype(numpy.uint64) + dim_j * parent_ijv[:, 2].astype(numpy.uint64))
-
-            child_linear_ij = child_ijv[:, 0] + dim_i * (child_ijv[:, 1].astype(numpy.uint64) + dim_j * child_ijv[:, 2].astype(numpy.uint64))
-
-            shape = dim_i * dim_j * dim_k
+        child_linear_ij = numpy.zeros_like(child_ijv[:, 0])
+        for idx, row in enumerate(child_ijv.T[:-1]):
+            child_linear_ij = child_linear_ij + numpy.product(dims[:idx]) * row.astype(numpy.uint64)
 
         parent_matrix = scipy.sparse.coo_matrix(
             (numpy.ones((parent_ijv.shape[0],)), (parent_ijv[:, -1], parent_linear_ij)),
@@ -392,8 +382,6 @@ class Objects(object):
         # I surely do not understand the sparse code.  Converting both
         # arrays to csc gives the best peformance... Why not p.csr and
         # c.csc?
-
-        # array([[ 0.,  0.], [ 0.,  9.]])
         return (parent_matrix.tocsc() * child_matrix.tocsc()).toarray()
 
     @property

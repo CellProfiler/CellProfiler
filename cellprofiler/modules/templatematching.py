@@ -1,0 +1,98 @@
+"""
+
+Template matching
+
+"""
+
+import cellprofiler.image
+import cellprofiler.module
+import cellprofiler.setting
+import skimage.feature
+import skimage.io
+
+
+class TemplateMatching(cellprofiler.module.Module):
+    module_name = "TemplateMatching"
+    category = "Image Processing"
+    variable_revision_number = 1
+
+    def create_settings(self):
+        self.input_image_name = cellprofiler.setting.ImageNameSubscriber(
+            "Image",
+        )
+
+        self.template_name = cellprofiler.setting.Pathname(
+            "Template",
+            ""
+        )
+
+        self.output_image_name = cellprofiler.setting.ImageNameProvider(
+            "Output",
+            "response",
+        )
+
+    def settings(self):
+        return [
+            self.input_image_name,
+            self.template_name,
+            self.output_image_name,
+        ]
+
+
+    def visible_settings(self):
+        return [
+            self.input_image_name,
+            self.template_name,
+            self.output_image_name,
+        ]
+
+    def run(self, workspace):
+        input_image_name = self.input_image_name.value
+
+        template_name = self.template_name.value
+
+        output_image_name = self.output_image_name.value
+
+        image_set = workspace.image_set
+
+        input_image = image_set.get_image(input_image_name)
+
+        input_pixels = input_image.pixel_data
+
+        template = skimage.io.imread(template_name)
+
+        output_pixels = skimage.feature.match_template(
+            image=input_pixels,
+            template=template,
+            pad_input=True
+        )
+
+        output_image = cellprofiler.image.Image(output_pixels, parent_image=input_image)
+
+        image_set.add(output_image_name, output_image)
+
+        if self.show_window:
+            workspace.display_data.input_pixels = input_pixels
+
+            workspace.display_data.template = template
+
+            workspace.display_data.output_pixels = output_pixels
+
+    def display(self, workspace, figure):
+        dimensions = (2, 1)
+
+        figure.set_subplots(dimensions)
+
+        figure.subplot_imshow(
+            0,
+            0,
+            workspace.display_data.input_pixels,
+            "Image"
+        )
+
+        figure.subplot_imshow(
+            1,
+            0,
+            workspace.display_data.output_pixels,
+            "Correlation coefficient"
+        )

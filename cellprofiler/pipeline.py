@@ -37,6 +37,7 @@ import numpy
 
 logger = logging.getLogger(__name__)
 pipeline_stats_logger = logging.getLogger("PipelineStatistics")
+import cellprofiler
 import cellprofiler.preferences as cpprefs
 import cellprofiler.image as cpi
 import cellprofiler.measurement as cpmeas
@@ -45,7 +46,6 @@ import cellprofiler.workspace as cpw
 import cellprofiler.setting as cps
 from cellprofiler.utilities.utf16encode import utf16encode, utf16decode
 from bioformats.omexml import OMEXML
-import cellprofiler.utilities.version as cpversion
 import javabridge as J
 
 '''The measurement name of the image number'''
@@ -945,7 +945,6 @@ class Pipeline(object):
 
         See savetxt for more comprehensive documentation.
         '''
-        from cellprofiler.utilities.version import version_number as cp_version_number
         self.__modules = []
         self.caption_for_user = None
         self.message_for_user = None
@@ -995,7 +994,7 @@ class Pipeline(object):
                     do_utf16_decode = True
             elif kwd in (H_SVN_REVISION, H_DATE_REVISION):
                 pipeline_version = int(value)
-                CURRENT_VERSION = cp_version_number
+                CURRENT_VERSION = int(re.sub(r"\.|rc\d{1}", "", cellprofiler.__version__))
             elif kwd == H_FROM_MATLAB:
                 from_matlab = (value == "True")
             elif kwd == H_MODULE_COUNT:
@@ -1024,74 +1023,56 @@ class Pipeline(object):
 
         if CURRENT_VERSION is None:
             pass
-        elif git_hash is None or git_hash != cpversion.git_hash:
-            if pipeline_version > CURRENT_VERSION:
-                if git_hash is None:
-                    message = (
-                                  'Your pipeline version is %d but you are '
-                                  'running CellProfiler version %d. '
-                                  'Loading this pipeline may fail or have '
-                                  'unpredictable results.') % (
-                                  pipeline_version, CURRENT_VERSION)
-                else:
+        if pipeline_version > CURRENT_VERSION:
+            message = "Your pipeline version is %d but you are running CellProfiler version %d. Loading this pipeline may fail or have unpredictable results." % (pipeline_version, CURRENT_VERSION)
 
-                    message = (
-                        'Your pipeline was saved by a more recent version '
-                        'of CellProfiler (rev %s%s) but you are running '
-                        'CellProfiler rev %s @ %s. Loading this pipeline may fail or '
-                        'have unpredictable results.') % (
-                            git_hash, pipeline_date, cpversion.git_hash,
-                            cpversion.version_date.strftime("%c"))
-
-                if cpprefs.get_headless():
-                    logging.warning(message)
-                else:
-                    import wx
-                    if wx.GetApp():
-                        dlg = wx.MessageDialog(
-                                parent=None,
-                                message=message + " Continue?",
-                                caption='Pipeline version mismatch',
-                                style=wx.OK | wx.CANCEL | wx.ICON_QUESTION)
-                        if dlg.ShowModal() != wx.ID_OK:
-                            dlg.Destroy()
-                            raise PipelineLoadCancelledException(message)
-                        dlg.Destroy()
-                    else:
-                        logger.error(
-                                'Your pipeline version is %d but you are running CellProfiler version %d. \nLoading this pipeline may fail or have unpredictable results.\n' % (
-                                    pipeline_version, CURRENT_VERSION))
+            if cpprefs.get_headless():
+                logging.warning(message)
             else:
-                if ((not cpprefs.get_headless()) and
-                            pipeline_version < CURRENT_VERSION):
-                    from cellprofiler.gui.errordialog import show_warning
-                    if git_hash is not None:
-                        message = (
-        "Your pipeline was saved using an old version\n"
-        "of CellProfiler (rev %s%s).\n"
-        "The current version of CellProfiler can load\n"
-        "and run this pipeline, but if you make changes\n"
-        "to it and save, the older version of CellProfiler\n"
-        "(perhaps the version your collaborator has?) may\n"
-        "not be able to load it.\n\n"
-        "You can ignore this warning if you do not plan to save\n"
-        "this pipeline or if you will only use it with this or\n"
-        "later versions of CellProfiler.") % (git_hash, pipeline_date)
-                    else:
-                        message = (
-                            "Your pipeline was saved using an old version\n"
-                            "of CellProfiler (version %d). The current version\n"
-                            "of CellProfiler can load and run this pipeline, but\n"
-                            "if you make changes to it and save, the older version\n"
-                            "of CellProfiler (perhaps the version your collaborator\n"
-                            "has?) may not be able to load it.\n\n"
-                            "You can ignore this warning if you do not plan to save\n"
-                            "this pipeline or if you will only use it with this or\n"
-                            "later versions of CellProfiler." % pipeline_version)
+                import wx
+                if wx.GetApp():
+                    dlg = wx.MessageDialog(
+                            parent=None,
+                            message=message + " Continue?",
+                            caption='Pipeline version mismatch',
+                            style=wx.OK | wx.CANCEL | wx.ICON_QUESTION)
+                    if dlg.ShowModal() != wx.ID_OK:
+                        dlg.Destroy()
+                        raise PipelineLoadCancelledException(message)
+                    dlg.Destroy()
                 else:
-                    pipeline_stats_logger.info(
-                            "Pipeline saved with CellProfiler version %d" %
-                            pipeline_version)
+                    logger.error(
+                            'Your pipeline version is %d but you are running CellProfiler version %d. \nLoading this pipeline may fail or have unpredictable results.\n' % (
+                                pipeline_version, CURRENT_VERSION))
+        else:
+            if (not cpprefs.get_headless()) and pipeline_version < CURRENT_VERSION:
+                if git_hash is not None:
+                    message = (
+    "Your pipeline was saved using an old version\n"
+    "of CellProfiler (rev %s%s).\n"
+    "The current version of CellProfiler can load\n"
+    "and run this pipeline, but if you make changes\n"
+    "to it and save, the older version of CellProfiler\n"
+    "(perhaps the version your collaborator has?) may\n"
+    "not be able to load it.\n\n"
+    "You can ignore this warning if you do not plan to save\n"
+    "this pipeline or if you will only use it with this or\n"
+    "later versions of CellProfiler.") % (git_hash, pipeline_date)
+                else:
+                    message = (
+                        "Your pipeline was saved using an old version\n"
+                        "of CellProfiler (version %d). The current version\n"
+                        "of CellProfiler can load and run this pipeline, but\n"
+                        "if you make changes to it and save, the older version\n"
+                        "of CellProfiler (perhaps the version your collaborator\n"
+                        "has?) may not be able to load it.\n\n"
+                        "You can ignore this warning if you do not plan to save\n"
+                        "this pipeline or if you will only use it with this or\n"
+                        "later versions of CellProfiler." % pipeline_version)
+            else:
+                pipeline_stats_logger.info(
+                        "Pipeline saved with CellProfiler version %d" %
+                        pipeline_version)
         #
         # The module section
         #
@@ -1267,7 +1248,6 @@ class Pipeline(object):
         are a collection of images and their metadata.
         See read_image_plane_details for the file format
         '''
-        from cellprofiler.utilities.version import version_number
         if hasattr(fd_or_filename, "write"):
             fd = fd_or_filename
             needs_close = False
@@ -1281,8 +1261,8 @@ class Pipeline(object):
 
         fd.write("%s\n" % COOKIE)
         fd.write("%s:%d\n" % (H_VERSION, NATIVE_VERSION))
-        fd.write("%s:%d\n" % (H_DATE_REVISION, version_number))
-        fd.write("%s:%s\n" % (H_GIT_HASH, cpversion.git_hash))
+        fd.write("%s:%d\n" % (H_DATE_REVISION, int(re.sub(r"\.|rc\d{1}", "", cellprofiler.__version__))))
+        fd.write("%s:%s\n" % (H_GIT_HASH, ""))
         fd.write("%s:%d\n" % (H_MODULE_COUNT, len(self.__modules)))
         fd.write("%s:%s\n" % (H_HAS_IMAGE_PLANE_DETAILS, str(save_image_plane_details)))
         attributes = (
@@ -2114,7 +2094,7 @@ class Pipeline(object):
         '''
         assert isinstance(m, cpmeas.Measurements)
         self.write_pipeline_measurement(m)
-        m.add_experiment_measurement(M_VERSION, cpversion.version_string)
+        m.add_experiment_measurement(M_VERSION, cellprofiler.__version__)
         m.add_experiment_measurement(M_TIMESTAMP,
                                      datetime.datetime.now().isoformat())
         m.flush()

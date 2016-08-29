@@ -80,6 +80,7 @@ except:
     logger.warning("MySQL could not be loaded.", exc_info=True)
     HAS_MYSQL_DB = False
 
+import cellprofiler
 import cellprofiler.module as cpm
 import cellprofiler.setting as cps
 from cellprofiler.setting import YES, NO
@@ -3720,7 +3721,6 @@ check_tables = yes
         return result
 
     def write_workspace_file(self, workspace):
-        from cellprofiler.utilities.version import version_number
         '''If requested, write a workspace file with selected measurements'''
         if self.db_type == DB_SQLITE:
             name = os.path.splitext(self.sqlite_file.value)[0]
@@ -3737,7 +3737,7 @@ check_tables = yes
         fd = open(file_name, "wb")
         header_text = """CellProfiler Analyst workflow
 version: 1
-CP version : %d\n""" % version_number
+CP version : %d\n""" % int(re.sub(r"\.|rc\d{1}", "", cellprofiler.__version__))
         fd.write(header_text)
         display_tool_text = ""
         for workspace_group in self.workspace_measurement_groups:

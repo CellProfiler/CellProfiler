@@ -2,6 +2,7 @@
 """ CellProfiler.CellProfilerGUI.CPFrame - Cell Profiler's main window
 """
 
+import cellprofiler
 import cellprofiler.gui
 import cellprofiler.gui.figure
 import cellprofiler.gui.datatoolframe
@@ -21,7 +22,6 @@ import cellprofiler.icons
 import cellprofiler.modules
 import cellprofiler.pipeline
 import cellprofiler.preferences
-import cellprofiler.utilities.version
 import cellprofiler.workspace
 import inspect
 import logging
@@ -472,7 +472,7 @@ class CPFrame(wx.Frame):
         wx.GetApp().ExitMainLoop()
 
     def __set_properties(self):
-        self.SetTitle("CellProfiler %s" % cellprofiler.utilities.version.title_string)
+        self.SetTitle("CellProfiler %s" % cellprofiler.__version__)
         self.SetSize((1024, 600))
 
     def enable_edit_commands(self, ids):

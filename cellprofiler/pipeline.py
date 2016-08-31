@@ -277,26 +277,6 @@ def add_all_measurements(handles, measurements):
             experiment_measurements[field][0, 0] = feature_measurements
 
 
-def evt_modulerunner_done_id():
-    """Initialize _evt_modulerunner_done_id inside this function
-    instead of at the top level so that the module will not require wx
-    when the GUI stuff is not being used."""
-    import wx
-    global _evt_modulerunner_done_id
-    if _evt_modulerunner_done_id is None:
-        _evt_modulerunner_done_id = wx.NewId()
-    return _evt_modulerunner_done_id
-
-
-def evt_modulerunner_event_type():
-    """Initialize the module runner event type"""
-    import wx
-    global _evt_modulerunner_eventtype
-    if _evt_modulerunner_eventtype is None:
-        _evt_modulerunner_eventtype = wx.NewEventType()
-    return _evt_modulerunner_eventtype
-
-
 def read_file_list(file_or_fd):
     """Read a file list from a file or file object
 

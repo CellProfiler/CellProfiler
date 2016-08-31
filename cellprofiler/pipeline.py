@@ -20,7 +20,6 @@ import scipy.io.matlab
 import StringIO
 import sys
 import tempfile
-import threading
 import urllib
 import urllib2
 import urlparse

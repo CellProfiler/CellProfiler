@@ -41,7 +41,6 @@ for package_name, import_name in [
     ("matplotlib", "matplotlib"),
     ("numpy", "numpy"),
     ("pytest", "pytest"),
-    ("pyzmq", "zmq"),
     ("requests", "requests"),
     ("scipy", "scipy")]:
     try:
@@ -57,8 +56,6 @@ try:
     import matplotlib
     import scipy.sparse.csgraph._validation
     import scipy.linalg
-    import zmq  # for proper discovery of its libraries by distutils
-    import zmq.libzmq
 except ImportError:
     pass
 
@@ -73,15 +70,6 @@ if sys.platform.startswith("win"):
         has_py2exe = False
 else:
     has_py2exe = False
-
-#
-# Recipe for ZMQ
-#
-if sys.platform.startswith("win"):
-    #
-    # See http://www.py2exe.org/index.cgi/Py2exeAndzmq
-    # Recipe needed for py2exe to package libzmq.dll
-    os.environ["PATH"] += os.path.pathsep + os.path.split(zmq.__file__)[0]
 
 
 class Test(setuptools.Command):
@@ -184,25 +172,6 @@ if has_py2exe:
             # py2exe recipe for matplotlib
             #
             self.distribution.data_files += matplotlib.get_py2exe_datafiles()
-            #
-            # Support for zmq-14.0.0+
-            #
-            zmq_version = tuple([int(_) for _ in zmq.__version__.split(".")])
-            if zmq_version >= (14, 0, 0):
-                # Backends are new in 14.x
-                self.includes += [
-                    "zmq.backend", "zmq.backend.cython", "zmq.backend.cython.*",
-                    "zmq.backend.cffi", "zmq.backend.cffi.*"]
-                #
-                # Must include libzmq.pyd without renaming because it's
-                # linked against. The problem is that py2exe renames it
-                # to "zmq.libzmq.pyd" and then the linking fails. So we
-                # include it as a data file and exclude it as a dll.
-                #
-                if zmq_version >= (14, 0, 0):
-                    self.distribution.data_files.append(
-                            (".", [zmq.libzmq.__file__]))
-                    self.dll_excludes.append("libzmq.pyd")
 
             if self.msvcrt_redist is not None:
                 sources = [
@@ -340,7 +309,6 @@ setuptools.setup(
             "prokaryote>=1.0.11",
             "pytest",
             "python-bioformats",
-            "pyzmq",
             "scipy"
         ],
         keywords="",

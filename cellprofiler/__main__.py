@@ -7,8 +7,6 @@ import cellprofiler.preferences
 import cellprofiler.utilities.cpjvm
 import cellprofiler.utilities.hdf5_dict
 import cellprofiler.utilities.version
-import cellprofiler.utilities.zmqrequest
-import cellprofiler.worker
 import cellprofiler.workspace
 import cStringIO
 import h5py
@@ -53,10 +51,6 @@ def main(args=None):
 
     if any([any([arg.startswith(switch) for switch in switches]) for arg in args]):
         cellprofiler.preferences.set_headless()
-
-        cellprofiler.worker.aw_parse_args()
-
-        cellprofiler.worker.main()
 
         sys.exit(exit_code)
 
@@ -161,8 +155,6 @@ def __version__(exit_code):
 
 
 def stop_cellprofiler():
-    cellprofiler.utilities.zmqrequest.join_to_the_boundary()
-
     cellprofiler.utilities.cpjvm.cp_stop_vm()
 
 

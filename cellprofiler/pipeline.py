@@ -672,8 +672,6 @@ class Pipeline(object):
         #
         self.__image_plane_details = []
         self.__image_plane_details_metadata_settings = tuple()
-
-        self.file_walker = WalkCollection(self.on_walk_completed)
         self.__undo_stack = []
 
     def copy(self, save_image_plane_details=True):
@@ -3102,27 +3100,6 @@ class Pipeline(object):
     def image_plane_details(self):
         return self.__image_plane_details
 
-    def walk_paths(self, pathnames):
-        if self.file_walker.get_state() == THREAD_STOP:
-            self.notify_listeners(FileWalkStartedEvent())
-        files = []
-        for pathname in pathnames:
-            if os.path.isdir(pathname):
-                self.file_walker.walk_in_background(
-                        pathname, self.wp_add_files, self.wp_add_image_metadata)
-            else:
-                files.append(pathname)
-        if len(files) > 0:
-            ipds = []
-            for pathname in files:
-                url = "file:" + urllib.pathname2url(pathname)
-                ipd = ImagePlaneDetails(url, None, None, None)
-                ipds.append(ipd)
-            self.add_image_plane_details(ipds)
-
-            self.file_walker.get_metadata_in_background(
-                    files, self.wp_add_image_metadata)
-
     def on_walk_completed(self):
         self.notify_listeners(FileWalkEndedEvent())
 
@@ -4094,74 +4071,6 @@ def get_metadata(path):
     return None
 
 
-def walk_in_background(path, callback_fn, completed_fn=None, metadata_fn=None):
-    '''Walk a directory tree in the background
-
-    path - path to walk
-
-    callback_fn - a function that's called in the UI thread and incrementally
-                  reports results. The callback is called with the
-                  dirpath, dirnames and filenames for each iteration of walk.
-    completed_fn - called when walk has completed
-    metadata_fn - if present, call back with metadata. The signature is
-                  metadata_fn(path, OMEXML) or metadata_fn(path, None) if
-                  the webserver did not find metadata.
-
-    Returns a function that can be called to interrupt the operation.
-    To stop, call it like this: fn(THREAD_STOP)
-    To pause, call it with THREAD_PAUSE, to resume, call it with
-    THREAD_RESUME
-    '''
-
-    checkpoint = Checkpoint()
-
-    def report(dirpath, dirnames, filenames):
-        if checkpoint.state != THREAD_STOP:
-            callback_fn(dirpath, dirnames, filenames)
-
-    def metadata_report(path, metadata):
-        if checkpoint.state != THREAD_STOP:
-            metadata_fn(path, metadata)
-
-    def complete():
-        if checkpoint.state != THREAD_STOP:
-            completed_fn()
-
-    def fn():
-        try:
-            path_list = []
-            for dirpath, dirnames, filenames in os.walk(path):
-                checkpoint.wait()
-                if len(filenames) == 0:
-                    continue
-                import wx
-                wx.CallAfter(report, dirpath, dirnames, filenames)
-                if metadata_fn is not None:
-                    path_list += [os.path.join(dirpath, filename)
-                                  for filename in filenames]
-            for subpath in sorted(path_list):
-                checkpoint.wait()
-                try:
-                    metadata = get_metadata("file:" + urllib.pathname2url(subpath))
-                    import wx
-                    wx.CallAfter(metadata_report, subpath, metadata)
-                except:
-                    logger.info("Failed to read image metadata for %s" % subpath)
-        except InterruptException:
-            logger.info("Exiting after request to stop")
-        except:
-            logger.exception("Exiting background walk after unhandled exception")
-        finally:
-            if completed_fn is not None:
-                import wx
-                wx.CallAfter(complete)
-
-    thread = threading.Thread(target=fn)
-    thread.setDaemon(True)
-    thread.start()
-    return checkpoint.set_state
-
-
 def get_metadata_in_background(pathnames, fn_callback, fn_completed=None):
     '''Get image metadata for each path
 
@@ -4206,73 +4115,3 @@ def get_metadata_in_background(pathnames, fn_callback, fn_completed=None):
     thread = threading.Thread(target=fn)
     thread.start()
     return checkpoint.set_state
-
-
-class WalkCollection(object):
-    '''A collection of all walks in progress
-
-    This class manages a group of walks that are in progress so that they
-    can be paused, resumed and stopped in unison.
-    '''
-
-    def __init__(self, fn_on_completed):
-        self.fn_on_completed = fn_on_completed
-        self.stop_functions = {}
-        self.paused_tasks = []
-        self.state = THREAD_STOP
-
-    def on_complete(self, uid):
-        if self.stop_functions.has_key(uid):
-            del self.stop_functions[uid]
-            if len(self.stop_functions) == 0:
-                self.state = THREAD_STOP
-                self.fn_on_completed()
-
-    def walk_in_background(self, path, callback_fn, metadata_fn=None):
-        if self.state == THREAD_PAUSE:
-            self.paused_tasks.append(
-                    lambda path, callback_fn, metadata_fn:
-                    self.walk_in_background(path, callback_fn, metadata_fn))
-        else:
-            key = uuid.uuid4()
-            fn_on_complete = lambda key=key: self.on_complete(key)
-            self.stop_functions[key] = walk_in_background(
-                    path, callback_fn, fn_on_complete, metadata_fn)
-            if self.state == THREAD_STOP:
-                self.state = THREAD_RUNNING
-
-    def get_metadata_in_background(self, pathnames, fn_callback):
-        if self.state == THREAD_PAUSE:
-            self.paused_tasks.append(
-                    lambda pathnames, fn_callback:
-                    self.get_metadata_in_background(pathnames, fn_callback))
-        else:
-            key = uuid.uuid4()
-            fn_on_complete = lambda key=key: self.on_complete(key)
-            self.stop_functions[key] = get_metadata_in_background(
-                    pathnames, fn_callback, fn_on_complete)
-
-    def get_state(self):
-        return self.state
-
-    def pause(self):
-        if self.state == THREAD_RUNNING:
-            for stop_fn in self.stop_functions.values():
-                stop_fn(THREAD_PAUSE)
-            self.state = THREAD_PAUSE
-
-    def resume(self):
-        if self.state == THREAD_PAUSE:
-            for stop_fn in self.stop_functions.values():
-                stop_fn(THREAD_RESUME)
-            for fn_task in self.paused_tasks:
-                fn_task()
-            self.paused_tasks = []
-            self.state = THREAD_RUNNING
-
-    def stop(self):
-        if self.state in (THREAD_RUNNING, THREAD_PAUSE):
-            for stop_fn in self.stop_functions.values():
-                stop_fn(THREAD_STOP)
-            self.paused_tasks = []
-            self.state = THREAD_STOPPING

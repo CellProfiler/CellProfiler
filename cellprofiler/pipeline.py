@@ -25,12 +25,6 @@ import urllib2
 import urlparse
 import uuid
 
-try:
-    from scipy.io.matlab.miobase import MatReadError
-
-    has_mat_read_error = True
-except:
-    has_mat_read_error = False
 
 logger = logging.getLogger(__name__)
 
@@ -760,25 +754,7 @@ class Pipeline(object):
                 self.load(StringIO.StringIO(pipeline_text))
                 return
 
-        if has_mat_read_error:
-            try:
-                handles = scipy.io.matlab.mio.loadmat(fd_or_filename,
-                                                      struct_as_record=True)
-            except MatReadError:
-                logging.error("Caught exception in Matlab reader\n", exc_info=True)
-                e = MatReadError(
-                    "%s is an unsupported .MAT file, most likely a measurements file.\nYou can load this as a pipeline if you load it as a pipeline using CellProfiler 1.0 and then save it to a different file.\n" %
-                    fd_or_filename)
-                self.notify_listeners(LoadExceptionEvent(e, None))
-                return
-            except Exception, e:
-                logging.error("Tried to load corrupted .MAT file: %s\n" % fd_or_filename,
-                              exc_info=True)
-                self.notify_listeners(LoadExceptionEvent(e, None))
-                return
-        else:
-            handles = scipy.io.matlab.mio.loadmat(fd_or_filename,
-                                                  struct_as_record=True)
+        handles = scipy.io.matlab.mio.loadmat(fd_or_filename, struct_as_record=True)
 
         if handles.has_key("handles"):
             #
@@ -1414,8 +1390,7 @@ class Pipeline(object):
                 if isinstance(module, LoadSingleImage):
                     for other_module in self.modules()[(i + 1):]:
                         if other_module.is_load_module():
-                            self.move_module(other_module.module_num,
-                                             DIRECTION_UP)
+                            self.move_module(other_module.module_num, DIRECTION_UP)
                             break
                     else:
                         continue
@@ -1432,13 +1407,7 @@ class Pipeline(object):
         for module in self.modules(False):
             module.obfuscate()
 
-    def run(self,
-            frame=None,
-            image_set_start=1,
-            image_set_end=None,
-            grouping=None,
-            measurements_filename=None,
-            initial_measurements=None):
+    def run(self, frame=None, image_set_start=1, image_set_end=None, grouping=None, measurements_filename=None, initial_measurements=None):
         """Run the pipeline
 
         Run the pipeline, returning the measurements made
@@ -1450,10 +1419,8 @@ class Pipeline(object):
                    grouping to run or None to run all groupings
         measurements_filename - name of file to use for measurements
         """
-        measurements = cellprofiler.measurement.Measurements(
-            image_set_start=image_set_start,
-            filename=measurements_filename,
-            copy=initial_measurements)
+        measurements = cellprofiler.measurement.Measurements(image_set_start=image_set_start, filename=measurements_filename, copy=initial_measurements)
+
         if not self.in_batch_mode() and initial_measurements is not None:
             #
             # Need file list in order to call prepare_run
@@ -1466,19 +1433,13 @@ class Pipeline(object):
                 self.add_urls(HDF5FileList(dest).get_filelist())
 
         measurements.is_first_image = True
-        for m in self.run_with_yield(frame, image_set_start, image_set_end,
-                                     grouping,
-                                     run_in_background=False,
-                                     initial_measurements=measurements):
+
+        for m in self.run_with_yield(frame, image_set_start, image_set_end, grouping, run_in_background=False, initial_measurements=measurements):
             measurements = m
+
         return measurements
 
-    def run_with_yield(self, frame=None,
-                       image_set_start=1,
-                       image_set_end=None,
-                       grouping=None, run_in_background=True,
-                       status_callback=None,
-                       initial_measurements=None):
+    def run_with_yield(self, frame=None, image_set_start=1, image_set_end=None, grouping=None, run_in_background=True, status_callback=None, initial_measurements=None):
         """Run the pipeline, yielding periodically to keep the GUI alive.
         Yields the measurements made.
 
@@ -1496,219 +1457,249 @@ class Pipeline(object):
             """Enumerate relevant image sets.  This function is
             side-effect free, so it can be called more than once."""
             keys, groupings = self.get_groupings(workspace)
+
             if grouping is not None and set(keys) != set(grouping.keys()):
-                raise ValueError(
-                    "The grouping keys specified on the command line (%s) must be the same as those defined by the modules in the pipeline (%s)" % (
-                        ", ".join(grouping.keys()), ", ".join(keys)))
+                raise ValueError("The grouping keys specified on the command line (%s) must be the same as those defined by the modules in the pipeline (%s)" % (", ".join(grouping.keys()), ", ".join(keys)))
+
             for gn, (grouping_keys, image_numbers) in enumerate(groupings):
                 if grouping is not None and grouping != grouping_keys:
                     continue
+
                 need_to_run_prepare_group = True
+
                 for gi, image_number in enumerate(image_numbers):
                     if image_number < image_set_start:
                         continue
+
                     if image_set_end is not None and image_number > image_set_end:
                         continue
-                    if initial_measurements is not None and all(
-                            [initial_measurements.has_feature(cellprofiler.measurement.IMAGE, f)
-                             for f in GROUP_NUMBER, GROUP_INDEX]):
-                        group_number, group_index = [
-                            initial_measurements[cellprofiler.measurement.IMAGE, f, image_number]
-                            for f in GROUP_NUMBER, GROUP_INDEX]
+
+                    if initial_measurements is not None and all([initial_measurements.has_feature(cellprofiler.measurement.IMAGE, f) for f in GROUP_NUMBER, GROUP_INDEX]):
+                        group_number, group_index = [initial_measurements[cellprofiler.measurement.IMAGE, f, image_number] for f in GROUP_NUMBER, GROUP_INDEX]
                     else:
                         group_number = gn + 1
+
                         group_index = gi + 1
+
                     if need_to_run_prepare_group:
-                        yield group_number, group_index, image_number, \
-                              lambda: self.prepare_group(
-                                  workspace, grouping_keys, image_numbers)
+                        yield group_number, group_index, image_number, lambda: self.prepare_group(workspace, grouping_keys, image_numbers)
                     else:
-                        yield group_number, group_index, image_number, \
-                              lambda: True
+                        yield group_number, group_index, image_number, lambda: True
+
                     need_to_run_prepare_group = False
+
                 if not need_to_run_prepare_group:
-                    yield None, None, None, lambda workspace: self.post_group(
-                        workspace, grouping_keys)
+                    yield None, None, None, lambda workspace: self.post_group(workspace, grouping_keys)
 
         columns = self.get_measurement_columns()
 
         if image_set_start is not None:
             assert isinstance(image_set_start, int), "Image set start must be an integer"
+
         if image_set_end is not None:
             assert isinstance(image_set_end, int), "Image set end must be an integer"
+
         if initial_measurements is None:
             measurements = cellprofiler.measurement.Measurements(image_set_start)
         else:
             measurements = initial_measurements
 
         image_set_list = cellprofiler.image.ImageSetList()
-        workspace = cellprofiler.workspace.Workspace(self, None, None, None,
-                                                     measurements, image_set_list, frame)
+
+        workspace = cellprofiler.workspace.Workspace(self, None, None, None, measurements, image_set_list, frame)
 
         try:
             if not self.prepare_run(workspace):
                 return
+
             #
             # Remove image sets outside of the requested ranges
             #
             image_numbers = measurements.get_image_numbers()
+
             to_remove = []
+
             if image_set_start is not None:
-                to_remove += [x for x in image_numbers
-                              if x < image_set_start]
-                image_numbers = [x for x in image_numbers
-                                 if x >= image_set_start]
+                to_remove += [x for x in image_numbers if x < image_set_start]
+
+                image_numbers = [x for x in image_numbers if x >= image_set_start]
+
             if image_set_end is not None:
-                to_remove += [x for x in image_numbers
-                              if x > image_set_end]
-                image_numbers = [x for x in image_numbers
-                                 if x <= image_set_end]
+                to_remove += [x for x in image_numbers if x > image_set_end]
+
+                image_numbers = [x for x in image_numbers if x <= image_set_end]
             if grouping is not None:
                 keys, groupings = self.get_groupings(workspace)
+
                 for grouping_keys, grouping_image_numbers in groupings:
                     if grouping_keys != grouping:
                         to_remove += list(grouping_image_numbers)
-            if (len(to_remove) > 0 and
-                    measurements.has_feature(cellprofiler.measurement.IMAGE, cellprofiler.measurement.IMAGE_NUMBER)):
+
+            if len(to_remove) > 0 and measurements.has_feature(cellprofiler.measurement.IMAGE, cellprofiler.measurement.IMAGE_NUMBER):
                 for image_number in numpy.unique(to_remove):
-                    measurements.remove_measurement(
-                        cellprofiler.measurement.IMAGE, cellprofiler.measurement.IMAGE_NUMBER, image_number)
+                    measurements.remove_measurement(cellprofiler.measurement.IMAGE, cellprofiler.measurement.IMAGE_NUMBER, image_number)
 
             # Keep track of progress for the benefit of the progress window.
             num_image_sets = len(measurements.get_image_numbers())
+
             image_set_count = -1
+
             is_first_image_set = True
+
             last_image_number = None
+
             pipeline_stats_logger.info("Times reported are CPU times for each module, not wall-clock time")
-            for group_number, group_index, image_number, closure \
-                    in group(workspace):
+
+            for group_number, group_index, image_number, closure in group(workspace):
                 if image_number is None:
                     if not closure(workspace):
-                        measurements.add_experiment_measurement(EXIT_STATUS,
-                                                                "Failure")
+                        measurements.add_experiment_measurement(EXIT_STATUS, "Failure")
+
                         return
+
                     continue
+
                 image_set_count += 1
+
                 if not closure():
                     return
+
                 last_image_number = image_number
+
                 measurements.clear_cache()
+
                 for provider in measurements.providers:
                     provider.release_memory()
+
                 measurements.next_image_set(image_number)
+
                 if is_first_image_set:
                     measurements.image_set_start = image_number
                     measurements.is_first_image = True
                     is_first_image_set = False
+
                 measurements.group_number = group_number
+
                 measurements.group_index = group_index
-                # numberof_windows = 0
-                # slot_number = 0
+
                 object_set = cellprofiler.object.ObjectSet()
+
                 image_set = measurements
+
                 outlines = {}
+
                 should_write_measurements = True
+
                 grids = None
+
                 for module in self.modules():
                     if module.should_stop_writing_measurements():
                         should_write_measurements = False
                     else:
-                        module_error_measurement = ('ModuleError_%02d%s' %
-                                                    (module.module_num,
-                                                     module.module_name))
-                        execution_time_measurement = ('ExecutionTime_%02d%s' %
-                                                      (module.module_num,
-                                                       module.module_name))
+                        module_error_measurement = ('ModuleError_%02d%s' % (module.module_num, module.module_name))
+
+                        execution_time_measurement = ('ExecutionTime_%02d%s' % (module.module_num, module.module_name))
+
                     failure = 1
+
                     exception = None
+
                     tb = None
+
                     frame_if_shown = frame if module.show_window else None
-                    workspace = cellprofiler.workspace.Workspace(self,
-                                                                 module,
-                                                                 image_set,
-                                                                 object_set,
-                                                                 measurements,
-                                                                 image_set_list,
-                                                                 frame_if_shown,
-                                                                 outlines=outlines)
+
+                    workspace = cellprofiler.workspace.Workspace(self, module, image_set, object_set, measurements, image_set_list, frame_if_shown, outlines=outlines)
+
                     grids = workspace.set_grids(grids)
+
                     if status_callback:
-                        status_callback(module, len(self.modules()),
-                                        image_set_count, num_image_sets)
+                        status_callback(module, len(self.modules()), image_set_count, num_image_sets)
+
                     start_time = datetime.datetime.now()
+
                     t0 = sum(os.times()[:-1])
+
                     if not run_in_background:
                         try:
                             self.run_module(module, workspace)
                         except Exception, instance:
-                            logger.error(
-                                "Error detected during run of module %s",
-                                module.module_name, exc_info=True)
+                            logger.error("Error detected during run of module %s", module.module_name, exc_info=True)
+
                             exception = instance
+
                             tb = sys.exc_info()[2]
+
                         yield measurements
                     else:
                         workspace.pipeline.run(module, workspace)
 
                         yield measurements
+
                     t1 = sum(os.times()[:-1])
+
                     delta_sec = max(0, t1 - t0)
-                    pipeline_stats_logger.info(
-                        "%s: Image # %d, module %s # %d: %.2f sec" %
-                        (start_time.ctime(), image_number,
-                         module.module_name, module.module_num,
-                         delta_sec))
-                    if (module.show_window and can_display and
-                            (exception is None)):
+
+                    pipeline_stats_logger.info("%s: Image # %d, module %s # %d: %.2f sec" % (start_time.ctime(), image_number, module.module_name, module.module_num, delta_sec))
+
+                    if module.show_window and can_display and (exception is None):
                         try:
                             fig = workspace.get_module_figure(module, image_number)
+
                             module.display(workspace, fig)
+
                             fig.Refresh()
                         except Exception, instance:
-                            logger.error("Failed to display results for module %s",
-                                         module.module_name, exc_info=True)
+                            logger.error("Failed to display results for module %s", module.module_name, exc_info=True)
+
                             exception = instance
+
                             tb = sys.exc_info()[2]
+
                     workspace.refresh()
+
                     failure = 0
+
                     if exception is not None:
                         event = RunExceptionEvent(exception, module, tb)
+
                         self.notify_listeners(event)
+
                         if event.cancel_run:
                             return
                         elif event.skip_thisset:
                             # Skip this image, continue to others
                             workspace.set_disposition(cellprofiler.workspace.DISPOSITION_SKIP)
+
                             should_write_measurements = False
+
                             measurements = None
 
                     # Paradox: ExportToDatabase must write these columns in order
                     #  to complete, but in order to do so, the module needs to
                     #  have already completed. So we don't report them for it.
-                    if (module.module_name != 'Restart' and
-                            should_write_measurements):
-                        measurements.add_measurement('Image',
-                                                     module_error_measurement,
-                                                     numpy.array([failure]))
-                        measurements.add_measurement('Image',
-                                                     execution_time_measurement,
-                                                     numpy.array([delta_sec]))
-                    while (workspace.disposition == cellprofiler.workspace.DISPOSITION_PAUSE and
-                                   frame is not None):
+                    if module.module_name != 'Restart' and should_write_measurements:
+                        measurements.add_measurement('Image', module_error_measurement, numpy.array([failure]))
+
+                        measurements.add_measurement('Image', execution_time_measurement, numpy.array([delta_sec]))
+
+                    while workspace.disposition == cellprofiler.workspace.DISPOSITION_PAUSE and frame is not None:
                         # try to leave measurements temporary file in a readable state
                         measurements.flush()
+
                         yield measurements
+
                     if workspace.disposition == cellprofiler.workspace.DISPOSITION_SKIP:
                         break
                     elif workspace.disposition == cellprofiler.workspace.DISPOSITION_CANCEL:
-                        measurements.add_experiment_measurement(EXIT_STATUS,
-                                                                "Failure")
+                        measurements.add_experiment_measurement(EXIT_STATUS, "Failure")
+
                         return
 
             if measurements is not None:
-                workspace = cellprofiler.workspace.Workspace(
-                    self, None, None, None, measurements, image_set_list, frame)
+                workspace = cellprofiler.workspace.Workspace(self, None, None, None, measurements, image_set_list, frame)
+
                 exit_status = self.post_run(workspace)
+
                 #
                 # Record the status after post_run
                 #
@@ -1719,15 +1710,16 @@ class Pipeline(object):
                 # underlying file, or else we get partially written HDF5
                 # files.  There must be a better way to do this.
                 measurements.flush()
+
                 del measurements
+
             self.end_run()
 
     def end_run(self):
         """Tell everyone that a run is ending"""
         self.notify_listeners(EndRunEvent())
 
-    def run_group_with_yield(self, workspace, grouping, image_numbers,
-                             stop_module, title, message):
+    def run_group_with_yield(self, workspace, grouping, image_numbers, stop_module, title, message):
         """Run the modules for the image_numbers in a group up to an agg module
 
         This method runs a pipeline up to an aggregation step on behalf of

@@ -56,8 +56,6 @@ IMAGE_TOOL_HELP = 'ImageToolHelp'
 PREFERENCES = 'Preferences'
 PIXEL_SIZE = 'PixelSize'
 SKIP_ERRORS = 'SkipErrors'
-_evt_modulerunner_done_id = None
-_evt_modulerunner_eventtype = None
 INTENSITY_COLOR_MAP = 'IntensityColorMap'
 LABEL_COLOR_MAP = 'LabelColorMap'
 STRIP_PIPELINE = 'StripPipeline'
@@ -297,28 +295,6 @@ def evt_modulerunner_event_type():
     if _evt_modulerunner_eventtype is None:
         _evt_modulerunner_eventtype = wx.NewEventType()
     return _evt_modulerunner_eventtype
-
-
-def post_module_runner_done_event(window):
-    import wx
-
-    # Defined here because the module should not depend on wx.
-    class ModuleRunnerDoneEvent(wx.PyEvent):
-        """In spite of its name, this event is posted both when a module
-        runner is done (i.e., when the module's run() method is finished)
-        and then again when run_with_yield has displayed the module's
-        results and collected its measurements."""
-
-        def __init__(self):
-            wx.PyEvent.__init__(self)
-            self.SetEventType(evt_modulerunner_event_type())
-            self.SetId(evt_modulerunner_done_id())
-
-            # def RequestMore(self):
-            #     "For now, make this work with code written for IdleEvent."
-            #     pass
-
-    wx.PostEvent(window, ModuleRunnerDoneEvent())
 
 
 def read_file_list(file_or_fd):

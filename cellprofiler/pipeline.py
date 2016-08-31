@@ -542,53 +542,6 @@ class ImagePlaneDetails(object):
             javabridge.call(self.jipd, "jsonSerialize", "()Ljava/lang/String;"))
 
 
-class ModuleRunner(threading.Thread):
-    """Worker thread that executes the run() method of a module."""
-
-    def __init__(self, module, workspace, notify_window):
-        super(ModuleRunner, self).__init__()
-        self.module = module
-        self.workspace = workspace
-        self.notify_window = notify_window
-        self.paused = False
-        self.exited_run = False
-        self.exception = None
-        self.tb = None
-        workspace.add_disposition_listener(self.on_disposition_changed)
-
-    def on_disposition_changed(self, event):
-        '''Callback to listen for changes in the workspace disposition
-
-        This gets called when a module decides to pause, continue,
-        or cancel running the pipeline. We want to postpone posting done
-        during pause and post done if we've finished running and
-        we're switching from paused to not paused
-        '''
-        if event.disposition == cellprofiler.workspace.DISPOSITION_PAUSE:
-            self.paused = True
-        elif self.paused:
-            self.paused = False
-            if self.exited_run:
-                self.post_done()
-
-    def run(self):
-        try:
-            self.workspace.pipeline.run(self.module, self.workspace)
-        except Exception, instance:
-            self.exception = instance
-            self.tb = sys.exc_info()[2]
-            logger.warning("Intercepted exception while running module",
-                           exc_info=True)
-            if os.getenv('CELLPROFILER_RERAISE') is not None:
-                raise
-        if not self.paused:
-            self.post_done()
-        self.exited_run = True
-
-    def post_done(self):
-        post_module_runner_done_event(self.notify_window)
-
-
 class Pipeline(object):
     def __init__(self):
         self.__modules = []
@@ -1741,16 +1694,9 @@ class Pipeline(object):
                             tb = sys.exc_info()[2]
                         yield measurements
                     else:
-                        # Turn on checks for calls to create_or_find_figure() in workspace.
-                        # workspace.in_background = True
-                        worker = ModuleRunner(module, workspace, frame)
-                        worker.start()
+                        workspace.pipeline.run(module, workspace)
+
                         yield measurements
-                        # After the worker finishes, we can clear this flag.
-                        # workspace.in_background = False
-                        if worker.exception is not None:
-                            exception = worker.exception
-                            tb = worker.tb
                     t1 = sum(os.times()[:-1])
                     delta_sec = max(0, t1 - t0)
                     pipeline_stats_logger.info(

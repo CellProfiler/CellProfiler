@@ -28,7 +28,7 @@ class TemplateMatching(cellprofiler.module.Module):
 
         self.output_image_name = cellprofiler.setting.ImageNameProvider(
             "Output",
-            "response",
+            "",
         )
 
     def settings(self):

@@ -1,6 +1,6 @@
 import cellprofiler.image
 import cellprofiler.measurement
-import cellprofiler.modules.templatematching
+import cellprofiler.modules.matchtemplate
 import cellprofiler.object
 import cellprofiler.pipeline
 import cellprofiler.workspace
@@ -12,7 +12,7 @@ import skimage.feature
 import skimage.io
 
 
-class TestTemplateMatching:
+class TestMatchTemplate:
     @pytest.fixture()
     def image_set(self, image_set_list):
         return image_set_list.get_image_set(0)
@@ -27,7 +27,7 @@ class TestTemplateMatching:
 
     @pytest.fixture()
     def module(self):
-        return cellprofiler.modules.templatematching.TemplateMatching()
+        return cellprofiler.modules.matchtemplate.MatchTemplate()
 
     @pytest.fixture()
     def object_set(self):

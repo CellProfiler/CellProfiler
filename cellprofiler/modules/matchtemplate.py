@@ -11,8 +11,8 @@ import skimage.feature
 import skimage.io
 
 
-class TemplateMatching(cellprofiler.module.Module):
-    module_name = "TemplateMatching"
+class MatchTemplate(cellprofiler.module.Module):
+    module_name = "MatchTemplate"
     category = "Image Processing"
     variable_revision_number = 1
 

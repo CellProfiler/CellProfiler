@@ -152,7 +152,7 @@ builtin_modules = ['align',
                    'measureobjectneighbors',
                    'measureobjectintensitydistribution',
                    'measureneurons',
-                   'measureradialentropy'
+                   'measureradialentropy',
                    'measuretexture',
                    'mergeoutputfiles',
                    'morph',

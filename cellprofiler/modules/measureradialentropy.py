@@ -2,31 +2,24 @@
 intensity inside a certain object
 <hr>
 <p>MeasureRadialEntropy divides an object into pie-shaped wedges and
- measures either the mean or median intensity of each.  Once the intensity
- of each wedge has been calculated, the entropy of the bin totals is calculated.</p>
+ measures either the mean, median, or integrated intensity of each.  Once the intensity
+ of each wedge has been calculated, the entropy of the bin measurements is calculated.</p>
 
  <p>This module is under construction</p>
 
 '''
 
 
-import numpy as np
-from scipy import stats
-
-
+import numpy
+import scipy.stats
 
 import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
-import cellprofiler.object as cpo
 import cellprofiler.setting as cps
 
 from centrosome.cpmorphology import minimum_enclosing_circle
 
-
-
 ENTROPY = "Entropy"
-
-
 
 class MeasurementTemplate(cpm.Module):
 
@@ -34,41 +27,37 @@ class MeasurementTemplate(cpm.Module):
     category = "Measurement"
     variable_revision_number = 1
 
-
     def create_settings(self):
 
         self.input_object_name = cps.ObjectNameSubscriber(
-            "Select objects to measure",
-            doc="""Select the objects whose radial entropy you want to measure.""" % globals())
+            "Select objects to measure", cps.NONE,
+            doc="""Select the objects whose radial entropy you want to measure.""")
 
         self.input_image_name = cps.ImageNameSubscriber(
-            "Select an image to measure", doc="""Select the
-            grayscale image you want to measure the entropy of.""" % globals())
+            "Select an image to measure", cps.NONE, doc="""Select the
+            grayscale image you want to measure the entropy of.""" )
 
         self.bin_number=cps.Integer(
             "Input number of bins", 6, minval=3, maxval=60,
             doc="""Number of radial bins to divide your object into.  The minimum number
-            of bins allowed is 3, the maximum number is 60.""" % globals())
+            of bins allowed is 3, the maximum number is 60.""")
 
         self.intensity_measurement=cps.Choice(
-            "Which intensity measurement should be used?", ['Mean','Median'], value='Mean',doc="""
-            Whether each wedge's mean or median intensity should be used to calculate the entropy.""" % globals())
+            "Which intensity measurement should be used?", ['Mean','Median','Integrated'], value='Mean',doc="""
+            Whether each wedge's mean, median, or integrated intensity
+            should be used to calculate the entropy.""" )
 
     def settings(self):
         return [self.input_image_name, self.input_object_name,
                 self.intensity_measurement, self.bin_number]
 
-
     def run(self, workspace):
-        #Import the workspace and the current measurements
-        meas = workspace.measurements
-        assert isinstance(meas, cpmeas.Measurements)
+        measurements = workspace.measurements
 
         statistics = [["Entropy"]]
 
         workspace.display_data.statistics = statistics
 
-        #Import the settings
         input_image_name = self.input_image_name.value
         input_object_name = self.input_object_name.value
         metric = self.intensity_measurement.value
@@ -78,11 +67,9 @@ class MeasurementTemplate(cpm.Module):
 
         input_image = image_set.get_image(input_image_name,
                                           must_be_grayscale=True)
-        #Read out the pixel data
         pixels = input_image.pixel_data
 
         object_set = workspace.object_set
-        assert isinstance(object_set, cpo.ObjectSet)
 
         objects = object_set.get_objects(input_object_name)
         labels = objects.segmented
@@ -95,9 +82,9 @@ class MeasurementTemplate(cpm.Module):
         #Do the actual calculation
         entropy=self.slice_and_measure_intensity(pixels,labels,indexes,centers,metric,bins)
         #Add the measurement back into the workspace
-        meas.add_measurement(input_object_name,feature,entropy)
+        measurements.add_measurement(input_object_name,feature,entropy)
 
-        emean = np.mean(entropy)
+        emean = numpy.mean(entropy)
         statistics.append([feature, emean])
 
 
@@ -105,33 +92,29 @@ class MeasurementTemplate(cpm.Module):
     #
     # DISPLAY
     #
-    def display(self, workspace, figure=None):
+    def display(self, workspace, figure):
         statistics = workspace.display_data.statistics
-        if figure is None:
-            figure = workspace.create_or_find_figure(subplots=(1, 1,))
-        else:
-            figure.set_subplots((1, 1))
+        figure = workspace.create_or_find_figure(subplots=(1, 1,))
         figure.subplot_table(0, 0, statistics)
 
 
-    def slice_and_measure_intensity(self, pixels, labels, indexes,centers,metric,nbins):
+    def slice_and_measure_intensity(self, pixels, labels, indexes, centers, metric, nbins):
         '''For each object, iterate over the pixels that make up the object, assign them to a bin,
-        then call calculate_entropy and return it to run.  I'm sure whatever I did here will make
-        Allen and Claire weep tears of bad-code-sadness'''
+        then call calculate_entropy and return it to run.  Needs an update to numpy vector operations'''
         entropylist=[]
         for eachindex in range(len(indexes)):
-            objects = np.zeros_like(pixels)
-            objects[objects==0]=-1
+            objects = numpy.zeros_like(pixels)
+            objects[objects==0] = -1
             objects[labels==indexes[eachindex]]= pixels[labels==indexes[eachindex]]
             pixeldict={}
-            objectiter=np.nditer(objects,flags=['multi_index'])
+            objectiter=numpy.nditer(objects, flags=['multi_index'])
             while not objectiter.finished:
-                if objectiter[0]!= -1:
+                if objectiter[0] != -1:
                     i1,i2=objectiter.multi_index
                     #Normalize the x,y coordinates to zero
                     center_y,center_x = centers[eachindex]
                     #Do the actual bin calculation
-                    sliceno = np.int32((np.pi + np.arctan2(i1-center_y, i2-center_x)) * (nbins / (2 * np.pi)))
+                    sliceno = numpy.int32((numpy.pi + numpy.arctan2(i1 - center_y, i2 - center_x)) * (nbins / (2 * numpy.pi)))
                     if sliceno not in pixeldict.keys():
                         pixeldict[sliceno]=[objects[i1,i2]]
                     else:
@@ -139,21 +122,23 @@ class MeasurementTemplate(cpm.Module):
                 objectiter.iternext()
             entropy=self.calculate_entropy(pixeldict,metric)
             entropylist.append(entropy)
-        entropyarray=np.array(entropylist)
+        entropyarray=numpy.array(entropylist)
         return entropyarray
 
     def calculate_entropy(self,pixeldict,metric):
-        '''Calculates either the mean or median intensity of each bin as per the user's request,
-        normalizes the sum of all of the means/medians to 1, then calculates the entropy'''
+        '''Calculates either the mean, median, or integrated intensity
+        of each bin as per the user's request then calculates the entropy'''
         slicemeasurements=[]
         for eachslice in pixeldict.keys():
             if metric=='Mean':
-                slicemeasurements.append(np.mean(pixeldict[eachslice]))
+                slicemeasurements.append(numpy.mean(pixeldict[eachslice]))
+            elif metric=='Median':
+                slicemeasurements.append(numpy.median(pixeldict[eachslice]))
             else:
-                slicemeasurements.append(np.median(pixeldict[eachslice]))
-        slicemeasurements=np.array(slicemeasurements,dtype=float)
-        slicemeasurements=slicemeasurements/sum(slicemeasurements)
-        entropy=stats.entropy(slicemeasurements)
+                slicemeasurements.append(numpy.sum(pixeldict[eachslice]))
+        slicemeasurements=numpy.array(slicemeasurements, dtype=float)
+        #Calculate entropy, and let scipy handle the normalization for you
+        entropy=scipy.stats.entropy(slicemeasurements)
         return entropy
 
 
@@ -200,6 +185,3 @@ class MeasurementTemplate(cpm.Module):
             return ["Entropy"]
         else:
             return []
-
-
-

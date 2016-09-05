@@ -509,6 +509,10 @@ class Module(object):
         """If true, the module will load files and make image sets"""
         return False
 
+    def is_3d_load_module(self):
+        """If true, the module will load 3D files and make image sets"""
+        return False
+
     @classmethod
     def is_input_module(cls):
         """If true, the module is one of the input modules

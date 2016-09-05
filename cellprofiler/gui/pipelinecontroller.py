@@ -2022,9 +2022,11 @@ class PipelineController(object):
                                      for m in self.__pipeline.modules()])
             has_legacy_modules = any([m.is_load_module()
                                       for m in self.__pipeline.modules()])
-            if (not has_input_modules) and (not has_legacy_modules):
+            has_3d_modules = any([m.is_3d_load_module()
+                                  for m in self.__pipeline.modules()])
+            if (not has_input_modules) and not (has_legacy_modules or has_3d_modules):
                 #
-                # We need input modules if legacy modules have been deleted
+                # We need input modules if legacy or 3D load modules have been deleted
                 #
                 self.__pipeline.init_modules()
             self.exit_test_mode()
@@ -2184,6 +2186,16 @@ class PipelineController(object):
                     style=wx.YES_NO | wx.YES_DEFAULT | wx.ICON_QUESTION,
                     parent=self.__frame) != wx.YES:
                 return
+            remove_input_modules = True
+
+        if module.is_3d_load_module():
+            message = ("%s is a brand new 3D image input module that is currently incompatible with the Images, "
+                       "Metadata, NamesAndTypes, and Groups input modules. These modules will be removed and %s "
+                       "will be used instead.") % (module.module_name, module.module_name)
+            wx.MessageBox(
+                message,
+                caption = "Use 3D image input module, %s" % module.module_name,
+                style = wx.OK)
             remove_input_modules = True
 
         self.__pipeline.add_module(module)

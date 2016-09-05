@@ -338,6 +338,13 @@ class Image(object):
         return self.__scale
 
 
+class Volume(Image):
+    def __init__(self):
+        self.spacing = (1.0, 1.0, 1.0)
+
+        super(self.__class__, self).__init__()
+
+
 def crop_image(image, crop_mask, crop_internal=False):
     """Crop an image to the size of the nonzero portion of a crop mask"""
     i_histogram = crop_mask.sum(axis=1)

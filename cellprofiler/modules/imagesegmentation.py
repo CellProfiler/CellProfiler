@@ -241,12 +241,11 @@ class ImageSegmentation(cellprofiler.module.Module):
             workspace.display_data.segmentation = segmentation
 
     def display(self, workspace, figure):
-        figure.gridspec((1, 2), (3, 3))
+        figure.set_grids((1, 2))
 
-        figure.add_grid(0, workspace.display_data.x_data)
+        figure.gridshow(0, 0, workspace.display_data.x_data)
 
-        figure.add_grid(1, workspace.display_data.y_data)
-
+        figure.gridshow(0, 1, workspace.display_data.y_data)
 
 import numpy as np
 import scipy.ndimage as nd

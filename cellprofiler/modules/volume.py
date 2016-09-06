@@ -109,6 +109,6 @@ class Volume(cellprofiler.module.Module):
             workspace.display_data.data = data
 
     def display(self, workspace, figure):
-        figure.set_subplots((1, 1))
+        figure.set_grids((1, 1))
 
-        figure.subplot_imshow_grayscale(0, 0, workspace.display_data.data[0])
+        figure.gridshow(0, 0, workspace.display_data.data)

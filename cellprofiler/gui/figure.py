@@ -14,6 +14,7 @@ import csv
 import functools
 import javabridge
 import logging
+import math
 import matplotlib
 import matplotlib.backends.backend_wxagg
 import matplotlib.backends.backend_wxagg
@@ -1089,9 +1090,9 @@ class Figure(wx.Frame):
 
         # From the number of slices that are displayable, determine the
         # shape of the grid these can be displayed in.
-        n_slices = stop - start
-        n_rows = n_slices / 3 + (1 if n_slices % 3 != 0 else 0)
-        n_cols = 3 if n_rows != 1 else n_slices
+        n_slices = float(stop - start)
+        n_rows = int(math.ceil(n_slices / 3))
+        n_cols = int(math.ceil(n_slices / n_rows))
 
         self.__grid_config = ((n_rows, n_cols), start, stop)
 
@@ -1104,15 +1105,15 @@ class Figure(wx.Frame):
         gx, gy = self.__gridspec.get_geometry()
         idx = gx * x + y
 
-        gridspec = matplotlib.gridspec.GridSpecFromSubplotSpec(*dimensions, subplot_spec=self.__gridspec[idx])
+        gridspec = matplotlib.gridspec.GridSpecFromSubplotSpec(*dimensions, subplot_spec=self.__gridspec[idx], wspace=0.1, hspace=0.1)
 
         for idx, img in enumerate(image[start:stop]):
             ax = matplotlib.pyplot.Subplot(self.figure, gridspec[idx])
 
-            if idx / 3 != (dimensions[0] - 1):
+            if idx / dimensions[0] != (dimensions[0] - 1):
                 ax.set_xticklabels([])
 
-            if idx % 3 != 0:
+            if idx % dimensions[1] != 0:
                 ax.set_yticklabels([])
 
             ax.imshow(img, cmap=cmap)

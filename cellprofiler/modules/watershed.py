@@ -88,6 +88,6 @@ class Watershed(cellprofiler.module.Module):
     def display(self, workspace, figure):
         figure.set_grids((1, 2))
 
-        figure.gridshow(0, 0, workspace.display_data.x_data)
+        figure.gridshow(0, 0, workspace.display_data.image)
 
-        figure.gridshow(0, 1, workspace.display_data.y_data)
+        figure.gridshow(0, 1, workspace.display_data.labels)

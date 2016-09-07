@@ -6,8 +6,10 @@ Save
 
 import cellprofiler.image
 import cellprofiler.module
+import cellprofiler.preferences
 import cellprofiler.setting
 import imageio
+import os.path
 
 
 class Save(cellprofiler.module.Module):
@@ -44,4 +46,4 @@ class Save(cellprofiler.module.Module):
 
         image = images.get_image(self.image.value).pixel_data
 
-        imageio.mimsave(filename, image)
+        imageio.mimsave(os.path.join(cellprofiler.preferences.get_default_output_directory(), filename), image)

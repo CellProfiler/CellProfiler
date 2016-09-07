@@ -50,7 +50,7 @@ class ImageSegmentation(cellprofiler.module.Module):
 
         self.chan_vese_mask = cellprofiler.setting.ImageNameSubscriber(
             "Mask",
-            cellprofiler.setting.NONE
+            can_be_blank=True
         )
 
         self.chan_vese_iterations = cellprofiler.setting.Integer(
@@ -208,9 +208,11 @@ class ImageSegmentation(cellprofiler.module.Module):
 
         if self.method.value == "Active contour model":
             if self.active_contour_model_implementation == "Chan-Vese":
-                mask = self.chan_vese_mask.value
-                mask_image = images.get_image(mask)
-                mask_data = mask_image.pixel_data
+                mask_data = None
+                if not self.chan_vese_mask.is_blank:
+                    mask = self.chan_vese_mask.value
+                    mask_image = images.get_image(mask)
+                    mask_data = mask_image.pixel_data
 
                 iterations = self.chan_vese_iterations.value
 
@@ -257,6 +259,9 @@ eps = np.finfo(np.float).eps
 
 def chanvese3d(I, init_mask, max_its=200, alpha=0.2, thresh=0, color='r', display=False):
     I = I.astype('float')
+
+    if init_mask is None:
+        init_mask = np.zeros_like(I)
 
     # -- Create a signed distance map (SDF) from mask
     phi = mask2phi(init_mask)

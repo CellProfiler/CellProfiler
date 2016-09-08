@@ -8,6 +8,7 @@ import cellprofiler.image
 import cellprofiler.module
 import cellprofiler.object
 import cellprofiler.setting
+import numpy
 import skimage.color
 import skimage.filters
 import skimage.measure
@@ -216,7 +217,7 @@ class ImageSegmentation(cellprofiler.module.Module):
 
                 iterations = self.chan_vese_iterations.value
 
-                segmentation = chanvese3d(data, mask_data, iterations)
+                segmentation = chanvese3d(data, mask_data, iterations)[0]
 
         if self.method.value == "Graph partition":
             if self.graph_partition_implementation == "Random walker algorithm":
@@ -243,11 +244,24 @@ class ImageSegmentation(cellprofiler.module.Module):
             workspace.display_data.segmentation = segmentation
 
     def display(self, workspace, figure):
-        figure.set_grids((1, 2))
+        figure.set_grids((1, 3))
 
-        figure.gridshow(0, 0, workspace.display_data.data)
+        image = workspace.display_data.image
 
-        figure.gridshow(0, 1, workspace.display_data.segmentation)
+        segmentation = workspace.display_data.segmentation
+
+        labels = skimage.measure.label(segmentation)
+
+        overlay = numpy.zeros(labels.shape + (3,))
+
+        for idx, _ in enumerate(labels):
+            overlay[idx] = skimage.color.label2rgb(labels[idx], image=image[idx], bg_label=0)
+
+        figure.gridshow(0, 0, image)
+
+        figure.gridshow(0, 1, segmentation)
+
+        figure.gridshow(0, 2, overlay, cmap=None)
 
 import numpy as np
 import scipy.ndimage as nd
@@ -261,7 +275,7 @@ def chanvese3d(I, init_mask, max_its=200, alpha=0.2, thresh=0, color='r', displa
     I = I.astype('float')
 
     if init_mask is None:
-        init_mask = np.zeros_like(I)
+        init_mask = np.ones_like(I)
 
     # -- Create a signed distance map (SDF) from mask
     phi = mask2phi(init_mask)

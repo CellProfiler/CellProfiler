@@ -372,7 +372,7 @@ def get_module_class(module_name):
                               "It will be available in a later version "
                               "of CellProfiler.") % module_class)
         if module_class in depricated_modules:
-            raise ValueError(("The %s module has been depricated and will "
+            raise ValueError(("The %s module has been deprecated and will "
                               "not be implemented in CellProfiler 2.0.") %
                              module_class)
         if replaced_modules.has_key(module_class):

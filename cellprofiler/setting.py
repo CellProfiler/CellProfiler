@@ -4,7 +4,6 @@ import cellprofiler.measurement
 import json
 import logging
 import matplotlib.cm
-import numpy as np
 import os
 import re
 import skimage.morphology

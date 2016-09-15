@@ -1,9 +1,7 @@
 import logging
 from six import StringIO
-import numpy as np
 import h5py
 import os
-from cellprofiler.grid import Grid
 from cellprofiler.utilities.hdf5_dict import HDF5FileList, HDF5Dict
 
 logger = logging.getLogger(__name__)

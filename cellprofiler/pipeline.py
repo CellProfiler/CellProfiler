@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import bisect
 import cellprofiler.image
 import cellprofiler.measurement
@@ -563,7 +565,7 @@ class Pipeline(object):
         try:
             settings = handles[SETTINGS][0, 0]
             module_names = settings[MODULE_NAMES]
-        except Exception, instance:
+        except Exception as instance:
             logger.error("Failed to load pipeline", exc_info=True)
             e = LoadExceptionEvent(instance, None)
             self.notify_listeners(e)
@@ -578,7 +580,7 @@ class Pipeline(object):
                 module = self.instantiate_module(module_name)
                 module.create_from_handles(handles, module_num)
                 module.module_num = real_module_num
-            except Exception, instance:
+            except Exception as instance:
                 logger.error("Failed to load pipeline", exc_info=True)
                 number_of_variables = settings[NUMBERS_OF_VARIABLES][0, idx]
                 module_settings = [settings[VARIABLE_VALUES][idx, i]
@@ -626,7 +628,7 @@ class Pipeline(object):
             fd.seek(0)
             self.loadtxt(fd, raise_on_error=True)
             return True
-        except Exception, e:
+        except Exception as e:
             logging.warning("Modules reloaded, but could not reinstantiate pipeline with new versions.", exc_info=True)
             return False
 
@@ -839,7 +841,7 @@ class Pipeline(object):
             elif kwd == H_GIT_HASH:
                 git_hash = value
             else:
-                print line
+                print(line)
 
         if pipeline_version > 20080101000000 and pipeline_version < 30080101000000:
             # being optomistic... a millenium should be OK, no?
@@ -988,7 +990,7 @@ class Pipeline(object):
                 module.set_settings_from_values(settings,
                                                 variable_revision_number,
                                                 module_name, from_matlab)
-            except Exception, instance:
+            except Exception as instance:
                 if raise_on_error:
                     raise
                 logging.error("Failed to load pipeline", exc_info=True)
@@ -1466,8 +1468,10 @@ class Pipeline(object):
                     if image_set_end is not None and image_number > image_set_end:
                         continue
 
-                    if initial_measurements is not None and all([initial_measurements.has_feature(cellprofiler.measurement.IMAGE, f) for f in GROUP_NUMBER, GROUP_INDEX]):
-                        group_number, group_index = [initial_measurements[cellprofiler.measurement.IMAGE, f, image_number] for f in GROUP_NUMBER, GROUP_INDEX]
+                    if initial_measurements is not None and all([initial_measurements.has_feature(cellprofiler.measurement.IMAGE, f) for f in
+                                                                 (GROUP_NUMBER, GROUP_INDEX)]):
+                        group_number, group_index = [initial_measurements[cellprofiler.measurement.IMAGE, f, image_number] for f in
+                                                     (GROUP_NUMBER, GROUP_INDEX)]
                     else:
                         group_number = gn + 1
 
@@ -1614,7 +1618,7 @@ class Pipeline(object):
                     if not run_in_background:
                         try:
                             self.run_module(module, workspace)
-                        except Exception, instance:
+                        except Exception as instance:
                             logger.error("Error detected during run of module %s", module.module_name, exc_info=True)
 
                             exception = instance
@@ -1640,7 +1644,7 @@ class Pipeline(object):
                             module.display(workspace, fig)
 
                             fig.Refresh()
-                        except Exception, instance:
+                        except Exception as instance:
                             logger.error("Failed to display results for module %s", module.module_name, exc_info=True)
 
                             exception = instance
@@ -1831,7 +1835,7 @@ class Pipeline(object):
                             had_image_sets = True
                         self.clear_measurements(workspace.measurements)
                         break
-                except Exception, instance:
+                except Exception as instance:
                     logging.error("Failed to prepare run for module %s",
                                   module.module_name, exc_info=True)
                     event = PrepareRunExceptionEvent(instance, module, sys.exc_info()[2])
@@ -1908,7 +1912,7 @@ class Pipeline(object):
             workspace.refresh()
             try:
                 module.post_run(workspace)
-            except Exception, instance:
+            except Exception as instance:
                 logging.error(
                     "Failed to complete post_run processing for module %s." %
                     module.module_name, exc_info=True)
@@ -1920,7 +1924,7 @@ class Pipeline(object):
                             module.__class__.display_post_run != Module.display_post_run:
                 try:
                     workspace.post_run_display(module)
-                except Exception, instance:
+                except Exception as instance:
                     # Warn about display failure but keep going.
                     logging.warn(
                         "Caught exception during post_run_display for module %s." %
@@ -1951,7 +1955,7 @@ class Pipeline(object):
                 workspace.set_module(module)
                 module.prepare_to_create_batch(workspace,
                                                fn_alter_path)
-            except Exception, instance:
+            except Exception as instance:
                 logger.error("Failed to collect batch information for module %s",
                              module.module_name, exc_info=True)
                 event = RunExceptionEvent(instance, module, sys.exc_info()[2])
@@ -2016,7 +2020,7 @@ class Pipeline(object):
             m = re.findall('\\\\g[<](.+?)[>]', pattern)
         if m:
             m = filter((lambda x: not any(
-                [x.startswith(y) for y in cellprofiler.measurement.C_SERIES, cellprofiler.measurement.C_FRAME])), m)
+                [x.startswith(y) for y in (cellprofiler.measurement.C_SERIES, cellprofiler.measurement.C_FRAME)])), m)
             undefined_tags = list(set(m).difference(current_metadata))
             return undefined_tags
         else:
@@ -2033,7 +2037,7 @@ class Pipeline(object):
         for module in self.modules():
             try:
                 module.prepare_group(workspace, grouping, image_numbers)
-            except Exception, instance:
+            except Exception as instance:
                 logger.error("Failed to prepare group in module %s",
                              module.module_name, exc_info=True)
                 event = RunExceptionEvent(instance, module, sys.exc_info()[2])
@@ -2051,7 +2055,7 @@ class Pipeline(object):
         for module in self.modules():
             try:
                 module.post_group(workspace, grouping)
-            except Exception, instance:
+            except Exception as instance:
                 logging.error(
                     "Failed during post-group processing for module %s" %
                     module.module_name, exc_info=True)
@@ -2312,7 +2316,7 @@ class Pipeline(object):
             return
         try:
             urls = file_list.get_filelist()
-        except Exception, instance:
+        except Exception as instance:
             logger.error("Failed to get file list from workspace", exc_info=True)
             x = IPDLoadExceptionEvent("Failed to get file list from workspace")
             self.notify_listeners(x)

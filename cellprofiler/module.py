@@ -293,9 +293,9 @@ class Module(object):
             for setting in self.visible_settings():
                 setting.test_valid(pipeline)
             self.validate_module(pipeline)
-        except cps.ValidationError, instance:
+        except cps.ValidationError as instance:
             raise instance
-        except Exception, e:
+        except Exception as e:
             raise cps.ValidationError("Exception in cpmodule.test_valid %s" % e,
                                       self.visible_settings()[0])
 
@@ -310,9 +310,9 @@ class Module(object):
             for setting in self.visible_settings():
                 setting.test_setting_warnings(pipeline)
             self.validate_module_warnings(pipeline)
-        except cps.ValidationError, instance:
+        except cps.ValidationError as instance:
             raise instance
-        except Exception, e:
+        except Exception as e:
             raise cps.ValidationError("Exception in cpmodule.test_valid %s" % e,
                                       self.visible_settings()[0])
 

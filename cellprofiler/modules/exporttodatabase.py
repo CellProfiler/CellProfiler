@@ -472,7 +472,7 @@ class ExportToDatabase(cpm.Module):
             the properties file so that CellProfiler Analyst centers cells
             using that object's center.
             <p>You can manually change this choice in the properties file by
-            edting the <i>cell_x_loc</i> and <i>cell_y_loc</i> properties.
+            editing the <i>cell_x_loc</i> and <i>cell_y_loc</i> properties.
             </p>
             <p>Note that if there are no objects defined in the pipeline (e.g.
             if only using MeasureImageQuality and/or Illumination Correction modules),
@@ -615,7 +615,7 @@ class ExportToDatabase(cpm.Module):
             Note that the actual class table will be named by prepending the table prefix
             (if any) to what you enter here.
             <p>You can manually change this choice in the properties file by
-            edting the <i>class_table</i> field. Leave this field blank if you are
+            editing the <i>class_table</i> field. Leave this field blank if you are
             not using the classifier or do not need the table written to the database</p>.""")
 
         self.properties_classification_type = cps.Choice(
@@ -632,7 +632,7 @@ class ExportToDatabase(cpm.Module):
             to "image".</li>
             </ul>
             You can manually change this choice in the properties file by
-            edting the <i>classification_type</i> field.
+            editing the <i>classification_type</i> field.
             """ % globals())
 
         self.create_workspace_file = cps.Binary(

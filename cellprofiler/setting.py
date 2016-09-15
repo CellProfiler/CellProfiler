@@ -10,6 +10,7 @@ import re
 import skimage.morphology
 import sys
 import uuid
+import six
 
 logger = logging.getLogger(__name__)
 
@@ -141,7 +142,7 @@ class Setting(object):
         override this to do things like compare whether an integer
         setting's value matches a given number
         '''
-        return self.value == unicode(x)
+        return self.value == six.text_type(x)
 
     def __ne__(self, x):
         return not self.__eq__(x)
@@ -192,7 +193,7 @@ class Setting(object):
         return self.get_unicode_value()
 
     def get_unicode_value(self):
-        return unicode(self.value_text)
+        return six.text_type(self.value_text)
 
 
 class HiddenCount(Setting):
@@ -228,7 +229,7 @@ class HiddenCount(Setting):
         return str(len(self.__sequence))
 
     def get_unicode_value(self):
-        return unicode(len(self.__sequence))
+        return six.text_type(len(self.__sequence))
 
 
 class Text(Setting):
@@ -719,7 +720,7 @@ class Number(Text):
     def set_value(self, value):
         """Convert integer to string
         """
-        str_value = unicode(value) if isinstance(value, basestring) \
+        str_value = six.text_type(value) if isinstance(value, basestring) \
             else self.value_to_str(value)
         self.set_value_text(str_value)
 
@@ -2980,7 +2981,7 @@ class Filter(Setting):
         for element in structure:
             if isinstance(element, Filter.FilterPredicate):
                 s.append(
-                        cls.FilterPredicate.encode_symbol(unicode(element.symbol)))
+                        cls.FilterPredicate.encode_symbol(six.text_type(element.symbol)))
             elif isinstance(element, basestring):
                 s.append(u'"' + cls.encode_literal(element) + u'"')
             else:

@@ -435,7 +435,7 @@ class MeasureObjectIntensityDistribution(cpm.Module):
                                              o.center_choice.value,
                                              bin_count_settings,
                                              d)
-        if self.wants_zernikes:
+        if self.wants_zernikes != Z_NONE:
             self.calculate_zernikes(workspace)
 
         if self.show_window:

@@ -240,7 +240,7 @@ class MeasurementTemplate(cpm.Module):
         # First, get an array that lists the whole range of indexes in
         # the labels matrix.
         #
-        indexes = objects.get_indices()
+        indexes = objects.indices
         #
         # Then ask for the minimum_enclosing_circle for each object named
         # in those indexes. MEC returns the i and j coordinate of the center
@@ -456,7 +456,7 @@ class MeasurementTemplate(cpm.Module):
     #
     #
     # get_measurement_columns gets the measurements for use in the database
-    # or in a spreadsheet. Some modules need the pipeline because they
+    # or in a spreadsheet. Some modules need this because they
     # might make measurements of measurements and need those names.
     #
     def get_measurement_columns(self, pipeline):

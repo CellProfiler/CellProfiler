@@ -1,35 +1,12 @@
 """ CellProfiler.Objects.py - represents a labelling of objects in an image
 """
 
-import numpy as np
-from centrosome.cpmorphology import all_connected_components
-from centrosome.index import Indexes, all_pairs
-from centrosome.outline import outline
-from scipy.sparse import coo_matrix
-
-import decorator
+import centrosome.index
+import centrosome.outline
+import numpy
+import scipy.sparse
 
 OBJECT_TYPE_NAME = "objects"
-
-
-@decorator.decorator
-def memoize_method(function, *args):
-    """Cache the result of a method in that class's dictionary
-
-    The dictionary is indexed by function name and the values of that
-    dictionary are themselves dictionaries with args[1:] as the keys
-    and the result of applying function to args[1:] as the values.
-    """
-    sself = args[0]
-    d = getattr(sself, "memoize_method_dictionary", False)
-    if not d:
-        d = {}
-        setattr(sself, "memoize_method_dictionary", d)
-    if not d.has_key(function):
-        d[function] = {}
-    if not d[function].has_key(args[1:]):
-        d[function][args[1:]] = function(*args)
-    return d[function][args[1:]]
 
 
 class Objects(object):
@@ -62,7 +39,8 @@ class Objects(object):
         self.__small_removed_segmented = None
         self.__parent_image = None
 
-    def get_segmented(self):
+    @property
+    def segmented(self):
         """Get the de-facto segmentation of the image into objects: a matrix
         of object numbers.
         """
@@ -70,20 +48,15 @@ class Objects(object):
             "Operation failed because objects were not initialized"
         dense, indices = self.__segmented.get_dense()
         assert len(dense) == 1, "Operation failed because objects overlapped. Please try with non-overlapping objects"
-        assert np.all(np.array(dense.shape[1:-2]) == 1), \
+        assert numpy.all(numpy.array(dense.shape[1:-2]) == 1), \
             "Operation failed because the segmentation was not 2D"
         return dense.reshape(dense.shape[-2:])
 
-    def set_segmented(self, labels):
+    @segmented.setter
+    def segmented(self, labels):
         dense = downsample_labels(labels)
         dense = dense.reshape((1, 1, 1, 1, dense.shape[0], dense.shape[1]))
         self.__segmented = Segmentation(dense=dense)
-
-        # Clear all cached results.
-        if getattr(self, "memoize_method_dictionary", False):
-            self.memoize_method_dictionary = {}
-
-    segmented = property(get_segmented, set_segmented)
 
     def set_ijv(self, ijv, shape=None):
         '''Set the segmentation to an IJV object format
@@ -91,12 +64,11 @@ class Objects(object):
         The ijv format is a list of i,j coordinates in slots 0 and 1
         and the label at the pixel in slot 2.
         '''
-        from cellprofiler.utilities.hdf5_dict import HDF5ObjectSet
-        sparse = np.core.records.fromarrays(
+        sparse = numpy.core.records.fromarrays(
                 (ijv[:, 0], ijv[:, 1], ijv[:, 2]),
-                [(HDF5ObjectSet.AXIS_Y, ijv.dtype, 1),
-                 (HDF5ObjectSet.AXIS_X, ijv.dtype, 1),
-                 (HDF5ObjectSet.AXIS_LABELS, ijv.dtype, 1)])
+                [("y", ijv.dtype, 1),
+                 ("x", ijv.dtype, 1),
+                 ("label", ijv.dtype, 1)])
         if shape is not None:
             shape = (1, 1, 1, shape[0], shape[1])
         self.__segmented = Segmentation(sparse=sparse, shape=shape)
@@ -107,21 +79,20 @@ class Objects(object):
         The ijv format is a list of i,j coordinates in slots 0 and 1
         and the label at the pixel in slot 2.
         '''
-        from cellprofiler.utilities.hdf5_dict import HDF5ObjectSet
-        sparse = self.__segmented.get_sparse()
-        return np.column_stack(
+        sparse = self.__segmented.sparse
+        return numpy.column_stack(
                 [sparse[axis] for axis in
-                 HDF5ObjectSet.AXIS_Y, HDF5ObjectSet.AXIS_X,
-                 HDF5ObjectSet.AXIS_LABELS])
+                 "y", "x",
+                 "label"])
 
     ijv = property(get_ijv, set_ijv)
 
     @property
     def shape(self):
         '''The i and j extents of the labels'''
-        return self.__segmented.get_shape()[-2:]
+        return self.__segmented.shape[-2:]
 
-    def get_labels(self, shape=None):
+    def get_labels(self):
         '''Get a set of labels matrices consisting of non-overlapping labels
 
         In IJV format, a single pixel might have multiple labels. If you
@@ -139,7 +110,8 @@ class Objects(object):
         """Return true if there is an unedited segmented matrix."""
         return self.__unedited_segmented is not None
 
-    def get_unedited_segmented(self):
+    @property
+    def unedited_segmented(self):
         """Get the segmentation of the image into objects, including junk that
         should be ignored: a matrix of object numbers.
 
@@ -151,19 +123,18 @@ class Objects(object):
             return dense[0, 0, 0, 0]
         return self.segmented
 
-    def set_unedited_segmented(self, labels):
+    @unedited_segmented.setter
+    def unedited_segmented(self, labels):
         dense = downsample_labels(labels).reshape(
                 (1, 1, 1, 1, labels.shape[0], labels.shape[1]))
         self.__unedited_segmented = Segmentation(dense=dense)
-
-    unedited_segmented = property(get_unedited_segmented,
-                                  set_unedited_segmented)
 
     def has_small_removed_segmented(self):
         """Return true if there is a junk object matrix."""
         return self.__small_removed_segmented is not None
 
-    def get_small_removed_segmented(self):
+    @property
+    def small_removed_segmented(self):
         """Get the matrix of segmented objects with the small objects removed
 
         This should be the same as the unedited_segmented label matrix with
@@ -175,29 +146,14 @@ class Objects(object):
             return dense[0, 0, 0, 0]
         return self.unedited_segmented
 
-    def set_small_removed_segmented(self, labels):
+    @small_removed_segmented.setter
+    def small_removed_segmented(self, labels):
         dense = downsample_labels(labels).reshape(
                 (1, 1, 1, 1, labels.shape[0], labels.shape[1]))
         self.__small_removed_segmented = Segmentation(dense=dense)
 
-    small_removed_segmented = property(get_small_removed_segmented,
-                                       set_small_removed_segmented)
-
-    def cache(self, hdf5_object_set, objects_name):
-        '''Move the segmentations out of memory and into HDF5
-
-        hdf5_object_set - an HDF5ObjectSet attached to an HDF5 file
-        objects_name - name of the objects
-        '''
-        for segmentation, segmentation_name in (
-                (self.__segmented, Segmentation.SEGMENTED),
-                (self.__unedited_segmented, Segmentation.UNEDITED_SEGMENTED),
-                (self.__small_removed_segmented, Segmentation.SMALL_REMOVED_SEGMENTED)):
-            if segmentation is not None:
-                segmentation.cache(
-                        hdf5_object_set, objects_name, segmentation_name)
-
-    def get_parent_image(self):
+    @property
+    def parent_image(self):
         """The image that was analyzed to yield the objects.
 
         The image is an instance of CPImage which means it has the mask
@@ -205,25 +161,20 @@ class Objects(object):
         """
         return self.__parent_image
 
-    def set_parent_image(self, parent_image):
+    @parent_image.setter
+    def parent_image(self, parent_image):
         self.__parent_image = parent_image
-        for segmentation in self.__segmented, self.__small_removed_segmented, \
-                            self.__unedited_segmented:
+        for segmentation in self.__segmented, self.__small_removed_segmented, self.__unedited_segmented:
             if segmentation is not None and not segmentation.has_shape():
-                shape = (1, 1, 1,
-                         parent_image.pixel_data.shape[0],
-                         parent_image.pixel_data.shape[1])
-                segmentation.set_shape(shape)
+                shape = (1, 1, 1, parent_image.pixel_data.shape[0], parent_image.pixel_data.shape[1])
+                segmentation.shape = shape
 
-    parent_image = property(get_parent_image, set_parent_image)
-
-    def get_has_parent_image(self):
+    @property
+    def has_parent_image(self):
         """True if the objects were derived from a parent image
 
         """
         return self.__parent_image is not None
-
-    has_parent_image = property(get_has_parent_image)
 
     def crop_image_similarly(self, image):
         """Crop an image in the same way as the parent image was cropped."""
@@ -246,12 +197,12 @@ class Objects(object):
         # the most similar colors in the color space for objects that
         # don't overlap.
         #
-        all_labels = [(outline(label), indexes) for label, indexes in self.get_labels()]
-        image = np.zeros(list(all_labels[0][0].shape) + [3], np.float32)
+        all_labels = [(centrosome.outline.outline(label), indexes) for label, indexes in self.get_labels()]
+        image = numpy.zeros(list(all_labels[0][0].shape) + [3], numpy.float32)
         #
         # Find out how many unique labels in each
         #
-        counts = [np.sum(np.unique(l) != 0) for l, _ in all_labels]
+        counts = [numpy.sum(numpy.unique(l) != 0) for l, _ in all_labels]
         if len(counts) == 1 and counts[0] == 0:
             return image
 
@@ -259,24 +210,24 @@ class Objects(object):
             # Have to color 2 planes using the same color!
             # There's some chance that overlapping objects will get
             # the same color. Give me more colors to work with please.
-            colors = np.vstack([colors] * (1 + len(all_labels) / len(colors)))
-        r = np.random.mtrand.RandomState()
-        alpha = np.zeros(all_labels[0][0].shape, np.float32)
-        order = np.lexsort([counts])
+            colors = numpy.vstack([colors] * (1 + len(all_labels) / len(colors)))
+        r = numpy.random.mtrand.RandomState()
+        alpha = numpy.zeros(all_labels[0][0].shape, numpy.float32)
+        order = numpy.lexsort([counts])
         label_colors = []
         for idx, i in enumerate(order):
             max_available = len(colors) / (len(all_labels) - idx)
             ncolors = min(counts[i], max_available)
             my_colors = colors[:ncolors]
             colors = colors[ncolors:]
-            my_colors = my_colors[r.permutation(np.arange(ncolors))]
+            my_colors = my_colors[r.permutation(numpy.arange(ncolors))]
             my_labels, indexes = all_labels[i]
-            color_idx = np.zeros(np.max(indexes) + 1, int)
-            color_idx[indexes] = np.arange(len(indexes)) % ncolors
+            color_idx = numpy.zeros(numpy.max(indexes) + 1, int)
+            color_idx[indexes] = numpy.arange(len(indexes)) % ncolors
             image[my_labels != 0, :] += \
                 my_colors[color_idx[my_labels[my_labels != 0]], :]
             alpha[my_labels != 0] += 1
-        image[alpha > 0, :] /= alpha[alpha > 0][:, np.newaxis]
+        image[alpha > 0, :] /= alpha[alpha > 0][:, numpy.newaxis]
         return image
 
     def relate_children(self, children):
@@ -314,10 +265,10 @@ class Objects(object):
         parent_count = histogram.shape[0] - 1
         child_count = histogram.shape[1] - 1
 
-        parents_of_children = np.argmax(histogram, axis=0)
+        parents_of_children = numpy.argmax(histogram, axis=0)
         #
         # Create a histogram of # of children per parent
-        children_per_parent = np.histogram(parents_of_children[1:], np.arange(parent_count + 2))[0][1:]
+        children_per_parent = numpy.histogram(parents_of_children[1:], numpy.arange(parent_count + 2))[0][1:]
 
         #
         # Make sure to remove the background elements at index 0
@@ -336,27 +287,27 @@ class Objects(object):
         correspond to parent and child labels of 0.
 
         """
-        parent_count = np.max(parent_labels)
-        child_count = np.max(child_labels)
+        parent_count = numpy.max(parent_labels)
+        child_count = numpy.max(child_labels)
         #
         # If the labels are different shapes, crop to shared shape.
         #
-        common_shape = np.minimum(parent_labels.shape, child_labels.shape)
+        common_shape = numpy.minimum(parent_labels.shape, child_labels.shape)
         parent_labels = parent_labels[0:common_shape[0], 0:common_shape[1]]
         child_labels = child_labels[0:common_shape[0], 0:common_shape[1]]
         #
         # Only look at points that are labeled in parent and child
         #
         not_zero = (parent_labels > 0) & (child_labels > 0)
-        not_zero_count = np.sum(not_zero)
+        not_zero_count = numpy.sum(not_zero)
         #
         # each row (axis = 0) is a parent
         # each column (axis = 1) is a child
         #
-        return coo_matrix((np.ones((not_zero_count,)),
-                           (parent_labels[not_zero],
+        return scipy.sparse.coo_matrix((numpy.ones((not_zero_count,)),
+                                        (parent_labels[not_zero],
                             child_labels[not_zero])),
-                          shape=(parent_count + 1, child_count + 1)).toarray()
+                                       shape=(parent_count + 1, child_count + 1)).toarray()
 
     @staticmethod
     def histogram_from_ijv(parent_ijv, child_ijv):
@@ -371,66 +322,54 @@ class Objects(object):
         correspond to parent and child labels of 0.
 
         """
-        parent_count = 0 if (parent_ijv.shape[0] == 0) else np.max(parent_ijv[:, 2])
-        child_count = 0 if (child_ijv.shape[0] == 0) else np.max(child_ijv[:, 2])
+        parent_count = 0 if (parent_ijv.shape[0] == 0) else numpy.max(parent_ijv[:, 2])
+        child_count = 0 if (child_ijv.shape[0] == 0) else numpy.max(child_ijv[:, 2])
 
         if parent_count == 0 or child_count == 0:
-            return np.zeros((parent_count + 1, child_count + 1), int)
+            return numpy.zeros((parent_count + 1, child_count + 1), int)
 
-        dim_i = max(np.max(parent_ijv[:, 0]), np.max(child_ijv[:, 0])) + 1
-        dim_j = max(np.max(parent_ijv[:, 1]), np.max(child_ijv[:, 1])) + 1
+        dim_i = max(numpy.max(parent_ijv[:, 0]), numpy.max(child_ijv[:, 0])) + 1
+        dim_j = max(numpy.max(parent_ijv[:, 1]), numpy.max(child_ijv[:, 1])) + 1
         parent_linear_ij = parent_ijv[:, 0] + \
-                           dim_i * parent_ijv[:, 1].astype(np.uint64)
+                           dim_i * parent_ijv[:, 1].astype(numpy.uint64)
         child_linear_ij = child_ijv[:, 0] + \
-                          dim_i * child_ijv[:, 1].astype(np.uint64)
+                          dim_i * child_ijv[:, 1].astype(numpy.uint64)
 
-        parent_matrix = coo_matrix((np.ones((parent_ijv.shape[0],)),
-                                    (parent_ijv[:, 2], parent_linear_ij)),
-                                   shape=(parent_count + 1, dim_i * dim_j))
-        child_matrix = coo_matrix((np.ones((child_ijv.shape[0],)),
-                                   (child_linear_ij, child_ijv[:, 2])),
-                                  shape=(dim_i * dim_j, child_count + 1))
+        parent_matrix = scipy.sparse.coo_matrix((numpy.ones((parent_ijv.shape[0],)),
+                                                 (parent_ijv[:, 2], parent_linear_ij)),
+                                                shape=(parent_count + 1, dim_i * dim_j))
+        child_matrix = scipy.sparse.coo_matrix((numpy.ones((child_ijv.shape[0],)),
+                                                (child_linear_ij, child_ijv[:, 2])),
+                                               shape=(dim_i * dim_j, child_count + 1))
         # I surely do not understand the sparse code.  Converting both
         # arrays to csc gives the best peformance... Why not p.csr and
         # c.csc?
         return (parent_matrix.tocsc() * child_matrix.tocsc()).toarray()
 
-    @memoize_method
-    def get_indices(self):
+    @property
+    def indices(self):
         """Get the indices for a scipy.ndimage-style function from the segmented labels
 
         """
         if len(self.ijv) == 0:
-            return np.zeros(0, np.int32)
-        max_label = np.max(self.ijv[:, 2])
-        return np.arange(max_label).astype(np.int32) + 1
+            return numpy.zeros(0, numpy.int32)
+        max_label = numpy.max(self.ijv[:, 2])
 
-    indices = property(get_indices)
+        return numpy.arange(max_label).astype(numpy.int32) + 1
 
     @property
     def count(self):
         """The number of objects labeled"""
         return len(self.indices)
 
-    @memoize_method
-    def get_areas(self):
+    @property
+    def areas(self):
         """The area of each object"""
         if len(self.indices) == 0:
-            return np.zeros(0, int)
-        return np.bincount(self.ijv[:, 2])[self.indices]
+            return numpy.zeros(0, int)
 
-    areas = property(get_areas)
+        return numpy.bincount(self.ijv[:, 2])[self.indices]
 
-    @memoize_method
-    def fn_of_label(self, function):
-        """Call a function taking just a label matrix
-
-        function - should have a signature like
-            labels - label_matrix
-    """
-        return function(self.segmented)
-
-    @memoize_method
     def fn_of_label_and_index(self, function):
         """Call a function taking a label matrix with the segmented labels
 
@@ -441,7 +380,6 @@ class Objects(object):
         """
         return function(self.segmented, self.indices)
 
-    @memoize_method
     def fn_of_ones_label_and_index(self, function):
         """Call a function taking an image, a label matrix and an index with an image of all ones
 
@@ -453,24 +391,7 @@ class Objects(object):
         Pass this function an "image" of all ones, for instance to compute
         a center or an area
         """
-
-        return function(np.ones(self.segmented.shape),
-                        self.segmented,
-                        self.indices)
-
-    @memoize_method
-    def fn_of_image_label_and_index(self, function, image):
-        """Call a function taking an image, a label matrix and an index
-
-        function - should have signature like
-                   image  - image with same dimensions as labels
-                   labels - label matrix
-                   index  - sequence of label indices documenting which
-                            label indices are of interest
-        """
-        return function(image,
-                        self.segmented,
-                        self.indices)
+        return function(numpy.ones(self.segmented.shape), self.segmented, self.indices)
 
 
 class Segmentation(object):
@@ -501,37 +422,14 @@ class Segmentation(object):
         else:
             self.__shape = None
             self.__explicit_shape = False
-        self.__cache = None
+
         if dense is not None:
-            self.__indices = [np.unique(d) for d in dense]
+            self.__indices = [numpy.unique(d) for d in dense]
             self.__indices = [
                 idx[1:] if idx[0] == 0 else idx for idx in self.__indices]
 
-    def cache(self, hdf5_object_set, objects_name, segmentation_name):
-        '''Cache the segmentation in the given object set
-
-        hdf5_object_set - an HDF5ObjectSet for moving objects out of memory
-        objects_name - name to use to store the objects
-        segmentation_name - name of this particular segmentation, for instance,
-                            Segmentation.SEGMENTED for the user-visible
-                            segmentation.
-        '''
-        if self.__cache is not None:
-            return
-        self.__objects_name = objects_name
-        self.__segmentation_name = segmentation_name
-        hdf5_object_set.clear(objects_name, segmentation_name)
-        if self.__dense is not None:
-            hdf5_object_set.set_dense(objects_name, segmentation_name,
-                                      self.__dense)
-        if self.__sparse is not None:
-            hdf5_object_set.set_sparse(objects_name, segmentation_name,
-                                       self.__sparse)
-        self.__dense = None
-        self.__sparse = None
-        self.__cache = hdf5_object_set
-
-    def get_shape(self):
+    @property
+    def shape(self):
         '''Get or estimate the shape of the segmentation matrix
 
         Order of precedence:
@@ -544,18 +442,18 @@ class Segmentation(object):
         if self.has_dense():
             self.__shape = self.get_dense()[0].shape[1:]
         else:
-            sparse = self.get_sparse()
+            sparse = self.sparse
             if len(sparse) == 0:
                 self.__shape = (1, 1, 1, 1, 1)
             else:
-                from cellprofiler.utilities.hdf5_dict import HDF5ObjectSet
                 self.__shape = tuple(
-                        [np.max(sparse[axis]) + 2
+                        [numpy.max(sparse[axis]) + 2
                          if axis in sparse.dtype.fields.keys() else 1
-                         for axis in HDF5ObjectSet.AXES])
+                         for axis in ("c", "t", "z", "y", "x")])
         return self.__shape
 
-    def set_shape(self, shape):
+    @shape.setter
+    def shape(self, shape):
         '''Set the shape of the segmentation array
 
         shape - the 5D shape of the array
@@ -565,17 +463,11 @@ class Segmentation(object):
         self.__shape = shape
         self.__explicit_shape = True
 
-    shape = property(get_shape, set_shape)
-
     def has_dense(self):
-        return self.__dense is not None or (
-            self.__cache is not None and self.__cache.has_dense(
-                    self.__objects_name, self.__segmentation_name))
+        return self.__dense is not None
 
     def has_sparse(self):
-        return self.__sparse is not None or (
-            self.__cache is not None and self.__cache.has_sparse(
-                    self.__objects_name, self.__segmentation_name))
+        return self.__sparse is not None
 
     def has_shape(self):
         if self.__explicit_shape:
@@ -583,7 +475,8 @@ class Segmentation(object):
 
         return self.has_dense()
 
-    def get_sparse(self):
+    @property
+    def sparse(self):
         '''Get the sparse representation of the segmentation
 
         returns a Numpy record array where every row represents
@@ -593,17 +486,11 @@ class Segmentation(object):
         '''
         if self.__sparse is not None:
             return self.__sparse
-        if self.__cache is not None and self.__cache.has_sparse(
-                self.__objects_name, self.__segmentation_name):
-            return self.__cache.get_sparse(
-                    self.__objects_name, self.__segmentation_name)
-        if not self.has_dense():
-            raise ValueError(
-                    "Can't find object, \"%s\", segmentation, \"%s\"." %
-                    (self.__objects_name, self.__segmentation_name))
-        return self.__convert_dense_to_sparse()
 
-    sparse = property(get_sparse)
+        if not self.has_dense():
+            raise ValueError("Can't find object, \"%s\", segmentation, \"%s\"." % (self.__objects_name, self.__segmentation_name))
+
+        return self.__convert_dense_to_sparse()
 
     def get_dense(self):
         '''Get the dense representation of the segmentation
@@ -621,21 +508,15 @@ class Segmentation(object):
         '''
         if self.__dense is not None:
             return self.__dense, self.__indices
-        if self.__cache is not None and self.__cache.has_dense(
-                self.__objects_name, self.__segmentation_name):
-            return (self.__cache.get_dense(
-                    self.__objects_name, self.__segmentation_name),
-                    self.__indices)
+
         if not self.has_sparse():
-            raise ValueError(
-                    "Can't find object, \"%s\", segmentation, \"%s\"." %
-                    (self.__objects_name, self.__segmentation_name))
+            raise ValueError("Can't find object, \"%s\", segmentation, \"%s\"." % (self.__objects_name, self.__segmentation_name))
+
         return self.__convert_sparse_to_dense()
 
     def __convert_dense_to_sparse(self):
         dense, indices = self.get_dense()
-        from cellprofiler.utilities.hdf5_dict import HDF5ObjectSet
-        axes = list(HDF5ObjectSet.AXES)
+        axes = list(("c", "t", "z", "y", "x"))
         axes, shape = [
             [a for a, s in zip(aa, self.shape) if s > 1]
             for aa in axes, self.shape]
@@ -645,54 +526,45 @@ class Segmentation(object):
         # objects. When collecting the coords, we can discard this axis.
         #
         dense = dense.reshape([dense.shape[0]] + shape)
-        coords = np.where(dense != 0)
+        coords = numpy.where(dense != 0)
         plane, coords = coords[0], coords[1:]
-        if np.max(shape) < 2 ** 16:
-            coords_dtype = np.uint16
+        if numpy.max(shape) < 2 ** 16:
+            coords_dtype = numpy.uint16
         else:
-            coords_dtype = np.uint32
+            coords_dtype = numpy.uint32
         if len(plane) > 0:
             labels = dense[tuple([plane] + list(coords))]
-            max_label = np.max(indices)
+            max_label = numpy.max(indices)
             if max_label < 2 ** 8:
-                labels_dtype = np.uint8
+                labels_dtype = numpy.uint8
             elif max_label < 2 ** 16:
-                labels_dtype = np.uint16
+                labels_dtype = numpy.uint16
             else:
-                labels_dtype = np.uint32
+                labels_dtype = numpy.uint32
         else:
-            labels = np.zeros(0, dense.dtype)
-            labels_dtype = np.uint8
+            labels = numpy.zeros(0, dense.dtype)
+            labels_dtype = numpy.uint8
         dtype = [(axis, coords_dtype, 1) for axis in axes]
-        dtype.append((HDF5ObjectSet.AXIS_LABELS, labels_dtype, 1))
-        sparse = np.core.records.fromarrays(list(coords) + [labels], dtype=dtype)
-        if self.__cache is not None:
-            self.__cache.set_sparse(
-                    self.__objects_name, self.__segmentation_name, sparse)
-        else:
-            self.__sparse = sparse
+        dtype.append(("label", labels_dtype, 1))
+        sparse = numpy.core.records.fromarrays(list(coords) + [labels], dtype=dtype)
+        self.__sparse = sparse
         return sparse
 
-    def __set_or_cache_dense(self, dense, indices=None):
-        if self.__cache is not None:
-            self.__cache.set_dense(
-                    self.__objects_name, self.__segmentation_name, dense)
-        else:
-            self.__dense = dense
+    def __set_dense(self, dense, indices=None):
+        self.__dense = dense
         if indices is not None:
             self.__indices = indices
         else:
-            self.__indices = [np.unique(d) for d in dense]
+            self.__indices = [numpy.unique(d) for d in dense]
             self.__indices = [
                 idx[1:] if idx[0] == 0 else idx for idx in self.__indices]
         return dense, self.__indices
 
     def __convert_sparse_to_dense(self):
-        from cellprofiler.utilities.hdf5_dict import HDF5ObjectSet
-        sparse = self.get_sparse()
+        sparse = self.sparse
         if len(sparse) == 0:
-            return self.__set_or_cache_dense(
-                    np.zeros([1] + list(self.shape), np.uint16))
+            return self.__set_dense(
+                    numpy.zeros([1] + list(self.shape), numpy.uint16))
 
         #
         # The code below assigns a "color" to each label so that no
@@ -701,18 +573,18 @@ class Segmentation(object):
         positional_columns = []
         available_columns = []
         lexsort_columns = []
-        for axis in HDF5ObjectSet.AXES:
+        for axis in ("c", "t", "z", "y", "x"):
             if axis in sparse.dtype.fields.keys():
                 positional_columns.append(sparse[axis])
                 available_columns.append(sparse[axis])
                 lexsort_columns.insert(0, sparse[axis])
             else:
                 positional_columns.append(0)
-        labels = sparse[HDF5ObjectSet.AXIS_LABELS]
+        labels = sparse["label"]
         lexsort_columns.insert(0, labels)
 
-        sort_order = np.lexsort(lexsort_columns)
-        n_labels = np.max(labels)
+        sort_order = numpy.lexsort(lexsort_columns)
+        n_labels = numpy.max(labels)
         #
         # Find the first of a run that's different from the rest
         #
@@ -721,10 +593,10 @@ class Segmentation(object):
         for column in available_columns[1:]:
             mask = mask | (column[sort_order[:-1]] !=
                            column[sort_order[1:]])
-        breaks = np.hstack(([0], np.where(mask)[0] + 1, [len(labels)]))
+        breaks = numpy.hstack(([0], numpy.where(mask)[0] + 1, [len(labels)]))
         firsts = breaks[:-1]
         counts = breaks[1:] - firsts
-        indexer = Indexes(counts)
+        indexer = centrosome.index.Indexes(counts)
         #
         # Eliminate the locations that are singly labeled
         #
@@ -732,14 +604,14 @@ class Segmentation(object):
         firsts = firsts[mask]
         counts = counts[mask]
         if len(counts) == 0:
-            dense = np.zeros([1] + list(self.shape), labels.dtype)
+            dense = numpy.zeros([1] + list(self.shape), labels.dtype)
             dense[[0] + positional_columns] = labels
-            return self.__set_or_cache_dense(dense)
+            return self.__set_dense(dense)
         #
         # There are n * n-1 pairs for each coordinate (n = # labels)
         # n = 1 -> 0 pairs, n = 2 -> 2 pairs, n = 3 -> 6 pairs
         #
-        pairs = all_pairs(np.max(counts))
+        pairs = centrosome.index.all_pairs(numpy.max(counts))
         pair_counts = counts * (counts - 1)
         #
         # Create an indexer for the inputs (indexes) and for the outputs
@@ -748,8 +620,8 @@ class Segmentation(object):
         # Remember idx points into sort_order which points into labels
         # to get the nth label, grouped into consecutive positions.
         #
-        input_indexer = Indexes(counts)
-        output_indexer = Indexes(pair_counts)
+        input_indexer = centrosome.index.Indexes(counts)
+        output_indexer = centrosome.index.Indexes(pair_counts)
         #
         # The start of the run of overlaps and the offsets
         #
@@ -760,13 +632,13 @@ class Segmentation(object):
         #
         # And sort these so that we get consecutive lists for each
         #
-        pair_sort_order = np.lexsort((second, first))
+        pair_sort_order = numpy.lexsort((second, first))
         #
         # Eliminate dupes
         #
-        to_keep = np.hstack(([True],
-                             (first[1:] != first[:-1]) |
-                             (second[1:] != second[:-1])))
+        to_keep = numpy.hstack(([True],
+                                (first[1:] != first[:-1]) |
+                                (second[1:] != second[:-1])))
         to_keep = to_keep & (first != second)
         pair_idx = pair_sort_order[to_keep]
         first = first[pair_idx]
@@ -778,31 +650,31 @@ class Segmentation(object):
         # its application to timetabling problems", The Computer Journal, 10(1)
         # p 85 (1967)
         #
-        overlap_counts = np.bincount(first.astype(np.int32))
+        overlap_counts = numpy.bincount(first.astype(numpy.int32))
         #
         # The index to the i'th label's stuff
         #
-        indexes = np.cumsum(overlap_counts) - overlap_counts
+        indexes = numpy.cumsum(overlap_counts) - overlap_counts
         #
         # A vector of a current color per label. All non-overlapping
         # objects are assigned to plane 1
         #
-        v_color = np.ones(n_labels + 1, int)
+        v_color = numpy.ones(n_labels + 1, int)
         v_color[0] = 0
         #
         # Clear all overlapping objects
         #
-        v_color[np.unique(first)] = 0
+        v_color[numpy.unique(first)] = 0
         #
         # The processing order is from most overlapping to least
         #
-        ol_labels = np.where(overlap_counts > 0)[0]
-        processing_order = np.lexsort((ol_labels, overlap_counts[ol_labels]))
+        ol_labels = numpy.where(overlap_counts > 0)[0]
+        processing_order = numpy.lexsort((ol_labels, overlap_counts[ol_labels]))
 
         for index in ol_labels[processing_order]:
             neighbors = second[
                         indexes[index]:indexes[index] + overlap_counts[index]]
-            colors = np.unique(v_color[neighbors])
+            colors = numpy.unique(v_color[neighbors])
             if colors[0] == 0:
                 if len(colors) == 1:
                     # all unassigned - put self in group 1
@@ -813,7 +685,7 @@ class Segmentation(object):
                     colors = colors[1:]
             # Match a range against the colors array - the first place
             # they don't match is the first color we can use
-            crange = np.arange(1, len(colors) + 1)
+            crange = numpy.arange(1, len(colors) + 1)
             misses = crange[colors != crange]
             if len(misses):
                 color = misses[0]
@@ -826,21 +698,21 @@ class Segmentation(object):
         # 5-d hyperplane into which we place each label
         #
         result = []
-        dense = np.zeros([np.max(v_color)] + list(self.shape), labels.dtype)
+        dense = numpy.zeros([numpy.max(v_color)] + list(self.shape), labels.dtype)
         slices = tuple([v_color[labels] - 1] + positional_columns)
         dense[slices] = labels
         indices = [
-            np.where(v_color == i)[0] for i in range(1, dense.shape[0] + 1)]
+            numpy.where(v_color == i)[0] for i in range(1, dense.shape[0] + 1)]
 
-        return self.__set_or_cache_dense(dense, indices)
+        return self.__set_dense(dense, indices)
 
 
 def check_consistency(segmented, unedited_segmented, small_removed_segmented):
     """Check the three components of Objects to make sure they are consistent
     """
-    assert segmented is None or np.all(segmented >= 0)
-    assert unedited_segmented is None or np.all(unedited_segmented >= 0)
-    assert small_removed_segmented is None or np.all(small_removed_segmented >= 0)
+    assert segmented is None or numpy.all(segmented >= 0)
+    assert unedited_segmented is None or numpy.all(unedited_segmented >= 0)
+    assert small_removed_segmented is None or numpy.all(small_removed_segmented >= 0)
     assert segmented is None or segmented.ndim == 2, "Segmented label matrix must have two dimensions, has %d" % (
         segmented.ndim)
     assert unedited_segmented is None or unedited_segmented.ndim == 2, "Unedited segmented label matrix must have two dimensions, has %d" % (
@@ -891,12 +763,11 @@ class ObjectSet(object):
         """
         return self.__objects_by_name[name]
 
-    def get_all_objects(self):
+    @property
+    def all_objects(self):
         """Return a list of name / objects tuples
         """
         return self.__objects_by_name.items()
-
-    all_objects = property(get_all_objects)
 
     def get_types(self):
         '''Get then names of types of per-image set "things"
@@ -933,25 +804,15 @@ class ObjectSet(object):
             return None
         return self.__types_and_instances[type_name][instance_name]
 
-    def cache(self, hdf5_object_set):
-        '''Cache all objects in the object set to an HDF5 backing store
-
-        hdf5_object_set - an HDF5ObjectSet that is used to store
-                          the segmentations so that they can be
-                          flushed out of memory.
-        '''
-        for objects_name in self.get_object_names():
-            self.get_objects(objects_name).cache(hdf5_object_set, objects_name)
-
 
 def downsample_labels(labels):
     '''Convert a labels matrix to the smallest possible integer format'''
-    labels_max = np.max(labels)
+    labels_max = numpy.max(labels)
     if labels_max < 128:
-        return labels.astype(np.int8)
+        return labels.astype(numpy.int8)
     elif labels_max < 32768:
-        return labels.astype(np.int16)
-    return labels.astype(np.int32)
+        return labels.astype(numpy.int16)
+    return labels.astype(numpy.int32)
 
 
 def crop_labels_and_image(labels, image):
@@ -985,27 +846,27 @@ def size_similarly(labels, secondary):
     modify the output within the unmasked region w/o destroying the original.
     '''
     if labels.shape[:2] == secondary.shape[:2]:
-        return secondary, np.ones(secondary.shape, bool)
+        return secondary, numpy.ones(secondary.shape, bool)
     if (labels.shape[0] <= secondary.shape[0] and
                 labels.shape[1] <= secondary.shape[1]):
         if secondary.ndim == 2:
             return (secondary[:labels.shape[0], :labels.shape[1]],
-                    np.ones(labels.shape, bool))
+                    numpy.ones(labels.shape, bool))
         else:
             return (secondary[:labels.shape[0], :labels.shape[1], :],
-                    np.ones(labels.shape, bool))
+                    numpy.ones(labels.shape, bool))
 
     #
     # Some portion of the secondary matrix does not cover the labels
     #
-    result = np.zeros(list(labels.shape) + list(secondary.shape[2:]),
-                      secondary.dtype)
+    result = numpy.zeros(list(labels.shape) + list(secondary.shape[2:]),
+                         secondary.dtype)
     i_max = min(secondary.shape[0], labels.shape[0])
     j_max = min(secondary.shape[1], labels.shape[1])
     if secondary.ndim == 2:
         result[:i_max, :j_max] = secondary[:i_max, :j_max]
     else:
         result[:i_max, :j_max, :] = secondary[:i_max, :j_max, :]
-    mask = np.zeros(labels.shape, bool)
+    mask = numpy.zeros(labels.shape, bool)
     mask[:i_max, :j_max] = 1
     return result, mask

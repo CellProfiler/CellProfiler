@@ -571,7 +571,7 @@ class FilterObjects(cpm.Module):
                  [m.measurement.get_image_name(workspace.pipeline)
                   for m in self.measurements]
                  if image is not None
-                 and image in workspace.image_set.get_names()]
+                 and image in workspace.image_set.names]
             if len(image_names) == 0:
                 # Measurement isn't image-based
                 if src_objects.has_parent_image:

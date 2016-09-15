@@ -1,4 +1,4 @@
-'''<b>Load Data</b> loads text or numerical data to be associated with images, and 
+'''<b>Load Data</b> loads text or numerical data to be associated with images, and
 can also load images specified by file names.
 <hr>
 This module loads a file that supplies text or numerical data associated with
@@ -1078,7 +1078,7 @@ class LoadData(cpm.Module):
             image_size = None
             for image_name in self.other_providers('imagegroup'):
                 provider = self.fetch_provider(image_name, m)
-                image_set.get_providers().append(provider)
+                image_set.providers.append(provider)
                 image = image_set.get_image(image_name)
                 pixel_data = image.pixel_data
                 m.add_image_measurement("_".join((C_MD5_DIGEST, image_name)),

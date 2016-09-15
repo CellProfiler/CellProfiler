@@ -4,16 +4,15 @@ Image        - Represents an image with secondary attributes such as a mask and 
 ImageSetList - Represents the list of image filenames that make up a pipeline run
 """
 
+import StringIO
+import cPickle
 import logging
 import math
+import struct
 import sys
-from StringIO import StringIO
-from cPickle import dump, Unpickler
-from struct import unpack
-from zlib import decompress
+import zlib
 
-import numpy as np
-from numpy import fromstring, uint8, uint16
+import numpy
 
 logger = logging.getLogger(__name__)
 
@@ -56,41 +55,41 @@ class Image(object):
     significant.
     """
 
-    def __init__(self,
-                 image=None,
-                 mask=None,
-                 crop_mask=None,
-                 parent_image=None,
-                 masking_objects=None,
-                 convert=True,
-                 path_name=None,
-                 file_name=None,
-                 scale=None):
+    def __init__(self, image=None, mask=None, crop_mask=None, parent_image=None, masking_objects=None, convert=True, path_name=None, file_name=None, scale=None):
         self.__image = None
+
         self.__mask = None
+
         self.__has_mask = False
-        self.__parent_image = parent_image
+
+        self.parent_image = parent_image
+
         self.__crop_mask = None
+
+        self.__has_crop_mask = False
+
         if crop_mask is not None:
-            self.set_crop_mask(crop_mask)
-            self.__has_crop_mask = True
-        else:
-            self.__has_crop_mask = False
-        self.__masking_objects = masking_objects
+            self.crop_mask = crop_mask
+
+        self.masking_objects = masking_objects
+
         self.__scale = scale
+
         if image is not None:
             self.set_image(image, convert)
+
         if mask is not None:
-            self.set_mask(mask)
+            self.mask = mask
+
         self.__file_name = file_name
+
         self.__path_name = path_name
-        self.__channel_names = None
+
+        self.channel_names = None
 
     def get_image(self):
         """Return the primary image"""
-        if self.__image is None:
-            return
-        return self.__image.get()
+        return self.__image
 
     def set_image(self, image, convert=True):
         """Set the primary image
@@ -102,91 +101,72 @@ class Image(object):
         * int8/16/32/64: scale min to max to 0 to 1
         * logical: save as is (and get if must_be_binary)
         """
-        img = np.asanyarray(image)
+        img = numpy.asanyarray(image)
         if img.dtype.name == "bool" or not convert:
-            self.__image = ImageCache(img)
+            self.__image = img
             return
         mval = 0.
         scale = 1.
         fix_range = False
-        if issubclass(img.dtype.type, np.floating):
+        if issubclass(img.dtype.type, numpy.floating):
             pass
-        elif img.dtype.type is np.uint8:
+        elif img.dtype.type is numpy.uint8:
             scale = math.pow(2.0, 8.0) - 1
-        elif img.dtype.type is np.uint16:
+        elif img.dtype.type is numpy.uint16:
             scale = math.pow(2.0, 16.0) - 1
-        elif img.dtype.type is np.uint32:
+        elif img.dtype.type is numpy.uint32:
             scale = math.pow(2.0, 32.0) - 1
-        elif img.dtype.type is np.uint64:
+        elif img.dtype.type is numpy.uint64:
             scale = math.pow(2.0, 64.0) - 1
-        elif img.dtype.type is np.int8:
+        elif img.dtype.type is numpy.int8:
             scale = math.pow(2.0, 8.0)
             mval = -scale / 2.0
             scale -= 1
             fix_range = True
-        elif img.dtype.type is np.int16:
+        elif img.dtype.type is numpy.int16:
             scale = math.pow(2.0, 16.0)
             mval = -scale / 2.0
             scale -= 1
             fix_range = True
-        elif img.dtype.type is np.int32:
+        elif img.dtype.type is numpy.int32:
             scale = math.pow(2.0, 32.0)
             mval = -scale / 2.0
             scale -= 1
             fix_range = True
-        elif img.dtype.type is np.int64:
+        elif img.dtype.type is numpy.int64:
             scale = math.pow(2.0, 64.0)
             mval = -scale / 2.0
             scale -= 1
             fix_range = True
         # Avoid temporaries by doing the shift/scale in place.
-        img = img.astype(np.float32)
+        img = img.astype(numpy.float32)
         img -= mval
         img /= scale
         if fix_range:
             # These types will always have ranges between 0 and 1. Make it so.
-            np.clip(img, 0, 1, out=img)
+            numpy.clip(img, 0, 1, out=img)
         check_consistency(img, self.__mask)
-        self.__image = ImageCache(img)
+        self.__image = img
 
     image = property(get_image, set_image)
     pixel_data = property(get_image, set_image)
 
-    def get_parent_image(self):
-        """The image from which this one was derived"""
-        return self.__parent_image
-
-    def set_parent_image(self, parent_image):
-        self.__parent_image = parent_image
-
-    parent_image = property(get_parent_image, set_parent_image)
-
-    def get_has_parent_image(self):
+    @property
+    def has_parent_image(self):
         """True if this image has a defined parent"""
-        return self.__parent_image is not None
+        return self.parent_image is not None
 
-    has_parent_image = property(get_has_parent_image)
-
-    def get_masking_objects(self):
-        """The objects used to crop and mask this image"""
-        return self.__masking_objects
-
-    def set_masking_objects(self, value):
-        self.__masking_objects = value
-
-    masking_objects = property(get_masking_objects, set_masking_objects)
-
-    def get_has_masking_objects(self):
+    @property
+    def has_masking_objects(self):
         """True if the image was cropped with objects
 
         If this is true, there will also be a valid labels matrix
         available through the labels property
         """
-        return self.__masking_objects is not None
+        return self.masking_objects is not None
 
-    has_masking_objects = property(get_has_masking_objects)
-
-    def get_labels(self):
+    @property
+    def labels(self):
         """Get the segmentation labels from the masking objects
 
         returns the "segmented" labels: others are available through
@@ -194,24 +174,26 @@ class Image(object):
         """
         if not self.has_masking_objects:
             return None
+
         return self.crop_image_similarly(self.masking_objects.segmented)
 
-    labels = property(get_labels)
-
-    def get_mask(self):
+    @property
+    def mask(self):
         """Return the mask (pixels to be considered) for the primary image
         """
-        if not self.__mask is None:
-            return self.__mask.get()
+        if self.__mask is not None:
+            return self.__mask
 
         if self.has_masking_objects:
             return self.crop_image_similarly(self.crop_mask)
 
         if self.has_parent_image:
             mask = self.parent_image.mask
+
             return self.crop_image_similarly(mask)
 
         image = self.image
+
         #
         # Exclude channel, if present, from shape
         #
@@ -221,61 +203,65 @@ class Image(object):
             shape = image.shape[:2]
         else:
             shape = image.shape[1:]
-        return np.ones(shape, dtype=np.bool)
 
-    def set_mask(self, mask):
+        return numpy.ones(shape, dtype=numpy.bool)
+
+    @mask.setter
+    def mask(self, mask):
         """Set the mask (pixels to be considered) for the primary image
 
         Convert the input into a numpy array. If the input is numeric,
         we convert it to boolean by testing each element for non-zero.
         """
-        m = np.array(mask)
-        if not (m.dtype.type is np.bool):
+        m = numpy.array(mask)
+
+        if not (m.dtype.type is numpy.bool):
             m = (m != 0)
+
         check_consistency(self.image, m)
-        self.__mask = ImageCache(m)
+        self.__mask = m
         self.__has_mask = True
 
-    mask = property(get_mask, set_mask)
-
-    def get_has_mask(self):
+    @property
+    def has_mask(self):
         """True if the image has a mask"""
         if self.__has_mask:
             return True
+
         if self.has_crop_mask:
             return True
+
         if self.parent_image is not None:
             return self.parent_image.has_mask
+
         return False
 
-    has_mask = property(get_has_mask)
-
-    def get_crop_mask(self):
+    @property
+    def crop_mask(self):
         """Return the mask used to crop this image"""
-        if not self.__crop_mask is None:
-            return self.__crop_mask.get()
+        if self.__crop_mask is not None:
+            return self.__crop_mask
 
         if self.has_masking_objects:
             return self.masking_objects.segmented != 0
 
         if self.has_parent_image:
             return self.parent_image.crop_mask
+
         #
         # If no crop mask, return the mask which should be all ones
         #
         return self.mask
 
-    def set_crop_mask(self, crop_mask):
-        self.__crop_mask = ImageCache(crop_mask)
-
-    crop_mask = property(get_crop_mask, set_crop_mask)
+    @crop_mask.setter
+    def crop_mask(self, crop_mask):
+        self.__has_crop_mask = True
+        self.__crop_mask = crop_mask
 
     @property
     def has_crop_mask(self):
         '''True if the image or its ancestors has a crop mask'''
-        return (self.__crop_mask is not None or
-                self.has_masking_objects or
-                (self.has_parent_image and self.parent_image.has_crop_mask))
+        return self.__has_crop_mask or self.has_masking_objects or (self.has_parent_image and self.parent_image.has_crop_mask)
 
     def crop_image_similarly(self, image):
         """Crop a 2-d or 3-d image using this image's crop mask
@@ -302,23 +288,23 @@ class Image(object):
                               repr(self.pixel_data.shape)))
         return cropped_image
 
-    def get_file_name(self):
+    @property
+    def file_name(self):
         '''The name of the file holding this image
 
         If the image is derived, then return the file name of the first
         ancestor that has a file name. Return None if the image does not have
         an ancestor or if no ancestor has a file name.
         '''
-        if not self.__file_name is None:
+        if self.__file_name is not None:
             return self.__file_name
         elif self.has_parent_image:
             return self.parent_image.file_name
         else:
             return None
 
-    file_name = property(get_file_name)
-
-    def get_path_name(self):
+    @property
+    def path_name(self):
         '''The path to the file holding this image
 
         If the image is derived, then return the path name of the first
@@ -332,23 +318,13 @@ class Image(object):
         else:
             return None
 
-    path_name = property(get_path_name)
-
-    def get_channel_names(self):
-        '''The user-defined names of the channels in a channel stack'''
-        return self.__channel_names
-
-    def set_channel_names(self, names):
-        self.__channel_names = tuple(names)
-
-    channel_names = property(get_channel_names, set_channel_names)
-
     @property
     def has_channel_names(self):
         '''True if there are channel names on this image'''
-        return self.__channel_names is not None
+        return self.channel_names is not None
 
-    def get_scale(self):
+    @property
+    def scale(self):
         '''The scale at acquisition
 
         This is the intensity scale used by the acquisition device. For
@@ -358,100 +334,25 @@ class Image(object):
         '''
         if self.__scale is None and self.has_parent_image:
             return self.parent_image.scale
+
         return self.__scale
-
-    scale = property(get_scale)
-
-    def cache(self, name, hdf5_file):
-        '''Move all images into backing stores
-
-        name - the channel name of the image
-        hdf5_file - an HDF5 file or group
-
-        We utilize the sub-groups, "Images", "Masks" and "CropMasks".
-        The best practice is to use a temporary file dedicated to images and
-        maybe objects.
-        '''
-        from cellprofiler.utilities.hdf5_dict import HDF5ImageSet
-        if isinstance(self.__image, ImageCache) and \
-                not self.__image.is_cached():
-            self.__image.cache(name, HDF5ImageSet(hdf5_file))
-        if isinstance(self.__mask, ImageCache) and \
-                not self.__mask.is_cached():
-            self.__mask.cache(name, HDF5ImageSet(hdf5_file, "Masks"))
-        if isinstance(self.__crop_mask, ImageCache) and \
-                not self.__crop_mask.is_cached():
-            self.__crop_mask.cache(name, HDF5ImageSet(hdf5_file, "CropMasks"))
-
-
-class ImageCache(object):
-    '''An HDF5 cache that can store an image, mask or crop mask
-
-    '''
-    IC_MONOCHROME = "Monochrome"
-    IC_COLOR = "Color"
-    IC_5D = "5D"
-
-    def __init__(self, image):
-        '''Initialize with the image to control'''
-        self.__backing_store = None
-        self.__name = None
-        if image.ndim == 2:
-            self.__type = ImageCache.IC_MONOCHROME
-            self.__image = image.reshape(1, 1, 1, image.shape[0], image.shape[1])
-        elif image.ndim == 3:
-            self.__type = ImageCache.IC_COLOR
-            self.__image = image.transpose(2, 0, 1).reshape(
-                    image.shape[2], 1, 1, image.shape[0], image.shape[1])
-        else:
-            self.__type = ImageCache.IC_5D
-            self.__image = image
-
-    def is_cached(self):
-        '''Return True if image is already cached by a backing store
-
-        '''
-        return self.__backing_store is not None
-
-    def cache(self, name, backing_store):
-        '''Cache an image into a backing store
-
-        name - unique channel name of the image
-        backing_store - an HDF5ImageSet
-        '''
-        self.__backing_store = backing_store
-        self.__name = name
-        self.__backing_store.set_image(self.__name, self.__image)
-        del self.__image
-
-    def get(self):
-        '''Get the image in its original format'''
-        if self.is_cached():
-            image = self.__backing_store.get_image(self.__name)
-        else:
-            image = self.__image
-        if self.__type == ImageCache.IC_MONOCHROME:
-            return image.reshape(image.shape[3], image.shape[4])
-        elif self.__type == ImageCache.IC_COLOR:
-            return image.reshape(
-                    image.shape[0], image.shape[3], image.shape[4]).transpose(1, 2, 0)
 
 
 def crop_image(image, crop_mask, crop_internal=False):
     """Crop an image to the size of the nonzero portion of a crop mask"""
     i_histogram = crop_mask.sum(axis=1)
-    i_cumsum = np.cumsum(i_histogram != 0)
+    i_cumsum = numpy.cumsum(i_histogram != 0)
     j_histogram = crop_mask.sum(axis=0)
-    j_cumsum = np.cumsum(j_histogram != 0)
+    j_cumsum = numpy.cumsum(j_histogram != 0)
     if i_cumsum[-1] == 0:
         # The whole image is cropped away
-        return np.zeros((0, 0), dtype=image.dtype)
+        return numpy.zeros((0, 0), dtype=image.dtype)
     if crop_internal:
         #
         # Make up sequences of rows and columns to keep
         #
-        i_keep = np.argwhere(i_histogram > 0)
-        j_keep = np.argwhere(j_histogram > 0)
+        i_keep = numpy.argwhere(i_histogram > 0)
+        j_keep = numpy.argwhere(j_histogram > 0)
         #
         # Then slice the array by I, then by J to get what's not blank
         #
@@ -462,11 +363,11 @@ def crop_image(image, crop_mask, crop_internal=False):
         # The last are at the first where the cumsum is it's max (meaning
         # what came after was all zeros and added nothing)
         #
-        i_first = np.argwhere(i_cumsum == 1)[0]
-        i_last = np.argwhere(i_cumsum == i_cumsum.max())[0]
+        i_first = numpy.argwhere(i_cumsum == 1)[0]
+        i_last = numpy.argwhere(i_cumsum == i_cumsum.max())[0]
         i_end = i_last + 1
-        j_first = np.argwhere(j_cumsum == 1)[0]
-        j_last = np.argwhere(j_cumsum == j_cumsum.max())[0]
+        j_first = numpy.argwhere(j_cumsum == 1)[0]
+        j_last = numpy.argwhere(j_cumsum == j_cumsum.max())[0]
         j_end = j_last + 1
         if image.ndim == 3:
             return image[i_first:i_end, j_first:j_end, :].copy()
@@ -486,13 +387,13 @@ class GrayscaleImage(object):
     def __getattr__(self, name):
         return getattr(self.__image, name)
 
-    def get_pixel_data(self):
+    @property
+    def pixel_data(self):
         """One 2-d channel of the color image as a numpy array"""
         if self.__image.pixel_data.dtype.kind == 'b':
-            return self.__image.pixel_data.astype(np.float64)
-        return self.__image.pixel_data[:, :, 0]
+            return self.__image.pixel_data.astype(numpy.float64)
 
-    pixel_data = property(get_pixel_data)
+        return self.__image.pixel_data[:, :, 0]
 
 
 class RGBImage(object):
@@ -508,11 +409,10 @@ class RGBImage(object):
     def __getattr__(self, name):
         return getattr(self.__image, name)
 
-    def get_pixel_data(self):
+    @property
+    def pixel_data(self):
         '''Return the pixel data without the alpha channel'''
         return self.__image.pixel_data[:, :, :3]
-
-    pixel_data = property(get_pixel_data)
 
 
 def check_consistency(image, mask):
@@ -520,7 +420,7 @@ def check_consistency(image, mask):
     assert (image is None) or (len(image.shape) in (2, 3)), "Image must have 2 or 3 dimensions"
     assert (mask is None) or (len(mask.shape) == 2), "Mask must have 2 dimensions"
     assert (image is None) or (mask is None) or (image.shape[:2] == mask.shape), "Image and mask sizes don't match"
-    assert (mask is None) or (mask.dtype.type is np.bool_), "Mask must be boolean, was %s" % (repr(mask.dtype.type))
+    assert (mask is None) or (mask.dtype.type is numpy.bool_), "Mask must be boolean, was %s" % (repr(mask.dtype.type))
 
 
 class AbstractImageProvider(object):
@@ -607,35 +507,16 @@ class ImageSet(object):
         """
         self.__image_providers = []
         self.__images = {}
-        self.__keys = keys
-        self.__number = number
-        self.__legacy_fields = legacy_fields
-
-    def get_number(self):
-        """The (zero-based) image set index
-        """
-        return self.__number
-
-    number = property(get_number)
-
-    @property
-    def image_number(self):
-        '''The image number as used in measurements and the database'''
-        return self.__number + 1
-
-    def get_keys(self):
-        """The keys that uniquely identify the image set
-        """
-        return self.__keys
-
-    keys = property(get_keys)
+        self.keys = keys
+        self.number = number
+        self.legacy_fields = legacy_fields
+        self.image_number = number + 1
 
     def get_image(self, name,
                   must_be_binary=False,
                   must_be_color=False,
                   must_be_grayscale=False,
-                  must_be_rgb=False,
-                  cache=True):
+                  must_be_rgb=False):
         """Return the image associated with the given name
 
         name - name of the image within the image_set
@@ -647,13 +528,12 @@ class ImageSet(object):
         name = str(name)
         if not self.__images.has_key(name):
             image = self.get_image_provider(name).provide_image(self)
-            if cache:
-                self.__images[name] = image
+
         else:
             image = self.__images[name]
         if must_be_binary and image.pixel_data.ndim == 3:
             raise ValueError("Image must be binary, but it was color")
-        if must_be_binary and image.pixel_data.dtype != np.bool:
+        if must_be_binary and image.pixel_data.dtype != numpy.bool:
             raise ValueError("Image was not binary")
         if must_be_color and image.pixel_data.ndim != 3:
             raise ValueError("Image must be color, but it was grayscale")
@@ -661,8 +541,8 @@ class ImageSet(object):
                 (image.pixel_data.ndim != 2)):
             pd = image.pixel_data
             if pd.shape[2] >= 3 and \
-                    np.all(pd[:, :, 0] == pd[:, :, 1]) and \
-                    np.all(pd[:, :, 0] == pd[:, :, 2]):
+                    numpy.all(pd[:, :, 0] == pd[:, :, 1]) and \
+                    numpy.all(pd[:, :, 0] == pd[:, :, 2]):
                 return GrayscaleImage(image)
             raise ValueError("Image must be grayscale, but it was color")
         if must_be_grayscale and image.pixel_data.dtype.kind == 'b':
@@ -678,11 +558,10 @@ class ImageSet(object):
                 return RGBImage(image)
         return image
 
-    def get_providers(self):
+    @property
+    def providers(self):
         """The list of providers (populated during the image discovery phase)"""
         return self.__image_providers
-
-    providers = property(get_providers)
 
     def get_image_provider(self, name):
         """Get a named image provider
@@ -711,24 +590,11 @@ class ImageSet(object):
         if self.__images.has_key(name):
             del self.__images[name]
 
-    def clear_cache(self):
-        '''Remove all of the cached images'''
-        self.__images.clear()
-
-    def get_names(self):
+    @property
+    def names(self):
         """Get the image provider names
         """
         return [provider.name for provider in self.providers]
-
-    names = property(get_names)
-
-    def get_legacy_fields(self):
-        """Matlab modules can stick legacy junk into the Images handles field. Save it in this dictionary.
-
-        """
-        return self.__legacy_fields
-
-    legacy_fields = property(get_legacy_fields)
 
     def add(self, name, image):
         old_providers = [provider for provider in self.providers
@@ -749,15 +615,10 @@ class ImageSetList(object):
     def __init__(self, test_mode=False):
         self.__image_sets = []
         self.__image_sets_by_key = {}
-        self.__legacy_fields = {}
+        self.legacy_fields = {}
         self.__associating_by_key = None
-        self.__test_mode = test_mode
         self.combine_path_and_file = False
-
-    @property
-    def test_mode(self):
-        '''True if we are in test mode'''
-        return self.__test_mode
+        self.test_mode = test_mode
 
     def get_image_set(self, keys_or_number):
         """Return either the indexed image set (keys_or_number = index) or the image set with matching keys
@@ -773,36 +634,27 @@ class ImageSetList(object):
             keys = keys_or_number
             k = make_dictionary_key(keys)
             if self.__image_sets_by_key.has_key(k):
-                number = self.__image_sets_by_key[k].get_number()
+                number = self.__image_sets_by_key[k].number
             else:
                 number = len(self.__image_sets)
             self.__associating_by_key = True
         if number >= len(self.__image_sets):
             self.__image_sets += [None] * (number - len(self.__image_sets) + 1)
         if self.__image_sets[number] is None:
-            image_set = ImageSet(number, keys, self.__legacy_fields)
+            image_set = ImageSet(number, keys, self.legacy_fields)
             self.__image_sets[number] = image_set
             self.__image_sets_by_key[k] = image_set
-            if self.associating_by_key:
+            if self.__associating_by_key:
                 k = make_dictionary_key(dict(number=number))
                 self.__image_sets_by_key[k] = image_set
         else:
             image_set = self.__image_sets[number]
         return image_set
 
-    @property
-    def associating_by_key(self):
-        '''True if some image set has been added with a key instead of a number
-
-        This will return "None" if no association has been done.
-        '''
-        return self.__associating_by_key
-
     def purge_image_set(self, number):
         """Remove the memory associated with an image set"""
         keys = self.__image_sets[number].keys
         image_set = self.__image_sets[number]
-        image_set.clear_cache()
         for provider in image_set.providers:
             provider.release_memory()
         self.__image_sets[number] = None
@@ -818,14 +670,6 @@ class ImageSetList(object):
 
     def count(self):
         return len(self.__image_sets)
-
-    def get_legacy_fields(self):
-        """Matlab modules can stick legacy junk into the Images handles field. Save it in this dictionary.
-
-        """
-        return self.__legacy_fields
-
-    legacy_fields = property(get_legacy_fields)
 
     def get_groupings(self, keys):
         '''Return the groupings of an image set list over a set of keys
@@ -867,14 +711,14 @@ class ImageSetList(object):
         load_state will restore the image set list's state. No image_set can
         have image providers before this call.
         '''
-        f = StringIO()
-        dump(self.count(), f)
+        f = StringIO.StringIO()
+        cPickle.dump(self.count(), f)
         for i in range(self.count()):
             image_set = self.get_image_set(i)
             assert isinstance(image_set, ImageSet)
             assert len(image_set.providers) == 0, "An image set cannot have providers while saving its state"
-            dump(image_set.keys, f)
-        dump(self.legacy_fields, f)
+            cPickle.dump(image_set.keys, f)
+        cPickle.dump(self.legacy_fields, f)
         return f.getvalue()
 
     def load_state(self, state):
@@ -884,7 +728,7 @@ class ImageSetList(object):
         self.__image_sets_by_key = {}
 
         # Make a safe unpickler
-        p = Unpickler(StringIO(state))
+        p = cPickle.Unpickler(StringIO.StringIO(state))
 
         def find_global(module_name, class_name):
             logger.debug("Pickler wants %s:%s", module_name, class_name)
@@ -903,7 +747,7 @@ class ImageSetList(object):
 
         count = p.load()
         all_keys = [p.load() for i in range(count)]
-        self.__legacy_fields = p.load()
+        self.legacy_fields = p.load()
         #
         # Have to do in this order in order for the image set's
         # legacy_fields property to hook to the right legacy_fields
@@ -916,50 +760,3 @@ def make_dictionary_key(key):
     '''Make a dictionary into a stable key for another dictionary'''
     return u", ".join([u":".join([unicode(y) for y in x])
                        for x in sorted(key.iteritems())])
-
-
-def readc01(fname):
-    '''Read a Cellomics file into an array
-
-    fname - the name of the file
-    '''
-
-    def readint(f):
-        return unpack("<l", f.read(4))[0]
-
-    def readshort(f):
-        return unpack("<h", f.read(2))[0]
-
-    f = open(fname, "rb")
-
-    # verify it's a c01 format, and skip the first four bytes
-    assert readint(f) == 16 << 24
-
-    # decompress
-    g = StringIO(decompress(f.read()))
-
-    # skip four bytes
-    g.seek(4, 1)
-
-    x = readint(g)
-    y = readint(g)
-
-    nplanes = readshort(g)
-    nbits = readshort(g)
-
-    compression = readint(g)
-    assert compression == 0, "can't read compressed pixel data"
-
-    # skip 4 bytes
-    g.seek(4, 1)
-
-    pixelwidth = readint(g)
-    pixelheight = readint(g)
-    colors = readint(g)
-    colors_important = readint(g)
-
-    # skip 12 bytes
-    g.seek(12, 1)
-
-    data = fromstring(g.read(), uint16 if nbits == 16 else uint8, x * y)
-    return data.reshape(x, y).T

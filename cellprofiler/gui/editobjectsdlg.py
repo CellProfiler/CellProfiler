@@ -288,8 +288,8 @@ class EditObjectsDialog(wx.Dialog):
         self.orig_axes._adjustable = 'box-forced'
         self.orig_axes.set_title(
                 self.title,
-                fontname=cellprofiler.preferences.get_title_font_name(),
-                fontsize=cellprofiler.preferences.get_title_font_size())
+                fontname="Tahoma",
+                fontsize=12)
 
         ########################################
         #
@@ -1437,8 +1437,8 @@ class EditObjectsDialog(wx.Dialog):
 
         self.orig_axes.set_title(
                 title,
-                fontname=cellprofiler.preferences.get_title_font_name(),
-                fontsize=cellprofiler.preferences.get_title_font_size())
+                fontname="Tahoma",
+                fontsize=12)
 
     def enter_split_mode(self, event):
         self.toolbar.cancel_mode()

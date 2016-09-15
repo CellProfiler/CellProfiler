@@ -531,7 +531,7 @@ class MetadataControl(wx.PyControl):
         try:
             dc.BackgroundMode = wx.SOLID
             background_color = wx.SystemSettings_GetColour(wx.SYS_COLOUR_WINDOW)
-            metadata_color = cellprofiler.preferences.get_primary_outline_color()
+            metadata_color = wx.Colour(red=int(0), green=int(255), blue=int(0))
             selected_background_color = wx.SystemSettings_GetColour(wx.SYS_COLOUR_HIGHLIGHT)
             selected_color = wx.SystemSettings_GetColour(wx.SYS_COLOUR_HIGHLIGHTTEXT)
             text_color = wx.SystemSettings_GetColour(wx.SYS_COLOUR_WINDOWTEXT)

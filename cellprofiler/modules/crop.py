@@ -491,7 +491,7 @@ class Crop(cpm.Module):
                 x = max(0, min(x, pixel_data.shape[1]))
                 y = max(0, min(y, pixel_data.shape[0]))
                 self.__selected = False
-                self.__color = cpprefs.get_primary_outline_color()
+                self.__color = wx.Colour(red=int(0), green=int(255), blue=int(0))
                 self.__color = np.hstack((self.__color, [255])).astype(float) / 255.0
                 self.__on_move = on_move
                 super(handle, self).__init__((x - self.width / 2, y - self.height / 2),
@@ -561,7 +561,7 @@ class Crop(cpm.Module):
             def __init__(self, top_left, bottom_right):
                 self.__left, self.__top = top_left
                 self.__right, self.__bottom = bottom_right
-                color = cpprefs.get_primary_outline_color()
+                color = wx.Colour(red=int(0), green=int(255), blue=int(0))
                 color = np.hstack((color, [255])).astype(float) / 255.0
                 self.rectangle = M.patches.Rectangle(
                         (min(self.__left, self.__right),
@@ -627,7 +627,7 @@ class Crop(cpm.Module):
                 self.center_x, self.center_y = center
                 self.radius_x = self.center_x + radius[0] / 2
                 self.radius_y = self.center_y + radius[1] / 2
-                color = cpprefs.get_primary_outline_color()
+                color = wx.Colour(red=int(0), green=int(255), blue=int(0))
                 color = np.hstack((color, [255])).astype(float) / 255.0
                 self.ellipse = M.patches.Ellipse(center, self.width, self.height,
                                                  edgecolor=color,

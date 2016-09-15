@@ -5,29 +5,19 @@
            Create a function to populate a handles structure with preferences.
 """
 
+import cellprofiler
+import cellprofiler.utilities.utf16encode
 import logging
-import multiprocessing
 import os
 import os.path
-import random
-import re
-import sys
 import tempfile
 import threading
 import time
-import traceback
-import uuid
 import weakref
-
-import cellprofiler
-from cellprofiler.utilities.utf16encode import utf16encode, utf16decode
 
 logger = logging.getLogger(__name__)
 
-'''get_absolute_path - mode = output. Assume "." is the default output dir'''
 ABSPATH_OUTPUT = 'abspath_output'
-
-'''get_absolute_path - mode = image. Assume "." is the default input dir'''
 ABSPATH_IMAGE = 'abspath_image'
 
 __python_root = os.path.split(str(cellprofiler.__path__[0]))[0]
@@ -50,7 +40,7 @@ class HeadlessConfig(object):
     def Write(self, kwd, value):
         self.__preferences[kwd] = value
 
-    WriteInt = Write
+    # WriteInt = Write
     WriteBool = Write
 
     def Exists(self, kwd):
@@ -66,6 +56,8 @@ class HeadlessConfig(object):
 
 __is_headless = False
 __headless_config = HeadlessConfig()
+__image_directory_listeners = []
+__cached_values = {}
 
 
 def set_headless():
@@ -106,41 +98,8 @@ def get_awt_headless():
 
 def get_config():
     global __is_headless, __headless_config
-    if __is_headless:
-        return __headless_config
-    import wx
-    try:
-        config = wx.Config.Get(False)
-    except wx.PyNoAppError:
-        app = wx.App(0)
-        config = wx.Config.Get(False)
-    if not config:
-        wx.Config.Set(wx.Config('CellProfiler', 'BroadInstitute', 'CellProfilerLocal.cfg', 'CellProfilerGlobal.cfg',
-                                wx.CONFIG_USE_LOCAL_FILE))
-        config = wx.Config.Get()
-        if not config.Exists(PREFERENCES_VERSION):
-            for key in ALL_KEYS:
-                if config.Exists(key) and config.GetEntryType(key) == 1:
-                    v = config.Read(key)
-                    config_write(key, v)
-            config_write(PREFERENCES_VERSION, str(PREFERENCES_VERSION_NUMBER))
-        else:
-            try:
-                preferences_version_number = int(config_read(PREFERENCES_VERSION))
-                if preferences_version_number != PREFERENCES_VERSION_NUMBER:
-                    logger.warning(
-                            "Preferences version mismatch: expected %d, at %d" %
-                            (PREFERENCES_VERSION_NUMBER, preferences_version_number))
-            except:
-                logger.warning(
-                        "Preferences version was %s, not a number. Resetting to current version" % preferences_version_number)
-                config_write(PREFERENCES_VERSION, str(PREFERENCES_VERSION))
 
-    return config
-
-
-def preferences_as_dict():
-    return dict((k, config_read(k)) for k in ALL_KEYS)
+    return __headless_config
 
 
 def set_preferences_from_dict(d):
@@ -166,9 +125,6 @@ def set_preferences_from_dict(d):
         globals()[cache_var] = None
 
 
-__cached_values = {}
-
-
 def config_read(key):
     '''Read the given configuration value
 
@@ -179,35 +135,20 @@ def config_read(key):
     Decode escaped config sequences too.
     '''
     global __cached_values
-    if not __is_headless:
-        #
-        # Keeps popup box from appearing during testing I hope
-        #
-        import wx
-        shutup = wx.LogNull()
+
     if __cached_values.has_key(key):
         return __cached_values[key]
     if get_config().Exists(key):
-        if not __is_headless:
-            # Fix problems with some 32-bit
-            import wx
-            entry_type = get_config().GetEntryType(key)
-            if entry_type == wx.Config.Type_Boolean:
-                return get_config().ReadBool(key)
-            elif entry_type == wx.Config.Type_Integer:
-                return get_config().ReadInt(key)
-            elif entry_type == wx.Config.Type_Float:
-                return get_config().ReadFloat(key)
         value = get_config().Read(key)
     else:
         value = None
     if value is not None:
         try:
-            value = utf16decode(value)
+            value = cellprofiler.utilities.utf16encode.utf16decode(value)
         except:
             logger.warning(
-                    "Failed to decode preference (%s=%s), assuming 2.0" %
-                    (key, value))
+                "Failed to decode preference (%s=%s), assuming 2.0" %
+                (key, value))
     __cached_values[key] = value
     return value
 
@@ -217,15 +158,9 @@ def config_write(key, value):
 
     Encode escaped config sequences.
     '''
-    if not __is_headless:
-        #
-        # Keeps popup box from appearing during testing I hope
-        #
-        import wx
-        shutup = wx.LogNull()
     __cached_values[key] = value
     if value is not None:
-        value = utf16encode(value)
+        value = cellprofiler.utilities.utf16encode.utf16encode(value)
     get_config().Write(key, value)
 
 
@@ -245,19 +180,6 @@ def cell_profiler_root_directory():
     if __cp_root:
         return __cp_root
     return '..'
-
-
-def python_root_directory():
-    return __python_root
-
-
-def resources_root_directory():
-    if hasattr(sys, 'frozen'):
-        # On Mac, the application runs in CellProfiler2.0.app/Contents/Resources.
-        # Not sure where this should be on PC.
-        return '.'
-    else:
-        return __python_root
 
 
 DEFAULT_INPUT_FOLDER_NAME = 'Default Input Folder'
@@ -313,26 +235,19 @@ For <i>%(ABSOLUTE_FOLDER_NAME)s</i>, <i>%(DEFAULT_INPUT_SUBFOLDER_NAME)s</i> and
 images via <b>Metadata</b> module, you can name the folder using metadata
 tags.""" % globals()
 
-PREFERENCES_VERSION = 'PreferencesVersion'
-PREFERENCES_VERSION_NUMBER = 1
 DEFAULT_IMAGE_DIRECTORY = 'DefaultImageDirectory'
 DEFAULT_OUTPUT_DIRECTORY = 'DefaultOutputDirectory'
 TITLE_FONT_SIZE = 'TitleFontSize'
 TITLE_FONT_NAME = 'TitleFontName'
-TABLE_FONT_NAME = 'TableFontName'
-TABLE_FONT_SIZE = 'TableFontSize'
-BACKGROUND_COLOR = 'BackgroundColor'
 PIXEL_SIZE = 'PixelSize'
 COLORMAP = 'Colormap'
 MODULEDIRECTORY = 'ModuleDirectory'
-SKIPVERSION = 'SkipVersion2.1'
 FF_RECENTFILES = 'RecentFile%d'
 STARTUPBLURB = 'StartupBlurb'
 RECENT_FILE_COUNT = 10
 PRIMARY_OUTLINE_COLOR = 'PrimaryOutlineColor'
 SECONDARY_OUTLINE_COLOR = 'SecondaryOutlineColor'
 TERTIARY_OUTLINE_COLOR = 'TertiaryOutlineColor'
-JVM_ERROR = 'JVMError'
 ALLOW_OUTPUT_FILE_OVERWRITE = 'AllowOutputFileOverwrite'
 PLUGIN_DIRECTORY = 'PluginDirectory'
 IJ_PLUGIN_DIRECTORY = 'IJPluginDirectory'
@@ -341,114 +256,87 @@ SHOW_EXITING_TEST_MODE_DLG = "ShowExitingTestModeDlg"
 SHOW_BAD_SIZES_DLG = "ShowBadSizesDlg"
 SHOW_SAMPLING = "ShowSampling"
 WRITE_MAT = "WriteMAT"
-WARN_ABOUT_OLD_PIPELINE = "WarnAboutOldPipeline"
-USE_MORE_FIGURE_SPACE = "UseMoreFigureSpace"
 WRITE_HDF5 = "WriteHDF5"
 WORKSPACE_FILE = "WorkspaceFile"
 OMERO_SERVER = "OmeroServer"
 OMERO_PORT = "OmeroPort"
 OMERO_USER = "OmeroUser"
 OMERO_SESSION_ID = "OmeroSessionId"
-MAX_WORKERS = "MaxWorkers"
 TEMP_DIR = "TempDir"
-WORKSPACE_CHOICE = "WorkspaceChoice"
 ERROR_COLOR = "ErrorColor"
 INTERPOLATION_MODE = "InterpolationMode"
 INTENSITY_MODE = "IntensityMode"
 SAVE_PIPELINE_WITH_PROJECT = "SavePipelineWithProject"
-FILENAME_RE_GUESSES_FILE = "FilenameRegularExpressionGuessesFile"
-PATHNAME_RE_GUESSES_FILE = "PathnameRegularExpressionGuessesFile"
 BATCHPROFILER_URL = "BatchProfilerURL"
 CHOOSE_IMAGE_SET_FRAME_SIZE = "ChooseImageSetFrameSize"
-
-'''Default URL root for BatchProfiler'''
 BATCHPROFILER_URL_DEFAULT = "http://imageweb/batchprofiler"
-
 IM_NEAREST = "Nearest"
 IM_BILINEAR = "Bilinear"
 IM_BICUBIC = "Bicubic"
-
 INTENSITY_MODE_RAW = "raw"
 INTENSITY_MODE_NORMAL = "normalized"
 INTENSITY_MODE_LOG = "log"
-
-WC_SHOW_WORKSPACE_CHOICE_DIALOG = "ShowWorkspaceChoiceDlg"
-WC_OPEN_LAST_WORKSPACE = "OpenLastWorkspace"
-WC_CREATE_NEW_WORKSPACE = "CreateNewWorkspace"
-WC_OPEN_OLD_WORKSPACE = "OpenOldWorkspace"
-
-'''The preference key for selecting the correct version of ImageJ'''
-IJ_VERSION = "ImageJVersion"
-'''Use the enhanced version of ImageJ 1.44 with some support for @parameter'''
-IJ_1 = "ImageJ 1.x"
-'''Use ImageJ 2.0 with Imglib and new framework'''
-IJ_2 = "ImageJ 2.0"
-
-'''The default extension for a CellProfiler pipeline (without the dot)'''
 EXT_PIPELINE = "cppipe"
-
-'''Possible CellProfiler pipeline extensions'''
 EXT_PIPELINE_CHOICES = [EXT_PIPELINE, "cp", "cpi", "cpproj", "h5", "mat"]
-
-'''Default project extension'''
 EXT_PROJECT = "cpproj"
-
-'''Possible CellProfiler project extensions'''
 EXT_PROJECT_CHOICES = [EXT_PROJECT, "cpi", "h5"]
-
-'''Preference key for the JVM heap size in megabytes'''
 JVM_HEAP_MB = "JVMHeapMB"
-
-'''Default JVM heap size'''
 DEFAULT_JVM_HEAP_MB = 512
-
-'''Save neither the pipeline nor the file list when saving the project'''
 SPP_NEITHER = "Neither"
 SPP_PIPELINE_ONLY = "Pipeline"
 SPP_FILE_LIST_ONLY = "File list"
 SPP_PIPELINE_AND_FILE_LIST = "Pipeline and file list"
-SPP_ALL = [SPP_NEITHER, SPP_PIPELINE_ONLY, SPP_FILE_LIST_ONLY,
-           SPP_PIPELINE_AND_FILE_LIST]
+
+__has_reported_jvm_error = False
+__allow_output_file_overwrite = None
+__show_analysis_complete_dlg = None
+__show_exiting_test_mode_dlg = None
+__show_report_bad_sizes_dlg = None
+__write_MAT_files = None
+__workspace_file = None
+__omero_server = None
+__omero_port = None
+__omero_user = None
+__omero_session_id = None
+__max_workers = None
+__temp_dir = None
+__progress_data = threading.local()
+__progress_data.last_report = time.time()
+__progress_data.callbacks = None
+__interpolation_mode = None
+__intensity_mode = None
+__jvm_heap_mb = None
+__save_pipeline_with_project = None
+__allow_schema_write = True
+__filename_re_guess_file = None
+__pathname_re_guess_file = None
+__batchprofiler_url = None
+__image_set_filename = None
+__wants_pony = None
+__choose_image_set_frame_size = None
+__default_output_directory = None
+__output_directory_listeners = []
+__error_color = None
+__output_filename = None
+__output_filename_listeners = []
+__default_colormap = None
+__current_workspace_path = None
+__show_sampling = None
+__recent_files = {}
+__plugin_directory = None
+__ij_plugin_directory = None
+__data_file = None
+__default_image_directory = None
 
 
 def recent_file(index, category=""):
     return (FF_RECENTFILES % (index + 1)) + category
 
 
-'''All keys saved in the registry'''
-ALL_KEYS = ([ALLOW_OUTPUT_FILE_OVERWRITE, BACKGROUND_COLOR,
-             COLORMAP, DEFAULT_IMAGE_DIRECTORY, DEFAULT_OUTPUT_DIRECTORY,
-             IJ_PLUGIN_DIRECTORY, MODULEDIRECTORY, PLUGIN_DIRECTORY,
-             PRIMARY_OUTLINE_COLOR, SECONDARY_OUTLINE_COLOR,
-             SHOW_ANALYSIS_COMPLETE_DLG, SHOW_BAD_SIZES_DLG,
-             SHOW_EXITING_TEST_MODE_DLG, WORKSPACE_CHOICE,
-             SHOW_SAMPLING, SKIPVERSION, STARTUPBLURB,
-             TABLE_FONT_NAME, TABLE_FONT_SIZE, TERTIARY_OUTLINE_COLOR,
-             TITLE_FONT_NAME, TITLE_FONT_SIZE, WARN_ABOUT_OLD_PIPELINE,
-             WRITE_MAT, USE_MORE_FIGURE_SPACE, WORKSPACE_FILE,
-             OMERO_SERVER, OMERO_PORT, OMERO_USER, SAVE_PIPELINE_WITH_PROJECT] +
-            [recent_file(n, category) for n in range(RECENT_FILE_COUNT)
-             for category in ("",
-                              DEFAULT_IMAGE_DIRECTORY,
-                              DEFAULT_OUTPUT_DIRECTORY,
-                              WORKSPACE_FILE)])
-
-
 def module_directory():
     if not config_exists(MODULEDIRECTORY):
         return os.path.join(cell_profiler_root_directory(), 'Modules')
     return str(config_read(MODULEDIRECTORY))
-
-
-def set_module_directory(value):
-    config_write(MODULEDIRECTORY, value)
-
-
-def module_extension():
-    return '.m'
-
-
-__default_image_directory = None
 
 
 def get_default_image_directory():
@@ -491,9 +379,6 @@ def fire_image_directory_changed_event():
         listener(PreferenceChangedEvent(__default_image_directory))
 
 
-__image_directory_listeners = []
-
-
 def add_image_directory_listener(listener):
     """Add a listener that will be notified when the image directory changes
 
@@ -512,9 +397,6 @@ def remove_image_directory_listener(listener):
 class PreferenceChangedEvent:
     def __init__(self, new_value):
         self.new_value = new_value
-
-
-__default_output_directory = None
 
 
 def get_default_output_directory():
@@ -552,9 +434,6 @@ def set_default_output_directory(path):
         listener(PreferenceChangedEvent(path))
 
 
-__output_directory_listeners = []
-
-
 def add_output_directory_listener(listener):
     """Add a listener that will be notified when the output directory changes
 
@@ -570,105 +449,6 @@ def remove_output_directory_listener(listener):
         __output_directory_listeners.remove(listener)
 
 
-def get_title_font_size():
-    if not config_exists(TITLE_FONT_SIZE):
-        return 12
-    title_font_size = config_read(TITLE_FONT_SIZE)
-    return float(title_font_size)
-
-
-def set_title_font_size(title_font_size):
-    config_write(TITLE_FONT_SIZE, str(title_font_size))
-
-
-def get_title_font_name():
-    if not config_exists(TITLE_FONT_NAME):
-        return "Tahoma"
-    return config_read(TITLE_FONT_NAME)
-
-
-def set_title_font_name(title_font_name):
-    config_write(TITLE_FONT_NAME, title_font_name)
-
-
-def get_table_font_name():
-    if not config_exists(TABLE_FONT_NAME):
-        return "Tahoma"
-    return config_read(TABLE_FONT_NAME)
-
-
-def set_table_font_name(title_font_name):
-    config_write(TABLE_FONT_NAME, title_font_name)
-
-
-def get_table_font_size():
-    if not config_exists(TABLE_FONT_SIZE):
-        return 9
-    table_font_size = config_read(TABLE_FONT_SIZE)
-    return float(table_font_size)
-
-
-def set_table_font_size(table_font_size):
-    config_write(TABLE_FONT_SIZE, str(table_font_size))
-
-
-def tuple_to_color(t, default=(0, 0, 0)):
-    import wx
-    try:
-        return wx.Colour(red=int(t[0]), green=int(t[1]), blue=int(t[2]))
-    except IndexError, ValueError:
-        return tuple_to_color(default)
-
-
-
-
-def get_background_color():
-    import wx
-
-    return wx.SystemSettings.GetColour(wx.SYS_COLOUR_BACKGROUND)
-
-
-def set_background_color(color):
-    pass
-
-
-__error_color = None
-
-
-def get_error_color():
-    '''Get the color to be used for error text'''
-    global __error_color
-    #
-    # Red found here:
-    # http://www.jankoatwarpspeed.com/css-message-boxes-for-different-message-types/
-    # but seems to be widely used.
-    #
-    default_color = (0xD8, 0x00, 0x0C)
-    if __error_color is None:
-        if not config_exists(ERROR_COLOR):
-            __error_color = tuple_to_color(default_color)
-        else:
-            color_string = config_read(ERROR_COLOR)
-            try:
-                __error_color = tuple_to_color(color_string.split(','))
-            except:
-                print "Failed to parse error color string: " + color_string
-                traceback.print_exc()
-                __error_color = default_color
-    return __error_color
-
-
-def set_error_color(color):
-    '''Set the color to be used for error text
-
-    color - a WX color or ducktyped
-    '''
-    global __error_color
-    config_write(ERROR_COLOR,
-                 ','.join([str(x) for x in color.Get()]))
-    __error_color = tuple_to_color(color.Get())
-
-
 def get_pixel_size():
     """The size of a pixel in microns"""
     if not config_exists(PIXEL_SIZE):
@@ -678,10 +458,6 @@ def get_pixel_size():
 
 def set_pixel_size(pixel_size):
     config_write(PIXEL_SIZE, str(pixel_size))
-
-
-__output_filename = None
-__output_filename_listeners = []
 
 
 def get_output_file_name():
@@ -754,26 +530,8 @@ def is_url_path(path):
     return False
 
 
-__default_colormap = None
-
-
 def get_default_colormap():
-    global __default_colormap
-    if __default_colormap is None:
-        if not config_exists(COLORMAP):
-            __default_colormap = 'jet'
-        else:
-            __default_colormap = config_read(COLORMAP)
-    return __default_colormap
-
-
-def set_default_colormap(colormap):
-    global __default_colormap
-    __default_colormap = colormap
-    config_write(COLORMAP, colormap)
-
-
-__current_workspace_path = None
+    return "jet"
 
 
 def get_current_workspace_path():
@@ -786,19 +544,6 @@ def set_current_workspace_path(path):
     __current_workspace_path = path
 
 
-def get_skip_version():
-    if not config_exists(SKIPVERSION):
-        return 0
-    return int(get_config().Read(SKIPVERSION))
-
-
-def set_skip_version(ver):
-    get_config().Write(SKIPVERSION, str(ver))
-
-
-__show_sampling = None
-
-
 def get_show_sampling():
     global __show_sampling
     if __show_sampling is not None:
@@ -807,15 +552,6 @@ def get_show_sampling():
         __show_sampling = False
         return False
     return get_config().ReadBool(SHOW_SAMPLING)
-
-
-def set_show_sampling(value):
-    global __show_sampling
-    get_config().WriteBool(SHOW_SAMPLING, bool(value))
-    __show_sampling = bool(value)
-
-
-__recent_files = {}
 
 
 def get_recent_files(category=""):
@@ -844,9 +580,6 @@ def add_recent_file(filename, category=""):
         config_write(recent_file(i, category), filename)
 
 
-__plugin_directory = None
-
-
 def get_plugin_directory():
     global __plugin_directory
 
@@ -858,9 +591,8 @@ def get_plugin_directory():
     elif get_headless():
         return None
     else:
-        import wx
-        if wx.GetApp() is not None:
-            __plugin_directory = os.path.join(wx.StandardPaths.Get().GetUserDataDir(), 'plugins')
+        pass
+
     return __plugin_directory
 
 
@@ -870,34 +602,6 @@ def set_plugin_directory(value, globally=True):
     __plugin_directory = value
     if globally:
         config_write(PLUGIN_DIRECTORY, value)
-
-
-__ij_plugin_directory = None
-
-
-def get_ij_plugin_directory():
-    global __ij_plugin_directory
-
-    if __ij_plugin_directory is not None:
-        return __ij_plugin_directory
-
-    if config_exists(IJ_PLUGIN_DIRECTORY):
-        __ij_plugin_directory = config_read(IJ_PLUGIN_DIRECTORY)
-    else:
-        # The default is the startup directory
-        return os.path.abspath(os.path.join(os.curdir, "plugins"))
-    return __ij_plugin_directory
-
-
-def set_ij_plugin_directory(value, globally=True):
-    global __ij_plugin_directory
-
-    __ij_plugin_directory = value
-    if globally:
-        config_write(IJ_PLUGIN_DIRECTORY, value)
-
-
-__data_file = None
 
 
 def get_data_file():
@@ -949,91 +653,18 @@ def update_cpfigure_position():
     which the next figure frame will be drawn.
     '''
     global __cpfigure_position
-    import wx
-    win_size = (600, 400)
-    try:
-        disp = wx.GetDisplaySize()
-    except:
-        disp = (800, 600)
+
+    win_size = (800, 600)
+
+    disp = (1280, 800)
+
     if __cpfigure_position[0] + win_size[0] > disp[0]:
         __cpfigure_position = (-1, __cpfigure_position[1])
+
     if __cpfigure_position[1] + win_size[1] > disp[1]:
         __cpfigure_position = (-1, -1)
     else:
-        # These offsets could be set in the preferences UI
-        __cpfigure_position = (__cpfigure_position[0] + 120,
-                               __cpfigure_position[1] + 24)
-
-
-def get_startup_blurb():
-    if not config_exists(STARTUPBLURB):
-        return True
-    return get_config().ReadBool(STARTUPBLURB)
-
-
-def set_startup_blurb(val):
-    get_config().WriteBool(STARTUPBLURB, val)
-
-
-def get_primary_outline_color():
-    default = (0, 255, 0)
-    if not config_exists(PRIMARY_OUTLINE_COLOR):
-        return tuple_to_color(default)
-    return tuple_to_color(config_read(PRIMARY_OUTLINE_COLOR).split(","))
-
-
-def set_primary_outline_color(color):
-    config_write(PRIMARY_OUTLINE_COLOR,
-                 ','.join([str(x) for x in color.Get()]))
-
-
-def get_secondary_outline_color():
-    default = (255, 0, 255)
-    if not config_exists(SECONDARY_OUTLINE_COLOR):
-        return tuple_to_color(default)
-    return tuple_to_color(config_read(SECONDARY_OUTLINE_COLOR).split(","))
-
-
-def set_secondary_outline_color(color):
-    config_write(SECONDARY_OUTLINE_COLOR,
-                 ','.join([str(x) for x in color.Get()]))
-
-
-def get_tertiary_outline_color():
-    default = (255, 255, 0)
-    if not config_exists(TERTIARY_OUTLINE_COLOR):
-        return tuple_to_color(default)
-    return tuple_to_color(config_read(TERTIARY_OUTLINE_COLOR).split(","))
-
-
-def set_tertiary_outline_color(color):
-    config_write(TERTIARY_OUTLINE_COLOR,
-                 ','.join([str(x) for x in color.Get()]))
-
-
-__has_reported_jvm_error = False
-
-
-def get_report_jvm_error():
-    '''Return true if user still wants to report a JVM error'''
-    if __has_reported_jvm_error:
-        return False
-    if not config_exists(JVM_ERROR):
-        return True
-    return config_read(JVM_ERROR) == "True"
-
-
-def set_report_jvm_error(should_report):
-    config_write(JVM_ERROR, "True" if should_report else "False")
-
-
-def set_has_reported_jvm_error():
-    '''Call this to remember that we showed the user the JVM error'''
-    global __has_reported_jvm_error
-    __has_reported_jvm_error = True
-
-
-__allow_output_file_overwrite = None
+        __cpfigure_position = (__cpfigure_position[0] + 120, __cpfigure_position[1] + 24)
 
 
 def get_allow_output_file_overwrite():
@@ -1057,30 +688,12 @@ def set_allow_output_file_overwrite(value):
                  "True" if value else "False")
 
 
-# "Analysis complete" preference
-__show_analysis_complete_dlg = None
-
-
-def get_show_analysis_complete_dlg():
-    '''Return true if the user wants to see the "analysis complete" dialog'''
-    global __show_analysis_complete_dlg
-    if __show_analysis_complete_dlg is not None:
-        return __show_analysis_complete_dlg
-    if not config_exists(SHOW_ANALYSIS_COMPLETE_DLG):
-        return True
-    return config_read(SHOW_ANALYSIS_COMPLETE_DLG) == "True"
-
-
 def set_show_analysis_complete_dlg(value):
     '''Set the "show analysis complete" flag'''
     global __show_analysis_complete_dlg
     __show_analysis_complete_dlg = value
     config_write(SHOW_ANALYSIS_COMPLETE_DLG,
                  "True" if value else "False")
-
-
-# "Existing test mode" preference
-__show_exiting_test_mode_dlg = None
 
 
 def get_show_exiting_test_mode_dlg():
@@ -1101,10 +714,6 @@ def set_show_exiting_test_mode_dlg(value):
                  "True" if value else "False")
 
 
-# "Report bad sizes" preference
-__show_report_bad_sizes_dlg = None
-
-
 def get_show_report_bad_sizes_dlg():
     '''Return true if the user wants to see the "report bad sizes" dialog'''
     global __show_report_bad_sizes_dlg
@@ -1121,10 +730,6 @@ def set_show_report_bad_sizes_dlg(value):
     __show_report_bad_sizes_dlg = value
     config_write(SHOW_BAD_SIZES_DLG,
                  "True" if value else "False")
-
-
-# Write .MAT files on output
-__write_MAT_files = None
 
 
 def get_write_MAT_files():
@@ -1154,20 +759,6 @@ def set_write_MAT_files(value):
                  else "True" if value else "False")
 
 
-__workspace_file = None
-
-
-def get_workspace_file():
-    '''Return the path to the workspace file'''
-    global __workspace_file
-    if __workspace_file is not None:
-        return __workspace_file
-    if not config_exists(WORKSPACE_FILE):
-        return None
-    __workspace_file = config_read(WORKSPACE_FILE)
-    return __workspace_file
-
-
 def set_workspace_file(path, permanently=True):
     '''Set the path to the workspace file
 
@@ -1182,18 +773,6 @@ def set_workspace_file(path, permanently=True):
     if permanently:
         add_recent_file(path, WORKSPACE_FILE)
         config_write(WORKSPACE_FILE, path)
-
-
-###########################################
-#
-# OMERO logon credentials
-#
-###########################################
-
-__omero_server = None
-__omero_port = None
-__omero_user = None
-__omero_session_id = None
 
 
 def get_omero_server():
@@ -1263,46 +842,6 @@ def get_omero_session_id():
     return __omero_session_id
 
 
-def set_omero_session_id(omero_session_id, globally=True):
-    '''Set the Omero session ID'''
-    global __omero_session_id
-    __omero_session_id = omero_session_id
-    if globally:
-        config_write(OMERO_SESSION_ID, omero_session_id)
-
-
-def default_max_workers():
-    try:
-        return multiprocessing.cpu_count()
-    except:
-        return 4
-
-
-__max_workers = None
-
-
-def get_max_workers():
-    '''Get the maximum number of worker processes allowed during analysis'''
-    global __max_workers
-    if __max_workers is not None:
-        return __max_workers
-    default = default_max_workers()
-    if config_exists(MAX_WORKERS):
-        __max_workers = get_config().ReadInt(MAX_WORKERS, default)
-        return __max_workers
-    return default
-
-
-def set_max_workers(value):
-    '''Set the maximum number of worker processes allowed during analysis'''
-    global __max_workers
-    get_config().WriteInt(MAX_WORKERS, value)
-    __max_workers = value
-
-
-__temp_dir = None
-
-
 def get_temporary_directory():
     '''Get the directory to be used for temporary files
 
@@ -1333,12 +872,6 @@ def set_temporary_directory(tempdir, globally=False):
     tempfile.tempdir = tempdir
 
 
-__progress_data = threading.local()
-__progress_data.last_report = time.time()
-__progress_data.callbacks = None
-__interpolation_mode = None
-
-
 def get_interpolation_mode():
     '''Get the interpolation mode for matplotlib
 
@@ -1352,15 +885,6 @@ def get_interpolation_mode():
     else:
         __interpolation_mode = IM_NEAREST
     return __interpolation_mode
-
-
-def set_interpolation_mode(value):
-    global __interpolation_mode
-    __interpolation_mode = value
-    config_write(INTERPOLATION_MODE, value)
-
-
-__intensity_mode = None
 
 
 def get_intensity_mode():
@@ -1378,58 +902,6 @@ def get_intensity_mode():
     return __intensity_mode
 
 
-def set_intensity_mode(value):
-    '''Set the intensity scaling mode for matplotlib'''
-    global __intensity_mode
-    __intensity_mode = value
-    config_write(INTENSITY_MODE, value)
-
-
-__jvm_heap_mb = None
-
-
-def get_jvm_heap_mb():
-    '''Get the JVM heap size'''
-    global __jvm_heap_mb
-    if __jvm_heap_mb is not None:
-        return __jvm_heap_mb
-    if config_exists(JVM_HEAP_MB):
-        jvm_heap_config = config_read(JVM_HEAP_MB)
-        try:
-            __jvm_heap_mb = int(jvm_heap_config)
-        except:
-            __jvm_heap_mb = DEFAULT_JVM_HEAP_MB
-    else:
-        __jvm_heap_mb = DEFAULT_JVM_HEAP_MB
-    return __jvm_heap_mb
-
-
-def set_jvm_heap_mb(value, save_config=True):
-    '''Set the JVM heap size
-
-    value - value in megabytes or as a string with a K/ M or G postifx
-    save_config - True to save the value in the configuration, False to set locally
-    '''
-    global __jvm_heap_mb
-    try:
-        value_mb = int(value)
-    except:
-        if value.lower().endswith("k"):
-            value_mb = int(value[:-1]) / 1000
-        elif value.lower().endswith("m"):
-            value_mb = int(value[:-1])
-        elif value.lower().endswith("g"):
-            value_mb = int(value[:-1]) * 1000
-        else:
-            raise
-    __jvm_heap_mb = value_mb
-    if save_config:
-        config_write(JVM_HEAP_MB, str(value_mb))
-
-
-__save_pipeline_with_project = None
-
-
 def get_save_pipeline_with_project():
     global __save_pipeline_with_project
     if __save_pipeline_with_project is None:
@@ -1439,15 +911,6 @@ def get_save_pipeline_with_project():
         else:
             __save_pipeline_with_project = SPP_NEITHER
     return __save_pipeline_with_project
-
-
-def set_save_pipeline_with_project(value):
-    global __save_pipeline_with_project
-    __save_pipeline_with_project = value
-    config_write(SAVE_PIPELINE_WITH_PROJECT, value)
-
-
-__allow_schema_write = True
 
 
 def get_allow_schema_write():
@@ -1474,112 +937,6 @@ def set_allow_schema_write(value):
     '''
     global __allow_schema_write
     __allow_schema_write = value
-
-
-__filename_re_guess_file = None
-
-
-def get_filename_re_guess_file():
-    '''The path to the file that contains filename regular expression guesses
-
-    The file given by this preference is an optional file that contains
-    possible regular expression patterns to match against file names.
-    '''
-    global __filename_re_guess_file
-    if __filename_re_guess_file is None:
-        if config_exists(FILENAME_RE_GUESSES_FILE):
-            __filename_re_guess_file = config_read(FILENAME_RE_GUESSES_FILE)
-    return __filename_re_guess_file
-
-
-def set_filename_re_guess_file(value):
-    '''Set the path to the filename regular expression guess file'''
-    global __filename_re_guess_file
-    __filename_re_guess_file = value
-    config_write(FILENAME_RE_GUESSES_FILE, value)
-
-
-__pathname_re_guess_file = None
-
-
-def get_pathname_re_guess_file():
-    '''The path to the file that contains pathname regular expression guesses
-
-    The file given by this preference is an optional file that contains
-    possible regular expression patterns to match against path names.
-    '''
-    global __pathname_re_guess_file
-    if __pathname_re_guess_file is None:
-        if config_exists(PATHNAME_RE_GUESSES_FILE):
-            __pathname_re_guess_file = config_read(PATHNAME_RE_GUESSES_FILE)
-    return __pathname_re_guess_file
-
-
-def set_pathname_re_guess_file(value):
-    '''Set the path to the pathname regular expression guess file'''
-    global __pathname_re_guess_file
-    __pathname_re_guess_file = value
-    config_write(PATHNAME_RE_GUESSES_FILE, value)
-
-
-__batchprofiler_url = None
-
-
-def get_batchprofiler_url():
-    '''Get the URL base for BatchProfiler
-
-    For example: "http://<dns-name>/BatchProfiler/cgi-bin"
-
-    Append /NewBatch.py?data_dir=... to get the URL for the batch
-    '''
-    global __batchprofiler_url
-    if __batchprofiler_url is None:
-        if config_exists(BATCHPROFILER_URL):
-            __batchprofiler_url = config_read(BATCHPROFILER_URL)
-        else:
-            __batchprofiler_url = BATCHPROFILER_URL_DEFAULT
-    return __batchprofiler_url
-
-
-def set_batchprofiler_url(value):
-    global __batchprofiler_url
-    __batchprofiler_url = value
-    config_write(BATCHPROFILER_URL, value)
-
-
-__image_set_filename = None
-
-__wants_pony = None
-
-
-def get_wants_pony():
-
-    """
-
-    :return:
-
-    """
-    global __wants_pony
-
-    if __wants_pony is not None:
-        return __wants_pony
-    elif config_exists("Pony"):
-        return config_read("Pony").lower() == "yes"
-    else:
-        return False
-
-
-def set_wants_pony(wants_pony):
-    """
-
-    :param wants_pony:
-
-    """
-    global __wants_pony
-
-    __wants_pony = wants_pony
-
-    config_write("Pony", "yes" if wants_pony else "no")
 
 
 def set_image_set_file(filename):
@@ -1609,9 +966,6 @@ def get_image_set_file():
     return __image_set_filename
 
 
-__choose_image_set_frame_size = None
-
-
 def get_choose_image_set_frame_size():
     '''Return the size (w, h) for the "Choose image set" dialog frame'''
     global __choose_image_set_frame_size
@@ -1619,7 +973,7 @@ def get_choose_image_set_frame_size():
         if config_exists(CHOOSE_IMAGE_SET_FRAME_SIZE):
             s = config_read(CHOOSE_IMAGE_SET_FRAME_SIZE)
             __choose_image_set_frame_size = tuple(
-                    [int(_.strip()) for _ in s.split(",", 1)])
+                [int(_.strip()) for _ in s.split(",", 1)])
     return __choose_image_set_frame_size
 
 
@@ -1697,34 +1051,6 @@ def report_progress(operation_id, progress, message):
         for callback in __progress_data.callbacks:
             callback(operation_id, progress, message)
         __progress_data.last_report = time.time()
-
-
-def map_report_progress(fn_map, fn_report, sequence, freq=None):
-    '''Apply a mapping function to a sequence, reporting progress
-
-    fn_map - function that maps members of the sequence to members of the output
-
-    fn_report - function that takes a sequence member and generates an
-                informative string
-
-    freq - report on mapping every N items. Default is to report 100 or less
-           times.
-    '''
-    n_items = len(sequence)
-    if n_items == 0:
-        return []
-    if freq is None:
-        if n_items < 100:
-            freq = 1
-        else:
-            freq = (n_items + 99) / 100
-    output = []
-    uid = uuid.uuid4()
-    for i in range(0, n_items, freq):
-        report_progress(uuid, float(i) / n_items, fn_report(sequence[i]))
-        output += map(fn_map, sequence[i:i + freq])
-    report_progress(uuid, 1, "Done")
-    return output
 
 
 def cancel_progress():

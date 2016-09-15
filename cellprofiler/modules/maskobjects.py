@@ -337,6 +337,7 @@ class MaskObjects(I.Identify):
     def display(self, workspace, figure):
         '''Create an informative display for the module'''
         import matplotlib
+        import wx
         from cellprofiler.gui.tools import renumber_labels_for_display
         original_labels = workspace.display_data.original_labels
         final_labels = workspace.display_data.final_labels
@@ -363,8 +364,8 @@ class MaskObjects(I.Identify):
         # and the outlines of removed objects red.
         #
         final_outlines = outline(final_labels) > 0
-        original_color = np.array(cpprefs.get_secondary_outline_color(), float) / 255
-        final_color = np.array(cpprefs.get_primary_outline_color(), float) / 255
+        original_color = np.array(wx.Colour(red=int(255), green=int(0), blue=int(255)), float) / 255
+        final_color = np.array(wx.Colour(red=int(0), green=int(255), blue=int(0)), float) / 255
         image[outlines, :] = original_color[np.newaxis, :]
         image[final_outlines, :] = final_color[np.newaxis, :]
 

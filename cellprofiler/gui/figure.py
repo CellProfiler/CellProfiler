@@ -769,11 +769,7 @@ class Figure(wx.Frame):
         x - subplot's column
         y - subplot's row
         """
-        fontname = fontname = cellprofiler.preferences.get_title_font_name()
-
-        self.subplot(x, y).set_title(title,
-                                     fontname=fontname,
-                                     fontsize=cellprofiler.preferences.get_title_font_size())
+        self.subplot(x, y).set_title(title, fontname="Tahoma", fontsize=12)
 
     def clear_subplot(self, x, y):
         """Clear a subplot of its gui junk. Noop if no subplot exists at x,y
@@ -1099,7 +1095,7 @@ class Figure(wx.Frame):
         if interpolation is None:
             interpolation = get_matplotlib_interpolation_preference()
         if normalize is None:
-            normalize = cellprofiler.preferences.get_intensity_mode()
+            normalize = "normalized"
             if normalize == cellprofiler.preferences.INTENSITY_MODE_RAW:
                 normalize = False
             elif normalize == cellprofiler.preferences.INTENSITY_MODE_LOG:
@@ -1115,11 +1111,11 @@ class Figure(wx.Frame):
                 d = d.copy()
                 if CPLD_OUTLINE_COLOR not in d:
                     if i == 0:
-                        d[CPLD_OUTLINE_COLOR] = cellprofiler.preferences.get_primary_outline_color()
+                        d[CPLD_OUTLINE_COLOR] = wx.Colour(red=int(0), green=int(255), blue=int(0))
                     elif i == 1:
-                        d[CPLD_OUTLINE_COLOR] = cellprofiler.preferences.get_secondary_outline_color()
+                        d[CPLD_OUTLINE_COLOR] = wx.Colour(red=int(255), green=int(0), blue=int(255))
                     elif i == 2:
-                        d[CPLD_OUTLINE_COLOR] = cellprofiler.preferences.get_tertiary_outline_color()
+                        d[CPLD_OUTLINE_COLOR] = wx.Colour(red=int(255), green=int(255), blue=int(0))
                 if CPLD_MODE not in d:
                     d[CPLD_MODE] = CPLDM_OUTLINES
                 if CPLD_LINE_WIDTH not in d:

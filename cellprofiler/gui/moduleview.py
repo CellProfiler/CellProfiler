@@ -278,7 +278,7 @@ class ModuleView(object):
         self.notes_panel = notes_panel
         self.__frame = frame
         self.top_panel = top_panel
-        background_color = cellprofiler.preferences.get_background_color()
+        background_color = wx.SystemSettings.GetColour(wx.SYS_COLOUR_BACKGROUND)
         #############################################
         #
         # Build the top-level GUI windows
@@ -1058,7 +1058,7 @@ class ModuleView(object):
                 control.SetSelection(index)
                 if selection not in v.choices:
                     control.SetItemForegroundColour(
-                        index, cellprofiler.preferences.get_error_color())
+                        index, wx.Colour(red=int(0xD8), green=int(0x00), blue=int(0x0C)))
 
             def callback(event, setting=v, control=control):
                 self.__on_multichoice_change(event, setting, control)
@@ -1077,7 +1077,7 @@ class ModuleView(object):
                     control.Select(i)
                     if choices[i] not in v.choices:
                         control.SetItemForegroundColour(
-                            i, cellprofiler.preferences.get_error_color())
+                            i, wx.Colour(red=int(0xD8), green=int(0x00), blue=int(0x0C)))
         return control
 
     def make_colormap_control(self, v, control_name, control):
@@ -2218,7 +2218,7 @@ class ModuleView(object):
 
     def on_validation(self, setting_idx, message, level):
         default_fg_color = wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOWTEXT)
-        default_bg_color = cellprofiler.preferences.get_background_color()
+        default_bg_color = wx.SystemSettings.GetColour(wx.SYS_COLOUR_BACKGROUND)
         if not self.__module:  # defensive coding, in case the module was deleted
             return
 
@@ -2250,7 +2250,7 @@ class ModuleView(object):
                     desired_fg, desired_bg = default_fg_color, default_bg_color
                     if setting is bad_setting:
                         if level == logging.ERROR:
-                            desired_fg = cellprofiler.preferences.get_error_color()
+                            desired_fg = wx.Colour(red=int(0xD8), green=int(0x00), blue=int(0x0C))
                         elif level == logging.WARNING:
                             desired_bg = WARNING_COLOR
         except Exception:
@@ -3777,7 +3777,7 @@ class BinaryMatrixController(object):
             wx.SystemSettings.GetMetric(m) for m in (
                 wx.SYS_BORDER_X, wx.SYS_EDGE_X, wx.SYS_SMALLICON_X,
                 wx.SYS_BORDER_Y, wx.SYS_EDGE_Y, wx.SYS_SMALLICON_Y)]
-        paint_dc.Background = wx.Brush(cellprofiler.preferences.get_background_color())
+        paint_dc.Background = wx.Brush(wx.SystemSettings.GetColour(wx.SYS_COLOUR_BACKGROUND))
         paint_dc.Clear()
         pShadow = wx.Pen(
                 wx.SystemSettings.GetColour(wx.SYS_COLOUR_BTNSHADOW), 1, wx.SOLID)
@@ -4050,7 +4050,7 @@ class DataTypeController(object):
 class TableController(wx.grid.PyGridTableBase):
     DEFAULT_ATTR = wx.grid.GridCellAttr()
     ERROR_ATTR = wx.grid.GridCellAttr()
-    ERROR_ATTR.TextColour = cellprofiler.preferences.get_error_color()
+    ERROR_ATTR.TextColour = wx.Colour(red=int(0xD8), green=int(0x00), blue=int(0x0C))
 
     def __init__(self, v):
         super(self.__class__, self).__init__()

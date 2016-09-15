@@ -876,21 +876,13 @@ class Pipeline(object):
                 if cellprofiler.preferences.get_headless():
                     logging.warning(message)
                 else:
-                    import wx
-                    if wx.GetApp():
-                        dlg = wx.MessageDialog(
-                            parent=None,
-                            message=message + " Continue?",
-                            caption='Pipeline version mismatch',
-                            style=wx.OK | wx.CANCEL | wx.ICON_QUESTION)
-                        if dlg.ShowModal() != wx.ID_OK:
-                            dlg.Destroy()
-                            raise PipelineLoadCancelledException(message)
-                        dlg.Destroy()
-                    else:
-                        logger.error(
-                            'Your pipeline version is %d but you are running CellProfiler version %d. \nLoading this pipeline may fail or have unpredictable results.\n' % (
-                                pipeline_version, CURRENT_VERSION))
+                    message = """
+                    Your pipeline version is {} but you are running CellProfiler version {}.
+
+                    Loading this pipeline may fail or have unpredictable results.
+                    """.format(pipeline_version, CURRENT_VERSION)
+
+                    logger.error(message)
             else:
                 if ((not cellprofiler.preferences.get_headless()) and
                             pipeline_version < CURRENT_VERSION):
@@ -1743,13 +1735,6 @@ class Pipeline(object):
         pipeline = workspace.pipeline
         image_set_list = workspace.image_set_list
         orig_image_number = m.image_set_number
-        if not pipeline.in_batch_mode() and not cellprofiler.preferences.get_headless():
-            import wx
-            progress_dialog = wx.ProgressDialog(
-                title, message,
-                style=wx.PD_APP_MODAL | wx.PD_AUTO_HIDE | wx.PD_CAN_ABORT)
-        else:
-            progress_dialog = None
 
         try:
             for i, image_number in enumerate(image_numbers):
@@ -1768,14 +1753,7 @@ class Pipeline(object):
                         break
                     else:
                         self.run_module(module, w)
-                    if progress_dialog is not None:
-                        should_continue, skip = progress_dialog.Update(i + 1)
-                        if not should_continue:
-                            progress_dialog.EndModal(0)
-                            return
         finally:
-            if progress_dialog is not None:
-                progress_dialog.Destroy()
             m.image_set_number = orig_image_number
 
     def run_module(self, module, workspace):

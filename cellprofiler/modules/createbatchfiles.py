@@ -224,8 +224,7 @@ class CreateBatchFiles(cpm.Module):
                     import urllib
                     server_path = self.alter_path(os.path.dirname(path))
                     query = urllib.urlencode(dict(data_dir=server_path))
-                    url = cpprefs.get_batchprofiler_url() + \
-                          "/NewBatch.py?" + query
+                    url = "http://imageweb/batchprofiler" + "/NewBatch.py?" + query
                     webbrowser.open_new(url)
                 except:
                     import traceback

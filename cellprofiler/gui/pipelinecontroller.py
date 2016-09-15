@@ -307,7 +307,7 @@ class PipelineController(object):
         In addition, the PipelineController gets to add whatever buttons it wants to the
         panel.
         """
-        bkgnd_color = cellprofiler.preferences.get_background_color()
+        bkgnd_color = wx.SystemSettings.GetColour(wx.SYS_COLOUR_BACKGROUND)
         assert isinstance(panel, wx.Window)
         self.__test_controls_panel = panel
         #

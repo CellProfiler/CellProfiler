@@ -1218,7 +1218,7 @@ class StraightenWorms(cpm.Module):
                         image[labels != 0, i] = pixel_data[labels != 0]
                 if object_number is not None:
                     color = np.array(
-                            cpprefs.get_primary_outline_color().asTuple(),
+                        wx.Colour(red=int(0), green=int(255), blue=int(0)).asTuple(),
                             dtype=np.float) / 255
                     s = slice(outline_indexes[object_number],
                               outline_indexes[object_number + 1])

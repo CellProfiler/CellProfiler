@@ -1,6 +1,3 @@
-""" CellProfiler.Objects.py - represents a labelling of objects in an image
-"""
-
 import centrosome.index
 import centrosome.outline
 import numpy

@@ -1,9 +1,4 @@
-""" Setting.py - represents a module setting
-"""
-
 import logging
-
-logger = logging.getLogger(__name__)
 import json
 import matplotlib.cm
 import numpy as np
@@ -11,17 +6,12 @@ import os
 import sys
 import re
 import uuid
-
-from cellprofiler.preferences import \
-    DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME, \
-    DEFAULT_INPUT_SUBFOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME, \
-    ABSOLUTE_FOLDER_NAME, URL_FOLDER_NAME, NO_FOLDER_NAME, \
-    get_default_image_directory, get_default_output_directory, \
-    standardize_default_folder_names
+from cellprofiler.preferences import DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME, DEFAULT_INPUT_SUBFOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME, ABSOLUTE_FOLDER_NAME, URL_FOLDER_NAME, NO_FOLDER_NAME, get_default_image_directory, get_default_output_directory, standardize_default_folder_names
 import cellprofiler.measurement
-
 from cellprofiler.utilities.utf16encode import utf16encode
 import skimage.morphology
+
+logger = logging.getLogger(__name__)
 
 '''Matlab CellProfiler uses this string for settings to be excluded'''
 DO_NOT_USE = 'Do not use'

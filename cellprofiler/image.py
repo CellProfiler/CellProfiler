@@ -1,18 +1,9 @@
-"""Image.py
-
-Image        - Represents an image with secondary attributes such as a mask and labels
-ImageSetList - Represents the list of image filenames that make up a pipeline run
-"""
-
-import StringIO
 import cPickle
 import logging
 import math
-import struct
-import sys
-import zlib
-
 import numpy
+import six
+import sys
 
 logger = logging.getLogger(__name__)
 
@@ -711,7 +702,7 @@ class ImageSetList(object):
         load_state will restore the image set list's state. No image_set can
         have image providers before this call.
         '''
-        f = StringIO.StringIO()
+        f = six.StringIO()
         cPickle.dump(self.count(), f)
         for i in range(self.count()):
             image_set = self.get_image_set(i)
@@ -728,7 +719,7 @@ class ImageSetList(object):
         self.__image_sets_by_key = {}
 
         # Make a safe unpickler
-        p = cPickle.Unpickler(StringIO.StringIO(state))
+        p = cPickle.Unpickler(six.StringIO(state))
 
         def find_global(module_name, class_name):
             logger.debug("Pickler wants %s:%s", module_name, class_name)

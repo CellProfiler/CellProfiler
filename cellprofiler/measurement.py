@@ -1,13 +1,8 @@
-"""Measurements.py - storage for image and object measurements
-"""
 from __future__ import with_statement
 
 import json
 import logging
-
 import h5py
-
-logger = logging.getLogger(__name__)
 import numpy as np
 import re
 from scipy.io.matlab import loadmat
@@ -25,6 +20,8 @@ import os.path
 import mmap
 import urllib
 import sys
+
+logger = logging.getLogger(__name__)
 
 AGG_MEAN = "Mean"
 AGG_STD_DEV = "StDev"

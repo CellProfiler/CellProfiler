@@ -17,7 +17,7 @@ import os
 import re
 import scipy
 import scipy.io.matlab
-import StringIO
+import six
 import sys
 import tempfile
 import urllib
@@ -527,7 +527,7 @@ class Pipeline(object):
 
     def copy(self, save_image_plane_details=True):
         """Create a copy of the pipeline modules and settings"""
-        fd = StringIO.StringIO()
+        fd = six.StringIO()
         self.save(fd, save_image_plane_details=save_image_plane_details)
         pipeline = Pipeline()
         fd.seek(0)
@@ -621,7 +621,7 @@ class Pipeline(object):
         # attempt to reinstantiate pipeline with new modules
         try:
             self.copy()  # if this fails, we probably can't reload
-            fd = StringIO.StringIO()
+            fd = six.StringIO()
             self.save(fd)
             fd.seek(0)
             self.loadtxt(fd, raise_on_error=True)
@@ -711,7 +711,7 @@ class Pipeline(object):
         elif hasattr(fd_or_filename, 'read') and hasattr(fd_or_filename, 'url'):
             # This is a URL file descriptor. Read into a StringIO so that
             # seek is available.
-            fd = StringIO.StringIO()
+            fd = six.StringIO()
             while True:
                 text = fd_or_filename.read()
                 if len(text) == 0:
@@ -751,7 +751,7 @@ class Pipeline(object):
                 m = cellprofiler.measurement.load_measurements(filename)
                 pipeline_text = m.get_experiment_measurement(M_PIPELINE)
                 pipeline_text = pipeline_text.encode('us-ascii')
-                self.load(StringIO.StringIO(pipeline_text))
+                self.load(six.StringIO(pipeline_text))
                 return
 
         handles = scipy.io.matlab.mio.loadmat(fd_or_filename, struct_as_record=True)
@@ -798,7 +798,7 @@ class Pipeline(object):
                 return None
 
         header = rl()
-        if not self.is_pipeline_txt_fd(StringIO.StringIO(header)):
+        if not self.is_pipeline_txt_fd(six.StringIO(header)):
             raise NotImplementedError('Invalid header: "%s"' % header)
         version = NATIVE_VERSION
         from_matlab = False
@@ -1189,7 +1189,7 @@ class Pipeline(object):
                         created by CreateBatchFiles.
         """
         assert (isinstance(m, cellprofiler.measurement.Measurements))
-        fd = StringIO.StringIO()
+        fd = six.StringIO()
         self.savetxt(fd, save_image_plane_details=False)
         m.add_measurement(cellprofiler.measurement.EXPERIMENT,
                           M_USER_PIPELINE if user_pipeline else M_PIPELINE,

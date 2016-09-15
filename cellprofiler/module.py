@@ -2,9 +2,7 @@ import os
 import re
 import sys
 import uuid
-
 import numpy as np
-
 import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.object

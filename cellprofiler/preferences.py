@@ -1,10 +1,3 @@
-"""Preferences.py - singleton preferences for CellProfiler
-
-   TO-DO - load the default preferences from somewhere.
-           Create a function to save the preferences.
-           Create a function to populate a handles structure with preferences.
-"""
-
 import cellprofiler
 import cellprofiler.utilities.utf16encode
 import logging

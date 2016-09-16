@@ -225,7 +225,7 @@ class HiddenCount(Setting):
             # The value was "inadvertantly" set, but is correct
             return
         raise NotImplementedError(
-                "The count should be inferred, not set  - actual: %d, set: %d" % (len(self.__sequence), count))
+            "The count should be inferred, not set  - actual: %d, set: %d" % (len(self.__sequence), count))
 
     def get_value(self):
         return len(self.__sequence)
@@ -302,7 +302,7 @@ class DirectoryPath(Text):
             dir_choices = dir_choices + [URL_FOLDER_NAME]
         if value is None:
             value = DirectoryPath.static_join_string(
-                    dir_choices[0], "")
+                dir_choices[0], "")
         self.dir_choices = dir_choices
         self.allow_metadata = allow_metadata
         self.support_urls = support_urls
@@ -326,10 +326,10 @@ class DirectoryPath(Text):
     def join_string(self, dir_choice=None, custom_path=None):
         '''Return the value string composed of a directory choice & path'''
         return self.static_join_string(
-                dir_choice if dir_choice is not None
-                else self.dir_choice,
-                custom_path if custom_path is not None
-                else self.custom_path)
+            dir_choice if dir_choice is not None
+            else self.dir_choice,
+            custom_path if custom_path is not None
+            else self.custom_path)
 
     @staticmethod
     def static_join_string(dir_choice, custom_path):
@@ -455,13 +455,13 @@ class DirectoryPath(Text):
             pass
         elif self.dir_choice == ABSOLUTE_FOLDER_NAME:
             self.custom_path = fn_alter_path(
-                    self.custom_path, regexp_substitution=self.allow_metadata)
+                self.custom_path, regexp_substitution=self.allow_metadata)
         elif self.dir_choice == DEFAULT_INPUT_SUBFOLDER_NAME:
             self.custom_path = fn_alter_path(
-                    self.custom_path, regexp_substitution=self.allow_metadata)
+                self.custom_path, regexp_substitution=self.allow_metadata)
         elif self.dir_choice == DEFAULT_OUTPUT_SUBFOLDER_NAME:
             self.custom_path = fn_alter_path(
-                    self.custom_path, regexp_substitution=self.allow_metadata)
+                self.custom_path, regexp_substitution=self.allow_metadata)
 
     def test_valid(self, pipeline):
         if self.dir_choice not in self.dir_choices + [NO_FOLDER_NAME]:
@@ -576,7 +576,7 @@ class ImagePlane(Setting):
         text - informative text to display to the left
         '''
         super(ImagePlane, self).__init__(
-                text, ImagePlane.build(""), *args, **kwargs)
+            text, ImagePlane.build(""), *args, **kwargs)
 
     @staticmethod
     def build(url, series=None, index=None, channel=None):
@@ -596,7 +596,7 @@ class ImagePlane(Setting):
             # Spaces are not legal characters in URLs, nevertheless, I try
             # to accomodate
             logger.warn(
-                    "URLs should not contain spaces. %s is the offending URL" % url)
+                "URLs should not contain spaces. %s is the offending URL" % url)
             url = url.replace(" ", "%20")
         return " ".join([str(x) if x is not None else ""
                          for x in url, series, index, channel])
@@ -639,8 +639,8 @@ class ImagePlane(Setting):
     def test_valid(self, pipeline):
         if self.url is None:
             raise ValidationError(
-                    "This setting's URL is blank. Please select a valid image",
-                    self)
+                "This setting's URL is blank. Please select a valid image",
+                self)
 
 
 class AlphanumericText(Text):
@@ -774,12 +774,12 @@ class Number(Text):
             raise ValidationError('Value not in decimal format', self)
         if self.__minval is not None and self.__minval > value:
             raise ValidationError(
-                    'Must be at least %s, was %s' %
-                    (self.value_to_str(self.__minval), self.value_text), self)
+                'Must be at least %s, was %s' %
+                (self.value_to_str(self.__minval), self.value_text), self)
         if self.__maxval is not None and self.__maxval < value:
             raise ValidationError(
-                    'Must be at most %s, was %s' %
-                    (self.value_to_str(self.__maxval), self.value_text), self)
+                'Must be at most %s, was %s' %
+                (self.value_to_str(self.__maxval), self.value_text), self)
 
     def eq(self, x):
         '''Equal if our value equals the operand'''
@@ -956,7 +956,7 @@ class IntegerRange(Range):
         maxval - the maximum acceptable value of either
         """
         super(IntegerRange, self).__init__(
-                text, "%d,%d" % value, minval, maxval, *args, **kwargs)
+            text, "%d,%d" % value, minval, maxval, *args, **kwargs)
 
     def str_to_value(self, value_str):
         return int(value_str)
@@ -1148,7 +1148,7 @@ class IntegerOrUnboundedRange(IntegerRange):
                 self._minval and
                     self._minval > self.min):
             raise ValidationError(
-                    "%s can't be less than %d" % (self.min_text, self._minval), self)
+                "%s can't be less than %d" % (self.min_text, self._minval), self)
         if ((not self.unbounded_max) and
                 self._maxval and
                     self._maxval < self.max):
@@ -1206,7 +1206,7 @@ class BinaryMatrix(Setting):
                  default_width=5,
                  default_height=5, **kwargs):
         initial_value_text = self.to_value(
-                [[default_value] * default_width] * default_height)
+            [[default_value] * default_width] * default_height)
         Setting.__init__(self, text, initial_value_text, **kwargs)
 
     @staticmethod
@@ -1331,9 +1331,9 @@ class ObjectNameProvider(NameProvider):
     def test_valid(self, pipeline):
         if self.value_text in cellprofiler.measurement.disallowed_object_names:
             raise ValidationError(
-                    "Object names may not be any of %s" % (
-                        ", ".join(cellprofiler.measurement.disallowed_object_names)),
-                    self)
+                "Object names may not be any of %s" % (
+                    ", ".join(cellprofiler.measurement.disallowed_object_names)),
+                self)
         super(ObjectNameProvider, self).test_valid(pipeline)
 
 
@@ -1611,6 +1611,19 @@ class Binary(Setting):
         return self.value
 
 
+class Checkbox(Setting):
+    """
+
+    """
+
+    def __init__(self, text, value):
+        self.text = text
+
+        self.value = value
+
+        super(Checkbox, self).__init__(self.text, self.value)
+
+
 class Choice(Setting):
     """A setting that displays a drop-down set of choices
 
@@ -1659,8 +1672,8 @@ class Choice(Setting):
             self.__choices = self.__choices_fn(pipeline)
         if self.value not in self.choices:
             raise ValidationError(
-                    "%s is not one of %s" %
-                    (self.value, ",".join(self.choices)), self)
+                "%s is not one of %s" %
+                (self.value, ",".join(self.choices)), self)
 
 
 class StructuringElement(Setting):
@@ -1772,7 +1785,7 @@ class MultiChoice(Setting):
                     raise ValidationError("No available choices", self)
                 elif len(self.choices) > 25:
                     raise ValidationError(
-                            "%s is not one of the choices" % selection, self)
+                        "%s is not one of the choices" % selection, self)
                 raise ValidationError("%s is not one of %s" %
                                       (selection,
                                        reduce(lambda x, y: "%s,%s" %
@@ -2765,34 +2778,34 @@ class Filter(Setting):
         return fn(results)
 
     AND_PREDICATE = CompoundFilterPredicate(
-            "and", "All",
-            lambda x, *l: Filter.eval_list(all, x, *l), list,
-            doc="All subordinate rules must be satisfied")
+        "and", "All",
+        lambda x, *l: Filter.eval_list(all, x, *l), list,
+        doc="All subordinate rules must be satisfied")
     OR_PREDICATE = CompoundFilterPredicate(
-            "or", "Any",
-            lambda x, *l: Filter.eval_list(any, x, *l), list,
-            doc="Any one of the subordinate rules must be satisfied")
+        "or", "Any",
+        lambda x, *l: Filter.eval_list(any, x, *l), list,
+        doc="Any one of the subordinate rules must be satisfied")
     LITERAL_PREDICATE = FilterPredicate(
-            "literal", "Custom value", None, [],
-            doc="Enter the rule's text")
+        "literal", "Custom value", None, [],
+        doc="Enter the rule's text")
     CONTAINS_PREDICATE = FilterPredicate(
-            "contain", "Contain",
-            lambda x, y: x.find(y) >= 0, [LITERAL_PREDICATE],
-            doc="The element must contain the text that you enter to the right")
+        "contain", "Contain",
+        lambda x, y: x.find(y) >= 0, [LITERAL_PREDICATE],
+        doc="The element must contain the text that you enter to the right")
     STARTS_WITH_PREDICATE = FilterPredicate(
-            "startwith", "Start with",
-            lambda x, y: x.startswith(y), [LITERAL_PREDICATE],
-            doc="The element must start with the text that you enter to the right")
+        "startwith", "Start with",
+        lambda x, y: x.startswith(y), [LITERAL_PREDICATE],
+        doc="The element must start with the text that you enter to the right")
     ENDSWITH_PREDICATE = FilterPredicate(
-            "endwith", "End with",
-            lambda x, y: x.endswith(y), [LITERAL_PREDICATE],
-            doc="The element must end with the text that you enter to the right")
+        "endwith", "End with",
+        lambda x, y: x.endswith(y), [LITERAL_PREDICATE],
+        doc="The element must end with the text that you enter to the right")
 
     class RegexpFilterPredicate(FilterPredicate):
         def __init__(self, display_name, subpredicates):
             super(self.__class__, self).__init__(
-                    "containregexp", display_name, self.regexp_fn, subpredicates,
-                    doc="The element must contain a match for the regular expression that you enter to the right")
+                "containregexp", display_name, self.regexp_fn, subpredicates,
+                doc="The element must contain a match for the regular expression that you enter to the right")
 
         def regexp_fn(self, x, y):
             try:
@@ -2802,10 +2815,10 @@ class Filter(Setting):
             return pattern.search(x) is not None
 
     CONTAINS_REGEXP_PREDICATE = RegexpFilterPredicate(
-            "Contain regular expression", [LITERAL_PREDICATE])
+        "Contain regular expression", [LITERAL_PREDICATE])
     EQ_PREDICATE = FilterPredicate(
-            "eq", "Exactly match", lambda x, y: x == y, [LITERAL_PREDICATE],
-            doc="Must exactly match the text that you enter to the right")
+        "eq", "Exactly match", lambda x, y: x == y, [LITERAL_PREDICATE],
+        doc="Must exactly match the text that you enter to the right")
 
     class DoesPredicate(FilterPredicate):
         '''Pass the arguments through (no-op)'''
@@ -2814,9 +2827,9 @@ class Filter(Setting):
         def __init__(self, subpredicates, text="Does",
                      doc="The rule passes if the condition to the right holds"):
             super(self.__class__, self).__init__(
-                    self.SYMBOL, text,
-                    lambda x, f, *l: f(x, *l), subpredicates,
-                    doc=doc)
+                self.SYMBOL, text,
+                lambda x, f, *l: f(x, *l), subpredicates,
+                doc=doc)
 
     class DoesNotPredicate(FilterPredicate):
         '''Negate the result of the arguments'''
@@ -2825,9 +2838,9 @@ class Filter(Setting):
         def __init__(self, subpredicates, text="Does not",
                      doc="The rule fails if the condition to the right holds"):
             super(self.__class__, self).__init__(
-                    self.SYMBOL, text,
-                    lambda x, f, *l: not f(x, *l), subpredicates,
-                    doc=doc)
+                self.SYMBOL, text,
+                lambda x, f, *l: not f(x, *l), subpredicates,
+                doc=doc)
 
     def __init__(self, text, predicates, value="", **kwargs):
         super(self.__class__, self).__init__(text, value, **kwargs)
@@ -2990,7 +3003,7 @@ class Filter(Setting):
         for element in structure:
             if isinstance(element, Filter.FilterPredicate):
                 s.append(
-                        cls.FilterPredicate.encode_symbol(unicode(element.symbol)))
+                    cls.FilterPredicate.encode_symbol(unicode(element.symbol)))
             elif isinstance(element, basestring):
                 s.append(u'"' + cls.encode_literal(element) + u'"')
             else:
@@ -3005,7 +3018,7 @@ class Filter(Setting):
             new Filter(expr, klass);
             """, dict(expr=self.value_text,
                       klass=J.class_for_name(
-                              "org.cellprofiler.imageset.ImagePlaneDetailsStack")))
+                          "org.cellprofiler.imageset.ImagePlaneDetailsStack")))
         except Exception, e:
             raise ValidationError(str(e), self)
 
@@ -3021,8 +3034,8 @@ class Filter(Setting):
                 self.__warn_if_blank(x)
             elif x == "":
                 raise ValidationError(
-                        "The text entry for an expression in this filter is blank",
-                        self)
+                    "The text entry for an expression in this filter is blank",
+                    self)
 
 
 class FileCollectionDisplay(Setting):
@@ -3371,7 +3384,7 @@ class PathListDisplay(Setting):
 
     def __init__(self):
         super(self.__class__, self).__init__(
-                "", value="")
+            "", value="")
         self.using_filter = True
 
 
@@ -3657,16 +3670,16 @@ class Joiner(Setting):
         join = self.parse()
         if len(join) == 0:
             raise ValidationError(
-                    "This setting needs to be initialized by choosing items from each column",
-                    self)
+                "This setting needs to be initialized by choosing items from each column",
+                self)
         for d in join:
             for column_name, value in d.items():
                 if column_name in self.entities and \
                         (value not in self.entities[column_name] and
                                  value is not None):
                     raise ValidationError(
-                            "%s is not a valid choice for %s" %
-                            (value, column_name), self)
+                        "%s is not a valid choice for %s" %
+                        (value, column_name), self)
 
 
 class DataTypes(Setting):

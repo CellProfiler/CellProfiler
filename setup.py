@@ -329,7 +329,7 @@ setuptools.setup(
         include_package_data=True,
         install_requires=[
             "cellh5",
-            "centrosome>=1.0.4",
+            "centrosome",
             "h5py",
             "inflect",
             "javabridge",
@@ -337,11 +337,12 @@ setuptools.setup(
             "matplotlib",
             "MySQL-python",
             "numpy",
-            "prokaryote>=1.0.11",
+            "prokaryote",
             "pytest",
             "python-bioformats",
             "pyzmq",
-            "scipy"
+            "scipy",
+            "SimpleITK"
         ],
         keywords="",
         license="BSD",

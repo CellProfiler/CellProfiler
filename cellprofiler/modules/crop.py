@@ -25,7 +25,6 @@ module help for more information on saving cropping shapes.
 
 import logging
 import math
-import sys
 
 import numpy as np
 from centrosome.filter import stretch
@@ -52,7 +51,7 @@ RM_NO = "No"
 RM_EDGES = "Edges"
 RM_ALL = "All"
 
-# Doens't seem to like importing defs from cellprofiler.gui.moduleview so define here
+# Doesn't seem to like importing defs from cellprofiler.gui.moduleview so define here
 ABSOLUTE = "Absolute"
 FROM_EDGE = "From edge"
 
@@ -305,6 +304,7 @@ class Crop(cpm.Module):
         image_set_list = workspace.image_set_list
         d = self.get_dictionary(image_set_list)
         orig_image = workspace.image_set.get_image(self.image_name.value)
+
         recalculate_flag = (self.shape not in (SH_ELLIPSE, SH_RECTANGLE) or
                             self.individual_or_once == IO_INDIVIDUALLY or
                             first_image_set or

@@ -1,4 +1,4 @@
-'''<b>RescaleIntensity</b> changes the intensity range of an image to your 
+'''<b>RescaleIntensity</b> changes the intensity range of an image to your
 desired specifications.
 <hr>
 This module lets you rescale the intensity of the input images by any of several
@@ -334,33 +334,46 @@ class RescaleIntensity(cpm.Module):
             rescaled_image = cpi.Image(output_image,
                                        mask=output_mask,
                                        parent_image=input_image,
-                                       convert=False)
+                                       convert=False,
+                                       dimensions=input_image.dimensions)
         else:
             rescaled_image = cpi.Image(output_image,
                                        parent_image=input_image,
-                                       convert=False)
+                                       convert=False,
+                                       dimensions=input_image.dimensions)
         workspace.image_set.add(self.rescaled_image_name.value, rescaled_image)
         if self.show_window:
             workspace.display_data.image_data = [input_image.pixel_data,
                                                  rescaled_image.pixel_data]
+            workspace.display_data.dimensionality = input_image.dimensions
 
     def display(self, workspace, figure):
-        '''Display the input image and rescaled image'''
-        figure.set_subplots((2, 1))
+        data = workspace.display_data.image_data[0]
+        rescaled = workspace.display_data.image_data[1]
 
-        for image_name, i, j in ((self.image_name, 0, 0),
-                                 (self.rescaled_image_name, 1, 0)):
-            image_name = image_name.value
-            pixel_data = workspace.display_data.image_data[i]
-            if pixel_data.ndim == 2:
-                figure.subplot_imshow_grayscale(i, j, pixel_data,
-                                                title=image_name,
-                                                vmin=0, vmax=1,
-                                                sharexy=figure.subplot(0, 0))
-            else:
-                figure.subplot_imshow(i, j, pixel_data, title=image_name,
-                                      normalize=False,
-                                      sharexy=figure.subplot(0, 0))
+        if workspace.display_data.dimensionality == 3:
+            figure.set_grids((1, 2))
+
+            figure.gridshow(0, 0, data)
+
+            figure.gridshow(0, 1, rescaled)
+        else:
+            '''Display the input image and rescaled image'''
+            figure.set_subplots((2, 1))
+
+            for image_name, i, j in ((self.image_name, 0, 0),
+                                     (self.rescaled_image_name, 1, 0)):
+                image_name = image_name.value
+                pixel_data = workspace.display_data.image_data[i]
+                if pixel_data.ndim == 2:
+                    figure.subplot_imshow_grayscale(i, j, pixel_data,
+                                                    title=image_name,
+                                                    vmin=0, vmax=1,
+                                                    sharexy=figure.subplot(0, 0))
+                else:
+                    figure.subplot_imshow(i, j, pixel_data, title=image_name,
+                                          normalize=False,
+                                          sharexy=figure.subplot(0, 0))
 
     def stretch(self, input_image):
         '''Stretch the input image to the range 0:1'''

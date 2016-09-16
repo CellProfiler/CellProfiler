@@ -4,19 +4,21 @@
 
 Thresholding
 
+Thresholding is used to create a binary image from a grayscale image. The simplest thresholding methods replace in an
+image with a black pixel if the image intensity is less than some fixed constant T, or a white pixel if the image
+intensity is greater than that constant.
+
 """
 
 import cellprofiler.image
 import cellprofiler.module
 import cellprofiler.setting
 import numpy
-import skimage.exposure
 import skimage.filters
-import skimage.morphology
 
 
 class Thresholding(cellprofiler.module.Module):
-    category = "Volumetric"
+    category = "Image Processing"
     module_name = "Thresholding"
     variable_revision_number = 1
 
@@ -27,11 +29,12 @@ class Thresholding(cellprofiler.module.Module):
 
         self.y_name = cellprofiler.setting.ImageNameProvider(
             u"Output",
-            u"OutputImage"
+            u"Thresholding"
         )
 
-        self.method = cellprofiler.setting.Choice(
-            u"Method",
+        # TODO: Make this friendly. :)
+        self.operation = cellprofiler.setting.Choice(
+            u"Operation",
             [
                 u"Adaptive",
                 u"Iterative selection thresholding",
@@ -39,117 +42,184 @@ class Thresholding(cellprofiler.module.Module):
                 u"Minimum cross entropy thresholding",
                 u"Otsu’s method",
                 u"Yen’s method"
-            ]
+            ],
+            doc="""Select the thresholding operation.
+            <ul>
+                <li>
+                    <i>Adaptive</i>: Applies an adaptive threshold. Also known as local or dynamic thresholding where
+                    the threshold value is the weighted mean for the local neighborhood of a pixel subtracted by a
+                    constant. Available methods for adaptive threshold are: "gaussian", "mean", or "median". See help
+                    for "Adaptive method" for descriptions of these options.
+                </li>
+                <br>
+                <li>
+                    <i>Iterative selection thresholding</i>: Histogram-based threshold, known as Ridler-Calvard method
+                    or inter-means. Threshold values returned satisfy the following equality:
+                    <br>
+                    <i>threshold = (image[image <= threshold].mean() + image[image > threshold].mean()) / 2.0</i>
+                    <br>
+                    <br>
+                    That is, returned thresholds are intensities that separate the image into two groups of pixels,
+                    where the threshold intensity is midway between the mean intensities of these groups.
+                    <br>
+                    <br>
+                    For integer images, the above equality holds to within one; for floating- point images, the
+                    equality holds to within the histogram bin-width.
+                </li>
+                <br>
+                <li>
+                    <i>Manual</i>: Threshold the image by assigning a white pixels to the pixels with intensity in range
+                    [lower, upper], or a black pixel to pixels with intensity outside that range.
+                </li>
+                <br>
+                <li>
+                    <i>Minimum cross entropy thresholding</i>: Li’s Minimum Cross Entropy method. All pixels with an
+                    intensity higher than this value are assumed to be foreground
+                </li>
+                <br>
+                <li>
+                    <i>Otsu's method</i>: Threshold using Otsu's method. The algorithm assumes that the image contains
+                    two classes of pixels following bi-modal histogram (foreground pixels and background pixels), it
+                    then calculates the optimum threshold separating the two classes so that their combined spread
+                    (intra-class variance) is minimal, or equivalently (because the sum of pairwise squared distances
+                    is constant), so that their inter-class variance is maximal.
+                </li>
+                <br>
+                <li>
+                    <i>Yen's method</i>: Threshold using Yen's thresholding method from "A new criterion for automatic
+                    multilevel thresholding". Yen's method considers the differences between the original image and
+                    the thresholded image and the number of bits required to represent the thresholded image to
+                    determine the threshold value.
+                </li>
+            </ul>
+            """
         )
 
-        self.adaptive_block_size = cellprofiler.setting.Integer(
+        self.block_size = cellprofiler.setting.OddInteger(
             u"Block size",
-            value=3
+            value=3,
+            doc="Odd size of pixel neighborhood which is used to calculate the threshold value."
         )
 
         self.adaptive_method = cellprofiler.setting.Choice(
             u"Adaptive method",
             [
                 u"Gaussian",
-                u"Generic",
                 u"Mean",
                 u"Median"
             ],
-            u"Gaussian"
+            u"Gaussian",
+            doc="""Method used to determine adaptive threshold for local neighbourhood in weighted mean image.
+            <ul>
+                <li>
+                    <i>Gaussian</i>: Apply Gaussian filter.
+                </li>
+                <br>
+                <li>
+                    <i>Mean</i>: Apply arithmetic mean filter.
+                </li>
+                <br>
+                <li>
+                    <i>Median</i>: Apply median rank filter.
+                </li>
+            </ul>
+            """
         )
 
-        self.adaptive_offset = cellprofiler.setting.Float(
+        self.sigma = cellprofiler.setting.Float(
+            u"Sigma",
+            1.0,
+            minval=0.0,
+            doc="Sigma used to compute Gaussian."
+        )
+
+        self.offset = cellprofiler.setting.Float(
             u"Offset",
-            value=0.0
+            value=0.0,
+            doc="Constant subtracted from weighted mean of neighborhood to calculate the local threshold value."
         )
 
-        self.adaptive_mode = cellprofiler.setting.Choice(
-            u"Mode",
-            [
-                u"Constant",
-                u"Mirror",
-                u"Nearest",
-                u"Reflect",
-                u"Wrap"
-            ],
-            u"Reflect"
-        )
-
-        self.isodata_bins = cellprofiler.setting.Integer(
+        self.bins = cellprofiler.setting.Integer(
             u"Bins",
-            value=256
-        )
-
-        self.otsu_bins = cellprofiler.setting.Integer(
-            u"Bins",
-            value=256
-        )
-
-        self.yen_bins = cellprofiler.setting.Integer(
-            u"Bins",
-            value=256
+            value=256,
+            doc="""Number of bins used to calculate the histogram in automatic thresholding. Histogram shape-based
+            methods in particular, but also many other thresholding algorithms, make certain assumptions about the
+            image intensity probability distribution. The most common thresholding methods work on bimodal
+            distributions, but algorithms have also been developed for unimodal distributions, multimodal
+            distributions, and circular distributions."""
         )
 
         self.lower = cellprofiler.setting.Float(
             u"Lower",
-            value=0.0
+            value=0.0,
+            doc="""The minimum pixel intensity for thresholding. All pixels with intensities less than the minimum are
+            assigned a black pixel. All pixels with intensities above the minimum (but below the maximum) are assigned
+            a white pixel."""
         )
 
         self.upper = cellprofiler.setting.Float(
             u"Upper",
-            value=1.0
+            value=1.0,
+            doc="""The maximum pixel intensity for thresholding. All pixels with intensities greater than the minimum are
+            assigned a black pixel. All pixels with intensities above the maximum (but above the minimum) are assigned
+            a white pixel."""
         )
 
     def settings(self):
         return [
-            self.adaptive_block_size,
             self.adaptive_method,
-            self.adaptive_mode,
-            self.adaptive_offset,
-            self.isodata_bins,
+            self.bins,
+            self.block_size,
             self.lower,
-            self.method,
-            self.otsu_bins,
+            self.offset,
+            self.operation,
+            self.sigma,
             self.upper,
             self.x_name,
-            self.y_name,
-            self.yen_bins
+            self.y_name
         ]
 
     def visible_settings(self):
         settings = [
             self.x_name,
             self.y_name,
-            self.method
+            self.operation
         ]
 
-        if self.method.value == u"Adaptive":
+        if self.operation.value == u"Adaptive":
             settings = settings + [
-                self.adaptive_block_size,
-                self.adaptive_method,
-                self.adaptive_offset,
-                self.adaptive_mode
+                self.adaptive_method
             ]
 
-        if self.method.value == u"Iterative selection thresholding":
+            if self.adaptive_method == u"Gaussian":
+                settings = settings + [
+                    self.sigma
+                ]
+
             settings = settings + [
-                self.isodata_bins
+                self.block_size,
+                self.offset
             ]
 
-        if self.method.value == u"Manual":
+        if self.operation.value == u"Iterative selection thresholding":
+            settings = settings + [
+                self.bins
+            ]
+
+        if self.operation.value == u"Manual":
             settings = settings + [
                 self.lower,
                 self.upper
             ]
 
-        if self.method.value == u"Otsu’s method":
+        if self.operation.value == u"Otsu’s method":
             settings = settings + [
-                self.otsu_bins
+                self.bins
             ]
 
-        if self.method.value == u"Yen’s method":
+        if self.operation.value == u"Yen’s method":
             settings = settings + [
-                self.yen_bins
+                self.bins
             ]
 
         return settings
@@ -170,50 +240,50 @@ class Thresholding(cellprofiler.module.Module):
         y_data = numpy.zeros_like(x_data)
 
         for z, image in enumerate(x_data):
-            if self.method.value == u"Adaptive":
+            if self.operation.value == u"Adaptive":
                 y_data[z] = skimage.filters.threshold_adaptive(
                     image=image,
-                    block_size=self.adaptive_block_size.value,
+                    block_size=self.block_size.value,
                     method=self.adaptive_method.value.lower(),
-                    offset=self.adaptive_offset.value,
-                    mode=self.adaptive_mode.value.lower()
+                    offset=self.offset.value,
+                    param=self.sigma.value
                 )
-
-                y_data[z] = image >= y_data[z]
-            elif self.method.value == u"Iterative selection thresholding":
+            elif self.operation.value == u"Iterative selection thresholding":
                 y_data[z] = skimage.filters.threshold_isodata(
                     image=image,
-                    nbins=self.isodata_bins.value
+                    nbins=self.bins.value
                 )
 
                 y_data[z] = image >= y_data[z]
-            elif self.method.value == u"Manual":
+            elif self.operation.value == u"Manual":
                 y_data[z] = image > self.lower
+
                 y_data[z] = image < self.upper
-            elif self.method.value == u"Minimum cross entropy thresholding":
+            elif self.operation.value == u"Minimum cross entropy thresholding":
                 y_data[z] = skimage.filters.threshold_li(
                     image=image
                 )
 
                 y_data[z] = image >= y_data[z]
-            elif self.method.value == u"Otsu’s method":
+            elif self.operation.value == u"Otsu’s method":
                 y_data[z] = skimage.filters.threshold_otsu(
                     image=image,
-                    nbins=self.otsu_bins.value
+                    nbins=self.bins.value
                 )
 
                 y_data[z] = image >= y_data[z]
-            elif self.method.value == u"Yen’s method":
+            elif self.operation.value == u"Yen’s method":
                 y_data[z] = skimage.filters.threshold_yen(
                     image=image,
-                    nbins=self.yen_bins.value
+                    nbins=self.bins.value
                 )
 
                 y_data[z] = image >= y_data[z]
 
         y = cellprofiler.image.Image(
             image=y_data,
-            parent_image=x
+            parent_image=x,
+            dimensions=x.dimensions
         )
 
         images.add(y_name, y)
@@ -223,9 +293,11 @@ class Thresholding(cellprofiler.module.Module):
 
             workspace.display_data.y_data = y_data
 
+            workspace.display_data.dimensions = x.dimensions
+
     def display(self, workspace, figure):
-        figure.set_grids((1, 2))
+        figure.set_subplots((1, 2), dimensions=workspace.display_data.dimensions)
 
-        figure.gridshow(0, 0, workspace.display_data.x_data)
+        figure.gridshow(0, 0, workspace.display_data.x_data, dimensions=workspace.display_data.dimensions)
 
-        figure.gridshow(0, 1, workspace.display_data.y_data)
+        figure.gridshow(0, 1, workspace.display_data.y_data, dimensions=workspace.display_data.dimensions)

@@ -73,7 +73,7 @@ class Thresholding(cellprofiler.module.Module):
                 </li>
                 <br>
                 <li>
-                    <i>Minimum cross entropy thresholding</i>: Li’s Minimum Cross Entropy method. All pixels with an
+                    <i>Minimum cross entropy thresholding</i>: Li's Minimum Cross Entropy method. All pixels with an
                     intensity higher than this value are assumed to be foreground
                 </li>
                 <br>

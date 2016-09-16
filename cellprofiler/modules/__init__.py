@@ -87,6 +87,7 @@ pymodule_to_cpmodule = {'align': 'Align',
                         'straightenworms': 'StraightenWorms',
                         'trackobjects': 'TrackObjects',
                         'tile': 'Tile',
+                        'thresholding': 'Thresholding',
                         'calculateimageoverlap': 'CalculateImageOverlap',
                         'unmixcolors': 'UnmixColors',
                         'untangleworms': 'UntangleWorms'
@@ -166,6 +167,7 @@ builtin_modules = ['align',
                    'straightenworms',
                    'trackobjects',
                    'tile',
+                   'thresholding',
                    'unmixcolors',
                    'untangleworms'
                    ]

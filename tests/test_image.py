@@ -70,6 +70,15 @@ class TestImage(unittest.TestCase):
         test_out = x.crop_image_similarly(test)
         self.assertTrue(np.all(test_out == test[2:-1, 1:-2]))
 
+    def test_init_volume(self):
+        data = np.ones((5, 10, 10))
+
+        x = cpi.Image(image=data, dimensions=3)
+
+        self.assertTrue(np.all(x.pixel_data == data))
+
+        self.assertEqual(x.dimensions, 3)
+
 
 IMAGE_NAME = "image"
 

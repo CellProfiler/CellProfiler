@@ -3,15 +3,28 @@ import cellprofiler.measurement
 import cellprofiler.object
 import cellprofiler.pipeline
 import cellprofiler.workspace
+import numpy
 import skimage.data
 import pytest
 
 
-@pytest.fixture(scope="module")
-def image():
-    example = skimage.data.camera()
+@pytest.fixture(
+    scope="module",
+    params=[
+        (skimage.data.camera()[0:128, 0:128], 2),
+        (skimage.data.astronaut()[0:128, 0:128, :], 2),
+        (numpy.tile(skimage.data.camera()[0:32, 0:32], (2, 1)).reshape(2, 32, 32), 3)
+    ],
+    ids=[
+        "grayscale_image",
+        "multichannel_image",
+        "grayscale_volume"
+    ]
+)
+def image(request):
+    data, dimensions = request.param
 
-    return cellprofiler.image.Image(example)
+    return cellprofiler.image.Image(image=data, dimensions=dimensions)
 
 
 @pytest.fixture(scope="module")

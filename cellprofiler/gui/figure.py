@@ -14,12 +14,15 @@ import csv
 import functools
 import javabridge
 import logging
+import math
 import matplotlib
 import matplotlib.backends.backend_wxagg
 import matplotlib.backends.backend_wxagg
 import matplotlib.cm
 import matplotlib.colorbar
+import matplotlib.gridspec
 import matplotlib.patches
+import matplotlib.pyplot
 import numpy
 import numpy.ma
 import os
@@ -284,8 +287,10 @@ class Figure(wx.Frame):
         self.widgets = []
         self.mouse_down = None
         self.remove_menu = []
-        self.figure = figure = matplotlib.figure.Figure()
+        self.figure = matplotlib.pyplot.Figure()
         self.panel = matplotlib.backends.backend_wxagg.FigureCanvasWxAgg(self, -1, self.figure)
+        self.__gridspec = None
+        self.__grid_config = None
         if secret_panel_class is None:
             secret_panel_class = wx.Panel
         self.secret_panel = secret_panel_class(self)
@@ -541,7 +546,7 @@ class Figure(wx.Frame):
             y1 = max(self.mouse_down[1], evt.ydata)
         if self.mouse_mode == MODE_MEASURE_LENGTH:
             self.on_mouse_move_measure_length(evt, x0, y0, x1, y1)
-        elif not self.mouse_mode == MODE_MEASURE_LENGTH:
+        elif not self.mouse_mode == MODE_NONE:
             self.on_mouse_move_show_pixel_data(evt, x0, y0, x1, y1)
 
     def get_pixel_data_fields_for_status_bar(self, im, xi, yi):
@@ -736,13 +741,16 @@ class Figure(wx.Frame):
                                     format=file_format,
                                     bbox_inches=extent)
 
-    def set_subplots(self, subplots):
+    def set_subplots(self, subplots, dimensions=2):
         self.clf()  # get rid of any existing subplots, menus, etc.
         if subplots is None:
             if hasattr(self, 'subplots'):
                 delattr(self, 'subplots')
         else:
-            self.subplots = numpy.zeros(subplots, dtype=object)
+            if dimensions is 2:
+                self.subplots = numpy.zeros(subplots, dtype=object)
+            else:
+                self.set_grids(subplots)
 
     @allow_sharexy
     def subplot(self, x, y, sharex=None, sharey=None):
@@ -1065,11 +1073,57 @@ class Figure(wx.Frame):
                 slider.Value = orig_alpha
                 on_slider(None)
 
+    def set_grids(self, shape):
+        self.__gridspec = matplotlib.gridspec.GridSpec(*shape)
+
+    def __set_grid_config(self, image):
+        z, _, _ = image.shape
+
+        center = z / 2
+
+        # Determine the indices of the first and last slices to display.
+        start = max(0, center - 4)
+        stop = min(center + 5, image.shape[0])
+
+        # From the number of slices that are displayable, determine the
+        # shape of the grid these can be displayed in.
+        n_slices = float(stop - start)
+        n_rows = int(math.ceil(n_slices / 3))
+        n_cols = int(math.ceil(n_slices / n_rows))
+
+        self.__grid_config = ((n_rows, n_cols), start, stop)
+
+    def gridshow(self, x, y, image, cmap='gray'):
+        if self.__grid_config is None:
+            self.__set_grid_config(image)
+
+        dimensions, start, stop = self.__grid_config
+
+        gx, gy = self.__gridspec.get_geometry()
+        idx = gx * x + y
+
+        gridspec = matplotlib.gridspec.GridSpecFromSubplotSpec(*dimensions, subplot_spec=self.__gridspec[idx], wspace=0.1, hspace=0.1)
+
+        for idx, img in enumerate(image[start:stop]):
+            ax = matplotlib.pyplot.Subplot(self.figure, gridspec[idx])
+
+            if idx / dimensions[0] != (dimensions[0] - 1):
+                ax.set_xticklabels([])
+
+            if idx % dimensions[1] != 0:
+                ax.set_yticklabels([])
+
+            ax.imshow(img, cmap=cmap)
+
+            self.figure.add_subplot(ax)
+
+        matplotlib.pyplot.show()
+
     @allow_sharexy
     def subplot_imshow(self, x, y, image, title=None, clear=True, colormap=None,
                        colorbar=False, normalize=None, vmin=0, vmax=1,
                        rgb_mask=(1, 1, 1), sharex=None, sharey=None,
-                       use_imshow=False, interpolation=None, cplabels=None):
+                       use_imshow=False, interpolation=None, cplabels=None, dimensions=2):
         """Show an image in a subplot
 
         x, y  - show image in this subplot
@@ -1094,187 +1148,192 @@ class Figure(wx.Frame):
                    describes a set of labels. See the documentation of
                    the CPLD_* constants for details.
         """
-        orig_vmin = vmin
-        orig_vmax = vmax
-        if interpolation is None:
-            interpolation = get_matplotlib_interpolation_preference()
-        if normalize is None:
-            normalize = cellprofiler.preferences.get_intensity_mode()
-            if normalize == cellprofiler.preferences.INTENSITY_MODE_RAW:
-                normalize = False
-            elif normalize == cellprofiler.preferences.INTENSITY_MODE_LOG:
-                normalize = "log"
+        if dimensions is 2:
+            orig_vmin = vmin
+            orig_vmax = vmax
+            if interpolation is None:
+                interpolation = get_matplotlib_interpolation_preference()
+            if normalize is None:
+                normalize = cellprofiler.preferences.get_intensity_mode()
+                if normalize == cellprofiler.preferences.INTENSITY_MODE_RAW:
+                    normalize = False
+                elif normalize == cellprofiler.preferences.INTENSITY_MODE_LOG:
+                    normalize = "log"
+                else:
+                    normalize = True
+            if cplabels is None:
+                cplabels = []
             else:
-                normalize = True
-        if cplabels is None:
-            cplabels = []
-        else:
-            use_imshow = False
-            new_cplabels = []
-            for i, d in enumerate(cplabels):
-                d = d.copy()
-                if CPLD_OUTLINE_COLOR not in d:
-                    if i == 0:
-                        d[CPLD_OUTLINE_COLOR] = cellprofiler.preferences.get_primary_outline_color()
-                    elif i == 1:
-                        d[CPLD_OUTLINE_COLOR] = cellprofiler.preferences.get_secondary_outline_color()
-                    elif i == 2:
-                        d[CPLD_OUTLINE_COLOR] = cellprofiler.preferences.get_tertiary_outline_color()
-                if CPLD_MODE not in d:
-                    d[CPLD_MODE] = CPLDM_OUTLINES
-                if CPLD_LINE_WIDTH not in d:
-                    d[CPLD_LINE_WIDTH] = 1
-                if CPLD_ALPHA_COLORMAP not in d:
-                    d[CPLD_ALPHA_COLORMAP] = cellprofiler.preferences.get_default_colormap()
-                if CPLD_ALPHA_VALUE not in d:
-                    d[CPLD_ALPHA_VALUE] = .25
-                new_cplabels.append(d)
-            cplabels = new_cplabels
+                use_imshow = False
+                new_cplabels = []
+                for i, d in enumerate(cplabels):
+                    d = d.copy()
+                    if CPLD_OUTLINE_COLOR not in d:
+                        if i == 0:
+                            d[CPLD_OUTLINE_COLOR] = cellprofiler.preferences.get_primary_outline_color()
+                        elif i == 1:
+                            d[CPLD_OUTLINE_COLOR] = cellprofiler.preferences.get_secondary_outline_color()
+                        elif i == 2:
+                            d[CPLD_OUTLINE_COLOR] = cellprofiler.preferences.get_tertiary_outline_color()
+                    if CPLD_MODE not in d:
+                        d[CPLD_MODE] = CPLDM_OUTLINES
+                    if CPLD_LINE_WIDTH not in d:
+                        d[CPLD_LINE_WIDTH] = 1
+                    if CPLD_ALPHA_COLORMAP not in d:
+                        d[CPLD_ALPHA_COLORMAP] = cellprofiler.preferences.get_default_colormap()
+                    if CPLD_ALPHA_VALUE not in d:
+                        d[CPLD_ALPHA_VALUE] = .25
+                    new_cplabels.append(d)
+                cplabels = new_cplabels
 
-        # NOTE: self.subplot_user_params is used to store changes that are made
-        #    to the display through GUI interactions (eg: hiding a channel).
-        #    Once a subplot that uses this mechanism has been drawn, it will
-        #    continually load defaults from self.subplot_user_params instead of
-        #    the default values specified in the function definition.
-        kwargs = {'title': title,
-                  'clear': False,
-                  'colormap': colormap,
-                  'colorbar': colorbar,
-                  'normalize': normalize,
-                  'vmin': vmin,
-                  'vmax': vmax,
-                  'rgb_mask': rgb_mask,
-                  'use_imshow': use_imshow,
-                  'interpolation': interpolation,
-                  'cplabels': cplabels}
-        if (x, y) not in self.subplot_user_params:
-            self.subplot_user_params[(x, y)] = {}
-        if (x, y) not in self.subplot_params:
-            self.subplot_params[(x, y)] = {}
-        # overwrite keyword arguments with user-set values
-        kwargs.update(self.subplot_user_params[(x, y)])
-        self.subplot_params[(x, y)].update(kwargs)
-        if kwargs["colormap"] is None:
-            kwargs["colormap"] = cellprofiler.preferences.get_default_colormap()
+            # NOTE: self.subplot_user_params is used to store changes that are made
+            #    to the display through GUI interactions (eg: hiding a channel).
+            #    Once a subplot that uses this mechanism has been drawn, it will
+            #    continually load defaults from self.subplot_user_params instead of
+            #    the default values specified in the function definition.
+            kwargs = {'title': title,
+                      'clear': False,
+                      'colormap': colormap,
+                      'colorbar': colorbar,
+                      'normalize': normalize,
+                      'vmin': vmin,
+                      'vmax': vmax,
+                      'rgb_mask': rgb_mask,
+                      'use_imshow': use_imshow,
+                      'interpolation': interpolation,
+                      'cplabels': cplabels}
+            if (x, y) not in self.subplot_user_params:
+                self.subplot_user_params[(x, y)] = {}
+            if (x, y) not in self.subplot_params:
+                self.subplot_params[(x, y)] = {}
+            # overwrite keyword arguments with user-set values
+            kwargs.update(self.subplot_user_params[(x, y)])
+            self.subplot_params[(x, y)].update(kwargs)
+            if kwargs["colormap"] is None:
+                kwargs["colormap"] = cellprofiler.preferences.get_default_colormap()
 
-        # and fetch back out
-        title = kwargs['title']
-        colormap = kwargs['colormap']
-        colorbar = kwargs['colorbar']
-        normalize = kwargs['normalize']
-        vmin = kwargs['vmin']
-        vmax = kwargs['vmax']
-        rgb_mask = kwargs['rgb_mask']
-        interpolation = kwargs['interpolation']
+            # and fetch back out
+            title = kwargs['title']
+            colormap = kwargs['colormap']
+            colorbar = kwargs['colorbar']
+            normalize = kwargs['normalize']
+            vmin = kwargs['vmin']
+            vmax = kwargs['vmax']
+            rgb_mask = kwargs['rgb_mask']
+            interpolation = kwargs['interpolation']
 
-        # Note: if we do not do this, then passing in vmin,vmax without setting
-        # normalize=False will cause the normalized image to be stretched
-        # further which makes no sense.
-        # ??? - We may want to change the normalize vs vmin,vmax behavior so if
-        # vmin,vmax are passed in, then normalize is ignored.
-        if normalize:
-            vmin, vmax = 0, 1
+            # Note: if we do not do this, then passing in vmin,vmax without setting
+            # normalize=False will cause the normalized image to be stretched
+            # further which makes no sense.
+            # ??? - We may want to change the normalize vs vmin,vmax behavior so if
+            # vmin,vmax are passed in, then normalize is ignored.
+            if normalize:
+                vmin, vmax = 0, 1
 
-        if clear:
-            self.clear_subplot(x, y)
-        # Store the raw image keyed by it's subplot location
-        self.images[(x, y)] = image
+            if clear:
+                self.clear_subplot(x, y)
+            # Store the raw image keyed by it's subplot location
+            self.images[(x, y)] = image
 
-        # Draw (actual image drawing in on_redraw() below)
-        subplot = self.subplot(x, y, sharex=sharex, sharey=sharey)
-        subplot._adjustable = 'box-forced'
-        subplot.plot([0, 0], list(image.shape[:2]), 'k')
-        subplot.set_xlim([-0.5, image.shape[1] - 0.5])
-        subplot.set_ylim([image.shape[0] - 0.5, -0.5])
-        subplot.set_aspect('equal')
+            # Draw (actual image drawing in on_redraw() below)
+            subplot = self.subplot(x, y, sharex=sharex, sharey=sharey)
+            subplot._adjustable = 'box-forced'
+            subplot.plot([0, 0], list(image.shape[:2]), 'k')
+            subplot.set_xlim([-0.5, image.shape[1] - 0.5])
+            subplot.set_ylim([image.shape[0] - 0.5, -0.5])
+            subplot.set_aspect('equal')
 
-        # Set title
-        if title is not None:
-            self.set_subplot_title(title, x, y)
+            # Set title
+            if title is not None:
+                self.set_subplot_title(title, x, y)
 
-        # Update colorbar
-        if orig_vmin is not None:
-            tick_vmin = orig_vmin
-        elif normalize == 'log':
-            tick_vmin = image[image > 0].min()
-        else:
-            tick_vmin = image.min()
-        if orig_vmax is not None:
-            tick_vmax = orig_vmax
-        else:
-            tick_vmax = image.max()
-
-        if isinstance(colormap, basestring):
-            colormap = matplotlib.cm.ScalarMappable(cmap=colormap)
-
-        # NOTE: We bind this event each time imshow is called to a new closure
-        #    of on_release so that each function will be called when a
-        #    button_release_event is fired.  It might be cleaner to bind the
-        #    event outside of subplot_imshow, and define a handler that iterates
-        #    through each subplot to determine what kind of action should be
-        #    taken. In this case each subplot_xxx call would have to append
-        #    an action response to a dictionary keyed by subplot.
-        if (x, y) in self.event_bindings:
-            [self.figure.canvas.mpl_disconnect(b) for b in self.event_bindings[(x, y)]]
-
-        def on_release(evt):
-            if evt.inaxes == subplot:
-                if evt.button != 1:
-                    self.show_imshow_popup_menu((evt.x, self.figure.canvas.GetSize()[1] - evt.y), (x, y))
-
-        self.event_bindings[(x, y)] = [
-            self.figure.canvas.mpl_connect('button_release_event', on_release)]
-
-        if colorbar and not is_color_image(image):
-            colormap.set_array(self.images[(x, y)])
-            colormap.autoscale()
-        if use_imshow or g_use_imshow:
-            image = self.images[(x, y)]
-            subplot.imshow(self.normalize_image(image, **kwargs))
-        else:
-            subplot.add_artist(CPImageArtist(self.images[(x, y)], self, kwargs))
-
-        self.update_line_labels(subplot, kwargs)
-        #
-        # Colorbar support
-        #
-        if colorbar and not is_color_image(image):
-
-            if not subplot in self.colorbar:
-                cax = matplotlib.colorbar.make_axes(subplot)[0]
-                bar = subplot.figure.colorbar(colormap, cax, subplot, use_gridspec=False)
-                self.colorbar[subplot] = (cax, bar)
+            # Update colorbar
+            if orig_vmin is not None:
+                tick_vmin = orig_vmin
+            elif normalize == 'log':
+                tick_vmin = image[image > 0].min()
             else:
-                cax, bar = self.colorbar[subplot]
-                bar.set_array(self.images[(x, y)])
-                bar.update_normal(colormap)
-                bar.update_ticks()
-
-        # Also add this menu to the main menu
-        if (x, y) in self.subplot_menus:
-            # First trash the existing menu if there is one
-            self.menu_subplots.RemoveItem(self.subplot_menus[(x, y)])
-        menu_pos = 0
-        for yy in range(y + 1):
-            if yy == y:
-                cols = x
+                tick_vmin = image.min()
+            if orig_vmax is not None:
+                tick_vmax = orig_vmax
             else:
-                cols = self.subplots.shape[0]
-            for xx in range(cols):
-                if (xx, yy) in self.images:
-                    menu_pos += 1
-        self.subplot_menus[(x, y)] = self.menu_subplots.InsertMenu(menu_pos,
-                                                                   -1, (title or 'Subplot (%s,%s)' % (x, y)),
-                                                                   self.get_imshow_menu((x, y)))
+                tick_vmax = image.max()
 
-        # Attempt to update histogram plot if one was created
-        hist_fig = find_fig(self, name='%s %s image histogram' % (self.Name,
-                                                                  (x, y)))
-        if hist_fig:
-            hist_fig.subplot_histogram(0, 0, self.images[(x, y)].flatten(),
-                                       bins=200, xlabel='pixel intensity')
-            hist_fig.figure.canvas.draw()
-        return subplot
+            if isinstance(colormap, basestring):
+                colormap = matplotlib.cm.ScalarMappable(cmap=colormap)
+
+            # NOTE: We bind this event each time imshow is called to a new closure
+            #    of on_release so that each function will be called when a
+            #    button_release_event is fired.  It might be cleaner to bind the
+            #    event outside of subplot_imshow, and define a handler that iterates
+            #    through each subplot to determine what kind of action should be
+            #    taken. In this case each subplot_xxx call would have to append
+            #    an action response to a dictionary keyed by subplot.
+            if (x, y) in self.event_bindings:
+                [self.figure.canvas.mpl_disconnect(b) for b in self.event_bindings[(x, y)]]
+
+            def on_release(evt):
+                if evt.inaxes == subplot:
+                    if evt.button != 1:
+                        self.show_imshow_popup_menu((evt.x, self.figure.canvas.GetSize()[1] - evt.y), (x, y))
+
+            self.event_bindings[(x, y)] = [
+                self.figure.canvas.mpl_connect('button_release_event', on_release)]
+
+            if colorbar and not is_color_image(image):
+                colormap.set_array(self.images[(x, y)])
+                colormap.autoscale()
+            if use_imshow or g_use_imshow:
+                image = self.images[(x, y)]
+                subplot.imshow(self.normalize_image(image, **kwargs))
+            else:
+                subplot.add_artist(CPImageArtist(self.images[(x, y)], self, kwargs))
+
+            self.update_line_labels(subplot, kwargs)
+            #
+            # Colorbar support
+            #
+            if colorbar and not is_color_image(image):
+
+                if not subplot in self.colorbar:
+                    cax = matplotlib.colorbar.make_axes(subplot)[0]
+                    bar = subplot.figure.colorbar(colormap, cax, subplot, use_gridspec=False)
+                    self.colorbar[subplot] = (cax, bar)
+                else:
+                    cax, bar = self.colorbar[subplot]
+                    bar.set_array(self.images[(x, y)])
+                    bar.update_normal(colormap)
+                    bar.update_ticks()
+
+            # Also add this menu to the main menu
+            if (x, y) in self.subplot_menus:
+                # First trash the existing menu if there is one
+                self.menu_subplots.RemoveItem(self.subplot_menus[(x, y)])
+            menu_pos = 0
+            for yy in range(y + 1):
+                if yy == y:
+                    cols = x
+                else:
+                    cols = self.subplots.shape[0]
+                for xx in range(cols):
+                    if (xx, yy) in self.images:
+                        menu_pos += 1
+            self.subplot_menus[(x, y)] = self.menu_subplots.InsertMenu(menu_pos,
+                                                                       -1, (title or 'Subplot (%s,%s)' % (x, y)),
+                                                                       self.get_imshow_menu((x, y)))
+
+            # Attempt to update histogram plot if one was created
+            hist_fig = find_fig(self, name='%s %s image histogram' % (self.Name,
+                                                                      (x, y)))
+            if hist_fig:
+                hist_fig.subplot_histogram(0, 0, self.images[(x, y)].flatten(),
+                                           bins=200, xlabel='pixel intensity')
+                hist_fig.figure.canvas.draw()
+            return subplot
+        else:
+            colormap = "gray" if colormap is None else colormap
+
+            self.gridshow(x, y, image, colormap)
 
     @staticmethod
     def update_line_labels(subplot, kwargs):
@@ -1431,7 +1490,7 @@ class Figure(wx.Frame):
         image = image.astype(numpy.float32)
         if isinstance(colormap, matplotlib.cm.ScalarMappable):
             colormap = colormap.cmap
-        
+
         # Perform normalization
         if normalize == 'log':
             if is_color_image(image):

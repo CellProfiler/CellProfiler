@@ -10,14 +10,17 @@ def test_run(image, module, image_set, workspace):
 
     module.y_name.value = "closing"
 
-    disk = skimage.morphology.disk(1)
+    if image.dimensions is 3 or image.multichannel:
+        module.structuring_element.shape = "ball"
 
-    module.structuring_element.value = disk
+        selem = skimage.morphology.ball(1)
+    else:
+        selem = skimage.morphology.disk(1)
 
     module.run(workspace)
 
     actual = image_set.get_image("closing")
 
-    desired = skimage.morphology.closing(image.pixel_data, disk)
+    desired = skimage.morphology.closing(image.pixel_data, selem)
 
     numpy.testing.assert_array_equal(actual.pixel_data, desired)

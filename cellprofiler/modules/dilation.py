@@ -45,7 +45,7 @@ class Dilation(cellprofiler.module.Module):
 
     def run(self, workspace):
         x_name = self.x_name.value
-        
+
         y_name = self.y_name.value
 
         structuring_element = self.structuring_element.value
@@ -72,11 +72,11 @@ class Dilation(cellprofiler.module.Module):
             workspace.display_data.x_data = x_data
 
             workspace.display_data.y_data = y_data
-            
+
             workspace.display_data.dimensions = dimensions
 
     def display(self, workspace, figure):
-        figure.set_subplots((1, 2), dimensions=workspace.display_data.dimensions)
+        figure.set_subplots((2, 1), dimensions=workspace.display_data.dimensions)
 
         figure.subplot_imshow(0, 0, workspace.display_data.x_data, dimensions=workspace.display_data.dimensions)
 

@@ -18,11 +18,11 @@ from centrosome.threshold import mad, binned_mode
 from centrosome.threshold import weighted_variance, sum_of_entropies
 from centrosome.threshold import sizeintervalprecision
 
-import cellprofiler.cpmodule
+import cellprofiler.module
 import cellprofiler.icons
-import cellprofiler.measurements as cpmeas
-import cellprofiler.objects
-import cellprofiler.settings as cps
+import cellprofiler.measurement as cpmeas
+import cellprofiler.object
+import cellprofiler.setting as cps
 from cellprofiler.gui.help import HELP_ON_PIXEL_INTENSITIES
 
 O_TWO_CLASS = 'Two classes'
@@ -156,7 +156,7 @@ PROTIP_AVOID_ICON = "thumb-down.png"
 TECH_NOTE_ICON = "gear.png"
 
 
-class Identify(cellprofiler.cpmodule.CPModule):
+class Identify(cellprofiler.module.Module):
     threshold_setting_version = 2
 
     def create_threshold_settings(self, methods=TM_METHODS):
@@ -448,7 +448,7 @@ class Identify(cellprofiler.cpmodule.CPModule):
             <li>Kapur JN, Sahoo PK, Wong AKC (1985) "A new method of gray level picture thresholding
             using the entropy of the histogram." <i>Computer Vision, Graphics and Image Processing</i>,
             29, 273-285.</li>
-            <li>Ranefall P, Wahlby C (2016) "Global Gray-level Thresholding Based on Object Size." <i>Cytometry Part A</i>, 89:4, 385-390.</li>
+			<li>Ranefall P, Wahlby C (2016) "Global Gray-level Thresholding Based on Object Size." <i>Cytometry Part A</i>, 89:4, 385-390.</li>
             </ul></p>
             """ % globals())
 
@@ -971,7 +971,7 @@ class Identify(cellprofiler.cpmodule.CPModule):
                         masking_objects = workspace.object_set.get_objects(
                                 self.masking_objects.value)
                     if masking_objects is not None:
-                        label_planes = masking_objects.get_labels(img.shape[:2])
+                        label_planes = masking_objects.get_labels()
                         if len(label_planes) == 1:
                             labels = label_planes[0][0]
                         else:

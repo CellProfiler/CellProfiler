@@ -951,3 +951,9 @@ class ImageProcessing(Module):
             self.x_name,
             self.y_name
         ]
+
+    def visible_settings(self):
+        return [
+            self.x_name,
+            self.y_name
+        ]

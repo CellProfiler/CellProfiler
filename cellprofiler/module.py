@@ -56,6 +56,7 @@ class Module(object):
     def __init__(self):
         if self.__doc__ is None:
             self.__doc__ = sys.modules[self.__module__].__doc__
+        self.function = None
         self.__module_num = -1
         self.__settings = []
         self.__notes = []
@@ -876,3 +877,83 @@ class Module(object):
     def on_setting_changed(self, setting, pipeline):
         '''Called when a setting has been changed in the GUI'''
         pass
+
+
+class ImageProcessing(Module):
+    category = "Image Processing"
+
+    def create_settings(self):
+        self.x_name = cellprofiler.setting.ImageNameSubscriber(
+            "Input"
+        )
+
+        self.y_name = cellprofiler.setting.ImageNameProvider(
+            "Output",
+            self.__class__.__name__
+        )
+
+    def display(self, workspace, figure):
+        layout = (2, 1)
+
+        figure.set_subplots(
+            dimensions=workspace.display_data.dimensions,
+            subplots=layout
+        )
+
+        figure.subplot_imshow(
+            dimensions=workspace.display_data.dimensions,
+            image=workspace.display_data.x_data,
+            x=0,
+            y=0
+        )
+
+        figure.subplot_imshow(
+            dimensions=workspace.display_data.dimensions,
+            image=workspace.display_data.y_data,
+            x=1,
+            y=0
+        )
+
+    def run(self, workspace):
+        x_name = self.x_name.value
+
+        y_name = self.y_name.value
+
+        images = workspace.image_set
+
+        x = images.get_image(x_name)
+
+        dimensions = x.dimensions
+
+        x_data = x.pixel_data
+
+        args = (setting.value for setting in self.settings()[2:])
+
+        y_data = self.function(x_data, *args)
+
+        y = cellprofiler.image.Image(
+            dimensions=dimensions,
+            image=y_data,
+            parent_image=x
+        )
+
+        images.add(y_name, y)
+
+        if self.show_window:
+            workspace.display_data.x_data = x_data
+
+            workspace.display_data.y_data = y_data
+
+            workspace.display_data.dimensions = dimensions
+
+    def settings(self):
+        return [
+            self.x_name,
+            self.y_name
+        ]
+
+    def visible_settings(self):
+        return [
+            self.x_name,
+            self.y_name
+        ]

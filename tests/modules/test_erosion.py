@@ -1,14 +1,14 @@
-import cellprofiler.modules.opening
+import cellprofiler.modules.erosion
 import numpy.testing
 import skimage.morphology
 
-instance = cellprofiler.modules.opening.Opening()
+instance = cellprofiler.modules.erosion.Erosion()
 
 
 def test_run(image, module, image_set, workspace):
     module.x_name.value = "example"
 
-    module.y_name.value = "opening"
+    module.y_name.value = "erosion"
 
     if image.dimensions is 3 or image.multichannel:
         module.structuring_element.shape = "ball"
@@ -19,8 +19,8 @@ def test_run(image, module, image_set, workspace):
 
     module.run(workspace)
 
-    actual = image_set.get_image("opening")
+    actual = image_set.get_image("erosion")
 
-    desired = skimage.morphology.opening(image.pixel_data, selem)
+    desired = skimage.morphology.erosion(image.pixel_data, selem)
 
     numpy.testing.assert_array_equal(actual.pixel_data, desired)

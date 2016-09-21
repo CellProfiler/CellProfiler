@@ -79,6 +79,27 @@ class TestImage(unittest.TestCase):
 
         self.assertEqual(x.dimensions, 3)
 
+    def test_multichannel_grayscale_image(self):
+        data = np.ones((10, 10))
+
+        x = cpi.Image(image=data)
+
+        self.assertFalse(x.multichannel)
+
+    def test_multichannel_rgb_image(self):
+        data = np.ones((10, 10, 3))
+
+        x = cpi.Image(image=data)
+
+        self.assertTrue(x.multichannel)
+
+    def test_multichannel_grayscale_volume(self):
+        data = np.ones((5, 10, 10))
+
+        x = cpi.Image(image=data, dimensions=3)
+
+        self.assertFalse(x.multichannel)
+
 
 IMAGE_NAME = "image"
 

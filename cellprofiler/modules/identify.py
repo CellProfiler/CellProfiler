@@ -448,7 +448,7 @@ class Identify(cellprofiler.module.Module):
             <li>Kapur JN, Sahoo PK, Wong AKC (1985) "A new method of gray level picture thresholding
             using the entropy of the histogram." <i>Computer Vision, Graphics and Image Processing</i>,
             29, 273-285.</li>
-			<li>Ranefall P, Wahlby C (2016) "Global Gray-level Thresholding Based on Object Size." <i>Cytometry Part A</i>, 89:4, 385-390.</li>
+            <li>Ranefall P, Wahlby C (2016) "Global Gray-level Thresholding Based on Object Size." <i>Cytometry Part A</i>, 89:4, 385-390.</li>
             </ul></p>
             """ % globals())
 
@@ -739,10 +739,7 @@ class Identify(cellprofiler.module.Module):
                 self.upper_outlier_fraction,
                 self.averaging_method,
                 self.variance_method,
-                self.number_of_deviations,
-                self.min_diameter,
-                self.max_diameter,
-                self.ignore_large]
+                self.number_of_deviations]
 
     def get_threshold_help_settings(self):
         '''Return the threshold settings to be displayed in help'''

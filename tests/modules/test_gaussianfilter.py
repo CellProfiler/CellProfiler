@@ -14,6 +14,9 @@ def test_run(image, module, image_set, workspace):
 
     actual = image_set.get_image("GaussianFilter")
 
-    desired = skimage.filters.gaussian(image.pixel_data)
+    desired = skimage.filters.gaussian(
+        image=image.pixel_data,
+        sigma=3
+    )
 
     numpy.testing.assert_array_almost_equal(actual.pixel_data, desired)

@@ -4,6 +4,8 @@
 
 <strong>Gamma correction</strong>
 
+Adjust the contrast of an image.
+
 """
 
 import cellprofiler.image
@@ -25,6 +27,10 @@ class GammaCorrection(cellprofiler.module.ImageProcessing):
             1,
             minval=0.0,
             maxval=100.0,
+            doc="""For gamma < 1, the output image will be brighter than the input image. For gamma > 1, the output
+            image will be darker than the input image. Use a gamma > 1 to make backgrounds darker while preserving
+            regions of high intensity.
+            """
         )
 
         self.gain = cellprofiler.setting.Float(
@@ -32,6 +38,7 @@ class GammaCorrection(cellprofiler.module.ImageProcessing):
             1,
             minval=1.0,
             maxval=100,
+            doc="Scales up the intensity of the image by this constant factor."
         )
 
     def settings(self):

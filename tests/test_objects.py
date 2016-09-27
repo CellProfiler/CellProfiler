@@ -43,6 +43,19 @@ class TestObjects(unittest.TestCase):
         x.segmented = self.__segmented10
         self.assertTrue((self.__segmented10 == x.segmented).all())
 
+    def test_segmented_volume(self):
+        segmentation = np.zeros((3, 10, 10), dtype=np.uint8)
+
+        segmentation[0:2, 2:4, 2:4] = 1
+
+        segmentation[1:2, 5:7, 5:7] = 2
+
+        x = cpo.Objects()
+
+        x.segmented = segmentation
+
+        self.assertTrue(np.all(x.segmented == segmentation))
+
     def test_01_03_set_unedited_segmented(self):
         x = cpo.Objects()
         x.unedited_segmented = self.__unedited_segmented10
@@ -53,10 +66,36 @@ class TestObjects(unittest.TestCase):
         x.unedited_segmented = self.__unedited_segmented10
         self.assertTrue((self.__unedited_segmented10 == x.unedited_segmented).all())
 
+    def test_unedited_segmented_volume(self):
+        segmentation = np.zeros((3, 10, 10), dtype=np.uint8)
+
+        segmentation[0:2, 2:4, 2:4] = 1
+
+        segmentation[1:2, 5:7, 5:7] = 2
+
+        x = cpo.Objects()
+
+        x.unedited_segmented = segmentation
+
+        self.assertTrue(np.all(x.unedited_segmented == segmentation))
+
     def test_01_05_set_small_removed_segmented(self):
         x = cpo.Objects()
         x.small_removed_segmented = self.__small_removed_segmented10
         self.assertTrue((self.__small_removed_segmented10 == x.small_removed_segmented).all())
+
+    def test_small_removed_segmented_volume(self):
+        segmentation = np.zeros((3, 10, 10), dtype=np.uint8)
+
+        segmentation[0:2, 2:4, 2:4] = 1
+
+        segmentation[1:2, 5:7, 5:7] = 2
+
+        x = cpo.Objects()
+
+        x.small_removed_segmented = segmentation
+
+        self.assertTrue(np.all(x.small_removed_segmented == segmentation))
 
     def test_01_06_unedited_segmented(self):
         x = cpo.Objects()

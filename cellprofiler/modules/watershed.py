@@ -10,6 +10,8 @@ import cellprofiler.image
 import cellprofiler.module
 import cellprofiler.object
 import cellprofiler.setting
+import numpy
+import skimage.feature
 import skimage.measure
 import skimage.morphology
 
@@ -21,6 +23,36 @@ class Watershed(cellprofiler.module.ImageSegmentation):
 
     def create_settings(self):
         super(Watershed, self).create_settings()
+
+        self.operation = cellprofiler.setting.Choice(
+            "Generate from:",
+            [
+                "Distance",
+                "Markers"
+            ],
+            "Distance",
+            doc="""Select a method of inputs for the watershed algorithm:
+            <ul>
+                <li>
+                    <i>Distance</i>: This is classical nuclei segmentation using watershed. Your "Input" image
+                    should be a binary image. The "Distance" image should be a result of DistanceTransform. Markers and
+                    other inputs for the watershed algorithm will be automatically generated from the "distance" input.
+                </li>
+                <br>
+                <li>
+                    <i>Markers</i>: Use manually generated markers and supply an optional mask for watershed. Watershed
+                    works best when the "Input" image has high intensity surrounding regions of interest and low intensity
+                    inside regions of interest. Refer to the documentation for the other available options for more
+                    information.
+                </li>
+            </ul>
+            """
+        )
+
+        self.distance_name = cellprofiler.setting.ImageNameSubscriber(
+            "Distance",
+            doc="An image of the distance from regions of interest to the background."
+        )
 
         self.markers_name = cellprofiler.setting.ImageNameSubscriber(
             "Markers",
@@ -37,6 +69,8 @@ class Watershed(cellprofiler.module.ImageSegmentation):
         __settings__ = super(Watershed, self).settings()
 
         return __settings__ + [
+            self.operation,
+            self.distance_name,
             self.markers_name,
             self.mask_name
         ]
@@ -44,10 +78,21 @@ class Watershed(cellprofiler.module.ImageSegmentation):
     def visible_settings(self):
         __settings__ = super(Watershed, self).settings()
 
-        return __settings__ + [
-            self.markers_name,
-            self.mask_name
+        __settings__ = __settings__ + [
+            self.operation
         ]
+
+        if self.operation.value == "Distance":
+            __settings__ = __settings__ + [
+                self.distance_name
+            ]
+        else:
+            __settings__ = __settings__ + [
+                self.markers_name,
+                self.mask_name
+            ]
+
+        return __settings__
 
     def run(self, workspace):
         x_name = self.x_name.value
@@ -62,23 +107,50 @@ class Watershed(cellprofiler.module.ImageSegmentation):
 
         x_data = x.pixel_data
 
-        markers_name = self.markers_name.value
+        if self.operation.value == "Distance":
+            distance_name = self.distance_name.value
 
-        markers = images.get_image(markers_name)
+            distance = images.get_image(distance_name)
 
-        markers_data = markers.pixel_data
+            distance_data = distance.pixel_data
 
-        mask_data = None
+            if dimensions is 3:
+                footprint = numpy.ones((3, 3, 3))
+            else:
+                footprint = numpy.ones((3, 3))
 
-        if not self.mask_name.is_blank:
-            mask_name = self.mask_name.value
+            local_maximums = skimage.feature.peak_local_max(
+                distance_data,
+                indices=False,
+                footprint=footprint,
+                labels=x_data
+            )
 
-            mask = images.get_image(mask_name)
+            data = -1 * distance_data
 
-            mask_data = mask.pixel_data
+            markers_data = skimage.measure.label(local_maximums)
+
+            mask_data = x_data
+        else:
+            markers_name = self.markers_name.value
+
+            markers = images.get_image(markers_name)
+
+            data = x_data
+
+            markers_data = markers.pixel_data
+
+            mask_data = None
+
+            if not self.mask_name.is_blank:
+                mask_name = self.mask_name.value
+
+                mask = images.get_image(mask_name)
+
+                mask_data = mask.pixel_data
 
         y_data = skimage.morphology.watershed(
-            image=x_data,
+            image=data,
             markers=markers_data,
             mask=mask_data
         )

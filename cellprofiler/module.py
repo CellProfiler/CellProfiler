@@ -957,3 +957,51 @@ class ImageProcessing(Module):
             self.x_name,
             self.y_name
         ]
+
+
+class ImageSegmentation(Module):
+    category = "Image Segmentation"
+
+    def create_settings(self):
+        self.x_name = cellprofiler.setting.ImageNameSubscriber(
+            "Input"
+        )
+
+        self.y_name = cellprofiler.setting.ObjectNameProvider(
+            "Object",
+            self.__class__.__name__
+        )
+
+    def display(self, workspace, figure):
+        layout = (2, 1)
+
+        figure.set_subplots(
+            dimensions=workspace.display_data.dimensions,
+            subplots=layout
+        )
+
+        figure.subplot_imshow(
+            dimensions=workspace.display_data.dimensions,
+            image=workspace.display_data.x_data,
+            x=0,
+            y=0
+        )
+
+        figure.subplot_imshow(
+            dimensions=workspace.display_data.dimensions,
+            image=workspace.display_data.y_data,
+            x=1,
+            y=0
+        )
+
+    def settings(self):
+        return [
+            self.x_name,
+            self.y_name
+        ]
+
+    def visible_settings(self):
+        return [
+            self.x_name,
+            self.y_name
+        ]

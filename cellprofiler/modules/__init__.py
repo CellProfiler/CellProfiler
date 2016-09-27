@@ -97,7 +97,8 @@ pymodule_to_cpmodule = {'align': 'Align',
                         'thresholding': 'Thresholding',
                         'calculateimageoverlap': 'CalculateImageOverlap',
                         'unmixcolors': 'UnmixColors',
-                        'untangleworms': 'UntangleWorms'
+                        'untangleworms': 'UntangleWorms',
+                        'watershed': 'Watershed'
                         }
 
 # the builtin CP modules that will be loaded from the cellprofiler.modules directory
@@ -183,7 +184,8 @@ builtin_modules = ['align',
                    'tile',
                    'thresholding',
                    'unmixcolors',
-                   'untangleworms'
+                   'untangleworms',
+                   'watershed'
                    ]
 
 # CP-Matlab to CP-python module substitutions

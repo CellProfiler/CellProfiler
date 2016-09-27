@@ -42,6 +42,14 @@ class GammaCorrection(cellprofiler.module.ImageProcessing):
             self.gain
         ]
 
+    def visible_settings(self):
+        __settings__ = super(GammaCorrection, self).visible_settings()
+
+        return __settings__ + [
+            self.gamma,
+            self.gain
+        ]
+
     def run(self, workspace):
         self.function = skimage.exposure.adjust_gamma
 

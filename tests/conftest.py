@@ -27,7 +27,7 @@ def image(request):
     return cellprofiler.image.Image(image=data, dimensions=dimensions)
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 def image_set(image, image_set_list):
     image_set = image_set_list.get_image_set(0)
 
@@ -36,12 +36,12 @@ def image_set(image, image_set_list):
     return image_set
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 def image_set_list():
     return cellprofiler.image.ImageSetList()
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 def measurements():
     return cellprofiler.measurement.Measurements()
 
@@ -53,16 +53,16 @@ def module(request):
     return instance
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 def object_set():
     return cellprofiler.object.ObjectSet()
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 def pipeline():
     return cellprofiler.pipeline.Pipeline()
 
 
-@pytest.fixture()
+@pytest.fixture(scope="function")
 def workspace(pipeline, module, image_set, object_set, measurements, image_set_list):
     return cellprofiler.workspace.Workspace(pipeline, module, image_set, object_set, measurements, image_set_list)

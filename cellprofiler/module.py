@@ -1008,7 +1008,7 @@ class ImageSegmentation(Module):
 
 
 class MathematicalMorphology(ImageProcessing):
-    category = "Mathematical Morphology"
+    category = "Mathematical morphology"
 
     def display(self, workspace, figure):
         layout = (2, 1)

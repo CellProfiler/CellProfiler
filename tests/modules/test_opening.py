@@ -1,14 +1,14 @@
-import cellprofiler.modules.closing
+import cellprofiler.modules.opening
 import numpy.testing
 import skimage.morphology
 
-instance = cellprofiler.modules.closing.Closing()
+instance = cellprofiler.modules.opening.Opening()
 
 
 def test_run(image, module, image_set, workspace):
     module.x_name.value = "example"
 
-    module.y_name.value = "closing"
+    module.y_name.value = "opening"
 
     if image.dimensions is 3 or image.multichannel:
         module.structuring_element.shape = "ball"
@@ -19,8 +19,8 @@ def test_run(image, module, image_set, workspace):
 
     module.run(workspace)
 
-    actual = image_set.get_image("closing")
+    actual = image_set.get_image("opening")
 
-    desired = skimage.morphology.closing(image.pixel_data, selem)
+    desired = skimage.morphology.opening(image.pixel_data, selem)
 
     numpy.testing.assert_array_equal(actual.pixel_data, desired)

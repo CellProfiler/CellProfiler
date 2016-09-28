@@ -1005,3 +1005,31 @@ class ImageSegmentation(Module):
             self.x_name,
             self.y_name
         ]
+
+
+class MathematicalMorphology(ImageProcessing):
+    category = "Mathematical Morphology"
+
+    def display(self, workspace, figure):
+        layout = (2, 1)
+
+        figure.set_subplots(
+            dimensions=workspace.display_data.dimensions,
+            subplots=layout
+        )
+
+        figure.subplot_imshow(
+            colormap="gray",
+            dimensions=workspace.display_data.dimensions,
+            image=workspace.display_data.x_data,
+            x=0,
+            y=0
+        )
+
+        figure.subplot_imshow(
+            colormap="gray",
+            dimensions=workspace.display_data.dimensions,
+            image=workspace.display_data.y_data,
+            x=1,
+            y=0
+        )

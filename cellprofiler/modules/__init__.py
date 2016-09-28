@@ -46,6 +46,7 @@ pymodule_to_cpmodule = {'align': 'Align',
                         'flagimage': 'FlagImage',
                         'flipandrotate': 'FlipAndRotate',
                         'gammacorrection': 'GammaCorrection',
+                        'gaussianfilter': 'GaussianFilter',
                         'graytocolor': 'GrayToColor',
                         'groups': 'Groups',
                         'identifydeadworms': 'IdentifyDeadWorms',
@@ -96,7 +97,8 @@ pymodule_to_cpmodule = {'align': 'Align',
                         'thresholding': 'Thresholding',
                         'calculateimageoverlap': 'CalculateImageOverlap',
                         'unmixcolors': 'UnmixColors',
-                        'untangleworms': 'UntangleWorms'
+                        'untangleworms': 'UntangleWorms',
+                        'watershed': 'Watershed'
                         }
 
 # the builtin CP modules that will be loaded from the cellprofiler.modules directory
@@ -133,6 +135,7 @@ builtin_modules = ['align',
                    'flagimage',
                    'flipandrotate',
                    'gammacorrection',
+                   'gaussianfilter',
                    'graytocolor',
                    'groups',
                    'identifydeadworms',
@@ -181,7 +184,8 @@ builtin_modules = ['align',
                    'tile',
                    'thresholding',
                    'unmixcolors',
-                   'untangleworms'
+                   'untangleworms',
+                   'watershed'
                    ]
 
 # CP-Matlab to CP-python module substitutions

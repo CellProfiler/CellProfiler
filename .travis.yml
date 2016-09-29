@@ -24,8 +24,5 @@ python:
 sudo: false
 virtualenv:
   system_site_packages: true
-install:
-  - pip install --editable .
-  - pip freeze
 script:
   - python setup.py test -a -x

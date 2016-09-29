@@ -3,21 +3,8 @@ services:
 addons:
   apt:
     packages:
-      - cython
-      - libhdf5-serial-dev
       - libwxgtk2.8-dev
       - libgtk2.0-dev
-      - python-dateutil
-      - python-imaging
-      - python-lxml
-      - python-matplotlib
-      - python-mysqldb
-      - python-networkx
-      - python-numpy
-      - python-pandas
-      - python-pip
-      - python-scipy
-      - python-tk
       - python-wxgtk2.8
 env:
   - LC_ALL="en_US.UTF-8" CP_MYSQL_TEST_HOST="127.0.0.1" CP_MYSQL_TEST_USER="travis" CP_MYSQL_TEST_PASSWORD="None"
@@ -38,12 +25,7 @@ sudo: false
 virtualenv:
   system_site_packages: true
 install:
-  - pip install --upgrade pip
-  - pip install --upgrade wheel
-  - pip install --upgrade pytest
-  - pip install --upgrade cython
   - pip install --editable .
   - pip freeze
-  - pip install --no-deps .
 script:
   - python setup.py test -a -x

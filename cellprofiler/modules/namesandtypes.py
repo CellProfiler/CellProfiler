@@ -1396,12 +1396,15 @@ class NamesAndTypes(cpm.Module):
             if rescale == INTENSITY_MANUAL:
                 rescale = self.manual_rescale.value
 
+            image_number = workspace.image_set.get_current_image_measurement(cpmeas.IMAGE_NUMBER)
+            file_list = workspace.pipeline.get_filtered_file_list(workspace)
+
             self.add_simple_image(
                 workspace=workspace,
                 name=name,
                 load_choice=load_choice,
                 rescale=rescale,
-                url=image_set[0],
+                url=file_list[image_number - 1],
                 series=None,
                 index=None,
                 channel=None
@@ -1490,13 +1493,9 @@ class NamesAndTypes(cpm.Module):
         import loadimages
         import os.path
 
-        # _, directory = os.path.dirname(url).split("file:")
+        _, directory = os.path.dirname(url).split("file:")
 
-        _, directory = (None, "/Users/agoodman/Desktop/example")
-
-        # filename = os.path.basename(url)
-
-        filename = "nucleus.tiff"
+        filename = os.path.basename(url)
 
         provider = loadimages.LoadImagesImageProvider(name, directory, filename)
 

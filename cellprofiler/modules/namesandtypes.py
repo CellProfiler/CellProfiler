@@ -1493,7 +1493,7 @@ class NamesAndTypes(cpm.Module):
         import loadimages
         import os.path
 
-        _, directory = os.path.dirname(url).split("file:")
+        directory = os.path.dirname(url)
 
         filename = os.path.basename(url)
 

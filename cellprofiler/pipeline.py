@@ -675,6 +675,7 @@ class Pipeline(object):
 
         self.file_walker = WalkCollection(self.on_walk_completed)
         self.__undo_stack = []
+        self.volumetric = False
 
     def copy(self, save_image_plane_details=True):
         '''Create a copy of the pipeline modules and settings'''

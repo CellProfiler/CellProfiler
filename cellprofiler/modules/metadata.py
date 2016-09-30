@@ -705,39 +705,70 @@ class Metadata(cpm.Module):
         return True
 
     def prepare_run(self, workspace):
-        '''Initialize the pipeline's metadata'''
         if workspace.pipeline.in_batch_mode():
             return True
 
         pipeline = workspace.pipeline
-        assert isinstance(pipeline, cpp.Pipeline)
+
         filtered_file_list = pipeline.get_filtered_file_list(workspace)
+
         extractor = self.build_extractor()
+
         env = J.get_env()
+
         scls = env.find_class("java/lang/String")
+
         url_array = env.make_object_array(len(filtered_file_list), scls)
+
         metadata_array = env.make_object_array(len(filtered_file_list), scls)
+
         for i, url in enumerate(filtered_file_list):
             if isinstance(url, unicode):
                 ourl = env.new_string(url)
             else:
                 ourl = env.new_string_utf(url)
+
             env.set_object_array_element(url_array, i, ourl)
+
             xmlmetadata = workspace.file_list.get_metadata(url)
+
             if xmlmetadata is not None:
                 xmlmetadata = env.new_string(xmlmetadata)
+
                 env.set_object_array_element(metadata_array, i, xmlmetadata)
+
         key_set = J.make_instance("java/util/HashSet", "()V")
+
         jipds = J.call(
-                extractor, "extract",
-                "([Ljava/lang/String;[Ljava/lang/String;Ljava/util/Set;)"
-                "[Lorg/cellprofiler/imageset/ImagePlaneDetails;",
-                url_array, metadata_array, key_set)
-        ipds = [cpp.ImagePlaneDetails(jipd)
-                for jipd in env.get_object_array_elements(jipds)]
+            extractor,
+            "extract",
+            "([Ljava/lang/String;[Ljava/lang/String;Ljava/util/Set;)[Lorg/cellprofiler/imageset/ImagePlaneDetails;",
+            url_array,
+            metadata_array,
+            key_set
+        )
+
+        ipds = [cpp.ImagePlaneDetails(jipd) for jipd in env.get_object_array_elements(jipds)]
+
         keys = sorted(J.iterate_collection(key_set, J.to_string))
+
+        if pipeline.volumetric:
+            ipds = ipds[:self.__channel_count(ipds)]
+
         pipeline.set_image_plane_details(ipds, keys, self)
+
         return True
+
+    def __channel_count(self, ipds):
+        if 'SizeC' in ipds[0].metadata:
+            return int(ipds[0].metadata['SizeC'])
+
+        if 'C' in ipds[0].metadata:
+            channels = [int(ipd.metadata['C']) for ipd in ipds]
+
+            return np.unique(channels)
+
+        return len(ipds)
 
     def build_extractor(self, end_group=None, for_metadata_only=False):
         '''Build a Java metadata extractor using the module settings

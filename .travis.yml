@@ -1,28 +1,8 @@
-services:
-  - mysql
-addons:
-  apt:
-    packages:
-      - libwxgtk2.8-dev
-      - libgtk2.0-dev
-      - python-wxgtk2.8
-env:
-  - LC_ALL="en_US.UTF-8" CP_MYSQL_TEST_HOST="127.0.0.1" CP_MYSQL_TEST_USER="travis" CP_MYSQL_TEST_PASSWORD="None"
-before_script:
-  - export DISPLAY=:99.0
-  - sh -e /etc/init.d/xvfb start
-  - sleep 3
-cache:
-  apt: true
-  directories:
-    - $HOME/.cache/pip
 language: python
 notifications:
   email: false
 python:
   - 2.7
 sudo: false
-virtualenv:
-  system_site_packages: true
-script:
-  - python setup.py test -a -x
+
+

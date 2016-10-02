@@ -1,9 +1,6 @@
 language: python
 notifications:
   email: false
-os:
-  - linux
-  - osx
 python:
-  - 2.7
+  - "2.7"
 sudo: false

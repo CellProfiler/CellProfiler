@@ -430,7 +430,7 @@ class SaveImages(cpm.Module):
         if (self.save_image_or_figure == IF_IMAGE and
                     self.file_format != FF_MAT):
             result.append(self.rescale)
-            if self.get_bit_depth() == "8":
+            if self.get_bit_depth() == "8-bit integer":
                 result.append(self.colormap)
         elif self.save_image_or_figure == IF_OBJECTS:
             result.append(self.gray_or_color)

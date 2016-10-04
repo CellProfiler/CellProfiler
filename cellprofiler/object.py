@@ -41,19 +41,36 @@ class Objects(object):
         """Get the de-facto segmentation of the image into objects: a matrix
         of object numbers.
         """
-        assert isinstance(self.__segmented, Segmentation), \
-            "Operation failed because objects were not initialized"
-        dense, indices = self.__segmented.get_dense()
-        assert len(dense) == 1, "Operation failed because objects overlapped. Please try with non-overlapping objects"
-        assert numpy.all(numpy.array(dense.shape[1:-2]) == 1), \
-            "Operation failed because the segmentation was not 2D"
-        return dense.reshape(dense.shape[-2:])
+        return self.__segmentation_to_labels(self.__segmented)
 
     @segmented.setter
     def segmented(self, labels):
+        self.__segmented = self.__labels_to_segmentation(labels)
+
+    def __labels_to_segmentation(self, labels):
         dense = downsample_labels(labels)
-        dense = dense.reshape((1, 1, 1, 1, dense.shape[0], dense.shape[1]))
-        self.__segmented = Segmentation(dense=dense)
+
+        if dense.ndim is 3:
+            z, x, y = dense.shape
+        else:
+            x, y = dense.shape
+            z = 1
+
+        dense = dense.reshape((1, 1, 1, z, x, y))
+
+        return Segmentation(dense=dense)
+
+    def __segmentation_to_labels(self, segmentation):
+        assert isinstance(segmentation, Segmentation), "Operation failed because objects were not initialized"
+
+        dense, indices = segmentation.get_dense()
+
+        assert len(dense) == 1, "Operation failed because objects overlapped. Please try with non-overlapping objects"
+
+        if dense.shape[3] is 1:
+            return dense.reshape(dense.shape[-2:])
+
+        return dense.reshape(dense.shape[-3:])
 
     def set_ijv(self, ijv, shape=None):
         '''Set the segmentation to an IJV object format
@@ -116,15 +133,13 @@ class Objects(object):
         segmented labeling.
         """
         if self.__unedited_segmented is not None:
-            dense, indices = self.__unedited_segmented.get_dense()
-            return dense[0, 0, 0, 0]
+            return self.__segmentation_to_labels(self.__unedited_segmented)
+
         return self.segmented
 
     @unedited_segmented.setter
     def unedited_segmented(self, labels):
-        dense = downsample_labels(labels).reshape(
-                (1, 1, 1, 1, labels.shape[0], labels.shape[1]))
-        self.__unedited_segmented = Segmentation(dense=dense)
+        self.__unedited_segmented = self.__labels_to_segmentation(labels)
 
     def has_small_removed_segmented(self):
         """Return true if there is a junk object matrix."""
@@ -139,15 +154,13 @@ class Objects(object):
         or the image mask still present.
         """
         if self.__small_removed_segmented is not None:
-            dense, indices = self.__small_removed_segmented.get_dense()
-            return dense[0, 0, 0, 0]
+            return self.__segmentation_to_labels(self.__small_removed_segmented)
+
         return self.unedited_segmented
 
     @small_removed_segmented.setter
     def small_removed_segmented(self, labels):
-        dense = downsample_labels(labels).reshape(
-                (1, 1, 1, 1, labels.shape[0], labels.shape[1]))
-        self.__small_removed_segmented = Segmentation(dense=dense)
+        self.__small_removed_segmented = self.__labels_to_segmentation(labels)
 
     @property
     def parent_image(self):

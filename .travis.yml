@@ -1,5 +1,11 @@
+addons:
+  apt:
+    packages:
+      - python-wxgtk2.8
 before_install:
   - pip install cython matplotlib numpy scipy
+cache:
+  pip: true
 dist: trusty
 language: python
 notifications:

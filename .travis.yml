@@ -8,4 +8,6 @@ notifications:
   email: false
 python:
   - "2.7"
+script:
+  - py.test
 sudo: required

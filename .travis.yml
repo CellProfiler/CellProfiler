@@ -15,3 +15,5 @@ python:
 script:
   - python setup.py test -a -x
 sudo: required
+virtualenv:
+  system_site_packages: true

@@ -2,12 +2,9 @@ before_install:
   - pip install cython matplotlib numpy scipy
 cache:
   pip: true
-dist: trusty
 language: python
 notifications:
   email: false
 python:
   - "2.7"
-script:
-  - python setup.py test -a -x
-sudo: required
+sudo: false

@@ -1,7 +1,3 @@
-addons:
-  apt:
-    packages:
-      - python-wxgtk2.8
 before_install:
   - pip install cython matplotlib numpy scipy
 cache:
@@ -15,5 +11,3 @@ python:
 script:
   - python setup.py test -a -x
 sudo: required
-virtualenv:
-  system_site_packages: true

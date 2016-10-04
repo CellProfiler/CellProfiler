@@ -120,6 +120,20 @@ class TestObjects(unittest.TestCase):
         x.unedited_segmented = self.__unedited_segmented10
         self.assertTrue((x.small_removed_segmented == self.__unedited_segmented10).all())
 
+    def test_shape_image_segmentation(self):
+        x = cpo.Objects()
+
+        x.segmented = self.__segmented10
+
+        self.assertEqual(x.shape, (10, 10))
+
+    def test_shape_volume_segmentation(self):
+        x = cpo.Objects()
+
+        x.segmented = np.ones((5, 10, 10))
+
+        self.assertEqual(x.shape, (5, 10, 10))
+
     def test_05_01_relate_zero_parents_and_children(self):
         """Test the relate method if both parent and child label matrices are zeros"""
         x = cpo.Objects()

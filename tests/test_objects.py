@@ -134,6 +134,28 @@ class TestObjects(unittest.TestCase):
 
         self.assertEqual(x.shape, (5, 10, 10))
 
+    def test_get_labels_image_segmentation(self):
+        x = cpo.Objects()
+
+        x.segmented = self.__segmented10
+
+        [(labels, _)] = x.get_labels()
+
+        self.assertTrue(np.all(labels == self.__segmented10))
+
+    def test_get_labels_volume_segmentation(self):
+        x = cpo.Objects()
+
+        segmentation = np.ones((5, 10, 10))
+
+        x.segmented = segmentation
+
+        [(labels, _)] = x.get_labels()
+
+        self.assertEqual(segmentation.shape, labels.shape)
+
+        self.assertTrue(np.all(segmentation == labels))
+
     def test_05_01_relate_zero_parents_and_children(self):
         """Test the relate method if both parent and child label matrices are zeros"""
         x = cpo.Objects()

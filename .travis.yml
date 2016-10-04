@@ -1,3 +1,5 @@
+before_install:
+  - pip install cython matplotlib numpy scipy
 dist: trusty
 language: python
 notifications:

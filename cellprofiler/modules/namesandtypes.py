@@ -1396,29 +1396,36 @@ class NamesAndTypes(cpm.Module):
             if rescale == INTENSITY_MANUAL:
                 rescale = self.manual_rescale.value
 
-            image_number = workspace.image_set.get_current_image_measurement(cpmeas.IMAGE_NUMBER)
-            file_list = workspace.pipeline.get_filtered_file_list(workspace)
-
-            self.add_simple_image(
-                workspace=workspace,
-                name=name,
-                load_choice=load_choice,
-                rescale=rescale,
-                url=file_list[image_number - 1],
-                series=None,
-                index=None,
-                channel=None
+            self.add_image_provider(
+                workspace,
+                name,
+                load_choice,
+                rescale,
+                image_set[0]
             )
         else:
             for group, stack in zip(self.assignments + self.single_images, image_set):
                 if group.load_as_choice == LOAD_AS_OBJECTS:
-                    self.add_objects(workspace, group.object_name.value, group.should_save_outlines.value, group.save_outlines.value, stack)
+                    self.add_objects(
+                        workspace,
+                        group.object_name.value,
+                        group.should_save_outlines.value,
+                        group.save_outlines.value,
+                        stack
+                    )
                 else:
                     rescale = group.rescale.value
+
                     if rescale == INTENSITY_MANUAL:
                         rescale = group.manual_rescale.value
 
-                    self.add_image_provider(workspace, group.image_name.value, group.load_as_choice.value, rescale, stack)
+                    self.add_image_provider(
+                        workspace,
+                        group.image_name.value,
+                        group.load_as_choice.value,
+                        rescale,
+                        stack
+                    )
 
     def add_image_provider(self, workspace, name, load_choice, rescale, stack):
         '''Put an image provider into the image set
@@ -1437,48 +1444,75 @@ class NamesAndTypes(cpm.Module):
         elif rescale == INTENSITY_RESCALING_BY_DATATYPE:
             rescale = False
         # else it's a manual rescale.
+
         num_dimensions = J.call(stack, "numDimensions", "()I")
+
         if num_dimensions == 2:
             coords = J.get_env().make_int_array(np.zeros(2, np.int32))
-            ipds = [
-                cpp.ImagePlaneDetails(J.call(stack, "get", "([I)Ljava/lang/Object;", coords))]
+
+            ipds = [cpp.ImagePlaneDetails(J.call(stack, "get", "([I)Ljava/lang/Object;", coords))]
         else:
             coords = np.zeros(num_dimensions, np.int32)
+
             ipds = []
             for i in range(J.call(stack, "size", "(I)I", 2)):
                 coords[2] = i
-                jcoords = J.get_env().make_int_array(coords)
-                ipds.append(cpp.ImagePlaneDetails(
-                        J.call(stack, "get", "([I)Ljava/lang/Object;", coords)))
+
+                ipds.append(cpp.ImagePlaneDetails(J.call(stack, "get", "([I)Ljava/lang/Object;", coords)))
 
         if len(ipds) == 1:
-            interleaved = J.get_static_field(
-                    "org/cellprofiler/imageset/ImagePlane", "INTERLEAVED", "I")
-            monochrome = J.get_static_field(
-                    "org/cellprofiler/imageset/ImagePlane", "ALWAYS_MONOCHROME", "I")
+            interleaved = J.get_static_field("org/cellprofiler/imageset/ImagePlane", "INTERLEAVED", "I")
+
+            monochrome = J.get_static_field("org/cellprofiler/imageset/ImagePlane", "ALWAYS_MONOCHROME", "I")
+
             ipd = ipds[0]
+
             url = ipd.url
+
             series = ipd.series
+
             index = ipd.index
+
             channel = ipd.channel
+
             if channel == monochrome:
                 channel = None
             elif channel == interleaved:
                 channel = None
+
                 if index == 0:
                     index = None
+
             self.add_simple_image(
-                    workspace, name, load_choice, rescale, url,
-                    series, index, channel)
+                workspace,
+                name,
+                load_choice,
+                rescale,
+                url,
+                series,
+                index,
+                channel
+            )
         elif all([ipd.url == ipds[0].url for ipd in ipds[1:]]):
             # Can load a simple image with a vector of series/index/channel
             url = ipds[0].url
+
             series = [ipd.series for ipd in ipds]
+
             index = [ipd.index for ipd in ipds]
+
             channel = [None if ipd.channel < 0 else ipd.channel for ipd in ipds]
+
             self.add_simple_image(
-                    workspace, name, load_choice, rescale, url,
-                    series, index, channel)
+                workspace,
+                name,
+                load_choice,
+                rescale,
+                url,
+                series,
+                index,
+                channel
+            )
         else:
             # Different URLs - someone is a clever sadist
             # At this point, I believe there's no way to do this using
@@ -1490,29 +1524,25 @@ class NamesAndTypes(cpm.Module):
     def add_simple_image(self, workspace, name, load_choice, rescale, url, series, index, channel):
         m = workspace.measurements
 
-        import loadimages
-        import os.path
+        url = m.alter_url_post_create_batch(url)
 
-        directory = os.path.dirname(url)
+        volume = workspace.pipeline.volumetric
 
-        filename = os.path.basename(url)
+        import IPython
+        IPython.embed()
 
-        provider = loadimages.LoadImagesImageProvider(name, directory, filename)
-
-        # if load_choice == LOAD_AS_COLOR_IMAGE:
-        #     provider = ColorImageProvider(name, url, series, index, rescale)
-        # elif load_choice == LOAD_AS_GRAYSCALE_IMAGE:
-        #     provider = MonochromeImageProvider(name, url, series, index,
-        #                                        channel, rescale)
-        # elif load_choice == LOAD_AS_ILLUMINATION_FUNCTION:
-        #     provider = MonochromeImageProvider(name, url, series, index,
-        #                                        channel, False)
-        # elif load_choice == LOAD_AS_MASK:
-        #     provider = MaskImageProvider(name, url, series, index, channel)
+        if load_choice == LOAD_AS_COLOR_IMAGE:
+            provider = ColorImageProvider(name, url, series, index, rescale, volume=volume)
+        elif load_choice == LOAD_AS_GRAYSCALE_IMAGE:
+            provider = MonochromeImageProvider(name, url, series, index, channel, rescale, volume=volume)
+        elif load_choice == LOAD_AS_ILLUMINATION_FUNCTION:
+            provider = MonochromeImageProvider(name, url, series, index, channel, False, volume=volume)
+        elif load_choice == LOAD_AS_MASK:
+            provider = MaskImageProvider(name, url, series, index, channel, volume=volume)
 
         workspace.image_set.providers.append(provider)
 
-        self.add_provider_measurements(provider, workspace.measurements, cpmeas.IMAGE)
+        self.add_provider_measurements(provider, m, cpmeas.IMAGE)
 
     @staticmethod
     def add_provider_measurements(provider, m, image_or_objects):
@@ -1988,11 +2018,12 @@ class MetadataPredicate(cps.Filter.FilterPredicate):
 class ColorImageProvider(LoadImagesImageProviderURL):
     '''Provide a color image, tripling a monochrome plane if needed'''
 
-    def __init__(self, name, url, series, index, rescale=True):
+    def __init__(self, name, url, series, index, rescale=True, volume=False):
         LoadImagesImageProviderURL.__init__(self, name, url,
                                             rescale=rescale,
                                             series=series,
-                                            index=index)
+                                            index=index,
+                                            volume=volume)
 
     def provide_image(self, image_set):
         image = LoadImagesImageProviderURL.provide_image(self, image_set)
@@ -2004,30 +2035,31 @@ class ColorImageProvider(LoadImagesImageProviderURL):
 class MonochromeImageProvider(LoadImagesImageProviderURL):
     '''Provide a monochrome image, combining RGB if needed'''
 
-    def __init__(self, name, url, series, index, channel, rescale=True):
+    def __init__(self, name, url, series, index, channel, rescale=True, volume=False):
         LoadImagesImageProviderURL.__init__(self, name, url,
                                             rescale=rescale,
                                             series=series,
                                             index=index,
-                                            channel=channel)
+                                            channel=channel,
+                                            volume=volume)
 
     def provide_image(self, image_set):
         image = LoadImagesImageProviderURL.provide_image(self, image_set)
         if image.pixel_data.ndim == 3:
-            image.pixel_data = \
-                np.sum(image.pixel_data, 2) / image.pixel_data.shape[2]
+            image.pixel_data = np.sum(image.pixel_data, 2) / image.pixel_data.shape[2]
         return image
 
 
 class MaskImageProvider(MonochromeImageProvider):
     '''Provide a boolean image, converting nonzero to True, zero to False if needed'''
 
-    def __init__(self, name, url, series, index, channel):
+    def __init__(self, name, url, series, index, channel, volume=False):
         MonochromeImageProvider.__init__(self, name, url,
                                          rescale=True,
                                          series=series,
                                          index=index,
-                                         channel=channel)
+                                         channel=channel,
+                                         volume=False)
 
     def provide_image(self, image_set):
         image = MonochromeImageProvider.provide_image(self, image_set)
@@ -2039,11 +2071,12 @@ class MaskImageProvider(MonochromeImageProvider):
 class ObjectsImageProvider(LoadImagesImageProviderURL):
     '''Provide a multi-plane integer image, interpreting an image file as objects'''
 
-    def __init__(self, name, url, series, index):
+    def __init__(self, name, url, series, index, volume=False):
         LoadImagesImageProviderURL.__init__(self, name, url,
                                             rescale=False,
                                             series=series,
-                                            index=index)
+                                            index=index,
+                                            volume=False)
 
     def provide_image(self, image_set):
         """Load an image from a pathname

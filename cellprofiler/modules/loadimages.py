@@ -3179,58 +3179,109 @@ class LoadImagesImageProviderBase(cpimage.AbstractImageProvider):
 
 
 class LoadImagesImageProvider(LoadImagesImageProviderBase):
-    def __init__(self, name, pathname, filename, rescale=True, series=None, index=None, channel=None):
+    """Provide an image by filename, loading the file as it is requested
+    """
+
+    def __init__(self, name, pathname, filename, rescale=True,
+                 series=None, index=None, channel=None, volume=False):
         super(LoadImagesImageProvider, self).__init__(name, pathname, filename)
-
-        self.channel = channel
-
-        self.index = index
-
         self.rescale = rescale
-
-        self.scale = 1.0
-
         self.series = series
+        self.index = index
+        self.channel = channel
+        self.__volume = volume
 
     def provide_image(self, image_set):
-        channel_names = []
+        """Load an image from a pathname
+        """
+        if self.__volume:
+            return self.__provide_volume()
 
+        from bioformats.formatreader import get_image_reader
+        self.cache_file()
         filename = self.get_filename()
+        channel_names = []
+        if isinstance(self.rescale, float):
+            rescale = False
+        else:
+            rescale = self.rescale
+        if self.is_matlab_file():
+            with open(self.get_full_name(), "rb") as fd:
+                imgdata = scipy.io.matlab.mio.loadmat(
+                        fd, struct_as_record=True)
+            img = imgdata["Image"]
+            # floating point - scale = 1:1
+            self.scale = 1.0
+            pixel_type_scale = 1.0
+        else:
+            url = self.get_url()
+            if url.lower().startswith("omero:"):
+                rdr = get_image_reader(self.get_name(), url=url)
+            else:
+                rdr = get_image_reader(
+                        self.get_name(), url=self.get_url())
+            if np.isscalar(self.index) or self.index is None:
+                img, self.scale = rdr.read(
+                        c=self.channel,
+                        series=self.series,
+                        index=self.index,
+                        rescale=self.rescale,
+                        wants_max_intensity=True,
+                        channel_names=channel_names)
+            else:
+                # It's a stack
+                stack = []
+                if np.isscalar(self.series):
+                    series_list = [self.series] * len(self.index)
+                else:
+                    series_list = self.series
+                if not np.isscalar(self.channel):
+                    channel_list = [self.channel] * len(self.index)
+                else:
+                    channel_list = self.channel
+                for series, index, channel in zip(
+                        series_list, self.index, channel_list):
+                    img, self.scale = rdr.read(
+                            c=channel,
+                            series=series,
+                            index=index,
+                            rescale=self.rescale,
+                            wants_max_intensity=True,
+                            channel_names=channel_names)
+                    stack.append(img)
+                img = np.dstack(stack)
+        if isinstance(self.rescale, float):
+            # Apply a manual rescale
+            img = img.astype(np.float32) / self.rescale
+        image = cpimage.Image(img,
+                              path_name=self.get_pathname(),
+                              file_name=self.get_filename(),
+                              scale=self.scale)
+        if img.ndim == 3 and len(channel_names) == img.shape[2]:
+            image.channel_names = list(channel_names)
+        return image
 
-        pathname = self.get_pathname()
-
-        scale = self.scale
-
+    def __provide_volume(self):
         import skimage.io
 
-        data = skimage.io.imread(
-            fname=os.path.join(pathname, filename)
-        )
+        data = skimage.io.imread(url2pathname(self.get_url()))
 
         data = skimage.img_as_float(data)
 
-        import cellprofiler.image
-
-        image = cellprofiler.image.Image(
-            convert=False,
-            file_name=filename,
+        return cpimage.Image(
             image=data,
-            path_name=pathname,
-            scale=self.scale,
+            path_name=self.get_pathname(),
+            file_name=self.get_filename(),
+            convert=False,
             dimensions=3
         )
-
-        if data.ndim == 3 and len(channel_names) == data.shape[2]:
-            image.channel_names = list(channel_names)
-
-        return image
 
 
 class LoadImagesImageProviderURL(LoadImagesImageProvider):
     '''Reference an image via a URL'''
 
     def __init__(self, name, url, rescale=True,
-                 series=None, index=None, channel=None):
+                 series=None, index=None, channel=None, volume=False):
         if url.lower().startswith("file:"):
             path = url2pathname(url)
             pathname, filename = os.path.split(path)
@@ -3238,7 +3289,7 @@ class LoadImagesImageProviderURL(LoadImagesImageProvider):
             pathname = ""
             filename = url
         super(LoadImagesImageProviderURL, self).__init__(
-                name, pathname, filename, rescale, series, index, channel)
+                name, pathname, filename, rescale, series, index, channel, volume)
         self.url = url
 
     def get_url(self):

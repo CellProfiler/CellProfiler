@@ -1528,9 +1528,6 @@ class NamesAndTypes(cpm.Module):
 
         volume = workspace.pipeline.volumetric
 
-        import IPython
-        IPython.embed()
-
         if load_choice == LOAD_AS_COLOR_IMAGE:
             provider = ColorImageProvider(name, url, series, index, rescale, volume=volume)
         elif load_choice == LOAD_AS_GRAYSCALE_IMAGE:

@@ -3268,6 +3268,9 @@ class LoadImagesImageProvider(LoadImagesImageProviderBase):
 
         data = skimage.img_as_float(data)
 
+        if self.channel is not None:
+            data = data[:, :, :, self.channel]
+
         return cpimage.Image(
             image=data,
             path_name=self.get_pathname(),

@@ -3271,12 +3271,16 @@ class LoadImagesImageProvider(LoadImagesImageProviderBase):
         if self.channel is not None:
             data = data[:, :, :, self.channel]
 
+        # TODO: make configurable
+        self.scale = (1.0, 1.0, 1.0)
+
         return cpimage.Image(
             image=data,
             path_name=self.get_pathname(),
             file_name=self.get_filename(),
             convert=False,
-            dimensions=3
+            dimensions=3,
+            scale=self.scale
         )
 
 

@@ -433,7 +433,6 @@ class RGBImage(object):
 
 def check_consistency(image, mask):
     """Check that the image, mask and labels arrays have the same shape and that the arrays are of the right dtype"""
-    assert (image is None) or (len(image.shape) in (2, 3)), "Image must have 2 or 3 dimensions"
     assert (mask is None) or (len(mask.shape) == 2), "Mask must have 2 dimensions"
     assert (image is None) or (mask is None) or (image.shape[:2] == mask.shape), "Image and mask sizes don't match"
     assert (mask is None) or (mask.dtype.type is numpy.bool_), "Mask must be boolean, was %s" % (repr(mask.dtype.type))

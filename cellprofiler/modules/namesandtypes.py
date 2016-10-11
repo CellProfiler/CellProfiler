@@ -2024,8 +2024,11 @@ class ColorImageProvider(LoadImagesImageProviderURL):
 
     def provide_image(self, image_set):
         image = LoadImagesImageProviderURL.provide_image(self, image_set)
+
+        # TODO: volumes
         if image.pixel_data.ndim == 2:
             image.pixel_data = np.dstack([image.pixel_data] * 3)
+
         return image
 
 
@@ -2042,8 +2045,12 @@ class MonochromeImageProvider(LoadImagesImageProviderURL):
 
     def provide_image(self, image_set):
         image = LoadImagesImageProviderURL.provide_image(self, image_set)
-        if image.pixel_data.ndim == 3:
-            image.pixel_data = np.sum(image.pixel_data, 2) / image.pixel_data.shape[2]
+
+        if image.pixel_data.ndim == image.dimensions + 1:
+            import skimage.color
+
+            image.pixel_data = skimage.color.rgb2gray(image.pixel_data)
+
         return image
 
 

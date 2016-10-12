@@ -3181,15 +3181,14 @@ class LoadImagesImageProviderBase(cpimage.AbstractImageProvider):
 class LoadImagesImageProvider(LoadImagesImageProviderBase):
     """Provide an image by filename, loading the file as it is requested
     """
-
-    def __init__(self, name, pathname, filename, rescale=True,
-                 series=None, index=None, channel=None, volume=False):
+    def __init__(self, name, pathname, filename, rescale=True, series=None, index=None, channel=None, volume=False, spacing=None):
         super(LoadImagesImageProvider, self).__init__(name, pathname, filename)
         self.rescale = rescale
         self.series = series
         self.index = index
         self.channel = channel
         self.__volume = volume
+        self.spacing = (1.0, 1.0, 1.0) if self.__volume and not spacing else None
 
     def provide_image(self, image_set):
         """Load an image from a pathname

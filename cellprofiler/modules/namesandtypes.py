@@ -312,6 +312,11 @@ class NamesAndTypes(cpm.Module):
                                           LOAD_AS_MASK],
                 doc=LOAD_AS_CHOICE_HELP_TEXT)
 
+        self.volumetric = cps.Binary(
+            text="Volumetric",
+            value=False
+        )
+
         self.single_image_provider = cps.FileImageNameProvider(
                 "Name to assign these images", IMAGE_NAMES[0])
 
@@ -632,10 +637,18 @@ class NamesAndTypes(cpm.Module):
                         '', "Remove this image", self.single_images, group))
 
     def settings(self):
-        result = [self.assignment_method, self.single_load_as_choice,
-                  self.single_image_provider, self.join, self.matching_choice,
-                  self.single_rescale, self.assignments_count,
-                  self.single_images_count, self.manual_rescale]
+        result = [
+            self.assignment_method,
+            self.single_load_as_choice,
+            self.single_image_provider,
+            self.join,
+            self.matching_choice,
+            self.single_rescale,
+            self.assignments_count,
+            self.single_images_count,
+            self.manual_rescale
+        ]
+
         for assignment in self.assignments:
             result += [assignment.rule_filter, assignment.image_name,
                        assignment.object_name, assignment.load_as_choice,
@@ -647,12 +660,19 @@ class NamesAndTypes(cpm.Module):
                 single_image.object_name, single_image.load_as_choice,
                 single_image.rescale, single_image.should_save_outlines,
                 single_image.save_outlines, single_image.manual_rescale]
-        return result
+
+        return result + [self.volumetric]
 
     def visible_settings(self):
         result = [self.assignment_method]
+
         if self.assignment_method == ASSIGN_ALL:
-            result += [self.single_load_as_choice, self.single_image_provider]
+            result += [
+                self.single_load_as_choice,
+                self.volumetric,
+                self.single_image_provider
+            ]
+
             if self.single_load_as_choice in (LOAD_AS_COLOR_IMAGE,
                                               LOAD_AS_GRAYSCALE_IMAGE):
                 result += [self.single_rescale]

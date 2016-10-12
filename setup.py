@@ -338,6 +338,7 @@ setuptools.setup(
             "MySQL-python",
             "numpy",
             "prokaryote>=1.0.11",
+            "pyamg",
             "pytest",
             "python-bioformats",
             "pyzmq",

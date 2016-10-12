@@ -10,6 +10,7 @@ import cellprofiler.image
 import cellprofiler.module
 import cellprofiler.setting
 import skimage.morphology
+import skimage.util
 
 
 class Erosion(cellprofiler.module.Module):
@@ -58,7 +59,13 @@ class Erosion(cellprofiler.module.Module):
 
         x_data = x.pixel_data
 
-        y_data = skimage.morphology.erosion(x_data, structuring_element)
+        y_data = skimage.util.apply_parallel(
+            array=x_data,
+            extra_keywords={
+                "selem": structuring_element
+            },
+            function=skimage.morphology.erosion
+        )
 
         y = cellprofiler.image.Image(
             image=y_data,

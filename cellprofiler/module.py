@@ -10,6 +10,7 @@ import cellprofiler.setting as cps
 import pipeline as cpp
 import six
 import skimage.color
+import skimage.util
 
 
 class Module(object):
@@ -929,7 +930,11 @@ class ImageProcessing(Module):
 
         args = (setting.value for setting in self.settings()[2:])
 
-        y_data = self.function(x_data, *args)
+        y_data = skimage.util.apply_parallel(
+            array=x_data,
+            extra_arguments=args,
+            function=self.function
+        )
 
         y = cellprofiler.image.Image(
             dimensions=dimensions,

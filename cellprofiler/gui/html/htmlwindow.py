@@ -1,6 +1,5 @@
 # coding=utf-8
 
-import cellprofiler.gui.html.content
 import cellprofiler.icons
 import content
 import os
@@ -41,6 +40,7 @@ class HtmlClickableWindow(wx.html.HtmlWindow):
                     parent = parent.Parent
         elif href.startswith('help:'):
             href = linkinfo.Href[7:]
+            import cellprofiler.gui.html.content
             html_str = cellprofiler.gui.html.content.WELCOME_HELP[href]
             html_str += '<p>Go <a href="startup_main">back</a> to the welcome screen.</p>'
             self.SetPage(html_str)

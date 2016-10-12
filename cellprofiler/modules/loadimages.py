@@ -3270,8 +3270,7 @@ class LoadImagesImageProvider(LoadImagesImageProviderBase):
         if self.channel is not None:
             data = data[:, :, :, self.channel]
 
-        # TODO: make configurable
-        self.scale = (1.0, 1.0, 1.0)
+        self.scale = self.spacing
 
         return cpimage.Image(
             image=data,

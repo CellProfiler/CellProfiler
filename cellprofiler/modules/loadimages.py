@@ -3270,6 +3270,7 @@ class LoadImagesImageProvider(LoadImagesImageProviderBase):
         if self.channel is not None:
             data = data[:, :, :, self.channel]
 
+        # TODO: Scale is not spacing, it's related to max intensity. See rdr.read (bioformats)
         self.scale = self.spacing
 
         return cpimage.Image(

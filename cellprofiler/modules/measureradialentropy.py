@@ -92,9 +92,12 @@ class MeasurementTemplate(cpm.Module):
     #
     # DISPLAY
     #
-    def display(self, workspace, figure):
+    def display(self, workspace, figure=None):
         statistics = workspace.display_data.statistics
-        figure = workspace.create_or_find_figure(subplots=(1, 1,))
+        if figure is None:
+            figure = workspace.create_or_find_figure(subplots=(1, 1,))
+        else:
+            figure.set_subplots((1, 1))
         figure.subplot_table(0, 0, statistics)
 
 

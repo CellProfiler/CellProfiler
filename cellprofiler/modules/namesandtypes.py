@@ -317,6 +317,21 @@ class NamesAndTypes(cpm.Module):
             value=False
         )
 
+        self.x = cps.Float(
+            text="x",
+            value=1.0
+        )
+
+        self.y = cps.Float(
+            text="y",
+            value=1.0
+        )
+
+        self.z = cps.Float(
+            text="z",
+            value=1.0
+        )
+
         self.single_image_provider = cps.FileImageNameProvider(
                 "Name to assign these images", IMAGE_NAMES[0])
 
@@ -646,7 +661,11 @@ class NamesAndTypes(cpm.Module):
             self.single_rescale,
             self.assignments_count,
             self.single_images_count,
-            self.manual_rescale
+            self.manual_rescale,
+            self.volumetric,
+            self.x,
+            self.y,
+            self.z
         ]
 
         for assignment in self.assignments:
@@ -661,17 +680,27 @@ class NamesAndTypes(cpm.Module):
                 single_image.rescale, single_image.should_save_outlines,
                 single_image.save_outlines, single_image.manual_rescale]
 
-        return result + [self.volumetric]
+        return result
 
     def visible_settings(self):
         result = [self.assignment_method]
 
         if self.assignment_method == ASSIGN_ALL:
+            # TODO: can we reorder these, or will it screw up saved pipelines?
+            # a more sensible order would be: self.single_image_provider, self.single_load_as_choice, self.volume
             result += [
                 self.single_load_as_choice,
-                self.volumetric,
-                self.single_image_provider
+                self.volumetric
             ]
+
+            if self.volumetric.value:
+                result += [
+                    self.x,
+                    self.y,
+                    self.z
+                ]
+
+            result += [self.single_image_provider]
 
             if self.single_load_as_choice in (LOAD_AS_COLOR_IMAGE,
                                               LOAD_AS_GRAYSCALE_IMAGE):
@@ -1546,16 +1575,18 @@ class NamesAndTypes(cpm.Module):
 
         url = m.alter_url_post_create_batch(url)
 
-        volume = workspace.pipeline.volumetric
+        volume = self.volumetric.value
+
+        spacing = (self.z.value, self.x.value, self.y.value) if volume else None
 
         if load_choice == LOAD_AS_COLOR_IMAGE:
-            provider = ColorImageProvider(name, url, series, index, rescale, volume=volume)
+            provider = ColorImageProvider(name, url, series, index, rescale, volume=volume, spacing=spacing)
         elif load_choice == LOAD_AS_GRAYSCALE_IMAGE:
-            provider = MonochromeImageProvider(name, url, series, index, channel, rescale, volume=volume)
+            provider = MonochromeImageProvider(name, url, series, index, channel, rescale, volume=volume, spacing=spacing)
         elif load_choice == LOAD_AS_ILLUMINATION_FUNCTION:
-            provider = MonochromeImageProvider(name, url, series, index, channel, False, volume=volume)
+            provider = MonochromeImageProvider(name, url, series, index, channel, False, volume=volume, spacing=spacing)
         elif load_choice == LOAD_AS_MASK:
-            provider = MaskImageProvider(name, url, series, index, channel, volume=volume)
+            provider = MaskImageProvider(name, url, series, index, channel, volume=volume, spacing=spacing)
 
         workspace.image_set.providers.append(provider)
 
@@ -2035,12 +2066,13 @@ class MetadataPredicate(cps.Filter.FilterPredicate):
 class ColorImageProvider(LoadImagesImageProviderURL):
     '''Provide a color image, tripling a monochrome plane if needed'''
 
-    def __init__(self, name, url, series, index, rescale=True, volume=False):
+    def __init__(self, name, url, series, index, rescale=True, volume=False, spacing=None):
         LoadImagesImageProviderURL.__init__(self, name, url,
                                             rescale=rescale,
                                             series=series,
                                             index=index,
-                                            volume=volume)
+                                            volume=volume,
+                                            spacing=spacing)
 
     def provide_image(self, image_set):
         image = LoadImagesImageProviderURL.provide_image(self, image_set)
@@ -2055,13 +2087,14 @@ class ColorImageProvider(LoadImagesImageProviderURL):
 class MonochromeImageProvider(LoadImagesImageProviderURL):
     '''Provide a monochrome image, combining RGB if needed'''
 
-    def __init__(self, name, url, series, index, channel, rescale=True, volume=False):
+    def __init__(self, name, url, series, index, channel, rescale=True, volume=False, spacing=None):
         LoadImagesImageProviderURL.__init__(self, name, url,
                                             rescale=rescale,
                                             series=series,
                                             index=index,
                                             channel=channel,
-                                            volume=volume)
+                                            volume=volume,
+                                            spacing=spacing)
 
     def provide_image(self, image_set):
         image = LoadImagesImageProviderURL.provide_image(self, image_set)
@@ -2077,13 +2110,14 @@ class MonochromeImageProvider(LoadImagesImageProviderURL):
 class MaskImageProvider(MonochromeImageProvider):
     '''Provide a boolean image, converting nonzero to True, zero to False if needed'''
 
-    def __init__(self, name, url, series, index, channel, volume=False):
+    def __init__(self, name, url, series, index, channel, volume=False, spacing=None):
         MonochromeImageProvider.__init__(self, name, url,
                                          rescale=True,
                                          series=series,
                                          index=index,
                                          channel=channel,
-                                         volume=False)
+                                         volume=volume,
+                                         spacing=spacing)
 
     def provide_image(self, image_set):
         image = MonochromeImageProvider.provide_image(self, image_set)

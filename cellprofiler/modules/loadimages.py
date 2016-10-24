@@ -3188,7 +3188,7 @@ class LoadImagesImageProvider(LoadImagesImageProviderBase):
         self.index = index
         self.channel = channel
         self.__volume = volume
-        self.spacing = (1.0, 1.0, 1.0) if self.__volume and not spacing else None
+        self.__spacing = spacing
 
     def provide_image(self, image_set):
         """Load an image from a pathname
@@ -3271,7 +3271,7 @@ class LoadImagesImageProvider(LoadImagesImageProviderBase):
             data = data[:, :, :, self.channel]
 
         # TODO: Scale is not spacing, it's related to max intensity. See rdr.read (bioformats)
-        self.scale = self.spacing
+        self.scale = self.__spacing
 
         return cpimage.Image(
             image=data,
@@ -3279,7 +3279,8 @@ class LoadImagesImageProvider(LoadImagesImageProviderBase):
             file_name=self.get_filename(),
             convert=False,
             dimensions=3,
-            scale=self.scale
+            scale=self.scale,
+            spacing=self.__spacing
         )
 
 
@@ -3287,7 +3288,7 @@ class LoadImagesImageProviderURL(LoadImagesImageProvider):
     '''Reference an image via a URL'''
 
     def __init__(self, name, url, rescale=True,
-                 series=None, index=None, channel=None, volume=False):
+                 series=None, index=None, channel=None, volume=False, spacing=None):
         if url.lower().startswith("file:"):
             path = url2pathname(url)
             pathname, filename = os.path.split(path)
@@ -3295,7 +3296,7 @@ class LoadImagesImageProviderURL(LoadImagesImageProvider):
             pathname = ""
             filename = url
         super(LoadImagesImageProviderURL, self).__init__(
-                name, pathname, filename, rescale, series, index, channel, volume)
+                name, pathname, filename, rescale, series, index, channel, volume, spacing)
         self.url = url
 
     def get_url(self):

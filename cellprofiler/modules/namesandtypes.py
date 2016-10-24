@@ -2077,9 +2077,10 @@ class ColorImageProvider(LoadImagesImageProviderURL):
     def provide_image(self, image_set):
         image = LoadImagesImageProviderURL.provide_image(self, image_set)
 
-        # TODO: volumes
-        if image.pixel_data.ndim == 2:
-            image.pixel_data = np.dstack([image.pixel_data] * 3)
+        if image.pixel_data.ndim == image.dimensions:
+            import skimage.color
+
+            image.pixel_data = skimage.color.gray2rgb(image.pixel_data)
 
         return image
 

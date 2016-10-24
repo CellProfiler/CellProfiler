@@ -408,12 +408,11 @@ class GrayscaleImage(object):
 
     @property
     def pixel_data(self):
-        # """One 2-d channel of the color image as a numpy array"""
-        # if self.__image.pixel_data.dtype.kind == 'b':
-        #     return self.__image.pixel_data.astype(numpy.float64)
-        #
-        # return self.__image.pixel_data[:, :, 0]
-        return self.__image.pixel_data
+        """One 2-d channel of the color image as a numpy array"""
+        if self.__image.pixel_data.dtype.kind == 'b':
+            return self.__image.pixel_data.astype(numpy.float64)
+
+        return self.__image.pixel_data[:, :, 0]
 
 
 class RGBImage(object):

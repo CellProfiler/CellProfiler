@@ -172,12 +172,6 @@ class Images(cpm.Module):
             that do not pass the current filter.
             """)
 
-        self.volumetric = cps.Binary(
-            "Load as volume(s)",
-            False,
-            doc="""Select "Yes" to load multi-page TIFs as volumes. Select "No" to load as individual frames."""
-        )
-
     @staticmethod
     def modpath_to_url(modpath):
         if modpath[0] in ("http", "https", "ftp"):
@@ -218,10 +212,10 @@ class Images(cpm.Module):
             path = new_path
 
     def settings(self):
-        return [self.path_list_display, self.filter_choice, self.filter, self.volumetric]
+        return [self.path_list_display, self.filter_choice, self.filter]
 
     def visible_settings(self):
-        result = [self.path_list_display, self.volumetric, self.filter_choice]
+        result = [self.path_list_display, self.filter_choice]
         if self.filter_choice == FILTER_CHOICE_CUSTOM:
             result += [self.filter, self.update_button]
             self.path_list_display.using_filter = True
@@ -278,7 +272,6 @@ class Images(cpm.Module):
             file_list = [f for f, passes in zip(file_list, passes_filter)
                          if passes]
         workspace.pipeline.set_filtered_file_list(file_list, self)
-        workspace.pipeline.volumetric = self.volumetric.value
         return True
 
     def run(self, workspace):

@@ -3267,9 +3267,6 @@ class LoadImagesImageProvider(LoadImagesImageProviderBase):
 
         data = skimage.img_as_float(data)
 
-        if self.channel is not None:
-            data = data[:, :, :, self.channel]
-
         # TODO: Scale is not spacing, it's related to max intensity. See rdr.read (bioformats)
         self.scale = self.__spacing
 

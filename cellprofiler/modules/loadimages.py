@@ -3261,14 +3261,24 @@ class LoadImagesImageProvider(LoadImagesImageProviderBase):
         return image
 
     def __provide_volume(self):
+        import numpy
         import skimage.io
 
         data = skimage.io.imread(url2pathname(self.get_url()))
 
         data = skimage.img_as_float(data)
 
-        # TODO: Scale is not spacing, it's related to max intensity. See rdr.read (bioformats)
-        self.scale = self.__spacing
+        # https://github.com/CellProfiler/python-bioformats/blob/855f2fb7807f00ef41e6d169178b7f3d22530b79/bioformats/formatreader.py#L768-L791
+        if data.dtype in [numpy.int8, numpy.uint8]:
+            self.scale = 255
+        elif data.dtype in [numpy.int16, numpy.uint16]:
+            self.scale = 65535
+        elif data.dtype == numpy.int32:
+            self.scale = 2**32-1
+        elif data.dtype == numpy.uint32:
+            self.scale = 2**32
+        else:
+            self.scale = 1
 
         return cpimage.Image(
             image=data,

@@ -1432,49 +1432,35 @@ class NamesAndTypes(cpm.Module):
     def is_input_module(self):
         return True
 
+
     def run(self, workspace):
         image_set = self.get_imageset(workspace)
-
         if self.assignment_method == ASSIGN_ALL:
             name = self.single_image_provider.value
-
             load_choice = self.single_load_as_choice.value
-
             rescale = self.single_rescale.value
-
             if rescale == INTENSITY_MANUAL:
                 rescale = self.manual_rescale.value
-
-            self.add_image_provider(
-                workspace,
-                name,
-                load_choice,
-                rescale,
-                image_set[0]
-            )
+            self.add_image_provider(workspace, name, load_choice,
+                                    rescale, image_set[0])
         else:
-            for group, stack in zip(self.assignments + self.single_images, image_set):
+            for group, stack in zip(self.assignments + self.single_images,
+                                    image_set):
                 if group.load_as_choice == LOAD_AS_OBJECTS:
-                    self.add_objects(
-                        workspace,
-                        group.object_name.value,
-                        group.should_save_outlines.value,
-                        group.save_outlines.value,
-                        stack
-                    )
+                    self.add_objects(workspace,
+                                     group.object_name.value,
+                                     group.should_save_outlines.value,
+                                     group.save_outlines.value,
+                                     stack)
                 else:
                     rescale = group.rescale.value
-
                     if rescale == INTENSITY_MANUAL:
                         rescale = group.manual_rescale.value
-
-                    self.add_image_provider(
-                        workspace,
-                        group.image_name.value,
-                        group.load_as_choice.value,
-                        rescale,
-                        stack
-                    )
+                    self.add_image_provider(workspace,
+                                            group.image_name.value,
+                                            group.load_as_choice.value,
+                                            rescale,
+                                            stack)
 
     def add_image_provider(self, workspace, name, load_choice, rescale, stack):
         '''Put an image provider into the image set
@@ -1493,75 +1479,49 @@ class NamesAndTypes(cpm.Module):
         elif rescale == INTENSITY_RESCALING_BY_DATATYPE:
             rescale = False
         # else it's a manual rescale.
-
         num_dimensions = J.call(stack, "numDimensions", "()I")
-
         if num_dimensions == 2:
             coords = J.get_env().make_int_array(np.zeros(2, np.int32))
-
-            ipds = [cpp.ImagePlaneDetails(J.call(stack, "get", "([I)Ljava/lang/Object;", coords))]
+            ipds = [
+                cpp.ImagePlaneDetails(
+                        J.call(stack, "get", "([I)Ljava/lang/Object;", coords))]
         else:
             coords = np.zeros(num_dimensions, np.int32)
-
             ipds = []
             for i in range(J.call(stack, "size", "(I)I", 2)):
                 coords[2] = i
-
-                ipds.append(cpp.ImagePlaneDetails(J.call(stack, "get", "([I)Ljava/lang/Object;", coords)))
+                jcoords = J.get_env().make_int_array(coords)
+                ipds.append(cpp.ImagePlaneDetails(
+                        J.call(stack, "get", "([I)Ljava/lang/Object;", coords)))
 
         if len(ipds) == 1:
-            interleaved = J.get_static_field("org/cellprofiler/imageset/ImagePlane", "INTERLEAVED", "I")
-
-            monochrome = J.get_static_field("org/cellprofiler/imageset/ImagePlane", "ALWAYS_MONOCHROME", "I")
-
+            interleaved = J.get_static_field(
+                    "org/cellprofiler/imageset/ImagePlane", "INTERLEAVED", "I")
+            monochrome = J.get_static_field(
+                    "org/cellprofiler/imageset/ImagePlane", "ALWAYS_MONOCHROME", "I")
             ipd = ipds[0]
-
             url = ipd.url
-
             series = ipd.series
-
             index = ipd.index
-
             channel = ipd.channel
-
             if channel == monochrome:
                 channel = None
             elif channel == interleaved:
                 channel = None
-
                 if index == 0:
                     index = None
-
             self.add_simple_image(
-                workspace,
-                name,
-                load_choice,
-                rescale,
-                url,
-                series,
-                index,
-                channel
-            )
+                    workspace, name, load_choice, rescale, url,
+                    series, index, channel)
         elif all([ipd.url == ipds[0].url for ipd in ipds[1:]]):
             # Can load a simple image with a vector of series/index/channel
             url = ipds[0].url
-
             series = [ipd.series for ipd in ipds]
-
             index = [ipd.index for ipd in ipds]
-
             channel = [None if ipd.channel < 0 else ipd.channel for ipd in ipds]
-
             self.add_simple_image(
-                workspace,
-                name,
-                load_choice,
-                rescale,
-                url,
-                series,
-                index,
-                channel
-            )
+                    workspace, name, load_choice, rescale, url,
+                    series, index, channel)
         else:
             # Different URLs - someone is a clever sadist
             # At this point, I believe there's no way to do this using

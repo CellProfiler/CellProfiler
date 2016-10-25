@@ -314,22 +314,32 @@ class NamesAndTypes(cpm.Module):
 
         self.volumetric = cps.Binary(
             text="Volumetric",
-            value=False
+            value=False,
+            doc="""
+            If the data is three-dimensional, select "Yes" to load files as volumes. Otherwise, select "No" to load
+            files as two-dimensional images.
+            """
         )
 
         self.x = cps.Float(
             text="x",
-            value=1.0
+            value=1.0,
+            minval=0.0,
+            doc="Spacing between voxels in the x-dimension."
         )
 
         self.y = cps.Float(
             text="y",
-            value=1.0
+            value=1.0,
+            minval=0.0,
+            doc="Spacing between voxels in the y-dimension."
         )
 
         self.z = cps.Float(
             text="z",
-            value=1.0
+            value=1.0,
+            minval=0.0,
+            doc="Spacing between voxels in the z-dimension."
         )
 
         self.single_image_provider = cps.FileImageNameProvider(

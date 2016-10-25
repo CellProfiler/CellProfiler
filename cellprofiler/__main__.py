@@ -47,13 +47,6 @@ def main(args=None):
 
     exit_code = 0
 
-    switches = ('--work-announce', '--knime-bridge-address')
-
-    if any([any([arg.startswith(switch) for switch in switches]) for arg in args]):
-        cellprofiler.preferences.set_headless()
-
-        sys.exit(exit_code)
-
     options, args = parse_args(args)
 
     if options.print_version:

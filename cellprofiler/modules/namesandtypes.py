@@ -269,7 +269,7 @@ M_IMAGE_SET = "ImageSet_ImageSet"
 
 
 class NamesAndTypes(cpm.Module):
-    variable_revision_number = 6
+    variable_revision_number = 7
     module_name = "NamesAndTypes"
     category = "File Processing"
 

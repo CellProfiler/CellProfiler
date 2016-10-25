@@ -3266,8 +3266,6 @@ class LoadImagesImageProvider(LoadImagesImageProviderBase):
 
         data = skimage.io.imread(url2pathname(self.get_url()))
 
-        data = skimage.img_as_float(data)
-
         # https://github.com/CellProfiler/python-bioformats/blob/855f2fb7807f00ef41e6d169178b7f3d22530b79/bioformats/formatreader.py#L768-L791
         if data.dtype in [numpy.int8, numpy.uint8]:
             self.scale = 255

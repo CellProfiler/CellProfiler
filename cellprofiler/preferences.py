@@ -1270,36 +1270,6 @@ def set_omero_session_id(omero_session_id, globally=True):
     if globally:
         config_write(OMERO_SESSION_ID, omero_session_id)
 
-
-def default_max_workers():
-    try:
-        return multiprocessing.cpu_count()
-    except:
-        return 4
-
-
-__max_workers = None
-
-
-def get_max_workers():
-    '''Get the maximum number of worker processes allowed during analysis'''
-    global __max_workers
-    if __max_workers is not None:
-        return __max_workers
-    default = default_max_workers()
-    if config_exists(MAX_WORKERS):
-        __max_workers = get_config().ReadInt(MAX_WORKERS, default)
-        return __max_workers
-    return default
-
-
-def set_max_workers(value):
-    '''Set the maximum number of worker processes allowed during analysis'''
-    global __max_workers
-    get_config().WriteInt(MAX_WORKERS, value)
-    __max_workers = value
-
-
 __temp_dir = None
 
 

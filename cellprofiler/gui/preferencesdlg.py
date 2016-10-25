@@ -316,11 +316,6 @@ class PreferencesDlg(wx.Dialog):
                  <li>Visualization of parameter space for image analysis. Pretorius AJ, Bray MA, Carpenter AE
                  and Ruddle RA. (2011) IEEE Transactions on Visualization and Computer Graphics, 17(12), 2402-2411.</li>
                  </ul>"""],
-                ['Maximum number of workers',
-                 cellprofiler.preferences.get_max_workers,
-                 cellprofiler.preferences.set_max_workers,
-                 IntegerPreference(1, cellprofiler.preferences.default_max_workers() * 4),
-                 cellprofiler.gui.help.MAX_WORKERS_HELP],
                 ['Temporary folder',
                  cellprofiler.preferences.get_temporary_directory,
                  (lambda x: cellprofiler.preferences.set_temporary_directory(x, globally=True)),

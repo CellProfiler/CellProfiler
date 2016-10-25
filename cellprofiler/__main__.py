@@ -7,7 +7,6 @@ import cellprofiler.preferences
 import cellprofiler.utilities.cpjvm
 import cellprofiler.utilities.hdf5_dict
 import cellprofiler.utilities.version
-import cellprofiler.utilities.zmqrequest
 import cellprofiler.workspace
 import cStringIO
 import h5py
@@ -156,8 +155,6 @@ def __version__(exit_code):
 
 
 def stop_cellprofiler():
-    cellprofiler.utilities.zmqrequest.join_to_the_boundary()
-
     cellprofiler.utilities.cpjvm.cp_stop_vm()
 
 

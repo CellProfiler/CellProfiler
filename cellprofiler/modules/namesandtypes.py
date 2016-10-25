@@ -686,10 +686,9 @@ class NamesAndTypes(cpm.Module):
         result = [self.assignment_method]
 
         if self.assignment_method == ASSIGN_ALL:
-            # TODO: can we reorder these, or will it screw up saved pipelines?
-            # a more sensible order would be: self.single_image_provider, self.single_load_as_choice, self.volume
             result += [
                 self.single_load_as_choice,
+                self.single_image_provider,
                 self.volumetric
             ]
 
@@ -699,8 +698,6 @@ class NamesAndTypes(cpm.Module):
                     self.y,
                     self.z
                 ]
-
-            result += [self.single_image_provider]
 
             if self.single_load_as_choice in (LOAD_AS_COLOR_IMAGE,
                                               LOAD_AS_GRAYSCALE_IMAGE):

@@ -1959,6 +1959,11 @@ class NamesAndTypes(cpm.Module):
             setting_values = new_setting_values
             variable_revision_number = 6
 
+        if variable_revision_number == 6:
+            new_setting_values = setting_values[:9] + [False, 1.0, 1.0, 1.0] + setting_values[9:]
+            setting_values = new_setting_values
+            variable_revision_number = 7
+
         return setting_values, variable_revision_number, from_matlab
 
     class FakeModpathResolver(object):

@@ -2556,7 +2556,12 @@ class PipelineController(object):
         finally:
             m = event.measurements
 
+            n_image_sets = len(self.__pipeline.workspace.image_set_list)
+            
             self.stop_running()
+
+            if cellprofiler.preferences.get_show_analysis_complete_dlg():
+                self.show_analysis_complete(n_image_sets)
 
             m.close()
             self.run_next_pipeline(None)

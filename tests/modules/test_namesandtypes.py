@@ -1265,11 +1265,8 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
     #         os.remove(batch_data_filename)
     #         os.rmdir(tempdir)
 
-
-    def run_workspace(self, path, load_as_type,
-                      series = None, index = None, channel = None,
-                      single=False,
-                      rescaled=N.INTENSITY_RESCALING_BY_METADATA, lsi = []):
+    def run_workspace(self, path, load_as_type, series=None, index=None, channel=None, single=False,
+                      rescaled=N.INTENSITY_RESCALING_BY_METADATA, lsi=[], volume=False, spacing=None):
         '''Run a workspace to load a file
 
         path - path to the file
@@ -1297,6 +1294,12 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
         n.single_load_as_choice.value = load_as_type
         n.single_rescale.value = rescaled
         n.manual_rescale.value = manual_rescale
+        n.volumetric.value = volume
+        if spacing is not None:
+            z, x, y = spacing
+            n.x.value = x
+            n.y.value = y
+            n.z.value = z
         n.assignments[0].image_name.value = IMAGE_NAME
         n.assignments[0].object_name.value = OBJECTS_NAME
         n.assignments[0].load_as_choice.value = load_as_type
@@ -1749,3 +1752,66 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
                 break
         else:
             self.fail()
+
+    def test_load_grayscale_volume(self):
+        path = os.path.realpath(os.path.join(os.path.dirname(__file__), "../resources/ball.tif"))
+
+        workspace = self.run_workspace(
+            path,
+            "Grayscale image",
+            single=True,
+            volume=True,
+            spacing=(0.3, 0.7, 0.7)
+        )
+
+        image = workspace.image_set.get_image("imagename")
+
+        self.assertEqual(3, image.dimensions)
+
+        self.assertEqual((9, 9, 9), image.pixel_data.shape)
+
+        self.assertEqual((0.3, 0.7, 0.7), image.spacing)
+
+        self.assertTrue(image.pixel_data.dtype.kind == "f")
+
+    def test_load_color_volume(self):
+        path = os.path.realpath(os.path.join(os.path.dirname(__file__), "../resources/ball.tif"))
+
+        workspace = self.run_workspace(
+            path,
+            "Color image",
+            single=True,
+            volume=True,
+            spacing=(0.3, 0.7, 0.7)
+        )
+
+        image = workspace.image_set.get_image("imagename")
+
+        self.assertEqual(3, image.dimensions)
+
+        self.assertEqual((9, 9, 9, 3), image.pixel_data.shape)
+
+        self.assertEqual((0.3, 0.7, 0.7), image.spacing)
+
+        self.assertTrue(image.pixel_data.dtype.kind == "f")
+
+    def test_load_binary_mask(self):
+        path = os.path.realpath(os.path.join(os.path.dirname(__file__), "../resources/ball.tif"))
+
+        workspace = self.run_workspace(
+            path,
+            "Binary mask",
+            single=True,
+            volume=True,
+            spacing=(0.3, 0.7, 0.7)
+        )
+
+        image = workspace.image_set.get_image("imagename")
+
+        self.assertEqual(3, image.dimensions)
+
+        self.assertEqual((9, 9, 9), image.pixel_data.shape)
+
+        self.assertEqual((0.3, 0.7, 0.7), image.spacing)
+
+        self.assertTrue(image.pixel_data.dtype.kind == "b")

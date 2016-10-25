@@ -690,36 +690,6 @@ class AnalysisRunner(object):
 
         cls.work_announce_address = get_announcer_address()
         logger.info("Starting workers on address %s" % cls.work_announce_address)
-        if 'CP_DEBUG_WORKER' in os.environ:
-            if os.environ['CP_DEBUG_WORKER'] == 'NOT_INPROC':
-                return
-            from cellprofiler.worker import \
-                AnalysisWorker, NOTIFY_ADDR, NOTIFY_STOP
-            from cellprofiler.pipeline import CancelledException
-
-            class WorkerRunner(threading.Thread):
-                def __init__(self, work_announce_address):
-                    threading.Thread.__init__(self)
-                    self.work_announce_address = work_announce_address
-                    self.notify_socket = zmq.Context.instance().socket(zmq.PUB)
-                    self.notify_socket.bind(NOTIFY_ADDR)
-
-                def run(self):
-                    with AnalysisWorker(self.work_announce_address) as aw:
-                        try:
-                            aw.run()
-                        except CancelledException:
-                            logger.info("Exiting debug worker thread")
-
-                def wait(self):
-                    self.notify_socket.send(NOTIFY_STOP)
-                    self.join()
-
-            thread = WorkerRunner(cls.work_announce_address)
-            thread.setDaemon(True)
-            thread.start()
-            cls.workers.append(thread)
-            return
 
         close_fds = False
         # start workers
@@ -734,34 +704,15 @@ class AnalysisRunner(object):
             aw_args.append("--jvm-heap-size=%s" % jvm_arg)
             # stdin for the subprocesses serves as a deadman's switch.  When
             # closed, the subprocess exits.
-            if hasattr(sys, 'frozen'):
-                if sys.platform == 'darwin':
-                    executable = os.path.join(
-                            os.path.dirname(sys.executable), "CellProfiler")
-                    args = ([executable] + aw_args)
-                elif sys.platform.startswith('linux'):
-                    aw_path = os.path.join(os.path.dirname(__file__),
-                                           "worker.py")
-                    args = [sys.executable, aw_path] + aw_args
-                else:
-                    args = [sys.executable] + aw_args
 
-                worker = subprocess.Popen(args,
-                                          env=find_worker_env(idx),
-                                          stdin=subprocess.PIPE,
-                                          stdout=subprocess.PIPE,
-                                          stderr=subprocess.STDOUT,
-                                          close_fds=close_fds)
-            else:
-                worker = subprocess.Popen(
-                        [find_python(),
-                         '-u',  # unbuffered
-                         find_analysis_worker_source()] + aw_args,
-                        env=find_worker_env(idx),
-                        stdin=subprocess.PIPE,
-                        stdout=subprocess.PIPE,
-                        stderr=subprocess.STDOUT,
-                        close_fds=close_fds)
+            worker = subprocess.Popen(
+                    [find_python(),
+                     '-u'],
+                    env=find_worker_env(idx),
+                    stdin=subprocess.PIPE,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT,
+                    close_fds=close_fds)
 
             def run_logger(workR, widx):
                 while True:
@@ -836,7 +787,7 @@ def find_worker_env(idx):
 def find_analysis_worker_source():
     # import here to break circular dependency.
     import cellprofiler.analysis  # used to get the path to the code
-    return os.path.join(os.path.dirname(cellprofiler.analysis.__file__), "worker.py")
+    return ""
 
 
 def start_daemon_thread(target=None, args=(), kwargs=None, name=None):

@@ -1432,7 +1432,6 @@ class NamesAndTypes(cpm.Module):
     def is_input_module(self):
         return True
 
-
     def run(self, workspace):
         image_set = self.get_imageset(workspace)
         if self.assignment_method == ASSIGN_ALL:

@@ -1584,7 +1584,7 @@ class NamesAndTypes(cpm.Module):
         elif load_choice == LOAD_AS_GRAYSCALE_IMAGE:
             provider = MonochromeImageProvider(name, url, series, index, channel, rescale, volume=volume, spacing=spacing)
         elif load_choice == LOAD_AS_ILLUMINATION_FUNCTION:
-            provider = MonochromeImageProvider(name, url, series, index, channel, False, volume=volume, spacing=spacing)
+            provider = MonochromeImageProvider(name, url, series, index, channel, False)
         elif load_choice == LOAD_AS_MASK:
             provider = MaskImageProvider(name, url, series, index, channel, volume=volume, spacing=spacing)
 
@@ -2135,7 +2135,7 @@ class MaskImageProvider(MonochromeImageProvider):
 class ObjectsImageProvider(LoadImagesImageProviderURL):
     '''Provide a multi-plane integer image, interpreting an image file as objects'''
 
-    def __init__(self, name, url, series, index, volume=False):
+    def __init__(self, name, url, series, index):
         LoadImagesImageProviderURL.__init__(self, name, url,
                                             rescale=False,
                                             series=series,

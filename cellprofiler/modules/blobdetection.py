@@ -277,7 +277,7 @@ class BlobDetection(cellprofiler.module.Module):
         images.add(y_name, y)
 
         if self.show_window:
-            workspace.display_data.x_data = x_data
+            workspace.display_data.x_data = x.pixel_data
 
             workspace.display_data.y_data = y_data
 

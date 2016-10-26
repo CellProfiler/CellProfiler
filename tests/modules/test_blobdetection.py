@@ -12,51 +12,29 @@ import skimage.draw
 import skimage.feature
 
 
+data = skimage.data.hubble_deep_field()[0:500, 0:500]
+
+
 @pytest.fixture(
     scope="module",
     params=[
-        skimage.color.rgb2gray(
-            skimage.data.hubble_deep_field()[0:500, 0:500]
-        ),
-        numpy.tile(
-            skimage.color.rgb2gray(
-                skimage.data.hubble_deep_field()[0:500, 0:500]
-            ),
-            (3, 1)
-        ).reshape((3, 500, 500))
+        (skimage.color.rgb2gray(data), 2),
+        (data, 2),
+        (numpy.tile(skimage.color.rgb2gray(data), (3, 1)).reshape((3, 500, 500)), 3)
     ],
     ids=[
         "grayscale_image",
+        "multichannel_image",
         "grayscale_volume"
     ]
 )
 def image(request):
-    data = request.param
+    data, dimensions = request.param
 
-    return cellprofiler.image.Image(image=data, dimensions=data.ndim)
+    return cellprofiler.image.Image(image=data, dimensions=dimensions)
 
 
 instance = cellprofiler.modules.blobdetection.BlobDetection()
-
-
-def test_run_multichannel_image(image_set_list, measurements, module, object_set, pipeline):
-    image = cellprofiler.image.Image(
-        image=skimage.data.hubble_deep_field()[0:500, 0:500],
-        dimensions=2
-    )
-
-    image_set = image_set_list.get_image_set(0)
-
-    image_set.add(u"example", image)
-
-    workspace = cellprofiler.workspace.Workspace(pipeline, module, image_set, object_set, measurements, image_set_list)
-
-    module.x_name.value = u"example"
-
-    with pytest.raises(ValueError) as error:
-        module.run(workspace)
-
-    assert "example is a multi-channel image, expected a single-channel image or volume" in str(error.value)
 
 
 def test_run_dog(image, image_set, module, workspace):
@@ -71,6 +49,9 @@ def test_run_dog(image, image_set, module, workspace):
     module.run(workspace)
 
     data = image.pixel_data
+
+    if image.multichannel:
+        data = skimage.color.rgb2gray(data)
 
     expected = numpy.zeros_like(data)
 
@@ -134,6 +115,9 @@ def test_run_doh_with_linear_scale(image, image_set, module, workspace):
 
     data = image.pixel_data
 
+    if image.multichannel:
+        data = skimage.color.rgb2gray(data)
+
     expected = numpy.zeros_like(data)
 
     if image.dimensions is 2:
@@ -195,6 +179,9 @@ def test_run_doh_with_logarithmic_scale(image, image_set, module, workspace):
     module.run(workspace)
 
     data = image.pixel_data
+
+    if image.multichannel:
+        data = skimage.color.rgb2gray(data)
 
     expected = numpy.zeros_like(data)
 
@@ -258,6 +245,9 @@ def test_run_log_with_linear_scale(image, image_set, module, workspace):
 
     data = image.pixel_data
 
+    if image.multichannel:
+        data = skimage.color.rgb2gray(data)
+
     expected = numpy.zeros_like(data)
 
     if image.dimensions is 2:
@@ -319,6 +309,9 @@ def test_run_log_with_logarithmic_scale(image, image_set, module, workspace):
     module.run(workspace)
 
     data = image.pixel_data
+
+    if image.multichannel:
+        data = skimage.color.rgb2gray(data)
 
     expected = numpy.zeros_like(data)
 

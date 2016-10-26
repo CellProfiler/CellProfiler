@@ -2,9 +2,8 @@
 
 """
 
-Find blobs in a grayscale (single-channel) image or volume. Blobs are bright on dark or dark on bright regions in an
-image. The output of this module is a binary image of white circles or spheres centered around found blobs on a black
-background.
+Find blobs in an image or volume. Blobs are bright on dark or dark on bright regions in an image. The output of this
+module is a binary image of white circles or spheres centered around found blobs on a black background.
 
 """
 
@@ -12,6 +11,7 @@ import cellprofiler.image
 import cellprofiler.module
 import cellprofiler.setting
 import numpy
+import skimage.color
 import skimage.draw
 import skimage.exposure
 import skimage.feature
@@ -30,7 +30,7 @@ class BlobDetection(cellprofiler.module.Module):
         self.x_name = cellprofiler.setting.ImageNameSubscriber(
             u"Input",
             doc="""
-            A grayscale image or volume to detect blobs in.
+            A image or volume to detect blobs in.
             """
         )
 
@@ -249,10 +249,10 @@ class BlobDetection(cellprofiler.module.Module):
 
         x = images.get_image(x_name)
 
-        if x.multichannel:
-            raise ValueError("%s is a multi-channel image, expected a single-channel image or volume" % x_name)
-
         x_data = x.pixel_data
+
+        if x.multichannel:
+            x_data = skimage.color.rgb2gray(x_data)
 
         dimensions = x.dimensions
 
@@ -282,6 +282,8 @@ class BlobDetection(cellprofiler.module.Module):
             workspace.display_data.y_data = y_data
 
             workspace.display_data.dimensions = dimensions
+
+            workspace.display_data.colormap = None if x.multichannel else "gray"
 
     def __detect_blobs(self, data):
         operation = self.operation.value
@@ -346,13 +348,13 @@ class BlobDetection(cellprofiler.module.Module):
         return result
 
     def display(self, workspace, figure):
-        import skimage.color
-
-        dimensions = workspace.display_data.dimensions
-
         x_data = workspace.display_data.x_data
 
         y_data = workspace.display_data.y_data
+
+        dimensions = workspace.display_data.dimensions
+
+        colormap = workspace.display_data.colormap
 
         if dimensions == 2:
             overlay = skimage.color.label2rgb(
@@ -372,8 +374,8 @@ class BlobDetection(cellprofiler.module.Module):
 
         figure.set_subplots((3, 1), dimensions=dimensions)
 
-        figure.subplot_imshow(0, 0, x_data, colormap="gray", dimensions=dimensions)
+        figure.subplot_imshow(0, 0, x_data, colormap=colormap, dimensions=dimensions)
 
         figure.subplot_imshow(1, 0, overlay, dimensions=dimensions)
 
-        figure.subplot_imshow(2, 0, y_data, colormap="gray", dimensions=dimensions)
+        figure.subplot_imshow(2, 0, y_data, colormap=colormap, dimensions=dimensions)

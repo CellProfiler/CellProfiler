@@ -65,7 +65,8 @@ class Image(object):
                  path_name=None,
                  file_name=None,
                  scale=None,
-                 dimensions=2):
+                 dimensions=2,
+                 spacing=None):
         self.__image = None
 
         self.__mask = None
@@ -98,6 +99,8 @@ class Image(object):
         self.channel_names = None
 
         self.dimensions = dimensions
+
+        self.spacing = spacing
 
     @property
     def multichannel(self):

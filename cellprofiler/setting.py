@@ -803,6 +803,16 @@ class Integer(Number):
         return u"%d" % value
 
 
+class OddInteger(Integer):
+    def test_valid(self, pipeline):
+        super(self.__class__, self).test_valid(pipeline)
+
+        value = self.str_to_value(self.value_text)
+
+        if value % 2 == 0:
+            raise ValidationError("Must be odd, was even", self)
+
+
 class Range(Setting):
     """A setting representing a range between two values"""
 
@@ -1664,10 +1674,10 @@ class Choice(Setting):
 
 
 class StructuringElement(Setting):
-    def __init__(self, shape="disk", size=1):
+    def __init__(self, shape="disk", size=1, doc=None):
         self.shape = shape
         self.size = size
-        super(StructuringElement, self).__init__("Structuring element", self.get_value())
+        super(StructuringElement, self).__init__("Structuring element", self.get_value(), doc=doc)
 
     @staticmethod
     def get_choices():

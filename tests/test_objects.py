@@ -43,6 +43,19 @@ class TestObjects(unittest.TestCase):
         x.segmented = self.__segmented10
         self.assertTrue((self.__segmented10 == x.segmented).all())
 
+    def test_segmented_volume(self):
+        segmentation = np.zeros((3, 10, 10), dtype=np.uint8)
+
+        segmentation[0:2, 2:4, 2:4] = 1
+
+        segmentation[1:2, 5:7, 5:7] = 2
+
+        x = cpo.Objects()
+
+        x.segmented = segmentation
+
+        self.assertTrue(np.all(x.segmented == segmentation))
+
     def test_01_03_set_unedited_segmented(self):
         x = cpo.Objects()
         x.unedited_segmented = self.__unedited_segmented10
@@ -53,10 +66,36 @@ class TestObjects(unittest.TestCase):
         x.unedited_segmented = self.__unedited_segmented10
         self.assertTrue((self.__unedited_segmented10 == x.unedited_segmented).all())
 
+    def test_unedited_segmented_volume(self):
+        segmentation = np.zeros((3, 10, 10), dtype=np.uint8)
+
+        segmentation[0:2, 2:4, 2:4] = 1
+
+        segmentation[1:2, 5:7, 5:7] = 2
+
+        x = cpo.Objects()
+
+        x.unedited_segmented = segmentation
+
+        self.assertTrue(np.all(x.unedited_segmented == segmentation))
+
     def test_01_05_set_small_removed_segmented(self):
         x = cpo.Objects()
         x.small_removed_segmented = self.__small_removed_segmented10
         self.assertTrue((self.__small_removed_segmented10 == x.small_removed_segmented).all())
+
+    def test_small_removed_segmented_volume(self):
+        segmentation = np.zeros((3, 10, 10), dtype=np.uint8)
+
+        segmentation[0:2, 2:4, 2:4] = 1
+
+        segmentation[1:2, 5:7, 5:7] = 2
+
+        x = cpo.Objects()
+
+        x.small_removed_segmented = segmentation
+
+        self.assertTrue(np.all(x.small_removed_segmented == segmentation))
 
     def test_01_06_unedited_segmented(self):
         x = cpo.Objects()
@@ -80,6 +119,42 @@ class TestObjects(unittest.TestCase):
         self.assertTrue((x.small_removed_segmented == self.__segmented10).all())
         x.unedited_segmented = self.__unedited_segmented10
         self.assertTrue((x.small_removed_segmented == self.__unedited_segmented10).all())
+
+    def test_shape_image_segmentation(self):
+        x = cpo.Objects()
+
+        x.segmented = self.__segmented10
+
+        self.assertEqual(x.shape, (10, 10))
+
+    def test_shape_volume_segmentation(self):
+        x = cpo.Objects()
+
+        x.segmented = np.ones((5, 10, 10))
+
+        self.assertEqual(x.shape, (5, 10, 10))
+
+    def test_get_labels_image_segmentation(self):
+        x = cpo.Objects()
+
+        x.segmented = self.__segmented10
+
+        [(labels, _)] = x.get_labels()
+
+        self.assertTrue(np.all(labels == self.__segmented10))
+
+    def test_get_labels_volume_segmentation(self):
+        x = cpo.Objects()
+
+        segmentation = np.ones((5, 10, 10))
+
+        x.segmented = segmentation
+
+        [(labels, _)] = x.get_labels()
+
+        self.assertEqual(segmentation.shape, labels.shape)
+
+        self.assertTrue(np.all(segmentation == labels))
 
     def test_05_01_relate_zero_parents_and_children(self):
         """Test the relate method if both parent and child label matrices are zeros"""

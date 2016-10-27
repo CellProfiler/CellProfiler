@@ -24,7 +24,7 @@ notifications:
 python:
   - 2.7
 script:
-  - py.test -x
+  - py.test -x ./tests
 services:
   - mysql
 sudo: false

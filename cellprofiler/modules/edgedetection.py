@@ -22,11 +22,17 @@ class EdgeDetection(cellprofiler.module.Module):
     def create_settings(self):
         self.x_name = cellprofiler.setting.ImageNameSubscriber(
             u"Input",
+            doc="""
+            An image or volume to detect edges in.
+            """
         )
 
         self.y_name = cellprofiler.setting.ImageNameProvider(
             u"Output",
-            u"EdgeDetection"
+            u"EdgeDetection",
+            doc="""
+            Name the output.
+            """
         )
 
         self.mask = cellprofiler.setting.ImageNameSubscriber(

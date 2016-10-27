@@ -1,11 +1,7 @@
-services:
-  - mysql
 addons:
   apt:
     packages:
       - python-pip
-env:
-  - LC_ALL="en_US.UTF-8" CP_MYSQL_TEST_HOST="127.0.0.1" CP_MYSQL_TEST_USER="travis" CP_MYSQL_TEST_PASSWORD="None"
 before_script:
   - export DISPLAY=:99.0
   - sh -e /etc/init.d/xvfb start
@@ -14,10 +10,13 @@ cache:
   apt: true
   directories:
     - $HOME/.cache/pip
+env:
+  - LC_ALL="en_US.UTF-8" CP_MYSQL_TEST_HOST="127.0.0.1" CP_MYSQL_TEST_USER="travis" CP_MYSQL_TEST_PASSWORD="None"
 language: python
 install:
   - pip install --upgrade pip
   - pip install --upgrade wheel
+  - pip install --upgrade scipy
   - pip install --editable .
   - pip freeze
 notifications:
@@ -26,6 +25,8 @@ python:
   - 2.7
 script:
   - py.test -x
+services:
+  - mysql
 sudo: false
 virtualenv:
   system_site_packages: true

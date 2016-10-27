@@ -10,6 +10,7 @@ env:
   - LC_ALL="en_US.UTF-8" CP_MYSQL_TEST_HOST="127.0.0.1" CP_MYSQL_TEST_USER="travis" CP_MYSQL_TEST_PASSWORD="None"
 language: python
 install:
+  - pip install --upgrade wheel
   - pip install --upgrade scipy
   - pip install --editable .
   - pip freeze

@@ -108,6 +108,7 @@ from cellprofiler.gui.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
 from bioformats import get_omexml_metadata, load_image
 import bioformats.omexml as OME
 import javabridge as J
+import skimage.color
 
 ASSIGN_ALL = "All images"
 ASSIGN_GUESS = "Try to guess image assignment"
@@ -2049,9 +2050,7 @@ class ColorImageProvider(LoadImagesImageProviderURL):
         image = LoadImagesImageProviderURL.provide_image(self, image_set)
 
         if image.pixel_data.ndim == image.dimensions:
-            import skimage.color
-
-            image.pixel_data = skimage.color.gray2rgb(image.pixel_data)
+            image.pixel_data = skimage.color.gray2rgb(image.pixel_data, alpha=False)
 
         return image
 
@@ -2072,8 +2071,6 @@ class MonochromeImageProvider(LoadImagesImageProviderURL):
         image = LoadImagesImageProviderURL.provide_image(self, image_set)
 
         if image.pixel_data.ndim == image.dimensions + 1:
-            import skimage.color
-
             image.pixel_data = skimage.color.rgb2gray(image.pixel_data)
 
         return image

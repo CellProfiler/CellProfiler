@@ -1074,12 +1074,10 @@ class Figure(wx.Frame):
                 on_slider(None)
 
     def set_grids(self, shape):
-        self.__gridspec = matplotlib.gridspec.GridSpec(*shape)
+        self.__gridspec = matplotlib.gridspec.GridSpec(*shape[::-1])
 
     def __set_grid_config(self, image):
-        z, _, _ = image.shape
-
-        center = z / 2
+        center = image.shape[0] / 2
 
         # Determine the indices of the first and last slices to display.
         start = max(0, center - 4)
@@ -1100,6 +1098,7 @@ class Figure(wx.Frame):
         dimensions, start, stop = self.__grid_config
 
         gx, gy = self.__gridspec.get_geometry()
+
         idx = gx * x + y
 
         gridspec = matplotlib.gridspec.GridSpecFromSubplotSpec(*dimensions, subplot_spec=self.__gridspec[idx], wspace=0.1, hspace=0.1)

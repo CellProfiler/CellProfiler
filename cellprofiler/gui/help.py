@@ -2406,7 +2406,7 @@ the plate viewer will group your images by plate and display a choice box
 that lets you pick the plate to display.
 <p>
 Click on a well to see the images for that well. If you have more than one site 
-per well and have site metadata (with the name,"Site"), the plate viewer will 
+per well and have site metadata (with the name, "Site"), the plate viewer will 
 tile the sites when displaying, and the values under "X" and "Y" determine the 
 position of each site in the tiled grid.
 <p>

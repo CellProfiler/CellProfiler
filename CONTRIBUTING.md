@@ -2,9 +2,11 @@
 
 Hello! We're glad you're interested in contributing to CellProfiler.
 
-This document provides guidelines for contributing to our project. You'll find information on what you can contribute, choosing what to contribute, setting up your local workstation for development, and submitting your contribution for review and acceptance.
+This document provides guidelines for contributing to the project. You'll find information on what you can contribute, choosing what to contribute, setting up your local workstation for development, and submitting your contribution for review and acceptance.
 
 We'd like to ensure this document is always accurate and understandable. Please [file an issue](https://github.com/CellProfiler/CellProfiler/issues/new) if any information is missing, unclear, or incorrect.  
+
+Note that anyone can update CellProfiler's documentation using a web browser, so this is a great place to start if you are intimidated by setting up a development environment: see instructions [below](#contributing-to-cellprofilers-documentation-using-a-web-browser).
 
 ## Creating an Issue
 
@@ -20,7 +22,7 @@ When there is an issue you would like to file, please check that the issue does 
 1. Give your issue a descriptive title. A good title summarizes the issue in a single sentence. Be specific. Avoid general titles such as "Add documentation" or "Error running CellProfiler".
 
 1. Provide specific information about your issue.
-  * Documentation: What is the mistake? Where is the mistake? What is the correct documentation?
+  * Documentation: What is the mistake? Where is the mistake? What is the correct documentation? 
   * Errors: What is the exact error? How did it occur? Please provide error details from the GUI or output from the terminal.
   * Unexpected behavior: What behavior did you observe? How did it occur? What behavior do you expect?
   * Feature requests: What is the feature? Why would you like to have this functionality in CellProfiler?
@@ -166,3 +168,6 @@ $ python setup.py test
 ```
 
 You can run individual tests by providing the option `-a PATH_TO_TEST_FILE`.
+
+## Contributing to CellProfiler's documentation using a web browser
+Coming soon.

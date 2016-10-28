@@ -1,59 +1,57 @@
+# -*- coding: utf-8 -*-
+
 """
 
-Histogram equalization
+Increase the global contrast of a low-contrast image or volume. A low contrast image has a background and
+foreground that are both dark, or both light. Histogram equalization redistributes intensities such that the most
+common frequencies are more distinct, increasing contrast.
 
 """
 
 import cellprofiler.image
 import cellprofiler.module
 import cellprofiler.setting
-import numpy
 import skimage.exposure
-import skimage.filters
-import skimage.morphology
 
 
-class HistogramEqualization(cellprofiler.module.Module):
-    category = "Volumetric"
+class HistogramEqualization(cellprofiler.module.ImageProcessing):
     module_name = "HistogramEqualization"
+
     variable_revision_number = 1
 
     def create_settings(self):
-        self.x_name = cellprofiler.setting.ImageNameSubscriber(
-            "Input"
+        super(HistogramEqualization, self).create_settings()
+
+        self.nbins = cellprofiler.setting.Integer(
+            u"Bins",
+            value=256,
+            minval=0,
+            doc="Number of bins for image histogram."
         )
 
-        self.y_name = cellprofiler.setting.ImageNameProvider(
-            "Output",
-            "OutputImage"
-        )
-
-        self.structuring_element = cellprofiler.setting.Choice(
-            "Structuing element",
-            [
-                "Ball"
-            ]
-        )
-
-        self.radius = cellprofiler.setting.Integer(
-            "Radius",
-            1
+        self.mask = cellprofiler.setting.ImageNameSubscriber(
+            u"Mask",
+            can_be_blank=True,
+            doc="""
+            Optional. Mask image must be the same size as "Input". Only unmasked points of the "Input" image are used
+            to compute the equalization, which is applied to the entire "Input" image.
+            """
         )
 
     def settings(self):
-        return [
-            self.x_name,
-            self.y_name,
-            self.structuring_element,
-            self.radius
+        __settings__ = super(HistogramEqualization, self).settings()
+
+        return __settings__ + [
+            self.nbins,
+            self.mask
         ]
 
     def visible_settings(self):
-        return [
-            self.x_name,
-            self.y_name,
-            self.structuring_element,
-            self.radius
+        __settings__ = super(HistogramEqualization, self).settings()
+
+        return __settings__ + [
+            self.nbins,
+            self.mask
         ]
 
     def run(self, workspace):
@@ -61,28 +59,29 @@ class HistogramEqualization(cellprofiler.module.Module):
 
         y_name = self.y_name.value
 
-        radius = self.radius.value
-
-        structuring_element = self.structuring_element.value
-
         images = workspace.image_set
 
         x = images.get_image(x_name)
 
+        dimensions = x.dimensions
+
         x_data = x.pixel_data
 
-        x_data = skimage.img_as_uint(x_data)
+        mask_data = None
 
-        disk = skimage.morphology.disk(radius)
+        if not self.mask.is_blank:
+            mask_name = self.mask.value
 
-        y_data = numpy.zeros_like(x_data)
+            mask = images.get_image(mask_name)
 
-        for plane, image in enumerate(x_data):
-            y_data[plane] = skimage.filters.rank.equalize(image, disk)
+            mask_data = mask.pixel_data
 
-        y_data = skimage.exposure.rescale_intensity(y_data * 1.0)
+        nbins = self.nbins.value
+
+        y_data = skimage.exposure.equalize_hist(x_data, nbins=nbins, mask=mask_data)
 
         y = cellprofiler.image.Image(
+            dimensions=dimensions,
             image=y_data,
             parent_image=x
         )
@@ -94,9 +93,4 @@ class HistogramEqualization(cellprofiler.module.Module):
 
             workspace.display_data.y_data = y_data
 
-    def display(self, workspace, figure):
-        figure.set_grids((1, 2))
-
-        figure.gridshow(0, 0, workspace.display_data.x_data)
-
-        figure.gridshow(0, 1, workspace.display_data.y_data)
+            workspace.display_data.dimensions = dimensions

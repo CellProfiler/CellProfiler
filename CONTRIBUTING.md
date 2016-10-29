@@ -6,7 +6,7 @@ This document provides guidelines for contributing to the project. You'll find i
 
 We'd like to ensure this document is always accurate and understandable. Please [file an issue](https://github.com/CellProfiler/CellProfiler/issues/new) if any information is missing, unclear, or incorrect.  
 
-Note that anyone can update CellProfiler's documentation using a web browser, so this is a great place to start if you are intimidated by setting up a development environment: see instructions [below](#contributing-to-cellprofilers-documentation-using-a-web-browser).
+Note that anyone can [update CellProfiler's documentation using a web browser](#contributing-to-cellprofilers-documentation-using-a-web-browser), so that is a great place to start if you are intimidated by setting up a development environment.
 
 ## Creating an Issue
 
@@ -82,7 +82,7 @@ To submit changes to CellProfiler, you'll need to have a [GitHub](https://github
 
 In this section we provide a general outline of the process for submitting changes to CellProfiler. You'll learn how to create a branch where you'll make changes, add modified files and commit your changes to your branch, and create a pull request to submit your changes for review by CellProfiler maintainers.
 
-1. Find the open [issue](https://github.com/CellProfiler/CellProfiler/issues) you want to resolve. Create a [new issue](https://github.com/CellProfiler/CellProfiler/issues/new) if necessary. Check out our guidelines for creating issues before submitting a new issue.
+1. Find the open [issue](https://github.com/CellProfiler/CellProfiler/issues) you want to resolve. Create a [new issue](https://github.com/CellProfiler/CellProfiler/issues/new) if necessary. Check out our guidelines above for [creating issues](#creating-an-issue) before submitting a new issue.
 
 1. Create a branch using the issue number. We prefer branches which are named in the format "issues/ISSUE_NUMBER". This helps us track with issues are resolved and should be closed. Use the `git checkout` command to create a new branch and switch to it:
 
@@ -170,4 +170,16 @@ $ python setup.py test
 You can run individual tests by providing the option `-a PATH_TO_TEST_FILE`.
 
 ## Contributing to CellProfiler's documentation using a web browser
-Coming soon.
+If you are only editing typos or such in the documentation, you can use the web interface of Github to do so, as follows: 
+
+1. In Github, choose the pencil icon as shown in the lower right of this screenshot. If the icon is not visible or cannot be clicked, you likely need to create a new branch: Under the "Code" tab there should be a dropdown from which you choose an existing branch or create a new one. We suggest the new branch be called doc/FILENAME where FILENAME is the name of the file you plan to edit (such as this one, "Contributing"). Note that because you are only changing documentation and not code, you need not create a new corresponding issue as is the norm when creating a new branch.
+<!---  ![Screenshot](https://github.com/CellProfiler/CellProfiler/images/commit_documentation1.png) ---> 
+
+1. Make edits in the browser window.
+
+1. Be sure to use the Preview changes tab towards the top of the window to verify your changes look as expected.
+
+1. Commit your changes. If you have not already made a new branch, do so here with the prefix docs/FILENAME as indicated here:
+<!---  ![Screenshot](https://github.com/CellProfiler/CellProfiler/images/commit_documentation2.png) ---> 
+
+

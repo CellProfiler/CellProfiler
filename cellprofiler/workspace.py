@@ -1,16 +1,10 @@
-"""workspace.py - the workspace for an imageset
-"""
-
 import logging
-
-logger = logging.getLogger(__name__)
-from cStringIO import StringIO
-import numpy as np
+from six import StringIO
 import h5py
 import os
+from cellprofiler.utilities.hdf5_dict import HDF5FileList, HDF5Dict
 
-from cellprofiler.grid import Grid
-from .utilities.hdf5_dict import HDF5FileList, HDF5Dict
+logger = logging.getLogger(__name__)
 
 '''Continue to run the pipeline
 

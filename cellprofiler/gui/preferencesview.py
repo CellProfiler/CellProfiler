@@ -2,7 +2,6 @@
 """PreferencesView.py - displays the default preferences in the lower right corner
 """
 
-import cellprofiler.analysis
 import cellprofiler.gui.help
 import cellprofiler.gui.htmldialog
 import cellprofiler.preferences
@@ -413,10 +412,7 @@ class PreferencesView(object):
 
     def on_analyze_images(self):
         # begin tracking progress
-        self.__progress_watcher = ProgressWatcher(
-            self.__progress_panel,
-            self.update_progress,
-            multiprocessing=cellprofiler.analysis.use_analysis)
+        self.__progress_watcher = ProgressWatcher(self.__progress_panel, self.update_progress)
         self.show_progress_panel()
 
     def on_pipeline_progress(self, *args):

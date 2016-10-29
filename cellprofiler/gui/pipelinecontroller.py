@@ -2,7 +2,6 @@
 """PipelineController.py - controls (modifies) a pipeline
 """
 
-import cellprofiler.analysis
 import cellprofiler.image
 import cellprofiler.module
 import cellprofiler.gui.addmoduleframe
@@ -308,7 +307,7 @@ class PipelineController(object):
         In addition, the PipelineController gets to add whatever buttons it wants to the
         panel.
         """
-        bkgnd_color = cellprofiler.preferences.get_background_color()
+        bkgnd_color = wx.SystemSettings.GetColour(wx.SYS_COLOUR_BACKGROUND)
         assert isinstance(panel, wx.Window)
         self.__test_controls_panel = panel
         #
@@ -2257,18 +2256,6 @@ class PipelineController(object):
         self.do_analyze_images()
 
     def do_analyze_images(self):
-        """Analyze images using the current workspace and pipeline"""
-        ##################################
-        #
-        # Preconditions:
-        # * Pipeline has no errors
-        # * Default input and output directories are valid
-        #
-        ##################################
-
-        if cellprofiler.preferences.get_wants_pony():
-            wx.Sound(os.path.join(cellprofiler.icons.path, "HorseWhinnying.wav")).Play()
-
         ok, reason = self.__frame.preferences_view.check_preferences()
 
         if ok:
@@ -2292,28 +2279,26 @@ class PipelineController(object):
             self.__module_view.disable()
             self.__pipeline_list_view.allow_editing(False)
             self.__frame.preferences_view.on_analyze_images()
-            with cellprofiler.pipeline.Pipeline.PipelineListener(
-                    self.__pipeline, self.on_prepare_run_error_event):
+
+            with cellprofiler.pipeline.Pipeline.PipelineListener(self.__pipeline, self.on_prepare_run_error_event):
                 if not self.__pipeline.prepare_run(self.__workspace):
                     self.stop_running()
+
                     return
+
             measurements_file_path = None
+
             if cellprofiler.preferences.get_write_MAT_files() == cellprofiler.preferences.WRITE_HDF5:
                 measurements_file_path = self.get_output_file_path()
 
-            num_workers = min(
-                len(self.__workspace.measurements.get_image_numbers()),
-                cellprofiler.preferences.get_max_workers())
-            self.__analysis = cellprofiler.analysis.Analysis(
-                self.__pipeline,
-                measurements_file_path,
-                initial_measurements=self.__workspace.measurements)
-            self.__analysis.start(self.analysis_event_handler,
-                                  num_workers)
-            self.__frame.preferences_view.update_worker_count_info(num_workers)
-            self.enable_module_controls_panel_buttons()
-            self.populate_goto_menu()
+            self.__pipeline.run(
+                measurements_filename=measurements_file_path,
+                initial_measurements=self.__workspace.measurements
+            )
 
+            self.enable_module_controls_panel_buttons()
+
+            self.populate_goto_menu()
         except Exception, e:
             # Catastrophic failure
             errordialog.display_error_dialog(self.__frame,
@@ -2347,67 +2332,6 @@ class PipelineController(object):
                 caption=caption,
                 parent=self.__frame,
                 style=wx.ICON_ERROR | wx.OK)
-
-    def analysis_event_handler(self, evt):
-        PRI_EXCEPTION, PRI_INTERACTION, PRI_DISPLAY = range(3)
-
-        if isinstance(evt, cellprofiler.analysis.AnalysisStarted):
-            wx.CallAfter(self.show_analysis_controls)
-        elif isinstance(evt, cellprofiler.analysis.AnalysisProgress):
-            print "Progress", evt.counts
-            total_jobs = sum(evt.counts.values())
-            completed = sum(map(
-                (lambda status: evt.counts.get(status, 0)),
-                (cellprofiler.analysis.AnalysisRunner.STATUS_DONE,
-                 cellprofiler.analysis.AnalysisRunner.STATUS_FINISHED_WAITING)))
-            wx.CallAfter(self.__frame.preferences_view.on_pipeline_progress,
-                         total_jobs, completed)
-        elif isinstance(evt, cellprofiler.analysis.AnalysisFinished):
-            print ("Cancelled!" if evt.cancelled else "Finished!")
-            # drop any interaction/display requests or exceptions
-            while True:
-                try:
-                    self.interaction_request_queue.get_nowait()  # in case the queue's been emptied
-                except Queue.Empty:
-                    break
-            if evt.cancelled:
-                self.pipeline_list = []
-
-            wx.CallAfter(self.on_stop_analysis, evt)
-        elif isinstance(evt, cellprofiler.analysis.DisplayRequest):
-            wx.CallAfter(self.module_display_request, evt)
-        elif isinstance(evt, cellprofiler.analysis.DisplayPostRunRequest):
-            wx.CallAfter(self.module_display_post_run_request, evt)
-        elif isinstance(evt, cellprofiler.analysis.DisplayPostGroupRequest):
-            wx.CallAfter(self.module_display_post_group_request, evt)
-        elif isinstance(evt, cellprofiler.analysis.InteractionRequest):
-            self.interaction_request_queue.put((PRI_INTERACTION, self.module_interaction_request, evt))
-            wx.CallAfter(self.handle_analysis_feedback)
-        elif isinstance(evt, cellprofiler.analysis.OmeroLoginRequest):
-            self.interaction_request_queue.put((PRI_INTERACTION, self.omero_login_request, evt))
-            wx.CallAfter(self.handle_analysis_feedback)
-        elif isinstance(evt, cellprofiler.analysis.ExceptionReport):
-            self.interaction_request_queue.put((PRI_EXCEPTION, self.analysis_exception, evt))
-            wx.CallAfter(self.handle_analysis_feedback)
-        elif isinstance(evt, (cellprofiler.analysis.DebugWaiting, cellprofiler.analysis.DebugComplete)):
-            # These are handled by the dialog reading the debug
-            # request queue
-            if self.debug_request_queue is None:
-                # Things are in a bad state here, possibly because the
-                # user hasn't properly run the debugger. Chances are that
-                # the user knows that something is going wrong.
-                evt.reply(cellprofiler.analysis.ServerExited())
-            else:
-                self.debug_request_queue.put(evt)
-        elif isinstance(evt, cellprofiler.analysis.AnalysisPaused):
-            wx.CallAfter(self.show_resume_button)
-        elif isinstance(evt, cellprofiler.analysis.AnalysisResumed):
-            wx.CallAfter(self.show_pause_button)
-        elif isinstance(evt, cellprofiler.pipeline.RunExceptionEvent):
-            # exception in (prepare/post)_(run/group)
-            wx.CallAfter(self.__on_pipeline_event, self.__pipeline, evt)
-        else:
-            raise ValueError("Unknown event type %s %s" % (type(evt), evt))
 
     def handle_analysis_feedback(self):
         """Process any pending exception or interaction requests from the
@@ -2445,7 +2369,6 @@ class PipelineController(object):
             # Defensive coding: module was deleted?
             logger.warning(
                 "Failed to display module # %d. The pipeline may have been edited during analysis" % module_num)
-            evt.reply(cellprofiler.analysis.Ack())
             return
 
         # use our shared workspace
@@ -2465,9 +2388,6 @@ class PipelineController(object):
             errordialog.display_error_dialog(None, exc, self.__pipeline, tb=tb, continue_only=True,
                                              message="Exception in handling display request for module %s #%d" \
                                                      % (module.module_name, module_num))
-        finally:
-            # we need to ensure that the reply_cb gets a reply
-            evt.reply(cellprofiler.analysis.Ack())
 
     def module_display_post_run_request(self, evt):
         assert wx.Thread_IsMain(), "PipelineController.module_post_run_display_request() must be called from main thread!"
@@ -2508,8 +2428,6 @@ class PipelineController(object):
             errordialog.display_error_dialog(None, exc, self.__pipeline, tb=tb, continue_only=True,
                                              message="Exception in handling display request for module %s #%d" \
                                                      % (module.module_name, module_num))
-        finally:
-            evt.reply(cellprofiler.analysis.Ack())
 
     def module_interaction_request(self, evt):
         """forward a module interaction request from the running pipeline to
@@ -2530,84 +2448,6 @@ class PipelineController(object):
             errordialog.display_error_dialog(None, exc, self.__pipeline, tb=tb, continue_only=True,
                                              message="Exception in handling interaction request for module %s(#%d)" \
                                                      % (module.module_name, module_num))
-        finally:
-            # we need to ensure that the reply_cb gets a reply (even if it
-            # being empty causes futher exceptions).
-            evt.reply(cellprofiler.analysis.InteractionReply(result=result))
-
-    @staticmethod
-    def omero_login_request(evt):
-        """Handle retrieval of the Omero credentials"""
-        from bioformats.formatreader import get_omero_credentials
-        evt.reply(cellprofiler.analysis.OmeroLoginReply(get_omero_credentials()))
-
-    def analysis_exception(self, evt):
-        """Report an error in analysis to the user, giving options for
-        skipping, aborting, and debugging."""
-
-        assert wx.Thread_IsMain(), "PipelineController.analysis_exception() must be called from main thread!"
-
-        self.debug_request_queue = Queue.Queue()
-
-        evtlist = [evt]
-
-        def remote_debug(evtlist=evtlist):
-            # choose a random string for verification
-            verification = ''.join(random.choice(string.ascii_letters) for x in range(5))
-            evt = evtlist[0]
-            # Request debugging.  We get back a port.
-            evt.reply(
-                cellprofiler.analysis.ExceptionPleaseDebugReply(
-                    cellprofiler.analysis.DEBUG,
-                    hashlib.sha1(verification).hexdigest()))
-            evt = self.debug_request_queue.get()
-            port = evt.port
-            result = wx.MessageBox(
-                "Remote PDB waiting on port %d\nUse '%s' for verification" %
-                (port, verification),
-                "Remote debugging started.",
-                wx.OK | wx.CANCEL | wx.ICON_INFORMATION)
-            if result == wx.ID_CANCEL:
-                evt.reply(cellprofiler.analysis.DebugCancel())
-                return False
-            # Acknowledge the port request, and we'll get back a
-            # DebugComplete(), which we use as a new evt to reply with the
-            # eventual CONTINUE/STOP choice.
-            with wx.ProgressDialog(
-                            "Remote debugging on port %d" % port,
-                    "Debugging remotely, Cancel to abandon",
-                    style=wx.PD_APP_MODAL | wx.PD_CAN_ABORT) as dlg:
-                while True:
-                    try:
-                        evtlist[0] = self.debug_request_queue.get(timeout=.25)
-                        return True
-                    except Queue.Empty:
-                        keep_going, skip = dlg.UpdatePulse(
-                            "Debugging remotely, Cancel to abandon")
-                        if not keep_going:
-                            self.debug_request_queue = None
-                            return False
-
-        if evt.module_name is not None:
-            message = (("Error while processing %s:\n"
-                        "%s\n\nDo you want to stop processing?") %
-                       (evt.module_name, evt))
-        else:
-            message = (("Error while processing (remote worker):\n"
-                        "%s\n\nDo you want to stop processing?") %
-                       evt)
-
-        disposition = errordialog.display_error_dialog(
-            None, evt.exc_type, self.__pipeline, message,
-            remote_exc_info=(evt.exc_type, evt.exc_message, evt.exc_traceback,
-                             evt.filename, evt.line_number,
-                             remote_debug))
-        if disposition == errordialog.ED_STOP:
-            self.__analysis.cancel()
-
-        evtlist[0].reply(cellprofiler.analysis.Reply(disposition=disposition))
-
-        wx.Yield()  # This allows cancel events to remove other exceptions from the queue.
 
     def on_restart(self, event):
         """Restart a pipeline from a measurements file"""
@@ -2639,13 +2479,10 @@ class PipelineController(object):
             if cellprofiler.preferences.get_write_MAT_files() == cellprofiler.preferences.WRITE_HDF5:
                 measurements_file_path = self.get_output_file_path()
 
-            self.__analysis = cellprofiler.analysis.Analysis(
-                self.__pipeline,
-                measurements_file_path,
-                initial_measurements=measurements)
-            self.__analysis.start(self.analysis_event_handler,
-                                  overwrite=False)
-
+            self.__pipeline.run(
+                measurements_filename=measurements_file_path,
+                initial_measurements=self.__workspace.measurements
+            )
         except Exception, e:
             # Catastrophic failure
             errordialog.display_error_dialog(self.__frame,
@@ -2709,13 +2546,7 @@ class PipelineController(object):
                 self.__pipeline.save_measurements(path, event.measurements)
         finally:
             m = event.measurements
-            status = m[cellprofiler.measurement.IMAGE, cellprofiler.analysis.AnalysisRunner.STATUS,
-                       m.get_image_numbers()]
-            n_image_sets = sum([
-                                   x == cellprofiler.analysis.AnalysisRunner.STATUS_DONE for x in status])
             self.stop_running()
-            if cellprofiler.preferences.get_show_analysis_complete_dlg():
-                self.show_analysis_complete(n_image_sets)
             m.close()
             self.run_next_pipeline(None)
 

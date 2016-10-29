@@ -1,13 +1,8 @@
-"""Measurements.py - storage for image and object measurements
-"""
 from __future__ import with_statement
 
 import json
 import logging
-
 import h5py
-
-logger = logging.getLogger(__name__)
 import numpy as np
 import re
 from scipy.io.matlab import loadmat
@@ -25,6 +20,9 @@ import os.path
 import mmap
 import urllib
 import sys
+import six
+
+logger = logging.getLogger(__name__)
 
 AGG_MEAN = "Mean"
 AGG_STD_DEV = "StDev"
@@ -518,7 +516,7 @@ class Measurements(object):
         Experiment measurements have one value per experiment
         """
         if isinstance(data, basestring):
-            data = unicode(data).encode('unicode_escape')
+            data = six.text_type(data).encode('unicode_escape')
         self.hdf5_dict.add_all(EXPERIMENT, feature_name, [data], [0])
 
     def get_group_number(self):
@@ -558,7 +556,7 @@ class Measurements(object):
         '''
         d = {}
         image_numbers = self.get_image_numbers()
-        values = [[unicode(x) for x in self.get_measurement(IMAGE, feature, image_numbers)]
+        values = [[six.text_type(x) for x in self.get_measurement(IMAGE, feature, image_numbers)]
                   for feature in features]
         for i, image_number in enumerate(image_numbers):
             key = tuple([(k, v[i]) for k, v in zip(features, values)])

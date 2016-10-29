@@ -92,7 +92,7 @@ def cp_start_vm():
         logger.debug("JVM will be started with AWT in headless mode")
         args.append("-Djava.awt.headless=true")
 
-    heap_size = str(cellprofiler.preferences.get_jvm_heap_mb()) + "m"
+    heap_size = str(512) + "m"
     if os.environ.has_key("CP_JDWP_PORT"):
         args.append(
                 ("-agentlib:jdwp=transport=dt_socket,address=127.0.0.1:%s"

@@ -1,27 +1,17 @@
-""" Setting.py - represents a module setting
-"""
-
+from cellprofiler.preferences import DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME, DEFAULT_INPUT_SUBFOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME, ABSOLUTE_FOLDER_NAME, URL_FOLDER_NAME, NO_FOLDER_NAME, get_default_image_directory, get_default_output_directory, standardize_default_folder_names
+from cellprofiler.utilities.utf16encode import utf16encode
+import cellprofiler.measurement
+import json
 import logging
+import matplotlib.cm
+import os
+import re
+import skimage.morphology
+import sys
+import uuid
+import six
 
 logger = logging.getLogger(__name__)
-import json
-import matplotlib.cm
-import numpy as np
-import os
-import sys
-import re
-import uuid
-
-from cellprofiler.preferences import \
-    DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME, \
-    DEFAULT_INPUT_SUBFOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME, \
-    ABSOLUTE_FOLDER_NAME, URL_FOLDER_NAME, NO_FOLDER_NAME, \
-    get_default_image_directory, get_default_output_directory, \
-    standardize_default_folder_names
-import cellprofiler.measurement
-
-from cellprofiler.utilities.utf16encode import utf16encode
-import skimage.morphology
 
 '''Matlab CellProfiler uses this string for settings to be excluded'''
 DO_NOT_USE = 'Do not use'
@@ -151,7 +141,7 @@ class Setting(object):
         override this to do things like compare whether an integer
         setting's value matches a given number
         '''
-        return self.value == unicode(x)
+        return self.value == six.text_type(x)
 
     def __ne__(self, x):
         return not self.__eq__(x)
@@ -202,7 +192,7 @@ class Setting(object):
         return self.get_unicode_value()
 
     def get_unicode_value(self):
-        return unicode(self.value_text)
+        return six.text_type(self.value_text)
 
 
 class HiddenCount(Setting):
@@ -238,7 +228,7 @@ class HiddenCount(Setting):
         return str(len(self.__sequence))
 
     def get_unicode_value(self):
-        return unicode(len(self.__sequence))
+        return six.text_type(len(self.__sequence))
 
 
 class Text(Setting):
@@ -281,7 +271,7 @@ class RegexpText(Setting):
             # Convert Matlab to Python
             pattern = re.sub('(\\(\\?)([<][^)>]+?[>])', '\\1P\\2', self.value)
             re.search('(|(%s))' % pattern, '')
-        except re.error, v:
+        except re.error as v:
             raise ValidationError("Invalid regexp: %s" % v, self)
 
 
@@ -599,7 +589,7 @@ class ImagePlane(Setting):
                     "URLs should not contain spaces. %s is the offending URL" % url)
             url = url.replace(" ", "%20")
         return " ".join([str(x) if x is not None else ""
-                         for x in url, series, index, channel])
+                         for x in (url, series, index, channel)])
 
     def __get_field(self, index):
         f = self.value_text.split(" ")[index]
@@ -729,7 +719,7 @@ class Number(Text):
     def set_value(self, value):
         """Convert integer to string
         """
-        str_value = unicode(value) if isinstance(value, basestring) \
+        str_value = six.text_type(value) if isinstance(value, basestring) \
             else self.value_to_str(value)
         self.set_value_text(str_value)
 
@@ -1197,7 +1187,7 @@ class FloatRange(Range):
         """
         smin, smax = [(u"%f" % v).rstrip("0") for v in value]
         text_value = ",".join([x + "0" if x.endswith(".") else ""
-                               for x in smin, smax])
+                               for x in (smin, smax)])
         super(FloatRange, self).__init__(text, text_value, *args, **kwargs)
 
     def str_to_value(self, value_str):
@@ -1917,7 +1907,7 @@ class MeasurementMultiChoice(MultiChoice):
 
         def valid_mc(c):
             '''Disallow any measurement column with "," or "|" in its names'''
-            return not any([any([bad in f for f in c[:2]]) for bad in ",", "|"])
+            return not any([any([bad in f for f in c[:2]]) for bad in (",", "|")])
 
         self.set_choices([self.make_measurement_choice(c[0], c[1])
                           for c in columns if valid_mc(c)])
@@ -3000,7 +2990,7 @@ class Filter(Setting):
         for element in structure:
             if isinstance(element, Filter.FilterPredicate):
                 s.append(
-                        cls.FilterPredicate.encode_symbol(unicode(element.symbol)))
+                        cls.FilterPredicate.encode_symbol(six.text_type(element.symbol)))
             elif isinstance(element, basestring):
                 s.append(u'"' + cls.encode_literal(element) + u'"')
             else:
@@ -3016,7 +3006,7 @@ class Filter(Setting):
             """, dict(expr=self.value_text,
                       klass=J.class_for_name(
                               "org.cellprofiler.imageset.ImagePlaneDetailsStack")))
-        except Exception, e:
+        except Exception as e:
             raise ValidationError(str(e), self)
 
     def test_setting_warnings(self, pipeline):

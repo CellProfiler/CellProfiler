@@ -123,7 +123,7 @@ class VWImageRow(VWRow):
         image_set = vw.workspace.image_set
         name = self.chooser.GetStringSelection()
 
-        im = cellprofiler.preferences.get_intensity_mode()
+        im = "normalized"
         if im == cellprofiler.preferences.INTENSITY_MODE_LOG:
             normalization = cellprofiler.gui.artist.NORMALIZE_LOG
         elif im == cellprofiler.preferences.INTENSITY_MODE_NORMAL:

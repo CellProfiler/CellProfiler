@@ -777,11 +777,7 @@ class Figure(wx.Frame):
         x - subplot's column
         y - subplot's row
         """
-        fontname = fontname = cellprofiler.preferences.get_title_font_name()
-
-        self.subplot(x, y).set_title(title,
-                                     fontname=fontname,
-                                     fontsize=cellprofiler.preferences.get_title_font_size())
+        self.subplot(x, y).set_title(title, fontname="Tahoma", fontsize=12)
 
     def clear_subplot(self, x, y):
         """Clear a subplot of its gui junk. Noop if no subplot exists at x,y

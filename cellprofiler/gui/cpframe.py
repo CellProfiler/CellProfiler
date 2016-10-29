@@ -302,8 +302,7 @@ class CPFrame(wx.Frame):
         self.__error_listeners = []
         self.Bind(wx.EVT_CLOSE, self.OnClose)
         self.SetAutoLayout(True)
-        if cellprofiler.preferences.get_startup_blurb():
-            self.show_welcome_screen(True)
+        self.show_welcome_screen(True)
         self.show_module_ui(True)
 
     def start(self, workspace_path, pipeline_path):
@@ -1190,7 +1189,7 @@ class CPFrame(wx.Frame):
 
     def __make_search_frame(self):
         """Make and hide the "search the help" frame"""
-        background_color = cellprofiler.preferences.get_background_color()
+        background_color = wx.SystemSettings.GetColour(wx.SYS_COLOUR_BACKGROUND)
         size = (wx.SystemSettings.GetMetric(wx.SYS_SCREEN_X) / 2,
                 wx.SystemSettings.GetMetric(wx.SYS_SCREEN_Y) / 2)
         self.search_frame = wx.Frame(
@@ -1261,7 +1260,7 @@ class CPFrame(wx.Frame):
 
     def __make_startup_blurb_frame(self):
         """Make the frame surrounding the startup blurb panel"""
-        background_color = cellprofiler.preferences.get_background_color()
+        background_color = wx.SystemSettings.GetColour(wx.SYS_COLOUR_BACKGROUND)
         frame = self.startup_blurb_frame = wx.Frame(
                 self, title="Welcome to CellProfiler",
                 size=(640, 480),

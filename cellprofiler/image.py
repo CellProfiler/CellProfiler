@@ -1,18 +1,9 @@
-"""Image.py
-
-Image        - Represents an image with secondary attributes such as a mask and labels
-ImageSetList - Represents the list of image filenames that make up a pipeline run
-"""
-
-import StringIO
-import cPickle
+import pickle
 import logging
 import math
-import struct
-import sys
-import zlib
-
 import numpy
+import six
+import sys
 
 logger = logging.getLogger(__name__)
 
@@ -729,14 +720,14 @@ class ImageSetList(object):
         load_state will restore the image set list's state. No image_set can
         have image providers before this call.
         '''
-        f = StringIO.StringIO()
-        cPickle.dump(self.count(), f)
+        f = six.StringIO()
+        pickle.dump(self.count(), f)
         for i in range(self.count()):
             image_set = self.get_image_set(i)
             assert isinstance(image_set, ImageSet)
             assert len(image_set.providers) == 0, "An image set cannot have providers while saving its state"
-            cPickle.dump(image_set.keys, f)
-        cPickle.dump(self.legacy_fields, f)
+            pickle.dump(image_set.keys, f)
+        pickle.dump(self.legacy_fields, f)
         return f.getvalue()
 
     def load_state(self, state):
@@ -746,7 +737,7 @@ class ImageSetList(object):
         self.__image_sets_by_key = {}
 
         # Make a safe unpickler
-        p = cPickle.Unpickler(StringIO.StringIO(state))
+        p = pickle.Unpickler(six.StringIO(state))
 
         def find_global(module_name, class_name):
             logger.debug("Pickler wants %s:%s", module_name, class_name)
@@ -776,5 +767,4 @@ class ImageSetList(object):
 
 def make_dictionary_key(key):
     '''Make a dictionary into a stable key for another dictionary'''
-    return u", ".join([u":".join([unicode(y) for y in x])
-                       for x in sorted(key.iteritems())])
+    return u", ".join([u":".join([six.text_type(y) for y in x]) for x in sorted(key.iteritems())])

@@ -10,6 +10,7 @@ import cellprofiler.image
 import cellprofiler.module
 import cellprofiler.setting
 import skimage.morphology
+import skimage.util
 
 
 class Closing(cellprofiler.module.Module):
@@ -57,7 +58,13 @@ class Closing(cellprofiler.module.Module):
 
         x_data = x.pixel_data
 
-        y_data = skimage.morphology.closing(x_data, structuring_element)
+        y_data = skimage.util.apply_parallel(
+            array=x_data,
+            extra_keywords={
+                "selem": structuring_element
+            },
+            function=skimage.morphology.closing
+        )
 
         y = cellprofiler.image.Image(
             image=y_data,

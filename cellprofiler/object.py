@@ -1,6 +1,3 @@
-""" CellProfiler.Objects.py - represents a labelling of objects in an image
-"""
-
 import centrosome.index
 import centrosome.outline
 import numpy
@@ -99,8 +96,8 @@ class Objects(object):
         sparse = self.__segmented.sparse
         return numpy.column_stack(
                 [sparse[axis] for axis in
-                 "y", "x",
-                 "label"])
+                 ("y", "x",
+                  "label")])
 
     ijv = property(get_ijv, set_ijv)
 
@@ -539,7 +536,7 @@ class Segmentation(object):
         axes = list(("c", "t", "z", "y", "x"))
         axes, shape = [
             [a for a, s in zip(aa, self.shape) if s > 1]
-            for aa in axes, self.shape]
+            for aa in (axes, self.shape)]
         #
         # dense.shape[0] is the overlap-axis - it's usually 1
         # except if there are multiply-labeled pixels and overlapping

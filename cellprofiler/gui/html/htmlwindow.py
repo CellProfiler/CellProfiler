@@ -1,5 +1,4 @@
 # coding=utf-8
-from cellprofiler.preferences import get_background_color, set_startup_blurb
 
 import cellprofiler.icons
 import content
@@ -30,7 +29,6 @@ class HtmlClickableWindow(wx.html.HtmlWindow):
             webbrowser.open(href)
         elif href.startswith('pref:'):
             if 'no_display' in href:
-                set_startup_blurb(False)
                 # Find the parent frame and, if it's the welcome screen frame,
                 # "close" it (= hide it)
                 #

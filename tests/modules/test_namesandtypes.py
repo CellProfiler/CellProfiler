@@ -1815,3 +1815,23 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
         self.assertEqual((0.3, 0.7, 0.7), image.spacing)
 
         self.assertTrue(image.pixel_data.dtype.kind == "b")
+
+    def test_load_illumination_function(self):
+        path = os.path.realpath(os.path.join(os.path.dirname(__file__), "../resources/ball.tif"))
+
+        workspace = self.run_workspace(
+            path,
+            "Illumination function",
+            volume=True,
+            spacing=(0.3, 0.7, 0.7)
+        )
+
+        image = workspace.image_set.get_image("imagename")
+
+        self.assertEqual(3, image.dimensions)
+
+        self.assertEqual((9, 9, 9), image.pixel_data.shape)
+
+        self.assertEqual((0.3, 0.7, 0.7), image.spacing)
+
+        self.assertTrue(image.pixel_data.dtype.kind == "f")

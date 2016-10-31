@@ -694,22 +694,20 @@ class NamesAndTypes(cpm.Module):
         return result
 
     def visible_settings(self):
-        result = [self.assignment_method]
+        result = [self.assignment_method, self.volumetric]
+
+        if self.volumetric.value:
+            result += [
+                self.x,
+                self.y,
+                self.z
+            ]
 
         if self.assignment_method == ASSIGN_ALL:
             result += [
                 self.single_load_as_choice,
-                self.single_image_provider,
-                self.volumetric
+                self.single_image_provider
             ]
-
-            if self.volumetric.value:
-                result += [
-                    self.x,
-                    self.y,
-                    self.z
-                ]
-
             if self.single_load_as_choice in (LOAD_AS_COLOR_IMAGE,
                                               LOAD_AS_GRAYSCALE_IMAGE):
                 result += [self.single_rescale]
@@ -1551,7 +1549,7 @@ class NamesAndTypes(cpm.Module):
         elif load_choice == LOAD_AS_GRAYSCALE_IMAGE:
             provider = MonochromeImageProvider(name, url, series, index, channel, rescale, volume=volume, spacing=spacing)
         elif load_choice == LOAD_AS_ILLUMINATION_FUNCTION:
-            provider = MonochromeImageProvider(name, url, series, index, channel, False)
+            provider = MonochromeImageProvider(name, url, series, index, channel, False, volume=volume, spacing=spacing)
         elif load_choice == LOAD_AS_MASK:
             provider = MaskImageProvider(name, url, series, index, channel, volume=volume, spacing=spacing)
 

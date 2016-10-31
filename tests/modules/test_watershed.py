@@ -87,8 +87,6 @@ def test_run_distance(image, module, image_set, workspace):
 
     module.y_name.value = "watershed"
 
-    module.distance_name.value = "distance"
-
     module.size.value = 32
 
     data = image.pixel_data
@@ -109,18 +107,9 @@ def test_run_distance(image, module, image_set, workspace):
         )
     )
 
-    distance = scipy.ndimage.distance_transform_edt(binary)
-
-    image_set.add(
-        "distance",
-        cellprofiler.image.Image(
-            image=distance,
-            convert=False,
-            dimensions=image.dimensions
-        )
-    )
-
     module.run(workspace)
+
+    distance = scipy.ndimage.distance_transform_edt(binary)
 
     local_maximums = skimage.feature.peak_local_max(
         distance,

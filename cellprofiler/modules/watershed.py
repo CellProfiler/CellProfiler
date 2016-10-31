@@ -65,7 +65,7 @@ class Watershed(cellprofiler.module.ImageSegmentation):
         )
 
         self.size = cellprofiler.setting.Integer(
-            "Size",
+            "Minimum object diameter",
             value=1,
             minval=1,
             doc="Minimum size of objects (in pixels) in the image."

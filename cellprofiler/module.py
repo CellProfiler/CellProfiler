@@ -902,6 +902,7 @@ class ImageProcessing(Module):
         )
 
         figure.subplot_imshow(
+            colormap="gray",
             dimensions=workspace.display_data.dimensions,
             image=workspace.display_data.x_data,
             x=0,
@@ -909,6 +910,7 @@ class ImageProcessing(Module):
         )
 
         figure.subplot_imshow(
+            colormap="gray",
             dimensions=workspace.display_data.dimensions,
             image=workspace.display_data.y_data,
             x=1,
@@ -998,6 +1000,7 @@ class ImageSegmentation(Module):
         )
 
         figure.subplot_imshow(
+            colormap="gray",
             dimensions=workspace.display_data.dimensions,
             image=workspace.display_data.x_data,
             x=0,

@@ -10,7 +10,6 @@ import cellprofiler.image
 import cellprofiler.module
 import cellprofiler.object
 import cellprofiler.setting
-import numpy
 import skimage.feature
 import skimage.measure
 import skimage.morphology
@@ -19,7 +18,7 @@ import skimage.morphology
 class Watershed(cellprofiler.module.ImageSegmentation):
     module_name = "Watershed"
 
-    variable_revision_number = 1
+    variable_revision_number = 2
 
     def create_settings(self):
         super(Watershed, self).create_settings()
@@ -65,6 +64,13 @@ class Watershed(cellprofiler.module.ImageSegmentation):
             doc="Optional. Only regions not blocked by the mask will be segmented."
         )
 
+        self.size = cellprofiler.setting.Integer(
+            "Minimum object diameter",
+            value=1,
+            minval=1,
+            doc="Minimum size of objects (in pixels) in the image."
+        )
+
     def settings(self):
         __settings__ = super(Watershed, self).settings()
 
@@ -72,7 +78,8 @@ class Watershed(cellprofiler.module.ImageSegmentation):
             self.operation,
             self.distance_name,
             self.markers_name,
-            self.mask_name
+            self.mask_name,
+            self.size
         ]
 
     def visible_settings(self):
@@ -84,7 +91,8 @@ class Watershed(cellprofiler.module.ImageSegmentation):
 
         if self.operation.value == "Distance":
             __settings__ = __settings__ + [
-                self.distance_name
+                self.distance_name,
+                self.size
             ]
         else:
             __settings__ = __settings__ + [
@@ -114,15 +122,18 @@ class Watershed(cellprofiler.module.ImageSegmentation):
 
             distance_data = distance.pixel_data
 
-            if dimensions is 3:
-                footprint = numpy.ones((3, 3, 3))
-            else:
-                footprint = numpy.ones((3, 3))
+            # http://scikit-image.org/docs/dev/api/skimage.feature.html#skimage.feature.peak_local_max says:
+            #       Peaks are the local maxima in a region of 2 * min_distance + 1
+            #       (i.e. peaks are separated by at least min_distance).
+            #
+            # We observe under-segmentation when passing min_distance=self.size.value. Better segmentation
+            # occurs when self.size.value = 2 * min_distance + 1.
+            min_distance = max(1, (self.size.value - 1) / 2)
 
             local_maximums = skimage.feature.peak_local_max(
                 distance_data,
                 indices=False,
-                footprint=footprint,
+                min_distance=min_distance,
                 labels=x_data
             )
 
@@ -169,3 +180,10 @@ class Watershed(cellprofiler.module.ImageSegmentation):
             workspace.display_data.y_data = y_data
 
             workspace.display_data.dimensions = dimensions
+
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name, from_matlab):
+        if variable_revision_number == 1:
+            setting_values = setting_values[:6] + [1] + setting_values[6:]
+            variable_revision_number = 2
+
+        super(Watershed, self).upgrade_settings(setting_values, variable_revision_number, module_name, from_matlab)

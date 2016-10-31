@@ -89,6 +89,8 @@ def test_run_distance(image, module, image_set, workspace):
 
     module.distance_name.value = "distance"
 
+    module.size.value = 32
+
     data = image.pixel_data
 
     if image.multichannel:
@@ -120,15 +122,10 @@ def test_run_distance(image, module, image_set, workspace):
 
     module.run(workspace)
 
-    if image.dimensions is 3:
-        footprint = numpy.ones((3, 3, 3))
-    else:
-        footprint = numpy.ones((3, 3))
-
     local_maximums = skimage.feature.peak_local_max(
         distance,
         indices=False,
-        footprint=footprint,
+        min_distance=15,
         labels=binary
     )
 

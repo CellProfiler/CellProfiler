@@ -87,8 +87,6 @@ def test_run_distance(image, module, image_set, workspace):
 
     module.y_name.value = "watershed"
 
-    module.distance_name.value = "distance"
-
     data = image.pixel_data
 
     if image.multichannel:
@@ -107,18 +105,9 @@ def test_run_distance(image, module, image_set, workspace):
         )
     )
 
-    distance = scipy.ndimage.distance_transform_edt(binary)
-
-    image_set.add(
-        "distance",
-        cellprofiler.image.Image(
-            image=distance,
-            convert=False,
-            dimensions=image.dimensions
-        )
-    )
-
     module.run(workspace)
+
+    distance = scipy.ndimage.distance_transform_edt(binary)
 
     if image.dimensions is 3:
         footprint = numpy.ones((3, 3, 3))

@@ -11,6 +11,7 @@ import cellprofiler.module
 import cellprofiler.object
 import cellprofiler.setting
 import numpy
+import scipy.ndimage
 import skimage.feature
 import skimage.measure
 import skimage.morphology
@@ -19,13 +20,13 @@ import skimage.morphology
 class Watershed(cellprofiler.module.ImageSegmentation):
     module_name = "Watershed"
 
-    variable_revision_number = 1
+    variable_revision_number = 2
 
     def create_settings(self):
         super(Watershed, self).create_settings()
 
         self.operation = cellprofiler.setting.Choice(
-            "Generate from:",
+            "Generate from",
             [
                 "Distance",
                 "Markers"
@@ -34,9 +35,9 @@ class Watershed(cellprofiler.module.ImageSegmentation):
             doc="""Select a method of inputs for the watershed algorithm:
             <ul>
                 <li>
-                    <i>Distance</i>: This is classical nuclei segmentation using watershed. Your "Input" image
-                    should be a binary image. The "Distance" image should be a result of DistanceTransform. Markers and
-                    other inputs for the watershed algorithm will be automatically generated from the "distance" input.
+                    <i>Distance</i> (default): This is classical nuclei segmentation using watershed. Your "Input" image
+                    should be a binary image. Markers and other inputs for the watershed algorithm will be
+                    automatically generated.
                 </li>
                 <br>
                 <li>
@@ -47,11 +48,6 @@ class Watershed(cellprofiler.module.ImageSegmentation):
                 </li>
             </ul>
             """
-        )
-
-        self.distance_name = cellprofiler.setting.ImageNameSubscriber(
-            "Distance",
-            doc="An image of the distance from regions of interest to the background."
         )
 
         self.markers_name = cellprofiler.setting.ImageNameSubscriber(
@@ -70,7 +66,6 @@ class Watershed(cellprofiler.module.ImageSegmentation):
 
         return __settings__ + [
             self.operation,
-            self.distance_name,
             self.markers_name,
             self.mask_name
         ]
@@ -82,11 +77,7 @@ class Watershed(cellprofiler.module.ImageSegmentation):
             self.operation
         ]
 
-        if self.operation.value == "Distance":
-            __settings__ = __settings__ + [
-                self.distance_name
-            ]
-        else:
+        if self.operation.value == "Markers":
             __settings__ = __settings__ + [
                 self.markers_name,
                 self.mask_name
@@ -108,11 +99,7 @@ class Watershed(cellprofiler.module.ImageSegmentation):
         x_data = x.pixel_data
 
         if self.operation.value == "Distance":
-            distance_name = self.distance_name.value
-
-            distance = images.get_image(distance_name)
-
-            distance_data = distance.pixel_data
+            distance_data = scipy.ndimage.distance_transform_edt(x_data)
 
             if dimensions is 3:
                 footprint = numpy.ones((3, 3, 3))
@@ -169,3 +156,10 @@ class Watershed(cellprofiler.module.ImageSegmentation):
             workspace.display_data.y_data = y_data
 
             workspace.display_data.dimensions = dimensions
+
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name, from_matlab):
+        if variable_revision_number == 1:
+            setting_values = setting_values[0] + setting_values[2:]
+            variable_revision_number = 2
+
+        return super(Watershed, self).upgrade_settings(setting_values, variable_revision_number, module_name, from_matlab)

@@ -1330,8 +1330,6 @@ class Figure(wx.Frame):
                 hist_fig.figure.canvas.draw()
             return subplot
         else:
-            colormap = "gray" if colormap is None else colormap
-
             self.gridshow(x, y, image, colormap)
 
     @staticmethod

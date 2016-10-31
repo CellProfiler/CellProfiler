@@ -30,7 +30,8 @@ class Thresholding(cellprofiler.module.ImageProcessing):
                 u"Minimum cross entropy thresholding",
                 u"Otsu’s method",
                 u"Yen’s method"
-            ]
+            ],
+            u"Minimum cross entropy thresholding"
         )
 
         self.block_size = cellprofiler.setting.OddInteger(

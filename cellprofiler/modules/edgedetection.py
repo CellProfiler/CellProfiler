@@ -2,6 +2,10 @@
 
 """
 
+Detect edges in an image or volume using the Sobel transform. Multi-channel images are converted to grayscale before
+the transform is applied. An edge is a region in which intensity changes dramatically. For example, an edge is the line
+between a dark background and a bright foreground.
+
 """
 
 import cellprofiler.image
@@ -24,7 +28,11 @@ class EdgeDetection(cellprofiler.module.ImageProcessing):
 
         self.mask = cellprofiler.setting.ImageNameSubscriber(
             u"Mask",
-            can_be_blank=True
+            can_be_blank=True,
+            doc="""
+            Optional. A binary image the same shape as "Input". Limit application of the edge filter to unmasked
+            regions of "Input".
+            """
         )
 
     def settings(self):

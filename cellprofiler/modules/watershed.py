@@ -19,7 +19,7 @@ import skimage.morphology
 class Watershed(cellprofiler.module.ImageSegmentation):
     module_name = "Watershed"
 
-    variable_revision_number = 2
+    variable_revision_number = 3
 
     def create_settings(self):
         super(Watershed, self).create_settings()

@@ -2,7 +2,6 @@
 """PreferencesView.py - displays the default preferences in the lower right corner
 """
 
-import cellprofiler.analysis
 import cellprofiler.gui.help
 import cellprofiler.gui.htmldialog
 import cellprofiler.preferences
@@ -289,17 +288,6 @@ class PreferencesView(object):
         panel.Bind(wx.EVT_WINDOW_DESTROY, self.__on_destroy, panel)
         on_write_MAT_files_combo_box(None)
 
-    def update_worker_count_info(self, n_workers):
-        """Update the # of running workers in the progress UI
-
-        n_workers - # of workers running
-        """
-        if n_workers == 1:
-            label = "Running 1 worker."
-        else:
-            label = "Running %d workers." % n_workers
-        self.__worker_count_ctrl.Label = label
-
     def __make_progress_panel(self):
         panel = self.__progress_panel
         self.__progress_msg_ctrl = wx.StaticText(panel)
@@ -416,7 +404,7 @@ class PreferencesView(object):
         self.__progress_watcher = ProgressWatcher(
             self.__progress_panel,
             self.update_progress,
-            multiprocessing=cellprofiler.analysis.use_analysis)
+            multiprocessing=False)
         self.show_progress_panel()
 
     def on_pipeline_progress(self, *args):

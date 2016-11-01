@@ -224,7 +224,6 @@ class ConvertObjectsToImage(cellprofiler.module.Module):
                 0,
                 0,
                 workspace.display_data.segmented,
-                self.object_name.value,
                 title="Original: %s" % self.object_name.value,
                 dimensions=dimensions
             )
@@ -234,7 +233,6 @@ class ConvertObjectsToImage(cellprofiler.module.Module):
             0,
             pixel_data,
             self.image_name.value,
-            sharexy=figure.subplot(0, 0),
             colormap=cmap,
             dimensions=dimensions
         )

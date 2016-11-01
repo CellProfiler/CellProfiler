@@ -1620,14 +1620,13 @@ class Measurements(object):
             image = matching_providers[0].provide_image(self)
             if cache:
                 self.__images[name] = image
-        if must_be_binary and image.pixel_data.ndim == 3:
+        if must_be_binary and image.multichannel:
             raise ValueError("Image must be binary, but it was color")
         if must_be_binary and image.pixel_data.dtype != np.bool:
             raise ValueError("Image was not binary")
-        if must_be_color and image.pixel_data.ndim != 3:
+        if must_be_color and not image.multichannel:
             raise ValueError("Image must be color, but it was grayscale")
-        if (must_be_grayscale and
-                (image.pixel_data.ndim != 2)):
+        if must_be_grayscale and image.multichannel:
             pd = image.pixel_data
             if pd.shape[2] >= 3 and \
                     np.all(pd[:, :, 0] == pd[:, :, 1]) and \
@@ -1637,9 +1636,9 @@ class Measurements(object):
         if must_be_grayscale and image.pixel_data.dtype.kind == 'b':
             return GrayscaleImage(image)
         if must_be_rgb:
-            if image.pixel_data.ndim != 3:
+            if not image.multichannel:
                 raise ValueError("Image must be RGB, but it was grayscale")
-            elif image.pixel_data.shape[2] not in (3, 4):
+            elif image.multichannel and image.pixel_data.shape[2] not in (3, 4):
                 raise ValueError("Image must be RGB, but it had %d channels" %
                                  image.pixel_data.shape[2])
             elif image.pixel_data.shape[2] == 4:

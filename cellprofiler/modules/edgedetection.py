@@ -97,4 +97,4 @@ class EdgeDetection(cellprofiler.module.ImageProcessing):
 
             workspace.display_data.y_data = y_data
 
-            workspace.dimensions = dimensions
+            workspace.display_data.dimensions = dimensions

@@ -70,17 +70,11 @@ class ActiveContourModel(cellprofiler.module.ImageSegmentation):
 
         x_data = x.pixel_data
 
-        thresholding = skimage.filters.threshold_isodata(x_data)
+        thresholding = skimage.filters.threshold_otsu(x_data)
+
+        thresholding = thresholding * 0.9
 
         binary = x_data > thresholding
-
-        ball = skimage.morphology.ball(3)
-
-        binary = skimage.morphology.closing(binary, ball)
-
-        binary = skimage.morphology.remove_small_holes(binary, 1000)
-
-        binary = skimage.morphology.remove_small_objects(binary, 1000)
 
         y_data, phi = chan_vese(x_data, binary, alpha=self.alpha.value, iterations=self.iterations.value, threshold=self.threshold.value)
 

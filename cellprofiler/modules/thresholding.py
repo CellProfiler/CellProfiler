@@ -10,6 +10,7 @@ import cellprofiler.image
 import cellprofiler.module
 import cellprofiler.setting
 import numpy
+import skimage.exposure
 import skimage.filters
 
 
@@ -161,9 +162,14 @@ class Thresholding(cellprofiler.module.ImageProcessing):
 
             y_data = x_data >= y_data
         elif self.operation.value == u"Manual":
-            y_data = x_data > self.lower
+            x_data = skimage.exposure.rescale_intensity(x_data)
 
-            y_data = y_data < self.upper
+            x_data = skimage.img_as_float(x_data)
+
+            y_data = numpy.zeros_like(x_data, numpy.bool)
+
+            y_data[x_data > self.lower.value] = True
+            y_data[x_data < self.upper.value] = False
         elif self.operation.value == u"Minimum cross entropy thresholding":
             y_data = skimage.filters.threshold_li(
                 image=x_data

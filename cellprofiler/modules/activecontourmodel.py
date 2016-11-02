@@ -86,6 +86,12 @@ class ActiveContourModel(cellprofiler.module.ImageSegmentation):
 
         y_data = skimage.measure.label(y_data)
 
+        objects = cellprofiler.object.Objects()
+
+        objects.segmented = y_data
+
+        workspace.object_set.add_objects(objects, y_name)
+
         if self.show_window:
             workspace.display_data.x_data = x_data
 

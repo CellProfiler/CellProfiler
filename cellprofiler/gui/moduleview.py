@@ -669,11 +669,14 @@ class ModuleView(object):
                 control,
                 choices=v.get_choices(),
                 style=wx.CB_READONLY,
-                name=shape_control_name
+                name=shape_control_name,
+                value=v.shape
             )
 
-            def on_select_shape(event):
-                v.shape = event.GetString()
+            def on_select_shape(event, setting=v, control=shape_control):
+                setting.shape = event.GetString()
+                new_value = setting.value_text
+                self.on_value_change(setting, control, new_value, event)
 
             shape_control.Bind(wx.EVT_COMBOBOX, on_select_shape)
 
@@ -685,13 +688,16 @@ class ModuleView(object):
 
             size_control = wx.TextCtrl(
                 control,
-                name=size_control_name
+                name=size_control_name,
+                value=str(v.size)
             )
 
             def on_set_size(event):
                 v.size = int(event.GetString())
+                new_value = v.value_text
+                self.notify(SettingEditedEvent(v, self.__module, new_value, event))
 
-            size_control.Bind(wx.EVT_TEXT, on_set_size)
+            self.__module_panel.Bind(wx.EVT_TEXT, on_set_size, size_control)
 
             shape_sizer = wx.BoxSizer(wx.VERTICAL)
 
@@ -717,9 +723,9 @@ class ModuleView(object):
 
             size_control = self.module_panel.FindWindowByName(size_control_name)
 
-        shape_control.SetStringSelection(v.shape)
+            shape_control.SetStringSelection(v.shape)
 
-        size_control.Value = str(v.size)
+            size_control.Value = str(v.size)
 
         return control
 

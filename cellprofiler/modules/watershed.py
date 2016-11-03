@@ -10,6 +10,8 @@ import cellprofiler.image
 import cellprofiler.module
 import cellprofiler.object
 import cellprofiler.setting
+import mahotas
+import numpy
 import scipy.ndimage
 import skimage.feature
 import skimage.measure
@@ -60,11 +62,10 @@ class Watershed(cellprofiler.module.ImageSegmentation):
             doc="Optional. Only regions not blocked by the mask will be segmented."
         )
 
-        self.size = cellprofiler.setting.Integer(
-            "Minimum object diameter",
-            value=1,
+        self.radius = cellprofiler.setting.Integer(
             minval=1,
-            doc="Minimum size of objects (in pixels) in the image."
+            text="Diameter",
+            value=16,
         )
 
     def settings(self):
@@ -74,7 +75,7 @@ class Watershed(cellprofiler.module.ImageSegmentation):
             self.operation,
             self.markers_name,
             self.mask_name,
-            self.size
+            self.radius
         ]
 
     def visible_settings(self):
@@ -86,7 +87,7 @@ class Watershed(cellprofiler.module.ImageSegmentation):
 
         if self.operation.value == "Distance":
             __settings__ = __settings__ + [
-                self.size
+                self.radius
             ]
         else:
             __settings__ = __settings__ + [
@@ -110,28 +111,28 @@ class Watershed(cellprofiler.module.ImageSegmentation):
         x_data = x.pixel_data
 
         if self.operation.value == "Distance":
-            distance_data = scipy.ndimage.distance_transform_edt(x_data)
+            distance = mahotas.distance(x_data)
 
-            # http://scikit-image.org/docs/dev/api/skimage.feature.html#skimage.feature.peak_local_max says:
-            #       Peaks are the local maxima in a region of 2 * min_distance + 1
-            #       (i.e. peaks are separated by at least min_distance).
-            #
-            # We observe under-segmentation when passing min_distance=self.size.value. Better segmentation
-            # occurs when self.size.value = 2 * min_distance + 1.
-            min_distance = max(1, (self.size.value - 1) / 2)
+            distance = mahotas.stretch(distance)
 
-            local_maximums = skimage.feature.peak_local_max(
-                distance_data,
-                indices=False,
-                min_distance=min_distance,
-                labels=x_data
-            )
+            radius = self.radius.value
 
-            data = -1 * distance_data
+            if x.dimensions is 2:
+                shape = (radius, radius)
+            else:
+                shape = (radius, radius, radius)
 
-            markers_data = skimage.measure.label(local_maximums)
+            footprint = numpy.ones(shape)
 
-            mask_data = x_data
+            peaks = mahotas.morph.regmax(distance, footprint)
+
+            markers, count = mahotas.label(peaks, footprint)
+
+            surface = distance.max() - distance
+
+            y_data = mahotas.cwatershed(surface, markers)
+
+            y_data *= x_data
         else:
             markers_name = self.markers_name.value
 
@@ -150,11 +151,11 @@ class Watershed(cellprofiler.module.ImageSegmentation):
 
                 mask_data = mask.pixel_data
 
-        y_data = skimage.morphology.watershed(
-            image=data,
-            markers=markers_data,
-            mask=mask_data
-        )
+            y_data = skimage.morphology.watershed(
+                image=data,
+                markers=markers_data,
+                mask=mask_data
+            )
 
         y_data = skimage.measure.label(y_data)
 

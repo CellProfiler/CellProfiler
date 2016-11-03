@@ -62,7 +62,7 @@ class Watershed(cellprofiler.module.ImageSegmentation):
             doc="Optional. Only regions not blocked by the mask will be segmented."
         )
 
-        self.diameter = cellprofiler.setting.Integer(
+        self.radius = cellprofiler.setting.Integer(
             minval=1,
             text="Diameter",
             value=16,
@@ -75,7 +75,7 @@ class Watershed(cellprofiler.module.ImageSegmentation):
             self.operation,
             self.markers_name,
             self.mask_name,
-            self.diameter
+            self.radius
         ]
 
     def visible_settings(self):
@@ -87,7 +87,7 @@ class Watershed(cellprofiler.module.ImageSegmentation):
 
         if self.operation.value == "Distance":
             __settings__ = __settings__ + [
-                self.diameter
+                self.radius
             ]
         else:
             __settings__ = __settings__ + [
@@ -115,9 +115,12 @@ class Watershed(cellprofiler.module.ImageSegmentation):
 
             distance = mahotas.stretch(distance)
 
-            diameter = self.diameter.value
+            radius = self.radius.value
 
-            shape = (diameter, diameter, diameter)
+            if x.dimensions is 2:
+                shape = (radius, radius)
+            else:
+                shape = (radius, radius, radius)
 
             footprint = numpy.ones(shape)
 

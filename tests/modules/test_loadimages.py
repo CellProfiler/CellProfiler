@@ -32,6 +32,7 @@ from cellprofiler.modules.namesandtypes import M_IMAGE_SET
 from tests.modules import \
     example_images_directory, maybe_download_sbs, maybe_download_tesst_image, maybe_download_fly, \
     cp_logo_url_folder, cp_logo_url_filename, cp_logo_url_shape
+import skimage.io
 
 IMAGE_NAME = "image"
 ALT_IMAGE_NAME = "altimage"
@@ -3813,6 +3814,54 @@ LoadImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
                                  "ExampleSBSImages")
         self.convtester(pipeline_text, directory)
 
+
+class TestLoadImagesImageProvider(unittest.TestCase):
+    def test_provide_volume(self):
+        path = os.path.realpath(os.path.join(os.path.dirname(__file__), "../resources"))
+
+        provider = LI.LoadImagesImageProvider(
+            name="ball",
+            pathname=path,
+            filename="ball.tif",
+            volume=True,
+            spacing=(0.3, 0.7, 0.7)
+        )
+
+        image = provider.provide_image(None)
+
+        expected = skimage.io.imread(os.path.join(path, "ball.tif"))
+
+        self.assertEqual(3, image.dimensions)
+
+        self.assertEqual((9, 9, 9), image.pixel_data.shape)
+
+        self.assertEqual((0.3, 0.7, 0.7), image.spacing)
+
+        self.assertTrue(np.all(expected == image.pixel_data))
+
+
+class TestLoadImagesImageProviderURL(unittest.TestCase):
+    def test_provide_volume(self):
+        path = os.path.realpath(os.path.join(os.path.dirname(__file__), "../resources"))
+
+        provider = LI.LoadImagesImageProviderURL(
+            name="ball",
+            url="file:/" + os.path.join(path, "ball.tif"),
+            volume=True,
+            spacing=(0.3, 0.7, 0.7)
+        )
+
+        image = provider.provide_image(None)
+
+        expected = skimage.io.imread(os.path.join(path, "ball.tif"))
+
+        self.assertEqual(3, image.dimensions)
+
+        self.assertEqual((9, 9, 9), image.pixel_data.shape)
+
+        self.assertEqual((0.3, 0.7, 0.7), image.spacing)
+
+        self.assertTrue(np.all(expected == image.pixel_data))
 
 '''A two-channel tif containing two overlapped objects'''
 overlapped_objects_data = zlib.decompress(base64.b64decode(

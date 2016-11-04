@@ -70,6 +70,36 @@ class TestImage(unittest.TestCase):
         test_out = x.crop_image_similarly(test)
         self.assertTrue(np.all(test_out == test[2:-1, 1:-2]))
 
+    def test_init_volume(self):
+        data = np.ones((5, 10, 10))
+
+        x = cpi.Image(image=data, dimensions=3)
+
+        self.assertTrue(np.all(x.pixel_data == data))
+
+        self.assertEqual(x.dimensions, 3)
+
+    def test_multichannel_grayscale_image(self):
+        data = np.ones((10, 10))
+
+        x = cpi.Image(image=data)
+
+        self.assertFalse(x.multichannel)
+
+    def test_multichannel_rgb_image(self):
+        data = np.ones((10, 10, 3))
+
+        x = cpi.Image(image=data)
+
+        self.assertTrue(x.multichannel)
+
+    def test_multichannel_grayscale_volume(self):
+        data = np.ones((5, 10, 10))
+
+        x = cpi.Image(image=data, dimensions=3)
+
+        self.assertFalse(x.multichannel)
+
 
 IMAGE_NAME = "image"
 

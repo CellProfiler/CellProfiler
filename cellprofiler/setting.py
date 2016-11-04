@@ -803,6 +803,16 @@ class Integer(Number):
         return u"%d" % value
 
 
+class OddInteger(Integer):
+    def test_valid(self, pipeline):
+        super(self.__class__, self).test_valid(pipeline)
+
+        value = self.str_to_value(self.value_text)
+
+        if value % 2 == 0:
+            raise ValidationError("Must be odd, was even", self)
+
+
 class Range(Setting):
     """A setting representing a range between two values"""
 
@@ -1664,10 +1674,8 @@ class Choice(Setting):
 
 
 class StructuringElement(Setting):
-    def __init__(self, shape="disk", size=1):
-        self.shape = shape
-        self.size = size
-        super(StructuringElement, self).__init__("Structuring element", self.get_value())
+    def __init__(self, text="Structuring element", value="disk,1", doc=None):
+        super(StructuringElement, self).__init__(text, value, doc=doc)
 
     @staticmethod
     def get_choices():
@@ -1683,6 +1691,25 @@ class StructuringElement(Setting):
 
     def get_value(self):
         return getattr(skimage.morphology, self.shape)(self.size)
+
+    def set_value(self, value):
+        self.value_text = value
+
+    @property
+    def shape(self):
+        return str(self.value_text.split(",")[0])
+
+    @shape.setter
+    def shape(self, value):
+        self.value_text = ",".join((value, str(self.size)))
+
+    @property
+    def size(self):
+        return int(self.value_text.split(",")[1])
+
+    @size.setter
+    def size(self, value):
+        self.value_text = ",".join((self.shape, str(value)))
 
 
 class CustomChoice(Choice):

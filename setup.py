@@ -334,10 +334,12 @@ setuptools.setup(
             "inflect",
             "javabridge",
             "libtiff",
+            "mahotas",
             "matplotlib",
             "MySQL-python",
             "numpy",
             "prokaryote>=1.0.11",
+            "pyamg",
             "pytest",
             "python-bioformats",
             "pyzmq",
@@ -361,5 +363,5 @@ setuptools.setup(
             "pytest"
         ],
         url="https://github.com/CellProfiler/CellProfiler",
-        version="2.4.0rc1"
+        version="3.0.0rc1"
 )

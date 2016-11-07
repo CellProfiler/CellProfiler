@@ -334,6 +334,7 @@ setuptools.setup(
             "inflect",
             "javabridge",
             "libtiff",
+            "mahotas",
             "matplotlib",
             "MySQL-python",
             "numpy",

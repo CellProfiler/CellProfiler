@@ -290,7 +290,6 @@ class Figure(wx.Frame):
         self.figure = matplotlib.pyplot.Figure()
         self.panel = matplotlib.backends.backend_wxagg.FigureCanvasWxAgg(self, -1, self.figure)
         self.__gridspec = None
-        self.__grid_config = None
         if secret_panel_class is None:
             secret_panel_class = wx.Panel
         self.secret_panel = secret_panel_class(self)
@@ -1076,43 +1075,23 @@ class Figure(wx.Frame):
     def set_grids(self, shape):
         self.__gridspec = matplotlib.gridspec.GridSpec(*shape[::-1])
 
-    def __set_grid_config(self, image):
-        center = image.shape[0] / 2
-
-        # Determine the indices of the first and last slices to display.
-        start = max(0, center - 4)
-        stop = min(center + 5, image.shape[0])
-
-        # From the number of slices that are displayable, determine the
-        # shape of the grid these can be displayed in.
-        n_slices = float(stop - start)
-        n_rows = int(math.ceil(n_slices / 3))
-        n_cols = int(math.ceil(n_slices / n_rows))
-
-        self.__grid_config = ((n_rows, n_cols), start, stop)
-
     def gridshow(self, x, y, image, cmap='gray'):
-        if self.__grid_config is None:
-            self.__set_grid_config(image)
+        gx = self.__gridspec.get_geometry()[0]
 
-        dimensions, start, stop = self.__grid_config
+        gridspec = matplotlib.gridspec.GridSpecFromSubplotSpec(3, 3, subplot_spec=self.__gridspec[gx * x + y], wspace=0.1, hspace=0.1)
 
-        gx, gy = self.__gridspec.get_geometry()
+        z = image.shape[0]
 
-        idx = gx * x + y
+        for position in range(9):
+            ax = matplotlib.pyplot.Subplot(self.figure, gridspec[position])
 
-        gridspec = matplotlib.gridspec.GridSpecFromSubplotSpec(*dimensions, subplot_spec=self.__gridspec[idx], wspace=0.1, hspace=0.1)
-
-        for idx, img in enumerate(image[start:stop]):
-            ax = matplotlib.pyplot.Subplot(self.figure, gridspec[idx])
-
-            if idx / dimensions[0] != (dimensions[0] - 1):
+            if position / 3 != 2:
                 ax.set_xticklabels([])
 
-            if idx % dimensions[1] != 0:
+            if position % 3 != 0:
                 ax.set_yticklabels([])
 
-            ax.imshow(img, cmap=cmap)
+            ax.imshow(image[position * (z-1) / 8], cmap=cmap)
 
             self.figure.add_subplot(ax)
 

@@ -1,5 +1,6 @@
 import cellprofiler.modules.watershed
 import cellprofiler.image
+import mahotas
 import numpy
 import numpy.testing
 import scipy.ndimage
@@ -9,6 +10,7 @@ import skimage.filters
 import skimage.filters.rank
 import skimage.measure
 import skimage.morphology
+import skimage.segmentation
 import skimage.util
 
 instance = cellprofiler.modules.watershed.Watershed()
@@ -87,7 +89,7 @@ def test_run_distance(image, module, image_set, workspace):
 
     module.y_name.value = "watershed"
 
-    module.size.value = 32
+    module.radius.value = 3
 
     data = image.pixel_data
 
@@ -109,21 +111,37 @@ def test_run_distance(image, module, image_set, workspace):
 
     module.run(workspace)
 
-    distance = scipy.ndimage.distance_transform_edt(binary)
+    distance = mahotas.distance(binary)
 
-    local_maximums = skimage.feature.peak_local_max(
-        distance,
-        indices=False,
-        min_distance=15,
-        labels=binary
-    )
+    distance = mahotas.stretch(distance)
 
-    markers = skimage.measure.label(local_maximums)
+    radius = 3
 
-    expected = skimage.morphology.watershed(-distance, markers, mask=binary)
+    if image.dimensions is 2:
+        shape = (radius, radius)
+    else:
+        shape = (radius, radius, radius)
+
+    footprint = numpy.ones(shape)
+
+    peaks = mahotas.morph.regmax(distance, footprint)
+
+    markers, count = mahotas.label(peaks, footprint)
+
+    surface = distance.max() - distance
+
+    expected = mahotas.cwatershed(surface, markers)
+
+    expected *= binary
 
     expected = skimage.measure.label(expected)
 
+    expected, _, _ = skimage.segmentation.relabel_sequential(expected)
+
     actual = workspace.get_objects("watershed")
 
-    numpy.testing.assert_array_equal(expected, actual.segmented)
+    actual = actual.segmented
+
+    actual, _, _ = skimage.segmentation.relabel_sequential(actual)
+
+    numpy.testing.assert_array_equal(expected, actual)

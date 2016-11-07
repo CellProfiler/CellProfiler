@@ -1,4 +1,4 @@
-"""<b>Measure Object Intensity</b> measures several intensity features for 
+"""<b>Measure Object Intensity</b> measures several intensity features for
 identified objects.
 <hr>
 Given an image with objects identified (e.g. nuclei or cells), this
@@ -87,8 +87,10 @@ MAD_INTENSITY = 'MADIntensity'
 UPPER_QUARTILE_INTENSITY = 'UpperQuartileIntensity'
 LOC_CMI_X = 'CenterMassIntensity_X'
 LOC_CMI_Y = 'CenterMassIntensity_Y'
+LOC_CMI_Z = 'CenterMassIntensity_Z'
 LOC_MAX_X = 'MaxIntensity_X'
 LOC_MAX_Y = 'MaxIntensity_Y'
+LOC_MAX_Z = 'MaxIntensity_Z'
 
 ALL_MEASUREMENTS = [INTEGRATED_INTENSITY, MEAN_INTENSITY, STD_INTENSITY,
                     MIN_INTENSITY, MAX_INTENSITY, INTEGRATED_INTENSITY_EDGE,
@@ -96,7 +98,7 @@ ALL_MEASUREMENTS = [INTEGRATED_INTENSITY, MEAN_INTENSITY, STD_INTENSITY,
                     MIN_INTENSITY_EDGE, MAX_INTENSITY_EDGE,
                     MASS_DISPLACEMENT, LOWER_QUARTILE_INTENSITY,
                     MEDIAN_INTENSITY, MAD_INTENSITY, UPPER_QUARTILE_INTENSITY]
-ALL_LOCATION_MEASUREMENTS = [LOC_CMI_X, LOC_CMI_Y, LOC_MAX_X, LOC_MAX_Y]
+ALL_LOCATION_MEASUREMENTS = [LOC_CMI_X, LOC_CMI_Y, LOC_CMI_Z, LOC_MAX_X, LOC_MAX_Y, LOC_MAX_Z]
 
 
 class MeasureObjectIntensity(cpm.Module):
@@ -309,6 +311,7 @@ class MeasureObjectIntensity(cpm.Module):
         for image_name in [img.name for img in self.images]:
             image = workspace.image_set.get_image(image_name.value,
                                                   must_be_grayscale=True)
+            dimensions = image.dimensions
             for object_name in [obj.name for obj in self.objects]:
                 # Need to refresh image after each iteration...
                 img = image.pixel_data
@@ -336,8 +339,10 @@ class MeasureObjectIntensity(cpm.Module):
                 upper_quartile_intensity = np.zeros((nobjects,))
                 cmi_x = np.zeros((nobjects,))
                 cmi_y = np.zeros((nobjects,))
+                cmi_z = np.zeros((nobjects,))
                 max_x = np.zeros((nobjects,))
                 max_y = np.zeros((nobjects,))
+                max_z = np.zeros((nobjects,))
                 for labels, lindexes in objects.get_labels():
                     lindexes = lindexes[lindexes != 0]
                     labels, img = cpo.crop_labels_and_image(labels, img)
@@ -359,10 +364,16 @@ class MeasureObjectIntensity(cpm.Module):
                     if has_objects:
                         limg = img[lmask]
                         llabels = labels[lmask]
-                        mesh_y, mesh_x = np.mgrid[0:masked_image.shape[0],
-                                         0:masked_image.shape[1]]
-                        mesh_x = mesh_x[lmask]
-                        mesh_y = mesh_y[lmask]
+                        if dimensions is 2:
+                            mesh_y, mesh_x = np.mgrid[0:masked_image.shape[0],
+                                             0:masked_image.shape[1]]
+                            mesh_x = mesh_x[lmask]
+                            mesh_y = mesh_y[lmask]
+                        else:
+                            mesh_z, mesh_y, mesh_x = np.mgrid[0:masked_image.shape[0], 0:masked_image.shape[1], 0:masked_image.shape[2]]
+                            mesh_x = mesh_x[lmask]
+                            mesh_y = mesh_y[lmask]
+                            mesh_z = mesh_z[lmask]
                         lcount = fix(nd.sum(np.ones(len(limg)), llabels, lindexes))
                         integrated_intensity[lindexes - 1] = \
                             fix(nd.sum(limg, llabels, lindexes))
@@ -377,23 +388,47 @@ class MeasureObjectIntensity(cpm.Module):
                         # Compute the position of the intensity maximum
                         max_position = np.array(fix(nd.maximum_position(limg, llabels, lindexes)), dtype=int)
                         max_position = np.reshape(max_position, (max_position.shape[0],))
-                        max_x[lindexes - 1] = mesh_x[max_position]
-                        max_y[lindexes - 1] = mesh_y[max_position]
-                        # The mass displacement is the distance between the center
-                        # of mass of the binary image and of the intensity image. The
-                        # center of mass is the average X or Y for the binary image
-                        # and the sum of X or Y * intensity / integrated intensity
-                        cm_x = fix(nd.mean(mesh_x, llabels, lindexes))
-                        cm_y = fix(nd.mean(mesh_y, llabels, lindexes))
+                        if dimensions is 2:
+                            max_x[lindexes - 1] = mesh_x[max_position]
+                            max_y[lindexes - 1] = mesh_y[max_position]
+                            # The mass displacement is the distance between the center
+                            # of mass of the binary image and of the intensity image. The
+                            # center of mass is the average X or Y for the binary image
+                            # and the sum of X or Y * intensity / integrated intensity
+                            cm_x = fix(nd.mean(mesh_x, llabels, lindexes))
+                            cm_y = fix(nd.mean(mesh_y, llabels, lindexes))
 
-                        i_x = fix(nd.sum(mesh_x * limg, llabels, lindexes))
-                        i_y = fix(nd.sum(mesh_y * limg, llabels, lindexes))
-                        cmi_x[lindexes - 1] = i_x / integrated_intensity[lindexes - 1]
-                        cmi_y[lindexes - 1] = i_y / integrated_intensity[lindexes - 1]
-                        diff_x = cm_x - cmi_x[lindexes - 1]
-                        diff_y = cm_y - cmi_y[lindexes - 1]
-                        mass_displacement[lindexes - 1] = \
-                            np.sqrt(diff_x * diff_x + diff_y * diff_y)
+                            i_x = fix(nd.sum(mesh_x * limg, llabels, lindexes))
+                            i_y = fix(nd.sum(mesh_y * limg, llabels, lindexes))
+                            cmi_x[lindexes - 1] = i_x / integrated_intensity[lindexes - 1]
+                            cmi_y[lindexes - 1] = i_y / integrated_intensity[lindexes - 1]
+                            diff_x = cm_x - cmi_x[lindexes - 1]
+                            diff_y = cm_y - cmi_y[lindexes - 1]
+                            mass_displacement[lindexes - 1] = \
+                                np.sqrt(diff_x * diff_x + diff_y * diff_y)
+                        else:
+                            max_x[lindexes - 1] = mesh_x[max_position]
+                            max_y[lindexes - 1] = mesh_y[max_position]
+                            max_z[lindexes - 1] = mesh_z[max_position]
+                            # The mass displacement is the distance between the center
+                            # of mass of the binary image and of the intensity image. The
+                            # center of mass is the average X or Y for the binary image
+                            # and the sum of X or Y * intensity / integrated intensity
+                            cm_x = fix(nd.mean(mesh_x, llabels, lindexes))
+                            cm_y = fix(nd.mean(mesh_y, llabels, lindexes))
+                            cm_z = fix(nd.mean(mesh_z, llabels, lindexes))
+
+                            i_x = fix(nd.sum(mesh_x * limg, llabels, lindexes))
+                            i_y = fix(nd.sum(mesh_y * limg, llabels, lindexes))
+                            i_z = fix(nd.sum(mesh_z * limg, llabels, lindexes))
+                            cmi_x[lindexes - 1] = i_x / integrated_intensity[lindexes - 1]
+                            cmi_y[lindexes - 1] = i_y / integrated_intensity[lindexes - 1]
+                            cmi_z[lindexes - 1] = i_z / integrated_intensity[lindexes - 1]
+                            diff_x = cm_x - cmi_x[lindexes - 1]
+                            diff_y = cm_y - cmi_y[lindexes - 1]
+                            diff_z = cm_z - cmi_z[lindexes - 1]
+                            mass_displacement[lindexes - 1] = \
+                                np.sqrt(diff_x * diff_x + diff_y * diff_y + diff_z * diff_z)
                         #
                         # Sort the intensities by label, then intensity.
                         # For each label, find the index above and below
@@ -459,6 +494,9 @@ class MeasureObjectIntensity(cpm.Module):
                         max_intensity_edge[lindexes - 1] = fix(
                                 nd.maximum(eimg, elabels, lindexes))
                 m = workspace.measurements
+                if dimensions is 2:
+                    cmi_z = [1]
+                    max_z = [1]
                 for category, feature_name, measurement in \
                         ((INTENSITY, INTEGRATED_INTENSITY, integrated_intensity),
                          (INTENSITY, MEAN_INTENSITY, mean_intensity),
@@ -477,8 +515,10 @@ class MeasureObjectIntensity(cpm.Module):
                          (INTENSITY, UPPER_QUARTILE_INTENSITY, upper_quartile_intensity),
                          (C_LOCATION, LOC_CMI_X, cmi_x),
                          (C_LOCATION, LOC_CMI_Y, cmi_y),
+                         (C_LOCATION, LOC_CMI_Z, cmi_z),
                          (C_LOCATION, LOC_MAX_X, max_x),
-                         (C_LOCATION, LOC_MAX_Y, max_y)):
+                         (C_LOCATION, LOC_MAX_Y, max_y),
+                         (C_LOCATION, LOC_MAX_Z, max_z)):
                     measurement_name = "%s_%s_%s" % (category, feature_name,
                                                      image_name.value)
                     m.add_measurement(object_name.value, measurement_name,

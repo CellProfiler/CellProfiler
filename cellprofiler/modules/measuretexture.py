@@ -128,6 +128,7 @@ import cellprofiler.measurement as cpmeas
 import cellprofiler.object as cpo
 import cellprofiler.setting as cps
 from cellprofiler.setting import YES, NO
+import mahotas.features
 
 """The category of the per-object measurements made by this module"""
 TEXTURE = 'Texture'
@@ -176,10 +177,8 @@ class MeasureTexture(cpm.Module):
         """
         self.image_groups = []
         self.object_groups = []
-        self.scale_groups = []
         self.image_count = cps.HiddenCount(self.image_groups)
         self.object_count = cps.HiddenCount(self.object_groups)
-        self.scale_count = cps.HiddenCount(self.scale_groups)
         self.add_image_cb(can_remove=False)
         self.add_images = cps.DoSomething("", "Add another image",
                                           self.add_image_cb)
@@ -188,9 +187,7 @@ class MeasureTexture(cpm.Module):
         self.add_objects = cps.DoSomething("", "Add another object",
                                            self.add_object_cb)
         self.object_divider = cps.Divider()
-        self.add_scale_cb(can_remove=False)
-        self.add_scales = cps.DoSomething("", "Add another scale",
-                                          self.add_scale_cb)
+
         self.scale_divider = cps.Divider()
 
         self.wants_gabor = cps.Binary(
@@ -220,10 +217,10 @@ class MeasureTexture(cpm.Module):
 
     def settings(self):
         """The settings as they appear in the save file."""
-        result = [self.image_count, self.object_count, self.scale_count]
+        result = [self.image_count, self.object_count]
         for groups, elements in [(self.image_groups, ['image_name']),
                                  (self.object_groups, ['object_name']),
-                                 (self.scale_groups, ['scale', 'angles'])]:
+                                 ]:
             for group in groups:
                 for element in elements:
                     result += [getattr(group, element)]
@@ -236,7 +233,7 @@ class MeasureTexture(cpm.Module):
         for count, sequence, fn in \
                 ((int(setting_values[0]), self.image_groups, self.add_image_cb),
                  (int(setting_values[1]), self.object_groups, self.add_object_cb),
-                 (int(setting_values[2]), self.scale_groups, self.add_scale_cb)):
+                 ):
             del sequence[count:]
             while len(sequence) < count:
                 fn()
@@ -248,11 +245,11 @@ class MeasureTexture(cpm.Module):
             vs_groups = [
                 (self.image_groups, self.add_images, self.image_divider),
                 (self.object_groups, self.add_objects, self.object_divider),
-                (self.scale_groups, self.add_scales, self.scale_divider)]
+            ]
         else:
             vs_groups = [
                 (self.image_groups, self.add_images, self.image_divider),
-                (self.scale_groups, self.add_scales, self.scale_divider)]
+            ]
 
         for groups, add_button, div in vs_groups:
             for group in groups:
@@ -312,47 +309,6 @@ class MeasureTexture(cpm.Module):
             group.append("remover", cps.RemoveSettingButton("", "Remove this object", self.object_groups, group))
         self.object_groups.append(group)
 
-    def add_scale_cb(self, can_remove=True):
-        '''Add a scale to the scale_groups collection
-
-        can_delete - set this to False to keep from showing the "remove"
-                     button for scales that must be present.
-        '''
-        group = cps.SettingsGroup()
-        if can_remove:
-            group.append("divider", cps.Divider(line=False))
-        group.append('scale',
-                     cps.Integer("Texture scale to measure",
-                                 len(self.scale_groups) + 3,
-                                 doc="""You can specify the scale of texture to be measured, in pixel units;
-                                 the texture scale is the distance between correlated intensities in the image. A
-                                 higher number for the scale of texture measures larger patterns of
-                                 texture whereas smaller numbers measure more localized patterns of
-                                 texture. It is best to measure texture on a scale smaller than your
-                                 objects' sizes, so be sure that the value entered for scale of texture is
-                                 smaller than most of your objects. For very small objects (smaller than
-                                 the scale of texture you are measuring), the texture cannot be measured
-                                 and will result in a undefined value in the output file."""))
-        group.append('angles', cps.MultiChoice(
-                "Angles to measure", H_ALL, H_ALL,
-                doc="""The Haralick texture measurements are based on the correlation
-        between pixels offset by the scale in one of four directions:
-        <p><ul>
-        <li><i>%(H_HORIZONTAL)s</i> - the correlated pixel is "scale" pixels
-        to the right of the pixel of interest.</li>
-        <li><i>%(H_VERTICAL)s</i> - the correlated pixel is "scale" pixels
-        below the pixel of interest.</li>
-        <li><i>%(H_DIAGONAL)s</i> - the correlated pixel is "scale" pixels
-        to the right and "scale" pixels below the pixel of interest.</li>
-        <li><i>%(H_ANTIDIAGONAL)s</i> - the correlated pixel is "scale"
-        pixels to the left and "scale" pixels below the pixel of interest.</li>
-        </ul><p>
-        Choose one or more directions to measure.""" % globals()))
-
-        if can_remove:
-            group.append("remover", cps.RemoveSettingButton("", "Remove this scale", self.scale_groups, group))
-        self.scale_groups.append(group)
-
     def validate_module(self, pipeline):
         """Make sure chosen objects, images and scales are selected only once"""
         images = set()
@@ -371,14 +327,6 @@ class MeasureTexture(cpm.Module):
                             "%s has already been selected" % group.object_name.value,
                             group.object_name)
                 objects.add(group.object_name.value)
-
-        scales = set()
-        for group in self.scale_groups:
-            if group.scale.value in scales:
-                raise cps.ValidationError(
-                        "%s has already been selected" % group.scale.value,
-                        group.scale)
-            scales.add(group.scale.value)
 
     def get_categories(self, pipeline, object_name):
         """Get the measurement categories supplied for the given object name.
@@ -433,8 +381,7 @@ class MeasureTexture(cpm.Module):
         measurement - name of measurement made
         image_name - name of image that was measured
         '''
-        if len(self.get_measurement_images(pipeline, object_name, category,
-                                           measurement)) > 0:
+        if len(self.get_measurement_images(pipeline, object_name, category, measurement)) > 0:
             if measurement == F_GABOR:
                 return [x.scale.value for x in self.scale_groups]
 
@@ -493,30 +440,59 @@ class MeasureTexture(cpm.Module):
     def run(self, workspace):
         """Run, computing the area measurements for the objects"""
 
-        workspace.display_data.col_labels = [
-            "Image", "Object", "Measurement", "Scale", "Value"]
+        workspace.display_data.col_labels = ["Image", "Object", "Measurement", "Scale", "Value"]
+
         statistics = []
+
         for image_group in self.image_groups:
             image_name = image_group.image_name.value
-            for scale_group in self.scale_groups:
-                scale = scale_group.scale.value
-                if self.wants_image_measurements():
+
+            scale = 3
+
+            angles = ["0", "90", "45", "135"]
+
+            image = workspace.image_set.get_image(image_name)
+
+            if self.wants_image_measurements():
+                if self.wants_gabor:
+                    statistics += self.run_image_gabor(image_name, scale, workspace)
+
+                for angle in angles:
+                    statistics += self.run_image(image_name, scale, angle, workspace)
+
+            if self.wants_object_measurements():
+                for object_group in self.object_groups:
+                    object_name = object_group.object_name.value
+
+                    objects = workspace.get_objects(object_name)
+
+                    data = np.zeros_like(image.pixel_data)
+
+                    labels = objects.segmented
+
+                    features = []
+
+                    for label in np.unique(labels):
+                        if label == 0:
+                            continue
+
+                        data[labels == label] = image.pixel_data[labels == label]
+
+                        data = mahotas.stretch(data)  # 0-255
+
+                        features += [mahotas.features.haralick(data)]  # distance=scale, ignore_zeros=True ?
+
+                    features = np.asarray(features)
+
+                    _, direction, feature = features.shape
+
+                    for direction_index in range(direction):
+                        for feature_index in range(feature):
+                            statistics += self.record_measurement(workspace, image_name, object_name, "3_" + str(direction_index), F_HARALICK[feature_index], features[:, direction_index, feature_index])
+
                     if self.wants_gabor:
-                        statistics += self.run_image_gabor(
-                                image_name, scale, workspace)
-                    for angle in scale_group.angles.get_selections():
-                        statistics += self.run_image(
-                                image_name, scale, angle, workspace)
-                if self.wants_object_measurements():
-                    for object_group in self.object_groups:
-                        object_name = object_group.object_name.value
-                        for angle in scale_group.angles.get_selections():
-                            statistics += self.run_one(
-                                    image_name, object_name, scale, angle,
-                                    workspace)
-                        if self.wants_gabor:
-                            statistics += self.run_one_gabor(
-                                    image_name, object_name, scale, workspace)
+                        statistics += self.run_one_gabor(image_name, object_name, scale, workspace)
+
         if self.show_window:
             workspace.display_data.statistics = statistics
 

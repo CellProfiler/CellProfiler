@@ -1628,9 +1628,7 @@ class Measurements(object):
             raise ValueError("Image must be color, but it was grayscale")
         if must_be_grayscale and image.multichannel:
             pd = image.pixel_data
-            if pd.shape[2] >= 3 and \
-                    np.all(pd[:, :, 0] == pd[:, :, 1]) and \
-                    np.all(pd[:, :, 0] == pd[:, :, 2]):
+            if pd.shape[-1] >= 3 and np.all(pd == pd[0]):
                 return GrayscaleImage(image)
             raise ValueError("Image must be grayscale, but it was color")
         if must_be_grayscale and image.pixel_data.dtype.kind == 'b':
@@ -1638,10 +1636,10 @@ class Measurements(object):
         if must_be_rgb:
             if not image.multichannel:
                 raise ValueError("Image must be RGB, but it was grayscale")
-            elif image.multichannel and image.pixel_data.shape[2] not in (3, 4):
+            elif image.multichannel and image.pixel_data.shape[-1] not in (3, 4):
                 raise ValueError("Image must be RGB, but it had %d channels" %
-                                 image.pixel_data.shape[2])
-            elif image.pixel_data.shape[2] == 4:
+                                 image.pixel_data.shape[-1])
+            elif image.pixel_data.shape[-1] == 4:
                 logger.warning("Discarding alpha channel.")
                 return RGBImage(image)
         return image

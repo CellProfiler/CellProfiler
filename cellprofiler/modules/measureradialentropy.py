@@ -117,7 +117,7 @@ class MeasurementTemplate(cpm.Module):
                     #Normalize the x,y coordinates to zero
                     center_y,center_x = centers[eachindex]
                     #Do the actual bin calculation
-                    sliceno = numpy.int32((numpy.pi + numpy.arctan2(i1 - center_y, i2 - center_x)) * (nbins / (2 * numpy.pi)))
+                    sliceno = int(numpy.ceil((numpy.pi + numpy.arctan2(i1 - center_y, i2 - center_x)) * (nbins / (2 * numpy.pi))))
                     if sliceno not in pixeldict.keys():
                         pixeldict[sliceno]=[objects[i1,i2]]
                     else:

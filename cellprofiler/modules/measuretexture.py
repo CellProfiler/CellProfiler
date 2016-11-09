@@ -166,7 +166,7 @@ IO_BOTH = "Both"
 
 class MeasureTexture(cpm.Module):
     module_name = "MeasureTexture"
-    variable_revision_number = 4
+    variable_revision_number = 5
     category = 'Measurement'
 
     def create_settings(self):
@@ -720,4 +720,16 @@ class MeasureTexture(cpm.Module):
             #
             setting_values = setting_values + [IO_BOTH]
             variable_revision_number = 4
+        if variable_revision_number == 4:
+            # Removed scale, angles
+            image_count = int(setting_values[0])
+            object_count = int(setting_values[1])
+            scale_count = int(setting_values[2])
+            scale_offset = 3 + image_count + object_count
+            new_setting_values = setting_values[:2]
+            new_setting_values += setting_values[3:scale_offset]
+            new_setting_values += setting_values[scale_offset + 2*scale_count:]
+            setting_values = new_setting_values
+            variable_revision_number = 5
+
         return setting_values, variable_revision_number, from_matlab

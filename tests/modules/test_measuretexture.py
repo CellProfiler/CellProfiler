@@ -82,10 +82,6 @@ class TestMeasureTexture(unittest.TestCase):
         self.assertEqual(module.object_count.value, 1)
         self.assertEqual(module.object_groups[0].object_name.value, "Nuclei")
 
-        self.assertEqual(module.scale_count.value, 3)
-        for scale, expected in zip([x.scale.value
-                                    for x in module.scale_groups], [3, 4, 5]):
-            self.assertEqual(scale, expected)
         self.assertEqual(module.gabor_angles.value, 3)
         self.assertTrue(module.wants_gabor)
 
@@ -137,13 +133,6 @@ MeasureTexture:[module_num:2|svn_version:\'1\'|variable_revision_number:2|show_w
             self.assertEqual(len(module.object_groups), 2)
             self.assertEqual(module.object_groups[0].object_name, "Cells")
             self.assertEqual(module.object_groups[1].object_name, "Nuclei")
-            self.assertEqual(len(module.scale_groups), 2)
-            self.assertEqual(module.scale_groups[0].scale, 3)
-            self.assertEqual(len(module.scale_groups[0].angles.get_selections()), 1)
-            self.assertEqual(module.scale_groups[0].angles.get_selections()[0], M.H_HORIZONTAL)
-            self.assertEqual(module.scale_groups[1].scale, 5)
-            self.assertEqual(len(module.scale_groups[1].angles.get_selections()), 1)
-            self.assertEqual(module.scale_groups[1].angles.get_selections()[0], M.H_HORIZONTAL)
             self.assertEqual(module.wants_gabor, wants_gabor)
             self.assertEqual(module.gabor_angles, 6)
 
@@ -199,19 +188,6 @@ MeasureTexture:[module_num:2|svn_version:\'1\'|variable_revision_number:3|show_w
             self.assertEqual(len(module.object_groups), 2)
             self.assertEqual(module.object_groups[0].object_name, "Cells")
             self.assertEqual(module.object_groups[1].object_name, "Nuclei")
-            self.assertEqual(len(module.scale_groups), 2)
-            self.assertEqual(module.scale_groups[0].scale, 3)
-            angles = module.scale_groups[0].angles.get_selections()
-            self.assertEqual(len(angles), 2)
-            self.assertTrue(M.H_HORIZONTAL in angles)
-            self.assertTrue(M.H_VERTICAL in angles)
-
-            angles = module.scale_groups[1].angles.get_selections()
-            self.assertEqual(len(angles), 2)
-            self.assertTrue(M.H_DIAGONAL in angles)
-            self.assertTrue(M.H_ANTIDIAGONAL in angles)
-
-            self.assertEqual(module.scale_groups[1].scale, 5)
             self.assertEqual(module.wants_gabor, wants_gabor)
             self.assertEqual(module.gabor_angles, 6)
             self.assertEqual(module.images_or_objects, M.IO_BOTH)
@@ -292,19 +268,6 @@ MeasureTexture:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|
             self.assertEqual(len(module.object_groups), 2)
             self.assertEqual(module.object_groups[0].object_name, "Cells")
             self.assertEqual(module.object_groups[1].object_name, "Nuclei")
-            self.assertEqual(len(module.scale_groups), 2)
-            self.assertEqual(module.scale_groups[0].scale, 3)
-            angles = module.scale_groups[0].angles.get_selections()
-            self.assertEqual(len(angles), 2)
-            self.assertTrue(M.H_HORIZONTAL in angles)
-            self.assertTrue(M.H_VERTICAL in angles)
-
-            angles = module.scale_groups[1].angles.get_selections()
-            self.assertEqual(len(angles), 2)
-            self.assertTrue(M.H_DIAGONAL in angles)
-            self.assertTrue(M.H_ANTIDIAGONAL in angles)
-
-            self.assertEqual(module.scale_groups[1].scale, 5)
             self.assertEqual(module.wants_gabor, wants_gabor)
             self.assertEqual(module.gabor_angles, 6)
 

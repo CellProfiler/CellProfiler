@@ -766,7 +766,7 @@ class MeasureImageQuality(cpm.Module):
         if image_group.check_blur.value:
             statistics += self.calculate_focus_scores(image_group, workspace)
             statistics += self.calculate_correlation(image_group, workspace)
-            statistics += self.calculate_power_spectrum(image_group, workspace)
+            # statistics += self.calculate_power_spectrum(image_group, workspace)
         if image_group.check_saturation.value:
             statistics += self.calculate_saturation(image_group, workspace)
         if image_group.check_intensity.value:
@@ -817,11 +817,20 @@ class MeasureImageQuality(cpm.Module):
                 # Create a labels matrix that grids the image to the dimensions
                 # of the window size
                 #
-                i, j = np.mgrid[0:shape[0], 0:shape[1]].astype(float)
-                m, n = (np.array(shape) + scale - 1) / scale
-                i = (i * float(m) / float(shape[0])).astype(int)
-                j = (j * float(n) / float(shape[1])).astype(int)
-                grid = i * n + j + 1
+                if image.dimensions is 2:
+                    i, j = np.mgrid[0:shape[0], 0:shape[1]].astype(float)
+                    m, n = (np.array(shape) + scale - 1) / scale
+                    i = (i * float(m) / float(shape[0])).astype(int)
+                    j = (j * float(n) / float(shape[1])).astype(int)
+                    grid = i * n + j + 1
+                else:
+                    k, i, j = np.mgrid[0:shape[0], 0:shape[1], 0:shape[2]].astype(float)
+                    o, m, n = (np.array(shape) + scale - 1) / scale
+                    k = (k * float(o) / float(shape[0])).astype(int)
+                    i = (i * float(m) / float(shape[1])).astype(int)
+                    j = (j * float(n) / float(shape[2])).astype(int)
+                    grid = k * o + i * n + j + 1  # hmm
+
                 if image.has_mask:
                     grid[np.logical_not(image.mask)] = 0
                 grid_range = np.arange(0, m * n + 1, dtype=np.int32)

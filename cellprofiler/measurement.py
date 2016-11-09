@@ -1628,7 +1628,8 @@ class Measurements(object):
             raise ValueError("Image must be color, but it was grayscale")
         if must_be_grayscale and image.multichannel:
             pd = image.pixel_data
-            if pd.shape[-1] >= 3 and np.all(pd == pd[0]):
+            pd = pd.transpose(-1, *range(pd.ndim - 1))
+            if pd.shape[-1] >= 3 and np.all(pd[0] == pd[1]) and np.all(pd[0] == pd[2]):
                 return GrayscaleImage(image)
             raise ValueError("Image must be grayscale, but it was color")
         if must_be_grayscale and image.pixel_data.dtype.kind == 'b':

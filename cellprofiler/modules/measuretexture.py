@@ -458,7 +458,7 @@ class MeasureTexture(cpm.Module):
                 data = image.pixel_data
 
                 if image.has_mask:
-                    data[~image.mask] = 0
+                    data[image.mask == 0] = 0
 
                 data = mahotas.stretch(data)  # 0-255
 

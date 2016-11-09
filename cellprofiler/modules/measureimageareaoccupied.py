@@ -1,4 +1,4 @@
-"""<b> Measure Image Area Occupied</b> measures the total area in an image that is 
+"""<b> Measure Image Area Occupied</b> measures the total area in an image that is
 occupied by objects.
 <hr>
 This module reports the sum of the areas and perimeters of the objects defined by one
@@ -233,7 +233,8 @@ class MeasureImageAreaOccupied(cpm.Module):
         if operand.should_save_image.value:
             binary_pixels = objects.segmented > 0
             output_image = cpi.Image(binary_pixels,
-                                     parent_image=objects.parent_image)
+                                     parent_image=objects.parent_image,
+                                     dimensions=len(objects.shape))
             workspace.image_set.add(operand.image_name.value,
                                     output_image)
         return [[operand.operand_objects.value,

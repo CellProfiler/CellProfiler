@@ -766,7 +766,7 @@ class MeasureImageQuality(cpm.Module):
         if image_group.check_blur.value:
             statistics += self.calculate_focus_scores(image_group, workspace)
             statistics += self.calculate_correlation(image_group, workspace)
-            # statistics += self.calculate_power_spectrum(image_group, workspace)
+            statistics += self.calculate_power_spectrum(image_group, workspace)
         if image_group.check_saturation.value:
             statistics += self.calculate_saturation(image_group, workspace)
         if image_group.check_intensity.value:
@@ -1006,6 +1006,10 @@ class MeasureImageQuality(cpm.Module):
             image = workspace.image_set.get_image(image_name,
                                                   must_be_grayscale=True)
 
+            if image.dimensions is 3:
+                # TODO: calculate "radial power spectrum" for volumes.
+                continue
+
             pixel_data = image.pixel_data
 
             if image.has_mask:
@@ -1048,6 +1052,9 @@ class MeasureImageQuality(cpm.Module):
             image = workspace.image_set.get_image(image_name,
                                                   must_be_grayscale=True)
 
+            # TODO: works on 2D slice of image, i suspect the thresholding methods in centrosome aren't working in 3D
+            pixel_data = image.pixel_data.astype(np.float32)
+
             for threshold_group in all_threshold_groups:
                 threshold_method = threshold_group.threshold_algorithm
                 object_fraction = threshold_group.object_fraction.value
@@ -1057,7 +1064,7 @@ class MeasureImageQuality(cpm.Module):
                 (local_threshold, global_threshold) = \
                     (cpthresh.get_threshold(threshold_method,
                                             cpthresh.TM_GLOBAL,
-                                            image.pixel_data,
+                                            pixel_data,
                                             mask=image.mask,
                                             object_fraction=object_fraction,
                                             two_class_otsu=two_class_otsu,
@@ -1067,7 +1074,7 @@ class MeasureImageQuality(cpm.Module):
                      else
                      cpthresh.get_threshold(threshold_method,
                                             cpthresh.TM_GLOBAL,
-                                            image.pixel_data,
+                                            pixel_data,
                                             object_fraction=object_fraction,
                                             two_class_otsu=two_class_otsu,
                                             use_weighted_variance=use_weighted_variance,

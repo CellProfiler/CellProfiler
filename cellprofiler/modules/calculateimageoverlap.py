@@ -383,23 +383,31 @@ class CalculateImageOverlap(cpm.Module):
         image_set = workspace.image_set
         object_name_GT = self.object_name_GT.value
         objects_GT = workspace.get_objects(object_name_GT)
-        iGT, jGT, lGT = objects_GT.ijv.transpose()
         object_name_ID = self.object_name_ID.value
         objects_ID = workspace.get_objects(object_name_ID)
-        iID, jID, lID = objects_ID.ijv.transpose()
-        ID_obj = 0 if len(lID) == 0 else max(lID)
-        GT_obj = 0 if len(lGT) == 0 else max(lGT)
 
-        xGT, yGT = objects_GT.shape
-        xID, yID = objects_ID.shape
-        GT_pixels = np.zeros((xGT, yGT))
-        ID_pixels = np.zeros((xID, yID))
-        total_pixels = xGT * yGT
+        if len(objects_GT.shape) is 2:
+            iGT, jGT, lGT = objects_GT.ijv.transpose()
+            iID, jID, lID = objects_ID.ijv.transpose()
+            ID_obj = 0 if len(lID) == 0 else max(lID)
+            GT_obj = 0 if len(lGT) == 0 else max(lGT)
 
-        GT_pixels[iGT, jGT] = 1
-        ID_pixels[iID, jID] = 1
+            xGT, yGT = objects_GT.shape
+            xID, yID = objects_ID.shape
+            GT_pixels = np.zeros((xGT, yGT))
+            ID_pixels = np.zeros((xID, yID))
+            total_pixels = xGT * yGT
 
-        GT_tot_area = len(iGT)
+            GT_pixels[iGT, jGT] = 1
+            ID_pixels[iID, jID] = 1
+
+            GT_tot_area = len(iGT)
+        else:
+            labels_GT = objects_GT.segmented
+            labels_ID = objects_ID.segmented
+
+
+
         if len(iGT) == 0 and len(iID) == 0:
             intersect_matrix = np.zeros((0, 0), int)
         else:

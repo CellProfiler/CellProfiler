@@ -1338,7 +1338,7 @@ class Figure(wx.Frame):
     @allow_sharexy
     def subplot_imshow_labels(self, x, y, labels, title=None, clear=True,
                               renumber=True, sharex=None, sharey=None,
-                              use_imshow=False):
+                              use_imshow=False, dimensions=2):
         """Show a labels matrix using the default color map
 
         x,y - the subplot's coordinates
@@ -1350,26 +1350,30 @@ class Figure(wx.Frame):
         use_imshow - Use matplotlib's imshow to display instead of creating
                      our own artist.
         """
-        if renumber:
-            labels = tools.renumber_labels_for_display(labels)
-
         cm = matplotlib.cm.get_cmap(cellprofiler.preferences.get_default_colormap())
-        cm.set_bad((0, 0, 0))
-        labels = numpy.ma.array(labels, mask=labels == 0)
-        mappable = matplotlib.cm.ScalarMappable(cmap=cm)
+        if dimensions is 2:
+            if renumber:
+                labels = tools.renumber_labels_for_display(labels)
+            cm.set_bad((0, 0, 0))
+            labels = numpy.ma.array(labels, mask=labels == 0)
+            mappable = matplotlib.cm.ScalarMappable(cmap=cm)
 
-        if all([c0x == 0 for c0x in cm(0)[:3]]):
-            # Set the lower limit to 0 if the color for index 0 is already black.
-            mappable.set_clim(0, labels.max())
-            cm = None
-        elif numpy.any(labels != 0):
-            mappable.set_clim(1, labels.max())
-            cm = None
-        image = mappable.to_rgba(labels)[:, :, :3]
+            if all([c0x == 0 for c0x in cm(0)[:3]]):
+                # Set the lower limit to 0 if the color for index 0 is already black.
+                mappable.set_clim(0, labels.max())
+                cm = None
+            elif numpy.any(labels != 0):
+                mappable.set_clim(1, labels.max())
+                cm = None
+            image = mappable.to_rgba(labels)[:, :, :3]
+        else:
+            import skimage.color
+
+            image = skimage.color.label2rgb(labels, bg_label=0)
         return self.subplot_imshow(x, y, image, title, clear, colormap=cm,
                                    normalize=False, vmin=None, vmax=None,
                                    sharex=sharex, sharey=sharey,
-                                   use_imshow=use_imshow)
+                                   use_imshow=use_imshow, dimensions=dimensions)
 
     @allow_sharexy
     def subplot_imshow_ijv(self, x, y, ijv, shape=None, title=None,

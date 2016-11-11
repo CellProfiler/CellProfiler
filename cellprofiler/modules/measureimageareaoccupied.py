@@ -215,13 +215,20 @@ class MeasureImageAreaOccupied(cpm.Module):
     def measure_objects(self, operand, workspace):
         '''Performs the measurements on the requested objects'''
         objects = workspace.get_objects(operand.operand_objects.value)
+        dimensions = len(objects.shape)
         if objects.has_parent_image:
             area_occupied = np.sum(objects.segmented[objects.parent_image.mask] > 0)
-            perimeter = np.sum(outline(np.logical_and(objects.segmented != 0, objects.parent_image.mask)))
+            if dimensions is 2:
+                perimeter = np.sum(outline(np.logical_and(objects.segmented != 0, objects.parent_image.mask)))
+            else:
+                perimeter = self.__surface_area(objects.segmented, objects.parent_image.spacing)
             total_area = np.sum(objects.parent_image.mask)
         else:
             area_occupied = np.sum(objects.segmented > 0)
-            perimeter = np.sum(outline(objects.segmented) > 0)
+            if dimensions is 2:
+                perimeter = np.sum(outline(objects.segmented) > 0)
+            else:
+                perimeter = self.__surface_area(objects.segmented, (1.0, 1.0, 1.0))
             total_area = np.product(objects.segmented.shape)
         m = workspace.measurements
         m.add_image_measurement(F_AREA_OCCUPIED % operand.operand_objects.value,
@@ -244,7 +251,10 @@ class MeasureImageAreaOccupied(cpm.Module):
         '''Performs measurements on the requested images'''
         image = workspace.image_set.get_image(operand.binary_name.value, must_be_binary=True)
         area_occupied = np.sum(image.pixel_data > 0)
-        perimeter = np.sum(outline(image.pixel_data) > 0)
+        if image.dimensions is 2:
+            perimeter = np.sum(outline(image.pixel_data) > 0)
+        else:
+            self.__surface_area(image.pixel_data, image.spacing)
         total_area = np.prod(np.shape(image.pixel_data))
         m = workspace.measurements
         m.add_image_measurement(F_AREA_OCCUPIED % operand.binary_name.value,
@@ -254,6 +264,20 @@ class MeasureImageAreaOccupied(cpm.Module):
         m.add_image_measurement(F_TOTAL_AREA % operand.binary_name.value,
                                 np.array([total_area], dtype=float))
         return [[operand.binary_name.value, str(area_occupied), str(perimeter), str(total_area)]]
+
+    def __surface_area(self, volume, spacing=(1.0, 1.0, 1.0)):
+        import skimage.measure
+
+        import IPython
+        IPython.embed()
+
+        verts, faces, _, _ = skimage.measure.marching_cubes(
+            volume,
+            spacing=spacing,
+            level=1
+        )
+
+        return skimage.measure.mesh_surface_area(verts, faces)
 
     def get_measurement_columns(self, pipeline):
         '''Return column definitions for measurements made by this module'''

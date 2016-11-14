@@ -426,11 +426,17 @@ class MeasureObjectSizeShape(cpm.Module):
             import mahotas
 
             if objects.has_parent_image:
-                image = objects.parent_image.pixel_data
-            else:
-                image = np.ones_like(labels)
+                image = objects.parent_image
 
-            centers = mahotas.center_of_mass(image, labels=labels)
+                data = image.pixel_data
+
+                spacing = image.spacing
+            else:
+                data = np.ones_like(labels)
+
+                spacing = (1.0, 1.0, 1.0)
+
+            centers = mahotas.center_of_mass(data, labels=labels)
 
             if np.any(labels == 0):
                 # Remove the 0-label center of mass
@@ -443,6 +449,30 @@ class MeasureObjectSizeShape(cpm.Module):
             self.record_measurement(workspace, object_name, F_CENTER_Y, center_y)
 
             self.record_measurement(workspace, object_name, F_CENTER_Z, center_z)
+
+            # Perimeters
+            perimeters = []
+
+            for label in np.unique(labels):
+                if label == 0:
+                    continue
+
+                volume = np.zeros_like(labels, dtype='bool')
+
+                volume[labels == label] = True
+
+                verts, faces = skimage.measure.marching_cubes(
+                    volume,
+                    spacing=spacing,
+                    level=0
+                )
+
+                perimeters += [skimage.measure.mesh_surface_area(verts, faces)]
+
+            if len(perimeters) == 0:
+                self.record_measurement(workspace, object_name, F_PERIMETER, [0])
+            else:
+                self.record_measurement(workspace, object_name, F_PERIMETER, perimeters)
 
     def display(self, workspace, figure):
         figure.set_subplots((1, 1))

@@ -254,7 +254,7 @@ class MeasureImageAreaOccupied(cpm.Module):
         if image.dimensions is 2:
             perimeter = np.sum(outline(image.pixel_data) > 0)
         else:
-            self.__surface_area(image.pixel_data, image.spacing)
+            perimeter = self.__surface_area(image.pixel_data, image.spacing)
         total_area = np.prod(np.shape(image.pixel_data))
         m = workspace.measurements
         m.add_image_measurement(F_AREA_OCCUPIED % operand.binary_name.value,
@@ -268,13 +268,10 @@ class MeasureImageAreaOccupied(cpm.Module):
     def __surface_area(self, volume, spacing=(1.0, 1.0, 1.0)):
         import skimage.measure
 
-        import IPython
-        IPython.embed()
-
-        verts, faces, _, _ = skimage.measure.marching_cubes(
+        verts, faces = skimage.measure.marching_cubes(
             volume,
             spacing=spacing,
-            level=1
+            level=0
         )
 
         return skimage.measure.mesh_surface_area(verts, faces)

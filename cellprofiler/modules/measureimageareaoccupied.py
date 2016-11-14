@@ -28,6 +28,7 @@ import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
 import cellprofiler.setting as cps
 from cellprofiler.setting import YES, NO
+import skimage.measure
 
 C_AREA_OCCUPIED = "AreaOccupied"
 
@@ -266,8 +267,6 @@ class MeasureImageAreaOccupied(cpm.Module):
         return [[operand.binary_name.value, str(area_occupied), str(perimeter), str(total_area)]]
 
     def __surface_area(self, volume, spacing=(1.0, 1.0, 1.0)):
-        import skimage.measure
-
         verts, faces = skimage.measure.marching_cubes(
             volume,
             spacing=spacing,

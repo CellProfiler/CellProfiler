@@ -144,6 +144,7 @@ F_SOLIDITY = 'Solidity'
 F_EXTENT = 'Extent'
 F_CENTER_X = 'Center_X'
 F_CENTER_Y = 'Center_Y'
+F_CENTER_Z = 'Center_Z'
 F_EULER_NUMBER = 'EulerNumber'
 F_PERIMETER = 'Perimeter'
 F_FORM_FACTOR = 'FormFactor'
@@ -161,7 +162,7 @@ F_MAX_FERET_DIAMETER = 'MaxFeretDiameter'
 F_STANDARD = [F_AREA, F_ECCENTRICITY, F_SOLIDITY, F_EXTENT,
               F_EULER_NUMBER, F_PERIMETER, F_FORM_FACTOR,
               F_MAJOR_AXIS_LENGTH, F_MINOR_AXIS_LENGTH,
-              F_ORIENTATION, F_COMPACTNESS, F_CENTER_X, F_CENTER_Y,
+              F_ORIENTATION, F_COMPACTNESS, F_CENTER_X, F_CENTER_Y, F_CENTER_Z,
               F_MAXIMUM_RADIUS, F_MEAN_RADIUS, F_MEDIAN_RADIUS,
               F_MIN_FERET_DIAMETER, F_MAX_FERET_DIAMETER]
 
@@ -286,16 +287,17 @@ class MeasureObjectSizeShape(cpm.Module):
         """Run, computing the area measurements for the objects"""
 
         if self.show_window:
-            workspace.display_data.col_labels = \
-                ("Object", "Feature", "Mean", "Median", "STD")
+            workspace.display_data.col_labels = ("Object", "Feature", "Mean", "Median", "STD")
+
             workspace.display_data.statistics = []
+
         for object_group in self.object_groups:
             self.run_on_objects(object_group.name.value, workspace)
 
     def run_on_objects(self, object_name, workspace):
         """Run, computing the area measurements for a single map of objects"""
         objects = workspace.get_objects(object_name)
-        assert isinstance(objects, cpo.Objects)
+
         if len(objects.shape) is 2:
             #
             # Do the ellipse-related measurements
@@ -388,6 +390,7 @@ class MeasureObjectSizeShape(cpm.Module):
             for f, m in ([(F_AREA, objects.areas),
                           (F_CENTER_X, mcenter_x),
                           (F_CENTER_Y, mcenter_y),
+                          (F_CENTER_Z, np.ones_like(mcenter_x)),
                           (F_EXTENT, mextent),
                           (F_PERIMETER, mperimeters),
                           (F_SOLIDITY, msolidity),
@@ -402,11 +405,41 @@ class MeasureObjectSizeShape(cpm.Module):
                               for n, m in zernike_numbers]):
                 self.record_measurement(workspace, object_name, f, m)
         else:
+            labels = objects.segmented
+
+            props = skimage.measure.regionprops(labels)
+
             # Area
-            props = skimage.measure.regionprops(objects.segmented)
             areas = [prop.area for prop in props]
 
             self.record_measurement(workspace, object_name, F_AREA, areas)
+
+            # Bounding box (min_z, min_x, min_y, max_z, max_x, max_y)
+            # bboxes = [prop.bbox for prop in props]
+
+            # Extent
+            extents = [prop.extent for prop in props]
+
+            self.record_measurement(workspace, object_name, F_EXTENT, extents)
+
+            # Centers of mass
+            import mahotas
+
+            image = objects.parent_image.pixel_data
+
+            centers = mahotas.center_of_mass(image, labels=labels)
+
+            if np.any(labels == 0):
+                # Remove the 0-label center of mass
+                centers = centers[1:]
+
+            center_z, center_x, center_y = centers.transpose()
+
+            self.record_measurement(workspace, object_name, F_CENTER_X, center_x)
+
+            self.record_measurement(workspace, object_name, F_CENTER_Y, center_y)
+
+            self.record_measurement(workspace, object_name, F_CENTER_Z, center_z)
 
     def display(self, workspace, figure):
         figure.set_subplots((1, 1))

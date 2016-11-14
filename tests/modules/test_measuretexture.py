@@ -85,7 +85,6 @@ class TestMeasureTexture(unittest.TestCase):
         self.assertEqual(module.object_count.value, 1)
         self.assertEqual(module.object_groups[0].object_name.value, "Nuclei")
 
-        self.assertEqual(module.gabor_angles.value, 3)
         self.assertTrue(module.wants_gabor)
 
     def test_01_03_load_v2(self):
@@ -137,7 +136,6 @@ MeasureTexture:[module_num:2|svn_version:\'1\'|variable_revision_number:2|show_w
             self.assertEqual(module.object_groups[0].object_name, "Cells")
             self.assertEqual(module.object_groups[1].object_name, "Nuclei")
             self.assertEqual(module.wants_gabor, wants_gabor)
-            self.assertEqual(module.gabor_angles, 6)
 
     def test_01_03_load_v3(self):
         data = """CellProfiler Pipeline: http://www.cellprofiler.org
@@ -192,7 +190,6 @@ MeasureTexture:[module_num:2|svn_version:\'1\'|variable_revision_number:3|show_w
             self.assertEqual(module.object_groups[0].object_name, "Cells")
             self.assertEqual(module.object_groups[1].object_name, "Nuclei")
             self.assertEqual(module.wants_gabor, wants_gabor)
-            self.assertEqual(module.gabor_angles, 6)
             self.assertEqual(module.images_or_objects, M.IO_BOTH)
 
     def test_01_04_load_v4(self):
@@ -272,7 +269,6 @@ MeasureTexture:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|
             self.assertEqual(module.object_groups[0].object_name, "Cells")
             self.assertEqual(module.object_groups[1].object_name, "Nuclei")
             self.assertEqual(module.wants_gabor, wants_gabor)
-            self.assertEqual(module.gabor_angles, 6)
 
     def test_02_02_many_objects(self):
         '''Regression test for IMG-775'''
@@ -322,22 +318,20 @@ MeasureTexture:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|
         himage = np.cos(np.pi * i) * .5 + .5
         dimage = np.cos(np.pi * (i - j) / np.sqrt(2)) * .5 + .5
 
-        def run_me(image, angles):
+        def run_me(image):
             workspace, module = self.make_workspace(image, labels)
-            module.gabor_angles.value = angles
             module.run(workspace)
             mname = '%s_%s_%s_%d' % (M.TEXTURE, M.F_GABOR, INPUT_IMAGE_NAME, 3)
             m = workspace.measurements.get_current_measurement(INPUT_OBJECTS_NAME, mname)
             self.assertEqual(len(m), 1)
             return m[0]
 
-        himage_2, himage_4, dimage_2, dimage_4 = [run_me(image, angles)
-                                                  for image, angles in
-                                                  ((himage, 2), (himage, 4),
-                                                   (dimage, 2), (dimage, 4))]
-        self.assertAlmostEqual(himage_2, himage_4)
+        himage_4 = run_me(himage)
+        dimage_4 = run_me(dimage)
+
+        # self.assertAlmostEqual(himage_2, himage_4)
         # self.assertAlmostEqual(dimage_2, 0)
-        self.assertAlmostEqual(dimage_2, 1.1924403)
+        # self.assertAlmostEqual(dimage_2, 1.1924403)
         self.assertNotAlmostEqual(dimage_4, 0)
 
     def test_03_02_01_gabor_off(self):

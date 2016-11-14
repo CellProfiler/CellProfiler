@@ -129,6 +129,7 @@ import cellprofiler.object as cpo
 import cellprofiler.setting as cps
 from cellprofiler.setting import YES, NO
 import mahotas.features
+import scipy.signal
 
 """The category of the per-object measurements made by this module"""
 TEXTURE = 'Texture'
@@ -198,11 +199,6 @@ class MeasureTexture(cpm.Module):
                 <i>%(NO)s</i> to skip the Gabor feature calculation if it is not
                 informative for your images.</p>""" % globals())
 
-        self.gabor_angles = cps.Integer("Number of angles to compute for Gabor", 4, 2, doc="""
-            <i>(Used only if Gabor features are measured)</i><br>
-            Enter the number of angles to use for each Gabor texture measurement.
-            The default value is 4 which detects bands in the horizontal, vertical and diagonal
-            orientations.""")
         self.images_or_objects = cps.Choice(
                 "Measure images or objects?", [IO_IMAGES, IO_OBJECTS, IO_BOTH],
                 value=IO_BOTH,
@@ -224,7 +220,7 @@ class MeasureTexture(cpm.Module):
             for group in groups:
                 for element in elements:
                     result += [getattr(group, element)]
-        result += [self.wants_gabor, self.gabor_angles, self.images_or_objects]
+        result += [self.wants_gabor, self.images_or_objects]
         return result
 
     def prepare_settings(self, setting_values):
@@ -258,8 +254,6 @@ class MeasureTexture(cpm.Module):
             if groups == self.image_groups:
                 result += [self.images_or_objects]
         result += [self.wants_gabor]
-        if self.wants_gabor:
-            result += [self.gabor_angles]
         return result
 
     def wants_image_measurements(self):
@@ -565,8 +559,7 @@ class MeasureTexture(cpm.Module):
         labels = objects.segmented
         object_count = np.max(labels)
         if object_count > 0:
-            image = workspace.image_set.get_image(image_name,
-                                                  must_be_grayscale=True)
+            image = workspace.image_set.get_image(image_name, must_be_grayscale=True)
             pixel_data = image.pixel_data
             labels = objects.segmented
             if image.has_mask:
@@ -587,15 +580,54 @@ class MeasureTexture(cpm.Module):
                     labels[~mask] = 0
             pixel_data = normalized_per_object(pixel_data, labels)
             best_score = np.zeros((object_count,))
-            for angle in range(self.gabor_angles.value):
-                theta = np.pi * angle / self.gabor_angles.value
-                g = gabor(pixel_data, labels, scale, theta)
-                score_r = fix(scind.sum(g.real, labels,
-                                        np.arange(object_count, dtype=np.int32) + 1))
-                score_i = fix(scind.sum(g.imag, labels,
-                                        np.arange(object_count, dtype=np.int32) + 1))
-                score = np.sqrt(score_r ** 2 + score_i ** 2)
-                best_score = np.maximum(best_score, score)
+            for angle in range(4):  # x-y direction
+                theta = np.pi * angle / 4.0
+                if image.dimensions is 2:
+                    g = gabor(pixel_data, labels, scale, theta)
+                    score_r = fix(scind.sum(g.real, labels,
+                                            np.arange(object_count, dtype=np.int32) + 1))
+                    score_i = fix(scind.sum(g.imag, labels,
+                                            np.arange(object_count, dtype=np.int32) + 1))
+                    score = np.sqrt(score_r ** 2 + score_i ** 2)
+                    best_score = np.maximum(best_score, score)
+                else:
+                    z, x, y = image.spacing
+
+                    for z_angle in range(4):  # z direction
+                        gamma = np.pi * z_angle / 4.0
+
+                        kernel = self.__gabor_filter_3d(
+                            frequency=scale,
+                            alpha=theta,
+                            gamma=gamma,
+                            scale_x=x,
+                            scale_y=y,
+                            scale_z=z
+                        )
+
+                        scores = []
+
+                        for label in np.unique(labels):
+                            if label == 0:
+                                continue
+
+                            label_image = np.zeros_like(labels)
+
+                            label_image[labels == label] = pixel_data[labels == label]
+
+                            real = scipy.signal.fftconvolve(label_image, np.real(kernel), mode='same')
+
+                            imaginary = scipy.signal.fftconvolve(label_image, np.imag(kernel), mode='same')
+
+                            score_r = np.sum(real)
+
+                            score_i = np.sum(imaginary)
+
+                            score = np.sqrt(score_r ** 2 + score_i ** 2)
+
+                            scores += [score]
+
+                        best_score = np.maximum(best_score, scores)
         else:
             best_score = np.zeros((0,))
         statistics = self.record_measurement(workspace,
@@ -607,21 +639,48 @@ class MeasureTexture(cpm.Module):
         return statistics
 
     def run_image_gabor(self, image_name, scale, workspace):
-        image = workspace.image_set.get_image(image_name,
-                                              must_be_grayscale=True)
+        image = workspace.image_set.get_image(image_name, must_be_grayscale=True)
         pixel_data = image.pixel_data
         labels = np.ones(pixel_data.shape, int)
         if image.has_mask:
             labels[~image.mask] = 0
         pixel_data = stretch(pixel_data, labels > 0)
         best_score = 0
-        for angle in range(self.gabor_angles.value):
-            theta = np.pi * angle / self.gabor_angles.value
-            g = gabor(pixel_data, labels, scale, theta)
-            score_r = np.sum(g.real)
-            score_i = np.sum(g.imag)
-            score = np.sqrt(score_r ** 2 + score_i ** 2)
-            best_score = max(best_score, score)
+        for angle in range(4):  # x-y direction
+            theta = np.pi * angle / 4
+            if image.dimensions is 2:
+                g = gabor(pixel_data, labels, scale, theta)
+                score_r = np.sum(g.real)
+                score_i = np.sum(g.imag)
+                score = np.sqrt(score_r ** 2 + score_i ** 2)
+                best_score = max(best_score, score)
+            else:
+                z, x, y = image.spacing
+
+                for z_angle in range(4):  # z direction
+                    gamma = np.pi * z_angle / 4
+
+                    kernel = self.__gabor_filter_3d(
+                        frequency=scale,
+                        alpha=theta,
+                        gamma=gamma,
+                        scale_x=x,
+                        scale_y=y,
+                        scale_z=z
+                    )
+
+                    real = scipy.signal.fftconvolve(pixel_data, np.real(kernel), mode='same')
+
+                    imaginary = scipy.signal.fftconvolve(pixel_data, np.imag(kernel), mode='same')
+
+                    score_r = np.sum(real)
+
+                    score_i = np.sum(imaginary)
+
+                    score = np.sqrt(score_r ** 2 + score_i ** 2)
+
+                    best_score = max(best_score, score)
+
         statistics = self.record_image_measurement(workspace,
                                                    image_name,
                                                    scale,
@@ -729,7 +788,124 @@ class MeasureTexture(cpm.Module):
             new_setting_values = setting_values[:2]
             new_setting_values += setting_values[3:scale_offset]
             new_setting_values += setting_values[scale_offset + 2*scale_count:]
+            # Removed gabor angles
+            new_setting_values = new_setting_values[:-2] + new_setting_values[-1:]
             setting_values = new_setting_values
             variable_revision_number = 5
 
         return setting_values, variable_revision_number, from_matlab
+
+    def __sigma_prefactor(self, bandwidth):
+        b = bandwidth
+        # See http://www.cs.rug.nl/~imaging/simplecell.html
+        return (1.0 / np.pi * np.sqrt(np.log(2) / 2.0) *
+                (2.0 ** b + 1) / (2.0 ** b - 1))
+
+    def __gabor_filter_3d(self, frequency, alpha=0, gamma=0, bandwidth=1, sigma_x=None, sigma_y=None, sigma_z=None,
+                          n_stds=3, scale_x=None, scale_y=None, scale_z=None):
+        """Return complex 3D Gabor filter kernel.
+        Gabor kernel is a Gaussian kernel modulated by a complex harmonic function.
+        Harmonic function consists of an imaginary sine function and a real
+        cosine function. Spatial frequency is inversely proportional to the
+        wavelength of the harmonic and to the standard deviation of a Gaussian
+        kernel. The bandwidth is also inversely proportional to the standard
+        deviation.
+        Parameters
+        ----------
+        frequency : float
+            Spatial frequency of the harmonic function. Specified in pixels.
+        alpha, gamma : float, optional
+            Orientation in radians of the x-y, and z axis.
+        bandwidth : float, optional
+            The bandwidth captured by the filter. For fixed bandwidth, `sigma_x`
+            and `sigma_y` will decrease with increasing frequency. This value is
+            ignored if `sigma_x` and `sigma_y` are set by the user.
+        sigma_x, sigma_y, sigma_z : float, optional
+            Standard deviation in x-, y-, and z-directions. These directions apply
+            to the kernel *before* rotation. If `alpha = pi/2`, then the kernel is
+            rotated 90 degrees so that `sigma_x` controls the *vertical* direction.
+        scale_x, scale_y, scale_z : float, optional
+            In case of using bandwidth but with a wish of different scale for
+            the sigma
+        n_stds : scalar, optional
+            The linear size of the kernel is n_stds (3 by default) standard
+            deviations
+        Returns
+        -------
+        g : complex array
+            Complex filter kernel.
+        """
+
+        if scale_x is None:
+            scale_x = 1.
+        if scale_y is None:
+            scale_y = 1.
+        if scale_z is None:
+            scale_z = 1.
+
+        if sigma_x is None:
+            sigma_x = self.__sigma_prefactor(bandwidth) / (frequency * scale_x)
+        if sigma_y is None:
+            sigma_y = self.__sigma_prefactor(bandwidth) / (frequency * scale_y)
+        if sigma_z is None:
+            sigma_z = self.__sigma_prefactor(bandwidth) / (frequency * scale_z)
+
+        # Define the different rotation matrix
+        rot_mat_x = np.matrix([[1, 0, 0],
+                               [0, np.cos(alpha), -np.sin(alpha)],
+                               [0, np.sin(alpha), np.cos(alpha)]])
+        rot_mat_z = np.matrix([[np.cos(gamma), -np.sin(gamma), 0],
+                               [np.sin(gamma), np.cos(gamma), 0],
+                               [0, 0, 1]])
+
+        # Compute the full rotation matrix
+        rot_mat = rot_mat_z * rot_mat_x
+
+
+        x0 = np.ceil(max(np.abs(n_stds * sigma_x * np.cos(gamma)),
+                         np.abs(n_stds * sigma_y * np.sin(gamma)),
+                         1))
+
+        y0 = np.ceil(max(np.abs(n_stds * sigma_x * -np.cos(alpha) * np.sin(gamma)),
+                         np.abs(n_stds * sigma_y * np.cos(alpha) * np.cos(gamma)),
+                         np.abs(n_stds * sigma_z * np.sin(alpha)),
+                         1))
+
+        z0 = np.ceil(max(np.abs(n_stds * sigma_x * np.sin(alpha) * np.sin(gamma)),
+                         np.abs(n_stds * sigma_y * -np.sin(alpha) * np.cos(gamma)),
+                         np.abs(n_stds * sigma_z * np.cos(alpha)),
+                         1))
+
+        x, y, z = np.mgrid[-x0:x0 + 1, -y0:y0 + 1, -z0:z0 + 1]
+
+        # Keep the shape of the grid for later reshaping
+        grid_shape = x.shape
+
+        # Build a huge matrix with all the coordinates
+        pos = np.matrix([x.reshape(-1), y.reshape(-1), z.reshape(-1)])
+
+        # Apply the rotation
+        rot_pos = rot_mat * pos
+
+        # Split the data according to the shape of the grid
+        rotx = np.reshape(np.array(rot_pos[0, :]), grid_shape)
+        roty = np.reshape(np.array(rot_pos[1, :]), grid_shape)
+        rotz = np.reshape(np.array(rot_pos[2, :]), grid_shape)
+
+        # Allocate the data with complex type
+        g = np.zeros(y.shape, dtype=np.complex)
+
+        # Compute the gaussian enveloppe
+        g[:] = np.exp(-0.5 * (rotx ** 2 / sigma_x ** 2 +
+                              roty ** 2 / sigma_y ** 2 +
+                              rotz ** 2 / sigma_z ** 2))
+        # Normalize the enveloppe
+        g /= ((2 * np.pi)**(3. / 2.)) * sigma_x * sigma_y * sigma_z
+        # Apply the sinusoidal
+        g *= np.exp(1j * 2 * np.pi * (frequency * np.sin(alpha) *
+                                      np.cos(gamma) * x +
+                                      frequency * np.sin(alpha) *
+                                      np.sin(gamma) * y +
+                                      frequency * np.cos(alpha) * z))
+
+        return g

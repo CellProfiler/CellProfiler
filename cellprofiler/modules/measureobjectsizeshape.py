@@ -425,7 +425,10 @@ class MeasureObjectSizeShape(cpm.Module):
             # Centers of mass
             import mahotas
 
-            image = objects.parent_image.pixel_data
+            if objects.has_parent_image:
+                image = objects.parent_image.pixel_data
+            else:
+                image = np.ones_like(labels)
 
             centers = mahotas.center_of_mass(image, labels=labels)
 

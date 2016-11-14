@@ -100,7 +100,18 @@ class Image(object):
 
         self.dimensions = dimensions
 
-        self.spacing = spacing
+        self.__spacing = spacing
+
+    @property
+    def spacing(self):
+        if self.__spacing is None and self.has_parent_image:
+            return self.parent_image.spacing
+
+        return self.__spacing
+
+    @spacing.setter
+    def spacing(self, spacing):
+        self.__spacing = spacing
 
     @property
     def multichannel(self):
@@ -216,12 +227,10 @@ class Image(object):
         #
         # Exclude channel, if present, from shape
         #
-        if image.ndim == 2:
-            shape = image.shape
-        elif image.ndim == 3:
-            shape = image.shape[:2]
-        else:
-            shape = image.shape[1:]
+        shape = image.shape
+
+        if self.multichannel:
+            shape = shape[:-1]
 
         return numpy.ones(shape, dtype=numpy.bool)
 

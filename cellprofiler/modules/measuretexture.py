@@ -128,6 +128,8 @@ import cellprofiler.measurement as cpmeas
 import cellprofiler.object as cpo
 import cellprofiler.setting as cps
 from cellprofiler.setting import YES, NO
+import mahotas.features
+import scipy.signal
 
 """The category of the per-object measurements made by this module"""
 TEXTURE = 'Texture'
@@ -165,7 +167,7 @@ IO_BOTH = "Both"
 
 class MeasureTexture(cpm.Module):
     module_name = "MeasureTexture"
-    variable_revision_number = 4
+    variable_revision_number = 5
     category = 'Measurement'
 
     def create_settings(self):
@@ -176,10 +178,8 @@ class MeasureTexture(cpm.Module):
         """
         self.image_groups = []
         self.object_groups = []
-        self.scale_groups = []
         self.image_count = cps.HiddenCount(self.image_groups)
         self.object_count = cps.HiddenCount(self.object_groups)
-        self.scale_count = cps.HiddenCount(self.scale_groups)
         self.add_image_cb(can_remove=False)
         self.add_images = cps.DoSomething("", "Add another image",
                                           self.add_image_cb)
@@ -188,9 +188,7 @@ class MeasureTexture(cpm.Module):
         self.add_objects = cps.DoSomething("", "Add another object",
                                            self.add_object_cb)
         self.object_divider = cps.Divider()
-        self.add_scale_cb(can_remove=False)
-        self.add_scales = cps.DoSomething("", "Add another scale",
-                                          self.add_scale_cb)
+
         self.scale_divider = cps.Divider()
 
         self.wants_gabor = cps.Binary(
@@ -201,11 +199,6 @@ class MeasureTexture(cpm.Module):
                 <i>%(NO)s</i> to skip the Gabor feature calculation if it is not
                 informative for your images.</p>""" % globals())
 
-        self.gabor_angles = cps.Integer("Number of angles to compute for Gabor", 4, 2, doc="""
-            <i>(Used only if Gabor features are measured)</i><br>
-            Enter the number of angles to use for each Gabor texture measurement.
-            The default value is 4 which detects bands in the horizontal, vertical and diagonal
-            orientations.""")
         self.images_or_objects = cps.Choice(
                 "Measure images or objects?", [IO_IMAGES, IO_OBJECTS, IO_BOTH],
                 value=IO_BOTH,
@@ -220,14 +213,14 @@ class MeasureTexture(cpm.Module):
 
     def settings(self):
         """The settings as they appear in the save file."""
-        result = [self.image_count, self.object_count, self.scale_count]
+        result = [self.image_count, self.object_count]
         for groups, elements in [(self.image_groups, ['image_name']),
                                  (self.object_groups, ['object_name']),
-                                 (self.scale_groups, ['scale', 'angles'])]:
+                                 ]:
             for group in groups:
                 for element in elements:
                     result += [getattr(group, element)]
-        result += [self.wants_gabor, self.gabor_angles, self.images_or_objects]
+        result += [self.wants_gabor, self.images_or_objects]
         return result
 
     def prepare_settings(self, setting_values):
@@ -236,7 +229,7 @@ class MeasureTexture(cpm.Module):
         for count, sequence, fn in \
                 ((int(setting_values[0]), self.image_groups, self.add_image_cb),
                  (int(setting_values[1]), self.object_groups, self.add_object_cb),
-                 (int(setting_values[2]), self.scale_groups, self.add_scale_cb)):
+                 ):
             del sequence[count:]
             while len(sequence) < count:
                 fn()
@@ -248,11 +241,11 @@ class MeasureTexture(cpm.Module):
             vs_groups = [
                 (self.image_groups, self.add_images, self.image_divider),
                 (self.object_groups, self.add_objects, self.object_divider),
-                (self.scale_groups, self.add_scales, self.scale_divider)]
+            ]
         else:
             vs_groups = [
                 (self.image_groups, self.add_images, self.image_divider),
-                (self.scale_groups, self.add_scales, self.scale_divider)]
+            ]
 
         for groups, add_button, div in vs_groups:
             for group in groups:
@@ -261,8 +254,6 @@ class MeasureTexture(cpm.Module):
             if groups == self.image_groups:
                 result += [self.images_or_objects]
         result += [self.wants_gabor]
-        if self.wants_gabor:
-            result += [self.gabor_angles]
         return result
 
     def wants_image_measurements(self):
@@ -312,47 +303,6 @@ class MeasureTexture(cpm.Module):
             group.append("remover", cps.RemoveSettingButton("", "Remove this object", self.object_groups, group))
         self.object_groups.append(group)
 
-    def add_scale_cb(self, can_remove=True):
-        '''Add a scale to the scale_groups collection
-
-        can_delete - set this to False to keep from showing the "remove"
-                     button for scales that must be present.
-        '''
-        group = cps.SettingsGroup()
-        if can_remove:
-            group.append("divider", cps.Divider(line=False))
-        group.append('scale',
-                     cps.Integer("Texture scale to measure",
-                                 len(self.scale_groups) + 3,
-                                 doc="""You can specify the scale of texture to be measured, in pixel units;
-                                 the texture scale is the distance between correlated intensities in the image. A
-                                 higher number for the scale of texture measures larger patterns of
-                                 texture whereas smaller numbers measure more localized patterns of
-                                 texture. It is best to measure texture on a scale smaller than your
-                                 objects' sizes, so be sure that the value entered for scale of texture is
-                                 smaller than most of your objects. For very small objects (smaller than
-                                 the scale of texture you are measuring), the texture cannot be measured
-                                 and will result in a undefined value in the output file."""))
-        group.append('angles', cps.MultiChoice(
-                "Angles to measure", H_ALL, H_ALL,
-                doc="""The Haralick texture measurements are based on the correlation
-        between pixels offset by the scale in one of four directions:
-        <p><ul>
-        <li><i>%(H_HORIZONTAL)s</i> - the correlated pixel is "scale" pixels
-        to the right of the pixel of interest.</li>
-        <li><i>%(H_VERTICAL)s</i> - the correlated pixel is "scale" pixels
-        below the pixel of interest.</li>
-        <li><i>%(H_DIAGONAL)s</i> - the correlated pixel is "scale" pixels
-        to the right and "scale" pixels below the pixel of interest.</li>
-        <li><i>%(H_ANTIDIAGONAL)s</i> - the correlated pixel is "scale"
-        pixels to the left and "scale" pixels below the pixel of interest.</li>
-        </ul><p>
-        Choose one or more directions to measure.""" % globals()))
-
-        if can_remove:
-            group.append("remover", cps.RemoveSettingButton("", "Remove this scale", self.scale_groups, group))
-        self.scale_groups.append(group)
-
     def validate_module(self, pipeline):
         """Make sure chosen objects, images and scales are selected only once"""
         images = set()
@@ -371,14 +321,6 @@ class MeasureTexture(cpm.Module):
                             "%s has already been selected" % group.object_name.value,
                             group.object_name)
                 objects.add(group.object_name.value)
-
-        scales = set()
-        for group in self.scale_groups:
-            if group.scale.value in scales:
-                raise cps.ValidationError(
-                        "%s has already been selected" % group.scale.value,
-                        group.scale)
-            scales.add(group.scale.value)
 
     def get_categories(self, pipeline, object_name):
         """Get the measurement categories supplied for the given object name.
@@ -433,15 +375,14 @@ class MeasureTexture(cpm.Module):
         measurement - name of measurement made
         image_name - name of image that was measured
         '''
-        if len(self.get_measurement_images(pipeline, object_name, category,
-                                           measurement)) > 0:
-            if measurement == F_GABOR:
-                return [x.scale.value for x in self.scale_groups]
-
-            return sum([["%d_%s" % (x.scale.value, H_TO_A[h])
-                         for h in x.angles.get_selections()]
-                        for x in self.scale_groups], [])
-        return []
+        # if len(self.get_measurement_images(pipeline, object_name, category, measurement)) > 0:
+        #     if measurement == F_GABOR:
+        #         return [x.scale.value for x in self.scale_groups]
+        #
+        #     return sum([["%d_%s" % (x.scale.value, H_TO_A[h])
+        #                  for h in x.angles.get_selections()]
+        #                 for x in self.scale_groups], [])
+        return [3]
 
     def get_measurement_columns(self, pipeline):
         '''Get column names output for each measurement.'''
@@ -449,74 +390,132 @@ class MeasureTexture(cpm.Module):
         if self.wants_image_measurements():
             for feature in self.get_features():
                 for im in self.image_groups:
-                    for sg in self.scale_groups:
-                        if feature == F_GABOR:
+                    scale = 3
+                    if feature == F_GABOR:
+                        cols += [
+                            (cpmeas.IMAGE,
+                             '%s_%s_%s_%d' % (TEXTURE, feature,
+                                              im.image_name.value,
+                                              scale),
+                             cpmeas.COLTYPE_FLOAT)]
+                    else:
+                        for angle in H_TO_A.keys():  # TODO: volumize me
                             cols += [
                                 (cpmeas.IMAGE,
-                                 '%s_%s_%s_%d' % (TEXTURE, feature,
-                                                  im.image_name.value,
-                                                  sg.scale.value),
+                                 '%s_%s_%s_%d_%s' % (
+                                     TEXTURE, feature, im.image_name.value,
+                                     scale, H_TO_A[angle]),
                                  cpmeas.COLTYPE_FLOAT)]
-                        else:
-                            for angle in sg.angles.get_selections():
-                                cols += [
-                                    (cpmeas.IMAGE,
-                                     '%s_%s_%s_%d_%s' % (
-                                         TEXTURE, feature, im.image_name.value,
-                                         sg.scale.value, H_TO_A[angle]),
-                                     cpmeas.COLTYPE_FLOAT)]
 
         if self.wants_object_measurements():
             for ob in self.object_groups:
                 for feature in self.get_features():
                     for im in self.image_groups:
-                        for sg in self.scale_groups:
-                            if feature == F_GABOR:
+                        scale = 3
+                        if feature == F_GABOR:
+                            cols += [
+                                (ob.object_name.value,
+                                 "%s_%s_%s_%d" % (
+                                     TEXTURE, feature, im.image_name.value,
+                                     scale),
+                                 cpmeas.COLTYPE_FLOAT)]
+                        else:
+                            for angle in H_TO_A.keys():  # TODO: volumize me
                                 cols += [
                                     (ob.object_name.value,
-                                     "%s_%s_%s_%d" % (
-                                         TEXTURE, feature, im.image_name.value,
-                                         sg.scale.value),
+                                     "%s_%s_%s_%d_%s" % (
+                                         TEXTURE, feature,
+                                         im.image_name.value,
+                                         scale, H_TO_A[angle]),
                                      cpmeas.COLTYPE_FLOAT)]
-                            else:
-                                for angle in sg.angles.get_selections():
-                                    cols += [
-                                        (ob.object_name.value,
-                                         "%s_%s_%s_%d_%s" % (
-                                             TEXTURE, feature,
-                                             im.image_name.value,
-                                             sg.scale.value, H_TO_A[angle]),
-                                         cpmeas.COLTYPE_FLOAT)]
 
         return cols
 
     def run(self, workspace):
         """Run, computing the area measurements for the objects"""
 
-        workspace.display_data.col_labels = [
-            "Image", "Object", "Measurement", "Scale", "Value"]
+        workspace.display_data.col_labels = ["Image", "Object", "Measurement", "Scale", "Value"]
+
         statistics = []
+
         for image_group in self.image_groups:
             image_name = image_group.image_name.value
-            for scale_group in self.scale_groups:
-                scale = scale_group.scale.value
-                if self.wants_image_measurements():
+
+            scale = 3
+
+            image = workspace.image_set.get_image(image_name)
+
+            if self.wants_image_measurements():
+                if self.wants_gabor:
+                    statistics += self.run_image_gabor(image_name, scale, workspace)
+
+                data = image.pixel_data
+
+                if image.has_mask:
+                    data[image.mask == 0] = 0
+
+                data = mahotas.stretch(data)  # 0-255
+
+                features = mahotas.features.haralick(data)
+
+                direction, feature = features.shape
+
+                for direction_index in range(direction):
+                    for feature_index in range(feature):
+                        statistics += self.record_image_measurement(
+                            workspace,
+                            image_name,
+                            "3_" + str(direction_index),
+                            F_HARALICK[feature_index],
+                            features[direction_index, feature_index]
+                        )
+
+            if self.wants_object_measurements():
+                for object_group in self.object_groups:
+                    object_name = object_group.object_name.value
+
+                    objects = workspace.get_objects(object_name)
+
+                    data = np.zeros_like(image.pixel_data)
+
+                    labels = objects.segmented
+
+                    features = []
+
+                    for label in np.unique(labels):
+                        if label == 0:
+                            continue
+
+                        data[labels == label] = image.pixel_data[labels == label]
+
+                        data = mahotas.stretch(data)  # 0-255
+
+                        features += [mahotas.features.haralick(data)]  # distance=scale, ignore_zeros=True ?
+
+                    features = np.asarray(features)
+
+                    if features.size is 0:
+                        if image.dimensions is 2:
+                            direction = 4
+                        else:
+                            direction = 13
+
+                        feature = 13
+
+                        for direction_index in range(direction):
+                            for feature_index in range(feature):
+                                statistics += self.record_measurement(workspace, image_name, object_name, "3_" + str(direction_index), F_HARALICK[feature_index], np.zeros((0,)))
+
+                    else:
+                        _, direction, feature = features.shape
+
+                        for direction_index in range(direction):
+                            for feature_index in range(feature):
+                                statistics += self.record_measurement(workspace, image_name, object_name, "3_" + str(direction_index), F_HARALICK[feature_index], features[:, direction_index, feature_index])
+
                     if self.wants_gabor:
-                        statistics += self.run_image_gabor(
-                                image_name, scale, workspace)
-                    for angle in scale_group.angles.get_selections():
-                        statistics += self.run_image(
-                                image_name, scale, angle, workspace)
-                if self.wants_object_measurements():
-                    for object_group in self.object_groups:
-                        object_name = object_group.object_name.value
-                        for angle in scale_group.angles.get_selections():
-                            statistics += self.run_one(
-                                    image_name, object_name, scale, angle,
-                                    workspace)
-                        if self.wants_gabor:
-                            statistics += self.run_one_gabor(
-                                    image_name, object_name, scale, workspace)
+                        statistics += self.run_one_gabor(image_name, object_name, scale, workspace)
+
         if self.show_window:
             workspace.display_data.statistics = statistics
 
@@ -525,50 +524,6 @@ class MeasureTexture(cpm.Module):
         figure.subplot_table(0, 0,
                              workspace.display_data.statistics,
                              col_labels=workspace.display_data.col_labels)
-
-    def run_one(self, image_name, object_name, scale, angle, workspace):
-        """Run, computing the area measurements for a single map of objects"""
-        statistics = []
-        image = workspace.image_set.get_image(image_name,
-                                              must_be_grayscale=True)
-        objects = workspace.get_objects(object_name)
-        pixel_data = image.pixel_data
-        if image.has_mask:
-            mask = image.mask
-        else:
-            mask = None
-        labels = objects.segmented
-        try:
-            pixel_data = objects.crop_image_similarly(pixel_data)
-        except ValueError:
-            #
-            # Recover by cropping the image to the labels
-            #
-            pixel_data, m1 = cpo.size_similarly(labels, pixel_data)
-            if np.any(~m1):
-                if mask is None:
-                    mask = m1
-                else:
-                    mask, m2 = cpo.size_similarly(labels, mask)
-                    mask[~m2] = False
-
-        if np.all(labels == 0):
-            for name in F_HARALICK:
-                statistics += self.record_measurement(
-                        workspace, image_name, object_name,
-                        str(scale) + "_" + H_TO_A[angle], name, np.zeros((0,)))
-        else:
-            scale_i, scale_j = self.get_angle_ij(angle, scale)
-
-            for name, value in zip(F_HARALICK, Haralick(pixel_data,
-                                                        labels,
-                                                        scale_i,
-                                                        scale_j,
-                                                        mask=mask).all()):
-                statistics += self.record_measurement(
-                        workspace, image_name, object_name,
-                        str(scale) + "_" + H_TO_A[angle], name, value)
-        return statistics
 
     def get_angle_ij(self, angle, scale):
         if angle == H_VERTICAL:
@@ -604,8 +559,7 @@ class MeasureTexture(cpm.Module):
         labels = objects.segmented
         object_count = np.max(labels)
         if object_count > 0:
-            image = workspace.image_set.get_image(image_name,
-                                                  must_be_grayscale=True)
+            image = workspace.image_set.get_image(image_name, must_be_grayscale=True)
             pixel_data = image.pixel_data
             labels = objects.segmented
             if image.has_mask:
@@ -626,15 +580,54 @@ class MeasureTexture(cpm.Module):
                     labels[~mask] = 0
             pixel_data = normalized_per_object(pixel_data, labels)
             best_score = np.zeros((object_count,))
-            for angle in range(self.gabor_angles.value):
-                theta = np.pi * angle / self.gabor_angles.value
-                g = gabor(pixel_data, labels, scale, theta)
-                score_r = fix(scind.sum(g.real, labels,
-                                        np.arange(object_count, dtype=np.int32) + 1))
-                score_i = fix(scind.sum(g.imag, labels,
-                                        np.arange(object_count, dtype=np.int32) + 1))
-                score = np.sqrt(score_r ** 2 + score_i ** 2)
-                best_score = np.maximum(best_score, score)
+            for angle in range(4):  # x-y direction
+                theta = np.pi * angle / 4.0
+                if image.dimensions is 2:
+                    g = gabor(pixel_data, labels, scale, theta)
+                    score_r = fix(scind.sum(g.real, labels,
+                                            np.arange(object_count, dtype=np.int32) + 1))
+                    score_i = fix(scind.sum(g.imag, labels,
+                                            np.arange(object_count, dtype=np.int32) + 1))
+                    score = np.sqrt(score_r ** 2 + score_i ** 2)
+                    best_score = np.maximum(best_score, score)
+                else:
+                    z, x, y = image.spacing
+
+                    for z_angle in range(4):  # z direction
+                        gamma = np.pi * z_angle / 4.0
+
+                        kernel = self.__gabor_filter_3d(
+                            frequency=scale,
+                            alpha=theta,
+                            gamma=gamma,
+                            scale_x=x,
+                            scale_y=y,
+                            scale_z=z
+                        )
+
+                        scores = []
+
+                        for label in np.unique(labels):
+                            if label == 0:
+                                continue
+
+                            label_image = np.zeros_like(labels)
+
+                            label_image[labels == label] = pixel_data[labels == label]
+
+                            real = scipy.signal.fftconvolve(label_image, np.real(kernel), mode='same')
+
+                            imaginary = scipy.signal.fftconvolve(label_image, np.imag(kernel), mode='same')
+
+                            score_r = np.sum(real)
+
+                            score_i = np.sum(imaginary)
+
+                            score = np.sqrt(score_r ** 2 + score_i ** 2)
+
+                            scores += [score]
+
+                        best_score = np.maximum(best_score, scores)
         else:
             best_score = np.zeros((0,))
         statistics = self.record_measurement(workspace,
@@ -646,21 +639,48 @@ class MeasureTexture(cpm.Module):
         return statistics
 
     def run_image_gabor(self, image_name, scale, workspace):
-        image = workspace.image_set.get_image(image_name,
-                                              must_be_grayscale=True)
+        image = workspace.image_set.get_image(image_name, must_be_grayscale=True)
         pixel_data = image.pixel_data
         labels = np.ones(pixel_data.shape, int)
         if image.has_mask:
             labels[~image.mask] = 0
         pixel_data = stretch(pixel_data, labels > 0)
         best_score = 0
-        for angle in range(self.gabor_angles.value):
-            theta = np.pi * angle / self.gabor_angles.value
-            g = gabor(pixel_data, labels, scale, theta)
-            score_r = np.sum(g.real)
-            score_i = np.sum(g.imag)
-            score = np.sqrt(score_r ** 2 + score_i ** 2)
-            best_score = max(best_score, score)
+        for angle in range(4):  # x-y direction
+            theta = np.pi * angle / 4
+            if image.dimensions is 2:
+                g = gabor(pixel_data, labels, scale, theta)
+                score_r = np.sum(g.real)
+                score_i = np.sum(g.imag)
+                score = np.sqrt(score_r ** 2 + score_i ** 2)
+                best_score = max(best_score, score)
+            else:
+                z, x, y = image.spacing
+
+                for z_angle in range(4):  # z direction
+                    gamma = np.pi * z_angle / 4
+
+                    kernel = self.__gabor_filter_3d(
+                        frequency=scale,
+                        alpha=theta,
+                        gamma=gamma,
+                        scale_x=x,
+                        scale_y=y,
+                        scale_z=z
+                    )
+
+                    real = scipy.signal.fftconvolve(pixel_data, np.real(kernel), mode='same')
+
+                    imaginary = scipy.signal.fftconvolve(pixel_data, np.imag(kernel), mode='same')
+
+                    score_r = np.sum(real)
+
+                    score_i = np.sum(imaginary)
+
+                    score = np.sqrt(score_r ** 2 + score_i ** 2)
+
+                    best_score = max(best_score, score)
+
         statistics = self.record_image_measurement(workspace,
                                                    image_name,
                                                    scale,
@@ -759,4 +779,133 @@ class MeasureTexture(cpm.Module):
             #
             setting_values = setting_values + [IO_BOTH]
             variable_revision_number = 4
+        if variable_revision_number == 4:
+            # Removed scale, angles
+            image_count = int(setting_values[0])
+            object_count = int(setting_values[1])
+            scale_count = int(setting_values[2])
+            scale_offset = 3 + image_count + object_count
+            new_setting_values = setting_values[:2]
+            new_setting_values += setting_values[3:scale_offset]
+            new_setting_values += setting_values[scale_offset + 2*scale_count:]
+            # Removed gabor angles
+            new_setting_values = new_setting_values[:-2] + new_setting_values[-1:]
+            setting_values = new_setting_values
+            variable_revision_number = 5
+
         return setting_values, variable_revision_number, from_matlab
+
+    def __sigma_prefactor(self, bandwidth):
+        b = bandwidth
+        # See http://www.cs.rug.nl/~imaging/simplecell.html
+        return (1.0 / np.pi * np.sqrt(np.log(2) / 2.0) *
+                (2.0 ** b + 1) / (2.0 ** b - 1))
+
+    def __gabor_filter_3d(self, frequency, alpha=0, gamma=0, bandwidth=1, sigma_x=None, sigma_y=None, sigma_z=None,
+                          n_stds=3, scale_x=None, scale_y=None, scale_z=None):
+        """Return complex 3D Gabor filter kernel.
+        Gabor kernel is a Gaussian kernel modulated by a complex harmonic function.
+        Harmonic function consists of an imaginary sine function and a real
+        cosine function. Spatial frequency is inversely proportional to the
+        wavelength of the harmonic and to the standard deviation of a Gaussian
+        kernel. The bandwidth is also inversely proportional to the standard
+        deviation.
+        Parameters
+        ----------
+        frequency : float
+            Spatial frequency of the harmonic function. Specified in pixels.
+        alpha, gamma : float, optional
+            Orientation in radians of the x-y, and z axis.
+        bandwidth : float, optional
+            The bandwidth captured by the filter. For fixed bandwidth, `sigma_x`
+            and `sigma_y` will decrease with increasing frequency. This value is
+            ignored if `sigma_x` and `sigma_y` are set by the user.
+        sigma_x, sigma_y, sigma_z : float, optional
+            Standard deviation in x-, y-, and z-directions. These directions apply
+            to the kernel *before* rotation. If `alpha = pi/2`, then the kernel is
+            rotated 90 degrees so that `sigma_x` controls the *vertical* direction.
+        scale_x, scale_y, scale_z : float, optional
+            In case of using bandwidth but with a wish of different scale for
+            the sigma
+        n_stds : scalar, optional
+            The linear size of the kernel is n_stds (3 by default) standard
+            deviations
+        Returns
+        -------
+        g : complex array
+            Complex filter kernel.
+        """
+
+        if scale_x is None:
+            scale_x = 1.
+        if scale_y is None:
+            scale_y = 1.
+        if scale_z is None:
+            scale_z = 1.
+
+        if sigma_x is None:
+            sigma_x = self.__sigma_prefactor(bandwidth) / (frequency * scale_x)
+        if sigma_y is None:
+            sigma_y = self.__sigma_prefactor(bandwidth) / (frequency * scale_y)
+        if sigma_z is None:
+            sigma_z = self.__sigma_prefactor(bandwidth) / (frequency * scale_z)
+
+        # Define the different rotation matrix
+        rot_mat_x = np.matrix([[1, 0, 0],
+                               [0, np.cos(alpha), -np.sin(alpha)],
+                               [0, np.sin(alpha), np.cos(alpha)]])
+        rot_mat_z = np.matrix([[np.cos(gamma), -np.sin(gamma), 0],
+                               [np.sin(gamma), np.cos(gamma), 0],
+                               [0, 0, 1]])
+
+        # Compute the full rotation matrix
+        rot_mat = rot_mat_z * rot_mat_x
+
+
+        x0 = np.ceil(max(np.abs(n_stds * sigma_x * np.cos(gamma)),
+                         np.abs(n_stds * sigma_y * np.sin(gamma)),
+                         1))
+
+        y0 = np.ceil(max(np.abs(n_stds * sigma_x * -np.cos(alpha) * np.sin(gamma)),
+                         np.abs(n_stds * sigma_y * np.cos(alpha) * np.cos(gamma)),
+                         np.abs(n_stds * sigma_z * np.sin(alpha)),
+                         1))
+
+        z0 = np.ceil(max(np.abs(n_stds * sigma_x * np.sin(alpha) * np.sin(gamma)),
+                         np.abs(n_stds * sigma_y * -np.sin(alpha) * np.cos(gamma)),
+                         np.abs(n_stds * sigma_z * np.cos(alpha)),
+                         1))
+
+        x, y, z = np.mgrid[-x0:x0 + 1, -y0:y0 + 1, -z0:z0 + 1]
+
+        # Keep the shape of the grid for later reshaping
+        grid_shape = x.shape
+
+        # Build a huge matrix with all the coordinates
+        pos = np.matrix([x.reshape(-1), y.reshape(-1), z.reshape(-1)])
+
+        # Apply the rotation
+        rot_pos = rot_mat * pos
+
+        # Split the data according to the shape of the grid
+        rotx = np.reshape(np.array(rot_pos[0, :]), grid_shape)
+        roty = np.reshape(np.array(rot_pos[1, :]), grid_shape)
+        rotz = np.reshape(np.array(rot_pos[2, :]), grid_shape)
+
+        # Allocate the data with complex type
+        g = np.zeros(y.shape, dtype=np.complex)
+
+        # Compute the gaussian enveloppe
+        g[:] = np.exp(-0.5 * (rotx ** 2 / sigma_x ** 2 +
+                              roty ** 2 / sigma_y ** 2 +
+                              rotz ** 2 / sigma_z ** 2))
+        # Normalize the enveloppe
+        g /= ((2 * np.pi)**(3. / 2.)) * sigma_x * sigma_y * sigma_z
+        # Apply the sinusoidal
+        g *= np.exp(1j * 2 * np.pi * (frequency * np.sin(alpha) *
+                                      np.cos(gamma) * x +
+                                      frequency * np.sin(alpha) *
+                                      np.sin(gamma) * y +
+                                      frequency * np.cos(alpha) * z))
+
+        return g

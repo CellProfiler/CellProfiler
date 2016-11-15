@@ -1620,29 +1620,27 @@ class Measurements(object):
             image = matching_providers[0].provide_image(self)
             if cache:
                 self.__images[name] = image
-        if must_be_binary and image.pixel_data.ndim == 3:
+        if must_be_binary and image.multichannel:
             raise ValueError("Image must be binary, but it was color")
         if must_be_binary and image.pixel_data.dtype != np.bool:
             raise ValueError("Image was not binary")
-        if must_be_color and image.pixel_data.ndim != 3:
+        if must_be_color and not image.multichannel:
             raise ValueError("Image must be color, but it was grayscale")
-        if (must_be_grayscale and
-                (image.pixel_data.ndim != 2)):
+        if must_be_grayscale and image.multichannel:
             pd = image.pixel_data
-            if pd.shape[2] >= 3 and \
-                    np.all(pd[:, :, 0] == pd[:, :, 1]) and \
-                    np.all(pd[:, :, 0] == pd[:, :, 2]):
+            pd = pd.transpose(-1, *range(pd.ndim - 1))
+            if pd.shape[-1] >= 3 and np.all(pd[0] == pd[1]) and np.all(pd[0] == pd[2]):
                 return GrayscaleImage(image)
             raise ValueError("Image must be grayscale, but it was color")
         if must_be_grayscale and image.pixel_data.dtype.kind == 'b':
             return GrayscaleImage(image)
         if must_be_rgb:
-            if image.pixel_data.ndim != 3:
+            if not image.multichannel:
                 raise ValueError("Image must be RGB, but it was grayscale")
-            elif image.pixel_data.shape[2] not in (3, 4):
+            elif image.multichannel and image.pixel_data.shape[-1] not in (3, 4):
                 raise ValueError("Image must be RGB, but it had %d channels" %
-                                 image.pixel_data.shape[2])
-            elif image.pixel_data.shape[2] == 4:
+                                 image.pixel_data.shape[-1])
+            elif image.pixel_data.shape[-1] == 4:
                 logger.warning("Discarding alpha channel.")
                 return RGBImage(image)
         return image

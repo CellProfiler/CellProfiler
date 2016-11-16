@@ -38,6 +38,11 @@ class Objects(object):
         self.__unedited_segmented = None
         self.__small_removed_segmented = None
         self.__parent_image = None
+        self.__dimensions = None
+
+    @property
+    def dimensions(self):
+        return self.__parent_image.dimensions
 
     @property
     def segmented(self):

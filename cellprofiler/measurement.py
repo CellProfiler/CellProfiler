@@ -1644,6 +1644,8 @@ class Measurements(object):
 
                     return RGBImage(image)
 
+            return image
+
         if must_be_binary and image.pixel_data.dtype != bool:
             raise ValueError("Image was not binary")
 

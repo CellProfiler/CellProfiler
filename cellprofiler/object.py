@@ -5,6 +5,7 @@ import centrosome.index
 import centrosome.outline
 import numpy
 import scipy.sparse
+import skimage.measure
 
 OBJECT_TYPE_NAME = "objects"
 
@@ -38,6 +39,15 @@ class Objects(object):
         self.__unedited_segmented = None
         self.__small_removed_segmented = None
         self.__parent_image = None
+
+    @property
+    def regionprops(self):
+        if self.parent_image:
+            labels = self.segmented & self.parent_image.mask
+        else:
+            labels = self.segmented
+
+        return skimage.measure.regionprops(labels)
 
     @property
     def segmented(self):

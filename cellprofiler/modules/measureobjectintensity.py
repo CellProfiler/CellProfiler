@@ -311,7 +311,6 @@ class MeasureObjectIntensity(cpm.Module):
         for image_name in [img.name for img in self.images]:
             image = workspace.image_set.get_image(image_name.value,
                                                   must_be_grayscale=True)
-            dimensions = image.dimensions
             for object_name in [obj.name for obj in self.objects]:
                 # Need to refresh image after each iteration...
                 img = image.pixel_data
@@ -364,16 +363,15 @@ class MeasureObjectIntensity(cpm.Module):
                     if has_objects:
                         limg = img[lmask]
                         llabels = labels[lmask]
-                        if dimensions is 2:
-                            mesh_y, mesh_x = np.mgrid[0:masked_image.shape[0],
-                                             0:masked_image.shape[1]]
-                            mesh_x = mesh_x[lmask]
-                            mesh_y = mesh_y[lmask]
-                        else:
+                        if image.volumetric:
                             mesh_z, mesh_y, mesh_x = np.mgrid[0:masked_image.shape[0], 0:masked_image.shape[1], 0:masked_image.shape[2]]
                             mesh_x = mesh_x[lmask]
                             mesh_y = mesh_y[lmask]
                             mesh_z = mesh_z[lmask]
+                        else:
+                            mesh_y, mesh_x = np.mgrid[0:masked_image.shape[0], 0:masked_image.shape[1]]
+                            mesh_x = mesh_x[lmask]
+                            mesh_y = mesh_y[lmask]
                         lcount = fix(nd.sum(np.ones(len(limg)), llabels, lindexes))
                         integrated_intensity[lindexes - 1] = \
                             fix(nd.sum(limg, llabels, lindexes))
@@ -403,13 +401,7 @@ class MeasureObjectIntensity(cpm.Module):
                         cmi_y[lindexes - 1] = i_y / integrated_intensity[lindexes - 1]
                         diff_x = cm_x - cmi_x[lindexes - 1]
                         diff_y = cm_y - cmi_y[lindexes - 1]
-                        if dimensions is 2:
-                            cmi_z = np.ones_like(cmi_x)
-
-                            max_z = np.ones_like(max_x)
-
-                            mass_displacement[lindexes - 1] = np.sqrt(diff_x * diff_x + diff_y * diff_y)
-                        else:
+                        if image.volumetric:
                             max_z[lindexes - 1] = mesh_z[max_position]
 
                             cm_z = fix(nd.mean(mesh_z, llabels, lindexes))
@@ -421,6 +413,12 @@ class MeasureObjectIntensity(cpm.Module):
                             diff_z = cm_z - cmi_z[lindexes - 1]
 
                             mass_displacement[lindexes - 1] = np.sqrt(diff_x * diff_x + diff_y * diff_y + diff_z * diff_z)
+                        else:
+                            cmi_z = np.ones_like(cmi_x)
+
+                            max_z = np.ones_like(max_x)
+
+                            mass_displacement[lindexes - 1] = np.sqrt(diff_x * diff_x + diff_y * diff_y)
                         #
                         # Sort the intensities by label, then intensity.
                         # For each label, find the index above and below

@@ -4,7 +4,9 @@ import base64
 import bz2
 import cStringIO
 import unittest
-
+import skimage.data
+import skimage.segmentation
+import numpy.testing
 import numpy as np
 import scipy.ndimage
 from centrosome.outline import outline
@@ -55,6 +57,21 @@ class TestObjects(unittest.TestCase):
         x.segmented = segmentation
 
         self.assertTrue(np.all(x.segmented == segmentation))
+
+    def test_regionprops(self):
+        image = skimage.data.astronaut()
+
+        labels = skimage.segmentation.slic(image)
+
+        objects = cpo.Objects()
+
+        objects.segmented = labels
+
+        regionprops = objects.regionprops
+
+        area = numpy.sum([regionprop.area for regionprop in regionprops])
+
+        self.assertEqual(area, 258024)
 
     def test_01_03_set_unedited_segmented(self):
         x = cpo.Objects()

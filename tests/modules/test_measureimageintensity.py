@@ -1,6 +1,3 @@
-'''test_measureimageintensity.py Test the MeasureImageIntensity module
-'''
-
 import StringIO
 import base64
 import unittest
@@ -14,8 +11,235 @@ import cellprofiler.pipeline
 import cellprofiler.preferences
 import cellprofiler.workspace
 import numpy
+import pytest
+import skimage.morphology
 
 cellprofiler.preferences.set_headless()
+
+
+@pytest.fixture(scope="function")
+def measurements():
+    return cellprofiler.measurement.Measurements()
+
+
+@pytest.fixture(scope="function")
+def module():
+    return cellprofiler.modules.measureimageintensity.MeasureImageIntensity()
+
+
+@pytest.fixture(scope="function")
+def workspace(measurements, module):
+    image_set_list = cellprofiler.image.ImageSetList()
+
+    image_set = image_set_list.get_image_set(0)
+
+    return cellprofiler.workspace.Workspace(
+        cellprofiler.pipeline.Pipeline(),
+        module,
+        image_set,
+        cellprofiler.object.ObjectSet(),
+        measurements,
+        image_set_list
+    )
+
+
+def test_zeros(measurements, module, workspace):
+    image = cellprofiler.image.Image(numpy.zeros((10, 10, 10)), dimensions=3)
+
+    workspace.image_set.add("image", image)
+
+    module.images[0].image_name.value = "image"
+
+    module.run(workspace)
+
+    expected = {
+        "Intensity_TotalIntensity_image": 0.0,
+        "Intensity_MeanIntensity_image": 0.0,
+        "Intensity_MedianIntensity_image": 0.0,
+        "Intensity_StdIntensity_image": 0.0,
+        "Intensity_MADIntensity_image": 0.0,
+        "Intensity_MaxIntensity_image": 0.0,
+        "Intensity_MinIntensity_image": 0.0,
+        "Intensity_TotalArea_image": 1000.0,
+        "Intensity_PercentMaximal_image": 100.0,
+        "Intensity_UpperQuartileIntensity_image": 0.0,
+        "Intensity_LowerQuartileIntensity_image": 0.0
+    }
+
+    for feature, value in expected.iteritems():
+        actual = measurements.get_current_measurement(
+            cellprofiler.measurement.IMAGE,
+            feature
+        )
+
+        assert actual == value, "{} expected {}, got {}".format(feature, value, actual)
+
+
+def test_volume(measurements, module, workspace):
+    data = skimage.morphology.ball(3)
+
+    image = cellprofiler.image.Image(data, dimensions=3, convert=False)
+
+    workspace.image_set.add("image", image)
+
+    module.images[0].image_name.value = "image"
+
+    module.run(workspace)
+
+    expected = {
+        "Intensity_TotalIntensity_image": 123.0,
+        "Intensity_MeanIntensity_image": 0.358600583090379,
+        "Intensity_MedianIntensity_image": 0.0,
+        "Intensity_StdIntensity_image": 0.47958962134059907,
+        "Intensity_MADIntensity_image": 0.0,
+        "Intensity_MaxIntensity_image": 1.0,
+        "Intensity_MinIntensity_image": 0.0,
+        "Intensity_TotalArea_image": 343.0,
+        "Intensity_PercentMaximal_image": 35.8600583090379,
+        "Intensity_UpperQuartileIntensity_image": 1.0,
+        "Intensity_LowerQuartileIntensity_image": 0.0
+    }
+
+    for feature, value in expected.iteritems():
+        actual = measurements.get_current_measurement(
+            cellprofiler.measurement.IMAGE,
+            feature
+        )
+
+        assert actual == value, "{} expected {}, got {}".format(feature, value, actual)
+
+
+def test_volume_and_mask(measurements, module, workspace):
+    mask = skimage.morphology.ball(3, dtype=numpy.bool)
+
+    data = numpy.ones_like(mask, dtype=numpy.uint8)
+
+    image = cellprofiler.image.Image(data, mask=mask, dimensions=3, convert=False)
+
+    workspace.image_set.add("image", image)
+
+    module.images[0].image_name.value = "image"
+
+    module.run(workspace)
+
+    expected = {
+        "Intensity_TotalIntensity_image": 123.0,
+        "Intensity_MeanIntensity_image": 1.0,
+        "Intensity_MedianIntensity_image": 1.0,
+        "Intensity_StdIntensity_image": 0.0,
+        "Intensity_MADIntensity_image": 0.0,
+        "Intensity_MaxIntensity_image": 1.0,
+        "Intensity_MinIntensity_image": 1.0,
+        "Intensity_TotalArea_image": 123.0,
+        "Intensity_PercentMaximal_image": 100.0,
+        "Intensity_UpperQuartileIntensity_image": 1.0,
+        "Intensity_LowerQuartileIntensity_image": 1.0
+    }
+
+    for feature, value in expected.iteritems():
+        actual = measurements.get_current_measurement(
+            cellprofiler.measurement.IMAGE,
+            feature
+        )
+
+        assert actual == value, "{} expected {}, got {}".format(feature, value, actual)
+
+
+def test_volume_and_objects(measurements, module, workspace):
+    object_data = skimage.morphology.ball(3, dtype=numpy.uint8)
+
+    image_data = numpy.ones_like(object_data, dtype=numpy.uint8)
+
+    image = cellprofiler.image.Image(image_data, dimensions=3, convert=False)
+
+    objects = cellprofiler.object.Objects()
+
+    objects.segmented = object_data
+
+    objects.parent_image = image
+
+    workspace.image_set.add("image", image)
+
+    workspace.object_set.add_objects(objects, "objects")
+
+    module.images[0].image_name.value = "image"
+
+    module.images[0].wants_objects.value = True
+
+    module.images[0].object_name.value = "objects"
+
+    module.run(workspace)
+
+    expected = {
+        "Intensity_TotalIntensity_image_objects": 123.0,
+        "Intensity_MeanIntensity_image_objects": 1.0,
+        "Intensity_MedianIntensity_image_objects": 1.0,
+        "Intensity_StdIntensity_image_objects": 0.0,
+        "Intensity_MADIntensity_image_objects": 0.0,
+        "Intensity_MaxIntensity_image_objects": 1.0,
+        "Intensity_MinIntensity_image_objects": 1.0,
+        "Intensity_TotalArea_image_objects": 123.0,
+        "Intensity_PercentMaximal_image_objects": 100.0,
+        "Intensity_UpperQuartileIntensity_image_objects": 1.0,
+        "Intensity_LowerQuartileIntensity_image_objects": 1.0
+    }
+
+    for feature, value in expected.iteritems():
+        actual = measurements.get_current_measurement(
+            cellprofiler.measurement.IMAGE,
+            feature
+        )
+
+        assert actual == value, "{} expected {}, got {}".format(feature, value, actual)
+
+def test_volume_and_objects_and_mask(measurements, module, workspace):
+    mask = skimage.morphology.ball(3, dtype=numpy.bool)
+
+    image_data = numpy.ones_like(mask, dtype=numpy.uint8)
+
+    object_data = numpy.ones_like(mask, dtype=numpy.uint8)
+
+    image = cellprofiler.image.Image(image_data, mask=mask, dimensions=3, convert=False)
+
+    objects = cellprofiler.object.Objects()
+
+    objects.segmented = object_data
+
+    objects.parent_image = image
+
+    workspace.image_set.add("image", image)
+
+    workspace.object_set.add_objects(objects, "objects")
+
+    module.images[0].image_name.value = "image"
+
+    module.images[0].wants_objects.value = True
+
+    module.images[0].object_name.value = "objects"
+
+    module.run(workspace)
+
+    expected = {
+        "Intensity_TotalIntensity_image_objects": 123.0,
+        "Intensity_MeanIntensity_image_objects": 1.0,
+        "Intensity_MedianIntensity_image_objects": 1.0,
+        "Intensity_StdIntensity_image_objects": 0.0,
+        "Intensity_MADIntensity_image_objects": 0.0,
+        "Intensity_MaxIntensity_image_objects": 1.0,
+        "Intensity_MinIntensity_image_objects": 1.0,
+        "Intensity_TotalArea_image_objects": 123.0,
+        "Intensity_PercentMaximal_image_objects": 100.0,
+        "Intensity_UpperQuartileIntensity_image_objects": 1.0,
+        "Intensity_LowerQuartileIntensity_image_objects": 1.0
+    }
+
+    for feature, value in expected.iteritems():
+        actual = measurements.get_current_measurement(
+            cellprofiler.measurement.IMAGE,
+            feature
+        )
+
+        assert actual == value, "{} expected {}, got {}".format(feature, value, actual)
 
 
 class TestMeasureImageIntensity(unittest.TestCase):

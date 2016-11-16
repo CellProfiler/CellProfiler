@@ -5,39 +5,37 @@ import StringIO
 import base64
 import unittest
 
-import numpy as np
+import cellprofiler.image
+import cellprofiler.measurement
+import cellprofiler.module
+import cellprofiler.modules.measureimageintensity
+import cellprofiler.object
+import cellprofiler.pipeline
+import cellprofiler.preferences
+import cellprofiler.workspace
+import numpy
 
-from cellprofiler.preferences import set_headless
-
-set_headless()
-
-import cellprofiler.module as cpm
-import cellprofiler.measurement as cpmeas
-import cellprofiler.pipeline as cpp
-import cellprofiler.workspace as cpw
-import cellprofiler.image as cpi
-import cellprofiler.object as cpo
-import cellprofiler.modules.measureimageintensity as M
+cellprofiler.preferences.set_headless()
 
 
 class TestMeasureImageIntensity(unittest.TestCase):
     def make_workspace(self, object_dict={}, image_dict={}):
         '''Make a workspace for testing MeasureImageIntensity'''
-        module = M.MeasureImageIntensity()
-        pipeline = cpp.Pipeline()
-        object_set = cpo.ObjectSet()
-        image_set_list = cpi.ImageSetList()
+        module = cellprofiler.modules.measureimageintensity.MeasureImageIntensity()
+        pipeline = cellprofiler.pipeline.Pipeline()
+        object_set = cellprofiler.object.ObjectSet()
+        image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        workspace = cpw.Workspace(pipeline,
-                                  module,
-                                  image_set,
-                                  object_set,
-                                  cpmeas.Measurements(),
-                                  image_set_list)
+        workspace = cellprofiler.workspace.Workspace(pipeline,
+                                                     module,
+                                                     image_set,
+                                                     object_set,
+                                                     cellprofiler.measurement.Measurements(),
+                                                     image_set_list)
         for key in image_dict.keys():
-            image_set.add(key, cpi.Image(image_dict[key]))
+            image_set.add(key, cellprofiler.image.Image(image_dict[key]))
         for key in object_dict.keys():
-            o = cpo.Objects()
+            o = cellprofiler.object.Objects()
             o.segmented = object_dict[key]
             object_set.add_objects(o, key)
         return workspace, module
@@ -45,26 +43,26 @@ class TestMeasureImageIntensity(unittest.TestCase):
     def test_00_00_zeros(self):
         '''Test operation on a completely-masked image'''
         workspace, module = self.make_workspace({},
-                                                {"my_image": np.zeros((10, 10))})
+                                                {"my_image": numpy.zeros((10, 10))})
         image = workspace.image_set.get_image("my_image")
-        image.mask = np.zeros((10, 10), bool)
+        image.mask = numpy.zeros((10, 10), bool)
         module.images[0].image_name.value = "my_image"
         module.run(workspace)
         m = workspace.measurements
-        self.assertEqual(m.get_current_measurement(cpmeas.IMAGE, "Intensity_TotalArea_my_image"), 0)
+        self.assertEqual(m.get_current_measurement(cellprofiler.measurement.IMAGE, "Intensity_TotalArea_my_image"), 0)
 
         self.assertEqual(len(m.get_object_names()), 1)
-        self.assertEqual(m.get_object_names()[0], cpmeas.IMAGE)
+        self.assertEqual(m.get_object_names()[0], cellprofiler.measurement.IMAGE)
         columns = module.get_measurement_columns(workspace.pipeline)
-        features = m.get_feature_names(cpmeas.IMAGE)
+        features = m.get_feature_names(cellprofiler.measurement.IMAGE)
         self.assertEqual(len(columns), len(features))
         for column in columns:
             self.assertTrue(column[1] in features)
 
     def test_01_01_image(self):
         '''Test operation on a single unmasked image'''
-        np.random.seed(0)
-        pixels = np.random.uniform(size=(10, 10)).astype(np.float32) * .99
+        numpy.random.seed(0)
+        pixels = numpy.random.uniform(size=(10, 10)).astype(numpy.float32) * .99
         pixels[0:2, 0:2] = 1
         workspace, module = self.make_workspace({},
                                                 {"my_image": pixels})
@@ -72,24 +70,24 @@ class TestMeasureImageIntensity(unittest.TestCase):
         module.images[0].image_name.value = "my_image"
         module.run(workspace)
         m = workspace.measurements
-        self.assertEqual(m.get_current_measurement(cpmeas.IMAGE, "Intensity_TotalArea_my_image"), 100)
-        self.assertEqual(m.get_current_measurement(cpmeas.IMAGE, "Intensity_TotalIntensity_my_image"),
-                         np.sum(pixels))
-        self.assertEqual(m.get_current_measurement(cpmeas.IMAGE, "Intensity_MeanIntensity_my_image"),
-                         np.sum(pixels) / 100.0)
+        self.assertEqual(m.get_current_measurement(cellprofiler.measurement.IMAGE, "Intensity_TotalArea_my_image"), 100)
+        self.assertEqual(m.get_current_measurement(cellprofiler.measurement.IMAGE, "Intensity_TotalIntensity_my_image"),
+                         numpy.sum(pixels))
+        self.assertEqual(m.get_current_measurement(cellprofiler.measurement.IMAGE, "Intensity_MeanIntensity_my_image"),
+                         numpy.sum(pixels) / 100.0)
         self.assertEqual(m.get_current_image_measurement('Intensity_MinIntensity_my_image'),
-                         np.min(pixels))
+                         numpy.min(pixels))
         self.assertEqual(m.get_current_image_measurement('Intensity_MaxIntensity_my_image'),
-                         np.max(pixels))
+                         numpy.max(pixels))
         self.assertEqual(m.get_current_image_measurement(
                 'Intensity_PercentMaximal_my_image'), 4.0)
 
     def test_01_02_image_and_mask(self):
         '''Test operation on a masked image'''
-        np.random.seed(0)
-        pixels = np.random.uniform(size=(10, 10)).astype(np.float32) * .99
+        numpy.random.seed(0)
+        pixels = numpy.random.uniform(size=(10, 10)).astype(numpy.float32) * .99
         pixels[1:3, 1:3] = 1
-        mask = np.zeros((10, 10), bool)
+        mask = numpy.zeros((10, 10), bool)
         mask[1:9, 1:9] = True
         workspace, module = self.make_workspace({},
                                                 {"my_image": pixels})
@@ -98,20 +96,20 @@ class TestMeasureImageIntensity(unittest.TestCase):
         module.images[0].image_name.value = "my_image"
         module.run(workspace)
         m = workspace.measurements
-        self.assertEqual(m.get_current_measurement(cpmeas.IMAGE, "Intensity_TotalArea_my_image"), 64)
-        self.assertEqual(m.get_current_measurement(cpmeas.IMAGE, "Intensity_TotalIntensity_my_image"),
-                         np.sum(pixels[1:9, 1:9]))
-        self.assertEqual(m.get_current_measurement(cpmeas.IMAGE, "Intensity_MeanIntensity_my_image"),
-                         np.sum(pixels[1:9, 1:9]) / 64.0)
+        self.assertEqual(m.get_current_measurement(cellprofiler.measurement.IMAGE, "Intensity_TotalArea_my_image"), 64)
+        self.assertEqual(m.get_current_measurement(cellprofiler.measurement.IMAGE, "Intensity_TotalIntensity_my_image"),
+                         numpy.sum(pixels[1:9, 1:9]))
+        self.assertEqual(m.get_current_measurement(cellprofiler.measurement.IMAGE, "Intensity_MeanIntensity_my_image"),
+                         numpy.sum(pixels[1:9, 1:9]) / 64.0)
         self.assertAlmostEqual(m.get_current_measurement(
-                cpmeas.IMAGE, "Intensity_PercentMaximal_my_image"), 400. / 64.)
+                cellprofiler.measurement.IMAGE, "Intensity_PercentMaximal_my_image"), 400. / 64.)
 
     def test_01_03_image_and_objects(self):
         '''Test operation on an image masked by objects'''
-        np.random.seed(0)
-        pixels = np.random.uniform(size=(10, 10)).astype(np.float32) * .99
+        numpy.random.seed(0)
+        pixels = numpy.random.uniform(size=(10, 10)).astype(numpy.float32) * .99
         pixels[1:3, 1:3] = 1
-        objects = np.zeros((10, 10), int)
+        objects = numpy.zeros((10, 10), int)
         objects[1:9, 1:5] = 1
         objects[1:9, 5:9] = 2
         workspace, module = self.make_workspace({"my_objects": objects},
@@ -121,30 +119,30 @@ class TestMeasureImageIntensity(unittest.TestCase):
         module.images[0].object_name.value = "my_objects"
         module.run(workspace)
         m = workspace.measurements
-        self.assertEqual(m.get_current_measurement(cpmeas.IMAGE, "Intensity_TotalArea_my_image_my_objects"), 64)
-        self.assertEqual(m.get_current_measurement(cpmeas.IMAGE, "Intensity_TotalIntensity_my_image_my_objects"),
-                         np.sum(pixels[1:9, 1:9]))
-        self.assertEqual(m.get_current_measurement(cpmeas.IMAGE, "Intensity_MeanIntensity_my_image_my_objects"),
-                         np.sum(pixels[1:9, 1:9]) / 64.0)
+        self.assertEqual(m.get_current_measurement(cellprofiler.measurement.IMAGE, "Intensity_TotalArea_my_image_my_objects"), 64)
+        self.assertEqual(m.get_current_measurement(cellprofiler.measurement.IMAGE, "Intensity_TotalIntensity_my_image_my_objects"),
+                         numpy.sum(pixels[1:9, 1:9]))
+        self.assertEqual(m.get_current_measurement(cellprofiler.measurement.IMAGE, "Intensity_MeanIntensity_my_image_my_objects"),
+                         numpy.sum(pixels[1:9, 1:9]) / 64.0)
         self.assertAlmostEqual(m.get_current_measurement(
-                cpmeas.IMAGE, "Intensity_PercentMaximal_my_image_my_objects"), 400. / 64.)
+                cellprofiler.measurement.IMAGE, "Intensity_PercentMaximal_my_image_my_objects"), 400. / 64.)
 
         self.assertEqual(len(m.get_object_names()), 1)
-        self.assertEqual(m.get_object_names()[0], cpmeas.IMAGE)
+        self.assertEqual(m.get_object_names()[0], cellprofiler.measurement.IMAGE)
         columns = module.get_measurement_columns(workspace.pipeline)
-        features = m.get_feature_names(cpmeas.IMAGE)
+        features = m.get_feature_names(cellprofiler.measurement.IMAGE)
         self.assertEqual(len(columns), len(features))
         for column in columns:
             self.assertTrue(column[1] in features)
 
     def test_01_04_image_and_objects_and_mask(self):
         '''Test operation on an image masked by objects and a mask'''
-        np.random.seed(0)
-        pixels = np.random.uniform(size=(10, 10)).astype(np.float32)
-        objects = np.zeros((10, 10), int)
+        numpy.random.seed(0)
+        pixels = numpy.random.uniform(size=(10, 10)).astype(numpy.float32)
+        objects = numpy.zeros((10, 10), int)
         objects[1:9, 1:5] = 1
         objects[1:9, 5:] = 2
-        mask = np.zeros((10, 10), bool)
+        mask = numpy.zeros((10, 10), bool)
         mask[1:9, :9] = True
         workspace, module = self.make_workspace({"my_objects": objects},
                                                 {"my_image": pixels})
@@ -156,11 +154,11 @@ class TestMeasureImageIntensity(unittest.TestCase):
         module.images[0].object_name.value = "my_objects"
         module.run(workspace)
         m = workspace.measurements
-        self.assertEqual(m.get_current_measurement(cpmeas.IMAGE, "Intensity_TotalArea_my_image_my_objects"), 64)
-        self.assertEqual(m.get_current_measurement(cpmeas.IMAGE, "Intensity_TotalIntensity_my_image_my_objects"),
-                         np.sum(pixels[1:9, 1:9]))
-        self.assertEqual(m.get_current_measurement(cpmeas.IMAGE, "Intensity_MeanIntensity_my_image_my_objects"),
-                         np.sum(pixels[1:9, 1:9]) / 64.0)
+        self.assertEqual(m.get_current_measurement(cellprofiler.measurement.IMAGE, "Intensity_TotalArea_my_image_my_objects"), 64)
+        self.assertEqual(m.get_current_measurement(cellprofiler.measurement.IMAGE, "Intensity_TotalIntensity_my_image_my_objects"),
+                         numpy.sum(pixels[1:9, 1:9]))
+        self.assertEqual(m.get_current_measurement(cellprofiler.measurement.IMAGE, "Intensity_MeanIntensity_my_image_my_objects"),
+                         numpy.sum(pixels[1:9, 1:9]) / 64.0)
 
     def test_02_01_load_matlab(self):
         '''Test loading a measure image intensity module saved in Matlab'''
@@ -180,10 +178,10 @@ class TestMeasureImageIntensity(unittest.TestCase):
                 'fjiQeEZcxclwbT6hKFsOWQ9gI5v+DzJJ1qPwpaKudJ/79nbReWk2O0/'
                 'jzWvwqCtwnJNunkwX5vq2a/wMdg65H')
         fd = StringIO.StringIO(base64.b64decode(data))
-        p = cpp.Pipeline()
+        p = cellprofiler.pipeline.Pipeline()
 
         def error_handler(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         p.add_listener(error_handler)
         p.load(fd)
@@ -311,10 +309,10 @@ class TestMeasureImageIntensity(unittest.TestCase):
                 'AAAAAAAA')
 
         fd = StringIO.StringIO(base64.b64decode(data))
-        p = cpp.Pipeline()
+        p = cellprofiler.pipeline.Pipeline()
 
         def error_handler(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         p.add_listener(error_handler)
         p.load(fd)
@@ -325,7 +323,7 @@ class TestMeasureImageIntensity(unittest.TestCase):
         self.assertFalse(module.images[0].wants_objects.value)
 
     def test_03_01_get_measurement_columns(self):
-        module = M.MeasureImageIntensity()
+        module = cellprofiler.modules.measureimageintensity.MeasureImageIntensity()
         image_names = ['image%d' % i for i in range(3)]
         object_names = ['object%d' % i for i in range(3)]
         first = True
@@ -347,17 +345,17 @@ class TestMeasureImageIntensity(unittest.TestCase):
                 im.object_name.value = object_name
                 expected_suffixes.append("%s_%s" % (image_name, object_name))
         columns = module.get_measurement_columns(None)
-        self.assertTrue(all([column[0] == cpmeas.IMAGE for column in columns]))
+        self.assertTrue(all([column[0] == cellprofiler.measurement.IMAGE for column in columns]))
         for expected_suffix in expected_suffixes:
-            for feature, coltype in ((M.F_TOTAL_INTENSITY, cpmeas.COLTYPE_FLOAT),
-                                     (M.F_MEAN_INTENSITY, cpmeas.COLTYPE_FLOAT),
-                                     (M.F_MIN_INTENSITY, cpmeas.COLTYPE_FLOAT),
-                                     (M.F_MAX_INTENSITY, cpmeas.COLTYPE_FLOAT),
-                                     (M.F_TOTAL_AREA, cpmeas.COLTYPE_INTEGER),
-                                     (M.F_PERCENT_MAXIMAL, cpmeas.COLTYPE_FLOAT),
-                                     (M.F_MAD_INTENSITY, cpmeas.COLTYPE_FLOAT),
-                                     (M.F_LOWER_QUARTILE, cpmeas.COLTYPE_FLOAT),
-                                     (M.F_UPPER_QUARTILE, cpmeas.COLTYPE_FLOAT)):
+            for feature, coltype in ((cellprofiler.modules.measureimageintensity.F_TOTAL_INTENSITY, cellprofiler.measurement.COLTYPE_FLOAT),
+                                     (cellprofiler.modules.measureimageintensity.F_MEAN_INTENSITY, cellprofiler.measurement.COLTYPE_FLOAT),
+                                     (cellprofiler.modules.measureimageintensity.F_MIN_INTENSITY, cellprofiler.measurement.COLTYPE_FLOAT),
+                                     (cellprofiler.modules.measureimageintensity.F_MAX_INTENSITY, cellprofiler.measurement.COLTYPE_FLOAT),
+                                     (cellprofiler.modules.measureimageintensity.F_TOTAL_AREA, cellprofiler.measurement.COLTYPE_INTEGER),
+                                     (cellprofiler.modules.measureimageintensity.F_PERCENT_MAXIMAL, cellprofiler.measurement.COLTYPE_FLOAT),
+                                     (cellprofiler.modules.measureimageintensity.F_MAD_INTENSITY, cellprofiler.measurement.COLTYPE_FLOAT),
+                                     (cellprofiler.modules.measureimageintensity.F_LOWER_QUARTILE, cellprofiler.measurement.COLTYPE_FLOAT),
+                                     (cellprofiler.modules.measureimageintensity.F_UPPER_QUARTILE, cellprofiler.measurement.COLTYPE_FLOAT)):
                 # feature names are now formatting strings
                 feature_name = feature % expected_suffix
                 self.assertTrue(any([(column[1] == feature_name and

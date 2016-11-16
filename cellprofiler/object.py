@@ -41,7 +41,12 @@ class Objects(object):
 
     @property
     def dimensions(self):
-        return self.__parent_image.dimensions
+        if self.__parent_image:
+            return self.__parent_image.dimensions
+        else:
+            shape = self.shape
+
+            return len(shape)
 
     @property
     def segmented(self):

@@ -20,15 +20,15 @@ select the binary image output by <b>ApplyThreshold</b> to be measured by this m
 See also <b>IdentifyPrimaryObjects</b>, <b>IdentifySecondaryObjects</b>, <b>IdentifyTertiaryObjects</b>
 """
 
-import numpy as np
-from centrosome.outline import outline
-
 import cellprofiler.image as cpi
-import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
+import cellprofiler.module as cpm
 import cellprofiler.setting as cps
-from cellprofiler.setting import YES, NO
+import numpy as np
 import skimage.measure
+
+from cellprofiler.setting import YES, NO
+
 
 C_AREA_OCCUPIED = "AreaOccupied"
 
@@ -220,16 +220,18 @@ class MeasureImageAreaOccupied(cpm.Module):
         if objects.has_parent_image:
             area_occupied = np.sum(objects.segmented[objects.parent_image.mask] > 0)
             if dimensions is 2:
-                perimeter = np.sum(outline(np.logical_and(objects.segmented != 0, objects.parent_image.mask)))
+                masked = np.logical_and(objects.segmented != 0, objects.parent_image.mask)
+
+                perimeter = skimage.measure.perimeter(masked)
             else:
                 perimeter = self.__surface_area(objects.segmented, objects.parent_image.spacing)
             total_area = np.sum(objects.parent_image.mask)
         else:
             area_occupied = np.sum(objects.segmented > 0)
             if dimensions is 2:
-                perimeter = np.sum(outline(objects.segmented) > 0)
+                perimeter = skimage.measure.perimeter(objects.segmented > 0)
             else:
-                perimeter = self.__surface_area(objects.segmented, (1.0, 1.0, 1.0))
+                perimeter = self.__surface_area(objects.segmented)
             total_area = np.product(objects.segmented.shape)
         m = workspace.measurements
         m.add_image_measurement(F_AREA_OCCUPIED % operand.operand_objects.value,
@@ -253,7 +255,7 @@ class MeasureImageAreaOccupied(cpm.Module):
         image = workspace.image_set.get_image(operand.binary_name.value, must_be_binary=True)
         area_occupied = np.sum(image.pixel_data > 0)
         if image.dimensions is 2:
-            perimeter = np.sum(outline(image.pixel_data) > 0)
+            perimeter = skimage.measure.perimeter(image.pixel_data > 0)
         else:
             perimeter = self.__surface_area(image.pixel_data, image.spacing)
         total_area = np.prod(np.shape(image.pixel_data))

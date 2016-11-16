@@ -49,10 +49,6 @@ class Objects(object):
 
         return skimage.measure.regionprops(labels)
 
-    @regionprops.setter
-    def regionprops(self, x):
-        pass
-
     @property
     def segmented(self):
         """Get the de-facto segmentation of the image into objects: a matrix

@@ -41,7 +41,9 @@ class Objects(object):
 
     @property
     def masked(self):
-        return self.segmented & self.parent_image.mask
+        mask = self.parent_image.mask
+
+        return numpy.logical_and(self.segmented, mask)
 
     @property
     def segmented(self):

@@ -40,6 +40,10 @@ class Objects(object):
         self.__parent_image = None
 
     @property
+    def masked(self):
+        return self.segmented & self.parent_image.mask
+
+    @property
     def segmented(self):
         """Get the de-facto segmentation of the image into objects: a matrix
         of object numbers.

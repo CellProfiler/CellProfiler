@@ -106,6 +106,13 @@ class Image(object):
     def multichannel(self):
         return True if self.dimensions is 2 and self.pixel_data.ndim is 3 else False
 
+    @property
+    def volumetric(self):
+        if self.dimensions is 3:
+            return True
+        else:
+            return False
+
     def get_image(self):
         """Return the primary image"""
         return self.__image

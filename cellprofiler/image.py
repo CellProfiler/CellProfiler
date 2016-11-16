@@ -110,8 +110,8 @@ class Image(object):
     def volumetric(self):
         if self.dimensions is 3:
             return True
-        else:
-            return False
+
+        return False
 
     def get_image(self):
         """Return the primary image"""

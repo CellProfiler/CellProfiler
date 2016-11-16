@@ -40,6 +40,22 @@ class Objects(object):
         self.__parent_image = None
 
     @property
+    def dimensions(self):
+        if self.__parent_image:
+            return self.__parent_image.dimensions
+
+        shape = self.shape
+
+        return len(shape)
+
+    @property
+    def volumetric(self):
+        if self.dimensions is 3:
+            return True
+
+        return False
+
+    @property
     def segmented(self):
         """Get the de-facto segmentation of the image into objects: a matrix
         of object numbers.

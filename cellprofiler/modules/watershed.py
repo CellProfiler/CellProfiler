@@ -163,6 +163,8 @@ class Watershed(cellprofiler.module.ImageSegmentation):
 
         objects.segmented = y_data
 
+        objects.parent_image = x
+
         workspace.object_set.add_objects(objects, y_name)
 
         if self.show_window:

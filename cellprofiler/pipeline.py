@@ -973,7 +973,7 @@ class Pipeline(object):
         do_utf16_decode = False
         has_image_plane_details = False
         git_hash = None
-        pipeline_version = None
+        pipeline_version = cellprofiler.__version__
         CURRENT_VERSION = None
         while True:
             line = rl()
@@ -987,9 +987,7 @@ class Pipeline(object):
             if kwd == H_VERSION:
                 version = int(value)
                 if version > NATIVE_VERSION:
-                    raise ValueError(
-                            "Pipeline file version is %d.\nCellProfiler can only read version %d or less.\nPlease upgrade to the latest version of CellProfiler." %
-                            (version, NATIVE_VERSION))
+                    raise ValueError("Pipeline file version is {}.\nCellProfiler can only read version {} or less.\nPlease upgrade to the latest version of CellProfiler.".format(version, NATIVE_VERSION))
                 elif version > 1:
                     do_utf16_decode = True
             elif kwd in (H_SVN_REVISION, H_DATE_REVISION):
@@ -1024,7 +1022,7 @@ class Pipeline(object):
         if CURRENT_VERSION is None:
             pass
         if pipeline_version > CURRENT_VERSION:
-            message = "Your pipeline version is %d but you are running CellProfiler version %d. Loading this pipeline may fail or have unpredictable results." % (pipeline_version, CURRENT_VERSION)
+            message = "Your pipeline version is {} but you are running CellProfiler version {}. Loading this pipeline may fail or have unpredictable results.".format(pipeline_version, CURRENT_VERSION)
 
             if cpprefs.get_headless():
                 logging.warning(message)
@@ -1041,38 +1039,38 @@ class Pipeline(object):
                         raise PipelineLoadCancelledException(message)
                     dlg.Destroy()
                 else:
-                    logger.error(
-                            'Your pipeline version is %d but you are running CellProfiler version %d. \nLoading this pipeline may fail or have unpredictable results.\n' % (
-                                pipeline_version, CURRENT_VERSION))
+                    logger.error("Your pipeline version is {} but you are running CellProfiler version {}. \nLoading this pipeline may fail or have unpredictable results.\n".format(pipeline_version, CURRENT_VERSION))
         else:
             if (not cpprefs.get_headless()) and pipeline_version < CURRENT_VERSION:
                 if git_hash is not None:
                     message = (
-    "Your pipeline was saved using an old version\n"
-    "of CellProfiler (rev %s%s).\n"
-    "The current version of CellProfiler can load\n"
-    "and run this pipeline, but if you make changes\n"
-    "to it and save, the older version of CellProfiler\n"
-    "(perhaps the version your collaborator has?) may\n"
-    "not be able to load it.\n\n"
-    "You can ignore this warning if you do not plan to save\n"
-    "this pipeline or if you will only use it with this or\n"
-    "later versions of CellProfiler.") % (git_hash, pipeline_date)
+                        "Your pipeline was saved using an old version\n"
+                        "of CellProfiler (rev {}{}).\n"
+                        "The current version of CellProfiler can load\n"
+                        "and run this pipeline, but if you make changes\n"
+                        "to it and save, the older version of CellProfiler\n"
+                        "(perhaps the version your collaborator has?) may\n"
+                        "not be able to load it.\n\n"
+                        "You can ignore this warning if you do not plan to save\n"
+                        "this pipeline or if you will only use it with this or\n"
+                        "later versions of CellProfiler."
+                    ).format(git_hash, pipeline_date)
+                    logging.warning(message)
                 else:
                     message = (
                         "Your pipeline was saved using an old version\n"
-                        "of CellProfiler (version %d). The current version\n"
+                        "of CellProfiler (version {}). The current version\n"
                         "of CellProfiler can load and run this pipeline, but\n"
                         "if you make changes to it and save, the older version\n"
                         "of CellProfiler (perhaps the version your collaborator\n"
                         "has?) may not be able to load it.\n\n"
                         "You can ignore this warning if you do not plan to save\n"
                         "this pipeline or if you will only use it with this or\n"
-                        "later versions of CellProfiler." % pipeline_version)
+                        "later versions of CellProfiler."
+                    ).format(pipeline_version)
+                    logging.warning(message)
             else:
-                pipeline_stats_logger.info(
-                        "Pipeline saved with CellProfiler version %d" %
-                        pipeline_version)
+                pipeline_stats_logger.info("Pipeline saved with CellProfiler version {}".format(pipeline_version))
         #
         # The module section
         #

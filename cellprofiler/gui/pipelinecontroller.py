@@ -2,6 +2,7 @@
 """PipelineController.py - controls (modifies) a pipeline
 """
 
+import cellprofiler
 import cellprofiler.analysis
 import cellprofiler.image
 import cellprofiler.module
@@ -20,7 +21,6 @@ import cellprofiler.modules.loadimages
 import cellprofiler.object
 import cellprofiler.pipeline
 import cellprofiler.preferences
-import cellprofiler.utilities.version
 import cellprofiler.workspace
 import cpframe
 import cStringIO
@@ -1248,15 +1248,15 @@ class PipelineController(object):
         """Set the title of the parent frame"""
         pathname = cellprofiler.preferences.get_current_workspace_path()
         if pathname is None:
-            self.__frame.Title = "CellProfiler %s" % cellprofiler.utilities.version.title_string
+            self.__frame.Title = "CellProfiler %s" % cellprofiler.__version__
             return
         path, filename = os.path.split(pathname)
         if self.__dirty_workspace:
             self.__frame.Title = "CellProfiler %s: %s* (%s)" % (
-            cellprofiler.utilities.version.title_string, filename, path)
+            cellprofiler.__version__, filename, path)
         else:
             self.__frame.Title = "CellProfiler %s: %s (%s)" % (
-            cellprofiler.utilities.version.title_string, filename, path)
+            cellprofiler.__version__, filename, path)
 
     def __on_clear_pipeline(self, event):
         if wx.MessageBox("Do you really want to remove all modules from the pipeline?",

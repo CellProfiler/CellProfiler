@@ -14,6 +14,7 @@ import cellprofiler.gui.omerologin
 import cellprofiler.gui.parametersampleframe
 import cellprofiler.gui.pathlist
 import cellprofiler.gui.viewworkspace
+import cellprofiler.gui.workspace
 import cellprofiler.icons
 import cellprofiler.measurement
 import cellprofiler.modules.loadimages
@@ -1421,7 +1422,7 @@ class PipelineController(object):
 
     def on_workspace_event(self, event):
         """Workspace's file list changed. Invalidate the workspace cache."""
-        if isinstance(event, cellprofiler.workspace.Workspace.WorkspaceFileListNotification):
+        if isinstance(event, cellprofiler.gui.workspace.Workspace.WorkspaceFileListNotification):
             self.on_image_set_modification()
             self.__dirty_workspace = True
 
@@ -2769,7 +2770,7 @@ class PipelineController(object):
         self.__frame.enable_debug_commands()
         assert isinstance(self.__pipeline, cellprofiler.pipeline.Pipeline)
         self.__debug_image_set_list = cellprofiler.image.ImageSetList(True)
-        workspace = cellprofiler.workspace.Workspace(self.__pipeline, None, None, None,
+        workspace = cellprofiler.gui.workspace.Workspace(self.__pipeline, None, None, None,
                                                      self.__debug_measurements,
                                                      self.__debug_image_set_list,
                                                      self.__frame)
@@ -2826,7 +2827,7 @@ class PipelineController(object):
                 cellprofiler.pipeline.GROUP_NUMBER, self.__grouping_index)
             self.__debug_measurements.add_image_measurement(
                 cellprofiler.pipeline.GROUP_INDEX, self.__within_group_index)
-            workspace = cellprofiler.workspace.Workspace(self.__pipeline,
+            workspace = cellprofiler.gui.workspace.Workspace(self.__pipeline,
                                                          module,
                                                          self.__debug_measurements,
                                                          self.__debug_object_set,
@@ -2994,7 +2995,7 @@ class PipelineController(object):
     def debug_choose_group(self, index):
         self.__grouping_index = index
         self.__within_group_index = 0
-        workspace = cellprofiler.workspace.Workspace(self.__pipeline, None, None, None,
+        workspace = cellprofiler.gui.workspace.Workspace(self.__pipeline, None, None, None,
                                                      self.__debug_measurements,
                                                      self.__debug_image_set_list,
                                                      self.__frame)
@@ -3236,7 +3237,7 @@ class PipelineController(object):
 
     def on_debug_view_workspace(self, event):
         """Show the workspace viewer"""
-        workspace = cellprofiler.workspace.Workspace(
+        workspace = cellprofiler.gui.workspace.Workspace(
             self.__pipeline,
             None,
             self.__debug_measurements,

@@ -171,7 +171,6 @@ class Image(object):
         if fix_range:
             # These types will always have ranges between 0 and 1. Make it so.
             numpy.clip(img, 0, 1, out=img)
-        check_consistency(img, self.__mask)
         self.__image = img
 
     image = property(get_image, set_image)
@@ -244,7 +243,6 @@ class Image(object):
         if not (m.dtype.type is numpy.bool):
             m = (m != 0)
 
-        check_consistency(self.image, m)
         self.__mask = m
         self.__has_mask = True
 
@@ -439,10 +437,6 @@ class RGBImage(object):
     def pixel_data(self):
         '''Return the pixel data without the alpha channel'''
         return self.__image.pixel_data[:, :, :3]
-
-
-def check_consistency(image, mask):
-    pass
 
 
 class AbstractImageProvider(object):

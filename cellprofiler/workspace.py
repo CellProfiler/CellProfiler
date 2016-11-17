@@ -237,12 +237,6 @@ class Workspace(object):
 
     in_background = property(get_in_background, set_in_background)
 
-    def get_module_figure(self, module, image_set_number, parent=None):
-        pass
-
-    def create_or_find_figure(self, title=None, subplots=None, window_name=None):
-        pass
-
     def get_outline_names(self):
         """The names of outlines of objects"""
         return self.__outlines.keys()

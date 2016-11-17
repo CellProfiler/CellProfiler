@@ -935,6 +935,9 @@ class Pipeline(object):
                            for module in self.modules(False)]
         self.__undo_stack = []
 
+    def respond_to_version_mismatch_error(self, message):
+        logging.warning(message)
+
     def loadtxt(self, fd_or_filename, raise_on_error=False):
         '''Load a pipeline from a text file
 
@@ -1024,22 +1027,7 @@ class Pipeline(object):
         if pipeline_version > CURRENT_VERSION:
             message = "Your pipeline version is {} but you are running CellProfiler version {}. Loading this pipeline may fail or have unpredictable results.".format(pipeline_version, CURRENT_VERSION)
 
-            if cpprefs.get_headless():
-                logging.warning(message)
-            else:
-                import wx
-                if wx.GetApp():
-                    dlg = wx.MessageDialog(
-                            parent=None,
-                            message=message + " Continue?",
-                            caption='Pipeline version mismatch',
-                            style=wx.OK | wx.CANCEL | wx.ICON_QUESTION)
-                    if dlg.ShowModal() != wx.ID_OK:
-                        dlg.Destroy()
-                        raise PipelineLoadCancelledException(message)
-                    dlg.Destroy()
-                else:
-                    logger.error("Your pipeline version is {} but you are running CellProfiler version {}. \nLoading this pipeline may fail or have unpredictable results.\n".format(pipeline_version, CURRENT_VERSION))
+            self.respond_to_version_mismatch_error(message)
         else:
             if (not cpprefs.get_headless()) and pipeline_version < CURRENT_VERSION:
                 if git_hash is not None:
@@ -2042,13 +2030,8 @@ class Pipeline(object):
         pipeline = workspace.pipeline
         image_set_list = workspace.image_set_list
         orig_image_number = m.image_set_number
-        if not pipeline.in_batch_mode() and not cpprefs.get_headless():
-            import wx
-            progress_dialog = wx.ProgressDialog(
-                    title, message,
-                    style=wx.PD_APP_MODAL | wx.PD_AUTO_HIDE | wx.PD_CAN_ABORT)
-        else:
-            progress_dialog = None
+
+        progress_dialog = self.create_progress_dialog(message, pipeline, title)
 
         try:
             for i, image_number in enumerate(image_numbers):
@@ -2076,6 +2059,9 @@ class Pipeline(object):
             if progress_dialog is not None:
                 progress_dialog.Destroy()
             m.image_set_number = orig_image_number
+
+    def create_progress_dialog(self, message, pipeline, title):
+        return None
 
     def run_module(self, module, workspace):
         '''Run one CellProfiler module

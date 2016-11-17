@@ -50,10 +50,7 @@ class Objects(object):
 
     @property
     def volumetric(self):
-        if self.dimensions is 3:
-            return True
-
-        return False
+        return self.dimensions is 3
 
     @property
     def segmented(self):

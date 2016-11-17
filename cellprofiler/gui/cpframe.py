@@ -14,6 +14,7 @@ import cellprofiler.gui.html.htmlwindow
 import cellprofiler.gui.imagesetctrl
 import cellprofiler.gui.moduleview
 import cellprofiler.gui.pathlist
+import cellprofiler.gui.pipeline
 import cellprofiler.gui.pipelinecontroller
 import cellprofiler.gui.pipelinelistview
 import cellprofiler.gui.preferencesdlg
@@ -120,7 +121,7 @@ class CPFrame(wx.Frame):
         """
         kwds["style"] = wx.DEFAULT_FRAME_STYLE
         wx.Frame.__init__(self, *args, **kwds)
-        self.__pipeline = cellprofiler.pipeline.Pipeline()
+        self.__pipeline = cellprofiler.gui.pipeline.Pipeline()
         self.__workspace = cellprofiler.workspace.Workspace(
                 self.__pipeline, None, None, None, None, None)
         # background_color = cellprofiler.preferences.get_background_color()

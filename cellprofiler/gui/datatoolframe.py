@@ -6,6 +6,7 @@ import cellprofiler.image
 import cellprofiler.gui
 import cellprofiler.gui.figure
 import cellprofiler.gui.moduleview
+import cellprofiler.gui.pipeline
 import cellprofiler.measurement
 import cellprofiler.modules
 import cellprofiler.object
@@ -42,7 +43,7 @@ class DataToolFrame(wx.Frame):
         wx.Frame.__init__(self, *args, **kwds_copy)
         self.module = cellprofiler.modules.instantiate_module(module_name)
         self.module.use_as_data_tool = True
-        self.pipeline = cellprofiler.pipeline.Pipeline()
+        self.pipeline = cellprofiler.gui.pipeline.Pipeline()
         if h5py.is_hdf5(measurements_file_name):
             self.workspace = cellprofiler.workspace.Workspace(self.pipeline, self.module, None, None, None,
                                                               None)

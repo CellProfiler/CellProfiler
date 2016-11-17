@@ -13,6 +13,7 @@ import cellprofiler.gui.moduleview
 import cellprofiler.gui.omerologin
 import cellprofiler.gui.parametersampleframe
 import cellprofiler.gui.pathlist
+import cellprofiler.gui.pipeline
 import cellprofiler.gui.viewworkspace
 import cellprofiler.icons
 import cellprofiler.measurement
@@ -492,7 +493,7 @@ class PipelineController(object):
         # Meh, maybe the user loaded a pipeline file...
         #
         if not h5py.is_hdf5(filename):
-            if cellprofiler.pipeline.Pipeline.is_pipeline_txt_file(filename):
+            if cellprofiler.gui.pipeline.Pipeline.is_pipeline_txt_file(filename):
                 message = (
                               "The file, \"%s\", is a pipeline file, not a project file. "
                               "Do you want to load it as a pipeline?") % \
@@ -2056,7 +2057,7 @@ class PipelineController(object):
             module = self.__pipeline.instantiate_module(m.module_name)
             module.module_num = module_num
             module.set_settings_from_values(
-                cellprofiler.pipeline.Pipeline.capture_module_settings(m),
+                cellprofiler.gui.pipeline.Pipeline.capture_module_settings(m),
                 m.variable_revision_number, m.module_name, False)
             module.show_window = m.show_window  # copy visibility
             self.__pipeline.add_module(module)
@@ -2292,7 +2293,7 @@ class PipelineController(object):
             self.__module_view.disable()
             self.__pipeline_list_view.allow_editing(False)
             self.__frame.preferences_view.on_analyze_images()
-            with cellprofiler.pipeline.Pipeline.PipelineListener(
+            with cellprofiler.gui.pipeline.Pipeline.PipelineListener(
                     self.__pipeline, self.on_prepare_run_error_event):
                 if not self.__pipeline.prepare_run(self.__workspace):
                     self.stop_running()
@@ -2755,7 +2756,7 @@ class PipelineController(object):
         self.__pipeline_list_view.set_debug_mode(True)
         self.__test_controls_panel.GetParent().GetSizer().Layout()
         self.show_test_controls()
-        with cellprofiler.pipeline.Pipeline.PipelineListener(
+        with cellprofiler.gui.pipeline.Pipeline.PipelineListener(
                 self.__pipeline, self.on_prepare_run_error_event):
             if not self.__workspace.refresh_image_set():
                 self.stop_debugging()
@@ -2767,7 +2768,7 @@ class PipelineController(object):
             mode="memory")
         self.__debug_object_set = cellprofiler.object.ObjectSet(can_overwrite=True)
         self.__frame.enable_debug_commands()
-        assert isinstance(self.__pipeline, cellprofiler.pipeline.Pipeline)
+        assert isinstance(self.__pipeline, cellprofiler.gui.pipeline.Pipeline)
         self.__debug_image_set_list = cellprofiler.image.ImageSetList(True)
         workspace = cellprofiler.workspace.Workspace(self.__pipeline, None, None, None,
                                                      self.__debug_measurements,

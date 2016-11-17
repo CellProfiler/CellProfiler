@@ -950,7 +950,7 @@ class CPFrame(wx.Frame):
     @staticmethod
     def __on_help_developers_guide(event):
         import webbrowser
-        webbrowser.open("http://www.cellprofiler.org/wiki/index.php/Main_Page")
+        webbrowser.open("https://github.com/CellProfiler/CellProfiler/wiki")
 
     @staticmethod
     def __on_help_source_code(event):

@@ -9,7 +9,7 @@ variety of pixel intensities.
 
 <p>This module can also measure textures of objects against grayscale images.
 Any input objects specified will have their texture measured against <i>all</i> input
-images specfied, which may lead to image-object texture combinations that are unneccesary.
+images specified, which may lead to image-object texture combinations that are unneccesary.
 If you do not want this behavior, use multiple <b>MeasureTexture</b> modules to
 specify the particular image-object measures that you want.</p>
 
@@ -304,7 +304,7 @@ class MeasureTexture(cpm.Module):
                         If you only want to measure the texture
                         for the image overall, you can remove all objects using the "Remove this object" button.
                         <p>Objects specified here will have their
-                        texture measured against <i>all</i> images specfied above, which
+                        texture measured against <i>all</i> images specified above, which
                         may lead to image-object combinations that are unneccesary. If you
                         do not want this behavior, use multiple <b>MeasureTexture</b>
                         modules to specify the particular image-object measures that you want.</p>"""))

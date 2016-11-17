@@ -55,7 +55,18 @@ class Image(object):
     significant.
     """
 
-    def __init__(self, image=None, mask=None, crop_mask=None, parent_image=None, masking_objects=None, convert=True, path_name=None, file_name=None, scale=None):
+    def __init__(self,
+                 image=None,
+                 mask=None,
+                 crop_mask=None,
+                 parent_image=None,
+                 masking_objects=None,
+                 convert=True,
+                 path_name=None,
+                 file_name=None,
+                 scale=None,
+                 dimensions=2,
+                 spacing=None):
         self.__image = None
 
         self.__mask = None
@@ -86,6 +97,21 @@ class Image(object):
         self.__path_name = path_name
 
         self.channel_names = None
+
+        self.dimensions = dimensions
+
+        self.spacing = spacing
+
+    @property
+    def multichannel(self):
+        return True if self.dimensions is 2 and self.pixel_data.ndim is 3 else False
+
+    @property
+    def volumetric(self):
+        if self.dimensions is 3:
+            return True
+
+        return False
 
     def get_image(self):
         """Return the primary image"""
@@ -145,7 +171,6 @@ class Image(object):
         if fix_range:
             # These types will always have ranges between 0 and 1. Make it so.
             numpy.clip(img, 0, 1, out=img)
-        check_consistency(img, self.__mask)
         self.__image = img
 
     image = property(get_image, set_image)
@@ -218,7 +243,6 @@ class Image(object):
         if not (m.dtype.type is numpy.bool):
             m = (m != 0)
 
-        check_consistency(self.image, m)
         self.__mask = m
         self.__has_mask = True
 
@@ -415,14 +439,6 @@ class RGBImage(object):
         return self.__image.pixel_data[:, :, :3]
 
 
-def check_consistency(image, mask):
-    """Check that the image, mask and labels arrays have the same shape and that the arrays are of the right dtype"""
-    assert (image is None) or (len(image.shape) in (2, 3)), "Image must have 2 or 3 dimensions"
-    assert (mask is None) or (len(mask.shape) == 2), "Mask must have 2 dimensions"
-    assert (image is None) or (mask is None) or (image.shape[:2] == mask.shape), "Image and mask sizes don't match"
-    assert (mask is None) or (mask.dtype.type is numpy.bool_), "Mask must be boolean, was %s" % (repr(mask.dtype.type))
-
-
 class AbstractImageProvider(object):
     """Represents an image provider that returns images
     """
@@ -531,31 +547,44 @@ class ImageSet(object):
 
         else:
             image = self.__images[name]
-        if must_be_binary and image.pixel_data.ndim == 3:
-            raise ValueError("Image must be binary, but it was color")
-        if must_be_binary and image.pixel_data.dtype != numpy.bool:
+
+        if image.multichannel:
+            if must_be_binary:
+                raise ValueError("Image must be binary, but it was color")
+
+            if must_be_grayscale:
+                pd = image.pixel_data
+
+                pd = pd.transpose(-1, *range(pd.ndim - 1))
+
+                if pd.shape[-1] >= 3 and numpy.all(pd[0] == pd[1]) and numpy.all(pd[0] == pd[2]):
+                    return GrayscaleImage(image)
+
+                raise ValueError("Image must be grayscale, but it was color")
+
+            if must_be_rgb:
+                if image.pixel_data.shape[-1] not in (3, 4):
+                    raise ValueError("Image must be RGB, but it had %d channels" % image.pixel_data.shape[-1])
+
+                if image.pixel_data.shape[-1] == 4:
+                    logger.warning("Discarding alpha channel.")
+
+                    return RGBImage(image)
+
+            return image
+
+        if must_be_binary and image.pixel_data.dtype != bool:
             raise ValueError("Image was not binary")
-        if must_be_color and image.pixel_data.ndim != 3:
-            raise ValueError("Image must be color, but it was grayscale")
-        if (must_be_grayscale and
-                (image.pixel_data.ndim != 2)):
-            pd = image.pixel_data
-            if pd.shape[2] >= 3 and \
-                    numpy.all(pd[:, :, 0] == pd[:, :, 1]) and \
-                    numpy.all(pd[:, :, 0] == pd[:, :, 2]):
-                return GrayscaleImage(image)
-            raise ValueError("Image must be grayscale, but it was color")
+
         if must_be_grayscale and image.pixel_data.dtype.kind == 'b':
             return GrayscaleImage(image)
+
         if must_be_rgb:
-            if image.pixel_data.ndim != 3:
-                raise ValueError("Image must be RGB, but it was grayscale")
-            elif image.pixel_data.shape[2] not in (3, 4):
-                raise ValueError("Image must be RGB, but it had %d channels" %
-                                 image.pixel_data.shape[2])
-            elif image.pixel_data.shape[2] == 4:
-                logger.warning("Discarding alpha channel.")
-                return RGBImage(image)
+            raise ValueError("Image must be RGB, but it was grayscale")
+
+        if must_be_color:
+            raise ValueError("Image must be color, but it was grayscale")
+
         return image
 
     @property
@@ -760,50 +789,3 @@ def make_dictionary_key(key):
     '''Make a dictionary into a stable key for another dictionary'''
     return u", ".join([u":".join([unicode(y) for y in x])
                        for x in sorted(key.iteritems())])
-
-
-def readc01(fname):
-    '''Read a Cellomics file into an array
-
-    fname - the name of the file
-    '''
-
-    def readint(f):
-        return struct.unpack("<l", f.read(4))[0]
-
-    def readshort(f):
-        return struct.unpack("<h", f.read(2))[0]
-
-    f = open(fname, "rb")
-
-    # verify it's a c01 format, and skip the first four bytes
-    assert readint(f) == 16 << 24
-
-    # decompress
-    g = StringIO.StringIO(zlib.decompress(f.read()))
-
-    # skip four bytes
-    g.seek(4, 1)
-
-    x = readint(g)
-    y = readint(g)
-
-    nplanes = readshort(g)
-    nbits = readshort(g)
-
-    compression = readint(g)
-    assert compression == 0, "can't read compressed pixel data"
-
-    # skip 4 bytes
-    g.seek(4, 1)
-
-    pixelwidth = readint(g)
-    pixelheight = readint(g)
-    colors = readint(g)
-    colors_important = readint(g)
-
-    # skip 12 bytes
-    g.seek(12, 1)
-
-    data = numpy.fromstring(g.read(), numpy.uint16 if nbits == 16 else numpy.uint8, x * y)
-    return data.reshape(x, y).T

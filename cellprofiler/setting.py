@@ -21,6 +21,7 @@ from cellprofiler.preferences import \
 import cellprofiler.measurement
 
 from cellprofiler.utilities.utf16encode import utf16encode
+import skimage.morphology
 
 '''Matlab CellProfiler uses this string for settings to be excluded'''
 DO_NOT_USE = 'Do not use'
@@ -744,7 +745,7 @@ class Number(Text):
             self.__default = self.str_to_value(value_text)
         except:
             logger.debug("Number set to illegal value: %s" % value_text)
-            
+
     def set_min_value(self, minval):
         '''Programatically set the minimum value allowed'''
         self.__minval = minval
@@ -752,15 +753,15 @@ class Number(Text):
     def set_max_value(self, minval):
         '''Programatically set the maximum value allowed'''
         self.__maxval = maxval
-        
+
     def get_min_value(self):
         '''The minimum value (inclusive) that can legally be entered'''
         return self.__minval
-    
+
     def get_max_value(self):
         '''The maximum value (inclusive) that can legally be entered'''
         return self.__maxval
-    
+
     min_value = property(get_min_value, set_min_value)
     max_value = property(get_max_value, set_max_value)
 
@@ -800,6 +801,16 @@ class Integer(Number):
 
     def value_to_str(self, value):
         return u"%d" % value
+
+
+class OddInteger(Integer):
+    def test_valid(self, pipeline):
+        super(self.__class__, self).test_valid(pipeline)
+
+        value = self.str_to_value(self.value_text)
+
+        if value % 2 == 0:
+            raise ValidationError("Must be odd, was even", self)
 
 
 class Range(Setting):
@@ -1660,6 +1671,45 @@ class Choice(Setting):
             raise ValidationError(
                     "%s is not one of %s" %
                     (self.value, ",".join(self.choices)), self)
+
+
+class StructuringElement(Setting):
+    def __init__(self, text="Structuring element", value="disk,1", doc=None):
+        super(StructuringElement, self).__init__(text, value, doc=doc)
+
+    @staticmethod
+    def get_choices():
+        return [
+            "ball",
+            "cube",
+            "diamond",
+            "disk",
+            "octahedron",
+            "square",
+            "star"
+        ]
+
+    def get_value(self):
+        return getattr(skimage.morphology, self.shape)(self.size)
+
+    def set_value(self, value):
+        self.value_text = value
+
+    @property
+    def shape(self):
+        return str(self.value_text.split(",")[0])
+
+    @shape.setter
+    def shape(self, value):
+        self.value_text = ",".join((value, str(self.size)))
+
+    @property
+    def size(self):
+        return int(self.value_text.split(",")[1])
+
+    @size.setter
+    def size(self, value):
+        self.value_text = ",".join((self.shape, str(value)))
 
 
 class CustomChoice(Choice):

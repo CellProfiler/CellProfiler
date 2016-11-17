@@ -14,6 +14,7 @@ import centrosome.outline
 import numpy
 import numpy.testing
 import pytest
+import skimage.measure
 
 cellprofiler.preferences.set_headless()
 
@@ -43,8 +44,33 @@ def module():
 
 
 @pytest.fixture(scope="function")
-def objects():
-    return cellprofiler.object.Objects()
+def objects(image):
+    objects = cellprofiler.object.Objects()
+
+    objects.parent_image = image
+
+    return objects
+
+
+@pytest.fixture(scope="function")
+def volume(image):
+    data = numpy.zeros((11, 11, 20))
+
+    k, i, j = numpy.mgrid[-5:6, -5:6, -5:15]
+    data[k ** 2 + i ** 2 + j ** 2 <= 25] = 0.5
+    data[k ** 2 + i ** 2 + j ** 2 <= 16] = 0.25
+    data[k ** 2 + i ** 2 + j ** 2 == 0] = 1
+
+    k, i, j = numpy.mgrid[-5:6, -5:6, -15:5]
+    data[k ** 2 + i ** 2 + j ** 2 <= 9] = 0.5
+    data[k ** 2 + i ** 2 + j ** 2 <= 4] = 0.75
+    data[k ** 2 + i ** 2 + j ** 2 == 0] = 1
+
+    image.set_image(data, convert=False)
+
+    image.dimensions = 3
+
+    return image
 
 
 @pytest.fixture(scope="function")
@@ -818,3 +844,91 @@ def test_04_02_masked_edge(image, module, objects, workspace):
     objects.segmented = labels
 
     module.run(workspace)
+
+
+def test_volume(measurements, module, objects, volume, workspace):
+    labels = skimage.measure.label(volume.pixel_data > 0)
+
+    objects.segmented = labels
+
+    module.run(workspace)
+
+    expected = {
+        "Intensity_IntegratedIntensity_MyImage": [194.0, 70.0],
+        "Intensity_MeanIntensity_MyImage": [0.37669902912621361, 0.56910569105691056],
+        "Intensity_StdIntensity_MyImage": [0.12786816898600722, 0.11626300525264302],
+        "Intensity_MinIntensity_MyImage": [0.25, 0.5],
+        "Intensity_MaxIntensity_MyImage": [1.0, 1.0],
+        # "Intensity_IntegratedIntensityEdge_MyImage": [0.0, 0.0],
+        # "Intensity_MeanIntensityEdge_MyImage": [0.5, 0.75],
+        # "Intensity_StdIntensityEdge_MyImage": [0.0, 0.0],
+        # "Intensity_MinIntensityEdge_MyImage": [0.25, 0.75],
+        # "Intensity_MaxIntensityEdge_MyImage": [0.5, 1.0],
+        # "Intensity_MassDisplacement_MyImage": [0.0, 0.0],
+        "Intensity_LowerQuartileIntensity_MyImage": [0.25, 0.5],
+        "Intensity_MedianIntensity_MyImage": [0.5, 0.5],
+        # "Intensity_MADIntensity_MyImage": [0.0, 0.0],
+        "Intensity_UpperQuartileIntensity_MyImage": [0.5, 0.75],
+        "Location_CenterMassIntensity_X_MyImage": [5.0, 15.0],
+        "Location_CenterMassIntensity_Y_MyImage": [5.0, 5.0],
+        "Location_CenterMassIntensity_Z_MyImage": [5.0, 5.0],
+        "Location_MaxIntensity_X_MyImage": [5.0, 15.0],
+        "Location_MaxIntensity_Y_MyImage": [5.0, 5.0],
+        "Location_MaxIntensity_Z_MyImage": [5.0, 5.0]
+    }
+
+    for feature, value in expected.iteritems():
+        actual = measurements.get_measurement(OBJECT_NAME, feature)
+
+        numpy.testing.assert_array_almost_equal(
+            value,
+            actual,
+            err_msg="{} expected {}, got {}".format(feature, value, actual)
+        )
+
+
+def test_volume_masked(measurements, module, objects, volume, workspace):
+    mask = numpy.zeros_like(volume.pixel_data)
+
+    mask[:, :, 11:] = 0
+
+    volume.mask = mask > 0
+
+    labels = skimage.measure.label(volume.pixel_data > 0)
+
+    objects.segmented = labels
+
+    module.run(workspace)
+
+    expected = {
+        # "Intensity_IntegratedIntensity_MyImage": [194.0, 0.0],
+        # "Intensity_MeanIntensity_MyImage": [0.37669902912621361, 0.0],
+        # "Intensity_StdIntensity_MyImage": [0.12786816898600722, 0.0],
+        # "Intensity_MinIntensity_MyImage": [0.25, 0.0],
+        # "Intensity_MaxIntensity_MyImage": [1.0, 0.0],
+        # "Intensity_IntegratedIntensityEdge_MyImage": [0.0, 0.0],
+        # "Intensity_MeanIntensityEdge_MyImage": [0.5, 0.0],
+        # "Intensity_StdIntensityEdge_MyImage": [0.0, 0.0],
+        # "Intensity_MinIntensityEdge_MyImage": [0.25, 0.0],
+        # "Intensity_MaxIntensityEdge_MyImage": [0.5, 0.0],
+        # "Intensity_MassDisplacement_MyImage": [0.0, 0.0],
+        # "Intensity_LowerQuartileIntensity_MyImage": [0.25, 0.0],
+        # "Intensity_MedianIntensity_MyImage": [0.5, 0.0],
+        # "Intensity_MADIntensity_MyImage": [0.0, 0.0],
+        # "Intensity_UpperQuartileIntensity_MyImage": [0.5, 0.0],
+        # "Location_CenterMassIntensity_X_MyImage": [5.0, 0.0],
+        # "Location_CenterMassIntensity_Y_MyImage": [5.0, 0.0],
+        # "Location_CenterMassIntensity_Z_MyImage": [5.0, 0.0],
+        # "Location_MaxIntensity_X_MyImage": [5.0, 0.0],
+        # "Location_MaxIntensity_Y_MyImage": [5.0, 0.0],
+        # "Location_MaxIntensity_Z_MyImage": [5.0, 0.0]
+    }
+
+    for feature, value in expected.iteritems():
+        actual = measurements.get_measurement(OBJECT_NAME, feature)
+
+        numpy.testing.assert_array_almost_equal(
+            value,
+            actual,
+            err_msg="{} expected {}, got {}".format(feature, value, actual)
+        )

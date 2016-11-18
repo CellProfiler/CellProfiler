@@ -11,7 +11,7 @@ import cellprofiler.modules
 import cellprofiler.object
 import cellprofiler.pipeline
 import cellprofiler.preferences
-import cellprofiler.workspace
+import cellprofiler.gui.workspace
 import h5py
 import wx
 import wx.lib.scrolledpanel
@@ -44,14 +44,14 @@ class DataToolFrame(wx.Frame):
         self.module.use_as_data_tool = True
         self.pipeline = cellprofiler.pipeline.Pipeline()
         if h5py.is_hdf5(measurements_file_name):
-            self.workspace = cellprofiler.workspace.Workspace(self.pipeline, self.module, None, None, None,
+            self.workspace = cellprofiler.gui.workspace.Workspace(self.pipeline, self.module, None, None, None,
                                                               None)
             self.workspace.load(measurements_file_name, True)
             self.measurements = self.workspace.measurements
         else:
             self.pipeline.load(measurements_file_name)
             self.load_measurements(measurements_file_name)
-            self.workspace = cellprofiler.workspace.Workspace(self.pipeline, self.module, None, None,
+            self.workspace = cellprofiler.gui.workspace.Workspace(self.pipeline, self.module, None, None,
                                                               self.measurements, None)
 
         self.module.module_num = len(self.pipeline.modules()) + 1
@@ -204,7 +204,7 @@ class DataToolFrame(wx.Frame):
     def on_run(self, event):
         image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        workspace = cellprofiler.workspace.Workspace(self.pipeline,
+        workspace = cellprofiler.gui.workspace.Workspace(self.pipeline,
                                                      self.module,
                                                      image_set,
                                                      cellprofiler.object.ObjectSet(),

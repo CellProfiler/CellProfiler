@@ -68,6 +68,7 @@ import cellprofiler.measurement as cpmeas
 import cellprofiler.object as cpo
 import cellprofiler.setting as cps
 from identify import C_LOCATION
+import skimage.segmentation
 
 INTENSITY = 'Intensity'
 INTEGRATED_INTENSITY = 'IntegratedIntensity'
@@ -346,7 +347,7 @@ class MeasureObjectIntensity(cpm.Module):
                     lindexes = lindexes[lindexes != 0]
                     labels, img = cpo.crop_labels_and_image(labels, img)
                     _, masked_image = cpo.crop_labels_and_image(labels, masked_image)
-                    outlines = cpmo.outline(labels)
+                    outlines = skimage.segmentation.find_boundaries(labels, mode='inner')
 
                     if image.has_mask:
                         _, mask = cpo.crop_labels_and_image(labels, image.mask)

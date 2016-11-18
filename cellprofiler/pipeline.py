@@ -1597,18 +1597,6 @@ class Pipeline(object):
             if not need_to_run_prepare_group:
                 yield None, None, None, lambda workspace: self.post_group(workspace, grouping_keys)
 
-    def run_and_execute_module(self, module, workspace):
-        try:
-            self.run_module(module, workspace)
-        except Exception as instance:
-            logger.error("Error detected during run of module %s", module.module_name, exc_info=True)
-
-            exception = instance
-
-            tb = sys.exc_info()[2]
-
-            return exception, tb
-
     def run_with_yield(self, frame=None, image_set_start=1, image_set_end=None, grouping=None, run_in_background=True, status_callback=None, initial_measurements=None):
         """Run the pipeline, yielding periodically to keep the GUI alive.
         Yields the measurements made.
@@ -1760,7 +1748,14 @@ class Pipeline(object):
 
                     t0 = sum(os.times()[:-1])
 
-                    exception, tb = self.run_and_execute_module(module, workspace)
+                    try:
+                        self.run_module(module, workspace)
+                    except Exception as instance:
+                        logger.error("Error detected during run of module %s", module.module_name, exc_info=True)
+
+                        exception = instance
+
+                        tb = sys.exc_info()[2]
 
                     yield measurements
 

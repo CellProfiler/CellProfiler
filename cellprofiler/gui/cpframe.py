@@ -19,11 +19,13 @@ import cellprofiler.gui.pipelinecontroller
 import cellprofiler.gui.pipelinelistview
 import cellprofiler.gui.preferencesdlg
 import cellprofiler.gui.preferencesview
+import cellprofiler.gui.workspace
 import cellprofiler.icons
 import cellprofiler.modules
 import cellprofiler.pipeline
 import cellprofiler.preferences
 import cellprofiler.workspace
+import cellprofiler.utilities.version
 import inspect
 import logging
 import os
@@ -122,7 +124,7 @@ class CPFrame(wx.Frame):
         kwds["style"] = wx.DEFAULT_FRAME_STYLE
         wx.Frame.__init__(self, *args, **kwds)
         self.__pipeline = cellprofiler.gui.pipeline.Pipeline()
-        self.__workspace = cellprofiler.workspace.Workspace(
+        self.__workspace = cellprofiler.gui.workspace.Workspace(
                 self.__pipeline, None, None, None, None, None)
         # background_color = cellprofiler.preferences.get_background_color()
         self.__splitter = wx.SplitterWindow(self, -1, style=wx.SP_BORDER)

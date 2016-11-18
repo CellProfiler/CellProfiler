@@ -2205,7 +2205,7 @@ class ModuleView(object):
                 self.clear_selection()
 
     def __on_workspace_event(self, event):
-        import cellprofiler.workspace as cpw
+        import cellprofiler.gui.workspace as cpw
         if isinstance(event, (cpw.Workspace.WorkspaceLoadedEvent,
                               cpw.Workspace.WorkspaceCreatedEvent)):
             # Detach and reattach the current module to get it reacclimated

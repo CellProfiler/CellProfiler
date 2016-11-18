@@ -237,68 +237,6 @@ class Workspace(object):
 
     in_background = property(get_in_background, set_in_background)
 
-    def get_module_figure(self, module, image_set_number, parent=None):
-        """Create a CPFigure window or find one already created"""
-        import cellprofiler.gui.figure as cpf
-        import cellprofiler.measurement as cpmeas
-
-        # catch any background threads trying to call display functions.
-        assert not self.__in_background
-        window_name = cpf.window_name(module)
-        if self.measurements.has_feature(cpmeas.EXPERIMENT,
-                                         cpmeas.M_GROUPING_TAGS):
-            group_number = self.measurements[
-                cpmeas.IMAGE, cpmeas.GROUP_NUMBER, image_set_number]
-            group_index = self.measurements[
-                cpmeas.IMAGE, cpmeas.GROUP_INDEX, image_set_number]
-            title = "%s #%d, image cycle #%d, group #%d, group index #%d" % (
-                module.module_name, module.module_num, image_set_number,
-                group_number, group_index)
-        else:
-            title = "%s #%d, image cycle #%d" % (module.module_name,
-                                                 module.module_num,
-                                                 image_set_number)
-
-        if self.__create_new_window:
-            figure = cpf.Figure(parent or self.__frame,
-                                name=window_name,
-                                title=title)
-        else:
-            figure = cpf.create_or_find(parent or self.__frame,
-                                        name=window_name,
-                                        title=title)
-
-        if not figure in self.__windows_used:
-            self.__windows_used.append(figure)
-
-        return figure
-
-    def create_or_find_figure(self, title=None, subplots=None, window_name=None):
-        """Create a matplotlib figure window or find one already created"""
-        import cellprofiler.gui.figure as cpf
-
-        # catch any background threads trying to call display functions.
-        assert not self.__in_background
-
-        if title is None:
-            title = self.__module.module_name
-
-        if window_name is None:
-            window_name = cpf.window_name(self.__module)
-
-        if self.__create_new_window:
-            figure = cpf.Figure(self,
-                                title=title,
-                                name=window_name,
-                                subplots=subplots)
-        else:
-            figure = cpf.create_or_find(self.__frame, title=title,
-                                        name=window_name,
-                                        subplots=subplots)
-        if not figure in self.__windows_used:
-            self.__windows_used.append(figure)
-        return figure
-
     def get_outline_names(self):
         """The names of outlines of objects"""
         return self.__outlines.keys()

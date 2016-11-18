@@ -888,7 +888,7 @@ def test_volume(measurements, module, objects, volume, workspace):
 
 
 def test_volume_masked(measurements, module, objects, volume, workspace):
-    mask = numpy.zeros_like(volume.pixel_data)
+    mask = numpy.ones_like(volume.pixel_data)
 
     mask[:, :, 11:] = 0
 
@@ -901,27 +901,27 @@ def test_volume_masked(measurements, module, objects, volume, workspace):
     module.run(workspace)
 
     expected = {
-        # "Intensity_IntegratedIntensity_MyImage": [194.0, 0.0],
-        # "Intensity_MeanIntensity_MyImage": [0.37669902912621361, 0.0],
-        # "Intensity_StdIntensity_MyImage": [0.12786816898600722, 0.0],
-        # "Intensity_MinIntensity_MyImage": [0.25, 0.0],
-        # "Intensity_MaxIntensity_MyImage": [1.0, 0.0],
+        "Intensity_IntegratedIntensity_MyImage": [194.0, 0.0],
+        "Intensity_MeanIntensity_MyImage": [0.37669902912621361, 0.0],
+        "Intensity_StdIntensity_MyImage": [0.12786816898600722, numpy.nan],
+        "Intensity_MinIntensity_MyImage": [0.25, 0.0],
+        "Intensity_MaxIntensity_MyImage": [1.0, 0.0],
         # "Intensity_IntegratedIntensityEdge_MyImage": [0.0, 0.0],
         # "Intensity_MeanIntensityEdge_MyImage": [0.5, 0.0],
         # "Intensity_StdIntensityEdge_MyImage": [0.0, 0.0],
         # "Intensity_MinIntensityEdge_MyImage": [0.25, 0.0],
         # "Intensity_MaxIntensityEdge_MyImage": [0.5, 0.0],
         # "Intensity_MassDisplacement_MyImage": [0.0, 0.0],
-        # "Intensity_LowerQuartileIntensity_MyImage": [0.25, 0.0],
-        # "Intensity_MedianIntensity_MyImage": [0.5, 0.0],
+        "Intensity_LowerQuartileIntensity_MyImage": [0.25, 0.0],
+        "Intensity_MedianIntensity_MyImage": [0.5, 0.0],
         # "Intensity_MADIntensity_MyImage": [0.0, 0.0],
-        # "Intensity_UpperQuartileIntensity_MyImage": [0.5, 0.0],
-        # "Location_CenterMassIntensity_X_MyImage": [5.0, 0.0],
-        # "Location_CenterMassIntensity_Y_MyImage": [5.0, 0.0],
-        # "Location_CenterMassIntensity_Z_MyImage": [5.0, 0.0],
-        # "Location_MaxIntensity_X_MyImage": [5.0, 0.0],
-        # "Location_MaxIntensity_Y_MyImage": [5.0, 0.0],
-        # "Location_MaxIntensity_Z_MyImage": [5.0, 0.0]
+        "Intensity_UpperQuartileIntensity_MyImage": [0.5, 0.0],
+        "Location_CenterMassIntensity_X_MyImage": [5.0, numpy.nan],
+        "Location_CenterMassIntensity_Y_MyImage": [5.0, numpy.nan],
+        "Location_CenterMassIntensity_Z_MyImage": [5.0, numpy.nan],
+        "Location_MaxIntensity_X_MyImage": [5.0, 0.0],
+        "Location_MaxIntensity_Y_MyImage": [5.0, 0.0],
+        "Location_MaxIntensity_Z_MyImage": [5.0, 0.0]
     }
 
     for feature, value in expected.iteritems():

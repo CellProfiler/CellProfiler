@@ -2,6 +2,7 @@
 """ModuleView.py - implements a view on a module
 """
 
+import cellprofiler.gui.pipeline
 import cellprofiler.icons
 import cellprofiler.pipeline
 import cellprofiler.preferences
@@ -2893,7 +2894,7 @@ class FileCollectionDisplayController(object):
         assert isinstance(v, cellprofiler.setting.FileCollectionDisplay)
         self.module_view = module_view
         self.v = v
-        assert isinstance(pipeline, cellprofiler.pipeline.Pipeline)
+        assert isinstance(pipeline, cellprofiler.gui.pipeline.Pipeline)
         self.pipeline = pipeline
         self.panel = wx.Panel(self.module_view.module_panel, -1,
                               name=edit_control_name(v))

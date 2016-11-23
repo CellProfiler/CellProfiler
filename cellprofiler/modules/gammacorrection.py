@@ -2,11 +2,11 @@
 
 """
 
-<strong>Gamma correction</strong>
+Gamma correction is a non-linear operation used to encode and decode luminance
+values in images.
 
 """
 
-import cellprofiler.image
 import cellprofiler.module
 import cellprofiler.setting
 import skimage.exposure
@@ -21,25 +21,31 @@ class GammaCorrection(cellprofiler.module.ImageProcessing):
         super(GammaCorrection, self).create_settings()
 
         self.gamma = cellprofiler.setting.Float(
-            "Gamma",
-            1,
-            minval=0.0,
+            doc="""
+            A gamma value, γ < 1, is an encoding gamma, and the process of
+            encoding with this compressive power-law non-linearity, gamma
+            compression, darkens images; conversely a gamma value, γ > 1, is a
+            decoding gamma and the application of the expansive power-law
+            non-linearity, gamma expansion, brightens images.
+            """,
             maxval=100.0,
-        )
-
-        self.gain = cellprofiler.setting.Float(
-            "Gain",
-            1,
-            minval=1.0,
-            maxval=100,
+            minval=0.0,
+            text="γ",
+            value=1.0
         )
 
     def settings(self):
         __settings__ = super(GammaCorrection, self).settings()
 
         return __settings__ + [
-            self.gamma,
-            self.gain
+            self.gamma
+        ]
+
+    def visible_settings(self):
+        __settings__ = super(GammaCorrection, self).visible_settings()
+
+        return __settings__ + [
+            self.gamma
         ]
 
     def run(self, workspace):

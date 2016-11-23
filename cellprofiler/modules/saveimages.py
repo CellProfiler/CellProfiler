@@ -46,7 +46,6 @@ from cellprofiler.modules.loadimages import \
     C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME, C_OBJECTS_URL
 from cellprofiler.modules.loadimages import pathname2url
 from centrosome.cpmorphology import distance_color_labels
-from cellprofiler.utilities.version import get_version
 from bioformats.formatwriter import write_image
 import bioformats.omexml as ome
 
@@ -430,7 +429,7 @@ class SaveImages(cpm.Module):
         if (self.save_image_or_figure == IF_IMAGE and
                     self.file_format != FF_MAT):
             result.append(self.rescale)
-            if self.get_bit_depth() == "8":
+            if self.get_bit_depth() == "8-bit integer":
                 result.append(self.colormap)
         elif self.save_image_or_figure == IF_OBJECTS:
             result.append(self.gray_or_color)

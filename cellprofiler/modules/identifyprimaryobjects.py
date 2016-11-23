@@ -425,7 +425,11 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             gradient toward their center, this option performs a Laplacian of Gaussian (or Mexican hat)
             transform on the image, which accentuates pixels that are local maxima of a desired size. It
             thresholds the result and finds pixels that are both local maxima and above
-            threshold. These pixels are used as the seeds for objects in the watershed.</li>
+            threshold. These pixels are used as the seeds for objects in the watershed.
+            Note that this method can occasionally result in strange artifacts; diagonal
+            invaginations that do not seem to match any intensity dip in the input image.
+            More information can be found 
+            <a href="https://github.com/CellProfiler/CellProfiler/issues/1156">here</a></li>
             <li><i>%(UN_NONE)s:</i> If objects are well separated and bright relative to the
             background, it may be unnecessary to attempt to separate clumped objects.
             Using the very fast <i>%(UN_NONE)s</i> option, a simple threshold will be used to identify

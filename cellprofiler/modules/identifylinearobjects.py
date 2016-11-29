@@ -21,6 +21,7 @@ from cellprofiler.settings import YES, NO
 
 from skimage.filter.rank import maximum
 from skimage.transform import rotate
+#from skimage.morphology import binary_dilation
 
 C_LINEAROBJECTS = "LinearObject"
 F_ANGLE = "Angle"
@@ -154,7 +155,7 @@ class IdentifyLinearObjects(cpm.CPModule):
         a = np.zeros(0, int)
 
         ig, jg = np.mgrid[0:mask.shape[0], 0:mask.shape[1]]
-        this_idx = 0
+        #this_idx = 0
         for angle_number in range(angle_count):
             angle = float(angle_number) * np.pi / float(angle_count)
             strel = self.get_diamond(angle)
@@ -218,23 +219,21 @@ class IdentifyLinearObjects(cpm.CPModule):
             nlabels = 0
             label_indexes = np.zeros(0, int)
             labels = np.zeros(mask.shape, int)
-  
+        
         ifull=[]
         jfull=[]
         ij_labelsfull=[]
         labeldict={}
         
-
         for label_id in np.unique(label_indexes):
             r = np.array(i)*(ij_labels==label_id)
             r=r[r!=0]
             c = np.array(j)*(ij_labels==label_id)
             c=c[c!=0]            
-
             rect_strel=self.get_rectangle(angles[label_id-1])
-
             seedmask = np.zeros_like(mask, int)
             seedmask[r,c]=label_id
+            
             reconstructedlinearobject=maximum(seedmask,rect_strel)
             reconstructedlinearobject=reconstructedlinearobject*mask
             if self.overlap_within_angle==False:
@@ -252,24 +251,9 @@ class IdentifyLinearObjects(cpm.CPModule):
             for eachangle in range(len(angles)):
                 angledict[eachangle+1]=[angles[eachangle]]
             nmerges=1
-            loops=0
             while nmerges!=0:
-                loops+=1
-                nmerges=0
-                for firstlabel in label_indexes:
-                    for secondlabel in label_indexes:
-                        if firstlabel != secondlabel:
-                            if firstlabel in labeldict.keys():
-                                if secondlabel in labeldict.keys():
-                                    if len(set(labeldict[firstlabel])&set(labeldict[secondlabel])) > 0:
-                                        anglediff=abs(np.mean(angledict[firstlabel])-np.mean(angledict[secondlabel]))*180/ np.pi
-                                        if anglediff <= self.angular_distance.value:
-                                            nmerges+=1
-                                            labeldict[firstlabel]=list(set(labeldict[firstlabel]) | set(labeldict[secondlabel]))
-                                            labeldict.pop(secondlabel)
-                                            angledict[firstlabel]+=angledict[secondlabel]
-                                            angledict.pop(secondlabel)
-
+                nmerges=sum([self.mergeduplicates(firstlabel,secondlabel,labeldict,angledict) for firstlabel in label_indexes for secondlabel in label_indexes if firstlabel!=secondlabel])          
+            
             newlabels=labeldict.keys()
             newlabels.sort()
             newangles=angledict.keys()
@@ -281,7 +265,7 @@ class IdentifyLinearObjects(cpm.CPModule):
                 ij_labelsfull+=[eachnewlabel+1]*len(labeldict[newlabels[eachnewlabel]])
                 angles.append(np.mean(angledict[newlabels[eachnewlabel]]))
             angles=np.array(angles)   
-
+            
         ijv = np.zeros([len(ifull),3],dtype=int)
         ijv[:,0]=ifull
         ijv[:,1]=jfull
@@ -302,11 +286,10 @@ class IdentifyLinearObjects(cpm.CPModule):
             workspace.display_data.mask = mask
             workspace.display_data.overlapping_labels = [
                     l for l, idx in objects.get_labels()]
-
         if self.overlap_within_angle==True:
             center_x = np.bincount(ijv[:, 2], ijv[:, 1])[objects.indices] / objects.areas
             center_y = np.bincount(ijv[:, 2], ijv[:, 0])[objects.indices] / objects.areas
-                    
+                   
         m = workspace.measurements
         assert isinstance(m, cpmeas.Measurements)
         m.add_measurement(object_name, I.M_LOCATION_CENTER_X, center_x)
@@ -317,7 +300,7 @@ class IdentifyLinearObjects(cpm.CPModule):
 
     def display(self, workspace, figure):
         '''Show an informative display'''
-        import matplotlib
+        #import matplotlib
         import cellprofiler.gui.cpfigure
         cplabels=[]
         figure.set_subplots((1, 1))
@@ -378,7 +361,22 @@ class IdentifyLinearObjects(cpm.CPModule):
         rect_strel=np.ones([linearobject_length,linearobject_width])
         rect_strel=rotate(rect_strel,-1*angle*180/np.pi,resize=True)
         return rect_strel
-        
+
+    def mergeduplicates(self, firstlabel,secondlabel,labeldict,angledict):
+        valtoreturn=0
+        if firstlabel in labeldict.keys():
+            if secondlabel in labeldict.keys():
+                if len(set(labeldict[firstlabel])&set(labeldict[secondlabel])) > 0:
+                    anglediff=abs(np.mean(angledict[firstlabel])-np.mean(angledict[secondlabel]))*180/ np.pi
+                    if anglediff <= self.angular_distance.value:
+                        #nmerges+=1
+                        labeldict[firstlabel]=list(set(labeldict[firstlabel]) | set(labeldict[secondlabel]))
+                        labeldict.pop(secondlabel)
+                        angledict[firstlabel]+=angledict[secondlabel]
+                        angledict.pop(secondlabel)
+                        valtoreturn=1
+        return valtoreturn
+
 
     @staticmethod
     def find_adjacent(img1, offset1, count1, img2, offset2, count2, first, second):

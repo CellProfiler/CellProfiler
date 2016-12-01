@@ -50,7 +50,7 @@ HIGH_ALL = [CUSTOM_VALUE, HIGH_EACH_IMAGE, HIGH_ALL_IMAGES]
 class RescaleIntensity(cellprofiler.module.Module):
     module_name = "RescaleIntensity"
     category = "Image Processing"
-    variable_revision_number = 2
+    variable_revision_number = 3
 
     def create_settings(self):
         self.image_name = cellprofiler.setting.ImageNameSubscriber(
@@ -146,39 +146,6 @@ class RescaleIntensity(cellprofiler.module.Module):
 
         self.dest_scale = cellprofiler.setting.FloatRange('Intensity range for the output image', (0, 1))
 
-        self.low_truncation_choice = cellprofiler.setting.Choice(
-                'Method to rescale pixels below the lower limit',
-                [R_MASK, R_SET_TO_ZERO, R_SET_TO_CUSTOM, R_SCALE], doc='''
-            <i>(Used only if "%(M_MANUAL_IO_RANGE)s" is selected)</i><br>
-            There are several ways to handle values less than the lower limit of the intensity range:
-            <ul>
-            <li><i>%(R_MASK)s:</i> Creates a mask for the output image. All pixels below
-            the lower limit will be masked out.</li>
-            <li><i>%(R_SET_TO_ZERO)s:</i> Sets all pixels below the lower limit to zero.</li>
-            <li><i>%(R_SET_TO_CUSTOM)s:</i> Sets all pixels below the lower limit to a custom
-            value.</li>
-            <li><i>%(R_SCALE)s:</i> Scales pixels with values below the lower limit
-            using the same offset and divisor as other pixels. The results
-            will be less than zero.</li>
-            </ul>''' % globals())
-
-        self.custom_low_truncation = cellprofiler.setting.Float(
-                "Custom value for pixels below lower limit", 0, doc="""
-            <i>(Used only if "%(M_MANUAL_IO_RANGE)s" and "%(R_SET_TO_CUSTOM)s are selected)</i><br>
-            enter the custom value to be assigned to pixels with values below the lower limit.""" % globals())
-
-        self.high_truncation_choice = cellprofiler.setting.Choice(
-                'Method to rescale pixels above the upper limit',
-                [R_MASK, R_SET_TO_ONE, R_SET_TO_CUSTOM, R_SCALE], doc="""
-            <i>(Used only if "%(M_MANUAL_IO_RANGE)s" is selected)</i><br>
-            There are several ways to handle values greater than the upper limit of the intensity range;
-            Options are described in the Help for the equivalent lower limit question.""" % globals())
-
-        self.custom_high_truncation = cellprofiler.setting.Float(
-                "Custom value for pixels above upper limit", 0, doc="""
-            <i>(Used only if "%(M_MANUAL_IO_RANGE)s" and "%(R_SET_TO_CUSTOM)s are selected)</i><br>
-            Enter the custom value to be assigned to pixels with values above the upper limit.""" % globals())
-
         self.matching_image_name = cellprofiler.setting.ImageNameSubscriber(
                 "Select image to match in maximum intensity", cellprofiler.setting.NONE, doc="""
             <i>(Used only if "%(M_SCALE_BY_IMAGE_MAXIMUM)s" is selected)</i><br>
@@ -197,13 +164,20 @@ class RescaleIntensity(cellprofiler.module.Module):
             Select the measurement value to use as the divisor for the final image.""" % globals())
 
     def settings(self):
-        return [self.image_name, self.rescaled_image_name, self.rescale_method,
-                self.wants_automatic_low, self.wants_automatic_high,
-                self.source_low, self.source_high,
-                self.source_scale, self.dest_scale, self.low_truncation_choice,
-                self.custom_low_truncation, self.high_truncation_choice,
-                self.custom_high_truncation, self.matching_image_name,
-                self.divisor_value, self.divisor_measurement]
+        return [
+            self.image_name,
+            self.rescaled_image_name,
+            self.rescale_method,
+            self.wants_automatic_low,
+            self.wants_automatic_high,
+            self.source_low,
+            self.source_high,
+            self.source_scale,
+            self.dest_scale,
+            self.matching_image_name,
+            self.divisor_value,
+            self.divisor_measurement
+        ]
 
     def visible_settings(self):
         result = [self.image_name, self.rescaled_image_name,
@@ -221,13 +195,6 @@ class RescaleIntensity(cellprofiler.module.Module):
                     result += [self.source_high]
         if self.rescale_method == M_MANUAL_IO_RANGE:
             result += [self.dest_scale]
-        if self.rescale_method in (M_MANUAL_INPUT_RANGE, M_MANUAL_IO_RANGE):
-            result += [self.low_truncation_choice]
-            if self.low_truncation_choice.value == R_SET_TO_CUSTOM:
-                result += [self.custom_low_truncation]
-            result += [self.high_truncation_choice]
-            if self.high_truncation_choice.value == R_SET_TO_CUSTOM:
-                result += [self.custom_high_truncation]
 
         if self.rescale_method == M_SCALE_BY_IMAGE_MAXIMUM:
             result += [self.matching_image_name]
@@ -314,9 +281,9 @@ class RescaleIntensity(cellprofiler.module.Module):
         if self.rescale_method == M_STRETCH:
             output_image = self.stretch(input_image)
         elif self.rescale_method == M_MANUAL_INPUT_RANGE:
-            output_image, output_mask = self.manual_input_range(input_image, workspace)
+            output_image = self.manual_input_range(input_image, workspace)
         elif self.rescale_method == M_MANUAL_IO_RANGE:
-            output_image, output_mask = self.manual_io_range(input_image, workspace)
+            output_image = self.manual_io_range(input_image, workspace)
         elif self.rescale_method == M_DIVIDE_BY_IMAGE_MINIMUM:
             output_image = self.divide_by_image_minimum(input_image)
         elif self.rescale_method == M_DIVIDE_BY_IMAGE_MAXIMUM:
@@ -484,34 +451,13 @@ class RescaleIntensity(cellprofiler.module.Module):
         if the user doesn't want to mask out-of-range values
         '''
 
-        if (self.low_truncation_choice == R_MASK or
-                    self.high_truncation_choice == R_MASK):
-            if input_image.has_mask:
-                mask = input_image.mask.copy()
-            else:
-                mask = numpy.ones(rescaled_image.shape, bool)
-            if self.low_truncation_choice == R_MASK:
-                mask[rescaled_image < target_min] = False
-            if self.high_truncation_choice == R_MASK:
-                mask[rescaled_image > target_max] = False
-        else:
-            mask = None
-        if self.low_truncation_choice == R_SET_TO_ZERO:
-            rescaled_image[rescaled_image < target_min] = 0
-        elif self.low_truncation_choice == R_SET_TO_CUSTOM:
-            rescaled_image[rescaled_image < target_min] = \
-                self.custom_low_truncation.value
+        mask = input_image.mask
 
-        if self.high_truncation_choice == R_SET_TO_ONE:
-            rescaled_image[rescaled_image > target_max] = 1
-        elif self.high_truncation_choice == R_SET_TO_CUSTOM:
-            rescaled_image[rescaled_image > target_max] = \
-                self.custom_high_truncation.value
-        if mask is not None and mask.ndim == 3:
-            # Color image -> 3-d mask. Collapse the 3rd dimension
-            # so any point is masked if any color fails
-            mask = numpy.all(mask, 2)
-        return rescaled_image, mask
+        rescaled_image[rescaled_image < target_min] = 0
+
+        rescaled_image[rescaled_image > target_max] = 1
+
+        return rescaled_image
 
     def upgrade_settings(self, setting_values, variable_revision_number, module_name, from_matlab):
         if variable_revision_number == 1:
@@ -529,4 +475,13 @@ class RescaleIntensity(cellprofiler.module.Module):
 
             variable_revision_number = 2
 
-        return setting_values, variable_revision_number, from_matlab
+        if variable_revision_number == 2:
+            #
+            # removed settings low_truncation_choice, custom_low_truncation,
+            # high_truncation_choice, custom_high_truncation (#9-#12)
+            #
+            setting_values = setting_values[:9] + setting_values[13:]
+
+            variable_revision_number = 3
+
+        return setting_values, variable_revision_number, False

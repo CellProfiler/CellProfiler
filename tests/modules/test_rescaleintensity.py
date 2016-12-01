@@ -82,78 +82,9 @@ class TestRescaleIntensity(unittest.TestCase):
         self.assertAlmostEqual(module.source_high.value, .99)
         self.assertAlmostEqual(module.source_scale.min, .1)
         self.assertAlmostEqual(module.source_scale.max, .9)
-        self.assertEqual(module.low_truncation_choice.value, cellprofiler.modules.rescaleintensity.R_SET_TO_CUSTOM)
-        self.assertEqual(module.high_truncation_choice.value, cellprofiler.modules.rescaleintensity.R_SET_TO_CUSTOM)
-        self.assertAlmostEqual(module.custom_low_truncation.value, .05)
-        self.assertAlmostEqual(module.custom_high_truncation.value, .95)
         self.assertEqual(module.matching_image_name.value, "Cytoplasm")
         self.assertAlmostEqual(module.divisor_value.value, 2)
         self.assertEqual(module.divisor_measurement.value, "Intensity_MeanIntensity_DNA")
-
-    def test_01_10_img_787(self):
-        data = ('eJyVk/s7E4oDxkeJU5xJhJPLcr91rEMuyxR6ODqZ+yS5Lmm5bC5z35Rrclml'
-                'EqYdB5PIDuUyxhzRYpg7oWJhmNvcRmM7Pef7F3zfH97f3ud5n8/zvg5Wbtes'
-                'rEEXfgWDHKzczt1GhgQagJxC/KNuoyJCISAnGw97mAHIJiLQPyrwFggVBgG5'
-                'YQJBDv4RILA5CHwech4MAZuAfgOfB4P+bwFE7B2AAABgWRwAiCXMeXo5ToFl'
-                'o0vAE2K13N+44Hnxd6WjxiaryGxMNfDdA1AZtLm7pB69+jH8eotvI7Ge3mW8'
-                '1HU8QqLEvvF3OMaFuL6XyA7Q/mQlcbh09p2iICwNIeVQk/N7Ta+U5hRI0x+b'
-                'dMR9kLMoWEffDLBC4zs0SSJ7d+K7eFMrD32zW5d8K6aldKI20LiIWEyyPzD1'
-                'a+tDuVIa86PEKwecyA0qC8lG2yR2eJapznJiKqIpIytrOmeIty3cjFV80hGo'
-                'tbZCoWLfgsep2KniItqZnBMK3fHBqcpIqdqoY8fZpSLszPTSuRoQFnXP9Q3C'
-                'a/hr7rbjUUBLxiVDYyVNYsq63/GwSx09efnVOGypiDxwO7gHL+rlTNDA5Yrx'
-                'tpuSTGeoQ+inSnRssxZXyLogGTsqRtWDHLuaNXDRaLF18AC+iZyI+RwGar08'
-                'hl005TSm+YibtPfezxSSBPUls3qfdnUe63xtQ9ygk360gM04gZyFpovrwd/5'
-                'MZtb8CdV3dTAjS23YY+IoiE/M4/FAr6YPKuNf8UZqx3sfetTUiiQEHw8bYSW'
-                'KSxL3Os596Fcbg/8jZGaJ0s3yWtPVKPrQGGTOxbbSrdYkVirJOXaIwQ9IG/g'
-                'L2/NRmuV1AsaK34P7OBAHWHBJL4sHtVGxt4pmzNapWjrq2rx7bkHycWcthmR'
-                'yKDdtzMaO28ydjHDkGhjrOaUy+VYyfpfns/BjYhNX0xV+iZbbnKqQsy0LPVO'
-                'mMmNGFSqkqgTP6BYmDO/hf+iMnZ6e3zAWd/L8lCCGOfRjYIKwpUDa4PFobod'
-                'FQxjwaXh7WeJvRT0T++5CSlqLHgUlZGex9uvDREEruLxz/KbfTLIJFpGThQH'
-                'V/PGq1s5LHNKVq1alXzxBKyIMpfeJEKKIowJqd/+C26RCXYqVblrk/isL/nP'
-                'R01ZB/jV2/Eqry6cQcYxitb/+uZmQqijJelChG93WzrX5YeA1eryCU+m2x/u'
-                'kem0NO2v5QEtjBph4BZxWykqK9I6DjisC9QiuK/+sDIe2k70b2i7z1HXq7SF'
-                'rTXDH/cQCleufwpjgWWllJsN7/ItZVTvDZVldaobWYeyxWypfYjj8GW9Tp0/'
-                'ygWhl8qj25Ovcye4opVXNDgRzv1cyvj4H9PRp5mWYXZN9Wh+7bs5SqdP4ikz'
-                '+b3GjKl/Nlv1blalBsutM2YmBIm8hvYdsaY8mbBZoJO2rae24z+spGcCJBUq'
-                'svZRl+d4QEP/rKaQciJolPaA/Wj2rCCFjQl/Wxhzmo1SiGnsNH+y1yqDYyqq'
-                'QVuxIrCGtmvckRzEqwel3KzlzXuDDonMnQTvryHTeluIp+1oSZILpF/Bgpvx'
-                'Kq9fusfHX8lFeWTM23BNjl0Zoqxi9D1znfKSHQNtbCR5hVusL8bWxf2569me'
-                '0LchkyQ5ZC99f8lV9PKBwrzOYya5Mg42Lv/s4Ml3vXfjHw3JMDY5gh/UkorK'
-                'O78b+gHbvwj1xRdlF9gKcPOKhWKKhOp5/GTzFifanFZYmKSSm+NlgvsCseJi'
-                'RXBFfCnsGD9/1NvdLokl2anba2nQSY5oU9/Zvthz3155ZPK6/NLbPu6j+VnP'
-                'UaoT9Y6wOWD7pOoH172fK+KkMTMGElbfVbEkVmO5axnKFXMX4kuKjYXHFI/1'
-                '5cEI7nzyaniVl10Dy7jr/dsGTnJXy/OtwKtAZuEQ8mFGUCiR8Xo7zX7DOVEX'
-                'uRjAZAg3fvVzxSOLX5u5KzdvucIdfdsRHIHLU1UviAN3o7rn8MM9Qm579O68'
-                'qy2QaxdnW5OhDXqYzZn1fNy/btGGoDao+6IEQ3wcnEkaM/IRWkw9xYw99fn8'
-                'fWyV3tDGJOrjemz2yYTNmOI16jlL0fdH57cWNo3dx3OD6Oot+NJ8U3A3/IrD'
-                'nH+o3Lr8/wb4wtkxBSxNZxyL7LkZlaVl+WJvsRR3JL9rUSbHljdTVFmtRyot'
-                '0+/eXS1PNx+7PHlWFqyODBNfGRd644cCRACT/kYd0dKe0ocLfcUdwG0r+xki'
-                '5cvR/c8b06ETNwaFvYsCM7bTDJpIxZ7N6Lo8uBOW3Ppkwx0j8IB92WcWaWcN'
-                'n47dhZDrlD43u3GsRjyMfT98PtWUEDwd1fr6oHnM0YdQF+v+hl59OIo5wIS7'
-                'ERHe8cvwpB/gPGDOVGqoz/cGwl10w1a3cE62S5+xIJeRXZqg2oIkBHIYdwPj'
-                '69byo+arQrDNW82VffowxSCPGXSSqGJ2mmt3+MfXLTpeUZYN4SGhxdUrfBSw'
-                'evwkz779b06XfiXkMF+OSalfjul25Oe+3DnE2M3c6iTOFkC0kVgzjRcD5ykl'
-                '6JJe+0LHlwO99xVyLNKpBYzTevuXZMymVR0e0ad5XeqYipR7j3Vv1bgOWkCv'
-                'mlWIsrczbJBNIFV/pWvehpK5sWSbB8UAm3RZirYoTyPt4gaWCqhqMtS4GZkT'
-                'nHxWs2B8ELJsFYPFiKnw1k8SxGRzBglptg7jte3mPuEquIZgmicj0/RPCcsk'
-                'a9XKLorhRpPQq5T3CKu3oJ8ZCeX9FIiIgMZIwxTocFFtS18TNVrQ1OHLVhRm'
-                'BUdrHbaczqmpGqGIsJol0fviys/9ow0QFciCYljpYMiFAEjdxtDP/QnIsF0f'
-                'c/ElniF+fh/131K+Ifz8BgABJqAFQIDtMQm/tE1/gJbla5zbIdoFCLCjWXv/'
-                'Cz7DUEw=')
-        pipeline = cellprofiler.pipeline.Pipeline()
-
-        def callback(caller, event):
-            self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
-
-        pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
-        module = pipeline.modules()[2]
-        self.assertTrue(isinstance(module, cellprofiler.modules.rescaleintensity.RescaleIntensity))
-        self.assertEqual(module.image_name, "OrigGreen")
-        self.assertEqual(module.rescaled_image_name, "Rescaledgreen")
-        self.assertEqual(module.rescale_method, cellprofiler.modules.rescaleintensity.M_MANUAL_INPUT_RANGE)
-        self.assertEqual(module.wants_automatic_low, cellprofiler.modules.rescaleintensity.LOW_EACH_IMAGE)
-        self.assertEqual(module.wants_automatic_high, cellprofiler.modules.rescaleintensity.HIGH_EACH_IMAGE)
 
     def make_workspace(self, input_image, input_mask=None,
                        reference_image=None, reference_mask=None,
@@ -354,71 +285,20 @@ class TestRescaleIntensity(unittest.TestCase):
         expected_high_mask[6:8, 5:7] = True
         expected[expected_high_mask] = 1.05
         mask = ~(expected_low_mask | expected_high_mask)
-        for low_truncate_method in (cellprofiler.modules.rescaleintensity.R_MASK, cellprofiler.modules.rescaleintensity.R_SCALE, cellprofiler.modules.rescaleintensity.R_SET_TO_CUSTOM,
-                                    cellprofiler.modules.rescaleintensity.R_SET_TO_ZERO):
-            for high_truncate_method in (cellprofiler.modules.rescaleintensity.R_MASK, cellprofiler.modules.rescaleintensity.R_SCALE, cellprofiler.modules.rescaleintensity.R_SET_TO_CUSTOM,
-                                         cellprofiler.modules.rescaleintensity.R_SET_TO_ONE):
-                workspace, module = self.make_workspace(expected / 2 + .1)
-                module.rescale_method.value = cellprofiler.modules.rescaleintensity.M_MANUAL_INPUT_RANGE
-                module.wants_automatic_low.value = cellprofiler.modules.rescaleintensity.CUSTOM_VALUE
-                module.wants_automatic_high.value = cellprofiler.modules.rescaleintensity.CUSTOM_VALUE
-                module.source_scale.min = .1
-                module.source_scale.max = .6
-                module.low_truncation_choice.value = low_truncate_method
-                module.high_truncation_choice.value = high_truncate_method
-                module.custom_low_truncation.value = -1
-                module.custom_high_truncation.value = 2
-                module.run(workspace)
-                image = workspace.image_set.get_image(OUTPUT_NAME)
-                pixels = image.pixel_data
-                numpy.testing.assert_almost_equal(pixels[mask], expected[mask])
-                if low_truncate_method == cellprofiler.modules.rescaleintensity.R_MASK:
-                    self.assertTrue(image.has_mask)
-                    self.assertTrue(numpy.all(image.mask[expected_low_mask] == False))
-                    if high_truncate_method != cellprofiler.modules.rescaleintensity.R_MASK:
-                        self.assertTrue(numpy.all(image.mask[expected_high_mask]))
-                else:
-                    if low_truncate_method == cellprofiler.modules.rescaleintensity.R_SCALE:
-                        low_value = -.05
-                    elif low_truncate_method == cellprofiler.modules.rescaleintensity.R_SET_TO_CUSTOM:
-                        low_value = -1
-                    elif low_truncate_method == cellprofiler.modules.rescaleintensity.R_SET_TO_ZERO:
-                        low_value = 0
-                    numpy.testing.assert_almost_equal(pixels[expected_low_mask], low_value)
-                if high_truncate_method == cellprofiler.modules.rescaleintensity.R_MASK:
-                    self.assertTrue(image.has_mask)
-                    self.assertTrue(numpy.all(image.mask[expected_high_mask] == False))
-                else:
-                    if high_truncate_method == cellprofiler.modules.rescaleintensity.R_SCALE:
-                        high_value = 1.05
-                    elif high_truncate_method == cellprofiler.modules.rescaleintensity.R_SET_TO_CUSTOM:
-                        high_value = 2
-                    elif high_truncate_method == cellprofiler.modules.rescaleintensity.R_SET_TO_ONE:
-                        high_value = 1
-                    numpy.testing.assert_almost_equal(
-                            pixels[expected_high_mask], high_value)
-
-    def test_04_06_color_mask(self):
-        '''Regression test - color image + truncate with mask
-
-        The bug: color image yielded a 3-d mask
-        '''
-        numpy.random.seed(0)
-        expected = numpy.random.uniform(size=(10, 10, 3)).astype(numpy.float32)
-        expected_mask = (expected >= .2) & (expected <= .8)
-        expected_mask = expected_mask[:, :, 0] & expected_mask[:, :, 1] & expected_mask[:, :, 2]
         workspace, module = self.make_workspace(expected / 2 + .1)
         module.rescale_method.value = cellprofiler.modules.rescaleintensity.M_MANUAL_INPUT_RANGE
         module.wants_automatic_low.value = cellprofiler.modules.rescaleintensity.CUSTOM_VALUE
         module.wants_automatic_high.value = cellprofiler.modules.rescaleintensity.CUSTOM_VALUE
-        module.source_scale.min = .2
-        module.source_scale.max = .5
-        module.low_truncation_choice.value = cellprofiler.modules.rescaleintensity.R_MASK
-        module.high_truncation_choice.value = cellprofiler.modules.rescaleintensity.R_MASK
+        module.source_scale.min = .1
+        module.source_scale.max = .6
         module.run(workspace)
         image = workspace.image_set.get_image(OUTPUT_NAME)
-        self.assertEqual(image.mask.ndim, 2)
-        self.assertTrue(numpy.all(image.mask == expected_mask))
+        pixels = image.pixel_data
+        numpy.testing.assert_almost_equal(pixels[mask], expected[mask])
+        low_value = 0
+        numpy.testing.assert_almost_equal(pixels[expected_low_mask], low_value)
+        high_value = 1
+        numpy.testing.assert_almost_equal(pixels[expected_high_mask], high_value)
 
     def test_05_01_manual_io_range(self):
         numpy.random.seed(0)

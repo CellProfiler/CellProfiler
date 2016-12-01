@@ -471,26 +471,6 @@ class RescaleIntensity(cellprofiler.module.Module):
             src_max = self.source_high.value
         return src_min, src_max
 
-    def truncate_values(self, input_image, rescaled_image, target_min, target_max):
-        '''Handle out of range values based on user settings
-
-        input_image - the original input image
-        rescaled_image - the pixel data after scaling
-        target_min - values below this are out of range
-        target_max - values above this are out of range
-
-        returns the truncated pixel data and either a mask or None
-        if the user doesn't want to mask out-of-range values
-        '''
-
-        mask = input_image.mask
-
-        rescaled_image[rescaled_image < target_min] = 0
-
-        rescaled_image[rescaled_image > target_max] = 1
-
-        return rescaled_image
-
     def upgrade_settings(self, setting_values, variable_revision_number, module_name, from_matlab):
         if variable_revision_number == 1:
             #

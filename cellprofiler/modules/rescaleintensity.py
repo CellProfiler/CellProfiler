@@ -328,65 +328,39 @@ class RescaleIntensity(cellprofiler.module.Module):
                                       normalize=False,
                                       sharexy=figure.subplot(0, 0))
 
+    def rescale(self, image, in_range, out_range=(0.0, 1.0)):
+        data = image.pixel_data
+
+        mask = image.mask
+
+        data[~mask] = 0
+
+        rescaled = skimage.exposure.rescale_intensity(data, in_range=in_range, out_range=out_range)
+
+        rescaled[~mask] = image.pixel_data[~mask]
+
+        return rescaled
+
     def stretch(self, input_image):
         data = input_image.pixel_data
 
-        mask = numpy.ones_like(data, dtype=numpy.bool)
-
-        if input_image.has_mask:
-            mask = input_image.mask
+        mask = input_image.mask
 
         in_range = (min(data[mask]), max(data[mask]))
 
-        out_range = (0.0, 1.0)
-
-        data[~mask] = 0
-
-        rescaled = skimage.exposure.rescale_intensity(data, in_range=in_range, out_range=out_range)
-
-        rescaled[~mask] = input_image.pixel_data[~mask]
-
-        return rescaled
+        return self.rescale(input_image, in_range)
 
     def manual_input_range(self, input_image, workspace):
-        data = input_image.pixel_data
-
-        mask = numpy.ones_like(data, dtype=numpy.bool)
-
-        if input_image.has_mask:
-            mask = input_image.mask
-
         in_range = self.get_source_range(input_image, workspace)
 
-        out_range = (0.0, 1.0)
-
-        data[~mask] = 0
-
-        rescaled = skimage.exposure.rescale_intensity(data, in_range=in_range, out_range=out_range)
-
-        rescaled[~mask] = input_image.pixel_data[~mask]
-
-        return rescaled
+        return self.rescale(input_image, in_range)
 
     def manual_io_range(self, input_image, workspace):
-        data = input_image.pixel_data
-
-        mask = numpy.ones_like(data, dtype=numpy.bool)
-
-        if input_image.has_mask:
-            mask = input_image.mask
-
         in_range = self.get_source_range(input_image, workspace)
 
         out_range = (self.dest_scale.min, self.dest_scale.max)
 
-        data[~mask] = 0
-
-        rescaled = skimage.exposure.rescale_intensity(data, in_range=in_range, out_range=out_range)
-
-        rescaled[~mask] = input_image.pixel_data[~mask]
-
-        return rescaled
+        return self.rescale(input_image, in_range, out_range)
 
     def divide_by_image_minimum(self, input_image):
         '''Divide the image by its minimum to get an illumination correction function'''

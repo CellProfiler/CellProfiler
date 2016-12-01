@@ -369,17 +369,24 @@ class RescaleIntensity(cellprofiler.module.Module):
         return rescaled
 
     def manual_io_range(self, input_image, workspace):
-        '''Stretch the input image using manual input and output values'''
+        data = input_image.pixel_data
 
-        src_min, src_max = self.get_source_range(input_image, workspace)
-        rescaled_image = ((input_image.pixel_data - src_min) /
-                          (src_max - src_min))
-        dest_min = self.dest_scale.min
-        dest_max = self.dest_scale.max
-        rescaled_image = rescaled_image * (dest_max - dest_min) + dest_min
-        return self.truncate_values(input_image,
-                                    rescaled_image,
-                                    dest_min, dest_max)
+        mask = numpy.ones_like(data, dtype=numpy.bool)
+
+        if input_image.has_mask:
+            mask = input_image.mask
+
+        in_range = self.get_source_range(input_image, workspace)
+
+        out_range = (self.dest_scale.min, self.dest_scale.max)
+
+        data[~mask] = 0
+
+        rescaled = skimage.exposure.rescale_intensity(data, in_range=in_range, out_range=out_range)
+
+        rescaled[~mask] = input_image.pixel_data[~mask]
+
+        return rescaled
 
     def divide_by_image_minimum(self, input_image):
         '''Divide the image by its minimum to get an illumination correction function'''

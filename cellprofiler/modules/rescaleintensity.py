@@ -8,12 +8,12 @@ do not preserve the relative intensities from image to image.
 '''
 
 import numpy
+import skimage.exposure
 
 import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.module
 import cellprofiler.setting
-import skimage.exposure
 
 M_STRETCH = 'Stretch each image to use the full intensity range'
 M_MANUAL_INPUT_RANGE = 'Choose specific values to be reset to the full intensity range'

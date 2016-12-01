@@ -269,7 +269,7 @@ class RescaleIntensity(cellprofiler.module.Module):
 
     def run(self, workspace):
         input_image = workspace.image_set.get_image(self.image_name.value)
-        output_mask = None
+
         if self.rescale_method == M_STRETCH:
             output_image = self.stretch(input_image)
         elif self.rescale_method == M_MANUAL_INPUT_RANGE:
@@ -286,37 +286,18 @@ class RescaleIntensity(cellprofiler.module.Module):
             output_image = self.divide_by_measurement(workspace, input_image)
         elif self.rescale_method == M_SCALE_BY_IMAGE_MAXIMUM:
             output_image = self.scale_by_image_maximum(workspace, input_image)
-        if output_mask is not None:
-            rescaled_image = cellprofiler.image.Image(output_image,
-                                                      mask=output_mask,
-                                                      parent_image=input_image,
-                                                      convert=False)
-        else:
-            rescaled_image = cellprofiler.image.Image(output_image,
-                                                      parent_image=input_image,
-                                                      convert=False)
+
+        rescaled_image = cellprofiler.image.Image(
+            output_image,
+            parent_image=input_image,
+            convert=False,
+            dimensions=input_image.dimensions
+        )
+
         workspace.image_set.add(self.rescaled_image_name.value, rescaled_image)
+
         if self.show_window:
-            workspace.display_data.image_data = [input_image.pixel_data,
-                                                 rescaled_image.pixel_data]
-
-    def display(self, workspace, figure):
-        '''Display the input image and rescaled image'''
-        figure.set_subplots((2, 1))
-
-        for image_name, i, j in ((self.image_name, 0, 0),
-                                 (self.rescaled_image_name, 1, 0)):
-            image_name = image_name.value
-            pixel_data = workspace.display_data.image_data[i]
-            if pixel_data.ndim == 2:
-                figure.subplot_imshow_grayscale(i, j, pixel_data,
-                                                title=image_name,
-                                                vmin=0, vmax=1,
-                                                sharexy=figure.subplot(0, 0))
-            else:
-                figure.subplot_imshow(i, j, pixel_data, title=image_name,
-                                      normalize=False,
-                                      sharexy=figure.subplot(0, 0))
+            workspace.display_data.image_data = [input_image.pixel_data, rescaled_image.pixel_data]
 
     def rescale(self, image, in_range, out_range=(0.0, 1.0)):
         data = image.pixel_data

@@ -432,13 +432,3 @@ class TestRescaleIntensity(unittest.TestCase):
         module.run(workspace)
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
         numpy.testing.assert_almost_equal(pixels[mask], expected[mask])
-
-    def test_11_01_convert_to_8_bit(self):
-        numpy.random.seed(0)
-        image = numpy.random.uniform(size=(10, 10))
-        expected = (image * 255).astype(numpy.uint8)
-        workspace, module = self.make_workspace(image)
-        module.rescale_method.value = cellprofiler.modules.rescaleintensity.M_CONVERT_TO_8_BIT
-        module.run(workspace)
-        pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
-        numpy.testing.assert_almost_equal(pixels, expected)

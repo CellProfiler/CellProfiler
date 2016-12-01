@@ -23,12 +23,11 @@ M_DIVIDE_BY_IMAGE_MAXIMUM = "Divide by the image's maximum"
 M_DIVIDE_BY_VALUE = 'Divide each image by the same value'
 M_DIVIDE_BY_MEASUREMENT = 'Divide each image by a previously calculated value'
 M_SCALE_BY_IMAGE_MAXIMUM = "Match the image's maximum to another image's maximum"
-M_CONVERT_TO_8_BIT = 'Convert to 8 bit'
 
 M_ALL = [M_STRETCH, M_MANUAL_INPUT_RANGE, M_MANUAL_IO_RANGE,
          M_DIVIDE_BY_IMAGE_MINIMUM, M_DIVIDE_BY_IMAGE_MAXIMUM,
          M_DIVIDE_BY_VALUE, M_DIVIDE_BY_MEASUREMENT,
-         M_SCALE_BY_IMAGE_MAXIMUM, M_CONVERT_TO_8_BIT]
+         M_SCALE_BY_IMAGE_MAXIMUM]
 
 R_SCALE = 'Scale similarly to others'
 R_MASK = 'Mask pixels'
@@ -91,13 +90,6 @@ class RescaleIntensity(cellprofiler.module.Module):
             or can be a value loaded by the <b>Metadata</b> module.</li>
             <li><i>%(M_SCALE_BY_IMAGE_MAXIMUM)s:</i> Scale an image so that its maximum value is the
             same as the maximum value within the reference image.</li>
-            <li><i>%(M_CONVERT_TO_8_BIT)s:</i> Images in CellProfiler are normally stored as a floating
-            point number in the range of 0 to 1. This option converts these images to class uint8,
-            meaning an 8 bit integer in the range of 0 to 255,
-            reducing the amount of memory required to store the image. <i>Warning:</i> Most
-            CellProfiler modules require the incoming image to be in the standard 0
-            to 1 range, so this conversion may cause downstream modules to behave
-            in unexpected ways.</li>
             </ul>''' % globals())
 
         self.wants_automatic_low = cellprofiler.setting.Choice(
@@ -294,8 +286,6 @@ class RescaleIntensity(cellprofiler.module.Module):
             output_image = self.divide_by_measurement(workspace, input_image)
         elif self.rescale_method == M_SCALE_BY_IMAGE_MAXIMUM:
             output_image = self.scale_by_image_maximum(workspace, input_image)
-        elif self.rescale_method == M_CONVERT_TO_8_BIT:
-            output_image = self.convert_to_8_bit(input_image)
         if output_mask is not None:
             rescaled_image = cellprofiler.image.Image(output_image,
                                                       mask=output_mask,
@@ -407,10 +397,6 @@ class RescaleIntensity(cellprofiler.module.Module):
         reference_max = numpy.max(reference_pixels)
 
         return self.divide(input_image.pixel_data * reference_max, image_max)
-
-    def convert_to_8_bit(self, input_image):
-        '''Convert the image data to uint8'''
-        return (input_image.pixel_data * 255).astype(numpy.uint8)
 
     def get_source_range(self, input_image, workspace):
         '''Get the source range, accounting for automatically computed values'''

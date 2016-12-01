@@ -1,4 +1,4 @@
-'''<b>RescaleIntensity</b> changes the intensity range of an image to your 
+'''<b>RescaleIntensity</b> changes the intensity range of an image to your
 desired specifications.
 <hr>
 This module lets you rescale the intensity of the input images by any of several
@@ -7,14 +7,13 @@ derived from images that have been rescaled because certain options for this mod
 do not preserve the relative intensities from image to image.
 '''
 
-import numpy as np
-from centrosome.filter import stretch
+import centrosome.filter
+import numpy
 
-import cellprofiler.image as cpi
-import cellprofiler.module as cpm
-import cellprofiler.measurement as cpmeas
-import cellprofiler.preferences as cpprefs
-import cellprofiler.setting as cps
+import cellprofiler.image
+import cellprofiler.measurement
+import cellprofiler.module
+import cellprofiler.setting
 
 M_STRETCH = 'Stretch each image to use the full intensity range'
 M_MANUAL_INPUT_RANGE = 'Choose specific values to be reset to the full intensity range'
@@ -48,21 +47,21 @@ HIGH_EACH_IMAGE = 'Maximum for each image'
 HIGH_ALL = [CUSTOM_VALUE, HIGH_EACH_IMAGE, HIGH_ALL_IMAGES]
 
 
-class RescaleIntensity(cpm.Module):
+class RescaleIntensity(cellprofiler.module.Module):
     module_name = "RescaleIntensity"
     category = "Image Processing"
     variable_revision_number = 2
 
     def create_settings(self):
-        self.image_name = cps.ImageNameSubscriber(
-                "Select the input image", cps.NONE, doc=
+        self.image_name = cellprofiler.setting.ImageNameSubscriber(
+                "Select the input image", cellprofiler.setting.NONE, doc=
                 '''Select the image to be rescaled.''')
 
-        self.rescaled_image_name = cps.ImageNameProvider(
+        self.rescaled_image_name = cellprofiler.setting.ImageNameProvider(
                 "Name the output image", "RescaledBlue", doc=
                 '''Enter the name of output rescaled image.''')
 
-        self.rescale_method = cps.Choice(
+        self.rescale_method = cellprofiler.setting.Choice(
                 'Rescaling method',
                 choices=M_ALL, doc='''
             There are a number of options for rescaling the input image:
@@ -101,7 +100,7 @@ class RescaleIntensity(cpm.Module):
             in unexpected ways.</li>
             </ul>''' % globals())
 
-        self.wants_automatic_low = cps.Choice(
+        self.wants_automatic_low = cellprofiler.setting.Choice(
                 'Method to calculate the minimum intensity',
                 LOW_ALL, doc="""
             <i>(Used only if "%(M_MANUAL_IO_RANGE)s" is selected)</i><br>
@@ -120,7 +119,7 @@ class RescaleIntensity(cpm.Module):
             </ul>
             """ % globals())
 
-        self.wants_automatic_high = cps.Choice(
+        self.wants_automatic_high = cellprofiler.setting.Choice(
                 'Method to calculate the maximum intensity',
                 HIGH_ALL, doc="""
             <i>(Used only if "%(M_MANUAL_IO_RANGE)s" is selected)</i><br>
@@ -139,15 +138,15 @@ class RescaleIntensity(cpm.Module):
             </ul>
             """ % globals())
 
-        self.source_low = cps.Float('Lower intensity limit for the input image', 0)
+        self.source_low = cellprofiler.setting.Float('Lower intensity limit for the input image', 0)
 
-        self.source_high = cps.Float('Upper intensity limit for the input image', 1)
+        self.source_high = cellprofiler.setting.Float('Upper intensity limit for the input image', 1)
 
-        self.source_scale = cps.FloatRange('Intensity range for the input image', (0, 1))
+        self.source_scale = cellprofiler.setting.FloatRange('Intensity range for the input image', (0, 1))
 
-        self.dest_scale = cps.FloatRange('Intensity range for the output image', (0, 1))
+        self.dest_scale = cellprofiler.setting.FloatRange('Intensity range for the output image', (0, 1))
 
-        self.low_truncation_choice = cps.Choice(
+        self.low_truncation_choice = cellprofiler.setting.Choice(
                 'Method to rescale pixels below the lower limit',
                 [R_MASK, R_SET_TO_ZERO, R_SET_TO_CUSTOM, R_SCALE], doc='''
             <i>(Used only if "%(M_MANUAL_IO_RANGE)s" is selected)</i><br>
@@ -163,37 +162,37 @@ class RescaleIntensity(cpm.Module):
             will be less than zero.</li>
             </ul>''' % globals())
 
-        self.custom_low_truncation = cps.Float(
+        self.custom_low_truncation = cellprofiler.setting.Float(
                 "Custom value for pixels below lower limit", 0, doc="""
             <i>(Used only if "%(M_MANUAL_IO_RANGE)s" and "%(R_SET_TO_CUSTOM)s are selected)</i><br>
             enter the custom value to be assigned to pixels with values below the lower limit.""" % globals())
 
-        self.high_truncation_choice = cps.Choice(
+        self.high_truncation_choice = cellprofiler.setting.Choice(
                 'Method to rescale pixels above the upper limit',
                 [R_MASK, R_SET_TO_ONE, R_SET_TO_CUSTOM, R_SCALE], doc="""
             <i>(Used only if "%(M_MANUAL_IO_RANGE)s" is selected)</i><br>
             There are several ways to handle values greater than the upper limit of the intensity range;
             Options are described in the Help for the equivalent lower limit question.""" % globals())
 
-        self.custom_high_truncation = cps.Float(
+        self.custom_high_truncation = cellprofiler.setting.Float(
                 "Custom value for pixels above upper limit", 0, doc="""
             <i>(Used only if "%(M_MANUAL_IO_RANGE)s" and "%(R_SET_TO_CUSTOM)s are selected)</i><br>
             Enter the custom value to be assigned to pixels with values above the upper limit.""" % globals())
 
-        self.matching_image_name = cps.ImageNameSubscriber(
-                "Select image to match in maximum intensity", cps.NONE, doc="""
+        self.matching_image_name = cellprofiler.setting.ImageNameSubscriber(
+                "Select image to match in maximum intensity", cellprofiler.setting.NONE, doc="""
             <i>(Used only if "%(M_SCALE_BY_IMAGE_MAXIMUM)s" is selected)</i><br>
             Select the image whose maximum you want the rescaled image to match.""" % globals())
 
-        self.divisor_value = cps.Float(
+        self.divisor_value = cellprofiler.setting.Float(
                 "Divisor value",
-                1, minval=np.finfo(float).eps, doc="""
+                1, minval=numpy.finfo(float).eps, doc="""
             <i>(Used only if "%(M_DIVIDE_BY_VALUE)s" is selected)</i><br>
             Enter the value to use as the divisor for the final image.""" % globals())
 
-        self.divisor_measurement = cps.Measurement(
+        self.divisor_measurement = cellprofiler.setting.Measurement(
                 "Divisor measurement",
-                lambda: cpmeas.IMAGE, doc="""
+                lambda: cellprofiler.measurement.IMAGE, doc="""
             <i>(Used only if "%(M_DIVIDE_BY_MEASUREMENT)s" is selected)</i><br>
             Select the measurement value to use as the divisor for the final image.""" % globals())
 
@@ -287,16 +286,16 @@ class RescaleIntensity(cpm.Module):
                                         cache=False)
             if self.wants_automatic_high == HIGH_ALL_IMAGES:
                 if image.has_mask:
-                    vmax = np.max(image.pixel_data[image.mask])
+                    vmax = numpy.max(image.pixel_data[image.mask])
                 else:
-                    vmax = np.max(image.pixel_data)
+                    vmax = numpy.max(image.pixel_data)
                     max_value = vmax if max_value is None else max(max_value, vmax)
 
             if self.wants_automatic_low == LOW_ALL_IMAGES:
                 if image.has_mask:
-                    vmin = np.min(image.pixel_data[image.mask])
+                    vmin = numpy.min(image.pixel_data[image.mask])
                 else:
-                    vmin = np.min(image.pixel_data)
+                    vmin = numpy.min(image.pixel_data)
                     min_value = vmin if min_value is None else min(min_value, vmin)
 
         if self.wants_automatic_high == HIGH_ALL_IMAGES:
@@ -331,14 +330,14 @@ class RescaleIntensity(cpm.Module):
         elif self.rescale_method == M_CONVERT_TO_8_BIT:
             output_image = self.convert_to_8_bit(input_image)
         if output_mask is not None:
-            rescaled_image = cpi.Image(output_image,
-                                       mask=output_mask,
-                                       parent_image=input_image,
-                                       convert=False)
+            rescaled_image = cellprofiler.image.Image(output_image,
+                                                      mask=output_mask,
+                                                      parent_image=input_image,
+                                                      convert=False)
         else:
-            rescaled_image = cpi.Image(output_image,
-                                       parent_image=input_image,
-                                       convert=False)
+            rescaled_image = cellprofiler.image.Image(output_image,
+                                                      parent_image=input_image,
+                                                      convert=False)
         workspace.image_set.add(self.rescaled_image_name.value, rescaled_image)
         if self.show_window:
             workspace.display_data.image_data = [input_image.pixel_data,
@@ -365,9 +364,9 @@ class RescaleIntensity(cpm.Module):
     def stretch(self, input_image):
         '''Stretch the input image to the range 0:1'''
         if input_image.has_mask:
-            return stretch(input_image.pixel_data, input_image.mask)
+            return centrosome.filter.stretch(input_image.pixel_data, input_image.mask)
         else:
-            return stretch(input_image.pixel_data)
+            return centrosome.filter.stretch(input_image.pixel_data)
 
     def manual_input_range(self, input_image, workspace):
         '''Stretch the input image from the requested range to 0:1'''
@@ -394,9 +393,9 @@ class RescaleIntensity(cpm.Module):
         '''Divide the image by its minimum to get an illumination correction function'''
 
         if input_image.has_mask:
-            src_min = np.min(input_image.pixel_data[input_image.mask])
+            src_min = numpy.min(input_image.pixel_data[input_image.mask])
         else:
-            src_min = np.min(input_image.pixel_data)
+            src_min = numpy.min(input_image.pixel_data)
         if src_min != 0:
             rescaled_image = input_image.pixel_data / src_min
         return rescaled_image
@@ -405,9 +404,9 @@ class RescaleIntensity(cpm.Module):
         '''Stretch the input image from 0 to the image maximum'''
 
         if input_image.has_mask:
-            src_max = np.max(input_image.pixel_data[input_image.mask])
+            src_max = numpy.max(input_image.pixel_data[input_image.mask])
         else:
-            src_max = np.max(input_image.pixel_data)
+            src_max = numpy.max(input_image.pixel_data)
         if src_max != 0:
             rescaled_image = input_image.pixel_data / src_max
         return rescaled_image
@@ -434,18 +433,18 @@ class RescaleIntensity(cpm.Module):
         reference_pixels = reference_image.pixel_data
         if reference_image.has_mask:
             reference_pixels = reference_pixels[reference_image.mask]
-        reference_max = np.max(reference_pixels)
+        reference_max = numpy.max(reference_pixels)
         if input_image.has_mask:
-            image_max = np.max(input_image.pixel_data[input_image.mask])
+            image_max = numpy.max(input_image.pixel_data[input_image.mask])
         else:
-            image_max = np.max(input_image.pixel_data)
+            image_max = numpy.max(input_image.pixel_data)
         if image_max == 0:
             return input_image.pixel_data
         return input_image.pixel_data * reference_max / image_max
 
     def convert_to_8_bit(self, input_image):
         '''Convert the image data to uint8'''
-        return (input_image.pixel_data * 255).astype(np.uint8)
+        return (input_image.pixel_data * 255).astype(numpy.uint8)
 
     def get_source_range(self, input_image, workspace):
         '''Get the source range, accounting for automatically computed values'''
@@ -462,13 +461,13 @@ class RescaleIntensity(cpm.Module):
         if self.wants_automatic_low == LOW_ALL_IMAGES:
             src_min = self.get_automatic_minimum(workspace.image_set_list)
         elif self.wants_automatic_low == LOW_EACH_IMAGE:
-            src_min = np.min(input_pixels)
+            src_min = numpy.min(input_pixels)
         else:
             src_min = self.source_low.value
         if self.wants_automatic_high.value == HIGH_ALL_IMAGES:
             src_max = self.get_automatic_maximum(workspace.image_set_list)
         elif self.wants_automatic_high == HIGH_EACH_IMAGE:
-            src_max = np.max(input_pixels)
+            src_max = numpy.max(input_pixels)
         else:
             src_max = self.source_high.value
         return src_min, src_max
@@ -490,7 +489,7 @@ class RescaleIntensity(cpm.Module):
             if input_image.has_mask:
                 mask = input_image.mask.copy()
             else:
-                mask = np.ones(rescaled_image.shape, bool)
+                mask = numpy.ones(rescaled_image.shape, bool)
             if self.low_truncation_choice == R_MASK:
                 mask[rescaled_image < target_min] = False
             if self.high_truncation_choice == R_MASK:
@@ -511,7 +510,7 @@ class RescaleIntensity(cpm.Module):
         if mask is not None and mask.ndim == 3:
             # Color image -> 3-d mask. Collapse the 3rd dimension
             # so any point is masked if any color fails
-            mask = np.all(mask, 2)
+            mask = numpy.all(mask, 2)
         return rescaled_image, mask
 
     def upgrade_settings(self, setting_values, variable_revision_number,
@@ -527,13 +526,13 @@ class RescaleIntensity(cpm.Module):
             #
             # Added load text name at the end
             #
-            setting_values = setting_values + [cps.NONE]
+            setting_values = setting_values + [cellprofiler.setting.NONE]
             variable_revision_number = 4
         if from_matlab and variable_revision_number == 4:
             new_setting_values = (setting_values[:2] +
                                   [M_STRETCH,  # 2: rescale_method,
-                                   cps.NO,  # 3: wants_automatic_low
-                                   cps.NO,  # 4: wants_automatic_high
+                                   cellprofiler.setting.NO,  # 3: wants_automatic_low
+                                   cellprofiler.setting.NO,  # 4: wants_automatic_high
                                    "0",  # 5: source_low
                                    "1",  # 6: source_high
                                    "0,1",  # 7: source_scale
@@ -542,9 +541,9 @@ class RescaleIntensity(cpm.Module):
                                    "0",  # 10: custom_low_truncation
                                    R_MASK,  # 11: high_truncation_choice
                                    "1",  # 12: custom_high_truncation
-                                   cps.NONE,  # 13: matching_image_name
+                                   cellprofiler.setting.NONE,  # 13: matching_image_name
                                    "1",  # 14: divisor_value
-                                   cps.NONE  # 15: divisor_measurement
+                                   cellprofiler.setting.NONE  # 15: divisor_measurement
                                    ])
             code = setting_values[2][0]
             if code.upper() == 'S':
@@ -597,7 +596,7 @@ class RescaleIntensity(cpm.Module):
             #
             setting_values = list(setting_values)
             for i, automatic in ((3, LOW_EACH_IMAGE), (4, HIGH_EACH_IMAGE)):
-                if setting_values[i] == cps.YES:
+                if setting_values[i] == cellprofiler.setting.YES:
                     setting_values[i] = automatic
                 else:
                     setting_values[i] = CUSTOM_VALUE

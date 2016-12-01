@@ -331,13 +331,7 @@ class RescaleIntensity(cellprofiler.module.Module):
     def rescale(self, image, in_range, out_range=(0.0, 1.0)):
         data = image.pixel_data
 
-        mask = image.mask
-
-        data[~mask] = 0
-
         rescaled = skimage.exposure.rescale_intensity(data, in_range=in_range, out_range=out_range)
-
-        rescaled[~mask] = image.pixel_data[~mask]
 
         return rescaled
 

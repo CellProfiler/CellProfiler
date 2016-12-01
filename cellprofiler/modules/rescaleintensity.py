@@ -356,58 +356,57 @@ class RescaleIntensity(cellprofiler.module.Module):
 
         return self.rescale(input_image, in_range, out_range)
 
-    def divide_by_image_minimum(self, input_image):
-        '''Divide the image by its minimum to get an illumination correction function'''
+    def divide(self, data, value):
+        if value == 0.0:
+            raise ZeroDivisionError("Cannot divide pixel intensity by 0.")
 
-        if input_image.has_mask:
-            src_min = numpy.min(input_image.pixel_data[input_image.mask])
-        else:
-            src_min = numpy.min(input_image.pixel_data)
-        if src_min != 0:
-            rescaled_image = input_image.pixel_data / src_min
-        return rescaled_image
+        return data / float(value)
+
+    def divide_by_image_minimum(self, input_image):
+        data = input_image.pixel_data
+
+        src_min = numpy.min(data[input_image.mask])
+
+        return self.divide(data, src_min)
 
     def divide_by_image_maximum(self, input_image):
-        '''Stretch the input image from 0 to the image maximum'''
+        data = input_image.pixel_data
 
-        if input_image.has_mask:
-            src_max = numpy.max(input_image.pixel_data[input_image.mask])
-        else:
-            src_max = numpy.max(input_image.pixel_data)
-        if src_max != 0:
-            rescaled_image = input_image.pixel_data / src_max
-        return rescaled_image
+        src_max = numpy.max(data[input_image.mask])
+
+        return self.divide(data, src_max)
 
     def divide_by_value(self, input_image):
-        '''Divide the image by a user-specified value'''
-        return input_image.pixel_data / self.divisor_value.value
+        return self.divide(input_image.pixel_data, self.divisor_value.value)
 
     def divide_by_measurement(self, workspace, input_image):
-        '''Divide the image by the value of an image measurement'''
         m = workspace.measurements
+
         value = m.get_current_image_measurement(self.divisor_measurement.value)
-        return input_image.pixel_data / float(value)
+
+        return self.divide(input_image.pixel_data, value)
 
     def scale_by_image_maximum(self, workspace, input_image):
-        '''Scale the image by the maximum of another image
+        ###
+        # Scale the image by the maximum of another image
+        #
+        # Find the maximum value within the unmasked region of the input
+        # and reference image. Multiply by the reference maximum, divide
+        # by the input maximum to scale the input image to the same
+        # range as the reference image
+        ###
+        image_max = numpy.max(input_image.pixel_data[input_image.mask])
 
-        Find the maximum value within the unmasked region of the input
-        and reference image. Multiply by the reference maximum, divide
-        by the input maximum to scale the input image to the same
-        range as the reference image
-        '''
-        reference_image = workspace.image_set.get_image(self.matching_image_name.value)
-        reference_pixels = reference_image.pixel_data
-        if reference_image.has_mask:
-            reference_pixels = reference_pixels[reference_image.mask]
-        reference_max = numpy.max(reference_pixels)
-        if input_image.has_mask:
-            image_max = numpy.max(input_image.pixel_data[input_image.mask])
-        else:
-            image_max = numpy.max(input_image.pixel_data)
         if image_max == 0:
             return input_image.pixel_data
-        return input_image.pixel_data * reference_max / image_max
+
+        reference_image = workspace.image_set.get_image(self.matching_image_name.value)
+
+        reference_pixels = reference_image.pixel_data[reference_image.mask]
+
+        reference_max = numpy.max(reference_pixels)
+
+        return self.divide(input_image.pixel_data * reference_max, image_max)
 
     def convert_to_8_bit(self, input_image):
         '''Convert the image data to uint8'''

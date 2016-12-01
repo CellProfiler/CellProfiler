@@ -7,13 +7,13 @@ derived from images that have been rescaled because certain options for this mod
 do not preserve the relative intensities from image to image.
 '''
 
-import centrosome.filter
 import numpy
 
 import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.module
 import cellprofiler.setting
+import skimage.exposure
 
 M_STRETCH = 'Stretch each image to use the full intensity range'
 M_MANUAL_INPUT_RANGE = 'Choose specific values to be reset to the full intensity range'
@@ -329,11 +329,24 @@ class RescaleIntensity(cellprofiler.module.Module):
                                       sharexy=figure.subplot(0, 0))
 
     def stretch(self, input_image):
-        '''Stretch the input image to the range 0:1'''
+        data = input_image.pixel_data
+
+        mask = numpy.ones_like(data, dtype=numpy.bool)
+
         if input_image.has_mask:
-            return centrosome.filter.stretch(input_image.pixel_data, input_image.mask)
-        else:
-            return centrosome.filter.stretch(input_image.pixel_data)
+            mask = input_image.mask
+
+        in_range = (min(data[mask]), max(data[mask]))
+
+        out_range = (0.0, 1.0)
+
+        data[~mask] = 0
+
+        rescaled = skimage.exposure.rescale_intensity(data, in_range=in_range, out_range=out_range)
+
+        rescaled[~mask] = input_image.pixel_data[~mask]
+
+        return rescaled
 
     def manual_input_range(self, input_image, workspace):
         '''Stretch the input image from the requested range to 0:1'''

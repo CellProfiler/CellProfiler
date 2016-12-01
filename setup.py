@@ -331,7 +331,6 @@ setuptools.setup(
             "cellh5",
             "centrosome>=1.0.4",
             "h5py",
-            "imageio",
             "inflect",
             "javabridge",
             "libtiff",

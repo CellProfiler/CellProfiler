@@ -101,7 +101,7 @@ class TestRescaleIntensity(unittest.TestCase):
         measurements = cellprofiler.measurement.Measurements()
         module_number = 1
         module = cellprofiler.modules.rescaleintensity.RescaleIntensity()
-        module.image_name.value = INPUT_NAME
+        module.x_name.value = INPUT_NAME
         if isinstance(input_image, (tuple, list)):
             first_input_image = input_image[0]
         else:
@@ -119,7 +119,7 @@ class TestRescaleIntensity(unittest.TestCase):
         module_number += 1
         pipeline.add_module(ii)
         image_set.add(INPUT_NAME, image)
-        module.rescaled_image_name.value = OUTPUT_NAME
+        module.y_name.value = OUTPUT_NAME
         if reference_image is not None:
             module.matching_image_name.value = REFERENCE_NAME
             if reference_mask is None:

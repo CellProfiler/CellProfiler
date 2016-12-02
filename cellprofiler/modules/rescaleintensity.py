@@ -46,19 +46,13 @@ HIGH_EACH_IMAGE = 'Maximum for each image'
 HIGH_ALL = [CUSTOM_VALUE, HIGH_EACH_IMAGE, HIGH_ALL_IMAGES]
 
 
-class RescaleIntensity(cellprofiler.module.Module):
+class RescaleIntensity(cellprofiler.module.ImageProcessing):
     module_name = "RescaleIntensity"
-    category = "Image Processing"
+
     variable_revision_number = 3
 
     def create_settings(self):
-        self.image_name = cellprofiler.setting.ImageNameSubscriber(
-                "Select the input image", cellprofiler.setting.NONE, doc=
-                '''Select the image to be rescaled.''')
-
-        self.rescaled_image_name = cellprofiler.setting.ImageNameProvider(
-                "Name the output image", "RescaledBlue", doc=
-                '''Enter the name of output rescaled image.''')
+        super(RescaleIntensity, self).create_settings()
 
         self.rescale_method = cellprofiler.setting.Choice(
                 'Rescaling method',
@@ -156,9 +150,9 @@ class RescaleIntensity(cellprofiler.module.Module):
             Select the measurement value to use as the divisor for the final image.""" % globals())
 
     def settings(self):
-        return [
-            self.image_name,
-            self.rescaled_image_name,
+        __settings__ = super(RescaleIntensity, self).settings()
+
+        return __settings__ + [
             self.rescale_method,
             self.wants_automatic_low,
             self.wants_automatic_high,
@@ -172,29 +166,30 @@ class RescaleIntensity(cellprofiler.module.Module):
         ]
 
     def visible_settings(self):
-        result = [self.image_name, self.rescaled_image_name,
-                  self.rescale_method]
+        __settings__ = super(RescaleIntensity, self).visible_settings()
+
+        __settings__ += [self.rescale_method]
         if self.rescale_method in (M_MANUAL_INPUT_RANGE, M_MANUAL_IO_RANGE):
-            result += [self.wants_automatic_low]
+            __settings__ += [self.wants_automatic_low]
             if self.wants_automatic_low.value == CUSTOM_VALUE:
                 if self.wants_automatic_high != CUSTOM_VALUE:
-                    result += [self.source_low, self.wants_automatic_high]
+                    __settings__ += [self.source_low, self.wants_automatic_high]
                 else:
-                    result += [self.wants_automatic_high, self.source_scale]
+                    __settings__ += [self.wants_automatic_high, self.source_scale]
             else:
-                result += [self.wants_automatic_high]
+                __settings__ += [self.wants_automatic_high]
                 if self.wants_automatic_high == CUSTOM_VALUE:
-                    result += [self.source_high]
+                    __settings__ += [self.source_high]
         if self.rescale_method == M_MANUAL_IO_RANGE:
-            result += [self.dest_scale]
+            __settings__ += [self.dest_scale]
 
         if self.rescale_method == M_SCALE_BY_IMAGE_MAXIMUM:
-            result += [self.matching_image_name]
+            __settings__ += [self.matching_image_name]
         elif self.rescale_method == M_DIVIDE_BY_MEASUREMENT:
-            result += [self.divisor_measurement]
+            __settings__ += [self.divisor_measurement]
         elif self.rescale_method == M_DIVIDE_BY_VALUE:
-            result += [self.divisor_value]
-        return result
+            __settings__ += [self.divisor_value]
+        return __settings__
 
     def set_automatic_minimum(self, image_set_list, value):
         d = self.get_dictionary(image_set_list)
@@ -232,7 +227,7 @@ class RescaleIntensity(cellprofiler.module.Module):
             return True
 
         title = "#%d: RescaleIntensity for %s" % (
-            self.module_num, self.image_name.value)
+            self.module_num, self.x_name.value)
         message = ("RescaleIntensity will process %d images while "
                    "preparing for run" % (len(image_numbers)))
         min_value = None
@@ -240,7 +235,7 @@ class RescaleIntensity(cellprofiler.module.Module):
         for w in workspace.pipeline.run_group_with_yield(
                 workspace, grouping, image_numbers, self, title, message):
             image_set = w.image_set
-            image = image_set.get_image(self.image_name.value,
+            image = image_set.get_image(self.x_name.value,
                                         must_be_grayscale=True,
                                         cache=False)
             if self.wants_automatic_high == HIGH_ALL_IMAGES:
@@ -268,7 +263,7 @@ class RescaleIntensity(cellprofiler.module.Module):
                 (self.wants_automatic_low == LOW_ALL_IMAGES))
 
     def run(self, workspace):
-        input_image = workspace.image_set.get_image(self.image_name.value)
+        input_image = workspace.image_set.get_image(self.x_name.value)
 
         if self.rescale_method == M_STRETCH:
             output_image = self.stretch(input_image)
@@ -294,10 +289,14 @@ class RescaleIntensity(cellprofiler.module.Module):
             dimensions=input_image.dimensions
         )
 
-        workspace.image_set.add(self.rescaled_image_name.value, rescaled_image)
+        workspace.image_set.add(self.y_name.value, rescaled_image)
 
         if self.show_window:
-            workspace.display_data.image_data = [input_image.pixel_data, rescaled_image.pixel_data]
+            workspace.display_data.x_data = input_image.pixel_data
+
+            workspace.display_data.y_data = output_image
+
+            workspace.display_data.dimensions = input_image.dimensions
 
     def rescale(self, image, in_range, out_range=(0.0, 1.0)):
         data = image.pixel_data

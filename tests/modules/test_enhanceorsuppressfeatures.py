@@ -38,8 +38,8 @@ class TestEnhanceOrSuppressSpeckles(unittest.TestCase):
                                                      cellprofiler.measurement.Measurements(),
                                                      image_set_list)
         image_set.add(INPUT_IMAGE_NAME, cellprofiler.image.Image(image, mask))
-        module.image_name.value = INPUT_IMAGE_NAME
-        module.filtered_image_name.value = OUTPUT_IMAGE_NAME
+        module.x_name.value = INPUT_IMAGE_NAME
+        module.y_name.value = OUTPUT_IMAGE_NAME
         return workspace, module
 
     def test_00_00_enhance_zero(self):
@@ -89,8 +89,8 @@ class TestEnhanceOrSuppressSpeckles(unittest.TestCase):
         self.assertEqual(len(pipeline.modules()), 2)
         module = pipeline.modules()[1]
         self.assertEqual(module.module_name, 'EnhanceOrSuppressFeatures')
-        self.assertEqual(module.image_name.value, 'MyImage')
-        self.assertEqual(module.filtered_image_name.value, 'MyEnhancedImage')
+        self.assertEqual(module.x_name.value, 'MyImage')
+        self.assertEqual(module.y_name.value, 'MyEnhancedImage')
         self.assertEqual(module.method.value, cellprofiler.modules.enhanceorsuppressfeatures.ENHANCE)
         self.assertEqual(module.object_size, 17)
 
@@ -157,8 +157,8 @@ EnhanceOrSuppressFeatures:[module_num:5|svn_version:\'10300\'|variable_revision_
                         ("EnhancedCircles", "Suppressed", cellprofiler.modules.enhanceorsuppressfeatures.SUPPRESS, 13, cellprofiler.modules.enhanceorsuppressfeatures.E_CIRCLES, 4, 11))):
             self.assertEqual(module.module_name, 'EnhanceOrSuppressFeatures')
             self.assertTrue(isinstance(module, cellprofiler.modules.enhanceorsuppressfeatures.EnhanceOrSuppressFeatures))
-            self.assertEqual(module.image_name, input_name)
-            self.assertEqual(module.filtered_image_name, output_name)
+            self.assertEqual(module.x_name, input_name)
+            self.assertEqual(module.y_name, output_name)
             self.assertEqual(module.method, operation)
             self.assertEqual(module.enhance_method, feature_type)
             self.assertEqual(module.object_size, feature_size)
@@ -202,8 +202,8 @@ EnhanceOrSuppressFeatures:[module_num:2|svn_version:\'10591\'|variable_revision_
         self.assertEqual(len(pipeline.modules()), 2)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, cellprofiler.modules.enhanceorsuppressfeatures.EnhanceOrSuppressFeatures))
-        self.assertEqual(module.image_name, "DNA")
-        self.assertEqual(module.filtered_image_name, "EnhancedTexture")
+        self.assertEqual(module.x_name, "DNA")
+        self.assertEqual(module.y_name, "EnhancedTexture")
         self.assertEqual(module.method, cellprofiler.modules.enhanceorsuppressfeatures.ENHANCE)
         self.assertEqual(module.enhance_method, cellprofiler.modules.enhanceorsuppressfeatures.E_TEXTURE)
         self.assertEqual(module.smoothing, 3.5)
@@ -262,8 +262,8 @@ EnhanceOrSuppressFeatures:[module_num:2|svn_version:\'Unknown\'|variable_revisio
         self.assertEqual(len(pipeline.modules()), 2)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, cellprofiler.modules.enhanceorsuppressfeatures.EnhanceOrSuppressFeatures))
-        self.assertEqual(module.image_name, "Dendrite")
-        self.assertEqual(module.filtered_image_name, "EnhancedDendrite")
+        self.assertEqual(module.x_name, "Dendrite")
+        self.assertEqual(module.y_name, "EnhancedDendrite")
         self.assertEqual(module.method, cellprofiler.modules.enhanceorsuppressfeatures.ENHANCE)
         self.assertEqual(module.enhance_method, cellprofiler.modules.enhanceorsuppressfeatures.E_NEURITES)
         self.assertEqual(module.smoothing, 2.0)
@@ -318,8 +318,8 @@ EnhanceOrSuppressFeatures:[module_num:2|svn_version:\'Unknown\'|variable_revisio
         self.assertEqual(len(pipeline.modules()), 2)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, cellprofiler.modules.enhanceorsuppressfeatures.EnhanceOrSuppressFeatures))
-        self.assertEqual(module.image_name, "Dendrite")
-        self.assertEqual(module.filtered_image_name, "EnhancedDendrite")
+        self.assertEqual(module.x_name, "Dendrite")
+        self.assertEqual(module.y_name, "EnhancedDendrite")
         self.assertEqual(module.method, cellprofiler.modules.enhanceorsuppressfeatures.ENHANCE)
         self.assertEqual(module.enhance_method, cellprofiler.modules.enhanceorsuppressfeatures.E_NEURITES)
         self.assertEqual(module.smoothing, 2.0)

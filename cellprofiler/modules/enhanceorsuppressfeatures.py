@@ -34,21 +34,13 @@ N_GRADIENT = "Line structures"
 N_TUBENESS = "Tubeness"
 
 
-class EnhanceOrSuppressFeatures(cellprofiler.module.Module):
+class EnhanceOrSuppressFeatures(cellprofiler.module.ImageProcessing):
     module_name = 'EnhanceOrSuppressFeatures'
-    category = "Image Processing"
+
     variable_revision_number = 5
 
     def create_settings(self):
-        self.image_name = cellprofiler.setting.ImageNameSubscriber(
-                'Select the input image',
-                cellprofiler.setting.NONE, doc="""
-            Select the image with features to be enhanced or suppressed.""")
-
-        self.filtered_image_name = cellprofiler.setting.ImageNameProvider(
-                'Name the output image',
-                'FilteredBlue', doc="""
-            Enter a name for the feature-enhanced or suppressed image.""")
+        super(EnhanceOrSuppressFeatures, self).create_settings()
 
         self.method = cellprofiler.setting.Choice(
                 'Select the operation',
@@ -218,40 +210,48 @@ class EnhanceOrSuppressFeatures(cellprofiler.module.Module):
             """ % globals())
 
     def settings(self):
-        return [self.image_name, self.filtered_image_name,
-                self.method, self.object_size, self.enhance_method,
-                self.hole_size, self.smoothing, self.angle, self.decay,
-                self.neurite_choice, self.speckle_accuracy]
+        __settings__ = super(EnhanceOrSuppressFeatures, self).settings()
+        return __settings__ + [
+            self.method,
+            self.object_size,
+            self.enhance_method,
+            self.hole_size,
+            self.smoothing,
+            self.angle,
+            self.decay,
+            self.neurite_choice,
+            self.speckle_accuracy
+        ]
 
     def visible_settings(self):
-        result = [self.image_name, self.filtered_image_name,
-                  self.method]
+        __settings__ = super(EnhanceOrSuppressFeatures, self).visible_settings()
+        __settings__ += [self.method]
         if self.method == ENHANCE:
-            result += [self.enhance_method]
+            __settings__ += [self.enhance_method]
             self.object_size.min_value = 2
             if self.enhance_method == E_DARK_HOLES:
-                result += [self.hole_size]
+                __settings__ += [self.hole_size]
             elif self.enhance_method == E_TEXTURE:
-                result += [self.smoothing]
+                __settings__ += [self.smoothing]
             elif self.enhance_method == E_DIC:
-                result += [self.smoothing, self.angle, self.decay]
+                __settings__ += [self.smoothing, self.angle, self.decay]
             elif self.enhance_method == E_NEURITES:
-                result += [self.neurite_choice]
+                __settings__ += [self.neurite_choice]
                 if self.neurite_choice == N_GRADIENT:
-                    result += [self.object_size]
+                    __settings__ += [self.object_size]
                 else:
-                    result += [self.smoothing]
+                    __settings__ += [self.smoothing]
             elif self.enhance_method == E_SPECKLES:
-                result += [self.object_size, self.speckle_accuracy]
+                __settings__ += [self.object_size, self.speckle_accuracy]
                 self.object_size.min_value = 3
             else:
-                result += [self.object_size]
+                __settings__ += [self.object_size]
         else:
-            result += [self.object_size]
-        return result
+            __settings__ += [self.object_size]
+        return __settings__
 
     def run(self, workspace):
-        image = workspace.image_set.get_image(self.image_name.value,
+        image = workspace.image_set.get_image(self.x_name.value,
                                               must_be_grayscale=True)
         #
         # Match against Matlab's strel('disk') operation.
@@ -329,21 +329,12 @@ class EnhanceOrSuppressFeatures(cellprofiler.module.Module):
         else:
             raise ValueError("Unknown filtering method: %s" % self.method)
         result_image = cellprofiler.image.Image(result, parent_image=image)
-        workspace.image_set.add(self.filtered_image_name.value, result_image)
+        workspace.image_set.add(self.y_name.value, result_image)
 
         if self.show_window:
-            workspace.display_data.image = image.pixel_data
-            workspace.display_data.result = result
-
-    def display(self, workspace, figure):
-        image = workspace.display_data.image
-        result = workspace.display_data.result
-        figure.set_subplots((2, 1))
-        figure.subplot_imshow_grayscale(0, 0, image,
-                                        "Original: %s" % self.image_name.value)
-        figure.subplot_imshow_grayscale(1, 0, result,
-                                        "Filtered: %s" % self.filtered_image_name.value,
-                                        sharexy=figure.subplot(0, 0))
+            workspace.display_data.x_data = image.pixel_data
+            workspace.display_data.y_data = result
+            workspace.display_data.dimensions = image.dimensions
 
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):

@@ -222,12 +222,10 @@ class Image(object):
         #
         # Exclude channel, if present, from shape
         #
-        if image.ndim == 2:
-            shape = image.shape
-        elif image.ndim == 3:
-            shape = image.shape[:2]
+        if self.multichannel:
+            shape = image.shape[:-1]
         else:
-            shape = image.shape[1:]
+            shape = image.shape
 
         return numpy.ones(shape, dtype=numpy.bool)
 

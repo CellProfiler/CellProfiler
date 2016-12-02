@@ -73,8 +73,8 @@ class TestRescaleIntensity(unittest.TestCase):
         # matching_image_name = Cytoplasm
         # divisor_value = 2
         # divisor_measurement = Intensity_MeanIntensity_DNA
-        self.assertEqual(module.image_name.value, "DNA")
-        self.assertEqual(module.rescaled_image_name.value, "RescaledDNA")
+        self.assertEqual(module.x_name.value, "DNA")
+        self.assertEqual(module.y_name.value, "RescaledDNA")
         self.assertEqual(module.rescale_method.value, cellprofiler.modules.rescaleintensity.M_MANUAL_IO_RANGE)
         self.assertEqual(module.wants_automatic_high.value, cellprofiler.modules.rescaleintensity.CUSTOM_VALUE)
         self.assertEqual(module.wants_automatic_low.value, cellprofiler.modules.rescaleintensity.CUSTOM_VALUE)

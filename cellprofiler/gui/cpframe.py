@@ -25,7 +25,6 @@ import cellprofiler.modules
 import cellprofiler.pipeline
 import cellprofiler.preferences
 import cellprofiler.workspace
-import cellprofiler.utilities.version
 import inspect
 import logging
 import os

@@ -14,6 +14,8 @@ import scipy.ndimage
 import cellprofiler.image
 import cellprofiler.module
 import cellprofiler.setting
+import skimage.morphology
+import numpy
 
 from cellprofiler.gui.help import HELP_ON_MEASURING_DISTANCES, PROTIP_AVOID_ICON
 
@@ -27,8 +29,8 @@ E_CIRCLES = 'Circles'
 E_TEXTURE = 'Texture'
 E_DIC = 'DIC'
 
-S_FAST = "Fast / hexagonal"
-S_SLOW = "Slow / circular"
+S_FAST = "Fast"
+S_SLOW = "Slow"
 
 N_GRADIENT = "Line structures"
 N_TUBENESS = "Tubeness"
@@ -37,7 +39,7 @@ N_TUBENESS = "Tubeness"
 class EnhanceOrSuppressFeatures(cellprofiler.module.ImageProcessing):
     module_name = 'EnhanceOrSuppressFeatures'
 
-    variable_revision_number = 5
+    variable_revision_number = 6
 
     def create_settings(self):
         super(EnhanceOrSuppressFeatures, self).create_settings()
@@ -251,28 +253,19 @@ class EnhanceOrSuppressFeatures(cellprofiler.module.ImageProcessing):
         return __settings__
 
     def run(self, workspace):
-        image = workspace.image_set.get_image(self.x_name.value,
-                                              must_be_grayscale=True)
+        image = workspace.image_set.get_image(self.x_name.value, must_be_grayscale=True)
         #
         # Match against Matlab's strel('disk') operation.
         #
         radius = (float(self.object_size.value) - 1.0) / 2.0
+
         mask = image.mask if image.has_mask else None
+
         pixel_data = image.pixel_data
+
         if self.method == ENHANCE:
             if self.enhance_method == E_SPECKLES:
-                if self.speckle_accuracy == S_SLOW or radius <= 3:
-                    result = centrosome.cpmorphology.white_tophat(pixel_data, radius, mask)
-                else:
-                    #
-                    # white_tophat = img - opening
-                    #              = img - dilate(erode)
-                    #              = img - median_filter(median_filter(0%) 100%)
-                    result = pixel_data - centrosome.filter.median_filter(
-                            centrosome.filter.median_filter(pixel_data, mask, radius, percent=0),
-                            mask, radius, percent=100)
-                    if mask is not None:
-                        result[~mask] = pixel_data[~mask]
+                result = self.enhance_speckles(image, self.object_size.value / 2)
             elif self.enhance_method == E_NEURITES:
                 if self.neurite_choice == N_GRADIENT:
                     #
@@ -336,6 +329,37 @@ class EnhanceOrSuppressFeatures(cellprofiler.module.ImageProcessing):
             workspace.display_data.y_data = result
             workspace.display_data.dimensions = image.dimensions
 
+    def enhance_speckles(self, image, radius):
+        pixel_data = skimage.img_as_float(image.pixel_data)
+
+        mask = image.mask
+
+        data = numpy.zeros_like(pixel_data)
+
+        data[mask] = pixel_data[mask]
+
+        if image.volumetric:
+            selem = skimage.morphology.ball(radius)
+        else:
+            selem = skimage.morphology.disk(radius)
+
+        if self.speckle_accuracy == S_SLOW or radius <= 3:
+            result = skimage.morphology.white_tophat(pixel_data, selem=selem)
+        else:
+            #
+            # white_tophat = img - opening
+            #              = img - dilate(erode)
+            #              = img - maximum_filter(minimum_filter)
+            minimum = scipy.ndimage.filters.minimum_filter(data, footprint=selem)
+
+            maximum = scipy.ndimage.filters.maximum_filter(minimum, footprint=selem)
+
+            result = data - maximum
+
+        result[~mask] = pixel_data[~mask]
+
+        return result
+
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
         '''Adjust setting values if they came from a previous revision
@@ -373,8 +397,17 @@ class EnhanceOrSuppressFeatures(cellprofiler.module.ImageProcessing):
             setting_values = setting_values + [N_GRADIENT]
             variable_revision_number = 4
         if not from_matlab and variable_revision_number == 4:
-            setting_values = setting_values + [S_SLOW]
+            setting_values = setting_values + ["Slow / circular"]
             variable_revision_number = 5
+
+        if not from_matlab and variable_revision_number == 5:
+            if setting_values[-1] == "Slow / circular":
+                setting_values[-1] = "Slow"
+            else:
+                setting_values[-1] = "Fast"
+
+            variable_revision_number = 6
+
         return setting_values, variable_revision_number, from_matlab
 
 

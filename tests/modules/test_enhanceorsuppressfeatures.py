@@ -6,6 +6,7 @@ import zlib
 
 import centrosome.filter
 import numpy
+import pytest
 
 import cellprofiler.image
 import cellprofiler.measurement
@@ -15,19 +16,13 @@ import cellprofiler.object
 import cellprofiler.pipeline
 import cellprofiler.preferences
 import cellprofiler.workspace
-import pytest
-
 
 cellprofiler.preferences.set_headless()
 
 
 @pytest.fixture(scope="function")
-def image(request):
-    image = cellprofiler.image.Image()
-
-    image.dimensions = request.param
-
-    return image
+def image():
+    return cellprofiler.image.Image()
 
 
 @pytest.fixture(scope="function")
@@ -89,6 +84,162 @@ def test_suppress_zero(image, module, workspace):
     actual = output.pixel_data
 
     assert numpy.all(actual == 0)
+
+
+@pytest.fixture(
+    params=["Slow", "Fast"],
+    scope="function"
+)
+def accuracy(request):
+    return request.param
+
+
+def test_enhance(accuracy, image, module, workspace):
+    data = numpy.zeros((20, 30))
+
+    expected = numpy.zeros((20, 30))
+
+    i, j = numpy.mgrid[-10:10, -10:20]
+
+    data[i ** 2 + j ** 2 <= 7 ** 2] = 1
+
+    i, j = numpy.mgrid[-10:10, -25:5]
+
+    data[i ** 2 + j ** 2 <= 9] = 1
+
+    expected[i ** 2 + j ** 2 <= 9] = 1
+
+    image.pixel_data = data
+
+    module.method.value = "Enhance"
+
+    module.enhance_method.value = "Speckles"
+
+    module.speckle_accuracy.value = accuracy
+
+    module.object_size.value = 14
+
+    module.run(workspace)
+
+    output = workspace.image_set.get_image("output")
+
+    actual = output.pixel_data
+
+    numpy.testing.assert_array_equal(expected, actual)
+
+
+def test_enhance_volume(accuracy, image, module, workspace):
+    data = numpy.zeros((20, 20, 30))
+
+    expected = numpy.zeros((20, 20, 30))
+
+    k, i, j = numpy.mgrid[-10:10, -10:10, -10:20]
+
+    data[k ** 2 + i ** 2 + j ** 2 <= 7 ** 2] = 1
+
+    k, i, j = numpy.mgrid[-10:10, -10:10, -25:5]
+
+    data[k ** 2 + i ** 2 + j ** 2 <= 9] = 1
+
+    expected[k ** 2 + i ** 2 + j ** 2 <= 9] = 1
+
+    image.pixel_data = data
+
+    image.dimensions = 3
+
+    module.method.value = "Enhance"
+
+    module.enhance_method.value = "Speckles"
+
+    module.speckle_accuracy.value = accuracy
+
+    module.object_size.value = 14
+
+    module.run(workspace)
+
+    output = workspace.image_set.get_image("output")
+
+    actual = output.pixel_data
+
+    numpy.testing.assert_array_equal(expected, actual)
+
+
+def test_enhance_masked(accuracy, image, module, workspace):
+    data = numpy.zeros((20, 30))
+
+    mask = numpy.ones_like(data, dtype=numpy.bool)
+
+    i, j = numpy.mgrid[-10:10, -10:20]
+
+    data[i ** 2 + j ** 2 <= 7 ** 2] = 1
+
+    mask[i ** 2 + j ** 2 <= 7 ** 2] = False
+
+    i, j = numpy.mgrid[-10:10, -25:5]
+
+    data[i ** 2 + j ** 2 <= 9] = 1
+
+    expected = data
+
+    image.pixel_data = data
+
+    image.mask = mask
+
+    module.method.value = "Enhance"
+
+    module.enhance_method.value = "Speckles"
+
+    module.speckle_accuracy.value = accuracy
+
+    module.object_size.value = 14
+
+    module.run(workspace)
+
+    output = workspace.image_set.get_image("output")
+
+    actual = output.pixel_data
+
+    numpy.testing.assert_array_equal(expected, actual)
+
+
+def test_enhance_masked_volume(accuracy, image, module, workspace):
+    data = numpy.zeros((20, 20, 30))
+
+    mask = numpy.ones_like(data, dtype=numpy.bool)
+
+    k, i, j = numpy.mgrid[-10:10, -10:10, -10:20]
+
+    data[k ** 2 + i ** 2 + j ** 2 <= 7 ** 2] = 1
+
+    mask[k ** 2 + i ** 2 + j ** 2 <= 7 ** 2] = False
+
+    k, i, j = numpy.mgrid[-10:10, -10:10, -25:5]
+
+    data[k ** 2 + i ** 2 + j ** 2 <= 9] = 1
+
+    expected = data
+
+    image.pixel_data = data
+
+    image.mask = mask
+
+    image.dimensions = 3
+
+    module.method.value = "Enhance"
+
+    module.enhance_method.value = "Speckles"
+
+    module.speckle_accuracy.value = accuracy
+
+    module.object_size.value = 14
+
+    module.run(workspace)
+
+    output = workspace.image_set.get_image("output")
+
+    actual = output.pixel_data
+
+    numpy.testing.assert_array_equal(expected, actual)
 
 
 INPUT_IMAGE_NAME = 'myimage'
@@ -388,29 +539,6 @@ EnhanceOrSuppressFeatures:[module_num:2|svn_version:\'Unknown\'|variable_revisio
         self.assertTrue(isinstance(module, cellprofiler.modules.enhanceorsuppressfeatures.EnhanceOrSuppressFeatures))
         self.assertEqual(module.neurite_choice, cellprofiler.modules.enhanceorsuppressfeatures.N_GRADIENT)
 
-    def test_02_01_enhance(self):
-        '''Enhance an image composed of two circles of different diameters'''
-        #
-        # Make an image which has circles of diameters 10 and 7. We should
-        # keep the smaller circle and erase the larger
-        #
-        image = numpy.zeros((11, 20))
-        expected = numpy.zeros((11, 20))
-        i, j = numpy.mgrid[-5:6, -5:16]
-        image[i ** 2 + j ** 2 < 23] = 1
-        i, j = numpy.mgrid[-5:6, -15:5]
-        image[i ** 2 + j ** 2 <= 9] = 1
-        expected[i ** 2 + j ** 2 <= 9] = 1
-        workspace, module = self.make_workspace(image,
-                                                numpy.ones(image.shape, bool))
-        module.method.value = cellprofiler.modules.enhanceorsuppressfeatures.ENHANCE
-        module.enhance_method.value = cellprofiler.modules.enhanceorsuppressfeatures.E_SPECKLES
-        module.object_size.value = 8
-        module.run(workspace)
-        result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertFalse(result is None)
-        self.assertTrue(numpy.all(result.pixel_data == expected))
-
     def test_02_02_suppress(self):
         '''Suppress a speckle in an image composed of two circles'''
         image = numpy.zeros((11, 20))
@@ -427,44 +555,6 @@ EnhanceOrSuppressFeatures:[module_num:2|svn_version:\'Unknown\'|variable_revisio
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         self.assertFalse(result is None)
         self.assertTrue(numpy.all(result.pixel_data == expected))
-
-    def test_03_01_enhancemask(self):
-        '''Enhance a speckles image, masking a portion'''
-        image = numpy.zeros((10, 10))
-        mask = numpy.ones((10, 10), bool)
-        #
-        # Put a single point in the middle of the image. The mask
-        # should protect the point against the opening operation and it
-        # should be zero after the subtraction
-        #
-        i, j = numpy.mgrid[-5:5, -5:5]
-        image[5, 5] = 1
-        mask[numpy.logical_and(i ** 2 + j ** 2 <= 16, image == 0)] = False
-        for speckle_accuracy in cellprofiler.modules.enhanceorsuppressfeatures.S_SLOW, cellprofiler.modules.enhanceorsuppressfeatures.S_FAST:
-            #
-            # Prove that, without the mask, the image is zero
-            #
-            workspace, module = self.make_workspace(image, None)
-            assert isinstance(module, cellprofiler.modules.enhanceorsuppressfeatures.EnhanceOrSuppressFeatures)
-            module.method.value = cellprofiler.modules.enhanceorsuppressfeatures.ENHANCE
-            module.enhance_method.value = cellprofiler.modules.enhanceorsuppressfeatures.E_SPECKLES
-            module.speckle_accuracy.value = speckle_accuracy
-            module.object_size.value = 7
-            module.run(workspace)
-            result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-            self.assertTrue(numpy.all(result.pixel_data == image))
-            #
-            # rescue the point with the mask
-            #
-            workspace, module = self.make_workspace(image, mask)
-            module.method.value = cellprofiler.modules.enhanceorsuppressfeatures.ENHANCE
-            module.enhance_method.value = cellprofiler.modules.enhanceorsuppressfeatures.E_SPECKLES
-            module.speckle_accuracy.value = speckle_accuracy
-            module.object_size.value = 7
-            module.run(workspace)
-            result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-            self.assertFalse(result is None)
-            self.assertTrue(numpy.all(result.pixel_data == 0))
 
     def test_03_02_suppressmask(self):
         '''Suppress a speckles image, masking a portion'''

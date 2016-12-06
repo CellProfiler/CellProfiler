@@ -20,6 +20,7 @@ import matplotlib.backends.backend_wxagg
 import matplotlib.backends.backend_wxagg
 import matplotlib.cm
 import matplotlib.colorbar
+import matplotlib.colors
 import matplotlib.gridspec
 import matplotlib.patches
 import matplotlib.pyplot
@@ -1082,6 +1083,10 @@ class Figure(wx.Frame):
 
         z = image.shape[0]
 
+        vmin = min(image[position * (z - 1) / 8].min() for position in range(9))
+
+        vmax = max(image[position * (z - 1) / 8].max() for position in range(9))
+
         for position in range(9):
             ax = matplotlib.pyplot.Subplot(self.figure, gridspec[position])
 
@@ -1091,7 +1096,7 @@ class Figure(wx.Frame):
             if position % 3 != 0:
                 ax.set_yticklabels([])
 
-            ax.imshow(image[position * (z-1) / 8], cmap=cmap)
+            ax.imshow(image[position * (z - 1) / 8], cmap=cmap, norm=matplotlib.colors.LogNorm(vmin=vmin, vmax=vmax))
 
             self.figure.add_subplot(ax)
 

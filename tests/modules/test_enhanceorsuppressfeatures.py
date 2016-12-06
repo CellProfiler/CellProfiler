@@ -15,8 +15,80 @@ import cellprofiler.object
 import cellprofiler.pipeline
 import cellprofiler.preferences
 import cellprofiler.workspace
+import pytest
+
 
 cellprofiler.preferences.set_headless()
+
+
+@pytest.fixture(scope="function")
+def image(request):
+    image = cellprofiler.image.Image()
+
+    image.dimensions = request.param
+
+    return image
+
+
+@pytest.fixture(scope="function")
+def module():
+    module = cellprofiler.modules.enhanceorsuppressfeatures.EnhanceOrSuppressFeatures()
+
+    module.x_name.value = "input"
+
+    module.y_name.value = "output"
+
+    return module
+
+
+@pytest.fixture(scope="function")
+def workspace(image, module):
+    image_set_list = cellprofiler.image.ImageSetList()
+
+    image_set = image_set_list.get_image_set(0)
+
+    image_set.add("input", image)
+
+    return cellprofiler.workspace.Workspace(
+        pipeline=cellprofiler.pipeline.Pipeline(),
+        module=module,
+        image_set=image_set,
+        object_set=cellprofiler.object.ObjectSet(),
+        measurements=cellprofiler.measurement.Measurements(),
+        image_set_list=image_set_list
+    )
+
+
+def test_enhance_zero(image, module, workspace):
+    image.pixel_data = numpy.zeros((10, 10))
+
+    module.method.value = "Enhance"
+
+    module.enhance_method.value = "Speckles"
+
+    module.run(workspace)
+
+    output = workspace.image_set.get_image("output")
+
+    actual = output.pixel_data
+
+    assert numpy.all(actual == 0)
+
+
+def test_suppress_zero(image, module, workspace):
+    image.pixel_data = numpy.zeros((10, 10))
+
+    module.method.value = "Suppress"
+
+    module.object_size.value = 10
+
+    module.run(workspace)
+
+    output = workspace.image_set.get_image("output")
+
+    actual = output.pixel_data
+
+    assert numpy.all(actual == 0)
 
 
 INPUT_IMAGE_NAME = 'myimage'
@@ -41,24 +113,6 @@ class TestEnhanceOrSuppressSpeckles(unittest.TestCase):
         module.x_name.value = INPUT_IMAGE_NAME
         module.y_name.value = OUTPUT_IMAGE_NAME
         return workspace, module
-
-    def test_00_00_enhance_zero(self):
-        '''Test enhance of an image of all zeros'''
-        workspace, module = self.make_workspace(numpy.zeros((10, 10)), None)
-        self.assertTrue(module.method.value == cellprofiler.modules.enhanceorsuppressfeatures.ENHANCE)
-        module.run(workspace)
-        result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertFalse(result is None)
-        self.assertTrue(numpy.all(result.pixel_data == 0))
-
-    def test_00_01_suppress_zero(self):
-        '''Test suppress of an image of all zeros'''
-        workspace, module = self.make_workspace(numpy.zeros((10, 10)), None)
-        module.method.value = cellprofiler.modules.enhanceorsuppressfeatures.SUPPRESS
-        module.run(workspace)
-        result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertFalse(result is None)
-        self.assertTrue(numpy.all(result.pixel_data == 0))
 
     def test_01_01_load_v1(self):
         data = ('eJztWNFO2zAUdUqBsUkr28v26Ee60aotQ4NqKu0oEtUIVLRiQohtpnXba'

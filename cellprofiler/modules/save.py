@@ -1,5 +1,5 @@
 """
-Save an image or volume as a TIFF.
+Save an image to file.
 
 If you want to save objects, use the Object Processing module ConvertObjectsToImage to convert objects to an image
 you can save.
@@ -21,7 +21,7 @@ class Save(cellprofiler.module.Module):
 
     def create_settings(self):
         self.directory = cellprofiler.setting.DirectoryPath(
-            "Output directory"
+            "Directory"
         )
 
         self.image = cellprofiler.setting.ImageNameSubscriber(
@@ -29,7 +29,7 @@ class Save(cellprofiler.module.Module):
         )
 
         self.bit_depth = cellprofiler.setting.Choice(
-            "Bit depth",
+            "Color depth",
             choices=[
                 "8",
                 "16"

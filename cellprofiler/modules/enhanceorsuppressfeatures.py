@@ -315,10 +315,8 @@ class EnhanceOrSuppressFeatures(cellprofiler.module.ImageProcessing):
                 raise NotImplementedError("Unimplemented enhance method: %s" %
                                           self.enhance_method.value)
         elif self.method == SUPPRESS:
-            if image.has_mask:
-                result = centrosome.cpmorphology.opening(image.pixel_data, radius, image.mask)
-            else:
-                result = centrosome.cpmorphology.opening(image.pixel_data, radius)
+            result = self.suppress(image, self.object_size.value / 2)
+
         else:
             raise ValueError("Unknown filtering method: %s" % self.method)
         result_image = cellprofiler.image.Image(result, parent_image=image)
@@ -357,6 +355,26 @@ class EnhanceOrSuppressFeatures(cellprofiler.module.ImageProcessing):
             result = data - maximum
 
         result[~mask] = pixel_data[~mask]
+
+        return result
+
+    def suppress(self, image, radius):
+        pixel_data = image.pixel_data
+
+        mask = image.mask
+
+        data = numpy.zeros_like(pixel_data)
+
+        data[mask] = pixel_data[mask]
+
+        if image.volumetric:
+            selem = skimage.morphology.ball(radius)
+        else:
+            selem = skimage.morphology.disk(radius)
+
+        result = skimage.morphology.opening(data, selem)
+
+        result[~mask] = image.pixel_data[~mask]
 
         return result
 

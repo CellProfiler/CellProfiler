@@ -267,34 +267,7 @@ class EnhanceOrSuppressFeatures(cellprofiler.module.ImageProcessing):
             if self.enhance_method == E_SPECKLES:
                 result = self.enhance_speckles(image, self.object_size.value / 2)
             elif self.enhance_method == E_NEURITES:
-                if self.neurite_choice == N_GRADIENT:
-                    #
-                    # white_tophat = img - opening
-                    # black_tophat = closing - img
-                    # desired effect = img + white_tophat - black_tophat
-                    #                = img + img - opening - closing + img
-                    #                = 3*img - opening - closing
-                    result = (3 * pixel_data -
-                              centrosome.cpmorphology.opening(pixel_data, radius, mask) -
-                              centrosome.cpmorphology.closing(pixel_data, radius, mask))
-                    result[result > 1] = 1
-                    result[result < 0] = 0
-                else:
-                    sigma = self.smoothing.value
-                    smoothed = scipy.ndimage.gaussian_filter(pixel_data, sigma)
-                    L = centrosome.filter.hessian(smoothed, return_hessian=False,
-                                                  return_eigenvectors=False)
-                    #
-                    # The positive values are darker pixels with lighter
-                    # neighbors. The original ImageJ code scales the result
-                    # by sigma squared - I have a feeling this might be
-                    # a first-order correction for e**(-2*sigma), possibly
-                    # because the hessian is taken from one pixel away
-                    # and the gradient is less as sigma gets larger.
-                    #
-                    result = -L[:, :, 0] * (L[:, :, 0] < 0) * sigma * sigma
-                if image.has_mask:
-                    result[~mask] = pixel_data[~mask]
+                result = self.enhance_neurites(image, self.object_size.value / 2)
             elif self.enhance_method == E_DARK_HOLES:
                 min_radius = max(1, int(self.hole_size.min / 2))
                 max_radius = int((self.hole_size.max + 1) / 2)
@@ -355,6 +328,60 @@ class EnhanceOrSuppressFeatures(cellprofiler.module.ImageProcessing):
             result = data - maximum
 
         result[~mask] = pixel_data[~mask]
+
+        return result
+
+    def enhance_neurites(self, image, radius):
+        pixel_data = image.pixel_data
+
+        mask = image.mask
+
+        data = numpy.zeros_like(pixel_data)
+
+        data[mask] = pixel_data[mask]
+
+        if self.neurite_choice == N_GRADIENT:
+            # desired effect = img + white_tophat - black_tophat
+            if image.volumetric:
+                selem = skimage.morphology.ball(radius)
+            else:
+                selem = skimage.morphology.disk(radius)
+
+            white = skimage.morphology.white_tophat(data, selem=selem)
+
+            black = skimage.morphology.black_tophat(data, selem=selem)
+
+            result = data + white - black
+
+            result[result > 1] = 1
+
+            result[result < 0] = 0
+        else:
+            sigma = self.smoothing.value
+
+            smoothed = scipy.ndimage.gaussian_filter(pixel_data, sigma)
+
+            if image.volumetric:
+                result = numpy.zeros_like(smoothed)
+
+                for index, plane in enumerate(smoothed):
+                    hessian = centrosome.filter.hessian(plane, return_hessian=False, return_eigenvectors=False)
+
+                    result[index] = -hessian[:, :, 0] * (hessian[:, :, 0] < 0) * (sigma ** 2)
+            else:
+                hessian = centrosome.filter.hessian(smoothed, return_hessian=False, return_eigenvectors=False)
+
+                #
+                # The positive values are darker pixels with lighter
+                # neighbors. The original ImageJ code scales the result
+                # by sigma squared - I have a feeling this might be
+                # a first-order correction for e**(-2*sigma), possibly
+                # because the hessian is taken from one pixel away
+                # and the gradient is less as sigma gets larger.
+                result = -hessian[:, :, 0] * (hessian[:, :, 0] < 0) * sigma * sigma
+
+        if image.has_mask:
+            result[~mask] = pixel_data[~mask]
 
         return result
 

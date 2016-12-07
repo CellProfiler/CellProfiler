@@ -7,6 +7,8 @@ import zlib
 import centrosome.filter
 import numpy
 import pytest
+import scipy.ndimage
+import skimage.exposure
 
 import cellprofiler.image
 import cellprofiler.measurement
@@ -374,6 +376,210 @@ def test_suppress_masked_volume(image, module, workspace):
     numpy.testing.assert_array_equal(expected, actual)
 
 
+def test_enhance_neurites_gradient(image, module, workspace):
+    resources = os.path.realpath(os.path.join(os.path.dirname(__file__), "..", "resources"))
+
+    data = numpy.load(os.path.join(resources, "neurite.npy"))
+
+    data = skimage.exposure.rescale_intensity(1.0 * data)
+
+    image.pixel_data = data
+
+    module.method.value = "Enhance"
+
+    module.enhance_method.value = "Neurites"
+
+    module.neurite_choice.value = "Line structures"
+
+    module.object_size.value = 8
+
+    module.run(workspace)
+
+    output = workspace.image_set.get_image("output")
+
+    actual = output.pixel_data
+
+    expected = numpy.load(os.path.join(resources, "enhanced_neurite.npy"))
+
+    numpy.testing.assert_array_almost_equal(expected, actual)
+
+
+def test_enhance_neurites_gradient_volume(image, module, workspace):
+    resources = os.path.realpath(os.path.join(os.path.dirname(__file__), "..", "resources"))
+
+    data = numpy.load(os.path.join(resources, "neurite.npy"))
+
+    data = skimage.exposure.rescale_intensity(1.0 * data)
+
+    data = numpy.tile(data, (3, 1)).reshape(3, *data.shape)
+
+    image.pixel_data = data
+
+    image.dimensions = 3
+
+    module.method.value = "Enhance"
+
+    module.enhance_method.value = "Neurites"
+
+    module.neurite_choice.value = "Line structures"
+
+    module.object_size.value = 8
+
+    module.run(workspace)
+
+    output = workspace.image_set.get_image("output")
+
+    actual = output.pixel_data
+
+    expected = numpy.load(os.path.join(resources, "enhanced_neurite.npy"))
+
+    expected = numpy.tile(expected, (3, 1)).reshape(3, *expected.shape)
+
+    numpy.testing.assert_array_almost_equal(expected, actual)
+
+
+def test_enhance_neurites_tubeness_positive(image, module, workspace):
+    data = numpy.zeros((20, 30))
+
+    data[5:15, 10:20] = numpy.identity(10)
+
+    image.pixel_data = data
+
+    module.method.value = "Enhance"
+
+    module.enhance_method.value = "Neurites"
+
+    module.neurite_choice.value = "Tubeness"
+
+    module.smoothing.value = 1.0
+
+    module.run(workspace)
+
+    output = workspace.image_set.get_image("output")
+
+    actual = output.pixel_data
+
+    expected = centrosome.filter.hessian(
+        scipy.ndimage.gaussian_filter(data, 1.0),
+        return_hessian=False,
+        return_eigenvectors=False
+    )
+
+    expected = -expected[:, :, 0] * (expected[:, :, 0] < 0)
+
+    numpy.testing.assert_array_almost_equal(expected, actual)
+
+
+def test_enhance_neurites_tubeness_negative(image, module, workspace):
+    data = numpy.ones((20, 30))
+
+    data[5:15, 10:20] -= numpy.identity(10)
+
+    image.pixel_data = data
+
+    module.method.value = "Enhance"
+
+    module.enhance_method.value = "Neurites"
+
+    module.neurite_choice.value = "Tubeness"
+
+    module.smoothing.value = 1.0
+
+    module.run(workspace)
+
+    output = workspace.image_set.get_image("output")
+
+    actual = output.pixel_data
+
+    expected = centrosome.filter.hessian(
+        scipy.ndimage.gaussian_filter(data, 1.0),
+        return_hessian=False,
+        return_eigenvectors=False
+    )
+
+    expected = -expected[:, :, 0] * (expected[:, :, 0] < 0)
+
+    numpy.testing.assert_array_almost_equal(expected, actual)
+
+
+def test_enhance_neurites_tubeness_positive_volume(image, module, workspace):
+    data = numpy.zeros((5, 20, 30))
+
+    data[1:4, 5:15, 10:20] = numpy.identity(10)
+
+    image.pixel_data = data
+
+    image.dimensions = 3
+
+    module.method.value = "Enhance"
+
+    module.enhance_method.value = "Neurites"
+
+    module.neurite_choice.value = "Tubeness"
+
+    module.smoothing.value = 1.0
+
+    module.run(workspace)
+
+    output = workspace.image_set.get_image("output")
+
+    actual = output.pixel_data
+
+    smoothed = scipy.ndimage.gaussian_filter(data, 1.0)
+
+    expected = numpy.zeros_like(smoothed)
+
+    for index, plane in enumerate(smoothed):
+        hessian = centrosome.filter.hessian(
+            plane,
+            return_hessian=False,
+            return_eigenvectors=False
+        )
+
+        expected[index] = -hessian[:, :, 0] * (hessian[:, :, 0] < 0)
+
+    numpy.testing.assert_array_almost_equal(expected, actual)
+
+
+def test_enhance_neurites_tubeness_negative_volume(image, module, workspace):
+    data = numpy.ones((5, 20, 30))
+
+    data[1:4, 5:15, 10:20] -= numpy.identity(10)
+
+    image.pixel_data = data
+
+    image.dimensions = 3
+
+    module.method.value = "Enhance"
+
+    module.enhance_method.value = "Neurites"
+
+    module.neurite_choice.value = "Tubeness"
+
+    module.smoothing.value = 1.0
+
+    module.run(workspace)
+
+    output = workspace.image_set.get_image("output")
+
+    actual = output.pixel_data
+
+    smoothed = scipy.ndimage.gaussian_filter(data, 1.0)
+
+    expected = numpy.zeros_like(smoothed)
+
+    for index, plane in enumerate(smoothed):
+        hessian = centrosome.filter.hessian(
+            plane,
+            return_hessian=False,
+            return_eigenvectors=False
+        )
+
+        expected[index] = -hessian[:, :, 0] * (hessian[:, :, 0] < 0)
+
+    numpy.testing.assert_array_almost_equal(expected, actual)
+
+
 INPUT_IMAGE_NAME = 'myimage'
 OUTPUT_IMAGE_NAME = 'myfilteredimage'
 
@@ -670,49 +876,6 @@ EnhanceOrSuppressFeatures:[module_num:2|svn_version:\'Unknown\'|variable_revisio
         module = pipeline.modules()[1]
         self.assertTrue(isinstance(module, cellprofiler.modules.enhanceorsuppressfeatures.EnhanceOrSuppressFeatures))
         self.assertEqual(module.neurite_choice, cellprofiler.modules.enhanceorsuppressfeatures.N_GRADIENT)
-
-    def test_04_01_enhance_neurites(self):
-        '''Check enhance neurites against Matlab'''
-        resources = os.path.realpath(os.path.join(os.path.dirname(__file__), "..", "resources"))
-        data = numpy.load(os.path.join(resources, "neurite.npy"))
-        expected = numpy.load(os.path.join(resources, "enhanced_neurite.npy"))
-        data = data.astype(float) / 255
-        expected = expected.astype(float) / 1000
-        workspace, module = self.make_workspace(data, None)
-        self.assertTrue(isinstance(module, cellprofiler.modules.enhanceorsuppressfeatures.EnhanceOrSuppressSpeckles))
-        module.method.value = cellprofiler.modules.enhanceorsuppressfeatures.ENHANCE
-        module.enhance_method.value = cellprofiler.modules.enhanceorsuppressfeatures.E_NEURITES
-        module.neurite_choice.value = cellprofiler.modules.enhanceorsuppressfeatures.N_GRADIENT
-        module.object_size.value = 8
-        module.run(workspace)
-        result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertTrue(numpy.all(numpy.abs(result.pixel_data - expected) < .002))
-
-    def test_04_02_enhance_neurites_tubeness_positive(self):
-        image = numpy.zeros((20, 30))
-        image[5:15, 10:20] = numpy.identity(10)
-        workspace, module = self.make_workspace(image, None)
-        self.assertTrue(isinstance(module, cellprofiler.modules.enhanceorsuppressfeatures.EnhanceOrSuppressSpeckles))
-        module.method.value = cellprofiler.modules.enhanceorsuppressfeatures.ENHANCE
-        module.neurite_choice.value = cellprofiler.modules.enhanceorsuppressfeatures.N_TUBENESS
-        module.smoothing.value = 1.0
-        module.run(workspace)
-        result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        pixel_data = result.pixel_data
-        self.assertTrue(numpy.all(pixel_data[image > 0] > 0))
-
-    def test_04_03_enhance_neurites_tubeness_negative(self):
-        image = numpy.ones((20, 30))
-        image[5:15, 10:20] -= numpy.identity(10)
-        workspace, module = self.make_workspace(image, None)
-        self.assertTrue(isinstance(module, cellprofiler.modules.enhanceorsuppressfeatures.EnhanceOrSuppressSpeckles))
-        module.method.value = cellprofiler.modules.enhanceorsuppressfeatures.ENHANCE
-        module.neurite_choice.value = cellprofiler.modules.enhanceorsuppressfeatures.N_TUBENESS
-        module.smoothing.value = 1.0
-        module.run(workspace)
-        result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        pixel_data = result.pixel_data
-        numpy.testing.assert_array_almost_equal(pixel_data, 0)
 
     def test_05_01_enhance_dark_holes(self):
         '''Check enhancement of dark holes'''

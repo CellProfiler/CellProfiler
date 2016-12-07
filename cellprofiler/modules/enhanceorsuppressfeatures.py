@@ -259,20 +259,21 @@ class EnhanceOrSuppressFeatures(cellprofiler.module.ImageProcessing):
 
         radius = self.object_size.value / 2
 
-        mask = image.mask if image.has_mask else None
-
-        pixel_data = image.pixel_data
-
         if self.method == ENHANCE:
             if self.enhance_method == E_SPECKLES:
-                result = self.enhance_speckles(image, radius)
+                result = self.enhance_speckles(image, radius, self.speckle_accuracy.value)
             elif self.enhance_method == E_NEURITES:
-                result = self.enhance_neurites(image, radius)
+                result = self.enhance_neurites(image, radius, self.neurite_choice.value)
             elif self.enhance_method == E_DARK_HOLES:
+                mask = image.mask if image.has_mask else None
+
+                pixel_data = image.pixel_data
+
                 min_radius = max(1, int(self.hole_size.min / 2))
+
                 max_radius = int((self.hole_size.max + 1) / 2)
-                result = centrosome.filter.enhance_dark_holes(pixel_data, min_radius,
-                                                              max_radius, mask)
+
+                result = centrosome.filter.enhance_dark_holes(pixel_data, min_radius, max_radius, mask)
             elif self.enhance_method == E_CIRCLES:
                 result = self.enhance_circles(image, radius)
             elif self.enhance_method == E_TEXTURE:
@@ -280,37 +281,49 @@ class EnhanceOrSuppressFeatures(cellprofiler.module.ImageProcessing):
             elif self.enhance_method == E_DIC:
                 result = self.enhance_dic(image, self.angle.value, self.decay.value, self.smoothing.value)
             else:
-                raise NotImplementedError("Unimplemented enhance method: %s" %
-                                          self.enhance_method.value)
+                raise NotImplementedError("Unimplemented enhance method: %s" % self.enhance_method.value)
         elif self.method == SUPPRESS:
             result = self.suppress(image, radius)
 
         else:
             raise ValueError("Unknown filtering method: %s" % self.method)
+
         result_image = cellprofiler.image.Image(result, parent_image=image)
+
         workspace.image_set.add(self.y_name.value, result_image)
 
         if self.show_window:
             workspace.display_data.x_data = image.pixel_data
+
             workspace.display_data.y_data = result
+
             workspace.display_data.dimensions = image.dimensions
 
-    def enhance_speckles(self, image, radius):
-        pixel_data = skimage.img_as_float(image.pixel_data)
-
-        mask = image.mask
-
+    def __mask(self, pixel_data, mask):
         data = numpy.zeros_like(pixel_data)
 
         data[mask] = pixel_data[mask]
 
-        if image.volumetric:
-            selem = skimage.morphology.ball(radius)
-        else:
-            selem = skimage.morphology.disk(radius)
+        return data
 
-        if self.speckle_accuracy == S_SLOW or radius <= 3:
-            result = skimage.morphology.white_tophat(pixel_data, selem=selem)
+    def __unmask(self, data, pixel_data, mask):
+        data[~mask] = pixel_data[~mask]
+
+        return data
+
+    def __structuring_element(self, radius, volumetric):
+        if volumetric:
+            return skimage.morphology.ball(radius)
+
+        return skimage.morphology.disk(radius)
+
+    def enhance_speckles(self, image, radius, accuracy):
+        data = self.__mask(image.pixel_data, image.mask)
+
+        selem = self.__structuring_element(radius, image.volumetric)
+
+        if accuracy == "Slow" or radius <= 3:
+            result = skimage.morphology.white_tophat(data, selem=selem)
         else:
             #
             # white_tophat = img - opening
@@ -322,25 +335,14 @@ class EnhanceOrSuppressFeatures(cellprofiler.module.ImageProcessing):
 
             result = data - maximum
 
-        result[~mask] = pixel_data[~mask]
+        return self.__unmask(result, image.pixel_data, image.mask)
 
-        return result
+    def enhance_neurites(self, image, radius, method):
+        data = self.__mask(image.pixel_data, image.mask)
 
-    def enhance_neurites(self, image, radius):
-        pixel_data = image.pixel_data
-
-        mask = image.mask
-
-        data = numpy.zeros_like(pixel_data)
-
-        data[mask] = pixel_data[mask]
-
-        if self.neurite_choice == N_GRADIENT:
+        if method == N_GRADIENT:
             # desired effect = img + white_tophat - black_tophat
-            if image.volumetric:
-                selem = skimage.morphology.ball(radius)
-            else:
-                selem = skimage.morphology.disk(radius)
+            selem = self.__structuring_element(radius, image.volumetric)
 
             white = skimage.morphology.white_tophat(data, selem=selem)
 
@@ -354,7 +356,7 @@ class EnhanceOrSuppressFeatures(cellprofiler.module.ImageProcessing):
         else:
             sigma = self.smoothing.value
 
-            smoothed = scipy.ndimage.gaussian_filter(pixel_data, sigma)
+            smoothed = scipy.ndimage.gaussian_filter(data, sigma)
 
             if image.volumetric:
                 result = numpy.zeros_like(smoothed)
@@ -375,19 +377,10 @@ class EnhanceOrSuppressFeatures(cellprofiler.module.ImageProcessing):
                 # and the gradient is less as sigma gets larger.
                 result = -hessian[:, :, 0] * (hessian[:, :, 0] < 0) * sigma * sigma
 
-        if image.has_mask:
-            result[~mask] = pixel_data[~mask]
-
-        return result
+        return self.__unmask(result, image.pixel_data, image.mask)
 
     def enhance_circles(self, image, radius):
-        pixel_data = image.pixel_data
-
-        mask = image.mask
-
-        data = numpy.zeros_like(pixel_data)
-
-        data[mask] = pixel_data[mask]
+        data = self.__mask(image.pixel_data, image.mask)
 
         if image.volumetric:
             result = numpy.zeros_like(data)
@@ -397,18 +390,12 @@ class EnhanceOrSuppressFeatures(cellprofiler.module.ImageProcessing):
         else:
             result = skimage.transform.hough_circle(data, radius)[0]
 
-        result[~mask] = pixel_data[~mask]
-
-        return result
+        return self.__unmask(result, image.pixel_data, image.mask)
 
     def enhance_texture(self, image, sigma):
-        pixel_data = image.pixel_data
-
         mask = image.mask
 
-        data = numpy.zeros_like(pixel_data)
-
-        data[mask] = pixel_data[mask]
+        data = self.__mask(image.pixel_data, mask)
 
         gmask = skimage.filters.gaussian(mask.astype(float), sigma, mode='constant', multichannel=False)
 
@@ -418,9 +405,7 @@ class EnhanceOrSuppressFeatures(cellprofiler.module.ImageProcessing):
 
         result = img_squared - img_mean ** 2
 
-        result[~mask] = pixel_data[~mask]
-
-        return result
+        return self.__unmask(result, image.pixel_data, mask)
 
     def enhance_dark_holes(self, image, min_radius, max_radius):
         pixel_data = image.pixel_data
@@ -443,24 +428,13 @@ class EnhanceOrSuppressFeatures(cellprofiler.module.ImageProcessing):
         return centrosome.filter.line_integration(pixel_data, angle, decay, smoothing)
 
     def suppress(self, image, radius):
-        pixel_data = image.pixel_data
+        data = self.__mask(image.pixel_data, image.mask)
 
-        mask = image.mask
-
-        data = numpy.zeros_like(pixel_data)
-
-        data[mask] = pixel_data[mask]
-
-        if image.volumetric:
-            selem = skimage.morphology.ball(radius)
-        else:
-            selem = skimage.morphology.disk(radius)
+        selem = self.__structuring_element(radius, image.volumetric)
 
         result = skimage.morphology.opening(data, selem)
 
-        result[~mask] = image.pixel_data[~mask]
-
-        return result
+        return self.__unmask(result, image.pixel_data, image.mask)
 
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):

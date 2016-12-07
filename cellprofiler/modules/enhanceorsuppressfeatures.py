@@ -255,10 +255,8 @@ class EnhanceOrSuppressFeatures(cellprofiler.module.ImageProcessing):
 
     def run(self, workspace):
         image = workspace.image_set.get_image(self.x_name.value, must_be_grayscale=True)
-        #
-        # Match against Matlab's strel('disk') operation.
-        #
-        radius = (float(self.object_size.value) - 1.0) / 2.0
+
+        radius = self.object_size.value / 2
 
         mask = image.mask if image.has_mask else None
 
@@ -266,16 +264,16 @@ class EnhanceOrSuppressFeatures(cellprofiler.module.ImageProcessing):
 
         if self.method == ENHANCE:
             if self.enhance_method == E_SPECKLES:
-                result = self.enhance_speckles(image, self.object_size.value / 2)
+                result = self.enhance_speckles(image, radius)
             elif self.enhance_method == E_NEURITES:
-                result = self.enhance_neurites(image, self.object_size.value / 2)
+                result = self.enhance_neurites(image, radius)
             elif self.enhance_method == E_DARK_HOLES:
                 min_radius = max(1, int(self.hole_size.min / 2))
                 max_radius = int((self.hole_size.max + 1) / 2)
                 result = centrosome.filter.enhance_dark_holes(pixel_data, min_radius,
                                                               max_radius, mask)
             elif self.enhance_method == E_CIRCLES:
-                result = self.enhance_circles(image, self.object_size.value / 2)
+                result = self.enhance_circles(image, radius)
             elif self.enhance_method == E_TEXTURE:
                 result = centrosome.filter.variance_transform(pixel_data,
                                                               self.smoothing.value,
@@ -289,7 +287,7 @@ class EnhanceOrSuppressFeatures(cellprofiler.module.ImageProcessing):
                 raise NotImplementedError("Unimplemented enhance method: %s" %
                                           self.enhance_method.value)
         elif self.method == SUPPRESS:
-            result = self.suppress(image, self.object_size.value / 2)
+            result = self.suppress(image, radius)
 
         else:
             raise ValueError("Unknown filtering method: %s" % self.method)

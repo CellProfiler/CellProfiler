@@ -9,6 +9,7 @@ import numpy
 import pytest
 import scipy.ndimage
 import skimage.exposure
+import skimage.transform
 
 import cellprofiler.image
 import cellprofiler.measurement
@@ -580,6 +581,138 @@ def test_enhance_neurites_tubeness_negative_volume(image, module, workspace):
     numpy.testing.assert_array_almost_equal(expected, actual)
 
 
+def test_enhance_circles(image, module, workspace):
+    i, j = numpy.mgrid[-15:16, -15:16]
+
+    circle = numpy.abs(numpy.sqrt(i * i + j * j) - 6) <= 1.5
+
+    image.pixel_data = circle
+
+    module.method.value = "Enhance"
+
+    module.enhance_method.value = "Circles"
+
+    module.object_size.value = 12
+
+    module.run(workspace)
+
+    actual = workspace.image_set.get_image("output").pixel_data
+
+    assert actual[15, 15] == 1
+
+    assert numpy.all(actual[numpy.abs(numpy.sqrt(i * i + j * j) - 6) < 1.5] < .25)
+
+
+def test_enhance_circles_masked(image, module, workspace):
+    data = numpy.zeros((31, 62))
+
+    mask = numpy.ones_like(data, dtype=numpy.bool)
+
+    i, j = numpy.mgrid[-15:16, -15:16]
+
+    circle = numpy.abs(numpy.sqrt(i * i + j * j) - 6) <= 1.5
+
+    data[:, :31] = circle
+
+    data[:, 31:] = circle
+
+    mask[:, 31:][circle] = False
+
+    image.pixel_data = data
+
+    image.mask = mask
+
+    module.method.value = "Enhance"
+
+    module.enhance_method.value = "Circles"
+
+    module.object_size.value = 12
+
+    module.run(workspace)
+
+    actual = workspace.image_set.get_image("output").pixel_data
+
+    assert actual[15, 15] == 1
+
+    assert actual[15, 15 + 31] == 0
+
+
+def test_enhance_circles_volume(image, module, workspace):
+    k, i, j = numpy.mgrid[-15:16, -15:16, -15:16]
+
+    data = numpy.abs(numpy.sqrt(k * k + i * i + j * j) - 6) <= 1.5
+
+    data = data.astype(float)
+
+    image.pixel_data = data
+
+    image.dimensions = 3
+
+    module.method.value = "Enhance"
+
+    module.enhance_method.value = "Circles"
+
+    module.object_size.value = 12
+
+    module.run(workspace)
+
+    actual = workspace.image_set.get_image("output").pixel_data
+
+    expected = numpy.zeros_like(data)
+
+    for index, plane in enumerate(data):
+        expected[index] = skimage.transform.hough_circle(plane, 6)[0]
+
+    numpy.testing.assert_array_almost_equal(expected, actual)
+
+
+def test_enhance_circles_masked_volume(image, module, workspace):
+    data = numpy.zeros((31, 31, 62))
+
+    mask = numpy.ones_like(data, dtype=numpy.bool)
+
+    k, i, j = numpy.mgrid[-15:16, -15:16, -15:16]
+
+    circle = numpy.abs(numpy.sqrt(k * k + i * i + j * j) - 6) <= 1.5
+
+    data[:, :, :31] = circle
+
+    data[:, :, 31:] = circle
+
+    data = data.astype(float)
+
+    mask[:, :, 31:][circle] = False
+
+    image.pixel_data = data
+
+    image.mask = mask
+
+    image.dimensions = 3
+
+    module.method.value = cellprofiler.modules.enhanceorsuppressfeatures.ENHANCE
+
+    module.enhance_method.value = cellprofiler.modules.enhanceorsuppressfeatures.E_CIRCLES
+
+    module.object_size.value = 12
+
+    module.run(workspace)
+
+    actual = workspace.image_set.get_image("output").pixel_data
+
+    expected = numpy.zeros_like(data)
+
+    data[:, :, 31:] = 0
+
+    for index, plane in enumerate(data):
+        expected[index] = skimage.transform.hough_circle(plane, 6)[0]
+
+    expected[:, :, 31:] = circle
+
+    expected = expected.astype(float)
+
+    numpy.testing.assert_array_almost_equal(expected, actual)
+
+
 INPUT_IMAGE_NAME = 'myimage'
 OUTPUT_IMAGE_NAME = 'myfilteredimage'
 
@@ -896,37 +1029,6 @@ EnhanceOrSuppressFeatures:[module_num:2|svn_version:\'Unknown\'|variable_revisio
             module.run(workspace)
             result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
             self.assertTrue(numpy.all(result.pixel_data == expected))
-
-    def test_06_01_enhance_circles(self):
-        i, j = numpy.mgrid[-15:16, -15:16]
-        circle = numpy.abs(numpy.sqrt(i * i + j * j) - 6) <= 1.5
-        workspace, module = self.make_workspace(circle, None)
-        module.method.value = cellprofiler.modules.enhanceorsuppressfeatures.ENHANCE
-        module.enhance_method.value = cellprofiler.modules.enhanceorsuppressfeatures.E_CIRCLES
-        module.object_size.value = 12
-        module.run(workspace)
-        img = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
-        self.assertEqual(img[15, 15], 1)
-        self.assertTrue(numpy.all(img[numpy.abs(numpy.sqrt(i * i + j * j) - 6) < 1.5] < .25))
-
-    def test_06_02_enhance_masked_circles(self):
-        img = numpy.zeros((31, 62))
-        mask = numpy.ones((31, 62), bool)
-        i, j = numpy.mgrid[-15:16, -15:16]
-        circle = numpy.abs(numpy.sqrt(i * i + j * j) - 6) <= 1.5
-        # Do one circle
-        img[:, :31] = circle
-        # Do a second, but mask it
-        img[:, 31:] = circle
-        mask[:, 31:][circle] = False
-        workspace, module = self.make_workspace(img, mask)
-        module.method.value = cellprofiler.modules.enhanceorsuppressfeatures.ENHANCE
-        module.enhance_method.value = cellprofiler.modules.enhanceorsuppressfeatures.E_CIRCLES
-        module.object_size.value = 12
-        module.run(workspace)
-        result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
-        self.assertEqual(result[15, 15], 1)
-        self.assertEqual(result[15, 15 + 31], 0)
 
     def test_07_01_enhance_dic(self):
         img = numpy.ones((21, 43)) * .5

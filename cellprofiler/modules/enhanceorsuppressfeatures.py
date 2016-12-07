@@ -9,13 +9,14 @@ produces a grayscale image in which objects can be identified using an <b>Identi
 
 import centrosome.cpmorphology
 import centrosome.filter
+import numpy
 import scipy.ndimage
+import skimage.morphology
+import skimage.transform
 
 import cellprofiler.image
 import cellprofiler.module
 import cellprofiler.setting
-import skimage.morphology
-import numpy
 
 from cellprofiler.gui.help import HELP_ON_MEASURING_DISTANCES, PROTIP_AVOID_ICON
 
@@ -274,7 +275,7 @@ class EnhanceOrSuppressFeatures(cellprofiler.module.ImageProcessing):
                 result = centrosome.filter.enhance_dark_holes(pixel_data, min_radius,
                                                               max_radius, mask)
             elif self.enhance_method == E_CIRCLES:
-                result = centrosome.filter.circular_hough(pixel_data, radius + .5, mask=mask)
+                result = self.enhance_circles(image, self.object_size.value / 2)
             elif self.enhance_method == E_TEXTURE:
                 result = centrosome.filter.variance_transform(pixel_data,
                                                               self.smoothing.value,
@@ -382,6 +383,27 @@ class EnhanceOrSuppressFeatures(cellprofiler.module.ImageProcessing):
 
         if image.has_mask:
             result[~mask] = pixel_data[~mask]
+
+        return result
+
+    def enhance_circles(self, image, radius):
+        pixel_data = image.pixel_data
+
+        mask = image.mask
+
+        data = numpy.zeros_like(pixel_data)
+
+        data[mask] = pixel_data[mask]
+
+        if image.volumetric:
+            result = numpy.zeros_like(data)
+
+            for index, plane in enumerate(data):
+                result[index] = skimage.transform.hough_circle(plane, radius)[0]
+        else:
+            result = skimage.transform.hough_circle(data, radius)[0]
+
+        result[~mask] = pixel_data[~mask]
 
         return result
 

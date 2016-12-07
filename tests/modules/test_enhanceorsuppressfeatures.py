@@ -9,6 +9,7 @@ import numpy
 import pytest
 import scipy.ndimage
 import skimage.exposure
+import skimage.filters
 import skimage.transform
 
 import cellprofiler.image
@@ -713,6 +714,158 @@ def test_enhance_circles_masked_volume(image, module, workspace):
     numpy.testing.assert_array_almost_equal(expected, actual)
 
 
+def test_enhance_texture(image, module, workspace):
+    r = numpy.random.RandomState()
+
+    r.seed(81)
+
+    data = r.uniform(size=(19, 24))
+
+    image.pixel_data = data
+
+    sigma = 2.1
+
+    module.method.value = "Enhance"
+
+    module.enhance_method.value = "Texture"
+
+    module.smoothing.value = sigma
+
+    module.run(workspace)
+
+    gaussian_mask = skimage.filters.gaussian(numpy.ones_like(data), sigma, mode='constant')
+
+    gaussian = skimage.filters.gaussian(data, sigma, mode='constant') / gaussian_mask
+
+    squared_gaussian = skimage.filters.gaussian(data ** 2, sigma, mode='constant') / gaussian_mask
+
+    expected = squared_gaussian - gaussian ** 2
+
+    actual = workspace.image_set.get_image("output").pixel_data
+
+    numpy.testing.assert_almost_equal(expected, actual)
+
+
+def test_enhance_texture_masked(image, module, workspace):
+    r = numpy.random.RandomState()
+
+    r.seed(81)
+
+    data = r.uniform(size=(19, 24))
+
+    mask = r.uniform(size=data.shape) > .25
+
+    image.pixel_data = data
+
+    image.mask = mask
+
+    sigma = 2.1
+
+    module.method.value = "Enhance"
+
+    module.enhance_method.value = "Texture"
+
+    module.smoothing.value = sigma
+
+    module.run(workspace)
+
+    masked_data = numpy.zeros_like(data)
+
+    masked_data[mask] = data[mask]
+
+    gaussian_mask = skimage.filters.gaussian(mask, sigma, mode='constant')
+
+    gaussian = skimage.filters.gaussian(masked_data, sigma, mode='constant') / gaussian_mask
+
+    squared_gaussian = skimage.filters.gaussian(masked_data ** 2, sigma, mode='constant') / gaussian_mask
+
+    expected = squared_gaussian - gaussian ** 2
+
+    expected[~mask] = data[~mask]
+
+    actual = workspace.image_set.get_image("output").pixel_data
+
+    numpy.testing.assert_almost_equal(actual[mask], expected[mask])
+
+
+def test_enhance_texture_volume(image, module, workspace):
+    r = numpy.random.RandomState()
+
+    r.seed(81)
+
+    data = r.uniform(size=(8, 19, 24))
+
+    image.pixel_data = data
+
+    image.dimensions = 3
+
+    sigma = 2.1
+
+    module.method.value = "Enhance"
+
+    module.enhance_method.value = "Texture"
+
+    module.smoothing.value = sigma
+
+    module.run(workspace)
+
+    gaussian_mask = skimage.filters.gaussian(numpy.ones_like(data), sigma, mode='constant')
+
+    gaussian = skimage.filters.gaussian(data, sigma, mode='constant') / gaussian_mask
+
+    squared_gaussian = skimage.filters.gaussian(data ** 2, sigma, mode='constant') / gaussian_mask
+
+    expected = squared_gaussian - gaussian ** 2
+
+    actual = workspace.image_set.get_image("output").pixel_data
+
+    numpy.testing.assert_almost_equal(expected, actual)
+
+
+def test_enhance_texture_masked_volume(image, module, workspace):
+    r = numpy.random.RandomState()
+
+    r.seed(81)
+
+    data = r.uniform(size=(8, 19, 24))
+
+    mask = r.uniform(size=data.shape) > .25
+
+    image.pixel_data = data
+
+    image.mask = mask
+
+    image.dimensions = 3
+
+    sigma = 2.1
+
+    module.method.value = "Enhance"
+
+    module.enhance_method.value = "Texture"
+
+    module.smoothing.value = sigma
+
+    module.run(workspace)
+
+    masked_data = numpy.zeros_like(data)
+
+    masked_data[mask] = data[mask]
+
+    gaussian_mask = skimage.filters.gaussian(mask, sigma, mode='constant')
+
+    gaussian = skimage.filters.gaussian(masked_data, sigma, mode='constant') / gaussian_mask
+
+    squared_gaussian = skimage.filters.gaussian(masked_data ** 2, sigma, mode='constant') / gaussian_mask
+
+    expected = squared_gaussian - gaussian ** 2
+
+    expected[~mask] = data[~mask]
+
+    actual = workspace.image_set.get_image("output").pixel_data
+
+    numpy.testing.assert_almost_equal(actual[mask], expected[mask])
+
+
 INPUT_IMAGE_NAME = 'myimage'
 OUTPUT_IMAGE_NAME = 'myfilteredimage'
 
@@ -1058,34 +1211,3 @@ EnhanceOrSuppressFeatures:[module_num:2|svn_version:\'Unknown\'|variable_revisio
         module.smoothing.value = 1
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
         self.assertTrue(numpy.all(result[4, 11:15] > .1))
-
-    def test_08_01_enhance_variance(self):
-        r = numpy.random.RandomState()
-        r.seed(81)
-        img = r.uniform(size=(19, 24))
-        sigma = 2.1
-        workspace, module = self.make_workspace(img, numpy.ones(img.shape))
-        self.assertTrue(isinstance(module, cellprofiler.modules.enhanceorsuppressfeatures.EnhanceOrSuppressFeatures))
-        module.method.value = cellprofiler.modules.enhanceorsuppressfeatures.ENHANCE
-        module.enhance_method.value = cellprofiler.modules.enhanceorsuppressfeatures.E_TEXTURE
-        module.smoothing.value = sigma
-        module.run(workspace)
-        expected = centrosome.filter.variance_transform(img, sigma)
-        result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
-        numpy.testing.assert_almost_equal(result, expected)
-
-    def test_08_02_enhance_variance_masked(self):
-        r = numpy.random.RandomState()
-        r.seed(81)
-        img = r.uniform(size=(19, 24))
-        mask = r.uniform(size=img.shape) > .25
-        sigma = 2.1
-        workspace, module = self.make_workspace(img, mask)
-        self.assertTrue(isinstance(module, cellprofiler.modules.enhanceorsuppressfeatures.EnhanceOrSuppressFeatures))
-        module.method.value = cellprofiler.modules.enhanceorsuppressfeatures.ENHANCE
-        module.enhance_method.value = cellprofiler.modules.enhanceorsuppressfeatures.E_TEXTURE
-        module.smoothing.value = sigma
-        module.run(workspace)
-        expected = centrosome.filter.variance_transform(img, sigma, mask)
-        result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
-        numpy.testing.assert_almost_equal(result[mask], expected[mask])

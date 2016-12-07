@@ -11,6 +11,7 @@ import centrosome.cpmorphology
 import centrosome.filter
 import numpy
 import scipy.ndimage
+import skimage.filters
 import skimage.morphology
 import skimage.transform
 
@@ -275,9 +276,7 @@ class EnhanceOrSuppressFeatures(cellprofiler.module.ImageProcessing):
             elif self.enhance_method == E_CIRCLES:
                 result = self.enhance_circles(image, radius)
             elif self.enhance_method == E_TEXTURE:
-                result = centrosome.filter.variance_transform(pixel_data,
-                                                              self.smoothing.value,
-                                                              mask=mask)
+                result = self.enhance_texture(image, self.smoothing.value)
             elif self.enhance_method == E_DIC:
                 result = centrosome.filter.line_integration(pixel_data,
                                                             self.angle.value,
@@ -400,6 +399,27 @@ class EnhanceOrSuppressFeatures(cellprofiler.module.ImageProcessing):
                 result[index] = skimage.transform.hough_circle(plane, radius)[0]
         else:
             result = skimage.transform.hough_circle(data, radius)[0]
+
+        result[~mask] = pixel_data[~mask]
+
+        return result
+
+    def enhance_texture(self, image, sigma):
+        pixel_data = image.pixel_data
+
+        mask = image.mask
+
+        data = numpy.zeros_like(pixel_data)
+
+        data[mask] = pixel_data[mask]
+
+        gmask = skimage.filters.gaussian(mask.astype(float), sigma, mode='constant', multichannel=False)
+
+        img_mean = skimage.filters.gaussian(data, sigma, mode='constant', multichannel=False) / gmask
+
+        img_squared = skimage.filters.gaussian(data ** 2, sigma, mode='constant', multichannel=False) / gmask
+
+        result = img_squared - img_mean ** 2
 
         result[~mask] = pixel_data[~mask]
 

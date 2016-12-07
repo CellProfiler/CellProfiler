@@ -866,6 +866,38 @@ def test_enhance_texture_masked_volume(image, module, workspace):
     numpy.testing.assert_almost_equal(actual[mask], expected[mask])
 
 
+def test_enhance_dark_holes(image, module, workspace):
+    '''Check enhancement of dark holes'''
+    #
+    # enhance_dark_holes's function is tested more extensively
+    # in test_filter
+    #
+    numpy.random.seed(0)
+
+    for i, j in ((2, 5), (3, 7), (4, 4)):
+        data = numpy.random.uniform(size=(40, 40)).astype(numpy.float32)
+
+        expected = centrosome.filter.enhance_dark_holes(data, i, j)
+
+        image.pixel_data = data
+
+        module.method.value = "Enhance"
+
+        module.enhance_method.value = "Dark holes"
+
+        module.hole_size.min = i * 2
+
+        module.hole_size.max = j * 2
+
+        module.run(workspace)
+
+        output = workspace.image_set.get_image("output")
+
+        actual = output.pixel_data
+
+        numpy.testing.assert_array_equal(expected, actual)
+
+
 def test_enhance_dic(image, module, workspace):
     data = numpy.ones((21, 43)) * .5
 
@@ -1212,23 +1244,3 @@ EnhanceOrSuppressFeatures:[module_num:2|svn_version:\'Unknown\'|variable_revisio
         module = pipeline.modules()[1]
         self.assertTrue(isinstance(module, cellprofiler.modules.enhanceorsuppressfeatures.EnhanceOrSuppressFeatures))
         self.assertEqual(module.neurite_choice, cellprofiler.modules.enhanceorsuppressfeatures.N_GRADIENT)
-
-    def test_05_01_enhance_dark_holes(self):
-        '''Check enhancement of dark holes'''
-        #
-        # enhance_dark_holes's function is tested more extensively
-        # in test_filter
-        #
-        numpy.random.seed(0)
-        for i, j in ((2, 5), (3, 7), (4, 4)):
-            data = numpy.random.uniform(size=(40, 40)).astype(numpy.float32)
-            expected = centrosome.filter.enhance_dark_holes(data, i, j)
-            workspace, module = self.make_workspace(data, None)
-            self.assertTrue(isinstance(module, cellprofiler.modules.enhanceorsuppressfeatures.EnhanceOrSuppressSpeckles))
-            module.method.value = cellprofiler.modules.enhanceorsuppressfeatures.ENHANCE
-            module.enhance_method.value = cellprofiler.modules.enhanceorsuppressfeatures.E_DARK_HOLES
-            module.hole_size.min = i * 2
-            module.hole_size.max = j * 2
-            module.run(workspace)
-            result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-            self.assertTrue(numpy.all(result.pixel_data == expected))

@@ -422,6 +422,13 @@ class EnhanceOrSuppressFeatures(cellprofiler.module.ImageProcessing):
 
         return result
 
+    def enhance_dark_holes(self, image, min_radius, max_radius):
+        pixel_data = image.pixel_data
+
+        mask = image.mask if image.has_mask else None
+
+        return centrosome.filter.enhance_dark_holes(pixel_data, min_radius, max_radius, mask)
+
     def enhance_dic(self, image, angle, decay, smoothing):
         pixel_data = image.pixel_data
 

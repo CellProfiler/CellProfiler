@@ -866,6 +866,56 @@ def test_enhance_texture_masked_volume(image, module, workspace):
     numpy.testing.assert_almost_equal(actual[mask], expected[mask])
 
 
+def test_enhance_dic(image, module, workspace):
+    data = numpy.ones((21, 43)) * .5
+
+    data[5:15, 10] = 1
+
+    data[5:15, 15] = 0
+
+    image.pixel_data = data
+
+    module.method.value = "Enhance"
+
+    module.enhance_method.value = "DIC"
+
+    module.angle.value = 90
+
+    module.decay.value = 1
+
+    module.smoothing.value = 0
+
+    module.run(workspace)
+
+    actual = workspace.image_set.get_image("output").pixel_data
+
+    expected = numpy.zeros(data.shape)
+
+    expected[5:15, 10] = .5
+
+    expected[5:15, 11:15] = 1
+
+    expected[5:15, 15] = .5
+
+    numpy.testing.assert_almost_equal(actual, expected)
+
+    module.decay.value = .9
+
+    module.run(workspace)
+
+    actual = workspace.image_set.get_image("output").pixel_data
+
+    assert numpy.all(actual[5:15, 12:14] < 1)
+
+    module.decay.value = 1
+
+    module.smoothing.value = 1
+
+    actual = workspace.image_set.get_image("output").pixel_data
+
+    assert numpy.all(actual[4, 11:15] > .1)
+
+
 INPUT_IMAGE_NAME = 'myimage'
 OUTPUT_IMAGE_NAME = 'myfilteredimage'
 
@@ -1182,32 +1232,3 @@ EnhanceOrSuppressFeatures:[module_num:2|svn_version:\'Unknown\'|variable_revisio
             module.run(workspace)
             result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
             self.assertTrue(numpy.all(result.pixel_data == expected))
-
-    def test_07_01_enhance_dic(self):
-        img = numpy.ones((21, 43)) * .5
-        img[5:15, 10] = 1
-        img[5:15, 15] = 0
-        workspace, module = self.make_workspace(img, numpy.ones(img.shape))
-        self.assertTrue(isinstance(module, cellprofiler.modules.enhanceorsuppressfeatures.EnhanceOrSuppressFeatures))
-        module.method.value = cellprofiler.modules.enhanceorsuppressfeatures.ENHANCE
-        module.enhance_method.value = cellprofiler.modules.enhanceorsuppressfeatures.E_DIC
-        module.angle.value = 90
-        module.decay.value = 1
-        module.smoothing.value = 0
-        module.run(workspace)
-        result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
-        expected = numpy.zeros(img.shape)
-        expected[5:15, 10] = .5
-        expected[5:15, 11:15] = 1
-        expected[5:15, 15] = .5
-        numpy.testing.assert_almost_equal(result, expected)
-
-        module.decay.value = .9
-        module.run(workspace)
-        result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
-        self.assertTrue(numpy.all(result[5:15, 12:14] < 1))
-
-        module.decay.value = 1
-        module.smoothing.value = 1
-        result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
-        self.assertTrue(numpy.all(result[4, 11:15] > .1))

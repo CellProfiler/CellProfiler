@@ -278,10 +278,7 @@ class EnhanceOrSuppressFeatures(cellprofiler.module.ImageProcessing):
             elif self.enhance_method == E_TEXTURE:
                 result = self.enhance_texture(image, self.smoothing.value)
             elif self.enhance_method == E_DIC:
-                result = centrosome.filter.line_integration(pixel_data,
-                                                            self.angle.value,
-                                                            self.decay.value,
-                                                            self.smoothing.value)
+                result = self.enhance_dic(image, self.angle.value, self.decay.value, self.smoothing.value)
             else:
                 raise NotImplementedError("Unimplemented enhance method: %s" %
                                           self.enhance_method.value)
@@ -424,6 +421,19 @@ class EnhanceOrSuppressFeatures(cellprofiler.module.ImageProcessing):
         result[~mask] = pixel_data[~mask]
 
         return result
+
+    def enhance_dic(self, image, angle, decay, smoothing):
+        pixel_data = image.pixel_data
+
+        if image.volumetric:
+            result = numpy.zeros_like(pixel_data)
+
+            for index, plane in enumerate(pixel_data):
+                result[index] = centrosome.filter.line_integration(plane, angle, decay, smoothing)
+
+            return result
+
+        return centrosome.filter.line_integration(pixel_data, angle, decay, smoothing)
 
     def suppress(self, image, radius):
         pixel_data = image.pixel_data

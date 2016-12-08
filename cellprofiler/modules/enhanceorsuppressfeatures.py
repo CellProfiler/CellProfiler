@@ -7,7 +7,6 @@ to the rest of the image, by applying image processing filters to the image. It
 produces a grayscale image in which objects can be identified using an <b>Identify</b> module.
 '''
 
-import centrosome.cpmorphology
 import centrosome.filter
 import numpy
 import scipy.ndimage

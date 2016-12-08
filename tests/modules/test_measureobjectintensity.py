@@ -15,6 +15,7 @@ import numpy
 import numpy.testing
 import pytest
 import skimage.measure
+import skimage.segmentation
 
 cellprofiler.preferences.set_headless()
 
@@ -715,13 +716,7 @@ def test_std_intensity_edge(image, measurements, module, objects, workspace):
 
     labels[20:, :] += 1
 
-    edge_mask = numpy.zeros((40, 30), bool)
-
-    for ii in (0, 19, 20, -1):
-        edge_mask[ii, :] = True
-
-    for jj in (0, 14, 15, -1):
-        edge_mask[:, jj] = True
+    edge_mask = skimage.segmentation.find_boundaries(labels, mode="inner")
 
     elabels = labels * edge_mask
 
@@ -859,15 +854,15 @@ def test_volume(measurements, module, objects, volume, workspace):
         "Intensity_StdIntensity_MyImage": [0.12786816898600722, 0.11626300525264302],
         "Intensity_MinIntensity_MyImage": [0.25, 0.5],
         "Intensity_MaxIntensity_MyImage": [1.0, 1.0],
-        # "Intensity_IntegratedIntensityEdge_MyImage": [0.0, 0.0],
-        # "Intensity_MeanIntensityEdge_MyImage": [0.5, 0.75],
-        # "Intensity_StdIntensityEdge_MyImage": [0.0, 0.0],
-        # "Intensity_MinIntensityEdge_MyImage": [0.25, 0.75],
-        # "Intensity_MaxIntensityEdge_MyImage": [0.5, 1.0],
+        "Intensity_IntegratedIntensityEdge_MyImage": [111.0, 45.0],
+        "Intensity_MeanIntensityEdge_MyImage": [0.5, 0.5],
+        "Intensity_StdIntensityEdge_MyImage": [0.0, 0.0],
+        "Intensity_MinIntensityEdge_MyImage": [0.5, 0.5],
+        "Intensity_MaxIntensityEdge_MyImage": [0.5, 0.5],
         # "Intensity_MassDisplacement_MyImage": [0.0, 0.0],
         "Intensity_LowerQuartileIntensity_MyImage": [0.25, 0.5],
         "Intensity_MedianIntensity_MyImage": [0.5, 0.5],
-        # "Intensity_MADIntensity_MyImage": [0.0, 0.0],
+        "Intensity_MADIntensity_MyImage": [0.0, 0.0],
         "Intensity_UpperQuartileIntensity_MyImage": [0.5, 0.75],
         "Location_CenterMassIntensity_X_MyImage": [5.0, 15.0],
         "Location_CenterMassIntensity_Y_MyImage": [5.0, 5.0],
@@ -902,15 +897,15 @@ def test_volume_masked(measurements, module, objects, volume, workspace):
 
     expected = {
         "Intensity_IntegratedIntensity_MyImage": [194.0, 0.0],
-        "Intensity_MeanIntensity_MyImage": [0.37669902912621361, 0.0],
+        "Intensity_MeanIntensity_MyImage": [0.37669902912621361, numpy.nan],
         "Intensity_StdIntensity_MyImage": [0.12786816898600722, numpy.nan],
         "Intensity_MinIntensity_MyImage": [0.25, 0.0],
         "Intensity_MaxIntensity_MyImage": [1.0, 0.0],
-        # "Intensity_IntegratedIntensityEdge_MyImage": [0.0, 0.0],
-        # "Intensity_MeanIntensityEdge_MyImage": [0.5, 0.0],
-        # "Intensity_StdIntensityEdge_MyImage": [0.0, 0.0],
-        # "Intensity_MinIntensityEdge_MyImage": [0.25, 0.0],
-        # "Intensity_MaxIntensityEdge_MyImage": [0.5, 0.0],
+        "Intensity_IntegratedIntensityEdge_MyImage": [111.0, 0.0],
+        "Intensity_MeanIntensityEdge_MyImage": [0.5, numpy.nan],
+        "Intensity_StdIntensityEdge_MyImage": [0.0, numpy.nan],
+        "Intensity_MinIntensityEdge_MyImage": [0.5, 0.0],
+        "Intensity_MaxIntensityEdge_MyImage": [0.5, 0.0],
         # "Intensity_MassDisplacement_MyImage": [0.0, 0.0],
         "Intensity_LowerQuartileIntensity_MyImage": [0.25, 0.0],
         "Intensity_MedianIntensity_MyImage": [0.5, 0.0],
@@ -919,8 +914,8 @@ def test_volume_masked(measurements, module, objects, volume, workspace):
         "Location_CenterMassIntensity_X_MyImage": [5.0, numpy.nan],
         "Location_CenterMassIntensity_Y_MyImage": [5.0, numpy.nan],
         "Location_CenterMassIntensity_Z_MyImage": [5.0, numpy.nan],
-        "Location_MaxIntensity_X_MyImage": [5.0, 0.0],
-        "Location_MaxIntensity_Y_MyImage": [5.0, 0.0],
+        "Location_MaxIntensity_X_MyImage": [5.0, 5.0],
+        "Location_MaxIntensity_Y_MyImage": [5.0, 5.0],
         "Location_MaxIntensity_Z_MyImage": [5.0, 0.0]
     }
 

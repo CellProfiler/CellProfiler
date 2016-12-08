@@ -264,15 +264,11 @@ class EnhanceOrSuppressFeatures(cellprofiler.module.ImageProcessing):
             elif self.enhance_method == E_NEURITES:
                 result = self.enhance_neurites(image, radius, self.neurite_choice.value)
             elif self.enhance_method == E_DARK_HOLES:
-                mask = image.mask if image.has_mask else None
-
-                pixel_data = image.pixel_data
-
                 min_radius = max(1, int(self.hole_size.min / 2))
 
                 max_radius = int((self.hole_size.max + 1) / 2)
 
-                result = centrosome.filter.enhance_dark_holes(pixel_data, min_radius, max_radius, mask)
+                result = self.enhance_dark_holes(image, min_radius, max_radius)
             elif self.enhance_method == E_CIRCLES:
                 result = self.enhance_circles(image, radius)
             elif self.enhance_method == E_TEXTURE:
@@ -283,7 +279,6 @@ class EnhanceOrSuppressFeatures(cellprofiler.module.ImageProcessing):
                 raise NotImplementedError("Unimplemented enhance method: %s" % self.enhance_method.value)
         elif self.method == SUPPRESS:
             result = self.suppress(image, radius)
-
         else:
             raise ValueError("Unknown filtering method: %s" % self.method)
 

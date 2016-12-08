@@ -114,7 +114,7 @@ def assert_features_and_columns_match(measurements, module):
 
 
 
-def test_01_02_load_v2():
+def test_load_v2():
     data = ('eJztW0Fv2zYUpl0nWFagS08dhhXgoYckiDXZq9E0KFo78boZqB2jNtoNadYx'
             'Mm1zkEVDotK4Re/9qTvmuONEW7IlTolkS4qdVAIE+VH8+L33+PhIyVS90n5V'
             'OYAlSYb1SjvfJSqGTRWxLtUH+1Bju/BQx4jhDqTaPmybGDboGSw+hoXifqm0'
@@ -170,7 +170,7 @@ def test_01_02_load_v2():
         assert expected == actual
 
 
-def test_02_01_supplied_measurements(module):
+def test_supplied_measurements(module):
     """Test the get_category / get_measurements, get_measurement_images functions"""
     module.images[0].name.value = 'MyImage'
 
@@ -204,7 +204,7 @@ def test_02_01_supplied_measurements(module):
     assert module.get_measurement_images(None, 'MyObjects1', cellprofiler.modules.measureobjectintensity.INTENSITY, cellprofiler.modules.measureobjectintensity.MAX_INTENSITY) == ['MyImage']
 
 
-def test_02_02_get_measurement_columns(module):
+def test_get_measurement_columns(module):
     '''test the get_measurement_columns method'''
     module.images[0].name.value = 'MyImage'
 
@@ -233,7 +233,7 @@ def test_02_02_get_measurement_columns(module):
             assert column[1][column[1].find('_') + 1:] in [m + '_MyImage' for m in cellprofiler.modules.measureobjectintensity.ALL_LOCATION_MEASUREMENTS]
 
 
-def test_03_01_00_zero(image, measurements, module, objects, workspace):
+def test_zero(image, measurements, module, objects, workspace):
     """Make sure we can process a blank image"""
     image.pixel_data = numpy.zeros((10, 10))
 
@@ -255,7 +255,7 @@ def test_03_01_00_zero(image, measurements, module, objects, workspace):
         assert_features_and_columns_match(measurements, module)
 
 
-def test_03_01_01_masked(image, measurements, module, objects, workspace):
+def test_masked(image, measurements, module, objects, workspace):
     """Make sure we can process a completely masked image
 
     Regression test of IMG-971
@@ -280,7 +280,7 @@ def test_03_01_01_masked(image, measurements, module, objects, workspace):
     assert_features_and_columns_match(measurements, module)
 
 
-def test_03_02_00_one(image, measurements, module, objects, workspace):
+def test_one(image, measurements, module, objects, workspace):
     """Check measurements on a 3x3 square of 1's"""
     data = numpy.array([[0, 0, 0, 0, 0, 0, 0],
                        [0, 0, 1, 1, 1, 0, 0],
@@ -321,7 +321,7 @@ def test_03_02_00_one(image, measurements, module, objects, workspace):
         assert data[0] == value, "%s expected %f != actual %f" % (meas_name, value, data[0])
 
 
-def test_03_02_01_one_masked(image, measurements, module, objects, workspace):
+def test_one_masked(image, measurements, module, objects, workspace):
     """Check measurements on a 3x3 square of 1's"""
     img = numpy.array([[0, 0, 0, 0, 0, 0, 0],
                        [0, 0, 1, 1, 1, 0, 0],
@@ -363,7 +363,7 @@ def test_03_02_01_one_masked(image, measurements, module, objects, workspace):
         assert data[0] == value, "%s expected %f != actual %f" % (meas_name, value, data[0])
 
 
-def test_03_02_02_intensity_location(image, measurements, module, objects, workspace):
+def test_intensity_location(image, measurements, module, objects, workspace):
     data = numpy.array([
         [0, 0, 0, 0, 0, 0, 0],
         [0, 1, 1, 1, 1, 1, 0],
@@ -392,7 +392,7 @@ def test_03_02_02_intensity_location(image, measurements, module, objects, works
         assert values[0] == value
 
 
-def test_03_03_00_mass_displacement(image, measurements, module, objects, workspace):
+def test_mass_displacement(image, measurements, module, objects, workspace):
     """Check the mass displacement of three squares"""
 
     labels = numpy.array([[0, 0, 0, 0, 0, 0, 0],
@@ -450,7 +450,7 @@ def test_03_03_00_mass_displacement(image, measurements, module, objects, worksp
     numpy.testing.assert_almost_equal(mass_displacement[2], 2.0)
 
 
-def test_03_03_01_mass_displacement_masked(image, measurements, module, objects, workspace):
+def test_mass_displacement_masked(image, measurements, module, objects, workspace):
     """Regression test IMG-766 - mass displacement of a masked image"""
     labels = numpy.array([[0, 0, 0, 0, 0, 0, 0],
                           [0, 1, 1, 1, 1, 1, 0],
@@ -514,7 +514,7 @@ def test_03_03_01_mass_displacement_masked(image, measurements, module, objects,
     numpy.testing.assert_almost_equal(mass_displacement[2], 2.0)
 
 
-def test_03_04_quartiles(image, measurements, module, objects, workspace):
+def test_quartiles_uniform(image, measurements, module, objects, workspace):
     """test quartile values on a 250x250 square filled with uniform values"""
     labels = numpy.ones((250, 250), int)
 
@@ -555,7 +555,7 @@ def test_03_04_quartiles(image, measurements, module, objects, workspace):
     numpy.testing.assert_almost_equal(data[0], .75, 2)
 
 
-def test_03_05_quartiles(image, module, objects, workspace):
+def test_quartiles_one_pixel(image, module, objects, workspace):
     """Regression test a bug that occurs in an image with one pixel"""
     labels = numpy.zeros((10, 20))
 
@@ -575,7 +575,7 @@ def test_03_05_quartiles(image, module, objects, workspace):
     module.run(workspace)
 
 
-def test_03_06_quartiles(image, measurements, module, objects, workspace):
+def test_quartiles_four_objects(image, measurements, module, objects, workspace):
     """test quartile values on a 250x250 square with 4 objects"""
     labels = numpy.ones((250, 250), int)
 
@@ -647,7 +647,7 @@ def test_03_06_quartiles(image, measurements, module, objects, workspace):
     numpy.testing.assert_almost_equal(data[3], 1.0 / 16.0, 2)
 
 
-def test_03_07_median_intensity_masked(image, measurements, module, objects, workspace):
+def test_median_intensity_masked(image, measurements, module, objects, workspace):
     numpy.random.seed(37)
 
     labels = numpy.ones((10, 10), int)
@@ -681,7 +681,7 @@ def test_03_07_median_intensity_masked(image, measurements, module, objects, wor
     assert expected == values[0]
 
 
-def test_03_08_std_intensity(image, measurements, module, objects, workspace):
+def test_std_intensity(image, measurements, module, objects, workspace):
     numpy.random.seed(38)
 
     labels = numpy.ones((40, 30), int)
@@ -706,7 +706,7 @@ def test_03_08_std_intensity(image, measurements, module, objects, workspace):
         numpy.testing.assert_almost_equal(values[i - 1], numpy.std(data[labels == i]))
 
 
-def test_03_09_std_intensity_edge(image, measurements, module, objects, workspace):
+def test_std_intensity_edge(image, measurements, module, objects, workspace):
     numpy.random.seed(39)
 
     labels = numpy.ones((40, 30), int)
@@ -743,7 +743,7 @@ def test_03_09_std_intensity_edge(image, measurements, module, objects, workspac
         numpy.testing.assert_almost_equal(values[i - 1], numpy.std(pixel_data[elabels == i]))
 
 
-def test_03_10_ijv(image, module, objects, workspace):
+def test_ijv(image, module, objects, workspace):
     #
     # Test the module on overlapping objects
     #
@@ -801,7 +801,7 @@ def test_03_10_ijv(image, module, objects, workspace):
             assert m0[i] == m1[0], "{} feature expected {}, got {}".format(mname, m0[i], m1[0])
 
 
-def test_04_01_wrong_image_size(image, measurements, module, objects, workspace):
+def test_wrong_image_size(image, measurements, module, objects, workspace):
     '''Regression test of IMG-961 - object and image size differ'''
     numpy.random.seed(41)
 
@@ -824,7 +824,7 @@ def test_04_01_wrong_image_size(image, measurements, module, objects, workspace)
     numpy.testing.assert_almost_equal(m[0], numpy.sum(pixel_data[:20, :40]), 4)
 
 
-def test_04_02_masked_edge(image, module, objects, workspace):
+def test_masked_edge(image, module, objects, workspace):
     # Regression test of issue #1115
     labels = numpy.zeros((20, 50), int)
 

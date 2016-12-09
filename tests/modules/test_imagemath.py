@@ -4,6 +4,7 @@ import unittest
 import zlib
 
 import numpy
+import pytest
 
 import cellprofiler.image
 import cellprofiler.measurement
@@ -17,6 +18,255 @@ import cellprofiler.workspace
 cellprofiler.preferences.set_headless()
 
 MEASUREMENT_NAME = 'mymeasurement'
+
+
+@pytest.fixture(scope="function")
+def image_a():
+    image_a = cellprofiler.image.Image()
+
+    data_a = numpy.zeros((11, 11, 15))
+
+    k, i, j = numpy.mgrid[-5:6, -5:6, -5:10]
+
+    data_a[k ** 2 + i ** 2 + j ** 2 <= 25] = 1
+
+    image_a.pixel_data = data_a
+
+    image_a.dimensions = 3
+
+    return image_a
+
+
+@pytest.fixture(scope="function")
+def image_b():
+    image_b = cellprofiler.image.Image()
+
+    data_b = numpy.zeros((11, 11, 15))
+
+    k, i, j = numpy.mgrid[-5:6, -5:6, -10:5]
+
+    data_b[k ** 2 + i ** 2 + j ** 2 <= 25] = 0.5
+
+    image_b.pixel_data = data_b
+
+    image_b.dimensions = 3
+
+    return image_b
+
+
+@pytest.fixture(scope="function")
+def module():
+    return cellprofiler.modules.imagemath.ImageMath()
+
+
+@pytest.fixture(scope="function")
+def workspace(image_a, image_b, module):
+    image_set_list = cellprofiler.image.ImageSetList()
+
+    image_set = image_set_list.get_image_set(0)
+
+    workspace = cellprofiler.workspace.Workspace(
+        image_set=image_set,
+        image_set_list=image_set_list,
+        module=module,
+        pipeline=cellprofiler.pipeline.Pipeline(),
+        measurements=cellprofiler.measurement.Measurements(),
+        object_set=cellprofiler.object.ObjectSet()
+    )
+
+    workspace.image_set.add("input_a", image_a)
+
+    workspace.image_set.add("input_b", image_b)
+
+    module.truncate_low.value = False
+
+    module.truncate_high.value = False
+
+    module.output_image_name.value = "output"
+
+    return workspace
+
+
+def test_add(image_a, image_b, module, workspace):
+    module.images[0].image_name.value = "input_a"
+
+    module.images[1].image_name.value = "input_b"
+
+    module.operation.value = "Add"
+
+    module.run(workspace)
+
+    output = workspace.image_set.get_image("output")
+
+    actual = output.pixel_data
+
+    expected = image_a.pixel_data + image_b.pixel_data
+
+    numpy.testing.assert_array_equal(expected, actual)
+
+
+def test_subtract(image_a, image_b, module, workspace):
+    module.images[0].image_name.value = "input_a"
+
+    module.images[1].image_name.value = "input_b"
+
+    module.operation.value = "Subtract"
+
+    module.run(workspace)
+
+    output = workspace.image_set.get_image("output")
+
+    actual = output.pixel_data
+
+    expected = image_a.pixel_data - image_b.pixel_data
+
+    numpy.testing.assert_array_equal(expected, actual)
+
+
+def test_absolute_difference(image_a, image_b, module, workspace):
+    module.images[0].image_name.value = "input_a"
+
+    module.images[1].image_name.value = "input_b"
+
+    module.operation.value = "Absolute Difference"
+
+    module.run(workspace)
+
+    output = workspace.image_set.get_image("output")
+
+    actual = output.pixel_data
+
+    expected = numpy.abs(image_a.pixel_data - image_b.pixel_data)
+
+    numpy.testing.assert_array_equal(expected, actual)
+
+
+def test_multiply(image_a, image_b, module, workspace):
+    module.images[0].image_name.value = "input_a"
+
+    module.images[1].image_name.value = "input_b"
+
+    module.operation.value = "Multiply"
+
+    module.run(workspace)
+
+    output = workspace.image_set.get_image("output")
+
+    actual = output.pixel_data
+
+    expected = image_a.pixel_data * image_b.pixel_data
+
+    numpy.testing.assert_array_equal(expected, actual)
+
+
+def test_divide(image_a, image_b, module, workspace):
+    module.images[0].image_name.value = "input_a"
+
+    module.images[1].image_name.value = "input_b"
+
+    module.operation.value = "Divide"
+
+    module.run(workspace)
+
+    output = workspace.image_set.get_image("output")
+
+    actual = output.pixel_data
+
+    expected = image_a.pixel_data / image_b.pixel_data
+
+    numpy.testing.assert_array_equal(expected, actual)
+
+
+def test_average(image_a, image_b, module, workspace):
+    module.images[0].image_name.value = "input_a"
+
+    module.images[0].factor.value = 1.0
+
+    module.images[1].image_name.value = "input_b"
+
+    module.images[1].factor.value = 1.0
+
+    module.operation.value = "Average"
+
+    module.run(workspace)
+
+    output = workspace.image_set.get_image("output")
+
+    actual = output.pixel_data
+
+    expected = (image_a.pixel_data + image_b.pixel_data) / 2.0
+
+    numpy.testing.assert_array_equal(expected, actual)
+
+
+def test_minimum(image_a, image_b, module, workspace):
+    module.images[0].image_name.value = "input_a"
+
+    module.images[1].image_name.value = "input_b"
+
+    module.operation.value = "Minimum"
+
+    module.run(workspace)
+
+    output = workspace.image_set.get_image("output")
+
+    actual = output.pixel_data
+
+    expected = numpy.minimum(image_a.pixel_data, image_b.pixel_data)
+
+    numpy.testing.assert_array_equal(expected, actual)
+
+
+def test_maximum(image_a, image_b, module, workspace):
+    module.images[0].image_name.value = "input_a"
+
+    module.images[1].image_name.value = "input_b"
+
+    module.operation.value = "Maximum"
+
+    module.run(workspace)
+
+    output = workspace.image_set.get_image("output")
+
+    actual = output.pixel_data
+
+    expected = numpy.maximum(image_a.pixel_data, image_b.pixel_data)
+
+    numpy.testing.assert_array_equal(expected, actual)
+
+
+def test_invert(image_a, module, workspace):
+    module.images[0].image_name.value = "input_a"
+
+    module.operation.value = "Invert"
+
+    module.run(workspace)
+
+    output = workspace.image_set.get_image("output")
+
+    actual = output.pixel_data
+
+    expected = image_a.pixel_data
+
+    numpy.testing.assert_array_equal(expected, actual)
+
+
+def test_and(image_a, image_b, module, workspace):
+    module.images[0].image_name.value = "input_a"
+
+    module.images[1].image_name.value = "input_b"
+
+    module.operation.value = "And"
+
+    module.run(workspace)
+
+    output = workspace.image_set.get_image("output")
+
+    actual = output.pixel_data
+
+    expected = 1.0 * numpy.logical_and(image_a.pixel_data, image_b.pixel_data)
+
+    numpy.testing.assert_array_equal(expected, actual)
 
 
 class TestImageMath(unittest.TestCase):

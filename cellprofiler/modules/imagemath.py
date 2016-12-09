@@ -58,9 +58,9 @@ FIXED_SETTING_COUNT_1 = 7
 FIXED_SETTING_COUNT = 8
 
 
-class ImageMath(cellprofiler.module.Module):
-    category = "Image Processing"
+class ImageMath(cellprofiler.module.ImageProcessing):
     variable_revision_number = 4
+
     module_name = "ImageMath"
 
     def create_settings(self):
@@ -414,31 +414,48 @@ class ImageMath(cellprofiler.module.Module):
                                                 crop_mask=crop_mask,
                                                 parent_image=images[0],
                                                 masking_objects=masking_objects,
-                                                convert=False)
+                                                convert=False,
+                                                dimensions=images[0].dimensions)
         workspace.image_set.add(self.output_image_name.value, output_image)
 
         #
         # Display results
         #
         if self.show_window:
-            workspace.display_data.pixel_data = \
-                [image.pixel_data for image in images] + [output_pixel_data]
-            workspace.display_data.display_names = \
-                image_names + [self.output_image_name.value]
+            workspace.display_data.pixel_data = [image.pixel_data for image in images] + [output_pixel_data]
+
+            workspace.display_data.display_names = image_names + [self.output_image_name.value]
+
+            workspace.display_data.dimensions = output_image.dimensions
 
     def display(self, workspace, figure):
+        import matplotlib.cm
+
         pixel_data = workspace.display_data.pixel_data
+
         display_names = workspace.display_data.display_names
+
         columns = (len(pixel_data) + 1) / 2
-        figure.set_subplots((columns, 2))
+
+        figure.set_subplots((columns, 2), dimensions=workspace.display_data.dimensions)
+
         for i in range(len(pixel_data)):
-            show = figure.subplot_imshow if pixel_data[i].ndim == 3 else \
-                figure.subplot_imshow_bw if pixel_data[i].dtype.kind == 'b' \
-                    else figure.subplot_imshow_grayscale
-            show(i % columns, int(i / columns),
-                 pixel_data[i],
-                 title=display_names[i],
-                 sharexy=figure.subplot(0, 0))
+            if pixel_data[i].shape[-1] in (3, 4):
+                cmap = None
+            elif pixel_data[i].dtype.kind == 'b':
+                cmap = matplotlib.cm.binary_r
+            else:
+                cmap = matplotlib.cm.Greys_r
+
+            figure.subplot_imshow(
+                i % columns,
+                int(i / columns),
+                pixel_data[i],
+                title=display_names[i],
+                # sharexy=figure.subplot(0, 0),
+                colormap=cmap,
+                dimensions=workspace.display_data.dimensions
+            )
 
     def validate_module(self, pipeline):
         '''Guarantee that at least one operand is an image'''

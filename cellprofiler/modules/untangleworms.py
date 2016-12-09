@@ -69,6 +69,7 @@ as video tutorials.</p>
 
 import logging
 import os
+import re
 import sys
 import urllib2
 import xml.dom.minidom as DOM
@@ -81,6 +82,7 @@ from scipy.io import loadmat
 from scipy.sparse import coo
 
 logger = logging.getLogger(__name__)
+import cellprofiler
 import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
 import cellprofiler.image as cpi
@@ -671,7 +673,6 @@ class UntangleWorms(cpm.Module):
     def post_group(self, workspace, grouping):
         '''Write the training data file as we finish grouping.'''
         if self.mode == MODE_TRAIN:
-            from cellprofiler.utilities.version import version_number
             worms = self.get_dictionary(workspace.image_set_list)[TRAINING_DATA]
             #
             # Either get weights from our instance or instantiate
@@ -741,7 +742,7 @@ class UntangleWorms(cpm.Module):
             top = doc.documentElement
             top.setAttribute("xmlns", T_NAMESPACE)
             for tag, value in (
-                    (T_VERSION, version_number),
+                    (T_VERSION, int(re.sub(r"\.|rc\d{1}", "", cellprofiler.__version__))),
                     (T_MIN_AREA, min_area),
                     (T_MAX_AREA, max_area),
                     (T_COST_THRESHOLD, max_cost),

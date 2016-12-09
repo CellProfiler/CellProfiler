@@ -367,9 +367,9 @@ class ImageMath(cellprofiler.module.ImageProcessing):
             if opval == O_AVERAGE:
                 output_pixel_data /= sum(image_factors)
         elif opval == O_INVERT:
-            output_pixel_data = 1 - output_pixel_data
+            output_pixel_data = output_pixel_data.max() - output_pixel_data
         elif opval == O_NOT:
-            output_pixel_data = ~ output_pixel_data
+            output_pixel_data = numpy.logical_not(output_pixel_data)
         elif opval == O_LOG_TRANSFORM:
             output_pixel_data = numpy.log2(output_pixel_data + 1)
         elif opval == O_LOG_TRANSFORM_LEGACY:

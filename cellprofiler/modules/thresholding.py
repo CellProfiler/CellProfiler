@@ -6,16 +6,16 @@ Thresholding
 
 """
 
-import cellprofiler.image
-import cellprofiler.module
-import cellprofiler.setting
-import joblib
 import numpy
 import skimage.exposure
 import skimage.filters
 import skimage.filters.rank
 import skimage.morphology
 import skimage.util
+
+import cellprofiler.image
+import cellprofiler.module
+import cellprofiler.setting
 
 
 class Thresholding(cellprofiler.module.ImageProcessing):

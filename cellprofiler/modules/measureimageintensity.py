@@ -1,4 +1,4 @@
-'''<b>Measure Image Intensity</b> measures the total intensity in an image 
+'''<b>Measure Image Intensity</b> measures the total intensity in an image
 by summing all of the pixel intensities (excluding masked pixels).
 <hr>
 This module will sum all pixel values to measure the total image
@@ -316,20 +316,7 @@ class MeasureImageIntensity(cpm.Module):
             return result
         return []
 
-    def upgrade_settings(self, setting_values,
-                         variable_revision_number,
-                         module_name, from_matlab):
-        '''Account for prior versions when loading
-
-        We handle Matlab revision # 2 here. We don't support thresholding
-        because it was generally unused. The first setting is the image name.
-        '''
-        if from_matlab and variable_revision_number == 2:
-            setting_values = [setting_values[0],  # image name
-                              cps.NO,  # wants objects
-                              cps.NONE]  # object name
-            variable_revision_number = 1
-            from_matlab = False
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         if variable_revision_number == 1:
             variable_revision_number = 2
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number

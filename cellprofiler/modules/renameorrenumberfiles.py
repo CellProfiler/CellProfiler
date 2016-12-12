@@ -262,38 +262,11 @@ class RenameOrRenumberFiles(cpm.Module):
                     "RenameOrRenumberFiles will not rename files in test mode",
                     self.image_name)
 
-    def upgrade_settings(self, setting_values, variable_revision_number,
-                         module_name, from_matlab):
-        '''Upgrade settings from previous pipeline versions
-
-        setting_values - string values for each of the settings
-        variable_revision_number - the revision number of the module at the
-                                   time of saving
-        module_name - the name of the module that saved the settings
-        from_matlab - true if pipeline was saved by CP 1.0
-        '''
-        if from_matlab and variable_revision_number == 1:
-            image_name, number_characters_prefix, number_characters_suffix, \
-            text_to_add, number_digits = setting_values
-
-            wants_text = text_to_add.lower() != cps.DO_NOT_USE.lower()
-            wants_text = cps.YES if wants_text else cps.NO
-
-            if number_digits.lower() == cps.DO_NOT_USE.lower():
-                number_digits = 4
-                action = A_DELETE
-            else:
-                action = A_RENUMBER
-
-            setting_values = [image_name, number_characters_prefix,
-                              number_characters_suffix, action,
-                              number_digits, wants_text, text_to_add]
-            variable_revision_number = 1
-            from_matlab = False
-        if (not from_matlab) and variable_revision_number == 1:
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
+        if variable_revision_number == 1:
             #
             # Added wants_to_replace_spaces and space_replacement
             #
             setting_values = setting_values + [cps.NO, "_"]
             variable_revision_number = 2
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number

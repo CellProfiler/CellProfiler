@@ -428,7 +428,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             threshold. These pixels are used as the seeds for objects in the watershed.
             Note that this method can occasionally result in strange artifacts; diagonal
             invaginations that do not seem to match any intensity dip in the input image.
-            More information can be found 
+            More information can be found
             <a href="https://github.com/CellProfiler/CellProfiler/issues/1156">here</a></li>
             <li><i>%(UN_NONE)s:</i> If objects are well separated and bright relative to the
             background, it may be unnecessary to attempt to separate clumped objects.
@@ -650,128 +650,55 @@ class IdentifyPrimaryObjects(cpmi.Identify):
                 self.limit_choice, self.maximum_object_count] + \
                self.get_threshold_settings()
 
-    def upgrade_settings(self, setting_values, variable_revision_number,
-                         module_name, from_matlab):
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         """Upgrade the strings in setting_values dependent on saved revision
 
         """
-        if variable_revision_number == 12 and from_matlab:
-            # Translating from Matlab:
-            #
-            # Variable # 16 (LaplaceValues) removed
-            # Variable # 19 (test mode) removed
-            #
-            # Added automatic smoothing / suppression checkboxes
-            # Added checkbox for setting manual threshold
-            # Added checkbox for thresholding using a binary image
-            # Added checkbox instead of "DO_NOT_USE" for saving outlines
-            new_setting_values = list(setting_values[:18])
-            #
-            # Remove the laplace values setting
-            #
-            del new_setting_values[15]
-            # Automatic smoothing checkbox - replace "Automatic" with
-            # a number
-            if setting_values[SMOOTHING_SIZE_VAR] == cps.AUTOMATIC:
-                new_setting_values += [cps.YES]
-                new_setting_values[SMOOTHING_SIZE_VAR] = '10'
-            else:
-                new_setting_values += [cps.NO]
-            #
-            # Automatic maxima suppression size
-            #
-            if setting_values[MAXIMA_SUPPRESSION_SIZE_VAR] == cps.AUTOMATIC:
-                new_setting_values += [cps.YES]
-                new_setting_values[MAXIMA_SUPPRESSION_SIZE_VAR] = '5'
-            else:
-                new_setting_values += [cps.NO]
-            if not setting_values[THRESHOLD_METHOD_VAR] in cpthresh.TM_METHODS:
-                # Try to figure out what the user wants if it's not one of the
-                # pre-selected choices.
-                try:
-                    # If it's a floating point number, then the user
-                    # was trying to type in a manual threshold
-                    ignore = float(setting_values[THRESHOLD_METHOD_VAR])
-                    new_setting_values[THRESHOLD_METHOD_VAR] = cpthresh.TM_MANUAL
-                    # Set the manual threshold to be the contents of the
-                    # old threshold method variable and ignore the binary mask
-                    new_setting_values += [setting_values[THRESHOLD_METHOD_VAR],
-                                           cps.DO_NOT_USE]
-                except:
-                    # Otherwise, assume that it's the name of a binary image
-                    new_setting_values[THRESHOLD_METHOD_VAR] = cpthresh.TM_BINARY_IMAGE
-                    new_setting_values += ['0.0',
-                                           setting_values[THRESHOLD_METHOD_VAR]]
-            else:
-                new_setting_values += ['0.0',
-                                       setting_values[THRESHOLD_METHOD_VAR]]
-            #
-            # The object fraction is stored as a percent in Matlab (sometimes)
-            #
-            m = re.match("([0-9.])%", setting_values[OBJECT_FRACTION_VAR])
-            if m:
-                setting_values[OBJECT_FRACTION_VAR] = str(float(m.groups()[0]) / 100.0)
-            #
-            # Check the "DO_NOT_USE" status of the save outlines variable
-            # to get the value for should_save_outlines
-            #
-            if new_setting_values[SAVE_OUTLINES_VAR] == cps.DO_NOT_USE:
-                new_setting_values += [cps.NO]
-                new_setting_values[SAVE_OUTLINES_VAR] = cps.NONE
-            else:
-                new_setting_values += [cps.YES]
-            setting_values = new_setting_values
-            if new_setting_values[UNCLUMP_METHOD_VAR] == cps.DO_NOT_USE:
-                new_setting_values[UNCLUMP_METHOD_VAR] = UN_NONE
-            if new_setting_values[WATERSHED_VAR] == cps.DO_NOT_USE:
-                new_setting_values[WATERSHED_VAR] = WA_NONE
-            variable_revision_number = 1
-            from_matlab = False
-        if (not from_matlab) and variable_revision_number == 1:
+        if variable_revision_number == 1:
             # Added LOG method
             setting_values = list(setting_values)
             setting_values += [cps.YES, ".5"]
             variable_revision_number = 2
 
-        if (not from_matlab) and variable_revision_number == 2:
+        if variable_revision_number == 2:
             # Added Otsu options
             setting_values = list(setting_values)
             setting_values += [cpmi.O_TWO_CLASS, cpmi.O_WEIGHTED_VARIANCE,
                                cpmi.O_FOREGROUND]
             variable_revision_number = 3
 
-        if (not from_matlab) and variable_revision_number == 3:
+        if variable_revision_number == 3:
             # Added more LOG options
             setting_values = setting_values + [cps.YES, "5"]
             variable_revision_number = 4
 
-        if (not from_matlab) and variable_revision_number == 4:
+        if variable_revision_number == 4:
             # Added # of object limits
             setting_values = setting_values + [LIMIT_NONE, "500"]
             variable_revision_number = 5
 
-        if (not from_matlab) and variable_revision_number == 5:
+        if variable_revision_number == 5:
             # Changed object number limit option from "No action" to "Continue"
             if setting_values[-2] == "No action":
                 setting_values[-2] = LIMIT_NONE
             variable_revision_number = 6
 
-        if (not from_matlab) and variable_revision_number == 6:
+        if variable_revision_number == 6:
             # Added measurements to threshold method
             setting_values = setting_values + [cps.NONE]
             variable_revision_number = 7
-        if (not from_matlab) and variable_revision_number == 7:
+        if variable_revision_number == 7:
             # changed DISTANCE to SHAPE
             if setting_values[11] == "Distance":
                 setting_values[11] = "Shape"
             variable_revision_number = 8
 
-        if (not from_matlab) and variable_revision_number == 8:
+        if variable_revision_number == 8:
             # Added adaptive thresholding settings
             setting_values += [FI_IMAGE_SIZE, "10"]
             variable_revision_number = 9
 
-        if (not from_matlab) and variable_revision_number == 9:
+        if variable_revision_number == 9:
             #
             # Unified threshold measurements.
             #
@@ -815,7 +742,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         # upgrade threshold settings
         setting_values = setting_values[:N_SETTINGS_V10] + \
                          self.upgrade_threshold_settings(setting_values[N_SETTINGS_V10:])
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number
 
     def help_settings(self):
         return [self.image_name,

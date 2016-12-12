@@ -277,18 +277,7 @@ class Images(cpm.Module):
     def run(self, workspace):
         pass
 
-    def upgrade_settings(self, setting_values, variable_revision_number,
-                         module_name, from_matlab):
-        '''Upgrade pipeline settings from a previous revision
-
-        setting_values - the text values of the module's settings
-
-        variable_revision_number - revision # of module version that saved them
-
-        module_name / from_matlab - ignore please
-
-        Returns upgraded setting values, revision number and matlab flag
-        '''
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         if variable_revision_number == 1:
             # Changed from yes/no for filter to a choice
             filter_choice = \
@@ -297,7 +286,7 @@ class Images(cpm.Module):
             setting_values = \
                 setting_values[:1] + [filter_choice] + setting_values[2:]
             variable_revision_number = 2
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number
 
 
 class DirectoryPredicate(cps.Filter.FilterPredicate):

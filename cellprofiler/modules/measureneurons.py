@@ -577,29 +577,14 @@ class MeasureNeurons(cpm.Module):
         else:
             return []
 
-    def upgrade_settings(self, setting_values, variable_revision_number,
-                         module_name, from_matlab):
-        '''Provide backwards compatibility for old pipelines
-
-        setting_values - the strings to be fed to settings
-        variable_revision_number - the version number at time of saving
-        module_name - name of original module
-        from_matlab - true if a matlab pipeline, false if pyCP
-        '''
-        if from_matlab and variable_revision_number == 1:
-            #
-            # Added "Wants branchpoint image" and branchpoint image name
-            #
-            setting_values = setting_values + [cps.NO, "Branchpoints"]
-            from_matlab = False
-            variable_revision_number = 1
-        if not from_matlab and variable_revision_number == 1:
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
+        if variable_revision_number == 1:
             #
             # Added hole size questions
             #
             setting_values = setting_values + [cps.YES, "10"]
             variable_revision_number = 2
-        if not from_matlab and variable_revision_number == 2:
+        if variable_revision_number == 2:
             #
             # Added graph stuff
             #
@@ -608,7 +593,7 @@ class MeasureNeurons(cpm.Module):
                 cps.DirectoryPath.static_join_string(cps.DEFAULT_OUTPUT_FOLDER_NAME, cps.NONE),
                 cps.NONE, cps.NONE]
             variable_revision_number = 3
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number
 
     def make_neuron_graph(self, skeleton, skeleton_labels,
                           trunks, branchpoints, endpoints, image):

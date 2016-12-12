@@ -195,10 +195,8 @@ class DisplayScatterPlot(cpm.Module):
     def run_as_data_tool(self, workspace):
         self.run(workspace)
 
-    def upgrade_settings(self, setting_values, variable_revision_number,
-                         module_name, from_matlab):
-        """Adjust the setting_values to upgrade from a previous version"""
-        if not from_matlab and variable_revision_number == 1:
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
+        if variable_revision_number == 1:
             if setting_values[0] == cpmeas.IMAGE:
                 # self.source, self.x_axis, "Image", self.y_axis, self.xscale, self.yscale, self.title
                 new_setting_values = [setting_values[0], cps.NONE, setting_values[1], cpmeas.IMAGE,
@@ -210,4 +208,4 @@ class DisplayScatterPlot(cpm.Module):
 
             variable_revision_number = 2
 
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number

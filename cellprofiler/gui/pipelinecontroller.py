@@ -2057,9 +2057,7 @@ class PipelineController(object):
         for m in modules:
             module = self.__pipeline.instantiate_module(m.module_name)
             module.module_num = module_num
-            module.set_settings_from_values(
-                cellprofiler.gui.pipeline.Pipeline.capture_module_settings(m),
-                m.variable_revision_number, m.module_name, False)
+            module.set_settings_from_values(cellprofiler.gui.pipeline.Pipeline.capture_module_settings(m), m.variable_revision_number, m.module_name)
             module.show_window = m.show_window  # copy visibility
             self.__pipeline.add_module(module)
             module_num += 1

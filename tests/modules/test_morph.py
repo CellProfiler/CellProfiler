@@ -26,58 +26,6 @@ import centrosome.filter as cpfilter
 
 
 class TestMorph(unittest.TestCase):
-    def test_01_01_load_matlab(self):
-        '''Load a pipeline that has a morph module in it'''
-        #
-        # Pipeline has Morph as second module
-        # input_name = OrigBlue
-        # output_name = MorphBlue
-        # dilate once
-        # erode twice
-        # fill forever
-        #
-        data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrV'
-                'SCHAO9/TTUXAuSk0sSU1RyM+zUggpTVXwKs1TMDBSMDS'
-                '0MjKyMjZTMDIwsFQgGTAwevryMzAw/GdkYKiYczfsrtd'
-                'hAxG7t7sMWdurVBdd8M7/s/9jkOvBxjzn4w4f1NZF8qa'
-                'cfXF+hl1j/2PlHxlqm29f2jFzq7awD+fTJc9/nzs5fbK'
-                'JKMOPGGaNj+Uzy4X3RRtu413J/ZuxXfHjnQUcYjlHH8/'
-                'fs32C/wXjo7ouyjIHdvQeWx3Xbhpf/di//EynxrqF696'
-                'cidZ9ZZdsv6Lc7cCP4mYeg1qFfIlJuU/K+n+rKJzp/mi'
-                '438qq77STap7rEQ3/EgMR2Ra92Zd2fLBv79xv6rq99GS'
-                '97TtfG47v69lXyN6KFdkWz3J+ZtvyNR84dr8T/j7JW/e'
-                'Du9SeqQeiC0ovrjg3+X+XUHnqivn3qwUbVWXFzsa362t'
-                'WJFq3LBI4v51vNVfcjfAz3yIy3BnnnXFevnjiA8MHEp9'
-                '6119euOIDh/TvMwctn08Ma5+sejz89U5njdi0P05Nyxn'
-                '+5Jwu/Xd6VvuuvuWShZXvm/dU5JnYSHP1b+h8PsGuUMk'
-                'l95Lrux/6Gzv0rObMPDAzILk+mp2d+1z49O9b/ne9Xnx'
-                '9Qe+KP/EzzetL7e0+hXo3z19af+3HPUWvB+fP3H8vukn'
-                'OyG/54y1f5cXWvt68Yvq8/Fu1qYfSP69trK78tOLn07n'
-                'P6x/+b7j5dfG1/Gu7dqaeWOnFHnft94kPdRz23309J28'
-                '/Of+sV93zNzYfu9yq5hydv3zu29jG6vaS15u+d/9fkfr'
-                '1P9NGrROuAE1uKvg=')
-        fd = StringIO.StringIO(zlib.decompress(base64.b64decode(data)))
-        pipeline = cpp.Pipeline()
-
-        def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
-
-        pipeline.add_listener(callback)
-        pipeline.load(fd)
-        self.assertEqual(len(pipeline.modules()), 2)
-        module = pipeline.modules()[1]
-        self.assertTrue(isinstance(module, morph.Morph))
-        self.assertEqual(module.image_name.value, "OrigBlue")
-        self.assertEqual(module.output_image_name.value, "MorphBlue")
-        self.assertEqual(len(module.functions), 3)
-        self.assertEqual(module.functions[0].function, morph.F_DILATE)
-        self.assertEqual(module.functions[0].repeats_choice.value, morph.R_ONCE)
-        self.assertEqual(module.functions[1].function, morph.F_ERODE)
-        self.assertEqual(module.functions[1].repeats_choice.value, morph.R_CUSTOM)
-        self.assertEqual(module.functions[1].custom_repeats.value, 2)
-        self.assertEqual(module.functions[2].function, morph.F_FILL)
-        self.assertEqual(module.functions[2].repeats_choice.value, morph.R_FOREVER)
-
     def test_01_02_load_v1(self):
         '''Load a revision 1 pipeline that has a morph module in it'''
         #

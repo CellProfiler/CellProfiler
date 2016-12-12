@@ -534,51 +534,10 @@ class CalculateMath(cpm.Module):
                             (self.output_feature_name.value, module.module_num),
                             self.output_feature_name)
 
-    def upgrade_settings(self, setting_values, variable_revision_number,
-                         module_name, from_matlab):
-        if (from_matlab and variable_revision_number == 6 and
-                    module_name == 'CalculateRatios'):
-            ratio_name, \
-            object_name_1, category_1, feature_1, image_1, scale_1, \
-            object_name_2, category_2, feature_2, image_2, scale_2, \
-            log_choice = setting_values
-            setting_values = [
-                object_name_1, category_1, feature_1, image_1, scale_1,
-                object_name_2, category_2, feature_2, image_2, scale_2,
-                log_choice, "1", "1", "1", "1", "Divide", ratio_name]
-            variable_revision_number = 6
-            module_name = 'CalculateMath'
-        if (from_matlab and variable_revision_number == 6 and
-                    module_name == 'CalculateMath'):
-            new_setting_values = [setting_values[16],  # output feature name
-                                  setting_values[15]]  # operation
-            for i, multiply_factor_idx in ((0, 11), (5, 12)):
-                object_name = setting_values[i]
-                category = setting_values[i + 1]
-                feature = setting_values[i + 2]
-                measurement_image = setting_values[i + 3]
-                scale = setting_values[i + 4]
-                measurement = category + '_' + feature
-                if len(measurement_image):
-                    measurement += '_' + measurement_image
-                if len(scale):
-                    measurement += '_' + scale
-                object_choice = (MC_IMAGE if object_name == cpmeas.IMAGE
-                                 else MC_OBJECT)
-                new_setting_values += [object_choice,
-                                       object_name,
-                                       measurement,
-                                       setting_values[multiply_factor_idx],
-                                       "1"]  # exponent
-            new_setting_values += [setting_values[10],  # wants log
-                                   setting_values[14],  # final multiplier
-                                   setting_values[13]]  # final exponent
-            setting_values = new_setting_values
-            from_matlab = False
-            variable_revision_number = 1
-        if not from_matlab and variable_revision_number == 1:
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
+        if variable_revision_number == 1:
             # Added a final addition number as well as options to constrain
             # the result to an upper and/or lower bound.
             setting_values += ["0", cps.NO, "0", cps.NO, "1"]
             variable_revision_number = 2
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number

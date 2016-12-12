@@ -251,36 +251,12 @@ class EnhanceEdges(cpm.Module):
         else:
             return self.sigma.value
 
-    def upgrade_settings(self, setting_values, variable_revision_number,
-                         module_name, from_matlab):
-        if from_matlab and variable_revision_number == 3:
-            setting_values = [
-                setting_values[0],  # ImageName
-                setting_values[1],  # OutputName
-                setting_values[2] == cps.DO_NOT_USE,  # Threshold
-                setting_values[2]
-                if setting_values[2] != cps.DO_NOT_USE
-                else .5,
-                setting_values[3],  # Threshold adjustment factor
-                setting_values[4],  # Method
-                setting_values[5],  # Filter size
-                setting_values[8],  # Direction
-                setting_values[9] == cps.DO_NOT_USE,  # Sigma
-                setting_values[9]
-                if setting_values[9] != cps.DO_NOT_USE
-                else 5,
-                setting_values[10] == cps.DO_NOT_USE,  # Low threshold
-                setting_values[10]
-                if setting_values[10] != cps.DO_NOT_USE
-                else .5]
-            from_matlab = False
-            variable_revision_number = 1
-
-        if from_matlab == False and variable_revision_number == 1:
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
+        if variable_revision_number == 1:
             # Ratio removed / filter size removed
             setting_values = setting_values[:6] + setting_values[7:]
             variable_revision_number = 2
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number
 
 
 FindEdges = EnhanceEdges

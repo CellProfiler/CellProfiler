@@ -547,11 +547,10 @@ class IdentifyDeadWorms(cpm.Module):
                 return [F_ANGLE]
         return []
 
-    def upgrade_settings(self, setting_values, variable_revision_number,
-                         module_name, from_matlab):
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         '''Upgrade the settings from a previous revison'''
         if variable_revision_number == 1:
             setting_values = setting_values + [
                 cps.YES, 5, 30]
             variable_revision_number = 2
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number

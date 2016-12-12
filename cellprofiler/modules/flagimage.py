@@ -379,13 +379,13 @@ class FlagImage(cpm.Module):
                         self.get_bin_labels(measurement_setting)
                     except IOError:
                         raise cps.ValidationError(
-                            "Failed to load classifier file %s" % 
-                            measurement_setting.rules_file_name.value, 
+                            "Failed to load classifier file %s" %
+                            measurement_setting.rules_file_name.value,
                             measurement_setting.rules_file_name)
                     except:
                         raise cps.ValidationError(
                         "Unable to load %s as a classifier file" %
-                        measurement_setting.rules_file_name.value, 
+                        measurement_setting.rules_file_name.value,
                         measurement_setting.rules_file_name)
 
     def prepare_to_create_batch(self, workspace, fn_alter_path):
@@ -526,19 +526,19 @@ class FlagImage(cpm.Module):
         path_ = os.path.join(directory_, file_)
         if path_ not in d:
             if not os.path.isfile(path_):
-                raise cps.ValidationError("No such rules file: %s" % path_, 
+                raise cps.ValidationError("No such rules file: %s" % path_,
                                           self.rules_file_name)
             else:
                 from sklearn.externals import joblib
                 d[path_] = joblib.load(path_)
         return d[path_]
-    
+
     def get_classifier(self, measurement_group):
         return self.load_classifier(measurement_group)[0]
-    
+
     def get_bin_labels(self, measurement_group):
         return self.load_classifier(measurement_group)[1]
-    
+
     def get_classifier_features(self, measurement_group):
         return self.load_classifier(measurement_group)[3]
 
@@ -639,10 +639,10 @@ class FlagImage(cpm.Module):
             for feature_name in self.get_classifier_features(ms):
                 feature_name = feature_name.split("_", 1)[1]
                 features.append(feature_name)
-    
+
             feature_vector = np.array([
                 0 if feature_name not in image_features else
-                workspace.measurements[cpmeas.IMAGE, feature_name] 
+                workspace.measurements[cpmeas.IMAGE, feature_name]
                 for feature_name in features]).reshape(1, len(features))
             predicted_class = classifier.predict(feature_vector)[0]
             predicted_idx = \
@@ -655,17 +655,17 @@ class FlagImage(cpm.Module):
                                       ms.source_choice)
         is_rc = ms.source_choice in (S_RULES, S_CLASSIFIER)
         is_meas = not is_rc
-        fail = (( is_meas and 
-                 (fail or (ms.wants_minimum.value and 
+        fail = (( is_meas and
+                 (fail or (ms.wants_minimum.value and
                            min_value < ms.minimum_value.value) or
                   (ms.wants_maximum.value and
                    max_value > ms.maximum_value.value))) or
                 (is_rc and fail))
-        
-        return ((not fail), (source, 
-                             ms.measurement.value if is_meas 
-                             else ms.source_choice.value, 
-                             display_value, 
+
+        return ((not fail), (source,
+                             ms.measurement.value if is_meas
+                             else ms.source_choice.value,
+                             display_value,
                              "Fail" if fail else "Pass"))
 
     def get_measurement_columns(self, pipeline):
@@ -684,58 +684,8 @@ class FlagImage(cpm.Module):
         return [flag.feature_name.value for flag in self.flags
                 if flag.category.value == category]
 
-    def upgrade_settings(self, setting_values, variable_revision_number,
-                         module_name, from_matlab):
-        if from_matlab and (variable_revision_number == 1 or variable_revision_number == 2):
-
-            if variable_revision_number == 1:
-                image_name, category, feature_num_or_name, min_value, max_value, \
-                new_or_append, new_name, old_name = setting_values
-                measurement_name = '_'.join((category, feature_num_or_name,
-                                             image_name))
-            elif variable_revision_number == 2:
-                image_name, category, feature_num_or_name, scale, min_value, max_value, \
-                new_or_append, new_name, old_name = setting_values
-
-                measurement_name = '_'.join((category, feature_num_or_name,
-                                             image_name, scale))
-            if min_value == 'No minimum':
-                wants_minimum = cps.NO
-                min_value = "0"
-            else:
-                wants_minimum = cps.YES
-            if max_value == 'No maximum':
-                wants_maximum = cps.NO
-                max_value = "1"
-            else:
-                wants_maximum = cps.YES
-            if new_or_append == "Append existing flag":
-                logger.warning(
-                        "CellProfiler 2.0 can't combine flags from multiple FlagImageForQC modules imported from version 1.0")
-
-            new_name_split = new_name.find('_')
-            if new_name_split == -1:
-                flag_category = 'Metadata'
-                flag_feature = new_name
-            else:
-                flag_category = new_name[:new_name_split]
-                flag_feature = new_name[new_name_split + 1:]
-            setting_values = ["1",  # of flags in module
-                              "1",  # of measurements in the flag
-                              flag_category,
-                              flag_feature,
-                              C_ANY,  # combination choice
-                              S_IMAGE,  # measurement source
-                              cps.NONE,  # object name
-                              measurement_name,
-                              wants_minimum,
-                              min_value,
-                              wants_maximum,
-                              max_value]
-            from_matlab = False
-            variable_revision_number = 1
-
-        if (not from_matlab) and variable_revision_number == 1:
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
+        if variable_revision_number == 1:
             new_setting_values = [setting_values[0]]
             idx = 1
             for flag_idx in range(int(setting_values[0])):
@@ -757,7 +707,7 @@ class FlagImage(cpm.Module):
             setting_values = new_setting_values
             variable_revision_number = 2
 
-        if (not from_matlab) and variable_revision_number == 2:
+        if variable_revision_number == 2:
             # Added rules
             new_setting_values = [setting_values[0]]
             idx = 1
@@ -776,7 +726,7 @@ class FlagImage(cpm.Module):
 
             variable_revision_number = 3
 
-        if (not from_matlab) and variable_revision_number == 3:
+        if variable_revision_number == 3:
             # Added rules_class
             new_setting_values = setting_values[:1]
             idx = 1
@@ -793,4 +743,4 @@ class FlagImage(cpm.Module):
             setting_values = new_setting_values
             variable_revision_number = 4
 
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number

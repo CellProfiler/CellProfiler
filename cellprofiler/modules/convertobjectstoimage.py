@@ -237,12 +237,6 @@ class ConvertObjectsToImage(cellprofiler.module.Module):
             dimensions=dimensions
         )
 
-    def upgrade_settings(self, setting_values, variable_revision_number, module_name, from_matlab):
-        if variable_revision_number == 1 and from_matlab:
-            from_matlab = False
-
-        return setting_values, variable_revision_number, from_matlab
-
 #
 # Backwards compatability
 #

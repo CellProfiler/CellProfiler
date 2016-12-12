@@ -24,40 +24,6 @@ OUTPUT_OBJECTS_NAME = "outputobjects"
 
 
 class TestEditObjectsManually(unittest.TestCase):
-    def test_01_01_load_matlab(self):
-        data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
-                'SU1RyM+zUgjJKFXwSsxTMDJUMDS2MjGzAjKMDAwNFEgGDIyevvwMDAwLmBgY'
-                'KuY8DT+ff9lApOz2Fime0NSrKnwepyceNgtqFHBXM1sglL08d9aRi753zp3Y'
-                'uvrIzFtzLT4cL3h0ZqJ9746z/MdfzzKx3+UZsWnN8z3f956Pn5O+nJPhx0W2'
-                'BQ97o+PWN7mu/l3m+urQPoc5yVZFrxyY9f/83B+3v8msjblpnULhROZDYmfK'
-                'X06IPaf2cHFw2k6Wrw8iyr5FnZfln/D2S7vjgv8/ePwFdx7YznEk+kFZX96G'
-                'Zsmvj2trSs3OnN4xabvmte2yLwMCS1ZU7tU9y/2fX+HT9Wkvrk36E1233yW4'
-                'rsCoVe368QmzrzMd9ziw8mhB1oMd5Sbn/9sprlv4JP/MV1POQy9/2Ac+av37'
-                'USqoy+O5w6WFOXK+qnE35hs8POE2rSd4Wl+p6v4N1sf+RTMvefw/pFP8m+Fl'
-                'zce7Xi/wOL6o4NrVh7O/6y65mMh95DP3b5mLP7dv9fx3VcJP9MsNpXcbX0SY'
-                '9KvMyWV1v1H7bsev9ENsE1osZl9bLnR4ZcM55o8B9ydvvN/5MaJcNj/oWOZG'
-                'C16Jdrfnit+Ob7K6t1QmkP3zzCPqEvtVHtiGf2jpXdmav+Gp06LHhjKty7Ml'
-                '/2y61q5j0xdzbk+z1GzJihW/nxm0y62uSDkofbPg2YwJCpzq+XtPS80/Yv+2'
-                'fMI092t/A034Q/l/SYl9kvv0SuDI/0th99ufWk3Yvu5s97ETae9UbM9tKu7n'
-                '3ac82d2h8vWsluXVpny+Xke8o95v+t/psZ01RirOmqtvw8zTnMte8G00+vBO'
-                'ujuqPmjef9X7ybKnb/mvPfX3q9fa2ZGvr4SzrV1XctBz87xYoI9juQP72jcb'
-                'S/c/3WzLGxd9UPhbZ2tlfVz0nGCPvdkSM1v/PCleMHGB99XNZbei1v3+u+vn'
-                'q/Oryv/ZT35kcv/53Xvn997XF6/83/D13v/Vov8cb0/5b3+mX74BAJGShuQ=')
-        pipeline = cpp.Pipeline()
-
-        def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
-
-        pipeline.add_listener(callback)
-        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
-        self.assertEqual(len(pipeline.modules()), 3)
-        module = pipeline.modules()[-1]
-        self.assertTrue(isinstance(module, E.EditObjectsManually))
-        self.assertEqual(module.object_name, "Nuclei")
-        self.assertEqual(module.filtered_objects, "FilteredNuclei")
-        self.assertFalse(module.wants_outlines)
-        self.assertEqual(module.renumber_choice, E.R_RENUMBER)
-
     def test_01_02_load_v1(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1

@@ -52,45 +52,6 @@ class TestApplyThreshold(unittest.TestCase):
     def test_01_00_write_a_test_for_the_new_variable_revision_please(self):
         self.assertEqual(A.ApplyThreshold.variable_revision_number, 7)
 
-    def test_01_01_load_matlab(self):
-        '''Load a matlab pipeline containing ApplyThreshold'''
-        data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUX'
-                'AuSk0sSU1RyM+zUggpTVXwKs1TMDBSMDSzMjK2MjRWMDIwsFQgGTAw'
-                'evryMzAwPGZkYKiYczfM1/+Qg4Csl6NJm4K6r8WXF65TKg5KS/ioBC'
-                'o4ePjs0SnRnD0l7zI/0z+m+knu/f90yhc67FYK2MfnY6y4eW7l52+l'
-                'N8w4GVqLGyx++xpMT0gy1O/7Mec47xuLIxfeSJwoeLm23jhfsXvBtr'
-                '5oj/KNvMaz103v1cvtO3NzbfiqXVbrFuyznxl59O32janhuy87vS/r'
-                '5dl4T0FeosnMd/Vjxo2cpnuq+ONj5n5d2nfB/OQfdbvrikovDpR6/r'
-                '5WWcf47OcnprtB+/5Mee5rU5I3r23FY43aJyVVMur7mdQVH3zYkSX4'
-                'dqLn2dfvw66cbqyS9DoaVSn7L90pXs68Wmxb9Z7PMe21n6czfRVKKX'
-                '79cn9HfacWW6nIdb6D9npArX2yLj13P3GsPXw48bc7k8XEwn+GX9tt'
-                'H7bevf533k+b9Qd2C3yo8OGZytPxSilWsXbJWb/zBr9Fnm932n5ZUz'
-                'poeXBivM01HZNN1h7H7eaU/nRhrgisSF4lE8S/cX9hN9PXysyfv8+s'
-                'P77ts5kc19lF6yTl8i9WF/Ut33Dx8DO9Qpe63c8qdX7Ef/j/p+Pz7p'
-                'd39gQsmVbLfsrKwpOx/bjr5Svuk/uFV62u/2//UfSPatlSfzPr9qIN'
-                'kftnyOzzS7te/Uzr8Gs7xTufd8ZNst/q+7meke/SzmsA0OAP3A==')
-        #
-        # ApplyThreshold:
-        # image_name = OrigBlue
-        # thresholded_image_name = ThreshBlue
-        # low_threshold = .1
-        # high_threshold = .9
-        # grayscale
-        #
-        fd = StringIO(zlib.decompress(base64.b64decode(data)))
-        pipeline = cpp.Pipeline()
-        pipeline.load(fd)
-        self.assertEqual(len(pipeline.modules()), 2)
-        module = pipeline.modules()[1]
-        self.assertTrue(isinstance(module, A.ApplyThreshold))
-        self.assertEqual(module.image_name.value, "OrigBlue")
-        self.assertEqual(module.thresholded_image_name.value, "ThreshBlue")
-        self.assertEqual(module.binary.value, A.GRAYSCALE)
-        self.assertEqual(module.low_or_high, A.TH_BELOW_THRESHOLD)
-        self.assertEqual(module.threshold_scope, T.TM_MANUAL)
-        self.assertAlmostEqual(module.manual_threshold.value, .1)
-        self.assertEqual(module.threshold_smoothing_choice, A.TSM_NONE)
-
     def test_01_02_load_v2(self):
         '''Load a variable_revision_number = 2 pipeline'''
         data = ('eJztWOFP2kAUPxCNzGRzH8z8eB9lE9J2uihZVIRlYwMkylyM0e2AQ7'

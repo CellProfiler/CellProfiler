@@ -1,4 +1,4 @@
-'''<b>Calculate Statistics</b> calculates measures of assay quality 
+'''<b>Calculate Statistics</b> calculates measures of assay quality
 (V and Z' factors) and dose response data (EC50) for all measured features
 made from images.
 <hr>
@@ -462,28 +462,12 @@ class CalculateStatistics(cpm.Module):
                     "CalculateStatistics will not produce any output in test mode",
                     self.grouping_values)
 
-    def upgrade_settings(self, setting_values, variable_revision_number,
-                         module_name, from_matlab):
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
 
         PC_DEFAULT = "Default output folder"
         PC_WITH_IMAGE = "Same folder as image"
 
-        if from_matlab and variable_revision_number == 3:
-            data_name = setting_values[0]
-            logarithmic = setting_values[1]
-            figure_name = setting_values[2]
-            wants_save_figure = (cps.NO if figure_name == cps.DO_NOT_USE
-                                 else cps.YES)
-            setting_values = [data_name,
-                              data_name,
-                              logarithmic,
-                              wants_save_figure,
-                              figure_name,
-                              PC_DEFAULT,
-                              cps.DO_NOT_USE]
-            variable_revision_number = 1
-            from_matlab = False
-        if variable_revision_number == 1 and not from_matlab:
+        if variable_revision_number == 1:
             #
             # Minor change: Default output directory -> folder
             #
@@ -512,7 +496,7 @@ class CalculateStatistics(cpm.Module):
             setting_values[offset] = cps.DirectoryPath.upgrade_setting(
                     setting_values[offset])
 
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number
 
 
 ########################################################

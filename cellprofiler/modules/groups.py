@@ -531,8 +531,7 @@ class Groups(cpm.Module):
                 result.append((cpmeas.IMAGE, ftr, cpmeas.COLTYPE_VARCHAR))
         return result
 
-    def upgrade_settings(self, setting_values, variable_revision_number,
-                         module_name, from_matlab):
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         if variable_revision_number == 1:
             #
             # Remove the image name from the settings
@@ -544,4 +543,4 @@ class Groups(cpm.Module):
                         setting_values[self.IDX_GROUPING_METADATA_COUNT + 2 + i * 2])
             setting_values = new_setting_values
             variable_revision_number = 2
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number

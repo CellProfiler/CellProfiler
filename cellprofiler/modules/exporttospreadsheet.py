@@ -1156,69 +1156,23 @@ Do you want to save it anyway?""" %
         self.directory.alter_for_create_batch_files(fn_alter_path)
         return True
 
-    def upgrade_settings(self, setting_values, variable_revision_number,
-                         module_name, from_matlab):
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         """Adjust the setting values based on the version that saved them
 
         """
 
-        if variable_revision_number == 1 and from_matlab:
-            # Added create subdirectories questeion
-            setting_values = list(setting_values)
-            setting_values.append(cps.NO)
-            variable_revision_number = 2
-        if variable_revision_number == 2 and from_matlab:
-            wants_subdirectories = (setting_values[8] == cps.YES)
-            object_names = [x for x in setting_values[:-1]
-                            if x != cps.DO_NOT_USE]
-            setting_values = [DELIMITER_TAB, cps.YES, cps.NO, cps.NO,
-                              cps.NO, cps.NO]
-            for name in object_names:
-                setting_values.extend([name, cps.NO, "%s.csv" % name])
-            variable_revision_number = 1
-            from_matlab = False
-        if variable_revision_number == 3 and from_matlab:
-            #
-            # Variables 9 and 10 are the pathname and prefix and
-            # are not yet replicated in pyCP
-            #
-            custom_directory = '.'
-            if setting_values[8] == '.':
-                directory_choice = DEFAULT_OUTPUT_FOLDER_NAME
-            elif setting_values[8] == '&':
-                directory_choice = DEFAULT_INPUT_FOLDER_NAME
-            elif setting_values[8].find(r"\(?<"):
-                directory_choice = DIR_CUSTOM_WITH_METADATA
-                custom_directory = setting_values[8]
-            else:
-                directory_choice = DIR_CUSTOM
-                custom_directory = setting_values[8]
-            if setting_values[9] != cps.DO_NOT_USE:
-                prefix = setting_values[9] + "_"
-            else:
-                prefix = ""
-            object_names = [x for x in setting_values[:8]
-                            if x != cps.DO_NOT_USE]
-            setting_values = [DELIMITER_TAB, cps.YES, cps.NO, cps.NO,
-                              cps.NO, cps.NO, cps.NO, cps.NO, cps.NO,
-                              directory_choice, custom_directory]
-            for name in object_names:
-                setting_values.extend([name, cps.NO,
-                                       "%s%s.csv" % (prefix, name)])
-            variable_revision_number = 3
-            from_matlab = False
-        if variable_revision_number == 1 and not from_matlab:
+        if variable_revision_number == 1:
             # Added aggregate questions
             setting_values = (setting_values[:6] + [cps.NO, cps.NO, cps.NO] +
                               setting_values[6:])
             variable_revision_number = 2
-        if variable_revision_number == 2 and not from_matlab:
+        if variable_revision_number == 2:
             # Added directory choice questions
             setting_values = (setting_values[:9] +
                               [DEFAULT_OUTPUT_FOLDER_NAME, "."] +
                               setting_values[9:])
             variable_revision_number = 3
-        if variable_revision_number == 3 and not from_matlab:
+        if variable_revision_number == 3:
             # Added "wants everything" setting
             #
             new_setting_values = setting_values[:11] + [cps.NO]
@@ -1228,12 +1182,12 @@ Do you want to save it anyway?""" %
             setting_values = new_setting_values
             variable_revision_number = 4
 
-        if variable_revision_number == 4 and not from_matlab:
+        if variable_revision_number == 4:
             # Added column selector
             setting_values = setting_values[:12] + ['None|None'] + setting_values[12:]
             variable_revision_number = 5
 
-        if variable_revision_number == 5 and not from_matlab:
+        if variable_revision_number == 5:
             # Combined directory_choice and custom_directory
             # Removed add_indexes
             directory_choice = setting_values[9]
@@ -1254,7 +1208,7 @@ Do you want to save it anyway?""" %
                               setting_values[11:])
             variable_revision_number = 6
 
-        if variable_revision_number == 6 and not from_matlab:
+        if variable_revision_number == 6:
             ''' Add GenePattern export options
             self.wants_genepattern_file, self.how_to_specify_gene_name,
             self.use_which_image_for_gene_name,self.gene_name_column
@@ -1264,26 +1218,26 @@ Do you want to save it anyway?""" %
                               setting_values[9:])
             variable_revision_number = 7
 
-        if variable_revision_number == 7 and not from_matlab:
+        if variable_revision_number == 7:
             # Add nan_representation
             setting_values = (
                 setting_values[:SETTING_OG_OFFSET_V7] +
                 [NANS_AS_NANS] + setting_values[SETTING_OG_OFFSET_V7:])
             variable_revision_number = 8
 
-        if variable_revision_number == 8 and not from_matlab:
+        if variable_revision_number == 8:
             # Removed output file prepend
             setting_values = setting_values[:1] + setting_values[2:]
             variable_revision_number = 9
 
-        if variable_revision_number == 9 and not from_matlab:
+        if variable_revision_number == 9:
             # Added prefix
             setting_values = setting_values[:SETTING_OG_OFFSET_V9] + \
                              [cps.NO, "MyExpt_"] + \
                              setting_values[SETTING_OG_OFFSET_V9:]
             variable_revision_number = 10
 
-        if variable_revision_number == 10 and not from_matlab:
+        if variable_revision_number == 10:
             # added overwrite choice - legacy value is "Yes"
             setting_values = setting_values[:SETTING_OG_OFFSET_V10] + \
                              [cps.YES] + \
@@ -1298,7 +1252,7 @@ Do you want to save it anyway?""" %
                           [directory] +
                           setting_values[SLOT_DIRCHOICE + 1:])
 
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number
 
 
 def is_object_group(group):

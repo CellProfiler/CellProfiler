@@ -34,33 +34,6 @@ ID_OBJ = 'Protein'
 
 
 class TestCalculateImageOverlap(unittest.TestCase):
-    def test_01_01_load_matlab(self):
-        data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
-                'SU1RyM+zUggpTVXwSsxTMDJTMDSzMrWwMrRQMDIwNFAgGTAwevryMzAwnGJk'
-                'YKiY83TqWa8jBgINy++G/WEMdBSwubFY/L/AkcULmpredek1Hd9x9prDrSlm'
-                'sWW1TPLH3T/01rAK5+7OjHl7fpX4cp7TS4zj1Sa/fKPE8EaP4UzH/ciFajUd'
-                'c2+1Lbq07+CcyQe6czck6MbWC1Z1KzW909znanLQ8MmktfPZa6/Jtv5c7f1M'
-                'TWT7xPVW3Jnq/2z7HvnZc/vEx09UXGb+RNA50Gh7to2CYaKj1PxPX6/WxB/b'
-                'Wiveanf7sZVElGxKbNiU0pf1LMn12U53p4n8Xxqyu+LEdr/2Fcdl5T/ecxY9'
-                '13Rs4jbxjSoFlVM+tNvMvyvUF/ogYoMsW9xkC7GJKx9JPT/tGd/7f+Wu0Kdn'
-                's20y5xuoJ9zxTOL5Py+8bL5bY/qBf/rPi8MORV+ruKTW6M12xFegtKN/T43X'
-                'FcvlkQ9mXUi7fDVzd9rcZ1uKPW93X9B4p9gl6ne1Joo1jvudS+i/TXK//h3k'
-                '0zoiP+v++dytcpe/3a4OPqEo9E9ufY/xy/rUM4Uu3I8Dzq7Om/e/9z9T/Pf+'
-                'e/t93/9sUvweI6kR+uzyqmMTvxku2tui1Hc/cS5jnwbXw8/lJsFFfME22mmb'
-                'K7dcL7Df7ThHdV5z7/VSye8sX99lfpb+7zPr135GNddNRQBlKwLx')
-        pipeline = cpp.Pipeline()
-
-        def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
-
-        pipeline.add_listener(callback)
-        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
-        self.assertEqual(len(pipeline.modules()), 2)
-        module = pipeline.modules()[-1]
-        self.assertTrue(isinstance(module, C.CalculateImageOverlap))
-        self.assertEqual(module.ground_truth, "groundtruth")
-        self.assertEqual(module.test_img, "orig")
-
     def test_01_02_load_v1(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1

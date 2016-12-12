@@ -145,7 +145,7 @@ H_VERSION = 'Version'
 H_SVN_REVISION = 'SVNRevision'
 H_DATE_REVISION = 'DateRevision'
 '''A pipeline file header variable for faking a matlab pipeline file'''
-H_FROM_MATLAB = 'FromMatlab'
+
 '''The GIT hash of the revision'''
 H_GIT_HASH = 'GitHash'
 
@@ -872,7 +872,6 @@ class Pipeline(object):
         if not self.is_pipeline_txt_fd(StringIO.StringIO(header)):
             raise NotImplementedError('Invalid header: "%s"' % header)
         version = NATIVE_VERSION
-        from_matlab = False
         do_utf16_decode = False
         has_image_plane_details = False
         git_hash = None
@@ -896,8 +895,6 @@ class Pipeline(object):
             elif kwd in (H_SVN_REVISION, H_DATE_REVISION):
                 pipeline_version = int(value)
                 CURRENT_VERSION = int(re.sub(r"\.|rc\d{1}", "", cellprofiler.__version__))
-            elif kwd == H_FROM_MATLAB:
-                from_matlab = (value == "True")
             elif kwd == H_MODULE_COUNT:
                 module_count = int(value)
             elif kwd == H_HAS_IMAGE_PLANE_DETAILS:
@@ -1030,9 +1027,7 @@ class Pipeline(object):
                         setattr(module, attribute, value)
                 if variable_revision_number is None:
                     raise ValueError("Module %s did not have a variable revision # attribute" % module_name)
-                module.set_settings_from_values(settings,
-                                                variable_revision_number,
-                                                module_name, from_matlab)
+                module.set_settings_from_values(settings, variable_revision_number, module_name)
             except Exception, instance:
                 if raise_on_error:
                     raise
@@ -2971,9 +2966,7 @@ class Pipeline(object):
 
         def undo():
             module = self.__modules[idx]
-            module.set_settings_from_values(old_settings,
-                                            variable_revision_number,
-                                            module_name, False)
+            module.set_settings_from_values(old_settings, variable_revision_number, module_name)
             self.notify_listeners(ModuleEditedPipelineEvent(module_num))
             self.__settings[idx] = old_settings
 

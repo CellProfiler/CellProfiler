@@ -1,4 +1,4 @@
-"""<b> Measure Image Area Occupied</b> measures the total area in an image that is 
+"""<b> Measure Image Area Occupied</b> measures the total area in an image that is
 occupied by objects.
 <hr>
 This module reports the sum of the areas and perimeters of the objects defined by one
@@ -306,21 +306,7 @@ class MeasureImageAreaOccupied(cpm.Module):
                     if op.operand_choice == O_BINARY_IMAGE]
         return []
 
-    def upgrade_settings(self, setting_values, variable_revision_number,
-                         module_name, from_matlab):
-        """Account for the save-format of previous versions of this module
-
-        We check for the Matlab version which did the thresholding as well
-        as the measurement; this duplicated the functionality in the Identify
-        modules.
-        """
-        if from_matlab:
-            raise NotImplementedError("The MeasureImageAreaOccupied module has changed substantially. \n"
-                                      "You should use this module by either:\n"
-                                      "(1) Thresholding your image using an Identify module\n"
-                                      "and then measure the resulting objects' area; or\n"
-                                      "(2) Create a binary image with ApplyThreshold and then measure the\n"
-                                      "resulting foreground image area.")
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         if variable_revision_number == 1:
             # We added the ability to process multiple objects in v2, but
             # the settings for v1 miraculously map to v2
@@ -334,4 +320,4 @@ class MeasureImageAreaOccupied(cpm.Module):
                                        setting_values[(i * 3) + 2], cps.NONE]
             setting_values = new_setting_values
             variable_revision_number = 3
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number

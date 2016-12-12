@@ -507,66 +507,22 @@ class ReassignObjectNumbers(cpm.Module):
         new_labels[labels != 0] = new_indexes[labels[labels != 0]]
         return new_labels
 
-    def upgrade_settings(self, setting_values, variable_revision_number,
-                         module_name, from_matlab):
-        '''Adjust setting values if they came from a previous revision
-
-        setting_values - a sequence of strings representing the settings
-                         for the module as stored in the pipeline
-        variable_revision_number - the variable revision number of the
-                         module at the time the pipeline was saved. Use this
-                         to determine how the incoming setting values map
-                         to those of the current module version.
-        module_name - the name of the module that did the saving. This can be
-                      used to import the settings from another module if
-                      that module was merged into the current module
-        from_matlab - True if the settings came from a Matlab pipeline, False
-                      if the settings are from a CellProfiler 2.0 pipeline.
-
-        Overriding modules should return a tuple of setting_values,
-        variable_revision_number and True if upgraded to CP 2.0, otherwise
-        they should leave things as-is so that the caller can report
-        an error.
-        '''
-        if (from_matlab and variable_revision_number == 1 and
-                    module_name == 'SplitIntoContiguousObjects'):
-            setting_values = setting_values + [OPTION_SPLIT, '0', cps.DO_NOT_USE]
-            variable_revision_number = 1
-            module_name = 'RelabelObjects'
-        if (from_matlab and variable_revision_number == 1 and
-                    module_name == 'UnifyObjects'):
-            setting_values = (setting_values[:2] + [OPTION_UNIFY] +
-                              setting_values[2:])
-            variable_revision_number = 1
-            module_name = 'RelabelObjects'
-        if (from_matlab and variable_revision_number == 1 and
-                    module_name == 'RelabelObjects'):
-            object_name, relabeled_object_name, relabel_option, \
-            distance_threshold, grayscale_image_name = setting_values
-            wants_image = (cps.NO if grayscale_image_name == cps.DO_NOT_USE
-                           else cps.YES)
-            setting_values = [object_name, relabeled_object_name,
-                              relabel_option, distance_threshold,
-                              wants_image, grayscale_image_name,
-                              "0.9", CA_CENTROIDS]
-            from_matlab = False
-            variable_revision_number = 1
-
-        if (not from_matlab) and variable_revision_number == 1:
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
+        if variable_revision_number == 1:
             # Added outline options
             setting_values += [cps.NO, "RelabeledNucleiOutlines"]
             variable_revision_number = 2
 
-        if (not from_matlab) and variable_revision_number == 1:
+        if variable_revision_number == 1:
             # Added per-parent unification
             setting_values += [UNIFY_DISTANCE, cps.NONE]
             variable_revision_number = 3
 
-        if (not from_matlab) and variable_revision_number == 3:
+        if variable_revision_number == 3:
             setting_values = setting_values + [UM_DISCONNECTED]
             variable_revision_number = 4
 
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number
 
     def get_image(self, workspace):
         '''Get the image for image-directed merging'''

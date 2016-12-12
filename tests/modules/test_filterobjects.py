@@ -58,10 +58,10 @@ class TestFilterObjects(unittest.TestCase):
         return workspace, module
 
     @contextlib.contextmanager
-    def make_classifier(self, module, 
-                        answers, 
+    def make_classifier(self, module,
+                        answers,
                         classes=None,
-                        class_names = None, 
+                        class_names = None,
                         rules_class = None,
                         name = "Classifier",
                         feature_names = ["Foo_"+TEST_FTR]):
@@ -73,12 +73,12 @@ class TestFilterObjects(unittest.TestCase):
             class_names = ["Class%d" for _ in classes]
         if rules_class is None:
             rules_class = class_names[0]
-        s = make_classifier_pickle(answers, classes, class_names, name, 
+        s = make_classifier_pickle(answers, classes, class_names, name,
                                   feature_names)
         fd, filename = tempfile.mkstemp(".model")
         os.write(fd, s)
         os.close(fd)
-            
+
         module.mode.value = F.MODE_CLASSIFIERS
         module.rules_class.value = rules_class
         module.rules_directory.set_custom_path(os.path.dirname(filename))
@@ -434,135 +434,6 @@ class TestFilterObjects(unittest.TestCase):
         alternates = workspace.object_set.get_objects("my_additional_result")
         self.assertTrue(np.all(labels.segmented == expected))
         self.assertTrue(np.all(alternates.segmented == expected_alternates))
-
-    def test_05_00_load_matlab_v5(self):
-        data = """CellProfiler Pipeline: http://www.cellprofiler.org
-Version:1
-SVNRevision:1234
-FromMatlab:True
-
-FilterByObjectMeasurement:[module_num:1|svn_version:\'8913\'|variable_revision_number:5|show_window:False|notes:\x5B\x5D]
-    Which object would you like to filter by, or if using a Ratio, what is the numerator object?:MyObjects
-    What do you want to call the filtered objects?:MyFilteredObjects
-    Which category of measurements would you want to filter by?:Texture
-    Which feature do you want to use? (Enter the feature number or name - see help for details):Granulectomy
-    For INTENSITY, AREAOCCUPIED or TEXTURE features, which image's measurements do you want to use (for other measurements, this will only affect the display)?:MyImage
-    For TEXTURE, RADIAL DISTRIBUTION, OR NEIGHBORS features, what previously measured size scale (TEXTURE OR NEIGHBORS) or previously used number of bins (RADIALDISTRIBUTION) do you want to use?:15
-    Minimum value required:No minimum
-    Maximum value allowed:0.85
-    What do you want to call the outlines of the identified objects (optional)?:MyOutlines
-"""
-        pipeline = cpp.Pipeline()
-
-        def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
-
-        pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(data))
-        self.assertEqual(len(pipeline.modules()), 1)
-        module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, F.FilterByObjectMeasurement))
-        self.assertEqual(module.object_name, "MyObjects")
-        self.assertEqual(module.target_name, "MyFilteredObjects")
-        self.assertEqual(module.measurements[0].measurement, "Texture_Granulectomy")
-        self.assertEqual(module.filter_choice, F.FI_LIMITS)
-        self.assertAlmostEqual(module.measurements[0].max_limit.value, 0.85)
-        self.assertEqual(module.outlines_name, "MyOutlines")
-
-    def test_05_01_load_matlab(self):
-        '''Test loading a Matlab pipeline
-
-Saved Pipeline, in file fbom_pipe.txt, Saved on 22-Apr-2009
-
-SVN version number: 7297
-Pixel Size: 1
-
-Pipeline:
-    KeepLargestObject
-    FilterByObjectMeasurement
-    FilterByObjectMeasurement
-
-Module #1: KeepLargestObject revision - 1
-     What did you call the primary objects?    FilteredNuclei
-     What did you call the secondary objects?    TargetObjects
-     What do you want to call the largest primary objects?    TargetObjects
-
-Module #2: FilterByObjectMeasurement revision - 6
-     What do you want to call the filtered objects?    FilteredNuclei
-     Which object would you like to filter by, or if using a Ratio, what is the numerator object?    LargestObjects
-     Which category of measurements would you want to filter by?    AreaShape
-     Which feature do you want to use? (Enter the feature number or name - see help for details)    Perimeter
-     For INTENSITY, AREAOCCUPIED or TEXTURE features, which image's measurements do you want to use (for other measurements, this will only affect the display)?
-     For TEXTURE, RADIAL DISTRIBUTION, OR NEIGHBORS features, what previously measured size scale (TEXTURE OR NEIGHBORS) or previously used number of bins (RADIALDISTRIBUTION) do you want to use?    1
-     Minimum value required:    200
-     Maximum value allowed:    No maximum
-     What do you want to call the outlines of the identified objects? Type "Do not use" to ignore.    Do not use
-
-Module #3: FilterByObjectMeasurement revision - 6
-     What do you want to call the filtered objects?    FilteredNuclei
-     Which object would you like to filter by, or if using a Ratio, what is the numerator object?    TargetObjects
-     Which category of measurements would you want to filter by?    Intensity
-     Which feature do you want to use? (Enter the feature number or name - see help for details)    MeanIntensity
-     For INTENSITY, AREAOCCUPIED or TEXTURE features, which image's measurements do you want to use (for other measurements, this will only affect the display)?
-     For TEXTURE, RADIAL DISTRIBUTION, OR NEIGHBORS features, what previously measured size scale (TEXTURE OR NEIGHBORS) or previously used number of bins (RADIALDISTRIBUTION) do you want to use?    1
-     Minimum value required:    No minimum
-     Maximum value allowed:    .25
-     What do you want to call the outlines of the identified objects? Type "Do not use" to ignore.    OutlineObjects
-        '''
-        data = ('TUFUTEFCIDUuMCBNQVQtZmlsZSwgUGxhdGZvcm06IFBDV0lOLCBD' +
-                'cmVhdGVkIG9uOiBXZWQgQXByIDIyIDEyOjM2OjQ3IDIwMDkgICAg' +
-                'ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg' +
-                'ICAgICAgIAABSU0PAAAACQIAAHic1ZZPT9swFMAd0lYURAU7gbRD' +
-                'j5xQQZq045gmBGK0FUW9u/RRPCV2FNuo5VPtuOM+Csd9jNkkaR1T' +
-                'SNKEanuRFT3nvd/7I+clLYTQzx2EGuq+qdYGiqQe646xtD4AIQid' +
-                '8Dqqof14/7daQxwSPPJgiD0JHM0l2b+gd+xmFswfXbGx9KCLfdNY' +
-                'SVf6Iwh57y5xjB/3yRS8AXkElJbE7BoeCCeMxv4x396dx2XCittS' +
-                '66m+6INj9cFVq2nsa/svaGFfW9K3lmG/G+tnxBMQwrgrbz0g/ydn' +
-                'x+Jo/QaHExC90Q+4FbxEf75rDl+A1plPVZymxdH6aQh4cI+D5Pyu' +
-                'yrmgAignYmZwyvD6EBIf1BEowFnWpyvA1MzNzKvzBi8Rk1fWL4+/' +
-                'Odcifwcdl/TLG9dN+bvopNPJ1fctq16td1nbJ5T40n9Z/6o8PE3z' +
-                'itZzdPKpdB7fWJsy0ZYc8nOWzZOeFB6hkJonf9xq5/y2FVfr7Dng' +
-                'JGQymHPOMzh7FmcvzWkTOobAyKtqXlV1/mucqvtU9J5Vx7LzT3w8' +
-                'gUUZlXKqvmf194OVl9ZZ9F6+aPB78A6d1993e36tel4uAYLUv4vB' +
-                '62fwDiye1qP/sq+zCKa+rlyG4ANdB9ec942Mfm0ozW02K/ve5onn' +
-                'NBrPfp8L+NVim4OPQ3VFcX+hYufi8A37RNZl/xf1ffWE')
-        pipeline = cpp.Pipeline()
-
-        def handle_error(caller, event):
-            if isinstance(event, cpp.LoadExceptionEvent):
-                self.fail(event.error.message)
-
-        pipeline.add_listener(handle_error)
-        fd = StringIO.StringIO(base64.b64decode(data))
-        pipeline.load(fd)
-
-        self.assertEqual(len(pipeline.modules()), 3)
-        klo, fbom1, fbom2 = pipeline.modules()
-        self.assertEqual(klo.object_name.value, 'TargetObjects')
-        self.assertEqual(klo.enclosing_object_name.value, 'FilteredNuclei')
-        self.assertEqual(klo.target_name.value, 'TargetObjects')
-        self.assertEqual(klo.filter_choice.value, F.FI_MAXIMAL_PER_OBJECT)
-        self.assertEqual(klo.measurements[0].measurement.value, 'AreaShape_Area')
-        self.assertFalse(klo.wants_outlines.value)
-
-        self.assertEqual(fbom1.object_name.value, 'LargestObjects')
-        self.assertEqual(fbom1.target_name.value, 'FilteredNuclei')
-        self.assertEqual(fbom1.filter_choice.value, F.FI_LIMITS)
-        self.assertEqual(fbom1.measurements[0].measurement.value, 'AreaShape_Perimeter')
-        self.assertTrue(fbom1.measurements[0].wants_minimum.value)
-        self.assertEqual(fbom1.measurements[0].min_limit.value, 200)
-        self.assertFalse(fbom1.measurements[0].wants_maximum.value)
-        self.assertFalse(fbom1.wants_outlines.value)
-
-        self.assertEqual(fbom2.object_name.value, 'TargetObjects')
-        self.assertEqual(fbom2.target_name.value, 'FilteredNuclei')
-        self.assertEqual(fbom2.filter_choice.value, F.FI_LIMITS)
-        self.assertEqual(fbom2.measurements[0].measurement.value, 'Intensity_MeanIntensity')
-        self.assertFalse(fbom2.measurements[0].wants_minimum.value)
-        self.assertTrue(fbom2.measurements[0].wants_maximum.value)
-        self.assertEqual(fbom2.measurements[0].max_limit.value, .25)
-        self.assertTrue(fbom2.wants_outlines.value)
-        self.assertEqual(fbom2.outlines_name.value, 'OutlineObjects')
 
     def test_05_02_load(self):
         '''Load a pipeline saved by pyCP'''
@@ -1007,46 +878,6 @@ Module #3: FilterByObjectMeasurement revision - 6
         self.assertEqual(module.rules_directory.dir_choice,
                          cpprefs.DEFAULT_INPUT_SUBFOLDER_NAME)
         self.assertEqual(module.rules_directory.custom_path, "./")
-
-    def test_05_04_load_matlab_v7(self):
-        data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
-                'SU1RyM+zUggH0l6JeQoGZgqGhlbGllZGhgpGBoYGCiQDBkZPX34GBoafTAwM'
-                'FXPezridd9lA4vhdvdhGR1OzRgZO0+kxPZO4Wso8Ay1DFmUeXeYZs2vtbUnV'
-                'wqkWwYdN/Q8FF5x8/IGjoP3usrXZl57dOCwwbc2L4j9///yUlw9mYvhTxXLA'
-                'rvpegiW/2soHty0Vi3/zBHatbQxm4Kp4MP1/wk+mWxJlPCWMvOKWCdOWPeVd'
-                '7X9u78M3oZO/xDC/vCCivXnJ7jT2m36r7Uu/xG//yCGZ/oObqTsz6q3yrkN8'
-                'atPev//89FLk7havt9Mi/sXNej1hcklAhJ3Yqcq/4Qlx8ZwX3gasqH/xvNhk'
-                'kf/9noTpq9SW3PU+d9HJopp7jm3A9WyF3viIO6qaeXn7j7K5mr16mXfdQcIl'
-                'Kz7ygcaCuGzzST82ms2N/RK97H1mR7zjpem3Q98+aWVb1Ls6epL99tcuWzlC'
-                'Y4/PVwi0MFfl2y4t5jqteSX7ouJFx4TDz/vn9OUF9VsLtd/2ZdENnOz7amL8'
-                'gyeNftt+2y5aJ3891aZl6/zoB08cRHPK6uQ8ZPK2r3i86j3PpUa3FL+wjyyF'
-                'JYtm3Ti0LHvZ45SftZe+sfdtuyxfuSdb/eqVvyedrj8X/PukNmR1xlWLj+y9'
-                '5Zc336w8u/KC4NmYdgO/K38NV64Tvf++tuN+rCZfXvLq9vUF51vbunwtZsxN'
-                'u35x/Yq/3rviWY8GF2smsqfc8RU8b7T3uqi/0LsDbfMut7IJWXh+P7rj15rq'
-                '+l7p87vOW2d+3TjvoM9+/6jYlHPnH736vXpHn8rV0j03eHIe8ZVPn5xiqzr3'
-                '/Arv4wpT167NkHBevqDW+8HbmpjZj1j+8s+s3+/5/dI88aZHv8Irbl/S75l8'
-                '9c+/9f9f/Tg0L/K4fW3b2mh3oem3jyxl23Yhnjt8zr+Y7893le4+o3v//dPf'
-                'EZcq/zQeiHPekeDy8rpt5+G3bvyRIt/3buv1/agj21oe/6hwd+eCx7dWmM7T'
-                'O/S09fMtxT3tQv23J/+/vX4v54Xls3XSHO0/ztkmv6h8XqT78aPNJv8NH20L'
-                '3zFXv2j/ZYm6rvh/m/5s/fP24/tPP2Q4H/WuVtd+5X953bX/zPOlJoQDAOEw'
-                'rqc=')
-        pipeline = cpp.Pipeline()
-
-        def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
-
-        pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
-        self.assertEqual(len(pipeline.modules()), 4)
-        module = pipeline.modules()[-1]
-        self.assertTrue(isinstance(module, F.FilterObjects))
-        self.assertEqual(module.object_name, "Nucs")
-        self.assertEqual(module.target_name, "FilteredNuclei")
-        self.assertEqual(module.mode, F.MODE_RULES)
-        self.assertEqual(module.rules_directory.dir_choice,
-                         cpprefs.DEFAULT_OUTPUT_FOLDER_NAME)
-        self.assertEqual(module.rules_file_name, "myrules.txt")
-        self.assertEqual(module.measurements[0].measurement, "Intensity_MeanIntensity_DNA_1")
 
     def test_05_05_load_v3(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
@@ -1713,7 +1544,7 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
         mask = (unedited != 3) & (unedited != 0)
         self.assertTrue(np.all(small_removed[mask] != 0))
         self.assertTrue(np.all(small_removed[~mask] == 0))
-        
+
     def test_11_00_classify_none(self):
         workspace, module = self.make_workspace(
             {INPUT_OBJECTS : np.zeros((10, 10), int)})
@@ -1724,7 +1555,7 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
             module.run(workspace)
             output_objects = workspace.object_set.get_objects(OUTPUT_OBJECTS)
             self.assertEqual(output_objects.count, 0)
-        
+
     def test_11_01_classify_true(self):
         labels = np.zeros((10, 10), int)
         labels[4:7, 4:7] = 1
@@ -1737,7 +1568,7 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
             module.run(workspace)
             output_objects = workspace.object_set.get_objects(OUTPUT_OBJECTS)
             self.assertEqual(output_objects.count, 1)
-    
+
     def test_11_02_classify_false(self):
         labels = np.zeros((10, 10), int)
         labels[4:7, 4:7] = 1
@@ -1750,7 +1581,7 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
             module.run(workspace)
             output_objects = workspace.object_set.get_objects(OUTPUT_OBJECTS)
             self.assertEqual(output_objects.count, 0)
-        
+
     def test_11_03_classify_many(self):
         labels = np.zeros((10, 10), int)
         labels[1:4, 1:4] = 1
@@ -1768,24 +1599,24 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
             labels_out = output_objects.get_labels()[0][0]
             np.testing.assert_array_equal(labels_out[1:4, 1:4], 1)
             np.testing.assert_array_equal(labels_out[5:7, 5:7], 0)
-        
+
 class FakeClassifier(object):
     def __init__(self, answers, classes):
         '''initializer
-        
+
         answers - a vector of answers to be returned by "predict"
-        
+
         classes - a vector of class numbers to be used to populate self.classes_
         '''
         self.answers_ = answers
         self.classes_ = classes
-        
+
     def predict(self, *args, **kwargs):
         return self.answers_
-    
+
 def make_classifier_pickle(answers, classes, class_names, name, feature_names):
     '''Make a pickle of a fake classifier
-    
+
     answers - the answers you want to get back after calling classifier.predict
     classes - the class #s for the answers.
     class_names - one name per class in the order they appear in classes

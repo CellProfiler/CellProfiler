@@ -69,35 +69,6 @@
 #     def on_event(self, pipeline, event):
 #         self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
 #
-#     def test_00_01_load_matlab(self):
-#         data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
-#                 'SU1RyM+zUnArylTwTy5RMDBSMDS1Mja2MrBUMDIAEiQDBkZPX34GBoYsRgaG'
-#                 'ijl7J5/1OuwgcFw981aX0+uLk7/cmCy/XU701cIFKyU0q+5cy4zw2KQof/SH'
-#                 'jVwNS3+tiXnupbxpF9Z0WxioGFvvn/tw/25bBokyRqs/1Ufutqzd2n1DwKZf'
-#                 '1kdIakehtI6F9qfsd8ZCgUbfC9z2iCTfiJw5n8X725zW3UvZv02ryhCO13mW'
-#                 'tvyfzOKKXToHk35O3Lf4+QX+llVTU/13LDJMdTwo/vv0zdj4aR611Xf2R1XL'
-#                 '9kjJ/nKyW7+/qXZvaPB9oVf+lSbb8s3vrGh8HbYj16Z3RfQnc94/G488/ziD'
-#                 'l2kazyWJr8/5mcM7jbXmMIp3/U3JW2L5XNs+WnSun8rcTz/yWgPNIlK4+aeW'
-#                 'Tnq+L/zJGa70prNXLFYfinzgpvL7fPVC6+166vPzCzzN7pjL1K1Pso+tXeEf'
-#                 'U6I8ra1+v/8Ng/0V60t+W6W0Tt5Tvue++5Xdly9cf1L/V8rvqWxM9rfXmQVi'
-#                 '6vbnt985rV8qK7dCf+2Z/wwneDJMAawzzdI=')
-#         pipeline = cpp.Pipeline()
-#         def callback(caller,event):
-#             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
-#         pipeline.add_listener(callback)
-#         pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
-#         self.assertEqual(len(pipeline.modules()), 1)
-#         module = pipeline.modules()[0]
-#         self.assertTrue(isinstance(module, cpm_si.SaveImages))
-#         self.assertEqual(module.image_name.value, "DNA")
-#         self.assertEqual(module.file_image_name.value, "OrigDNA")
-#         self.assertEqual(module.file_name_method.value, cpm_si.FN_FROM_IMAGE)
-#         self.assertEqual(module.pathname.dir_choice,
-#                          cps.DEFAULT_OUTPUT_FOLDER_NAME)
-#         self.assertEqual(module.when_to_save.value, cpm_si.WS_EVERY_CYCLE)
-#         self.assertEqual(module.colormap.value, cpm_si.CM_GRAY)
-#         self.assertFalse(module.overwrite)
-#
 #     def test_00_03_load_v2(self):
 #         data = ('eJztVsFu0zAYdrJ0MCohNC47+ogQVNlQ0eiFdZSKSms70WriiJc6wZITR45T'
 #                 'Vk48Ao/HY+wRiCNnSaywJK3EhVmy4t/+Pn+/v9iWp8PlxfAc9ns2nA6Xr11C'

@@ -1062,27 +1062,7 @@ class StraightenWorms(cpm.Module):
                             range(nsegments))]
         return result
 
-    def upgrade_settings(self, setting_values, variable_revision_number,
-                         module_name, from_matlab):
-        '''Modify the settings to match the current version
-
-        This method takes the settings from a previous revision of
-        StraightenWorms and modifies them so that they match
-        the settings that would be output by the current version.
-
-        setting_values - setting value strings, possibly output by prev version
-
-        variable_revision_number - revision of version of StraightenWorms that
-        output the settings
-
-        module_name, from_matlab - not used, see CPModule for use elsewhere.
-
-        Overriding modules should return a tuple of setting_values,
-        variable_revision_number and True if upgraded to CP 2.0, otherwise
-        they should leave things as-is so that the caller can report
-        an error.
-        '''
-
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         if variable_revision_number == 1:
             #
             # Added worm measurement and flipping
@@ -1100,7 +1080,7 @@ class StraightenWorms(cpm.Module):
                 setting_values[:IDX_FLIP_WORMS_V2] + ["1"] +
                 setting_values[IDX_FLIP_WORMS_V2:])
             variable_revision_number = 3
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number
 
     def prepare_to_create_batch(self, workspace, fn_alter_path):
         '''Prepare to create a batch file

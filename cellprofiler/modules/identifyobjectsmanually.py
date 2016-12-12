@@ -1,4 +1,4 @@
-'''<b>Identify Objects Manually</b> allows you to identify objects 
+'''<b>Identify Objects Manually</b> allows you to identify objects
 in an image by hand rather than automatically.
 <hr>
 This module lets you outline the objects in an image using the mouse. The
@@ -183,19 +183,6 @@ class IdentifyObjectsManually(I.Identify):
             if result != OK:
                 return None
             return dialog_box.labels[0]
-
-    def upgrade_settings(self, setting_values, variable_revision_number,
-                         module_name, from_matlab):
-        if from_matlab and variable_revision_number == 2:
-            image_name, object_name, max_resolution, save_outlines = setting_values
-            wants_outlines = \
-                (cps.YES if save_outlines.lower() == cps.DO_NOT_USE.lower()
-                 else cps.NO)
-            setting_values = [image_name, object_name, wants_outlines,
-                              save_outlines]
-            variable_revision_number = 1
-            from_matlab = False
-        return setting_values, variable_revision_number, from_matlab
 
     def get_measurement_columns(self, pipeline):
         '''Return database info on measurements made in module

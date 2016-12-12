@@ -403,32 +403,8 @@ class ColorToGray(cpm.Module):
         while len(self.channels) < nchannels:
             self.add_channel()
 
-    def upgrade_settings(self,
-                         setting_values,
-                         variable_revision_number,
-                         module_name,
-                         from_matlab):
-        if from_matlab and variable_revision_number == 1:
-            new_setting_values = [setting_values[0],  # image name
-                                  setting_values[1],  # combine or split
-                                  # blank slot for text: "Combine options"
-                                  setting_values[3],  # grayscale name
-                                  setting_values[4],  # red contribution
-                                  setting_values[5],  # green contribution
-                                  setting_values[6]  # blue contribution
-                                  # blank slot for text: "Split options"
-                                  ]
-            for i in range(3):
-                vv = setting_values[i + 8]
-                use_it = ((vv == cps.DO_NOT_USE or vv == "N") and cps.NO) or cps.YES
-                new_setting_values.append(use_it)
-                new_setting_values.append(vv)
-            setting_values = new_setting_values
-            module_name = self.module_class()
-            variable_revision_number = 1
-            from_matlab = False
-
-        if not from_matlab and variable_revision_number == 1:
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
+        if variable_revision_number == 1:
             #
             # Added rgb_or_channels at position # 2, added channel count
             # at end.
@@ -438,7 +414,7 @@ class ColorToGray(cpm.Module):
                 ["1", "Red: 1", "1", "Channel1"])
             variable_revision_number = 2
 
-        if not from_matlab and variable_revision_number == 2:
+        if variable_revision_number == 2:
             #
             # Added HSV settings
             #
@@ -457,4 +433,4 @@ class ColorToGray(cpm.Module):
             channel_idx = self.get_channel_idx_from_choice(setting_values[idx])
             setting_values[idx] = self.channel_names[channel_idx]
 
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number

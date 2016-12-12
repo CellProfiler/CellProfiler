@@ -1,4 +1,4 @@
-'''<b>RescaleIntensity</b> changes the intensity range of an image to your 
+'''<b>RescaleIntensity</b> changes the intensity range of an image to your
 desired specifications.
 <hr>
 This module lets you rescale the intensity of the input images by any of several
@@ -514,83 +514,8 @@ class RescaleIntensity(cpm.Module):
             mask = np.all(mask, 2)
         return rescaled_image, mask
 
-    def upgrade_settings(self, setting_values, variable_revision_number,
-                         module_name, from_matlab):
-        if from_matlab and variable_revision_number == 2:
-            #
-            # Added custom_low_truncation and custom_high_truncation
-            #
-            setting_values = (setting_values[:7] + ["0", "1"] +
-                              setting_values[7:])
-            variable_revision_number = 3
-        if from_matlab and variable_revision_number == 3:
-            #
-            # Added load text name at the end
-            #
-            setting_values = setting_values + [cps.NONE]
-            variable_revision_number = 4
-        if from_matlab and variable_revision_number == 4:
-            new_setting_values = (setting_values[:2] +
-                                  [M_STRETCH,  # 2: rescale_method,
-                                   cps.NO,  # 3: wants_automatic_low
-                                   cps.NO,  # 4: wants_automatic_high
-                                   "0",  # 5: source_low
-                                   "1",  # 6: source_high
-                                   "0,1",  # 7: source_scale
-                                   "0,1",  # 8: dest_scale
-                                   R_MASK,  # 9: low_truncation_choice
-                                   "0",  # 10: custom_low_truncation
-                                   R_MASK,  # 11: high_truncation_choice
-                                   "1",  # 12: custom_high_truncation
-                                   cps.NONE,  # 13: matching_image_name
-                                   "1",  # 14: divisor_value
-                                   cps.NONE  # 15: divisor_measurement
-                                   ])
-            code = setting_values[2][0]
-            if code.upper() == 'S':
-                new_setting_values[2] = M_STRETCH
-            elif code.upper() == 'E':
-                if setting_values[5] == "0" and setting_values[6] == "1":
-                    new_setting_values[2] = M_MANUAL_INPUT_RANGE
-                else:
-                    new_setting_values[2] = M_MANUAL_IO_RANGE
-                if setting_values[3].upper() == "AA":
-                    new_setting_values[3] = LOW_ALL_IMAGES
-                elif setting_values[3].upper() == "AE":
-                    new_setting_values[3] = LOW_EACH_IMAGE
-                else:
-                    new_setting_values[3] = CUSTOM_VALUE
-                    new_setting_values[5] = setting_values[3]
-                if setting_values[4].upper() == "AA":
-                    new_setting_values[4] = HIGH_ALL_IMAGES
-                elif setting_values[4].upper() == "AE":
-                    new_setting_values[4] = HIGH_EACH_IMAGE
-                else:
-                    new_setting_values[4] = CUSTOM_VALUE
-                    new_setting_values[6] = setting_values[4]
-                if all([x.upper() not in ("AA", "AE")
-                        for x in setting_values[3:4]]):
-                    # Both are manual, put them in the range variable
-                    new_setting_values[7] = ",".join(setting_values[3:5])
-                new_setting_values[8] = ",".join(setting_values[5:7])
-                new_setting_values[9] = R_SET_TO_CUSTOM
-                new_setting_values[10] = setting_values[7]
-                new_setting_values[11] = R_SET_TO_CUSTOM
-                new_setting_values[12] = setting_values[8]
-            elif code.upper() == 'G':
-                new_setting_values[2] = M_DIVIDE_BY_IMAGE_MINIMUM
-            elif code.upper() == 'M':
-                new_setting_values[2] = M_SCALE_BY_IMAGE_MAXIMUM
-                new_setting_values[13] = setting_values[9]
-            elif code.upper() == 'C':
-                new_setting_values[2] = M_CONVERT_TO_8_BIT
-            elif code.upper() == 'T':
-                new_setting_values[2] = M_DIVIDE_BY_MEASUREMENT
-                new_setting_values[15] = setting_values[10]
-            setting_values = new_setting_values
-            variable_revision_number = 2
-            from_matlab = False
-        if (not from_matlab) and (variable_revision_number == 1):
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
+        if variable_revision_number == 1:
             #
             # wants_automatic_low (# 3) and wants_automatic_high (# 4)
             # changed to a choice: yes = each, no = custom
@@ -602,4 +527,4 @@ class RescaleIntensity(cpm.Module):
                 else:
                     setting_values[i] = CUSTOM_VALUE
             variable_revision_number = 2
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number

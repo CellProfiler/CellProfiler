@@ -98,24 +98,6 @@ class TestPipeline(unittest.TestCase):
     def test_00_00_init(self):
         x = cpp.Pipeline()
 
-    def test_01_01_load_mat(self):
-        '''Regression test of img-942, load a batch data pipeline with notes'''
-
-        global img_942_data  # see bottom of this file
-
-        pipeline = cpp.Pipeline()
-
-        def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
-
-        pipeline.add_listener(callback)
-        pipeline.load(cStringIO.StringIO(zlib.decompress(base64.b64decode(img_942_data))))
-        module = pipeline.modules()[0]
-        self.assertEqual(len(module.notes), 1)
-        self.assertEqual(
-                module.notes[0],
-                """Excluding "_E12f03d" since it has an incomplete set of channels (and is the only one as such).""")
-
     def test_01_02_is_txt_fd_sorry_for_your_proofpoint(self):
         # Regression test of issue #1318
         sensible = r"""CellProfiler Pipeline: http://www.cellprofiler.org

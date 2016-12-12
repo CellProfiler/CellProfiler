@@ -390,43 +390,8 @@ class GrayToColor(cpm.Module):
                               title=self.rgb_image_name.value,
                               sharexy=figure.subplot(0, 0))
 
-    def upgrade_settings(self, setting_values, variable_revision_number,
-                         module_name, from_matlab):
-        if from_matlab and variable_revision_number == 1:
-            # Blue and red were switched: it was BGR
-            temp = list(setting_values)
-            temp[OFF_RED_IMAGE_NAME] = setting_values[OFF_BLUE_IMAGE_NAME]
-            temp[OFF_BLUE_IMAGE_NAME] = setting_values[OFF_RED_IMAGE_NAME]
-            temp[OFF_RED_ADJUSTMENT_FACTOR] = setting_values[OFF_BLUE_ADJUSTMENT_FACTOR]
-            temp[OFF_BLUE_ADJUSTMENT_FACTOR] = setting_values[OFF_RED_ADJUSTMENT_FACTOR]
-            setting_values = temp
-            variable_revision_number = 2
-        if from_matlab and variable_revision_number == 2:
-            from_matlab = False
-            variable_revision_number = 1
-        if from_matlab and variable_revision_number == 3:
-            image_names = [LEAVE_THIS_BLACK if value == cps.DO_NOT_USE
-                           else value
-                           for value in setting_values[:4]]
-            rgb_image_name = setting_values[4]
-            adjustment_factors = setting_values[5:]
-            if image_names[3] == LEAVE_THIS_BLACK:
-                #
-                # RGB color scheme
-                #
-                setting_values = (
-                    [SCHEME_RGB] + image_names[:3] + [rgb_image_name] +
-                    adjustment_factors[:3] + [cps.NONE] * 4 + [1] * 4)
-            else:
-                #
-                # CYMK color scheme
-                #
-                setting_values = (
-                    [SCHEME_CMYK] + [cps.NONE] * 3 + [rgb_image_name] +
-                    [1] * 3 + image_names + adjustment_factors)
-            from_matlab = False
-            variable_revision_number = 2
-        if (not from_matlab) and variable_revision_number == 1:
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
+        if variable_revision_number == 1:
             #
             # Was RGB-only. Convert values to CYMK-style
             #
@@ -434,7 +399,7 @@ class GrayToColor(cpm.Module):
                 [SCHEME_CMYK] + setting_values +
                 [cps.NONE] * 4 + [1] * 4)
             variable_revision_number = 2
-        if (not from_matlab) and variable_revision_number == 2:
+        if variable_revision_number == 2:
             #
             # Added composite mode
             #
@@ -447,7 +412,7 @@ class GrayToColor(cpm.Module):
                     [image_name, DEFAULT_COLORS[i % len(DEFAULT_COLORS)], "1.0"]
             setting_values = new_setting_values
             variable_revision_number = 3
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number
 
 
 class ColorSchemeSettings(object):

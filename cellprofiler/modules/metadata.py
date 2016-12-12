@@ -1077,8 +1077,7 @@ class Metadata(cpm.Module):
             return keys
         return []
 
-    def upgrade_settings(self, setting_values, variable_revision_number,
-                         module_name, from_matlab):
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         if variable_revision_number == 1:
             n_groups = int(setting_values[IDX_EXTRACTION_METHOD_COUNT_V1])
             new_setting_values = setting_values[:IDX_EXTRACTION_METHOD_V1]
@@ -1115,4 +1114,4 @@ class Metadata(cpm.Module):
                              [DTC_TEXT, "{}"] + setting_values[IDX_EXTRACTION_METHOD_COUNT_V3:]
             variable_revision_number = 4
 
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number

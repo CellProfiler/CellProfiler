@@ -1,4 +1,4 @@
-"""<b>Measure Object Intensity Distribution</b> measures the distribution 
+"""<b>Measure Object Intensity Distribution</b> measures the distribution
 of intensities within each object.
 <hr>
 Given an image with objects identified, this module measures the
@@ -903,19 +903,7 @@ class MeasureObjectIntensityDistribution(cpm.Module):
             return result
         return []
 
-    def upgrade_settings(self, setting_values, variable_revision_number,
-                         module_name, from_matlab):
-        if from_matlab and variable_revision_number == 1:
-            image_name, object_name, center_name, bin_count = setting_values[:4]
-            if center_name == cps.DO_NOT_USE:
-                center_choice = C_SELF
-            else:
-                center_choice = C_CENTERS_OF_OTHER
-            setting_values = ["1", "1", "1", image_name,
-                              object_name, center_choice, center_name,
-                              bin_count]
-            variable_revision_number = 1
-            from_matlab = False
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         if variable_revision_number == 1:
             n_images, n_objects, n_bins = [
                 int(setting) for setting in setting_values[:3]]
@@ -954,7 +942,7 @@ class MeasureObjectIntensityDistribution(cpm.Module):
                              setting_values[4:]
             variable_revision_number = 5
 
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number
 
 
 class MORDObjectNameSubscriber(cps.ObjectNameSubscriber):

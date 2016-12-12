@@ -30,41 +30,6 @@ OBJECTS_NAME = 'myobjects'
 
 
 class TestMeasureGranularity(unittest.TestCase):
-    def test_01_01_load_matlab(self):
-        '''Load a Matlab MeasureGranularity pipeline'''
-        data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
-                'SU1RyM+zUggH0sGpBQqGZgqGplamFlYGxgpGBgaWCiQDBkZPX34GBoYXjAwM'
-                'FXPehp31O+QgMM/JO0C4Oe7LAs/+OJcJRypCmgOFfnYKLDouOm2X58tJ/wQ+'
-                'cNawxB/uTpc7vXj3DafdCrr2rxyXzzTZPPf97Lv5y2/nMR04zebQdHfymeQP'
-                'mV3S3nbPC0VvmxmaeDNKlt39yPjZyoiz6kKh7Eu+bQkp9yoOZlyM2m9cFbLE'
-                '1/246pVv6sbalm/Zc6KeTmMvkQ/34H8d+qlFMSPulu47oe6Aw0d3/3n0YoXe'
-                '1tZds8+8F0qWVXFkX3d6W/6c5/MPWsTPWxR9avr8or1t1d8epvKb5mztfXNM'
-                '+bkl70NPLhsbvdkuuxOCimvUWPTZPxg9Oa/d6lows0Rve9fPtoeijOcf+1hV'
-                'FwkFfi8FMm1CebNW9z01C5jy9TiTjeEJuf95fx+fyXpd/X3/MfFlu0UeTFb4'
-                'fvbzTr6Ht4V+VPj0qL2ctKy5ZOqWiWZWZ59FLr8Rr7prjt9Ly9Io4WtHk8+6'
-                '1K5uLHnzuNNqfkWDPt93n6nzrzivyZdZyPAvdtbf2o+vN+bs553tZLzy8swn'
-                '3aes3/42fRYayf3onMm9+n8v/zD/qPp/9F90yf18jSyxGnanKZ9T3R88LBRU'
-                'Pm34ccKrUy5tizfL6+62/yin4nRNMPn6tk03Kie1esZMqeoysfdLu37732u5'
-                '47aHa36XGCjf3+z62Z6BddWmAACOeBVt')
-        pipeline = cpp.Pipeline()
-
-        def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
-
-        pipeline.add_listener(callback)
-        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
-        self.assertEqual(len(pipeline.modules()), 2)
-        module = pipeline.modules()[1]
-        self.assertTrue(isinstance(module, M.MeasureGranularity))
-        self.assertEqual(len(module.images), 1)
-        image_setting = module.images[0]
-        # self.assertTrue(isinstance(image_setting, M.MeasureGranularity))
-        self.assertEqual(image_setting.image_name.value, 'OrigBlue')
-        self.assertAlmostEqual(image_setting.subsample_size.value, .33)
-        self.assertAlmostEqual(image_setting.image_sample_size.value, .166)
-        self.assertEqual(image_setting.element_size.value, 12)
-        self.assertEqual(image_setting.granular_spectrum_length.value, 20)
-
     def test_01_02_load_v1(self):
         '''Load a variable_revision_number=1 pipeline'''
         data = ('eJztWc1u2kAQXhNSNYlUpae0tz2GNljG+WmCqgQaVy1qoCigRFGUthtYwkq2'

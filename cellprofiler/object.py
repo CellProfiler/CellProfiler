@@ -48,6 +48,11 @@ class Objects(object):
 
         return len(shape)
 
+    def masked(self):
+        mask = self.parent_image.mask
+
+        return numpy.logical_and(self.segmented, mask)
+
     @property
     def segmented(self):
         """Get the de-facto segmentation of the image into objects: a matrix

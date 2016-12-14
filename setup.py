@@ -290,6 +290,9 @@ if has_py2exe:
     cmdclass["py2exe"] = CPPy2Exe
     cmdclass["msi"] = CellProfilerMSI
 
+version_file = open(os.path.join(os.path.dirname(__file__), "cellprofiler", "VERSION"))
+version = version_file.read().strip()
+
 setuptools.setup(
         app=[
             "CellProfiler.py"
@@ -339,7 +342,7 @@ setuptools.setup(
             "MySQL-python",
             "numpy",
             "prokaryote>=1.0.11",
-            "pyamg",
+            "pyamg!=3.2.0",
             "pytest",
             "python-bioformats",
             "pyzmq",

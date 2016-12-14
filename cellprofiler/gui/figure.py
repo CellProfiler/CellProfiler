@@ -1096,7 +1096,11 @@ class Figure(wx.Frame):
             if position % 3 != 0:
                 ax.set_yticklabels([])
 
-            ax.imshow(image[position * (z - 1) / 8], cmap=cmap, norm=matplotlib.colors.LogNorm(vmin=vmin, vmax=vmax))
+            ax.imshow(
+                image[position * (z - 1) / 8],
+                cmap=cmap,
+                norm=matplotlib.colors.SymLogNorm(linthresh=0.03, linscale=0.03, vmin=vmin, vmax=vmax)
+            )
 
             self.figure.add_subplot(ax)
 

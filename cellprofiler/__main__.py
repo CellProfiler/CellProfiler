@@ -166,7 +166,7 @@ def stop_cellprofiler():
     # Bioformats readers have to be properly closed.
     # This is especially important when using OmeroReaders as leaving the
     # readers open leaves the OMERO.server services open which in turn leads to
-    # high memory consuption.
+    # high memory consumption.
     bioformats.formatreader.clear_image_reader_cache()
 
     cellprofiler.utilities.cpjvm.cp_stop_vm()

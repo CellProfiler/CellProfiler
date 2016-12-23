@@ -1,5 +1,3 @@
-import cellprofiler.modules.watershed
-import cellprofiler.image
 import mahotas
 import numpy
 import numpy.testing
@@ -11,7 +9,11 @@ import skimage.filters.rank
 import skimage.measure
 import skimage.morphology
 import skimage.segmentation
+import skimage.transform
 import skimage.util
+
+import cellprofiler.image
+import cellprofiler.modules.watershed
 
 instance = cellprofiler.modules.watershed.Watershed()
 
@@ -89,7 +91,7 @@ def test_run_distance(image, module, image_set, workspace):
 
     module.y_name.value = "watershed"
 
-    module.radius.value = 3
+    module.connectivity.value = 3
 
     data = image.pixel_data
 
@@ -111,37 +113,40 @@ def test_run_distance(image, module, image_set, workspace):
 
     module.run(workspace)
 
-    distance = mahotas.distance(binary)
+    original_shape = binary.shape
+
+    if image.volumetric:
+        binary = skimage.transform.resize(binary, (original_shape[0], 256, 256), order=0, mode="edge")
+
+    distance = scipy.ndimage.distance_transform_edt(binary)
 
     distance = mahotas.stretch(distance)
 
-    radius = 3
-
-    if image.dimensions is 2:
-        shape = (radius, radius)
-    else:
-        shape = (radius, radius, radius)
-
-    footprint = numpy.ones(shape)
-
-    peaks = mahotas.morph.regmax(distance, footprint)
-
-    markers, count = mahotas.label(peaks, footprint)
-
     surface = distance.max() - distance
+
+    if image.volumetric:
+        footprint = numpy.ones((3, 3, 3))
+    else:
+        footprint = numpy.ones((3, 3))
+
+    peaks = mahotas.regmax(distance, footprint)
+
+    if image.volumetric:
+        markers, _ = mahotas.label(peaks, numpy.ones((16, 16, 16)))
+    else:
+        markers, _ = mahotas.label(peaks, numpy.ones((16, 16)))
 
     expected = mahotas.cwatershed(surface, markers)
 
-    expected *= binary
+    expected = expected * binary
+
+    if image.volumetric:
+        expected = skimage.transform.resize(expected, original_shape, order=0, mode="edge")
 
     expected = skimage.measure.label(expected)
-
-    expected, _, _ = skimage.segmentation.relabel_sequential(expected)
 
     actual = workspace.get_objects("watershed")
 
     actual = actual.segmented
-
-    actual, _, _ = skimage.segmentation.relabel_sequential(actual)
 
     numpy.testing.assert_array_equal(expected, actual)

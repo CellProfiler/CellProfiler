@@ -288,9 +288,9 @@ def _display_error_dialog(frame, exc, pipeline, message=None, tb=None, continue_
 
 def on_report(event, dialog, traceback_text, pipeline):
     """Report an error to us"""
-    from cellprofiler.utilities.version import version_string
+    import cellprofiler
     params = {"traceback": traceback_text,
-              "revision": version_string,
+              "revision": cellprofiler.__version__,
               "platform": str(platform.platform())
               }
     try:

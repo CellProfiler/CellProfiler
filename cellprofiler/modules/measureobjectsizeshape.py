@@ -414,9 +414,6 @@ class MeasureObjectSizeShape(cpm.Module):
 
             self.record_measurement(workspace, object_name, F_AREA, areas)
 
-            # Bounding box (min_z, min_x, min_y, max_z, max_x, max_y)
-            # bboxes = [prop.bbox for prop in props]
-
             # Extent
             extents = [prop.extent for prop in props]
 

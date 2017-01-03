@@ -1077,9 +1077,15 @@ class Figure(wx.Frame):
         self.__gridspec = matplotlib.gridspec.GridSpec(*shape[::-1])
 
     def gridshow(self, x, y, image, cmap='gray'):
-        gx = self.__gridspec.get_geometry()[0]
+        gx, gy = self.__gridspec.get_geometry()
 
-        gridspec = matplotlib.gridspec.GridSpecFromSubplotSpec(3, 3, subplot_spec=self.__gridspec[gx * x + y], wspace=0.1, hspace=0.1)
+        gridspec = matplotlib.gridspec.GridSpecFromSubplotSpec(
+            3,
+            3,
+            subplot_spec=self.__gridspec[gy * y + x],
+            wspace=0.1,
+            hspace=0.1
+        )
 
         z = image.shape[0]
 

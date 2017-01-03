@@ -46,6 +46,7 @@ import cellprofiler.workspace as cpw
 import cellprofiler.setting as cps
 from cellprofiler.utilities.utf16encode import utf16encode, utf16decode
 from bioformats.omexml import OMEXML
+from bioformats.formatreader import clear_image_reader_cache
 import javabridge as J
 
 '''The measurement name of the image number'''
@@ -1813,7 +1814,10 @@ class Pipeline(object):
                         measurements.add_experiment_measurement(EXIT_STATUS, "Failure")
 
                         return
-
+            # Close cached readers.
+            # This may play a big role with cluster deployments or long standing jobs
+            # by freeing up memory and resources.
+            clear_image_reader_cache()
             if measurements is not None:
                 workspace = cpw.Workspace(self, None, None, None, measurements, image_set_list, frame)
 

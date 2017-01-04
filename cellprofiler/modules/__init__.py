@@ -1,6 +1,13 @@
 """Modules - pipeline processing modules for CellProfiler
 """
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
 import logging
 
 logger = logging.getLogger(__name__)
@@ -307,7 +314,7 @@ def find_cpmodule(m):
 
     returns the CPModule class
     '''
-    for v, val in m.__dict__.iteritems():
+    for v, val in list(m.__dict__.items()):
         if isinstance(val, type) and issubclass(val, cpm.Module):
             return val
     raise "Could not find cpm.CPModule class in %s" % m.__file__
@@ -433,7 +440,7 @@ def instantiate_module(module_name):
 
 
 def get_module_names():
-    return all_modules.keys()
+    return list(all_modules.keys())
 
 
 def get_data_tool_names():

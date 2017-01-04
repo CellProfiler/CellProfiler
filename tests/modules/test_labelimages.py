@@ -1,11 +1,20 @@
 '''test_labelimages.py - test the labelimages module
 '''
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from builtins import *
+from future import standard_library
+standard_library.install_aliases()
+from builtins import range
+from past.utils import old_div
 import base64
 import os
 import unittest
 import zlib
-from StringIO import StringIO
+from io import StringIO
 
 import numpy as np
 import scipy.ndimage
@@ -138,7 +147,7 @@ LabelImages:[module_num:2|svn_version:\'9970\'|variable_revision_number:1|show_w
         for i in range(nimagesets):
             self.assertEqual(sites[i], (i % 6) + 1)
             this_row = 'ABCDEFGH'[int(i / 6 / 12)]
-            this_column = (int(i / 6) % 12) + 1
+            this_column = (int(old_div(i, 6)) % 12) + 1
             self.assertEqual(rows[i], this_row)
             self.assertEqual(columns[i], this_column)
             self.assertEqual(wells[i], '%s%02d' % (this_row, this_column))
@@ -167,7 +176,7 @@ LabelImages:[module_num:2|svn_version:\'9970\'|variable_revision_number:1|show_w
         wells = measurements.get_all_measurements(cpmeas.IMAGE, cpmeas.M_WELL)
         for i in range(nimagesets):
             self.assertEqual(sites[i], (i % 6) + 1)
-            this_row = 'ABCDEFGH'[int(i / 6) % 8]
+            this_row = 'ABCDEFGH'[int(old_div(i, 6)) % 8]
             this_column = int(i / 6 / 8) + 1
             self.assertEqual(rows[i], this_row)
             self.assertEqual(columns[i], this_column)
@@ -197,7 +206,7 @@ LabelImages:[module_num:2|svn_version:\'9970\'|variable_revision_number:1|show_w
         wells = measurements.get_all_measurements(cpmeas.IMAGE, cpmeas.M_WELL)
         for i in range(nimagesets):
             self.assertEqual(sites[i], 1)
-            this_row = 'ABCDEFGH'[int(i / 12) % 8]
+            this_row = 'ABCDEFGH'[int(old_div(i, 12)) % 8]
             this_column = (i % 12) + 1
             self.assertEqual(rows[i], this_row)
             self.assertEqual(columns[i], this_column)
@@ -227,6 +236,6 @@ LabelImages:[module_num:2|svn_version:\'9970\'|variable_revision_number:1|show_w
         for i in range(nimagesets):
             self.assertEqual(sites[i], 1)
             this_row = (abc[int(i / 26 / 26)] +
-                        abc[int(i / 26) % 26] +
+                        abc[int(old_div(i, 26)) % 26] +
                         abc[i % 26])
             self.assertEqual(rows[i], this_row)

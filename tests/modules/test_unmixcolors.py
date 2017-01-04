@@ -1,8 +1,16 @@
 '''test_unmixcolors - test the unmixcolors module
 '''
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from builtins import *
+from future import standard_library
+standard_library.install_aliases()
+from past.utils import old_div
 import unittest
-from StringIO import StringIO
+from io import StringIO
 
 import numpy as np
 
@@ -160,7 +168,7 @@ UnmixColors:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|sho
         absorbance = 1 - expected
         log_absorbance = np.log(absorbance + eps)
         absorbances = np.array(absorbances)
-        absorbances = absorbances / np.sqrt(np.sum(absorbances ** 2))
+        absorbances = old_div(absorbances, np.sqrt(np.sum(absorbances ** 2)))
         log_absorbance = log_absorbance[:, :, np.newaxis] * absorbances[np.newaxis, np.newaxis, :]
         image = np.exp(log_absorbance) - eps
         return image

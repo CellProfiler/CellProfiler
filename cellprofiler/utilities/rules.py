@@ -1,6 +1,15 @@
 '''rules - code for parsing and applying rules from CPA
 '''
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import str
+from builtins import object
 import re
 
 import numpy as np
@@ -89,7 +98,7 @@ class Rules(object):
                         "\\s*(?P<threshold>[^,]+)"
                         ",\\s*\\[\\s*(?P<true>[^\\]]+)\\s*\\]"
                         ",\\s*\\[\\s*(?P<false>[^\\]]+)\\s*\\]\\s*\\)$")
-        if isinstance(fd_or_file, str) or isinstance(fd_or_file, unicode):
+        if isinstance(fd_or_file, str) or isinstance(fd_or_file, str):
             fd = open(fd_or_file, 'r')
             needs_close = True
         else:

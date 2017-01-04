@@ -1,3 +1,15 @@
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import str
+from builtins import zip
+from builtins import range
+from builtins import object
+from past.utils import old_div
 import cellprofiler.icons
 from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON, NAMESANDTYPES_DISPLAY_TABLE, \
     EXAMPLE_DAPI_PIC, EXAMPLE_GFP_PIC
@@ -580,7 +592,7 @@ class NamesAndTypes(cpm.Module):
             if image_name not in all_image_names:
                 return image_name
         else:
-            for i in xrange(1, 1000):
+            for i in range(1, 1000):
                 image_name = "Channel%d" % i
                 if image_name not in all_image_names:
                     return image_name
@@ -594,7 +606,7 @@ class NamesAndTypes(cpm.Module):
             if object_name not in all_object_names:
                 return object_name
         else:
-            for i in xrange(1, 1000):
+            for i in range(1, 1000):
                 object_name = "Object%d" % i
                 if object_name not in all_object_names:
                     return object_name
@@ -861,13 +873,13 @@ class NamesAndTypes(cpm.Module):
             return True
 
         image_set_channel_names = [None] * len(column_names)
-        for name, idx in channel_map.iteritems():
+        for name, idx in list(channel_map.items()):
             image_set_channel_names[idx] = name
 
         m = workspace.measurements
         assert isinstance(m, cpmeas.Measurements)
 
-        image_numbers = range(1, len(image_sets) + 1)
+        image_numbers = list(range(1, len(image_sets) + 1))
         if len(image_numbers) == 0:
             return False
         m.add_all_measurements(cpmeas.IMAGE, cpmeas.IMAGE_NUMBER,
@@ -1347,7 +1359,7 @@ class NamesAndTypes(cpm.Module):
             dlist = image_sets
         else:
             # Pick somewhere between four and 8 image sets from the whole
-            dlist = J.make_list(image_sets[::int(len(image_sets) / 4)])
+            dlist = J.make_list(image_sets[::int(old_div(len(image_sets), 4))])
         cd = J.run_script(
                 """importPackage(Packages.org.cellprofiler.imageset);
                    ImageSet.createCompressionDictionary(image_sets, channel_names);
@@ -1954,7 +1966,7 @@ class NamesAndTypes(cpm.Module):
                 if len(joins) > 0:
                     for join in joins:
                         best_value = None
-                        for key in join.keys():
+                        for key in list(join.keys()):
                             if key not in self.get_column_names():
                                 del join[key]
                             elif join[key] is not None and best_value is None:
@@ -1973,7 +1985,7 @@ class NamesAndTypes(cpm.Module):
         if self.matching_method == MATCH_BY_METADATA:
             joins = self.join.parse()
             metadata_columns = [
-                " / ".join(set([k for k in join.values() if k is not None]))
+                " / ".join(set([k for k in list(join.values()) if k is not None]))
                 for join in joins]
         else:
             metadata_columns = [cpmeas.IMAGE_NUMBER]
@@ -2119,7 +2131,7 @@ class ObjectsImageProvider(LoadImagesImageProviderURL):
                                              else self.series).Pixels
             nplanes = (pixel_metadata.SizeC * pixel_metadata.SizeZ *
                        pixel_metadata.SizeT)
-            indexes = range(nplanes)
+            indexes = list(range(nplanes))
         elif np.isscalar(self.index):
             indexes = [self.index]
         else:

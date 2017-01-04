@@ -1,4 +1,13 @@
 from __future__ import absolute_import
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import str
+from builtins import range
+from past.utils import old_div
 import cellprofiler.icons
 from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON
 
@@ -711,7 +720,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             #
             m = re.match("([0-9.])%", setting_values[OBJECT_FRACTION_VAR])
             if m:
-                setting_values[OBJECT_FRACTION_VAR] = str(float(m.groups()[0]) / 100.0)
+                setting_values[OBJECT_FRACTION_VAR] = str(old_div(float(m.groups()[0]), 100.0))
             #
             # Check the "DO_NOT_USE" status of the save outlines variable
             # to get the value for should_save_outlines
@@ -946,9 +955,9 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             if object_count > 0:
                 areas = scipy.ndimage.sum(np.ones(labeled_image.shape), labeled_image, np.arange(1, object_count + 1))
                 areas.sort()
-                low_diameter = (math.sqrt(float(areas[object_count / 10]) / np.pi) * 2)
-                median_diameter = (math.sqrt(float(areas[object_count / 2]) / np.pi) * 2)
-                high_diameter = (math.sqrt(float(areas[object_count * 9 / 10]) / np.pi) * 2)
+                low_diameter = (math.sqrt(old_div(float(areas[old_div(object_count, 10)]), np.pi)) * 2)
+                median_diameter = (math.sqrt(old_div(float(areas[old_div(object_count, 2)]), np.pi)) * 2)
+                high_diameter = (math.sqrt(old_div(float(areas[object_count * 9 / 10]), np.pi)) * 2)
                 statistics.append(["10th pctile diameter",
                                    "%.1f pixels" % low_diameter])
                 statistics.append(["Median diameter",
@@ -1044,14 +1053,14 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         filter_size = self.calc_smoothing_filter_size()
         if filter_size == 0:
             return image
-        sigma = filter_size / 2.35
+        sigma = old_div(filter_size, 2.35)
         #
         # We not only want to smooth using a Gaussian, but we want to limit
         # the spread of the smoothing to 2 SD, partly to make things happen
         # locally, partly to make things run faster, partly to try to match
         # the Matlab behavior.
         #
-        filter_size = max(int(float(filter_size) / 2.0), 1)
+        filter_size = max(int(old_div(float(filter_size), 2.0)), 1)
         f = (1 / np.sqrt(2.0 * np.pi) / sigma *
              np.exp(-0.5 * np.arange(-filter_size, filter_size + 1) ** 2 /
                     sigma ** 2))
@@ -1072,7 +1081,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         masked_image = image.copy()
         masked_image[~mask] = 0
         smoothed_image = fgaussian(masked_image)
-        masked_image[mask] = smoothed_image[mask] / edge_array[mask]
+        masked_image[mask] = old_div(smoothed_image[mask], edge_array[mask])
         return masked_image
 
     def separate_neighboring_objects(self, workspace, labeled_image,
@@ -1100,18 +1109,18 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         reported_LoG_threshold = 0.5
         blurred_image = self.smooth_image(image, mask)
         if self.low_res_maxima.value and self.size_range.min > 10:
-            image_resize_factor = 10.0 / float(self.size_range.min)
+            image_resize_factor = old_div(10.0, float(self.size_range.min))
             if self.automatic_suppression.value:
                 maxima_suppression_size = 7
             else:
                 maxima_suppression_size = (self.maxima_suppression_size.value *
                                            image_resize_factor + .5)
             reported_maxima_suppression_size = \
-                maxima_suppression_size / image_resize_factor
+                old_div(maxima_suppression_size, image_resize_factor)
         else:
             image_resize_factor = 1.0
             if self.automatic_suppression.value:
-                maxima_suppression_size = self.size_range.min / 1.5
+                maxima_suppression_size = old_div(self.size_range.min, 1.5)
             else:
                 maxima_suppression_size = self.maxima_suppression_size.value
             reported_maxima_suppression_size = maxima_suppression_size
@@ -1119,19 +1128,19 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         distance_transformed_image = None
         if self.unclump_method == UN_LOG:
             if self.wants_automatic_log_diameter.value:
-                diameter = (min(self.size_range.max, self.size_range.min ** 2) +
-                            self.size_range.min * 5) / 6
+                diameter = old_div((min(self.size_range.max, self.size_range.min ** 2) +
+                            self.size_range.min * 5), 6)
             else:
                 diameter = self.log_diameter.value
             reported_LoG_filter_diameter = diameter
-            sigma = float(diameter) / 2.35
+            sigma = old_div(float(diameter), 2.35)
             #
             # Shrink the image to save processing time
             #
             if image_resize_factor < 1.0:
                 shrunken = True
                 shrunken_shape = (np.array(image.shape) * image_resize_factor + 1).astype(int)
-                i_j = np.mgrid[0:shrunken_shape[0], 0:shrunken_shape[1]].astype(float) / image_resize_factor
+                i_j = old_div(np.mgrid[0:shrunken_shape[0], 0:shrunken_shape[1]].astype(float), image_resize_factor)
                 simage = scipy.ndimage.map_coordinates(image, i_j)
                 smask = scipy.ndimage.map_coordinates(mask.astype(float), i_j) > .99
                 diameter = diameter * image_resize_factor + 1
@@ -1243,8 +1252,8 @@ class IdentifyPrimaryObjects(cpmi.Identify):
     def get_maxima(self, image, labeled_image, maxima_mask, image_resize_factor):
         if image_resize_factor < 1.0:
             shape = np.array(image.shape) * image_resize_factor
-            i_j = (np.mgrid[0:shape[0], 0:shape[1]].astype(float) /
-                   image_resize_factor)
+            i_j = (old_div(np.mgrid[0:shape[0], 0:shape[1]].astype(float),
+                   image_resize_factor))
             resized_image = scipy.ndimage.map_coordinates(image, i_j)
             resized_labels = scipy.ndimage.map_coordinates(
                     labeled_image, i_j, order=0).astype(labeled_image.dtype)
@@ -1263,11 +1272,11 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         else:
             binary_maxima_image = (resized_image > 0) & (labeled_image > 0)
         if image_resize_factor < 1.0:
-            inverse_resize_factor = (float(image.shape[0]) /
-                                     float(binary_maxima_image.shape[0]))
-            i_j = (np.mgrid[0:image.shape[0],
-                   0:image.shape[1]].astype(float) /
-                   inverse_resize_factor)
+            inverse_resize_factor = (old_div(float(image.shape[0]),
+                                     float(binary_maxima_image.shape[0])))
+            i_j = (old_div(np.mgrid[0:image.shape[0],
+                   0:image.shape[1]].astype(float),
+                   inverse_resize_factor))
             binary_maxima_image = scipy.ndimage.map_coordinates(
                     binary_maxima_image.astype(float), i_j) > .5
             assert (binary_maxima_image.shape[0] == image.shape[0])
@@ -1289,7 +1298,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         if self.exclude_size.value and object_count > 0:
             areas = scipy.ndimage.measurements.sum(np.ones(labeled_image.shape),
                                                    labeled_image,
-                                                   np.array(range(0, object_count + 1), dtype=np.int32))
+                                                   np.array(list(range(0, object_count + 1)), dtype=np.int32))
             areas = np.array(areas, dtype=int)
             min_allowed_area = np.pi * (self.size_range.min * self.size_range.min) / 4
             max_allowed_area = np.pi * (self.size_range.max * self.size_range.max) / 4

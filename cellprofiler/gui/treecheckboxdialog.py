@@ -1,7 +1,14 @@
 # coding=utf-8
 """treecheckboxdialog.py - tree checkbox dialog for selection of tree branches
 """
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
 import wx
 
 
@@ -109,7 +116,7 @@ class TreeCheckboxDialog(wx.Dialog):
             d = self.get_item_data(item_id)
             assert len(d) > 1
             if self.tree_ctrl.GetChildrenCount(item_id, False) == 0:
-                for key in sorted([x for x in d.keys() if x is not None]):
+                for key in sorted([x for x in list(d.keys()) if x is not None]):
                     d1 = d[key]
                     if hasattr(d1, "__call__"):
                         # call function to get real value

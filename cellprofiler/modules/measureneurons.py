@@ -35,7 +35,17 @@ the branchpoints that lie outside the seed objects.</li>
 <li><i>TotalNeuriteLength</i>: The length of all skeleton segments per neuron.</li>
 </ul>
 '''
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import zip
+from builtins import range
+from past.utils import old_div
 import os
 
 import centrosome.cpmorphology as morph
@@ -518,9 +528,9 @@ class MeasureNeurons(cpm.Module):
             i = vertex_graph["i"]
             j = vertex_graph["j"]
             kind = vertex_graph["kind"]
-            brightness = edge_graph["total_intensity"] / edge_graph["length"]
-            brightness = ((brightness - np.min(brightness)) /
-                          (np.max(brightness) - np.min(brightness) + .000001))
+            brightness = old_div(edge_graph["total_intensity"], edge_graph["length"])
+            brightness = (old_div((brightness - np.min(brightness)),
+                          (np.max(brightness) - np.min(brightness) + .000001)))
             cm = matplotlib.cm.get_cmap(cpprefs.get_default_colormap())
             cmap = matplotlib.cm.ScalarMappable(cmap=cm)
             edge_color = cmap.to_rgba(brightness)

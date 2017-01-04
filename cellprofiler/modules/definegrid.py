@@ -30,7 +30,17 @@ each other.
 
 See also <b>IdentifyObjectsInGrid</b>.
 '''
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import str
+from builtins import range
+from past.utils import old_div
 import logging
 import traceback
 
@@ -407,8 +417,8 @@ class DefineGrid(cpm.Module):
             ai = ax.images[0]
             shape = ai.get_size()
             dpi = figure.dpi
-            width = float(shape[1]) / dpi
-            height = float(shape[0]) / dpi
+            width = old_div(float(shape[1]), dpi)
+            height = old_div(float(shape[0]), dpi)
             figure.set_figheight(height)
             figure.set_figwidth(width)
             bbox = matplotlib.transforms.Bbox(
@@ -429,10 +439,10 @@ class DefineGrid(cpm.Module):
                 return None
             image = np.zeros((gridding.total_height +
                               (gridding.y_location_of_lowest_y_spot -
-                               gridding.y_spacing / 2) * 2 + 2,
+                               old_div(gridding.y_spacing, 2)) * 2 + 2,
                               gridding.total_width +
                               (gridding.x_location_of_lowest_x_spot -
-                               gridding.x_spacing / 2) * 2 + 2, 3))
+                               old_div(gridding.x_spacing, 2)) * 2 + 2, 3))
         else:
             image = workspace.image_set.get_image(self.display_image_name.value).pixel_data
             if image.ndim == 2:
@@ -716,10 +726,10 @@ class DefineGrid(cpm.Module):
         second_row, second_col = \
             self.canonical_row_and_column(second_row, second_col)
         gridding = cpg.Grid()
-        gridding.x_spacing = (float(first_x - second_x) /
-                              float(first_col - second_col))
-        gridding.y_spacing = (float(first_y - second_y) /
-                              float(first_row - second_row))
+        gridding.x_spacing = (old_div(float(first_x - second_x),
+                              float(first_col - second_col)))
+        gridding.y_spacing = (old_div(float(first_y - second_y),
+                              float(first_row - second_row)))
         gridding.x_location_of_lowest_x_spot = int(first_x - first_col *
                                                    gridding.x_spacing)
         gridding.y_location_of_lowest_y_spot = int(first_y - first_row *
@@ -732,9 +742,9 @@ class DefineGrid(cpm.Module):
         gridding.total_height = int(gridding.y_spacing * gridding.rows)
 
         line_left_x = int(gridding.x_location_of_lowest_x_spot -
-                          gridding.x_spacing / 2)
+                          old_div(gridding.x_spacing, 2))
         line_top_y = int(gridding.y_location_of_lowest_y_spot -
-                         gridding.y_spacing / 2)
+                         old_div(gridding.y_spacing, 2))
         #
         # Make a 2 x columns array of x-coordinates of vertical lines (x0=x1)
         #
@@ -785,9 +795,9 @@ class DefineGrid(cpm.Module):
             # guess the image shape by adding the same border to the right
             # and bottom that we have on the left and top
             top_edge = int(gridding.y_location_of_lowest_y_spot -
-                           gridding.y_spacing / 2)
+                           old_div(gridding.y_spacing, 2))
             right_edge = int(gridding.x_location_of_lowest_x_spot -
-                             gridding.x_spacing / 2)
+                             old_div(gridding.x_spacing, 2))
             gridding.image_height = \
                 top_edge * 2 + gridding.y_spacing * gridding.rows
             gridding.image_width = \

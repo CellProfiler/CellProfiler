@@ -40,10 +40,19 @@ See also the <b>Input</b> modules, <b>LoadData</b>, <b>LoadSingleImage</b>, <b>S
 '''
 from __future__ import print_function
 from __future__ import absolute_import
+from __future__ import division
+from __future__ import unicode_literals
 
+from builtins import *
+from future import standard_library
+standard_library.install_aliases()
+from builtins import zip
+from builtins import str
+from builtins import range
+from past.utils import old_div
 import cgi
 import hashlib
-import httplib
+import http.client
 import logging
 import os
 import re
@@ -51,8 +60,8 @@ import stat
 import sys
 import tempfile
 import traceback
-import urllib
-import urlparse
+import urllib.request, urllib.parse, urllib.error
+import urllib.parse
 
 import numpy as np
 
@@ -1183,7 +1192,7 @@ class LoadImages(cpmodule.Module):
             """Add the metadata slots to the images"""
             new_values = list(setting_values[:self.SLOT_FIRST_IMAGE_V1])
             new_values.append(cps.NO)  # Group by metadata is off
-            for i in range((len(setting_values) - self.SLOT_FIRST_IMAGE_V1) / self.SLOT_IMAGE_FIELD_COUNT_V1):
+            for i in range(old_div((len(setting_values) - self.SLOT_FIRST_IMAGE_V1), self.SLOT_IMAGE_FIELD_COUNT_V1)):
                 off = self.SLOT_FIRST_IMAGE_V1 + i * self.SLOT_IMAGE_FIELD_COUNT_V1
                 new_values.extend([setting_values[off],
                                    setting_values[off + 1],
@@ -1233,7 +1242,7 @@ class LoadImages(cpmodule.Module):
             '''Added separate channels for flex images'''
             new_values = list(setting_values[:self.SLOT_FIRST_IMAGE_V5])
             setting_values = setting_values[self.SLOT_FIRST_IMAGE_V5:]
-            image_count = (len(setting_values) / self.SLOT_IMAGE_FIELD_COUNT_V5)
+            image_count = (old_div(len(setting_values), self.SLOT_IMAGE_FIELD_COUNT_V5))
             #
             # Add the image count to the settings
             #
@@ -1589,11 +1598,11 @@ class LoadImages(cpmodule.Module):
                             None,
                             image_number,
                             self.images[i], full_path)
-                    for k, v in d.iteritems():
+                    for k, v in list(d.items()):
                         if k not in features:
                             features[k] = [None] * n_image_sets
                         features[k][image_number - 1] = v
-        for k, v in features.iteritems():
+        for k, v in list(features.items()):
             workspace.measurements.add_all_measurements(cpmeas.IMAGE, k, v)
 
         return True
@@ -1617,7 +1626,7 @@ class LoadImages(cpmodule.Module):
         values = set()
         for dd in d:
             if not dd is None:
-                values.update([x for x in dd.keys() if x is not None])
+                values.update([x for x in list(dd.keys()) if x is not None])
         result = []
         for value in sorted(values):
             subgroup = tuple((dd and None in dd and dd[None]) or  # wildcard metadata
@@ -1704,7 +1713,7 @@ class LoadImages(cpmodule.Module):
             table = wx.ListCtrl(panel, style=wx.LC_REPORT)
             tables.append(table)
             sizer.Add(table, 1, wx.EXPAND | wx.ALL, 3)
-            for tag, index in zip(tags, range(tag_ct)):
+            for tag, index in zip(tags, list(range(tag_ct))):
                 table.InsertColumn(index, tag)
             table.InsertColumn(index + 1, "First path")
             table.InsertColumn(index + 2, "First file name")
@@ -1728,9 +1737,9 @@ class LoadImages(cpmodule.Module):
             tables.append(table)
             sizer.Add(table, 1, wx.EXPAND | wx.ALL, 3)
             if self.do_group_by_metadata:
-                for tag, index in zip(tags, range(tag_ct)):
+                for tag, index in zip(tags, list(range(tag_ct))):
                     table.InsertColumn(index, tag)
-            for fd, index in zip(self.images, range(len(self.images))):
+            for fd, index in zip(self.images, list(range(len(self.images)))):
                 table.InsertColumn(index * 2 + tag_ct,
                                    "%s path" % fd.channels[0].image_name.value)
                 table.InsertColumn(index * 2 + 1 + tag_ct,
@@ -1879,7 +1888,7 @@ class LoadImages(cpmodule.Module):
                                      "%d frames will be discarded.\n") %
                                     (pathname, nframes, nchannels, nframes % nchannels))
                             nframes -= nframes % nchannels
-                        nsets = int(nframes / nchannels)
+                        nsets = int(old_div(nframes, nchannels))
                         for idx in range(nsets):
                             frame_metadata = metadata.copy()
                             frame_metadata[M_Z] = 0  # so sorry, real Z obliterated
@@ -1888,11 +1897,11 @@ class LoadImages(cpmodule.Module):
                             image_numbers = [image_set_count + 1]
                             if match_metadata:
                                 key = dict([(k, str(v))
-                                            for k, v in frame_metadata.items()])
+                                            for k, v in list(frame_metadata.items())])
                                 if key not in md_dict:
                                     message = (
                                         "Could not find a matching image set for " %
-                                        ", ".join(["%s=%s%" % kv for kv in frame_metadata.items()]))
+                                        ", ".join(["%s=%s%" % kv for kv in list(frame_metadata.items())]))
                                     pipeline.report_prepare_run_error(self, message)
                                     return False
                                 image_numbers = md_dict[key]
@@ -1905,7 +1914,7 @@ class LoadImages(cpmodule.Module):
                                     else:
                                         cidx = channel * nsets + idx
                                     c = cidx % channel_count
-                                    z = int(cidx / channel_count) % stack_count
+                                    z = int(old_div(cidx, channel_count)) % stack_count
                                     t = int(cidx / channel_count / stack_count) % timepoint_count
                                     m.add_measurement(
                                             cpmeas.IMAGE,
@@ -1930,7 +1939,7 @@ class LoadImages(cpmodule.Module):
                                             cpmeas.IMAGE,
                                             "_".join((C_FRAME, image_name)), cidx,
                                             image_set_number=image_number)
-                                for k in frame_metadata.keys():
+                                for k in list(frame_metadata.keys()):
                                     m.add_measurement(
                                             cpmeas.IMAGE,
                                             "_".join((cpmeas.C_METADATA, k)),
@@ -1958,11 +1967,11 @@ class LoadImages(cpmodule.Module):
                                 image_numbers = [image_set_count + 1]
                                 if match_metadata:
                                     key = dict([(k, str(v))
-                                                for k, v in frame_metadata.items()])
+                                                for k, v in list(frame_metadata.items())])
                                     if key not in md_dict:
                                         message = (
                                             "Could not find a matching image set for " %
-                                            ", ".join(["%s=%s%" % kv for kv in frame_metadata.items()]))
+                                            ", ".join(["%s=%s%" % kv for kv in list(frame_metadata.items())]))
                                         pipeline.report_prepare_run_error(
                                                 self, message)
                                         return False
@@ -2004,7 +2013,7 @@ class LoadImages(cpmodule.Module):
                                                 "_".join((C_FRAME, image_name)),
                                                 index,
                                                 image_set_number=image_number)
-                                    for k in frame_metadata.keys():
+                                    for k in list(frame_metadata.keys()):
                                         m.add_measurement(
                                                 cpmeas.IMAGE,
                                                 "_".join((cpmeas.C_METADATA, k)),
@@ -2054,7 +2063,7 @@ class LoadImages(cpmodule.Module):
                              "%d channels per group.\n"
                              "%d frames will be discarded.\n") %
                             (pathname, frame_count, group_size, remainder))
-                group_count = int(frame_count / group_size)
+                group_count = int(old_div(frame_count, group_size))
                 for group_number in range(group_count):
                     for i, channel in enumerate(image.channels):
                         channel_idx = int(channel.channel_number.value) - 1
@@ -2130,7 +2139,7 @@ class LoadImages(cpmodule.Module):
         ratio = [1.0, 2.5, 2.0]
         tags = self.get_metadata_tags()
         ratio += [1.0 for tag in tags]
-        ratio = [x / sum(ratio) for x in ratio]
+        ratio = [old_div(x, sum(ratio)) for x in ratio]
         header += tags
         statistics = []
         m = workspace.measurements
@@ -2303,8 +2312,8 @@ class LoadImages(cpmodule.Module):
             path = os.path.abspath(os.path.join(self.image_directory(), path))
             metadata.update(cpmeas.extract_metadata(fd.path_metadata.value,
                                                     path))
-        if needs_well_metadata(metadata.keys()):
-            well_row_token, well_column_token = well_metadata_tokens(metadata.keys())
+        if needs_well_metadata(list(metadata.keys())):
+            well_row_token, well_column_token = well_metadata_tokens(list(metadata.keys()))
             metadata[cpmeas.FTR_WELL] = (metadata[well_row_token] +
                                          metadata[well_column_token])
         return metadata
@@ -2367,7 +2376,7 @@ class LoadImages(cpmodule.Module):
                 image_data.append((C_FRAME, frame))
             for category, value in image_data:
                 add_fn("_".join((category, channel.get_image_name())), value)
-        for key in metadata.keys():
+        for key in list(metadata.keys()):
             add_fn("_".join((cpmeas.C_METADATA, key)), metadata[key])
         if measurements is None:
             return d
@@ -2930,7 +2939,7 @@ class LoadImages(cpmodule.Module):
                     # Add our metadata tags to the joiner
                     current = namesandtypes.join.parse()
                     for d in current:
-                        for v in d.values():
+                        for v in list(d.values()):
                             if v in my_tags:
                                 d[name] = v
                                 my_tags.remove(v)
@@ -3073,14 +3082,14 @@ class LoadImagesImageProviderBase(cpimage.AbstractImageProvider):
             filename = self.get_filename()
             if os.path.exists(filename):
                 return False
-            parsed_path = urlparse.urlparse(filename)
+            parsed_path = urllib.parse.urlparse(filename)
             url = filename
             if len(parsed_path.scheme) < 2:
                 raise IOError("Test for access to file failed. File: %s" % filename)
         elif os.path.exists(path):
             return False
         else:
-            parsed_path = urlparse.urlparse(path)
+            parsed_path = urllib.parse.urlparse(path)
             url = '/'.join((path, self.get_filename()))
             #
             # Scheme length == 0 means no scheme
@@ -3099,7 +3108,7 @@ class LoadImagesImageProviderBase(cpimage.AbstractImageProvider):
             tempfd, temppath = tempfile.mkstemp(suffix=".mat", dir=temp_dir)
             self.__cached_file = temppath
             try:
-                self.__cached_file, headers = urllib.urlretrieve(
+                self.__cached_file, headers = urllib.request.urlretrieve(
                         url, filename=temppath)
             finally:
                 os.close(tempfd)
@@ -3122,7 +3131,7 @@ class LoadImagesImageProviderBase(cpimage.AbstractImageProvider):
 
     def is_matlab_file(self):
         '''Return True if the file name ends with .mat (no Bio-formats)'''
-        path = urlparse.urlparse(self.get_url())[2]
+        path = urllib.parse.urlparse(self.get_url())[2]
         return path.lower().endswith(".mat")
 
     def get_md5_hash(self, measurements):
@@ -3255,7 +3264,7 @@ class LoadImagesImageProvider(LoadImagesImageProviderBase):
                 img = np.dstack(stack)
         if isinstance(self.rescale, float):
             # Apply a manual rescale
-            img = img.astype(np.float32) / self.rescale
+            img = old_div(img.astype(np.float32), self.rescale)
         image = cpimage.Image(img,
                               path_name=self.get_pathname(),
                               file_name=self.get_filename(),
@@ -3405,7 +3414,7 @@ def pathname2url(path):
     utf8_path = path.encode('utf-8')
     if any([utf8_path.lower().startswith(x) for x in PASSTHROUGH_SCHEMES]):
         return utf8_path
-    return FILE_SCHEME + urllib.pathname2url(utf8_path)
+    return FILE_SCHEME + urllib.request.pathname2url(utf8_path)
 
 
 def is_file_url(url):
@@ -3413,13 +3422,13 @@ def is_file_url(url):
 
 
 def url2pathname(url):
-    if isinstance(url, unicode):
+    if isinstance(url, str):
         url = url.encode("utf-8")
     if any([url.lower().startswith(x) for x in PASSTHROUGH_SCHEMES]):
         return url
     assert is_file_url(url)
-    utf8_url = urllib.url2pathname(url[len(FILE_SCHEME):])
-    return unicode(utf8_url, 'utf-8')
+    utf8_url = urllib.request.url2pathname(url[len(FILE_SCHEME):])
+    return str(utf8_url, 'utf-8')
 
 
 def urlfilename(url):
@@ -3430,11 +3439,11 @@ def urlfilename(url):
     '''
     if is_file_url(url):
         return os.path.split(url2pathname(url))[1]
-    path = urlparse.urlparse(url)[2]
+    path = urllib.parse.urlparse(url)[2]
     if "/" in path:
-        return urllib.unquote(path.rsplit("/", 1)[1])
+        return urllib.parse.unquote(path.rsplit("/", 1)[1])
     else:
-        return urllib.unquote(path)
+        return urllib.parse.unquote(path)
 
 
 def urlpathname(url):
@@ -3447,9 +3456,9 @@ def urlpathname(url):
     '''
     if is_file_url(url):
         return os.path.split(url2pathname(url))[0]
-    scheme, netloc, path = urlparse.urlparse(url)[:3]
-    path = urlparse.urlunparse([scheme, netloc, path, "", "", ""])
+    scheme, netloc, path = urllib.parse.urlparse(url)[:3]
+    path = urllib.parse.urlunparse([scheme, netloc, path, "", "", ""])
     if "/" in path:
-        return urllib.unquote(path.rsplit("/", 1)[0])
+        return urllib.parse.unquote(path.rsplit("/", 1)[0])
     else:
-        return urllib.unquote(path)
+        return urllib.parse.unquote(path)

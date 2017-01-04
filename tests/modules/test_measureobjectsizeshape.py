@@ -1,7 +1,16 @@
 """test_measureobjectsizeshape.py - test the MeasureObjectSizeShape module
 """
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
-import StringIO
+from builtins import *
+from future import standard_library
+standard_library.install_aliases()
+from builtins import zip
+from past.utils import old_div
+import io
 import base64
 import unittest
 
@@ -54,7 +63,7 @@ class TestMeasureObjectSizeShape(unittest.TestCase):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(data))
+        pipeline.load(io.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 9)
         module = pipeline.modules()[7]
         self.assertTrue(isinstance(module, cpmoas.MeasureObjectAreaShape))
@@ -80,7 +89,7 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(data))
+        pipeline.load(io.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, cpmoas.MeasureObjectSizeShape))
@@ -168,15 +177,15 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
                                                     'AreaShape_Area')
         # The perimeter is obtained geometrically and is overestimated.
         expected = 100 * np.pi
-        diff = abs((perim[0] - expected) / (perim[0] + expected))
+        diff = abs(old_div((perim[0] - expected), (perim[0] + expected)))
         self.assertTrue(diff < .05, "perimeter off by %f" % diff)
-        wrongness = (perim[0] / expected) ** 2
+        wrongness = (old_div(perim[0], expected)) ** 2
 
         # It's an approximate circle...
         expected = np.pi * 50.0 ** 2
-        diff = abs((area[0] - expected) / (area[0] + expected))
+        diff = abs(old_div((area[0] - expected), (area[0] + expected)))
         self.assertTrue(diff < .05, "area off by %f" % diff)
-        wrongness *= expected / area[0]
+        wrongness *= old_div(expected, area[0])
 
         self.assertAlmostEqual(ff[0] * wrongness, 1.0)
         for object_name, object_count in (('SomeObjects', 2),

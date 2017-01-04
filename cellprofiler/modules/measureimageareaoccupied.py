@@ -19,7 +19,18 @@ select the binary image output by <b>ApplyThreshold</b> to be measured by this m
 
 See also <b>IdentifyPrimaryObjects</b>, <b>IdentifySecondaryObjects</b>, <b>IdentifyTertiaryObjects</b>
 """
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import str
+from builtins import range
+from past.utils import old_div
+from builtins import object
 import numpy as np
 from centrosome.outline import outline
 
@@ -327,7 +338,7 @@ class MeasureImageAreaOccupied(cpm.Module):
             variable_revision_number = 2
         if variable_revision_number == 2:
             # Permits choice of binary image or objects to measure from
-            count = len(setting_values) / 3
+            count = old_div(len(setting_values), 3)
             new_setting_values = [str(count)]
             for i in range(0, count):
                 new_setting_values += ['Objects', setting_values[(i * 3)], setting_values[(i * 3) + 1],

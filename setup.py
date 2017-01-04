@@ -333,6 +333,7 @@ setuptools.setup(
         install_requires=[
             "cellh5",
             "centrosome>=1.0.4",
+            "future",
             "h5py",
             "inflect",
             "javabridge",

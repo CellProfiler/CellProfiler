@@ -1,10 +1,19 @@
 '''test_calculatemath.py - Test the CalculateMath module'''
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
 
+from builtins import *
+from future import standard_library
+standard_library.install_aliases()
+from builtins import zip
+from builtins import range
 import base64
 import os
 import unittest
 import zlib
-from StringIO import StringIO
+from io import StringIO
 
 import PIL.Image as PILImage
 import numpy as np

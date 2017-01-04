@@ -7,7 +7,16 @@ of every object in an image. The display itself is an image which you
 can save to a file using <b>SaveImages</b>.
 '''
 from __future__ import absolute_import
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import zip
+from builtins import str
+from past.utils import old_div
 import numpy as np
 
 import cellprofiler.image as cpi
@@ -249,10 +258,10 @@ class DisplayDataOnImage(cpm.Module):
             value = measurements.get_current_image_measurement(
                     self.measurement.value)
             values = [value]
-            x = [pixel_data.shape[1] / 2]
+            x = [old_div(pixel_data.shape[1], 2)]
             x_offset = np.random.uniform(high=1.0, low=-1.0)
             x[0] += x_offset
-            y = [pixel_data.shape[0] / 2]
+            y = [old_div(pixel_data.shape[0], 2)]
             y_offset = np.sqrt(1 - x_offset ** 2)
             y[0] += y_offset
         else:
@@ -300,8 +309,8 @@ class DisplayDataOnImage(cpm.Module):
             if not self.use_color_map():
                 fig.subplots_adjust(0.1, .1, .9, .9, 0, 0)
             shape = pixel_data.shape
-            width = float(shape[1]) / fig.dpi
-            height = float(shape[0]) / fig.dpi
+            width = old_div(float(shape[1]), fig.dpi)
+            height = old_div(float(shape[0]), fig.dpi)
             fig.set_figheight(height)
             fig.set_figwidth(width)
         elif self.saved_image_contents == E_IMAGE:
@@ -375,7 +384,7 @@ class DisplayDataOnImage(cpm.Module):
             else:
                 pixel_data = (labels != 0).astype(np.float32)
             if pixel_data.ndim == 3:
-                pixel_data = np.sum(pixel_data, 2) / pixel_data.shape[2]
+                pixel_data = old_div(np.sum(pixel_data, 2), pixel_data.shape[2])
             colormap_name = self.colormap.value
             if colormap_name == cps.DEFAULT:
                 colormap_name = cpprefs.get_default_colormap()

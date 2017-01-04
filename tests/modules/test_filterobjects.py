@@ -1,9 +1,19 @@
 '''test_filterbyobjectmeasurements.py: Test FilterByObjectMeasurements module'''
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
 
+from builtins import *
+from future import standard_library
+standard_library.install_aliases()
+from builtins import zip
+from builtins import range
+from builtins import object
 import contextlib
-import StringIO
+import io
 import base64
-import cPickle
+import pickle
 import os
 import tempfile
 import unittest
@@ -49,9 +59,9 @@ class TestFilterObjects(unittest.TestCase):
                                   object_set,
                                   cpm.Measurements(),
                                   image_set_list)
-        for key in image_dict.keys():
+        for key in list(image_dict.keys()):
             image_set.add(key, cpi.Image(image_dict[key]))
-        for key in object_dict.keys():
+        for key in list(object_dict.keys()):
             o = cpo.Objects()
             o.segmented = object_dict[key]
             object_set.add_objects(o, key)
@@ -286,7 +296,7 @@ class TestFilterObjects(unittest.TestCase):
         my_min = .3
         my_max = .7
         expected = np.zeros(labels.shape, int)
-        for i, value in zip(range(n), values):
+        for i, value in zip(list(range(n)), values):
             if value >= my_min and value <= my_max:
                 expected[labels == i + 1] = idx
                 idx += 1
@@ -316,7 +326,7 @@ class TestFilterObjects(unittest.TestCase):
         idx = 1
         my_min = .3
         expected = np.zeros(labels.shape, int)
-        for i, value in zip(range(n), values):
+        for i, value in zip(list(range(n)), values):
             if value >= my_min:
                 expected[labels == i + 1] = idx
                 idx += 1
@@ -345,7 +355,7 @@ class TestFilterObjects(unittest.TestCase):
         idx = 1
         my_max = .7
         expected = np.zeros(labels.shape, int)
-        for i, value in zip(range(n), values):
+        for i, value in zip(list(range(n)), values):
             if value <= my_max:
                 expected[labels == i + 1] = idx
                 idx += 1
@@ -375,7 +385,7 @@ class TestFilterObjects(unittest.TestCase):
         idx = 1
         my_max = np.array([.7, .5])
         expected = np.zeros(labels.shape, int)
-        for i, v1, v2 in zip(range(n), values[:, 0], values[:, 1]):
+        for i, v1, v2 in zip(list(range(n)), values[:, 0], values[:, 1]):
             if v1 <= my_max[0] and v2 <= my_max[1]:
                 expected[labels == i + 1] = idx
                 idx += 1
@@ -411,7 +421,7 @@ class TestFilterObjects(unittest.TestCase):
         my_max = .7
         expected = np.zeros(labels.shape, int)
         expected_alternates = np.zeros(alternates.shape, int)
-        for i, value in zip(range(n), values):
+        for i, value in zip(list(range(n)), values):
             if value >= my_min and value <= my_max:
                 expected[labels == i + 1] = idx
                 expected_alternates[alternates == i + 1] = idx
@@ -458,7 +468,7 @@ FilterByObjectMeasurement:[module_num:1|svn_version:\'8913\'|variable_revision_n
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(data))
+        pipeline.load(io.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, F.FilterByObjectMeasurement))
@@ -533,7 +543,7 @@ Module #3: FilterByObjectMeasurement revision - 6
                 self.fail(event.error.message)
 
         pipeline.add_listener(handle_error)
-        fd = StringIO.StringIO(base64.b64decode(data))
+        fd = io.StringIO(base64.b64decode(data))
         pipeline.load(fd)
 
         self.assertEqual(len(pipeline.modules()), 3)
@@ -947,7 +957,7 @@ Module #3: FilterByObjectMeasurement revision - 6
                 self.fail(event.error.message)
 
         pipeline.add_listener(handle_error)
-        fd = StringIO.StringIO(base64.b64decode(data))
+        fd = io.StringIO(base64.b64decode(data))
         pipeline.load(fd)
         module = pipeline.modules()[4]
         self.assertEqual(module.target_name.value, 'FilteredNuclei')
@@ -997,7 +1007,7 @@ Module #3: FilterByObjectMeasurement revision - 6
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
+        pipeline.load(io.StringIO(zlib.decompress(base64.b64decode(data))))
         module = pipeline.modules()[-1]
         self.assertTrue(isinstance(module, F.FilterByObjectMeasurement))
         self.assertEqual(module.target_name.value, 'FilteredBlue')
@@ -1036,7 +1046,7 @@ Module #3: FilterByObjectMeasurement revision - 6
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
+        pipeline.load(io.StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 4)
         module = pipeline.modules()[-1]
         self.assertTrue(isinstance(module, F.FilterObjects))
@@ -1076,7 +1086,7 @@ FilterObjects:[module_num:1|svn_version:\'8955\'|variable_revision_number:3|show
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(data))
+        pipeline.load(io.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[-1]
         self.assertTrue(isinstance(module, F.FilterObjects))
@@ -1218,7 +1228,7 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:4|show
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(data))
+        pipeline.load(io.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 6)
         module = pipeline.modules()[-1]
         self.assertTrue(isinstance(module, F.FilterObjects))
@@ -1291,7 +1301,7 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(data))
+        pipeline.load(io.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[-1]
         self.assertTrue(isinstance(module, F.FilterObjects))
@@ -1366,7 +1376,7 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(data))
+        pipeline.load(io.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[-1]
         self.assertTrue(isinstance(module, F.FilterObjects))
@@ -1443,7 +1453,7 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(data))
+        pipeline.load(io.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[-1]
         self.assertTrue(isinstance(module, F.FilterObjects))
@@ -1534,7 +1544,7 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
                     C_PARENT: [INPUT_OBJECTS],
                     C_NUMBER: [FTR_OBJECT_NUMBER]})):
             categories = module.get_categories(None, object_name)
-            for c in category.keys():
+            for c in list(category.keys()):
                 self.assertTrue(c in categories)
                 ff = module.get_measurements(None, object_name, c)
                 for f in ff:
@@ -1793,4 +1803,4 @@ def make_classifier_pickle(answers, classes, class_names, name, feature_names):
     feature_names - the names of the features fed into the classifier
     '''
     classifier = FakeClassifier(answers, classes)
-    return cPickle.dumps([classifier, class_names, name, feature_names])
+    return pickle.dumps([classifier, class_names, name, feature_names])

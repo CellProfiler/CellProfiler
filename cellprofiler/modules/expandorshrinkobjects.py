@@ -30,7 +30,14 @@ the expanded/shrunken objects.</li>
 </ul>
 
 <p>See also <b>Identify</b> modules.</p>'''
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
 import numpy as np
 from centrosome.cpmorphology import binary_shrink, thin
 from centrosome.cpmorphology import fill_labeled_holes, adjacent

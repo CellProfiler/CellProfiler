@@ -1,4 +1,15 @@
-import StringIO
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
+from builtins import *
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
+from builtins import zip
+from builtins import range
+from past.utils import old_div
+import io
 import base64
 import unittest
 import zlib
@@ -161,7 +172,7 @@ def test_divide(image_a, image_b, module, workspace):
 
     actual = output.pixel_data
 
-    expected = image_a.pixel_data / image_b.pixel_data
+    expected = old_div(image_a.pixel_data, image_b.pixel_data)
 
     numpy.testing.assert_array_equal(expected, actual)
 
@@ -175,7 +186,7 @@ def test_average(image_a, image_b, module, workspace):
 
     actual = output.pixel_data
 
-    expected = (image_a.pixel_data + image_b.pixel_data) / 2.0
+    expected = old_div((image_a.pixel_data + image_b.pixel_data), 2.0)
 
     numpy.testing.assert_array_equal(expected, actual)
 
@@ -313,7 +324,7 @@ Subtract:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|show_wind
             self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(data))
+        pipeline.load(io.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, cellprofiler.modules.imagemath.ImageMath))
@@ -348,7 +359,7 @@ Combine:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|show_windo
             self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(data))
+        pipeline.load(io.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, cellprofiler.modules.imagemath.ImageMath))
@@ -357,7 +368,7 @@ Combine:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|show_windo
         self.assertEqual(module.images[1].image_name, "MySecondImage")
         self.assertAlmostEqual(module.images[0].factor.value, 0.2)
         self.assertAlmostEqual(module.images[1].factor.value, 0.7)
-        self.assertAlmostEqual(module.after_factor.value, 1.0 / 0.9)
+        self.assertAlmostEqual(module.after_factor.value, old_div(1.0, 0.9))
         self.assertEqual(module.operation.value, cellprofiler.modules.imagemath.O_ADD)
         self.assertEqual(module.output_image_name, "MyOutputImage")
 
@@ -377,7 +388,7 @@ InvertIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|sh
             self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(data))
+        pipeline.load(io.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, cellprofiler.modules.imagemath.ImageMath))
@@ -403,7 +414,7 @@ Multiply:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_wind
             self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(data))
+        pipeline.load(io.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, cellprofiler.modules.imagemath.ImageMath))
@@ -438,7 +449,7 @@ Multiply:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_wind
             self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
+        pipeline.load(io.StringIO(zlib.decompress(base64.b64decode(data))))
         #
         # There are 3 ImageMath modules:
         # 1)
@@ -510,7 +521,7 @@ Multiply:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_wind
             self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
+        pipeline.load(io.StringIO(zlib.decompress(base64.b64decode(data))))
         #
         # Modules:
         # 1) Add, 1
@@ -605,7 +616,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:3|show_
             self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(data))
+        pipeline.load(io.StringIO(data))
         module = pipeline.modules()[-1]
         self.assertTrue(isinstance(module, cellprofiler.modules.imagemath.ImageMath))
         self.assertEqual(module.operation, cellprofiler.modules.imagemath.O_LOG_TRANSFORM_LEGACY)
@@ -697,7 +708,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
             self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(data))
+        pipeline.load(io.StringIO(data))
         module = pipeline.modules()[-1]
         self.assertTrue(isinstance(module, cellprofiler.modules.imagemath.ImageMath))
         self.assertEqual(module.operation, cellprofiler.modules.imagemath.O_LOG_TRANSFORM)
@@ -1015,7 +1026,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
         for n in range(2, 5):
             images = [{'pixel_data': numpy.random.uniform(size=(10, 10)).astype(numpy.float32)}
                       for i in range(n)]
-            expected = reduce(numpy.add, [x['pixel_data'] for x in images]) / n
+            expected = old_div(reduce(numpy.add, [x['pixel_data'] for x in images]), n)
             output = self.run_imagemath(images, fn)
             self.check_expected(output, expected)
 
@@ -1086,7 +1097,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
         numpy.random.seed(101)
         measurement = 1.23
         expected = numpy.random.uniform(size=(10, 20)).astype(numpy.float32)
-        image = expected / measurement
+        image = old_div(expected, measurement)
         output = self.run_imagemath([{'pixel_data': image}],
                                     modify_module_fn=fn,
                                     measurement=measurement)
@@ -1103,7 +1114,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
         numpy.random.seed(102)
         measurement = 1.52
         expected = numpy.random.uniform(size=(10, 20)).astype(numpy.float32)
-        image = expected / measurement
+        image = old_div(expected, measurement)
         mask = numpy.random.uniform(size=(10, 20)) < .2
         output = self.run_imagemath([{'pixel_data': image, 'mask': mask}],
                                     modify_module_fn=fn,

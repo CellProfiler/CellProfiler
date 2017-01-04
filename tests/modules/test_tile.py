@@ -1,10 +1,21 @@
 '''test_tile.py - Test the tile module
 '''
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from builtins import *
+from future import standard_library
+standard_library.install_aliases()
+from builtins import zip
+from builtins import str
+from builtins import range
+from past.utils import old_div
 import base64
 import unittest
 import zlib
-from StringIO import StringIO
+from io import StringIO
 
 import numpy as np
 
@@ -195,7 +206,7 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
         self.assertEqual(pixel_data.shape[0], 6 * 20)
         self.assertEqual(pixel_data.shape[1], 16 * 10)
         for i, image in enumerate(images):
-            ii = int(i / 16)
+            ii = int(old_div(i, 16))
             jj = i % 16
             iii = ii * 20
             jjj = jj * 10
@@ -224,7 +235,7 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
         self.assertEqual(pixel_data.shape[0], 6 * 20)
         self.assertEqual(pixel_data.shape[1], 16 * 10)
         for i, image in enumerate(images):
-            ii = int(i / 16)
+            ii = int(old_div(i, 16))
             jj = i % 16
             iii = ii * 20
             jjj = jj * 10
@@ -253,7 +264,7 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
         self.assertEqual(pixel_data.shape[0], 6 * 20)
         self.assertEqual(pixel_data.shape[1], 16 * 10)
         for i, image in enumerate(images):
-            ii = int(i / 16)
+            ii = int(old_div(i, 16))
             jj = i % 16
             iii = ii * 20
             jjj = jj * 10
@@ -281,7 +292,7 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
         self.assertEqual(pixel_data.shape[0], 9 * 20)
         self.assertEqual(pixel_data.shape[1], 11 * 10)
         for i, image in enumerate(images):
-            ii = int(i / 11)
+            ii = int(old_div(i, 11))
             jj = i % 11
             iii = ii * 20
             jjj = jj * 10
@@ -310,7 +321,7 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
         self.assertEqual(pixel_data.shape[0], 6 * 20)
         self.assertEqual(pixel_data.shape[1], 16 * 10)
         for i, image in enumerate(images):
-            ii = int(i / 16)
+            ii = int(old_div(i, 16))
             jj = i % 16
             iii = ii * 20
             jjj = jj * 10
@@ -341,7 +352,7 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
         self.assertEqual(pixel_data.shape[1], 16 * 10)
         for i, image in enumerate(images):
             ii = i % 6
-            jj = int(i / 6)
+            jj = int(old_div(i, 6))
             iii = ii * 20
             jjj = jj * 10
             self.assertTrue(np.all(pixel_data[iii:(iii + 20), jjj:(jjj + 10)] ==
@@ -371,7 +382,7 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
         self.assertEqual(pixel_data.shape[0], 6 * 20)
         self.assertEqual(pixel_data.shape[1], 16 * 10)
         for i, image in enumerate(images):
-            ii = int(i / 16)
+            ii = int(old_div(i, 16))
             jj = 15 - (i % 16)
             iii = ii * 20
             jjj = jj * 10
@@ -402,7 +413,7 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
         self.assertEqual(pixel_data.shape[0], 6 * 20)
         self.assertEqual(pixel_data.shape[1], 16 * 10)
         for i, image in enumerate(images):
-            ii = 5 - int(i / 16)
+            ii = 5 - int(old_div(i, 16))
             jj = i % 16
             iii = ii * 20
             jjj = jj * 10
@@ -433,7 +444,7 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
         self.assertEqual(pixel_data.shape[0], 6 * 20)
         self.assertEqual(pixel_data.shape[1], 16 * 10)
         for i, image in enumerate(images):
-            ii = 5 - int(i / 16)
+            ii = 5 - int(old_div(i, 16))
             jj = 15 - (i % 16)
             iii = ii * 20
             jjj = jj * 10
@@ -495,7 +506,7 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
         self.assertEqual(pixel_data.shape[0], 6 * 20)
         self.assertEqual(pixel_data.shape[1], 16 * 10)
         for i, image in enumerate(images[:-1]):
-            ii = 5 - int(i / 16)
+            ii = 5 - int(old_div(i, 16))
             jj = 15 - (i % 16)
             iii = ii * 20
             jjj = jj * 10

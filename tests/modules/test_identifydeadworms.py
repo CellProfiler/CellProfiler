@@ -1,8 +1,18 @@
 '''test_identifydeadworms.py - test the IdentifyDeadWorms module
 '''
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from builtins import *
+from future import standard_library
+standard_library.install_aliases()
+from builtins import zip
+from builtins import range
+from past.utils import old_div
 import unittest
-from StringIO import StringIO
+from io import StringIO
 
 import numpy as np
 from scipy.ndimage import binary_fill_holes
@@ -263,7 +273,7 @@ IdentifyDeadWorms:[module_num:1|svn_version:\'Unknown\'|variable_revision_number
         self.assertEqual(len(first), 50)
         self.assertEqual(len(second), 50)
         for i in range(50):
-            self.assertEqual(first[i], int(i / 5))
+            self.assertEqual(first[i], int(old_div(i, 5)))
         for i in range(25):
             self.assertEqual(second[i], i % 5)
             self.assertEqual(second[i + 25], (i % 5) + 5)

@@ -384,7 +384,16 @@ in <b>Morph</b> to achieve the same result.</td>
 </tr>
 </table>
 '''
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import range
+from past.utils import old_div
 import logging
 import sys
 
@@ -632,7 +641,7 @@ class Morph(cpm.Module):
     def prepare_settings(self, setting_values):
         '''Adjust the # of functions to match the # of setting values'''
         assert (len(setting_values) - 2) % FUNCTION_SETTING_COUNT == 0
-        function_count = (len(setting_values) - 2) / FUNCTION_SETTING_COUNT
+        function_count = old_div((len(setting_values) - 2), FUNCTION_SETTING_COUNT)
         del self.functions[function_count:]
         while len(self.functions) < function_count:
             self.add_function()
@@ -710,7 +719,7 @@ class Morph(cpm.Module):
             if any([np.any(pixel_data[:, :, 0] != pixel_data[:, :, plane])
                     for plane in range(1, pixel_data.shape[2])]):
                 logger.warn("Image is color, converting to grayscale")
-            pixel_data = np.sum(pixel_data, 2) / pixel_data.shape[2]
+            pixel_data = old_div(np.sum(pixel_data, 2), pixel_data.shape[2])
         for function in self.functions:
             pixel_data = self.run_function(function, pixel_data, mask)
         new_image = cpi.Image(pixel_data, parent_image=image)
@@ -749,13 +758,13 @@ class Morph(cpm.Module):
         if function.structuring_element == SE_ARBITRARY:
             strel = np.array(function.strel.get_matrix())
         elif function.structuring_element == SE_DISK:
-            strel = morph.strel_disk(scale / 2.0)
+            strel = morph.strel_disk(old_div(scale, 2.0))
         elif function.structuring_element == SE_DIAMOND:
-            strel = morph.strel_diamond(scale / 2.0)
+            strel = morph.strel_diamond(old_div(scale, 2.0))
         elif function.structuring_element == SE_LINE:
             strel = morph.strel_line(scale, function.angle.value)
         elif function.structuring_element == SE_OCTAGON:
-            strel = morph.strel_octagon(scale / 2.0)
+            strel = morph.strel_octagon(old_div(scale, 2.0))
         elif function.structuring_element == SE_PAIR:
             strel = morph.strel_pair(function.x_offset.value,
                                      function.y_offset.value)
@@ -824,7 +833,7 @@ class Morph(cpm.Module):
             elif function_name == F_DISTANCE:
                 image = scind.distance_transform_edt(pixel_data)
                 if function.rescale_values.value:
-                    image = image / np.max(image)
+                    image = old_div(image, np.max(image))
                 return image
             elif function_name == F_ENDPOINTS:
                 return morph.endpoints(pixel_data, mask)

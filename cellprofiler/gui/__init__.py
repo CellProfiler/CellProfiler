@@ -4,7 +4,14 @@
 The CellProfilerGUI package holds the viewer and controller portions
 of the cell profiler program
 """
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
 import cellprofiler.icons
 import os
 import sys

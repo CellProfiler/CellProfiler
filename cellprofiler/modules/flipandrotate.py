@@ -5,7 +5,15 @@
 <li><i>Rotation:</i> Angle of rotation for the input image.</li>
 </ul>
 '''
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from past.utils import old_div
 import numpy as np
 import scipy.ndimage as scind
 
@@ -218,7 +226,7 @@ class FlipAndRotate(cpm.Module):
                 # The left and right halves are symmetric, so we compute
                 # on just two of the quadrants.
                 #
-                half = (np.array(crop.shape) / 2).astype(int)
+                half = (old_div(np.array(crop.shape), 2)).astype(int)
                 #
                 # Operate on the lower right
                 #
@@ -316,8 +324,8 @@ class FlipAndRotate(cpm.Module):
         i, j, k = np.mgrid[0:isize,
                   0:int(isize * pixel_data.shape[1] / pixel_data.shape[0]),
                   0:3].astype(float)
-        i *= float(pixel_data.shape[0]) / float(isize)
-        j *= float(pixel_data.shape[0]) / float(isize)
+        i *= old_div(float(pixel_data.shape[0]), float(isize))
+        j *= old_div(float(pixel_data.shape[0]), float(isize))
         pixel_data = scind.map_coordinates(pixel_data, (i, j, k))
         #
         # Make a dialog box that contains the image
@@ -367,7 +375,7 @@ class FlipAndRotate(cpm.Module):
         arrow_cursor = wx.StockCursor(wx.CURSOR_ARROW)
 
         def get_angle(event):
-            center = np.array(canvas.Size) / 2
+            center = old_div(np.array(canvas.Size), 2)
             point = np.array(event.GetPositionTuple())
             offset = point - center
             return -np.arctan2(offset[1], offset[0]) * 180.0 / np.pi
@@ -531,5 +539,5 @@ def affine_offset(shape, transform):
     transform the location of the center of the image (the image rotates
     or is flipped about the center).
     '''
-    c = (np.array(shape[:2]) - 1).astype(float) / 2.0
+    c = old_div((np.array(shape[:2]) - 1).astype(float), 2.0)
     return -np.dot(transform - np.identity(2), c)

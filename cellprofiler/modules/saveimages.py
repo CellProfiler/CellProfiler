@@ -15,7 +15,17 @@ is supported for TIFF only.</p>
 
 See also <b>NamesAndTypes</b>.
 '''
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import str
+from builtins import range
+from past.utils import old_div
 import logging
 import os
 import re
@@ -591,7 +601,7 @@ class SaveImages(cpm.Module):
                                    bytes=True)[pixels != 0, :3]
                 counts[pixels != 0] += 1
             counts[counts == 0] = 1
-            cpixels = cpixels / counts[:, :, np.newaxis]
+            cpixels = old_div(cpixels, counts[:, :, np.newaxis])
             self.do_save_image(workspace, filename, cpixels, ome.PT_UINT8)
         self.save_filename_measurements(workspace)
         if self.show_window:
@@ -656,13 +666,13 @@ class SaveImages(cpm.Module):
                             img_min = np.min(pixels[:, :, i])
                             img_max = np.max(pixels[:, :, i])
                             if img_max > img_min:
-                                pixels[:, :, i] = (pixels[:, :, i] - img_min) / (img_max - img_min)
+                                pixels[:, :, i] = old_div((pixels[:, :, i] - img_min), (img_max - img_min))
                     else:
                         # Grayscale
                         img_min = np.min(pixels)
                         img_max = np.max(pixels)
                         if img_max > img_min:
-                            pixels = (pixels - img_min) / (img_max - img_min)
+                            pixels = old_div((pixels - img_min), (img_max - img_min))
                 elif not (u16hack or self.get_bit_depth() == BIT_DEPTH_FLOAT):
                     # Clip at 0 and 1
                     if np.max(pixels) > 1 or np.min(pixels) < 0:

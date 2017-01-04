@@ -32,7 +32,19 @@ of the moment and the ZernikePhase feature gives the moment's orientation.</li>
 
 See also <b>MeasureObjectIntensity</b>.
 """
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import zip
+from builtins import filter
+from builtins import str
+from builtins import range
+from past.utils import old_div
 import sys
 
 import centrosome.zernike as cpmz
@@ -475,7 +487,7 @@ class MeasureObjectIntensityDistribution(cpm.Module):
         stats = workspace.display_data.stats
         n_plots = len(workspace.display_data.heatmaps) + 1
         n_vert = int(np.sqrt(n_plots))
-        n_horiz = int(np.ceil(float(n_plots) / n_vert))
+        n_horiz = int(np.ceil(old_div(float(n_plots), n_vert)))
         figure.set_subplots((n_horiz, n_vert))
         figure.subplot_table(0, 0, stats, col_labels=header)
         idx = 1
@@ -489,7 +501,7 @@ class MeasureObjectIntensityDistribution(cpm.Module):
                     heatmap.object_name.get_objects_name(),
                     heatmap.measurement.value)
                 x = idx % n_horiz
-                y = int(idx / n_horiz)
+                y = int(old_div(idx, n_horiz))
                 colormap = heatmap.colormap.value
                 if colormap == cps.DEFAULT:
                     colormap = cpprefs.get_default_colormap()
@@ -670,11 +682,11 @@ class MeasureObjectIntensityDistribution(cpm.Module):
             normalized_distance = np.zeros(labels.shape)
             if wants_scaled:
                 total_distance = d_from_center + d_to_edge
-                normalized_distance[good_mask] = (d_from_center[good_mask] /
-                                                  (total_distance[good_mask] + .001))
+                normalized_distance[good_mask] = (old_div(d_from_center[good_mask],
+                                                  (total_distance[good_mask] + .001)))
             else:
                 normalized_distance[good_mask] = \
-                    d_from_center[good_mask] / maximum_radius
+                    old_div(d_from_center[good_mask], maximum_radius)
             dd[name] = [normalized_distance, i_center, j_center, good_mask]
         ngood_pixels = np.sum(good_mask)
         good_labels = labels[good_mask]
@@ -685,15 +697,15 @@ class MeasureObjectIntensityDistribution(cpm.Module):
                                (nobjects, bin_count + 1)).toarray()
         sum_by_object = np.sum(histogram, 1)
         sum_by_object_per_bin = np.dstack([sum_by_object] * (bin_count + 1))[0]
-        fraction_at_distance = histogram / sum_by_object_per_bin
+        fraction_at_distance = old_div(histogram, sum_by_object_per_bin)
         number_at_distance = coo_matrix((np.ones(ngood_pixels), labels_and_bins),
                                         (nobjects, bin_count + 1)).toarray()
         object_mask = number_at_distance > 0
         sum_by_object = np.sum(number_at_distance, 1)
         sum_by_object_per_bin = np.dstack([sum_by_object] * (bin_count + 1))[0]
-        fraction_at_bin = number_at_distance / sum_by_object_per_bin
-        mean_pixel_fraction = fraction_at_distance / (fraction_at_bin +
-                                                      np.finfo(float).eps)
+        fraction_at_bin = old_div(number_at_distance, sum_by_object_per_bin)
+        mean_pixel_fraction = old_div(fraction_at_distance, (fraction_at_bin +
+                                                      np.finfo(float).eps))
         masked_fraction_at_distance = masked_array(fraction_at_distance,
                                                    ~object_mask)
         masked_mean_pixel_fraction = masked_array(mean_pixel_fraction,
@@ -724,8 +736,8 @@ class MeasureObjectIntensityDistribution(cpm.Module):
             pixel_count = coo_matrix((np.ones(bin_pixels), labels_and_radii),
                                      (nobjects, 8)).toarray()
             mask = pixel_count == 0
-            radial_means = masked_array(radial_values / pixel_count, mask)
-            radial_cv = np.std(radial_means, 1) / np.mean(radial_means, 1)
+            radial_means = masked_array(old_div(radial_values, pixel_count), mask)
+            radial_cv = old_div(np.std(radial_means, 1), np.mean(radial_means, 1))
             radial_cv[np.sum(~mask, 1) == 0] = 0
             for measurement, feature, overflow_feature in (
                     (fraction_at_distance[:, bin], MF_FRAC_AT_D, OF_FRAC_AT_D),
@@ -771,7 +783,7 @@ class MeasureObjectIntensityDistribution(cpm.Module):
             #
             ijv = objects.ijv
             l = ijv[:, 2]
-            yx = (ijv[:, :2] - ij[l, :]) / r[l, np.newaxis]
+            yx = old_div((ijv[:, :2] - ij[l, :]), r[l, np.newaxis])
             z = cpmz.construct_zernike_polynomials(
                     yx[:, 1], yx[:, 0], zernike_indexes)
             for image_group in self.images:
@@ -802,7 +814,7 @@ class MeasureObjectIntensityDistribution(cpm.Module):
                     vi = scind.sum(
                             pixels[ijv[mask, 0], ijv[mask, 1]] * z_[:, i].imag,
                             labels=l_, index=objects.indices)
-                    magnitude = np.sqrt(vr * vr + vi * vi) / areas
+                    magnitude = old_div(np.sqrt(vr * vr + vi * vi), areas)
                     ftr = self.get_zernike_magnitude_name(image_name, n, m)
                     meas[object_name, ftr] = magnitude
                     if self.wants_zernikes == Z_MAGNITUDES_AND_PHASE:
@@ -972,7 +984,7 @@ class MORDObjectNameSubscriber(cps.ObjectNameSubscriber):
 
     def get_choices(self, pipeline):
         super_choices = super(self.__class__, self).get_choices(pipeline)
-        return filter(self.__is_valid_choice, super_choices)
+        return list(filter(self.__is_valid_choice, super_choices))
 
     def is_visible(self):
         '''Return True if a choice should be displayed'''
@@ -1001,7 +1013,7 @@ class MORDImageNameSubscriber(cps.ImageNameSubscriber):
 
     def get_choices(self, pipeline):
         super_choices = super(self.__class__, self).get_choices(pipeline)
-        return filter(self.__is_valid_choice, super_choices)
+        return list(filter(self.__is_valid_choice, super_choices))
 
     def is_visible(self):
         '''Return True if a choice should be displayed'''

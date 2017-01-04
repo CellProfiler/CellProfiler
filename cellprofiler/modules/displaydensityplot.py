@@ -16,7 +16,15 @@ created from all the measurements collected during the run.</p>
 
 See also <b>DisplayScatterPlot</b>, <b>DisplayHistogram</b>.
 '''
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import zip
 import matplotlib.cm
 import numpy as np
 
@@ -99,7 +107,7 @@ class DisplayDensityPlot(cpm.Module):
             measurements that would not easily be seen if the
             measurement is plotted linearly.''')
 
-        maps = [m for m in matplotlib.cm.datad.keys() if not m.endswith('_r')]
+        maps = [m for m in list(matplotlib.cm.datad.keys()) if not m.endswith('_r')]
         maps.sort()
 
         self.colormap = cps.Choice(

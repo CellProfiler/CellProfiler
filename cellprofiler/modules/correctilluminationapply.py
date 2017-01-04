@@ -8,7 +8,15 @@ either loaded by <b>LoadSingleImage</b> or created by <b>CorrectIlluminationCalc
 This module corrects each image in the pipeline using the function specified.
 
 See also <b>CorrectIlluminationCalculate</b>.'''
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from past.utils import old_div
 import numpy as np
 
 import cellprofiler.image  as cpi
@@ -154,7 +162,7 @@ class CorrectIlluminationApply(cpm.Module):
         # Figure out how many images there are based on the number of setting_values
         #
         assert len(setting_values) % SETTINGS_PER_IMAGE == 0
-        image_count = len(setting_values) / SETTINGS_PER_IMAGE
+        image_count = old_div(len(setting_values), SETTINGS_PER_IMAGE)
         del self.images[image_count:]
         while len(self.images) < image_count:
             self.add_image()
@@ -198,7 +206,7 @@ class CorrectIlluminationApply(cpm.Module):
         # Either divide or subtract the illumination image from the original
         #
         if image.divide_or_subtract == DOS_DIVIDE:
-            output_pixels = orig_image.pixel_data / illum_function_pixel_data
+            output_pixels = old_div(orig_image.pixel_data, illum_function_pixel_data)
         elif image.divide_or_subtract == DOS_SUBTRACT:
             output_pixels = orig_image.pixel_data - illum_function_pixel_data
             output_pixels[output_pixels < 0] = 0

@@ -1,3 +1,15 @@
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from builtins import *
+from future import standard_library
+standard_library.install_aliases()
+from builtins import filter
+from builtins import zip
+from builtins import map
+from builtins import range
+from past.builtins import basestring
 import cellprofiler.icons
 from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON, IMAGES_FILELIST_BLANK, \
     IMAGES_FILELIST_FILLED, MODULE_ADD_BUTTON, METADATA_DISPLAY_TABLE
@@ -103,8 +115,8 @@ import csv
 import re
 import os
 import time
-import urllib
-import urlparse
+import urllib.request, urllib.parse, urllib.error
+import urllib.parse
 
 import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
@@ -512,7 +524,7 @@ class Metadata(cpm.Module):
         group.imported_metadata_header_path = csv_path
         try:
             if group.csv_location.is_url():
-                fd = urllib.urlopen(csv_path)
+                fd = urllib.request.urlopen(csv_path)
             else:
                 fd = open(csv_path, "rb")
             group.imported_metadata_header_line = fd.readline()
@@ -718,7 +730,7 @@ class Metadata(cpm.Module):
         url_array = env.make_object_array(len(filtered_file_list), scls)
         metadata_array = env.make_object_array(len(filtered_file_list), scls)
         for i, url in enumerate(filtered_file_list):
-            if isinstance(url, unicode):
+            if isinstance(url, str):
                 ourl = env.new_string(url)
             else:
                 ourl = env.new_string_utf(url)
@@ -893,9 +905,9 @@ class Metadata(cpm.Module):
             setting_idx = len(self.visible_settings())
         for group in self.extraction_methods:
             if group.extraction_method == X_IMPORTED_EXTRACTION:
-                idx = max(*map(visible_settings.index,
+                idx = max(*list(map(visible_settings.index,
                                [group.csv_joiner, group.csv_location,
-                                group.wants_case_insensitive]))
+                                group.wants_case_insensitive])))
                 if idx < setting_idx:
                     continue
                 self.refresh_group_joiner(group)
@@ -990,8 +1002,8 @@ class Metadata(cpm.Module):
         '''Get the metadata keys which can have flexible datatyping
 
         '''
-        return filter((lambda k: k not in self.NUMERIC_DATA_TYPES),
-                      self.get_metadata_keys())
+        return list(filter((lambda k: k not in self.NUMERIC_DATA_TYPES),
+                      self.get_metadata_keys()))
 
     NUMERIC_DATA_TYPES = (
         cpp.ImagePlaneDetails.MD_T, cpp.ImagePlaneDetails.MD_Z,
@@ -1040,7 +1052,7 @@ class Metadata(cpm.Module):
                     group.wants_case_insensitive:
                 joins = group.csv_joiner.parse()
                 for join in joins:
-                    if key in join.values():
+                    if key in list(join.values()):
                         return True
         return False
 
@@ -1048,7 +1060,7 @@ class Metadata(cpm.Module):
         '''Get the metadata measurements collected by this module'''
         key_types = pipeline.get_available_metadata_keys()
         result = []
-        for key, coltype in key_types.iteritems():
+        for key, coltype in list(key_types.items()):
             if self.data_type_choice == DTC_CHOOSE:
                 data_type = self.get_data_type(key)
                 if data_type == cps.DataTypes.DT_NONE:

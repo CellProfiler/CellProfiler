@@ -37,7 +37,16 @@ according to the arrangement order specified by the user.</li>
 
 <p>See also <b>DefineGrid</b>.
 '''
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import range
+from past.utils import old_div
 import numpy as np
 from centrosome.cpmorphology import centers_of_labels, relabel
 from centrosome.outline import outline
@@ -238,11 +247,11 @@ class IdentifyObjectsInGrid(cpm.Module):
         i, j = np.mgrid[0:gridding.image_height,
                0:gridding.image_width]
         i_min = int(gridding.y_location_of_lowest_y_spot -
-                    gridding.y_spacing / 2)
+                    old_div(gridding.y_spacing, 2))
         j_min = int(gridding.x_location_of_lowest_x_spot -
-                    gridding.x_spacing / 2)
-        i = np.floor((i - i_min) / gridding.y_spacing).astype(int)
-        j = np.floor((j - j_min) / gridding.x_spacing).astype(int)
+                    old_div(gridding.x_spacing, 2))
+        i = np.floor(old_div((i - i_min), gridding.y_spacing)).astype(int)
+        j = np.floor(old_div((j - j_min), gridding.x_spacing)).astype(int)
         mask = ((i >= 0) & (j >= 0) &
                 (i < gridding.spot_table.shape[0]) &
                 (j < gridding.spot_table.shape[1]))
@@ -344,14 +353,14 @@ class IdentifyObjectsInGrid(cpm.Module):
     def get_radius(self, workspace, gridding):
         '''Get the radius for circles'''
         if self.diameter_choice == AM_MANUAL:
-            return self.diameter.value / 2
+            return old_div(self.diameter.value, 2)
         labels = self.filtered_labels(workspace, gridding)
         areas = np.bincount(labels[labels != 0])
         if len(areas) == 0:
             raise RuntimeError("Failed to calculate average radius: no grid objects found in %s" %
                                self.guiding_object_name.value)
         median_area = np.median(areas[areas != 0])
-        return max(1, np.sqrt(median_area / np.pi))
+        return max(1, np.sqrt(old_div(median_area, np.pi)))
 
     def filtered_labels(self, workspace, gridding):
         '''Filter labels by proximity to edges of grid'''
@@ -372,8 +381,8 @@ class IdentifyObjectsInGrid(cpm.Module):
                        (centers[1, :] >= labels.shape[1]))
         centers = np.round(centers).astype(int)
         masked_labels = labels.copy()
-        x_border = int(np.ceil(gridding.x_spacing / 10))
-        y_border = int(np.ceil(gridding.y_spacing / 10))
+        x_border = int(np.ceil(old_div(gridding.x_spacing, 10)))
+        y_border = int(np.ceil(old_div(gridding.y_spacing, 10)))
         #
         # erase anything that's not like what's next to it
         #

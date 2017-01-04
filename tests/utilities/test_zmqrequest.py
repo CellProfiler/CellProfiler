@@ -1,10 +1,20 @@
 """test_zmqrequest.py - test the zmqrequest framework
 """
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from builtins import *
+from future import standard_library
+standard_library.install_aliases()
+from builtins import zip
+from past.builtins import basestring
+from builtins import object
 import logging
 import logging.handlers
 
 logger = logging.getLogger(__name__)
-import Queue
+import queue
 import os
 import threading
 import tempfile
@@ -46,8 +56,8 @@ class TestZMQRequest(unittest.TestCase):
             threading.Thread.__init__(self, name=name)
             self.notify_addr = "inproc://" + uuid.uuid4().hex
             self.setDaemon(True)
-            self.queue = Queue.Queue()
-            self.response_queue = Queue.Queue()
+            self.queue = queue.Queue()
+            self.response_queue = queue.Queue()
             self.start_signal = threading.Semaphore(0)
             self.keep_going = True
             self.analysis_id = analysis_id
@@ -122,7 +132,7 @@ class TestZMQRequest(unittest.TestCase):
     class ZMQServer(object):
         def __enter__(self):
             self.analysis_id = uuid.uuid4().hex
-            self.upq = Queue.Queue()
+            self.upq = queue.Queue()
             logger.info("Server registering")
             self.boundary = Z.register_analysis(self.analysis_id,
                                                 self.upq)
@@ -134,7 +144,7 @@ class TestZMQRequest(unittest.TestCase):
             try:
                 req = self.upq.get(timeout)
                 return req
-            except Queue.Empty:
+            except queue.Empty:
                 raise AssertionError("Failed to receive message within timeout of %f sec" % timeout)
 
         def __exit__(self, type, value, traceback):

@@ -37,7 +37,16 @@ See also the <b>Input</b> modules, <b>LoadImages</b>,<b>LoadData</b>.
 
 """
 from __future__ import absolute_import
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import zip
+from builtins import range
+from past.utils import old_div
 import hashlib
 import os
 import re
@@ -254,8 +263,8 @@ class LoadSingleImage(cpm.Module):
 
     def prepare_settings(self, setting_values):
         """Adjust the file_settings depending on how many files there are"""
-        count = ((len(setting_values) - S_FIXED_SETTINGS_COUNT) /
-                 S_FILE_SETTINGS_COUNT)
+        count = (old_div((len(setting_values) - S_FIXED_SETTINGS_COUNT),
+                 S_FILE_SETTINGS_COUNT))
         del self.file_settings[count:]
         while len(self.file_settings) < count:
             self.add_file()
@@ -333,7 +342,7 @@ class LoadSingleImage(cpm.Module):
 
         for image_number in image_numbers:
             dict = self.get_file_names(workspace, image_set_number=image_number)
-            for image_name in dict.keys():
+            for image_name in list(dict.keys()):
                 file_settings = self.get_file_settings(image_name)
                 if file_settings.image_objects_choice == IO_IMAGES:
                     #
@@ -644,7 +653,7 @@ class LoadSingleImage(cpm.Module):
             if namesandtypes.matching_choice == cpnamesandtypes.MATCH_BY_METADATA:
                 joins = namesandtypes.join.parse()
                 for d in joins:
-                    for v in d.values():
+                    for v in list(d.values()):
                         if v in tags:
                             d[name] = v
                             tags.remove(v)

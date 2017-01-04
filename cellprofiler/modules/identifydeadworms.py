@@ -36,7 +36,15 @@ Toolbox</a> page for sample images and pipelines, as well
 as video tutorials.</p>
 '''
 from __future__ import absolute_import
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import range
+from past.utils import old_div
 import numpy as np
 from centrosome.cpmorphology import all_connected_components
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
@@ -226,7 +234,7 @@ class IdentifyDeadWorms(cpm.Module):
             vangles = fix(mean_of_labels((a - angles[ij_labels - 1]) ** 2,
                                          ij_labels, label_indexes))
             aa = a.copy()
-            aa[a > np.pi / 2] -= np.pi
+            aa[a > old_div(np.pi, 2)] -= np.pi
             aangles = fix(mean_of_labels(aa, ij_labels, label_indexes))
             vaangles = fix(mean_of_labels((aa - aangles[ij_labels - 1]) ** 2,
                                           ij_labels, label_indexes))
@@ -310,7 +318,7 @@ class IdentifyDeadWorms(cpm.Module):
             lcolors = colors * .5 + .5  # Wash the colors out a little
             for ii in range(count):
                 diamond = self.get_diamond(angles[ii])
-                hshape = ((np.array(diamond.shape) - 1) / 2).astype(int)
+                hshape = (old_div((np.array(diamond.shape) - 1), 2)).astype(int)
                 iii = i[ii]
                 jjj = j[ii]
                 color_image[iii - hshape[0]:iii + hshape[0] + 1,
@@ -320,8 +328,8 @@ class IdentifyDeadWorms(cpm.Module):
         # Do our own alpha-normalization
         #
         color_image[:, :, -1][color_image[:, :, -1] == 0] = 1
-        color_image[:, :, :-1] = (color_image[:, :, :-1] /
-                                  color_image[:, :, -1][:, :, np.newaxis])
+        color_image[:, :, :-1] = (old_div(color_image[:, :, :-1],
+                                  color_image[:, :, -1][:, :, np.newaxis]))
         plot00 = figure.subplot_imshow_bw(0, 0, mask, self.image_name.value)
         figure.subplot_imshow_color(1, 0, color_image[:, :, :-1],
                                     title=self.object_name.value,
@@ -451,7 +459,7 @@ class IdentifyDeadWorms(cpm.Module):
             space_distance = self.worm_width.value
             angle_distance = np.arctan2(self.worm_width.value,
                                         self.worm_length.value)
-            angle_distance += np.pi / self.angle_count.value
+            angle_distance += old_div(np.pi, self.angle_count.value)
         else:
             space_distance = self.space_distance.value
             angle_distance = self.angular_distance.value * np.pi / 180

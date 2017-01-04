@@ -1,11 +1,20 @@
 """test_correctilluminationcalculate.py - test the CorrectIlluminationCalculate module
 """
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from builtins import *
+from future import standard_library
+standard_library.install_aliases()
+from builtins import zip
+from past.utils import old_div
 import base64
 import sys
 import unittest
 import zlib
-from StringIO import StringIO
+from io import StringIO
 
 import numpy as np
 
@@ -324,8 +333,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         #
         for image_name in (
                 OUTPUT_IMAGE_NAME, DILATED_IMAGE_NAME, AVERAGE_IMAGE_NAME):
-            self.assertEqual(len(filter(lambda x: x == image_name,
-                                        image_set.names)), 1)
+            self.assertEqual(len([x for x in image_set.names if x == image_name]), 1)
 
     def test_02_02_Background(self):
         """Test an image with four distinct backgrounds"""
@@ -417,7 +425,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
     def test_03_01_FitPolynomial(self):
         """Test fitting a polynomial to different gradients"""
 
-        y, x = (np.mgrid[0:20, 0:20]).astype(float) / 20.0
+        y, x = old_div((np.mgrid[0:20, 0:20]).astype(float), 20.0)
         image_x = x
         image_y = y
         image_x2 = x ** 2
@@ -470,7 +478,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         input_image[50, 50] = 1
         image_name = "InputImage"
         i, j = np.mgrid[-50:51, -50:51]
-        expected_image = np.e ** (- (i ** 2 + j ** 2) / (2 * (10.0 / 2.35) ** 2))
+        expected_image = np.e ** (old_div(- (i ** 2 + j ** 2), (2 * (old_div(10.0, 2.35)) ** 2)))
         pipeline = cpp.Pipeline()
         pipeline.add_listener(self.error_callback)
         inj_module = inj.InjectImage(image_name, input_image)
@@ -508,8 +516,8 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         image = image_set.get_image("OutputImage")
         ipd = image.pixel_data[40:61, 40:61]
         expected_image = expected_image[40:61, 40:61]
-        self.assertTrue(np.all(np.abs(ipd / ipd.mean() -
-                                      expected_image / expected_image.mean()) <
+        self.assertTrue(np.all(np.abs(old_div(ipd, ipd.mean()) -
+                                      old_div(expected_image, expected_image.mean())) <
                                .001))
 
     def test_03_03_median_filter(self):
@@ -518,7 +526,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         input_image[50, 50] = 1
         image_name = "InputImage"
         expected_image = np.zeros((101, 101))
-        filter_distance = int(.5 + 10 / 2.35)
+        filter_distance = int(.5 + old_div(10, 2.35))
         expected_image[-filter_distance:filter_distance + 1,
         -filter_distance:filter_distance + 1] = 1
         pipeline = cpp.Pipeline()
@@ -628,19 +636,19 @@ class TestCorrectImage_Calculate(unittest.TestCase):
                 # Add some "foreground" pixels
                 #
                 fg = np.random.permutation(400)[:100]
-                image[fg % image.shape[0], (fg / image.shape[0]).astype(int)] *= 10
+                image[fg % image.shape[0], (old_div(fg, image.shape[0])).astype(int)] *= 10
             if lo:
                 #
                 # Add some "background" pixels
                 #
                 bg = np.random.permutation(400)[:100]
-                image[bg % image.shape[0], (bg / image.shape[0]).astype(int)] -= offset
+                image[bg % image.shape[0], (old_div(bg, image.shape[0])).astype(int)] -= offset
 
             #
             # Make a background function
             #
             ii, jj = np.mgrid[-10:11, -15:16]
-            bg = ((ii.astype(float) / 10) ** 2) * ((jj.astype(float) / 15) ** 2)
+            bg = ((old_div(ii.astype(float), 10)) ** 2) * ((old_div(jj.astype(float), 15)) ** 2)
             bg *= .2
             image += bg
 
@@ -676,12 +684,12 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         # Add some "foreground" pixels
         #
         fg = np.random.permutation(np.prod(image.shape))[:200]
-        image[fg % image.shape[0], (fg / image.shape[0]).astype(int)] *= 15
+        image[fg % image.shape[0], (old_div(fg, image.shape[0])).astype(int)] *= 15
         #
         # Make a background function
         #
         ii, jj = np.mgrid[-50:51, -65:66]
-        bg = ((ii.astype(float) / 10) ** 2) * ((jj.astype(float) / 15) ** 2)
+        bg = ((old_div(ii.astype(float), 10)) ** 2) * ((old_div(jj.astype(float), 15)) ** 2)
         bg *= .2
         image += bg
 
@@ -714,7 +722,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         # Make a background function
         #
         ii, jj = np.mgrid[-10:11, -15:16]
-        bg = ((ii.astype(float) / 10) ** 2) * ((jj.astype(float) / 15) ** 2)
+        bg = ((old_div(ii.astype(float), 10)) ** 2) * ((old_div(jj.astype(float), 15)) ** 2)
         bg *= .2
         image += bg
         #
@@ -767,7 +775,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         # Make a background function
         #
         ii, jj = np.mgrid[-10:11, -15:16]
-        bg = ((ii.astype(float) / 10) ** 2) * ((jj.astype(float) / 15) ** 2)
+        bg = ((old_div(ii.astype(float), 10)) ** 2) * ((old_div(jj.astype(float), 15)) ** 2)
         bg *= .2
         image += bg
         #

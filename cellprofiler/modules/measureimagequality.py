@@ -57,7 +57,17 @@ control in large-scale high-content screens." <i>J Biomol Screen</i> 17(2):266-7
 </ul>
 '''
 from __future__ import absolute_import
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import zip
+from builtins import str
+from builtins import range
+from past.utils import old_div
 import logging
 
 import numpy as np
@@ -812,14 +822,14 @@ class MeasureImageQuality(cpm.Module):
                     mean_image_value = np.mean(pixel_data)
                     squared_normalized_image = (pixel_data - mean_image_value) ** 2
                     if mean_image_value > 0:
-                        focus_score = (np.sum(squared_normalized_image) /
-                                       (np.product(pixel_data.shape) * mean_image_value))
+                        focus_score = (old_div(np.sum(squared_normalized_image),
+                                       (np.product(pixel_data.shape) * mean_image_value)))
                 #
                 # Create a labels matrix that grids the image to the dimensions
                 # of the window size
                 #
                 i, j = np.mgrid[0:shape[0], 0:shape[1]].astype(float)
-                m, n = (np.array(shape) + scale - 1) / scale
+                m, n = old_div((np.array(shape) + scale - 1), scale)
                 i = (i * float(m) / float(shape[0])).astype(int)
                 j = (j * float(n) / float(shape[1])).astype(int)
                 grid = i * n + j + 1
@@ -847,11 +857,11 @@ class MeasureImageQuality(cpm.Module):
                     sums = fix(scind.sum(local_squared_normalized_image, grid,
                                          nz_grid_range))
                     pixel_counts = fix(scind.sum(np.ones(shape), grid, nz_grid_range))
-                    local_norm_var = (sums /
-                                      (pixel_counts * local_means[grid_mask]))
+                    local_norm_var = (old_div(sums,
+                                      (pixel_counts * local_means[grid_mask])))
                     local_norm_median = np.median(local_norm_var)
                     if np.isfinite(local_norm_median) and local_norm_median > 0:
-                        local_focus_score[-1] = np.var(local_norm_var) / local_norm_median
+                        local_focus_score[-1] = old_div(np.var(local_norm_var), local_norm_median)
 
             #
             # Add the measurements
@@ -962,7 +972,7 @@ class MeasureImageQuality(cpm.Module):
             pixel_max = 0
         else:
             pixel_sum = np.sum(pixels)
-            pixel_mean = pixel_sum / float(pixel_count)
+            pixel_mean = old_div(pixel_sum, float(pixel_count))
             pixel_std = np.std(pixels)
             pixel_median = np.median(pixels)
             pixel_mad = np.median(np.abs(pixels - pixel_median))
@@ -1230,7 +1240,7 @@ class MeasureImageQuality(cpm.Module):
                         d[threshold_image]["check_threshold"] = cps.YES
                         d[threshold_image]["threshold_method"] = threshold_method
             setting_values = []
-            for image_name in d.keys():
+            for image_name in list(d.keys()):
                 dd = d[image_name]
                 setting_values += [image_name, dd["check_blur"], window_size,
                                    dd["check_saturation"],
@@ -1244,7 +1254,7 @@ class MeasureImageQuality(cpm.Module):
             # add power spectrum calculations
             assert (not from_matlab)
             assert len(setting_values) % 7 == 0
-            num_images = len(setting_values) / 7
+            num_images = old_div(len(setting_values), 7)
             new_settings = []
             for idx in range(num_images):
                 new_settings += setting_values[(idx * 7):(idx * 7 + 7)]
@@ -1255,7 +1265,7 @@ class MeasureImageQuality(cpm.Module):
         if (not from_matlab) and variable_revision_number == 2:
             # add otsu threshold settings
             assert len(setting_values) % 8 == 0
-            num_images = len(setting_values) / 8
+            num_images = old_div(len(setting_values), 8)
             new_settings = []
             for idx in range(num_images):
                 new_settings += setting_values[(idx * 8):(idx * 8 + 8)]
@@ -1267,7 +1277,7 @@ class MeasureImageQuality(cpm.Module):
         if (not from_matlab) and variable_revision_number == 3:
             # Rearrangement/consolidation of settings
             assert len(setting_values) % SETTINGS_PER_GROUP_V3 == 0
-            num_images = len(setting_values) / SETTINGS_PER_GROUP_V3
+            num_images = old_div(len(setting_values), SETTINGS_PER_GROUP_V3)
 
             '''Since some settings are new/consolidated and can be repeated, handle
             the old settings by using a dict'''
@@ -1306,7 +1316,7 @@ class MeasureImageQuality(cpm.Module):
 
             # Uniquify the scales and threshold methods
             import itertools
-            for image_name in d.keys():
+            for image_name in list(d.keys()):
                 d[image_name]["blur_scales"] = list(set(d[image_name]["blur_scales"]))
                 d[image_name]["threshold_methods"] = [k for k, v in
                                                       itertools.groupby(sorted(d[image_name]["threshold_methods"]))]
@@ -1333,7 +1343,7 @@ class MeasureImageQuality(cpm.Module):
 
         if (not from_matlab) and variable_revision_number == 4:
             # Thresholding method name change: Strip off "Global"
-            thresh_dict = dict(zip(cpthresh.TM_GLOBAL_METHODS, cpthresh.TM_METHODS))
+            thresh_dict = dict(list(zip(cpthresh.TM_GLOBAL_METHODS, cpthresh.TM_METHODS)))
             # Naturally, this method assumes that the user didn't name their images "Otsu Global" or something similar
             setting_values = [thresh_dict[x] if x in cpthresh.TM_GLOBAL_METHODS else x for x in setting_values]
             variable_revision_number = 5

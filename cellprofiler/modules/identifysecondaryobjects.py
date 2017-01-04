@@ -1,4 +1,12 @@
 from __future__ import absolute_import
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import range
+from past.utils import old_div
 import cellprofiler.icons
 from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON
 
@@ -631,7 +639,7 @@ class IdentifySecondaryObjects(cpmi.Identify):
             #
             lookup = scind.maximum(segmented_out,
                                    objects.segmented,
-                                   range(np.max(objects.segmented) + 1))
+                                   list(range(np.max(objects.segmented) + 1)))
             lookup = fix(lookup)
             lookup[0] = 0
             lookup[lookup != 0] = np.arange(np.sum(lookup != 0)) + 1
@@ -749,9 +757,9 @@ class IdentifySecondaryObjects(cpmi.Identify):
         if object_count > 0:
             areas = scind.sum(np.ones(segmented_out.shape), segmented_out, np.arange(1, object_count + 1))
             areas.sort()
-            low_diameter = (np.sqrt(float(areas[object_count / 10]) / np.pi) * 2)
-            median_diameter = (np.sqrt(float(areas[object_count / 2]) / np.pi) * 2)
-            high_diameter = (np.sqrt(float(areas[object_count * 9 / 10]) / np.pi) * 2)
+            low_diameter = (np.sqrt(old_div(float(areas[old_div(object_count, 10)]), np.pi)) * 2)
+            median_diameter = (np.sqrt(old_div(float(areas[old_div(object_count, 2)]), np.pi)) * 2)
+            high_diameter = (np.sqrt(old_div(float(areas[object_count * 9 / 10]), np.pi)) * 2)
             statistics.append(["10th pctile diameter",
                                "%.1f pixels" % low_diameter])
             statistics.append(["Median diameter",
@@ -801,7 +809,7 @@ class IdentifySecondaryObjects(cpmi.Identify):
             segmented_labels, m1 = cpo.size_similarly(labels_out, segmented_labels)
             segmented_labels[~m1] = 0
             lookup = scind.maximum(segmented_labels, labels_out,
-                                   range(max_out + 1))
+                                   list(range(max_out + 1)))
             lookup = np.array(lookup, int)
             lookup[0] = 0
             segmented_labels_out = lookup[labels_out]

@@ -29,7 +29,16 @@ module.</li>
 
 See also: <b>ReassignObjectNumbers</b>, <b>MaskObjects</b>.
 '''
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import range
+from past.utils import old_div
 import re
 import sys
 
@@ -621,8 +630,8 @@ class RelateObjects(cpm.Module):
         the number of relevant settings so they map correctly to the values.
         """
         setting_count = len(setting_values)
-        step_parent_count = ((setting_count - FIXED_SETTING_COUNT) /
-                             VARIABLE_SETTING_COUNT)
+        step_parent_count = (old_div((setting_count - FIXED_SETTING_COUNT),
+                             VARIABLE_SETTING_COUNT))
         assert len(self.step_parent_names) > 0
         self.step_parent_names = self.step_parent_names[:1]
         for i in range(1, step_parent_count):

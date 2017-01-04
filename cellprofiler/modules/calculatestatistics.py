@@ -110,7 +110,16 @@ Here is an example file:<br><br>
 
 See also the <b>Metadata</b> and legacy <b>LoadData</b> modules.
 '''
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import range
+from past.utils import old_div
 import os
 
 import numpy as np
@@ -292,7 +301,7 @@ class CalculateStatistics(cpm.Module):
         if (value_count - FIXED_SETTING_COUNT) % VARIABLE_SETTING_COUNT != 0:
             raise ValueError("Invalid # of settings (%d) for the CalculateStatistics module" %
                              value_count)
-        dose_count = (value_count - FIXED_SETTING_COUNT) / VARIABLE_SETTING_COUNT
+        dose_count = old_div((value_count - FIXED_SETTING_COUNT), VARIABLE_SETTING_COUNT)
         if len(self.dose_values) > dose_count:
             del self.dose_values[dose_count:]
         while len(self.dose_values) < dose_count:
@@ -404,7 +413,7 @@ class CalculateStatistics(cpm.Module):
                               dose_group.log_transform.value)
 
         for i, (object_name, feature_name) in enumerate(feature_set):
-            for statistic, value in expt_measurements.iteritems():
+            for statistic, value in list(expt_measurements.items()):
                 sfeature_name = '_'.join((statistic, object_name, feature_name))
                 measurements.add_experiment_measurement(sfeature_name, value[i])
         if self.show_window:
@@ -450,7 +459,7 @@ class CalculateStatistics(cpm.Module):
         else:
             return False
         if np.isscalar(v):
-            return not (isinstance(v, (str, unicode)))
+            return not (isinstance(v, (str, str)))
         #
         # Make sure the measurement isn't a string or other oddity
         #
@@ -542,7 +551,7 @@ def z_factors(xcol, ymatr):
     zstd = stds[0, :] + stds[-1, :]
     zstd[zrange == 0] = 1
     zrange[zrange == 0] = 0.000001
-    z = 1 - 3 * (zstd / zrange)
+    z = 1 - 3 * (old_div(zstd, zrange))
 
     # The one-tailed Z' factor is defined by using only the samples between the
     # means, again defined by DOSE extremes
@@ -564,13 +573,13 @@ def z_factors(xcol, ymatr):
                            (exp1_cvals <= sort_avers[1, i])]
         vals2 = exp2_cvals[(exp2_cvals >= sort_avers[0, i]) &
                            (exp2_cvals <= sort_avers[1, i])]
-        stds[0, i] = np.sqrt(np.sum((vals1 - sort_avers[0, i]) ** 2) / len(vals1))
-        stds[1, i] = np.sqrt(np.sum((vals2 - sort_avers[1, i]) ** 2) / len(vals2))
+        stds[0, i] = np.sqrt(old_div(np.sum((vals1 - sort_avers[0, i]) ** 2), len(vals1)))
+        stds[1, i] = np.sqrt(old_div(np.sum((vals2 - sort_avers[1, i]) ** 2), len(vals2)))
 
     zstd = stds[0, :] + stds[1, :]
 
     # If means aren't the same and stdev aren't NaN, calculate the value
-    z_one_tailed = 1 - 3 * (zstd / zrange)
+    z_one_tailed = 1 - 3 * (old_div(zstd, zrange))
     # Otherwise, set it to a really negative value
     z_one_tailed[(~ np.isfinite(zstd)) | (zrange == 0)] = -1e5
     return z, z_one_tailed, xs, avers
@@ -596,7 +605,7 @@ def v_factors(xcol, ymatr):
     vstd[vrange == 0] = 1
     vstd[vrange != 0] = np.mean(stds[:, vrange != 0], 0)
     vrange[vrange == 0] = 0.000001
-    v = 1 - 6 * (vstd / vrange)
+    v = 1 - 6 * (old_div(vstd, vrange))
     return v
 
 
@@ -724,8 +733,8 @@ def sigmoid(v, x):
         v[3] = Hill coefficient
     '''
     p_min, p_max, ec50, hill = v
-    return p_min + ((p_max - p_min) /
-                    (1 + (x / ec50) ** hill))
+    return p_min + (old_div((p_max - p_min),
+                    (1 + (old_div(x, ec50)) ** hill)))
 
 
 def calc_init_params(x, y):
@@ -751,12 +760,12 @@ def calc_init_params(x, y):
     # 5 We will take a two-pronged approach: Use the estimate from this latter approach,
     # unless the parameter will equal either the max(x) or min(x).  In this case, we will use the
     # former approach, namely (mean([max(x); min(x)]).  DL 2007.09.24
-    YvalueAt50thPercentile = (min(y) + max(y)) / 2
+    YvalueAt50thPercentile = old_div((min(y) + max(y)), 2)
     DistanceToCentralYValue = np.abs(y - YvalueAt50thPercentile)
     LocationOfNearest = np.argmin(DistanceToCentralYValue)
     XvalueAt50thPercentile = x[LocationOfNearest]
     if XvalueAt50thPercentile == min(x) or XvalueAt50thPercentile == max(x):
-        ec50 = (min(x) + max(x)) / 2
+        ec50 = old_div((min(x) + max(x)), 2)
     else:
         ec50 = XvalueAt50thPercentile
 

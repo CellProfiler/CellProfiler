@@ -9,7 +9,19 @@ Each color's brightness can be adjusted independently by using
 relative weights.
 
 <p>See also <b>ColorToGray</b>.'''
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import str
+from builtins import zip
+from builtins import range
+from builtins import object
+from past.utils import old_div
 import numpy as np
 
 import cellprofiler.image as cpi
@@ -192,7 +204,7 @@ class GrayToColor(cpm.Module):
             <br>The color to be assigned to the above image.
             """ % globals()))
         group.append("weight", cps.Float(
-                "Weight", 1.0, minval=.5 / 255,
+                "Weight", 1.0, minval=old_div(.5, 255),
                 doc="""
             <i>Used only if %(SCHEME_COMPOSITE)s is chosen</i>
             <br>The weighting of the above image relative to the others. The
@@ -222,7 +234,7 @@ class GrayToColor(cpm.Module):
                                         self.yellow_adjustment_factor, .5, 0, .5),
                     ColorSchemeSettings(self.gray_image_name,
                                         self.gray_adjustment_factor,
-                                        1. / 3., 1. / 3., 1. / 3.)]
+                                        old_div(1., 3.), old_div(1., 3.), old_div(1., 3.))]
         else:
             return []
 
@@ -372,9 +384,9 @@ class GrayToColor(cpm.Module):
             subplot_indices = ((0, 0), (0, 1), (1, 0))
             color_subplot = (1, 1)
         else:
-            subplots = (min(nsubplots + 1, 4), int(nsubplots / 4) + 1)
-            subplot_indices = [(i % 4, int(i / 4)) for i in range(nsubplots)]
-            color_subplot = (nsubplots % 4, int(nsubplots / 4))
+            subplots = (min(nsubplots + 1, 4), int(old_div(nsubplots, 4)) + 1)
+            subplot_indices = [(i % 4, int(old_div(i, 4))) for i in range(nsubplots)]
+            color_subplot = (nsubplots % 4, int(old_div(nsubplots, 4)))
         figure.set_subplots(subplots)
         for i, (input_image_name, image_pixel_data) in \
                 enumerate(zip(input_image_names, images)):

@@ -1,3 +1,13 @@
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import zip
+from builtins import range
+from past.utils import old_div
 import cellprofiler.icons
 from cellprofiler.gui.help import PROTIP_RECOMEND_ICON
 from functools import reduce
@@ -300,11 +310,11 @@ class CalculateImageOverlap(cpm.Module):
         if labeled_pixel_count == 0:
             precision = 1.0
         else:
-            precision = float(true_positive_count) / float(labeled_pixel_count)
+            precision = old_div(float(true_positive_count), float(labeled_pixel_count))
         if true_count == 0:
             recall = 1.0
         else:
-            recall = float(true_positive_count) / float(true_count)
+            recall = old_div(float(true_positive_count), float(true_count))
         if (precision + recall) == 0:
             f_factor = 0.0  # From http://en.wikipedia.org/wiki/F1_score
         else:
@@ -314,18 +324,18 @@ class CalculateImageOverlap(cpm.Module):
             false_positive_rate = 0.0
             true_negative_rate = 1.0
         else:
-            false_positive_rate = (float(false_positive_count) /
-                                   float(negative_count))
-            true_negative_rate = (float(true_negative_count) /
-                                  float(negative_count))
+            false_positive_rate = (old_div(float(false_positive_count),
+                                   float(negative_count)))
+            true_negative_rate = (old_div(float(true_negative_count),
+                                  float(negative_count)))
         if true_count == 0:
             false_negative_rate = 0.0
             true_positive_rate = 1.0
         else:
-            false_negative_rate = (float(false_negative_count) /
-                                   float(true_count))
-            true_positive_rate = (float(true_positive_count) /
-                                  float(true_count))
+            false_negative_rate = (old_div(float(false_negative_count),
+                                   float(true_count)))
+            true_positive_rate = (old_div(float(true_positive_count),
+                                  float(true_count)))
         ground_truth_labels, ground_truth_count = label(
                 ground_truth_pixels & mask, np.ones((3, 3), bool))
         test_labels, test_count = label(
@@ -500,7 +510,7 @@ class CalculateImageOverlap(cpm.Module):
         def nan_divide(numerator, denominator):
             if denominator == 0:
                 return np.nan
-            return float(numerator) / float(denominator)
+            return old_div(float(numerator), float(denominator))
 
         accuracy = nan_divide(TP, all_intersecting_area)
         recall = nan_divide(TP, GT_tot_area)
@@ -659,14 +669,14 @@ class CalculateImageOverlap(cpm.Module):
             #
             N_i = np.sum(N_ij, 1)
             N_j = np.sum(N_ij, 0)
-            C = np.sum((N_i[:, np.newaxis] - N_ij) * N_ij) / 2
-            D = np.sum((N_j[np.newaxis, :] - N_ij) * N_ij) / 2
+            C = old_div(np.sum((N_i[:, np.newaxis] - N_ij) * N_ij), 2)
+            D = old_div(np.sum((N_j[np.newaxis, :] - N_ij) * N_ij), 2)
             total = choose2(len(test_labels))
             # an astute observer would say, why bother computing A and B
             # when all we need is A+B and C, D and the total can be used to do
             # that. The calculations aren't too expensive, though, so I do them.
             B = total - A - C - D
-            rand_index = (A + B) / total
+            rand_index = old_div((A + B), total)
             #
             # Compute adjusted Rand Index
             #
@@ -674,7 +684,7 @@ class CalculateImageOverlap(cpm.Module):
             max_index = (np.sum(choose2(N_i)) + np.sum(choose2(N_j))) * total / 2
 
             adjusted_rand_index = \
-                (A * total - expected_index) / (max_index - expected_index)
+                old_div((A * total - expected_index), (max_index - expected_index))
         else:
             rand_index = adjusted_rand_index = np.nan
         return rand_index, adjusted_rand_index
@@ -759,7 +769,7 @@ class CalculateImageOverlap(cpm.Module):
                 # Arrange into an array where the rows are coordinates
                 # and the columns are the labels for that coordinate
                 #
-                lm = u[match, 2].reshape(np.sum(match) / (i + j), i + j)
+                lm = u[match, 2].reshape(old_div(np.sum(match), (i + j)), i + j)
                 #
                 # Sort by label.
                 #
@@ -809,16 +819,16 @@ class CalculateImageOverlap(cpm.Module):
         # Equation 13 from the paper
         #
         min_JK = min(max_t_labels, max_g_labels) + 1
-        rand_index = np.sum(tbl[:min_JK, :min_JK] * np.identity(min_JK)) / N
+        rand_index = old_div(np.sum(tbl[:min_JK, :min_JK] * np.identity(min_JK)), N)
         #
         # Equation 15 from the paper, the expected index
         #
-        e_omega = np.sum(np.sum(tbl[:min_JK, :min_JK], 0) *
-                         np.sum(tbl[:min_JK, :min_JK], 1)) / N ** 2
+        e_omega = old_div(np.sum(np.sum(tbl[:min_JK, :min_JK], 0) *
+                         np.sum(tbl[:min_JK, :min_JK], 1)), N ** 2)
         #
         # Equation 16 is the adjusted index
         #
-        adjusted_rand_index = (rand_index - e_omega) / (1 - e_omega)
+        adjusted_rand_index = old_div((rand_index - e_omega), (1 - e_omega))
         return rand_index, adjusted_rand_index
 
     def compute_emd(self, src_objects, dest_objects):

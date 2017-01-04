@@ -32,7 +32,17 @@ image stitching, you may find the following list of software packages useful:
 </ul>
 Other packages are referenced <a href="http://graphicssoft.about.com/od/panorama/Panorama_Creation_and_Stitching_Tools.htm">here</a></p>
 '''
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import str
+from builtins import range
+from past.utils import old_div
 import logging
 import sys
 
@@ -213,7 +223,7 @@ class Tile(cpm.Module):
 
     def prepare_settings(self, setting_values):
         assert (len(setting_values) - FIXED_SETTING_COUNT) % 1 == 0
-        n_additional = (len(setting_values) - FIXED_SETTING_COUNT) / 1
+        n_additional = old_div((len(setting_values) - FIXED_SETTING_COUNT), 1)
         del self.additional_images[:]
         while len(self.additional_images) < n_additional:
             self.add_image()
@@ -311,8 +321,8 @@ class Tile(cpm.Module):
         return output_pixels
 
     def put_tile(self, pixels, output_pixels, image_index, rows, columns):
-        tile_height = int(output_pixels.shape[0] / rows)
-        tile_width = int(output_pixels.shape[1] / columns)
+        tile_height = int(old_div(output_pixels.shape[0], rows))
+        tile_width = int(old_div(output_pixels.shape[1], columns))
         tile_i, tile_j = self.get_tile_ij(image_index, rows, columns)
         tile_i *= tile_height
         tile_j *= tile_width
@@ -365,14 +375,14 @@ class Tile(cpm.Module):
         returns i,j where 0 < i < self.rows and 0 < j < self.columns
         '''
         if self.tile_style == S_ROW:
-            tile_i = int(image_index / columns)
+            tile_i = int(old_div(image_index, columns))
             tile_j = image_index % columns
             if self.meander and tile_i % 2 == 1:
                 # Reverse the direction if in meander mode
                 tile_j = columns - tile_j - 1
         else:
             tile_i = image_index % rows
-            tile_j = int(image_index / rows)
+            tile_j = int(old_div(image_index, rows))
             if self.meander and tile_j % 2 == 1:
                 # Reverse the direction if in meander mode
                 tile_i = rows - tile_i - 1
@@ -405,15 +415,15 @@ class Tile(cpm.Module):
                 # Maybe add 1 to get # of columns.
                 #
                 i = int(np.sqrt(image_count))
-                j = int((image_count + i - 1) / i)
+                j = int(old_div((image_count + i - 1), i))
                 return i, j
             else:
                 j = self.columns.value
-                i = int((image_count + j - 1) / j)
+                i = int(old_div((image_count + j - 1), j))
                 return i, j
         elif self.wants_automatic_columns:
             i = self.rows.value
-            j = int((image_count + i - 1) / i)
+            j = int(old_div((image_count + i - 1), i))
             return i, j
         else:
             return self.rows.value, self.columns.value

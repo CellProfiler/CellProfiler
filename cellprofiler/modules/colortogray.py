@@ -11,7 +11,18 @@ the relative weights will adjust the contribution of the colors relative to each
 <i>Note:</i>All <b>Identify</b> modules require grayscale images.
 <p>See also <b>GrayToColor</b>.
 '''
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import str
+from builtins import zip
+from builtins import range
+from past.utils import old_div
 import re
 
 import matplotlib.colors
@@ -319,10 +330,10 @@ class ColorToGray(cpm.Module):
         """Combine images to make a grayscale one
         """
         input_image = image.pixel_data
-        channels, contributions = zip(*self.channels_and_contributions())
+        channels, contributions = list(zip(*self.channels_and_contributions()))
         denominator = sum(contributions)
         channels = np.array(channels, int)
-        contributions = np.array(contributions) / denominator
+        contributions = old_div(np.array(contributions), denominator)
 
         output_image = np.sum(input_image[:, :, channels] *
                               contributions[np.newaxis, np.newaxis, :], 2)

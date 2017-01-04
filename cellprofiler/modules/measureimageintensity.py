@@ -35,7 +35,16 @@ of the pixels in the object have lower values.</li>
 
 See also <b>MeasureObjectIntensity</b>, <b>MaskImage</b>.
 '''
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import str
+from past.utils import old_div
 import numpy as np
 
 import cellprofiler.module as cpm
@@ -158,7 +167,7 @@ class MeasureImageIntensity(cpm.Module):
 
     def prepare_settings(self, setting_values):
         assert len(setting_values) % SETTINGS_PER_IMAGE == 0
-        image_count = len(setting_values) / SETTINGS_PER_IMAGE
+        image_count = old_div(len(setting_values), SETTINGS_PER_IMAGE)
         while image_count > len(self.images):
             self.add_image_measurement()
         while image_count < len(self.images):
@@ -171,7 +180,7 @@ class MeasureImageIntensity(cpm.Module):
             key = ((im.image_name, im.object_name) if im.wants_objects.value
                    else (im.image_name,))
             dict[key] = im
-        return dict.values()
+        return list(dict.values())
 
     def run(self, workspace):
         '''Perform the measurements on the imageset'''
@@ -231,7 +240,7 @@ class MeasureImageIntensity(cpm.Module):
             pixel_count = np.product(pixels.shape)
 
             pixel_sum = np.sum(pixels)
-            pixel_mean = pixel_sum / float(pixel_count)
+            pixel_mean = old_div(pixel_sum, float(pixel_count))
             pixel_std = np.std(pixels)
             pixel_median = np.median(pixels)
             pixel_mad = np.median(np.abs(pixels - pixel_median))

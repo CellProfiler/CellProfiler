@@ -8,7 +8,14 @@ to produce a binary (black/white) mask of edges. The Canny algorithm
 produces a binary (black/white) mask image consisting of the edge pixels.
 
 '''
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
 import numpy as np
 from centrosome.filter import laplacian_of_gaussian
 from centrosome.filter import prewitt, hprewitt, vprewitt, stretch

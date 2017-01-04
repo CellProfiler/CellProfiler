@@ -151,7 +151,16 @@ See also the <b>Input</b> modules, <b>LoadImages</b> and <b>CalculateStatistics<
 '''
 from __future__ import print_function
 from __future__ import absolute_import
+from __future__ import unicode_literals
+from __future__ import division
 
+from builtins import *
+from future import standard_library
+standard_library.install_aliases()
+from builtins import next
+from builtins import zip
+from builtins import str
+from builtins import range
 import csv
 import hashlib
 import logging
@@ -163,9 +172,9 @@ from functools import reduce
 
 logger = logging.getLogger(__name__)
 try:
-    from cStringIO import StringIO
+    from io import StringIO
 except:
-    from StringIO import StringIO
+    from io import StringIO
 import matplotlib.mlab
 
 import cellprofiler.module as cpm
@@ -570,7 +579,7 @@ class LoadData(cpm.Module):
             output = []
             for h in header:
                 if not h.startswith('file_'):
-                    if isinstance(h, unicode):
+                    if isinstance(h, str):
                         output.append(h.encode("utf-8"))
                     else:
                         output.append(h)
@@ -649,9 +658,9 @@ class LoadData(cpm.Module):
             else:
                 if do_not_cache:
                     raise RuntimeError('Need to fetch URL manually.')
-                import urllib2
+                import urllib.request, urllib.error, urllib.parse
                 try:
-                    url_fd = urllib2.urlopen(self.csv_path)
+                    url_fd = urllib.request.urlopen(self.csv_path)
                 except Exception as e:
                     entry["URLEXCEPTION"] = e
                     raise e
@@ -685,7 +694,7 @@ class LoadData(cpm.Module):
         for i, field in enumerate(header):
             list_ctl.InsertColumn(i, field)
         for line in reader:
-            list_ctl.Append([unicode(s, 'utf8') if isinstance(s, str) else s
+            list_ctl.Append([str(s, 'utf8') if isinstance(s, str) else s
                              for s in line[:len(header)]])
         frame.SetMinSize((640, 480))
         frame.SetIcon(get_cp_icon())
@@ -780,14 +789,14 @@ class LoadData(cpm.Module):
                     break
                 if len(row) == 0:
                     continue
-                row = [unicode(s, 'utf8') if isinstance(s, str) else s
+                row = [str(s, 'utf8') if isinstance(s, str) else s
                        for s in row]
                 if len(row) != len(header):
                     raise ValueError("Row # %d has the wrong number of elements: %d. Expected %d" %
                                      (i, len(row), len(header)))
                 rows.append(row)
         else:
-            rows = [[unicode(s, 'utf8') if isinstance(s, str) else s
+            rows = [[str(s, 'utf8') if isinstance(s, str) else s
                      for s in row] for row in reader
                     if len(row) > 0]
         fd.close()
@@ -856,7 +865,7 @@ class LoadData(cpm.Module):
                     (image_columns, C_URL, C_FILE_NAME, C_PATH_NAME),
                     (object_columns, C_OBJECTS_URL, C_OBJECTS_FILE_NAME,
                      C_OBJECTS_PATH_NAME)):
-                for name in d.keys():
+                for name in list(d.keys()):
                     url_column = file_name_column = path_name_column = None
                     for k in d[name]:
                         if header[k].startswith(url_category):
@@ -954,18 +963,18 @@ class LoadData(cpm.Module):
             #  loadimages)
             #
             image_numbers = m.match_metadata(
-                    metadata_columns.keys(),
-                    [columns[k] for k in metadata_columns.keys()])
+                    list(metadata_columns.keys()),
+                    [columns[k] for k in list(metadata_columns.keys())])
             image_numbers = np.array(image_numbers, int).flatten()
             max_image_number = np.max(image_numbers)
             new_columns = {}
-            for key, values in columns.iteritems():
+            for key, values in list(columns.items()):
                 new_values = [None] * max_image_number
                 for image_number, value in zip(image_numbers, values):
                     new_values[image_number - 1] = value
                 new_columns[key] = new_values
             columns = new_columns
-        for feature, values in columns.iteritems():
+        for feature, values in list(columns.items()):
             m.add_all_measurements(cpmeas.IMAGE, feature, values)
         if self.wants_image_groupings and \
                         len(self.metadata_fields.selections) > 0:
@@ -1018,7 +1027,7 @@ class LoadData(cpm.Module):
                             fullname = url2pathname(url)
                             fullname = fn_alter_path(fullname)
                             path, filename = os.path.split(fullname)
-                            url = unicode(pathname2url(fullname), "utf-8")
+                            url = str(pathname2url(fullname), "utf-8")
                             m.add_measurement(cpmeas.IMAGE, url_feature, url,
                                               image_set_number=image_number)
                             if file_feature is not None:
@@ -1431,7 +1440,7 @@ def best_cast(sequence, coltype=None):
     Try casting all elements to integer and float, returning a numpy
     array of values. If all fail, return a numpy array of strings.
     '''
-    if (isinstance(coltype, (str, unicode)) and
+    if (isinstance(coltype, (str, str)) and
             coltype.startswith(cpmeas.COLTYPE_VARCHAR)):
         # Cast columns already defined as strings as same
         return np.array(sequence)

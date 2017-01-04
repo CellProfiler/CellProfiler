@@ -1,10 +1,19 @@
 '''test_measuretexture - test the MeasureTexture module
 '''
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from builtins import *
+from future import standard_library
+standard_library.install_aliases()
+from builtins import zip
+from past.utils import old_div
 import base64
 import unittest
 import zlib
-from StringIO import StringIO
+from io import StringIO
 
 import cellprofiler.image as cpi
 import cellprofiler.measurement as cpmeas
@@ -355,7 +364,7 @@ MeasureTexture:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|
         np.random.seed(22)
         image = np.random.uniform(size=(100, 100))
         i, j = np.mgrid[0:100, 0:100]
-        labels = (i / 10).astype(int) + (j / 10).astype(int) * 10 + 1
+        labels = (old_div(i, 10)).astype(int) + (old_div(j, 10)).astype(int) * 10 + 1
         workspace, module = self.make_workspace(image, labels)
         self.assertTrue(isinstance(module, M.MeasureTexture))
         module.scale_groups[0].scale.value = 2

@@ -4,7 +4,14 @@
 based on a threshold which can be pre-selected or calculated automatically using one of many methods.
 """
 from __future__ import absolute_import
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import str
 from centrosome.cpmorphology import strel_disk
 from centrosome.threshold import TM_GLOBAL, TM_ADAPTIVE, TM_PER_OBJECT, TM_BINARY_IMAGE
 from centrosome.threshold import TM_METHODS, TM_MANUAL, TM_MOG, TM_OTSU

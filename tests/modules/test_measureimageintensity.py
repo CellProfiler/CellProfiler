@@ -1,4 +1,13 @@
-import StringIO
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
+from builtins import *
+from future import standard_library
+standard_library.install_aliases()
+from builtins import range
+from past.utils import old_div
+import io
 import base64
 
 import cellprofiler.image
@@ -90,7 +99,7 @@ def test_volume_zeros(image, measurements, module, workspace):
         "Intensity_LowerQuartileIntensity_image": 0.0
     }
 
-    for feature, value in expected.iteritems():
+    for feature, value in list(expected.items()):
         actual = measurements.get_current_measurement(
             cellprofiler.measurement.IMAGE,
             feature
@@ -120,7 +129,7 @@ def test_volume(image, measurements, module, workspace):
         "Intensity_LowerQuartileIntensity_image": 0.0
     }
 
-    for feature, value in expected.iteritems():
+    for feature, value in list(expected.items()):
         actual = measurements.get_current_measurement(
             cellprofiler.measurement.IMAGE,
             feature
@@ -154,7 +163,7 @@ def test_volume_and_mask(image, measurements, module, workspace):
         "Intensity_LowerQuartileIntensity_image": 1.0
     }
 
-    for feature, value in expected.iteritems():
+    for feature, value in list(expected.items()):
         actual = measurements.get_current_measurement(
             cellprofiler.measurement.IMAGE,
             feature
@@ -190,7 +199,7 @@ def test_volume_and_objects(image, measurements, module, objects, workspace):
         "Intensity_LowerQuartileIntensity_image_objects": 1.0
     }
 
-    for feature, value in expected.iteritems():
+    for feature, value in list(expected.items()):
         actual = measurements.get_current_measurement(
             cellprofiler.measurement.IMAGE,
             feature
@@ -230,7 +239,7 @@ def test_volume_and_objects_and_mask(image, measurements, module, objects, works
         "Intensity_LowerQuartileIntensity_image_objects": 1.0
     }
 
-    for feature, value in expected.iteritems():
+    for feature, value in list(expected.items()):
         actual = measurements.get_current_measurement(
             cellprofiler.measurement.IMAGE,
             feature
@@ -279,7 +288,7 @@ def test_01_01_image(image, measurements, module, workspace):
 
     assert measurements.get_current_measurement(cellprofiler.measurement.IMAGE, "Intensity_TotalIntensity_image") == numpy.sum(pixels)
 
-    assert measurements.get_current_measurement(cellprofiler.measurement.IMAGE, "Intensity_MeanIntensity_image") == numpy.sum(pixels) / 100.0
+    assert measurements.get_current_measurement(cellprofiler.measurement.IMAGE, "Intensity_MeanIntensity_image") == old_div(numpy.sum(pixels), 100.0)
 
     assert measurements.get_current_image_measurement('Intensity_MinIntensity_image') == numpy.min(pixels)
 
@@ -310,9 +319,9 @@ def test_01_02_image_and_mask(image, measurements, module, workspace):
 
     assert measurements.get_current_measurement(cellprofiler.measurement.IMAGE, "Intensity_TotalIntensity_image") == numpy.sum(pixels[1:9, 1:9])
 
-    assert measurements.get_current_measurement(cellprofiler.measurement.IMAGE, "Intensity_MeanIntensity_image") == numpy.sum(pixels[1:9, 1:9]) / 64.0
+    assert measurements.get_current_measurement(cellprofiler.measurement.IMAGE, "Intensity_MeanIntensity_image") == old_div(numpy.sum(pixels[1:9, 1:9]), 64.0)
 
-    assert measurements.get_current_measurement(cellprofiler.measurement.IMAGE, "Intensity_PercentMaximal_image") == 400. / 64.
+    assert measurements.get_current_measurement(cellprofiler.measurement.IMAGE, "Intensity_PercentMaximal_image") == old_div(400., 64.)
 
 
 def test_01_03_image_and_objects(image, measurements, module, objects, workspace):
@@ -341,9 +350,9 @@ def test_01_03_image_and_objects(image, measurements, module, objects, workspace
 
     assert measurements.get_current_measurement(cellprofiler.measurement.IMAGE, "Intensity_TotalIntensity_image_objects") == numpy.sum(pixels[1:9, 1:9])
 
-    assert measurements.get_current_measurement(cellprofiler.measurement.IMAGE, "Intensity_MeanIntensity_image_objects") == numpy.sum(pixels[1:9, 1:9]) / 64.0
+    assert measurements.get_current_measurement(cellprofiler.measurement.IMAGE, "Intensity_MeanIntensity_image_objects") == old_div(numpy.sum(pixels[1:9, 1:9]), 64.0)
 
-    numpy.testing.assert_almost_equal(measurements.get_current_measurement(cellprofiler.measurement.IMAGE, "Intensity_PercentMaximal_image_objects"), 400. / 64.)
+    numpy.testing.assert_almost_equal(measurements.get_current_measurement(cellprofiler.measurement.IMAGE, "Intensity_PercentMaximal_image_objects"), old_div(400., 64.))
 
     assert len(measurements.get_object_names()) == 1
 
@@ -389,7 +398,7 @@ def test_01_04_image_and_objects_and_mask(image, measurements, module, objects, 
 
     assert measurements.get_current_measurement(cellprofiler.measurement.IMAGE, "Intensity_TotalIntensity_image_objects") == numpy.sum(pixels[1:9, 1:9])
 
-    assert measurements.get_current_measurement(cellprofiler.measurement.IMAGE, "Intensity_MeanIntensity_image_objects") == numpy.sum(pixels[1:9, 1:9]) / 64.0
+    assert measurements.get_current_measurement(cellprofiler.measurement.IMAGE, "Intensity_MeanIntensity_image_objects") == old_div(numpy.sum(pixels[1:9, 1:9]), 64.0)
 
 
 def test_02_01_load_v1():
@@ -509,7 +518,7 @@ def test_02_01_load_v1():
             'DgAAACgAAAAGAAAACAAAAAEAAAAAAAAABQAAAAgAAAAAAAAAAQAAAAEA'
             'AAAAAAAA')
 
-    fd = StringIO.StringIO(base64.b64decode(data))
+    fd = io.StringIO(base64.b64decode(data))
 
     p = cellprofiler.pipeline.Pipeline()
 

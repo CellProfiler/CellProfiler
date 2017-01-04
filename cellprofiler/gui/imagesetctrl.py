@@ -3,7 +3,20 @@
 """
 from __future__ import print_function
 from __future__ import absolute_import
+from __future__ import division
+from __future__ import unicode_literals
 
+from builtins import *
+from past.builtins import cmp
+from future import standard_library
+standard_library.install_aliases()
+from builtins import zip
+from builtins import chr
+from builtins import str
+from builtins import range
+from past.builtins import basestring
+from builtins import object
+from past.utils import old_div
 import cellprofiler.gui
 import cellprofiler.gui.cornerbuttonmixin
 import cellprofiler.measurement
@@ -12,7 +25,7 @@ import cellprofiler.preferences
 import cellprofiler.setting
 import numpy
 import re
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import wx
 import wx.combo
 import wx.grid
@@ -110,9 +123,9 @@ class ImageSetCache(object):
     def decimate(self):
         """Reduce the cache size by 1/2"""
         # Get the cache, sorted from low values to high
-        cache_kv = sorted(self.cache.items(), key=lambda x: x[1][1])
+        cache_kv = sorted(list(self.cache.items()), key=lambda x: x[1][1])
         # Take 1/2 of the max size
-        self.cache = dict(cache_kv[-int(self.max_size / 2):])
+        self.cache = dict(cache_kv[-int(old_div(self.max_size, 2)):])
 
 
 class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButtonMixin):
@@ -291,7 +304,7 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
                         self.display_mode == DISPLAY_MODE_SIMPLE and
                         value is not None):
                 last_slash = value.rfind("/")
-                return urllib.unquote(value[(last_slash + 1):])
+                return urllib.parse.unquote(value[(last_slash + 1):])
             return value
 
         def get_url(self, row, col):
@@ -312,7 +325,7 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
             image_number = self.image_numbers[row]
             metadata_tags = self.metadata_tags
             if len(metadata_tags) > 0:
-                key = [unicode(self.cache[tag, image_number])
+                key = [str(self.cache[tag, image_number])
                        for tag in metadata_tags]
                 return " : ".join(key)
 
@@ -848,7 +861,7 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
             if col == wx.NOT_FOUND:
                 col = None
         bottom = self.GridWindow.GetVirtualSize()[1]
-        if y <= self.GetRowSize(0) / 2:
+        if y <= old_div(self.GetRowSize(0), 2):
             row = 0
         elif y >= bottom - self.GetRowSize(self.GetNumberRows() - 1):
             row = self.GetNumberRows()
@@ -896,11 +909,11 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
         if col is not None:
             if row == self.GetNumberRows():
                 rect = self.CellToRect(row - 1, col)
-                rect.Y += rect.Height - int(self.DROP_HEIGHT / 2) - 1
-                rect.Height = int(self.DROP_HEIGHT / 2) + 1
+                rect.Y += rect.Height - int(old_div(self.DROP_HEIGHT, 2)) - 1
+                rect.Height = int(old_div(self.DROP_HEIGHT, 2)) + 1
             else:
                 rect = self.CellToRect(row, col)
-                rect.Y -= int(self.DROP_HEIGHT / 2) + 1
+                rect.Y -= int(old_div(self.DROP_HEIGHT, 2)) + 1
                 rect.Height = self.DROP_HEIGHT + 1
             rect.X, rect.Y = self.CalcScrolledPosition(rect.X, rect.Y)
             self.GridWindow.RefreshRect(rect, eraseBackground=False)
@@ -979,7 +992,7 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
             if need_column_layout:
                 if self.Table.GetNumberRows() > 0:
                     first_width, _ = self.GridWindow.GetTextExtent(
-                            unicode(self.Table.GetValue(0, i)))
+                            str(self.Table.GetValue(0, i)))
                     first_width += self.cell_renderer.padding * 4
                     width = max(first_width, min_width)
                 else:
@@ -1002,7 +1015,7 @@ class EllipsisGridCellRenderer(wx.grid.PyGridCellRenderer):
         assert isinstance(attr, wx.grid.GridCellAttr)
         assert isinstance(rect, wx.Rect)
         assert isinstance(grid, ImageSetCtrl)
-        s = unicode(grid.Table.GetValue(row, col))
+        s = str(grid.Table.GetValue(row, col))
         old_font = dc.GetFont()
         old_brush = dc.GetBrush()
         old_pen = dc.GetPen()
@@ -1044,10 +1057,10 @@ class EllipsisGridCellRenderer(wx.grid.PyGridCellRenderer):
                 field_size = 0
                 sdisplay = "..."
                 while True:
-                    increment = int((increment + 1) / 2)
+                    increment = int(old_div((increment + 1), 2))
                     test_size = field_size + increment
                     if len(s) > test_size:
-                        half = int(test_size / 2)
+                        half = int(old_div(test_size, 2))
                         stest = s[:half] + u"..." + s[-half:]
                     else:
                         stest = s
@@ -1071,7 +1084,7 @@ class EllipsisGridCellRenderer(wx.grid.PyGridCellRenderer):
 
                     dc.Pen = wx.TRANSPARENT_PEN
                     dc.Brush = wx.BLACK_BRUSH
-                    half_height = int(grid.DROP_HEIGHT) / 2
+                    half_height = old_div(int(grid.DROP_HEIGHT), 2)
                     dc.DrawPolygon([
                         (rect.X, y - half_height - 1),
                         (rect.X + half_height + 1, y),
@@ -1092,7 +1105,7 @@ class EllipsisGridCellRenderer(wx.grid.PyGridCellRenderer):
     def GetBestSize(self, grid, attr, dc, row, col):
         assert isinstance(dc, wx.DC)
         assert isinstance(grid, wx.grid.Grid)
-        s = unicode(grid.Table.GetValue(row, col))
+        s = str(grid.Table.GetValue(row, col))
         width, height = grid.GetGridWindow().GetTextExtent(s)
         return wx.Size(width + 2 * self.padding, height)
 
@@ -1174,7 +1187,7 @@ class ColLabelRenderer(wx.lib.mixins.gridlabelrenderer.GridLabelRenderer):
                     self.draw_button(window, mdc, icon_rect,
                                      image, flags)
             else:
-                x = (rect.width - label_size[0] + 1) / 2
+                x = old_div((rect.width - label_size[0] + 1), 2)
                 y = self.icon_padding + self.gap_size
                 for line_number, line in enumerate(label.split("\n")):
                     mdc.DrawText(line, x, y + label_size[1] * line_number)
@@ -1258,8 +1271,8 @@ class ColLabelRenderer(wx.lib.mixins.gridlabelrenderer.GridLabelRenderer):
             dc.Font = window.Font
             dc.BackgroundMode = wx.TRANSPARENT
             width, height = dc.GetTextExtent(bitmap)
-            x = rect.X + (rect.Width - width) / 2
-            y = rect.Y + (rect.Height - height) / 2
+            x = rect.X + old_div((rect.Width - width), 2)
+            y = rect.Y + old_div((rect.Height - height), 2)
             dc.DrawText(bitmap, x, y)
             dc.Font = wx.NullFont
 
@@ -1276,7 +1289,7 @@ class ColLabelRenderer(wx.lib.mixins.gridlabelrenderer.GridLabelRenderer):
         else:
             first_button_rect = self.get_icon_rect(rect, label_size, 0, last, only)
             available_width = first_button_rect.X - self.gap_size - rect.X
-        x = rect.x + self.gap_size + (available_width - label_width) / 2
+        x = rect.x + self.gap_size + old_div((available_width - label_width), 2)
         y = self.icon_padding + self.gap_size
         return wx.Rect(x, y, label_width, max(self.icon_size, label_height))
 

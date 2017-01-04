@@ -1,6 +1,15 @@
 """identify.py - a base class for common functionality for identify modules
 """
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import range
+from past.utils import old_div
 import math
 
 import centrosome.outline
@@ -953,7 +962,7 @@ class Identify(cellprofiler.module.Module):
                     if self.adaptive_window_method == FI_IMAGE_SIZE:
                         # The original behavior
                         image_size = np.array(img.shape[:2], dtype=int)
-                        block_size = image_size / 10
+                        block_size = old_div(image_size, 10)
                         block_size[block_size < 50] = 50
                     elif self.adaptive_window_method == FI_CUSTOM:
                         block_size = self.adaptive_window_size.value * \
@@ -985,7 +994,7 @@ class Identify(cellprofiler.module.Module):
                     #
                     object_fraction = self.object_fraction.value
                     if object_fraction.endswith("%"):
-                        object_fraction = float(object_fraction[:-1]) / 100.0
+                        object_fraction = old_div(float(object_fraction[:-1]), 100.0)
                     else:
                         object_fraction = float(object_fraction)
                     kwparams['object_fraction'] = object_fraction
@@ -1182,7 +1191,7 @@ class Identify(cellprofiler.module.Module):
             result += [C_LOCATION, C_NUMBER]
             if len(object_dictionary[object_name]) > 0:
                 result += [C_PARENT]
-        if object_name in reduce(lambda x, y: x + y, object_dictionary.values()):
+        if object_name in reduce(lambda x, y: x + y, list(object_dictionary.values())):
             result += [C_CHILDREN]
         return result
 
@@ -1208,7 +1217,7 @@ class Identify(cellprofiler.module.Module):
                 return list(object_dictionary[object_name])
         if category == C_CHILDREN:
             result = []
-            for child_object_name in object_dictionary.keys():
+            for child_object_name in list(object_dictionary.keys()):
                 if object_name in object_dictionary[child_object_name]:
                     result += ["%s_Count" % child_object_name]
             return result
@@ -1235,7 +1244,7 @@ def add_object_location_measurements(measurements,
     if object_count:
         centers = scipy.ndimage.center_of_mass(np.ones(labels.shape),
                                                labels,
-                                               range(1, object_count + 1))
+                                               list(range(1, object_count + 1)))
         centers = np.array(centers)
         centers = centers.reshape((object_count, 2))
         location_center_y = centers[:, 0]
@@ -1265,8 +1274,8 @@ def add_object_location_measurements_ijv(measurements,
         areas = np.zeros(object_count, int)
         areas_bc = np.bincount(ijv[:, 2])[1:]
         areas[:len(areas_bc)] = areas_bc
-        center_x = np.bincount(ijv[:, 2], ijv[:, 1])[1:] / areas
-        center_y = np.bincount(ijv[:, 2], ijv[:, 0])[1:] / areas
+        center_x = old_div(np.bincount(ijv[:, 2], ijv[:, 1])[1:], areas)
+        center_y = old_div(np.bincount(ijv[:, 2], ijv[:, 0])[1:], areas)
     measurements.add_measurement(object_name, M_LOCATION_CENTER_X, center_x)
     measurements.add_measurement(object_name, M_LOCATION_CENTER_Y, center_y)
     measurements.add_measurement(object_name, M_NUMBER_OBJECT_NUMBER,
@@ -1308,9 +1317,9 @@ def get_threshold_measurement_columns(image_name):
 
 def draw_outline(img, outline, color):
     '''Draw the given outline on the given image in the given color'''
-    red = float(color.Red()) / 255.0
-    green = float(color.Green()) / 255.0
-    blue = float(color.Blue()) / 255.0
+    red = old_div(float(color.Red()), 255.0)
+    green = old_div(float(color.Green()), 255.0)
+    blue = old_div(float(color.Blue()), 255.0)
     img[outline != 0, 0] = red
     img[outline != 0, 1] = green
     img[outline != 0, 2] = blue

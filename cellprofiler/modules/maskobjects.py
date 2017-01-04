@@ -26,7 +26,14 @@ mass of the masked objects.</li>
 </ul>
 '''
 from __future__ import absolute_import
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from past.utils import old_div
 import numpy as np
 import scipy.ndimage as scind
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
@@ -272,7 +279,7 @@ class MaskObjects(I.Identify):
                     keep = pixel_counts == total_pixels
                 elif self.overlap_choice == P_REMOVE_PERCENTAGE:
                     fraction = self.overlap_fraction.value
-                    keep = pixel_counts / total_pixels >= fraction
+                    keep = old_div(pixel_counts, total_pixels) >= fraction
                 else:
                     raise NotImplementedError("Unknown overlap-handling choice: %s",
                                               self.overlap_choice.value)
@@ -364,8 +371,8 @@ class MaskObjects(I.Identify):
         # and the outlines of removed objects red.
         #
         final_outlines = outline(final_labels) > 0
-        original_color = np.array(cpprefs.get_secondary_outline_color(), float) / 255
-        final_color = np.array(cpprefs.get_primary_outline_color(), float) / 255
+        original_color = old_div(np.array(cpprefs.get_secondary_outline_color(), float), 255)
+        final_color = old_div(np.array(cpprefs.get_primary_outline_color(), float), 255)
         image[outlines, :] = original_color[np.newaxis, :]
         image[final_outlines, :] = final_color[np.newaxis, :]
 

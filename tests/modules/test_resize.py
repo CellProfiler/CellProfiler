@@ -1,11 +1,19 @@
 '''test_resize.py - test the Resize module
 '''
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from builtins import *
+from future import standard_library
+standard_library.install_aliases()
+from past.utils import old_div
 import base64
 import os
 import unittest
 import zlib
-from StringIO import StringIO
+from io import StringIO
 
 import PIL.Image as PILImage
 import numpy as np
@@ -223,7 +231,7 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         expected = (np.mgrid[0:10, 0:10][0].astype(float) * 29.0 / 9.0 + .5).astype(int)
         workspace, module = self.make_workspace(image, R.R_BY_FACTOR,
                                                 R.I_NEAREST_NEIGHBOR)
-        module.resizing_factor.value = 1.0 / 3.0
+        module.resizing_factor.value = old_div(1.0, 3.0)
         module.run(workspace)
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
         self.assertTrue(np.all(np.abs(result - expected) <=
@@ -247,14 +255,14 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         image = i.astype(float) ** 2
         # Bicubic here should be betweeen nearest neighbor and bilinear
         i, j = np.mgrid[0:19, 0:19]
-        low_bound = (i / 2) ** 2
-        upper_bound = (i.astype(float) / 2) ** 2
+        low_bound = (old_div(i, 2)) ** 2
+        upper_bound = (old_div(i.astype(float), 2)) ** 2
         odd_mask = i % 2 == 1
-        upper_bound[odd_mask] = (upper_bound[np.maximum(i - 1, 0), j] +
-                                 upper_bound[np.minimum(i + 1, 18), j])[odd_mask] / 2
+        upper_bound[odd_mask] = old_div((upper_bound[np.maximum(i - 1, 0), j] +
+                                 upper_bound[np.minimum(i + 1, 18), j])[odd_mask], 2)
         workspace, module = self.make_workspace(image, R.R_BY_FACTOR,
                                                 R.I_BICUBIC)
-        module.resizing_factor.value = 19.0 / 10.0
+        module.resizing_factor.value = old_div(19.0, 10.0)
         module.run(workspace)
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
         #
@@ -270,7 +278,7 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         '''Make an image twice as large by changing the shape'''
         i, j = np.mgrid[0:10, 0:10].astype(float)
         image = i + j * 10
-        i, j = np.mgrid[0:19, 0:19].astype(float) / 2.0
+        i, j = old_div(np.mgrid[0:19, 0:19].astype(float), 2.0)
         expected = i + j * 10
         workspace, module = self.make_workspace(image, R.R_TO_SIZE,
                                                 R.I_BILINEAR)
@@ -283,7 +291,7 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
 
     def test_04_02_reshape_half(self):
         '''Make an image half as large by changing the shape'''
-        i, j = np.mgrid[0:19, 0:19].astype(float) / 2.0
+        i, j = old_div(np.mgrid[0:19, 0:19].astype(float), 2.0)
         image = i + j * 10
         i, j = np.mgrid[0:10, 0:10].astype(float)
         expected = i + j * 10

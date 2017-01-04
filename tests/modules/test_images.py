@@ -1,12 +1,19 @@
 '''test_images.py - test the Images module
 '''
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
 
+from builtins import *
+from future import standard_library
+standard_library.install_aliases()
 import csv
 import os
 import tempfile
 import unittest
-import urllib
-from cStringIO import StringIO
+import urllib.request, urllib.parse, urllib.error
+from io import StringIO
 
 import numpy as np
 

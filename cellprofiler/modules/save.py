@@ -4,7 +4,14 @@ Save an image to file.
 If you want to save objects, use the Object Processing module ConvertObjectsToImage to convert objects to an image
 you can save.
 """
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
 import cellprofiler.module
 import cellprofiler.setting
 import os.path

@@ -20,7 +20,17 @@ the second image needs to be shifted by to match the first.</p>
 aligned image with respect to the original image.</li>
 </ul>
 '''
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import zip
+from builtins import range
+from past.utils import old_div
 import numpy as np
 import scipy.ndimage as scind
 import scipy.sparse
@@ -194,7 +204,7 @@ class Align(cpm.Module):
 
     def prepare_settings(self, setting_values):
         assert (len(setting_values) - 6) % 3 == 0
-        n_additional = (len(setting_values) - 6) / 3
+        n_additional = old_div((len(setting_values) - 6), 3)
         del self.additional_images[:]
         while len(self.additional_images) < n_additional:
             self.add_image()
@@ -407,7 +417,7 @@ class Align(cpm.Module):
         #
         # Divide the sum over the # of elements summed-over
         #
-        p1_mean = p1_sum / unit
+        p1_mean = old_div(p1_sum, unit)
 
         p2_si = pixels2.shape[0]
         p2_sj = pixels2.shape[1]
@@ -417,7 +427,7 @@ class Align(cpm.Module):
         p2_sum[-p2_si:, :p2_sj] = cumsum_quadrant(pixels2, True, False)
         p2_sum[-p2_si:, -p2_sj:] = cumsum_quadrant(pixels2, True, True)
         p2_sum = np.fliplr(np.flipud(p2_sum))
-        p2_mean = p2_sum / unit
+        p2_mean = old_div(p2_sum, unit)
         #
         # Once we have the means for u,v, we can caluclate the
         # variance-like parts of the equation. We have to multiply
@@ -431,14 +441,14 @@ class Align(cpm.Module):
         # resulting in a negative sd, so limit the sds here
         #
         sd = np.sqrt(np.maximum(p1sd * p2sd, 0))
-        corrnorm = corr12 / sd
+        corrnorm = old_div(corr12, sd)
         #
         # There's not much information for points where the standard
         # deviation is less than 1/100 of the maximum. We exclude these
         # from consideration.
         #
-        corrnorm[(unit < np.product(s) / 2) &
-                 (sd < np.mean(sd) / 100)] = 0
+        corrnorm[(unit < old_div(np.product(s), 2)) &
+                 (sd < old_div(np.mean(sd), 100))] = 0
         i, j = np.unravel_index(np.argmax(corrnorm), fshape)
         #
         # Reflect values that fall into the second half
@@ -796,7 +806,7 @@ def entropy(x):
     n = np.sum(histogram)
     if n > 0 and np.max(histogram) > 0:
         histogram = histogram[histogram != 0]
-        return np.log2(n) - np.sum(histogram * np.log2(histogram)) / n
+        return np.log2(n) - old_div(np.sum(histogram * np.log2(histogram)), n)
     else:
         return 0
 
@@ -820,7 +830,7 @@ def entropy2(x, y):
     n = np.sum(histogram)
     if n > 0 and np.max(histogram) > 0:
         histogram = histogram[histogram > 0]
-        return np.log2(n) - np.sum(histogram * np.log2(histogram)) / n
+        return np.log2(n) - old_div(np.sum(histogram * np.log2(histogram)), n)
     else:
         return 0
 

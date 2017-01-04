@@ -1,4 +1,17 @@
 from __future__ import absolute_import
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import map
+from builtins import filter
+from builtins import zip
+from builtins import str
+from builtins import range
+from past.builtins import basestring
+from past.utils import old_div
 from cellprofiler.gui.help import USING_METADATA_TAGS_REF
 
 __doc__ = '''
@@ -356,8 +369,8 @@ class ExportToSpreadsheet(cpm.Module):
         setting_count = len(setting_values)
         assert ((setting_count - SETTING_OG_OFFSET) %
                 SETTING_OBJECT_GROUP_CT == 0)
-        group_count = int((setting_count - SETTING_OG_OFFSET) /
-                          SETTING_OBJECT_GROUP_CT)
+        group_count = int(old_div((setting_count - SETTING_OG_OFFSET),
+                          SETTING_OBJECT_GROUP_CT))
         del self.object_groups[group_count:]
 
         while len(self.object_groups) < group_count:
@@ -712,7 +725,7 @@ class ExportToSpreadsheet(cpm.Module):
             object_names = set((IMAGE, EXPERIMENT, OBJECT_RELATIONSHIPS))
             object_providers = workspace.pipeline.get_provider_dictionary(
                     cps.OBJECT_GROUP, self)
-            object_names.update(object_providers.keys())
+            object_names.update(list(object_providers.keys()))
             metadata_groups = self.get_metadata_groups(workspace)
             for object_name in object_names:
                 for metadata_group in metadata_groups:
@@ -739,7 +752,7 @@ class ExportToSpreadsheet(cpm.Module):
                 #
                 first_in_file = self.last_in_file(i)
 
-        files_to_overwrite = filter(os.path.isfile, files_to_check)
+        files_to_overwrite = list(filter(os.path.isfile, files_to_check))
         if len(files_to_overwrite) > 0:
             if get_headless():
                 logger.error(
@@ -783,7 +796,7 @@ class ExportToSpreadsheet(cpm.Module):
                                 v.dtype == np.uint8:
                     v = base64.b64encode(v.data)
                 else:
-                    unicode(v).encode('utf8')
+                    str(v).encode('utf8')
                 writer.writerow((feature_name, v))
         finally:
             fd.close()
@@ -841,7 +854,7 @@ class ExportToSpreadsheet(cpm.Module):
                             value = m[IMAGE, feature_name, img_number]
                         if value is None:
                             row.append('')
-                        elif isinstance(value, unicode):
+                        elif isinstance(value, str):
                             row.append(value.encode('utf8'))
                         elif isinstance(value, basestring):
                             row.append(value)
@@ -1025,8 +1038,8 @@ Do you want to save it anyway?""" %
                 object_names[0], workspace, image_set_numbers[0], settings_group)
         features = [(IMAGE, IMAGE_NUMBER),
                     (object_names[0], OBJECT_NUMBER)]
-        columns = map(
-                (lambda c: c[:2]), workspace.pipeline.get_measurement_columns())
+        columns = list(map(
+                (lambda c: c[:2]), workspace.pipeline.get_measurement_columns()))
         if self.add_metadata.value:
             mdfeatures = [
                 (IMAGE, name) for object_name, name in columns

@@ -1,4 +1,15 @@
 from __future__ import absolute_import
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import str
+from builtins import zip
+from builtins import range
+from builtins import object
+from past.utils import old_div
 from cellprofiler.gui.help import USING_METADATA_HELP_REF, USING_METADATA_GROUPING_HELP_REF, LOADING_IMAGE_SEQ_HELP_REF
 
 TM_OVERLAP = 'Overlap'
@@ -1021,7 +1032,7 @@ class TrackObjects(cpm.Module):
         recolored_labels = indexer[labels]
         cm = matplotlib.cm.get_cmap(cpprefs.get_default_colormap())
         cm.set_bad((0, 0, 0))
-        norm = matplotlib.colors.BoundaryNorm(range(256), 256)
+        norm = matplotlib.colors.BoundaryNorm(list(range(256)), 256)
         img = ax.imshow(numpy.ma.array(recolored_labels, mask=(labels == 0)),
                         cmap=cm, norm=norm)
         if self.display_type == DT_COLOR_AND_NUMBER:
@@ -1147,7 +1158,7 @@ class TrackObjects(cpm.Module):
             t = t + 1
             t = np.column_stack((t, x))
             a = np.arange(len(old_i)) + 2
-            x = np.searchsorted(t[0:(t.size / 2), 0], a)
+            x = np.searchsorted(t[0:(old_div(t.size, 2)), 0], a)
             a = np.arange(len(old_i)) + 1
             b = np.arange(len(old_i)) + len(new_i) + 1
             c = np.zeros(len(old_i)) + costDie
@@ -1196,7 +1207,7 @@ class TrackObjects(cpm.Module):
                 kalman_used[old_idx[mask], mask]
             linking_distance[mask] = d[old_idx[mask], mask]
             standard_deviation[mask] = \
-                linking_distance[mask] / noise_sd[old_idx[mask]]
+                old_div(linking_distance[mask], noise_sd[old_idx[mask]])
             model_type[mask] = model_types[model_idx[mask]]
             link_type[mask] = LT_PHASE_1
             #
@@ -1206,7 +1217,7 @@ class TrackObjects(cpm.Module):
             # the center is within the cell, then the error is
             # proportional to the radius and the square to the area.
             #
-            measurement_variance = areas.astype(float) / np.pi
+            measurement_variance = old_div(areas.astype(float), np.pi)
             #
             # Broadcast the measurement error into a diagonal matrix
             #
@@ -1467,13 +1478,13 @@ class TrackObjects(cpm.Module):
             return
 
         gap_cost = float(self.gap_cost.value)
-        split_alternative_cost = float(self.split_cost.value) / 2
+        split_alternative_cost = old_div(float(self.split_cost.value), 2)
         merge_alternative_cost = float(self.merge_cost.value)
         mitosis_alternative_cost = float(self.mitosis_cost.value)
 
         max_gap_score = self.max_gap_score.value
         max_merge_score = self.max_merge_score.value
-        max_split_score = self.max_split_score.value / 2  # to match legacy
+        max_split_score = old_div(self.max_split_score.value, 2)  # to match legacy
         max_frame_difference = self.max_frame_distance.value
 
         m = workspace.measurements
@@ -1680,7 +1691,7 @@ class TrackObjects(cpm.Module):
         merge_off = gap_end
         if len(P1) > 0:
             # Do the initial winnowing in chunks of 10m pairs
-            lchunk_size = 10000000 / len(P1)
+            lchunk_size = old_div(10000000, len(P1))
             chunks = []
             for lstart in range(0, len(L), lchunk_size):
                 lend = min(len(L), lstart + lchunk_size)
@@ -1746,7 +1757,7 @@ class TrackObjects(cpm.Module):
 
         split_off = merge_end
         if len(P2) > 0:
-            lchunk_size = 10000000 / len(P2)
+            lchunk_size = old_div(10000000, len(P2))
             chunks = []
             for fstart in range(0, len(L), lchunk_size):
                 fend = min(len(L), fstart + lchunk_size)
@@ -1920,7 +1931,7 @@ class TrackObjects(cpm.Module):
                 # Taking the alt score would cost us a mitosis alternative
                 # cost, but would remove half of a gap alternative.
                 #
-                alt_score += mitosis_alternative_cost - gap_cost / 2
+                alt_score += mitosis_alternative_cost - old_div(gap_cost, 2)
                 #
                 # Alternatively, taking the mitosis score would cost us
                 # the gap alternatives of the left and right.
@@ -2294,8 +2305,8 @@ class TrackObjects(cpm.Module):
         a1+a2 < b. I can't think of a good reason why they should be
         asymmetric.
         '''
-        result = a1 / a2
-        result[result < 1] = 1 / result[result < 1]
+        result = old_div(a1, a2)
+        result[result < 1] = old_div(1, result[result < 1])
         result[np.isnan(result)] = np.inf
         return result
 
@@ -2424,8 +2435,8 @@ class TrackObjects(cpm.Module):
         i, j = i[mask], j[mask]
         if len(i) == 0:
             return np.zeros((0, 3), np.int32), np.zeros(0, np.int32)
-        center_x = (F[i, X] + F[j, X]) / 2
-        center_y = (F[i, Y] + F[j, Y]) / 2
+        center_x = old_div((F[i, X] + F[j, X]), 2)
+        center_y = old_div((F[i, Y] + F[j, Y]), 2)
         frame = F[i, IIDX]
 
         # Find all parent-daughter pairs where the parent
@@ -2609,7 +2620,7 @@ class TrackObjects(cpm.Module):
             # Linearity = ratio of displacement and integrated
             # distance. NaN for new cells is ok.
             #
-            linearity[index] = tot_distance / integrated[index]
+            linearity[index] = old_div(tot_distance, integrated[index])
             #
             # Add 1 to lifetimes / one for new
             #
@@ -2621,10 +2632,10 @@ class TrackObjects(cpm.Module):
             for this_label, this_lifetime in zip(label[index], lifetimes[index]):
                 age[this_label] = this_lifetime
 
-        all_labels = age.keys()
-        all_ages = age.values()
+        all_labels = list(age.keys())
+        all_ages = list(age.values())
         if self.wants_lifetime_filtering.value:
-            labels_to_filter = [k for k, v in age.iteritems() if v <= minimum_lifetime or v >= maximum_lifetime]
+            labels_to_filter = [k for k, v in list(age.items()) if v <= minimum_lifetime or v >= maximum_lifetime]
         for image_number in image_numbers:
             index = image_index[image_number]
 
@@ -2718,7 +2729,7 @@ class TrackObjects(cpm.Module):
             distance[has_old] = np.sqrt(diff_i[has_old] ** 2 + diff_j[has_old] ** 2)
             integrated_distance[has_old] = (old_distance[old_indexes] + distance[has_old])
             displacement[has_old] = np.sqrt((i[has_old] - orig_i[has_old]) ** 2 + (j[has_old] - orig_j[has_old]) ** 2)
-            linearity[has_old] = displacement[has_old] / integrated_distance[has_old]
+            linearity[has_old] = old_div(displacement[has_old], integrated_distance[has_old])
         self.add_measurement(workspace, F_TRAJECTORY_X, diff_j)
         self.add_measurement(workspace, F_TRAJECTORY_Y, diff_i)
         self.add_measurement(workspace, F_DISTANCE_TRAVELED, distance)
@@ -2871,7 +2882,7 @@ class TrackObjects(cpm.Module):
             jj = x[this_slice]
             new_kalman_states = []
             r = np.column_stack(
-                    (area[this_slice].astype(float) / np.pi, np.zeros(n_objects),
+                    (old_div(area[this_slice].astype(float), np.pi), np.zeros(n_objects),
                      np.zeros(n_objects), area[this_slice].astype(float))) \
                 .reshape(n_objects, 2, 2)
             for kalman_state in kalman_states:
@@ -2905,7 +2916,7 @@ class TrackObjects(cpm.Module):
             ii = y[this_slice]
             jj = x[this_slice]
             r = np.column_stack(
-                    (area[this_slice].astype(float) / np.pi, np.zeros(n_objects),
+                    (old_div(area[this_slice].astype(float), np.pi), np.zeros(n_objects),
                      np.zeros(n_objects), area[this_slice].astype(float))) \
                 .reshape(n_objects, 2, 2)
             new_kalman_states = []

@@ -2,6 +2,9 @@
 """ help.py - contains menu structures for help menus in CP
 """
 from __future__ import absolute_import
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
 
 #######################################################
 #
@@ -19,6 +22,9 @@ from __future__ import absolute_import
 #
 ########################################################
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
 import cellprofiler.icons
 import logging
 import os
@@ -2468,7 +2474,7 @@ def make_help_menu(h, window, menu=None):
         menu = wx.Menu()
     for key, value in h:
         my_id = wx.NewId()
-        if hasattr(value, "__iter__") and not isinstance(value, (str, unicode)):
+        if hasattr(value, "__iter__") and not isinstance(value, (str, str)):
             menu.AppendMenu(my_id, key, make_help_menu(value, window))
         else:
             def show_dialog(event, key=key, value=value):

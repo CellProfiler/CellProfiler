@@ -1,4 +1,12 @@
-import StringIO
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
+from builtins import *
+from future import standard_library
+standard_library.install_aliases()
+from past.utils import old_div
+import io
 import base64
 import unittest
 import zlib
@@ -193,7 +201,7 @@ def test_divide_by_image_minimum(image, module, workspace):
 
     actual = output.pixel_data
 
-    expected = data / 50.0
+    expected = old_div(data, 50.0)
 
     numpy.testing.assert_array_almost_equal(expected, actual)
 
@@ -211,7 +219,7 @@ def test_divide_by_image_minimum_masked(image, mask, module, workspace):
 
     actual = output.pixel_data
 
-    expected = data / 50.0
+    expected = old_div(data, 50.0)
 
     numpy.testing.assert_array_almost_equal(expected, actual)
 
@@ -238,7 +246,7 @@ def test_divide_by_image_maximum(image, module, workspace):
 
     actual = output.pixel_data
 
-    expected = data / 255.0
+    expected = old_div(data, 255.0)
 
     numpy.testing.assert_array_almost_equal(expected, actual)
 
@@ -256,7 +264,7 @@ def test_divide_by_image_maximum_masked(image, mask, module, workspace):
 
     actual = output.pixel_data
 
-    expected = data / 205.0
+    expected = old_div(data, 205.0)
 
     numpy.testing.assert_array_almost_equal(expected, actual)
 
@@ -274,7 +282,7 @@ def test_divide_by_value(image, module, workspace):
 
     actual = output.pixel_data
 
-    expected = data / 50.0
+    expected = old_div(data, 50.0)
 
     numpy.testing.assert_array_almost_equal(expected, actual)
 
@@ -309,7 +317,7 @@ def test_divide_by_measurement(image, module, workspace):
 
     actual = output.pixel_data
 
-    expected = data / 50.0
+    expected = old_div(data, 50.0)
 
     numpy.testing.assert_array_almost_equal(expected, actual)
 
@@ -341,7 +349,7 @@ def test_scale_by_image_maximum_zero(image, module, workspace):
 def test_scale_by_image_maximum(image, module, workspace):
     data = image.pixel_data
 
-    match_data = data / 2.0
+    match_data = old_div(data, 2.0)
 
     match_image = cellprofiler.image.Image(image=match_data, dimensions=3, convert=False)
 
@@ -357,7 +365,7 @@ def test_scale_by_image_maximum(image, module, workspace):
 
     actual = output.pixel_data
 
-    expected = data * (127.5 / 255.0)
+    expected = data * (old_div(127.5, 255.0))
 
     numpy.testing.assert_array_equal(expected, actual)
 
@@ -365,7 +373,7 @@ def test_scale_by_image_maximum(image, module, workspace):
 def test_scale_by_image_maximum_masked(image, mask, module, workspace):
     data = image.pixel_data
 
-    match_data = data / 2.0
+    match_data = old_div(data, 2.0)
 
     match_image = cellprofiler.image.Image(image=match_data, mask=mask, dimensions=3, convert=False)
 
@@ -383,7 +391,7 @@ def test_scale_by_image_maximum_masked(image, mask, module, workspace):
 
     actual = output.pixel_data
 
-    expected = data * (102.5 / 205.0)
+    expected = data * (old_div(102.5, 205.0))
 
     numpy.testing.assert_array_equal(expected, actual)
 
@@ -418,7 +426,7 @@ class TestRescaleIntensity(unittest.TestCase):
             self.assertFalse(isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
 
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
+        pipeline.load(io.StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 3)
         module = pipeline.modules()[2]
         self.assertTrue(isinstance(module, cellprofiler.modules.rescaleintensity.RescaleIntensity))
@@ -514,7 +522,7 @@ class TestRescaleIntensity(unittest.TestCase):
         expected = numpy.random.uniform(size=(10, 10)).astype(numpy.float32)
         expected[0, 0] = 1
         expected[9, 9] = 0
-        workspace, module = self.make_workspace(expected / 2 + .1)
+        workspace, module = self.make_workspace(old_div(expected, 2) + .1)
         module.rescale_method.value = cellprofiler.modules.rescaleintensity.M_STRETCH
         module.run(workspace)
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
@@ -528,7 +536,7 @@ class TestRescaleIntensity(unittest.TestCase):
         mask = numpy.ones(expected.shape, bool)
         mask[3:5, 4:7] = False
         expected[~ mask] = 1.5
-        workspace, module = self.make_workspace(expected / 2 + .1, mask)
+        workspace, module = self.make_workspace(old_div(expected, 2) + .1, mask)
         module.rescale_method.value = cellprofiler.modules.rescaleintensity.M_STRETCH
         module.run(workspace)
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
@@ -537,7 +545,7 @@ class TestRescaleIntensity(unittest.TestCase):
     def test_04_01_manual_input_range(self):
         numpy.random.seed(0)
         expected = numpy.random.uniform(size=(10, 10))
-        workspace, module = self.make_workspace(expected / 2 + .1)
+        workspace, module = self.make_workspace(old_div(expected, 2) + .1)
         module.rescale_method.value = cellprofiler.modules.rescaleintensity.M_MANUAL_INPUT_RANGE
         module.wants_automatic_low.value = cellprofiler.modules.rescaleintensity.CUSTOM_VALUE
         module.wants_automatic_high.value = cellprofiler.modules.rescaleintensity.CUSTOM_VALUE
@@ -551,7 +559,7 @@ class TestRescaleIntensity(unittest.TestCase):
         numpy.random.seed(0)
         expected = numpy.random.uniform(size=(10, 10)).astype(numpy.float32)
         expected[0, 0] = 0
-        workspace, module = self.make_workspace(expected / 2 + .1)
+        workspace, module = self.make_workspace(old_div(expected, 2) + .1)
         module.rescale_method.value = cellprofiler.modules.rescaleintensity.M_MANUAL_INPUT_RANGE
         module.wants_automatic_low.value = cellprofiler.modules.rescaleintensity.LOW_EACH_IMAGE
         module.wants_automatic_high.value = cellprofiler.modules.rescaleintensity.CUSTOM_VALUE
@@ -565,7 +573,7 @@ class TestRescaleIntensity(unittest.TestCase):
         numpy.random.seed(421)
         image1 = numpy.random.uniform(size=(10, 20)).astype(numpy.float32) * .5 + .5
         image2 = numpy.random.uniform(size=(10, 20)).astype(numpy.float32)
-        expected = (image1 - numpy.min(image2)) / (1 - numpy.min(image2))
+        expected = old_div((image1 - numpy.min(image2)), (1 - numpy.min(image2)))
         workspace, module = self.make_workspace([image1, image2])
         self.assertTrue(isinstance(module, cellprofiler.modules.rescaleintensity.RescaleIntensity))
         module.rescale_method.value = cellprofiler.modules.rescaleintensity.M_MANUAL_INPUT_RANGE
@@ -582,7 +590,7 @@ class TestRescaleIntensity(unittest.TestCase):
         numpy.random.seed(0)
         expected = numpy.random.uniform(size=(10, 10)).astype(numpy.float32)
         expected[0, 0] = 1
-        workspace, module = self.make_workspace(expected / 2 + .1)
+        workspace, module = self.make_workspace(old_div(expected, 2) + .1)
         module.rescale_method.value = cellprofiler.modules.rescaleintensity.M_MANUAL_INPUT_RANGE
         module.wants_automatic_low.value = cellprofiler.modules.rescaleintensity.CUSTOM_VALUE
         module.wants_automatic_high.value = cellprofiler.modules.rescaleintensity.HIGH_EACH_IMAGE
@@ -596,7 +604,7 @@ class TestRescaleIntensity(unittest.TestCase):
         numpy.random.seed(421)
         image1 = numpy.random.uniform(size=(10, 20)).astype(numpy.float32) * .5
         image2 = numpy.random.uniform(size=(10, 20)).astype(numpy.float32)
-        expected = image1 / numpy.max(image2)
+        expected = old_div(image1, numpy.max(image2))
         workspace, module = self.make_workspace([image1, image2])
         self.assertTrue(isinstance(module, cellprofiler.modules.rescaleintensity.RescaleIntensity))
         image_set_2 = workspace.image_set_list.get_image_set(1)
@@ -615,8 +623,8 @@ class TestRescaleIntensity(unittest.TestCase):
         numpy.random.seed(0)
         expected = numpy.random.uniform(size=(10, 10)).astype(numpy.float32)
         expected = expected - expected.min()
-        expected = expected / expected.max()
-        workspace, module = self.make_workspace(expected / 2 + .1)
+        expected = old_div(expected, expected.max())
+        workspace, module = self.make_workspace(old_div(expected, 2) + .1)
         module.rescale_method.value = cellprofiler.modules.rescaleintensity.M_MANUAL_INPUT_RANGE
         module.wants_automatic_low.value = cellprofiler.modules.rescaleintensity.LOW_EACH_IMAGE
         module.wants_automatic_high.value = cellprofiler.modules.rescaleintensity.HIGH_EACH_IMAGE
@@ -631,7 +639,7 @@ class TestRescaleIntensity(unittest.TestCase):
         mask = numpy.ones(expected.shape, bool)
         mask[3:5, 4:7] = False
         expected[~ mask] = 1.5
-        workspace, module = self.make_workspace(expected / 2 + .1, mask)
+        workspace, module = self.make_workspace(old_div(expected, 2) + .1, mask)
         module.rescale_method.value = cellprofiler.modules.rescaleintensity.M_MANUAL_INPUT_RANGE
         module.wants_automatic_low.value = cellprofiler.modules.rescaleintensity.CUSTOM_VALUE
         module.wants_automatic_high.value = cellprofiler.modules.rescaleintensity.HIGH_EACH_IMAGE
@@ -650,7 +658,7 @@ class TestRescaleIntensity(unittest.TestCase):
         expected_high_mask[6:8, 5:7] = True
         expected[expected_high_mask] = 1.05
         mask = ~(expected_low_mask | expected_high_mask)
-        workspace, module = self.make_workspace(expected / 2 + .1)
+        workspace, module = self.make_workspace(old_div(expected, 2) + .1)
         module.rescale_method.value = cellprofiler.modules.rescaleintensity.M_MANUAL_INPUT_RANGE
         module.wants_automatic_low.value = cellprofiler.modules.rescaleintensity.CUSTOM_VALUE
         module.wants_automatic_high.value = cellprofiler.modules.rescaleintensity.CUSTOM_VALUE
@@ -668,7 +676,7 @@ class TestRescaleIntensity(unittest.TestCase):
     def test_05_01_manual_io_range(self):
         numpy.random.seed(0)
         expected = numpy.random.uniform(size=(10, 10)).astype(numpy.float32)
-        workspace, module = self.make_workspace(expected / 2 + .1)
+        workspace, module = self.make_workspace(old_div(expected, 2) + .1)
         expected = expected * .75 + .05
         module.rescale_method.value = cellprofiler.modules.rescaleintensity.M_MANUAL_IO_RANGE
         module.wants_automatic_low.value = cellprofiler.modules.rescaleintensity.CUSTOM_VALUE
@@ -685,7 +693,7 @@ class TestRescaleIntensity(unittest.TestCase):
         numpy.random.seed(0)
         image = numpy.random.uniform(size=(10, 10)).astype(numpy.float32)
         image[0, 0] = 0
-        image = image / 2 + .25
+        image = old_div(image, 2) + .25
         expected = image * 4
         workspace, module = self.make_workspace(image)
         module.rescale_method.value = cellprofiler.modules.rescaleintensity.M_DIVIDE_BY_IMAGE_MINIMUM
@@ -697,7 +705,7 @@ class TestRescaleIntensity(unittest.TestCase):
         numpy.random.seed(0)
         image = numpy.random.uniform(size=(10, 10))
         image[0, 0] = 0
-        image = image / 2 + .25
+        image = old_div(image, 2) + .25
         mask = numpy.ones(image.shape, bool)
         mask[3:6, 7:9] = False
         image[~mask] = .05
@@ -711,9 +719,9 @@ class TestRescaleIntensity(unittest.TestCase):
     def test_07_01_divide_by_image_maximum(self):
         numpy.random.seed(0)
         image = numpy.random.uniform(size=(10, 10)).astype(numpy.float32)
-        image = image / 2 + .1
+        image = old_div(image, 2) + .1
         image[0, 0] = .8
-        expected = image / .8
+        expected = old_div(image, .8)
         workspace, module = self.make_workspace(image)
         module.rescale_method.value = cellprofiler.modules.rescaleintensity.M_DIVIDE_BY_IMAGE_MAXIMUM
         module.run(workspace)
@@ -723,12 +731,12 @@ class TestRescaleIntensity(unittest.TestCase):
     def test_07_02_divide_by_image_minimum_masked(self):
         numpy.random.seed(0)
         image = numpy.random.uniform(size=(10, 10)).astype(numpy.float32)
-        image = image / 2 + .1
+        image = old_div(image, 2) + .1
         image[0, 0] = .8
         mask = numpy.ones(image.shape, bool)
         mask[3:6, 7:9] = False
         image[~mask] = .9
-        expected = image / .8
+        expected = old_div(image, .8)
         workspace, module = self.make_workspace(image, mask)
         module.rescale_method.value = cellprofiler.modules.rescaleintensity.M_DIVIDE_BY_IMAGE_MAXIMUM
         module.run(workspace)
@@ -738,9 +746,9 @@ class TestRescaleIntensity(unittest.TestCase):
     def test_08_01_divide_by_value(self):
         numpy.random.seed(0)
         image = numpy.random.uniform(size=(10, 10)).astype(numpy.float32)
-        image = image / 2 + .1
+        image = old_div(image, 2) + .1
         value = .9
-        expected = image / value
+        expected = old_div(image, value)
         workspace, module = self.make_workspace(image)
         module.rescale_method.value = cellprofiler.modules.rescaleintensity.M_DIVIDE_BY_VALUE
         module.divisor_value.value = value
@@ -751,9 +759,9 @@ class TestRescaleIntensity(unittest.TestCase):
     def test_09_01_divide_by_measurement(self):
         numpy.random.seed(0)
         image = numpy.random.uniform(size=(10, 10)).astype(numpy.float32)
-        image = image / 2 + .1
+        image = old_div(image, 2) + .1
         value = .75
-        expected = image / value
+        expected = old_div(image, value)
         workspace, module = self.make_workspace(image, measurement=value)
         module.rescale_method.value = cellprofiler.modules.rescaleintensity.M_DIVIDE_BY_MEASUREMENT
         module.run(workspace)
@@ -764,7 +772,7 @@ class TestRescaleIntensity(unittest.TestCase):
         numpy.random.seed(0)
         image = numpy.random.uniform(size=(10, 10)).astype(numpy.float32)
         image[0, 0] = 1
-        image = image / 2 + .1
+        image = old_div(image, 2) + .1
         reference = numpy.random.uniform(size=(10, 10)).astype(numpy.float32) * .75
         reference[0, 0] = .75
         expected = image * .75 / .60
@@ -779,7 +787,7 @@ class TestRescaleIntensity(unittest.TestCase):
         numpy.random.seed(0)
         image = numpy.random.uniform(size=(10, 10)).astype(numpy.float32)
         image[0, 0] = 1
-        image = image / 2 + .1
+        image = old_div(image, 2) + .1
         mask = numpy.ones(image.shape, bool)
         mask[3:6, 4:8] = False
         image[~mask] = .9

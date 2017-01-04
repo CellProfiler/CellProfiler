@@ -1,8 +1,16 @@
 """test_colortogray.py - test the ColorToGray module
 """
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from builtins import *
+from future import standard_library
+standard_library.install_aliases()
+from past.utils import old_div
 import unittest
-from StringIO import StringIO
+from io import StringIO
 
 import numpy as np
 from cellprofiler.preferences import set_headless
@@ -66,9 +74,9 @@ class TestColorToGray(unittest.TestCase):
         grayscale = image_set.get_image("my_grayscale")
         self.assertTrue(grayscale)
         img = grayscale.image
-        self.assertAlmostEqual(img[0, 0], 1.0 / 6.0)
-        self.assertAlmostEqual(img[0, 25], 1.0 / 3.0)
-        self.assertAlmostEqual(img[25, 0], 1.0 / 2.0)
+        self.assertAlmostEqual(img[0, 0], old_div(1.0, 6.0))
+        self.assertAlmostEqual(img[0, 25], old_div(1.0, 3.0))
+        self.assertAlmostEqual(img[25, 0], old_div(1.0, 2.0))
         self.assertAlmostEqual(img[25, 25], 0)
 
     def test_01_02_split_all(self):

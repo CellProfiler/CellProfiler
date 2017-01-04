@@ -22,7 +22,17 @@ number of images per plate is the same. </li>
 
 See also the <b>Metadata</b> module.
 '''
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import str
+from builtins import range
+from past.utils import old_div
 import numpy as np
 
 import cellprofiler.module as cpm
@@ -95,7 +105,7 @@ class LabelImages(cpm.Module):
 
         row_text_indexes = [
             x % 26 for x in reversed(
-                    [int(row_index / (26 ** i)) for i in range(self.row_digits)])]
+                    [int(old_div(row_index, (26 ** i))) for i in range(self.row_digits)])]
 
         row_text = ['ABCDEFGHIJKLMNOPQRSTUVWXYZ'[x] for x in row_text_indexes]
         row_text = reduce(lambda x, y: x + y, row_text)
@@ -120,7 +130,7 @@ class LabelImages(cpm.Module):
         If a plate has more than 26 rows, you need two digits. The following
         is sufficiently general.
         '''
-        return int(1 + np.log(self.row_count.value) / np.log(26))
+        return int(1 + old_div(np.log(self.row_count.value), np.log(26)))
 
     @property
     def column_digits(self):

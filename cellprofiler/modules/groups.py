@@ -1,3 +1,12 @@
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import str
+from builtins import range
 import cellprofiler.icons
 from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON, GROUPS_DISPLAY_TABLE
 
@@ -401,7 +410,7 @@ class Groups(cpm.Module):
             order = np.lexsort((group_indexes, group_numbers))
 
             for idx in order:
-                row = [unicode(x[idx]) for x in all_features]
+                row = [str(x[idx]) for x in all_features]
                 self.image_set_list.data.append(row)
 
     def get_groupings(self, workspace):

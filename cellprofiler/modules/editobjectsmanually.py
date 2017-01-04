@@ -26,7 +26,15 @@ and continue the pipeline.
 See also <b>FilterObjects</b>, <b>MaskObject</b>, <b>OverlayOutlines</b>, <b>ConvertToImage</b>.
 '''
 from __future__ import absolute_import
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import range
+from past.utils import old_div
 import logging
 
 logger = logging.getLogger(__name__)
@@ -189,7 +197,7 @@ class EditObjectsManually(I.Identify):
             guide_image = workspace.image_set.get_image(self.image_name.value)
             guide_image = guide_image.pixel_data
             if np.any(guide_image != np.min(guide_image)):
-                guide_image = (guide_image - np.min(guide_image)) / (np.max(guide_image) - np.min(guide_image))
+                guide_image = old_div((guide_image - np.min(guide_image)), (np.max(guide_image) - np.min(guide_image)))
         else:
             guide_image = None
         filtered_labels = workspace.interaction_request(
@@ -344,8 +352,8 @@ class EditObjectsManually(I.Identify):
         #
         guide_image = load_image(guidename)
         if np.min(guide_image) != np.max(guide_image):
-            guide_image = ((guide_image - np.min(guide_image)) /
-                           (np.max(guide_image) - np.min(guide_image)))
+            guide_image = (old_div((guide_image - np.min(guide_image)),
+                           (np.max(guide_image) - np.min(guide_image))))
         if labels is None:
             shape = guide_image.shape[:2]
             labels = [np.zeros(shape, int)]
@@ -405,15 +413,15 @@ class EditObjectsManually(I.Identify):
                 j0 = j[mask == 1]
                 i1 = i[mask == 2]
                 j1 = j[mask == 2]
-                if len(i1) < subsample / 2:
+                if len(i1) < old_div(subsample, 2):
                     p0 = r.permutation(len(i0))[:(subsample - len(i1))]
                     p1 = np.arange(len(i1))
-                elif len(i0) < subsample / 2:
+                elif len(i0) < old_div(subsample, 2):
                     p0 = np.arange(len(i0))
                     p1 = r.permutation(len(i1))[:(subsample - len(i0))]
                 else:
-                    p0 = r.permutation(len(i0))[:(subsample / 2)]
-                    p1 = r.permutation(len(i1))[:(subsample / 2)]
+                    p0 = r.permutation(len(i0))[:(old_div(subsample, 2))]
+                    p1 = r.permutation(len(i1))[:(old_div(subsample, 2))]
                 mask_copy = np.zeros(mask.shape, mask.dtype)
                 mask_copy[i0[p0], j0[p0]] = 1
                 mask_copy[i1[p1], j1[p1]] = 2

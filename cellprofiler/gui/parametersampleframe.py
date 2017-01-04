@@ -6,7 +6,16 @@ Author: AJ Pretorius
         a.j.pretorius@leeds.ac.uk
 """
 from __future__ import print_function
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import str
+from builtins import range
+from past.utils import old_div
 import cellprofiler.image
 import cellprofiler.module
 import cellprofiler.measurement
@@ -513,7 +522,7 @@ class ParameterSampleFrame(wx.Frame):
         """
         samples = []
         if number_samples > 1:
-            delta = (upper_bound - lower_bound) / float(number_samples - 1)
+            delta = old_div((upper_bound - lower_bound), float(number_samples - 1))
             for i in range(number_samples):
                 sample = lower_bound + i * delta
                 if is_int:

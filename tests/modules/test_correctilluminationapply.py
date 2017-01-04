@@ -1,13 +1,21 @@
 """test_correctilluminationapply.py
 """
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from builtins import *
+from future import standard_library
+standard_library.install_aliases()
+from past.utils import old_div
 import base64
 import os
 import sys
 import tempfile
 import unittest
 import zlib
-from StringIO import StringIO
+from io import StringIO
 
 import numpy as np
 
@@ -148,7 +156,7 @@ class TestCorrectIlluminationApply(unittest.TestCase):
         np.random.seed(0)
         image = np.random.uniform(size=(10, 10)).astype(np.float32)
         illum = np.random.uniform(size=(10, 10)).astype(np.float32)
-        expected = image / illum
+        expected = old_div(image, illum)
         pipeline = cpp.Pipeline()
         pipeline.add_listener(self.error_callback)
         input_module = inj.InjectImage("InputImage", image)

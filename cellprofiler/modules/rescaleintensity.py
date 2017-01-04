@@ -6,7 +6,15 @@ methods. You should use caution when interpreting intensity and texture measurem
 derived from images that have been rescaled because certain options for this module
 do not preserve the relative intensities from image to image.
 '''
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from past.utils import old_div
 import numpy
 import skimage.exposure
 
@@ -330,7 +338,7 @@ class RescaleIntensity(cellprofiler.module.ImageProcessing):
         if value == 0.0:
             raise ZeroDivisionError("Cannot divide pixel intensity by 0.")
 
-        return data / float(value)
+        return old_div(data, float(value))
 
     def divide_by_image_minimum(self, input_image):
         data = input_image.pixel_data

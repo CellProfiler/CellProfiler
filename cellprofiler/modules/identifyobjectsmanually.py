@@ -13,7 +13,15 @@ display to within that rectangle.</li>
 <li><i>Erase:</i> Erases an object if you click on it.</li></ul>
 '''
 from __future__ import absolute_import
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import range
+from past.utils import old_div
 import numpy as np
 from centrosome.cpmorphology import draw_line
 from centrosome.cpmorphology import fill_labeled_holes
@@ -156,7 +164,7 @@ class IdentifyObjectsManually(I.Identify):
         labels_image = sm.to_rgba(labels)[:, :, :3]
 
         lmask = labels > 0
-        gray = (image[lmask, 0] + image[lmask, 1] + image[lmask, 2]) / 3
+        gray = old_div((image[lmask, 0] + image[lmask, 1] + image[lmask, 2]), 3)
 
         for i in range(3):
             image[lmask, i] = gray * labels_image[lmask, i]

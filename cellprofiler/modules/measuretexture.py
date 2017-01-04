@@ -116,7 +116,17 @@ SMC-3(6):610-621.
 <a href="http://dx.doi.org/10.1049/ji-3-2.1946.0074">(link)</a></li>
 </ul>
 """
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import zip
+from builtins import str
+from builtins import range
 import numpy as np
 import scipy.ndimage as scind
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix

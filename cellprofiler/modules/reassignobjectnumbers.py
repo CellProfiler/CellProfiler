@@ -32,7 +32,15 @@ reassignment.
 
 <p>See also <b>RelateObjects</b>.</p>
 '''
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from past.utils import old_div
 import centrosome.cpmorphology as morph
 import centrosome.outline
 import numpy as np
@@ -277,7 +285,7 @@ class ReassignObjectNumbers(cpm.Module):
                     # distance from an object.
                     #
                     d = scind.distance_transform_edt(~mask)
-                    mask = d < self.distance_threshold.value / 2 + 1
+                    mask = d < old_div(self.distance_threshold.value, 2) + 1
                 output_labels, count = scind.label(mask, np.ones((3, 3), bool))
                 output_labels[labels == 0] = 0
                 if self.wants_image:

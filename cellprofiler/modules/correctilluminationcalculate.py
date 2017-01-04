@@ -15,7 +15,17 @@ on the CellProfiler website for further advice.
 
 See also <b>CorrectIlluminationApply</b>, <b>EnhanceOrSuppressFeatures</b>.
 '''
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import zip
+from builtins import range
+from past.utils import old_div
 import centrosome.cpmorphology as cpmm
 import numpy as np
 import scipy.linalg
@@ -662,7 +672,7 @@ class CorrectIlluminationCalculate(cpm.Module):
         elif self.automatic_object_width == FI_OBJECT_SIZE:
             return self.object_width.value * 2.35 / 3.5
         elif self.automatic_object_width == FI_AUTOMATIC:
-            return min(30, float(np.max(image_shape)) / 40.0)
+            return min(30, old_div(float(np.max(image_shape)), 40.0))
 
     def preprocess_image_for_averaging(self, orig_image):
         """Create a version of the image appropriate for averaging
@@ -723,7 +733,7 @@ class CorrectIlluminationCalculate(cpm.Module):
     def smooth_plane(self, pixel_data, mask):
         '''Smooth one 2-d color plane of an image'''
 
-        sigma = self.smoothing_filter_size(pixel_data.shape) / 2.35
+        sigma = old_div(self.smoothing_filter_size(pixel_data.shape), 2.35)
         if self.smoothing_method == SM_FIT_POLYNOMIAL:
             output_pixels = fit_polynomial(pixel_data, mask)
         elif self.smoothing_method == SM_GAUSSIAN_FILTER:
@@ -773,7 +783,7 @@ class CorrectIlluminationCalculate(cpm.Module):
             if shortest_side < 200:
                 scale = 1
             else:
-                scale = float(shortest_side) / 200
+                scale = old_div(float(shortest_side), 200)
             result = backgr(pixel_data, mask, scale=scale)
         else:
             mode = self.spline_bg_mode.value
@@ -817,11 +827,11 @@ class CorrectIlluminationCalculate(cpm.Module):
                 pixel_data = pixel_data.copy()
                 pixel_data[pixel_data < robust_minimum] = robust_minimum
             elif self.rescale_option == RE_MEDIAN:
-                idx = int(sorted_pixel_data.shape[0] / 2)
+                idx = int(old_div(sorted_pixel_data.shape[0], 2))
                 robust_minimum = sorted_pixel_data[idx]
             if robust_minimum == 0:
                 return pixel_data
-            return pixel_data / robust_minimum
+            return old_div(pixel_data, robust_minimum)
 
         if image.pixel_data.ndim == 2:
             output_pixels = scaling_fn_2d(image.pixel_data)
@@ -1057,11 +1067,11 @@ class CorrectIlluminationImageProvider(cpi.AbstractImageProvider):
                               self.__image_sum.dtype)
         mask = self.__mask_count > 0
         if pixel_data.ndim == 2:
-            pixel_data[mask] = self.__image_sum[mask] / self.__mask_count[mask]
+            pixel_data[mask] = old_div(self.__image_sum[mask], self.__mask_count[mask])
         else:
             for i in range(pixel_data.shape[2]):
                 pixel_data[mask, i] = \
-                    self.__image_sum[mask, i] / self.__mask_count[mask]
+                    old_div(self.__image_sum[mask, i], self.__mask_count[mask])
         self.__cached_avg_image = cpi.Image(pixel_data, mask)
         self.__cached_dilated_image = \
             self.__module.apply_dilation(self.__cached_avg_image)

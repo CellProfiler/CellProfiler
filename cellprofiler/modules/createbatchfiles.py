@@ -1,3 +1,13 @@
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
+from builtins import *
+from future import standard_library
+standard_library.install_aliases()
+from builtins import zip
+from builtins import str
+from past.utils import old_div
 from cellprofiler.gui.help import BATCH_PROCESSING_HELP_REF
 
 __doc__ = '''
@@ -26,12 +36,12 @@ For more details on batch processing, please see <i>%(BATCH_PROCESSING_HELP_REF)
 import logging
 
 logger = logging.getLogger(__name__)
-import httplib
+import http.client
 import numpy as np
 import os
 import re
 import sys
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import zlib
 
 import cellprofiler
@@ -181,7 +191,7 @@ class CreateBatchFiles(cpm.Module):
                              "is not a multiple of %d" %
                              (len(setting_values) - S_FIXED_COUNT,
                               S_PER_MAPPING))
-        mapping_count = (len(setting_values) - S_FIXED_COUNT) / S_PER_MAPPING
+        mapping_count = old_div((len(setting_values) - S_FIXED_COUNT), S_PER_MAPPING)
         while mapping_count < len(self.mappings):
             del self.mappings[-1]
 
@@ -222,9 +232,9 @@ class CreateBatchFiles(cpm.Module):
             if self.go_to_website:
                 try:
                     import webbrowser
-                    import urllib
+                    import urllib.request, urllib.parse, urllib.error
                     server_path = self.alter_path(os.path.dirname(path))
-                    query = urllib.urlencode(dict(data_dir=server_path))
+                    query = urllib.parse.urlencode(dict(data_dir=server_path))
                     url = cpprefs.get_batchprofiler_url() + \
                           "/NewBatch.py?" + query
                     webbrowser.open_new(url)
@@ -352,13 +362,13 @@ class CreateBatchFiles(cpm.Module):
         import wx
 
         def check(path):
-            more = urllib.urlencode(dict(path=path))
+            more = urllib.parse.urlencode(dict(path=path))
             url = ("/batchprofiler/cgi-bin/development/"
                    "CellProfiler_2.0/PathExists.py?%s") % more
-            conn = httplib.HTTPConnection("imageweb")
+            conn = http.client.HTTPConnection("imageweb")
             conn.request("GET", url)
             result = conn.getresponse()
-            if result.status != httplib.OK:
+            if result.status != http.client.OK:
                 raise RuntimeError("HTTP failed: %s" % result.reason)
             body = result.read()
             return body.find("OK") != -1

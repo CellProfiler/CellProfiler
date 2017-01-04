@@ -1,7 +1,16 @@
 # coding=utf-8
 """namesubscriber.py - implements a combobox with extra information
 """
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import zip
+from past.utils import old_div
 import wx
 
 
@@ -26,7 +35,7 @@ def align_twosided_items(parent, items, min_spacing=8, left_texts=None, right_te
             spacewidth = parent.GetTextExtent("  ")[0] - parent.GetTextExtent(" ")[0]
             for item, left, right, initial_width in \
                     zip(items, left_texts, right_texts, widths):
-                numspaces = int(min_spacing + (maxwidth - initial_width) / spacewidth)
+                numspaces = int(min_spacing + old_div((maxwidth - initial_width), spacewidth))
                 item.SetItemLabel("%s%s%s" % (left, ' ' * numspaces, right))
 
 

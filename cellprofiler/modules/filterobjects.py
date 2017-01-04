@@ -28,7 +28,18 @@ mass of the remaining objects.</li>
 See also any of the <b>MeasureObject</b> modules, <b>MeasureTexture</b>,
 <b>MeasureCorrelation</b>, and <b>CalculateRatios</b>.
 '''
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import zip
+from builtins import str
+from builtins import range
+from past.utils import old_div
 import logging
 
 logger = logging.getLogger(__name__)
@@ -1160,7 +1171,7 @@ class FilterObjects(cpm.Module):
                 outlines_name, rules_or_measurements, rules_directory_choice, \
                 rules_path_name, rules_file_name = setting_values[:15]
             additional_object_settings = setting_values[15:]
-            additional_object_count = len(additional_object_settings) / 4
+            additional_object_count = old_div(len(additional_object_settings), 4)
 
             setting_values = [
                 target_name, object_name, rules_or_measurements,

@@ -1,6 +1,14 @@
 # coding=utf-8
 
 from __future__ import print_function
+from __future__ import unicode_literals
+from __future__ import division
+from __future__ import absolute_import
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import str
+from past.builtins import basestring
 import cellprofiler
 import cellprofiler.gui.help
 import cellprofiler.icons
@@ -114,7 +122,7 @@ def output_gui_html(webpage_path):
         help_text += "<ul>\n"
         for key, value in h:
             help_text += "<li>"
-            if hasattr(value, "__iter__") and not isinstance(value, (str, unicode)):
+            if hasattr(value, "__iter__") and not isinstance(value, (str, str)):
                 help_text += "<b>%s</b>" % key
                 help_text = write_menu(prefix + "_" + key, value, help_text)
             else:
@@ -172,7 +180,7 @@ def output_module_html(webpage_path):
                 module.create_settings.__func__.__code__.co_filename)[0]
         if location == cellprofiler.preferences.get_plugin_directory():
             continue
-        if isinstance(module.category, (str, unicode)):
+        if isinstance(module.category, (str, str)):
             module.category = [module.category]
         for category in module.category:
             if category not in d:
@@ -334,4 +342,4 @@ def __search_menu_helper(menu, search_fn):
         if len(matches) > 0:
             return [(menu[0], menu[1], matches)]
         return []
-    return sum(map(lambda x: __search_menu_helper(x, search_fn), menu[1]), [])
+    return sum([__search_menu_helper(x, search_fn) for x in menu[1]], [])

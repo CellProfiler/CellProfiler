@@ -51,7 +51,16 @@ binned into bins above ("high") and below ("low") the cutoff.</li>
 
 See also <b>CalculateMath</b> and any of the modules in the <b>Measure</b> category.
 '''
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import str
+from builtins import range
 import numpy as np
 
 import cellprofiler.image as cpi

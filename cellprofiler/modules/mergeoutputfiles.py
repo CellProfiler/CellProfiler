@@ -43,7 +43,16 @@ as a data tool.</p>
 
 <p>See also <b>CreateBatchFiles</b>, <b>ExportToDatabase</b>.</p>
 '''
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from past.builtins import cmp
+from builtins import range
 import os
 import sys
 
@@ -216,7 +225,7 @@ class MergeOutputFiles(cpm.Module):
     def get_anti_order(order):
         '''Return a dictionary whose values are the keys of the input and vice versa'''
         anti_order = {}
-        for key in order.keys():
+        for key in list(order.keys()):
             anti_order[order[key]] = key
         return anti_order
 
@@ -263,7 +272,7 @@ class MergeOutputFiles(cpm.Module):
         assert isinstance(list_ctrl, wx.ListCtrl)
         anti_order = MergeOutputFiles.get_anti_order(order)
         last = None
-        for i in reversed(anti_order.keys()):
+        for i in reversed(list(anti_order.keys())):
             current_id = anti_order[i]
             if list_ctrl.IsSelected(i):
                 if last is not None:

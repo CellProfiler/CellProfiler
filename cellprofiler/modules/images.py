@@ -1,3 +1,11 @@
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from builtins import *
+from future import standard_library
+standard_library.install_aliases()
+from builtins import zip
 import cellprofiler.icons
 from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON, IMAGES_FILELIST_BLANK, \
     IMAGES_FILELIST_FILLED
@@ -96,7 +104,7 @@ import cellprofiler.workspace as cpw
 import javabridge as J
 import os
 import sys
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import uuid
 
 from .loadimages import pathname2url, SUPPORTED_IMAGE_EXTENSIONS
@@ -181,7 +189,7 @@ class Images(cpm.Module):
                 return modpath[0] + ":" + modpath[1]
             else:
                 return modpath[0] + ":" + modpath[1] + "/" + "/".join(
-                        [urllib.quote(part) for part in modpath[2:]])
+                        [urllib.parse.quote(part) for part in modpath[2:]])
         path = os.path.join(*modpath)
         return pathname2url(path)
 
@@ -189,8 +197,8 @@ class Images(cpm.Module):
     def url_to_modpath(url):
         if not url.lower().startswith("file:"):
             schema, rest = HDF5FileList.split_url(url)
-            return [schema] + rest[0:1] + [urllib.unquote(part) for part in rest[1:]]
-        path = urllib.url2pathname(url[5:])
+            return [schema] + rest[0:1] + [urllib.parse.unquote(part) for part in rest[1:]]
+        path = urllib.request.url2pathname(url[5:])
         parts = []
         while True:
             new_path, part = os.path.split(path)
@@ -258,7 +266,7 @@ class Images(cpm.Module):
                     expression, ifcls)
             file_array = env.make_object_array(len(file_list), scls)
             for i, url in enumerate(file_list):
-                if isinstance(url, unicode):
+                if isinstance(url, str):
                     ourl = env.new_string(url)
                 else:
                     ourl = env.new_string_utf(url)

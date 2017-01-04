@@ -38,7 +38,16 @@ there will not be a corresponding <i>ClosestObjectNumber</i>.
 
 See also the <b>Identify</b> modules.
 '''
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import str
+from past.utils import old_div
 import matplotlib.cm
 import numpy as np
 import scipy.ndimage as scind
@@ -322,8 +331,8 @@ class MeasureObjectNeighbors(cpm.Module):
                 #
                 # Project the unit vector v1 against the unit vector v2
                 #
-                dot = (np.sum(v1 * v2, 0) /
-                       np.sqrt(np.sum(v1 ** 2, 0) * np.sum(v2 ** 2, 0)))
+                dot = (old_div(np.sum(v1 * v2, 0),
+                       np.sqrt(np.sum(v1 ** 2, 0) * np.sum(v2 ** 2, 0))))
                 angle = np.arccos(dot) * 180. / np.pi
 
             # Make the structuring element for dilation
@@ -609,7 +618,7 @@ class MeasureObjectNeighbors(cpm.Module):
         if self.neighbors_are_objects:
             return M_ALL
         else:
-            return filter(lambda x: x != M_PERCENT_TOUCHING, M_ALL)
+            return [x for x in M_ALL if x != M_PERCENT_TOUCHING]
 
     def get_measurement_name(self, feature):
         if self.distance_method == D_EXPAND:
@@ -655,8 +664,8 @@ class MeasureObjectNeighbors(cpm.Module):
 
     def get_measurements(self, pipeline, object_name, category):
         if object_name == self.object_name and category == C_NEIGHBORS:
-            return filter(lambda x: (x is not M_PERCENT_TOUCHING
-                                     or self.neighbors_are_objects), M_ALL)
+            return [x for x in M_ALL if (x is not M_PERCENT_TOUCHING
+                                     or self.neighbors_are_objects)]
         return []
 
     def get_measurement_objects(self, pipeline, object_name, category,

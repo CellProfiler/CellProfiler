@@ -2,15 +2,22 @@
 """errordialog - dialog box for reporting error.
 """
 from __future__ import print_function
+from __future__ import unicode_literals
+from __future__ import division
+from __future__ import absolute_import
 
+from builtins import *
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
 import logging
 import os
 import platform
-import StringIO
+import io
 import sys
 import traceback
-import urllib
-import urllib2
+import urllib.request, urllib.parse, urllib.error
+import urllib.request, urllib.error, urllib.parse
 from functools import reduce
 
 ED_STOP = "Stop"
@@ -298,7 +305,7 @@ def on_report(event, dialog, traceback_text, pipeline):
     try:
         obfuscated_pipeline = pipeline.copy()
         obfuscated_pipeline.obfuscate()
-        fd = StringIO.StringIO()
+        fd = io.StringIO()
         obfuscated_pipeline.savetxt(fd)
         fd.seek(0)
         pipeline_text = fd.read()
@@ -306,17 +313,17 @@ def on_report(event, dialog, traceback_text, pipeline):
     except:
         pass
     headers = {"Accept": "text/plain"}
-    data = urllib.urlencode(params)
-    req = urllib2.Request(ERROR_URL, data, headers)
+    data = urllib.parse.urlencode(params)
+    req = urllib.request.Request(ERROR_URL, data, headers)
     import wx
     try:
-        conn = urllib2.urlopen(req)
+        conn = urllib.request.urlopen(req)
         response = conn.read()
         wx.MessageBox("Report successfully sent to CellProfiler.org. Thank you.",
                       parent=dialog)
-    except urllib2.HTTPError as e:
+    except urllib.error.HTTPError as e:
         wx.MessageBox("Failed to upload, server reported code %d" % e.code)
-    except urllib2.URLError as e:
+    except urllib.error.URLError as e:
         wx.MessageBox("Failed to upload: %s" % e.reason)
 
 

@@ -41,7 +41,17 @@ and Gi_coloc =  Gi when Ri >0, 0 otherwise. (Singan et al. 2011, BMC Bioinformat
 </li></ul>
 
 '''
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import str
+from builtins import range
+from past.utils import old_div
 import numpy as np
 import scipy.ndimage as scind
 import scipy.stats as scistat
@@ -294,7 +304,7 @@ class MeasureCorrelation(cpm.Module):
 
             denom = 2 * covar
             num = (yvar - xvar) + np.sqrt((yvar - xvar) * (yvar - xvar) + 4 * (covar * covar))
-            a = (num / denom)
+            a = (old_div(num, denom))
             b = (ymean - a * xmean)
 
             i = 1
@@ -326,8 +336,8 @@ class MeasureCorrelation(cpm.Module):
             # Manders Coefficient
             M1 = 0
             M2 = 0
-            M1 = fi_thresh.sum() / tot_fi_thr
-            M2 = si_thresh.sum() / tot_si_thr
+            M1 = old_div(fi_thresh.sum(), tot_fi_thr)
+            M2 = old_div(si_thresh.sum(), tot_si_thr)
 
             result += [[first_image_name, second_image_name, "-", "Manders Coefficient","%.3f"%M1],
                        [second_image_name, first_image_name, "-", "Manders Coefficient","%.3f"%M2]]
@@ -348,27 +358,27 @@ class MeasureCorrelation(cpm.Module):
 
             R = max(Rank_im1.max(), Rank_im2.max()) + 1
             Di = abs(Rank_im1 - Rank_im2)
-            weight = ((R - Di) * 1.0) / R
+            weight = old_div(((R - Di) * 1.0), R)
             weight_thresh = weight[combined_thresh]
-            RWC1 = (fi_thresh * weight_thresh).sum() / tot_fi_thr
-            RWC2 = (si_thresh * weight_thresh).sum() / tot_si_thr
+            RWC1 = old_div((fi_thresh * weight_thresh).sum(), tot_fi_thr)
+            RWC2 = old_div((si_thresh * weight_thresh).sum(), tot_si_thr)
             result += [[first_image_name, second_image_name, "-", "RWC Coefficient", "%.3f" % RWC1],
                        [second_image_name, first_image_name, "-", "RWC Coefficient", "%.3f" % RWC2]]
 
             # Costes' Automated Threshold
             C1 = 0
             C2 = 0
-            C1 = fi_thresh_c.sum() / tot_fi_thr_c
-            C2 = si_thresh_c.sum() / tot_si_thr_c
+            C1 = old_div(fi_thresh_c.sum(), tot_fi_thr_c)
+            C2 = old_div(si_thresh_c.sum(), tot_si_thr_c)
 
             result += [[first_image_name, second_image_name, "-", "Manders Coefficient (Costes)","%.3f"%C1],
                        [second_image_name, first_image_name, "-", "Manders Coefficient (Costes)","%.3f"%C2]]
 
             # Overlap Coefficient
             overlap = 0
-            overlap = (fi_thresh * si_thresh).sum() / np.sqrt((fi_thresh ** 2).sum() * (si_thresh ** 2).sum())
-            K1 = (fi_thresh * si_thresh).sum() / (fi_thresh ** 2).sum()
-            K2 = (fi_thresh * si_thresh).sum() / (si_thresh ** 2).sum()
+            overlap = old_div((fi_thresh * si_thresh).sum(), np.sqrt((fi_thresh ** 2).sum() * (si_thresh ** 2).sum()))
+            K1 = old_div((fi_thresh * si_thresh).sum(), (fi_thresh ** 2).sum())
+            K2 = old_div((fi_thresh * si_thresh).sum(), (si_thresh ** 2).sum())
             result += [[first_image_name, second_image_name, "-", "Overlap Coefficient", "%.3f" % overlap]]
 
         else:
@@ -530,8 +540,8 @@ class MeasureCorrelation(cpm.Module):
                 [first_image_name, second_image_name, object_name, "Max Correlation coeff", "%.3f" % np.max(corr)]]
 
             # Threshold as percentage of maximum intensity of objects in each channel
-            tff = (self.thr.value / 100) * fix(scind.maximum(first_pixels, labels, lrange))
-            tss = (self.thr.value / 100) * fix(scind.maximum(second_pixels, labels, lrange))
+            tff = (old_div(self.thr.value, 100)) * fix(scind.maximum(first_pixels, labels, lrange))
+            tss = (old_div(self.thr.value, 100)) * fix(scind.maximum(second_pixels, labels, lrange))
 
             combined_thresh = (first_pixels > tff[labels - 1]) & (second_pixels > tss[labels - 1])
             fi_thresh = first_pixels[combined_thresh]
@@ -555,7 +565,7 @@ class MeasureCorrelation(cpm.Module):
 
             denom = 2 * covar
             num = (yvar - xvar) + np.sqrt((yvar - xvar) * (yvar - xvar) + 4 * (covar * covar))
-            a = (num / denom)
+            a = (old_div(num, denom))
             b = (ymean - a * xmean)
 
             i = 1
@@ -589,8 +599,8 @@ class MeasureCorrelation(cpm.Module):
             M2 = np.zeros(len(lrange))
 
             if np.any(combined_thresh):
-                M1 = np.array(scind.sum(fi_thresh,labels[combined_thresh],lrange)) / np.array(tot_fi_thr)
-                M2 = np.array(scind.sum(si_thresh,labels[combined_thresh],lrange)) / np.array(tot_si_thr)
+                M1 = old_div(np.array(scind.sum(fi_thresh,labels[combined_thresh],lrange)), np.array(tot_fi_thr))
+                M2 = old_div(np.array(scind.sum(si_thresh,labels[combined_thresh],lrange)), np.array(tot_si_thr))
             result += [[first_image_name, second_image_name, object_name,"Mean Manders coeff","%.3f"%np.mean(M1)],
                        [first_image_name, second_image_name, object_name,"Median Manders coeff","%.3f"%np.median(M1)],
                        [first_image_name, second_image_name, object_name,"Min Manders coeff","%.3f"%np.min(M1)],
@@ -619,10 +629,10 @@ class MeasureCorrelation(cpm.Module):
             weight = (R - Di) * 1.0 / R
             weight_thresh = weight[combined_thresh]
             if np.any(combined_thresh_c):
-                RWC1 = np.array(scind.sum(fi_thresh * weight_thresh, labels[combined_thresh], lrange)) / np.array(
-                        tot_fi_thr)
-                RWC2 = np.array(scind.sum(si_thresh * weight_thresh, labels[combined_thresh], lrange)) / np.array(
-                        tot_si_thr)
+                RWC1 = old_div(np.array(scind.sum(fi_thresh * weight_thresh, labels[combined_thresh], lrange)), np.array(
+                        tot_fi_thr))
+                RWC2 = old_div(np.array(scind.sum(si_thresh * weight_thresh, labels[combined_thresh], lrange)), np.array(
+                        tot_si_thr))
 
             result += [[first_image_name, second_image_name, object_name, "Mean RWC coeff", "%.3f" % np.mean(RWC1)],
                        [first_image_name, second_image_name, object_name, "Median RWC coeff", "%.3f" % np.median(RWC1)],
@@ -637,8 +647,8 @@ class MeasureCorrelation(cpm.Module):
             C1 = np.zeros(len(lrange))
             C2 = np.zeros(len(lrange))
             if np.any(combined_thresh_c):
-                C1 = np.array(scind.sum(fi_thresh_c,labels[combined_thresh_c],lrange)) / np.array(tot_fi_thr_c)
-                C2 = np.array(scind.sum(si_thresh_c,labels[combined_thresh_c],lrange)) / np.array(tot_si_thr_c)
+                C1 = old_div(np.array(scind.sum(fi_thresh_c,labels[combined_thresh_c],lrange)), np.array(tot_fi_thr_c))
+                C2 = old_div(np.array(scind.sum(si_thresh_c,labels[combined_thresh_c],lrange)), np.array(tot_si_thr_c))
             result += [[first_image_name, second_image_name, object_name,"Mean Manders coeff (Costes)","%.3f"%np.mean(C1)],
                        [first_image_name, second_image_name, object_name,"Median Manders coeff (Costes)","%.3f"%np.median(C1)],
                        [first_image_name, second_image_name, object_name,"Min Manders coeff (Costes)","%.3f"%np.min(C1)],
@@ -657,15 +667,15 @@ class MeasureCorrelation(cpm.Module):
 
             if np.any(combined_thresh):
                 overlap = fix(
-                        scind.sum(first_pixels[combined_thresh] * second_pixels[combined_thresh],
+                        old_div(scind.sum(first_pixels[combined_thresh] * second_pixels[combined_thresh],
                                   labels[combined_thresh],
-                                  lrange) / pdt)
-                K1 = fix((scind.sum(first_pixels[combined_thresh] * second_pixels[combined_thresh],
-                                    labels[combined_thresh], lrange)) / (np.array(fpsq)))
+                                  lrange), pdt))
+                K1 = fix(old_div((scind.sum(first_pixels[combined_thresh] * second_pixels[combined_thresh],
+                                    labels[combined_thresh], lrange)), (np.array(fpsq))))
                 K2 = fix(
-                        scind.sum(first_pixels[combined_thresh] * second_pixels[combined_thresh],
+                        old_div(scind.sum(first_pixels[combined_thresh] * second_pixels[combined_thresh],
                                   labels[combined_thresh],
-                                  lrange) / np.array(spsq))
+                                  lrange), np.array(spsq)))
             else:
                 overlap = K1 = K2 = np.zeros(len(lrange))
             result += [

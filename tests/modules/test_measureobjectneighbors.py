@@ -1,10 +1,18 @@
 '''test_measureobjectneighbors.py Test the MeasureObjectNeighbors module
 '''
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from builtins import *
+from future import standard_library
+standard_library.install_aliases()
+from past.utils import old_div
 import base64
 import unittest
 import zlib
-from StringIO import StringIO
+from io import StringIO
 
 import numpy as np
 
@@ -399,8 +407,8 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
                                           "Neighbors_AngleBetweenNeighbors_5")
         self.assertEqual(len(angle), 3)
         self.assertAlmostEqual(angle[0], 90)
-        self.assertAlmostEqual(angle[1], np.arccos(3.0 / 5.0) * 180.0 / np.pi)
-        self.assertAlmostEqual(angle[2], np.arccos(4.0 / 5.0) * 180.0 / np.pi)
+        self.assertAlmostEqual(angle[1], np.arccos(old_div(3.0, 5.0)) * 180.0 / np.pi)
+        self.assertAlmostEqual(angle[2], np.arccos(old_div(4.0, 5.0)) * 180.0 / np.pi)
 
     def test_02_09_touching_discarded(self):
         '''Make sure that we count edge-touching discarded objects

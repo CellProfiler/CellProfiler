@@ -1,10 +1,21 @@
 '''test_measureobjectradialdistribution.py
 '''
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from builtins import *
+from future import standard_library
+standard_library.install_aliases()
+from builtins import zip
+from builtins import str
+from builtins import range
+from past.utils import old_div
 import base64
 import unittest
 import zlib
-from StringIO import StringIO
+from io import StringIO
 
 import numpy as np
 
@@ -746,12 +757,12 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
                 np.ones(labels.shape), labels,
                 wants_workspace=True, wants_zernikes=True, zernike_degree=2)
         assert isinstance(workspace, cpw.Workspace)
-        bins = labels * (1 + (np.sqrt(i * i + j * j) / 10).astype(int))
+        bins = labels * (1 + (old_div(np.sqrt(i * i + j * j), 10)).astype(int))
         for bin in range(1, 5):
             data = m.get_current_measurement(OBJECT_NAME,
                                              feature_frac_at_d(bin, 4))
             self.assertEqual(len(data), 1)
-            area = (float(bin) * 2.0 - 1.0) / 16.0
+            area = old_div((float(bin) * 2.0 - 1.0), 16.0)
             self.assertTrue(data[0] > area - .1)
             self.assertTrue(data[0] < area + .1)
             heatmap = workspace.image_set.get_image(
@@ -795,14 +806,14 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
         i, j = np.mgrid[-50:51, -50:51]
         labels = (np.sqrt(i * i + j * j) <= 40).astype(int)
         image = np.zeros(labels.shape)
-        image[i > 0] = (np.sqrt(i * i + j * j) / 100)[i > 0]
+        image[i > 0] = (old_div(np.sqrt(i * i + j * j), 100))[i > 0]
         image[j == 0] = 0
         image[i == j] = 0
         image[i == -j] = 0
         # 1/2 of the octants should be pretty much all zero and 1/2
         # should be all one
         x = [0, 0, 0, 0, 1, 1, 1, 1]
-        expected_cv = np.std(x) / np.mean(x)
+        expected_cv = old_div(np.std(x), np.mean(x))
         m = self.run_module(image, labels)
         bin_labels = (np.sqrt(i * i + j * j) * 4 / 40.001).astype(int)
         mask = i * i + j * j <= 40 * 40
@@ -812,14 +823,14 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
                                              feature_frac_at_d(bin, 4))
             self.assertEqual(len(data), 1)
             bin_count = np.sum(bin_labels[mask] == bin - 1)
-            frac_in_bin = float(bin_count) / np.sum(mask)
+            frac_in_bin = old_div(float(bin_count), np.sum(mask))
             bin_intensity = np.sum(image[mask & (bin_labels == bin - 1)])
-            expected = bin_intensity / total_intensity
+            expected = old_div(bin_intensity, total_intensity)
             self.assertTrue(np.abs(expected - data[0]) < .2 * expected)
             data = m.get_current_measurement(OBJECT_NAME,
                                              feature_mean_frac(bin, 4))
             self.assertEqual(len(data), 1)
-            expected = expected / frac_in_bin
+            expected = old_div(expected, frac_in_bin)
             self.assertTrue(np.abs(data[0] - expected) < .2 * expected)
             data = m.get_current_measurement(OBJECT_NAME,
                                              feature_radial_cv(bin, 4))
@@ -853,7 +864,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
                             wants_zernikes=M.Z_MAGNITUDES_AND_PHASE,
                             zernike_degree=1)
         phase_j_1_1 = m[OBJECT_NAME, ftr][0]
-        self.assertAlmostEqual(abs(phase_i_1_1 - phase_j_1_1), np.pi / 2, .1)
+        self.assertAlmostEqual(abs(phase_i_1_1 - phase_j_1_1), old_div(np.pi, 2), .1)
 
     def test_03_04_line(self):
         '''Test the alternate centers with a line'''
@@ -878,7 +889,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
         image = np.random.uniform(size=labels.shape)
         m = self.run_module(image, labels, centers)
         total_intensity = np.sum(image[labels == 1])
-        normalized_distance = distance_to_center / (distance_to_center + distance_to_edge + .001)
+        normalized_distance = old_div(distance_to_center, (distance_to_center + distance_to_edge + .001))
         bin_labels = (normalized_distance * 4).astype(int)
         for bin in range(1, 5):
             data = m.get_current_measurement(OBJECT_NAME,
@@ -886,7 +897,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
             self.assertEqual(len(data), 1)
             bin_intensity = np.sum(image[(labels == 1) &
                                          (bin_labels == bin - 1)])
-            expected = bin_intensity / total_intensity
+            expected = old_div(bin_intensity, total_intensity)
             self.assertTrue(np.abs(expected - data[0]) < .1 * expected)
             data = m.get_current_measurement(OBJECT_NAME,
                                              feature_mean_frac(bin, 4))
@@ -911,7 +922,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
         r.seed(35)
         image = r.uniform(size=i.shape)
         total_intensity = np.sum(image[labels == 1])
-        bin_labels = (distance / 5).astype(int)
+        bin_labels = (old_div(distance, 5)).astype(int)
         bin_labels[bin_labels > 4] = 4
         m = self.run_module(image, labels, bin_count=4,
                             maximum_radius=20, wants_scaled=False)
@@ -921,7 +932,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
             self.assertEqual(len(data), 1)
             bin_intensity = np.sum(image[(labels == 1) &
                                          (bin_labels == bin - 1)])
-            expected = bin_intensity / total_intensity
+            expected = old_div(bin_intensity, total_intensity)
             self.assertAlmostEqual(expected, data[0], 4)
             data = m.get_current_measurement(OBJECT_NAME,
                                              feature_mean_frac(bin, 4))
@@ -952,11 +963,11 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
                                        (labels > 0), 1)
         good_mask = (labels > 0) & (centers == 0)
         d_from_center = d_from_center[good_mask]
-        bins = (d_from_center / 2).astype(int)
+        bins = (old_div(d_from_center, 2)).astype(int)
         bins[bins > 4] = 4
         bin_counts = np.bincount(bins)
         image_sums = np.bincount(bins, image[good_mask])
-        frac_at_d = image_sums / np.sum(image_sums)
+        frac_at_d = old_div(image_sums, np.sum(image_sums))
         for i in range(1, 6):
             data = m.get_current_measurement(OBJECT_NAME,
                                              feature_frac_at_d(i, 4))
@@ -968,19 +979,19 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
         i, j = [np.hstack((x, x)) for x in (i, j)]
         d = np.sqrt(i * i + j * j)
         labels = (d <= 40).astype(int)
-        labels[:, (j.shape[1] / 2):] *= 2
+        labels[:, (old_div(j.shape[1], 2)):] *= 2
         img = np.zeros(labels.shape)
         img[labels == 1] = 1
-        img[labels == 2] = d[labels == 2] / 40
+        img[labels == 2] = old_div(d[labels == 2], 40)
         m, workspace = self.run_module(
                 img, labels, wants_workspace=True)
         assert isinstance(workspace, cpw.Workspace)
-        bins = (labels != 0) * (1 + (np.sqrt(i * i + j * j) / 10).astype(int))
+        bins = (labels != 0) * (1 + (old_div(np.sqrt(i * i + j * j), 10)).astype(int))
         for bin in range(1, 5):
             data = m.get_current_measurement(OBJECT_NAME,
                                              feature_frac_at_d(bin, 4))
             self.assertEqual(len(data), 2)
-            area = (float(bin) * 2.0 - 1.0) / 16.0
+            area = old_div((float(bin) * 2.0 - 1.0), 16.0)
             bin_d = (float(bin) - .5) * 8 / 21
             self.assertLess(np.abs(data[0] - area), .1)
             self.assertLess(np.abs(data[1] - area * bin_d), .1)
@@ -1048,8 +1059,8 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
                            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
 
         center_labels = np.zeros(labels.shape, int)
-        center_labels[int(center_labels.shape[0] / 2),
-                      int(center_labels.shape[1] / 2)] = 1
+        center_labels[int(old_div(center_labels.shape[0], 2)),
+                      int(old_div(center_labels.shape[1], 2))] = 1
 
         image = np.random.uniform(size=labels.shape)
         for center_choice in (M.C_CENTERS_OF_OTHER, M.C_EDGES_OF_OTHER):
@@ -1091,8 +1102,8 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
         i, j = np.mgrid[0:100, 0:100]
         ir = (i % 10) - 5
         jr = (j % 10) - 5
-        il = (i / 10).astype(int)
-        jl = (j / 10).astype(int)
+        il = (old_div(i, 10)).astype(int)
+        jl = (old_div(j, 10)).astype(int)
         ll = il + jl * 10 + 1
 
         center_labels = np.zeros((100, 100), int)
@@ -1120,8 +1131,8 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
         i, j = np.mgrid[0:100, 0:100]
         ir = (i % 10) - 5
         jr = (j % 10) - 5
-        il = (i / 10).astype(int)
-        jl = (j / 10).astype(int)
+        il = (old_div(i, 10)).astype(int)
+        jl = (old_div(j, 10)).astype(int)
         ll = il + jl * 10 + 1
 
         labels = np.zeros((100, 100), int)

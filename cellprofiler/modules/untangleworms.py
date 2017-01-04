@@ -67,12 +67,24 @@ Toolbox</a> page for sample images and pipelines, as well
 as video tutorials.</p>
 '''
 from __future__ import absolute_import
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
 
+from builtins import *
+from future import standard_library
+standard_library.install_aliases()
+from builtins import zip
+from builtins import filter
+from builtins import str
+from builtins import range
+from past.utils import old_div
+from builtins import object
 import logging
 import os
 import re
 import sys
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import xml.dom.minidom as DOM
 
 import matplotlib.mlab as mlab
@@ -870,8 +882,8 @@ class UntangleWorms(cpm.Module):
                 center_x = np.zeros(0)
                 center_y = np.zeros(0)
             else:
-                center_x = np.bincount(ijv[:, 2], ijv[:, 1])[o.indices] / o.areas
-                center_y = np.bincount(ijv[:, 2], ijv[:, 0])[o.indices] / o.areas
+                center_x = old_div(np.bincount(ijv[:, 2], ijv[:, 1])[o.indices], o.areas)
+                center_y = old_div(np.bincount(ijv[:, 2], ijv[:, 0])[o.indices], o.areas)
             measurements.add_measurement(name, I.M_LOCATION_CENTER_X, center_x)
             measurements.add_measurement(name, I.M_LOCATION_CENTER_Y, center_y)
             measurements.add_measurement(name, I.M_NUMBER_OBJECT_NUMBER, o.indices)
@@ -1128,9 +1140,9 @@ class UntangleWorms(cpm.Module):
             max_order = np.array(scind.maximum(order, labels,
                                                np.arange(num_segments + 1)))
             big_segment = max_order >= max_skel_length
-            segment_count = np.maximum((max_order + max_skel_length - 1) /
-                                       max_skel_length, 1).astype(int)
-            segment_length = ((max_order + 1) / segment_count).astype(int)
+            segment_count = np.maximum(old_div((max_order + max_skel_length - 1),
+                                       max_skel_length), 1).astype(int)
+            segment_length = (old_div((max_order + 1), segment_count)).astype(int)
             new_bp_mask = ((order % segment_length[labels] ==
                             segment_length[labels] - 1) &
                            (order != max_order[labels]) &
@@ -1569,7 +1581,7 @@ class UntangleWorms(cpm.Module):
         #
         # Sample points from f (for the ones in the middle)
         #
-        first = float(cumul_lengths[-1]) / float(num_control_points - 1)
+        first = old_div(float(cumul_lengths[-1]), float(num_control_points - 1))
         last = float(cumul_lengths[-1]) - first
         findices = f(np.linspace(first, last, num_control_points - 2))
         indices = findices.astype(int)
@@ -1937,7 +1949,7 @@ class UntangleWorms(cpm.Module):
         inv_angles_covariance_matrix = params.inv_angles_covariance_matrix
 
         component = labels == i
-        max_num_worms = int(np.ceil(np.sum(component) / median_worm_area))
+        max_num_worms = int(np.ceil(old_div(np.sum(component), median_worm_area)))
 
         # First, filter out based on path length
         # Simultaneously build a vector of shape costs and a vector of
@@ -2091,7 +2103,7 @@ class UntangleWorms(cpm.Module):
         order = order[mask[order]]
         if len(order) * len(costs) > MAX_CONSIDERED:
             # Limit # to consider at next level
-            order = order[:(1 + MAX_CONSIDERED / len(costs))]
+            order = order[:(1 + old_div(MAX_CONSIDERED, len(costs)))]
         current_path_segment_matrix = current_path_segment_matrix[:, order]
         current_path_choices = current_path_choices[:, order]
         #
@@ -2286,7 +2298,7 @@ class UntangleWorms(cpm.Module):
         label[index[1:]] = 1
         label = np.cumsum(label)
         order = np.arange(len(i)) - index[label]
-        frac = order.astype(float) / count[label].astype(float)
+        frac = old_div(order.astype(float), count[label].astype(float))
         radius = (worm_radii[label] * (1 - frac) +
                   worm_radii[label + 1] * frac)
         iworm_radius = int(np.max(np.ceil(radius)))
@@ -2536,7 +2548,7 @@ def read_params(training_set_directory, training_set_file_name, d):
 
     if training_set_directory.dir_choice == cps.URL_FOLDER_NAME:
         url = file_name
-        fd_or_file = urllib2.urlopen(url)
+        fd_or_file = urllib.request.urlopen(url)
         is_url = True
         timestamp = "URL"
     else:
@@ -2602,10 +2614,10 @@ def read_params(training_set_directory, training_set_file_name, d):
                 result.inv_angles_covariance_matrix[i, j] = float(text.strip())
     except:
         if is_url:
-            fd_or_file = urllib2.urlopen(url)
+            fd_or_file = urllib.request.urlopen(url)
 
         mat_params = loadmat(fd_or_file)["params"][0, 0]
-        field_names = mat_params.dtype.fields.keys()
+        field_names = list(mat_params.dtype.fields.keys())
 
         result = X()
 
@@ -2692,7 +2704,7 @@ def recalculate_single_worm_control_points(all_labels, ncontrolpoints):
     '''
 
     all_object_numbers = [
-        filter((lambda n: n > 0), np.unique(l)) for l in all_labels]
+        list(filter((lambda n: n > 0), np.unique(l))) for l in all_labels]
     if all([len(object_numbers) == 0 for object_numbers in all_object_numbers]):
         return np.zeros((0, ncontrolpoints, 2), int), np.zeros(0, int)
     module = UntangleWorms()

@@ -1,3 +1,11 @@
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from past.utils import old_div
 from cellprofiler.gui.help import LOADING_IMAGE_SEQ_HELP_REF
 
 __doc__ = '''
@@ -429,11 +437,11 @@ class ImageProvider(cpi.AbstractImageProvider):
         if self.__cached_image is not None:
             return self.__cached_image
         if self.__how_to_accumulate == P_AVERAGE:
-            cached_image = self.__image / image_count
+            cached_image = old_div(self.__image, image_count)
         elif self.__how_to_accumulate == P_VARIANCE:
             cached_image = np.zeros(self.__vsquared.shape, np.float32)
-            cached_image[mask] = self.__vsquared[mask] / image_count[mask]
-            cached_image[mask] -= self.__vsum[mask] ** 2 / (image_count[mask] ** 2)
+            cached_image[mask] = old_div(self.__vsquared[mask], image_count[mask])
+            cached_image[mask] -= old_div(self.__vsum[mask] ** 2, (image_count[mask] ** 2))
         elif self.__how_to_accumulate == P_POWER:
             cached_image = np.zeros(image_count.shape, np.complex128)
             cached_image[mask] = self.__power_image[mask]

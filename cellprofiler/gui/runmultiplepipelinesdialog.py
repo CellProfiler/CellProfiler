@@ -1,7 +1,17 @@
 # coding=utf-8
 """ runmultiplepipelinesdialog.py - Dialog to collect info for RunMultiplePipelines
 """
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import str
+from builtins import range
+from builtins import object
 import cellprofiler.gui.pipeline
 import cellprofiler.pipeline
 import cellprofiler.preferences

@@ -29,7 +29,19 @@ Intelligence</i>, 11, N 7, pp. 701-716, 1989</li>
 (in Russian)</li>
 </ul>
 '''
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import zip
+from builtins import str
+from builtins import range
+from builtins import object
+from past.utils import old_div
 import centrosome.cpmorphology as morph
 import numpy as np
 import scipy.ndimage as scind
@@ -213,8 +225,8 @@ class MeasureGranularity(cpm.Module):
         new_shape = np.array(im.pixel_data.shape)
         if image.subsample_size.value < 1:
             new_shape = new_shape * image.subsample_size.value
-            i, j = (np.mgrid[0:new_shape[0], 0:new_shape[1]].astype(float) /
-                    image.subsample_size.value)
+            i, j = (old_div(np.mgrid[0:new_shape[0], 0:new_shape[1]].astype(float),
+                    image.subsample_size.value))
             pixels = scind.map_coordinates(im.pixel_data, (i, j), order=1)
             mask = scind.map_coordinates(im.mask.astype(float), (i, j)) > .9
         else:
@@ -225,8 +237,8 @@ class MeasureGranularity(cpm.Module):
         #
         if image.image_sample_size.value < 1:
             back_shape = new_shape * image.image_sample_size.value
-            i, j = (np.mgrid[0:back_shape[0], 0:back_shape[1]].astype(float) /
-                    image.image_sample_size.value)
+            i, j = (old_div(np.mgrid[0:back_shape[0], 0:back_shape[1]].astype(float),
+                    image.image_sample_size.value))
             back_pixels = scind.map_coordinates(pixels, (i, j), order=1)
             back_mask = scind.map_coordinates(mask.astype(float), (i, j)) > .9
         else:
@@ -241,8 +253,8 @@ class MeasureGranularity(cpm.Module):
             # Make sure the mapping only references the index range of
             # back_pixels.
             #
-            i *= float(back_shape[0] - 1) / float(new_shape[0] - 1)
-            j *= float(back_shape[1] - 1) / float(new_shape[1] - 1)
+            i *= old_div(float(back_shape[0] - 1), float(new_shape[0] - 1))
+            j *= old_div(float(back_shape[1] - 1), float(new_shape[1] - 1))
             back_pixels = scind.map_coordinates(back_pixels, (i, j), order=1)
         pixels -= back_pixels
         pixels[pixels < 0] = 0
@@ -313,8 +325,8 @@ class MeasureGranularity(cpm.Module):
             # Make sure the mapping only references the index range of
             # back_pixels.
             #
-            i *= float(new_shape[0] - 1) / float(orig_shape[0] - 1)
-            j *= float(new_shape[1] - 1) / float(orig_shape[1] - 1)
+            i *= old_div(float(new_shape[0] - 1), float(orig_shape[0] - 1))
+            j *= old_div(float(new_shape[1] - 1), float(orig_shape[1] - 1))
             rec = scind.map_coordinates(rec, (i, j), order=1)
 
             #
@@ -406,7 +418,7 @@ class MeasureGranularity(cpm.Module):
             variable_revision_number = 2
         if variable_revision_number == 2:
             # Changed to add objects and explicit image numbers
-            image_count = int(len(setting_values) / IMAGE_SETTING_COUNT_V2)
+            image_count = int(old_div(len(setting_values), IMAGE_SETTING_COUNT_V2))
             new_setting_values = [str(image_count)]
             for i in range(image_count):
                 # Object setting count = 0

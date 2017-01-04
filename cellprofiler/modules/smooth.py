@@ -4,7 +4,15 @@ This module allows you to smooth (blur) images, which can be helpful to
 remove artifacts of a particular size.
 Note that smoothing can be a time-consuming process.
 '''
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from past.utils import old_div
 import numpy as np
 import scipy.ndimage as scind
 from centrosome.filter import median_filter, bilateral_filter, circular_average_filter
@@ -140,10 +148,10 @@ class Smooth(cpm.Module):
                                               must_be_grayscale=True)
         pixel_data = image.pixel_data
         if self.wants_automatic_object_size.value:
-            object_size = min(30, max(1, np.mean(pixel_data.shape) / 40))
+            object_size = min(30, max(1, old_div(np.mean(pixel_data.shape), 40)))
         else:
             object_size = float(self.object_size.value)
-        sigma = object_size / 2.35
+        sigma = old_div(object_size, 2.35)
         if self.smoothing_method.value == GAUSSIAN_FILTER:
             def fn(image):
                 return scind.gaussian_filter(image, sigma,
@@ -153,7 +161,7 @@ class Smooth(cpm.Module):
                                                           image.mask)
         elif self.smoothing_method.value == MEDIAN_FILTER:
             output_pixels = median_filter(pixel_data, image.mask,
-                                          object_size / 2 + 1)
+                                          old_div(object_size, 2) + 1)
         elif self.smoothing_method.value == SMOOTH_KEEPING_EDGES:
             sigma_range = float(self.sigma_range.value)
             output_pixels = bilateral_filter(pixel_data, image.mask,
@@ -162,7 +170,7 @@ class Smooth(cpm.Module):
             output_pixels = fit_polynomial(pixel_data, image.mask,
                                            self.clip.value)
         elif self.smoothing_method.value == CIRCULAR_AVERAGE_FILTER:
-            output_pixels = circular_average_filter(pixel_data, object_size / 2 + 1, image.mask)
+            output_pixels = circular_average_filter(pixel_data, old_div(object_size, 2) + 1, image.mask)
         elif self.smoothing_method.value == SM_TO_AVERAGE:
             if image.has_mask:
                 mean = np.mean(pixel_data[image.mask])

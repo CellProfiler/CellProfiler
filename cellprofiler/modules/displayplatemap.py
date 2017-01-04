@@ -13,7 +13,17 @@ blank.
 See also <b>DisplayDensityPlot</b>, <b>DisplayHistogram</b>,
 <b>DisplayScatterPlot</b>.
 '''
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import map
+from builtins import zip
+from past.utils import old_div
 import numpy as np
 
 import cellprofiler.image as cpi
@@ -170,9 +180,9 @@ class DisplayPlatemap(cpm.Module):
         if self.show_window:
             m = workspace.get_measurements()
             # Get plates
-            plates = map(
-                    unicode,
-                    m.get_all_measurements(cpmeas.IMAGE, self.plate_name.value))
+            plates = list(map(
+                    str,
+                    m.get_all_measurements(cpmeas.IMAGE, self.plate_name.value)))
             # Get wells
             if self.well_format == WF_NAME:
                 wells = m.get_all_measurements(cpmeas.IMAGE, self.well_name.value)
@@ -195,8 +205,8 @@ class DisplayPlatemap(cpm.Module):
                 else:
                     pm_dict[plate] = {well: [data]}
 
-            for plate, sub_dict in pm_dict.items():
-                for well, vals in sub_dict.items():
+            for plate, sub_dict in list(pm_dict.items()):
+                for well, vals in list(sub_dict.items()):
                     vals = np.hstack(vals)
                     if self.agg_method == AGG_AVG:
                         pm_dict[plate][well] = np.mean(vals)
@@ -205,7 +215,7 @@ class DisplayPlatemap(cpm.Module):
                     elif self.agg_method == AGG_MEDIAN:
                         pm_dict[plate][well] = np.median(vals)
                     elif self.agg_method == AGG_CV:
-                        pm_dict[plate][well] = np.std(vals) / np.mean(vals)
+                        pm_dict[plate][well] = old_div(np.std(vals), np.mean(vals))
                     else:
                         raise NotImplemented
             workspace.display_data.pm_dict = pm_dict

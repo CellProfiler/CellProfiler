@@ -13,7 +13,18 @@ display purposes, so additional rescaling may be needed. Please see the
 
 See also <b>ApplyThreshold</b>, <b>RescaleIntensity</b>, <b>CorrectIlluminationCalculate</b>.
 '''
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import str
+from builtins import zip
+from builtins import range
+from past.utils import old_div
 import inflect
 import numpy
 
@@ -261,7 +272,7 @@ class ImageMath(cellprofiler.module.ImageProcessing):
     def prepare_settings(self, setting_values):
         value_count = len(setting_values)
         assert (value_count - FIXED_SETTING_COUNT) % IMAGE_SETTING_COUNT == 0
-        image_count = (value_count - FIXED_SETTING_COUNT) / IMAGE_SETTING_COUNT
+        image_count = old_div((value_count - FIXED_SETTING_COUNT), IMAGE_SETTING_COUNT)
         # always keep the first two images
         del self.images[2:]
         while len(self.images) < image_count:
@@ -435,7 +446,7 @@ class ImageMath(cellprofiler.module.ImageProcessing):
 
         display_names = workspace.display_data.display_names
 
-        columns = (len(pixel_data) + 1) / 2
+        columns = old_div((len(pixel_data) + 1), 2)
 
         figure.set_subplots((columns, 2), dimensions=workspace.display_data.dimensions)
 
@@ -449,7 +460,7 @@ class ImageMath(cellprofiler.module.ImageProcessing):
 
             figure.subplot_imshow(
                 i % columns,
-                int(i / columns),
+                int(old_div(i, columns)),
                 pixel_data[i],
                 title=display_names[i],
                 # sharexy=figure.subplot(0, 0),
@@ -494,8 +505,8 @@ class ImageMath(cellprofiler.module.ImageProcessing):
                                         setting_values[4:])
                 if name.lower() != cellprofiler.setting.DO_NOT_USE.lower()]
 
-            multiplier = 1.0 / sum([float(weight)
-                                    for name, weight in names_and_weights])
+            multiplier = old_div(1.0, sum([float(weight)
+                                    for name, weight in names_and_weights]))
             output_image = setting_values[3]
             setting_values = [O_ADD,  # Operation
                               "1",  # Exponent

@@ -28,7 +28,18 @@ The result of these calculations is a new measurement in the "Math" category.
 
 See also all <b>Measure</b> modules.
 '''
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import zip
+from builtins import range
+from past.utils import old_div
+from builtins import object
 import logging
 
 logger = logging.getLogger(__package__)
@@ -300,7 +311,7 @@ class CalculateMath(cpm.Module):
                 # ensure that the data can be changed in-place by floating point ops
                 value = value.astype(np.float)
 
-            if isinstance(value, str) or isinstance(value, unicode):
+            if isinstance(value, str) or isinstance(value, str):
                 try:
                     value = float(value)
                 except ValueError:
@@ -362,8 +373,8 @@ class CalculateMath(cpm.Module):
 
                     c0 = bincount(i0, minlength=len(values[0]))
                     c1 = bincount(i1, minlength=len(values[1]))
-                    v1 = bincount(i0, values[1][i1], minlength=len(values[0])) / c0
-                    v0 = bincount(i1, values[0][i0], minlength=len(values[1])) / c1
+                    v1 = old_div(bincount(i0, values[1][i1], minlength=len(values[0])), c0)
+                    v0 = old_div(bincount(i1, values[0][i0], minlength=len(values[1])), c1)
                     break
             else:
                 logger.warning(
@@ -424,9 +435,9 @@ class CalculateMath(cpm.Module):
                     else:
                         result = np.array([np.NaN] * len(numerator))
                 else:
-                    result = numerator / denominator
+                    result = old_div(numerator, denominator)
             else:
-                result = numerator / denominator
+                result = old_div(numerator, denominator)
                 result[denominator == 0] = np.NaN
         else:
             raise NotImplementedError("Unsupported operation: %s" % self.operation.value)

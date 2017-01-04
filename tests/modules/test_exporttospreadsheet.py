@@ -1,14 +1,25 @@
 '''test_ExportToSpreadsheet.py - test the ExportToSpreadsheet module
 '''
 from __future__ import print_function
+from __future__ import unicode_literals
+from __future__ import division
+from __future__ import absolute_import
 
+from builtins import *
+from future import standard_library
+standard_library.install_aliases()
+from builtins import zip
+from builtins import next
+from builtins import str
+from builtins import range
+from past.builtins import basestring
 import base64
 import csv
 import os
 import tempfile
 import unittest
 import zlib
-from StringIO import StringIO
+from io import StringIO
 
 import numpy as np
 from cellprofiler.preferences import set_headless
@@ -819,7 +830,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             header = next(reader)
             self.assertEqual(len(header), 3)
             self.assertEqual(header[2], "my_measurement")
-            self.assertRaises(StopIteration, reader.next)
+            self.assertRaises(StopIteration, reader.__next__)
         finally:
             fd.close()
             del m
@@ -857,7 +868,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             self.assertEqual(len(row), 2)
             self.assertEqual(row[0], "my_measurement")
             self.assertEqual(row[1], "Hello, world")
-            self.assertRaises(StopIteration, reader.next)
+            self.assertRaises(StopIteration, reader.__next__)
         finally:
             del m
             fd.close()
@@ -899,7 +910,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             self.assertEqual(len(row), 2)
             self.assertEqual(row[0], "my_other_measurement")
             self.assertEqual(row[1], "Goodbye")
-            self.assertRaises(StopIteration, reader.next)
+            self.assertRaises(StopIteration, reader.__next__)
         finally:
             fd.close()
 
@@ -996,7 +1007,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             row = next(reader)
             self.assertEqual(row[0], "1")
             self.assertEqual(row[1], "Hello, world")
-            self.assertRaises(StopIteration, reader.next)
+            self.assertRaises(StopIteration, reader.__next__)
         finally:
             fd.close()
 
@@ -1040,7 +1051,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                 self.assertEqual(len(row), 4)
                 for j in range(3):
                     self.assertEqual(row[j + 1], "%d:%d" % (i, j))
-            self.assertRaises(StopIteration, reader.next)
+            self.assertRaises(StopIteration, reader.__next__)
         finally:
             fd.close()
 
@@ -1081,7 +1092,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             row = next(reader)
             self.assertEqual(len(row), 3)
             self.assertAlmostEqual(float(row[2]), mvalues[0], 4)
-            self.assertRaises(StopIteration, reader.next)
+            self.assertRaises(StopIteration, reader.__next__)
         finally:
             fd.close()
 
@@ -1128,7 +1139,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                 self.assertEqual(int(row[1]), i + 1)
                 for j in range(3):
                     self.assertAlmostEqual(float(row[j + 2]), mvalues[i, j])
-            self.assertRaises(StopIteration, reader.next)
+            self.assertRaises(StopIteration, reader.__next__)
         finally:
             fd.close()
 
@@ -1192,7 +1203,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                 for j in range(3):
                     for k in range(2):
                         self.assertAlmostEqual(float(row[k * 3 + j + 2]), mvalues[i, j, k])
-            self.assertRaises(StopIteration, reader.next)
+            self.assertRaises(StopIteration, reader.__next__)
         finally:
             fd.close()
 
@@ -1237,7 +1248,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             row = next(reader)
             self.assertEqual(len(row), 3)
             self.assertEqual(row[2], str(np.NaN))
-            self.assertRaises(StopIteration, reader.next)
+            self.assertRaises(StopIteration, reader.__next__)
         finally:
             fd.close()
 
@@ -1282,7 +1293,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             row = next(reader)
             self.assertEqual(len(row), 3)
             self.assertEqual(len(row[2]), 0)
-            self.assertRaises(StopIteration, reader.next)
+            self.assertRaises(StopIteration, reader.__next__)
         finally:
             fd.close()
 
@@ -1343,7 +1354,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                         value, str(np.NaN),
                         msg="Expected nan %s measurement, got %s" %
                             (meas, value))
-            self.assertRaises(StopIteration, reader.next)
+            self.assertRaises(StopIteration, reader.__next__)
 
     def test_03_07_null_image_measurements(self):
         path = os.path.join(self.output_dir, "my_file.csv")
@@ -1402,7 +1413,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                         len(value), 0,
                         msg="Expected null %s measurement, got %s" %
                             (meas, value))
-            self.assertRaises(StopIteration, reader.next)
+            self.assertRaises(StopIteration, reader.__next__)
 
     def test_03_08_blob_image_measurements(self):
         path = os.path.join(self.output_dir, "my_file.csv")
@@ -1498,7 +1509,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         np.random.seed(0)
         mvalues = np.random.uniform(size=(4,))
         image_set_list = cpi.ImageSetList()
-        for index, measurement, metadata in zip(range(4), mvalues, ('foo', 'bar', 'bar', 'foo')):
+        for index, measurement, metadata in zip(list(range(4)), mvalues, ('foo', 'bar', 'bar', 'foo')):
             image_set = image_set_list.get_image_set(index)
             m.add_measurement("my_object", "my_measurement", np.array([measurement]))
             m.add_image_measurement("Metadata_tag", metadata)
@@ -1533,7 +1544,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                     self.assertEqual(int(row[1]), 1)
                     self.assertAlmostEqual(float(row[2]),
                                            mvalues[value_index], 4)
-                self.assertRaises(StopIteration, reader.next)
+                self.assertRaises(StopIteration, reader.__next__)
             finally:
                 fd.close()
 
@@ -1556,7 +1567,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         np.random.seed(0)
         mvalues = np.random.uniform(size=(4,))
         image_set_list = cpi.ImageSetList()
-        for index, measurement, metadata in zip(range(4), mvalues, ('foo', 'bar', 'bar', 'foo')):
+        for index, measurement, metadata in zip(list(range(4)), mvalues, ('foo', 'bar', 'bar', 'foo')):
             image_set = image_set_list.get_image_set(index)
             m.add_measurement("my_object", "my_measurement", np.array([measurement]))
             m.add_image_measurement("Metadata_tag", metadata)
@@ -1590,7 +1601,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                     self.assertEqual(int(row[1]), 1)
                     self.assertAlmostEqual(float(row[2]),
                                            mvalues[value_index], 4)
-                self.assertRaises(StopIteration, reader.next)
+                self.assertRaises(StopIteration, reader.__next__)
             finally:
                 fd.close()
 
@@ -1610,7 +1621,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         np.random.seed(0)
         mvalues = np.random.uniform(size=(4,))
         image_set_list = cpi.ImageSetList()
-        for index, measurement, metadata in zip(range(4), mvalues, ('foo', 'bar', 'bar', 'foo')):
+        for index, measurement, metadata in zip(list(range(4)), mvalues, ('foo', 'bar', 'bar', 'foo')):
             image_set = image_set_list.get_image_set(index)
             m.add_image_measurement("my_measurement", measurement)
             m.add_image_measurement("Metadata_tag", metadata)
@@ -1638,14 +1649,14 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                 self.assertTrue("ImageNumber" in header)
                 self.assertTrue("my_measurement" in header)
                 self.assertTrue("Metadata_tag" in header)
-                for caption, index in zip(header, range(3)):
+                for caption, index in zip(header, list(range(3))):
                     d[caption] = index
                 for value_index in value_indexes:
                     row = next(reader)
                     self.assertEqual(len(row), 3)
                     self.assertAlmostEqual(float(row[d["my_measurement"]]),
                                            mvalues[value_index], 4)
-                self.assertRaises(StopIteration, reader.next)
+                self.assertRaises(StopIteration, reader.__next__)
             finally:
                 fd.close()
 
@@ -1696,14 +1707,14 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                 self.assertTrue("ImageNumber" in header)
                 self.assertTrue("my_measurement" in header)
                 self.assertTrue("Metadata_tag" in header)
-                for caption, index in zip(header, range(3)):
+                for caption, index in zip(header, list(range(3))):
                     d[caption] = index
                 for value_index in value_indexes:
                     row = next(reader)
                     self.assertEqual(len(row), 3)
                     self.assertAlmostEqual(float(row[d["my_measurement"]]),
                                            mvalues[value_index], 4)
-                self.assertRaises(StopIteration, reader.next)
+                self.assertRaises(StopIteration, reader.__next__)
             finally:
                 fd.close()
 
@@ -1743,7 +1754,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             row = next(reader)
             self.assertEqual(row[0], "1")
             self.assertEqual(row[1], "Hello, world")
-            self.assertRaises(StopIteration, reader.next)
+            self.assertRaises(StopIteration, reader.__next__)
         finally:
             fd.close()
 
@@ -1783,8 +1794,8 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             self.assertEqual(header[1], "my_measurement")
             row = next(reader)
             self.assertEqual(row[0], "1")
-            self.assertEqual(unicode(row[1], 'utf8'), metadata_value)
-            self.assertRaises(StopIteration, reader.next)
+            self.assertEqual(str(row[1], 'utf8'), metadata_value)
+            self.assertRaises(StopIteration, reader.__next__)
         finally:
             fd.close()
 
@@ -1901,7 +1912,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                 else np.median(data) if agg == cpmeas.AGG_MEDIAN
                 else np.NAN)
                 self.assertAlmostEqual(float(row[d["%s_my_objects_my_measurement" % agg]]), value)
-            self.assertRaises(StopIteration, reader.next)
+            self.assertRaises(StopIteration, reader.__next__)
         finally:
             fd.close()
 
@@ -1944,7 +1955,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                 d[caption] = index
             row = next(reader)
             self.assertEqual(row[d["Count_my_objects"]], "6")
-            self.assertRaises(StopIteration, reader.next)
+            self.assertRaises(StopIteration, reader.__next__)
         finally:
             del m
             fd.close()
@@ -2023,7 +2034,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             self.assertAlmostEqual(float(row[d["first_measurement"]]), np.sum(data))
             self.assertAlmostEqual(float(row[d["Mean_my_objects_my_measurement"]]),
                                    np.mean(data))
-            self.assertRaises(StopIteration, reader.next)
+            self.assertRaises(StopIteration, reader.__next__)
         finally:
             fd.close()
         try:
@@ -2138,7 +2149,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                 row = next(reader)
                 self.assertEqual(int(row[0]), i + 1)
                 self.assertEqual(row[1], data[i])
-            self.assertRaises(StopIteration, reader.next)
+            self.assertRaises(StopIteration, reader.__next__)
         finally:
             fd.close()
 
@@ -2188,7 +2199,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                     self.assertEqual(int(row[1]), object_idx + 1)
                     self.assertAlmostEqual(float(row[2]),
                                            mvalues[image_idx, object_idx], 4)
-            self.assertRaises(StopIteration, reader.next)
+            self.assertRaises(StopIteration, reader.__next__)
         finally:
             fd.close()
 
@@ -2244,7 +2255,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                     self.assertEqual(row[d["Metadata_Well"]], "C0%d" % (image_idx + 1))
                     self.assertAlmostEqual(float(row[d["my_measurement"]]),
                                            mvalues[image_idx, object_idx], 4)
-            self.assertRaises(StopIteration, reader.next)
+            self.assertRaises(StopIteration, reader.__next__)
         finally:
             fd.close()
 
@@ -2304,7 +2315,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                     else:
                         self.assertAlmostEqual(float(row[d["my_measurement"]]),
                                                mvalues[image_idx, object_idx], 4)
-            self.assertRaises(StopIteration, reader.next)
+            self.assertRaises(StopIteration, reader.__next__)
         finally:
             fd.close()
 
@@ -2363,7 +2374,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                 self.assertEqual(float(x), (i + 1) ** 2)
                 y = row[d[M_LOCATION_CENTER_Y]]
                 self.assertEqual(y.lower(), "nan")
-            self.assertRaises(StopIteration, reader.next)
+            self.assertRaises(StopIteration, reader.__next__)
         finally:
             fd.close()
 
@@ -2427,7 +2438,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             d = {cpmeas.GROUP_NUMBER: [0],
                  cpmeas.GROUP_INDEX: [0]}
         m = cpmeas.Measurements()
-        for k, v in d.iteritems():
+        for k, v in list(d.items()):
             m[cpmeas.IMAGE, k, np.arange(len(v)) + 1] = v
         image_numbers = m.get_image_numbers()
         if cpmeas.GROUP_NUMBER not in d:

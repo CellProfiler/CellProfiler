@@ -1,5 +1,15 @@
 """Directory for tests of individual modules
 """
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
+from builtins import *
+from past.builtins import cmp
+from future import standard_library
+standard_library.install_aliases()
+from builtins import range
+from past.utils import old_div
 import logging
 
 logger = logging.getLogger(__name__)
@@ -13,8 +23,8 @@ import javabridge
 import numpy as np
 import os
 import unittest
-from urllib import urlretrieve, URLopener
-from urllib2 import HTTPError
+from urllib.request import urlretrieve, URLopener
+from urllib.error import HTTPError
 import tempfile
 
 import scipy.io.matlab.mio
@@ -218,7 +228,7 @@ def make_12_bit_image(folder, filename, shape):
     new_data = np.zeros(len(data) + diff, np.uint8)
     new_data[:offset] = data[:offset]
     new_data[offset] = len(ifds) % 256
-    new_data[offset + 1] = int(len(ifds) / 256)
+    new_data[offset + 1] = int(old_div(len(ifds), 256))
     for idx, ifd in enumerate(ifds):
         new_data[offset + 2 + idx * 12:offset + 14 + idx * 12] = ifd
     new_data[new_end:] = data[old_end:]

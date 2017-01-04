@@ -5,7 +5,17 @@ can resize an image by applying a resizing factor or by specifying the
 desired dimensions, in pixels. You can also select which interpolation
 method to use.
 """
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import zip
+from builtins import range
+from past.utils import old_div
 import logging
 import traceback
 
@@ -200,15 +210,15 @@ class Resize(cpm.Module):
             elif self.use_manual_or_image == C_IMAGE:
                 shape = np.array(workspace.image_set.get_image(
                         self.specific_image.value).pixel_data.shape[:2]).astype(int)
-            factor = np.array(shape, float) / \
-                     np.array(image_pixels.shape[:2], float)
+            factor = old_div(np.array(shape, float), \
+                     np.array(image_pixels.shape[:2], float))
         #
         # Little bit of wierdness here. The input pixels are numbered 0 to
         # shape-1 and so are the output pixels. Therefore the affine transform
         # is the ratio of the two shapes-1
         #
-        ratio = ((np.array(image_pixels.shape[:2]).astype(float) - 1) /
-                 (shape.astype(float) - 1))
+        ratio = (old_div((np.array(image_pixels.shape[:2]).astype(float) - 1),
+                 (shape.astype(float) - 1)))
         transform = np.array([[ratio[0], 0], [0, ratio[1]]])
         if self.interpolation not in I_ALL:
             raise NotImplementedError("Unsupported interpolation method: %s" %
@@ -237,7 +247,7 @@ class Resize(cpm.Module):
             input_cropping = image.crop_mask
             cropping_shape = (
                 np.array(input_cropping.shape, float) * factor + .5).astype(int)
-            eps = np.array([.50001, .50001]) / factor
+            eps = old_div(np.array([.50001, .50001]), factor)
             i = np.linspace(eps[0], input_cropping.shape[0] + eps[0],
                             cropping_shape[0],
                             endpoint=False)

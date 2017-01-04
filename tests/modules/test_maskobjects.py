@@ -1,11 +1,19 @@
 '''test_maskobjects.py - test the MaskObjects module
 '''
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
 
+from builtins import *
+from future import standard_library
+standard_library.install_aliases()
+from builtins import zip
 import base64
 import os
 import unittest
 import zlib
-from StringIO import StringIO
+from io import StringIO
 
 import PIL.Image as PILImage
 import numpy as np
@@ -330,9 +338,9 @@ MaskObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:1|sho
              INPUT_OBJECTS: {"Foo": [],
                              M.I.C_CHILDREN: [ftr_count]}
              }
-        for object_name in d.keys():
+        for object_name in list(d.keys()):
             od = d[object_name]
-            for category in od.keys():
+            for category in list(od.keys()):
                 features = module.get_measurements(workspace.pipeline,
                                                    object_name,
                                                    category)

@@ -1,6 +1,18 @@
 '''test_hdf5_dict - test the hdf5_dict module
 '''
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import chr
+from builtins import zip
+from builtins import range
+from past.builtins import basestring
+from past.utils import old_div
 import os
 import sys
 import tempfile
@@ -123,7 +135,7 @@ class TestHDF5Dict(unittest.TestCase):
         self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 1] = np.zeros(0)
         self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 2] = np.arange(5)
         self.assertSequenceEqual(
-                self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 2].tolist(), range(5))
+                self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 2].tolist(), list(range(5)))
 
     def test_02_05_01_upgrade_none_multiple(self):
         # Regression test of issue #1011
@@ -134,14 +146,14 @@ class TestHDF5Dict(unittest.TestCase):
     def test_02_06_upgrade_int_to_float(self):
         self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 1] = np.arange(5)
         self.assertEqual(self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 1].dtype.kind, "i")
-        self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 2] = np.arange(5).astype(float) / 2.0
+        self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 2] = old_div(np.arange(5).astype(float), 2.0)
 
         self.assertEqual(self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 1].dtype.kind, "f")
         self.assertSequenceEqual(
-                self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 1].tolist(), range(5))
+                self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 1].tolist(), list(range(5)))
         self.assertSequenceEqual(
                 self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 2].tolist(),
-                map(lambda x: float(x) / 2, range(5)))
+                [old_div(float(x), 2) for x in range(5)])
 
     def test_02_07_upgrade_float_to_string(self):
         self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 1] = [2.5]
@@ -1138,7 +1150,7 @@ class TestHDFCSV(HDF5DictTessstBase):
              "rocks": ["granite", "basalt", "limestone"]}
         csv = H5DICT.HDFCSV(self.hdf_file, "csv")
         csv.set_all(d)
-        for key, strings in d.iteritems():
+        for key, strings in list(d.items()):
             column = csv[key]
             self.assertEqual(len(column), len(strings))
             for s0, s1 in zip(strings, column):
@@ -1153,8 +1165,8 @@ class TestHDFCSV(HDF5DictTessstBase):
         for key in d:
             self.assertIn(key, csv.get_column_names())
             self.assertIn(key, csv)
-            self.assertIn(key, csv.keys())
-            self.assertIn(key, csv.iterkeys())
+            self.assertIn(key, list(csv.keys()))
+            self.assertIn(key, iter(list(csv.keys())))
 
 
 class TestVStringArray(HDF5DictTessstBase):

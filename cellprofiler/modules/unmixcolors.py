@@ -38,7 +38,18 @@ deconvolution." <i>Analytical & Quantitative Cytology & Histology</i>, 23: 291-2
 
 See also <b>ColorToGray</b>.
 '''
+from __future__ import division
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import *
+from builtins import hex
+from builtins import str
+from builtins import range
+from past.utils import old_div
 import numpy as np
 from scipy.linalg import lstsq
 
@@ -377,7 +388,7 @@ class UnmixColors(cpm.Module):
         else:
             result = STAIN_DICTIONARY[output.stain_choice.value]
         result = np.array(result)
-        result = result / np.sqrt(np.sum(result ** 2))
+        result = old_div(result, np.sqrt(np.sum(result ** 2)))
         return result
 
     def get_inverse_absorbances(self, output):
@@ -438,7 +449,7 @@ class UnmixColors(cpm.Module):
             # Normalize
             #
             absorbances = np.array(absorbances)
-            return absorbances / np.sqrt(np.sum(absorbances ** 2))
+            return old_div(absorbances, np.sqrt(np.sum(absorbances ** 2)))
         return None
 
     def prepare_settings(self, setting_values):

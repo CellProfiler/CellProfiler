@@ -17,7 +17,7 @@ from builtins import object
 import cellprofiler.icons
 from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON
 
-__doc__ = '''<b>Export To Database</b> exports data directly to a database, or in
+__doc__ = """<b>Export To Database</b> exports data directly to a database, or in
 database readable format, including an imported file
 with column names and a CellProfiler Analyst properties file, if desired.
 <hr>
@@ -73,7 +73,7 @@ see <i>Help > General Help > How Measurements Are Named</i>.
 
 See also <b>ExportToSpreadsheet</b>.
 
-'''
+"""
 
 import csv
 import datetime
@@ -119,14 +119,14 @@ from cellprofiler.preferences import \
 ##############################################
 D_MEASUREMENT_COLUMNS = "MeasurementColumns"
 
-'''The column name for the image number column'''
+"""The column name for the image number column"""
 C_IMAGE_NUMBER = "ImageNumber"
 
-'''The column name for the object number column'''
+"""The column name for the object number column"""
 C_OBJECT_NUMBER = "ObjectNumber"
 D_IMAGE_SET_INDEX = "ImageSetIndex"
 
-'''The thumbnail category'''
+"""The thumbnail category"""
 C_THUMBNAIL = "Thumbnail"
 
 ##############################################
@@ -145,11 +145,11 @@ DB_MYSQL_CSV = "MySQL / CSV"
 #
 ##############################################
 
-'''Put all objects in the database'''
+"""Put all objects in the database"""
 O_ALL = "All"
-'''Don't put any objects in the database'''
+"""Don't put any objects in the database"""
 O_NONE = "None"
-'''Select the objects you want from a list'''
+"""Select the objects you want from a list"""
 O_SELECT = "Select..."
 
 ##############################################
@@ -236,10 +236,10 @@ OT_PER_OBJECT = "One table per object type"
 OT_COMBINE = "Single object table"
 OT_VIEW = "Single object view"
 
-'''Index of the object table format choice in the settings'''
+"""Index of the object table format choice in the settings"""
 OT_IDX = 17
 
-'''Use this dictionary to keep track of rewording of above if it happens'''
+"""Use this dictionary to keep track of rewording of above if it happens"""
 OT_DICTIONARY = {
     "One table per object type": OT_PER_OBJECT,
     "Single object table": OT_COMBINE,
@@ -297,7 +297,7 @@ def get_next_result(cursor):
 
 
 def connect_mysql(host, user, pw, db):
-    '''Creates and returns a db connection and cursor.'''
+    """Creates and returns a db connection and cursor."""
     connection = MySQLdb.connect(host=host, user=user, passwd=pw, db=db)
     cursor = SSCursor(connection)
     #
@@ -311,7 +311,7 @@ def connect_mysql(host, user, pw, db):
 
 
 def connect_sqlite(db_file):
-    '''Creates and returns a db connection and cursor.'''
+    """Creates and returns a db connection and cursor."""
     import sqlite3
     connection = sqlite3.connect(db_file, timeout=30)
     cursor = connection.cursor()
@@ -319,7 +319,7 @@ def connect_sqlite(db_file):
 
 
 class DBContext(object):
-    '''A database context suitable for the "with" statement
+    """A database context suitable for the "with" statement
 
     Usage:
 
@@ -331,7 +331,7 @@ class DBContext(object):
 
     # cursor and connection are closed. Changes are either committed
     # or rolled back depending on exception status
-    '''
+    """
 
     def __init__(self, module):
         assert isinstance(module, ExportToDatabase)
@@ -715,7 +715,7 @@ class ExportToDatabase(cpm.Module):
                                             False)
 
         self.wants_agg_mean_well = cps.Binary(
-                "Calculate the per-well mean values of object measurements?", False, doc='''
+                "Calculate the per-well mean values of object measurements?", False, doc="""
             Select <i>%(YES)s</i> for <b>ExportToDatabase</b> to calculate statistics over all the objects in each well
             and store the results as columns in a "per-well" table in the database. For instance,
             if you are measuring the area of the Nuclei objects and you check the aggregate
@@ -728,10 +728,10 @@ class ExportToDatabase(cpm.Module):
             <p><i>Note:</i> this option is only available if you have extracted plate and well metadata
             from the filename using the <b>Metadata</b> or <b>LoadData</b> modules.
             It will write out a .sql file with the statements necessary to create the Per_Well
-            table, regardless of the option chosen above. %(USING_METADATA_HELP_REF)s''' % globals())
+            table, regardless of the option chosen above. %(USING_METADATA_HELP_REF)s""" % globals())
 
         self.wants_agg_median_well = cps.Binary(
-                "Calculate the per-well median values of object measurements?", False, doc='''
+                "Calculate the per-well median values of object measurements?", False, doc="""
             Select <i>%(YES)s</i> for <b>ExportToDatabase</b> to calculate statistics over all the objects in each well
             and store the results as columns in a "per-well" table in the database. For instance,
             if you are measuring the area of the Nuclei objects and you check the aggregate
@@ -745,10 +745,10 @@ class ExportToDatabase(cpm.Module):
             available if you have extracted plate and well metadata from the filename using
             the <b>Metadata</b> or <b>LoadData</b> modules.
             It will write out a .sql file with the statements necessary to create the Per_Well
-            table, regardless of the option chosen above. %(USING_METADATA_HELP_REF)s''' % globals())
+            table, regardless of the option chosen above. %(USING_METADATA_HELP_REF)s""" % globals())
 
         self.wants_agg_std_dev_well = cps.Binary(
-                "Calculate the per-well standard deviation values of object measurements?", False, doc='''
+                "Calculate the per-well standard deviation values of object measurements?", False, doc="""
             Select <i>%(YES)s</i> for <b>ExportToDatabase</b> to calculate statistics over all the objects in each well
             and store the results as columns in a "per-well" table in the database. For instance,
             if you are measuring the area of the Nuclei objects and you check the aggregate
@@ -761,7 +761,7 @@ class ExportToDatabase(cpm.Module):
             available if you have extracted plate and well metadata from the filename
             using the <b>Metadata</b> or <b>LoadData</b> modules.
             It will write out a .sql file with the statements necessary to create the Per_Well
-            table, regardless of the option chosen above. %(USING_METADATA_HELP_REF)s''' % globals())
+            table, regardless of the option chosen above. %(USING_METADATA_HELP_REF)s""" % globals())
 
         self.objects_choice = cps.Choice(
                 "Export measurements for all objects to the database?",
@@ -1480,7 +1480,7 @@ class ExportToDatabase(cpm.Module):
                 raise cps.ValidationError(msg, self.table_prefix)
 
     def validate_module_warnings(self, pipeline):
-        '''Warn user re: Test mode '''
+        """Warn user re: Test mode """
         if pipeline.test_mode:
             raise cps.ValidationError("ExportToDatabase does not produce output in Test Mode",
                                       self.db_type)
@@ -1495,7 +1495,7 @@ class ExportToDatabase(cpm.Module):
                     "ExportToDatabase will work in multiprocessing mode using a\n"
                     "SQLite database.", self.db_type)
 
-        '''Warn user that they will have to merge tables to use CPA'''
+        """Warn user that they will have to merge tables to use CPA"""
         if self.objects_choice != O_NONE and self.separate_object_tables == OT_PER_OBJECT:
             raise cps.ValidationError(
                     ("You will have to merge the separate object tables in order\n"
@@ -1504,7 +1504,7 @@ class ExportToDatabase(cpm.Module):
                      "%s to write a single object table.") % ("'%s' or '%s'" % (OT_COMBINE, OT_VIEW)),
                     self.separate_object_tables)
 
-        '''Warn user re: bad characters in object used for center, filter/group names and class_table name'''
+        """Warn user re: bad characters in object used for center, filter/group names and class_table name"""
         if self.save_cpa_properties:
             warning_string = "CellProfiler Analyst will not recogize this %s because it contains invalid characters. Allowable characters are letters, numbers and underscores."
             if not re.match("^[\w]*$", self.location_object.value):
@@ -1527,7 +1527,7 @@ class ExportToDatabase(cpm.Module):
                 if not re.match("^[\w]*$", self.properties_class_table_name.value):
                     raise cps.ValidationError(warning_string % "class table name", self.properties_class_table_name)
 
-        '''Warn user re: objects that are not 1:1 (i.e., primary/secondary/tertiary) if creating a view'''
+        """Warn user re: objects that are not 1:1 (i.e., primary/secondary/tertiary) if creating a view"""
         if self.objects_choice != O_NONE and self.separate_object_tables in (OT_VIEW, OT_COMBINE):
             if self.objects_choice == O_SELECT:
                 selected_objs = self.objects_list.value.rsplit(',')
@@ -1560,7 +1560,7 @@ class ExportToDatabase(cpm.Module):
                     raise cps.ValidationError(msg, self.separate_object_tables)
 
     def test_connection(self):
-        '''Check to make sure the MySQL server is remotely accessible'''
+        """Check to make sure the MySQL server is remotely accessible"""
         import wx
 
         error = None
@@ -1606,8 +1606,8 @@ class ExportToDatabase(cpm.Module):
         return os.path.join(path, file)
 
     def prepare_run(self, workspace, as_data_tool=False):
-        '''Prepare to run the pipeline
-        Establish a connection to the database.'''
+        """Prepare to run the pipeline
+        Establish a connection to the database."""
 
         if not as_data_tool:
             self.get_dictionary().clear()
@@ -1710,7 +1710,7 @@ class ExportToDatabase(cpm.Module):
                 self.cursor = None
 
     def prepare_to_create_batch(self, workspace, fn_alter_path):
-        '''Alter the output directory path for the remote batch host'''
+        """Alter the output directory path for the remote batch host"""
         self.directory.alter_for_create_batch_files(fn_alter_path)
         return True
 
@@ -1724,11 +1724,11 @@ class ExportToDatabase(cpm.Module):
         return []
 
     def run_as_data_tool(self, workspace):
-        '''Run the module as a data tool
+        """Run the module as a data tool
 
         ExportToDatabase has two modes - writing CSVs and writing directly.
         We write CSVs in post_run. We write directly in run.
-        '''
+        """
         #
         # The measurements may have been created by an old copy of CP. We
         # have to hack our measurement column cache to circumvent this.
@@ -1840,7 +1840,7 @@ class ExportToDatabase(cpm.Module):
     INTERACTION_ADD_RELATIONSHIP_TYPE = "AddRelationshipType"
 
     def handle_interaction(self, command, *args, **kwargs):
-        '''Handle sqllite interactions from workers'''
+        """Handle sqllite interactions from workers"""
 
         if command == self.INTERACTION_EXECUTE:
             return self.handle_interaction_execute(*args, **kwargs)
@@ -1867,32 +1867,32 @@ class ExportToDatabase(cpm.Module):
             connection.close()
 
     def handle_interaction_get_relationship_types(self):
-        '''Get the relationship types from the database
+        """Get the relationship types from the database
 
         returns a dictionary whose key is
         (module_number, relationship name, object_name1, object_name2) and
         whose value is the relationship type ID for that relationship.
-        '''
+        """
         db_file = self.make_full_filename(self.sqlite_file.value)
         with DBContext(self) as (connection, cursor):
             return list(self.get_relationship_types(cursor).items())
 
     def grt_interaction_to_dict(self, json_struct):
-        '''Handle the conversion from json mangled structure to dictionary
+        """Handle the conversion from json mangled structure to dictionary
 
         json_struct - the result from handle_interaction_get_relationship_types
                       which has been dumbed-down for json and which json
                       has likely turned tuples to lists
-        '''
+        """
         return dict([(tuple(k), v) for k, v in json_struct])
 
     def get_relationship_types(self, cursor):
-        '''Get the relationship types from the database
+        """Get the relationship types from the database
 
         returns a dictionary whose key is
         (module_number, relationship name, object_name1, object_name2) and
         whose value is the relationship type ID for that relationship.
-        '''
+        """
         relationship_type_table = self.get_table_name(T_RELATIONSHIP_TYPES)
         statement = "SELECT %s, %s, %s, %s, %s FROM %s" % (
             COL_RELATIONSHIP_TYPE_ID, COL_RELATIONSHIP, COL_MODULE_NUMBER,
@@ -1905,26 +1905,26 @@ class ExportToDatabase(cpm.Module):
 
     def handle_interaction_add_relationship_type(
             self, module_num, relationship, object_name1, object_name2):
-        '''Add a relationship type to the database
+        """Add a relationship type to the database
 
         module_num, relationship, object_name1, object_name2: the key
               to the relationship in the relationship type table
 
         returns the relationship type ID
-        '''
+        """
         with DBContext(self) as (connection, cursor):
             return self.add_relationship_type(
                     module_num, relationship, object_name1, object_name2, cursor)
 
     def add_relationship_type(self, module_num, relationship, object_name1,
                               object_name2, cursor):
-        '''Add a relationship type to the database
+        """Add a relationship type to the database
 
         module_num, relationship, object_name1, object_name2: the key
               to the relationship in the relationship type table
 
         returns the relationship type ID
-        '''
+        """
         logger.info("Adding missing relationship type:")
         logger.info("        module #: %d" % module_num)
         logger.info("    relationship: %s" % relationship)
@@ -1987,7 +1987,7 @@ class ExportToDatabase(cpm.Module):
         return int(result[0][0])
 
     def post_group(self, workspace, grouping):
-        '''Write out any columns that are only available post-group'''
+        """Write out any columns that are only available post-group"""
         if workspace.pipeline.test_mode:
             return
 
@@ -2053,7 +2053,7 @@ class ExportToDatabase(cpm.Module):
 
     @property
     def wants_well_tables(self):
-        '''Return true if user wants any well tables'''
+        """Return true if user wants any well tables"""
         if self.db_type == DB_SQLITE:
             return False
         else:
@@ -2062,11 +2062,11 @@ class ExportToDatabase(cpm.Module):
 
     @property
     def wants_relationship_table(self):
-        '''True to write relationships to the database'''
+        """True to write relationships to the database"""
         return self.wants_relationship_table_setting.value
 
     def should_stop_writing_measurements(self):
-        '''All subsequent modules should not write measurements'''
+        """All subsequent modules should not write measurements"""
         return True
 
     def ignore_object(self, object_name, strict=False):
@@ -2114,7 +2114,7 @@ class ExportToDatabase(cpm.Module):
         return mappings
 
     def get_aggregate_columns(self, pipeline, image_set_list, post_group=None):
-        '''Get object aggregate columns for the PerImage table
+        """Get object aggregate columns for the PerImage table
 
         pipeline - the pipeline being run
         image_set_list - for cacheing column data
@@ -2127,7 +2127,7 @@ class ExportToDatabase(cpm.Module):
         result[1] - feature name
         result[2] - aggregation operation
         result[3] - column name in Image database
-        '''
+        """
         columns = self.get_pipeline_measurement_columns(pipeline,
                                                         image_set_list)
         mappings = self.get_column_name_mappings(pipeline, image_set_list)
@@ -2150,7 +2150,7 @@ class ExportToDatabase(cpm.Module):
         return result
 
     def get_object_names(self, pipeline, image_set_list):
-        '''Get the names of the objects whose measurements are being taken'''
+        """Get the names of the objects whose measurements are being taken"""
         column_defs = self.get_pipeline_measurement_columns(pipeline,
                                                             image_set_list)
         obnames = set([c[0] for c in column_defs])
@@ -2165,7 +2165,7 @@ class ExportToDatabase(cpm.Module):
 
     @property
     def agg_names(self):
-        '''The list of selected aggregate names'''
+        """The list of selected aggregate names"""
         return [name
                 for name, setting
                 in ((cpmeas.AGG_MEAN, self.wants_agg_mean),
@@ -2175,7 +2175,7 @@ class ExportToDatabase(cpm.Module):
 
     @property
     def agg_well_names(self):
-        '''The list of selected aggregate names'''
+        """The list of selected aggregate names"""
         return [name
                 for name, setting
                 in (('avg', self.wants_agg_mean_well),
@@ -2187,7 +2187,7 @@ class ExportToDatabase(cpm.Module):
     # Create per_image and per_object tables in MySQL
     #
     def create_database_tables(self, cursor, workspace):
-        '''Creates empty image and object tables
+        """Creates empty image and object tables
 
         Creates the MySQL database (if MySQL), drops existing tables of the
         same name and creates the tables.
@@ -2195,7 +2195,7 @@ class ExportToDatabase(cpm.Module):
         cursor - database cursor for creating the tables
         column_defs - column definitions as returned by get_measurement_columns
         mappings - mappings from measurement feature names to column names
-        '''
+        """
         pipeline = workspace.pipeline
         image_set_list = workspace.image_set_list
         # Create the database
@@ -2360,7 +2360,7 @@ CREATE TABLE %s (
         return statements
 
     def get_create_image_table_statement(self, pipeline, image_set_list):
-        '''Return a SQL statement that generates the image table'''
+        """Return a SQL statement that generates the image table"""
         statement = 'CREATE TABLE ' + self.get_table_name(cpmeas.IMAGE) + ' (\n'
         statement += '%s INTEGER' % C_IMAGE_NUMBER
 
@@ -2382,10 +2382,10 @@ CREATE TABLE %s (
 
     def get_create_object_table_statement(self, object_name, pipeline,
                                           image_set_list):
-        '''Get the "CREATE TABLE" statement for the given object table
+        """Get the "CREATE TABLE" statement for the given object table
 
         object_name - None = PerObject, otherwise a specific table
-        '''
+        """
         if object_name is None:
             object_table = self.get_table_name(cpmeas.OBJECT)
         else:
@@ -2415,10 +2415,10 @@ CREATE TABLE %s (
 
     def get_create_object_view_statement(self, object_names, pipeline,
                                          image_set_list):
-        '''Get the "CREATE VIEW" statement for the given object view
+        """Get the "CREATE VIEW" statement for the given object view
 
         object_names is the list of objects to be included into the view
-        '''
+        """
         object_table = self.get_table_name(cpmeas.OBJECT)
 
         # Produce a list of columns from each of the separate tables
@@ -2558,7 +2558,7 @@ CREATE TABLE %s (
 
     def get_relationship_type_id(self, workspace, module_num, relationship,
                                  object_name1, object_name2):
-        '''Get the relationship_type_id for the given relationship
+        """Get the relationship_type_id for the given relationship
 
         workspace - the analysis workspace
 
@@ -2575,7 +2575,7 @@ CREATE TABLE %s (
         type record in the relationship types table.
 
         NOTE: this should not be called for CSV databases.
-        '''
+        """
         assert self.db_type != DB_MYSQL_CSV
 
         d = self.get_dictionary()
@@ -2685,13 +2685,13 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         fid.close()
 
     def write_mysql_table_per_well(self, pipeline, image_set_list, fid=None):
-        '''Write SQL statements to generate a per-well table
+        """Write SQL statements to generate a per-well table
 
         pipeline - the pipeline being run (to get feature names)
         image_set_list -
         fid - file handle of file to write or None if statements
               should be written to a separate file.
-        '''
+        """
         if fid is None:
             file_name = "%s_Per_Well_SETUP.SQL" % self.sql_file_prefix
             path_name = self.make_full_filename(file_name)
@@ -2931,13 +2931,13 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
 
     @staticmethod
     def should_write(column, post_group):
-        '''Determine if a column should be written in run or post_group
+        """Determine if a column should be written in run or post_group
 
         column - 3 or 4 tuple column from get_measurement_columns
         post_group - True if in post_group, false if in run
 
         returns True if column should be written
-        '''
+        """
         if len(column) == 3:
             return not post_group
         if not hasattr(column[3], "has_key"):
@@ -3246,9 +3246,9 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             raise
 
     def truncate_string_for_display(self, s, field_size=100):
-        ''' Any string with more than this # of characters will
+        """ Any string with more than this # of characters will
                 be truncated using an ellipsis.
-        '''
+        """
         if len(s) > field_size:
             half = old_div(int(field_size - 3), 2)
             s = s[:half] + "..." + s[-half:]
@@ -3271,7 +3271,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                              col_labels=workspace.display_data.header)
 
     def write_post_run_measurements(self, workspace):
-        '''Write any experiment measurements marked as post-run'''
+        """Write any experiment measurements marked as post-run"""
         columns = workspace.pipeline.get_measurement_columns()
         columns = list(filter(
                 (lambda c:
@@ -3301,7 +3301,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             fid.close()
 
     def get_property_file_text(self, workspace):
-        '''Get the text for all property files
+        """Get the text for all property files
 
         workspace - the workspace from prepare_run
 
@@ -3317,7 +3317,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         * text - the text to save
 
         * properties - a key / value dictionary of the properties
-        '''
+        """
 
         class Properties(object):
             def __init__(self, object_name, file_name, text):
@@ -3430,7 +3430,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                         cell_x_loc = '%s_Location_Center_X' % object_name
                         cell_y_loc = '%s_Location_Center_Y' % object_name
             else:
-                '''If object_name = None, it's either per_image only or a view '''
+                """If object_name = None, it's either per_image only or a view """
                 if self.objects_choice == O_NONE:
                     cell_tables = ''
                     object_id = ''
@@ -3735,7 +3735,7 @@ check_tables = yes
         return result
 
     def write_workspace_file(self, workspace):
-        '''If requested, write a workspace file with selected measurements'''
+        """If requested, write a workspace file with selected measurements"""
         if self.db_type == DB_SQLITE:
             name = os.path.splitext(self.sqlite_file.value)[0]
         else:
@@ -3827,14 +3827,14 @@ CP version : %d\n""" % int(re.sub(r"\.|rc\d{1}", "", cellprofiler.__version__))
         return ""
 
     def get_table_name(self, object_name):
-        '''Return the table name associated with a given object
+        """Return the table name associated with a given object
 
         object_name - name of object or "Image", "Object" or "Well"
-        '''
+        """
         return self.get_table_prefix() + 'Per_' + object_name
 
     def get_pipeline_measurement_columns(self, pipeline, image_set_list, remove_postgroup_key=False):
-        '''Get the measurement columns for this pipeline, possibly cached'''
+        """Get the measurement columns for this pipeline, possibly cached"""
         d = self.get_dictionary(image_set_list)
         if D_MEASUREMENT_COLUMNS not in d:
             d[D_MEASUREMENT_COLUMNS] = pipeline.get_measurement_columns()
@@ -3846,7 +3846,7 @@ CP version : %d\n""" % int(re.sub(r"\.|rc\d{1}", "", cellprofiler.__version__))
         return d[D_MEASUREMENT_COLUMNS]
 
     def filter_measurement_columns(self, columns):
-        '''Filter out and properly sort measurement columns'''
+        """Filter out and properly sort measurement columns"""
         columns = [x for x in columns
                    if not self.ignore_feature(x[0], x[1], True)]
 
@@ -3880,10 +3880,10 @@ CP version : %d\n""" % int(re.sub(r"\.|rc\d{1}", "", cellprofiler.__version__))
         return columns
 
     def obfuscate(self):
-        '''Erase sensitive information about the database
+        """Erase sensitive information about the database
 
         This is run on a copy of the pipeline, so it's ok to erase info.
-        '''
+        """
         self.db_host.value = ''.join(['*'] * len(self.db_host.value))
         self.db_user.value = ''.join(['*'] * len(self.db_user.value))
         self.db_name.value = ''.join(['*'] * len(self.db_name.value))
@@ -4322,12 +4322,12 @@ class ColumnNameMapping(object):
 
 
 def random_number_generator(seed):
-    '''This is a very repeatable pseudorandom number generator
+    """This is a very repeatable pseudorandom number generator
 
     seed - a string to seed the generator
 
     yields integers in the range 0-65535 on iteration
-    '''
+    """
     m = hashlib.md5()
     m.update(seed)
     while True:
@@ -4337,7 +4337,7 @@ def random_number_generator(seed):
 
 
 class SQLiteCommands(object):
-    '''This class ducktypes a connection and cursor to aggregate and bulk execute SQL'''
+    """This class ducktypes a connection and cursor to aggregate and bulk execute SQL"""
 
     def __init__(self):
         self.commands_and_bindings = []

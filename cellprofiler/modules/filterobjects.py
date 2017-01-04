@@ -1,4 +1,4 @@
-'''<b>Filter Objects</b> eliminates objects based on their measurements (e.g., area, shape,
+"""<b>Filter Objects</b> eliminates objects based on their measurements (e.g., area, shape,
 texture, intensity).
 <hr>
 This module removes selected objects based on measurements produced by another module (e.g.,
@@ -27,7 +27,7 @@ mass of the remaining objects.</li>
 
 See also any of the <b>MeasureObject</b> modules, <b>MeasureTexture</b>,
 <b>MeasureCorrelation</b>, and <b>CalculateRatios</b>.
-'''
+"""
 from __future__ import division
 from __future__ import unicode_literals
 from __future__ import print_function
@@ -68,36 +68,36 @@ from cellprofiler.modules.identify import get_object_measurement_columns
 from cellprofiler.preferences import IO_FOLDER_CHOICE_HELP_TEXT
 from cellprofiler.gui.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
 
-'''Minimal filter - pick a single object per image by minimum measured value'''
+"""Minimal filter - pick a single object per image by minimum measured value"""
 FI_MINIMAL = "Minimal"
 
-'''Maximal filter - pick a single object per image by maximum measured value'''
+"""Maximal filter - pick a single object per image by maximum measured value"""
 FI_MAXIMAL = "Maximal"
 
-'''Pick one object per containing object by minimum measured value'''
+"""Pick one object per containing object by minimum measured value"""
 FI_MINIMAL_PER_OBJECT = "Minimal per object"
 
-'''Pick one object per containing object by maximum measured value'''
+"""Pick one object per containing object by maximum measured value"""
 FI_MAXIMAL_PER_OBJECT = "Maximal per object"
 
-'''Keep all objects whose values fall between set limits'''
+"""Keep all objects whose values fall between set limits"""
 FI_LIMITS = "Limits"
 
 FI_ALL = [FI_MINIMAL, FI_MAXIMAL, FI_MINIMAL_PER_OBJECT,
           FI_MAXIMAL_PER_OBJECT, FI_LIMITS]
 
-'''The number of settings for this module in the pipeline if no additional objects'''
+"""The number of settings for this module in the pipeline if no additional objects"""
 FIXED_SETTING_COUNT = 13
 
 FIXED_SETTING_COUNT_V6 = 12
 
-'''The number of settings per additional object'''
+"""The number of settings per additional object"""
 ADDITIONAL_OBJECT_SETTING_COUNT = 4
 
-'''The location of the setting count'''
+"""The location of the setting count"""
 ADDITIONAL_OBJECT_SETTING_INDEX = 11
 
-'''The location of the measurements count setting'''
+"""The location of the measurements count setting"""
 MEASUREMENT_COUNT_SETTING_INDEX = 10
 
 MODE_RULES = "Rules"
@@ -118,7 +118,7 @@ class FilterObjects(cpm.Module):
     variable_revision_number = 7
 
     def create_settings(self):
-        '''Create the initial settings and name the module'''
+        """Create the initial settings and name the module"""
         self.target_name = cps.ObjectNameProvider(
             'Name the output objects', 'FilteredBlue', doc="""
             Enter a name for the collection of objects that are retained after applying the filter(s).""")
@@ -239,7 +239,7 @@ class FilterObjects(cpm.Module):
             </ul></p>""" % globals())
 
         def get_directory_fn():
-            '''Get the directory for the rules file name'''
+            """Get the directory for the rules file name"""
             return self.rules_directory.get_absolute_path()
 
         def set_directory_fn(path):
@@ -302,7 +302,7 @@ class FilterObjects(cpm.Module):
             return [str(i) for i in range(1, 3)]
 
     def add_measurement(self, can_delete=True):
-        '''Add another measurement to the filter list'''
+        """Add another measurement to the filter list"""
         group = cps.SettingsGroup()
         group.append("measurement", cps.Measurement(
             'Select the measurement to filter by',
@@ -355,8 +355,8 @@ class FilterObjects(cpm.Module):
         self.additional_objects.append(group)
 
     def prepare_settings(self, setting_values):
-        '''Make sure the # of slots for additional objects matches
-           the anticipated number of additional objects'''
+        """Make sure the # of slots for additional objects matches
+           the anticipated number of additional objects"""
         additional_object_count = int(setting_values[ADDITIONAL_OBJECT_SETTING_INDEX])
         while len(self.additional_objects) > additional_object_count:
             self.remove_additional_object(self.additional_objects[-1].key)
@@ -442,7 +442,7 @@ class FilterObjects(cpm.Module):
         return result
 
     def validate_module(self, pipeline):
-        '''Make sure that the user has selected some limits when filtering'''
+        """Make sure that the user has selected some limits when filtering"""
         if (self.mode == MODE_MEASUREMENTS and
             self.filter_choice == FI_LIMITS):
             for group in self.measurements:
@@ -485,7 +485,7 @@ class FilterObjects(cpm.Module):
                     self.rules_file_name.value, self.rules_file_name)
 
     def run(self, workspace):
-        '''Filter objects for this image set, display results'''
+        """Filter objects for this image set, display results"""
         src_objects = workspace.get_objects(self.object_name.value)
         if self.mode == MODE_RULES:
             indexes = self.keep_by_rules(workspace, src_objects)
@@ -599,7 +599,7 @@ class FilterObjects(cpm.Module):
             workspace.display_data.target_objects_segmented = target_objects.segmented
 
     def display(self, workspace, figure):
-        '''Display what was filtered'''
+        """Display what was filtered"""
         src_name = self.object_name.value
         src_objects_segmented = workspace.display_data.src_objects_segmented
         image = workspace.display_data.image
@@ -642,11 +642,11 @@ class FilterObjects(cpm.Module):
                             "Number of objects post-filtering"))
 
     def keep_one(self, workspace, src_objects):
-        '''Return an array containing the single object to keep
+        """Return an array containing the single object to keep
 
         workspace - workspace passed into Run
         src_objects - the Objects instance to be filtered
-        '''
+        """
         measurement = self.measurements[0].measurement.value
         src_name = self.object_name.value
         values = workspace.measurements.get_current_measurement(src_name,
@@ -658,11 +658,11 @@ class FilterObjects(cpm.Module):
         return np.array([best_idx], int)
 
     def keep_per_object(self, workspace, src_objects):
-        '''Return an array containing the best object per enclosing object
+        """Return an array containing the best object per enclosing object
 
         workspace - workspace passed into Run
         src_objects - the Objects instance to be filtered
-        '''
+        """
         measurement = self.measurements[0].measurement.value
         src_name = self.object_name.value
         enclosing_name = self.enclosing_object_name.value
@@ -763,11 +763,11 @@ class FilterObjects(cpm.Module):
             return indexes[1:] if len(indexes) > 0 and indexes[0] == 0 else indexes
 
     def keep_within_limits(self, workspace, src_objects):
-        '''Return an array containing the indices of objects to keep
+        """Return an array containing the indices of objects to keep
 
         workspace - workspace passed into Run
         src_objects - the Objects instance to be filtered
-        '''
+        """
         src_name = self.object_name.value
         hits = None
         m = workspace.measurements
@@ -792,11 +792,11 @@ class FilterObjects(cpm.Module):
         return indexes
 
     def discard_border_objects(self, workspace, src_objects):
-        '''Return an array containing the indices of objects to keep
+        """Return an array containing the indices of objects to keep
 
         workspace - workspace passed into Run
         src_objects - the Objects instance to be filtered
-        '''
+        """
         labeled_image = src_objects.segmented
 
         border_labeled_image = labeled_image.copy()
@@ -845,7 +845,7 @@ class FilterObjects(cpm.Module):
         return np.unique(border_labeled_image)[1:]
 
     def get_rules(self):
-        '''Read the rules from a file'''
+        """Read the rules from a file"""
         rules_file = self.rules_file_name.value
         rules_directory = self.rules_directory.get_absolute_path()
         path = os.path.join(rules_directory, rules_file)
@@ -858,10 +858,10 @@ class FilterObjects(cpm.Module):
             return rules
 
     def load_classifier(self):
-        '''Load the classifier pickle if not cached
+        """Load the classifier pickle if not cached
 
         returns classifier, bin_labels, name and features
-        '''
+        """
         d = self.get_dictionary()
         file_ = self.rules_file_name.value
         directory_ = self.rules_directory.get_absolute_path()
@@ -885,14 +885,14 @@ class FilterObjects(cpm.Module):
         return self.load_classifier()[3]
 
     def keep_by_rules(self, workspace, src_objects):
-        '''Keep objects according to rules
+        """Keep objects according to rules
 
         workspace - workspace holding the measurements for the rules
         src_objects - filter these objects (uses measurement indexes instead)
 
         Open the rules file indicated by the settings and score the
         objects by the rules. Return the indexes of the objects that pass.
-        '''
+        """
         rules = self.get_rules()
         rules_class = int(self.rules_class.value) - 1
         scores = rules.score(workspace.measurements)
@@ -907,11 +907,11 @@ class FilterObjects(cpm.Module):
         return indexes
 
     def keep_by_class(self, workspace, src_objects):
-        ''' Keep objects according to their predicted class
+        """ Keep objects according to their predicted class
         :param workspace: workspace holding the measurements for the rules
         :param src_objects: filter these objects (uses measurement indexes instead)
         :return: indexes (base 1) of the objects that pass
-        '''
+        """
         classifier = self.get_classifier()
         target_idx = self.get_bin_labels().index(self.rules_class.value)
         target_class = classifier.classes_[target_idx]
@@ -933,7 +933,7 @@ class FilterObjects(cpm.Module):
         return indexes.flatten()
 
     def get_measurement_columns(self, pipeline):
-        '''Return measurement column defs for the parent/child measurement'''
+        """Return measurement column defs for the parent/child measurement"""
         object_list = ([(self.object_name.value, self.target_name.value)] +
                        [(x.object_name.value, x.target_name.value)
                         for x in self.additional_objects])
@@ -985,7 +985,7 @@ class FilterObjects(cpm.Module):
         return result
 
     def prepare_to_create_batch(self, workspace, fn_alter_path):
-        '''Prepare to create a batch file
+        """Prepare to create a batch file
 
         This function is called when CellProfiler is about to create a
         file for batch processing. It will pickle the image set list's
@@ -999,13 +999,13 @@ class FilterObjects(cpm.Module):
                         handles issues such as replacing backslashes and
                         mapping mountpoints. It should be called for every
                         pathname stored in the settings or legacy fields.
-        '''
+        """
         self.rules_directory.alter_for_create_batch_files(fn_alter_path)
         return True
 
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
-        '''Account for old save formats
+        """Account for old save formats
 
         setting_values - the strings for the settings as saved in the pipeline
         variable_revision_number - the variable revision number at the time
@@ -1015,7 +1015,7 @@ class FilterObjects(cpm.Module):
                       it is KeepLargestObject for Matlab's module of that
                       name.
         from_matlab - true if file was saved by Matlab CP
-        '''
+        """
 
         DIR_DEFAULT_INPUT = "Default input folder"
         DIR_DEFAULT_OUTPUT = "Default output folder"

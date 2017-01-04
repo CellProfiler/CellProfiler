@@ -1,4 +1,4 @@
-'''<b>Measure Object Neighbors</b> calculates how many neighbors each 
+"""<b>Measure Object Neighbors</b> calculates how many neighbors each 
 object has and records various properties about the neighbors' relationships,
 including the percentage of an object's edge pixels that touch a neighbor.
 <hr>
@@ -37,7 +37,7 @@ that object had been discarded, <i>NumberOfNeighbors</i> will be positive, but
 there will not be a corresponding <i>ClosestObjectNumber</i>.
 
 See also the <b>Identify</b> modules.
-'''
+"""
 from __future__ import division
 from __future__ import unicode_literals
 from __future__ import print_function
@@ -207,7 +207,7 @@ class MeasureObjectNeighbors(cpm.Module):
 
     @property
     def neighbors_are_objects(self):
-        '''True if the neighbors are taken from the same object set as objects'''
+        """True if the neighbors are taken from the same object set as objects"""
         return self.object_name.value == self.neighbors_name.value
 
     def run(self, workspace):
@@ -634,7 +634,7 @@ class MeasureObjectNeighbors(cpm.Module):
                              self.neighbors_name.value, scale))
 
     def get_measurement_columns(self, pipeline):
-        '''Return column definitions for measurements made by this module'''
+        """Return column definitions for measurements made by this module"""
         coltypes = dict([(feature,
                           cpmeas.COLTYPE_INTEGER
                           if feature in (M_NUMBER_OF_NEIGHBORS,
@@ -648,7 +648,7 @@ class MeasureObjectNeighbors(cpm.Module):
                 for feature_name in self.all_features]
 
     def get_object_relationships(self, pipeline):
-        '''Return column definitions for object relationships output by module'''
+        """Return column definitions for object relationships output by module"""
         objects_name = self.object_name.value
         if self.neighbors_are_objects:
             neighbors_name = objects_name
@@ -713,7 +713,7 @@ class MeasureObjectNeighbors(cpm.Module):
 
 
 def get_colormap(name):
-    '''Get colormap, accounting for possible request for default'''
+    """Get colormap, accounting for possible request for default"""
     if name == cps.DEFAULT:
         name = cpprefs.get_default_colormap()
     return matplotlib.cm.get_cmap(name)

@@ -1,4 +1,4 @@
-'''
+"""
 <b> Color to Gray</b> converts an image with three color channels to a set of individual
 grayscale images.
 <hr>
@@ -10,7 +10,7 @@ the relative weights will adjust the contribution of the colors relative to each
 <br>
 <i>Note:</i>All <b>Identify</b> modules require grayscale images.
 <p>See also <b>GrayToColor</b>.
-'''
+"""
 from __future__ import division
 from __future__ import unicode_literals
 from __future__ import print_function
@@ -56,14 +56,14 @@ class ColorToGray(cpm.Module):
 
         self.combine_or_split = cps.Choice(
                 "Conversion method",
-                [COMBINE, SPLIT], doc='''
+                [COMBINE, SPLIT], doc="""
             How do you want to convert the color image?
             <ul>
             <li><i>%(SPLIT)s:</i> Splits the three channels
             (red, green, blue) of a color image into three separate grayscale images. </li>
             <li><i>%(COMBINE)s</i> Converts a color image to a grayscale
             image by combining the three channels (red, green, blue) together.</li>
-            </ul>''' % globals())
+            </ul>""" % globals())
 
         self.rgb_or_channels = cps.Choice(
                 "Image type", [CH_RGB, CH_HSV, CH_CHANNELS], doc="""
@@ -88,27 +88,27 @@ class ColorToGray(cpm.Module):
 
         self.red_contribution = cps.Float(
                 "Relative weight of the red channel",
-                1, 0, doc='''
+                1, 0, doc="""
             <i>(Used only when combining channels)</i><br>
             Relative weights: If all relative weights are equal, all three
             colors contribute equally in the final image. To weight colors relative
-            to each other, increase or decrease the relative weights.''')
+            to each other, increase or decrease the relative weights.""")
 
         self.green_contribution = cps.Float(
                 "Relative weight of the green channel",
-                1, 0, doc='''
+                1, 0, doc="""
             <i>(Used only when combining channels)</i><br>
             Relative weights: If all relative weights are equal, all three
             colors contribute equally in the final image. To weight colors relative
-            to each other, increase or decrease the relative weights.''')
+            to each other, increase or decrease the relative weights.""")
 
         self.blue_contribution = cps.Float(
                 "Relative weight of the blue channel",
-                1, 0, doc='''
+                1, 0, doc="""
             <i>(Used only when combining channels)</i><br>
             Relative weights: If all relative weights are equal, all three
             colors contribute equally in the final image. To weight colors relative
-            to each other, increase or decrease the relative weights.''')
+            to each other, increase or decrease the relative weights.""")
 
         # The following settings are used for the split RGB option
         self.use_red = cps.Binary('Convert red to gray?', True)
@@ -142,7 +142,7 @@ class ColorToGray(cpm.Module):
                      [str(x) for x in range(5, 20)])
 
     def add_channel(self, can_remove=True):
-        '''Add another channel to the channels list'''
+        """Add another channel to the channels list"""
         group = cps.SettingsGroup()
         group.can_remove = can_remove
         group.append("channel_choice", cps.Choice(
@@ -161,11 +161,11 @@ class ColorToGray(cpm.Module):
             for a .PNG file"""))
 
         group.append("contribution", cps.Float(
-                "Relative weight of the channel", 1, 0, doc='''
+                "Relative weight of the channel", 1, 0, doc="""
             <i>(Used only when combining channels)</i><br>
             Relative weights: If all relative weights are equal, all three
             colors contribute equally in the final image. To weight colors relative
-            to each other, increase or decrease the relative weights.'''))
+            to each other, increase or decrease the relative weights."""))
 
         group.append("image_name", cps.ImageNameProvider(
                 "Image name", value="Channel%d" % (len(self.channels) + 1), doc="""
@@ -271,12 +271,12 @@ class ColorToGray(cpm.Module):
 
     @staticmethod
     def get_channel_idx_from_choice(choice):
-        '''Convert one of the channel choice strings to a channel index
+        """Convert one of the channel choice strings to a channel index
 
         choice - one of the strings from channel_choices or similar
                  (string ending in a one-based index)
         returns the zero-based index of the channel.
-        '''
+        """
         return int(re.search("[0-9]+$", choice).group()) - 1
 
     def channels_and_image_names(self):
@@ -402,13 +402,13 @@ class ColorToGray(cpm.Module):
                                   sharexy=figure.subplot(0, 0))
 
     def prepare_settings(self, setting_values):
-        '''Prepare the module to receive the settings
+        """Prepare the module to receive the settings
 
         setting_values - one string per setting to be initialized
 
         Adjust the number of channels to match the number indicated in
         the settings.
-        '''
+        """
         del self.channels[1:]
         nchannels = int(setting_values[SLOT_CHANNEL_COUNT])
         while len(self.channels) < nchannels:

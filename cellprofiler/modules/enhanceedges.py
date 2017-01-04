@@ -1,4 +1,4 @@
-'''<b>Enhance Edges</b> enhances or identifies edges in an image, which can improve object
+"""<b>Enhance Edges</b> enhances or identifies edges in an image, which can improve object
 identification or other downstream image processing.
 <hr>
 This module enhances the edges (gradients) in a grayscale image. All methods
@@ -7,7 +7,7 @@ other than Canny produce a grayscale image that can be used in an
 to produce a binary (black/white) mask of edges. The Canny algorithm
 produces a binary (black/white) mask image consisting of the edge pixels.
 
-'''
+"""
 from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import division
@@ -51,38 +51,38 @@ class EnhanceEdges(cpm.Module):
 
     def create_settings(self):
         self.image_name = cps.ImageNameSubscriber(
-                "Select the input image", cps.NONE, doc='''
-            What did you call the image in which you want to enhance the edges?''')
+                "Select the input image", cps.NONE, doc="""
+            What did you call the image in which you want to enhance the edges?""")
 
         self.output_image_name = cps.ImageNameProvider(
-                "Name the output image", "EdgedImage", doc='''
-            What do you want to call the image with edges enhanced?''')
+                "Name the output image", "EdgedImage", doc="""
+            What do you want to call the image with edges enhanced?""")
 
         self.wants_automatic_threshold = cps.Binary(
-                "Automatically calculate the threshold?", True, doc='''
+                "Automatically calculate the threshold?", True, doc="""
             <i>(Used only with the %(M_CANNY)s option and automatic thresholding)</i> <br>
             Select <i>%(YES)s</i> to automatically calculate the threshold using a three-category
             Otsu algorithm performed on the Sobel transform of the image.
-            <p>Select <i>%(NO)s</i> to manually enter the threshold value.</p>''' % globals())
+            <p>Select <i>%(NO)s</i> to manually enter the threshold value.</p>""" % globals())
 
         self.manual_threshold = cps.Float(
-                "Absolute threshold", 0.2, 0, 1, doc='''
+                "Absolute threshold", 0.2, 0, 1, doc="""
             <i>(Used only with the %(M_CANNY)s option and manual thresholding)</i><br>
             The upper cutoff for Canny edges. All Sobel-transformed
             pixels with this value or higher will be marked as an edge.
-            You can enter a threshold between 0 and 1.''' % globals())
+            You can enter a threshold between 0 and 1.""" % globals())
 
         self.threshold_adjustment_factor = cps.Float(
-                "Threshold adjustment factor", 1, doc='''
+                "Threshold adjustment factor", 1, doc="""
             <i>(Used only with the %(M_CANNY)s option and automatic thresholding)</i><br>
             This threshold adjustment factor is a multiplier that is applied to
             both the lower and upper Canny thresholds if they are calculated
             automatically. An adjustment factor of 1 indicates no adjustment.
-            The adjustment factor has no effect on any threshhold entered manually entered.''' % globals())
+            The adjustment factor has no effect on any threshhold entered manually entered.""" % globals())
 
         self.method = cps.Choice(
                 "Select an edge-finding method",
-                [M_SOBEL, M_PREWITT, M_ROBERTS, M_LOG, M_CANNY, M_KIRSCH], doc='''
+                [M_SOBEL, M_PREWITT, M_ROBERTS, M_LOG, M_CANNY, M_KIRSCH], doc="""
             There are several methods that can be used to enhance edges:
             <ul>
             <li><i>%(M_SOBEL)s:</i> Finds edges using the %(M_SOBEL)s approximation to the derivative.
@@ -105,15 +105,15 @@ class EnhanceEdges(cpm.Module):
             <li><i>%(M_KIRSCH)s:</i> Finds edges by calculating the gradient
             among the 8 compass points (North, North-east, etc.) and selecting
             the maximum as the pixel's value.</li>
-            </ul>''' % globals())
+            </ul>""" % globals())
 
         self.direction = cps.Choice(
                 "Select edge direction to enhance",
-                [E_ALL, E_HORIZONTAL, E_VERTICAL], doc='''
+                [E_ALL, E_HORIZONTAL, E_VERTICAL], doc="""
             <i>(Used only with %(M_PREWITT)s and %(M_SOBEL)s methods)</i> <br>
             The direction of the edges
             are you are identifying in the image (predominantly horizontal, predominantly vertical,
-            or both).''' % globals())
+            or both).""" % globals())
 
         self.wants_automatic_sigma = cps.Binary("Calculate Gaussian's sigma automatically?", True)
 

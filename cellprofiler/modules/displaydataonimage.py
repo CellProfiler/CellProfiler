@@ -1,11 +1,11 @@
-'''<b>Display Data On Image</b> 
+"""<b>Display Data On Image</b> 
 produces an image with measured data on top of identified objects.
 <hr>
 This module displays either a single image measurement on an image of
 your choosing, or one object measurement per object on top
 of every object in an image. The display itself is an image which you
 can save to a file using <b>SaveImages</b>.
-'''
+"""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
@@ -223,7 +223,7 @@ class DisplayDataOnImage(cpm.Module):
         return result
 
     def use_color_map(self):
-        '''True if the measurement values are rendered using a color map'''
+        """True if the measurement values are rendered using a color map"""
         return self.objects_or_image == OI_OBJECTS and \
                self.color_or_text == CT_COLOR and not self.use_as_data_tool
 
@@ -447,7 +447,7 @@ class DisplayDataOnImage(cpm.Module):
             variable_revision_number = 2
 
         if variable_revision_number == 2:
-            '''Added annotation offset'''
+            """Added annotation offset"""
             setting_values = setting_values + ["0"]
             variable_revision_number = 3
 
@@ -470,8 +470,8 @@ class DisplayDataOnImage(cpm.Module):
 
 
 if __name__ == "__main__":
-    ''' For debugging purposes only...
-    '''
+    """ For debugging purposes only...
+    """
     import wx
     from cellprofiler.gui.datatoolframe import DataToolFrame
 

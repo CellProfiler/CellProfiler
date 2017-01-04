@@ -1,11 +1,11 @@
-'''<b>Enhance Or Suppress Features</b> enhances or suppresses certain image features 
+"""<b>Enhance Or Suppress Features</b> enhances or suppresses certain image features 
 (such as speckles, ring shapes, and neurites), which can improve subsequent
 identification of objects.
 <hr>
 This module enhances or suppresses the intensity of certain pixels relative
 to the rest of the image, by applying image processing filters to the image. It
 produces a grayscale image in which objects can be identified using an <b>Identify</b> module.
-'''
+"""
 from __future__ import division
 from __future__ import unicode_literals
 from __future__ import print_function
@@ -357,7 +357,7 @@ class EnhanceOrSuppressFeatures(cpm.Module):
 
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
-        '''Adjust setting values if they came from a previous revision
+        """Adjust setting values if they came from a previous revision
 
         setting_values - a sequence of strings representing the settings
                          for the module as stored in the pipeline
@@ -375,7 +375,7 @@ class EnhanceOrSuppressFeatures(cpm.Module):
         variable_revision_number and True if upgraded to CP 2.0, otherwise
         they should leave things as-is so that the caller can report
         an error.
-        '''
+        """
         if not from_matlab and variable_revision_number == 1:
             #
             # V1 -> V2, added enhance method and hole size

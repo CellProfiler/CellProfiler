@@ -1,4 +1,4 @@
-'''<b>IdentifyDeadWorms</b> identifies dead worms by their shape.
+"""<b>IdentifyDeadWorms</b> identifies dead worms by their shape.
 <hr>
 Dead <i>C. elegans</i> worms most often have a straight shape in an image whereas
 live worms assume a sinusoidal shape. This module identifies dead worms
@@ -34,7 +34,7 @@ Ausubel FM, Carpenter AE (2012). "An image analysis toolbox for high-throughput
 <p>See also: Our <a href="http://www.cellprofiler.org/wormtoolbox/">Worm
 Toolbox</a> page for sample images and pipelines, as well
 as video tutorials.</p>
-'''
+"""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
@@ -64,11 +64,11 @@ C_WORMS = "Worm"
 F_ANGLE = "Angle"
 M_ANGLE = "_".join((C_WORMS, F_ANGLE))
 
-'''Alpha value when drawing the binary mask'''
+"""Alpha value when drawing the binary mask"""
 MASK_ALPHA = .1
-'''Alpha value for labels'''
+"""Alpha value for labels"""
 LABEL_ALPHA = 1.0
-'''Alpha value for the worm shapes'''
+"""Alpha value for the worm shapes"""
 WORM_ALPHA = .25
 
 
@@ -145,13 +145,13 @@ class IdentifyDeadWorms(cpm.Module):
             number is measured in degrees.""")
 
     def settings(self):
-        '''The settings as they appear in the pipeline file'''
+        """The settings as they appear in the pipeline file"""
         return [self.image_name, self.object_name, self.worm_width,
                 self.worm_length, self.angle_count, self.wants_automatic_distance,
                 self.space_distance, self.angular_distance]
 
     def visible_settings(self):
-        '''The settings as they appear in the user interface'''
+        """The settings as they appear in the user interface"""
         result = [self.image_name, self.object_name, self.worm_width,
                   self.worm_length, self.angle_count, self.wants_automatic_distance]
         if not self.wants_automatic_distance:
@@ -159,7 +159,7 @@ class IdentifyDeadWorms(cpm.Module):
         return result
 
     def run(self, workspace):
-        '''Run the algorithm on one image set'''
+        """Run the algorithm on one image set"""
         #
         # Get the image as a binary image
         #
@@ -279,7 +279,7 @@ class IdentifyDeadWorms(cpm.Module):
             workspace.display_data.count = nlabels
 
     def display(self, workspace, figure):
-        '''Show an informative display'''
+        """Show an informative display"""
         import matplotlib
         import cellprofiler.gui.figure
 
@@ -337,13 +337,13 @@ class IdentifyDeadWorms(cpm.Module):
                                     sharexy=plot00)
 
     def get_diamond(self, angle):
-        '''Get a diamond-shaped structuring element
+        """Get a diamond-shaped structuring element
 
         angle - angle at which to tilt the diamond
 
         returns a binary array that can be used as a footprint for
         the erosion
-        '''
+        """
         worm_width = self.worm_width.value
         worm_length = self.worm_length.value
         #
@@ -377,7 +377,7 @@ class IdentifyDeadWorms(cpm.Module):
 
     @staticmethod
     def find_adjacent(img1, offset1, count1, img2, offset2, count2, first, second):
-        '''Find adjacent pairs of points between two masks
+        """Find adjacent pairs of points between two masks
 
         img1, img2 - binary images to be 8-connected
         offset1 - number the foreground points in img1 starting at this offset
@@ -387,7 +387,7 @@ class IdentifyDeadWorms(cpm.Module):
         first, second - prior collection of points
 
         returns augmented collection of points
-        '''
+        """
         numbering1 = np.zeros(img1.shape, int)
         numbering1[img1] = np.arange(count1) + offset1
         numbering2 = np.zeros(img1.shape, int)
@@ -408,14 +408,14 @@ class IdentifyDeadWorms(cpm.Module):
 
     @staticmethod
     def find_adjacent_same(img, offset, count, first, second):
-        '''Find adjacent pairs of points in the same mask
+        """Find adjacent pairs of points in the same mask
         img - binary image to be 8-connected
         offset - where to start numbering
         count - number of foreground points in image
         first, second - prior collection of points
 
         returns augmented collection of points
-        '''
+        """
         numbering = np.zeros(img.shape, int)
         numbering[img] = np.arange(count) + offset
         f = np.zeros(0, int)
@@ -430,21 +430,21 @@ class IdentifyDeadWorms(cpm.Module):
 
     @staticmethod
     def find_adjacent_one(img1, numbering1, img2, numbering2, oi, oj):
-        '''Find correlated pairs of foreground points at given offsets
+        """Find correlated pairs of foreground points at given offsets
 
         img1, img2 - binary images to be correlated
         numbering1, numbering2 - indexes to be returned for pairs
         oi, oj - offset for second image
 
         returns two vectors: index in first and index in second
-        '''
+        """
         i1, i2 = IdentifyDeadWorms.get_slices(oi)
         j1, j2 = IdentifyDeadWorms.get_slices(oj)
         match = img1[i1, j1] & img2[i2, j2]
         return numbering1[i1, j1][match], numbering2[i2, j2][match]
 
     def find_adjacent_by_distance(self, i, j, a):
-        '''Return pairs of worm centers that are deemed adjacent by distance
+        """Return pairs of worm centers that are deemed adjacent by distance
 
         i - i-centers of worms
         j - j-centers of worms
@@ -452,7 +452,7 @@ class IdentifyDeadWorms(cpm.Module):
 
         Returns two vectors giving the indices of the first and second
         centers that are connected.
-        '''
+        """
         if len(i) < 2:
             return np.zeros(len(i), int), np.zeros(len(i), int)
         if self.wants_automatic_distance:
@@ -510,7 +510,7 @@ class IdentifyDeadWorms(cpm.Module):
 
     @staticmethod
     def get_slices(offset):
-        '''Get slices to use for a pair of arrays, given an offset
+        """Get slices to use for a pair of arrays, given an offset
 
         offset - offset to be applied to the second array
 
@@ -518,7 +518,7 @@ class IdentifyDeadWorms(cpm.Module):
         an offset of 1 means that the first array has a slice of :-1
         and the second has a slice of 1:. Return the slice to use
         for the first and second arrays.
-        '''
+        """
         if offset > 0:
             s0, s1 = slice(0, -offset), slice(offset, np.iinfo(int).max)
         elif offset < 0:
@@ -528,7 +528,7 @@ class IdentifyDeadWorms(cpm.Module):
         return s0, s1
 
     def get_measurement_columns(self, pipeline):
-        '''Return column definitions for measurements made by this module'''
+        """Return column definitions for measurements made by this module"""
         object_name = self.object_name.value
         return [(object_name, I.M_LOCATION_CENTER_X, cpmeas.COLTYPE_INTEGER),
                 (object_name, I.M_LOCATION_CENTER_Y, cpmeas.COLTYPE_INTEGER),
@@ -558,7 +558,7 @@ class IdentifyDeadWorms(cpm.Module):
 
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
-        '''Upgrade the settings from a previous revison'''
+        """Upgrade the settings from a previous revison"""
         if variable_revision_number == 1:
             setting_values = setting_values + [
                 cps.YES, 5, 30]

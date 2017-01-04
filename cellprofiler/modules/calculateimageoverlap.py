@@ -12,7 +12,7 @@ import cellprofiler.icons
 from cellprofiler.gui.help import PROTIP_RECOMEND_ICON
 from functools import reduce
 
-__doc__ = '''
+__doc__ = """
 <b>Calculate Image Overlap </b> calculates how much overlap occurs between the white portions of two black and white images
 <hr>
 This module calculates overlap by determining a set of statistics that measure the closeness of an image or object
@@ -72,7 +72,7 @@ Research</i>, 23, 231-242 <a href="http://dx.doi.org/10.1207/s15327906mbr2302_6"
 <li>Pele O, Werman M (2009) "Fast and Robust Earth Mover's Distances",
 <i>2009 IEEE 12th International Conference on Computer Vision</i></li>
 </ul>
-'''
+"""
 
 import numpy as np
 
@@ -261,7 +261,7 @@ class CalculateImageOverlap(cpm.Module):
             self.measure_objects(workspace)
 
     def measure_image(self, workspace):
-        '''Add the image overlap measurements'''
+        """Add the image overlap measurements"""
 
         image_set = workspace.image_set
         ground_truth_image = image_set.get_image(self.ground_truth.value,
@@ -646,7 +646,7 @@ class CalculateImageOverlap(cpm.Module):
                                (ground_truth_labels, test_labels))).toarray()
 
             def choose2(x):
-                '''Compute # of pairs of x things = x * (x-1) / 2'''
+                """Compute # of pairs of x things = x * (x-1) / 2"""
                 return x * (x - 1) / 2
 
             #
@@ -690,7 +690,7 @@ class CalculateImageOverlap(cpm.Module):
         return rand_index, adjusted_rand_index
 
     def compute_rand_index_ijv(self, gt_ijv, test_ijv, shape):
-        '''Compute the Rand Index for an IJV matrix
+        """Compute the Rand Index for an IJV matrix
 
         This is in part based on the Omega Index:
         Collins, "Omega: A General Formulation of the Rand Index of Cluster
@@ -700,7 +700,7 @@ class CalculateImageOverlap(cpm.Module):
         The basic idea of the paper is that a pair should be judged to
         agree only if the number of clusters in which they appear together
         is the same.
-        '''
+        """
         #
         # The idea here is to assign a label to every pixel position based
         # on the set of labels given to that position by both the ground
@@ -832,14 +832,14 @@ class CalculateImageOverlap(cpm.Module):
         return rand_index, adjusted_rand_index
 
     def compute_emd(self, src_objects, dest_objects):
-        '''Compute the earthmovers distance between two sets of objects
+        """Compute the earthmovers distance between two sets of objects
 
         src_objects - move pixels from these objects
 
         dest_objects - move pixels to these objects
 
         returns the earth mover's distance
-        '''
+        """
         #
         # if either foreground set is empty, the emd is the penalty.
         #
@@ -879,7 +879,7 @@ class CalculateImageOverlap(cpm.Module):
         return labels_mask
 
     def get_skeleton_points(self, obj):
-        '''Get points by skeletonizing the objects and decimating'''
+        """Get points by skeletonizing the objects and decimating"""
         ii = []
         jj = []
         total_skel = np.zeros(obj.shape, bool)
@@ -923,7 +923,7 @@ class CalculateImageOverlap(cpm.Module):
         return i, j
 
     def get_kmeans_points(self, src_obj, dest_obj):
-        '''Get representative points in the objects using K means
+        """Get representative points in the objects using K means
 
         src_obj - get some of the foreground points from the source objects
         dest_obj - get the rest of the foreground points from the destination
@@ -931,7 +931,7 @@ class CalculateImageOverlap(cpm.Module):
 
         returns a vector of i coordinates of representatives and a vector
                 of j coordinates
-        '''
+        """
         from sklearn.cluster import KMeans
 
         ijv = np.vstack((src_obj.ijv, dest_obj.ijv))
@@ -946,11 +946,11 @@ class CalculateImageOverlap(cpm.Module):
                kmeans.cluster_centers_[:, 1].astype(np.uint32)
 
     def get_weights(self, i, j, labels_mask):
-        '''Return the weights to assign each i,j point
+        """Return the weights to assign each i,j point
 
         Assign each pixel in the labels mask to the nearest i,j and return
         the number of pixels assigned to each i,j
-        '''
+        """
         #
         # Create a mapping of chosen points to their index in the i,j array
         #
@@ -980,7 +980,7 @@ class CalculateImageOverlap(cpm.Module):
         return result
 
     def display(self, workspace, figure):
-        '''Display the image confusion matrix & statistics'''
+        """Display the image confusion matrix & statistics"""
         figure.set_subplots((3, 2))
         for x, y, image, label in (
                 (0, 0, workspace.display_data.true_positives, "True positives"),
@@ -1005,20 +1005,20 @@ class CalculateImageOverlap(cpm.Module):
         return name
 
     def get_categories(self, pipeline, object_name):
-        '''Return the measurement categories for an object'''
+        """Return the measurement categories for an object"""
         if object_name == cpmeas.IMAGE:
             return [C_IMAGE_OVERLAP]
         return []
 
     def get_measurements(self, pipeline, object_name, category):
-        '''Return the measurements made for a category'''
+        """Return the measurements made for a category"""
         if object_name == cpmeas.IMAGE and category == C_IMAGE_OVERLAP:
             return self.all_features()
         return []
 
     def get_measurement_images(self, pipeline, object_name, category,
                                measurement):
-        '''Return the images that were used when making the measurement'''
+        """Return the images that were used when making the measurement"""
         if measurement in self.get_measurements(pipeline, object_name, category) \
                 and self.obj_or_img == O_IMG:
             return [self.test_img.value]
@@ -1026,7 +1026,7 @@ class CalculateImageOverlap(cpm.Module):
 
     def get_measurement_scales(
             self, pipeline, object_name, category, measurement, image_name):
-        '''Return a "scale" that captures the measurement parameters
+        """Return a "scale" that captures the measurement parameters
 
         pipeline - the module's pipeline
 
@@ -1040,7 +1040,7 @@ class CalculateImageOverlap(cpm.Module):
 
         The "scale" in this case is the combination of ground-truth objects and
         test objects.
-        '''
+        """
         if (object_name == cpmeas.IMAGE and category == C_IMAGE_OVERLAP and
                     measurement in FTR_ALL and self.obj_or_img == O_OBJ):
             return ["_".join((self.object_name_GT.value,
@@ -1048,14 +1048,14 @@ class CalculateImageOverlap(cpm.Module):
         return []
 
     def all_features(self):
-        '''Return a list of all the features measured by this module'''
+        """Return a list of all the features measured by this module"""
         all_features = list(FTR_ALL)
         if self.wants_emd:
             all_features.append(FTR_EARTH_MOVERS_DISTANCE)
         return all_features
 
     def get_measurement_columns(self, pipeline):
-        '''Return database column information for each measurement'''
+        """Return database column information for each measurement"""
         return [(cpmeas.IMAGE,
                  self.measurement_name(feature),
                  cpmeas.COLTYPE_FLOAT)

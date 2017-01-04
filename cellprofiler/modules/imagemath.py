@@ -1,4 +1,4 @@
-'''<b>Image Math</b> performs simple mathematical operations on image intensities.
+"""<b>Image Math</b> performs simple mathematical operations on image intensities.
 <hr>
 This module can perform addition, subtraction, multiplication, division, or averaging
 of two or more image intensities, as well as inversion, log transform, or scaling by
@@ -12,7 +12,7 @@ display purposes, so additional rescaling may be needed. Please see the
 <b>RescaleIntensity</b> module for more scaling options.</p>
 
 See also <b>ApplyThreshold</b>, <b>RescaleIntensity</b>, <b>CorrectIlluminationCalculate</b>.
-'''
+"""
 from __future__ import division
 from __future__ import unicode_literals
 from __future__ import print_function
@@ -223,7 +223,7 @@ class ImageMath(cellprofiler.module.ImageProcessing):
 
     @property
     def operand_count(self):
-        '''# of operands, taking the operation into consideration'''
+        """# of operands, taking the operation into consideration"""
         if self.operation.value in (O_INVERT, O_LOG_TRANSFORM, O_LOG_TRANSFORM_LEGACY, O_NONE, O_NOT):
             return 1
         return len(self.images)
@@ -469,7 +469,7 @@ class ImageMath(cellprofiler.module.ImageProcessing):
             )
 
     def validate_module(self, pipeline):
-        '''Guarantee that at least one operand is an image'''
+        """Guarantee that at least one operand is an image"""
         for i in range(self.operand_count):
             op = self.images[i]
             if op.image_or_measurement == IM_IMAGE:

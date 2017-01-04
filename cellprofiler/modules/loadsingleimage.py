@@ -105,7 +105,7 @@ class LoadSingleImage(cpm.Module):
 
         """
         self.directory = cps.DirectoryPath(
-                "Input image file location", support_urls=True, doc='''
+                "Input image file location", support_urls=True, doc="""
             Select the folder containing the image(s) to be loaded. Generally,
             it is best to store the image you want to load in either the Default Input or
             Output Folder, so that the correct image is loaded into the pipeline
@@ -117,7 +117,7 @@ class LoadSingleImage(cpm.Module):
             subfolder options and then specify a subfolder name of "\g&lt;Plate&gt;"
             to get the files from the subfolder associated with that image's plate. The module will
             substitute the metadata values for the current image set for any metadata tags in the
-            folder name. %(USING_METADATA_HELP_REF)s.</p>''' % globals())
+            folder name. %(USING_METADATA_HELP_REF)s.</p>""" % globals())
 
         self.file_settings = []
         self.add_file(can_remove=False)
@@ -177,10 +177,10 @@ class LoadSingleImage(cpm.Module):
                     </ul>""" % globals()))
 
         group.append("image_name", cps.FileImageNameProvider("Name the image that will be loaded",
-                                                             "OrigBlue", doc='''
+                                                             "OrigBlue", doc="""
                     <i>(Used only if an image is output)</i><br>
                     Enter the name of the image that will be loaded.
-                    You can use this name to select the image in downstream modules.'''))
+                    You can use this name to select the image in downstream modules."""))
 
         group.append("rescale", cps.Binary(
                 "Rescale intensities?", True, doc="""
@@ -270,7 +270,7 @@ class LoadSingleImage(cpm.Module):
             self.add_file()
 
     def prepare_to_create_batch(self, workspace, fn_alter_path):
-        '''Prepare to create a batch file
+        """Prepare to create a batch file
 
         This function is called when CellProfiler is about to create a
         file for batch processing. It will pickle the image set list's
@@ -284,7 +284,7 @@ class LoadSingleImage(cpm.Module):
                         handles issues such as replacing backslashes and
                         mapping mountpoints. It should be called for every
                         pathname stored in the settings or legacy fields.
-        '''
+        """
         self.directory.alter_for_create_batch_files(fn_alter_path)
         return True
 
@@ -312,7 +312,7 @@ class LoadSingleImage(cpm.Module):
         return result
 
     def get_file_settings(self, image_name):
-        '''Get the file settings associated with a given image name'''
+        """Get the file settings associated with a given image name"""
         for file_setting in self.file_settings:
             if (file_setting.image_objects_choice == IO_IMAGES and
                         file_setting.image_name == image_name):
@@ -323,7 +323,7 @@ class LoadSingleImage(cpm.Module):
         return None
 
     def file_wants_images(self, file_setting):
-        '''True if the file_setting produces images, false if it produces objects'''
+        """True if the file_setting produces images, false if it produces objects"""
         return file_setting.image_objects_choice == IO_IMAGES
 
     def is_load_module(self):
@@ -476,13 +476,13 @@ class LoadSingleImage(cpm.Module):
 
     @property
     def wants_images(self):
-        '''True if any file setting loads images'''
+        """True if any file setting loads images"""
         return any([True for file_setting in self.file_settings
                     if file_setting.image_objects_choice == IO_IMAGES])
 
     @property
     def wants_objects(self):
-        '''True if any file setting loads objects'''
+        """True if any file setting loads objects"""
         return any([True for file_setting in self.file_settings
                     if file_setting.image_objects_choice == IO_OBJECTS])
 
@@ -500,11 +500,11 @@ class LoadSingleImage(cpm.Module):
         return result
 
     def get_measurements(self, pipeline, object_name, category):
-        '''Return the measurements that this module produces
+        """Return the measurements that this module produces
 
         object_name - return measurements made on this object (or 'Image' for image measurements)
         category - return measurements made in this category
-        '''
+        """
         result = []
         if object_name == cpmeas.IMAGE:
             if category in (C_FILE_NAME, C_MD5_DIGEST, C_PATH_NAME, C_SCALING, C_HEIGHT, C_WIDTH):
@@ -554,7 +554,7 @@ class LoadSingleImage(cpm.Module):
                         group.file_name)
 
     def validate_module_warnings(self, pipeline):
-        '''Check for potentially dangerous settings'''
+        """Check for potentially dangerous settings"""
         # Check that user-specified names don't have bad characters
         invalid_chars_pattern = "^[A-Za-z][A-Za-z0-9_]+$"
         warning_text = "The image name has questionable characters. The pipeline can use this name " \
@@ -568,7 +568,7 @@ class LoadSingleImage(cpm.Module):
         return True
 
     def convert(self, pipeline, metadata, namesandtypes, groups):
-        '''Convert from legacy to modern'''
+        """Convert from legacy to modern"""
         import cellprofiler.modules.metadata as cpmetadata
         import cellprofiler.modules.namesandtypes as cpnamesandtypes
         import cellprofiler.modules.groups as cpgroups

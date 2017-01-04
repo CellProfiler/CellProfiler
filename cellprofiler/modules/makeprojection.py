@@ -8,7 +8,7 @@ from builtins import *
 from past.utils import old_div
 from cellprofiler.gui.help import LOADING_IMAGE_SEQ_HELP_REF
 
-__doc__ = '''
+__doc__ = """
 <b>Make Projection</b> combines several two-dimensional images of
 the same field of view together, either by performing a mathematical operation
 upon the pixel values at each pixel position.
@@ -35,7 +35,7 @@ output of this module is not complete until all image processing cycles have com
 the projection should be created with a dedicated pipeline.</p>
 
 See also the help for the <b>Input</b> modules.
-''' % globals()
+""" % globals()
 
 import numpy as np
 
@@ -64,12 +64,12 @@ class MakeProjection(cpm.Module):
 
     def create_settings(self):
         self.image_name = cps.ImageNameSubscriber(
-                'Select the input image', cps.NONE, doc='''
-            Select the image to be made into a projection.''')
+                'Select the input image', cps.NONE, doc="""
+            Select the image to be made into a projection.""")
 
         self.projection_type = cps.Choice(
                 'Type of projection',
-                P_ALL, doc='''
+                P_ALL, doc="""
             The final projection image can be created by the following methods:
             <ul>
             <li><i>%(P_AVERAGE)s:</i> Use the average pixel intensity at each pixel position.</li>
@@ -115,12 +115,12 @@ class MakeProjection(cpm.Module):
             automated analysis of macrophage images", <i>PLoS ONE</i> 4(10): e7497
             <a href="http://dx.doi.org/10.1371/journal.pone.0007497">(link)</a>.</li>
             </ul>
-            </p>''' % globals())
+            </p>""" % globals())
 
         self.projection_image_name = cps.ImageNameProvider(
                 'Name the output image',
-                'ProjectionBlue', doc='''
-            Enter the name for the projected image.''',
+                'ProjectionBlue', doc="""
+            Enter the name for the projected image.""",
                 provided_attributes={cps.AGGREGATE_IMAGE_ATTRIBUTE: True,
                                      cps.AVAILABLE_ON_LAST_ATTRIBUTE: True})
         self.frequency = cps.Float(
@@ -144,7 +144,7 @@ class MakeProjection(cpm.Module):
         return result
 
     def prepare_group(self, workspace, grouping, image_numbers):
-        '''Reset the aggregate image at the start of group processing'''
+        """Reset the aggregate image at the start of group processing"""
         if len(image_numbers) > 0:
             provider = ImageProvider(self.projection_image_name.value,
                                      self.projection_type.value,
@@ -168,15 +168,15 @@ class MakeProjection(cpm.Module):
                 provider.provide_image(workspace.image_set).pixel_data
 
     def is_aggregation_module(self):
-        '''Return True because we aggregate over all images in a group'''
+        """Return True because we aggregate over all images in a group"""
         return True
 
     def post_group(self, workspace, grouping):
-        '''Handle processing that takes place at the end of a group
+        """Handle processing that takes place at the end of a group
 
         Add the provider to the workspace if not present. This could
         happen if the image set didn't reach this module.
-        '''
+        """
         image_set = workspace.image_set
         if self.projection_image_name.value not in image_set.names:
             provider = ImageProvider.restore_from_state(self.get_dictionary())
@@ -267,10 +267,10 @@ class ImageProvider(cpi.AbstractImageProvider):
     D_NORM0 = "norm0"
 
     def save_state(self, d):
-        '''Save the provider state to a dictionary
+        """Save the provider state to a dictionary
 
         d - store state in this dictionary
-        '''
+        """
         d[self.D_NAME] = self.__name
         d[self.D_FREQUENCY] = self.frequency
         d[self.D_IMAGE] = self.__image
@@ -287,12 +287,12 @@ class ImageProvider(cpi.AbstractImageProvider):
 
     @staticmethod
     def restore_from_state(d):
-        '''Create a provider from the state stored in the dictionary
+        """Create a provider from the state stored in the dictionary
 
         d - dictionary from call to save_state
 
         returns a new ImageProvider built from the saved state
-        '''
+        """
         name = d[ImageProvider.D_NAME]
         frequency = d[ImageProvider.D_FREQUENCY]
         how_to_accumulate = d[ImageProvider.D_HOW_TO_ACCUMULATE]
@@ -310,7 +310,7 @@ class ImageProvider(cpi.AbstractImageProvider):
         return image_provider
 
     def reset(self):
-        '''Reset accumulator at start of groups'''
+        """Reset accumulator at start of groups"""
         self.__image_count = None
         self.__image = None
         self.__cached_image = None
@@ -468,5 +468,5 @@ class ImageProvider(cpi.AbstractImageProvider):
         return self.__name
 
     def release_memory(self):
-        '''Don't discard the image at end of image set'''
+        """Don't discard the image at end of image set"""
         pass

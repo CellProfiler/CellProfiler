@@ -1,4 +1,4 @@
-'''<b>Unmix Colors</b> creates separate images per dye stain for histologically
+"""<b>Unmix Colors</b> creates separate images per dye stain for histologically
 stained images.
 <hr>
 This module creates separate grayscale images from a color image stained
@@ -37,7 +37,7 @@ deconvolution." <i>Analytical & Quantitative Cytology & Histology</i>, 23: 291-2
 </ul>
 
 See also <b>ColorToGray</b>.
-'''
+"""
 from __future__ import division
 from __future__ import unicode_literals
 from __future__ import print_function
@@ -60,7 +60,7 @@ import cellprofiler.setting as cps
 
 
 def html_color(rgb):
-    '''Return an HTML color for a given stain'''
+    """Return an HTML color for a given stain"""
     rgb = np.exp(-np.array(rgb)) * 255
     rgb = rgb.astype(int)
     color = hex((rgb[0] * 256 + rgb[1]) * 256 + rgb[2])
@@ -292,7 +292,7 @@ class UnmixColors(cpm.Module):
         self.outputs.append(group)
 
     def settings(self):
-        '''The settings as saved to or loaded from the pipeline'''
+        """The settings as saved to or loaded from the pipeline"""
         result = [self.stain_count, self.input_image_name]
         for output in self.outputs:
             result += [output.image_name, output.stain_choice,
@@ -301,7 +301,7 @@ class UnmixColors(cpm.Module):
         return result
 
     def visible_settings(self):
-        '''The settings visible to the user'''
+        """The settings visible to the user"""
         result = [self.input_image_name]
         for output in self.outputs:
             if output.can_remove:
@@ -316,7 +316,7 @@ class UnmixColors(cpm.Module):
         return result
 
     def run(self, workspace):
-        '''Unmix the colors on an image in the image set'''
+        """Unmix the colors on an image in the image set"""
         input_image_name = self.input_image_name.value
         input_image = workspace.image_set.get_image(input_image_name,
                                                     must_be_rgb=True)
@@ -328,7 +328,7 @@ class UnmixColors(cpm.Module):
             self.run_on_output(workspace, input_image, output)
 
     def run_on_output(self, workspace, input_image, output):
-        '''Produce one image - storing it in the image set'''
+        """Produce one image - storing it in the image set"""
         input_pixels = input_image.pixel_data
         inverse_absorbances = self.get_inverse_absorbances(output)
         #########################################
@@ -364,7 +364,7 @@ class UnmixColors(cpm.Module):
             workspace.display_data.outputs[image_name] = image
 
     def display(self, workspace, figure):
-        '''Display all of the images in a figure'''
+        """Display all of the images in a figure"""
         figure.set_subplots((len(self.outputs) + 1, 1))
         input_image = workspace.display_data.input_image
         figure.subplot_imshow_color(0, 0, input_image,
@@ -378,7 +378,7 @@ class UnmixColors(cpm.Module):
                                             sharexy=ax)
 
     def get_absorbances(self, output):
-        '''Given one of the outputs, return the red, green and blue absorbance'''
+        """Given one of the outputs, return the red, green and blue absorbance"""
 
         if output.stain_choice == CHOICE_CUSTOM:
             result = np.array(
@@ -392,13 +392,13 @@ class UnmixColors(cpm.Module):
         return result
 
     def get_inverse_absorbances(self, output):
-        '''Get the inverse of the absorbance matrix corresponding to the output
+        """Get the inverse of the absorbance matrix corresponding to the output
 
         output - one of the rows of self.output
 
         returns a 3-tuple which is the column of the inverse of the matrix
         of absorbances corresponding to the entered row.
-        '''
+        """
         idx = self.outputs.index(output)
         absorbance_array = np.array([self.get_absorbances(o)
                                      for o in self.outputs])
@@ -406,10 +406,10 @@ class UnmixColors(cpm.Module):
         return np.array(absorbance_matrix.I[:, idx]).flatten()
 
     def estimate_absorbance(self):
-        '''Load an image and use it to estimate the absorbance of a stain
+        """Load an image and use it to estimate the absorbance of a stain
 
         Returns a 3-tuple of the R/G/B absorbances
-        '''
+        """
 
         from cellprofiler.modules.loadimages import LoadImagesImageProvider
         import wx

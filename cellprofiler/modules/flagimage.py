@@ -1,4 +1,4 @@
-'''<b>Flag Image</b> allows you to flag an image based on properties
+"""<b>Flag Image</b> allows you to flag an image based on properties
 that you specify, for example, quality control measurements.
 <hr>
 
@@ -22,7 +22,7 @@ measurements is outside of the bounds.
 
 This module must be placed in the pipeline after the relevant measurement
 modules upon which the flags are based.
-'''
+"""
 from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import division
@@ -59,15 +59,15 @@ S_RULES = "Rules"
 S_CLASSIFIER = "Classifier"
 S_ALL = [S_IMAGE, S_AVERAGE_OBJECT, S_ALL_OBJECTS, S_RULES, S_CLASSIFIER]
 
-'''Number of settings in the module, aside from those in the flags'''
+"""Number of settings in the module, aside from those in the flags"""
 N_FIXED_SETTINGS = 1
 
-'''Number of settings in each flag, aside from those in the measurements'''
+"""Number of settings in each flag, aside from those in the measurements"""
 N_FIXED_SETTINGS_PER_FLAG = 5
 
 N_SETTINGS_PER_MEASUREMENT_V2 = 7
 N_SETTINGS_PER_MEASUREMENT_V3 = 9
-'''Number of settings per measurement'''
+"""Number of settings per measurement"""
 N_SETTINGS_PER_MEASUREMENT = 10
 
 
@@ -91,7 +91,7 @@ class FlagImage(cpm.Module):
         group.append("measurement_count", cps.HiddenCount(group.measurement_settings))
         group.append("category",
                      cps.Text(
-                             "Name the flag's category", "Metadata", doc='''
+                             "Name the flag's category", "Metadata", doc="""
                         Name a measurement category by which to categorize the flag. The <i>Metadata</i>
                         category is the default used in CellProfiler to store information about
                         images (referred to as <i>metadata</i>).</p>
@@ -99,21 +99,21 @@ class FlagImage(cpm.Module):
                         flag's category and feature name, underscore delimited.
                         For instance, if the measurement category is
                         <i>Metadata</i> and the feature name is <i>QCFlag</i>, then the default
-                        measurement name would be <i>Metadata_QCFlag</i>. %s</p>''' % USING_METADATA_HELP_REF))
+                        measurement name would be <i>Metadata_QCFlag</i>. %s</p>""" % USING_METADATA_HELP_REF))
 
         group.append("feature_name",
                      cps.Text(
-                             "Name the flag", "QCFlag", doc='''
+                             "Name the flag", "QCFlag", doc="""
                         The flag is stored as a per-image measurement whose name is a combination of the
                         flag's category and feature name, separated by underscores.
                         For instance, if the measurement category is
                         <i>Metadata</i> and the feature name is <i>QCFlag</i>, then the default
-                        measurement name would be <i>Metadata_QCFlag</i>.'''))
+                        measurement name would be <i>Metadata_QCFlag</i>."""))
 
         group.append("combination_choice",
                      cps.Choice(
                              "How should measurements be linked?",
-                             [C_ANY, C_ALL], doc='''
+                             [C_ANY, C_ALL], doc="""
                         For combinations of measurements, you can set the criteria under which an image set is flagged:
                         <ul>
                         <li><i>%(C_ANY)s:</i> An image set will be flagged if any of its measurements fail. This can be useful
@@ -122,7 +122,7 @@ class FlagImage(cpm.Module):
                         <li><i>%(C_ALL)s:</i> A flag will only be assigned if all measurements fail.  This can be useful
                         for flagging images that possess only a combination
                         of QC flaws; for example, you can flag only images that are both bright and out of focus.</li>
-                        </ul>''' % globals()))
+                        </ul>""" % globals()))
 
         group.append("wants_skip",
                      cps.Binary(
@@ -156,7 +156,7 @@ class FlagImage(cpm.Module):
         group.append("divider1", cps.Divider(line=False))
         group.append("source_choice",
                      cps.Choice(
-                             "Flag is based on", S_ALL, doc='''
+                             "Flag is based on", S_ALL, doc="""
                         <ul>
                         <li><i>%(S_IMAGE)s:</i> A per-image measurement, such as intensity or
                         granularity.</li>
@@ -170,14 +170,14 @@ class FlagImage(cpm.Module):
                         in the rules file upstream of this module.</li>
                         <li><i>%(S_CLASSIFIER)s:</i> Use a classifier built by CellProfiler Analyst.</li>
                         </ul>
-                        ''' % globals()))
+                        """ % globals()))
 
         group.append("object_name",
                      cps.ObjectNameSubscriber(
                              "Select the object to be used for flagging",
-                             cps.NONE, doc='''
+                             cps.NONE, doc="""
                         <i>(Used only when flag is based on an object measurement)</i><br>
-                        Select the objects whose measurements you want to use for flagging.'''))
+                        Select the objects whose measurements you want to use for flagging."""))
 
         def object_fn():
             if group.source_choice == S_IMAGE:
@@ -192,7 +192,7 @@ class FlagImage(cpm.Module):
                         %(IO_FOLDER_CHOICE_HELP_TEXT)s""" % globals()))
 
         def get_directory_fn():
-            '''Get the directory for the rules file name'''
+            """Get the directory for the rules file name"""
             return group.rules_directory.get_absolute_path()
 
         def set_directory_fn(path):
@@ -218,7 +218,7 @@ class FlagImage(cpm.Module):
                         positive score is higher than the negative score.</p>""" % globals()))
 
         def get_rules_class_choices(group=group):
-            '''Get the available choices from the rules file'''
+            """Get the available choices from the rules file"""
             try:
                 if group.source_choice == S_CLASSIFIER:
                     return self.get_bin_labels(group)
@@ -258,17 +258,17 @@ class FlagImage(cpm.Module):
 
         group.append("wants_minimum",
                      cps.Binary(
-                             "Flag images based on low values?", True, doc='''
+                             "Flag images based on low values?", True, doc="""
                          Select <i>%(YES)s</i> to flag images with measurements below the specified cutoff.
-                         If the measurement evaluates to Not-A-Number (NaN), then the image is not flagged.''' % globals()))
+                         If the measurement evaluates to Not-A-Number (NaN), then the image is not flagged.""" % globals()))
 
         group.append("minimum_value", cps.Float("Minimum value", 0))
 
         group.append("wants_maximum",
                      cps.Binary(
-                             "Flag images based on high values?", True, doc='''
+                             "Flag images based on high values?", True, doc="""
                          Select <i>%(YES)s</i> to flag images with measurements above the specified cutoff.
-                         If the measurement evaluates to Not-A-Number (NaN), then the image is not flagged.''' % globals()))
+                         If the measurement evaluates to Not-A-Number (NaN), then the image is not flagged.""" % globals()))
 
         group.append("maximum_value", cps.Float("Maximum value", 1))
 
@@ -292,7 +292,7 @@ class FlagImage(cpm.Module):
         return result
 
     def prepare_settings(self, setting_values):
-        '''Construct the correct number of flags'''
+        """Construct the correct number of flags"""
         flag_count = int(setting_values[0])
         del self.flags[:]
         self.add_flag(can_delete=False)
@@ -361,7 +361,7 @@ class FlagImage(cpm.Module):
         return result
 
     def validate_module(self, pipeline):
-        '''If using rules, validate them'''
+        """If using rules, validate them"""
         for flag in self.flags:
             for measurement_setting in flag.measurement_settings:
                 if measurement_setting.source_choice == S_RULES:
@@ -513,7 +513,7 @@ class FlagImage(cpm.Module):
         return "_".join((flag.category.value, flag.feature_name.value))
 
     def get_rules(self, measurement_group):
-        '''Read the rules from a file'''
+        """Read the rules from a file"""
         rules_file = measurement_group.rules_file_name.value
         rules_directory = measurement_group.rules_directory.get_absolute_path()
         path = os.path.join(rules_directory, rules_file)
@@ -525,10 +525,10 @@ class FlagImage(cpm.Module):
             return rules
 
     def load_classifier(self, measurement_group):
-        '''Load the classifier pickle if not cached
+        """Load the classifier pickle if not cached
 
         returns classifier, bin_labels, name and features
-        '''
+        """
         d = self.get_dictionary()
         file_ = measurement_group.rules_file_name.value
         directory_ = measurement_group.rules_directory.get_absolute_path()
@@ -573,7 +573,7 @@ class FlagImage(cpm.Module):
         return statistics
 
     def eval_measurement(self, workspace, ms):
-        '''Evaluate a measurement
+        """Evaluate a measurement
 
         workspace - holds the measurements to be evaluated
         ms - the measurement settings indicating how to evaluate
@@ -582,7 +582,7 @@ class FlagImage(cpm.Module):
            first tuple element is True = pass, False = Fail
            second tuple element has all of the statistics except for the
                         flag name
-        '''
+        """
         m = workspace.measurements
         assert isinstance(m, cpmeas.Measurements)
         fail = False
@@ -678,7 +678,7 @@ class FlagImage(cpm.Module):
                              "Fail" if fail else "Pass"))
 
     def get_measurement_columns(self, pipeline):
-        '''Return column definitions for each flag mesurment in the module'''
+        """Return column definitions for each flag mesurment in the module"""
         return [(cpmeas.IMAGE, self.measurement_name(flag), cpmeas.COLTYPE_INTEGER)
                 for flag in self.flags]
 

@@ -1,4 +1,4 @@
-'''<b>Calculate Statistics</b> calculates measures of assay quality 
+"""<b>Calculate Statistics</b> calculates measures of assay quality 
 (V and Z' factors) and dose response data (EC50) for all measured features
 made from images.
 <hr>
@@ -109,7 +109,7 @@ Here is an example file:<br><br>
 <br>
 
 See also the <b>Metadata</b> and legacy <b>LoadData</b> modules.
-'''
+"""
 from __future__ import division
 from __future__ import unicode_literals
 from __future__ import print_function
@@ -136,7 +136,7 @@ from cellprofiler.preferences import standardize_default_folder_names, \
 from cellprofiler.setting import YES, NO
 from functools import reduce
 
-'''# of settings aside from the dose measurements'''
+"""# of settings aside from the dose measurements"""
 FIXED_SETTING_COUNT = 1
 VARIABLE_SETTING_COUNT = 5
 
@@ -163,7 +163,7 @@ class CalculateStatistics(cpm.Module):
 
         self.grouping_values = cps.Measurement(
                 "Select the image measurement describing the positive and negative control status",
-                lambda: cpmeas.IMAGE, doc='''
+                lambda: cpmeas.IMAGE, doc="""
             The Z' factor, a measure of assay quality, is calculated by this
             module based on measurements from images that are specified as positive controls
             and images that are specified as negative controls. (Images that are neither are
@@ -182,17 +182,17 @@ class CalculateStatistics(cpm.Module):
             a text comma-delimited (CSV) file outside of CellProfiler and then load that file into the pipeline
             using the <b>Metadata</b> module or the legacy <b>LoadData</b> module. In that case, choose the
             measurement that matches the column header of the measurement
-            in the input file. See the <b>Metadata</b> module help for an example text file.''')
+            in the input file. See the <b>Metadata</b> module help for an example text file.""")
         self.dose_values = []
         self.add_dose_value(can_remove=False)
         self.add_dose_button = cps.DoSomething("", "Add another dose specification",
                                                self.add_dose_value)
 
     def add_dose_value(self, can_remove=True):
-        '''Add a dose value measurement to the list
+        """Add a dose value measurement to the list
 
         can_delete - set this to False to keep from showing the "remove"
-                     button for images that must be present.'''
+                     button for images that must be present."""
         group = cps.SettingsGroup()
         group.append("measurement",
                      cps.Measurement("Select the image measurement describing the treatment dose",
@@ -210,25 +210,25 @@ class CalculateStatistics(cpm.Module):
             """))
 
         group.append("log_transform", cps.Binary(
-                "Log-transform the dose values?", False, doc='''
+                "Log-transform the dose values?", False, doc="""
             Select <i>%(YES)s</i> if you have dose-response data and you want to log-transform
             the dose values before fitting a sigmoid curve.
             <p>Select <i>%(NO)s</i> if your data values indicate only positive vs. negative
-            controls.</p>''' % globals()))
+            controls.</p>""" % globals()))
 
         group.append('wants_save_figure', cps.Binary(
-                '''Create dose/response plots?''', False, doc='''<a name='wants_save_figure'></a>
+                """Create dose/response plots?""", False, doc="""<a name='wants_save_figure'></a>
             Select <i>%(YES)s</i> if you want to create and save
-            dose response plots. You will be asked for information on how to save the plots.''' % globals()))
+            dose response plots. You will be asked for information on how to save the plots.""" % globals()))
 
         group.append('figure_name', cps.Text(
-                "Figure prefix", "", doc='''
+                "Figure prefix", "", doc="""
             <i>(Used only when creating dose/response plots)</i><br>
             CellProfiler will create a file name by appending the measurement name
             to the prefix you enter here. For instance, if you have objects
             named, "Cells", the "AreaShape_Area measurement", and a prefix of "Dose_",
             CellProfiler will save the figure as <i>Dose_Cells_AreaShape_Area.m</i>.
-            Leave this setting blank if you do not want a prefix.'''
+            Leave this setting blank if you do not want a prefix."""
         ))
         group.append('pathname', cps.DirectoryPath(
                 "Output file location",
@@ -434,7 +434,7 @@ class CalculateStatistics(cpm.Module):
 
     def include_feature(self, measurements, object_name, feature_name,
                         image_numbers):
-        '''Return true if we should analyze a feature'''
+        """Return true if we should analyze a feature"""
         if feature_name.find("Location") != -1:
             return False
         if feature_name.find("ModuleError") != -1:
@@ -466,7 +466,7 @@ class CalculateStatistics(cpm.Module):
         return np.asanyarray(v).dtype.kind not in "OSU"
 
     def validate_module_warnings(self, pipeline):
-        '''Warn user re: Test mode '''
+        """Warn user re: Test mode """
         if pipeline.test_mode:
             raise cps.ValidationError(
                     "CalculateStatistics will not produce any output in test mode",
@@ -532,7 +532,7 @@ class CalculateStatistics(cpm.Module):
 # http://www.ravkin.net
 ########################################################
 def z_factors(xcol, ymatr):
-    '''xcol is (Nobservations,1) column vector of grouping values
+    """xcol is (Nobservations,1) column vector of grouping values
            (in terms of dose curve it may be Dose).
        ymatr is (Nobservations, Nmeasures) matrix, where rows correspond to
            observations and columns corresponds to different measures.
@@ -542,7 +542,7 @@ def z_factors(xcol, ymatr):
        between-mean Z'-factors for the corresponding measures.
 
        When ranges are zero, we set the Z' factors to a very negative
-       value.'''
+       value."""
 
     xs, avers, stds = loc_shrink_mean_std(xcol, ymatr)
     # Z' factor is defined by the positive and negative controls, so we take the
@@ -586,13 +586,13 @@ def z_factors(xcol, ymatr):
 
 
 def v_factors(xcol, ymatr):
-    '''xcol is (Nobservations,1) column vector of grouping values
+    """xcol is (Nobservations,1) column vector of grouping values
            (in terms of dose curve it may be Dose).
        ymatr is (Nobservations, Nmeasures) matrix, where rows correspond to
            observations and columns corresponds to different measures.
 
         Calculate the V factor = 1-6 * mean standard deviation / range
-    '''
+    """
     xs, avers, stds = loc_shrink_mean_std(xcol, ymatr)
     #
     # Range of averages per label
@@ -610,7 +610,7 @@ def v_factors(xcol, ymatr):
 
 
 def loc_shrink_mean_std(xcol, ymatr):
-    '''Compute mean and standard deviation per label
+    """Compute mean and standard deviation per label
 
     xcol - column of image labels or doses
     ymatr - a matrix with rows of values per image and columns
@@ -619,7 +619,7 @@ def loc_shrink_mean_std(xcol, ymatr):
     returns xs - a vector of unique doses
             avers - the average value per label
             stds - the standard deviation per label
-    '''
+    """
     ncols = ymatr.shape[1]
     labels, labnum, xs = loc_vector_labels(xcol)
     avers = np.zeros((labnum, ncols))
@@ -636,7 +636,7 @@ def loc_shrink_mean_std(xcol, ymatr):
 
 
 def loc_vector_labels(x):
-    '''Identify unique labels from the vector of image labels
+    """Identify unique labels from the vector of image labels
 
     x - a vector of one label or dose per image
 
@@ -645,7 +645,7 @@ def loc_vector_labels(x):
              is an index into the vector of unique labels (uniqsortvals)
     labnum - # of unique labels in x
     uniqsortvals - a vector containing the unique labels in x
-    '''
+    """
     #
     # Get the index of each image's label in the sorted array
     #
@@ -678,7 +678,7 @@ def loc_vector_labels(x):
 #
 #######################################################
 def calculate_ec50(conc, responses, Logarithmic):
-    '''EC50 Function to fit a dose-response data to a 4 parameter dose-response
+    """EC50 Function to fit a dose-response data to a 4 parameter dose-response
        curve.
 
        Inputs: 1. a 1 dimensional array of drug concentrations
@@ -695,7 +695,7 @@ def calculate_ec50(conc, responses, Logarithmic):
 
        Original Matlab code Copyright 2004 Carlos Evangelista
        send comments to CCEvangelista@aol.com
-       '''
+       """
     # If we are using a log-domain set of doses, we have a better chance of
     # fitting a sigmoid to the curve if the concentrations are
     # log-transformed.
@@ -706,11 +706,11 @@ def calculate_ec50(conc, responses, Logarithmic):
     results = np.zeros((n, 4))
 
     def error_fn(v, x, y):
-        '''Least-squares error function
+        """Least-squares error function
 
         This measures the least-squares error of fitting the sigmoid
         with parameters in v to the x and y data.
-        '''
+        """
         return np.sum((sigmoid(v, x) - y) ** 2)
 
     for i in range(n):
@@ -724,26 +724,26 @@ def calculate_ec50(conc, responses, Logarithmic):
 
 
 def sigmoid(v, x):
-    '''This is the EC50 sigmoid function
+    """This is the EC50 sigmoid function
 
     v is a vector of parameters:
         v[0] = minimum allowed value
         v[1] = maximum allowed value
         v[2] = ec50
         v[3] = Hill coefficient
-    '''
+    """
     p_min, p_max, ec50, hill = v
     return p_min + (old_div((p_max - p_min),
                     (1 + (old_div(x, ec50)) ** hill)))
 
 
 def calc_init_params(x, y):
-    '''This generates the min, max, x value at the mid-y value, and Hill
+    """This generates the min, max, x value at the mid-y value, and Hill
       coefficient. These values are starting points for the sigmoid fitting.
 
       x & y are the points to be fit
       returns minimum, maximum, ec50 and hill coefficient starting points
-      '''
+      """
     min_0 = min(y)
     max_0 = max(y)
 
@@ -811,7 +811,7 @@ def calc_init_params(x, y):
 def write_figures(prefix, directory, dose_name,
                   dose_data, data, ec50_coeffs,
                   feature_set, log_transform):
-    '''Write out figure scripts for each measurement
+    """Write out figure scripts for each measurement
 
     prefix - prefix for file names
     directory - write files into this directory
@@ -821,7 +821,7 @@ def write_figures(prefix, directory, dose_name,
     ec50_coeffs - coefficients calculated by calculate_ec50
     feature_set - tuples of object name and feature name in same order as data
     log_transform - true to log-transform the dose data
-    '''
+    """
     from matplotlib.figure import Figure
     from matplotlib.backends.backend_pdf import FigureCanvasPdf
 

@@ -1,4 +1,4 @@
-'''<b>ExportToCellH5</b> exports measurements, objects and object relationships,
+"""<b>ExportToCellH5</b> exports measurements, objects and object relationships,
 and images to the CellH5 data format.
 <hr>
 <h4>File structure</h4>
@@ -6,7 +6,7 @@ In multiprocessing-mode, CellProfiler will create satellite .cellh5 files that
 are linked to the one that you specify using this module. The only thing
 to note is that you must keep all .cellh5 files that are generated together
 if you move them to a new folder.
-'''
+"""
 from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import division
@@ -76,7 +76,7 @@ class ExportToCellH5(cpm.Module):
     IGNORE_METADATA = "None"
 
     def create_settings(self):
-        '''Create the settings for the ExportToCellH5 module'''
+        """Create the settings for the ExportToCellH5 module"""
         self.directory = cps.DirectoryPath(
                 "Output file location",
                 doc="""
@@ -85,7 +85,7 @@ class ExportToCellH5(cpm.Module):
             """ % globals())
 
         def get_directory_fn():
-            '''Get the directory for the CellH5 file'''
+            """Get the directory for the CellH5 file"""
             return self.directory.get_absolute_path()
 
         def set_directory_fn(path):
@@ -274,7 +274,7 @@ class ExportToCellH5(cpm.Module):
                             self.file_name.value)
 
     def get_site_path(self, workspace, image_number):
-        '''Get the plate / well / site tuple that identifies a field of view
+        """Get the plate / well / site tuple that identifies a field of view
 
         workspace - workspace for the analysis containing the metadata
                     measurements to be mined.
@@ -283,7 +283,7 @@ class ExportToCellH5(cpm.Module):
 
         returns a tuple which can be used for the hierarchical path
         to the group for a particular field of view
-        '''
+        """
         m = workspace.measurements
         path = []
         for setting in self.plate_metadata, self.well_metadata, self.site_metadata:
@@ -295,12 +295,12 @@ class ExportToCellH5(cpm.Module):
         return tuple(path)
 
     def get_subfile_name(self, workspace):
-        '''Contact the UI to find the cellh5 file to use to store results
+        """Contact the UI to find the cellh5 file to use to store results
 
         Internally, this tells the UI to create a link from the master file
         to the plate / well / site group that will be used to store results.
         Then, the worker writes into that file.
-        '''
+        """
         master_file_name = self.get_path_to_master_file(workspace.measurements)
         path = self.get_site_path(
                 workspace,
@@ -309,7 +309,7 @@ class ExportToCellH5(cpm.Module):
                 self, master_file_name, os.getpid(), path, headless_ok=True)
 
     def handle_interaction(self, master_file, pid, path):
-        '''Handle an analysis worker / UI interaction
+        """Handle an analysis worker / UI interaction
 
         This function is used to coordinate linking a group in the master file
         with a group in a subfile that is reserved for a particular
@@ -326,7 +326,7 @@ class ExportToCellH5(cpm.Module):
         returns the name of the subfile to be used. After return, the
         subfile has been closed by the UI and a link has been established
         to the group named by the path.
-        '''
+        """
         master_dict = self.get_dictionary().setdefault(master_file, {})
         if pid not in master_dict:
             md_head, md_tail = os.path.splitext(master_file)

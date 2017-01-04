@@ -1,4 +1,4 @@
-'''<b>Define Grid</b> produces a grid of desired specifications either manually, or
+"""<b>Define Grid</b> produces a grid of desired specifications either manually, or
 automatically based on previously identified objects.
 <hr>
 This module defines the location of a grid that can be used by modules
@@ -29,7 +29,7 @@ each other.
 </ul>
 
 See also <b>IdentifyObjectsInGrid</b>.
-'''
+"""
 from __future__ import division
 from __future__ import unicode_literals
 from __future__ import print_function
@@ -75,22 +75,22 @@ FAIL_NO = "No"
 FAIL_ANY_PREVIOUS = "Use any previous grid"
 FAIL_FIRST = "Use the first cycle's grid"
 
-'''The module dictionary keyword of the first or most recent good gridding'''
+"""The module dictionary keyword of the first or most recent good gridding"""
 GOOD_GRIDDING = "GoodGridding"
 
-'''Measurement category for this module'''
+"""Measurement category for this module"""
 M_CATEGORY = 'DefinedGrid'
-'''Feature name of top left spot x coordinate'''
+"""Feature name of top left spot x coordinate"""
 F_X_LOCATION_OF_LOWEST_X_SPOT = "XLocationOfLowestXSpot"
-'''Feature name of top left spot y coordinate'''
+"""Feature name of top left spot y coordinate"""
 F_Y_LOCATION_OF_LOWEST_Y_SPOT = "YLocationOfLowestYSpot"
-'''Feature name of x distance between spots'''
+"""Feature name of x distance between spots"""
 F_X_SPACING = "XSpacing"
-'''Feature name of y distance between spots'''
+"""Feature name of y distance between spots"""
 F_Y_SPACING = "YSpacing"
-'''Feature name of # of rows in grid'''
+"""Feature name of # of rows in grid"""
 F_ROWS = "Rows"
-'''Feature name of # of columns in grid'''
+"""Feature name of # of columns in grid"""
 F_COLUMNS = "Columns"
 
 
@@ -450,10 +450,10 @@ class DefineGrid(cpm.Module):
         return image
 
     def run_automatic(self, workspace):
-        '''Automatically define a grid based on objects
+        """Automatically define a grid based on objects
 
         Returns a CPGridInfo object
-        '''
+        """
         objects = workspace.object_set.get_objects(self.object_name.value)
         centroids = centers_of_labels(objects.segmented)
         try:
@@ -490,10 +490,10 @@ class DefineGrid(cpm.Module):
         return result
 
     def run_coordinates(self, workspace):
-        '''Define a grid based on the coordinates of two points
+        """Define a grid based on the coordinates of two points
 
         Returns a CPGridInfo object
-        '''
+        """
         if self.display_image_name.value in workspace.image_set.names:
             image = workspace.image_set.get_image(self.display_image_name.value)
             shape = image.pixel_data.shape[:2]
@@ -513,10 +513,10 @@ class DefineGrid(cpm.Module):
         return self.run_mouse(background_image, image_set_number)
 
     def run_mouse(self, background_image, image_set_number):
-        '''Define a grid by running the UI
+        """Define a grid by running the UI
 
         Returns a CPGridInfo object
-        '''
+        """
         import matplotlib
         import matplotlib.backends.backend_wxagg as backend
         import wx
@@ -709,18 +709,18 @@ class DefineGrid(cpm.Module):
         return '_'.join((M_CATEGORY, self.grid_image.value, feature))
 
     def add_measurement(self, workspace, feature, value):
-        '''Add an image measurement using our category and grid
+        """Add an image measurement using our category and grid
 
         feature - the feature name of the measurement to add
         value - the value for the measurement
-        '''
+        """
         feature_name = self.get_feature_name(feature)
         workspace.measurements.add_image_measurement(feature_name, value)
 
     def build_grid_info(self, first_x, first_y, first_row, first_col,
                         second_x, second_y, second_row, second_col,
                         image_shape=None):
-        '''Populate and return a CPGridInfo based on two cell locations'''
+        """Populate and return a CPGridInfo based on two cell locations"""
         first_row, first_col = \
             self.canonical_row_and_column(first_row, first_col)
         second_row, second_col = \
@@ -805,12 +805,12 @@ class DefineGrid(cpm.Module):
         return gridding
 
     def canonical_row_and_column(self, row, column):
-        '''Convert a row and column as entered by the user to canonical form
+        """Convert a row and column as entered by the user to canonical form
 
         The user might select something other than the bottom left as the
         origin of their coordinate space. This method returns a row and
         column using a numbering where the top left corner is 0,0
-        '''
+        """
         if self.origin in (NUM_BOTTOM_LEFT, NUM_BOTTOM_RIGHT):
             row = self.grid_rows.value - row
         else:
@@ -834,7 +834,7 @@ class DefineGrid(cpm.Module):
                               ax)
 
     def display_grid(self, background_image, gridding, image_set_number, axes):
-        '''Display the grid in a figure'''
+        """Display the grid in a figure"""
         import matplotlib
 
         axes.cla()
@@ -875,21 +875,21 @@ class DefineGrid(cpm.Module):
         axes.axis('image')
 
     def get_good_gridding(self, workspace):
-        '''Get either the first gridding or the most recent successful gridding'''
+        """Get either the first gridding or the most recent successful gridding"""
         d = self.get_dictionary()
         if not GOOD_GRIDDING in d:
             return None
         return d[GOOD_GRIDDING]
 
     def set_good_gridding(self, workspace, gridding):
-        '''Set the gridding to use upon failure'''
+        """Set the gridding to use upon failure"""
         d = self.get_dictionary()
         if (self.failed_grid_choice == FAIL_ANY_PREVIOUS or
                 GOOD_GRIDDING not in d):
             d[GOOD_GRIDDING] = gridding
 
     def validate_module(self, pipeline):
-        '''Make sure that the row and column are different'''
+        """Make sure that the row and column are different"""
         if (self.auto_or_manual == AM_MANUAL and
                     self.manual_choice == MAN_COORDINATES):
             if self.first_spot_row.value == self.second_spot_row.value:
@@ -905,7 +905,7 @@ class DefineGrid(cpm.Module):
 
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
-        '''Adjust setting values if they came from a previous revision
+        """Adjust setting values if they came from a previous revision
 
         setting_values - a sequence of strings representing the settings
                          for the module as stored in the pipeline
@@ -923,7 +923,7 @@ class DefineGrid(cpm.Module):
         variable_revision_number and True if upgraded to CP 2.0, otherwise
         they should leave things as-is so that the caller can report
         an error.
-        '''
+        """
         if from_matlab and variable_revision_number == 3:
             grid_name, rows_cols, left_or_right, top_or_bottom, \
             rows_or_columns, each_or_once, auto_or_manual, object_name, \
@@ -982,7 +982,7 @@ class DefineGrid(cpm.Module):
         return setting_values, variable_revision_number, from_matlab
 
     def get_measurement_columns(self, pipeline):
-        '''Return a sequence describing the measurement columns needed by this module
+        """Return a sequence describing the measurement columns needed by this module
 
         This call should return one element per image or object measurement
         made by the module during image set analysis. The element itself
@@ -994,7 +994,7 @@ class DefineGrid(cpm.Module):
                       to add_measurement)
         third entry: the column data type (for instance, "varchar(255)" or
                      "float")
-        '''
+        """
         return [(cpmeas.IMAGE, self.get_feature_name(F_ROWS), cpmeas.COLTYPE_INTEGER),
                 (cpmeas.IMAGE, self.get_feature_name(F_COLUMNS), cpmeas.COLTYPE_INTEGER),
                 (cpmeas.IMAGE, self.get_feature_name(F_X_SPACING), cpmeas.COLTYPE_FLOAT),

@@ -34,7 +34,7 @@ import sys
 
 logger = logging.getLogger(__name__)
 
-'''Set the log level through the environment by specifying AW_LOG_LEVEL'''
+"""Set the log level through the environment by specifying AW_LOG_LEVEL"""
 AW_LOG_LEVEL = "AW_LOG_LEVEL"
 
 work_announce_address = None
@@ -42,7 +42,7 @@ knime_bridge_address = None
 
 
 def aw_parse_args():
-    '''Parse the application arguments into setup parameters'''
+    """Parse the application arguments into setup parameters"""
     from cellprofiler.preferences import \
         set_headless, set_awt_headless, \
         set_plugin_directory, set_ij_plugin_directory
@@ -214,9 +214,9 @@ def main():
 
 
 class AnalysisWorker(object):
-    '''An analysis worker processing work at a given address
+    """An analysis worker processing work at a given address
 
-    '''
+    """
 
     def __init__(self, work_announce_address, with_stop_run_loop=True):
         from bioformats.formatreader import set_omero_login_hook
@@ -253,9 +253,9 @@ class AnalysisWorker(object):
         self.initial_measurements = {}
 
     class AnalysisWorkerThreadObject(object):
-        '''Provide the scope needed by the analysis worker thread
+        """Provide the scope needed by the analysis worker thread
 
-        '''
+        """
 
         def __init__(self, worker):
             self.worker = worker
@@ -310,10 +310,10 @@ class AnalysisWorker(object):
                     self.work_socket.close()
 
     def do_job(self, job):
-        '''Handle a work request to its completion
+        """Handle a work request to its completion
 
         job - WorkRequest
-        '''
+        """
         import cellprofiler.pipeline as cpp
         job_measurements = []
         try:
@@ -495,7 +495,7 @@ class AnalysisWorker(object):
                 m.close()
 
     def interaction_handler(self, module, *args, **kwargs):
-        '''handle interaction requests by passing them to the jobserver and wait for the reply.'''
+        """handle interaction requests by passing them to the jobserver and wait for the reply."""
         # we write args and kwargs into the InteractionRequest to allow
         # more complex data to be sent by the underlying zmq machinery.
         arg_kwarg_dict = dict([('arg_%d' % idx, v) for idx, v in enumerate(args)] +
@@ -510,13 +510,13 @@ class AnalysisWorker(object):
         return rep.result
 
     def cancel_handler(self):
-        '''Handle a cancel request by sending AnalysisCancelRequest
+        """Handle a cancel request by sending AnalysisCancelRequest
 
-        '''
+        """
         self.send(AnalysisCancelRequest(self.current_analysis_id))
 
     def display_handler(self, module, display_data, image_set_number):
-        '''handle display requests'''
+        """handle display requests"""
         req = DisplayRequest(self.current_analysis_id,
                              module_num=module.module_num,
                              display_data_dict=display_data.__dict__,
@@ -530,21 +530,21 @@ class AnalysisWorker(object):
         rep = self.send(req)
 
     def omero_login_handler(self):
-        '''Handle requests for an Omero login'''
+        """Handle requests for an Omero login"""
         from bioformats.formatreader import use_omero_credentials
         req = OmeroLoginRequest(self.current_analysis_id)
         rep = self.send(req)
         use_omero_credentials(rep.credentials)
 
     def send(self, req, work_socket=None):
-        '''Send a request and receive a reply
+        """Send a request and receive a reply
 
         req - request to send
 
         socket - socket to use for send. Default is current work socket
 
         returns a reply on success. If cancelled, throws a CancelledException
-        '''
+        """
         if self.current_analysis_id is None:
             from cellprofiler.pipeline import CancelledException
             raise CancelledException("Can't send after cancelling")
@@ -573,14 +573,14 @@ class AnalysisWorker(object):
         return response
 
     def raise_cancel(self, msg="Cancelling analysis"):
-        '''Handle the cleanup after some proximate cause of cancellation
+        """Handle the cleanup after some proximate cause of cancellation
 
         msg - reason for cancellation
 
         This should only be called upon detection of a server-driven
         cancellation of analysis: either UpstreamExit or a stop notification
         from the deadman thread.
-        '''
+        """
         from cellprofiler.pipeline import CancelledException
         logger.debug(msg)
         self.cancelled = True
@@ -593,12 +593,12 @@ class AnalysisWorker(object):
         raise CancelledException(msg)
 
     def get_announcement(self):
-        '''Connect to the announcing socket and get an analysis announcement
+        """Connect to the announcing socket and get an analysis announcement
 
         returns an analysis_id / worker_request address pair
 
         raises a CancelledException if we detect cancellation.
-        '''
+        """
         poller = zmq.Poller()
         poller.register(self.notify_socket, zmq.POLLIN)
         announce_socket = the_zmq_context.socket(zmq.SUB)
@@ -629,12 +629,12 @@ class AnalysisWorker(object):
 
     def handle_exception(self, image_set_number=None,
                          module_name=None, exc_info=None):
-        '''report and handle an exception, possibly by remote debugging, returning
+        """report and handle an exception, possibly by remote debugging, returning
         how to proceed (skip or abort).
 
         A new socket is created for each exception report, to allow us to sidestep
         any REP/REQ state in the worker.
-        '''
+        """
         if self.current_analysis_id is None:
             # Analysis has been cancelled - don't initiate server interactions
             return ED_STOP
@@ -715,7 +715,7 @@ __the_notify_pub_socket = None
 
 
 def get_the_notify_pub_socket():
-    '''Get the socket used to publish the worker stop message'''
+    """Get the socket used to publish the worker stop message"""
     global __the_notify_pub_socket
     if __the_notify_pub_socket is None or __the_notify_pub_socket.closed:
         __the_notify_pub_socket = the_zmq_context.socket(zmq.PUB)
@@ -724,7 +724,7 @@ def get_the_notify_pub_socket():
 
 
 def exit_on_stdin_close():
-    '''Read until EOF, then exit, possibly without cleanup.'''
+    """Read until EOF, then exit, possibly without cleanup."""
     notify_pub_socket = get_the_notify_pub_socket()
     deadman_socket = the_zmq_context.socket(zmq.PAIR)
     deadman_socket.connect(DEADMAN_START_ADDR)

@@ -252,10 +252,10 @@ def get_menu_id(d, idx):
     return d[idx]
 
 
-'''mouse tool mode - do nothing'''
+"""mouse tool mode - do nothing"""
 MODE_NONE = 0
 
-'''mouse tool mode - show pixel data'''
+"""mouse tool mode - show pixel data"""
 MODE_MEASURE_LENGTH = 2
 
 

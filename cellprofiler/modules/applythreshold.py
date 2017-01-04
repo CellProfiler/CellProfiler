@@ -37,7 +37,7 @@ BINARY = "Binary (black and white)"
 TH_BELOW_THRESHOLD = "Below threshold"
 TH_ABOVE_THRESHOLD = "Above threshold"
 
-'''# of non-threshold settings in current revision'''
+"""# of non-threshold settings in current revision"""
 N_SETTINGS = 6
 
 
@@ -51,16 +51,16 @@ class ApplyThreshold(Identify):
                              if method != TM_BINARY_IMAGE]
 
         self.image_name = cps.ImageNameSubscriber(
-                "Select the input image", doc='''
-            Choose the image to be thresholded.''')
+                "Select the input image", doc="""
+            Choose the image to be thresholded.""")
 
         self.thresholded_image_name = cps.ImageNameProvider(
                 "Name the output image",
-                "ThreshBlue", doc='''
-            Enter a name for the thresholded image.''')
+                "ThreshBlue", doc="""
+            Enter a name for the thresholded image.""")
 
         self.binary = cps.Choice(
-                "Select the output image type", [GRAYSCALE, BINARY], doc='''
+                "Select the output image type", [GRAYSCALE, BINARY], doc="""
             Two types of output images can be produced:<br>
             <ul>
             <li><i>%(GRAYSCALE)s:</i> The pixels that are retained after some pixels
@@ -70,7 +70,7 @@ class ApplyThreshold(Identify):
             <li><i>%(BINARY)s:</i> The pixels that are retained after some pixels are
             set to zero (based on your selections for thresholding options) will be
             white and all other pixels will be black (zeroes).</li>
-            </ul>''' % globals())
+            </ul>""" % globals())
 
         # if not binary:
         self.low_or_high = cps.Choice(
@@ -89,19 +89,19 @@ class ApplyThreshold(Identify):
         # if not binary and below threshold
 
         self.shift = cps.Binary(
-                "Subtract the threshold value from the remaining pixel intensities?", False, doc='''
+                "Subtract the threshold value from the remaining pixel intensities?", False, doc="""
             <i>(Used only if the output image is %(GRAYSCALE)s and pixels below a given intensity are to be set to zero)</i><br>
-            Select <i>%(YES)s</i> to shift the value of the dim pixels by the threshold value.''' % globals())
+            Select <i>%(YES)s</i> to shift the value of the dim pixels by the threshold value.""" % globals())
 
         # if not binary and above threshold
 
         self.dilation = cps.Float(
                 "Number of pixels by which to expand the thresholding around those excluded bright pixels",
-                0.0, doc='''
+                0.0, doc="""
             <i>(Used only if the output image is grayscale and pixels above a given intensity are to be set to zero)</i><br>
             This setting is useful when attempting to exclude bright artifactual objects:
             first, set the threshold to exclude these bright objects; it may also be desirable to expand the
-            thresholded region around those bright objects by a certain distance so as to avoid a "halo" effect.''')
+            thresholded region around those bright objects by a certain distance so as to avoid a "halo" effect.""")
 
         self.create_threshold_settings(threshold_methods)
         self.threshold_smoothing_choice.value = TSM_NONE
@@ -192,11 +192,11 @@ class ApplyThreshold(Identify):
                 workspace.display_data.col_labels)
 
     def get_measurement_objects_name(self):
-        '''Return the name of the "objects" used to name thresholding measurements
+        """Return the name of the "objects" used to name thresholding measurements
 
         In the case of ApplyThreshold, we use the image name to name the
         measurements, so the code here works, but is misnamed.
-        '''
+        """
         return self.thresholded_image_name.value
 
     def get_measurement_columns(self, pipeline):

@@ -1,4 +1,4 @@
-'''<b>Tile</b> tiles images together to form large montage images.
+"""<b>Tile</b> tiles images together to form large montage images.
 <hr>
 This module allows more than one image to be placed next to each other in a
 grid layout you specify. It might be helpful, for example, to place images adjacent to
@@ -31,7 +31,7 @@ image stitching, you may find the following list of software packages useful:
 <li><a href="http://bigwww.epfl.ch/thevenaz/mosaicj/">ImageJ with the MosaicJ plugin</a></li>
 </ul>
 Other packages are referenced <a href="http://graphicssoft.about.com/od/panorama/Panorama_Creation_and_Stitching_Tools.htm">here</a></p>
-'''
+"""
 from __future__ import division
 from __future__ import unicode_literals
 from __future__ import print_function
@@ -70,11 +70,11 @@ S_ROW = "row"
 S_COL = "column"
 S_ALL = (S_ROW, S_COL)
 
-'''Module dictionary keyword for storing the # of images in the group when tiling'''
+"""Module dictionary keyword for storing the # of images in the group when tiling"""
 IMAGE_COUNT = "ImageCount"
-'''Dictionary keyword for storing the current image number in the group'''
+"""Dictionary keyword for storing the current image number in the group"""
 IMAGE_NUMBER = "ImageNumber"
-'''Module dictionary keyword for the image being tiled'''
+"""Module dictionary keyword for the image being tiled"""
 TILED_IMAGE = "TiledImage"
 TILE_WIDTH = "TileWidth"
 TILE_HEIGHT = "TileHeight"
@@ -106,7 +106,7 @@ class Tile(cpm.Module):
 
         self.tile_method = cps.Choice(
                 "Tile assembly method",
-                T_ALL, doc='''
+                T_ALL, doc="""
             This setting controls the method by which the final tiled image is asembled:
             <ul>
             <li><i>%(T_WITHIN_CYCLES)s:</i> If you have loaded more than one image for each cycle
@@ -119,10 +119,10 @@ class Tile(cpm.Module):
             images of the same type (e.g., OrigBlue) across all fields of view in your
             experiment, which will result in one final tiled image
             when processing is complete.</li>
-            </ul>''' % globals())
+            </ul>""" % globals())
 
         self.rows = cps.Integer(
-                "Final number of rows", 8, doc='''
+                "Final number of rows", 8, doc="""
             Specify the number of rows would you like to have in the tiled image.
             For example, if you want to show your images in a 96-well format,
             enter 8.
@@ -135,11 +135,11 @@ class Tile(cpm.Module):
             <li>If the <i>M</i> &lt; <i>N</i>, an error will occur since there are
             not enough image slots. Check "Automatically calculate number of rows?"
             to avoid this error.</li>
-            </ul></p>''')
+            </ul></p>""")
 
         self.columns = cps.Integer(
                 "Final number of columns",
-                12, doc='''
+                12, doc="""
             Specify the number of columns you like to have in the tiled image.
             For example, if you want to show your images in a 96-well format,
             enter 12.
@@ -152,28 +152,28 @@ class Tile(cpm.Module):
             <li>If the <i>M</i> &lt; <i>N</i>, an error will occur since there are
             not enough image slots. Check "Automatically calculate number of columns?"
             to avoid this error.</li>
-            </ul></p>''')
+            </ul></p>""")
 
         self.place_first = cps.Choice(
-                "Image corner to begin tiling", P_ALL, doc='''
+                "Image corner to begin tiling", P_ALL, doc="""
             Where do you want the first image to be placed?  Begin in the upper left-hand corner
-            for a typical multi-well plate format where the first image is A01.''')
+            for a typical multi-well plate format where the first image is A01.""")
 
         self.tile_style = cps.Choice(
-                "Direction to begin tiling", S_ALL, doc='''
+                "Direction to begin tiling", S_ALL, doc="""
             This setting specifies the order that the images are to be arranged.
             If your images are named A01, A02, etc,
-            enter <i>%(S_ROW)s</i>".''' % globals())
+            enter <i>%(S_ROW)s</i>".""" % globals())
 
         self.meander = cps.Binary(
-                "Use meander mode?", False, doc='''
+                "Use meander mode?", False, doc="""
             Select <i>%(YES)s</i> to tile adjacent images in one direction,
             then the next row/column is tiled in the opposite direction.
             Some microscopes capture images
             in this fashion. The default mode is "comb", or "typewriter"
             mode; in this mode, when one row is completely tiled in one direction,
             the next row starts near where the first row started and tiles
-            again in the same direction.''' % globals())
+            again in the same direction.""" % globals())
 
         self.wants_automatic_rows = cps.Binary(
                 "Automatically calculate number of rows?", False, doc="""
@@ -198,7 +198,7 @@ class Tile(cpm.Module):
             and columns.</p>""" % globals())
 
     def add_image(self, can_remove=True):
-        '''Add an image + associated questions and buttons'''
+        """Add an image + associated questions and buttons"""
         group = cps.SettingsGroup()
         if can_remove:
             group.append("divider", cps.Divider(line=True))
@@ -249,14 +249,14 @@ class Tile(cpm.Module):
         return self.tile_method == T_ACROSS_CYCLES
 
     def prepare_group(self, workspace, grouping, image_numbers):
-        '''Prepare to handle a group of images when tiling'''
+        """Prepare to handle a group of images when tiling"""
         d = self.get_dictionary(workspace.image_set_list)
         d[IMAGE_COUNT] = len(image_numbers)
         d[IMAGE_NUMBER] = 0
         d[TILED_IMAGE] = None
 
     def run(self, workspace):
-        '''do the image analysis'''
+        """do the image analysis"""
         if self.tile_method == T_WITHIN_CYCLES:
             output_pixels = self.place_adjacent(workspace)
         else:
@@ -275,12 +275,12 @@ class Tile(cpm.Module):
                               cpi.Image(d[TILED_IMAGE]))
 
     def is_aggregation_module(self):
-        '''Need to run all cycles in same worker if across cycles'''
+        """Need to run all cycles in same worker if across cycles"""
         return self.tile_method == T_ACROSS_CYCLES
 
     def display(self, workspace, figure):
-        '''Display
-        '''
+        """Display
+        """
         figure.set_subplots((1, 1))
         pixels = workspace.display_data.image
         name = self.output_image.value
@@ -290,8 +290,8 @@ class Tile(cpm.Module):
             figure.subplot_imshow_grayscale(0, 0, pixels, title=name)
 
     def tile(self, workspace):
-        '''Tile images across image cycles
-        '''
+        """Tile images across image cycles
+        """
         d = self.get_dictionary(workspace.image_set_list)
         rows, columns = self.get_grid_dimensions(d[IMAGE_COUNT])
         image_set = workspace.image_set
@@ -344,7 +344,7 @@ class Tile(cpm.Module):
         return output_pixels
 
     def place_adjacent(self, workspace):
-        '''Place images from the same image set adjacent to each other'''
+        """Place images from the same image set adjacent to each other"""
         rows, columns = self.get_grid_dimensions()
         image_names = ([self.input_image.value] +
                        [g.input_image_name.value
@@ -370,10 +370,10 @@ class Tile(cpm.Module):
         return output_pixels
 
     def get_tile_ij(self, image_index, rows, columns):
-        '''Get the I/J coordinates for an image
+        """Get the I/J coordinates for an image
 
         returns i,j where 0 < i < self.rows and 0 < j < self.columns
-        '''
+        """
         if self.tile_style == S_ROW:
             tile_i = int(old_div(image_index, columns))
             tile_j = image_index % columns
@@ -400,10 +400,10 @@ class Tile(cpm.Module):
         return tile_i, tile_j
 
     def get_grid_dimensions(self, image_count=None):
-        '''Get the dimensions of the grid in i,j format
+        """Get the dimensions of the grid in i,j format
 
         image_count - # of images in the grid. If None, use info from settings.
-        '''
+        """
         assert ((image_count is not None) or
                 self.tile_method == T_WITHIN_CYCLES), "Must specify image count for %s method" % self.tile_method.value
         if image_count is None:
@@ -429,16 +429,16 @@ class Tile(cpm.Module):
             return self.rows.value, self.columns.value
 
     def get_measurement_columns(self, pipeline):
-        '''return the measurements'''
+        """return the measurements"""
         columns = []
         return columns
 
     def validate_module(self, pipeline):
-        '''Make sure the settings are consistent
+        """Make sure the settings are consistent
 
         Check to make sure that we have enough rows and columns if
         we are in PlaceAdjacent mode.
-        '''
+        """
         if (self.tile_method == T_WITHIN_CYCLES and
                 (not self.wants_automatic_rows) and
                 (not self.wants_automatic_columns) and
@@ -453,7 +453,7 @@ class Tile(cpm.Module):
     def upgrade_settings(self, setting_values,
                          variable_revision_number,
                          module_name, from_matlab):
-        '''this must take into account both Tile and PlaceAdjacent from the Matlab'''
+        """this must take into account both Tile and PlaceAdjacent from the Matlab"""
         if (from_matlab and module_name == "Tile" and
                     variable_revision_number == 1):
             image_name, orig_image_name, tiled_image, number_rows, \

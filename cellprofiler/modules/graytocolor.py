@@ -1,4 +1,4 @@
-'''
+"""
 <b>Gray to Color</b> takes grayscale images and and produces a
 color image from them.
 <hr>
@@ -8,7 +8,7 @@ blue (RGB) image or a cyan, magenta, yellow, black (CMYK) image.
 Each color's brightness can be adjusted independently by using
 relative weights.
 
-<p>See also <b>ColorToGray</b>.'''
+<p>See also <b>ColorToGray</b>."""
 from __future__ import division
 from __future__ import unicode_literals
 from __future__ import print_function
@@ -101,27 +101,27 @@ class GrayToColor(cpm.Module):
 
         self.red_adjustment_factor = cps.Float(
                 "Relative weight for the red image",
-                value=1, minval=0, doc='''
+                value=1, minval=0, doc="""
             <i>(Used only if %(SCHEME_RGB)s is selected as the color scheme)</i><br>
             Enter the relative weight for the red image. If all relative weights are equal, all three
             colors contribute equally in the final image. To weight colors relative to each other,
-            increase or decrease the relative weights.''' % globals())
+            increase or decrease the relative weights.""" % globals())
 
         self.green_adjustment_factor = cps.Float(
                 "Relative weight for the green image",
-                value=1, minval=0, doc='''
+                value=1, minval=0, doc="""
             <i>(Used only if %(SCHEME_RGB)s is selected as the color scheme)</i><br>
             Enter the relative weight for the green image. If all relative weights are equal, all three
             colors contribute equally in the final image. To weight colors relative to each other,
-            increase or decrease the relative weights.''' % globals())
+            increase or decrease the relative weights.""" % globals())
 
         self.blue_adjustment_factor = cps.Float(
                 "Relative weight for the blue image",
-                value=1, minval=0, doc='''
+                value=1, minval=0, doc="""
             <i>(Used only if %(SCHEME_RGB)s is selected as the color scheme)</i><br>
             Enter the relative weight for the blue image. If all relative weights are equal, all three
             colors contribute equally in the final image. To weight colors relative to each other,
-            increase or decrease the relative weights.''' % globals())
+            increase or decrease the relative weights.""" % globals())
         # # # # # # # # # # # # # #
         #
         # CYMK settings
@@ -145,35 +145,35 @@ class GrayToColor(cpm.Module):
 
         self.cyan_adjustment_factor = cps.Float(
                 "Relative weight for the cyan image",
-                value=1, minval=0, doc='''
+                value=1, minval=0, doc="""
             <i>(Used only if %(SCHEME_CMYK)s is selected as the color scheme)</i><br>
             Enter the relative weight for the cyan image. If all relative weights are equal, all
             colors contribute equally in the final image. To weight colors relative to each other,
-            increase or decrease the relative weights.''' % globals())
+            increase or decrease the relative weights.""" % globals())
 
         self.magenta_adjustment_factor = cps.Float(
                 "Relative weight for the magenta image",
-                value=1, minval=0, doc='''
+                value=1, minval=0, doc="""
             <i>(Used only if %(SCHEME_CMYK)s is selected as the color scheme)</i><br>
             Enter the relative weight for the magenta image. If all relative weights are equal, all
             colors contribute equally in the final image. To weight colors relative to each other,
-            increase or decrease the relative weights.''' % globals())
+            increase or decrease the relative weights.""" % globals())
 
         self.yellow_adjustment_factor = cps.Float(
                 "Relative weight for the yellow image",
-                value=1, minval=0, doc='''
+                value=1, minval=0, doc="""
             <i>(Used only if %(SCHEME_CMYK)s is selected as the color scheme)</i><br>
             Enter the relative weight for the yellow image. If all relative weights are equal, all
             colors contribute equally in the final image. To weight colors relative to each other,
-            increase or decrease the relative weights.''' % globals())
+            increase or decrease the relative weights.""" % globals())
 
         self.gray_adjustment_factor = cps.Float(
                 "Relative weight for the brightness image",
-                value=1, minval=0, doc='''
+                value=1, minval=0, doc="""
             <i>(Used only if %(SCHEME_CMYK)s is selected as the color scheme)</i><br>
             Enter the relative weight for the brightness image. If all relative weights are equal, all
             colors contribute equally in the final image. To weight colors relative to each other,
-            increase or decrease the relative weights.''' % globals())
+            increase or decrease the relative weights.""" % globals())
 
         # # # # # # # # # # # # # #
         #
@@ -463,18 +463,18 @@ class GrayToColor(cpm.Module):
 
 
 class ColorSchemeSettings(object):
-    '''Collect all of the details for one color in one place'''
+    """Collect all of the details for one color in one place"""
 
     def __init__(self, image_name_setting, adjustment_setting,
                  red_intensity, green_intensity, blue_intensity):
-        '''Initialize with settings and multipliers
+        """Initialize with settings and multipliers
 
         image_name_setting - names the image to use for the color
         adjustment_setting - weights the image
         red_intensity - indicates how much it contributes to the red channel
         green_intensity - indicates how much it contributes to the green channel
         blue_intensity - indicates how much it contributes to the blue channel
-        '''
+        """
         self.image_name = image_name_setting
         self.adjustment_factor = adjustment_setting
         self.red_intensity = red_intensity
@@ -483,7 +483,7 @@ class ColorSchemeSettings(object):
 
     @property
     def intensities(self):
-        '''The intensities in RGB order as a numpy array'''
+        """The intensities in RGB order as a numpy array"""
         return np.array((self.red_intensity,
                          self.green_intensity,
                          self.blue_intensity))

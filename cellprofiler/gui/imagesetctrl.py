@@ -31,17 +31,17 @@ import wx.combo
 import wx.grid
 import wx.lib.mixins.gridlabelrenderer
 
-'''Table column displays metadata'''
+"""Table column displays metadata"""
 COL_METADATA = "Metadata"
-'''Table column displays a URL'''
+"""Table column displays a URL"""
 COL_URL = "URL"
-'''Table column displays a file name'''
+"""Table column displays a file name"""
 COL_FILENAME = "Filename"
-'''Table column displays a path name'''
+"""Table column displays a path name"""
 COL_PATHNAME = "Pathname"
-'''Table column displays a series number'''
+"""Table column displays a series number"""
 COL_SERIES = "Series"
-'''Table column displays a frame number'''
+"""Table column displays a frame number"""
 COL_FRAME = "Frame"
 
 COL_ORDER = [COL_PATHNAME, COL_FILENAME, COL_URL, COL_SERIES, COL_FRAME]
@@ -841,7 +841,7 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
     #
     ##################
 
-    '''Height of the drop graphic'''
+    """Height of the drop graphic"""
     DROP_HEIGHT = 7
 
     def get_drop_location(self, x, y):

@@ -11,7 +11,7 @@ from past.utils import old_div
 import cellprofiler.icons
 from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON
 
-__doc__ = '''
+__doc__ = """
 <b>Identify Primary Objects</b> identifies biological components of interest in grayscale images
 containing bright objects on a dark background.
 <hr>
@@ -164,7 +164,7 @@ segmentation of cell nuclei in tissue sections." <i>J Microsc</i> 215, 67-76.
 
 <p>See also <b>IdentifySecondaryObjects</b>, <b>IdentifyTertiaryObjects</b>,
 <b>IdentifyObjectsManually</b> and <b>ClassifyPixels</b> </p>
-''' % globals()
+""" % globals()
 
 import math
 import scipy.ndimage
@@ -246,7 +246,7 @@ OFF_ADAPTIVE_WINDOW_METHOD_V9 = 32
 OFF_ADAPTIVE_WINDOW_SIZE_V9 = 33
 OFF_FILL_HOLES_V10 = 12
 
-'''The number of settings, exclusive of threshold settings in V10'''
+"""The number of settings, exclusive of threshold settings in V10"""
 N_SETTINGS_V10 = 22
 
 UN_INTENSITY = "Intensity"
@@ -263,7 +263,7 @@ LIMIT_NONE = "Continue"
 LIMIT_TRUNCATE = "Truncate"
 LIMIT_ERASE = "Erase"
 
-'''Never fill holes'''
+"""Never fill holes"""
 FH_NEVER = "Never"
 FH_THRESHOLDING = "After both thresholding and declumping"
 FH_DECLUMP = "After declumping only"
@@ -301,7 +301,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
 
         self.size_range = cps.IntegerRange(
                 SIZE_RANGE_SETTING_TEXT,
-                (10, 40), minval=1, doc='''
+                (10, 40), minval=1, doc="""
             This setting allows the user to make a distinction on the basis of size, which can
             be used in conjunction with the <i>%(EXCLUDE_SIZE_SETTING_TEXT)s</i> setting
             below to remove objects that fail this criteria.
@@ -324,11 +324,11 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             <li>For non-round objects, the diameter here is actually the "equivalent diameter", i.e.,
             the diameter of a circle with the same area as the object.</li>
             </ul>
-            </p>''' % globals())
+            </p>""" % globals())
 
         self.exclude_size = cps.Binary(
                 EXCLUDE_SIZE_SETTING_TEXT,
-                True, doc='''
+                True, doc="""
             Select <i>%(YES)s</i> to discard objects outside the range you specified in the
             <i>%(SIZE_RANGE_SETTING_TEXT)s</i> setting. Select <i>%(NO)s</i> to ignore this
             criterion.
@@ -341,11 +341,11 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             Select <i>%(YES)s</i> allows you to exclude small objects (e.g., dust, noise,
             and debris) or large objects (e.g., large clumps) if desired. </dd>
             </dl>
-            ''' % globals())
+            """ % globals())
 
         self.merge_objects = cps.Binary(
                 "Try to merge too small objects with nearby larger objects?",
-                False, doc='''
+                False, doc="""
             Select <i>%(YES)s</i> to cause objects that are
             smaller than the specified minimum diameter to be merged, if possible, with
             other surrounding objects.
@@ -357,11 +357,11 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             not notice that this is the case, since it may successfully piece together the
             objects again. It is therefore a good idea to run the
             module first without merging objects to make sure the settings are
-            reasonably effective.</p>''' % globals())
+            reasonably effective.</p>""" % globals())
 
         self.exclude_border_objects = cps.Binary(
                 "Discard objects touching the border of the image?",
-                True, doc='''
+                True, doc="""
             Select <i>%(YES)s</i> to discard objects that touch the border of the image.
             Select <i>%(NO)s</i> to ignore this criterion.
             <dl>
@@ -374,7 +374,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             <p>Objects discarded due to border touching are outlined in yellow in the module's display.
             Note that if a per-object thresholding method is used or if the image has been
             previously cropped or masked, objects that touch the
-            border of the cropped or masked region may also discarded.</p>''' % globals())
+            border of the cropped or masked region may also discarded.</p>""" % globals())
 
         self.create_threshold_settings()
 
@@ -1009,13 +1009,13 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             workspace.image_set.add(self.save_outlines.value, out_img)
 
     def limit_object_count(self, labeled_image, object_count):
-        '''Limit the object count according to the rules
+        """Limit the object count according to the rules
 
         labeled_image - image to be limited
         object_count - check to see if this exceeds the maximum
 
         returns a new labeled_image and object count
-        '''
+        """
         if object_count > self.maximum_object_count.value:
             if self.limit_choice == LIMIT_ERASE:
                 labeled_image = np.zeros(labeled_image.shape, int)
@@ -1401,16 +1401,16 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             return self.smoothing_filter_size.value
 
     def is_object_identification_module(self):
-        '''IdentifyPrimaryObjects makes primary objects sets so it's a identification module'''
+        """IdentifyPrimaryObjects makes primary objects sets so it's a identification module"""
         return True
 
     def get_measurement_objects_name(self):
-        '''Return the name to be appended to image measurements made by module
-        '''
+        """Return the name to be appended to image measurements made by module
+        """
         return self.object_name.value
 
     def get_measurement_columns(self, pipeline):
-        '''Column definitions for measurements made by IdentifyPrimAutomatic'''
+        """Column definitions for measurements made by IdentifyPrimAutomatic"""
         columns = cpmi.get_object_measurement_columns(self.object_name.value)
         columns += self.get_threshold_measurement_columns(pipeline)
         return columns

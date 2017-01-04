@@ -1360,7 +1360,7 @@ module help.</p>""" % globals()
 # Help for the module figure windows
 #
 ####################################################
-'''The help menu for the figure window'''
+"""The help menu for the figure window"""
 
 MODULE_DISPLAY_MENU_BAR_HELP = """
 From the menu bar of each module display window, you have the following options:
@@ -2322,7 +2322,7 @@ process the slices in all stacks together as if they were constituents of only o
 #
 #########################################################
 
-'''The help to be displayed if someone asks for help on a module but none is selected'''
+"""The help to be displayed if someone asks for help on a module but none is selected"""
 HELP_ON_MODULE_BUT_NONE_SELECTED = (
     "The help button can be used to obtain help for the currently selected module "
     "in the pipeline panel on the left side of the CellProfiler interface.\n\n"
@@ -2428,7 +2428,7 @@ channel.  "Alpha" determines the weight each channel contributes to the summed i
 #
 #########################################################
 
-'''The help menu for CP's main window'''
+"""The help menu for CP's main window"""
 MAIN_HELP = (
     ("Why Use CellProfiler?", WHEN_CAN_I_USE_CELLPROFILER_HELP),
     ("Navigating The Menu Bar", (

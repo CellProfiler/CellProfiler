@@ -1,4 +1,4 @@
-'''<b>Rename or Renumber Files</b> renames or renumbers files on the hard drive.
+"""<b>Rename or Renumber Files</b> renames or renumbers files on the hard drive.
 <hr>
 This file-renaming utility adjusts text within image file names.
 <i><b>Be very careful with this module because its purpose is
@@ -63,7 +63,7 @@ want to:
 </table>
 
 See also: <b>NamesAndTypes</b>, <b>SaveImages</b>
-'''
+"""
 from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import division
@@ -89,7 +89,7 @@ class RenameOrRenumberFiles(cpm.Module):
     variable_revision_number = 2
 
     def create_settings(self):
-        '''Create the settings for the module's UI'''
+        """Create the settings for the module's UI"""
         self.warning = cps.Divider(
                 "This module allows you to rename (overwrite) your files. Please "
                 "see the help for this module for warnings.")
@@ -170,14 +170,14 @@ class RenameOrRenumberFiles(cpm.Module):
             in your file name.""")
 
     def settings(self):
-        '''Return settings in the order that they should appear in pipeline'''
+        """Return settings in the order that they should appear in pipeline"""
         return [self.image_name, self.number_characters_prefix,
                 self.number_characters_suffix, self.action,
                 self.number_digits, self.wants_text, self.text_to_add,
                 self.wants_to_replace_spaces, self.space_replacement]
 
     def visible_settings(self):
-        '''Return the settings to display in the GUI'''
+        """Return the settings to display in the GUI"""
         result = [self.warning, self.image_name, self.number_characters_prefix,
                   self.number_characters_suffix, self.action]
         if self.action == A_RENUMBER:
@@ -191,7 +191,7 @@ class RenameOrRenumberFiles(cpm.Module):
         return result
 
     def run(self, workspace):
-        '''Run on an image set'''
+        """Run on an image set"""
         image_name = self.image_name.value
         m = workspace.measurements
         #
@@ -252,7 +252,7 @@ class RenameOrRenumberFiles(cpm.Module):
                   os.path.join(path, new_file_name))
 
     def display(self, workspace, figure):
-        '''Display the pathname conversion'''
+        """Display the pathname conversion"""
         figure.set_subplots((1, 1))
         if workspace.pipeline.test_mode:
             figure.subplot_table(
@@ -264,7 +264,7 @@ class RenameOrRenumberFiles(cpm.Module):
                     0, 0, statistics, col_labels=('Old file name', 'New file name'))
 
     def validate_module_warnings(self, pipeline):
-        '''Warn user re: Test mode '''
+        """Warn user re: Test mode """
         if pipeline.test_mode:
             raise cps.ValidationError(
                     "RenameOrRenumberFiles will not rename files in test mode",
@@ -272,14 +272,14 @@ class RenameOrRenumberFiles(cpm.Module):
 
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
-        '''Upgrade settings from previous pipeline versions
+        """Upgrade settings from previous pipeline versions
 
         setting_values - string values for each of the settings
         variable_revision_number - the revision number of the module at the
                                    time of saving
         module_name - the name of the module that saved the settings
         from_matlab - true if pipeline was saved by CP 1.0
-        '''
+        """
         if from_matlab and variable_revision_number == 1:
             image_name, number_characters_prefix, number_characters_suffix, \
             text_to_add, number_digits = setting_values

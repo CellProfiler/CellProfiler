@@ -22,15 +22,15 @@ import matplotlib.collections
 import numpy
 import scipy.ndimage
 
-'''Render the image in shades of gray'''
+"""Render the image in shades of gray"""
 MODE_GRAYSCALE = "grayscale"
-'''Render the image in shades of a color'''
+"""Render the image in shades of a color"""
 MODE_COLORIZE = "colorize"
-'''Render the image using a color map'''
+"""Render the image using a color map"""
 MODE_COLORMAP = "colormap"
-'''Render the image as RGB'''
+"""Render the image as RGB"""
 MODE_RGB = "rgb"
-'''Do not display'''
+"""Do not display"""
 MODE_HIDE = "hide"
 
 NORMALIZE_RAW = "raw"

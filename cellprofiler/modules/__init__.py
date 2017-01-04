@@ -308,12 +308,12 @@ def check_module(module, name):
 
 
 def find_cpmodule(m):
-    '''Returns the CPModule from within the loaded Python module
+    """Returns the CPModule from within the loaded Python module
 
     m - an imported module
 
     returns the CPModule class
-    '''
+    """
     for v, val in list(m.__dict__.items()):
         if isinstance(val, type) and issubclass(val, cpm.Module):
             return val

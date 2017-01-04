@@ -1,4 +1,4 @@
-'''<b>Measure Granularity</b> outputs spectra of size measurements 
+"""<b>Measure Granularity</b> outputs spectra of size measurements 
 of the textures in the image.
 <hr>
 Image granularity is a texture measurement that tries a series of structure elements
@@ -28,7 +28,7 @@ Intelligence</i>, 11, N 7, pp. 701-716, 1989</li>
 <i>Applied Informatics</i>, v.14, pp. 41-90, Finances and Statistics, Moskow,
 (in Russian)</li>
 </ul>
-'''
+"""
 from __future__ import division
 from __future__ import unicode_literals
 from __future__ import print_function
@@ -89,7 +89,7 @@ class MeasureGranularity(cpm.Module):
 
         group.append("subsample_size", cps.Float(
                 "Subsampling factor for granularity measurements",
-                0.25, minval=np.finfo(float).eps, maxval=1, doc='''
+                0.25, minval=np.finfo(float).eps, maxval=1, doc="""
             If the textures of
             interest are larger than a few pixels, we recommend you subsample the image with a factor
             &lt;1 to speed up the processing. Down sampling the image will let you detect larger
@@ -107,11 +107,11 @@ class MeasureGranularity(cpm.Module):
             cannot be determined in advance; an analysis as in this reference may be
             required before running the whole set.
             See this <a href="http://www.ravkin.net/presentations/Statistical%20properties%20of%20algorithms%20for%20analysis%20of%20cell%20images.pdf">
-            pdf</a>, slides 27-31, 49-50.'''))
+            pdf</a>, slides 27-31, 49-50."""))
 
         group.append("image_sample_size", cps.Float(
                 "Subsampling factor for background reduction",
-                .25, minval=np.finfo(float).eps, maxval=1, doc='''
+                .25, minval=np.finfo(float).eps, maxval=1, doc="""
             It is important to
             remove low frequency image background variations as they will affect the final granularity
             measurement. Any method can be used as a pre-processing step prior to this module;
@@ -120,22 +120,22 @@ class MeasureGranularity(cpm.Module):
             highly empirical, but a small factor should be used if the structures of interest are large. The
             significance of background removal in the context of granulometry is that image
             volume at certain granular size is normalized by total image volume, which depends on
-            how the background was removed.'''))
+            how the background was removed."""))
 
         group.append("element_size", cps.Integer(
                 "Radius of structuring element",
-                10, minval=1, doc='''
+                10, minval=1, doc="""
             This radius should correspond to the radius of the textures of interest <i>after</i>
             subsampling; i.e., if textures in the original image scale have a radius of 40
             pixels, and a subsampling factor of 0.25 is used, the structuring element size should be
-            10 or slightly smaller, and the range of the spectrum defined below will cover more sizes.'''))
+            10 or slightly smaller, and the range of the spectrum defined below will cover more sizes."""))
 
         group.append("granular_spectrum_length", cps.Integer(
                 "Range of the granular spectrum",
-                16, minval=1, doc='''
+                16, minval=1, doc="""
             You may need a trial run to see which granular
             spectrum range yields informative measurements. Start by using a wide spectrum and
-            narrow it down to the informative range to save time.'''))
+            narrow it down to the informative range to save time."""))
 
         group.append("add_objects_button", cps.DoSomething(
                 "", "Add another object", group.add_objects, doc="""
@@ -155,7 +155,7 @@ class MeasureGranularity(cpm.Module):
         return group
 
     def validate_module(self, pipeline):
-        '''Make sure settings are compatible. In particular, we make sure that no measurements are duplicated'''
+        """Make sure settings are compatible. In particular, we make sure that no measurements are duplicated"""
         measurements, sources = self.get_measurement_columns(pipeline, return_sources=True)
         d = {}
         for m, s in zip(measurements, sources):
@@ -174,7 +174,7 @@ class MeasureGranularity(cpm.Module):
         return result
 
     def prepare_settings(self, setting_values):
-        '''Adjust self.images to account for the expected # of images'''
+        """Adjust self.images to account for the expected # of images"""
         image_count = int(setting_values[0])
         idx = 1
         del self.images[:]

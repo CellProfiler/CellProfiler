@@ -124,11 +124,11 @@ class MeasureObjectIntensity(cpm.Module):
         self.add_object_button = cps.DoSomething("", "Add another object", self.add_object)
 
     def add_image(self, can_remove=True):
-        '''Add an image to the image_groups collection
+        """Add an image to the image_groups collection
 
         can_delete - set this to False to keep from showing the "remove"
                      button for images that must be present.
-        '''
+        """
         group = cps.SettingsGroup()
         if can_remove:
             group.append("divider", cps.Divider(line=False))
@@ -141,11 +141,11 @@ class MeasureObjectIntensity(cpm.Module):
         self.images.append(group)
 
     def add_object(self, can_remove=True):
-        '''Add an object to the object_groups collection
+        """Add an object to the object_groups collection
 
         can_delete - set this to False to keep from showing the "remove"
                      button for images that must be present.
-        '''
+        """
         group = cps.SettingsGroup()
         if can_remove:
             group.append("divider", cps.Divider(line=False))
@@ -175,7 +175,7 @@ class MeasureObjectIntensity(cpm.Module):
 
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
-        '''Adjust setting values if they came from a previous revision
+        """Adjust setting values if they came from a previous revision
 
         setting_values - a sequence of strings representing the settings
                          for the module as stored in the pipeline
@@ -193,7 +193,7 @@ class MeasureObjectIntensity(cpm.Module):
         variable_revision_number and True if upgraded to CP 2.0, otherwise
         they should leave things as-is so that the caller can report
         an error.
-        '''
+        """
         if from_matlab and variable_revision_number == 2:
             # Old matlab-style. Erase any setting values that are
             # "Do not use"
@@ -255,7 +255,7 @@ class MeasureObjectIntensity(cpm.Module):
             objects.add(group.name.value)
 
     def get_measurement_columns(self, pipeline):
-        '''Return the column definitions for measurements made by this module'''
+        """Return the column definitions for measurements made by this module"""
         columns = []
         for image_name in [im.name for im in self.images]:
             for object_name in [obj.name for obj in self.objects]:

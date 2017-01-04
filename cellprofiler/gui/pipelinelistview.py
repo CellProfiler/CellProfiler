@@ -72,17 +72,17 @@ NOTDEBUG = "notdebug"
 UNAVAILABLE = "unavailable"
 
 PLV_HITTEST_SLIDER = 4096
-'''Module has an associated warning'''
+"""Module has an associated warning"""
 PLV_STATE_WARNING = 1024
-'''Module has an associated error'''
+"""Module has an associated error"""
 PLV_STATE_ERROR = 2048
-'''Mask of warning / error bits'''
+"""Mask of warning / error bits"""
 PLV_STATE_ERROR_MASK = PLV_STATE_ERROR + PLV_STATE_WARNING
-'''Bit is set if the module is unavailable = not in pipeline'''
+"""Bit is set if the module is unavailable = not in pipeline"""
 PLV_STATE_UNAVAILABLE = 4096
-'''Bit is clear if the pipeline can't proceeed past this module'''
+"""Bit is clear if the pipeline can't proceeed past this module"""
 PLV_STATE_PROCEED = 8192
-'''Report that the slider has moved'''
+"""Report that the slider has moved"""
 EVT_PLV_SLIDER_MOTION = wx.PyEventBinder(wx.NewEventType())
 EVT_PLV_PAUSE_COLUMN_CLICKED = wx.PyEventBinder(wx.NewEventType())
 EVT_PLV_EYE_COLUMN_CLICKED = wx.PyEventBinder(wx.NewEventType())

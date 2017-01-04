@@ -10,7 +10,7 @@ from past.utils import old_div
 import cellprofiler.icons
 from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON
 
-__doc__ = '''<b>Identify Secondary Objects</b> identifies objects (e.g., cell edges) using
+__doc__ = """<b>Identify Secondary Objects</b> identifies objects (e.g., cell edges) using
 objects identified by another module (e.g., nuclei) as a starting point.
 <hr>
 <h4>What is a secondary object?</h4>
@@ -130,7 +130,7 @@ calculated as the sum of absolute differences in a 3x3 (8-connected) image
 neighborhood, combined with &lambda; via sqrt(differences<sup>2</sup> + &lambda;<sup>2</sup>).
 
 <p>See also the other <b>Identify</b> modules.</p>
-''' % globals()
+""" % globals()
 
 import numpy as np
 import os
@@ -163,10 +163,10 @@ M_WATERSHED_I = "Watershed - Image"
 M_DISTANCE_N = "Distance - N"
 M_DISTANCE_B = "Distance - B"
 
-'''# of setting values other than thresholding ones'''
+"""# of setting values other than thresholding ones"""
 N_SETTING_VALUES = 14
 
-'''Parent (seed) relationship of input objects to output objects'''
+"""Parent (seed) relationship of input objects to output objects"""
 R_PARENT = "Parent"
 
 
@@ -840,11 +840,11 @@ class IdentifySecondaryObjects(cpmi.Identify):
         return segmented_labels_out
 
     def is_object_identification_module(self):
-        '''IdentifySecondaryObjects makes secondary objects sets so it's a identification module'''
+        """IdentifySecondaryObjects makes secondary objects sets so it's a identification module"""
         return True
 
     def get_measurement_columns(self, pipeline):
-        '''Return column definitions for measurements made by this module'''
+        """Return column definitions for measurements made by this module"""
         columns = cpmi.get_object_measurement_columns(self.objects_name.value)
         columns += [(self.primary_objects.value,
                      cpmi.FF_CHILDREN_COUNT % self.objects_name.value,
@@ -900,10 +900,10 @@ class IdentifySecondaryObjects(cpmi.Identify):
         return result
 
     def get_object_dictionary(self):
-        '''Get the dictionary of parent child relationships
+        """Get the dictionary of parent child relationships
 
         see Identify.get_object_categories, Identify.get_object_measurements
-        '''
+        """
         object_dictionary = {
             self.objects_name.value: [self.primary_objects.value]
         }

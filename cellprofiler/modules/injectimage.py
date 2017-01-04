@@ -27,7 +27,7 @@ class InjectImage(cellprofiler.module.Module):
     variable_revision_number = 1
 
     def __init__(self, image_name, image, mask=None, release_image=False):
-        '''Initializer
+        """Initializer
 
         image_name - the name of the image to put into the image set
 
@@ -38,7 +38,7 @@ class InjectImage(cellprofiler.module.Module):
         mask - None for no mask (default), a binary 2-d matrix if same mask
                for all image sets or a list or tuple of masks if one
                different mask per image set.
-        '''
+        """
         super(InjectImage, self).__init__()
         self.__image_name = image_name
         self.__image = image

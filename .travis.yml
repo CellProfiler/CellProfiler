@@ -22,8 +22,6 @@ before_script:
   - sleep 3
 cache:
   apt: true
-  directories:
-    - $HOME/.cache/pip
 language: python
 notifications:
   email: false

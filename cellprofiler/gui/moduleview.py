@@ -1314,7 +1314,7 @@ class ModuleView(object):
             text_ctrl = wx.TextCtrl(panel, -1, str(v.value),
                                     name=text_control_name(v))
             sizer.Add(text_ctrl, 1, wx.EXPAND | wx.RIGHT, 1)
-            bitmap = wx.ArtProvider.GetBitmap(wx.ART_FIND, wx.ART_TOOLBAR, (16, 16))
+            bitmap = wx.ArtProvider().GetBitmap(wx.ART_FIND, wx.ART_TOOLBAR, (16, 16))
             bitmap_button = wx.BitmapButton(panel, bitmap=bitmap,
                                             name=button_control_name(v))
             sizer.Add(bitmap_button, 0, wx.EXPAND)
@@ -1395,7 +1395,7 @@ class ModuleView(object):
 
             self.__module_panel.Bind(wx.EVT_TEXT, on_cell_change, edit_control)
 
-            bitmap = wx.ArtProvider.GetBitmap(wx.ART_FILE_OPEN,
+            bitmap = wx.ArtProvider().GetBitmap(wx.ART_FILE_OPEN,
                                               wx.ART_BUTTON, (16, 16))
             button_control = wx.BitmapButton(control, bitmap=bitmap,
                                              name=button_name)
@@ -1469,7 +1469,7 @@ class ModuleView(object):
                 custom_ctrl = wx.TextCtrl(control, -1, v.custom_path,
                                           name=custom_ctrl_name)
             custom_sizer.Add(custom_ctrl, 1, wx.ALIGN_CENTER_VERTICAL)
-            browse_bitmap = wx.ArtProvider.GetBitmap(wx.ART_FOLDER,
+            browse_bitmap = wx.ArtProvider().GetBitmap(wx.ART_FOLDER,
                                                      wx.ART_CMN_DIALOG,
                                                      (16, 16))
             browse_ctrl = wx.BitmapButton(control, bitmap=browse_bitmap,
@@ -1572,7 +1572,7 @@ class ModuleView(object):
             text_control.Bind(
                 wx.EVT_TEXT,
                 lambda event: self.__on_cell_change(event, v, text_control))
-            browse_bitmap = wx.ArtProvider.GetBitmap(wx.ART_FOLDER,
+            browse_bitmap = wx.ArtProvider().GetBitmap(wx.ART_FOLDER,
                                                      wx.ART_CMN_DIALOG,
                                                      (16, 16))
             browse_ctrl = wx.BitmapButton(control, bitmap=browse_bitmap,
@@ -2829,13 +2829,13 @@ class FileCollectionDisplayController(object):
     """
     IMAGE_LIST = wx.ImageList(16, 16, 3)
     FOLDER_IMAGE_INDEX = IMAGE_LIST.Add(
-            wx.ArtProvider.GetBitmap(wx.ART_FOLDER,
+            wx.ArtProvider().GetBitmap(wx.ART_FOLDER,
                                      wx.ART_OTHER, size=(16, 16)))
     FOLDER_OPEN_IMAGE_INDEX = IMAGE_LIST.Add(
-            wx.ArtProvider.GetBitmap(wx.ART_FOLDER_OPEN,
+            wx.ArtProvider().GetBitmap(wx.ART_FOLDER_OPEN,
                                      wx.ART_OTHER, size=(16, 16)))
     FILE_IMAGE_INDEX = IMAGE_LIST.Add(
-            wx.ArtProvider.GetBitmap(wx.ART_NORMAL_FILE,
+            wx.ArtProvider().GetBitmap(wx.ART_NORMAL_FILE,
                                      wx.ART_OTHER, size=(16, 16)))
     IMAGE_PLANE_IMAGE_INDEX = IMAGE_LIST.Add(
             cellprofiler.icons.get_builtin_image("microscope-icon_16").ConvertToBitmap())
@@ -3636,7 +3636,7 @@ class JoinerController(object):
                 move_up_button_name = self.get_up_button_control_name(i)
                 ctrl = self.panel.FindWindowByName(move_up_button_name)
                 if ctrl is None:
-                    img = wx.ArtProvider.GetBitmap(wx.ART_GO_UP,
+                    img = wx.ArtProvider().GetBitmap(wx.ART_GO_UP,
                                                    wx.ART_BUTTON,
                                                    (16, 16))
                     ctrl = wx.BitmapButton(self.panel, -1, img,
@@ -3652,7 +3652,7 @@ class JoinerController(object):
                 move_down_button_name = self.get_down_button_control_name(i)
                 ctrl = self.panel.FindWindowByName(move_down_button_name)
                 if ctrl is None:
-                    img = wx.ArtProvider.GetBitmap(wx.ART_GO_DOWN,
+                    img = wx.ArtProvider().GetBitmap(wx.ART_GO_DOWN,
                                                    wx.ART_BUTTON,
                                                    (16, 16))
                     ctrl = wx.BitmapButton(self.panel, -1, img,

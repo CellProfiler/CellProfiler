@@ -60,7 +60,7 @@ class VWRow(object):
         self.chooser = wx.Choice(panel)
         self.color_ctrl = wx.lib.colourselect.ColourSelect(panel, colour=color)
         self.show_check = wx.CheckBox(panel)
-        bitmap = wx.ArtProvider.GetBitmap(
+        bitmap = wx.ArtProvider().GetBitmap(
                 wx.ART_DELETE, wx.ART_TOOLBAR, (16, 16))
         self.remove_button = wx.BitmapButton(
                 panel, bitmap=bitmap)
@@ -262,16 +262,16 @@ class ViewWorkspace(object):
                 sub_sizer, 0, wx.ALIGN_LEFT | wx.LEFT | wx.RIGHT, 3)
         sub_sizer.Add(self.image_grid, 0, wx.ALIGN_LEFT)
         self.image_grid.Add(
-                wx.StaticText(panel, label="Images"), (0, self.C_CHOOSER),
+                wx.StaticText(panel, label="Images"), pos=wx.GBPosition(0, self.C_CHOOSER),
                 flag=wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_BOTTOM)
         self.image_grid.Add(
-                wx.StaticText(panel, label="Color"), (0, self.C_COLOR),
+                wx.StaticText(panel, label="Color"), pos=wx.GBPosition(0, self.C_COLOR),
                 flag=wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_BOTTOM)
         self.image_grid.Add(
-                wx.StaticText(panel, label="Show"), (0, self.C_SHOW),
+                wx.StaticText(panel, label="Show"), pos=wx.GBPosition(0, self.C_SHOW),
                 flag=wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_BOTTOM)
         self.image_grid.Add(
-                wx.StaticText(panel, label="Remove"), (0, self.C_REMOVE),
+                wx.StaticText(panel, label="Remove"), pos=wx.GBPosition(0, self.C_REMOVE),
                 flag=wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_BOTTOM)
         self.add_image_row(can_delete=False)
         add_image_button = wx.Button(panel,
@@ -292,16 +292,16 @@ class ViewWorkspace(object):
         panel.Sizer.Add(sub_sizer, 0, wx.ALIGN_LEFT | wx.LEFT | wx.RIGHT, 3)
         sub_sizer.Add(self.object_grid, 0, wx.ALIGN_LEFT)
         self.object_grid.Add(
-                wx.StaticText(panel, label="Objects"), (0, self.C_CHOOSER),
+                wx.StaticText(panel, label="Objects"), pos=wx.GBPosition(0, self.C_CHOOSER),
                 flag=wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_BOTTOM)
         self.object_grid.Add(
-                wx.StaticText(panel, label="Color"), (0, self.C_COLOR),
+                wx.StaticText(panel, label="Color"), pos=wx.GBPosition(0, self.C_COLOR),
                 flag=wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_BOTTOM)
         self.object_grid.Add(
-                wx.StaticText(panel, label="Show"), (0, self.C_SHOW),
+                wx.StaticText(panel, label="Show"), pos=wx.GBPosition(0, self.C_SHOW),
                 flag=wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_BOTTOM)
         self.object_grid.Add(
-                wx.StaticText(panel, label="Remove"), (0, self.C_REMOVE),
+                wx.StaticText(panel, label="Remove"), pos=wx.GBPosition(0, self.C_REMOVE),
                 flag=wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_BOTTOM)
         self.add_objects_row(can_delete=False)
         add_object_button = wx.Button(panel,
@@ -322,16 +322,16 @@ class ViewWorkspace(object):
         panel.Sizer.Add(sub_sizer, 0, wx.ALIGN_LEFT | wx.LEFT | wx.RIGHT, 3)
         sub_sizer.Add(self.mask_grid, 0, wx.ALIGN_LEFT)
         self.mask_grid.Add(
-                wx.StaticText(panel, label="Masks"), (0, self.C_CHOOSER),
+                wx.StaticText(panel, label="Masks"), pos=wx.GBPosition(0, self.C_CHOOSER),
                 flag=wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_BOTTOM)
         self.mask_grid.Add(
-                wx.StaticText(panel, label="Color"), (0, self.C_COLOR),
+                wx.StaticText(panel, label="Color"), pos=wx.GBPosition(0, self.C_COLOR),
                 flag=wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_BOTTOM)
         self.mask_grid.Add(
-                wx.StaticText(panel, label="Show"), (0, self.C_SHOW),
+                wx.StaticText(panel, label="Show"), pos=wx.GBPosition(0, self.C_SHOW),
                 flag=wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_BOTTOM)
         self.mask_grid.Add(
-                wx.StaticText(panel, label="Remove"), (0, self.C_REMOVE),
+                wx.StaticText(panel, label="Remove"), pos=wx.GBPosition(0, self.C_REMOVE),
                 flag=wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_BOTTOM)
         self.add_mask_row(can_delete=False)
         add_mask_button = wx.Button(panel,
@@ -352,16 +352,16 @@ class ViewWorkspace(object):
         panel.Sizer.Add(sub_sizer, 0, wx.ALIGN_LEFT | wx.LEFT | wx.RIGHT, 3)
         sub_sizer.Add(self.m_grid, 0, wx.ALIGN_LEFT)
         self.m_grid.Add(
-                wx.StaticText(panel, label="Measurement"), (0, self.C_CHOOSER),
+                wx.StaticText(panel, label="Measurement"), pos=wx.GBPosition(0, self.C_CHOOSER),
                 flag=wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_BOTTOM)
         self.m_grid.Add(
-                wx.StaticText(panel, label="Font"), (0, self.C_COLOR),
+                wx.StaticText(panel, label="Font"), pos=wx.GBPosition(0, self.C_COLOR),
                 flag=wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_BOTTOM)
         self.m_grid.Add(
-                wx.StaticText(panel, label="Show"), (0, self.C_SHOW),
+                wx.StaticText(panel, label="Show"), pos=wx.GBPosition(0, self.C_SHOW),
                 flag=wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_BOTTOM)
         self.m_grid.Add(
-                wx.StaticText(panel, label="Remove"), (0, self.C_REMOVE),
+                wx.StaticText(panel, label="Remove"), pos=wx.GBPosition(0, self.C_REMOVE),
                 flag=wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_BOTTOM)
         self.add_measurement_row(can_delete=False)
         add_measurement_button = wx.Button(panel,
@@ -497,12 +497,12 @@ class ViewWorkspace(object):
                              lambda: self.on_measurement_changed(mr[0]))
         mr.append(row)
         self.measurement_rows.append(row)
-        bitmap = wx.ArtProvider.GetBitmap(
+        bitmap = wx.ArtProvider().GetBitmap(
                 wx.ART_DELETE, wx.ART_TOOLBAR, (16, 16))
 
         remove_button = wx.BitmapButton(panel,
                                         bitmap=bitmap)
-        self.m_grid.Add(remove_button, (row_idx, self.C_REMOVE),
+        self.m_grid.Add(remove_button, pos=wx.GBPosition(row_idx, self.C_REMOVE),
                         flag=wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_TOP)
         remove_button.Bind(
                 wx.EVT_BUTTON,
@@ -634,7 +634,7 @@ class ViewWorkspace(object):
                         continue
                     value = values[j][i]
                     font = measurement_row.font
-                    if font.GetStyle() == wx.ITALIC:
+                    if font.GetStyle() == wx.FONTSTYLE_ITALIC:
                         fontstyle = "italic"
                     else:
                         fontstyle = "normal"
@@ -716,9 +716,10 @@ class MeasurementRow(object):
         # The drawing characteristics
         #
         self.font = self.font_button.Font
-        self.foreground_color = wx.SystemSettings.GetColour(
+        settings = wx.SystemSettings()
+        self.foreground_color = settings.GetColour(
                 wx.SYS_COLOUR_BTNTEXT)
-        self.background_color = wx.SystemSettings.GetColour(
+        self.background_color = settings.GetColour(
                 wx.SYS_COLOUR_WINDOW)
         self.background_alpha = 0.5
         self.box_style = "round"

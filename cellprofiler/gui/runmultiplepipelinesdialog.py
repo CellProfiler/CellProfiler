@@ -87,7 +87,7 @@ class RunMultplePipelinesDialog(wx.Dialog):
 
     def add_pipeline_list_box(self, sizer):
         self.plv_image_list = wx.ImageList(16, 16)
-        delete_bmp = wx.ArtProvider.GetBitmap(wx.ART_DELETE, size=(16, 16))
+        delete_bmp = wx.ArtProvider().GetBitmap(wx.ART_DELETE, size=(16, 16))
         self.delete_bmp_idx = self.plv_image_list.Add(delete_bmp)
         self.pipeline_list_view = wx.ListCtrl(self, style=wx.LC_REPORT)
         self.pipeline_list_view.SetImageList(self.plv_image_list, wx.IMAGE_LIST_SMALL)

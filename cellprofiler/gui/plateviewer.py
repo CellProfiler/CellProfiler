@@ -230,9 +230,9 @@ class PlateViewer(object):
         self.plate_panel.Bind(wx.EVT_MOTION, self.on_plate_motion)
         self.plate_panel.Bind(wx.EVT_LEFT_DOWN, self.on_plate_click)
         self.plate_choice.Bind(wx.EVT_CHOICE, self.on_plate_choice_evt)
-        self.site_grid.Bind(wx.grid.EVT_GRID_CELL_CHANGE,
+        self.site_grid.Bind(wx.grid.EVT_GRID_CELL_CHANGED,
                             lambda event: self.update_figure())
-        self.channel_grid.Bind(wx.grid.EVT_GRID_CELL_CHANGE,
+        self.channel_grid.Bind(wx.grid.EVT_GRID_CELL_CHANGED,
                                lambda event: self.update_figure())
         self.frame.Bind(wx.EVT_CLOSE, self.on_close)
         self.subcanvaspanel.Bind(wx.EVT_SIZE, self.on_subcanvaspanel_size)

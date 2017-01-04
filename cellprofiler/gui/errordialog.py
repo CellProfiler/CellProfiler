@@ -352,7 +352,7 @@ def show_warning(title, message, get_preference, set_preference):
         subsizer = wx.BoxSizer(wx.HORIZONTAL)
         sizer.Add(subsizer, 0, wx.EXPAND | wx.ALL, 5)
         subsizer.Add(wx.StaticBitmap(dlg, wx.ID_ANY,
-                                     wx.ArtProvider.GetBitmap(wx.ART_INFORMATION,
+                                     wx.ArtProvider().GetBitmap(wx.ART_INFORMATION,
                                                               wx.ART_CMN_DIALOG)),
                      0, wx.ALIGN_LEFT | wx.ALIGN_TOP | wx.RIGHT, 5)
         text = wx.StaticText(dlg, wx.ID_ANY, message)

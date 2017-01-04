@@ -384,7 +384,7 @@ class PipelineController(object):
         self.__tcp_step.Bind(wx.EVT_BUTTON, self.on_debug_step)
         sub_sizer.Add(self.__tcp_step, 1, wx.EXPAND)
 
-        view_bitmap = wx.ArtProvider.GetBitmap(wx.ART_FIND, wx.ART_BUTTON)
+        view_bitmap = wx.ArtProvider().GetBitmap(wx.ART_FIND, wx.ART_BUTTON)
         self.__tcp_view = wx.lib.buttons.GenBitmapTextButton(panel, label="Viewer", bitmap=view_bitmap)
         self.__tcp_view.SetToolTip(wx.ToolTip("Open the workspace viewer"))
         self.__tcp_view.Bind(wx.EVT_BUTTON, self.on_debug_view_workspace)
@@ -609,11 +609,11 @@ class PipelineController(object):
             button_bar = wx.StdDialogButtonSizer()
             panel.Sizer.Add(button_bar, 0, wx.EXPAND | wx.ALL, 5)
 
-            info_bitmap = wx.ArtProvider.GetBitmap(
+            info_bitmap = wx.ArtProvider().GetBitmap(
                 wx.ART_INFORMATION,
                 client=wx.ART_CMN_DIALOG)
             message_sizer.Add(
-                wx.StaticBitmap(subpanel, bitmap=info_bitmap),
+                wx.StaticBitmap(subpanel, label=info_bitmap),
                 0, wx.ALIGN_TOP | wx.ALIGN_LEFT)
             message_sizer.AddSpacer(12)
             text = wx.StaticText(
@@ -868,9 +868,9 @@ class PipelineController(object):
                     dlg.Sizer = wx.BoxSizer(wx.VERTICAL)
                     sizer = wx.BoxSizer(wx.HORIZONTAL)
                     dlg.Sizer.Add(sizer, 0, wx.EXPAND | wx.ALL, 10)
-                    bmp = wx.ArtProvider.GetBitmap(wx.ART_QUESTION,
+                    bmp = wx.ArtProvider().GetBitmap(wx.ART_QUESTION,
                                                    wx.ART_CMN_DIALOG)
-                    sizer.Add(wx.StaticBitmap(dlg, bitmap=bmp), 0,
+                    sizer.Add(wx.StaticBitmap(dlg, label=bmp), 0,
                               wx.ALIGN_LEFT | wx.ALIGN_TOP)
                     sizer.AddSpacer(8)
                     vsizer = wx.BoxSizer(wx.VERTICAL)
@@ -964,7 +964,7 @@ class PipelineController(object):
                               os.path.split(pathname)[1]
                     sizer.Add(wx.StaticText(dlg, label=message), 0, wx.EXPAND)
                     sizer.AddSpacer(4)
-                    gb_sizer = wx.BoxSizer(groupbox, wx.VERTICAL)
+                    gb_sizer = wx.BoxSizer(wx.VERTICAL)
                     sizer.Add(gb_sizer, 1, wx.EXPAND)
                     rb_primary = wx.RadioButton(dlg, label="&Primary pipeline")
                     gb_sizer.Add(rb_primary, 0, wx.ALIGN_LEFT)
@@ -1079,11 +1079,11 @@ class PipelineController(object):
         button_bar = wx.StdDialogButtonSizer()
         panel.Sizer.Add(button_bar, 0, wx.EXPAND | wx.ALL, 5)
 
-        info_bitmap = wx.ArtProvider.GetBitmap(
+        info_bitmap = wx.ArtProvider().GetBitmap(
             wx.ART_INFORMATION,
             client=wx.ART_CMN_DIALOG)
         message_sizer.Add(
-            wx.StaticBitmap(subpanel, bitmap=info_bitmap),
+            wx.StaticBitmap(subpanel, label=info_bitmap),
             0, wx.ALIGN_TOP | wx.ALIGN_LEFT)
         message_sizer.AddSpacer(12)
         help_text = (
@@ -1194,8 +1194,8 @@ class PipelineController(object):
             dlg.Sizer = wx.BoxSizer(wx.VERTICAL)
             message_sizer = wx.BoxSizer(wx.HORIZONTAL)
             dlg.Sizer.Add(message_sizer, 0, wx.EXPAND | wx.ALL, 15)
-            bmpInfo = wx.ArtProvider.GetBitmap(wx.ART_INFORMATION, wx.ART_CMN_DIALOG)
-            message_sizer.Add(wx.StaticBitmap(dlg, bitmap=bmpInfo), 0,
+            bmpInfo = wx.ArtProvider().GetBitmap(wx.ART_INFORMATION, wx.ART_CMN_DIALOG)
+            message_sizer.Add(wx.StaticBitmap(dlg, label=bmpInfo), 0,
                               wx.ALIGN_TOP | wx.ALIGN_LEFT)
             message_sizer.AddSpacer(12)
             message_sizer.Add(wx.StaticText(dlg, label=message), 0,
@@ -1291,7 +1291,7 @@ class PipelineController(object):
             #
             sizer = wx.BoxSizer(wx.HORIZONTAL)
             super_sizer.Add(sizer, 1, wx.EXPAND | wx.ALL, 5)
-            question_mark = wx.ArtProvider.GetBitmap(wx.ART_HELP,
+            question_mark = wx.ArtProvider().GetBitmap(wx.ART_HELP,
                                                      wx.ART_MESSAGE_BOX)
             icon = wx.StaticBitmap(dialog, -1, question_mark)
             sizer.Add(icon, 0, wx.EXPAND | wx.ALL, 5)
@@ -1346,7 +1346,7 @@ class PipelineController(object):
         self.__workspace.close()
 
     def __on_pipeline_event(self, caller, event):
-        if not wx.Thread_IsMain():
+        if not wx.IsMainThread():
             wx.CallAfter(self.__on_pipeline_event, caller, event)
         if isinstance(event, cellprofiler.pipeline.RunExceptionEvent):
             error_msg = None
@@ -2418,7 +2418,7 @@ class PipelineController(object):
         opened, which can overwhelm the user and cause UI hangs.
         """
         # just in case.
-        assert wx.Thread_IsMain(), "PipelineController.handle_analysis_feedback() must be called from main thread!"
+        assert wx.IsMainThread(), "PipelineController.handle_analysis_feedback() must be called from main thread!"
 
         # only one window at a time
         if self.interaction_pending:
@@ -2440,7 +2440,7 @@ class PipelineController(object):
     def module_display_request(self, evt):
         """
         """
-        assert wx.Thread_IsMain(), "PipelineController.module_display_request() must be called from main thread!"
+        assert wx.IsMainThread(), "PipelineController.module_display_request() must be called from main thread!"
 
         module_num = evt.module_num
         if module_num <= 0 or \
@@ -2473,7 +2473,7 @@ class PipelineController(object):
             evt.reply(cellprofiler.analysis.Ack())
 
     def module_display_post_run_request(self, evt):
-        assert wx.Thread_IsMain(), "PipelineController.module_post_run_display_request() must be called from main thread!"
+        assert wx.IsMainThread(), "PipelineController.module_post_run_display_request() must be called from main thread!"
         module_num = evt.module_num
         # use our shared workspace
         self.__workspace.display_data.__dict__.update(evt.display_data.__dict__)
@@ -2493,7 +2493,7 @@ class PipelineController(object):
                                                      % (module.module_name, module_num))
 
     def module_display_post_group_request(self, evt):
-        assert wx.Thread_IsMain(), "PipelineController.module_post_group_display_request() must be called from main thread!"
+        assert wx.IsMainThread(), "PipelineController.module_post_group_display_request() must be called from main thread!"
         module_num = evt.module_num
         # use our shared workspace
         self.__workspace.display_data.__dict__.update(evt.display_data)
@@ -2548,7 +2548,7 @@ class PipelineController(object):
         """Report an error in analysis to the user, giving options for
         skipping, aborting, and debugging."""
 
-        assert wx.Thread_IsMain(), "PipelineController.analysis_exception() must be called from main thread!"
+        assert wx.IsMainThread(), "PipelineController.analysis_exception() must be called from main thread!"
 
         self.debug_request_queue = Queue.Queue()
 
@@ -3293,7 +3293,7 @@ class PipelineController(object):
             text_ctrl,
             1, wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL |
                wx.EXPAND | wx.ALL, 10)
-        bitmap = wx.ArtProvider.GetBitmap(wx.ART_INFORMATION,
+        bitmap = wx.ArtProvider().GetBitmap(wx.ART_INFORMATION,
                                           wx.ART_CMN_DIALOG,
                                           size=(32, 32))
         sub_sizer.Add(wx.StaticBitmap(dlg, -1, bitmap), 0,
@@ -3361,7 +3361,7 @@ class PipelineController(object):
             text_ctrl,
             1, wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL |
                wx.EXPAND | wx.ALL, 10)
-        bitmap = wx.ArtProvider.GetBitmap(wx.ART_INFORMATION,
+        bitmap = wx.ArtProvider().GetBitmap(wx.ART_INFORMATION,
                                           wx.ART_CMN_DIALOG,
                                           size=(32, 32))
         sub_sizer.Add(wx.StaticBitmap(dlg, -1, bitmap), 0,

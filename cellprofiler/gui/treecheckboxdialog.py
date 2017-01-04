@@ -56,14 +56,14 @@ class TreeCheckboxDialog(wx.Dialog):
         self.tree_ctrl.Expand(root_id)
         table_sizer = wx.GridBagSizer()
         sizer.Add(table_sizer, 0, wx.EXPAND)
-        table_sizer.Add(wx.StaticText(self, label='Key:'), (0, 0), flag=wx.LEFT | wx.RIGHT, border=3)
+        table_sizer.Add(wx.StaticText(self, label='Key:'), pos=wx.GBPosition(0, 0), flag=wx.LEFT | wx.RIGHT, border=3)
         for i, (bitmap, description) in enumerate((
                 (image_list.GetBitmap(0), "No subitems selected / not selected"),
                 (image_list.GetBitmap(2), "All subitems selected / selected"),
                 (image_list.GetBitmap(4), "Some subitems selected. Open tree to see selections."))):
             bitmap_ctrl = wx.StaticBitmap(self)
             bitmap_ctrl.SetBitmap(bitmap)
-            table_sizer.Add(bitmap_ctrl, (i, 1), flag=wx.RIGHT, border=5)
+            table_sizer.Add(bitmap_ctrl, pos=wx.GBPosition(i, 1), flag=wx.RIGHT, border=5)
             table_sizer.Add(wx.StaticText(self, label=description), (i, 2))
         table_sizer.AddGrowableCol(2)
         sizer.Add(self.CreateStdDialogButtonSizer(wx.CANCEL | wx.OK),
@@ -205,7 +205,7 @@ class TreeCheckboxDialog(wx.Dialog):
         dc.SetTextForeground(wx.BLACK)
         try:
             dc.Clear()
-            render = wx.RendererNative.Get()
+            render = wx.RendererNative().Get()
             render.DrawCheckBox(self, dc, (0, 0, width, height), flags)
         finally:
             dc.SelectObject(wx.NullBitmap)

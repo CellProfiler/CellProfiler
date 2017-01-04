@@ -9,6 +9,7 @@ import matplotlib.cm
 import os
 import sys
 import wx
+import wx.lib.scrolledpanel
 
 DIRBROWSE = "Browse"
 FILEBROWSE = "FileBrowse"
@@ -83,7 +84,7 @@ class PreferencesDlg(wx.Dialog):
         top_sizer.Add(sizer, 1, wx.EXPAND | wx.ALL, 5)
         index = 0
         controls = []
-        help_bitmap = wx.ArtProvider.GetBitmap(wx.ART_HELP,
+        help_bitmap = wx.ArtProvider().GetBitmap(wx.ART_HELP,
                                                wx.ART_CMN_DIALOG,
                                                (16, 16))
         for text, getter, setter, ui_info, help_text in p:
@@ -123,7 +124,7 @@ class PreferencesDlg(wx.Dialog):
                 min_width = ctl.GetTextExtent("Make sure the window can display this")[0]
                 ctl.SetMinSize((min_width, min_height))
             controls.append(ctl)
-            sizer.Add(ctl, (index, 1), flag=wx.EXPAND)
+            sizer.Add(ctl, wx.GBPosition(index, 1), flag=wx.EXPAND)
             if ui_info == DIRBROWSE:
                 def on_press(event, ctl=ctl, parent=self):
                     dlg = wx.DirDialog(parent)
@@ -149,7 +150,7 @@ class PreferencesDlg(wx.Dialog):
                     fd = wx.FontData()
                     fd.SetInitialFont(wx.FFont(float(size),
                                                wx.FONTFAMILY_DEFAULT,
-                                               face=name))
+                                               faceName=name))
                     dlg = wx.FontDialog(parent, fd)
                     if dlg.ShowModal() == wx.ID_OK:
                         fd = dlg.GetFontData()

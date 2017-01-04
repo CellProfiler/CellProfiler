@@ -120,7 +120,7 @@ class PreferencesView(object):
         edit_box = wx.ComboBox(panel, -1, value, choices=choices)
         sizer.Add(edit_box, 1, wx.ALIGN_CENTER)
         sizer.AddSpacer(2)
-        browse_bmp = wx.ArtProvider.GetBitmap(wx.ART_FOLDER_OPEN,
+        browse_bmp = wx.ArtProvider().GetBitmap(wx.ART_FOLDER_OPEN,
                                               wx.ART_CMN_DIALOG,
                                               (16, 16))
         browse_button = wx.BitmapButton(panel, -1, bitmap=browse_bmp)
@@ -128,7 +128,7 @@ class PreferencesView(object):
         sizer.Add(browse_button, 0, wx.ALIGN_CENTER)
         sizer.AddSpacer(2)
 
-        new_bmp = wx.ArtProvider.GetBitmap(wx.ART_NEW_DIR,
+        new_bmp = wx.ArtProvider().GetBitmap(wx.ART_NEW_DIR,
                                            wx.ART_CMN_DIALOG,
                                            (16, 16))
         new_button = wx.BitmapButton(panel, -1, bitmap=new_bmp)
@@ -137,7 +137,7 @@ class PreferencesView(object):
             new_button.Disable()
         sizer.Add(new_button, 0, wx.ALIGN_CENTER)
         if refresh_action is not None:
-            refresh_bitmap = wx.ArtProvider.GetBitmap(wx.ART_REDO,
+            refresh_bitmap = wx.ArtProvider().GetBitmap(wx.ART_REDO,
                                                       wx.ART_CMN_DIALOG,
                                                       (16, 16))
             refresh_button = wx.BitmapButton(panel, -1, bitmap=refresh_bitmap)

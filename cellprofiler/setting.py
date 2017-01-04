@@ -20,7 +20,6 @@ from cellprofiler.preferences import \
     standardize_default_folder_names
 import cellprofiler.measurement
 
-from cellprofiler.utilities.utf16encode import utf16encode
 import skimage.morphology
 
 '''Matlab CellProfiler uses this string for settings to be excluded'''

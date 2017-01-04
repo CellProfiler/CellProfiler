@@ -1,3 +1,4 @@
+from __future__ import print_function
 import bioformats.formatreader
 import ctypes
 import cellprofiler
@@ -496,16 +497,16 @@ def print_measurements(options):
 
     columns = pipeline.get_measurement_columns()
 
-    print "--- begin measurements ---"
+    print("--- begin measurements ---")
 
-    print "Object,Feature,Type"
+    print("Object,Feature,Type")
 
     for column in columns:
         object_name, feature, data_type = column[:3]
 
-        print "%s,%s,%s" % (object_name, feature, data_type)
+        print("%s,%s,%s" % (object_name, feature, data_type))
 
-    print "--- end measurements ---"
+    print("--- end measurements ---")
 
 
 def print_groups(filename):
@@ -566,7 +567,7 @@ def get_batch_commands(filename):
                 if off == prev:
                     continue
 
-                print "CellProfiler -c -r -p %s -f %d -l %d" % (filename, prev + 1, off)
+                print("CellProfiler -c -r -p %s -f %d -l %d" % (filename, prev + 1, off))
 
                 prev = off
 
@@ -579,7 +580,7 @@ def get_batch_commands(filename):
     for grouping in groupings:
         group_string = ",".join(["%s=%s" % (k, v) for k, v in grouping[0].iteritems()])
 
-        print "CellProfiler -c -r -p %s -g %s" % (filename, group_string)
+        print("CellProfiler -c -r -p %s -g %s" % (filename, group_string))
 
 
 def write_schema(pipeline_filename):

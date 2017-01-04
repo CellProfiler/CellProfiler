@@ -105,8 +105,8 @@ class Objects(object):
         sparse = self.__segmented.sparse
         return numpy.column_stack(
                 [sparse[axis] for axis in
-                 "y", "x",
-                 "label"])
+                 ("y", "x",
+                 "label")])
 
     ijv = property(get_ijv, set_ijv)
 
@@ -545,7 +545,7 @@ class Segmentation(object):
         axes = list(("c", "t", "z", "y", "x"))
         axes, shape = [
             [a for a, s in zip(aa, self.shape) if s > 1]
-            for aa in axes, self.shape]
+            for aa in (axes, self.shape)]
         #
         # dense.shape[0] is the overlap-axis - it's usually 1
         # except if there are multiply-labeled pixels and overlapping
@@ -773,7 +773,7 @@ class ObjectSet(object):
 
     def add_objects(self, objects, name):
         assert isinstance(objects, Objects), "objects must be an instance of CellProfiler.Objects"
-        assert ((not self.__objects_by_name.has_key(name)) or
+        assert ((name not in self.__objects_by_name) or
                 self.__can_overwrite), "The object, %s, is already in the object set" % name
         self.__objects_by_name[name] = objects
 

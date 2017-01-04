@@ -540,7 +540,7 @@ class ImageSet(object):
                       discard alpha channel.
         """
         name = str(name)
-        if not self.__images.has_key(name):
+        if name not in self.__images:
             image = self.get_image_provider(name).provide_image(self)
 
         else:
@@ -614,7 +614,7 @@ class ImageSet(object):
         name - the name of the provider
         '''
         self.get_image_provider(name).release_memory()
-        if self.__images.has_key(name):
+        if name in self.__images:
             del self.__images[name]
 
     @property
@@ -660,7 +660,7 @@ class ImageSetList(object):
         else:
             keys = keys_or_number
             k = make_dictionary_key(keys)
-            if self.__image_sets_by_key.has_key(k):
+            if k in self.__image_sets_by_key:
                 number = self.__image_sets_by_key[k].number
             else:
                 number = len(self.__image_sets)
@@ -726,7 +726,7 @@ class ImageSetList(object):
             image_set = self.get_image_set(i)
             assert isinstance(image_set, ImageSet)
             key_values = tuple([str(image_set.keys[key]) for key in keys])
-            if not d.has_key(key_values):
+            if key_values not in d:
                 d[key_values] = []
                 sort_order.append(key_values)
             d[key_values].append(i + 1)

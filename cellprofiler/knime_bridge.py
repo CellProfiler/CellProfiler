@@ -136,7 +136,7 @@ class KnimeBridgeServer(threading.Thread):
                                 try:
                                     self.dispatch[message_type](
                                             session_id, message_type, msg)
-                                except Exception, e:
+                                except Exception as e:
                                     logger.warn(e.message, exc_info=1)
                                     self.raise_cellprofiler_exception(
                                             session_id, e.message)
@@ -164,7 +164,7 @@ class KnimeBridgeServer(threading.Thread):
         pipeline = cpp.Pipeline()
         try:
             pipeline.loadtxt(StringIO(pipeline_txt))
-        except Exception, e:
+        except Exception as e:
             logger.warning(
                     "Failed to load pipeline: sending pipeline exception",
                     exc_info=1)
@@ -190,7 +190,7 @@ class KnimeBridgeServer(threading.Thread):
         pipeline = cpp.Pipeline()
         try:
             pipeline.loadtxt(StringIO(pipeline_txt))
-        except Exception, e:
+        except Exception as e:
             logger.warning(
                     "Failed to load pipeline: sending pipeline exception",
                     exc_info=1)
@@ -233,7 +233,7 @@ class KnimeBridgeServer(threading.Thread):
                 if workspace.disposition in \
                         (cpw.DISPOSITION_SKIP, cpw.DISPOSITION_CANCEL):
                     break
-            except Exception, e:
+            except Exception as e:
                 msg = "Encountered error while running module, \"%s\": %s" % (
                     module.module_name, e.message)
                 logger.warning(msg, exc_info=1)
@@ -293,7 +293,7 @@ class KnimeBridgeServer(threading.Thread):
                         string_data.append(np.frombuffer(s, np.uint8))
         data = np.hstack([
                              np.frombuffer(np.hstack(ditem).data, np.uint8)
-                             for ditem in double_data, float_data, int_data, string_data
+                             for ditem in (double_data, float_data, int_data, string_data)
                              if len(ditem) > 0])
         self.socket.send_multipart(
                 [zmq.Frame(session_id),
@@ -341,13 +341,13 @@ class KnimeBridgeServer(threading.Thread):
                     return
                 image_group.create_dataset(channel_name,
                                            data=pixel_data)
-        except Exception, e:
+        except Exception as e:
             self.raise_cellprofiler_exception(
                     session_id, e.message)
             return None, None, None
         try:
             pipeline.loadtxt(StringIO(pipeline_txt))
-        except Exception, e:
+        except Exception as e:
             logger.warning(
                     "Failed to load pipeline: sending pipeline exception",
                     exc_info=1)
@@ -387,7 +387,7 @@ class KnimeBridgeServer(threading.Thread):
                     if workspace.disposition in \
                             (cpw.DISPOSITION_SKIP, cpw.DISPOSITION_CANCEL):
                         break
-                except Exception, e:
+                except Exception as e:
                     msg = "Encountered error while running module, \"%s\": %s" % (
                         module.module_name, e.message)
                     logger.warning(msg, exc_info=1)
@@ -467,7 +467,7 @@ class KnimeBridgeServer(threading.Thread):
                         int_data.append(data.astype('<i4'))
         data = np.hstack([
                              np.frombuffer(np.ascontiguousarray(np.hstack(ditem)).data, np.uint8)
-                             for ditem in double_data, float_data, int_data
+                             for ditem in (double_data, float_data, int_data)
                              if len(ditem) > 0])
         data = np.ascontiguousarray(data)
         self.socket.send_multipart(
@@ -505,14 +505,14 @@ class KnimeBridgeServer(threading.Thread):
                         channel_metadata, message.pop(0).bytes,
                         grouping_allowed=grouping_allowed)
                 m.add(channel_name, cpi.Image(pixel_data))
-        except Exception, e:
+        except Exception as e:
             logger.warn("Failed to decode message", exc_info=1)
             self.raise_cellprofiler_exception(
                     session_id, e.message)
             return None, None, None
         try:
             pipeline.loadtxt(StringIO(pipeline_txt))
-        except Exception, e:
+        except Exception as e:
             logger.warning(
                     "Failed to load pipeline: sending pipeline exception",
                     exc_info=1)

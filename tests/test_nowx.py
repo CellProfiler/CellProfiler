@@ -68,7 +68,7 @@ class TestNoWX(unittest.TestCase):
         pipeline.add_listener(callback)
         try:
             fd = urlopen(self.fly_url)
-        except IOError, e:
+        except IOError as e:
             def bad_url(e=e):
                 raise e
 

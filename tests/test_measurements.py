@@ -1,5 +1,6 @@
 """ test_Measurements.py - tests for CellProfiler.Measurements
 """
+from __future__ import print_function
 
 import base64
 import os
@@ -15,6 +16,7 @@ import numpy as np
 
 import cellprofiler.image as cpi
 import cellprofiler.measurement as cpmeas
+from functools import reduce
 
 OBJECT_NAME = "myobjects"
 FEATURE_NAME = "feature"
@@ -484,7 +486,7 @@ class TestMeasurements(unittest.TestCase):
             try:
                 os.unlink(filename)
             except:
-                print "Failed to remove file %s" % filename
+                print("Failed to remove file %s" % filename)
 
     def test_09_01_group_by_metadata(self):
         m = cpmeas.Measurements()
@@ -861,7 +863,7 @@ class TestMeasurements(unittest.TestCase):
                     (cpmeas.AGG_MEDIAN, np.median(values)),
                     (cpmeas.AGG_STD_DEV, np.std(values))):
                 feature = "%s_%s_Foo" % (agg_name, OBJECT_NAME)
-                self.assertTrue(d.has_key(feature))
+                self.assertTrue(feature in d)
                 self.assertAlmostEqual(d[feature], expected)
         finally:
             del m
@@ -888,7 +890,7 @@ class TestMeasurements(unittest.TestCase):
                     (cpmeas.AGG_MEDIAN, np.median(values)),
                     (cpmeas.AGG_STD_DEV, np.std(values))):
                 feature = "%s_%s_Foo" % (agg_name, OBJECT_NAME)
-                self.assertTrue(d.has_key(feature))
+                self.assertTrue(feature in d)
                 self.assertAlmostEqual(d[feature], expected)
         finally:
             del m
@@ -1048,7 +1050,7 @@ class TestMeasurements(unittest.TestCase):
             x.flatten() for x in np.mgrid[1:4, 1:10]]
         order = r.permutation(len(image_numbers1))
         image_numbers2, object_numbers2 = [
-            x[order] for x in image_numbers1, object_numbers1]
+            x[order] for x in (image_numbers1, object_numbers1)]
 
         m.add_relate_measurement(1, "Foo", "O1", "O2",
                                  image_numbers1, object_numbers1,
@@ -1062,8 +1064,8 @@ class TestMeasurements(unittest.TestCase):
         r = m.get_relationships(1, "Foo", "O1", "O2")
         ri1, ro1, ri2, ro2 = [
             r[key] for key in
-            cpmeas.R_FIRST_IMAGE_NUMBER, cpmeas.R_FIRST_OBJECT_NUMBER,
-            cpmeas.R_SECOND_IMAGE_NUMBER, cpmeas.R_SECOND_OBJECT_NUMBER]
+            (cpmeas.R_FIRST_IMAGE_NUMBER, cpmeas.R_FIRST_OBJECT_NUMBER,
+            cpmeas.R_SECOND_IMAGE_NUMBER, cpmeas.R_SECOND_OBJECT_NUMBER)]
         order = np.lexsort((ro1, ri1))
         np.testing.assert_array_equal(image_numbers1, ri1[order])
         np.testing.assert_array_equal(object_numbers1, ro1[order])
@@ -1078,7 +1080,7 @@ class TestMeasurements(unittest.TestCase):
             x.flatten() for x in np.mgrid[1:4, 1:10]]
         order = r.permutation(len(image_numbers1))
         image_numbers2, object_numbers2 = [
-            x[order] for x in image_numbers1, object_numbers1]
+            x[order] for x in (image_numbers1, object_numbers1)]
 
         split = int(len(image_numbers1) / 2)
         m.add_relate_measurement(
@@ -1092,8 +1094,8 @@ class TestMeasurements(unittest.TestCase):
         r = m.get_relationships(1, "Foo", "O1", "O2")
         ri1, ro1, ri2, ro2 = [
             r[key] for key in
-            cpmeas.R_FIRST_IMAGE_NUMBER, cpmeas.R_FIRST_OBJECT_NUMBER,
-            cpmeas.R_SECOND_IMAGE_NUMBER, cpmeas.R_SECOND_OBJECT_NUMBER]
+            (cpmeas.R_FIRST_IMAGE_NUMBER, cpmeas.R_FIRST_OBJECT_NUMBER,
+            cpmeas.R_SECOND_IMAGE_NUMBER, cpmeas.R_SECOND_OBJECT_NUMBER)]
         order = np.lexsort((ro1, ri1))
         np.testing.assert_array_equal(image_numbers1, ri1[order])
         np.testing.assert_array_equal(object_numbers1, ro1[order])
@@ -1166,7 +1168,7 @@ class TestMeasurements(unittest.TestCase):
                        first_object_names[on1idx], second_object_names[on2idx])
                 order = r.permutation(len(image_numbers1))
                 image_numbers2, object_numbers2 = [
-                    x[order] for x in image_numbers1, object_numbers1]
+                    x[order] for x in (image_numbers1, object_numbers1)]
                 d[key] = (image_numbers2, object_numbers2)
                 m.add_relate_measurement(key[0], key[1], key[2], key[3],
                                          image_numbers1, object_numbers1,
@@ -1184,8 +1186,8 @@ class TestMeasurements(unittest.TestCase):
                 r = m.get_relationships(key[0], key[1], key[2], key[3])
                 ri1, ro1, ri2, ro2 = [
                     r[key] for key in
-                    cpmeas.R_FIRST_IMAGE_NUMBER, cpmeas.R_FIRST_OBJECT_NUMBER,
-                    cpmeas.R_SECOND_IMAGE_NUMBER, cpmeas.R_SECOND_OBJECT_NUMBER]
+                    (cpmeas.R_FIRST_IMAGE_NUMBER, cpmeas.R_FIRST_OBJECT_NUMBER,
+                    cpmeas.R_SECOND_IMAGE_NUMBER, cpmeas.R_SECOND_OBJECT_NUMBER)]
                 order = np.lexsort((ro1, ri1))
                 np.testing.assert_array_equal(image_numbers1, ri1[order])
                 np.testing.assert_array_equal(object_numbers1, ro1[order])
@@ -1218,8 +1220,8 @@ class TestMeasurements(unittest.TestCase):
         r = m2.get_relationships(1, "Foo", "O1", "O2")
         ri1, ro1, ri2, ro2 = [
             r[key] for key in
-            cpmeas.R_FIRST_IMAGE_NUMBER, cpmeas.R_FIRST_OBJECT_NUMBER,
-            cpmeas.R_SECOND_IMAGE_NUMBER, cpmeas.R_SECOND_OBJECT_NUMBER]
+            (cpmeas.R_FIRST_IMAGE_NUMBER, cpmeas.R_FIRST_OBJECT_NUMBER,
+            cpmeas.R_SECOND_IMAGE_NUMBER, cpmeas.R_SECOND_OBJECT_NUMBER)]
         order = np.lexsort((ro1, ri1))
         np.testing.assert_array_equal(image_numbers1, ri1[order])
         np.testing.assert_array_equal(object_numbers1, ro1[order])
@@ -1239,16 +1241,16 @@ class TestMeasurements(unittest.TestCase):
         for i in range(0, 4000, 500):
             m.add_relate_measurement(
                     1, "Foo", "O1", "O2",
-                    *[x[i:(i + 500)] for x in image_numbers1, object_numbers1,
-                                              image_numbers2, object_numbers2])
+                    *[x[i:(i + 500)] for x in (image_numbers1, object_numbers1,
+                                              image_numbers2, object_numbers2)])
 
         for _ in range(50):
             image_numbers = r.randint(1, 1001, 3)
             result = m.get_relationships(1, "Foo", "O1", "O2", image_numbers)
             ri1, ro1, ri2, ro2 = [
                 result[key] for key in
-                cpmeas.R_FIRST_IMAGE_NUMBER, cpmeas.R_FIRST_OBJECT_NUMBER,
-                cpmeas.R_SECOND_IMAGE_NUMBER, cpmeas.R_SECOND_OBJECT_NUMBER]
+                (cpmeas.R_FIRST_IMAGE_NUMBER, cpmeas.R_FIRST_OBJECT_NUMBER,
+                cpmeas.R_SECOND_IMAGE_NUMBER, cpmeas.R_SECOND_OBJECT_NUMBER)]
             rorder = np.lexsort((ro2, ri2, ro1, ri1))
             i, j = [x.flatten() for x in np.mgrid[0:2, 0:3]]
             mask = reduce(

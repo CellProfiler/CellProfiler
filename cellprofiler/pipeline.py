@@ -8,6 +8,7 @@ from __future__ import absolute_import
 
 from past.builtins import cmp
 from future import standard_library
+
 standard_library.install_aliases()
 from builtins import chr
 from builtins import map
@@ -109,16 +110,33 @@ CURRENT_MODULE_NUMBER = 'CurrentModuleNumber'
 SHOW_WINDOW = 'ShowFrame'
 BATCH_STATE = 'BatchState'
 EXIT_STATUS = 'Exit_Status'
-SETTINGS_DTYPE = np.dtype([(VARIABLE_VALUES, '|O4'),
-                           (VARIABLE_INFO_TYPES, '|O4'),
-                           (MODULE_NAMES, '|O4'),
-                           (NUMBERS_OF_VARIABLES, '|O4'),
-                           (PIXEL_SIZE, '|O4'),
-                           (VARIABLE_REVISION_NUMBERS, '|O4'),
-                           (MODULE_REVISION_NUMBERS, '|O4'),
-                           (MODULE_NOTES, '|O4'),
-                           (SHOW_WINDOW, '|O4'),
-                           (BATCH_STATE, '|O4')])
+
+SETTINGS_DTYPE = {
+    'names': [
+        VARIABLE_VALUES,
+        VARIABLE_INFO_TYPES,
+        MODULE_NAMES,
+        NUMBERS_OF_VARIABLES,
+        PIXEL_SIZE,
+        VARIABLE_REVISION_NUMBERS,
+        MODULE_REVISION_NUMBERS,
+        MODULE_NOTES,
+        SHOW_WINDOW,
+        BATCH_STATE
+    ],
+    'formats': [
+        numpy.object_,
+        numpy.object_,
+        numpy.object_,
+        numpy.object_,
+        numpy.object_,
+        numpy.object_,
+        numpy.object_,
+        numpy.object_,
+        numpy.object_,
+        numpy.object_
+    ]
+}
 
 
 def make_cell_struct_dtype(fields):
@@ -126,7 +144,17 @@ def make_cell_struct_dtype(fields):
 
     fields - the names of the fields in the struct
     """
-    return numpy.dtype([(str(x), '|O4') for x in fields])
+
+    names = {"names": fields}
+
+    context = names.copy()
+
+    formats = {"formats": [numpy.object_ for _ in fields]}
+
+    context.update(formats)
+
+    return numpy.dtype(context)
+
 
 
 CURRENT_DTYPE = make_cell_struct_dtype([NUMBER_OF_IMAGE_SETS,
@@ -138,6 +166,7 @@ CURRENT_DTYPE = make_cell_struct_dtype([NUMBER_OF_IMAGE_SETS,
                                         DEFAULT_IMAGE_DIRECTORY,
                                         IMAGE_TOOLS_FILENAMES,
                                         IMAGE_TOOL_HELP])
+
 PREFERENCES_DTYPE = make_cell_struct_dtype([PIXEL_SIZE,
                                             DEFAULT_MODULE_DIRECTORY,
                                             DEFAULT_OUTPUT_DIRECTORY,
@@ -390,14 +419,14 @@ class ImagePlaneDetails(object):
     @property
     def url(self):
         return J.run_script(
-                "o.getImagePlane().getImageFile().getURI().toString()",
-                dict(o=self.jipd)).encode("utf-8")
+            "o.getImagePlane().getImageFile().getURI().toString()",
+            dict(o=self.jipd)).encode("utf-8")
 
     @property
     def series(self):
         return J.run_script(
-                "o.getImagePlane().getSeries().getSeries()",
-                dict(o=self.jipd))
+            "o.getImagePlane().getSeries().getSeries()",
+            dict(o=self.jipd))
 
     @property
     def index(self):
@@ -412,7 +441,7 @@ class ImagePlaneDetails(object):
     @property
     def metadata(self):
         return json.loads(
-                J.call(self.jipd, "jsonSerialize", "()Ljava/lang/String;"))
+            J.call(self.jipd, "jsonSerialize", "()Ljava/lang/String;"))
 
 
 def read_file_list(file_or_fd):
@@ -762,7 +791,7 @@ class Pipeline(object):
             return True
         if re.search(SAD_PROOFPOINT_COOKIE, header):
             logger.info(
-                    "print_emoji(\":cat_crying_because_of_proofpoint:\")")
+                "print_emoji(\":cat_crying_because_of_proofpoint:\")")
             return True
         return False
 
@@ -831,8 +860,8 @@ class Pipeline(object):
             except MatReadError:
                 logging.error("Caught exception in Matlab reader\n", exc_info=True)
                 e = MatReadError(
-                        "%s is an unsupported .MAT file, most likely a measurements file.\nYou can load this as a pipeline if you load it as a pipeline using CellProfiler 1.0 and then save it to a different file.\n" %
-                        fd_or_filename)
+                    "%s is an unsupported .MAT file, most likely a measurements file.\nYou can load this as a pipeline if you load it as a pipeline using CellProfiler 1.0 and then save it to a different file.\n" %
+                    fd_or_filename)
                 self.notify_listeners(LoadExceptionEvent(e, None))
                 return
             except Exception as e:
@@ -909,7 +938,9 @@ class Pipeline(object):
             if kwd == H_VERSION:
                 version = int(value)
                 if version > NATIVE_VERSION:
-                    raise ValueError("Pipeline file version is {}.\nCellProfiler can only read version {} or less.\nPlease upgrade to the latest version of CellProfiler.".format(version, NATIVE_VERSION))
+                    raise ValueError(
+                        "Pipeline file version is {}.\nCellProfiler can only read version {} or less.\nPlease upgrade to the latest version of CellProfiler.".format(
+                            version, NATIVE_VERSION))
                 elif version > 1:
                     do_utf16_decode = True
             elif kwd in (H_SVN_REVISION, H_DATE_REVISION):
@@ -929,8 +960,8 @@ class Pipeline(object):
             else:
                 print(line)
 
-        if pipeline_version > 20080101000000 and\
-           pipeline_version < 30080101000000:
+        if pipeline_version > 20080101000000 and \
+                        pipeline_version < 30080101000000:
             # being optomistic... a millenium should be OK, no?
             second, minute, hour, day, month = [
                 int(old_div(pipeline_version, (100 ** i))) % 100
@@ -944,7 +975,8 @@ class Pipeline(object):
         if CURRENT_VERSION is None:
             pass
         if pipeline_version > CURRENT_VERSION:
-            message = "Your pipeline version is {} but you are running CellProfiler version {}. Loading this pipeline may fail or have unpredictable results.".format(pipeline_version, CURRENT_VERSION)
+            message = "Your pipeline version is {} but you are running CellProfiler version {}. Loading this pipeline may fail or have unpredictable results.".format(
+                pipeline_version, CURRENT_VERSION)
 
             self.respond_to_version_mismatch_error(message)
         else:
@@ -1078,7 +1110,7 @@ class Pipeline(object):
         self.notify_listeners(PipelineLoadedEvent())
         if has_image_plane_details:
             self.notify_listeners(URLsAddedEvent(
-                    self.__file_list))
+                self.__file_list))
         self.__undo_stack = []
         return pipeline_version, git_hash
 
@@ -1298,7 +1330,9 @@ class Pipeline(object):
 
         current = np.ndarray(shape=[1, 1], dtype=CURRENT_DTYPE)
         handles[CURRENT] = current
-        current[NUMBER_OF_IMAGE_SETS][0, 0] = [(image_set is not None and NUMBER_OF_IMAGE_SETS in image_set.legacy_fields and image_set.legacy_fields[NUMBER_OF_IMAGE_SETS]) or 1]
+        current[NUMBER_OF_IMAGE_SETS][0, 0] = [(
+                                               image_set is not None and NUMBER_OF_IMAGE_SETS in image_set.legacy_fields and
+                                               image_set.legacy_fields[NUMBER_OF_IMAGE_SETS]) or 1]
         current[SET_BEING_ANALYZED][0, 0] = [(measurements and measurements.image_set_number) or 1]
         current[NUMBER_OF_MODULES][0, 0] = [len(self.__modules)]
         current[SAVE_OUTPUT_HOW_OFTEN][0, 0] = [1]
@@ -1555,9 +1589,9 @@ class Pipeline(object):
         measurements_filename - name of file to use for measurements
         """
         measurements = cpmeas.Measurements(
-                image_set_start=image_set_start,
-                filename=measurements_filename,
-                copy=initial_measurements)
+            image_set_start=image_set_start,
+            filename=measurements_filename,
+            copy=initial_measurements)
         if not self.in_batch_mode() and initial_measurements is not None:
             #
             # Need file list in order to call prepare_run
@@ -1583,7 +1617,9 @@ class Pipeline(object):
         keys, groupings = self.get_groupings(workspace)
 
         if grouping is not None and set(keys) != set(grouping.keys()):
-            raise ValueError("The grouping keys specified on the command line (%s) must be the same as those defined by the modules in the pipeline (%s)" % (", ".join(list(grouping.keys())), ", ".join(keys)))
+            raise ValueError(
+                "The grouping keys specified on the command line (%s) must be the same as those defined by the modules in the pipeline (%s)" % (
+                ", ".join(list(grouping.keys())), ", ".join(keys)))
 
         for gn, (grouping_keys, image_numbers) in enumerate(groupings):
             if grouping is not None and grouping != grouping_keys:
@@ -1598,15 +1634,18 @@ class Pipeline(object):
                 if image_set_end is not None and image_number > image_set_end:
                     continue
 
-                if initial_measurements is not None and all([initial_measurements.has_feature(cpmeas.IMAGE, f) for f in (GROUP_NUMBER, GROUP_INDEX)]):
-                    group_number, group_index = [initial_measurements[cpmeas.IMAGE, f, image_number] for f in (GROUP_NUMBER, GROUP_INDEX)]
+                if initial_measurements is not None and all(
+                        [initial_measurements.has_feature(cpmeas.IMAGE, f) for f in (GROUP_NUMBER, GROUP_INDEX)]):
+                    group_number, group_index = [initial_measurements[cpmeas.IMAGE, f, image_number] for f in
+                                                 (GROUP_NUMBER, GROUP_INDEX)]
                 else:
                     group_number = gn + 1
 
                     group_index = gi + 1
 
                 if need_to_run_prepare_group:
-                    yield group_number, group_index, image_number, lambda: self.prepare_group(workspace, grouping_keys, image_numbers)
+                    yield group_number, group_index, image_number, lambda: self.prepare_group(workspace, grouping_keys,
+                                                                                              image_numbers)
                 else:
                     yield group_number, group_index, image_number, lambda: True
 
@@ -1615,7 +1654,8 @@ class Pipeline(object):
             if not need_to_run_prepare_group:
                 yield None, None, None, lambda workspace: self.post_group(workspace, grouping_keys)
 
-    def run_with_yield(self, frame=None, image_set_start=1, image_set_end=None, grouping=None, run_in_background=True, status_callback=None, initial_measurements=None):
+    def run_with_yield(self, frame=None, image_set_start=1, image_set_end=None, grouping=None, run_in_background=True,
+                       status_callback=None, initial_measurements=None):
         """Run the pipeline, yielding periodically to keep the GUI alive.
         Yields the measurements made.
 
@@ -1755,7 +1795,8 @@ class Pipeline(object):
 
                     frame_if_shown = frame if module.show_window else None
 
-                    workspace = cpw.Workspace(self, module, image_set, object_set, measurements, image_set_list, frame_if_shown, outlines=outlines)
+                    workspace = cpw.Workspace(self, module, image_set, object_set, measurements, image_set_list,
+                                              frame_if_shown, outlines=outlines)
 
                     grids = workspace.set_grids(grids)
 
@@ -1781,7 +1822,8 @@ class Pipeline(object):
 
                     delta_sec = max(0, t1 - t0)
 
-                    pipeline_stats_logger.info("%s: Image # %d, module %s # %d: %.2f sec" % (start_time.ctime(), image_number, module.module_name, module.module_num, delta_sec))
+                    pipeline_stats_logger.info("%s: Image # %d, module %s # %d: %.2f sec" % (
+                    start_time.ctime(), image_number, module.module_name, module.module_num, delta_sec))
 
                     if module.show_window and can_display and (exception is None):
                         try:
@@ -2091,10 +2133,10 @@ class Pipeline(object):
         if workspace.measurements.image_set_count == 0:
             if not had_image_sets:
                 self.report_prepare_run_error(
-                        None,
-                        "The pipeline did not identify any image sets.\n"
-                        "Please correct any problems in your input module settings\n"
-                        "and try again.")
+                    None,
+                    "The pipeline did not identify any image sets.\n"
+                    "Please correct any problems in your input module settings\n"
+                    "and try again.")
             return False
 
         if not m.has_feature(cpmeas.IMAGE, cpmeas.GROUP_NUMBER):
@@ -2109,11 +2151,11 @@ class Pipeline(object):
                 iii = indexes[group_image_numbers]
                 group_numbers[iii] = i + 1
                 group_indexes[iii] = np.arange(
-                        len(iii)) + 1
+                    len(iii)) + 1
             m.add_all_measurements(
-                    cpmeas.IMAGE, cpmeas.GROUP_NUMBER, group_numbers)
+                cpmeas.IMAGE, cpmeas.GROUP_NUMBER, group_numbers)
             m.add_all_measurements(
-                    cpmeas.IMAGE, cpmeas.GROUP_INDEX, group_indexes)
+                cpmeas.IMAGE, cpmeas.GROUP_INDEX, group_indexes)
             #
             # The grouping for legacy pipelines may not be monotonically
             # increasing by group number and index.
@@ -2159,8 +2201,8 @@ class Pipeline(object):
                 module.post_run(workspace)
             except Exception as instance:
                 logging.error(
-                        "Failed to complete post_run processing for module %s." %
-                        module.module_name, exc_info=True)
+                    "Failed to complete post_run processing for module %s." %
+                    module.module_name, exc_info=True)
                 event = PostRunExceptionEvent(instance, module, sys.exc_info()[2])
                 self.notify_listeners(event)
                 if event.cancel_run:
@@ -2172,10 +2214,10 @@ class Pipeline(object):
                 except Exception as instance:
                     # Warn about display failure but keep going.
                     logging.warn(
-                            "Caught exception during post_run_display for module %s." %
-                            module.module_name, exc_info=True)
+                        "Caught exception during post_run_display for module %s." %
+                        module.module_name, exc_info=True)
         workspace.measurements.add_experiment_measurement(
-                M_MODIFICATION_TIMESTAMP, datetime.datetime.now().isoformat())
+            M_MODIFICATION_TIMESTAMP, datetime.datetime.now().isoformat())
 
         return "Complete"
 
@@ -2264,7 +2306,7 @@ class Pipeline(object):
             m = re.findall('\\\\g[<](.+?)[>]', pattern)
         if m:
             m = list(filter((lambda x: not any(
-                    [x.startswith(y) for y in (cpmeas.C_SERIES, cpmeas.C_FRAME)])), m))
+                [x.startswith(y) for y in (cpmeas.C_SERIES, cpmeas.C_FRAME)])), m))
             undefined_tags = list(set(m).difference(current_metadata))
             return undefined_tags
         else:
@@ -2301,8 +2343,8 @@ class Pipeline(object):
                 module.post_group(workspace, grouping)
             except Exception as instance:
                 logging.error(
-                        "Failed during post-group processing for module %s" %
-                        module.module_name, exc_info=True)
+                    "Failed during post-group processing for module %s" %
+                    module.module_name, exc_info=True)
                 event = RunExceptionEvent(instance, module, sys.exc_info()[2])
                 self.notify_listeners(event)
                 if event.cancel_run:
@@ -2313,8 +2355,8 @@ class Pipeline(object):
                     workspace.post_group_display(module)
                 except:
                     logging.warn(
-                            "Failed during post group display for module %s" %
-                            module.module_name, exc_info=True)
+                        "Failed during post group display for module %s" %
+                        module.module_name, exc_info=True)
         return True
 
     def has_create_batch_module(self):
@@ -2386,8 +2428,8 @@ class Pipeline(object):
         if direction == DIRECTION_DOWN:
             if module_num >= len(self.__modules):
                 raise ValueError(
-                        '%(module_num)d is at or after the last module in the pipeline and can''t move down' % (
-                            locals()))
+                    '%(module_num)d is at or after the last module in the pipeline and can''t move down' % (
+                        locals()))
             module = self.__modules[idx]
             new_module_num = module_num + 1
             module.set_module_num(module_num + 1)
@@ -2427,8 +2469,8 @@ class Pipeline(object):
         '''Enable a module = make it executable'''
         if module.enabled:
             logger.warn(
-                    "Asked to enable module %s, but it was already enabled" %
-                    module.module_name)
+                "Asked to enable module %s, but it was already enabled" %
+                module.module_name)
             return
         module.enabled = True
         self.notify_listeners(ModuleEnabledEvent(module))
@@ -2443,8 +2485,8 @@ class Pipeline(object):
         '''Disable a module = prevent it from being executed'''
         if not module.enabled:
             logger.warn(
-                    "Asked to disable module %s, but it was already disabled" %
-                    module.module_name)
+                "Asked to disable module %s, but it was already disabled" %
+                module.module_name)
         module.enabled = False
         self.notify_listeners(ModuleDisabledEvent(module))
 
@@ -2492,8 +2534,8 @@ class Pipeline(object):
                     filename = path
                 filename = urllib.request.url2pathname(filename)
                 cpprefs.report_progress(
-                        uid, old_div(float(i), n),
-                             u"Adding %s" % filename)
+                    uid, old_div(float(i), n),
+                    u"Adding %s" % filename)
             pos = bisect.bisect_left(self.__file_list, url, start)
             if (pos == len(self.file_list) or
                         self.__file_list[pos] != url):
@@ -2599,9 +2641,9 @@ class Pipeline(object):
                     self.read_file_list(fd, add_undo=add_undo)
             return
         self.add_pathnames_to_file_list(
-                list(map((lambda x: x.strip()),
-                    list(filter((lambda x: len(x) > 0), path_or_fd)))),
-                add_undo=add_undo)
+            list(map((lambda x: x.strip()),
+                     list(filter((lambda x: len(x) > 0), path_or_fd)))),
+            add_undo=add_undo)
 
     def add_pathnames_to_file_list(self, pathnames, add_undo=True):
         '''Add a sequence of paths or URLs to the file list'''
@@ -2786,8 +2828,8 @@ class Pipeline(object):
         new_workspace = None
         try:
             new_workspace = cpw.Workspace(
-                    pipeline, None, None, None,
-                    temp_measurements, cpi.ImageSetList())
+                pipeline, None, None, None,
+                temp_measurements, cpi.ImageSetList())
             new_workspace.set_file_list(workspace.file_list)
             pipeline.prepare_run(new_workspace, end_module)
 
@@ -2800,7 +2842,7 @@ class Pipeline(object):
                 return iscds, metadata_key_names, {}
             metadata_columns = [
                 temp_measurements.get_measurement(
-                        cpmeas.IMAGE, feature, all_image_numbers)
+                    cpmeas.IMAGE, feature, all_image_numbers)
                 for feature in metadata_key_names]
 
             def get_column(image_category, objects_category, iscd):
@@ -2811,7 +2853,7 @@ class Pipeline(object):
                 feature_name = "_".join((category, iscd.name))
                 if feature_name in temp_measurements.get_feature_names(cpmeas.IMAGE):
                     return temp_measurements.get_measurement(
-                            cpmeas.IMAGE, feature_name, all_image_numbers)
+                        cpmeas.IMAGE, feature_name, all_image_numbers)
                 else:
                     return [None] * len(all_image_numbers)
 
@@ -2828,7 +2870,7 @@ class Pipeline(object):
                 key = tuple([mc[idx] for mc in metadata_columns])
                 value = [
                     pipeline.find_image_plane_details(
-                            ImagePlaneDetails(u[idx], s[idx], i[idx], c[idx]))
+                        ImagePlaneDetails(u[idx], s[idx], i[idx], c[idx]))
                     for u, s, i, c in zip(url_columns, series_columns,
                                           index_columns, channel_columns)]
                 d[key] = value
@@ -2945,7 +2987,7 @@ class Pipeline(object):
         for module, mn in zip(self.__modules[idx + 1:], list(range(module_num + 1, len(self.__modules) + 1))):
             module.module_num = mn
         self.notify_listeners(ModuleAddedPipelineEvent(
-                module_num, is_image_set_modification=is_image_set_modification))
+            module_num, is_image_set_modification=is_image_set_modification))
         self.__settings.insert(idx, self.capture_module_settings(new_module))
 
         def undo():
@@ -2967,7 +3009,7 @@ class Pipeline(object):
         for module in self.__modules[idx:]:
             module.module_num = module.module_num - 1
         self.notify_listeners(ModuleRemovedPipelineEvent(
-                module_num, is_image_set_modification=is_image_set_modification))
+            module_num, is_image_set_modification=is_image_set_modification))
         del self.__settings[idx]
 
         def undo():
@@ -2985,7 +3027,7 @@ class Pipeline(object):
         module = self.__modules[idx]
         new_settings = self.capture_module_settings(module)
         self.notify_listeners(ModuleEditedPipelineEvent(
-                module_num, is_image_set_modification=is_image_set_modification))
+            module_num, is_image_set_modification=is_image_set_modification))
         self.__settings[idx] = new_settings
         variable_revision_number = module.variable_revision_number
         module_name = module.module_name
@@ -3120,8 +3162,8 @@ class Pipeline(object):
                         t_idx = len(dims)
                     else:
                         raise ValueError(
-                                "Unsupported dimension order for file %s: %s" %
-                                (url, pixels.DimensionOrder))
+                            "Unsupported dimension order for file %s: %s" %
+                            (url, pixels.DimensionOrder))
                     dims.append(dim)
                 index_order = np.mgrid[0:dims[0], 0:dims[1], 0:dims[2]]
                 c_indexes = index_order[c_idx].flatten()
@@ -3364,18 +3406,18 @@ class Pipeline(object):
                     group = setting.get_group()
                     name = setting.value
                     if (group in providers and
-                            name in providers[group]):
+                                name in providers[group]):
                         for pmodule, psetting in providers[group][name]:
                             if pmodule.module_num < module.module_num:
                                 if group == cps.OBJECT_GROUP:
                                     dependency = ObjectDependency(
-                                            pmodule, module, name,
-                                            psetting, setting)
+                                        pmodule, module, name,
+                                        psetting, setting)
                                     result.append(dependency)
                                 elif group == cps.IMAGE_GROUP:
                                     dependency = ImageDependency(
-                                            pmodule, module, name,
-                                            psetting, setting)
+                                        pmodule, module, name,
+                                        psetting, setting)
                                     result.append(dependency)
                                 break
                 elif isinstance(setting, cps.Measurement):
@@ -3386,8 +3428,8 @@ class Pipeline(object):
                         for pmodule, psetting in providers[cps.MEASUREMENTS_GROUP][key]:
                             if pmodule.module_num < module.module_num:
                                 dependency = MeasurementDependency(
-                                        pmodule, module, object_name, feature_name,
-                                        psetting, setting)
+                                    pmodule, module, object_name, feature_name,
+                                    psetting, setting)
                                 result.append(dependency)
                                 break
         return result
@@ -3482,8 +3524,8 @@ class PipelineLoadedEvent(AbstractPipelineEvent):
 
     def __init__(self):
         super(PipelineLoadedEvent, self).__init__(
-                is_pipeline_modification=True,
-                is_image_set_modification=True)
+            is_pipeline_modification=True,
+            is_image_set_modification=True)
 
     def event_type(self):
         return "PipelineLoaded"
@@ -3496,8 +3538,8 @@ class PipelineClearedEvent(AbstractPipelineEvent):
 
     def __init__(self):
         super(PipelineClearedEvent, self).__init__(
-                is_pipeline_modification=True,
-                is_image_set_modification=True)
+            is_pipeline_modification=True,
+            is_image_set_modification=True)
 
     def event_type(self):
         return "PipelineCleared"
@@ -3514,8 +3556,8 @@ class ModuleMovedPipelineEvent(AbstractPipelineEvent):
 
     def __init__(self, module_num, direction, is_image_set_modification):
         super(ModuleMovedPipelineEvent, self).__init__(
-                is_pipeline_modification=True,
-                is_image_set_modification=is_image_set_modification)
+            is_pipeline_modification=True,
+            is_image_set_modification=is_image_set_modification)
         self.module_num = module_num
         self.direction = direction
 
@@ -3530,8 +3572,8 @@ class ModuleAddedPipelineEvent(AbstractPipelineEvent):
 
     def __init__(self, module_num, is_image_set_modification=False):
         super(ModuleAddedPipelineEvent, self).__init__(
-                is_pipeline_modification=True,
-                is_image_set_modification=is_image_set_modification)
+            is_pipeline_modification=True,
+            is_image_set_modification=is_image_set_modification)
         self.module_num = module_num
 
     def event_type(self):
@@ -3545,8 +3587,8 @@ class ModuleRemovedPipelineEvent(AbstractPipelineEvent):
 
     def __init__(self, module_num, is_image_set_modification=False):
         super(ModuleRemovedPipelineEvent, self).__init__(
-                is_pipeline_modification=True,
-                is_image_set_modification=is_image_set_modification)
+            is_pipeline_modification=True,
+            is_image_set_modification=is_image_set_modification)
         self.module_num = module_num
 
     def event_type(self):
@@ -3560,8 +3602,8 @@ class ModuleEditedPipelineEvent(AbstractPipelineEvent):
 
     def __init__(self, module_num, is_image_set_modification=False):
         super(ModuleEditedPipelineEvent, self).__init__(
-                is_pipeline_modification=True,
-                is_image_set_modification=is_image_set_modification)
+            is_pipeline_modification=True,
+            is_image_set_modification=is_image_set_modification)
         self.module_num = module_num
 
     def event_type(self):

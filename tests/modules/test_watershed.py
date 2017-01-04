@@ -1,5 +1,4 @@
-import cellprofiler.modules.watershed
-import cellprofiler.image
+import mahotas
 import numpy
 import numpy.testing
 import scipy.ndimage
@@ -9,7 +8,12 @@ import skimage.filters
 import skimage.filters.rank
 import skimage.measure
 import skimage.morphology
+import skimage.segmentation
+import skimage.transform
 import skimage.util
+
+import cellprofiler.image
+import cellprofiler.modules.watershed
 
 instance = cellprofiler.modules.watershed.Watershed()
 
@@ -87,7 +91,7 @@ def test_run_distance(image, module, image_set, workspace):
 
     module.y_name.value = "watershed"
 
-    module.distance_name.value = "distance"
+    module.connectivity.value = 3
 
     data = image.pixel_data
 
@@ -107,37 +111,42 @@ def test_run_distance(image, module, image_set, workspace):
         )
     )
 
-    distance = scipy.ndimage.distance_transform_edt(binary)
-
-    image_set.add(
-        "distance",
-        cellprofiler.image.Image(
-            image=distance,
-            convert=False,
-            dimensions=image.dimensions
-        )
-    )
-
     module.run(workspace)
 
-    if image.dimensions is 3:
+    original_shape = binary.shape
+
+    if image.volumetric:
+        binary = skimage.transform.resize(binary, (original_shape[0], 256, 256), order=0, mode="edge")
+
+    distance = scipy.ndimage.distance_transform_edt(binary)
+
+    distance = mahotas.stretch(distance)
+
+    surface = distance.max() - distance
+
+    if image.volumetric:
         footprint = numpy.ones((3, 3, 3))
     else:
         footprint = numpy.ones((3, 3))
 
-    local_maximums = skimage.feature.peak_local_max(
-        distance,
-        indices=False,
-        footprint=footprint,
-        labels=binary
-    )
+    peaks = mahotas.regmax(distance, footprint)
 
-    markers = skimage.measure.label(local_maximums)
+    if image.volumetric:
+        markers, _ = mahotas.label(peaks, numpy.ones((16, 16, 16)))
+    else:
+        markers, _ = mahotas.label(peaks, numpy.ones((16, 16)))
 
-    expected = skimage.morphology.watershed(-distance, markers, mask=binary)
+    expected = mahotas.cwatershed(surface, markers)
+
+    expected = expected * binary
+
+    if image.volumetric:
+        expected = skimage.transform.resize(expected, original_shape, order=0, mode="edge")
 
     expected = skimage.measure.label(expected)
 
     actual = workspace.get_objects("watershed")
 
-    numpy.testing.assert_array_equal(expected, actual.segmented)
+    actual = actual.segmented
+
+    numpy.testing.assert_array_equal(expected, actual)

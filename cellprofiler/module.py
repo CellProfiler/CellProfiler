@@ -10,6 +10,7 @@ import cellprofiler.measurement
 import cellprofiler.object
 import cellprofiler.setting as cps
 import pipeline as cpp
+import skimage.color
 
 
 class Module(object):
@@ -901,6 +902,7 @@ class ImageProcessing(Module):
         )
 
         figure.subplot_imshow(
+            colormap="gray",
             dimensions=workspace.display_data.dimensions,
             image=workspace.display_data.x_data,
             x=0,
@@ -908,6 +910,7 @@ class ImageProcessing(Module):
         )
 
         figure.subplot_imshow(
+            colormap="gray",
             dimensions=workspace.display_data.dimensions,
             image=workspace.display_data.y_data,
             x=1,
@@ -975,12 +978,29 @@ class ImageSegmentation(Module):
     def display(self, workspace, figure):
         layout = (2, 1)
 
+        if workspace.display_data.dimensions is 3:
+            overlay = np.zeros(workspace.display_data.x_data.shape + (3,))
+
+            for index, data in enumerate(workspace.display_data.x_data):
+                overlay[index] = skimage.color.label2rgb(
+                    workspace.display_data.y_data[index],
+                    image=data,
+                    bg_label=0
+                )
+        else:
+            overlay = skimage.color.label2rgb(
+                workspace.display_data.y_data,
+                image=workspace.display_data.x_data,
+                bg_label=0
+            )
+
         figure.set_subplots(
             dimensions=workspace.display_data.dimensions,
             subplots=layout
         )
 
         figure.subplot_imshow(
+            colormap="gray",
             dimensions=workspace.display_data.dimensions,
             image=workspace.display_data.x_data,
             x=0,
@@ -989,7 +1009,7 @@ class ImageSegmentation(Module):
 
         figure.subplot_imshow(
             dimensions=workspace.display_data.dimensions,
-            image=workspace.display_data.y_data,
+            image=overlay,
             x=1,
             y=0
         )

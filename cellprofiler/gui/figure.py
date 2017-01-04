@@ -20,6 +20,7 @@ import matplotlib.backends.backend_wxagg
 import matplotlib.backends.backend_wxagg
 import matplotlib.cm
 import matplotlib.colorbar
+import matplotlib.colors
 import matplotlib.gridspec
 import matplotlib.patches
 import matplotlib.pyplot
@@ -290,7 +291,6 @@ class Figure(wx.Frame):
         self.figure = matplotlib.pyplot.Figure()
         self.panel = matplotlib.backends.backend_wxagg.FigureCanvasWxAgg(self, -1, self.figure)
         self.__gridspec = None
-        self.__grid_config = None
         if secret_panel_class is None:
             secret_panel_class = wx.Panel
         self.secret_panel = secret_panel_class(self)
@@ -1074,46 +1074,39 @@ class Figure(wx.Frame):
                 on_slider(None)
 
     def set_grids(self, shape):
-        self.__gridspec = matplotlib.gridspec.GridSpec(*shape)
-
-    def __set_grid_config(self, image):
-        z, _, _ = image.shape
-
-        center = z / 2
-
-        # Determine the indices of the first and last slices to display.
-        start = max(0, center - 4)
-        stop = min(center + 5, image.shape[0])
-
-        # From the number of slices that are displayable, determine the
-        # shape of the grid these can be displayed in.
-        n_slices = float(stop - start)
-        n_rows = int(math.ceil(n_slices / 3))
-        n_cols = int(math.ceil(n_slices / n_rows))
-
-        self.__grid_config = ((n_rows, n_cols), start, stop)
+        self.__gridspec = matplotlib.gridspec.GridSpec(*shape[::-1])
 
     def gridshow(self, x, y, image, cmap='gray'):
-        if self.__grid_config is None:
-            self.__set_grid_config(image)
-
-        dimensions, start, stop = self.__grid_config
-
         gx, gy = self.__gridspec.get_geometry()
-        idx = gx * x + y
 
-        gridspec = matplotlib.gridspec.GridSpecFromSubplotSpec(*dimensions, subplot_spec=self.__gridspec[idx], wspace=0.1, hspace=0.1)
+        gridspec = matplotlib.gridspec.GridSpecFromSubplotSpec(
+            3,
+            3,
+            subplot_spec=self.__gridspec[gy * y + x],
+            wspace=0.1,
+            hspace=0.1
+        )
 
-        for idx, img in enumerate(image[start:stop]):
-            ax = matplotlib.pyplot.Subplot(self.figure, gridspec[idx])
+        z = image.shape[0]
 
-            if idx / dimensions[0] != (dimensions[0] - 1):
+        vmin = min(image[position * (z - 1) / 8].min() for position in range(9))
+
+        vmax = max(image[position * (z - 1) / 8].max() for position in range(9))
+
+        for position in range(9):
+            ax = matplotlib.pyplot.Subplot(self.figure, gridspec[position])
+
+            if position / 3 != 2:
                 ax.set_xticklabels([])
 
-            if idx % dimensions[1] != 0:
+            if position % 3 != 0:
                 ax.set_yticklabels([])
 
-            ax.imshow(img, cmap=cmap)
+            ax.imshow(
+                image[position * (z - 1) / 8],
+                cmap=cmap,
+                norm=matplotlib.colors.SymLogNorm(linthresh=0.03, linscale=0.03, vmin=vmin, vmax=vmax)
+            )
 
             self.figure.add_subplot(ax)
 
@@ -1331,8 +1324,6 @@ class Figure(wx.Frame):
                 hist_fig.figure.canvas.draw()
             return subplot
         else:
-            colormap = "gray" if colormap is None else colormap
-
             self.gridshow(x, y, image, colormap)
 
     @staticmethod

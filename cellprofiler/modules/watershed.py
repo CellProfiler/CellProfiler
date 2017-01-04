@@ -6,14 +6,18 @@ Watershed is a segmentation algorithm. It is used to separate different objects 
 
 """
 
+import mahotas
+import numpy
+import scipy.ndimage
+import skimage.feature
+import skimage.measure
+import skimage.morphology
+import skimage.transform
+
 import cellprofiler.image
 import cellprofiler.module
 import cellprofiler.object
 import cellprofiler.setting
-import numpy
-import skimage.feature
-import skimage.measure
-import skimage.morphology
 
 
 class Watershed(cellprofiler.module.ImageSegmentation):
@@ -25,7 +29,7 @@ class Watershed(cellprofiler.module.ImageSegmentation):
         super(Watershed, self).create_settings()
 
         self.operation = cellprofiler.setting.Choice(
-            "Generate from:",
+            "Generate from",
             [
                 "Distance",
                 "Markers"
@@ -34,9 +38,9 @@ class Watershed(cellprofiler.module.ImageSegmentation):
             doc="""Select a method of inputs for the watershed algorithm:
             <ul>
                 <li>
-                    <i>Distance</i>: This is classical nuclei segmentation using watershed. Your "Input" image
-                    should be a binary image. The "Distance" image should be a result of DistanceTransform. Markers and
-                    other inputs for the watershed algorithm will be automatically generated from the "distance" input.
+                    <i>Distance</i> (default): This is classical nuclei segmentation using watershed. Your "Input" image
+                    should be a binary image. Markers and other inputs for the watershed algorithm will be
+                    automatically generated.
                 </li>
                 <br>
                 <li>
@@ -47,11 +51,6 @@ class Watershed(cellprofiler.module.ImageSegmentation):
                 </li>
             </ul>
             """
-        )
-
-        self.distance_name = cellprofiler.setting.ImageNameSubscriber(
-            "Distance",
-            doc="An image of the distance from regions of interest to the background."
         )
 
         self.markers_name = cellprofiler.setting.ImageNameSubscriber(
@@ -65,14 +64,20 @@ class Watershed(cellprofiler.module.ImageSegmentation):
             doc="Optional. Only regions not blocked by the mask will be segmented."
         )
 
+        self.connectivity = cellprofiler.setting.Integer(
+            minval=1,
+            text="Connectivity",
+            value=8,
+        )
+
     def settings(self):
         __settings__ = super(Watershed, self).settings()
 
         return __settings__ + [
             self.operation,
-            self.distance_name,
             self.markers_name,
-            self.mask_name
+            self.mask_name,
+            self.connectivity
         ]
 
     def visible_settings(self):
@@ -84,7 +89,7 @@ class Watershed(cellprofiler.module.ImageSegmentation):
 
         if self.operation.value == "Distance":
             __settings__ = __settings__ + [
-                self.distance_name
+                self.connectivity
             ]
         else:
             __settings__ = __settings__ + [
@@ -108,29 +113,35 @@ class Watershed(cellprofiler.module.ImageSegmentation):
         x_data = x.pixel_data
 
         if self.operation.value == "Distance":
-            distance_name = self.distance_name.value
+            original_shape = x_data.shape
 
-            distance = images.get_image(distance_name)
+            if x.volumetric:
+                x_data = skimage.transform.resize(x_data, (original_shape[0], 256, 256), order=0, mode="edge")
 
-            distance_data = distance.pixel_data
+            distance = scipy.ndimage.distance_transform_edt(x_data)
 
-            if dimensions is 3:
-                footprint = numpy.ones((3, 3, 3))
+            distance = mahotas.stretch(distance)
+
+            surface = distance.max() - distance
+
+            if x.volumetric:
+                footprint = numpy.ones((self.connectivity.value, self.connectivity.value, self.connectivity.value))
             else:
-                footprint = numpy.ones((3, 3))
+                footprint = numpy.ones((self.connectivity.value, self.connectivity.value))
 
-            local_maximums = skimage.feature.peak_local_max(
-                distance_data,
-                indices=False,
-                footprint=footprint,
-                labels=x_data
-            )
+            peaks = mahotas.regmax(distance, footprint)
 
-            data = -1 * distance_data
+            if x.volumetric:
+                markers, _ = mahotas.label(peaks, numpy.ones((16, 16, 16)))
+            else:
+                markers, _ = mahotas.label(peaks, numpy.ones((16, 16)))
 
-            markers_data = skimage.measure.label(local_maximums)
+            y_data = mahotas.cwatershed(surface, markers)
 
-            mask_data = x_data
+            y_data = y_data * x_data
+
+            if x.volumetric:
+                y_data = skimage.transform.resize(y_data, original_shape, order=0, mode="edge")
         else:
             markers_name = self.markers_name.value
 
@@ -149,11 +160,11 @@ class Watershed(cellprofiler.module.ImageSegmentation):
 
                 mask_data = mask.pixel_data
 
-        y_data = skimage.morphology.watershed(
-            image=data,
-            markers=markers_data,
-            mask=mask_data
-        )
+            y_data = skimage.morphology.watershed(
+                image=data,
+                markers=markers_data,
+                mask=mask_data
+            )
 
         y_data = skimage.measure.label(y_data)
 
@@ -161,10 +172,12 @@ class Watershed(cellprofiler.module.ImageSegmentation):
 
         objects.segmented = y_data
 
+        objects.parent_image = x
+
         workspace.object_set.add_objects(objects, y_name)
 
         if self.show_window:
-            workspace.display_data.x_data = x_data
+            workspace.display_data.x_data = x.pixel_data
 
             workspace.display_data.y_data = y_data
 

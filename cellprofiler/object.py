@@ -40,6 +40,12 @@ class Objects(object):
         self.__parent_image = None
 
     @property
+    def masked(self):
+        mask = self.parent_image.mask
+
+        return numpy.logical_and(self.segmented, mask)
+
+    @property
     def segmented(self):
         """Get the de-facto segmentation of the image into objects: a matrix
         of object numbers.
@@ -106,11 +112,15 @@ class Objects(object):
 
     @property
     def shape(self):
-        '''The i and j extents of the labels'''
-        return self.__segmented.shape[-2:]
+        dense, _ = self.__segmented.get_dense()
+
+        if dense.shape[3] is 1:
+            return dense.shape[-2:]
+
+        return dense.shape[-3:]
 
     def get_labels(self):
-        '''Get a set of labels matrices consisting of non-overlapping labels
+        """Get a set of labels matrices consisting of non-overlapping labels
 
         In IJV format, a single pixel might have multiple labels. If you
         want to use a labels matrix, you have an ambiguous situation and the
@@ -118,10 +128,13 @@ class Objects(object):
         non-overlapping labels.
 
         returns a list of label matrixes and the indexes in each
-        '''
+        """
         dense, indices = self.__segmented.get_dense()
-        return [
-            (dense[i, 0, 0, 0], indices[i]) for i in range(dense.shape[0])]
+
+        if dense.shape[3] is 1:
+            return [(dense[i, 0, 0, 0], indices[i]) for i in range(dense.shape[0])]
+
+        return [(dense[i, 0, 0], indices[i]) for i in range(dense.shape[0])]
 
     def has_unedited_segmented(self):
         """Return true if there is an unedited segmented matrix."""

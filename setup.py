@@ -290,6 +290,9 @@ if has_py2exe:
     cmdclass["py2exe"] = CPPy2Exe
     cmdclass["msi"] = CellProfilerMSI
 
+version_file = open(os.path.join(os.path.dirname(__file__), "cellprofiler", "VERSION"))
+version = version_file.read().strip()
+
 setuptools.setup(
         app=[
             "CellProfiler.py"
@@ -334,13 +337,16 @@ setuptools.setup(
             "inflect",
             "javabridge",
             "libtiff",
+            "mahotas",
             "matplotlib",
             "MySQL-python",
             "numpy",
             "prokaryote>=1.0.11",
+            "pyamg!=3.2.0",
             "pytest",
             "python-bioformats",
             "pyzmq",
+            "scikit-image>=0.12.3",
             "scipy"
         ],
         keywords="",
@@ -361,5 +367,5 @@ setuptools.setup(
             "pytest"
         ],
         url="https://github.com/CellProfiler/CellProfiler",
-        version="2.4.0rc1"
+        version="3.0.0rc1"
 )

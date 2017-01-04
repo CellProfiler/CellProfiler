@@ -11,11 +11,8 @@ addons:
       - python-numpy
       - python-h5py
       - python-pip
-      - python-pytest
-      - python-scikit-learn
       - python-scipy
       - python-wxgtk2.8
-      - python-wheel
       - python-zmq
 env:
   - LC_ALL="en_US.UTF-8" CP_MYSQL_TEST_HOST="127.0.0.1" CP_MYSQL_TEST_USER="travis" CP_MYSQL_TEST_PASSWORD="None"

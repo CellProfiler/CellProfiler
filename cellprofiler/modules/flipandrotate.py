@@ -352,7 +352,7 @@ class FlipAndRotate(cpm.Module):
                            scind.affine_transform(pixel_data[:, :, 2], transform,
                                                   offset, order=0)))
             buff = x.astype(np.uint8).tostring()
-            bitmap = wx.BitmapFromBuffer(x.shape[1],
+            bitmap = wx.Bitmap.FromBuffer(x.shape[1],
                                          x.shape[0],
                                          buff)
             canvas.SetBitmap(bitmap)

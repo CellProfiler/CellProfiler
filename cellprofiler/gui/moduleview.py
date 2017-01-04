@@ -27,7 +27,6 @@ import weakref
 import wx
 import wx.grid
 import wx.lib.colourselect
-import wx.lib.rcsizer
 import wx.lib.resizewidget
 import wx.lib.scrolledpanel
 
@@ -1105,7 +1104,7 @@ class ModuleView(object):
             if cm.N < 128:
                 j *= int((cm.N + 128) / 128)
             image = (sm.to_rgba(j) * 255).astype(numpy.uint8)
-            bitmap = wx.BitmapFromBufferRGBA(128, 12, image.tostring())
+            bitmap = wx.Bitmap.BitmapFromBufferRGBA(128, 12, image.tostring())
         except:
             logger.warning("Failed to create the %s colorbar" % cmap_name)
             bitmap = None
@@ -1560,7 +1559,7 @@ class ModuleView(object):
                 "( %s )" % cellprofiler.preferences.get_default_output_directory()
         else:
             folder_label.Label = wx.EmptyString
-        dir_ctrl.SetToolTipString(folder_label.Label)
+        dir_ctrl.SetToolTip(folder_label.Label)
         return control
 
     def make_pathname_control(self, v, control):
@@ -2279,7 +2278,7 @@ class ModuleView(object):
                 ctrl.SetToolTip(None)
         else:
             def set_tool_tip(ctrl, message=message):
-                ctrl.SetToolTipString(message)
+                ctrl.SetToolTip(message)
         if control is not None:
             set_tool_tip(control)
             for child in control.GetChildren():
@@ -2723,7 +2722,7 @@ class FilterPanelController(object):
 
         if anyall.GetStringSelection() != structure[0].display_name:
             anyall.SetStringSelection(structure[0].display_name)
-            anyall.SetToolTipString(structure[0].doc)
+            anyall.SetToolTip(structure[0].doc)
         #
         # Now each subelement should be a list.
         #
@@ -2747,7 +2746,7 @@ class FilterPanelController(object):
                         if choice_ctrl.GetStringSelection() != token.display_name:
                             choice_ctrl.SetStringSelection(token.display_name)
                         if token.doc is not None:
-                            choice_ctrl.SetToolTipString(token.doc)
+                            choice_ctrl.SetToolTip(token.doc)
                         predicates = token.subpredicates
                 i = len(substructure)
                 while len(predicates) > 0:
@@ -3503,7 +3502,7 @@ class JoinerController(object):
         self.v = v
         self.panel = wx.Panel(module_view.module_panel, -1,
                               name=edit_control_name(v))
-        self.panel.Sizer = wx.lib.rcsizer.RowColSizer()
+        self.panel.Sizer = wx.GridBagSizer()
         self.panel.joiner_controller = self
         self.update()
 
@@ -3780,16 +3779,12 @@ class BinaryMatrixController(object):
         matrix = self.setting.get_matrix()
         h = len(matrix)
         w = len(matrix[0])
-        bx, ex, dx, by, ey, dy = [
-            wx.SystemSettings.GetMetric(m) for m in (
-                wx.SYS_BORDER_X, wx.SYS_EDGE_X, wx.SYS_SMALLICON_X,
-                wx.SYS_BORDER_Y, wx.SYS_EDGE_Y, wx.SYS_SMALLICON_Y)]
+        settings = wx.SystemSettings()
+        bx, ex, dx, by, ey, dy = [settings.GetMetric(m) for m in (wx.SYS_BORDER_X, wx.SYS_EDGE_X, wx.SYS_SMALLICON_X, wx.SYS_BORDER_Y, wx.SYS_EDGE_Y, wx.SYS_SMALLICON_Y)]
         paint_dc.Background = wx.Brush(cellprofiler.preferences.get_background_color())
         paint_dc.Clear()
-        pShadow = wx.Pen(
-                wx.SystemSettings.GetColour(wx.SYS_COLOUR_BTNSHADOW), 1, wx.SOLID)
-        pHighlight = wx.Pen(
-                wx.SystemSettings.GetColour(wx.SYS_COLOUR_BTNHIGHLIGHT), 1, wx.SOLID)
+        pShadow = wx.Pen(settings.GetColour(wx.SYS_COLOUR_BTNSHADOW), 1, 100)
+        pHighlight = wx.Pen(settings.GetColour(wx.SYS_COLOUR_BTNHIGHLIGHT), 1, 100)
         bBackground, bForeground = [
             wx.Brush(color) for color in
             wx.Colour(80, 80, 80, 255), wx.WHITE]
@@ -3816,10 +3811,8 @@ class BinaryMatrixController(object):
 
     @staticmethod
     def get_matrix_element_rect(i, j):
-        bx, ex, dx, by, ey, dy = [
-            wx.SystemSettings.GetMetric(m) for m in (
-                wx.SYS_BORDER_X, wx.SYS_EDGE_X, wx.SYS_SMALLICON_X,
-                wx.SYS_BORDER_Y, wx.SYS_EDGE_Y, wx.SYS_SMALLICON_Y)]
+        settings = wx.SystemSettings()
+        bx, ex, dx, by, ey, dy = [settings.GetMetric(m) for m in (wx.SYS_BORDER_X, wx.SYS_EDGE_X, wx.SYS_SMALLICON_X, wx.SYS_BORDER_Y, wx.SYS_EDGE_Y, wx.SYS_SMALLICON_Y)]
         return wx.Rect(ex * (2 * j + 1) + dx * j + bx * j,
                        ey * (2 * i + 1) + dy * i + by * i, dx, dy)
 
@@ -3828,10 +3821,8 @@ class BinaryMatrixController(object):
 
         returns i, j or None, None if misses the hit test
         """
-        bx, ex, dx, by, ey, dy = [
-            wx.SystemSettings.GetMetric(m) for m in (
-                wx.SYS_BORDER_X, wx.SYS_EDGE_X, wx.SYS_SMALLICON_X,
-                wx.SYS_BORDER_Y, wx.SYS_EDGE_Y, wx.SYS_SMALLICON_Y)]
+        settings = wx.SystemSettings()
+        bx, ex, dx, by, ey, dy = [settings.GetMetric(m) for m in (wx.SYS_BORDER_X, wx.SYS_EDGE_X, wx.SYS_SMALLICON_X, wx.SYS_BORDER_Y, wx.SYS_EDGE_Y, wx.SYS_SMALLICON_Y)]
         i = int((y - ey) / (2 * ey + dy + by))
         j = int((x - ex) / (2 * ex + dx + bx))
         h, w = self.setting.get_size()
@@ -3919,7 +3910,7 @@ class DataTypeController(object):
             self.panel = DoesntInheritBackgroundColor(
                     module_view.module_panel, -1,
                     name=edit_control_name(v))
-            self.panel.Sizer = wx.lib.rcsizer.RowColSizer()
+            self.panel.Sizer = wx.GridBagSizer()
             self.panel.Bind(wx.EVT_PAINT, self.on_paint)
         self.panel.controller = self
         self.n_items = 0
@@ -3928,14 +3919,15 @@ class DataTypeController(object):
     def on_paint(self, event):
         dc = wx.BufferedPaintDC(self.panel)
         dc.BeginDrawing()
-        dc.Background = wx.Brush(wx.SystemSettings.GetColour(
+        settings = wx.SystemSettings()
+        dc.Background = wx.Brush(settings.GetColour(
                 wx.SYS_COLOUR_WINDOW))
         dc.Clear()
-        dc.Pen = wx.Pen(wx.SystemSettings.GetColour(
+        dc.Pen = wx.Pen(settings.GetColour(
                 wx.SYS_COLOUR_GRAYTEXT))
         sizer = self.panel.Sizer
         _, panel_width = self.panel.GetClientSize()
-        assert isinstance(sizer, wx.lib.rcsizer.RowColSizer)
+        assert isinstance(sizer, wx.GridBagSizer)
         bottom_choice_name = self.get_choice_control_name(self.n_items)
         bottom_choice = self.panel.FindWindowByName(bottom_choice_name)
         if bottom_choice is not None:
@@ -3963,7 +3955,7 @@ class DataTypeController(object):
         d = self.v.get_data_types()
         needs_bind = []
         sizer = self.panel.Sizer
-        assert isinstance(sizer, wx.lib.rcsizer.RowColSizer)
+        assert isinstance(sizer, wx.GridBagSizer)
         for child in self.panel.GetChildren():
             sizer.Hide(child)
 
@@ -3986,7 +3978,8 @@ class DataTypeController(object):
                 sizer.Add(ctrl,
                           flag=wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL | wx.BOTTOM,
                           border=1,
-                          row=0, col=column)
+                          row=0,
+                          col=column)
             else:
                 sizer.Show(ctrl)
         for i, feature in enumerate(sorted(d.keys())):
@@ -4144,7 +4137,7 @@ class TableController(wx.grid.PyGridTableBase):
                 s = ''
             elif not isinstance(s, basestring):
                 s = str(s)
-            self.grid.GetGridWindow().SetToolTipString(s)
+            self.grid.GetGridWindow().SetToolTip(s)
         event.Skip()
 
     def on_column_resize(self, event):

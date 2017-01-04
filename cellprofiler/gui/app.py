@@ -2,6 +2,7 @@
 import sys
 import wx
 import cellprofiler
+import cellprofiler.gui.cpframe
 import cellprofiler.preferences
 import cellprofiler.gui.errordialog
 

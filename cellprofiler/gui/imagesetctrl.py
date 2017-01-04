@@ -12,7 +12,7 @@ import numpy
 import re
 import urllib
 import wx
-import wx.combo
+import wx.adv
 import wx.grid
 import wx.lib.mixins.gridlabelrenderer
 
@@ -114,7 +114,7 @@ class ImageSetCache(object):
 
 
 class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButtonMixin):
-    class ImageSetGridTable(wx.grid.PyGridTableBase):
+    class ImageSetGridTable(wx.grid.GridTableBase):
         DEFAULT_ATTR = wx.grid.GridCellAttr()
         ERROR_ATTR = wx.grid.GridCellAttr()
         ERROR_ATTR.TextColour = ERROR_COLOR
@@ -375,6 +375,7 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
             display_mode = DISPLAY_MODE_SIMPLE
 
         wx.grid.Grid.__init__(self, *args, **kwargs)
+
         cellprofiler.gui.cornerbuttonmixin.CornerButtonMixin.__init__(self, self.on_update,
                                                                       tooltip="Update and display the image set")
         gclw = self.GetGridColLabelWindow()
@@ -405,7 +406,7 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
 
         from cellprofiler.icons import get_builtin_image
         def get_builtin_bitmap(name):
-            return wx.BitmapFromImage(get_builtin_image(name))
+            return wx.Bitmap(get_builtin_image(name))
 
         self.color_channel_image = get_builtin_bitmap("color")
         self.monochrome_channel_image = get_builtin_bitmap("monochrome")
@@ -592,19 +593,19 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
         pb_col, pb_hit_code, pb_show = self.pressed_button
         if pb_hit_code is None:
             if hit_code == self.HIT_CHANNEL_TYPE_BUTTON:
-                self.GridColLabelWindow.SetToolTipString(
+                self.GridColLabelWindow.SetToolTip(
                         "Change the channel's type (monochrome, color, objects, etc)")
             elif hit_code == self.HIT_FILTER_BUTTON:
-                self.GridColLabelWindow.SetToolTipString(
+                self.GridColLabelWindow.SetToolTip(
                         "Select items in this channel using a filter")
             elif hit_code == self.HIT_PLUS:
-                self.GridColLabelWindow.SetToolTipString(
+                self.GridColLabelWindow.SetToolTip(
                         "Add an image column to the image set")
             elif hit_code == self.HIT_MINUS:
-                self.GridColLabelWindow.SetToolTipString(
+                self.GridColLabelWindow.SetToolTip(
                         "Remove this image column from the image set.")
             elif col is not None:
-                self.GridColLabelWindow.SetToolTipString(
+                self.GridColLabelWindow.SetToolTip(
                         'Image column, "%s"' % self.Table.columns[col].channel)
             event.Skip(True)
             return
@@ -652,8 +653,7 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
             dlg.Sizer.Add(sub_sizer, 0, wx.EXPAND | wx.ALL, 10)
             sub_sizer.Add(wx.StaticText(dlg, label="Image type:"))
             channel_type = self.Table.columns[col].channel_type
-            choice = wx.combo.BitmapComboBox(dlg, value=channel_type,
-                                             style=wx.CB_DROPDOWN)
+            choice = wx.adv.BitmapComboBox(dlg, value=channel_type, style=wx.CB_DROPDOWN)
             sub_sizer.Add(choice)
             selection = None
             current_help = ""
@@ -985,7 +985,7 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
                 self.SetColSize(i, width)
 
 
-class EllipsisGridCellRenderer(wx.grid.PyGridCellRenderer):
+class EllipsisGridCellRenderer(wx.grid.GridCellRenderer):
     """Renders a grid cell with ellipsis in the middle if can't fit
 
     """
@@ -993,7 +993,8 @@ class EllipsisGridCellRenderer(wx.grid.PyGridCellRenderer):
     def __init__(self, padding=2):
         super(self.__class__, self).__init__()
         self.padding = 2
-        self.renderer = wx.RendererNative.Get()
+        native = wx.RendererNative()
+        self.renderer = native.Get()
 
     def Draw(self, grid, attr, dc, rect, row, col, is_selected):
         assert isinstance(dc, wx.DC)
@@ -1110,8 +1111,9 @@ class ColLabelRenderer(wx.lib.mixins.gridlabelrenderer.GridLabelRenderer):
         self.icon_size = 16
         self.gap_size = 2
         self.read_only = read_only
-        self.renderer = wx.RendererNative.Get()
-        assert isinstance(self.renderer, wx.RendererNative)
+        native = wx.RendererNative()
+        self.renderer = native.Get()
+        assert isinstance(self.renderer, native)
 
     def Draw(self, grid, dc, rect, col):
         assert isinstance(grid, ImageSetCtrl)
@@ -1251,7 +1253,7 @@ class ColLabelRenderer(wx.lib.mixins.gridlabelrenderer.GridLabelRenderer):
                        height + self.icon_padding * 2)
         self.renderer.DrawPushButton(window, dc, rect, flags)
         if isinstance(bitmap, wx.Bitmap):
-            dc.DrawBitmap(bitmap, x, y, useMask=True)
+            dc.DrawBitmap(bitmap, x, y, True)
         elif isinstance(bitmap, basestring):
             dc.Font = window.Font
             dc.BackgroundMode = wx.TRANSPARENT
@@ -1323,7 +1325,8 @@ class ColumnNameValidator(wx.PyValidator):
         if ctrl.GetInsertionPoint() > 0 and c.isdigit():
             event.Skip()
             return
-        if not wx.Validator.IsSilent():
+        validator = wx.Validator()
+        if not validator.IsSilent():
             wx.Bell()
 
 
@@ -1514,7 +1517,7 @@ class FilterPanelDlg(wx.Dialog):
 
         for button_text, fn, help_text in function_list:
             button = wx.Button(self, label=button_text)
-            button.SetToolTipString(help_text)
+            button.SetToolTip(help_text)
 
             def on_button(event, fn=fn):
                 current_channel = self.channel_choice.GetStringSelection()

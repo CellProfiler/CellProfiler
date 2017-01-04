@@ -37,7 +37,7 @@ PADDING = 1
 
 
 def plv_get_bitmap(data):
-    return wx.BitmapFromImage(data)
+    return wx.Bitmap(data)
 
 
 PAUSE_COLUMN = 0
@@ -139,7 +139,7 @@ class PipelineListView(object):
         outputs_sizer.Add(self.outputs_panel, 1, wx.EXPAND)
         self.outputs_panel.Sizer = wx.BoxSizer()
         if wx.VERSION < (2, 9):
-            self.outputs_panel.BackgroundStyle = wx.SOLID
+            self.outputs_panel.BackgroundStyle = 100
         else:
             self.outputs_panel.BackgroundStyle = wx.BG_STYLE_COLOUR
         self.outputs_button = wx.Button(self.outputs_panel, label="View output settings", style=wx.BU_EXACTFIT)
@@ -245,7 +245,7 @@ class PipelineListView(object):
             event.Skip()
 
         input_list_ctrl.Bind(wx.EVT_MOVE, on_fake_move)
-        transparent_window.SetToolTipString(
+        transparent_window.SetToolTip(
                 "The current pipeline is a legacy pipeline that does not use these modules")
         self.transparent_window = transparent_window
 
@@ -981,7 +981,7 @@ class PipelineDropTarget(wx.PyDropTarget):
         return action
 
 
-class PipelineListCtrl(wx.PyScrolledWindow):
+class PipelineListCtrl(wx.ScrolledWindow):
     """A custom widget for the pipeline module list"""
 
     class PipelineListCtrlItem(object):
@@ -1648,7 +1648,7 @@ class PipelineListCtrl(wx.PyScrolledWindow):
                     elif not item.module.is_input_module():
                         tooltip_text = "Click to enable the %s module" % item.module.module_name
             if tooltip_text is not None:
-                self.SetToolTipString(tooltip_text)
+                self.SetToolTip(tooltip_text)
             else:
                 self.SetToolTip(None)
 

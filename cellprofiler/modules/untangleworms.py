@@ -66,6 +66,7 @@ Ausubel FM, Carpenter AE (2012). "An image analysis toolbox for high-throughput
 Toolbox</a> page for sample images and pipelines, as well
 as video tutorials.</p>
 '''
+from __future__ import absolute_import
 
 import logging
 import os
@@ -91,7 +92,7 @@ import cellprofiler.setting as cps
 from cellprofiler.setting import YES, NO
 import centrosome.cpmorphology as morph
 import cellprofiler.preferences as cpprefs
-import identify as I
+from . import identify as I
 from centrosome.propagate import propagate
 from centrosome.outline import outline
 from cellprofiler.preferences import standardize_default_folder_names, \
@@ -2527,7 +2528,7 @@ def read_params(training_set_directory, training_set_file_name, d):
 
     path = training_set_directory.get_absolute_path()
     file_name = training_set_file_name.value
-    if d.has_key(file_name):
+    if file_name in d:
         result, timestamp = d[file_name]
         if (timestamp == "URL" or
                     timestamp == os.stat(os.path.join(path, file_name)).st_mtime):

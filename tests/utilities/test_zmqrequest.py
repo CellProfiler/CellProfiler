@@ -97,7 +97,7 @@ class TestZMQRequest(unittest.TestCase):
                                 req = self.queue.get_nowait()
                                 req.send_only(self.work_socket)
                                 logger.info("Client message sent")
-            except Exception, e:
+            except Exception as e:
                 self.response_queue.put((e, None))
             finally:
                 logger.info("Client thread exiting")

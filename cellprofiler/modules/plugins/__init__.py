@@ -49,7 +49,7 @@ class PluginImporter(object):
             mod.__file__ = os.path.join(cpprefs.get_plugin_directory(), modname + '.py')
 
             contents = open(mod.__file__, "r").read()
-            exec compile(contents, mod.__file__, "exec") in mod.__dict__
+            exec(compile(contents, mod.__file__, "exec"), mod.__dict__)
             return mod
         except:
             if fullname in sys.module:

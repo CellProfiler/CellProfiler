@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from cellprofiler.gui.help import USING_METADATA_HELP_REF, USING_METADATA_GROUPING_HELP_REF, LOADING_IMAGE_SEQ_HELP_REF
 
 TM_OVERLAP = 'Overlap'
@@ -188,7 +189,7 @@ from centrosome.cpmorphology import centers_of_labels
 from centrosome.cpmorphology import associate_by_distance
 from centrosome.cpmorphology import all_connected_components
 from centrosome.index import Indexes
-from identify import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
+from .identify import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
 from cellprofiler.gui.help import HELP_ON_MEASURING_DISTANCES
 
 DT_COLOR_AND_NUMBER = 'Color and Number'
@@ -840,7 +841,7 @@ class TrackObjects(cpm.Module):
         return self.get_dictionary(workspace.image_set_list)
 
     def __get(self, field, workspace, default):
-        if self.get_ws_dictionary(workspace).has_key(field):
+        if field in self.get_ws_dictionary(workspace):
             return self.get_ws_dictionary(workspace)[field]
         return default
 
@@ -852,7 +853,7 @@ class TrackObjects(cpm.Module):
         assert isinstance(m, cpmeas.Measurements)
         d = self.get_ws_dictionary(workspace)
         group_number = m.get_group_number()
-        if not d.has_key("group_number") or d["group_number"] != group_number:
+        if "group_number" not in d or d["group_number"] != group_number:
             d["group_number"] = group_number
             group_indexes = np.array([
                                          (m.get_measurement(cpmeas.IMAGE, cpmeas.GROUP_INDEX, i), i)
@@ -1427,7 +1428,7 @@ class TrackObjects(cpm.Module):
                                              cpmeas.GROUP_NUMBER, i)
             group_index = m.get_measurement(cpmeas.IMAGE,
                                             cpmeas.GROUP_INDEX, i)
-            if ((not group_numbers.has_key(group_number)) or
+            if ((group_number not in group_numbers) or
                     (group_numbers[group_number][1] > group_index)):
                 group_numbers[group_number] = (i, group_index)
 
@@ -1688,7 +1689,7 @@ class TrackObjects(cpm.Module):
                 z = (P1[merge_p1idx, IIDX] - L[merge_lidx, IIDX]).astype(np.int32)
                 mask = (z <= max_frame_difference) & (z > 0)
                 if np.sum(mask) > 0:
-                    chunks.append([_[mask] for _ in merge_p1idx, merge_lidx, z])
+                    chunks.append([_[mask] for _ in (merge_p1idx, merge_lidx, z)])
             if len(chunks) > 0:
                 merge_p1idx, merge_lidx, z = [
                     np.hstack([_[i] for _ in chunks]) for i in range(3)]
@@ -1708,7 +1709,7 @@ class TrackObjects(cpm.Module):
             merge_scores = d * rho
             mask = merge_scores <= max_merge_score
             merge_p1idx, merge_lidx, merge_scores = [
-                _[mask] for _ in merge_p1idx, merge_lidx, merge_scores]
+                _[mask] for _ in (merge_p1idx, merge_lidx, merge_scores)]
             merge_len = np.sum(mask)
             if merge_len > 0:
                 #
@@ -1755,7 +1756,7 @@ class TrackObjects(cpm.Module):
                 mask = (z <= max_frame_difference) & (z > 0)
                 if np.sum(mask) > 0:
                     chunks.append(
-                            [_[mask] for _ in split_p2idx, split_fidx, z])
+                            [_[mask] for _ in (split_p2idx, split_fidx, z)])
             if len(chunks) > 0:
                 split_p2idx, split_fidx, z = [
                     np.hstack([_[i] for _ in chunks]) for i in range(3)]
@@ -1774,7 +1775,7 @@ class TrackObjects(cpm.Module):
             split_scores = d * rho
             mask = (split_scores <= max_split_score)
             split_p2idx, split_fidx, split_scores = \
-                [_[mask] for _ in split_p2idx, split_fidx, split_scores]
+                [_[mask] for _ in (split_p2idx, split_fidx, split_scores)]
             split_len = np.sum(mask)
             if split_len > 0:
                 #
@@ -1913,8 +1914,8 @@ class TrackObjects(cpm.Module):
             #
             if x[pidx] == midx + mitosis_off and not \
                     any([y[idx] >= mitosis_off and y[idx] < mitosis_end
-                         for idx in lidx, ridx]):
-                alt_score = sum([score_matrix[y[idx], idx] for idx in lidx, ridx])
+                         for idx in (lidx, ridx)]):
+                alt_score = sum([score_matrix[y[idx], idx] for idx in (lidx, ridx)])
                 #
                 # Taking the alt score would cost us a mitosis alternative
                 # cost, but would remove half of a gap alternative.
@@ -2986,7 +2987,7 @@ class TrackObjects(cpm.Module):
             else:
                 pg_meas = [
                     self.measurement_name(feature)
-                    for feature in F_LINKING_DISTANCE, F_MOVEMENT_MODEL]
+                    for feature in (F_LINKING_DISTANCE, F_MOVEMENT_MODEL)]
                 result = [
                     c if c[1] not in pg_meas else (c[0], c[1], c[2], attributes)
                     for c in result]

@@ -570,7 +570,7 @@ class MeasureObjectIntensityDistribution(cpm.Module):
             return [(image_name, object_name, "no objects", "-", "-", "-", "-")]
         name = (object_name if center_object_name is None
                 else "%s_%s" % (object_name, center_object_name))
-        if dd.has_key(name):
+        if name in dd:
             normalized_distance, i_center, j_center, good_mask = dd[name]
         else:
             d_to_edge = distance_to_edge(labels)

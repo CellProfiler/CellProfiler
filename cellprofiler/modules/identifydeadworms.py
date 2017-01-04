@@ -35,6 +35,7 @@ Ausubel FM, Carpenter AE (2012). "An image analysis toolbox for high-throughput
 Toolbox</a> page for sample images and pipelines, as well
 as video tutorials.</p>
 '''
+from __future__ import absolute_import
 
 import numpy as np
 from centrosome.cpmorphology import all_connected_components
@@ -48,7 +49,7 @@ import cellprofiler.measurement as cpmeas
 import cellprofiler.object as cpo
 import cellprofiler.preferences as cpprefs
 import cellprofiler.setting as cps
-import identify as I
+from . import identify as I
 from cellprofiler.setting import YES, NO
 
 C_WORMS = "Worm"

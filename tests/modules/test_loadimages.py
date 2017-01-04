@@ -1,5 +1,6 @@
 """Test the LoadImages module
 """
+from __future__ import print_function
 
 import base64
 import glob
@@ -1842,11 +1843,11 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                     try:
                         os.remove(p)
                     except:
-                        print "Failed to remove %s" % p
+                        print("Failed to remove %s" % p)
                 try:
                     os.rmdir(directory)
                 except:
-                    print "Failed to remove " + directory
+                    print("Failed to remove " + directory)
 
     def test_06_07_subfolders(self):
         '''Test recursion down the list of subfolders'''
@@ -1868,8 +1869,8 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
             try:
                 os.symlink(os.path.join(directory, filenames[0][0]),
                            os.path.join(directory, filenames[-1][0], filenames[0][0]))
-            except Exception, e:
-                print "ignoring symlink exception:", e
+            except Exception as e:
+                print("ignoring symlink exception:", e)
             load_images = LI.LoadImages()
             load_images.module_num = 1
             load_images.file_types.value = LI.FF_INDIVIDUAL_IMAGES
@@ -1912,12 +1913,12 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                     try:
                         os.remove(p)
                     except:
-                        print "Failed to remove " + p
+                        print("Failed to remove " + p)
                         traceback.print_exc()
                 try:
                     os.rmdir(path)
                 except:
-                    print "Failed to remove " + path
+                    print("Failed to remove " + path)
                     traceback.print_exc()
 
     def test_06_08_some_subfolders(self):
@@ -1986,12 +1987,12 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                     try:
                         os.remove(p)
                     except:
-                        print "Failed to remove " + p
+                        print("Failed to remove " + p)
                         traceback.print_exc()
                 try:
                     os.rmdir(path)
                 except:
-                    print "Failed to remove " + path
+                    print("Failed to remove " + path)
                     traceback.print_exc()
 
     def get_example_pipeline_data(self):
@@ -2144,7 +2145,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                 category_dict = {}
                 for column in expected_cols:
                     category, feature = column[1].split("_", 1)
-                    if not category_dict.has_key(category):
+                    if category not in category_dict:
                         category_dict[category] = []
                     category_dict[category].append(feature)
                 for category in category_dict.keys():
@@ -2199,7 +2200,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
             category_dict = {}
             for column in expected_cols:
                 category, feature = column[1].split("_", 1)
-                if not category_dict.has_key(category):
+                if category not in category_dict:
                     category_dict[category] = []
                 category_dict[category].append(feature)
             for category in category_dict.keys():

@@ -443,7 +443,7 @@ class FilterObjects(cpm.Module):
         if self.mode == MODE_RULES:
             try:
                 rules = self.get_rules()
-            except Exception, instance:
+            except Exception as instance:
                 logger.warning("Failed to load rules: %s", str(instance), exc_info=True)
                 raise cps.ValidationError(str(instance),
                                           self.rules_file_name)
@@ -702,7 +702,7 @@ class FilterObjects(cpm.Module):
                 svalues = values
             order = np.lexsort((-areas, svalues[src_labels - 1]))
             src_labels, enclosing_labels, areas = [
-                x[order] for x in src_labels, enclosing_labels, areas]
+                x[order] for x in (src_labels, enclosing_labels, areas)]
             firsts = np.hstack((
                 [0], np.where(src_labels[:-1] != src_labels[1:])[0] + 1,
                 src_labels.shape[:1]))

@@ -149,6 +149,8 @@ image loading was requested by the user.</li>
 
 See also the <b>Input</b> modules, <b>LoadImages</b> and <b>CalculateStatistics</b>.
 '''
+from __future__ import print_function
+from __future__ import absolute_import
 
 import csv
 import hashlib
@@ -157,6 +159,7 @@ import os
 import sys
 
 import numpy as np
+from functools import reduce
 
 logger = logging.getLogger(__name__)
 try:
@@ -171,7 +174,7 @@ import cellprofiler.measurement as cpmeas
 import cellprofiler.setting as cps
 from cellprofiler.setting import YES, NO
 import cellprofiler.preferences as cpprefs
-import identify as I
+from . import identify as I
 from cellprofiler.modules.loadimages import LoadImagesImageProvider
 from cellprofiler.modules.loadimages import C_FILE_NAME, C_PATH_NAME, C_URL
 from cellprofiler.modules.loadimages import C_SERIES, C_FRAME
@@ -453,7 +456,7 @@ class LoadData(cpm.Module):
 
         try:
             self.open_csv()
-        except IOError, e:
+        except IOError as e:
             import errno
             if e.errno == errno.EWOULDBLOCK:
                 raise cps.ValidationError("Another program (Excel?) is locking the CSV file %s." %
@@ -464,7 +467,7 @@ class LoadData(cpm.Module):
 
         try:
             self.get_header()
-        except Exception, e:
+        except Exception as e:
             raise cps.ValidationError(
                     "The CSV file, %s, is not in the proper format. See this module's help for details on CSV format. (error: %s)" %
                     (self.csv_path, e), self.csv_file_name)
@@ -622,7 +625,7 @@ class LoadData(cpm.Module):
         global header_cache
         entry = header_cache.get(self.csv_path, dict(ctime=0))
         if cpprefs.is_url_path(self.csv_path):
-            if not header_cache.has_key(self.csv_path):
+            if self.csv_path not in header_cache:
                 header_cache[self.csv_path] = entry
             return entry
         ctime = os.stat(self.csv_path).st_ctime
@@ -636,12 +639,12 @@ class LoadData(cpm.Module):
         global header_cache
 
         if cpprefs.is_url_path(self.csv_path):
-            if not header_cache.has_key(self.csv_path):
+            if self.csv_path not in header_cache:
                 header_cache[self.csv_path] = {}
             entry = header_cache[self.csv_path]
-            if entry.has_key("URLEXCEPTION"):
+            if "URLEXCEPTION" in entry:
                 raise entry["URLEXCEPTION"]
-            if entry.has_key("URLDATA"):
+            if "URLDATA" in entry:
                 fd = StringIO(entry["URLDATA"])
             else:
                 if do_not_cache:
@@ -649,7 +652,7 @@ class LoadData(cpm.Module):
                 import urllib2
                 try:
                     url_fd = urllib2.urlopen(self.csv_path)
-                except Exception, e:
+                except Exception as e:
                     entry["URLEXCEPTION"] = e
                     raise e
                 fd = StringIO()
@@ -673,7 +676,7 @@ class LoadData(cpm.Module):
             wx.MessageBox("Could not read %s" % self.csv_path)
             return
         reader = csv.reader(fd)
-        header = reader.next()
+        header = next(reader)
         frame = wx.Frame(wx.GetApp().frame, title=self.csv_path)
         sizer = wx.BoxSizer(wx.VERTICAL)
         frame.SetSizer(sizer)
@@ -696,17 +699,17 @@ class LoadData(cpm.Module):
         of its first line. These should be the measurement columns.
         '''
         entry = self.get_cache_info()
-        if entry.has_key("header"):
+        if "header" in entry:
             return entry["header"]
 
         fd = self.open_csv(do_not_cache=do_not_cache)
         reader = csv.reader(fd)
-        header = reader.next()
+        header = next(reader)
         fd.close()
         if header[0].startswith('ELN_RUN_ID'):
             try:
                 data = self.convert()
-            except Exception, e:
+            except Exception as e:
                 raise RuntimeError("%s" % e)
             header = data.dtype.names
         entry["header"] = [header_to_column(column) for column in header]
@@ -734,13 +737,13 @@ class LoadData(cpm.Module):
             try:
                 # do not load URLs automatically
                 return self.get_image_names(do_not_cache=True)
-            except Exception, e:
+            except Exception as e:
                 return []
         elif group == 'objectgroup' and self.wants_images:
             try:
                 # do not load URLs automatically
                 return self.get_object_names(do_not_cache=True)
-            except Exception, e:
+            except Exception as e:
                 return []
 
         return []
@@ -763,7 +766,7 @@ class LoadData(cpm.Module):
             return True
         fd = self.open_csv()
         reader = csv.reader(fd)
-        header = [header_to_column(column) for column in reader.next()]
+        header = [header_to_column(column) for column in next(reader)]
         if header[0].startswith('ELN_RUN_ID'):
             reader = self.convert()
             header = list(reader.dtype.names)
@@ -817,11 +820,11 @@ class LoadData(cpm.Module):
             else:
                 category, feature = column.split("_", 1)
             if category in IMAGE_CATEGORIES:
-                if not image_columns.has_key(feature):
+                if feature not in image_columns:
                     image_columns[feature] = []
                 image_columns[feature].append(i)
             elif category in OBJECTS_CATEGORIES:
-                if not object_columns.has_key(feature):
+                if feature not in object_columns:
                     object_columns[feature] = []
                 object_columns[feature].append(i)
             else:
@@ -935,7 +938,7 @@ class LoadData(cpm.Module):
             columns[feature] = c
             for row in rows:
                 value = row[index]
-                if column_type.has_key(feature):
+                if feature in column_type:
                     datatype = column_type[feature]
                 else:
                     datatype = previous_column_types[feature]
@@ -1098,7 +1101,7 @@ class LoadData(cpm.Module):
                     if self.show_window:
                         workspace.display_data.warning = warning
                     else:
-                        print warning
+                        print(warning)
                         #
                         # Process any object tags
                         #
@@ -1153,11 +1156,11 @@ class LoadData(cpm.Module):
         entry = None
         try:
             entry = self.get_cache_info()
-            if entry.has_key("measurement_columns"):
+            if "measurement_columns" in entry:
                 return entry["measurement_columns"]
             fd = self.open_csv()
             reader = csv.reader(fd)
-            header = [header_to_column(x) for x in reader.next()]
+            header = [header_to_column(x) for x in next(reader)]
             if header[0].startswith('ELN_RUN_ID'):
                 reader = self.convert()
                 header = reader.dtype.names

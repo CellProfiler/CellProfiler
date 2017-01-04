@@ -38,6 +38,8 @@ filename, if requested.</li>
 
 See also the <b>Input</b> modules, <b>LoadData</b>, <b>LoadSingleImage</b>, <b>SaveImages</b>.
 '''
+from __future__ import print_function
+from __future__ import absolute_import
 
 import cgi
 import hashlib
@@ -69,7 +71,7 @@ import cellprofiler.preferences as preferences
 import cellprofiler.setting as cps
 from cellprofiler.setting import YES, NO
 import centrosome.outline
-import identify as I
+from . import identify as I
 import os.path
 from cellprofiler.preferences import \
     standardize_default_folder_names, DEFAULT_INPUT_FOLDER_NAME, \
@@ -1481,7 +1483,7 @@ class LoadImages(cpmodule.Module):
                 parent = d[i]
                 for tag in tags[:-1]:
                     value = metadata.get(tag)
-                    if parent.has_key(value):
+                    if value in parent:
                         child = parent[value]
                     else:
                         child = {}
@@ -1490,7 +1492,7 @@ class LoadImages(cpmodule.Module):
                     last_value = value
                 tag = tags[-1]
                 value = metadata.get(tag)
-                if parent.has_key(value):
+                if value in parent:
                     # There's already a match to this metadata
                     conflict = [fd, parent[value], (path, filename)]
                     conflicts.append(conflict)
@@ -1588,7 +1590,7 @@ class LoadImages(cpmodule.Module):
                             image_number,
                             self.images[i], full_path)
                     for k, v in d.iteritems():
-                        if not features.has_key(k):
+                        if k not in features:
                             features[k] = [None] * n_image_sets
                         features[k][image_number - 1] = v
         for k, v in features.iteritems():
@@ -1618,7 +1620,7 @@ class LoadImages(cpmodule.Module):
                 values.update([x for x in dd.keys() if x is not None])
         result = []
         for value in sorted(values):
-            subgroup = tuple((dd and dd.has_key(None) and dd[None]) or  # wildcard metadata
+            subgroup = tuple((dd and None in dd and dd[None]) or  # wildcard metadata
                              (dd and dd.get(value)) or  # fetch subvalue or None if missing
                              None  # metadata is missing
                              for dd in d)
@@ -1660,7 +1662,7 @@ class LoadImages(cpmodule.Module):
             keys = tuple([measurements.get_measurement(
                     cpmeas.IMAGE, "_".join((cpmeas.C_METADATA, tag)), i)
                           for tag in tags])
-            if md_dict.has_key(keys):
+            if keys in md_dict:
                 md_dict.append(i)
             else:
                 md_dict[keys] = [i]
@@ -1833,7 +1835,7 @@ class LoadImages(cpmodule.Module):
                     pixels = omemetadata.image(i).Pixels
                     channel_count = pixels.SizeC
                     stack_count = pixels.SizeZ
-                    if not d[i].has_key("Z"):
+                    if "Z" not in d[i]:
                         d[i]["Z"] = stack_count
                     elif stack_count != d[i]["Z"]:
                         message = (
@@ -1844,7 +1846,7 @@ class LoadImages(cpmodule.Module):
                         pipeline.report_prepare_run_error(self, message)
                         return False
                     timepoint_count = pixels.SizeT
-                    if not d[i].has_key("T"):
+                    if "T" not in d[i]:
                         d[i]["T"] = timepoint_count
                     elif timepoint_count != d[i]["T"]:
                         message = (
@@ -1887,7 +1889,7 @@ class LoadImages(cpmodule.Module):
                             if match_metadata:
                                 key = dict([(k, str(v))
                                             for k, v in frame_metadata.items()])
-                                if not md_dict.has_key(key):
+                                if key not in md_dict:
                                     message = (
                                         "Could not find a matching image set for " %
                                         ", ".join(["%s=%s%" % kv for kv in frame_metadata.items()]))
@@ -1957,7 +1959,7 @@ class LoadImages(cpmodule.Module):
                                 if match_metadata:
                                     key = dict([(k, str(v))
                                                 for k, v in frame_metadata.items()])
-                                    if not md_dict.has_key(key):
+                                    if key not in md_dict:
                                         message = (
                                             "Could not find a matching image set for " %
                                             ", ".join(["%s=%s%" % kv for kv in frame_metadata.items()]))
@@ -2033,7 +2035,7 @@ class LoadImages(cpmodule.Module):
             pathname = os.path.join(self.image_directory(), pathname)
             frame_count = self.get_frame_count(pathname)
             if frame_count == 0:
-                print "Warning - no frame count detected"
+                print("Warning - no frame count detected")
                 frame_count = 256
             #
             # 3 choices here:
@@ -2202,7 +2204,7 @@ class LoadImages(cpmodule.Module):
                         warning = bad_sizes_warning(image_size, first_image_filename,
                                                     pixel_data.shape[:2], filename)
                         if get_headless():
-                            print warning
+                            print(warning)
                         elif self.show_window:
                             workspace.display_data.warning = warning
                 else:
@@ -2263,9 +2265,9 @@ class LoadImages(cpmodule.Module):
                         workspace.image_set.add(channel.outlines_name.value, outline_image)
 
                 for tag in tags:
-                    if metadata.has_key(tag):
+                    if tag in metadata:
                         row.append(metadata[tag])
-                    elif image_set_metadata.has_key(tag):
+                    elif tag in image_set_metadata:
                         row.append(image_set_metadata[tag])
                     else:
                         row.append("")
@@ -2511,7 +2513,7 @@ class LoadImages(cpmodule.Module):
         frame = workspace.frame
         root = self.image_directory()
         use_cached = False
-        if can_cache and frame is not None and cached_file_lists.has_key(root):
+        if can_cache and frame is not None and root in cached_file_lists:
             how_long, files = cached_file_lists[root]
             if how_long > 3:
                 import wx

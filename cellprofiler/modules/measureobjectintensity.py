@@ -56,6 +56,7 @@ the pixel with the maximum intensity within the object.</li>
 
 See also <b>NamesAndTypes</b>, <b>MeasureImageIntensity</b>.
 """
+from __future__ import absolute_import
 
 import centrosome.outline as cpmo
 import numpy as np
@@ -67,7 +68,7 @@ import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
 import cellprofiler.object as cpo
 import cellprofiler.setting as cps
-from identify import C_LOCATION
+from .identify import C_LOCATION
 
 INTENSITY = 'Intensity'
 INTEGRATED_INTENSITY = 'IntegratedIntensity'

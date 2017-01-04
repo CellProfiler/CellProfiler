@@ -6,6 +6,7 @@ your choosing, or one object measurement per object on top
 of every object in an image. The display itself is an image which you
 can save to a file using <b>SaveImages</b>.
 '''
+from __future__ import absolute_import
 
 import numpy as np
 
@@ -319,7 +320,7 @@ class DisplayDataOnImage(cpm.Module):
         # Note: workspace.measurements.image_set_number contains the image
         #    number that should be displayed.
         import wx
-        import loadimages as LI
+        from . import loadimages as LI
         import os.path
         im_id = self.image_name.value
 
@@ -328,7 +329,7 @@ class DisplayDataOnImage(cpm.Module):
         pathname_feature = "_".join((LI.C_PATH_NAME, image_name))
         filename_feature = "_".join((LI.C_FILE_NAME, image_name))
         if not all([m.has_feature(cpmeas.IMAGE, f)
-                    for f in pathname_feature, filename_feature]):
+                    for f in (pathname_feature, filename_feature)]):
             with wx.FileDialog(
                     None,
                     message="Image file for display",

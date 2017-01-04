@@ -1,6 +1,7 @@
 # coding=utf-8
 """ figure.py - provides a frame with a figure inside
 """
+from __future__ import absolute_import
 
 import cellprofiler.gui
 import cellprofiler.gui.artist
@@ -9,7 +10,7 @@ import cellprofiler.preferences
 import cellprofiler.preferences
 import centrosome.cpmorphology
 import centrosome.outline
-import tools
+from . import tools
 import csv
 import functools
 import javabridge
@@ -472,7 +473,7 @@ class Figure(wx.Frame):
         we do it manually here. Reinventing the wheel is so much quicker
         and works much better.
         """
-        if any([not hasattr(self, bar) for bar in "navtoolbar", "status_bar"]):
+        if any([not hasattr(self, bar) for bar in ("navtoolbar", "status_bar")]):
             return
         available_width, available_height = self.GetClientSize()
         nbheight = self.navtoolbar.GetSize()[1]
@@ -551,7 +552,7 @@ class Figure(wx.Frame):
 
     def get_pixel_data_fields_for_status_bar(self, im, xi, yi):
         fields = []
-        x, y = [int(round(xy)) for xy in xi, yi]
+        x, y = [int(round(xy)) for xy in (xi, yi)]
         if not self.in_bounds(im, x, y):
             return fields
         if im.dtype.type == numpy.uint8:
@@ -803,7 +804,7 @@ class Figure(wx.Frame):
         popup = self.get_imshow_menu(subplot_xy)
         self.PopupMenu(popup, pos)
 
-    def get_imshow_menu(self, (x, y)):
+    def get_imshow_menu(self, xxx_todo_changeme):
         """returns a menu corresponding to the specified subplot with items to:
         - launch the image in a new cpfigure window
         - Show image histogram
@@ -811,6 +812,7 @@ class Figure(wx.Frame):
         - Toggle channels on/off
         Note: Each item is bound to a handler.
         """
+        (x, y) = xxx_todo_changeme
         MENU_CONTRAST_RAW = wx.NewId()
         MENU_CONTRAST_NORMALIZED = wx.NewId()
         MENU_CONTRAST_LOG = wx.NewId()
@@ -1886,7 +1888,7 @@ class Figure(wx.Frame):
         axes.axis('image')
 
         if colorbar and not numpy.all(numpy.isnan(data)):
-            if self.colorbar.has_key(axes):
+            if axes in self.colorbar:
                 cb = self.colorbar[axes]
                 cb.set_clim(numpy.min(clean_data), numpy.max(clean_data))
                 cb.update_normal(clean_data)
@@ -1959,13 +1961,13 @@ def show_image(url, parent=None, needs_raise_after=True):
         wx.MessageBox('Failed to open file, "%s"' % filename,
                       caption="File open error")
         return
-    except javabridge.JavaException, je:
+    except javabridge.JavaException as je:
         wx.MessageBox(
                 'Could not open "%s" as an image.' % filename,
                 caption="File format error")
         return
 
-    except Exception, e:
+    except Exception as e:
         from cellprofiler.gui.errordialog import display_error_dialog
         display_error_dialog(None, e, None,
                              "Failed to load %s" % url,

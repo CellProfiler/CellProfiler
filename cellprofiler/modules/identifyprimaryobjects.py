@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import cellprofiler.icons
 from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON
 
@@ -163,7 +164,7 @@ import numpy as np
 import re
 import scipy.stats
 
-import identify as cpmi
+from . import identify as cpmi
 import cellprofiler.module
 import cellprofiler.image as cpi
 import cellprofiler.measurement as cpmeas
@@ -182,9 +183,9 @@ import centrosome.outline
 import cellprofiler.object
 from cellprofiler.setting import AUTOMATIC
 import centrosome.threshold as cpthresh
-from identify import TSM_AUTOMATIC, TS_BINARY_IMAGE
-from identify import draw_outline
-from identify import FI_IMAGE_SIZE
+from .identify import TSM_AUTOMATIC, TS_BINARY_IMAGE
+from .identify import draw_outline
+from .identify import FI_IMAGE_SIZE
 from cellprofiler.gui.help import HELP_ON_MEASURING_DISTANCES, RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
 
 #################################################

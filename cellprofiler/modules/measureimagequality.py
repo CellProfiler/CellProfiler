@@ -56,6 +56,7 @@ control in large-scale high-content screens." <i>J Biomol Screen</i> 17(2):266-7
 <a href="http://dx.doi.org/10.1177/1087057111420292">(link)</a></li>
 </ul>
 '''
+from __future__ import absolute_import
 
 import logging
 
@@ -73,10 +74,10 @@ from cellprofiler.setting import YES, NO
 import centrosome.threshold as cpthresh
 import itertools
 import centrosome.radial_power_spectrum as rps
-from identify import O_TWO_CLASS, O_THREE_CLASS, O_WEIGHTED_VARIANCE, O_ENTROPY
-from identify import O_FOREGROUND, O_BACKGROUND
+from .identify import O_TWO_CLASS, O_THREE_CLASS, O_WEIGHTED_VARIANCE, O_ENTROPY
+from .identify import O_FOREGROUND, O_BACKGROUND
 from centrosome.threshold import TM_MOG, TM_OTSU
-from loadimages import C_FILE_NAME, C_SCALING
+from .loadimages import C_FILE_NAME, C_SCALING
 import cellprofiler.preferences as cpprefs
 from cellprofiler.preferences import \
     DEFAULT_OUTPUT_FOLDER_NAME, DEFAULT_INPUT_FOLDER_NAME, ABSOLUTE_FOLDER_NAME, \
@@ -1211,7 +1212,7 @@ class MeasureImageQuality(cpm.Module):
                 threshold_image = setting_values[i + 1]
                 threshold_method = setting_values[i + 2]
                 if saturation_image != cps.DO_NOT_USE:
-                    if not d.has_key(saturation_image):
+                    if saturation_image not in d:
                         d[saturation_image] = {"check_blur": check_blur,
                                                "check_saturation": cps.YES,
                                                "check_threshold": cps.NO,
@@ -1220,7 +1221,7 @@ class MeasureImageQuality(cpm.Module):
                         d[saturation_image]["check_blur"] = check_blur
                         d[saturation_image]["check_saturation"] = cps.YES
                 if threshold_image != cps.DO_NOT_USE:
-                    if not d.has_key(threshold_image):
+                    if threshold_image not in d:
                         d[threshold_image] = {"check_blur": cps.NO,
                                               "check_saturation": cps.NO,
                                               "check_threshold": cps.YES,

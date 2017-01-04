@@ -1,5 +1,6 @@
 '''test_measureimagequality.py - test the MeasureImageQuality module
 '''
+from __future__ import print_function
 
 import StringIO
 import base64
@@ -298,8 +299,8 @@ class TestMeasureImageQuality(unittest.TestCase):
                                                ("ImageQuality_PercentMinimal_my_image", 200.0 / 3)):
             self.assertTrue(m.has_current_measurements(cpmeas.IMAGE,
                                                        feature_name))
-            print feature_name, expected_value, m.get_current_measurement(cpmeas.IMAGE,
-                                                                          feature_name)
+            print(feature_name, expected_value, m.get_current_measurement(cpmeas.IMAGE,
+                                                                          feature_name))
             self.assertAlmostEqual(m.get_current_measurement(cpmeas.IMAGE,
                                                              feature_name),
                                    expected_value)
@@ -399,7 +400,7 @@ class TestMeasureImageQuality(unittest.TestCase):
         threshold_algorithm = threshold_group.threshold_algorithm
         f_mean, f_median, f_std = [
             threshold_group.threshold_feature_name(image_name, agg)
-            for agg in miq.AGG_MEAN, miq.AGG_MEDIAN, miq.AGG_STD]
+            for agg in (miq.AGG_MEAN, miq.AGG_MEDIAN, miq.AGG_STD)]
 
         expected = ((f_mean, np.mean(data)),
                     (f_median, np.median(data)),
@@ -441,7 +442,7 @@ class TestMeasureImageQuality(unittest.TestCase):
         image_name = module.image_groups[0].image_names.value
         f_mean, f_median, f_std = [
             threshold_group.threshold_feature_name(image_name, agg)
-            for agg in miq.AGG_MEAN, miq.AGG_MEDIAN, miq.AGG_STD]
+            for agg in (miq.AGG_MEAN, miq.AGG_MEDIAN, miq.AGG_STD)]
 
         expected = ((f_mean, np.mean(data[mask])),
                     (f_median, np.median(data[mask])),

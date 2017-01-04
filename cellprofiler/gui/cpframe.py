@@ -1,6 +1,7 @@
 # -*- Encoding: utf-8 -*-
 """ CellProfiler.CellProfilerGUI.CPFrame - Cell Profiler's main window
 """
+from __future__ import absolute_import
 
 import cellprofiler
 import cellprofiler.gui
@@ -751,7 +752,7 @@ class CPFrame(wx.Frame):
             self.__menu_data_tools_help_menu = wx.Menu()
 
             def on_plate_viewer_help(event):
-                import htmldialog
+                from . import htmldialog
                 dlg = htmldialog.HTMLDialog(
                         self, "Help on plate viewer", cellprofiler.gui.help.PLATEVIEWER_HELP)
                 dlg.Show()
@@ -777,7 +778,7 @@ class CPFrame(wx.Frame):
             self.__data_tools_menu = wx.Menu()
 
             def on_data_tool_overview(event):
-                import htmldialog
+                from . import htmldialog
                 from cellprofiler.gui.help import MENU_BAR_DATATOOLS_HELP
                 dlg = htmldialog.HTMLDialog(self, 'Data Tool Overview', MENU_BAR_DATATOOLS_HELP)
                 dlg.Show()
@@ -960,7 +961,7 @@ class CPFrame(wx.Frame):
         webbrowser.open("https://github.com/CellProfiler/CellProfiler")
 
     def __on_help_path_list(self, event):
-        import htmldialog
+        from . import htmldialog
         dlg = htmldialog.HTMLDialog(self, "Help on file list", cellprofiler.gui.help.HELP_ON_FILE_LIST)
         dlg.Show()
 

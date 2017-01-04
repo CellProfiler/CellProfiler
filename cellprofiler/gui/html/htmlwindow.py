@@ -1,8 +1,9 @@
 # coding=utf-8
+from __future__ import absolute_import
 from cellprofiler.preferences import get_background_color, set_startup_blurb
 
 import cellprofiler.icons
-import content
+from . import content
 import os
 import sys
 import urllib

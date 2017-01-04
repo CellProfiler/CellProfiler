@@ -1,6 +1,8 @@
 # coding=utf-8
 """ImageSetCtrl.py - A control to display an imageset
 """
+from __future__ import print_function
+from __future__ import absolute_import
 
 import cellprofiler.gui
 import cellprofiler.gui.cornerbuttonmixin
@@ -431,7 +433,7 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
         self.Table.workspace.refresh_image_set()
         n_imagesets = self.Table.workspace.measurements.image_set_count
         if n_imagesets == 0:
-            from help import CREATING_A_PROJECT_CAPTION
+            from .help import CREATING_A_PROJECT_CAPTION
             wx.MessageBox(
                     "Sorry, your pipeline doesn't produce any valid image sets "
                     "as currently configured. Check your Input module settings, "
@@ -768,11 +770,11 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
             dlg.ShowModal()
 
     def on_add_column(self):
-        print "Add column pressed"
+        print("Add column pressed")
         self.Table.AppendCols(1)
 
     def on_remove_column(self, col):
-        print "Remove column pressed"
+        print("Remove column pressed")
         self.Table.DeleteCols(col, 1)
 
     ####

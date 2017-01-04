@@ -25,6 +25,7 @@ of the region. </p>
 mass of the masked objects.</li>
 </ul>
 '''
+from __future__ import absolute_import
 
 import numpy as np
 import scipy.ndimage as scind
@@ -37,7 +38,7 @@ import cellprofiler.measurement as cpmeas
 import cellprofiler.object as cpo
 import cellprofiler.preferences as cpprefs
 import cellprofiler.setting as cps
-import identify as I
+from . import identify as I
 from cellprofiler.gui.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
 from cellprofiler.setting import YES, NO
 

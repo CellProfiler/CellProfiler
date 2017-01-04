@@ -52,6 +52,7 @@ identified tertiary objects.</li>
 
 See also <b>IdentifyPrimaryObject</b> and <b>IdentifySecondaryObject</b> modules.
 '''
+from __future__ import absolute_import
 
 import matplotlib
 import matplotlib.cm
@@ -64,7 +65,7 @@ import cellprofiler.measurement as cpmeas
 import cellprofiler.object as cpo
 import cellprofiler.preferences as cpprefs
 import cellprofiler.setting as cps
-import identify as cpmi
+from . import identify as cpmi
 from cellprofiler.gui.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
 from cellprofiler.setting import YES, NO
 

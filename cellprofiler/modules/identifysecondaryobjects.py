@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import cellprofiler.icons
 from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON
 
@@ -136,8 +137,8 @@ import cellprofiler.preferences as cpprefs
 import cellprofiler.workspace as cpw
 import cellprofiler.setting as cps
 from cellprofiler.setting import YES, NO
-import identify as cpmi
-from identify import FI_IMAGE_SIZE
+from . import identify as cpmi
+from .identify import FI_IMAGE_SIZE
 import centrosome.threshold as cpthresh
 import centrosome.otsu
 from centrosome.propagate import propagate
@@ -732,7 +733,7 @@ class IdentifySecondaryObjects(cpmi.Identify):
             workspace.display_data.object_count = object_count
 
     def display(self, workspace, figure):
-        from identify import TS_BINARY_IMAGE
+        from .identify import TS_BINARY_IMAGE
 
         object_pct = workspace.display_data.object_pct
         img = workspace.display_data.img

@@ -3,6 +3,7 @@
 <b>ApplyThreshold</b> produces either a grayscale or binary image
 based on a threshold which can be pre-selected or calculated automatically using one of many methods.
 """
+from __future__ import absolute_import
 
 from centrosome.cpmorphology import strel_disk
 from centrosome.threshold import TM_GLOBAL, TM_ADAPTIVE, TM_PER_OBJECT, TM_BINARY_IMAGE
@@ -14,12 +15,12 @@ from cellprofiler import image
 from cellprofiler.module import Module
 from cellprofiler.modules.identify import get_threshold_measurement_columns
 from cellprofiler.setting import YES, NO
-from identify import FF_ORIG_THRESHOLD, FF_FINAL_THRESHOLD
-from identify import FF_SUM_OF_ENTROPIES, FF_WEIGHTED_VARIANCE
-from identify import FI_IMAGE_SIZE, TSM_NONE
-from identify import Identify, O_BACKGROUND, O_ENTROPY
-from identify import O_FOREGROUND, O_THREE_CLASS
-from identify import O_TWO_CLASS, O_WEIGHTED_VARIANCE
+from .identify import FF_ORIG_THRESHOLD, FF_FINAL_THRESHOLD
+from .identify import FF_SUM_OF_ENTROPIES, FF_WEIGHTED_VARIANCE
+from .identify import FI_IMAGE_SIZE, TSM_NONE
+from .identify import Identify, O_BACKGROUND, O_ENTROPY
+from .identify import O_FOREGROUND, O_THREE_CLASS
+from .identify import O_TWO_CLASS, O_WEIGHTED_VARIANCE
 
 RETAIN = "Retain"
 SHIFT = "Shift"
@@ -208,7 +209,7 @@ class ApplyThreshold(Identify):
                          variable_revision_number, module_name,
                          from_matlab):
         if from_matlab and variable_revision_number < 4:
-            raise NotImplementedError, ("TODO: Handle Matlab CP pipelines for "
+            raise NotImplementedError("TODO: Handle Matlab CP pipelines for "
                                         "ApplyThreshold with revision < 4")
         if from_matlab and variable_revision_number == 4:
             setting_values = [setting_values[0],  # ImageName

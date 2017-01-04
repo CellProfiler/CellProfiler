@@ -1,6 +1,7 @@
 # coding=utf-8
 """ help.py - contains menu structures for help menus in CP
 """
+from __future__ import absolute_import
 
 #######################################################
 #
@@ -2462,7 +2463,7 @@ MAIN_HELP = (
 
 def make_help_menu(h, window, menu=None):
     import wx
-    import htmldialog
+    from . import htmldialog
     if menu is None:
         menu = wx.Menu()
     for key, value in h:

@@ -923,7 +923,7 @@ class NamesAndTypes(cpm.Module):
 
         urls, path_names, file_names, series, index, channel = [
             env.get_object_array_elements(x) for x in
-            urls, path_names, file_names, series, index, channel]
+            (urls, path_names, file_names, series, index, channel)]
         for i, iscd in enumerate(iscds):
             image_set_column_idx = channel_map[column_names[i]]
             if iscd.channel_type == ImageSetChannelDescriptor.CT_OBJECTS:
@@ -1960,7 +1960,7 @@ class NamesAndTypes(cpm.Module):
                             elif join[key] is not None and best_value is None:
                                 best_value = join[key]
                         for i, column_name in enumerate(self.get_column_names()):
-                            if not join.has_key(column_name):
+                            if column_name not in join:
                                 if best_value in self.metadata_keys:
                                     join[column_name] = best_value
                                 else:
@@ -2004,7 +2004,7 @@ class MetadataPredicate(cps.Filter.FilterPredicate):
                     key,
                     self.display_fmt % key,
                     lambda ipd, match, key=key:
-                    ipd.metadata.has_key(key) and
+                    key in ipd.metadata and
                     ipd.metadata[key] == match,
                     [cps.Filter.LITERAL_PREDICATE])
             for key in keys]

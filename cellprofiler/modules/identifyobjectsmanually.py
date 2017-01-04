@@ -12,6 +12,7 @@ display to within that rectangle.</li>
 <li><i>Zoom out:</i> Reverses the effect of the last zoom-in.</li>
 <li><i>Erase:</i> Erases an object if you click on it.</li></ul>
 '''
+from __future__ import absolute_import
 
 import numpy as np
 from centrosome.cpmorphology import draw_line
@@ -23,7 +24,7 @@ import cellprofiler.module as cpm
 import cellprofiler.object as cpo
 import cellprofiler.preferences as cpprefs
 import cellprofiler.setting as cps
-import identify as I
+from . import identify as I
 from cellprofiler.gui.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
 
 TOOL_OUTLINE = "Outline"

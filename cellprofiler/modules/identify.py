@@ -23,6 +23,7 @@ import cellprofiler.measurement as cpmeas
 import cellprofiler.object
 import cellprofiler.setting as cps
 from cellprofiler.gui.help import HELP_ON_PIXEL_INTENSITIES
+from functools import reduce
 
 O_TWO_CLASS = 'Two classes'
 O_THREE_CLASS = 'Three classes'
@@ -1177,7 +1178,7 @@ class Identify(cellprofiler.module.Module):
         if object_name == cpmeas.IMAGE:
             return [C_COUNT]
         result = []
-        if object_dictionary.has_key(object_name):
+        if object_name in object_dictionary:
             result += [C_LOCATION, C_NUMBER]
             if len(object_dictionary[object_name]) > 0:
                 result += [C_PARENT]
@@ -1198,7 +1199,7 @@ class Identify(cellprofiler.module.Module):
         if object_name == cpmeas.IMAGE and category == C_COUNT:
             return list(object_dictionary.keys())
 
-        if object_dictionary.has_key(object_name):
+        if object_name in object_dictionary:
             if category == C_LOCATION:
                 return [FTR_CENTER_X, FTR_CENTER_Y]
             elif category == C_NUMBER:

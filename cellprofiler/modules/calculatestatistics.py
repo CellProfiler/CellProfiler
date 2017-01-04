@@ -125,6 +125,7 @@ from cellprofiler.preferences import standardize_default_folder_names, \
     DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME, \
     IO_FOLDER_CHOICE_HELP_TEXT, IO_WITH_METADATA_HELP_TEXT
 from cellprofiler.setting import YES, NO
+from functools import reduce
 
 '''# of settings aside from the dose measurements'''
 FIXED_SETTING_COUNT = 1

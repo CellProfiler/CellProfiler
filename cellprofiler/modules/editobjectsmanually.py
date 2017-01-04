@@ -25,6 +25,7 @@ and continue the pipeline.
 
 See also <b>FilterObjects</b>, <b>MaskObject</b>, <b>OverlayOutlines</b>, <b>ConvertToImage</b>.
 '''
+from __future__ import absolute_import
 
 import logging
 
@@ -46,7 +47,7 @@ from centrosome.outline import outline
 from centrosome.cpmorphology import triangle_areas
 
 from cellprofiler.modules.loadimages import pathname2url
-import identify as I
+from . import identify as I
 
 ###########################################
 #

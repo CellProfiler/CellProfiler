@@ -202,7 +202,7 @@ EditObjectsManually:[module_num:1|svn_version:\'10039\'|variable_revision_number
             self.assertEqual(len(categories), len([k for k in category_d.keys()
                                                    if k != "Foo"]))
             for category in categories:
-                self.assertTrue(category_d.has_key(category))
+                self.assertTrue(category in category_d)
             for category in category_d.keys():
                 if category != "Foo":
                     self.assertTrue(category in categories)

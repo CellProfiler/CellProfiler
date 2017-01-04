@@ -1,5 +1,6 @@
 '''test_measureneurons.py - test the MeasureNeurons module
 '''
+from __future__ import print_function
 
 import base64
 import os
@@ -44,7 +45,7 @@ class TestMeasureNeurons(unittest.TestCase):
                     if os.path.exists(p):
                         os.remove(p)
                 except:
-                    print "Failed to remove %s" % p
+                    print("Failed to remove %s" % p)
                     traceback.print_exc()
             os.rmdir(self.temp_dir)
 

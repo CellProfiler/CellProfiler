@@ -995,7 +995,7 @@ class Pipeline(object):
                     text, setting = line.split(':')
                     setting = setting.decode('string_escape')
                     if do_utf16_decode:
-                        setting = utf16decode(setting)
+                        setting = setting
                     settings.append(setting)
                 #
                 # Set up the module
@@ -1178,7 +1178,7 @@ class Pipeline(object):
                     setting_text = str(setting_text)
                 fd.write('    %s:%s\n' % (
                     self.encode_txt(setting_text),
-                    self.encode_txt(utf16encode(setting.unicode_value))))
+                    self.encode_txt(setting_text)))
         if save_image_plane_details:
             fd.write("\n")
             write_file_list(fd, self.__file_list)
